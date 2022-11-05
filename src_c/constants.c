@@ -623,6 +623,11 @@ MODINIT_DEFINE(constants)
     // https://github.com/pygame-community/pygame-ce/issues/1845
     DEC_CONSTS(IS_CE, 1)
 
+    /* Font alignment constants */
+    DEC_CONSTS(FONT_LEFT, 0);
+    DEC_CONSTS(FONT_CENTER, 1);
+    DEC_CONSTS(FONT_RIGHT, 2);
+
     if (PyModule_AddObject(module, "__all__", all_list)) {
         Py_DECREF(all_list);
         Py_DECREF(module);
