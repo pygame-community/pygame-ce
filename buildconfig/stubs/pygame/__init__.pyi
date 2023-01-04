@@ -42,6 +42,7 @@ from pygame import (
     surflock as surflock,
     sysfont as sysfont,
     _debug as _debug,
+    system as system,
 )
 
 from .rect import Rect as Rect

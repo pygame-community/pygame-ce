@@ -50,6 +50,7 @@ PG_AUTOIMPORT_SUBMODS = [
     "surflock",
     "sysfont",
     "_debug"
+    "system",
 ]
 
 # pygame classes that are autoimported into main namespace are kept in this dict
