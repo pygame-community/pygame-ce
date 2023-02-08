@@ -15,20 +15,18 @@ with open('README.rst', encoding='utf-8') as readme:
 EXTRAS = {}
 
 METADATA = {
-    "name": "pygame",
+    "name": "pygame-ce",
     "version": "2.1.4.dev1",
     "license": "LGPL",
-    "url": "https://www.pygame.org",
+    "url": "https://pyga.me",
     "author": "A community project.",
-    "author_email": "pygame@pygame.org",
     "description": "Python Game Development",
     "long_description": LONG_DESCRIPTION,
     "long_description_content_type": "text/x-rst",
     "project_urls": {
-        "Documentation": "https://pygame.org/docs",
-        "Bug Tracker": "https://github.com/pygame/pygame/issues",
-        "Source": "https://github.com/pygame/pygame",
-        "Twitter": "https://twitter.com/pygame_org",
+        "Documentation": "https://pyga.me",
+        "Bug Tracker": "https://github.com/pygame-community/pygame/issues",
+        "Source": "https://github.com/pygame-community/pygame",
     },
     "classifiers": [
         "Development Status :: 6 - Mature",
@@ -169,7 +167,7 @@ def compilation_help():
     print('For help with compilation see:')
     print(f'    {url}')
     print('To contribute to pygame development see:')
-    print('    https://www.pygame.org/contribute.html')
+    print('    https://github.com/pygame-community/pygame')
     print('---\n')
 
 
