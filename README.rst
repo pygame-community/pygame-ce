@@ -1,6 +1,6 @@
-.. image:: https://raw.githubusercontent.com/pygame/pygame/main/docs/reST/_static/pygame_logo.svg
+.. image:: https://raw.githubusercontent.com/pygame-community/pygame/main/docs/reST/_static/pygame_logo.svg
   :alt: pygame
-  :target: https://www.pygame.org/
+  :target: https://pyga.me/
 
 
 |AppVeyorBuild| |PyPiVersion| |PyPiLicense|
@@ -21,7 +21,7 @@ Installation
 
 ::
 
-   pip install pygame
+   pip install pygame-ce
 
 
 Help
@@ -35,7 +35,7 @@ entire library. Browse the documentation on the `docs page`_.
 The online documentation stays up to date with the development version
 of pygame on github.  This may be a bit newer than the version of pygame
 you are using. To upgrade to the latest full release, run 
-``pip install pygame --upgrade`` in your terminal.
+``pip install pygame-ce --upgrade`` in your terminal.
 
 Best of all, the examples directory has many playable small programs
 which can get you started playing with the code right away.
