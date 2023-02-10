@@ -25,7 +25,7 @@ python3 -m pip install conan
 conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
 
 # add the pygame conan repository.
-conan remote add pygame-repo https://api.bintray.com/conan/pygame/pygame
+conan remote add pygame-repo https://api.bintray.com/conan/pygame-community/pygame-ce
 
 # install dependencies with conan, and write a `Setup` file for pygame to build with.
 python3 buildconfig/config.py -conan
