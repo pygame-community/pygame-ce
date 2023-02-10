@@ -14,8 +14,8 @@ these programs a more intuitive task.
 
 This is pygame-ce, pygame community edition. This is a pygame fork,
 created by the pygame core developers after impossible challenges
-prevented them from continuing maintenance on old pygame. It aims
-for more frequent releases, continuing bugfixes and enhancements,
+prevented them from continuing maintenance on the old pygame project.
+It aims for more frequent releases, continuing bugfixes and enhancements,
 and a more democratic governance model.
 
 New contributors are welcome.
