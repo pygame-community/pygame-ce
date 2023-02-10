@@ -1,4 +1,4 @@
-.. image:: https://raw.githubusercontent.com/pygame-community/pygame/main/docs/reST/_static/pygame_logo.svg
+.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_logo.svg
   :alt: pygame
   :target: https://pyga.me/
 
@@ -12,7 +12,12 @@ It uses the `Simple DirectMedia Layer library`_ and several other
 popular libraries to abstract the most common functions, making writing
 these programs a more intuitive task.
 
-`We need your help`_ to make pygame the best it can be!
+This is pygame-ce, pygame community edition. This is a pygame fork,
+created by the pygame core developers after impossible challenges
+prevented them from continuing maintenance on old pygame. It aims
+for more frequent releases, continuing bugfixes and enhancements,
+and a more democratic governance model.
+
 New contributors are welcome.
 
 
@@ -181,9 +186,9 @@ See docs/licenses for licenses of dependencies.
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
-.. _pygame: https://www.pygame.org
+.. _pygame: https://www.pyga.me
 .. _Simple DirectMedia Layer library: https://www.libsdl.org
 .. _We need your help: https://www.pygame.org/contribute.html
 .. _Compilation wiki page: https://www.pygame.org/wiki/Compilation
-.. _docs page: https://www.pygame.org/docs/
+.. _docs page: https://pyga.me/docs
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
