@@ -698,25 +698,35 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             # Test simple slicing
             self.assertEqual(len(ar[:, :]), 6)
             self.assertEqual(
-                len(ar[:,]),
+                len(
+                    ar[
+                        :,
+                    ]
+                ),
                 6,
             )
             self.assertEqual(len(ar[1, :]), 8)
             self.assertEqual(len(ar[:, 2]), 6)
             # Empty slices
             self.assertEqual(
-                ar[4:4,],
+                ar[
+                    4:4,
+                ],
                 None,
             )
             self.assertEqual(ar[4:4, ...], None)
             self.assertEqual(ar[4:4, 2:2], None)
             self.assertEqual(ar[4:4, 1:4], None)
             self.assertEqual(
-                ar[4:4:2,],
+                ar[
+                    4:4:2,
+                ],
                 None,
             )
             self.assertEqual(
-                ar[4:4:-2,],
+                ar[
+                    4:4:-2,
+                ],
                 None,
             )
             self.assertEqual(ar[4:4:1, ...], None)
@@ -847,7 +857,9 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             self.assertEqual(ar[0, 0], 0)
             self.assertEqual(ar[1, 0], 0)
             self.assertEqual(ar[-1, -1], 0)
-            ar[...,] = (0, 0, 255)
+            ar[
+                ...,
+            ] = (0, 0, 255)
             self.assertEqual(ar[0, 0], sf.map_rgb((0, 0, 255)))
             self.assertEqual(ar[1, 0], sf.map_rgb((0, 0, 255)))
             self.assertEqual(ar[-1, -1], sf.map_rgb((0, 0, 255)))
