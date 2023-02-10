@@ -24,9 +24,9 @@ METADATA = {
     "long_description": LONG_DESCRIPTION,
     "long_description_content_type": "text/x-rst",
     "project_urls": {
-        "Documentation": "https://pyga.me",
-        "Bug Tracker": "https://github.com/pygame-community/pygame/issues",
-        "Source": "https://github.com/pygame-community/pygame",
+        "Documentation": "https://pyga.me/docs",
+        "Bug Tracker": "https://github.com/pygame-community/pygame-ce/issues",
+        "Source": "https://github.com/pygame-community/pygame-ce",
     },
     "classifiers": [
         "Development Status :: 6 - Mature",
@@ -167,7 +167,7 @@ def compilation_help():
     print('For help with compilation see:')
     print(f'    {url}')
     print('To contribute to pygame development see:')
-    print('    https://github.com/pygame-community/pygame')
+    print('    https://github.com/pygame-community/pygame-ce')
     print('---\n')
 
 
