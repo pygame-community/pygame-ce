@@ -18,7 +18,7 @@ prevented them from continuing maintenance on the old pygame project.
 It aims for more frequent releases, continuing bugfixes and enhancements,
 and a more democratic governance model.
 
-New contributors are welcome.
+New contributors are welcome!
 
 
 Installation
