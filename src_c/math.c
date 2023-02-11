@@ -1747,7 +1747,7 @@ _vector_check_snprintf_success(int return_code, int max_size)
     }
     if (return_code >= max_size) {
         PyErr_SetString(PyExc_SystemError,
-                        "Internal buffer to small for snprintf! Please report "
+                        "Internal buffer too small for snprintf! Please report "
                         "this to github.com/pygame-community/pygame-ce/issues");
         return 0;
     }
