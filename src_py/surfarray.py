@@ -96,7 +96,7 @@ __all__ = [
 def blit_array(surface, array):
     """pygame.surfarray.blit_array(Surface, array): return None
 
-    Blit directly from a array values.
+    Blit directly from an array values.
 
     Directly copy values from an array into a Surface. This is faster than
     converting the array into a Surface and blitting. The array must be the

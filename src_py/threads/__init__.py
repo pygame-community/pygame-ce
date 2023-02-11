@@ -225,7 +225,7 @@ def tmap(f, seq_args, num_workers=20, worker_queue=None, wait=True, stop_on_erro
 
             wq = WorkerQueue(num_workers)
 
-    # we short cut it here if the number of workers is 0.
+    # we shortcut it here if the number of workers is 0.
     # normal map should be faster in this case.
     if len(wq.pool) == 0:
         return map(f, seq_args)
