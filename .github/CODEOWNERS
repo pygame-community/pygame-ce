@@ -1,0 +1,9 @@
+# This file allows us to set a team - for now the contributing admins - from which an approving review on a pull request
+# must be received before it is merged. The intent here is to have both a number of required PR reviews - that can draw
+# from a wider pool of fresher reviewers and a smaller group of experienced reviewers from which a PR needs only one
+# review.
+# More could be done with this file later if needed. We could have different team rules for code & documentation for
+# example. The documentation can be seen here:
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+* @pygame-community/pygame-contributing-admins
