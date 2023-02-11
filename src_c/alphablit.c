@@ -581,6 +581,7 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
+                        src->format->Amask == 0xFF000000 &&
                         info.src_blend != SDL_BLENDMODE_NONE &&
                         pg_HasSSE_NEON() && (src != dst)) {
                         blit_blend_premultiplied_sse2(&info);
