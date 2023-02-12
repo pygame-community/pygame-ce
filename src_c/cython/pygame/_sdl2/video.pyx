@@ -1145,27 +1145,6 @@ cdef class Renderer:
         else:
             raise TypeError('target must be a Texture or None')
 
-    cpdef object blit(self, object source, Rect dest=None, Rect area=None, int special_flags=0):
-        """ Only for compatibility.
-        Textures created by different Renderers cannot shared with each other!
-        :param source: A Texture or Image to draw.
-        :param dest: destination on the render target.
-        :param area: the portion of source texture.
-        :param special_flags: have no effect at this moment.
-        """
-        if isinstance(source, Texture):
-            (<Texture>source).draw(area, dest)
-        elif isinstance(source, Image):
-            (<Image>source).draw(area, dest)
-        elif not hasattr(source, 'draw'):
-            raise TypeError('source must be drawable')
-        else:
-            source.draw(area, dest)
-
-        if not dest:
-            return self.get_viewport()
-        return dest
-
     def draw_line(self, p1, p2):
         # https://wiki.libsdl.org/SDL_RenderDrawLine
         res = SDL_RenderDrawLine(self._renderer,

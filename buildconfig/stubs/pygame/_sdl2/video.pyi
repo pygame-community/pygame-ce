@@ -138,13 +138,6 @@ class Renderer:
     logical_size: Iterable[int]
     scale: Iterable[float]
     target: Optional[Texture]
-    def blit(
-        self,
-        source: Union[Texture, Image],
-        dest: Optional[RectValue] = None,
-        area: Optional[RectValue] = None,
-        special_flags: int = 0,
-    ) -> Rect: ...
     def draw_line(self, p1: Iterable[int], p2: Iterable[int]) -> None: ...
     def draw_point(self, point: Iterable[int]) -> None: ...
     def draw_rect(self, rect: RectValue) -> None: ...

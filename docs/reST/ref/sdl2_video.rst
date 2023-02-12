@@ -298,11 +298,6 @@
       | :sl:`Gets and sets the render target. None represents the default target (the renderer).`
       | :sg:`target -> Texture or None`
 
-   .. method:: blit
-
-      | :sl:`For compatibility purposes. Textures created by different Renderers cannot be shared!`
-      | :sg:`blit(source, dest, area=None, special_flags=0)-> Rect`
-
    .. method:: draw_line
 
       | :sl:`Draws a line.`
