@@ -39,9 +39,59 @@ jobs:
       matrix:
         include:
           - {
+            name: "x86_64 (CPython 3.6 3.10 and above)",
+            winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
+            # pattern matches 6 or any 2 digit number
+            pyversions: "cp3{6,[1-9][0-9]}-*"
+          }
+          - {
+            name: "CPython 3.11 (64 bit)",
+            winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
+            pyversions: "cp311-*"
+          }
+          - {
             name: "CPython 3.10 (64 bit)",
             winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
             pyversions: "cp310-*"
+          }
+          - {
+            name: "CPython 3.9 (64 bit)",
+            winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
+            pyversions: "cp39-*"
+          }
+          - {
+            name: "CPython 3.8 (64 bit)",
+            winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
+            pyversions: "cp38-*"
+          }
+          - {
+            name: "CPython 3.7 (64 bit)",
+            winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
+            pyversions: "cp37-*"
+          }
+          - {
+            name: "CPython 3.6 (64 bit)",
+            winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
+            pyversions: "cp36-*"
+          }
+          - {
+            name: "CPython 3.11 (32 bit)",
+            winarch: x86,
+            msvc-dev-arch: x86,
+            pyversions: "cp311-win32"
+          }
+          - {
+            name: "Pypy 3.8",
+            winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
+            pyversions: "pp38-*"
           }
 
 
@@ -72,7 +122,7 @@ jobs:
 
       - uses: TheMrMilchmann/setup-msvc-dev@v2  # this lets us use the developer command prompt on windows
         with:
-          arch: x86_amd64
+          arch: ${{ matrix.msvc-dev-arch }}
       - name: Build and test wheels
         shell: cmd
         run: |
