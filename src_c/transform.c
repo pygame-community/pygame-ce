@@ -3063,9 +3063,9 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
 
     for (i = 0; i <= radius; i++) {  // init gaussian lut
         // Gaussian function, radius=2*sigma
-        lut[i] = (float)radius / 2 *
-                 expf(-powf(i, 2) / (2 * powf((float)radius / 2, 2))) *
-                 0.3989422804014327;
+        lut[i] = (float)radius / 2.0f *
+                 expf(-powf(i, 2.0f) / (2.0f * powf((float)radius / 2.0f, 2.0f))) *
+                 0.3989422804014327f;
         lut_sum += lut[i] * 2;
     }
     lut_sum -= lut[0];
