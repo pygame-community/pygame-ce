@@ -1,0 +1,89 @@
+name: Windows
+
+# Run CI only when a release is created, on changes to main branch, or any PR
+# to main. Do not run CI on any other branch. Also, skip any non-source changes
+# from running on CI
+on:
+  release:
+    types: [created]
+  push:
+    branches: main
+    paths-ignore:
+      - 'docs/**'
+      - 'examples/**'
+      - '.gitignore'
+      - '*.rst'
+      - '*.md'
+      - '.github/workflows/*.yml'
+      # re-include current file to not be excluded
+      - '!.github/workflows/build-windows.yml'
+
+  pull_request:
+    branches: main
+    paths-ignore:
+      - 'docs/**'
+      - 'examples/**'
+      - '.gitignore'
+      - '*.rst'
+      - '*.md'
+      - '.github/workflows/*.yml'
+      # re-include current file to not be excluded
+      - '!.github/workflows/build-windows.yml'
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false  # if a particular matrix build fails, don't skip the rest
+      matrix:
+        include:
+          - {
+            name: "CPython 3.10 (64 bit)",
+            winarch: AMD64,
+            pyversions: "cp310-*"
+          }
+
+
+    env:
+      # load pip config from this file. Define this in 'CIBW_ENVIRONMENT'
+      # because this should not affect cibuildwheel machinery
+      # also define environment variables needed for testing
+      CIBW_ENVIRONMENT: PIP_CONFIG_FILE=buildconfig/pip_config.ini SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
+
+      CIBW_BUILD: ${{ matrix.pyversions }}
+      CIBW_ARCHS: ${{ matrix.winarch }}
+
+#      Not sure if we can use this later. I had to move the docs into the steps section for it
+#      to be included in the wheel
+#      CIBW_BEFORE_BUILD: |
+#        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
+#        set DISTUTILS_USE_SDK=1
+#        set MSSdk=1
+#        pip install setuptools wheel requests numpy Sphinx
+#        python setup.py docs
+      CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,timing --time_out 300
+
+      # Increase pip debugging output
+      CIBW_BUILD_VERBOSITY: 2
+
+    steps:
+      - uses: actions/checkout@v3.0.2
+
+      - uses: TheMrMilchmann/setup-msvc-dev@v2  # this lets us use the developer command prompt on windows
+        with:
+          arch: x86_amd64
+      - name: Build and test wheels
+        shell: cmd
+        run: |
+          set DISTUTILS_USE_SDK=1
+          set MSSdk=1
+          python -m pip install setuptools wheel requests numpy Sphinx
+          python setup.py docs
+          python -m pip --disable-pip-version-check install cibuildwheel
+          python -m cibuildwheel --output-dir wheelhouse
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: pygame-wheels
+          path: ./wheelhouse/*.whl
