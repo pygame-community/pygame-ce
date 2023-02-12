@@ -29,6 +29,7 @@
 #define DOC_CHANNELPAUSE "pause() -> None\ntemporarily stop playback of a channel"
 #define DOC_CHANNELUNPAUSE "unpause() -> None\nresume pause playback of a channel"
 #define DOC_CHANNELFADEOUT "fadeout(time) -> None\nstop playback after fading channel out"
+#define DOC_CHANNELSETPOSITION "set_volume(angle,distance) -> None\nset the position of a playing channel"
 #define DOC_CHANNELSETVOLUME "set_volume(value) -> None\nset_volume(left, right) -> None\nset the volume of a playing channel"
 #define DOC_CHANNELGETVOLUME "get_volume() -> value\nget the volume of the playing channel"
 #define DOC_CHANNELGETBUSY "get_busy() -> bool\ncheck if the channel is active"
@@ -169,6 +170,10 @@ resume pause playback of a channel
 pygame.mixer.Channel.fadeout
  fadeout(time) -> None
 stop playback after fading channel out
+
+pygame.mixer.Channel.set_position
+ set_volume(angle,distance) -> None
+set the position of a playing channel
 
 pygame.mixer.Channel.set_volume
  set_volume(value) -> None

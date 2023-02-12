@@ -1161,6 +1161,27 @@ chan_unpause(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
+chan_set_position(PyObject *self, PyObject *args)
+{
+    int channelnum = pgChannel_AsInt(self);
+    Sint16 angle;
+    Uint8 distance;
+    PyThreadState *_save;
+
+    if (!PyArg_ParseTuple(args, "hb", &angle, &distance))
+        return NULL;
+
+    MIXER_INIT_CHECK();
+    _save = PyEval_SaveThread();
+    if(!Mix_SetPosition(channelnum,angle,distance)){
+        PyEval_RestoreThread(_save);
+        return RAISE(pgExc_SDLError, Mix_GetError());
+    }
+    PyEval_RestoreThread(_save);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 chan_set_volume(PyObject *self, PyObject *args)
 {
     int channelnum = pgChannel_AsInt(self);
@@ -1288,6 +1309,7 @@ static PyMethodDef channel_methods[] = {
     {"stop", (PyCFunction)chan_stop, METH_NOARGS, DOC_CHANNELSTOP},
     {"pause", (PyCFunction)chan_pause, METH_NOARGS, DOC_CHANNELPAUSE},
     {"unpause", (PyCFunction)chan_unpause, METH_NOARGS, DOC_CHANNELUNPAUSE},
+    {"set_position", chan_set_position, METH_VARARGS, DOC_CHANNELSETPOSITION},
     {"set_volume", chan_set_volume, METH_VARARGS, DOC_CHANNELSETVOLUME},
     {"get_volume", (PyCFunction)chan_get_volume, METH_NOARGS,
      DOC_CHANNELGETVOLUME},
