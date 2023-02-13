@@ -3,7 +3,7 @@ name: cppcheck Static Analysis
 # Run cppcheck on src_c changes to main branch, or any PR to main.
 on:
   push:
-    branches: main
+    branches: [main, 'release*']
     paths:
       - 'src_c/**'
 

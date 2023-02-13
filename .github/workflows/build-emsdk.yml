@@ -4,7 +4,7 @@ name: Build WASM (Emscripten)
 # any other branch. Also, skip any non-source changes from running on CI
 on:
   push:
-    branches: main
+    branches: [main, 'release*']
     paths-ignore:
       - 'docs/**'
       - 'examples/**'
