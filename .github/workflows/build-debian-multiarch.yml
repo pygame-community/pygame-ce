@@ -86,7 +86,7 @@ jobs:
           python3 setup.py docs
           pip3 wheel . --wheel-dir /artifacts -vvv
           echo "\nInstalling wheel\n"
-          pip3 install --no-index --pre --find-links /artifacts pygame
+          pip3 install --no-index --pre --find-links /artifacts pygame-ce
           echo "\nRunning tests\n"
           export SDL_VIDEODRIVER=dummy
           export SDL_AUDIODRIVER=disk
