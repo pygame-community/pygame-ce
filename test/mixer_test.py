@@ -1,10 +1,11 @@
 import sys
 import os
 import unittest
+import time
 import pathlib
 import platform
 
-from pygame.tests.test_utils import example_path
+from pygame.tests.test_utils import example_path, prompt, question
 
 import pygame
 from pygame import mixer
@@ -892,6 +893,48 @@ class ChannelTypeTest(unittest.TestCase):
         # Resume the playback on a paused channel.
 
         self.fail()
+
+
+class ChannelInteractiveTest(unittest.TestCase):
+    __tags__ = ["interactive"]
+
+    def tearDown(self):
+        mixer.quit()
+        mixer.pre_init(0, 0, 0, 0)
+
+    def setUp(self):
+        mixer.init()
+        filename = example_path(os.path.join("data", "house_lo.mp3"))
+        self.snd = mixer.Sound(filename)
+
+    def test_set_position(self):
+        prompt("Please wear earphones before the test for set_position() starts")
+        ch = self.snd.play()
+        angle = 0
+        distance = 100
+        while ch.get_busy():
+            ch.set_position(angle, distance)
+            angle += 1
+            angle %= 360
+            time.sleep(0.01)
+        ans = question("You heard the sound was running around you. Is that correct?")
+        self.assertTrue(ans)
+
+        ch = self.snd.play()
+        angle = 0
+        distance = 0
+        direction = 0
+        while ch.get_busy():
+            ch.set_position(angle, distance)
+            if distance == 0 or distance == 255:
+                direction = 1 - direction
+            distance += 1 if direction else -1
+            time.sleep(0.01)
+
+        ans = question(
+            "You heard the distance of the sound was changing. Is that correct?"
+        )
+        self.assertTrue(ans)
 
 
 ############################### SOUND CLASS TESTS ##############################

@@ -1173,7 +1173,7 @@ chan_set_position(PyObject *self, PyObject *args)
 
     MIXER_INIT_CHECK();
     _save = PyEval_SaveThread();
-    if(!Mix_SetPosition(channelnum,angle,distance)){
+    if (!Mix_SetPosition(channelnum, angle, distance)) {
         PyEval_RestoreThread(_save);
         return RAISE(pgExc_SDLError, Mix_GetError());
     }
