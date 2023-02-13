@@ -695,7 +695,7 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
          * could cause issues.
          * pygame Surfaces are supposed to be (0, 0, 0, 255) by default.
          * This is a simple fix to fill it with (0, 0, 0, 255) if necessary.
-         * See Github issue: https://github.com/pygame/pygame/issues/1395
+         * See Github issue: https://github.com/pygame-community/pygame-ce/issues/796
          */
         if (Amask != 0) {
             SDL_FillRect(surface, NULL,

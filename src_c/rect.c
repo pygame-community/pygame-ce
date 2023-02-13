@@ -174,7 +174,7 @@ pg_rect_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         Py_INCREF(self);
         /* This is so that pypy garbage collector thinks it is a new obj
            TODO: May be a hack. Is a hack.
-           See https://github.com/pygame/pygame/issues/430
+           See https://github.com/pygame-community/pygame-ce/issues/408
         */
         ((PyObject *)(self))->ob_pypy_link = 0;
         pg_rect_freelist_num--;
