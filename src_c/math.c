@@ -1742,13 +1742,13 @@ _vector_check_snprintf_success(int return_code, int max_size)
     if (return_code < 0) {
         PyErr_SetString(PyExc_SystemError,
                         "internal snprintf call went wrong! Please report "
-                        "this to github.com/pygame/pygame/issues");
+                        "this to github.com/pygame-community/pygame-ce/issues");
         return 0;
     }
     if (return_code >= max_size) {
         PyErr_SetString(PyExc_SystemError,
-                        "Internal buffer to small for snprintf! Please report "
-                        "this to github.com/pygame/pygame/issues");
+                        "Internal buffer too small for snprintf! Please report "
+                        "this to github.com/pygame-community/pygame-ce/issues");
         return 0;
     }
     return 1;
@@ -2030,7 +2030,7 @@ vector_setAttr_swizzle(pgVector *self, PyObject *attr_name, PyObject *val)
             /* this should NEVER happen and means a bug in the code */
             PyErr_SetString(PyExc_RuntimeError,
                             "Unhandled error in swizzle code. Please report "
-                            "this bug to github.com/pygame/pygame/issues");
+                            "this bug to github.com/pygame-community/pygame-ce/issues");
             return -1;
     }
 }
@@ -2288,7 +2288,7 @@ _vector2_rotate_helper(double *dst_coords, const double *src_coords,
                 PyErr_SetString(
                     PyExc_RuntimeError,
                     "Please report this bug in vector2_rotate_helper to "
-                    "the developers at github.com/pygame/pygame/issues");
+                    "the developers at github.com/pygame-community/pygame-ce/issues");
                 return 0;
         }
     }
@@ -2775,7 +2775,7 @@ _vector3_rotate_helper(double *dst_coords, const double *src_coords,
                 PyErr_SetString(
                     PyExc_RuntimeError,
                     "Please report this bug in vector3_rotate_helper to "
-                    "the developers at github.com/pygame/pygame/issues");
+                    "the developers at github.com/pygame-community/pygame-ce/issues");
                 return 0;
         }
     }
