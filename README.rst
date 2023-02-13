@@ -12,7 +12,7 @@ It uses the `Simple DirectMedia Layer library`_ and several other
 popular libraries to abstract the most common functions, making writing
 these programs a more intuitive task.
 
-This distribution is called **'pygame - Community Edition'** ('pygame-ce' for short).
+This distribution is called **'pygame - community edition'** ('pygame-ce' for short).
 
 It is a fork of the upstream pygame project by its former core developers,
 and was created after impossible challenges prevented them from continuing development upstream.
