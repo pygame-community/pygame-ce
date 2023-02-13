@@ -129,7 +129,6 @@ class BlitTest(unittest.TestCase):
             print(f"Surface.blits generator: {t1 - t0}")
 
     def test_fblits(self):
-
         NUM_SURFS = 255
         PRINT_TIMING = 0
         dst = pygame.Surface((NUM_SURFS * 10, 10), SRCALPHA, 32)
