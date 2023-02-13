@@ -475,7 +475,7 @@ def get_fonts():
 
 
 def match_font(name, bold=False, italic=False):
-    """pygame.font.match_font(name, bold=0, italic=0) -> name
+    """pygame.font.match_font(name, bold=False, italic=False) -> name
     find the filename for the named system font
 
     This performs the same font search as the SysFont()
