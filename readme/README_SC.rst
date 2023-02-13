@@ -11,7 +11,7 @@
 
 Pygame_ 是一款自由且开源的跨平台库，用于开发电子游戏等多媒体应用。Pygame基于 `Simple DirectMedia Layer library`_ 以及其他几个广受欢迎的库，汲取其中最常见的函数，让编写游戏成为更加符合直觉的事情。
 
-本发行版名为 **“pygame - Community Editio”** （简称 “pygame-ce”）。
+本发行版名为 **“pygame - Community Edition”** （简称 “pygame-ce”）。
 
 pygame-ce是上游pygame项目的分支，由此前pygame项目的核心开发者创建。开发者们在上游的开发中受到了强烈的阻挠，无法继续，所以创建了这个发行版。新的发行版旨在提供更加频繁的版本更新，持续不断的bug修复与功能增强，以及更加民主的管理模式。
 
