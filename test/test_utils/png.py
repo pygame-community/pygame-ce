@@ -2573,7 +2573,7 @@ class Test(unittest.TestCase):
         self.assertEqual(sbit, strtobytes("\x04\x04"))
 
     def testPNMsbit(self):
-        """Test that PNM files can generate sBIT chunk."""
+        """Test that PNM files can generate an sBIT chunk."""
 
         def do():
             return _main(["testPNMsbit"])
