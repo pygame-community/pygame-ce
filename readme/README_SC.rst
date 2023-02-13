@@ -157,5 +157,5 @@ pygame显然依赖于SDL和Python。此外pygame还嵌入了几个较小的库�
 .. _docs page: https://pyga.me/docs
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
 
-.. _English: ./README.rst
+.. _English: /../README.rst
 .. _简体中文: ./readme/README_SC.rst
