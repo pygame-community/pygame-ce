@@ -34,6 +34,10 @@ on:
       # re-include current file to not be excluded
       - '!.github/workflows/build-debian-multiarch.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-multiarch:
     name: Debian (Bullseye - 11) [${{ matrix.arch }}]
@@ -86,7 +90,7 @@ jobs:
           python3 setup.py docs
           pip3 wheel . --wheel-dir /artifacts -vvv
           echo "\nInstalling wheel\n"
-          pip3 install --no-index --pre --find-links /artifacts pygame
+          pip3 install --no-index --pre --find-links /artifacts pygame-ce
           echo "\nRunning tests\n"
           export SDL_VIDEODRIVER=dummy
           export SDL_AUDIODRIVER=disk

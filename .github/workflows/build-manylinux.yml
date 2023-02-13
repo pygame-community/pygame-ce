@@ -30,6 +30,10 @@ on:
       # re-include current file to not be excluded
       - '!.github/workflows/build-manylinux.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: ${{ matrix.image }} [${{ matrix.arch }}]
