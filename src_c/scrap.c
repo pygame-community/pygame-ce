@@ -36,7 +36,7 @@
 #include "scrap.h"
 
 /**
- * Indicates, whether pygame.scrap was initialized or not.
+ * Indicates whether pygame.scrap was initialized or not.
  */
 static int _scrapinitialized = 0;
 
