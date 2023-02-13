@@ -485,7 +485,7 @@ the author of Twitch, an entirely average pygame arcade game.*
 
 *This guide was substantially updated in 2022.*
 
-.. _Pygame: https://www.pygame.org/
+.. _Pygame: https://pyga.me/
 .. _SDL: http://libsdl.org
 .. _Python documentation: https://docs.python.org/3/
 .. _Game Programming Patterns: https://gameprogrammingpatterns.com/contents.html

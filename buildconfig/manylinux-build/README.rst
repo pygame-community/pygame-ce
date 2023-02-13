@@ -1,7 +1,7 @@
 Manylinux wheels
 ================
 
-This is for building linux binary wheels. So "pip install pygame" works on linux.
+This is for building linux binary wheels. So "pip install pygame-ce" works on linux.
 
 The *manylinux1* tag (see `PEP 513 <https://www.python.org/dev/peps/pep-0513/>`__)
 refers to a specific set of core library minimum versions, which most recent
