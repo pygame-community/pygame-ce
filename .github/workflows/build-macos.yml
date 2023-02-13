@@ -30,6 +30,10 @@ on:
       # re-include current file to not be excluded
       - '!.github/workflows/build-macos.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deps:
     name: ${{ matrix.macarch }} deps
