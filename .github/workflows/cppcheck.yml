@@ -12,6 +12,10 @@ on:
     paths:
       - 'src_c/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 # TODO: Any more static checkers can be added here
 jobs:
   run-cppcheck:

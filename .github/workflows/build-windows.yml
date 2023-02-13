@@ -30,6 +30,10 @@ on:
       # re-include current file to not be excluded
       - '!.github/workflows/build-windows.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: ${{ matrix.name }}
@@ -38,13 +42,6 @@ jobs:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
         include:
-          - {
-            name: "x86_64 (CPython 3.6 3.10 and above)",
-            winarch: AMD64,
-            msvc-dev-arch: x86_amd64,
-            # pattern matches 6 or any 2 digit number
-            pyversions: "cp3{6,[1-9][0-9]}-*"
-          }
           - {
             name: "CPython 3.11 (64 bit)",
             winarch: AMD64,
