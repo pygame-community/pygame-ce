@@ -240,7 +240,7 @@ following formats.
 .. function:: fromstring
 
    | :sl:`create new Surface from a byte buffer`
-   | :sg:`fromstring(bytes, size, format, flipped=False) -> Surface`
+   | :sg:`fromstring(bytes, size, format, flipped=False, stride=-1) -> Surface`
 
    This function takes arguments similar to :func:`pygame.image.tostring()`.
    The size argument is a pair of numbers representing the width and height.
@@ -260,7 +260,7 @@ following formats.
 .. function:: frombytes
 
    | :sl:`create new Surface from a byte buffer`
-   | :sg:`frombytes(bytes, size, format, flipped=False) -> Surface`
+   | :sg:`frombytes(bytes, size, format, flipped=False, stride=-1) -> Surface`
 
    This function takes arguments similar to :func:`pygame.image.tobytes()`.
    The size argument is a pair of numbers representing the width and height.
@@ -285,7 +285,7 @@ following formats.
 .. function:: frombuffer
 
    | :sl:`create a new Surface that shares data inside a bytes buffer`
-   | :sg:`frombuffer(buffer, size, format) -> Surface`
+   | :sg:`frombuffer(buffer, size, format, stride=-1) -> Surface`
 
    Create a new Surface that shares pixel data directly from a buffer. This
    buffer can be bytes, a bytearray, a memoryview, a

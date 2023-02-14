@@ -1026,7 +1026,7 @@ image_frombytes(PyObject *self, PyObject *arg)
     PyObject *bytes;
     char *format, *data;
     SDL_Surface *surf = NULL;
-    int w, h, flipped = 0;
+    int w, h, flipped = 0, stride = -1;
     Py_ssize_t len;
     int loopw, looph;
 
@@ -1036,8 +1036,8 @@ image_frombytes(PyObject *self, PyObject *arg)
     __analysis_assume(format = "inited");
 #endif
 
-    if (!PyArg_ParseTuple(arg, "O!(ii)s|i", &PyBytes_Type, &bytes, &w, &h,
-                          &format, &flipped))
+    if (!PyArg_ParseTuple(arg, "O!(ii)s|ii", &PyBytes_Type, &bytes, &w, &h,
+                          &format, &flipped, &stride))
         return NULL;
 
     if (w < 1 || h < 1)
@@ -1047,7 +1047,16 @@ image_frombytes(PyObject *self, PyObject *arg)
     PyBytes_AsStringAndSize(bytes, &data, &len);
 
     if (!strcmp(format, "P")) {
-        if (len != (Py_ssize_t)w * h)
+        if (stride == -1) {
+            stride = w;
+        }
+        else if (stride < w) {
+            return RAISE(PyExc_ValueError,
+                         "Stride must be greater than or equal to the width "
+                         "by the format");
+        }
+
+        if (len != (Py_ssize_t)stride * h)
             return RAISE(
                 PyExc_ValueError,
                 "Bytes length does not equal format and resolution size");
@@ -1058,11 +1067,20 @@ image_frombytes(PyObject *self, PyObject *arg)
         SDL_LockSurface(surf);
         for (looph = 0; looph < h; ++looph)
             memcpy(((char *)surf->pixels) + looph * surf->pitch,
-                   DATAROW(data, looph, w, h, flipped), w);
+                   DATAROW(data, looph, stride, h, flipped), w);
         SDL_UnlockSurface(surf);
     }
     else if (!strcmp(format, "RGB")) {
-        if (len != (Py_ssize_t)w * h * 3)
+        if (stride == -1) {
+            stride = w * 3;
+        }
+        else if (stride < w * 3) {
+            return RAISE(PyExc_ValueError,
+                         "Stride must be greater than or equal to the width * "
+                         "3 by the format");
+        }
+
+        if (len != (Py_ssize_t)stride * h)
             return RAISE(
                 PyExc_ValueError,
                 "Bytes length does not equal format and resolution size");
@@ -1087,12 +1105,23 @@ image_frombytes(PyObject *self, PyObject *arg)
                 pix += 3;
                 data += 3;
             }
+
+            data += stride - w;
         }
         SDL_UnlockSurface(surf);
     }
     else if (!strcmp(format, "RGBA") || !strcmp(format, "RGBX")) {
+        if (stride == -1) {
+            stride = w * 4;
+        }
+        else if (stride < w * 4) {
+            return RAISE(PyExc_ValueError,
+                         "Stride must be greater than or equal to the width * "
+                         "4 by the format");
+        }
+
         int alphamult = !strcmp(format, "RGBA");
-        if (len != (Py_ssize_t)w * h * 4)
+        if (len != (Py_ssize_t)stride * h)
             return RAISE(
                 PyExc_ValueError,
                 "Bytes length does not equal format and resolution size");
@@ -1111,12 +1140,22 @@ image_frombytes(PyObject *self, PyObject *arg)
             Uint32 *pix = (Uint32 *)DATAROW(surf->pixels, looph, surf->pitch,
                                             h, flipped);
             memcpy(pix, data, w * sizeof(Uint32));
-            data += w * sizeof(Uint32);
+
+            data += stride;
         }
         SDL_UnlockSurface(surf);
     }
     else if (!strcmp(format, "BGRA")) {
-        if (len != (Py_ssize_t)w * h * 4)
+        if (stride == -1) {
+            stride = w * 4;
+        }
+        else if (stride < w * 4) {
+            return RAISE(PyExc_ValueError,
+                         "Stride must be greater than or equal to the width * "
+                         "4 by the format");
+        }
+
+        if (len != (Py_ssize_t)stride * h)
             return RAISE(
                 PyExc_ValueError,
                 "Bytes length does not equal format and resolution size");
@@ -1133,12 +1172,21 @@ image_frombytes(PyObject *self, PyObject *arg)
             Uint32 *pix = (Uint32 *)DATAROW(surf->pixels, looph, surf->pitch,
                                             h, flipped);
             memcpy(pix, data, w * sizeof(Uint32));
-            data += w * sizeof(Uint32);
+            data += stride;
         }
         SDL_UnlockSurface(surf);
     }
     else if (!strcmp(format, "ARGB")) {
-        if (len != (Py_ssize_t)w * h * 4)
+        if (stride == -1) {
+            stride = w * 4;
+        }
+        else if (stride < w * 4) {
+            return RAISE(PyExc_ValueError,
+                         "Stride must be greater than or equal to the width * "
+                         "4 by the format");
+        }
+
+        if (len != (Py_ssize_t)stride * h)
             return RAISE(
                 PyExc_ValueError,
                 "Bytes length does not equal format and resolution size");
@@ -1155,7 +1203,7 @@ image_frombytes(PyObject *self, PyObject *arg)
             Uint32 *pix = (Uint32 *)DATAROW(surf->pixels, looph, surf->pitch,
                                             h, flipped);
             memcpy(pix, data, w * sizeof(Uint32));
-            data += w * sizeof(Uint32);
+            data += stride;
         }
         SDL_UnlockSurface(surf);
     }
@@ -1198,7 +1246,7 @@ image_frombuffer(PyObject *self, PyObject *arg)
     PyObject *buffer;
     char *format, *data;
     SDL_Surface *surf = NULL;
-    int w, h;
+    int w, h, stride = -1;
     Py_ssize_t len;
     pgSurfaceObject *surfobj;
 
@@ -1208,7 +1256,7 @@ image_frombuffer(PyObject *self, PyObject *arg)
     __analysis_assume(format = "inited");
 #endif
 
-    if (!PyArg_ParseTuple(arg, "O(ii)s|i", &buffer, &w, &h, &format))
+    if (!PyArg_ParseTuple(arg, "O(ii)s|ii", &buffer, &w, &h, &format, &stride))
         return NULL;
 
     if (w < 1 || h < 1)
@@ -1220,61 +1268,106 @@ image_frombuffer(PyObject *self, PyObject *arg)
         return NULL;
 
     if (!strcmp(format, "P")) {
-        if (len != (Py_ssize_t)w * h)
+        if (stride == -1) {
+            stride = w;
+        }
+        else if (stride < w) {
+            return RAISE(PyExc_ValueError,
+                         "Stride must be greater than or equal to the width "
+                         "by the format");
+        }
+
+        if (len != (Py_ssize_t)stride * h)
             return RAISE(
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
 
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 8, w, 0, 0, 0, 0);
+        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 8, stride, 0, 0, 0, 0);
     }
     else if (!strcmp(format, "RGB")) {
-        if (len != (Py_ssize_t)w * h * 3)
+        if (stride == -1) {
+            stride = w * 3;
+        }
+        else if (stride < w * 3) {
+            return RAISE(PyExc_ValueError,
+                         "Stride must be greater than or equal to the width * "
+                         "3 by the format");
+        }
+
+        if (len != (Py_ssize_t)stride * h)
             return RAISE(
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, w * 3, 0xFF, 0xFF << 8,
-                                        0xFF << 16, 0);
+        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, stride, 0xFF,
+                                        0xFF << 8, 0xFF << 16, 0);
 #else
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, w * 3, 0xFF << 16,
+        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, stride, 0xFF << 16,
                                         0xFF << 8, 0xFF, 0);
 #endif
     }
     else if (!strcmp(format, "BGR")) {
-        if (len != (Py_ssize_t)w * h * 3)
+        if (stride == -1) {
+            stride = w * 3;
+        }
+        else if (stride < w * 3) {
+            return RAISE(PyExc_ValueError,
+                         "Stride must be greater than or equal to the width * "
+                         "3 by the format");
+        }
+
+        if (len != (Py_ssize_t)stride * h)
             return RAISE(
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, w * 3, 0xFF << 16,
+        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, stride, 0xFF << 16,
                                         0xFF << 8, 0xFF, 0);
 #else
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, w * 3, 0xFF, 0xFF << 8,
-                                        0xFF << 16, 0);
+        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, stride, 0xFF,
+                                        0xFF << 8, 0xFF << 16, 0);
 #endif
     }
     else if (!strcmp(format, "BGRA")) {
-        if (len != (Py_ssize_t)w * h * 4)
+        if (stride == -1) {
+            stride = w * 4;
+        }
+        else if (stride < w * 4) {
+            return RAISE(PyExc_ValueError,
+                         "Stride must be greater than or equal to the width * "
+                         "4 by the format");
+        }
+
+        if (len != (Py_ssize_t)stride * h)
             return RAISE(
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 32, w * 4, 0xFF << 16,
+        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 32, stride, 0xFF << 16,
                                         0xFF << 8, 0xFF, 0xFF << 24);
 
 #else
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 32, w * 4, 0xFF << 8,
+        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 32, stride, 0xFF << 8,
                                         0xFF << 16, 0xFF << 24, 0xFF);
 #endif
     }
     else if (!strcmp(format, "RGBA") || !strcmp(format, "RGBX")) {
+        if (stride == -1) {
+            stride = w * 4;
+        }
+        else if (stride < w * 4) {
+            return RAISE(PyExc_ValueError,
+                         "Stride must be greater than or equal to the width * "
+                         "4 by the format");
+        }
+
         int alphamult = !strcmp(format, "RGBA");
-        if (len != (Py_ssize_t)w * h * 4)
+        if (len != (Py_ssize_t)stride * h)
             return RAISE(
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 32, w * 4,
+        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 32, stride,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
                                         0xFF, 0xFF << 8, 0xFF << 16,
                                         (alphamult ? 0xFF << 24 : 0));
@@ -1286,12 +1379,21 @@ image_frombuffer(PyObject *self, PyObject *arg)
             surf->flags |= SDL_SRCALPHA;
     }
     else if (!strcmp(format, "ARGB")) {
-        if (len != (Py_ssize_t)w * h * 4)
+        if (stride == -1) {
+            stride = w * 4;
+        }
+        else if (stride < w * 4) {
+            return RAISE(PyExc_ValueError,
+                         "Stride must be greater than or equal to the width * "
+                         "4 by the format");
+        }
+
+        if (len != (Py_ssize_t)stride * h)
             return RAISE(
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
         surf =
-            SDL_CreateRGBSurfaceFrom(data, w, h, 32, w * 4,
+            SDL_CreateRGBSurfaceFrom(data, w, h, 32, stride,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
                                      0xFF << 8, 0xFF << 16, 0xFF << 24, 0xFF);
 #else
