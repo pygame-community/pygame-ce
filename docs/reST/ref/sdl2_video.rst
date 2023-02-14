@@ -243,15 +243,55 @@
       | :sl:`Gets and sets the Rect the Image is based on.`
       | :sg:`srcrect -> Rect`
 
+.. class:: RendererDriver
+   
+   | :sl:`Get a renderer driver for a Renderer.`
+   | :sg:`RendererDriver(index) -> RendererDriver`
+
+   .. attribute:: name
+
+      | :sl:`Gets the name of the driver.`
+      | :sg:`name -> str`
+   
+   .. attribute:: flags
+
+      | :sl:`Gets the flags of the driver.`
+      | :sg:`flags -> int`
+   
+   .. attribute:: num_texture_formats
+
+      | :sl:`Gets the number of texture formats of the driver.`
+      | :sg:`num_texture_formats -> int`
+   
+   .. attribute:: max_texture_height
+
+      | :sl:`Gets the maximum texture height of the driver.`
+      | :sg:`max_texture_height -> int`
+   
+   .. attribute:: max_texture_width
+
+      | :sl:`Gets the maximum texture width of the driver.`
+      | :sg:`max_texture_width -> int`
+   
+   .. classmethod:: get_drivers
+
+      | :sl:`Gets all alternative drivers.`
+      | :sg:`get_drivers() -> Generator[cls, None, None]`
+
 .. class:: Renderer
 
    | :sl:`Create a 2D rendering context for a window.`
-   | :sg:`Renderer(window, index=-1, accelerated=-1, vsync=False, target_texture=False) -> Renderer`
+   | :sg:`Renderer(window, driver=None, accelerated=-1, vsync=False, target_texture=False) -> Renderer`
 
    .. classmethod:: from_window
 
       | :sl:`Easy way to create a Renderer.`
       | :sg:`from_window(window) -> Renderer`
+
+   .. attribute:: driver
+
+      | :sl:`Gets the renderer driver of this Renderer.`
+      | :sg:`driver -> RendererDriver`
 
    .. attribute:: draw_blend_mode
 

@@ -67,30 +67,78 @@ import_pygame_color()
 import_pygame_surface()
 import_pygame_rect()
 
-class RendererDriverInfo:
+cdef class RendererDriver:
+
+    cdef:
+        int _index
+        str _name
+        int _flags
+        int _num_texture_formats
+        int _max_texture_width
+        int _max_texture_height
+
+    @property
+    def index(self):return self._index
+    @property
+    def name(self):return self._name
+    @property
+    def flags(self):return self._flags
+    @property
+    def num_texture_formats(self):return self._num_texture_formats
+    @property
+    def max_texture_height(self):return self._max_texture_height
+    @property
+    def max_texture_width(self):return self._max_texture_width
+
+    def __init__(self,int index):
+        cdef SDL_RendererInfo info
+        if SDL_GetRenderDriverInfo(index, &info)<0:
+            raise error()
+        self._name = info.name.decode("utf-8")
+        self._flags = info.flags
+        self._num_texture_formats = info.num_texture_formats
+        self._max_texture_width = info.max_texture_width
+        self._max_texture_height = info.max_texture_height
+        self._index=index
+    
+    @classmethod
+    def _from_renderer(cls,Renderer renderer):
+        cdef RendererDriver self = cls.__new__(cls)
+        cdef SDL_RendererInfo info
+        if SDL_GetRendererInfo(renderer._renderer,&info)<0:
+            raise error()
+        self._name = info.name.decode("utf-8")
+        self._flags = info.flags
+        self._num_texture_formats = info.num_texture_formats
+        self._max_texture_width = info.max_texture_width
+        self._max_texture_height = info.max_texture_height
+
+        cdef RendererDriver _drv
+        for drv in self.get_drivers():
+            _drv=drv
+            if _drv._name==self._name:
+                self._index=_drv._index
+                return self
+        raise error()
+
     def __repr__(self):
-        return "<%s(name: %s, flags: 0x%02x, num_texture_formats: %d, max_texture_width: %d, max_texture_height: %d)>" % (
+        return "<%s(name: %s, flags: 0x%02x, num_texture_formats: %d, max_texture_width: %d, max_texture_height: %d, index: %d)>" % (
             self.__class__.__name__,
-            self.name,
-            self.flags,
-            self.num_texture_formats,
-            self.max_texture_width,
-            self.max_texture_height,
+            self._name,
+            self._flags,
+            self._num_texture_formats,
+            self._max_texture_width,
+            self._max_texture_height,
+            self._index
         )
 
-def get_drivers():
-    cdef int num = SDL_GetNumRenderDrivers()
-    cdef SDL_RendererInfo info
-    cdef int ind
-    for ind from 0 <= ind < num:
-        SDL_GetRenderDriverInfo(ind, &info)
-        ret = RendererDriverInfo()
-        ret.name = info.name.decode("utf-8")
-        ret.flags = info.flags
-        ret.num_texture_formats = info.num_texture_formats
-        ret.max_texture_width = info.max_texture_width
-        ret.max_texture_height = info.max_texture_height
-        yield ret
+    @classmethod
+    def get_drivers(cls):
+        cdef int num = SDL_GetNumRenderDrivers()
+        cdef int ind
+        for ind from 0 <= ind < num:
+            ret=cls(ind)
+            yield ret
 
 
 def get_grabbed_window():
@@ -964,14 +1012,14 @@ cdef class Renderer:
         self._target = None
         return self
 
-    def __init__(self, Window window, int index=-1,
+    def __init__(self, Window window,RendererDriver driver=None,
                  int accelerated=-1, bint vsync=False,
                  bint target_texture=False):
         """ Create a 2D rendering context for a window.
 
         :param Window window: where rendering is displayed.
-        :param int index: index of rendering driver to initialize,
-                          or -1 to init the first supporting requested options.
+        :param RendererDriver driver: The rendering driver to initialize,
+                          or None to init the first supporting requested options.
         :param int accelerated: if 1, the renderer uses hardware acceleration.
                                 if 0, the renderer is a software fallback.
                                 -1 gives precedence to renderers using hardware acceleration.
@@ -988,10 +1036,14 @@ cdef class Renderer:
         if target_texture:
             flags |= _SDL_RENDERER_TARGETTEXTURE
 
-        self._renderer = SDL_CreateRenderer(window._win, index, flags)
+        cdef int _index=-1
+        if not driver is None:
+            _index = driver.index
+
+        self._renderer = SDL_CreateRenderer(window._win, _index, flags)
         if not self._renderer:
             raise error()
-
+        
         cdef Uint8[4] defaultColor = [255, 255, 255, 255]
         self._draw_color = pgColor_NewLength(defaultColor, 4)
         self._target = None
@@ -1003,6 +1055,10 @@ cdef class Renderer:
             return
         if self._renderer:
             SDL_DestroyRenderer(self._renderer)
+
+    @property
+    def driver(self):
+        return RendererDriver._from_renderer(self)
 
     @property
     def draw_blend_mode(self):

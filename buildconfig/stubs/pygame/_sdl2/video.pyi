@@ -13,14 +13,17 @@ MESSAGEBOX_ERROR: int
 MESSAGEBOX_WARNING: int
 MESSAGEBOX_INFORMATION: int
 
-class RendererDriverInfo:
+class RendererDriver:
+    def __init__(self,index:int) -> None: ...
+    @classmethod
+    def get_drivers(cls) -> Generator[cls, None, None]: ...
     name: str
     flags: int
     num_texture_formats: int
     max_texture_width: int
     max_texture_height: int
+    index: int
 
-def get_drivers() -> Generator[RendererDriverInfo, None, None]: ...
 def get_grabbed_window() -> Optional[Window]: ...
 def messagebox(
     title: str,
@@ -122,13 +125,14 @@ class Renderer:
     def __init__(
         self,
         window: Window,
-        index: int = -1,
+        driver: RendererDriver = None,
         accelerated: int = -1,
         vsync: bool = False,
         target_texture: bool = False,
     ) -> None: ...
     @classmethod
     def from_window(cls, window: Window) -> Renderer: ...
+    driver: RendererDriver
     draw_blend_mode: int
     draw_color: Color
     def clear(self) -> None: ...
