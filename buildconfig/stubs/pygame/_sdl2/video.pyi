@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Any, Generator, Iterable, Optional, Tuple, Union
 
 from pygame.color import Color
@@ -16,7 +17,7 @@ MESSAGEBOX_INFORMATION: int
 class RendererDriver:
     def __init__(self,index:int) -> None: ...
     @classmethod
-    def get_drivers(cls) -> Generator[cls, None, None]: ...
+    def get_drivers(cls) -> Generator[RendererDriver, None, None]: ...
     name: str
     flags: int
     num_texture_formats: int
@@ -125,7 +126,7 @@ class Renderer:
     def __init__(
         self,
         window: Window,
-        driver: RendererDriver = None,
+        driver: RendererDriver | None = None,
         accelerated: int = -1,
         vsync: bool = False,
         target_texture: bool = False,
