@@ -42,6 +42,10 @@ cdef extern from "SDL.h" nogil:
         SDL_BLENDMODE_ADD = 0x00000002,
         SDL_BLENDMODE_MOD = 0x00000004,
         SDL_BLENDMODE_INVALID = 0x7FFFFFFF
+    
+    # Hint
+    SDL_bool SDL_SetHint(const char *name, const char *value)
+    char* SDL_HINT_RENDER_SCALE_QUALITY="SDL_RENDER_SCALE_QUALITY" 
 
     # https://wiki.libsdl.org/SDL_MessageBoxData
     # https://wiki.libsdl.org/SDL_ShowMessageBox

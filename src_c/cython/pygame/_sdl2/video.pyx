@@ -11,6 +11,9 @@ MESSAGEBOX_ERROR = _SDL_MESSAGEBOX_ERROR
 MESSAGEBOX_WARNING = _SDL_MESSAGEBOX_WARNING
 MESSAGEBOX_INFORMATION = _SDL_MESSAGEBOX_INFORMATION
 
+SCALEQUALITY_NEAREST=b"nearest"
+SCALEQUALITY_LINEAR=b"linear"
+SCALEQUALITY_BEST=b"best"
 
 cdef extern from "SDL.h" nogil:
     Uint32 SDL_GetWindowPixelFormat(SDL_Window* window)
@@ -554,7 +557,7 @@ cdef class Texture:
                  Renderer renderer,
                  size, int depth=0,
                  static=False, streaming=False,
-                 target=False):
+                 target=False, scale_quality=SCALEQUALITY_NEAREST):
         """ Create an empty texture.
 
         :param Renderer renderer: Rendering context for the texture.
@@ -567,6 +570,7 @@ cdef class Texture:
         :param bool static: Changes rarely, not lockable.
         :param bool streaming: Changes frequently, lockable.
         :param bool target: Can be used as a render target.
+        :param scale_quality: The quality of scale.
         """
         # https://wiki.libsdl.org/SDL_CreateTexture
         # TODO: masks
@@ -602,6 +606,7 @@ cdef class Texture:
 
         self.renderer = renderer
         cdef SDL_Renderer* _renderer = renderer._renderer
+        SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,<char*>scale_quality)
         self._tex = SDL_CreateTexture(_renderer,
                                       format,
                                       access,
