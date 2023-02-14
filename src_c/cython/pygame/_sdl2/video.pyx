@@ -559,9 +559,9 @@ cdef class OpenGLWindow(Window):
         cdef char[64] dummy_window_str
         cdef SDL_Window* dummy_window = SDL_CreateWindow("Dummy",0,0,1,1,_SDL_WINDOW_OPENGL|_SDL_WINDOW_HIDDEN)
         sprintf(dummy_window_str,"%p",dummy_window)
-        SDL_SetHint(b"SDL_VIDEO_WINDOW_SHARE_PIXEL_FORMAT",dummy_window_str)
+        SDL_SetHint(SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT,dummy_window_str)
         cdef SDL_Window* window = SDL_CreateWindowFrom(<void*>_hwnd)
-        SDL_SetHint(b"SDL_VIDEO_WINDOW_SHARE_PIXEL_FORMAT",b'')
+        SDL_SetHint(SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT,b'')
 
         if not window:
             raise error()
