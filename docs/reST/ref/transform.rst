@@ -212,10 +212,10 @@ Instead, always begin with the original image and scale to the desired size.)
 
 .. function:: box_blur
 
-   | :sl:`make surface blur`
+   | :sl:`make surface blurry`
    | :sg:`box_blur(surface, radius, repeat_edge_pixels=True, dest_surface=None) -> Surface`
 
-   Makes the surface blur using box blur algorithm.
+   Makes the surface blurry using box blur algorithm.
 
    .. versionadded:: 2.1.4
 
@@ -223,10 +223,10 @@ Instead, always begin with the original image and scale to the desired size.)
 
 .. function:: gaussian_blur
 
-   | :sl:`make surface blur`
+   | :sl:`make surface blurry`
    | :sg:`gaussian_blur(surface, radius, repeat_edge_pixels=True, dest_surface=None) -> Surface`
 
-   Makes the surface blur using gaussian blur algorithm.
+   Makes the surface blurry using gaussian blur algorithm.
    Slower than `box_blur()`.
 
    .. versionadded:: 2.1.4
