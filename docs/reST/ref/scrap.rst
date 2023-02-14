@@ -14,14 +14,14 @@ you use this, your code may break with the next pygame release.
 The scrap module is for transferring data to/from the clipboard. This allows for
 transferring of strings between pygame and other applications. Currently, only strings
 are supported with the ``scrap.put_text``, ``scrap.get_text``, and ``scrap.has_text``
-functions. All other functions are deprecated as of pygame 2.1.3 and will be removed
+functions. All other functions are deprecated as of pygame 2.1.4 and will be removed
 in a future release of pygame.
 
 .. note:: ``scrap.put_text``, ``scrap.get_text``, and ``scrap.has_text`` use the same
    clipboard as the rest of the current API, but only strings are compatible with the 
    new API as of right now.
 
-**THE BELOW INFORMATION IS DEPRECATED IN PYGAME 2.1.3 AND WILL BE REMOVED IN THE FUTURE.**
+**THE BELOW INFORMATION IS DEPRECATED IN PYGAME 2.1.4 AND WILL BE REMOVED IN THE FUTURE.**
 
 The scrap module is for transferring data to/from the clipboard. This allows
 for cutting and pasting data between pygame and other applications. Some basic
@@ -93,7 +93,7 @@ For an example of how the scrap module works refer to the examples page
    .. note:: The scrap module requires :func:`pygame.display.set_mode()` be
       called before being initialized.
    
-   .. deprecated:: 2.1.3
+   .. deprecated:: 2.1.4
 
    .. ## pygame.scrap.init ##
 
@@ -109,7 +109,7 @@ For an example of how the scrap module works refer to the examples page
    :rtype: bool
 
    .. versionadded:: 1.9.5
-   .. deprecated:: 2.1.3
+   .. deprecated:: 2.1.4
 
    .. ## pygame.scrap.get_init ##
 
@@ -128,7 +128,7 @@ For an example of how the scrap module works refer to the examples page
       no data for the given type is available
    :rtype: bytes | None
 
-   .. deprecated:: 2.1.3
+   .. deprecated:: 2.1.4
 
    ::
 
@@ -154,7 +154,7 @@ For an example of how the scrap module works refer to the examples page
       is no data in the clipboard an empty list is returned
    :rtype: list
 
-   .. deprecated:: 2.1.3
+   .. deprecated:: 2.1.4
 
    ::
 
@@ -183,7 +183,7 @@ For an example of how the scrap module works refer to the examples page
 
    :raises pygame.error: if unable to put the data into the clipboard
 
-   .. deprecated:: 2.1.3
+   .. deprecated:: 2.1.4
 
    ::
 
@@ -210,7 +210,7 @@ For an example of how the scrap module works refer to the examples page
       clipboard, ``False`` otherwise
    :rtype: bool
 
-   .. deprecated:: 2.1.3
+   .. deprecated:: 2.1.4
 
    ::
 
@@ -233,7 +233,7 @@ For an example of how the scrap module works refer to the examples page
       application, ``False`` if the pygame application still owns the clipboard
    :rtype: bool
 
-   .. deprecated:: 2.1.3
+   .. deprecated:: 2.1.4
 
    ::
 
@@ -260,7 +260,7 @@ For an example of how the scrap module works refer to the examples page
    :raises ValueError: if the ``mode`` parameter is not
       ``pygame.SCRAP_CLIPBOARD`` or ``pygame.SCRAP_SELECTION``
 
-   .. deprecated:: 2.1.3
+   .. deprecated:: 2.1.4
 
    .. ## pygame.scrap.set_mode ##
 
@@ -280,7 +280,7 @@ For an example of how the scrap module works refer to the examples page
 
    .. note:: ``pygame.display.set_mode()`` should be called before using the ``scrap`` module
 
-   .. versionadded:: 2.1.3
+   .. versionadded:: 2.1.4
 
    .. ## pygame.scrap.put_text
 
@@ -295,7 +295,7 @@ For an example of how the scrap module works refer to the examples page
 
    :rtype: str
 
-   .. versionadded:: 2.1.3
+   .. versionadded:: 2.1.4
 
    .. ## pygame.scrap.get_text
 
@@ -310,7 +310,7 @@ For an example of how the scrap module works refer to the examples page
 
    :rtype: bool
 
-   .. versionadded:: 2.1.3
+   .. versionadded:: 2.1.4
 
    .. ## pygame.scrap.has_text
 .. ## pygame.scrap ##
