@@ -76,7 +76,7 @@ def assert_on_results(suite, single, sub):
 
 
 # Don't modify tests in suites below. These assertions are in place to make sure
-# that tests are actually being ran
+# that tests are actually being run
 
 
 def all_ok_test(suite, *args):

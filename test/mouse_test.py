@@ -27,10 +27,10 @@ class MouseModuleInteractiveTest(MouseTests):
         Requires tester to move the mouse to be on the window.
         """
         pygame.display.set_mode((500, 500))
-        pygame.event.get()  # Pump event queue to make window get focus on macos.
+        pygame.event.get()  # Pump event queue to make window get focus on macOS.
 
         if not pygame.mouse.get_focused():
-            # The window needs to be focused for the mouse.set_pos to work on macos.
+            # The window needs to be focused for the mouse.set_pos to work on macOS.
             return
         clock = pygame.time.Clock()
 
