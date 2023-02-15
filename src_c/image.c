@@ -1021,7 +1021,7 @@ image_tobytes(PyObject *self, PyObject *arg)
 }
 
 PyObject *
-image_frombytes(PyObject *self, PyObject *arg)
+image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
 {
     PyObject *bytes;
     char *format, *data;
@@ -1036,8 +1036,11 @@ image_frombytes(PyObject *self, PyObject *arg)
     __analysis_assume(format = "inited");
 #endif
 
-    if (!PyArg_ParseTuple(arg, "O!(ii)s|ii", &PyBytes_Type, &bytes, &w, &h,
-                          &format, &flipped, &stride))
+    const char *kwids[] = {"bytes",   "size",   "format",
+                           "flipped", "stride", NULL};
+    if (!PyArg_ParseTupleAndKeywords(arg, kwds, "O!(ii)s|ii", kwids,
+                                     &PyBytes_Type, &bytes, &w, &h, &format,
+                                     &flipped, &stride))
         return NULL;
 
     if (w < 1 || h < 1)
@@ -1240,7 +1243,7 @@ pgObject_AsCharBuffer(PyObject *obj, const char **buffer,
 }
 
 PyObject *
-image_frombuffer(PyObject *self, PyObject *arg)
+image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
 {
     PyObject *buffer;
     char *format, *data;
@@ -1255,7 +1258,9 @@ image_frombuffer(PyObject *self, PyObject *arg)
     __analysis_assume(format = "inited");
 #endif
 
-    if (!PyArg_ParseTuple(arg, "O(ii)s|ii", &buffer, &w, &h, &format, &stride))
+    const char *kwids[] = {"buffer", "size", "format", "stride", NULL};
+    if (!PyArg_ParseTupleAndKeywords(arg, kwds, "O(ii)s|i", kwids, &buffer, &w,
+                                     &h, &format, &stride))
         return NULL;
 
     if (w < 1 || h < 1)
@@ -1690,9 +1695,12 @@ static PyMethodDef _image_methods[] = {
 
     {"tostring", image_tobytes, METH_VARARGS, DOC_PYGAMEIMAGETOSTRING},
     {"tobytes", image_tobytes, METH_VARARGS, DOC_PYGAMEIMAGETOBYTES},
-    {"fromstring", image_frombytes, METH_VARARGS, DOC_PYGAMEIMAGEFROMSTRING},
-    {"frombytes", image_frombytes, METH_VARARGS, DOC_PYGAMEIMAGEFROMBYTES},
-    {"frombuffer", image_frombuffer, METH_VARARGS, DOC_PYGAMEIMAGEFROMBUFFER},
+    {"fromstring", image_frombytes, METH_VARARGS | METH_KEYWORDS,
+     DOC_PYGAMEIMAGEFROMSTRING},
+    {"frombytes", image_frombytes, METH_VARARGS | METH_KEYWORDS,
+     DOC_PYGAMEIMAGEFROMBYTES},
+    {"frombuffer", image_frombuffer, METH_VARARGS | METH_KEYWORDS,
+     DOC_PYGAMEIMAGEFROMBUFFER},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(image)
