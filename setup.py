@@ -1011,9 +1011,9 @@ class StubcheckCommand(Command):
         command_line = [
             sys.executable,'-m','mypy.stubtest',"pygame","--allowlist","mypy_allow_list.txt"
         ]
-        result = subprocess.call(command_line)
+        result = subprocess.run(command_line)
         os.chdir('../../')
-        if result != 0:
+        if result.returncode != 0:
             raise SystemExit("Stubcheck failed.")
 
 # Prune empty file lists.
