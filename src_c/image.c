@@ -1106,7 +1106,7 @@ image_frombytes(PyObject *self, PyObject *arg)
                 data += 3;
             }
 
-            data += stride - w;
+            data += stride - w * 3;
         }
         SDL_UnlockSurface(surf);
     }
@@ -1140,7 +1140,6 @@ image_frombytes(PyObject *self, PyObject *arg)
             Uint32 *pix = (Uint32 *)DATAROW(surf->pixels, looph, surf->pitch,
                                             h, flipped);
             memcpy(pix, data, w * sizeof(Uint32));
-
             data += stride;
         }
         SDL_UnlockSurface(surf);
