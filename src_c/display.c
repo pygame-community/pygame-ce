@@ -55,6 +55,7 @@ typedef struct _display_state_s {
     int fullscreen_backup_x;
     int fullscreen_backup_y;
     SDL_bool auto_resize;
+    SDL_bool unscaled_render;
 } _DisplayState;
 
 static int
@@ -693,6 +694,29 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
     if (window != pygame_window)
         return 0;
 
+    if (state->unscaled_render && pg_renderer != NULL) {
+        if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+            if (window == pygame_window) {
+                int w = event->window.data1;
+                int h = event->window.data2;
+                pgSurfaceObject *display_surface = pg_GetDefaultWindowSurface();
+                SDL_Surface *surf = SDL_CreateRGBSurface(
+                                SDL_SWSURFACE, w, h, 32,
+                                0xff << 16, 0xff << 8, 0xff, 0);
+
+                SDL_FreeSurface(display_surface->surf);
+                display_surface->surf=surf;
+
+                SDL_DestroyTexture(pg_texture);
+
+                pg_texture = SDL_CreateTexture(
+                     pg_renderer, SDL_PIXELFORMAT_ARGB8888,
+                     SDL_TEXTUREACCESS_STREAMING, w, h);
+            }
+        }
+        return 0;
+    }
+
     if (pg_renderer != NULL) {
         if (event->window.event == SDL_WINDOWEVENT_MAXIMIZED) {
             SDL_RenderSetIntegerScale(pg_renderer, SDL_FALSE);
@@ -866,6 +890,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
     state->using_gl = (flags & PGS_OPENGL) != 0;
     state->scaled_gl = state->using_gl && (flags & PGS_SCALED) != 0;
+    state->unscaled_render = vsync && !(flags & (PGS_SCALED | PGS_OPENGL));
 
     if (state->scaled_gl) {
         if (PyErr_WarnEx(PyExc_FutureWarning,
@@ -886,6 +911,13 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     //     return RAISE(pgExc_SDLError,
     //                  "vsync needs either SCALED or OPENGL flag");
     // }
+
+    if (vsync && !(flags & (PGS_SCALED | PGS_OPENGL))) {
+        //if (flags & PGS_RESIZABLE) {
+        //    return RAISE(pgExc_SDLError,
+        //                 "resizing currently not supported");
+        //}
+    }
 
     /* set these only in toggle_fullscreen, clear on set_mode */
     state->toggle_windowed_w = 0;
@@ -1174,7 +1206,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 state->gl_context = NULL;
             }
 
-            if (flags & PGS_SCALED) {
+            if (flags & PGS_SCALED || state->unscaled_render) {
                 if (pg_renderer == NULL) {
                     SDL_RendererInfo info;
 
@@ -1194,17 +1226,19 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                                      "failed to create renderer");
                     }
 
-                    /* use whole screen with uneven pixels on fullscreen,
-                       exact scale otherwise.
-                       we chose the window size for this to work */
-                    SDL_RenderSetIntegerScale(
-                        pg_renderer,
-                        !(flags & PGS_FULLSCREEN ||
-                          SDL_GetHintBoolean("SDL_HINT_RENDER_SCALE_QUALITY",
-                                             SDL_FALSE)));
-                    SDL_RenderSetLogicalSize(pg_renderer, w, h);
-                    /* this must be called after creating the renderer!*/
-                    SDL_SetWindowMinimumSize(win, w, h);
+                    if (flags & PGS_SCALED) {
+                        /* use whole screen with uneven pixels on fullscreen,
+                           exact scale otherwise.
+                           we chose the window size for this to work */
+                        SDL_RenderSetIntegerScale(
+                            pg_renderer,
+                            !(flags & PGS_FULLSCREEN ||
+                              SDL_GetHintBoolean("SDL_HINT_RENDER_SCALE_QUALITY",
+                                                 SDL_FALSE)));
+                        SDL_RenderSetLogicalSize(pg_renderer, w, h);
+                        /* this must be called after creating the renderer!*/
+                        SDL_SetWindowMinimumSize(win, w, h);
+                    }
 
                     SDL_GetRendererInfo(pg_renderer, &info);
                     if (vsync && !(info.flags & SDL_RENDERER_PRESENTVSYNC)) {
@@ -2092,6 +2126,10 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
     if (state->using_gl && pg_renderer != NULL) {
         return RAISE(pgExc_SDLError,
                      "OPENGL and SDL_Renderer active at the same time");
+    }
+    if (state->unscaled_render) {
+        return RAISE(pgExc_SDLError,
+                     "resizing currently not supported");
     }
 
     if (pg_renderer != NULL) {

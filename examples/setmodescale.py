@@ -11,6 +11,7 @@ on desktop size and the graphics are scaled.
 """
 
 import pygame as pg
+import sys
 
 pg.init()
 
@@ -19,7 +20,13 @@ FPS = 30
 clock = pg.time.Clock()
 
 print("desktops", pg.display.get_desktop_sizes())
-screen = pg.display.set_mode(RES, pg.SCALED | pg.RESIZABLE)
+
+do_vsync=bool("--vsync" in sys.argv)
+
+if do_vsync:
+    screen = pg.display.set_mode(RES, pg.SCALED | pg.RESIZABLE, vsync=1)
+else:
+    screen = pg.display.set_mode(RES, pg.SCALED | pg.RESIZABLE)
 
 # MAIN LOOP
 
@@ -59,9 +66,18 @@ while not done:
     pg.draw.circle(screen, (0, 0, 0), (100, 100), 20)
     pg.draw.circle(screen, (0, 0, 200), (0, 0), 10)
     pg.draw.circle(screen, (200, 0, 0), (160, 120), 30)
-    pg.draw.line(screen, (250, 250, 0), (0, 120), (160, 0))
+    if do_vsync:
+        pg.draw.line(screen, (250, 250, 0), (i, 0), (i, 120))
+    else:
+        pg.draw.line(screen, (250, 250, 0), (0, 120), (160, 0))
     pg.draw.circle(screen, (255, 255, 255), (i, j), 5)
 
-    pg.display.flip()
-    clock.tick(FPS)
+    pg.display.set_caption("FPS:"+str(clock.get_fps()))
+    if do_vsync:
+        pg.display.flip()
+        clock.tick(1000)
+    else:
+        clock.tick(FPS)
+        pg.display.flip()
+
 pg.quit()
