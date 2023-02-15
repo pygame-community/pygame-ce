@@ -1036,8 +1036,8 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
     __analysis_assume(format = "inited");
 #endif
 
-    const char *kwids[] = {"bytes",   "size",   "format",
-                           "flipped", "stride", NULL};
+    static char *kwids[] = {"bytes",   "size",   "format",
+                            "flipped", "stride", NULL};
     if (!PyArg_ParseTupleAndKeywords(arg, kwds, "O!(ii)s|ii", kwids,
                                      &PyBytes_Type, &bytes, &w, &h, &format,
                                      &flipped, &stride))
@@ -1258,7 +1258,7 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
     __analysis_assume(format = "inited");
 #endif
 
-    const char *kwids[] = {"buffer", "size", "format", "stride", NULL};
+    static char *kwids[] = {"buffer", "size", "format", "stride", NULL};
     if (!PyArg_ParseTupleAndKeywords(arg, kwds, "O(ii)s|i", kwids, &buffer, &w,
                                      &h, &format, &stride))
         return NULL;
@@ -1695,11 +1695,11 @@ static PyMethodDef _image_methods[] = {
 
     {"tostring", image_tobytes, METH_VARARGS, DOC_PYGAMEIMAGETOSTRING},
     {"tobytes", image_tobytes, METH_VARARGS, DOC_PYGAMEIMAGETOBYTES},
-    {"fromstring", image_frombytes, METH_VARARGS | METH_KEYWORDS,
+    {"fromstring", (PyCFunction)image_frombytes, METH_VARARGS | METH_KEYWORDS,
      DOC_PYGAMEIMAGEFROMSTRING},
-    {"frombytes", image_frombytes, METH_VARARGS | METH_KEYWORDS,
+    {"frombytes", (PyCFunction)image_frombytes, METH_VARARGS | METH_KEYWORDS,
      DOC_PYGAMEIMAGEFROMBYTES},
-    {"frombuffer", image_frombuffer, METH_VARARGS | METH_KEYWORDS,
+    {"frombuffer", (PyCFunction)image_frombuffer, METH_VARARGS | METH_KEYWORDS,
      DOC_PYGAMEIMAGEFROMBUFFER},
     {NULL, NULL, 0, NULL}};
 
