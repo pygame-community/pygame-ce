@@ -46,8 +46,16 @@
 #define DOC_IMAGEBLENDMODE "blend_mode -> int\nGets and sets the blend mode for the Image."
 #define DOC_IMAGETEXTURE "texture -> Texture\nGets and sets the Texture the Image is based on."
 #define DOC_IMAGESRCRECT "srcrect -> Rect\nGets and sets the Rect the Image is based on."
-#define DOC_PYGAMESDL2VIDEORENDERER "Renderer(window, index=-1, accelerated=-1, vsync=False, target_texture=False) -> Renderer\nCreate a 2D rendering context for a window."
+#define DOC_PYGAMESDL2VIDEORENDERERDRIVER "RendererDriver(index) -> RendererDriver\nGet a renderer driver for a Renderer."
+#define DOC_RENDERERDRIVERNAME "name -> str\nGets the name of the driver."
+#define DOC_RENDERERDRIVERFLAGS "flags -> int\nGets the flags of the driver."
+#define DOC_RENDERERDRIVERNUMTEXTUREFORMATS "num_texture_formats -> int\nGets the number of texture formats of the driver."
+#define DOC_RENDERERDRIVERMAXTEXTUREHEIGHT "max_texture_height -> int\nGets the maximum texture height of the driver."
+#define DOC_RENDERERDRIVERMAXTEXTUREWIDTH "max_texture_width -> int\nGets the maximum texture width of the driver."
+#define DOC_RENDERERDRIVERGETDRIVERS "get_drivers() -> Generator[cls, None, None]\nGets all alternative drivers."
+#define DOC_PYGAMESDL2VIDEORENDERER "Renderer(window, driver=None, accelerated=-1, vsync=False, target_texture=False) -> Renderer\nCreate a 2D rendering context for a window."
 #define DOC_RENDERERFROMWINDOW "from_window(window) -> Renderer\nEasy way to create a Renderer."
+#define DOC_RENDERERDRIVER "driver -> RendererDriver\nGets the renderer driver of this Renderer."
 #define DOC_RENDERERDRAWBLENDMODE "draw_blend_mode -> int\nGets and sets the blend mode used by the drawing functions."
 #define DOC_RENDERERDRAWCOLOR "draw_color -> Color\nGets and sets the color used by the drawing functions."
 #define DOC_RENDERERCLEAR "clear() -> None\nClear the current rendering target with the drawing color."
@@ -256,13 +264,45 @@ pygame._sdl2.video.Image.srcrect
  srcrect -> Rect
 Gets and sets the Rect the Image is based on.
 
+pygame._sdl2.video.RendererDriver
+ RendererDriver(index) -> RendererDriver
+Get a renderer driver for a Renderer.
+
+pygame._sdl2.video.RendererDriver.name
+ name -> str
+Gets the name of the driver.
+
+pygame._sdl2.video.RendererDriver.flags
+ flags -> int
+Gets the flags of the driver.
+
+pygame._sdl2.video.RendererDriver.num_texture_formats
+ num_texture_formats -> int
+Gets the number of texture formats of the driver.
+
+pygame._sdl2.video.RendererDriver.max_texture_height
+ max_texture_height -> int
+Gets the maximum texture height of the driver.
+
+pygame._sdl2.video.RendererDriver.max_texture_width
+ max_texture_width -> int
+Gets the maximum texture width of the driver.
+
+pygame._sdl2.video.RendererDriver.get_drivers
+ get_drivers() -> Generator[cls, None, None]
+Gets all alternative drivers.
+
 pygame._sdl2.video.Renderer
- Renderer(window, index=-1, accelerated=-1, vsync=False, target_texture=False) -> Renderer
+ Renderer(window, driver=None, accelerated=-1, vsync=False, target_texture=False) -> Renderer
 Create a 2D rendering context for a window.
 
 pygame._sdl2.video.Renderer.from_window
  from_window(window) -> Renderer
 Easy way to create a Renderer.
+
+pygame._sdl2.video.Renderer.driver
+ driver -> RendererDriver
+Gets the renderer driver of this Renderer.
 
 pygame._sdl2.video.Renderer.draw_blend_mode
  draw_blend_mode -> int

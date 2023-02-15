@@ -133,6 +133,9 @@ cdef extern from "SDL.h" nogil:
         Uint32[16] texture_formats
         int max_texture_width
         int max_texture_height
+    # https://wiki.libsdl.org/SDL2/SDL_GetRendererInfo
+    int SDL_GetRendererInfo(SDL_Renderer * renderer,
+                        SDL_RendererInfo * info)
     # https://wiki.libsdl.org/SDL_GetNumRenderDrivers
     int SDL_GetNumRenderDrivers()
     # https://wiki.libsdl.org/SDL_GetRenderDriverInfo
