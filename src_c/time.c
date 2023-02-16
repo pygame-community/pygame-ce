@@ -198,10 +198,11 @@ timer_callback(Uint32 interval, void *param)
     return interval;
 }
 
-static int
-accurate_delay(int ticks)
+static Uint64
+accurate_delay(Sint64 ticks)
 {
-    int funcstart, delay;
+    Uint64 funcstart, delay;
+
     if (ticks <= 0)
         return 0;
 
@@ -212,7 +213,7 @@ accurate_delay(int ticks)
         }
     }
 
-    funcstart = SDL_GetTicks();
+    funcstart = SDL_GetTicks64();
     if (ticks >= WORST_CLOCK_ACCURACY) {
         delay = (ticks - 2) - (ticks % WORST_CLOCK_ACCURACY);
         if (delay >= WORST_CLOCK_ACCURACY) {
@@ -222,10 +223,10 @@ accurate_delay(int ticks)
         }
     }
     do {
-        delay = ticks - (SDL_GetTicks() - funcstart);
+        delay = ticks - (SDL_GetTicks64() - funcstart);
     } while (delay > 0);
 
-    return SDL_GetTicks() - funcstart;
+    return SDL_GetTicks64() - funcstart;
 }
 
 static PyObject *
@@ -233,30 +234,30 @@ time_get_ticks(PyObject *self, PyObject *_null)
 {
     if (!SDL_WasInit(SDL_INIT_TIMER))
         return PyLong_FromLong(0);
-    return PyLong_FromLong(SDL_GetTicks());
+    return PyLong_FromUnsignedLongLong(SDL_GetTicks64());
 }
 
 static PyObject *
 time_delay(PyObject *self, PyObject *arg)
 {
-    int ticks;
+    Sint64 ticks;
     if (!PyLong_Check(arg))
         return RAISE(PyExc_TypeError, "delay requires one integer argument");
 
-    ticks = PyLong_AsLong(arg);
+    ticks = PyLong_AsLongLong(arg);
     if (ticks < 0)
         ticks = 0;
 
     ticks = accurate_delay(ticks);
     if (ticks == -1)
         return NULL;
-    return PyLong_FromLong(ticks);
+    return PyLong_FromLongLong(ticks);
 }
 
 static PyObject *
 time_wait(PyObject *self, PyObject *arg)
 {
-    int ticks, start;
+    Sint64 ticks, start;
     if (!PyLong_Check(arg))
         return RAISE(PyExc_TypeError, "wait requires one integer argument");
 
@@ -266,16 +267,16 @@ time_wait(PyObject *self, PyObject *arg)
         }
     }
 
-    ticks = PyLong_AsLong(arg);
+    ticks = PyLong_AsLongLong(arg);
     if (ticks < 0)
         ticks = 0;
 
-    start = SDL_GetTicks();
+    start = SDL_GetTicks64();
     Py_BEGIN_ALLOW_THREADS;
     SDL_Delay(ticks);
     Py_END_ALLOW_THREADS;
 
-    return PyLong_FromLong(SDL_GetTicks() - start);
+    return PyLong_FromUnsignedLongLong(SDL_GetTicks64() - start);
 }
 
 static PyObject *
@@ -347,10 +348,10 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
 
 /*clock object interface*/
 typedef struct {
-    PyObject_HEAD int last_tick;
+    PyObject_HEAD Uint64 last_tick;
     int fps_count, fps_tick;
     float fps;
-    int timepassed, rawpassed;
+    Uint64 timepassed, rawpassed;
     PyObject *rendered;
 } PyClockObject;
 
@@ -360,14 +361,14 @@ clock_tick_base(PyObject *self, PyObject *arg, int use_accurate_delay)
 {
     PyClockObject *_clock = (PyClockObject *)self;
     float framerate = 0.0f;
-    int nowtime;
+    Uint64 nowtime;
 
     if (!PyArg_ParseTuple(arg, "|f", &framerate))
         return NULL;
 
     if (framerate) {
-        int delay, endtime = (int)((1.0f / framerate) * 1000.0f);
-        _clock->rawpassed = SDL_GetTicks() - _clock->last_tick;
+        Sint64 delay, endtime = (Sint64)((1.0f / framerate) * 1000.0f);
+        _clock->rawpassed = SDL_GetTicks64() - _clock->last_tick;
         delay = endtime - _clock->rawpassed;
 
         /*just doublecheck that timer is initialized*/
@@ -393,7 +394,7 @@ clock_tick_base(PyObject *self, PyObject *arg, int use_accurate_delay)
             return NULL;
     }
 
-    nowtime = SDL_GetTicks();
+    nowtime = SDL_GetTicks64();
     _clock->timepassed = nowtime - _clock->last_tick;
     _clock->fps_count += 1;
     _clock->last_tick = nowtime;
@@ -411,7 +412,7 @@ clock_tick_base(PyObject *self, PyObject *arg, int use_accurate_delay)
         _clock->fps_tick = nowtime;
         Py_XDECREF(_clock->rendered);
     }
-    return PyLong_FromLong(_clock->timepassed);
+    return PyLong_FromUnsignedLongLong(_clock->timepassed);
 }
 
 static PyObject *
@@ -437,14 +438,14 @@ static PyObject *
 clock_get_time(PyObject *self, PyObject *_null)
 {
     PyClockObject *_clock = (PyClockObject *)self;
-    return PyLong_FromLong(_clock->timepassed);
+    return PyLong_FromUnsignedLongLong(_clock->timepassed);
 }
 
 static PyObject *
 clock_get_rawtime(PyObject *self, PyObject *_null)
 {
     PyClockObject *_clock = (PyClockObject *)self;
-    return PyLong_FromLong(_clock->rawpassed);
+    return PyLong_FromUnsignedLongLong(_clock->rawpassed);
 }
 
 /* clock object internals */
@@ -502,7 +503,7 @@ clock_new(PyTypeObject *type, PyObject *args, PyObject *kwargs)
     self->fps_tick = 0;
     self->timepassed = 0;
     self->rawpassed = 0;
-    self->last_tick = SDL_GetTicks();
+    self->last_tick = SDL_GetTicks64();
     self->fps = 0.0f;
     self->fps_count = 0;
     self->rendered = NULL;
