@@ -213,20 +213,20 @@ accurate_delay(Sint64 ticks)
         }
     }
 
-    funcstart = SDL_GetTicks64();
+    funcstart = PG_GetTicks();
     if (ticks >= WORST_CLOCK_ACCURACY) {
         delay = (ticks - 2) - (ticks % WORST_CLOCK_ACCURACY);
         if (delay >= WORST_CLOCK_ACCURACY) {
             Py_BEGIN_ALLOW_THREADS;
-            SDL_Delay(delay);
+            SDL_Delay((Uint32)delay);
             Py_END_ALLOW_THREADS;
         }
     }
     do {
-        delay = ticks - (SDL_GetTicks64() - funcstart);
+        delay = ticks - (PG_GetTicks() - funcstart);
     } while (delay > 0);
 
-    return SDL_GetTicks64() - funcstart;
+    return PG_GetTicks() - funcstart;
 }
 
 static PyObject *
@@ -234,7 +234,7 @@ time_get_ticks(PyObject *self, PyObject *_null)
 {
     if (!SDL_WasInit(SDL_INIT_TIMER))
         return PyLong_FromLong(0);
-    return PyLong_FromUnsignedLongLong(SDL_GetTicks64());
+    return PyLong_FromUnsignedLongLong(PG_GetTicks());
 }
 
 static PyObject *
@@ -271,12 +271,12 @@ time_wait(PyObject *self, PyObject *arg)
     if (ticks < 0)
         ticks = 0;
 
-    start = SDL_GetTicks64();
+    start = PG_GetTicks();
     Py_BEGIN_ALLOW_THREADS;
-    SDL_Delay(ticks);
+    SDL_Delay((Uint32)ticks);
     Py_END_ALLOW_THREADS;
 
-    return PyLong_FromUnsignedLongLong(SDL_GetTicks64() - start);
+    return PyLong_FromUnsignedLongLong(PG_GetTicks() - start);
 }
 
 static PyObject *
@@ -348,8 +348,7 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
 
 /*clock object interface*/
 typedef struct {
-    PyObject_HEAD Uint64 last_tick;
-    int fps_count, fps_tick;
+    PyObject_HEAD Uint64 last_tick, fps_count, fps_tick;
     float fps;
     Uint64 timepassed, rawpassed;
     PyObject *rendered;
@@ -368,7 +367,7 @@ clock_tick_base(PyObject *self, PyObject *arg, int use_accurate_delay)
 
     if (framerate) {
         Sint64 delay, endtime = (Sint64)((1.0f / framerate) * 1000.0f);
-        _clock->rawpassed = SDL_GetTicks64() - _clock->last_tick;
+        _clock->rawpassed = PG_GetTicks() - _clock->last_tick;
         delay = endtime - _clock->rawpassed;
 
         /*just doublecheck that timer is initialized*/
@@ -394,7 +393,7 @@ clock_tick_base(PyObject *self, PyObject *arg, int use_accurate_delay)
             return NULL;
     }
 
-    nowtime = SDL_GetTicks64();
+    nowtime = PG_GetTicks();
     _clock->timepassed = nowtime - _clock->last_tick;
     _clock->fps_count += 1;
     _clock->last_tick = nowtime;
@@ -503,7 +502,7 @@ clock_new(PyTypeObject *type, PyObject *args, PyObject *kwargs)
     self->fps_tick = 0;
     self->timepassed = 0;
     self->rawpassed = 0;
-    self->last_tick = SDL_GetTicks64();
+    self->last_tick = PG_GetTicks();
     self->fps = 0.0f;
     self->fps_count = 0;
     self->rendered = NULL;

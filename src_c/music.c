@@ -47,7 +47,7 @@ mixmusic_callback(void *udata, Uint8 *stream, int len)
 {
     if (!Mix_PausedMusic()) {
         music_pos += len;
-        music_pos_time = SDL_GetTicks64();
+        music_pos_time = PG_GetTicks();
     }
 }
 
@@ -112,7 +112,7 @@ music_play(PyObject *self, PyObject *args, PyObject *keywds)
     Mix_SetPostMix(mixmusic_callback, NULL);
     Mix_QuerySpec(&music_frequency, &music_format, &music_channels);
     music_pos = 0;
-    music_pos_time = SDL_GetTicks64();
+    music_pos_time = PG_GetTicks();
 
     volume = Mix_VolumeMusic(-1);
     val = Mix_FadeInMusicPos(current_music, loops, fade_ms, startpos);
@@ -196,7 +196,7 @@ music_unpause(PyObject *self, PyObject *_null)
 
     Mix_ResumeMusic();
     /* need to set pos_time for the adjusted time spent paused*/
-    music_pos_time = SDL_GetTicks64();
+    music_pos_time = PG_GetTicks();
     Py_RETURN_NONE;
 }
 
@@ -264,7 +264,7 @@ music_set_pos(PyObject *self, PyObject *arg)
 static PyObject *
 music_get_pos(PyObject *self, PyObject *_null)
 {
-    long ticks;
+    Uint64 ticks;
 
     MIXER_INIT_CHECK();
 
@@ -275,9 +275,9 @@ music_get_pos(PyObject *self, PyObject *_null)
                    (music_channels * music_frequency *
                     ((music_format & 0xff) >> 3)));
     if (!Mix_PausedMusic())
-        ticks += SDL_GetTicks64() - music_pos_time;
+        ticks += PG_GetTicks() - music_pos_time;
 
-    return PyLong_FromLong((long)ticks);
+    return PyLong_FromUnsignedLongLong(ticks);
 }
 
 static PyObject *
