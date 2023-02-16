@@ -357,7 +357,7 @@ class TimeModuleTest(unittest.TestCase):
         self._type_error_checks(pygame.time.wait)
 
     def _wait_delay_check(self, func_to_check, millis, iterations, delta):
-        """ "
+        """
         call func_to_check(millis) "iterations" times and check each time if
         function "waited" for given millisecond (+- delta). At the end, take
         average time for each call (whole_duration/iterations), which should

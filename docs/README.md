@@ -2,7 +2,7 @@
 
 ### Accessing Documentation
 
-Obviously you can visit pygame.org/docs to see the documentation, 
+Obviously you can visit pyga.me/docs/ to see the documentation, 
 but the documentation can also be launched with `python -m pygame.docs`
 
 ### Generating the Documentation

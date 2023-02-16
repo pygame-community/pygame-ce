@@ -1163,7 +1163,7 @@ class ColorTypeTest(unittest.TestCase):
         # type checking
         self.assertTrue(isinstance(color0.premul_alpha(), Color))
 
-        # hand crafted value testing
+        # handcrafted value testing
         self.assertEqual(alpha0.premul_alpha(), Color(0, 0, 0, 0))
         self.assertEqual(alpha49.premul_alpha(), Color(49, 0, 0, 49))
         self.assertEqual(alpha67.premul_alpha(), Color(0, 67, 0, 67))

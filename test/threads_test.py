@@ -81,7 +81,7 @@ class WorkerQueueTypeTest(unittest.TestCase):
         # Make a worker queue with only one thread
         wq = WorkerQueue(1)
 
-        # Ocuppy the one worker with the threadloop
+        # Occupy the one worker with the threadloop
         # wq threads are just threadloop, so this makes an embedded threadloop
         wq.do(wq.threadloop)
 

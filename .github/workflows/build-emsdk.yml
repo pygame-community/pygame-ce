@@ -27,6 +27,10 @@ on:
       # re-include current file to not be excluded
       - '!.github/workflows/build-emsdk.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-22.04

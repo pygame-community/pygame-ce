@@ -199,7 +199,7 @@ class MaskTypeTest(unittest.TestCase):
         """Ensures masks are created correctly using the fill keyword
         over a range of sizes.
 
-        Tests masks of different sizes, including:
+        Test masks of different sizes, including:
            -masks 31 to 33 bits wide (32 bit boundaries)
            -masks 63 to 65 bits wide (64 bit boundaries)
         """
@@ -709,7 +709,7 @@ class MaskTypeTest(unittest.TestCase):
     def test_overlap__bit_boundaries(self):
         """Ensures overlap handles masks of different sizes correctly.
 
-        Tests masks of different sizes, including:
+        Test masks of different sizes, including:
            -masks 31 to 33 bits wide (32 bit boundaries)
            -masks 63 to 65 bits wide (64 bit boundaries)
         """
@@ -857,7 +857,7 @@ class MaskTypeTest(unittest.TestCase):
     def test_overlap_area__bit_boundaries(self):
         """Ensures overlap_area handles masks of different sizes correctly.
 
-        Tests masks of different sizes, including:
+        Test masks of different sizes, including:
            -masks 31 to 33 bits wide (32 bit boundaries)
            -masks 63 to 65 bits wide (64 bit boundaries)
         """
@@ -1079,7 +1079,7 @@ class MaskTypeTest(unittest.TestCase):
     def test_overlap_mask__bit_boundaries(self):
         """Ensures overlap_mask handles masks of different sizes correctly.
 
-        Tests masks of different sizes, including:
+        Test masks of different sizes, including:
            -masks 31 to 33 bits wide (32 bit boundaries)
            -masks 63 to 65 bits wide (64 bit boundaries)
         """
@@ -1171,7 +1171,7 @@ class MaskTypeTest(unittest.TestCase):
     def test_fill__bit_boundaries(self):
         """Ensures masks of different sizes are filled correctly.
 
-        Tests masks of different sizes, including:
+        Test masks of different sizes, including:
            -masks 31 to 33 bits wide (32 bit boundaries)
            -masks 63 to 65 bits wide (64 bit boundaries)
         """
@@ -1200,7 +1200,7 @@ class MaskTypeTest(unittest.TestCase):
     def test_clear__bit_boundaries(self):
         """Ensures masks of different sizes are cleared correctly.
 
-        Tests masks of different sizes, including:
+        Test masks of different sizes, including:
            -masks 31 to 33 bits wide (32 bit boundaries)
            -masks 63 to 65 bits wide (64 bit boundaries)
         """
@@ -1275,7 +1275,7 @@ class MaskTypeTest(unittest.TestCase):
     def test_invert__bit_boundaries(self):
         """Ensures masks of different sizes are inverted correctly.
 
-        Tests masks of different sizes, including:
+        Test masks of different sizes, including:
            -masks 31 to 33 bits wide (32 bit boundaries)
            -masks 63 to 65 bits wide (64 bit boundaries)
         """
@@ -1469,7 +1469,7 @@ class MaskTypeTest(unittest.TestCase):
     def test_draw__bit_boundaries(self):
         """Ensures draw handles masks of different sizes correctly.
 
-        Tests masks of different sizes, including:
+        Test masks of different sizes, including:
            -masks 31 to 33 bits wide (32 bit boundaries)
            -masks 63 to 65 bits wide (64 bit boundaries)
         """
@@ -1663,7 +1663,7 @@ class MaskTypeTest(unittest.TestCase):
     def test_erase__bit_boundaries(self):
         """Ensures erase handles masks of different sizes correctly.
 
-        Tests masks of different sizes, including:
+        Test masks of different sizes, including:
            -masks 31 to 33 bits wide (32 bit boundaries)
            -masks 63 to 65 bits wide (64 bit boundaries)
         """
@@ -1742,7 +1742,7 @@ class MaskTypeTest(unittest.TestCase):
     def test_count__bit_boundaries(self):
         """Ensures the set bits of different sized masks are counted correctly.
 
-        Tests masks of different sizes, including:
+        Test masks of different sizes, including:
            -masks 31 to 33 bits wide (32 bit boundaries)
            -masks 63 to 65 bits wide (64 bit boundaries)
         """
@@ -2729,7 +2729,7 @@ class MaskTypeTest(unittest.TestCase):
         assertSurfaceFilled(self, to_surface, expected_color)
 
     def test_to_surface__unsetcolor_param(self):
-        """Ensures to_surface accepts a unsetcolor arg/kwarg."""
+        """Ensures to_surface accepts an unsetcolor arg/kwarg."""
         expected_ref_count = 2
         expected_flag = SRCALPHA
         expected_depth = 32
@@ -3316,7 +3316,7 @@ class MaskTypeTest(unittest.TestCase):
         """Ensures to_surface works with a default surface value
         and combinations of other parameters.
 
-        This tests many different parameter combinations with full and empty
+        This tests many parameter combinations with full and empty
         masks.
         """
         expected_ref_count = 2
@@ -3400,7 +3400,7 @@ class MaskTypeTest(unittest.TestCase):
         """Ensures to_surface works with a surface value
         and combinations of other parameters.
 
-        This tests many different parameter combinations with full and empty
+        This tests many parameter combinations with full and empty
         masks.
         """
         expected_ref_count = 4
@@ -3484,7 +3484,7 @@ class MaskTypeTest(unittest.TestCase):
                                 assertSurfaceFilled(self, to_surface, expected_color)
 
     def test_to_surface__set_and_unset_bits(self):
-        """Ensures that to_surface works correctly with with set/unset bits
+        """Ensures that to_surface works correctly with set/unset bits
         when using the defaults for setcolor and unsetcolor.
         """
         default_setcolor = pygame.Color("white")
@@ -3521,7 +3521,7 @@ class MaskTypeTest(unittest.TestCase):
             to_surface.unlock()
 
     def test_to_surface__set_and_unset_bits_with_setsurface_unsetsurface(self):
-        """Ensures that to_surface works correctly with with set/unset bits
+        """Ensures that to_surface works correctly with set/unset bits
         when using setsurface and unsetsurface.
         """
         width, height = size = (10, 20)
@@ -6065,7 +6065,7 @@ class MaskModuleTest(unittest.TestCase):
 
         This test checks the masks created by the from_surface function using
         16 and 32 bit surfaces. Each alpha value (0-255) is tested against
-        several different threshold values.
+        several threshold values.
         Note: On 16 bit surface the requested alpha value can differ from what
               is actually set. This test uses the value read from the surface.
         """
@@ -6084,7 +6084,7 @@ class MaskModuleTest(unittest.TestCase):
 
                 if depth < 32:
                     # On surfaces with depths < 32 the requested alpha can be
-                    # different than what gets set. Use the value read from the
+                    # different from what gets set. Use the value read from the
                     # surface.
                     alpha = surface.get_at((0, 0))[3]
 
@@ -6179,7 +6179,7 @@ class MaskModuleTest(unittest.TestCase):
         # special handling.
         for threshold in range(threshold_count):
             # On surfaces with depths < 32 the requested alpha can be different
-            # than what gets set. Use the value read from the surface.
+            # from what gets set. Use the value read from the surface.
             alpha = surface.get_at((threshold, 0))[3]
 
             if alpha not in alpha_thresholds:
@@ -6248,7 +6248,7 @@ class MaskModuleTest(unittest.TestCase):
             for colorkey in colorkeys:
                 surface.set_colorkey(colorkey)
                 # With some depths (i.e. 8 and 16) the actual colorkey can be
-                # different than what was requested via the set.
+                # different from what was requested via the set.
                 surface.fill(surface.get_colorkey())
 
                 mask = pygame.mask.from_surface(surface)

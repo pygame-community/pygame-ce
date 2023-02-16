@@ -74,7 +74,7 @@ def run(*args, **kwds):
     A tuple of total number of tests run, dictionary of error information. The
     dictionary is empty if no errors were recorded.
 
-    By default individual test modules are run in separate subprocesses. This
+    By default, individual test modules are run in separate subprocesses. This
     recreates normal Pygame usage where pygame.init() and pygame.quit() are
     called only once per program execution, and avoids unfortunate
     interactions between test modules. Also, a time limit is placed on test
@@ -89,10 +89,10 @@ def run(*args, **kwds):
 
     Individual test modules may have a corresponding *_tags.py module,
     defining a __tags__ attribute, a list of tag strings used to selectively
-    omit modules from a run. By default only the 'interactive', 'ignore', and
+    omit modules from a run. By default, only the 'interactive', 'ignore', and
     'subprocess_ignore' tags are ignored. 'interactive' is for modules that
     take user input, like cdrom_test.py. 'ignore' and 'subprocess_ignore' for
-    for disabling modules for foreground and subprocess modes respectively.
+    disabling modules for foreground and subprocess modes respectively.
     These are for disabling tests on optional modules or for experimental
     modules with known problems. These modules can be run from the console as
     a Python program.

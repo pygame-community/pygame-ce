@@ -1047,7 +1047,7 @@ class RectTypeTest(unittest.TestCase):
     def test_clipline__endpoints_inside_and_outside(self):
         """Ensures lines that overlap the rect are clipped.
 
-        Testing lines with one endpoint outside the rect and the other is
+        Testing lines with one endpoint outside the rect and the other
         inside the rect.
         """
         rect = Rect((0, 0), (21, 21))
