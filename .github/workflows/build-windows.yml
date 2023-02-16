@@ -155,9 +155,8 @@ jobs:
         run: |
           set DISTUTILS_USE_SDK=1
           set MSSdk=1
-          python -m pip install setuptools wheel requests numpy Sphinx cython
+          python -m pip install setuptools wheel requests numpy Sphinx
           python3 setup.py docs
-          python3 setup.py cython_only
           python -m pip --disable-pip-version-check install cibuildwheel
           python -m cibuildwheel --output-dir wheelhouse
 
