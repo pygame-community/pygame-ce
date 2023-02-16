@@ -2127,10 +2127,6 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
         return RAISE(pgExc_SDLError,
                      "OPENGL and SDL_Renderer active at the same time");
     }
-    if (state->unscaled_render) {
-        return RAISE(pgExc_SDLError,
-                     "resizing currently not supported");
-    }
 
     if (pg_renderer != NULL) {
         if (SDL_GetRendererInfo(pg_renderer, &r_info) != 0) {
@@ -2200,7 +2196,13 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
     if (flags & SDL_WINDOW_FULLSCREEN) {
         /* TOGGLE FULLSCREEN OFF */
 
-        if (pg_renderer != NULL) {
+        if (state->unscaled_render) {
+            result = SDL_SetWindowFullscreen(win, 0);
+            if (result != 0) {
+                return RAISE(pgExc_SDLError, SDL_GetError());
+            }
+        }
+        else if (pg_renderer != NULL && !(state->unscaled_render)) {
             int scale = 1;
             int xscale, yscale;
 
@@ -2317,7 +2319,15 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
 
         state->toggle_windowed_w = w;
         state->toggle_windowed_h = h;
-        if (pg_renderer != NULL) {
+
+        if (state->unscaled_render) {
+            result =
+                SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN_DESKTOP);
+            if (result != 0) {
+                return RAISE(pgExc_SDLError, SDL_GetError());
+            }
+        }
+        else if (pg_renderer != NULL) {
             result =
                 SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN_DESKTOP);
             if (result != 0) {
