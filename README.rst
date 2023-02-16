@@ -3,7 +3,7 @@
   :target: https://pyga.me/
 
 
-|AppVeyorBuild| |PyPiVersion| |PyPiLicense|
+|AppVeyorBuild| |DocsStatus| |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
 Pygame_ is a free and open-source cross-platform library
@@ -183,6 +183,8 @@ See docs/licenses for licenses of dependencies.
 
 .. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame/pygame/2.1.2.svg
    :target: https://github.com/pygame/pygame/compare/2.1.2...main
+
+.. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
 
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
