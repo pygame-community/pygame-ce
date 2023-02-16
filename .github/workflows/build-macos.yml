@@ -133,8 +133,9 @@ jobs:
         bash ./install_mac_deps.sh
 
       CIBW_BEFORE_BUILD: |
-        pip install requests numpy Sphinx
-        python setup.py docs
+        pip install requests numpy Sphinx cython
+        python3 setup.py docs
+        python3 setup.py cython_only
 
       CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,timing --time_out 300
 

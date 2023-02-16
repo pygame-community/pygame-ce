@@ -82,12 +82,14 @@ jobs:
           apt-get upgrade -y
           apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libfreetype6-dev libportmidi-dev libjpeg-dev fontconfig -y
           apt-get install python3-setuptools python3-dev python3-pip python3-wheel python3-sphinx -y
+          pip3 -m pip install cython
 
         # Build a wheel, install it for running unit tests
         run: |
           export PIP_CONFIG_FILE=buildconfig/pip_config.ini
           echo "\nBuilding pygame wheel\n"
           python3 setup.py docs
+          python3 setup.py cython_only
           pip3 wheel . --wheel-dir /artifacts -vvv
           echo "\nInstalling wheel\n"
           pip3 install --no-index --pre --find-links /artifacts pygame-ce

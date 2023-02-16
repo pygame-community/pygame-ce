@@ -59,13 +59,14 @@ jobs:
         sudo apt-get update --fix-missing
         sudo apt-get upgrade
         sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libfreetype6-dev libportmidi-dev libjpeg-dev python3-setuptools python3-dev
-        pip3 install sphinx numpy>=1.21.0
+        pip3 install sphinx numpy>=1.21.0 cython
 
     - name: Make sdist and install it
       env:
         PIP_CONFIG_FILE: "buildconfig/pip_config.ini"
       run: |
         python3 setup.py docs
+        python3 setup.py cython_only
         python3 setup.py sdist
         pip3 install dist/pygame-*.tar.gz -vv
 

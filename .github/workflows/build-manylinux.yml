@@ -80,8 +80,9 @@ jobs:
 
       # command that runs before every build
       CIBW_BEFORE_BUILD: |
-        pip install Sphinx
-        python setup.py docs
+        pip install Sphinx cython
+        python3 setup.py docs
+        python3 setup.py cython_only
 
       CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,music,timing --time_out 300
 
