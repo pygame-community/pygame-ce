@@ -6,9 +6,9 @@
 #define DOC_PYGAMEIMAGEGETEXTENDED "get_extended() -> bool\ntest if extended image formats can be loaded"
 #define DOC_PYGAMEIMAGETOSTRING "tostring(Surface, format, flipped=False) -> bytes\ntransfer image to byte buffer"
 #define DOC_PYGAMEIMAGETOBYTES "tobytes(Surface, format, flipped=False) -> bytes\ntransfer image to byte buffer"
-#define DOC_PYGAMEIMAGEFROMSTRING "fromstring(bytes, size, format, flipped=False, stride=-1) -> Surface\ncreate new Surface from a byte buffer"
-#define DOC_PYGAMEIMAGEFROMBYTES "frombytes(bytes, size, format, flipped=False, stride=-1) -> Surface\ncreate new Surface from a byte buffer"
-#define DOC_PYGAMEIMAGEFROMBUFFER "frombuffer(buffer, size, format, stride=-1) -> Surface\ncreate a new Surface that shares data inside a bytes buffer"
+#define DOC_PYGAMEIMAGEFROMSTRING "fromstring(bytes, size, format, flipped=False, pitch=-1) -> Surface\ncreate new Surface from a byte buffer"
+#define DOC_PYGAMEIMAGEFROMBYTES "frombytes(bytes, size, format, flipped=False, pitch=-1) -> Surface\ncreate new Surface from a byte buffer"
+#define DOC_PYGAMEIMAGEFROMBUFFER "frombuffer(buffer, size, format, pitch=-1) -> Surface\ncreate a new Surface that shares data inside a bytes buffer"
 #define DOC_PYGAMEIMAGELOADBASIC "load_basic(file) -> Surface\nload new BMP image from a file (or file-like object)"
 #define DOC_PYGAMEIMAGELOADEXTENDED "load_extended(filename) -> Surface\nload_extended(fileobj, namehint="") -> Surface\nload an image from a file (or file-like object)"
 #define DOC_PYGAMEIMAGESAVEEXTENDED "save_extended(Surface, filename) -> None\nsave_extended(Surface, fileobj, namehint="") -> None\nsave a png/jpg image to file (or file-like object)"
@@ -49,15 +49,15 @@ pygame.image.tobytes
 transfer image to byte buffer
 
 pygame.image.fromstring
- fromstring(bytes, size, format, flipped=False, stride=-1) -> Surface
+ fromstring(bytes, size, format, flipped=False, pitch=-1) -> Surface
 create new Surface from a byte buffer
 
 pygame.image.frombytes
- frombytes(bytes, size, format, flipped=False, stride=-1) -> Surface
+ frombytes(bytes, size, format, flipped=False, pitch=-1) -> Surface
 create new Surface from a byte buffer
 
 pygame.image.frombuffer
- frombuffer(buffer, size, format, stride=-1) -> Surface
+ frombuffer(buffer, size, format, pitch=-1) -> Surface
 create a new Surface that shares data inside a bytes buffer
 
 pygame.image.load_basic

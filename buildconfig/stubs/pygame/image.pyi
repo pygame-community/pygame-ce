@@ -26,7 +26,7 @@ def fromstring(
     size: Union[Sequence[int], Tuple[int, int]],
     format: _from_string_format,
     flipped: bool = False,
-    stride: int = -1,
+    pitch: int = -1,
 ) -> Surface: ...
 
 # the use of tobytes/frombytes is preferred over tostring/fromstring
@@ -38,13 +38,13 @@ def frombytes(
     size: Union[Sequence[int], Tuple[int, int]],
     format: _from_string_format,
     flipped: bool = False,
-    stride: int = -1,
+    pitch: int = -1,
 ) -> Surface: ...
 def frombuffer(
     bytes: _BufferStyle,
     size: Union[Sequence[int], Tuple[int, int]],
     format: _from_buffer_format,
-    stride: int = -1,
+    pitch: int = -1,
 ) -> Surface: ...
 def load_basic(filename: FileArg) -> Surface: ...
 def load_extended(filename: FileArg, namehint: str = "") -> Surface: ...
