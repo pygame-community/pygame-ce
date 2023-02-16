@@ -18,8 +18,8 @@ Pygame Front Page
 Quick start
 -----------
 
-Welcome to pygame! Once you've got pygame installed (:code:`pip install pygame` or
-:code:`pip3 install pygame` for most people), the next question is how to get a game
+Welcome to pygame! Once you've got pygame installed (:code:`pip install pygame-ce` or
+:code:`pip3 install pygame-ce` for most people), the next question is how to get a game
 loop running. Pygame, unlike some other libraries, gives you full control of program
 execution. That freedom means it is easy to mess up in your initial steps.
 

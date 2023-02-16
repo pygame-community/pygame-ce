@@ -21,7 +21,7 @@
 It is written on top of the excellent SDL library. This allows you
 to create fully featured games and multimedia programs in the python
 language. The package is highly portable, with games running on
-Windows, MacOS, OS X, BeOS, FreeBSD, IRIX, and Linux."""
+Windows, macOS, OS X, BeOS, FreeBSD, IRIX, and Linux."""
 
 import sys
 import os
@@ -33,7 +33,7 @@ if os.name == "nt":
     # pypy does not find the dlls, so we add package folder to PATH.
     os.environ["PATH"] = os.environ["PATH"] + ";" + pygame_dir
 
-    # windows store python does not find the dlls, so we run this
+    # Windows store python does not find the dlls, so we run this
     if sys.version_info > (3, 8):
         os.add_dll_directory(pygame_dir)  # only available in 3.8+
 
@@ -335,11 +335,9 @@ copyreg.pickle(Color, __color_reduce, __color_constructor)
 # Thanks for supporting pygame. Without support now, there won't be pygame later.
 if "PYGAME_HIDE_SUPPORT_PROMPT" not in os.environ:
     print(
-        "pygame {} (SDL {}.{}.{}, Python {}.{}.{})".format(  # pylint: disable=consider-using-f-string
+        "pygame-ce {} (SDL {}.{}.{}, Python {}.{}.{})".format(  # pylint: disable=consider-using-f-string
             ver, *get_sdl_version() + sys.version_info[0:3]
         )
     )
-    print("Hello from the pygame community. https://www.pygame.org/contribute.html")
-
 # cleanup namespace
 del pygame, os, sys, MissingModule, copyreg, packager_imports
