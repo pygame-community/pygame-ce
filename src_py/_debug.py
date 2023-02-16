@@ -66,9 +66,7 @@ def print_debug_info(filename=None):
 
     # keyword for compat with getters
     def dummy_return(linked=True):
-        # lint complains about unused keyword
-        if linked:
-            return (-1, -1, -1)
+        # pylint: disable=unused-argument
         return (-1, -1, -1)
 
     from pygame.display import get_driver, get_init as display_init
