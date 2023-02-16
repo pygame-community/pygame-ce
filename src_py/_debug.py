@@ -54,8 +54,8 @@ def attempt_import(module, function_name, output_str=""):
 
 
 def print_debug_info(filename=None):
-    """Gets debug information for reporting bugs. Prints to console 
-    if filename is not specified, otherwise writes to that file 
+    """Gets debug information for reporting bugs. Prints to console
+    if filename is not specified, otherwise writes to that file
     (note: if filename is not an empty file, it will overwrite whatever is
     in there)
 
@@ -118,7 +118,7 @@ def print_debug_info(filename=None):
         f"Architecture:\t\tBits: {platform.architecture()[0]}\t"
         f"Linkage: {platform.architecture()[1]}\n"
     )
-    
+
     if display_init():
         debug_str += f"Driver:\t\t\t{get_driver()}\n\n"
     else:
