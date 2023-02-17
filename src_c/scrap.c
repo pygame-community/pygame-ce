@@ -331,6 +331,7 @@ _scrap_set_mode(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+
 static PyMethodDef scrap_builtins[] = {
 /*
  * Only initialise these functions for ones we know about.
