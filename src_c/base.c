@@ -613,11 +613,10 @@ pg_TwoIntsFromObjEx(PyObject *obj, int *val1, int *val2, const char *msg)
     else if (PySequence_Check(obj)) {
         length = PySequence_Length(obj);
         if (length == 2) {
-            if (!_pg_IntFromSeqIndexEx(obj, 0, val1, msg))
+            if (!_pg_IntFromSeqIndexEx(obj, 0, val1, msg) ||
+                !_pg_IntFromSeqIndexEx(obj, 1, val2, msg)) {
                 return 0;
-
-            if (!_pg_IntFromSeqIndexEx(obj, 1, val2, msg))
-                return 0;
+            }
         }
         else if (length == 1) {
             /* Handle case of ((x, y), ) 'nested sequence' */
@@ -2292,7 +2291,7 @@ MODINIT_DEFINE(base)
     c_api[25] = pg_TwoIntsFromObjEx;
     c_api[26] = pg_IntFromSeqIndexEx;
 
-#define FILLED_SLOTS 24
+#define FILLED_SLOTS 27
 
 #if PYGAMEAPI_BASE_NUMSLOTS != FILLED_SLOTS
 #error export slot count mismatch
