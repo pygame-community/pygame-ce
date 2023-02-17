@@ -47,7 +47,7 @@ jobs:
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-18.04, ubuntu-22.04]
 
     steps:
     - uses: actions/checkout@v3.0.2
@@ -57,10 +57,6 @@ jobs:
       # and has typestubs
       run: |
         sudo apt-get update --fix-missing
-        sudo apt-get purge grub\*
-        sudo apt-get install grub-efi
-        sudo apt-get autoremove
-        sudo update-grub
         sudo apt-get upgrade
         sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libfreetype6-dev libportmidi-dev libjpeg-dev python3-setuptools python3-dev
         pip3 install sphinx numpy>=1.21.0
