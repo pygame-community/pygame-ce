@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-FREETYPE=freetype-2.12.1
+FREETYPE=freetype-2.13.0
 HARFBUZZ_VER=5.1.0
 HARFBUZZ_NAME="harfbuzz-$HARFBUZZ_VER"
 
