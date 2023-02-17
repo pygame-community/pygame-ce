@@ -173,11 +173,11 @@ See docs/licenses for licenses of dependencies.
 .. |AppVeyorBuild| image:: https://ci.appveyor.com/api/projects/status/x4074ybuobsh4myx?svg=true
    :target: https://ci.appveyor.com/project/pygame/pygame
 
-.. |PyPiVersion| image:: https://img.shields.io/pypi/v/pygame.svg?v=1
-   :target: https://pypi.python.org/pypi/pygame
+.. |PyPiVersion| image:: https://img.shields.io/pypi/v/pygame-ce.svg?v=1
+   :target: https://pypi.python.org/pypi/pygame-ce
 
-.. |PyPiLicense| image:: https://img.shields.io/pypi/l/pygame.svg?v=1
-   :target: https://pypi.python.org/pypi/pygame
+.. |PyPiLicense| image:: https://img.shields.io/pypi/l/pygame-ce.svg?v=1
+   :target: https://pypi.python.org/pypi/pygame-ce
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
