@@ -61,6 +61,7 @@ jobs:
         run: |
           export MAC_ARCH="${{ matrix.macarch }}"
           brew install coreutils
+          brew install freetype
           cd buildconfig/macdependencies
           bash ./build_mac_deps.sh
 
