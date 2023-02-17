@@ -186,7 +186,7 @@ class BlitTest(unittest.TestCase):
         results = dst.fblits(blit_list, 0)
         t1 = time()
         if PRINT_TIMING:
-            print(f"Surface.fblits doreturn=0: {t1 - t0}")
+            print(f"Surface.fblits: {t1 - t0}")
         self.assertEqual(results, None)
 
         t0 = time()
