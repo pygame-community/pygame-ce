@@ -50,7 +50,7 @@ jobs:
         os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
 
     steps:
-    - uses: actions/checkout@v3.0.2
+    - uses: actions/checkout@v3.3.0
 
     - name: Install deps
       # install numpy from pip and not apt because the one from pip is newer,
