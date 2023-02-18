@@ -130,7 +130,7 @@ def clip_line(line, b_box, use_float=False):
     """Algorithm to calculate the clipped line.
 
     We calculate the coordinates of the part of the line segment within the
-    bounding box (defined by left, top, right, bottom). The we write
+    bounding box (defined by left, top, right, bottom). Then we write
     the coordinates of the line segment into "line", much like the C-algorithm.
     With `use_float` True, clip_line is usable for float-clipping.
 
@@ -193,7 +193,7 @@ def _draw_line(surf, color, start, end):
     # Variant of https://en.wikipedia.org/wiki/Bresenham's_line_algorithm
     #
     # This strongly differs from craw.c implementation, because we use a
-    # "slope" variable (instead of delta_x and delta_y) and a "error" variable.
+    # "slope" variable (instead of delta_x and delta_y) and an "error" variable.
     # And we can not do pointer-arithmetic with "BytesPerPixel", like in
     # the C-algorithm.
     if start.x == end.x:
@@ -255,10 +255,10 @@ def _draw_aaline(surf, color, start, end, blend):
     # implies to make some compromises:
     # 1. We want smooth evolution wrt to the 4 endpoint coordinates
     #    (this means also that we want a smooth evolution when the angle
-    #     passes +/- 45°
+    #     passes +/- 45°)
     # 2. We want the same behavior when swapping the endpoints
     # 3. We want understandable results for the endpoint values
-    #    (eg we want to avoid half-integer values to draw a simple plain
+    #    (e.g. we want to avoid half-integer values to draw a simple plain
     #     horizontal or vertical line between two integer l endpoints)
     #
     # This implies to somehow make the line artificially 1 pixel longer
@@ -321,7 +321,7 @@ def _draw_aaline_dy(d_y, slope, end, start, draw_two_pixel):
 def _draw_aaline_dx(d_x, slope, end, start, draw_two_pixel):
     # A and G are respectively left and right to the "from" point, but
     # with integer-x-coordinate, (and only if from_x is not integer).
-    # Hence they appear in following order on the line in general case:
+    # Hence, they appear in following order on the line in general case:
     #  A   from-pt    G    .  .  .        to-pt    S
     #  |------*-------|--- .  .  . ---|-----*------|-
     g_x = ceil(start.x)

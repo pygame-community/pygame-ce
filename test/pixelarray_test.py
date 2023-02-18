@@ -308,7 +308,7 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
                 self.assertFalse(sf.get_locked())
 
     def test_as_class(self):
-        # Check general new-style class freatures.
+        # Check general new-style class features.
         sf = pygame.Surface((2, 3), 0, 32)
         ar = pygame.PixelArray(sf)
         self.assertRaises(AttributeError, getattr, ar, "nonnative")
@@ -670,7 +670,7 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
                 self.assertEqual(refcnts_after, refcnts_before)
 
     def test_subscript(self):
-        # By default we do not need to work with any special __***__
+        # By default, we do not need to work with any special __***__
         # methods as map subscripts are the first looked up by the
         # object system.
         for bpp in (8, 16, 24, 32):
@@ -1234,7 +1234,7 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
 
     def test_transpose(self):
         # PixelArray.transpose(): swap axis on a 2D array, add a length
-        # 1 x axis to a 1D array.
+        # 1 x-axis to a 1D array.
         sf = pygame.Surface((3, 7), 0, 32)
         ar = pygame.PixelArray(sf)
         w, h = ar.shape

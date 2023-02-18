@@ -578,20 +578,56 @@ pg_rect_unionall_ip(pgRectObject *self, PyObject *args)
 }
 
 static PyObject *
-pg_rect_collidepoint(pgRectObject *self, PyObject *args)
+pg_rect_collidepoint(pgRectObject *self, PyObject *const *args,
+                     Py_ssize_t nargs)
 {
-    int x = 0, y = 0;
-    int inside;
+    /* This function uses FASTCALL and because of this, the implementation has
+       become more complex. We now need to separate the different cases of
+       number of arguments and handle them separately. If there is only one
+       argument, we need to attempt to convert it to two integers. If there are
+       two arguments, we need to attempt to convert each to an integer. If
+       neither of these cases apply, we raise a TypeError for invalid number of
+       arguments.
 
-    if (!pg_TwoIntsFromObj(args, &x, &y)) {
-        return RAISE(PyExc_TypeError, "argument must contain two numbers");
+       Once the arguments are successfully converted, we use the
+       SDL_PointInRect function to check if the point is within the rect and
+       return the result as a boolean value.
+       */
+
+    SDL_Rect srect = self->r;
+    SDL_Point p;
+
+    /*Check if there is only one argument*/
+    if (nargs == 1) {
+        /*Attempt to convert the argument to two integers*/
+        if (!pg_TwoIntsFromObj(args[0], &p.x, &p.y)) {
+            return RAISE(PyExc_TypeError,
+                         "Invalid position. Must be a two-element "
+                         "sequence of numbers");
+        }
+    }
+    /*Check if there are two arguments*/
+    else if (nargs == 2) {
+        /*Attempt to convert the first argument to an integer*/
+        if (!pg_IntFromObj(args[0], &p.x)) {
+            return RAISE(PyExc_TypeError, "x must be a numeric value");
+        }
+        /*Attempt to convert the second argument to an integer*/
+        if (!pg_IntFromObj(args[1], &p.y)) {
+            return RAISE(PyExc_TypeError, "y must be a numeric value");
+        }
+    }
+    /*Raise a TypeError for invalid number of arguments*/
+    else {
+        return RAISE(PyExc_TypeError,
+                     "Invalid arguments number, must either be 1 or 2");
     }
 
-    inside = x >= self->r.x && x < self->r.x + self->r.w && y >= self->r.y &&
-             y < self->r.y + self->r.h;
-
-    return PyBool_FromLong(inside);
+    /*Use SDL_PointInRect to check if the point is within the rect and return
+    the result as a boolean value*/
+    return PyBool_FromLong(SDL_PointInRect(&p, &srect));
 }
+PG_WRAP_FASTCALL_FUNC(pg_rect_collidepoint, pgRectObject)
 
 static PyObject *
 pg_rect_colliderect(pgRectObject *self, PyObject *const *args,
@@ -1361,8 +1397,8 @@ static struct PyMethodDef pg_rect_methods[] = {
     {"union_ip", (PyCFunction)pg_rect_union_ip, METH_VARARGS, DOC_RECTUNIONIP},
     {"unionall_ip", (PyCFunction)pg_rect_unionall_ip, METH_VARARGS,
      DOC_RECTUNIONALLIP},
-    {"collidepoint", (PyCFunction)pg_rect_collidepoint, METH_VARARGS,
-     DOC_RECTCOLLIDEPOINT},
+    {"collidepoint", (PyCFunction)PG_FASTCALL_NAME(pg_rect_collidepoint),
+     PG_FASTCALL, DOC_RECTCOLLIDEPOINT},
     {"colliderect", (PyCFunction)PG_FASTCALL_NAME(pg_rect_colliderect),
      PG_FASTCALL, DOC_RECTCOLLIDERECT},
     {"collidelist", (PyCFunction)pg_rect_collidelist, METH_VARARGS,
