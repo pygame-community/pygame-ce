@@ -1081,6 +1081,11 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 /*open window*/
                 if (hwnd != NULL) {
                     if (flags & PGS_OPENGL) {
+#if SDL_VERSION_ATLEAST(2, 0, 22)
+                        SDL_SetHint(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL, "1");
+                        win = SDL_CreateWindowFrom(hwnd);
+                        SDL_SetHint(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL, "0");
+#else
                         // Create window with SDL_CreateWindowFrom() and OpenGL
                         // See https://gamedev.stackexchange.com/a/119903
                         dummy = SDL_CreateWindow(
@@ -1094,6 +1099,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
                         SDL_SetHint(SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT,
                                     "");
+#endif
                     }
                     else {
                         win = SDL_CreateWindowFrom(hwnd);
