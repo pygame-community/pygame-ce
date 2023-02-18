@@ -197,5 +197,4 @@ See docs/licenses for licenses of dependencies.
 .. _docs page: https://pyga.me/docs
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
 
-.. _English: ./README.rst
-.. _简体中文: ./readme/README_SC.rst
+.. _简体中文: ./docs/readmes/README_SC.rst
