@@ -133,19 +133,17 @@ pygame显然依赖于SDL和Python。此外pygame还嵌入了几个较小的库�
 有关依赖项的许可证，请参阅 ``docs/licenses`` 。
 
 
-.. |AppVeyorBuild| image:: https://ci.appveyor.com/api/projects/status/x4074ybuobsh4myx?svg=true
-   :target: https://ci.appveyor.com/project/pygame/pygame
 
-.. |PyPiVersion| image:: https://img.shields.io/pypi/v/pygame.svg?v=1
-   :target: https://pypi.python.org/pypi/pygame
+.. |PyPiVersion| image:: https://img.shields.io/pypi/v/pygame-ce.svg?v=1
+   :target: https://pypi.python.org/pypi/pygame-ce
 
-.. |PyPiLicense| image:: https://img.shields.io/pypi/l/pygame.svg?v=1
-   :target: https://pypi.python.org/pypi/pygame
+.. |PyPiLicense| image:: https://img.shields.io/pypi/l/pygame-ce.svg?v=1
+   :target: https://pypi.python.org/pypi/pygame-ce
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame/pygame/2.1.2.svg
-   :target: https://github.com/pygame/pygame/compare/2.1.2...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.1.3.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.1.3...main
 
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
