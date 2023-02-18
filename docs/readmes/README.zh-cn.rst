@@ -28,7 +28,7 @@ pygame-ce是上游pygame项目的分支，由此前pygame项目的核心开发�
 入门
 ----
 
-刚接触pygame的初学者应该可以快速入门。pygame提供了大量教程与介绍，也提供了整个库的完整参考文档。你可以在 `docs page`_ 浏览文档。也可以在终端中运行``python -m pygame.docs``，在本地浏览文档。如果找不到本地文档，会自动打开在线文档。
+刚接触pygame的初学者应该可以快速入门。pygame提供了大量教程与介绍，也提供了整个库的完整参考文档。你可以在 `docs page`_ 浏览文档。也可以在终端中运行`python -m pygame.docs`，在本地浏览文档。如果找不到本地文档，会自动打开在线文档。
 
 在线文档与github中的开发版pygame同步。文档版本可能比你正在用的pygame版本新一些。在终端中运行 ``pip install pygame-ce --upgrade`` 可以升级到最新完整版本。
 
@@ -39,7 +39,7 @@ pygame-ce是上游pygame项目的分支，由此前pygame项目的核心开发�
 
 如果你想使用那些正在开发的特性，或者你想要为pygame做出贡献，你就需要从源码开始编译pygame，而不是用pip进行安装。
 
-编译与安装的流程是高度自动化的。你要做的工作主要是pygame依赖的编译与安装。一旦完成，你就可以运行``setup.py``，它会尝试完成自动配置，编译，然后安装pygame。
+编译与安装的流程是高度自动化的。你要做的工作主要是pygame依赖的编译与安装。一旦完成，你就可以运行`setup.py`，它会尝试完成自动配置，编译，然后安装pygame。
 
 更多关于编译与安装信息，参见 `Compilation wiki page`_ 。
 
