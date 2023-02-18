@@ -3,7 +3,7 @@
   :target: https://pyga.me/
 
 
-|AppVeyorBuild| |PyPiVersion| |PyPiLicense|
+|PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
 Pygame_ is a free and open-source cross-platform library
@@ -169,9 +169,6 @@ The programs in the ``examples`` subdirectory are in the public domain.
 
 See docs/licenses for licenses of dependencies.
 
-
-.. |AppVeyorBuild| image:: https://ci.appveyor.com/api/projects/status/x4074ybuobsh4myx?svg=true
-   :target: https://ci.appveyor.com/project/pygame/pygame
 
 .. |PyPiVersion| image:: https://img.shields.io/pypi/v/pygame-ce.svg?v=1
    :target: https://pypi.python.org/pypi/pygame-ce
