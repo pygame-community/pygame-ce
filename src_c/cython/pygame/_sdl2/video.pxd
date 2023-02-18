@@ -173,7 +173,7 @@ cdef extern from "SDL.h" nogil:
     # Hint
     # https://wiki.libsdl.org/SDL2/SDL_SetHint
     SDL_bool SDL_SetHint(const char *name, const char *value)
-    char* SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT = "SDL_VIDEO_WINDOW_SHARE_PIXEL_FORMAT"
+    char* SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL = "SDL_VIDEO_FOREIGN_WINDOW_OPENGL"
 
     # OpenGL
     # https://wiki.libsdl.org/SDL2/SDL_GL_CreateContext

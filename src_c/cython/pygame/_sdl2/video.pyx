@@ -554,14 +554,14 @@ cdef class OpenGLWindow(Window):
         cdef unsigned long long _hwnd=hwnd
         cdef Window self = cls.__new__(cls)
 
-        # Create window with SDL_CreateWindowFrom() and OpenGL
-        # See https://gamedev.stackexchange.com/a/119903
-        cdef char[64] dummy_window_str
-        cdef SDL_Window* dummy_window = SDL_CreateWindow("Dummy",0,0,1,1,_SDL_WINDOW_OPENGL|_SDL_WINDOW_HIDDEN)
-        sprintf(dummy_window_str,"%p",dummy_window)
-        SDL_SetHint(SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT,dummy_window_str)
+        from pygame.base import get_sdl_version
+        sdlver=get_sdl_version()
+        if sdlver[0]<2 or sdlver[1]<0 or sdlver[2]<22:
+            raise error('SDL 2.0.22 or later required.')
+
+        SDL_SetHint(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL,b'1')
         cdef SDL_Window* window = SDL_CreateWindowFrom(<void*>_hwnd)
-        SDL_SetHint(SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT,b'')
+        SDL_SetHint(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL,b'0')
 
         if not window:
             raise error()
