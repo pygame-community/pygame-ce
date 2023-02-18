@@ -37,7 +37,7 @@ concurrency:
 jobs:
   deps:
     name: ${{ matrix.macarch }} deps
-    runs-on: macos-12
+    runs-on: macos-11
     strategy:
       matrix:
         # make arm64 deps and x86_64 deps
