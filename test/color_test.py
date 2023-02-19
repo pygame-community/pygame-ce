@@ -1134,7 +1134,7 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(color.grayscale(), Color(38, 38, 38, 144))
         color = Color(30, 50, 70, 144)
         self.assertEqual(color.grayscale(), Color(46, 46, 46, 144))
-        
+
     def test_lerp(self):
         # setup
         Color = pygame.color.Color
