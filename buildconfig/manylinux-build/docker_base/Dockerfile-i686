@@ -1,6 +1,5 @@
-ARG BASE_IMAGE=manylinux1_i686
-FROM quay.io/pypa/$BASE_IMAGE
-ENV MAKEFLAGS="-j 16"
+FROM quay.io/pypa/manylinux2014_i686
+ENV MAKEFLAGS="-j 2"
 
 # Set up repoforge
 COPY RPM-GPG-KEY.dag.txt /tmp/
