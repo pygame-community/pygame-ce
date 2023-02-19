@@ -620,6 +620,16 @@ MODINIT_DEFINE(constants)
 #define PYGAME_USEREVENT_DROPFILE 0x1000
     DEC_CONSTS(USEREVENT_DROPFILE, PYGAME_USEREVENT_DROPFILE);
 
+    // https://github.com/pygame-community/pygame-ce/issues/1845
+    if (PyModule_AddObject(module, "IS_CE", Py_True)) {
+        Py_DECREF(Py_True);
+        Py_DECREF(module);
+        return NULL;
+    }
+    else {
+        PyList_Append(all_list, PyUnicode_FromString("IS_CE"));
+    }
+
     if (PyModule_AddObject(module, "__all__", all_list)) {
         Py_DECREF(all_list);
         Py_DECREF(module);
