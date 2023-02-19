@@ -720,8 +720,7 @@ PG_WRAP_FASTCALL_FUNC(pg_rect_colliderect, pgRectObject)
 static PyObject *
 pg_rect_collidelist(pgRectObject *self, PyObject *arg)
 {
-    SDL_Rect *argrect, temp;
-    const SDL_Rect *const srect = &self->r;
+    SDL_Rect *argrect, *srect = &self->r, temp;
     Py_ssize_t loop;
 
     if (!PySequence_Check(arg)) {
@@ -769,8 +768,7 @@ pg_rect_collidelist(pgRectObject *self, PyObject *arg)
 static PyObject *
 pg_rect_collidelistall(pgRectObject *self, PyObject *arg)
 {
-    SDL_Rect *argrect, temp;
-    const SDL_Rect *const srect = &self->r;
+    SDL_Rect *argrect, *srect = &self->r, temp;
     Py_ssize_t loop;
     PyObject *ret = NULL;
 
