@@ -985,6 +985,38 @@ class DocsCommand(Command):
         if subprocess.call(command_line) != 0:
             raise SystemExit("Failed to build documentation")
 
+@add_command('stubcheck')
+class StubcheckCommand(Command):
+    """ For checking the stubs with `python setup.py stubcheck`.
+    """
+    user_options = []
+    def initialize_options(self):
+        pass
+        
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        '''
+        runs mypy to build the docs.
+        '''
+        import subprocess
+        import warnings
+
+        print("Using python:", sys.executable)
+
+        if shutil.which('mypy') is None:
+            warnings.warn("Please install 'mypy' in your environment. (hint: 'python3 -m pip install mypy')")
+            sys.exit(1)
+
+        os.chdir('buildconfig/stubs')
+        command_line = [
+            sys.executable,'-m','mypy.stubtest',"pygame","--allowlist","mypy_allow_list.txt"
+        ]
+        result = subprocess.run(command_line)
+        os.chdir('../../')
+        if result.returncode != 0:
+            raise SystemExit("Stubcheck failed.")
 
 # Prune empty file lists.
 data_files = [(path, files) for path, files in data_files if files]
