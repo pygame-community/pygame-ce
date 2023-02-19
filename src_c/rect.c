@@ -721,7 +721,7 @@ static PyObject *
 pg_rect_collidelist(pgRectObject *self, PyObject *arg)
 {
     SDL_Rect *argrect, *srect = &self->r, temp;
-    Py_ssize_t loop;
+    int loop;
 
     if (!PySequence_Check(arg)) {
         return RAISE(PyExc_TypeError,
@@ -769,7 +769,7 @@ static PyObject *
 pg_rect_collidelistall(pgRectObject *self, PyObject *arg)
 {
     SDL_Rect *argrect, *srect = &self->r, temp;
-    Py_ssize_t loop;
+    int loop;
     PyObject *ret = NULL;
 
     if (!PySequence_Check(arg)) {
