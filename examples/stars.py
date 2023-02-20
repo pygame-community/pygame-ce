@@ -1,103 +1,135 @@
 #!/usr/bin/env python
-""" pg.examples.stars
-
-    We are all in the gutter,
-    but some of us are looking at the stars.
-                                            -- Oscar Wilde
-
-A simple starfield example. Note you can move the 'center' of
-the starfield by leftclicking in the window. This example show
-the basics of creating a window, simple pixel plotting, and input
-event management.
 """
+pg.examples.stars
+
+We are all in the gutter,
+but some of us are looking at the stars.
+                                        -- Oscar Wilde
+
+A simple starfield example. Note you can move the center of
+the starfield by leftclicking in the window. This example shows
+the basics of creating a window, simple pixel plotting, and event management.
+"""
+
 import random
-import math
+from typing import List
+
 import pygame as pg
 
-# constants
-WINSIZE = [640, 480]
-WINCENTER = [320, 240]
-NUMSTARS = 150
+
+class Particle:
+    """
+    Moving particle
+    """
+
+    def __init__(
+        self,
+        pos: List[int],
+        vel: pg.Vector2,
+        radius: int,
+    ):
+        """
+        Parameters:
+            pos: Position of the particle
+            vel: How far does the particle move (x, y) every frame
+            radius: Particle's radius
+        """
+
+        self.pos = pos
+        self.radius = radius
+        self.vel = vel
+
+    def draw(self, display: pg.Surface):
+        """
+        Draws the particle on a pygame.Surface
+        Parameters:
+            display: The surface the particle is drawn on
+        """
+
+        pg.draw.circle(display, (255, 240, 200), self.pos, self.radius)
+
+    def update(self):
+        """
+        Moves the particle
+        """
+
+        self.pos += self.vel
 
 
-def init_star():
-    "creates new star values"
-    dir = random.randrange(100000)
-    velmult = random.random() * 0.6 + 0.4
-    vel = [math.sin(dir) * velmult, math.cos(dir) * velmult]
-    return vel, WINCENTER[:]
+def create_particle(particle_list: List[Particle], pos: pg.Vector2):
+    """
+    Creates a new particle
+    Parameters:
+        particle_list: List of existing particles
+        pos: The coordinates the new particle will be spawned on
+    """
+
+    particle_list.append(
+        Particle(
+            pos=pos.copy(),
+            vel=pg.Vector2(random.uniform(-5, 5), random.uniform(-5, 5)),
+            radius=1,
+        )
+    )
 
 
-def initialize_stars():
-    "creates a new starfield"
-    stars = []
-    for x in range(NUMSTARS):
-        star = init_star()
-        vel, pos = star
-        steps = random.randint(0, WINCENTER[0])
-        pos[0] = pos[0] + (vel[0] * steps)
-        pos[1] = pos[1] + (vel[1] * steps)
-        vel[0] = vel[0] * (steps * 0.09)
-        vel[1] = vel[1] * (steps * 0.09)
-        stars.append(star)
-    move_stars(stars)
-    return stars
+def update_particles(particle_list: List[Particle], screen_rect: pg.Rect):
+    """
+    Updates the particles
+    Parameters:
+        particle_list: List of existing particles
+        screen_rect: A pg.Rect that represents the screen
+                (used to determine whether a particle is visible on the screen)
+    """
+
+    for particle in particle_list:
+        if not screen_rect.collidepoint(particle.pos):
+            particle_list.remove(particle)
+
+        particle.update()
 
 
-def draw_stars(surface, stars, color):
-    "used to draw (and clear) the stars"
-    for vel, pos in stars:
-        pos = (int(pos[0]), int(pos[1]))
-        surface.set_at(pos, color)
-
-
-def move_stars(stars):
-    "animate the star values"
-    for vel, pos in stars:
-        pos[0] = pos[0] + vel[0]
-        pos[1] = pos[1] + vel[1]
-        if not 0 <= pos[0] <= WINSIZE[0] or not 0 <= pos[1] <= WINSIZE[1]:
-            vel[:], pos[:] = init_star()
-        else:
-            vel[0] = vel[0] * 1.05
-            vel[1] = vel[1] * 1.05
+def draw_particles(particle_list: List[Particle], display: pg.Surface):
+    """
+    Draws the particles
+    Parameters:
+        particle_list: List of existing particles
+        display: The surface the particle is drawn on
+    """
+    for particle in particle_list:
+        particle.draw(display)
 
 
 def main():
-    "This is the starfield code"
-    # create our starfield
-    random.seed()
-    stars = initialize_stars()
+    """
+    Contains the game variables and loop
+    """
+    screen = pg.display.set_mode((600, 500))
     clock = pg.time.Clock()
-    # initialize and prepare screen
-    pg.init()
-    screen = pg.display.set_mode(WINSIZE)
-    pg.display.set_caption("pygame Stars Example")
-    white = 255, 240, 200
-    black = 20, 20, 40
-    screen.fill(black)
+    pg.display.set_caption("Pygame Stars")
+    particles = []
 
-    # main game loop
-    done = 0
-    while not done:
-        draw_stars(screen, stars, black)
-        move_stars(stars)
-        draw_stars(screen, stars, white)
-        pg.display.update()
-        for e in pg.event.get():
-            if e.type == pg.QUIT or (e.type == pg.KEYUP and e.key == pg.K_ESCAPE):
-                done = 1
-                break
-            elif e.type == pg.MOUSEBUTTONDOWN and e.button == 1:
-                WINCENTER[:] = list(e.pos)
-        clock.tick(50)
+    screen_rect = screen.get_rect()
+    spawn_point = pg.Vector2(screen_rect.center)
+
+    running = True
+    while running:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                running = False
+            if event.type == pg.MOUSEBUTTONDOWN:
+                spawn_point = pg.Vector2(event.pos)
+
+        screen.fill((20, 20, 40))
+        create_particle(particles, spawn_point)
+        update_particles(particles, screen_rect)
+        draw_particles(particles, screen)
+
+        pg.display.flip()
+        clock.tick(60)
+
     pg.quit()
 
 
-# if python says run, then we should run
 if __name__ == "__main__":
     main()
-
-    # I prefer the time of insects to the time of stars.
-    #
-    #                              -- Wisława Szymborska
