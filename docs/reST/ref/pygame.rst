@@ -24,7 +24,7 @@ object instead of the module, which can be used to test for availability.
 .. data:: IS_CE
 
    | :sl:`exists if current pygame is pygame-ce`
-   | :sg:`IS_CE = True`
+   | :sg:`IS_CE = 1`
 
    Use ``getattr(pygame, "IS_CE", False)`` to check if current pygame is pygame-ce
 
