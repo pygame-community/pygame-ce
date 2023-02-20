@@ -212,7 +212,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
 .. function:: box_blur
 
-   | :sl:`make surface blurry`
+   | :sl:`blur a surface using box blur`
    | :sg:`box_blur(surface, radius, repeat_edge_pixels=True, dest_surface=None) -> Surface`
 
    Returns the blured surface using box blur algorithm.
@@ -223,7 +223,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
 .. function:: gaussian_blur
 
-   | :sl:`make surface blurry`
+   | :sl:`blur a surface using gaussian blur`
    | :sg:`gaussian_blur(surface, radius, repeat_edge_pixels=True, dest_surface=None) -> Surface`
 
    Returns the blured surface using gaussian blur algorithm.
