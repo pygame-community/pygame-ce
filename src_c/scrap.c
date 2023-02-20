@@ -380,8 +380,6 @@ _scrap_set_mode(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-#endif /* !defined(MAC_SCRAP) */
-
 /**
  * @brief Fetches a python string from the SDL clipboard. If
  *        there is nothing in the clipboard, it will return empty
