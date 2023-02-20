@@ -41,7 +41,7 @@ from pygame import (
     surface as surface,
     surflock as surflock,
     sysfont as sysfont,
-    _debug as _debug
+    _debug as _debug,
 )
 
 from .rect import Rect as Rect
