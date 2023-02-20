@@ -171,7 +171,7 @@ class BlitTest(unittest.TestCase):
 
         dst.fill((230, 230, 230))
         t0 = time()
-        results = dst.fblits(blit_list, 0)
+        dst.fblits(blit_list, 0)
         t1 = time()
         if PRINT_TIMING:
             print(f"Surface.fblits :{t1 - t0}")
@@ -183,17 +183,37 @@ class BlitTest(unittest.TestCase):
             self.assertEqual(dst.get_at(((i * 10) + 5, 5)), color)
 
         t0 = time()
-        results = dst.fblits(blit_list, 0)
+        result = dst.fblits(blit_list)
         t1 = time()
         if PRINT_TIMING:
             print(f"Surface.fblits: {t1 - t0}")
-        self.assertEqual(results, None)
+        self.assertEqual(result, None)
 
         t0 = time()
-        results = dst.fblits(((surf, dest) for surf, dest in blit_list), 0)
+        dst.fblits(((surf, dest) for surf, dest in blit_list))
         t1 = time()
         if PRINT_TIMING:
             print(f"Surface.fblits generator: {t1 - t0}")
+
+    def test_fblits_not_sequence(self):
+        dst = pygame.Surface((100, 10), SRCALPHA, 32)
+        self.assertRaises(ValueError, dst.fblits, None)
+
+    def test_fblits_wrong_length(self):
+        dst = pygame.Surface((100, 10), SRCALPHA, 32)
+        self.assertRaises(
+            ValueError, dst.fblits, [pygame.Surface((10, 10), SRCALPHA, 32)]
+        )
+
+    def test_fblits_bad_surf_args(self):
+        dst = pygame.Surface((100, 10), SRCALPHA, 32)
+        self.assertRaises(TypeError, dst.fblits, [(None, None)])
+
+    def test_fblits_bad_dest(self):
+        dst = pygame.Surface((100, 10), SRCALPHA, 32)
+        self.assertRaises(
+            TypeError, dst.fblits, [(pygame.Surface((10, 10), SRCALPHA, 32), None)]
+        )
 
     def test_blits_not_sequence(self):
         dst = pygame.Surface((100, 10), SRCALPHA, 32)

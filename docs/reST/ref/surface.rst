@@ -160,16 +160,15 @@
       | :sg:`fblits(blit_sequence=((source, dest), ...), special_flags=0) -> None`
 
       This method takes a sequence of tuples (source, dest) as input, where source is a Surface
-      object and dest is its destination position on this Surface. It draws each source surface
-      fully(meaning that unlike `blit()` you cannot pass an "area" parameter to represent
+      object and dest is its destination position on this Surface. It draws each source Surface
+      fully (meaning that unlike `blit()` you cannot pass an "area" parameter to represent
       a smaller portion of the source Surface to draw) on this Surface with the same blending
       mode specified by special_flags. The sequence must have at least one (source, dest) pair.
 
       :param blit_sequence: a sequence of (source, dest)
       :param special_flags: the flag(s) representing the blend mode used for each surface
 
-      :returns: always returns ``None``
-      :rtype: None
+      :returns: ``None``
 
       .. note:: This method only accepts a sequence of (source, dest) pairs and a single
                 special_flags value that's applied to all surfaces drawn. This allows faster
