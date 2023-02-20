@@ -748,17 +748,19 @@ pg_rect_collidelist(pgRectObject *self, PyObject *arg)
     else {
         for (loop = 0; loop < PySequence_Length(arg); loop++) {
             PyObject *obj = PySequence_GetItem(arg, loop);
+
             if (!obj || !(argrect = pgRect_FromObject(obj, &temp))) {
                 Py_XDECREF(obj);
                 return RAISE(
                     PyExc_TypeError,
                     "Argument must be a sequence of rectstyle objects.");
             }
+
+            Py_DECREF(obj);
+
             if (_pg_do_rects_intersect(srect, argrect)) {
-                Py_DECREF(obj);
                 return PyLong_FromLong(loop);
             }
-            Py_DECREF(obj);
         }
     }
 
