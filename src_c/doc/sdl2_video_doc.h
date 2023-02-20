@@ -23,7 +23,7 @@
 #define DOC_WINDOWOPACITY "opacity -> float\nGets and sets the window opacity. Between 0.0 (fully transparent) and 1.0 (fully opaque)."
 #define DOC_WINDOWDISPLAYINDEX "display_index -> int\nGet the index of the display that owns the window. *Read-only*"
 #define DOC_WINDOWSETMODALFOR "set_modal_for(Window) -> None\nSet the window as a modal for a parent window. This function is only supported on X11."
-#define DOC_PYGAMESDL2VIDEOTEXTURE "Texture(renderer, size, depth=0, static=False, streaming=False, target=False, scale_quality=SCALEQUALITY_NEAREST) -> Texture\npygame object that representing a Texture."
+#define DOC_PYGAMESDL2VIDEOTEXTURE "Texture(renderer, size, depth=0, static=False, streaming=False, target=False, scale_quality=None) -> Texture\npygame object that representing a Texture."
 #define DOC_TEXTUREFROMSURFACE "from_surface(renderer, surface) -> Texture\nCreate a texture from an existing surface."
 #define DOC_TEXTURERENDERER "renderer -> Renderer\nGets the renderer associated with the Texture. *Read-only*"
 #define DOC_TEXTUREWIDTH "width -> int\nGets the width of the Texture. *Read-only*"
@@ -165,7 +165,7 @@ pygame._sdl2.video.Window.set_modal_for
 Set the window as a modal for a parent window. This function is only supported on X11.
 
 pygame._sdl2.video.Texture
- Texture(renderer, size, depth=0, static=False, streaming=False, target=False, scale_quality=SCALEQUALITY_NEAREST) -> Texture
+ Texture(renderer, size, depth=0, static=False, streaming=False, target=False, scale_quality=None) -> Texture
 pygame object that representing a Texture.
 
 pygame._sdl2.video.Texture.from_surface

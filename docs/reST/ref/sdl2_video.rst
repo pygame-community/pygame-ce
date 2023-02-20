@@ -131,7 +131,7 @@
 .. class:: Texture	
 
    | :sl:`pygame object that representing a Texture.`
-   | :sg:`Texture(renderer, size, depth=0, static=False, streaming=False, target=False, scale_quality=SCALEQUALITY_NEAREST) -> Texture`
+   | :sg:`Texture(renderer, size, depth=0, static=False, streaming=False, target=False, scale_quality=None) -> Texture`
 
    .. staticmethod:: from_surface
 

@@ -557,7 +557,7 @@ cdef class Texture:
                  Renderer renderer,
                  size, int depth=0,
                  static=False, streaming=False,
-                 target=False, scale_quality=SCALEQUALITY_NEAREST):
+                 target=False, scale_quality=None):
         """ Create an empty texture.
 
         :param Renderer renderer: Rendering context for the texture.
@@ -612,7 +612,10 @@ cdef class Texture:
                                       width, height)
         if not self._tex:
             raise error()
-        SDL_SetTextureScaleMode(self._tex,scale_quality) # SDL 2.0.12+
+            
+        if not scale_quality is None:
+            SDL_SetTextureScaleMode(self._tex,scale_quality) # SDL 2.0.12+
+
         self.width, self.height = width, height
 
     @staticmethod
