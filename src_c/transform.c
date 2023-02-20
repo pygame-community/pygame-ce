@@ -2966,6 +2966,82 @@ surf_average_color(PyObject *self, PyObject *args, PyObject *kwargs)
     return Py_BuildValue("(bbbb)", r, g, b, a);
 }
 
+SDL_Surface *
+invert(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
+{
+    SDL_Surface *src = pgSurface_AsSurface(srcobj);
+    SDL_Surface *newsurf;
+
+    if (!dstobj) {
+        newsurf = newsurf_fromsurf(src, srcobj->surf->w, srcobj->surf->h);
+        if (!newsurf)
+            return NULL;
+    }
+    else {
+        newsurf = pgSurface_AsSurface(dstobj);
+    }
+
+    if (newsurf->w != src->w || newsurf->h != src->h) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Destination surface must be the same size as source surface."));
+    }
+
+    if (src->format->BytesPerPixel != newsurf->format->BytesPerPixel) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Source and destination surfaces need the same format."));
+    }
+
+    int x, y;
+    for (y = 0; y < src->h; y++) {
+        for (x = 0; x < src->w; x++) {
+            Uint32 pixel;
+            Uint8 *pix;
+            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format,
+                        pix);
+            unsigned char r, g, b, a;
+            SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
+            Uint32 new_pixel = SDL_MapRGBA(newsurf->format, ~r, ~g, ~b, a);
+            SURF_SET_AT(new_pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
+                        newsurf->format, pix);
+        }
+    }
+
+    SDL_UnlockSurface(newsurf);
+
+    return newsurf;
+}
+
+static PyObject *
+surf_invert(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    pgSurfaceObject *surfobj2 = NULL;
+    SDL_Surface *newsurf;
+
+    static char *keywords[] = {"surface", "dest_surface", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!", keywords,
+                                     &pgSurface_Type, &surfobj,
+                                     &pgSurface_Type, &surfobj2))
+        return NULL;
+
+    newsurf = invert(surfobj, surfobj2);
+
+    if (!newsurf) {
+        return NULL;
+    }
+
+    if (surfobj2) {
+        Py_INCREF(surfobj2);
+        return (PyObject *)surfobj2;
+    }
+    else {
+        return (PyObject *)pgSurface_New(newsurf);
+    }
+}
+
 static PyMethodDef _transform_methods[] = {
     {"scale", (PyCFunction)surf_scale, METH_VARARGS | METH_KEYWORDS,
      DOC_PYGAMETRANSFORMSCALE},
@@ -2997,6 +3073,8 @@ static PyMethodDef _transform_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMAVERAGESURFACES},
     {"average_color", (PyCFunction)surf_average_color,
      METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMAVERAGECOLOR},
+    {"invert", (PyCFunction)surf_invert, METH_VARARGS | METH_KEYWORDS,
+     DOC_PYGAMETRANSFORMINVERT},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(transform)

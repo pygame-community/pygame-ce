@@ -243,6 +243,15 @@ Instead, always begin with the original image and scale to the desired size.)
 
    .. ## pygame.transform.average_color ##
 
+.. function:: invert
+
+   | :sl:`inverts the RGB elements of a surface`
+   | :sg:`average_color(surface, dest_surface=None) -> Surface`
+
+   Inverts each RGB pixel contained within the Surface, does not affect alpha channel. Can also be used with a destination Surface. 
+
+   .. ## pygame.transform.invert ##
+
 .. function:: threshold
 
    | :sl:`finds which, and how many pixels in a surface are within a threshold of a 'search_color' or a 'search_surf'.`
