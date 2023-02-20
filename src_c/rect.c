@@ -331,8 +331,7 @@ pgRect_FromObject(PyObject *obj, SDL_Rect *temp)
     SDL_Rect *returnrect;
 
     /*call if it's a method*/
-    if (PyCallable_Check(rectattr))
-    {
+    if (PyCallable_Check(rectattr)) {
         PyObject *rectresult = PyObject_CallObject(rectattr, NULL);
         Py_DECREF(rectattr);
         if (!rectresult) {
