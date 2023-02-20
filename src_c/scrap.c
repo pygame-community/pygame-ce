@@ -73,19 +73,10 @@ _scrap_has_text(PyObject *self, PyObject *args);
 #define SDL2_SCRAP
 #include "scrap_sdl2.c"
 
-#elif defined(__unix__) && defined(SDL_VIDEO_DRIVER_X11)
-/*!defined(__QNXNTO__) &&*/
-#define X11_SCRAP
-#include <time.h> /* Needed for clipboard timeouts. */
-#include "scrap_x11.c"
-
 #elif defined(__WIN32__)
 #define WIN_SCRAP
 #include "scrap_win.c"
 
-#elif defined(__APPLE__)
-#define MAC_SCRAP
-#include "scrap_mac.c"
 #else
 #error Unknown window manager for clipboard handling
 #endif /* scrap type */
@@ -101,7 +92,6 @@ pygame_scrap_initialized(void)
     return _scrapinitialized;
 }
 
-#if !defined(MAC_SCRAP)
 /*
  * Initializes the pygame scrap module.
  */
@@ -133,7 +123,6 @@ _scrap_init(PyObject *self, PyObject *args)
 
     Py_RETURN_NONE;
 }
-#endif
 
 /*
  * Indicates whether the scrap module is currently initialized.
@@ -152,7 +141,6 @@ _scrap_get_init(PyObject *self, PyObject *_null)
     return PyBool_FromLong(pygame_scrap_initialized());
 }
 
-#if !defined(MAC_SCRAP)
 /*
  * Gets the currently available types from the active clipboard.
  */
@@ -203,9 +191,7 @@ _scrap_get_types(PyObject *self, PyObject *_null)
     }
     return list;
 }
-#endif
 
-#if !defined(MAC_SCRAP)
 /*
  * Checks whether the active clipboard contains a certain type.
  */
@@ -226,9 +212,7 @@ _scrap_contains(PyObject *self, PyObject *args)
         Py_RETURN_TRUE;
     Py_RETURN_FALSE;
 }
-#endif
 
-#if !defined(MAC_SCRAP)
 /*
  * Gets the content for a certain type from the active clipboard.
  */
@@ -306,9 +290,7 @@ _scrap_get_scrap(PyObject *self, PyObject *args)
 
     return retval;
 }
-#endif
 
-#if !defined(MAC_SCRAP)
 /*
  * This will put a python string into the clipboard.
  */
@@ -358,9 +340,7 @@ _scrap_put_scrap(PyObject *self, PyObject *args)
 
     Py_RETURN_NONE;
 }
-#endif
 
-#if !defined(MAC_SCRAP)
 /*
  * Checks whether the pygame window has lost the clipboard.
  */
@@ -373,9 +353,7 @@ _scrap_lost_scrap(PyObject *self, PyObject *_null)
         Py_RETURN_TRUE;
     Py_RETURN_FALSE;
 }
-#endif
 
-#if !defined(MAC_SCRAP)
 /*
  * Sets the clipboard mode. This only works for the X11 environment, which
  * diverses between mouse selections and the clipboard.
@@ -397,10 +375,8 @@ _scrap_set_mode(PyObject *self, PyObject *args)
     if (_currentmode != SCRAP_CLIPBOARD && _currentmode != SCRAP_SELECTION)
         return RAISE(PyExc_ValueError, "invalid clipboard mode");
 
-#ifndef X11_SCRAP
     /* Force the clipboard, if not in a X11 environment. */
     _currentmode = SCRAP_CLIPBOARD;
-#endif
     Py_RETURN_NONE;
 }
 
@@ -481,8 +457,7 @@ static PyMethodDef scrap_builtins[] = {
  *
  * Note, the macosx stuff is done in sdlosx_main.m
  */
-#if (defined(X11_SCRAP) || defined(WIN_SCRAP) || defined(QNX_SCRAP) || \
-     defined(MAC_SCRAP) || defined(SDL2_SCRAP))
+#if (defined(WIN_SCRAP) || defined(SDL2_SCRAP))
 
     {"init", _scrap_init, 1, DOC_PYGAMESCRAPINIT},
     {"get_init", _scrap_get_init, METH_NOARGS, DOC_PYGAMESCRAPGETINIT},

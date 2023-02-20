@@ -21,6 +21,15 @@ imported. Be aware that some of the pygame modules are considered *optional*,
 and may not be available. In that case, pygame will provide a placeholder
 object instead of the module, which can be used to test for availability.
 
+.. data:: IS_CE
+
+   | :sl:`exists if current pygame is pygame-ce`
+   | :sg:`IS_CE = 1`
+
+   Use ``getattr(pygame, "IS_CE", False)`` to check if current pygame is pygame-ce
+
+   .. ## pygame.IS_CE ##
+
 .. function:: init
 
    | :sl:`initialize all imported pygame modules`
@@ -191,6 +200,25 @@ object instead of the module, which can be used to test for availability.
    .. versionadded:: 1.9.2 (primarily for use in unit tests)
 
    .. ## pygame.encode_file_path ##
+
+.. function:: print_debug_info
+   
+   | :sl:`retrieves useful information for debugging and issue-reporting purposes`
+   | :sg:`print_debug_info(filename=None) -> None`
+
+   Constructs a string containing details on the system, the python interpreter,
+   the pygame version, and the linked and compiled versions of the libraries that
+   pygame wraps. If ``filename`` is ``None``, then the string is printed into the
+   console. Otherwise, the debug string is written to the specified file.
+
+   .. note::
+      If ``pygame.freetype`` has not been initialized with :func:`pygame.init` or :func:`pygame.freetype.init`,
+      then the linked and compiled versions of FreeType will be "Unk" since this information is not
+      available before initialization. 
+
+   .. versionadded:: 2.1.4
+
+   .. ## pygame.print_debug_info ##
 
 
 :mod:`pygame.version`

@@ -240,7 +240,7 @@ following formats.
 .. function:: fromstring
 
    | :sl:`create new Surface from a byte buffer`
-   | :sg:`fromstring(bytes, size, format, flipped=False) -> Surface`
+   | :sg:`fromstring(bytes, size, format, flipped=False, pitch=-1) -> Surface`
 
    This function takes arguments similar to :func:`pygame.image.tostring()`.
    The size argument is a pair of numbers representing the width and height.
@@ -250,17 +250,25 @@ following formats.
    The bytes and format passed must compute to the exact size of image
    specified. Otherwise a ``ValueError`` will be raised.
 
+   The 'pitch' argument can be used specify the pitch/stride per horizontal line
+   of the image bytes in bytes. It must be equal to or greater than how many bytes
+   the pixel data of each horizontal line in the image bytes occupies without any
+   extra padding. By default, it is ``-1``, which means that the pitch/stride is 
+   the same size as how many bytes the pure pixel data of each horizontal line takes.
+
    See the :func:`pygame.image.frombuffer()` method for a potentially faster
    way to transfer images into pygame.
 
    .. note:: it is preferred to use :func:`frombytes` as of pygame 2.1.3
+
+   .. versionadded:: 2.1.4 Added a 'pitch' argument and support for keyword arguments.
 
    .. ## pygame.image.fromstring ##
 
 .. function:: frombytes
 
    | :sl:`create new Surface from a byte buffer`
-   | :sg:`frombytes(bytes, size, format, flipped=False) -> Surface`
+   | :sg:`frombytes(bytes, size, format, flipped=False, pitch=-1) -> Surface`
 
    This function takes arguments similar to :func:`pygame.image.tobytes()`.
    The size argument is a pair of numbers representing the width and height.
@@ -270,6 +278,12 @@ following formats.
    The bytes and format passed must compute to the exact size of image
    specified. Otherwise a ``ValueError`` will be raised.
 
+   The 'pitch' argument can be used specify the pitch/stride per horizontal line
+   of the image bytes in bytes. It must be equal to or greater than how many bytes
+   the pixel data of each horizontal line in the image bytes occupies without any
+   extra padding. By default, it is ``-1``, which means that the pitch/stride is 
+   the same size as how many bytes the pure pixel data of each horizontal line takes.
+
    See the :func:`pygame.image.frombuffer()` method for a potentially faster
    way to transfer images into pygame.
 
@@ -278,14 +292,15 @@ following formats.
              This function was introduced so it matches nicely with other 
              libraries (PIL, numpy, etc), and with people's expectations.
 
-   .. versionadded:: 2.1.3 
+   .. versionadded:: 2.1.3
+   .. versionadded:: 2.1.4 Added a 'pitch' argument and support for keyword arguments.
 
    .. ## pygame.image.frombytes ##
 
 .. function:: frombuffer
 
    | :sl:`create a new Surface that shares data inside a bytes buffer`
-   | :sg:`frombuffer(buffer, size, format) -> Surface`
+   | :sg:`frombuffer(buffer, size, format, pitch=-1) -> Surface`
 
    Create a new Surface that shares pixel data directly from a buffer. This
    buffer can be bytes, a bytearray, a memoryview, a
@@ -311,8 +326,16 @@ following formats.
       * ``ARGB``, 32-bit image with alpha channel first
 
       * ``BGRA``, 32-bit image with alpha channel, red and blue channels swapped
-  
+
+   The 'pitch' argument can be used specify the pitch/stride per horizontal line
+   of the image buffer in bytes. It must be equal to or greater than how many bytes
+   the pixel data of each horizontal line in the image buffer occupies without any
+   extra padding. By default, it is ``-1``, which means that the pitch/stride is 
+   the same size as how many bytes the pure pixel data of each horizontal line takes.
+
    .. versionadded:: 2.1.3 BGRA format
+   .. versionadded:: 2.1.4 Added a 'pitch' argument and support for keyword arguments.
+
    .. ## pygame.image.frombuffer ##
 
 .. function:: load_basic

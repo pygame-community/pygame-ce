@@ -37,7 +37,7 @@ static Mix_Music *queue_music = NULL;
 static int queue_music_loops = 0;
 static int endmusic_event = SDL_NOEVENT;
 static Uint64 music_pos = 0;
-static long music_pos_time = -1;
+static Uint64 music_pos_time = -1;
 static int music_frequency = 0;
 static Uint16 music_format = 0;
 static int music_channels = 0;
@@ -47,7 +47,7 @@ mixmusic_callback(void *udata, Uint8 *stream, int len)
 {
     if (!Mix_PausedMusic()) {
         music_pos += len;
-        music_pos_time = SDL_GetTicks();
+        music_pos_time = PG_GetTicks();
     }
 }
 
@@ -112,7 +112,7 @@ music_play(PyObject *self, PyObject *args, PyObject *keywds)
     Mix_SetPostMix(mixmusic_callback, NULL);
     Mix_QuerySpec(&music_frequency, &music_format, &music_channels);
     music_pos = 0;
-    music_pos_time = SDL_GetTicks();
+    music_pos_time = PG_GetTicks();
 
     volume = Mix_VolumeMusic(-1);
     val = Mix_FadeInMusicPos(current_music, loops, fade_ms, startpos);
@@ -196,7 +196,7 @@ music_unpause(PyObject *self, PyObject *_null)
 
     Mix_ResumeMusic();
     /* need to set pos_time for the adjusted time spent paused*/
-    music_pos_time = SDL_GetTicks();
+    music_pos_time = PG_GetTicks();
     Py_RETURN_NONE;
 }
 
@@ -264,7 +264,7 @@ music_set_pos(PyObject *self, PyObject *arg)
 static PyObject *
 music_get_pos(PyObject *self, PyObject *_null)
 {
-    long ticks;
+    Uint64 ticks;
 
     MIXER_INIT_CHECK();
 
@@ -275,9 +275,9 @@ music_get_pos(PyObject *self, PyObject *_null)
                    (music_channels * music_frequency *
                     ((music_format & 0xff) >> 3)));
     if (!Mix_PausedMusic())
-        ticks += SDL_GetTicks() - music_pos_time;
+        ticks += PG_GetTicks() - music_pos_time;
 
-    return PyLong_FromLong((long)ticks);
+    return PyLong_FromUnsignedLongLong(ticks);
 }
 
 static PyObject *
@@ -500,6 +500,66 @@ music_queue(PyObject *self, PyObject *args, PyObject *keywds)
     Py_RETURN_NONE;
 }
 
+static PyObject *
+music_get_metadata(PyObject *self, PyObject *args, PyObject *keywds)
+{
+    PyObject *meta_dict;
+    Mix_Music *music = current_music;
+
+    PyObject *obj = NULL;
+    char *namehint = NULL;
+    static char *kwids[] = {"filename", "namehint", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "|Os", kwids, &obj,
+                                     &namehint))
+        return NULL;
+
+    MIXER_INIT_CHECK();
+
+    if (obj) {
+        music = _load_music(obj, namehint);
+        if (!music) {
+            return NULL;
+        }
+    }
+    else if (namehint) {
+        PyErr_SetString(
+            pgExc_SDLError,
+            "'namehint' specified without specifying 'filename' or 'fileobj'");
+        return NULL;
+    }
+
+    const char *title = "";
+    const char *album = "";
+    const char *artist = "";
+    const char *copyright = "";
+
+#if ((SDL_MIXER_MAJOR_VERSION >= 2) &&                                \
+     (SDL_MIXER_MAJOR_VERSION > 2 || SDL_MIXER_MINOR_VERSION >= 6) && \
+     (SDL_MIXER_MAJOR_VERSION > 2 || SDL_MIXER_MINOR_VERSION > 6 ||   \
+      SDL_MIXER_PATCHLEVEL >= 0))
+
+    title = Mix_GetMusicTitleTag(music);
+    album = Mix_GetMusicAlbumTag(music);
+    artist = Mix_GetMusicArtistTag(music);
+    copyright = Mix_GetMusicCopyrightTag(music);
+
+#endif
+
+    if (!music) {
+        return RAISE(pgExc_SDLError, "music not loaded");
+    }
+
+    meta_dict = Py_BuildValue("{ss ss ss ss}", "title", title, "album", album,
+                              "artist", artist, "copyright", copyright);
+
+    if (obj) {
+        Mix_FreeMusic(music);
+    }
+
+    return meta_dict;
+}
+
 static PyMethodDef _music_methods[] = {
     {"set_endevent", music_set_endevent, METH_VARARGS,
      DOC_PYGAMEMIXERMUSICSETENDEVENT},
@@ -520,6 +580,8 @@ static PyMethodDef _music_methods[] = {
      DOC_PYGAMEMIXERMUSICGETVOLUME},
     {"set_pos", music_set_pos, METH_O, DOC_PYGAMEMIXERMUSICSETPOS},
     {"get_pos", music_get_pos, METH_NOARGS, DOC_PYGAMEMIXERMUSICGETPOS},
+    {"get_metadata", (PyCFunction)music_get_metadata,
+     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMEMIXERMUSICGETMETADATA},
 
     {"load", (PyCFunction)music_load, METH_VARARGS | METH_KEYWORDS,
      DOC_PYGAMEMIXERMUSICLOAD},
