@@ -228,40 +228,92 @@ pgRect_FromObject(PyObject *obj, SDL_Rect *temp)
         return &((pgRectObject *)obj)->r;
     }
 
-    if (PySequence_Check(obj) &&
-        (fseq = PySequence_Fast(obj, "A sequence was expected"))) {
-        length = PySequence_Fast_GET_SIZE(fseq);
-        PyObject **items = PySequence_Fast_ITEMS(fseq);
+    if (PyTuple_Check(obj) || PyList_Check(obj)) {
+        length = PySequence_Fast_GET_SIZE(obj);
+        PyObject **items = PySequence_Fast_ITEMS(obj);
 
         if (length == 4) {
             if (!pg_IntFromObj(items[0], &temp->x) ||
                 !pg_IntFromObj(items[1], &temp->y) ||
                 !pg_IntFromObj(items[2], &temp->w) ||
                 !pg_IntFromObj(items[3], &temp->h)) {
-                Py_DECREF(fseq);
                 return NULL;
             }
-            Py_DECREF(fseq);
             return temp;
         }
         else if (length == 2) {
             if (!pg_TwoIntsFromObj(items[0], &temp->x, &temp->y) ||
                 !pg_TwoIntsFromObj(items[1], &temp->w, &temp->h)) {
-                Py_DECREF(fseq);
                 return NULL;
             }
+            return temp;
+        }
+        else if (length == 1) {
+            return pgRect_FromObject(items[0], temp);
+        }
+    }
+    else if (PySequence_Check(obj)) {
+        PyObject *item;
+        if ((length = PySequence_Size(obj)) == -1) {
+            PyErr_Clear();
+            return NULL;
+        }
 
-            Py_DECREF(fseq);
+        if (length == 4) {
+            item = PySequence_GetItem(obj, 0);
+            if (!pg_IntFromObj(item, &temp->x)) {
+                Py_DECREF(item);
+                return NULL;
+            }
+            Py_DECREF(item);
+
+            item = PySequence_GetItem(obj, 1);
+            if (!pg_IntFromObj(item, &temp->y)) {
+                Py_DECREF(item);
+                return NULL;
+            }
+            Py_DECREF(item);
+
+            item = PySequence_GetItem(obj, 2);
+            if (!pg_IntFromObj(item, &temp->w)) {
+                Py_DECREF(item);
+                return NULL;
+            }
+            Py_DECREF(item);
+
+            item = PySequence_GetItem(obj, 3);
+            if (!pg_IntFromObj(item, &temp->h)) {
+                Py_DECREF(item);
+                return NULL;
+            }
+            Py_DECREF(item);
+
+            return temp;
+        }
+        else if (length == 2) {
+            item = PySequence_GetItem(obj, 0);
+            if (!pg_TwoIntsFromObj(item, &temp->x, &temp->y)) {
+                Py_DECREF(item);
+                return NULL;
+            }
+            Py_DECREF(item);
+
+            item = PySequence_GetItem(obj, 1);
+            if (!pg_TwoIntsFromObj(item, &temp->w, &temp->h)) {
+                Py_DECREF(item);
+                return NULL;
+            }
+            Py_DECREF(item);
+
             return temp;
         }
         /*looks like an arg?*/
         else if (length == 1) {
-            if (!PyUnicode_Check(obj)) {
-                Py_DECREF(fseq);
-                return pgRect_FromObject(items[0], temp);
+            item = PySequence_GetItem(obj, 0);
+            if (!PyUnicode_Check(item)) {
+                return pgRect_FromObject(item, temp);
             }
             else {
-                Py_DECREF(fseq);
                 return NULL;
             }
         }
@@ -271,29 +323,30 @@ pgRect_FromObject(PyObject *obj, SDL_Rect *temp)
         PyErr_Clear();
     }
 
-    if (PyObject_HasAttrString(obj, "rect")) {
-        PyObject *rectattr;
-        SDL_Rect *returnrect;
-        rectattr = PyObject_GetAttrString(obj, "rect");
-        if (rectattr == NULL) {
+    PyObject *rectattr;
+    if (!(rectattr = PyObject_GetAttrString(obj, "rect"))) {
+        PyErr_Clear();
+        return NULL;
+    }
+    SDL_Rect *returnrect;
+
+    /*call if it's a method*/
+    if (PyCallable_Check(rectattr))
+    {
+        PyObject *rectresult = PyObject_CallObject(rectattr, NULL);
+        Py_DECREF(rectattr);
+        if (!rectresult) {
             PyErr_Clear();
             return NULL;
         }
-        if (PyCallable_Check(rectattr)) /*call if it's a method*/
-        {
-            PyObject *rectresult = PyObject_CallObject(rectattr, NULL);
-            Py_DECREF(rectattr);
-            if (rectresult == NULL) {
-                PyErr_Clear();
-                return NULL;
-            }
-            rectattr = rectresult;
-        }
-        returnrect = pgRect_FromObject(rectattr, temp);
-        Py_DECREF(rectattr);
-        return returnrect;
+        rectattr = rectresult;
     }
-    return NULL;
+
+    returnrect = pgRect_FromObject(rectattr, temp);
+
+    Py_DECREF(rectattr);
+
+    return returnrect;
 }
 
 static PyObject *
