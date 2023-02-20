@@ -11,9 +11,9 @@ MESSAGEBOX_ERROR = _SDL_MESSAGEBOX_ERROR
 MESSAGEBOX_WARNING = _SDL_MESSAGEBOX_WARNING
 MESSAGEBOX_INFORMATION = _SDL_MESSAGEBOX_INFORMATION
 
-SCALEQUALITY_NEAREST=b"nearest"
-SCALEQUALITY_LINEAR=b"linear"
-SCALEQUALITY_BEST=b"best"
+SCALEQUALITY_NEAREST=SDL_ScaleMode.SDL_ScaleModeNearest
+SCALEQUALITY_LINEAR=SDL_ScaleMode.SDL_ScaleModeLinear
+SCALEQUALITY_BEST=SDL_ScaleMode.SDL_ScaleModeBest
 
 cdef extern from "SDL.h" nogil:
     Uint32 SDL_GetWindowPixelFormat(SDL_Window* window)
@@ -606,13 +606,13 @@ cdef class Texture:
 
         self.renderer = renderer
         cdef SDL_Renderer* _renderer = renderer._renderer
-        SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,<char*>scale_quality)
         self._tex = SDL_CreateTexture(_renderer,
                                       format,
                                       access,
                                       width, height)
         if not self._tex:
             raise error()
+        SDL_SetTextureScaleMode(self._tex,scale_quality) # SDL 2.0.12+
         self.width, self.height = width, height
 
     @staticmethod
