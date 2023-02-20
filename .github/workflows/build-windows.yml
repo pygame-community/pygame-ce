@@ -115,10 +115,22 @@ jobs:
             pyversions: "cp36-win32"
           }
           - {
+            name: "Pypy 3.7",
+            winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
+            pyversions: "pp37-*"
+          }
+          - {
             name: "Pypy 3.8",
             winarch: AMD64,
             msvc-dev-arch: x86_amd64,
             pyversions: "pp38-*"
+          }
+          - {
+            name: "Pypy 3.9",
+            winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
+            pyversions: "pp39-*"
           }
 
 
@@ -157,7 +169,7 @@ jobs:
           set MSSdk=1
           python -m pip install setuptools wheel requests numpy Sphinx
           python setup.py docs
-          python -m pip --disable-pip-version-check install cibuildwheel
+          python -m pip --disable-pip-version-check install cibuildwheel==2.12.0
           python -m cibuildwheel --output-dir wheelhouse
 
       - uses: actions/upload-artifact@v3
