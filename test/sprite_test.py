@@ -1354,7 +1354,7 @@ class DirtySpriteTypeTest(SpriteBase, unittest.TestCase):
 
 class SingleGroupBugsTest(unittest.TestCase):
     def test_memoryleak_bug(self):
-        # For memoryleak bug posted to mailing list by Tobias Steinrücken on 16/11/10.
+        # For memory leak bug posted to mailing list by Tobias Steinrücken on 16/11/10.
         # Fixed in revision 2953.
 
         import weakref

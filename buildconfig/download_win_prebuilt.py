@@ -96,12 +96,12 @@ def get_urls(x86=True, x64=True):
     ])
     if x86:
         url_sha1.append([
-         'https://github.com/pygame/pygame/releases/download/2.1.3.dev4/prebuilt-x86-pygame-2.1.4-20220319.zip',
+         'https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/prebuilt-x86-pygame-2.1.4-20220319.zip',
          'bff2e50d65ec35274d33203e9fcaf5d53b31a696'
         ])
     if x64:
         url_sha1.append([
-         'https://github.com/pygame/pygame/releases/download/2.1.3.dev4/prebuilt-x64-pygame-2.1.4-20220319.zip',
+         'https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/prebuilt-x64-pygame-2.1.4-20220319.zip',
          '16b46596744ce9ef80e7e40fa72ddbafef1cf586'
         ])
     return url_sha1
