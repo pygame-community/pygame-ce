@@ -808,11 +808,11 @@ pg_rect_collidelistall(pgRectObject *self, PyObject *arg)
             }
         }
     }
-    /* If the sequence is not a fast sequence, we have to use the slower
-     * PySequence_GetItem() function to get the items. */
+    /* Slower path for general sequences. */
     else {
         for (loop = 0; loop < PySequence_Length(arg); loop++) {
-            PyObject *obj = PySequence_GetItem(arg, loop);
+            PyObject *obj = PySequence_ITEM(arg, loop);
+
             if (!obj || !(argrect = pgRect_FromObject(obj, &temp))) {
                 Py_XDECREF(obj);
                 Py_DECREF(ret);
@@ -821,22 +821,21 @@ pg_rect_collidelistall(pgRectObject *self, PyObject *arg)
                     "Argument must be a sequence of rectstyle objects.");
             }
 
+            Py_DECREF(obj);
+
             if (_pg_do_rects_intersect(srect, argrect)) {
                 PyObject *num = PyLong_FromLong(loop);
                 if (!num) {
                     Py_DECREF(ret);
-                    Py_DECREF(obj);
                     return NULL;
                 }
                 if (PyList_Append(ret, num)) {
                     Py_DECREF(ret);
                     Py_DECREF(num);
-                    Py_DECREF(obj);
                     return NULL; /* Exception already set. */
                 }
                 Py_DECREF(num);
             }
-            Py_DECREF(obj);
         }
     }
 
