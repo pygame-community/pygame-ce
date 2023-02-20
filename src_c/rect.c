@@ -259,30 +259,30 @@ pgRect_FromObject(PyObject *obj, SDL_Rect *temp)
         }
 
         if (length == 4) {
-            item = PySequence_GetItem(obj, 0);
+            item = PySequence_ITEM(obj, 0);
             if (!pg_IntFromObj(item, &temp->x)) {
-                Py_DECREF(item);
+                Py_XDECREF(item);
                 return NULL;
             }
             Py_DECREF(item);
 
-            item = PySequence_GetItem(obj, 1);
+            item = PySequence_ITEM(obj, 1);
             if (!pg_IntFromObj(item, &temp->y)) {
-                Py_DECREF(item);
+                Py_XDECREF(item);
                 return NULL;
             }
             Py_DECREF(item);
 
-            item = PySequence_GetItem(obj, 2);
+            item = PySequence_ITEM(obj, 2);
             if (!pg_IntFromObj(item, &temp->w)) {
-                Py_DECREF(item);
+                Py_XDECREF(item);
                 return NULL;
             }
             Py_DECREF(item);
 
-            item = PySequence_GetItem(obj, 3);
+            item = PySequence_ITEM(obj, 3);
             if (!pg_IntFromObj(item, &temp->h)) {
-                Py_DECREF(item);
+                Py_XDECREF(item);
                 return NULL;
             }
             Py_DECREF(item);
@@ -290,16 +290,16 @@ pgRect_FromObject(PyObject *obj, SDL_Rect *temp)
             return temp;
         }
         else if (length == 2) {
-            item = PySequence_GetItem(obj, 0);
+            item = PySequence_ITEM(obj, 0);
             if (!pg_TwoIntsFromObj(item, &temp->x, &temp->y)) {
-                Py_DECREF(item);
+                Py_XDECREF(item);
                 return NULL;
             }
             Py_DECREF(item);
 
-            item = PySequence_GetItem(obj, 1);
+            item = PySequence_ITEM(obj, 1);
             if (!pg_TwoIntsFromObj(item, &temp->w, &temp->h)) {
-                Py_DECREF(item);
+                Py_XDECREF(item);
                 return NULL;
             }
             Py_DECREF(item);
@@ -308,20 +308,23 @@ pgRect_FromObject(PyObject *obj, SDL_Rect *temp)
         }
         /*looks like an arg?*/
         else if (length == 1) {
-            item = PySequence_GetItem(obj, 0);
+            item = PySequence_ITEM(obj, 0);
+            if (!item) {
+                return NULL;
+            }
             if (!PyUnicode_Check(item)) {
-                return pgRect_FromObject(item, temp);
+                SDL_Rect *returnrect = pgRect_FromObject(item, temp);
+                Py_DECREF(item);
+                return returnrect;
             }
             else {
+                Py_DECREF(item);
                 return NULL;
             }
         }
     }
 
-    if (PyErr_Occurred()) {
-        PyErr_Clear();
-    }
-
+    /* Try to get the rect attribute */
     PyObject *rectattr;
     if (!(rectattr = PyObject_GetAttrString(obj, "rect"))) {
         PyErr_Clear();
