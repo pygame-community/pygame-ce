@@ -1056,7 +1056,7 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
         else if (pitch < w) {
             return RAISE(PyExc_ValueError,
                          "Pitch must be greater than or equal to the width "
-                         "by the format");
+                         "as per the format");
         }
 
         if (len != (Py_ssize_t)pitch * h)
@@ -1080,7 +1080,7 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
         else if (pitch < w * 3) {
             return RAISE(PyExc_ValueError,
                          "Pitch must be greater than or equal to the width * "
-                         "3 by the format");
+                         "3 as per the format");
         }
 
         if (len != (Py_ssize_t)pitch * h)
@@ -1120,7 +1120,7 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
         else if (pitch < w * 4) {
             return RAISE(PyExc_ValueError,
                          "Pitch must be greater than or equal to the width * "
-                         "4 by the format");
+                         "4 as per the format");
         }
 
         int alphamult = !strcmp(format, "RGBA");
@@ -1154,7 +1154,7 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
         else if (pitch < w * 4) {
             return RAISE(PyExc_ValueError,
                          "Pitch must be greater than or equal to the width * "
-                         "4 by the format");
+                         "4 as per the format");
         }
 
         if (len != (Py_ssize_t)pitch * h)
@@ -1185,7 +1185,7 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
         else if (pitch < w * 4) {
             return RAISE(PyExc_ValueError,
                          "Pitch must be greater than or equal to the width * "
-                         "4 by the format");
+                         "4 as per the format");
         }
 
         if (len != (Py_ssize_t)pitch * h)
@@ -1278,7 +1278,7 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
         else if (pitch < w) {
             return RAISE(PyExc_ValueError,
                          "Pitch must be greater than or equal to the width "
-                         "by the format");
+                         "as per the format");
         }
 
         if (len != (Py_ssize_t)pitch * h)
@@ -1295,7 +1295,7 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
         else if (pitch < w * 3) {
             return RAISE(PyExc_ValueError,
                          "Pitch must be greater than or equal to the width * "
-                         "3 by the format");
+                         "3 as per the format");
         }
 
         if (len != (Py_ssize_t)pitch * h)
@@ -1317,7 +1317,7 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
         else if (pitch < w * 3) {
             return RAISE(PyExc_ValueError,
                          "Pitch must be greater than or equal to the width * "
-                         "3 by the format");
+                         "3 as per the format");
         }
 
         if (len != (Py_ssize_t)pitch * h)
@@ -1339,7 +1339,7 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
         else if (pitch < w * 4) {
             return RAISE(PyExc_ValueError,
                          "Pitch must be greater than or equal to the width * "
-                         "4 by the format");
+                         "4 as per the format");
         }
 
         if (len != (Py_ssize_t)pitch * h)
@@ -1363,7 +1363,7 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
         else if (pitch < w * 4) {
             return RAISE(PyExc_ValueError,
                          "Pitch must be greater than or equal to the width * "
-                         "4 by the format");
+                         "4 as per the format");
         }
 
         int alphamult = !strcmp(format, "RGBA");
@@ -1389,7 +1389,7 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
         else if (pitch < w * 4) {
             return RAISE(PyExc_ValueError,
                          "Pitch must be greater than or equal to the width * "
-                         "4 by the format");
+                         "4 as per the format");
         }
 
         if (len != (Py_ssize_t)pitch * h)
