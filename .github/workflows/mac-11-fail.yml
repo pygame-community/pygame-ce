@@ -1,0 +1,153 @@
+name: MacOS 11 fail
+
+on: [push]
+
+jobs:
+  deps:
+    name: ${{ matrix.macarch }} deps
+    runs-on: macos-12
+    strategy:
+      matrix:
+        # make arm64 deps and x86_64 deps
+        macarch: [x86_64]
+
+    steps:
+      - uses: actions/checkout@v3.3.0
+
+      - name: Test for Mac Deps cache hit
+        id: macdep-cache
+        uses: actions/cache@v3.0.2
+        with:
+          path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
+          # The hash of all files in buildconfig manylinux-build and macdependencies is
+          # the key to the cache. If anything changes here, the deps are built again
+          key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}
+
+      # build mac deps on cache miss
+      - name: Build Mac Deps
+        if: steps.macdep-cache.outputs.cache-hit != 'true'
+        run: |
+          export MAC_ARCH="${{ matrix.macarch }}"
+          brew install coreutils pkg-config
+          cd buildconfig/macdependencies
+          bash ./build_mac_deps.sh
+
+      # Uncomment when you want to manually verify the deps by downloading them
+      # - name: Upload Mac deps
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: pygame-mac-deps-${{ matrix.macarch }}
+      #     path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
+
+  build:
+    name: ${{ matrix.name }}
+    needs: deps
+    runs-on: macos-12
+    strategy:
+      fail-fast: false  # if a particular matrix build fails, don't skip the rest
+      matrix:
+        # Split job into 5 matrix builds, because GH actions provides 5 concurrent
+        # builds on macOS. This needs to be manually kept updated so that each
+        # of these builds take roughly the same time
+        include:
+
+          - {
+            name: "x86_64 (Python 3.11)",
+            macarch: x86_64,
+            pyversions: "?p311-*"
+          }
+
+
+    env:
+      # load pip config from this file. Define this in 'CIBW_ENVIRONMENT'
+      # because this should not affect cibuildwheel machinery
+      # also define environment variables needed for testing
+      CIBW_ENVIRONMENT: PIP_CONFIG_FILE=buildconfig/pip_config.ini SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
+
+      CIBW_BUILD: ${{ matrix.pyversions }}
+
+      # Build arm64 and x86_64 wheels too on an Intel runner.
+      # Note that the arm64 wheels cannot be tested on CI in this configuration
+      CIBW_ARCHS: ${{ matrix.macarch }}
+
+      # Setup MacOS dependencies
+      CIBW_BEFORE_ALL: |
+        export MAC_ARCH="${{ matrix.macarch }}"
+        brew install pkg-config
+        cd buildconfig/macdependencies
+        bash ./install_mac_deps.sh
+
+      CIBW_BEFORE_BUILD: |
+        pip install requests numpy Sphinx
+        python setup.py docs
+
+      # Increase pip debugging output
+      CIBW_BUILD_VERBOSITY: 2
+
+    steps:
+      - uses: actions/checkout@v3.0.2
+
+      - name: pip cache
+        uses: actions/cache@v3.0.2
+        with:
+          path: ~/Library/Caches/pip  # This cache path is only right on mac
+          key: pip-cache-${{ matrix.name }}
+
+      - name: Fetch Mac deps
+        id: macdep-cache
+        uses: actions/cache@v3.0.2
+        with:
+          path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
+          key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}
+
+      - name: Build and test wheels
+        uses: pypa/cibuildwheel@v2.12.0
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: pygame-wheels
+          path: ./wheelhouse/*.whl
+
+#   - name: Upload binaries to Github Releases
+#     if: github.event_name == 'release'
+#     uses: svenstaro/upload-release-action@v2
+#     with:
+#       repo_token: ${{ secrets.GITHUB_TOKEN }}
+#       file: ./wheelhouse/*.whl
+#       tag: ${{ github.ref }}
+#
+#   - name: Upload binaries to PyPI
+#     if: github.event_name == 'release'
+#     env:
+#      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+#      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+#     run: |
+#       python3 -m pip install twine
+#       twine upload ./wheelhouse/*.whl
+
+  try-wheels-old-mac:
+    needs: build
+    runs-on: ${{ matrix.macver }}
+    strategy:
+      fail-fast: false  # if a particular matrix build fails, don't skip the rest
+      matrix:
+        macver: [macos-11,macos-10.15]
+    steps:
+      - uses: actions/checkout@v3.3.0
+      - uses: actions/download-artifact@v3
+        with:
+          path: ./wheelhouse/
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install wheelhouse/pygame-wheels/pygame_ce-2.1.4.dev1-cp311-cp311-macosx_10_9_x86_64.whl
+      - name: Run Tests
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: disk
+        run: |
+          python -m pygame.tests -v --exclude opengl,timing --time_out 300
