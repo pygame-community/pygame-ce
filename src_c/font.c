@@ -702,7 +702,7 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     PyObject *obj = Py_None;
     SDL_RWops *rw;
 
-    static char *kwlist[] = {"font", "size", NULL};
+    static char *kwlist[] = {"filename", "size", NULL};
 
     self->font = NULL;
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Oi", kwlist, &obj,
