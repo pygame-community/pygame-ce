@@ -3037,9 +3037,7 @@ surf_invert(PyObject *self, PyObject *args, PyObject *kwargs)
         Py_INCREF(surfobj2);
         return (PyObject *)surfobj2;
     }
-    else {
-        return (PyObject *)pgSurface_New(newsurf);
-    }
+    return (PyObject *)pgSurface_New(newsurf);
 }
 
 static PyMethodDef _transform_methods[] = {
