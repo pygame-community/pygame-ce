@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""
-pg.examples.stars
+""" pg.examples.stars
 
 We are all in the gutter,
 but some of us are looking at the stars.
@@ -18,10 +17,6 @@ import pygame as pg
 
 
 class Particle:
-    """
-    Moving particle
-    """
-
     def __init__(
         self,
         pos: List[int],
