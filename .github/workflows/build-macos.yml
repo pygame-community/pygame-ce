@@ -161,6 +161,11 @@ jobs:
       - name: Build and test wheels
         uses: pypa/cibuildwheel@v2.12.0
 
+      - name: Fix freetype dylib
+        run: |
+          cd buildconfig
+          python3 fix_freetype_dylib.py
+
       - uses: actions/upload-artifact@v3
         with:
           name: pygame-wheels
