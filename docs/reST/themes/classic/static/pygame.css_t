@@ -487,6 +487,12 @@ span.highlighted {
     background-color: {{ theme_highlightbgcolor }};
 }
 
+code{
+    border-radius: 0.25em;
+    padding: 0 0.2em 0;
+    background-color: {{ theme_codebgcolor }};
+}
+
 pre {
     background-color: {{ theme_codebgcolor }};
     border: 1px solid #ac9;
