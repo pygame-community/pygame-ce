@@ -308,7 +308,7 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
                 self.assertFalse(sf.get_locked())
 
     def test_as_class(self):
-        # Check general new-style class freatures.
+        # Check general new-style class features.
         sf = pygame.Surface((2, 3), 0, 32)
         ar = pygame.PixelArray(sf)
         self.assertRaises(AttributeError, getattr, ar, "nonnative")
@@ -670,7 +670,7 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
                 self.assertEqual(refcnts_after, refcnts_before)
 
     def test_subscript(self):
-        # By default we do not need to work with any special __***__
+        # By default, we do not need to work with any special __***__
         # methods as map subscripts are the first looked up by the
         # object system.
         for bpp in (8, 16, 24, 32):
@@ -698,35 +698,25 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             # Test simple slicing
             self.assertEqual(len(ar[:, :]), 6)
             self.assertEqual(
-                len(
-                    ar[
-                        :,
-                    ]
-                ),
+                len(ar[:,]),
                 6,
             )
             self.assertEqual(len(ar[1, :]), 8)
             self.assertEqual(len(ar[:, 2]), 6)
             # Empty slices
             self.assertEqual(
-                ar[
-                    4:4,
-                ],
+                ar[4:4,],
                 None,
             )
             self.assertEqual(ar[4:4, ...], None)
             self.assertEqual(ar[4:4, 2:2], None)
             self.assertEqual(ar[4:4, 1:4], None)
             self.assertEqual(
-                ar[
-                    4:4:2,
-                ],
+                ar[4:4:2,],
                 None,
             )
             self.assertEqual(
-                ar[
-                    4:4:-2,
-                ],
+                ar[4:4:-2,],
                 None,
             )
             self.assertEqual(ar[4:4:1, ...], None)
@@ -857,9 +847,7 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             self.assertEqual(ar[0, 0], 0)
             self.assertEqual(ar[1, 0], 0)
             self.assertEqual(ar[-1, -1], 0)
-            ar[
-                ...,
-            ] = (0, 0, 255)
+            ar[...,] = (0, 0, 255)
             self.assertEqual(ar[0, 0], sf.map_rgb((0, 0, 255)))
             self.assertEqual(ar[1, 0], sf.map_rgb((0, 0, 255)))
             self.assertEqual(ar[-1, -1], sf.map_rgb((0, 0, 255)))
@@ -1246,7 +1234,7 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
 
     def test_transpose(self):
         # PixelArray.transpose(): swap axis on a 2D array, add a length
-        # 1 x axis to a 1D array.
+        # 1 x-axis to a 1D array.
         sf = pygame.Surface((3, 7), 0, 32)
         ar = pygame.PixelArray(sf)
         w, h = ar.shape
@@ -1338,7 +1326,6 @@ class PixelArrayArrayInterfaceTest(unittest.TestCase, TestMixin):
 
     @unittest.skipIf(IS_PYPY, "skipping for PyPy (why?)")
     def test_shape(self):
-
         for shape in [[4, 16], [5, 13]]:
             w, h = shape
             sf = pygame.Surface(shape, 0, 32)
@@ -1456,7 +1443,6 @@ class PixelArrayArrayInterfaceTest(unittest.TestCase, TestMixin):
 @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
 @unittest.skipIf(IS_PYPY, "pypy having issues")
 class PixelArrayNewBufferTest(unittest.TestCase, TestMixin):
-
     if pygame.HAVE_NEWBUF:
         from pygame.tests.test_utils import buftools
 

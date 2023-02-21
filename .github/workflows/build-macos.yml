@@ -30,6 +30,10 @@ on:
       # re-include current file to not be excluded
       - '!.github/workflows/build-macos.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deps:
     name: ${{ matrix.macarch }} deps
@@ -40,7 +44,7 @@ jobs:
         macarch: [arm64, x86_64]
 
     steps:
-      - uses: actions/checkout@v3.0.2
+      - uses: actions/checkout@v3.3.0
 
       - name: Test for Mac Deps cache hit
         id: macdep-cache
@@ -56,7 +60,7 @@ jobs:
         if: steps.macdep-cache.outputs.cache-hit != 'true'
         run: |
           export MAC_ARCH="${{ matrix.macarch }}"
-          brew install coreutils
+          brew install coreutils pkg-config
           cd buildconfig/macdependencies
           bash ./build_mac_deps.sh
 
@@ -125,6 +129,7 @@ jobs:
       # Setup MacOS dependencies
       CIBW_BEFORE_ALL: |
         export MAC_ARCH="${{ matrix.macarch }}"
+        brew install pkg-config
         cd buildconfig/macdependencies
         bash ./install_mac_deps.sh
 
@@ -154,7 +159,7 @@ jobs:
           key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.10.2
+        uses: pypa/cibuildwheel@v2.12.0
 
       - uses: actions/upload-artifact@v3
         with:

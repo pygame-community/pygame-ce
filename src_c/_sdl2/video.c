@@ -6,7 +6,7 @@
         "depends": [],
         "name": "pygame._sdl2.video",
         "sources": [
-            "src_c/cython/pygame/_sdl2/video.pyx"
+            "src_c\\cython\\pygame\\_sdl2\\video.pyx"
         ]
     },
     "module_name": "pygame._sdl2.video"
@@ -922,9 +922,9 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "src_c/cython/pygame/_sdl2/video.pyx",
+  "src_c\\cython\\pygame\\_sdl2\\video.pyx",
   "stringsource",
-  "src_c/cython/pygame/_sdl2/video.pxd",
+  "src_c\\cython\\pygame\\_sdl2\\video.pxd",
   "type.pxd",
   "bool.pxd",
   "complex.pxd",
@@ -2185,7 +2185,7 @@ static const char __pyx_k_srcrect_must_be_a_rect_or_None[] = "srcrect must be a 
 static const char __pyx_k_dstrect_must_be_a_position_rect[] = "dstrect must be a position, rect, or None";
 static const char __pyx_k_only_one_of_static_streaming_or[] = "only one of static, streaming, or target can be true";
 static const char __pyx_k_s_name_s_flags_0x_02x_num_textu[] = "<%s(name: %s, flags: 0x%02x, num_texture_formats: %d, max_texture_width: %d, max_texture_height: %d)>";
-static const char __pyx_k_src_c_cython_pygame__sdl2_video[] = "src_c/cython/pygame/_sdl2/video.pyx";
+static const char __pyx_k_src_c_cython_pygame__sdl2_video[] = "src_c\\cython\\pygame\\_sdl2\\video.pyx";
 static const char __pyx_k_surface_must_be_a_surface_or_No[] = "'surface' must be a surface or None";
 static const char __pyx_k_the_argument_is_not_a_rectangle[] = "the argument is not a rectangle or None";
 static const char __pyx_k_area_must_be_a_rectangle_or_None[] = "area must be a rectangle or None";
@@ -6590,7 +6590,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_6Window_10borderless___get__(str
  * 
  *     @borderless.setter
  *     def borderless(self, enabled):             # <<<<<<<<<<<<<<
- *         SDL_SetWindowBordered(self._win, 1 if enabled else 0)
+ *         SDL_SetWindowBordered(self._win, 0 if enabled else 1)
  * 
  */
 
@@ -6620,15 +6620,15 @@ static int __pyx_pf_6pygame_5_sdl2_5video_6Window_10borderless_2__set__(struct _
   /* "pygame/_sdl2/video.pyx":446
  *     @borderless.setter
  *     def borderless(self, enabled):
- *         SDL_SetWindowBordered(self._win, 1 if enabled else 0)             # <<<<<<<<<<<<<<
+ *         SDL_SetWindowBordered(self._win, 0 if enabled else 1)             # <<<<<<<<<<<<<<
  * 
  *     def set_icon(self, surface):
  */
   __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_enabled); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 446, __pyx_L1_error)
   if (__pyx_t_2) {
-    __pyx_t_1 = 1;
-  } else {
     __pyx_t_1 = 0;
+  } else {
+    __pyx_t_1 = 1;
   }
   SDL_SetWindowBordered(__pyx_v_self->_win, __pyx_t_1);
 
@@ -6636,7 +6636,7 @@ static int __pyx_pf_6pygame_5_sdl2_5video_6Window_10borderless_2__set__(struct _
  * 
  *     @borderless.setter
  *     def borderless(self, enabled):             # <<<<<<<<<<<<<<
- *         SDL_SetWindowBordered(self._win, 1 if enabled else 0)
+ *         SDL_SetWindowBordered(self._win, 0 if enabled else 1)
  * 
  */
 
@@ -6652,7 +6652,7 @@ static int __pyx_pf_6pygame_5_sdl2_5video_6Window_10borderless_2__set__(struct _
 }
 
 /* "pygame/_sdl2/video.pyx":448
- *         SDL_SetWindowBordered(self._win, 1 if enabled else 0)
+ *         SDL_SetWindowBordered(self._win, 0 if enabled else 1)
  * 
  *     def set_icon(self, surface):             # <<<<<<<<<<<<<<
  *         """ Set the icon for the window.
@@ -6725,7 +6725,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_6Window_22set_icon(struct __pyx_
   SDL_SetWindowIcon(__pyx_v_self->_win, pgSurface_AsSurface(__pyx_v_surface));
 
   /* "pygame/_sdl2/video.pyx":448
- *         SDL_SetWindowBordered(self._win, 1 if enabled else 0)
+ *         SDL_SetWindowBordered(self._win, 0 if enabled else 1)
  * 
  *     def set_icon(self, surface):             # <<<<<<<<<<<<<<
  *         """ Set the icon for the window.
@@ -18689,7 +18689,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_26compose_custom_blend
  *                                          alpha_mode[0],
  *                                          alpha_mode[1],             # <<<<<<<<<<<<<<
  *                                          alpha_mode[2])
- * 
+ *         if res < 0:
  */
   __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_alpha_mode, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1289, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -18700,8 +18700,8 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_26compose_custom_blend
  *                                          alpha_mode[0],
  *                                          alpha_mode[1],
  *                                          alpha_mode[2])             # <<<<<<<<<<<<<<
- * 
  *         if res < 0:
+ *             raise error()
  */
   __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_alpha_mode, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1290, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -18717,9 +18717,9 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_26compose_custom_blend
  */
   __pyx_v_res = SDL_ComposeCustomBlendMode(__pyx_t_2, __pyx_t_3, __pyx_t_4, __pyx_t_5, __pyx_t_6, __pyx_t_7);
 
-  /* "pygame/_sdl2/video.pyx":1292
+  /* "pygame/_sdl2/video.pyx":1291
+ *                                          alpha_mode[1],
  *                                          alpha_mode[2])
- * 
  *         if res < 0:             # <<<<<<<<<<<<<<
  *             raise error()
  *         return res
@@ -18727,13 +18727,13 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_26compose_custom_blend
   __pyx_t_8 = ((__pyx_v_res < 0) != 0);
   if (unlikely(__pyx_t_8)) {
 
-    /* "pygame/_sdl2/video.pyx":1293
- * 
+    /* "pygame/_sdl2/video.pyx":1292
+ *                                          alpha_mode[2])
  *         if res < 0:
  *             raise error()             # <<<<<<<<<<<<<<
  *         return res
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_9, __pyx_n_s_error); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 1293, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_9, __pyx_n_s_error); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 1292, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
     __pyx_t_10 = NULL;
     if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_9))) {
@@ -18747,29 +18747,29 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_26compose_custom_blend
     }
     __pyx_t_1 = (__pyx_t_10) ? __Pyx_PyObject_CallOneArg(__pyx_t_9, __pyx_t_10) : __Pyx_PyObject_CallNoArg(__pyx_t_9);
     __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1293, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1292, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
     __Pyx_Raise(__pyx_t_1, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __PYX_ERR(0, 1293, __pyx_L1_error)
+    __PYX_ERR(0, 1292, __pyx_L1_error)
 
-    /* "pygame/_sdl2/video.pyx":1292
+    /* "pygame/_sdl2/video.pyx":1291
+ *                                          alpha_mode[1],
  *                                          alpha_mode[2])
- * 
  *         if res < 0:             # <<<<<<<<<<<<<<
  *             raise error()
  *         return res
  */
   }
 
-  /* "pygame/_sdl2/video.pyx":1294
+  /* "pygame/_sdl2/video.pyx":1293
  *         if res < 0:
  *             raise error()
  *         return res             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_SDL_BlendMode(__pyx_v_res); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1294, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_SDL_BlendMode(__pyx_v_res); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1293, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;

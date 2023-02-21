@@ -15,20 +15,18 @@ with open('README.rst', encoding='utf-8') as readme:
 EXTRAS = {}
 
 METADATA = {
-    "name": "pygame",
+    "name": "pygame-ce",
     "version": "2.1.4.dev1",
     "license": "LGPL",
-    "url": "https://www.pygame.org",
+    "url": "https://pyga.me",
     "author": "A community project.",
-    "author_email": "pygame@pygame.org",
     "description": "Python Game Development",
     "long_description": LONG_DESCRIPTION,
     "long_description_content_type": "text/x-rst",
     "project_urls": {
-        "Documentation": "https://pygame.org/docs",
-        "Bug Tracker": "https://github.com/pygame/pygame/issues",
-        "Source": "https://github.com/pygame/pygame",
-        "Twitter": "https://twitter.com/pygame_org",
+        "Documentation": "https://pyga.me/docs",
+        "Bug Tracker": "https://github.com/pygame-community/pygame-ce/issues",
+        "Source": "https://github.com/pygame-community/pygame-ce",
     },
     "classifiers": [
         "Development Status :: 6 - Mature",
@@ -169,7 +167,7 @@ def compilation_help():
     print('For help with compilation see:')
     print(f'    {url}')
     print('To contribute to pygame development see:')
-    print('    https://www.pygame.org/contribute.html')
+    print('    https://github.com/pygame-community/pygame-ce')
     print('---\n')
 
 
@@ -985,6 +983,38 @@ class DocsCommand(Command):
         if subprocess.call(command_line) != 0:
             raise SystemExit("Failed to build documentation")
 
+@add_command('stubcheck')
+class StubcheckCommand(Command):
+    """ For checking the stubs with `python setup.py stubcheck`.
+    """
+    user_options = []
+    def initialize_options(self):
+        pass
+        
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        '''
+        runs mypy to build the docs.
+        '''
+        import subprocess
+        import warnings
+
+        print("Using python:", sys.executable)
+
+        if shutil.which('mypy') is None:
+            warnings.warn("Please install 'mypy' in your environment. (hint: 'python3 -m pip install mypy')")
+            sys.exit(1)
+
+        os.chdir('buildconfig/stubs')
+        command_line = [
+            sys.executable,'-m','mypy.stubtest',"pygame","--allowlist","mypy_allow_list.txt"
+        ]
+        result = subprocess.run(command_line)
+        os.chdir('../../')
+        if result.returncode != 0:
+            raise SystemExit("Stubcheck failed.")
 
 # Prune empty file lists.
 data_files = [(path, files) for path, files in data_files if files]

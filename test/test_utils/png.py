@@ -456,7 +456,7 @@ class Writer:
 
         def check_color(c, which):
             """Checks that a colour argument for transparent or
-            background options is the right form.  Also "corrects" bare
+            background options is the right form. Also, "corrects" bare
             integers to 1-tuples.
             """
 
@@ -757,7 +757,7 @@ class Writer:
                 oldextend(map(lambda x: int(round(factor * x)), sl))
 
         # Build the first row, testing mostly to see if we need to
-        # changed the extend function to cope with NumPy integer types
+        # change the extend function to cope with NumPy integer types
         # (they cause our ordinary definition of extend to fail, so we
         # wrap it).  See
         # http://code.google.com/p/pypng/issues/detail?id=44
@@ -799,7 +799,7 @@ class Writer:
                     # print(len(data), len(compressed), file= >> sys.stderr)
                     write_chunk(outfile, "IDAT", compressed)
                 # Because of our very witty definition of ``extend``,
-                # above, we must re-use the same ``data`` object.  Hence
+                # above, we must re-use the same ``data`` object.  Hence,
                 # we use ``del`` to empty this one, rather than create a
                 # fresh one (which would be my natural FP instinct).
                 del data[:]
@@ -832,7 +832,7 @@ class Writer:
         which should be in boxed row packed format.  Each row should be
         a sequence of packed bytes.
 
-        Technically, this method does work for interlaced images but it
+        Technically, this method does work for interlaced images, but it
         is best avoided.  For interlaced images, the rows should be
         presented in the order that they appear in the file.
 
@@ -1057,9 +1057,9 @@ def filter_scanline(type, line, fo, prev=None):
             ai += 1
 
     if not prev:
-        # We're on the first line.  Some of the filters can be reduced
+        # We're on the first line. Some of the filters can be reduced
         # to simpler cases which makes handling the line "off the top"
-        # of the image simpler.  "up" becomes "none"; "paeth" becomes
+        # of the image simpler. "up" becomes "none"; "paeth" becomes
         # "left" (non-trivial, but true). "average" needs to be handled
         # specially.
         if type == 2:  # "up"
@@ -1089,14 +1089,14 @@ def from_array(a, mode=None, info={}):
     .. note :
 
       The use of the term *3-dimensional* is for marketing purposes
-      only.  It doesn't actually work.  Please bear with us.  Meanwhile
+      only.  It doesn't actually work.  Please bear with us.  Meanwhile,
       enjoy the complimentary snacks (on request) and please use a
       2-dimensional array.
 
     Unless they are specified using the *info* parameter, the PNG's
     height and width are taken from the array size.  For a 3 dimensional
     array the first axis is the height; the second axis is the width;
-    and the third axis is the channel number.  Thus an RGB image that is
+    and the third axis is the channel number.  Thus, an RGB image that is
     16 pixels high and 8 wide will use an array that is 16x8x3.  For 2
     dimensional arrays the first axis is the height, but the second axis
     is ``width*channels``, so an RGB image that is 16 pixels high and 8
@@ -1491,7 +1491,7 @@ class Reader:
             )
 
         # Filter unit.  The stride from one pixel to the corresponding
-        # byte from the previous previous.  Normally this is the pixel
+        # byte from the previous scanline.  Normally this is the pixel
         # size in bytes, but when this is smaller than 1, the previous
         # byte is used instead.
         fu = max(1, self.psize)
@@ -2237,6 +2237,7 @@ class Reader:
 
         else:
             assert not meta["alpha"] and not meta["greyscale"]
+
             # RGB to RGBA
             def convert():
                 for row in pixels:
@@ -2451,7 +2452,7 @@ class Test(unittest.TestCase):
         r = Reader(bytes=_pngsuite["tbrn2c08"])
         x, y, pixels, meta = r.asRGBA8()
         # I just happen to know that the first pixel is transparent.
-        # In particular it should be #7f7f7f00
+        # In particular, it should be #7f7f7f00
         row0 = list(pixels)[0]
         self.assertEqual(tuple(row0[0:4]), (0x7F, 0x7F, 0x7F, 0x00))
 
@@ -2572,7 +2573,7 @@ class Test(unittest.TestCase):
         self.assertEqual(sbit, strtobytes("\x04\x04"))
 
     def testPNMsbit(self):
-        """Test that PNM files can generates sBIT chunk."""
+        """Test that PNM files can generate an sBIT chunk."""
 
         def do():
             return _main(["testPNMsbit"])

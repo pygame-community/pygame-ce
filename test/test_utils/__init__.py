@@ -80,7 +80,7 @@ def combinations(seqs):
 
     Recipe 496807 from ActiveState Python CookBook
 
-    Non recursive technique for getting all possible combinations of a sequence
+    Non-recursive technique for getting all possible combinations of a sequence
     of sequences.
 
     """

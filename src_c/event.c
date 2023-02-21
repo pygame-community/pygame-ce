@@ -1610,10 +1610,10 @@ _pg_event_wait(SDL_Event *event, int timeout)
     /* Custom re-implementation of SDL_WaitEventTimeout, doing this has
      * many advantages. This is copied from SDL source code, with a few
      * minor modifications */
-    Uint32 finish = 0;
+    Uint64 finish = 0;
 
     if (timeout > 0)
-        finish = SDL_GetTicks() + timeout;
+        finish = PG_GetTicks() + timeout;
 
     while (1) {
         _pg_event_pump(1); /* Use our custom pump here */
@@ -1624,7 +1624,7 @@ _pg_event_wait(SDL_Event *event, int timeout)
                 return 1;
 
             default:
-                if (timeout >= 0 && SDL_GetTicks() >= finish) {
+                if (timeout >= 0 && PG_GetTicks() >= finish) {
                     /* no events */
                     return 0;
                 }

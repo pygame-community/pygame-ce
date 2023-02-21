@@ -20,7 +20,6 @@ class MouseTests(unittest.TestCase):
 
 
 class MouseModuleInteractiveTest(MouseTests):
-
     __tags__ = ["interactive"]
 
     def test_set_pos(self):
@@ -28,10 +27,10 @@ class MouseModuleInteractiveTest(MouseTests):
         Requires tester to move the mouse to be on the window.
         """
         pygame.display.set_mode((500, 500))
-        pygame.event.get()  # Pump event queue to make window get focus on macos.
+        pygame.event.get()  # Pump event queue to make window get focus on macOS.
 
         if not pygame.mouse.get_focused():
-            # The window needs to be focused for the mouse.set_pos to work on macos.
+            # The window needs to be focused for the mouse.set_pos to work on macOS.
             return
         clock = pygame.time.Clock()
 
@@ -303,7 +302,6 @@ class MouseModuleTest(MouseTests):
     def test_set_pos__invalid_pos(self):
         """Ensures set_pos handles invalid positions correctly."""
         for invalid_pos in ((1,), [1, 2, 3], 1, "1", (1, "1"), []):
-
             with self.assertRaises(TypeError):
                 pygame.mouse.set_pos(invalid_pos)
 

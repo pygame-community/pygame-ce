@@ -280,8 +280,13 @@ class FontTypeTest(unittest.TestCase):
     def test_default_parameters(self):
         f = pygame_font.Font()
 
+    def test_font_alias(self):
+        """Check if pygame.Font is present and the correct type."""
+        self.assertIs(pygame.Font, pygame.font.Font)
+
+
     def test_get_ascent(self):
-        # Ckecking ascent would need a custom test font to do properly.
+        # Checking ascent would need a custom test font to do properly.
         f = pygame_font.Font(None, 20)
         ascent = f.get_ascent()
         self.assertTrue(isinstance(ascent, int))
@@ -290,14 +295,14 @@ class FontTypeTest(unittest.TestCase):
         self.assertTrue(s.get_size()[1] > ascent)
 
     def test_get_descent(self):
-        # Ckecking descent would need a custom test font to do properly.
+        # Checking descent would need a custom test font to do properly.
         f = pygame_font.Font(None, 20)
         descent = f.get_descent()
         self.assertTrue(isinstance(descent, int))
         self.assertTrue(descent < 0)
 
     def test_get_height(self):
-        # Ckecking height would need a custom test font to do properly.
+        # Checking height would need a custom test font to do properly.
         f = pygame_font.Font(None, 20)
         height = f.get_height()
         self.assertTrue(isinstance(height, int))
@@ -306,7 +311,7 @@ class FontTypeTest(unittest.TestCase):
         self.assertTrue(s.get_size()[1] == height)
 
     def test_get_linesize(self):
-        # Ckecking linesize would need a custom test font to do properly.
+        # Checking linesize would need a custom test font to do properly.
         # Questions: How do linesize, height and descent relate?
         f = pygame_font.Font(None, 20)
         linesize = f.get_linesize()
@@ -613,10 +618,31 @@ class FontTypeTest(unittest.TestCase):
             font = pygame_font.Font(fpath, size)
             font.render("WHERE", True, "black")
 
+    def test_font_set_script(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            return  # this ain't a pygame.ftfont thing!
+
+        font = pygame_font.Font(None, 16)
+
+        ttf_version = pygame_font.get_sdl_ttf_version()
+        if ttf_version >= (2, 20, 0):
+            self.assertRaises(TypeError, pygame.font.Font.set_script)
+            self.assertRaises(TypeError, pygame.font.Font.set_script, font)
+            self.assertRaises(TypeError, pygame.font.Font.set_script, "hey", "Deva")
+            self.assertRaises(TypeError, font.set_script, 1)
+            self.assertRaises(TypeError, font.set_script, ["D", "e", "v", "a"])
+
+            self.assertRaises(ValueError, font.set_script, "too long by far")
+            self.assertRaises(ValueError, font.set_script, "")
+            self.assertRaises(ValueError, font.set_script, "a")
+
+            font.set_script("Deva")
+        else:
+            self.assertRaises(pygame.error, font.set_script, "Deva")
+
 
 @unittest.skipIf(IS_PYPY, "pypy skip known failure")  # TODO
 class VisualTests(unittest.TestCase):
-
     __tags__ = ["interactive"]
 
     screen = None

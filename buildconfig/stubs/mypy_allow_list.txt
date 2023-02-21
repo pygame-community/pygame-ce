@@ -21,7 +21,6 @@ pygame\.tests.*
 pygame\.__pyinstaller.*
 
 # don't look for stubs for these private modules either
-pygame\.draw_py
 pygame\.ftfont
 pygame\.imageext
 pygame\.macosx

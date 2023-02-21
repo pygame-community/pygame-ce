@@ -49,7 +49,7 @@ class Camera:
         self._open = False
 
     # all of this could have been done in the constructor, but creating
-    # the VideoCapture is very time consuming, so it makes more sense in the
+    # the VideoCapture is very time-consuming, so it makes more sense in the
     # actual start() method
     def start(self):
         if self._open:
@@ -160,7 +160,6 @@ class Camera:
 
 class CameraMac(Camera):
     def __init__(self, device=0, size=(640, 480), mode="RGB"):
-
         if isinstance(device, int):
             _dev = device
         elif isinstance(device, str):

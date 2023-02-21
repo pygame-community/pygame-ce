@@ -18,7 +18,7 @@ Controls
 --------
 
 * Left and right arrows to move.
-* Space bar to shoot
+* Space bar to shoot.
 * f key to toggle between fullscreen.
 
 """
@@ -304,7 +304,6 @@ def main(winstyle=0):
 
     # Run our main loop whilst the player is alive.
     while player.alive():
-
         # get input
         for event in pg.event.get():
             if event.type == pg.QUIT:

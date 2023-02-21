@@ -44,7 +44,7 @@ __all__ = [
 ]
 
 
-def SysFont(name, size, bold=0, italic=0, constructor=None):
+def SysFont(name, size, bold=False, italic=False, constructor=None):
     """pygame.ftfont.SysFont(name, size, bold=False, italic=False, constructor=None) -> Font
     Create a pygame Font from system font resources.
 
@@ -53,7 +53,7 @@ def SysFont(name, size, bold=0, italic=0, constructor=None):
     the appropriate system font will be selected if available.
 
     This will always return a valid Font object, and will
-    fallback on the builtin pygame font if the given font
+    fall back on the builtin pygame font if the given font
     is not found.
 
     Name can also be an iterable of font names, a string of

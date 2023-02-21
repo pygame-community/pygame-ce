@@ -299,7 +299,6 @@ class ImageModuleTest(unittest.TestCase):
             os.remove(f_path)
 
     def test_save(self):
-
         s = pygame.Surface((10, 10))
         s.fill((23, 23, 23))
         magic_hex = {}
@@ -1099,6 +1098,569 @@ class ImageModuleTest(unittest.TestCase):
         )
 
         argb_surf = pygame.image.frombuffer(argb_buffer, (4, 4), "ARGB")
+        self.assertEqual(argb_surf.get_at((0, 0)), pygame.Color(255, 10, 20, 200))
+        self.assertEqual(argb_surf.get_at((1, 1)), pygame.Color(255, 255, 255, 127))
+        self.assertEqual(argb_surf.get_at((2, 2)), pygame.Color(0, 0, 0, 79))
+        self.assertEqual(argb_surf.get_at((3, 3)), pygame.Color(50, 200, 20, 255))
+
+    def test_frombuffer_pitched_8bit(self):
+        """test reading pixel data from a bytes buffer with a pitch"""
+        pygame.display.init()
+        eight_bit_palette_buffer = bytearray(
+            [
+                0,
+                0,
+                0,
+                0,
+                0,  # Padding
+                0,  # Padding
+                1,
+                1,
+                1,
+                1,
+                0,  # Padding
+                0,  # Padding
+                2,
+                2,
+                2,
+                2,
+                0,  # Padding
+                0,  # Padding
+                3,
+                3,
+                3,
+                3,
+                0,  # Padding
+                0,  # Padding
+            ]
+        )
+
+        eight_bit_surf = pygame.image.frombuffer(
+            eight_bit_palette_buffer, (4, 4), "P", pitch=6
+        )
+        eight_bit_surf.set_palette(
+            [(255, 10, 20), (255, 255, 255), (0, 0, 0), (50, 200, 20)]
+        )
+        self.assertEqual(eight_bit_surf.get_at((0, 0)), pygame.Color(255, 10, 20))
+        self.assertEqual(eight_bit_surf.get_at((1, 1)), pygame.Color(255, 255, 255))
+        self.assertEqual(eight_bit_surf.get_at((2, 2)), pygame.Color(0, 0, 0))
+        self.assertEqual(eight_bit_surf.get_at((3, 3)), pygame.Color(50, 200, 20))
+
+    def test_frombuffer_pitched_RGB(self):
+        rgb_buffer = bytearray(
+            [
+                255,
+                10,
+                20,
+                255,
+                10,
+                20,
+                255,
+                10,
+                20,
+                255,
+                10,
+                20,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                50,
+                200,
+                20,
+                50,
+                200,
+                20,
+                50,
+                200,
+                20,
+                50,
+                200,
+                20,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+            ]
+        )
+
+        rgb_surf = pygame.image.frombuffer(rgb_buffer, (4, 4), "RGB", pitch=16)
+        self.assertEqual(rgb_surf.get_at((0, 0)), pygame.Color(255, 10, 20))
+        self.assertEqual(rgb_surf.get_at((1, 1)), pygame.Color(255, 255, 255))
+        self.assertEqual(rgb_surf.get_at((2, 2)), pygame.Color(0, 0, 0))
+        self.assertEqual(rgb_surf.get_at((3, 3)), pygame.Color(50, 200, 20))
+
+    def test_frombuffer_pitched_BGR(self):
+        bgr_buffer = bytearray(
+            [
+                20,
+                10,
+                255,
+                20,
+                10,
+                255,
+                20,
+                10,
+                255,
+                20,
+                10,
+                255,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                20,
+                200,
+                50,
+                20,
+                200,
+                50,
+                20,
+                200,
+                50,
+                20,
+                200,
+                50,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+            ]
+        )
+
+        bgr_surf = pygame.image.frombuffer(bgr_buffer, (4, 4), "BGR", pitch=16)
+        self.assertEqual(bgr_surf.get_at((0, 0)), pygame.Color(255, 10, 20))
+        self.assertEqual(bgr_surf.get_at((1, 1)), pygame.Color(255, 255, 255))
+        self.assertEqual(bgr_surf.get_at((2, 2)), pygame.Color(0, 0, 0))
+        self.assertEqual(bgr_surf.get_at((3, 3)), pygame.Color(50, 200, 20))
+
+    def test_frombuffer_pitched_BGRA(self):
+        bgra_buffer = bytearray(
+            [
+                255,
+                10,
+                20,
+                200,
+                255,
+                10,
+                20,
+                200,
+                255,
+                10,
+                20,
+                200,
+                255,
+                10,
+                20,
+                200,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                255,
+                255,
+                255,
+                127,
+                255,
+                255,
+                255,
+                127,
+                255,
+                255,
+                255,
+                127,
+                255,
+                255,
+                255,
+                127,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,
+                0,
+                0,
+                79,
+                0,
+                0,
+                0,
+                79,
+                0,
+                0,
+                0,
+                79,
+                0,
+                0,
+                0,
+                79,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                50,
+                200,
+                20,
+                255,
+                50,
+                200,
+                20,
+                255,
+                50,
+                200,
+                20,
+                255,
+                50,
+                200,
+                20,
+                255,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+            ]
+        )
+
+        bgra_surf = pygame.image.frombuffer(bgra_buffer, (4, 4), "BGRA", pitch=20)
+        self.assertEqual(bgra_surf.get_at((0, 0)), pygame.Color(20, 10, 255, 200))
+        self.assertEqual(bgra_surf.get_at((1, 1)), pygame.Color(255, 255, 255, 127))
+        self.assertEqual(bgra_surf.get_at((2, 2)), pygame.Color(0, 0, 0, 79))
+        self.assertEqual(bgra_surf.get_at((3, 3)), pygame.Color(20, 200, 50, 255))
+
+    def test_frombuffer_pitched_RGBX(self):
+        rgbx_buffer = bytearray(
+            [
+                255,
+                10,
+                20,
+                255,
+                255,
+                10,
+                20,
+                255,
+                255,
+                10,
+                20,
+                255,
+                255,
+                10,
+                20,
+                255,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,
+                0,
+                0,
+                255,
+                0,
+                0,
+                0,
+                255,
+                0,
+                0,
+                0,
+                255,
+                0,
+                0,
+                0,
+                255,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                50,
+                200,
+                20,
+                255,
+                50,
+                200,
+                20,
+                255,
+                50,
+                200,
+                20,
+                255,
+                50,
+                200,
+                20,
+                255,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+            ]
+        )
+
+        rgbx_surf = pygame.image.frombuffer(rgbx_buffer, (4, 4), "RGBX", pitch=20)
+        self.assertEqual(rgbx_surf.get_at((0, 0)), pygame.Color(255, 10, 20, 255))
+        self.assertEqual(rgbx_surf.get_at((1, 1)), pygame.Color(255, 255, 255, 255))
+        self.assertEqual(rgbx_surf.get_at((2, 2)), pygame.Color(0, 0, 0, 255))
+        self.assertEqual(rgbx_surf.get_at((3, 3)), pygame.Color(50, 200, 20, 255))
+
+    def test_frombuffer_pitched_RGBA(self):
+        rgba_buffer = bytearray(
+            [
+                255,
+                10,
+                20,
+                200,
+                255,
+                10,
+                20,
+                200,
+                255,
+                10,
+                20,
+                200,
+                255,
+                10,
+                20,
+                200,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                255,
+                255,
+                255,
+                127,
+                255,
+                255,
+                255,
+                127,
+                255,
+                255,
+                255,
+                127,
+                255,
+                255,
+                255,
+                127,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,
+                0,
+                0,
+                79,
+                0,
+                0,
+                0,
+                79,
+                0,
+                0,
+                0,
+                79,
+                0,
+                0,
+                0,
+                79,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                50,
+                200,
+                20,
+                255,
+                50,
+                200,
+                20,
+                255,
+                50,
+                200,
+                20,
+                255,
+                50,
+                200,
+                20,
+                255,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+            ]
+        )
+
+        rgba_surf = pygame.image.frombuffer(rgba_buffer, (4, 4), "RGBA", pitch=20)
+        self.assertEqual(rgba_surf.get_at((0, 0)), pygame.Color(255, 10, 20, 200))
+        self.assertEqual(rgba_surf.get_at((1, 1)), pygame.Color(255, 255, 255, 127))
+        self.assertEqual(rgba_surf.get_at((2, 2)), pygame.Color(0, 0, 0, 79))
+        self.assertEqual(rgba_surf.get_at((3, 3)), pygame.Color(50, 200, 20, 255))
+
+    def test_frombuffer_pitched_ARGB(self):
+        argb_buffer = bytearray(
+            [
+                200,
+                255,
+                10,
+                20,
+                200,
+                255,
+                10,
+                20,
+                200,
+                255,
+                10,
+                20,
+                200,
+                255,
+                10,
+                20,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                127,
+                255,
+                255,
+                255,
+                127,
+                255,
+                255,
+                255,
+                127,
+                255,
+                255,
+                255,
+                127,
+                255,
+                255,
+                255,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                79,
+                0,
+                0,
+                0,
+                79,
+                0,
+                0,
+                0,
+                79,
+                0,
+                0,
+                0,
+                79,
+                0,
+                0,
+                0,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                255,
+                50,
+                200,
+                20,
+                255,
+                50,
+                200,
+                20,
+                255,
+                50,
+                200,
+                20,
+                255,
+                50,
+                200,
+                20,
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+                0,  # Padding
+            ]
+        )
+
+        argb_surf = pygame.image.frombuffer(argb_buffer, (4, 4), "ARGB", pitch=20)
         self.assertEqual(argb_surf.get_at((0, 0)), pygame.Color(255, 10, 20, 200))
         self.assertEqual(argb_surf.get_at((1, 1)), pygame.Color(255, 255, 255, 127))
         self.assertEqual(argb_surf.get_at((2, 2)), pygame.Color(0, 0, 0, 79))
