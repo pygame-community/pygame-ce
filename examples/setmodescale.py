@@ -21,7 +21,7 @@ clock = pg.time.Clock()
 
 print("desktops", pg.display.get_desktop_sizes())
 
-do_vsync=bool("--vsync" in sys.argv)
+do_vsync = bool("--vsync" in sys.argv)
 
 if do_vsync:
     screen = pg.display.set_mode(RES, pg.SCALED | pg.RESIZABLE, vsync=1)
@@ -73,7 +73,7 @@ while not done:
         pg.draw.line(screen, (250, 250, 0), (0, 120), (160, 0))
     pg.draw.circle(screen, (255, 255, 255), (i, j), 5)
 
-    pg.display.set_caption("FPS:"+str(clock.get_fps()))
+    pg.display.set_caption("FPS:" + str(clock.get_fps()))
     if do_vsync:
         pg.display.flip()
         # FPS should be limited by vsync, so we tick really fast

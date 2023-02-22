@@ -699,19 +699,19 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
             if (window == pygame_window) {
                 int w = event->window.data1;
                 int h = event->window.data2;
-                pgSurfaceObject *display_surface = pg_GetDefaultWindowSurface();
+                pgSurfaceObject *display_surface =
+                    pg_GetDefaultWindowSurface();
                 SDL_Surface *surf = SDL_CreateRGBSurface(
-                                SDL_SWSURFACE, w, h, 32,
-                                0xff << 16, 0xff << 8, 0xff, 0);
+                    SDL_SWSURFACE, w, h, 32, 0xff << 16, 0xff << 8, 0xff, 0);
 
                 SDL_FreeSurface(display_surface->surf);
-                display_surface->surf=surf;
+                display_surface->surf = surf;
 
                 SDL_DestroyTexture(pg_texture);
 
-                pg_texture = SDL_CreateTexture(
-                     pg_renderer, SDL_PIXELFORMAT_ARGB8888,
-                     SDL_TEXTUREACCESS_STREAMING, w, h);
+                pg_texture =
+                    SDL_CreateTexture(pg_renderer, SDL_PIXELFORMAT_ARGB8888,
+                                      SDL_TEXTUREACCESS_STREAMING, w, h);
             }
         }
         return 0;
@@ -908,18 +908,6 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
             return PyErr_NoMemory();
         strcpy(state->title, DefaultTitle);
         title = state->title;
-    }
-
-    // if (vsync && !(flags & (PGS_SCALED | PGS_OPENGL))) {
-    //     return RAISE(pgExc_SDLError,
-    //                  "vsync needs either SCALED or OPENGL flag");
-    // }
-
-    if (vsync && !(flags & (PGS_SCALED | PGS_OPENGL))) {
-        //if (flags & PGS_RESIZABLE) {
-        //    return RAISE(pgExc_SDLError,
-        //                 "resizing currently not supported");
-        //}
     }
 
     /* set these only in toggle_fullscreen, clear on set_mode */
@@ -1337,22 +1325,21 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     if (state->icon)
         SDL_SetWindowIcon(win, pgSurface_AsSurface(state->icon));
 
-        if (!SDL_GetWindowWMInfo(win, &wm_info)) {
+    if (!SDL_GetWindowWMInfo(win, &wm_info)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
-    if (wm_info.subsystem==SDL_SYSWM_X11) {
+    if (wm_info.subsystem == SDL_SYSWM_X11) {
         char *xdg_session_type = SDL_getenv("XDG_SESSION_TYPE");
         char *wayland_display = SDL_getenv("WAYLAND_DISPLAY");
-        if (NULL != wayland_display
-            || SDL_strcmp(xdg_session_type, "wayland") == 0) {
+        if (NULL != wayland_display ||
+            SDL_strcmp(xdg_session_type, "wayland") == 0) {
             if (PyErr_WarnEx(PyExc_Warning,
                              "PyGame seems to be running through X11 "
-                             "on top if wayland, instead of wayland directly", 1) != 0)
+                             "on top if wayland, instead of wayland directly",
+                             1) != 0)
                 return NULL;
-
         }
-
     }
 
     /*probably won't do much, but can't hurt, and might help*/
