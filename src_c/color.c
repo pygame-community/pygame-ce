@@ -2034,6 +2034,12 @@ static int
 color_setAttr_swizzle(pgColorObject *self, PyObject *attr_name, PyObject *val)
 {
     Py_ssize_t len = PySequence_Length(attr_name);
+ 
+    if (len == 1) {
+        return PyObject_GenericSetAttr((PyObject *)self, attr_name,
+                                val);
+    }
+
     PyObject *attr_unicode = PyUnicode_FromObject(attr_name);
     const char *attr = PyUnicode_AsUTF8AndSize(attr_unicode, &len);
     char used[4];
@@ -2127,7 +2133,6 @@ color_getAttr_swizzle(pgColorObject *self, PyObject *attr_name)
             ((pgColorObject *)res)->data[i] = value;
         }
         else {
-            res = PyTuple_New(len);
             if (PyTuple_SetItem(res, i, PyFloat_FromDouble(value)) != 0) {
                 Py_XDECREF(res);
                 Py_XDECREF(attr_unicode);
