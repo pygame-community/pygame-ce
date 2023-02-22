@@ -131,11 +131,16 @@ jobs:
         export MAC_ARCH="${{ matrix.macarch }}"
         brew install pkg-config
         cd buildconfig/macdependencies
+        cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
         bash ./install_mac_deps.sh
 
       CIBW_BEFORE_BUILD: |
         pip install requests numpy Sphinx
         python setup.py docs
+        cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
+
+      # To remove any speculations about the wheel not being self-contained
+      CIBW_BEFORE_TEST: rm -rf ${{ github.workspace }}/pygame_mac_deps
 
       CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,timing --time_out 300
 
