@@ -2034,24 +2034,25 @@ static int
 color_setAttr_swizzle(pgColorObject *self, PyObject *attr_name, PyObject *val)
 {
     Py_ssize_t len = PySequence_Length(attr_name);
- 
+    const char *current;
+
     if (len == 1) {
-        return PyObject_GenericSetAttr((PyObject *)self, attr_name,
-                                val);
+        return PyObject_GenericSetAttr((PyObject *)self, attr_name, val);
     }
 
     PyObject *attr_unicode = PyUnicode_FromObject(attr_name);
     const char *attr = PyUnicode_AsUTF8AndSize(attr_unicode, &len);
     char used[4];
 
-    for (int j = 0; j < 4; j++) {
+    int j;
+    for (j = 0; j < 4; j++) {
         used[j] = '\0';
     }
 
     Py_ssize_t i;
     for (i = 0; i < len; i++) {
-        const char current = attr[i];
-        for (int j = 0; j < 4; j++) {
+        current = attr[i];
+        for (j = 0; j < 4; j++) {
             if (used[j] == current) {
                 PyErr_SetString(
                     PyExc_AttributeError,
