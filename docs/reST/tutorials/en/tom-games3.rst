@@ -56,7 +56,7 @@ a nasty traceback, which non-programmers won't understand. The code is fairly si
 3.2. Resource handling functions
 --------------------------------
 
-In the :doc:`Line By Line Chimp <ChimpLineByLine>` example, the first code to be written was for loading images and sounds. As these
+In the :doc:`Line By Line Chimp <chimp-explanation>` example, the first code to be written was for loading images and sounds. As these
 were totally independent of any game logic or game objects, they were written as separate functions, and were written first so
 that later code could make use of them. I generally put all my code of this nature first, in their own, classless functions; these
 will, generally speaking, be resource handling functions. You can of course create classes for these, so that you can group them

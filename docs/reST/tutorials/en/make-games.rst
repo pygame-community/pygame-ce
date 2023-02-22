@@ -14,11 +14,11 @@ Making Games With Pygame
    :hidden:
    :glob:
 
-   tom_games2
-   tom_games3
-   tom_games4
-   tom_games5
-   tom_games6
+   tom-games2
+   tom-games3
+   tom-games4
+   tom-games5
+   tom-games6
 
 Table of Contents
 -----------------
@@ -73,7 +73,7 @@ Table of Contents
 1. Introduction
 ---------------
 
-First of all, I will assume you have read the :doc:`Line By Line Chimp <ChimpLineByLine>`
+First of all, I will assume you have read the :doc:`Line By Line Chimp <chimp-explanation>`
 tutorial, which introduces the basics of Python and pygame. Give it a read before reading this
 tutorial, as I won't bother repeating what that tutorial says (or at least not in as much detail). This tutorial is aimed at those
 who understand how to make a ridiculously simple little "game", and who would like to make a relatively simple game like Pong.
