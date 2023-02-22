@@ -203,7 +203,7 @@ static PyMethodDef _color_methods[] = {
      DOC_COLORSETLENGTH},
     {"lerp", (PyCFunction)_color_lerp, METH_VARARGS | METH_KEYWORDS,
      DOC_COLORLERP},
-    {"grayscale", (PyCFunction)_color_grayscale, METH_VARARGS | METH_KEYWORDS,
+    {"grayscale", (PyCFunction)_color_grayscale, METH_NOARGS,
      DOC_COLORGRAYSCALE},
     {"premul_alpha", (PyCFunction)_premul_alpha, METH_NOARGS,
      DOC_COLORPREMULALPHA},

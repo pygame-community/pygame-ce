@@ -230,7 +230,11 @@
 
       | :sl:`returns the grayscale of a Color`
       | :sg:`grayscale() -> Color`
-      Returns a Color which represents the grayscaled version of self using the luminosity formula which weights red, green and blue according to their wavelengths..
+      
+      Returns a new Color object which represents the grayscaled version of self, using the luminosity formula, 
+      which weighs red, green, and blue according to their relative contribution to perceived brightness.
+
+      .. versionadded:: 2.1.4
 
       .. ## Color.grayscale ##
 
