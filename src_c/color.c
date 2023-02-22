@@ -2034,7 +2034,7 @@ static int
 color_setAttr_swizzle(pgColorObject *self, PyObject *attr_name, PyObject *val)
 {
     Py_ssize_t len = PySequence_Length(attr_name);
-    const char *current;
+    char current;
 
     if (len == 1) {
         return PyObject_GenericSetAttr((PyObject *)self, attr_name, val);
@@ -2062,20 +2062,19 @@ color_setAttr_swizzle(pgColorObject *self, PyObject *attr_name, PyObject *val)
         }
         switch (current) {
             case 'r':
-                self->data[RED] =
-                    PyFloat_AsDouble(PySequence_GetItem(val, RED));
+                self->data[RED] = PyLong_AsLong(PySequence_GetItem(val, RED));
                 break;
             case 'g':
                 self->data[GREEN] =
-                    PyFloat_AsDouble(PySequence_GetItem(val, GREEN));
+                    PyLong_AsLong(PySequence_GetItem(val, GREEN));
                 break;
             case 'b':
                 self->data[BLUE] =
-                    PyFloat_AsDouble(PySequence_GetItem(val, BLUE));
+                    PyLong_AsLong(PySequence_GetItem(val, BLUE));
                 break;
             case 'a':
                 self->data[ALPHA] =
-                    PyFloat_AsDouble(PySequence_GetItem(val, ALPHA));
+                    PyLong_AsLong(PySequence_GetItem(val, ALPHA));
                 break;
             default:
                 Py_DECREF(attr_unicode);
@@ -2111,7 +2110,7 @@ color_getAttr_swizzle(pgColorObject *self, PyObject *attr_name)
     PyObject *attr_unicode = PyUnicode_FromObject(attr_name);
     const char *attr = PyUnicode_AsUTF8AndSize(attr_unicode, &len);
 
-    double value;
+    Uint8 value;
     Py_ssize_t i;
     for (i = 0; i < len; i++) {
         switch (attr[i]) {
@@ -2134,7 +2133,7 @@ color_getAttr_swizzle(pgColorObject *self, PyObject *attr_name)
             ((pgColorObject *)res)->data[i] = value;
         }
         else {
-            if (PyTuple_SetItem(res, i, PyFloat_FromDouble(value)) != 0) {
+            if (PyTuple_SetItem(res, i, PyLong_FromLong(value)) != 0) {
                 Py_XDECREF(res);
                 Py_XDECREF(attr_unicode);
                 return NULL;
@@ -2239,7 +2238,7 @@ MODINIT_DEFINE(color)
         goto error;
     }
     pgColor_Type.tp_getattro = (getattrofunc)color_getAttr_swizzle;
-    pgColor_Type.tp_setattro = (getattrofunc)color_setAttr_swizzle;
+    pgColor_Type.tp_setattro = (setattrofunc)color_setAttr_swizzle;
 
     Py_INCREF(&pgColor_Type);
     if (PyModule_AddObject(module, "Color", (PyObject *)&pgColor_Type)) {
