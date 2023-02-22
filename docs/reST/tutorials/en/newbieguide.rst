@@ -1,6 +1,6 @@
 .. TUTORIAL: David Clark's Newbie Guide To Pygame
 
-.. include:: common.txt
+.. include:: ../../common.txt
 
 **************************
   Newbie Guide to Pygame

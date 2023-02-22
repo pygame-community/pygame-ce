@@ -1,6 +1,6 @@
 .. TUTORIAL:Tom Chance's Making Games Tutorial
 
-.. include:: common.txt
+.. include:: ../../common.txt
 
 ****************************
   Making Games With Pygame
