@@ -2025,6 +2025,126 @@ _color_getbuffer(pgColorObject *color, Py_buffer *view, int flags)
     return 0;
 }
 
+#define RED 0
+#define GREEN 1
+#define BLUE 2
+#define ALPHA 3
+
+static int
+color_setAttr_swizzle(pgColorObject *self, PyObject *attr_name, PyObject *val)
+{
+    Py_ssize_t len = PySequence_Length(attr_name);
+    PyObject *attr_unicode = PyUnicode_FromObject(attr_name);
+    const char *attr = PyUnicode_AsUTF8AndSize(attr_unicode, &len);
+    char used[4];
+
+    for (int j = 0; j < 4; j++) {
+        used[j] = '\0';
+    }
+
+    Py_ssize_t i;
+    for (i = 0; i < len; i++) {
+        const char current = attr[i];
+        for (int j = 0; j < 4; j++) {
+            if (used[j] == current) {
+                PyErr_SetString(
+                    PyExc_AttributeError,
+                    "Attribute assignment conflicts with swizzling.");
+                return -1;
+            }
+        }
+        switch (current) {
+            case 'r':
+                self->data[RED] =
+                    PyFloat_AsDouble(PySequence_GetItem(val, RED));
+                break;
+            case 'g':
+                self->data[GREEN] =
+                    PyFloat_AsDouble(PySequence_GetItem(val, GREEN));
+                break;
+            case 'b':
+                self->data[BLUE] =
+                    PyFloat_AsDouble(PySequence_GetItem(val, BLUE));
+                break;
+            case 'a':
+                self->data[ALPHA] =
+                    PyFloat_AsDouble(PySequence_GetItem(val, ALPHA));
+                break;
+            default:
+                Py_DECREF(attr_unicode);
+                return PyObject_GenericSetAttr((PyObject *)self, attr_name,
+                                               val);
+        }
+        used[i] = current;
+    }
+
+    Py_DECREF(attr_unicode);
+    return 0;
+}
+
+static PyObject *
+color_getAttr_swizzle(pgColorObject *self, PyObject *attr_name)
+{
+    Py_ssize_t len = PySequence_Length(attr_name);
+    PyObject *res;
+
+    if (len == 1) {
+        return PyObject_GenericGetAttr((PyObject *)self, attr_name);
+    }
+
+    if (len == 3 || len == 4) {
+        Uint8 data[len];
+        res = pgColor_New(data);
+        ((pgColorObject *)res)->data[ALPHA] = 255;
+    }
+    else {
+        res = PyTuple_New(len);
+    }
+
+    PyObject *attr_unicode = PyUnicode_FromObject(attr_name);
+    const char *attr = PyUnicode_AsUTF8AndSize(attr_unicode, &len);
+
+    double value;
+    Py_ssize_t i;
+    for (i = 0; i < len; i++) {
+        switch (attr[i]) {
+            case 'r':
+                value = self->data[RED];
+                break;
+            case 'g':
+                value = self->data[GREEN];
+                break;
+            case 'b':
+                value = self->data[BLUE];
+                break;
+            case 'a':
+                value = self->data[ALPHA];
+                break;
+            default:
+                return PyObject_GenericGetAttr((PyObject *)self, attr_name);
+        }
+        if (len == 3 || len == 4) {
+            ((pgColorObject *)res)->data[i] = value;
+        }
+        else {
+            res = PyTuple_New(len);
+            if (PyTuple_SetItem(res, i, PyFloat_FromDouble(value)) != 0) {
+                Py_XDECREF(res);
+                Py_XDECREF(attr_unicode);
+                return NULL;
+            };
+        }
+    }
+
+    Py_DECREF(attr_unicode);
+    return res;
+}
+
+#undef RED
+#undef GREEN
+#undef BLUE
+#undef ALPHA
+
 /**** C API interfaces ****/
 static PyObject *
 pgColor_New(Uint8 rgba[])
@@ -2112,7 +2232,9 @@ MODINIT_DEFINE(color)
     if (!module) {
         goto error;
     }
-    pgColor_Type.tp_getattro = PyObject_GenericGetAttr;
+    pgColor_Type.tp_getattro = (getattrofunc)color_getAttr_swizzle;
+    pgColor_Type.tp_setattro = (getattrofunc)color_setAttr_swizzle;
+
     Py_INCREF(&pgColor_Type);
     if (PyModule_AddObject(module, "Color", (PyObject *)&pgColor_Type)) {
         Py_DECREF(&pgColor_Type);
