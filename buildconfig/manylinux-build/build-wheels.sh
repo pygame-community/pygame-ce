@@ -64,6 +64,6 @@ for PYVER in $SUPPORTED_PYTHONS; do
 	    PYTHON="/opt/python/${PYVER}/bin/pypy"
 	fi
 
-    ${PYTHON} -m pip install pygame --no-index -f /io/buildconfig/manylinux-build/wheelhouse
+    ${PYTHON} -m pip install pygame-ce --no-index -f /io/buildconfig/manylinux-build/wheelhouse
     (cd $HOME; ${PYTHON} -m pygame.tests -vv --exclude opengl,music,timing)
 done

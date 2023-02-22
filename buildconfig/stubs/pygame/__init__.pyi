@@ -41,7 +41,7 @@ from pygame import (
     surface as surface,
     surflock as surflock,
     sysfont as sysfont,
-    _debug as _debug
+    _debug as _debug,
 )
 
 from .rect import Rect as Rect
@@ -228,6 +228,7 @@ from .constants import (
     HWACCEL as HWACCEL,
     HWPALETTE as HWPALETTE,
     HWSURFACE as HWSURFACE,
+    IS_CE as IS_CE,
     JOYAXISMOTION as JOYAXISMOTION,
     JOYBALLMOTION as JOYBALLMOTION,
     JOYBUTTONDOWN as JOYBUTTONDOWN,
