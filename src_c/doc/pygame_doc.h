@@ -1,5 +1,6 @@
 /* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
 #define DOC_PYGAME "the top level pygame package"
+#define DOC_PYGAMEISCE "IS_CE = 1\nexists if current pygame is pygame-ce"
 #define DOC_PYGAMEINIT "init() -> (numpass, numfail)\ninitialize all imported pygame modules"
 #define DOC_PYGAMEQUIT "quit() -> None\nuninitialize all pygame modules"
 #define DOC_PYGAMEGETINIT "get_init() -> bool\nreturns True if pygame is currently initialized"
@@ -25,6 +26,10 @@
 
 pygame
 the top level pygame package
+
+pygame.IS_CE
+ IS_CE = 1
+exists if current pygame is pygame-ce
 
 pygame.init
  init() -> (numpass, numfail)
