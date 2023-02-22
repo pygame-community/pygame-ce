@@ -853,6 +853,9 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     int display = _get_display(win);
     char *title = state->title;
     char *scale_env;
+    SDL_SysWMinfo wm_info;
+
+    SDL_VERSION(&wm_info.version);
 
     char *keywords[] = {"size", "flags", "depth", "display", "vsync", NULL};
 
@@ -1333,6 +1336,24 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     }
     if (state->icon)
         SDL_SetWindowIcon(win, pgSurface_AsSurface(state->icon));
+
+        if (!SDL_GetWindowWMInfo(win, &wm_info)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    if (wm_info.subsystem==SDL_SYSWM_X11) {
+        char *xdg_session_type = SDL_getenv("XDG_SESSION_TYPE");
+        char *wayland_display = SDL_getenv("WAYLAND_DISPLAY");
+        if (NULL != wayland_display
+            || SDL_strcmp(xdg_session_type, "wayland") == 0) {
+            if (PyErr_WarnEx(PyExc_Warning,
+                             "PyGame seems to be running through X11 "
+                             "on top if wayland, instead of wayland directly", 1) != 0)
+                return NULL;
+
+        }
+
+    }
 
     /*probably won't do much, but can't hurt, and might help*/
     SDL_PumpEvents();
@@ -2154,7 +2175,9 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
         // In the future, add consoles like xbone/switch here
         case SDL_SYSWM_DIRECTFB:
         case SDL_SYSWM_UIKIT:    // iOS currently not supported by pygame
-        case SDL_SYSWM_ANDROID:  // currently not supported by pygame
+        case SDL_SYSWM_ANDROID:  // supported through pygame-for-android,
+                                 // but fullscreen only
+        case SDL_SYSWM_KMSDRM:
             if (PyErr_WarnEx(PyExc_Warning,
                              "cannot leave FULLSCREEN on this platform",
                              1) != 0) {
@@ -2390,6 +2413,9 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
             display_surface->surf = SDL_GetWindowSurface(win);
         }
         else if (wm_info.subsystem == SDL_SYSWM_WAYLAND) {
+            /* This only happens AFTER other options have been exhausted.
+             * with GL, Renderer, or the correct window size, toggling works.
+             * Only entering a hard fullscreen state is unsupported. */
             if (PyErr_WarnEx(PyExc_Warning,
                              "skipping toggle_fullscreen on wayland",
                              1) != 0) {

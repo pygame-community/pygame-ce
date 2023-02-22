@@ -67,6 +67,7 @@ while not done:
     pg.draw.circle(screen, (0, 0, 200), (0, 0), 10)
     pg.draw.circle(screen, (200, 0, 0), (160, 120), 30)
     if do_vsync:
+        # vertical line that moves horizontally to make screen tearing obvious
         pg.draw.line(screen, (250, 250, 0), (i, 0), (i, 120))
     else:
         pg.draw.line(screen, (250, 250, 0), (0, 120), (160, 0))
@@ -75,6 +76,8 @@ while not done:
     pg.display.set_caption("FPS:"+str(clock.get_fps()))
     if do_vsync:
         pg.display.flip()
+        # FPS should be limited by vsync, so we tick really fast
+        # we only need to have the clock tick to track FPS
         clock.tick(1000)
     else:
         clock.tick(FPS)
