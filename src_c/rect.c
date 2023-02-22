@@ -227,7 +227,7 @@ pgRect_FromObject(PyObject *obj, SDL_Rect *temp)
         return &((pgRectObject *)obj)->r;
     }
 
-    if (PyTuple_Check(obj) || PyList_Check(obj)) {
+    if (pgSequenceFast_Check(obj)) {
         length = PySequence_Fast_GET_SIZE(obj);
         PyObject **items = PySequence_Fast_ITEMS(obj);
 
