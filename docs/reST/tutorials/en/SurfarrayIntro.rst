@@ -267,7 +267,7 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: surfarray_allblack.png
+      .. image:: assets/surfarray_allblack.png
          :alt: allblack
 
       ::
@@ -286,7 +286,7 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: surfarray_striped.png
+      .. image:: assets/surfarray_striped.png
          :alt: striped
 
       ::
@@ -307,7 +307,7 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: surfarray_rgbarray.png
+      .. image:: assets/surfarray_rgbarray.png
          :alt: rgbarray
 
       ::
@@ -330,7 +330,7 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: surfarray_flipped.png
+      .. image:: assets/surfarray_flipped.png
          :alt: flipped
 
       ::
@@ -347,7 +347,7 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: surfarray_scaledown.png
+      .. image:: assets/surfarray_scaledown.png
          :alt: scaledown
 
       ::
@@ -365,7 +365,7 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: surfarray_scaleup.png
+      .. image:: assets/surfarray_scaleup.png
          :alt: scaleup
 
       ::
@@ -392,7 +392,7 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: surfarray_redimg.png
+      .. image:: assets/surfarray_redimg.png
          :alt: redimg
 
       ::
@@ -412,7 +412,7 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: surfarray_soften.png
+      .. image:: assets/surfarray_soften.png
          :alt: soften
 
       ::
@@ -445,7 +445,7 @@ that displays an array on the screen.
 
    .. container:: example
 
-      .. image:: surfarray_xfade.png
+      .. image:: assets/surfarray_xfade.png
          :alt: xfade
 
       ::

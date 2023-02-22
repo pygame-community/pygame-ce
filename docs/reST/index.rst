@@ -7,7 +7,7 @@ Pygame Front Page
    :hidden:
 
    ref/*
-   tutorials/*
+   tutorials/en/*
    tutorials/en/**/*
    tutorials/ko/**/*
    tutorials/es/*
@@ -64,47 +64,47 @@ Documents
 Tutorials
 ---------
 
-:doc:`Introduction to Pygame <tutorials/PygameIntro>`
+:doc:`Introduction to Pygame <tutorials/en/PygameIntro>`
   An introduction to the basics of pygame.
   This is written for users of Python and appeared in volume two of the Py magazine.
 
-:doc:`Import and Initialize <tutorials/ImportInit>`
+:doc:`Import and Initialize <tutorials/en/ImportInit>`
   The beginning steps on importing and initializing pygame.
   The pygame package is made of several modules.
   Some modules are not included on all platforms.
 
-:doc:`How do I move an Image? <tutorials/MoveIt>`
+:doc:`How do I move an Image? <tutorials/en/MoveIt>`
   A basic tutorial that covers the concepts behind 2D computer animation.
   Information about drawing and clearing objects to make them appear animated.
 
-:doc:`Chimp Tutorial, Line by Line <tutorials/ChimpLineByLine>`
+:doc:`Chimp Tutorial, Line by Line <tutorials/en/ChimpLineByLine>`
   The pygame examples include a simple program with an interactive fist and a chimpanzee.
   This was inspired by the annoying flash banner of the early 2000s.
   This tutorial examines every line of code used in the example.
 
-:doc:`Sprite Module Introduction <tutorials/SpriteIntro>`
+:doc:`Sprite Module Introduction <tutorials/en/SpriteIntro>`
   Pygame includes a higher level sprite module to help organize games.
   The sprite module includes several classes that help manage details found in almost all games types.
   The Sprite classes are a bit more advanced than the regular pygame modules,
   and need more understanding to be properly used.
 
-:doc:`Surfarray Introduction <tutorials/SurfarrayIntro>`
+:doc:`Surfarray Introduction <tutorials/en/SurfarrayIntro>`
   Pygame used the NumPy python module to allow efficient per pixel effects on images.
   Using the surface arrays is an advanced feature that allows custom effects and filters.
   This also examines some of the simple effects from the pygame example, arraydemo.py.
 
-:doc:`Camera Module Introduction <tutorials/CameraIntro>`
+:doc:`Camera Module Introduction <tutorials/en/CameraIntro>`
   Pygame, as of 1.9, has a camera module that allows you to capture images,
   watch live streams, and do some basic computer vision.
   This tutorial covers those use cases.
 
-:doc:`Newbie Guide <tutorials/newbieguide>`
+:doc:`Newbie Guide <tutorials/en/newbieguide>`
   A list of thirteen helpful tips for people to get comfortable using pygame.
 
-:doc:`Making Games Tutorial <tutorials/MakeGames>`
+:doc:`Making Games Tutorial <tutorials/en/MakeGames>`
   A large tutorial that covers the bigger topics needed to create an entire game.
 
-:doc:`Display Modes <tutorials/DisplayModes>`
+:doc:`Display Modes <tutorials/en/DisplayModes>`
   Getting a display surface for the screen.
 
 :doc:`한국어 튜토리얼 (Korean Tutorial) <tutorials/ko/빨간블록 검은블록/개요>`

@@ -49,7 +49,7 @@ and run the chimp demo for yourself in the examples directory.
 
    (no, this is not a banner ad, it's the screenshot)
 
-   .. image:: chimpshot.gif
+   .. image:: assets/chimpshot.gif
       :alt: chimp game banner
 
    :doc:`Full Source <chimp.py>`
