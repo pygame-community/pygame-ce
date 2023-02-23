@@ -316,6 +316,12 @@ supported Python version. #endif */
 
 #endif /* PY_VERSION_HEX >= 0x03070000 */
 
+/* Update this function if new sequences are added to the fast sequence
+ * type. */
+#ifndef pgSequenceFast_Check
+#define pgSequenceFast_Check(o) (PyList_Check(o) || PyTuple_Check(o))
+#endif /* ~pgSequenceFast_Check */
+
 /*
  * event module internals
  */
