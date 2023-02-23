@@ -226,7 +226,7 @@ Instead, always begin with the original image and scale to the desired size.)
    | :sl:`blur a surface using gaussian blur`
    | :sg:`gaussian_blur(surface, radius, repeat_edge_pixels=True, dest_surface=None) -> Surface`
 
-   Returns the blured surface using gaussian blur algorithm.
+   Returns the blurred surface using gaussian blur algorithm.
    Slower than `box_blur()`.
 
    .. versionadded:: 2.1.4
