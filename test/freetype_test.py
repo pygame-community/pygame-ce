@@ -64,7 +64,7 @@ class FreeTypeFontTest(unittest.TestCase):
     def setUpClass(cls):
         ft.init()
 
-        # Setup the test fonts.
+        # Set up the test fonts.
 
         # Inconsolata is an open-source font designed by Raph Levien.
         # Licensed under the Open Font License.
@@ -133,7 +133,7 @@ class FreeTypeFontTest(unittest.TestCase):
             FileNotFoundError, f.__init__, os.path.join(FONTDIR, "nonexistent.ttf")
         )
 
-        # Test attribute preservation during reinitalization
+        # Test attribute preservation during reinitialization
         f = ft.Font(self._sans_path, size=24, ucs4=True)
         self.assertEqual(f.name, "Liberation Sans")
         self.assertTrue(f.scalable)
@@ -1011,7 +1011,7 @@ class FreeTypeFontTest(unittest.TestCase):
         font = self._TEST_FONTS["sans"]
         text = "abc"
 
-        # No frills antialiased render to int1 (__render_glyph_INT)
+        # No frills anti aliased render to int1 (__render_glyph_INT)
         srect = font.get_rect(text, size=24)
         surf = pygame.Surface(srect.size, 0, 8)
         rrect = font.render_raw_to(surf.get_view("2"), text, size=24)
@@ -1052,7 +1052,7 @@ class FreeTypeFontTest(unittest.TestCase):
         finally:
             font.antialiased = True
 
-        # Antialiased render to ints sized greater than 1 byte
+        # Anti aliased render to ints sized greater than 1 byte
         # (__render_glyph_INT)
         srect = font.get_rect(text, size=24)
 
@@ -1595,7 +1595,7 @@ class FreeTypeFontTest(unittest.TestCase):
         n = len(refs)
         self.assertTrue(n > 0)
 
-        # for pypy we garbage collection twice.
+        # for pypy we perform garbage collection twice.
         for i in range(2):
             gc.collect()
 
@@ -1626,7 +1626,7 @@ class FreeTypeFontTest(unittest.TestCase):
         """Font.render_to() on a closed display surface"""
 
         # The Font.render_to() method checks that PySurfaceObject.surf is NULL
-        # and raise a exception if it is. This fixes a bug in Pygame revision
+        # and raise an exception if it is. This fixes a bug in Pygame revision
         # 0600ea4f1cfb and earlier where Pygame segfaults instead.
         null_surface = pygame.Surface.__new__(pygame.Surface)
         f = self._TEST_FONTS["sans"]

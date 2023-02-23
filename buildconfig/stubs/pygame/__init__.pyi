@@ -41,6 +41,7 @@ from pygame import (
     surface as surface,
     surflock as surflock,
     sysfont as sysfont,
+    _debug as _debug,
 )
 
 from .rect import Rect as Rect
@@ -51,6 +52,12 @@ from .math import Vector2 as Vector2, Vector3 as Vector3
 from .cursors import Cursor as Cursor
 from .bufferproxy import BufferProxy as BufferProxy
 from .mask import Mask as Mask
+from ._debug import print_debug_info as print_debug_info
+from .event import Event as Event
+from .font import Font as Font
+from .mixer import Channel as Channel
+from .time import Clock as Clock
+from .joystick import Joystick as Joystick
 from .base import (
     BufferError as BufferError,
     HAVE_NEWBUF as HAVE_NEWBUF,
