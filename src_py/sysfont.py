@@ -161,13 +161,13 @@ def _font_finder_darwin():
 
     username = os.getenv("USER")
     if username:
-        locations.append("/Users/" + username + "/Library/Fonts")
+        locations.append(f"/Users/{username}/Library/Fonts")
 
     strange_root = "/System/Library/Assets/com_apple_MobileAsset_Font3"
     if exists(strange_root):
         strange_locations = os.listdir(strange_root)
         for loc in strange_locations:
-            locations.append(strange_root + "/" + loc + "/AssetData")
+            locations.append(f"{strange_root}/{loc}/AssetData")
 
     fonts = {}
 
@@ -185,7 +185,7 @@ def _font_finder_darwin():
 
 
 def initsysfonts_darwin():
-    """Read the fonts on MacOS, and OS X."""
+    """Read the fonts on macOS, and OS X."""
     # if the X11 binary exists... try and use that.
     #  Not likely to be there on pre 10.4.x ... or MacOS 10.10+
     if exists("/usr/X11/bin/fc-list"):
@@ -251,7 +251,7 @@ def _parse_font_entry_unix(entry, fonts):
     Parses an entry in the unix font data to add to the pygame font
     dictionary.
 
-    :param entry: A entry from the unix font list.
+    :param entry: An entry from the unix font list.
     :param fonts: The pygame font dictionary to add the parsed font data to.
 
     """
@@ -397,7 +397,7 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
     the appropriate system font will be selected if available.
 
     This will always return a valid Font object, and will
-    fallback on the builtin pygame font if the given font
+    fall back on the builtin pygame font if the given font
     is not found.
 
     Name can also be an iterable of font names, a string of
@@ -474,8 +474,8 @@ def get_fonts():
     return list(Sysfonts)
 
 
-def match_font(name, bold=0, italic=0):
-    """pygame.font.match_font(name, bold=0, italic=0) -> name
+def match_font(name, bold=False, italic=False):
+    """pygame.font.match_font(name, bold=False, italic=False) -> name
     find the filename for the named system font
 
     This performs the same font search as the SysFont()

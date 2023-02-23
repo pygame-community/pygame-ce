@@ -11,12 +11,12 @@
 The pygame math module currently provides Vector classes in two and three
 dimensions, ``Vector2`` and ``Vector3`` respectively.
 
-They support the following numerical operations: ``vec+vec``, ``vec-vec``, 
-``vec*number``, ``number*vec``, ``vec/number``, ``vec//number``, ``vec+=vec``, 
-``vec-=vec``, ``vec*=number``, ``vec/=number``, ``vec//=number``. 
+They support the following numerical operations: ``vec + vec``, ``vec - vec``,
+``vec * number``, ``number * vec``, ``vec / number``, ``vec // number``, ``vec += vec``,
+``vec -= vec``, ``vec *= number``, ``vec /= number``, ``vec //= number``, ``round(vec, ndigits=0)``.
 
 All these operations will be performed elementwise.
-In addition ``vec*vec`` will perform a scalar-product (a.k.a. dot-product). 
+In addition ``vec * vec`` will perform a scalar-product (a.k.a. dot-product).
 If you want to multiply every element from vector v with every element from 
 vector w you can use the elementwise method: ``v.elementwise() * w``
 
@@ -46,12 +46,25 @@ Multiple coordinates can be set using slices or swizzling
 .. versionadded:: 1.9.2pre
 .. versionchanged:: 1.9.4 Removed experimental notice.
 .. versionchanged:: 1.9.4 Allow scalar construction like GLSL Vector2(2) == Vector2(2.0, 2.0)
-.. versionchanged:: 1.9.4 :mod:`pygame.math` required import. More convenient ``pygame.Vector2`` and ``pygame.Vector3``.
+.. versionchanged:: 1.9.4 :mod:`pygame.math` import not required. More convenient ``pygame.Vector2`` and ``pygame.Vector3``.
+.. versionchanged:: 2.1.4 `round` returns a new vector with components rounded to the specified digits.
+
+.. function:: clamp
+
+   | :sl:`returns value clamped to min and max.`
+   | :sg:`clamp(value, min, max) -> float`
+
+   Clamps a numeric ``value`` so that it's no lower than ``min``, and no higher
+   than ``max``.
+
+   .. versionadded:: 2.1.3
+
+   .. ## math.clamp ##
 
 .. class:: Vector2
 
    | :sl:`a 2-Dimensional Vector`
-   | :sg:`Vector2() -> Vector2`
+   | :sg:`Vector2() -> Vector2(0, 0)`
    | :sg:`Vector2(int) -> Vector2`
    | :sg:`Vector2(float) -> Vector2`
    | :sg:`Vector2(complex) -> Vector2`
@@ -75,7 +88,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: cross
 
       | :sl:`calculates the cross- or vector-product`
-      | :sg:`cross(Vector2) -> Vector2`
+      | :sg:`cross(Vector2) -> float`
 
       calculates the third component of the cross-product.
 
@@ -333,7 +346,14 @@ Multiple coordinates can be set using slices or swizzling
       | :sl:`calculates the angle to a given vector in degrees.`
       | :sg:`angle_to(Vector2) -> float`
 
-      Returns the angle between self and the given vector.
+      Returns the angle from self to the passed ``Vector2`` that would rotate self
+      to be aligned with the passed ``Vector2`` without crossing over the negative
+      x-axis.
+
+      .. figure:: code_examples/angle_to.png
+         :alt: angle_to image
+
+         Example demonstrating the angle returned
 
       .. ## Vector2.angle_to ##
 
@@ -388,8 +408,15 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`clamp_magnitude(max_length) -> Vector2`
       | :sg:`clamp_magnitude(min_length, max_length) -> Vector2`
 
-      Returns a new copy of a vector with the magnitude clamped between max_length and min_length. If
-      a min_length value is not assigned, then it will automatically be set to 0.
+      **Experimental:** feature still in development available for testing and feedback. It may change.
+      `Please leave clamp_magnitude feedback with authors <https://github.com/pygame/pygame/pull/2990>`_
+
+      Returns a new copy of a vector with the magnitude clamped between
+      ``max_length`` and ``min_length``. If only one argument is passed, it is
+      taken to be the ``max_length``
+
+      This function raises ``ValueError`` if ``min_length`` is greater than
+      ``max_length``, or if either of these values are negative.
 
       .. versionadded:: 2.1.3
 
@@ -402,8 +429,11 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`clamp_magnitude_ip(max_length) -> None`
       | :sg:`clamp_magnitude_ip(min_length, max_length) -> None`
 
-      Clamps the vector's magnitude between max_length and min_length. If a min_length value is not assigned,
-      then it will automatically be set to 0.
+      Clamps the vector's magnitude between ``max_length`` and ``min_length``.
+      If only one argument is passed, it is taken to be the ``max_length``
+
+      This function raises ``ValueError`` if ``min_length`` is greater than
+      ``max_length``, or if either of these values are negative.
 
       .. versionadded:: 2.1.3
 
@@ -438,12 +468,46 @@ Multiple coordinates can be set using slices or swizzling
 
       .. ## Vector2.update ##
 
+
+   .. attribute:: epsilon
+
+      | :sl:`Determines the tolerance of vector calculations.`
+
+      Both Vector classes have a value named ``epsilon`` that defaults to ``1e-6``.
+      This value acts as a numerical margin in various methods to account for floating point
+      arithmetic errors. Specifically, ``epsilon`` is used in the following places:
+
+         * comparing Vectors (``==`` and ``!=``)
+         * the ``is_normalized`` method (if the square of the length is within ``epsilon`` of 1, it's normalized)
+         * slerping (a Vector with a length of ``<epsilon`` is considered a zero vector, and can't slerp with that)
+         * reflection (can't reflect over the zero vector)
+         * projection (can't project onto the zero vector)
+         * rotation (only used when rotating by a multiple of 90 degrees)
+
+      While it's possible to change ``epsilon`` for a specific instance of a Vector, all the other Vectors
+      will retain the default value. Changing ``epsilon`` on a specific instance however could lead to some
+      asymmetric behavior where symmetry would be expected, such as
+
+      ::
+
+         u = pygame.Vector2(0, 1)
+         v = pygame.Vector2(0, 1.2)
+         u.epsilon = 0.5 # don't set it nearly this large
+
+         print(u == v) # >> True
+         print(v == u) # >> False
+
+      You'll probably never have to change ``epsilon`` from the default value, but in rare situations you might
+      find that either the margin is too large or too small, in which case changing ``epsilon`` slightly
+      might help you out.
+
+
    .. ## pygame.math.Vector2 ##
 
 .. class:: Vector3
 
    | :sl:`a 3-Dimensional Vector`
-   | :sg:`Vector3() -> Vector3`
+   | :sg:`Vector3() -> Vector3(0, 0, 0)`
    | :sg:`Vector3(int) -> Vector3`
    | :sg:`Vector3(float) -> Vector3`
    | :sg:`Vector3(Vector3) -> Vector3`
@@ -973,8 +1037,12 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`clamp_magnitude(max_length) -> Vector3`
       | :sg:`clamp_magnitude(min_length, max_length) -> Vector3`
 
-      Returns a new copy of a vector with the magnitude clamped between max_length and min_length. If
-      a min_length value is not assigned, then it will automatically be set to 0.
+      Returns a new copy of a vector with the magnitude clamped between
+      ``max_length`` and ``min_length``. If only one argument is passed, it is
+      taken to be the ``max_length``
+
+      This function raises ``ValueError`` if ``min_length`` is greater than
+      ``max_length``, or if either of these values are negative.
 
       .. versionadded:: 2.1.3
 
@@ -987,8 +1055,11 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`clamp_magnitude_ip(max_length) -> None`
       | :sg:`clamp_magnitude_ip(min_length, max_length) -> None`
 
-      Clamps the vector's magnitude between max_length and min_length. If a min_length value is not assigned,
-      then it will automatically be set to 0.
+      Clamps the vector's magnitude between ``max_length`` and ``min_length``.
+      If only one argument is passed, it is taken to be the ``max_length``
+
+      This function raises ``ValueError`` if ``min_length`` is greater than
+      ``max_length``, or if either of these values are negative.
 
       .. versionadded:: 2.1.3
 
@@ -1009,6 +1080,12 @@ Multiple coordinates can be set using slices or swizzling
       .. versionadded:: 1.9.5
 
       .. ## Vector3.update ##
+
+   .. attribute:: epsilon
+
+      | :sl:`Determines the tolerance of vector calculations.`
+
+      With lengths within this number, vectors are considered equal. For more information see :attr:`pygame.math.Vector2.epsilon`
 
    .. ##  ##
 

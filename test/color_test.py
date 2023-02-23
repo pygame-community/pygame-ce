@@ -268,6 +268,12 @@ class ColorTypeTest(unittest.TestCase):
         r, g, b = c
         self.assertEqual((1, 2, 3), (r, g, b))
 
+        # Checking if DeprecationWarning is triggered
+        # when function is called
+        for i in range(1, 5):
+            with self.assertWarns(DeprecationWarning):
+                c.set_length(i)
+
     def test_length(self):
         # should be able to unpack to r,g,b,a and r,g,b
         c = pygame.Color(1, 2, 3, 4)
@@ -985,7 +991,6 @@ class ColorTypeTest(unittest.TestCase):
 
     @unittest.skipIf(IS_PYPY, "PyPy has no ctypes")
     def test_arraystruct(self):
-
         import pygame.tests.test_utils.arrinter as ai
         import ctypes as ct
 
@@ -1158,7 +1163,7 @@ class ColorTypeTest(unittest.TestCase):
         # type checking
         self.assertTrue(isinstance(color0.premul_alpha(), Color))
 
-        # hand crafted value testing
+        # handcrafted value testing
         self.assertEqual(alpha0.premul_alpha(), Color(0, 0, 0, 0))
         self.assertEqual(alpha49.premul_alpha(), Color(49, 0, 0, 49))
         self.assertEqual(alpha67.premul_alpha(), Color(0, 67, 0, 67))

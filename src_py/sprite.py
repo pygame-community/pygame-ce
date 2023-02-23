@@ -273,13 +273,12 @@ class DirtySprite(Sprite):
         the screen.)
 
     _layer = 0
-        0 is the default value but this is able to be set differently
+        0 is the default value but this can be set differently
         when subclassing.
 
     """
 
     def __init__(self, *groups):
-
         self.dirty = 1
 
         # referred to as special_flags in the documentation of Surface.blit
@@ -688,7 +687,7 @@ class OrderedUpdates(RenderUpdates):
         RenderUpdates.__init__(self, *sprites)
 
     def sprites(self):
-        return list(self._spritelist)
+        return self._spritelist.copy()
 
     def add_internal(self, sprite, layer=None):
         RenderUpdates.add_internal(self, sprite)
@@ -829,12 +828,12 @@ class LayeredUpdates(AbstractGroup):
         del self._spritelayers[sprite]
 
     def sprites(self):
-        """return a ordered list of sprites (first back, last top).
+        """return an ordered list of sprites (first back, last top).
 
         LayeredUpdates.sprites(): return sprites
 
         """
-        return list(self._spritelist)
+        return self._spritelist.copy()
 
     def draw(self, surface):
         """draw all sprites in the right order onto the passed surface
@@ -996,13 +995,13 @@ class LayeredUpdates(AbstractGroup):
         return self._spritelist[-1]
 
     def get_sprites_from_layer(self, layer):
-        """return all sprites from a layer ordered as they where added
+        """return all sprites from a layer ordered as they were added
 
         LayeredUpdates.get_sprites_from_layer(layer): return sprites
 
         Returns all sprites from a layer. The sprites are ordered in the
-        sequence that they where added. (The sprites are not removed from the
-        layer.
+        sequence that they were added. (The sprites are not removed from the
+        layer).
 
         """
         sprites = []
@@ -1044,7 +1043,7 @@ class LayeredDirty(LayeredUpdates):
     It uses the dirty flag technique and is therefore faster than
     pygame.sprite.RenderUpdates if you have many static sprites.  It
     also switches automatically between dirty rect updating and full
-    screen drawing, so you do no have to worry which would be faster.
+    screen drawing, so you do not have to worry which would be faster.
 
     As with the pygame.sprite.Group, you can specify some additional attributes
     through kwargs:
@@ -1529,7 +1528,7 @@ def collide_circle(left, right):
     except AttributeError:
         leftrect = left.rect
         # approximating the radius of a square by using half of the diagonal,
-        # might give false positives (especially if its a long small rect)
+        # might give false positives (especially if it's a long small rect)
         leftradius = 0.5 * ((leftrect.width**2 + leftrect.height**2) ** 0.5)
         # store the radius on the sprite for next time
         left.radius = leftradius
@@ -1539,7 +1538,7 @@ def collide_circle(left, right):
     except AttributeError:
         rightrect = right.rect
         # approximating the radius of a square by using half of the diagonal
-        # might give false positives (especially if its a long small rect)
+        # might give false positives (especially if it's a long small rect)
         rightradius = 0.5 * ((rightrect.width**2 + rightrect.height**2) ** 0.5)
         # store the radius on the sprite for next time
         right.radius = rightradius
@@ -1675,7 +1674,6 @@ def spritecollide(sprite, group, dokill, collided=None):
     default_sprite_collide_func = sprite.rect.colliderect
 
     if dokill:
-
         crashed = []
         append = crashed.append
 
@@ -1744,8 +1742,8 @@ def spritecollideany(sprite, group, collided=None):
 
     pygame.sprite.spritecollideany(sprite, group): return sprite
 
-    Given a sprite and a group of sprites, this will return return any single
-    sprite that collides with with the given sprite. If there are no
+    Given a sprite and a group of sprites, this will return any single
+    sprite that collides with the given sprite. If there are no
     collisions, then this returns None.
 
     If you don't need all the features of the spritecollide function, this

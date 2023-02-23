@@ -130,14 +130,20 @@ following formats.
 .. function:: get_sdl_image_version
 
    | :sl:`get version number of the SDL_Image library being used`
-   | :sg:`get_sdl_image_version() -> None`
-   | :sg:`get_sdl_image_version() -> (major, minor, patch)`
+   | :sg:`get_sdl_image_version(linked=True) -> None`
+   | :sg:`get_sdl_image_version(linked=True) -> (major, minor, patch)`
 
    If pygame is built with extended image formats, then this function will
    return the SDL_Image library's version number as a tuple of 3 integers
    ``(major, minor, patch)``. If not, then it will return ``None``.
 
+   ``linked=True`` is the default behavior and the function will return the
+   version of the library that Pygame is linked against, while ``linked=False``
+   will return the version of the library that Pygame is compiled against.
+
    .. versionadded:: 2.0.0
+
+   .. versionchanged:: 2.1.4 ``linked`` keyword argument added and default behavior changed from returning compiled version to returning linked version
 
    .. ## pygame.image.get_sdl_image_version ##
 
@@ -154,13 +160,13 @@ following formats.
 
 .. function:: tostring
 
-   | :sl:`transfer image to string buffer`
+   | :sl:`transfer image to byte buffer`
    | :sg:`tostring(Surface, format, flipped=False) -> bytes`
 
    Creates a string of bytes that can be transferred with the ``fromstring``
    or ``frombytes`` methods in other Python imaging packages. Some Python
    image packages prefer their images in bottom-to-top format (PyOpenGL for
-   example). If you pass ``True`` for the flipped argument, the string buffer
+   example). If you pass ``True`` for the flipped argument, the byte buffer
    will be vertically flipped.
 
    The format argument is a string of one of the following values. Note that
@@ -177,17 +183,64 @@ following formats.
       * ``RGBA``, 32-bit image with an alpha channel
 
       * ``ARGB``, 32-bit image with alpha channel first
+      
+      * ``BGRA``, 32-bit image with alpha channel, red and blue channels swapped
 
       * ``RGBA_PREMULT``, 32-bit image with colors scaled by alpha channel
 
       * ``ARGB_PREMULT``, 32-bit image with colors scaled by alpha channel, alpha channel first
 
+   .. note:: it is preferred to use :func:`tobytes` as of pygame 2.1.3
+
+   .. versionadded:: 2.1.3 BGRA format
    .. ## pygame.image.tostring ##
+
+.. function:: tobytes
+
+   | :sl:`transfer image to byte buffer`
+   | :sg:`tobytes(Surface, format, flipped=False) -> bytes`
+
+   Creates a string of bytes that can be transferred with the ``fromstring``
+   or ``frombytes`` methods in other Python imaging packages. Some Python
+   image packages prefer their images in bottom-to-top format (PyOpenGL for
+   example). If you pass ``True`` for the flipped argument, the byte buffer
+   will be vertically flipped.
+
+   The format argument is a string of one of the following values. Note that
+   only 8-bit Surfaces can use the "P" format. The other formats will work for
+   any Surface. Also note that other Python image packages support more formats
+   than pygame.
+
+      * ``P``, 8-bit palettized Surfaces
+
+      * ``RGB``, 24-bit image
+
+      * ``RGBX``, 32-bit image with unused space
+
+      * ``RGBA``, 32-bit image with an alpha channel
+
+      * ``ARGB``, 32-bit image with alpha channel first
+      
+      * ``BGRA``, 32-bit image with alpha channel, red and blue channels swapped      
+
+      * ``RGBA_PREMULT``, 32-bit image with colors scaled by alpha channel
+
+      * ``ARGB_PREMULT``, 32-bit image with colors scaled by alpha channel, alpha channel first
+   
+   .. note:: this function is an alias for :func:`tostring`. The use of this
+             function is recommended over :func:`tostring` as of pygame 2.1.3.
+             This function was introduced so it matches nicely with other 
+             libraries (PIL, numpy, etc), and with people's expectations.
+
+   .. versionadded:: 2.1.3 
+
+   .. ## pygame.image.tobytes ##
+
 
 .. function:: fromstring
 
-   | :sl:`create new Surface from a string buffer`
-   | :sg:`fromstring(bytes, size, format, flipped=False) -> Surface`
+   | :sl:`create new Surface from a byte buffer`
+   | :sg:`fromstring(bytes, size, format, flipped=False, pitch=-1) -> Surface`
 
    This function takes arguments similar to :func:`pygame.image.tostring()`.
    The size argument is a pair of numbers representing the width and height.
@@ -197,19 +250,57 @@ following formats.
    The bytes and format passed must compute to the exact size of image
    specified. Otherwise a ``ValueError`` will be raised.
 
+   The 'pitch' argument can be used specify the pitch/stride per horizontal line
+   of the image bytes in bytes. It must be equal to or greater than how many bytes
+   the pixel data of each horizontal line in the image bytes occupies without any
+   extra padding. By default, it is ``-1``, which means that the pitch/stride is 
+   the same size as how many bytes the pure pixel data of each horizontal line takes.
+
    See the :func:`pygame.image.frombuffer()` method for a potentially faster
    way to transfer images into pygame.
 
-   .. note:: :func:`fromstring` and :func:`tostring` are named with "string,"
-             but they deal in bytes. In Python 2, str = bytes, so this is
-             "from string" as in a Python 2 string.
+   .. note:: it is preferred to use :func:`frombytes` as of pygame 2.1.3
+
+   .. versionadded:: 2.1.4 Added a 'pitch' argument and support for keyword arguments.
 
    .. ## pygame.image.fromstring ##
+
+.. function:: frombytes
+
+   | :sl:`create new Surface from a byte buffer`
+   | :sg:`frombytes(bytes, size, format, flipped=False, pitch=-1) -> Surface`
+
+   This function takes arguments similar to :func:`pygame.image.tobytes()`.
+   The size argument is a pair of numbers representing the width and height.
+   Once the new Surface is created it is independent from the memory of the
+   bytes passed in.
+
+   The bytes and format passed must compute to the exact size of image
+   specified. Otherwise a ``ValueError`` will be raised.
+
+   The 'pitch' argument can be used specify the pitch/stride per horizontal line
+   of the image bytes in bytes. It must be equal to or greater than how many bytes
+   the pixel data of each horizontal line in the image bytes occupies without any
+   extra padding. By default, it is ``-1``, which means that the pitch/stride is 
+   the same size as how many bytes the pure pixel data of each horizontal line takes.
+
+   See the :func:`pygame.image.frombuffer()` method for a potentially faster
+   way to transfer images into pygame.
+
+   .. note:: this function is an alias for :func:`fromstring`. The use of this
+             function is recommended over :func:`fromstring` as of pygame 2.1.3.
+             This function was introduced so it matches nicely with other 
+             libraries (PIL, numpy, etc), and with people's expectations.
+
+   .. versionadded:: 2.1.3
+   .. versionadded:: 2.1.4 Added a 'pitch' argument and support for keyword arguments.
+
+   .. ## pygame.image.frombytes ##
 
 .. function:: frombuffer
 
    | :sl:`create a new Surface that shares data inside a bytes buffer`
-   | :sg:`frombuffer(buffer, size, format) -> Surface`
+   | :sg:`frombuffer(buffer, size, format, pitch=-1) -> Surface`
 
    Create a new Surface that shares pixel data directly from a buffer. This
    buffer can be bytes, a bytearray, a memoryview, a
@@ -233,6 +324,17 @@ following formats.
       * ``RGBA``, 32-bit image with an alpha channel
 
       * ``ARGB``, 32-bit image with alpha channel first
+
+      * ``BGRA``, 32-bit image with alpha channel, red and blue channels swapped
+
+   The 'pitch' argument can be used specify the pitch/stride per horizontal line
+   of the image buffer in bytes. It must be equal to or greater than how many bytes
+   the pixel data of each horizontal line in the image buffer occupies without any
+   extra padding. By default, it is ``-1``, which means that the pitch/stride is 
+   the same size as how many bytes the pure pixel data of each horizontal line takes.
+
+   .. versionadded:: 2.1.3 BGRA format
+   .. versionadded:: 2.1.4 Added a 'pitch' argument and support for keyword arguments.
 
    .. ## pygame.image.frombuffer ##
 

@@ -47,9 +47,9 @@ copyright = '2000-2022, pygame developers'
 # built documents.
 #
 # The short X.Y version.
-version = '2.1.3'
+version = '2.1.4'
 # The full version, including alpha/beta/rc tags.
-release = '2.1.3.dev5'
+release = '2.1.4.dev1'
 
 # Format strings for the version directives
 versionadded_format = 'New in pygame %s'
@@ -106,7 +106,7 @@ html_theme = 'classic'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {'home_uri': 'https://www.pygame.org/'}
+html_theme_options = {'home_uri': 'https://pyga.me'}
 
 # Add any paths that contain custom themes here, relative to this directory.
 html_theme_path = ['themes']
@@ -224,5 +224,5 @@ headers_filename_sfx = '_doc'
 
 smartquotes = False
 
-edit_on_github_project = 'pygame/pygame'
+edit_on_github_project = 'pygame-community/pygame-ce'
 edit_on_github_branch = 'main'

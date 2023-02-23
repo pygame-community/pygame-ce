@@ -68,8 +68,7 @@ def _module_init(state=None):
         _module_init.value
     except AttributeError:
         return False
-    else:
-        return _module_init.value
+    return _module_init.value
 
 
 def init():
@@ -502,7 +501,7 @@ class Output:
         Output.write_short(status)
         Output.write_short(status, data1 = 0, data2 = 0)
 
-        output MIDI information of 3 bytes or less.
+        output MIDI information of 3 bytes or fewer.
         data fields are optional
         status byte could be:
              0xc0 = program change
@@ -612,7 +611,7 @@ class Output:
 #
 #    0x80     Note Off    (note_off)
 #    0x90     Note On     (note_on)
-#    0xA0     Aftertouch
+#    0xA0     After-touch
 #    0xB0     Continuous controller
 #    0xC0     Patch change    (set_instrument?)
 #    0xD0     Channel Pressure

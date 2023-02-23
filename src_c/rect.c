@@ -35,7 +35,8 @@
 #include <limits.h>
 
 static PyTypeObject pgRect_Type;
-#define pgRect_Check(x) ((x)->ob_type == &pgRect_Type)
+#define pgRect_Check(x) (PyObject_IsInstance(x, (PyObject *)&pgRect_Type))
+#define pgRect_CheckExact(x) (Py_TYPE(x) == &pgRect_Type)
 
 static int
 pg_rect_init(pgRectObject *, PyObject *, PyObject *);
@@ -149,7 +150,7 @@ four_ints_from_obj(PyObject *obj, int *val1, int *val2, int *val3, int *val4)
 static PyObject *
 _pg_rect_subtype_new4(PyTypeObject *type, int x, int y, int w, int h)
 {
-    pgRectObject *rect = (pgRectObject *)pgRect_Type.tp_new(type, NULL, NULL);
+    pgRectObject *rect = (pgRectObject *)type->tp_new(type, NULL, NULL);
 
     if (rect) {
         rect->r.x = x;
@@ -166,7 +167,9 @@ pg_rect_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     pgRectObject *self;
 
 #ifdef PYPY_VERSION
-    if (pg_rect_freelist_num > -1) {
+    /* Only instances of the base pygame.Rect class are allowed in the
+     * current freelist implementation (subclasses are not allowed) */
+    if (pg_rect_freelist_num > -1 && type == &pgRect_Type) {
         self = pg_rect_freelist[pg_rect_freelist_num];
         Py_INCREF(self);
         /* This is so that pypy garbage collector thinks it is a new obj
@@ -200,7 +203,10 @@ pg_rect_dealloc(pgRectObject *self)
     }
 
 #ifdef PYPY_VERSION
-    if (pg_rect_freelist_num < PG_RECT_FREELIST_MAX - 1) {
+    /* Only instances of the base pygame.Rect class are allowed in the
+     * current freelist implementation (subclasses are not allowed) */
+    if (pg_rect_freelist_num < PG_RECT_FREELIST_MAX - 1 &&
+        pgRect_CheckExact(self)) {
         pg_rect_freelist_num++;
         pg_rect_freelist[pg_rect_freelist_num] = self;
     }
@@ -572,124 +578,267 @@ pg_rect_unionall_ip(pgRectObject *self, PyObject *args)
 }
 
 static PyObject *
-pg_rect_collidepoint(pgRectObject *self, PyObject *args)
+pg_rect_collidepoint(pgRectObject *self, PyObject *const *args,
+                     Py_ssize_t nargs)
 {
-    int x = 0, y = 0;
-    int inside;
+    /* This function uses FASTCALL and because of this, the implementation has
+       become more complex. We now need to separate the different cases of
+       number of arguments and handle them separately. If there is only one
+       argument, we need to attempt to convert it to two integers. If there are
+       two arguments, we need to attempt to convert each to an integer. If
+       neither of these cases apply, we raise a TypeError for invalid number of
+       arguments.
 
-    if (!pg_TwoIntsFromObj(args, &x, &y)) {
-        return RAISE(PyExc_TypeError, "argument must contain two numbers");
-    }
+       Once the arguments are successfully converted, we use the
+       SDL_PointInRect function to check if the point is within the rect and
+       return the result as a boolean value.
+       */
 
-    inside = x >= self->r.x && x < self->r.x + self->r.w && y >= self->r.y &&
-             y < self->r.y + self->r.h;
+    SDL_Rect srect = self->r;
+    SDL_Point p;
 
-    return PyBool_FromLong(inside);
-}
-
-static PyObject *
-pg_rect_colliderect(pgRectObject *self, PyObject *args)
-{
-    SDL_Rect *argrect, temp;
-
-    if (!(argrect = pgRect_FromObject(args, &temp))) {
-        return RAISE(PyExc_TypeError, "Argument must be rect style object");
-    }
-    return PyBool_FromLong(_pg_do_rects_intersect(&self->r, argrect));
-}
-
-static PyObject *
-pg_rect_collidelist(pgRectObject *self, PyObject *args)
-{
-    SDL_Rect *argrect, temp;
-    Py_ssize_t size;
-    int loop;
-    PyObject *list, *obj;
-    PyObject *ret = NULL;
-
-    if (!PyArg_ParseTuple(args, "O", &list)) {
-        return NULL;
-    }
-
-    if (!PySequence_Check(list)) {
-        return RAISE(PyExc_TypeError,
-                     "Argument must be a sequence of rectstyle objects.");
-    }
-
-    size = PySequence_Length(list); /*warning, size could be -1 on error?*/
-    for (loop = 0; loop < size; ++loop) {
-        obj = PySequence_GetItem(list, loop);
-        if (!obj || !(argrect = pgRect_FromObject(obj, &temp))) {
-            PyErr_SetString(
-                PyExc_TypeError,
-                "Argument must be a sequence of rectstyle objects.");
-            Py_XDECREF(obj);
-            break;
-        }
-        if (_pg_do_rects_intersect(&self->r, argrect)) {
-            ret = PyLong_FromLong(loop);
-            Py_DECREF(obj);
-            break;
-        }
-        Py_DECREF(obj);
-    }
-    if (loop == size) {
-        ret = PyLong_FromLong(-1);
-    }
-
-    return ret;
-}
-
-static PyObject *
-pg_rect_collidelistall(pgRectObject *self, PyObject *args)
-{
-    SDL_Rect *argrect, temp;
-    Py_ssize_t size;
-    int loop;
-    PyObject *list, *obj;
-    PyObject *ret = NULL;
-
-    if (!PyArg_ParseTuple(args, "O", &list)) {
-        return NULL;
-    }
-
-    if (!PySequence_Check(list)) {
-        return RAISE(PyExc_TypeError,
-                     "Argument must be a sequence of rectstyle objects.");
-    }
-
-    ret = PyList_New(0);
-    if (!ret) {
-        return NULL;
-    }
-
-    size = PySequence_Length(list); /*warning, size could be -1?*/
-    for (loop = 0; loop < size; ++loop) {
-        obj = PySequence_GetItem(list, loop);
-
-        if (!obj || !(argrect = pgRect_FromObject(obj, &temp))) {
-            Py_XDECREF(obj);
-            Py_DECREF(ret);
+    /*Check if there is only one argument*/
+    if (nargs == 1) {
+        /*Attempt to convert the argument to two integers*/
+        if (!pg_TwoIntsFromObj(args[0], &p.x, &p.y)) {
             return RAISE(PyExc_TypeError,
-                         "Argument must be a sequence of rectstyle objects.");
+                         "Invalid position. Must be a two-element "
+                         "sequence of numbers");
         }
+    }
+    /*Check if there are two arguments*/
+    else if (nargs == 2) {
+        /*Attempt to convert the first argument to an integer*/
+        if (!pg_IntFromObj(args[0], &p.x)) {
+            return RAISE(PyExc_TypeError, "x must be a numeric value");
+        }
+        /*Attempt to convert the second argument to an integer*/
+        if (!pg_IntFromObj(args[1], &p.y)) {
+            return RAISE(PyExc_TypeError, "y must be a numeric value");
+        }
+    }
+    /*Raise a TypeError for invalid number of arguments*/
+    else {
+        return RAISE(PyExc_TypeError,
+                     "Invalid arguments number, must either be 1 or 2");
+    }
 
-        if (_pg_do_rects_intersect(&self->r, argrect)) {
-            PyObject *num = PyLong_FromLong(loop);
-            if (!num) {
-                Py_DECREF(ret);
-                Py_DECREF(obj);
+    /*Use SDL_PointInRect to check if the point is within the rect and return
+    the result as a boolean value*/
+    return PyBool_FromLong(SDL_PointInRect(&p, &srect));
+}
+PG_WRAP_FASTCALL_FUNC(pg_rect_collidepoint, pgRectObject)
+
+static PyObject *
+pg_rect_colliderect(pgRectObject *self, PyObject *const *args,
+                    Py_ssize_t nargs)
+{
+    /* This function got changed to use the FASTCALL calling convention in
+     * Python 3.7. This lets us exploit the fact that we don't have an
+     * intermediate Tuple args object to extract all the arguments from, saving
+     * us performance in the process. This decoupling forces us to deal with
+     * all the different cases (dictated by the number of parameters) by
+     * building specific code paths.
+     * Given that this function accepts any Rect-like object, there are 3 main
+     * cases to deal with:
+     * - 1 parameter: a Rect-like object
+     * - 2 parameters: two sequences that represent the position and dimensions
+     * of the Rect
+     * - 4 parameters: four numbers that represent the position and dimensions
+     */
+
+    SDL_Rect srect = self->r;
+    SDL_Rect temp;
+
+    if (nargs == 1) {
+        /* One argument was passed in, so we assume it's a rectstyle object.
+         * This could mean several of the following (all dealt by
+         * pgRect_FromObject):
+         * - (x, y, w, h)
+         * - ((x, y), (w, h))
+         * - Rect
+         * - Object with "rect" attribute
+         */
+        SDL_Rect *tmp;
+        if (!(tmp = pgRect_FromObject(args[0], &temp))) {
+            if (PyErr_Occurred()) {
                 return NULL;
             }
-            if (0 != PyList_Append(ret, num)) {
-                Py_DECREF(ret);
-                Py_DECREF(num);
-                Py_DECREF(obj);
-                return NULL; /* Exception already set. */
+            else {
+                return RAISE(PyExc_TypeError,
+                             "Invalid rect, all 4 fields must be numeric");
             }
-            Py_DECREF(num);
         }
-        Py_DECREF(obj);
+        return PyBool_FromLong(_pg_do_rects_intersect(&srect, tmp));
+    }
+    else if (nargs == 2) {
+        /* Two separate sequences were passed in:
+         * - (x, y), (w, h)
+         */
+        if (!pg_TwoIntsFromObj(args[0], &temp.x, &temp.y) ||
+            !pg_TwoIntsFromObj(args[1], &temp.w, &temp.h)) {
+            if (PyErr_Occurred())
+                return NULL;
+            else
+                return RAISE(PyExc_TypeError,
+                             "Invalid rect, all 4 fields must be numeric");
+        }
+    }
+    else if (nargs == 4) {
+        /* Four separate arguments were passed in:
+         * - x, y, w, h
+         */
+        if (!(pg_IntFromObj(args[0], &temp.x))) {
+            return RAISE(PyExc_TypeError,
+                         "Invalid x value for rect, must be numeric");
+        }
+
+        if (!(pg_IntFromObj(args[1], &temp.y))) {
+            return RAISE(PyExc_TypeError,
+                         "Invalid y value for rect, must be numeric");
+        }
+
+        if (!(pg_IntFromObj(args[2], &temp.w))) {
+            return RAISE(PyExc_TypeError,
+                         "Invalid w value for rect, must be numeric");
+        }
+
+        if (!(pg_IntFromObj(args[3], &temp.h))) {
+            return RAISE(PyExc_TypeError,
+                         "Invalid h value for rect, must be numeric");
+        }
+    }
+    else {
+        return RAISE(PyExc_ValueError,
+                     "Incorrect arguments number, must be either 1, 2 or 4");
+    }
+
+    return PyBool_FromLong(_pg_do_rects_intersect(&srect, &temp));
+}
+PG_WRAP_FASTCALL_FUNC(pg_rect_colliderect, pgRectObject)
+
+static PyObject *
+pg_rect_collidelist(pgRectObject *self, PyObject *arg)
+{
+    SDL_Rect *argrect, *srect = &self->r, temp;
+    int loop;
+
+    if (!PySequence_Check(arg)) {
+        return RAISE(PyExc_TypeError,
+                     "Argument must be a sequence of rectstyle objects.");
+    }
+
+    /* If the sequence is a fast sequence, we can use the faster
+     * PySequence_Fast_ITEMS() function to get the items. */
+    if (pgSequenceFast_Check(arg)) {
+        PyObject **items = PySequence_Fast_ITEMS(arg);
+        for (loop = 0; loop < PySequence_Fast_GET_SIZE(arg); loop++) {
+            if (!(argrect = pgRect_FromObject(items[loop], &temp))) {
+                return RAISE(
+                    PyExc_TypeError,
+                    "Argument must be a sequence of rectstyle objects.");
+            }
+            if (_pg_do_rects_intersect(srect, argrect)) {
+                return PyLong_FromLong(loop);
+            }
+        }
+    }
+    /* If the sequence is not a fast sequence, we have to use the slower
+     * PySequence_GetItem() function to get the items. */
+    else {
+        for (loop = 0; loop < PySequence_Length(arg); loop++) {
+            PyObject *obj = PySequence_GetItem(arg, loop);
+
+            if (!obj || !(argrect = pgRect_FromObject(obj, &temp))) {
+                Py_XDECREF(obj);
+                return RAISE(
+                    PyExc_TypeError,
+                    "Argument must be a sequence of rectstyle objects.");
+            }
+
+            Py_DECREF(obj);
+
+            if (_pg_do_rects_intersect(srect, argrect)) {
+                return PyLong_FromLong(loop);
+            }
+        }
+    }
+
+    return PyLong_FromLong(-1);
+}
+
+static PyObject *
+pg_rect_collidelistall(pgRectObject *self, PyObject *arg)
+{
+    SDL_Rect *argrect, *srect = &self->r, temp;
+    int loop;
+    PyObject *ret = NULL;
+
+    if (!PySequence_Check(arg)) {
+        return RAISE(PyExc_TypeError,
+                     "Argument must be a sequence of rectstyle objects.");
+    }
+
+    if (!(ret = PyList_New(0))) {
+        return NULL;
+    }
+
+    /* If the sequence is a fast sequence, we can use the faster
+     * PySequence_Fast_ITEMS() function to get the items. */
+    if (pgSequenceFast_Check(arg)) {
+        PyObject **items = PySequence_Fast_ITEMS(arg);
+        for (loop = 0; loop < PySequence_Fast_GET_SIZE(arg); loop++) {
+            if (!(argrect = pgRect_FromObject(items[loop], &temp))) {
+                Py_DECREF(ret);
+                return RAISE(
+                    PyExc_TypeError,
+                    "Argument must be a sequence of rectstyle objects.");
+            }
+
+            if (_pg_do_rects_intersect(srect, argrect)) {
+                PyObject *num = PyLong_FromLong(loop);
+                if (!num) {
+                    Py_DECREF(ret);
+                    return NULL;
+                }
+                if (PyList_Append(ret, num)) {
+                    Py_DECREF(ret);
+                    Py_DECREF(num);
+                    return NULL; /* Exception already set. */
+                }
+                Py_DECREF(num);
+            }
+        }
+    }
+    /* Slower path for general sequences. */
+    else {
+        for (loop = 0; loop < PySequence_Length(arg); loop++) {
+            PyObject *obj = PySequence_ITEM(arg, loop);
+
+            if (!obj || !(argrect = pgRect_FromObject(obj, &temp))) {
+                Py_XDECREF(obj);
+                Py_DECREF(ret);
+                return RAISE(
+                    PyExc_TypeError,
+                    "Argument must be a sequence of rectstyle objects.");
+            }
+
+            Py_DECREF(obj);
+
+            if (_pg_do_rects_intersect(srect, argrect)) {
+                PyObject *num = PyLong_FromLong(loop);
+                if (!num) {
+                    Py_DECREF(ret);
+                    return NULL;
+                }
+                if (PyList_Append(ret, num)) {
+                    Py_DECREF(ret);
+                    Py_DECREF(num);
+                    return NULL; /* Exception already set. */
+                }
+                Py_DECREF(num);
+            }
+        }
     }
 
     return ret;
@@ -1278,13 +1427,13 @@ static struct PyMethodDef pg_rect_methods[] = {
     {"union_ip", (PyCFunction)pg_rect_union_ip, METH_VARARGS, DOC_RECTUNIONIP},
     {"unionall_ip", (PyCFunction)pg_rect_unionall_ip, METH_VARARGS,
      DOC_RECTUNIONALLIP},
-    {"collidepoint", (PyCFunction)pg_rect_collidepoint, METH_VARARGS,
-     DOC_RECTCOLLIDEPOINT},
-    {"colliderect", (PyCFunction)pg_rect_colliderect, METH_VARARGS,
-     DOC_RECTCOLLIDERECT},
-    {"collidelist", (PyCFunction)pg_rect_collidelist, METH_VARARGS,
+    {"collidepoint", (PyCFunction)PG_FASTCALL_NAME(pg_rect_collidepoint),
+     PG_FASTCALL, DOC_RECTCOLLIDEPOINT},
+    {"colliderect", (PyCFunction)PG_FASTCALL_NAME(pg_rect_colliderect),
+     PG_FASTCALL, DOC_RECTCOLLIDERECT},
+    {"collidelist", (PyCFunction)pg_rect_collidelist, METH_O,
      DOC_RECTCOLLIDELIST},
-    {"collidelistall", (PyCFunction)pg_rect_collidelistall, METH_VARARGS,
+    {"collidelistall", (PyCFunction)pg_rect_collidelistall, METH_O,
      DOC_RECTCOLLIDELISTALL},
     {"collideobjectsall", (PyCFunction)pg_rect_collideobjectsall,
      METH_VARARGS | METH_KEYWORDS, DOC_RECTCOLLIDEOBJECTSALL},
@@ -1329,6 +1478,11 @@ pg_rect_ass_item(pgRectObject *self, Py_ssize_t i, PyObject *v)
 {
     int val = 0;
     int *data = (int *)&self->r;
+
+    if (!v) {
+        PyErr_SetString(PyExc_TypeError, "item deletion is not supported");
+        return -1;
+    }
 
     if (i < 0 || i > 3) {
         if (i > -5 && i < 0) {
@@ -1407,6 +1561,11 @@ pg_rect_subscript(pgRectObject *self, PyObject *op)
 static int
 pg_rect_ass_subscript(pgRectObject *self, PyObject *op, PyObject *value)
 {
+    if (!value) {
+        PyErr_SetString(PyExc_TypeError, "item deletion is not supported");
+        return -1;
+    }
+
     if (PyIndex_Check(op)) {
         PyObject *index;
         Py_ssize_t i;
@@ -1428,7 +1587,7 @@ pg_rect_ass_subscript(pgRectObject *self, PyObject *op, PyObject *value)
             self->r.w = val;
             self->r.h = val;
         }
-        else if (PyObject_IsInstance(value, (PyObject *)&pgRect_Type)) {
+        else if (pgRect_Check(value)) {
             pgRectObject *rect = (pgRectObject *)value;
 
             self->r.x = rect->r.x;
@@ -1835,7 +1994,7 @@ pg_rect_setcentery(pgRectObject *self, PyObject *value, void *closure)
 static PyObject *
 pg_rect_gettopleft(pgRectObject *self, void *closure)
 {
-    return Py_BuildValue("(ii)", self->r.x, self->r.y);
+    return pg_tuple_couple_from_values_int(self->r.x, self->r.y);
 }
 
 static int
@@ -1862,7 +2021,7 @@ pg_rect_settopleft(pgRectObject *self, PyObject *value, void *closure)
 static PyObject *
 pg_rect_gettopright(pgRectObject *self, void *closure)
 {
-    return Py_BuildValue("(ii)", self->r.x + self->r.w, self->r.y);
+    return pg_tuple_couple_from_values_int(self->r.x + self->r.w, self->r.y);
 }
 
 static int
@@ -1889,7 +2048,7 @@ pg_rect_settopright(pgRectObject *self, PyObject *value, void *closure)
 static PyObject *
 pg_rect_getbottomleft(pgRectObject *self, void *closure)
 {
-    return Py_BuildValue("(ii)", self->r.x, self->r.y + self->r.h);
+    return pg_tuple_couple_from_values_int(self->r.x, self->r.y + self->r.h);
 }
 
 static int
@@ -1916,7 +2075,8 @@ pg_rect_setbottomleft(pgRectObject *self, PyObject *value, void *closure)
 static PyObject *
 pg_rect_getbottomright(pgRectObject *self, void *closure)
 {
-    return Py_BuildValue("(ii)", self->r.x + self->r.w, self->r.y + self->r.h);
+    return pg_tuple_couple_from_values_int(self->r.x + self->r.w,
+                                           self->r.y + self->r.h);
 }
 
 static int
@@ -1943,7 +2103,8 @@ pg_rect_setbottomright(pgRectObject *self, PyObject *value, void *closure)
 static PyObject *
 pg_rect_getmidtop(pgRectObject *self, void *closure)
 {
-    return Py_BuildValue("(ii)", self->r.x + (self->r.w >> 1), self->r.y);
+    return pg_tuple_couple_from_values_int(self->r.x + (self->r.w >> 1),
+                                           self->r.y);
 }
 
 static int
@@ -1970,7 +2131,8 @@ pg_rect_setmidtop(pgRectObject *self, PyObject *value, void *closure)
 static PyObject *
 pg_rect_getmidleft(pgRectObject *self, void *closure)
 {
-    return Py_BuildValue("(ii)", self->r.x, self->r.y + (self->r.h >> 1));
+    return pg_tuple_couple_from_values_int(self->r.x,
+                                           self->r.y + (self->r.h >> 1));
 }
 
 static int
@@ -1997,8 +2159,8 @@ pg_rect_setmidleft(pgRectObject *self, PyObject *value, void *closure)
 static PyObject *
 pg_rect_getmidbottom(pgRectObject *self, void *closure)
 {
-    return Py_BuildValue("(ii)", self->r.x + (self->r.w >> 1),
-                         self->r.y + self->r.h);
+    return pg_tuple_couple_from_values_int(self->r.x + (self->r.w >> 1),
+                                           self->r.y + self->r.h);
 }
 
 static int
@@ -2025,8 +2187,8 @@ pg_rect_setmidbottom(pgRectObject *self, PyObject *value, void *closure)
 static PyObject *
 pg_rect_getmidright(pgRectObject *self, void *closure)
 {
-    return Py_BuildValue("(ii)", self->r.x + self->r.w,
-                         self->r.y + (self->r.h >> 1));
+    return pg_tuple_couple_from_values_int(self->r.x + self->r.w,
+                                           self->r.y + (self->r.h >> 1));
 }
 
 static int
@@ -2053,8 +2215,8 @@ pg_rect_setmidright(pgRectObject *self, PyObject *value, void *closure)
 static PyObject *
 pg_rect_getcenter(pgRectObject *self, void *closure)
 {
-    return Py_BuildValue("(ii)", self->r.x + (self->r.w >> 1),
-                         self->r.y + (self->r.h >> 1));
+    return pg_tuple_couple_from_values_int(self->r.x + (self->r.w >> 1),
+                                           self->r.y + (self->r.h >> 1));
 }
 
 static int
@@ -2081,7 +2243,7 @@ pg_rect_setcenter(pgRectObject *self, PyObject *value, void *closure)
 static PyObject *
 pg_rect_getsize(pgRectObject *self, void *closure)
 {
-    return Py_BuildValue("(ii)", self->r.w, self->r.h);
+    return pg_tuple_couple_from_values_int(self->r.w, self->r.h);
 }
 
 static int
@@ -2153,7 +2315,7 @@ static PyGetSetDef pg_rect_getsets[] = {
 };
 
 static PyTypeObject pgRect_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.Rect",
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.rect.Rect",
     .tp_basicsize = sizeof(pgRectObject),
     .tp_dealloc = (destructor)pg_rect_dealloc,
     .tp_repr = (reprfunc)pg_rect_repr,

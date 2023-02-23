@@ -19,7 +19,9 @@
 
 /* Adjust gcc 4.4 optimization for floating point on x86-32 PCs running Linux.
  * This addresses bug 52:
- * http://pygame.motherhamster.org/bugzilla/show_bug.cgi?id=52
+ * https://github.com/pygame/pygame/issues/52
+ * With this option, floats have consistent precision regardless of optimize
+ * level.
  */
 #if defined(__GNUC__) && defined(__linux__) && defined(__i386__) && \
     __SIZEOF_POINTER__ == 4 && __GNUC__ == 4 && __GNUC_MINOR__ >= 4
@@ -109,6 +111,11 @@ typedef struct {
 } vector_elementwiseproxy;
 
 /* further forward declarations */
+/* math functions */
+static PyObject *
+math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs);
+PG_DECLARE_FASTCALL_FUNC(math_clamp, PyObject);
+
 /* generic helper functions */
 static int
 RealNumber_Check(PyObject *obj);
@@ -252,9 +259,15 @@ vector_project_onto(pgVector *self, PyObject *other);
 static PyObject *
 vector_copy(pgVector *self, PyObject *_null);
 static PyObject *
-vector_clamp_magnitude(pgVector *self, PyObject *args, PyObject *kwargs);
+vector_clamp_magnitude(pgVector *self, PyObject *const *args,
+                       Py_ssize_t nargs);
+PG_DECLARE_FASTCALL_FUNC(vector_clamp_magnitude, pgVector);
 static PyObject *
-vector_clamp_magnitude_ip(pgVector *self, PyObject *args, PyObject *kwargs);
+vector_clamp_magnitude_ip(pgVector *self, PyObject *const *args,
+                          Py_ssize_t nargs);
+PG_DECLARE_FASTCALL_FUNC(vector_clamp_magnitude_ip, pgVector);
+static PyObject *
+vector___round__(pgVector *self, PyObject *args);
 static PyObject *
 vector2_to_complex(pgVector *self);
 
@@ -515,39 +528,47 @@ _vector_coords_from_string(PyObject *str, char **delimiter, double *coords,
                            Py_ssize_t dim)
 {
     int error_code;
-    Py_ssize_t i, start_pos, end_pos, length;
+    Py_ssize_t i, start_pos, end_pos, length, ret = 0;
     PyObject *vector_string;
     vector_string = PyUnicode_FromObject(str);
     if (vector_string == NULL) {
-        return -2;
+        ret = -2;
+        goto end;
     }
     length = PySequence_Length(vector_string);
     /* find the starting point of the first coordinate in the string */
     start_pos =
         _vector_find_string_helper(vector_string, delimiter[0], 0, length);
     if (start_pos < 0) {
-        return start_pos;
+        ret = start_pos;
+        goto end;
     }
     start_pos += strlen(delimiter[0]);
     for (i = 0; i < dim; i++) {
         /* find the end point of the current coordinate in the string */
         end_pos = _vector_find_string_helper(vector_string, delimiter[i + 1],
                                              start_pos, length);
-        if (end_pos < 0)
-            return end_pos;
+        if (end_pos < 0) {
+            ret = end_pos;
+            goto end;
+        }
         /* try to convert the current coordinate */
         error_code = get_double_from_unicode_slice(vector_string, start_pos,
                                                    end_pos, &coords[i]);
         if (error_code < 0) {
-            return -2;
+            ret = -2;
+            goto end;
         }
         else if (error_code == 0) {
-            return -1;
+            ret = -1;
+            goto end;
         }
         /* move starting point to the next coordinate */
         start_pos = end_pos + strlen(delimiter[i + 1]);
     }
-    return 0;
+end:
+    Py_XDECREF(vector_string);
+    return ret;
 }
 
 static PyMemberDef vector_members[] = {
@@ -808,7 +829,7 @@ vector2_to_complex(pgVector *self)
 }
 
 static PyObject *
-vector_clamp_magnitude(pgVector *self, PyObject *args, PyObject *kwargs)
+vector_clamp_magnitude(pgVector *self, PyObject *const *args, Py_ssize_t nargs)
 {
     Py_ssize_t i;
     pgVector *ret;
@@ -820,8 +841,9 @@ vector_clamp_magnitude(pgVector *self, PyObject *args, PyObject *kwargs)
     for (i = 0; i < self->dim; ++i)
         ret->coords[i] = self->coords[i];
 
-    PyObject *ret_val = vector_clamp_magnitude_ip(ret, args, kwargs);
+    PyObject *ret_val = vector_clamp_magnitude_ip(ret, args, nargs);
     if (!ret_val) {
+        Py_DECREF(ret);
         return NULL;
     }
     Py_DECREF(ret_val);
@@ -829,62 +851,58 @@ vector_clamp_magnitude(pgVector *self, PyObject *args, PyObject *kwargs)
     return (PyObject *)ret;
 }
 
+PG_WRAP_FASTCALL_FUNC(vector_clamp_magnitude, pgVector);
+
 static PyObject *
-vector_clamp_magnitude_ip(pgVector *self, PyObject *args, PyObject *kwargs)
+vector_clamp_magnitude_ip(pgVector *self, PyObject *const *args,
+                          Py_ssize_t nargs)
 {
     Py_ssize_t i;
-    double arg0;
-    double arg1 = 0; /*
-    Default value, if arg1 is set to a different value,
-    then it will clamp to the minimum and maximum.
-    */
-    double max_length;
-    double min_length;
-    double old_length_sq;
-    double fraction;
-
-    int length_greater;
-    int length_less;
-
-    static char *keywords[] = {"arg0", "arg1", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "d|d", keywords, &arg0,
-                                     &arg1)) {
-        return NULL;
+    double max_length, old_length_sq, fraction = 1, min_length = 0;
+    switch (nargs) {
+        case 2:
+            min_length = PyFloat_AsDouble(args[0]);
+            if (min_length == -1.0 && PyErr_Occurred()) {
+                return NULL;
+            }
+            /* Fall-through */
+        case 1:
+            max_length = PyFloat_AsDouble(args[nargs - 1]);
+            if (max_length == -1.0 && PyErr_Occurred()) {
+                return NULL;
+            }
+            break;
+        default:
+            return RAISE(PyExc_TypeError,
+                         "Vector clamp function must take one or two floats");
     }
 
-    if (arg1 != 0) {
-        min_length = arg0;
-        max_length = arg1;
+    if (min_length > max_length) {
+        return RAISE(PyExc_ValueError,
+                     "Argument min_length cannot exceed max_length");
     }
-    else if (arg1 == 0) {
-        max_length = arg0;
-        min_length = arg1;
+
+    if (max_length < 0 || min_length < 0) {
+        return RAISE(PyExc_ValueError,
+                     "Arguments to Vector clamp must be non-negative");
     }
 
     /* Get magnitude of Vector */
     old_length_sq = _scalar_product(self->coords, self->coords, self->dim);
-
     if (old_length_sq == 0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Cannot clamp a vector with zero length");
-        return NULL;
+        return RAISE(PyExc_ValueError,
+                     "Cannot clamp a vector with zero length");
     }
 
-    /*
-    Notes for other contributors reading this code:
-    The numerator for the fraction is different.
-    */
-    length_greater = old_length_sq > max_length * max_length;
-    fraction = 1;
-
-    if (length_greater) {
+    /* Notes for other contributors reading this code:
+     * The numerator for the fraction is different.
+     */
+    if (old_length_sq > max_length * max_length) {
         /* Scale to length */
         fraction = max_length / sqrt(old_length_sq);
     }
 
-    length_less = old_length_sq < min_length * min_length;
-    if (length_less) {
+    if (old_length_sq < min_length * min_length) {
         /* Scale to length */
         fraction = min_length / sqrt(old_length_sq);
     }
@@ -894,6 +912,8 @@ vector_clamp_magnitude_ip(pgVector *self, PyObject *args, PyObject *kwargs)
 
     Py_RETURN_NONE;
 }
+
+PG_WRAP_FASTCALL_FUNC(vector_clamp_magnitude_ip, pgVector);
 
 static PyNumberMethods vector_as_number = {
     .nb_add = (binaryfunc)vector_add,
@@ -990,7 +1010,12 @@ vector_GetSlice(pgVector *self, Py_ssize_t ilow, Py_ssize_t ihigh)
         return NULL;
 
     for (i = 0; i < len; i++) {
-        PyList_SET_ITEM(slice, i, PyFloat_FromDouble(self->coords[ilow + i]));
+        PyObject *tmp = PyFloat_FromDouble(self->coords[ilow + i]);
+        if (!tmp) {
+            Py_DECREF(slice);
+            return NULL;
+        }
+        PyList_SET_ITEM(slice, i, tmp);
     }
     return (PyObject *)slice;
 }
@@ -1303,9 +1328,12 @@ vector_normalize(pgVector *self, PyObject *_null)
     }
     memcpy(ret->coords, self->coords, sizeof(ret->coords[0]) * ret->dim);
 
-    if (!vector_normalize_ip(ret, NULL)) {
+    PyObject *tmp = vector_normalize_ip(ret, NULL);
+    if (!tmp) {
+        Py_DECREF(ret);
         return NULL;
     }
+    Py_DECREF(tmp);
     return (PyObject *)ret;
 }
 
@@ -1385,9 +1413,7 @@ _vector_move_towards_helper(Py_ssize_t dim, double *origin_coords,
                             double *target_coords, double max_distance)
 {
     Py_ssize_t i;
-    double delta[VECTOR_MAX_SIZE];
-    double dist;
-
+    double frac, dist, delta[VECTOR_MAX_SIZE];
     if (max_distance == 0)
         return;
 
@@ -1396,6 +1422,11 @@ _vector_move_towards_helper(Py_ssize_t dim, double *origin_coords,
 
     /* Get magnitude of Vector */
     dist = sqrt(_scalar_product(delta, delta, dim));
+    if (dist == 0) {
+        /* origin and target are same, return early (this also makes sure
+         * that frac is never NaN) */
+        return;
+    }
 
     if (dist <= max_distance) {
         /* Return target Vector */
@@ -1404,10 +1435,9 @@ _vector_move_towards_helper(Py_ssize_t dim, double *origin_coords,
         return;
     }
 
+    frac = max_distance / dist;
     for (i = 0; i < dim; ++i)
-        origin_coords[i] = origin_coords[i] + delta[i] / dist * max_distance;
-
-    return;
+        origin_coords[i] += delta[i] * frac;
 }
 
 static PyObject *
@@ -1620,6 +1650,7 @@ vector_reflect(pgVector *self, PyObject *normal)
 
     if (!_vector_reflect_helper(ret->coords, self->coords, normal, self->dim,
                                 self->epsilon)) {
+        Py_DECREF(ret);
         return NULL;
     }
     return (PyObject *)ret;
@@ -1641,17 +1672,56 @@ vector_reflect_ip(pgVector *self, PyObject *normal)
 static double
 _vector_distance_helper(pgVector *self, PyObject *other)
 {
-    Py_ssize_t i;
-    double distance_squared, tmp;
+    Py_ssize_t i, dim = self->dim;
+    double distance_squared = 0;
 
-    distance_squared = 0;
-    for (i = 0; i < self->dim; ++i) {
-        tmp = PySequence_GetItem_AsDouble(other, i) - self->coords[i];
-        distance_squared += tmp * tmp;
+    /* Specialised fastpath for Vector-Vector distance calculation*/
+    if (pgVector_Check(other)) {
+        pgVector *otherv = (pgVector *)other;
+        double dx, dy;
+
+        if (dim != otherv->dim) {
+            PyErr_SetString(PyExc_ValueError, "Vectors must be the same size");
+            return -1;
+        }
+
+        dx = otherv->coords[0] - self->coords[0];
+        dy = otherv->coords[1] - self->coords[1];
+
+        distance_squared = dx * dx + dy * dy;
+
+        if (dim == 3) {
+            double dz;
+            dz = otherv->coords[2] - self->coords[2];
+            distance_squared += dz * dz;
+        }
     }
-    /* PySequence_GetItem_AsDouble can fail in which case it will set an Err */
-    if (PyErr_Occurred())
-        return -1;
+    /* Vector-Sequence distance calculation*/
+    else {
+        double tmp;
+        PyObject *fast_seq = PySequence_Fast(other, "A sequence was expected");
+        if (!fast_seq) {
+            return -1;
+        }
+
+        if (PySequence_Fast_GET_SIZE(fast_seq) != dim) {
+            Py_DECREF(fast_seq);
+            PyErr_SetString(PyExc_ValueError,
+                            "Vector and sequence must be the same size");
+            return -1;
+        }
+
+        for (i = 0; i < dim; ++i) {
+            tmp = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(fast_seq, i)) -
+                  self->coords[i];
+            if (PyErr_Occurred()) {
+                Py_DECREF(fast_seq);
+                return -1;
+            }
+            distance_squared += tmp * tmp;
+        }
+        Py_DECREF(fast_seq);
+    }
 
     return distance_squared;
 }
@@ -1678,15 +1748,17 @@ static int
 _vector_check_snprintf_success(int return_code, int max_size)
 {
     if (return_code < 0) {
-        PyErr_SetString(PyExc_SystemError,
-                        "internal snprintf call went wrong! Please report "
-                        "this to github.com/pygame/pygame/issues");
+        PyErr_SetString(
+            PyExc_SystemError,
+            "internal snprintf call went wrong! Please report "
+            "this to github.com/pygame-community/pygame-ce/issues");
         return 0;
     }
     if (return_code >= max_size) {
-        PyErr_SetString(PyExc_SystemError,
-                        "Internal buffer to small for snprintf! Please report "
-                        "this to github.com/pygame/pygame/issues");
+        PyErr_SetString(
+            PyExc_SystemError,
+            "Internal buffer too small for snprintf! Please report "
+            "this to github.com/pygame-community/pygame-ce/issues");
         return 0;
     }
     return 1;
@@ -1779,6 +1851,7 @@ vector_project_onto(pgVector *self, PyObject *other)
     if (b_dot_b < self->epsilon) {
         PyErr_SetString(PyExc_ValueError,
                         "Cannot project onto a vector with zero length");
+        Py_DECREF(ret);
         return NULL;
     }
 
@@ -1965,9 +2038,10 @@ vector_setAttr_swizzle(pgVector *self, PyObject *attr_name, PyObject *val)
             return -1;
         default:
             /* this should NEVER happen and means a bug in the code */
-            PyErr_SetString(PyExc_RuntimeError,
-                            "Unhandled error in swizzle code. Please report "
-                            "this bug to github.com/pygame/pygame/issues");
+            PyErr_SetString(
+                PyExc_RuntimeError,
+                "Unhandled error in swizzle code. Please report "
+                "this bug to github.com/pygame-community/pygame-ce/issues");
             return -1;
     }
 }
@@ -2039,6 +2113,47 @@ static PyBufferProcs vector_as_buffer = {
     (releasebufferproc)vector_releasebuffer,
 };
 #endif
+
+static PyObject *
+vector___round__(pgVector *self, PyObject *args)
+{
+    Py_ssize_t i, ndigits;
+    PyObject *o_ndigits = NULL;
+
+    pgVector *ret = _vector_subtype_new(self);
+    if (ret == NULL) {
+        return NULL;
+    }
+
+    if (!PyArg_ParseTuple(args, "|O", &o_ndigits)) {
+        Py_DECREF(ret);
+        return NULL;
+    }
+
+    memcpy(ret->coords, self->coords, sizeof(ret->coords[0]) * ret->dim);
+
+    if (o_ndigits == NULL || o_ndigits == Py_None) {
+        for (i = 0; i < ret->dim; ++i)
+            ret->coords[i] = round(ret->coords[i]);
+    }
+    else if (RealNumber_Check(o_ndigits)) {
+        ndigits = PyNumber_AsSsize_t(o_ndigits, NULL);
+        if (PyErr_Occurred()) {
+            Py_DECREF(ret);
+            return NULL;
+        }
+        for (i = 0; i < ret->dim; ++i)
+            ret->coords[i] = round(ret->coords[i] * pow(10, (double)ndigits)) /
+                             pow(10, (double)ndigits);
+    }
+    else {
+        PyErr_SetString(PyExc_TypeError, "Argument must be an integer");
+        Py_DECREF(ret);
+        return NULL;
+    }
+
+    return (PyObject *)ret;
+}
 
 /*********************************************************************
  * vector2 specific functions
@@ -2190,7 +2305,8 @@ _vector2_rotate_helper(double *dst_coords, const double *src_coords,
                 PyErr_SetString(
                     PyExc_RuntimeError,
                     "Please report this bug in vector2_rotate_helper to "
-                    "the developers at github.com/pygame/pygame/issues");
+                    "the developers at "
+                    "github.com/pygame-community/pygame-ce/issues");
                 return 0;
         }
     }
@@ -2217,9 +2333,12 @@ vector2_rotate_rad(pgVector *self, PyObject *angleObject)
     }
 
     ret = _vector_subtype_new(self);
-    if (ret == NULL || !_vector2_rotate_helper(ret->coords, self->coords,
-                                               angle, self->epsilon)) {
-        Py_XDECREF(ret);
+    if (ret == NULL) {
+        return NULL;
+    }
+    if (!_vector2_rotate_helper(ret->coords, self->coords, angle,
+                                self->epsilon)) {
+        Py_DECREF(ret);
         return NULL;
     }
     return (PyObject *)ret;
@@ -2236,8 +2355,7 @@ vector2_rotate_rad_ip(pgVector *self, PyObject *angleObject)
         return NULL;
     }
 
-    tmp[0] = self->coords[0];
-    tmp[1] = self->coords[1];
+    memcpy(tmp, self->coords, 2 * sizeof(double));
     if (!_vector2_rotate_helper(self->coords, tmp, angle, self->epsilon)) {
         return NULL;
     }
@@ -2270,9 +2388,12 @@ vector2_rotate(pgVector *self, PyObject *angleObject)
     angle = DEG2RAD(angle);
 
     ret = _vector_subtype_new(self);
-    if (ret == NULL || !_vector2_rotate_helper(ret->coords, self->coords,
-                                               angle, self->epsilon)) {
-        Py_XDECREF(ret);
+    if (ret == NULL) {
+        return NULL;
+    }
+    if (!_vector2_rotate_helper(ret->coords, self->coords, angle,
+                                self->epsilon)) {
+        Py_DECREF(ret);
         return NULL;
     }
     return (PyObject *)ret;
@@ -2290,8 +2411,7 @@ vector2_rotate_ip(pgVector *self, PyObject *angleObject)
     }
     angle = DEG2RAD(angle);
 
-    tmp[0] = self->coords[0];
-    tmp[1] = self->coords[1];
+    memcpy(tmp, self->coords, 2 * sizeof(double));
     if (!_vector2_rotate_helper(self->coords, tmp, angle, self->epsilon)) {
         return NULL;
     }
@@ -2433,14 +2553,16 @@ static PyMethodDef vector2_methods[] = {
     {"to_complex", (PyCFunction)vector2_to_complex, METH_NOARGS,
      DOC_VECTOR2TOCOMPLEX},
     {"__copy__", (PyCFunction)vector_copy, METH_NOARGS, NULL},
-    {"clamp_magnitude", (PyCFunction)vector_clamp_magnitude,
-     METH_VARARGS | METH_KEYWORDS, DOC_VECTOR2CLAMPMAGNITUDE},
-    {"clamp_magnitude_ip", (PyCFunction)vector_clamp_magnitude_ip,
-     METH_VARARGS | METH_KEYWORDS, DOC_VECTOR2CLAMPMAGNITUDEIP},
+    {"clamp_magnitude", (PyCFunction)PG_FASTCALL_NAME(vector_clamp_magnitude),
+     PG_FASTCALL, DOC_VECTOR2CLAMPMAGNITUDE},
+    {"clamp_magnitude_ip",
+     (PyCFunction)PG_FASTCALL_NAME(vector_clamp_magnitude_ip), PG_FASTCALL,
+     DOC_VECTOR2CLAMPMAGNITUDEIP},
     {"__safe_for_unpickling__", (PyCFunction)vector_getsafepickle, METH_NOARGS,
      NULL},
     {"__reduce__", (PyCFunction)vector2_reduce, METH_NOARGS, NULL},
     {"__complex__", (PyCFunction)vector2_to_complex, METH_NOARGS, NULL},
+    {"__round__", (PyCFunction)vector___round__, METH_VARARGS, NULL},
 
     {NULL} /* Sentinel */
 };
@@ -2674,7 +2796,8 @@ _vector3_rotate_helper(double *dst_coords, const double *src_coords,
                 PyErr_SetString(
                     PyExc_RuntimeError,
                     "Please report this bug in vector3_rotate_helper to "
-                    "the developers at github.com/pygame/pygame/issues");
+                    "the developers at "
+                    "github.com/pygame-community/pygame-ce/issues");
                 return 0;
         }
     }
@@ -2725,10 +2848,12 @@ vector3_rotate_rad(pgVector *self, PyObject *args)
     }
 
     ret = _vector_subtype_new(self);
-    if (ret == NULL ||
-        !_vector3_rotate_helper(ret->coords, self->coords, axis_coords, angle,
+    if (ret == NULL) {
+        return NULL;
+    }
+    if (!_vector3_rotate_helper(ret->coords, self->coords, axis_coords, angle,
                                 self->epsilon)) {
-        Py_XDECREF(ret);
+        Py_DECREF(ret);
         return NULL;
     }
     return (PyObject *)ret;
@@ -2795,10 +2920,12 @@ vector3_rotate(pgVector *self, PyObject *args)
     }
 
     ret = _vector_subtype_new(self);
-    if (ret == NULL ||
-        !_vector3_rotate_helper(ret->coords, self->coords, axis_coords, angle,
+    if (ret == NULL) {
+        return NULL;
+    }
+    if (!_vector3_rotate_helper(ret->coords, self->coords, axis_coords, angle,
                                 self->epsilon)) {
-        Py_XDECREF(ret);
+        Py_DECREF(ret);
         return NULL;
     }
     return (PyObject *)ret;
@@ -3348,13 +3475,15 @@ static PyMethodDef vector3_methods[] = {
     {"project", (PyCFunction)vector3_project, METH_O, DOC_VECTOR3PROJECT},
     {"copy", (PyCFunction)vector_copy, METH_NOARGS, DOC_VECTOR3COPY},
     {"__copy__", (PyCFunction)vector_copy, METH_NOARGS, NULL},
-    {"clamp_magnitude", (PyCFunction)vector_clamp_magnitude,
-     METH_VARARGS | METH_KEYWORDS, DOC_VECTOR3CLAMPMAGNITUDE},
-    {"clamp_magnitude_ip", (PyCFunction)vector_clamp_magnitude_ip,
-     METH_VARARGS | METH_KEYWORDS, DOC_VECTOR3CLAMPMAGNITUDEIP},
+    {"clamp_magnitude", (PyCFunction)PG_FASTCALL_NAME(vector_clamp_magnitude),
+     PG_FASTCALL, DOC_VECTOR3CLAMPMAGNITUDE},
+    {"clamp_magnitude_ip",
+     (PyCFunction)PG_FASTCALL_NAME(vector_clamp_magnitude_ip), PG_FASTCALL,
+     DOC_VECTOR3CLAMPMAGNITUDEIP},
     {"__safe_for_unpickling__", (PyCFunction)vector_getsafepickle, METH_NOARGS,
      NULL},
     {"__reduce__", (PyCFunction)vector3_reduce, METH_NOARGS, NULL},
+    {"__round__", (PyCFunction)vector___round__, METH_VARARGS, NULL},
 
     {NULL} /* Sentinel */
 };
@@ -4065,6 +4194,49 @@ vector_elementwise(pgVector *vec, PyObject *_null)
 }
 
 static PyObject *
+math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (nargs != 3)
+        return RAISE(PyExc_TypeError, "clamp requires 3 arguments");
+
+    PyObject *value = args[0];
+    PyObject *min = args[1];
+    PyObject *max = args[2];
+
+    if (PyNumber_Check(args[0]) != 1 || PyNumber_Check(args[1]) != 1 ||
+        PyNumber_Check(args[2]) != 1) {
+        return RAISE(PyExc_TypeError, "clamp requires 3 numeric arguments");
+    }
+
+    // Using RichCompare instead of converting to C types for performance
+    // reasons. This implementation was tested to be faster than using
+    // PyFloat_AsDouble and PyErr_Occurred.
+
+    // if value < min: return min
+    int result = PyObject_RichCompareBool(value, min, Py_LT);
+    if (result == 1) {
+        Py_INCREF(min);
+        return min;
+    }
+    else if (result == -1)
+        return NULL;
+
+    // if value > max: return max
+    result = PyObject_RichCompareBool(value, max, Py_GT);
+    if (result == 1) {
+        Py_INCREF(max);
+        return max;
+    }
+    else if (result == -1)
+        return NULL;
+
+    Py_INCREF(value);
+    return value;
+}
+
+PG_WRAP_FASTCALL_FUNC(math_clamp, PyObject);
+
+static PyObject *
 math_enable_swizzling(pgVector *self, PyObject *_null)
 {
     if (PyErr_WarnEx(PyExc_DeprecationWarning,
@@ -4091,6 +4263,8 @@ math_disable_swizzling(pgVector *self, PyObject *_null)
 }
 
 static PyMethodDef _math_methods[] = {
+    {"clamp", (PyCFunction)PG_FASTCALL_NAME(math_clamp), PG_FASTCALL,
+     DOC_PYGAMEMATHCLAMP},
     {"enable_swizzling", (PyCFunction)math_enable_swizzling, METH_NOARGS,
      "Deprecated, will be removed in a future version"},
     {"disable_swizzling", (PyCFunction)math_disable_swizzling, METH_NOARGS,

@@ -2,6 +2,7 @@
 #define DOC_PYGAMESURFACE "Surface((width, height), flags=0, depth=0, masks=None) -> Surface\nSurface((width, height), flags=0, Surface) -> Surface\npygame object for representing images"
 #define DOC_SURFACEBLIT "blit(source, dest, area=None, special_flags=0) -> Rect\ndraw one image onto another"
 #define DOC_SURFACEBLITS "blits(blit_sequence=((source, dest), ...), doreturn=1) -> [Rect, ...] or None\nblits(((source, dest, area), ...)) -> [Rect, ...]\nblits(((source, dest, area, special_flags), ...)) -> [Rect, ...]\ndraw many images onto another"
+#define DOC_SURFACEFBLITS "fblits(blit_sequence=((source, dest), ...), special_flags=0) -> None\ndraw many surfaces onto the calling surface at their corresponding location and the same special_flags"
 #define DOC_SURFACECONVERT "convert(Surface=None) -> Surface\nconvert(depth, flags=0) -> Surface\nconvert(masks, flags=0) -> Surface\nchange the pixel format of an image"
 #define DOC_SURFACECONVERTALPHA "convert_alpha(Surface) -> Surface\nconvert_alpha() -> Surface\nchange the pixel format of an image including per pixel alphas"
 #define DOC_SURFACECOPY "copy() -> Surface\ncreate a new copy of a Surface"
@@ -49,6 +50,7 @@
 #define DOC_SURFACEGETVIEW "get_view(<kind>='2') -> BufferProxy\nreturn a buffer view of the Surface's pixels."
 #define DOC_SURFACEGETBUFFER "get_buffer() -> BufferProxy\nacquires a buffer object for the pixels of the Surface."
 #define DOC_SURFACEPIXELSADDRESS "_pixels_address -> int\npixel buffer address"
+#define DOC_SURFACEPREMULALPHA "premul_alpha() -> Surface\nreturns a copy of the surface with the RGB channels pre-multiplied by the alpha channel."
 
 
 /* Docs in a comment... slightly easier to read. */
@@ -69,6 +71,10 @@ pygame.Surface.blits
  blits(((source, dest, area), ...)) -> [Rect, ...]
  blits(((source, dest, area, special_flags), ...)) -> [Rect, ...]
 draw many images onto another
+
+pygame.Surface.fblits
+ fblits(blit_sequence=((source, dest), ...), special_flags=0) -> None
+draw many surfaces onto the calling surface at their corresponding location and the same special_flags
 
 pygame.Surface.convert
  convert(Surface=None) -> Surface
@@ -263,5 +269,9 @@ acquires a buffer object for the pixels of the Surface.
 pygame.Surface._pixels_address
  _pixels_address -> int
 pixel buffer address
+
+pygame.Surface.premul_alpha
+ premul_alpha() -> Surface
+returns a copy of the surface with the RGB channels pre-multiplied by the alpha channel.
 
 */

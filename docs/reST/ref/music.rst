@@ -86,7 +86,7 @@ MP3 in most cases.
    | :sg:`rewind() -> None`
 
    Resets playback of the current music to the beginning. If :func:`pause` has
-   previoulsy been used to pause the music, the music will remain paused.
+   previously been used to pause the music, the music will remain paused.
    
    .. note:: :func:`rewind` supports a limited number of file types and notably
              ``WAV`` files are NOT supported. For unsupported file types use :func:`play`
@@ -272,3 +272,31 @@ MP3 in most cases.
    .. ## pygame.mixer.music.get_endevent ##
 
 .. ## pygame.mixer.music ##
+
+.. function:: get_metadata
+
+   | :sl:`get metadata of the specified or currently loaded music stream`
+   | :sg:`get_metadata() -> dict`
+   | :sg:`get_metadata(filename) -> dict`
+   | :sg:`get_metadata(fileobj, namehint="") -> dict`
+   
+   If no arguments are passed returns a dictionary containing metadata 
+   of the currently loaded music stream, raises an exception if a music stream is not loaded. 
+   Available keys are ``"title"``, ``"album"``, ``"artist"``, ``"copyright"``. 
+   Values are strings containing corresponding retrieved metadata. 
+   If particular metadata was not found the value is an empty string.
+   Here is an example:
+   ``{'title': 'Small Tone', 'album': 'Tones', 'artist': 'Audacity Generator', 'copyright': ''}``
+   
+   Refer to the :func:`pygame.mixer.music.load` function for arguments regarding specifying a file or a file-like object 
+   whose metadata you want to retrieve. For this function all arguments are optional, 
+   however, specifying only the ``namehint`` will raise an exception.
+   
+   Since the underlying functionality was introduced in version 2.6.0 of SDL_mixer,
+   calling this function with an older version of SDL_mixer will return a dictionary
+   with all values being set to empty strings. You can find your version of SDL_mixer
+   by using :func:`pygame.mixer.get_sdl_mixer_version`.
+
+   .. versionadded:: 2.1.4
+   
+   .. ## pygame.mixer.music.get_metadata ##

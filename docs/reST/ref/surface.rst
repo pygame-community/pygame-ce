@@ -154,6 +154,29 @@
 
       .. ## Surface.blits ##
 
+   .. method:: fblits
+
+      | :sl:`draw many surfaces onto the calling surface at their corresponding location and the same special_flags`
+      | :sg:`fblits(blit_sequence=((source, dest), ...), special_flags=0) -> None`
+
+      This method takes a sequence of tuples (source, dest) as input, where source is a Surface
+      object and dest is its destination position on this Surface. It draws each source Surface
+      fully (meaning that unlike `blit()` you cannot pass an "area" parameter to represent
+      a smaller portion of the source Surface to draw) on this Surface with the same blending
+      mode specified by special_flags. The sequence must have at least one (source, dest) pair.
+
+      :param blit_sequence: a sequence of (source, dest)
+      :param special_flags: the flag(s) representing the blend mode used for each surface
+
+      :returns: ``None``
+
+      .. note:: This method only accepts a sequence of (source, dest) pairs and a single
+                special_flags value that's applied to all surfaces drawn. This allows faster
+                iteration over the sequence and better performance over `blits()`. Further
+                optimizations are applied if blit_sequence is a list or a tuple (using one
+                of them is recommended).
+
+      .. ## Surface.fblits ##
 
    .. method:: convert
 
@@ -769,8 +792,10 @@
 
       This is not needed for normal pygame usage.
 
-      .. note:: In SDL2, the masks are read-only and accordingly this method will raise
-                an AttributeError if called.
+      .. note:: Starting in pygame 2.0, the masks are read-only and
+         accordingly this method will raise a TypeError if called.
+
+      .. deprecated:: 2.0.0
 
       .. versionadded:: 1.8.1
 
@@ -795,8 +820,10 @@
 
       This is not needed for normal pygame usage.
 
-      .. note:: In SDL2, the shifts are read-only and accordingly this method will raise
-                an AttributeError if called.
+      .. note:: Starting in pygame 2.0, the shifts are read-only and
+         accordingly this method will raise a TypeError if called.
+
+      .. deprecated:: 2.0.0
 
       .. versionadded:: 1.8.1
 
@@ -902,4 +929,44 @@
 
       .. versionadded:: 1.9.2
 
+   .. method:: premul_alpha
+
+      | :sl:`returns a copy of the surface with the RGB channels pre-multiplied by the alpha channel.`
+      | :sg:`premul_alpha() -> Surface`
+
+      **Experimental:** feature still in development available for testing and feedback. It may change.
+      `Please leave premul_alpha feedback with authors <https://github.com/pygame/pygame/pull/3276>`_
+
+      Returns a copy of the initial surface with the red, green and blue color channels multiplied
+      by the alpha channel. This is intended to make it easier to work with the BLEND_PREMULTIPLED
+      blend mode flag of the blit() method. Surfaces which have called this method will only look
+      correct after blitting if the BLEND_PREMULTIPLED special flag is used.
+
+      It is worth noting that after calling this method, methods that return the colour of a pixel
+      such as get_at() will return the alpha multiplied colour values. It is not possible to fully
+      reverse an alpha multiplication of the colours in a surface as integer colour channel data
+      is generally reduced by the operation (e.g. 255 x 0 = 0, from there it is not possible to reconstruct
+      the original 255 from just the two remaining zeros in the colour and alpha channels).
+
+      If you call this method, and then call it again, it will multiply the colour channels by the alpha channel
+      twice. There are many possible ways to obtain a surface with the colour channels pre-multiplied by the
+      alpha channel in pygame, and it is not possible to tell the difference just from the information in the pixels.
+      It is completely possible to have two identical surfaces - one intended for pre-multiplied alpha blending and
+      one intended for normal blending. For this reason we do not store state on surfaces intended for pre-multiplied
+      alpha blending.
+
+      Surfaces without an alpha channel cannot use this method and will return an error if you use
+      it on them. It is best used on 32 bit surfaces (the default on most platforms) as the blitting
+      on these surfaces can be accelerated by SIMD versions of the pre-multiplied blitter.
+
+      In general pre-multiplied alpha blitting is faster then 'straight alpha' blitting and produces
+      superior results when blitting an alpha surface onto another surface with alpha - assuming both
+      surfaces contain pre-multiplied alpha colours.
+
+      .. versionadded:: 2.1.4
+
+      .. ## Surface.premul_alpha ##
+
    .. ## pygame.Surface ##
+
+

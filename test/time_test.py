@@ -8,6 +8,10 @@ Clock = pygame.time.Clock
 class ClockTypeTest(unittest.TestCase):
     __tags__ = ["timing"]
 
+    def test_clock_alias(self):
+        """Check if pygame.Clock is present and the correct type."""
+        self.assertIs(pygame.Clock, pygame.time.Clock)
+
     def test_construction(self):
         """Ensure a Clock object can be created"""
         c = Clock()
@@ -38,7 +42,6 @@ class ClockTypeTest(unittest.TestCase):
         self.assertAlmostEqual(clock.get_fps(), fps, delta=fps * delta)
 
     def test_get_rawtime(self):
-
         iterations = 10
         delay = 0.1
         delay_miliseconds = delay * (10**3)  # actual time difference between ticks
@@ -358,7 +361,7 @@ class TimeModuleTest(unittest.TestCase):
         self._type_error_checks(pygame.time.wait)
 
     def _wait_delay_check(self, func_to_check, millis, iterations, delta):
-        """ "
+        """
         call func_to_check(millis) "iterations" times and check each time if
         function "waited" for given millisecond (+- delta). At the end, take
         average time for each call (whole_duration/iterations), which should

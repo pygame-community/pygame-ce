@@ -7,7 +7,6 @@ import pygame._sdl2.controller
 
 class JoystickTypeTest(unittest.TestCase):
     def todo_test_Joystick(self):
-
         # __doc__ (as of 2008-08-02) for pygame.joystick.Joystick:
 
         # pygame.joystick.Joystick(id): return Joystick
@@ -31,6 +30,10 @@ class JoystickTypeTest(unittest.TestCase):
         #
 
         self.fail()
+
+    def test_Joystick_alias(self):
+        """Check if pygame.Joystick is present and the correct type."""
+        self.assertIs(pygame.Joystick, pygame.joystick.Joystick)
 
 
 class JoystickModuleTest(unittest.TestCase):
@@ -126,7 +129,6 @@ class JoystickModuleTest(unittest.TestCase):
 
 
 class JoystickInteractiveTest(unittest.TestCase):
-
     __tags__ = ["interactive"]
 
     def test_get_count_interactive(self):
