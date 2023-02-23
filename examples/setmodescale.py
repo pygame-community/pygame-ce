@@ -78,7 +78,7 @@ while not done:
         pg.display.flip()
         # FPS should be limited by vsync, so we tick really fast
         # we only need to have the clock tick to track FPS
-        clock.tick(1000)
+        clock.tick()
     else:
         clock.tick(FPS)
         pg.display.flip()

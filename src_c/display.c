@@ -1226,10 +1226,10 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                            exact scale otherwise.
                            we chose the window size for this to work */
                         SDL_RenderSetIntegerScale(
-                            pg_renderer,
-                            !(flags & PGS_FULLSCREEN ||
-                              SDL_GetHintBoolean("SDL_HINT_RENDER_SCALE_QUALITY",
-                                                 SDL_FALSE)));
+                            pg_renderer, !(flags & PGS_FULLSCREEN ||
+                                           SDL_GetHintBoolean(
+                                               "SDL_HINT_RENDER_SCALE_QUALITY",
+                                               SDL_FALSE)));
                         SDL_RenderSetLogicalSize(pg_renderer, w, h);
                         /* this must be called after creating the renderer!*/
                         SDL_SetWindowMinimumSize(win, w, h);
@@ -2166,7 +2166,9 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
         case SDL_SYSWM_UIKIT:    // iOS currently not supported by pygame
         case SDL_SYSWM_ANDROID:  // supported through pygame-for-android,
                                  // but fullscreen only
+#if defined(SDL_SYSWM_KMSDRM)
         case SDL_SYSWM_KMSDRM:
+#endif
             if (PyErr_WarnEx(PyExc_Warning,
                              "cannot leave FULLSCREEN on this platform",
                              1) != 0) {
