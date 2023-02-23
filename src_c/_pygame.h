@@ -288,6 +288,12 @@ supported Python version. #endif */
 
 #define PG_FASTCALL METH_FASTCALL
 
+/* Update this function if new sequences are added to the fast sequence
+ * type. */
+#ifndef pgSequenceFast_Check
+#define pgSequenceFast_Check(o) (PyList_Check(o) || PyTuple_Check(o))
+#endif /* ~pgSequenceFast_Check */
+
 /*
  * event module internals
  */
