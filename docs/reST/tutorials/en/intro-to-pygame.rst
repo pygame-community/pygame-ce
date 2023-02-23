@@ -16,7 +16,7 @@ Python Pygame Introduction
 :Contact: pete@shinners.org
 
 
-This article is an introduction to the `pygame library <http://www.pygame.org>`_
+This article is an introduction to the `pygame library <https://pyga.me>`_
 for `Python programmers <https://www.python.org/>`_.
 The original version appeared in the `PyZine volume 1 issue 3
 <https://web.archive.org/web/20030810011958/http://store.pyzine.com:80/article.phtml?a=2>`_.
