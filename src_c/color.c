@@ -2062,7 +2062,8 @@ color_setAttr_swizzle(pgColorObject *self, PyObject *attr_name, PyObject *val)
         }
         switch (current) {
             case 'r':
-                self->data[RED] = (Uint8)PyLong_AsLong(PySequence_GetItem(val, RED));
+                self->data[RED] =
+                    (Uint8)PyLong_AsLong(PySequence_GetItem(val, RED));
                 break;
             case 'g':
                 self->data[GREEN] =
@@ -2100,7 +2101,7 @@ color_getAttr_swizzle(pgColorObject *self, PyObject *attr_name)
 
     if (len == 3 || len == 4) {
         Uint8 data[4];
-        res = pgColor_New(pg);
+        res = pgColor_New(data);
         ((pgColorObject *)res)->data[ALPHA] = 255;
     }
     else {
