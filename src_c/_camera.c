@@ -1845,27 +1845,43 @@ camera_init(pgCameraObject *self, PyObject *arg, PyObject *kwargs)
 
     return 0;
 #elif defined(PYGAME_WINDOWS_CAMERA)
-    PyObject *name_obj = NULL;
-    WCHAR *dev_name = NULL;
+    PyObject *identifier_obj = NULL;
     int w, h;
     char *color = NULL;
-    IMFActivate *p = NULL;
+    IMFActivate *act = NULL;
 
     w = DEFAULT_WIDTH;
     h = DEFAULT_HEIGHT;
 
-    if (!PyArg_ParseTuple(arg, "O|(ii)s", &name_obj, &w, &h, &color)) {
+    if (!PyArg_ParseTuple(arg, "O|(ii)s", &identifier_obj, &w, &h, &color)) {
         return -1;
     }
 
-    /* needs to be freed with PyMem_Free later */
-    dev_name = PyUnicode_AsWideCharString(name_obj, NULL);
+    if (PyObject_TypeCheck(identifier_obj, &PyUnicode_Type)) {
+        WCHAR *dev_name = PyUnicode_AsWideCharString(identifier_obj, NULL);
 
-    p = windows_device_from_name(dev_name);
+        act = windows_device_from_name(dev_name);
+        PyMem_Free(dev_name);
+        if (!act) {
+            PyErr_SetString(PyExc_ValueError,
+                            "Couldn't find a camera with that name");
+            return -1;
+        }
+    }
+    else if (PyObject_TypeCheck(identifier_obj, &PyLong_Type)) {
+        int index = PyLong_AsLong(identifier_obj);
 
-    if (!p) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Couldn't find a camera with that name");
+        act = windows_device_from_index(index);
+        if (!act) {
+            PyErr_SetString(PyExc_ValueError,
+                            "Couldn't find a camera with that index");
+            return -1;
+        }
+    }
+    else {
+        PyErr_SetString(
+            PyExc_TypeError,
+            "device must be a string 'name' or an integer 'index'");
         return -1;
     }
 
@@ -1884,7 +1900,8 @@ camera_init(pgCameraObject *self, PyObject *arg, PyObject *kwargs)
         self->color_out = RGB_OUT;
     }
 
-    self->device_name = dev_name;
+    //self->device_name = dev_name;
+    self->act = act;
     self->width = w;
     self->height = h;
     self->open = 0;

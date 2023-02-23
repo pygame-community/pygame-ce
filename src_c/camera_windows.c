@@ -287,6 +287,49 @@ cleanup:
     return NULL;
 }
 
+IMFActivate *
+windows_device_from_index(int index)
+{
+    IMFAttributes *pAttributes = NULL;
+    IMFActivate **ppDevices = NULL;
+    IMFActivate *ret_device;
+    WCHAR *_device_name = NULL;
+    UINT32 count = 0;
+    HRESULT hr;
+
+    hr = MFCreateAttributes(&pAttributes, 1);
+    HANDLEHR(hr);
+
+    hr = pAttributes->lpVtbl->SetGUID(pAttributes,
+                                      &MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+                                      &DEVSOURCE_VIDCAP_GUID);
+    HANDLEHR(hr);
+
+    hr = MFEnumDeviceSources(pAttributes, &ppDevices, &count);
+    HANDLEHR(hr);
+
+    if (index > count-1) {
+        goto cleanup;
+    }
+
+    RELEASE(pAttributes);
+    for (int i = 0; i < (int)count; i++) {
+        if (i != index) {
+            RELEASE(ppDevices[i]);
+        }
+    }
+
+    return ppDevices[index];
+
+cleanup:
+    RELEASE(pAttributes);
+    for (int i = 0; i < (int)count; i++) {
+        RELEASE(ppDevices[i]);
+    }
+    CoTaskMemFree(ppDevices);
+    return NULL;
+}
+
 /* Enumerates the formats supported "natively" by the webcam, and picks one
  * that is A) supported by the video processor MFT used for processing, and
  * B) close to the requested size */
@@ -631,7 +674,8 @@ windows_open_device(pgCameraObject *self)
     MFT_OUTPUT_STREAM_INFO info;
     HRESULT hr;
 
-    IMFActivate *act = windows_device_from_name(self->device_name);
+    //IMFActivate *act = windows_device_from_name(self->device_name);
+    IMFActivate *act = self->act;
 
     hr = act->lpVtbl->ActivateObject(act, &IID_IMFMediaSource, &source);
     RELEASE(act);
@@ -741,7 +785,7 @@ windows_init_device(pgCameraObject *self)
 void
 windows_dealloc_device(pgCameraObject *self)
 {
-    PyMem_Free(self->device_name);
+    //PyMem_Free(self->device_name);
 
     MFShutdown();
     CoUninitialize();
