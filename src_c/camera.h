@@ -113,7 +113,7 @@ typedef struct pgCameraObject {
 } pgCameraObject;
 #elif defined(PYGAME_WINDOWS_CAMERA)
 typedef struct pgCameraObject {
-    PyObject_HEAD WCHAR *device_name;
+    PyObject_HEAD IMFActivate *act;
     IMFSourceReader *reader;
     IMFTransform *transform;
     IMFVideoProcessorControl *control;
@@ -231,6 +231,8 @@ int
 windows_open_device(pgCameraObject *self);
 IMFActivate *
 windows_device_from_name(WCHAR *device_name);
+IMFActivate *
+windows_device_from_index(int index);
 int
 windows_close_device(pgCameraObject *self);
 int
