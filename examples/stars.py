@@ -21,18 +21,22 @@ class Particle:
         self,
         pos: List[int],
         vel: pg.Vector2,
-        radius: int,
     ):
         """
         Parameters:
             pos: Position of the particle
             vel: How far does the particle move (x, y) every frame
-            radius: Particle's radius
         """
 
         self.pos = pos
-        self.radius = radius
         self.vel = vel
+        self.color_list = [
+            (255, 210, 125),
+            (255, 163, 113),
+            (166, 168, 255),
+            (255, 250, 134),
+            (168, 123, 255),
+        ]
 
     def draw(self, display: pg.Surface):
         """
@@ -41,7 +45,7 @@ class Particle:
             display: The surface the particle is drawn on
         """
 
-        pg.draw.circle(display, (255, 240, 200), self.pos, self.radius)
+        pg.draw.line(display, random.choice(self.color_list), self.pos, self.pos)
 
     def update(self):
         """
@@ -63,7 +67,6 @@ def create_particle(particle_list: List[Particle], pos: pg.Vector2):
         Particle(
             pos=pos.copy(),
             vel=pg.Vector2(random.uniform(-5, 5), random.uniform(-5, 5)),
-            radius=1,
         )
     )
 
@@ -103,6 +106,8 @@ def main():
     clock = pg.time.Clock()
     pg.display.set_caption("Pygame Stars")
     particles = []
+    # how many particles to spawn every frame
+    particle_density = 10
 
     screen_rect = screen.get_rect()
     spawn_point = pg.Vector2(screen_rect.center)
@@ -116,7 +121,8 @@ def main():
                 spawn_point = pg.Vector2(event.pos)
 
         screen.fill((20, 20, 40))
-        create_particle(particles, spawn_point)
+        for _ in range(particle_density):
+            create_particle(particles, spawn_point)
         update_particles(particles, screen_rect)
         draw_particles(particles, screen)
 
