@@ -1,6 +1,6 @@
 .. TUTORIAL: Choosing and Configuring Display Modes
 
-.. include:: common.txt
+.. include:: ../../common.txt
 
 ********************************************
   Pygame Tutorials - Setting Display Modes
