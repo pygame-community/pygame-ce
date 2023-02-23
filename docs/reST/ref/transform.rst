@@ -215,7 +215,7 @@ Instead, always begin with the original image and scale to the desired size.)
    | :sl:`blur a surface using box blur`
    | :sg:`box_blur(surface, radius, repeat_edge_pixels=True, dest_surface=None) -> Surface`
 
-   Returns the blured surface using box blur algorithm.
+   Returns the blurred surface using box blur algorithm.
 
    .. versionadded:: 2.1.4
 
