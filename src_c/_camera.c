@@ -1900,7 +1900,7 @@ camera_init(pgCameraObject *self, PyObject *arg, PyObject *kwargs)
         self->color_out = RGB_OUT;
     }
 
-    //self->device_name = dev_name;
+    // self->device_name = dev_name;
     self->act = act;
     self->width = w;
     self->height = h;

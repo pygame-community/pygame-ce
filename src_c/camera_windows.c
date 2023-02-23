@@ -308,7 +308,7 @@ windows_device_from_index(int index)
     hr = MFEnumDeviceSources(pAttributes, &ppDevices, &count);
     HANDLEHR(hr);
 
-    if (index > count-1) {
+    if (index > count - 1) {
         goto cleanup;
     }
 
@@ -674,7 +674,7 @@ windows_open_device(pgCameraObject *self)
     MFT_OUTPUT_STREAM_INFO info;
     HRESULT hr;
 
-    //IMFActivate *act = windows_device_from_name(self->device_name);
+    // IMFActivate *act = windows_device_from_name(self->device_name);
     IMFActivate *act = self->act;
 
     hr = act->lpVtbl->ActivateObject(act, &IID_IMFMediaSource, &source);
@@ -785,7 +785,7 @@ windows_init_device(pgCameraObject *self)
 void
 windows_dealloc_device(pgCameraObject *self)
 {
-    //PyMem_Free(self->device_name);
+    // PyMem_Free(self->device_name);
 
     MFShutdown();
     CoUninitialize();
