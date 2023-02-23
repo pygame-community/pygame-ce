@@ -290,8 +290,6 @@ windows_device_from_index(int index)
 {
     IMFAttributes *pAttributes = NULL;
     IMFActivate **ppDevices = NULL;
-    IMFActivate *ret_device;
-    WCHAR *_device_name = NULL;
     UINT32 count = 0;
     HRESULT hr;
 
@@ -306,7 +304,7 @@ windows_device_from_index(int index)
     hr = MFEnumDeviceSources(pAttributes, &ppDevices, &count);
     HANDLEHR(hr);
 
-    if (index > count - 1) {
+    if ((uint32_t)index > count - 1) {
         goto cleanup;
     }
 
