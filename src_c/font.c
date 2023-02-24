@@ -72,7 +72,7 @@ static const char resourcefunc_name[] = "getResource";
 #endif
 static const char font_defaultname[] = "freesansbold.ttf";
 
-static const int font_defaultsize = 12;
+static const int font_defaultsize = 20;
 
 /*
  */
