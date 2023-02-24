@@ -63,7 +63,7 @@ class Surface:
             self,
             source: Surface,
             dest: Union[Coordinate, RectValue],
-            special_flags: int=0, /
+            special_flags: int=0
     ) -> None: ...
     def blits(
         self,

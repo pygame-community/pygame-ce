@@ -1891,21 +1891,20 @@ static PyObject *
 surf_rblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     SDL_Surface *src, *dest = pgSurface_AsSurface(self);
-    SDL_Rect dest_rect, temp;
-    SDL_Rect *src_rect;
-    PyObject *argpos;
-    PyObject *srcobject;
-    int result, flags_numeric = 0;
+    SDL_Rect *src_rect, dest_rect, temp;
+    PyObject *blit_pos, *src_surf;
+    int flags_numeric = 0;
 
-    if (nargs < 2 || nargs > 3)
-        return RAISE(
-            PyExc_ValueError,
-            "Function requires at least 2 positional arguments in the order: "
-            "source, dest, (special_flags optional)");
-    else if (nargs == 3) {
+    if (nargs != 2 || nargs != 3) {
+        return RAISE(PyExc_ValueError,
+                     "Function takes exactly 2 or 3 arguments in the order: "
+                     "source, dest, special_flags (optional)");
+    }
+
+    if (nargs == 3) {
         if (PyLong_Check(args[2])) {
             flags_numeric = PyLong_AsLong(args[2]);
-            if (flags_numeric == -1 && PyErr_Occurred()) {
+            if (PyErr_Occurred()) {
                 return NULL;
             }
         }
@@ -1915,17 +1914,20 @@ surf_rblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
         }
     }
 
-    srcobject = args[0];
-    src = pgSurface_AsSurface(srcobject);
-    if (!dest || !src)
-        return RAISE(pgExc_SDLError, "display Surface quit");
-
-    argpos = args[1];
-
-    /* Setup the destination rect, src rect is NULL */
-    if (pg_TwoIntsFromObj(argpos, &(dest_rect.x), &(dest_rect.y))) {
+    /* Check that the source is a Surface */
+    src_surf = args[0];
+    if (!pgSurface_Check(src_surf)) {
+        return RAISE(PyExc_TypeError, "source must be a Surface");
     }
-    else if ((src_rect = pgRect_FromObject(argpos, &temp))) {
+    if (!dest || !(src = pgSurface_AsSurface(src_surf))) {
+        return RAISE(pgExc_SDLError, "display Surface quit");
+    }
+
+    /* Try to extract a valid blit position */
+    blit_pos = args[1];
+    if (pg_TwoIntsFromObj(blit_pos, &dest_rect.x, &dest_rect.y)) {
+    }
+    else if ((src_rect = pgRect_FromObject(blit_pos, &temp))) {
         dest_rect.x = src_rect->x;
         dest_rect.y = src_rect->y;
     }
@@ -1936,11 +1938,11 @@ surf_rblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
     dest_rect.w = src->w;
     dest_rect.h = src->h;
 
-    result = pgSurface_Blit(self, (pgSurfaceObject *)srcobject, &dest_rect,
-                            NULL, flags_numeric);
-
-    if (result != 0)
-        return NULL;
+    /* Perform the blit */
+    if (pgSurface_Blit(self, (pgSurfaceObject *)src_surf, &dest_rect, NULL,
+                       flags_numeric)) {
+        return NULL; /* Exception already set */
+    }
 
     Py_RETURN_NONE;
 }
