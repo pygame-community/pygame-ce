@@ -627,7 +627,6 @@ pg_rect_collidepoint(pgRectObject *self, PyObject *const *args,
     the result as a boolean value*/
     return PyBool_FromLong(SDL_PointInRect(&p, &srect));
 }
-PG_WRAP_FASTCALL_FUNC(pg_rect_collidepoint, pgRectObject)
 
 static PyObject *
 pg_rect_colliderect(pgRectObject *self, PyObject *const *args,
@@ -715,7 +714,6 @@ pg_rect_colliderect(pgRectObject *self, PyObject *const *args,
 
     return PyBool_FromLong(_pg_do_rects_intersect(&srect, &temp));
 }
-PG_WRAP_FASTCALL_FUNC(pg_rect_colliderect, pgRectObject)
 
 static PyObject *
 pg_rect_collidelist(pgRectObject *self, PyObject *arg)
@@ -1427,10 +1425,10 @@ static struct PyMethodDef pg_rect_methods[] = {
     {"union_ip", (PyCFunction)pg_rect_union_ip, METH_VARARGS, DOC_RECTUNIONIP},
     {"unionall_ip", (PyCFunction)pg_rect_unionall_ip, METH_VARARGS,
      DOC_RECTUNIONALLIP},
-    {"collidepoint", (PyCFunction)PG_FASTCALL_NAME(pg_rect_collidepoint),
-     PG_FASTCALL, DOC_RECTCOLLIDEPOINT},
-    {"colliderect", (PyCFunction)PG_FASTCALL_NAME(pg_rect_colliderect),
-     PG_FASTCALL, DOC_RECTCOLLIDERECT},
+    {"collidepoint", (PyCFunction)pg_rect_collidepoint, METH_FASTCALL,
+     DOC_RECTCOLLIDEPOINT},
+    {"colliderect", (PyCFunction)pg_rect_colliderect, METH_FASTCALL,
+     DOC_RECTCOLLIDERECT},
     {"collidelist", (PyCFunction)pg_rect_collidelist, METH_O,
      DOC_RECTCOLLIDELIST},
     {"collidelistall", (PyCFunction)pg_rect_collidelistall, METH_O,
