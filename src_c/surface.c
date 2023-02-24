@@ -175,7 +175,6 @@ static PyObject *
 surf_blits(pgSurfaceObject *self, PyObject *args, PyObject *keywds);
 static PyObject *
 surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs);
-PG_DECLARE_FASTCALL_FUNC(surf_fblits, pgSurfaceObject);
 static PyObject *
 surf_fill(pgSurfaceObject *self, PyObject *args, PyObject *keywds);
 static PyObject *
@@ -347,8 +346,7 @@ static struct PyMethodDef surface_methods[] = {
      DOC_SURFACEBLIT},
     {"blits", (PyCFunction)surf_blits, METH_VARARGS | METH_KEYWORDS,
      DOC_SURFACEBLITS},
-    {"fblits", (PyCFunction)PG_FASTCALL_NAME(surf_fblits), PG_FASTCALL,
-     DOC_SURFACEFBLITS},
+    {"fblits", (PyCFunction)surf_fblits, METH_FASTCALL, DOC_SURFACEFBLITS},
     {"scroll", (PyCFunction)surf_scroll, METH_VARARGS | METH_KEYWORDS,
      DOC_SURFACESCROLL},
 
@@ -2330,7 +2328,6 @@ on_error:
     }
     return RAISE(PyExc_TypeError, "Unknown error");
 }
-PG_WRAP_FASTCALL_FUNC(surf_fblits, pgSurfaceObject)
 
 static PyObject *
 surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
