@@ -60,10 +60,10 @@ class Surface:
         special_flags: int = 0,
     ) -> Rect: ...
     def rblit(
-            self,
-            source: Surface,
-            dest: Union[Coordinate, RectValue],
-            special_flags: int=0
+        self,
+        source: Surface,
+        dest: Union[Coordinate, RectValue],
+        special_flags: int = 0,
     ) -> None: ...
     def blits(
         self,
