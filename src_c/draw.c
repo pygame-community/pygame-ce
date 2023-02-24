@@ -1087,28 +1087,6 @@ on_error:
     return RAISE(PyExc_TypeError, "Unknown error");
 }
 
-#if PY_VERSION_HEX < 0x03070000
-static PyObject *
-polygons_wrapper(PyObject *self, PyObject *args)
-{
-    Py_ssize_t i, nargs = PyTuple_GET_SIZE(args);
-    PyObject **vector_args = PyMem_New(PyObject *, nargs);
-    if (!vector_args) {
-        return PyErr_NoMemory();
-    }
-    for (i = 0; i < nargs; i++) {
-        vector_args[i] = PyTuple_GetItem(args, i);
-        if (!vector_args[i]) {
-            PyMem_Free(vector_args);
-            return NULL;
-        }
-    }
-    PyObject *ret = polygons(self, (PyObject *const *)vector_args, nargs);
-    PyMem_Free(vector_args);
-
-    return ret;
-}
-#endif
 static PyObject *
 rect(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -2798,12 +2776,8 @@ static PyMethodDef _draw_methods[] = {
      DOC_PYGAMEDRAWCIRCLE},
     {"polygon", (PyCFunction)polygon, METH_VARARGS | METH_KEYWORDS,
      DOC_PYGAMEDRAWPOLYGON},
-#if PY_VERSION_HEX < 0x03070000
     {"polygons", (PyCFunction)polygons_wrapper, METH_VARARGS,
      DOC_PYGAMEDRAWPOLYGONS},
-#else
-    {"polygons", (PyCFunction)polygons, METH_FASTCALL, DOC_PYGAMEDRAWPOLYGONS},
-#endif
     {"rect", (PyCFunction)rect, METH_VARARGS | METH_KEYWORDS,
      DOC_PYGAMEDRAWRECT},
 
