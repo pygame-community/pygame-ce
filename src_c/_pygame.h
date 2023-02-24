@@ -281,13 +281,6 @@ supported Python version. #endif */
 
 #define PyType_Init(x) (((x).ob_type) = &PyType_Type)
 
-/* compat macros are no-op on python versions that support fastcall */
-#define PG_FASTCALL_NAME(func) func
-#define PG_DECLARE_FASTCALL_FUNC(func, self_type)
-#define PG_WRAP_FASTCALL_FUNC(func, self_type)
-
-#define PG_FASTCALL METH_FASTCALL
-
 /* Update this function if new sequences are added to the fast sequence
  * type. */
 #ifndef pgSequenceFast_Check
