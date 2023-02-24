@@ -173,7 +173,6 @@ static PyObject *
 surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds);
 static PyObject *
 surf_rblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs);
-PG_DECLARE_FASTCALL_FUNC(surf_rblit, pgSurfaceObject);
 static PyObject *
 surf_blits(pgSurfaceObject *self, PyObject *args, PyObject *keywds);
 static PyObject *
@@ -347,8 +346,7 @@ static struct PyMethodDef surface_methods[] = {
      DOC_SURFACEFILL},
     {"blit", (PyCFunction)surf_blit, METH_VARARGS | METH_KEYWORDS,
      DOC_SURFACEBLIT},
-    {"rblit", (PyCFunction)PG_FASTCALL_NAME(surf_rblit), PG_FASTCALL,
-     DOC_SURFACERBLIT},
+    {"rblit", (PyCFunction)surf_rblit, METH_FASTCALL, DOC_SURFACERBLIT},
     {"blits", (PyCFunction)surf_blits, METH_VARARGS | METH_KEYWORDS,
      DOC_SURFACEBLITS},
     {"fblits", (PyCFunction)surf_fblits, METH_FASTCALL, DOC_SURFACEFBLITS},
@@ -1946,8 +1944,6 @@ surf_rblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     Py_RETURN_NONE;
 }
-
-PG_WRAP_FASTCALL_FUNC(surf_rblit, pgSurfaceObject)
 
 #define BLITS_ERR_SEQUENCE_REQUIRED 1
 #define BLITS_ERR_DISPLAY_SURF_QUIT 2
