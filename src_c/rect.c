@@ -1107,41 +1107,14 @@ pg_rect_clip(pgRectObject *self, PyObject *args)
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
     }
 
-    /* Left */
-    if ((A->x >= B->x) && (A->x < (B->x + B->w))) {
-        x = A->x;
-    }
-    else if ((B->x >= A->x) && (B->x < (A->x + A->w)))
-        x = B->x;
-    else
-        goto nointersect;
+    x = MAX(A->x, B->x);
+    y = MAX(A->y, B->y);
+    w = MIN(A->x + A->w, B->x + B->w) - x;
+    h = MIN(A->y + A->h, B->y + B->h) - y;
 
-    /* Right */
-    if (((A->x + A->w) > B->x) && ((A->x + A->w) <= (B->x + B->w))) {
-        w = (A->x + A->w) - x;
-    }
-    else if (((B->x + B->w) > A->x) && ((B->x + B->w) <= (A->x + A->w)))
-        w = (B->x + B->w) - x;
-    else
+    if (w < 0 || h < 0) {
         goto nointersect;
-
-    /* Top */
-    if ((A->y >= B->y) && (A->y < (B->y + B->h))) {
-        y = A->y;
     }
-    else if ((B->y >= A->y) && (B->y < (A->y + A->h)))
-        y = B->y;
-    else
-        goto nointersect;
-
-    /* Bottom */
-    if (((A->y + A->h) > B->y) && ((A->y + A->h) <= (B->y + B->h))) {
-        h = (A->y + A->h) - y;
-    }
-    else if (((B->y + B->h) > A->y) && ((B->y + B->h) <= (A->y + A->h)))
-        h = (B->y + B->h) - y;
-    else
-        goto nointersect;
 
     return _pg_rect_subtype_new4(Py_TYPE(self), x, y, w, h);
 
