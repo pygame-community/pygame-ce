@@ -98,7 +98,7 @@ pg_iter_raise(PyObject *self)
 
 /**
  * There is an issue in PyPy that causes __iter__ to be called
- * on creation of a ScandcodeWrapper. This stops this from
+ * on creation of a ScancodeWrapper. This stops this from
  * happening.
  */
 #ifdef PYPY_VERSION
