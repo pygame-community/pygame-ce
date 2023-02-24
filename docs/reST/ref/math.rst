@@ -78,6 +78,9 @@ Multiple coordinates can be set using slices or swizzling
       Inherited methods of vector subclasses now correctly return an instance of the 
       subclass instead of the superclass
 
+   .. versionchanged:: 2.1.4
+      Added support for instancing vectors with `Vector2(complex)`
+
    .. method:: dot
 
       | :sl:`calculates the dot- or scalar-product with the other vector`
@@ -464,9 +467,9 @@ Multiple coordinates can be set using slices or swizzling
 
       Returns complex number where x is real and y is imaginary.
 
-      .. versionadded:: 2.1.3
+      .. versionadded:: 2.1.4
 
-      .. ## Vector2.update ##
+      .. ## Vector2.to_complex ##
 
 
    .. attribute:: epsilon
