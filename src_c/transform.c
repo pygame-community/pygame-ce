@@ -586,9 +586,7 @@ surf_scale(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
 
     if (!pg_TwoIntsFromObj(size, &width, &height))
         return RAISE(PyExc_TypeError, "size must be two numbers");
@@ -626,9 +624,8 @@ surf_scale_by(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
+
     newsurf = scale_to(surfobj, surfobj2, (int)(surf->w * scalex),
                        (int)(surf->h * scaley));
     if (!newsurf) {
@@ -657,9 +654,7 @@ surf_scale2x(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
 
     /* if the second surface is not there, then make a new one. */
 
@@ -719,9 +714,7 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
                                      &pgSurface_Type, &surfobj, &angle))
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
 
     if (surf->w < 1 || surf->h < 1) {
         Py_INCREF(surfobj);
@@ -820,9 +813,7 @@ surf_flip(PyObject *self, PyObject *args, PyObject *kwargs)
                                      &yaxis))
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
 
     newsurf = newsurf_fromsurf(surf, surf->w, surf->h);
     if (!newsurf)
@@ -970,9 +961,7 @@ surf_rotozoom(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
 
     if (scale == 0.0 || surf->w == 0 || surf->h == 0) {
         newsurf = newsurf_fromsurf(surf, 0, 0);
@@ -1090,9 +1079,8 @@ surf_chop(PyObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(PyExc_TypeError, "Rect argument is invalid");
 
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
+
     /* The function releases GIL internally, don't release here */
     newsurf = chop(surf, rect->x, rect->y, rect->w, rect->h);
 
@@ -1581,9 +1569,7 @@ surf_scalesmooth(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
 
     if (!pg_TwoIntsFromObj(size, &width, &height))
         return RAISE(PyExc_TypeError, "size must be two numbers");
@@ -1621,9 +1607,7 @@ surf_scalesmooth_by(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
 
     newsurf = smoothscale_to(self, surfobj, surfobj2, (int)(surf->w * scale),
                              (int)(surf->h * scaley));
@@ -2356,9 +2340,7 @@ surf_laplacian(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
 
     /* if the second surface is not there, then make a new one. */
 

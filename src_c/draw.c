@@ -119,9 +119,7 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
 
     if (!blend) {
         if (PyErr_WarnEx(
@@ -194,9 +192,7 @@ line(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -271,9 +267,7 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -407,9 +401,7 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -532,9 +524,7 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -610,9 +600,7 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -696,9 +684,7 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -788,9 +774,7 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -908,9 +892,7 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
-    if (!surf) {
-        return RAISE(pgExc_SDLError, "display Surface quit");
-    }
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,

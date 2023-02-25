@@ -480,6 +480,12 @@ PYGAMEAPI_EXTERN_SLOTS(math);
  *  functions in Python 3.
  */
 
+#define SURF_INIT_CHECK(SDL_SurfObj) {\
+    if (!SDL_SurfObj) {\
+        return RAISE(pgExc_SDLError, "Surface is not initializied"); \
+    } \
+}
+
 static PG_INLINE PyObject *
 pg_tuple_couple_from_values_int(int val1, int val2)
 {
