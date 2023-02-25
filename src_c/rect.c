@@ -147,6 +147,41 @@ four_ints_from_obj(PyObject *obj, int *val1, int *val2, int *val3, int *val4)
     return 1;
 }
 
+static int
+pgCoord_FromFastcallArgs(PyObject *const *args, Py_ssize_t nargs, int *x,
+                         int *y)
+{
+    /*Check if there is only one argument*/
+    if (nargs == 1) {
+        /*Attempt to convert the argument to two integers*/
+        if (!pg_TwoIntsFromObj(args[0], x, y)) {
+            PyErr_SetString(PyExc_TypeError,
+                            "Invalid position. Must be a two-element "
+                            "sequence of numbers");
+            return 0;
+        }
+        return 1;
+    }
+    /*Check if there are two arguments*/
+    else if (nargs == 2) {
+        /*Attempt to convert the first argument to an integer*/
+        if (!pg_IntFromObj(args[0], x)) {
+            PyErr_SetString(PyExc_TypeError, "x must be a numeric value");
+            return 0;
+        }
+        /*Attempt to convert the second argument to an integer*/
+        if (!pg_IntFromObj(args[1], y)) {
+            PyErr_SetString(PyExc_TypeError, "y must be a numeric value");
+            return 0;
+        }
+        return 1;
+    }
+    /*Raise a TypeError for invalid number of arguments*/
+    PyErr_SetString(PyExc_TypeError,
+                    "Invalid arguments number, must either be 1 or 2");
+    return 0;
+}
+
 static PyObject *
 _pg_rect_subtype_new4(PyTypeObject *type, int x, int y, int w, int h)
 {
@@ -372,12 +407,12 @@ pg_rect_normalize(pgRectObject *self, PyObject *_null)
 }
 
 static PyObject *
-pg_rect_move(pgRectObject *self, PyObject *args)
+pg_rect_move(pgRectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
-    int x = 0, y = 0;
+    int x, y;
 
-    if (!pg_TwoIntsFromObj(args, &x, &y)) {
-        return RAISE(PyExc_TypeError, "argument must contain two numbers");
+    if (!pgCoord_FromFastcallArgs(args, nargs, &x, &y)) {
+        return NULL;
     }
 
     return _pg_rect_subtype_new4(Py_TYPE(self), self->r.x + x, self->r.y + y,
@@ -385,12 +420,12 @@ pg_rect_move(pgRectObject *self, PyObject *args)
 }
 
 static PyObject *
-pg_rect_move_ip(pgRectObject *self, PyObject *args)
+pg_rect_move_ip(pgRectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
-    int x = 0, y = 0;
+    int x, y;
 
-    if (!pg_TwoIntsFromObj(args, &x, &y)) {
-        return RAISE(PyExc_TypeError, "argument must contain two numbers");
+    if (!pgCoord_FromFastcallArgs(args, nargs, &x, &y)) {
+        return NULL;
     }
 
     self->r.x += x;
@@ -597,30 +632,8 @@ pg_rect_collidepoint(pgRectObject *self, PyObject *const *args,
     SDL_Rect srect = self->r;
     SDL_Point p;
 
-    /*Check if there is only one argument*/
-    if (nargs == 1) {
-        /*Attempt to convert the argument to two integers*/
-        if (!pg_TwoIntsFromObj(args[0], &p.x, &p.y)) {
-            return RAISE(PyExc_TypeError,
-                         "Invalid position. Must be a two-element "
-                         "sequence of numbers");
-        }
-    }
-    /*Check if there are two arguments*/
-    else if (nargs == 2) {
-        /*Attempt to convert the first argument to an integer*/
-        if (!pg_IntFromObj(args[0], &p.x)) {
-            return RAISE(PyExc_TypeError, "x must be a numeric value");
-        }
-        /*Attempt to convert the second argument to an integer*/
-        if (!pg_IntFromObj(args[1], &p.y)) {
-            return RAISE(PyExc_TypeError, "y must be a numeric value");
-        }
-    }
-    /*Raise a TypeError for invalid number of arguments*/
-    else {
-        return RAISE(PyExc_TypeError,
-                     "Invalid arguments number, must either be 1 or 2");
+    if (!pgCoord_FromFastcallArgs(args, nargs, &p.x, &p.y)) {
+        return NULL;
     }
 
     /*Use SDL_PointInRect to check if the point is within the rect and return
@@ -1413,13 +1426,13 @@ static struct PyMethodDef pg_rect_methods[] = {
     {"clamp_ip", (PyCFunction)pg_rect_clamp_ip, METH_VARARGS, DOC_RECTCLAMPIP},
     {"copy", (PyCFunction)pg_rect_copy, METH_NOARGS, DOC_RECTCOPY},
     {"fit", (PyCFunction)pg_rect_fit, METH_VARARGS, DOC_RECTFIT},
-    {"move", (PyCFunction)pg_rect_move, METH_VARARGS, DOC_RECTMOVE},
+    {"move", (PyCFunction)pg_rect_move, METH_FASTCALL, DOC_RECTMOVE},
     {"update", (PyCFunction)pg_rect_update, METH_VARARGS, DOC_RECTUPDATE},
     {"inflate", (PyCFunction)pg_rect_inflate, METH_VARARGS, DOC_RECTINFLATE},
     {"union", (PyCFunction)pg_rect_union, METH_VARARGS, DOC_RECTUNION},
     {"unionall", (PyCFunction)pg_rect_unionall, METH_VARARGS,
      DOC_RECTUNIONALL},
-    {"move_ip", (PyCFunction)pg_rect_move_ip, METH_VARARGS, DOC_RECTMOVEIP},
+    {"move_ip", (PyCFunction)pg_rect_move_ip, METH_FASTCALL, DOC_RECTMOVEIP},
     {"inflate_ip", (PyCFunction)pg_rect_inflate_ip, METH_VARARGS,
      DOC_RECTINFLATEIP},
     {"union_ip", (PyCFunction)pg_rect_union_ip, METH_VARARGS, DOC_RECTUNIONIP},
