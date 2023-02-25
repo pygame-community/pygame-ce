@@ -86,6 +86,7 @@ Sprites are not thread safe, so lock them yourself if using threads.
 # specialized cases.
 
 from warnings import warn
+from typing import Optional
 
 import pygame
 
@@ -111,8 +112,26 @@ class Sprite:
 
     def __init__(self, *groups):
         self.__g = {}  # The groups the sprite is in
+        self.__image: Optional[pygame.surface.Surface] = None
+        self.__rect: Optional[pygame.rect.Rect] = None
         if groups:
             self.add(*groups)
+
+    @property
+    def image(self):
+        return self.__image
+
+    @image.setter
+    def image(self, value: Optional[pygame.surface.Surface]):
+        self.__image = value
+
+    @property
+    def rect(self):
+        return self.__rect
+
+    @rect.setter
+    def rect(self, value: Optional[pygame.rect.Rect]):
+        self.__rect = value
 
     def add(self, *groups):
         """add the sprite to groups
