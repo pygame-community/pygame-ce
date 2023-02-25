@@ -1112,7 +1112,7 @@ pg_rect_clip(pgRectObject *self, PyObject *args)
     w = MIN(A->x + A->w, B->x + B->w) - x;
     h = MIN(A->y + A->h, B->y + B->h) - y;
 
-    if (w < 0 || h < 0) {
+    if (w <= 0 || h <= 0) {
         return _pg_rect_subtype_new4(Py_TYPE(self), A->x, A->y, 0, 0);
     }
 
