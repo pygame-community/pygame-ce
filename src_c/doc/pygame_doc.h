@@ -1,5 +1,6 @@
 /* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
 #define DOC_PYGAME "the top level pygame package"
+#define DOC_PYGAMEISCE "IS_CE = 1\nexists if current pygame is pygame-ce"
 #define DOC_PYGAMEINIT "init() -> (numpass, numfail)\ninitialize all imported pygame modules"
 #define DOC_PYGAMEQUIT "quit() -> None\nuninitialize all pygame modules"
 #define DOC_PYGAMEGETINIT "get_init() -> bool\nreturns True if pygame is currently initialized"
@@ -11,6 +12,7 @@
 #define DOC_PYGAMEREGISTERQUIT "register_quit(callable) -> None\nregister a function to be called when pygame quits"
 #define DOC_PYGAMEENCODESTRING "encode_string([obj [, encoding [, errors [, etype]]]]) -> bytes or None\nEncode a Unicode or bytes object"
 #define DOC_PYGAMEENCODEFILEPATH "encode_file_path([obj [, etype]]) -> bytes or None\nEncode a Unicode or bytes object as a file system path"
+#define DOC_PYGAMEPRINTDEBUGINFO "print_debug_info(filename=None) -> None\nretrieves useful information for debugging and issue-reporting purposes"
 #define DOC_PYGAMEVERSION "small module containing version information"
 #define DOC_PYGAMEVERSIONVER "ver = '1.2'\nversion number as a string"
 #define DOC_PYGAMEVERSIONVERNUM "vernum = (1, 5, 3)\ntupled integers of the version"
@@ -24,6 +26,10 @@
 
 pygame
 the top level pygame package
+
+pygame.IS_CE
+ IS_CE = 1
+exists if current pygame is pygame-ce
 
 pygame.init
  init() -> (numpass, numfail)
@@ -68,6 +74,10 @@ Encode a Unicode or bytes object
 pygame.encode_file_path
  encode_file_path([obj [, etype]]) -> bytes or None
 Encode a Unicode or bytes object as a file system path
+
+pygame.print_debug_info
+ print_debug_info(filename=None) -> None
+retrieves useful information for debugging and issue-reporting purposes
 
 pygame.version
 small module containing version information

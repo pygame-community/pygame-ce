@@ -114,7 +114,6 @@ typedef struct {
 /* math functions */
 static PyObject *
 math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs);
-PG_DECLARE_FASTCALL_FUNC(math_clamp, PyObject);
 
 /* generic helper functions */
 static int
@@ -261,11 +260,9 @@ vector_copy(pgVector *self, PyObject *_null);
 static PyObject *
 vector_clamp_magnitude(pgVector *self, PyObject *const *args,
                        Py_ssize_t nargs);
-PG_DECLARE_FASTCALL_FUNC(vector_clamp_magnitude, pgVector);
 static PyObject *
 vector_clamp_magnitude_ip(pgVector *self, PyObject *const *args,
                           Py_ssize_t nargs);
-PG_DECLARE_FASTCALL_FUNC(vector_clamp_magnitude_ip, pgVector);
 static PyObject *
 vector___round__(pgVector *self, PyObject *args);
 
@@ -843,8 +840,6 @@ vector_clamp_magnitude(pgVector *self, PyObject *const *args, Py_ssize_t nargs)
     return (PyObject *)ret;
 }
 
-PG_WRAP_FASTCALL_FUNC(vector_clamp_magnitude, pgVector);
-
 static PyObject *
 vector_clamp_magnitude_ip(pgVector *self, PyObject *const *args,
                           Py_ssize_t nargs)
@@ -904,8 +899,6 @@ vector_clamp_magnitude_ip(pgVector *self, PyObject *const *args,
 
     Py_RETURN_NONE;
 }
-
-PG_WRAP_FASTCALL_FUNC(vector_clamp_magnitude_ip, pgVector);
 
 static PyNumberMethods vector_as_number = {
     .nb_add = (binaryfunc)vector_add,
@@ -1740,15 +1733,17 @@ static int
 _vector_check_snprintf_success(int return_code, int max_size)
 {
     if (return_code < 0) {
-        PyErr_SetString(PyExc_SystemError,
-                        "internal snprintf call went wrong! Please report "
-                        "this to github.com/pygame-community/pygame-ce/issues");
+        PyErr_SetString(
+            PyExc_SystemError,
+            "internal snprintf call went wrong! Please report "
+            "this to github.com/pygame-community/pygame-ce/issues");
         return 0;
     }
     if (return_code >= max_size) {
-        PyErr_SetString(PyExc_SystemError,
-                        "Internal buffer too small for snprintf! Please report "
-                        "this to github.com/pygame-community/pygame-ce/issues");
+        PyErr_SetString(
+            PyExc_SystemError,
+            "Internal buffer too small for snprintf! Please report "
+            "this to github.com/pygame-community/pygame-ce/issues");
         return 0;
     }
     return 1;
@@ -2028,9 +2023,10 @@ vector_setAttr_swizzle(pgVector *self, PyObject *attr_name, PyObject *val)
             return -1;
         default:
             /* this should NEVER happen and means a bug in the code */
-            PyErr_SetString(PyExc_RuntimeError,
-                            "Unhandled error in swizzle code. Please report "
-                            "this bug to github.com/pygame-community/pygame-ce/issues");
+            PyErr_SetString(
+                PyExc_RuntimeError,
+                "Unhandled error in swizzle code. Please report "
+                "this bug to github.com/pygame-community/pygame-ce/issues");
             return -1;
     }
 }
@@ -2288,7 +2284,8 @@ _vector2_rotate_helper(double *dst_coords, const double *src_coords,
                 PyErr_SetString(
                     PyExc_RuntimeError,
                     "Please report this bug in vector2_rotate_helper to "
-                    "the developers at github.com/pygame-community/pygame-ce/issues");
+                    "the developers at "
+                    "github.com/pygame-community/pygame-ce/issues");
                 return 0;
         }
     }
@@ -2533,11 +2530,10 @@ static PyMethodDef vector2_methods[] = {
     {"project", (PyCFunction)vector2_project, METH_O, DOC_VECTOR2PROJECT},
     {"copy", (PyCFunction)vector_copy, METH_NOARGS, DOC_VECTOR2COPY},
     {"__copy__", (PyCFunction)vector_copy, METH_NOARGS, NULL},
-    {"clamp_magnitude", (PyCFunction)PG_FASTCALL_NAME(vector_clamp_magnitude),
-     PG_FASTCALL, DOC_VECTOR2CLAMPMAGNITUDE},
-    {"clamp_magnitude_ip",
-     (PyCFunction)PG_FASTCALL_NAME(vector_clamp_magnitude_ip), PG_FASTCALL,
-     DOC_VECTOR2CLAMPMAGNITUDEIP},
+    {"clamp_magnitude", (PyCFunction)vector_clamp_magnitude, METH_FASTCALL,
+     DOC_VECTOR2CLAMPMAGNITUDE},
+    {"clamp_magnitude_ip", (PyCFunction)vector_clamp_magnitude_ip,
+     METH_FASTCALL, DOC_VECTOR2CLAMPMAGNITUDEIP},
     {"__safe_for_unpickling__", (PyCFunction)vector_getsafepickle, METH_NOARGS,
      NULL},
     {"__reduce__", (PyCFunction)vector2_reduce, METH_NOARGS, NULL},
@@ -2775,7 +2771,8 @@ _vector3_rotate_helper(double *dst_coords, const double *src_coords,
                 PyErr_SetString(
                     PyExc_RuntimeError,
                     "Please report this bug in vector3_rotate_helper to "
-                    "the developers at github.com/pygame-community/pygame-ce/issues");
+                    "the developers at "
+                    "github.com/pygame-community/pygame-ce/issues");
                 return 0;
         }
     }
@@ -3453,11 +3450,10 @@ static PyMethodDef vector3_methods[] = {
     {"project", (PyCFunction)vector3_project, METH_O, DOC_VECTOR3PROJECT},
     {"copy", (PyCFunction)vector_copy, METH_NOARGS, DOC_VECTOR3COPY},
     {"__copy__", (PyCFunction)vector_copy, METH_NOARGS, NULL},
-    {"clamp_magnitude", (PyCFunction)PG_FASTCALL_NAME(vector_clamp_magnitude),
-     PG_FASTCALL, DOC_VECTOR3CLAMPMAGNITUDE},
-    {"clamp_magnitude_ip",
-     (PyCFunction)PG_FASTCALL_NAME(vector_clamp_magnitude_ip), PG_FASTCALL,
-     DOC_VECTOR3CLAMPMAGNITUDEIP},
+    {"clamp_magnitude", (PyCFunction)vector_clamp_magnitude, METH_FASTCALL,
+     DOC_VECTOR3CLAMPMAGNITUDE},
+    {"clamp_magnitude_ip", (PyCFunction)vector_clamp_magnitude_ip,
+     METH_FASTCALL, DOC_VECTOR3CLAMPMAGNITUDEIP},
     {"__safe_for_unpickling__", (PyCFunction)vector_getsafepickle, METH_NOARGS,
      NULL},
     {"__reduce__", (PyCFunction)vector3_reduce, METH_NOARGS, NULL},
@@ -4212,8 +4208,6 @@ math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     return value;
 }
 
-PG_WRAP_FASTCALL_FUNC(math_clamp, PyObject);
-
 static PyObject *
 math_enable_swizzling(pgVector *self, PyObject *_null)
 {
@@ -4241,8 +4235,7 @@ math_disable_swizzling(pgVector *self, PyObject *_null)
 }
 
 static PyMethodDef _math_methods[] = {
-    {"clamp", (PyCFunction)PG_FASTCALL_NAME(math_clamp), PG_FASTCALL,
-     DOC_PYGAMEMATHCLAMP},
+    {"clamp", (PyCFunction)math_clamp, METH_FASTCALL, DOC_PYGAMEMATHCLAMP},
     {"enable_swizzling", (PyCFunction)math_enable_swizzling, METH_NOARGS,
      "Deprecated, will be removed in a future version"},
     {"disable_swizzling", (PyCFunction)math_disable_swizzling, METH_NOARGS,

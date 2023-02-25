@@ -203,7 +203,7 @@ class KeyModuleTest(unittest.TestCase):
                 display_sizes = [(500, 500)]
             pygame.display.set_mode(size=display_sizes[-1], flags=pygame.FULLSCREEN)
             pygame.event.set_grab(True)
-            # Pump event queue to get window focus on macos
+            # Pump event queue to get window focus on macOS
             pygame.event.pump()
             focused = pygame.key.get_focused()
             self.assertIsInstance(focused, int)
@@ -250,7 +250,7 @@ class KeyModuleTest(unittest.TestCase):
             const_val = getattr(pygame, const_name)
 
             # with these tests below, we also make sure that key.name and key.key_code
-            # can work together and handle each others outputs
+            # can work together and handle each other's outputs
 
             # test positional args
             self.assertEqual(pygame.key.name(const_val), expected_str_name)

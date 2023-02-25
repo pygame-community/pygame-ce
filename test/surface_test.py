@@ -418,7 +418,7 @@ class SurfaceTypeTest(unittest.TestCase):
         c = s1.get_at((0, 0))
         self.assertEqual(c, color)
 
-        # make subsurface in the middle to test it doesn't over write.
+        # make subsurface in the middle to test it doesn't overwrite.
         s2 = s1.subsurface((5, 5, 5, 5))
         r2 = s2.fill(color2, (-3, -3, 5, 5))
         c2 = s1.get_at((4, 4))
@@ -426,7 +426,7 @@ class SurfaceTypeTest(unittest.TestCase):
 
         # rect returns the area we actually fill.
         r3 = s2.fill(color2, (-30, -30, 5, 5))
-        # since we are using negative coords, it should be an zero sized rect.
+        # since we are using negative coords, it should be a zero sized rect.
         self.assertEqual(tuple(r3), (0, 0, 0, 0))
 
     def test_fill_keyword_args(self):
@@ -526,7 +526,7 @@ class SurfaceTypeTest(unittest.TestCase):
 
             # OPENGL
             screen_surf = pygame.display.set_mode((600, 400), flags=0)
-            # it can have an OPENGL flag by default on Macos?
+            # it can have an OPENGL flag by default on macOS?
             if not (screen_surf.get_flags() & pygame.OPENGL):
                 self.assertFalse(screen_surf.get_flags() & pygame.OPENGL)
 
@@ -860,11 +860,11 @@ class TestSurfaceBlit(unittest.TestCase):
     # draw one image onto another
     #
     # Draws a source Surface onto this Surface. The draw can be positioned
-    # with the dest argument. Dest can either be pair of coordinates
+    # with the dest argument. Dest can be a pair of coordinates
     # representing the upper left corner of the source. A Rect can also be
     # passed as the destination and the topleft corner of the rectangle
     # will be used as the position for the blit. The size of the
-    # destination rectangle does not effect the blit.
+    # destination rectangle does not affect the blit.
     #
     # An optional area rectangle can be passed as well. This represents a
     # smaller portion of the source Surface to draw.
@@ -1621,7 +1621,7 @@ class GeneralSurfaceTests(unittest.TestCase):
         #
         # Creates a new copy of the Surface with the pixel format changed. The
         # new pixel format can be determined from another existing Surface.
-        # Otherwise depth, flags, and masks arguments can be used, similar to
+        # Otherwise, depth, flags, and masks arguments can be used, similar to
         # the pygame.Surface() call.
         #
         # If no arguments are passed the new Surface will have the same pixel
@@ -1733,7 +1733,7 @@ class GeneralSurfaceTests(unittest.TestCase):
         try:
             parent = pygame.Surface((64, 64), SRCALPHA, 32)
 
-            # Stack bunch of subsurfaces
+            # Stack a bunch of subsurfaces
             sub_level_1 = parent.subsurface((2, 2), (34, 37))
             sub_level_2 = sub_level_1.subsurface((0, 0), (30, 29))
             sub_level_3 = sub_level_2.subsurface((3, 7), (20, 21))
@@ -1765,7 +1765,7 @@ class GeneralSurfaceTests(unittest.TestCase):
         try:
             parent = pygame.Surface((32, 32), SRCALPHA, 32)
 
-            # Stack bunch of subsurfaces
+            # Stack a bunch of subsurfaces
             sub_level_1 = parent.subsurface((1, 1), (15, 15))
             sub_level_2 = sub_level_1.subsurface((1, 1), (12, 12))
             sub_level_3 = sub_level_2.subsurface((1, 1), (9, 9))
@@ -2401,7 +2401,7 @@ class GeneralSurfaceTests(unittest.TestCase):
         #
         # Returns a new Surface that shares its pixels with its new parent.
         # The new Surface is considered a child of the original. Modifications
-        # to either Surface pixels will effect each other. Surface information
+        # to either Surface pixels will affect each other. Surface information
         # like clipping area and color keys are unique to each Surface.
         #
         # The new Surface will inherit the palette, color key, and alpha
@@ -2653,7 +2653,7 @@ class SurfaceSubtypeTest(unittest.TestCase):
 
 
 class SurfaceGetBufferTest(unittest.TestCase):
-    # These tests requires ctypes. They are disabled if ctypes
+    # These tests require ctypes. They are disabled if ctypes
     # is not installed.
     try:
         ArrayInterface
@@ -2959,7 +2959,7 @@ class SurfaceGetBufferTest(unittest.TestCase):
         Importer = buftools.Importer
         s = pygame.Surface((10, 6), 0, 32)
         a = s.get_view("2")
-        # Non dimensional requests, no PyDEF_ND, are handled by the
+        # Non-dimensional requests, no PyDEF_ND, are handled by the
         # 1D surface buffer code, so only need to confirm a success.
         b = Importer(a, buftools.PyBUF_SIMPLE)
         self.assertEqual(b.ndim, 0)
@@ -3767,7 +3767,7 @@ class SurfaceBlendTest(unittest.TestCase):
         s1_alpha = s1.premul_alpha()
         self.assertEqual(s1_alpha.get_at((50, 50)), pygame.Color(100, 100, 100, 100))
 
-        # 16 bit colour has less precision
+        # 16-bit colour has less precision
         s2 = pygame.Surface((100, 100), pygame.SRCALPHA, 16)
         s2.fill(
             pygame.Color(

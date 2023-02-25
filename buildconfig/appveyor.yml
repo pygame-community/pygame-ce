@@ -23,13 +23,6 @@ environment:
       PYPY_VERSION: "pypy3.6-v7.3.2-win32"
       PYPY_DOWNLOAD: "powershell buildconfig\\ci\\appveyor\\download_pypy.ps1"
 
-    - PYTHON: "C:\\Python36\\python"
-      PYTHONPATH: "C:\\Python36"
-      PYTHON_VERSION: "3.6.0"
-      PYTHON_SUFFIX: ""
-      PYTHON_ARCH: "32"
-      USE_ANALYZE: ""
-
     - PYTHON: "C:\\Python37\\python"
       PYTHONPATH: "C:\\Python37"
       PYTHON_VERSION: "3.7.0"
@@ -63,13 +56,6 @@ environment:
       PYTHON_VERSION: "3.11.0"
       PYTHON_SUFFIX: ""
       PYTHON_ARCH: "32"
-      USE_ANALYZE: ""
-
-    - PYTHON: "C:\\Python36-x64\\python"
-      PYTHONPATH: "C:\\Python36-x64"
-      PYTHON_VERSION: "3.6.0"
-      PYTHON_SUFFIX: ""
-      PYTHON_ARCH: "64"
       USE_ANALYZE: ""
 
     - PYTHON: "C:\\Python37-x64\\python"
@@ -154,7 +140,7 @@ install:
   - ps: "ls dist"
 
   # Install the wheel to test it
-  - "%PYTHON% -m pip install --ignore-installed --pre --no-index --find-links dist/ pygame"
+  - "%PYTHON% -m pip install --ignore-installed --pre --no-index --find-links dist/ pygame-ce"
 
 # Appveyor's build step is specific to .NET projects, so we build in the
 # install step instead.
