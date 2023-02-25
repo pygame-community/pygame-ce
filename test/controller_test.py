@@ -1,6 +1,6 @@
 import unittest
 import pygame
-import pygame._sdl2.controller_old as controller
+import pygame._sdl2.controller as controller
 from pygame.tests.test_utils import prompt, question
 
 
