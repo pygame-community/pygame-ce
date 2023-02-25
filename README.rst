@@ -1,9 +1,9 @@
-.. image:: https://raw.githubusercontent.com/pygame/pygame/main/docs/reST/_static/pygame_logo.svg
+.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_logo.svg
   :alt: pygame
-  :target: https://www.pygame.org/
+  :target: https://pyga.me/
 
 
-|AppVeyorBuild| |PyPiVersion| |PyPiLicense|
+|PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
 Pygame_ is a free and open-source cross-platform library
@@ -12,8 +12,14 @@ It uses the `Simple DirectMedia Layer library`_ and several other
 popular libraries to abstract the most common functions, making writing
 these programs a more intuitive task.
 
-`We need your help`_ to make pygame the best it can be!
-New contributors are welcome.
+This distribution is called **'pygame - Community Edition'** ('pygame-ce' for short).
+
+It is a fork of the upstream pygame project by its former core developers,
+and was created after impossible challenges prevented them from continuing development upstream.
+The new distribution aims to offer more frequent releases, continuous bugfixes and enhancements,
+and a more democratic governance model.
+
+New contributors are welcome!
 
 
 Installation
@@ -21,7 +27,7 @@ Installation
 
 ::
 
-   pip install pygame
+   pip install pygame-ce
 
 
 Help
@@ -38,7 +44,7 @@ locally, it'll launch the online website instead.
 The online documentation stays up to date with the development version
 of pygame on github.  This may be a bit newer than the version of pygame
 you are using. To upgrade to the latest full release, run 
-``pip install pygame --upgrade`` in your terminal.
+``pip install pygame-ce --upgrade`` in your terminal.
 
 Best of all, the examples directory has many playable small programs
 which can get you started playing with the code right away.
@@ -130,7 +136,7 @@ Dependency versions:
 
 
 +----------+------------------------+
-| CPython  | >= 3.6 (Or use PyPy3)  |
+| CPython  | >= 3.7 (Or use PyPy3)  |
 +----------+------------------------+
 | SDL      | >= 2.0.8               |
 +----------+------------------------+
@@ -164,26 +170,23 @@ The programs in the ``examples`` subdirectory are in the public domain.
 See docs/licenses for licenses of dependencies.
 
 
-.. |AppVeyorBuild| image:: https://ci.appveyor.com/api/projects/status/x4074ybuobsh4myx?svg=true
-   :target: https://ci.appveyor.com/project/pygame/pygame
+.. |PyPiVersion| image:: https://img.shields.io/pypi/v/pygame-ce.svg?v=1
+   :target: https://pypi.python.org/pypi/pygame-ce
 
-.. |PyPiVersion| image:: https://img.shields.io/pypi/v/pygame.svg?v=1
-   :target: https://pypi.python.org/pypi/pygame
-
-.. |PyPiLicense| image:: https://img.shields.io/pypi/l/pygame.svg?v=1
-   :target: https://pypi.python.org/pypi/pygame
+.. |PyPiLicense| image:: https://img.shields.io/pypi/l/pygame-ce.svg?v=1
+   :target: https://pypi.python.org/pypi/pygame-ce
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame/pygame/2.1.2.svg
-   :target: https://github.com/pygame/pygame/compare/2.1.2...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.1.3.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.1.3...main
 
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
-.. _pygame: https://www.pygame.org
+.. _pygame: https://pyga.me
 .. _Simple DirectMedia Layer library: https://www.libsdl.org
 .. _We need your help: https://www.pygame.org/contribute.html
 .. _Compilation wiki page: https://www.pygame.org/wiki/Compilation
-.. _docs page: https://www.pygame.org/docs/
+.. _docs page: https://pyga.me/docs
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html

@@ -319,7 +319,7 @@ dl.definition {
 }
 
 dt.title {
-    font-family: monospace;
+    font-family: 'consolas', monospace;
 }
 
 dt tt {
@@ -351,7 +351,7 @@ span.signature {
 }
 
 span.pre {
-    font-family: monospace;
+    font-family: 'consolas', monospace;
 }
 
 code.download span.pre {
@@ -487,6 +487,12 @@ span.highlighted {
     background-color: {{ theme_highlightbgcolor }};
 }
 
+code{
+    border-radius: 0.25em;
+    padding: 0 0.2em 0;
+    background-color: {{ theme_codebgcolor }};
+}
+
 pre {
     background-color: {{ theme_codebgcolor }};
     border: 1px solid #ac9;
@@ -494,7 +500,7 @@ pre {
     border-right: none;
     color: #333333;
     display: block;
-    font-family: monospace;
+    font-family: 'consolas', monospace;
     line-height: 120%;
     margin-bottom: 1em;
     padding: 5px 5px 5px 15px;
