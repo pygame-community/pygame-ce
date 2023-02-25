@@ -45,20 +45,16 @@ jobs:
         # concurrent builds on ubuntu. 6 are used here
         include:
           # no pypy and cpython >= cp310 on manylinux1
-          - { image: manylinux1, arch: x86_64, pyversions: "cp3[6-9]-*" }
-          - { image: manylinux1, arch: i686, pyversions: "cp3[6-9]-*" }
+          - { image: manylinux1, arch: x86_64, pyversions: "cp3[7-9]-*" }
+          - { image: manylinux1, arch: i686, pyversions: "cp3[7-9]-*" }
 
           # no pypy >= 3.9 and cpython >= cp311 on manylinux2010
-          - { image: manylinux2010, arch: x86_64, pyversions: "cp3{[6-9],10}-* pp3{7,8}-*" }
-          - { image: manylinux2010, arch: i686, pyversions: "cp3{[6-9],10}-* pp3{7,8}-*" }
+          - { image: manylinux2010, arch: x86_64, pyversions: "cp3{[7-9],10}-* pp3{7,8}-*" }
+          - { image: manylinux2010, arch: i686, pyversions: "cp3{[7-9],10}-* pp3{7,8}-*" }
 
-          # all cpython and pypy versions should support this for now
-          # The * here essentially tells cibuildwheel to follow its default behaviour 
-          # of building all possible build configurations the particular cibuildwheel
-          # version supports. Unless cibuildwheel itself is bumped to the next version,
-          # this will stay constant and do the same set of builds everytime.
-          - { image: manylinux2014, arch: x86_64, pyversions: "*" }
-          - { image: manylinux2014, arch: i686, pyversions: "*" }
+          # all versions of python supported by cibuildwheel (except cp3.6)
+          - { image: manylinux2014, arch: x86_64, pyversions: "cp3{[7-9],10,11}-* pp3{7,8,9}-*" }
+          - { image: manylinux2014, arch: i686, pyversions: "cp3{[7-9],10,11}-* pp3{7,8,9}-*" }
 
     env:
       # load pip config from this file. Define this in 'CIBW_ENVIRONMENT'

@@ -73,12 +73,6 @@ jobs:
             pyversions: "cp37-*"
           }
           - {
-            name: "CPython 3.6 (64 bit)",
-            winarch: AMD64,
-            msvc-dev-arch: x86_amd64,
-            pyversions: "cp36-*"
-          }
-          - {
             name: "CPython 3.11 (32 bit)",
             winarch: x86,
             msvc-dev-arch: x86,
@@ -107,12 +101,6 @@ jobs:
             winarch: x86,
             msvc-dev-arch: x86,
             pyversions: "cp37-win32"
-          }
-          - {
-            name: "CPython 3.6 (32 bit)",
-            winarch: x86,
-            msvc-dev-arch: x86,
-            pyversions: "cp36-win32"
           }
           - {
             name: "Pypy 3.7",
