@@ -2776,8 +2776,7 @@ static PyMethodDef _draw_methods[] = {
      DOC_PYGAMEDRAWCIRCLE},
     {"polygon", (PyCFunction)polygon, METH_VARARGS | METH_KEYWORDS,
      DOC_PYGAMEDRAWPOLYGON},
-    {"polygons", (PyCFunction)polygons_wrapper, METH_VARARGS,
-     DOC_PYGAMEDRAWPOLYGONS},
+    {"polygons", (PyCFunction)polygons, METH_FASTCALL, DOC_PYGAMEDRAWPOLYGONS},
     {"rect", (PyCFunction)rect, METH_VARARGS | METH_KEYWORDS,
      DOC_PYGAMEDRAWRECT},
 
