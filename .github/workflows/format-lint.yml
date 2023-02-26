@@ -22,7 +22,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ !startsWith(github.ref_name, 'release/') }} 
 
 jobs:
   format-lint-code-check:
