@@ -2,11 +2,17 @@ import math
 import unittest
 from collections.abc import Collection, Sequence
 
-from pygame import Rect, Vector2
+from pygame import Vector2, FRect, Rect as IRect
 from pygame.tests import test_utils
+
+Rect = IRect
 
 
 class RectTypeTest(unittest.TestCase):
+    def setUp(self):
+        global Rect
+        Rect = IRect
+
     def _assertCountEqual(self, *args, **kwargs):
         self.assertCountEqual(*args, **kwargs)
 
@@ -2549,6 +2555,141 @@ class RectTypeTest(unittest.TestCase):
         r = Rect(64, 70, 75, 30)
         self.assertTrue(isinstance(r, Collection))
         self.assertFalse(isinstance(r, Sequence))
+
+
+class FRectTypeTest(RectTypeTest):
+    def setUp(self):
+        global Rect
+        Rect = FRect
+
+    def test_convert_rect_frect(self):
+        r = IRect(1, 2, 3, 4)
+        fr = FRect(1.1, 2.2, 3.3, 4.4)
+
+        self.assertEqual(IRect(fr), IRect(1, 2, 3, 4))
+        self.assertEqual(FRect(r), FRect(1.0, 2.0, 3.0, 4.0))
+
+    def test_clipline__floats(self):
+        """Ensures clipline handles float parameters."""
+        pass  # Unused
+
+    def test_clipline__equal_endpoints_no_overlap(self):
+        """Ensures clipline handles lines with both endpoints the same.
+
+        Testing lines that do not overlap the rect.
+        """
+        expected_line = ()
+        rect = FRect((10, 25), (15, 20))
+
+        # Test points outside rect.
+        for pt in test_utils.rect_perimeter_pts(IRect((0, 0), (35, 70))):
+            clipped_line = rect.clipline((pt, pt))
+
+            self.assertTupleEqual(clipped_line, expected_line)
+
+    def test_clipline__equal_endpoints_with_overlap(self):
+        """Ensures clipline handles lines with both endpoints the same.
+
+        Testing lines that overlap the rect.
+        """
+        rect = FRect((10, 25), (15, 20))
+
+        # Test all the points in and on a rect.
+        pts = (
+            (x, y)
+            for x in range(int(rect.left), int(rect.right))
+            for y in range(int(rect.top), int(rect.bottom))
+        )
+
+        for pt in pts:
+            expected_line = (pt, pt)
+
+            clipped_line = rect.clipline((pt, pt))
+
+            self.assertTupleEqual(clipped_line, expected_line)
+
+    def test_clipline__endpoints_inside_and_outside(self):
+        """Ensures lines that overlap the rect are clipped.
+
+        Testing lines with one endpoint outside the rect and the other
+        inside the rect.
+        """
+        # TO BE IMPLEMENTED
+
+    def test_collidepoint(self):
+        l = [
+            FRect(-1, -2, 10, 10),
+            FRect(0, 0, 10, 10),
+            FRect(0, 1, 10, 10),
+            FRect(1, 2, 10, 10),
+            FRect(2, 1, 10, 10),
+            FRect(3, 4, 10, 10),
+        ]
+        for r in l:
+            self.assertFalse(
+                r.collidepoint(r.left, r.top), "r collides with point (left, top)"
+            )
+
+            self.assertFalse(
+                r.collidepoint(r.right, r.bottom),
+                "r collides with point (right - 1, bottom - 1)",
+            )
+
+    def test_contains(self):
+        r = FRect(1, 2, 3, 4)
+
+        self.assertTrue(
+            r.contains(FRect(2, 3, 1, 1)), "r does not contain Rect(2, 3, 1, 1)"
+        )
+        self.assertTrue(FRect(2, 3, 1, 1) in r, "r does not contain Rect(2, 3, 1, 1) 2")
+        self.assertTrue(
+            r.contains(FRect(r)), "r does not contain the same rect as itself"
+        )
+        self.assertTrue(r in FRect(r), "r does not contain the same rect as itself")
+        self.assertTrue(
+            r.contains(FRect(2, 3, 0, 0)),
+            "r does not contain an empty rect within its bounds",
+        )
+        self.assertTrue(
+            FRect(2, 3, 0, 0) in r,
+            "r does not contain an empty rect within its bounds",
+        )
+        self.assertFalse(r.contains(FRect(0, 0, 1, 2)), "r contains Rect(0, 0, 1, 2)")
+        self.assertFalse(r.contains(FRect(4, 6, 1, 1)), "r contains Rect(4, 6, 1, 1)")
+        self.assertFalse(r.contains(FRect(4, 6, 0, 0)), "r contains Rect(4, 6, 0, 0)")
+        self.assertFalse(FRect(0, 0, 1, 2) in r, "r contains Rect(0, 0, 1, 2)")
+        self.assertFalse(FRect(4, 6, 1, 1) in r, "r contains Rect(4, 6, 1, 1)")
+        self.assertFalse(FRect(4, 6, 0, 0) in r, "r contains Rect(4, 6, 0, 0)")
+
+        # TO BE IMPLEMENTED
+
+        # self.assertTrue(2 in FRect(0, 0, 1, 2), "r does not contain 2")
+        # self.assertFalse(3 in FRect(0, 0, 1, 2), "r contains 3")
+
+        self.assertRaises(TypeError, lambda: "string" in FRect(0, 0, 1, 2))
+        self.assertRaises(TypeError, lambda: 4 + 3j in FRect(0, 0, 1, 2))
+
+    def testCalculatedAttributes(self):
+        r = FRect(1.0, 2.0, 3.0, 4.0)
+
+        self.assertEqual(r.left + r.width, r.right)
+        self.assertEqual(r.top + r.height, r.bottom)
+        self.assertEqual((r.width, r.height), r.size)
+        self.assertEqual((r.left, r.top), r.topleft)
+        self.assertEqual((r.right, r.top), r.topright)
+        self.assertEqual((r.left, r.bottom), r.bottomleft)
+        self.assertEqual((r.right, r.bottom), r.bottomright)
+
+        midx = r.left + r.width / 2
+        midy = r.top + r.height / 2
+
+        self.assertEqual(midx, r.centerx)
+        self.assertEqual(midy, r.centery)
+        self.assertEqual((r.centerx, r.centery), r.center)
+        self.assertEqual((r.centerx, r.top), r.midtop)
+        self.assertEqual((r.centerx, r.bottom), r.midbottom)
+        self.assertEqual((r.left, r.centery), r.midleft)
+        self.assertEqual((r.right, r.centery), r.midright)
 
 
 class SubclassTest(unittest.TestCase):
