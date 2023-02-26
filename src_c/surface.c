@@ -1895,7 +1895,7 @@ surf_rblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
     PyObject *blit_pos, *src_surf;
     int flags_numeric = 0;
 
-    if (nargs != 2 || nargs != 3) {
+    if (nargs != 2 && nargs != 3) {
         return RAISE(PyExc_ValueError,
                      "Function takes exactly 2 or 3 arguments in the order: "
                      "source, dest, special_flags (optional)");
