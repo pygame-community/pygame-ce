@@ -38,8 +38,8 @@ static PyTypeObject pgRect_Type;
 static PyTypeObject pgFRect_Type;
 #define pgRect_Check(x) (PyObject_IsInstance(x, (PyObject *)&pgRect_Type))
 #define pgRect_CheckExact(x) (Py_TYPE(x) == &pgRect_Type)
-#define pgRect_Check(x) (PyObject_IsInstance(x, (PyObject *)&pgFRect_Type))
-#define pgRect_CheckExact(x) (Py_TYPE(x) == &pgFRect_Type)
+#define pgFRect_Check(x) (PyObject_IsInstance(x, (PyObject *)&pgFRect_Type))
+#define pgFRect_CheckExact(x) (Py_TYPE(x) == &pgFRect_Type)
 
 static int
 four_ints_from_obj(PyObject *obj, int *val1, int *val2, int *val3, int *val4);
@@ -131,6 +131,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectImport_primitiveType int
 #define RectImport_RectCheck pgRect_Check
 #define RectImport_innerRectStruct SDL_Rect
+#define RectImport_innerPointStruct SDL_Point
 #define RectImport_fourPrimiviteFromObj four_ints_from_obj
 #define RectImport_primitiveFromObjIndex pg_IntFromObjIndex
 #define RectImport_twoPrimitivesFromObj pg_TwoIntsFromObj
@@ -139,7 +140,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectImport_TypeObject pgRect_Type
 #define RectImport_IntersectRectAndLine SDL_IntersectRectAndLine
 #define RectImport_PyBuildValueFormat "i"
-#define RectImport_ObjectName "pygame.Rect"
+#define RectImport_ObjectName "pygame.rect.Rect"
 #define RectImport_PythonNumberCheck PyLong_Check
 #define RectImport_PythonNumberAsPrimitiveType PyLong_AsLong
 #define RectImport_PrimitiveTypeAsPythonNumber PyLong_FromLong
@@ -236,6 +237,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectImport_primitiveType float
 #define RectImport_RectCheck pgFRect_Check
 #define RectImport_innerRectStruct SDL_FRect
+#define RectImport_innerPointStruct SDL_FPoint
 #define RectImport_fourPrimiviteFromObj four_floats_from_obj
 #define RectImport_primitiveFromObjIndex pg_FloatFromObjIndex
 #define RectImport_twoPrimitivesFromObj pg_TwoFloatsFromObj
@@ -244,7 +246,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectImport_IntersectRectAndLine SDL_IntersectFRectAndLine
 #define RectImport_TypeObject pgFRect_Type
 #define RectImport_PyBuildValueFormat "f"
-#define RectImport_ObjectName "pygame.FRect"
+#define RectImport_ObjectName "pygame.rect.FRect"
 #define RectImport_PythonNumberCheck PyFloat_Check
 #define RectImport_PythonNumberAsPrimitiveType PyFloat_AsDouble
 #define RectImport_PrimitiveTypeAsPythonNumber PyFloat_FromFloat
@@ -371,23 +373,6 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
         if (item == NULL) {
             return 0; /* Exception already set. */
         }
-    }
-    /*Check if there are two arguments*/
-    else if (nargs == 2) {
-        /*Attempt to convert the first argument to an integer*/
-        if (!pg_IntFromObj(args[0], &p.x)) {
-            return RAISE(PyExc_TypeError, "x must be a numeric value");
-        }
-        /*Attempt to convert the second argument to an integer*/
-        if (!pg_IntFromObj(args[1], &p.y)) {
-            return RAISE(PyExc_TypeError, "y must be a numeric value");
-        }
-    }
-    /*Raise a TypeError for invalid number of arguments*/
-    else {
-        return RAISE(PyExc_TypeError,
-                     "Invalid arguments number, must either be 1 or 2");
-    }
 
         result = pg_TwoFloatsFromObj(item, val1, val2);
         Py_DECREF(item);
@@ -517,13 +502,13 @@ static struct PyMethodDef pg_frect_methods[] = {
      DOC_RECTUNIONIP},
     {"unionall_ip", (PyCFunction)pg_frect_unionall_ip, METH_VARARGS,
      DOC_RECTUNIONALLIP},
-    {"collidepoint", (PyCFunction)pg_frect_collidepoint, METH_VARARGS,
+    {"collidepoint", (PyCFunction)pg_frect_collidepoint, METH_FASTCALL,
      DOC_RECTCOLLIDEPOINT},
-    {"colliderect", (PyCFunction)pg_frect_colliderect, METH_VARARGS,
+    {"colliderect", (PyCFunction)pg_frect_colliderect, METH_FASTCALL,
      DOC_RECTCOLLIDERECT},
-    {"collidelist", (PyCFunction)pg_frect_collidelist, METH_VARARGS,
+    {"collidelist", (PyCFunction)pg_frect_collidelist, METH_O,
      DOC_RECTCOLLIDELIST},
-    {"collidelistall", (PyCFunction)pg_frect_collidelistall, METH_VARARGS,
+    {"collidelistall", (PyCFunction)pg_frect_collidelistall, METH_O,
      DOC_RECTCOLLIDELISTALL},
     {"collidedict", (PyCFunction)pg_frect_collidedict, METH_VARARGS,
      DOC_RECTCOLLIDEDICT},
@@ -725,7 +710,7 @@ static PyTypeObject pgRect_Type = {
 
 // FRECT_TYPE
 static PyTypeObject pgFRect_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.FRect",
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.rect.FRect",
     .tp_basicsize = sizeof(pgFRectObject), .tp_itemsize = 0,
     /* methods */
     .tp_dealloc = (destructor)pg_frect_dealloc,

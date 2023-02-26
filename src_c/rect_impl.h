@@ -34,7 +34,7 @@
 
 #include <limits.h>
 
-//#region RectExport
+// #region RectExport
 #ifndef RectExport_init
 #error RectExport_init needs to be defined
 #endif
@@ -278,9 +278,9 @@
 #ifndef RectExport_iterator
 #error RectExpor_iterator needs to be defined
 #endif
-//#endregion
+// #endregion
 
-//#region RectImport
+// #region RectImport
 #ifndef RectImport_PythonNumberCheck
 #error RectImport_PythonNumberCheck
 #endif
@@ -305,6 +305,9 @@
 #ifndef RectImport_innerRectStruct
 #error RectImport_innerRectStruct needs to be defined
 #endif
+#ifndef RectImport_innerPointStruct
+#error RectImport_innerPointStruct needs to be defined
+#endif
 #ifndef RectImport_fourPrimiviteFromObj
 #error RectImport_fourPrimiviteFromObj needs to be defined
 #endif
@@ -326,9 +329,9 @@
 #ifndef RectImport_PyBuildValueFormat
 #error RectImport_PyBuildValueFormat needs to be defined
 #endif
-//#endregion
+// #endregion
 
-//#region RectOptional
+// #region RectOptional
 #ifdef RectOptional_FREELIST
 #ifndef PYPY_VERSION
 #error freelist is currently only supported for PyPy
@@ -346,12 +349,13 @@
 #error RectOptional_Freelist_Num needs to be defined as RectOptional_FREELIST is defined
 #endif
 #endif  // RectOptional_FREELIST
-//#endregion RectOptional
+// #endregion RectOptional
 
 #define PrimitiveType RectImport_primitiveType
 #define RectObject RectImport_RectObject
 #define TypeObject RectImport_TypeObject
 #define InnerRect RectImport_innerRectStruct
+#define InnerPoint RectImport_innerPointStruct
 #define RectCheck RectImport_RectCheck
 #define RectFromObject RectExport_RectFromObject
 #define subtype_new4 RectExport_subtypeNew4
@@ -988,124 +992,238 @@ RectExport_unionallIp(RectObject *self, PyObject *args)
 }
 
 static PyObject *
-RectExport_collidepoint(RectObject *self, PyObject *args)
+RectExport_collidepoint(RectObject *self, PyObject *const *args,
+                        Py_ssize_t nargs)
 {
-    PrimitiveType x, y;
-    int inside;
+    InnerRect srect = self->r;
+    InnerPoint p;
 
-    if (!twoPrimitivesFromObj(args, &x, &y)) {
-        return RAISE(PyExc_TypeError, "argument must contain two numbers");
-    }
-
-    inside = x >= self->r.x && x < self->r.x + self->r.w && y >= self->r.y &&
-             y < self->r.y + self->r.h;
-
-    return PyBool_FromLong(inside);
-}
-
-static PyObject *
-RectExport_colliderect(RectObject *self, PyObject *args)
-{
-    InnerRect *argrect, temp;
-
-    if (!(argrect = RectFromObject(args, &temp))) {
-        return RAISE(PyExc_TypeError, "Argument must be rect style object");
-    }
-    return PyBool_FromLong(_pg_do_rects_intersect(&self->r, argrect));
-}
-
-static PyObject *
-RectExport_collidelist(RectObject *self, PyObject *args)
-{
-    InnerRect *argrect, temp;
-    Py_ssize_t size;
-    int loop;
-    PyObject *list, *obj;
-    PyObject *ret = NULL;
-
-    if (!PyArg_ParseTuple(args, "O", &list)) {
-        return NULL;
-    }
-
-    if (!PySequence_Check(list)) {
-        return RAISE(PyExc_TypeError,
-                     "Argument must be a sequence of rectstyle objects.");
-    }
-
-    size = PySequence_Length(list); /*warning, size could be -1 on error?*/
-    for (loop = 0; loop < size; ++loop) {
-        obj = PySequence_GetItem(list, loop);
-        if (!obj || !(argrect = RectFromObject(obj, &temp))) {
-            PyErr_SetString(
-                PyExc_TypeError,
-                "Argument must be a sequence of rectstyle objects.");
-            Py_XDECREF(obj);
-            break;
-        }
-        if (_pg_do_rects_intersect(&self->r, argrect)) {
-            ret = PyLong_FromLong(loop);
-            Py_DECREF(obj);
-            break;
-        }
-        Py_DECREF(obj);
-    }
-    if (loop == size) {
-        ret = PyLong_FromLong(-1);
-    }
-
-    return ret;
-}
-
-static PyObject *
-RectExport_collidelistall(RectObject *self, PyObject *args)
-{
-    InnerRect *argrect, temp;
-    Py_ssize_t size;
-    int loop;
-    PyObject *list, *obj;
-    PyObject *ret = NULL;
-
-    if (!PyArg_ParseTuple(args, "O", &list)) {
-        return NULL;
-    }
-
-    if (!PySequence_Check(list)) {
-        return RAISE(PyExc_TypeError,
-                     "Argument must be a sequence of rectstyle objects.");
-    }
-
-    ret = PyList_New(0);
-    if (!ret) {
-        return NULL;
-    }
-
-    size = PySequence_Length(list); /*warning, size could be -1?*/
-    for (loop = 0; loop < size; ++loop) {
-        obj = PySequence_GetItem(list, loop);
-
-        if (!obj || !(argrect = RectFromObject(obj, &temp))) {
-            Py_XDECREF(obj);
-            Py_DECREF(ret);
+    /*Check if there is only one argument*/
+    if (nargs == 1) {
+        /*Attempt to convert the argument to two integers*/
+        if (!twoPrimitivesFromObj(args[0], &p.x, &p.y)) {
             return RAISE(PyExc_TypeError,
-                         "Argument must be a sequence of rectstyle objects.");
+                         "Invalid position. Must be a two-element "
+                         "sequence of numbers");
         }
+    }
+    /*Check if there are two arguments*/
+    else if (nargs == 2) {
+        /*Attempt to convert the first argument to an integer*/
+        if (!PrimitiveFromObj(args[0], &p.x)) {
+            return RAISE(PyExc_TypeError, "x must be a numeric value");
+        }
+        /*Attempt to convert the second argument to an integer*/
+        if (!PrimitiveFromObj(args[1], &p.y)) {
+            return RAISE(PyExc_TypeError, "y must be a numeric value");
+        }
+    }
+    /*Raise a TypeError for invalid number of arguments*/
+    else {
+        return RAISE(PyExc_TypeError,
+                     "Invalid arguments number, must either be 1 or 2");
+    }
 
-        if (_pg_do_rects_intersect(&self->r, argrect)) {
-            PyObject *num = PyLong_FromLong(loop);
-            if (!num) {
-                Py_DECREF(ret);
-                Py_DECREF(obj);
+    /*Use SDL_PointInRect to check if the point is within the rect and return
+    the result as a boolean value*/
+    return PyBool_FromLong(SDL_PointInRect(&p, &srect));
+}
+
+static PyObject *
+RectExport_colliderect(RectObject *self, PyObject *const *args,
+                       Py_ssize_t nargs)
+{
+    InnerRect srect = self->r;
+    InnerRect temp;
+
+    if (nargs == 1) {
+        /* One argument was passed in, so we assume it's a rectstyle object.
+         * This could mean several of the following (all dealt by
+         * pgRect_FromObject):
+         * - (x, y, w, h)
+         * - ((x, y), (w, h))
+         * - Rect
+         * - Object with "rect" attribute
+         */
+        InnerRect *tmp;
+        if (!(tmp = RectExport_RectFromObject(args[0], &temp))) {
+            if (PyErr_Occurred()) {
                 return NULL;
             }
-            if (0 != PyList_Append(ret, num)) {
-                Py_DECREF(ret);
-                Py_DECREF(num);
-                Py_DECREF(obj);
-                return NULL; /* Exception already set. */
+            else {
+                return RAISE(PyExc_TypeError,
+                             "Invalid rect, all 4 fields must be numeric");
             }
-            Py_DECREF(num);
         }
-        Py_DECREF(obj);
+        return PyBool_FromLong(_pg_do_rects_intersect(&srect, tmp));
+    }
+    else if (nargs == 2) {
+        /* Two separate sequences were passed in:
+         * - (x, y), (w, h)
+         */
+        if (!twoPrimitivesFromObj(args[0], &temp.x, &temp.y) ||
+            !twoPrimitivesFromObj(args[1], &temp.w, &temp.h)) {
+            if (PyErr_Occurred())
+                return NULL;
+            else
+                return RAISE(PyExc_TypeError,
+                             "Invalid rect, all 4 fields must be numeric");
+        }
+    }
+    else if (nargs == 4) {
+        /* Four separate arguments were passed in:
+         * - x, y, w, h
+         */
+        if (!(PrimitiveFromObj(args[0], &temp.x))) {
+            return RAISE(PyExc_TypeError,
+                         "Invalid x value for rect, must be numeric");
+        }
+
+        if (!(PrimitiveFromObj(args[1], &temp.y))) {
+            return RAISE(PyExc_TypeError,
+                         "Invalid y value for rect, must be numeric");
+        }
+
+        if (!(PrimitiveFromObj(args[2], &temp.w))) {
+            return RAISE(PyExc_TypeError,
+                         "Invalid w value for rect, must be numeric");
+        }
+
+        if (!(PrimitiveFromObj(args[3], &temp.h))) {
+            return RAISE(PyExc_TypeError,
+                         "Invalid h value for rect, must be numeric");
+        }
+    }
+    else {
+        return RAISE(PyExc_ValueError,
+                     "Incorrect arguments number, must be either 1, 2 or 4");
+    }
+
+    return PyBool_FromLong(_pg_do_rects_intersect(&srect, &temp));
+}
+
+static PyObject *
+RectExport_collidelist(RectObject *self, PyObject *arg)
+{
+    InnerRect *argrect, *srect = &self->r, temp;
+    int loop;
+
+    if (!PySequence_Check(arg)) {
+        return RAISE(PyExc_TypeError,
+                     "Argument must be a sequence of rectstyle objects.");
+    }
+
+    /* If the sequence is a fast sequence, we can use the faster
+     * PySequence_Fast_ITEMS() function to get the items. */
+    if (pgSequenceFast_Check(arg)) {
+        PyObject **items = PySequence_Fast_ITEMS(arg);
+        for (loop = 0; loop < PySequence_Fast_GET_SIZE(arg); loop++) {
+            if (!(argrect = RectFromObject(items[loop], &temp))) {
+                return RAISE(
+                    PyExc_TypeError,
+                    "Argument must be a sequence of rectstyle objects.");
+            }
+            if (_pg_do_rects_intersect(srect, argrect)) {
+                return PyLong_FromLong(loop);
+            }
+        }
+    }
+    /* If the sequence is not a fast sequence, we have to use the slower
+     * PySequence_GetItem() function to get the items. */
+    else {
+        for (loop = 0; loop < PySequence_Length(arg); loop++) {
+            PyObject *obj = PySequence_GetItem(arg, loop);
+
+            if (!obj || !(argrect = RectFromObject(obj, &temp))) {
+                Py_XDECREF(obj);
+                return RAISE(
+                    PyExc_TypeError,
+                    "Argument must be a sequence of rectstyle objects.");
+            }
+
+            Py_DECREF(obj);
+
+            if (_pg_do_rects_intersect(srect, argrect)) {
+                return PyLong_FromLong(loop);
+            }
+        }
+    }
+
+    return PyLong_FromLong(-1);
+}
+
+static PyObject *
+RectExport_collidelistall(RectObject *self, PyObject *arg)
+{
+    InnerRect *argrect, *srect = &self->r, temp;
+    int loop;
+    PyObject *ret = NULL;
+
+    if (!PySequence_Check(arg)) {
+        return RAISE(PyExc_TypeError,
+                     "Argument must be a sequence of rectstyle objects.");
+    }
+
+    if (!(ret = PyList_New(0))) {
+        return NULL;
+    }
+
+    /* If the sequence is a fast sequence, we can use the faster
+     * PySequence_Fast_ITEMS() function to get the items. */
+    if (pgSequenceFast_Check(arg)) {
+        PyObject **items = PySequence_Fast_ITEMS(arg);
+        for (loop = 0; loop < PySequence_Fast_GET_SIZE(arg); loop++) {
+            if (!(argrect = RectFromObject(items[loop], &temp))) {
+                Py_DECREF(ret);
+                return RAISE(
+                    PyExc_TypeError,
+                    "Argument must be a sequence of rectstyle objects.");
+            }
+
+            if (_pg_do_rects_intersect(srect, argrect)) {
+                PyObject *num = PyLong_FromLong(loop);
+                if (!num) {
+                    Py_DECREF(ret);
+                    return NULL;
+                }
+                if (PyList_Append(ret, num)) {
+                    Py_DECREF(ret);
+                    Py_DECREF(num);
+                    return NULL; /* Exception already set. */
+                }
+                Py_DECREF(num);
+            }
+        }
+    }
+    /* Slower path for general sequences. */
+    else {
+        for (loop = 0; loop < PySequence_Length(arg); loop++) {
+            PyObject *obj = PySequence_ITEM(arg, loop);
+
+            if (!obj || !(argrect = RectFromObject(obj, &temp))) {
+                Py_XDECREF(obj);
+                Py_DECREF(ret);
+                return RAISE(
+                    PyExc_TypeError,
+                    "Argument must be a sequence of rectstyle objects.");
+            }
+
+            Py_DECREF(obj);
+
+            if (_pg_do_rects_intersect(srect, argrect)) {
+                PyObject *num = PyLong_FromLong(loop);
+                if (!num) {
+                    Py_DECREF(ret);
+                    return NULL;
+                }
+                if (PyList_Append(ret, num)) {
+                    Py_DECREF(ret);
+                    Py_DECREF(num);
+                    return NULL; /* Exception already set. */
+                }
+                Py_DECREF(num);
+            }
+        }
     }
 
     return ret;
@@ -1702,6 +1820,11 @@ RectExport_assItem(RectObject *self, Py_ssize_t i, PyObject *v)
     PrimitiveType val;
     PrimitiveType *data = (PrimitiveType *)&self->r;
 
+    if (!v) {
+        PyErr_SetString(PyExc_TypeError, "item deletion is not supported");
+        return -1;
+    }
+
     if (i < 0 || i > 3) {
         if (i > -5 && i < 0) {
             i += 4;
@@ -1773,6 +1896,10 @@ RectExport_subscript(RectObject *self, PyObject *op)
 static int
 RectExport_assSubscript(RectObject *self, PyObject *op, PyObject *value)
 {
+    if (!value) {
+        PyErr_SetString(PyExc_TypeError, "item deletion is not supported");
+        return -1;
+    }
     if (PyIndex_Check(op)) {
         PyObject *index;
         Py_ssize_t i;
@@ -2541,6 +2668,7 @@ RectExport_iterator(RectObject *self)
 #undef RectImport_primitiveType
 #undef RectImport_RectCheck
 #undef RectImport_innerRectStruct
+#undef RectImport_innerPointStruct
 #undef RectImport_fourPrimiviteFromObj
 #undef RectImport_primitiveFromObjIndex
 #undef RectImport_twoPrimitivesFromObj
@@ -2556,6 +2684,7 @@ RectExport_iterator(RectObject *self)
 #undef RectObject
 #undef TypeObject
 #undef InnerRect
+#undef InnerPoint
 #undef RectCheck
 #undef RectFromObject
 #undef subtype_new4
