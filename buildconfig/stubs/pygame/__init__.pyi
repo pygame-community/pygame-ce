@@ -44,7 +44,7 @@ from pygame import (
     _debug as _debug,
 )
 
-from .rect import Rect as Rect
+from .rect import Rect as Rect, FRect as FRect
 from .surface import Surface as Surface, SurfaceType as SurfaceType
 from .color import Color as Color
 from .pixelarray import PixelArray as PixelArray
