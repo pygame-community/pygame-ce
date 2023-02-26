@@ -267,9 +267,9 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
       the ``pygame.KEYDOWN`` events on the :mod:`pygame.event` queue for this
       functionality.
    
-   .. versionadded:: 2.1.4
+   .. versionchanged:: 2.1.4
       The collection of bools returned by ``get_pressed`` can not be iterated
-      over because the indexes of the internal tuple does not correpsond to the 
+      over because the indexes of the internal tuple does not correspond to the 
       keycodes.
 
    .. ## pygame.key.get_pressed ##
