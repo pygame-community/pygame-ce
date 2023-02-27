@@ -83,6 +83,7 @@ class MissingModule:
         except ImportError:
             print(message)
 
+
 # This is a special loader for WebAssembly platform
 # where pygame is in fact statically linked
 # mixing single phase (C) and multiphase modules (cython)
@@ -93,7 +94,6 @@ if sys.platform in ("wasi", "emscripten"):
         pygame_static = None
 
     if pygame_static:
-
         pygame = sys.modules[__name__]
 
         pygame.Color = pygame.color.Color

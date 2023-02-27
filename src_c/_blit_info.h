@@ -22,4 +22,3 @@ typedef struct {
     SDL_BlendMode dst_blend;
 } SDL_BlitInfo;
 #endif  // BLIT_INFO_H
-
