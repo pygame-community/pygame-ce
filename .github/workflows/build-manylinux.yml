@@ -32,7 +32,7 @@ on:
   workflow_call:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-manylinux
   cancel-in-progress: true
 
 jobs:
