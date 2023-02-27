@@ -379,16 +379,6 @@ def __color_reduce(c):
 
 copyreg.pickle(Color, __color_reduce, __color_constructor)
 
-# This is the wasm "vendor" patch that allows to bind certain modules
-# like eg camera or mixer.music to host implementation.
-# also allow for experimenting more support without need to modify pygame.
-if sys.platform in ("wasi", "emscripten"):
-    try:
-        import pygame_wasm_patches
-        del pygame_wasm_patches
-    except (ImportError, OSError):
-        pass
-
 # Thanks for supporting pygame. Without support now, there won't be pygame later.
 if "PYGAME_HIDE_SUPPORT_PROMPT" not in os.environ:
     print(
