@@ -618,7 +618,11 @@ cdef class Texture:
             if SDL_VERSION_ATLEAST(2,0,12):
                 SDL_SetTextureScaleMode(self._tex,scale_quality)
             else:
-                raise error("scale_quality requires SDL 2.0.12 or newer")
+                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,{
+                    0: b'nearest',
+                    1: b'linear',
+                    2: b'best'
+                }[scale_quality])
 
         self.width, self.height = width, height
 

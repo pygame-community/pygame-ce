@@ -35,6 +35,9 @@ cdef extern from "SDL.h" nogil:
     ctypedef struct SDL_Color:
         Uint8 r, g, b, a
 
+    SDL_bool SDL_SetHint(const char *name, const char *value)
+    char* SDL_HINT_RENDER_SCALE_QUALITY b'SDL_HINT_RENDER_SCALE_QUALITY'
+
     cdef extern from *:
         """
         #if SDL_VERSION_ATLEAST(2, 0, 18)
