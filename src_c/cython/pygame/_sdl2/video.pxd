@@ -59,7 +59,7 @@ cdef extern from "SDL.h" nogil:
             typedef enum {
                 SDL_ScaleModeNearest,
                 SDL_ScaleModeLinear,
-                SDL_ScaleModeBes,
+                SDL_ScaleModeBest,
             } _pgsdlScaleMode;
 
             int SDL_SetTextureScaleMode(SDL_Texture * texture, _pgsdlScaleMode scaleMode){
