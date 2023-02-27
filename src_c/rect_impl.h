@@ -1023,10 +1023,11 @@ RectExport_collidepoint(RectObject *self, PyObject *const *args,
         return RAISE(PyExc_TypeError,
                      "Invalid arguments number, must either be 1 or 2");
     }
-
-    /*Use SDL_PointInRect to check if the point is within the rect and return
-    the result as a boolean value*/
-    return PyBool_FromLong(SDL_PointInRect(&p, &srect));
+    if ((p.x >= srect.x) && (p.x < (srect.x + srect.w)) && (p.y >= srect.y) &&
+        (p.y < (srect.y + srect.h))) {
+        Py_RETURN_TRUE;
+    }
+    Py_RETURN_FALSE;
 }
 
 static PyObject *
