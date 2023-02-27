@@ -32,6 +32,8 @@
 
 #include "pgcompat.h"
 
+#include "pgcompat_rect.h"
+
 #include <limits.h>
 
 static PyTypeObject pgRect_Type;
