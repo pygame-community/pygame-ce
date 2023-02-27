@@ -52,6 +52,20 @@ cdef extern from "SDL.h" nogil:
                 _pgsdlFPoint tex_coord;
             } _pgsdlVertex;
         #endif
+
+        #if SDL_VERSION_ATLEAST(2,0,12)
+            typedef SDL_ScaleMode _pgsdlScaleMode;
+        #else
+            typedef enum {
+                SDL_ScaleModeNearest;
+                SDL_ScaleModeLinear;
+                SDL_ScaleModeBes;
+            } _pgsdlScaleMode;
+
+            int SDL_SetTextureScaleMode(SDL_Texture * texture, _pgsdlScaleMode scaleMode){
+                return 0;
+            }
+        #endif
         """
     ctypedef struct SDL_FPoint "_pgsdlFPoint":
         float x, y
@@ -60,6 +74,13 @@ cdef extern from "SDL.h" nogil:
         SDL_Color color
         SDL_FPoint tex_coord
     
+    ctypedef enum SDL_ScaleMode "_pgsdlScaleMode":
+        SDL_ScaleModeNearest,
+        SDL_ScaleModeLinear,
+        SDL_ScaleModeBest
+
+    int SDL_SetTextureScaleMode(SDL_Texture * texture, SDL_ScaleMode scaleMode)
+
     ctypedef enum SDL_RendererFlip:
         SDL_FLIP_NONE,
         SDL_FLIP_HORIZONTAL,
@@ -70,13 +91,6 @@ cdef extern from "SDL.h" nogil:
         SDL_BLENDMODE_ADD = 0x00000002,
         SDL_BLENDMODE_MOD = 0x00000004,
         SDL_BLENDMODE_INVALID = 0x7FFFFFFF
-
-    ctypedef enum SDL_ScaleMode:
-        SDL_ScaleModeNearest,
-        SDL_ScaleModeLinear,
-        SDL_ScaleModeBest   
-    
-    int SDL_SetTextureScaleMode(SDL_Texture * texture, SDL_ScaleMode scaleMode)
 
     # https://wiki.libsdl.org/SDL_MessageBoxData
     # https://wiki.libsdl.org/SDL_ShowMessageBox
