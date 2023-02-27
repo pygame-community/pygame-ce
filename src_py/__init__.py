@@ -21,10 +21,10 @@
 It is written on top of the excellent SDL library. This allows you
 to create fully featured games and multimedia programs in the python
 language. The package is highly portable, with games running on
-Windows, MacOS, OS X, BeOS, FreeBSD, IRIX, and Linux."""
+Windows, macOS, OS X, BeOS, FreeBSD, IRIX, and Linux."""
 
-import sys
 import os
+import sys
 
 # Choose Windows display driver
 if os.name == "nt":
@@ -33,7 +33,7 @@ if os.name == "nt":
     # pypy does not find the dlls, so we add package folder to PATH.
     os.environ["PATH"] = os.environ["PATH"] + ";" + pygame_dir
 
-    # windows store python does not find the dlls, so we run this
+    # Windows store python does not find the dlls, so we run this
     if sys.version_info > (3, 8):
         os.add_dll_directory(pygame_dir)  # only available in 3.8+
 
@@ -93,6 +93,7 @@ from pygame.base import *  # pylint: disable=wildcard-import; lgtm[py/polluting-
 from pygame.constants import *  # now has __all__ pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.version import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.rect import Rect
+
 from pygame.rwobject import encode_string, encode_file_path
 import pygame.surflock
 import pygame.color
@@ -129,6 +130,7 @@ except (ImportError, OSError):
 
 try:
     import pygame.event
+    from pygame.event import Event
 except (ImportError, OSError):
     event = MissingModule("event", urgent=1)
 
@@ -139,6 +141,7 @@ except (ImportError, OSError):
 
 try:
     import pygame.joystick
+    from pygame.joystick import Joystick
 except (ImportError, OSError):
     joystick = MissingModule("joystick", urgent=1)
 
@@ -215,6 +218,7 @@ except (ImportError, OSError):
 
 try:
     import pygame.time
+    from pygame.time import Clock
 except (ImportError, OSError):
     time = MissingModule("time", urgent=1)
 
@@ -235,6 +239,8 @@ try:
     import pygame.font
     import pygame.sysfont
 
+    from pygame.font import Font
+
     pygame.font.SysFont = pygame.sysfont.SysFont
     pygame.font.get_fonts = pygame.sysfont.get_fonts
     pygame.font.match_font = pygame.sysfont.match_font
@@ -252,6 +258,7 @@ except (ImportError, OSError):
 
 try:
     import pygame.mixer
+    from pygame.mixer import Channel
 except (ImportError, OSError):
     mixer = MissingModule("mixer", urgent=0)
 
@@ -274,6 +281,12 @@ try:
     import pygame.fastevent
 except (ImportError, OSError):
     fastevent = MissingModule("fastevent", urgent=0)
+
+try:
+    import pygame._debug
+    from pygame._debug import print_debug_info
+except (ImportError, OSError):
+    debug = MissingModule("_debug", urgent=0)
 
 # there's also a couple "internal" modules not needed
 # by users, but putting them here helps "dependency finder"

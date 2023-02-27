@@ -49,7 +49,7 @@ class Camera:
         self._open = False
 
     # all of this could have been done in the constructor, but creating
-    # the VideoCapture is very time consuming, so it makes more sense in the
+    # the VideoCapture is very time-consuming, so it makes more sense in the
     # actual start() method
     def start(self):
         if self._open:

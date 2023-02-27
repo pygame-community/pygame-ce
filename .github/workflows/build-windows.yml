@@ -4,8 +4,6 @@ name: Windows
 # to main. Do not run CI on any other branch. Also, skip any non-source changes
 # from running on CI
 on:
-  release:
-    types: [created]
   push:
     branches: main
     paths-ignore:
@@ -29,6 +27,9 @@ on:
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
       - '!.github/workflows/build-windows.yml'
+  
+  # the github release drafter can call this workflow
+  workflow_call:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -73,12 +74,6 @@ jobs:
             pyversions: "cp37-*"
           }
           - {
-            name: "CPython 3.6 (64 bit)",
-            winarch: AMD64,
-            msvc-dev-arch: x86_amd64,
-            pyversions: "cp36-*"
-          }
-          - {
             name: "CPython 3.11 (32 bit)",
             winarch: x86,
             msvc-dev-arch: x86,
@@ -109,16 +104,22 @@ jobs:
             pyversions: "cp37-win32"
           }
           - {
-            name: "CPython 3.6 (32 bit)",
-            winarch: x86,
-            msvc-dev-arch: x86,
-            pyversions: "cp36-win32"
+            name: "Pypy 3.7",
+            winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
+            pyversions: "pp37-*"
           }
           - {
             name: "Pypy 3.8",
             winarch: AMD64,
             msvc-dev-arch: x86_amd64,
             pyversions: "pp38-*"
+          }
+          - {
+            name: "Pypy 3.9",
+            winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
+            pyversions: "pp39-*"
           }
 
 
@@ -145,7 +146,7 @@ jobs:
       CIBW_BUILD_VERBOSITY: 2
 
     steps:
-      - uses: actions/checkout@v3.0.2
+      - uses: actions/checkout@v3.3.0
 
       - uses: TheMrMilchmann/setup-msvc-dev@v2  # this lets us use the developer command prompt on windows
         with:
@@ -157,7 +158,7 @@ jobs:
           set MSSdk=1
           python -m pip install setuptools wheel requests numpy Sphinx
           python setup.py docs
-          python -m pip --disable-pip-version-check install cibuildwheel
+          python -m pip --disable-pip-version-check install cibuildwheel==2.12.0
           python -m cibuildwheel --output-dir wheelhouse
 
       - uses: actions/upload-artifact@v3

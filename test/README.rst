@@ -156,3 +156,4 @@ some convenience functions ::
 
     example_path(pth)
         Likewise but paths are relative to trunk\examples
+
