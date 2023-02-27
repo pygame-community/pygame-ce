@@ -778,9 +778,9 @@ static CYTHON_INLINE float __PYX_NAN() {
             typedef SDL_ScaleMode _pgsdlScaleMode;
         #else
             typedef enum {
-                SDL_ScaleModeNearest;
-                SDL_ScaleModeLinear;
-                SDL_ScaleModeBes;
+                SDL_ScaleModeNearest,
+                SDL_ScaleModeLinear,
+                SDL_ScaleModeBes,
             } _pgsdlScaleMode;
 
             int SDL_SetTextureScaleMode(SDL_Texture * texture, _pgsdlScaleMode scaleMode){
