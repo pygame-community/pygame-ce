@@ -665,6 +665,10 @@ class ChannelTypeTest(unittest.TestCase):
         if mixer.get_init() is None:
             mixer.init()
 
+    def test_channel_alias(self):
+        """Check if pygame.Channel is present and the correct type."""
+        self.assertIs(pygame.Channel, pygame.mixer.Channel)
+
     def test_channel(self):
         """Ensure Channel() creation works."""
         channel = mixer.Channel(0)
