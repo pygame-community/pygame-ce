@@ -431,12 +431,14 @@ RectExport_unionall(RectObject *self, PyObject *args);
 static PyObject *
 RectExport_unionallIp(RectObject *self, PyObject *args);
 static PyObject *
-RectExport_collidepoint(RectObject *self, PyObject *args);
+RectExport_collidepoint(RectObject *self, PyObject *const *args,
+                        Py_ssize_t nargs);
 static InnerRect *
 RectExport_RectFromObjectAndKeyFunc(PyObject *obj, PyObject *keyfunc,
                                     InnerRect *temp);
 static PyObject *
-RectExport_colliderect(RectObject *self, PyObject *args);
+RectExport_colliderect(RectObject *self, PyObject *const *args,
+                       Py_ssize_t nargs);
 static PyObject *
 RectExport_collidelist(RectObject *self, PyObject *args);
 static PyObject *
