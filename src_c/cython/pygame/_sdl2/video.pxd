@@ -37,6 +37,10 @@ cdef extern from "SDL.h" nogil:
 
     cdef extern from *:
         """
+        #if !SDL_VERSION_ATLEAST(2, 0, 20)
+            #define SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL "SDL_VIDEO_FOREIGN_WINDOW_OPENGL"
+        #endif
+        
         #if SDL_VERSION_ATLEAST(2, 0, 18)
             typedef SDL_FPoint _pgsdlFPoint;
             typedef SDL_Vertex _pgsdlVertex;

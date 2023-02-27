@@ -552,6 +552,9 @@ cdef class OpenGLWindow(Window):
 
     @classmethod  
     def from_existing_window(cls,hwnd):
+        if not SDL_VERSION_ATLEAST(2,0,22):
+            raise error("requires SDL 2.0.22 or newer")
+
         cdef unsigned long long _hwnd=hwnd
         cdef Window self = cls.__new__(cls)
 
