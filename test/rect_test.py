@@ -2570,7 +2570,7 @@ class FRectTypeTest(RectTypeTest):
         self.assertEqual(FRect(r), FRect(1.0, 2.0, 3.0, 4.0))
 
     def test_clipline__floats(self):
-        """Ensures clipline handles float parameters."""
+        """This test is not for FRect"""
         pass  # Unused
 
     def test_clipline__equal_endpoints_no_overlap(self):
@@ -2614,26 +2614,34 @@ class FRectTypeTest(RectTypeTest):
         Testing lines with one endpoint outside the rect and the other
         inside the rect.
         """
-        # TO BE IMPLEMENTED
+        rect = Rect((0, 0), (21, 21))
+        # Use a bigger rect to help create test lines.
+        big_rect = rect.inflate(2, 2)
 
-    def test_collidepoint(self):
-        l = [
-            FRect(-1, -2, 10, 10),
-            FRect(0, 0, 10, 10),
-            FRect(0, 1, 10, 10),
-            FRect(1, 2, 10, 10),
-            FRect(2, 1, 10, 10),
-            FRect(3, 4, 10, 10),
-        ]
-        for r in l:
-            self.assertFalse(
-                r.collidepoint(r.left, r.top), "r collides with point (left, top)"
-            )
+        # Create a dict of lines and expected results.
+        line_dict = {
+            (big_rect.midleft, rect.center): (rect.midleft, rect.center),
+            (big_rect.midtop, rect.center): (rect.midtop, rect.center),
+            (big_rect.midright, rect.center): (
+                (rect.midright[0] - 1, rect.midright[1]),
+                rect.center,
+            ),
+            (big_rect.midbottom, rect.center): (
+                (rect.midbottom[0], rect.midbottom[1] - 1),
+                rect.center,
+            ),
+        }
+        for line, expected_line in line_dict.items():
+            clipped_line = rect.clipline(line)
 
-            self.assertFalse(
-                r.collidepoint(r.right, r.bottom),
-                "r collides with point (right - 1, bottom - 1)",
-            )
+            self.assertTupleEqual(clipped_line, expected_line)
+
+            # Swap endpoints to test for symmetry.
+            expected_line = (expected_line[1], expected_line[0])
+
+            clipped_line = rect.clipline((line[1], line[0]))
+
+            self.assertTupleEqual(clipped_line, expected_line)
 
     def test_contains(self):
         r = FRect(1, 2, 3, 4)
