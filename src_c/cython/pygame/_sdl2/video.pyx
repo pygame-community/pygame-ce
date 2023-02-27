@@ -940,10 +940,11 @@ cdef class Image:
         if isinstance(textureOrImage, Image):
             self.texture = textureOrImage.texture
             self.srcrect = pgRect_New(&(<Rect>textureOrImage.srcrect).r)
+            self.blend_mode = textureOrImage.blend_mode
         else:
             self.texture = textureOrImage
             self.srcrect = textureOrImage.get_rect()
-        self.blend_mode = textureOrImage.blend_mode
+            self.blend_mode = textureOrImage.get_blend_mode()
 
         if srcrect is not None:
             rectptr = pgRect_FromObject(srcrect, &temp)
@@ -1029,10 +1030,14 @@ cdef class Image:
                     cdstrect = &dst
                 else:
                     raise TypeError('dstrect must be a position, rect, or None')
-
-        self.texture.color = self._color
-        self.texture.alpha = self.alpha
-        self.texture.blend_mode = self.blend_mode
+        if isinstance(self.texture, Image):
+            self.texture.color = self._color
+            self.texture.alpha = self.alpha
+            self.texture.blend_mode = self.blend_mode
+        else:
+            self.texture.set_color(self._color)
+            self.texture.set_alpha(self.alpha)
+            self.texture.set_blend_mode(self.blend_mode)
 
         self.texture.draw_internal(csrcrect, cdstrect, self.angle,
                                    self._originptr, self.flip_x, self.flip_y)

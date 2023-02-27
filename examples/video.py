@@ -58,10 +58,10 @@ clock = pg.time.Clock()
 backgrounds = [(255, 0, 0, 255), (0, 255, 0, 255), (0, 0, 255, 255)]
 bg_index = 0
 
-renderer.draw_color = backgrounds[bg_index]
+renderer.set_draw_color(backgrounds[bg_index])
 
 win2 = Window("2nd window", size=(256, 256), always_on_top=True)
-win2.opacity = 0.5
+win2.set_opacity(0.5)
 win2.set_icon(load_img("bomb.gif"))
 renderer2 = Renderer(win2)
 tex2 = Texture.from_surface(renderer2, load_img("asprite.bmp"))
@@ -146,17 +146,17 @@ while running:
     # - rect(rect, width=0)->filled ? , instead of fill_rect
     #
     # TODO: should these work with pg.draw.line(renderer, ...) functions?
-    renderer.draw_color = (255, 255, 255, 255)
+    renderer.set_draw_color((255, 255, 255, 255))
     renderer.draw_line((0, 0), (64, 64))
     renderer.draw_line((64, 64), (128, 0))
     renderer.draw_point((72, 32))
     renderer.draw_rect(pg.Rect(0, 64, 64, 64))
     renderer.fill_rect(pg.Rect(0, 128, 64, 64))
-    renderer.draw_color = backgrounds[bg_index]
+    renderer.set_draw_color(backgrounds[bg_index])
 
     renderer.present()
 
     clock.tick(60)
-    win.title = str(f"FPS: {clock.get_fps()}")
+    win.set_title(str(f"FPS: {clock.get_fps()}"))
 
 pg.quit()
