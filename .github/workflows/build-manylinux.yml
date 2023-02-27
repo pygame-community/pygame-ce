@@ -4,8 +4,6 @@ name: ManyLinux
 # to main. Do not run CI on any other branch. Also, skip any non-source changes 
 # from running on CI
 on:
-  release:
-    types: [created]
   push:
     branches: main
     paths-ignore:
@@ -29,6 +27,9 @@ on:
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
       - '!.github/workflows/build-manylinux.yml'
+  
+  # the github release drafter can call this workflow
+  workflow_call:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -36,43 +37,28 @@ concurrency:
 
 jobs:
   build:
-    name: ${{ matrix.image }} [${{ matrix.arch }}]
-    runs-on: ubuntu-20.04
+    name: ${{ matrix.arch }}
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+    
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
-        # Split job into many matrix builds, because GH actions provides 20
-        # concurrent builds on ubuntu. 6 are used here
-        include:
-          # no pypy and cpython >= cp310 on manylinux1
-          - { image: manylinux1, arch: x86_64, pyversions: "cp3[7-9]-*" }
-          - { image: manylinux1, arch: i686, pyversions: "cp3[7-9]-*" }
-
-          # no pypy >= 3.9 and cpython >= cp311 on manylinux2010
-          - { image: manylinux2010, arch: x86_64, pyversions: "cp3{[7-9],10}-* pp3{7,8}-*" }
-          - { image: manylinux2010, arch: i686, pyversions: "cp3{[7-9],10}-* pp3{7,8}-*" }
-
-          # all versions of python supported by cibuildwheel (except cp3.6)
-          - { image: manylinux2014, arch: x86_64, pyversions: "cp3{[7-9],10,11}-* pp3{7,8,9}-*" }
-          - { image: manylinux2014, arch: i686, pyversions: "cp3{[7-9],10,11}-* pp3{7,8,9}-*" }
-
+        arch: [x86_64, i686]
+    
     env:
       # load pip config from this file. Define this in 'CIBW_ENVIRONMENT'
       # because this should not affect cibuildwheel machinery
       # also define environment variables needed for testing
       CIBW_ENVIRONMENT: PIP_CONFIG_FILE=buildconfig/pip_config.ini PORTMIDI_INC_PORTTIME=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
 
-      CIBW_BUILD: ${{ matrix.pyversions }}
+      CIBW_BUILD: "cp3{[7-9],10,11}-* pp3[7-9]-*"
       CIBW_ARCHS: ${{ matrix.arch }}
 
       # skip musllinux for now
       CIBW_SKIP: '*-musllinux_*'
-
-      # set custom pygame images
-      CIBW_MANYLINUX_X86_64_IMAGE: pygame/${{ matrix.image }}_base_x86_64
-      CIBW_MANYLINUX_PYPY_X86_64_IMAGE: pygame/${{ matrix.image }}_base_x86_64
-      CIBW_MANYLINUX_I686_IMAGE: pygame/${{ matrix.image }}_base_i686
-      CIBW_MANYLINUX_PYPY_I686_IMAGE: pygame/${{ matrix.image }}_base_i686
 
       # command that runs before every build
       CIBW_BEFORE_BUILD: |
@@ -95,7 +81,43 @@ jobs:
     steps:
     - uses: actions/checkout@v3.3.0
 
+    - name: Log in to the Container registry
+      uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Inspect image, skip build if image exists
+      id: inspect
+      continue-on-error: true
+      run: docker manifest inspect ghcr.io/${{ github.repository }}_${{ matrix.arch }}:${{ hashFiles('buildconfig/manylinux-build/**') }}
+
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+      with:
+        images: ghcr.io/${{ github.repository }}_${{ matrix.arch }}
+        tags: type=raw,value=${{ hashFiles('buildconfig/manylinux-build/**') }}
+
+    - name: Build and push Docker image
+      if: steps.inspect.outcome == 'failure'
+      uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+      with:
+        context: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base
+        file: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base/Dockerfile-${{ matrix.arch }}
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+
     - name: Build and test wheels
+      env:
+        # set custom pygame images
+        CIBW_MANYLINUX_X86_64_IMAGE: ghcr.io/${{ github.repository }}_x86_64:${{ steps.meta.outputs.version }}
+        CIBW_MANYLINUX_PYPY_X86_64_IMAGE: ghcr.io/${{ github.repository }}_x86_64:${{ steps.meta.outputs.version }}
+        CIBW_MANYLINUX_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
+        CIBW_MANYLINUX_PYPY_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
+
       uses: pypa/cibuildwheel@v2.12.0
 
     # We upload the generated files under github actions assets
@@ -105,19 +127,3 @@ jobs:
         name: pygame-manylinux-wheels
         path: ./wheelhouse/*.whl
 
-#   - name: Upload binaries to Github Releases
-#     if: github.event_name == 'release'
-#     uses: svenstaro/upload-release-action@v2
-#     with:
-#       repo_token: ${{ secrets.GITHUB_TOKEN }}
-#       file: ./wheelhouse/*.whl
-#       tag: ${{ github.ref }}
-#
-#   - name: Upload binaries to PyPI
-#     if: github.event_name == 'release'
-#     env:
-#      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-#      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-#     run: |
-#       python3 -m pip install twine
-#       twine upload ./wheelhouse/*.whl

@@ -1,0 +1,25 @@
+name: PyPI Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3.3.0
+
+      - name: Pull all release assets
+        uses: robinraju/release-downloader@v1.7
+        with:
+          releaseId: ${{ github.event.release.id }}
+          fileName: "*"
+          tarBall: false
+          zipBall: false
+          out-file-path: "dist"
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}

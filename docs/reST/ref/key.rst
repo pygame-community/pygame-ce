@@ -266,6 +266,11 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
       translate these pushed keys into a fully translated character value. See
       the ``pygame.KEYDOWN`` events on the :mod:`pygame.event` queue for this
       functionality.
+   
+   .. versionchanged:: 2.1.4
+      The collection of bools returned by ``get_pressed`` can not be iterated
+      over because the indexes of the internal tuple does not correspond to the 
+      keycodes.
 
    .. ## pygame.key.get_pressed ##
 
