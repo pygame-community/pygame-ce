@@ -758,7 +758,7 @@ static CYTHON_INLINE float __PYX_NAN() {
 #include <stdio.h>
 #include "SDL.h"
 
-        #if !SDL_VERSION_ATLEAST(2, 0, 20)
+        #if !SDL_VERSION_ATLEAST(2, 0, 22)
             #define SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL "SDL_VIDEO_FOREIGN_WINDOW_OPENGL"
         #endif
         
