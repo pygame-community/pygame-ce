@@ -1,4 +1,4 @@
-#include <pgcompat_rect.h>
+#include "pgcompat_rect.h"
 
 /* SDL 2.0.22 provides some utility functions for FRects */
 #if !(SDL_VERSION_ATLEAST(2, 0, 22))

@@ -1,6 +1,8 @@
 #ifndef PGCOMPAT_RECT_H
 #define PGCOMPAT_RECT_H
 
+#include <SDL.h>
+
 #if !(SDL_VERSION_ATLEAST(2, 0, 10))
 typedef struct SDL_FRect {
     float x, y;
