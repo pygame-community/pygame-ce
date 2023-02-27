@@ -815,7 +815,10 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
     _DisplayState *state = DISPLAY_MOD_STATE(self);
     SDL_Window *win = pg_GetDefaultWindow();
+#if !SDL_VERSION_ATLEAST(2, 0, 22)
     SDL_Window *dummy = NULL;
+    char dummy_id_str[64];
+#endif
     pgSurfaceObject *surface = pg_GetDefaultWindowSurface();
     SDL_Surface *surf = NULL;
     SDL_Surface *newownedsurf = NULL;
