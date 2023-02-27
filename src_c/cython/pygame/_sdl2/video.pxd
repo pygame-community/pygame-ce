@@ -434,7 +434,6 @@ cdef class Image:
     cdef SDL_Point* _originptr
     cdef public bint flip_x
     cdef public bint flip_y
-    cdef public float alpha
     cdef public SDL_BlendMode blend_mode
 
     cdef public Texture texture
