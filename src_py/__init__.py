@@ -83,6 +83,40 @@ class MissingModule:
         except ImportError:
             print(message)
 
+# This is a special loader for WebAssembly platform
+# where pygame is in fact statically linked
+# mixing single phase (C) and multiphase modules (cython)
+if sys.platform in ("wasi", "emscripten"):
+    try:
+        import pygame_static
+    except ModuleNotFoundError:
+        pygame_static = None
+
+    if pygame_static:
+
+        pygame = sys.modules[__name__]
+
+        pygame.Color = pygame.color.Color
+
+        Vector2 = pygame.math.Vector2
+        Vector3 = pygame.math.Vector3
+
+        Rect = pygame.rect.Rect
+
+        BufferProxy = pygame.bufferproxy.BufferProxy
+
+        # cython modules use multiphase initialisation when not in builtin Inittab.
+
+        from pygame import _sdl2
+
+        import importlib.machinery
+
+        loader = importlib.machinery.FrozenImporter
+        spec = importlib.machinery.ModuleSpec("", loader)
+        pygame_static.import_cython(spec)
+        delete loader, spec
+    delete pygame_static
+
 
 # we need to import like this, each at a time. the cleanest way to import
 # our modules is with the import command (not the __import__ function)
@@ -344,6 +378,16 @@ def __color_reduce(c):
 
 
 copyreg.pickle(Color, __color_reduce, __color_constructor)
+
+# This is the wasm "vendor" patch that allows to bind certain modules
+# like eg camera or mixer.music to host implementation.
+# also allow for experimenting more support without need to modify pygame.
+if sys.platform in ("wasi", "emscripten"):
+    try:
+        import pygame_wasm_patches
+        delete pygame_wasm_patches
+    except (ImportError, OSError):
+        pass
 
 # Thanks for supporting pygame. Without support now, there won't be pygame later.
 if "PYGAME_HIDE_SUPPORT_PROMPT" not in os.environ:
