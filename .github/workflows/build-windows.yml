@@ -4,8 +4,6 @@ name: Windows
 # to main. Do not run CI on any other branch. Also, skip any non-source changes
 # from running on CI
 on:
-  release:
-    types: [created]
   push:
     branches: main
     paths-ignore:
@@ -29,6 +27,9 @@ on:
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
       - '!.github/workflows/build-windows.yml'
+  
+  # the github release drafter can call this workflow
+  workflow_call:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

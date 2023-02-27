@@ -107,6 +107,33 @@ class Texture:
         flip_x: bool = False,
         flip_y: bool = False,
     ) -> None: ...
+    def draw_triangle(
+        self,
+        p1_xy,
+        p2_xy,
+        p3_xy,
+        p1_uv=(0.0, 0.0),
+        p2_uv=(1.0, 1.0),
+        p3_uv=(0.0, 1.0),
+        p1_mod=(255, 255, 255, 255),
+        p2_mod=(255, 255, 255, 255),
+        p3_mod=(255, 255, 255, 255),
+    ) -> None: ...
+    def draw_quad(
+        self,
+        p1_xy,
+        p2_xy,
+        p3_xy,
+        p4_xy,
+        p1_uv=(0.0, 0.0),
+        p2_uv=(1.0, 0.0),
+        p3_uv=(1.0, 1.0),
+        p4_uv=(0.0, 1.0),
+        p1_mod=(255, 255, 255, 255),
+        p2_mod=(255, 255, 255, 255),
+        p3_mod=(255, 255, 255, 255),
+        p4_mod=(255, 255, 255, 255),
+    ) -> None: ...
     def update(self, surface: Surface, area: Optional[RectValue] = None) -> None: ...
 
 class Image:
@@ -168,6 +195,18 @@ class Renderer:
     def draw_point(self, point: Iterable[int]) -> None: ...
     def draw_rect(self, rect: RectValue) -> None: ...
     def fill_rect(self, rect: RectValue) -> None: ...
+    def draw_triangle(
+        self, p1: Iterable[int], p2: Iterable[int], p3: Iterable[int]
+    ) -> None: ...
+    def fill_triangle(
+        self, p1: Iterable[int], p2: Iterable[int], p3: Iterable[int]
+    ) -> None: ...
+    def draw_quad(
+        self, p1: Iterable[int], p2: Iterable[int], p3: Iterable[int], p4: Iterable[int]
+    ) -> None: ...
+    def fill_quad(
+        self, p1: Iterable[int], p2: Iterable[int], p3: Iterable[int], p4: Iterable[int]
+    ) -> None: ...
     def to_surface(
         self, surface: Optional[Surface] = None, area: Optional[RectValue] = None
     ) -> Surface: ...
