@@ -169,6 +169,6 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: pygame-wheels
+          name: pygame-wheels-macos
           path: ./wheelhouse/*.whl
 

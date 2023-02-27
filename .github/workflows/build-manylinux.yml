@@ -124,6 +124,6 @@ jobs:
     - name: Upload dist
       uses: actions/upload-artifact@v3
       with:
-        name: pygame-manylinux-wheels
+        name: pygame-wheels-manylinux
         path: ./wheelhouse/*.whl
 

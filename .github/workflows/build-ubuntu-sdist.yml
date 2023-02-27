@@ -88,6 +88,6 @@ jobs:
       if: matrix.os == 'ubuntu-20.04' # upload sdist only once
       uses: actions/upload-artifact@v3
       with:
-        name: pygame-sdist
+        name: pygame-wheels-sdist
         path: dist/*.tar.gz
 

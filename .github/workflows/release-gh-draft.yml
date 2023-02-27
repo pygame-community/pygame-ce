@@ -25,8 +25,6 @@ jobs:
 
       - name: Download all artifacts
         uses: actions/download-artifact@v3
-        with:
-          path: dist
       
       # Strips 'release/' from the ref_name, this helps us access the version
       # name as 'steps.ver.outputs.VER'
@@ -39,7 +37,7 @@ jobs:
         with:
           draft: true
           prerelease: ${{ contains(steps.ver.outputs.VER, 'dev') }}
-          files: dist/*
+          files: pygame-wheels-*/*
           name: '${{ steps.ver.outputs.VER }} - {TODO put a title here} [DRAFTED BY CI]'
           tag_name: ${{ steps.ver.outputs.VER }}
           target_commitish: ${{ github.ref_name }}
