@@ -114,8 +114,8 @@ if sys.platform in ("wasi", "emscripten"):
         loader = importlib.machinery.FrozenImporter
         spec = importlib.machinery.ModuleSpec("", loader)
         pygame_static.import_cython(spec)
-        delete loader, spec
-    delete pygame_static
+        del loader, spec
+    del pygame_static
 
 
 # we need to import like this, each at a time. the cleanest way to import
@@ -385,7 +385,7 @@ copyreg.pickle(Color, __color_reduce, __color_constructor)
 if sys.platform in ("wasi", "emscripten"):
     try:
         import pygame_wasm_patches
-        delete pygame_wasm_patches
+        del pygame_wasm_patches
     except (ImportError, OSError):
         pass
 
