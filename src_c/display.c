@@ -815,10 +815,6 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
     _DisplayState *state = DISPLAY_MOD_STATE(self);
     SDL_Window *win = pg_GetDefaultWindow();
-#if !SDL_VERSION_ATLEAST(2, 0, 22)
-    SDL_Window *dummy = NULL;
-    char dummy_id_str[64];
-#endif
     pgSurfaceObject *surface = pg_GetDefaultWindowSurface();
     SDL_Surface *surf = NULL;
     SDL_Surface *newownedsurf = NULL;
@@ -827,27 +823,20 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     int w, h;
     PyObject *size = NULL;
     int vsync = SDL_FALSE;
-    long long hwnd = 0;
     /* display will get overwritten by ParseTupleAndKeywords only if display
        parameter is given. By default, put the new window on the same
        screen as the old one */
     int display = _get_display(win);
     char *title = state->title;
-    char *scale_env, *winid_env;
+    char *scale_env;
 
-    char *keywords[] = {"size",  "flags", "depth", "display",
-                        "vsync", "hwnd",  NULL};
+    char *keywords[] = {"size", "flags", "depth", "display", "vsync", NULL};
 
     scale_env = SDL_getenv("PYGAME_FORCE_SCALE");
-    winid_env = SDL_getenv("SDL_WINDOWID");
 
-    if (!PyArg_ParseTupleAndKeywords(arg, kwds, "|OiiiiK", keywords, &size,
-                                     &flags, &depth, &display, &vsync, &hwnd))
+    if (!PyArg_ParseTupleAndKeywords(arg, kwds, "|Oiiii", keywords, &size,
+                                     &flags, &depth, &display, &vsync))
         return NULL;
-
-    if (hwnd == 0 && winid_env != NULL) {
-        hwnd = SDL_strtol(winid_env, NULL, 0);
-    }
 
     if (scale_env != NULL) {
         flags |= PGS_SCALED;
@@ -1086,35 +1075,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
             if (!win) {
                 /*open window*/
-                if (hwnd != 0) {
-                    if (flags & PGS_OPENGL) {
-#if SDL_VERSION_ATLEAST(2, 0, 22)
-                        SDL_SetHint(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL, "1");
-                        win = SDL_CreateWindowFrom((void*)hwnd);
-                        SDL_SetHint(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL, "0");
-#else
-                        // Create window with SDL_CreateWindowFrom() and OpenGL
-                        // See https://gamedev.stackexchange.com/a/119903
-                        dummy = SDL_CreateWindow(
-                            "OpenGL Dummy", 0, 0, 1, 1,
-                            SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
-                        sprintf(dummy_id_str, "%p", dummy);
-                        SDL_SetHint(SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT,
-                                    dummy_id_str);
-
-                        win = SDL_CreateWindowFrom(hwnd);
-
-                        SDL_SetHint(SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT,
-                                    "");
-#endif
-                    }
-                    else {
-                        win = SDL_CreateWindowFrom((void*)hwnd);
-                    }
-                }
-                else {
-                    win = SDL_CreateWindow(title, x, y, w_1, h_1, sdl_flags);
-                }
+                win = SDL_CreateWindow(title, x, y, w_1, h_1, sdl_flags);
                 if (!win)
                     return RAISE(pgExc_SDLError, SDL_GetError());
             }

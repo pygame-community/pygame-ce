@@ -71,9 +71,6 @@ class Window:
     display_index: int
     def set_modal_for(self, Window) -> None: ...
 
-class OpenGLWindow(Window):
-    def gl_flip(self) ->None : ...
-
 class Texture:
     def __init__(
         self,
