@@ -32,7 +32,7 @@ class Font:
     italic: bool
     underline: bool
     strikethrough: bool
-    def __init__(self, filename: Optional[FileArg], size: int) -> None: ...
+    def __init__(self, filename: Optional[FileArg] = None, size: int = None) -> None: ...
     def render(
         self,
         text: Union[str, bytes, None],
