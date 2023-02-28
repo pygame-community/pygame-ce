@@ -299,6 +299,9 @@
 #ifndef RectImport_RectCheck
 #error RectImport_RectCheck needs to be Defined
 #endif
+#ifndef RectImport_RectCheckExact
+#error RectImport_RectCheckExact needs to be Defined
+#endif
 #ifndef RectImport_primitiveType
 #error RectImport_primitiveType needs to be defined
 #endif
@@ -688,7 +691,9 @@ RectExport_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     RectObject *self;
 
 #ifdef RectOptional_FREELIST
-    if (RectOptional_Freelist_Num > -1) {
+    /* Only instances of the base pygame.Rect class are allowed in the
+     * current freelist implementation (subclasses are not allowed) */
+    if (RectOptional_Freelist_Num > -1 && type == &RectImport_TypeObject) {
         self = RectOptional_FreelistFreelistName[RectOptional_Freelist_Num];
         Py_INCREF(self);
         /* This is so that pypy garbage collector thinks it is a new obj
@@ -706,10 +711,8 @@ RectExport_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 #endif
 
     if (self != NULL) {
-        self->r.x = (PrimitiveType)0;
-        self->r.y = (PrimitiveType)0;
-        self->r.w = (PrimitiveType)0;
-        self->r.h = (PrimitiveType)0;
+        self->r.x = self->r.y = (PrimitiveType)0;
+        self->r.w = self->r.h = (PrimitiveType)0;
         self->weakreflist = NULL;
     }
     return (PyObject *)self;
@@ -722,8 +725,11 @@ RectExport_dealloc(RectObject *self)
         PyObject_ClearWeakRefs((PyObject *)self);
     }
 
-#ifdef RectOptional_FREELIST
-    if (RectOptional_Freelist_Num < RectOptional_FreelistlimitNumberName) {
+#ifdef PYPY_VERSION
+    /* Only instances of the base pygame.Rect class are allowed in the
+     * current freelist implementation (subclasses are not allowed) */
+    if (RectOptional_Freelist_Num < RectOptional_FreelistlimitNumberName - 1 &&
+        RectImport_RectCheckExact(self)) {
         RectOptional_Freelist_Num++;
         RectOptional_FreelistFreelistName[RectOptional_Freelist_Num] = self;
     }
@@ -733,7 +739,6 @@ RectExport_dealloc(RectObject *self)
 #else
     Py_TYPE(self)->tp_free((PyObject *)self);
 #endif
-    return;
 }
 
 static int
@@ -1924,7 +1929,7 @@ RectExport_assSubscript(RectObject *self, PyObject *op, PyObject *value)
             self->r.w = val;
             self->r.h = val;
         }
-        else if (PyObject_IsInstance(value, (PyObject *)&TypeObject)) {
+        else if (RectImport_RectCheck(value)) {
             RectObject *rect = (RectObject *)value;
 
             self->r.x = rect->r.x;
@@ -2670,6 +2675,7 @@ RectExport_iterator(RectObject *self)
 #undef RectImport_PrimitiveTypeAsPythonNumber
 #undef RectImport_primitiveType
 #undef RectImport_RectCheck
+#undef RectImport_RectCheckExact
 #undef RectImport_innerRectStruct
 #undef RectImport_innerPointStruct
 #undef RectImport_fourPrimiviteFromObj

@@ -132,6 +132,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_setsize pg_rect_setsize
 #define RectImport_primitiveType int
 #define RectImport_RectCheck pgRect_Check
+#define RectImport_RectCheckExact pgRect_CheckExact
 #define RectImport_innerRectStruct SDL_Rect
 #define RectImport_innerPointStruct SDL_Point
 #define RectImport_fourPrimiviteFromObj four_ints_from_obj
@@ -238,6 +239,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_setsize pg_frect_setsize
 #define RectImport_primitiveType float
 #define RectImport_RectCheck pgFRect_Check
+#define RectImport_RectCheckExact pgFRect_CheckExact
 #define RectImport_innerRectStruct SDL_FRect
 #define RectImport_innerPointStruct SDL_FPoint
 #define RectImport_fourPrimiviteFromObj four_floats_from_obj
