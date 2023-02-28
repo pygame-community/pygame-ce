@@ -763,7 +763,7 @@ static PyMethodDef font_methods[] = {
     {"render", font_render, METH_VARARGS, DOC_FONTRENDER},
     {"size", font_size, METH_O, DOC_FONTSIZE},
     {"set_script", font_set_script, METH_O, DOC_FONTSETSCRIPT},
-    {"set_direction", font_set_direction, METH_VARARGS | METH_KEYWORDS,
+    {"set_direction", (PyCFunction)font_set_direction, METH_VARARGS | METH_KEYWORDS,
      DOC_FONTSETDIRECTION},
     {NULL, NULL, 0, NULL}};
 
