@@ -1251,6 +1251,9 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
     int w, h, pitch = -1;
     Py_ssize_t len;
     pgSurfaceObject *surfobj;
+    Uint32 r_mask, g_mask, b_mask, a_mask;
+    int alphamult = 0;
+    int depth;
 
 #ifdef _MSC_VER
     /* MSVC static analyzer false alarm: assure format is NULL-terminated by
@@ -1271,143 +1274,107 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
     if (pgObject_AsCharBuffer(buffer, (const char **)&data, &len) == -1)
         return NULL;
 
+    size_t format_length = strlen(format);
+    if (pitch == -1) {
+        pitch = w * (int)format_length;
+    }
+    else if ((size_t)pitch < w * format_length) {
+        return RAISE(PyExc_ValueError,
+                     "Pitch must be greater than or equal to the width * heh "
+                     "as per the format");
+    }
+
+    if (len != (Py_ssize_t)pitch * h)
+        return RAISE(
+            PyExc_ValueError,
+            "Buffer length does not equal format and resolution size");
+
     if (!strcmp(format, "P")) {
-        if (pitch == -1) {
-            pitch = w;
-        }
-        else if (pitch < w) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width "
-                         "as per the format");
-        }
-
-        if (len != (Py_ssize_t)pitch * h)
-            return RAISE(
-                PyExc_ValueError,
-                "Buffer length does not equal format and resolution size");
-
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 8, pitch, 0, 0, 0, 0);
+        depth = 8;
+        r_mask = 0;
+        g_mask = 0;
+        b_mask = 0;
+        a_mask = 0;
     }
     else if (!strcmp(format, "RGB")) {
-        if (pitch == -1) {
-            pitch = w * 3;
-        }
-        else if (pitch < w * 3) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "3 as per the format");
-        }
-
-        if (len != (Py_ssize_t)pitch * h)
-            return RAISE(
-                PyExc_ValueError,
-                "Buffer length does not equal format and resolution size");
+        depth = 24;
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, pitch, 0xFF, 0xFF << 8,
-                                        0xFF << 16, 0);
+        r_mask = 0xFF;
+        g_mask = 0xFF << 8;
+        b_mask = 0xFF << 16;
+        a_mask = 0;
 #else
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, pitch, 0xFF << 16,
-                                        0xFF << 8, 0xFF, 0);
+        r_mask = 0xFF << 16;
+        g_mask = 0xFF << 8;
+        b_mask = 0xFF;
+        a_mask = 0;
 #endif
     }
     else if (!strcmp(format, "BGR")) {
-        if (pitch == -1) {
-            pitch = w * 3;
-        }
-        else if (pitch < w * 3) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "3 as per the format");
-        }
-
-        if (len != (Py_ssize_t)pitch * h)
-            return RAISE(
-                PyExc_ValueError,
-                "Buffer length does not equal format and resolution size");
+        depth = 24;
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, pitch, 0xFF << 16,
-                                        0xFF << 8, 0xFF, 0);
+        r_mask = 0xFF << 16;
+        g_mask = 0xFF << 8;
+        b_mask = 0xFF;
+        a_mask = 0;
 #else
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, pitch, 0xFF, 0xFF << 8,
-                                        0xFF << 16, 0);
+        r_mask = 0xFF;
+        g_mask = 0xFF << 8;
+        b_mask = 0xFF << 16;
+        a_mask = 0;
 #endif
     }
     else if (!strcmp(format, "BGRA")) {
-        if (pitch == -1) {
-            pitch = w * 4;
-        }
-        else if (pitch < w * 4) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "4 as per the format");
-        }
-
-        if (len != (Py_ssize_t)pitch * h)
-            return RAISE(
-                PyExc_ValueError,
-                "Buffer length does not equal format and resolution size");
-
+        depth = 32;
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 32, pitch, 0xFF << 16,
-                                        0xFF << 8, 0xFF, 0xFF << 24);
-
+        r_mask = 0xFF << 16;
+        g_mask = 0xFF << 8;
+        b_mask = 0xFF;
+        a_mask = 0xFF << 24;
 #else
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 32, pitch, 0xFF << 8,
-                                        0xFF << 16, 0xFF << 24, 0xFF);
+        r_mask = 0xFF << 8;
+        g_mask = 0xFF << 16;
+        b_mask = 0xFF << 24;
+        a_mask = 0xFF;
 #endif
     }
     else if (!strcmp(format, "RGBA") || !strcmp(format, "RGBX")) {
-        if (pitch == -1) {
-            pitch = w * 4;
-        }
-        else if (pitch < w * 4) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "4 as per the format");
-        }
-
-        int alphamult = !strcmp(format, "RGBA");
-        if (len != (Py_ssize_t)pitch * h)
-            return RAISE(
-                PyExc_ValueError,
-                "Buffer length does not equal format and resolution size");
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 32, pitch,
+        alphamult = !strcmp(format, "RGBA");
+        depth = 32;
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                                        0xFF, 0xFF << 8, 0xFF << 16,
-                                        (alphamult ? 0xFF << 24 : 0));
+        r_mask = 0xFF;
+        g_mask = 0xFF << 8;
+        b_mask = 0xFF << 16;
+        a_mask = alphamult ? 0xFF << 24 : 0;
 #else
-                                        0xFF << 24, 0xFF << 16, 0xFF << 8,
-                                        (alphamult ? 0xFF : 0));
+        r_mask = 0xFF << 24;
+        g_mask = 0xFF << 16;
+        b_mask = 0xFF << 8;
+        a_mask = alphamult ? 0xFF : 0;
 #endif
-        if (alphamult)
-            surf->flags |= SDL_SRCALPHA;
     }
     else if (!strcmp(format, "ARGB")) {
-        if (pitch == -1) {
-            pitch = w * 4;
-        }
-        else if (pitch < w * 4) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "4 as per the format");
-        }
-
-        if (len != (Py_ssize_t)pitch * h)
-            return RAISE(
-                PyExc_ValueError,
-                "Buffer length does not equal format and resolution size");
-        surf =
-            SDL_CreateRGBSurfaceFrom(data, w, h, 32, pitch,
+        alphamult = 1;
+        depth = 32;
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                                     0xFF << 8, 0xFF << 16, 0xFF << 24, 0xFF);
+        r_mask = 0xFF << 8;
+        g_mask = 0xFF << 16;
+        b_mask = 0xFF << 24;
+        a_mask = 0xFF;
 #else
-                                     0xFF << 16, 0xFF << 8, 0xFF, 0xFF << 24);
+        r_mask = 0xFF << 16;
+        g_mask = 0xFF << 8;
+        b_mask = 0xFF;
+        a_mask = 0xFF << 24;
 #endif
-        surf->flags |= SDL_SRCALPHA;
     }
     else
         return RAISE(PyExc_ValueError, "Unrecognized type of format");
 
+    surf = SDL_CreateRGBSurfaceFrom(data, w, h, depth, pitch, r_mask, g_mask,
+                                    b_mask, a_mask);
+    if (alphamult)
+        surf->flags |= SDL_SRCALPHA;
     if (!surf)
         return RAISE(pgExc_SDLError, SDL_GetError());
     surfobj = (pgSurfaceObject *)pgSurface_New(surf);
