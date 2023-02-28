@@ -544,41 +544,6 @@ cdef class Window:
             return
         self.destroy()
 
-cdef class OpenGLWindow(Window):
-    def __init__(self,*args,**kwargs):
-        super().__init__(*args,opengl=1,**kwargs)
-        if not SDL_GL_CreateContext(self._win):
-            raise error()
-
-    @classmethod  
-    def from_existing_window(cls,hwnd):
-        if not SDL_VERSION_ATLEAST(2,0,22):
-            raise error("requires SDL 2.0.22 or newer")
-
-        cdef unsigned long long _hwnd=hwnd
-        cdef Window self = cls.__new__(cls)
-
-        from pygame.base import get_sdl_version
-        sdlver=get_sdl_version()
-        if sdlver[0]<2 or sdlver[1]<0 or sdlver[2]<22:
-            raise error('SDL 2.0.22 or later required.')
-
-        SDL_SetHint(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL,b'1')
-        cdef SDL_Window* window = SDL_CreateWindowFrom(<void*>_hwnd)
-        SDL_SetHint(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL,b'0')
-
-        if not window:
-            raise error()
-        self._win=window
-        self._is_borrowed=0
-        SDL_SetWindowData(window, "pg_window", <PyObject*>self)
-        if not SDL_GL_CreateContext(self._win):
-            raise error()
-        return self
-
-    def gl_flip(self):
-        SDL_GL_SwapWindow(self._win) 
-
 cdef Uint32 format_from_depth(int depth):
     cdef Uint32 Rmask, Gmask, Bmask, Amask
     if depth == 16:

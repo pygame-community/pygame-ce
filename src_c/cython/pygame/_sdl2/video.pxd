@@ -36,11 +36,7 @@ cdef extern from "SDL.h" nogil:
         Uint8 r, g, b, a
 
     cdef extern from *:
-        """
-        #if !SDL_VERSION_ATLEAST(2, 0, 22)
-            #define SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL "SDL_VIDEO_FOREIGN_WINDOW_OPENGL"
-        #endif
-        
+        """        
         #if SDL_VERSION_ATLEAST(2, 0, 18)
             typedef SDL_FPoint _pgsdlFPoint;
             typedef SDL_Vertex _pgsdlVertex;
@@ -201,17 +197,6 @@ cdef extern from "SDL.h" nogil:
         SDL_BLENDFACTOR_ONE_MINUS_DST_COLOR = 0x00000008,
         SDL_BLENDFACTOR_DST_ALPHA = 0x00000009,
         SDL_BLENDFACTOR_ONE_MINUS_DST_ALPHA = 0x0000000A
-
-    # Hint
-    # https://wiki.libsdl.org/SDL2/SDL_SetHint
-    SDL_bool SDL_SetHint(const char *name, const char *value)
-    char* SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL = "SDL_VIDEO_FOREIGN_WINDOW_OPENGL"
-
-    # OpenGL
-    # https://wiki.libsdl.org/SDL2/SDL_GL_CreateContext
-    # https://wiki.libsdl.org/SDL2/SDL_GL_SwapWindow
-    SDL_GLContext SDL_GL_CreateContext(SDL_Window *window)
-    void SDL_GL_SwapWindow(SDL_Window * window)
 
     # WINDOW
     # https://wiki.libsdl.org/SDL_CreateWindow
