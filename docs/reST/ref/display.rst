@@ -83,8 +83,6 @@ required).
    be set to a string containing the window id or handle. The environment
    variable is checked when the pygame display is initialized. Be aware that
    there can be many strange side effects when running in an embedded display.
-   This is only for pygame 1.x and no longer applies to pygame 2.x due to the 
-   change from SDL 1 to SDL 2.
 
    It is harmless to call this more than once, repeated calls have no effect.
 

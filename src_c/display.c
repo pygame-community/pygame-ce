@@ -833,16 +833,21 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
        screen as the old one */
     int display = _get_display(win);
     char *title = state->title;
-    char *scale_env;
+    char *scale_env, *winid_env;
 
     char *keywords[] = {"size",  "flags", "depth", "display",
                         "vsync", "hwnd",  NULL};
 
     scale_env = SDL_getenv("PYGAME_FORCE_SCALE");
+    winid_env = SDL_getenv("SDL_WINDOWID");
 
     if (!PyArg_ParseTupleAndKeywords(arg, kwds, "|OiiiiK", keywords, &size,
                                      &flags, &depth, &display, &vsync, &hwnd))
         return NULL;
+
+    if (hwnd == NULL && winid_env != NULL) {
+        hwnd = (void *)SDL_strtol(winid_env, NULL, 0);
+    }
 
     if (scale_env != NULL) {
         flags |= PGS_SCALED;
