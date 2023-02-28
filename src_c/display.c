@@ -827,7 +827,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     int w, h;
     PyObject *size = NULL;
     int vsync = SDL_FALSE;
-    const void *hwnd = NULL;
+    long long hwnd = 0;
     /* display will get overwritten by ParseTupleAndKeywords only if display
        parameter is given. By default, put the new window on the same
        screen as the old one */
@@ -845,8 +845,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                                      &flags, &depth, &display, &vsync, &hwnd))
         return NULL;
 
-    if (hwnd == NULL && winid_env != NULL) {
-        hwnd = (void *)SDL_strtol(winid_env, NULL, 0);
+    if (hwnd == 0 && winid_env != NULL) {
+        hwnd = SDL_strtol(winid_env, NULL, 0);
     }
 
     if (scale_env != NULL) {
@@ -1086,11 +1086,11 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
             if (!win) {
                 /*open window*/
-                if (hwnd != NULL) {
+                if (hwnd != 0) {
                     if (flags & PGS_OPENGL) {
 #if SDL_VERSION_ATLEAST(2, 0, 22)
                         SDL_SetHint(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL, "1");
-                        win = SDL_CreateWindowFrom(hwnd);
+                        win = SDL_CreateWindowFrom((void*)hwnd);
                         SDL_SetHint(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL, "0");
 #else
                         // Create window with SDL_CreateWindowFrom() and OpenGL
@@ -1109,7 +1109,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 #endif
                     }
                     else {
-                        win = SDL_CreateWindowFrom(hwnd);
+                        win = SDL_CreateWindowFrom((void*)hwnd);
                     }
                 }
                 else {
