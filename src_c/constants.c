@@ -623,6 +623,12 @@ MODINIT_DEFINE(constants)
     // https://github.com/pygame-community/pygame-ce/issues/1845
     DEC_CONSTS(IS_CE, 1)
 
+    /* constants for font direction */
+    DEC_CONSTS(DIRECTION_LTR, 0);
+    DEC_CONSTS(DIRECTION_RTL, 1);
+    DEC_CONSTS(DIRECTION_TTB, 2);
+    DEC_CONSTS(DIRECTION_BTT, 3);
+
     if (PyModule_AddObject(module, "__all__", all_list)) {
         Py_DECREF(all_list);
         Py_DECREF(module);

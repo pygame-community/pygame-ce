@@ -667,6 +667,65 @@ font_set_script(PyObject *self, PyObject *arg)
     Py_RETURN_NONE;
 }
 
+static PyObject*
+font_set_direction(PyObject *self, PyObject* arg, PyObject* kwarg)
+{
+/* Can't use SDL_TTF_VERSION_ATLEAST until SDL_ttf 2.0.15 is minimum supported */
+#if SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \
+                   SDL_TTF_PATCHLEVEL) >= SDL_VERSIONNUM(2, 20, 0)
+    TTF_Font *font = PyFont_AsFont(self);
+    int direction;
+    char* kwds[] = {"direction", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(arg, kwarg, "i", kwds, &direction)) {
+        return RAISE(PyExc_TypeError, "direction argument must be an int");
+    }
+
+    if (direction < 0 || direction > 3) {
+        return RAISE(PyExc_ValueError, "invalid input parameter for Font.set_direction");
+    }
+
+    TTF_Direction dir;
+    switch (direction) {
+        case 0: {
+            dir = TTF_DIRECTION_LTR;
+            break;
+        }
+
+        case 1: {
+            dir = TTF_DIRECTION_RTL;
+            break;
+        }
+
+        case 2: {
+            dir = TTF_DIRECTION_TTB;
+            break;
+        }
+
+        case 3: {
+            dir = TTF_DIRECTION_BTT;
+            break;
+        }
+
+        default: {
+            // should NEVER reach this point
+            return RAISE(PyExc_RuntimeError, "Something went wrong in Font.set_direction. Please report this"
+                                            " to https://github.com/pygame-community/pygame-ce");
+        }
+    }
+
+    if (TTF_SetFontDirection(font, dir)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+#else
+    return RAISE(pgExc_SDLError,
+                 "pygame.font not compiled with a new enough SDL_ttf version. "
+                 "Needs SDL_ttf 2.20.0 or above.");
+#endif
+    Py_RETURN_NONE;
+}
+
 /**
  * Getters and setters for the pgFontObject.
  */
@@ -700,6 +759,7 @@ static PyMethodDef font_methods[] = {
     {"render", font_render, METH_VARARGS, DOC_FONTRENDER},
     {"size", font_size, METH_O, DOC_FONTSIZE},
     {"set_script", font_set_script, METH_O, DOC_FONTSETSCRIPT},
+    {"set_direction", font_set_direction, METH_VARARGS | METH_KEYWORDS, DOC_FONTSETDIRECTION},
     {NULL, NULL, 0, NULL}};
 
 /*font object internals*/

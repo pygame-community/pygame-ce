@@ -492,6 +492,30 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.set_script ## 
 
+   .. method:: set_direction
+
+      | :sl:`set the script direction for text shaping`
+      | :sg:`set_direction(direction=int) -> None`
+
+      **Experimental:** feature still in development available for testing and feedback. It may change.
+      `Please leave feedback with pygame-ce authors <https://github.com/pygame-community/pygame-ce/pull/1956>`_
+
+      Sets the font direction for harfbuzz text rendering, taking in an integer
+      between 0 and 3 (inclusive) as input. There are convenient constants defined
+      for use in this method.
+
+      * ``pygame.DIRECTION_LTR`` is for left-to-right text
+      * ``pygame.DIRECTION_RTL`` is for right-to-left text
+      * ``pygame.DIRECTION_TTB`` is for top-to-bottom text
+      * ``pygame.DIRECTION_BTT`` is for bottom-to-top text
+
+      This method requires pygame built with SDL_ttf 2.20.0 or above. Otherwise the
+      method will raise a pygame.error.
+
+      .. versionadded:: 2.1.4
+      
+      .. ## font.set_direction ##
+
    .. ## pygame.font.Font ##
 
 .. ## pygame.font ##

@@ -29,6 +29,7 @@
 #define DOC_FONTGETASCENT "get_ascent() -> int\nget the ascent of the font"
 #define DOC_FONTGETDESCENT "get_descent() -> int\nget the descent of the font"
 #define DOC_FONTSETSCRIPT "set_script(str) -> None\nset the script code for text shaping"
+#define DOC_FONTSETDIRECTION "set_direction(direction=int) -> None\nset the script direction for text shaping"
 
 
 /* Docs in a comment... slightly easier to read. */
@@ -155,5 +156,9 @@ get the descent of the font
 pygame.font.Font.set_script
  set_script(str) -> None
 set the script code for text shaping
+
+pygame.font.Font.set_direction
+ set_direction(direction=int) -> None
+set the script direction for text shaping
 
 */
