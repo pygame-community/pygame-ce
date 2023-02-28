@@ -1090,7 +1090,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                     if (flags & PGS_OPENGL) {
 #if SDL_VERSION_ATLEAST(2, 0, 22)
                         SDL_SetHint(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL, "1");
-                        win = SDL_CreateWindowFrom((void*)hwnd);
+                        win = SDL_CreateWindowFrom((void *)hwnd);
                         SDL_SetHint(SDL_HINT_VIDEO_FOREIGN_WINDOW_OPENGL, "0");
 #else
                         // Create window with SDL_CreateWindowFrom() and OpenGL
@@ -1109,7 +1109,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 #endif
                     }
                     else {
-                        win = SDL_CreateWindowFrom((void*)hwnd);
+                        win = SDL_CreateWindowFrom((void *)hwnd);
                     }
                 }
                 else {
