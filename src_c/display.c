@@ -1102,7 +1102,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                         SDL_SetHint(SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT,
                                     dummy_id_str);
 
-                        win = SDL_CreateWindowFrom(hwnd);
+                        win = SDL_CreateWindowFrom((void *)hwnd);
 
                         SDL_SetHint(SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT,
                                     "");
