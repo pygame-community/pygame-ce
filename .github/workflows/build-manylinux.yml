@@ -32,7 +32,7 @@ on:
   workflow_call:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-manylinux
   cancel-in-progress: true
 
 jobs:
@@ -124,6 +124,6 @@ jobs:
     - name: Upload dist
       uses: actions/upload-artifact@v3
       with:
-        name: pygame-manylinux-wheels
+        name: pygame-wheels-manylinux
         path: ./wheelhouse/*.whl
 
