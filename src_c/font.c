@@ -639,7 +639,7 @@ font_getter_pointsize(PyFontObject *self, void *closure)
 #else
     PyErr_SetString(PyExc_SystemError,
                     "Incorrect SDL_TTF version (requires 2.0.18)");
-    return 0;
+    return NULL;
 #endif
 }
 
@@ -653,7 +653,7 @@ font_setter_pointsize(PyFontObject *self, PyObject *value, void *closure)
     if (val <= 0) {
         PyErr_SetString(PyExc_ValueError,
                         "pointsize cannot be equal or less than 0");
-        return 0;
+        return -1;
     }
 
     if (TTF_SetFontSize(font, val) == -1) {
@@ -665,7 +665,7 @@ font_setter_pointsize(PyFontObject *self, PyObject *value, void *closure)
 #else
     PyErr_SetString(PyExc_SystemError,
                     "Incorrect SDL_TTF version (requires 2.0.18)");
-    return 0;
+    return -1;
 #endif
 }
 
@@ -677,7 +677,7 @@ font_get_ptsize(PyObject *self, PyObject *args)
 #else
     PyErr_SetString(PyExc_SystemError,
                     "Incorrect SDL_TTF version (requires 2.0.18)");
-    return 0;
+    return NULL;
 #endif
 }
 
@@ -691,7 +691,7 @@ font_set_ptsize(PyObject *self, PyObject *arg)
     if (val <= 0) {
         PyErr_SetString(PyExc_ValueError,
                         "pointsize cannot be equal or less than 0");
-        return 0;
+        return NULL;
     }
 
     if (TTF_SetFontSize(font, val) == -1) {
@@ -703,7 +703,7 @@ font_set_ptsize(PyObject *self, PyObject *arg)
 #else
     PyErr_SetString(PyExc_SystemError,
                     "Incorrect SDL_TTF version (requires 2.0.18)");
-    return 0;
+    return NULL;
 #endif
 }
 

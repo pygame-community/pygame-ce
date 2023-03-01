@@ -546,7 +546,15 @@ class FontTypeTest(unittest.TestCase):
         self.assertNotEqual(size, bsize)
 
     def test_pointsize_property(self):
-        f = pygame.font.Font(None, 25)
+        if pygame_font.__name__ == "pygame.ftfont":
+            return  # not a pygame.ftfont feature
+
+        ttf_version = pygame_font.get_sdl_ttf_version()
+        if ttf_version < (2, 0, 18):
+            return
+
+        pygame_font.init()
+        f = pygame_font.Font(None, 25)
         f.pointsize = 10
         self.assertEqual(10, f.pointsize)
         f.pointsize += 23
@@ -560,7 +568,12 @@ class FontTypeTest(unittest.TestCase):
         self.assertRaises(ValueError, test_neg)
 
     def test_pointsize_method(self):
-        f = pygame.font.Font(None, 25)
+        ttf_version = pygame_font.get_sdl_ttf_version()
+        if ttf_version < (2, 0, 18):
+            return
+
+        pygame_font.init()
+        f = pygame_font.Font(None, 25)
         f.set_pointsize(10)
         self.assertEqual(10, f.get_pointsize())
         self.assertRaises(ValueError, f.set_pointsize, -500)
