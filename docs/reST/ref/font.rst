@@ -260,6 +260,18 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.align ##
 
+   .. attribute:: pointsize
+
+      | :sl:`Gets or sets the font's pointsize`
+      | :sg:`pointsize -> int`
+
+      The font's pointsize will not entirely be accurate upon
+      initialization.
+
+      .. versionadded:: 2.2
+
+      .. ## Font.underline ##
+
    .. method:: render
 
       | :sl:`draw text on a new Surface`
@@ -472,6 +484,25 @@ solves no longer exists, it will likely be removed in the future.
       average size for each glyph in the font.
 
       .. ## Font.get_height ##
+
+   .. method:: set_pointsize
+
+      | :sl:`set the pointsize of the font`
+      | :sg:`set_pointsize(val) -> int`
+
+      Sets the pointsize of the font.
+
+      .. ## Font.set_pointsize ##
+
+   .. method:: get_pointsize
+
+      | :sl:`get the pointsize of the font`
+      | :sg:`get_pointsize() -> int`
+
+      Returns the pointsize of the font. Will not be accurate upon
+      initializing the font object.
+
+      .. ## Font.get_pointsize ##
 
    .. method:: get_ascent
 

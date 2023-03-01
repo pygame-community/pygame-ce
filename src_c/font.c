@@ -632,6 +632,70 @@ font_size(PyObject *self, PyObject *text)
 }
 
 static PyObject *
+font_getter_pointsize(PyFontObject *self, void *closure)
+{
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+    return PyLong_FromLong(self->ptsize);
+#else
+    PyErr_SetString(PyExc_SystemError,
+                    "Incorrect SDL_TTF version (requires 2.0.18)");
+    return 0;
+#endif
+}
+
+static int
+font_setter_pointsize(PyFontObject *self, PyObject *value, void *closure)
+{
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+    TTF_Font *font = PyFont_AsFont(self);
+    int val = PyLong_AsLong(value);
+
+    if (TTF_SetFontSize(font, val) == -1) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+    }
+    self->ptsize = val;
+
+    return 0;
+#else
+    PyErr_SetString(PyExc_SystemError,
+                    "Incorrect SDL_TTF version (requires 2.0.18)");
+    return 0;
+#endif
+}
+
+static PyObject *
+font_get_ptsize(PyObject *self, PyObject *args)
+{
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+    return PyLong_FromLong(((PyFontObject *)self)->ptsize);
+#else
+    PyErr_SetString(PyExc_SystemError,
+                    "Incorrect SDL_TTF version (requires 2.0.18)");
+    return 0;
+#endif
+}
+
+static PyObject *
+font_set_ptsize(PyObject *self, PyObject *arg)
+{
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+    TTF_Font *font = PyFont_AsFont(self);
+    int val = PyLong_AsLong(arg);
+
+    if (TTF_SetFontSize(font, val) == -1) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+    }
+    ((PyFontObject *)self)->ptsize = val;
+
+    Py_RETURN_NONE;
+#else
+    PyErr_SetString(PyExc_SystemError,
+                    "Incorrect SDL_TTF version (requires 2.0.18)");
+    return 0;
+#endif
+}
+
+static PyObject *
 font_metrics(PyObject *self, PyObject *textobj)
 {
     TTF_Font *font = PyFont_AsFont(self);
@@ -840,6 +904,8 @@ static PyGetSetDef font_getsets[] = {
      (setter)font_setter_strikethrough, DOC_FONTSTRIKETHROUGH, NULL},
     {"align", (getter)font_getter_align, (setter)font_setter_align,
      DOC_FONTALIGN, NULL},
+    {"pointsize", (getter)font_getter_pointsize, (setter)font_setter_pointsize,
+     DOC_FONTPOINTSIZE, NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyMethodDef font_methods[] = {
@@ -857,6 +923,8 @@ static PyMethodDef font_methods[] = {
      DOC_FONTGETSTRIKETHROUGH},
     {"set_strikethrough", font_set_strikethrough, METH_O,
      DOC_FONTSETSTRIKETHROUGH},
+    {"get_pointsize", font_get_ptsize, METH_NOARGS, DOC_FONTGETPOINTSIZE},
+    {"set_pointsize", font_set_ptsize, METH_O, DOC_FONTSETPOINTSIZE},
     {"metrics", font_metrics, METH_O, DOC_FONTMETRICS},
     {"render", font_render, METH_VARARGS, DOC_FONTRENDER},
     {"size", font_size, METH_O, DOC_FONTSIZE},
@@ -966,6 +1034,7 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
 
     Py_DECREF(obj);
     self->font = font;
+    self->ptsize = fontsize;
     self->ttf_init_generation = current_ttf_generation;
 
     return 0;
