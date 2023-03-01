@@ -650,6 +650,12 @@ font_setter_pointsize(PyFontObject *self, PyObject *value, void *closure)
     TTF_Font *font = PyFont_AsFont(self);
     int val = PyLong_AsLong(value);
 
+    if (val <= 0) {
+        PyErr_SetString(PyExc_ValueError,
+                        "pointsize cannot be equal or less than 0");
+        return 0;
+    }
+
     if (TTF_SetFontSize(font, val) == -1) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
     }
@@ -681,6 +687,12 @@ font_set_ptsize(PyObject *self, PyObject *arg)
 #if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     TTF_Font *font = PyFont_AsFont(self);
     int val = PyLong_AsLong(arg);
+
+    if (val <= 0) {
+        PyErr_SetString(PyExc_ValueError,
+                        "pointsize cannot be equal or less than 0");
+        return 0;
+    }
 
     if (TTF_SetFontSize(font, val) == -1) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
