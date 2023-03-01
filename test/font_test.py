@@ -545,6 +545,26 @@ class FontTypeTest(unittest.TestCase):
 
         self.assertNotEqual(size, bsize)
 
+    def test_pointsize_property(self):
+        f = pygame.font.Font(None, 25)
+        f.pointsize = 10
+        self.assertEqual(10, f.pointsize)
+        f.pointsize += 23
+        self.assertEqual(33, f.pointsize)
+        f.pointsize -= 2
+        self.assertEqual(31, f.pointsize)
+
+        def test_neg():
+            f.pointsize = -500
+
+        self.assertRaises(ValueError, test_neg)
+
+    def test_pointsize_method(self):
+        f = pygame.font.Font(None, 25)
+        f.set_pointsize(10)
+        self.assertEqual(10, f.get_pointsize())
+        self.assertRaises(ValueError, f.set_pointsize, -500)
+
     def test_font_file_not_found(self):
         # A per BUG reported by Bo Jangeborg on pygame-user mailing list,
         # http://www.mail-archive.com/pygame-users@seul.org/msg11675.html
