@@ -26,7 +26,6 @@ from pygame import (
     sprite as sprite,
     surfarray as surfarray,
     transform as transform,
-    fastevent as fastevent,
     scrap as scrap,
     threads as threads,
     version as version,
