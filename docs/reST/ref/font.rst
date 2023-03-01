@@ -498,9 +498,6 @@ solves no longer exists, it will likely be removed in the future.
       | :sl:`set the script code for text shaping`
       | :sg:`set_script(str) -> None`
 
-      **Experimental:** feature still in development available for testing and feedback. It may change.
-      `Please leave feedback with authors <https://github.com/pygame/pygame/pull/3330>`_
-
       Sets the script used by harfbuzz text shaping, taking a 4 character
       script code as input. For example, Hindi is written in the Devanagari
       script, for which the script code is `"Deva"`. See the full list of
