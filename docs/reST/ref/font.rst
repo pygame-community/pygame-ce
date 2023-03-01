@@ -497,9 +497,6 @@ solves no longer exists, it will likely be removed in the future.
       | :sl:`set the script direction for text shaping`
       | :sg:`set_direction(direction=int) -> None`
 
-      **Experimental:** feature still in development available for testing and feedback. It may change.
-      `Please leave feedback with pygame-ce authors <https://github.com/pygame-community/pygame-ce/pull/1956>`_
-
       Sets the font direction for harfbuzz text rendering, taking in an integer
       between 0 and 3 (inclusive) as input. There are convenient constants defined
       for use in this method.

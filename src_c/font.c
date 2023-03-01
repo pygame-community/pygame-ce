@@ -679,7 +679,7 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
     char *kwds[] = {"direction", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(arg, kwarg, "i", kwds, &direction)) {
-        return RAISE(PyExc_TypeError, "direction argument must be an int");
+        return NULL;
     }
 
     if (direction < 0 || direction > 3) {
@@ -699,6 +699,22 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
             break;
         }
 
+/*  There is a bug in SDL2 up to 2.26.3 (the current release version as of writing this)
+    This bug flips the top-to-bottom and bottom-to-top rendering. So, this is a compat
+    patch for that behavior
+ */
+#if SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \
+                   SDL_TTF_PATCHLEVEL) <= SDL_VERSIONNUM(2, 26, 3)
+        case 2: {
+            dir = TTF_DIRECTION_BTT;
+            break;
+        }
+
+        case 3: {
+            dir = TTF_DIRECTION_TTB;
+            break;
+        }
+#else
         case 2: {
             dir = TTF_DIRECTION_TTB;
             break;
@@ -708,6 +724,7 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
             dir = TTF_DIRECTION_BTT;
             break;
         }
+#endif
 
         default: {
             // should NEVER reach this point
