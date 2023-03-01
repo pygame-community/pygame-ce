@@ -30,9 +30,17 @@
 #define MODULE_NAME "_freetype"
 #define FONT_TYPE_NAME "Font"
 
+#define DEFAULT_FONT_NAME "freesans"
+#define DEFAULT_FONT_FILE "freesansbold.ttf"
+#define PKGDATA_MODULE_NAME "pygame.pkgdata"
+#define RESOURCE_FUNC_NAME "getResource"
+
 /*
  * FreeType module declarations
  */
+
+PyObject *_freetypemodule = NULL;
+
 static const Scale_t FACE_SIZE_NONE = {0, 0};
 
 static int
@@ -207,10 +215,6 @@ free_string(PGFT_String *);
                                                                \
         _var = PyObject_IsTrue(_pyobj);                        \
     }
-
-#define DEFAULT_FONT_NAME "freesansbold.ttf"
-#define PKGDATA_MODULE_NAME "pygame.pkgdata"
-#define RESOURCE_FUNC_NAME "getResource"
 
 static PyObject *
 load_font_res(const char *filename)
@@ -687,7 +691,11 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
     SDL_RWops *source;
 
     FreeTypeInstance *ft;
+#if defined(__EMSCRIPTEN__)
+    ft = FREETYPE_MOD_STATE(_freetypemodule)->freetype;
+#else
     ASSERT_GRAB_FREETYPE(ft, -1);
+#endif
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O&lIi", kwlist, &file,
                                      obj_to_scale, (void *)&face_size,
@@ -721,7 +729,7 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
         self->resolution = FREETYPE_STATE->resolution;
     }
     if (file == Py_None) {
-        file = load_font_res(DEFAULT_FONT_NAME);
+        file = load_font_res(DEFAULT_FONT_FILE);
 
         if (!file) {
             PyErr_SetString(PyExc_RuntimeError, "Failed to find default font");
@@ -2035,6 +2043,14 @@ _ft_get_error(PyObject *self, PyObject *_null)
     Py_RETURN_NONE;
 }
 
+#if defined(__EMSCRIPTEN__)
+static PyObject *
+_ft_get_version(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    return Py_BuildValue("iii", FREETYPE_MAJOR, FREETYPE_MINOR,
+                         FREETYPE_PATCH);
+}
+#else
 static PyObject *
 _ft_get_version(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -2081,6 +2097,7 @@ _ft_get_version(PyObject *self, PyObject *args, PyObject *kwargs)
                              FREETYPE_PATCH);
     }
 }
+#endif  // defined(__EMSCRIPTEN__)
 
 static PyObject *
 _ft_get_cache_size(PyObject *self, PyObject *_null)
@@ -2120,7 +2137,7 @@ _ft_get_init(PyObject *self, PyObject *_null)
 static PyObject *
 _ft_get_default_font(PyObject *self, PyObject *_null)
 {
-    return PyUnicode_FromString(DEFAULT_FONT_NAME);
+    return PyUnicode_FromString(DEFAULT_FONT_FILE);
 }
 
 static int
@@ -2143,13 +2160,13 @@ _ft_clear(PyObject *mod)
  * FREETYPE MODULE DECLARATION
  ****************************************************/
 #ifndef PYPY_VERSION
-struct PyModuleDef _freetypemodule = {
+struct PyModuleDef _freetypemoduledef = {
     PyModuleDef_HEAD_INIT,  MODULE_NAME, DOC_PYGAMEFREETYPE,
     sizeof(_FreeTypeState), _ft_methods, 0,
     _ft_traverse,           _ft_clear,   0};
 #else  /* PYPY_VERSION */
 _FreeTypeState _modstate;
-struct PyModuleDef _freetypemodule = {
+struct PyModuleDef _freetypemoduledef = {
     PyModuleDef_HEAD_INIT,
     MODULE_NAME,
     DOC_PYGAMEFREETYPE,
@@ -2163,7 +2180,7 @@ struct PyModuleDef _freetypemodule = {
 
 MODINIT_DEFINE(_freetype)
 {
-    PyObject *module, *apiobj;
+    PyObject *apiobj;
     static void *c_api[PYGAMEAPI_FREETYPE_NUMSLOTS];
 
     import_pygame_base();
@@ -2196,27 +2213,32 @@ MODINIT_DEFINE(_freetype)
         return NULL;
     }
 
-    module = PyModule_Create(&_freetypemodule);
+    _freetypemodule = PyModule_Create(&_freetypemoduledef);
 
-    if (!module) {
+    if (!_freetypemodule) {
         return NULL;
     }
 
-    FREETYPE_MOD_STATE(module)->freetype = 0;
-    FREETYPE_MOD_STATE(module)->cache_size = 0;
-    FREETYPE_MOD_STATE(module)->resolution = PGFT_DEFAULT_RESOLUTION;
+#if defined(__EMSCRIPTEN__)
+    _PGFT_Init(&(FREETYPE_MOD_STATE(_freetypemodule)->freetype), 0);
+#else
+    FREETYPE_MOD_STATE(_freetypemodule)->freetype = 0;
+#endif
+    FREETYPE_MOD_STATE(_freetypemodule)->cache_size = 0;
+    FREETYPE_MOD_STATE(_freetypemodule)->resolution = PGFT_DEFAULT_RESOLUTION;
 
     Py_INCREF(&pgFont_Type);
-    if (PyModule_AddObject(module, FONT_TYPE_NAME, (PyObject *)&pgFont_Type)) {
+    if (PyModule_AddObject(_freetypemodule, FONT_TYPE_NAME,
+                           (PyObject *)&pgFont_Type)) {
         Py_DECREF(&pgFont_Type);
-        Py_DECREF(module);
+        Py_DECREF(_freetypemodule);
         return NULL;
     }
 
-#define DEC_CONST(x)                                        \
-    if (PyModule_AddIntConstant(module, #x, (int)FT_##x)) { \
-        Py_DECREF(module);                                  \
-        return NULL;                                        \
+#define DEC_CONST(x)                                                 \
+    if (PyModule_AddIntConstant(_freetypemodule, #x, (int)FT_##x)) { \
+        Py_DECREF(_freetypemodule);                                  \
+        return NULL;                                                 \
     }
 
     DEC_CONST(STYLE_NORMAL);
@@ -2239,11 +2261,11 @@ MODINIT_DEFINE(_freetype)
     c_api[1] = &pgFont_New;
 
     apiobj = encapsulate_api(c_api, "freetype");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+    if (PyModule_AddObject(_freetypemodule, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);
-        Py_DECREF(module);
+        Py_DECREF(_freetypemodule);
         return NULL;
     }
 
-    return module;
+    return _freetypemodule;
 }
