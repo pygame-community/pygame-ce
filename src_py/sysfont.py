@@ -213,12 +213,13 @@ def initsysfonts_unix(path="fc-list"):
         from pathlib import Path
 
         # default font
-        import importlib.resources, pygame
+        import importlib.resources
+        import pygame
 
         entry = importlib.resources.files(pygame) / "freesansbold.ttf"
         _parse_font_entry_unix(f"{entry}: FreeSans:style=Bold", fonts)
 
-        # pygbag cache in search order  main script folder, then /tmp
+        # cache in search order  main script folder, then /tmp
         main = __import__("__main__")
         if hasattr(main, "__file__"):
             fc_cache = Path(main.__file__).parent / "fc_cache"
@@ -226,15 +227,11 @@ def initsysfonts_unix(path="fc-list"):
             fc_cache = Path(__import__("tempfile").gettempdir()) / "fc_cache"
 
         if fc_cache.is_file():
-            for entry in open(fc_cache).read().splitlines():
-                _parse_font_entry_unix(entry, fonts)
+            with open(fc_cache, "r") as file:
+                for entry in file.read().splitlines():
+                    _parse_font_entry_unix(entry, fonts)
         else:
-            import warnings
-
             warnings.warn(f"no fc_cache font cache file at {fc_cache}")
-
-        for k, v in fonts.items():
-            print(f"238: fc-cache: {k} {v}")
 
         return fonts
 
