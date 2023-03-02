@@ -73,7 +73,7 @@ pygame.font.SysFont
 create a Font object from the system fonts
 
 pygame.font.Font
- Font(filename=None, size=12) -> Font
+ Font(filename=None, size=20) -> Font
  Font(filename, size) -> Font
  Font(pathlib.Path, size) -> Font
  Font(object, size) -> Font
