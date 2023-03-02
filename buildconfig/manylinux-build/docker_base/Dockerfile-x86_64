@@ -1,6 +1,5 @@
-ARG BASE_IMAGE=manylinux1_x86_64
-FROM quay.io/pypa/$BASE_IMAGE
-ENV MAKEFLAGS="-j 16"
+FROM quay.io/pypa/manylinux2014_x86_64
+ENV MAKEFLAGS="-j 2"
 
 # Set up repoforge
 COPY RPM-GPG-KEY.dag.txt /tmp/
@@ -111,7 +110,3 @@ RUN ["bash", "/portmidi_build/build-portmidi.sh"]
 # run strip on built libraries
 COPY strip-lib-so-files.sh /tmp/
 RUN source /tmp/strip-lib-so-files.sh
-
-ENV base_image=$BASE_IMAGE
-RUN echo "$base_image"
-RUN echo "$BASE_IMAGE"

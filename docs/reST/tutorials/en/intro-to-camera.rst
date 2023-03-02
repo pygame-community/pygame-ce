@@ -1,6 +1,6 @@
 .. TUTORIAL:Camera Module Introduction
 
-.. include:: common.txt
+.. include:: ../../common.txt
 
 *************************************************
   Pygame Tutorials - Camera Module Introduction
@@ -162,21 +162,21 @@ color, something we will look at later in the tutorial.
 
   self.cam = pygame.camera.Camera(self.clist[0], self.size, "RGB")
 
-.. image:: camera_rgb.jpg
+.. image:: ../assets/camera_rgb.jpg
    :class: trailing
 
 ::
 
   self.cam = pygame.camera.Camera(self.clist[0], self.size, "YUV")
 
-.. image:: camera_yuv.jpg
+.. image:: ../assets/camera_yuv.jpg
    :class: trailing
 
 ::
 
   self.cam = pygame.camera.Camera(self.clist[0], self.size, "HSV")
 
-.. image:: camera_hsv.jpg
+.. image:: ../assets/camera_hsv.jpg
    :class: trailing
 
 
@@ -195,7 +195,7 @@ of the image black.  Check the reference documentation for details on the
   self.snapshot = self.cam.get_image(self.snapshot)
   pygame.transform.threshold(self.thresholded,self.snapshot,(0,255,0),(90,170,170),(0,0,0),2)
 
-.. image:: camera_thresholded.jpg
+.. image:: ../assets/camera_thresholded.jpg
    :class: trailing
 
 
@@ -224,14 +224,14 @@ images.
       self.display.fill(self.ccolor, (0,0,50,50))
       pygame.display.flip()
 
-.. image:: camera_average.jpg
+.. image:: ../assets/camera_average.jpg
    :class: trailing
 
 ::
 
   pygame.transform.threshold(self.thresholded,self.snapshot,self.ccolor,(30,30,30),(0,0,0),2)
 
-.. image:: camera_thresh.jpg
+.. image:: ../assets/camera_thresh.jpg
    :class: trailing
 
 
@@ -252,14 +252,14 @@ just has the camera pointed at a blank white wall in HSV colorspace.
       self.display.blit(self.background, (0,0))
       pygame.display.flip()
 
-.. image:: camera_background.jpg
+.. image:: ../assets/camera_background.jpg
    :class: trailing
 
 ::
 
   pygame.transform.threshold(self.thresholded,self.snapshot,(0,255,0),(30,30,30),(0,0,0),1,self.background)
 
-.. image:: camera_green.jpg
+.. image:: ../assets/camera_green.jpg
    :class: trailing
 
 
@@ -289,7 +289,7 @@ use it to control an on screen object.
           pygame.draw.circle(self.display, (0,255,0), coord, max(min(50,mask.count()/400),5))
       pygame.display.flip()
 
-.. image:: camera_mask.jpg
+.. image:: ../assets/camera_mask.jpg
    :class: trailing
 
 

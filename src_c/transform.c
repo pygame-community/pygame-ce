@@ -1887,7 +1887,7 @@ surf_threshold(PyObject *self, PyObject *args, PyObject *kwds)
     int num_threshold_pixels = 0;
 
     /*
-    https://www.pygame.org/docs/ref/transform.html#pygame.transform.threshold
+    https://pyga.me/docs/ref/transform.html#pygame.transform.threshold
 
     Returns the number of pixels within the threshold.
     */

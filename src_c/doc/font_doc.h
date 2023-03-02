@@ -13,7 +13,8 @@
 #define DOC_FONTITALIC "italic -> bool\nGets or sets whether the font should be rendered in (faked) italics."
 #define DOC_FONTUNDERLINE "underline -> bool\nGets or sets whether the font should be rendered with an underline."
 #define DOC_FONTSTRIKETHROUGH "strikethrough -> bool\nGets or sets whether the font should be rendered with a strikethrough."
-#define DOC_FONTRENDER "render(text, antialias, color, background=None) -> Surface\ndraw text on a new Surface"
+#define DOC_FONTALIGN "align -> int\nSet how rendered text is aligned when given a wrap length"
+#define DOC_FONTRENDER "render(text, antialias, color, background=None, wraplength=0) -> Surface\ndraw text on a new Surface"
 #define DOC_FONTSIZE "size(text) -> (width, height)\ndetermine the amount of space needed to render text"
 #define DOC_FONTSETUNDERLINE "set_underline(bool) -> None\ncontrol if text is rendered with an underline"
 #define DOC_FONTGETUNDERLINE "get_underline() -> bool\ncheck if text will be rendered with an underline"
@@ -29,6 +30,7 @@
 #define DOC_FONTGETASCENT "get_ascent() -> int\nget the ascent of the font"
 #define DOC_FONTGETDESCENT "get_descent() -> int\nget the descent of the font"
 #define DOC_FONTSETSCRIPT "set_script(str) -> None\nset the script code for text shaping"
+#define DOC_FONTSETDIRECTION "set_direction(direction=int) -> None\nset the script direction for text shaping"
 
 
 /* Docs in a comment... slightly easier to read. */
@@ -92,8 +94,12 @@ pygame.font.Font.strikethrough
  strikethrough -> bool
 Gets or sets whether the font should be rendered with a strikethrough.
 
+pygame.font.Font.align
+ align -> int
+Set how rendered text is aligned when given a wrap length
+
 pygame.font.Font.render
- render(text, antialias, color, background=None) -> Surface
+ render(text, antialias, color, background=None, wraplength=0) -> Surface
 draw text on a new Surface
 
 pygame.font.Font.size
@@ -155,5 +161,9 @@ get the descent of the font
 pygame.font.Font.set_script
  set_script(str) -> None
 set the script code for text shaping
+
+pygame.font.Font.set_direction
+ set_direction(direction=int) -> None
+set the script direction for text shaping
 
 */
