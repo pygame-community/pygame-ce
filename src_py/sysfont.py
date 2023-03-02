@@ -227,8 +227,8 @@ def initsysfonts_unix(path="fc-list"):
             fc_cache = Path(__import__("tempfile").gettempdir()) / "fc_cache"
 
         if fc_cache.is_file():
-            with open(fc_cache, "r") as file:
-                for entry in file.read().splitlines():
+            with open(fc_cache, "rb") as file:
+                for entry in file.read().decode("utf-8").splitlines():
                     _parse_font_entry_unix(entry, fonts)
         else:
             warnings.warn(f"no fc_cache font cache file at {fc_cache}")
