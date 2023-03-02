@@ -136,7 +136,7 @@ Dependency versions:
 
 
 +----------+------------------------+
-| CPython  | >= 3.6 (Or use PyPy3)  |
+| CPython  | >= 3.7 (Or use PyPy3)  |
 +----------+------------------------+
 | SDL      | >= 2.0.8               |
 +----------+------------------------+
@@ -184,7 +184,7 @@ See docs/licenses for licenses of dependencies.
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
-.. _pygame: https://www.pyga.me
+.. _pygame: https://pyga.me
 .. _Simple DirectMedia Layer library: https://www.libsdl.org
 .. _We need your help: https://www.pygame.org/contribute.html
 .. _Compilation wiki page: https://www.pygame.org/wiki/Compilation
