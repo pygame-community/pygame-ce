@@ -18,7 +18,8 @@
 # Pete Shinners
 # pete@shinners.org
 """sysfont, used in the font module to find system fonts"""
-import logging
+
+import warnings
 import os
 import sys
 import warnings
@@ -459,19 +460,17 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
                 for idx, single_name in enumerate(name):
                     if isinstance(single_name, bytes):
                         name[idx] = single_name.decode()
-                logging.warning(
-                    f"None of the specified system fonts (%s) "
-                    f"could be found. Using the default font instead.",
-                    ", ".join(name),
+                warnings.warn(
+                    f"None of the specified system fonts ({', '.join(name)}) "
+                    "could be found. Using the default font instead."
                 )
             else:
                 single_name = (
                     name[0].decode() if isinstance(name[0], bytes) else name[0]
                 )
-                logging.warning(
-                    f"The system font '%s' couldn't be "
-                    f"found. Using the default font instead.",
-                    single_name,
+                warnings.warn(
+                    f"The system font {single_name} couldn't be "
+                    "found. Using the default font instead."
                 )
 
     set_bold = set_italic = False
