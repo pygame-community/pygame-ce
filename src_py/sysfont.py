@@ -455,18 +455,23 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
         else:
             if len(name) > 1:
                 name = list(name)
-                for i in range(len(name)):
-                    if isinstance(name[i], bytes):
-                        name[i] = name[i].decode()
+
+                for idx, single_name in enumerate(name):
+                    if isinstance(single_name, bytes):
+                        name[idx] = single_name.decode()
                 logging.warning(
-                    f"None of the specified system fonts ({', '.join(name)}) "
-                    f"could be found. Using the default font instead."
+                    f"None of the specified system fonts (%s) "
+                    f"could be found. Using the default font instead.",
+                    ", ".join(name),
                 )
             else:
-                single_name = name[0].decode() if type(name[0]) is bytes else name[0]
+                single_name = (
+                    name[0].decode() if isinstance(name[0], bytes) else name[0]
+                )
                 logging.warning(
-                    f"The system font '{single_name}' couldn't be "
-                    f"found. Using the default font instead."
+                    f"The system font '%s' couldn't be "
+                    f"found. Using the default font instead.",
+                    single_name,
                 )
 
     set_bold = set_italic = False
