@@ -1501,8 +1501,8 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     sy = y1 < y2 ? 1 : -1;
     err = (dx > dy ? dx : -dy) / 2;
     clip = clip_line(surf, &x1, &y1, &x2, &y2, width, xinc) ||
-           clip_line(surf, &x1 + width, &y1, &x2, &y2, -width, xinc);
-    clip_line(surf, &x1, &y1, &x2, &y2, 0, 0);
+           clip_line(surf, &x1 + width, &y1, &x2, &y2, -width, xinc) ||
+           clip_line(surf, &x1, &y1, &x2, &y2, 0, 0);
     if (clip) {
         if (width == 1)
             draw_line(surf, x1, y1, x2, y2, color, drawn_area);
