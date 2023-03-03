@@ -1049,21 +1049,21 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
 
     PyBytes_AsStringAndSize(bytes, &data, &len);
 
+    size_t format_length = strlen(format);
+    if (pitch == -1) {
+        pitch = w * (int)format_length;
+    }
+    else if ((size_t)pitch < w * format_length) {
+        return RAISE(PyExc_ValueError,
+                     "Pitch must be greater than or equal to the width * heh "
+                     "as per the format");
+    }
+
+    if (len != (Py_ssize_t)pitch * h)
+        return RAISE(PyExc_ValueError,
+                     "Bytes length does not equal format and resolution size");
+
     if (!strcmp(format, "P")) {
-        if (pitch == -1) {
-            pitch = w;
-        }
-        else if (pitch < w) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width "
-                         "as per the format");
-        }
-
-        if (len != (Py_ssize_t)pitch * h)
-            return RAISE(
-                PyExc_ValueError,
-                "Bytes length does not equal format and resolution size");
-
         surf = SDL_CreateRGBSurface(0, w, h, 8, 0, 0, 0, 0);
         if (!surf)
             return RAISE(pgExc_SDLError, SDL_GetError());
@@ -1074,19 +1074,6 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
         SDL_UnlockSurface(surf);
     }
     else if (!strcmp(format, "RGB")) {
-        if (pitch == -1) {
-            pitch = w * 3;
-        }
-        else if (pitch < w * 3) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "3 as per the format");
-        }
-
-        if (len != (Py_ssize_t)pitch * h)
-            return RAISE(
-                PyExc_ValueError,
-                "Bytes length does not equal format and resolution size");
         surf =
             SDL_CreateRGBSurface(0, w, h, 24, 0xFF << 16, 0xFF << 8, 0xFF, 0);
         if (!surf)
@@ -1114,20 +1101,7 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
         SDL_UnlockSurface(surf);
     }
     else if (!strcmp(format, "RGBA") || !strcmp(format, "RGBX")) {
-        if (pitch == -1) {
-            pitch = w * 4;
-        }
-        else if (pitch < w * 4) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "4 as per the format");
-        }
-
         int alphamult = !strcmp(format, "RGBA");
-        if (len != (Py_ssize_t)pitch * h)
-            return RAISE(
-                PyExc_ValueError,
-                "Bytes length does not equal format and resolution size");
         surf = SDL_CreateRGBSurface((alphamult ? SDL_SRCALPHA : 0), w, h, 32,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
                                     0xFF, 0xFF << 8, 0xFF << 16,
@@ -1148,19 +1122,6 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
         SDL_UnlockSurface(surf);
     }
     else if (!strcmp(format, "BGRA")) {
-        if (pitch == -1) {
-            pitch = w * 4;
-        }
-        else if (pitch < w * 4) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "4 as per the format");
-        }
-
-        if (len != (Py_ssize_t)pitch * h)
-            return RAISE(
-                PyExc_ValueError,
-                "Bytes length does not equal format and resolution size");
         surf = SDL_CreateRGBSurface(SDL_SRCALPHA, w, h, 32,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
                                     0xFF << 16, 0xFF << 8, 0xFF, 0xFF << 24);
@@ -1179,19 +1140,6 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
         SDL_UnlockSurface(surf);
     }
     else if (!strcmp(format, "ARGB")) {
-        if (pitch == -1) {
-            pitch = w * 4;
-        }
-        else if (pitch < w * 4) {
-            return RAISE(PyExc_ValueError,
-                         "Pitch must be greater than or equal to the width * "
-                         "4 as per the format");
-        }
-
-        if (len != (Py_ssize_t)pitch * h)
-            return RAISE(
-                PyExc_ValueError,
-                "Bytes length does not equal format and resolution size");
         surf = SDL_CreateRGBSurface(SDL_SRCALPHA, w, h, 32,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
                                     0xFF << 8, 0xFF << 16, 0xFF << 24, 0xFF);
