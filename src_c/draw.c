@@ -914,7 +914,7 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
         if (!SDL_IntersectRect(&sdlrect, &cliprect, &clipped)) {
             return pgRect_New4(rect->x, rect->y, 0, 0);
         }
-        if (width > 0 && (width * 2) < clipped.w && (width * 2) < clipped.h) {
+        if (width > 0 && width < clipped.w && width < clipped.h) {
             draw_rect(surf, sdlrect.x, sdlrect.y, sdlrect.x + sdlrect.w - 1,
                       sdlrect.y + sdlrect.h - 1, width, color);
         }
