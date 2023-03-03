@@ -12,7 +12,6 @@
 #define DOC_PYGAMEFREETYPESYSFONT "SysFont(name, size, bold=False, italic=False) -> Font\ncreate a Font object from the system fonts"
 #define DOC_PYGAMEFREETYPEGETDEFAULTFONT "get_default_font() -> string\nGet the filename of the default font"
 #define DOC_PYGAMEFREETYPEFONT "Font(file, size=0, font_index=0, resolution=0, ucs4=False) -> Font\nFont(pathlib.Path) -> Font\nCreate a new Font instance from a supported font file."
-#define DOC_FONTNAME "name -> string\nProper font name."
 #define DOC_FONTPATH "path -> unicode\nFont file path"
 #define DOC_FONTSIZE "size -> float\nsize -> (float, float)\nThe default point size used in rendering"
 #define DOC_FONTGETRECT "get_rect(text, style=STYLE_DEFAULT, rotation=0, size=0) -> rect\nReturn the size and offset of rendered text"
