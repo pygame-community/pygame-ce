@@ -96,7 +96,6 @@ static PyObject *
 _premul_alpha(pgColorObject *, PyObject *);
 static PyObject *
 _color_update(pgColorObject *self, PyObject *const *args, Py_ssize_t nargs);
-PG_DECLARE_FASTCALL_FUNC(_color_update, pgColorObject);
 
 /* Getters/setters */
 static PyObject *
@@ -210,8 +209,7 @@ static PyMethodDef _color_methods[] = {
      DOC_COLORLERP},
     {"premul_alpha", (PyCFunction)_premul_alpha, METH_NOARGS,
      DOC_COLORPREMULALPHA},
-    {"update", (PyCFunction)PG_FASTCALL_NAME(_color_update), PG_FASTCALL,
-     DOC_COLORUPDATE},
+    {"update", (PyCFunction)_color_update, METH_FASTCALL, DOC_COLORUPDATE},
     {NULL, NULL, 0, NULL}};
 
 /**
@@ -872,8 +870,6 @@ _color_update(pgColorObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
     Py_RETURN_NONE;
 }
-
-PG_WRAP_FASTCALL_FUNC(_color_update, pgColorObject)
 
 /**
  * color.r

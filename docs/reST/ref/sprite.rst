@@ -213,9 +213,6 @@ Sprites are not thread safe. So lock them yourself if using threads.
        bool    test if any Sprites are contained
        iter    iterate through all the Sprites
 
-   The Sprites in the Group are ordered only on python 3.6 and higher.
-   Below python 3.6 drawing and iterating over the Sprites is in no particular order.
-
    .. method:: sprites
 
       | :sl:`list of the Sprites this Group contains`

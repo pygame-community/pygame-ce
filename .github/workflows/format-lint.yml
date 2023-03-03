@@ -21,7 +21,7 @@ on:
       - '**.rst'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-format-lint
   cancel-in-progress: true
 
 jobs:

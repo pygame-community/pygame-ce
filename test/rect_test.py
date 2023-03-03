@@ -847,6 +847,10 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual(
             r1, r1.clip(Rect(r1)), "r1 does not clip an identical rect to itself"
         )
+        self.assertEqual(Rect(1, 2, 0, 0), r1.clip(Rect(3, 0, 2, 2)))
+        self.assertEqual(Rect(1, 2, 0, 0), r1.clip(Rect(3, 8, 2, 2)))
+        self.assertEqual(Rect(1, 2, 0, 0), r1.clip(Rect(-2, 8, 2, 2)))
+        self.assertEqual(Rect(1, 2, 0, 0), r1.clip(Rect(-2, 0, 2, 2)))
 
     def test_clipline(self):
         """Ensures clipline handles four int parameters.
@@ -1964,10 +1968,12 @@ class RectTypeTest(unittest.TestCase):
         r = Rect(1, 1, 10, 10)
         l = [Rect(50, 50, 1, 1), Rect(5, 5, 10, 10), Rect(15, 15, 1, 1)]
 
-        self.assertEqual(r.collidelist(l), 1)
+        self.assertEqual(r.collidelist(l), 1)  # list
+        self.assertEqual(r.collidelist(tuple(l)), 1)  # tuple
 
         f = [Rect(50, 50, 1, 1), (100, 100, 4, 4)]
-        self.assertEqual(r.collidelist(f), -1)
+        self.assertEqual(r.collidelist(f), -1)  # list
+        self.assertEqual(r.collidelist(tuple(f)), -1)  # tuple
 
     def test_collidelistall(self):
         # __doc__ (as of 2008-08-02) for pygame.rect.Rect.collidelistall:
@@ -1987,10 +1993,12 @@ class RectTypeTest(unittest.TestCase):
             Rect(15, 15, 1, 1),
             Rect(2, 2, 1, 1),
         ]
-        self.assertEqual(r.collidelistall(l), [0, 1, 3])
+        self.assertEqual(r.collidelistall(l), [0, 1, 3])  # list
+        self.assertEqual(r.collidelistall(tuple(l)), [0, 1, 3])  # tuple
 
         f = [Rect(50, 50, 1, 1), Rect(20, 20, 5, 5)]
-        self.assertFalse(r.collidelistall(f))
+        self.assertFalse(r.collidelistall(f))  # list
+        self.assertFalse(r.collidelistall(tuple(f)))  # tuple
 
     def test_collidelistall_returns_empty_list(self):
         r = Rect(1, 1, 10, 10)
@@ -2001,7 +2009,8 @@ class RectTypeTest(unittest.TestCase):
             Rect(15, 15, 1, 1),
             Rect(-20, 2, 1, 1),
         ]
-        self.assertEqual(r.collidelistall(l), [])
+        self.assertEqual(r.collidelistall(l), [])  # list
+        self.assertEqual(r.collidelistall(tuple(l)), [])  # tuple
 
     def test_collidelistall_list_of_tuples(self):
         r = Rect(1, 1, 10, 10)
@@ -2012,10 +2021,12 @@ class RectTypeTest(unittest.TestCase):
             (15, 15, 1, 1),
             (2, 2, 1, 1),
         ]
-        self.assertEqual(r.collidelistall(l), [0, 1, 3])
+        self.assertEqual(r.collidelistall(l), [0, 1, 3])  # list
+        self.assertEqual(r.collidelistall(tuple(l)), [0, 1, 3])  # tuple
 
         f = [(50, 50, 1, 1), (20, 20, 5, 5)]
-        self.assertFalse(r.collidelistall(f))
+        self.assertFalse(r.collidelistall(f))  # list
+        self.assertFalse(r.collidelistall(tuple(f)))  # tuple
 
     def test_collidelistall_list_of_two_tuples(self):
         r = Rect(1, 1, 10, 10)
@@ -2026,10 +2037,12 @@ class RectTypeTest(unittest.TestCase):
             ((15, 15), (1, 1)),
             ((2, 2), (1, 1)),
         ]
-        self.assertEqual(r.collidelistall(l), [0, 1, 3])
+        self.assertEqual(r.collidelistall(l), [0, 1, 3])  # list
+        self.assertEqual(r.collidelistall(tuple(l)), [0, 1, 3])  # tuple
 
         f = [((50, 50), (1, 1)), ((20, 20), (5, 5))]
-        self.assertFalse(r.collidelistall(f))
+        self.assertFalse(r.collidelistall(f))  # list
+        self.assertFalse(r.collidelistall(tuple(f)))  # tuple
 
     def test_collidelistall_list_of_lists(self):
         r = Rect(1, 1, 10, 10)
@@ -2040,10 +2053,12 @@ class RectTypeTest(unittest.TestCase):
             [15, 15, 1, 1],
             [2, 2, 1, 1],
         ]
-        self.assertEqual(r.collidelistall(l), [0, 1, 3])
+        self.assertEqual(r.collidelistall(l), [0, 1, 3])  # list
+        self.assertEqual(r.collidelistall(tuple(l)), [0, 1, 3])  # tuple
 
         f = [[50, 50, 1, 1], [20, 20, 5, 5]]
-        self.assertFalse(r.collidelistall(f))
+        self.assertFalse(r.collidelistall(f))  # list
+        self.assertFalse(r.collidelistall(tuple(f)))  # tuple
 
     class _ObjectWithRectAttribute:
         def __init__(self, r):
@@ -2079,13 +2094,15 @@ class RectTypeTest(unittest.TestCase):
             self._ObjectWithRectAttribute(Rect(15, 15, 1, 1)),
             self._ObjectWithRectAttribute(Rect(2, 2, 1, 1)),
         ]
-        self.assertEqual(r.collidelistall(l), [0, 1, 3])
+        self.assertEqual(r.collidelistall(l), [0, 1, 3])  # list
+        self.assertEqual(r.collidelistall(tuple(l)), [0, 1, 3])  # tuple
 
         f = [
             self._ObjectWithRectAttribute(Rect(50, 50, 1, 1)),
             self._ObjectWithRectAttribute(Rect(20, 20, 5, 5)),
         ]
-        self.assertFalse(r.collidelistall(f))
+        self.assertFalse(r.collidelistall(f))  # list
+        self.assertFalse(r.collidelistall(tuple(f)))  # tuple
 
     def test_collidelistall_list_of_object_with_callable_rect_attribute(self):
         r = Rect(1, 1, 10, 10)
@@ -2096,13 +2113,15 @@ class RectTypeTest(unittest.TestCase):
             self._ObjectWithCallableRectAttribute(Rect(15, 15, 1, 1)),
             self._ObjectWithCallableRectAttribute(Rect(2, 2, 1, 1)),
         ]
-        self.assertEqual(r.collidelistall(l), [0, 1, 3])
+        self.assertEqual(r.collidelistall(l), [0, 1, 3])  # list
+        self.assertEqual(r.collidelistall(tuple(l)), [0, 1, 3])  # tuple
 
         f = [
             self._ObjectWithCallableRectAttribute(Rect(50, 50, 1, 1)),
             self._ObjectWithCallableRectAttribute(Rect(20, 20, 5, 5)),
         ]
-        self.assertFalse(r.collidelistall(f))
+        self.assertFalse(r.collidelistall(f))  # list
+        self.assertFalse(r.collidelistall(tuple(f)))  # tuple
 
     def test_collidelistall_list_of_object_with_callable_rect_returning_object_with_rect_attribute(
         self,
@@ -2123,13 +2142,15 @@ class RectTypeTest(unittest.TestCase):
                 self._ObjectWithRectAttribute(Rect(2, 2, 1, 1))
             ),
         ]
-        self.assertEqual(r.collidelistall(l), [0, 1, 3])
+        self.assertEqual(r.collidelistall(l), [0, 1, 3])  # list
+        self.assertEqual(r.collidelistall(tuple(l)), [0, 1, 3])  # tuple
 
         f = [
             self._ObjectWithCallableRectAttribute(Rect(50, 50, 1, 1)),
             self._ObjectWithCallableRectAttribute(Rect(20, 20, 5, 5)),
         ]
-        self.assertFalse(r.collidelistall(f))
+        self.assertFalse(r.collidelistall(f))  # list
+        self.assertFalse(r.collidelistall(tuple(f)))  # tuple
 
     def test_collidelistall_list_of_object_with_rect_property(self):
         r = Rect(1, 1, 10, 10)
@@ -2140,13 +2161,15 @@ class RectTypeTest(unittest.TestCase):
             self._ObjectWithRectProperty(Rect(15, 15, 1, 1)),
             self._ObjectWithRectProperty(Rect(2, 2, 1, 1)),
         ]
-        self.assertEqual(r.collidelistall(l), [0, 1, 3])
+        self.assertEqual(r.collidelistall(l), [0, 1, 3])  # list
+        self.assertEqual(r.collidelistall(tuple(l)), [0, 1, 3])  # tuple
 
         f = [
             self._ObjectWithRectProperty(Rect(50, 50, 1, 1)),
             self._ObjectWithRectProperty(Rect(20, 20, 5, 5)),
         ]
-        self.assertFalse(r.collidelistall(f))
+        self.assertFalse(r.collidelistall(f))  # list
+        self.assertFalse(r.collidelistall(tuple(f)))  # tuple
 
     def test_collideobjects_call_variants(self):
         # arrange
