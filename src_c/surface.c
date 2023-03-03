@@ -1820,10 +1820,8 @@ surf_fill(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
 static PyObject *
 surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
 {
-    SDL_Surface *surf = pgSurface_AsSurface(self);
-    SURF_INIT_CHECK(surf)
-
     SDL_Surface *src, *dest = pgSurface_AsSurface(self);
+    SURF_INIT_CHECK(src)
     SDL_Rect *src_rect, temp;
     PyObject *argpos, *argrect = NULL;
     pgSurfaceObject *srcobject;
@@ -1839,9 +1837,8 @@ surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
         return NULL;
 
     src = pgSurface_AsSurface(srcobject);
-    if (!dest) {
-        SURF_INIT_CHECK(src)
-    }
+    SURF_INIT_CHECK(src)
+    SURF_INIT_CHECK(dest)
 
     if ((src_rect = pgRect_FromObject(argpos, &temp))) {
         dx = src_rect->x;
@@ -1895,9 +1892,6 @@ surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
 static PyObject *
 surf_blits(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
 {
-    SDL_Surface *surf = pgSurface_AsSurface(self);
-    SURF_INIT_CHECK(surf)
-
     SDL_Surface *src, *dest = pgSurface_AsSurface(self);
     SDL_Rect *src_rect, temp;
     PyObject *srcobject = NULL, *argpos = NULL, *argrect = NULL;
@@ -1916,7 +1910,10 @@ surf_blits(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
     int doreturn = 1;
     int bliterrornum = 0;
     int issequence = 0;
+
     static char *kwids[] = {"blit_sequence", "doreturn", NULL};
+
+    SURF_INIT_CHECK(src)
     if (!PyArg_ParseTupleAndKeywords(args, keywds, "O|i", kwids, &blitsequence,
                                      &doreturn))
         return NULL;
