@@ -504,6 +504,10 @@ class FontTypeTest(unittest.TestCase):
 
         self.assertNotEqual(size, bsize)
 
+    def test_font_name(self):
+        f = pygame_font.Font(None, 20)
+        self.assertEqual(f.name, "FreeSans")
+
     def test_font_file_not_found(self):
         # A per BUG reported by Bo Jangeborg on pygame-user mailing list,
         # http://www.mail-archive.com/pygame-users@seul.org/msg11675.html

@@ -553,6 +553,15 @@ font_size(PyObject *self, PyObject *text)
 }
 
 static PyObject *
+font_getter_name(PyObject *self, void *closure)
+{
+    TTF_Font *font = PyFont_AsFont(self);
+    const char *font_name = TTF_FontFaceFamilyName(font);
+
+    return PyUnicode_FromString(font_name);
+}
+
+static PyObject *
 font_metrics(PyObject *self, PyObject *textobj)
 {
     TTF_Font *font = PyFont_AsFont(self);
@@ -671,6 +680,7 @@ font_set_script(PyObject *self, PyObject *arg)
  * Getters and setters for the pgFontObject.
  */
 static PyGetSetDef font_getsets[] = {
+    {"name", (getter)font_getter_name, NULL, DOC_FONTNAME, NULL},
     {"bold", (getter)font_getter_bold, (setter)font_setter_bold, DOC_FONTBOLD,
      NULL},
     {"italic", (getter)font_getter_italic, (setter)font_setter_italic,

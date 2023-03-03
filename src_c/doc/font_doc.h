@@ -10,6 +10,7 @@
 #define DOC_PYGAMEFONTSYSFONT "SysFont(name, size, bold=False, italic=False) -> Font\ncreate a Font object from the system fonts"
 #define DOC_PYGAMEFONTFONT "Font(filename, size) -> Font\nFont(pathlib.Path, size) -> Font\nFont(object, size) -> Font\ncreate a new Font object from a file"
 #define DOC_FONTBOLD "bold -> bool\nGets or sets whether the font should be rendered in (faked) bold."
+#define DOC_FONTNAME "name -> str\nGets the font's name."
 #define DOC_FONTITALIC "italic -> bool\nGets or sets whether the font should be rendered in (faked) italics."
 #define DOC_FONTUNDERLINE "underline -> bool\nGets or sets whether the font should be rendered with an underline."
 #define DOC_FONTSTRIKETHROUGH "strikethrough -> bool\nGets or sets whether the font should be rendered with a strikethrough."
@@ -79,6 +80,10 @@ create a new Font object from a file
 pygame.font.Font.bold
  bold -> bool
 Gets or sets whether the font should be rendered in (faked) bold.
+
+pygame.font.Font.name
+ name -> str
+Gets the font's name.
 
 pygame.font.Font.italic
  italic -> bool
