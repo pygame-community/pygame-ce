@@ -1655,6 +1655,8 @@ surf_convert_alpha(pgSurfaceObject *self, PyObject *args)
     pgSurfaceObject *srcsurf = NULL;
     SDL_Surface *newsurf;
 
+    SURF_INIT_CHECK(surf)
+
     if (!SDL_WasInit(SDL_INIT_VIDEO))
         return RAISE(pgExc_SDLError,
                      "cannot convert without pygame.display initialized");
@@ -1821,7 +1823,6 @@ static PyObject *
 surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
 {
     SDL_Surface *src, *dest = pgSurface_AsSurface(self);
-    SURF_INIT_CHECK(src)
     SDL_Rect *src_rect, temp;
     PyObject *argpos, *argrect = NULL;
     pgSurfaceObject *srcobject;
@@ -1913,7 +1914,7 @@ surf_blits(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
 
     static char *kwids[] = {"blit_sequence", "doreturn", NULL};
 
-    SURF_INIT_CHECK(src)
+    SURF_INIT_CHECK(dest)
     if (!PyArg_ParseTupleAndKeywords(args, keywds, "O|i", kwids, &blitsequence,
                                      &doreturn))
         return NULL;
