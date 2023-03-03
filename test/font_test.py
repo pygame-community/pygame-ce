@@ -568,6 +568,9 @@ class FontTypeTest(unittest.TestCase):
         self.assertRaises(ValueError, test_neg)
 
     def test_pointsize_method(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            return  # not a pygame.ftfont feature
+
         ttf_version = pygame_font.get_sdl_ttf_version()
         if ttf_version < (2, 0, 18):
             return
