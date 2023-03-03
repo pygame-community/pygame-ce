@@ -1061,7 +1061,7 @@ add_line_to_drawn_list(int x1, int y1, int x2, int *pts)
 }
 
 static int
-clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2)
+clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2, int width, int xinc)
 {
     int p1 = *x1 - *x2;
     int p2 = -p1;
@@ -1076,6 +1076,14 @@ clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2)
     double nmax = 0;
     double pmin = 1;
     double r1, r2;
+    if (xinc) {
+       q1 += width;
+       q2 -= width;
+    }
+    else {
+        q3 += width;
+        q4 -= width;
+    }
     if ((p1 == 0 && q1 < 0) || (p2 == 0 && q2 < 0) || (p3 == 0 && q3 < 0) ||
         (p4 == 0 && q4 < 0))
         return 0;
@@ -1113,6 +1121,7 @@ clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2)
     }
     if (nmax > pmin)
         return 0;
+    if (width == 0) {
     *x1 =
         old_x1 + (int)(p2 * nmax < 0 ? (p2 * nmax - 0.5) : (p2 * nmax + 0.5));
     *y1 =
@@ -1121,6 +1130,7 @@ clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2)
         old_x1 + (int)(p2 * pmin < 0 ? (p2 * pmin - 0.5) : (p2 * pmin + 0.5));
     *y2 =
         old_y1 + (int)(p4 * pmin < 0 ? (p4 * pmin - 0.5) : (p4 * pmin + 0.5));
+    }
     return 1;
 }
 
@@ -1477,6 +1487,7 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     int end_x = x2;
     int end_y = y2;
     int xinc = 0;
+    int clip = 0;
     /* Decide which direction to grow (width/thickness). */
     if (abs(x1 - x2) <= abs(y1 - y2)) {
         /* The line's thickness will be in the x direction. The top/bottom
@@ -1488,7 +1499,9 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     dy = abs(y2 - y1);
     sy = y1 < y2 ? 1 : -1;
     err = (dx > dy ? dx : -dy) / 2;
-    if (clip_line(surf, &x1, &y1, &x2, &y2)) {
+    clip = clip_line(surf, &x1, &y1, &x2, &y2, width, xinc) || clip_line(surf, &x1+width, &y1, &x2, &y2, -width, xinc);
+    clip_line(surf, &x1, &y1, &x2, &y2, 0, 0);
+    if (clip) {
         if (width == 1)
             draw_line(surf, x1, y1, x2, y2, color, drawn_area);
         else {
