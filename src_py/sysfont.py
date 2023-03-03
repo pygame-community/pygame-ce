@@ -22,7 +22,6 @@
 import warnings
 import os
 import sys
-import warnings
 from os.path import basename, dirname, exists, join, splitext
 
 from pygame.font import Font
