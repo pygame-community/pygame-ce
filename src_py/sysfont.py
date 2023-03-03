@@ -206,8 +206,6 @@ def initsysfonts_unix(path="fc-list"):
     """if not embedded, use the fc-list from fontconfig to get a list of fonts"""
     fonts = {}
 
-    print("208: initsysfonts_unix {path=}")
-
     # these are embedded and cannot get os to list fonts a simple way.
     if hasattr(sys, "getandroidapilevel") or sys.platform == "emscripten":
         from pathlib import Path
