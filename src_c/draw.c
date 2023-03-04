@@ -1458,7 +1458,6 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     int end_x = x2;
     int end_y = y2;
     int xinc = 0;
-    int clip = 0;
     /* Decide which direction to grow (width/thickness). */
     if (abs(x1 - x2) <= abs(y1 - y2)) {
         /* The line's thickness will be in the x direction. The top/bottom
