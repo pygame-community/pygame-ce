@@ -63,6 +63,7 @@ class SysfontModuleTest(unittest.TestCase):
                 (bytes("non-existent font", "utf-8"), "non-existent font2"), 40
             )
 
+
 ###############################################################################
 
 if __name__ == "__main__":
