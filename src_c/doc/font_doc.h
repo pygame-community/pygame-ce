@@ -14,6 +14,7 @@
 #define DOC_FONTUNDERLINE "underline -> bool\nGets or sets whether the font should be rendered with an underline."
 #define DOC_FONTSTRIKETHROUGH "strikethrough -> bool\nGets or sets whether the font should be rendered with a strikethrough."
 #define DOC_FONTALIGN "align -> int\nSet how rendered text is aligned when given a wrap length"
+#define DOC_FONTPOINTSIZE "point_size -> int\nGets or sets the font's point_size"
 #define DOC_FONTRENDER "render(text, antialias, color, background=None, wraplength=0) -> Surface\ndraw text on a new Surface"
 #define DOC_FONTSIZE "size(text) -> (width, height)\ndetermine the amount of space needed to render text"
 #define DOC_FONTSETUNDERLINE "set_underline(bool) -> None\ncontrol if text is rendered with an underline"
@@ -27,6 +28,8 @@
 #define DOC_FONTGETITALIC "get_italic() -> bool\ncheck if the text will be rendered italic"
 #define DOC_FONTGETLINESIZE "get_linesize() -> int\nget the line space of the font text"
 #define DOC_FONTGETHEIGHT "get_height() -> int\nget the height of the font"
+#define DOC_FONTSETPOINTSIZE "set_point_size(val) -> int\nset the point_size of the font"
+#define DOC_FONTGETPOINTSIZE "get_point_size() -> int\nget the point_size of the font"
 #define DOC_FONTGETASCENT "get_ascent() -> int\nget the ascent of the font"
 #define DOC_FONTGETDESCENT "get_descent() -> int\nget the descent of the font"
 #define DOC_FONTSETSCRIPT "set_script(str) -> None\nset the script code for text shaping"
@@ -98,6 +101,10 @@ pygame.font.Font.align
  align -> int
 Set how rendered text is aligned when given a wrap length
 
+pygame.font.Font.point_size
+ point_size -> int
+Gets or sets the font's point_size
+
 pygame.font.Font.render
  render(text, antialias, color, background=None, wraplength=0) -> Surface
 draw text on a new Surface
@@ -149,6 +156,14 @@ get the line space of the font text
 pygame.font.Font.get_height
  get_height() -> int
 get the height of the font
+
+pygame.font.Font.set_point_size
+ set_point_size(val) -> int
+set the point_size of the font
+
+pygame.font.Font.get_point_size
+ get_point_size() -> int
+get the point_size of the font
 
 pygame.font.Font.get_ascent
  get_ascent() -> int
