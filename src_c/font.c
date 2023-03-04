@@ -632,7 +632,7 @@ font_size(PyObject *self, PyObject *text)
 }
 
 static PyObject *
-font_getter_pointsize(PyFontObject *self, void *closure)
+font_getter_point_size(PyFontObject *self, void *closure)
 {
 #if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     return PyLong_FromLong(self->ptsize);
@@ -644,7 +644,7 @@ font_getter_pointsize(PyFontObject *self, void *closure)
 }
 
 static int
-font_setter_pointsize(PyFontObject *self, PyObject *value, void *closure)
+font_setter_point_size(PyFontObject *self, PyObject *value, void *closure)
 {
 #if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     TTF_Font *font = PyFont_AsFont(self);
@@ -652,7 +652,7 @@ font_setter_pointsize(PyFontObject *self, PyObject *value, void *closure)
 
     if (val <= 0) {
         PyErr_SetString(PyExc_ValueError,
-                        "pointsize cannot be equal or less than 0");
+                        "point_size cannot be equal or less than 0");
         return -1;
     }
 
@@ -690,7 +690,7 @@ font_set_ptsize(PyObject *self, PyObject *arg)
 
     if (val <= 0) {
         PyErr_SetString(PyExc_ValueError,
-                        "pointsize cannot be equal or less than 0");
+                        "point_size cannot be equal or less than 0");
         return NULL;
     }
 
@@ -916,8 +916,8 @@ static PyGetSetDef font_getsets[] = {
      (setter)font_setter_strikethrough, DOC_FONTSTRIKETHROUGH, NULL},
     {"align", (getter)font_getter_align, (setter)font_setter_align,
      DOC_FONTALIGN, NULL},
-    {"pointsize", (getter)font_getter_pointsize, (setter)font_setter_pointsize,
-     DOC_FONTPOINTSIZE, NULL},
+    {"point_size", (getter)font_getter_point_size,
+     (setter)font_setter_point_size, DOC_FONTPOINTSIZE, NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyMethodDef font_methods[] = {
@@ -935,8 +935,8 @@ static PyMethodDef font_methods[] = {
      DOC_FONTGETSTRIKETHROUGH},
     {"set_strikethrough", font_set_strikethrough, METH_O,
      DOC_FONTSETSTRIKETHROUGH},
-    {"get_pointsize", font_get_ptsize, METH_NOARGS, DOC_FONTGETPOINTSIZE},
-    {"set_pointsize", font_set_ptsize, METH_O, DOC_FONTSETPOINTSIZE},
+    {"get_point_size", font_get_ptsize, METH_NOARGS, DOC_FONTGETPOINTSIZE},
+    {"set_point_size", font_set_ptsize, METH_O, DOC_FONTSETPOINTSIZE},
     {"metrics", font_metrics, METH_O, DOC_FONTMETRICS},
     {"render", font_render, METH_VARARGS, DOC_FONTRENDER},
     {"size", font_size, METH_O, DOC_FONTSIZE},
