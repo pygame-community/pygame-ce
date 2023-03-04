@@ -1064,73 +1064,43 @@ static int
 clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2, int width,
           int xinc)
 {
-    int p1 = *x1 - *x2;
-    int p2 = -p1;
-    int p3 = *y1 - *y2;
-    int p4 = -p3;
-    int q1 = *x1 - surf->clip_rect.x;
-    int q2 = surf->clip_rect.w + surf->clip_rect.x - *x1;
-    int q3 = *y1 - surf->clip_rect.y;
-    int q4 = surf->clip_rect.h + surf->clip_rect.y - *y1;
-    int old_x1 = *x1;
-    int old_y1 = *y1;
-    double nmax = 0;
-    double pmin = 1;
-    double r1, r2;
+    int left, right, top, bottom;
     if (xinc) {
-        q1 += width;
-        q2 -= width;
+        left = MIN(*x1, *x2) - width;
+        right = MAX(*x1, *x2) + width;
+        top = MIN(*y1, *y2);
+        bottom = MAX(*y1, *y2);
     }
     else {
-        q3 += width;
-        q4 -= width;
+        left = MIN(*x1, *x2);
+        right = MAX(*x1, *x2);
+        top = MIN(*y1, *y2) - width;
+        bottom = MAX(*y1, *y2) + width;
     }
-    if ((p1 == 0 && q1 < 0) || (p2 == 0 && q2 < 0) || (p3 == 0 && q3 < 0) ||
-        (p4 == 0 && q4 < 0))
+    if (surf->clip_rect.x > right || surf->clip_rect.y > bottom ||
+        surf->clip_rect.x + surf->clip_rect.w < left ||
+        surf->clip_rect.y + surf->clip_rect.h < top) {
         return 0;
-    if (p1) {
-        r1 = (double)q1 / p1;
-        r2 = (double)q2 / p2;
-        if (p1 < 0) {
-            if (r1 > nmax)
-                nmax = r1;
-            if (r2 < pmin)
-                pmin = r2;
+    }
+    if (*y1 == *y2) {
+        if (*x2 < *x1) {
+            *x2 = MAX(surf->clip_rect.x, *x2);
+            *x1 = MIN(surf->clip_rect.x + surf->clip_rect.w, *x1);
         }
         else {
-            if (r2 > nmax)
-                nmax = r2;
-            if (r1 < pmin)
-                pmin = r1;
+            *x1 = MAX(surf->clip_rect.x, *x1);
+            *x2 = MIN(surf->clip_rect.x + surf->clip_rect.w, *x2);
         }
     }
-    if (p3) {
-        r1 = (double)q3 / p3;
-        r2 = (double)q4 / p4;
-        if (p3 < 0) {
-            if (r1 > nmax)
-                nmax = r1;
-            if (r2 < pmin)
-                pmin = r2;
+    else if (*x1 == *x2) {
+        if (*y2 < *y1) {
+            *y2 = MAX(surf->clip_rect.y, *y2);
+            *y1 = MIN(surf->clip_rect.y + surf->clip_rect.h, *y1);
         }
         else {
-            if (r2 > nmax)
-                nmax = r2;
-            if (r1 < pmin)
-                pmin = r1;
+            *y1 = MAX(surf->clip_rect.y, *y1);
+            *y2 = MIN(surf->clip_rect.y + surf->clip_rect.h, *y2);
         }
-    }
-    if (nmax > pmin)
-        return 0;
-    if (width == 0) {
-        *x1 = old_x1 +
-              (int)(p2 * nmax < 0 ? (p2 * nmax - 0.5) : (p2 * nmax + 0.5));
-        *y1 = old_y1 +
-              (int)(p4 * nmax < 0 ? (p4 * nmax - 0.5) : (p4 * nmax + 0.5));
-        *x2 = old_x1 +
-              (int)(p2 * pmin < 0 ? (p2 * pmin - 0.5) : (p2 * pmin + 0.5));
-        *y2 = old_y1 +
-              (int)(p4 * pmin < 0 ? (p4 * pmin - 0.5) : (p4 * pmin + 0.5));
     }
     return 1;
 }
@@ -1500,10 +1470,7 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     dy = abs(y2 - y1);
     sy = y1 < y2 ? 1 : -1;
     err = (dx > dy ? dx : -dy) / 2;
-    clip = clip_line(surf, &x1, &y1, &x2, &y2, width, xinc) ||
-           clip_line(surf, &x1 + width, &y1, &x2, &y2, -width, xinc) ||
-           clip_line(surf, &x1, &y1, &x2, &y2, 0, 0);
-    if (clip) {
+    if (clip_line(surf, &x1, &y1, &x2, &y2, width, xinc)) {
         if (width == 1)
             draw_line(surf, x1, y1, x2, y2, color, drawn_area);
         else {
