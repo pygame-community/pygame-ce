@@ -1510,7 +1510,7 @@ RectExport_clip(RectObject *self, PyObject *args)
     h = MIN(A->y + A->h, B->y + B->h) - y;
 
     if (w <= 0 || h <= 0) {
-        return _pg_rect_subtype_new4(Py_TYPE(self), A->x, A->y, 0, 0);
+        return RectExport_subtypeNew4(Py_TYPE(self), A->x, A->y, 0, 0);
     }
     return RectExport_subtypeNew4(Py_TYPE(self), x, y, w, h);
 }
