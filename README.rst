@@ -183,7 +183,8 @@ See docs/licenses for licenses of dependencies.
    :target: https://github.com/pygame-community/pygame-ce/compare/2.1.3...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
-
+   :target: https://pyga.me/docs/
+   
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
