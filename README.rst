@@ -3,7 +3,7 @@
   :target: https://pyga.me/
 
 
-|DocsStatus| |PyPiVersion| |PyPiLicense|
+|DocsStatus| 
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
