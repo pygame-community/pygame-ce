@@ -960,7 +960,6 @@ surf_rotozoom(PyObject *self, PyObject *args, PyObject *kwargs)
                                      &scale))
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
-    surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
     if (scale == 0.0 || surf->w == 0 || surf->h == 0) {
