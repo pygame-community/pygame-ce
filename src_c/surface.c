@@ -2167,21 +2167,13 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
     blit_sequence = args[0];
 
     /* Fast path for Lists or Tuples */
-    if (PyList_Check(blit_sequence) || PyTuple_Check(blit_sequence)) {
-        Py_ssize_t i, sequence_len;
-        PyObject **sequence_items;
-        sequence_items = PySequence_Fast_ITEMS(blit_sequence);
-        sequence_len = PySequence_Fast_GET_SIZE(blit_sequence);
-        for (i = 0; i < sequence_len; i++) {
+    if (pgSequenceFast_Check(blit_sequence)) {
+        Py_ssize_t i;
+        PyObject **sequence_items = PySequence_Fast_ITEMS(blit_sequence);
+        for (i = 0; i < PySequence_Fast_GET_SIZE(blit_sequence); i++) {
             /* Check that the item is a tuple of length 2 */
             item = sequence_items[i];
-            if (PyTuple_Check(item)) {
-                if (PyTuple_GET_SIZE(item) != 2) {
-                    error = FBLITS_ERR_TUPLE_REQUIRED;
-                    goto on_error;
-                }
-            }
-            else {
+            if (!PyTuple_Check(item) || PyTuple_GET_SIZE(item) != 2) {
                 error = FBLITS_ERR_TUPLE_REQUIRED;
                 goto on_error;
             }
@@ -2228,14 +2220,7 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
     else if (PyIter_Check(blit_sequence)) {
         while ((item = PyIter_Next(blit_sequence))) {
             /* Check that the item is a tuple of length 2 */
-            if (PyTuple_Check(item)) {
-                if (PyTuple_GET_SIZE(item) != 2) {
-                    error = FBLITS_ERR_TUPLE_REQUIRED;
-                    Py_DECREF(item);
-                    goto on_error;
-                }
-            }
-            else {
+            if (!PyTuple_Check(item) || PyTuple_GET_SIZE(item) != 2) {
                 error = FBLITS_ERR_TUPLE_REQUIRED;
                 Py_DECREF(item);
                 goto on_error;
