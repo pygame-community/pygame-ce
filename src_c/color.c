@@ -794,6 +794,7 @@ _color_correct_gamma(pgColorObject *color, PyObject *args)
 static PyObject *
 _color_grayscale(pgColorObject *self)
 {
+    // RGBA to GRAY formula used by OpenCV
     Uint8 grayscale_pixel =
         (Uint8)(0.299 * self->data[0] + 0.587 * self->data[1] +
                 0.114 * self->data[2]);
