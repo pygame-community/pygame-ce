@@ -71,6 +71,7 @@ static const char pkgdatamodule_name[] = "pygame.pkgdata";
 static const char resourcefunc_name[] = "getResource";
 #endif
 static const char font_defaultname[] = "freesansbold.ttf";
+static const int font_defaultsize = 20;
 
 #ifndef SDL_TTF_VERSION_ATLEAST
 /**
@@ -889,13 +890,16 @@ font_dealloc(PyFontObject *self)
 static int
 font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
 {
-    int fontsize;
+    int fontsize = font_defaultsize;
     TTF_Font *font = NULL;
-    PyObject *obj;
+    PyObject *obj = Py_None;
     SDL_RWops *rw;
 
+    static char *kwlist[] = {"filename", "size", NULL};
+
     self->font = NULL;
-    if (!PyArg_ParseTuple(args, "Oi", &obj, &fontsize)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Oi", kwlist, &obj,
+                                     &fontsize)) {
         return -1;
     }
 

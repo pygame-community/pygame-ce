@@ -159,6 +159,7 @@ solves no longer exists, it will likely be removed in the future.
 .. class:: Font
 
    | :sl:`create a new Font object from a file`
+   | :sg:`Font(filename=None, size=20) -> Font`
    | :sg:`Font(filename, size) -> Font`
    | :sg:`Font(pathlib.Path, size) -> Font`
    | :sg:`Font(object, size) -> Font`
@@ -172,6 +173,9 @@ solves no longer exists, it will likely be removed in the future.
    Font objects are mainly used to render text into new Surface objects. The
    render can emulate bold or italic features, but it is better to load from a
    font with actual italic or bold glyphs.
+
+   .. versionchanged:: 2.1.4 If no arguments are given then the default font will be used and
+      a font size of 20 is used.
 
    .. versionchanged:: 2.1.4 This class is also available through the ``pygame.Font``
       alias.
