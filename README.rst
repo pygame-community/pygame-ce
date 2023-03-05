@@ -3,6 +3,7 @@
   :target: https://pyga.me/
 
 
+|DocsStatus| 
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
@@ -136,7 +137,7 @@ Dependency versions:
 
 
 +----------+------------------------+
-| CPython  | >= 3.6 (Or use PyPy3)  |
+| CPython  | >= 3.7 (Or use PyPy3)  |
 +----------+------------------------+
 | SDL      | >= 2.0.8               |
 +----------+------------------------+
@@ -178,13 +179,16 @@ See docs/licenses for licenses of dependencies.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.1.3.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.1.3...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.1.4.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.1.4...main
 
+.. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
+   :target: https://pyga.me/docs/
+   
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
-.. _pygame: https://www.pyga.me
+.. _pygame: https://pyga.me
 .. _Simple DirectMedia Layer library: https://www.libsdl.org
 .. _We need your help: https://www.pygame.org/contribute.html
 .. _Compilation wiki page: https://www.pygame.org/wiki/Compilation

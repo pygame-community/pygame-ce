@@ -56,8 +56,8 @@
 
 /* version macros (defined since version 1.9.5) */
 #define PG_MAJOR_VERSION 2
-#define PG_MINOR_VERSION 1
-#define PG_PATCH_VERSION 4
+#define PG_MINOR_VERSION 2
+#define PG_PATCH_VERSION 0
 #define PG_VERSIONNUM(MAJOR, MINOR, PATCH) \
     (1000 * (MAJOR) + 100 * (MINOR) + (PATCH))
 #define PG_VERSION_ATLEAST(MAJOR, MINOR, PATCH)                             \
@@ -479,6 +479,13 @@ PYGAMEAPI_EXTERN_SLOTS(math);
  *  functions There seems to be no good reason to stick to macro only
  *  functions in Python 3.
  */
+
+#define SURF_INIT_CHECK(surf)                                           \
+    {                                                                   \
+        if (!surf) {                                                    \
+            return RAISE(pgExc_SDLError, "Surface is not initialized"); \
+        }                                                               \
+    }
 
 static PG_INLINE PyObject *
 pg_tuple_couple_from_values_int(int val1, int val2)

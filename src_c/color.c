@@ -93,10 +93,11 @@ _color_set_length(pgColorObject *, PyObject *);
 static PyObject *
 _color_lerp(pgColorObject *, PyObject *, PyObject *);
 static PyObject *
+_color_grayscale(pgColorObject *);
+static PyObject *
 _premul_alpha(pgColorObject *, PyObject *);
 static PyObject *
 _color_update(pgColorObject *self, PyObject *const *args, Py_ssize_t nargs);
-PG_DECLARE_FASTCALL_FUNC(_color_update, pgColorObject);
 
 /* Getters/setters */
 static PyObject *
@@ -201,10 +202,11 @@ static PyMethodDef _color_methods[] = {
      DOC_COLORSETLENGTH},
     {"lerp", (PyCFunction)_color_lerp, METH_VARARGS | METH_KEYWORDS,
      DOC_COLORLERP},
+    {"grayscale", (PyCFunction)_color_grayscale, METH_NOARGS,
+     DOC_COLORGRAYSCALE},
     {"premul_alpha", (PyCFunction)_premul_alpha, METH_NOARGS,
      DOC_COLORPREMULALPHA},
-    {"update", (PyCFunction)PG_FASTCALL_NAME(_color_update), PG_FASTCALL,
-     DOC_COLORUPDATE},
+    {"update", (PyCFunction)_color_update, METH_FASTCALL, DOC_COLORUPDATE},
     {NULL, NULL, 0, NULL}};
 
 /**
@@ -785,6 +787,25 @@ _color_correct_gamma(pgColorObject *color, PyObject *args)
 }
 
 /**
+ * color.grayscale()
+ */
+static PyObject *
+_color_grayscale(pgColorObject *self)
+{
+    // RGBA to GRAY formula used by OpenCV
+    Uint8 grayscale_pixel =
+        (Uint8)(0.299 * self->data[0] + 0.587 * self->data[1] +
+                0.114 * self->data[2]);
+
+    Uint8 new_rgba[4];
+    new_rgba[0] = grayscale_pixel;
+    new_rgba[1] = grayscale_pixel;
+    new_rgba[2] = grayscale_pixel;
+    new_rgba[3] = self->data[3];
+    return (PyObject *)_color_new_internal(Py_TYPE(self), new_rgba);
+}
+
+/**
  * color.lerp(other, x)
  */
 static PyObject *
@@ -863,8 +884,6 @@ _color_update(pgColorObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
     Py_RETURN_NONE;
 }
-
-PG_WRAP_FASTCALL_FUNC(_color_update, pgColorObject)
 
 /**
  * color.r

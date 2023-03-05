@@ -4,8 +4,6 @@ name: Windows
 # to main. Do not run CI on any other branch. Also, skip any non-source changes
 # from running on CI
 on:
-  release:
-    types: [created]
   push:
     branches: main
     paths-ignore:
@@ -29,9 +27,12 @@ on:
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
       - '!.github/workflows/build-windows.yml'
+  
+  # the github release drafter can call this workflow
+  workflow_call:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-windows
   cancel-in-progress: true
 
 jobs:
@@ -73,12 +74,6 @@ jobs:
             pyversions: "cp37-*"
           }
           - {
-            name: "CPython 3.6 (64 bit)",
-            winarch: AMD64,
-            msvc-dev-arch: x86_amd64,
-            pyversions: "cp36-*"
-          }
-          - {
             name: "CPython 3.11 (32 bit)",
             winarch: x86,
             msvc-dev-arch: x86,
@@ -107,12 +102,6 @@ jobs:
             winarch: x86,
             msvc-dev-arch: x86,
             pyversions: "cp37-win32"
-          }
-          - {
-            name: "CPython 3.6 (32 bit)",
-            winarch: x86,
-            msvc-dev-arch: x86,
-            pyversions: "cp36-win32"
           }
           - {
             name: "Pypy 3.7",
@@ -174,5 +163,5 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: pygame-wheels
+          name: pygame-wheels-windows
           path: ./wheelhouse/*.whl

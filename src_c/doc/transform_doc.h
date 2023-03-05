@@ -15,6 +15,7 @@
 #define DOC_PYGAMETRANSFORMAVERAGESURFACES "average_surfaces(surfaces, dest_surface=None, palette_colors=1) -> Surface\nfind the average surface from many surfaces."
 #define DOC_PYGAMETRANSFORMAVERAGECOLOR "average_color(surface, rect=None, consider_alpha=False) -> Color\nfinds the average color of a surface"
 #define DOC_PYGAMETRANSFORMINVERT "invert(surface, dest_surface=None) -> Surface\ninverts the RGB elements of a surface"
+#define DOC_PYGAMETRANSFORMGRAYSCALE "grayscale(surface, dest_surface=None) -> Surface\ngrayscale a surface"
 #define DOC_PYGAMETRANSFORMTHRESHOLD "threshold(dest_surface, surface, search_color, threshold=(0,0,0,0), set_color=(0,0,0,0), set_behavior=1, search_surf=None, inverse_set=False) -> num_threshold_pixels\nfinds which, and how many pixels in a surface are within a threshold of a 'search_color' or a 'search_surf'."
 
 
@@ -84,6 +85,10 @@ finds the average color of a surface
 pygame.transform.invert
  invert(surface, dest_surface=None) -> Surface
 inverts the RGB elements of a surface
+
+pygame.transform.grayscale
+ grayscale(surface, dest_surface=None) -> Surface
+grayscale a surface
 
 pygame.transform.threshold
  threshold(dest_surface, surface, search_color, threshold=(0,0,0,0), set_color=(0,0,0,0), set_behavior=1, search_surf=None, inverse_set=False) -> num_threshold_pixels
