@@ -180,6 +180,13 @@ _color_richcompare(PyObject *, PyObject *, int);
 static int
 _color_getbuffer(pgColorObject *, Py_buffer *, int);
 
+/* Fallback getattr and setattr for swizzling RGBA */
+static PyObject *
+_color_getAttr_swizzle(pgColorObject *self, PyObject *attr_name);
+static int
+_color_setAttr_swizzle(pgColorObject *self, PyObject *attr_name,
+                       PyObject *val);
+
 /* C API interfaces */
 static PyObject *
 pgColor_New(Uint8 rgba[]);
@@ -272,6 +279,8 @@ static PyTypeObject pgColor_Type = {
     .tp_as_sequence = &_color_as_sequence,
     .tp_as_mapping = &_color_as_mapping,
     .tp_as_buffer = &_color_as_buffer,
+    .tp_getattro = (getattrofunc)_color_getAttr_swizzle,
+    .tp_setattro = (setattrofunc)_color_setAttr_swizzle,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_doc = DOC_PYGAMECOLOR,
     .tp_richcompare = _color_richcompare,
@@ -709,7 +718,7 @@ _color_dealloc(pgColorObject *color)
 static PyObject *
 _color_repr(pgColorObject *color)
 {
-    return PyUnicode_FromFormat("(%d, %d, %d, %d)", color->data[0],
+    return PyUnicode_FromFormat("<Color(%d, %d, %d, %d)>", color->data[0],
                                 color->data[1], color->data[2],
                                 color->data[3]);
 }
@@ -2044,6 +2053,207 @@ _color_getbuffer(pgColorObject *color, Py_buffer *view, int flags)
     return 0;
 }
 
+static PyObject *
+_color_getAttr_swizzle(pgColorObject *self, PyObject *attr_name)
+{
+    const char *attr = NULL;
+    PyObject *attr_unicode = NULL;
+    Py_ssize_t i, len = PySequence_Length(attr_name);
+    PyObject *res = NULL;
+    Uint8 value;
+
+    if (len == 1) {
+        return PyObject_GenericGetAttr((PyObject *)self, attr_name);
+    }
+
+    attr_unicode = PyUnicode_FromObject(attr_name);
+    if (attr_unicode == NULL)
+        goto swizzle_failed;
+    attr = PyUnicode_AsUTF8AndSize(attr_unicode, &len);
+    if (attr == NULL)
+        goto swizzle_error;
+
+    /* If we are not a swizzle, go straight to GenericGetAttr. */
+    if ((attr[0] != 'r') && (attr[0] != 'g') && (attr[0] != 'b') &&
+        (attr[0] != 'a')) {
+        goto swizzle_failed;
+    }
+
+    if (len == 3 || len == 4) {
+        static Uint8 rgba[] = {0, 0, 0, 255};
+        res = (PyObject *)pgColor_New(rgba);
+    }
+    else {
+        /* More than 3, we return a tuple. */
+        res = (PyObject *)PyTuple_New(len);
+    }
+
+    if (res == NULL)
+        goto swizzle_error;
+
+    for (i = 0; i < len; i++) {
+        switch (attr[i]) {
+            case 'r':
+                value = self->data[0];
+                break;
+            case 'g':
+                value = self->data[1];
+                break;
+            case 'b':
+                value = self->data[2];
+                break;
+            case 'a':
+                value = self->data[3];
+                break;
+
+            case '0':
+                value = 0;
+                break;
+            case '1':
+                value = 255;
+                break;
+
+            default:
+                goto swizzle_failed;
+        }
+
+        if (len == 3 || len == 4) {
+            ((pgColorObject *)res)->data[i] = value;
+        }
+        else {
+            if (PyTuple_SetItem(res, i, PyLong_FromLong(value)) != 0)
+                goto swizzle_error;
+        }
+    }
+
+    /* Swizzling succeeded! */
+    Py_XDECREF(attr_unicode);
+    return res;
+
+    /* Swizzling failed! Fallback to PyObject_GenericGetAttr */
+swizzle_failed:
+    Py_XDECREF(res);
+    Py_XDECREF(attr_unicode);
+    return PyObject_GenericGetAttr((PyObject *)self, attr_name);
+
+    /* Something else happened while trying to swizzle. Return NULL */
+swizzle_error:
+    Py_XDECREF(res);
+    Py_XDECREF(attr_unicode);
+    return NULL;
+}
+
+static int
+_color_setAttr_swizzle(pgColorObject *self, PyObject *attr_name, PyObject *val)
+{
+    const char *attr = NULL;
+    PyObject *attr_unicode = NULL;
+    Py_ssize_t i, len = PySequence_Length(attr_name);
+    Uint8 entry[4] = {0};
+    int entry_was_set[4] = {0};
+
+    if (len == 1)
+        return PyObject_GenericSetAttr((PyObject *)self, attr_name, val);
+
+    /* Handle string and unicode uniformly */
+    attr_unicode = PyUnicode_FromObject(attr_name);
+    if (attr_unicode == NULL)
+        return -1;
+    attr = PyUnicode_AsUTF8AndSize(attr_unicode, &len);
+
+    if (attr == NULL) {
+        goto swizzle_error;
+    }
+
+    /* Make sure that it's supposed to be a swizzle */
+    for (i = 0; i < len; ++i) {
+        switch (attr[i]) {
+            case 'r':
+            case 'g':
+            case 'b':
+            case 'a':
+                break;
+
+            default:
+                goto swizzle_failed;
+        }
+    }
+
+    for (i = 0; i < len; ++i) {
+        int idx;
+        PyObject *entry_obj;
+        long entry_long;
+
+        switch (attr[i]) {
+            case 'r':
+                idx = 0;
+                break;
+            case 'g':
+                idx = 1;
+                break;
+            case 'b':
+                idx = 2;
+                break;
+            case 'a':
+                idx = 3;
+                break;
+            default:
+                /* Swizzle failed */
+                goto swizzle_failed;
+        }
+
+        if (idx >= 4) {
+            /* Swizzle failed */
+            goto swizzle_failed;
+        }
+
+        if (entry_was_set[idx]) {
+            PyErr_SetString(PyExc_AttributeError,
+                            "Attribute assignment conflicts with swizzling");
+            goto swizzle_error;
+        }
+
+        entry_was_set[idx] = 1;
+        entry_obj = PySequence_GetItem(val, i);
+        if (entry_obj == NULL) {
+            PyErr_SetString(
+                PyExc_TypeError,
+                "A sequence of the corresponding elements is expected");
+            goto swizzle_error;
+        }
+
+        entry_long = PyLong_AsLong(entry_obj);
+        Py_DECREF(entry_obj);
+        if (PyErr_Occurred())
+            goto swizzle_error;
+
+        if (entry_long >= 0 && entry_long <= 255)
+            entry[idx] = (Uint8)entry_long;
+        else {
+            PyErr_SetString(
+                PyExc_TypeError,
+                "Color element is outside of the range from 0 to 255");
+            goto swizzle_error;
+        }
+    }
+
+    /* Swizzle successful */
+    for (i = 0; i < 4; ++i)
+        if (entry_was_set[i])
+            self->data[i] = entry[i];
+    return 0;
+
+    /* Swizzling failed! Fallback to PyObject_GenericSetAttr */
+swizzle_failed:
+    Py_DECREF(attr_unicode);
+    return PyObject_GenericSetAttr((PyObject *)self, attr_name, val);
+
+    /* Something else happened. Immediately return */
+swizzle_error:
+    Py_DECREF(attr_unicode);
+    return -1;
+}
+
 /**** C API interfaces ****/
 static PyObject *
 pgColor_New(Uint8 rgba[])
@@ -2131,7 +2341,7 @@ MODINIT_DEFINE(color)
     if (!module) {
         goto error;
     }
-    pgColor_Type.tp_getattro = PyObject_GenericGetAttr;
+
     Py_INCREF(&pgColor_Type);
     if (PyModule_AddObject(module, "Color", (PyObject *)&pgColor_Type)) {
         Py_DECREF(&pgColor_Type);
