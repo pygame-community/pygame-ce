@@ -3173,7 +3173,6 @@ static PyMethodDef _transform_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMAVERAGECOLOR},
     {"invert", (PyCFunction)surf_invert, METH_VARARGS | METH_KEYWORDS,
      DOC_PYGAMETRANSFORMINVERT},
-=======
     {"grayscale", (PyCFunction)surf_grayscale, METH_VARARGS | METH_KEYWORDS,
      DOC_PYGAMETRANSFORMGRAYSCALE},
     {NULL, NULL, 0, NULL}};
