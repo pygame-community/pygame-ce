@@ -120,7 +120,7 @@ def spawn(self, cmd, **kwargs):
 distutils.ccompiler.CCompiler.__spawn = distutils.ccompiler.CCompiler.spawn
 distutils.ccompiler.CCompiler.spawn = spawn
 
-# A (bit hacky) fix for https://github.com/pygame/pygame/issues/2613
+# A (bit hacky) fix for https://github.com/pygame-community/pygame-ce/issues/1346
 # This is due to the fact that distutils uses command line args to 
 # export PyInit_* functions on windows, but those functions are already exported
 # and that is why compiler gives warnings
