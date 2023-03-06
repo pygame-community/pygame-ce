@@ -1071,66 +1071,47 @@ add_line_to_drawn_list(int x1, int y1, int x2, int *pts)
 }
 
 static int
-clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2)
+clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2, int width,
+          int xinc)
 {
-    int p1 = *x1 - *x2;
-    int p2 = -p1;
-    int p3 = *y1 - *y2;
-    int p4 = -p3;
-    int q1 = *x1 - surf->clip_rect.x;
-    int q2 = surf->clip_rect.w + surf->clip_rect.x - *x1;
-    int q3 = *y1 - surf->clip_rect.y;
-    int q4 = surf->clip_rect.h + surf->clip_rect.y - *y1;
-    int old_x1 = *x1;
-    int old_y1 = *y1;
-    double nmax = 0;
-    double pmin = 1;
-    double r1, r2;
-    if ((p1 == 0 && q1 < 0) || (p2 == 0 && q2 < 0) || (p3 == 0 && q3 < 0) ||
-        (p4 == 0 && q4 < 0))
+    int left, right, top, bottom;
+    if (xinc) {
+        left = MIN(*x1, *x2) - width;
+        right = MAX(*x1, *x2) + width;
+        top = MIN(*y1, *y2);
+        bottom = MAX(*y1, *y2);
+    }
+    else {
+        left = MIN(*x1, *x2);
+        right = MAX(*x1, *x2);
+        top = MIN(*y1, *y2) - width;
+        bottom = MAX(*y1, *y2) + width;
+    }
+    if (surf->clip_rect.x > right || surf->clip_rect.y > bottom ||
+        surf->clip_rect.x + surf->clip_rect.w < left ||
+        surf->clip_rect.y + surf->clip_rect.h < top) {
         return 0;
-    if (p1) {
-        r1 = (double)q1 / p1;
-        r2 = (double)q2 / p2;
-        if (p1 < 0) {
-            if (r1 > nmax)
-                nmax = r1;
-            if (r2 < pmin)
-                pmin = r2;
+    }
+    if (*y1 == *y2) {
+        if (*x2 < *x1) {
+            *x2 = MAX(surf->clip_rect.x, *x2);
+            *x1 = MIN(surf->clip_rect.x + surf->clip_rect.w, *x1);
         }
         else {
-            if (r2 > nmax)
-                nmax = r2;
-            if (r1 < pmin)
-                pmin = r1;
+            *x1 = MAX(surf->clip_rect.x, *x1);
+            *x2 = MIN(surf->clip_rect.x + surf->clip_rect.w, *x2);
         }
     }
-    if (p3) {
-        r1 = (double)q3 / p3;
-        r2 = (double)q4 / p4;
-        if (p3 < 0) {
-            if (r1 > nmax)
-                nmax = r1;
-            if (r2 < pmin)
-                pmin = r2;
+    else if (*x1 == *x2) {
+        if (*y2 < *y1) {
+            *y2 = MAX(surf->clip_rect.y, *y2);
+            *y1 = MIN(surf->clip_rect.y + surf->clip_rect.h, *y1);
         }
         else {
-            if (r2 > nmax)
-                nmax = r2;
-            if (r1 < pmin)
-                pmin = r1;
+            *y1 = MAX(surf->clip_rect.y, *y1);
+            *y2 = MIN(surf->clip_rect.y + surf->clip_rect.h, *y2);
         }
     }
-    if (nmax > pmin)
-        return 0;
-    *x1 =
-        old_x1 + (int)(p2 * nmax < 0 ? (p2 * nmax - 0.5) : (p2 * nmax + 0.5));
-    *y1 =
-        old_y1 + (int)(p4 * nmax < 0 ? (p4 * nmax - 0.5) : (p4 * nmax + 0.5));
-    *x2 =
-        old_x1 + (int)(p2 * pmin < 0 ? (p2 * pmin - 0.5) : (p2 * pmin + 0.5));
-    *y2 =
-        old_y1 + (int)(p4 * pmin < 0 ? (p4 * pmin - 0.5) : (p4 * pmin + 0.5));
     return 1;
 }
 
@@ -1472,10 +1453,13 @@ drawhorzlineclipbounding(SDL_Surface *surf, Uint32 color, int x1, int y1,
 int
 inside_clip(SDL_Surface *surf, int x, int y)
 {
-    if (x < surf->clip_rect.x || x >= surf->clip_rect.x + surf->clip_rect.w ||
-        y < surf->clip_rect.y || y >= surf->clip_rect.y + surf->clip_rect.h)
-        return 0;
-    return 1;
+    // 0: inside
+    int value = 0;
+    if (x < surf->clip_rect.x) value |= 1;
+    if (x > surf->clip_rect.x + surf->clip_rect.w) value |= 2;
+    if (y < surf->clip_rect.y) value |=4;
+    if (y >= surf->clip_rect.y + surf->clip_rect.h) value |=8;
+    return value;
 }
 
 static void
@@ -1483,101 +1467,93 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
                 int y2, int width, int *drawn_area)
 {
     int dx, dy, err, e2, sx, sy, y;
+    double fx1, fx2, fy1, fy2;
     int left_top, right_bottom;
-    int end_x = x2;
-    int end_y = y2;
+    int half_width = width / 2 + 1;
+    int start_x = surf->clip_rect.x;
+    int start_y = surf->clip_rect.y;
+    int end_x = surf->clip_rect.x + surf->clip_rect.w;
+    int end_y = surf->clip_rect.y + surf->clip_rect.h;
     int xinc = 0;
     /* Decide which direction to grow (width/thickness). */
     if (abs(x1 - x2) <= abs(y1 - y2)) {
         /* The line's thickness will be in the x direction. The top/bottom
          * ends of the line will be flat. */
         xinc = 1;
+        start_x -= half_width;
+        end_x += half_width;
     }
-    dx = abs(x2 - x1);
-    sx = x1 < x2 ? 1 : -1;
-    dy = abs(y2 - y1);
-    sy = y1 < y2 ? 1 : -1;
-    err = (dx > dy ? dx : -dy) / 2;
-    if (clip_line(surf, &x1, &y1, &x2, &y2)) {
-        if (width == 1)
-            draw_line(surf, x1, y1, x2, y2, color, drawn_area);
+    else {
+        start_y -= half_width;
+        end_y += half_width;
+    }
+
+    // Determine endpoints for line
+    int inside1 = inside_clip(surf, x1, y1);
+    int inside2 = inside_clip(surf, x2, y2);
+    // Based on the Cohen Sutherland algorithm
+    while (true) {
+        dx = x2 - x1;
+        dy = y2 - y1;
+
+        if !(inside1 | inside2) {
+            break;
+        }
+        else if (
+            inside1 & inside2
+        ) break;
         else {
-            if (xinc) {
-                left_top = x1 - (width - 1) / 2;
-                right_bottom = x1 + width / 2;
+            inside = inside1 ? inside1 : inside2;
+            if (inside & 8) {
+                fx1 = x1 + dx * (end_y - y1) / dy;
+                fy1 = end_y;
+            }
+            else if (inside & 4) {
+                // point is below the rectangle
+                fx1 = x1 + dx * (surf->clip_rect.y - half_width - y1) / dy;
+                fy1 = surf->clip_rect.y - half_width;
+            }
+            else if (inside & 2) {
+                fy1 = y1 + dy * (end_x - x1) / dx;
+                fx1 = end_x;
+            }
+            else if (inside & 1) {
+                // point is to the left of rectangle
+                fy1 = y1 + dy * (surf->clip_rect.x - half_width - x1) / dx;
+                fx1 = surf->clip_rect.x - half_width;
+            }
+            if (inside == inside1) {
+                x1 = fx1;
+                y1 = fy1;
+                inside1 = inside_clip(surf, x1, y1);
             }
             else {
-                left_top = y1 - (width - 1) / 2;
-                right_bottom = y1 + width / 2;
-            }
-            while ((sign(x1 - x2, sx) != sx) || (sign(y1 - y2, sy) != sy)) {
-                if (xinc)
-                    drawhorzlineclipbounding(surf, color, left_top, y1,
-                                             right_bottom, drawn_area);
-                else {
-                    for (y = left_top; y <= right_bottom; y++)
-                        set_and_check_rect(surf, x1, y, color, drawn_area);
-                }
-                e2 = err;
-                if (e2 > -dx) {
-                    err -= dy;
-                    x1 += sx;
-                    if (xinc) {
-                        left_top += sx;
-                        right_bottom += sx;
-                    }
-                }
-                if (e2 < dy) {
-                    err += dx;
-                    y1 += sy;
-                    if (!xinc) {
-                        left_top += sy;
-                        right_bottom += sy;
-                    }
-                }
-            }
-            if (xinc) {
-                while (y1 != end_y && (inside_clip(surf, left_top, y1) ||
-                                       inside_clip(surf, right_bottom, y1))) {
-                    drawhorzlineclipbounding(surf, color, left_top, y1,
-                                             right_bottom, drawn_area);
-                    e2 = err;
-                    if (e2 > -dx) {
-                        err -= dy;
-                        x1 += sx;
-                        left_top += sx;
-                        right_bottom += sx;
-                    }
-                    if (e2 < dy) {
-                        err += dx;
-                        y1 += sy;
-                    }
-                }
-                drawhorzlineclipbounding(surf, color, left_top, y1,
-                                         right_bottom, drawn_area);
-            }
-            else {
-                while (x1 != end_x && (inside_clip(surf, x1, left_top) ||
-                                       inside_clip(surf, x1, right_bottom))) {
-                    for (y = left_top; y <= right_bottom; y++)
-                        set_and_check_rect(surf, x1, y, color, drawn_area);
-                    e2 = err;
-                    if (e2 > -dx) {
-                        err -= dy;
-                        x1 += sx;
-                    }
-                    if (e2 < dy) {
-                        err += dx;
-                        y1 += sy;
-                        left_top += sy;
-                        right_bottom += sy;
-                    }
-                }
-                for (y = left_top; y <= right_bottom; y++)
-                    set_and_check_rect(surf, x1, y, color, drawn_area);
+                x2 = fx1;
+                y2 = fy1;
+                inside1 = inside_clip(surf, x2, y2);
             }
         }
     }
+
+    dx = abs(x2 - x1);
+    dy = abs(y2 - y1);
+    sx = x2 > x1 ? 1 : -1;
+    sy = y2 > y1 ? 1 : -1;
+    err = (dx > dy ? dx : -dy) / 2;
+    // draw it
+    if (xinc) {
+        while (y1 < y2) {
+
+        for x in range(cur_x - width/2, cur_x + width/2) {
+            if (surf->rect.x < cur_x < end_x)
+            set_and_check_rect(surf, x, y, pixel_color, drawn_area);
+        }
+        e2 = err;
+        if (e2 >-dx) { err -= dy; cur_x += sx; }
+        if (e2 < dy) { err += dx; y += sy; }
+        }
+    }
+
 }
 
 /* Algorithm modified from
