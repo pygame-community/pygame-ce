@@ -1136,6 +1136,39 @@ set_at(SDL_Surface *surf, int x, int y, Uint32 color)
 }
 
 static void
+set_at_unchecked(SDL_Surface *surf, int x, int y, Uint32 color)
+{
+    SDL_PixelFormat *format = surf->format;
+    Uint8 *pixels = (Uint8 *)surf->pixels;
+    Uint8 *byte_buf, rgb[4];
+
+    switch (format->BytesPerPixel) {
+        case 1:
+            *((Uint8 *)pixels + y * surf->pitch + x) = (Uint8)color;
+            break;
+        case 2:
+            *((Uint16 *)(pixels + y * surf->pitch) + x) = (Uint16)color;
+            break;
+        case 4:
+            *((Uint32 *)(pixels + y * surf->pitch) + x) = color;
+            break;
+        default: /*case 3:*/
+            SDL_GetRGB(color, format, rgb, rgb + 1, rgb + 2);
+            byte_buf = (Uint8 *)(pixels + y * surf->pitch) + x * 3;
+#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+            *(byte_buf + (format->Rshift >> 3)) = rgb[0];
+            *(byte_buf + (format->Gshift >> 3)) = rgb[1];
+            *(byte_buf + (format->Bshift >> 3)) = rgb[2];
+#else
+            *(byte_buf + 2 - (format->Rshift >> 3)) = rgb[0];
+            *(byte_buf + 2 - (format->Gshift >> 3)) = rgb[1];
+            *(byte_buf + 2 - (format->Bshift >> 3)) = rgb[2];
+#endif
+            break;
+    }
+}
+
+static void
 set_and_check_rect(SDL_Surface *surf, int x, int y, Uint32 color,
                    int *drawn_area)
 {
@@ -1458,7 +1491,7 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     int extra_width = 1 - (width % 2);
     //validate not point first
     // check 1 width
-
+    if (width < 1) return;
     if (width == 1) {
         draw_line(surf, x1, y1, x2, y2, color, drawn_area);
         return;
@@ -1496,9 +1529,15 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     err = (dx > dy ? dx : -dy) / 2;
     // draw it
     if (xinc) {
+        while (y1 < start_y || y1 > end_y) {
+            e2 = err;
+            if (e2 >-dx) { err -= dy; x1 += sx; }
+            if (e2 < dy) { err += dx; y1 += sy; }
+        }
         while (y1 != (y2+sy)) {
             for (int x = MAX((x1 - width)  + extra_width, start_x); x<=MIN(end_x, x1 + width); x++) {
                 set_and_check_rect(surf, x, y1, color, drawn_area);
+
             }
             e2 = err;
             if (e2 >-dx) { err -= dy; x1 += sx; }
@@ -1506,6 +1545,11 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
         }
     }
     else {
+        while (x1 < start_x || x1 > end_x) {
+            e2 = err;
+            if (e2 >-dx) { err -= dy; x1 += sx; }
+            if (e2 < dy) { err += dx; y1 += sy; }
+        }
         while (x1 != (x2+sx)) {
             for (int y = MAX((y1 - width) + extra_width , start_y); y <= MIN(end_y, y1 + width); y++) {
                 set_and_check_rect(surf, x1, y, color, drawn_area);
