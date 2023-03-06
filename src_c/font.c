@@ -779,7 +779,7 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
             break;
         }
 
-/*  There is a bug in SDL2 up to 2.26.3 (the current release version as of
+/*  There is a bug in SDL_ttf up to 2.22.0 (the current release version as of
    writing this) This bug flips the top-to-bottom and bottom-to-top rendering.
    So, this is a compat patch for that behavior
  */
