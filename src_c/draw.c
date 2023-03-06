@@ -1482,7 +1482,6 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
                 int y2, int width, int *drawn_area)
 {
     int dx, dy, err, e2, sx, sy, y;
-    int left_top, right_bottom;
     int start_x = surf->clip_rect.x;
     int start_y = surf->clip_rect.y;
     int end_x = surf->clip_rect.x + surf->clip_rect.w;
@@ -1526,33 +1525,36 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     dy = abs(y2 - y1);
     sx = x2 > x1 ? 1 : -1;
     sy = y2 > y1 ? 1 : -1;
+
+
     err = (dx > dy ? dx : -dy) / 2;
     // draw it
     if (xinc) {
-        while (y1 < start_y || y1 > end_y) {
-            e2 = err;
-            if (e2 >-dx) { err -= dy; x1 += sx; }
-            if (e2 < dy) { err += dx; y1 += sy; }
-        }
         while (y1 != (y2+sy)) {
-            for (int x = MAX((x1 - width)  + extra_width, start_x); x<=MIN(end_x, x1 + width); x++) {
-                set_and_check_rect(surf, x, y1, color, drawn_area);
+            if (start_y <= y1 <= end_y) {
+            for (int x = MAX((x1 - width)  + extra_width, surf->clip_rect.x); x<=MIN(surf->clip_rect.x + surf->clip_rect.w - 1, x1 + width); x++) {
+
+
+                set_at_unchecked(surf, x, y1, color);
+                add_pixel_to_drawn_list(x, y1, drawn_area);
 
             }
+             }
             e2 = err;
             if (e2 >-dx) { err -= dy; x1 += sx; }
             if (e2 < dy) { err += dx; y1 += sy; }
         }
     }
     else {
-        while (x1 < start_x || x1 > end_x) {
-            e2 = err;
-            if (e2 >-dx) { err -= dy; x1 += sx; }
-            if (e2 < dy) { err += dx; y1 += sy; }
-        }
         while (x1 != (x2+sx)) {
-            for (int y = MAX((y1 - width) + extra_width , start_y); y <= MIN(end_y, y1 + width); y++) {
-                set_and_check_rect(surf, x1, y, color, drawn_area);
+            if (start_x <= x1 <= end_x) {
+            for (int y = MAX((y1 - width) + extra_width , surf->clip_rect.y); y <= MIN(surf->clip_rect.y + surf->clip_rect.h -1, y1 + width); y++) {
+
+
+                set_at_unchecked(surf, x1, y, color);
+                add_pixel_to_drawn_list(x1, y, drawn_area);
+
+            }
             }
             e2 = err;
             if (e2 >-dx) { err -= dy; x1 += sx; }
