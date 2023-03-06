@@ -372,10 +372,6 @@ PyInit_pygame_static()
 #include "freetype/ft_layout.c"
 #include "freetype/ft_unicode.c"
 
-#undef DOC_FONTUNDERLINE
-#undef DOC_FONTRENDER
-#undef DOC_FONTSIZE
-
 #include "font.c"
 
 #include "mixer.c"
