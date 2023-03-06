@@ -70,91 +70,85 @@ key_get_repeat(PyObject *self, PyObject *_null)
     "pygame.key." _PG_SCANCODEWRAPPER_TYPE_NAME
 
 typedef struct {
-    PyTupleObject tuple;
+    PyObject_HEAD const Uint8 *keys;
+    int length;
 } pgScancodeWrapper;
 
 static PyObject *
 pg_scancodewrapper_subscript(pgScancodeWrapper *self, PyObject *item)
 {
-    long index;
-    PyObject *adjustedvalue, *ret;
-    if ((index = PyLong_AsLong(item)) == -1 && PyErr_Occurred())
+    long index = PyLong_AsLong(item);
+    if (index == -1 && PyErr_Occurred()) {
         return NULL;
+    }
     index = SDL_GetScancodeFromKey(index);
-    adjustedvalue = PyLong_FromLong(index);
-    ret = PyTuple_Type.tp_as_mapping->mp_subscript((PyObject *)self,
-                                                   adjustedvalue);
-    Py_DECREF(adjustedvalue);
-    return ret;
+    return PyBool_FromLong(self->keys[index]);
+}
+
+static Py_ssize_t
+pg_scancodewrapper_len(pgScancodeWrapper *self)
+{
+    return (Py_ssize_t)self->length;
 }
 
 static PyObject *
-pg_iter_raise(PyObject *self)
+pg_scancodewrapper_iter_raise(pgScancodeWrapper *self)
 {
     PyErr_SetString(PyExc_TypeError,
                     "Iterating over key states is not supported");
     return NULL;
 }
 
-/**
- * There is an issue in PyPy that causes __iter__ to be called
- * on creation of a ScancodeWrapper. This stops this from
- * happening.
- */
-#ifdef PYPY_VERSION
-static PyObject *
-pg_scancodewrapper_new(PyTypeObject *subtype, PyObject *args, PyObject *kwds)
-{
-    PyObject *tuple = NULL;
-    Py_ssize_t size = PyTuple_Size(args);
-    if (size == 1) {
-        tuple = PyTuple_GET_ITEM(args, 0);
-        if (PyTuple_Check(tuple)) {
-            size = PyTuple_Size(tuple);
-        }
-        else {
-            tuple = NULL;
-        }
-    }
-
-    pgScancodeWrapper *obj =
-        (pgScancodeWrapper *)(subtype->tp_alloc(subtype, size));
-
-    if (obj && tuple) {
-        for (Py_ssize_t i = 0; i < size; ++i) {
-            PyObject *item = PyTuple_GET_ITEM((PyObject *)tuple, i);
-            PyTuple_SET_ITEM((PyObject *)obj, i, item);
-        }
-        Py_DECREF(tuple);
-    }
-
-    return (PyObject *)obj;
-}
-#endif /* PYPY_VERSION */
-
 static PyMappingMethods pg_scancodewrapper_mapping = {
     .mp_subscript = (binaryfunc)pg_scancodewrapper_subscript,
+    .mp_length = (lenfunc)pg_scancodewrapper_len,
 };
 
 static PyObject *
 pg_scancodewrapper_repr(pgScancodeWrapper *self)
 {
-    PyObject *baserepr = PyTuple_Type.tp_repr((PyObject *)self);
-    PyObject *ret =
-        PyUnicode_FromFormat(_PG_SCANCODEWRAPPER_TYPE_FULLNAME "%S", baserepr);
-    Py_DECREF(baserepr);
-    return ret;
+    int index = 0, offset;
+    int i;
+    // 7 since the string can either be "False, " or "True, "
+    int size = self->length * 7;
+    char *string = malloc(sizeof(char) * size);
+    PyObject *res;
+
+    if (string == NULL) {
+        return PyErr_NoMemory();
+    }
+
+    for (i = 0; i < self->length; i++) {
+        if (self->keys[i]) {
+            offset = PyOS_snprintf(&string[index], size - index, "True, ");
+        }
+        else {
+            offset = PyOS_snprintf(&string[index], size - index, "False, ");
+        }
+        if (offset > 0 && offset <= size - index) {
+            index += offset;
+        }
+        else {
+            return RAISE(PyExc_RuntimeError,
+                         "Internal PyOS_snprintf call failed!");
+        }
+    }
+    string[index - 2] = '\0';  // cut off last ", "
+
+    res =
+        PyUnicode_FromFormat(_PG_SCANCODEWRAPPER_TYPE_FULLNAME "(%s)", string);
+
+    free(string);
+    return res;
 }
 
 static PyTypeObject pgScancodeWrapper_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.key.ScancodeWrapper",
     .tp_repr = (reprfunc)pg_scancodewrapper_repr,
     .tp_as_mapping = &pg_scancodewrapper_mapping,
-    .tp_iter = (getiterfunc)pg_iter_raise,
-    .tp_iternext = (iternextfunc)pg_iter_raise,
-#ifdef PYPY_VERSION
-    .tp_new = pg_scancodewrapper_new,
-#endif
+    .tp_iter = (getiterfunc)pg_scancodewrapper_iter_raise,
+    .tp_iternext = (iternextfunc)pg_scancodewrapper_iter_raise,
+    .tp_dealloc = (destructor)PyObject_DEL,
     .tp_flags =
         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_TUPLE_SUBCLASS | Py_TPFLAGS_BASETYPE,
 };
@@ -164,34 +158,24 @@ key_get_pressed(PyObject *self, PyObject *_null)
 {
     int num_keys;
     const Uint8 *key_state;
-    PyObject *ret_obj = NULL;
-    PyObject *key_tuple;
-    int i;
+    pgScancodeWrapper *obj;
 
     VIDEO_INIT_CHECK();
 
     key_state = SDL_GetKeyboardState(&num_keys);
-
-    if (!key_state || !num_keys)
-        Py_RETURN_NONE;
-
-    if (!(key_tuple = PyTuple_New(num_keys)))
-        return NULL;
-
-    for (i = 0; i < num_keys; i++) {
-        PyObject *key_elem;
-        key_elem = PyBool_FromLong(key_state[i]);
-        if (!key_elem) {
-            Py_DECREF(key_tuple);
-            return NULL;
-        }
-        PyTuple_SET_ITEM(key_tuple, i, key_elem);
+    if (key_state == NULL) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
-    ret_obj = PyObject_CallFunctionObjArgs((PyObject *)&pgScancodeWrapper_Type,
-                                           key_tuple, NULL);
-    Py_DECREF(key_tuple);
-    return ret_obj;
+    obj = PyObject_NEW(pgScancodeWrapper, &pgScancodeWrapper_Type);
+    if (!obj) {
+        return NULL;
+    }
+
+    obj->keys = key_state;
+    obj->length = num_keys;
+
+    return (PyObject *)obj;
 }
 
 /* Keep our own key-name table for backwards compatibility.
