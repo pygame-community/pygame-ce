@@ -1753,20 +1753,20 @@ static PyObject *
 vector_repr(pgVector *self)
 {
     /* The repr() of the largest possible Vector3 looks like
-     * "<Vector3({d}, {d}, {d})>" where 'd' has a maximum size of 32 bytes
+     * "Vector3({d}, {d}, {d})" where 'd' has a maximum size of 32 bytes
      *  so allocate a 16 + 3 * 32 == 112 byte buffer
      */
     char buffer[STRING_BUF_SIZE_REPR];
     int tmp;
 
     if (self->dim == 2) {
-        tmp = PyOS_snprintf(buffer, STRING_BUF_SIZE_REPR, "<Vector2(%g, %g)>",
+        tmp = PyOS_snprintf(buffer, STRING_BUF_SIZE_REPR, "Vector2(%g, %g)",
                             self->coords[0], self->coords[1]);
     }
     else if (self->dim == 3) {
-        tmp = PyOS_snprintf(buffer, STRING_BUF_SIZE_REPR,
-                            "<Vector3(%g, %g, %g)>", self->coords[0],
-                            self->coords[1], self->coords[2]);
+        tmp =
+            PyOS_snprintf(buffer, STRING_BUF_SIZE_REPR, "Vector3(%g, %g, %g)",
+                          self->coords[0], self->coords[1], self->coords[2]);
     }
     else {
         return RAISE(
@@ -2181,7 +2181,7 @@ _vector2_set(pgVector *self, PyObject *xOrSequence, PyObject *y)
                 return 0;
         }
         else if (PyUnicode_Check(xOrSequence)) {
-            char *delimiter[3] = {"<Vector2(", ", ", ")>"};
+            char *delimiter[3] = {"Vector2(", ", ", ")"};
             Py_ssize_t error_code;
             error_code = _vector_coords_from_string(xOrSequence, delimiter,
                                                     self->coords, self->dim);
@@ -2616,7 +2616,7 @@ _vector3_set(pgVector *self, PyObject *xOrSequence, PyObject *y, PyObject *z)
                 return 0;
         }
         else if (PyUnicode_Check(xOrSequence)) {
-            char *delimiter[4] = {"<Vector3(", ", ", ", ", ")>"};
+            char *delimiter[4] = {"Vector3(", ", ", ", ", ")"};
             Py_ssize_t error_code;
             error_code = _vector_coords_from_string(xOrSequence, delimiter,
                                                     self->coords, self->dim);
