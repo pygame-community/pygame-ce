@@ -2079,8 +2079,8 @@ _color_getAttr_swizzle(pgColorObject *self, PyObject *attr_name)
         goto swizzle_failed;
     }
 
-    if (len == 3 || len == 4) {
-        static Uint8 rgba[] = {0, 0, 0, 255};
+    if (len == 4) {
+        static Uint8 rgba[4];
         res = (PyObject *)pgColor_New(rgba);
     }
     else {
@@ -2117,7 +2117,7 @@ _color_getAttr_swizzle(pgColorObject *self, PyObject *attr_name)
                 goto swizzle_failed;
         }
 
-        if (len == 3 || len == 4) {
+        if (len == 4) {
             ((pgColorObject *)res)->data[i] = value;
         }
         else {
