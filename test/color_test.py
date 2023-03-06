@@ -500,7 +500,7 @@ class ColorTypeTest(unittest.TestCase):
 
     def test_repr(self):
         c = pygame.Color(68, 38, 26, 69)
-        t = "(68, 38, 26, 69)"
+        t = "<Color(68, 38, 26, 69)>"
         self.assertEqual(repr(c), t)
 
     def test_add(self):
@@ -1171,6 +1171,51 @@ class ColorTypeTest(unittest.TestCase):
         self.assertRaises(ValueError, lambda: color0.lerp((0, 0, 256, 0), 0.5))
         self.assertRaises(ValueError, lambda: color0.lerp((0, 0, 0, 256), 0.5))
         self.assertRaises(TypeError, lambda: color0.lerp(0.2, 0.5))
+
+    def test_swizzle_get(self):
+        c = pygame.color.Color(10, 20, 30, 40)
+
+        self.assertEqual(c.rg, (10, 20))
+        self.assertEqual(c.rb, (10, 30))
+        self.assertEqual(c.rr, (10, 10))
+
+        self.assertEqual(c.rgb, (10, 20, 30))
+        self.assertEqual(c.bgr, (30, 20, 10))
+        self.assertEqual(c.rrr, (10, 10, 10))
+        self.assertEqual(c.rrg, (10, 10, 20))
+        self.assertEqual(c.rrb, (10, 10, 30))
+        self.assertEqual(c.ggg, (20, 20, 20))
+        self.assertEqual(c.ggb, (20, 20, 30))
+        self.assertEqual(c.ggr, (20, 20, 10))
+        self.assertEqual(c.bbb, (30, 30, 30))
+        self.assertEqual(c.bbg, (30, 30, 20))
+        self.assertEqual(c.bbr, (30, 30, 10))
+
+        c.rgba = c.abgr
+        self.assertEqual(c.rgba, (40, 30, 20, 10))
+        c.rgba = c.rgga
+        self.assertEqual(c.rgba, (40, 30, 30, 10))
+        c.rg = c.gg
+        self.assertEqual(c.rgba, (30, 30, 30, 10))
+
+        with self.assertRaises(AttributeError):
+            c.rr = (10, 10)
+            c.bb = (10, 10)
+            c.gg = (10, 10)
+            c.aa = (10, 10)
+            c.aaa = (10, 10, 100)
+            c.rgb = (256, 256, 256)
+
+    def test_swizzle_return_types(self):
+        c = pygame.color.Color(10, 20, 30, 40)
+
+        self.assertEqual(type(c.rgb), pygame.color.Color)
+        self.assertEqual(type(c.rgba), pygame.color.Color)
+        self.assertEqual(type(c.bgra), pygame.color.Color)
+        self.assertEqual(type(c.bg), tuple)
+        self.assertEqual(type(c.gr), tuple)
+        self.assertEqual(type(c.rr), tuple)
+        self.assertEqual(type(c.rrggbb), tuple)
 
     def test_premul_alpha(self):
         # setup

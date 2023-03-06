@@ -1271,6 +1271,66 @@ class TransformModuleTest(unittest.TestCase):
         self.assertEqual(s1.get_rect(), pygame.Rect(0, 0, 0, 0))
         self.assertEqual(s2.get_rect(), pygame.Rect(0, 0, 0, 0))
 
+    def test_invert(self):
+        surface = pygame.Surface((10, 10), depth=32)
+
+        surface.fill((255, 0, 0))
+        surface = pygame.transform.invert(surface)
+        self.assertEqual(surface.get_at((4, 4)), (0, 255, 255, 255))
+
+        surface.fill((200, 0, 45))
+        surface = pygame.transform.invert(surface)
+        self.assertEqual(surface.get_at((4, 4)), (55, 255, 210, 255))
+
+        surface.fill((38, 201, 12))
+        surface = pygame.transform.invert(surface)
+        self.assertEqual(surface.get_at((4, 4)), (217, 54, 243, 255))
+
+        surface.fill((39, 210, 30))
+        surface = pygame.transform.invert(surface)
+        self.assertEqual(surface.get_at((4, 4)), (216, 45, 225, 255))
+
+        surface.fill((255, 0, 0))
+        pygame.transform.invert(surface, surface)
+        self.assertEqual(surface.get_at((4, 4)), (0, 255, 255, 255))
+
+        surface.fill((200, 0, 45))
+        pygame.transform.invert(surface, surface)
+        self.assertEqual(surface.get_at((4, 4)), (55, 255, 210, 255))
+
+        surface.fill((38, 201, 12))
+        pygame.transform.invert(surface, surface)
+        self.assertEqual(surface.get_at((4, 4)), (217, 54, 243, 255))
+
+        surface.fill((39, 210, 30))
+        pygame.transform.invert(surface, surface)
+        self.assertEqual(surface.get_at((4, 4)), (216, 45, 225, 255))
+
+        self.assertRaises(
+            ValueError, pygame.transform.invert, surface, pygame.Surface((100, 100))
+        )
+        self.assertRaises(
+            ValueError, pygame.transform.invert, surface, pygame.Surface((5, 5))
+        )
+        self.assertRaises(
+            ValueError,
+            pygame.transform.invert,
+            surface,
+            pygame.Surface((10, 10), depth=24),
+        )
+        self.assertRaises(
+            ValueError,
+            pygame.transform.invert,
+            surface,
+            pygame.Surface((10, 10), depth=16),
+        )
+        self.assertRaises(
+            ValueError,
+            pygame.transform.invert,
+            surface,
+            pygame.Surface((10, 10), depth=8),
+        )
+
     def test_smoothscale(self):
         """Tests the stated boundaries, sizing, and color blending of smoothscale function"""
         # __doc__ (as of 2008-08-02) for pygame.transform.smoothscale:

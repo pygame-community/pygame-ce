@@ -517,7 +517,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: set_direction
 
       | :sl:`set the script direction for text shaping`
-      | :sg:`set_direction(direction=int) -> None`
+      | :sg:`set_direction(direction) -> None`
 
       Sets the font direction for harfbuzz text rendering, taking in an integer
       between 0 and 3 (inclusive) as input. There are convenient constants defined
@@ -530,6 +530,9 @@ solves no longer exists, it will likely be removed in the future.
 
       This method requires pygame built with SDL_ttf 2.20.0 or above. Otherwise the
       method will raise a pygame.error.
+
+      .. note:: multiline renders with :meth:`render` do not play nicely with top-to-bottom
+         or bottom-to-top rendering.
 
       .. versionadded:: 2.1.4
       
