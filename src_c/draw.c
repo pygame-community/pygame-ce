@@ -1092,26 +1092,8 @@ clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2, int width,
         surf->clip_rect.y + surf->clip_rect.h < top) {
         return 0;
     }
-    if (*y1 == *y2) {
-        if (*x2 < *x1) {
-            *x2 = MAX(surf->clip_rect.x, *x2);
-            *x1 = MIN(surf->clip_rect.x + surf->clip_rect.w, *x1);
-        }
-        else {
-            *x1 = MAX(surf->clip_rect.x, *x1);
-            *x2 = MIN(surf->clip_rect.x + surf->clip_rect.w, *x2);
-        }
-    }
-    else if (*x1 == *x2) {
-        if (*y2 < *y1) {
-            *y2 = MAX(surf->clip_rect.y, *y2);
-            *y1 = MIN(surf->clip_rect.y + surf->clip_rect.h, *y1);
-        }
-        else {
-            *y1 = MAX(surf->clip_rect.y, *y1);
-            *y2 = MIN(surf->clip_rect.y + surf->clip_rect.h, *y2);
-        }
-    }
+
+
     return 1;
 }
 
@@ -1467,72 +1449,44 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
                 int y2, int width, int *drawn_area)
 {
     int dx, dy, err, e2, sx, sy, y;
-    double fx1, fx2, fy1, fy2;
     int left_top, right_bottom;
-    int half_width = width / 2 + 1;
     int start_x = surf->clip_rect.x;
     int start_y = surf->clip_rect.y;
     int end_x = surf->clip_rect.x + surf->clip_rect.w;
     int end_y = surf->clip_rect.y + surf->clip_rect.h;
     int xinc = 0;
+    int extra_width = 1 - (width % 2);
+    //validate not point first
+    // check 1 width
+
+    if (width == 1) {
+        draw_line(surf, x1, y1, x2, y2, color, drawn_area);
+        return;
+    }
+
+
+    width = (width / 2);
+
     /* Decide which direction to grow (width/thickness). */
     if (abs(x1 - x2) <= abs(y1 - y2)) {
         /* The line's thickness will be in the x direction. The top/bottom
          * ends of the line will be flat. */
         xinc = 1;
-        start_x -= half_width;
-        end_x += half_width;
+        start_x -= width;
+        end_x += width;
     }
     else {
-        start_y -= half_width;
-        end_y += half_width;
+        start_y -= width;
+        end_y += width;
     }
 
-    // Determine endpoints for line
-    int inside1 = inside_clip(surf, x1, y1);
-    int inside2 = inside_clip(surf, x2, y2);
-    // Based on the Cohen Sutherland algorithm
-    while (true) {
-        dx = x2 - x1;
-        dy = y2 - y1;
+    if (!clip_line(surf, &x1, &y1, &x2, &y2, width, xinc)) return;
 
-        if !(inside1 | inside2) {
-            break;
-        }
-        else if (
-            inside1 & inside2
-        ) break;
-        else {
-            inside = inside1 ? inside1 : inside2;
-            if (inside & 8) {
-                fx1 = x1 + dx * (end_y - y1) / dy;
-                fy1 = end_y;
+    if (x1 == x2 && y1 == y2) { /* Single point */
+        for (int x = MAX((x1 - width)  + extra_width, start_x); x<=MIN(end_x, x1 + width); x++) {
+                set_and_check_rect(surf, x, y1, color, drawn_area);
             }
-            else if (inside & 4) {
-                // point is below the rectangle
-                fx1 = x1 + dx * (surf->clip_rect.y - half_width - y1) / dy;
-                fy1 = surf->clip_rect.y - half_width;
-            }
-            else if (inside & 2) {
-                fy1 = y1 + dy * (end_x - x1) / dx;
-                fx1 = end_x;
-            }
-            else if (inside & 1) {
-                // point is to the left of rectangle
-                fy1 = y1 + dy * (surf->clip_rect.x - half_width - x1) / dx;
-                fx1 = surf->clip_rect.x - half_width;
-            }
-            if (inside == inside1) {
-                x1 = fx1;
-                y1 = fy1;
-                inside1 = inside_clip(surf, x1, y1);
-            }
-            else {
-                x2 = fx1;
-                y2 = fy1;
-                inside1 = inside_clip(surf, x2, y2);
-            }
-        }
+        return;
     }
 
     dx = abs(x2 - x1);
@@ -1542,15 +1496,23 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     err = (dx > dy ? dx : -dy) / 2;
     // draw it
     if (xinc) {
-        while (y1 < y2) {
-
-        for x in range(cur_x - width/2, cur_x + width/2) {
-            if (surf->rect.x < cur_x < end_x)
-            set_and_check_rect(surf, x, y, pixel_color, drawn_area);
+        while (y1 != (y2+sy)) {
+            for (int x = MAX((x1 - width)  + extra_width, start_x); x<=MIN(end_x, x1 + width); x++) {
+                set_and_check_rect(surf, x, y1, color, drawn_area);
+            }
+            e2 = err;
+            if (e2 >-dx) { err -= dy; x1 += sx; }
+            if (e2 < dy) { err += dx; y1 += sy; }
         }
-        e2 = err;
-        if (e2 >-dx) { err -= dy; cur_x += sx; }
-        if (e2 < dy) { err += dx; y += sy; }
+    }
+    else {
+        while (x1 != (x2+sx)) {
+            for (int y = MAX((y1 - width) + extra_width , start_y); y <= MIN(end_y, y1 + width); y++) {
+                set_and_check_rect(surf, x1, y, color, drawn_area);
+            }
+            e2 = err;
+            if (e2 >-dx) { err -= dy; x1 += sx; }
+            if (e2 < dy) { err += dx; y1 += sy; }
         }
     }
 
