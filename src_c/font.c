@@ -784,7 +784,7 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
    So, this is a compat patch for that behavior
  */
 #if SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \
-                   SDL_TTF_PATCHLEVEL) < SDL_TTF_VERSIONNUM(2, 22, 0)
+                   SDL_TTF_PATCHLEVEL) < SDL_VERSIONNUM(2, 22, 0)
         case 2: {
             dir = TTF_DIRECTION_BTT;
             break;
