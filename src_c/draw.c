@@ -1633,8 +1633,8 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
             : 1;
     x0 += width / 2;
     y0 += height / 2;
-    int x_offset = (width + 1) % 2;
-    int y_offset = (height + 1) % 2;
+    double x_offset = (width + 1) % 2;
+    double y_offset = (height + 1) % 2;
     width = width / 2;
     height = height / 2;
     short line = 1;
@@ -1653,7 +1653,7 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
         2 * (height - thickness) * (height - thickness) * x_inner;
     double dy = 2 * width * width * y;
     double dy_inner = 2 * (width - thickness) * (width - thickness) * y_inner;
-    int start_x, start_x_offset, end_x, end_x_offset, l, r, t, b;
+    double start_x, start_x_offset, end_x, end_x_offset, l, r, t, b;
 
     while (dx < dy) {
         while (d1 < 0) {
