@@ -2147,16 +2147,16 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
         error = FBLITS_ERR_INCORRECT_ARGS_NUM;
         goto on_error;
     }
-    else if (nargs == 2) {
-        if (PyLong_Check(args[1])) {
-            flags_numeric = PyLong_AsLong(args[1]);
-            if (PyErr_Occurred()) {
-                return NULL;
-            }
-        }
-        else {
+
+    /* Get the flags if they are passed */
+    if (nargs == 2) {
+        if (!PyLong_Check(args[1])) {
             error = FBLITS_ERR_FLAG_NOT_NUMERIC;
             goto on_error;
+        }
+        flags_numeric = PyLong_AsLong(args[1]);
+        if (PyErr_Occurred()) {
+            return NULL;
         }
     }
 
