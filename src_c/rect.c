@@ -224,7 +224,7 @@ pgRect_FromObject(PyObject *obj, SDL_Rect *temp)
     Py_ssize_t length;
 
     if (pgRect_Check(obj)) {
-        return &((pgRectObject *)obj)->r;
+        return &pgRect_AsRect(obj);
     }
 
     if (pgSequenceFast_Check(obj)) {
