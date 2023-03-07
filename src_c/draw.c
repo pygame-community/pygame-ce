@@ -1481,7 +1481,7 @@ static void
 draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
                 int y2, int width, int *drawn_area)
 {
-    int dx, dy, err, e2, sx, sy, y, start_numx, start_numy, end_numx, end_numy;
+    int dx, dy, err, e2, sx, sy;
     int start_x = surf->clip_rect.x;
     int start_y = surf->clip_rect.y;
     int end_x = surf->clip_rect.x + surf->clip_rect.w;
@@ -1506,8 +1506,6 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
         xinc = 1;
         start_x -= width;
         end_x += width;
-        start_numy = start_y;
-        end_numy = end_y;
     }
     else {
         start_y -= width;
@@ -1527,18 +1525,12 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     dy = abs(y2 - y1);
     sx = x2 > x1 ? 1 : -1;
     sy = y2 > y1 ? 1 : -1;
-    start_numy = y2 > y1 ? start_y : end_y;
-    start_numx = x2 > x1 ? start_x : end_x;
-    end_numy = y2 < y1 ? start_y : end_y;
-    end_numx = x2 < x1 ? start_x : end_x;
-
-
     err = (dx > dy ? dx : -dy) / 2;
     // draw it
     if (xinc) {
         while (y1 != (y2+sy)) {
-            if (start_numy <= y1 < end_numy) {
-            for (int x = MAX((x1 - width)  + extra_width, surf->clip_rect.x); x<=MIN(surf->clip_rect.x + surf->clip_rect.w - 1, x1 + width); x++) {
+            if (start_y <= y1 && y1 < end_y) {
+            for (int x = MAX((x1 - width) + extra_width, surf->clip_rect.x); x<=MIN(surf->clip_rect.x + surf->clip_rect.w - 1, x1 + width); x++) {
 
 
                 set_at_unchecked(surf, x, y1, color);
@@ -1553,10 +1545,8 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     }
     else {
         while (x1 != (x2+sx)) {
-            if (start_numx <= x1 < end_numx) {
+            if (start_x <= x1 && x1 < end_x) {
             for (int y = MAX((y1 - width) + extra_width , surf->clip_rect.y); y <= MIN(surf->clip_rect.y + surf->clip_rect.h -1, y1 + width); y++) {
-
-
                 set_at_unchecked(surf, x1, y, color);
                 add_pixel_to_drawn_list(x1, y, drawn_area);
 
