@@ -203,6 +203,8 @@
                 optimizations are applied if blit_sequence is a list or a tuple (using one
                 of them is recommended).
 
+      .. versionadded:: 2.1.4
+
       .. ## Surface.fblits ##
 
    .. method:: convert
