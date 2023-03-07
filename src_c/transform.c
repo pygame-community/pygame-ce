@@ -3066,39 +3066,115 @@ surf_average_color(PyObject *self, PyObject *args, PyObject *kwargs)
     return Py_BuildValue("(bbbb)", r, g, b, a);
 }
 
+SDL_Surface *
+invert(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
+{
+    SDL_Surface *src = pgSurface_AsSurface(srcobj);
+    SDL_Surface *newsurf;
+
+    if (!dstobj) {
+        newsurf = newsurf_fromsurf(src, srcobj->surf->w, srcobj->surf->h);
+        if (!newsurf)
+            return NULL;
+    }
+    else {
+        newsurf = pgSurface_AsSurface(dstobj);
+    }
+
+    if (newsurf->w != src->w || newsurf->h != src->h) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Destination surface must be the same size as source surface."));
+    }
+
+    if (src->format->BytesPerPixel != newsurf->format->BytesPerPixel) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Source and destination surfaces need the same format."));
+    }
+
+    int x, y;
+    for (y = 0; y < src->h; y++) {
+        for (x = 0; x < src->w; x++) {
+            Uint32 pixel;
+            Uint8 *pix;
+            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format,
+                        pix);
+            unsigned char r, g, b, a;
+            SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
+            Uint32 new_pixel = SDL_MapRGBA(newsurf->format, ~r, ~g, ~b, a);
+            SURF_SET_AT(new_pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
+                        newsurf->format, pix);
+        }
+    }
+
+    SDL_UnlockSurface(newsurf);
+
+    return newsurf;
+}
+
+static PyObject *
+surf_invert(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    pgSurfaceObject *surfobj2 = NULL;
+    SDL_Surface *newsurf;
+
+    static char *keywords[] = {"surface", "dest_surface", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!", keywords,
+                                     &pgSurface_Type, &surfobj,
+                                     &pgSurface_Type, &surfobj2))
+        return NULL;
+
+    newsurf = invert(surfobj, surfobj2);
+
+    if (!newsurf) {
+        return NULL;
+    }
+
+    if (surfobj2) {
+        Py_INCREF(surfobj2);
+        return (PyObject *)surfobj2;
+    }
+    return (PyObject *)pgSurface_New(newsurf);
+}
+
 static PyMethodDef _transform_methods[] = {
     {"scale", (PyCFunction)surf_scale, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMSCALE},
+     DOC_TRANSFORM_SCALE},
     {"scale_by", (PyCFunction)surf_scale_by, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMSCALEBY},
+     DOC_TRANSFORM_SCALEBY},
     {"rotate", (PyCFunction)surf_rotate, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMROTATE},
+     DOC_TRANSFORM_ROTATE},
     {"flip", (PyCFunction)surf_flip, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMFLIP},
+     DOC_TRANSFORM_FLIP},
     {"rotozoom", (PyCFunction)surf_rotozoom, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMROTOZOOM},
+     DOC_TRANSFORM_ROTOZOOM},
     {"chop", (PyCFunction)surf_chop, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMCHOP},
+     DOC_TRANSFORM_CHOP},
     {"scale2x", (PyCFunction)surf_scale2x, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMSCALE2X},
+     DOC_TRANSFORM_SCALE2X},
     {"smoothscale", (PyCFunction)surf_scalesmooth,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMSMOOTHSCALE},
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_SMOOTHSCALE},
     {"smoothscale_by", (PyCFunction)surf_scalesmooth_by,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMSMOOTHSCALEBY},
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_SMOOTHSCALEBY},
     {"get_smoothscale_backend", surf_get_smoothscale_backend, METH_NOARGS,
-     DOC_PYGAMETRANSFORMGETSMOOTHSCALEBACKEND},
+     DOC_TRANSFORM_GETSMOOTHSCALEBACKEND},
     {"set_smoothscale_backend", (PyCFunction)surf_set_smoothscale_backend,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMSETSMOOTHSCALEBACKEND},
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_SETSMOOTHSCALEBACKEND},
     {"threshold", (PyCFunction)surf_threshold, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMTHRESHOLD},
+     DOC_TRANSFORM_THRESHOLD},
     {"laplacian", (PyCFunction)surf_laplacian, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMTHRESHOLD},
+     DOC_TRANSFORM_THRESHOLD},
     {"average_surfaces", (PyCFunction)surf_average_surfaces,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMAVERAGESURFACES},
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_AVERAGESURFACES},
     {"average_color", (PyCFunction)surf_average_color,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMAVERAGECOLOR},
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_AVERAGECOLOR},
+    {"invert", (PyCFunction)surf_invert, METH_VARARGS | METH_KEYWORDS,
+     DOC_TRANSFORM_INVERT},
     {"grayscale", (PyCFunction)surf_grayscale, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMGRAYSCALE},
+     DOC_TRANSFORM_GRAYSCALE},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(transform)
@@ -3108,7 +3184,7 @@ MODINIT_DEFINE(transform)
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "transform",
-                                         DOC_PYGAMETRANSFORM,
+                                         DOC_TRANSFORM,
                                          sizeof(struct _module_state),
                                          _transform_methods,
                                          NULL,

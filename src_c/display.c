@@ -2510,50 +2510,48 @@ pg_set_allow_screensaver(PyObject *self, PyObject *arg, PyObject *kwargs)
 }
 
 static PyMethodDef _pg_display_methods[] = {
-    {"init", (PyCFunction)pg_display_init, METH_NOARGS, DOC_PYGAMEDISPLAYINIT},
-    {"quit", (PyCFunction)pg_display_quit, METH_NOARGS, DOC_PYGAMEDISPLAYQUIT},
-    {"get_init", (PyCFunction)pg_get_init, METH_NOARGS,
-     DOC_PYGAMEDISPLAYGETINIT},
+    {"init", (PyCFunction)pg_display_init, METH_NOARGS, DOC_DISPLAY_INIT},
+    {"quit", (PyCFunction)pg_display_quit, METH_NOARGS, DOC_DISPLAY_QUIT},
+    {"get_init", (PyCFunction)pg_get_init, METH_NOARGS, DOC_DISPLAY_GETINIT},
     {"get_active", (PyCFunction)pg_get_active, METH_NOARGS,
-     DOC_PYGAMEDISPLAYGETACTIVE},
+     DOC_DISPLAY_GETACTIVE},
 
     /* { "set_driver", set_driver, 1, doc_set_driver }, */
     {"get_driver", (PyCFunction)pg_get_driver, METH_NOARGS,
-     DOC_PYGAMEDISPLAYGETDRIVER},
+     DOC_DISPLAY_GETDRIVER},
     {"get_wm_info", (PyCFunction)pg_get_wm_info, METH_NOARGS,
-     DOC_PYGAMEDISPLAYGETWMINFO},
-    {"Info", (PyCFunction)pgInfo, METH_NOARGS, DOC_PYGAMEDISPLAYINFO},
+     DOC_DISPLAY_GETWMINFO},
+    {"Info", (PyCFunction)pgInfo, METH_NOARGS, DOC_DISPLAY_INFO},
     {"get_surface", (PyCFunction)pg_get_surface, METH_NOARGS,
-     DOC_PYGAMEDISPLAYGETSURFACE},
+     DOC_DISPLAY_GETSURFACE},
     {"get_window_size", (PyCFunction)pg_window_size, METH_NOARGS,
-     DOC_PYGAMEDISPLAYGETWINDOWSIZE},
+     DOC_DISPLAY_GETWINDOWSIZE},
 
     {"set_mode", (PyCFunction)pg_set_mode, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDISPLAYSETMODE},
+     DOC_DISPLAY_SETMODE},
     {"mode_ok", (PyCFunction)pg_mode_ok, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDISPLAYMODEOK},
+     DOC_DISPLAY_MODEOK},
     {"list_modes", (PyCFunction)pg_list_modes, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDISPLAYLISTMODES},
+     DOC_DISPLAY_LISTMODES},
     {"get_num_displays", (PyCFunction)pg_num_displays, METH_NOARGS,
-     DOC_PYGAMEDISPLAYGETNUMDISPLAYS},
+     DOC_DISPLAY_GETNUMDISPLAYS},
 
-    {"flip", (PyCFunction)pg_flip, METH_NOARGS, DOC_PYGAMEDISPLAYFLIP},
-    {"update", (PyCFunction)pg_update, METH_VARARGS, DOC_PYGAMEDISPLAYUPDATE},
+    {"flip", (PyCFunction)pg_flip, METH_NOARGS, DOC_DISPLAY_FLIP},
+    {"update", (PyCFunction)pg_update, METH_VARARGS, DOC_DISPLAY_UPDATE},
 
-    {"set_palette", pg_set_palette, METH_VARARGS, DOC_PYGAMEDISPLAYSETPALETTE},
-    {"set_gamma", pg_set_gamma, METH_VARARGS, DOC_PYGAMEDISPLAYSETGAMMA},
+    {"set_palette", pg_set_palette, METH_VARARGS, DOC_DISPLAY_SETPALETTE},
+    {"set_gamma", pg_set_gamma, METH_VARARGS, DOC_DISPLAY_SETGAMMA},
     {"set_gamma_ramp", pg_set_gamma_ramp, METH_VARARGS,
-     DOC_PYGAMEDISPLAYSETGAMMARAMP},
+     DOC_DISPLAY_SETGAMMARAMP},
 
-    {"set_caption", pg_set_caption, METH_VARARGS, DOC_PYGAMEDISPLAYSETCAPTION},
+    {"set_caption", pg_set_caption, METH_VARARGS, DOC_DISPLAY_SETCAPTION},
     {"get_caption", (PyCFunction)pg_get_caption, METH_NOARGS,
-     DOC_PYGAMEDISPLAYGETCAPTION},
-    {"set_icon", pg_set_icon, METH_O, DOC_PYGAMEDISPLAYSETICON},
+     DOC_DISPLAY_GETCAPTION},
+    {"set_icon", pg_set_icon, METH_O, DOC_DISPLAY_SETICON},
 
-    {"iconify", (PyCFunction)pg_iconify, METH_NOARGS,
-     DOC_PYGAMEDISPLAYICONIFY},
+    {"iconify", (PyCFunction)pg_iconify, METH_NOARGS, DOC_DISPLAY_ICONIFY},
     {"toggle_fullscreen", (PyCFunction)pg_toggle_fullscreen, METH_NOARGS,
-     DOC_PYGAMEDISPLAYTOGGLEFULLSCREEN},
+     DOC_DISPLAY_TOGGLEFULLSCREEN},
 
     {"_set_autoresize", (PyCFunction)pg_display_set_autoresize, METH_O,
      "provisional API, subject to change"},
@@ -2563,26 +2561,26 @@ static PyMethodDef _pg_display_methods[] = {
     {"_get_renderer_info", (PyCFunction)pg_get_scaled_renderer_info,
      METH_NOARGS, "provisional API, subject to change"},
     {"get_desktop_sizes", (PyCFunction)pg_get_desktop_screen_sizes,
-     METH_NOARGS, DOC_PYGAMEDISPLAYGETDESKTOPSIZES},
+     METH_NOARGS, DOC_DISPLAY_GETDESKTOPSIZES},
     {"is_fullscreen", (PyCFunction)pg_is_fullscreen, METH_NOARGS,
      "provisional API, subject to change"},
 
     {"gl_set_attribute", pg_gl_set_attribute, METH_VARARGS,
-     DOC_PYGAMEDISPLAYGLSETATTRIBUTE},
+     DOC_DISPLAY_GLSETATTRIBUTE},
     {"gl_get_attribute", pg_gl_get_attribute, METH_VARARGS,
-     DOC_PYGAMEDISPLAYGLGETATTRIBUTE},
+     DOC_DISPLAY_GLGETATTRIBUTE},
 
     {"get_allow_screensaver", (PyCFunction)pg_get_allow_screensaver,
-     METH_NOARGS, DOC_PYGAMEDISPLAYGETALLOWSCREENSAVER},
+     METH_NOARGS, DOC_DISPLAY_GETALLOWSCREENSAVER},
     {"set_allow_screensaver", (PyCFunction)pg_set_allow_screensaver,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMEDISPLAYSETALLOWSCREENSAVER},
+     METH_VARARGS | METH_KEYWORDS, DOC_DISPLAY_SETALLOWSCREENSAVER},
 
     {NULL, NULL, 0, NULL}};
 
 #ifndef PYPY_VERSION
 static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                      "display",
-                                     DOC_PYGAMEDISPLAY,
+                                     DOC_DISPLAY,
                                      sizeof(_DisplayState),
                                      _pg_display_methods,
 #pragma PG_WARN(At some point should add GC slot functions.)
@@ -2592,15 +2590,9 @@ static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                      NULL};
 #else  /* PYPY_VERSION */
 static struct PyModuleDef _module = {
-    PyModuleDef_HEAD_INIT,
-    "display",
-    DOC_PYGAMEDISPLAY,
-    -1, /* PyModule_GetState() not implemented */
-    _pg_display_methods,
-    NULL,
-    NULL,
-    NULL,
-    NULL};
+    PyModuleDef_HEAD_INIT, "display", DOC_DISPLAY, -1, /* PyModule_GetState()
+                                                          not implemented */
+    _pg_display_methods,   NULL,      NULL,        NULL, NULL};
 #endif /* PYPY_VERSION */
 
 MODINIT_DEFINE(display)

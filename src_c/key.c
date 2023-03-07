@@ -506,22 +506,22 @@ key_set_text_input_rect(PyObject *self, PyObject *obj)
 }
 
 static PyMethodDef _key_methods[] = {
-    {"set_repeat", key_set_repeat, METH_VARARGS, DOC_PYGAMEKEYSETREPEAT},
-    {"get_repeat", key_get_repeat, METH_NOARGS, DOC_PYGAMEKEYGETREPEAT},
-    {"get_pressed", key_get_pressed, METH_NOARGS, DOC_PYGAMEKEYGETPRESSED},
+    {"set_repeat", key_set_repeat, METH_VARARGS, DOC_KEY_SETREPEAT},
+    {"get_repeat", key_get_repeat, METH_NOARGS, DOC_KEY_GETREPEAT},
+    {"get_pressed", key_get_pressed, METH_NOARGS, DOC_KEY_GETPRESSED},
     {"name", (PyCFunction)key_name, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEKEYNAME},
+     DOC_KEY_NAME},
     {"key_code", (PyCFunction)key_code, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEKEYKEYCODE},
-    {"get_mods", key_get_mods, METH_NOARGS, DOC_PYGAMEKEYGETMODS},
-    {"set_mods", key_set_mods, METH_VARARGS, DOC_PYGAMEKEYSETMODS},
-    {"get_focused", key_get_focused, METH_NOARGS, DOC_PYGAMEKEYGETFOCUSED},
+     DOC_KEY_KEYCODE},
+    {"get_mods", key_get_mods, METH_NOARGS, DOC_KEY_GETMODS},
+    {"set_mods", key_set_mods, METH_VARARGS, DOC_KEY_SETMODS},
+    {"get_focused", key_get_focused, METH_NOARGS, DOC_KEY_GETFOCUSED},
     {"start_text_input", key_start_text_input, METH_NOARGS,
-     DOC_PYGAMEKEYSTARTTEXTINPUT},
+     DOC_KEY_STARTTEXTINPUT},
     {"stop_text_input", key_stop_text_input, METH_NOARGS,
-     DOC_PYGAMEKEYSTOPTEXTINPUT},
+     DOC_KEY_STOPTEXTINPUT},
     {"set_text_input_rect", key_set_text_input_rect, METH_O,
-     DOC_PYGAMEKEYSETTEXTINPUTRECT},
+     DOC_KEY_SETTEXTINPUTRECT},
 
     {NULL, NULL, 0, NULL}};
 
@@ -531,7 +531,7 @@ MODINIT_DEFINE(key)
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "key",
-                                         DOC_PYGAMEKEY,
+                                         DOC_KEY,
                                          -1,
                                          _key_methods,
                                          NULL,
