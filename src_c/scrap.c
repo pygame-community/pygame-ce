@@ -467,9 +467,9 @@ static PyMethodDef scrap_builtins[] = {
     {"set_mode", _scrap_set_mode, METH_VARARGS, DOC_SCRAP_SETMODE},
 
 #endif
-    {"get_text", _scrap_get_text, METH_NOARGS, DOC_PYGAMESCRAPGETTEXT},
-    {"has_text", _scrap_has_text, METH_NOARGS, DOC_PYGAMESCRAPHASTEXT},
-    {"put_text", _scrap_put_text, METH_VARARGS, DOC_PYGAMESCRAPPUTTEXT},
+    {"get_text", _scrap_get_text, METH_NOARGS, DOC_SCRAP_GETTEXT},
+    {"has_text", _scrap_has_text, METH_NOARGS, DOC_SCRAP_HASTEXT},
+    {"put_text", _scrap_put_text, METH_VARARGS, DOC_SCRAP_PUTTEXT},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(scrap)
