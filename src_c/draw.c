@@ -1633,15 +1633,15 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
             : 1;
     x0 += width / 2;
     y0 += height / 2;
-    double x_offset = (width + 1) % 2;
-    double y_offset = (height + 1) % 2;
+    int x_offset = (width + 1) % 2;
+    int y_offset = (height + 1) % 2;
     width = width / 2;
     height = height / 2;
     short line = 1;
-    long long x = 0;
-    long long x_inner = 0;
-    long long y = height;
-    long long y_inner = height - thickness;
+    double x = 0;
+    double x_inner = 0;
+    double y = height;
+    double y_inner = height - thickness;
     double d1 =
         (height * height) - (width * width * height) + (0.25 * width * width);
     double d1_inner =
@@ -1653,7 +1653,7 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
         2 * (height - thickness) * (height - thickness) * x_inner;
     double dy = 2 * width * width * y;
     double dy_inner = 2 * (width - thickness) * (width - thickness) * y_inner;
-    double start_x, start_x_offset, end_x, end_x_offset, l, r, t, b;
+    int start_x, start_x_offset, end_x, end_x_offset, l, r, t, b;
 
     while (dx < dy) {
         while (d1 < 0) {
@@ -1661,16 +1661,17 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
             dx = dx + (2 * height * height);
             d1 = d1 + dx + (height * height);
         }
-        start_x = start_slope ? round(y / start_slope) : 0;
-        start_x_offset = start_slope ? round((y - y_offset) / start_slope) : 0;
-        end_x = end_slope ? round(y / end_slope) : 0;
-        end_x_offset = end_slope ? round((y - y_offset) / end_slope) : 0;
+        start_x = start_slope ? (int)round(y / start_slope) : 0;
+        start_x_offset =
+            start_slope ? (int)round((y - y_offset) / start_slope) : 0;
+        end_x = end_slope ? (int)round(y / end_slope) : 0;
+        end_x_offset = end_slope ? (int)round((y - y_offset) / end_slope) : 0;
 
         // DRAW_PART
-        l = x0 - x;
-        r = x0 + x - x_offset;
-        t = y0 - y;
-        b = y0 + y - y_offset;
+        l = x0 - (int)x;
+        r = x0 + (int)x - x_offset;
+        t = y0 - (int)y;
+        b = y0 + (int)y - y_offset;
         if (left) {
             if (start_angle < M_PI) {
                 if (end_angle < M_PI) {
@@ -1683,12 +1684,13 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else {
                                 drawhorzlineclipbounding(
                                     surf, color, l, t,
-                                    MIN(x0 + start_x, x0 - x_inner),
+                                    (int)MIN(x0 + start_x, x0 - x_inner),
                                     drawn_area);
                                 if (x0 + x_inner - x_offset <= x0 + start_x) {
                                     drawhorzlineclipbounding(
-                                        surf, color, x0 + x_inner - x_offset,
-                                        t, MIN(r, x0 + start_x), drawn_area);
+                                        surf, color,
+                                        x0 + (int)x_inner - x_offset, t,
+                                        (int)MIN(r, x0 + start_x), drawn_area);
                                 }
                             }
                         }
@@ -1697,10 +1699,11 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                                      drawn_area);
                         else {
                             drawhorzlineclipbounding(surf, color, l, b,
-                                                     x0 - x_inner, drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     b, r, drawn_area);
+                                                     x0 - (int)x_inner,
+                                                     drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, b,
+                                r, drawn_area);
                         }
                     }
                     else {
@@ -1713,7 +1716,7 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                 else
                                     drawhorzlineclipbounding(
                                         surf, color, l, t,
-                                        MIN(x0 + start_x, x0 - x_inner),
+                                        MIN(x0 + start_x, x0 - (int)x_inner),
                                         drawn_area);
                             }
                             if (x0 + end_x <= r) {
@@ -1725,7 +1728,7 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                     drawhorzlineclipbounding(
                                         surf, color,
                                         MAX(x0 + end_x,
-                                            x0 + x_inner - x_offset),
+                                            x0 + (int)x_inner - x_offset),
                                         t, r, drawn_area);
                             }
                         }
@@ -1738,7 +1741,7 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                 else
                                     drawhorzlineclipbounding(
                                         surf, color, l, t,
-                                        MIN(x0 + start_x, x0 - x_inner),
+                                        (int)MIN(x0 + start_x, x0 - x_inner),
                                         drawn_area);
                             }
                             if (line)
@@ -1749,10 +1752,10 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                 if (x0 + end_x <= x0 - x_inner)
                                     drawhorzlineclipbounding(
                                         surf, color, MAX(x0 + end_x, l), t,
-                                        x0 - x_inner, drawn_area);
+                                        x0 - (int)x_inner, drawn_area);
                                 drawhorzlineclipbounding(
-                                    surf, color, x0 + x_inner - x_offset, t, r,
-                                    drawn_area);
+                                    surf, color, x0 + (int)x_inner - x_offset,
+                                    t, r, drawn_area);
                             }
                         }
                         else if (start_slope > 0 && end_slope > 0) {
@@ -1762,12 +1765,13 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                                          drawn_area);
                             else {
                                 drawhorzlineclipbounding(surf, color, l, t,
-                                                         x0 - x_inner,
+                                                         x0 - (int)x_inner,
                                                          drawn_area);
                                 if (x0 + x_inner - x_offset <= x0 + start_x)
                                     drawhorzlineclipbounding(
-                                        surf, color, x0 + x_inner - x_offset,
-                                        t, MIN(r, x0 + start_x), drawn_area);
+                                        surf, color,
+                                        x0 + (int)x_inner - x_offset, t,
+                                        MIN(r, x0 + start_x), drawn_area);
                             }
                             if (x0 + end_x <= r) {
                                 if (line)
@@ -1778,7 +1782,7 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                     drawhorzlineclipbounding(
                                         surf, color,
                                         MAX(x0 + end_x,
-                                            x0 + x_inner - x_offset),
+                                            x0 + (int)x_inner - x_offset),
                                         t, r, drawn_area);
                             }
                         }
@@ -1787,10 +1791,11 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                                      drawn_area);
                         else {
                             drawhorzlineclipbounding(surf, color, l, b,
-                                                     x0 - x_inner, drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     b, r, drawn_area);
+                                                     x0 - (int)x_inner,
+                                                     drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, b,
+                                r, drawn_area);
                         }
                     }
                 }
@@ -1802,11 +1807,11 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                                          drawn_area);
                             else {
                                 drawhorzlineclipbounding(surf, color, l, t,
-                                                         x0 - x_inner,
+                                                         x0 - (int)x_inner,
                                                          drawn_area);
                                 drawhorzlineclipbounding(
-                                    surf, color, x0 + x_inner - x_offset, t, r,
-                                    drawn_area);
+                                    surf, color, x0 + (int)x_inner - x_offset,
+                                    t, r, drawn_area);
                             }
                         }
                         else if (line) {
@@ -1820,12 +1825,12 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             if (l <= x0 + start_x)
                                 drawhorzlineclipbounding(
                                     surf, color, l, t,
-                                    MIN(x0 + start_x, x0 - x_inner),
+                                    (int)MIN(x0 + start_x, x0 - x_inner),
                                     drawn_area);
                             if (x0 + x_inner - x_offset <= x0 + start_x)
                                 drawhorzlineclipbounding(
-                                    surf, color, x0 + x_inner - x_offset, t,
-                                    MIN(r, x0 + start_x), drawn_area);
+                                    surf, color, x0 + (int)x_inner - x_offset,
+                                    t, MIN(r, x0 + start_x), drawn_area);
                         }
                     }
                     else {
@@ -1844,22 +1849,23 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             }
                             else {
                                 drawhorzlineclipbounding(surf, color, l, t,
-                                                         x0 - x_inner,
+                                                         x0 - (int)x_inner,
                                                          drawn_area);
                                 drawhorzlineclipbounding(
-                                    surf, color, x0 + x_inner - x_offset, t, r,
-                                    drawn_area);
+                                    surf, color, x0 + (int)x_inner - x_offset,
+                                    t, r, drawn_area);
                                 if (x0 - end_x_offset >= l)
                                     drawhorzlineclipbounding(
                                         surf, color, l, b,
-                                        MIN(x0 - x_inner, x0 - end_x_offset),
+                                        (int)MIN(x0 - x_inner,
+                                                 x0 - end_x_offset),
                                         drawn_area);
                                 if (end_slope < 0 &&
                                     x_inner - x_offset <= -end_x_offset)
                                     drawhorzlineclipbounding(
-                                        surf, color, x0 + x_inner - x_offset,
-                                        b, MIN(x0 - end_x_offset, r),
-                                        drawn_area);
+                                        surf, color,
+                                        x0 + (int)x_inner - x_offset, b,
+                                        MIN(x0 - end_x_offset, r), drawn_area);
                             }
                         }
                         else {
@@ -1871,13 +1877,13 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                 else {
                                     drawhorzlineclipbounding(
                                         surf, color, l, t,
-                                        MIN(x0 - x_inner, x0 + start_x),
+                                        (int)MIN(x0 - x_inner, x0 + start_x),
                                         drawn_area);
                                     if (x0 + x_inner - x_offset <=
                                         x0 + start_x)
                                         drawhorzlineclipbounding(
                                             surf, color,
-                                            x0 + x_inner - x_offset, t,
+                                            x0 + (int)x_inner - x_offset, t,
                                             MIN(r, x0 + start_x), drawn_area);
                                 }
                             }
@@ -1889,13 +1895,14 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                 else {
                                     drawhorzlineclipbounding(
                                         surf, color, l, b,
-                                        MIN(x0 - end_x_offset, x0 - x_inner),
+                                        (int)MIN(x0 - end_x_offset,
+                                                 x0 - x_inner),
                                         drawn_area);
                                     if (x0 - end_x_offset >=
                                         x0 + x_inner - x_offset)
                                         drawhorzlineclipbounding(
                                             surf, color,
-                                            x0 + x_inner - x_offset, b,
+                                            x0 + (int)x_inner - x_offset, b,
                                             MIN(x0 - end_x_offset, r),
                                             drawn_area);
                                 }
@@ -1915,7 +1922,8 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else
                                 drawhorzlineclipbounding(
                                     surf, color,
-                                    MAX(x0 + end_x, x0 + x_inner - x_offset),
+                                    (int)MAX(x0 + end_x,
+                                             x0 + x_inner - x_offset),
                                     t, r, drawn_area);
                         }
                     }
@@ -1928,21 +1936,21 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             if (x0 + end_x <= x0 - x_inner)
                                 drawhorzlineclipbounding(
                                     surf, color, MAX(l, x0 + end_x), t,
-                                    x0 - x_inner, drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     t, r, drawn_area);
+                                    x0 - (int)x_inner, drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, t,
+                                r, drawn_area);
                         }
                     }
                     if (line)
                         drawhorzlineclipbounding(surf, color, l, b, r,
                                                  drawn_area);
                     else {
-                        drawhorzlineclipbounding(surf, color, l, b,
-                                                 x0 - x_inner, drawn_area);
+                        drawhorzlineclipbounding(
+                            surf, color, l, b, x0 - (int)x_inner, drawn_area);
                         drawhorzlineclipbounding(surf, color,
-                                                 x0 + x_inner - x_offset, b, r,
-                                                 drawn_area);
+                                                 x0 + (int)x_inner - x_offset,
+                                                 b, r, drawn_area);
                     }
                 }
                 else {
@@ -1955,7 +1963,7 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else
                                 drawhorzlineclipbounding(
                                     surf, color, l, b,
-                                    MIN(x0 - end_x_offset, x0 - x_inner),
+                                    (int)MIN(x0 - end_x_offset, x0 - x_inner),
                                     drawn_area);
                         }
                     }
@@ -1966,11 +1974,12 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                                      drawn_area);
                         else {
                             drawhorzlineclipbounding(surf, color, l, b,
-                                                     x0 - x_inner, drawn_area);
+                                                     x0 - (int)x_inner,
+                                                     drawn_area);
                             if (x0 + x_inner - x_offset <= x0 - end_x_offset)
                                 drawhorzlineclipbounding(
-                                    surf, color, x0 + x_inner - x_offset, b,
-                                    MIN(x0 - end_x_offset, r), drawn_area);
+                                    surf, color, x0 + (int)x_inner - x_offset,
+                                    b, MIN(x0 - end_x_offset, r), drawn_area);
                         }
                     }
                 }
@@ -1987,21 +1996,21 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                 drawn_area);
                     }
                     else {
-                        drawhorzlineclipbounding(surf, color, l, t,
-                                                 x0 - x_inner, drawn_area);
+                        drawhorzlineclipbounding(
+                            surf, color, l, t, x0 - (int)x_inner, drawn_area);
                         drawhorzlineclipbounding(surf, color,
-                                                 x0 + x_inner - x_offset, t, r,
-                                                 drawn_area);
+                                                 x0 + (int)x_inner - x_offset,
+                                                 t, r, drawn_area);
                         if (x0 - start_x_offset <= r)
                             drawhorzlineclipbounding(
                                 surf, color,
-                                MAX(x0 + x_inner - x_offset,
-                                    x0 - start_x_offset),
+                                (int)MAX(x0 + x_inner - x_offset,
+                                         x0 - start_x_offset),
                                 b, r, drawn_area);
                         if (start_x_offset >= x_inner)
                             drawhorzlineclipbounding(
                                 surf, color, MAX(l, x0 - start_x_offset), b,
-                                x0 - x_inner, drawn_area);
+                                x0 - (int)x_inner, drawn_area);
                     }
                 }
                 else {
@@ -2014,10 +2023,10 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             if (x0 - start_x_offset <= x0 - x_inner)
                                 drawhorzlineclipbounding(
                                     surf, color, MAX(x0 - start_x_offset, l),
-                                    b, x0 - x_inner, drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     b, r, drawn_area);
+                                    b, x0 - (int)x_inner, drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, b,
+                                r, drawn_area);
                         }
                         if (l <= x0 - end_x_offset) {
                             if (line)
@@ -2027,7 +2036,7 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else
                                 drawhorzlineclipbounding(
                                     surf, color, l, b,
-                                    MIN(x0 - end_x_offset, x0 - x_inner),
+                                    (int)MIN(x0 - end_x_offset, x0 - x_inner),
                                     drawn_area);
                         }
                         if (line)
@@ -2035,10 +2044,11 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                                      drawn_area);
                         else {
                             drawhorzlineclipbounding(surf, color, l, t,
-                                                     x0 - x_inner, drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     t, r, drawn_area);
+                                                     x0 - (int)x_inner,
+                                                     drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, t,
+                                r, drawn_area);
                         }
                     }
                     else {
@@ -2051,7 +2061,7 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                 drawhorzlineclipbounding(
                                     surf, color,
                                     MAX(x0 - start_x_offset,
-                                        x0 + x_inner - x_offset),
+                                        x0 + (int)x_inner - x_offset),
                                     b, r, drawn_area);
                         }
                         if (end_slope < 0) {
@@ -2062,14 +2072,14 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else {
                                 drawhorzlineclipbounding(
                                     surf, color, l, b,
-                                    MIN(x0 - end_x_offset, x0 - x_inner),
+                                    (int)MIN(x0 - end_x_offset, x0 - x_inner),
                                     drawn_area);
                                 if (x0 + x_inner - x_offset <=
                                     x0 - end_x_offset)
                                     drawhorzlineclipbounding(
-                                        surf, color, x0 + x_inner - x_offset,
-                                        b, MIN(x0 - end_x_offset, r),
-                                        drawn_area);
+                                        surf, color,
+                                        x0 + (int)x_inner - x_offset, b,
+                                        MIN(x0 - end_x_offset, r), drawn_area);
                             }
                         }
                         else {
@@ -2081,7 +2091,8 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                 else
                                     drawhorzlineclipbounding(
                                         surf, color, l, b,
-                                        MIN(x0 - end_x_offset, x0 - x_inner),
+                                        (int)MIN(x0 - end_x_offset,
+                                                 x0 - x_inner),
                                         drawn_area);
                             }
                         }
@@ -2090,10 +2101,11 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                                      drawn_area);
                         else {
                             drawhorzlineclipbounding(surf, color, l, t,
-                                                     x0 - x_inner, drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     t, r, drawn_area);
+                                                     x0 - (int)x_inner,
+                                                     drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, t,
+                                r, drawn_area);
                         }
                     }
                 }
@@ -2111,10 +2123,10 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             if (x0 + end_x <= x0 - x_inner)
                                 drawhorzlineclipbounding(
                                     surf, color, MAX(l, x0 + end_x), t,
-                                    x0 - x_inner, drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     t, r, drawn_area);
+                                    x0 - (int)x_inner, drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, t,
+                                r, drawn_area);
                         }
                     }
                     else {
@@ -2125,7 +2137,8 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else
                                 drawhorzlineclipbounding(
                                     surf, color,
-                                    MAX(x0 + end_x, x0 + x_inner - x_offset),
+                                    (int)MAX(x0 + end_x,
+                                             x0 + x_inner - x_offset),
                                     t, r, drawn_area);
                         }
                     }
@@ -2139,7 +2152,7 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                         else if (x_inner - x_offset <= start_x)
                             drawhorzlineclipbounding(
                                 surf, color,
-                                MAX(end_x, x0 + x_inner - x_offset), t,
+                                (int)MAX(end_x, x0 + x_inner - x_offset), t,
                                 MIN(r, x0 + start_x), drawn_area);
                     }
                 }
@@ -2158,12 +2171,12 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             if (x_inner <= -end_x)
                                 drawhorzlineclipbounding(
                                     surf, color, MAX(l, x0 + end_x), t,
-                                    MIN(x0 + start_x, x0 - x_inner),
+                                    (int)MIN(x0 + start_x, x0 - x_inner),
                                     drawn_area);
                             if (x_inner - x_offset <= start_x)
                                 drawhorzlineclipbounding(
                                     surf, color,
-                                    MAX(x0, x0 + x_inner - x_offset), t,
+                                    (int)MAX(x0, x0 + x_inner - x_offset), t,
                                     MIN(r, x0 + start_x), drawn_area);
                         }
                     }
@@ -2180,7 +2193,8 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else if (x0 - start_x_offset <= x0 - x_inner)
                                 drawhorzlineclipbounding(
                                     surf, color, MAX(l, x0 - start_x_offset),
-                                    b, MIN(x0 - end_x_offset, x0 - x_inner),
+                                    b,
+                                    (int)MIN(x0 - end_x_offset, x0 - x_inner),
                                     drawn_area);
                         }
                     }
@@ -2196,13 +2210,13 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                     drawhorzlineclipbounding(
                                         surf, color,
                                         MAX(l, x0 - start_x_offset), b,
-                                        x0 - x_inner, drawn_area);
+                                        x0 - (int)x_inner, drawn_area);
                                 if (x0 + x_inner - x_offset <=
                                     x0 - end_x_offset)
                                     drawhorzlineclipbounding(
                                         surf, color,
-                                        MAX(x0 + x_inner - x_offset,
-                                            x0 - start_x_offset),
+                                        (int)MAX(x0 + x_inner - x_offset,
+                                                 x0 - start_x_offset),
                                         b, MIN(r, x0 - end_x_offset),
                                         drawn_area);
                             }
@@ -2213,17 +2227,18 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                     if (start_slope > 0) {
                         if (line)
                             drawhorzlineclipbounding(
-                                surf, color, MAX(x0 - start_x_offset, x0 - x),
-                                b, r, drawn_area);
+                                surf, color,
+                                (int)MAX(x0 - start_x_offset, x0 - x), b, r,
+                                drawn_area);
                         else {
                             if (x0 - x_inner >= x0 - start_x_offset)
                                 drawhorzlineclipbounding(
                                     surf, color,
-                                    MAX(x0 - start_x_offset, x0 - x), b,
-                                    MIN(x0, x0 - x_inner), drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     b, r, drawn_area);
+                                    (int)MAX(x0 - start_x_offset, x0 - x), b,
+                                    (int)MIN(x0, x0 - x_inner), drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, b,
+                                r, drawn_area);
                         }
                     }
                     else {
@@ -2235,8 +2250,8 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else
                                 drawhorzlineclipbounding(
                                     surf, color,
-                                    MAX(x0 + x_inner - x_offset,
-                                        x0 - start_x_offset),
+                                    (int)MAX(x0 + x_inner - x_offset,
+                                             x0 - start_x_offset),
                                     b, r, drawn_area);
                         }
                     }
@@ -2248,7 +2263,8 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else
                                 drawhorzlineclipbounding(
                                     surf, color,
-                                    MAX(x0 + end_x, x0 + x_inner - x_offset),
+                                    (int)MAX(x0 + end_x,
+                                             x0 + x_inner - x_offset),
                                     t, r, drawn_area);
                         }
                     }
@@ -2261,10 +2277,10 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             if (MAX(x0 + end_x, l) <= x0 - x_inner)
                                 drawhorzlineclipbounding(
                                     surf, color, MAX(x0 + end_x, l), t,
-                                    x0 - x_inner, drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     t, r, drawn_area);
+                                    x0 - (int)x_inner, drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, t,
+                                r, drawn_area);
                         }
                     }
                 }
@@ -2305,16 +2321,17 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
     double d2_inner = 0;
 
     while (y >= 0) {
-        start_x = start_slope ? round(y / start_slope) : 0;
-        start_x_offset = start_slope ? round((y - y_offset) / start_slope) : 0;
-        end_x = end_slope ? round(y / end_slope) : 0;
-        end_x_offset = end_slope ? round((y - y_offset) / end_slope) : 0;
+        start_x = start_slope ? (int)round(y / start_slope) : 0;
+        start_x_offset =
+            start_slope ? (int)round((y - y_offset) / start_slope) : 0;
+        end_x = end_slope ? (int)round(y / end_slope) : 0;
+        end_x_offset = end_slope ? (int)round((y - y_offset) / end_slope) : 0;
 
         // DRAW_PART
-        l = x0 - x;
-        r = x0 + x - x_offset;
-        t = y0 - y;
-        b = y0 + y - y_offset;
+        l = x0 - (int)x;
+        r = x0 + (int)x - x_offset;
+        t = y0 - (int)y;
+        b = y0 + (int)y - y_offset;
         if (left) {
             if (start_angle < M_PI) {
                 if (end_angle < M_PI) {
@@ -2327,12 +2344,13 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else {
                                 drawhorzlineclipbounding(
                                     surf, color, l, t,
-                                    MIN(x0 + start_x, x0 - x_inner),
+                                    (int)MIN(x0 + start_x, x0 - x_inner),
                                     drawn_area);
                                 if (x0 + x_inner - x_offset <= x0 + start_x) {
                                     drawhorzlineclipbounding(
-                                        surf, color, x0 + x_inner - x_offset,
-                                        t, MIN(r, x0 + start_x), drawn_area);
+                                        surf, color,
+                                        x0 + (int)x_inner - x_offset, t,
+                                        MIN(r, x0 + start_x), drawn_area);
                                 }
                             }
                         }
@@ -2341,10 +2359,11 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                                      drawn_area);
                         else {
                             drawhorzlineclipbounding(surf, color, l, b,
-                                                     x0 - x_inner, drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     b, r, drawn_area);
+                                                     x0 - (int)x_inner,
+                                                     drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, b,
+                                r, drawn_area);
                         }
                     }
                     else {
@@ -2357,7 +2376,7 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                 else
                                     drawhorzlineclipbounding(
                                         surf, color, l, t,
-                                        MIN(x0 + start_x, x0 - x_inner),
+                                        (int)MIN(x0 + start_x, x0 - x_inner),
                                         drawn_area);
                             }
                             if (x0 + end_x <= r) {
@@ -2369,7 +2388,7 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                     drawhorzlineclipbounding(
                                         surf, color,
                                         MAX(x0 + end_x,
-                                            x0 + x_inner - x_offset),
+                                            x0 + (int)x_inner - x_offset),
                                         t, r, drawn_area);
                             }
                         }
@@ -2382,7 +2401,7 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                 else
                                     drawhorzlineclipbounding(
                                         surf, color, l, t,
-                                        MIN(x0 + start_x, x0 - x_inner),
+                                        (int)MIN(x0 + start_x, x0 - x_inner),
                                         drawn_area);
                             }
                             if (line)
@@ -2393,10 +2412,10 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                 if (x0 + end_x <= x0 - x_inner)
                                     drawhorzlineclipbounding(
                                         surf, color, MAX(x0 + end_x, l), t,
-                                        x0 - x_inner, drawn_area);
+                                        x0 - (int)x_inner, drawn_area);
                                 drawhorzlineclipbounding(
-                                    surf, color, x0 + x_inner - x_offset, t, r,
-                                    drawn_area);
+                                    surf, color, x0 + (int)x_inner - x_offset,
+                                    t, r, drawn_area);
                             }
                         }
                         else if (start_slope > 0 && end_slope > 0) {
@@ -2406,12 +2425,13 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                                          drawn_area);
                             else {
                                 drawhorzlineclipbounding(surf, color, l, t,
-                                                         x0 - x_inner,
+                                                         x0 - (int)x_inner,
                                                          drawn_area);
                                 if (x0 + x_inner - x_offset <= x0 + start_x)
                                     drawhorzlineclipbounding(
-                                        surf, color, x0 + x_inner - x_offset,
-                                        t, MIN(r, x0 + start_x), drawn_area);
+                                        surf, color,
+                                        x0 + (int)x_inner - x_offset, t,
+                                        MIN(r, x0 + start_x), drawn_area);
                             }
                             if (x0 + end_x <= r) {
                                 if (line)
@@ -2422,7 +2442,7 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                     drawhorzlineclipbounding(
                                         surf, color,
                                         MAX(x0 + end_x,
-                                            x0 + x_inner - x_offset),
+                                            x0 + (int)x_inner - x_offset),
                                         t, r, drawn_area);
                             }
                         }
@@ -2431,10 +2451,11 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                                      drawn_area);
                         else {
                             drawhorzlineclipbounding(surf, color, l, b,
-                                                     x0 - x_inner, drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     b, r, drawn_area);
+                                                     x0 - (int)x_inner,
+                                                     drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, b,
+                                r, drawn_area);
                         }
                     }
                 }
@@ -2446,11 +2467,11 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                                          drawn_area);
                             else {
                                 drawhorzlineclipbounding(surf, color, l, t,
-                                                         x0 - x_inner,
+                                                         x0 - (int)x_inner,
                                                          drawn_area);
                                 drawhorzlineclipbounding(
-                                    surf, color, x0 + x_inner - x_offset, t, r,
-                                    drawn_area);
+                                    surf, color, x0 + (int)x_inner - x_offset,
+                                    t, r, drawn_area);
                             }
                         }
                         else if (line) {
@@ -2464,12 +2485,12 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             if (l <= x0 + start_x)
                                 drawhorzlineclipbounding(
                                     surf, color, l, t,
-                                    MIN(x0 + start_x, x0 - x_inner),
+                                    (int)MIN(x0 + start_x, x0 - x_inner),
                                     drawn_area);
                             if (x0 + x_inner - x_offset <= x0 + start_x)
                                 drawhorzlineclipbounding(
-                                    surf, color, x0 + x_inner - x_offset, t,
-                                    MIN(r, x0 + start_x), drawn_area);
+                                    surf, color, x0 + (int)x_inner - x_offset,
+                                    t, MIN(r, x0 + start_x), drawn_area);
                         }
                     }
                     else {
@@ -2488,22 +2509,23 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             }
                             else {
                                 drawhorzlineclipbounding(surf, color, l, t,
-                                                         x0 - x_inner,
+                                                         x0 - (int)x_inner,
                                                          drawn_area);
                                 drawhorzlineclipbounding(
-                                    surf, color, x0 + x_inner - x_offset, t, r,
-                                    drawn_area);
+                                    surf, color, x0 + (int)x_inner - x_offset,
+                                    t, r, drawn_area);
                                 if (x0 - end_x_offset >= l)
                                     drawhorzlineclipbounding(
                                         surf, color, l, b,
-                                        MIN(x0 - x_inner, x0 - end_x_offset),
+                                        (int)MIN(x0 - x_inner,
+                                                 x0 - end_x_offset),
                                         drawn_area);
                                 if (end_slope < 0 &&
                                     x_inner - x_offset <= -end_x_offset)
                                     drawhorzlineclipbounding(
-                                        surf, color, x0 + x_inner - x_offset,
-                                        b, MIN(x0 - end_x_offset, r),
-                                        drawn_area);
+                                        surf, color,
+                                        x0 + (int)x_inner - x_offset, b,
+                                        MIN(x0 - end_x_offset, r), drawn_area);
                             }
                         }
                         else {
@@ -2515,13 +2537,13 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                 else {
                                     drawhorzlineclipbounding(
                                         surf, color, l, t,
-                                        MIN(x0 - x_inner, x0 + start_x),
+                                        (int)MIN(x0 - x_inner, x0 + start_x),
                                         drawn_area);
                                     if (x0 + x_inner - x_offset <=
                                         x0 + start_x)
                                         drawhorzlineclipbounding(
                                             surf, color,
-                                            x0 + x_inner - x_offset, t,
+                                            x0 + (int)x_inner - x_offset, t,
                                             MIN(r, x0 + start_x), drawn_area);
                                 }
                             }
@@ -2533,13 +2555,14 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                 else {
                                     drawhorzlineclipbounding(
                                         surf, color, l, b,
-                                        MIN(x0 - end_x_offset, x0 - x_inner),
+                                        (int)MIN(x0 - end_x_offset,
+                                                 x0 - x_inner),
                                         drawn_area);
                                     if (x0 - end_x_offset >=
                                         x0 + x_inner - x_offset)
                                         drawhorzlineclipbounding(
                                             surf, color,
-                                            x0 + x_inner - x_offset, b,
+                                            x0 + (int)x_inner - x_offset, b,
                                             MIN(x0 - end_x_offset, r),
                                             drawn_area);
                                 }
@@ -2559,7 +2582,8 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else
                                 drawhorzlineclipbounding(
                                     surf, color,
-                                    MAX(x0 + end_x, x0 + x_inner - x_offset),
+                                    (int)MAX(x0 + end_x,
+                                             x0 + x_inner - x_offset),
                                     t, r, drawn_area);
                         }
                     }
@@ -2572,21 +2596,21 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             if (x0 + end_x <= x0 - x_inner)
                                 drawhorzlineclipbounding(
                                     surf, color, MAX(l, x0 + end_x), t,
-                                    x0 - x_inner, drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     t, r, drawn_area);
+                                    x0 - (int)x_inner, drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, t,
+                                r, drawn_area);
                         }
                     }
                     if (line)
                         drawhorzlineclipbounding(surf, color, l, b, r,
                                                  drawn_area);
                     else {
-                        drawhorzlineclipbounding(surf, color, l, b,
-                                                 x0 - x_inner, drawn_area);
+                        drawhorzlineclipbounding(
+                            surf, color, l, b, x0 - (int)x_inner, drawn_area);
                         drawhorzlineclipbounding(surf, color,
-                                                 x0 + x_inner - x_offset, b, r,
-                                                 drawn_area);
+                                                 x0 + (int)x_inner - x_offset,
+                                                 b, r, drawn_area);
                     }
                 }
                 else {
@@ -2599,7 +2623,7 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else
                                 drawhorzlineclipbounding(
                                     surf, color, l, b,
-                                    MIN(x0 - end_x_offset, x0 - x_inner),
+                                    (int)MIN(x0 - end_x_offset, x0 - x_inner),
                                     drawn_area);
                         }
                     }
@@ -2610,11 +2634,12 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                                      drawn_area);
                         else {
                             drawhorzlineclipbounding(surf, color, l, b,
-                                                     x0 - x_inner, drawn_area);
+                                                     x0 - (int)x_inner,
+                                                     drawn_area);
                             if (x0 + x_inner - x_offset <= x0 - end_x_offset)
                                 drawhorzlineclipbounding(
-                                    surf, color, x0 + x_inner - x_offset, b,
-                                    MIN(x0 - end_x_offset, r), drawn_area);
+                                    surf, color, x0 + (int)x_inner - x_offset,
+                                    b, MIN(x0 - end_x_offset, r), drawn_area);
                         }
                     }
                 }
@@ -2631,21 +2656,21 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                 drawn_area);
                     }
                     else {
-                        drawhorzlineclipbounding(surf, color, l, t,
-                                                 x0 - x_inner, drawn_area);
+                        drawhorzlineclipbounding(
+                            surf, color, l, t, x0 - (int)x_inner, drawn_area);
                         drawhorzlineclipbounding(surf, color,
-                                                 x0 + x_inner - x_offset, t, r,
-                                                 drawn_area);
+                                                 x0 + (int)x_inner - x_offset,
+                                                 t, r, drawn_area);
                         if (x0 - start_x_offset <= r)
                             drawhorzlineclipbounding(
                                 surf, color,
-                                MAX(x0 + x_inner - x_offset,
-                                    x0 - start_x_offset),
+                                (int)MAX(x0 + x_inner - x_offset,
+                                         x0 - start_x_offset),
                                 b, r, drawn_area);
                         if (start_x_offset >= x_inner)
                             drawhorzlineclipbounding(
                                 surf, color, MAX(l, x0 - start_x_offset), b,
-                                x0 - x_inner, drawn_area);
+                                x0 - (int)x_inner, drawn_area);
                     }
                 }
                 else {
@@ -2658,10 +2683,10 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             if (x0 - start_x_offset <= x0 - x_inner)
                                 drawhorzlineclipbounding(
                                     surf, color, MAX(x0 - start_x_offset, l),
-                                    b, x0 - x_inner, drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     b, r, drawn_area);
+                                    b, x0 - (int)x_inner, drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, b,
+                                r, drawn_area);
                         }
                         if (l <= x0 - end_x_offset) {
                             if (line)
@@ -2671,7 +2696,7 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else
                                 drawhorzlineclipbounding(
                                     surf, color, l, b,
-                                    MIN(x0 - end_x_offset, x0 - x_inner),
+                                    (int)MIN(x0 - end_x_offset, x0 - x_inner),
                                     drawn_area);
                         }
                         if (line)
@@ -2679,10 +2704,11 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                                      drawn_area);
                         else {
                             drawhorzlineclipbounding(surf, color, l, t,
-                                                     x0 - x_inner, drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     t, r, drawn_area);
+                                                     x0 - (int)x_inner,
+                                                     drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, t,
+                                r, drawn_area);
                         }
                     }
                     else {
@@ -2694,8 +2720,8 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else
                                 drawhorzlineclipbounding(
                                     surf, color,
-                                    MAX(x0 - start_x_offset,
-                                        x0 + x_inner - x_offset),
+                                    (int)MAX(x0 - start_x_offset,
+                                             x0 + x_inner - x_offset),
                                     b, r, drawn_area);
                         }
                         if (end_slope < 0) {
@@ -2706,14 +2732,14 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else {
                                 drawhorzlineclipbounding(
                                     surf, color, l, b,
-                                    MIN(x0 - end_x_offset, x0 - x_inner),
+                                    (int)MIN(x0 - end_x_offset, x0 - x_inner),
                                     drawn_area);
                                 if (x0 + x_inner - x_offset <=
                                     x0 - end_x_offset)
                                     drawhorzlineclipbounding(
-                                        surf, color, x0 + x_inner - x_offset,
-                                        b, MIN(x0 - end_x_offset, r),
-                                        drawn_area);
+                                        surf, color,
+                                        x0 + (int)x_inner - x_offset, b,
+                                        MIN(x0 - end_x_offset, r), drawn_area);
                             }
                         }
                         else {
@@ -2725,7 +2751,8 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                 else
                                     drawhorzlineclipbounding(
                                         surf, color, l, b,
-                                        MIN(x0 - end_x_offset, x0 - x_inner),
+                                        (int)MIN(x0 - end_x_offset,
+                                                 x0 - x_inner),
                                         drawn_area);
                             }
                         }
@@ -2734,10 +2761,11 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                                      drawn_area);
                         else {
                             drawhorzlineclipbounding(surf, color, l, t,
-                                                     x0 - x_inner, drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     t, r, drawn_area);
+                                                     x0 - (int)x_inner,
+                                                     drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, t,
+                                r, drawn_area);
                         }
                     }
                 }
@@ -2755,10 +2783,10 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             if (x0 + end_x <= x0 - x_inner)
                                 drawhorzlineclipbounding(
                                     surf, color, MAX(l, x0 + end_x), t,
-                                    x0 - x_inner, drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     t, r, drawn_area);
+                                    x0 - (int)x_inner, drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, t,
+                                r, drawn_area);
                         }
                     }
                     else {
@@ -2769,7 +2797,8 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else
                                 drawhorzlineclipbounding(
                                     surf, color,
-                                    MAX(x0 + end_x, x0 + x_inner - x_offset),
+                                    (int)MAX(x0 + end_x,
+                                             x0 + x_inner - x_offset),
                                     t, r, drawn_area);
                         }
                     }
@@ -2783,7 +2812,7 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                         else if (x_inner - x_offset <= start_x)
                             drawhorzlineclipbounding(
                                 surf, color,
-                                MAX(end_x, x0 + x_inner - x_offset), t,
+                                (int)MAX(end_x, x0 + x_inner - x_offset), t,
                                 MIN(r, x0 + start_x), drawn_area);
                     }
                 }
@@ -2802,12 +2831,12 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             if (x_inner <= -end_x)
                                 drawhorzlineclipbounding(
                                     surf, color, MAX(l, x0 + end_x), t,
-                                    MIN(x0 + start_x, x0 - x_inner),
+                                    (int)MIN(x0 + start_x, x0 - x_inner),
                                     drawn_area);
                             if (x_inner - x_offset <= start_x)
                                 drawhorzlineclipbounding(
                                     surf, color,
-                                    MAX(x0, x0 + x_inner - x_offset), t,
+                                    (int)MAX(x0, x0 + x_inner - x_offset), t,
                                     MIN(r, x0 + start_x), drawn_area);
                         }
                     }
@@ -2824,7 +2853,8 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else if (x0 - start_x_offset <= x0 - x_inner)
                                 drawhorzlineclipbounding(
                                     surf, color, MAX(l, x0 - start_x_offset),
-                                    b, MIN(x0 - end_x_offset, x0 - x_inner),
+                                    b,
+                                    (int)MIN(x0 - end_x_offset, x0 - x_inner),
                                     drawn_area);
                         }
                     }
@@ -2840,13 +2870,13 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                                     drawhorzlineclipbounding(
                                         surf, color,
                                         MAX(l, x0 - start_x_offset), b,
-                                        x0 - x_inner, drawn_area);
+                                        x0 - (int)x_inner, drawn_area);
                                 if (x0 + x_inner - x_offset <=
                                     x0 - end_x_offset)
                                     drawhorzlineclipbounding(
                                         surf, color,
-                                        MAX(x0 + x_inner - x_offset,
-                                            x0 - start_x_offset),
+                                        (int)MAX(x0 + x_inner - x_offset,
+                                                 x0 - start_x_offset),
                                         b, MIN(r, x0 - end_x_offset),
                                         drawn_area);
                             }
@@ -2857,17 +2887,18 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                     if (start_slope > 0) {
                         if (line)
                             drawhorzlineclipbounding(
-                                surf, color, MAX(x0 - start_x_offset, x0 - x),
-                                b, r, drawn_area);
+                                surf, color,
+                                (int)MAX(x0 - start_x_offset, x0 - x), b, r,
+                                drawn_area);
                         else {
                             if (x0 - x_inner >= x0 - start_x_offset)
                                 drawhorzlineclipbounding(
                                     surf, color,
-                                    MAX(x0 - start_x_offset, x0 - x), b,
-                                    MIN(x0, x0 - x_inner), drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     b, r, drawn_area);
+                                    (int)MAX(x0 - start_x_offset, x0 - x), b,
+                                    (int)MIN(x0, x0 - x_inner), drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, b,
+                                r, drawn_area);
                         }
                     }
                     else {
@@ -2879,8 +2910,8 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else
                                 drawhorzlineclipbounding(
                                     surf, color,
-                                    MAX(x0 + x_inner - x_offset,
-                                        x0 - start_x_offset),
+                                    (int)MAX(x0 + x_inner - x_offset,
+                                             x0 - start_x_offset),
                                     b, r, drawn_area);
                         }
                     }
@@ -2892,7 +2923,8 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             else
                                 drawhorzlineclipbounding(
                                     surf, color,
-                                    MAX(x0 + end_x, x0 + x_inner - x_offset),
+                                    (int)MAX(x0 + end_x,
+                                             x0 + x_inner - x_offset),
                                     t, r, drawn_area);
                         }
                     }
@@ -2905,10 +2937,10 @@ draw_arc(SDL_Surface *surf, int x0, int y0, int width, int height,
                             if (MAX(x0 + end_x, l) <= x0 - x_inner)
                                 drawhorzlineclipbounding(
                                     surf, color, MAX(x0 + end_x, l), t,
-                                    x0 - x_inner, drawn_area);
-                            drawhorzlineclipbounding(surf, color,
-                                                     x0 + x_inner - x_offset,
-                                                     t, r, drawn_area);
+                                    x0 - (int)x_inner, drawn_area);
+                            drawhorzlineclipbounding(
+                                surf, color, x0 + (int)x_inner - x_offset, t,
+                                r, drawn_area);
                         }
                     }
                 }
