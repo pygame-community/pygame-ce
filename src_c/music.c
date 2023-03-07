@@ -385,7 +385,7 @@ _load_music(PyObject *obj, char *namehint)
     if (rw ==
         NULL) { /* stop on NULL, error already set is what we SHOULD do */
         PyErr_Fetch(&_type, &error, &_traceback);
-        PyErr_SetObject(pgExc_SDLError, error);
+        PyErr_SetObject(PyExc_FileNotFoundError, error);
         Py_XDECREF(_type);
         Py_XDECREF(_traceback);
         return NULL;
