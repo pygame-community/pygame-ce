@@ -1209,7 +1209,7 @@ class ColorTypeTest(unittest.TestCase):
     def test_swizzle_return_types(self):
         c = pygame.color.Color(10, 20, 30, 40)
 
-        self.assertEqual(type(c.rgb), pygame.color.Color)
+        self.assertEqual(type(c.rgb), tuple)
         self.assertEqual(type(c.rgba), pygame.color.Color)
         self.assertEqual(type(c.bgra), pygame.color.Color)
         self.assertEqual(type(c.bg), tuple)
