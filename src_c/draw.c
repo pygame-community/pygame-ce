@@ -1048,7 +1048,7 @@ add_pixel_to_drawn_list(int x, int y, int *pts)
 }
 
 static void
-add_line_to_drawn_list(int x1, int y1, int x2, int *pts)
+add_line_to_drawn_list(int x1, int y1, int x2, int y2, int *pts)
 {
     if (x1 < pts[0]) {
         pts[0] = x1;
@@ -1059,8 +1059,8 @@ add_line_to_drawn_list(int x1, int y1, int x2, int *pts)
     if (x2 > pts[2]) {
         pts[2] = x2;
     }
-    if (y1 > pts[3]) {
-        pts[3] = y1;
+    if (y2 > pts[3]) {
+        pts[3] = y2;
     }
 }
 
@@ -1126,39 +1126,6 @@ set_at(SDL_Surface *surf, int x, int y, Uint32 color)
             break;
     }
     return 1;
-}
-
-static void
-set_at_unchecked(SDL_Surface *surf, int x, int y, Uint32 color)
-{
-    SDL_PixelFormat *format = surf->format;
-    Uint8 *pixels = (Uint8 *)surf->pixels;
-    Uint8 *byte_buf, rgb[4];
-
-    switch (format->BytesPerPixel) {
-        case 1:
-            *((Uint8 *)pixels + y * surf->pitch + x) = (Uint8)color;
-            break;
-        case 2:
-            *((Uint16 *)(pixels + y * surf->pitch) + x) = (Uint16)color;
-            break;
-        case 4:
-            *((Uint32 *)(pixels + y * surf->pitch) + x) = color;
-            break;
-        default: /*case 3:*/
-            SDL_GetRGB(color, format, rgb, rgb + 1, rgb + 2);
-            byte_buf = (Uint8 *)(pixels + y * surf->pitch) + x * 3;
-#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            *(byte_buf + (format->Rshift >> 3)) = rgb[0];
-            *(byte_buf + (format->Gshift >> 3)) = rgb[1];
-            *(byte_buf + (format->Bshift >> 3)) = rgb[2];
-#else
-            *(byte_buf + 2 - (format->Rshift >> 3)) = rgb[0];
-            *(byte_buf + 2 - (format->Gshift >> 3)) = rgb[1];
-            *(byte_buf + 2 - (format->Bshift >> 3)) = rgb[2];
-#endif
-            break;
-    }
 }
 
 static void
@@ -1405,6 +1372,42 @@ drawhorzline(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2)
 }
 
 static void
+drawvertline(SDL_Surface *surf, Uint32 color, int y1, int x1, int y2)
+{
+    Uint8 *pixel, *end;
+
+    pixel = ((Uint8 *)surf->pixels) + surf->pitch * y1;
+    end = ((Uint8 *)surf->pixels) + surf->pitch * y2 +
+          x1 * surf->format->BytesPerPixel;
+    pixel += x1 * surf->format->BytesPerPixel;
+    switch (surf->format->BytesPerPixel) {
+        case 1:
+            for (; pixel <= end; pixel += surf->pitch) {
+                *pixel = (Uint8)color;
+            }
+            break;
+        case 2:
+            for (; pixel <= end; pixel += surf->pitch) {
+                *(Uint16 *)pixel = (Uint16)color;
+            }
+            break;
+        case 3:
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+            color <<= 8;
+#endif
+            for (; pixel <= end; pixel += surf->pitch) {
+                memcpy(pixel, &color, 3 * sizeof(Uint8));
+            }
+            break;
+        default: /*case 4*/
+            for (; pixel <= end; pixel += surf->pitch) {
+                *(Uint32 *)pixel = color;
+            }
+            break;
+    }
+}
+
+static void
 drawhorzlineclip(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2)
 {
     if (y1 < surf->clip_rect.y || y1 >= surf->clip_rect.y + surf->clip_rect.h)
@@ -1453,7 +1456,7 @@ drawhorzlineclipbounding(SDL_Surface *surf, Uint32 color, int x1, int y1,
         return;
     }
 
-    add_line_to_drawn_list(x1, y1, x2, pts);
+    add_line_to_drawn_list(x1, y1, x2, y1, pts);
 
     drawhorzline(surf, color, x1, y1, x2);
 }
@@ -1462,7 +1465,7 @@ static void
 draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
                 int y2, int width, int *drawn_area)
 {
-    int dx, dy, err, e2, sx, sy;
+    int dx, dy, err, e2, sx, sy, start_draw, end_draw;
     int end_x = surf->clip_rect.x + surf->clip_rect.w - 1;
     int end_y = surf->clip_rect.y + surf->clip_rect.h - 1;
     int xinc = 0;
@@ -1488,10 +1491,11 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
         return;
 
     if (x1 == x2 && y1 == y2) { /* Single point */
-        for (int x = MAX((x1 - width) + extra_width, surf->clip_rect.x);
-             x <= MIN(end_x, x1 + width); x++) {
-            set_at_unchecked(surf, x, y1, color);
-            add_pixel_to_drawn_list(x, y1, drawn_area);
+        start_draw = MAX((x1 - width) + extra_width, surf->clip_rect.x);
+        end_draw = MIN(end_x, x1 + width);
+        if (start_draw <= end_draw) {
+            drawhorzline(surf, color, start_draw, y1, end_draw);
+            add_line_to_drawn_list(start_draw, y1, end_draw, y1, drawn_area);
         }
         return;
     }
@@ -1504,11 +1508,13 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     if (xinc) {
         while (y1 != (y2 + sy)) {
             if (surf->clip_rect.y <= y1 && y1 <= end_y) {
-                for (int x =
-                         MAX((x1 - width) + extra_width, surf->clip_rect.x);
-                     x <= MIN(end_x, x1 + width); x++) {
-                    set_at_unchecked(surf, x, y1, color);
-                    add_pixel_to_drawn_list(x, y1, drawn_area);
+                start_draw =
+                    MAX((x1 - width) + extra_width, surf->clip_rect.x);
+                end_draw = MIN(end_x, x1 + width);
+                if (start_draw <= end_draw) {
+                    drawhorzline(surf, color, start_draw, y1, end_draw);
+                    add_line_to_drawn_list(start_draw, y1, end_draw, y1,
+                                           drawn_area);
                 }
             }
             e2 = err;
@@ -1525,11 +1531,13 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     else {
         while (x1 != (x2 + sx)) {
             if (surf->clip_rect.x <= x1 && x1 <= end_x) {
-                for (int y =
-                         MAX((y1 - width) + extra_width, surf->clip_rect.y);
-                     y <= MIN(end_y, y1 + width); y++) {
-                    set_at_unchecked(surf, x1, y, color);
-                    add_pixel_to_drawn_list(x1, y, drawn_area);
+                start_draw =
+                    MAX((y1 - width) + extra_width, surf->clip_rect.y);
+                end_draw = MIN(end_y, y1 + width);
+                if (start_draw <= end_draw) {
+                    drawvertline(surf, color, start_draw, x1, end_draw);
+                    add_line_to_drawn_list(x1, start_draw, x1, end_draw,
+                                           drawn_area);
                 }
             }
             e2 = err;
