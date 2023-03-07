@@ -24,9 +24,9 @@
 
    Color objects support swizzling for their ``RGBA`` attributes, which allows
    the creation of new color objects with the corresponding swizzled attributes
-   as its ``RGBA`` attributes. For example, ``color.bgr`` provides a shortcut to
-   doing ``Color(color.b, color.g, color.r)``. Swizzling with 2 or more than 4
-   attributes will return a tuple consisting of the corresponding elements
+   as its ``RGBA`` attributes. For example, ``color.bgra`` provides a shortcut to
+   doing ``Color(color.b, color.g, color.r, color.a)``. Swizzling with other than
+   4 attributes will return a tuple consisting of the corresponding elements
    instead of a color object.
 
    Color objects support equality comparison with other color objects and 3 or

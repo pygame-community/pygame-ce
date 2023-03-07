@@ -202,35 +202,35 @@ pg_RGBAFromFuzzyColorObj(PyObject *color, Uint8 rgba[]);
  */
 static PyMethodDef _color_methods[] = {
     {"normalize", (PyCFunction)_color_normalize, METH_NOARGS,
-     DOC_COLORNORMALIZE},
+     DOC_COLOR_NORMALIZE},
     {"correct_gamma", (PyCFunction)_color_correct_gamma, METH_VARARGS,
-     DOC_COLORCORRECTGAMMA},
+     DOC_COLOR_CORRECTGAMMA},
     {"set_length", (PyCFunction)_color_set_length, METH_VARARGS,
-     DOC_COLORSETLENGTH},
+     DOC_COLOR_SETLENGTH},
     {"lerp", (PyCFunction)_color_lerp, METH_VARARGS | METH_KEYWORDS,
-     DOC_COLORLERP},
+     DOC_COLOR_LERP},
     {"grayscale", (PyCFunction)_color_grayscale, METH_NOARGS,
-     DOC_COLORGRAYSCALE},
+     DOC_COLOR_GRAYSCALE},
     {"premul_alpha", (PyCFunction)_premul_alpha, METH_NOARGS,
-     DOC_COLORPREMULALPHA},
-    {"update", (PyCFunction)_color_update, METH_FASTCALL, DOC_COLORUPDATE},
+     DOC_COLOR_PREMULALPHA},
+    {"update", (PyCFunction)_color_update, METH_FASTCALL, DOC_COLOR_UPDATE},
     {NULL, NULL, 0, NULL}};
 
 /**
  * Getters and setters for the pgColorObject.
  */
 static PyGetSetDef _color_getsets[] = {
-    {"r", (getter)_color_get_r, (setter)_color_set_r, DOC_COLORR, NULL},
-    {"g", (getter)_color_get_g, (setter)_color_set_g, DOC_COLORG, NULL},
-    {"b", (getter)_color_get_b, (setter)_color_set_b, DOC_COLORB, NULL},
-    {"a", (getter)_color_get_a, (setter)_color_set_a, DOC_COLORA, NULL},
-    {"hsva", (getter)_color_get_hsva, (setter)_color_set_hsva, DOC_COLORHSVA,
+    {"r", (getter)_color_get_r, (setter)_color_set_r, DOC_COLOR_R, NULL},
+    {"g", (getter)_color_get_g, (setter)_color_set_g, DOC_COLOR_G, NULL},
+    {"b", (getter)_color_get_b, (setter)_color_set_b, DOC_COLOR_B, NULL},
+    {"a", (getter)_color_get_a, (setter)_color_set_a, DOC_COLOR_A, NULL},
+    {"hsva", (getter)_color_get_hsva, (setter)_color_set_hsva, DOC_COLOR_HSVA,
      NULL},
-    {"hsla", (getter)_color_get_hsla, (setter)_color_set_hsla, DOC_COLORHSLA,
+    {"hsla", (getter)_color_get_hsla, (setter)_color_set_hsla, DOC_COLOR_HSLA,
      NULL},
     {"i1i2i3", (getter)_color_get_i1i2i3, (setter)_color_set_i1i2i3,
-     DOC_COLORI1I2I3, NULL},
-    {"cmy", (getter)_color_get_cmy, (setter)_color_set_cmy, DOC_COLORCMY,
+     DOC_COLOR_I1I2I3, NULL},
+    {"cmy", (getter)_color_get_cmy, (setter)_color_set_cmy, DOC_COLOR_CMY,
      NULL},
     {"__array_struct__", (getter)_color_get_arraystruct, NULL,
      "array structure interface, read only", NULL},
@@ -282,7 +282,7 @@ static PyTypeObject pgColor_Type = {
     .tp_getattro = (getattrofunc)_color_getAttr_swizzle,
     .tp_setattro = (setattrofunc)_color_setAttr_swizzle,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = DOC_PYGAMECOLOR,
+    .tp_doc = DOC_COLOR,
     .tp_richcompare = _color_richcompare,
     .tp_iter = (getiterfunc)_color_iter,
     .tp_methods = _color_methods,
@@ -2079,8 +2079,8 @@ _color_getAttr_swizzle(pgColorObject *self, PyObject *attr_name)
         goto swizzle_failed;
     }
 
-    if (len == 3 || len == 4) {
-        static Uint8 rgba[] = {0, 0, 0, 255};
+    if (len == 4) {
+        static Uint8 rgba[4];
         res = (PyObject *)pgColor_New(rgba);
     }
     else {
@@ -2117,7 +2117,7 @@ _color_getAttr_swizzle(pgColorObject *self, PyObject *attr_name)
                 goto swizzle_failed;
         }
 
-        if (len == 3 || len == 4) {
+        if (len == 4) {
             ((pgColorObject *)res)->data[i] = value;
         }
         else {

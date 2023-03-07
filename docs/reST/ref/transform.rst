@@ -244,6 +244,8 @@ Instead, always begin with the original image and scale to the desired size.)
 
    Inverts each RGB pixel contained within the Surface, does not affect alpha channel. Can also be used with a destination Surface. 
 
+   .. versionadded:: 2.2.0
+
    .. ## pygame.transform.invert ##
 
 .. function:: grayscale

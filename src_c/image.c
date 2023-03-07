@@ -1679,28 +1679,27 @@ SaveTGA(SDL_Surface *surface, const char *file, int rle)
 }
 
 static PyMethodDef _image_methods[] = {
-    {"load_basic", (PyCFunction)image_load_basic, METH_O,
-     DOC_PYGAMEIMAGELOADBASIC},
+    {"load_basic", (PyCFunction)image_load_basic, METH_O, DOC_IMAGE_LOADBASIC},
     {"load_extended", image_load_extended, METH_VARARGS,
-     DOC_PYGAMEIMAGELOADEXTENDED},
-    {"load", image_load, METH_VARARGS, DOC_PYGAMEIMAGELOAD},
+     DOC_IMAGE_LOADEXTENDED},
+    {"load", image_load, METH_VARARGS, DOC_IMAGE_LOAD},
 
     {"save_extended", image_save_extended, METH_VARARGS,
-     DOC_PYGAMEIMAGESAVEEXTENDED},
-    {"save", image_save, METH_VARARGS, DOC_PYGAMEIMAGESAVE},
+     DOC_IMAGE_SAVEEXTENDED},
+    {"save", image_save, METH_VARARGS, DOC_IMAGE_SAVE},
     {"get_extended", (PyCFunction)image_get_extended, METH_NOARGS,
-     DOC_PYGAMEIMAGEGETEXTENDED},
+     DOC_IMAGE_GETEXTENDED},
     {"get_sdl_image_version", (PyCFunction)image_get_sdl_image_version,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMEIMAGEGETSDLIMAGEVERSION},
+     METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_GETSDLIMAGEVERSION},
 
-    {"tostring", image_tobytes, METH_VARARGS, DOC_PYGAMEIMAGETOSTRING},
-    {"tobytes", image_tobytes, METH_VARARGS, DOC_PYGAMEIMAGETOBYTES},
+    {"tostring", image_tobytes, METH_VARARGS, DOC_IMAGE_TOSTRING},
+    {"tobytes", image_tobytes, METH_VARARGS, DOC_IMAGE_TOBYTES},
     {"fromstring", (PyCFunction)image_frombytes, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEIMAGEFROMSTRING},
+     DOC_IMAGE_FROMSTRING},
     {"frombytes", (PyCFunction)image_frombytes, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEIMAGEFROMBYTES},
+     DOC_IMAGE_FROMBYTES},
     {"frombuffer", (PyCFunction)image_frombuffer, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEIMAGEFROMBUFFER},
+     DOC_IMAGE_FROMBUFFER},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(image)
@@ -1710,7 +1709,7 @@ MODINIT_DEFINE(image)
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "image",
-                                         DOC_PYGAMEIMAGE,
+                                         DOC_IMAGE,
                                          -1,
                                          _image_methods,
                                          NULL,
