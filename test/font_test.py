@@ -299,6 +299,9 @@ class FontTypeTest(unittest.TestCase):
     def tearDown(self):
         pygame_font.quit()
 
+    def test_default_parameters(self):
+        f = pygame_font.Font()
+
     def test_font_alias(self):
         """Check if pygame.Font is present and the correct type."""
         self.assertIs(pygame.Font, pygame.font.Font)
@@ -561,12 +564,27 @@ class FontTypeTest(unittest.TestCase):
         )
         f = pygame_font.Font(font_path, 20)
 
+    def test_load_from_file_default(self):
+        font_name = pygame_font.get_default_font()
+        font_path = os.path.join(
+            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
+        )
+        f = pygame_font.Font(font_path)
+
     def test_load_from_pathlib(self):
         font_name = pygame_font.get_default_font()
         font_path = os.path.join(
             os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
         )
         f = pygame_font.Font(pathlib.Path(font_path), 20)
+        f = pygame_font.Font(pathlib.Path(font_path))
+
+    def test_load_from_pathlib_default(self):
+        font_name = pygame_font.get_default_font()
+        font_path = os.path.join(
+            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
+        )
+        f = pygame_font.Font(pathlib.Path(font_path))
 
     def test_load_from_file_obj(self):
         font_name = pygame_font.get_default_font()
@@ -576,10 +594,23 @@ class FontTypeTest(unittest.TestCase):
         with open(font_path, "rb") as f:
             font = pygame_font.Font(f, 20)
 
+    def test_load_from_file_obj_default(self):
+        font_name = pygame_font.get_default_font()
+        font_path = os.path.join(
+            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
+        )
+        with open(font_path, "rb") as f:
+            font = pygame_font.Font(f)
+
     def test_load_default_font_filename(self):
         # In font_init, a special case is when the filename argument is
         # identical to the default font file name.
         f = pygame_font.Font(pygame_font.get_default_font(), 20)
+
+    def test_load_default_font_filename_default(self):
+        # In font_init, a special case is when the filename argument is
+        # identical to the default font file name.
+        f = pygame_font.Font(pygame_font.get_default_font())
 
     def _load_unicode(self, path):
         import shutil
@@ -648,6 +679,28 @@ class FontTypeTest(unittest.TestCase):
             font.set_script("Deva")
         else:
             self.assertRaises(pygame.error, font.set_script, "Deva")
+
+    def test_font_set_direction(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            return  # not a pygame.ftfont thing
+
+        font = pygame_font.Font(None, 16)
+
+        ttf_version = pygame.font.get_sdl_ttf_version()
+        if ttf_version >= (2, 20, 0):
+            self.assertRaises(TypeError, pygame.font.Font.set_direction)
+            self.assertRaises(TypeError, pygame.font.Font.set_direction, font)
+            self.assertRaises(TypeError, pygame.font.Font.set_direction, "font")
+            self.assertRaises(TypeError, font.set_direction, [1, 1])
+            self.assertRaises(TypeError, font.set_direction, "string1", "string2")
+
+            self.assertRaises(ValueError, font.set_direction, -1)
+            self.assertRaises(ValueError, font.set_direction, 4)
+
+            font.set_direction(pygame.DIRECTION_RTL)
+
+        else:
+            self.assertRaises(pygame.error, font.set_direction, pygame.DIRECTION_RTL)
 
 
 @unittest.skipIf(IS_PYPY, "pypy skip known failure")  # TODO
