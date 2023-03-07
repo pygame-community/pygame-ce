@@ -1088,8 +1088,8 @@ clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2, int width,
         bottom = MAX(*y1, *y2) + width;
     }
     if (surf->clip_rect.x > right || surf->clip_rect.y > bottom ||
-        surf->clip_rect.x + surf->clip_rect.w < left ||
-        surf->clip_rect.y + surf->clip_rect.h < top) {
+        surf->clip_rect.x + surf->clip_rect.w <= left ||
+        surf->clip_rect.y + surf->clip_rect.h <= top) {
         return 0;
     }
 
@@ -1469,8 +1469,6 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
                 int y2, int width, int *drawn_area)
 {
     int dx, dy, err, e2, sx, sy;
-    int start_x = surf->clip_rect.x;
-    int start_y = surf->clip_rect.y;
     int end_x = surf->clip_rect.x + surf->clip_rect.w - 1;
     int end_y = surf->clip_rect.y + surf->clip_rect.h - 1;
     int xinc = 0;
@@ -1496,7 +1494,7 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
         return;
 
     if (x1 == x2 && y1 == y2) { /* Single point */
-        for (int x = MAX((x1 - width) + extra_width, start_x);
+        for (int x = MAX((x1 - width) + extra_width, surf->clip_rect.x);
              x <= MIN(end_x, x1 + width); x++) {
             set_at_unchecked(surf, x, y1, color);
             add_pixel_to_drawn_list(x, y1, drawn_area);
@@ -1511,8 +1509,9 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     err = (dx > dy ? dx : -dy) / 2;
     if (xinc) {
         while (y1 != (y2 + sy)) {
-            if (start_y <= y1 && y1 <= end_y) {
-                for (int x = MAX((x1 - width) + extra_width, start_x);
+            if (surf->clip_rect.y <= y1 && y1 <= end_y) {
+                for (int x =
+                         MAX((x1 - width) + extra_width, surf->clip_rect.x);
                      x <= MIN(end_x, x1 + width); x++) {
                     set_at_unchecked(surf, x, y1, color);
                     add_pixel_to_drawn_list(x, y1, drawn_area);
@@ -1531,8 +1530,9 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     }
     else {
         while (x1 != (x2 + sx)) {
-            if (start_x <= x1 && x1 <= end_x) {
-                for (int y = MAX((y1 - width) + extra_width, start_y);
+            if (surf->clip_rect.x <= x1 && x1 <= end_x) {
+                for (int y =
+                         MAX((y1 - width) + extra_width, surf->clip_rect.y);
                      y <= MIN(end_y, y1 + width); y++) {
                     set_at_unchecked(surf, x1, y, color);
                     add_pixel_to_drawn_list(x1, y, drawn_area);
