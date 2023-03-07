@@ -1886,6 +1886,7 @@ static PyObject *
 surf_rblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     SDL_Surface *src, *dest = pgSurface_AsSurface(self);
+    SURF_INIT_CHECK(dest)
     SDL_Rect *src_rect, dest_rect, temp;
     PyObject *blit_pos, *src_surf;
     int flags_numeric = 0;
@@ -1897,15 +1898,13 @@ surf_rblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
 
     if (nargs == 3) {
-        if (PyLong_Check(args[2])) {
-            flags_numeric = PyLong_AsLong(args[2]);
-            if (PyErr_Occurred()) {
-                return NULL;
-            }
-        }
-        else {
+        if (!PyLong_Check(args[2])) {
             return RAISE(PyExc_TypeError,
                          "special_flags parameter must be numeric");
+        }
+        flags_numeric = PyLong_AsLong(args[2]);
+        if (PyErr_Occurred()) {
+            return NULL;
         }
     }
 
@@ -1914,7 +1913,7 @@ surf_rblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
     if (!pgSurface_Check(src_surf)) {
         return RAISE(PyExc_TypeError, "source must be a Surface");
     }
-    if (!dest || !(src = pgSurface_AsSurface(src_surf))) {
+    if (!(src = pgSurface_AsSurface(src_surf))) {
         return RAISE(pgExc_SDLError, "display Surface quit");
     }
 
