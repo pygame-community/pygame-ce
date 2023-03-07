@@ -993,12 +993,6 @@ compare_int(const void *a, const void *b)
     return (*(const int *)a) - (*(const int *)b);
 }
 
-static int
-sign(int x, int y)
-{
-    return (x > 0) ? 1 : ((x < 0) ? -1 : y);
-}
-
 static Uint32
 get_antialiased_color(SDL_Surface *surf, int x, int y, Uint32 original_color,
                       float brightness, int blend)
