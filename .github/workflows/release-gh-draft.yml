@@ -1,0 +1,44 @@
+name: Draft Github Release
+
+on:
+  push:
+    branches: 'release/**'
+
+jobs:
+  manylinux:
+    uses: ./.github/workflows/build-manylinux.yml
+
+  macos:
+    uses: ./.github/workflows/build-macos.yml
+
+  windows:
+    uses: ./.github/workflows/build-windows.yml
+
+  sdist:
+    uses: ./.github/workflows/build-ubuntu-sdist.yml
+
+  draft-release:
+    needs: [manylinux, macos, windows, sdist]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3.3.0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+      
+      # Strips 'release/' from the ref_name, this helps us access the version
+      # name as 'steps.ver.outputs.VER'
+      - name: Get version
+        id: ver
+        run: echo "VER=${GITHUB_REF_NAME#'release/'}" >> $GITHUB_OUTPUT
+
+      - name: Draft a release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          prerelease: ${{ contains(steps.ver.outputs.VER, 'dev') }}
+          files: pygame-wheels-*/*
+          name: '${{ steps.ver.outputs.VER }} - {TODO put a title here} [DRAFTED BY CI]'
+          tag_name: ${{ steps.ver.outputs.VER }}
+          target_commitish: ${{ github.ref_name }}
+          generate_release_notes: true

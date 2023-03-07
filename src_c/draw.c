@@ -118,6 +118,9 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
         return NULL; /* Exception already set. */
     }
 
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
     if (!blend) {
         if (PyErr_WarnEx(
                 PyExc_DeprecationWarning,
@@ -127,8 +130,6 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
             return NULL;
         }
     }
-
-    surf = pgSurface_AsSurface(surfobj);
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -191,6 +192,7 @@ line(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -265,6 +267,7 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -398,6 +401,7 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -520,6 +524,7 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -595,6 +600,7 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -678,6 +684,7 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -767,6 +774,7 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -884,6 +892,8 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
@@ -2519,22 +2529,20 @@ draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
 /* List of python functions */
 static PyMethodDef _draw_methods[] = {
     {"aaline", (PyCFunction)aaline, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWAALINE},
-    {"line", (PyCFunction)line, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWLINE},
+     DOC_DRAW_AALINE},
+    {"line", (PyCFunction)line, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_LINE},
     {"aalines", (PyCFunction)aalines, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWAALINES},
+     DOC_DRAW_AALINES},
     {"lines", (PyCFunction)lines, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWLINES},
+     DOC_DRAW_LINES},
     {"ellipse", (PyCFunction)ellipse, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWELLIPSE},
-    {"arc", (PyCFunction)arc, METH_VARARGS | METH_KEYWORDS, DOC_PYGAMEDRAWARC},
+     DOC_DRAW_ELLIPSE},
+    {"arc", (PyCFunction)arc, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_ARC},
     {"circle", (PyCFunction)circle, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWCIRCLE},
+     DOC_DRAW_CIRCLE},
     {"polygon", (PyCFunction)polygon, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWPOLYGON},
-    {"rect", (PyCFunction)rect, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWRECT},
+     DOC_DRAW_POLYGON},
+    {"rect", (PyCFunction)rect, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_RECT},
 
     {NULL, NULL, 0, NULL}};
 
@@ -2542,7 +2550,7 @@ MODINIT_DEFINE(draw)
 {
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "draw",
-                                         DOC_PYGAMEDRAW,
+                                         DOC_DRAW,
                                          -1,
                                          _draw_methods,
                                          NULL,
