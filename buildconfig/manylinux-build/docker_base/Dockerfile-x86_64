@@ -44,6 +44,12 @@ RUN ["bash", "/pkg-config_build/build-pkg-config.sh"]
 ADD buildtools /buildtools/
 RUN ["bash", "/buildtools/install.sh"]
 
+ADD libffi /libffi_build/
+RUN ["bash", "/libffi_build/build-libffi.sh"]
+
+ADD libxml2 /libxml2_build/
+RUN ["bash", "/libxml2_build/build-libxml2.sh"]
+
 #ADD zlib-ng /zlib-ng_build/
 #RUN ["bash", "/zlib-ng_build/build-zlib-ng.sh"]
 
@@ -93,9 +99,6 @@ RUN ["bash", "/pulseaudio_build/build-pulseaudio.sh"]
 
 ADD libxmp /libxmp_build/
 RUN ["bash", "/libxmp_build/build-libxmp.sh"]
-
-ADD libffi /libffi_build/
-RUN ["bash", "/libffi_build/build-libffi.sh"]
 
 # explicit install not needed anymore
 # ADD gettext /gettext_build/
