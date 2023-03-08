@@ -82,7 +82,7 @@ class ColorTypeTest(unittest.TestCase):
             pygame.Color(10, g=20, b=30, a=200),
             pygame.Color(10, 20, b=30, a=200),
             pygame.Color(10, 20, 30, a=200),
-            pygame.Color(a=200, b=30, g=20, r=10)
+            pygame.Color(a=200, b=30, g=20, r=10),
         ]
         for col in colors:
             self.assertEqual(col, (10, 20, 30, 200))
