@@ -74,7 +74,7 @@ class Font(_Font):
         )
         self.antialiased = bool(antialias)
         try:
-            s, _ = super().render(text, antialias, color, background, wraplength)
+            s, _ = super().render(text, color, background, wraplength)
             return s
         finally:
             self.antialiased = save_antialiased
