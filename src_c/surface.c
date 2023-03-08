@@ -2139,17 +2139,16 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
     SURF_INIT_CHECK(dest)
 
     SDL_Rect *src_rect, temp, dest_rect;
-    PyObject *item = NULL, *src_surf = NULL, *blit_pos = NULL;
-    PyObject *blit_sequence;
-    int error = 0, flags_numeric = 0;
+    PyObject *item, *src_surf, *blit_pos, *blit_sequence;
+    int flags_numeric = 0; /* Default flag is 0, opaque */
+    int error = 0;
 
     if (nargs == 0 || nargs > 2) {
         error = FBLITS_ERR_INCORRECT_ARGS_NUM;
         goto on_error;
     }
-
     /* Get the flags if they are passed */
-    if (nargs == 2) {
+    else if (nargs == 2) {
         if (!PyLong_Check(args[1])) {
             error = FBLITS_ERR_FLAG_NOT_NUMERIC;
             goto on_error;
