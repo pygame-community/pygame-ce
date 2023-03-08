@@ -865,7 +865,7 @@ static PyMethodDef font_methods[] = {
     {"set_strikethrough", font_set_strikethrough, METH_O,
      DOC_FONT_FONT_SETSTRIKETHROUGH},
     {"metrics", font_metrics, METH_O, DOC_FONT_FONT_METRICS},
-    {"render", font_render, METH_VARARGS | METH_KEYWORDS,
+    {"render", (PyCFunction)font_render, METH_VARARGS | METH_KEYWORDS,
      DOC_FONT_FONT_RENDER},
     {"size", font_size, METH_O, DOC_FONT_FONT_SIZE},
     {"set_script", font_set_script, METH_O, DOC_FONT_FONT_SETSCRIPT},
