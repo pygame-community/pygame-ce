@@ -92,6 +92,8 @@
    :returns: a newly created :class:`Color` object
    :rtype: Color
 
+   .. versionchanged:: 2.1.4
+      :class:`Color` objects can be created using the keyword argument names r, g, b and a.
    .. versionchanged:: 2.0.0
       Support for tuples, lists, and :class:`Color` objects when creating
       :class:`Color` objects.

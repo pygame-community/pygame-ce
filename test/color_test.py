@@ -76,6 +76,17 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(len(c), 4)
         self.assertEqual(c, (100, 110, 120, 128))
 
+    def test_init_kwargs(self):
+        colors = [
+            pygame.Color(r=10, g=20, b=30, a=200),
+            pygame.Color(10, g=20, b=30, a=200),
+            pygame.Color(10, 20, b=30, a=200),
+            pygame.Color(10, 20, 30, a=200),
+            pygame.Color(a=200, b=30, g=20, r=10)
+        ]
+        for col in colors:
+            self.assertEqual(col, (10, 20, 30, 200))
+
     def test_invalid_html_hex_codes(self):
         # This was a problem with the way 2 digit hex numbers were
         # calculated. The test_hex_digits test is related to the fix.
