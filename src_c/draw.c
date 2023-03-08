@@ -872,7 +872,7 @@ polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     pgSurfaceObject *surfobj;
     PyObject *colorobj, *points, *item = NULL;
-    PyObject *poly_repr = NULL;
+    PyObject *poly_tuple = NULL;
     PyObject **draw_sequence;
     SDL_Surface *surf = NULL;
     Uint8 rgba[4];
@@ -928,55 +928,53 @@ polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
 
     for (seq_counter = 0; seq_counter < draw_seq_len; seq_counter++) {
-        poly_repr = draw_sequence[seq_counter];
-        if (PyTuple_Check(poly_repr)) {
-            itemlength = PyTuple_GET_SIZE(poly_repr);
-            if (itemlength < 2 || itemlength > 3) {
-                pgSurface_Unlock(surfobj);
-                PyMem_Free(xylist);
-                errornum = POLYGONS_ERR_INVALID_ITEM_LENGTH;
-                goto on_error;
-            }
-        }
-        else {
+        poly_tuple = draw_sequence[seq_counter];
+        if (!PyTuple_Check(poly_tuple)) {
             pgSurface_Unlock(surfobj);
             PyMem_Free(xylist);
             errornum = POLYGONS_ERR_ITEM_TUPLE_REQUIRED;
             goto on_error;
         }
 
-        colorobj = PyTuple_GET_ITEM(poly_repr, 0);
-        points = PyTuple_GET_ITEM(poly_repr, 1);
+        itemlength = PyTuple_GET_SIZE(poly_tuple);
+        if (itemlength < 2 || itemlength > 3) {
+            pgSurface_Unlock(surfobj);
+            PyMem_Free(xylist);
+            errornum = POLYGONS_ERR_INVALID_ITEM_LENGTH;
+            goto on_error;
+        }
+
+        colorobj = PyTuple_GET_ITEM(poly_tuple, 0);
+        points = PyTuple_GET_ITEM(poly_tuple, 1);
         CHECK_LOAD_COLOR(colorobj);
 
-        if (PySequence_Check(points)) {
-            if ((curr_size = PySequence_Length(points)) < 3) {
-                PyMem_Free(xylist);
-                pgSurface_Unlock(surfobj);
-                errornum = POLYGONS_ERR_POINTS_SEQUENCE_REQUIRED;
-                goto on_error;
-            }
-            else if (curr_size > curr_plength) {
-                curr_plength = curr_size;
-                PyMem_Resize(xylist, int, 2 * curr_plength);
-                /* deallocate memory if could not reallocate */
-                if (!xylist) {
-                    pgSurface_Unlock(surfobj);
-                    errornum = POLYGONS_ERR_MEM_REALLOC;
-                    goto on_error;
-                }
-            }
-        }
-        else {
+        if (!PySequence_Check(points)) {
             PyMem_Free(xylist);
             pgSurface_Unlock(surfobj);
             errornum = POLYGONS_ERR_POINTS_SEQUENCE_REQUIRED;
             goto on_error;
         }
 
+        if ((curr_size = PySequence_Length(points)) < 3) {
+            PyMem_Free(xylist);
+            pgSurface_Unlock(surfobj);
+            errornum = POLYGONS_ERR_POINTS_SEQUENCE_REQUIRED;
+            goto on_error;
+        }
+        else if (curr_size > curr_plength) {
+            curr_plength = curr_size;
+            PyMem_Resize(xylist, int, 2 * curr_plength);
+            /* deallocate memory if could not reallocate */
+            if (!xylist) {
+                pgSurface_Unlock(surfobj);
+                errornum = POLYGONS_ERR_MEM_REALLOC;
+                goto on_error;
+            }
+        }
+
         l_width = 0;
         if (itemlength == 3) {
-            if (!pg_IntFromObj(PyTuple_GET_ITEM(poly_repr, 2), &l_width)) {
+            if (!pg_IntFromObj(PyTuple_GET_ITEM(poly_tuple, 2), &l_width)) {
                 PyMem_Free(xylist);
                 pgSurface_Unlock(surfobj);
                 errornum = POLYGONS_ERR_INVALID_WIDTH_TYPE;
@@ -984,7 +982,7 @@ polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
             }
         }
 
-        /* setup the xlist and ylist drawing points */
+        /* Set up the xylist array */
         for (loop = 0; loop < curr_plength; ++loop) {
             item = PySequence_ITEM(points, loop);
             if (!pg_TwoIntsFromObj(item, &xylist[loop],
@@ -1001,21 +999,20 @@ polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         if (l_width > 0) {
             /* this is done in two parts to maintain the same
                behavior as the draw.polygon function */
-            for (loop = 0; loop < curr_plength - 1; loop++) {
+            Py_ssize_t j;
+            for (loop = 0, j = curr_plength - 1; loop < curr_plength;
+                 j = loop++) {
                 draw_line_width(surf, color, xylist[loop],
-                                xylist[curr_plength + loop], xylist[loop + 1],
-                                xylist[curr_plength + loop + 1], l_width,
-                                drawn_area);
+                                xylist[curr_plength + loop], xylist[j],
+                                xylist[curr_plength + j], l_width, drawn_area);
             }
-            draw_line_width(surf, color, xylist[curr_plength - 1],
-                            xylist[2 * curr_plength - 1], xylist[0],
-                            xylist[curr_plength], l_width, drawn_area);
         }
         /* Filled poly */
-        else if (l_width == 0) {
+        else if (!l_width) {
             draw_fillpoly(surf, xylist, &xylist[curr_plength], curr_plength,
                           color, drawn_area);
         }
+        /* Invalid width */
         else {
             pgSurface_Unlock(surfobj);
             PyMem_Free(xylist);
