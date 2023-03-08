@@ -74,20 +74,30 @@ pg_avx2_at_runtime_but_uncompiled()
     __m256i *srcp256 = (__m256i *)info->s_pixels;                             \
     __m256i *dstp256 = (__m256i *)info->d_pixels;                             \
                                                                               \
-    __m256i mm256_shuff_mask_A =                                              \
+    __m256i shuff_out_A =                                                     \
         _mm256_set_epi8(0x80, 23, 0x80, 22, 0x80, 21, 0x80, 20, 0x80, 19,     \
                         0x80, 18, 0x80, 17, 0x80, 16, 0x80, 7, 0x80, 6, 0x80, \
                         5, 0x80, 4, 0x80, 3, 0x80, 2, 0x80, 1, 0x80, 0);      \
                                                                               \
-    __m256i mm256_shuff_mask_B = _mm256_set_epi8(                             \
+    __m256i shuff_out_B = _mm256_set_epi8(                                    \
         0x80, 31, 0x80, 30, 0x80, 29, 0x80, 28, 0x80, 27, 0x80, 26, 0x80, 25, \
         0x80, 24, 0x80, 15, 0x80, 14, 0x80, 13, 0x80, 12, 0x80, 11, 0x80, 10, \
         0x80, 9, 0x80, 8);                                                    \
                                                                               \
-    __m256i shuffle_out =                                                     \
-        _mm256_set_epi8(0x80, 14, 0x80, 14, 0x80, 14, 0x80, 14, 0x80, 6,      \
-                        0x80, 6, 0x80, 6, 0x80, 6, 0x80, 14, 0x80, 14, 0x80,  \
-                        14, 0x80, 14, 0x80, 6, 0x80, 6, 0x80, 6, 0x80, 6);    \
+    /* Alpha offset (in 16 bit space). Once a pixel has been extracted */     \
+    /* into the AVX registers, it looks like [0][A][0][R][0][G][0][B] */      \
+    /* -- except the location of the alpha is not guaranteed to be the */     \
+    /* same on different pixelformats, so we need to find the offset */       \
+    /* to further extract the alpha */                                        \
+    /* src->Ashift is in bits, so Ashift / 8 * 2 (because of 16 bit space) */ \
+    /* derives to Ashift >> 2 */                                              \
+    int a_off = info->src->Ashift >> 2;                                       \
+                                                                              \
+    __m256i shuff_out_alpha = _mm256_set_epi8(                                \
+        0x80, 8 + a_off, 0x80, 8 + a_off, 0x80, 8 + a_off, 0x80, 8 + a_off,   \
+        0x80, 0 + a_off, 0x80, 0 + a_off, 0x80, 0 + a_off, 0x80, 0 + a_off,   \
+        0x80, 8 + a_off, 0x80, 8 + a_off, 0x80, 8 + a_off, 0x80, 8 + a_off,   \
+        0x80, 0 + a_off, 0x80, 0 + a_off, 0x80, 0 + a_off, 0x80, 0 + a_off);  \
                                                                               \
     __m256i mm256_mask =                                                      \
         _mm256_set_epi32(0x00, (pre_8_width > 6) ? 0x80000000 : 0x00,         \
@@ -144,11 +154,11 @@ alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
     __m256i mm256_srcA, mm256_srcB, mm256_dstA, mm256_dstB, mm256_srcAlpha,
         temp;
 
-    printf("inside avx2 alpha blitter\n");
-    printf("rshift=%i\n", info->src->Rshift / 8);
-    printf("gshift=%i\n", info->src->Gshift / 8);
-    printf("bshift=%i\n", info->src->Bshift / 8);
-    printf("ashift=%i\n", info->src->Ashift / 8);
+    //printf("inside avx2 alpha blitter\n");
+    //printf("rshift=%i\n", info->src->Rshift / 8);
+    //printf("gshift=%i\n", info->src->Gshift / 8);
+    //printf("bshift=%i\n", info->src->Bshift / 8);
+    //printf("ashift=%i\n", info->src->Ashift / 8);
 
     /* Original 'Straight Alpha' blending equation:
         --------------------------------------------
@@ -171,6 +181,12 @@ alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
         for processing. This blitter loads in 8 pixels at once, but
         processes 4 at a time (4x64=256 bits).
 
+        * In this blitter, the interspersed RGBA layout is not determined,
+        because the only thing that matters is alpha location, and a mask
+        is provided to select alpha out of the registers. This way the blitter
+        can easily support different pixel arrangements
+        (RGBA, BGRA, ARGB, ABGR)
+
         Order of operations:
             temp = srcRGBA - dstRGBA
             temp *= srcA
@@ -183,13 +199,13 @@ alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
     RUN_AVX2_BLITTER(
         /* ==== shuffle pixels out into two registers each, src
          * and dst set up for 16 bit math, like 0A0R0G0B ==== */
-        mm256_srcA = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_A);
-        mm256_srcB = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_B);
-        mm256_dstA = _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_A);
-        mm256_dstB = _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_B);
+        mm256_srcA = _mm256_shuffle_epi8(mm256_src, shuff_out_A);
+        mm256_srcB = _mm256_shuffle_epi8(mm256_src, shuff_out_B);
+        mm256_dstA = _mm256_shuffle_epi8(mm256_dst, shuff_out_A);
+        mm256_dstB = _mm256_shuffle_epi8(mm256_dst, shuff_out_B);
 
         /* ==== alpha blend opaque dst on A pixels ==== */
-        mm256_srcAlpha = _mm256_shuffle_epi8(mm256_srcA, shuffle_out);
+        mm256_srcAlpha = _mm256_shuffle_epi8(mm256_srcA, shuff_out_alpha);
         temp = _mm256_sub_epi16(mm256_srcA, mm256_dstA);
         temp = _mm256_mullo_epi16(temp, mm256_srcAlpha);
         mm256_dstA = _mm256_slli_epi16(mm256_dstA, 8);
@@ -198,7 +214,7 @@ alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
         mm256_dstA = _mm256_srli_epi16(mm256_dstA, 8);
 
         /* ==== alpha blend opaque dst on B pixels ==== */
-        mm256_srcAlpha = _mm256_shuffle_epi8(mm256_srcB, shuffle_out);
+        mm256_srcAlpha = _mm256_shuffle_epi8(mm256_srcB, shuff_out_alpha);
         temp = _mm256_sub_epi16(mm256_srcB, mm256_dstB);
         temp = _mm256_mullo_epi16(temp, mm256_srcAlpha);
         mm256_dstB = _mm256_slli_epi16(mm256_dstB, 8);
