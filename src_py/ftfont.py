@@ -59,8 +59,8 @@ class Font(_Font):
         self.ucs4 = True
         self.underline_adjustment = 1.0
 
-    def render(self, text, antialias, color, background=None):
-        """render(text, antialias, color, background=None) -> Surface
+    def render(self, text, antialias, color, background=None, wraplength=0):
+        """render(text, antialias, color, background=None, wraplength=0) -> Surface
         draw text on a new Surface"""
 
         if text is None:
@@ -74,7 +74,7 @@ class Font(_Font):
         )
         self.antialiased = bool(antialias)
         try:
-            s, _ = super().render(text, color, background)
+            s, _ = super().render(text, antialias, color, background, wraplength)
             return s
         finally:
             self.antialiased = save_antialiased
