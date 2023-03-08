@@ -657,10 +657,6 @@ _color_init(pgColorObject *self, PyObject *args, PyObject *kwds)
     PyObject *obj1 = NULL;
     PyObject *obj2 = NULL;
     PyObject *obj3 = NULL;
-    PyObject *objkw = NULL;
-    PyObject *obj1kw = NULL;
-    PyObject *obj2kw = NULL;
-    PyObject *obj3kw = NULL;
 
     static char *kwlist[] = {"r", "g", "b", "a", NULL};
 
