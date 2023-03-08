@@ -2110,6 +2110,99 @@ pg_is_fullscreen(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
+pg_is_vsync(PyObject *self)
+{
+    SDL_Window *win = pg_GetDefaultWindow();
+    int flags;
+    _DisplayState *state = DISPLAY_STATE;
+
+    VIDEO_INIT_CHECK();
+    if (!win)
+        return RAISE(pgExc_SDLError, "No open window");
+
+    if (pg_renderer != NULL) {
+        SDL_RendererInfo info;
+
+        if (SDL_GetRendererInfo(pg_renderer, &info) != 0)
+            return RAISE(pgExc_SDLError, SDL_GetError());
+
+        if (info.flags & SDL_RENDERER_PRESENTVSYNC)
+            Py_RETURN_TRUE;
+        else
+            Py_RETURN_FALSE;
+    }
+
+    if (state->using_gl) {
+        if (SDL_GL_GetSwapInterval() != 0)
+            Py_RETURN_TRUE;
+        else
+            Py_RETURN_FALSE;
+    }
+
+    Py_RETURN_FALSE;
+}
+
+static PyObject *
+pg_current_refresh_rate(PyObject *self)
+{
+    SDL_Window *win = pg_GetDefaultWindow();
+    SDL_DisplayMode mode;
+    int result;
+    int display_index;
+
+    VIDEO_INIT_CHECK();
+    if (!win)
+        return RAISE(pgExc_SDLError, "No open window");
+
+    display_index = SDL_GetWindowDisplayIndex(win);
+    if (display_index < 0)
+        return RAISE(pgExc_SDLError, SDL_GetError());
+
+    if(SDL_GetCurrentDisplayMode(display_index, &mode)!=0)
+        return RAISE(pgExc_SDLError, SDL_GetError());
+
+    return PyLong_FromLong(mode.refresh_rate);
+}
+
+static PyObject *
+pg_desktop_refresh_rates(PyObject *self)
+{
+    int display_count, i;
+    SDL_DisplayMode dm;
+    PyObject *result, *refresh_rate;
+
+    VIDEO_INIT_CHECK();
+
+    display_count = SDL_GetNumVideoDisplays();
+    if (display_count < 0) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    result = PyList_New(display_count);
+    if (!result) {
+        return NULL;
+    }
+
+    for (i = 0; i < display_count; i++) {
+        if (SDL_GetDesktopDisplayMode(i, &dm)) {
+            Py_DECREF(result);
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+
+        refresh_rate = PyLong_FromLong(dm.refresh_rate);
+        if (!refresh_rate) {
+            Py_DECREF(result);
+            return NULL;
+        }
+
+        PyList_SET_ITEM(result, i, refresh_rate);
+    }
+    return result;
+}
+
+
+
+static PyObject *
 pg_toggle_fullscreen(PyObject *self, PyObject *_null)
 {
     SDL_Window *win = pg_GetDefaultWindow();
@@ -2628,6 +2721,13 @@ static PyMethodDef _pg_display_methods[] = {
      METH_NOARGS, DOC_PYGAMEDISPLAYGETDESKTOPSIZES},
     {"is_fullscreen", (PyCFunction)pg_is_fullscreen, METH_NOARGS,
      "provisional API, subject to change"},
+
+    {"is_vsync", (PyCFunction)pg_is_vsync, METH_NOARGS,
+     DOC_PYGAMEDISPLAYISVSYNC},
+    {"get_desktop_refresh_rates", (PyCFunction)pg_desktop_refresh_rates,
+     METH_NOARGS, DOC_PYGAMEDISPLAYGETDESKTOPREFRESHRATES},
+    {"get_current_refresh_rate", (PyCFunction)pg_current_refresh_rate,
+     METH_NOARGS, DOC_PYGAMEDISPLAYGETCURRENTREFRESHRATE},
 
     {"gl_set_attribute", pg_gl_set_attribute, METH_VARARGS,
      DOC_PYGAMEDISPLAYGLSETATTRIBUTE},
