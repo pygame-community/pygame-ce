@@ -4,8 +4,6 @@ name: MacOS
 # to main. Do not run CI on any other branch. Also, skip any non-source changes 
 # from running on CI
 on:
-  release:
-    types: [created]
   push:
     branches: main
     paths-ignore:
@@ -29,9 +27,12 @@ on:
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
       - '!.github/workflows/build-macos.yml'
+  
+  # the github release drafter can call this workflow
+  workflow_call:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-macos
   cancel-in-progress: true
 
 jobs:
@@ -131,11 +132,16 @@ jobs:
         export MAC_ARCH="${{ matrix.macarch }}"
         brew install pkg-config
         cd buildconfig/macdependencies
+        cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
         bash ./install_mac_deps.sh
 
       CIBW_BEFORE_BUILD: |
         pip install requests numpy Sphinx
         python setup.py docs
+        cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
+
+      # To remove any speculations about the wheel not being self-contained
+      CIBW_BEFORE_TEST: rm -rf ${{ github.workspace }}/pygame_mac_deps
 
       CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,timing --time_out 300
 
@@ -143,7 +149,7 @@ jobs:
       CIBW_BUILD_VERBOSITY: 2
 
     steps:
-      - uses: actions/checkout@v3.0.2
+      - uses: actions/checkout@v3.3.0
 
       - name: pip cache
         uses: actions/cache@v3.0.2
@@ -163,22 +169,6 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: pygame-wheels
+          name: pygame-wheels-macos
           path: ./wheelhouse/*.whl
 
-#   - name: Upload binaries to Github Releases
-#     if: github.event_name == 'release'
-#     uses: svenstaro/upload-release-action@v2
-#     with:
-#       repo_token: ${{ secrets.GITHUB_TOKEN }}
-#       file: ./wheelhouse/*.whl
-#       tag: ${{ github.ref }}
-#
-#   - name: Upload binaries to PyPI
-#     if: github.event_name == 'release'
-#     env:
-#      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-#      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-#     run: |
-#       python3 -m pip install twine
-#       twine upload ./wheelhouse/*.whl
