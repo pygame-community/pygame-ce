@@ -53,185 +53,161 @@ pg_avx2_at_runtime_but_uncompiled()
 //     printf("h: %llX\n", *(z + 1));
 // }
 
+#define __AVX2__ 1
+
+#define SETUP_AVX2_BLITTER                                                    \
+    int n;                                                                    \
+    int width = info->width;                                                  \
+    int height = info->height;                                                \
+                                                                              \
+    Uint32 *srcp = (Uint32 *)info->s_pixels;                                  \
+    int srcskip = info->s_skip >> 2;                                          \
+    int srcpxskip = info->s_pxskip >> 2;                                      \
+                                                                              \
+    Uint32 *dstp = (Uint32 *)info->d_pixels;                                  \
+    int dstskip = info->d_skip >> 2;                                          \
+    int dstpxskip = info->d_pxskip >> 2;                                      \
+                                                                              \
+    int pre_8_width = width % 8;                                              \
+    int post_8_width = width / 8;                                             \
+                                                                              \
+    __m256i *srcp256 = (__m256i *)info->s_pixels;                             \
+    __m256i *dstp256 = (__m256i *)info->d_pixels;                             \
+                                                                              \
+    __m256i mm256_shuff_mask_A =                                              \
+        _mm256_set_epi8(0x80, 23, 0x80, 22, 0x80, 21, 0x80, 20, 0x80, 19,     \
+                        0x80, 18, 0x80, 17, 0x80, 16, 0x80, 7, 0x80, 6, 0x80, \
+                        5, 0x80, 4, 0x80, 3, 0x80, 2, 0x80, 1, 0x80, 0);      \
+                                                                              \
+    __m256i mm256_shuff_mask_B = _mm256_set_epi8(                             \
+        0x80, 31, 0x80, 30, 0x80, 29, 0x80, 28, 0x80, 27, 0x80, 26, 0x80, 25, \
+        0x80, 24, 0x80, 15, 0x80, 14, 0x80, 13, 0x80, 12, 0x80, 11, 0x80, 10, \
+        0x80, 9, 0x80, 8);                                                    \
+                                                                              \
+    __m256i shuffle_out =                                                     \
+        _mm256_set_epi8(0x80, 14, 0x80, 14, 0x80, 14, 0x80, 14, 0x80, 6,      \
+                        0x80, 6, 0x80, 6, 0x80, 6, 0x80, 14, 0x80, 14, 0x80,  \
+                        14, 0x80, 14, 0x80, 6, 0x80, 6, 0x80, 6, 0x80, 6);    \
+                                                                              \
+    __m256i mm256_mask =                                                      \
+        _mm256_set_epi32(0x00, (pre_8_width > 6) ? 0x80000000 : 0x00,         \
+                         (pre_8_width > 5) ? 0x80000000 : 0x00,               \
+                         (pre_8_width > 4) ? 0x80000000 : 0x00,               \
+                         (pre_8_width > 3) ? 0x80000000 : 0x00,               \
+                         (pre_8_width > 2) ? 0x80000000 : 0x00,               \
+                         (pre_8_width > 1) ? 0x80000000 : 0x00,               \
+                         (pre_8_width > 0) ? 0x80000000 : 0x00);              \
+                                                                              \
+    __m256i mm256_src, mm256_dst;
+
+#define RUN_AVX2_BLITTER(BLITTER_CODE)                                  \
+    while (height--) {                                                  \
+        for (int i = post_8_width; i > 0; i--) {                        \
+            /* ==== load 8 pixels into AVX registers ==== */            \
+            mm256_src = _mm256_loadu_si256(srcp256);                    \
+            mm256_dst = _mm256_loadu_si256(dstp256);                    \
+                                                                        \
+            {BLITTER_CODE}                                              \
+                                                                        \
+            /* ==== store 8 pixels from AVX registers ==== */           \
+            _mm256_storeu_si256(dstp256, mm256_dst);                    \
+                                                                        \
+            srcp256++;                                                  \
+            dstp256++;                                                  \
+        }                                                               \
+        srcp = (Uint32 *)srcp256;                                       \
+        dstp = (Uint32 *)dstp256;                                       \
+        if (pre_8_width > 0) {                                          \
+            mm256_src = _mm256_maskload_epi32((int *)srcp, mm256_mask); \
+            mm256_dst = _mm256_maskload_epi32((int *)dstp, mm256_mask); \
+                                                                        \
+            {BLITTER_CODE}                                              \
+                                                                        \
+            /* ==== store 1-7 pixels from AVX registers ==== */         \
+            _mm256_maskstore_epi32((int *)dstp, mm256_mask, mm256_dst); \
+                                                                        \
+            srcp += srcpxskip * pre_8_width;                            \
+            dstp += dstpxskip * pre_8_width;                            \
+        }                                                               \
+                                                                        \
+        srcp256 = (__m256i *)srcp + srcskip;                            \
+        dstp256 = (__m256i *)dstp + dstskip;                            \
+    }
+
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
 void
 alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
 {
-    int n;
-    int width = info->width;
-    int height = info->height;
+    SETUP_AVX2_BLITTER
 
-    Uint32 *srcp = (Uint32 *)info->s_pixels;
-    int srcskip = info->s_skip >> 2;
-    int srcpxskip = info->s_pxskip >> 2;
+    __m256i mm256_srcA, mm256_srcB, mm256_dstA, mm256_dstB, mm256_srcAlpha,
+        temp;
 
-    Uint32 *dstp = (Uint32 *)info->d_pixels;
-    int dstskip = info->d_skip >> 2;
-    int dstpxskip = info->d_pxskip >> 2;
-
-    int pre_8_width = width % 8;
-    int post_8_width = width / 8;
-
-    __m256i *srcp256 = (__m256i *)info->s_pixels;
-    __m256i *dstp256 = (__m256i *)info->d_pixels;
-
-    __m256i mm256_src, mm256_srcA, mm256_srcB, mm256_dst, mm256_dstA,
-        mm256_dstB, mm256_shuff_mask_A, mm256_shuff_mask_B, shuffle_out,
-        mm256_srcAlpha, temp, mm256_mask;
-
-    mm256_shuff_mask_A =
-        _mm256_set_epi8(0x80, 23, 0x80, 22, 0x80, 21, 0x80, 20, 0x80, 19, 0x80,
-                        18, 0x80, 17, 0x80, 16, 0x80, 7, 0x80, 6, 0x80, 5,
-                        0x80, 4, 0x80, 3, 0x80, 2, 0x80, 1, 0x80, 0);
-    mm256_shuff_mask_B =
-        _mm256_set_epi8(0x80, 31, 0x80, 30, 0x80, 29, 0x80, 28, 0x80, 27, 0x80,
-                        26, 0x80, 25, 0x80, 24, 0x80, 15, 0x80, 14, 0x80, 13,
-                        0x80, 12, 0x80, 11, 0x80, 10, 0x80, 9, 0x80, 8);
-
-    shuffle_out =
-        _mm256_set_epi8(0x80, 14, 0x80, 14, 0x80, 14, 0x80, 14, 0x80, 6, 0x80,
-                        6, 0x80, 6, 0x80, 6, 0x80, 14, 0x80, 14, 0x80, 14,
-                        0x80, 14, 0x80, 6, 0x80, 6, 0x80, 6, 0x80, 6);
-
-    mm256_mask = _mm256_set_epi32(0x00, (pre_8_width > 6) ? 0x80000000 : 0x00,
-                                  (pre_8_width > 5) ? 0x80000000 : 0x00,
-                                  (pre_8_width > 4) ? 0x80000000 : 0x00,
-                                  (pre_8_width > 3) ? 0x80000000 : 0x00,
-                                  (pre_8_width > 2) ? 0x80000000 : 0x00,
-                                  (pre_8_width > 1) ? 0x80000000 : 0x00,
-                                  (pre_8_width > 0) ? 0x80000000 : 0x00);
+    printf("inside avx2 alpha blitter\n");
+    printf("rshift=%i\n", info->src->Rshift / 8);
+    printf("gshift=%i\n", info->src->Gshift / 8);
+    printf("bshift=%i\n", info->src->Bshift / 8);
+    printf("ashift=%i\n", info->src->Ashift / 8);
 
     /* Original 'Straight Alpha' blending equation:
-       --------------------------------------------
-       dstRGB = (srcRGB * srcA) + (dstRGB * (1-srcA))
-         dstA = srcA + (dstA * (1-srcA))
+        --------------------------------------------
+        dstRGB = (srcRGB * srcA) + (dstRGB * (1-srcA))
+            dstA = srcA + (dstA * (1-srcA))
 
-       We use something slightly different to simulate
-       SDL1, as follows:
-       dstRGB = (((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) >> 8)
-         dstA = srcA + dstA - ((srcA * dstA) / 255);
+        We use something slightly different to simulate
+        SDL1, as follows:
+        dstRGB = (((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) >> 8)
+            dstA = srcA + dstA - ((srcA * dstA) / 255);
     */
 
     /* Alpha blend procedure in this blitter:
-       --------------------------------------
+        --------------------------------------
         srcRGBA = 16 bit interspersed source pixels
             i.e. [0][A][0][R][0][G][0][B]
         srcA = 16 bit interspersed alpha channel
             i.e. [0][A][0][A][0][A][0][A]
-        As you can see, each pixel is moved out into 64 bits of register for
-        processing. This blitter loads in 8 pixels at once, but processes
-        4 at a time (4x64=256 bits).
+        As you can see, each pixel is moved out into 64 bits of register
+        for processing. This blitter loads in 8 pixels at once, but
+        processes 4 at a time (4x64=256 bits).
 
         Order of operations:
-            temp1 = srcRGBA - dstRGBA
-            temp1 *= srcA
+            temp = srcRGBA - dstRGBA
+            temp *= srcA
             dstRGBA <<= 8
-            dstRGBA += temp1
+            dstRGBA += temp
             dstRGBA += srcRGBA
             dstRGBA >>= 8
-     */
+        */
 
-    while (height--) {
-        if (pre_8_width > 0) {
-            /* ==== load 1-7 pixels into AVX registers ==== */
-            mm256_src = _mm256_maskload_epi32((int *)srcp, mm256_mask);
-            mm256_dst = _mm256_maskload_epi32((int *)dstp, mm256_mask);
+    RUN_AVX2_BLITTER(
+        /* ==== shuffle pixels out into two registers each, src
+         * and dst set up for 16 bit math, like 0A0R0G0B ==== */
+        mm256_srcA = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_A);
+        mm256_srcB = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_B);
+        mm256_dstA = _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_A);
+        mm256_dstB = _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_B);
 
-            /* ==== shuffle pixels out into two registers each, src
-             * and dst set up for 16 bit math, like 0A0R0G0B ==== */
-            mm256_srcA = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_A);
-            mm256_srcB = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_B);
+        /* ==== alpha blend opaque dst on A pixels ==== */
+        mm256_srcAlpha = _mm256_shuffle_epi8(mm256_srcA, shuffle_out);
+        temp = _mm256_sub_epi16(mm256_srcA, mm256_dstA);
+        temp = _mm256_mullo_epi16(temp, mm256_srcAlpha);
+        mm256_dstA = _mm256_slli_epi16(mm256_dstA, 8);
+        mm256_dstA = _mm256_add_epi16(mm256_dstA, temp);
+        mm256_dstA = _mm256_add_epi16(mm256_dstA, mm256_srcA);
+        mm256_dstA = _mm256_srli_epi16(mm256_dstA, 8);
 
-            mm256_dstA = _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_A);
-            mm256_dstB = _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_B);
+        /* ==== alpha blend opaque dst on B pixels ==== */
+        mm256_srcAlpha = _mm256_shuffle_epi8(mm256_srcB, shuffle_out);
+        temp = _mm256_sub_epi16(mm256_srcB, mm256_dstB);
+        temp = _mm256_mullo_epi16(temp, mm256_srcAlpha);
+        mm256_dstB = _mm256_slli_epi16(mm256_dstB, 8);
+        mm256_dstB = _mm256_add_epi16(mm256_dstB, temp);
+        mm256_dstB = _mm256_add_epi16(mm256_dstB, mm256_srcB);
+        mm256_dstB = _mm256_srli_epi16(mm256_dstB, 8);
 
-            /* ==== alpha blend opaque dst on A pixels ==== */
-            mm256_srcAlpha = _mm256_shuffle_epi8(mm256_srcA, shuffle_out);
-
-            temp = _mm256_sub_epi16(mm256_srcA, mm256_dstA);
-            temp = _mm256_mullo_epi16(temp, mm256_srcAlpha);
-
-            mm256_dstA = _mm256_slli_epi16(mm256_dstA, 8);
-            mm256_dstA = _mm256_add_epi16(mm256_dstA, temp);
-            mm256_dstA = _mm256_add_epi16(mm256_dstA, mm256_srcA);
-            mm256_dstA = _mm256_srli_epi16(mm256_dstA, 8);
-
-            /* ==== alpha blend opaque dst on B pixels ==== */
-            mm256_srcAlpha = _mm256_shuffle_epi8(mm256_srcB, shuffle_out);
-
-            temp = _mm256_sub_epi16(mm256_srcB, mm256_dstB);
-            temp = _mm256_mullo_epi16(temp, mm256_srcAlpha);
-
-            mm256_dstB = _mm256_slli_epi16(mm256_dstB, 8);
-            mm256_dstB = _mm256_add_epi16(mm256_dstB, temp);
-            mm256_dstB = _mm256_add_epi16(mm256_dstB, mm256_srcB);
-            mm256_dstB = _mm256_srli_epi16(mm256_dstB, 8);
-
-            /* ==== recombine A and B pixels and store ==== */
-            mm256_dst = _mm256_packus_epi16(mm256_dstA, mm256_dstB);
-            _mm256_maskstore_epi32((int *)dstp, mm256_mask, mm256_dst);
-
-            srcp += srcpxskip * pre_8_width;
-            dstp += dstpxskip * pre_8_width;
-        }
-        srcp256 = (__m256i *)srcp;
-        dstp256 = (__m256i *)dstp;
-        if (post_8_width > 0) {
-            LOOP_UNROLLED4(
-                {
-                    /* ==== load 8 pixels into AVX registers ==== */
-                    mm256_src = _mm256_loadu_si256(srcp256);
-                    mm256_dst = _mm256_loadu_si256(dstp256);
-
-                    /* ==== shuffle pixels out into two registers each, src
-                     * and dst set up for 16 bit math, like 0A0R0G0B ==== */
-                    mm256_srcA =
-                        _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_A);
-                    mm256_srcB =
-                        _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_B);
-
-                    mm256_dstA =
-                        _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_A);
-                    mm256_dstB =
-                        _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_B);
-
-                    /* ==== alpha blend opaque dst on A pixels ==== */
-                    mm256_srcAlpha =
-                        _mm256_shuffle_epi8(mm256_srcA, shuffle_out);
-
-                    temp = _mm256_sub_epi16(mm256_srcA, mm256_dstA);
-                    temp = _mm256_mullo_epi16(temp, mm256_srcAlpha);
-
-                    mm256_dstA = _mm256_slli_epi16(mm256_dstA, 8);
-                    mm256_dstA = _mm256_add_epi16(mm256_dstA, temp);
-                    mm256_dstA = _mm256_add_epi16(mm256_dstA, mm256_srcA);
-                    mm256_dstA = _mm256_srli_epi16(mm256_dstA, 8);
-
-                    /* ==== alpha blend opaque dst on B pixels ==== */
-                    mm256_srcAlpha =
-                        _mm256_shuffle_epi8(mm256_srcB, shuffle_out);
-
-                    temp = _mm256_sub_epi16(mm256_srcB, mm256_dstB);
-                    temp = _mm256_mullo_epi16(temp, mm256_srcAlpha);
-
-                    mm256_dstB = _mm256_slli_epi16(mm256_dstB, 8);
-                    mm256_dstB = _mm256_add_epi16(mm256_dstB, temp);
-                    mm256_dstB = _mm256_add_epi16(mm256_dstB, mm256_srcB);
-                    mm256_dstB = _mm256_srli_epi16(mm256_dstB, 8);
-
-                    /* ==== recombine A and B pixels and store ==== */
-                    mm256_dst = _mm256_packus_epi16(mm256_dstA, mm256_dstB);
-                    _mm256_storeu_si256(dstp256, mm256_dst);
-
-                    srcp256++;
-                    dstp256++;
-                },
-                n, post_8_width);
-        }
-        srcp = (Uint32 *)srcp256 + srcskip;
-        dstp = (Uint32 *)dstp256 + dstskip;
-    }
+        /* ==== recombine A and B pixels ==== */
+        mm256_dst = _mm256_packus_epi16(mm256_dstA, mm256_dstB);)
 }
 #else
 void
