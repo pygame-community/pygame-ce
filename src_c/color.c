@@ -657,8 +657,15 @@ _color_init(pgColorObject *self, PyObject *args, PyObject *kwds)
     PyObject *obj1 = NULL;
     PyObject *obj2 = NULL;
     PyObject *obj3 = NULL;
+    PyObject *objkw = NULL;
+    PyObject *obj1kw = NULL;
+    PyObject *obj2kw = NULL;
+    PyObject *obj3kw = NULL;
 
-    if (!PyArg_ParseTuple(args, "O|OOO", &obj, &obj1, &obj2, &obj3)) {
+    static char *kwlist[] = {"r", "g", "b", "a", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist, &obj, &obj1,
+                                     &obj2, &obj3)) {
         return -1;
     }
 
