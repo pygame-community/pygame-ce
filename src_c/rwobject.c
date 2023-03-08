@@ -465,15 +465,6 @@ pgRWops_FromFileObject(PyObject *obj)
     rw->write = _pg_rw_write;
     rw->close = _pg_rw_close;
 
-/* https://docs.python.org/3/c-api/init.html#c.PyEval_InitThreads */
-/* ^ in Python >= 3.7, we don't have to call this function, and in 3.11
- * it will be removed */
-#if PY_VERSION_HEX < 0x03070000
-#ifdef WITH_THREAD
-    PyEval_InitThreads();
-#endif /* WITH_THREAD */
-#endif
-
     return rw;
 }
 
@@ -834,9 +825,9 @@ pg_encode_file_path(PyObject *self, PyObject *args, PyObject *keywds)
 
 static PyMethodDef _pg_rwobject_methods[] = {
     {"encode_string", (PyCFunction)pg_encode_string,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMEENCODESTRING},
+     METH_VARARGS | METH_KEYWORDS, DOC_ENCODESTRING},
     {"encode_file_path", (PyCFunction)pg_encode_file_path,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMEENCODEFILEPATH},
+     METH_VARARGS | METH_KEYWORDS, DOC_ENCODEFILEPATH},
     {NULL, NULL, 0, NULL}};
 
 /*DOC*/ static char _pg_rwobject_doc[] =
