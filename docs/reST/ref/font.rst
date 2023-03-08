@@ -321,6 +321,9 @@ solves no longer exists, it will likely be removed in the future.
 
       .. versionadded:: 2.1.4 wraplength parameter
 
+      .. versionchanged:: 2.1.4 all arguments can be pass by keyword arguments 
+         of the respective names.
+
       .. ## Font.render ##
 
    .. method:: size
