@@ -1173,30 +1173,25 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                for the whole desktop because of wayland GL compositing. */
             if (vsync == -1) {
                 if (SDL_GL_SetSwapInterval(-1) != 0) {
-                    if (PyErr_WarnEx(PyExc_Warning,
-                                     "adaptive vsync for OpenGL not "
-                                     "available",
-                                     1) != 0) {
-                        _display_state_cleanup(state);
-                        goto DESTROY_WINDOW;
-                    }
+                    PyErr_SetString(pgExc_SDLError,
+                                    "adaptive vsync for OpenGL not "
+                                    "available");
+
+                    _display_state_cleanup(state);
+                    goto DESTROY_WINDOW;
+                }
+            }
+            else if (vsync == 1) {
+                if (SDL_GL_SetSwapInterval(1) != 0) {
+                    PyErr_SetString(pgExc_SDLError,
+                                    "regular vsync for OpenGL not "
+                                    "available");
+                    _display_state_cleanup(state);
+                    goto DESTROY_WINDOW;
                 }
             }
             else {
-                if (vsync == 1) {
-                    if (SDL_GL_SetSwapInterval(1) != 0) {
-                        if (PyErr_WarnEx(PyExc_Warning,
-                                         "regular vsync for OpenGL not "
-                                         "available",
-                                         1) != 0) {
-                            _display_state_cleanup(state);
-                            goto DESTROY_WINDOW;
-                        }
-                    }
-                }
-                else {
-                    SDL_GL_SetSwapInterval(0);
-                }
+                SDL_GL_SetSwapInterval(0);
             }
         }
         else {
@@ -1241,11 +1236,10 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
                     SDL_GetRendererInfo(pg_renderer, &info);
                     if (vsync && !(info.flags & SDL_RENDERER_PRESENTVSYNC)) {
-                        if (PyErr_WarnEx(PyExc_Warning,
-                                         "could not enable vsync", 1) != 0) {
-                            _display_state_cleanup(state);
-                            goto DESTROY_WINDOW;
-                        }
+                         PyErr_SetString(pgExc_SDLError,
+                                         "could not enable vsync");
+                         _display_state_cleanup(state);
+                         goto DESTROY_WINDOW;
                     }
                     if (!(info.flags & SDL_RENDERER_ACCELERATED)) {
                         if (PyErr_WarnEx(PyExc_Warning,
