@@ -576,7 +576,7 @@ surf_scale(PyObject *self, PyObject *args, PyObject *kwargs)
     pgSurfaceObject *surfobj;
     pgSurfaceObject *surfobj2 = NULL;
     PyObject *size;
-    SDL_Surface *newsurf;
+    SDL_Surface *newsurf, *surf;
     int width, height;
     static char *keywords[] = {"surface", "size", "dest_surface", NULL};
 
@@ -584,6 +584,9 @@ surf_scale(PyObject *self, PyObject *args, PyObject *kwargs)
                                      &pgSurface_Type, &surfobj, &size,
                                      &pgSurface_Type, &surfobj2))
         return NULL;
+
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (!pg_TwoIntsFromObj(size, &width, &height))
         return RAISE(PyExc_TypeError, "size must be two numbers");
@@ -621,6 +624,8 @@ surf_scale_by(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
     newsurf = scale_to(surfobj, surfobj2, (int)(surf->w * scalex),
                        (int)(surf->h * scaley));
     if (!newsurf) {
@@ -649,6 +654,7 @@ surf_scale2x(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     /* if the second surface is not there, then make a new one. */
 
@@ -708,6 +714,8 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
                                      &pgSurface_Type, &surfobj, &angle))
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
     if (surf->w < 1 || surf->h < 1) {
         Py_INCREF(surfobj);
         return (PyObject *)surfobj;
@@ -805,6 +813,7 @@ surf_flip(PyObject *self, PyObject *args, PyObject *kwargs)
                                      &yaxis))
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     newsurf = newsurf_fromsurf(surf, surf->w, surf->h);
     if (!newsurf)
@@ -951,6 +960,8 @@ surf_rotozoom(PyObject *self, PyObject *args, PyObject *kwargs)
                                      &scale))
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
     if (scale == 0.0 || surf->w == 0 || surf->h == 0) {
         newsurf = newsurf_fromsurf(surf, 0, 0);
         return (PyObject *)pgSurface_New(newsurf);
@@ -1067,6 +1078,8 @@ surf_chop(PyObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(PyExc_TypeError, "Rect argument is invalid");
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
     /* The function releases GIL internally, don't release here */
     newsurf = chop(surf, rect->x, rect->y, rect->w, rect->h);
 
@@ -1543,6 +1556,7 @@ surf_scalesmooth(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     pgSurfaceObject *surfobj;
     pgSurfaceObject *surfobj2 = NULL;
+    SDL_Surface *surf;
     PyObject *size;
     SDL_Surface *newsurf;
     int width, height;
@@ -1552,6 +1566,9 @@ surf_scalesmooth(PyObject *self, PyObject *args, PyObject *kwargs)
                                      &pgSurface_Type, &surfobj, &size,
                                      &pgSurface_Type, &surfobj2))
         return NULL;
+
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (!pg_TwoIntsFromObj(size, &width, &height))
         return RAISE(PyExc_TypeError, "size must be two numbers");
@@ -1589,6 +1606,7 @@ surf_scalesmooth_by(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     newsurf = smoothscale_to(self, surfobj, surfobj2, (int)(surf->w * scale),
                              (int)(surf->h * scaley));
@@ -2110,6 +2128,87 @@ clamp_4
 
 #endif
 
+SDL_Surface *
+grayscale(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
+{
+    SDL_Surface *src = pgSurface_AsSurface(srcobj);
+    SDL_Surface *newsurf;
+
+    if (!dstobj) {
+        newsurf = newsurf_fromsurf(src, srcobj->surf->w, srcobj->surf->h);
+        if (!newsurf)
+            return NULL;
+    }
+    else {
+        newsurf = pgSurface_AsSurface(dstobj);
+    }
+
+    if (newsurf->w != src->w || newsurf->h != src->h) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Destination surface must be the same size as source surface."));
+    }
+
+    if (src->format->BytesPerPixel != newsurf->format->BytesPerPixel) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Source and destination surfaces need the same format."));
+    }
+
+    int x, y;
+    for (y = 0; y < src->h; y++) {
+        for (x = 0; x < src->w; x++) {
+            Uint32 pixel;
+            Uint8 *pix;
+            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format,
+                        pix);
+            Uint8 r, g, b, a;
+            SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
+
+            // RGBA to GRAY formula used by OpenCV
+            Uint8 grayscale_pixel = (Uint8)(0.299 * r + 0.587 * g + 0.114 * b);
+            Uint32 new_pixel =
+                SDL_MapRGBA(newsurf->format, grayscale_pixel, grayscale_pixel,
+                            grayscale_pixel, a);
+            SURF_SET_AT(new_pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
+                        newsurf->format, pix);
+        }
+    }
+
+    SDL_UnlockSurface(newsurf);
+
+    return newsurf;
+}
+
+static PyObject *
+surf_grayscale(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    pgSurfaceObject *surfobj2 = NULL;
+    SDL_Surface *newsurf;
+
+    static char *keywords[] = {"surface", "dest_surface", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!", keywords,
+                                     &pgSurface_Type, &surfobj,
+                                     &pgSurface_Type, &surfobj2))
+        return NULL;
+
+    newsurf = grayscale(surfobj, surfobj2);
+
+    if (!newsurf) {
+        return NULL;
+    }
+
+    if (surfobj2) {
+        Py_INCREF(surfobj2);
+        return (PyObject *)surfobj2;
+    }
+    else {
+        return (PyObject *)pgSurface_New(newsurf);
+    }
+}
+
 /*
 number to use for missing samples
 */
@@ -2321,6 +2420,7 @@ surf_laplacian(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     /* if the second surface is not there, then make a new one. */
 
@@ -3250,41 +3350,119 @@ surf_gaussian_blur(PyObject *self, PyObject *args, PyObject *kwargs)
     return (PyObject *)pgSurface_New(new_surf);
 }
 
+SDL_Surface *
+invert(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
+{
+    SDL_Surface *src = pgSurface_AsSurface(srcobj);
+    SDL_Surface *newsurf;
+
+    if (!dstobj) {
+        newsurf = newsurf_fromsurf(src, srcobj->surf->w, srcobj->surf->h);
+        if (!newsurf)
+            return NULL;
+    }
+    else {
+        newsurf = pgSurface_AsSurface(dstobj);
+    }
+
+    if (newsurf->w != src->w || newsurf->h != src->h) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Destination surface must be the same size as source surface."));
+    }
+
+    if (src->format->BytesPerPixel != newsurf->format->BytesPerPixel) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Source and destination surfaces need the same format."));
+    }
+
+    int x, y;
+    for (y = 0; y < src->h; y++) {
+        for (x = 0; x < src->w; x++) {
+            Uint32 pixel;
+            Uint8 *pix;
+            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format,
+                        pix);
+            unsigned char r, g, b, a;
+            SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
+            Uint32 new_pixel = SDL_MapRGBA(newsurf->format, ~r, ~g, ~b, a);
+            SURF_SET_AT(new_pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
+                        newsurf->format, pix);
+        }
+    }
+
+    SDL_UnlockSurface(newsurf);
+
+    return newsurf;
+}
+
+static PyObject *
+surf_invert(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    pgSurfaceObject *surfobj2 = NULL;
+    SDL_Surface *newsurf;
+
+    static char *keywords[] = {"surface", "dest_surface", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!", keywords,
+                                     &pgSurface_Type, &surfobj,
+                                     &pgSurface_Type, &surfobj2))
+        return NULL;
+
+    newsurf = invert(surfobj, surfobj2);
+
+    if (!newsurf) {
+        return NULL;
+    }
+
+    if (surfobj2) {
+        Py_INCREF(surfobj2);
+        return (PyObject *)surfobj2;
+    }
+    return (PyObject *)pgSurface_New(newsurf);
+}
+
 static PyMethodDef _transform_methods[] = {
     {"scale", (PyCFunction)surf_scale, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMSCALE},
+     DOC_TRANSFORM_SCALE},
     {"scale_by", (PyCFunction)surf_scale_by, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMSCALEBY},
+     DOC_TRANSFORM_SCALEBY},
     {"rotate", (PyCFunction)surf_rotate, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMROTATE},
+     DOC_TRANSFORM_ROTATE},
     {"flip", (PyCFunction)surf_flip, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMFLIP},
+     DOC_TRANSFORM_FLIP},
     {"rotozoom", (PyCFunction)surf_rotozoom, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMROTOZOOM},
+     DOC_TRANSFORM_ROTOZOOM},
     {"chop", (PyCFunction)surf_chop, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMCHOP},
+     DOC_TRANSFORM_CHOP},
     {"scale2x", (PyCFunction)surf_scale2x, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMSCALE2X},
+     DOC_TRANSFORM_SCALE2X},
     {"smoothscale", (PyCFunction)surf_scalesmooth,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMSMOOTHSCALE},
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_SMOOTHSCALE},
     {"smoothscale_by", (PyCFunction)surf_scalesmooth_by,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMSMOOTHSCALEBY},
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_SMOOTHSCALEBY},
     {"get_smoothscale_backend", surf_get_smoothscale_backend, METH_NOARGS,
-     DOC_PYGAMETRANSFORMGETSMOOTHSCALEBACKEND},
+     DOC_TRANSFORM_GETSMOOTHSCALEBACKEND},
     {"set_smoothscale_backend", (PyCFunction)surf_set_smoothscale_backend,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMSETSMOOTHSCALEBACKEND},
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_SETSMOOTHSCALEBACKEND},
     {"threshold", (PyCFunction)surf_threshold, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMTHRESHOLD},
+     DOC_TRANSFORM_THRESHOLD},
     {"laplacian", (PyCFunction)surf_laplacian, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMTHRESHOLD},
+     DOC_TRANSFORM_THRESHOLD},
     {"average_surfaces", (PyCFunction)surf_average_surfaces,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMAVERAGESURFACES},
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_AVERAGESURFACES},
     {"average_color", (PyCFunction)surf_average_color,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMAVERAGECOLOR},
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_AVERAGECOLOR},
     {"box_blur", (PyCFunction)surf_box_blur, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMBOXBLUR},
+     DOC_TRANSFORM_BOXBLUR},
     {"gaussian_blur", (PyCFunction)surf_gaussian_blur,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMGAUSSIANBLUR},
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_GAUSSIANBLUR},
+    {"invert", (PyCFunction)surf_invert, METH_VARARGS | METH_KEYWORDS,
+     DOC_TRANSFORM_INVERT},
+    {"grayscale", (PyCFunction)surf_grayscale, METH_VARARGS | METH_KEYWORDS,
+     DOC_TRANSFORM_GRAYSCALE},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(transform)
@@ -3294,7 +3472,7 @@ MODINIT_DEFINE(transform)
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "transform",
-                                         DOC_PYGAMETRANSFORM,
+                                         DOC_TRANSFORM,
                                          sizeof(struct _module_state),
                                          _transform_methods,
                                          NULL,

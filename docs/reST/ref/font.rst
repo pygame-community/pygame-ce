@@ -159,6 +159,7 @@ solves no longer exists, it will likely be removed in the future.
 .. class:: Font
 
    | :sl:`create a new Font object from a file`
+   | :sg:`Font(filename=None, size=20) -> Font`
    | :sg:`Font(filename, size) -> Font`
    | :sg:`Font(pathlib.Path, size) -> Font`
    | :sg:`Font(object, size) -> Font`
@@ -172,6 +173,9 @@ solves no longer exists, it will likely be removed in the future.
    Font objects are mainly used to render text into new Surface objects. The
    render can emulate bold or italic features, but it is better to load from a
    font with actual italic or bold glyphs.
+
+   .. versionchanged:: 2.1.4 If no arguments are given then the default font will be used and
+      a font size of 20 is used.
 
    .. versionchanged:: 2.1.4 This class is also available through the ``pygame.Font``
       alias.
@@ -498,9 +502,6 @@ solves no longer exists, it will likely be removed in the future.
       | :sl:`set the script code for text shaping`
       | :sg:`set_script(str) -> None`
 
-      **Experimental:** feature still in development available for testing and feedback. It may change.
-      `Please leave feedback with authors <https://github.com/pygame/pygame/pull/3330>`_
-
       Sets the script used by harfbuzz text shaping, taking a 4 character
       script code as input. For example, Hindi is written in the Devanagari
       script, for which the script code is `"Deva"`. See the full list of
@@ -516,7 +517,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: set_direction
 
       | :sl:`set the script direction for text shaping`
-      | :sg:`set_direction(direction=int) -> None`
+      | :sg:`set_direction(direction) -> None`
 
       Sets the font direction for harfbuzz text rendering, taking in an integer
       between 0 and 3 (inclusive) as input. There are convenient constants defined
@@ -529,6 +530,9 @@ solves no longer exists, it will likely be removed in the future.
 
       This method requires pygame built with SDL_ttf 2.20.0 or above. Otherwise the
       method will raise a pygame.error.
+
+      .. note:: multiline renders with :meth:`render` do not play nicely with top-to-bottom
+         or bottom-to-top rendering.
 
       .. versionadded:: 2.1.4
       
