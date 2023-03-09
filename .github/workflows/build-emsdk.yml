@@ -28,7 +28,7 @@ on:
       - '!.github/workflows/build-emsdk.yml'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-emsdk
   cancel-in-progress: true
 
 jobs:
