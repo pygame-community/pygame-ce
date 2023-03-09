@@ -3,6 +3,7 @@
   :target: https://pyga.me/
 
 
+|DocsStatus| 
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
@@ -104,7 +105,7 @@ pygame显然依赖于SDL和Python。此外pygame还嵌入了几个较小的库�
 
 
 +----------+------------------------+
-| CPython  | >= 3.6 （或 PyPy3）    |
+| CPython  | >= 3.7 （或 PyPy3）    |
 +----------+------------------------+
 | SDL      | >= 2.0.8               |
 +----------+------------------------+
@@ -142,8 +143,11 @@ pygame显然依赖于SDL和Python。此外pygame还嵌入了几个较小的库�
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.1.3.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.1.3...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.1.4.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.1.4...main
+
+.. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
+   :target: https://pyga.me/docs/
 
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
