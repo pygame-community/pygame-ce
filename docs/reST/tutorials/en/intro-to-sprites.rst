@@ -1,6 +1,6 @@
 .. TUTORIAL: Sprite Module Introduction
 
-.. include:: common.txt
+.. include:: ../../common.txt
 
 *************************************************
   Pygame Tutorials - Sprite Module Introduction
