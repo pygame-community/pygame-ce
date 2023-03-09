@@ -13,6 +13,10 @@ MESSAGEBOX_ERROR: int
 MESSAGEBOX_WARNING: int
 MESSAGEBOX_INFORMATION: int
 
+SCALEQUALITY_NEAREST: int
+SCALEQUALITY_LINEAR: int
+SCALEQUALITY_BEST: int
+
 class RendererDriverInfo:
     name: str
     flags: int
@@ -85,6 +89,7 @@ class Texture:
         static: bool = False,
         streaming: bool = False,
         target: bool = False,
+        scale_quality: Optional[int] =None
     ) -> None: ...
     @staticmethod
     def from_surface(renderer: Renderer, surface: Surface) -> Texture: ...

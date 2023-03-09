@@ -11,6 +11,9 @@ MESSAGEBOX_ERROR = _SDL_MESSAGEBOX_ERROR
 MESSAGEBOX_WARNING = _SDL_MESSAGEBOX_WARNING
 MESSAGEBOX_INFORMATION = _SDL_MESSAGEBOX_INFORMATION
 
+SCALEQUALITY_NEAREST=SDL_ScaleMode.SDL_ScaleModeNearest
+SCALEQUALITY_LINEAR=SDL_ScaleMode.SDL_ScaleModeLinear
+SCALEQUALITY_BEST=SDL_ScaleMode.SDL_ScaleModeBest
 
 cdef extern from "SDL.h" nogil:
     int SDL_VERSION_ATLEAST(int major, int minor, int patch) 
@@ -550,7 +553,7 @@ cdef class Texture:
                  Renderer renderer,
                  size, int depth=0,
                  static=False, streaming=False,
-                 target=False):
+                 target=False, scale_quality=None):
         """ Create an empty texture.
 
         :param Renderer renderer: Rendering context for the texture.
@@ -563,6 +566,7 @@ cdef class Texture:
         :param bool static: Changes rarely, not lockable.
         :param bool streaming: Changes frequently, lockable.
         :param bool target: Can be used as a render target.
+        :param scale_quality: The quality of scale.
         """
         # https://wiki.libsdl.org/SDL_CreateTexture
         # TODO: masks
@@ -604,6 +608,17 @@ cdef class Texture:
                                       width, height)
         if not self._tex:
             raise error()
+            
+        if not scale_quality is None:
+            if SDL_VERSION_ATLEAST(2,0,12):
+                SDL_SetTextureScaleMode(self._tex,scale_quality)
+            else:
+                SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,{
+                    0: b'nearest',
+                    1: b'linear',
+                    2: b'best'
+                }[scale_quality])
+
         self.width, self.height = width, height
 
     @staticmethod
