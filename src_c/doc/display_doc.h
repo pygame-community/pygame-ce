@@ -11,9 +11,6 @@
 #define DOC_PYGAMEDISPLAYINFO "Info() -> VideoInfo\nCreate a video display information object"
 #define DOC_PYGAMEDISPLAYGETWMINFO "get_wm_info() -> dict\nGet information about the current windowing system"
 #define DOC_PYGAMEDISPLAYGETDESKTOPSIZES "get_desktop_sizes() -> list\nGet sizes of active desktops"
-#define DOC_PYGAMEDISPLAYGETDESKTOPREFRESHRATES "get_desktop_refresh_rate() -> list\nReturns the screen refresh rates for all desktops (in windowed mode). They can differ from the current refresh rate in fullscreen mode."
-#define DOC_PYGAMEDISPLAYGETCURRENTREFRESHRATE "get_current_refresh_rate() -> int\nReturns the screen refresh rate."
-#define DOC_PYGAMEDISPLAYISVSYNC "is_vsync() -> int\nReturns True if vertical synchronisation for pygame.display.flip() is enabled"
 #define DOC_PYGAMEDISPLAYLISTMODES "list_modes(depth=0, flags=pygame.FULLSCREEN, display=0) -> list\nGet list of available fullscreen modes"
 #define DOC_PYGAMEDISPLAYMODEOK "mode_ok(size, flags=0, depth=0, display=0) -> depth\nPick the best color depth for a display mode"
 #define DOC_PYGAMEDISPLAYGLGETATTRIBUTE "gl_get_attribute(flag) -> value\nGet the value for an OpenGL flag for the current display"
@@ -31,6 +28,9 @@
 #define DOC_PYGAMEDISPLAYGETWINDOWSIZE "get_window_size() -> tuple\nReturn the size of the window or screen"
 #define DOC_PYGAMEDISPLAYGETALLOWSCREENSAVER "get_allow_screensaver() -> bool\nReturn whether the screensaver is allowed to run."
 #define DOC_PYGAMEDISPLAYSETALLOWSCREENSAVER "set_allow_screensaver(bool) -> None\nSet whether the screensaver may run"
+#define DOC_PYGAMEDISPLAYISVSYNC "is_vsync() -> bool\nReturns True if vertical synchronisation for pygame.display.flip() is enabled"
+#define DOC_PYGAMEDISPLAYGETCURRENTREFRESHRATE "get_current_refresh_rate() -> int\nReturns the screen refresh rate or 0 if unknown"
+#define DOC_PYGAMEDISPLAYGETDESKTOPREFRESHRATES "get_desktop_refresh_rates() -> list\nReturns the screen refresh rates for all displays (in windowed mode)."
 
 
 /* Docs in a comment... slightly easier to read. */
@@ -152,5 +152,17 @@ Return whether the screensaver is allowed to run.
 pygame.display.set_allow_screensaver
  set_allow_screensaver(bool) -> None
 Set whether the screensaver may run
+
+pygame.display.is_vsync
+ is_vsync() -> bool
+Returns True if vertical synchronisation for pygame.display.flip() is enabled
+
+pygame.display.get_current_refresh_rate
+ get_current_refresh_rate() -> int
+Returns the screen refresh rate or 0 if unknown
+
+pygame.display.get_desktop_refresh_rates
+ get_desktop_refresh_rates() -> list
+Returns the screen refresh rates for all displays (in windowed mode).
 
 */

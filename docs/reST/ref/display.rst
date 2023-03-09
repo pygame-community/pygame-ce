@@ -723,7 +723,36 @@ required).
 
    .. versionadded:: 2.0.0
 
+.. function:: is_vsync
 
+   | :sl:`Returns True if vertical synchronisation for pygame.display.flip() is enabled`
+   | :sg:`is_vsync() -> bool`
+
+   .. versionadded:: 2.2.0
+
+.. function:: get_current_refresh_rate() -> int
+
+   | :sl:`Returns the screen refresh rate or 0 if unknown`
+   | :sg:`get_current_refresh_rate() -> int`
+
+   The screen refresh rate for the current window. In windowed mode, this
+   should be equal to the refresh rate of the desktop the window is on.
+
+   If no window is open, an exception is raised.
+
+   .. versionadded:: 2.2.0
+
+.. function:: get_desktop_refresh_rates() -> list
+
+   | :sl:`Returns the screen refresh rates for all displays (in windowed mode).`
+   | :sg:`get_desktop_refresh_rates() -> list`
+
+   If the current window is in full-screen mode, the actual refresh rate for
+   that window can differ.
+
+   This is safe to call when no window is open (i.e. before any calls to :func:`pygame.display.set_mode()`
+
+   .. versionadded:: 2.2.0
    .. ## pygame.display.set_allow_screensaver ##
 
 .. ## pygame.display ##
