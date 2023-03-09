@@ -840,9 +840,9 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
  * Getters and setters for the pgFontObject.
  */
 static PyGetSetDef font_getsets[] = {
-    {"name", (getter)font_getter_name, NULL, DOC_FONTNAME, NULL},
-    {"bold", (getter)font_getter_bold, (setter)font_setter_bold, DOC_FONTBOLD,
-     NULL},
+    {"name", (getter)font_getter_name, NULL, DOC_FONT_FONT_NAME, NULL},
+    {"bold", (getter)font_getter_bold, (setter)font_setter_bold,
+     DOC_FONT_FONT_BOLD, NULL},
     {"italic", (getter)font_getter_italic, (setter)font_setter_italic,
      DOC_FONT_FONT_ITALIC, NULL},
     {"underline", (getter)font_getter_underline, (setter)font_setter_underline,
