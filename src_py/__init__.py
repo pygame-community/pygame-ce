@@ -84,6 +84,40 @@ class MissingModule:
             print(message)
 
 
+# This is a special loader for WebAssembly platform
+# where pygame is in fact statically linked
+# mixing single phase (C) and multiphase modules (cython)
+if sys.platform in ("wasi", "emscripten"):
+    try:
+        import pygame_static
+    except ModuleNotFoundError:
+        pygame_static = None
+
+    if pygame_static:
+        pygame = sys.modules[__name__]
+
+        pygame.Color = pygame.color.Color
+
+        Vector2 = pygame.math.Vector2
+        Vector3 = pygame.math.Vector3
+
+        Rect = pygame.rect.Rect
+
+        BufferProxy = pygame.bufferproxy.BufferProxy
+
+        # cython modules use multiphase initialisation when not in builtin Inittab.
+
+        from pygame import _sdl2
+
+        import importlib.machinery
+
+        loader = importlib.machinery.FrozenImporter
+        spec = importlib.machinery.ModuleSpec("", loader)
+        pygame_static.import_cython(spec)
+        del loader, spec
+    del pygame_static
+
+
 # we need to import like this, each at a time. the cleanest way to import
 # our modules is with the import command (not the __import__ function)
 # isort: skip_file
