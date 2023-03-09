@@ -21,6 +21,15 @@ imported. Be aware that some of the pygame modules are considered *optional*,
 and may not be available. In that case, pygame will provide a placeholder
 object instead of the module, which can be used to test for availability.
 
+.. data:: IS_CE
+
+   | :sl:`exists if current pygame is pygame-ce`
+   | :sg:`IS_CE = 1`
+
+   Use ``getattr(pygame, "IS_CE", False)`` to check if current pygame is pygame-ce
+
+   .. ## pygame.IS_CE ##
+
 .. function:: init
 
    | :sl:`initialize all imported pygame modules`

@@ -1,6 +1,6 @@
 .. TUTORIAL:Pygame Python Introduction
 
-.. include:: common.txt
+.. include:: ../../common.txt
 
 ****************
   Pygame Intro
@@ -16,7 +16,7 @@ Python Pygame Introduction
 :Contact: pete@shinners.org
 
 
-This article is an introduction to the `pygame library <http://www.pygame.org>`_
+This article is an introduction to the `pygame library <https://pyga.me>`_
 for `Python programmers <https://www.python.org/>`_.
 The original version appeared in the `PyZine volume 1 issue 3
 <https://web.archive.org/web/20030810011958/http://store.pyzine.com:80/article.phtml?a=2>`_.
@@ -62,7 +62,7 @@ animation with 7 lines of code. Let's take a look at a friendlier
 version of that same thing. This should be simple enough to follow
 along, and a complete breakdown follows.
 
-.. image:: intro_ball.gif
+.. image:: ../assets/intro_ball.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -189,7 +189,7 @@ is not hard to reach the ceiling once your game begins to get more
 complex. Any game running in realtime will be making full use of the
 computer.
 
-.. image:: intro_blade.jpg
+.. image:: ../assets/intro_blade.jpg
    :class: inlined-right
 
 Over the past several years there has been an interesting trend in game development,
@@ -212,7 +212,7 @@ they are nothing more than Python source files.
 More recently, Python has been used in a variety of games like Freedom
 Force, and Humungous' Backyard Sports Series.
 
-.. image:: intro_freedom.jpg
+.. image:: ../assets/intro_freedom.jpg
    :class: inlined-right
 
 Pygame and SDL serve as an excellent C engine for 2D games.

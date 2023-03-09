@@ -54,9 +54,6 @@ Instead, always begin with the original image and scale to the desired size.)
    | :sl:`resize to new resolution, using scalar(s)`
    | :sg:`scale_by(surface, factor, dest_surface=None) -> Surface`
 
-   **Experimental:** feature still in development available for testing and feedback. It may change.
-   `Please leave scale_by feedback with authors <https://github.com/pygame/pygame/pull/2723>`_
-
    Same as :func:`scale()`, but scales by some factor, rather than taking
    the new size explicitly. For example, :code:`transform.scale_by(surf, 3)`
    will triple the size of the surface in both dimensions. Optionally, the
@@ -139,9 +136,6 @@ Instead, always begin with the original image and scale to the desired size.)
 
    | :sl:`resize to new resolution, using scalar(s)`
    | :sg:`smoothscale_by(surface, factor, dest_surface=None) -> Surface`
-
-   **Experimental:** feature still in development available for testing and feedback. It may change.
-   `Please leave smoothscale_by feedback with authors <https://github.com/pygame/pygame/pull/2723>`_
 
    Same as :func:`smoothscale()`, but scales by some factor, rather than
    taking the new size explicitly. For example,
@@ -242,6 +236,31 @@ Instead, always begin with the original image and scale to the desired size.)
    .. versionadded:: 2.1.2 ``consider_alpha`` argument
 
    .. ## pygame.transform.average_color ##
+
+.. function:: invert
+
+   | :sl:`inverts the RGB elements of a surface`
+   | :sg:`average_color(surface, dest_surface=None) -> Surface`
+
+   Inverts each RGB pixel contained within the Surface, does not affect alpha channel. Can also be used with a destination Surface. 
+
+   .. versionadded:: 2.2.0
+
+   .. ## pygame.transform.invert ##
+
+.. function:: grayscale
+
+   | :sl:`grayscale a surface`
+   | :sg:`grayscale(surface, dest_surface=None) -> Surface`
+
+   Returns a grayscaled version of the original surface using the luminosity formula which weights red, green and blue according to their wavelengths.
+
+   An optional destination surface can be passed which is faster than creating a new Surface.
+   This destination surface must have the same dimensions (width, height) and depth as the source Surface.
+   
+   .. versionadded:: 2.1.4
+
+   .. ## pygame.transform.grayscale ##
 
 .. function:: threshold
 

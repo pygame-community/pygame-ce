@@ -1,6 +1,6 @@
 .. TUTORIAL:Help! How Do I Move An Image?
 
-.. include:: common.txt
+.. include:: ../../common.txt
 
 ****************************************************
   Pygame Tutorials - Help! How Do I Move An Image?
