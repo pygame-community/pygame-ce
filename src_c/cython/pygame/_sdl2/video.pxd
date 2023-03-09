@@ -35,6 +35,9 @@ cdef extern from "SDL.h" nogil:
     ctypedef struct SDL_Color:
         Uint8 r, g, b, a
 
+    SDL_bool SDL_SetHint(const char *name, const char *value)
+    char* SDL_HINT_RENDER_SCALE_QUALITY b'SDL_HINT_RENDER_SCALE_QUALITY'
+
     cdef extern from *:
         """        
         #if SDL_VERSION_ATLEAST(2, 0, 18)
@@ -52,6 +55,20 @@ cdef extern from "SDL.h" nogil:
                 _pgsdlFPoint tex_coord;
             } _pgsdlVertex;
         #endif
+
+        #if SDL_VERSION_ATLEAST(2,0,12)
+            typedef SDL_ScaleMode _pgsdlScaleMode;
+        #else
+            typedef enum {
+                SDL_ScaleModeNearest,
+                SDL_ScaleModeLinear,
+                SDL_ScaleModeBest,
+            } _pgsdlScaleMode;
+
+            int SDL_SetTextureScaleMode(SDL_Texture * texture, _pgsdlScaleMode scaleMode){
+                return 0;
+            }
+        #endif
         """
     ctypedef struct SDL_FPoint "_pgsdlFPoint":
         float x, y
@@ -60,6 +77,13 @@ cdef extern from "SDL.h" nogil:
         SDL_Color color
         SDL_FPoint tex_coord
     
+    ctypedef enum SDL_ScaleMode "_pgsdlScaleMode":
+        SDL_ScaleModeNearest,
+        SDL_ScaleModeLinear,
+        SDL_ScaleModeBest
+
+    int SDL_SetTextureScaleMode(SDL_Texture * texture, SDL_ScaleMode scaleMode)
+
     ctypedef enum SDL_RendererFlip:
         SDL_FLIP_NONE,
         SDL_FLIP_HORIZONTAL,
