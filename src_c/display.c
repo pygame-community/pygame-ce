@@ -2198,8 +2198,6 @@ pg_desktop_refresh_rates(PyObject *self)
     return result;
 }
 
-
-
 static PyObject *
 pg_toggle_fullscreen(PyObject *self, PyObject *_null)
 {
@@ -2718,8 +2716,7 @@ static PyMethodDef _pg_display_methods[] = {
     {"is_fullscreen", (PyCFunction)pg_is_fullscreen, METH_NOARGS,
      "provisional API, subject to change"},
 
-    {"is_vsync", (PyCFunction)pg_is_vsync, METH_NOARGS,
-     DOC_DISPLAY_ISVSYNC},
+    {"is_vsync", (PyCFunction)pg_is_vsync, METH_NOARGS, DOC_DISPLAY_ISVSYNC},
     {"get_desktop_refresh_rates", (PyCFunction)pg_desktop_refresh_rates,
      METH_NOARGS, DOC_DISPLAY_GETDESKTOPREFRESHRATES},
     {"get_current_refresh_rate", (PyCFunction)pg_current_refresh_rate,
