@@ -45,13 +45,13 @@ pg_avx2_at_runtime_but_uncompiled()
 
 /* just prints the first/lower 128 bits, in two chunks */
 // static void
-// _debug_print256_num(__m256i var, const char *msg)
-// {
-//     printf("%s\n", msg);
-//     Uint64 *z = (Uint64 *)&var;
-//     printf("l: %llX\n", *z);
-//     printf("h: %llX\n", *(z + 1));
-// }
+_debug_print256_num(__m256i var, const char *msg)
+{
+     printf("%s\n", msg);
+     Uint64 *z = (Uint64 *)&var;
+     printf("l: %llX\n", *z);
+     printf("h: %llX\n", *(z + 1));
+}
 
 #define __AVX2__ 1
 
@@ -140,8 +140,8 @@ pg_avx2_at_runtime_but_uncompiled()
             dstp += dstpxskip * pre_8_width;                            \
         }                                                               \
                                                                         \
-        srcp256 = (__m256i *)srcp + srcskip;                            \
-        dstp256 = (__m256i *)dstp + dstskip;                            \
+        srcp256 = (__m256i *)(srcp + srcskip);                            \
+        dstp256 = (__m256i *)(dstp + dstskip);                            \
     }
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
@@ -154,11 +154,11 @@ alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
     __m256i mm256_srcA, mm256_srcB, mm256_dstA, mm256_dstB, mm256_srcAlpha,
         temp;
 
-    //printf("inside avx2 alpha blitter\n");
-    //printf("rshift=%i\n", info->src->Rshift / 8);
-    //printf("gshift=%i\n", info->src->Gshift / 8);
-    //printf("bshift=%i\n", info->src->Bshift / 8);
-    //printf("ashift=%i\n", info->src->Ashift / 8);
+    // printf("inside avx2 alpha blitter\n");
+    // printf("rshift=%i\n", info->src->Rshift / 8);
+    // printf("gshift=%i\n", info->src->Gshift / 8);
+    // printf("bshift=%i\n", info->src->Bshift / 8);
+    // printf("ashift=%i\n", info->src->Ashift / 8);
 
     /* Original 'Straight Alpha' blending equation:
         --------------------------------------------
@@ -228,6 +228,106 @@ alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
 #else
 void
 alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
+{
+    BAD_AVX2_FUNCTION_CALL;
+}
+#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
+          !defined(SDL_DISABLE_IMMINTRIN_H) */
+
+#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
+    !defined(SDL_DISABLE_IMMINTRIN_H)
+void
+alphablit_alpha_avx2_argb_no_surf_alpha(SDL_BlitInfo *info)
+{
+    SETUP_AVX2_BLITTER
+
+    __m256i mm256_srcA, mm256_srcB, mm256_dstA, mm256_dstB, mm256_srcAlpha,
+        temp, mm256_dstAlpha, mm256_newDstAlpha;
+
+    //printf("inside avx2 a different alpha blitter\n");
+    // printf("rshift=%i\n", info->src->Rshift / 8);
+    // printf("gshift=%i\n", info->src->Gshift / 8);
+    // printf("bshift=%i\n", info->src->Bshift / 8);
+    // printf("ashift=%i\n", info->src->Ashift / 8);
+
+    /*
+     dstRGB = (((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) >> 8)
+     dstA = srcA + dstA - ((srcA * dstA) / 255);
+     */
+
+    RUN_AVX2_BLITTER(
+        /* ==== shuffle pixels out into two registers each, src
+         * and dst set up for 16 bit math, like 0A0R0G0B ==== */
+        mm256_srcA = _mm256_shuffle_epi8(mm256_src, shuff_out_A);
+        mm256_srcB = _mm256_shuffle_epi8(mm256_src, shuff_out_B);
+        mm256_dstA = _mm256_shuffle_epi8(mm256_dst, shuff_out_A);
+        mm256_dstB = _mm256_shuffle_epi8(mm256_dst, shuff_out_B);
+
+        /* ==== alpha blend on A pixels ==== */
+        mm256_srcAlpha = _mm256_shuffle_epi8(mm256_srcA, shuff_out_alpha);
+
+        // figure out alpha
+        mm256_dstAlpha = _mm256_shuffle_epi8(mm256_dstA, shuff_out_alpha);
+        temp = _mm256_mullo_epi16(mm256_srcAlpha, mm256_dstAlpha);
+        temp = _mm256_srli_epi16(
+            _mm256_mulhi_epu16(temp, _mm256_set1_epi16((short)0x8081)), 7);
+        mm256_newDstAlpha = _mm256_sub_epi16(mm256_dstAlpha, temp);
+        mm256_newDstAlpha = _mm256_add_epi16(mm256_srcAlpha, mm256_newDstAlpha);
+
+        //_debug_print256_num(mm256_srcAlpha, "mm256_srcAlpha");
+        // if preexisting dst alpha is 0, src alpha should be set to 255
+        // enforces that dest alpha 0 means "copy source RGB"
+        // happens after real src alpha values used to calculate dst alpha
+        //mm256_dstAlpha = _mm256_cmpeq_epi8(mm256_dstAlpha, _mm256_setzero_si256());
+        //mm256_srcAlpha = _mm256_max_epu8(mm256_dstAlpha, mm256_srcAlpha);
+        //_debug_print256_num(mm256_dstAlpha, "mm256_dstAlpha");
+        //_debug_print256_num(mm256_srcAlpha, "new mm256_srcAlpha");
+
+        // figure out RGB
+        temp = _mm256_sub_epi16(mm256_srcA, mm256_dstA);
+        temp = _mm256_mullo_epi16(temp, mm256_srcAlpha);
+        temp = _mm256_add_epi16(temp, mm256_srcA);
+        mm256_dstA = _mm256_slli_epi16(mm256_dstA, 8);
+        mm256_dstA = _mm256_add_epi16(mm256_dstA, temp);
+        mm256_dstA = _mm256_srli_epi16(mm256_dstA, 8);
+
+        // blend together dstRGB and dstA
+        // TODO FIXME: needs to work on different alpha locations
+        mm256_dstA = _mm256_blend_epi16(mm256_dstA, mm256_newDstAlpha, 0b10001000);
+
+
+        /* ==== alpha blend on B pixels ==== */
+        mm256_srcAlpha = _mm256_shuffle_epi8(mm256_srcB, shuff_out_alpha);
+
+        // figure out alpha
+        mm256_dstAlpha = _mm256_shuffle_epi8(mm256_dstB, shuff_out_alpha);
+        temp = _mm256_mullo_epi16(mm256_srcAlpha, mm256_dstAlpha);
+        temp = _mm256_srli_epi16(
+            _mm256_mulhi_epu16(temp, _mm256_set1_epi16((short)0x8081)), 7);
+        mm256_dstAlpha = _mm256_sub_epi16(mm256_dstAlpha, temp);
+        mm256_dstAlpha = _mm256_add_epi16(mm256_srcAlpha, mm256_dstAlpha);
+
+        // figure out RGB
+        temp = _mm256_sub_epi16(mm256_srcB, mm256_dstB);
+        temp = _mm256_mullo_epi16(temp, mm256_srcAlpha);
+        temp = _mm256_add_epi16(temp, mm256_srcB);
+        mm256_dstB = _mm256_slli_epi16(mm256_dstB, 8);
+        mm256_dstB = _mm256_add_epi16(mm256_dstB, temp);
+        mm256_dstB = _mm256_srli_epi16(mm256_dstB, 8);
+
+        // blend together dstRGB and dstA
+        // TODO FIXME: needs to work on different alpha locations
+        mm256_dstB = _mm256_blend_epi16(mm256_dstB, mm256_dstAlpha, 0b10001000);
+       
+
+        /* ==== recombine A and B pixels ==== */
+        mm256_dst = _mm256_packus_epi16(mm256_dstA, mm256_dstB);)
+
+    //printf("leaving avx2 blitter\n");
+}
+#else
+void
+alphablit_alpha_avx2_argb_no_surf_alpha(SDL_BlitInfo *info)
 {
     BAD_AVX2_FUNCTION_CALL;
 }

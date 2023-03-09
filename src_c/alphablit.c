@@ -231,8 +231,14 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                                     if (SDL_ISPIXELFORMAT_ALPHA(
                                             dst->format->format) &&
                                         info.dst_blend != SDL_BLENDMODE_NONE) {
-                                        alphablit_alpha_sse2_argb_no_surf_alpha(
-                                            &info);
+                                        if (SDL_HasAVX2()) {
+                                            alphablit_alpha_avx2_argb_no_surf_alpha(
+                                                &info);
+                                        }
+                                        else {
+                                            alphablit_alpha_sse2_argb_no_surf_alpha(
+                                                &info);
+                                        }
                                     }
                                     else if (SDL_HasAVX2()) {
                                         alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(
