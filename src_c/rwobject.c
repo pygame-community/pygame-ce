@@ -825,9 +825,9 @@ pg_encode_file_path(PyObject *self, PyObject *args, PyObject *keywds)
 
 static PyMethodDef _pg_rwobject_methods[] = {
     {"encode_string", (PyCFunction)pg_encode_string,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMEENCODESTRING},
+     METH_VARARGS | METH_KEYWORDS, DOC_ENCODESTRING},
     {"encode_file_path", (PyCFunction)pg_encode_file_path,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMEENCODEFILEPATH},
+     METH_VARARGS | METH_KEYWORDS, DOC_ENCODEFILEPATH},
     {NULL, NULL, 0, NULL}};
 
 /*DOC*/ static char _pg_rwobject_doc[] =
