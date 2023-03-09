@@ -2111,7 +2111,6 @@ static PyObject *
 pg_is_vsync(PyObject *self)
 {
     SDL_Window *win = pg_GetDefaultWindow();
-    int flags;
     _DisplayState *state = DISPLAY_STATE;
 
     VIDEO_INIT_CHECK();
@@ -2145,7 +2144,6 @@ pg_current_refresh_rate(PyObject *self)
 {
     SDL_Window *win = pg_GetDefaultWindow();
     SDL_DisplayMode mode;
-    int result;
     int display_index;
 
     VIDEO_INIT_CHECK();
