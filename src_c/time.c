@@ -198,10 +198,11 @@ timer_callback(Uint32 interval, void *param)
     return interval;
 }
 
-static int
-accurate_delay(int ticks)
+static Uint64
+accurate_delay(Sint64 ticks)
 {
-    int funcstart, delay;
+    Uint64 funcstart, delay;
+
     if (ticks <= 0)
         return 0;
 
@@ -212,20 +213,20 @@ accurate_delay(int ticks)
         }
     }
 
-    funcstart = SDL_GetTicks();
+    funcstart = PG_GetTicks();
     if (ticks >= WORST_CLOCK_ACCURACY) {
         delay = (ticks - 2) - (ticks % WORST_CLOCK_ACCURACY);
         if (delay >= WORST_CLOCK_ACCURACY) {
             Py_BEGIN_ALLOW_THREADS;
-            SDL_Delay(delay);
+            SDL_Delay((Uint32)delay);
             Py_END_ALLOW_THREADS;
         }
     }
     do {
-        delay = ticks - (SDL_GetTicks() - funcstart);
+        delay = ticks - (PG_GetTicks() - funcstart);
     } while (delay > 0);
 
-    return SDL_GetTicks() - funcstart;
+    return PG_GetTicks() - funcstart;
 }
 
 static PyObject *
@@ -233,30 +234,30 @@ time_get_ticks(PyObject *self, PyObject *_null)
 {
     if (!SDL_WasInit(SDL_INIT_TIMER))
         return PyLong_FromLong(0);
-    return PyLong_FromLong(SDL_GetTicks());
+    return PyLong_FromUnsignedLongLong(PG_GetTicks());
 }
 
 static PyObject *
 time_delay(PyObject *self, PyObject *arg)
 {
-    int ticks;
+    Sint64 ticks;
     if (!PyLong_Check(arg))
         return RAISE(PyExc_TypeError, "delay requires one integer argument");
 
-    ticks = PyLong_AsLong(arg);
+    ticks = PyLong_AsLongLong(arg);
     if (ticks < 0)
         ticks = 0;
 
     ticks = accurate_delay(ticks);
     if (ticks == -1)
         return NULL;
-    return PyLong_FromLong(ticks);
+    return PyLong_FromLongLong(ticks);
 }
 
 static PyObject *
 time_wait(PyObject *self, PyObject *arg)
 {
-    int ticks, start;
+    Sint64 ticks, start;
     if (!PyLong_Check(arg))
         return RAISE(PyExc_TypeError, "wait requires one integer argument");
 
@@ -266,16 +267,16 @@ time_wait(PyObject *self, PyObject *arg)
         }
     }
 
-    ticks = PyLong_AsLong(arg);
+    ticks = PyLong_AsLongLong(arg);
     if (ticks < 0)
         ticks = 0;
 
-    start = SDL_GetTicks();
+    start = PG_GetTicks();
     Py_BEGIN_ALLOW_THREADS;
-    SDL_Delay(ticks);
+    SDL_Delay((Uint32)ticks);
     Py_END_ALLOW_THREADS;
 
-    return PyLong_FromLong(SDL_GetTicks() - start);
+    return PyLong_FromUnsignedLongLong(PG_GetTicks() - start);
 }
 
 static PyObject *
@@ -347,10 +348,9 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
 
 /*clock object interface*/
 typedef struct {
-    PyObject_HEAD int last_tick;
-    int fps_count, fps_tick;
+    PyObject_HEAD Uint64 last_tick, fps_count, fps_tick;
     float fps;
-    int timepassed, rawpassed;
+    Uint64 timepassed, rawpassed;
     PyObject *rendered;
 } PyClockObject;
 
@@ -360,14 +360,14 @@ clock_tick_base(PyObject *self, PyObject *arg, int use_accurate_delay)
 {
     PyClockObject *_clock = (PyClockObject *)self;
     float framerate = 0.0f;
-    int nowtime;
+    Uint64 nowtime;
 
     if (!PyArg_ParseTuple(arg, "|f", &framerate))
         return NULL;
 
     if (framerate) {
-        int delay, endtime = (int)((1.0f / framerate) * 1000.0f);
-        _clock->rawpassed = SDL_GetTicks() - _clock->last_tick;
+        Sint64 delay, endtime = (Sint64)((1.0f / framerate) * 1000.0f);
+        _clock->rawpassed = PG_GetTicks() - _clock->last_tick;
         delay = endtime - _clock->rawpassed;
 
         /*just doublecheck that timer is initialized*/
@@ -393,7 +393,7 @@ clock_tick_base(PyObject *self, PyObject *arg, int use_accurate_delay)
             return NULL;
     }
 
-    nowtime = SDL_GetTicks();
+    nowtime = PG_GetTicks();
     _clock->timepassed = nowtime - _clock->last_tick;
     _clock->fps_count += 1;
     _clock->last_tick = nowtime;
@@ -411,7 +411,7 @@ clock_tick_base(PyObject *self, PyObject *arg, int use_accurate_delay)
         _clock->fps_tick = nowtime;
         Py_XDECREF(_clock->rendered);
     }
-    return PyLong_FromLong(_clock->timepassed);
+    return PyLong_FromUnsignedLongLong(_clock->timepassed);
 }
 
 static PyObject *
@@ -437,25 +437,25 @@ static PyObject *
 clock_get_time(PyObject *self, PyObject *_null)
 {
     PyClockObject *_clock = (PyClockObject *)self;
-    return PyLong_FromLong(_clock->timepassed);
+    return PyLong_FromUnsignedLongLong(_clock->timepassed);
 }
 
 static PyObject *
 clock_get_rawtime(PyObject *self, PyObject *_null)
 {
     PyClockObject *_clock = (PyClockObject *)self;
-    return PyLong_FromLong(_clock->rawpassed);
+    return PyLong_FromUnsignedLongLong(_clock->rawpassed);
 }
 
 /* clock object internals */
 
 static struct PyMethodDef clock_methods[] = {
-    {"tick", clock_tick, METH_VARARGS, DOC_CLOCKTICK},
-    {"get_fps", clock_get_fps, METH_NOARGS, DOC_CLOCKGETFPS},
-    {"get_time", clock_get_time, METH_NOARGS, DOC_CLOCKGETTIME},
-    {"get_rawtime", clock_get_rawtime, METH_NOARGS, DOC_CLOCKGETRAWTIME},
+    {"tick", clock_tick, METH_VARARGS, DOC_TIME_CLOCK_TICK},
+    {"get_fps", clock_get_fps, METH_NOARGS, DOC_TIME_CLOCK_GETFPS},
+    {"get_time", clock_get_time, METH_NOARGS, DOC_TIME_CLOCK_GETTIME},
+    {"get_rawtime", clock_get_rawtime, METH_NOARGS, DOC_TIME_CLOCK_GETRAWTIME},
     {"tick_busy_loop", clock_tick_busy_loop, METH_VARARGS,
-     DOC_CLOCKTICKBUSYLOOP},
+     DOC_TIME_CLOCK_TICKBUSYLOOP},
     {NULL, NULL, 0, NULL}};
 
 static void
@@ -502,7 +502,7 @@ clock_new(PyTypeObject *type, PyObject *args, PyObject *kwargs)
     self->fps_tick = 0;
     self->timepassed = 0;
     self->rawpassed = 0;
-    self->last_tick = SDL_GetTicks();
+    self->last_tick = PG_GetTicks();
     self->fps = 0.0f;
     self->fps_count = 0;
     self->rendered = NULL;
@@ -516,7 +516,7 @@ static PyTypeObject PyClock_Type = {
     .tp_dealloc = clock_dealloc,
     .tp_repr = clock_str,
     .tp_str = clock_str,
-    .tp_doc = DOC_PYGAMETIMECLOCK,
+    .tp_doc = DOC_TIME_CLOCK,
     .tp_methods = clock_methods,
     .tp_new = clock_new,
 };
@@ -526,12 +526,11 @@ static PyMethodDef _time_methods[] = {
      "auto initialize function for time"},
     {"_internal_mod_quit", (PyCFunction)pg_time_autoquit, METH_NOARGS,
      "auto quit function for time"},
-    {"get_ticks", (PyCFunction)time_get_ticks, METH_NOARGS,
-     DOC_PYGAMETIMEGETTICKS},
-    {"delay", time_delay, METH_O, DOC_PYGAMETIMEDELAY},
-    {"wait", time_wait, METH_O, DOC_PYGAMETIMEWAIT},
+    {"get_ticks", (PyCFunction)time_get_ticks, METH_NOARGS, DOC_TIME_GETTICKS},
+    {"delay", time_delay, METH_O, DOC_TIME_DELAY},
+    {"wait", time_wait, METH_O, DOC_TIME_WAIT},
     {"set_timer", (PyCFunction)time_set_timer, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETIMESETTIMER},
+     DOC_TIME_SETTIMER},
 
     {NULL, NULL, 0, NULL}};
 
@@ -545,7 +544,7 @@ MODINIT_DEFINE(time)
     PyObject *module;
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "time",
-                                         DOC_PYGAMETIME,
+                                         DOC_TIME,
                                          -1,
                                          _time_methods,
                                          NULL,

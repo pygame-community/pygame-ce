@@ -25,6 +25,12 @@ typedef uint8_t Uint8;
 
 #if defined(SDL_VERSION_ATLEAST)
 
+#if SDL_VERSION_ATLEAST(2, 0, 18)
+#define PG_GetTicks SDL_GetTicks64
+#else
+#define PG_GetTicks SDL_GetTicks
+#endif
+
 #ifndef SDL_WINDOW_VULKAN
 #define SDL_WINDOW_VULKAN 0
 #endif

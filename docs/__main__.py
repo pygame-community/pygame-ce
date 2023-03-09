@@ -29,7 +29,7 @@ def open_docs():
             url_path = f"{drive}/{url_path}"
         url = urlunparse(("file", "", url_path, "", "", ""))
     else:
-        url = "https://www.pygame.org/docs/"
+        url = "https://pyga.me/docs/"
     webbrowser.open(url)
 
 

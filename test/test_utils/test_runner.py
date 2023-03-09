@@ -30,9 +30,9 @@ def prepare_test_env():
 main_dir, test_subdir, fake_test_subdir = prepare_test_env()
 
 ################################################################################
-# Set the command line options
+# Set the command line options.
 #
-# options are shared with run_tests.py so make sure not to conflict
+# Options are shared with run_tests.py so make sure not to conflict
 # in time more will be added here
 
 TAG_PAT = r"-?[a-zA-Z0-9_]+"

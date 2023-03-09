@@ -41,6 +41,7 @@ from pygame import (
     surface as surface,
     surflock as surflock,
     sysfont as sysfont,
+    _debug as _debug,
 )
 
 from .rect import Rect as Rect
@@ -51,6 +52,12 @@ from .math import Vector2 as Vector2, Vector3 as Vector3
 from .cursors import Cursor as Cursor
 from .bufferproxy import BufferProxy as BufferProxy
 from .mask import Mask as Mask
+from ._debug import print_debug_info as print_debug_info
+from .event import Event as Event
+from .font import Font as Font
+from .mixer import Channel as Channel
+from .time import Clock as Clock
+from .joystick import Joystick as Joystick
 from .base import (
     BufferError as BufferError,
     HAVE_NEWBUF as HAVE_NEWBUF,
@@ -166,6 +173,10 @@ from .constants import (
     CONTROLLER_BUTTON_START as CONTROLLER_BUTTON_START,
     CONTROLLER_BUTTON_X as CONTROLLER_BUTTON_X,
     CONTROLLER_BUTTON_Y as CONTROLLER_BUTTON_Y,
+    DIRECTION_BTT as DIRECTION_BTT,
+    DIRECTION_LTR as DIRECTION_LTR,
+    DIRECTION_RTL as DIRECTION_RTL,
+    DIRECTION_TTB as DIRECTION_TTB,
     DOUBLEBUF as DOUBLEBUF,
     DROPBEGIN as DROPBEGIN,
     DROPCOMPLETE as DROPCOMPLETE,
@@ -174,6 +185,9 @@ from .constants import (
     FINGERDOWN as FINGERDOWN,
     FINGERMOTION as FINGERMOTION,
     FINGERUP as FINGERUP,
+    FONT_CENTER as FONT_CENTER,
+    FONT_LEFT as FONT_LEFT,
+    FONT_RIGHT as FONT_RIGHT,
     FULLSCREEN as FULLSCREEN,
     GL_ACCELERATED_VISUAL as GL_ACCELERATED_VISUAL,
     GL_ACCUM_ALPHA_SIZE as GL_ACCUM_ALPHA_SIZE,
@@ -221,6 +235,7 @@ from .constants import (
     HWACCEL as HWACCEL,
     HWPALETTE as HWPALETTE,
     HWSURFACE as HWSURFACE,
+    IS_CE as IS_CE,
     JOYAXISMOTION as JOYAXISMOTION,
     JOYBALLMOTION as JOYBALLMOTION,
     JOYBUTTONDOWN as JOYBUTTONDOWN,

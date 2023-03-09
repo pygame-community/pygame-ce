@@ -28,7 +28,7 @@ on:
       - '!.github/workflows/build-emsdk.yml'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-emsdk
   cancel-in-progress: true
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       # pin SDK version to the latest, update manually
-      SDK_VERSION: 3.1.27.0
+      SDK_VERSION: 3.1.32.0
       SDK_ARCHIVE: python3.11-wasm-sdk-Ubuntu-22.04.tar.lz4
       SDKROOT: /opt/python-wasm-sdk
 
@@ -47,7 +47,7 @@ jobs:
       WHEELHOUSE_CYTHON: /tmp/wheelhouse/cython
 
     steps:
-    - uses: actions/checkout@v3.0.2
+    - uses: actions/checkout@v3.3.0
 
     - name: Cache Cython
       id: cache-cython
