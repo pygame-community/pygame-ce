@@ -211,7 +211,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
    Returns the blurred surface using box blur algorithm.
 
-   .. versionadded:: 2.1.4
+   .. versionadded:: 2.2.0
 
    .. ## pygame.transform.box_blur ##
 
@@ -223,7 +223,7 @@ Instead, always begin with the original image and scale to the desired size.)
    Returns the blurred surface using gaussian blur algorithm.
    Slower than `box_blur()`.
 
-   .. versionadded:: 2.1.4
+   .. versionadded:: 2.2.0
 
    .. ## pygame.transform.gaussian_blur ##
 
