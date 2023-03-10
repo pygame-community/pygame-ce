@@ -1562,6 +1562,10 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
     }
     else {
         newsurf = pg_DisplayFormat(surf);
+        if (newsurf == NULL) {
+            SDL_FreeSurface(newsurf);
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
         SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
     }
 
