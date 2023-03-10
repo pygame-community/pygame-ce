@@ -34,7 +34,6 @@ PG_AUTOIMPORT_SUBMODS = [
     "sprite",
     "surfarray",
     "transform",
-    "fastevent",
     "scrap",
     "threads",
     "version",
