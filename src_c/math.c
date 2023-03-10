@@ -56,7 +56,7 @@
 
 #define VECTOR_EPSILON (1e-6)
 #define VECTOR_MAX_SIZE (4)
-#define STRING_BUF_SIZE_REPR (112)
+#define STRING_BUF_SIZE_REPR (110)
 #define STRING_BUF_SIZE_STR (103)
 #define SWIZZLE_ERR_NO_ERR 0
 #define SWIZZLE_ERR_DOUBLE_IDX 1
@@ -1754,7 +1754,7 @@ vector_repr(pgVector *self)
 {
     /* The repr() of the largest possible Vector3 looks like
      * "Vector3({d}, {d}, {d})" where 'd' has a maximum size of 32 bytes
-     *  so allocate a 16 + 3 * 32 == 112 byte buffer
+     *  so allocate a 14 + 3 * 32 == 110 byte buffer
      */
     char buffer[STRING_BUF_SIZE_REPR];
     int tmp;
