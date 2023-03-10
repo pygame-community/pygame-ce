@@ -3156,7 +3156,7 @@ surf_premul_alpha(pgSurfaceObject *self, PyObject *_null)
     // Make a copy of the surface first
     newsurf = SDL_ConvertSurface(surf, surf->format, 0);
 
-    if ((surf->w > 0 && surf->h > 0)){
+    if ((surf->w > 0 && surf->h > 0)) {
         // If the surface has no pixels we don't need to premul
         // just return the copy.
         if (premul_surf_color_by_alpha(surf, newsurf) != 0) {
