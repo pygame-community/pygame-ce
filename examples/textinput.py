@@ -27,10 +27,10 @@ class TextInput:
     FONT_NAMES = [
         "notosanscjktcregular",
         "notosansmonocjktcregular",
-        "notosansregular,",
-        "microsoftjhengheimicrosoftjhengheiuilight",
-        "microsoftyaheimicrosoftyaheiuilight",
-        "msgothicmsuigothicmspgothic",
+        "notosansregular",
+        "microsoftjhenghei,microsoftjhengheiuilight",
+        "microsoftyahei,microsoftyaheiuilight",
+        "msgothic,msuigothic,mspgothic",
         "msmincho",
         "Arial",
     ]
