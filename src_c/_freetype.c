@@ -2166,7 +2166,7 @@ _ft_clear(PyObject *mod)
  ****************************************************/
 #ifndef PYPY_VERSION
 struct PyModuleDef _freetypemoduledef = {
-    PyModuleDef_HEAD_INIT,  MODULE_NAME, DOC_PYGAMEFREETYPE,
+    PyModuleDef_HEAD_INIT,  MODULE_NAME, DOC_FREETYPE,
     sizeof(_FreeTypeState), _ft_methods, 0,
     _ft_traverse,           _ft_clear,   0};
 #else  /* PYPY_VERSION */
