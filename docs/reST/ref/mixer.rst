@@ -487,8 +487,13 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
 
       Set the position (angle, distance) of a playing channel.
 
-      `angle``: Angle is in degrees.
-      `distance``: Range from 0 to 255.
+      `angle`: Angle is in degrees.
+      
+      `distance`: Range from 0 to 255.
+      
+      .. versionadded:: 2.2.0
+      
+      .. ## Channel.set_position ##
 
    .. method:: set_volume
 
