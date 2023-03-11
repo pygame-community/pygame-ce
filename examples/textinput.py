@@ -28,9 +28,9 @@ class TextInput:
         "notosanscjktcregular",
         "notosansmonocjktcregular",
         "notosansregular",
-        "microsoftjhenghei,microsoftjhengheiuilight",
-        "microsoftyahei,microsoftyaheiuilight",
-        "msgothic,msuigothic,mspgothic",
+        "microsoftjhenghei",
+        "microsoftyahei",
+        "msgothic",
         "msmincho",
         "Arial",
     ]
