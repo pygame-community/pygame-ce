@@ -1900,7 +1900,7 @@ surf_blits(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
     int dx, dy, result;
     SDL_Rect dest_rect;
     int sx, sy;
-    int the_args = 0;
+    int blend_flags = 0;
 
     PyObject *blitsequence;
     PyObject *iterator = NULL;
