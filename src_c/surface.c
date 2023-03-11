@@ -2139,21 +2139,21 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
     SURF_INIT_CHECK(dest)
 
     SDL_Rect *src_rect, temp, dest_rect;
-    PyObject *item, *src_surf, *blit_pos, *blit_sequence;
-    int flags_numeric = 0; /* Default flag is 0, opaque */
+    PyObject *blit_sequence, *item, *src_surf, *blit_pos;
+    int blend_flags = 0; /* Default flag is 0, opaque */
     int error = 0;
 
     if (nargs == 0 || nargs > 2) {
         error = FBLITS_ERR_INCORRECT_ARGS_NUM;
         goto on_error;
     }
-    /* Get the flags if they are passed */
+    /* Get the blend flags if they are passed */
     else if (nargs == 2) {
         if (!PyLong_Check(args[1])) {
             error = FBLITS_ERR_FLAG_NOT_NUMERIC;
             goto on_error;
         }
-        flags_numeric = PyLong_AsLong(args[1]);
+        blend_flags = PyLong_AsLong(args[1]);
         if (PyErr_Occurred()) {
             return NULL;
         }
@@ -2205,7 +2205,7 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
 
             /* Perform the blit */
             if (pgSurface_Blit(self, (pgSurfaceObject *)src_surf, &dest_rect,
-                               NULL, flags_numeric)) {
+                               NULL, blend_flags)) {
                 error = BLITS_ERR_BLIT_FAIL;
                 goto on_error;
             }
@@ -2255,7 +2255,7 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
 
             /* Perform the blit */
             if (pgSurface_Blit(self, (pgSurfaceObject *)src_surf, &dest_rect,
-                               NULL, flags_numeric)) {
+                               NULL, blend_flags)) {
                 error = BLITS_ERR_BLIT_FAIL;
                 goto on_error;
             }
