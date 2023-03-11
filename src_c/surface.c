@@ -1565,6 +1565,10 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
         SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
     }
 
+    if (newsurf == NULL) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
     if (has_colorkey) {
         colorkey = pg_map_rgba(newsurf, key_r, key_g, key_b, key_a);
         if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
