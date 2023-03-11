@@ -100,6 +100,8 @@ following formats.
 
      eg. asurf = pygame.image.load(os.path.join('data', 'bla.png'))
 
+   .. versionchanged:: 2.2.0 Now supports keyword arguments.
+
    .. ## pygame.image.load ##
 
 .. function:: save
@@ -124,6 +126,7 @@ following formats.
                        The ``namehint`` parameter was added to make it possible
                        to save other formats than ``TGA`` to a file-like object.
                        Saving to a file-like object with JPEG is possible.
+   .. versionchanged:: 2.2.0 Now supports keyword arguments.
 
    .. ## pygame.image.save ##
 
@@ -193,6 +196,8 @@ following formats.
    .. note:: it is preferred to use :func:`tobytes` as of pygame 2.1.3
 
    .. versionadded:: 2.1.3 BGRA format
+   .. versionchanged:: 2.2.0 Now supports keyword arguments.
+
    .. ## pygame.image.tostring ##
 
 .. function:: tobytes
@@ -233,6 +238,7 @@ following formats.
              libraries (PIL, numpy, etc), and with people's expectations.
 
    .. versionadded:: 2.1.3 
+   .. versionchanged:: 2.2.0 Now supports keyword arguments.
 
    .. ## pygame.image.tobytes ##
 
@@ -369,6 +375,7 @@ following formats.
                        Previously, this function may or may not be
                        available, depending on the state of extended image
                        format support.
+   .. versionchanged:: 2.2.0 Now supports keyword arguments.
 
    .. ## pygame.image.load_extended ##
 
@@ -392,6 +399,7 @@ following formats.
                        Previously, this function may or may not be
                        available, depending on the state of extended image
                        format support.
+   .. versionchanged:: 2.2.0 Now supports keyword arguments.
 
    .. ## pygame.image.save_extended ##
 

@@ -99,7 +99,7 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
     char *name = NULL, *ext = NULL, *type = NULL;
     SDL_Surface *surf;
     SDL_RWops *rw = NULL;
-    static char *kwds[] = {"filename", "namehint", NULL};
+    static char *kwds[] = {"file", "namehint", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(arg, kwarg, "O|s", kwds, &obj, &name)) {
         return NULL;
@@ -343,7 +343,7 @@ image_save_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
     int result = 1;
     char *name = NULL;
     SDL_RWops *rw = NULL;
-    static char *kwds[] = {"surface", "filename", "namehint", NULL};
+    static char *kwds[] = {"surface", "file", "namehint", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(arg, kwarg, "O!O|s", kwds,
                                      &pgSurface_Type, &surfobj, &obj,
