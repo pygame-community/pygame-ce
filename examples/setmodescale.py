@@ -54,9 +54,6 @@ while not done:
             done = True
         if event.type == pg.KEYDOWN and event.key == pg.K_f:
             pg.display.toggle_fullscreen()
-        if event.type == pg.VIDEORESIZE:
-            pg.display._resize_event(event)
-
     i += 1
     i = i % screen.get_width()
     j += i % 2

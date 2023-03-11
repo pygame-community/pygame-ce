@@ -891,6 +891,12 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
             return NULL;
     }
 
+    if ((vsync == -1) && ((flags & PGS_OPENGL) == 0)) {
+        PyErr_SetString(PyExc_ValueError,
+                        "requested adaptive vsync without OpenGL");
+        return NULL;
+    }
+
     state->using_gl = (flags & PGS_OPENGL) != 0;
     state->scaled_gl = state->using_gl && (flags & PGS_SCALED) != 0;
     state->unscaled_render = vsync && !(flags & (PGS_SCALED | PGS_OPENGL));
