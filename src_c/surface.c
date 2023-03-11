@@ -3158,10 +3158,15 @@ surf_premul_alpha(pgSurfaceObject *self, PyObject *_null)
     pgSurface_Prep(self);
     // Make a copy of the surface first
     newsurf = SDL_ConvertSurface(surf, surf->format, 0);
-    if (premul_surf_color_by_alpha(surf, newsurf) != 0) {
-        return RAISE(PyExc_ValueError,
-                     "source surface to be alpha pre-multiplied must have "
-                     "alpha channel");
+
+    if ((surf->w > 0 && surf->h > 0)) {
+        // If the surface has no pixels we don't need to premul
+        // just return the copy.
+        if (premul_surf_color_by_alpha(surf, newsurf) != 0) {
+            return RAISE(PyExc_ValueError,
+                         "source surface to be alpha pre-multiplied must have "
+                         "alpha channel");
+        }
     }
     pgSurface_Unprep(self);
 
