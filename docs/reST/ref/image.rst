@@ -68,8 +68,8 @@ following formats.
 .. function:: load
 
    | :sl:`load new image from a file (or file-like object)`
-   | :sg:`load(filename) -> Surface`
-   | :sg:`load(fileobj, namehint="") -> Surface`
+   | :sg:`load(file) -> Surface`
+   | :sg:`load(file, namehint="") -> Surface`
 
    Load an image from a file source. You can pass either a filename, a Python
    file-like object, or a pathlib.Path.
@@ -107,8 +107,8 @@ following formats.
 .. function:: save
 
    | :sl:`save an image to file (or file-like object)`
-   | :sg:`save(Surface, filename) -> None`
-   | :sg:`save(Surface, fileobj, namehint="") -> None`
+   | :sg:`save(Surface, file) -> None`
+   | :sg:`save(Surface, file, namehint="") -> None`
 
    This will save your Surface as either a ``BMP``, ``TGA``, ``PNG``, or
    ``JPEG`` image. If the filename extension is unrecognized it will default to
@@ -361,8 +361,8 @@ following formats.
 .. function:: load_extended
 
    | :sl:`load an image from a file (or file-like object)`
-   | :sg:`load_extended(filename) -> Surface`
-   | :sg:`load_extended(fileobj, namehint="") -> Surface`
+   | :sg:`load_extended(file) -> Surface`
+   | :sg:`load_extended(file, namehint="") -> Surface`
 
    This function is similar to :func:`pygame.image.load()`, except that this
    function can only be used if pygame was built with extended image format
@@ -382,8 +382,8 @@ following formats.
 .. function:: save_extended
 
    | :sl:`save a png/jpg image to file (or file-like object)`
-   | :sg:`save_extended(Surface, filename) -> None`
-   | :sg:`save_extended(Surface, fileobj, namehint="") -> None`
+   | :sg:`save_extended(Surface, file) -> None`
+   | :sg:`save_extended(Surface, file, namehint="") -> None`
 
    This will save your Surface as either a ``PNG`` or ``JPEG`` image.
 
