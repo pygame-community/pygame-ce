@@ -317,6 +317,11 @@ try:
 except (ImportError, OSError):
     debug = MissingModule("_debug", urgent=0)
 
+try:
+    import pygame.system
+except (ImportError, OSError):
+    system = MissingModule("system", urgent=0)
+
 # there's also a couple "internal" modules not needed
 # by users, but putting them here helps "dependency finder"
 # programs get everything they need (like py2exe)
