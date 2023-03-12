@@ -118,11 +118,6 @@
       | :sl:`Gets and sets the window opacity. Between 0.0 (fully transparent) and 1.0 (fully opaque).`
       | :sg:`opacity -> float`
 
-   .. attribute:: brightness
-
-      | :sl:`Gets and sets the brightness (gamma multiplier) for the display that owns the window.`
-      | :sg:`brightness -> float`
-
    .. attribute:: display_index
 
       | :sl:`Get the index of the display that owns the window. *Read-only*`
@@ -136,7 +131,7 @@
 .. class:: Texture	
 
    | :sl:`pygame object that representing a Texture.`
-   | :sg:`Texture(renderer, size, depth=0, static=False, streaming=False, target=False) -> Texture`
+   | :sg:`Texture(renderer, size, depth=0, static=False, streaming=False, target=False, scale_quality=None) -> Texture`
 
    .. staticmethod:: from_surface
 
@@ -182,6 +177,16 @@
 
       | :sl:`Copy a portion of the texture to the rendering target.`
       | :sg:`draw(srcrect=None, dstrect=None, angle=0, origin=None, flip_x=False, flip_y=False) -> None`
+
+   .. method:: draw_triangle
+
+      | :sl:`Copy a triangle portion of the texture to the rendering target by vertices coordinates.`
+      | :sg:`draw_triangle(p1_xy, p2_xy, p3_xy, p1_uv=(0.0, 0.0), p2_uv=(1.0, 1.0), p3_uv=(0.0, 1.0), p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255), p3_mod=(255, 255, 255, 255)) -> None`
+
+   .. method:: draw_quad
+
+      | :sl:`Copy a quad portion of the texture to the rendering target by vertices coordinates.`
+      | :sg:`draw_quad(p1_xy, p2_xy, p3_xy, p4_xy, p1_uv=(0.0, 0.0), p2_uv=(1.0, 0.0), p3_uv=(1.0, 1.0), p4_uv=(0.0, 1.0), p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255), p3_mod=(255, 255, 255, 255), p4_mod=(255, 255, 255, 255)) -> None`
 
    .. method:: update
 
@@ -332,3 +337,23 @@
 
       | :sl:`Read pixels from current render target and create a pygame.Surface. WARNING: Slow operation, use sparingly.`
       | :sg:`to_surface(surface=None, area=None)-> Surface`
+
+   .. method:: draw_triangle
+
+      | :sl:`Draws a triangle.`
+      | :sg:`draw_triangle(p1, p2, p3) -> None`
+
+   .. method:: fill_triangle
+
+      | :sl:`Fills a triangle.`
+      | :sg:`fill_triangle(p1, p2, p3) -> None`
+
+   .. method:: draw_quad
+
+      | :sl:`Draws a quad.`
+      | :sg:`draw_quad(p1, p2, p3, p4) -> None`
+
+   .. method:: fill_quad
+
+      | :sl:`Fills a quad.`
+      | :sg:`fill_quad(p1, p2, p3, p4) -> None`

@@ -40,13 +40,9 @@
 #undef HAVE_STDLIB_H
 #endif
 
-#ifdef __SYMBIAN32__ /* until PNG support is done for Symbian */
-#include <stdio.h>
-#else
 // PNG_SKIP_SETJMP_CHECK : non-regression on #662 (build error on old libpng)
 #define PNG_SKIP_SETJMP_CHECK
 #include <png.h>
-#endif
 
 #include "pgcompat.h"
 
@@ -96,24 +92,29 @@ iext_find_extension(char *fullname)
 }
 
 static PyObject *
-image_load_ext(PyObject *self, PyObject *arg)
+image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     PyObject *obj;
     PyObject *final;
-    char *name = NULL, *ext = NULL;
+    char *name = NULL, *ext = NULL, *type = NULL;
     SDL_Surface *surf;
     SDL_RWops *rw = NULL;
+    static char *kwds[] = {"file", "namehint", NULL};
 
-    if (!PyArg_ParseTuple(arg, "O|s", &obj, &name)) {
+    if (!PyArg_ParseTupleAndKeywords(arg, kwarg, "O|s", kwds, &obj, &name)) {
         return NULL;
     }
 
-    rw = pgRWops_FromObject(obj);
+    rw = pgRWops_FromObject(obj, &ext);
     if (rw == NULL) /* stop on NULL, error already set */
         return NULL;
-    ext = pgRWops_GetFileExtension(rw);
-    if (name) /* override extension with namehint if given */
-        ext = iext_find_extension(name);
+
+    if (name) { /* override extension with namehint if given */
+        type = iext_find_extension(name);
+    }
+    else { /* Otherwise type should be whatever ext is, even if ext is NULL */
+        type = ext;
+    }
 
 #ifdef WITH_THREAD
     /*
@@ -129,11 +130,15 @@ image_load_ext(PyObject *self, PyObject *arg)
     SDL_UnlockMutex(_pg_img_mutex);
     */
 
-    surf = IMG_LoadTyped_RW(rw, 1, ext);
+    surf = IMG_LoadTyped_RW(rw, 1, type);
     Py_END_ALLOW_THREADS;
 #else  /* ~WITH_THREAD */
-    surf = IMG_LoadTyped_RW(rw, 1, ext);
+    surf = IMG_LoadTyped_RW(rw, 1, type);
 #endif /* ~WITH_THREAD */
+
+    if (ext) {
+        free(ext);
+    }
 
     if (surf == NULL)
         return RAISE(pgExc_SDLError, IMG_GetError());
@@ -328,7 +333,7 @@ pg_SavePNG(SDL_Surface *surface, const char *file)
 #endif /* end if PNG_H */
 
 static PyObject *
-image_save_ext(PyObject *self, PyObject *arg)
+image_save_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     pgSurfaceObject *surfobj;
     PyObject *obj;
@@ -338,9 +343,11 @@ image_save_ext(PyObject *self, PyObject *arg)
     int result = 1;
     char *name = NULL;
     SDL_RWops *rw = NULL;
+    static char *kwds[] = {"surface", "file", "namehint", NULL};
 
-    if (!PyArg_ParseTuple(arg, "O!O|s", &pgSurface_Type, &surfobj, &obj,
-                          &namehint)) {
+    if (!PyArg_ParseTupleAndKeywords(arg, kwarg, "O!O|s", kwds,
+                                     &pgSurface_Type, &surfobj, &obj,
+                                     &namehint)) {
         return NULL;
     }
 
@@ -414,10 +421,26 @@ image_save_ext(PyObject *self, PyObject *arg)
 }
 
 static PyObject *
-imageext_get_sdl_image_version(PyObject *self, PyObject *_null)
+imageext_get_sdl_image_version(PyObject *self, PyObject *args,
+                               PyObject *kwargs)
 {
-    return Py_BuildValue("iii", SDL_IMAGE_MAJOR_VERSION,
-                         SDL_IMAGE_MINOR_VERSION, SDL_IMAGE_PATCHLEVEL);
+    int linked = 1;
+
+    static char *keywords[] = {"linked", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", keywords, &linked)) {
+        return NULL;
+    }
+
+    if (linked) {
+        SDL_version v;
+        SDL_IMAGE_VERSION(&v);
+        return Py_BuildValue("iii", v.major, v.minor, v.patch);
+    }
+    else {
+        const SDL_version *v = IMG_Linked_Version();
+        return Py_BuildValue("iii", v->major, v->minor, v->patch);
+    }
 }
 
 /*
@@ -434,9 +457,12 @@ _imageext_free(void *ptr)
 */
 
 static PyMethodDef _imageext_methods[] = {
-    {"load_extended", image_load_ext, METH_VARARGS, DOC_PYGAMEIMAGE},
-    {"save_extended", image_save_ext, METH_VARARGS, DOC_PYGAMEIMAGE},
-    {"_get_sdl_image_version", imageext_get_sdl_image_version, METH_NOARGS,
+    {"load_extended", (PyCFunction)image_load_ext,
+     METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_LOADEXTENDED},
+    {"save_extended", (PyCFunction)image_save_ext,
+     METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_SAVEEXTENDED},
+    {"_get_sdl_image_version", (PyCFunction)imageext_get_sdl_image_version,
+     METH_VARARGS | METH_KEYWORDS,
      "_get_sdl_image_version() -> (major, minor, patch)\n"
      "Note: Should not be used directly."},
     {NULL, NULL, 0, NULL}};

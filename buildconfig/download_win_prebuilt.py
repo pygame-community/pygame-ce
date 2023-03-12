@@ -86,22 +86,22 @@ def get_urls(x86=True, x64=True):
         '137f86474691f4e12e76e07d58d5920c8d844d5b',
         ],
         [
-        'https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.0/SDL2_ttf-devel-2.20.0-VC.zip',
-        'd5f6c8bc8084b3fd1decd4e7d2e43ad3f38d4cf4'
+        'https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.1/SDL2_ttf-devel-2.20.1-VC.zip',
+        '371606aceba450384428fd2852f73d2f6290b136'
         ],
         [
-        'https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip',
-        'f70b5ad1c7ae4b62ae9e8c2a6f8885917d483fe3',
+        'https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.2/SDL2_mixer-devel-2.6.2-VC.zip',
+        '000e3ea8a50261d46dbd200fb450b93c59ed4482',
         ],
     ])
     if x86:
         url_sha1.append([
-         'https://github.com/pygame/pygame/releases/download/2.1.3.dev4/prebuilt-x86-pygame-2.1.4-20220319.zip',
+         'https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/prebuilt-x86-pygame-2.1.4-20220319.zip',
          'bff2e50d65ec35274d33203e9fcaf5d53b31a696'
         ])
     if x64:
         url_sha1.append([
-         'https://github.com/pygame/pygame/releases/download/2.1.3.dev4/prebuilt-x64-pygame-2.1.4-20220319.zip',
+         'https://github.com/pygame-community/pygame-ce/releases/download/2.1.3/prebuilt-x64-pygame-2.1.4-20220319.zip',
          '16b46596744ce9ef80e7e40fa72ddbafef1cf586'
         ])
     return url_sha1
@@ -212,23 +212,23 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2_mixer-devel-2.6.0-VC/SDL2_mixer-2.6.0'
+                'SDL2_mixer-devel-2.6.2-VC/SDL2_mixer-2.6.2'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2_mixer-2.6.0'
+                'SDL2_mixer-2.6.2'
             )
         )
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2_ttf-devel-2.20.0-VC/SDL2_ttf-2.20.0'
+                'SDL2_ttf-devel-2.20.1-VC/SDL2_ttf-2.20.1'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2_ttf-2.20.0'
+                'SDL2_ttf-2.20.1'
             )
         )
         copy(

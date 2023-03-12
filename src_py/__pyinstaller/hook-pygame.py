@@ -1,6 +1,6 @@
 """
 binaries hook for pygame seems to be required for pygame 2.0 Windows.
-Otherwise some essential DLLs will not be transferred to the exe.
+Otherwise, some essential DLLs will not be transferred to the exe.
 
 And also put hooks for datas, resources that pygame uses, to work
 correctly with pyinstaller
@@ -16,6 +16,7 @@ pygame_folder = os.path.dirname(os.path.abspath(pygame_main_file))
 
 # datas is the variable that pyinstaller looks for while processing hooks
 datas = []
+
 
 # A helper to append the relative path of a resource to hook variable - datas
 def _append_to_datas(file_path):

@@ -118,6 +118,9 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
         return NULL; /* Exception already set. */
     }
 
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
     if (!blend) {
         if (PyErr_WarnEx(
                 PyExc_DeprecationWarning,
@@ -127,8 +130,6 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
             return NULL;
         }
     }
-
-    surf = pgSurface_AsSurface(surfobj);
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -191,6 +192,7 @@ line(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -265,6 +267,7 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -398,6 +401,7 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -645,6 +649,7 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -720,6 +725,7 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -803,6 +809,7 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -892,6 +899,7 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -1009,6 +1017,8 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
@@ -1165,6 +1175,23 @@ add_pixel_to_drawn_list(int x, int y, int *pts)
     }
     if (y > pts[3]) {
         pts[3] = y;
+    }
+}
+
+static void
+add_line_to_drawn_list(int x1, int y1, int x2, int *pts)
+{
+    if (x1 < pts[0]) {
+        pts[0] = x1;
+    }
+    if (y1 < pts[1]) {
+        pts[1] = y1;
+    }
+    if (x2 > pts[2]) {
+        pts[2] = x2;
+    }
+    if (y1 > pts[3]) {
+        pts[3] = y1;
     }
 }
 
@@ -1483,19 +1510,9 @@ drawhorzline(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2)
 {
     Uint8 *pixel, *end;
 
-    if (x1 == x2) {
-        return;
-    }
-
     pixel = ((Uint8 *)surf->pixels) + surf->pitch * y1;
-    if (x1 < x2) {
-        end = pixel + x2 * surf->format->BytesPerPixel;
-        pixel += x1 * surf->format->BytesPerPixel;
-    }
-    else {
-        end = pixel + x1 * surf->format->BytesPerPixel;
-        pixel += x2 * surf->format->BytesPerPixel;
-    }
+    end = pixel + x2 * surf->format->BytesPerPixel;
+    pixel += x1 * surf->format->BytesPerPixel;
     switch (surf->format->BytesPerPixel) {
         case 1:
             for (; pixel <= end; ++pixel) {
@@ -1572,8 +1589,7 @@ drawhorzlineclipbounding(SDL_Surface *surf, Uint32 color, int x1, int y1,
         return;
     }
 
-    add_pixel_to_drawn_list(x1, y1, pts);
-    add_pixel_to_drawn_list(x2, y1, pts);
+    add_line_to_drawn_list(x1, y1, x2, pts);
 
     drawhorzline(surf, color, x1, y1, x2);
 }
@@ -1788,69 +1804,134 @@ static void
 draw_circle_bresenham(SDL_Surface *surf, int x0, int y0, int radius,
                       int thickness, Uint32 color, int *drawn_area)
 {
-    int f = 1 - radius;
-    int ddF_x = 0;
-    int ddF_y = -2 * radius;
-    int x = 0;
-    int y = radius;
-    int y1;
-    int i_y = radius - thickness;
-    int thickness_inner = thickness;
-    int i_f = 1 - i_y;
-    int i_ddF_x = 0;
-    int i_ddF_y = -2 * i_y;
-    int i;
+    long long x = 0;
+    long long y = radius;
+    long long radius_squared = radius * radius;
+    long long double_radius_squared = 2 * radius_squared;
+    double d1 = radius_squared * (1.25 - radius);
+    long long dx = 0;
+    long long dy = double_radius_squared * y;
 
-    while (x < y) {
-        if (f >= 0) {
-            y--;
-            ddF_y += 2;
-            f += ddF_y;
+    int line = 1;
+    long long radius_inner = radius - thickness + 1;
+    long long x_inner = 0;
+    long long y_inner = radius_inner;
+    long long radius_inner_squared = radius_inner * radius_inner;
+    long long double_radius_inner_squared = 2 * radius_inner_squared;
+    double d1_inner = radius_inner_squared * (1.25 - radius_inner);
+    double d2_inner = 0;
+    long long dx_inner = 0;
+    long long dy_inner = double_radius_inner_squared * y_inner;
+
+    while (dx < dy) {
+        while (d1 < 0) {
+            x++;
+            dx += double_radius_squared;
+            d1 += dx + radius_squared;
         }
-        /* inner circle*/
-        if (i_f >= 0) {
-            i_y--;
-            i_ddF_y += 2;
-            i_f += i_ddF_y;
-        }
-        x++;
-        ddF_x += 2;
-        f += ddF_x + 1;
-
-        /* inner circle*/
-        i_ddF_x += 2;
-        i_f += i_ddF_x + 1;
-
-        if (x > i_y) {
-            /* Distance between outer circle and 45-degree angle */
-            /* plus one pixel so there's no gap */
-            thickness_inner = y - x + 1;
+        if (line) {
+            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
+                                     x0 + (int)x - 1, drawn_area);
+            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 + (int)y - 1,
+                                     x0 + (int)x - 1, drawn_area);
         }
         else {
-            /* Distance between outer and inner circle */
-            thickness_inner = y - i_y;
+            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
+                                     x0 - (int)x_inner, drawn_area);
+            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 + (int)y - 1,
+                                     x0 - (int)x_inner, drawn_area);
+            drawhorzlineclipbounding(surf, color, x0 + (int)x_inner - 1,
+                                     y0 - (int)y, x0 + (int)x - 1, drawn_area);
+            drawhorzlineclipbounding(surf, color, x0 + (int)x_inner - 1,
+                                     y0 + (int)y - 1, x0 + (int)x - 1,
+                                     drawn_area);
         }
-
-        /* Numbers represent parts of circle function draw in radians
-           interval: [number - 1 * pi / 4, number * pi / 4] */
-        for (i = 0; i < thickness_inner; i++) {
-            y1 = y - i;
-            set_and_check_rect(surf, x0 + x - 1, y0 + y1 - 1, color,
-                               drawn_area); /* 7 */
-            set_and_check_rect(surf, x0 - x, y0 + y1 - 1, color,
-                               drawn_area); /* 6 */
-            set_and_check_rect(surf, x0 + x - 1, y0 - y1, color,
-                               drawn_area); /* 2 */
-            set_and_check_rect(surf, x0 - x, y0 - y1, color,
-                               drawn_area); /* 3 */
-            set_and_check_rect(surf, x0 + y1 - 1, y0 + x - 1, color,
-                               drawn_area); /* 8 */
-            set_and_check_rect(surf, x0 + y1 - 1, y0 - x, color,
-                               drawn_area); /* 1 */
-            set_and_check_rect(surf, x0 - y1, y0 + x - 1, color,
-                               drawn_area); /* 5 */
-            set_and_check_rect(surf, x0 - y1, y0 - x, color,
-                               drawn_area); /* 4 */
+        x++;
+        y--;
+        dx += double_radius_squared;
+        dy -= double_radius_squared;
+        d1 += dx - dy + radius_squared;
+        if (line && y < radius_inner)
+            line = 0;
+        if (!line) {
+            while (d1_inner < 0) {
+                x_inner += 1;
+                dx_inner += double_radius_inner_squared;
+                d1_inner += dx_inner + radius_inner_squared;
+            }
+            x_inner++;
+            y_inner--;
+            dx_inner += double_radius_inner_squared;
+            dy_inner -= double_radius_inner_squared;
+            d1_inner += dx_inner - dy_inner + radius_inner_squared;
+        }
+    }
+    d1 = radius_squared *
+         ((x + 0.5) * (x + 0.5) + (y - 1) * (y - 1) - radius_squared);
+    while (y >= 0) {
+        if (line) {
+            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
+                                     x0 + (int)x - 1, drawn_area);
+            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 + (int)y - 1,
+                                     x0 + (int)x - 1, drawn_area);
+        }
+        else {
+            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
+                                     x0 - (int)x_inner, drawn_area);
+            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 + (int)y - 1,
+                                     x0 - (int)x_inner, drawn_area);
+            drawhorzlineclipbounding(surf, color, x0 + (int)x_inner - 1,
+                                     y0 - (int)y, x0 + (int)x - 1, drawn_area);
+            drawhorzlineclipbounding(surf, color, x0 + (int)x_inner - 1,
+                                     y0 + (int)y - 1, x0 + (int)x - 1,
+                                     drawn_area);
+        }
+        if (d1 > 0) {
+            y--;
+            dy -= double_radius_squared;
+            d1 += radius_squared - dy;
+        }
+        else {
+            y--;
+            x++;
+            dx += double_radius_squared;
+            dy -= double_radius_squared;
+            d1 += dx - dy + radius_squared;
+        }
+        if (line && y < radius_inner)
+            line = 0;
+        if (!line) {
+            if (dx_inner < dy_inner) {
+                while (d1_inner < 0) {
+                    x_inner += 1;
+                    dx_inner += double_radius_inner_squared;
+                    d1_inner += dx_inner + radius_inner_squared;
+                }
+                x_inner++;
+                y_inner--;
+                dx_inner += double_radius_inner_squared;
+                dy_inner -= double_radius_inner_squared;
+                d1_inner += dx_inner - dy_inner + radius_inner_squared;
+            }
+            else {
+                if (!d2_inner)
+                    d2_inner =
+                        radius_inner_squared *
+                        ((x_inner + 0.5) * (x_inner + 0.5) +
+                         (y_inner - 1) * (y_inner - 1) - radius_inner_squared);
+                if (d2_inner > 0) {
+                    y_inner--;
+                    dy_inner -= double_radius_inner_squared;
+                    d2_inner += radius_inner_squared - dy_inner;
+                }
+                else {
+                    y_inner--;
+                    x_inner++;
+                    dx_inner += double_radius_inner_squared;
+                    dy_inner -= double_radius_inner_squared;
+                    d2_inner += dx_inner - dy_inner + radius_inner_squared;
+                }
+            }
         }
     }
 }
@@ -2573,24 +2654,22 @@ draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
 /* List of python functions */
 static PyMethodDef _draw_methods[] = {
     {"aaline", (PyCFunction)aaline, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWAALINE},
-    {"line", (PyCFunction)line, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWLINE},
+     DOC_DRAW_AALINE},
+    {"line", (PyCFunction)line, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_LINE},
     {"aalines", (PyCFunction)aalines, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWAALINES},
+     DOC_DRAW_AALINES},
     {"lines", (PyCFunction)lines, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWLINES},
+     DOC_DRAW_LINES},
     {"nclines", (PyCFunction)PG_FASTCALL_NAME(nclines), PG_FASTCALL,
-     DOC_PYGAMEDRAWNCLINES},
+     DOC_DRAW_NCLINES},
     {"ellipse", (PyCFunction)ellipse, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWELLIPSE},
-    {"arc", (PyCFunction)arc, METH_VARARGS | METH_KEYWORDS, DOC_PYGAMEDRAWARC},
+     DOC_DRAW_ELLIPSE},
+    {"arc", (PyCFunction)arc, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_ARC},
     {"circle", (PyCFunction)circle, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWCIRCLE},
+     DOC_DRAW_CIRCLE},
     {"polygon", (PyCFunction)polygon, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWPOLYGON},
-    {"rect", (PyCFunction)rect, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWRECT},
+     DOC_DRAW_POLYGON},
+    {"rect", (PyCFunction)rect, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_RECT},
 
     {NULL, NULL, 0, NULL}};
 
@@ -2598,7 +2677,7 @@ MODINIT_DEFINE(draw)
 {
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "draw",
-                                         DOC_PYGAMEDRAW,
+                                         DOC_DRAW,
                                          -1,
                                          _draw_methods,
                                          NULL,

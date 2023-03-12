@@ -71,7 +71,7 @@ image_load_basic(PyObject *self, PyObject *obj)
     PyObject *final;
     SDL_Surface *surf;
 
-    SDL_RWops *rw = pgRWops_FromObject(obj);
+    SDL_RWops *rw = pgRWops_FromObject(obj, NULL);
     if (rw == NULL) {
         return NULL;
     }
@@ -91,29 +91,31 @@ image_load_basic(PyObject *self, PyObject *obj)
 }
 
 static PyObject *
-image_load_extended(PyObject *self, PyObject *arg)
+image_load_extended(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     if (extloadobj == NULL)
         return RAISE(PyExc_NotImplementedError,
                      "loading images of extended format is not available");
     else
-        return PyObject_CallObject(extloadobj, arg);
+        return PyObject_Call(extloadobj, arg, kwarg);
 }
 
 static PyObject *
-image_load(PyObject *self, PyObject *arg)
+image_load(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     PyObject *obj;
     const char *name = NULL;
+    static char *kwds[] = {"file", "namehint", NULL};
 
     if (extloadobj == NULL) {
-        if (!PyArg_ParseTuple(arg, "O|s", &obj, &name)) {
+        if (!PyArg_ParseTupleAndKeywords(arg, kwarg, "O|s", kwds, &obj,
+                                         &name)) {
             return NULL;
         }
         return image_load_basic(self, obj);
     }
     else
-        return image_load_extended(self, arg);
+        return image_load_extended(self, arg, kwarg);
 }
 
 #ifdef WIN32
@@ -123,17 +125,17 @@ image_load(PyObject *self, PyObject *arg)
 #endif
 
 static PyObject *
-image_save_extended(PyObject *self, PyObject *arg)
+image_save_extended(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     if (extsaveobj == NULL)
         return RAISE(PyExc_NotImplementedError,
                      "saving images of extended format is not available");
     else
-        return PyObject_CallObject(extsaveobj, arg);
+        return PyObject_Call(extsaveobj, arg, kwarg);
 }
 
 static PyObject *
-image_save(PyObject *self, PyObject *arg)
+image_save(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     pgSurfaceObject *surfobj;
     PyObject *obj;
@@ -142,9 +144,11 @@ image_save(PyObject *self, PyObject *arg)
     PyObject *ret;
     SDL_Surface *surf;
     int result = 1;
+    static char *kwds[] = {"surface", "file", "namehint", NULL};
 
-    if (!PyArg_ParseTuple(arg, "O!O|s", &pgSurface_Type, &surfobj, &obj,
-                          &namehint)) {
+    if (!PyArg_ParseTupleAndKeywords(arg, kwarg, "O!O|s", kwds,
+                                     &pgSurface_Type, &surfobj, &obj,
+                                     &namehint)) {
         return NULL;
     }
 
@@ -170,7 +174,7 @@ image_save(PyObject *self, PyObject *arg)
             !strcasecmp(ext, "jpeg")) {
             /* If it is .png .jpg .jpeg use the extended module. */
             /* try to get extended formats */
-            ret = image_save_extended(self, arg);
+            ret = image_save_extended(self, arg, kwarg);
             result = (ret == NULL ? -2 : 0);
         }
         else if (oencoded == Py_None) {
@@ -236,12 +240,12 @@ image_get_extended(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
-image_get_sdl_image_version(PyObject *self, PyObject *_null)
+image_get_sdl_image_version(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     if (extverobj == NULL)
         Py_RETURN_NONE;
     else
-        return PyObject_CallObject(extverobj, NULL);
+        return PyObject_Call(extverobj, args, kwargs);
 }
 
 #if PG_COMPILE_SSE4_2
@@ -269,7 +273,7 @@ _debug_print128_num(__m128i var, const char *msg)
 
 /*
  * Generates an SSE vector useful for reordering a SSE vector
- * based on the "in-memory layout" to match the "tostring layout"
+ * based on the "in-memory layout" to match the "tobytes layout"
  * It is only useful as second parameter to _mm_shuffle_epi8.
  *
  * A short _mm_shuffle_epi8 primer:
@@ -319,8 +323,8 @@ compute_align_vector(SDL_PixelFormat *format, int color_offset,
 }
 
 static PG_INLINE PG_FUNCTION_TARGET_SSE4_2 void
-tostring_pixels_32bit_sse4(const __m128i *row, __m128i *data, int loop_max,
-                           __m128i mask_vector, __m128i align_vector)
+tobytes_pixels_32bit_sse4(const __m128i *row, __m128i *data, int loop_max,
+                          __m128i mask_vector, __m128i align_vector)
 {
     int w;
     for (w = 0; w < loop_max; ++w) {
@@ -335,14 +339,14 @@ tostring_pixels_32bit_sse4(const __m128i *row, __m128i *data, int loop_max,
 }
 
 /*
- * SSE4.2 variant of tostring_surf_32bpp.
+ * SSE4.2 variant of tobytes_surf_32bpp.
  *
  * It is a lot faster but only works on a subset of the surfaces
  * (plus requires SSE4.2 support from the CPU).
  */
 static PG_FUNCTION_TARGET_SSE4_2 void
-tostring_surf_32bpp_sse42(SDL_Surface *surf, int flipped, char *data,
-                          int color_offset, int alpha_offset)
+tobytes_surf_32bpp_sse42(SDL_Surface *surf, int flipped, char *data,
+                         int color_offset, int alpha_offset)
 {
     const int step_size = 4;
     int h;
@@ -384,8 +388,8 @@ tostring_surf_32bpp_sse42(SDL_Surface *surf, int flipped, char *data,
     for (h = 0; h < surf->h; ++h) {
         const char *row =
             (char *)DATAROW(surf->pixels, h, surf->pitch, surf->h, flipped);
-        tostring_pixels_32bit_sse4((const __m128i *)row, (__m128i *)data,
-                                   loop_max, mask_vector, align_vector);
+        tobytes_pixels_32bit_sse4((const __m128i *)row, (__m128i *)data,
+                                  loop_max, mask_vector, align_vector);
         row += sizeof(__m128i) * loop_max;
         data += sizeof(__m128i) * loop_max;
         if (rollback_count) {
@@ -397,8 +401,8 @@ tostring_surf_32bpp_sse42(SDL_Surface *surf, int flipped, char *data,
             row -= rollback_count * sizeof(Uint32);
             data -= rollback_count * sizeof(Uint32);
 
-            tostring_pixels_32bit_sse4((const __m128i *)row, (__m128i *)data,
-                                       1, mask_vector, align_vector);
+            tobytes_pixels_32bit_sse4((const __m128i *)row, (__m128i *)data, 1,
+                                      mask_vector, align_vector);
 
             row += sizeof(__m128i);
             data += sizeof(__m128i);
@@ -408,9 +412,9 @@ tostring_surf_32bpp_sse42(SDL_Surface *surf, int flipped, char *data,
 #endif /* PG_COMPILE_SSE4_2 */
 
 static void
-tostring_surf_32bpp(SDL_Surface *surf, int flipped, int hascolorkey,
-                    Uint32 colorkey, char *serialized_image, int color_offset,
-                    int alpha_offset)
+tobytes_surf_32bpp(SDL_Surface *surf, int flipped, int hascolorkey,
+                   Uint32 colorkey, char *serialized_image, int color_offset,
+                   int alpha_offset)
 {
     int w, h;
 
@@ -452,8 +456,8 @@ tostring_surf_32bpp(SDL_Surface *surf, int flipped, int hascolorkey,
          */
         && (surf->format->Rloss % 8) == 0 && (surf->format->Bloss % 8) == 0 &&
         (surf->format->Gloss % 8) == 0 && (Aloss % 8) == 0) {
-        tostring_surf_32bpp_sse42(surf, flipped, serialized_image,
-                                  color_offset, alpha_offset);
+        tobytes_surf_32bpp_sse42(surf, flipped, serialized_image, color_offset,
+                                 alpha_offset);
         return;
     }
 #endif /* PG_COMPILE_SSE4_2 */
@@ -480,10 +484,10 @@ tostring_surf_32bpp(SDL_Surface *surf, int flipped, int hascolorkey,
 }
 
 PyObject *
-image_tostring(PyObject *self, PyObject *arg)
+image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     pgSurfaceObject *surfobj;
-    PyObject *string = NULL;
+    PyObject *bytes = NULL;
     char *format, *data;
     SDL_Surface *surf;
     int w, h, flipped = 0;
@@ -493,6 +497,7 @@ image_tostring(PyObject *self, PyObject *arg)
     int hascolorkey;
     Uint32 color, colorkey;
     Uint32 alpha;
+    static char *kwds[] = {"surface", "format", "flipped", NULL};
 
 #ifdef _MSC_VER
     /* MSVC static analyzer false alarm: assure format is NULL-terminated by
@@ -500,8 +505,9 @@ image_tostring(PyObject *self, PyObject *arg)
     __analysis_assume(format = "inited");
 #endif
 
-    if (!PyArg_ParseTuple(arg, "O!s|i", &pgSurface_Type, &surfobj, &format,
-                          &flipped))
+    if (!PyArg_ParseTupleAndKeywords(arg, kwarg, "O!s|i", kwds,
+                                     &pgSurface_Type, &surfobj, &format,
+                                     &flipped))
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
 
@@ -524,11 +530,10 @@ image_tostring(PyObject *self, PyObject *arg)
             return RAISE(
                 PyExc_ValueError,
                 "Can only create \"P\" format data with 8bit Surfaces");
-        string =
-            PyBytes_FromStringAndSize(NULL, (Py_ssize_t)surf->w * surf->h);
-        if (!string)
+        bytes = PyBytes_FromStringAndSize(NULL, (Py_ssize_t)surf->w * surf->h);
+        if (!bytes)
             return NULL;
-        PyBytes_AsStringAndSize(string, &data, &len);
+        PyBytes_AsStringAndSize(bytes, &data, &len);
 
         pgSurface_Lock(surfobj);
         for (h = 0; h < surf->h; ++h)
@@ -537,11 +542,11 @@ image_tostring(PyObject *self, PyObject *arg)
         pgSurface_Unlock(surfobj);
     }
     else if (!strcmp(format, "RGB")) {
-        string =
+        bytes =
             PyBytes_FromStringAndSize(NULL, (Py_ssize_t)surf->w * surf->h * 3);
-        if (!string)
+        if (!bytes)
             return NULL;
-        PyBytes_AsStringAndSize(string, &data, &len);
+        PyBytes_AsStringAndSize(bytes, &data, &len);
 
         pgSurface_Lock(surfobj);
 
@@ -611,11 +616,11 @@ image_tostring(PyObject *self, PyObject *arg)
         if (strcmp(format, "RGBA"))
             hascolorkey = 0;
 
-        string =
+        bytes =
             PyBytes_FromStringAndSize(NULL, (Py_ssize_t)surf->w * surf->h * 4);
-        if (!string)
+        if (!bytes)
             return NULL;
-        PyBytes_AsStringAndSize(string, &data, &len);
+        PyBytes_AsStringAndSize(bytes, &data, &len);
 
         pgSurface_Lock(surfobj);
         switch (surf->format->BytesPerPixel) {
@@ -678,8 +683,8 @@ image_tostring(PyObject *self, PyObject *arg)
                 }
                 break;
             case 4:
-                tostring_surf_32bpp(surf, flipped, hascolorkey, colorkey, data,
-                                    0, 3);
+                tobytes_surf_32bpp(surf, flipped, hascolorkey, colorkey, data,
+                                   0, 3);
                 break;
         }
         pgSurface_Unlock(surfobj);
@@ -687,11 +692,11 @@ image_tostring(PyObject *self, PyObject *arg)
     else if (!strcmp(format, "ARGB")) {
         hascolorkey = 0;
 
-        string =
+        bytes =
             PyBytes_FromStringAndSize(NULL, (Py_ssize_t)surf->w * surf->h * 4);
-        if (!string)
+        if (!bytes)
             return NULL;
-        PyBytes_AsStringAndSize(string, &data, &len);
+        PyBytes_AsStringAndSize(bytes, &data, &len);
 
         pgSurface_Lock(surfobj);
         switch (surf->format->BytesPerPixel) {
@@ -747,8 +752,8 @@ image_tostring(PyObject *self, PyObject *arg)
                 }
                 break;
             case 4:
-                tostring_surf_32bpp(surf, flipped, hascolorkey, colorkey, data,
-                                    1, 0);
+                tobytes_surf_32bpp(surf, flipped, hascolorkey, colorkey, data,
+                                   1, 0);
                 break;
         }
         pgSurface_Unlock(surfobj);
@@ -756,11 +761,11 @@ image_tostring(PyObject *self, PyObject *arg)
     else if (!strcmp(format, "BGRA")) {
         hascolorkey = 0;
 
-        string =
+        bytes =
             PyBytes_FromStringAndSize(NULL, (Py_ssize_t)surf->w * surf->h * 4);
-        if (!string)
+        if (!bytes)
             return NULL;
-        PyBytes_AsStringAndSize(string, &data, &len);
+        PyBytes_AsStringAndSize(bytes, &data, &len);
 
         pgSurface_Lock(surfobj);
         switch (surf->format->BytesPerPixel) {
@@ -837,14 +842,14 @@ image_tostring(PyObject *self, PyObject *arg)
     else if (!strcmp(format, "RGBA_PREMULT")) {
         if (surf->format->BytesPerPixel == 1 || surf->format->Amask == 0)
             return RAISE(PyExc_ValueError,
-                         "Can only create pre-multiplied alpha strings if the "
+                         "Can only create pre-multiplied alpha bytes if the "
                          "surface has per-pixel alpha");
 
-        string =
+        bytes =
             PyBytes_FromStringAndSize(NULL, (Py_ssize_t)surf->w * surf->h * 4);
-        if (!string)
+        if (!bytes)
             return NULL;
-        PyBytes_AsStringAndSize(string, &data, &len);
+        PyBytes_AsStringAndSize(bytes, &data, &len);
 
         pgSurface_Lock(surfobj);
         switch (surf->format->BytesPerPixel) {
@@ -927,14 +932,14 @@ image_tostring(PyObject *self, PyObject *arg)
     else if (!strcmp(format, "ARGB_PREMULT")) {
         if (surf->format->BytesPerPixel == 1 || surf->format->Amask == 0)
             return RAISE(PyExc_ValueError,
-                         "Can only create pre-multiplied alpha strings if the "
+                         "Can only create pre-multiplied alpha bytes if the "
                          "surface has per-pixel alpha");
 
-        string =
+        bytes =
             PyBytes_FromStringAndSize(NULL, (Py_ssize_t)surf->w * surf->h * 4);
-        if (!string)
+        if (!bytes)
             return NULL;
-        PyBytes_AsStringAndSize(string, &data, &len);
+        PyBytes_AsStringAndSize(bytes, &data, &len);
 
         pgSurface_Lock(surfobj);
         switch (surf->format->BytesPerPixel) {
@@ -1018,16 +1023,16 @@ image_tostring(PyObject *self, PyObject *arg)
         return RAISE(PyExc_ValueError, "Unrecognized type of format");
     }
 
-    return string;
+    return bytes;
 }
 
 PyObject *
-image_fromstring(PyObject *self, PyObject *arg)
+image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
 {
-    PyObject *string;
+    PyObject *bytes;
     char *format, *data;
     SDL_Surface *surf = NULL;
-    int w, h, flipped = 0;
+    int w, h, flipped = 0, pitch = -1;
     Py_ssize_t len;
     int loopw, looph;
 
@@ -1037,18 +1042,30 @@ image_fromstring(PyObject *self, PyObject *arg)
     __analysis_assume(format = "inited");
 #endif
 
-    if (!PyArg_ParseTuple(arg, "O!(ii)s|i", &PyBytes_Type, &string, &w, &h,
-                          &format, &flipped))
+    static char *kwids[] = {"bytes",   "size",  "format",
+                            "flipped", "pitch", NULL};
+    if (!PyArg_ParseTupleAndKeywords(arg, kwds, "O!(ii)s|ii", kwids,
+                                     &PyBytes_Type, &bytes, &w, &h, &format,
+                                     &flipped, &pitch))
         return NULL;
 
     if (w < 1 || h < 1)
         return RAISE(PyExc_ValueError,
                      "Resolution must be nonzero positive values");
 
-    PyBytes_AsStringAndSize(string, &data, &len);
+    PyBytes_AsStringAndSize(bytes, &data, &len);
 
     if (!strcmp(format, "P")) {
-        if (len != (Py_ssize_t)w * h)
+        if (pitch == -1) {
+            pitch = w;
+        }
+        else if (pitch < w) {
+            return RAISE(PyExc_ValueError,
+                         "Pitch must be greater than or equal to the width "
+                         "as per the format");
+        }
+
+        if (len != (Py_ssize_t)pitch * h)
             return RAISE(
                 PyExc_ValueError,
                 "Bytes length does not equal format and resolution size");
@@ -1059,11 +1076,20 @@ image_fromstring(PyObject *self, PyObject *arg)
         SDL_LockSurface(surf);
         for (looph = 0; looph < h; ++looph)
             memcpy(((char *)surf->pixels) + looph * surf->pitch,
-                   DATAROW(data, looph, w, h, flipped), w);
+                   DATAROW(data, looph, pitch, h, flipped), w);
         SDL_UnlockSurface(surf);
     }
     else if (!strcmp(format, "RGB")) {
-        if (len != (Py_ssize_t)w * h * 3)
+        if (pitch == -1) {
+            pitch = w * 3;
+        }
+        else if (pitch < w * 3) {
+            return RAISE(PyExc_ValueError,
+                         "Pitch must be greater than or equal to the width * "
+                         "3 as per the format");
+        }
+
+        if (len != (Py_ssize_t)pitch * h)
             return RAISE(
                 PyExc_ValueError,
                 "Bytes length does not equal format and resolution size");
@@ -1088,12 +1114,23 @@ image_fromstring(PyObject *self, PyObject *arg)
                 pix += 3;
                 data += 3;
             }
+
+            data += pitch - w * 3;
         }
         SDL_UnlockSurface(surf);
     }
     else if (!strcmp(format, "RGBA") || !strcmp(format, "RGBX")) {
+        if (pitch == -1) {
+            pitch = w * 4;
+        }
+        else if (pitch < w * 4) {
+            return RAISE(PyExc_ValueError,
+                         "Pitch must be greater than or equal to the width * "
+                         "4 as per the format");
+        }
+
         int alphamult = !strcmp(format, "RGBA");
-        if (len != (Py_ssize_t)w * h * 4)
+        if (len != (Py_ssize_t)pitch * h)
             return RAISE(
                 PyExc_ValueError,
                 "Bytes length does not equal format and resolution size");
@@ -1112,12 +1149,21 @@ image_fromstring(PyObject *self, PyObject *arg)
             Uint32 *pix = (Uint32 *)DATAROW(surf->pixels, looph, surf->pitch,
                                             h, flipped);
             memcpy(pix, data, w * sizeof(Uint32));
-            data += w * sizeof(Uint32);
+            data += pitch;
         }
         SDL_UnlockSurface(surf);
     }
     else if (!strcmp(format, "BGRA")) {
-        if (len != (Py_ssize_t)w * h * 4)
+        if (pitch == -1) {
+            pitch = w * 4;
+        }
+        else if (pitch < w * 4) {
+            return RAISE(PyExc_ValueError,
+                         "Pitch must be greater than or equal to the width * "
+                         "4 as per the format");
+        }
+
+        if (len != (Py_ssize_t)pitch * h)
             return RAISE(
                 PyExc_ValueError,
                 "Bytes length does not equal format and resolution size");
@@ -1134,12 +1180,21 @@ image_fromstring(PyObject *self, PyObject *arg)
             Uint32 *pix = (Uint32 *)DATAROW(surf->pixels, looph, surf->pitch,
                                             h, flipped);
             memcpy(pix, data, w * sizeof(Uint32));
-            data += w * sizeof(Uint32);
+            data += pitch;
         }
         SDL_UnlockSurface(surf);
     }
     else if (!strcmp(format, "ARGB")) {
-        if (len != (Py_ssize_t)w * h * 4)
+        if (pitch == -1) {
+            pitch = w * 4;
+        }
+        else if (pitch < w * 4) {
+            return RAISE(PyExc_ValueError,
+                         "Pitch must be greater than or equal to the width * "
+                         "4 as per the format");
+        }
+
+        if (len != (Py_ssize_t)pitch * h)
             return RAISE(
                 PyExc_ValueError,
                 "Bytes length does not equal format and resolution size");
@@ -1156,7 +1211,7 @@ image_fromstring(PyObject *self, PyObject *arg)
             Uint32 *pix = (Uint32 *)DATAROW(surf->pixels, looph, surf->pitch,
                                             h, flipped);
             memcpy(pix, data, w * sizeof(Uint32));
-            data += w * sizeof(Uint32);
+            data += pitch;
         }
         SDL_UnlockSurface(surf);
     }
@@ -1194,12 +1249,12 @@ pgObject_AsCharBuffer(PyObject *obj, const char **buffer,
 }
 
 PyObject *
-image_frombuffer(PyObject *self, PyObject *arg)
+image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
 {
     PyObject *buffer;
     char *format, *data;
     SDL_Surface *surf = NULL;
-    int w, h;
+    int w, h, pitch = -1;
     Py_ssize_t len;
     pgSurfaceObject *surfobj;
 
@@ -1209,7 +1264,9 @@ image_frombuffer(PyObject *self, PyObject *arg)
     __analysis_assume(format = "inited");
 #endif
 
-    if (!PyArg_ParseTuple(arg, "O(ii)s|i", &buffer, &w, &h, &format))
+    static char *kwids[] = {"buffer", "size", "format", "pitch", NULL};
+    if (!PyArg_ParseTupleAndKeywords(arg, kwds, "O(ii)s|i", kwids, &buffer, &w,
+                                     &h, &format, &pitch))
         return NULL;
 
     if (w < 1 || h < 1)
@@ -1221,61 +1278,106 @@ image_frombuffer(PyObject *self, PyObject *arg)
         return NULL;
 
     if (!strcmp(format, "P")) {
-        if (len != (Py_ssize_t)w * h)
+        if (pitch == -1) {
+            pitch = w;
+        }
+        else if (pitch < w) {
+            return RAISE(PyExc_ValueError,
+                         "Pitch must be greater than or equal to the width "
+                         "as per the format");
+        }
+
+        if (len != (Py_ssize_t)pitch * h)
             return RAISE(
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
 
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 8, w, 0, 0, 0, 0);
+        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 8, pitch, 0, 0, 0, 0);
     }
     else if (!strcmp(format, "RGB")) {
-        if (len != (Py_ssize_t)w * h * 3)
+        if (pitch == -1) {
+            pitch = w * 3;
+        }
+        else if (pitch < w * 3) {
+            return RAISE(PyExc_ValueError,
+                         "Pitch must be greater than or equal to the width * "
+                         "3 as per the format");
+        }
+
+        if (len != (Py_ssize_t)pitch * h)
             return RAISE(
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, w * 3, 0xFF, 0xFF << 8,
+        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, pitch, 0xFF, 0xFF << 8,
                                         0xFF << 16, 0);
 #else
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, w * 3, 0xFF << 16,
+        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, pitch, 0xFF << 16,
                                         0xFF << 8, 0xFF, 0);
 #endif
     }
     else if (!strcmp(format, "BGR")) {
-        if (len != (Py_ssize_t)w * h * 3)
+        if (pitch == -1) {
+            pitch = w * 3;
+        }
+        else if (pitch < w * 3) {
+            return RAISE(PyExc_ValueError,
+                         "Pitch must be greater than or equal to the width * "
+                         "3 as per the format");
+        }
+
+        if (len != (Py_ssize_t)pitch * h)
             return RAISE(
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, w * 3, 0xFF << 16,
+        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, pitch, 0xFF << 16,
                                         0xFF << 8, 0xFF, 0);
 #else
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, w * 3, 0xFF, 0xFF << 8,
+        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 24, pitch, 0xFF, 0xFF << 8,
                                         0xFF << 16, 0);
 #endif
     }
     else if (!strcmp(format, "BGRA")) {
-        if (len != (Py_ssize_t)w * h * 4)
+        if (pitch == -1) {
+            pitch = w * 4;
+        }
+        else if (pitch < w * 4) {
+            return RAISE(PyExc_ValueError,
+                         "Pitch must be greater than or equal to the width * "
+                         "4 as per the format");
+        }
+
+        if (len != (Py_ssize_t)pitch * h)
             return RAISE(
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 32, w * 4, 0xFF << 16,
+        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 32, pitch, 0xFF << 16,
                                         0xFF << 8, 0xFF, 0xFF << 24);
 
 #else
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 32, w * 4, 0xFF << 8,
+        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 32, pitch, 0xFF << 8,
                                         0xFF << 16, 0xFF << 24, 0xFF);
 #endif
     }
     else if (!strcmp(format, "RGBA") || !strcmp(format, "RGBX")) {
+        if (pitch == -1) {
+            pitch = w * 4;
+        }
+        else if (pitch < w * 4) {
+            return RAISE(PyExc_ValueError,
+                         "Pitch must be greater than or equal to the width * "
+                         "4 as per the format");
+        }
+
         int alphamult = !strcmp(format, "RGBA");
-        if (len != (Py_ssize_t)w * h * 4)
+        if (len != (Py_ssize_t)pitch * h)
             return RAISE(
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
-        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 32, w * 4,
+        surf = SDL_CreateRGBSurfaceFrom(data, w, h, 32, pitch,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
                                         0xFF, 0xFF << 8, 0xFF << 16,
                                         (alphamult ? 0xFF << 24 : 0));
@@ -1287,12 +1389,21 @@ image_frombuffer(PyObject *self, PyObject *arg)
             surf->flags |= SDL_SRCALPHA;
     }
     else if (!strcmp(format, "ARGB")) {
-        if (len != (Py_ssize_t)w * h * 4)
+        if (pitch == -1) {
+            pitch = w * 4;
+        }
+        else if (pitch < w * 4) {
+            return RAISE(PyExc_ValueError,
+                         "Pitch must be greater than or equal to the width * "
+                         "4 as per the format");
+        }
+
+        if (len != (Py_ssize_t)pitch * h)
             return RAISE(
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
         surf =
-            SDL_CreateRGBSurfaceFrom(data, w, h, 32, w * 4,
+            SDL_CreateRGBSurfaceFrom(data, w, h, 32, pitch,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
                                      0xFF << 8, 0xFF << 16, 0xFF << 24, 0xFF);
 #else
@@ -1574,25 +1685,31 @@ SaveTGA(SDL_Surface *surface, const char *file, int rle)
 }
 
 static PyMethodDef _image_methods[] = {
-    {"load_basic", (PyCFunction)image_load_basic, METH_O,
-     DOC_PYGAMEIMAGELOADBASIC},
-    {"load_extended", image_load_extended, METH_VARARGS,
-     DOC_PYGAMEIMAGELOADEXTENDED},
-    {"load", image_load, METH_VARARGS, DOC_PYGAMEIMAGELOAD},
+    {"load_basic", (PyCFunction)image_load_basic, METH_O, DOC_IMAGE_LOADBASIC},
+    {"load_extended", (PyCFunction)image_load_extended,
+     METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_LOADEXTENDED},
+    {"load", (PyCFunction)image_load, METH_VARARGS | METH_KEYWORDS,
+     DOC_IMAGE_LOAD},
 
-    {"save_extended", image_save_extended, METH_VARARGS,
-     DOC_PYGAMEIMAGESAVEEXTENDED},
-    {"save", image_save, METH_VARARGS, DOC_PYGAMEIMAGESAVE},
+    {"save_extended", (PyCFunction)image_save_extended,
+     METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_SAVEEXTENDED},
+    {"save", (PyCFunction)image_save, METH_VARARGS | METH_KEYWORDS,
+     DOC_IMAGE_SAVE},
     {"get_extended", (PyCFunction)image_get_extended, METH_NOARGS,
-     DOC_PYGAMEIMAGEGETEXTENDED},
+     DOC_IMAGE_GETEXTENDED},
     {"get_sdl_image_version", (PyCFunction)image_get_sdl_image_version,
-     METH_NOARGS, DOC_PYGAMEIMAGEGETSDLIMAGEVERSION},
+     METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_GETSDLIMAGEVERSION},
 
-    {"tostring", image_tostring, METH_VARARGS, DOC_PYGAMEIMAGETOSTRING},
-    {"tobytes", image_tostring, METH_VARARGS, DOC_PYGAMEIMAGETOBYTES},
-    {"fromstring", image_fromstring, METH_VARARGS, DOC_PYGAMEIMAGEFROMSTRING},
-    {"frombytes", image_fromstring, METH_VARARGS, DOC_PYGAMEIMAGEFROMBYTES},
-    {"frombuffer", image_frombuffer, METH_VARARGS, DOC_PYGAMEIMAGEFROMBUFFER},
+    {"tostring", (PyCFunction)image_tobytes, METH_VARARGS | METH_KEYWORDS,
+     DOC_IMAGE_TOSTRING},
+    {"tobytes", (PyCFunction)image_tobytes, METH_VARARGS | METH_KEYWORDS,
+     DOC_IMAGE_TOBYTES},
+    {"fromstring", (PyCFunction)image_frombytes, METH_VARARGS | METH_KEYWORDS,
+     DOC_IMAGE_FROMSTRING},
+    {"frombytes", (PyCFunction)image_frombytes, METH_VARARGS | METH_KEYWORDS,
+     DOC_IMAGE_FROMBYTES},
+    {"frombuffer", (PyCFunction)image_frombuffer, METH_VARARGS | METH_KEYWORDS,
+     DOC_IMAGE_FROMBUFFER},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(image)
@@ -1602,7 +1719,7 @@ MODINIT_DEFINE(image)
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "image",
-                                         DOC_PYGAMEIMAGE,
+                                         DOC_IMAGE,
                                          -1,
                                          _image_methods,
                                          NULL,

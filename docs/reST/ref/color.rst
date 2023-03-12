@@ -22,6 +22,13 @@
    For the binary operators, the class of the returned color is that of the
    left hand color object of the operator.
 
+   Color objects support swizzling for their ``RGBA`` attributes, which allows
+   the creation of new color objects with the corresponding swizzled attributes
+   as its ``RGBA`` attributes. For example, ``color.bgra`` provides a shortcut to
+   doing ``Color(color.b, color.g, color.r, color.a)``. Swizzling with other than
+   4 attributes will return a tuple consisting of the corresponding elements
+   instead of a color object.
+
    Color objects support equality comparison with other color objects and 3 or
    4 element tuples of integers. There was a bug in pygame 1.8.1
    where the default alpha was 0, not 255 like previously.
@@ -162,7 +169,7 @@
       | :sg:`hsla -> tuple`
 
       The ``HSLA`` representation of the Color. The ``HSLA`` components are in
-      the ranges ``H`` = [0, 360], ``S`` = [0, 100], ``V`` = [0, 100], A = [0,
+      the ranges ``H`` = [0, 360], ``S`` = [0, 100], ``L`` = [0, 100], A = [0,
       100]. Note that this will not return the absolutely exact ``HSL`` values
       for the set ``RGB`` values in all cases. Due to the ``RGB`` mapping from
       0-255 and the ``HSL`` mapping from 0-100 and 0-360 rounding errors may
@@ -225,6 +232,18 @@
       .. versionadded:: 1.9.0
 
       .. ## Color.set_length ##
+
+   .. method:: grayscale
+
+      | :sl:`returns the grayscale of a Color`
+      | :sg:`grayscale() -> Color`
+      
+      Returns a new Color object which represents the grayscaled version of self, using the luminosity formula, 
+      which weights red, green, and blue according to their relative contribution to perceived brightness.
+
+      .. versionadded:: 2.1.4
+
+      .. ## Color.grayscale ##
 
    .. method:: lerp
 

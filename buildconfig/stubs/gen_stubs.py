@@ -34,7 +34,6 @@ PG_AUTOIMPORT_SUBMODS = [
     "sprite",
     "surfarray",
     "transform",
-    "fastevent",
     "scrap",
     "threads",
     "version",
@@ -49,7 +48,8 @@ PG_AUTOIMPORT_SUBMODS = [
     "surface",
     "surflock",
     "sysfont",
-    "context",
+    "_debug"
+    "system",
 ]
 
 # pygame classes that are autoimported into main namespace are kept in this dict
@@ -62,6 +62,12 @@ PG_AUTOIMPORT_CLASSES = {
     "cursors": ["Cursor"],
     "bufferproxy": ["BufferProxy"],
     "mask": ["Mask"],
+    "_debug": ["print_debug_info"],
+    "event": ["Event"],
+    "font": ["Font"],
+    "mixer": ["Channel"],
+    "time": ["Clock"],
+    "joystick": ["Joystick"]
 }
 
 # pygame modules from which __init__.py does the equivalent of
@@ -102,13 +108,10 @@ with open(constants_file, "w") as f:
     # write the module docstring of this file in the generated file, so that
     # people know this file exists
     f.write(info_header)
-    f.write("from typing import List\n\n")
 
     for element in pygame_all_imports[".constants"]:
         constant_type = getattr(pygame.constants, element).__class__.__name__
         f.write(f"{element}: {constant_type}\n")
-
-    f.write("\n__all__: List[str]\n")
 
 
 # write __init__.pyi file

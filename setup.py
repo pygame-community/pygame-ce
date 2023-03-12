@@ -7,6 +7,7 @@
 #     python setup.py install
 
 import platform
+import sysconfig
 
 with open('README.rst', encoding='utf-8') as readme:
     LONG_DESCRIPTION = readme.read()
@@ -14,20 +15,18 @@ with open('README.rst', encoding='utf-8') as readme:
 EXTRAS = {}
 
 METADATA = {
-    "name": "pygame",
-    "version": "2.1.3.dev5",
+    "name": "pygame-ce",
+    "version": "2.2.0.dev1",
     "license": "LGPL",
-    "url": "https://www.pygame.org",
+    "url": "https://pyga.me",
     "author": "A community project.",
-    "author_email": "pygame@pygame.org",
     "description": "Python Game Development",
     "long_description": LONG_DESCRIPTION,
     "long_description_content_type": "text/x-rst",
     "project_urls": {
-        "Documentation": "https://pygame.org/docs",
-        "Bug Tracker": "https://github.com/pygame/pygame/issues",
-        "Source": "https://github.com/pygame/pygame",
-        "Twitter": "https://twitter.com/pygame_org",
+        "Documentation": "https://pyga.me/docs",
+        "Bug Tracker": "https://github.com/pygame-community/pygame-ce/issues",
+        "Source": "https://github.com/pygame-community/pygame-ce",
     },
     "classifiers": [
         "Development Status :: 6 - Mature",
@@ -38,11 +37,11 @@ METADATA = {
         "Programming Language :: Objective C",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Games/Entertainment",
@@ -59,7 +58,7 @@ METADATA = {
         "Operating System :: Unix",
         "Operating System :: MacOS",
     ],
-    "python_requires": '>=3.6',
+    "python_requires": '>=3.7',
 }
 
 import re
@@ -167,15 +166,15 @@ def compilation_help():
     print('For help with compilation see:')
     print(f'    {url}')
     print('To contribute to pygame development see:')
-    print('    https://www.pygame.org/contribute.html')
+    print('    https://github.com/pygame-community/pygame-ce')
     print('---\n')
 
 
-if not hasattr(sys, 'version_info') or sys.version_info < (3, 6):
+if not hasattr(sys, 'version_info') or sys.version_info < (3, 7):
     compilation_help()
-    raise SystemExit("Pygame requires Python3 version 3.6 or above.")
+    raise SystemExit("Pygame requires Python3 version 3.7 or above.")
 if IS_PYPY and sys.pypy_version_info < (7,):
-    raise SystemExit("Pygame requires PyPy version 7.0.0 above, compatible with CPython >= 3.6")
+    raise SystemExit("Pygame requires PyPy version 7.0.0 above, compatible with CPython >= 3.7")
 
 
 def consume_arg(name):
@@ -442,7 +441,8 @@ for e in extensions:
 
     if "freetype" in e.name and sys.platform not in ("darwin", "win32"):
         # TODO: fix freetype issues here
-        e.extra_compile_args.append("-Wno-error=unused-but-set-variable")
+        if sysconfig.get_config_var("MAINCC") != "clang":        
+            e.extra_compile_args.append("-Wno-error=unused-but-set-variable")
 
     if "mask" in e.name and sys.platform == "win32":
         # skip analyze warnings that pop up a lot in mask for now. TODO fix
@@ -764,7 +764,8 @@ if sys.platform == 'win32' and not 'WIN32_DO_NOT_INCLUDE_DEPS' in os.environ:
                             return
 
 
-        replace_scale_mmx()
+        if not 'ARM64' in sys.version:
+            replace_scale_mmx()
 
 # clean up the list of extensions
 for e in extensions[:]:
@@ -981,6 +982,38 @@ class DocsCommand(Command):
         if subprocess.call(command_line) != 0:
             raise SystemExit("Failed to build documentation")
 
+@add_command('stubcheck')
+class StubcheckCommand(Command):
+    """ For checking the stubs with `python setup.py stubcheck`.
+    """
+    user_options = []
+    def initialize_options(self):
+        pass
+        
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        '''
+        runs mypy to build the docs.
+        '''
+        import subprocess
+        import warnings
+
+        print("Using python:", sys.executable)
+
+        if shutil.which('mypy') is None:
+            warnings.warn("Please install 'mypy' in your environment. (hint: 'python3 -m pip install mypy')")
+            sys.exit(1)
+
+        os.chdir('buildconfig/stubs')
+        command_line = [
+            sys.executable,'-m','mypy.stubtest',"pygame","--allowlist","mypy_allow_list.txt"
+        ]
+        result = subprocess.run(command_line)
+        os.chdir('../../')
+        if result.returncode != 0:
+            raise SystemExit("Stubcheck failed.")
 
 # Prune empty file lists.
 data_files = [(path, files) for path, files in data_files if files]

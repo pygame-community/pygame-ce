@@ -5,7 +5,6 @@ import pygame
 
 class CursorsModuleTest(unittest.TestCase):
     def test_compile(self):
-
         # __doc__ (as of 2008-06-25) for pygame.cursors.compile:
 
         # pygame.cursors.compile(strings, black, white,xor) -> data, mask
@@ -219,7 +218,7 @@ class CursorsModuleTest(unittest.TestCase):
         # __doc__ (as of 2008-06-25) for pygame.cursors.load_xbm:
 
         # pygame.cursors.load_xbm(cursorfile, maskfile) -> cursor_args
-        # reads a pair of XBM files into set_cursor arguments
+        # reads a pair of XBM files into set_cursor arguments.
         #
         # Arguments can either be filenames or filelike objects
         # with the readlines method. Not largely tested, but

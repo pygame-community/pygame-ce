@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Sequence, Tuple, Union, overload
+from typing import Any, List, Optional, Sequence, Tuple, Union, overload, Iterable
 
 from pygame.bufferproxy import BufferProxy
 from pygame.color import Color
@@ -70,6 +70,14 @@ class Surface:
         ],
         doreturn: Union[int, bool] = 1,
     ) -> Union[List[Rect], None]: ...
+    def fblits(
+        self,
+        blit_sequence: Union[
+            Sequence[Tuple[Surface, Union[Coordinate, RectValue]]],
+            Iterable[Tuple[Surface, Union[Coordinate, RectValue]]],
+        ],
+        special_flags: int = 0,
+    ) -> None: ...
     @overload
     def convert(self, surface: Surface) -> Surface: ...
     @overload
@@ -144,5 +152,6 @@ class Surface:
     def get_view(self, kind: _ViewKind = "2") -> BufferProxy: ...
     def get_buffer(self) -> BufferProxy: ...
     def get_blendmode(self) -> int: ...
+    def premul_alpha(self) -> Surface: ...
 
 SurfaceType = Surface

@@ -34,7 +34,7 @@ class Font(_Font):
     __unull = "\x00"
     __bnull = b"\x00"
 
-    def __init__(self, file, size=-1):
+    def __init__(self, file=None, size=20):
         size = max(size, 1)
         if isinstance(file, str):
             try:
@@ -175,7 +175,7 @@ def SysFont(name, size, bold=0, italic=0, constructor=None):
     the appropriate system font will be selected if available.
 
     This will always return a valid Font object, and will
-    fallback on the builtin pygame font if the given font
+    fall back on the builtin pygame font if the given font
     is not found.
 
     Name can also be an iterable of font names, a string of

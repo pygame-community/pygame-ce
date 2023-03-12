@@ -21,6 +21,15 @@ imported. Be aware that some of the pygame modules are considered *optional*,
 and may not be available. In that case, pygame will provide a placeholder
 object instead of the module, which can be used to test for availability.
 
+.. data:: IS_CE
+
+   | :sl:`exists if current pygame is pygame-ce`
+   | :sg:`IS_CE = 1`
+
+   Use ``getattr(pygame, "IS_CE", False)`` to check if current pygame is pygame-ce
+
+   .. ## pygame.IS_CE ##
+
 .. function:: init
 
    | :sl:`initialize all imported pygame modules`
@@ -108,13 +117,18 @@ object instead of the module, which can be used to test for availability.
 .. function:: get_sdl_version
 
    | :sl:`get the version number of SDL`
-   | :sg:`get_sdl_version() -> major, minor, patch`
+   | :sg:`get_sdl_version(linked=True) -> major, minor, patch`
 
-   Returns the three version numbers of the SDL library. This version is built
-   at compile time. It can be used to detect which features may or may not be
+   Returns the three version numbers of the SDL library. ``linked=True``
+   will cause the function to return the version of the library that pygame
+   is linked against while ``linked=False`` will cause the function to return
+   the version of the library that pygame is compiled against.
+   It can be used to detect which features may or may not be
    available through pygame.
 
    .. versionadded:: 1.7.0
+
+   .. versionchanged:: 2.1.4 ``linked`` keyword argument added
 
    .. ## pygame.get_sdl_version ##
 
@@ -186,6 +200,25 @@ object instead of the module, which can be used to test for availability.
    .. versionadded:: 1.9.2 (primarily for use in unit tests)
 
    .. ## pygame.encode_file_path ##
+
+.. function:: print_debug_info
+   
+   | :sl:`retrieves useful information for debugging and issue-reporting purposes`
+   | :sg:`print_debug_info(filename=None) -> None`
+
+   Constructs a string containing details on the system, the python interpreter,
+   the pygame version, and the linked and compiled versions of the libraries that
+   pygame wraps. If ``filename`` is ``None``, then the string is printed into the
+   console. Otherwise, the debug string is written to the specified file.
+
+   .. note::
+      If ``pygame.freetype`` has not been initialized with :func:`pygame.init` or :func:`pygame.freetype.init`,
+      then the linked and compiled versions of FreeType will be "Unk" since this information is not
+      available before initialization. 
+
+   .. versionadded:: 2.1.4
+
+   .. ## pygame.print_debug_info ##
 
 
 :mod:`pygame.version`
@@ -486,3 +519,15 @@ apps. This is usually a good thing as it's faster, however if you
 have an app which *doesn't* update every frame and are using linux
 you may want to disable this bypass. The bypass has reported problems
 on KDE linux. This variable is only used on x11/linux platforms.
+
+|
+
+::
+
+ SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS
+ Set to "1" to allow joysticks to be updated even when the window is out of focus
+
+By default, when the window is not in focus, input devices do not get
+updated. However, using this environment variable it is possible to get
+joystick updates even when the window is in the background. Must be set
+before calling :func:`pygame.init()` or :func:`pygame.joystick.init()`.

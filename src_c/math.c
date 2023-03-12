@@ -19,7 +19,9 @@
 
 /* Adjust gcc 4.4 optimization for floating point on x86-32 PCs running Linux.
  * This addresses bug 52:
- * http://pygame.motherhamster.org/bugzilla/show_bug.cgi?id=52
+ * https://github.com/pygame/pygame/issues/52
+ * With this option, floats have consistent precision regardless of optimize
+ * level.
  */
 #if defined(__GNUC__) && defined(__linux__) && defined(__i386__) && \
     __SIZEOF_POINTER__ == 4 && __GNUC__ == 4 && __GNUC_MINOR__ >= 4
@@ -112,7 +114,6 @@ typedef struct {
 /* math functions */
 static PyObject *
 math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs);
-PG_DECLARE_FASTCALL_FUNC(math_clamp, PyObject);
 
 /* generic helper functions */
 static int
@@ -257,9 +258,13 @@ vector_project_onto(pgVector *self, PyObject *other);
 static PyObject *
 vector_copy(pgVector *self, PyObject *_null);
 static PyObject *
-vector_clamp_magnitude(pgVector *self, PyObject *args, PyObject *kwargs);
+vector_clamp_magnitude(pgVector *self, PyObject *const *args,
+                       Py_ssize_t nargs);
 static PyObject *
-vector_clamp_magnitude_ip(pgVector *self, PyObject *args, PyObject *kwargs);
+vector_clamp_magnitude_ip(pgVector *self, PyObject *const *args,
+                          Py_ssize_t nargs);
+static PyObject *
+vector___round__(pgVector *self, PyObject *args);
 
 /*
 static Py_ssize_t vector_readbuffer(pgVector *self, Py_ssize_t segment, void
@@ -518,39 +523,47 @@ _vector_coords_from_string(PyObject *str, char **delimiter, double *coords,
                            Py_ssize_t dim)
 {
     int error_code;
-    Py_ssize_t i, start_pos, end_pos, length;
+    Py_ssize_t i, start_pos, end_pos, length, ret = 0;
     PyObject *vector_string;
     vector_string = PyUnicode_FromObject(str);
     if (vector_string == NULL) {
-        return -2;
+        ret = -2;
+        goto end;
     }
     length = PySequence_Length(vector_string);
     /* find the starting point of the first coordinate in the string */
     start_pos =
         _vector_find_string_helper(vector_string, delimiter[0], 0, length);
     if (start_pos < 0) {
-        return start_pos;
+        ret = start_pos;
+        goto end;
     }
     start_pos += strlen(delimiter[0]);
     for (i = 0; i < dim; i++) {
         /* find the end point of the current coordinate in the string */
         end_pos = _vector_find_string_helper(vector_string, delimiter[i + 1],
                                              start_pos, length);
-        if (end_pos < 0)
-            return end_pos;
+        if (end_pos < 0) {
+            ret = end_pos;
+            goto end;
+        }
         /* try to convert the current coordinate */
         error_code = get_double_from_unicode_slice(vector_string, start_pos,
                                                    end_pos, &coords[i]);
         if (error_code < 0) {
-            return -2;
+            ret = -2;
+            goto end;
         }
         else if (error_code == 0) {
-            return -1;
+            ret = -1;
+            goto end;
         }
         /* move starting point to the next coordinate */
         start_pos = end_pos + strlen(delimiter[i + 1]);
     }
-    return 0;
+end:
+    Py_XDECREF(vector_string);
+    return ret;
 }
 
 static PyMemberDef vector_members[] = {
@@ -805,7 +818,7 @@ vector_copy(pgVector *self, PyObject *_null)
 }
 
 static PyObject *
-vector_clamp_magnitude(pgVector *self, PyObject *args, PyObject *kwargs)
+vector_clamp_magnitude(pgVector *self, PyObject *const *args, Py_ssize_t nargs)
 {
     Py_ssize_t i;
     pgVector *ret;
@@ -817,8 +830,9 @@ vector_clamp_magnitude(pgVector *self, PyObject *args, PyObject *kwargs)
     for (i = 0; i < self->dim; ++i)
         ret->coords[i] = self->coords[i];
 
-    PyObject *ret_val = vector_clamp_magnitude_ip(ret, args, kwargs);
+    PyObject *ret_val = vector_clamp_magnitude_ip(ret, args, nargs);
     if (!ret_val) {
+        Py_DECREF(ret);
         return NULL;
     }
     Py_DECREF(ret_val);
@@ -827,61 +841,55 @@ vector_clamp_magnitude(pgVector *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
-vector_clamp_magnitude_ip(pgVector *self, PyObject *args, PyObject *kwargs)
+vector_clamp_magnitude_ip(pgVector *self, PyObject *const *args,
+                          Py_ssize_t nargs)
 {
     Py_ssize_t i;
-    double arg0;
-    double arg1 = 0; /*
-    Default value, if arg1 is set to a different value,
-    then it will clamp to the minimum and maximum.
-    */
-    double max_length;
-    double min_length;
-    double old_length_sq;
-    double fraction;
-
-    int length_greater;
-    int length_less;
-
-    static char *keywords[] = {"arg0", "arg1", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "d|d", keywords, &arg0,
-                                     &arg1)) {
-        return NULL;
+    double max_length, old_length_sq, fraction = 1, min_length = 0;
+    switch (nargs) {
+        case 2:
+            min_length = PyFloat_AsDouble(args[0]);
+            if (min_length == -1.0 && PyErr_Occurred()) {
+                return NULL;
+            }
+            /* Fall-through */
+        case 1:
+            max_length = PyFloat_AsDouble(args[nargs - 1]);
+            if (max_length == -1.0 && PyErr_Occurred()) {
+                return NULL;
+            }
+            break;
+        default:
+            return RAISE(PyExc_TypeError,
+                         "Vector clamp function must take one or two floats");
     }
 
-    if (arg1 != 0) {
-        min_length = arg0;
-        max_length = arg1;
+    if (min_length > max_length) {
+        return RAISE(PyExc_ValueError,
+                     "Argument min_length cannot exceed max_length");
     }
-    else if (arg1 == 0) {
-        max_length = arg0;
-        min_length = arg1;
+
+    if (max_length < 0 || min_length < 0) {
+        return RAISE(PyExc_ValueError,
+                     "Arguments to Vector clamp must be non-negative");
     }
 
     /* Get magnitude of Vector */
     old_length_sq = _scalar_product(self->coords, self->coords, self->dim);
-
     if (old_length_sq == 0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Cannot clamp a vector with zero length");
-        return NULL;
+        return RAISE(PyExc_ValueError,
+                     "Cannot clamp a vector with zero length");
     }
 
-    /*
-    Notes for other contributors reading this code:
-    The numerator for the fraction is different.
-    */
-    length_greater = old_length_sq > max_length * max_length;
-    fraction = 1;
-
-    if (length_greater) {
+    /* Notes for other contributors reading this code:
+     * The numerator for the fraction is different.
+     */
+    if (old_length_sq > max_length * max_length) {
         /* Scale to length */
         fraction = max_length / sqrt(old_length_sq);
     }
 
-    length_less = old_length_sq < min_length * min_length;
-    if (length_less) {
+    if (old_length_sq < min_length * min_length) {
         /* Scale to length */
         fraction = min_length / sqrt(old_length_sq);
     }
@@ -987,7 +995,12 @@ vector_GetSlice(pgVector *self, Py_ssize_t ilow, Py_ssize_t ihigh)
         return NULL;
 
     for (i = 0; i < len; i++) {
-        PyList_SET_ITEM(slice, i, PyFloat_FromDouble(self->coords[ilow + i]));
+        PyObject *tmp = PyFloat_FromDouble(self->coords[ilow + i]);
+        if (!tmp) {
+            Py_DECREF(slice);
+            return NULL;
+        }
+        PyList_SET_ITEM(slice, i, tmp);
     }
     return (PyObject *)slice;
 }
@@ -1300,9 +1313,12 @@ vector_normalize(pgVector *self, PyObject *_null)
     }
     memcpy(ret->coords, self->coords, sizeof(ret->coords[0]) * ret->dim);
 
-    if (!vector_normalize_ip(ret, NULL)) {
+    PyObject *tmp = vector_normalize_ip(ret, NULL);
+    if (!tmp) {
+        Py_DECREF(ret);
         return NULL;
     }
+    Py_DECREF(tmp);
     return (PyObject *)ret;
 }
 
@@ -1619,6 +1635,7 @@ vector_reflect(pgVector *self, PyObject *normal)
 
     if (!_vector_reflect_helper(ret->coords, self->coords, normal, self->dim,
                                 self->epsilon)) {
+        Py_DECREF(ret);
         return NULL;
     }
     return (PyObject *)ret;
@@ -1673,6 +1690,7 @@ _vector_distance_helper(pgVector *self, PyObject *other)
         }
 
         if (PySequence_Fast_GET_SIZE(fast_seq) != dim) {
+            Py_DECREF(fast_seq);
             PyErr_SetString(PyExc_ValueError,
                             "Vector and sequence must be the same size");
             return -1;
@@ -1681,11 +1699,15 @@ _vector_distance_helper(pgVector *self, PyObject *other)
         for (i = 0; i < dim; ++i) {
             tmp = PyFloat_AsDouble(PySequence_Fast_GET_ITEM(fast_seq, i)) -
                   self->coords[i];
-            if (PyErr_Occurred())
+            if (PyErr_Occurred()) {
+                Py_DECREF(fast_seq);
                 return -1;
+            }
             distance_squared += tmp * tmp;
         }
+        Py_DECREF(fast_seq);
     }
+
     return distance_squared;
 }
 
@@ -1711,15 +1733,17 @@ static int
 _vector_check_snprintf_success(int return_code, int max_size)
 {
     if (return_code < 0) {
-        PyErr_SetString(PyExc_SystemError,
-                        "internal snprintf call went wrong! Please report "
-                        "this to github.com/pygame/pygame/issues");
+        PyErr_SetString(
+            PyExc_SystemError,
+            "internal snprintf call went wrong! Please report "
+            "this to github.com/pygame-community/pygame-ce/issues");
         return 0;
     }
     if (return_code >= max_size) {
-        PyErr_SetString(PyExc_SystemError,
-                        "Internal buffer to small for snprintf! Please report "
-                        "this to github.com/pygame/pygame/issues");
+        PyErr_SetString(
+            PyExc_SystemError,
+            "Internal buffer too small for snprintf! Please report "
+            "this to github.com/pygame-community/pygame-ce/issues");
         return 0;
     }
     return 1;
@@ -1812,6 +1836,7 @@ vector_project_onto(pgVector *self, PyObject *other)
     if (b_dot_b < self->epsilon) {
         PyErr_SetString(PyExc_ValueError,
                         "Cannot project onto a vector with zero length");
+        Py_DECREF(ret);
         return NULL;
     }
 
@@ -1998,9 +2023,10 @@ vector_setAttr_swizzle(pgVector *self, PyObject *attr_name, PyObject *val)
             return -1;
         default:
             /* this should NEVER happen and means a bug in the code */
-            PyErr_SetString(PyExc_RuntimeError,
-                            "Unhandled error in swizzle code. Please report "
-                            "this bug to github.com/pygame/pygame/issues");
+            PyErr_SetString(
+                PyExc_RuntimeError,
+                "Unhandled error in swizzle code. Please report "
+                "this bug to github.com/pygame-community/pygame-ce/issues");
             return -1;
     }
 }
@@ -2072,6 +2098,47 @@ static PyBufferProcs vector_as_buffer = {
     (releasebufferproc)vector_releasebuffer,
 };
 #endif
+
+static PyObject *
+vector___round__(pgVector *self, PyObject *args)
+{
+    Py_ssize_t i, ndigits;
+    PyObject *o_ndigits = NULL;
+
+    pgVector *ret = _vector_subtype_new(self);
+    if (ret == NULL) {
+        return NULL;
+    }
+
+    if (!PyArg_ParseTuple(args, "|O", &o_ndigits)) {
+        Py_DECREF(ret);
+        return NULL;
+    }
+
+    memcpy(ret->coords, self->coords, sizeof(ret->coords[0]) * ret->dim);
+
+    if (o_ndigits == NULL || o_ndigits == Py_None) {
+        for (i = 0; i < ret->dim; ++i)
+            ret->coords[i] = round(ret->coords[i]);
+    }
+    else if (RealNumber_Check(o_ndigits)) {
+        ndigits = PyNumber_AsSsize_t(o_ndigits, NULL);
+        if (PyErr_Occurred()) {
+            Py_DECREF(ret);
+            return NULL;
+        }
+        for (i = 0; i < ret->dim; ++i)
+            ret->coords[i] = round(ret->coords[i] * pow(10, (double)ndigits)) /
+                             pow(10, (double)ndigits);
+    }
+    else {
+        PyErr_SetString(PyExc_TypeError, "Argument must be an integer");
+        Py_DECREF(ret);
+        return NULL;
+    }
+
+    return (PyObject *)ret;
+}
 
 /*********************************************************************
  * vector2 specific functions
@@ -2217,7 +2284,8 @@ _vector2_rotate_helper(double *dst_coords, const double *src_coords,
                 PyErr_SetString(
                     PyExc_RuntimeError,
                     "Please report this bug in vector2_rotate_helper to "
-                    "the developers at github.com/pygame/pygame/issues");
+                    "the developers at "
+                    "github.com/pygame-community/pygame-ce/issues");
                 return 0;
         }
     }
@@ -2244,9 +2312,12 @@ vector2_rotate_rad(pgVector *self, PyObject *angleObject)
     }
 
     ret = _vector_subtype_new(self);
-    if (ret == NULL || !_vector2_rotate_helper(ret->coords, self->coords,
-                                               angle, self->epsilon)) {
-        Py_XDECREF(ret);
+    if (ret == NULL) {
+        return NULL;
+    }
+    if (!_vector2_rotate_helper(ret->coords, self->coords, angle,
+                                self->epsilon)) {
+        Py_DECREF(ret);
         return NULL;
     }
     return (PyObject *)ret;
@@ -2296,9 +2367,12 @@ vector2_rotate(pgVector *self, PyObject *angleObject)
     angle = DEG2RAD(angle);
 
     ret = _vector_subtype_new(self);
-    if (ret == NULL || !_vector2_rotate_helper(ret->coords, self->coords,
-                                               angle, self->epsilon)) {
-        Py_XDECREF(ret);
+    if (ret == NULL) {
+        return NULL;
+    }
+    if (!_vector2_rotate_helper(ret->coords, self->coords, angle,
+                                self->epsilon)) {
+        Py_DECREF(ret);
         return NULL;
     }
     return (PyObject *)ret;
@@ -2406,63 +2480,68 @@ vector2_reduce(PyObject *oself, PyObject *_null)
 }
 
 static PyMethodDef vector2_methods[] = {
-    {"length", (PyCFunction)vector_length, METH_NOARGS, DOC_VECTOR2LENGTH},
+    {"length", (PyCFunction)vector_length, METH_NOARGS,
+     DOC_MATH_VECTOR2_LENGTH},
     {"length_squared", (PyCFunction)vector_length_squared, METH_NOARGS,
-     DOC_VECTOR2LENGTHSQUARED},
+     DOC_MATH_VECTOR2_LENGTHSQUARED},
     {"magnitude", (PyCFunction)vector_length, METH_NOARGS,
-     DOC_VECTOR2MAGNITUDE},
+     DOC_MATH_VECTOR2_MAGNITUDE},
     {"magnitude_squared", (PyCFunction)vector_length_squared, METH_NOARGS,
-     DOC_VECTOR2MAGNITUDESQUARED},
-    {"rotate", (PyCFunction)vector2_rotate, METH_O, DOC_VECTOR2ROTATE},
-    {"rotate_ip", (PyCFunction)vector2_rotate_ip, METH_O, DOC_VECTOR2ROTATEIP},
+     DOC_MATH_VECTOR2_MAGNITUDESQUARED},
+    {"rotate", (PyCFunction)vector2_rotate, METH_O, DOC_MATH_VECTOR2_ROTATE},
+    {"rotate_ip", (PyCFunction)vector2_rotate_ip, METH_O,
+     DOC_MATH_VECTOR2_ROTATEIP},
     {"rotate_rad", (PyCFunction)vector2_rotate_rad, METH_O,
-     DOC_VECTOR2ROTATERAD},
+     DOC_MATH_VECTOR2_ROTATERAD},
     {"rotate_rad_ip", (PyCFunction)vector2_rotate_rad_ip, METH_O,
-     DOC_VECTOR2ROTATERADIP},
+     DOC_MATH_VECTOR2_ROTATERADIP},
     {"rotate_ip_rad", (PyCFunction)vector2_rotate_ip_rad, METH_O,
-     DOC_VECTOR2ROTATEIPRAD},
+     DOC_MATH_VECTOR2_ROTATEIPRAD},
     {"move_towards", (PyCFunction)vector_move_towards, METH_VARARGS,
-     DOC_VECTOR2MOVETOWARDS},
+     DOC_MATH_VECTOR2_MOVETOWARDS},
     {"move_towards_ip", (PyCFunction)vector_move_towards_ip, METH_VARARGS,
-     DOC_VECTOR2MOVETOWARDSIP},
-    {"slerp", (PyCFunction)vector_slerp, METH_VARARGS, DOC_VECTOR2SLERP},
-    {"lerp", (PyCFunction)vector_lerp, METH_VARARGS, DOC_VECTOR2LERP},
+     DOC_MATH_VECTOR2_MOVETOWARDSIP},
+    {"slerp", (PyCFunction)vector_slerp, METH_VARARGS, DOC_MATH_VECTOR2_SLERP},
+    {"lerp", (PyCFunction)vector_lerp, METH_VARARGS, DOC_MATH_VECTOR2_LERP},
     {"normalize", (PyCFunction)vector_normalize, METH_NOARGS,
-     DOC_VECTOR2NORMALIZE},
+     DOC_MATH_VECTOR2_NORMALIZE},
     {"normalize_ip", (PyCFunction)vector_normalize_ip, METH_NOARGS,
-     DOC_VECTOR2NORMALIZEIP},
+     DOC_MATH_VECTOR2_NORMALIZEIP},
     {"is_normalized", (PyCFunction)vector_is_normalized, METH_NOARGS,
-     DOC_VECTOR2ISNORMALIZED},
-    {"cross", (PyCFunction)vector2_cross, METH_O, DOC_VECTOR2CROSS},
-    {"dot", (PyCFunction)vector_dot, METH_O, DOC_VECTOR2DOT},
-    {"angle_to", (PyCFunction)vector2_angle_to, METH_O, DOC_VECTOR2ANGLETO},
+     DOC_MATH_VECTOR2_ISNORMALIZED},
+    {"cross", (PyCFunction)vector2_cross, METH_O, DOC_MATH_VECTOR2_CROSS},
+    {"dot", (PyCFunction)vector_dot, METH_O, DOC_MATH_VECTOR2_DOT},
+    {"angle_to", (PyCFunction)vector2_angle_to, METH_O,
+     DOC_MATH_VECTOR2_ANGLETO},
     {"update", (PyCFunction)vector2_update, METH_VARARGS | METH_KEYWORDS,
-     DOC_VECTOR2UPDATE},
+     DOC_MATH_VECTOR2_UPDATE},
     {"scale_to_length", (PyCFunction)vector_scale_to_length, METH_O,
-     DOC_VECTOR2SCALETOLENGTH},
-    {"reflect", (PyCFunction)vector_reflect, METH_O, DOC_VECTOR2REFLECT},
+     DOC_MATH_VECTOR2_SCALETOLENGTH},
+    {"reflect", (PyCFunction)vector_reflect, METH_O, DOC_MATH_VECTOR2_REFLECT},
     {"reflect_ip", (PyCFunction)vector_reflect_ip, METH_O,
-     DOC_VECTOR2REFLECTIP},
+     DOC_MATH_VECTOR2_REFLECTIP},
     {"distance_to", (PyCFunction)vector_distance_to, METH_O,
-     DOC_VECTOR2DISTANCETO},
+     DOC_MATH_VECTOR2_DISTANCETO},
     {"distance_squared_to", (PyCFunction)vector_distance_squared_to, METH_O,
-     DOC_VECTOR2DISTANCESQUAREDTO},
+     DOC_MATH_VECTOR2_DISTANCESQUAREDTO},
     {"elementwise", (PyCFunction)vector_elementwise, METH_NOARGS,
-     DOC_VECTOR2ELEMENTWISE},
+     DOC_MATH_VECTOR2_ELEMENTWISE},
     {"as_polar", (PyCFunction)vector2_as_polar, METH_NOARGS,
-     DOC_VECTOR2ASPOLAR},
+     DOC_MATH_VECTOR2_ASPOLAR},
     {"from_polar", (PyCFunction)vector2_from_polar, METH_VARARGS,
-     DOC_VECTOR2FROMPOLAR},
-    {"project", (PyCFunction)vector2_project, METH_O, DOC_VECTOR2PROJECT},
-    {"copy", (PyCFunction)vector_copy, METH_NOARGS, DOC_VECTOR2COPY},
+     DOC_MATH_VECTOR2_FROMPOLAR},
+    {"project", (PyCFunction)vector2_project, METH_O,
+     DOC_MATH_VECTOR2_PROJECT},
+    {"copy", (PyCFunction)vector_copy, METH_NOARGS, DOC_MATH_VECTOR2_COPY},
     {"__copy__", (PyCFunction)vector_copy, METH_NOARGS, NULL},
-    {"clamp_magnitude", (PyCFunction)vector_clamp_magnitude,
-     METH_VARARGS | METH_KEYWORDS, DOC_VECTOR2CLAMPMAGNITUDE},
+    {"clamp_magnitude", (PyCFunction)vector_clamp_magnitude, METH_FASTCALL,
+     DOC_MATH_VECTOR2_CLAMPMAGNITUDE},
     {"clamp_magnitude_ip", (PyCFunction)vector_clamp_magnitude_ip,
-     METH_VARARGS | METH_KEYWORDS, DOC_VECTOR2CLAMPMAGNITUDEIP},
+     METH_FASTCALL, DOC_MATH_VECTOR2_CLAMPMAGNITUDEIP},
     {"__safe_for_unpickling__", (PyCFunction)vector_getsafepickle, METH_NOARGS,
      NULL},
     {"__reduce__", (PyCFunction)vector2_reduce, METH_NOARGS, NULL},
+    {"__round__", (PyCFunction)vector___round__, METH_VARARGS, NULL},
 
     {NULL} /* Sentinel */
 };
@@ -2489,7 +2568,7 @@ static PyTypeObject pgVector2_Type = {
     .tp_getattro = (getattrofunc)vector_getAttr_swizzle,
     .tp_setattro = (setattrofunc)vector_setAttr_swizzle,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = DOC_PYGAMEMATHVECTOR2,
+    .tp_doc = DOC_MATH_VECTOR2,
     .tp_richcompare = (richcmpfunc)vector_richcompare,
     .tp_iter = vector_iter,
     .tp_methods = vector2_methods,
@@ -2696,7 +2775,8 @@ _vector3_rotate_helper(double *dst_coords, const double *src_coords,
                 PyErr_SetString(
                     PyExc_RuntimeError,
                     "Please report this bug in vector3_rotate_helper to "
-                    "the developers at github.com/pygame/pygame/issues");
+                    "the developers at "
+                    "github.com/pygame-community/pygame-ce/issues");
                 return 0;
         }
     }
@@ -2747,10 +2827,12 @@ vector3_rotate_rad(pgVector *self, PyObject *args)
     }
 
     ret = _vector_subtype_new(self);
-    if (ret == NULL ||
-        !_vector3_rotate_helper(ret->coords, self->coords, axis_coords, angle,
+    if (ret == NULL) {
+        return NULL;
+    }
+    if (!_vector3_rotate_helper(ret->coords, self->coords, axis_coords, angle,
                                 self->epsilon)) {
-        Py_XDECREF(ret);
+        Py_DECREF(ret);
         return NULL;
     }
     return (PyObject *)ret;
@@ -2817,10 +2899,12 @@ vector3_rotate(pgVector *self, PyObject *args)
     }
 
     ret = _vector_subtype_new(self);
-    if (ret == NULL ||
-        !_vector3_rotate_helper(ret->coords, self->coords, axis_coords, angle,
+    if (ret == NULL) {
+        return NULL;
+    }
+    if (!_vector3_rotate_helper(ret->coords, self->coords, axis_coords, angle,
                                 self->epsilon)) {
-        Py_XDECREF(ret);
+        Py_DECREF(ret);
         return NULL;
     }
     return (PyObject *)ret;
@@ -3292,91 +3376,99 @@ vector3_reduce(PyObject *oself, PyObject *_null)
 }
 
 static PyMethodDef vector3_methods[] = {
-    {"length", (PyCFunction)vector_length, METH_NOARGS, DOC_VECTOR3LENGTH},
+    {"length", (PyCFunction)vector_length, METH_NOARGS,
+     DOC_MATH_VECTOR3_LENGTH},
     {"length_squared", (PyCFunction)vector_length_squared, METH_NOARGS,
-     DOC_VECTOR3LENGTHSQUARED},
+     DOC_MATH_VECTOR3_LENGTHSQUARED},
     {"magnitude", (PyCFunction)vector_length, METH_NOARGS,
-     DOC_VECTOR3MAGNITUDE},
+     DOC_MATH_VECTOR3_MAGNITUDE},
     {"magnitude_squared", (PyCFunction)vector_length_squared, METH_NOARGS,
-     DOC_VECTOR3MAGNITUDESQUARED},
-    {"rotate", (PyCFunction)vector3_rotate, METH_VARARGS, DOC_VECTOR3ROTATE},
+     DOC_MATH_VECTOR3_MAGNITUDESQUARED},
+    {"rotate", (PyCFunction)vector3_rotate, METH_VARARGS,
+     DOC_MATH_VECTOR3_ROTATE},
     {"rotate_ip", (PyCFunction)vector3_rotate_ip, METH_VARARGS,
-     DOC_VECTOR3ROTATEIP},
+     DOC_MATH_VECTOR3_ROTATEIP},
     {"rotate_rad", (PyCFunction)vector3_rotate_rad, METH_VARARGS,
-     DOC_VECTOR3ROTATERAD},
+     DOC_MATH_VECTOR3_ROTATERAD},
     {"rotate_rad_ip", (PyCFunction)vector3_rotate_rad_ip, METH_VARARGS,
-     DOC_VECTOR3ROTATERADIP},
+     DOC_MATH_VECTOR3_ROTATERADIP},
     {"rotate_ip_rad", (PyCFunction)vector3_rotate_ip_rad, METH_VARARGS,
-     DOC_VECTOR3ROTATEIPRAD},
-    {"rotate_x", (PyCFunction)vector3_rotate_x, METH_O, DOC_VECTOR3ROTATEX},
+     DOC_MATH_VECTOR3_ROTATEIPRAD},
+    {"rotate_x", (PyCFunction)vector3_rotate_x, METH_O,
+     DOC_MATH_VECTOR3_ROTATEX},
     {"rotate_x_ip", (PyCFunction)vector3_rotate_x_ip, METH_O,
-     DOC_VECTOR3ROTATEXIP},
+     DOC_MATH_VECTOR3_ROTATEXIP},
     {"rotate_x_rad", (PyCFunction)vector3_rotate_x_rad, METH_O,
-     DOC_VECTOR3ROTATEXRAD},
+     DOC_MATH_VECTOR3_ROTATEXRAD},
     {"rotate_x_rad_ip", (PyCFunction)vector3_rotate_x_rad_ip, METH_O,
-     DOC_VECTOR3ROTATEXRADIP},
+     DOC_MATH_VECTOR3_ROTATEXRADIP},
     {"rotate_x_ip_rad", (PyCFunction)vector3_rotate_x_ip_rad, METH_O,
-     DOC_VECTOR3ROTATEXIPRAD},
-    {"rotate_y", (PyCFunction)vector3_rotate_y, METH_O, DOC_VECTOR3ROTATEY},
+     DOC_MATH_VECTOR3_ROTATEXIPRAD},
+    {"rotate_y", (PyCFunction)vector3_rotate_y, METH_O,
+     DOC_MATH_VECTOR3_ROTATEY},
     {"rotate_y_ip", (PyCFunction)vector3_rotate_y_ip, METH_O,
-     DOC_VECTOR3ROTATEYIP},
+     DOC_MATH_VECTOR3_ROTATEYIP},
     {"rotate_y_rad", (PyCFunction)vector3_rotate_y_rad, METH_O,
-     DOC_VECTOR3ROTATEYRAD},
+     DOC_MATH_VECTOR3_ROTATEYRAD},
     {"rotate_y_rad_ip", (PyCFunction)vector3_rotate_y_rad_ip, METH_O,
-     DOC_VECTOR3ROTATEYRADIP},
+     DOC_MATH_VECTOR3_ROTATEYRADIP},
     {"rotate_y_ip_rad", (PyCFunction)vector3_rotate_y_ip_rad, METH_O,
-     DOC_VECTOR3ROTATEYIPRAD},
-    {"rotate_z", (PyCFunction)vector3_rotate_z, METH_O, DOC_VECTOR3ROTATEZ},
+     DOC_MATH_VECTOR3_ROTATEYIPRAD},
+    {"rotate_z", (PyCFunction)vector3_rotate_z, METH_O,
+     DOC_MATH_VECTOR3_ROTATEZ},
     {"rotate_z_ip", (PyCFunction)vector3_rotate_z_ip, METH_O,
-     DOC_VECTOR3ROTATEZIP},
+     DOC_MATH_VECTOR3_ROTATEZIP},
     {"rotate_z_rad", (PyCFunction)vector3_rotate_z_rad, METH_O,
-     DOC_VECTOR3ROTATEZRAD},
+     DOC_MATH_VECTOR3_ROTATEZRAD},
     {"rotate_z_rad_ip", (PyCFunction)vector3_rotate_z_rad_ip, METH_O,
-     DOC_VECTOR3ROTATEZRADIP},
+     DOC_MATH_VECTOR3_ROTATEZRADIP},
     {"rotate_z_ip_rad", (PyCFunction)vector3_rotate_z_ip_rad, METH_O,
-     DOC_VECTOR3ROTATEZIPRAD},
+     DOC_MATH_VECTOR3_ROTATEZIPRAD},
     {"move_towards", (PyCFunction)vector_move_towards, METH_VARARGS,
-     DOC_VECTOR3MOVETOWARDS},
+     DOC_MATH_VECTOR3_MOVETOWARDS},
     {"move_towards_ip", (PyCFunction)vector_move_towards_ip, METH_VARARGS,
-     DOC_VECTOR3MOVETOWARDSIP},
-    {"slerp", (PyCFunction)vector_slerp, METH_VARARGS, DOC_VECTOR3SLERP},
-    {"lerp", (PyCFunction)vector_lerp, METH_VARARGS, DOC_VECTOR3LERP},
+     DOC_MATH_VECTOR3_MOVETOWARDSIP},
+    {"slerp", (PyCFunction)vector_slerp, METH_VARARGS, DOC_MATH_VECTOR3_SLERP},
+    {"lerp", (PyCFunction)vector_lerp, METH_VARARGS, DOC_MATH_VECTOR3_LERP},
     {"normalize", (PyCFunction)vector_normalize, METH_NOARGS,
-     DOC_VECTOR3NORMALIZE},
+     DOC_MATH_VECTOR3_NORMALIZE},
     {"normalize_ip", (PyCFunction)vector_normalize_ip, METH_NOARGS,
-     DOC_VECTOR3NORMALIZEIP},
+     DOC_MATH_VECTOR3_NORMALIZEIP},
     {"is_normalized", (PyCFunction)vector_is_normalized, METH_NOARGS,
-     DOC_VECTOR3ISNORMALIZED},
-    {"cross", (PyCFunction)vector3_cross, METH_O, DOC_VECTOR3CROSS},
-    {"dot", (PyCFunction)vector_dot, METH_O, DOC_VECTOR3DOT},
-    {"angle_to", (PyCFunction)vector3_angle_to, METH_O, DOC_VECTOR3ANGLETO},
+     DOC_MATH_VECTOR3_ISNORMALIZED},
+    {"cross", (PyCFunction)vector3_cross, METH_O, DOC_MATH_VECTOR3_CROSS},
+    {"dot", (PyCFunction)vector_dot, METH_O, DOC_MATH_VECTOR3_DOT},
+    {"angle_to", (PyCFunction)vector3_angle_to, METH_O,
+     DOC_MATH_VECTOR3_ANGLETO},
     {"update", (PyCFunction)vector3_update, METH_VARARGS | METH_KEYWORDS,
-     DOC_VECTOR3UPDATE},
+     DOC_MATH_VECTOR3_UPDATE},
     {"scale_to_length", (PyCFunction)vector_scale_to_length, METH_O,
-     DOC_VECTOR3SCALETOLENGTH},
-    {"reflect", (PyCFunction)vector_reflect, METH_O, DOC_VECTOR3REFLECT},
+     DOC_MATH_VECTOR3_SCALETOLENGTH},
+    {"reflect", (PyCFunction)vector_reflect, METH_O, DOC_MATH_VECTOR3_REFLECT},
     {"reflect_ip", (PyCFunction)vector_reflect_ip, METH_O,
-     DOC_VECTOR3REFLECTIP},
+     DOC_MATH_VECTOR3_REFLECTIP},
     {"distance_to", (PyCFunction)vector_distance_to, METH_O,
-     DOC_VECTOR3DISTANCETO},
+     DOC_MATH_VECTOR3_DISTANCETO},
     {"distance_squared_to", (PyCFunction)vector_distance_squared_to, METH_O,
-     DOC_VECTOR3DISTANCESQUAREDTO},
+     DOC_MATH_VECTOR3_DISTANCESQUAREDTO},
     {"elementwise", (PyCFunction)vector_elementwise, METH_NOARGS,
-     DOC_VECTOR3ELEMENTWISE},
+     DOC_MATH_VECTOR3_ELEMENTWISE},
     {"as_spherical", (PyCFunction)vector3_as_spherical, METH_NOARGS,
-     DOC_VECTOR3ASSPHERICAL},
+     DOC_MATH_VECTOR3_ASSPHERICAL},
     {"from_spherical", (PyCFunction)vector3_from_spherical, METH_VARARGS,
-     DOC_VECTOR3FROMSPHERICAL},
-    {"project", (PyCFunction)vector3_project, METH_O, DOC_VECTOR3PROJECT},
-    {"copy", (PyCFunction)vector_copy, METH_NOARGS, DOC_VECTOR3COPY},
+     DOC_MATH_VECTOR3_FROMSPHERICAL},
+    {"project", (PyCFunction)vector3_project, METH_O,
+     DOC_MATH_VECTOR3_PROJECT},
+    {"copy", (PyCFunction)vector_copy, METH_NOARGS, DOC_MATH_VECTOR3_COPY},
     {"__copy__", (PyCFunction)vector_copy, METH_NOARGS, NULL},
-    {"clamp_magnitude", (PyCFunction)vector_clamp_magnitude,
-     METH_VARARGS | METH_KEYWORDS, DOC_VECTOR3CLAMPMAGNITUDE},
+    {"clamp_magnitude", (PyCFunction)vector_clamp_magnitude, METH_FASTCALL,
+     DOC_MATH_VECTOR3_CLAMPMAGNITUDE},
     {"clamp_magnitude_ip", (PyCFunction)vector_clamp_magnitude_ip,
-     METH_VARARGS | METH_KEYWORDS, DOC_VECTOR3CLAMPMAGNITUDEIP},
+     METH_FASTCALL, DOC_MATH_VECTOR3_CLAMPMAGNITUDEIP},
     {"__safe_for_unpickling__", (PyCFunction)vector_getsafepickle, METH_NOARGS,
      NULL},
     {"__reduce__", (PyCFunction)vector3_reduce, METH_NOARGS, NULL},
+    {"__round__", (PyCFunction)vector___round__, METH_VARARGS, NULL},
 
     {NULL} /* Sentinel */
 };
@@ -3404,7 +3496,7 @@ static PyTypeObject pgVector3_Type = {
     .tp_getattro = (getattrofunc)vector_getAttr_swizzle,
     .tp_setattro = (setattrofunc)vector_setAttr_swizzle,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = DOC_PYGAMEMATHVECTOR3,
+    .tp_doc = DOC_MATH_VECTOR3,
     .tp_richcompare = (richcmpfunc)vector_richcompare,
     .tp_iter = vector_iter,
     .tp_methods = vector3_methods,
@@ -4127,8 +4219,6 @@ math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     return value;
 }
 
-PG_WRAP_FASTCALL_FUNC(math_clamp, PyObject);
-
 static PyObject *
 math_enable_swizzling(pgVector *self, PyObject *_null)
 {
@@ -4156,8 +4246,7 @@ math_disable_swizzling(pgVector *self, PyObject *_null)
 }
 
 static PyMethodDef _math_methods[] = {
-    {"clamp", (PyCFunction)PG_FASTCALL_NAME(math_clamp), PG_FASTCALL,
-     DOC_PYGAMEMATHCLAMP},
+    {"clamp", (PyCFunction)math_clamp, METH_FASTCALL, DOC_MATH_CLAMP},
     {"enable_swizzling", (PyCFunction)math_enable_swizzling, METH_NOARGS,
      "Deprecated, will be removed in a future version"},
     {"disable_swizzling", (PyCFunction)math_disable_swizzling, METH_NOARGS,
@@ -4180,7 +4269,7 @@ MODINIT_DEFINE(math)
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "math",
-                                         DOC_PYGAMEMATH,
+                                         DOC_MATH,
                                          -1,
                                          _math_methods,
                                          NULL,

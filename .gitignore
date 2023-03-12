@@ -35,6 +35,7 @@
 # Other
 envdev*
 .virtualenv*
+*venv*
 buildconfig/manylinux-build/wheelhouse/
 anenv
 dist
@@ -42,3 +43,4 @@ dist
 *.egg-info/
 *.so
 __pycache__
+_headers/*

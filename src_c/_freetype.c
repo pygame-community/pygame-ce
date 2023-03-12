@@ -45,7 +45,7 @@ _ft_quit(PyObject *, PyObject *);
 static PyObject *
 _ft_init(PyObject *, PyObject *, PyObject *);
 static PyObject *
-_ft_get_version(PyObject *, PyObject *);
+_ft_get_version(PyObject *, PyObject *, PyObject *);
 static PyObject *
 _ft_get_error(PyObject *, PyObject *);
 static PyObject *
@@ -487,22 +487,22 @@ static PyMethodDef _ft_methods[] = {
     {"_internal_mod_init", (PyCFunction)_ft_autoinit, METH_NOARGS,
      "auto initialize function for _freetype"},
     {"init", (PyCFunction)_ft_init, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEFREETYPEINIT},
-    {"quit", (PyCFunction)_ft_quit, METH_NOARGS, DOC_PYGAMEFREETYPEQUIT},
-    {"get_init", _ft_get_init, METH_NOARGS, DOC_PYGAMEFREETYPEGETINIT},
+     DOC_FREETYPE_INIT},
+    {"quit", (PyCFunction)_ft_quit, METH_NOARGS, DOC_FREETYPE_QUIT},
+    {"get_init", _ft_get_init, METH_NOARGS, DOC_FREETYPE_GETINIT},
     {"was_init", _ft_get_init, METH_NOARGS,
-     DOC_PYGAMEFREETYPEWASINIT},  // DEPRECATED
-    {"get_error", _ft_get_error, METH_NOARGS, DOC_PYGAMEFREETYPEGETERROR},
-    {"get_version", _ft_get_version, METH_NOARGS,
-     DOC_PYGAMEFREETYPEGETVERSION},
+     DOC_FREETYPE_WASINIT},  // DEPRECATED
+    {"get_error", _ft_get_error, METH_NOARGS, DOC_FREETYPE_GETERROR},
+    {"get_version", (PyCFunction)_ft_get_version, METH_VARARGS | METH_KEYWORDS,
+     DOC_FREETYPE_GETVERSION},
     {"get_cache_size", _ft_get_cache_size, METH_NOARGS,
-     DOC_PYGAMEFREETYPEGETCACHESIZE},
+     DOC_FREETYPE_GETCACHESIZE},
     {"get_default_resolution", _ft_get_default_resolution, METH_NOARGS,
-     DOC_PYGAMEFREETYPEGETDEFAULTRESOLUTION},
+     DOC_FREETYPE_GETDEFAULTRESOLUTION},
     {"set_default_resolution", _ft_set_default_resolution, METH_VARARGS,
-     DOC_PYGAMEFREETYPESETDEFAULTRESOLUTION},
+     DOC_FREETYPE_SETDEFAULTRESOLUTION},
     {"get_default_font", _ft_get_default_font, METH_NOARGS,
-     DOC_PYGAMEFREETYPEGETDEFAULTFONT},
+     DOC_FREETYPE_GETDEFAULTFONT},
 
     {0, 0, 0, 0}};
 
@@ -511,27 +511,27 @@ static PyMethodDef _ft_methods[] = {
  */
 static PyMethodDef _ftfont_methods[] = {
     {"get_sized_height", (PyCFunction)_ftfont_getsizedheight, METH_VARARGS,
-     DOC_FONTGETSIZEDHEIGHT},
+     DOC_FREETYPE_FONT_GETSIZEDHEIGHT},
     {"get_sized_ascender", (PyCFunction)_ftfont_getsizedascender, METH_VARARGS,
-     DOC_FONTGETSIZEDASCENDER},
+     DOC_FREETYPE_FONT_GETSIZEDASCENDER},
     {"get_sized_descender", (PyCFunction)_ftfont_getsizeddescender,
-     METH_VARARGS, DOC_FONTGETSIZEDDESCENDER},
+     METH_VARARGS, DOC_FREETYPE_FONT_GETSIZEDDESCENDER},
     {"get_sized_glyph_height", (PyCFunction)_ftfont_getsizedglyphheight,
-     METH_VARARGS, DOC_FONTGETSIZEDGLYPHHEIGHT},
+     METH_VARARGS, DOC_FREETYPE_FONT_GETSIZEDGLYPHHEIGHT},
     {"get_rect", (PyCFunction)_ftfont_getrect, METH_VARARGS | METH_KEYWORDS,
-     DOC_FONTGETRECT},
+     DOC_FREETYPE_FONT_GETRECT},
     {"get_metrics", (PyCFunction)_ftfont_getmetrics,
-     METH_VARARGS | METH_KEYWORDS, DOC_FONTGETMETRICS},
+     METH_VARARGS | METH_KEYWORDS, DOC_FREETYPE_FONT_GETMETRICS},
     {"get_sizes", (PyCFunction)_ftfont_getsizes, METH_NOARGS,
-     DOC_FONTGETSIZES},
+     DOC_FREETYPE_FONT_GETSIZES},
     {"render", (PyCFunction)_ftfont_render, METH_VARARGS | METH_KEYWORDS,
-     DOC_FONTRENDER},
+     DOC_FREETYPE_FONT_RENDER},
     {"render_to", (PyCFunction)_ftfont_render_to, METH_VARARGS | METH_KEYWORDS,
-     DOC_FONTRENDERTO},
+     DOC_FREETYPE_FONT_RENDERTO},
     {"render_raw", (PyCFunction)_ftfont_render_raw,
-     METH_VARARGS | METH_KEYWORDS, DOC_FONTRENDERRAW},
+     METH_VARARGS | METH_KEYWORDS, DOC_FREETYPE_FONT_RENDERRAW},
     {"render_raw_to", (PyCFunction)_ftfont_render_raw_to,
-     METH_VARARGS | METH_KEYWORDS, DOC_FONTRENDERRAWTO},
+     METH_VARARGS | METH_KEYWORDS, DOC_FREETYPE_FONT_RENDERRAWTO},
 
     {0, 0, 0, 0}};
 
@@ -539,57 +539,62 @@ static PyMethodDef _ftfont_methods[] = {
  * FREETYPE FONT GETTERS/SETTERS TABLE
  */
 static PyGetSetDef _ftfont_getsets[] = {
-    {"size", (getter)_ftfont_getsize, (setter)_ftfont_setsize, DOC_FONTSIZE,
-     0},
+    {"size", (getter)_ftfont_getsize, (setter)_ftfont_setsize,
+     DOC_FREETYPE_FONT_SIZE, 0},
     {"style", (getter)_ftfont_getstyle, (setter)_ftfont_setstyle,
-     DOC_FONTSTYLE, 0},
-    {"height", (getter)_ftfont_getfontmetric, 0, DOC_FONTHEIGHT,
+     DOC_FREETYPE_FONT_STYLE, 0},
+    {"height", (getter)_ftfont_getfontmetric, 0, DOC_FREETYPE_FONT_HEIGHT,
      (void *)_PGFT_Font_GetHeight},
-    {"ascender", (getter)_ftfont_getfontmetric, 0, DOC_FONTASCENDER,
+    {"ascender", (getter)_ftfont_getfontmetric, 0, DOC_FREETYPE_FONT_ASCENDER,
      (void *)_PGFT_Font_GetAscender},
-    {"descender", (getter)_ftfont_getfontmetric, 0, DOC_FONTASCENDER,
-     (void *)_PGFT_Font_GetDescender},
-    {"name", (getter)_ftfont_getname, 0, DOC_FONTNAME, 0},
-    {"path", (getter)_ftfont_getpath, 0, DOC_FONTPATH, 0},
-    {"scalable", (getter)_ftfont_getscalable, 0, DOC_FONTSCALABLE, 0},
-    {"fixed_width", (getter)_ftfont_getfixedwidth, 0, DOC_FONTFIXEDWIDTH, 0},
-    {"fixed_sizes", (getter)_ftfont_getfixedsizes, 0, DOC_FONTFIXEDSIZES, 0},
+    {"descender", (getter)_ftfont_getfontmetric, 0,
+     DOC_FREETYPE_FONT_DESCENDER, (void *)_PGFT_Font_GetDescender},
+    {"name", (getter)_ftfont_getname, 0, DOC_FREETYPE_FONT_NAME, 0},
+    {"path", (getter)_ftfont_getpath, 0, DOC_FREETYPE_FONT_PATH, 0},
+    {"scalable", (getter)_ftfont_getscalable, 0, DOC_FREETYPE_FONT_SCALABLE,
+     0},
+    {"fixed_width", (getter)_ftfont_getfixedwidth, 0,
+     DOC_FREETYPE_FONT_FIXEDWIDTH, 0},
+    {"fixed_sizes", (getter)_ftfont_getfixedsizes, 0,
+     DOC_FREETYPE_FONT_FIXEDSIZES, 0},
     {"antialiased", (getter)_ftfont_getrender_flag,
-     (setter)_ftfont_setrender_flag, DOC_FONTANTIALIASED,
+     (setter)_ftfont_setrender_flag, DOC_FREETYPE_FONT_ANTIALIASED,
      (void *)FT_RFLAG_ANTIALIAS},
     {"kerning", (getter)_ftfont_getrender_flag, (setter)_ftfont_setrender_flag,
-     DOC_FONTKERNING, (void *)FT_RFLAG_KERNING},
+     DOC_FREETYPE_FONT_KERNING, (void *)FT_RFLAG_KERNING},
     {"vertical", (getter)_ftfont_getrender_flag,
-     (setter)_ftfont_setrender_flag, DOC_FONTVERTICAL,
+     (setter)_ftfont_setrender_flag, DOC_FREETYPE_FONT_VERTICAL,
      (void *)FT_RFLAG_VERTICAL},
     {"pad", (getter)_ftfont_getrender_flag, (setter)_ftfont_setrender_flag,
-     DOC_FONTPAD, (void *)FT_RFLAG_PAD},
+     DOC_FREETYPE_FONT_PAD, (void *)FT_RFLAG_PAD},
     {"oblique", (getter)_ftfont_getstyle_flag, (setter)_ftfont_setstyle_flag,
-     DOC_FONTOBLIQUE, (void *)FT_STYLE_OBLIQUE},
+     DOC_FREETYPE_FONT_OBLIQUE, (void *)FT_STYLE_OBLIQUE},
     {"strong", (getter)_ftfont_getstyle_flag, (setter)_ftfont_setstyle_flag,
-     DOC_FONTSTRONG, (void *)FT_STYLE_STRONG},
+     DOC_FREETYPE_FONT_STRONG, (void *)FT_STYLE_STRONG},
     {"underline", (getter)_ftfont_getstyle_flag, (setter)_ftfont_setstyle_flag,
-     DOC_FONTUNDERLINE, (void *)FT_STYLE_UNDERLINE},
+     DOC_FREETYPE_FONT_UNDERLINE, (void *)FT_STYLE_UNDERLINE},
     {"wide", (getter)_ftfont_getstyle_flag, (setter)_ftfont_setstyle_flag,
-     DOC_FONTWIDE, (void *)FT_STYLE_WIDE},
+     DOC_FREETYPE_FONT_WIDE, (void *)FT_STYLE_WIDE},
     {"strength", (getter)_ftfont_getstrength, (setter)_ftfont_setstrength,
-     DOC_FONTSTRENGTH, 0},
+     DOC_FREETYPE_FONT_STRENGTH, 0},
     {"underline_adjustment", (getter)_ftfont_getunderlineadjustment,
-     (setter)_ftfont_setunderlineadjustment, DOC_FONTUNDERLINEADJUSTMENT, 0},
+     (setter)_ftfont_setunderlineadjustment,
+     DOC_FREETYPE_FONT_UNDERLINEADJUSTMENT, 0},
     {"ucs4", (getter)_ftfont_getrender_flag, (setter)_ftfont_setrender_flag,
-     DOC_FONTUCS4, (void *)FT_RFLAG_UCS4},
+     DOC_FREETYPE_FONT_UCS4, (void *)FT_RFLAG_UCS4},
     {"use_bitmap_strikes", (getter)_ftfont_getrender_flag,
-     (setter)_ftfont_setrender_flag, DOC_FONTUSEBITMAPSTRIKES,
+     (setter)_ftfont_setrender_flag, DOC_FREETYPE_FONT_USEBITMAPSTRIKES,
      (void *)FT_RFLAG_USE_BITMAP_STRIKES},
-    {"resolution", (getter)_ftfont_getresolution, 0, DOC_FONTRESOLUTION, 0},
+    {"resolution", (getter)_ftfont_getresolution, 0,
+     DOC_FREETYPE_FONT_RESOLUTION, 0},
     {"rotation", (getter)_ftfont_getrotation, (setter)_ftfont_setrotation,
-     DOC_FONTROTATION, 0},
+     DOC_FREETYPE_FONT_ROTATION, 0},
     {"fgcolor", (getter)_ftfont_getfgcolor, (setter)_ftfont_setfgcolor,
-     DOC_FONTFGCOLOR, 0},
+     DOC_FREETYPE_FONT_FGCOLOR, 0},
     {"bgcolor", (getter)_ftfont_getbgcolor, (setter)_ftfont_setbgcolor,
-     DOC_FONTBGCOLOR, 0},
+     DOC_FREETYPE_FONT_BGCOLOR, 0},
     {"origin", (getter)_ftfont_getrender_flag, (setter)_ftfont_setrender_flag,
-     DOC_FONTORIGIN, (void *)FT_RFLAG_ORIGIN},
+     DOC_FREETYPE_FONT_ORIGIN, (void *)FT_RFLAG_ORIGIN},
 #if defined(PGFT_DEBUG_CACHE)
     {"_debug_cache_stats", (getter)_ftfont_getdebugcachestats, 0,
      "_debug cache fields as a tuple", 0},
@@ -600,22 +605,19 @@ static PyGetSetDef _ftfont_getsets[] = {
 /*
  * FREETYPE FONT BASE TYPE TABLE
  */
-#define FULL_TYPE_NAME MODULE_NAME "." FONT_TYPE_NAME
 
 PyTypeObject pgFont_Type = {
-    PyVarObject_HEAD_INIT(0, 0).tp_name = FULL_TYPE_NAME,
+    PyVarObject_HEAD_INIT(0, 0).tp_name = "pygame.freetype.Font",
     .tp_basicsize = sizeof(pgFontObject),
     .tp_dealloc = (destructor)_ftfont_dealloc,
     .tp_repr = (reprfunc)_ftfont_repr,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = DOC_PYGAMEFREETYPEFONT,
+    .tp_doc = DOC_FREETYPE_FONT,
     .tp_methods = _ftfont_methods,
     .tp_getset = _ftfont_getsets,
     .tp_init = (initproc)_ftfont_init,
     .tp_new = (newfunc)_ftfont_new,
 };
-
-#undef FULL_TYPE_NAME
 
 /****************************************************
  * CONSTRUCTOR/INIT/DESTRUCTOR
@@ -807,7 +809,7 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
         Py_INCREF(file);
     if (!PG_CHECK_THREADS())
         goto end;
-    source = pgRWops_FromObject(file);
+    source = pgRWops_FromObject(file, NULL);
     if (!source) {
         goto end;
     }
@@ -2039,11 +2041,50 @@ _ft_get_error(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
-_ft_get_version(PyObject *self, PyObject *_null)
+_ft_get_version(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    /* Return the linked FreeType2 version */
-    return Py_BuildValue("iii", FREETYPE_MAJOR, FREETYPE_MINOR,
-                         FREETYPE_PATCH);
+    int linked = 1;
+    static char *keywords[] = {"linked", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", keywords, &linked)) {
+        return NULL;
+    }
+
+    if (linked) {
+        /*
+         * The FreeType library is being initialized here separately from the
+         * initialization of the `pygame.freetype` module so that the linked
+         * version can always be obtained. This does not affect the
+         * initialization state of `pygame.freetype` itself.
+         *
+         * The reason this is needed is because if freetype has not been
+         * initialized, then a segmentation fault can happen. The alternative
+         * would be to return something predefined to mean something akin to
+         * "Unknown", but as this function is meant for debugging purposes, it
+         * seems like a good idea to always be able to retrieve the linked
+         * FreeType version.
+         */
+        FT_Library lib;
+        int err = FT_Init_FreeType(&lib);
+        if (err) {
+            PyErr_SetString(PyExc_RuntimeError,
+                            "FreeType could not be initialized");
+
+            FT_Done_FreeType(lib);
+
+            return NULL;
+        }
+        FT_Int major, minor, patch;
+        FT_Library_Version(lib, &major, &minor, &patch);
+
+        FT_Done_FreeType(lib);
+
+        return Py_BuildValue("iii", major, minor, patch);
+    }
+    else {
+        return Py_BuildValue("iii", FREETYPE_MAJOR, FREETYPE_MINOR,
+                             FREETYPE_PATCH);
+    }
 }
 
 static PyObject *
@@ -2108,7 +2149,7 @@ _ft_clear(PyObject *mod)
  ****************************************************/
 #ifndef PYPY_VERSION
 struct PyModuleDef _freetypemodule = {
-    PyModuleDef_HEAD_INIT,  MODULE_NAME, DOC_PYGAMEFREETYPE,
+    PyModuleDef_HEAD_INIT,  MODULE_NAME, DOC_FREETYPE,
     sizeof(_FreeTypeState), _ft_methods, 0,
     _ft_traverse,           _ft_clear,   0};
 #else  /* PYPY_VERSION */
@@ -2116,7 +2157,7 @@ _FreeTypeState _modstate;
 struct PyModuleDef _freetypemodule = {
     PyModuleDef_HEAD_INIT,
     MODULE_NAME,
-    DOC_PYGAMEFREETYPE,
+    DOC_FREETYPE,
     -1 /* PyModule_GetState() not implemented */,
     _ft_methods,
     0,

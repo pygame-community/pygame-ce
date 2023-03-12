@@ -173,8 +173,9 @@ pg_SetDefaultWindowSurface(pgSurfaceObject *);
 static char *
 pg_EnvShouldBlendAlphaSDL2(void);
 
+/* compare compiled to linked, raise python error on incompatibility */
 static int
-pg_CheckSDLVersions(void) /*compare compiled to linked*/
+pg_CheckSDLVersions(void)
 {
     SDL_version compiled;
     SDL_version linked;
@@ -182,34 +183,22 @@ pg_CheckSDLVersions(void) /*compare compiled to linked*/
     SDL_VERSION(&compiled);
     SDL_GetVersion(&linked);
 
-    /*only check the major and minor version numbers.
-      we will relax any differences in 'patch' version.*/
+    /* only check the major version, in general major version is bumped for ABI
+     * incompatible changes */
+    if (compiled.major != linked.major) {
+        PyErr_Format(PyExc_RuntimeError,
+                     "ABI incompatibility detected! SDL compiled with "
+                     "%d.%d.%d, linked to %d.%d.%d (major versions should "
+                     "have matched)",
+                     compiled.major, compiled.minor, compiled.patch,
+                     linked.major, linked.minor, linked.patch);
+        return 0;
+    }
 
-    if (compiled.major != linked.major || compiled.minor != linked.minor) {
-        PyErr_Format(PyExc_RuntimeError,
-                     "SDL compiled with version %d.%d.%d, linked to %d.%d.%d",
-                     compiled.major, compiled.minor, compiled.patch,
-                     linked.major, linked.minor, linked.patch);
-        return 0;
-    }
-    else if (linked.major == 2 && linked.minor == 0 && linked.patch < 14 &&
-             compiled.patch >=
-                 14) {  // major and minor versions match, check edge case
-        /* SDL 2.0.14 replaces some macros with symbols, see
-         * https://github.com/libsdl-org/SDL/commit/316ff3847b4d9d87d9b0aab15321461db0e8ae0b
-         */
-        PyErr_Format(PyExc_RuntimeError,
-                     "Known SDL incompatibility detected! (compiled with "
-                     "version %d.%d.%d, linked to %d.%d.%d)",
-                     compiled.major, compiled.minor, compiled.patch,
-                     linked.major, linked.minor, linked.patch);
-        return 0;
-    }
-    else if ((linked.major == compiled.major &&
-              linked.minor == compiled.minor &&
-              linked.patch < compiled.patch) ||
-             (linked.major == compiled.major &&
-              linked.minor < compiled.minor)) {
+    /* Basically, this is compiled_version > linked_version case, which we
+     * don't allow */
+    if ((linked.minor == compiled.minor && linked.patch < compiled.patch) ||
+        linked.minor < compiled.minor) {
         /* We do some ifdefs to support different SDL versions at compile time.
            We use newer API only when available.
            Downgrading via dynamic API probably breaks this.*/
@@ -341,10 +330,6 @@ pg_init(PyObject *self, PyObject *_null)
         /* IMPPREFIX "_sdl2.controller", Is this required? Comment for now*/
         NULL};
 
-    if (!pg_CheckSDLVersions()) {
-        return NULL;
-    }
-
     /*nice to initialize timer, so startup time will reflec pg_init() time*/
 #if defined(WITH_THREAD) && !defined(MS_WIN32) && defined(SDL_INIT_EVENTTHREAD)
     pg_sdl_was_init = SDL_Init(SDL_INIT_EVENTTHREAD | SDL_INIT_TIMER |
@@ -385,11 +370,23 @@ pg_atexit_quit(void)
 }
 
 static PyObject *
-pg_get_sdl_version(PyObject *self, PyObject *_null)
+pg_get_sdl_version(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+    int linked = 1; /* Default is linked version. */
     SDL_version v;
 
-    SDL_GetVersion(&v);
+    static char *keywords[] = {"linked", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", keywords, &linked)) {
+        return NULL; /* Exception already set. */
+    }
+
+    if (linked) {
+        SDL_GetVersion(&v);
+    }
+    else {
+        SDL_VERSION(&v);
+    }
     return Py_BuildValue("iii", v.major, v.minor, v.patch);
 }
 
@@ -2069,18 +2066,16 @@ pg_uninstall_parachute(void)
 /* bind functions to python */
 
 static PyMethodDef _base_methods[] = {
-    {"init", (PyCFunction)pg_init, METH_NOARGS, DOC_PYGAMEINIT},
-    {"quit", (PyCFunction)pg_quit, METH_NOARGS, DOC_PYGAMEQUIT},
-    {"get_init", (PyCFunction)pg_base_get_init, METH_NOARGS,
-     DOC_PYGAMEGETINIT},
-    {"register_quit", (PyCFunction)pg_register_quit, METH_O,
-     DOC_PYGAMEREGISTERQUIT},
-    {"get_error", (PyCFunction)pg_get_error, METH_NOARGS, DOC_PYGAMEGETERROR},
-    {"set_error", pg_set_error, METH_VARARGS, DOC_PYGAMESETERROR},
-    {"get_sdl_version", (PyCFunction)pg_get_sdl_version, METH_NOARGS,
-     DOC_PYGAMEGETSDLVERSION},
+    {"init", (PyCFunction)pg_init, METH_NOARGS, DOC_INIT},
+    {"quit", (PyCFunction)pg_quit, METH_NOARGS, DOC_QUIT},
+    {"get_init", (PyCFunction)pg_base_get_init, METH_NOARGS, DOC_GETINIT},
+    {"register_quit", (PyCFunction)pg_register_quit, METH_O, DOC_REGISTERQUIT},
+    {"get_error", (PyCFunction)pg_get_error, METH_NOARGS, DOC_GETERROR},
+    {"set_error", pg_set_error, METH_VARARGS, DOC_SETERROR},
+    {"get_sdl_version", (PyCFunction)pg_get_sdl_version,
+     METH_VARARGS | METH_KEYWORDS, DOC_GETSDLVERSION},
     {"get_sdl_byteorder", (PyCFunction)pg_get_sdl_byteorder, METH_NOARGS,
-     DOC_PYGAMEGETSDLBYTEORDER},
+     DOC_GETSDLBYTEORDER},
 
     {"get_array_interface", (PyCFunction)pg_get_array_interface, METH_O,
      "return an array struct interface as an interface dictionary"},
@@ -2175,6 +2170,7 @@ MODINIT_DEFINE(base)
     c_api[21] = pg_GetDefaultWindowSurface;
     c_api[22] = pg_SetDefaultWindowSurface;
     c_api[23] = pg_EnvShouldBlendAlphaSDL2;
+
 #define FILLED_SLOTS 24
 
 #if PYGAMEAPI_BASE_NUMSLOTS != FILLED_SLOTS
@@ -2211,13 +2207,14 @@ MODINIT_DEFINE(base)
     pg_install_parachute();
 #endif
 
-#ifdef MS_WIN32
-    SDL_RegisterApp("pygame", 0, GetModuleHandle(NULL));
-#endif
-
+    /* This must be called before calling any other SDL API */
     if (!pg_CheckSDLVersions()) {
         goto error;
     }
+
+#ifdef MS_WIN32
+    SDL_RegisterApp("pygame", 0, GetModuleHandle(NULL));
+#endif
 
     return module;
 

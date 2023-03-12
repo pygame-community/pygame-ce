@@ -72,25 +72,19 @@ NAMES_AND_EVENTS = (
     ("ControllerDeviceRemoved", pygame.CONTROLLERDEVICEREMOVED),
     ("ControllerDeviceMapped", pygame.CONTROLLERDEVICEREMAPPED),
     ("DropFile", pygame.DROPFILE),
+    ("AudioDeviceAdded", pygame.AUDIODEVICEADDED),
+    ("AudioDeviceRemoved", pygame.AUDIODEVICEREMOVED),
+    ("DropText", pygame.DROPTEXT),
+    ("DropBegin", pygame.DROPBEGIN),
+    ("DropComplete", pygame.DROPCOMPLETE),
 )
-
-# Add in any SDL 2.0.4 specific events.
-if pygame.get_sdl_version() >= (2, 0, 4):
-    NAMES_AND_EVENTS += (
-        ("AudioDeviceAdded", pygame.AUDIODEVICEADDED),
-        ("AudioDeviceRemoved", pygame.AUDIODEVICEREMOVED),
-    )
-
-# Add in any SDL 2.0.5 specific events.
-if pygame.get_sdl_version() >= (2, 0, 5):
-    NAMES_AND_EVENTS += (
-        ("DropText", pygame.DROPTEXT),
-        ("DropBegin", pygame.DROPBEGIN),
-        ("DropComplete", pygame.DROPCOMPLETE),
-    )
 
 
 class EventTypeTest(unittest.TestCase):
+    def test_Event_alias(self):
+        """Check if pygame.Event is present and the correct type."""
+        self.assertIs(pygame.Event, pygame.event.Event)
+
     def test_Event(self):
         """Ensure an Event object can be created."""
         e = pygame.event.Event(pygame.USEREVENT, some_attr=1, other_attr="1")
@@ -98,8 +92,8 @@ class EventTypeTest(unittest.TestCase):
         self.assertEqual(e.some_attr, 1)
         self.assertEqual(e.other_attr, "1")
 
-        # Event now uses tp_dictoffset and tp_members: request 62
-        # on Motherhamster Bugzilla.
+        # Event now uses tp_dictoffset and tp_members:
+        # https://github.com/pygame/pygame/issues/62
         self.assertEqual(e.type, pygame.USEREVENT)
         self.assertIs(e.dict, e.__dict__)
 

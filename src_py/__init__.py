@@ -21,10 +21,10 @@
 It is written on top of the excellent SDL library. This allows you
 to create fully featured games and multimedia programs in the python
 language. The package is highly portable, with games running on
-Windows, MacOS, OS X, BeOS, FreeBSD, IRIX, and Linux."""
+Windows, macOS, OS X, BeOS, FreeBSD, IRIX, and Linux."""
 
-import sys
 import os
+import sys
 
 # Choose Windows display driver
 if os.name == "nt":
@@ -33,7 +33,7 @@ if os.name == "nt":
     # pypy does not find the dlls, so we add package folder to PATH.
     os.environ["PATH"] = os.environ["PATH"] + ";" + pygame_dir
 
-    # windows store python does not find the dlls, so we run this
+    # Windows store python does not find the dlls, so we run this
     if sys.version_info > (3, 8):
         os.add_dll_directory(pygame_dir)  # only available in 3.8+
 
@@ -84,6 +84,40 @@ class MissingModule:
             print(message)
 
 
+# This is a special loader for WebAssembly platform
+# where pygame is in fact statically linked
+# mixing single phase (C) and multiphase modules (cython)
+if sys.platform in ("wasi", "emscripten"):
+    try:
+        import pygame_static
+    except ModuleNotFoundError:
+        pygame_static = None
+
+    if pygame_static:
+        pygame = sys.modules[__name__]
+
+        pygame.Color = pygame.color.Color
+
+        Vector2 = pygame.math.Vector2
+        Vector3 = pygame.math.Vector3
+
+        Rect = pygame.rect.Rect
+
+        BufferProxy = pygame.bufferproxy.BufferProxy
+
+        # cython modules use multiphase initialisation when not in builtin Inittab.
+
+        from pygame import _sdl2
+
+        import importlib.machinery
+
+        loader = importlib.machinery.FrozenImporter
+        spec = importlib.machinery.ModuleSpec("", loader)
+        pygame_static.import_cython(spec)
+        del loader, spec
+    del pygame_static
+
+
 # we need to import like this, each at a time. the cleanest way to import
 # our modules is with the import command (not the __import__ function)
 # isort: skip_file
@@ -93,6 +127,7 @@ from pygame.base import *  # pylint: disable=wildcard-import; lgtm[py/polluting-
 from pygame.constants import *  # now has __all__ pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.version import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.rect import Rect
+
 from pygame.rwobject import encode_string, encode_file_path
 import pygame.surflock
 import pygame.color
@@ -129,6 +164,7 @@ except (ImportError, OSError):
 
 try:
     import pygame.event
+    from pygame.event import Event
 except (ImportError, OSError):
     event = MissingModule("event", urgent=1)
 
@@ -139,6 +175,7 @@ except (ImportError, OSError):
 
 try:
     import pygame.joystick
+    from pygame.joystick import Joystick
 except (ImportError, OSError):
     joystick = MissingModule("joystick", urgent=1)
 
@@ -178,59 +215,6 @@ except (ImportError, OSError):
     pixelcopy = MissingModule("pixelcopy", urgent=1)
 
 
-def warn_unwanted_files():
-    """warn about unneeded old files"""
-
-    # a temporary hack to warn about camera.so and camera.pyd.
-    install_path = os.path.split(pygame.base.__file__)[0]
-    extension_ext = os.path.splitext(pygame.base.__file__)[1]
-
-    # here are the .so/.pyd files we need to ask to remove.
-    ext_to_remove = ["camera"]
-
-    # here are the .py/.pyo/.pyc files we need to ask to remove.
-    py_to_remove = ["color"]
-
-    # Don't warn on Symbian. The color.py is used as a wrapper.
-    if os.name == "e32":
-        py_to_remove = []
-
-    # See if any of the files are there.
-    extension_files = [f"{x}{extension_ext}" for x in ext_to_remove]
-
-    py_files = [
-        f"{x}{py_ext}" for py_ext in [".py", ".pyc", ".pyo"] for x in py_to_remove
-    ]
-
-    files = py_files + extension_files
-
-    unwanted_files = []
-    for f in files:
-        unwanted_files.append(os.path.join(install_path, f))
-
-    ask_remove = []
-    for f in unwanted_files:
-        if os.path.exists(f):
-            ask_remove.append(f)
-
-    if ask_remove:
-        message = "Detected old file(s).  Please remove the old files:\n"
-        message += " ".join(ask_remove)
-        message += "\nLeaving them there might break pygame.  Cheers!\n\n"
-
-        try:
-            import warnings
-
-            level = 4
-            warnings.warn(message, RuntimeWarning, level)
-        except ImportError:
-            print(message)
-
-
-# disable, because we hopefully don't need it.
-# warn_unwanted_files()
-
-
 try:
     from pygame.surface import Surface, SurfaceType
 except (ImportError, OSError):
@@ -268,6 +252,7 @@ except (ImportError, OSError):
 
 try:
     import pygame.time
+    from pygame.time import Clock
 except (ImportError, OSError):
     time = MissingModule("time", urgent=1)
 
@@ -288,6 +273,8 @@ try:
     import pygame.font
     import pygame.sysfont
 
+    from pygame.font import Font
+
     pygame.font.SysFont = pygame.sysfont.SysFont
     pygame.font.get_fonts = pygame.sysfont.get_fonts
     pygame.font.match_font = pygame.sysfont.match_font
@@ -305,6 +292,7 @@ except (ImportError, OSError):
 
 try:
     import pygame.mixer
+    from pygame.mixer import Channel
 except (ImportError, OSError):
     mixer = MissingModule("mixer", urgent=0)
 
@@ -324,14 +312,15 @@ except (ImportError, OSError):
     sndarray = MissingModule("sndarray", urgent=0)
 
 try:
-    import pygame.fastevent
+    import pygame._debug
+    from pygame._debug import print_debug_info
 except (ImportError, OSError):
-    fastevent = MissingModule("fastevent", urgent=0)
+    debug = MissingModule("_debug", urgent=0)
 
 try:
-    import pygame.context
+    import pygame.system
 except (ImportError, OSError):
-    context = MissingModule("context", urgent=0)
+    system = MissingModule("system", urgent=0)
 
 # there's also a couple "internal" modules not needed
 # by users, but putting them here helps "dependency finder"
@@ -393,11 +382,9 @@ copyreg.pickle(Color, __color_reduce, __color_constructor)
 # Thanks for supporting pygame. Without support now, there won't be pygame later.
 if "PYGAME_HIDE_SUPPORT_PROMPT" not in os.environ:
     print(
-        "pygame {} (SDL {}.{}.{}, Python {}.{}.{})".format(  # pylint: disable=consider-using-f-string
+        "pygame-ce {} (SDL {}.{}.{}, Python {}.{}.{})".format(  # pylint: disable=consider-using-f-string
             ver, *get_sdl_version() + sys.version_info[0:3]
         )
     )
-    print("Hello from the pygame community. https://www.pygame.org/contribute.html")
-
 # cleanup namespace
-del pygame, os, sys, MissingModule, copyreg, warn_unwanted_files, packager_imports
+del pygame, os, sys, MissingModule, copyreg, packager_imports

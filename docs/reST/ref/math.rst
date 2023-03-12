@@ -11,12 +11,12 @@
 The pygame math module currently provides Vector classes in two and three
 dimensions, ``Vector2`` and ``Vector3`` respectively.
 
-They support the following numerical operations: ``vec+vec``, ``vec-vec``, 
-``vec*number``, ``number*vec``, ``vec/number``, ``vec//number``, ``vec+=vec``, 
-``vec-=vec``, ``vec*=number``, ``vec/=number``, ``vec//=number``. 
+They support the following numerical operations: ``vec + vec``, ``vec - vec``, 
+``vec * number``, ``number * vec``, ``vec / number``, ``vec // number``, ``vec += vec``, 
+``vec -= vec``, ``vec *= number``, ``vec /= number``, ``vec //= number``, ``round(vec, ndigits=0)``. 
 
 All these operations will be performed elementwise.
-In addition ``vec*vec`` will perform a scalar-product (a.k.a. dot-product). 
+In addition ``vec * vec`` will perform a scalar-product (a.k.a. dot-product). 
 If you want to multiply every element from vector v with every element from 
 vector w you can use the elementwise method: ``v.elementwise() * w``
 
@@ -46,7 +46,8 @@ Multiple coordinates can be set using slices or swizzling
 .. versionadded:: 1.9.2pre
 .. versionchanged:: 1.9.4 Removed experimental notice.
 .. versionchanged:: 1.9.4 Allow scalar construction like GLSL Vector2(2) == Vector2(2.0, 2.0)
-.. versionchanged:: 1.9.4 :mod:`pygame.math` required import. More convenient ``pygame.Vector2`` and ``pygame.Vector3``.
+.. versionchanged:: 1.9.4 :mod:`pygame.math` import not required. More convenient ``pygame.Vector2`` and ``pygame.Vector3``.
+.. versionchanged:: 2.1.4 `round` returns a new vector with components rounded to the specified digits.
 
 .. function:: clamp
 
@@ -63,7 +64,7 @@ Multiple coordinates can be set using slices or swizzling
 .. class:: Vector2
 
    | :sl:`a 2-Dimensional Vector`
-   | :sg:`Vector2() -> Vector2`
+   | :sg:`Vector2() -> Vector2(0, 0)`
    | :sg:`Vector2(int) -> Vector2`
    | :sg:`Vector2(float) -> Vector2`
    | :sg:`Vector2(Vector2) -> Vector2`
@@ -406,8 +407,15 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`clamp_magnitude(max_length) -> Vector2`
       | :sg:`clamp_magnitude(min_length, max_length) -> Vector2`
 
-      Returns a new copy of a vector with the magnitude clamped between max_length and min_length. If
-      a min_length value is not assigned, then it will automatically be set to 0.
+      **Experimental:** feature still in development available for testing and feedback. It may change.
+      `Please leave clamp_magnitude feedback with authors <https://github.com/pygame/pygame/pull/2990>`_
+
+      Returns a new copy of a vector with the magnitude clamped between 
+      ``max_length`` and ``min_length``. If only one argument is passed, it is 
+      taken to be the ``max_length``
+
+      This function raises ``ValueError`` if ``min_length`` is greater than
+      ``max_length``, or if either of these values are negative.
 
       .. versionadded:: 2.1.3
 
@@ -420,8 +428,11 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`clamp_magnitude_ip(max_length) -> None`
       | :sg:`clamp_magnitude_ip(min_length, max_length) -> None`
 
-      Clamps the vector's magnitude between max_length and min_length. If a min_length value is not assigned,
-      then it will automatically be set to 0.
+      Clamps the vector's magnitude between ``max_length`` and ``min_length``.
+      If only one argument is passed, it is taken to be the ``max_length``
+
+      This function raises ``ValueError`` if ``min_length`` is greater than
+      ``max_length``, or if either of these values are negative.
 
       .. versionadded:: 2.1.3
 
@@ -483,7 +494,7 @@ Multiple coordinates can be set using slices or swizzling
 .. class:: Vector3
 
    | :sl:`a 3-Dimensional Vector`
-   | :sg:`Vector3() -> Vector3`
+   | :sg:`Vector3() -> Vector3(0, 0, 0)`
    | :sg:`Vector3(int) -> Vector3`
    | :sg:`Vector3(float) -> Vector3`
    | :sg:`Vector3(Vector3) -> Vector3`
@@ -1013,8 +1024,12 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`clamp_magnitude(max_length) -> Vector3`
       | :sg:`clamp_magnitude(min_length, max_length) -> Vector3`
 
-      Returns a new copy of a vector with the magnitude clamped between max_length and min_length. If
-      a min_length value is not assigned, then it will automatically be set to 0.
+      Returns a new copy of a vector with the magnitude clamped between 
+      ``max_length`` and ``min_length``. If only one argument is passed, it is 
+      taken to be the ``max_length``
+
+      This function raises ``ValueError`` if ``min_length`` is greater than
+      ``max_length``, or if either of these values are negative.
 
       .. versionadded:: 2.1.3
 
@@ -1027,8 +1042,11 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`clamp_magnitude_ip(max_length) -> None`
       | :sg:`clamp_magnitude_ip(min_length, max_length) -> None`
 
-      Clamps the vector's magnitude between max_length and min_length. If a min_length value is not assigned,
-      then it will automatically be set to 0.
+      Clamps the vector's magnitude between ``max_length`` and ``min_length``.
+      If only one argument is passed, it is taken to be the ``max_length``
+
+      This function raises ``ValueError`` if ``min_length`` is greater than
+      ``max_length``, or if either of these values are negative.
 
       .. versionadded:: 2.1.3
 
