@@ -495,6 +495,118 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
 }
 
 static PyObject *
+nclines(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    pgSurfaceObject *surfobj;
+    SDL_Surface *surf = NULL;
+    Uint32 color;
+    Uint8 rgba[4];
+    PyObject *line_repr;
+    PyObject **draw_sequence, **line_items;
+    Py_ssize_t tuple_len, sequencelength, i;
+    int x1, y1, x2, y2;
+    int width = 1; /* Default width. */
+    /* Used to store bounding box values */
+    int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN, INT_MIN};
+
+    if (nargs != 2) {
+        return RAISE(PyExc_ValueError,
+                     "function requires exactly 2 arguments");
+    }
+
+    /* Destination Surface*/
+    surfobj = (pgSurfaceObject *)args[0];
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+        return PyErr_Format(PyExc_ValueError,
+                            "unsupported surface bit depth (%d) for drawing",
+                            surf->format->BytesPerPixel);
+    }
+
+    /* draw_sequence preparations */
+    if (!pgSequenceFast_Check(args[1])) {
+        return RAISE(PyExc_TypeError,
+                     "draw_sequence parameter must be a List/Tuple of "
+                     "(color, pos1, pos2, width) or (color, pos1, pos2)");
+    }
+    draw_sequence = PySequence_Fast_ITEMS(args[1]);
+    /* Exit early if draw_sequence is empty */
+    if (!(sequencelength = PySequence_Fast_GET_SIZE(args[1]))) {
+        Py_RETURN_NONE;
+    }
+
+    /* Lock surface for drawing */
+    if (!pgSurface_Lock(surfobj)) {
+        return RAISE(PyExc_RuntimeError, "error locking surface");
+    }
+
+    /* Draw loop */
+    for (i = 0; i < sequencelength; i++) {
+        line_repr = draw_sequence[i];
+
+        if (!pgSequenceFast_Check(line_repr)) {
+            pgSurface_Unlock(surfobj);
+            return RAISE(PyExc_ValueError,
+                         "draw sequence item must be a tuple object");
+        }
+        tuple_len = PySequence_Fast_GET_SIZE(line_repr);
+        if (tuple_len < 3 || tuple_len > 4) {
+            pgSurface_Unlock(surfobj);
+            return PyErr_Format(PyExc_ValueError,
+                                "too many/too little elements per line "
+                                "draw(must either be 3 or 4): currently ",
+                                tuple_len);
+        }
+
+        line_items = PySequence_Fast_ITEMS(line_repr);
+        CHECK_LOAD_COLOR(line_items[0])
+
+        if (!pg_TwoIntsFromObj(line_items[1], &x1, &y1) ||
+            !pg_TwoIntsFromObj(line_items[2], &x2, &y2)) {
+            pgSurface_Unlock(surfobj);
+            PyErr_SetString(
+                PyExc_TypeError,
+                "Invalid endpoint position, must be a pair of numbers");
+            return NULL;
+        }
+
+        width = 1;
+        if (tuple_len == 4 && !pg_IntFromObj(line_items[3], &width)) {
+            pgSurface_Unlock(surfobj);
+            PyErr_SetString(PyExc_TypeError,
+                            "width argument must be a number");
+            return NULL;
+        }
+
+        if (width < 1) {
+            pgSurface_Unlock(surfobj);
+            return RAISE(
+                PyExc_ValueError,
+                "specified width value must be greater or equal to 1");
+        }
+        if (x1 == x2 && y1 == y2) {
+            pgSurface_Unlock(surfobj);
+            return RAISE(PyExc_ValueError, "pos1 and pos2 must be different");
+        }
+
+        if (width == 1) {
+            draw_line(surf, x1, y1, x2, y2, color, drawn_area);
+        }
+        else {
+            draw_line_width(surf, color, x1, y1, x2, y2, width, drawn_area);
+        }
+    }
+
+    /* Unlock surface for finished drawing */
+    if (!pgSurface_Unlock(surfobj)) {
+        return RAISE(PyExc_RuntimeError, "error unlocking surface");
+    }
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 arc(PyObject *self, PyObject *arg, PyObject *kwargs)
 {
     pgSurfaceObject *surfobj;
@@ -2535,6 +2647,7 @@ static PyMethodDef _draw_methods[] = {
      DOC_DRAW_AALINES},
     {"lines", (PyCFunction)lines, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_LINES},
+    {"nclines", (PyCFunction)nclines, METH_FASTCALL, DOC_DRAW_NCLINES},
     {"ellipse", (PyCFunction)ellipse, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_ELLIPSE},
     {"arc", (PyCFunction)arc, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_ARC},
