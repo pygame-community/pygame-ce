@@ -871,68 +871,70 @@ static PyObject *
 polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     pgSurfaceObject *surfobj;
-    PyObject *colorobj, *points, *item = NULL;
-    PyObject *poly_tuple = NULL;
     PyObject **draw_sequence;
+    PyObject *poly_tuple, *item, *colorobj, *points;
+
     SDL_Surface *surf = NULL;
     Uint8 rgba[4];
     Uint32 color;
     int *xylist = NULL;
-    int l_width = 0; /* Default width. */
+    int l_width = 0; /* Default width, filled polygons. */
     /* Used to store bounding box values */
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN, INT_MIN};
-    int errornum = 0;
-    Py_ssize_t loop;
-    Py_ssize_t tuple_len, draw_seq_len, seq_counter, curr_size;
-    Py_ssize_t curr_plength = 3;
+    int error = 0;
+    Py_ssize_t i, j;
+    Py_ssize_t tuple_len, draw_seq_len, curr_size;
+    Py_ssize_t curr_p_len = 3;
 
     if (nargs < 2) {
-        errornum = POLYGONS_ERR_INSUFFICIENT_ARGS;
+        error = POLYGONS_ERR_INSUFFICIENT_ARGS;
         goto on_error;
     }
     /* Destination Surface*/
     if (!pgSurface_Check(args[0])) {
-        errornum = POLYGONS_ERR_SURFTYPE_REQUIRED;
+        error = POLYGONS_ERR_SURFTYPE_REQUIRED;
         goto on_error;
     }
     surfobj = (pgSurfaceObject *)args[0];
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
-        errornum = POLYGONS_ERR_WRONG_SURF_FORMAT;
+        error = POLYGONS_ERR_WRONG_SURF_FORMAT;
         goto on_error;
     }
 
     if (!pgSequenceFast_Check(args[1])) {
-        errornum = POLYGONS_ERR_SEQUENCE_REQUIRED;
+        error = POLYGONS_ERR_SEQUENCE_REQUIRED;
         goto on_error;
     }
 
-    /* exit early if no polygons to draw */
+    /* Exit early if no polygons to draw */
     if (!(draw_seq_len = PySequence_Fast_GET_SIZE(args[1]))) {
         Py_RETURN_NONE;
     }
 
     draw_sequence = PySequence_Fast_ITEMS(args[1]);
 
-    /* create an array to store the points */
-    if (!(xylist = PyMem_New(int, 2 * curr_plength))) {
-        errornum = POLYGONS_ERR_MEM_ALLOC;
+    /* Create an array to store the points, this will only be used if
+     * the width is 0, filled polygons */
+    if (!(xylist = PyMem_New(int, 2 * curr_p_len))) {
+        error = POLYGONS_ERR_MEM_ALLOC;
         goto on_error;
     }
 
-    /* lock surface for drawing */
+    /* Lock surface for drawing */
     if (!pgSurface_Lock(surfobj)) {
         PyMem_Free(xylist);
-        errornum = POLYGONS_ERR_LOCK;
+        error = POLYGONS_ERR_LOCK;
         goto on_error;
     }
 
-    for (seq_counter = 0; seq_counter < draw_seq_len; seq_counter++) {
-        poly_tuple = draw_sequence[seq_counter];
+    for (i = 0; i < draw_seq_len; i++) {
+        poly_tuple = draw_sequence[i];
         if (!PyTuple_Check(poly_tuple)) {
             pgSurface_Unlock(surfobj);
             PyMem_Free(xylist);
-            errornum = POLYGONS_ERR_ITEM_TUPLE_REQUIRED;
+            error = POLYGONS_ERR_ITEM_TUPLE_REQUIRED;
             goto on_error;
         }
 
@@ -940,7 +942,7 @@ polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         if (tuple_len < 2 || tuple_len > 3) {
             pgSurface_Unlock(surfobj);
             PyMem_Free(xylist);
-            errornum = POLYGONS_ERR_INVALID_ITEM_LENGTH;
+            error = POLYGONS_ERR_INVALID_ITEM_LENGTH;
             goto on_error;
         }
 
@@ -951,7 +953,7 @@ polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         if (!PySequence_Check(points)) {
             PyMem_Free(xylist);
             pgSurface_Unlock(surfobj);
-            errornum = POLYGONS_ERR_POINTS_SEQUENCE_REQUIRED;
+            error = POLYGONS_ERR_POINTS_SEQUENCE_REQUIRED;
             goto on_error;
         }
 
@@ -959,7 +961,7 @@ polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         if ((curr_size = PySequence_Length(points)) < 3) {
             PyMem_Free(xylist);
             pgSurface_Unlock(surfobj);
-            errornum = POLYGONS_ERR_POINTS_SEQUENCE_REQUIRED;
+            error = POLYGONS_ERR_POINTS_SEQUENCE_REQUIRED;
             goto on_error;
         }
 
@@ -969,30 +971,30 @@ polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
             !pg_IntFromObj(PyTuple_GET_ITEM(poly_tuple, 2), &l_width)) {
             PyMem_Free(xylist);
             pgSurface_Unlock(surfobj);
-            errornum = POLYGONS_ERR_INVALID_WIDTH_TYPE;
+            error = POLYGONS_ERR_INVALID_WIDTH_TYPE;
             goto on_error;
         }
 
         /* Hollow poly */
         if (l_width > 0) {
-            Py_ssize_t j;
+            Py_ssize_t k;
             int x1, y1, x2, y2;
-            for (loop = 0, j = curr_size - 1; loop < curr_size; j = loop++) {
-                item = PySequence_ITEM(points, loop);
+            for (j = 0, k = curr_size - 1; j < curr_size; k = j++) {
+                item = PySequence_ITEM(points, j);
                 if (!pg_TwoIntsFromObj(item, &x1, &y1)) {
                     Py_DECREF(item);
                     pgSurface_Unlock(surfobj);
                     PyMem_Free(xylist);
-                    errornum = POLYGONS_ERR_POINTS_SEQUENCE_REQUIRED;
+                    error = POLYGONS_ERR_POINTS_SEQUENCE_REQUIRED;
                     goto on_error;
                 }
                 Py_DECREF(item);
-                item = PySequence_ITEM(points, j);
+                item = PySequence_ITEM(points, k);
                 if (!pg_TwoIntsFromObj(item, &x2, &y2)) {
                     Py_DECREF(item);
                     pgSurface_Unlock(surfobj);
                     PyMem_Free(xylist);
-                    errornum = POLYGONS_ERR_POINTS_SEQUENCE_REQUIRED;
+                    error = POLYGONS_ERR_POINTS_SEQUENCE_REQUIRED;
                     goto on_error;
                 }
                 Py_DECREF(item);
@@ -1003,21 +1005,21 @@ polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         }
         /* Filled poly */
         else if (!l_width) {
-            if (curr_size > curr_plength) {
-                curr_plength = curr_size;
-                PyMem_Resize(xylist, int, 2 * curr_plength);
+            if (curr_size > curr_p_len) {
+                curr_p_len = curr_size;
+                PyMem_Resize(xylist, int, 2 * curr_p_len);
                 /* deallocate memory if could not reallocate */
                 if (!xylist) {
                     pgSurface_Unlock(surfobj);
-                    errornum = POLYGONS_ERR_MEM_REALLOC;
+                    error = POLYGONS_ERR_MEM_REALLOC;
                     goto on_error;
                 }
             }
             /* Set up the xylist array */
-            for (loop = 0; loop < curr_plength; loop++) {
-                item = PySequence_ITEM(points, loop);
-                if (!pg_TwoIntsFromObj(item, &xylist[loop],
-                                       &xylist[curr_plength + loop])) {
+            for (j = 0; j < curr_p_len; j++) {
+                item = PySequence_ITEM(points, j);
+                if (!pg_TwoIntsFromObj(item, &xylist[j],
+                                       &xylist[curr_p_len + j])) {
                     Py_DECREF(item);
                     pgSurface_Unlock(surfobj);
                     PyMem_Free(xylist);
@@ -1026,30 +1028,30 @@ polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
                 }
                 Py_DECREF(item);
             }
-            draw_fillpoly(surf, xylist, &xylist[curr_plength], curr_plength,
-                          color, drawn_area);
+            draw_fillpoly(surf, xylist, &xylist[curr_p_len], curr_p_len, color,
+                          drawn_area);
         }
         /* Invalid width */
         else {
             pgSurface_Unlock(surfobj);
             PyMem_Free(xylist);
-            errornum = POLYGONS_ERR_INVALID_WIDTH;
+            error = POLYGONS_ERR_INVALID_WIDTH;
             goto on_error;
         }
     }
 
     PyMem_Free(xylist);
 
-    /* unlock surface for finished drawing */
+    /* Unlock surface for finished drawing */
     if (!pgSurface_Unlock(surfobj)) {
-        errornum = POLYGONS_ERR_UNLOCK;
+        error = POLYGONS_ERR_UNLOCK;
         goto on_error;
     }
 
     Py_RETURN_NONE;
 
 on_error:
-    switch (errornum) {
+    switch (error) {
         case POLYGONS_ERR_INSUFFICIENT_ARGS:
             return RAISE(
                 PyExc_ValueError,
