@@ -501,9 +501,8 @@ nclines(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     SDL_Surface *surf = NULL;
     Uint32 color;
     Uint8 rgba[4];
-    PyObject *colorobj;
-    PyObject *line_tuple;
-    PyObject **draw_sequence;
+    PyObject *line_repr;
+    PyObject **draw_sequence, **tuple_items;
     Py_ssize_t tuple_len, sequencelength, i;
     int x1, y1, x2, y2;
     int width = 1; /* Default width. */
@@ -531,28 +530,27 @@ nclines(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
                      "draw_sequence parameter must be a List/Tuple of "
                      "(color, pos1, pos2, width) or (color, pos1, pos2)");
     }
-
     draw_sequence = PySequence_Fast_ITEMS(args[1]);
     /* Exit early if draw_sequence is empty */
     if (!(sequencelength = PySequence_Fast_GET_SIZE(args[1]))) {
         Py_RETURN_NONE;
     }
 
-    /* lock surface for drawing */
+    /* Lock surface for drawing */
     if (!pgSurface_Lock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
     /* Draw loop */
     for (i = 0; i < sequencelength; i++) {
-        line_tuple = draw_sequence[i];
+        line_repr = draw_sequence[i];
 
-        if (!PyTuple_Check(line_tuple)) {
+        if (!pgSequenceFast_Check(line_repr)) {
             pgSurface_Unlock(surfobj);
             return RAISE(PyExc_ValueError,
                          "draw sequence item must be a tuple object");
         }
-        tuple_len = PyTuple_GET_SIZE(line_tuple);
+        tuple_len = PySequence_Fast_GET_SIZE(line_repr);
         if (tuple_len < 3 || tuple_len > 4) {
             pgSurface_Unlock(surfobj);
             return PyErr_Format(PyExc_ValueError,
@@ -561,11 +559,11 @@ nclines(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
                                 tuple_len);
         }
 
-        colorobj = PyTuple_GET_ITEM(line_tuple, 0);
-        CHECK_LOAD_COLOR(colorobj)
+        tuple_items = PySequence_Fast_ITEMS(line_repr);
+        CHECK_LOAD_COLOR(tuple_items[0])
 
-        if (!pg_TwoIntsFromObj(PyTuple_GET_ITEM(line_tuple, 1), &x1, &y1) ||
-            !pg_TwoIntsFromObj(PyTuple_GET_ITEM(line_tuple, 2), &x2, &y2)) {
+        if (!pg_TwoIntsFromObj(tuple_items[1], &x1, &y1) ||
+            !pg_TwoIntsFromObj(tuple_items[2], &x2, &y2)) {
             pgSurface_Unlock(surfobj);
             PyErr_SetString(
                 PyExc_TypeError,
@@ -574,13 +572,11 @@ nclines(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         }
 
         width = 1;
-        if (tuple_len == 4) {
-            if (!pg_IntFromObj(PyTuple_GET_ITEM(line_tuple, 3), &width)) {
-                pgSurface_Unlock(surfobj);
-                PyErr_SetString(PyExc_TypeError,
-                                "width argument must be a number");
-                return NULL;
-            }
+        if (tuple_len == 4 && !pg_IntFromObj(tuple_items[3], &width)) {
+            pgSurface_Unlock(surfobj);
+            PyErr_SetString(PyExc_TypeError,
+                            "width argument must be a number");
+            return NULL;
         }
 
         if (width < 1) {
@@ -602,7 +598,7 @@ nclines(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         }
     }
 
-    /* unlock surface for finished drawing */
+    /* Unlock surface for finished drawing */
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");
     }
