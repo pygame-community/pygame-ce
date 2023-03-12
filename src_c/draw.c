@@ -853,6 +853,198 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
 }
 
 static PyObject *
+polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    pgSurfaceObject *surfobj;
+    PyObject **draw_sequence, **poly_items;
+    PyObject *poly_repr, *item, *points;
+
+    SDL_Surface *surf = NULL;
+    Uint8 rgba[4];
+    Uint32 color;
+    int *xylist = NULL;
+    int width = 0; /* Default width, filled polygons. */
+    /* Used to store bounding box values */
+    int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN, INT_MIN};
+    Py_ssize_t i, j;
+    Py_ssize_t tuple_len, draw_seq_len, curr_size;
+    Py_ssize_t curr_p_len = 3;
+
+    if (nargs < 2) {
+        return RAISE(
+            PyExc_ValueError,
+            "Function needs at least 2 parameters: surf, draw_sequence ");
+    }
+    /* Destination Surface*/
+    if (!pgSurface_Check(args[0])) {
+        return RAISE(PyExc_TypeError,
+                     "surf parameter must be of type Surface");
+    }
+    surfobj = (pgSurfaceObject *)args[0];
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+        return PyErr_Format(PyExc_ValueError,
+                            "Unsupported surface bit depth (%d) for drawing",
+                            surf->format->BytesPerPixel);
+    }
+
+    if (!pgSequenceFast_Check(args[1])) {
+        return RAISE(PyExc_TypeError,
+                     "draw_sequence parameter must be a List/Tuple of "
+                     "(points, color, width)");
+    }
+
+    /* Exit early if no polygons to draw */
+    if (!(draw_seq_len = PySequence_Fast_GET_SIZE(args[1]))) {
+        Py_RETURN_NONE;
+    }
+
+    draw_sequence = PySequence_Fast_ITEMS(args[1]);
+
+    /* Create an array to store the points, this will only be used if
+     * the width is 0, filled polygons */
+    if (!(xylist = PyMem_New(int, 2 * curr_p_len))) {
+        return RAISE(
+            PyExc_MemoryError,
+            "cannot allocate enough memory to draw the requested polygon");
+    }
+
+    /* Lock surface for drawing */
+    if (!pgSurface_Lock(surfobj)) {
+        PyMem_Free(xylist);
+        return RAISE(PyExc_RuntimeError, "Error locking surface");
+    }
+
+    for (i = 0; i < draw_seq_len; i++) {
+        poly_repr = draw_sequence[i];
+        if (!pgSequenceFast_Check(poly_repr)) {
+            pgSurface_Unlock(surfobj);
+            PyMem_Free(xylist);
+            return RAISE(PyExc_ValueError,
+                         "draw_sequence item must be a tuple or list object");
+        }
+
+        tuple_len = PySequence_Fast_GET_SIZE(poly_repr);
+        if (tuple_len < 2 || tuple_len > 3) {
+            pgSurface_Unlock(surfobj);
+            PyMem_Free(xylist);
+            return RAISE(PyExc_ValueError,
+                         "Invalid elements number in draw_sequence "
+                         "item(must either be 2 or 3)");
+        }
+
+        poly_items = PySequence_Fast_ITEMS(poly_repr);
+
+        CHECK_LOAD_COLOR(poly_items[0]);
+        points = poly_items[1];
+
+        if (!PySequence_Check(points)) {
+            PyMem_Free(xylist);
+            pgSurface_Unlock(surfobj);
+            goto on_error;
+        }
+
+        /* Get the number of vertices of the polygon */
+        if ((curr_size = PySequence_Length(points)) < 3) {
+            PyMem_Free(xylist);
+            pgSurface_Unlock(surfobj);
+            goto on_error;
+        }
+
+        /* Set up the draw width if it is given */
+        width = 0;
+        if (tuple_len == 3 && !pg_IntFromObj(poly_items[2], &width)) {
+            PyMem_Free(xylist);
+            pgSurface_Unlock(surfobj);
+            return RAISE(PyExc_TypeError,
+                         "incorrect 'width' type, must be numeric");
+        }
+
+        /* Hollow poly */
+        if (width > 0) {
+            Py_ssize_t k;
+            int x1, y1, x2, y2;
+            for (j = 0, k = curr_size - 1; j < curr_size; k = j++) {
+                item = PySequence_ITEM(points, j);
+                if (!pg_TwoIntsFromObj(item, &x1, &y1)) {
+                    Py_DECREF(item);
+                    pgSurface_Unlock(surfobj);
+                    PyMem_Free(xylist);
+                    goto on_error;
+                }
+                Py_DECREF(item);
+                item = PySequence_ITEM(points, k);
+                if (!pg_TwoIntsFromObj(item, &x2, &y2)) {
+                    Py_DECREF(item);
+                    pgSurface_Unlock(surfobj);
+                    PyMem_Free(xylist);
+                    goto on_error;
+                }
+                Py_DECREF(item);
+                if (width == 1) {
+                    draw_line(surf, x1, y1, x2, y2, color, drawn_area);
+                    continue;
+                }
+                draw_line_width(surf, color, x1, y1, x2, y2, width,
+                                drawn_area);
+            }
+        }
+        /* Filled poly */
+        else if (!width) {
+            if (curr_size > curr_p_len) {
+                curr_p_len = curr_size;
+                PyMem_Resize(xylist, int, 2 * curr_p_len);
+                /* deallocate memory if could not reallocate */
+                if (!xylist) {
+                    pgSurface_Unlock(surfobj);
+                    return RAISE(
+                        PyExc_MemoryError,
+                        "Could not reallocate enough memory to draw the "
+                        "requested polygon");
+                }
+            }
+            /* Set up the xylist array */
+            for (j = 0; j < curr_p_len; j++) {
+                item = PySequence_ITEM(points, j);
+                if (!pg_TwoIntsFromObj(item, &xylist[j],
+                                       &xylist[curr_p_len + j])) {
+                    Py_DECREF(item);
+                    pgSurface_Unlock(surfobj);
+                    PyMem_Free(xylist);
+                    return RAISE(PyExc_TypeError,
+                                 "points must be number pairs");
+                }
+                Py_DECREF(item);
+            }
+            draw_fillpoly(surf, xylist, &xylist[curr_p_len], curr_p_len, color,
+                          drawn_area);
+        }
+        /* Invalid width */
+        else {
+            pgSurface_Unlock(surfobj);
+            PyMem_Free(xylist);
+            return RAISE(PyExc_ValueError,
+                         "Polygon 'width' must either be 0 or higher");
+        }
+    }
+
+    PyMem_Free(xylist);
+
+    /* Unlock surface for finished drawing */
+    if (!pgSurface_Unlock(surfobj)) {
+        return RAISE(PyExc_RuntimeError, "Error unlocking surface");
+    }
+
+    Py_RETURN_NONE;
+
+on_error:
+    return RAISE(PyExc_TypeError,
+                 "draw_sequence element 'points' in (points, color, "
+                 "width) must be a sequence of numeric pairs");
+}
+
+static PyObject *
 rect(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     pgSurfaceObject *surfobj;
@@ -2542,8 +2734,8 @@ static PyMethodDef _draw_methods[] = {
      DOC_DRAW_CIRCLE},
     {"polygon", (PyCFunction)polygon, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_POLYGON},
+    {"polygons", (PyCFunction)polygons, METH_FASTCALL, DOC_DRAW_POLYGONS},
     {"rect", (PyCFunction)rect, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_RECT},
-
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(draw)
