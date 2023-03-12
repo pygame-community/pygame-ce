@@ -91,29 +91,31 @@ image_load_basic(PyObject *self, PyObject *obj)
 }
 
 static PyObject *
-image_load_extended(PyObject *self, PyObject *arg)
+image_load_extended(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     if (extloadobj == NULL)
         return RAISE(PyExc_NotImplementedError,
                      "loading images of extended format is not available");
     else
-        return PyObject_CallObject(extloadobj, arg);
+        return PyObject_Call(extloadobj, arg, kwarg);
 }
 
 static PyObject *
-image_load(PyObject *self, PyObject *arg)
+image_load(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     PyObject *obj;
     const char *name = NULL;
+    static char *kwds[] = {"file", "namehint", NULL};
 
     if (extloadobj == NULL) {
-        if (!PyArg_ParseTuple(arg, "O|s", &obj, &name)) {
+        if (!PyArg_ParseTupleAndKeywords(arg, kwarg, "O|s", kwds, &obj,
+                                         &name)) {
             return NULL;
         }
         return image_load_basic(self, obj);
     }
     else
-        return image_load_extended(self, arg);
+        return image_load_extended(self, arg, kwarg);
 }
 
 #ifdef WIN32
@@ -123,17 +125,17 @@ image_load(PyObject *self, PyObject *arg)
 #endif
 
 static PyObject *
-image_save_extended(PyObject *self, PyObject *arg)
+image_save_extended(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     if (extsaveobj == NULL)
         return RAISE(PyExc_NotImplementedError,
                      "saving images of extended format is not available");
     else
-        return PyObject_CallObject(extsaveobj, arg);
+        return PyObject_Call(extsaveobj, arg, kwarg);
 }
 
 static PyObject *
-image_save(PyObject *self, PyObject *arg)
+image_save(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     pgSurfaceObject *surfobj;
     PyObject *obj;
@@ -142,9 +144,11 @@ image_save(PyObject *self, PyObject *arg)
     PyObject *ret;
     SDL_Surface *surf;
     int result = 1;
+    static char *kwds[] = {"surface", "file", "namehint", NULL};
 
-    if (!PyArg_ParseTuple(arg, "O!O|s", &pgSurface_Type, &surfobj, &obj,
-                          &namehint)) {
+    if (!PyArg_ParseTupleAndKeywords(arg, kwarg, "O!O|s", kwds,
+                                     &pgSurface_Type, &surfobj, &obj,
+                                     &namehint)) {
         return NULL;
     }
 
@@ -170,7 +174,7 @@ image_save(PyObject *self, PyObject *arg)
             !strcasecmp(ext, "jpeg")) {
             /* If it is .png .jpg .jpeg use the extended module. */
             /* try to get extended formats */
-            ret = image_save_extended(self, arg);
+            ret = image_save_extended(self, arg, kwarg);
             result = (ret == NULL ? -2 : 0);
         }
         else if (oencoded == Py_None) {
@@ -480,7 +484,7 @@ tobytes_surf_32bpp(SDL_Surface *surf, int flipped, int hascolorkey,
 }
 
 PyObject *
-image_tobytes(PyObject *self, PyObject *arg)
+image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     pgSurfaceObject *surfobj;
     PyObject *bytes = NULL;
@@ -493,6 +497,7 @@ image_tobytes(PyObject *self, PyObject *arg)
     int hascolorkey;
     Uint32 color, colorkey;
     Uint32 alpha;
+    static char *kwds[] = {"surface", "format", "flipped", NULL};
 
 #ifdef _MSC_VER
     /* MSVC static analyzer false alarm: assure format is NULL-terminated by
@@ -500,8 +505,9 @@ image_tobytes(PyObject *self, PyObject *arg)
     __analysis_assume(format = "inited");
 #endif
 
-    if (!PyArg_ParseTuple(arg, "O!s|i", &pgSurface_Type, &surfobj, &format,
-                          &flipped))
+    if (!PyArg_ParseTupleAndKeywords(arg, kwarg, "O!s|i", kwds,
+                                     &pgSurface_Type, &surfobj, &format,
+                                     &flipped))
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
 
@@ -1680,20 +1686,24 @@ SaveTGA(SDL_Surface *surface, const char *file, int rle)
 
 static PyMethodDef _image_methods[] = {
     {"load_basic", (PyCFunction)image_load_basic, METH_O, DOC_IMAGE_LOADBASIC},
-    {"load_extended", image_load_extended, METH_VARARGS,
-     DOC_IMAGE_LOADEXTENDED},
-    {"load", image_load, METH_VARARGS, DOC_IMAGE_LOAD},
+    {"load_extended", (PyCFunction)image_load_extended,
+     METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_LOADEXTENDED},
+    {"load", (PyCFunction)image_load, METH_VARARGS | METH_KEYWORDS,
+     DOC_IMAGE_LOAD},
 
-    {"save_extended", image_save_extended, METH_VARARGS,
-     DOC_IMAGE_SAVEEXTENDED},
-    {"save", image_save, METH_VARARGS, DOC_IMAGE_SAVE},
+    {"save_extended", (PyCFunction)image_save_extended,
+     METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_SAVEEXTENDED},
+    {"save", (PyCFunction)image_save, METH_VARARGS | METH_KEYWORDS,
+     DOC_IMAGE_SAVE},
     {"get_extended", (PyCFunction)image_get_extended, METH_NOARGS,
      DOC_IMAGE_GETEXTENDED},
     {"get_sdl_image_version", (PyCFunction)image_get_sdl_image_version,
      METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_GETSDLIMAGEVERSION},
 
-    {"tostring", image_tobytes, METH_VARARGS, DOC_IMAGE_TOSTRING},
-    {"tobytes", image_tobytes, METH_VARARGS, DOC_IMAGE_TOBYTES},
+    {"tostring", (PyCFunction)image_tobytes, METH_VARARGS | METH_KEYWORDS,
+     DOC_IMAGE_TOSTRING},
+    {"tobytes", (PyCFunction)image_tobytes, METH_VARARGS | METH_KEYWORDS,
+     DOC_IMAGE_TOBYTES},
     {"fromstring", (PyCFunction)image_frombytes, METH_VARARGS | METH_KEYWORDS,
      DOC_IMAGE_FROMSTRING},
     {"frombytes", (PyCFunction)image_frombytes, METH_VARARGS | METH_KEYWORDS,
