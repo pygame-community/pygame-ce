@@ -617,7 +617,6 @@ nclines(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     Py_RETURN_NONE;
 }
-PG_WRAP_FASTCALL_FUNC(nclines, PyObject)
 
 static PyObject *
 arc(PyObject *self, PyObject *arg, PyObject *kwargs)
@@ -2660,8 +2659,7 @@ static PyMethodDef _draw_methods[] = {
      DOC_DRAW_AALINES},
     {"lines", (PyCFunction)lines, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_LINES},
-    {"nclines", (PyCFunction)PG_FASTCALL_NAME(nclines), PG_FASTCALL,
-     DOC_DRAW_NCLINES},
+    {"nclines", (PyCFunction)nclines, METH_FASTCALL, DOC_DRAW_NCLINES},
     {"ellipse", (PyCFunction)ellipse, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_ELLIPSE},
     {"arc", (PyCFunction)arc, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_ARC},
