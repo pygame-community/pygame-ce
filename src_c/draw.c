@@ -863,7 +863,7 @@ polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     Uint8 rgba[4];
     Uint32 color;
     int *xylist = NULL;
-    int l_width = 0; /* Default width, filled polygons. */
+    int width = 0; /* Default width, filled polygons. */
     /* Used to store bounding box values */
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN, INT_MIN};
     Py_ssize_t i, j;
@@ -953,8 +953,8 @@ polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         }
 
         /* Set up the draw width if it is given */
-        l_width = 0;
-        if (tuple_len == 3 && !pg_IntFromObj(poly_items[2], &l_width)) {
+        width = 0;
+        if (tuple_len == 3 && !pg_IntFromObj(poly_items[2], &width)) {
             PyMem_Free(xylist);
             pgSurface_Unlock(surfobj);
             return RAISE(PyExc_TypeError,
@@ -962,7 +962,7 @@ polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         }
 
         /* Hollow poly */
-        if (l_width > 0) {
+        if (width > 0) {
             Py_ssize_t k;
             int x1, y1, x2, y2;
             for (j = 0, k = curr_size - 1; j < curr_size; k = j++) {
@@ -982,13 +982,16 @@ polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
                     goto on_error;
                 }
                 Py_DECREF(item);
-
-                draw_line_width(surf, color, x1, y1, x2, y2, l_width,
+                if (width == 1) {
+                    draw_line(surf, x1, y1, x2, y2, color, drawn_area);
+                    continue;
+                }
+                draw_line_width(surf, color, x1, y1, x2, y2, width,
                                 drawn_area);
             }
         }
         /* Filled poly */
-        else if (!l_width) {
+        else if (!width) {
             if (curr_size > curr_p_len) {
                 curr_p_len = curr_size;
                 PyMem_Resize(xylist, int, 2 * curr_p_len);
