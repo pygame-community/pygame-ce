@@ -285,7 +285,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
       if pygame.key.get_just_pressed()[pygame.K_b]:
          print("B key just pressed")
 
-   .. versionadded:: 2.1.3
+   .. versionadded:: 2.2.0
 
    .. ## pygame.key.get_just_pressed ##
 .. function:: get_just_released
@@ -304,7 +304,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
       if pygame.key.get_just_released()[pygame.K_b]:
          print("B key just released")
 
-   .. versionadded:: 2.1.3
+   .. versionadded:: 2.2.0
 
    .. ## pygame.key.get_just_released ##
 
