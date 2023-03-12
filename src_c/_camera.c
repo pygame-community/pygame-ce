@@ -68,8 +68,8 @@ PyObject *
 camera_get_raw(pgCameraObject *self, PyObject *args);
 
 /*
- * Functions available to pygame-ce users.  The idea is to make these as simple as
- * possible, and merely have them call functions specific to the type of
+ * Functions available to pygame-ce users.  The idea is to make these as simple
+ * as possible, and merely have them call functions specific to the type of
  * camera being used to do all the real work.  It currently just calls v4l2_*
  * functions, but it could check something like self->cameratype and depending
  * on the result, call v4l, v4l2, vfw, or other functions.
