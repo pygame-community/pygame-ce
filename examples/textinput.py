@@ -32,6 +32,7 @@ class TextInput:
         "microsoftyahei",
         "msgothic",
         "msmincho",
+        "unifont",
         "Arial",
     ]
 
