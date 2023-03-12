@@ -203,7 +203,7 @@ solves no longer exists, it will likely be removed in the future.
       | :sl:`Gets the font's name.`
       | :sg:`name -> str`
 
-      Returns the font's name.
+      Read only. Returns the font's name.
 
       .. versionadded:: 2.2
 
