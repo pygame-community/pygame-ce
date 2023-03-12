@@ -1,4 +1,4 @@
-# Pygame build process: config.py setup.py
+# pygame-ce build process: config.py setup.py
 /Setup
 *.pyc
 /build/

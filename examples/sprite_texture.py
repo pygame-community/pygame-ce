@@ -13,7 +13,7 @@ import os
 import pygame as pg
 
 if pg.get_sdl_version()[0] < 2:
-    raise SystemExit("This example requires pygame 2 and SDL2.")
+    raise SystemExit("This example requires pygame-ce 2 and SDL2.")
 from pygame._sdl2 import Window, Texture, Image, Renderer
 
 
