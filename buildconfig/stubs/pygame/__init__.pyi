@@ -26,7 +26,6 @@ from pygame import (
     sprite as sprite,
     surfarray as surfarray,
     transform as transform,
-    fastevent as fastevent,
     scrap as scrap,
     threads as threads,
     version as version,
@@ -42,6 +41,7 @@ from pygame import (
     surflock as surflock,
     sysfont as sysfont,
     _debug as _debug,
+    system as system,
 )
 
 from .rect import Rect as Rect
@@ -173,6 +173,10 @@ from .constants import (
     CONTROLLER_BUTTON_START as CONTROLLER_BUTTON_START,
     CONTROLLER_BUTTON_X as CONTROLLER_BUTTON_X,
     CONTROLLER_BUTTON_Y as CONTROLLER_BUTTON_Y,
+    DIRECTION_BTT as DIRECTION_BTT,
+    DIRECTION_LTR as DIRECTION_LTR,
+    DIRECTION_RTL as DIRECTION_RTL,
+    DIRECTION_TTB as DIRECTION_TTB,
     DOUBLEBUF as DOUBLEBUF,
     DROPBEGIN as DROPBEGIN,
     DROPCOMPLETE as DROPCOMPLETE,
@@ -181,6 +185,9 @@ from .constants import (
     FINGERDOWN as FINGERDOWN,
     FINGERMOTION as FINGERMOTION,
     FINGERUP as FINGERUP,
+    FONT_CENTER as FONT_CENTER,
+    FONT_LEFT as FONT_LEFT,
+    FONT_RIGHT as FONT_RIGHT,
     FULLSCREEN as FULLSCREEN,
     GL_ACCELERATED_VISUAL as GL_ACCELERATED_VISUAL,
     GL_ACCUM_ALPHA_SIZE as GL_ACCUM_ALPHA_SIZE,

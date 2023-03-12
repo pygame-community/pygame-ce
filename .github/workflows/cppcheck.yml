@@ -13,7 +13,7 @@ on:
       - 'src_c/**'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-cppcheck
   cancel-in-progress: true
 
 # TODO: Any more static checkers can be added here
@@ -26,7 +26,6 @@ jobs:
 
       - name: Install deps
         run: |
-          sudo apt-mark hold grub-efi-amd64-signed
           sudo apt-get update --fix-missing
           sudo apt-get upgrade
           sudo apt install cppcheck
