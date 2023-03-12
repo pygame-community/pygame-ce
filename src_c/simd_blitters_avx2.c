@@ -154,12 +154,6 @@ alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
     __m256i mm256_srcA, mm256_srcB, mm256_dstA, mm256_dstB, mm256_srcAlpha,
         temp;
 
-    // printf("inside avx2 alpha blitter\n");
-    // printf("rshift=%i\n", info->src->Rshift / 8);
-    // printf("gshift=%i\n", info->src->Gshift / 8);
-    // printf("bshift=%i\n", info->src->Bshift / 8);
-    // printf("ashift=%i\n", info->src->Ashift / 8);
-
     /* Original 'Straight Alpha' blending equation:
         --------------------------------------------
         dstRGB = (srcRGB * srcA) + (dstRGB * (1-srcA))
@@ -241,14 +235,17 @@ alphablit_alpha_avx2_argb_no_surf_alpha(SDL_BlitInfo *info)
 {
     SETUP_AVX2_BLITTER
 
+    // Used to choose which byte to use when pulling from the RGBX buffer and
+    // the dst alpha buffer. Chooses the RGBX buffer most of the time, chooses
+    // A when on the low byte of the X 16 bit region.
+    // RGB buffer looks like: [0][R][0][G][0][B][0][X] 
+    // Dst alpha looks like:  [0][A][0][A][0][A][0][A]
+    // We want:               [0][R][0][G][0][B][0][A]
+    // *ofc real memory layout differs based on pixelformat.
+    __m256i combine_rgba_mask = _mm256_set1_epi64x(1LL << (((info->src->Ashift)*2) + 7));
+
     __m256i mm256_srcA, mm256_srcB, mm256_dstA, mm256_dstB, mm256_srcAlpha,
         temp, mm256_dstAlpha, mm256_newDstAlpha;
-
-    // printf("inside avx2 a different alpha blitter\n");
-    //  printf("rshift=%i\n", info->src->Rshift / 8);
-    //  printf("gshift=%i\n", info->src->Gshift / 8);
-    //  printf("bshift=%i\n", info->src->Bshift / 8);
-    //  printf("ashift=%i\n", info->src->Ashift / 8);
 
     /*
      dstRGB = (((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) >> 8)
@@ -278,6 +275,8 @@ alphablit_alpha_avx2_argb_no_surf_alpha(SDL_BlitInfo *info)
         // if preexisting dst alpha is 0, src alpha should be set to 255
         // enforces that dest alpha 0 means "copy source RGB"
         // happens after real src alpha values used to calculate dst alpha
+        // compares each 16 bit block to zeroes, yielding 0xFFFF or 0x0000--
+        // shifts out bottom 8 bits to get to 0x00FF or 0x0000.
         mm256_dstAlpha =
             _mm256_cmpeq_epi16(mm256_dstAlpha, _mm256_setzero_si256());
         mm256_dstAlpha = _mm256_srli_epi16(mm256_dstAlpha, 8);
@@ -292,9 +291,7 @@ alphablit_alpha_avx2_argb_no_surf_alpha(SDL_BlitInfo *info)
         mm256_dstA = _mm256_srli_epi16(mm256_dstA, 8);
 
         // blend together dstRGB and dstA
-        // TODO FIXME: needs to work on different alpha locations
-        mm256_dstA =
-            _mm256_blend_epi16(mm256_dstA, mm256_newDstAlpha, 0b10001000);
+        mm256_dstA = _mm256_blendv_epi8(mm256_dstA, mm256_newDstAlpha, combine_rgba_mask);
 
         /* ==== alpha blend on B pixels ==== */
         mm256_srcAlpha = _mm256_shuffle_epi8(mm256_srcB, shuff_out_alpha);
@@ -311,6 +308,8 @@ alphablit_alpha_avx2_argb_no_surf_alpha(SDL_BlitInfo *info)
         // if preexisting dst alpha is 0, src alpha should be set to 255
         // enforces that dest alpha 0 means "copy source RGB"
         // happens after real src alpha values used to calculate dst alpha
+        // compares each 16 bit block to zeroes, yielding 0xFFFF or 0x0000--
+        // shifts out bottom 8 bits to get to 0x00FF or 0x0000.
         mm256_dstAlpha =
             _mm256_cmpeq_epi16(mm256_dstAlpha, _mm256_setzero_si256());
         mm256_dstAlpha = _mm256_srli_epi16(mm256_dstAlpha, 8);
@@ -325,14 +324,10 @@ alphablit_alpha_avx2_argb_no_surf_alpha(SDL_BlitInfo *info)
         mm256_dstB = _mm256_srli_epi16(mm256_dstB, 8);
 
         // blend together dstRGB and dstA
-        // TODO FIXME: needs to work on different alpha locations
-        mm256_dstB =
-            _mm256_blend_epi16(mm256_dstB, mm256_newDstAlpha, 0b10001000);
+        mm256_dstB = _mm256_blendv_epi8(mm256_dstB, mm256_newDstAlpha, combine_rgba_mask);
 
         /* ==== recombine A and B pixels ==== */
         mm256_dst = _mm256_packus_epi16(mm256_dstA, mm256_dstB);)
-
-    // printf("leaving avx2 blitter\n");
 }
 #else
 void
