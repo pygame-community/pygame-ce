@@ -502,9 +502,9 @@ nclines(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     Uint32 color;
     Uint8 rgba[4];
     PyObject *colorobj;
-    PyObject *line_repr;
-    PyObject *draw_sequence = NULL, **f_drawsequence;
-    Py_ssize_t itemlength, sequencelength, seq_counter;
+    PyObject *line_tuple;
+    PyObject **draw_sequence;
+    Py_ssize_t tuple_len, sequencelength, i;
     int x1, y1, x2, y2;
     int width = 1; /* Default width. */
     /* Used to store bounding box values */
@@ -518,6 +518,7 @@ nclines(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     /* Destination Surface*/
     surfobj = (pgSurfaceObject *)args[0];
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
@@ -525,23 +526,17 @@ nclines(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
 
     /* draw_sequence preparations */
-    if (!PySequence_Check(args[1]) ||
-        !(draw_sequence = PySequence_Fast(
-              args[1], "Error, could not convert to a sequence"))) {
-        Py_XDECREF(draw_sequence);
+    if (!pgSequenceFast_Check(args[1])) {
         return RAISE(PyExc_TypeError,
                      "draw_sequence parameter must be a List/Tuple of "
                      "(color, pos1, pos2, width) or (color, pos1, pos2)");
     }
-    sequencelength = PySequence_Fast_GET_SIZE(draw_sequence);
-    if (!sequencelength) {
-        /* if length is 0 don't raise and return None */
-        Py_DECREF(draw_sequence);
+
+    draw_sequence = PySequence_Fast_ITEMS(args[1]);
+    /* Exit early if draw_sequence is empty */
+    if (!(sequencelength = PySequence_Fast_GET_SIZE(args[1]))) {
         Py_RETURN_NONE;
     }
-    f_drawsequence = PySequence_Fast_ITEMS(draw_sequence);
-    Py_DECREF(draw_sequence);
-    draw_sequence = NULL;
 
     /* lock surface for drawing */
     if (!pgSurface_Lock(surfobj)) {
@@ -549,43 +544,38 @@ nclines(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
 
     /* Draw loop */
-    for (seq_counter = 0; seq_counter < sequencelength; seq_counter++) {
-        line_repr = f_drawsequence[seq_counter];
-        if (PyTuple_Check(line_repr)) {
-            itemlength = PyTuple_Size(line_repr);
-            if (itemlength < 3 || itemlength > 4) {
-                pgSurface_Unlock(surfobj);
-                return PyErr_Format(PyExc_ValueError,
-                                    "too many/too little elements per line "
-                                    "draw(must either be 3 or 4): currently ",
-                                    itemlength);
-            }
-        }
-        else {
+    for (i = 0; i < sequencelength; i++) {
+        line_tuple = draw_sequence[i];
+
+        if (!PyTuple_Check(line_tuple)) {
             pgSurface_Unlock(surfobj);
             return RAISE(PyExc_ValueError,
                          "draw sequence item must be a tuple object");
         }
+        tuple_len = PyTuple_GET_SIZE(line_tuple);
+        if (tuple_len < 3 || tuple_len > 4) {
+            pgSurface_Unlock(surfobj);
+            return PyErr_Format(PyExc_ValueError,
+                                "too many/too little elements per line "
+                                "draw(must either be 3 or 4): currently ",
+                                tuple_len);
+        }
 
-        colorobj = PyTuple_GET_ITEM(line_repr, 0);
+        colorobj = PyTuple_GET_ITEM(line_tuple, 0);
         CHECK_LOAD_COLOR(colorobj)
 
-        if (!pg_TwoIntsFromObj(PyTuple_GET_ITEM(line_repr, 1), &x1, &y1)) {
+        if (!pg_TwoIntsFromObj(PyTuple_GET_ITEM(line_tuple, 1), &x1, &y1) ||
+            !pg_TwoIntsFromObj(PyTuple_GET_ITEM(line_tuple, 2), &x2, &y2)) {
             pgSurface_Unlock(surfobj);
-            PyErr_SetString(PyExc_TypeError,
-                            "pos1 argument must be a pair of numbers");
-            return NULL;
-        }
-        if (!pg_TwoIntsFromObj(PyTuple_GET_ITEM(line_repr, 2), &x2, &y2)) {
-            pgSurface_Unlock(surfobj);
-            PyErr_SetString(PyExc_TypeError,
-                            "pos2 argument must be a pair of numbers");
+            PyErr_SetString(
+                PyExc_TypeError,
+                "Invalid endpoint position, must be a pair of numbers");
             return NULL;
         }
 
         width = 1;
-        if (itemlength == 4) {
-            if (!pg_IntFromObj(PyTuple_GET_ITEM(line_repr, 3), &width)) {
+        if (tuple_len == 4) {
+            if (!pg_IntFromObj(PyTuple_GET_ITEM(line_tuple, 3), &width)) {
                 pgSurface_Unlock(surfobj);
                 PyErr_SetString(PyExc_TypeError,
                                 "width argument must be a number");
@@ -604,10 +594,12 @@ nclines(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
             return RAISE(PyExc_ValueError, "pos1 and pos2 must be different");
         }
 
-        if (width == 1)
+        if (width == 1) {
             draw_line(surf, x1, y1, x2, y2, color, drawn_area);
-        else
+        }
+        else {
             draw_line_width(surf, color, x1, y1, x2, y2, width, drawn_area);
+        }
     }
 
     /* unlock surface for finished drawing */
