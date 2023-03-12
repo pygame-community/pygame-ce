@@ -502,7 +502,7 @@ nclines(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     Uint32 color;
     Uint8 rgba[4];
     PyObject *line_repr;
-    PyObject **draw_sequence, **tuple_items;
+    PyObject **draw_sequence, **line_items;
     Py_ssize_t tuple_len, sequencelength, i;
     int x1, y1, x2, y2;
     int width = 1; /* Default width. */
@@ -559,11 +559,11 @@ nclines(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
                                 tuple_len);
         }
 
-        tuple_items = PySequence_Fast_ITEMS(line_repr);
-        CHECK_LOAD_COLOR(tuple_items[0])
+        line_items = PySequence_Fast_ITEMS(line_repr);
+        CHECK_LOAD_COLOR(line_items[0])
 
-        if (!pg_TwoIntsFromObj(tuple_items[1], &x1, &y1) ||
-            !pg_TwoIntsFromObj(tuple_items[2], &x2, &y2)) {
+        if (!pg_TwoIntsFromObj(line_items[1], &x1, &y1) ||
+            !pg_TwoIntsFromObj(line_items[2], &x2, &y2)) {
             pgSurface_Unlock(surfobj);
             PyErr_SetString(
                 PyExc_TypeError,
@@ -572,7 +572,7 @@ nclines(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         }
 
         width = 1;
-        if (tuple_len == 4 && !pg_IntFromObj(tuple_items[3], &width)) {
+        if (tuple_len == 4 && !pg_IntFromObj(line_items[3], &width)) {
             pgSurface_Unlock(surfobj);
             PyErr_SetString(PyExc_TypeError,
                             "width argument must be a number");
