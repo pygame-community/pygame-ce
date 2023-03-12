@@ -100,7 +100,7 @@ typedef struct pg_BlitMap {
 
 int
 pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
-               SDL_Rect *dstrect, SDL_Rect *srcrect, int the_args);
+               SDL_Rect *dstrect, SDL_Rect *srcrect, int blend_flags);
 
 /* statics */
 static pgSurfaceObject *
@@ -1833,12 +1833,12 @@ surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
     int dx, dy, result;
     SDL_Rect dest_rect;
     int sx, sy;
-    int the_args = 0;
+    int blend_flags = 0;
 
     static char *kwids[] = {"source", "dest", "area", "special_flags", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, keywds, "O!O|Oi", kwids,
                                      &pgSurface_Type, &srcobject, &argpos,
-                                     &argrect, &the_args))
+                                     &argrect, &blend_flags))
         return NULL;
 
     src = pgSurface_AsSurface(srcobject);
@@ -1872,10 +1872,11 @@ surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
     dest_rect.w = src_rect->w;
     dest_rect.h = src_rect->h;
 
-    if (!the_args)
-        the_args = 0;
+    if (!blend_flags)
+        blend_flags = 0;
 
-    result = pgSurface_Blit(self, srcobject, &dest_rect, src_rect, the_args);
+    result =
+        pgSurface_Blit(self, srcobject, &dest_rect, src_rect, blend_flags);
 
     if (result != 0)
         return NULL;
@@ -1903,7 +1904,7 @@ surf_blits(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
     int dx, dy, result;
     SDL_Rect dest_rect;
     int sx, sy;
-    int the_args = 0;
+    int blend_flags = 0;
 
     PyObject *blitsequence;
     PyObject *iterator = NULL;
@@ -1969,7 +1970,7 @@ surf_blits(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
         }
         argrect = NULL;
         special_flags = NULL;
-        the_args = 0;
+        blend_flags = 0;
 
         /* We know that there will be at least two items due to the
            conditional at the start of the loop */
@@ -2037,14 +2038,14 @@ surf_blits(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
         dest_rect.h = src_rect->h;
 
         if (special_flags) {
-            if (!pg_IntFromObj(special_flags, &the_args)) {
+            if (!pg_IntFromObj(special_flags, &blend_flags)) {
                 bliterrornum = BLITS_ERR_MUST_ASSIGN_NUMERIC;
                 goto bliterror;
             }
         }
 
         result = pgSurface_Blit(self, (pgSurfaceObject *)srcobject, &dest_rect,
-                                src_rect, the_args);
+                                src_rect, blend_flags);
 
         if (result != 0) {
             bliterrornum = BLITS_ERR_BLIT_FAIL;
@@ -3800,7 +3801,7 @@ surface_do_overlap(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
 /*this internal blit function is accessible through the C api*/
 int
 pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
-               SDL_Rect *dstrect, SDL_Rect *srcrect, int the_args)
+               SDL_Rect *dstrect, SDL_Rect *srcrect, int blend_flags)
 {
     SDL_Surface *src = pgSurface_AsSurface(srcobj);
     SDL_Surface *dst = pgSurface_AsSurface(dstobj);
@@ -3845,7 +3846,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
 
     pgSurface_Prep(srcobj);
 
-    if ((the_args != 0 && the_args != PYGAME_BLEND_ALPHA_SDL2) ||
+    if ((blend_flags != 0 && blend_flags != PYGAME_BLEND_ALPHA_SDL2) ||
         ((SDL_GetColorKey(src, &key) == 0 || _PgSurface_SrcAlpha(src) == 1) &&
          /* This simplification is possible because a source subsurface
             is converted to its owner with a clip rect and a dst
@@ -3855,7 +3856,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
          dst->pixels == src->pixels && srcrect != NULL &&
          surface_do_overlap(src, srcrect, dst, dstrect))) {
         /* Py_BEGIN_ALLOW_THREADS */
-        result = pygame_Blit(src, srcrect, dst, dstrect, the_args);
+        result = pygame_Blit(src, srcrect, dst, dstrect, blend_flags);
         /* Py_END_ALLOW_THREADS */
     }
     /* can't blit alpha to 8bit, crashes SDL */
@@ -3896,7 +3897,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
         }
         /* Py_END_ALLOW_THREADS */
     }
-    else if (the_args != PYGAME_BLEND_ALPHA_SDL2 &&
+    else if (blend_flags != PYGAME_BLEND_ALPHA_SDL2 &&
              !(pg_EnvShouldBlendAlphaSDL2()) &&
              SDL_GetColorKey(src, &key) != 0 &&
              (dst->format->BytesPerPixel == 4 ||
@@ -3908,7 +3909,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
         /* If we have a 32bit source surface with per pixel alpha
            and no RLE we'll use pygame_Blit so we can mimic how SDL1
             behaved */
-        result = pygame_Blit(src, srcrect, dst, dstrect, the_args);
+        result = pygame_Blit(src, srcrect, dst, dstrect, blend_flags);
     }
     else {
         /* Py_BEGIN_ALLOW_THREADS */
