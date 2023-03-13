@@ -2225,8 +2225,8 @@ MODINIT_DEFINE(_freetype)
     }
 
 #if defined(__EMSCRIPTEN__)
-    //_PGFT_Init(&(FREETYPE_MOD_STATE(_freetypemodule)->freetype), 0);
-    #pragma message "NO _PGFT_Init"
+//_PGFT_Init(&(FREETYPE_MOD_STATE(_freetypemodule)->freetype), 0);
+#pragma message "NO _PGFT_Init"
     FREETYPE_MOD_STATE(_freetypemodule)->freetype = 0;
 #else
     FREETYPE_MOD_STATE(_freetypemodule)->freetype = 0;
