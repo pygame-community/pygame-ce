@@ -119,41 +119,31 @@ required).
    requests for a display type. The actual created display will be the best
    possible match supported by the system.
 
+   Basic example:
+
+   ::
+
+        # Open a window on the screen
+        screen_width=700
+        screen_height=400
+        screen=pygame.display.set_mode([screen_width, screen_height])
+
    Note that calling this function implicitly initializes ``pygame.display``, if
    it was not initialized before.
-
-   The size argument is a pair of numbers representing the width and
-   height. The flags argument is a collection of additional options. The depth
-   argument represents the number of bits to use for color.
 
    The Surface that gets returned can be drawn to like a regular Surface but
    changes will eventually be seen on the monitor.
 
+   The ``size`` argument is a pair of numbers representing the width and height.
    If no size is passed or is set to ``(0, 0)`` and pygame uses ``SDL``
    version 1.2.10 or above, the created Surface will have the same size as the
    current screen resolution. If only the width or height are set to ``0``, the
    Surface will have the same width or height as the screen resolution. Using a
    ``SDL`` version prior to 1.2.10 will raise an exception.
 
-   It is usually best to not pass the depth argument. It will default to the
-   best and fastest color depth for the system. If your game requires a
-   specific color format you can control the depth with this argument. Pygame
-   will emulate an unavailable color depth which can be slow.
-
-   When requesting fullscreen display modes, sometimes an exact match for the
-   requested size cannot be made. In these situations pygame will select
-   the closest compatible match. The returned surface will still always match
-   the requested size.
-
-   On high resolution displays(4k, 1080p) and tiny graphics games (640x480)
-   show up very small so that they are unplayable. SCALED scales up the window
-   for you. The game thinks it's a 640x480 window, but really it can be bigger.
-   Mouse events are scaled for you, so your game doesn't need to do it. Note
-   that SCALED is considered an experimental API and may change in future
-   releases.
-
-   The flags argument controls which type of display you want. There are
-   several to choose from, and you can even combine multiple types using the
+   The ``flags`` argument is a collection of additional options. The flags argument 
+   controls which type of display you want. There are several to
+   choose from, and you can even combine multiple types using the
    bitwise or operator, (the pipe "|" character). Here are the display
    flags you will want to choose from:
 
@@ -172,6 +162,32 @@ required).
 
    .. versionadded:: 2.0.0 ``SCALED``, ``SHOWN`` and ``HIDDEN``
 
+   When requesting fullscreen display modes, sometimes an exact match for the
+   requested size cannot be made. In these situations pygame will select
+   the closest compatible match. The returned surface will still always match
+   the requested size.
+
+   On high resolution displays(4k, 1080p) and tiny graphics games (640x480)
+   show up very small so that they are unplayable. SCALED scales up the window
+   for you. The game thinks it's a 640x480 window, but really it can be bigger.
+   Mouse events are scaled for you, so your game doesn't need to do it. Note
+   that SCALED is considered an experimental API and may change in future
+   releases.
+
+   The ``depth`` argument represents the number of bits to use for color. It is 
+   usually best to not pass the depth argument. It will default to the
+   best and fastest color depth for the system. If your game requires a
+   specific color format you can control the depth with this argument. Pygame
+   will emulate an unavailable color depth which can be slow.
+
+   The ``display`` argument represents the display index.
+   The display index ``0`` means the default display is used. If no display
+   index argument is provided, the default display can be overridden with an
+   environment variable.
+
+   .. versionadded:: 1.9.5 ``display``
+
+   The ``vsync`` argument controls the on/off of the vsync.
    By setting the ``vsync`` parameter to ``1``, it is possible to get a display
    with vertical sync, but you are not guaranteed to get one. The request only
    works at all for calls to ``set_mode()`` with the ``pygame.OPENGL`` or
@@ -188,22 +204,6 @@ required).
    Vsync behaviour is considered experimental, and may change in future releases.
 
    .. versionadded:: 2.0.0 ``vsync``
-
-   Basic example:
-
-   ::
-
-        # Open a window on the screen
-        screen_width=700
-        screen_height=400
-        screen=pygame.display.set_mode([screen_width, screen_height])
-
-   The display index ``0`` means the default display is used. If no display
-   index argument is provided, the default display can be overridden with an
-   environment variable.
-
-
-   .. versionchanged:: 1.9.5 ``display`` argument added
 
    .. versionchanged:: 2.1.3
       pygame now ensures that subsequent calls to this function clears the
