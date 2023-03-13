@@ -8,3 +8,6 @@
 #define DOC_SCRAP_CONTAINS "contains(type) -> bool\nChecks whether data for a given type is available in the clipboard."
 #define DOC_SCRAP_LOST "lost() -> bool\nIndicates if the clipboard ownership has been lost by the pygame application."
 #define DOC_SCRAP_SETMODE "set_mode(mode) -> None\nSets the clipboard access mode."
+#define DOC_SCRAP_PUTTEXT "put_text(text) -> None\nPlaces text into the clipboard."
+#define DOC_SCRAP_GETTEXT "get_text() -> str\nGets text from the clipboard."
+#define DOC_SCRAP_HASTEXT "has_text() -> bool\nChecks if text is in the clipboard."
