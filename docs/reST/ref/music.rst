@@ -34,6 +34,7 @@ MP3 in most cases.
    the type of music data in the object. For example: :code:`load(fileobj, "ogg")`.
 
    .. versionchanged:: 2.0.2 Added optional ``namehint`` argument
+   .. versionchanged:: 2.2.0 Raises ``FileNotFoundError`` instead of :exc:`pygame.error` if file cannot be found
 
    .. ## pygame.mixer.music.load ##
 
@@ -243,6 +244,7 @@ MP3 in most cases.
        pygame.mixer.music.queue('mozart.ogg')
 
    .. versionchanged:: 2.0.2 Added optional ``namehint`` argument
+   .. versionchanged:: 2.2.0 Raises ``FileNotFoundError`` instead of :exc:`pygame.error` if file cannot be found
 
    .. ## pygame.mixer.music.queue ##
 
