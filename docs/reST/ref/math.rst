@@ -11,12 +11,12 @@
 The pygame math module currently provides Vector classes in two and three
 dimensions, ``Vector2`` and ``Vector3`` respectively.
 
-They support the following numerical operations: ``vec + vec``, ``vec - vec``, 
-``vec * number``, ``number * vec``, ``vec / number``, ``vec // number``, ``vec += vec``, 
-``vec -= vec``, ``vec *= number``, ``vec /= number``, ``vec //= number``, ``round(vec, ndigits=0)``. 
+They support the following numerical operations: ``vec + vec``, ``vec - vec``,
+``vec * number``, ``number * vec``, ``vec / number``, ``vec // number``, ``vec += vec``,
+``vec -= vec``, ``vec *= number``, ``vec /= number``, ``vec //= number``, ``round(vec, ndigits=0)``.
 
 All these operations will be performed elementwise.
-In addition ``vec * vec`` will perform a scalar-product (a.k.a. dot-product). 
+In addition ``vec * vec`` will perform a scalar-product (a.k.a. dot-product).
 If you want to multiply every element from vector v with every element from 
 vector w you can use the elementwise method: ``v.elementwise() * w``
 
@@ -67,6 +67,7 @@ Multiple coordinates can be set using slices or swizzling
    | :sg:`Vector2() -> Vector2(0, 0)`
    | :sg:`Vector2(int) -> Vector2`
    | :sg:`Vector2(float) -> Vector2`
+   | :sg:`Vector2(complex) -> Vector2`
    | :sg:`Vector2(Vector2) -> Vector2`
    | :sg:`Vector2(x, y) -> Vector2`
    | :sg:`Vector2((x, y)) -> Vector2`
@@ -76,6 +77,9 @@ Multiple coordinates can be set using slices or swizzling
    .. versionchanged:: 2.1.3 
       Inherited methods of vector subclasses now correctly return an instance of the 
       subclass instead of the superclass
+
+   .. versionchanged:: 2.2.0
+      Added support for instancing vectors with `Vector2(complex)`
 
    .. method:: dot
 
@@ -346,7 +350,7 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`angle_to(Vector2) -> float`
 
       Returns the angle from self to the passed ``Vector2`` that would rotate self
-      to be aligned with the passed ``Vector2`` without crossing over the negative 
+      to be aligned with the passed ``Vector2`` without crossing over the negative
       x-axis.
 
       .. figure:: code_examples/angle_to.png
@@ -410,8 +414,8 @@ Multiple coordinates can be set using slices or swizzling
       **Experimental:** feature still in development available for testing and feedback. It may change.
       `Please leave clamp_magnitude feedback with authors <https://github.com/pygame/pygame/pull/2990>`_
 
-      Returns a new copy of a vector with the magnitude clamped between 
-      ``max_length`` and ``min_length``. If only one argument is passed, it is 
+      Returns a new copy of a vector with the magnitude clamped between
+      ``max_length`` and ``min_length``. If only one argument is passed, it is
       taken to be the ``max_length``
 
       This function raises ``ValueError`` if ``min_length`` is greater than
@@ -455,11 +459,23 @@ Multiple coordinates can be set using slices or swizzling
 
       .. ## Vector2.update ##
 
-   
+
+   .. method:: to_complex
+
+      | :sl:`Converts vector to complex number.`
+      | :sg:`to_complex() -> complex`
+
+      Returns complex number where x is real and y is imaginary.
+
+      .. versionadded:: 2.2.0
+
+      .. ## Vector2.to_complex ##
+
+
    .. attribute:: epsilon
-      
+
       | :sl:`Determines the tolerance of vector calculations.`
-      
+
       Both Vector classes have a value named ``epsilon`` that defaults to ``1e-6``.
       This value acts as a numerical margin in various methods to account for floating point
       arithmetic errors. Specifically, ``epsilon`` is used in the following places:
@@ -485,7 +501,7 @@ Multiple coordinates can be set using slices or swizzling
          print(v == u) # >> False
 
       You'll probably never have to change ``epsilon`` from the default value, but in rare situations you might
-      find that either the margin is too large or too small, in which case changing ``epsilon`` slightly 
+      find that either the margin is too large or too small, in which case changing ``epsilon`` slightly
       might help you out.
 
 
@@ -1024,8 +1040,8 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`clamp_magnitude(max_length) -> Vector3`
       | :sg:`clamp_magnitude(min_length, max_length) -> Vector3`
 
-      Returns a new copy of a vector with the magnitude clamped between 
-      ``max_length`` and ``min_length``. If only one argument is passed, it is 
+      Returns a new copy of a vector with the magnitude clamped between
+      ``max_length`` and ``min_length``. If only one argument is passed, it is
       taken to be the ``max_length``
 
       This function raises ``ValueError`` if ``min_length`` is greater than
@@ -1071,9 +1087,9 @@ Multiple coordinates can be set using slices or swizzling
    .. attribute:: epsilon
 
       | :sl:`Determines the tolerance of vector calculations.`
-      
+
       With lengths within this number, vectors are considered equal. For more information see :attr:`pygame.math.Vector2.epsilon`
-            
+
    .. ##  ##
 
    .. ## pygame.math.Vector3 ##

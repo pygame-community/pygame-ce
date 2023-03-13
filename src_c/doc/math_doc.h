@@ -1,7 +1,7 @@
 /* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
 #define DOC_MATH "pygame module for vector classes"
 #define DOC_MATH_CLAMP "clamp(value, min, max) -> float\nreturns value clamped to min and max."
-#define DOC_MATH_VECTOR2 "Vector2() -> Vector2(0, 0)\nVector2(int) -> Vector2\nVector2(float) -> Vector2\nVector2(Vector2) -> Vector2\nVector2(x, y) -> Vector2\nVector2((x, y)) -> Vector2\na 2-Dimensional Vector"
+#define DOC_MATH_VECTOR2 "Vector2() -> Vector2(0, 0)\nVector2(int) -> Vector2\nVector2(float) -> Vector2\nVector2(complex) -> Vector2\nVector2(Vector2) -> Vector2\nVector2(x, y) -> Vector2\nVector2((x, y)) -> Vector2\na 2-Dimensional Vector"
 #define DOC_MATH_VECTOR2_DOT "dot(Vector2) -> float\ncalculates the dot- or scalar-product with the other vector"
 #define DOC_MATH_VECTOR2_CROSS "cross(Vector2) -> float\ncalculates the cross- or vector-product"
 #define DOC_MATH_VECTOR2_MAGNITUDE "magnitude() -> float\nreturns the Euclidean magnitude of the vector."
@@ -34,6 +34,7 @@
 #define DOC_MATH_VECTOR2_CLAMPMAGNITUDE "clamp_magnitude(max_length) -> Vector2\nclamp_magnitude(min_length, max_length) -> Vector2\nReturns a copy of a vector with the magnitude clamped between max_length and min_length."
 #define DOC_MATH_VECTOR2_CLAMPMAGNITUDEIP "clamp_magnitude_ip(max_length) -> None\nclamp_magnitude_ip(min_length, max_length) -> None\nClamps the vector's magnitude between max_length and min_length"
 #define DOC_MATH_VECTOR2_UPDATE "update() -> None\nupdate(int) -> None\nupdate(float) -> None\nupdate(Vector2) -> None\nupdate(x, y) -> None\nupdate((x, y)) -> None\nSets the coordinates of the vector."
+#define DOC_MATH_VECTOR2_TOCOMPLEX "to_complex() -> complex\nConverts vector to complex number."
 #define DOC_MATH_VECTOR2_EPSILON "Determines the tolerance of vector calculations."
 #define DOC_MATH_VECTOR3 "Vector3() -> Vector3(0, 0, 0)\nVector3(int) -> Vector3\nVector3(float) -> Vector3\nVector3(Vector3) -> Vector3\nVector3(x, y, z) -> Vector3\nVector3((x, y, z)) -> Vector3\na 3-Dimensional Vector"
 #define DOC_MATH_VECTOR3_DOT "dot(Vector3) -> float\ncalculates the dot- or scalar-product with the other vector"
