@@ -1666,7 +1666,7 @@ static PyNumberMethods pg_rect_as_number = {
 static PyObject *
 pg_rect_repr(pgRectObject *self)
 {
-    return PyUnicode_FromFormat("<rect(%d, %d, %d, %d)>", self->r.x, self->r.y,
+    return PyUnicode_FromFormat("Rect(%d, %d, %d, %d)", self->r.x, self->r.y,
                                 self->r.w, self->r.h);
 }
 

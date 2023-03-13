@@ -28,6 +28,7 @@ def SysFont(
 ) -> Font: ...
 
 class Font:
+    name: str
     bold: bool
     italic: bool
     underline: bool

@@ -1096,6 +1096,8 @@ class GeneralSurfaceTests(unittest.TestCase):
         for surf.convert()."""
         pygame.display.quit()
         surf = pygame.Surface((1, 1))
+        filename = example_path(os.path.join("data", "alien3.png"))  # 8bit PNG
+        surf8bit = pygame.image.load(filename)
 
         self.assertRaisesRegex(pygame.error, "display initialized", surf.convert)
 
@@ -1109,6 +1111,7 @@ class GeneralSurfaceTests(unittest.TestCase):
                     self.fail("convert() should not raise an exception here.")
 
             self.assertRaisesRegex(pygame.error, "No video mode", surf.convert)
+            self.assertRaisesRegex(pygame.error, "No video mode", surf8bit.convert)
 
             pygame.display.set_mode((640, 480))
             try:
