@@ -83,9 +83,15 @@ cdef extern from "SDL.h" nogil:
                                   const SDL_FRect * dstrect,
                                   const double angle,
                                   const SDL_FPoint *center,
-                                  const SDL_RendererFlip flip){
-                return -1;
-            }
+                                  const SDL_RendererFlip flip)
+                                  {return -1;}
+            int SDL_RenderDrawLineF(SDL_Renderer* renderer,float x1,float y1,
+                                    float x2,float y2)
+                                    {return -1;}
+            int SDL_RenderDrawPointF(SDL_Renderer * renderer,
+                                    float x, float y)
+                                    {return -1}
+                                    
         #endif
         """
     ctypedef struct SDL_FPoint "_pgsdlFPoint":
@@ -431,8 +437,10 @@ cdef extern from "SDL.h" nogil:
                                             int    depth,
                                             Uint32 format)
     # https://wiki.libsdl.org/SDL_RenderDrawLine
+    # https://wiki.libsdl.org/SDL_RenderDrawLineF
     # https://wiki.libsdl.org/SDL_RenderDrawLines
     # https://wiki.libsdl.org/SDL_RenderDrawPoint
+    # https://wiki.libsdl.org/SDL_RenderDrawPointF
     # https://wiki.libsdl.org/SDL_RenderDrawRect
     # https://wiki.libsdl.org/SDL_RenderFillRect
     # https://wiki.libsdl.org/SDL_RenderGeometry
@@ -441,12 +449,20 @@ cdef extern from "SDL.h" nogil:
                            int y1,
                            int x2,
                            int y2)
+    int SDL_RenderDrawLineF(SDL_Renderer* renderer,
+                           float x1,
+                           float y1,
+                           float x2,
+                           float y2)
     int SDL_RenderDrawLines(SDL_Renderer* renderer,
                             const SDL_Point* points,
                             int count)
     int SDL_RenderDrawPoint(SDL_Renderer* renderer,
                            int x,
                            int y)
+    int SDL_RenderDrawPointF(SDL_Renderer* renderer,
+                           float x,
+                           float y)
     int SDL_RenderDrawRect(SDL_Renderer* renderer,
                            const SDL_Rect* rect)
 
