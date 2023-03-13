@@ -1056,50 +1056,17 @@ cdef class Image:
         :param dstrect: destination rectangle or position on the render target, or None for entire target.
                         The image is stretched to fill dstrect.
         """
-        cdef SDL_Rect src
-        cdef SDL_Rect dst
-        cdef SDL_Rect *csrcrect = NULL
-        cdef SDL_Rect *cdstrect = NULL
-        cdef SDL_Rect *rectptr
-
-        if srcrect is None:
-            csrcrect = &self.srcrect.r
-        else:
-            if pgRect_Check(srcrect):
-                src = (<Rect>srcrect).r
-            else:
-
-                rectptr = pgRect_FromObject(srcrect, &src)
-                if rectptr == NULL:
-                    raise TypeError('srcrect must be a rect or None')
-                src.x = rectptr.x
-                src.y = rectptr.y
-                src.w = rectptr.w
-                src.h = rectptr.h
-
-            src.x += self.srcrect.x
-            src.y += self.srcrect.y
-            csrcrect = &src
-
-        if dstrect is not None:
-            cdstrect = pgRect_FromObject(dstrect, &dst)
-            if cdstrect == NULL:
-                if len(dstrect) == 2:
-                    dst.x = dstrect[0]
-                    dst.y = dstrect[1]
-                    dst.w = self.srcrect.w
-                    dst.h = self.srcrect.h
-                    cdstrect = &dst
-                else:
-                    raise TypeError('dstrect must be a position, rect, or None')
 
         self.texture.color = self._color
         self.texture.alpha = self.alpha
         self.texture.blend_mode = self.blend_mode
-
-        self.texture.draw_internal(csrcrect, cdstrect, self.angle,
-                                   self._originptr, self.flip_x, self.flip_y)
-
+        self.texture.draw(
+            (srcrect if not srcrect is None else self.srcrect),
+            dstrect,
+            self.angle,
+            self.origin,
+            self.flip_x,
+            self.flip_y)
 
 cdef class Renderer:
 
