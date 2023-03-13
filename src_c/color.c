@@ -697,17 +697,29 @@ _color_init(pgColorObject *self, PyObject *args, PyObject *kwds)
     if (!obj && robj) {
         obj = robj;
     }
+    else if (obj && robj) {
+        Py_XDECREF(robj);
+    }
 
     if (!obj1 && gobj) {
         obj1 = gobj;
+    }
+    else if (obj1 && gobj) {
+        Py_XDECREF(gobj);
     }
 
     if (!obj2 && bobj) {
         obj2 = bobj;
     }
+    else if (obj2 && bobj) {
+        Py_XDECREF(bobj);
+    }
 
     if (!obj3 && aobj) {
         obj3 = aobj;
+    }
+    else if (obj3 && aobj) {
+        Py_XDECREF(aobj);
     }
 
     if (!obj1) {
