@@ -11,6 +11,7 @@ on desktop size and the graphics are scaled.
 """
 
 import pygame as pg
+import sys
 
 pg.init()
 
@@ -19,7 +20,13 @@ FPS = 30
 clock = pg.time.Clock()
 
 print("desktops", pg.display.get_desktop_sizes())
-screen = pg.display.set_mode(RES, pg.SCALED | pg.RESIZABLE)
+
+do_vsync = bool("--vsync" in sys.argv)
+
+if do_vsync:
+    screen = pg.display.set_mode(RES, pg.SCALED | pg.RESIZABLE, vsync=1)
+else:
+    screen = pg.display.set_mode(RES, pg.SCALED | pg.RESIZABLE)
 
 # MAIN LOOP
 
@@ -47,9 +54,6 @@ while not done:
             done = True
         if event.type == pg.KEYDOWN and event.key == pg.K_f:
             pg.display.toggle_fullscreen()
-        if event.type == pg.VIDEORESIZE:
-            pg.display._resize_event(event)
-
     i += 1
     i = i % screen.get_width()
     j += i % 2
@@ -59,9 +63,21 @@ while not done:
     pg.draw.circle(screen, (0, 0, 0), (100, 100), 20)
     pg.draw.circle(screen, (0, 0, 200), (0, 0), 10)
     pg.draw.circle(screen, (200, 0, 0), (160, 120), 30)
-    pg.draw.line(screen, (250, 250, 0), (0, 120), (160, 0))
+    if do_vsync:
+        # vertical line that moves horizontally to make screen tearing obvious
+        pg.draw.line(screen, (250, 250, 0), (i, 0), (i, 120))
+    else:
+        pg.draw.line(screen, (250, 250, 0), (0, 120), (160, 0))
     pg.draw.circle(screen, (255, 255, 255), (i, j), 5)
 
-    pg.display.flip()
-    clock.tick(FPS)
+    pg.display.set_caption("FPS:" + str(clock.get_fps()))
+    if do_vsync:
+        pg.display.flip()
+        # FPS should be limited by vsync, so we tick really fast
+        # we only need to have the clock tick to track FPS
+        clock.tick()
+    else:
+        clock.tick(FPS)
+        pg.display.flip()
+
 pg.quit()

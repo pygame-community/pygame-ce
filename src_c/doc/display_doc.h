@@ -28,3 +28,6 @@
 #define DOC_DISPLAY_GETWINDOWSIZE "get_window_size() -> tuple\nReturn the size of the window or screen"
 #define DOC_DISPLAY_GETALLOWSCREENSAVER "get_allow_screensaver() -> bool\nReturn whether the screensaver is allowed to run."
 #define DOC_DISPLAY_SETALLOWSCREENSAVER "set_allow_screensaver(bool) -> None\nSet whether the screensaver may run"
+#define DOC_DISPLAY_ISVSYNC "is_vsync() -> bool\nReturns True if vertical synchronisation for pygame.display.flip() is enabled"
+#define DOC_DISPLAY_GETCURRENTREFRESHRATE "get_current_refresh_rate() -> int\nReturns the screen refresh rate or 0 if unknown"
+#define DOC_DISPLAY_GETDESKTOPREFRESHRATES "get_desktop_refresh_rates() -> list\nReturns the screen refresh rates for all displays (in windowed mode)."
