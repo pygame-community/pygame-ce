@@ -55,8 +55,12 @@ cdef extern from "pygame.h" nogil:
     object pgRect_New(SDL_Rect *r)
     object pgRect_New4(int x, int y, int w, int h)
     SDL_Rect pgRect_AsRect(object rect)
-    void import_pygame_rect()
 
+    int pgFRect_Check(object rect)
+    SDL_FRect *pgFRect_FromObject(object obj, SDL_FRect *temp)
+    object pgFRect_New(SDL_FRect *r)
+    object pgFRect_New4(float x, float y, float w, float h)
+    void import_pygame_rect()
 
     object pgColor_New(Uint8 rgba[])
     object pgColor_NewLength(Uint8 rgba[], Uint8 length)
@@ -731,6 +735,44 @@ cdef class Texture:
                                         angle, originptr, <SDL_RendererFlip>flip)
         if res < 0:
             raise error()
+    
+    cdef _frect_draw(self, SDL_Rect *csrcrect, dstrect=None, float angle=0, origin=None,
+                    bint flip_x=False, bint flip_y=False):
+        
+        cdef SDL_FRect dst
+        cdef SDL_FRect *cdstrect = NULL
+        cdef SDL_FPoint corigin
+        cdef SDL_FPoint *originptr
+
+        if dstrect is not None:
+            cdstrect = pgFRect_FromObject(dstrect, &dst)
+            if cdstrect == NULL:
+                if len(dstrect) == 2:
+                    dst.x = dstrect[0]
+                    dst.y = dstrect[1]
+                    dst.w = self.width
+                    dst.h = self.height
+                    cdstrect = &dst
+                else:
+                    raise TypeError('dstrect must be a position, rect, or None')
+
+        if origin:
+            originptr = &corigin
+            corigin.x = origin[0]
+            corigin.y = origin[1]
+        else:
+            originptr = NULL
+
+        cdef int flip = SDL_FLIP_NONE
+        if flip_x:
+            flip |= SDL_FLIP_HORIZONTAL
+        if flip_y:
+            flip |= SDL_FLIP_VERTICAL
+
+        cdef int res = SDL_RenderCopyExF(self.renderer._renderer, self._tex, csrcrect, cdstrect,
+                                        angle, originptr, <SDL_RendererFlip>flip)
+        if res < 0:
+            raise error()
 
     cpdef void draw(self, srcrect=None, dstrect=None, float angle=0, origin=None,
                     bint flip_x=False, bint flip_y=False):
@@ -755,6 +797,9 @@ cdef class Texture:
             csrcrect = pgRect_FromObject(srcrect, &src)
             if not csrcrect:
                 raise TypeError("the argument is not a rectangle or None")
+        
+        if SDL_VERSION_ATLEAST(2,0,10):
+            self._frect_draw(csrcrect,dstrect,angle,origin,flip_x,flip_y)
 
         if dstrect is not None:
             cdstrect = pgRect_FromObject(dstrect, &dst)
