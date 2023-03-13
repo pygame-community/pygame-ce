@@ -695,6 +695,7 @@ _color_init(pgColorObject *self, PyObject *args, PyObject *kwds)
     }
 
     if (!obj && robj) {
+        printf("HERE\n");
         obj = robj;
     }
     else if (obj && robj) {
@@ -720,6 +721,11 @@ _color_init(pgColorObject *self, PyObject *args, PyObject *kwds)
     }
     else if (obj3 && aobj) {
         Py_XDECREF(aobj);
+    }
+
+    if (!obj) {
+        PyErr_SetString(PyExc_ValueError, "invalid color argument");
+        return -1;
     }
 
     if (!obj1) {
