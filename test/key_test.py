@@ -234,6 +234,14 @@ class KeyModuleTest(unittest.TestCase):
         states = pygame.key.get_pressed()
         self.assertEqual(states[pygame.K_RIGHT], 0)
 
+    def test_get_just_pressed(self):
+        pressed_keys = pygame.key.get_just_pressed()
+        self.assertEqual(pressed_keys[pygame.K_RIGHT], 0)
+
+    def test_get_just_released(self):
+        released_keys = pygame.key.get_just_released()
+        self.assertEqual(released_keys[pygame.K_RIGHT], 0)
+
     def test_get_pressed_not_iter(self):
         states = pygame.key.get_pressed()
         with self.assertRaises(TypeError):
