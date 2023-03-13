@@ -653,7 +653,7 @@ static int
 _color_init(pgColorObject *self, PyObject *args, PyObject *kwds)
 {
     Uint8 *rgba = self->data;
-    PyObject *obj;
+    PyObject *obj = NULL;
     PyObject *obj1 = NULL;
     PyObject *obj2 = NULL;
     PyObject *obj3 = NULL;
@@ -695,7 +695,6 @@ _color_init(pgColorObject *self, PyObject *args, PyObject *kwds)
     }
 
     if (!obj && robj) {
-        printf("HERE\n");
         obj = robj;
     }
     else if (obj && robj) {
