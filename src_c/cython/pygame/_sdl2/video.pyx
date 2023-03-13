@@ -1293,17 +1293,27 @@ cdef class Renderer:
         return dest
 
     def draw_line(self, p1, p2):
-        # https://wiki.libsdl.org/SDL_RenderDrawLine
-        cdef int res = SDL_RenderDrawLine(self._renderer,
-                                          p1[0], p1[1],
-                                          p2[0], p2[1])
+        cdef int res
+        if SDL_VERSION_ATLEAST(2,0,10):
+            res = SDL_RenderDrawLineF(self._renderer,
+                                     p1[0], p1[1],
+                                     p2[0], p2[1])
+        else:
+            res = SDL_RenderDrawLine(self._renderer,
+                                     p1[0], p1[1],
+                                     p2[0], p2[1])
         if res < 0:
             raise error()
 
     def draw_point(self, point):
         # https://wiki.libsdl.org/SDL_RenderDrawPoint
-        cdef int res = SDL_RenderDrawPoint(self._renderer,
-                                           point[0], point[1])
+        cdef int res
+        if SDL_VERSION_ATLEAST(2,0,10):
+            res = SDL_RenderDrawPointF(self._renderer,
+                                    point[0], point[1])
+        else:
+            res = SDL_RenderDrawPoint(self._renderer,
+                                    point[0], point[1])
         if res < 0:
             raise error()
 
