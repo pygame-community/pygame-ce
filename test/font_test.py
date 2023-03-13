@@ -251,8 +251,8 @@ class FontTest(unittest.TestCase):
             font_surface = f.render(
                 text="   bar",
                 antialias=True,
-                color=(0, 0, 0),
-                background=(255, 255, 255),
+                fgcolor=(0, 0, 0),
+                bgcolor=(255, 255, 255),
                 wraplength=0,
             )
             font_rect = font_surface.get_rect()

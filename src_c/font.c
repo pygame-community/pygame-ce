@@ -486,8 +486,8 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
     const char *astring = "";
     int wraplength = 0;
 
-    static char *kwlist[] = {"text",       "antialias",  "color",
-                             "background", "wraplength", NULL};
+    static char *kwlist[] = {"text",    "antialias",  "fgcolor",
+                             "bgcolor", "wraplength", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "OpO|Oi", kwlist, &text,
                                      &antialias, &fg_rgba_obj, &bg_rgba_obj,
