@@ -77,6 +77,18 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(c, (100, 110, 120, 128))
 
     def test_init_kwargs(self):
+        with self.assertRaises(ValueError) as f:
+            pygame.Color(r=(1, 1, 1, 1))
+
+        with self.assertRaises(ValueError) as f:
+            pygame.Color(g=(1, 1, 1, 1))
+
+        with self.assertRaises(ValueError) as f:
+            pygame.Color(b=(1, 1, 1, 1))
+
+        with self.assertRaises(ValueError) as f:
+            pygame.Color(a=(1, 1, 1, 1))
+
         colors = [
             pygame.Color(r=10, g=20, b=30, a=200),
             pygame.Color(10, g=20, b=30, a=200),

@@ -657,12 +657,69 @@ _color_init(pgColorObject *self, PyObject *args, PyObject *kwds)
     PyObject *obj1 = NULL;
     PyObject *obj2 = NULL;
     PyObject *obj3 = NULL;
+    PyObject *robj = NULL;
+    PyObject *gobj = NULL;
+    PyObject *bobj = NULL;
+    PyObject *aobj = NULL;
 
-    static char *kwlist[] = {"r", "g", "b", "a", NULL};
+    static char *kwlist[] = {"", "", "", "", "r", "g", "b", "a", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist, &obj, &obj1,
-                                     &obj2, &obj3)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOOOOOO", kwlist, &obj,
+                                     &obj1, &obj2, &obj3, &robj, &gobj, &bobj,
+                                     &aobj)) {
         return -1;
+    }
+
+    if (robj && PyTuple_Check(robj)) {
+        PyErr_SetString(PyExc_ValueError,
+                        "invalid value for 'r' keyword argument");
+        return -1;
+    }
+
+    if (gobj && PyTuple_Check(gobj)) {
+        PyErr_SetString(PyExc_ValueError,
+                        "invalid value for 'g' keyword argument");
+        return -1;
+    }
+
+    if (bobj && PyTuple_Check(bobj)) {
+        PyErr_SetString(PyExc_ValueError,
+                        "invalid value for 'b' keyword argument");
+        return -1;
+    }
+
+    if (aobj && PyTuple_Check(aobj)) {
+        PyErr_SetString(PyExc_ValueError,
+                        "invalid value for 'a' keyword argument");
+        return -1;
+    }
+
+    if (!obj && robj) {
+        obj = robj;
+    }
+    else if (obj && robj) {
+        Py_DECREF(robj);
+    }
+
+    if (!obj1 && gobj) {
+        obj1 = gobj;
+    }
+    else if (obj1 && gobj) {
+        Py_DECREF(gobj);
+    }
+
+    if (!obj2 && bobj) {
+        obj2 = bobj;
+    }
+    else if (obj2 && bobj) {
+        Py_DECREF(bobj);
+    }
+
+    if (!obj3 && aobj) {
+        obj3 = aobj;
+    }
+    else if (obj3 && aobj) {
+        Py_DECREF(aobj);
     }
 
     if (!obj1) {
