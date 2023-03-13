@@ -3,6 +3,12 @@
 
 from .sdl2 cimport *
 
+cdef extern from "pgcompat_rect.h" nogil:
+    ctypedef struct SDL_FRect:
+        float x, y
+        float w, h
+
+
 cdef extern from "SDL.h" nogil:
     ctypedef struct SDL_Window
     ctypedef struct SDL_Texture
@@ -67,6 +73,18 @@ cdef extern from "SDL.h" nogil:
 
             int SDL_SetTextureScaleMode(SDL_Texture * texture, _pgsdlScaleMode scaleMode){
                 return 0;
+            }
+        #endif
+
+        #if !(SDL_VERSION_ATLEAST(2,0,10))
+            int SDL_RenderCopyExF(SDL_Renderer * renderer,
+                                  SDL_Texture * texture,
+                                  const SDL_Rect * srcrect,
+                                  const SDL_FRect * dstrect,
+                                  const double angle,
+                                  const SDL_FPoint *center,
+                                  const SDL_RendererFlip flip){
+                return -1;
             }
         #endif
         """
@@ -134,6 +152,7 @@ cdef extern from "SDL.h" nogil:
     # https://wiki.libsdl.org/SDL_RenderClear
     # https://wiki.libsdl.org/SDL_RenderCopy
     # https://wiki.libsdl.org/SDL_RenderCopyEx
+    # https://wiki.libsdl.org/SDL_RenderCopyExF
     # https://wiki.libsdl.org/SDL_RenderPresent
     int SDL_SetRenderDrawColor(SDL_Renderer* renderer,
                                Uint8         r,
@@ -160,6 +179,13 @@ cdef extern from "SDL.h" nogil:
                          const double           angle,
                          const SDL_Point*       center,
                          const SDL_RendererFlip flip)
+    int SDL_RenderCopyExF(SDL_Renderer*          renderer,
+                          SDL_Texture*           texture,
+                          const SDL_Rect*        srcrect,
+                          const SDL_FRect*       dstrect,
+                          const double           angle,
+                          const SDL_FPoint*      center,
+                          const SDL_RendererFlip flip)
     void SDL_RenderPresent(SDL_Renderer* renderer)
     # https://wiki.libsdl.org/SDL_RenderGetViewport
     # https://wiki.libsdl.org/SDL_RenderSetViewport
@@ -487,6 +513,8 @@ cdef class Texture:
     cdef draw_internal(self, SDL_Rect *csrcrect, SDL_Rect *cdstrect, float angle=*, SDL_Point *originptr=*,
                        bint flip_x=*, bint flip_y=*)
     cpdef void draw(self, srcrect=*, dstrect=*, float angle=*, origin=*,
+                    bint flip_x=*, bint flip_y=*)
+    cdef _frect_draw(self,SDL_Rect *csrcrect, dstrect=*, float angle=*, origin=*,
                     bint flip_x=*, bint flip_y=*)
 
 cdef class Image:
