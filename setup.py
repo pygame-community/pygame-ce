@@ -165,7 +165,7 @@ def compilation_help():
     print('\n---')
     print('For help with compilation see:')
     print(f'    {url}')
-    print('To contribute to pygame development see:')
+    print('To contribute to pygame-ce development see:')
     print('    https://github.com/pygame-community/pygame-ce')
     print('---\n')
 
@@ -949,7 +949,7 @@ class FormatCommand(LintFormatCommand):
 
 @add_command('docs')
 class DocsCommand(Command):
-    """ For building the pygame documentation with `python setup.py docs`.
+    """ For building the pygame-ce documentation with `python setup.py docs`.
     This generates html, and documentation .h header files.
     """
     user_options = [
