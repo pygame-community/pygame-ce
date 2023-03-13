@@ -1,7 +1,7 @@
 /* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
 #define DOC_MATH "pygame module for vector classes"
 #define DOC_MATH_CLAMP "clamp(value, min, max) -> float\nreturns value clamped to min and max."
-#define DOC_MATH_VECTOR2 "Vector2() -> Vector2(0, 0)\nVector2(int) -> Vector2\nVector2(float) -> Vector2\nVector2(Vector2) -> Vector2\nVector2(x, y) -> Vector2\nVector2((x, y)) -> Vector2\na 2-Dimensional Vector"
+#define DOC_MATH_VECTOR2 "Vector2() -> Vector2(0, 0)\nVector2(int) -> Vector2\nVector2(float) -> Vector2\nVector2(complex) -> Vector2\nVector2(Vector2) -> Vector2\nVector2(x, y) -> Vector2\nVector2((x, y)) -> Vector2\na 2-Dimensional Vector"
 #define DOC_MATH_VECTOR2_DOT "dot(Vector2) -> float\ncalculates the dot- or scalar-product with the other vector"
 #define DOC_MATH_VECTOR2_CROSS "cross(Vector2) -> float\ncalculates the cross- or vector-product"
 #define DOC_MATH_VECTOR2_MAGNITUDE "magnitude() -> float\nreturns the Euclidean magnitude of the vector."
