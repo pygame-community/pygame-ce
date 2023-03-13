@@ -60,7 +60,7 @@ class Font(_Font):
         self.underline_adjustment = 1.0
 
     def render(self, text, antialias, color, background=None):
-        """render(text, antialias, color, background=None) -> Surface
+        """render(text, antialias, color, background=None, wraplength=0) -> Surface
         draw text on a new Surface"""
 
         if text is None:

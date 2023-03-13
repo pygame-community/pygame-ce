@@ -245,6 +245,26 @@ class FontTest(unittest.TestCase):
         self.assertEqual(tuple(screen.get_at((0, 0)))[:3], (255, 255, 255))
         self.assertEqual(tuple(screen.get_at(font_rect.topleft))[:3], (255, 255, 255))
 
+        # this test should only be run with FontTest not FtFontTest
+        if str(self.__class__) == "Font":
+            screen.fill((10, 10, 10))
+            font_surface = f.render(
+                text="   bar",
+                antialias=True,
+                fgcolor=(0, 0, 0),
+                bgcolor=(255, 255, 255),
+                wraplength=0,
+            )
+            font_rect = font_surface.get_rect()
+            font_rect.topleft = rect.topleft
+            self.assertTrue(font_surface)
+            screen.blit(font_surface, font_rect, font_rect)
+            pygame.display.update()
+            self.assertEqual(tuple(screen.get_at((0, 0)))[:3], (255, 255, 255))
+            self.assertEqual(
+                tuple(screen.get_at(font_rect.topleft))[:3], (255, 255, 255)
+            )
+
         # If we don't have a real display, don't do this test.
         # Transparent background doesn't seem to work without a read video card.
         if os.environ.get("SDL_VIDEODRIVER") != "dummy":

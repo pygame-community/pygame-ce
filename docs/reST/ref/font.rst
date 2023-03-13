@@ -278,7 +278,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: render
 
       | :sl:`draw text on a new Surface`
-      | :sg:`render(text, antialias, color, background=None, wraplength=0) -> Surface`
+      | :sg:`render(text, antialias, fgcolor, bgcolor=None, wraplength=0) -> Surface`
 
       This creates a new Surface with the specified text rendered on it. 
       :mod:`pygame.font` provides no way to directly draw text on an existing
@@ -331,6 +331,8 @@ solves no longer exists, it will likely be removed in the future.
          multiple lines.
 
       .. versionadded:: 2.1.4 wraplength parameter
+
+      .. versionchanged:: 2.2.0 now supports keyword arguments.
 
       .. ## Font.render ##
 
