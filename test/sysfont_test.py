@@ -44,6 +44,25 @@ class SysfontModuleTest(unittest.TestCase):
 
         self.assertTrue(len(pygame.sysfont.get_fonts()) > 10)
 
+    def test_sysfont_warnings(self):
+        import pygame.font
+
+        pygame.font.init()
+
+        with self.assertWarns(UserWarning):
+            pygame.font.SysFont("non-existent font", 40)
+
+        with self.assertWarns(UserWarning):
+            pygame.font.SysFont(bytes("non-existent font", "utf-8"), 40)
+
+        with self.assertWarns(UserWarning):
+            pygame.font.SysFont(("non-existent font", "non-existent font2"), 40)
+
+        with self.assertWarns(UserWarning):
+            pygame.font.SysFont(
+                (bytes("non-existent font", "utf-8"), "non-existent font2"), 40
+            )
+
 
 ###############################################################################
 

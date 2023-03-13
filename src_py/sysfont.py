@@ -19,9 +19,9 @@
 # pete@shinners.org
 """sysfont, used in the font module to find system fonts"""
 
+import warnings
 import os
 import sys
-import warnings
 from os.path import basename, dirname, exists, join, splitext
 
 from pygame.font import Font
@@ -451,6 +451,29 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
                     gotitalic = italic
             if fontname:
                 break
+
+        else:
+            if len(name) > 1:
+                name = list(name)
+
+                for idx, single_name in enumerate(name):
+                    if isinstance(single_name, bytes):
+                        name[idx] = single_name.decode()
+
+                names = "', '".join(name)
+                warnings.warn(
+                    f"None of the specified system fonts "
+                    f"('{names}') could be found. "
+                    f"Using the default font instead."
+                )
+            else:
+                single_name = (
+                    name[0].decode() if isinstance(name[0], bytes) else name[0]
+                )
+                warnings.warn(
+                    f"The system font '{single_name}' couldn't be "
+                    "found. Using the default font instead."
+                )
 
     set_bold = set_italic = False
     if bold and not gotbold:
