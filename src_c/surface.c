@@ -499,8 +499,37 @@ surface_str(PyObject *self)
         return PyUnicode_FromString("<Surface(Dead Display)>");
     }
 
-    return PyUnicode_FromFormat("<Surface(%dx%dx%d SW)>", surf->w, surf->h,
-                                surf->format->BitsPerPixel);
+    PyObject *colorkey = surf_get_colorkey((pgSurfaceObject *)self, NULL);
+    if (colorkey == NULL) {
+        return NULL;
+    }
+    PyObject *global_alpha = surf_get_alpha((pgSurfaceObject *)self, NULL);
+    if (global_alpha == NULL) {
+        Py_DECREF(colorkey);
+        return NULL;
+    }
+
+    // 49 is max len of format str, plus null terminator
+    char format[50] = "<Surface(%dx%dx%d";
+    if (PyObject_IsTrue(colorkey)) {
+        strcat(format, ", colorkey=%S");
+    }
+    if (PyObject_IsTrue(global_alpha)) {
+        strcat(format, ", global_alpha=%S");
+    }
+    strcat(format, ")>");
+
+    // Because PyUnicode_FromFormat ignores extra args, if we have no colorkey,
+    // but alpha, we can "move up" the global alpha to this spot No need to do
+    // this vice-versa, as it ignores extra args
+    PyObject *formatted_str = PyUnicode_FromFormat(
+        format, surf->w, surf->h, surf->format->BitsPerPixel,
+        PyObject_IsTrue(colorkey) ? colorkey : global_alpha, global_alpha);
+
+    Py_DECREF(colorkey);
+    Py_DECREF(global_alpha);
+
+    return formatted_str;
 }
 
 static intptr_t
