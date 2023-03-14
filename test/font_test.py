@@ -260,7 +260,7 @@ class FontTest(unittest.TestCase):
                 antialias=True,
                 fgcolor=(0, 0, 0),
                 bgcolor=(255, 255, 255),
-                style=pygame_font.STYLE_DEFAULT,
+                style=pygame_font.Font.STYLE_DEFAULT,
                 rotation=0,
                 size=0,
             )
