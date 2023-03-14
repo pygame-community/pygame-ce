@@ -499,8 +499,8 @@ surface_str(PyObject *self)
         return PyUnicode_FromString("<Surface(Dead Display)>");
     }
 
-    PyObject *colorkey = surf_get_colorkey(self, NULL);
-    PyObject *global_alpha = surf_get_alpha(self, NULL);
+    PyObject *colorkey = surf_get_colorkey((pgSurfaceObject *)self, NULL);
+    PyObject *global_alpha = surf_get_alpha((pgSurfaceObject *)self, NULL);
 
     // 46 is max len of format str, plus null terminator
     char format[47] = "<Surface %dx%dx%d";
