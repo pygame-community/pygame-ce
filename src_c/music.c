@@ -382,12 +382,7 @@ _load_music(PyObject *obj, char *namehint)
     MIXER_INIT_CHECK();
 
     rw = pgRWops_FromObject(obj, &ext);
-    if (rw ==
-        NULL) { /* stop on NULL, error already set is what we SHOULD do */
-        PyErr_Fetch(&_type, &error, &_traceback);
-        PyErr_SetObject(PyExc_FileNotFoundError, error);
-        Py_XDECREF(_type);
-        Py_XDECREF(_traceback);
+    if (rw == NULL) {
         return NULL;
     }
     if (namehint) {
