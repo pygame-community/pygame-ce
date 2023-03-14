@@ -259,7 +259,7 @@ class FontTest(unittest.TestCase):
                 text="   bar",
                 antialias=True,
                 fgcolor=(0, 0, 0),
-                bgcolor=(255, 255, 255)
+                bgcolor=(255, 255, 255),
             )
         screen.fill((10, 10, 10))
         font_rect = font_surface.get_rect()
