@@ -1370,11 +1370,21 @@ cdef class Renderer:
     def draw_triangle(self, p1, p2, p3):
         # https://wiki.libsdl.org/SDL_RenderDrawLines
         cdef SDL_Point points[4]
-        for i, pos in enumerate((p1, p2, p3, p1)):
-            points[i].x = pos[0]
-            points[i].y = pos[1]
+        cdef SDL_FPoint fpoints[4]
+        if SDL_VERSION_ATLEAST(2,0,10):
+            for i, pos in enumerate((p1, p2, p3, p1)):
+                fpoints[i].x = pos[0]
+                fpoints[i].y = pos[1]
 
-        res = SDL_RenderDrawLines(self._renderer, points, 4)
+            res = SDL_RenderDrawLinesF(self._renderer, fpoints, 4)
+
+        else:
+            for i, pos in enumerate((p1, p2, p3, p1)):
+                points[i].x = pos[0]
+                points[i].y = pos[1]
+
+            res = SDL_RenderDrawLines(self._renderer, points, 4)
+
         if res < 0:
             raise error()
 
@@ -1399,11 +1409,20 @@ cdef class Renderer:
     def draw_quad(self, p1, p2, p3, p4):
         # https://wiki.libsdl.org/SDL_RenderDrawLines
         cdef SDL_Point points[5]
-        for i, pos in enumerate((p1, p2, p3, p4, p1)):
-            points[i].x = pos[0]
-            points[i].y = pos[1]
+        cdef SDL_FPoint fpoints[5]
+        if SDL_VERSION_ATLEAST(2,0,10):
+            for i, pos in enumerate((p1, p2, p3, p4, p1)):
+                fpoints[i].x = pos[0]
+                fpoints[i].y = pos[1]
 
-        res = SDL_RenderDrawLines(self._renderer, points, 5)
+            res = SDL_RenderDrawLinesF(self._renderer, fpoints, 5)
+
+        else:
+            for i, pos in enumerate((p1, p2, p3, p4, p1)):
+                points[i].x = pos[0]
+                points[i].y = pos[1]
+
+            res = SDL_RenderDrawLines(self._renderer, points, 5)
         if res < 0:
             raise error()
 

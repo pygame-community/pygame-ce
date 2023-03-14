@@ -95,6 +95,10 @@ cdef extern from "SDL.h" nogil:
                                     {return -1;}
             int SDL_RenderFillRectF(SDL_Renderer* renderer, const SDL_FRect* rect)
                                     {return -1;}
+            int SDL_RenderDrawLinesF(SDL_Renderer* renderer,
+                                    const SDL_FPoint* points,
+                                    int count)
+                                    {return -1;}
                                     
         #endif
         """
@@ -443,6 +447,7 @@ cdef extern from "SDL.h" nogil:
     # https://wiki.libsdl.org/SDL_RenderDrawLine
     # https://wiki.libsdl.org/SDL_RenderDrawLineF
     # https://wiki.libsdl.org/SDL_RenderDrawLines
+    # https://wiki.libsdl.org/SDL_RenderDrawLinesF
     # https://wiki.libsdl.org/SDL_RenderDrawPoint
     # https://wiki.libsdl.org/SDL_RenderDrawPointF
     # https://wiki.libsdl.org/SDL_RenderDrawRect
@@ -462,6 +467,9 @@ cdef extern from "SDL.h" nogil:
                            float y2)
     int SDL_RenderDrawLines(SDL_Renderer* renderer,
                             const SDL_Point* points,
+                            int count)
+    int SDL_RenderDrawLinesF(SDL_Renderer* renderer,
+                            const SDL_FPoint* points,
                             int count)
     int SDL_RenderDrawPoint(SDL_Renderer* renderer,
                            int x,
