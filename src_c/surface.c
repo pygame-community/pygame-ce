@@ -510,10 +510,12 @@ surface_str(PyObject *self)
         strcat(format, " global_alpha=%S");
     strcat(format, ">");
 
-    // Because PyUnicode_FromFormat ignores extra args, if we have no colorkey, but alpha, we can "move up" the global alpha to this spot
-    // No need to do this vice-versa, as it ignores extra args
-    return PyUnicode_FromFormat(format, surf->w, surf->h,
-                                surf->format->BitsPerPixel, PyObject_IsTrue(colorkey) ? colorkey : global_alpha, global_alpha);
+    // Because PyUnicode_FromFormat ignores extra args, if we have no colorkey,
+    // but alpha, we can "move up" the global alpha to this spot No need to do
+    // this vice-versa, as it ignores extra args
+    return PyUnicode_FromFormat(
+        format, surf->w, surf->h, surf->format->BitsPerPixel,
+        PyObject_IsTrue(colorkey) ? colorkey : global_alpha, global_alpha);
 }
 
 static intptr_t

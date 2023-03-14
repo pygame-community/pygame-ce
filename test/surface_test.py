@@ -70,12 +70,17 @@ class SurfaceTypeTest(unittest.TestCase):
 
         surf_colorkey = pygame.Surface((70, 70), 0, 32)
         surf_colorkey.set_colorkey("purple")
-        self.assertEqual(repr(surf_colorkey), "<Surface 70x70x32 colorkey=(160, 32, 240, 255)>")
+        self.assertEqual(
+            repr(surf_colorkey), "<Surface 70x70x32 colorkey=(160, 32, 240, 255)>"
+        )
 
         surf_colorkey_global = pygame.Surface((70, 70), 32)
         surf_colorkey_global.set_colorkey("orange")
         surf_colorkey_global.set_alpha(200)
-        self.assertEqual(repr(surf_colorkey_global), "<Surface 70x70x32 colorkey=(255, 165, 0, 255) global_alpha=200>")
+        self.assertEqual(
+            repr(surf_colorkey_global),
+            "<Surface 70x70x32 colorkey=(255, 165, 0, 255) global_alpha=200>",
+        )
 
         surf_16_global = pygame.Surface((70, 70), 0, 16)
         surf_16_global.set_alpha(200)
@@ -83,7 +88,6 @@ class SurfaceTypeTest(unittest.TestCase):
 
         surf_8 = pygame.Surface((70, 70), 0, 8)
         self.assertEqual(repr(surf_8), "<Surface 70x70x8>")
-
 
     def test_keyword_arguments(self):
         surf = pygame.Surface((70, 70), flags=SRCALPHA, depth=32)
@@ -1100,8 +1104,12 @@ class GeneralSurfaceTests(unittest.TestCase):
             self.assertEqual(im.get_palette(), ((0, 0, 0, 255), (255, 255, 255, 255)))
             self.assertEqual(im2.get_palette(), ((0, 0, 0, 255), (0, 0, 0, 255)))
 
-            self.assertEqual(repr(im.convert(32)), "<Surface 24x24x32 colorkey=(0, 0, 0, 255)>")
-            self.assertEqual(repr(im2.convert(32)), "<Surface 469x137x32 colorkey=(0, 0, 0, 255)>")
+            self.assertEqual(
+                repr(im.convert(32)), "<Surface 24x24x32 colorkey=(0, 0, 0, 255)>"
+            )
+            self.assertEqual(
+                repr(im2.convert(32)), "<Surface 469x137x32 colorkey=(0, 0, 0, 255)>"
+            )
 
             # Ensure a palette format to palette format works.
             im3 = im.convert(8)
