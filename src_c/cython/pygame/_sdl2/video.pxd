@@ -543,8 +543,6 @@ cdef class Texture:
     cdef readonly int width
     cdef readonly int height
 
-    cdef draw_internal(self, SDL_Rect *csrcrect, SDL_Rect *cdstrect, float angle=*, SDL_Point *originptr=*,
-                       bint flip_x=*, bint flip_y=*)
     cpdef void draw(self, srcrect=*, dstrect=*, float angle=*, origin=*,
                     bint flip_x=*, bint flip_y=*)
     cdef _frect_draw(self,SDL_Rect *csrcrect, dstrect=*, float angle=*, origin=*,

@@ -723,19 +723,6 @@ cdef class Texture:
 
         return rect
 
-    cdef draw_internal(self, SDL_Rect *csrcrect, SDL_Rect *cdstrect, float angle=0, SDL_Point *originptr=NULL,
-                       bint flip_x=False, bint flip_y=False):
-        cdef int flip = SDL_FLIP_NONE
-        if flip_x:
-            flip |= SDL_FLIP_HORIZONTAL
-        if flip_y:
-            flip |= SDL_FLIP_VERTICAL
-
-        cdef int res = SDL_RenderCopyEx(self.renderer._renderer, self._tex, csrcrect, cdstrect,
-                                        angle, originptr, <SDL_RendererFlip>flip)
-        if res < 0:
-            raise error()
-    
     cdef _frect_draw(self, SDL_Rect *csrcrect, dstrect=None, float angle=0, origin=None,
                     bint flip_x=False, bint flip_y=False):
         
@@ -820,8 +807,16 @@ cdef class Texture:
         else:
             originptr = NULL
 
-        self.draw_internal(csrcrect, cdstrect, angle, originptr,
-                           flip_x, flip_y)
+        cdef int flip = SDL_FLIP_NONE
+        if flip_x:
+            flip |= SDL_FLIP_HORIZONTAL
+        if flip_y:
+            flip |= SDL_FLIP_VERTICAL
+
+        cdef int res = SDL_RenderCopyEx(self.renderer._renderer, self._tex, csrcrect, cdstrect,
+                                        angle, originptr, <SDL_RendererFlip>flip)
+        if res < 0:
+            raise error()
 
     def draw_triangle(self, p1_xy, p2_xy, p3_xy,
                       p1_uv=(0.0, 0.0), p2_uv=(1.0, 1.0), p3_uv=(0.0, 1.0),
