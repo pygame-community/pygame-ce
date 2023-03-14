@@ -55,51 +55,37 @@ _debug_print256_num(__m256i var, const char *msg)
 
 #define __AVX2__ 1
 
-#define SETUP_AVX2_BLITTER                                                    \
-    int n;                                                                    \
-    int width = info->width;                                                  \
-    int height = info->height;                                                \
-                                                                              \
-    Uint32 *srcp = (Uint32 *)info->s_pixels;                                  \
-    int srcskip = info->s_skip >> 2;                                          \
-    int srcpxskip = info->s_pxskip >> 2;                                      \
-                                                                              \
-    Uint32 *dstp = (Uint32 *)info->d_pixels;                                  \
-    int dstskip = info->d_skip >> 2;                                          \
-    int dstpxskip = info->d_pxskip >> 2;                                      \
-                                                                              \
-    int pre_8_width = width % 8;                                              \
-    int post_8_width = width / 8;                                             \
-                                                                              \
-    __m256i *srcp256 = (__m256i *)info->s_pixels;                             \
-    __m256i *dstp256 = (__m256i *)info->d_pixels;                             \
-                                                                              \
-    /* Alpha offset (in 16 bit space). Once a pixel has been extracted */     \
-    /* into the AVX registers, it looks like [0][A][0][R][0][G][0][B] */      \
-    /* -- except the location of the alpha is not guaranteed to be the */     \
-    /* same on different pixelformats, so we need to find the offset */       \
-    /* to further extract the alpha */                                        \
-    /* src->Ashift is in bits, so Ashift / 8 * 2 (because of 16 bit space) */ \
-    /* derives to Ashift >> 2 */                                              \
-    int a_off = info->src->Ashift >> 2;                                       \
-                                                                              \
-    __m256i shuff_out_alpha = _mm256_set_epi8(                                \
-        0x80, 8 + a_off, 0x80, 8 + a_off, 0x80, 8 + a_off, 0x80, 8 + a_off,   \
-        0x80, 0 + a_off, 0x80, 0 + a_off, 0x80, 0 + a_off, 0x80, 0 + a_off,   \
-        0x80, 8 + a_off, 0x80, 8 + a_off, 0x80, 8 + a_off, 0x80, 8 + a_off,   \
-        0x80, 0 + a_off, 0x80, 0 + a_off, 0x80, 0 + a_off, 0x80, 0 + a_off);  \
-                                                                              \
-    /* Since this operates on 8 pixels at a time, it needs to mask out */     \
-    /* 0-7 pixels for partial loads/stores at periphery of blit area */       \
-    __m256i _partial8_mask =                                                  \
-        _mm256_set_epi32(0x00, (pre_8_width > 6) ? 0x80000000 : 0x00,         \
-                         (pre_8_width > 5) ? 0x80000000 : 0x00,               \
-                         (pre_8_width > 4) ? 0x80000000 : 0x00,               \
-                         (pre_8_width > 3) ? 0x80000000 : 0x00,               \
-                         (pre_8_width > 2) ? 0x80000000 : 0x00,               \
-                         (pre_8_width > 1) ? 0x80000000 : 0x00,               \
-                         (pre_8_width > 0) ? 0x80000000 : 0x00);              \
-                                                                              \
+/* Setup for RUN_AVX2_BLITTER */
+#define SETUP_AVX2_BLITTER                                                \
+    int n;                                                                \
+    int width = info->width;                                              \
+    int height = info->height;                                            \
+                                                                          \
+    Uint32 *srcp = (Uint32 *)info->s_pixels;                              \
+    int srcskip = info->s_skip >> 2;                                      \
+    int srcpxskip = info->s_pxskip >> 2;                                  \
+                                                                          \
+    Uint32 *dstp = (Uint32 *)info->d_pixels;                              \
+    int dstskip = info->d_skip >> 2;                                      \
+    int dstpxskip = info->d_pxskip >> 2;                                  \
+                                                                          \
+    int pre_8_width = width % 8;                                          \
+    int post_8_width = width / 8;                                         \
+                                                                          \
+    __m256i *srcp256 = (__m256i *)info->s_pixels;                         \
+    __m256i *dstp256 = (__m256i *)info->d_pixels;                         \
+                                                                          \
+    /* Since this operates on 8 pixels at a time, it needs to mask out */ \
+    /* 0-7 pixels for partial loads/stores at periphery of blit area */   \
+    __m256i _partial8_mask =                                              \
+        _mm256_set_epi32(0x00, (pre_8_width > 6) ? 0x80000000 : 0x00,     \
+                         (pre_8_width > 5) ? 0x80000000 : 0x00,           \
+                         (pre_8_width > 4) ? 0x80000000 : 0x00,           \
+                         (pre_8_width > 3) ? 0x80000000 : 0x00,           \
+                         (pre_8_width > 2) ? 0x80000000 : 0x00,           \
+                         (pre_8_width > 1) ? 0x80000000 : 0x00,           \
+                         (pre_8_width > 0) ? 0x80000000 : 0x00);          \
+                                                                          \
     __m256i pixels_src, pixels_dst;
 
 /* Interface definition
@@ -144,6 +130,7 @@ _debug_print256_num(__m256i var, const char *msg)
         dstp256 = (__m256i *)(dstp + dstskip);                               \
     }
 
+/* Setup for RUN_16BIT_SHUFFLE_OUT */
 #define SETUP_16BIT_SHUFFLE_OUT                                               \
     __m256i shuff_out_A =                                                     \
         _mm256_set_epi8(0x80, 23, 0x80, 22, 0x80, 21, 0x80, 20, 0x80, 19,     \
@@ -183,6 +170,23 @@ _debug_print256_num(__m256i var, const char *msg)
     /* ==== recombine A and B pixels ==== */                   \
     pixels_dst = _mm256_packus_epi16(_shuff16_temp, shuff_dst);
 
+/* Interface definition
+ * Input variables: "info" SDL_BlitInfo object
+ * Output variables: `shuff_out_alpha` shuffle control mask.
+ *
+ * Takes a pixel in AVX2 registers like             [0][A][0][R][0][G][0][B]
+ * (or however RGBA are aligned) and turns it into  [0][A][0][A][0][A][0][A]
+ * */
+#define ADD_SHUFFLE_OUT_ALPHA_CONTROL                                     \
+    int _a_off = info->src->Ashift >> 2;                                  \
+                                                                          \
+    __m256i shuff_out_alpha = _mm256_set_epi8(                            \
+        0x80, 8 + _a_off, 0x80, 8 + _a_off, 0x80, 8 + _a_off, 0x80,       \
+        8 + _a_off, 0x80, 0 + _a_off, 0x80, 0 + _a_off, 0x80, 0 + _a_off, \
+        0x80, 0 + _a_off, 0x80, 8 + _a_off, 0x80, 8 + _a_off, 0x80,       \
+        8 + _a_off, 0x80, 8 + _a_off, 0x80, 0 + _a_off, 0x80, 0 + _a_off, \
+        0x80, 0 + _a_off, 0x80, 0 + _a_off);
+
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
 void
@@ -190,6 +194,7 @@ alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
 {
     SETUP_AVX2_BLITTER
     SETUP_16BIT_SHUFFLE_OUT
+    ADD_SHUFFLE_OUT_ALPHA_CONTROL
 
     __m256i src_alpha, temp;
 
@@ -254,6 +259,7 @@ alphablit_alpha_avx2_argb_no_surf_alpha(SDL_BlitInfo *info)
 {
     SETUP_AVX2_BLITTER
     SETUP_16BIT_SHUFFLE_OUT
+    ADD_SHUFFLE_OUT_ALPHA_CONTROL
 
     // Used to choose which byte to use when pulling from the RGBX buffer and
     // the dst alpha buffer. Chooses the RGBX buffer most of the time, chooses
