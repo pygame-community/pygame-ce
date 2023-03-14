@@ -53,8 +53,6 @@ pg_avx2_at_runtime_but_uncompiled()
 //    printf("h: %llX\n", *(z + 1));
 //}
 
-#define __AVX2__ 1
-
 /* Setup for RUN_AVX2_BLITTER */
 #define SETUP_AVX2_BLITTER                                                \
     int n;                                                                \
