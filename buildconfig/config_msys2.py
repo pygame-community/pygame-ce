@@ -1,7 +1,7 @@
 """Config on MSYS2"""
 
 # The search logic is adapted from config_win.
-# This assumes that the PyGame dependencies are resolved
+# This assumes that the pygame-ce dependencies are resolved
 # by MSYS2 packages.
 
 try:

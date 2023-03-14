@@ -1,5 +1,5 @@
 #
-# Pygame documentation build configuration file, created by
+# pygame-ce documentation build configuration file, created by
 # sphinx-quickstart on Sat Mar  5 11:56:39 2011.
 #
 # This file is execfile()d with the current directory set to its containing dir.

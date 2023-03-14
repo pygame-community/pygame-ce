@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -633,6 +633,15 @@ font_size(PyObject *self, PyObject *text)
 }
 
 static PyObject *
+font_getter_name(PyObject *self, void *closure)
+{
+    TTF_Font *font = PyFont_AsFont(self);
+    const char *font_name = TTF_FontFaceFamilyName(font);
+
+    return PyUnicode_FromString(font_name);
+}
+
+static PyObject *
 font_metrics(PyObject *self, PyObject *textobj)
 {
     TTF_Font *font = PyFont_AsFont(self);
@@ -779,12 +788,12 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
             break;
         }
 
-/*  There is a bug in SDL2 up to 2.26.3 (the current release version as of
+/*  There is a bug in SDL_ttf up to 2.22.0 (the next release version as of
    writing this) This bug flips the top-to-bottom and bottom-to-top rendering.
    So, this is a compat patch for that behavior
  */
 #if SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \
-                   SDL_TTF_PATCHLEVEL) <= SDL_VERSIONNUM(2, 26, 3)
+                   SDL_TTF_PATCHLEVEL) < SDL_VERSIONNUM(2, 22, 0)
         case 2: {
             dir = TTF_DIRECTION_BTT;
             break;
@@ -831,6 +840,7 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
  * Getters and setters for the pgFontObject.
  */
 static PyGetSetDef font_getsets[] = {
+    {"name", (getter)font_getter_name, NULL, DOC_FONT_FONT_NAME, NULL},
     {"bold", (getter)font_getter_bold, (setter)font_setter_bold,
      DOC_FONT_FONT_BOLD, NULL},
     {"italic", (getter)font_getter_italic, (setter)font_setter_italic,

@@ -12,6 +12,8 @@
 #define DOC_TRANSFORM_SETSMOOTHSCALEBACKEND "set_smoothscale_backend(backend) -> None\nset smoothscale filter version to one of: 'GENERIC', 'MMX', or 'SSE'"
 #define DOC_TRANSFORM_CHOP "chop(surface, rect) -> Surface\ngets a copy of an image with an interior area removed"
 #define DOC_TRANSFORM_LAPLACIAN "laplacian(surface, dest_surface=None) -> Surface\nfind edges in a surface"
+#define DOC_TRANSFORM_BOXBLUR "box_blur(surface, radius, repeat_edge_pixels=True, dest_surface=None) -> Surface\nblur a surface using box blur"
+#define DOC_TRANSFORM_GAUSSIANBLUR "gaussian_blur(surface, radius, repeat_edge_pixels=True, dest_surface=None) -> Surface\nblur a surface using gaussian blur"
 #define DOC_TRANSFORM_AVERAGESURFACES "average_surfaces(surfaces, dest_surface=None, palette_colors=1) -> Surface\nfind the average surface from many surfaces."
 #define DOC_TRANSFORM_AVERAGECOLOR "average_color(surface, rect=None, consider_alpha=False) -> Color\nfinds the average color of a surface"
 #define DOC_TRANSFORM_INVERT "average_color(surface, dest_surface=None) -> Surface\ninverts the RGB elements of a surface"
