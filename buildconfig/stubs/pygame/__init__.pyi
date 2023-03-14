@@ -26,7 +26,6 @@ from pygame import (
     sprite as sprite,
     surfarray as surfarray,
     transform as transform,
-    fastevent as fastevent,
     scrap as scrap,
     threads as threads,
     version as version,
@@ -42,6 +41,7 @@ from pygame import (
     surflock as surflock,
     sysfont as sysfont,
     _debug as _debug,
+    system as system,
 )
 
 from .rect import Rect as Rect, FRect as FRect

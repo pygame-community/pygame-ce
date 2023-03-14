@@ -26,7 +26,6 @@ jobs:
 
       - name: Install deps
         run: |
-          sudo apt-mark hold grub-efi-amd64-signed
           sudo apt-get update --fix-missing
           sudo apt-get upgrade
           sudo apt install cppcheck

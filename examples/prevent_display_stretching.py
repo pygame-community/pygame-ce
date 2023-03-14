@@ -6,7 +6,7 @@ Prevent display stretching on Windows.
 On some computers, the display environment can be configured to stretch
 all windows so that they will not appear too small on the screen for
 the user. This configuration is especially common on high-DPI displays.
-pygame graphics appear distorted when automatically stretched by the
+pygame-ce graphics appear distorted when automatically stretched by the
 display environment. This script demonstrates a technique for preventing
 this stretching and distortion.
 

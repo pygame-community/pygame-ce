@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -584,7 +584,7 @@ static PyNumberMethods pg_frect_as_number = {
 static PyObject *
 pg_rect_repr(pgRectObject *self)
 {
-    return PyUnicode_FromFormat("<rect(%d, %d, %d, %d)>", self->r.x, self->r.y,
+    return PyUnicode_FromFormat("Rect(%d, %d, %d, %d)", self->r.x, self->r.y,
                                 self->r.w, self->r.h);
 }
 

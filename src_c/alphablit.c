@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
   Copyright (C) 2006 Rene Dudfield
   Copyright (C) 2007 Marcus von Appen
@@ -116,7 +116,7 @@ blit_blend_premultiplied_mmx(SDL_BlitInfo *info);
 
 static int
 SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
-               SDL_Rect *dstrect, int the_args);
+               SDL_Rect *dstrect, int blend_flags);
 extern int
 SDL_RLESurface(SDL_Surface *surface);
 extern void
@@ -124,7 +124,7 @@ SDL_UnRLESurface(SDL_Surface *surface, int recode);
 
 static int
 SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
-               SDL_Rect *dstrect, int the_args)
+               SDL_Rect *dstrect, int blend_flags)
 {
     int okay;
     int src_locked;
@@ -202,13 +202,13 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
             }
             /* Convert alpha multiply blends to regular blends if either of
              the surfaces don't have alpha channels */
-            if (the_args == PYGAME_BLEND_RGBA_MULT &&
+            if (blend_flags == PYGAME_BLEND_RGBA_MULT &&
                 (info.src_blend == SDL_BLENDMODE_NONE ||
                  info.dst_blend == SDL_BLENDMODE_NONE)) {
-                the_args = PYGAME_BLEND_MULT;
+                blend_flags = PYGAME_BLEND_MULT;
             }
 
-            switch (the_args) {
+            switch (blend_flags) {
                 case 0: {
                     if (info.src_blend != SDL_BLENDMODE_NONE &&
                         src->format->Amask) {
@@ -2839,7 +2839,7 @@ alphablit_solid(SDL_BlitInfo *info)
 /*we assume the "dst" has pixel alpha*/
 int
 pygame_Blit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
-            SDL_Rect *dstrect, int the_args)
+            SDL_Rect *dstrect, int blend_flags)
 {
     SDL_Rect fulldst;
     int srcx, srcy, w, h;
@@ -2925,7 +2925,7 @@ pygame_Blit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
         sr.y = srcy;
         sr.w = dstrect->w = w;
         sr.h = dstrect->h = h;
-        return SoftBlitPyGame(src, &sr, dst, dstrect, the_args);
+        return SoftBlitPyGame(src, &sr, dst, dstrect, blend_flags);
     }
     dstrect->w = dstrect->h = 0;
     return 0;
@@ -2933,9 +2933,9 @@ pygame_Blit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
 
 int
 pygame_AlphaBlit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
-                 SDL_Rect *dstrect, int the_args)
+                 SDL_Rect *dstrect, int blend_flags)
 {
-    return pygame_Blit(src, srcrect, dst, dstrect, the_args);
+    return pygame_Blit(src, srcrect, dst, dstrect, blend_flags);
 }
 
 int

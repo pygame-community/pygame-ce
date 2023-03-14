@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Library General Public
@@ -24,7 +24,7 @@
  * This module allows for use of v4l2 webcams in pygame. The code is written
  * such that adding support for vfw cameras should be possible without
  * much modification of existing functions. v4l2 functions are kept separate
- * from functions available to pygame users and generic functions like
+ * from functions available to pygame-ce users and generic functions like
  * colorspace conversion.
  *
  * There is currently support for cameras that support MMAP and use
@@ -45,7 +45,7 @@
 #endif
 */
 
-/* functions available to pygame users */
+/* functions available to pygame-ce users */
 PyObject *
 surf_colorspace(PyObject *self, PyObject *arg);
 PyObject *
@@ -68,8 +68,8 @@ PyObject *
 camera_get_raw(pgCameraObject *self, PyObject *args);
 
 /*
- * Functions available to pygame users.  The idea is to make these as simple as
- * possible, and merely have them call functions specific to the type of
+ * Functions available to pygame-ce users.  The idea is to make these as simple
+ * as possible, and merely have them call functions specific to the type of
  * camera being used to do all the real work.  It currently just calls v4l2_*
  * functions, but it could check something like self->cameratype and depending
  * on the result, call v4l, v4l2, vfw, or other functions.
