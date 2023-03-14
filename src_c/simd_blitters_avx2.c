@@ -337,6 +337,8 @@ alphablit_alpha_avx2_argb_surf_alpha(SDL_BlitInfo *info)
 
     __m256i src_alpha, temp, dst_alpha, new_dst_alpha;
 
+    int dst_alpha_offset = (info->dst->Amask ? 0 : 255);
+
     __m256i modulate_alpha = _mm256_set1_epi16(info->src_blanket_alpha);
 
     /*
@@ -354,6 +356,10 @@ alphablit_alpha_avx2_argb_surf_alpha(SDL_BlitInfo *info)
             7);
 
         dst_alpha = _mm256_shuffle_epi8(shuff_dst, shuff_out_alpha);
+        // if the destination is opaque, it takes the max of each alpha with 255
+        // otherwise it takes with the max with 0. This is equivalent to
+        // if opaque: alpha = 255
+        dst_alpha = _mm256_max_epi16(dst_alpha, _mm256_set1_epi16(dst_alpha_offset));
 
         // figure out alpha
         temp = _mm256_mullo_epi16(src_alpha, dst_alpha);
