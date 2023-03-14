@@ -8,7 +8,7 @@ import platform
 
 import pygame
 from pygame import font as pygame_font  # So font can be replaced with ftfont
-
+from pygame._freetype import STYLE_DEFAULT
 
 FONTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "fonts")
 
@@ -260,7 +260,7 @@ class FontTest(unittest.TestCase):
                 antialias=True,
                 fgcolor=(0, 0, 0),
                 bgcolor=(255, 255, 255),
-                style=pygame_font.Font.STYLE_DEFAULT,
+                style=STYLE_DEFAULT,
                 rotation=0,
                 size=0,
             )
