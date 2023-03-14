@@ -346,51 +346,49 @@ alphablit_alpha_avx2_argb_surf_alpha(SDL_BlitInfo *info)
      dstA = srcA + dstA - ((srcA * dstA) / 255);
      */
 
-    RUN_AVX2_BLITTER(
-        RUN_16BIT_SHUFFLE_OUT(
-            src_alpha = _mm256_shuffle_epi8(shuff_src, shuff_out_alpha);
+    RUN_AVX2_BLITTER(RUN_16BIT_SHUFFLE_OUT(
+        src_alpha = _mm256_shuffle_epi8(shuff_src, shuff_out_alpha);
 
-            // src_alpha = src_alpha * module_alpha / 255
-            src_alpha = _mm256_mullo_epi16(src_alpha, modulate_alpha);
-            src_alpha = _mm256_srli_epi16(
-                _mm256_mulhi_epu16(src_alpha,
-                                   _mm256_set1_epi16((short)0x8081)),
-                7);
+        // src_alpha = src_alpha * module_alpha / 255
+        src_alpha = _mm256_mullo_epi16(src_alpha, modulate_alpha);
+        src_alpha = _mm256_srli_epi16(
+            _mm256_mulhi_epu16(src_alpha, _mm256_set1_epi16((short)0x8081)),
+            7);
 
-            dst_alpha = _mm256_shuffle_epi8(shuff_dst, shuff_out_alpha);
-            // if the destination is opaque, it takes the max of each alpha
-            // with 255 otherwise it takes with the max with 0. This is
-            // equivalent to if opaque: alpha = 255
-            dst_alpha = _mm256_max_epi16(dst_alpha,
-                                         _mm256_set1_epi16(dst_alpha_offset));
+        dst_alpha = _mm256_shuffle_epi8(shuff_dst, shuff_out_alpha);
+        // if the destination is opaque, it takes the max of each alpha
+        // with 255 otherwise it takes with the max with 0. This is
+        // equivalent to if opaque: alpha = 255
+        dst_alpha =
+            _mm256_max_epi16(dst_alpha, _mm256_set1_epi16(dst_alpha_offset));
 
-            // figure out alpha
-            temp = _mm256_mullo_epi16(src_alpha, dst_alpha);
-            temp = _mm256_srli_epi16(
-                _mm256_mulhi_epu16(temp, _mm256_set1_epi16((short)0x8081)), 7);
-            new_dst_alpha = _mm256_sub_epi16(dst_alpha, temp);
-            new_dst_alpha = _mm256_add_epi16(src_alpha, new_dst_alpha);
+        // figure out alpha
+        temp = _mm256_mullo_epi16(src_alpha, dst_alpha);
+        temp = _mm256_srli_epi16(
+            _mm256_mulhi_epu16(temp, _mm256_set1_epi16((short)0x8081)), 7);
+        new_dst_alpha = _mm256_sub_epi16(dst_alpha, temp);
+        new_dst_alpha = _mm256_add_epi16(src_alpha, new_dst_alpha);
 
-            // if preexisting dst alpha is 0, src alpha should be set to 255
-            // enforces that dest alpha 0 means "copy source RGB"
-            // happens after real src alpha values used to calculate dst alpha
-            // compares each 16 bit block to zeroes, yielding 0xFFFF or
-            // 0x0000-- shifts out bottom 8 bits to get to 0x00FF or 0x0000.
-            dst_alpha = _mm256_cmpeq_epi16(dst_alpha, _mm256_setzero_si256());
-            dst_alpha = _mm256_srli_epi16(dst_alpha, 8);
-            src_alpha = _mm256_max_epu8(dst_alpha, src_alpha);
+        // if preexisting dst alpha is 0, src alpha should be set to 255
+        // enforces that dest alpha 0 means "copy source RGB"
+        // happens after real src alpha values used to calculate dst alpha
+        // compares each 16 bit block to zeroes, yielding 0xFFFF or
+        // 0x0000-- shifts out bottom 8 bits to get to 0x00FF or 0x0000.
+        dst_alpha = _mm256_cmpeq_epi16(dst_alpha, _mm256_setzero_si256());
+        dst_alpha = _mm256_srli_epi16(dst_alpha, 8);
+        src_alpha = _mm256_max_epu8(dst_alpha, src_alpha);
 
-            // figure out RGB
-            temp = _mm256_sub_epi16(shuff_src, shuff_dst);
-            temp = _mm256_mullo_epi16(temp, src_alpha);
-            temp = _mm256_add_epi16(temp, shuff_src);
-            shuff_dst = _mm256_slli_epi16(shuff_dst, 8);
-            shuff_dst = _mm256_add_epi16(shuff_dst, temp);
-            shuff_dst = _mm256_srli_epi16(shuff_dst, 8);
+        // figure out RGB
+        temp = _mm256_sub_epi16(shuff_src, shuff_dst);
+        temp = _mm256_mullo_epi16(temp, src_alpha);
+        temp = _mm256_add_epi16(temp, shuff_src);
+        shuff_dst = _mm256_slli_epi16(shuff_dst, 8);
+        shuff_dst = _mm256_add_epi16(shuff_dst, temp);
+        shuff_dst = _mm256_srli_epi16(shuff_dst, 8);
 
-            // blend together dstRGB and dstA
-            shuff_dst = _mm256_blendv_epi8(shuff_dst, new_dst_alpha,
-                                           combine_rgba_mask);))
+        // blend together dstRGB and dstA
+        shuff_dst =
+            _mm256_blendv_epi8(shuff_dst, new_dst_alpha, combine_rgba_mask);))
 }
 #else
 void
