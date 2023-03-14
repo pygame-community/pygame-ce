@@ -2581,6 +2581,10 @@ class FRectTypeTest(RectTypeTest):
         """This test is not for FRect"""
         pass  # Unused
 
+    def testRepr(self):
+        rect = Rect(12, 34, 56, 78)
+        self.assertEqual(repr(rect), "FRect(12.0, 34.0, 56.0, 78.0)")
+
     def test_clipline__equal_endpoints_no_overlap(self):
         """Ensures clipline handles lines with both endpoints the same.
 

@@ -594,7 +594,7 @@ pg_frect_repr(pgFRectObject *self)
     /* kinda weird workaround/hack to format floats with `PyUnicode_FromFormat`
      */
     return PyUnicode_FromFormat(
-        "<frect(%S, %S, %S, %S)>", PyFloat_FromFloat(self->r.x),
+        "FRect(%S, %S, %S, %S)", PyFloat_FromFloat(self->r.x),
         PyFloat_FromFloat(self->r.y), PyFloat_FromFloat(self->r.w),
         PyFloat_FromFloat(self->r.h));
 }
