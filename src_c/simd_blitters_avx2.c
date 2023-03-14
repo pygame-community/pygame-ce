@@ -45,13 +45,13 @@ pg_avx2_at_runtime_but_uncompiled()
 
 /* just prints the first/lower 128 bits, in two chunks */
 // static void
-_debug_print256_num(__m256i var, const char *msg)
-{
-    printf("%s\n", msg);
-    Uint64 *z = (Uint64 *)&var;
-    printf("l: %llX\n", *z);
-    printf("h: %llX\n", *(z + 1));
-}
+//_debug_print256_num(__m256i var, const char *msg)
+//{
+//    printf("%s\n", msg);
+//    Uint64 *z = (Uint64 *)&var;
+//    printf("l: %llX\n", *z);
+//    printf("h: %llX\n", *(z + 1));
+//}
 
 #define __AVX2__ 1
 
@@ -353,7 +353,8 @@ alphablit_alpha_avx2_argb_surf_alpha(SDL_BlitInfo *info)
         // src_alpha = src_alpha * module_alpha / 255
         src_alpha = _mm256_mullo_epi16(src_alpha, modulate_alpha);
         src_alpha = _mm256_srli_epi16(
-            _mm256_mulhi_epu16(src_alpha, _mm256_set1_epi16((short)0x8081)), 7);
+            _mm256_mulhi_epu16(src_alpha, _mm256_set1_epi16((short)0x8081)),
+            7);
 
         dst_alpha = _mm256_shuffle_epi8(shuff_dst, shuff_out_alpha);
 
