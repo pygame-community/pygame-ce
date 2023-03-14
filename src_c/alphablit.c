@@ -224,7 +224,7 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
 #if PG_ENABLE_SSE_NEON
                             if ((pg_HasSSE_NEON()) && (src != dst)) {
                                 if (info.src_blanket_alpha != 255) {
-                                    if (pg_has_avx2() && 1) {
+                                    if (pg_has_avx2()) {
                                         alphablit_alpha_avx2_argb_surf_alpha(
                                             &info);
                                     }

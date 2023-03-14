@@ -55,7 +55,6 @@ pg_avx2_at_runtime_but_uncompiled()
 
 /* Setup for RUN_AVX2_BLITTER */
 #define SETUP_AVX2_BLITTER                                                \
-    int n;                                                                \
     int width = info->width;                                              \
     int height = info->height;                                            \
                                                                           \
