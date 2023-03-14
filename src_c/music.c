@@ -375,9 +375,6 @@ _load_music(PyObject *obj, char *namehint)
     Mix_Music *new_music = NULL;
     char *ext = NULL, *type = NULL;
     SDL_RWops *rw = NULL;
-    PyObject *_type = NULL;
-    PyObject *error = NULL;
-    PyObject *_traceback = NULL;
 
     MIXER_INIT_CHECK();
 
