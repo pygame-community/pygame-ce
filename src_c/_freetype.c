@@ -2224,13 +2224,7 @@ MODINIT_DEFINE(_freetype)
         return NULL;
     }
 
-#if defined(__EMSCRIPTEN__)
-//_PGFT_Init(&(FREETYPE_MOD_STATE(_freetypemodule)->freetype), 0);
-#pragma message "NO _PGFT_Init"
     FREETYPE_MOD_STATE(_freetypemodule)->freetype = 0;
-#else
-    FREETYPE_MOD_STATE(_freetypemodule)->freetype = 0;
-#endif
     FREETYPE_MOD_STATE(_freetypemodule)->cache_size = 0;
     FREETYPE_MOD_STATE(_freetypemodule)->resolution = PGFT_DEFAULT_RESOLUTION;
 
