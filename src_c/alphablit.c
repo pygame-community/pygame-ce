@@ -224,14 +224,20 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
 #if PG_ENABLE_SSE_NEON
                             if ((pg_HasSSE_NEON()) && (src != dst)) {
                                 if (info.src_blanket_alpha != 255) {
-                                    alphablit_alpha_sse2_argb_surf_alpha(
-                                        &info);
+                                    if (pg_has_avx2() && 1) {
+                                        alphablit_alpha_avx2_argb_surf_alpha(
+                                            &info);
+                                    }
+                                    else {
+                                        alphablit_alpha_sse2_argb_surf_alpha(
+                                            &info);
+                                    }
                                 }
                                 else {
                                     if (SDL_ISPIXELFORMAT_ALPHA(
                                             dst->format->format) &&
                                         info.dst_blend != SDL_BLENDMODE_NONE) {
-                                        if (SDL_HasAVX2()) {
+                                        if (pg_has_avx2()) {
                                             alphablit_alpha_avx2_argb_no_surf_alpha(
                                                 &info);
                                         }
@@ -240,7 +246,7 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                                                 &info);
                                         }
                                     }
-                                    else if (SDL_HasAVX2()) {
+                                    else if (pg_has_avx2()) {
                                         alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(
                                             &info);
                                     }
