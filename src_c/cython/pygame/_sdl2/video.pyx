@@ -1320,24 +1320,50 @@ cdef class Renderer:
     def draw_rect(self, rect):
         # https://wiki.libsdl.org/SDL_RenderDrawRect
         cdef SDL_Rect _rect
-        cdef SDL_Rect *rectptr = pgRect_FromObject(rect, &_rect)
+        cdef SDL_Rect *rectptr
+        cdef SDL_FRect _frect
+        cdef SDL_FRect *frectptr
+        cdef int res
 
-        if rectptr == NULL:
-            raise TypeError('expected a rectangle')
+        if SDL_VERSION_ATLEAST(2,0,10):
+            frectptr = pgFRect_FromObject(rect, &_frect)
+            if frectptr == NULL:
+                raise TypeError('expected a rectangle')
 
-        cdef int res = SDL_RenderDrawRect(self._renderer, rectptr)
+            res = SDL_RenderDrawRectF(self._renderer, frectptr)
+
+        else:
+            rectptr = pgRect_FromObject(rect, &_rect)
+            if rectptr == NULL:
+                raise TypeError('expected a rectangle')
+
+            res = SDL_RenderDrawRect(self._renderer, rectptr)
+
         if res < 0:
             raise error()
 
     def fill_rect(self, rect):
         # https://wiki.libsdl.org/SDL_RenderFillRect
         cdef SDL_Rect _rect
-        cdef SDL_Rect *rectptr = pgRect_FromObject(rect, &_rect)
+        cdef SDL_Rect *rectptr
+        cdef SDL_FRect _frect
+        cdef SDL_FRect *frectptr
+        cdef int res
 
-        if rectptr == NULL:
-            raise TypeError('expected a rectangle')
+        if SDL_VERSION_ATLEAST(2,0,10):
+            frectptr = pgFRect_FromObject(rect, &_frect)
+            if frectptr == NULL:
+                raise TypeError('expected a rectangle')
 
-        cdef int res = SDL_RenderFillRect(self._renderer, rectptr)
+            res = SDL_RenderFillRectF(self._renderer, frectptr)
+
+        else:
+            rectptr = pgRect_FromObject(rect, &_rect)
+            if rectptr == NULL:
+                raise TypeError('expected a rectangle')
+
+            res = SDL_RenderFillRect(self._renderer, rectptr)
+
         if res < 0:
             raise error()
 

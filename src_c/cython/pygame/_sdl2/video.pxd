@@ -90,7 +90,11 @@ cdef extern from "SDL.h" nogil:
                                     {return -1;}
             int SDL_RenderDrawPointF(SDL_Renderer * renderer,
                                     float x, float y)
-                                    {return -1}
+                                    {return -1;}
+            int SDL_RenderDrawRectF(SDL_Renderer* renderer, const SDL_FRect* rect)
+                                    {return -1;}
+            int SDL_RenderFillRectF(SDL_Renderer* renderer, const SDL_FRect* rect)
+                                    {return -1;}
                                     
         #endif
         """
@@ -442,7 +446,9 @@ cdef extern from "SDL.h" nogil:
     # https://wiki.libsdl.org/SDL_RenderDrawPoint
     # https://wiki.libsdl.org/SDL_RenderDrawPointF
     # https://wiki.libsdl.org/SDL_RenderDrawRect
+    # https://wiki.libsdl.org/SDL_RenderDrawRectF
     # https://wiki.libsdl.org/SDL_RenderFillRect
+    # https://wiki.libsdl.org/SDL_RenderFillRectF
     # https://wiki.libsdl.org/SDL_RenderGeometry
     int SDL_RenderDrawLine(SDL_Renderer* renderer,
                            int x1,
@@ -465,9 +471,12 @@ cdef extern from "SDL.h" nogil:
                            float y)
     int SDL_RenderDrawRect(SDL_Renderer* renderer,
                            const SDL_Rect* rect)
-
+    int SDL_RenderDrawRectF(SDL_Renderer* renderer,
+                           const SDL_FRect* rect)
     int SDL_RenderFillRect(SDL_Renderer*   renderer,
                            const SDL_Rect* rect)
+    int SDL_RenderFillRectF(SDL_Renderer*   renderer,
+                           const SDL_FRect* rect)
     int SDL_RenderGeometry(SDL_Renderer* renderer,
                            SDL_Texture* texture,
                            const SDL_Vertex* vertices,
