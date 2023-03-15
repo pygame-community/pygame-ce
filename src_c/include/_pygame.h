@@ -64,7 +64,7 @@
     (PG_VERSIONNUM(PG_MAJOR_VERSION, PG_MINOR_VERSION, PG_PATCH_VERSION) >= \
      PG_VERSIONNUM(MAJOR, MINOR, PATCH))
 
-#include "../pgcompat.h"
+#include "pgcompat.h"
 
 /* Flag indicating a pg_buffer; used for assertions within callbacks */
 #ifndef NDEBUG
