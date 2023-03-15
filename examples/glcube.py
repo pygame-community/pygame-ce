@@ -41,7 +41,6 @@ except ImportError:
     print("numpy missing. The GLCUBE example requires: pyopengl numpy")
     raise SystemExit
 
-
 # do we want to use the 'modern' OpenGL API or the old one?
 # This example shows you how to do both.
 USE_MODERN_GL = True
@@ -508,7 +507,7 @@ def draw_cube_modern(shader_data, filled_cube_indices, outline_cube_indices, rot
 
     # Rotate cube
     # rotation.theta += 1.0  # degrees
-    rotation.phi += 1.0  # degrees
+    # rotation.phi += 1.0  # degrees
     # rotation.psi += 1.0  # degrees
     model = eye(4, dtype=float32)
     # rotate(model, rotation.theta, 0, 0, 1)
@@ -522,6 +521,7 @@ def main():
 
     # initialize pygame-ce and setup an opengl display
     pg.init()
+    clock = pg.time.Clock()
 
     gl_version = (3, 0)  # GL Version number (Major, Minor)
     if USE_MODERN_GL:
@@ -535,10 +535,14 @@ def main():
             pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE
         )
 
-    fullscreen = False  # start in windowed mode
-
+    # start in windowed mode
     display_size = (640, 480)
-    pg.display.set_mode(display_size, pg.OPENGL | pg.DOUBLEBUF | pg.RESIZABLE)
+    try:
+        pg.display.set_mode(
+            display_size, pg.OPENGL | pg.DOUBLEBUF | pg.RESIZABLE, vsync=1
+        )
+    except:
+        pg.display.set_mode(display_size, pg.OPENGL | pg.DOUBLEBUF | pg.RESIZABLE)
 
     if USE_MODERN_GL:
         gpu, f_indices, o_indices = init_gl_modern(display_size)
@@ -546,6 +550,7 @@ def main():
     else:
         init_gl_stuff_old()
 
+    delta_time = 0
     going = True
     while going:
         # check for quit'n events
@@ -557,14 +562,14 @@ def main():
                 going = False
 
             elif event.type == pg.KEYDOWN and event.key == pg.K_f:
-                if not fullscreen:
+                if not pg.display.is_fullscreen():
                     print("Changing to FULLSCREEN")
                     pg.display.set_mode(
-                        (640, 480), pg.OPENGL | pg.DOUBLEBUF | pg.FULLSCREEN
+                        display_size, pg.OPENGL | pg.DOUBLEBUF | pg.FULLSCREEN
                     )
                 else:
                     print("Changing to windowed mode")
-                    pg.display.set_mode((640, 480), pg.OPENGL | pg.DOUBLEBUF)
+                    pg.display.set_mode(display_size, pg.OPENGL | pg.DOUBLEBUF)
                 fullscreen = not fullscreen
                 if gl_version[0] >= 4 or (gl_version[0] == 3 and gl_version[1] >= 2):
                     gpu, f_indices, o_indices = init_gl_modern(display_size)
@@ -572,17 +577,23 @@ def main():
                 else:
                     init_gl_stuff_old()
 
+        # orbit camera around by 60 degrees per second
+        angle = (delta_time / 1000) * 60
         if USE_MODERN_GL:
+            rotation.phi += angle
             draw_cube_modern(gpu, f_indices, o_indices, rotation)
         else:
             # clear screen and move camera
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
-            # orbit camera around by 1 degree
-            GL.glRotatef(1, 0, 1, 0)
+            # rotate camera to angle
+            GL.glRotatef(angle, 0, 1, 0)
             drawcube_old()
 
         pg.display.flip()
-        pg.time.wait(10)
+        if pg.display.is_vsync():
+            delta_time = clock.tick()
+        else:
+            delta_time = clock.tick(60)
 
     pg.quit()
 
