@@ -1,5 +1,5 @@
 /*
-    pygame - Python Game Library
+    pygame-ce - Python Game Library
     Copyright (C) 2006, 2007 Rene Dudfield, Marcus von Appen
 
     Originally written and put in the public domain by Sam Lantinga.
@@ -337,14 +337,14 @@ static PyMethodDef scrap_builtins[] = {
  */
 #if (defined(WIN_SCRAP) || defined(SDL2_SCRAP))
 
-    {"init", _scrap_init, 1, DOC_PYGAMESCRAPINIT},
-    {"get_init", _scrap_get_init, METH_NOARGS, DOC_PYGAMESCRAPGETINIT},
-    {"contains", _scrap_contains, METH_VARARGS, DOC_PYGAMESCRAPCONTAINS},
-    {"get", _scrap_get_scrap, METH_VARARGS, DOC_PYGAMESCRAPGET},
-    {"get_types", _scrap_get_types, METH_NOARGS, DOC_PYGAMESCRAPGETTYPES},
-    {"put", _scrap_put_scrap, METH_VARARGS, DOC_PYGAMESCRAPPUT},
-    {"lost", _scrap_lost_scrap, METH_NOARGS, DOC_PYGAMESCRAPLOST},
-    {"set_mode", _scrap_set_mode, METH_VARARGS, DOC_PYGAMESCRAPSETMODE},
+    {"init", _scrap_init, 1, DOC_SCRAP_INIT},
+    {"get_init", _scrap_get_init, METH_NOARGS, DOC_SCRAP_GETINIT},
+    {"contains", _scrap_contains, METH_VARARGS, DOC_SCRAP_CONTAINS},
+    {"get", _scrap_get_scrap, METH_VARARGS, DOC_SCRAP_GET},
+    {"get_types", _scrap_get_types, METH_NOARGS, DOC_SCRAP_GETTYPES},
+    {"put", _scrap_put_scrap, METH_VARARGS, DOC_SCRAP_PUT},
+    {"lost", _scrap_lost_scrap, METH_NOARGS, DOC_SCRAP_LOST},
+    {"set_mode", _scrap_set_mode, METH_VARARGS, DOC_SCRAP_SETMODE},
 
 #endif
     {NULL, NULL, 0, NULL}};
@@ -353,7 +353,7 @@ MODINIT_DEFINE(scrap)
 {
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "scrap",
-                                         "",
+                                         DOC_SCRAP,
                                          -1,
                                          scrap_builtins,
                                          NULL,

@@ -1,5 +1,5 @@
 /*
-    pygame - Python Game Library
+    pygame-ce - Python Game Library
     Copyright (C) 2000-2001  Pete Shinners
 
     This library is free software; you can redistribute it and/or
@@ -118,6 +118,9 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
         return NULL; /* Exception already set. */
     }
 
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
     if (!blend) {
         if (PyErr_WarnEx(
                 PyExc_DeprecationWarning,
@@ -127,8 +130,6 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
             return NULL;
         }
     }
-
-    surf = pgSurface_AsSurface(surfobj);
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -191,6 +192,7 @@ line(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -265,6 +267,7 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -398,6 +401,7 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -520,6 +524,7 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -595,6 +600,7 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -643,6 +649,7 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
     SDL_Surface *surf = NULL;
     Uint8 rgba[4];
     Uint32 color;
+    SDL_Rect cliprect;
     PyObject *posobj, *radiusobj;
     int posx, posy, radius;
     int width = 0; /* Default values. */
@@ -678,6 +685,7 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -693,6 +701,15 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (width > radius) {
         width = radius;
+    }
+
+    SDL_GetClipRect(surf, &cliprect);
+
+    if (posx > cliprect.x + cliprect.w + radius ||
+        posx < cliprect.x - radius ||
+        posy > cliprect.y + cliprect.h + radius ||
+        posy < cliprect.y - radius) {
+        return pgRect_New4(posx, posy, 0, 0);
     }
 
     if (!pgSurface_Lock(surfobj)) {
@@ -767,6 +784,7 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -884,6 +902,8 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
@@ -1999,6 +2019,15 @@ draw_circle_filled(SDL_Surface *surf, int x0, int y0, int radius, Uint32 color,
     int ddF_y = -2 * radius;
     int x = 0;
     int y = radius;
+    int xmin = INT_MAX;
+    int xmax = INT_MIN;
+
+    if (x0 < 0) {
+        xmin = x0 + INT_MAX + 1;
+    }
+    else {
+        xmax = INT_MAX - x0;
+    }
 
     while (x < y) {
         if (f >= 0) {
@@ -2013,15 +2042,16 @@ draw_circle_filled(SDL_Surface *surf, int x0, int y0, int radius, Uint32 color,
         /* optimisation to avoid overdrawing and repeated return rect checks:
            only draw a line if y-step is about to be decreased. */
         if (f >= 0) {
-            drawhorzlineclipbounding(surf, color, x0 - x, y0 + y - 1,
-                                     x0 + x - 1, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - x, y0 - y, x0 + x - 1,
+            drawhorzlineclipbounding(surf, color, x0 - MIN(x, xmin),
+                                     y0 + y - 1, x0 + MIN(x - 1, xmax),
                                      drawn_area);
+            drawhorzlineclipbounding(surf, color, x0 - MIN(x, xmin), y0 - y,
+                                     x0 + MIN(x - 1, xmax), drawn_area);
         }
-        drawhorzlineclipbounding(surf, color, x0 - y, y0 + x - 1, x0 + y - 1,
-                                 drawn_area);
-        drawhorzlineclipbounding(surf, color, x0 - y, y0 - x, x0 + y - 1,
-                                 drawn_area);
+        drawhorzlineclipbounding(surf, color, x0 - MIN(y, xmin), y0 + x - 1,
+                                 x0 + MIN(y - 1, xmax), drawn_area);
+        drawhorzlineclipbounding(surf, color, x0 - MIN(y, xmin), y0 - x,
+                                 x0 + MIN(y - 1, xmax), drawn_area);
     }
 }
 
@@ -2519,22 +2549,20 @@ draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
 /* List of python functions */
 static PyMethodDef _draw_methods[] = {
     {"aaline", (PyCFunction)aaline, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWAALINE},
-    {"line", (PyCFunction)line, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWLINE},
+     DOC_DRAW_AALINE},
+    {"line", (PyCFunction)line, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_LINE},
     {"aalines", (PyCFunction)aalines, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWAALINES},
+     DOC_DRAW_AALINES},
     {"lines", (PyCFunction)lines, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWLINES},
+     DOC_DRAW_LINES},
     {"ellipse", (PyCFunction)ellipse, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWELLIPSE},
-    {"arc", (PyCFunction)arc, METH_VARARGS | METH_KEYWORDS, DOC_PYGAMEDRAWARC},
+     DOC_DRAW_ELLIPSE},
+    {"arc", (PyCFunction)arc, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_ARC},
     {"circle", (PyCFunction)circle, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWCIRCLE},
+     DOC_DRAW_CIRCLE},
     {"polygon", (PyCFunction)polygon, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWPOLYGON},
-    {"rect", (PyCFunction)rect, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEDRAWRECT},
+     DOC_DRAW_POLYGON},
+    {"rect", (PyCFunction)rect, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_RECT},
 
     {NULL, NULL, 0, NULL}};
 
@@ -2542,7 +2570,7 @@ MODINIT_DEFINE(draw)
 {
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "draw",
-                                         DOC_PYGAMEDRAW,
+                                         DOC_DRAW,
                                          -1,
                                          _draw_methods,
                                          NULL,

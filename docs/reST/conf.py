@@ -1,5 +1,5 @@
 #
-# Pygame documentation build configuration file, created by
+# pygame-ce documentation build configuration file, created by
 # sphinx-quickstart on Sat Mar  5 11:56:39 2011.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -47,9 +47,9 @@ copyright = '2000-2022, pygame developers'
 # built documents.
 #
 # The short X.Y version.
-version = '2.1.4'
+version = '2.2.0'
 # The full version, including alpha/beta/rc tags.
-release = '2.1.4.dev3'
+release = '2.2.0.dev1'
 
 # Format strings for the version directives
 versionadded_format = 'New in pygame %s'

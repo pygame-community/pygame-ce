@@ -204,6 +204,29 @@ Instead, always begin with the original image and scale to the desired size.)
 
    .. ## pygame.transform.laplacian ##
 
+.. function:: box_blur
+
+   | :sl:`blur a surface using box blur`
+   | :sg:`box_blur(surface, radius, repeat_edge_pixels=True, dest_surface=None) -> Surface`
+
+   Returns the blurred surface using box blur algorithm.
+
+   .. versionadded:: 2.2.0
+
+   .. ## pygame.transform.box_blur ##
+
+.. function:: gaussian_blur
+
+   | :sl:`blur a surface using gaussian blur`
+   | :sg:`gaussian_blur(surface, radius, repeat_edge_pixels=True, dest_surface=None) -> Surface`
+
+   Returns the blurred surface using gaussian blur algorithm.
+   Slower than `box_blur()`.
+
+   .. versionadded:: 2.2.0
+
+   .. ## pygame.transform.gaussian_blur ##
+
 .. function:: average_surfaces
 
    | :sl:`find the average surface from many surfaces.`
@@ -236,6 +259,31 @@ Instead, always begin with the original image and scale to the desired size.)
    .. versionadded:: 2.1.2 ``consider_alpha`` argument
 
    .. ## pygame.transform.average_color ##
+
+.. function:: invert
+
+   | :sl:`inverts the RGB elements of a surface`
+   | :sg:`average_color(surface, dest_surface=None) -> Surface`
+
+   Inverts each RGB pixel contained within the Surface, does not affect alpha channel. Can also be used with a destination Surface. 
+
+   .. versionadded:: 2.2.0
+
+   .. ## pygame.transform.invert ##
+
+.. function:: grayscale
+
+   | :sl:`grayscale a surface`
+   | :sg:`grayscale(surface, dest_surface=None) -> Surface`
+
+   Returns a grayscaled version of the original surface using the luminosity formula which weights red, green and blue according to their wavelengths.
+
+   An optional destination surface can be passed which is faster than creating a new Surface.
+   This destination surface must have the same dimensions (width, height) and depth as the source Surface.
+   
+   .. versionadded:: 2.1.4
+
+   .. ## pygame.transform.grayscale ##
 
 .. function:: threshold
 

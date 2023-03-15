@@ -46,6 +46,10 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual((r.left, r.centery), r.midleft)
         self.assertEqual((r.right, r.centery), r.midright)
 
+    def testRepr(self):
+        rect = Rect(12, 34, 56, 78)
+        self.assertEqual(repr(rect), "Rect(12, 34, 56, 78)")
+
     def test_rect_iter(self):
         rect = Rect(50, 100, 150, 200)
 
@@ -847,6 +851,10 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual(
             r1, r1.clip(Rect(r1)), "r1 does not clip an identical rect to itself"
         )
+        self.assertEqual(Rect(1, 2, 0, 0), r1.clip(Rect(3, 0, 2, 2)))
+        self.assertEqual(Rect(1, 2, 0, 0), r1.clip(Rect(3, 8, 2, 2)))
+        self.assertEqual(Rect(1, 2, 0, 0), r1.clip(Rect(-2, 8, 2, 2)))
+        self.assertEqual(Rect(1, 2, 0, 0), r1.clip(Rect(-2, 0, 2, 2)))
 
     def test_clipline(self):
         """Ensures clipline handles four int parameters.

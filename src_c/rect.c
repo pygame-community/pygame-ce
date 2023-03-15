@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -1105,46 +1105,16 @@ pg_rect_clip(pgRectObject *self, PyObject *args)
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
     }
 
-    /* Left */
-    if ((A->x >= B->x) && (A->x < (B->x + B->w))) {
-        x = A->x;
-    }
-    else if ((B->x >= A->x) && (B->x < (A->x + A->w)))
-        x = B->x;
-    else
-        goto nointersect;
+    x = MAX(A->x, B->x);
+    y = MAX(A->y, B->y);
+    w = MIN(A->x + A->w, B->x + B->w) - x;
+    h = MIN(A->y + A->h, B->y + B->h) - y;
 
-    /* Right */
-    if (((A->x + A->w) > B->x) && ((A->x + A->w) <= (B->x + B->w))) {
-        w = (A->x + A->w) - x;
+    if (w <= 0 || h <= 0) {
+        return _pg_rect_subtype_new4(Py_TYPE(self), A->x, A->y, 0, 0);
     }
-    else if (((B->x + B->w) > A->x) && ((B->x + B->w) <= (A->x + A->w)))
-        w = (B->x + B->w) - x;
-    else
-        goto nointersect;
-
-    /* Top */
-    if ((A->y >= B->y) && (A->y < (B->y + B->h))) {
-        y = A->y;
-    }
-    else if ((B->y >= A->y) && (B->y < (A->y + A->h)))
-        y = B->y;
-    else
-        goto nointersect;
-
-    /* Bottom */
-    if (((A->y + A->h) > B->y) && ((A->y + A->h) <= (B->y + B->h))) {
-        h = (A->y + A->h) - y;
-    }
-    else if (((B->y + B->h) > A->y) && ((B->y + B->h) <= (A->y + A->h)))
-        h = (B->y + B->h) - y;
-    else
-        goto nointersect;
 
     return _pg_rect_subtype_new4(Py_TYPE(self), x, y, w, h);
-
-nointersect:
-    return _pg_rect_subtype_new4(Py_TYPE(self), A->x, A->y, 0, 0);
 }
 
 /* clipline() - crops the given line within the rect
@@ -1405,44 +1375,46 @@ pg_rect_copy(pgRectObject *self, PyObject *_null)
 
 static struct PyMethodDef pg_rect_methods[] = {
     {"normalize", (PyCFunction)pg_rect_normalize, METH_NOARGS,
-     DOC_RECTNORMALIZE},
-    {"clip", (PyCFunction)pg_rect_clip, METH_VARARGS, DOC_RECTCLIP},
+     DOC_RECT_NORMALIZE},
+    {"clip", (PyCFunction)pg_rect_clip, METH_VARARGS, DOC_RECT_CLIP},
     {"clipline", (PyCFunction)pg_rect_clipline, METH_VARARGS,
-     DOC_RECTCLIPLINE},
-    {"clamp", (PyCFunction)pg_rect_clamp, METH_VARARGS, DOC_RECTCLAMP},
-    {"clamp_ip", (PyCFunction)pg_rect_clamp_ip, METH_VARARGS, DOC_RECTCLAMPIP},
-    {"copy", (PyCFunction)pg_rect_copy, METH_NOARGS, DOC_RECTCOPY},
-    {"fit", (PyCFunction)pg_rect_fit, METH_VARARGS, DOC_RECTFIT},
-    {"move", (PyCFunction)pg_rect_move, METH_VARARGS, DOC_RECTMOVE},
-    {"update", (PyCFunction)pg_rect_update, METH_VARARGS, DOC_RECTUPDATE},
-    {"inflate", (PyCFunction)pg_rect_inflate, METH_VARARGS, DOC_RECTINFLATE},
-    {"union", (PyCFunction)pg_rect_union, METH_VARARGS, DOC_RECTUNION},
+     DOC_RECT_CLIPLINE},
+    {"clamp", (PyCFunction)pg_rect_clamp, METH_VARARGS, DOC_RECT_CLAMP},
+    {"clamp_ip", (PyCFunction)pg_rect_clamp_ip, METH_VARARGS,
+     DOC_RECT_CLAMPIP},
+    {"copy", (PyCFunction)pg_rect_copy, METH_NOARGS, DOC_RECT_COPY},
+    {"fit", (PyCFunction)pg_rect_fit, METH_VARARGS, DOC_RECT_FIT},
+    {"move", (PyCFunction)pg_rect_move, METH_VARARGS, DOC_RECT_MOVE},
+    {"update", (PyCFunction)pg_rect_update, METH_VARARGS, DOC_RECT_UPDATE},
+    {"inflate", (PyCFunction)pg_rect_inflate, METH_VARARGS, DOC_RECT_INFLATE},
+    {"union", (PyCFunction)pg_rect_union, METH_VARARGS, DOC_RECT_UNION},
     {"unionall", (PyCFunction)pg_rect_unionall, METH_VARARGS,
-     DOC_RECTUNIONALL},
-    {"move_ip", (PyCFunction)pg_rect_move_ip, METH_VARARGS, DOC_RECTMOVEIP},
+     DOC_RECT_UNIONALL},
+    {"move_ip", (PyCFunction)pg_rect_move_ip, METH_VARARGS, DOC_RECT_MOVEIP},
     {"inflate_ip", (PyCFunction)pg_rect_inflate_ip, METH_VARARGS,
-     DOC_RECTINFLATEIP},
-    {"union_ip", (PyCFunction)pg_rect_union_ip, METH_VARARGS, DOC_RECTUNIONIP},
+     DOC_RECT_INFLATEIP},
+    {"union_ip", (PyCFunction)pg_rect_union_ip, METH_VARARGS,
+     DOC_RECT_UNIONIP},
     {"unionall_ip", (PyCFunction)pg_rect_unionall_ip, METH_VARARGS,
-     DOC_RECTUNIONALLIP},
+     DOC_RECT_UNIONALLIP},
     {"collidepoint", (PyCFunction)pg_rect_collidepoint, METH_FASTCALL,
-     DOC_RECTCOLLIDEPOINT},
+     DOC_RECT_COLLIDEPOINT},
     {"colliderect", (PyCFunction)pg_rect_colliderect, METH_FASTCALL,
-     DOC_RECTCOLLIDERECT},
+     DOC_RECT_COLLIDERECT},
     {"collidelist", (PyCFunction)pg_rect_collidelist, METH_O,
-     DOC_RECTCOLLIDELIST},
+     DOC_RECT_COLLIDELIST},
     {"collidelistall", (PyCFunction)pg_rect_collidelistall, METH_O,
-     DOC_RECTCOLLIDELISTALL},
+     DOC_RECT_COLLIDELISTALL},
     {"collideobjectsall", (PyCFunction)pg_rect_collideobjectsall,
-     METH_VARARGS | METH_KEYWORDS, DOC_RECTCOLLIDEOBJECTSALL},
+     METH_VARARGS | METH_KEYWORDS, DOC_RECT_COLLIDEOBJECTSALL},
     {"collideobjects", (PyCFunction)pg_rect_collideobjects,
-     METH_VARARGS | METH_KEYWORDS, DOC_RECTCOLLIDEOBJECTS},
+     METH_VARARGS | METH_KEYWORDS, DOC_RECT_COLLIDEOBJECTS},
     {"collidedict", (PyCFunction)pg_rect_collidedict, METH_VARARGS,
-     DOC_RECTCOLLIDEDICT},
+     DOC_RECT_COLLIDEDICT},
     {"collidedictall", (PyCFunction)pg_rect_collidedictall, METH_VARARGS,
-     DOC_RECTCOLLIDEDICTALL},
+     DOC_RECT_COLLIDEDICTALL},
     {"contains", (PyCFunction)pg_rect_contains, METH_VARARGS,
-     DOC_RECTCONTAINS},
+     DOC_RECT_CONTAINS},
     {"__reduce__", (PyCFunction)pg_rect_reduce, METH_NOARGS, NULL},
     {"__copy__", (PyCFunction)pg_rect_copy, METH_NOARGS, NULL},
     {NULL, NULL, 0, NULL}};
@@ -1694,7 +1666,7 @@ static PyNumberMethods pg_rect_as_number = {
 static PyObject *
 pg_rect_repr(pgRectObject *self)
 {
-    return PyUnicode_FromFormat("<rect(%d, %d, %d, %d)>", self->r.x, self->r.y,
+    return PyUnicode_FromFormat("Rect(%d, %d, %d, %d)", self->r.x, self->r.y,
                                 self->r.w, self->r.h);
 }
 
@@ -2322,7 +2294,7 @@ static PyTypeObject pgRect_Type = {
     .tp_as_mapping = &pg_rect_as_mapping,
     .tp_str = (reprfunc)pg_rect_str,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = DOC_PYGAMERECT,
+    .tp_doc = DOC_RECT,
     .tp_richcompare = (richcmpfunc)pg_rect_richcompare,
     .tp_weaklistoffset = offsetof(pgRectObject, weakreflist),
     .tp_iter = (getiterfunc)pg_rect_iterator,

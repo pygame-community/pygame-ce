@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2008 Marcus von Appen
 
   This library is free software; you can redistribute it and/or
@@ -86,36 +86,33 @@ static PyObject *
 _gfx_beziercolor(PyObject *self, PyObject *args);
 
 static PyMethodDef _gfxdraw_methods[] = {
-    {"pixel", _gfx_pixelcolor, METH_VARARGS, DOC_PYGAMEGFXDRAWPIXEL},
-    {"hline", _gfx_hlinecolor, METH_VARARGS, DOC_PYGAMEGFXDRAWHLINE},
-    {"vline", _gfx_vlinecolor, METH_VARARGS, DOC_PYGAMEGFXDRAWVLINE},
-    {"rectangle", _gfx_rectanglecolor, METH_VARARGS,
-     DOC_PYGAMEGFXDRAWRECTANGLE},
-    {"box", _gfx_boxcolor, METH_VARARGS, DOC_PYGAMEGFXDRAWRECTANGLE},
-    {"line", _gfx_linecolor, METH_VARARGS, DOC_PYGAMEGFXDRAWLINE},
-    {"circle", _gfx_circlecolor, METH_VARARGS, DOC_PYGAMEGFXDRAWCIRCLE},
-    {"arc", _gfx_arccolor, METH_VARARGS, DOC_PYGAMEGFXDRAWARC},
-    {"aacircle", _gfx_aacirclecolor, METH_VARARGS, DOC_PYGAMEGFXDRAWAACIRCLE},
+    {"pixel", _gfx_pixelcolor, METH_VARARGS, DOC_GFXDRAW_PIXEL},
+    {"hline", _gfx_hlinecolor, METH_VARARGS, DOC_GFXDRAW_HLINE},
+    {"vline", _gfx_vlinecolor, METH_VARARGS, DOC_GFXDRAW_VLINE},
+    {"rectangle", _gfx_rectanglecolor, METH_VARARGS, DOC_GFXDRAW_RECTANGLE},
+    {"box", _gfx_boxcolor, METH_VARARGS, DOC_GFXDRAW_RECTANGLE},
+    {"line", _gfx_linecolor, METH_VARARGS, DOC_GFXDRAW_LINE},
+    {"circle", _gfx_circlecolor, METH_VARARGS, DOC_GFXDRAW_CIRCLE},
+    {"arc", _gfx_arccolor, METH_VARARGS, DOC_GFXDRAW_ARC},
+    {"aacircle", _gfx_aacirclecolor, METH_VARARGS, DOC_GFXDRAW_AACIRCLE},
     {"filled_circle", _gfx_filledcirclecolor, METH_VARARGS,
-     DOC_PYGAMEGFXDRAWFILLEDCIRCLE},
-    {"ellipse", _gfx_ellipsecolor, METH_VARARGS, DOC_PYGAMEGFXDRAWELLIPSE},
-    {"aaellipse", _gfx_aaellipsecolor, METH_VARARGS,
-     DOC_PYGAMEGFXDRAWAAELLIPSE},
+     DOC_GFXDRAW_FILLEDCIRCLE},
+    {"ellipse", _gfx_ellipsecolor, METH_VARARGS, DOC_GFXDRAW_ELLIPSE},
+    {"aaellipse", _gfx_aaellipsecolor, METH_VARARGS, DOC_GFXDRAW_AAELLIPSE},
     {"filled_ellipse", _gfx_filledellipsecolor, METH_VARARGS,
-     DOC_PYGAMEGFXDRAWFILLEDELLIPSE},
-    {"pie", _gfx_piecolor, METH_VARARGS, DOC_PYGAMEGFXDRAWPIE},
-    {"trigon", _gfx_trigoncolor, METH_VARARGS, DOC_PYGAMEGFXDRAWTRIGON},
-    {"aatrigon", _gfx_aatrigoncolor, METH_VARARGS, DOC_PYGAMEGFXDRAWAATRIGON},
+     DOC_GFXDRAW_FILLEDELLIPSE},
+    {"pie", _gfx_piecolor, METH_VARARGS, DOC_GFXDRAW_PIE},
+    {"trigon", _gfx_trigoncolor, METH_VARARGS, DOC_GFXDRAW_TRIGON},
+    {"aatrigon", _gfx_aatrigoncolor, METH_VARARGS, DOC_GFXDRAW_AATRIGON},
     {"filled_trigon", _gfx_filledtrigoncolor, METH_VARARGS,
-     DOC_PYGAMEGFXDRAWFILLEDTRIGON},
-    {"polygon", _gfx_polygoncolor, METH_VARARGS, DOC_PYGAMEGFXDRAWPOLYGON},
-    {"aapolygon", _gfx_aapolygoncolor, METH_VARARGS,
-     DOC_PYGAMEGFXDRAWAAPOLYGON},
+     DOC_GFXDRAW_FILLEDTRIGON},
+    {"polygon", _gfx_polygoncolor, METH_VARARGS, DOC_GFXDRAW_POLYGON},
+    {"aapolygon", _gfx_aapolygoncolor, METH_VARARGS, DOC_GFXDRAW_AAPOLYGON},
     {"filled_polygon", _gfx_filledpolygoncolor, METH_VARARGS,
-     DOC_PYGAMEGFXDRAWFILLEDPOLYGON},
+     DOC_GFXDRAW_FILLEDPOLYGON},
     {"textured_polygon", _gfx_texturedpolygon, METH_VARARGS,
-     DOC_PYGAMEGFXDRAWTEXTUREDPOLYGON},
-    {"bezier", _gfx_beziercolor, METH_VARARGS, DOC_PYGAMEGFXDRAWBEZIER},
+     DOC_GFXDRAW_TEXTUREDPOLYGON},
+    {"bezier", _gfx_beziercolor, METH_VARARGS, DOC_GFXDRAW_BEZIER},
     {NULL, NULL, 0, NULL},
 };
 
@@ -1097,7 +1094,7 @@ MODINIT_DEFINE(gfxdraw)
 {
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "gfxdraw",
-                                         DOC_PYGAMEGFXDRAW,
+                                         DOC_GFXDRAW,
                                          -1,
                                          _gfxdraw_methods,
                                          NULL,
