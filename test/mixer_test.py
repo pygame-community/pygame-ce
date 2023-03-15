@@ -93,7 +93,7 @@ class MixerModuleTest(unittest.TestCase):
             frequency, size, channels = init_conf.values()
             if (frequency, size) == (22050, 16):
                 continue
-            mixer.init(frequency, size, channels)
+            mixer.init(frequency, size, channels, allowedchanges=0)
 
             mixer_conf = mixer.get_init()
 

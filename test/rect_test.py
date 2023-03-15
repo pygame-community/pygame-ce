@@ -46,6 +46,10 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual((r.left, r.centery), r.midleft)
         self.assertEqual((r.right, r.centery), r.midright)
 
+    def testRepr(self):
+        rect = Rect(12, 34, 56, 78)
+        self.assertEqual(repr(rect), "Rect(12, 34, 56, 78)")
+
     def test_rect_iter(self):
         rect = Rect(50, 100, 150, 200)
 

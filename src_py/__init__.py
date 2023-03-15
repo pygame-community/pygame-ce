@@ -1,4 +1,4 @@
-# pygame - Python Game Library
+# pygame-ce - Python Game Library
 # Copyright (C) 2000-2001  Pete Shinners
 #
 # This library is free software; you can redistribute it and/or
@@ -312,15 +312,15 @@ except (ImportError, OSError):
     sndarray = MissingModule("sndarray", urgent=0)
 
 try:
-    import pygame.fastevent
-except (ImportError, OSError):
-    fastevent = MissingModule("fastevent", urgent=0)
-
-try:
     import pygame._debug
     from pygame._debug import print_debug_info
 except (ImportError, OSError):
     debug = MissingModule("_debug", urgent=0)
+
+try:
+    import pygame.system
+except (ImportError, OSError):
+    system = MissingModule("system", urgent=0)
 
 # there's also a couple "internal" modules not needed
 # by users, but putting them here helps "dependency finder"
