@@ -253,7 +253,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectImport_ObjectName "pygame.rect.FRect"
 #define RectImport_PythonNumberCheck PyFloat_Check
 #define RectImport_PythonNumberAsPrimitiveType PyFloat_AsDouble
-#define RectImport_PrimitiveTypeAsPythonNumber PyFloat_FromFloat
+#define RectImport_PrimitiveTypeAsPythonNumber pg_PyFloat_FromFloat
 #ifdef PYPY_VERSION
 #define RectOptional_FREELIST
 #define RectOptional_FreelistlimitNumberName PG_FRECT_FREELIST_MAX
@@ -591,12 +591,16 @@ pg_rect_repr(pgRectObject *self)
 static PyObject *
 pg_frect_repr(pgFRectObject *self)
 {
-    /* kinda weird workaround/hack to format floats with `PyUnicode_FromFormat`
-     */
-    return PyUnicode_FromFormat(
-        "FRect(%S, %S, %S, %S)", PyFloat_FromFloat(self->r.x),
-        PyFloat_FromFloat(self->r.y), PyFloat_FromFloat(self->r.w),
-        PyFloat_FromFloat(self->r.h));
+    char str[64];
+
+    int ret = PyOS_snprintf(str, 64, "FRect(%f, %f, %f, %f)", self->r.x,
+                            self->r.y, self->r.w, self->r.h);
+    if (ret < 0 || ret >= 64) {
+        return RAISE(PyExc_RuntimeError,
+                     "Internal PyOS_snprintf call failed!");
+    }
+
+    return PyUnicode_FromString(str);
 }
 
 static PyObject *

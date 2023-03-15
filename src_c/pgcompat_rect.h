@@ -18,10 +18,6 @@ SDL_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
                           float *Y2);
 #endif /* !(SDL_VERSION_ATLEAST(2, 0, 22)) */
 
-/* incase it is defined in the future by Python.h */
-#ifndef PyFloat_FromFloat
-#define PyFloat_FromFloat(x) \
-    (PyFloat_FromDouble((double)(round((x)*100000) / 100000)))
-#endif /* PyFloat_FromFloat */
+#define pg_PyFloat_FromFloat(x) (PyFloat_FromDouble((double)x))
 
 #endif /* PGCOMPAT_RECT_H */
