@@ -2583,7 +2583,9 @@ class FRectTypeTest(RectTypeTest):
 
     def testRepr(self):
         rect = Rect(12.3456789, 34, 56, 78)
-        self.assertEqual(repr(rect), "FRect(12.345679, 34.000000, 56.000000, 78.000000)")
+        self.assertEqual(
+            repr(rect), "FRect(12.345679, 34.000000, 56.000000, 78.000000)"
+        )
 
     def test_clipline__equal_endpoints_no_overlap(self):
         """Ensures clipline handles lines with both endpoints the same.
