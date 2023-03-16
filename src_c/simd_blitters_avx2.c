@@ -184,6 +184,12 @@ pg_avx2_at_runtime_but_uncompiled()
         8 + _a_off, 0x80, 8 + _a_off, 0x80, 0 + _a_off, 0x80, 0 + _a_off, \
         0x80, 0 + _a_off, 0x80, 0 + _a_off);
 
+/* Divides each element in input mm256i by 255
+ * See: https://stackoverflow.com/a/35286833/13816541 */
+#define DO_AVX2_DIV255_U16(MM256I) \
+    _mm256_srli_epi16(             \
+        _mm256_mulhi_epu16(MM256I, _mm256_set1_epi16((short)0x8081)), 7);
+
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
 void
@@ -281,8 +287,7 @@ alphablit_alpha_avx2_argb_no_surf_alpha(SDL_BlitInfo *info)
 
         // figure out alpha
         temp = _mm256_mullo_epi16(src_alpha, dst_alpha);
-        temp = _mm256_srli_epi16(
-            _mm256_mulhi_epu16(temp, _mm256_set1_epi16((short)0x8081)), 7);
+        temp = DO_AVX2_DIV255_U16(temp);
         new_dst_alpha = _mm256_sub_epi16(dst_alpha, temp);
         new_dst_alpha = _mm256_add_epi16(src_alpha, new_dst_alpha);
 
@@ -364,8 +369,7 @@ alphablit_alpha_avx2_argb_surf_alpha(SDL_BlitInfo *info)
 
         // figure out alpha
         temp = _mm256_mullo_epi16(src_alpha, dst_alpha);
-        temp = _mm256_srli_epi16(
-            _mm256_mulhi_epu16(temp, _mm256_set1_epi16((short)0x8081)), 7);
+        temp = DO_AVX2_DIV255_U16(temp);
         new_dst_alpha = _mm256_sub_epi16(dst_alpha, temp);
         new_dst_alpha = _mm256_add_epi16(src_alpha, new_dst_alpha);
 
