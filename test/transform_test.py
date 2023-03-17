@@ -1406,6 +1406,14 @@ class TransformDisplayModuleTest(unittest.TestCase):
     def tearDown(self):
         pygame.display.quit()
 
+    def test_blur_indexed_surface(self):
+        data_fname = example_path("data")
+        path = os.path.join(data_fname, "alien3.png")
+        sf = pygame.image.load(path)  # Get an indexed surface.
+
+        self.assertRaises(ValueError, lambda: pygame.transform.box_blur(sf, 10))
+        self.assertRaises(ValueError, lambda: pygame.transform.gaussian_blur(sf, 10))
+
     def test_box_blur(self):
         data1 = {
             (1, 29): (67, 58, 26, 255),
