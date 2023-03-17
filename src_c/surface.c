@@ -1486,10 +1486,10 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
                 else {
                     Amask = 0;
                     switch (bpp) {
-                        case 8:
-                            Rmask = 0;
-                            Gmask = 0;
-                            Bmask = 0;
+                        case 8:  // Convert to RGB332
+                            Rmask = 0xE0;
+                            Gmask = 0x1C;
+                            Bmask = 0x03;
                             break;
                         case 12:
                             Rmask = 0xFF >> 4 << 8;
