@@ -1556,6 +1556,17 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
                  * that at least one entry is not black.
                  */
                 format.palette = NULL;
+            if (SDL_ISPIXELFORMAT_INDEXED(SDL_MasksToPixelFormatEnum(
+                    format.BitsPerPixel, format.Rmask, format.Gmask,
+                    format.Bmask, format.Amask))) {
+                /* Give the surface something other than an all white palette.
+                 */
+                SDL_Palette *palette =
+                    SDL_AllocPalette(default_palette_size - 1);
+                SDL_SetPaletteColors(palette, default_palette_colors, 0,
+                                     default_palette_size - 1);
+                format.palette = palette;
+            }
             newsurf = SDL_ConvertSurface(surf, &format, 0);
             SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
         }
