@@ -3242,6 +3242,10 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
 
     src = pgSurface_AsSurface(srcobj);
 
+    if (src->format->palette) {
+        return RAISE(PyExc_ValueError, "Indexed surfaces connot be blurred.");
+    }
+
     if (!dstobj) {
         retsurf = newsurf_fromsurf(src, src->w, src->h);
         if (!retsurf)
