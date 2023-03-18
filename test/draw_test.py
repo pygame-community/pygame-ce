@@ -5623,12 +5623,17 @@ class DrawCircleMixin:
         solid band across the screen
         """
         surf = pygame.Surface((200, 200))
+        surf_center = surf.get_rect().center
         radius = 10
-        center = (-1, 100)
-        self.draw_circle(surf, "white", center, radius)
 
-        # pixel at (50, 100) should be black, not white
-        self.assertEqual(surf.get_at((50, 100))[0:3], (0, 0, 0))
+        # one pixel outside the screen on the center of each edge
+        test_centers = [(-1, 100), (201, 100), (100, -1), (100, 201)]
+        for center in test_centers:
+            surf.fill("black")
+            self.draw_circle(surf, "white", center, radius)
+
+            # pixel at the center should be black, not white
+            self.assertEqual(surf.get_at(surf_center)[0:3], (0, 0, 0))
 
 
 class DrawCircleTest(DrawCircleMixin, DrawTestCase):
