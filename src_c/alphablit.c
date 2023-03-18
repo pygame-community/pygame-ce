@@ -259,8 +259,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                                 }
                                 break;
                             }
-                        }
 #endif /* PG_ENABLE_SSE_NEON */
+                        }
 #endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
 #endif /* __EMSCRIPTEN__ */
                         alphablit_alpha(&info);
