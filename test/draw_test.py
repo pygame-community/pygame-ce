@@ -5622,12 +5622,19 @@ class DrawCircleMixin:
         """Ensures that drawing a circle with the center off-screen doesn't create a
         solid band across the screen
         """
-        surf = pygame.Surface((200, 200))
+        width = 200
+        height = 200
+        surf = pygame.Surface((width, height))
         surf_center = surf.get_rect().center
         radius = 10
 
         # one pixel outside the screen on the center of each edge
-        test_centers = [(-1, 100), (201, 100), (100, -1), (100, 201)]
+        test_centers = [
+            (-1, height / 2),
+            (width + 1, height / 2),
+            (width / 2, -1),
+            (width / 2, height + 1),
+        ]
         for center in test_centers:
             surf.fill("black")
             self.draw_circle(surf, "white", center, radius)
