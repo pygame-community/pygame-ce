@@ -5617,7 +5617,18 @@ class DrawCircleMixin:
             bounding_rect = self.draw_circle(surf, color, center, radius, width)
             self.assertEqual(bounding_rect.width, radius * 2)
             self.assertEqual(bounding_rect.height, radius * 2)
-
+            
+    def test_circle__no_band(self):
+        """ Ensures that drawing a circle with the center off-screen doesn't create a
+        solid band across the screen
+        """
+        surf = pygame.Surface((200, 200))
+        radius = 10
+        center = (-1, 100)
+        self.draw_circle(surf, "white", center, radius)
+        
+        # pixel at (50, 100) should be black, not white
+        self.assertEqual(surf.get_at((50, 100))[0:3], (0, 0, 0))
 
 class DrawCircleTest(DrawCircleMixin, DrawTestCase):
     """Test draw module function circle.

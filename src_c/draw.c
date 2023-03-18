@@ -2023,7 +2023,7 @@ draw_circle_filled(SDL_Surface *surf, int x0, int y0, int radius, Uint32 color,
     int xmax = INT_MIN;
 
     if (x0 < 0) {
-        xmin = x0 + INT_MAX + 1;
+        xmax = x0 + INT_MAX + 1;
     }
     else {
         xmax = INT_MAX - x0;
