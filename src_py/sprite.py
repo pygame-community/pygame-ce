@@ -655,8 +655,24 @@ class Group(AbstractGroup):
         self.add(*sprites)
 
 
-RenderPlain = Group
-RenderClear = Group
+class RenderPlain(Group):
+    def __init__(self, *sprites):
+        super().__init__(*sprites)
+        warn(
+            "This class will be removed in version 2.4.0",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+
+class RenderClear(Group):
+    def __init__(self, *sprites):
+        super().__init__(*sprites)
+        warn(
+            "This class will be removed in version 2.4.0",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
 
 class RenderUpdates(Group):
@@ -690,31 +706,15 @@ class RenderUpdates(Group):
 
 
 class OrderedUpdates(RenderUpdates):
-    """RenderUpdates class that draws Sprites in order of addition
-
-    pygame.sprite.OrderedUpdates(*sprites): return OrderedUpdates
-
-    This class derives from pygame.sprite.RenderUpdates().  It maintains
-    the order in which the Sprites were added to the Group for rendering.
-    This makes adding and removing Sprites from the Group a little
-    slower than regular Groups.
-
-    """
-
     def __init__(self, *sprites):
-        self._spritelist = []
-        RenderUpdates.__init__(self, *sprites)
-
-    def sprites(self):
-        return self._spritelist.copy()
-
-    def add_internal(self, sprite, layer=None):
-        RenderUpdates.add_internal(self, sprite)
-        self._spritelist.append(sprite)
-
-    def remove_internal(self, sprite):
-        RenderUpdates.remove_internal(self, sprite)
-        self._spritelist.remove(sprite)
+        super().__init__(*sprites)
+        warn(
+            "OrderedUpdates is now just an alias to RenderUpdates, order of "
+            "sprites is now maintained in all sprite Group classes. This "
+            "class will be removed in version 2.4.0",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
 
 class LayeredUpdates(AbstractGroup):
