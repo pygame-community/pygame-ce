@@ -1791,6 +1791,61 @@ class DrawLineTest(LineMixin, DrawTestCase):
         check_white_line((50, 50), (0, 120))
         check_white_line((50, 50), (199, 198))
 
+    def test_line_clipping_with_thickness(self):
+        width = 200
+        height = 200
+        start_points = [
+            (-50, -50),
+            (-50, 50),
+            (50, 50),
+            (250, 250),
+            (200, 203),
+            (-29, 131),
+            (203, 0),
+            (-10, -10),
+            (-10, 210),
+        ]
+        end_points = [
+            (20, 200),
+            (20, -20),
+            (-20, -10),
+            (120, 20),
+            (0, 202),
+            (21, 106),
+            (200, 200),
+            (210, 210),
+            (100, 150),
+        ]
+        check_points = [
+            ((2, 126), (255, 255, 255)),
+            ((2, 3), (255, 255, 255)),
+            ((50, 55), (255, 255, 255)),
+            ((199, 165), (255, 255, 255)),
+            ((99, 198), (255, 255, 255)),
+            ((70, 80), (0, 0, 0)),
+            ((199, 0), (255, 255, 255)),
+            ((105, 100), (255, 255, 255)),
+            ((5, 198), (255, 255, 255)),
+        ]
+
+        surf = pygame.Surface((width, height), pygame.SRCALPHA)
+        for n in range(len(start_points)):
+            surf.fill((0, 0, 0))
+            pygame.draw.line(surf, (255, 255, 255), start_points[n], end_points[n], 10)
+            self.assertEqual(
+                surf.get_at(check_points[n][0]),
+                check_points[n][1],
+                "start={}, end={}".format(start_points[n], end_points[n]),
+            )
+            surf.fill((0, 0, 0))
+            pygame.draw.line(surf, (255, 255, 255), end_points[n], start_points[n], 10)
+
+            self.assertEqual(
+                surf.get_at(check_points[n][0]),
+                check_points[n][1],
+                "start={}, end={}".format(end_points[n], start_points[n]),
+            )
+
 
 ### Lines Testing #############################################################
 
