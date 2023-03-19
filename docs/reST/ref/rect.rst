@@ -8,7 +8,7 @@
 
 | :sl:`pygame module for rect classes`
 
-since version 2.1.4 there is another class called FRect that serves the same 
+since version 2.2 there is another class called FRect that serves the same 
 purpose as as `Rect` but it can hold floats instead of integers.
 
 .. class:: Rect
