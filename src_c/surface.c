@@ -1567,9 +1567,9 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
                      * palette.
                      */
                     SDL_Palette *palette =
-                        SDL_AllocPalette(default_palette_size - 1);
+                        SDL_AllocPalette(default_palette_size);
                     SDL_SetPaletteColors(palette, default_palette_colors, 0,
-                                         default_palette_size - 1);
+                                         default_palette_size);
                     format.palette = palette;
                 }
             }
