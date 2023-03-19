@@ -475,6 +475,62 @@ font_set_strikethrough(PyObject *self, PyObject *arg)
 }
 
 static PyObject *
+font_is_char_provided(PyObject *self, PyObject *textobj)
+{
+    TTF_Font *font = PyFont_AsFont(self);
+    PyObject *temp;
+    PyObject *obj;
+    Uint16 *buffer;
+    Py_ssize_t length;
+    Uint16 ch;
+
+    if (PyUnicode_Check(textobj)) {
+        obj = textobj;
+        Py_INCREF(obj);
+    }
+    else if (PyBytes_Check(textobj)) {
+        obj = PyUnicode_FromEncodedObject(textobj, "UTF-8", NULL);
+        if (!obj) {
+            return NULL;
+        }
+    }
+    else {
+        return RAISE_TEXT_TYPE_ERROR();
+    }
+    temp = PyUnicode_AsUTF16String(obj);
+    Py_DECREF(obj);
+    if (!temp)
+        return NULL;
+    obj = temp;
+
+#if !SDL_TTF_VERSION_ATLEAST(2, 0, 15)
+    if (utf_8_needs_UCS_4(astring)) {
+        Py_DECREF(obj);
+        return RAISE(PyExc_UnicodeError,
+                     "a Unicode character above '\\uFFFF' was found;"
+                     " not supported with SDL_ttf version below 2.0.15");
+    }
+#endif
+
+    buffer = (Uint16 *)PyBytes_AS_STRING(obj);
+    length = PyBytes_GET_SIZE(obj) / sizeof(Uint16);
+
+    if (length > 2) {
+        Py_DECREF(obj);
+        return RAISE(PyExc_ValueError,
+                     "Too long, only 1 char supported.");
+    }
+
+    ch = buffer[1];/* skip BOM */
+    int index = TTF_GlyphIsProvided(font, ch);
+    Py_DECREF(obj);
+    if (!index) {
+        Py_RETURN_FALSE;
+    }
+    Py_RETURN_TRUE;
+}
+
+static PyObject *
 font_render(PyObject *self, PyObject *args)
 {
     TTF_Font *font = PyFont_AsFont(self);
@@ -639,6 +695,26 @@ font_getter_name(PyObject *self, void *closure)
     const char *font_name = TTF_FontFaceFamilyName(font);
 
     return PyUnicode_FromString(font_name);
+}
+
+static PyObject *
+font_getter_style_name(PyObject *self, void *closure)
+{
+    TTF_Font *font = PyFont_AsFont(self);
+    const char *font_name = TTF_FontFaceStyleName(font);
+
+    return PyUnicode_FromString(font_name);
+}
+
+static PyObject*
+font_getter_path(PyObject *self, void *closure)
+{
+    PyObject *path = ((PyFontObject *)self)->path;
+    if (path == Py_None) {
+        Py_RETURN_NONE;
+    }
+    const char *result = PyBytes_AS_STRING(path);
+    return PyUnicode_FromString(result);
 }
 
 static PyObject *
@@ -841,6 +917,9 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
  */
 static PyGetSetDef font_getsets[] = {
     {"name", (getter)font_getter_name, NULL, DOC_FONT_FONT_NAME, NULL},
+    {"stylename", (getter)font_getter_style_name, NULL,
+     DOC_FONT_FONT_STYLENAME, NULL},
+    {"path", (getter)font_getter_path, NULL, DOC_FONT_FONT_PATH, NULL},
     {"bold", (getter)font_getter_bold, (setter)font_setter_bold,
      DOC_FONT_FONT_BOLD, NULL},
     {"italic", (getter)font_getter_italic, (setter)font_setter_italic,
@@ -872,6 +951,7 @@ static PyMethodDef font_methods[] = {
      DOC_FONT_FONT_SETSTRIKETHROUGH},
     {"metrics", font_metrics, METH_O, DOC_FONT_FONT_METRICS},
     {"render", font_render, METH_VARARGS, DOC_FONT_FONT_RENDER},
+    {"is_char_defined", font_is_char_provided, METH_O, DOC_FONT_FONT_ISCHARDEFINED},
     {"size", font_size, METH_O, DOC_FONT_FONT_SIZE},
     {"set_script", font_set_script, METH_O, DOC_FONT_FONT_SETSCRIPT},
     {"set_direction", (PyCFunction)font_set_direction,
@@ -892,6 +972,11 @@ font_dealloc(PyFontObject *self)
         }
         TTF_CloseFont(font);
         self->font = NULL;
+        if (self->path != Py_None) {
+            Py_DECREF(self->path);
+        }
+
+        self->path = NULL;
     }
 
     if (self->weakreflist)
@@ -905,6 +990,7 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     int fontsize = font_defaultsize;
     TTF_Font *font = NULL;
     PyObject *obj = Py_None;
+    PyObject *path = Py_None;
     SDL_RWops *rw;
 
     static char *kwlist[] = {"filename", "size", NULL};
@@ -930,7 +1016,7 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     if (obj == Py_None) {
         /* default font */
         Py_DECREF(obj);
-        obj = font_resource(font_defaultname);
+        obj = font_resource(font_defaultname); // Returns an encoded file path, a file-like object or a NULL pointer.
         if (obj == NULL) {
             if (PyErr_Occurred() == NULL) {
                 PyErr_Format(PyExc_RuntimeError,
@@ -942,6 +1028,15 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
         fontsize = (int)(fontsize * .6875);
     }
 
+    path = pg_EncodeString(obj, "UTF-8", NULL, NULL);
+    if (!path || path == Py_None) {
+        /* if path is NULL, we are forwarding an error. If it is None,
+         * the object passed was not a bytes/string/pathlib object so
+         * handling of that is done after this function, exit early here */
+        Py_XDECREF(path);
+        path = Py_None;
+    }
+
     rw = pgRWops_FromObject(obj, NULL);
 
     if (rw == NULL && PyUnicode_Check(obj)) {
@@ -950,7 +1045,7 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
              * default font */
             PyErr_Clear();
             Py_DECREF(obj);
-            obj = font_resource(font_defaultname);
+            obj = font_resource(font_defaultname); // Returns an encoded file path, a file-like object or a NULL pointer.
             if (obj == NULL) {
                 if (PyErr_Occurred() == NULL) {
                     PyErr_Format(PyExc_RuntimeError,
@@ -966,7 +1061,18 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
              * old one */
 
             rw = pgRWops_FromObject(obj, NULL);
+
+            path = pg_EncodeString(obj, "UTF-8", NULL, NULL);
+            if (!path || path == Py_None) {
+                /* if path is NULL, we are forwarding an error. If it is None,
+                 * the object passed was not a bytes/string/pathlib object so
+                 * handling of that is done after this function, exit early
+                 * here */
+                Py_XDECREF(path);
+                path = Py_None;
+            }
         }
+
     }
 
     if (rw == NULL) {
@@ -981,6 +1087,7 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     Py_END_ALLOW_THREADS;
 
     Py_DECREF(obj);
+    self->path = path;
     self->font = font;
     self->ttf_init_generation = current_ttf_generation;
 

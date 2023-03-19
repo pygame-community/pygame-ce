@@ -9,7 +9,6 @@ import platform
 import pygame
 from pygame import font as pygame_font  # So font can be replaced with ftfont
 
-
 FONTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "fonts")
 
 
@@ -118,7 +117,10 @@ class FontModuleTest(unittest.TestCase):
         for font in fonts:
             path = pygame_font.match_font(font)
             self.assertFalse(path is None)
-            self.assertTrue(os.path.isabs(path) and os.path.isfile(path))
+            self.assertTrue(
+                os.path.isabs(path) and os.path.isfile(path),
+                msg=f"path '{path}': exists: {os.path.exists(path)} is abs path:{os.path.isabs(path)} and is file:{os.path.isfile(path)} is link: {os.path.islink(path)} is mount: {os.path.ismount(path)} is dir: {os.path.isdir(path)}",
+            )
 
     def test_match_font_name(self):
         """That match_font accepts names of various types"""
@@ -556,6 +558,83 @@ class FontTypeTest(unittest.TestCase):
             f.name = "Say my name."
 
         self.assertRaises(AttributeError, test_set_name)
+
+    def test_font_path_from_none(self):
+        try:
+            # arrange
+            f = pygame_font.Font(None, 20)
+            # get the compare value from the freetype font.path
+            import pygame.freetype
+
+            pygame.freetype.init()
+            ft = pygame.freetype.Font(None, 20)
+
+            # act / assert
+            self.assertEqual(ft.path, f.path)
+        finally:
+            # cleanup
+            pygame.freetype.quit()
+
+    def test_font_path_from_file_bytes(self):
+        import pygame
+
+        try:
+            font_path = os.path.join(
+                os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
+            )
+            filesystem_encoding = sys.getfilesystemencoding()
+            filesystem_errors = (
+                "replace" if sys.platform == "win32" else "surrogateescape"
+            )
+            bfont_path = font_path.encode(filesystem_encoding, filesystem_errors)
+            f = pygame_font.Font(bfont_path, 20)
+            # get the compare value from the freetype font.path
+            import pygame.freetype
+
+            pygame.freetype.init()
+            ft = pygame.freetype.Font(bfont_path, 20)
+
+            # act / assert
+            self.assertEqual(
+                ft.path, f.path, msg=f"expected: {ft.path} actual: {f.path}"
+            )
+
+        finally:
+            # cleanup
+            pygame.freetype.quit()
+
+    def test_font_path_from_obj(self):
+        font_name = pygame_font.get_default_font()
+        font_path = os.path.join(
+            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
+        )
+        with open(font_path, "rb") as f:
+            font = pygame_font.Font(f, 20)
+            self.assertIsNone(font.path, f"should be None but is '{font.path}'")
+
+    def test_font_is_char_defined_true(self):
+        f = pygame_font.Font(None, 20)
+        self.assertTrue(f.is_char_defined("a"))
+
+    def test_font_is_char_defined_true_unicode(self):
+        f = pygame_font.Font(None, 20)
+        self.assertTrue(f.is_char_defined("\u003F"))
+
+    def test_font_is_char_defined_raises_value_error_if_too_long(self):
+        f = pygame_font.Font(None, 20)
+        self.assertRaises(ValueError, f.is_char_defined, "ab")
+
+    def test_font_is_char_defined_false_is_empty(self):
+        f = pygame_font.Font(None, 20)
+        self.assertFalse(f.is_char_defined(""))
+
+    def test_font_is_char_defined_false(self):
+        f = pygame_font.Font(None, 20)
+        self.assertFalse(f.is_char_defined("❤"))
+
+    def test_font_is_char_defined_false_unicode(self):
+        f = pygame_font.Font(None, 20)
+        self.assertFalse(f.is_char_defined("\uFF00"))
 
     def test_font_file_not_found(self):
         # A per BUG reported by Bo Jangeborg on pygame-user mailing list,

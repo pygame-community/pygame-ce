@@ -81,6 +81,8 @@ _ftfont_getrect(pgFontObject *, PyObject *, PyObject *);
 static PyObject *
 _ftfont_getmetrics(pgFontObject *, PyObject *, PyObject *);
 static PyObject *
+_ftfont_is_char_defined(pgFontObject *self, PyObject *textobj);
+static PyObject *
 _ftfont_render(pgFontObject *, PyObject *, PyObject *);
 static PyObject *
 _ftfont_render_to(pgFontObject *, PyObject *, PyObject *);
@@ -114,6 +116,8 @@ static int
 _ftfont_setstyle(pgFontObject *, PyObject *, void *);
 static PyObject *
 _ftfont_getname(pgFontObject *, void *);
+static PyObject *
+_ftfont_getstylename(pgFontObject *, void *);
 static PyObject *
 _ftfont_getpath(pgFontObject *, void *);
 static PyObject *
@@ -522,6 +526,8 @@ static PyMethodDef _ftfont_methods[] = {
      DOC_FREETYPE_FONT_GETRECT},
     {"get_metrics", (PyCFunction)_ftfont_getmetrics,
      METH_VARARGS | METH_KEYWORDS, DOC_FREETYPE_FONT_GETMETRICS},
+    {"is_char_defined", (PyCFunction)_ftfont_is_char_defined, METH_O,
+     DOC_FREETYPE_FONT_ISCHARDEFINED},
     {"get_sizes", (PyCFunction)_ftfont_getsizes, METH_NOARGS,
      DOC_FREETYPE_FONT_GETSIZES},
     {"render", (PyCFunction)_ftfont_render, METH_VARARGS | METH_KEYWORDS,
@@ -549,7 +555,8 @@ static PyGetSetDef _ftfont_getsets[] = {
      (void *)_PGFT_Font_GetAscender},
     {"descender", (getter)_ftfont_getfontmetric, 0,
      DOC_FREETYPE_FONT_DESCENDER, (void *)_PGFT_Font_GetDescender},
-    {"name", (getter)_ftfont_getname, 0, DOC_FREETYPE_FONT_NAME, 0},
+    {"name", (getter)_ftfont_getname, 0, DOC_FREETYPE_FONT_STYLENAME, 0},
+    {"stylename", (getter)_ftfont_getstylename, 0, DOC_FREETYPE_FONT_NAME, 0},
     {"path", (getter)_ftfont_getpath, 0, DOC_FREETYPE_FONT_PATH, 0},
     {"scalable", (getter)_ftfont_getscalable, 0, DOC_FREETYPE_FONT_SCALABLE,
      0},
@@ -1101,6 +1108,16 @@ _ftfont_getname(pgFontObject *self, void *closure)
 }
 
 static PyObject *
+_ftfont_getstylename(pgFontObject *self, void *closure)
+{
+    if (pgFont_IS_ALIVE(self)) {
+        const char *stylename = _PGFT_Font_GetStyleName(self->freetype, self);
+        return stylename ? PyUnicode_FromString(stylename) : 0;
+    }
+    return PyObject_Repr((PyObject *)self);
+}
+
+static PyObject *
 _ftfont_getpath(pgFontObject *self, void *closure)
 {
     PyObject *path = ((pgFontObject *)self)->path;
@@ -1416,6 +1433,40 @@ error:
     free_string(text);
     Py_XDECREF(list);
     return 0;
+}
+
+static PyObject *
+_ftfont_is_char_defined(pgFontObject *self, PyObject *textobj)
+{
+    PGFT_String *text = 0;
+    int glyph_index;
+    FT_Face face;
+
+    /* Encode text */
+    text = _PGFT_EncodePyString(textobj, self->render_flags & FT_RFLAG_UCS4);
+    if (!text)
+        goto error;
+
+    if (text->length > 1) {
+        free_string(text);
+        return RAISE(PyExc_ValueError, "Too long, only 1 char supported.");
+    }
+
+    ASSERT_SELF_IS_ALIVE(self);
+
+    face = _PGFT_GetFont(self->freetype, self);
+    PGFT_char charcode = text->data[0];
+    glyph_index = FT_Get_Char_Index(face, charcode);
+    if (glyph_index >0) {
+        free_string(text);
+        Py_RETURN_TRUE;
+    }
+
+    goto error;
+
+error:
+    free_string(text);
+    Py_RETURN_FALSE;
 }
 
 static PyObject *

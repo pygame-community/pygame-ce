@@ -224,6 +224,17 @@ loaded. This module must be imported explicitly to be used. ::
       Read only. Returns the real (long) name of the font, as
       recorded in the font file.
 
+   .. attribute:: stylename
+
+      | :sl:`Gets the font's stylename.`
+      | :sg:`stylename -> str`
+
+      Read only. Returns the font's style name.
+
+      .. versionadded:: 2.2
+
+      .. ## Font.stylename ##
+
    .. attribute:: path
 
       | :sl:`Font file path`
@@ -378,6 +389,18 @@ loaded. This module must be imported explicitly to be used. ::
       supported. Each tuple containing the point size, the height in pixels,
       width in pixels, horizontal ppem (nominal width) in fractional pixels,
       and vertical ppem (nominal height) in fractional pixels.
+
+
+   .. method:: is_char_defined
+
+      | :sl:`Check if a char is defined in the font.`
+      | :sg:`is_char_defined(char) -> bool`
+
+      This checks if the char is defined in this font.
+
+      .. versionadded:: 2.2.0
+
+      .. ## Font.is_char_defined ##
 
    .. method:: render
 

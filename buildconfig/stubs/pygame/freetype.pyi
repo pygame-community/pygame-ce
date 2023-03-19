@@ -39,6 +39,7 @@ STYLE_DEFAULT: int
 
 class Font:
     name: str
+    stylename: str
     path: str
     size: Union[float, Tuple[float, float]]
     height: int
@@ -126,3 +127,4 @@ class Font:
         size: float = 0,
         invert: bool = False,
     ) -> Rect: ...
+    def is_char_defined(char: Union[str, bytes]) -> bool: ...

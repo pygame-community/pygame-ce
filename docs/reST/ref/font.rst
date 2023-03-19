@@ -209,6 +209,28 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.name ##
 
+   .. attribute:: stylename
+
+      | :sl:`Gets the font's stylename.`
+      | :sg:`stylename -> str`
+
+      Read only. Returns the font's style name.
+
+      .. versionadded:: 2.2
+
+      .. ## Font.stylename ##
+
+   .. attribute:: path
+
+      | :sl:`Gets the font's path or None.`
+      | :sg:`path -> str`
+
+      Read only. Returns the font's path or None if it was loaded from a file like object.
+
+      .. versionadded:: 2.2
+
+      .. ## Font.path ##
+
    .. attribute:: italic
 
       | :sl:`Gets or sets whether the font should be rendered in (faked) italics.`
@@ -261,7 +283,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. attribute:: align
 
-      | :sl:`Set how rendered text is aligned when given a wrap length`
+      | :sl:`Set how rendered text is aligned when given a wrap length.`
       | :sg:`align -> int`
 
       Can be set to `pygame.FONT_LEFT`, `pygame.FONT_RIGHT`, or
@@ -274,6 +296,17 @@ solves no longer exists, it will likely be removed in the future.
       .. versionadded:: 2.1.4
 
       .. ## Font.align ##
+
+   .. method:: is_char_defined
+
+      | :sl:`Check if a char is defined in the font.`
+      | :sg:`is_char_defined(char) -> bool`
+
+      This checks if the char is defined in this font.
+
+      .. versionadded:: 2.2.0
+
+      .. ## Font.is_char_defined ##
 
    .. method:: render
 
