@@ -5640,8 +5640,11 @@ class DrawCircleMixin:
             surf.fill("black")
             self.draw_circle(surf, "white", center, radius)
 
-            # pixel at the center should be black, not white
-            self.assertEqual(surf.get_at(surf_center)[0:3], (0, 0, 0))
+            self.assertEqual(
+                surf.get_at(surf_center)[0:3],
+                (0, 0, 0),
+                msg="pixel at center should be black, not white",
+            )
 
     def test_circle__no_band(self):
         """Ensures that drawing a circle with the center off-screen doesn't create a
@@ -5666,8 +5669,11 @@ class DrawCircleMixin:
             surf.fill("black")
             self.draw_circle(surf, "white", center, radius)
 
-            # pixel at the center should be black, not white
-            self.assertEqual(surf.get_at(surf_center)[0:3], (0, 0, 0))
+            self.assertEqual(
+                surf.get_at(surf_center)[0:3],
+                (0, 0, 0),
+                msg="pixel at center should be black, not white",
+            )
 
 
 class DrawCircleTest(DrawCircleMixin, DrawTestCase):
