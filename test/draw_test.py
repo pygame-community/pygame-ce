@@ -5673,6 +5673,63 @@ class DrawCircleMixin:
             self.assertEqual(bounding_rect.width, radius * 2)
             self.assertEqual(bounding_rect.height, radius * 2)
 
+    def test_circle__offscreen(self):
+        """Ensures that drawing a circle completely off-screen doesn't create
+        a solid band across the screen
+        see https://github.com/pygame/pygame/issues/3143
+        """
+        width = 200
+        height = 200
+        surf = pygame.Surface((width, height))
+        surf_center = surf.get_rect().center
+        radius = 10
+
+        # way way outside the screen
+        test_centers = [
+            (-1e30, height / 2),
+            (1e30, height / 2),
+            (width / 2, -1e30),
+            (width / 2, 1e30),
+        ]
+        for center in test_centers:
+            surf.fill("black")
+            self.draw_circle(surf, "white", center, radius)
+
+            self.assertEqual(
+                surf.get_at(surf_center)[0:3],
+                (0, 0, 0),
+                msg="pixel at center should be black, not white",
+            )
+
+    def test_circle__no_band(self):
+        """Ensures that drawing a circle with the center off-screen doesn't create a
+        solid band across the screen
+        This tests a bug introduced in
+        https://github.com/pygame-community/pygame-ce/commit/c88a1d8f7b31099cec84dc5cb7aeebdada783e83
+        """
+        width = 200
+        height = 200
+        surf = pygame.Surface((width, height))
+        surf_center = surf.get_rect().center
+        radius = 10
+
+        # one pixel outside the screen on the center of each edge
+        test_centers = [
+            (-1, height / 2),
+            (width + 1, height / 2),
+            (width / 2, -1),
+            (width / 2, height + 1),
+        ]
+        for center in test_centers:
+            surf.fill("black")
+            self.draw_circle(surf, "white", center, radius)
+
+            self.assertEqual(
+                surf.get_at(surf_center)[0:3],
+                (0, 0, 0),
+                msg="pixel at center should be black, not white",
+            )
+
 
 class DrawCircleTest(DrawCircleMixin, DrawTestCase):
     """Test draw module function circle.
