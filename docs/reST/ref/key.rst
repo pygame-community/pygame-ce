@@ -279,9 +279,19 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
    | :sl:`returns a pygame.key.ScancodeWrapper containing the most recent key presses`
    | :sg:`get_just_pressed() -> bools`
 
-   Returns a sequence of boolean values representing the KEYDOWN events as of the last call to pygame.event.get()
-   done by tracking the KEYDOWN events when the event loop is pumped using pygame.event.get() 
-   and is therefore similar to checking KEYDOWNS in the event loop.
+   Returns a mapping from key codes to booleans indicating which keys were
+   newly pressed as of the last time events were processed. This can be used
+   as a convenience function to detect keys that were pressed "this frame".
+
+   The result of this function is updated when new events are processed,
+   e.g. in :func:`pygame.event.get()` or :func:`pygame.event.pump()`.
+
+   A key can be marked as "just pressed" even if it is not currently pressed
+   according to :func:`pygame.key.get_pressed()`, if it was pressed and released
+   again during the same frame. Multiple presses and releases of the same key
+   are not distinguished from a single press with this function.
+
+   See also :func:`pygame.key.get_just_released()`.
 
    .. note::
       If you require getting the key presses in order use the event queue KEYDOWN events
@@ -298,9 +308,14 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
    | :sl:`returns a pygame.key.ScancodeWrapper containing the most recent key releases`
    | :sg:`get_just_pressed() -> bools`
    
-   Returns a sequence of boolean values representing the KEYDOWN events as of the last call to pygame.event.get()
-   done by tracking the KEYUP events when the event loop is pumped using pygame.event.get() 
-   and is therefore similar to checking KEYUPS in the event loop.
+   Returns a mapping from key codes to booleans indicating which keys were
+   newly *released* as of the last time events were processed. This can be used
+   as a convenience function to detect keys that were *released* "this frame".
+
+   The result of this function is updated when new events are processed,
+   e.g. in :func:`pygame.event.get()` or :func:`pygame.event.pump()`.
+
+   See also :func:`pygame.key.get_just_pressed()`.
 
    .. note::
       If you require getting the key releases in order use the event queue KEYUP events.
