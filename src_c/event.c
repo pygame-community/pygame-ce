@@ -434,6 +434,18 @@ _pg_translate_windowevent(void *_, SDL_Event *event)
     return 1;
 }
 
+static int
+_pg_register_keys_just_pressed(void *_, SDL_Event *event)
+{
+    if (event->type == SDL_KEYDOWN) {
+        pressed_keys[event->key.keysym.scancode] = 1;
+    }
+    else if (event->type == SDL_KEYUP) {
+        released_keys[event->key.keysym.scancode] = 1;
+    }
+    return 1;
+}
+
 static int SDLCALL
 _pg_remove_pending_VIDEORESIZE(void *userdata, SDL_Event *event)
 {
@@ -1600,7 +1612,17 @@ _pg_event_pump(int dopump)
 {
     if (dopump) {
         SDL_PumpEvents();
+
+        /* This needs to be reset on pump, e.g. on calls to pygame.event.get(),
+         * but not on pygame.event.get(pump=False) */
+        memset(pressed_keys, 0, sizeof(pressed_keys));
+        memset(released_keys, 0, sizeof(released_keys));
     }
+
+    /* this could also be in an event filter like pg_event_filter
+     * but here it more predictable. */
+    SDL_FilterEvents(_pg_register_keys_just_pressed, NULL);
+
     /* We need to translate WINDOWEVENTS. But if we do that from the
      * from event filter, internal SDL stuff that rely on WINDOWEVENT
      * might break. So after every event pump, we translate events from
@@ -1923,14 +1945,6 @@ _pg_get_all_events(void)
         for (loop = 0; loop < len; loop++) {
             if (!_pg_event_append_to_list(list, &eventbuf[loop]))
                 goto error;
-
-            if (eventbuf[loop].type == SDL_KEYDOWN) {
-                pressed_keys[(int)eventbuf[loop].key.keysym.scancode] = 1;
-            }
-
-            if (eventbuf[loop].type == SDL_KEYUP) {
-                released_keys[(int)eventbuf[loop].key.keysym.scancode] = 1;
-            }
         }
     }
     return list;
@@ -2011,9 +2025,6 @@ pg_event_get(PyObject *self, PyObject *args, PyObject *kwargs)
     VIDEO_INIT_CHECK();
 
     _pg_event_pump(dopump);
-
-    memset(pressed_keys, 0, sizeof(pressed_keys));
-    memset(released_keys, 0, sizeof(released_keys));
 
     if (obj_evtype == NULL || obj_evtype == Py_None) {
         if (obj_exclude != NULL && obj_exclude != Py_None) {
