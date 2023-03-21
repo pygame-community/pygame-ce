@@ -1889,7 +1889,7 @@ surf_rblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
     SURF_INIT_CHECK(dest)
     SDL_Rect *src_rect, dest_rect, temp;
     PyObject *blit_pos, *src_surf;
-    int flags_numeric = 0;
+    int blend_flags = 0;
 
     if (nargs != 2 && nargs != 3) {
         return RAISE(PyExc_ValueError,
@@ -1902,7 +1902,7 @@ surf_rblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
             return RAISE(PyExc_TypeError,
                          "special_flags parameter must be numeric");
         }
-        flags_numeric = PyLong_AsLong(args[2]);
+        blend_flags = PyLong_AsLong(args[2]);
         if (PyErr_Occurred()) {
             return NULL;
         }
@@ -1934,7 +1934,7 @@ surf_rblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     /* Perform the blit */
     if (pgSurface_Blit(self, (pgSurfaceObject *)src_surf, &dest_rect, NULL,
-                       flags_numeric)) {
+                       blend_flags)) {
         return NULL; /* Exception already set */
     }
 
