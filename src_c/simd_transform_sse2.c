@@ -47,10 +47,13 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
 
     int skip = (src->pitch - width * src->format->BytesPerPixel) >> 2;
     int pxskip = src->format->BytesPerPixel >> 2;
+    Uint32 amask = src->format->Amask;
 
-    __m128i mm_src, mm_dst, mm_zero, mm_two_five_fives, mm_rgb_weights;
+    __m128i mm_src, mm_dst, mm_zero, mm_two_five_fives, mm_rgb_weights,
+        mm_alpha_mask;
 
     mm_zero = _mm_setzero_si128();
+    mm_alpha_mask = _mm_cvtsi32_si128(amask);
     mm_two_five_fives = _mm_set_epi64x(0x00FF00FF00FF00FF, 0x00FF00FF00FF00FF);
     mm_rgb_weights = _mm_set_epi64x(0xFF4C961DFF4C961D, 0xFF4C961DFF4C961D);
 
@@ -76,8 +79,12 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
                 mm_dst = _mm_add_epi16(
                     _mm_add_epi16(
                         _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(3, 0, 0, 0)),
-                        _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(-1, 1, 1, 1))),
-                    _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(-1, 2, 2, 2)));
+                        _mm_subs_epu8(_mm_shufflelo_epi16(
+                                          mm_dst, _MM_SHUFFLE(3, 1, 1, 1)),
+                                      mm_alpha_mask)),
+                    _mm_subs_epu8(
+                        _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(3, 2, 2, 2)),
+                        mm_alpha_mask));
 
                 mm_dst = _mm_packus_epi16(mm_dst, mm_dst);
                 /*mm_dst = 0x00000000AARRGGBB00000000AARRGGBB*/
