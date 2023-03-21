@@ -982,10 +982,6 @@ polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
                     goto on_error;
                 }
                 Py_DECREF(item);
-                if (width == 1) {
-                    draw_line(surf, x1, y1, x2, y2, color, drawn_area);
-                    continue;
-                }
                 draw_line_width(surf, color, x1, y1, x2, y2, width,
                                 drawn_area);
             }
