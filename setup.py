@@ -71,7 +71,7 @@ import distutils
 
 import distutils.ccompiler
 
-avx2_filenames = ['simd_blitters_avx2']
+avx2_filenames = ['simd_blitters_avx2', 'simd_transform_avx2']
 
 compiler_options = {
     'unix': ('-mavx2',),

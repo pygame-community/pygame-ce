@@ -33,6 +33,60 @@
 #include <math.h>
 #include <string.h>
 
+#if !defined(PG_ENABLE_ARM_NEON) && defined(__aarch64__)
+// arm64 has neon optimisations enabled by default, even when fpu=neon is not
+// passed
+#define PG_ENABLE_ARM_NEON 1
+#endif
+
+/* See if we are compiled 64 bit on GCC or MSVC */
+#if _WIN32 || _WIN64
+#if _WIN64
+#define ENV64BIT
+#endif
+#endif
+
+// Check GCC
+#if __GNUC__
+#if __x86_64__ || __ppc64__ || __aarch64__
+#define ENV64BIT
+#endif
+#endif
+
+#if PG_ENABLE_ARM_NEON
+// sse2neon.h is from here: https://github.com/DLTcollab/sse2neon
+#include "include/sse2neon.h"
+#endif /* PG_ENABLE_ARM_NEON */
+
+/* This defines PG_ENABLE_SSE_NEON as True if either SSE or NEON is available
+ * at compile time. Since we do compile time translation of SSE2->NEON, they
+ * have the same code paths, so this reduces code duplication of those paths.
+ */
+#if defined(__SSE2__)
+#define PG_ENABLE_SSE_NEON 1
+#elif PG_ENABLE_ARM_NEON
+#define PG_ENABLE_SSE_NEON 1
+#else
+#define PG_ENABLE_SSE_NEON 0
+#endif
+
+/* This returns True if either SSE2 or NEON is present at runtime.
+ * Relevant because they use the same codepaths. Only the relevant runtime
+ * SDL cpu feature check is compiled in.*/
+int
+pg_HasSSE_NEON()
+{
+#if defined(__SSE2__)
+    return SDL_HasSSE2();
+#elif PG_ENABLE_ARM_NEON
+    return SDL_HasNEON();
+#else
+    return 0;
+#endif
+}
+
+#include "simd_transform.h"
+
 #include "scale.h"
 
 typedef void (*SMOOTHSCALE_FILTER_P)(Uint8 *, Uint8 *, int, int, int, int,
@@ -2037,6 +2091,32 @@ clamp_4
 
 #endif
 
+
+void grayscale_non_simd(SDL_Surface *src, SDL_Surface * newsurf)
+{
+int x, y;
+    for (y = 0; y < src->h; y++) {
+        for (x = 0; x < src->w; x++) {
+            Uint32 pixel;
+            Uint8 *pix;
+            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format,
+                        pix);
+            Uint8 r, g, b, a;
+            SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
+
+            // RGBA to GRAY formula used by OpenCV
+            Uint8 grayscale_pixel = (Uint8)((((76 * r) + 255) >> 8) +
+                                            (((150 * g) + 255) >> 8) +
+                                            (((29 * b) + 255) >> 8));
+            Uint32 new_pixel =
+                SDL_MapRGBA(newsurf->format, grayscale_pixel, grayscale_pixel,
+                            grayscale_pixel, a);
+            SURF_SET_AT(new_pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
+                        newsurf->format, pix);
+        }
+    }
+}
+
 SDL_Surface *
 grayscale(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
 {
@@ -2064,24 +2144,22 @@ grayscale(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
             "Source and destination surfaces need the same format."));
     }
 
-    int x, y;
-    for (y = 0; y < src->h; y++) {
-        for (x = 0; x < src->w; x++) {
-            Uint32 pixel;
-            Uint8 *pix;
-            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format,
-                        pix);
-            Uint8 r, g, b, a;
-            SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
-
-            // RGBA to GRAY formula used by OpenCV
-            Uint8 grayscale_pixel = (Uint8)(0.299 * r + 0.587 * g + 0.114 * b);
-            Uint32 new_pixel =
-                SDL_MapRGBA(newsurf->format, grayscale_pixel, grayscale_pixel,
-                            grayscale_pixel, a);
-            SURF_SET_AT(new_pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
-                        newsurf->format, pix);
+    if (src->format->BytesPerPixel == 4 &&
+        src->format->Rmask == newsurf->format->Rmask &&
+        src->format->Gmask == newsurf->format->Gmask &&
+        src->format->Bmask == newsurf->format->Bmask) {
+        if (pg_has_avx2()){
+            grayscale_sse2(src, newsurf);
         }
+        else if(pg_HasSSE_NEON()){
+            grayscale_sse2(src, newsurf);
+        }
+        else {
+            grayscale_non_simd(src, newsurf);
+        }
+    }
+    else {
+        grayscale_non_simd(src, newsurf);
     }
 
     SDL_UnlockSurface(newsurf);
