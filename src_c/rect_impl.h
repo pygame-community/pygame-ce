@@ -588,101 +588,132 @@ int RectOptional_Freelist_Num = -1;
 static InnerRect *
 RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
 {
-    PrimitiveType val;
     Py_ssize_t length;
 
     if (RectCheck(obj)) {
         return &((RectObject *)obj)->r;
     }
-    if (PySequence_Check(obj) && (length = PySequence_Length(obj)) > 0) {
-        if (length == 4) {
-            if (!primitiveFromObjIndex(obj, 0, &val)) {
-                return NULL;
-            }
-            temp->x = val;
-            if (!primitiveFromObjIndex(obj, 1, &val)) {
-                return NULL;
-            }
-            temp->y = val;
-            if (!primitiveFromObjIndex(obj, 2, &val)) {
-                return NULL;
-            }
-            temp->w = val;
-            if (!primitiveFromObjIndex(obj, 3, &val)) {
-                return NULL;
-            }
-            temp->h = val;
-            return temp;
-        }
-        if (length == 2) {
-            PyObject *sub = PySequence_GetItem(obj, 0);
-            if (!sub || !PySequence_Check(sub) ||
-                PySequence_Length(sub) != 2) {
-                PyErr_Clear();
-                Py_XDECREF(sub);
-                return NULL;
-            }
-            if (!primitiveFromObjIndex(sub, 0, &val)) {
-                Py_DECREF(sub);
-                return NULL;
-            }
-            temp->x = val;
-            if (!primitiveFromObjIndex(sub, 1, &val)) {
-                Py_DECREF(sub);
-                return NULL;
-            }
-            temp->y = val;
-            Py_DECREF(sub);
 
-            sub = PySequence_GetItem(obj, 1);
-            if (sub == NULL || !PySequence_Check(sub) ||
-                PySequence_Length(sub) != 2) {
-                PyErr_Clear();
-                Py_XDECREF(sub);
+    if (pgSequenceFast_Check(obj)) {
+        length = PySequence_Fast_GET_SIZE(obj);
+        PyObject **items = PySequence_Fast_ITEMS(obj);
+
+        if (length == 4) {
+            if (!PrimitiveFromObj(items[0], &temp->x) ||
+                !PrimitiveFromObj(items[1], &temp->y) ||
+                !PrimitiveFromObj(items[2], &temp->w) ||
+                !PrimitiveFromObj(items[3], &temp->h)) {
                 return NULL;
             }
-            if (!primitiveFromObjIndex(sub, 0, &val)) {
-                Py_DECREF(sub);
-                return NULL;
-            }
-            temp->w = val;
-            if (!primitiveFromObjIndex(sub, 1, &val)) {
-                Py_DECREF(sub);
-                return NULL;
-            }
-            temp->h = val;
-            Py_DECREF(sub);
             return temp;
         }
-        if (PyTuple_Check(obj) && length == 1) /*looks like an arg?*/ {
-            PyObject *sub = PyTuple_GET_ITEM(obj, 0);
-            if (sub) {
-                return RectExport_RectFromObject(sub, temp);
+        else if (length == 2) {
+            if (!twoPrimitivesFromObj(items[0], &temp->x, &temp->y) ||
+                !twoPrimitivesFromObj(items[1], &temp->w, &temp->h)) {
+                return NULL;
             }
+            return temp;
+        }
+        else if (length == 1) {
+            return RectExport_RectFromObject(items[0], temp);
         }
     }
-    if (PyObject_HasAttrString(obj, "rect")) {
-        PyObject *rectattr;
-        InnerRect *returnrect;
-        rectattr = PyObject_GetAttrString(obj, "rect");
-        if (rectattr == NULL) {
+    else if (PySequence_Check(obj)) {
+        PyObject *item;
+        if ((length = PySequence_Size(obj)) == -1) {
             PyErr_Clear();
             return NULL;
         }
-        if (PyCallable_Check(rectattr)) /*call if it's a method*/
-        {
-            PyObject *rectresult = PyObject_CallObject(rectattr, NULL);
-            Py_DECREF(rectattr);
-            if (rectresult == NULL) {
-                PyErr_Clear();
+
+        if (length == 4) {
+            item = PySequence_ITEM(obj, 0);
+            if (!PrimitiveFromObj(item, &temp->x)) {
+                Py_XDECREF(item);
                 return NULL;
             }
-            rectattr = rectresult;
+            Py_DECREF(item);
+
+            item = PySequence_ITEM(obj, 1);
+            if (!PrimitiveFromObj(item, &temp->y)) {
+                Py_XDECREF(item);
+                return NULL;
+            }
+            Py_DECREF(item);
+
+            item = PySequence_ITEM(obj, 2);
+            if (!PrimitiveFromObj(item, &temp->w)) {
+                Py_XDECREF(item);
+                return NULL;
+            }
+            Py_DECREF(item);
+
+            item = PySequence_ITEM(obj, 3);
+            if (!PrimitiveFromObj(item, &temp->h)) {
+                Py_XDECREF(item);
+                return NULL;
+            }
+            Py_DECREF(item);
+
+            return temp;
         }
-        returnrect = RectFromObject(rectattr, temp);
-        Py_DECREF(rectattr);
-        return returnrect;
+        else if (length == 2) {
+            item = PySequence_ITEM(obj, 0);
+            if (!twoPrimitivesFromObj(item, &temp->x, &temp->y)) {
+                Py_XDECREF(item);
+                return NULL;
+            }
+            Py_DECREF(item);
+
+            item = PySequence_ITEM(obj, 1);
+            if (!twoPrimitivesFromObj(item, &temp->w, &temp->h)) {
+                Py_XDECREF(item);
+                return NULL;
+            }
+            Py_DECREF(item);
+
+            return temp;
+        }
+        /*looks like an arg?*/
+        else if (length == 1) {
+            item = PySequence_ITEM(obj, 0);
+            if (!item) {
+                return NULL;
+            }
+            if (!PyUnicode_Check(item)) {
+                InnerRect *returnrect = RectExport_RectFromObject(item, temp);
+                Py_DECREF(item);
+                return returnrect;
+            }
+            else {
+                Py_DECREF(item);
+                return NULL;
+            }
+        }
     }
+
+    /* Try to get the rect attribute */
+    PyObject *rectattr;
+    if (!(rectattr = PyObject_GetAttrString(obj, "rect"))) {
+        PyErr_Clear();
+        return NULL;
+    }
+
+    InnerRect *returnrect;
+    /*call if it's a method*/
+    if (PyCallable_Check(rectattr)) {
+        PyObject *rectresult = PyObject_CallObject(rectattr, NULL);
+        Py_DECREF(rectattr);
+        if (rectresult == NULL) {
+            PyErr_Clear();
+            return NULL;
+        }
+        rectattr = rectresult;
+    }
+
+    returnrect = RectExport_RectFromObject(rectattr, temp);
+    Py_DECREF(rectattr);
+    return returnrect;
+
     return NULL;
 }
 
