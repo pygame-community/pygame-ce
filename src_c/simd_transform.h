@@ -91,12 +91,10 @@ pg_neon_at_runtime_but_uncompiled();
 int
 pg_avx2_at_runtime_but_uncompiled();
 
-
 void
-grayscale_sse2(SDL_Surface *src, SDL_Surface * newsurf);
-
+grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf);
 
 int
 pg_has_avx2();
 void
-grayscale_avx2(SDL_Surface *src, SDL_Surface * newsurf);
+grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf);
