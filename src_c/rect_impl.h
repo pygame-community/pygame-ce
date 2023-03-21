@@ -50,6 +50,9 @@
 #ifndef RectExport_normalize
 #error RectExport_normalize needs to be defined
 #endif
+#ifndef RectExport_pgCoord_FromFastcallArgs
+#error RectExport_pgCoord_FromFastcallArgs needs to be defined
+#endif
 #ifndef RectExport_move
 #error RectExport_move needs to be defined
 #endif
@@ -415,10 +418,13 @@ static void
 RectExport_Normalize(InnerRect *rect);
 static PyObject *
 RectExport_normalize(RectObject *self, PyObject *args);
+static int
+RectExport_pgCoord_FromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
+                                    PrimitiveType *x, PrimitiveType *y);
 static PyObject *
-RectExport_move(RectObject *self, PyObject *args);
+RectExport_move(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static PyObject *
-RectExport_moveIp(RectObject *self, PyObject *args);
+RectExport_moveIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static PyObject *
 RectExport_inflate(RectObject *self, PyObject *args);
 static PyObject *
@@ -792,13 +798,48 @@ RectExport_normalize(RectObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
+static int
+RectExport_pgCoord_FromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
+                                    PrimitiveType *x, PrimitiveType *y)
+{
+    /*Check if there is only one argument*/
+    if (nargs == 1) {
+        /*Attempt to convert the argument to two integers*/
+        if (!twoPrimitivesFromObj(args[0], x, y)) {
+            PyErr_SetString(PyExc_TypeError,
+                            "Invalid position. Must be a two-element "
+                            "sequence of numbers");
+            return 0;
+        }
+        return 1;
+    }
+    /*Check if there are two arguments*/
+    else if (nargs == 2) {
+        /*Attempt to convert the first argument to an integer*/
+        if (!PrimitiveFromObj(args[0], x)) {
+            PyErr_SetString(PyExc_TypeError, "x must be a numeric value");
+            return 0;
+        }
+        /*Attempt to convert the second argument to an integer*/
+        if (!PrimitiveFromObj(args[1], y)) {
+            PyErr_SetString(PyExc_TypeError, "y must be a numeric value");
+            return 0;
+        }
+        return 1;
+    }
+    /*Raise a TypeError for invalid number of arguments*/
+    PyErr_SetString(PyExc_TypeError,
+                    "Invalid arguments number, must either be 1 or 2");
+    return 0;
+}
+
 static PyObject *
-RectExport_move(RectObject *self, PyObject *args)
+RectExport_move(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     PrimitiveType x, y;
 
-    if (!twoPrimitivesFromObj(args, &x, &y)) {
-        return RAISE(PyExc_TypeError, "argument must contain two numbers");
+    if (!RectExport_pgCoord_FromFastcallArgs(args, nargs, &x, &y)) {
+        return NULL;
     }
 
     return RectExport_subtypeNew4(Py_TYPE(self), self->r.x + x, self->r.y + y,
@@ -806,12 +847,12 @@ RectExport_move(RectObject *self, PyObject *args)
 }
 
 static PyObject *
-RectExport_moveIp(RectObject *self, PyObject *args)
+RectExport_moveIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     PrimitiveType x, y;
 
-    if (!twoPrimitivesFromObj(args, &x, &y)) {
-        return RAISE(PyExc_TypeError, "argument must contain two numbers");
+    if (!RectExport_pgCoord_FromFastcallArgs(args, nargs, &x, &y)) {
+        return NULL;
     }
 
     self->r.x += x;
@@ -1005,31 +1046,10 @@ RectExport_collidepoint(RectObject *self, PyObject *const *args,
     InnerRect srect = self->r;
     InnerPoint p;
 
-    /*Check if there is only one argument*/
-    if (nargs == 1) {
-        /*Attempt to convert the argument to two integers*/
-        if (!twoPrimitivesFromObj(args[0], &p.x, &p.y)) {
-            return RAISE(PyExc_TypeError,
-                         "Invalid position. Must be a two-element "
-                         "sequence of numbers");
-        }
+    if (!RectExport_pgCoord_FromFastcallArgs(args, nargs, &p.x, &p.y)) {
+        return NULL;
     }
-    /*Check if there are two arguments*/
-    else if (nargs == 2) {
-        /*Attempt to convert the first argument to an integer*/
-        if (!PrimitiveFromObj(args[0], &p.x)) {
-            return RAISE(PyExc_TypeError, "x must be a numeric value");
-        }
-        /*Attempt to convert the second argument to an integer*/
-        if (!PrimitiveFromObj(args[1], &p.y)) {
-            return RAISE(PyExc_TypeError, "y must be a numeric value");
-        }
-    }
-    /*Raise a TypeError for invalid number of arguments*/
-    else {
-        return RAISE(PyExc_TypeError,
-                     "Invalid arguments number, must either be 1 or 2");
-    }
+
     if ((p.x >= srect.x) && (p.x < (srect.x + srect.w)) && (p.y >= srect.y) &&
         (p.y < (srect.y + srect.h))) {
         Py_RETURN_TRUE;
@@ -2562,6 +2582,7 @@ RectExport_iterator(RectObject *self)
 #undef RectExport_new
 #undef RectExport_dealloc
 #undef RectExport_normalize
+#undef RectExport_pgCoord_FromFastcallArgs
 #undef RectExport_move
 #undef RectExport_moveIp
 #undef RectExport_inflate
