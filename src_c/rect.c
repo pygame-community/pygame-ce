@@ -600,21 +600,21 @@ pg_rect_collidepoint(pgRectObject *self, PyObject *const *args,
     /*Check if there is only one argument*/
     if (nargs == 1) {
         /*Attempt to convert the argument to two integers*/
-        if (!pg_TwoIntsFromObjEx(args[0], &p.x, &p.y,
-                                 "Invalid position. Must be a two-element "
-                                 "sequence of numbers")) {
-            return NULL;
+        if (!pg_TwoIntsFromObj(args[0], &p.x, &p.y)) {
+            return RAISE(PyExc_TypeError,
+                         "Invalid position. Must be a two-element "
+                         "sequence of numbers");
         }
     }
     /*Check if there are two arguments*/
     else if (nargs == 2) {
         /*Attempt to convert the first argument to an integer*/
-        if (!pg_IntFromObjEx(args[0], &p.x, "x must be a numeric value")) {
-            return NULL;
+        if (!pg_IntFromObj(args[0], &p.x)) {
+            return RAISE(PyExc_TypeError, "x must be a numeric value");
         }
         /*Attempt to convert the second argument to an integer*/
-        if (!pg_IntFromObjEx(args[1], &p.y, "y must be a numeric value")) {
-            return NULL;
+        if (!pg_IntFromObj(args[1], &p.y)) {
+            return RAISE(PyExc_TypeError, "y must be a numeric value");
         }
     }
     /*Raise a TypeError for invalid number of arguments*/
