@@ -5,7 +5,6 @@
 #include "include/sse2neon.h"
 #endif /* PG_ENABLE_ARM_NEON */
 
-
 /* This returns 1 when sse2 is available at runtime but support for it isn't
  * compiled in, 0 in all other cases */
 int
@@ -56,7 +55,6 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
     mm_rgb_weights = _mm_set_epi64x(0xFF4C961DFF4C961D, 0xFF4C961DFF4C961D);
 
     while (height--) {
-
         LOOP_UNROLLED4(
             {
                 mm_src = _mm_cvtsi32_si128(*srcp);
@@ -76,9 +74,10 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
 
                 /* red & alpha */
                 mm_dst = _mm_add_epi16(
-                    _mm_add_epi16(_mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE( 3,0,0,0)),
-                                  _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(-1,1,1,1))),
-                                  _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(-1,2,2,2)));
+                    _mm_add_epi16(
+                        _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(3, 0, 0, 0)),
+                        _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(-1, 1, 1, 1))),
+                    _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(-1, 2, 2, 2)));
 
                 mm_dst = _mm_packus_epi16(mm_dst, mm_dst);
                 /*mm_dst = 0x00000000AARRGGBB00000000AARRGGBB*/

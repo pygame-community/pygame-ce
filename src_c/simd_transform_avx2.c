@@ -31,7 +31,6 @@ pg_has_avx2()
 void
 grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
 {
-
     // Current AVX2 process
     // ------------------
     // - pre loop: Load weights into register x8
@@ -50,7 +49,6 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     //     2. SSE2 single pixel version - see current single pixel path.
     //     2. Would be nice to only use AVX2 stuff for the single pixel stuff.
     //     3. Get inspiration from Starbuck's AVX2 macros
-
 
     int n;
     int width = src->w;
@@ -83,23 +81,17 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
                         26, 0x80, 25, 0x80, 24, 0x80, 15, 0x80, 14, 0x80, 13,
                         0x80, 12, 0x80, 11, 0x80, 10, 0x80, 9, 0x80, 8);
 
-    mm256_shuff_mask_red_alpha =
-        _mm256_set_epi8(31, 28, 28, 28, 27, 24, 24, 24,
-                        23, 20, 20, 20, 19, 16, 16, 16,
-                        15, 12, 12, 12, 11, 8, 8, 8,
-                        7, 4, 4, 4, 3, 0, 0, 0);
+    mm256_shuff_mask_red_alpha = _mm256_set_epi8(
+        31, 28, 28, 28, 27, 24, 24, 24, 23, 20, 20, 20, 19, 16, 16, 16, 15, 12,
+        12, 12, 11, 8, 8, 8, 7, 4, 4, 4, 3, 0, 0, 0);
 
-    mm256_shuff_mask_green =
-        _mm256_set_epi8(0x80, 29, 29, 29, 0x80, 25, 25, 25,
-                        0x80, 21, 21, 21, 0x80, 17, 17, 17,
-                        0x80, 13, 13, 13, 0x80, 9, 9, 9,
-                        0x80, 5, 5, 5, 0x80, 1, 1, 1);
+    mm256_shuff_mask_green = _mm256_set_epi8(
+        0x80, 29, 29, 29, 0x80, 25, 25, 25, 0x80, 21, 21, 21, 0x80, 17, 17, 17,
+        0x80, 13, 13, 13, 0x80, 9, 9, 9, 0x80, 5, 5, 5, 0x80, 1, 1, 1);
 
-    mm256_shuff_mask_blue =
-        _mm256_set_epi8(0x80, 30, 30, 30, 0x80, 26, 26, 26,
-                        0x80, 22, 22, 22, 0x80, 18, 18, 18,
-                        0x80, 14, 14, 14, 0x80, 10, 10, 10,
-                        0x80, 6, 6, 6, 0x80, 2, 2, 2);
+    mm256_shuff_mask_blue = _mm256_set_epi8(
+        0x80, 30, 30, 30, 0x80, 26, 26, 26, 0x80, 22, 22, 22, 0x80, 18, 18, 18,
+        0x80, 14, 14, 14, 0x80, 10, 10, 10, 0x80, 6, 6, 6, 0x80, 2, 2, 2);
 
     mm_zero = _mm_setzero_si128();
     mm_two_five_fives = _mm_set_epi64x(0x00FF00FF00FF00FF, 0x00FF00FF00FF00FF);
@@ -111,15 +103,9 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
         0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF);
 
     mm256_rgb_weights = _mm256_set_epi8(
-        0xFF, 0x4C, 0x96, 0x1D,
-        0xFF, 0x4C, 0x96, 0x1D,
-        0xFF, 0x4C, 0x96, 0x1D,
-        0xFF, 0x4C, 0x96, 0x1D,
-        0xFF, 0x4C, 0x96, 0x1D,
-        0xFF, 0x4C, 0x96, 0x1D,
-        0xFF, 0x4C, 0x96, 0x1D,
-        0xFF, 0x4C, 0x96, 0x1D);
-
+        0xFF, 0x4C, 0x96, 0x1D, 0xFF, 0x4C, 0x96, 0x1D, 0xFF, 0x4C, 0x96, 0x1D,
+        0xFF, 0x4C, 0x96, 0x1D, 0xFF, 0x4C, 0x96, 0x1D, 0xFF, 0x4C, 0x96, 0x1D,
+        0xFF, 0x4C, 0x96, 0x1D, 0xFF, 0x4C, 0x96, 0x1D);
 
     while (height--) {
         if (pre_8_width > 0) {
@@ -142,9 +128,11 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
 
                     /* red & alpha */
                     mm_dst = _mm_add_epi16(
-                        _mm_add_epi16(_mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE( 3,0,0,0)),
-                                      _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(-1,1,1,1))),
-                                      _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(-1,2,2,2)));
+                        _mm_add_epi16(_mm_shufflelo_epi16(
+                                          mm_dst, _MM_SHUFFLE(3, 0, 0, 0)),
+                                      _mm_shufflelo_epi16(
+                                          mm_dst, _MM_SHUFFLE(-1, 1, 1, 1))),
+                        _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(-1, 2, 2, 2)));
 
                     mm_dst = _mm_packus_epi16(mm_dst, mm_dst);
                     /*mm_dst = 0x00000000AARRGGBB00000000AARRGGBB*/
@@ -167,10 +155,10 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
                     mm256_srcB =
                         _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_B);
 
-                    mm256_dstA =
-                        _mm256_shuffle_epi8(mm256_rgb_weights, mm256_shuff_mask_A);
-                    mm256_dstB =
-                        _mm256_shuffle_epi8(mm256_rgb_weights, mm256_shuff_mask_B);
+                    mm256_dstA = _mm256_shuffle_epi8(mm256_rgb_weights,
+                                                     mm256_shuff_mask_A);
+                    mm256_dstB = _mm256_shuffle_epi8(mm256_rgb_weights,
+                                                     mm256_shuff_mask_B);
 
                     mm256_dstA = _mm256_mullo_epi16(mm256_srcA, mm256_dstA);
                     mm256_dstA =
@@ -184,15 +172,17 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
 
                     mm256_dst = _mm256_packus_epi16(mm256_dstA, mm256_dstB);
 
-                    mm256_dstA = _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_red_alpha);
+                    mm256_dstA = _mm256_shuffle_epi8(
+                        mm256_dst, mm256_shuff_mask_red_alpha);
 
-                    mm256_dstB = _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_green);
+                    mm256_dstB =
+                        _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_green);
 
-                    mm256_dst = _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_blue);
+                    mm256_dst =
+                        _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_blue);
 
                     mm256_dst = _mm256_adds_epu8(mm256_dst, mm256_dstB);
                     mm256_dst = _mm256_adds_epu8(mm256_dst, mm256_dstA);
-
 
                     _mm256_storeu_si256(dstp256, mm256_dst);
 

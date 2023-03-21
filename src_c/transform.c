@@ -2091,10 +2091,10 @@ clamp_4
 
 #endif
 
-
-void grayscale_non_simd(SDL_Surface *src, SDL_Surface * newsurf)
+void
+grayscale_non_simd(SDL_Surface *src, SDL_Surface *newsurf)
 {
-int x, y;
+    int x, y;
     for (y = 0; y < src->h; y++) {
         for (x = 0; x < src->w; x++) {
             Uint32 pixel;
@@ -2105,9 +2105,9 @@ int x, y;
             SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
 
             // RGBA to GRAY formula used by OpenCV
-            Uint8 grayscale_pixel = (Uint8)((((76 * r) + 255) >> 8) +
-                                            (((150 * g) + 255) >> 8) +
-                                            (((29 * b) + 255) >> 8));
+            Uint8 grayscale_pixel =
+                (Uint8)((((76 * r) + 255) >> 8) + (((150 * g) + 255) >> 8) +
+                        (((29 * b) + 255) >> 8));
             Uint32 new_pixel =
                 SDL_MapRGBA(newsurf->format, grayscale_pixel, grayscale_pixel,
                             grayscale_pixel, a);
@@ -2148,10 +2148,10 @@ grayscale(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
         src->format->Rmask == newsurf->format->Rmask &&
         src->format->Gmask == newsurf->format->Gmask &&
         src->format->Bmask == newsurf->format->Bmask) {
-        if (pg_has_avx2()){
-            grayscale_sse2(src, newsurf);
+        if (pg_has_avx2()) {
+            grayscale_avx2(src, newsurf);
         }
-        else if(pg_HasSSE_NEON()){
+        else if (pg_HasSSE_NEON()) {
             grayscale_sse2(src, newsurf);
         }
         else {
