@@ -211,6 +211,9 @@ Instead, always begin with the original image and scale to the desired size.)
 
    Returns the blurred surface using box blur algorithm.
 
+   This function does not work for indexed surfaces.
+   An exception will be thrown if the input is an indexed surface.
+
    .. versionadded:: 2.2.0
 
    .. ## pygame.transform.box_blur ##
@@ -222,6 +225,9 @@ Instead, always begin with the original image and scale to the desired size.)
 
    Returns the blurred surface using gaussian blur algorithm.
    Slower than `box_blur()`.
+
+   This function does not work for indexed surfaces.
+   An exception will be thrown if the input is an indexed surface.
 
    .. versionadded:: 2.2.0
 
