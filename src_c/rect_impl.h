@@ -113,6 +113,9 @@
 #ifndef RectExport_RectFromObject
 #error RectExport_RectFromObject needs to be defined
 #endif
+#ifndef RectExport_RectFromFastcallArgs
+#error RectExport_RectFromFastcallArgs needs to be defined
+#endif
 #ifndef RectExport_RectNew
 #error RectExport_RectNew needs to be defined
 #endif
@@ -361,6 +364,7 @@
 #define InnerPoint RectImport_innerPointStruct
 #define RectCheck RectImport_RectCheck
 #define RectFromObject RectExport_RectFromObject
+#define RectFromFastcallArgs RectExport_RectFromFastcallArgs
 #define subtype_new4 RectExport_subtypeNew4
 #define primitiveFromObjIndex RectImport_primitiveFromObjIndex
 #define twoPrimitivesFromObj RectImport_twoPrimitivesFromObj
@@ -397,6 +401,9 @@ RectExport_do_rects_intresect(InnerRect *A, InnerRect *B)
 
 static InnerRect *
 RectExport_RectFromObject(PyObject *obj, InnerRect *temp);
+static InnerRect *
+RectExport_RectFromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
+                                InnerRect *temp);
 static PyObject *
 RectExport_subtypeNew4(PyTypeObject *type, PrimitiveType x, PrimitiveType y,
                        PrimitiveType w, PrimitiveType h);
@@ -424,11 +431,11 @@ RectExport_inflate(RectObject *self, PyObject *args);
 static PyObject *
 RectExport_inflateIp(RectObject *self, PyObject *args);
 static PyObject *
-RectExport_update(RectObject *self, PyObject *args);
+RectExport_update(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static PyObject *
-RectExport_union(RectObject *self, PyObject *args);
+RectExport_union(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static PyObject *
-RectExport_unionIp(RectObject *self, PyObject *args);
+RectExport_unionIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static PyObject *
 RectExport_unionall(RectObject *self, PyObject *args);
 static PyObject *
@@ -456,7 +463,7 @@ RectExport_collidedict(RectObject *self, PyObject *args);
 static PyObject *
 RectExport_collidedictall(RectObject *self, PyObject *args);
 static PyObject *
-RectExport_clip(RectObject *self, PyObject *args);
+RectExport_clip(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static int
 RectExport_contains_internal(RectObject *self, PyObject *arg);
 static PyObject *
@@ -464,11 +471,11 @@ RectExport_contains(RectObject *self, PyObject *arg);
 static int
 RectExport_containsSeq(RectObject *self, PyObject *arg);
 static PyObject *
-RectExport_clamp(RectObject *self, PyObject *args);
+RectExport_clamp(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static PyObject *
-RectExport_fit(RectObject *self, PyObject *args);
+RectExport_fit(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static PyObject *
-RectExport_clampIp(RectObject *self, PyObject *args);
+RectExport_clampIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static PyObject *
 RectExport_reduce(RectObject *self, PyObject *args);
 static PyObject *
@@ -669,6 +676,36 @@ RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
     return NULL;
 }
 
+static InnerRect *
+RectExport_RectFromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
+                                InnerRect *temp)
+{
+    /* This function converts a sequence of arguments coming from a fastcall
+     * call into a Rect or FRect.
+     * */
+
+    if (nargs == 1) {
+        return RectFromObject(args[0], temp);
+    }
+    else if (nargs == 4) {
+        if (!PrimitiveFromObj(args[0], &temp->x) ||
+            !PrimitiveFromObj(args[1], &temp->y) ||
+            !PrimitiveFromObj(args[2], &temp->w) ||
+            !PrimitiveFromObj(args[3], &temp->h)) {
+            return NULL;
+        }
+        return temp;
+    }
+    else if (nargs == 2) {
+        if (!twoPrimitivesFromObj(args[0], &temp->x, &temp->y) ||
+            !twoPrimitivesFromObj(args[1], &temp->w, &temp->h)) {
+            return NULL;
+        }
+        return temp;
+    }
+    return NULL;
+}
+
 static PyObject *
 RectExport_subtypeNew4(PyTypeObject *type, PrimitiveType x, PrimitiveType y,
                        PrimitiveType w, PrimitiveType h)
@@ -744,17 +781,15 @@ RectExport_dealloc(RectObject *self)
 static int
 RectExport_init(RectObject *self, PyObject *args, PyObject *kwds)
 {
-    InnerRect temp;
-    InnerRect *argrect = RectFromObject(args, &temp);
+    InnerRect *argrect, temp;
 
-    if (argrect == NULL) {
+    if (!(argrect = RectFromObject(args, &temp))) {
         PyErr_SetString(PyExc_TypeError, "Argument must be rect style object");
         return -1;
     }
-    self->r.x = argrect->x;
-    self->r.y = argrect->y;
-    self->r.w = argrect->w;
-    self->r.h = argrect->h;
+
+    self->r = *argrect;
+
     return 0;
 }
 
@@ -849,28 +884,26 @@ RectExport_inflateIp(RectObject *self, PyObject *args)
 }
 
 static PyObject *
-RectExport_update(RectObject *self, PyObject *args)
+RectExport_update(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
-    InnerRect temp;
-    InnerRect *argrect = RectFromObject(args, &temp);
+    InnerRect *argrect, temp;
 
-    if (argrect == NULL) {
+    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
     }
-    self->r.x = argrect->x;
-    self->r.y = argrect->y;
-    self->r.w = argrect->w;
-    self->r.h = argrect->h;
+
+    self->r = *argrect;
+
     Py_RETURN_NONE;
 }
 
 static PyObject *
-RectExport_union(RectObject *self, PyObject *args)
+RectExport_union(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     InnerRect *argrect, temp;
     PrimitiveType x, y, w, h;
 
-    if (!(argrect = RectFromObject(args, &temp))) {
+    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
     }
     x = MIN(self->r.x, argrect->x);
@@ -881,12 +914,12 @@ RectExport_union(RectObject *self, PyObject *args)
 }
 
 static PyObject *
-RectExport_unionIp(RectObject *self, PyObject *args)
+RectExport_unionIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     InnerRect *argrect, temp;
     PrimitiveType x, y, w, h;
 
-    if (!(argrect = RectFromObject(args, &temp)))
+    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp)))
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
 
     x = MIN(self->r.x, argrect->x);
@@ -1041,73 +1074,13 @@ static PyObject *
 RectExport_colliderect(RectObject *self, PyObject *const *args,
                        Py_ssize_t nargs)
 {
-    InnerRect srect = self->r;
-    InnerRect temp;
+    InnerRect *argrect, temp;
 
-    if (nargs == 1) {
-        /* One argument was passed in, so we assume it's a rectstyle object.
-         * This could mean several of the following (all dealt by
-         * pgRect_FromObject):
-         * - (x, y, w, h)
-         * - ((x, y), (w, h))
-         * - Rect
-         * - Object with "rect" attribute
-         */
-        InnerRect *tmp;
-        if (!(tmp = RectExport_RectFromObject(args[0], &temp))) {
-            if (PyErr_Occurred()) {
-                return NULL;
-            }
-            else {
-                return RAISE(PyExc_TypeError,
-                             "Invalid rect, all 4 fields must be numeric");
-            }
-        }
-        return PyBool_FromLong(_pg_do_rects_intersect(&srect, tmp));
-    }
-    else if (nargs == 2) {
-        /* Two separate sequences were passed in:
-         * - (x, y), (w, h)
-         */
-        if (!twoPrimitivesFromObj(args[0], &temp.x, &temp.y) ||
-            !twoPrimitivesFromObj(args[1], &temp.w, &temp.h)) {
-            if (PyErr_Occurred())
-                return NULL;
-            else
-                return RAISE(PyExc_TypeError,
-                             "Invalid rect, all 4 fields must be numeric");
-        }
-    }
-    else if (nargs == 4) {
-        /* Four separate arguments were passed in:
-         * - x, y, w, h
-         */
-        if (!(PrimitiveFromObj(args[0], &temp.x))) {
-            return RAISE(PyExc_TypeError,
-                         "Invalid x value for rect, must be numeric");
-        }
-
-        if (!(PrimitiveFromObj(args[1], &temp.y))) {
-            return RAISE(PyExc_TypeError,
-                         "Invalid y value for rect, must be numeric");
-        }
-
-        if (!(PrimitiveFromObj(args[2], &temp.w))) {
-            return RAISE(PyExc_TypeError,
-                         "Invalid w value for rect, must be numeric");
-        }
-
-        if (!(PrimitiveFromObj(args[3], &temp.h))) {
-            return RAISE(PyExc_TypeError,
-                         "Invalid h value for rect, must be numeric");
-        }
-    }
-    else {
-        return RAISE(PyExc_ValueError,
-                     "Incorrect arguments number, must be either 1, 2 or 4");
+    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
+        return RAISE(PyExc_TypeError, "Argument must be rect style object");
     }
 
-    return PyBool_FromLong(_pg_do_rects_intersect(&srect, &temp));
+    return PyBool_FromLong(_pg_do_rects_intersect(&self->r, argrect));
 }
 
 static PyObject *
@@ -1494,13 +1467,13 @@ RectExport_collidedictall(RectObject *self, PyObject *args)
 }
 
 static PyObject *
-RectExport_clip(RectObject *self, PyObject *args)
+RectExport_clip(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     InnerRect *A, *B, temp;
     PrimitiveType x, y, w, h;
 
     A = &self->r;
-    if (!(B = RectFromObject(args, &temp))) {
+    if (!(B = RectFromFastcallArgs(args, nargs, &temp))) {
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
     }
 
@@ -1665,12 +1638,12 @@ RectExport_containsSeq(RectObject *self, PyObject *arg)
 }
 
 static PyObject *
-RectExport_clamp(RectObject *self, PyObject *args)
+RectExport_clamp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     InnerRect *argrect, temp;
     PrimitiveType x, y;
 
-    if (!(argrect = RectFromObject(args, &temp))) {
+    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
     }
 
@@ -1698,13 +1671,13 @@ RectExport_clamp(RectObject *self, PyObject *args)
 }
 
 static PyObject *
-RectExport_fit(RectObject *self, PyObject *args)
+RectExport_fit(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     InnerRect *argrect, temp;
     PrimitiveType w, h, x, y;
     float xratio, yratio, maxratio;
 
-    if (!(argrect = RectFromObject(args, &temp))) {
+    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
     }
 
@@ -1722,12 +1695,12 @@ RectExport_fit(RectObject *self, PyObject *args)
 }
 
 static PyObject *
-RectExport_clampIp(RectObject *self, PyObject *args)
+RectExport_clampIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     InnerRect *argrect, temp;
     PrimitiveType x, y;
 
-    if (!(argrect = RectFromObject(args, &temp))) {
+    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp))) {
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
     }
 
@@ -2584,6 +2557,7 @@ RectExport_iterator(RectObject *self)
 #undef RectExport_clipline
 #undef RectExport_do_rects_intresect
 #undef RectExport_RectFromObject
+#undef RectExport_RectFromFastcallArgs
 #undef RectExport_RectNew
 #undef RectExport_RectNew4
 #undef RectExport_Normalize
@@ -2665,6 +2639,7 @@ RectExport_iterator(RectObject *self)
 #undef InnerPoint
 #undef RectCheck
 #undef RectFromObject
+#undef RectFromFastcallArgs
 #undef subtype_new4
 #undef primitiveFromObjIndex
 #undef twoPrimitivesFromObj
