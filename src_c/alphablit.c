@@ -215,25 +215,43 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                             src->format->Rmask == dst->format->Rmask &&
                             src->format->Gmask == dst->format->Gmask &&
                             src->format->Bmask == dst->format->Bmask) {
-/* If our source and destination are the same ARGB 32bit
-   format we can use SSE2/NEON to speed up the blend */
+                            /* If our source and destination are the same ARGB
+                               32bit format we can use SSE2/NEON/AVX2 to speed
+                               up the blend */
+                            if (pg_has_avx2() && (src != dst)) {
+                                if (info.src_blanket_alpha != 255) {
+                                    alphablit_alpha_avx2_argb_surf_alpha(
+                                        &info);
+                                }
+                                else if (SDL_ISPIXELFORMAT_ALPHA(
+                                             dst->format->format) &&
+                                         info.dst_blend !=
+                                             SDL_BLENDMODE_NONE) {
+                                    alphablit_alpha_avx2_argb_no_surf_alpha(
+                                        &info);
+                                }
+                                else {
+                                    alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(
+                                        &info);
+                                }
+                                break;
+                            }
 #if PG_ENABLE_SSE_NEON
                             if ((pg_HasSSE_NEON()) && (src != dst)) {
                                 if (info.src_blanket_alpha != 255) {
                                     alphablit_alpha_sse2_argb_surf_alpha(
                                         &info);
                                 }
+                                else if (SDL_ISPIXELFORMAT_ALPHA(
+                                             dst->format->format) &&
+                                         info.dst_blend !=
+                                             SDL_BLENDMODE_NONE) {
+                                    alphablit_alpha_sse2_argb_no_surf_alpha(
+                                        &info);
+                                }
                                 else {
-                                    if (SDL_ISPIXELFORMAT_ALPHA(
-                                            dst->format->format) &&
-                                        info.dst_blend != SDL_BLENDMODE_NONE) {
-                                        alphablit_alpha_sse2_argb_no_surf_alpha(
-                                            &info);
-                                    }
-                                    else {
-                                        alphablit_alpha_sse2_argb_no_surf_alpha_opaque_dst(
-                                            &info);
-                                    }
+                                    alphablit_alpha_sse2_argb_no_surf_alpha_opaque_dst(
+                                        &info);
                                 }
                                 break;
                             }
