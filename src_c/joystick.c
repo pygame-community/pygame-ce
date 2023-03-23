@@ -28,14 +28,9 @@
 #include "doc/joystick_doc.h"
 
 static pgJoystickObject *joylist_head = NULL;
-#ifndef BUILD_STATIC
-static PyObject *joy_instance_map = NULL;
-#endif  // BUILD_STATIC joy_instance_map already defined in src_c/event.c:57
 static PyTypeObject pgJoystick_Type;
 static PyObject *
 pgJoystick_New(int);
-static int
-_joy_map_insert(pgJoystickObject *jstick);
 #define pgJoystick_Check(x) ((x)->ob_type == &pgJoystick_Type)
 
 static PyObject *
@@ -130,37 +125,7 @@ joy_init(PyObject *self, PyObject *_null)
         }
     }
 
-    if (-1 == _joy_map_insert(jstick)) {
-        return NULL;
-    }
-
     Py_RETURN_NONE;
-}
-
-static int
-_joy_map_insert(pgJoystickObject *jstick)
-{
-    SDL_JoystickID instance_id;
-    PyObject *k, *v;
-
-    if (!joy_instance_map) {
-        return -1;
-    }
-
-    instance_id = SDL_JoystickInstanceID(jstick->joy);
-    if (instance_id < 0) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
-    }
-    k = PyLong_FromLong(instance_id);
-    v = PyLong_FromLong(jstick->id);
-    if (k && v) {
-        PyDict_SetItem(joy_instance_map, k, v);
-    }
-    Py_XDECREF(k);
-    Py_XDECREF(v);
-
-    return 0;
 }
 
 static PyObject *
@@ -588,11 +553,6 @@ pgJoystick_New(int id)
     }
     joylist_head = jstick;
 
-    if (-1 == _joy_map_insert(jstick)) {
-        Py_DECREF(jstick);
-        return NULL;
-    }
-
     return (PyObject *)jstick;
 }
 
@@ -629,17 +589,6 @@ MODINIT_DEFINE(joystick)
 
     /* type preparation */
     if (PyType_Ready(&pgJoystick_Type) == -1) {
-        return NULL;
-    }
-
-    /* Grab the instance -> device id mapping */
-    module = PyImport_ImportModule("pygame.event");
-    if (!module) {
-        return NULL;
-    }
-    joy_instance_map = PyObject_GetAttrString(module, "_joy_instance_map");
-    Py_DECREF(module);
-    if (!joy_instance_map) {
         return NULL;
     }
 
