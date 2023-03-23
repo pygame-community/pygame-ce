@@ -42,11 +42,9 @@ Instead, always begin with the original image and scale to the desired size.)
    Resizes the Surface to a new size, given as (width, height). 
    This is a fast scale operation that does not sample the results.
 
-   An optional destination surface can be used, rather than have it create a
-   new one. This is quicker if you want to repeatedly scale something. However
-   the destination must be the same size as the size (width, height) passed in. Also
-   the destination surface must be the same format.
-
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must be the same as the size (width, height) passed
+   in, and the same depth as the source Surface.
    .. ## pygame.transform.scale ##
 
 .. function:: scale_by
@@ -60,6 +58,10 @@ Instead, always begin with the original image and scale to the desired size.)
    scale factor can be a sequence of two numbers, controlling x and y scaling
    separately. For example, :code:`transform.scale_by(surf, (2, 1))` doubles
    the image width but keeps the height the same.
+
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the scaled dimensions
+   (width * factor, height * factor) and same depth as the source Surface.
 
    .. versionadded:: 2.1.3
 
@@ -106,11 +108,10 @@ Instead, always begin with the original image and scale to the desired size.)
    This really only has an effect on simple images with solid colors. On
    photographic and antialiased images it will look like a regular unfiltered
    scale.
-
-   An optional destination surface can be used, rather than have it create a
-   new one. This is quicker if you want to repeatedly scale something. However
-   the destination must be twice the size of the source surface passed in. Also
-   the destination surface must be the same format.
+   
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have double the dimensions
+   (width * 2, height * 2) and same depth as the source Surface.
 
    .. ## pygame.transform.scale2x ##
 
@@ -128,6 +129,10 @@ Instead, always begin with the original image and scale to the desired size.)
    surfaces. An exception will be thrown if the input surface bit depth is less
    than 24.
 
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must be the same as the size (width, height) passed
+   in, and the same depth as the source Surface.
+
    .. versionadded:: 1.8
 
    .. ## pygame.transform.smoothscale ##
@@ -144,6 +149,10 @@ Instead, always begin with the original image and scale to the desired size.)
    of two numbers, controlling x and y scaling separately. For example,
    :code:`transform.smoothscale_by(surf, (2, 1))` doubles the image width but
    keeps the height the same.
+
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the scaled dimensions
+   (width * factor, height * factor) and same depth as the source Surface.
 
    .. versionadded:: 2.1.3
 
@@ -200,6 +209,10 @@ Instead, always begin with the original image and scale to the desired size.)
 
    Finds the edges in a surface using the laplacian algorithm.
 
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the same dimensions (width, height) and
+   depth as the source Surface.
+
    .. versionadded:: 1.8
 
    .. ## pygame.transform.laplacian ##
@@ -213,6 +226,10 @@ Instead, always begin with the original image and scale to the desired size.)
 
    This function does not work for indexed surfaces.
    An exception will be thrown if the input is an indexed surface.
+
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the same dimensions (width, height) and
+   depth as the source Surface.
 
    .. versionadded:: 2.2.0
 
@@ -228,6 +245,10 @@ Instead, always begin with the original image and scale to the desired size.)
 
    This function does not work for indexed surfaces.
    An exception will be thrown if the input is an indexed surface.
+
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the same dimensions (width, height) and
+   depth as the source Surface.
 
    .. versionadded:: 2.2.0
 
@@ -247,6 +268,10 @@ Instead, always begin with the original image and scale to the desired size.)
 
    Note, this function currently does not handle palette using surfaces
    correctly.
+
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the same dimensions (width, height) and 
+   depth as the source Surfaces.
 
    .. versionadded:: 1.8
    .. versionadded:: 1.9 ``palette_colors`` argument
@@ -271,7 +296,11 @@ Instead, always begin with the original image and scale to the desired size.)
    | :sl:`inverts the RGB elements of a surface`
    | :sg:`average_color(surface, dest_surface=None) -> Surface`
 
-   Inverts each RGB pixel contained within the Surface, does not affect alpha channel. Can also be used with a destination Surface. 
+   Inverts each RGB pixel contained within the Surface, does not affect alpha channel.
+
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the same dimensions (width, height) and
+   depth as the source Surface.
 
    .. versionadded:: 2.2.0
 
@@ -284,8 +313,9 @@ Instead, always begin with the original image and scale to the desired size.)
 
    Returns a grayscaled version of the original surface using the luminosity formula which weights red, green and blue according to their wavelengths.
 
-   An optional destination surface can be passed which is faster than creating a new Surface.
-   This destination surface must have the same dimensions (width, height) and depth as the source Surface.
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the same dimensions (width, height) and
+   depth as the source Surface.
    
    .. versionadded:: 2.1.4
 
