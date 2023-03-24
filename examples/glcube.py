@@ -520,7 +520,7 @@ def draw_cube_modern(shader_data, filled_cube_indices, outline_cube_indices, rot
 def main():
     """run the demo"""
 
-    # initialize pygame and setup an opengl display
+    # initialize pygame-ce and setup an opengl display
     pg.init()
 
     gl_version = (3, 0)  # GL Version number (Major, Minor)

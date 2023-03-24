@@ -39,7 +39,7 @@ def main():
     # Get ready to print.
     text_print = TextPrint()
 
-    # This dict can be left as-is, since pygame will generate a
+    # This dict can be left as-is, since pygame-ce will generate a
     # pygame.JOYDEVICEADDED event for every joystick connected
     # at the start of the program.
     joysticks = {}

@@ -198,6 +198,17 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.bold ##
 
+   .. attribute:: name
+
+      | :sl:`Gets the font's name.`
+      | :sg:`name -> str`
+
+      Read only. Returns the font's name.
+
+      .. versionadded:: 2.2
+
+      .. ## Font.name ##
+
    .. attribute:: italic
 
       | :sl:`Gets or sets whether the font should be rendered in (faked) italics.`

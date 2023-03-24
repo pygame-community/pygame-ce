@@ -11,6 +11,11 @@
    | :sg:`Rect(left, top, width, height) -> Rect`
    | :sg:`Rect((left, top), (width, height)) -> Rect`
    | :sg:`Rect(object) -> Rect`
+   | :sg:`FRect(left, top, width, height) -> FRect`
+   | :sg:`FRect((left, top), (width, height)) -> FRect`
+   | :sg:`FRect(object) -> FRect`
+
+   .. versionchanged:: 2.2 Since version 2.2 there is another class called FRect that serves the same purpose as as `Rect` but it can hold floats instead of integers.
 
    Pygame uses Rect objects to store and manipulate rectangular areas. A Rect
    can be created from a combination of left, top, width, and height values.
