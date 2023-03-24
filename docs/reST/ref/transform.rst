@@ -44,7 +44,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
    An optional destination surface can be passed which is faster than creating a new
    Surface. This destination surface must be the same as the size (width, height) passed
-   in, and the same depth as the source Surface.
+   in, and the same depth and format as the source Surface.
    .. ## pygame.transform.scale ##
 
 .. function:: scale_by
@@ -61,7 +61,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
    An optional destination surface can be passed which is faster than creating a new
    Surface. This destination surface must have the scaled dimensions
-   (width * factor, height * factor) and same depth as the source Surface.
+   (width * factor, height * factor) and same depth and format as the source Surface.
 
    .. versionadded:: 2.1.3
 
@@ -111,7 +111,7 @@ Instead, always begin with the original image and scale to the desired size.)
    
    An optional destination surface can be passed which is faster than creating a new
    Surface. This destination surface must have double the dimensions
-   (width * 2, height * 2) and same depth as the source Surface.
+   (width * 2, height * 2) and same depth and format as the source Surface.
 
    .. ## pygame.transform.scale2x ##
 
@@ -131,7 +131,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
    An optional destination surface can be passed which is faster than creating a new
    Surface. This destination surface must be the same as the size (width, height) passed
-   in, and the same depth as the source Surface.
+   in, and the same depth and format as the source Surface.
 
    .. versionadded:: 1.8
 
@@ -152,7 +152,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
    An optional destination surface can be passed which is faster than creating a new
    Surface. This destination surface must have the scaled dimensions
-   (width * factor, height * factor) and same depth as the source Surface.
+   (width * factor, height * factor) and same depth and format as the source Surface.
 
    .. versionadded:: 2.1.3
 
@@ -229,7 +229,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
    An optional destination surface can be passed which is faster than creating a new
    Surface. This destination surface must have the same dimensions (width, height) and
-   depth as the source Surface.
+   depth and format as the source Surface.
 
    .. versionadded:: 2.2.0
 
@@ -248,7 +248,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
    An optional destination surface can be passed which is faster than creating a new
    Surface. This destination surface must have the same dimensions (width, height) and
-   depth as the source Surface.
+   depth and format as the source Surface.
 
    .. versionadded:: 2.2.0
 
@@ -271,7 +271,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
    An optional destination surface can be passed which is faster than creating a new
    Surface. This destination surface must have the same dimensions (width, height) and 
-   depth as the source Surfaces.
+   depth as the first passed source Surface.
 
    .. versionadded:: 1.8
    .. versionadded:: 1.9 ``palette_colors`` argument
