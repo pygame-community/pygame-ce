@@ -270,8 +270,7 @@ For an example of how the scrap module works refer to the examples page
    | :sg:`put_text(text) -> None`
 
    Places the input text into the clipboard. The data should be a string.
-   This is a different clipboard than the rest of the scrap module, except
-   for ``get_text`` and ``has_text``.
+   This is the same clipboard as the legacy scrap API when using ``SCRAP_TEXT``.
 
    :param string text: String to be placed into the clipboard
    :rtype: None
@@ -290,8 +289,8 @@ For an example of how the scrap module works refer to the examples page
    | :sg:`get_text() -> str`
 
    Gets text from the clipboard and returns it. If the clipboard is empty,
-   returns an empty string. This is a different clipboard than the rest of 
-   the scrap module, except for ``put_text`` and ``has_text``.
+   returns an empty string. This is the same clipboard as the legacy scrap
+   API when using ``SCRAP_TEXT``.
 
    :rtype: str
 
@@ -305,8 +304,7 @@ For an example of how the scrap module works refer to the examples page
    | :sg:`has_text() -> bool`
 
    Returns ``True`` if the clipboard has a string, otherwise returns ``False``.
-   This is a different clipboard than the rest of the scrap module, except
-   for ``get_text`` and ``put_text``.
+   This is the same clipboard as the legacy scrap API when using ``SCRAP_TEXT``.
 
    :rtype: bool
 
