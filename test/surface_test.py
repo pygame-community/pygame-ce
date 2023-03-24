@@ -1096,6 +1096,8 @@ class GeneralSurfaceTests(unittest.TestCase):
         for surf.convert()."""
         pygame.display.quit()
         surf = pygame.Surface((1, 1))
+        filename = example_path(os.path.join("data", "alien3.png"))  # 8bit PNG
+        surf8bit = pygame.image.load(filename)
 
         self.assertRaisesRegex(pygame.error, "display initialized", surf.convert)
 
@@ -1109,6 +1111,7 @@ class GeneralSurfaceTests(unittest.TestCase):
                     self.fail("convert() should not raise an exception here.")
 
             self.assertRaisesRegex(pygame.error, "No video mode", surf.convert)
+            self.assertRaisesRegex(pygame.error, "No video mode", surf8bit.convert)
 
             pygame.display.set_mode((640, 480))
             try:
@@ -3650,6 +3653,39 @@ class SurfaceBlendTest(unittest.TestCase):
                 dst_bit_depth=8,
             )
         )
+
+    def test_blit_blend_premultiplied_pixelformats(self):
+        # first create two BGRA pixel format surfaces using
+        # tobytes & frombytes
+        argb_surf_a = pygame.Surface((64, 64), flags=pygame.SRCALPHA)
+        byte_surf_a = pygame.image.tobytes(argb_surf_a, "ARGB")
+        bgra_surf_a = pygame.image.frombytes(byte_surf_a, (64, 64), "ARGB")
+
+        argb_surf_b = pygame.Surface((64, 64), flags=pygame.SRCALPHA)
+        byte_surf_b = pygame.image.tobytes(argb_surf_b, "ARGB")
+        bgra_surf_b = pygame.image.frombytes(byte_surf_b, (64, 64), "ARGB")
+
+        argb_surf_a.fill((64, 0, 0, 128))
+        self.assertEqual(argb_surf_a.get_at((0, 0)), pygame.Color(64, 0, 0, 128))
+
+        # 128 green, 128 blue at 50% alpha, premultiplied
+        argb_surf_b.fill((0, 64, 64, 128))
+        self.assertEqual(argb_surf_b.get_at((0, 0)), pygame.Color(0, 64, 64, 128))
+
+        argb_surf_a.blit(argb_surf_b, (0, 0), special_flags=pygame.BLEND_PREMULTIPLIED)
+
+        self.assertEqual(argb_surf_a.get_at((0, 0)), pygame.Color(32, 64, 64, 192))
+
+        bgra_surf_a.fill((64, 0, 0, 128))  # 128 red at 50% alpha
+        self.assertEqual(bgra_surf_a.get_at((0, 0)), pygame.Color(64, 0, 0, 128))
+
+        # 128 green, 128 blue at 50% alpha, premultiplied
+        bgra_surf_b.fill((0, 64, 64, 128))
+        self.assertEqual(bgra_surf_b.get_at((0, 0)), pygame.Color(0, 64, 64, 128))
+
+        bgra_surf_a.blit(bgra_surf_b, (0, 0), special_flags=pygame.BLEND_PREMULTIPLIED)
+
+        self.assertEqual(bgra_surf_a.get_at((0, 0)), pygame.Color(32, 64, 64, 192))
 
     def test_blit_blend_big_rect(self):
         """test that an oversized rect works ok."""
