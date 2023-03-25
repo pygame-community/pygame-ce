@@ -849,6 +849,13 @@ get_joy_guid(int device_index)
 }
 
 static PyObject *
+get_joy_device_index(int instance_id)
+{
+    int device_index = pgJoystick_GetDeviceIndexByInstanceID(instance_id);
+    return PyLong_FromLong(device_index);
+}
+
+static PyObject *
 dict_from_event(SDL_Event *event)
 {
     PyObject *dict = NULL, *tuple, *obj;
@@ -945,7 +952,7 @@ dict_from_event(SDL_Event *event)
                 PyBool_FromLong((event->button.which == SDL_TOUCH_MOUSEID)));
             break;
         case SDL_JOYAXISMOTION:
-            _pg_insobj(dict, "joy", PyLong_FromLong(event->jaxis.which));
+            _pg_insobj(dict, "joy", get_joy_device_index(event->jaxis.which));
             _pg_insobj(dict, "instance_id",
                        PyLong_FromLong(event->jaxis.which));
             _pg_insobj(dict, "axis", PyLong_FromLong(event->jaxis.axis));
@@ -953,7 +960,7 @@ dict_from_event(SDL_Event *event)
                        PyFloat_FromDouble(event->jaxis.value / 32767.0));
             break;
         case SDL_JOYBALLMOTION:
-            _pg_insobj(dict, "joy", PyLong_FromLong(event->jaxis.which));
+            _pg_insobj(dict, "joy", get_joy_device_index(event->jaxis.which));
             _pg_insobj(dict, "instance_id",
                        PyLong_FromLong(event->jball.which));
             _pg_insobj(dict, "ball", PyLong_FromLong(event->jball.ball));
@@ -961,7 +968,7 @@ dict_from_event(SDL_Event *event)
             _pg_insobj(dict, "rel", obj);
             break;
         case SDL_JOYHATMOTION:
-            _pg_insobj(dict, "joy", PyLong_FromLong(event->jaxis.which));
+            _pg_insobj(dict, "joy", get_joy_device_index(event->jaxis.which));
             _pg_insobj(dict, "instance_id",
                        PyLong_FromLong(event->jhat.which));
             _pg_insobj(dict, "hat", PyLong_FromLong(event->jhat.hat));
@@ -978,7 +985,7 @@ dict_from_event(SDL_Event *event)
             break;
         case SDL_JOYBUTTONUP:
         case SDL_JOYBUTTONDOWN:
-            _pg_insobj(dict, "joy", PyLong_FromLong(event->jaxis.which));
+            _pg_insobj(dict, "joy", get_joy_device_index(event->jaxis.which));
             _pg_insobj(dict, "instance_id",
                        PyLong_FromLong(event->jbutton.which));
             _pg_insobj(dict, "button", PyLong_FromLong(event->jbutton.button));
@@ -2207,6 +2214,11 @@ MODINIT_DEFINE(event)
        the module is not loaded.
     */
     import_pygame_base();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
+    import_pygame_joystick();
     if (PyErr_Occurred()) {
         return NULL;
     }

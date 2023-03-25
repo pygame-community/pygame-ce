@@ -31,6 +31,8 @@ static pgJoystickObject *joylist_head = NULL;
 static PyTypeObject pgJoystick_Type;
 static PyObject *
 pgJoystick_New(int);
+static int
+pgJoystick_GetDeviceIndexByInstanceID(int instance_id);
 #define pgJoystick_Check(x) ((x)->ob_type == &pgJoystick_Type)
 
 static PyObject *
@@ -511,6 +513,20 @@ static PyTypeObject pgJoystick_Type = {
     .tp_methods = joy_methods,
 };
 
+static int
+pgJoystick_GetDeviceIndexByInstanceID(int instance_id)
+{
+    pgJoystickObject *cur;
+    cur = joylist_head;
+    while (cur) {
+        if (SDL_JoystickInstanceID(cur->joy) == instance_id) {
+            return cur->id;
+        }
+        cur = cur->next;
+    }
+    return -1;
+}
+
 static PyObject *
 pgJoystick_New(int id)
 {
@@ -609,6 +625,7 @@ MODINIT_DEFINE(joystick)
     /* export the c api */
     c_api[0] = &pgJoystick_Type;
     c_api[1] = pgJoystick_New;
+    c_api[2] = pgJoystick_GetDeviceIndexByInstanceID;
     apiobj = encapsulate_api(c_api, "joystick");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);
