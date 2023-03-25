@@ -32,7 +32,7 @@ static PyTypeObject pgJoystick_Type;
 static PyObject *
 pgJoystick_New(int);
 static int
-pgJoystick_GetDeviceIndexByInstanceID(int instance_id);
+pgJoystick_GetDeviceIndexByInstanceID(int);
 #define pgJoystick_Check(x) ((x)->ob_type == &pgJoystick_Type)
 
 static PyObject *
