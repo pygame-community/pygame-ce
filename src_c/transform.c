@@ -3074,39 +3074,41 @@ box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
     Uint8 *srcpx = (Uint8 *)src->pixels;
     Uint8 *dstpx = (Uint8 *)dst->pixels;
     Uint8 nb = src->format->BytesPerPixel;
-    int w = dst->w, h = dst->h, pitch = dst->pitch;
+    int w = dst->w, h = dst->h;
+    int dst_pitch = dst->pitch;
+    int src_pitch = src->pitch;
     int i, x, y, color;
-    Uint32 *buf = malloc(pitch * sizeof(Uint32));
-    Uint32 *sum_v = malloc(pitch * sizeof(Uint32));
+    Uint32 *buf = malloc(dst_pitch * sizeof(Uint32));
+    Uint32 *sum_v = malloc(dst_pitch * sizeof(Uint32));
     Uint32 *sum_h = malloc(nb * sizeof(Uint32));
 
-    memset(sum_v, 0, pitch * sizeof(Uint32));
+    memset(sum_v, 0, dst_pitch * sizeof(Uint32));
     for (y = 0; y <= radius; y++) {  // y-pre
-        for (i = 0; i < pitch; i++) {
-            sum_v[i] += srcpx[pitch * y + i];
+        for (i = 0; i < dst_pitch; i++) {
+            sum_v[i] += srcpx[src_pitch * y + i];
         }
     }
     if (repeat) {
-        for (i = 0; i < pitch; i++) {
+        for (i = 0; i < dst_pitch; i++) {
             sum_v[i] += srcpx[i] * radius;
         }
     }
     for (y = 0; y < h; y++) {  // y
-        for (i = 0; i < pitch; i++) {
+        for (i = 0; i < dst_pitch; i++) {
             buf[i] = sum_v[i] / (radius * 2 + 1);
 
             // update vertical sum
             if (y - radius >= 0) {
-                sum_v[i] -= srcpx[pitch * (y - radius) + i];
+                sum_v[i] -= srcpx[src_pitch * (y - radius) + i];
             }
             else if (repeat) {
                 sum_v[i] -= srcpx[i];
             }
             if (y + radius + 1 < h) {
-                sum_v[i] += srcpx[pitch * (y + radius + 1) + i];
+                sum_v[i] += srcpx[src_pitch * (y + radius + 1) + i];
             }
             else if (repeat) {
-                sum_v[i] += srcpx[pitch * (h - 1) + i];
+                sum_v[i] += srcpx[src_pitch * (h - 1) + i];
             }
         }
 
@@ -3123,7 +3125,7 @@ box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
         }
         for (x = 0; x < w; x++) {  // x
             for (color = 0; color < nb; color++) {
-                dstpx[pitch * y + nb * x + color] =
+                dstpx[dst_pitch * y + nb * x + color] =
                     sum_h[color] / (radius * 2 + 1);
 
                 // update horizontal sum
@@ -3154,10 +3156,12 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
     Uint8 *srcpx = (Uint8 *)src->pixels;
     Uint8 *dstpx = (Uint8 *)dst->pixels;
     Uint8 nb = src->format->BytesPerPixel;
-    int w = dst->w, h = dst->h, pitch = dst->pitch;
+    int w = dst->w, h = dst->h;
+    int dst_pitch = dst->pitch;
+    int src_pitch = src->pitch;
     int i, j, x, y, color;
-    float *buf = malloc(pitch * sizeof(float));
-    float *buf2 = malloc(pitch * sizeof(float));
+    float *buf = malloc(dst_pitch * sizeof(float));
+    float *buf2 = malloc(dst_pitch * sizeof(float));
     float *lut = malloc((radius + 1) * sizeof(float));
     float lut_sum = 0.0;
 
@@ -3174,24 +3178,25 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
         lut[i] /= lut_sum;
     }
 
-    for (i = 0; i < pitch; i++) {
+    for (i = 0; i < dst_pitch; i++) {
         buf[i] = 0.0;
         buf2[i] = 0.0;
     }
 
     for (y = 0; y < h; y++) {
         for (j = -radius; j <= radius; j++) {
-            for (i = 0; i < pitch; i++) {
+            for (i = 0; i < dst_pitch; i++) {
                 if (y + j >= 0 && y + j < h) {
-                    buf[i] += (float)srcpx[pitch * (y + j) + i] * lut[abs(j)];
+                    buf[i] +=
+                        (float)srcpx[src_pitch * (y + j) + i] * lut[abs(j)];
                 }
                 else if (repeat) {
                     if (y + j < 0) {
                         buf[i] += (float)srcpx[i] * lut[abs(j)];
                     }
                     else {
-                        buf[i] +=
-                            (float)srcpx[pitch * (h - 1) + i] * lut[abs(j)];
+                        buf[i] += (float)srcpx[src_pitch * (h - 1) + i] *
+                                  lut[abs(j)];
                     }
                 }
             }
@@ -3216,8 +3221,8 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
                 }
             }
         }
-        for (i = 0; i < pitch; i++) {
-            dstpx[pitch * y + i] = (Uint8)buf2[i];
+        for (i = 0; i < dst_pitch; i++) {
+            dstpx[dst_pitch * y + i] = (Uint8)buf2[i];
             buf[i] = 0.0;
             buf2[i] = 0.0;
         }
