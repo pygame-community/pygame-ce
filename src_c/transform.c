@@ -3248,7 +3248,7 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
     src = pgSurface_AsSurface(srcobj);
 
     if (src->format->palette) {
-        return RAISE(PyExc_ValueError, "Indexed surfaces connot be blurred.");
+        return RAISE(PyExc_ValueError, "Indexed surfaces cannot be blurred.");
     }
 
     if (!dstobj) {
