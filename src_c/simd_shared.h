@@ -1,4 +1,6 @@
-
+#ifndef SIMD_SHARED_H
+#define SIMD_SHARED_H
+#include "surface.h"
 
 int
 pg_sse2_at_runtime_but_uncompiled();
@@ -14,3 +16,5 @@ pg_has_avx2();
  * SDL cpu feature check is compiled in.*/
 int
 pg_HasSSE_NEON();
+
+#endif
