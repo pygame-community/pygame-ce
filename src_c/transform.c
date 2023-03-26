@@ -70,21 +70,7 @@
 #define PG_ENABLE_SSE_NEON 0
 #endif
 
-/* This returns True if either SSE2 or NEON is present at runtime.
- * Relevant because they use the same codepaths. Only the relevant runtime
- * SDL cpu feature check is compiled in.*/
-int
-pg_HasSSE_NEON()
-{
-#if defined(__SSE2__)
-    return SDL_HasSSE2();
-#elif PG_ENABLE_ARM_NEON
-    return SDL_HasNEON();
-#else
-    return 0;
-#endif
-}
-
+#include "simd_shared.h"
 #include "simd_transform.h"
 
 #include "scale.h"
