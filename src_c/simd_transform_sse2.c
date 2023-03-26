@@ -1,4 +1,3 @@
-#include "simd_shared.h"
 #include "simd_transform.h"
 
 #if PG_ENABLE_ARM_NEON

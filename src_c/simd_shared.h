@@ -2,6 +2,8 @@
 #ifndef SIMD_SHARED_H
 #define SIMD_SHARED_H
 
+#include "_surface.h"
+
 int
 pg_sse2_at_runtime_but_uncompiled();
 int
@@ -15,6 +17,15 @@ pg_has_avx2();
  * Relevant because they use the same codepaths. Only the relevant runtime
  * SDL cpu feature check is compiled in.*/
 int
-pg_HasSSE_NEON();
+pg_HasSSE_NEON()
+{
+#if defined(__SSE2__)
+    return SDL_HasSSE2();
+#elif PG_ENABLE_ARM_NEON
+    return SDL_HasNEON();
+#else
+    return 0;
+#endif
+}
 
 #endif  // SIMD_SHARED_H

@@ -1,4 +1,3 @@
-#include "simd_shared.h"
 #include "simd_transform.h"
 
 #if defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H)
