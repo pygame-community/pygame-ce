@@ -7,6 +7,9 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
+**English** `简体中文`_
+----
+
 Pygame_ is a free and open-source cross-platform library
 for the development of multimedia applications like video games using Python.
 It uses the `Simple DirectMedia Layer library`_ and several other
@@ -194,3 +197,5 @@ See docs/licenses for licenses of dependencies.
 .. _Compilation wiki page: https://www.pygame.org/wiki/Compilation
 .. _docs page: https://pyga.me/docs
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
+
+.. _简体中文: ./docs/readmes/README.zh-cn.rst
