@@ -41,61 +41,56 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
     int n;
     int width = src->w;
     int height = src->h;
+    int pixel_length = width * height;
 
     Uint32 *srcp = (Uint32 *)src->pixels;
     Uint32 *dstp = (Uint32 *)newsurf->pixels;
 
-    int skip = (src->pitch - width * src->format->BytesPerPixel) >> 2;
-    int pxskip = src->format->BytesPerPixel >> 2;
     Uint32 amask = src->format->Amask;
+    Uint32 rgbmask = ~amask;
 
-    __m128i mm_src, mm_dst, mm_zero, mm_two_five_fives, mm_rgb_weights,
-        mm_alpha_mask;
+    int rgb_weights =
+        ((0x4C << src->format->Rshift) | (0x96 << src->format->Gshift) |
+         (0x1D << src->format->Bshift));
+
+    __m128i mm_src, mm_dst, mm_alpha, mm_zero, mm_two_five_fives,
+        mm_rgb_weights, mm_alpha_mask, mm_rgb_mask;
 
     mm_zero = _mm_setzero_si128();
     mm_alpha_mask = _mm_cvtsi32_si128(amask);
+    mm_rgb_mask = _mm_cvtsi32_si128(rgbmask);
     mm_two_five_fives = _mm_set_epi64x(0x00FF00FF00FF00FF, 0x00FF00FF00FF00FF);
-    mm_rgb_weights = _mm_set_epi64x(0xFF4C961DFF4C961D, 0xFF4C961DFF4C961D);
+    mm_rgb_weights =
+        _mm_unpacklo_epi8(_mm_cvtsi32_si128(rgb_weights), mm_zero);
 
-    while (height--) {
-        LOOP_UNROLLED4(
-            {
-                mm_src = _mm_cvtsi32_si128(*srcp);
-                /*mm_src = 0x000000000000000000000000AARRGGBB*/
-                mm_src = _mm_unpacklo_epi8(mm_src, mm_zero);
-                /*mm_src = 0x000000000000000000AA00RR00GG00BB*/
+    while (pixel_length--) {
+        mm_src = _mm_cvtsi32_si128(*srcp);
+        /*mm_src = 0x000000000000000000000000AARRGGBB*/
+        mm_alpha = _mm_subs_epu8(mm_src, mm_rgb_mask);
+        /*mm_src = 0x00000000000000000000000000RRGGBB*/
+        mm_src = _mm_unpacklo_epi8(mm_src, mm_zero);
+        /*mm_src = 0x0000000000000000000000RR00GG00BB*/
 
-                mm_dst = _mm_unpacklo_epi8(mm_rgb_weights, mm_zero);
-                /*mm_dst = 0x000000000000000000AA00RR00GG00BB*/
+        mm_dst = _mm_mullo_epi16(mm_src, mm_rgb_weights);
+        /*mm_dst = 0x00000000000000000000RRRRGGGGBBBB*/
+        mm_dst = _mm_add_epi16(mm_dst, mm_two_five_fives);
+        /*mm_dst = 0x00000000000000000000RRRRGGGGBBBB*/
+        mm_dst = _mm_srli_epi16(mm_dst, 8);
+        /*mm_dst = 0x0000000000000000000000RR00GG00BB*/
 
-                mm_dst = _mm_mullo_epi16(mm_src, mm_dst);
-                /*mm_dst = 0x0000000000000000AAAARRRRGGGGBBBB*/
-                mm_dst = _mm_add_epi16(mm_dst, mm_two_five_fives);
-                /*mm_dst = 0x0000000000000000AAAARRRRGGGGBBBB*/
-                mm_dst = _mm_srli_epi16(mm_dst, 8);
-                /*mm_dst = 0x000000000000000000AA00RR00GG00BB*/
+        mm_dst = _mm_hadd_epi16(mm_dst, mm_dst);
+        mm_dst = _mm_shufflelo_epi16(_mm_hadd_epi16(mm_dst, mm_dst),
+                                     _MM_SHUFFLE(0, 0, 0, 0));
+        /*mm_dst = 0x000000000000000000GrGr00GrGr00GrGr00GrGr*/
 
-                /* red & alpha */
-                mm_dst = _mm_add_epi16(
-                    _mm_add_epi16(
-                        _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(3, 0, 0, 0)),
-                        _mm_subs_epu8(_mm_shufflelo_epi16(
-                                          mm_dst, _MM_SHUFFLE(3, 1, 1, 1)),
-                                      mm_alpha_mask)),
-                    _mm_subs_epu8(
-                        _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(3, 2, 2, 2)),
-                        mm_alpha_mask));
-
-                mm_dst = _mm_packus_epi16(mm_dst, mm_dst);
-                /*mm_dst = 0x00000000AARRGGBB00000000AARRGGBB*/
-                *dstp = _mm_cvtsi128_si32(mm_dst);
-                /*dstp = 0xAARRGGBB*/
-                srcp += pxskip;
-                dstp += pxskip;
-            },
-            n, width);
-
-        srcp += skip;
-        dstp += skip;
+        mm_dst = _mm_packus_epi16(mm_dst, mm_dst);
+        /*mm_dst = 0x000000000000000000000000GrGrGrGrGrGrGrGr*/
+        mm_dst = _mm_subs_epu8(mm_dst, mm_alpha_mask);
+        mm_dst = _mm_adds_epu8(mm_dst, mm_alpha);
+        /*mm_dst = 0x000000000000000000000000AAGrGrGrGrGrGr*/
+        *dstp = _mm_cvtsi128_si32(mm_dst);
+        /*dstp = 0xAARRGGBB*/
+        srcp++;
+        dstp++;
     }
 }
