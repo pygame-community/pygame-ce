@@ -1,5 +1,5 @@
 #include "simd_shared.h"
-#include "surface.h"
+#include "_surface.h"
 
 int
 pg_HasSSE_NEON()

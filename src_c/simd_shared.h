@@ -1,3 +1,4 @@
+#define NO_PYGAME_C_API
 #ifndef SIMD_SHARED_H
 #define SIMD_SHARED_H
 
@@ -16,4 +17,4 @@ pg_has_avx2();
 int
 pg_HasSSE_NEON();
 
-#endif
+#endif  // SIMD_SHARED_H
