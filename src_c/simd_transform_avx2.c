@@ -52,10 +52,7 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     //     1. Would be nice to only use AVX2 stuff for the single pixel stuff.
     //     2. Get inspiration from Starbuck's AVX2 macros
 
-    int n;
-    int width = src->w;
-    int height = src->h;
-    int pixel_length = width * height;
+    int pixel_length = src->w * src->h;
     int remaining_pixels = pixel_length % 8;
     int perfect_8_pixels = (pixel_length - remaining_pixels) / 8;
 

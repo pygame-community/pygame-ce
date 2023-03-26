@@ -38,10 +38,7 @@ pg_neon_at_runtime_but_uncompiled()
 void
 grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
 {
-    int n;
-    int width = src->w;
-    int height = src->h;
-    int pixel_length = width * height;
+    int pixel_length = src->w * src->h;
 
     Uint32 *srcp = (Uint32 *)src->pixels;
     Uint32 *dstp = (Uint32 *)newsurf->pixels;
