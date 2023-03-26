@@ -34,7 +34,7 @@ pg_neon_at_runtime_but_uncompiled()
     }
     return 0;
 }
-
+#if (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON))
 void
 grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
 {
@@ -99,3 +99,4 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
         dstp++;
     }
 }
+#endif /* __SSE2__ || PG_ENABLE_ARM_NEON*/
