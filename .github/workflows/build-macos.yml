@@ -137,6 +137,7 @@ jobs:
         bash ./install_mac_deps.sh
 
       CIBW_BEFORE_BUILD: |
+        export MAC_ARCH="${{ matrix.macarch }}"
         pip install requests numpy Sphinx
         python setup.py docs
         cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
