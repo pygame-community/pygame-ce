@@ -1,3 +1,4 @@
+#include "simd_shared.h"
 #include "simd_transform.h"
 
 #if defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H)
@@ -151,7 +152,7 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
         mm_dst = _mm_srli_epi16(mm_dst, 8);
         /*mm_dst = 0x0000000000000000000000RR00GG00BB*/
 
-        mm_dst = _mm_hadd_epi16(mm_dst, mm_dst);
+        mm_dst = _mm_hadd_epi16(mm_dst, mm_dst);  // This requires SSE3
         mm_dst = _mm_shufflelo_epi16(_mm_hadd_epi16(mm_dst, mm_dst),
                                      _MM_SHUFFLE(0, 0, 0, 0));
         /*mm_dst = 0x000000000000000000GrGr00GrGr00GrGr00GrGr*/

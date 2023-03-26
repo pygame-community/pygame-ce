@@ -1,3 +1,4 @@
+#include "simd_shared.h"
 #include "simd_transform.h"
 
 #if PG_ENABLE_ARM_NEON
@@ -75,9 +76,17 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
         mm_dst = _mm_srli_epi16(mm_dst, 8);
         /*mm_dst = 0x0000000000000000000000RR00GG00BB*/
 
-        mm_dst = _mm_hadd_epi16(mm_dst, mm_dst);
-        mm_dst = _mm_shufflelo_epi16(_mm_hadd_epi16(mm_dst, mm_dst),
-                                     _MM_SHUFFLE(0, 0, 0, 0));
+        //        Sadly horizontal adding needs SSE3
+        //        mm_dst = _mm_hadd_epi16(mm_dst, mm_dst);
+        //        mm_dst = _mm_shufflelo_epi16(_mm_hadd_epi16(mm_dst, mm_dst),
+        //                                     _MM_SHUFFLE(0, 0, 0, 0));
+        mm_dst = _mm_adds_epu8(
+            _mm_adds_epu8(
+                _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(0, 0, 0, 0)),
+                _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(1, 1, 1, 1))),
+            _mm_adds_epu8(
+                _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(2, 2, 2, 2)),
+                _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(3, 3, 3, 3))));
         /*mm_dst = 0x000000000000000000GrGr00GrGr00GrGr00GrGr*/
 
         mm_dst = _mm_packus_epi16(mm_dst, mm_dst);

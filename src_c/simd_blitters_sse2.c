@@ -1,3 +1,4 @@
+#include "simd_shared.h"
 #include "simd_blitters.h"
 
 #if PG_ENABLE_ARM_NEON
