@@ -1143,7 +1143,8 @@ dict_from_event(SDL_Event *event)
             _pg_insobj(dict, "instance_id",
                        PyLong_FromLong(event->caxis.which));
             _pg_insobj(dict, "axis", PyLong_FromLong(event->caxis.axis));
-            _pg_insobj(dict, "value", PyLong_FromLong(event->caxis.value));
+            _pg_insobj(dict, "value",
+                       PyFloat_FromDouble(event->caxis.value / 32767.0));
             break;
         case SDL_CONTROLLERBUTTONDOWN:
         case SDL_CONTROLLERBUTTONUP:
