@@ -129,7 +129,7 @@ jobs:
 
       # Setup MacOS dependencies
       CIBW_BEFORE_ALL: |
-        echo "MAC_ARCH=\"${{ matrix.macarch }}\"" >> $GITHUB_ENV
+        echo "MAC_ARCH="${{ matrix.macarch }}"" >> $GITHUB_ENV
         brew install pkg-config
         cd buildconfig/macdependencies
         cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
