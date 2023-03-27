@@ -116,6 +116,7 @@ jobs:
           }
 
     env:
+      MAC_ARCH: ${{ matrix.macarch }}
       # load pip config from this file. Define this in 'CIBW_ENVIRONMENT'
       # because this should not affect cibuildwheel machinery
       # also define environment variables needed for testing
@@ -129,7 +130,6 @@ jobs:
 
       # Setup MacOS dependencies
       CIBW_BEFORE_ALL: |
-        echo "MAC_ARCH="${{ matrix.macarch }}"" >> $GITHUB_ENV
         brew install pkg-config
         cd buildconfig/macdependencies
         cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
