@@ -946,7 +946,7 @@ cdef class Image:
 
         cdef Uint8[4] defaultColor = [255, 255, 255, 255]
         self._color = pgColor_NewLength(defaultColor, 3)
-        self.alpha = 255
+        self._alpha = 255
 
     def __init__(self, textureOrImage, srcrect=None):
         cdef SDL_Rect temp
@@ -955,11 +955,11 @@ cdef class Image:
         if isinstance(textureOrImage, Image):
             self.texture = textureOrImage.texture
             self.srcrect = pgRect_New(&(<Rect>textureOrImage.srcrect).r)
-            self.blend_mode = textureOrImage.blend_mode
         else:
             self.texture = textureOrImage
             self.srcrect = textureOrImage.get_rect()
-            self.blend_mode = textureOrImage.get_blend_mode()
+        
+        self._blend_mode = textureOrImage.get_blend_mode()
 
         if srcrect is not None:
             rectptr = pgRect_FromObject(srcrect, &temp)
@@ -1001,6 +1001,18 @@ cdef class Image:
 
     def get_rect(self):
         return pgRect_New(&self.srcrect.r)
+    
+    def get_alpha(self):
+        return self._alpha
+    
+    def set_alpha(self,alpha):
+        self._alpha=int(alpha)
+    
+    def get_blend_mode(self):
+        return self._blend_mode
+    
+    def set_blend_mode(self,blend):
+        self._blend_mode=blend
 
     cpdef void draw(self, srcrect=None, dstrect=None):
         """ Copy a portion of the image to the rendering target.
@@ -1045,14 +1057,10 @@ cdef class Image:
                     cdstrect = &dst
                 else:
                     raise TypeError('dstrect must be a position, rect, or None')
-        if isinstance(self.texture, Image):
-            self.texture.color = self._color
-            self.texture.alpha = self.alpha
-            self.texture.blend_mode = self.blend_mode
-        else:
-            self.texture.set_color(self._color)
-            self.texture.set_alpha(self.alpha)
-            self.texture.set_blend_mode(self.blend_mode)
+
+        self.texture.set_color(self._color)
+        self.texture.set_alpha(self._alpha)
+        self.texture.set_blend_mode(self._blend_mode)
 
         self.texture.draw_internal(csrcrect, cdstrect, self.angle,
                                    self._originptr, self.flip_x, self.flip_y)
