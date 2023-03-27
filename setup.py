@@ -83,8 +83,6 @@ def spawn(self, cmd, **kwargs):
     should_use_avx2 = False
     # try to be thorough in detecting that we are on a platform that potentially supports AVX2
     machine_name = platform.machine()
-    print("machine_name:", machine_name)
-    print("os.environ.get('MAC_ARCH'):", os.environ.get("MAC_ARCH"))
     if ((machine_name.startswith(("x86", "i686")) or
         machine_name.lower() == "amd64") and
             os.environ.get("MAC_ARCH") != "arm64"):
