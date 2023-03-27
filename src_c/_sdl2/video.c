@@ -2554,7 +2554,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_3get_grabbed_window(CYTHON_UNUSE
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_5messagebox(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_title, PyObject *__pyx_v_message, struct __pyx_obj_6pygame_5_sdl2_5video_Window *__pyx_v_window, int __pyx_v_info, int __pyx_v_warn, int __pyx_v_error, PyObject *__pyx_v_buttons, PyObject *__pyx_v_return_button, PyObject *__pyx_v_escape_button); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_6Window_from_display_module(PyTypeObject *__pyx_v_cls); /* proto */
 static int __pyx_pf_6pygame_5_sdl2_5video_6Window_2__init__(struct __pyx_obj_6pygame_5_sdl2_5video_Window *__pyx_v_self, PyObject *__pyx_v_title, PyObject *__pyx_v_size, PyObject *__pyx_v_position, int __pyx_v_fullscreen, int __pyx_v_fullscreen_desktop, PyObject *__pyx_v_kwargs); /* proto */
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_6Window_4get_geab(struct __pyx_obj_6pygame_5_sdl2_5video_Window *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_6Window_4get_grab(struct __pyx_obj_6pygame_5_sdl2_5video_Window *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_6Window_6set_grab(struct __pyx_obj_6pygame_5_sdl2_5video_Window *__pyx_v_self, PyObject *__pyx_v_enable); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_6Window_8get_relative_mouse_mode(CYTHON_UNUSED struct __pyx_obj_6pygame_5_sdl2_5video_Window *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_6Window_10set_relative_mouse_mode(CYTHON_UNUSED struct __pyx_obj_6pygame_5_sdl2_5video_Window *__pyx_v_self, PyObject *__pyx_v_enable); /* proto */
@@ -5280,7 +5280,7 @@ static int __pyx_pf_6pygame_5_sdl2_5video_6Window_2__init__(struct __pyx_obj_6py
  *         surf.set_colorkey(0)
  *         self.set_icon(surf)             # <<<<<<<<<<<<<<
  * 
- *     def get_geab(self) -> bool:
+ *     def get_grab(self) -> bool:
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_set_icon); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 295, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -5338,33 +5338,33 @@ static int __pyx_pf_6pygame_5_sdl2_5video_6Window_2__init__(struct __pyx_obj_6py
 /* "pygame/_sdl2/video.pyx":297
  *         self.set_icon(surf)
  * 
- *     def get_geab(self) -> bool:             # <<<<<<<<<<<<<<
+ *     def get_grab(self) -> bool:             # <<<<<<<<<<<<<<
  *         """ Gets the Window's input grab state
  *         """
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_6pygame_5_sdl2_5video_6Window_5get_geab(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static char __pyx_doc_6pygame_5_sdl2_5video_6Window_4get_geab[] = " Gets the Window's input grab state\n        ";
-static PyObject *__pyx_pw_6pygame_5_sdl2_5video_6Window_5get_geab(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_6pygame_5_sdl2_5video_6Window_5get_grab(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static char __pyx_doc_6pygame_5_sdl2_5video_6Window_4get_grab[] = " Gets the Window's input grab state\n        ";
+static PyObject *__pyx_pw_6pygame_5_sdl2_5video_6Window_5get_grab(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("get_geab (wrapper)", 0);
-  __pyx_r = __pyx_pf_6pygame_5_sdl2_5video_6Window_4get_geab(((struct __pyx_obj_6pygame_5_sdl2_5video_Window *)__pyx_v_self));
+  __Pyx_RefNannySetupContext("get_grab (wrapper)", 0);
+  __pyx_r = __pyx_pf_6pygame_5_sdl2_5video_6Window_4get_grab(((struct __pyx_obj_6pygame_5_sdl2_5video_Window *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_6Window_4get_geab(struct __pyx_obj_6pygame_5_sdl2_5video_Window *__pyx_v_self) {
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_6Window_4get_grab(struct __pyx_obj_6pygame_5_sdl2_5video_Window *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("get_geab", 0);
+  __Pyx_RefNannySetupContext("get_grab", 0);
 
   /* "pygame/_sdl2/video.pyx":300
  *         """ Gets the Window's input grab state
@@ -5383,7 +5383,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_6Window_4get_geab(struct __pyx_o
   /* "pygame/_sdl2/video.pyx":297
  *         self.set_icon(surf)
  * 
- *     def get_geab(self) -> bool:             # <<<<<<<<<<<<<<
+ *     def get_grab(self) -> bool:             # <<<<<<<<<<<<<<
  *         """ Gets the Window's input grab state
  *         """
  */
@@ -5391,7 +5391,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_6Window_4get_geab(struct __pyx_o
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("pygame._sdl2.video.Window.get_geab", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("pygame._sdl2.video.Window.get_grab", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -22277,7 +22277,7 @@ static void __pyx_tp_dealloc_6pygame_5_sdl2_5video_Window(PyObject *o) {
 
 static PyMethodDef __pyx_methods_6pygame_5_sdl2_5video_Window[] = {
   {"from_display_module", (PyCFunction)__pyx_pw_6pygame_5_sdl2_5video_6Window_1from_display_module, METH_NOARGS, 0},
-  {"get_geab", (PyCFunction)__pyx_pw_6pygame_5_sdl2_5video_6Window_5get_geab, METH_NOARGS, __pyx_doc_6pygame_5_sdl2_5video_6Window_4get_geab},
+  {"get_grab", (PyCFunction)__pyx_pw_6pygame_5_sdl2_5video_6Window_5get_grab, METH_NOARGS, __pyx_doc_6pygame_5_sdl2_5video_6Window_4get_grab},
   {"set_grab", (PyCFunction)__pyx_pw_6pygame_5_sdl2_5video_6Window_7set_grab, METH_O, __pyx_doc_6pygame_5_sdl2_5video_6Window_6set_grab},
   {"get_relative_mouse_mode", (PyCFunction)__pyx_pw_6pygame_5_sdl2_5video_6Window_9get_relative_mouse_mode, METH_NOARGS, __pyx_doc_6pygame_5_sdl2_5video_6Window_8get_relative_mouse_mode},
   {"set_relative_mouse_mode", (PyCFunction)__pyx_pw_6pygame_5_sdl2_5video_6Window_11set_relative_mouse_mode, METH_O, __pyx_doc_6pygame_5_sdl2_5video_6Window_10set_relative_mouse_mode},

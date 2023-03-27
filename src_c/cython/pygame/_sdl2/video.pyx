@@ -294,7 +294,7 @@ cdef class Window:
         surf.set_colorkey(0)
         self.set_icon(surf)
 
-    def get_geab(self) -> bool:
+    def get_grab(self) -> bool:
         """ Gets the Window's input grab state
         """
         return SDL_GetWindowGrab(self._win) != 0
