@@ -201,6 +201,11 @@ alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
 
     __m256i src_alpha, temp;
 
+    /* The location of the destination's missing alpha channel can be masked
+     * out by composing all the other channels' masks. */
+    __m256i mask_out_alpha = _mm256_set1_epi32(
+        (info->dst->Rmask | info->dst->Gmask | info->dst->Bmask));
+
     /* Original 'Straight Alpha' blending equation:
         --------------------------------------------
         dstRGB = (srcRGB * srcA) + (dstRGB * (1-srcA))
@@ -237,14 +242,21 @@ alphablit_alpha_avx2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
             dstRGBA >>= 8
         */
 
-    RUN_AVX2_BLITTER(RUN_16BIT_SHUFFLE_OUT(
-        src_alpha = _mm256_shuffle_epi8(shuff_src, shuff_out_alpha);
-        temp = _mm256_sub_epi16(shuff_src, shuff_dst);
-        temp = _mm256_mullo_epi16(temp, src_alpha);
-        shuff_dst = _mm256_slli_epi16(shuff_dst, 8);
-        shuff_dst = _mm256_add_epi16(shuff_dst, temp);
-        shuff_dst = _mm256_add_epi16(shuff_dst, shuff_src);
-        shuff_dst = _mm256_srli_epi16(shuff_dst, 8);))
+    RUN_AVX2_BLITTER(
+        RUN_16BIT_SHUFFLE_OUT(
+            src_alpha = _mm256_shuffle_epi8(shuff_src, shuff_out_alpha);
+            temp = _mm256_sub_epi16(shuff_src, shuff_dst);
+            temp = _mm256_mullo_epi16(temp, src_alpha);
+            shuff_dst = _mm256_slli_epi16(shuff_dst, 8);
+            shuff_dst = _mm256_add_epi16(shuff_dst, temp);
+            shuff_dst = _mm256_add_epi16(shuff_dst, shuff_src);
+            shuff_dst = _mm256_srli_epi16(shuff_dst, 8););
+
+        /* It seems like the destination pixel alpha shouldn't matter, since
+         * it is RGBX, but it has to be zero. I suspect this is a weak spot
+         * in the other blitting routines, that they need alpha 0 from these
+         * surfaces. */
+        pixels_dst = _mm256_and_si256(pixels_dst, mask_out_alpha);)
 }
 #else
 void
