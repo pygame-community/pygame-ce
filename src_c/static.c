@@ -397,3 +397,5 @@ PyInit_pygame_static()
 #undef MAX
 #undef MIN
 #include "scale2x.c"
+
+#include "window.c"
