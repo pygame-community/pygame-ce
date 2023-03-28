@@ -59,8 +59,9 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     Uint32 *srcp = (Uint32 *)src->pixels;
     Uint32 *dstp = (Uint32 *)newsurf->pixels;
 
-    Uint32 amask = src->format->Amask;
-    Uint32 rgbmask = ~amask;
+    Uint32 rgbmask =
+        (src->format->Rmask | src->format->Gmask | src->format->Bmask);
+    Uint32 amask = ~rgbmask;
 
     int rgb_weights =
         ((0x4C << src->format->Rshift) | (0x96 << src->format->Gshift) |
