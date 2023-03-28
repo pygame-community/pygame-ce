@@ -24,12 +24,13 @@ window_destroy(pgWindowObject *self)
     self->win = NULL;
 
     for (i = 0; i < PySequence_Size(_window_list); i++) {
-        if (self == PySequence_GetItem(_window_list, i)) {
+        if ((PyObject *)self == PySequence_GetItem(_window_list, i)) {
             PySequence_DelItem(_window_list, i);
             Py_DECREF(self);
             Py_RETURN_NONE;
         }
     }
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -63,8 +64,8 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     PyObject *size = NULL;
     int size_w = 640, size_h = 480;
     PyObject *position = NULL;
-    int pos_x=SDL_WINDOWPOS_UNDEFINED;
-    int pos_y=SDL_WINDOWPOS_UNDEFINED;
+    int pos_x = SDL_WINDOWPOS_UNDEFINED;
+    int pos_y = SDL_WINDOWPOS_UNDEFINED;
     SDL_bool fullscreen = SDL_FALSE;
     SDL_bool fullscreen_desktop = SDL_FALSE;
     Uint32 flags = 0;
@@ -77,7 +78,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                                      &fullscreen_desktop)) {
         return -1;
     }
-    
+
     if (fullscreen && fullscreen_desktop) {
         PyErr_SetString(
             PyExc_ValueError,
@@ -117,7 +118,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 
     SDL_SetWindowData(_win, "pg_window", self);
 
-    PyList_Append(_window_list, self);
+    PyList_Append(_window_list, (PyObject *)self);
 
     return 0;
 }
@@ -130,7 +131,7 @@ static PyMethodDef window_methods[] = {
 static PyTypeObject pgWindow_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.window.Window",
     .tp_basicsize = sizeof(pgWindowObject),
-    .tp_dealloc = window_dealloc,
+    .tp_dealloc = (destructor)window_dealloc,
     .tp_doc = "doc_needed",
     .tp_methods = window_methods,
     .tp_init = (initproc)window_init,
@@ -142,7 +143,6 @@ static PyMethodDef _window_methods[] = {{NULL, NULL, 0, NULL}};
 MODINIT_DEFINE(window)
 {
     PyObject *module;
-    struct _module_state *st;
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "window",
