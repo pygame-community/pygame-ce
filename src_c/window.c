@@ -99,7 +99,8 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (position) {
-        if (Py_IS_TYPE(position, &PyLong_Type)) {
+        
+        if (Py_TYPE(position) == &PyLong_Type) {
             pos_x = pos_y = PyLong_AsLong(position);
         }
         else if (!pg_TwoIntsFromObj(position, &pos_x, &pos_y)) {
