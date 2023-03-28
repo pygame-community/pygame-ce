@@ -491,7 +491,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
       
       `distance`: Range from 0 to 255.
       
-      .. versionadded:: 2.2.0
+      .. versionadded:: 2.3.0
       
       .. ## Channel.set_position ##
 
