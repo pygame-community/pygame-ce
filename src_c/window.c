@@ -12,6 +12,13 @@ typedef struct {
 } pgWindowObject;
 
 static PyObject *
+get_windows(PyObject *self)
+{
+    Py_INCREF(_window_list);
+    return _window_list;
+}
+
+static PyObject *
 window_destroy(pgWindowObject *self)
 {
     int i;
@@ -99,7 +106,6 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (position) {
-        
         if (Py_TYPE(position) == &PyLong_Type) {
             pos_x = pos_y = PyLong_AsLong(position);
         }
@@ -139,7 +145,9 @@ static PyTypeObject pgWindow_Type = {
     .tp_new = PyType_GenericNew,
 };
 
-static PyMethodDef _window_methods[] = {{NULL, NULL, 0, NULL}};
+static PyMethodDef _window_methods[] = {
+    {"get_windows", (PyCFunction)get_windows, METH_NOARGS, "docs_needed"},
+    {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(window)
 {
