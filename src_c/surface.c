@@ -196,6 +196,8 @@ surf_get_pitch(PyObject *self, PyObject *args);
 static PyObject *
 surf_get_rect(PyObject *self, PyObject *args, PyObject *kwargs);
 static PyObject *
+surf_get_frect(PyObject *self, PyObject *args, PyObject *kwargs);
+static PyObject *
 surf_get_width(PyObject *self, PyObject *args);
 static PyObject *
 surf_get_shifts(PyObject *self, PyObject *args);
@@ -356,6 +358,8 @@ static struct PyMethodDef surface_methods[] = {
     {"get_height", surf_get_height, METH_NOARGS, DOC_SURFACE_GETHEIGHT},
     {"get_rect", (PyCFunction)surf_get_rect, METH_VARARGS | METH_KEYWORDS,
      DOC_SURFACE_GETRECT},
+    {"get_frect", (PyCFunction)surf_get_frect, METH_VARARGS | METH_KEYWORDS,
+     DOC_SURFACE_GETFRECT},
     {"get_pitch", surf_get_pitch, METH_NOARGS, DOC_SURFACE_GETPITCH},
     {"get_bitsize", surf_get_bitsize, METH_NOARGS, DOC_SURFACE_GETBITSIZE},
     {"get_bytesize", surf_get_bytesize, METH_NOARGS, DOC_SURFACE_GETBYTESIZE},
@@ -2514,6 +2518,34 @@ surf_get_rect(PyObject *self, PyObject *args, PyObject *kwargs)
     SURF_INIT_CHECK(surf)
 
     rect = pgRect_New4(0, 0, surf->w, surf->h);
+    if (rect && kwargs) {
+        PyObject *key, *value;
+        Py_ssize_t pos = 0;
+
+        while (PyDict_Next(kwargs, &pos, &key, &value)) {
+            if ((PyObject_SetAttr(rect, key, value) == -1)) {
+                Py_DECREF(rect);
+                return NULL;
+            }
+        }
+    }
+    return rect;
+}
+
+static PyObject *
+surf_get_frect(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    PyObject *rect;
+    SDL_Surface *surf = pgSurface_AsSurface(self);
+
+    if (PyTuple_GET_SIZE(args) > 0) {
+        return RAISE(PyExc_TypeError,
+                     "get_rect only accepts keyword arguments");
+    }
+
+    SURF_INIT_CHECK(surf)
+
+    rect = pgFRect_New4(0, 0, surf->w, surf->h);
     if (rect && kwargs) {
         PyObject *key, *value;
         Py_ssize_t pos = 0;
