@@ -141,6 +141,35 @@ window_minimize(pgWindowObject *self)
 }
 
 static PyObject *
+window_update_from_surface(pgWindowObject *self, PyObject *const *args,
+                           Py_ssize_t nargs)
+{
+    int i;
+    SDL_Rect *rects = NULL, tmp, *r;
+    if (nargs == 0) {
+        if (SDL_UpdateWindowSurface(self->win)) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+    }
+    else {
+        rects = malloc(nargs * sizeof(SDL_Rect));
+        for (i = 0; i < nargs; i++) {
+            r = pgRect_FromObject(args[i], &tmp);
+            if (!r) {
+                return RAISE(PyExc_TypeError,
+                             "Arguments must be rect or rect-like objects.");
+            }
+            rects[i] = *r;
+            if (SDL_UpdateWindowSurfaceRects(self->win, rects, nargs)) {
+                return RAISE(pgExc_SDLError, SDL_GetError());
+            }
+        }
+        free(rects);
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 window_set_icon(pgWindowObject *self, PyObject *arg)
 {
     if (!pgSurface_Check(arg)) {
@@ -333,6 +362,22 @@ window_get_display_index(pgWindowObject *self)
     return PyLong_FromLong(index);
 }
 
+static PyObject *
+window_get_surface(pgWindowObject *self)
+{
+    PyObject *surf = NULL;
+    SDL_Surface *_surf = SDL_GetWindowSurface(self->win);
+    if (!_surf) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    surf = pgSurface_New(_surf);
+    if (!surf) {
+        return NULL;
+    }
+    Py_INCREF(surf);
+    return surf;
+}
+
 static void
 window_dealloc(pgWindowObject *self)
 {
@@ -428,6 +473,8 @@ static PyMethodDef window_methods[] = {
     {"minimize", (PyCFunction)window_minimize, METH_NOARGS, "docs_needed"},
     {"set_modal_for", (PyCFunction)window_set_modal_for, METH_O,
      "docs_needed"},
+    {"update_from_surface", (PyCFunction)window_update_from_surface,
+     METH_FASTCALL, "docs_needed"},
     {"set_icon", (PyCFunction)window_set_icon, METH_O, "docs_needed"},
     {"set_grab", (PyCFunction)window_set_grab, METH_O, "docs_needed"},
     {"get_grab", (PyCFunction)window_get_grab, METH_NOARGS, "docs_needed"},
@@ -452,6 +499,8 @@ static PyMethodDef window_methods[] = {
     {"get_opacity", (PyCFunction)window_get_opacity, METH_NOARGS,
      "docs_needed"},
     {"get_display_index", (PyCFunction)window_get_display_index, METH_NOARGS,
+     "docs_needed"},
+    {"get_surface", (PyCFunction)window_get_surface, METH_NOARGS,
      "docs_needed"},
     {NULL, NULL, 0, NULL}};
 
@@ -511,6 +560,11 @@ MODINIT_DEFINE(window)
     }
 
     import_pygame_surface();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
+    import_pygame_rect();
     if (PyErr_Occurred()) {
         return NULL;
     }
