@@ -161,7 +161,7 @@ window_get_grab(pgWindowObject *self)
 static PyObject *
 window_set_title(pgWindowObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
-    char *title;
+    const char *title;
     if (nargs != 1) {
         return RAISE(PyExc_TypeError,
                      "set_title() takes 1 positional argument.");
@@ -177,7 +177,7 @@ window_set_title(pgWindowObject *self, PyObject *const *args, Py_ssize_t nargs)
 static PyObject *
 window_get_title(pgWindowObject *self)
 {
-    char *title = SDL_GetWindowTitle(self->win);
+    const char *title = SDL_GetWindowTitle(self->win);
     return PyUnicode_FromString(title);
 }
 
