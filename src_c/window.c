@@ -87,6 +87,39 @@ window_set_fullscreen(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
+window_focus(pgWindowObject *self, PyObject *args, PyObject *kwargs)
+{
+    SDL_bool input_only = SDL_FALSE;
+    char *kwids[] = {"input_only", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", kwids, &input_only)) {
+        return NULL;
+    }
+    if (input_only) {
+        if (SDL_SetWindowInputFocus(self->win)) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+    }
+    else {
+        SDL_RaiseWindow(self->win);
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+window_hide(pgWindowObject *self)
+{
+    SDL_HideWindow(self->win);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+window_show(pgWindowObject *self)
+{
+    SDL_ShowWindow(self->win);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 window_set_icon(pgWindowObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     if (nargs != 1) {
@@ -229,6 +262,10 @@ static PyMethodDef window_methods[] = {
      "docs_needed"},
     {"set_fullscreen", (PyCFunction)window_set_fullscreen,
      METH_VARARGS | METH_KEYWORDS, "docs_needed"},
+    {"focus", (PyCFunction)window_focus, METH_VARARGS | METH_KEYWORDS,
+     "docs_needed"},
+    {"hide", (PyCFunction)window_hide, METH_NOARGS, "docs_needed"},
+    {"show", (PyCFunction)window_show, METH_NOARGS, "docs_needed"},
     {"set_icon", (PyCFunction)window_set_icon, METH_FASTCALL, "docs_needed"},
     {"set_grab", (PyCFunction)window_set_grab, METH_FASTCALL, "docs_needed"},
     {"get_grab", (PyCFunction)window_get_grab, METH_NOARGS, "docs_needed"},
