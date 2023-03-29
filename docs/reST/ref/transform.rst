@@ -45,6 +45,11 @@ Instead, always begin with the original image and scale to the desired size.)
    An optional destination surface can be passed which is faster than creating a new
    Surface. This destination surface must be the same as the size (width, height) passed
    in, and the same depth and format as the source Surface.
+
+   .. versionchanged:: 2.3.0 internal scaling algorithm was replaced with a nearly
+      equivalent one that is 40% faster. Scale results will be very slightly
+      different.
+
    .. ## pygame.transform.scale ##
 
 .. function:: scale_by
