@@ -342,7 +342,7 @@ window_set_opacity(pgWindowObject *self, PyObject *const *args,
         return RAISE(PyExc_TypeError,
                      "set_opacity() takes 1 positional argument.");
     }
-    opacity = PyFloat_AsDouble(args[0]);
+    opacity = (float)PyFloat_AsDouble(args[0]);
     if (PyErr_Occurred()) {
         return NULL;
     }
