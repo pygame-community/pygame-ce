@@ -14,9 +14,9 @@ typedef struct {
 static PyObject *
 get_windows(PyObject *self)
 {
-    PyObject* t=PyTuple_New(PySequence_Size(_window_list));
-    for(int i=0;i<PySequence_Size(_window_list);i++){
-        PyTuple_SetItem(t,i,PySequence_GetItem(_window_list,i));
+    PyObject *t = PyTuple_New(PySequence_Size(_window_list));
+    for (int i = 0; i < PySequence_Size(_window_list); i++) {
+        PyTuple_SetItem(t, i, PySequence_GetItem(_window_list, i));
     }
     return t;
 }
@@ -56,6 +56,30 @@ window_set_icon(pgWindowObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
     SDL_SetWindowIcon(self->win, pgSurface_AsSurface(args[0]));
     Py_RETURN_NONE;
+}
+
+static PyObject *
+window_set_grab(pgWindowObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (nargs != 1) {
+        return RAISE(PyExc_TypeError,
+                     "set_grab() takes 1 positional argument.");
+    }
+
+    if (PyObject_IsTrue(args[0])) {
+        SDL_SetWindowGrab(self->win, SDL_TRUE);
+    }
+    else {
+        SDL_SetWindowGrab(self->win, SDL_FALSE);
+    }
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+window_get_grab(pgWindowObject *self)
+{
+    return PyBool_FromLong(SDL_GetWindowGrab(self->win));
 }
 
 static void
@@ -135,6 +159,8 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 
 static PyMethodDef window_methods[] = {
     {"set_icon", (PyCFunction)window_set_icon, METH_FASTCALL, "docs_needed"},
+    {"set_grab", (PyCFunction)window_set_grab, METH_FASTCALL, "docs_needed"},
+    {"get_grab", (PyCFunction)window_get_grab, METH_NOARGS, "docs_needed"},
     {"destroy", (PyCFunction)window_destroy, METH_NOARGS, "docs_needed"},
     {NULL, NULL, 0, NULL}};
 
@@ -142,7 +168,7 @@ static PyTypeObject pgWindow_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.window.Window",
     .tp_basicsize = sizeof(pgWindowObject),
     .tp_dealloc = (destructor)window_dealloc,
-    .tp_doc = "doc_needed",
+    .tp_doc = "docs_needed",
     .tp_methods = window_methods,
     .tp_init = (initproc)window_init,
     .tp_new = PyType_GenericNew,
