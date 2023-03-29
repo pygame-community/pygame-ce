@@ -885,6 +885,14 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         h = 0;
     }
 
+    #ifdef WIN32
+    if (flags & PGS_DPIAWARE) {
+        int (*SetProcessDPIAware)();
+        SetProcessDPIAware = (void*) GetProcAddress(LoadLibrary("user32.dll"), "SetProcessDPIAware");
+        if (SetProcessDPIAware) SetProcessDPIAware();
+    }
+    #endif
+
     if (!SDL_WasInit(SDL_INIT_VIDEO)) {
         /* note SDL works special like this too */
         if (!pg_display_init(NULL, NULL))
