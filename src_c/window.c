@@ -264,6 +264,72 @@ window_get_window_id(pgWindowObject *self)
     return PyLong_FromLong(window_id);
 }
 
+static PyObject *
+window_set_size(pgWindowObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    int w, h;
+    if (nargs != 1) {
+        return RAISE(PyExc_TypeError,
+                     "set_size() takes 1 positional argument.");
+    }
+
+    if (!pg_TwoIntsFromObj(args[0], &w, &h)) {
+        return RAISE(PyExc_TypeError, "invalid size argument");
+    }
+
+    SDL_SetWindowSize(self->win, w, h);
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+window_get_size(pgWindowObject *self)
+{
+    int w, h;
+    PyObject *out = PyTuple_New(2);
+
+    SDL_GetWindowSize(self->win, &w, &h);
+    PyTuple_SetItem(out, 0, PyLong_FromLong(w));
+    PyTuple_SetItem(out, 1, PyLong_FromLong(h));
+
+    return out;
+}
+
+static PyObject *
+window_set_position(pgWindowObject *self, PyObject *const *args,
+                    Py_ssize_t nargs)
+{
+    int x, y;
+    if (nargs != 1) {
+        return RAISE(PyExc_TypeError,
+                     "set_position() takes 1 positional argument.");
+    }
+
+    if (Py_TYPE(args[0]) == &PyLong_Type) {
+        x = y = PyLong_AsLong(args[0]);
+    }
+    else if (!pg_TwoIntsFromObj(args[0], &x, &y)) {
+        return RAISE(PyExc_TypeError, "invalid position argument");
+    }
+
+    SDL_SetWindowPosition(self->win, x, y);
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+window_get_position(pgWindowObject *self)
+{
+    int x, h;
+    PyObject *out = PyTuple_New(2);
+
+    SDL_GetWindowPosition(self->win, &x, &h);
+    PyTuple_SetItem(out, 0, PyLong_FromLong(x));
+    PyTuple_SetItem(out, 1, PyLong_FromLong(h));
+
+    return out;
+}
+
 static void
 window_dealloc(pgWindowObject *self)
 {
@@ -366,6 +432,12 @@ static PyMethodDef window_methods[] = {
     {"get_borderless", (PyCFunction)window_get_borderless, METH_NOARGS,
      "docs_needed"},
     {"get_window_id", (PyCFunction)window_get_window_id, METH_NOARGS,
+     "docs_needed"},
+    {"set_size", (PyCFunction)window_set_size, METH_FASTCALL, "docs_needed"},
+    {"get_size", (PyCFunction)window_get_size, METH_NOARGS, "docs_needed"},
+    {"set_position", (PyCFunction)window_set_position, METH_FASTCALL,
+     "docs_needed"},
+    {"get_position", (PyCFunction)window_get_position, METH_NOARGS,
      "docs_needed"},
     {NULL, NULL, 0, NULL}};
 
