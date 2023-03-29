@@ -95,7 +95,7 @@ window_set_icon(pgWindowObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
     if (!pgSurface_Check(args[0])) {
         return RAISE(PyExc_TypeError,
-                     "Argument to set_icon must be a Surface");
+                     "Argument to set_icon must be a Surface.");
     }
     SDL_SetWindowIcon(self->win, pgSurface_AsSurface(args[0]));
     Py_RETURN_NONE;
@@ -123,6 +123,29 @@ static PyObject *
 window_get_grab(pgWindowObject *self)
 {
     return PyBool_FromLong(SDL_GetWindowGrab(self->win));
+}
+
+static PyObject *
+window_set_title(pgWindowObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    char *title;
+    if (nargs != 1) {
+        return RAISE(PyExc_TypeError,
+                     "set_title() takes 1 positional argument.");
+    }
+    if (!PyUnicode_Check(args[0])) {
+        return RAISE(PyExc_TypeError, "Argument to set_title must be a str.");
+    }
+    title = PyUnicode_AsUTF8(args[0]);
+    SDL_SetWindowTitle(self->win, title);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+window_get_title(pgWindowObject *self)
+{
+    char *title = SDL_GetWindowTitle(self->win);
+    return PyUnicode_FromString(title);
 }
 
 static void
@@ -201,6 +224,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyMethodDef window_methods[] = {
+    {"destroy", (PyCFunction)window_destroy, METH_NOARGS, "docs_needed"},
     {"set_windowed", (PyCFunction)window_set_windowed, METH_NOARGS,
      "docs_needed"},
     {"set_fullscreen", (PyCFunction)window_set_fullscreen,
@@ -208,7 +232,8 @@ static PyMethodDef window_methods[] = {
     {"set_icon", (PyCFunction)window_set_icon, METH_FASTCALL, "docs_needed"},
     {"set_grab", (PyCFunction)window_set_grab, METH_FASTCALL, "docs_needed"},
     {"get_grab", (PyCFunction)window_get_grab, METH_NOARGS, "docs_needed"},
-    {"destroy", (PyCFunction)window_destroy, METH_NOARGS, "docs_needed"},
+    {"set_title", (PyCFunction)window_set_title, METH_FASTCALL, "docs_needed"},
+    {"get_title", (PyCFunction)window_get_title, METH_NOARGS, "docs_needed"},
     {NULL, NULL, 0, NULL}};
 
 static PyTypeObject pgWindow_Type = {
