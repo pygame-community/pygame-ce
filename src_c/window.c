@@ -138,29 +138,20 @@ window_minimize(pgWindowObject *self)
 }
 
 static PyObject *
-window_set_icon(pgWindowObject *self, PyObject *const *args, Py_ssize_t nargs)
+window_set_icon(pgWindowObject *self, PyObject *arg)
 {
-    if (nargs != 1) {
-        return RAISE(PyExc_TypeError,
-                     "set_icon() takes 1 positional argument.");
-    }
-    if (!pgSurface_Check(args[0])) {
+    if (!pgSurface_Check(arg)) {
         return RAISE(PyExc_TypeError,
                      "Argument to set_icon must be a Surface.");
     }
-    SDL_SetWindowIcon(self->win, pgSurface_AsSurface(args[0]));
+    SDL_SetWindowIcon(self->win, pgSurface_AsSurface(arg));
     Py_RETURN_NONE;
 }
 
 static PyObject *
-window_set_grab(pgWindowObject *self, PyObject *const *args, Py_ssize_t nargs)
+window_set_grab(pgWindowObject *self, PyObject*arg)
 {
-    if (nargs != 1) {
-        return RAISE(PyExc_TypeError,
-                     "set_grab() takes 1 positional argument.");
-    }
-
-    if (PyObject_IsTrue(args[0])) {
+    if (PyObject_IsTrue(arg)) {
         SDL_SetWindowGrab(self->win, SDL_TRUE);
     }
     else {
@@ -177,17 +168,13 @@ window_get_grab(pgWindowObject *self)
 }
 
 static PyObject *
-window_set_title(pgWindowObject *self, PyObject *const *args, Py_ssize_t nargs)
+window_set_title(pgWindowObject *self, PyObject *arg)
 {
     const char *title;
-    if (nargs != 1) {
-        return RAISE(PyExc_TypeError,
-                     "set_title() takes 1 positional argument.");
-    }
-    if (!PyUnicode_Check(args[0])) {
+    if (!PyUnicode_Check(arg)) {
         return RAISE(PyExc_TypeError, "Argument to set_title must be a str.");
     }
-    title = PyUnicode_AsUTF8(args[0]);
+    title = PyUnicode_AsUTF8(arg);
     SDL_SetWindowTitle(self->win, title);
     Py_RETURN_NONE;
 }
@@ -200,15 +187,9 @@ window_get_title(pgWindowObject *self)
 }
 
 static PyObject *
-window_set_resizable(pgWindowObject *self, PyObject *const *args,
-                     Py_ssize_t nargs)
+window_set_resizable(pgWindowObject *self, PyObject *arg)
 {
-    if (nargs != 1) {
-        return RAISE(PyExc_TypeError,
-                     "set_resizable() takes 1 positional argument.");
-    }
-
-    if (PyObject_IsTrue(args[0])) {
+    if (PyObject_IsTrue(arg)) {
         SDL_SetWindowResizable(self->win, SDL_TRUE);
     }
     else {
@@ -226,15 +207,9 @@ window_get_resizable(pgWindowObject *self)
 }
 
 static PyObject *
-window_set_borderless(pgWindowObject *self, PyObject *const *args,
-                      Py_ssize_t nargs)
+window_set_borderless(pgWindowObject *self, PyObject *arg)
 {
-    if (nargs != 1) {
-        return RAISE(PyExc_TypeError,
-                     "set_borderless() takes 1 positional argument.");
-    }
-
-    if (PyObject_IsTrue(args[0])) {
+    if (PyObject_IsTrue(arg)) {
         SDL_SetWindowBordered(self->win, SDL_FALSE);
     }
     else {
@@ -262,15 +237,11 @@ window_get_window_id(pgWindowObject *self)
 }
 
 static PyObject *
-window_set_size(pgWindowObject *self, PyObject *const *args, Py_ssize_t nargs)
+window_set_size(pgWindowObject *self, PyObject *arg)
 {
     int w, h;
-    if (nargs != 1) {
-        return RAISE(PyExc_TypeError,
-                     "set_size() takes 1 positional argument.");
-    }
 
-    if (!pg_TwoIntsFromObj(args[0], &w, &h)) {
+    if (!pg_TwoIntsFromObj(arg, &w, &h)) {
         return RAISE(PyExc_TypeError, "invalid size argument");
     }
 
@@ -293,22 +264,17 @@ window_get_size(pgWindowObject *self)
 }
 
 static PyObject *
-window_set_position(pgWindowObject *self, PyObject *const *args,
-                    Py_ssize_t nargs)
+window_set_position(pgWindowObject *self, PyObject *arg)
 {
     int x, y;
-    if (nargs != 1) {
-        return RAISE(PyExc_TypeError,
-                     "set_position() takes 1 positional argument.");
-    }
 
-    if (Py_TYPE(args[0]) == &PyLong_Type) {
-        x = y = PyLong_AsLong(args[0]);
+    if (Py_TYPE(arg) == &PyLong_Type) {
+        x = y = PyLong_AsLong(arg);
         if (x != SDL_WINDOWPOS_CENTERED && x != SDL_WINDOWPOS_UNDEFINED) {
             return RAISE(PyExc_TypeError, "invalid position argument");
         }
     }
-    else if (!pg_TwoIntsFromObj(args[0], &x, &y)) {
+    else if (!pg_TwoIntsFromObj(arg, &x, &y)) {
         return RAISE(PyExc_TypeError, "invalid position argument");
     }
 
@@ -331,15 +297,10 @@ window_get_position(pgWindowObject *self)
 }
 
 static PyObject *
-window_set_opacity(pgWindowObject *self, PyObject *const *args,
-                   Py_ssize_t nargs)
+window_set_opacity(pgWindowObject *self, PyObject *arg)
 {
     float opacity;
-    if (nargs != 1) {
-        return RAISE(PyExc_TypeError,
-                     "set_opacity() takes 1 positional argument.");
-    }
-    opacity = (float)PyFloat_AsDouble(args[0]);
+    opacity = (float)PyFloat_AsDouble(arg);
     if (PyErr_Occurred()) {
         return NULL;
     }
@@ -462,28 +423,28 @@ static PyMethodDef window_methods[] = {
     {"restore", (PyCFunction)window_restore, METH_NOARGS, "docs_needed"},
     {"maximize", (PyCFunction)window_maximize, METH_NOARGS, "docs_needed"},
     {"minimize", (PyCFunction)window_minimize, METH_NOARGS, "docs_needed"},
-    {"set_icon", (PyCFunction)window_set_icon, METH_FASTCALL, "docs_needed"},
-    {"set_grab", (PyCFunction)window_set_grab, METH_FASTCALL, "docs_needed"},
+    {"set_icon", (PyCFunction)window_set_icon, METH_O, "docs_needed"},
+    {"set_grab", (PyCFunction)window_set_grab, METH_O, "docs_needed"},
     {"get_grab", (PyCFunction)window_get_grab, METH_NOARGS, "docs_needed"},
-    {"set_title", (PyCFunction)window_set_title, METH_FASTCALL, "docs_needed"},
+    {"set_title", (PyCFunction)window_set_title, METH_O, "docs_needed"},
     {"get_title", (PyCFunction)window_get_title, METH_NOARGS, "docs_needed"},
-    {"set_resizable", (PyCFunction)window_set_resizable, METH_FASTCALL,
+    {"set_resizable", (PyCFunction)window_set_resizable, METH_O,
      "docs_needed"},
     {"get_resizable", (PyCFunction)window_get_resizable, METH_NOARGS,
      "docs_needed"},
-    {"set_borderless", (PyCFunction)window_set_borderless, METH_FASTCALL,
+    {"set_borderless", (PyCFunction)window_set_borderless, METH_O,
      "docs_needed"},
     {"get_borderless", (PyCFunction)window_get_borderless, METH_NOARGS,
      "docs_needed"},
     {"get_window_id", (PyCFunction)window_get_window_id, METH_NOARGS,
      "docs_needed"},
-    {"set_size", (PyCFunction)window_set_size, METH_FASTCALL, "docs_needed"},
+    {"set_size", (PyCFunction)window_set_size, METH_O, "docs_needed"},
     {"get_size", (PyCFunction)window_get_size, METH_NOARGS, "docs_needed"},
-    {"set_position", (PyCFunction)window_set_position, METH_FASTCALL,
+    {"set_position", (PyCFunction)window_set_position, METH_O,
      "docs_needed"},
     {"get_position", (PyCFunction)window_get_position, METH_NOARGS,
      "docs_needed"},
-    {"set_opacity", (PyCFunction)window_set_opacity, METH_FASTCALL,
+    {"set_opacity", (PyCFunction)window_set_opacity, METH_O,
      "docs_needed"},
     {"get_opacity", (PyCFunction)window_get_opacity, METH_NOARGS,
      "docs_needed"},
