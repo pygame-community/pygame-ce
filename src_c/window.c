@@ -22,6 +22,22 @@ get_windows(PyObject *self)
 }
 
 static PyObject *
+get_grabbed_window(PyObject *self)
+{
+    SDL_Window *grabbed = SDL_GetGrabbedWindow();
+    PyObject *win_obj = NULL;
+    if (grabbed) {
+        win_obj = SDL_GetWindowData(grabbed, "pg_window");
+        if (!win_obj) {
+            Py_RETURN_NONE;
+        }
+        Py_INCREF(win_obj);
+        return win_obj;
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 window_destroy(pgWindowObject *self)
 {
     int i;
@@ -175,6 +191,8 @@ static PyTypeObject pgWindow_Type = {
 };
 
 static PyMethodDef _window_methods[] = {
+    {"get_grabbed_window", (PyCFunction)get_grabbed_window, METH_NOARGS,
+     "docs_needed"},
     {"get_windows", (PyCFunction)get_windows, METH_NOARGS, "docs_needed"},
     {NULL, NULL, 0, NULL}};
 
