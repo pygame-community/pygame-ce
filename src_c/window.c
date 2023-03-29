@@ -249,13 +249,14 @@ MODINIT_DEFINE(window)
     _window_list = PyList_New(0);
     Py_XINCREF(_window_list);
 
-    PyObject* WINDOWPOS_UNDEFINED=PyLong_FromLong(SDL_WINDOWPOS_UNDEFINED);
-    if (PyModule_AddObject(module, "WINDOWPOS_UNDEFINED", WINDOWPOS_UNDEFINED)) {
+    PyObject *WINDOWPOS_UNDEFINED = PyLong_FromLong(SDL_WINDOWPOS_UNDEFINED);
+    if (PyModule_AddObject(module, "WINDOWPOS_UNDEFINED",
+                           WINDOWPOS_UNDEFINED)) {
         Py_DECREF(WINDOWPOS_UNDEFINED);
         Py_DECREF(module);
         return NULL;
     }
-    PyObject* WINDOWPOS_CENTERED=PyLong_FromLong(SDL_WINDOWPOS_CENTERED);
+    PyObject *WINDOWPOS_CENTERED = PyLong_FromLong(SDL_WINDOWPOS_CENTERED);
     if (PyModule_AddObject(module, "WINDOWPOS_CENTERED", WINDOWPOS_CENTERED)) {
         Py_DECREF(WINDOWPOS_CENTERED);
         Py_DECREF(module);

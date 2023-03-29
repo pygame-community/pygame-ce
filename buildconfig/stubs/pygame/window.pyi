@@ -1,10 +1,12 @@
-from typing import Any, Generator, Iterable, Optional, Tuple, Union
+from typing import Iterable, Optional, Tuple, Union, final
 from pygame.surface import Surface
 
 WINDOWPOS_UNDEFINED: int
 WINDOWPOS_CENTERED: int
 def get_windows() -> Tuple[Window, ...]: ... 
 def get_grabbed_window() -> Optional[Window]: ...
+
+@final
 class Window:
     def __init__(
         self,
@@ -18,3 +20,5 @@ class Window:
     def set_icon(self,icon:Surface) -> None: ...
     def set_grab(self,enable :bool) -> None: ...
     def get_grab(self) -> bool: ...
+
+WindowType = Window
