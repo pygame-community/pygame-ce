@@ -254,6 +254,16 @@ window_get_borderless(pgWindowObject *self)
                            SDL_WINDOW_BORDERLESS);
 }
 
+static PyObject *
+window_get_window_id(pgWindowObject *self)
+{
+    Uint32 window_id = SDL_GetWindowID(self->win);
+    if (!window_id) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    return PyLong_FromLong(window_id);
+}
+
 static void
 window_dealloc(pgWindowObject *self)
 {
@@ -354,6 +364,8 @@ static PyMethodDef window_methods[] = {
     {"set_borderless", (PyCFunction)window_set_borderless, METH_FASTCALL,
      "docs_needed"},
     {"get_borderless", (PyCFunction)window_get_borderless, METH_NOARGS,
+     "docs_needed"},
+    {"get_window_id", (PyCFunction)window_get_window_id, METH_NOARGS,
      "docs_needed"},
     {NULL, NULL, 0, NULL}};
 
