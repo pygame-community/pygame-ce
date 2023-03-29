@@ -362,6 +362,16 @@ window_get_opacity(pgWindowObject *self)
     return PyFloat_FromDouble(opacity);
 }
 
+static PyObject *
+window_get_display_index(pgWindowObject *self)
+{
+    int index = SDL_GetWindowDisplayIndex(self->win);
+    if (index<0) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    return PyLong_FromLong(index);
+}
+
 static void
 window_dealloc(pgWindowObject *self)
 {
@@ -479,6 +489,8 @@ static PyMethodDef window_methods[] = {
     {"set_opacity", (PyCFunction)window_set_opacity, METH_FASTCALL,
      "docs_needed"},
     {"get_opacity", (PyCFunction)window_get_opacity, METH_NOARGS,
+     "docs_needed"},
+    {"get_display_index", (PyCFunction)window_get_display_index, METH_NOARGS,
      "docs_needed"},
     {NULL, NULL, 0, NULL}};
 
