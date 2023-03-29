@@ -9,6 +9,9 @@
 PyObject *_window_list = NULL;
 
 static PyObject *
+window_set_modal_for(pgWindowObject *self, PyObject *arg);
+
+static PyObject *
 get_windows(PyObject *self)
 {
     PyObject *t = PyTuple_New(PySequence_Size(_window_list));
@@ -149,7 +152,7 @@ window_set_icon(pgWindowObject *self, PyObject *arg)
 }
 
 static PyObject *
-window_set_grab(pgWindowObject *self, PyObject*arg)
+window_set_grab(pgWindowObject *self, PyObject *arg)
 {
     if (PyObject_IsTrue(arg)) {
         SDL_SetWindowGrab(self->win, SDL_TRUE);
@@ -423,6 +426,8 @@ static PyMethodDef window_methods[] = {
     {"restore", (PyCFunction)window_restore, METH_NOARGS, "docs_needed"},
     {"maximize", (PyCFunction)window_maximize, METH_NOARGS, "docs_needed"},
     {"minimize", (PyCFunction)window_minimize, METH_NOARGS, "docs_needed"},
+    {"set_modal_for", (PyCFunction)window_set_modal_for, METH_O,
+     "docs_needed"},
     {"set_icon", (PyCFunction)window_set_icon, METH_O, "docs_needed"},
     {"set_grab", (PyCFunction)window_set_grab, METH_O, "docs_needed"},
     {"get_grab", (PyCFunction)window_get_grab, METH_NOARGS, "docs_needed"},
@@ -440,12 +445,10 @@ static PyMethodDef window_methods[] = {
      "docs_needed"},
     {"set_size", (PyCFunction)window_set_size, METH_O, "docs_needed"},
     {"get_size", (PyCFunction)window_get_size, METH_NOARGS, "docs_needed"},
-    {"set_position", (PyCFunction)window_set_position, METH_O,
-     "docs_needed"},
+    {"set_position", (PyCFunction)window_set_position, METH_O, "docs_needed"},
     {"get_position", (PyCFunction)window_get_position, METH_NOARGS,
      "docs_needed"},
-    {"set_opacity", (PyCFunction)window_set_opacity, METH_O,
-     "docs_needed"},
+    {"set_opacity", (PyCFunction)window_set_opacity, METH_O, "docs_needed"},
     {"get_opacity", (PyCFunction)window_get_opacity, METH_NOARGS,
      "docs_needed"},
     {"get_display_index", (PyCFunction)window_get_display_index, METH_NOARGS,
@@ -464,6 +467,19 @@ static PyTypeObject pgWindow_Type = {
 
 #define pgWindow_Check(x) \
     (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
+
+static PyObject *
+window_set_modal_for(pgWindowObject *self, PyObject *arg)
+{
+    if (!pgWindow_Check(arg)) {
+        return RAISE(PyExc_TypeError,
+                     "Argument to set_modal_for must be a Window.");
+    }
+    if (!SDL_SetWindowModalFor(self->win, ((pgWindowObject *)arg)->win)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    Py_RETURN_NONE;
+}
 
 static PyMethodDef _window_methods[] = {
     {"get_grabbed_window", (PyCFunction)get_grabbed_window, METH_NOARGS,
