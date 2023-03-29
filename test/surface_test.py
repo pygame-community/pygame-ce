@@ -18,6 +18,7 @@ import platform
 import gc
 import weakref
 import ctypes
+import itertools
 
 IS_PYPY = "PyPy" == platform.python_implementation()
 
@@ -1059,6 +1060,41 @@ class TestSurfaceBlit(unittest.TestCase):
         source = pygame.Surface((1, 1), pygame.SRCALPHA, 32)
         source.set_at((0, 0), test_color)
         target.blit(source, (0, 0))
+
+    def test_blit__SCALPHA32_TO_OPAQUE32(self):
+        # Apparently these types of blits need to write 0 to the destination's
+        # alpha channel (it's not really an alpha channel but it's treated like one)
+        # See https://github.com/pygame-community/pygame-ce/pull/2067
+
+        alphas = [0, 10, 50, 122, 240, 255]
+
+        combinations = list(itertools.combinations_with_replacement(alphas, 2))
+        width = len(combinations)
+
+        # masks explicitly specified so direct pixel access of bytes below is
+        # gauranteed to be stable
+        surf1 = pygame.Surface((width, 1), depth=32, masks=(0xFF0000, 0xFF00, 0xFF, 0))
+        surf2 = pygame.Surface(
+            (width, 1),
+            pygame.SRCALPHA,
+            depth=32,
+            masks=(0xFF0000, 0xFF00, 0xFF, 0xFF000000),
+        )
+
+        for i in range(width):
+            alpha1, alpha2 = combinations[i]
+            surf1.set_at((i, 0), (0, 0, 0, alpha1))
+            surf2.set_at((i, 0), (0, 0, 0, alpha2))
+
+        surf1.blit(surf2, (0, 0))
+
+        # Why use get_buffer?
+        # get_at for RGBX surfaces seems to always think A=255, regardless
+        # of bytes in surface, which makes sense.
+        surf1_bytes = surf1.get_buffer().raw
+        for i in range(width):
+            # +3 gets the "alpha channel" in this pixel format
+            assert surf1_bytes[i * 4 + 3] == 0
 
 
 class GeneralSurfaceTests(unittest.TestCase):
