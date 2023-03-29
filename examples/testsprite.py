@@ -183,8 +183,12 @@ def main(
     sprite_surface2 = pygame.image.load(os.path.join(data_dir, "static.png"))
 
     if use_rle:
-        sprite_surface.set_colorkey([0xFF, 0xFF, 0xFF], pygame.SRCCOLORKEY | pygame.RLEACCEL)
-        sprite_surface2.set_colorkey([0xFF, 0xFF, 0xFF], pygame.SRCCOLORKEY | pygame.RLEACCEL)
+        sprite_surface.set_colorkey(
+            [0xFF, 0xFF, 0xFF], pygame.SRCCOLORKEY | pygame.RLEACCEL
+        )
+        sprite_surface2.set_colorkey(
+            [0xFF, 0xFF, 0xFF], pygame.SRCCOLORKEY | pygame.RLEACCEL
+        )
     else:
         sprite_surface.set_colorkey([0xFF, 0xFF, 0xFF], pygame.SRCCOLORKEY)
         sprite_surface2.set_colorkey([0xFF, 0xFF, 0xFF], pygame.SRCCOLORKEY)
@@ -248,7 +252,12 @@ def main(
             pygame.display.flip()
 
         for event in pygame.event.get():
-            if event.type in [pygame.QUIT, pygame.KEYDOWN, pygame.QUIT, pygame.JOYBUTTONDOWN]:
+            if event.type in [
+                pygame.QUIT,
+                pygame.KEYDOWN,
+                pygame.QUIT,
+                pygame.JOYBUTTONDOWN,
+            ]:
                 going = False
 
         frames += 1

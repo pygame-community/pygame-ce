@@ -168,7 +168,9 @@ def main():
     clock = pygame.time.Clock()
 
     pygame.scrap.init()
-    pygame.SCRAP_TEXT = pygame.scrap.get_types()[0]  # TODO remove when scrap module is fixed
+    pygame.SCRAP_TEXT = pygame.scrap.get_types()[
+        0
+    ]  # TODO remove when scrap module is fixed
     clipped = pygame.scrap.get(pygame.SCRAP_TEXT).decode("UTF-8")
     # store the current text from the clipboard TODO remove decode
 

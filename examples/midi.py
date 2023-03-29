@@ -461,7 +461,9 @@ def key_class(updates, image_strip, image_rects, is_white_key=True):
             self._notify_down = getattr(key_left, c_notify_down_method)
             self._notify_up = getattr(key_left, c_notify_up_method)
             self._key_left = key_left
-            self._background_rect = pygame.Rect(rect.left, rect.bottom - 10, c_width, 10)
+            self._background_rect = pygame.Rect(
+                rect.left, rect.bottom - 10, c_width, 10
+            )
             c_updates.add(self)
 
         def down(self):

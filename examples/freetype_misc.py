@@ -147,7 +147,11 @@ def run():
     pygame.display.flip()
 
     while True:
-        if pygame.event.wait().type in (pygame.QUIT, pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
+        if pygame.event.wait().type in (
+            pygame.QUIT,
+            pygame.KEYDOWN,
+            pygame.MOUSEBUTTONDOWN,
+        ):
             break
 
     pygame.quit()

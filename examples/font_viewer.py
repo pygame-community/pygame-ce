@@ -195,7 +195,9 @@ class FontViewer:
             x = center - int(w / 2)
             large_surface.blit(surface, (x, y))
             y += surface.get_height()
-        self.max_y = large_surface.get_height() - pygame.display.get_surface().get_height()
+        self.max_y = (
+            large_surface.get_height() - pygame.display.get_surface().get_height()
+        )
         self.surface = large_surface
 
     def display_surface(self, time=10):

@@ -99,7 +99,9 @@ class VideoCapturePlayer:
         while going:
             events = pygame.event.get()
             for e in events:
-                if e.type == pygame.QUIT or (e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE):
+                if e.type == pygame.QUIT or (
+                    e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE
+                ):
                     going = False
                 if e.type == pygame.KEYDOWN:
                     if e.key in range(pygame.K_0, pygame.K_0 + 10):

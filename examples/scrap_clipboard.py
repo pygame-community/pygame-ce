@@ -44,7 +44,9 @@ usage()
 
 while going:
     for e in pygame.event.get():
-        if e.type == pygame.QUIT or (e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE):
+        if e.type == pygame.QUIT or (
+            e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE
+        ):
             going = False
 
         elif e.type == pygame.KEYDOWN and e.key == pygame.K_g:

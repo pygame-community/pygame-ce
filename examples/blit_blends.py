@@ -154,7 +154,11 @@ def main():
                 print("one pixel is:%s:" % [im1.get_at((0, 0))])
                 print(f"time to do:{t2 - t1}:")
 
-            elif event.type == pygame.KEYDOWN and event.key in [pygame.K_r, pygame.K_g, pygame.K_b]:
+            elif event.type == pygame.KEYDOWN and event.key in [
+                pygame.K_r,
+                pygame.K_g,
+                pygame.K_b,
+            ]:
                 # this adds one to each pixel.
                 colmap = {}
                 colmap[pygame.K_r] = 0x10000
