@@ -160,7 +160,7 @@ window_update_from_surface(pgWindowObject *self, PyObject *const *args,
                              "Arguments must be rect or rect-like objects.");
             }
             rects[i] = *r;
-            if (SDL_UpdateWindowSurfaceRects(self->win, rects, nargs)) {
+            if (SDL_UpdateWindowSurfaceRects(self->win, rects, (int)nargs)) {
                 return RAISE(pgExc_SDLError, SDL_GetError());
             }
         }
@@ -370,7 +370,7 @@ window_get_surface(pgWindowObject *self)
     if (!_surf) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
-    surf = pgSurface_New(_surf);
+    surf = (PyObject *)pgSurface_New(_surf);
     if (!surf) {
         return NULL;
     }
