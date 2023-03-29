@@ -155,6 +155,9 @@ PyInit_gfxdraw(void);
 PyMODINIT_FUNC
 PyInit_audio(void);
 
+PyMODINIT_FUNC
+PyInit_window(void);
+
 // pygame_static module
 
 void
@@ -282,6 +285,8 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_pg_mixer(), "mixer");
 
     load_submodule("pygame.mixer", PyInit_mixer_music(), "music");
+
+    load_submodule("pygame.window", PyInit_window(), "window");
 
     return PyModule_Create(&mod_pygame_static);
 }

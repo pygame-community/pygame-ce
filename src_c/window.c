@@ -466,7 +466,7 @@ static PyTypeObject pgWindow_Type = {
 };
 
 #define pgWindow_Check(x) \
-    (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
+    (PyObject_IsInstance((x), (PyTypeObject *)&pgWindow_Type))
 
 static PyObject *
 window_set_modal_for(pgWindowObject *self, PyObject *arg)
