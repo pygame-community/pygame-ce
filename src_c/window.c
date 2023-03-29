@@ -1,3 +1,5 @@
+#define PYGAMEAPI_WINDOW_INTERNAL
+
 #include "pygame.h"
 
 #include "pgcompat.h"
@@ -5,11 +7,6 @@
 // #include "doc/window_doc.h"
 
 PyObject *_window_list = NULL;
-
-typedef struct {
-    PyObject_HEAD SDL_Window *win;
-    SDL_bool is_from_display;
-} pgWindowObject;
 
 static PyObject *
 get_windows(PyObject *self)
@@ -366,7 +363,7 @@ static PyObject *
 window_get_display_index(pgWindowObject *self)
 {
     int index = SDL_GetWindowDisplayIndex(self->win);
-    if (index<0) {
+    if (index < 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     return PyLong_FromLong(index);
@@ -504,6 +501,9 @@ static PyTypeObject pgWindow_Type = {
     .tp_new = PyType_GenericNew,
 };
 
+#define pgWindow_Check(x) \
+    (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
+
 static PyMethodDef _window_methods[] = {
     {"get_grabbed_window", (PyCFunction)get_grabbed_window, METH_NOARGS,
      "docs_needed"},
@@ -513,6 +513,7 @@ static PyMethodDef _window_methods[] = {
 MODINIT_DEFINE(window)
 {
     PyObject *module;
+    static void *c_api[PYGAMEAPI_WINDOW_NUMSLOTS];
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "window",
@@ -576,6 +577,8 @@ MODINIT_DEFINE(window)
         Py_DECREF(module);
         return NULL;
     }
+
+    c_api[0] = &pgWindow_Type;
 
     return module;
 }
