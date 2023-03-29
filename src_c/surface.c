@@ -2545,7 +2545,7 @@ surf_get_frect(PyObject *self, PyObject *args, PyObject *kwargs)
 
     SURF_INIT_CHECK(surf)
 
-    rect = pgFRect_New4(0, 0, surf->w, surf->h);
+    rect = pgFRect_New4(0.f, 0.f, (float)surf->w, (float)surf->h);
     if (rect && kwargs) {
         PyObject *key, *value;
         Py_ssize_t pos = 0;
