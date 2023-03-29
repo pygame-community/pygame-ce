@@ -333,6 +333,35 @@ window_get_position(pgWindowObject *self)
     return out;
 }
 
+static PyObject *
+window_set_opacity(pgWindowObject *self, PyObject *const *args,
+                   Py_ssize_t nargs)
+{
+    float opacity;
+    if (nargs != 1) {
+        return RAISE(PyExc_TypeError,
+                     "set_opacity() takes 1 positional argument.");
+    }
+    opacity = PyFloat_AsDouble(args[0]);
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    if (SDL_SetWindowOpacity(self->win, opacity)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+window_get_opacity(pgWindowObject *self)
+{
+    float opacity;
+    if (SDL_GetWindowOpacity(self->win, &opacity)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    return PyFloat_FromDouble(opacity);
+}
+
 static void
 window_dealloc(pgWindowObject *self)
 {
@@ -446,6 +475,10 @@ static PyMethodDef window_methods[] = {
     {"set_position", (PyCFunction)window_set_position, METH_FASTCALL,
      "docs_needed"},
     {"get_position", (PyCFunction)window_get_position, METH_NOARGS,
+     "docs_needed"},
+    {"set_opacity", (PyCFunction)window_set_opacity, METH_FASTCALL,
+     "docs_needed"},
+    {"get_opacity", (PyCFunction)window_get_opacity, METH_NOARGS,
      "docs_needed"},
     {NULL, NULL, 0, NULL}};
 
