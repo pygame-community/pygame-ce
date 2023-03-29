@@ -120,6 +120,27 @@ window_show(pgWindowObject *self)
 }
 
 static PyObject *
+window_restore(pgWindowObject *self)
+{
+    SDL_RestoreWindow(self->win);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+window_maximize(pgWindowObject *self)
+{
+    SDL_MaximizeWindow(self->win);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+window_minimize(pgWindowObject *self)
+{
+    SDL_MinimizeWindow(self->win);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 window_set_icon(pgWindowObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     if (nargs != 1) {
@@ -266,6 +287,9 @@ static PyMethodDef window_methods[] = {
      "docs_needed"},
     {"hide", (PyCFunction)window_hide, METH_NOARGS, "docs_needed"},
     {"show", (PyCFunction)window_show, METH_NOARGS, "docs_needed"},
+    {"restore", (PyCFunction)window_restore, METH_NOARGS, "docs_needed"},
+    {"maximize", (PyCFunction)window_maximize, METH_NOARGS, "docs_needed"},
+    {"minimize", (PyCFunction)window_minimize, METH_NOARGS, "docs_needed"},
     {"set_icon", (PyCFunction)window_set_icon, METH_FASTCALL, "docs_needed"},
     {"set_grab", (PyCFunction)window_set_grab, METH_FASTCALL, "docs_needed"},
     {"get_grab", (PyCFunction)window_get_grab, METH_NOARGS, "docs_needed"},
