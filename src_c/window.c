@@ -228,6 +228,32 @@ window_get_resizable(pgWindowObject *self)
                            SDL_WINDOW_RESIZABLE);
 }
 
+static PyObject *
+window_set_borderless(pgWindowObject *self, PyObject *const *args,
+                      Py_ssize_t nargs)
+{
+    if (nargs != 1) {
+        return RAISE(PyExc_TypeError,
+                     "set_borderless() takes 1 positional argument.");
+    }
+
+    if (PyObject_IsTrue(args[0])) {
+        SDL_SetWindowBordered(self->win, SDL_FALSE);
+    }
+    else {
+        SDL_SetWindowBordered(self->win, SDL_TRUE);
+    }
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+window_get_borderless(pgWindowObject *self)
+{
+    return PyBool_FromLong(SDL_GetWindowFlags(self->win) &
+                           SDL_WINDOW_BORDERLESS);
+}
+
 static void
 window_dealloc(pgWindowObject *self)
 {
@@ -324,6 +350,10 @@ static PyMethodDef window_methods[] = {
     {"set_resizable", (PyCFunction)window_set_resizable, METH_FASTCALL,
      "docs_needed"},
     {"get_resizable", (PyCFunction)window_get_resizable, METH_NOARGS,
+     "docs_needed"},
+    {"set_borderless", (PyCFunction)window_set_borderless, METH_FASTCALL,
+     "docs_needed"},
+    {"get_borderless", (PyCFunction)window_get_borderless, METH_NOARGS,
      "docs_needed"},
     {NULL, NULL, 0, NULL}};
 
