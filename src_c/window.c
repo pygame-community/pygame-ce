@@ -489,7 +489,7 @@ static PyMethodDef _window_methods[] = {
 
 MODINIT_DEFINE(window)
 {
-    PyObject *module;
+    PyObject *module, *apiobj;
     static void *c_api[PYGAMEAPI_WINDOW_NUMSLOTS];
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
@@ -556,6 +556,13 @@ MODINIT_DEFINE(window)
     }
 
     c_api[0] = &pgWindow_Type;
+    apiobj = encapsulate_api(c_api, "window");
+    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+        Py_XDECREF(apiobj);
+        Py_XDECREF(_window_list);
+        Py_DECREF(module);
+        return NULL;
+    }
 
     return module;
 }
