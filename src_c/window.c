@@ -14,8 +14,11 @@ typedef struct {
 static PyObject *
 get_windows(PyObject *self)
 {
-    Py_INCREF(_window_list);
-    return _window_list;
+    PyObject* t=PyTuple_New(PySequence_Size(_window_list));
+    for(int i=0;i<PySequence_Size(_window_list);i++){
+        PyTuple_SetItem(t,i,PySequence_GetItem(_window_list,i));
+    }
+    return t;
 }
 
 static PyObject *
