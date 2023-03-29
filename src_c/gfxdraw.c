@@ -804,7 +804,6 @@ _gfx_filledpolygoncolor(PyObject *self, PyObject *args)
     if (count < 3) {
         return RAISE(PyExc_ValueError,
                      "points must contain more than 2 points");
-        return NULL;
     }
 
     vx = PyMem_New(Sint16, (size_t)count);
