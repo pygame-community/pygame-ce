@@ -60,6 +60,33 @@ window_destroy(pgWindowObject *self)
 }
 
 static PyObject *
+window_set_windowed(pgWindowObject *self)
+{
+    if (SDL_SetWindowFullscreen(self->win, 0)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+window_set_fullscreen(pgWindowObject *self, PyObject *args, PyObject *kwargs)
+{
+    SDL_bool desktop = SDL_FALSE;
+    int flags = SDL_WINDOW_FULLSCREEN;
+    char *kwids[] = {"desktop", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", kwids, &desktop)) {
+        return NULL;
+    }
+    if (desktop) {
+        flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
+    }
+    if (SDL_SetWindowFullscreen(self->win, flags)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 window_set_icon(pgWindowObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     if (nargs != 1) {
@@ -174,6 +201,10 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyMethodDef window_methods[] = {
+    {"set_windowed", (PyCFunction)window_set_windowed, METH_NOARGS,
+     "docs_needed"},
+    {"set_fullscreen", (PyCFunction)window_set_fullscreen,
+     METH_VARARGS | METH_KEYWORDS, "docs_needed"},
     {"set_icon", (PyCFunction)window_set_icon, METH_FASTCALL, "docs_needed"},
     {"set_grab", (PyCFunction)window_set_grab, METH_FASTCALL, "docs_needed"},
     {"get_grab", (PyCFunction)window_get_grab, METH_NOARGS, "docs_needed"},
