@@ -88,8 +88,8 @@ def main():
     pygame.display.set_caption("Cursors Example")
 
     pygame.font.init()
-    font = pygame.font.Font(None, 30)
-    font1 = pygame.font.Font(None, 24)
+    font = pygame.Font(None, 30)
+    font1 = pygame.Font(None, 24)
 
     bg = pygame.display.set_mode((500, 400))
     bg.fill((183, 201, 226))
@@ -153,7 +153,7 @@ def main():
     pygame.mouse.set_cursor(cursors[index])
 
     pressed = False
-    clock = pygame.time.Clock()
+    clock = pygame.Clock()
 
     while True:
         clock.tick(50)

@@ -10,7 +10,7 @@ What does it show you about pygame?
 * music with pygame.mixer.music, including fadeout
 * sound effects with pygame.Sound
 * event processing, keyboard handling, QUIT handling.
-* a main loop frame limited with a game clock from pygame.time.Clock
+* a main loop frame limited with a game clock from the pygame.time module
 * fullscreen switching.
 
 
@@ -213,7 +213,7 @@ class Score(pygame.sprite.Sprite):
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.font = pygame.font.Font(None, 20)
+        self.font = pygame.Font(None, 20)
         self.font.set_italic(1)
         self.color = "white"
         self.lastscore = -1
@@ -293,7 +293,7 @@ def main(winstyle=0):
     # Create Some Starting Values
     global score
     alienreload = ALIEN_RELOAD
-    clock = pygame.time.Clock()
+    clock = pygame.Clock()
 
     # initialize our starting sprites
     global SCORE

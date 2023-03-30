@@ -62,7 +62,7 @@ def load_image(name):
 # here's the full code
 def main():
     pygame.init()
-    clock = pygame.time.Clock()
+    clock = pygame.Clock()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
     player = load_image("player1.gif")

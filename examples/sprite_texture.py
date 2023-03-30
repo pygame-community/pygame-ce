@@ -64,7 +64,7 @@ import math
 
 t = 0
 running = True
-clock = pygame.time.Clock()
+clock = pygame.Clock()
 renderer.draw_color = (255, 0, 0, 255)
 
 while running:

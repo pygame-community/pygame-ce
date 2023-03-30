@@ -33,7 +33,7 @@ main_dir = os.path.split(os.path.abspath(__file__))[0]
 
 pygame.init()
 screen = pygame.display.set_mode((200, 200))
-c = pygame.time.Clock()
+c = pygame.Clock()
 going = True
 
 # Initialize the scrap module and use the clipboard mode.

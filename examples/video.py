@@ -53,7 +53,7 @@ tex = Texture.from_surface(renderer, load_img("alien1.gif"))
 running = True
 
 x, y = 250, 50
-clock = pygame.time.Clock()
+clock = pygame.Clock()
 
 backgrounds = [(255, 0, 0, 255), (0, 255, 0, 255), (0, 0, 255, 255)]
 bg_index = 0
