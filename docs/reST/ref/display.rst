@@ -168,9 +168,11 @@ required).
       pygame.SCALED        resolution depends on desktop size and scale graphics
       pygame.SHOWN         window is opened in visible mode (default)
       pygame.HIDDEN        window is opened in hidden mode
+      pygame.DPIAWARE      set the display to run in dpi aware mode (cannot be turned off without a restart)
 
 
    .. versionadded:: 2.0.0 ``SCALED``, ``SHOWN`` and ``HIDDEN``
+   .. versionadded:: 2.3.0 ``DPIAWARE``
 
    By setting the ``vsync`` parameter to ``1``, it is possible to get a display
    with vertical sync at a constant frame rate. Subsequent calls to

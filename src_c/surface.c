@@ -2459,6 +2459,8 @@ surf_get_flags(PyObject *self, PyObject *_null)
             flags |= PGS_RESIZABLE;
         if (window_flags & SDL_WINDOW_BORDERLESS)
             flags |= PGS_NOFRAME;
+        if (window_flags & SDL_WINDOW_ALLOW_HIGHDPI)
+            flags |= PGS_DPIAWARE;
     }
 
     return PyLong_FromLong((long)flags);
