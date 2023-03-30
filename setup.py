@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # This is the distutils setup script for pygame.
-# Full instructions are in https://www.pygame.org/wiki/GettingStarted
+# Full instructions are in https://github.com/pygame-community/pygame-ce/wiki
 #
 # To configure, compile, install, just run this script.
 #     python setup.py install
@@ -134,33 +134,14 @@ IS_PYPY = '__pypy__' in sys.builtin_module_names
 def compilation_help():
     """ On failure point people to a web page for help.
     """
-    the_system = platform.system()
-    if the_system == 'Linux':
-        if hasattr(platform, 'linux_distribution'):
-            distro = platform.linux_distribution()
-            if distro[0].lower() == 'ubuntu':
-                the_system = 'Ubuntu'
-            elif distro[0].lower() == 'debian':
-                the_system = 'Debian'
-
     help_urls = {
-        'Linux': 'https://www.pygame.org/wiki/Compilation',
-        'Ubuntu': 'https://www.pygame.org/wiki/CompileUbuntu',
-        'Windows': 'https://www.pygame.org/wiki/CompileWindows',
-        'Darwin': 'https://www.pygame.org/wiki/MacCompile',
-        'RedHat': 'https://www.pygame.org/wiki/CompileRedHat',
-        # TODO There is nothing in the following pages yet
-        'Suse': 'https://www.pygame.org/wiki/CompileSuse',
-        'Python (from pypy.org)': 'https://www.pygame.org/wiki/CompilePyPy',
-        'Free BSD': 'https://www.pygame.org/wiki/CompileFreeBSD',
-        'Debian': 'https://www.pygame.org/wiki/CompileDebian',
+        'Linux': 'https://github.com/pygame-community/pygame-ce/wiki/Compiling-on-Linux',
+        'Windows': 'https://github.com/pygame-community/pygame-ce/wiki/Compiling-on-Windows',
+        'Darwin': 'https://github.com/pygame-community/pygame-ce/wiki/Compiling-on-macOS',
     }
 
-    default = 'https://www.pygame.org/wiki/Compilation'
-    url = help_urls.get(the_system, default)
-
-    if IS_PYPY:
-        url += '\n    https://www.pygame.org/wiki/CompilePyPy'
+    default = 'https://github.com/pygame-community/pygame-ce/wiki#compiling'
+    url = help_urls.get(platform.system(), default)
 
     print('\n---')
     print('For help with compilation see:')
