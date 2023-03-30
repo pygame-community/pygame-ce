@@ -472,6 +472,31 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     return 0;
 }
 
+static PyObject *
+window_from_display_module(PyTypeObject *cls)
+{
+    SDL_Window *window;
+    int i;
+    pgWindowObject *self, *tmp_window;
+    window = pg_GetDefaultWindow();
+    if (!window) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    for (i = 0; i < PySequence_Size(_window_list); i++) {
+        tmp_window = (pgWindowObject *)PySequence_GetItem(_window_list, i);
+        if (window == tmp_window->win) {
+            return (PyObject *)tmp_window;
+        }
+    }
+    self = (pgWindowObject *)(cls->tp_new(cls, NULL, NULL));
+    self->win = window;
+    self->is_from_display = SDL_TRUE;
+    SDL_SetWindowData(window, "pg_window", self);
+    PyList_Append(_window_list, self);
+    return (PyObject *)self;
+}
+
 static PyMethodDef window_methods[] = {
     {"destroy", (PyCFunction)window_destroy, METH_NOARGS, "docs_needed"},
     {"set_windowed", (PyCFunction)window_set_windowed, METH_NOARGS,
@@ -516,6 +541,8 @@ static PyMethodDef window_methods[] = {
      "docs_needed"},
     {"get_surface", (PyCFunction)window_get_surface, METH_NOARGS,
      "docs_needed"},
+    {"from_display_module", (PyCFunction)window_from_display_module,
+     METH_CLASS | METH_NOARGS, "docs_needed"},
     {NULL, NULL, 0, NULL}};
 
 static PyTypeObject pgWindow_Type = {

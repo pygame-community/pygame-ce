@@ -1,6 +1,6 @@
 from typing import Iterable, Optional, Tuple, Union, final
 from pygame.surface import Surface
-from .._common import RectValue
+from ._common import RectValue
 
 WINDOWPOS_UNDEFINED: int
 WINDOWPOS_CENTERED: int
@@ -46,6 +46,10 @@ class Window:
     def set_opacity(self,opacity :float) -> None: ...
     def get_opacity(self) -> float: ...
     def get_display_index(self) -> int: ...
-    def get_surface(self) -> Surfece: ...
+    def get_surface(self) -> Surface: ...
+
+    @classmethod
+    def from_display_module(cls) -> Window: ...
+    
 
 WindowType = Window
