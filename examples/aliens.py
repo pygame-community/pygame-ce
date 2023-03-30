@@ -88,7 +88,7 @@ class Player(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self, self.containers)
         self.image = self.images[0]
         self.rect = self.image.get_rect(midbottom=SCREENRECT.midbottom)
-        self.reloading = 0
+        self.reloading = False
         self.origtop = self.rect.top
         self.facing = -1
 
