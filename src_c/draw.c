@@ -1571,7 +1571,7 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
             x1 += diff * sx;
             err += diff * dy;
             y1 += ((err - dx) / -dx) * sy;
-            err = (err % dx) + dx;
+            err = (err % dx) + dy;
         }
         while (x1 != end) {
             if (x1 != exit) {
