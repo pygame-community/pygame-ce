@@ -1524,11 +1524,10 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
         else {
             exit = surf->clip_rect.y - 1;
             diff = y1 - end_y;
-
         }
         if (diff > 0) {
             y1 += diff * sy;
-            err += (diff) * dx;
+            err += (diff)*dx;
             x1 += ((err - dy) / -dy) * sx;
             err = (err % -dy) + dy;
         }
@@ -1544,7 +1543,8 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
                                            drawn_area);
                 }
             }
-            else break;
+            else
+                break;
             e2 = err * 2;
             if (e2 >= dy) {
                 err += dy;
@@ -1554,7 +1554,6 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
                 err += dx;
                 y1 += sy;
             }
-
         }
     }
     else {
@@ -1584,7 +1583,8 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
                                            drawn_area);
                 }
             }
-            else break;
+            else
+                break;
             e2 = err * 2;
             if (e2 >= dy) {
                 err += dy;
@@ -2360,7 +2360,8 @@ draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
      * 3. each two x-coordinates in x_intersect are then inside the polygon
      *    (draw line for a pair of two such points)
      */
-    for (y = MAX(miny, surf->clip_rect.y); (y <= MIN(maxy, surf->clip_rect.y + surf->clip_rect.h)); y++) {
+    for (y = MAX(miny, surf->clip_rect.y);
+         (y <= MIN(maxy, surf->clip_rect.y + surf->clip_rect.h)); y++) {
         // n_intersections is the number of intersections with the polygon
         int n_intersections = 0;
         for (i = 0; (i < num_points); i++) {
