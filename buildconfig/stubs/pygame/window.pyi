@@ -52,6 +52,8 @@ class Window:
 
     @classmethod
     def from_display_module(cls) -> Window: ...
+    @classmethod
+    def from_existing_window(cls) -> Window: ...
     
 
 WindowType = Window

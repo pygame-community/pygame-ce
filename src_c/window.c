@@ -432,9 +432,6 @@ window_get_always_on_top(pgWindowObject *self)
 static void
 window_dealloc(pgWindowObject *self)
 {
-    if (self->is_from_display) {
-        return;
-    }
     PyObject_Free(self);
 }
 
@@ -534,6 +531,31 @@ window_from_display_module(PyTypeObject *cls)
     return (PyObject *)self;
 }
 
+static PyObject *
+window_from_existing_window(PyTypeObject *cls, PyObject *arg)
+{
+    SDL_Window *window;
+    pgWindowObject *self;
+    long long hwnd;
+
+    hwnd = PyLong_AsLongLong(arg);
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
+    window = SDL_CreateWindowFrom((void *)hwnd);
+    if (!window) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    self = (pgWindowObject *)(cls->tp_new(cls, NULL, NULL));
+    self->win = window;
+    self->is_from_display = SDL_FALSE;
+    SDL_SetWindowData(window, "pg_window", self);
+    PyList_Append(_window_list, (PyObject *)self);
+    return (PyObject *)self;
+}
+
 static PyMethodDef window_methods[] = {
     {"destroy", (PyCFunction)window_destroy, METH_NOARGS, "docs_needed"},
     {"set_windowed", (PyCFunction)window_set_windowed, METH_NOARGS,
@@ -584,6 +606,8 @@ static PyMethodDef window_methods[] = {
      "docs_needed"},
     {"from_display_module", (PyCFunction)window_from_display_module,
      METH_CLASS | METH_NOARGS, "docs_needed"},
+    {"from_existing_window", (PyCFunction)window_from_existing_window,
+     METH_CLASS | METH_O, "docs_needed"},
     {NULL, NULL, 0, NULL}};
 
 static PyTypeObject pgWindow_Type = {
