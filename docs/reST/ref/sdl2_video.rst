@@ -266,12 +266,7 @@
    .. attribute:: draw_blend_mode
 
       | :sl:`Gets and sets the blend mode used by the drawing functions.`
-      | :sg:`draw_blend_mode -> int`   
-
-   .. attribute:: draw_color
-
-      | :sl:`Gets and sets the color used by the drawing functions.`
-      | :sg:`draw_color -> Color`
+      | :sg:`draw_blend_mode -> int`
 
    .. method:: clear
 

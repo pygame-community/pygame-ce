@@ -528,7 +528,6 @@ cdef class Window:
 
 cdef class Renderer:
     cdef SDL_Renderer* _renderer
-    cdef Color _draw_color
     cdef Texture _target
     cdef Window _win
     cdef int _is_borrowed
