@@ -496,7 +496,7 @@ window_from_display_module(PyTypeObject *cls)
     self->win = window;
     self->is_from_display = SDL_TRUE;
     SDL_SetWindowData(window, "pg_window", self);
-    PyList_Append(_window_list, self);
+    PyList_Append(_window_list, (PyObject *)self);
     return (PyObject *)self;
 }
 
