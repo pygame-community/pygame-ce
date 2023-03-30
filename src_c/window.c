@@ -395,6 +395,40 @@ window_get_surface(pgWindowObject *self)
     return surf;
 }
 
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+static PyObject *
+window_set_always_on_top(pgWindowObject *self, PyObject *arg)
+{
+    if (PyObject_IsTrue(arg)) {
+        SDL_SetWindowAlwaysOnTop(self->win, SDL_TRUE);
+    }
+    else {
+        SDL_SetWindowAlwaysOnTop(self->win, SDL_FALSE);
+    }
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+window_get_always_on_top(pgWindowObject *self)
+{
+    return PyBool_FromLong(SDL_GetWindowFlags(self->win) &
+                           SDL_WINDOW_ALWAYS_ON_TOP);
+}
+#else
+static PyObject *
+window_set_always_on_top(pgWindowObject *self, PyObject *arg)
+{
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+window_get_always_on_top(pgWindowObject *self)
+{
+    Py_RETURN_FALSE;
+}
+#endif  // SDL_VERSION_ATLEAST(2,0,16)
+
 static void
 window_dealloc(pgWindowObject *self)
 {
@@ -543,6 +577,10 @@ static PyMethodDef window_methods[] = {
     {"get_display_index", (PyCFunction)window_get_display_index, METH_NOARGS,
      "docs_needed"},
     {"get_surface", (PyCFunction)window_get_surface, METH_NOARGS,
+     "docs_needed"},
+    {"set_always_on_top", (PyCFunction)window_set_always_on_top, METH_O,
+     "docs_needed"},
+    {"get_always_on_top", (PyCFunction)window_get_always_on_top, METH_NOARGS,
      "docs_needed"},
     {"from_display_module", (PyCFunction)window_from_display_module,
      METH_CLASS | METH_NOARGS, "docs_needed"},
