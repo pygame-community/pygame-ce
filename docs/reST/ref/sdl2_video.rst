@@ -28,11 +28,6 @@
       | :sl:`Gets or sets whether the mouse is confined to the window.`
       | :sg:`grab -> bool`
 
-   .. attribute:: relative_mouse
-
-      | :sl:`Gets or sets the window's relative mouse motion state.`
-      | :sg:`relative_mouse -> bool`
-
    .. method:: set_windowed
 
       | :sl:`Enable windowed mode (exit fullscreen).`

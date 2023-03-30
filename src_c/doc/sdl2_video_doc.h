@@ -3,7 +3,6 @@
 #define DOC_SDL2_VIDEO_WINDOW "Window(title="pygame", size=(640, 480), position=None, fullscreen=False, fullscreen_desktop=False, keywords) -> Window\npygame object that represents a window"
 #define DOC_SDL2_VIDEO_WINDOW_FROMDISPLAYMODULE "from_display_module() -> Window\nCreates window using window created by pygame.display.set_mode()."
 #define DOC_SDL2_VIDEO_WINDOW_GRAB "grab -> bool\nGets or sets whether the mouse is confined to the window."
-#define DOC_SDL2_VIDEO_WINDOW_RELATIVEMOUSE "relative_mouse -> bool\nGets or sets the window's relative mouse motion state."
 #define DOC_SDL2_VIDEO_WINDOW_SETWINDOWED "set_windowed() -> None\nEnable windowed mode (exit fullscreen)."
 #define DOC_SDL2_VIDEO_WINDOW_SETFULLSCREEN "set_fullscreen(desktop=False) -> None\nEnter fullscreen."
 #define DOC_SDL2_VIDEO_WINDOW_TITLE "title -> string\nGets or sets whether the window title."
