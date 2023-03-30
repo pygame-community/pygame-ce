@@ -42,6 +42,7 @@ static PyObject *
 window_destroy(pgWindowObject *self)
 {
     int i;
+    PyObject *item;
 
     if (!self->win) {
         Py_RETURN_NONE;
@@ -51,11 +52,13 @@ window_destroy(pgWindowObject *self)
     self->win = NULL;
 
     for (i = 0; i < PySequence_Size(_window_list); i++) {
-        if ((PyObject *)self == PySequence_GetItem(_window_list, i)) {
+        item = PySequence_GetItem(_window_list, i);
+        if ((PyObject *)self == item) {
             PySequence_DelItem(_window_list, i);
             Py_DECREF(self);
             Py_RETURN_NONE;
         }
+        Py_DECREF(item);
     }
     Py_RETURN_NONE;
 }
@@ -414,7 +417,6 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     SDL_bool fullscreen_desktop = SDL_FALSE;
     Uint32 flags = 0;
     SDL_Window *_win = NULL;
-
     char *kwids[] = {
         "title", "size", "position", "fullscreen", "fullscreen_desktop", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|sOOpp", kwids, &title,
@@ -488,6 +490,7 @@ window_from_display_module(PyTypeObject *cls)
         if (window == tmp_window->win) {
             return (PyObject *)tmp_window;
         }
+        Py_DECREF(tmp_window);
     }
     self = (pgWindowObject *)(cls->tp_new(cls, NULL, NULL));
     self->win = window;
