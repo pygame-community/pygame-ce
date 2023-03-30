@@ -570,7 +570,6 @@ def main():
                 else:
                     print("Changing to windowed mode")
                     pg.display.set_mode(display_size, pg.OPENGL | pg.DOUBLEBUF)
-                fullscreen = not fullscreen
                 if gl_version[0] >= 4 or (gl_version[0] == 3 and gl_version[1] >= 2):
                     gpu, f_indices, o_indices = init_gl_modern(display_size)
                     rotation = Rotation()

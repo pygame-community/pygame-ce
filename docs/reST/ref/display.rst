@@ -752,7 +752,8 @@ required).
    | :sl:`Returns True if the pygame window created by pygame.display.set_mode() is in full-screen mode`
    | :sg:`is_vsync() -> bool`
 
-   If the window is in windowed mode, but maximised, this will return `False`.
+   Edge cases:
+   If the window is in windowed mode, but maximized, this will return `False`.
    If the window is in "borderless fullscreen" mode, this will return `True`.
 
    .. versionadded:: 2.2.0
