@@ -18,14 +18,6 @@ from time import time
 import pygame
 
 
-if "-psyco" in sys.argv:
-    try:
-        import psyco
-
-        psyco.full()
-    except Exception:
-        print("No psyco for you!  psyco failed to import and run.")
-
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 data_dir = os.path.join(main_dir, "data")
 
@@ -60,10 +52,6 @@ if "-sw" in sys.argv:
     flags ^= pygame.SWSURFACE
 
 use_rle = True
-
-if "-hw" in sys.argv:
-    flags ^= pygame.HWSURFACE
-    use_rle = False
 
 if "-scaled" in sys.argv:
     flags ^= pygame.SCALED

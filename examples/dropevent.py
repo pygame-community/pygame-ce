@@ -12,9 +12,6 @@ Uses these events:
 """
 import pygame
 
-if pygame.get_sdl_version() < (2, 0, 0):
-    raise Exception("This example requires SDL2.")
-
 pygame.init()
 
 

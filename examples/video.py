@@ -12,10 +12,6 @@ Experimental!
 import os
 import pygame
 
-if pygame.get_sdl_version()[0] < 2:
-    raise SystemExit(
-        "This example requires pygame 2 and SDL2. _sdl2 is experimental and will change."
-    )
 from pygame._sdl2 import Window, Texture, Image, Renderer, get_drivers, messagebox
 
 data_dir = os.path.join(os.path.split(os.path.abspath(__file__))[0], "data")

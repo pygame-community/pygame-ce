@@ -24,7 +24,7 @@ main_dir = os.path.split(os.path.abspath(__file__))[0]
 def main():
     # initialize and setup screen
     pygame.init()
-    screen = pygame.display.set_mode((640, 480), pygame.HWSURFACE | pygame.DOUBLEBUF)
+    screen = pygame.display.set_mode((640, 480), pygame.DOUBLEBUF)
 
     # load image and quadruple
     imagename = os.path.join(main_dir, "data", "liquid.bmp")
