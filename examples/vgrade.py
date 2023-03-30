@@ -86,13 +86,15 @@ def main():
     screen = pygame.display.set_mode(size, pygame.NOFRAME, 0)
 
     pygame.event.set_blocked(pygame.MOUSEMOTION)  # keep our queue cleaner
-    pygame.time.set_timer(pygame.USEREVENT, 500)
+
+    TIMER_EVENT = pygame.event.custom_type()
+    pygame.time.set_timer(TIMER_EVENT, 500)
 
     while True:
         event = pygame.event.wait()
         if event.type in (pygame.QUIT, pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
             break
-        elif event.type == pygame.USEREVENT:
+        elif event.type == TIMER_EVENT:
             DisplayGradient(screen)
 
     pygame.quit()

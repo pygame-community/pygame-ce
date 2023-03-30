@@ -103,6 +103,8 @@ def show_usage_message():
 def main(file_path):
     """Play an audio file with pygame.mixer.music"""
 
+    EVENT_LOOP_TICK = pygame.event.custom_type()
+
     with Window(file_path) as win:
         win.write_lines("Loading ...", -1)
         pygame.mixer.init(frequency=44100)
@@ -111,7 +113,7 @@ def main(file_path):
             pygame.mixer.music.load(file_path)
 
             # Make sure the event loop ticks over at least every 0.5 seconds.
-            pygame.time.set_timer(pygame.USEREVENT, 500)
+            pygame.time.set_timer(EVENT_LOOP_TICK, 500)
 
             pygame.mixer.music.play()
             win.write_lines("Playing ...\n", -1)
@@ -151,7 +153,7 @@ def main(file_path):
                     paused = False
                     pygame.mixer.music.stop()
                     # get_busy() will now return False.
-            pygame.time.set_timer(pygame.USEREVENT, 0)
+            pygame.time.set_timer(EVENT_LOOP_TICK, 0)
         finally:
             pygame.mixer.quit()
     pygame.quit()

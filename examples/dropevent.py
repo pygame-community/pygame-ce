@@ -12,9 +12,6 @@ Uses these events:
 """
 import pygame
 
-if pygame.get_sdl_version() < (2, 0, 0):
-    raise Exception("This example requires SDL2.")
-
 pygame.init()
 
 
@@ -22,7 +19,7 @@ def main():
     Running = True
     surf = pygame.display.set_mode((640, 480))
     font = pygame.font.SysFont("Arial", 24)
-    clock = pygame.time.Clock()
+    clock = pygame.Clock()
 
     spr_file_text = font.render("Feed me some file or image!", 1, (255, 255, 255))
     spr_file_text_rect = spr_file_text.get_rect()

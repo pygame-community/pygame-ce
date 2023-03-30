@@ -73,7 +73,7 @@ def main():
 
     screen.blit(im1, (0, 0))
     pygame.display.flip()
-    clock = pygame.time.Clock()
+    clock = pygame.Clock()
     print("one pixel is:%s:" % [im1.get_at((0, 0))])
 
     going = True

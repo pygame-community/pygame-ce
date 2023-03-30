@@ -148,7 +148,7 @@ def main():
 
     # Put Text On The Background, Centered
     if pygame.font:
-        font = pygame.font.Font(None, 64)
+        font = pygame.Font(None, 64)
         text = font.render("Pummel The Chimp, And Win $$$", True, (10, 10, 10))
         textpos = text.get_rect(centerx=background.get_width() / 2, y=10)
         background.blit(text, textpos)
@@ -163,7 +163,7 @@ def main():
     chimp = Chimp()
     fist = Fist()
     allsprites = pygame.sprite.RenderPlain((chimp, fist))
-    clock = pygame.time.Clock()
+    clock = pygame.Clock()
 
     # Main Loop
     going = True

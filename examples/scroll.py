@@ -148,7 +148,7 @@ def main(image_file=None):
         # the direction we will scroll in.
         direction = None
 
-        clock = pygame.time.Clock()
+        clock = pygame.Clock()
         clock.tick()
 
         going = True
