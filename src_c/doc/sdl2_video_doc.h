@@ -51,7 +51,6 @@
 #define DOC_SDL2_VIDEO_RENDERER "Renderer(window, index=-1, accelerated=-1, vsync=False, target_texture=False) -> Renderer\nCreate a 2D rendering context for a window."
 #define DOC_SDL2_VIDEO_RENDERER_FROMWINDOW "from_window(window) -> Renderer\nEasy way to create a Renderer."
 #define DOC_SDL2_VIDEO_RENDERER_DRAWBLENDMODE "draw_blend_mode -> int\nGets and sets the blend mode used by the drawing functions."
-#define DOC_SDL2_VIDEO_RENDERER_DRAWCOLOR "draw_color -> Color\nGets and sets the color used by the drawing functions."
 #define DOC_SDL2_VIDEO_RENDERER_CLEAR "clear() -> None\nClear the current rendering target with the drawing color."
 #define DOC_SDL2_VIDEO_RENDERER_PRESENT "present() -> None\nUpdates the screen with any new rendering since previous call."
 #define DOC_SDL2_VIDEO_RENDERER_GETVIEWPORT "get_viewport() -> Rect\nReturns the drawing area on the target."
