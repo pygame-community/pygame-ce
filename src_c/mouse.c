@@ -468,14 +468,14 @@ mouse_get_relative_mode(PyObject *self)
 }
 
 static PyObject *
-mouse_set_relative_mode(PyObject *self,PyObject* arg)
-{   
+mouse_set_relative_mode(PyObject *self, PyObject *arg)
+{
     SDL_bool mode = SDL_FALSE;
-    if(PyObject_IsTrue(arg)){
+    if (PyObject_IsTrue(arg)) {
         mode = SDL_TRUE;
     }
-    if(SDL_SetRelativeMouseMode(mode)){
-        return RAISE(pgExc_SDLError,SDL_GetError());
+    if (SDL_SetRelativeMouseMode(mode)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
 }
@@ -494,9 +494,9 @@ static PyMethodDef _mouse_methods[] = {
      "set_system_cursor(constant) -> None\nset the mouse cursor to a system "
      "variant"},
     {"get_relative_mode", (PyCFunction)mouse_get_relative_mode, METH_NOARGS,
-     DOC_MOUSE_GETFOCUSED},
-    {"set_relative_mode", (PyCFunction)mouse_set_relative_mode, METH_NOARGS,
-     DOC_MOUSE_GETFOCUSED},
+     DOC_MOUSE_GETRELATIVEMODE},
+    {"set_relative_mode", (PyCFunction)mouse_set_relative_mode, METH_O,
+     DOC_MOUSE_SETRELATIVEMODE},
     {"_set_cursor", (PyCFunction)mouse_set_cursor,
      METH_VARARGS | METH_KEYWORDS, "Internal API for mouse.set_cursor"},
     {"_get_cursor", (PyCFunction)mouse_get_cursor, METH_NOARGS,

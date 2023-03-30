@@ -216,4 +216,28 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 
    .. ## pygame.mouse.get_cursor ##
 
+.. function:: get_relative_mode
+
+   | :sl:`query whether relative mouse mode is enabled`
+   | :sg:`get_relative_mode() -> bool`
+
+   Query whether relative mouse mode is enabled.
+
+   .. ## pygame.mouse.get_relative_mode ##
+
+.. function:: set_relative_mode
+
+   | :sl:`set relative mouse mode`
+   | :sg:`set_relative_mode(enable) -> None`
+
+   While the mouse is in relative mode, the cursor is hidden, and the driver
+   will try to report continuous motion in the current window. Only relative
+   motion events will be delivered, the mouse position will not change.
+
+   Note that this function will not be able to provide continuous relative
+   motion when used over Microsoft Remote Desktop, instead motion is limited
+   to the bounds of the screen.
+
+   .. ## pygame.mouse.set_relative_mode ##
+
 .. ## pygame.mouse ##
