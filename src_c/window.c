@@ -200,12 +200,11 @@ window_set_icon(pgWindowObject *self, PyObject *arg)
 static PyObject *
 window_set_grab(pgWindowObject *self, PyObject *arg)
 {
-    if (PyObject_IsTrue(arg)) {
-        SDL_SetWindowGrab(self->win, SDL_TRUE);
-    }
-    else {
-        SDL_SetWindowGrab(self->win, SDL_FALSE);
-    }
+    int enable = PyObject_IsTrue(arg);
+    if (enable == -1)
+        return NULL;
+
+    SDL_SetWindowGrab(self->win, enable);
 
     Py_RETURN_NONE;
 }
@@ -238,12 +237,11 @@ window_get_title(pgWindowObject *self)
 static PyObject *
 window_set_resizable(pgWindowObject *self, PyObject *arg)
 {
-    if (PyObject_IsTrue(arg)) {
-        SDL_SetWindowResizable(self->win, SDL_TRUE);
-    }
-    else {
-        SDL_SetWindowResizable(self->win, SDL_FALSE);
-    }
+    int enable = PyObject_IsTrue(arg);
+    if (enable == -1)
+        return NULL;
+
+    SDL_SetWindowResizable(self->win, enable);
 
     Py_RETURN_NONE;
 }
@@ -258,12 +256,11 @@ window_get_resizable(pgWindowObject *self)
 static PyObject *
 window_set_borderless(pgWindowObject *self, PyObject *arg)
 {
-    if (PyObject_IsTrue(arg)) {
-        SDL_SetWindowBordered(self->win, SDL_FALSE);
-    }
-    else {
-        SDL_SetWindowBordered(self->win, SDL_TRUE);
-    }
+    int enable = PyObject_IsTrue(arg);
+    if (enable == -1)
+        return NULL;
+
+    SDL_SetWindowBordered(self->win, !enable);
 
     Py_RETURN_NONE;
 }
@@ -399,12 +396,11 @@ window_get_surface(pgWindowObject *self)
 static PyObject *
 window_set_always_on_top(pgWindowObject *self, PyObject *arg)
 {
-    if (PyObject_IsTrue(arg)) {
-        SDL_SetWindowAlwaysOnTop(self->win, SDL_TRUE);
-    }
-    else {
-        SDL_SetWindowAlwaysOnTop(self->win, SDL_FALSE);
-    }
+    int enable = PyObject_IsTrue(arg);
+    if (enable == -1)
+        return NULL;
+
+    SDL_SetWindowAlwaysOnTop(self->win, enable);
 
     Py_RETURN_NONE;
 }
