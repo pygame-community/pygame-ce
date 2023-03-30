@@ -19,21 +19,21 @@ import sys
 #   so it doesn't need a windowing system.
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-import pygame as pg
+import pygame
 
-# Some platforms need to init the display for some parts of pg.
-pg.display.init()
-screen = pg.display.set_mode((1, 1))
+# Some platforms need to init the display for some parts of pygame.
+pygame.display.init()
+screen = pygame.display.set_mode((1, 1))
 
 
 def scaleit(fin, fout, w, h):
-    i = pg.image.load(fin)
+    i = pygame.image.load(fin)
 
-    if hasattr(pg.transform, "smoothscale"):
-        scaled_image = pg.transform.smoothscale(i, (w, h))
+    if hasattr(pygame.transform, "smoothscale"):
+        scaled_image = pygame.transform.smoothscale(i, (w, h))
     else:
-        scaled_image = pg.transform.scale(i, (w, h))
-    pg.image.save(scaled_image, fout)
+        scaled_image = pygame.transform.scale(i, (w, h))
+    pygame.image.save(scaled_image, fout)
 
 
 def main(fin, fout, w, h):
