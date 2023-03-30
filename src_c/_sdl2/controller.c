@@ -18,8 +18,12 @@ typedef struct pgControllerObject {
 
 static pgControllerObject *_first_controller = NULL;
 
+#if defined(_MSC_VER)
+#define strtok_r strtok_s
+#endif
+
 static PyObject *
-init(PyObject *module, PyObject *_null)
+controller_module_init(PyObject *module, PyObject *_null)
 {
     if (!SDL_WasInit(SDL_INIT_GAMECONTROLLER)) {
         if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER)) {
@@ -32,7 +36,7 @@ init(PyObject *module, PyObject *_null)
 }
 
 static PyObject *
-quit(PyObject *module, PyObject *_null)
+controller_module_quit(PyObject *module, PyObject *_null)
 {
     pgControllerObject *cur = _first_controller;
 
@@ -51,19 +55,20 @@ quit(PyObject *module, PyObject *_null)
 }
 
 static void
-_auto_quit(void)
+_controller_module_auto_quit(void)
 {
-    quit(NULL, NULL);
+    controller_module_quit(NULL, NULL);
 }
 
 static PyObject *
-get_init(PyObject *module, PyObject *_null)
+controller_module_get_init(PyObject *module, PyObject *_null)
 {
     return PyBool_FromLong(SDL_WasInit(SDL_INIT_GAMECONTROLLER) != 0);
 }
 
 static PyObject *
-is_controller(PyObject *module, PyObject *args, PyObject *kwargs)
+controller_module_is_controller(PyObject *module, PyObject *args,
+                                PyObject *kwargs)
 {
     int device_index;
     static char *keywords[] = {"device_index", NULL};
@@ -78,7 +83,7 @@ is_controller(PyObject *module, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
-get_count(PyObject *module, PyObject *_null)
+controller_module_get_count(PyObject *module, PyObject *_null)
 {
     CONTROLLER_INIT_CHECK();
 
@@ -91,13 +96,15 @@ get_count(PyObject *module, PyObject *_null)
 }
 
 static PyMethodDef _controller_module_methods[] = {
-    {"init", (PyCFunction)init, METH_NOARGS, DOC_SDL2_CONTROLLER_INIT},
-    {"quit", (PyCFunction)quit, METH_NOARGS, DOC_SDL2_CONTROLLER_QUIT},
-    {"get_init", (PyCFunction)get_init, METH_NOARGS,
+    {"init", (PyCFunction)controller_module_init, METH_NOARGS,
+     DOC_SDL2_CONTROLLER_INIT},
+    {"quit", (PyCFunction)controller_module_quit, METH_NOARGS,
+     DOC_SDL2_CONTROLLER_QUIT},
+    {"get_init", (PyCFunction)controller_module_get_init, METH_NOARGS,
      DOC_SDL2_CONTROLLER_GETINIT},
-    {"is_controller", (PyCFunction)is_controller, METH_VARARGS | METH_KEYWORDS,
-     DOC_SDL2_CONTROLLER_ISCONTROLLER},
-    {"get_count", (PyCFunction)get_count, METH_NOARGS,
+    {"is_controller", (PyCFunction)controller_module_is_controller,
+     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_CONTROLLER_ISCONTROLLER},
+    {"get_count", (PyCFunction)controller_module_get_count, METH_NOARGS,
      DOC_SDL2_CONTROLLER_GETCOUNT},
     {NULL, NULL, 0, NULL}};
 
@@ -237,9 +244,9 @@ controller_get_mapping(pgControllerObject *self, PyObject *_null)
         goto err;
     }
 
-    token = SDL_strtokr(mapping, ",", &saveptr);
+    token = strtok_r(mapping, ",", &saveptr);
     while (token != NULL) {
-        key = SDL_strtokr(token, ":", &value);
+        key = strtok_r(token, ":", &value);
 
         if (value[0] != '\0') {
             value_obj = PyUnicode_FromString(value);
@@ -579,7 +586,7 @@ MODINIT_DEFINE(controller)
     /* note: whenever this module gets released from _sdl2, base.c _pg_quit
      * should should quit the controller module automatically, instead of
      * doing this */
-    pg_RegisterQuit(_auto_quit);
+    pg_RegisterQuit(_controller_module_auto_quit);
 
     return module;
 }
