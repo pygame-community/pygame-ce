@@ -7,9 +7,10 @@
 // #include "doc/window_doc.h"
 
 PyObject *_window_list = NULL;
+static PyTypeObject pgWindow_Type;
 
-static PyObject *
-window_set_modal_for(pgWindowObject *self, PyObject *arg);
+#define pgWindow_Check(x) \
+    (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
 
 static PyObject *
 get_windows(PyObject *self)
@@ -137,6 +138,19 @@ static PyObject *
 window_minimize(pgWindowObject *self)
 {
     SDL_MinimizeWindow(self->win);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+window_set_modal_for(pgWindowObject *self, PyObject *arg)
+{
+    if (!pgWindow_Check(arg)) {
+        return RAISE(PyExc_TypeError,
+                     "Argument to set_modal_for must be a Window.");
+    }
+    if (!SDL_SetWindowModalFor(self->win, ((pgWindowObject *)arg)->win)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
     Py_RETURN_NONE;
 }
 
@@ -513,22 +527,6 @@ static PyTypeObject pgWindow_Type = {
     .tp_init = (initproc)window_init,
     .tp_new = PyType_GenericNew,
 };
-
-#define pgWindow_Check(x) \
-    (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
-
-static PyObject *
-window_set_modal_for(pgWindowObject *self, PyObject *arg)
-{
-    if (!pgWindow_Check(arg)) {
-        return RAISE(PyExc_TypeError,
-                     "Argument to set_modal_for must be a Window.");
-    }
-    if (!SDL_SetWindowModalFor(self->win, ((pgWindowObject *)arg)->win)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
-    }
-    Py_RETURN_NONE;
-}
 
 static PyMethodDef _window_methods[] = {
     {"get_grabbed_window", (PyCFunction)get_grabbed_window, METH_NOARGS,
