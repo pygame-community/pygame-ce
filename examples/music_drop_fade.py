@@ -15,7 +15,7 @@ Keyboard Controls:
 * Press any other button to skip to the next music file in the list
 """
 
-import pygame as pg
+import pygame
 import os, sys
 
 VOLUME_CHANGE_AMOUNT = 0.02  # how fast should up and down arrows change the volume?
@@ -58,15 +58,15 @@ def play_file(filename):
 
     if add_file(filename):
         try:  # we must do this in case the file is not a valid audio file
-            pg.mixer.music.load(music_file_list[-1])
-        except pg.error as e:
+            pygame.mixer.music.load(music_file_list[-1])
+        except pygame.error as e:
             print(e)  # print description such as 'Not an Ogg Vorbis audio stream'
             if filename in music_file_list:
                 music_file_list.remove(filename)
                 print(f"{filename} removed from file list")
             return
-        pg.mixer.music.play(fade_ms=4000)
-        pg.mixer.music.set_volume(volume)
+        pygame.mixer.music.play(fade_ms=4000)
+        pygame.mixer.music.set_volume(volume)
 
         if filename.rpartition(".")[2].lower() in music_can_seek:
             print("file supports seeking")
@@ -74,7 +74,7 @@ def play_file(filename):
         else:
             print("file does not support seeking")
             starting_pos = -1
-        pg.mixer.music.set_endevent(MUSIC_DONE)
+        pygame.mixer.music.set_endevent(MUSIC_DONE)
 
 
 def play_next():
@@ -89,8 +89,8 @@ def play_next():
         nxt = music_file_list.pop(0)
 
         try:
-            pg.mixer.music.load(nxt)
-        except pg.error as e:
+            pygame.mixer.music.load(nxt)
+        except pygame.error as e:
             print(e)
             print(f"{nxt} removed from file list")
 
@@ -98,9 +98,9 @@ def play_next():
         print("starting next song: ", nxt)
     else:
         nxt = music_file_list[0]
-    pg.mixer.music.play(fade_ms=4000)
-    pg.mixer.music.set_volume(volume)
-    pg.mixer.music.set_endevent(MUSIC_DONE)
+    pygame.mixer.music.play(fade_ms=4000)
+    pygame.mixer.music.set_volume(volume)
+    pygame.mixer.music.set_endevent(MUSIC_DONE)
 
     if nxt.rpartition(".")[2].lower() in music_can_seek:
         starting_pos = 0
@@ -114,7 +114,7 @@ def draw_text_line(text, y=0):
     The text will be centered horizontally at the given y position
     The text's height is added to y and returned to the caller
     """
-    screen = pg.display.get_surface()
+    screen = pygame.display.get_surface()
     surf = font.render(text, 1, (255, 255, 255))
     y += surf.get_height()
     x = (screen.get_width() - surf.get_width()) / 2
@@ -133,14 +133,14 @@ def change_music_position(amount):
     global starting_pos
 
     if starting_pos >= 0:  # will be -1 unless play_file() was OGG or MP3
-        played_for = pg.mixer.music.get_pos() / 1000.0
+        played_for = pygame.mixer.music.get_pos() / 1000.0
         old_pos = starting_pos + played_for
         starting_pos = old_pos + amount
-        pg.mixer.music.play(start=starting_pos)
+        pygame.mixer.music.play(start=starting_pos)
         print(f"jumped from {old_pos} to {starting_pos}")
 
 
-MUSIC_DONE = pg.event.custom_type()  # event to be set as mixer.music.set_endevent()
+MUSIC_DONE = pygame.event.custom_type()  # event to be set as mixer.music.set_endevent()
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 data_dir = os.path.join(main_dir, "data")
 
@@ -162,14 +162,16 @@ def main():
     # the change_volume variable will be set by key down events and cleared by key up events
     change_volume = 0
 
-    pg.init()
-    pg.display.set_mode((640, 480))
-    font = pg.font.SysFont("Arial", 24)
-    clock = pg.time.Clock()
+    pygame.init()
+    pygame.display.set_mode((640, 480))
+    font = pygame.font.SysFont("Arial", 24)
+    clock = pygame.time.Clock()
 
-    pg.scrap.init()
-    pg.SCRAP_TEXT = pg.scrap.get_types()[0]  # TODO remove when scrap module is fixed
-    clipped = pg.scrap.get(pg.SCRAP_TEXT).decode("UTF-8")
+    pygame.scrap.init()
+    pygame.SCRAP_TEXT = pygame.scrap.get_types()[
+        0
+    ]  # TODO remove when scrap module is fixed
+    clipped = pygame.scrap.get(pygame.SCRAP_TEXT).decode("UTF-8")
     # store the current text from the clipboard TODO remove decode
 
     # add the command line arguments to the  music_file_list
@@ -191,58 +193,58 @@ def main():
     It will respond to drag and drop, clipboard changes, and key presses
     """
     while running:
-        for ev in pg.event.get():
-            if ev.type == pg.QUIT:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
                 running = False
-            elif ev.type == pg.DROPTEXT:
+            elif ev.type == pygame.DROPTEXT:
                 play_file(ev.text)
-            elif ev.type == pg.DROPFILE:
+            elif ev.type == pygame.DROPFILE:
                 play_file(ev.file)
             elif ev.type == MUSIC_DONE:
                 play_next()
-            elif ev.type == pg.KEYDOWN:
-                if ev.key == pg.K_ESCAPE:
+            elif ev.type == pygame.KEYDOWN:
+                if ev.key == pygame.K_ESCAPE:
                     running = False  # exit loop
-                elif ev.key in (pg.K_SPACE, pg.K_RETURN):
+                elif ev.key in (pygame.K_SPACE, pygame.K_RETURN):
                     if paused:
-                        pg.mixer.music.unpause()
+                        pygame.mixer.music.unpause()
                         paused = False
                     else:
-                        pg.mixer.music.pause()
+                        pygame.mixer.music.pause()
                         paused = True
-                elif ev.key == pg.K_UP:
+                elif ev.key == pygame.K_UP:
                     change_volume = VOLUME_CHANGE_AMOUNT
-                elif ev.key == pg.K_DOWN:
+                elif ev.key == pygame.K_DOWN:
                     change_volume = -VOLUME_CHANGE_AMOUNT
-                elif ev.key == pg.K_RIGHT:
+                elif ev.key == pygame.K_RIGHT:
                     change_music_position(+5)
-                elif ev.key == pg.K_LEFT:
+                elif ev.key == pygame.K_LEFT:
                     change_music_position(-5)
 
                 else:
                     play_next()
 
-            elif ev.type == pg.KEYUP:
-                if ev.key in (pg.K_UP, pg.K_DOWN):
+            elif ev.type == pygame.KEYUP:
+                if ev.key in (pygame.K_UP, pygame.K_DOWN):
                     change_volume = 0
 
         # is the user holding up or down?
         if change_volume:
             volume += change_volume
             volume = min(max(0, volume), 1)  # volume should be between 0 and 1
-            pg.mixer.music.set_volume(volume)
+            pygame.mixer.music.set_volume(volume)
             print("volume:", volume)
 
         # TODO remove decode when SDL2 scrap is fixed
-        new_text = pg.scrap.get(pg.SCRAP_TEXT).decode("UTF-8")
+        new_text = pygame.scrap.get(pygame.SCRAP_TEXT).decode("UTF-8")
         if new_text != clipped:  # has the clipboard changed?
             clipped = new_text
             play_file(clipped)  # try to play the file if it has
 
-        pg.display.flip()
+        pygame.display.flip()
         clock.tick(9)  # keep CPU use down by updating screen less often
 
-    pg.quit()
+    pygame.quit()
 
 
 if __name__ == "__main__":

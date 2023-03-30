@@ -7,6 +7,9 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
+**English** `简体中文`_
+----
+
 Pygame_ is a free and open-source cross-platform library
 for the development of multimedia applications like video games using Python.
 It uses the `Simple DirectMedia Layer library`_ and several other
@@ -179,8 +182,8 @@ See docs/licenses for licenses of dependencies.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.1.4.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.1.4...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.2.0.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.2.0...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
@@ -194,3 +197,5 @@ See docs/licenses for licenses of dependencies.
 .. _Compilation wiki page: https://www.pygame.org/wiki/Compilation
 .. _docs page: https://pyga.me/docs
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
+
+.. _简体中文: ./docs/readmes/README.zh-cn.rst

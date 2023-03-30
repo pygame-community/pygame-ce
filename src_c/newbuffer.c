@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Module newbuffer.c, Copyright (C) 2013  Lenard Lindstrom
 
   This library is free software; you can redistribute it and/or
