@@ -135,7 +135,7 @@ _pg_remove_event_timer(pgEventObject *ev)
         else
             pg_event_timer = hunt->next;
         Py_DECREF(hunt->event);
-        PyMem_Del(hunt);
+        PyMem_Free(hunt);
     }
     /* Chances of it failing here are next to zero, dont do anything */
     SDL_UnlockMutex(timermutex);
