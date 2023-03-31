@@ -55,7 +55,8 @@ window_destroy(pgWindowObject *self)
     // set the surface to dummy
     // to prevent segfaut when writing the surface after
     // the window is destroyed
-    self->surf->surf = dummy_surface;
+    if (self->surf)
+        self->surf->surf = dummy_surface;
 
     self->surf = NULL;
     self->win = NULL;
