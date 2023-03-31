@@ -271,7 +271,7 @@
    .. method:: clear
 
       | :sl:`Clear the current rendering target with the drawing color.`
-      | :sg:`clear() -> None`
+      | :sg:`clear(color=(0, 0, 0, 255)) -> None`
 
    .. method:: present
 
@@ -311,22 +311,22 @@
    .. method:: draw_line
 
       | :sl:`Draws a line.`
-      | :sg:`draw_line(p1, p2) -> None`
+      | :sg:`draw_line(p1, p2, color=(255, 255, 255, 255)) -> None`
 
    .. method:: draw_point
 
       | :sl:`Draws a point.`
-      | :sg:`draw_point(point) -> None`
+      | :sg:`draw_point(point, color=(255, 255, 255, 255)) -> None`
 
    .. method:: draw_rect
 
       | :sl:`Draws a rectangle.`
-      | :sg:`draw_rect(rect)-> None`
+      | :sg:`draw_rect(rect, color=(255, 255, 255, 255))-> None`
 
    .. method:: fill_rect
 
       | :sl:`Fills a rectangle.`
-      | :sg:`fill_rect(rect)-> None`
+      | :sg:`fill_rect(rect, color=(255, 255, 255, 255))-> None`
 
    .. method:: to_surface
 
@@ -336,19 +336,19 @@
    .. method:: draw_triangle
 
       | :sl:`Draws a triangle.`
-      | :sg:`draw_triangle(p1, p2, p3) -> None`
+      | :sg:`draw_triangle(p1, p2, p3, color=(255, 255, 255, 255)) -> None`
 
    .. method:: fill_triangle
 
       | :sl:`Fills a triangle.`
-      | :sg:`fill_triangle(p1, p2, p3) -> None`
+      | :sg:`fill_triangle(p1, p2, p3, color=(255, 255, 255, 255)) -> None`
 
    .. method:: draw_quad
 
       | :sl:`Draws a quad.`
-      | :sg:`draw_quad(p1, p2, p3, p4) -> None`
+      | :sg:`draw_quad(p1, p2, p3, p4, color=(255, 255, 255, 255)) -> None`
 
    .. method:: fill_quad
 
       | :sl:`Fills a quad.`
-      | :sg:`fill_quad(p1, p2, p3, p4) -> None`
+      | :sg:`fill_quad(p1, p2, p3, p4, color=(255, 255, 255, 255)) -> None`

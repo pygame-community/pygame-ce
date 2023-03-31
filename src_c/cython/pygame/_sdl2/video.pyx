@@ -1138,11 +1138,18 @@ cdef class Renderer:
         if res < 0:
             raise error()
 
-    def clear(self):
-        """ Clear the current rendering target with the drawing color.
+    def clear(self, color=(0, 0, 0, 255)):
+        """ Clear the current rendering target with the given color.
         """
         # https://wiki.libsdl.org/SDL_RenderClear
-        cdef int res = SDL_RenderClear(self._renderer)
+        cdef int res = SDL_SetRenderDrawColor(self._renderer,
+                                              color[0],
+                                              color[1],
+                                              color[2],
+                                              color[3])
+        if res < 0:
+            raise error()
+        res = SDL_RenderClear(self._renderer)
         if res < 0:
             raise error()
 
