@@ -1,5 +1,6 @@
 import unittest
 import pygame
+import os
 
 pygame.init()
 
@@ -45,23 +46,39 @@ class WindowTypeTest(unittest.TestCase):
     def setUp(self):
         self.win = pygame.window.Window()
 
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER") == "dummy",
+        "requires the SDL_VIDEODRIVER to be a non dummy value",
+    )
     def test_grab(self):
         self.win.set_grab(1)
         self.assertTrue(self.win.get_grab())
         self.win.set_grab(0)
         self.assertFalse(self.win.get_grab())
 
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER") == "dummy",
+        "requires the SDL_VIDEODRIVER to be a non dummy value",
+    )
     def test_title(self):
         title = "Hello_World你好世界こにじわ"
         self.win.set_title(title)
         self.assertEqual(self.win.get_title(), title)
 
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER") == "dummy",
+        "requires the SDL_VIDEODRIVER to be a non dummy value",
+    )
     def test_resizable(self):
         self.win.set_resizable(1)
         self.assertTrue(self.win.get_resizable())
         self.win.set_resizable(0)
         self.assertFalse(self.win.get_resizable())
 
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER") == "dummy",
+        "requires the SDL_VIDEODRIVER to be a non dummy value",
+    )
     def test_borderless(self):
         self.win.set_borderless(1)
         self.assertTrue(self.win.get_borderless())
@@ -88,6 +105,10 @@ class WindowTypeTest(unittest.TestCase):
         # raise TypeError if input is some random number instead of flag
         self.assertRaises(TypeError, lambda: self.win.set_position(123))
 
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER") == "dummy",
+        "requires the SDL_VIDEODRIVER to be a non dummy value",
+    )
     def test_opacity(self):
         self.win.set_opacity(0.5)
         self.assertEqual(self.win.get_opacity(), 0.5)
@@ -99,6 +120,10 @@ class WindowTypeTest(unittest.TestCase):
     @unittest.skipIf(
         pygame.version.get_sdl_version() < pygame.version.SDLVersion(2, 0, 16),
         "always_on_top requires SDL 2.0.16+",
+    )
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER") == "dummy",
+        "requires the SDL_VIDEODRIVER to be a non dummy value",
     )
     def test_always_on_top(self):
         self.win.set_always_on_top(1)
@@ -115,6 +140,10 @@ class WindowSurfaceTest(unittest.TestCase):
         self.win = pygame.window.Window()
         self.sf = self.win.get_surface()
 
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER") == "dummy",
+        "requires the SDL_VIDEODRIVER to be a non dummy value",
+    )
     def test_surface_auto_resize(self):
         size = (360, 360)
         self.win.set_size(size)
@@ -125,6 +154,9 @@ class WindowSurfaceTest(unittest.TestCase):
         size = (640, 640)
         self.win.set_size(size)
         self.assertTupleEqual(self.sf.get_size(), size)
+
+    def tearDown(self):
+        self.win.destroy()
 
 
 if __name__ == "__main__":
