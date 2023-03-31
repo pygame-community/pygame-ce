@@ -294,42 +294,40 @@ cdef class Window:
         surf.set_colorkey(0)
         self.set_icon(surf)
 
-    @property
-    def grab(self):
-        """ Window's input grab state (``True`` or ``False``).
+    def get_grab(self) -> bool:
+        """ Gets the Window's input grab state
+        """
+        return SDL_GetWindowGrab(self._win) != 0
+
+    def set_grab(self, enable:bool):
+        """ Sets the window's input grab state (``True`` or ``False``).
 
         Set it to ``True`` to grab, ``False`` to release.
 
         When input is grabbed the mouse is confined to the window.
         If the caller enables a grab while another window is currently grabbed,
         the other window loses its grab in favor of the caller's window.
-
-        :rtype: bool
         """
-        return SDL_GetWindowGrab(self._win) != 0
-
-    @grab.setter
-    def grab(self, bint grabbed):
         # https://wiki.libsdl.org/SDL_SetWindowGrab
-        SDL_SetWindowGrab(self._win, 1 if grabbed else 0)
+        SDL_SetWindowGrab(self._win, 1 if enable else 0)
 
-    @property
-    def relative_mouse(self):
-        """ Window's relative mouse motion state (``True`` or ``False``).
+    def get_relative_mouse_mode(self) -> bool:
+        """Gets the window's relative mouse motion state
+        """
+        return SDL_GetRelativeMouseMode()
+
+    def set_relative_mouse_mode(self, enable:bool):
+        """ Sets the window's relative mouse motion state (``True`` or ``False``).
+        
+        'While the mouse is in relative mode, the cursor is hidden,
+        and the driver will try to report continuous motion in the current window. 
+        Only relative motion events will be delivered, the mouse position will not change.'
+        ↑ says SDL Wiki
 
         Set it to ``True`` to enable, ``False`` to disable.
         If mouse.set_visible(True) is set the input will be grabbed,
         and the mouse will enter endless relative motion mode.
-
-        :rtype: bool
         """
-        return SDL_GetRelativeMouseMode()
-
-
-    @relative_mouse.setter
-    def relative_mouse(self, bint enable):
-        # https://wiki.libsdl.org/SDL_SetRelativeMouseMode
-        #SDL_SetWindowGrab(self._win, 1 if enable else 0)
         SDL_SetRelativeMouseMode(1 if enable else 0)
 
     def set_windowed(self):
@@ -363,15 +361,13 @@ cdef class Window:
         if SDL_SetWindowFullscreen(self._win, flags):
             raise error()
 
-    @property
-    def title(self):
+    def get_title(self) -> str:
         """ The title of the window or u"" if there is none.
         """
         # https://wiki.libsdl.org/SDL_GetWindowTitle
         return SDL_GetWindowTitle(self._win).decode('utf8')
 
-    @title.setter
-    def title(self, title):
+    def set_title(self, title:str):
         """ Set the window title.
 
         :param str title: the desired window title in UTF-8.
@@ -427,26 +423,26 @@ cdef class Window:
         """
         SDL_MinimizeWindow(self._win)
 
-    @property
-    def resizable(self):
-        """ Sets whether the window is resizable.
+    def get_resizable(self) -> bool:
+        """ Gets whether the window is resizable.
         """
         return SDL_GetWindowFlags(self._win) & _SDL_WINDOW_RESIZABLE != 0
 
-    @resizable.setter
-    def resizable(self, enabled):
-        SDL_SetWindowResizable(self._win, 1 if enabled else 0)
+    def set_resizable(self, enable:bool):
+        """ Sets whether the window is resizable.
+        """
+        SDL_SetWindowResizable(self._win, 1 if enable else 0)
 
-    @property
-    def borderless(self):
+    def get_borderless(self) -> bool:
+        """Gets whether the window is borderless.
+        """
+        return SDL_GetWindowFlags(self._win) & _SDL_WINDOW_BORDERLESS != 0
+
+    def set_borderless(self, enabled:bool):
         """ Add or remove the border from the actual window.
 
         .. note:: You can't change the border state of a fullscreen window.
         """
-        return SDL_GetWindowFlags(self._win) & _SDL_WINDOW_BORDERLESS != 0
-
-    @borderless.setter
-    def borderless(self, enabled):
         SDL_SetWindowBordered(self._win, 0 if enabled else 1)
 
     def set_icon(self, surface):
@@ -458,34 +454,35 @@ cdef class Window:
             raise TypeError('surface must be a Surface object')
         SDL_SetWindowIcon(self._win, pgSurface_AsSurface(surface))
 
-    @property
-    def id(self):
-        """ A unique window ID. *Read-only*.
-
-        :rtype: int
+    def get_window_id(self) -> int:
+        """ A unique window ID.
         """
         return SDL_GetWindowID(self._win)
 
-    @property
-    def size(self):
-        """ The size of the window's client area."""
+    def get_size(self) -> tuple:
+        """Get the size of the window's client area.
+        """
         cdef int w, h
         SDL_GetWindowSize(self._win, &w, &h)
         return (w, h)
 
-    @size.setter
-    def size(self, size):
+    def set_size(self, size):
+        """Set the size of the window's client area.
+        """
         SDL_SetWindowSize(self._win, size[0], size[1])
 
-    @property
-    def position(self):
-        """ Window's screen coordinates, or WINDOWPOS_CENTERED or WINDOWPOS_UNDEFINED"""
+    def get_position(self) -> tuple:
+        """ Gets the window's screen coordinates
+        """
         cdef int x, y
         SDL_GetWindowPosition(self._win, &x, &y)
         return (x, y)
 
-    @position.setter
-    def position(self, position):
+    def set_position(self, position):
+        """ Sets the window's screen coordinates (x, y).
+        The x or y can be set to WINDOWPOS_CENTERED
+        to center the window in x or y direction
+        """
         cdef int x, y
         if position == WINDOWPOS_UNDEFINED:
             x, y = WINDOWPOS_UNDEFINED, WINDOWPOS_UNDEFINED
@@ -495,25 +492,23 @@ cdef class Window:
             x, y = position
         SDL_SetWindowPosition(self._win, x, y)
 
-    @property
-    def opacity(self):
-        """ Window opacity. It ranges between 0.0 (fully transparent)
-        and 1.0 (fully opaque)."""
+    def get_opacity(self) -> float:
+        """ Get the window's opacity.
+        """
         cdef float opacity
         if SDL_GetWindowOpacity(self._win, &opacity):
             raise error()
         return opacity
 
-    @opacity.setter
-    def opacity(self, opacity):
+    def set_opacity(self, opacity:float):
+        """ Set the window's opacity. 
+        Opacity ranges between 0.0 (fully transparent) and 1.0 (fully opaque).
+        """
         if SDL_SetWindowOpacity(self._win, opacity):
             raise error()
 
-    @property
-    def display_index(self):
-        """ The index of the display associated with the window. *Read-only*.
-
-        :rtype: int
+    def get_display_index(self) -> int:
+        """ Gets the index of the display where the window is located.
         """
         cdef int index = SDL_GetWindowDisplayIndex(self._win)
         if index < 0:
@@ -652,8 +647,9 @@ cdef class Texture:
         if self._tex:
             SDL_DestroyTexture(self._tex)
 
-    @property
-    def alpha(self):
+    def get_alpha(self):
+        """Get the additional alpha value multiplied into draw operations.
+        """
         # https://wiki.libsdl.org/SDL_GetTextureAlphaMod
         cdef Uint8 alpha
         cdef int res = SDL_GetTextureAlphaMod(self._tex, &alpha)
@@ -662,15 +658,17 @@ cdef class Texture:
 
         return alpha
 
-    @alpha.setter
-    def alpha(self, Uint8 new_value):
+    def set_alpha(self, Uint8 new_value):
+        """Set an additional alpha value multiplied into draw operations.
+        """
         # https://wiki.libsdl.org/SDL_SetTextureAlphaMod
         cdef int res = SDL_SetTextureAlphaMod(self._tex, new_value)
         if res < 0:
             raise error()
 
-    @property
-    def blend_mode(self):
+    def get_blend_mode(self):
+        """Get the blend mode used for draw operations.
+        """
         # https://wiki.libsdl.org/SDL_GetTextureBlendMode
         cdef SDL_BlendMode blendMode
         cdef int res = SDL_GetTextureBlendMode(self._tex, &blendMode)
@@ -679,15 +677,17 @@ cdef class Texture:
 
         return blendMode
 
-    @blend_mode.setter
-    def blend_mode(self, blendMode):
+    def set_blend_mode(self, blendMode):
+        """Set the blend mode for a texture
+        """
         # https://wiki.libsdl.org/SDL_SetTextureBlendMode
         cdef int res = SDL_SetTextureBlendMode(self._tex, blendMode)
         if res < 0:
             raise error()
 
-    @property
-    def color(self):
+    def get_color(self):
+        """Get the additional color value multiplied into draw operations.
+        """
         # https://wiki.libsdl.org/SDL_GetTextureColorMod
         cdef int res = SDL_GetTextureColorMod(self._tex,
                                               &self._color.data[0],
@@ -698,8 +698,9 @@ cdef class Texture:
 
         return self._color
 
-    @color.setter
-    def color(self, new_value):
+    def set_color(self, new_value):
+        """Set an additional color value multiplied into draw operations.
+        """
         # https://wiki.libsdl.org/SDL_SetTextureColorMod
         cdef int res = SDL_SetTextureColorMod(self._tex,
                                               new_value[0],
@@ -945,7 +946,7 @@ cdef class Image:
 
         cdef Uint8[4] defaultColor = [255, 255, 255, 255]
         self._color = pgColor_NewLength(defaultColor, 3)
-        self.alpha = 255
+        self._alpha = 255
 
     def __init__(self, textureOrImage, srcrect=None):
         cdef SDL_Rect temp
@@ -957,7 +958,8 @@ cdef class Image:
         else:
             self.texture = textureOrImage
             self.srcrect = textureOrImage.get_rect()
-        self.blend_mode = textureOrImage.blend_mode
+        
+        self._blend_mode = textureOrImage.get_blend_mode()
 
         if srcrect is not None:
             rectptr = pgRect_FromObject(srcrect, &temp)
@@ -977,23 +979,19 @@ cdef class Image:
             temp.y += self.srcrect.y
             self.srcrect = pgRect_New(&temp)
 
-    @property
-    def color(self):
+    def get_color(self):
         return self._color
 
-    @color.setter
-    def color(self, new_color):
+    def set_color(self, new_color):
         self._color[:3] = new_color[:3]
 
-    @property
-    def origin(self):
+    def get_origin(self):
         if self._originptr == NULL:
             return None
         else:
             return (self._origin.x, self._origin.y)
 
-    @origin.setter
-    def origin(self, new_origin):
+    def set_origin(self, new_origin):
         if new_origin:
             self._origin.x = <int>new_origin[0]
             self._origin.y = <int>new_origin[1]
@@ -1003,6 +1001,18 @@ cdef class Image:
 
     def get_rect(self):
         return pgRect_New(&self.srcrect.r)
+    
+    def get_alpha(self):
+        return self._alpha
+    
+    def set_alpha(self,alpha):
+        self._alpha=int(alpha)
+    
+    def get_blend_mode(self):
+        return self._blend_mode
+    
+    def set_blend_mode(self,blend):
+        self._blend_mode=blend
 
     cpdef void draw(self, srcrect=None, dstrect=None):
         """ Copy a portion of the image to the rendering target.
@@ -1048,9 +1058,9 @@ cdef class Image:
                 else:
                     raise TypeError('dstrect must be a position, rect, or None')
 
-        self.texture.color = self._color
-        self.texture.alpha = self.alpha
-        self.texture.blend_mode = self.blend_mode
+        self.texture.set_color(self._color)
+        self.texture.set_alpha(self._alpha)
+        self.texture.set_blend_mode(self._blend_mode)
 
         self.texture.draw_internal(csrcrect, cdstrect, self.angle,
                                    self._originptr, self.flip_x, self.flip_y)
@@ -1118,8 +1128,9 @@ cdef class Renderer:
         if self._renderer:
             SDL_DestroyRenderer(self._renderer)
 
-    @property
-    def draw_blend_mode(self):
+    def get_draw_blend_mode(self):
+        """Get the blend mode used for drawing operations (Fill and Line).
+        """
         # https://wiki.libsdl.org/SDL_GetRenderDrawBlendMode
         cdef SDL_BlendMode blendMode
         cdef int res = SDL_GetRenderDrawBlendMode(self._renderer, &blendMode)
@@ -1128,22 +1139,21 @@ cdef class Renderer:
 
         return blendMode
 
-    @draw_blend_mode.setter
-    def draw_blend_mode(self, blendMode):
+    def set_draw_blend_mode(self, blendMode):
+        """Set the blend mode used for drawing operations (Fill and Line).
+        """
         # https://wiki.libsdl.org/SDL_SetRenderDrawBlendMode
         cdef int res = SDL_SetRenderDrawBlendMode(self._renderer, blendMode)
         if res < 0:
             raise error()
 
-    @property
-    def draw_color(self):
-        """ Color used by the drawing functions.
+    def get_draw_color(self):
+        """ Get the color used by the drawing functions.
         """
         return self._draw_color
 
-    @draw_color.setter
-    def draw_color(self, new_value):
-        """ color used by the drawing functions.
+    def set_draw_color(self, new_value):
+        """ Set color used by the drawing functions.
         """
         # https://wiki.libsdl.org/SDL_SetRenderDrawColor
         self._draw_color[:] = new_value
@@ -1181,29 +1191,33 @@ cdef class Renderer:
         SDL_RenderGetViewport(self._renderer, &rect)
         return pgRect_New(&rect)
 
-    @property
-    def logical_size(self):
+    def get_logical_size(self):
+        """Get the device independent resolution for rendering.
+        """
         cdef int w
         cdef int h
         SDL_RenderGetLogicalSize(self._renderer, &w, &h)
         return (w, h)
 
-    @logical_size.setter
-    def logical_size(self, size):
+    def set_logical_size(self, size):
+        """Set a device independent resolution for rendering.
+        """
         cdef int w = size[0]
         cdef int h = size[1]
         if (SDL_RenderSetLogicalSize(self._renderer, w, h) != 0):
             raise error()
 
-    @property
-    def scale(self):
+    def get_scale(self):
+        """Get the drawing scale for the current target.
+        """
         cdef float x
         cdef float y
         SDL_RenderGetScale(self._renderer, &x, &y)
         return (x, y)
 
-    @scale.setter
-    def scale(self, scale):
+    def set_scale(self, scale):
+        """Set a drawing scale for the current target.
+        """
         cdef float x = scale[0]
         cdef float y = scale[1]
         if (SDL_RenderSetScale(self._renderer, x, y) != 0):
@@ -1234,18 +1248,17 @@ cdef class Renderer:
         if SDL_RenderSetViewport(self._renderer, rectptr) < 0:
             raise error()
 
-
-    @property
-    def target(self):
-        """ The current render target. Set to ``None`` for the default target.
+    def get_target(self):
+        """ Get the current render target. Set to ``None`` for the default target.
 
         :rtype: Texture, None
         """
         # https://wiki.libsdl.org/SDL_GetRenderTarget
         return self._target
 
-    @target.setter
-    def target(self, newtarget):
+    def set_target(self, newtarget):
+        """Get the current render target. Set to ``None`` for the default target.
+        """
         # https://wiki.libsdl.org/SDL_SetRenderTarget
         if newtarget is None:
             self._target = None
