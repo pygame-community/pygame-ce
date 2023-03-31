@@ -6,9 +6,9 @@
 
 // #include "doc/window_doc.h"
 
-PyObject *_window_list = NULL;
 static PyTypeObject pgWindow_Type;
-SDL_Surface *dummy_surface = NULL;
+PyObject *_window_list = NULL;
+SDL_Surface *_dummy_surface = NULL;
 PyObject *_pg_display_quit = NULL;
 
 #define pgWindow_Check(x) \
@@ -57,7 +57,7 @@ window_destroy(pgWindowObject *self)
     // to prevent segfaut when writing the surface after
     // the window is destroyed
     if (self->surf)
-        self->surf->surf = dummy_surface;
+        self->surf->surf = _dummy_surface;
 
     self->surf = NULL;
     self->win = NULL;
@@ -759,7 +759,7 @@ MODINIT_DEFINE(window)
 
     SDL_AddEventWatch(_resize_event_watch, NULL);
 
-    dummy_surface =
+    _dummy_surface =
         SDL_CreateRGBSurface(0, 1, 1, 24, 0xff0000, 0xff00, 0xff, 0);
 
     c_api[0] = &pgWindow_Type;
