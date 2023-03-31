@@ -20,7 +20,7 @@ CIRCLE_RADIUS = 5
 
 pygame.init()
 screen = pygame.display.set_mode(SCREEN_SIZE)
-clock = pygame.time.Clock()
+clock = pygame.Clock()
 
 target_position = None
 balls = []

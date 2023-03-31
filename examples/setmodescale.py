@@ -17,7 +17,7 @@ pygame.init()
 
 RES = (160, 120)
 FPS = 30
-clock = pygame.time.Clock()
+clock = pygame.Clock()
 
 print("desktops", pygame.display.get_desktop_sizes())
 

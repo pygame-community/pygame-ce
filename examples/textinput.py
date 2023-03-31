@@ -190,7 +190,7 @@ class Game:
         pygame.init()
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
         pygame.display.set_caption(caption)
-        self.clock = pygame.time.Clock()
+        self.clock = pygame.Clock()
 
         # Text input
         # Set to true or add 'showevent' in argv to see IME and KEYDOWN events

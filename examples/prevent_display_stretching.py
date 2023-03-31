@@ -57,13 +57,13 @@ screen = pygame.display.set_mode(RESOLUTION)
 
 # Render message onto a surface
 pygame.font.init()
-font = pygame.font.Font(None, 36)
+font = pygame.Font(None, 36)
 msg_surf = font.render(msg, 1, TEXTCOLOR)
 res_surf = font.render("Intended resolution: %ix%i" % RESOLUTION, 1, TEXTCOLOR)
 
 # Control loop
 running = True
-clock = pygame.time.Clock()
+clock = pygame.Clock()
 counter = 0
 while running:
     for event in pygame.event.get():

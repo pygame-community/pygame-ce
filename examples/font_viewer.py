@@ -50,7 +50,7 @@ class FontViewer:
         pygame.display.set_mode((int(w * 0.8), int(h * 0.8)))
         self.font_size = h // 20
 
-        self.clock = pygame.time.Clock()
+        self.clock = pygame.Clock()
         self.y_offset = 0
         self.grabbed = False
         self.render_fonts("&N abcDEF789")
@@ -95,7 +95,7 @@ class FontViewer:
         total_height = 0
         max_width = 0
 
-        load_font = pygame.font.Font if path else pygame.font.SysFont
+        load_font = pygame.Font if path else pygame.font.SysFont
 
         # display instructions at the top of the display
         font = pygame.font.SysFont(pygame.font.get_default_font(), font_size)
@@ -143,7 +143,7 @@ class FontViewer:
         """
         pygame.display.set_caption("Font Viewer")
         display = pygame.display.get_surface()
-        clock = pygame.time.Clock()
+        clock = pygame.Clock()
         center = display.get_width() // 2
 
         while True:

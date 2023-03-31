@@ -103,7 +103,7 @@ def main():
     Contains the game variables and loop
     """
     screen = pygame.display.set_mode((600, 500))
-    clock = pygame.time.Clock()
+    clock = pygame.Clock()
     pygame.display.set_caption("Pygame Stars")
     particles = []
     # how many particles to spawn every frame

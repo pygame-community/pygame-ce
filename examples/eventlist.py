@@ -125,7 +125,7 @@ def main():
     pygame.display.set_caption("Mouse Focus Workout. h key for help")
 
     global font
-    font = pygame.font.Font(None, 26)
+    font = pygame.Font(None, 26)
 
     global img_on_off
     img_on_off.append(font.render("Off", 1, (0, 0, 0), (255, 50, 50)))
