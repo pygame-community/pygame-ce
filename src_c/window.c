@@ -8,6 +8,7 @@
 
 PyObject *_window_list = NULL;
 static PyTypeObject pgWindow_Type;
+SDL_Surface *dummy_surface = NULL;
 
 #define pgWindow_Check(x) \
     (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
@@ -49,6 +50,14 @@ window_destroy(pgWindowObject *self)
     }
 
     SDL_DestroyWindow(self->win);
+    Py_XDECREF(self->surf);
+
+    // set the surface to dummy
+    // to prevent segfaut when writing the surface after
+    // the window is destroyed
+    self->surf->surf = dummy_surface;
+
+    self->surf = NULL;
     self->win = NULL;
 
     for (i = 0; i < PySequence_Size(_window_list); i++) {
@@ -388,8 +397,34 @@ window_get_surface(pgWindowObject *self)
     if (!surf) {
         return NULL;
     }
+    self->surf = (pgSurfaceObject *)surf;
     Py_INCREF(surf);
     return surf;
+}
+
+static int SDLCALL
+_resize_event_watch(void *userdata, SDL_Event *event)
+{
+    pgWindowObject *item;
+    SDL_Window *event_window;
+    int i;
+    if ((event->type != SDL_WINDOWEVENT))
+        return 0;
+    if (event->window.event != SDL_WINDOWEVENT_SIZE_CHANGED)
+        return 0;
+    event_window = SDL_GetWindowFromID(event->window.windowID);
+
+    for (i = 0; i < PySequence_Size(_window_list); i++) {
+        item = PySequence_GetItem(_window_list, i);
+        Py_DECREF(item);
+        if (item->win == event_window) {
+            if (item->surf) {
+                item->surf->surf = SDL_GetWindowSurface(item->win);
+            }
+            return 0;
+        }
+    }
+    return 0;
 }
 
 #if SDL_VERSION_ATLEAST(2, 0, 16)
@@ -493,6 +528,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     }
     self->win = _win;
     self->is_from_display = SDL_FALSE;
+    self->surf = NULL;
 
     SDL_SetWindowData(_win, "pg_window", self);
 
@@ -694,6 +730,11 @@ MODINIT_DEFINE(window)
         Py_DECREF(module);
         return NULL;
     }
+
+    SDL_AddEventWatch(_resize_event_watch, NULL);
+
+    dummy_surface =
+        SDL_CreateRGBSurface(0, 1, 1, 24, 0xff0000, 0xff00, 0xff, 0);
 
     c_api[0] = &pgWindow_Type;
     apiobj = encapsulate_api(c_api, "window");
