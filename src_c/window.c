@@ -9,6 +9,7 @@
 PyObject *_window_list = NULL;
 static PyTypeObject pgWindow_Type;
 SDL_Surface *dummy_surface = NULL;
+PyObject *pg_display_quit = NULL;
 
 #define pgWindow_Check(x) \
     (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
@@ -46,7 +47,7 @@ window_destroy(pgWindowObject *self)
     PyObject *item;
 
     if (!self->win) {
-        Py_RETURN_NONE;
+        return RAISE(pgExc_SDLError, "Invalid window");
     }
 
     SDL_DestroyWindow(self->win);
@@ -66,10 +67,19 @@ window_destroy(pgWindowObject *self)
         if ((PyObject *)self == item) {
             PySequence_DelItem(_window_list, i);
             Py_DECREF(self);
-            Py_RETURN_NONE;
+            break;
         }
         Py_DECREF(item);
     }
+
+    // if the window is from display module
+    // quit the display module
+    if (self->is_from_display) {
+        if (!PyObject_CallObject(pg_display_quit, NULL)) {
+            return NULL;
+        }
+    }
+
     Py_RETURN_NONE;
 }
 
@@ -661,7 +671,7 @@ static PyMethodDef _window_methods[] = {
 
 MODINIT_DEFINE(window)
 {
-    PyObject *module, *apiobj;
+    PyObject *module, *apiobj, *display_module;
     static void *c_api[PYGAMEAPI_WINDOW_NUMSLOTS];
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
@@ -689,6 +699,16 @@ MODINIT_DEFINE(window)
 
     import_pygame_rect();
     if (PyErr_Occurred()) {
+        return NULL;
+    }
+
+    display_module = PyImport_ImportModule("pygame.display");
+    if (!display_module) {
+        return NULL;
+    }
+    pg_display_quit = PyObject_GetAttrString(display_module, "quit");
+    Py_DECREF(display_module);
+    if (!pg_display_quit) {
         return NULL;
     }
 
