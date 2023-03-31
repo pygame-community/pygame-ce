@@ -26,6 +26,7 @@ class WindowModuleTest(unittest.TestCase):
         got_windows = pygame.window.get_windows()
         self.assertEqual(0, len(got_windows))
 
+
 class WindowFromDisplayTest(unittest.TestCase):
     def test_from_display_module(self):
         pygame.display.quit()
@@ -38,6 +39,7 @@ class WindowFromDisplayTest(unittest.TestCase):
         # display should be quit after the window is destroyed
         win.destroy()
         self.assertFalse(pygame.display.get_init())
+
 
 class WindowTypeTest(unittest.TestCase):
     def setUp(self):
@@ -93,35 +95,37 @@ class WindowTypeTest(unittest.TestCase):
         self.assertEqual(self.win.get_opacity(), 0)
         self.win.set_opacity(1)
         self.assertEqual(self.win.get_opacity(), 1)
-    
+
     @unittest.skipIf(
         pygame.version.get_sdl_version() < pygame.version.SDLVersion(2, 0, 16),
-        "always_on_top requires SDL 2.0.16+"
+        "always_on_top requires SDL 2.0.16+",
     )
     def test_always_on_top(self):
         self.win.set_always_on_top(1)
         self.assertTrue(self.win.get_always_on_top())
         self.win.set_always_on_top(0)
         self.assertFalse(self.win.get_always_on_top())
-    
+
     def tearDown(self):
         self.win.destroy()
+
 
 class WindowSurfaceTest(unittest.TestCase):
     def setUp(self):
         self.win = pygame.window.Window()
         self.sf = self.win.get_surface()
-    
+
     def test_surface_auto_resize(self):
-        size=(360,360)
+        size = (360, 360)
         self.win.set_size(size)
-        self.assertTupleEqual(self.sf.get_size(),size)
-        size=(1280,720)
+        self.assertTupleEqual(self.sf.get_size(), size)
+        size = (1280, 720)
         self.win.set_size(size)
-        self.assertTupleEqual(self.sf.get_size(),size)
-        size=(640,640)
+        self.assertTupleEqual(self.sf.get_size(), size)
+        size = (640, 640)
         self.win.set_size(size)
-        self.assertTupleEqual(self.sf.get_size(),size)
+        self.assertTupleEqual(self.sf.get_size(), size)
+
 
 if __name__ == "__main__":
     unittest.main()

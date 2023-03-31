@@ -9,7 +9,7 @@
 PyObject *_window_list = NULL;
 static PyTypeObject pgWindow_Type;
 SDL_Surface *dummy_surface = NULL;
-PyObject *pg_display_quit = NULL;
+PyObject *_pg_display_quit = NULL;
 
 #define pgWindow_Check(x) \
     (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
@@ -75,7 +75,7 @@ window_destroy(pgWindowObject *self)
     // if the window is from display module
     // quit the display module
     if (self->is_from_display) {
-        if (!PyObject_CallObject(pg_display_quit, NULL)) {
+        if (!PyObject_CallObject(_pg_display_quit, NULL)) {
             return NULL;
         }
     }
@@ -711,9 +711,9 @@ MODINIT_DEFINE(window)
     if (!display_module) {
         return NULL;
     }
-    pg_display_quit = PyObject_GetAttrString(display_module, "quit");
+    _pg_display_quit = PyObject_GetAttrString(display_module, "quit");
     Py_DECREF(display_module);
-    if (!pg_display_quit) {
+    if (!_pg_display_quit) {
         return NULL;
     }
 
