@@ -415,7 +415,7 @@ _resize_event_watch(void *userdata, SDL_Event *event)
     event_window = SDL_GetWindowFromID(event->window.windowID);
 
     for (i = 0; i < PySequence_Size(_window_list); i++) {
-        item = PySequence_GetItem(_window_list, i);
+        item = (pgWindowObject *)PySequence_GetItem(_window_list, i);
         Py_DECREF(item);
         if (item->win == event_window) {
             if (item->surf) {
