@@ -53,8 +53,6 @@ struct _module_state {
 
 void
 scale2x(SDL_Surface *src, SDL_Surface *dst);
-void
-scale2xraw(SDL_Surface *src, SDL_Surface *dst);
 extern SDL_Surface *
 rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth);
 
@@ -411,118 +409,13 @@ rotate(SDL_Surface *src, SDL_Surface *dst, Uint32 bgcolor, double sangle,
     }
 }
 
-static void
-stretch(SDL_Surface *src, SDL_Surface *dst)
-{
-    int looph, loopw;
-
-    Uint8 *srcrow = (Uint8 *)src->pixels;
-    Uint8 *dstrow = (Uint8 *)dst->pixels;
-
-    int srcpitch = src->pitch;
-    int dstpitch = dst->pitch;
-
-    int dstwidth = dst->w;
-    int dstheight = dst->h;
-    int dstwidth2 = dst->w << 1;
-    int dstheight2 = dst->h << 1;
-
-    int srcwidth2 = src->w << 1;
-    int srcheight2 = src->h << 1;
-
-    int w_err, h_err = srcheight2 - dstheight2;
-
-    switch (src->format->BytesPerPixel) {
-        case 1:
-            for (looph = 0; looph < dstheight; ++looph) {
-                Uint8 *srcpix = (Uint8 *)srcrow, *dstpix = (Uint8 *)dstrow;
-                w_err = srcwidth2 - dstwidth2;
-                for (loopw = 0; loopw < dstwidth; ++loopw) {
-                    *dstpix++ = *srcpix;
-                    while (w_err >= 0) {
-                        ++srcpix;
-                        w_err -= dstwidth2;
-                    }
-                    w_err += srcwidth2;
-                }
-                while (h_err >= 0) {
-                    srcrow += srcpitch;
-                    h_err -= dstheight2;
-                }
-                dstrow += dstpitch;
-                h_err += srcheight2;
-            }
-            break;
-        case 2:
-            for (looph = 0; looph < dstheight; ++looph) {
-                Uint16 *srcpix = (Uint16 *)srcrow, *dstpix = (Uint16 *)dstrow;
-                w_err = srcwidth2 - dstwidth2;
-                for (loopw = 0; loopw < dstwidth; ++loopw) {
-                    *dstpix++ = *srcpix;
-                    while (w_err >= 0) {
-                        ++srcpix;
-                        w_err -= dstwidth2;
-                    }
-                    w_err += srcwidth2;
-                }
-                while (h_err >= 0) {
-                    srcrow += srcpitch;
-                    h_err -= dstheight2;
-                }
-                dstrow += dstpitch;
-                h_err += srcheight2;
-            }
-            break;
-        case 3:
-            for (looph = 0; looph < dstheight; ++looph) {
-                Uint8 *srcpix = (Uint8 *)srcrow, *dstpix = (Uint8 *)dstrow;
-                w_err = srcwidth2 - dstwidth2;
-                for (loopw = 0; loopw < dstwidth; ++loopw) {
-                    memcpy(dstpix, srcpix, 3);
-                    dstpix += 3;
-                    while (w_err >= 0) {
-                        srcpix += 3;
-                        w_err -= dstwidth2;
-                    }
-                    w_err += srcwidth2;
-                }
-                while (h_err >= 0) {
-                    srcrow += srcpitch;
-                    h_err -= dstheight2;
-                }
-                dstrow += dstpitch;
-                h_err += srcheight2;
-            }
-            break;
-        default: /*case 4:*/
-            for (looph = 0; looph < dstheight; ++looph) {
-                Uint32 *srcpix = (Uint32 *)srcrow, *dstpix = (Uint32 *)dstrow;
-                w_err = srcwidth2 - dstwidth2;
-                for (loopw = 0; loopw < dstwidth; ++loopw) {
-                    *dstpix++ = *srcpix;
-                    while (w_err >= 0) {
-                        ++srcpix;
-                        w_err -= dstwidth2;
-                    }
-                    w_err += srcwidth2;
-                }
-                while (h_err >= 0) {
-                    srcrow += srcpitch;
-                    h_err -= dstheight2;
-                }
-                dstrow += dstpitch;
-                h_err += srcheight2;
-            }
-            break;
-    }
-}
-
 static SDL_Surface *
 scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
          int height)
 {
     SDL_Surface *src = NULL;
     SDL_Surface *retsurf = NULL;
+    int stretch_result_num = 0;
 
     if (width < 0 || height < 0)
         return RAISE(PyExc_ValueError, "Cannot scale to negative size");
@@ -544,27 +437,21 @@ scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
             "Destination surface not the given width or height."));
     }
 
-    if (src->format->BytesPerPixel != retsurf->format->BytesPerPixel) {
-        return (SDL_Surface *)(RAISE(
-            PyExc_ValueError,
-            "Source and destination surfaces need the same format."));
-    }
-
+    /* Testing width and height of src and dest, because pygame supports
+     * surfaces with "0" as the width or height, and for those nothing should
+     * happen here. */
     if ((width && height) && (src->w && src->h)) {
-        SDL_LockSurface(retsurf);
         pgSurface_Lock(srcobj);
-
         Py_BEGIN_ALLOW_THREADS;
-        if (width == 2 * src->w && height == 2 * src->h) {
-            scale2xraw(src, retsurf);
-        }
-        else {
-            stretch(src, retsurf);
-        }
-        Py_END_ALLOW_THREADS;
 
+        stretch_result_num = SDL_SoftStretch(src, NULL, retsurf, NULL);
+
+        Py_END_ALLOW_THREADS;
         pgSurface_Unlock(srcobj);
-        SDL_UnlockSurface(retsurf);
+
+        if (stretch_result_num < 0) {
+            return (SDL_Surface *)(RAISE(pgExc_SDLError, SDL_GetError()));
+        }
     }
 
     return retsurf;
@@ -3074,39 +2961,41 @@ box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
     Uint8 *srcpx = (Uint8 *)src->pixels;
     Uint8 *dstpx = (Uint8 *)dst->pixels;
     Uint8 nb = src->format->BytesPerPixel;
-    int w = dst->w, h = dst->h, pitch = dst->pitch;
+    int w = dst->w, h = dst->h;
+    int dst_pitch = dst->pitch;
+    int src_pitch = src->pitch;
     int i, x, y, color;
-    Uint32 *buf = malloc(pitch * sizeof(Uint32));
-    Uint32 *sum_v = malloc(pitch * sizeof(Uint32));
+    Uint32 *buf = malloc(dst_pitch * sizeof(Uint32));
+    Uint32 *sum_v = malloc(dst_pitch * sizeof(Uint32));
     Uint32 *sum_h = malloc(nb * sizeof(Uint32));
 
-    memset(sum_v, 0, pitch * sizeof(Uint32));
+    memset(sum_v, 0, dst_pitch * sizeof(Uint32));
     for (y = 0; y <= radius; y++) {  // y-pre
-        for (i = 0; i < pitch; i++) {
-            sum_v[i] += srcpx[pitch * y + i];
+        for (i = 0; i < dst_pitch; i++) {
+            sum_v[i] += srcpx[src_pitch * y + i];
         }
     }
     if (repeat) {
-        for (i = 0; i < pitch; i++) {
+        for (i = 0; i < dst_pitch; i++) {
             sum_v[i] += srcpx[i] * radius;
         }
     }
     for (y = 0; y < h; y++) {  // y
-        for (i = 0; i < pitch; i++) {
+        for (i = 0; i < dst_pitch; i++) {
             buf[i] = sum_v[i] / (radius * 2 + 1);
 
             // update vertical sum
             if (y - radius >= 0) {
-                sum_v[i] -= srcpx[pitch * (y - radius) + i];
+                sum_v[i] -= srcpx[src_pitch * (y - radius) + i];
             }
             else if (repeat) {
                 sum_v[i] -= srcpx[i];
             }
             if (y + radius + 1 < h) {
-                sum_v[i] += srcpx[pitch * (y + radius + 1) + i];
+                sum_v[i] += srcpx[src_pitch * (y + radius + 1) + i];
             }
             else if (repeat) {
-                sum_v[i] += srcpx[pitch * (h - 1) + i];
+                sum_v[i] += srcpx[src_pitch * (h - 1) + i];
             }
         }
 
@@ -3123,7 +3012,7 @@ box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
         }
         for (x = 0; x < w; x++) {  // x
             for (color = 0; color < nb; color++) {
-                dstpx[pitch * y + nb * x + color] =
+                dstpx[dst_pitch * y + nb * x + color] =
                     sum_h[color] / (radius * 2 + 1);
 
                 // update horizontal sum
@@ -3154,10 +3043,12 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
     Uint8 *srcpx = (Uint8 *)src->pixels;
     Uint8 *dstpx = (Uint8 *)dst->pixels;
     Uint8 nb = src->format->BytesPerPixel;
-    int w = dst->w, h = dst->h, pitch = dst->pitch;
+    int w = dst->w, h = dst->h;
+    int dst_pitch = dst->pitch;
+    int src_pitch = src->pitch;
     int i, j, x, y, color;
-    float *buf = malloc(pitch * sizeof(float));
-    float *buf2 = malloc(pitch * sizeof(float));
+    float *buf = malloc(dst_pitch * sizeof(float));
+    float *buf2 = malloc(dst_pitch * sizeof(float));
     float *lut = malloc((radius + 1) * sizeof(float));
     float lut_sum = 0.0;
 
@@ -3174,24 +3065,25 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
         lut[i] /= lut_sum;
     }
 
-    for (i = 0; i < pitch; i++) {
+    for (i = 0; i < dst_pitch; i++) {
         buf[i] = 0.0;
         buf2[i] = 0.0;
     }
 
     for (y = 0; y < h; y++) {
         for (j = -radius; j <= radius; j++) {
-            for (i = 0; i < pitch; i++) {
+            for (i = 0; i < dst_pitch; i++) {
                 if (y + j >= 0 && y + j < h) {
-                    buf[i] += (float)srcpx[pitch * (y + j) + i] * lut[abs(j)];
+                    buf[i] +=
+                        (float)srcpx[src_pitch * (y + j) + i] * lut[abs(j)];
                 }
                 else if (repeat) {
                     if (y + j < 0) {
                         buf[i] += (float)srcpx[i] * lut[abs(j)];
                     }
                     else {
-                        buf[i] +=
-                            (float)srcpx[pitch * (h - 1) + i] * lut[abs(j)];
+                        buf[i] += (float)srcpx[src_pitch * (h - 1) + i] *
+                                  lut[abs(j)];
                     }
                 }
             }
@@ -3216,8 +3108,8 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
                 }
             }
         }
-        for (i = 0; i < pitch; i++) {
-            dstpx[pitch * y + i] = (Uint8)buf2[i];
+        for (i = 0; i < dst_pitch; i++) {
+            dstpx[dst_pitch * y + i] = (Uint8)buf2[i];
             buf[i] = 0.0;
             buf2[i] = 0.0;
         }
@@ -3243,7 +3135,7 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
     src = pgSurface_AsSurface(srcobj);
 
     if (src->format->palette) {
-        return RAISE(PyExc_ValueError, "Indexed surfaces connot be blurred.");
+        return RAISE(PyExc_ValueError, "Indexed surfaces cannot be blurred.");
     }
 
     if (!dstobj) {

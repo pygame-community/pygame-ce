@@ -16,7 +16,7 @@ i - put image into the clipboard
 """
 import os
 
-import pygame as pg
+import pygame
 import pygame.scrap as scrap
 
 from io import BytesIO
@@ -31,23 +31,25 @@ def usage():
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 
-pg.init()
-screen = pg.display.set_mode((200, 200))
-c = pg.time.Clock()
+pygame.init()
+screen = pygame.display.set_mode((200, 200))
+c = pygame.time.Clock()
 going = True
 
 # Initialize the scrap module and use the clipboard mode.
 scrap.init()
-scrap.set_mode(pg.SCRAP_CLIPBOARD)
+scrap.set_mode(pygame.SCRAP_CLIPBOARD)
 
 usage()
 
 while going:
-    for e in pg.event.get():
-        if e.type == pg.QUIT or (e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE):
+    for e in pygame.event.get():
+        if e.type == pygame.QUIT or (
+            e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE
+        ):
             going = False
 
-        elif e.type == pg.KEYDOWN and e.key == pg.K_g:
+        elif e.type == pygame.KEYDOWN and e.key == pygame.K_g:
             # This means to look for data.
             print("Getting the different clipboard data..")
             for t in scrap.get_types():
@@ -62,15 +64,15 @@ while going:
                     namehint = t.split("/")[1]
                     if namehint in ["bmp", "png", "jpg"]:
                         f = BytesIO(r)
-                        loaded_surf = pg.image.load(f, "." + namehint)
+                        loaded_surf = pygame.image.load(f, "." + namehint)
                         screen.blit(loaded_surf, (0, 0))
 
-        elif e.type == pg.KEYDOWN and e.key == pg.K_p:
+        elif e.type == pygame.KEYDOWN and e.key == pygame.K_p:
             # Place some text into the selection.
             print("Placing clipboard text.")
-            scrap.put(pg.SCRAP_TEXT, b"Hello. This is a message from scrap.")
+            scrap.put(pygame.SCRAP_TEXT, b"Hello. This is a message from scrap.")
 
-        elif e.type == pg.KEYDOWN and e.key == pg.K_a:
+        elif e.type == pygame.KEYDOWN and e.key == pygame.K_a:
             # Get all available types.
             print("Getting the available types from the clipboard.")
             types = scrap.get_types()
@@ -79,16 +81,16 @@ while going:
                 print(f"Contains {types[0]}: {scrap.contains(types[0])}")
                 print("Contains _INVALID_: ", scrap.contains("_INVALID_"))
 
-        elif e.type == pg.KEYDOWN and e.key == pg.K_i:
+        elif e.type == pygame.KEYDOWN and e.key == pygame.K_i:
             print("Putting image into the clipboard.")
-            scrap.set_mode(pg.SCRAP_CLIPBOARD)
+            scrap.set_mode(pygame.SCRAP_CLIPBOARD)
             fp = open(os.path.join(main_dir, "data", "liquid.bmp"), "rb")
             buf = fp.read()
             scrap.put("image/bmp", buf)
             fp.close()
 
-        elif e.type in (pg.KEYDOWN, pg.MOUSEBUTTONDOWN):
+        elif e.type in (pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
             usage()
-    pg.display.flip()
+    pygame.display.flip()
     c.tick(40)
-pg.quit()
+pygame.quit()
