@@ -87,7 +87,8 @@ def initsysfonts_win32():
                 # Some are named A & B, both names should be processed separately
                 # Ex: the main Cambria file is marked as "Cambria & Cambria Math"
                 for name in name.split("&"):
-                    _parse_font_entry_win(name, font, fonts)
+                    if os.path.exists(font):  # check if the file actually exists
+                        _parse_font_entry_win(name, font, fonts)
 
     return fonts
 
