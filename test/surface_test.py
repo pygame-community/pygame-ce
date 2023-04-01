@@ -570,11 +570,12 @@ class SurfaceTypeTest(unittest.TestCase):
     ########################################################################
 
     def test_get_frect(self):
-        """Ensure a surface's rect can be retrieved."""
+        """Ensure a surface's frect can be retrieved."""
         size = (16, 16)
         surf = pygame.Surface(size)
         frect = surf.get_frect()
 
+        self.assertEqual(frect.topleft, (0.0, 0.0))
         self.assertEqual(frect.size, size)
         self.assertIsInstance(frect, pygame.FRect)
 

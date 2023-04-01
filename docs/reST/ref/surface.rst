@@ -715,10 +715,10 @@
       | :sg:`get_frect(\**kwargs) -> FRect`
       
       This is the same as ``.get_rect()`` but returns an FRect. FRect is similar
-      to Rect, only except its coordinates are floats.
+      to Rect, except it stores float values instead.
 
       You can pass keyword argument values to this function. These named values
-      will be applied to the attributes of the Rect before it is returned. An
+      will be applied to the attributes of the FRect before it is returned. An
       example would be ``mysurf.get_frect(center=(100, 100))`` to create a
       rectangle for the Surface centered at a given position.
 

@@ -2540,7 +2540,7 @@ surf_get_frect(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (PyTuple_GET_SIZE(args) > 0) {
         return RAISE(PyExc_TypeError,
-                     "get_rect only accepts keyword arguments");
+                     "get_frect only accepts keyword arguments");
     }
 
     SURF_INIT_CHECK(surf)
