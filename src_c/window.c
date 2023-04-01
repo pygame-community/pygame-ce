@@ -314,8 +314,9 @@ window_set_size(pgWindowObject *self, PyObject *arg)
     }
 
     if (w <= 0 || h <= 0) {
-        return RAISE(PyExc_ValueError,
-                     "X or Y should not be less than or equal to zero.");
+        return RAISE(
+            PyExc_ValueError,
+            "width or height should not be less than or equal to zero.");
     }
 
     SDL_SetWindowSize(self->win, w, h);
@@ -638,6 +639,13 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
             PyErr_SetString(PyExc_TypeError, "invalid size argument");
             return -1;
         }
+    }
+
+    if (size_w <= 0 || size_h <= 0) {
+        PyErr_SetString(
+            PyExc_ValueError,
+            "width or height should not be less than or equal to zero.");
+        return -1;
     }
 
     if (position) {

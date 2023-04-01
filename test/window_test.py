@@ -94,6 +94,13 @@ class WindowTypeTest(unittest.TestCase):
         self.assertRaises(ValueError, lambda: self.win.set_size((-1, -10)))
         self.assertRaises(ValueError, lambda: self.win.set_size((0, 0)))
 
+        # test set size when init
+        win = pygame.window.Window(size=(12, 34))
+        self.assertTupleEqual((12, 34), win.get_size())
+        win.destroy()
+
+        self.assertRaises(ValueError, lambda: pygame.window.Window(size=(-1, 0)))
+
         self.win.set_size((640, 480))
 
     def test_position(self):
@@ -104,6 +111,13 @@ class WindowTypeTest(unittest.TestCase):
 
         # raise TypeError if input is some random number instead of flag
         self.assertRaises(TypeError, lambda: self.win.set_position(123))
+
+        # test set position when init
+        win = pygame.window.Window(position=(12, 34))
+        self.assertTupleEqual((12, 34), win.get_position())
+        win.destroy()
+
+        self.assertRaises(TypeError, lambda: pygame.window.Window(position=123))
 
     @unittest.skipIf(
         os.environ.get("SDL_VIDEODRIVER") == "dummy",
