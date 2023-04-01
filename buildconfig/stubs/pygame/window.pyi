@@ -1,9 +1,8 @@
 from typing import Iterable, Optional, Tuple, Union, final
 from pygame.surface import Surface
 from ._common import RectValue
+from pygame.locals import WINDOWPOS_UNDEFINED
 
-WINDOWPOS_UNDEFINED: int
-WINDOWPOS_CENTERED: int
 def get_windows() -> Tuple[Window, ...]: ... 
 def get_grabbed_window() -> Optional[Window]: ...
 

@@ -100,7 +100,7 @@ class WindowTypeTest(unittest.TestCase):
         self.win.set_position((12, 34))
         self.assertTupleEqual(self.win.get_position(), (12, 34))
 
-        self.win.set_position(pygame.window.WINDOWPOS_CENTERED)
+        self.win.set_position(pygame.WINDOWPOS_CENTERED)
 
         # raise TypeError if input is some random number instead of flag
         self.assertRaises(TypeError, lambda: self.win.set_position(123))
