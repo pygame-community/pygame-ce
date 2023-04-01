@@ -571,7 +571,7 @@ class SurfaceTypeTest(unittest.TestCase):
 
     def test_get_frect(self):
         """Ensure a surface's frect can be retrieved."""
-        size = (16, 16)
+        size = (16.0, 16.0)
         surf = pygame.Surface(size)
         frect = surf.get_frect()
 

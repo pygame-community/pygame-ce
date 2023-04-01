@@ -719,7 +719,7 @@
 
       You can pass keyword argument values to this function. These named values
       will be applied to the attributes of the FRect before it is returned. An
-      example would be ``mysurf.get_frect(center=(100, 100))`` to create a
+      example would be ``mysurf.get_frect(center=(100.0, 100.0))`` to create a
       rectangle for the Surface centered at a given position.
 
       :ref:`Surface.get_rect`
