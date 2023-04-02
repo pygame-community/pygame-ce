@@ -3,6 +3,8 @@
 #define DOC_WINDOW_GETWINDOWS "get_windows() -> Tuple[Window, ...]\ndocs_needed"
 #define DOC_WINDOW_GETGRABBEDWINDOW "get_grabbed_window() -> Optional[Window]\ndocs_needed"
 #define DOC_WINDOW_WINDOW "Window(title='pygame window', size=(640, 480), position=WINDOWPOS_UNDEFINED, **flags)\ndocs_needed"
+#define DOC_WINDOW_WINDOW_FROMDISPLAYMODULE "from_display_module() -> Window\ndocs_needed"
+#define DOC_WINDOW_WINDOW_FROMEXISTINGWINDOW "from_existing_window(hwnd) -> Window\ndocs_needed"
 #define DOC_WINDOW_WINDOW_DESTROY "destroy() -> None\ndocs_needed"
 #define DOC_WINDOW_WINDOW_SETWINDOWED "set_windowed() -> None\ndocs_needed"
 #define DOC_WINDOW_WINDOW_SETFULLSCREEN "set_fullscreen(desktop=False) -> None\ndocs_needed"

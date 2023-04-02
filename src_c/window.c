@@ -960,9 +960,9 @@ static PyMethodDef window_methods[] = {
     {"get_wm_info", (PyCFunction)window_get_wm_info, METH_NOARGS,
      "docs_needed"},
     {"from_display_module", (PyCFunction)window_from_display_module,
-     METH_CLASS | METH_NOARGS, "docs_needed"},
+     METH_CLASS | METH_NOARGS, DOC_WINDOW_WINDOW_FROMDISPLAYMODULE},
     {"from_existing_window", (PyCFunction)window_from_existing_window,
-     METH_CLASS | METH_O, "docs_needed"},
+     METH_CLASS | METH_O, DOC_WINDOW_WINDOW_FROMEXISTINGWINDOW},
     {NULL, NULL, 0, NULL}};
 
 static PyTypeObject pgWindow_Type = {

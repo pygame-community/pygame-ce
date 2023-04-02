@@ -27,6 +27,20 @@
    | :sl:`docs_needed`
    | :sg:`Window(title='pygame window', size=(640, 480), position=WINDOWPOS_UNDEFINED, **flags)`
 
+   .. classmethod:: from_display_module
+   
+      | :sl:`docs_needed`
+      | :sg:`from_display_module() -> Window`
+
+      .. ## Window.from_display_module ##
+   
+   .. classmethod:: from_existing_window
+   
+      | :sl:`docs_needed`
+      | :sg:`from_existing_window(hwnd) -> Window`
+
+      .. ## Window.from_existing_window ##
+
    .. method:: destroy
 
       | :sl:`docs_needed`
