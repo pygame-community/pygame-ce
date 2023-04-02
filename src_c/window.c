@@ -680,7 +680,6 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     int _value_bool;
 
     _kw = PyDict_New();
-    Py_XDECREF(_kw);
     if (!_kw)
         return -1;
 
