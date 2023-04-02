@@ -469,12 +469,20 @@ window_get_always_on_top(pgWindowObject *self)
 static PyObject *
 window_set_always_on_top(pgWindowObject *self, PyObject *arg)
 {
+    if (PyErr_WarnEx(PyExc_Warning, "set_always_on_top() requires SDL 2.0.16+",
+                     1) != 0) {
+        return NULL;
+    }
     Py_RETURN_NONE;
 }
 
 static PyObject *
 window_get_always_on_top(pgWindowObject *self)
 {
+    if (PyErr_WarnEx(PyExc_Warning, "get_always_on_top() requires SDL 2.0.16+",
+                     1) != 0) {
+        return NULL;
+    }
     Py_RETURN_FALSE;
 }
 #endif  // SDL_VERSION_ATLEAST(2,0,16)
@@ -628,11 +636,18 @@ window_flash_cancel(pgWindowObject *self)
 static PyObject *
 window_flash(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 {
+    if (PyErr_WarnEx(PyExc_Warning, "flash() requires SDL 2.0.16+", 1) != 0) {
+        return NULL;
+    }
     Py_RETURN_NONE;
 }
 static PyObject *
 window_flash_cancel(pgWindowObject *self)
 {
+    if (PyErr_WarnEx(PyExc_Warning, "flash_cancel() requires SDL 2.0.16+",
+                     1) != 0) {
+        return NULL;
+    }
     Py_RETURN_NONE;
 }
 
