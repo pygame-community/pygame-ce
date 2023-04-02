@@ -6,7 +6,7 @@
 
 #include <SDL_syswm.h>
 
-// #include "doc/window_doc.h"
+#include "doc/window_doc.h"
 
 static PyTypeObject pgWindow_Type;
 PyObject *_window_list = NULL;
@@ -902,26 +902,30 @@ window_from_existing_window(PyTypeObject *cls, PyObject *arg)
 }
 
 static PyMethodDef window_methods[] = {
-    {"destroy", (PyCFunction)window_destroy, METH_NOARGS, "docs_needed"},
+    {"destroy", (PyCFunction)window_destroy, METH_NOARGS,
+     DOC_WINDOW_WINDOW_DESTROY},
     {"set_windowed", (PyCFunction)window_set_windowed, METH_NOARGS,
-     "docs_needed"},
+     DOC_WINDOW_WINDOW_SETWINDOWED},
     {"set_fullscreen", (PyCFunction)window_set_fullscreen,
-     METH_VARARGS | METH_KEYWORDS, "docs_needed"},
+     METH_VARARGS | METH_KEYWORDS, DOC_WINDOW_WINDOW_SETFULLSCREEN},
     {"focus", (PyCFunction)window_focus, METH_VARARGS | METH_KEYWORDS,
-     "docs_needed"},
-    {"hide", (PyCFunction)window_hide, METH_NOARGS, "docs_needed"},
-    {"show", (PyCFunction)window_show, METH_NOARGS, "docs_needed"},
-    {"restore", (PyCFunction)window_restore, METH_NOARGS, "docs_needed"},
-    {"maximize", (PyCFunction)window_maximize, METH_NOARGS, "docs_needed"},
-    {"minimize", (PyCFunction)window_minimize, METH_NOARGS, "docs_needed"},
+     DOC_WINDOW_WINDOW_FOCUS},
+    {"hide", (PyCFunction)window_hide, METH_NOARGS, DOC_WINDOW_WINDOW_HIDE},
+    {"show", (PyCFunction)window_show, METH_NOARGS, DOC_WINDOW_WINDOW_SHOW},
+    {"restore", (PyCFunction)window_restore, METH_NOARGS,
+     DOC_WINDOW_WINDOW_RESTORE},
+    {"maximize", (PyCFunction)window_maximize, METH_NOARGS,
+     DOC_WINDOW_WINDOW_MAXIMIZE},
+    {"minimize", (PyCFunction)window_minimize, METH_NOARGS,
+     DOC_WINDOW_WINDOW_MINIMIZE},
     {"flash", (PyCFunction)window_flash, METH_VARARGS | METH_KEYWORDS,
-     "docs_needed"},
+     DOC_WINDOW_WINDOW_FLASH},
     {"flash_cancel", (PyCFunction)window_flash_cancel, METH_NOARGS,
-     "docs_needed"},
+     DOC_WINDOW_WINDOW_FLASHCANCEL},
     {"set_modal_for", (PyCFunction)window_set_modal_for, METH_O,
-     "docs_needed"},
+     DOC_WINDOW_WINDOW_SETMODALFOR},
     {"update_from_surface", (PyCFunction)window_update_from_surface,
-     METH_FASTCALL, "docs_needed"},
+     METH_FASTCALL, DOC_WINDOW_WINDOW_UPDATEFROMSURFACE},
     {"set_icon", (PyCFunction)window_set_icon, METH_O, "docs_needed"},
     {"set_grab", (PyCFunction)window_set_grab, METH_O, "docs_needed"},
     {"get_grab", (PyCFunction)window_get_grab, METH_NOARGS, "docs_needed"},
@@ -965,7 +969,7 @@ static PyTypeObject pgWindow_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.window.Window",
     .tp_basicsize = sizeof(pgWindowObject),
     .tp_dealloc = (destructor)window_dealloc,
-    .tp_doc = "docs_needed",
+    .tp_doc = DOC_WINDOW_WINDOW,
     .tp_methods = window_methods,
     .tp_init = (initproc)window_init,
     .tp_new = PyType_GenericNew,
@@ -973,8 +977,9 @@ static PyTypeObject pgWindow_Type = {
 
 static PyMethodDef _window_methods[] = {
     {"get_grabbed_window", (PyCFunction)get_grabbed_window, METH_NOARGS,
-     "docs_needed"},
-    {"get_windows", (PyCFunction)get_windows, METH_NOARGS, "docs_needed"},
+     DOC_WINDOW_GETGRABBEDWINDOW},
+    {"get_windows", (PyCFunction)get_windows, METH_NOARGS,
+     DOC_WINDOW_GETWINDOWS},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(window)
@@ -984,7 +989,7 @@ MODINIT_DEFINE(window)
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "window",
-                                         "docs_needed",
+                                         DOC_WINDOW,
                                          -1,
                                          _window_methods,
                                          NULL,
