@@ -675,7 +675,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 
     Py_ssize_t dict_pos = 0;
     PyObject *_key, *_value, *_kw;
-    char *_key_str;
+    const char *_key_str;
     char _exc_str[64];
     int _value_bool;
 
@@ -704,7 +704,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
             else {
                 _value_bool = PyObject_IsTrue(_value);
                 if (_value_bool == -1)
-                    return NULL;
+                    return -1;
 
                 if (!strcmp(_key_str, "opengl")) {
                     if (_value_bool)
