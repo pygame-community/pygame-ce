@@ -8,7 +8,7 @@
 |Python3| |GithubCommits| |BlackFormatBadge|
 
 **English** `简体中文`_
-----
+-------------------
 
 Pygame_ is a free and open-source cross-platform library
 for the development of multimedia applications like video games using Python.
