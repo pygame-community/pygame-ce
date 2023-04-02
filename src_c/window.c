@@ -733,7 +733,11 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                 }
                 else if (!strcmp(_key_str, "mouse_grabbed")) {
                     if (_value_bool)
+#if SDL_VERSION_ATLEAST(2, 0, 16)
                         flags |= SDL_WINDOW_MOUSE_GRABBED;
+#else
+                        flags |= SDL_WINDOW_INPUT_GRABBED;
+#endif
                 }
                 else if (!strcmp(_key_str, "allow_high_dpi")) {
                     if (_value_bool)
@@ -765,7 +769,9 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                 }
                 else if (!strcmp(_key_str, "keyboard_grabbed")) {
                     if (_value_bool)
+#if SDL_VERSION_ATLEAST(2, 0, 16)
                         flags |= SDL_WINDOW_KEYBOARD_GRABBED;
+#endif
                 }
                 else if (!strcmp(_key_str, "vulkan")) {
                     if (_value_bool)
@@ -773,7 +779,9 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                 }
                 else if (!strcmp(_key_str, "metal")) {
                     if (_value_bool)
+#if SDL_VERSION_ATLEAST(2, 0, 14)
                         flags |= SDL_WINDOW_METAL;
+#endif
                 }
                 else {
                     sprintf(_exc_str, "__init__ got an unexpected flag \'%s\'",
