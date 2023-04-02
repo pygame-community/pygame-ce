@@ -685,12 +685,12 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
         return -1;
 
     if (kwargs) {
-        if (!PyArg_ValidateKeywordArguments(kwargs)) {
-            return -1;
-        }
-
-        // handle **flags
         while (PyDict_Next(kwargs, &dict_pos, &_key, &_value)) {
+            if (!PyUnicode_Check(_key)) {
+                PyErr_SetString(PyExc_TypeError, "keywords must be strings");
+                return -1;
+            }
+
             _key_str = PyUnicode_AsUTF8(_key);
             if (!_key_str)
                 return -1;
@@ -701,6 +701,8 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                 !strcmp(_key_str, "fullscreen_desktop")) {
                 PyDict_SetItem(_kw, _key, _value);
             }
+
+            // handle **flags
             else {
                 _value_bool = PyObject_IsTrue(_value);
                 if (_value_bool == -1)
