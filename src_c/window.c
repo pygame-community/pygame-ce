@@ -595,6 +595,7 @@ window_get_wm_info(pgWindowObject *self)
     return dict;
 }
 
+#if SDL_VERSION_ATLEAST(2, 0, 16)
 static PyObject *
 window_flash(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -623,6 +624,19 @@ window_flash_cancel(pgWindowObject *self)
     }
     Py_RETURN_NONE;
 }
+#else
+static PyObject *
+window_flash(pgWindowObject *self, PyObject *args, PyObject *kwargs)
+{
+    Py_RETURN_NONE;
+}
+static PyObject *
+window_flash_cancel(pgWindowObject *self)
+{
+    Py_RETURN_NONE;
+}
+
+#endif  // SDL_VERSION_ATLEAST(2,0,16)
 
 static void
 window_dealloc(pgWindowObject *self)
