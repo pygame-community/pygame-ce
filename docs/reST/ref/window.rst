@@ -132,4 +132,151 @@
 
       .. ## Window.update_from_surface ##
 
+   .. method:: set_grab
+
+      | :sl:`docs_needed`
+      | :sg:`set_grab(enable) -> None`
+
+      .. ## Window.set_grab ##
+   
+   .. method:: get_grab
+
+      | :sl:`docs_needed`
+      | :sg:`get_grab() -> bool`
+
+      .. ## Window.get_grab ##
+   
+   .. method:: set_always_on_top
+
+      | :sl:`docs_needed`
+      | :sg:`set_always_on_top(enable) -> None`
+
+      .. ## Window.set_always_on_top ##
+   
+   .. method:: get_always_on_top
+
+      | :sl:`docs_needed`
+      | :sg:`get_always_on_top() -> bool`
+
+      .. ## Window.get_always_on_top ##
+
+   .. method:: set_title
+
+      | :sl:`docs_needed`
+      | :sg:`set_title(title) -> None`
+
+      .. ## Window.set_title ##
+   
+   .. method:: get_title
+
+      | :sl:`docs_needed`
+      | :sg:`get_title() -> str`
+
+      .. ## Window.get_title ##
+   
+   .. method:: set_resizable
+
+      | :sl:`docs_needed`
+      | :sg:`set_resizable(enable) -> None`
+
+      .. ## Window.set_resizable ##
+   
+   .. method:: get_resizable
+
+      | :sl:`docs_needed`
+      | :sg:`get_resizable() -> bool`
+
+      .. ## Window.get_resizable ##
+   
+   .. method:: set_borderless
+
+      | :sl:`docs_needed`
+      | :sg:`set_borderless(enable) -> None`
+
+      .. ## Window.set_borderless ##
+   
+   .. method:: get_borderless
+
+      | :sl:`docs_needed`
+      | :sg:`get_borderless() -> bool`
+
+      .. ## Window.get_borderless ##
+   
+   .. method:: set_size
+
+      | :sl:`docs_needed`
+      | :sg:`set_size((width, height)) -> None`
+
+      .. ## Window.set_size ##
+   
+   .. method:: get_size
+
+      | :sl:`docs_needed`
+      | :sg:`get_size() -> (width, height)`
+
+      .. ## Window.get_size ##
+   
+   .. method:: set_position
+
+      | :sl:`docs_needed`
+      | :sg:`set_position((x, y)) -> None`
+
+      .. ## Window.set_position ##
+   
+   .. method:: get_position
+
+      | :sl:`docs_needed`
+      | :sg:`get_position() -> (x, y)`
+
+      .. ## Window.get_position ##
+   
+   .. method:: set_opacity
+
+      | :sl:`docs_needed`
+      | :sg:`set_opacity(opacity) -> None`
+
+      .. ## Window.set_opacity ##
+   
+   .. method:: get_opacity
+
+      | :sl:`docs_needed`
+      | :sg:`get_opacity() -> float`
+
+      .. ## Window.get_opacity ##
+   
+   .. method:: set_icon
+
+      | :sl:`docs_needed`
+      | :sg:`set_icon(icon) -> None`
+
+      .. ## Window.set_icon ##
+   
+   .. method:: get_display_index
+
+      | :sl:`docs_needed`
+      | :sg:`get_display_index() -> int`
+
+      .. ## Window.get_display_index ##
+   
+   .. method:: get_surface
+
+      | :sl:`docs_needed`
+      | :sg:`get_surface() -> Surface`
+
+      .. ## Window.get_surface ##
+   
+   .. method:: get_window_id
+
+      | :sl:`docs_needed`
+      | :sg:`get_window_id() -> int`
+
+      .. ## Window.get_window_id ##
+
+   .. method:: get_wm_info
+
+      | :sl:`docs_needed`
+      | :sg:`get_wm_info() -> dict`
+
+      .. ## Window.get_wm_info ##
+
    .. ## pygame.window.Window ##
