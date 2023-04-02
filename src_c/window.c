@@ -672,10 +672,122 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     SDL_bool fullscreen_desktop = SDL_FALSE;
     Uint32 flags = 0;
     SDL_Window *_win = NULL;
+
+    Py_ssize_t dict_pos = 0;
+    PyObject *_key, *_value, *_kw;
+    char *_key_str;
+    char _exc_str[64];
+    int _value_bool;
+
+    _kw = PyDict_New();
+    Py_XDECREF(_kw);
+    if (!_kw)
+        return -1;
+
+    if (kwargs) {
+        if (!PyArg_ValidateKeywordArguments(kwargs)) {
+            return -1;
+        }
+
+        // handle **flags
+        while (PyDict_Next(kwargs, &dict_pos, &_key, &_value)) {
+            _key_str = PyUnicode_AsUTF8(_key);
+            if (!_key_str)
+                return -1;
+
+            if (!strcmp(_key_str, "title") || !strcmp(_key_str, "size") ||
+                !strcmp(_key_str, "position") ||
+                !strcmp(_key_str, "fullscreen") ||
+                !strcmp(_key_str, "fullscreen_desktop")) {
+                PyDict_SetItem(_kw, _key, _value);
+            }
+            else {
+                _value_bool = PyObject_IsTrue(_value);
+                if (_value_bool == -1)
+                    return NULL;
+
+                if (!strcmp(_key_str, "opengl")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_OPENGL;
+                }
+                else if (!strcmp(_key_str, "hidden")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_HIDDEN;
+                }
+                else if (!strcmp(_key_str, "borderless")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_BORDERLESS;
+                }
+                else if (!strcmp(_key_str, "resizable")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_RESIZABLE;
+                }
+                else if (!strcmp(_key_str, "minimized")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_MINIMIZED;
+                }
+                else if (!strcmp(_key_str, "maximized")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_MAXIMIZED;
+                }
+                else if (!strcmp(_key_str, "mouse_grabbed")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_MOUSE_GRABBED;
+                }
+                else if (!strcmp(_key_str, "allow_high_dpi")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+                }
+                else if (!strcmp(_key_str, "mouse_capture")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_MOUSE_CAPTURE;
+                }
+                else if (!strcmp(_key_str, "always_on_top")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_ALWAYS_ON_TOP;
+                }
+                else if (!strcmp(_key_str, "skip_taskbar")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_SKIP_TASKBAR;
+                }
+                else if (!strcmp(_key_str, "utility")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_UTILITY;
+                }
+                else if (!strcmp(_key_str, "tooltip")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_TOOLTIP;
+                }
+                else if (!strcmp(_key_str, "popup_menu")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_POPUP_MENU;
+                }
+                else if (!strcmp(_key_str, "keyboard_grabbed")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_KEYBOARD_GRABBED;
+                }
+                else if (!strcmp(_key_str, "vulkan")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_VULKAN;
+                }
+                else if (!strcmp(_key_str, "metal")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_METAL;
+                }
+                else {
+                    sprintf(_exc_str, "__init__ got an unexpected flag \'%s\'",
+                            _key_str);
+                    PyErr_SetString(PyExc_TypeError, _exc_str);
+                    return -1;
+                }
+            }
+        }
+    }
+
     char *kwids[] = {
         "title", "size", "position", "fullscreen", "fullscreen_desktop", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|sOOpp", kwids, &title,
-                                     &size, &position, &fullscreen,
+    if (!PyArg_ParseTupleAndKeywords(args, _kw, "|sOOpp", kwids, &title, &size,
+                                     &position, &fullscreen,
                                      &fullscreen_desktop)) {
         return -1;
     }
