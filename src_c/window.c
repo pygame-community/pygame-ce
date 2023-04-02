@@ -668,8 +668,6 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     PyObject *position = NULL;
     int pos_x = SDL_WINDOWPOS_UNDEFINED;
     int pos_y = SDL_WINDOWPOS_UNDEFINED;
-    SDL_bool fullscreen = SDL_FALSE;
-    SDL_bool fullscreen_desktop = SDL_FALSE;
     Uint32 flags = 0;
     SDL_Window *_win = NULL;
 
