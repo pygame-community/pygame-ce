@@ -662,7 +662,7 @@ window_dealloc(pgWindowObject *self)
 static int
 window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 {
-    char *title = "pygame";
+    char *title = "pygame window";
     PyObject *size = NULL;
     int size_w = 640, size_h = 480;
     PyObject *position = NULL;
