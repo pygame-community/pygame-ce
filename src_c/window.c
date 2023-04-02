@@ -768,20 +768,22 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                         flags |= SDL_WINDOW_POPUP_MENU;
                 }
                 else if (!strcmp(_key_str, "keyboard_grabbed")) {
-                    if (_value_bool)
+                    if (_value_bool) {
 #if SDL_VERSION_ATLEAST(2, 0, 16)
                         flags |= SDL_WINDOW_KEYBOARD_GRABBED;
 #endif
+                    }
                 }
                 else if (!strcmp(_key_str, "vulkan")) {
                     if (_value_bool)
                         flags |= SDL_WINDOW_VULKAN;
                 }
                 else if (!strcmp(_key_str, "metal")) {
-                    if (_value_bool)
+                    if (_value_bool) {
 #if SDL_VERSION_ATLEAST(2, 0, 14)
                         flags |= SDL_WINDOW_METAL;
 #endif
+                    }
                 }
                 else {
                     sprintf(_exc_str, "__init__ got an unexpected flag \'%s\'",
