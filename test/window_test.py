@@ -145,6 +145,26 @@ class WindowTypeTest(unittest.TestCase):
         self.win.set_always_on_top(0)
         self.assertFalse(self.win.get_always_on_top())
 
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER") == "dummy",
+        "requires the SDL_VIDEODRIVER to be a non dummy value",
+    )
+    def test_init_flags(self):
+        # test borderless
+        win = pygame.window.Window(borderless=True)
+        self.assertTrue(win.get_borderless())
+        win.destroy()
+
+        # test resizable
+        win = pygame.window.Window(resizable=True)
+        self.assertTrue(win.get_resizable())
+        win.destroy()
+
+        # test always_on_top
+        win = pygame.window.Window(always_on_top=True)
+        self.assertTrue(win.get_always_on_top())
+        win.destroy()
+
     def tearDown(self):
         self.win.destroy()
 
