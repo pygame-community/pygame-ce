@@ -595,6 +595,35 @@ window_get_wm_info(pgWindowObject *self)
     return dict;
 }
 
+static PyObject *
+window_flash(pgWindowObject *self, PyObject *args, PyObject *kwargs)
+{
+    SDL_bool briefly = SDL_FALSE;
+    int op = SDL_FLASH_UNTIL_FOCUSED;
+    char *kwids[] = {"briefly", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", kwids, &briefly)) {
+        return NULL;
+    }
+
+    if (briefly)
+        op = SDL_FLASH_BRIEFLY;
+
+    if (SDL_FlashWindow(self->win, op)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+window_flash_cancel(pgWindowObject *self)
+{
+    if (SDL_FlashWindow(self->win, SDL_FLASH_CANCEL)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    Py_RETURN_NONE;
+}
+
 static void
 window_dealloc(pgWindowObject *self)
 {
@@ -743,6 +772,10 @@ static PyMethodDef window_methods[] = {
     {"restore", (PyCFunction)window_restore, METH_NOARGS, "docs_needed"},
     {"maximize", (PyCFunction)window_maximize, METH_NOARGS, "docs_needed"},
     {"minimize", (PyCFunction)window_minimize, METH_NOARGS, "docs_needed"},
+    {"flash", (PyCFunction)window_flash, METH_VARARGS | METH_KEYWORDS,
+     "docs_needed"},
+    {"flash_cancel", (PyCFunction)window_flash_cancel, METH_NOARGS,
+     "docs_needed"},
     {"set_modal_for", (PyCFunction)window_set_modal_for, METH_O,
      "docs_needed"},
     {"update_from_surface", (PyCFunction)window_update_from_surface,
