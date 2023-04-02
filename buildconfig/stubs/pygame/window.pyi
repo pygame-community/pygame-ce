@@ -13,8 +13,6 @@ class Window:
         title: str = "pygame window",
         size: Iterable[int] = (640, 480),
         position: Union[int, Iterable[int]] = WINDOWPOS_UNDEFINED,
-        fullscreen: bool = False,
-        fullscreen_desktop: bool = False,
         **flags: bool
         ) -> None: ...
     def destroy(self) -> None: ...

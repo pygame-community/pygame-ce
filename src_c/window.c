@@ -695,9 +695,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                 return -1;
 
             if (!strcmp(_key_str, "title") || !strcmp(_key_str, "size") ||
-                !strcmp(_key_str, "position") ||
-                !strcmp(_key_str, "fullscreen") ||
-                !strcmp(_key_str, "fullscreen_desktop")) {
+                !strcmp(_key_str, "position")) {
                 PyDict_SetItem(_kw, _key, _value);
             }
 
@@ -710,6 +708,14 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                 if (!strcmp(_key_str, "opengl")) {
                     if (_value_bool)
                         flags |= SDL_WINDOW_OPENGL;
+                }
+                else if (!strcmp(_key_str, "fullscreen")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_FULLSCREEN;
+                }
+                else if (!strcmp(_key_str, "fullscreen_desktop")) {
+                    if (_value_bool)
+                        flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
                 }
                 else if (!strcmp(_key_str, "hidden")) {
                     if (_value_bool)
@@ -795,25 +801,11 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
         }
     }
 
-    char *kwids[] = {
-        "title", "size", "position", "fullscreen", "fullscreen_desktop", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, _kw, "|sOOpp", kwids, &title, &size,
-                                     &position, &fullscreen,
-                                     &fullscreen_desktop)) {
+    char *kwids[] = {"title", "size", "position", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, _kw, "|sOO", kwids, &title, &size,
+                                     &position)) {
         return -1;
     }
-
-    if (fullscreen && fullscreen_desktop) {
-        PyErr_SetString(
-            PyExc_ValueError,
-            "fullscreen and fullscreen_desktop cannot be used at the same "
-            "time.");
-        return -1;
-    }
-    if (fullscreen)
-        flags |= SDL_WINDOW_FULLSCREEN;
-    else if (fullscreen_desktop)
-        flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 
     if (size) {
         if (!pg_TwoIntsFromObj(size, &size_w, &size_h)) {
