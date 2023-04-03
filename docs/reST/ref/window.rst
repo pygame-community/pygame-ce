@@ -272,6 +272,13 @@
 
       .. ## Window.get_window_id ##
 
+   .. method:: get_foreign
+
+      | :sl:`docs_needed`
+      | :sg:`get_foreign() -> bool`
+
+      .. ## Window.get_foreign ##
+
    .. method:: get_wm_info
 
       | :sl:`docs_needed`

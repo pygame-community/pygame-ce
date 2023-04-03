@@ -38,4 +38,5 @@
 #define DOC_WINDOW_WINDOW_GETDISPLAYINDEX "get_display_index() -> int\ndocs_needed"
 #define DOC_WINDOW_WINDOW_GETSURFACE "get_surface() -> Surface\ndocs_needed"
 #define DOC_WINDOW_WINDOW_GETWINDOWID "get_window_id() -> int\ndocs_needed"
+#define DOC_WINDOW_WINDOW_GETFOREIGN "get_foreign() -> bool\ndocs_needed"
 #define DOC_WINDOW_WINDOW_GETWMINFO "get_wm_info() -> dict\ndocs_needed"
