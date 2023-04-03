@@ -83,6 +83,8 @@ class RendererDriverInfo:
         )
 
 def get_drivers():
+    """Get info about the rendering drivers available for Renderer objects
+    """
     cdef int num = SDL_GetNumRenderDrivers()
     cdef SDL_RendererInfo info
     cdef int ind
@@ -118,9 +120,9 @@ def messagebox(title, message,
                buttons=('OK', ),
                return_button=0,
                escape_button=0):
-    """ Display a message box.
+    """create a native GUI message box
 
-    :param str title: A title string or None.
+    :param str or None title: A title string or None.
     :param str message: A message string.
     :param bool info: If ``True``, display an info message.
     :param bool warn: If ``True``, display a warning message.
@@ -215,6 +217,9 @@ cdef class Window:
 
     @classmethod
     def from_display_module(cls):
+        """Create a Window object using the same internal window structure created
+        after calling :meth:`pygame.display.set_mode`.  
+        """
         cdef Window self = cls.__new__(cls)
         cdef SDL_Window* window = pg_GetDefaultWindow()
         if not window:
@@ -229,31 +234,31 @@ cdef class Window:
                  position=WINDOWPOS_UNDEFINED,
                  bint fullscreen=False,
                  bint fullscreen_desktop=False, **kwargs):
-        """ Create a window with the specified position, dimensions, and flags.
+        """Create a window with the specified position, dimensions, and flags.
 
-        :param str title: the title of the window, in UTF-8 encoding
-        :param tuple size: the size of the window, in screen coordinates (width, height)
-        :param position: a tuple specifying the window position, WINDOWPOS_CENTERED, or WINDOWPOS_UNDEFINED.
-        :param bool fullscreen: fullscreen window using the window size as the resolution (videomode change)
-        :param bool fullscreen_desktop: fullscreen window using the current desktop resolution
-        :param bool opengl: Usable with OpenGL context. You will still need to create an OpenGL context.
-        :param bool vulkan: usable with a Vulkan instance
-        :param bool hidden: window is not visible
-        :param bool borderless: no window decoration
-        :param bool resizable: window can be resized
-        :param bool minimized: window is minimized
-        :param bool maximized: window is maximized
-        :param bool input_grabbed: window has grabbed input focus
-        :param bool input_focus: window has input focus
-        :param bool mouse_focus: window has mouse focus
-        :param bool foreign: window not created by SDL
-        :param bool allow_highdpi: window should be created in high-DPI mode if supported (>= SDL 2.0.1)
-        :param bool mouse_capture: window has mouse captured (unrelated to INPUT_GRABBED, >= SDL 2.0.4)
-        :param bool always_on_top: window should always be above others (X11 only, >= SDL 2.0.5)
-        :param bool skip_taskbar: window should not be added to the taskbar (X11 only, >= SDL 2.0.5)
-        :param bool utility: window should be treated as a utility window (X11 only, >= SDL 2.0.5)
-        :param bool tooltip: window should be treated as a tooltip (X11 only, >= SDL 2.0.5)
-        :param bool popup_menu: window should be treated as a popup menu (X11 only, >= SDL 2.0.5)
+        :param str title: The title of the window.
+        :param (int, int) size: The size of the window, in screen coordinates.
+        :param (int, int) or int position: A tuple specifying the window position, or ``WINDOWPOS_CENTERED``, or ``WINDOWPOS_UNDEFINED``.
+        :param bool fullscreen: Create a fullscreen window using the window size as the resolution (videomode change).
+        :param bool fullscreen_desktop: Create a fullscreen window using the current desktop resolution
+        :param bool opengl: Create a window with support for an OpenGL context. You will still need to create an OpenGL context separately.
+        :param bool vulkan: Create a window with support for a Vulkan instance.
+        :param bool hidden: Create a hidden window.
+        :param bool borderless: Create a window without borders.
+        :param bool resizable: Create a resizable window.
+        :param bool minimized: Create a mimized window.
+        :param bool maximized: Create a maximized window.
+        :param bool input_grabbed: Create a window with a grabbed input focus.
+        :param bool input_focus: Create a window with input focus.
+        :param bool mouse_focus: Create a window with mouse focus.
+        :param bool foreign: Marks a window not created by SDL.
+        :param bool allow_highdpi: Create a window in high-DPI mode if supported (>= SDL 2.0.1)
+        :param bool mouse_capture: Create a window that has the mouse captured (unrelated to INPUT_GRABBED, >= SDL 2.0.4)
+        :param bool always_on_top: Create a window that is always on top (X11 only, >= SDL 2.0.5)
+        :param bool skip_taskbar: Create a window that should not be added to the taskbar (X11 only, >= SDL 2.0.5)
+        :param bool utility: Create a window that should be treated as a utility window (X11 only, >= SDL 2.0.5)
+        :param bool tooltip: Create a window that should be treated as a tooltip (X11 only, >= SDL 2.0.5)
+        :param bool popup_menu: Create a window that should be treated as a popup menu (X11 only, >= SDL 2.0.5)
         """
         # https://wiki.libsdl.org/SDL_CreateWindow
         # https://wiki.libsdl.org/SDL_WindowFlags
@@ -294,44 +299,51 @@ cdef class Window:
         surf.set_colorkey(0)
         self.set_icon(surf)
 
-    def get_grab(self) -> bool:
-        """ Gets the Window's input grab state
+    def get_grab(self):
+        """Get the window's input grab state
+
+        Get the window's input grab state (whether the mouse is confined to the
+        window).
         """
         return SDL_GetWindowGrab(self._win) != 0
 
-    def set_grab(self, enable:bool):
-        """ Sets the window's input grab state (``True`` or ``False``).
+    def set_grab(self, bint grabbed):
+        """Set the window's input grab state
 
-        Set it to ``True`` to grab, ``False`` to release.
+        :param bool grabbed: The new input grab state.
 
-        When input is grabbed the mouse is confined to the window.
+        When input is grabbed, the mouse is confined to the window.
         If the caller enables a grab while another window is currently grabbed,
         the other window loses its grab in favor of the caller's window.
         """
         # https://wiki.libsdl.org/SDL_SetWindowGrab
-        SDL_SetWindowGrab(self._win, 1 if enable else 0)
+        SDL_SetWindowGrab(self._win, 1 if grabbed else 0)
 
-    def get_relative_mouse_mode(self) -> bool:
-        """Gets the window's relative mouse motion state
+    def get_relative_mouse_mode(self):
+        """Get the window's relative mouse mode state
         """
         return SDL_GetRelativeMouseMode()
 
-    def set_relative_mouse_mode(self, enable:bool):
-        """ Sets the window's relative mouse motion state (``True`` or ``False``).
+    def set_relative_mouse_mode(self, bint enabled):
+        """Get the window's relative mouse mode state
         
-        'While the mouse is in relative mode, the cursor is hidden,
-        and the driver will try to report continuous motion in the current window. 
-        Only relative motion events will be delivered, the mouse position will not change.'
-        ↑ says SDL Wiki
+        :param bool enabled: The new relative mouse mode state.
 
-        Set it to ``True`` to enable, ``False`` to disable.
-        If mouse.set_visible(True) is set the input will be grabbed,
+        SDL2 docs: *"While the mouse is in relative mode, the cursor is hidden, the mouse position
+        is constrained to the window, and SDL will report continuous relative mouse
+        motion even if the mouse is at the edge of the window.*
+        
+        *This function will flush any pending mouse motion."*
+
+        If :func:`pygame.mouse.set_visible` was called with ``True`` the input will be grabbed,
         and the mouse will enter endless relative motion mode.
         """
-        SDL_SetRelativeMouseMode(1 if enable else 0)
+        # https://wiki.libsdl.org/SDL_SetRelativeMouseMode
+        #SDL_SetWindowGrab(self._win, 1 if enable else 0)
+        SDL_SetRelativeMouseMode(1 if enabled else 0)
 
     def set_windowed(self):
-        """ Enable windowed mode
+        """Enable windowed mode (exit fullscreen)
 
         .. seealso:: :func:`set_fullscreen`
 
@@ -340,16 +352,11 @@ cdef class Window:
         if SDL_SetWindowFullscreen(self._win, 0):
             raise error()
 
-    #TODO: not sure about this...
-    # Perhaps this is more readable:
-    #     window.fullscreen = True
-    #     window.fullscreen_desktop = True
-    #     window.windowed = True
     def set_fullscreen(self, bint desktop=False):
-        """ Enable fullscreen for the window
+        """Enable fullscreen for the window
 
-        :param bool desktop: If ``True``: use the current desktop resolution.
-                             If ``False``: change the fullscreen resolution to the window size.
+        :param bool desktop: If ``True``, use the current desktop resolution.
+            If ``False``, change the fullscreen resolution to the window size.
 
         .. seealso:: :func:`set_windowed`
         """
@@ -361,22 +368,27 @@ cdef class Window:
         if SDL_SetWindowFullscreen(self._win, flags):
             raise error()
 
-    def get_title(self) -> str:
-        """ The title of the window or u"" if there is none.
+    def get_title(self):
+        """Get the window title
         """
         # https://wiki.libsdl.org/SDL_GetWindowTitle
         return SDL_GetWindowTitle(self._win).decode('utf8')
 
-    def set_title(self, title:str):
-        """ Set the window title.
+    def set_title(self, title: str):
+        """Set the window title
 
-        :param str title: the desired window title in UTF-8.
+        :param str title: the desired window title.
         """
         # https://wiki.libsdl.org/SDL_SetWindowTitle
         SDL_SetWindowTitle(self._win, title.encode('utf8'))
 
     def destroy(self):
-        """ Destroys the window.
+        """Destroy the window
+
+        Destroy the internal window data of the Window object. This method is called
+        automatically when the Window object is garbage collected, so there usually
+        aren't many reasons to call it manually.
+        Other methods that try to manipulate that window data will raise an error.
         """
         # https://wiki.libsdl.org/SDL_DestroyWindow
         if self._win:
@@ -384,22 +396,25 @@ cdef class Window:
             self._win = NULL
 
     def hide(self):
-        """ Hide the window.
+        """Hide the window
         """
         # https://wiki.libsdl.org/SDL_HideWindow
         SDL_HideWindow(self._win)
 
     def show(self):
-        """ Show the window.
+        """Show the window
         """
         # https://wiki.libsdl.org/SDL_ShowWindow
         SDL_ShowWindow(self._win)
 
-    def focus(self, input_only=False):
-        """ Raise the window above other windows and set the input focus.
+    def focus(self, input_only: bool = False):
+        """Set the window to be focused
+
+        Raise the window above other windows and set the input focus.
 
         :param bool input_only: if ``True``, the window will be given input focus
                                 but may be completely obscured by other windows.
+                                Only supported on X11.
         """
         # https://wiki.libsdl.org/SDL_RaiseWindow
         if input_only:
@@ -409,79 +424,82 @@ cdef class Window:
             SDL_RaiseWindow(self._win)
 
     def restore(self):
-        """ Restore the size and position of a minimized or maximized window.
+        """Restore the size and position of a minimized or maximized window
         """
         SDL_RestoreWindow(self._win)
 
     def maximize(self):
-        """ Maximize the window.
+        """Maximize the window
         """
         SDL_MaximizeWindow(self._win)
 
     def minimize(self):
-        """ Minimize the window.
+        """Minimize the window
         """
         SDL_MinimizeWindow(self._win)
 
-    def get_resizable(self) -> bool:
-        """ Gets whether the window is resizable.
+    def get_resizable(self):
+        """Get whether the window is resizable
         """
         return SDL_GetWindowFlags(self._win) & _SDL_WINDOW_RESIZABLE != 0
 
-    def set_resizable(self, enable:bool):
-        """ Sets whether the window is resizable.
+    def set_resizable(self, enabled: bool):
+        """Set whether the window is resizable
         """
-        SDL_SetWindowResizable(self._win, 1 if enable else 0)
+        SDL_SetWindowResizable(self._win, 1 if enabled else 0)
 
-    def get_borderless(self) -> bool:
-        """Gets whether the window is borderless.
+    def get_borderless(self):
+        """Get whether the window is borderless
         """
         return SDL_GetWindowFlags(self._win) & _SDL_WINDOW_BORDERLESS != 0
 
-    def set_borderless(self, enabled:bool):
-        """ Add or remove the border from the actual window.
+    def set_borderless(self, enabled: bool):
+        """Set whether the window is borderless
 
         .. note:: You can't change the border state of a fullscreen window.
         """
         SDL_SetWindowBordered(self._win, 0 if enabled else 1)
 
     def set_icon(self, surface):
-        """ Set the icon for the window.
+        """Set the icon for the window
 
-        :param pygame.Surface surface: A Surface to use as the icon.
+        :param Surface surface: A Surface to use as the icon.
         """
         if not pgSurface_Check(surface):
             raise TypeError('surface must be a Surface object')
         SDL_SetWindowIcon(self._win, pgSurface_AsSurface(surface))
 
-    def get_window_id(self) -> int:
+    def get_window_id(self):
         """ A unique window ID.
         """
         return SDL_GetWindowID(self._win)
 
-    def get_size(self) -> tuple:
-        """Get the size of the window's client area.
+    def get_size(self):
+        """Get the window size
         """
         cdef int w, h
         SDL_GetWindowSize(self._win, &w, &h)
         return (w, h)
 
     def set_size(self, size):
-        """Set the size of the window's client area.
+        """Set the window size
+
+        :param (int, int) size: The new window size.
         """
         SDL_SetWindowSize(self._win, size[0], size[1])
 
-    def get_position(self) -> tuple:
-        """ Gets the window's screen coordinates
+    def get_position(self):
+        """Gets the window's screen position
         """
         cdef int x, y
         SDL_GetWindowPosition(self._win, &x, &y)
         return (x, y)
 
     def set_position(self, position):
-        """ Sets the window's screen coordinates (x, y).
-        The x or y can be set to WINDOWPOS_CENTERED
-        to center the window in x or y direction
+        """Set the window's screen position
+
+        :param (int, int) or int position: The coordinates as an x, y tuple, or
+            as ``WINDOWPOS_CENTERED`` to center the window.
         """
         cdef int x, y
         if position == WINDOWPOS_UNDEFINED:
@@ -492,23 +510,28 @@ cdef class Window:
             x, y = position
         SDL_SetWindowPosition(self._win, x, y)
 
-    def get_opacity(self) -> float:
-        """ Get the window's opacity.
+    def get_opacity(self):
+        """Get the window opacity
+
+        Get the window opacity, a floating point value between 0.0 (fully transparent)
+        and 1.0 (fully opaque).
         """
         cdef float opacity
         if SDL_GetWindowOpacity(self._win, &opacity):
             raise error()
         return opacity
 
-    def set_opacity(self, opacity:float):
-        """ Set the window's opacity. 
-        Opacity ranges between 0.0 (fully transparent) and 1.0 (fully opaque).
+    def set_opacity(self, opacity):
+        """Set the window opacity
+
+        :param float opacity: The new opacity value between 0.0
+            (fully transparent) and 1.0 (fully opaque).
         """
         if SDL_SetWindowOpacity(self._win, opacity):
             raise error()
 
-    def get_display_index(self) -> int:
-        """ Gets the index of the display where the window is located.
+    def get_display_index(self):
+        """Get the index of the display that owns the window
         """
         cdef int index = SDL_GetWindowDisplayIndex(self._win)
         if index < 0:
@@ -516,8 +539,12 @@ cdef class Window:
         return index
 
     def set_modal_for(self, Window parent):
-        """set the window as a modal for a parent window
-        This function is only supported on X11."""
+        """Set the window as a modal for a parent window
+        
+        :param Window parent: The parent window.
+
+        This function is only supported on X11.
+        """
         if SDL_SetWindowModalFor(self._win, parent._win):
             raise error()
 
@@ -554,19 +581,35 @@ cdef class Texture:
                  size, int depth=0,
                  static=False, streaming=False,
                  target=False, scale_quality=None):
-        """ Create an empty texture.
+        """pygame object that represents a texture
 
-        :param Renderer renderer: Rendering context for the texture.
-        :param tuple size: The width and height of the texture.
+        :param Renderer renderer: The rendering context for the texture.
+        :param tuple size: The width and height for the texture.
         :param int depth: The pixel format (0 to use the default).
+        :param bool static: Initialize the texture as static (changes rarely, not lockable).
+        :param bool streaming: Initialize the texture as streaming (changes frequently, lockable).
+        :param bool target: Initialize the texture as target (can be used as a rendering target).
+        :param int scale_quality: Set the texture scale quality. Can be 0
+            (nearest pixel sampling), 1 (linear filtering, supported by OpenGL and Direct3D)
+            and 2 (anisotropic filtering, supported by Direct3D)
 
         One of ``static``, ``streaming``, or ``target`` can be set
         to ``True``. If all are ``False``, then ``static`` is used.
 
-        :param bool static: Changes rarely, not lockable.
-        :param bool streaming: Changes frequently, lockable.
-        :param bool target: Can be used as a render target.
-        :param scale_quality: The quality of scale.
+
+        Texture objects provide a platform-agnostic API for working with GPU textures
+        (although there is a CPU fallback). They are stored in GPU video memory (VRAM),
+        and are therefore very fast to rotate and resize when drawn unto a :class:`Renderer`
+        (an object that manages a rendering context inside a :class:`Window`) on most GPUs.
+
+        Since textures are stored in GPU video memory, they aren't as easy to modify as the image data of
+        :class:`Surface` objects, which reside in RAM.
+        
+        Textures can be modified in 2 ways:
+
+            * By drawing other textures unto them, which is achieved by marking them as "target" textures, and temporarily setting them as the rendering target of their Renderer object.
+      
+            * By updating them with a Surface. **WARNING:** This is a slow operation, as it requires image data to be uploaded from RAM to VRAM, a generally slow process.
         """
         # https://wiki.libsdl.org/SDL_CreateTexture
         # TODO: masks
@@ -623,10 +666,10 @@ cdef class Texture:
 
     @staticmethod
     def from_surface(Renderer renderer, surface):
-        """ Create a texture from an existing surface.
+        """Create a texture from an existing surface.
 
         :param Renderer renderer: Rendering context for the texture.
-        :param pygame.Surface surface: The surface to create a texture from.
+        :param Surface surface: The surface to create a texture from.
         """
         # https://wiki.libsdl.org/SDL_CreateTextureFromSurface
         if not pgSurface_Check(surface):
@@ -647,8 +690,31 @@ cdef class Texture:
         if self._tex:
             SDL_DestroyTexture(self._tex)
 
+
+    def get_width(self):
+        """Get the width of the Texture
+        """
+        return self.width
+    
+    def get_height(self):
+        """Get the height of the Texture
+        """
+        return self.height
+
+    def get_rect(self, **kwargs):
+        """Get the rectangular area of the texture
+        
+        Like :meth:`pygame.Surface.get_rect`, returns a **new** rectangle covering the entire texture.
+        This rectangle will always start at 0, 0 with a ``width`` and ``height`` the same size as the texture.
+        """
+        rect = pgRect_New4(0, 0, self.width, self.height)
+        for key in kwargs:
+            setattr(rect, key, kwargs[key])
+
+        return rect
+
     def get_alpha(self):
-        """Get the additional alpha value multiplied into draw operations.
+        """Get the additional alpha value multiplied into draw operations
         """
         # https://wiki.libsdl.org/SDL_GetTextureAlphaMod
         cdef Uint8 alpha
@@ -658,35 +724,40 @@ cdef class Texture:
 
         return alpha
 
-    def set_alpha(self, Uint8 new_value):
-        """Set an additional alpha value multiplied into draw operations.
+    def set_alpha(self, Uint8 alpha):
+        """Set a additional alpha value multiplied into draw operations
+
+        :param int alpha: The new alpha value. Must be between 0-255.
         """
         # https://wiki.libsdl.org/SDL_SetTextureAlphaMod
-        cdef int res = SDL_SetTextureAlphaMod(self._tex, new_value)
+        cdef int res = SDL_SetTextureAlphaMod(self._tex, alpha)
         if res < 0:
             raise error()
 
     def get_blend_mode(self):
-        """Get the blend mode used for draw operations.
+        """Get the blend mode used for texture drawing operations
         """
         # https://wiki.libsdl.org/SDL_GetTextureBlendMode
-        cdef SDL_BlendMode blendMode
-        cdef int res = SDL_GetTextureBlendMode(self._tex, &blendMode)
+        cdef SDL_BlendMode blend_mode
+        cdef int res = SDL_GetTextureBlendMode(self._tex, &blend_mode)
         if res < 0:
             raise error()
 
-        return blendMode
+        return blend_mode
 
-    def set_blend_mode(self, blendMode):
-        """Set the blend mode for a texture
+    def set_blend_mode(self, blend_mode):
+        """Set the blend mode used for texture drawing operations
+
+        :param int blend_mode: The blend mode. Can be set using one
+                              of the ``BLENDMODE_*`` constants or a custom one. 
         """
         # https://wiki.libsdl.org/SDL_SetTextureBlendMode
-        cdef int res = SDL_SetTextureBlendMode(self._tex, blendMode)
+        cdef int res = SDL_SetTextureBlendMode(self._tex, blend_mode)
         if res < 0:
             raise error()
 
     def get_color(self):
-        """Get the additional color value multiplied into draw operations.
+        """Get the additional color value multiplied into texture drawing operations
         """
         # https://wiki.libsdl.org/SDL_GetTextureColorMod
         cdef int res = SDL_GetTextureColorMod(self._tex,
@@ -698,27 +769,16 @@ cdef class Texture:
 
         return self._color
 
-    def set_color(self, new_value):
-        """Set an additional color value multiplied into draw operations.
+    def set_color(self, color):
+        """Set an additional color value multiplied into texture drawing operations
         """
         # https://wiki.libsdl.org/SDL_SetTextureColorMod
         cdef int res = SDL_SetTextureColorMod(self._tex,
-                                              new_value[0],
-                                              new_value[1],
-                                              new_value[2])
+                                              color[0],
+                                              color[1],
+                                              color[2])
         if res < 0:
             raise error()
-
-    def get_rect(self, **kwargs):
-        """ Get the rectangular area of the texture.
-        like surface.get_rect(), returns a new rectangle covering the entire surface.
-        This rectangle will always start at 0, 0 with a width. and height the same size as the texture.
-        """
-        rect = pgRect_New4(0, 0, self.width, self.height)
-        for key in kwargs:
-            setattr(rect, key, kwargs[key])
-
-        return rect
 
     cdef draw_internal(self, SDL_Rect *csrcrect, SDL_Rect *cdstrect, float angle=0, SDL_Point *originptr=NULL,
                        bint flip_x=False, bint flip_y=False):
@@ -735,16 +795,18 @@ cdef class Texture:
 
     cpdef void draw(self, srcrect=None, dstrect=None, float angle=0, origin=None,
                     bint flip_x=False, bint flip_y=False):
-        """ Copy a portion of the texture to the rendering target.
+        """Copy a portion of the texture to the rendering target
 
-        :param srcrect: source rectangle on the texture, or None for the entire texture.
-        :param dstrect: destination rectangle or position on the render target, or None for entire target.
-                        The texture is stretched to fill dstrect.
-        :param float angle: angle (in degrees) to rotate dstrect around (clockwise).
-        :param origin: point around which dstrect will be rotated.
-                       If None, it will equal the center: (dstrect.w/2, dstrect.h/2).
-        :param bool flip_x: flip horizontally.
-        :param bool flip_y: flip vertically.
+        :param srcrect: The source rectangle on the texture, or ``None`` for the entire
+                        texture.
+        :param dstrect: The destination rectangle on the rendering target, or ``None`` for
+                        the entire rendering target. The texture will be stretched to fill
+                        ``dstrect``.
+        :param float angle: The angle (in degrees) to rotate dstrect around (clockwise).
+        :param origin: The point around which dstrect will be rotated.
+                       If ``None``, it will equal the center: (dstrect.w/2, dstrect.h/2).
+        :param bool flip_x: Flip the drawn texture portion horizontally (x - axis).
+        :param bool flip_y: Flip the drawn texture portion vertically (y - axis).
         """
         cdef SDL_Rect src, dst
         cdef SDL_Rect *csrcrect = NULL
@@ -782,17 +844,17 @@ cdef class Texture:
     def draw_triangle(self, p1_xy, p2_xy, p3_xy,
                       p1_uv=(0.0, 0.0), p2_uv=(1.0, 1.0), p3_uv=(0.0, 1.0),
                       p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255), p3_mod=(255, 255, 255, 255)):
-        """ Copy a triangle portion of the texture to the rendering target by vertices coordinates.
+        """Copy a triangle portion of the texture to the rendering target using the given coordinates
 
-        :param p1_xy: first vertex coordinate on the render target to be drawn at.
-        :param p2_xy: second vertex coordinate on the render target to be drawn at.
-        :param p3_xy: third vertex coordinate on the render target to be drawn at.
-        :param p1_uv: first vertex coordinate on the texture to be drawn from.
-        :param p2_uv: second vertex coordinate on the texture to be drawn from.
-        :param p3_uv: third vertex coordinate on the texture to be drawn from.
-        :param p1_mod: first vertex color modulation.
-        :param p2_mod: second vertex color modulation.
-        :param p3_mod: third vertex color modulation.
+        :param p1_xy: The first vertex coordinate on the rendering target.
+        :param p2_xy: The second vertex coordinate on the rendering target.
+        :param p3_xy: The third vertex coordinate on the rendering target.
+        :param p1_uv: The first UV coordinate of the triangle portion.
+        :param p2_uv: The second UV coordinate of the triangle portion.
+        :param p3_uv: The third UV coordinate of the triangle portion.
+        :param p1_mod: The first vertex color modulation.
+        :param p2_mod: The second vertex color modulation.
+        :param p3_mod: The third vertex color modulation.
         """
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("draw_triangle requires SDL 2.0.18 or newer")
@@ -828,20 +890,20 @@ cdef class Texture:
                   p1_uv=(0.0, 0.0), p2_uv=(1.0, 0.0), p3_uv=(1.0, 1.0), p4_uv=(0.0, 1.0),
                   p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255),
                   p3_mod=(255, 255, 255, 255), p4_mod=(255, 255, 255, 255)):
-        """ Copy a quad portion of the texture to the rendering target by vertices coordinates.
+        """Copy a quad portion of the texture to the rendering target using the given coordinates
 
-        :param p1_xy: first vertex coordinate on the render target to be drawn at.
-        :param p2_xy: second vertex coordinate on the render target to be drawn at.
-        :param p3_xy: third vertex coordinate on the render target to be drawn at.
-        :param p4_xy: fourth vertex coordinate on the render target to be drawn at.
-        :param p1_uv: first vertex coordinate on the texture to be drawn from.
-        :param p2_uv: second vertex coordinate on the texture to be drawn from.
-        :param p3_uv: third vertex coordinate on the texture to be drawn from.
-        :param p4_uv: fourth vertex coordinate on the texture to be drawn from.
-        :param p1_mod: first vertex color modulation.
-        :param p2_mod: second vertex color modulation.
-        :param p3_mod: third vertex color modulation.
-        :param p4_mod: fourth vertex color modulation.
+        :param p1_xy: The first vertex coordinate on the rendering target.
+        :param p2_xy: The second vertex coordinate on the rendering target.
+        :param p3_xy: The third vertex coordinate on the rendering target.
+        :param p4_xy: The fourth vertex coordinate on the rendering target.
+        :param p1_uv: The first UV coordinate of the quad portion.
+        :param p2_uv: The second UV coordinate of the quad portion.
+        :param p3_uv: The third UV coordinate of the quad portion.
+        :param p4_uv: The fourth UV coordinate of the quad portion.
+        :param p1_mod: The first vertex color modulation.
+        :param p2_mod: The second vertex color modulation.
+        :param p3_mod: The third vertex color modulation.
+        :param p4_mod: The fourth vertex color modulation.
         """
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("draw_quad requires SDL 2.0.18 or newer")
@@ -879,16 +941,18 @@ cdef class Texture:
     def update(self, surface, area=None):
         # https://wiki.libsdl.org/SDL_UpdateTexture
         # Should it accept a raw pixel data array too?
-        """ Update the texture with Surface.
+        """Update the texture with Surface (WARNING: Slow operation, use sparingly)
+
+        :param Surface surface: The source surface.
+        :param area: The rectangular area of the texture to update.
+        
         This is a fairly slow function, intended for use with static textures that do not change often.
 
         If the texture is intended to be updated often,
         it is preferred to create the texture as streaming and use the locking functions.
 
-        While this function will work with streaming textures,
-        for optimization reasons you may not get the pixels back if you lock the texture afterward.
-
-        :param surface: source Surface.
+        While this function will work with streaming textures, for optimization reasons you may
+        not get the pixels back if you lock the texture afterward.
         """
 
         if not pgSurface_Check(surface):
@@ -948,18 +1012,26 @@ cdef class Image:
         self._color = pgColor_NewLength(defaultColor, 3)
         self._alpha = 255
 
-    def __init__(self, textureOrImage, srcrect=None):
+    def __init__(self, texture_or_image, srcrect=None):
+        """pygame object that represents a portion of a texture
+        
+        An Image object represents a portion of a texture. Specifically, they can be used
+        to store and manipulate arguments for :meth:`Texture.draw` in a more user friendly way.
+
+        :param Texture | Image texture_or_image: The Texture or an existing Image object to create the Image from.
+        :param srcrect: The rectangular portion of the Texture or Image object passed to ``texture_or_image``.
+        """
         cdef SDL_Rect temp
         cdef SDL_Rect *rectptr
 
-        if isinstance(textureOrImage, Image):
-            self.texture = textureOrImage.texture
-            self.srcrect = pgRect_New(&(<Rect>textureOrImage.srcrect).r)
+        if isinstance(texture_or_image, Image):
+            self.texture = texture_or_image.texture
+            self.srcrect = pgRect_New(&(<Rect>texture_or_image.srcrect).r)
         else:
-            self.texture = textureOrImage
-            self.srcrect = textureOrImage.get_rect()
+            self.texture = texture_or_image
+            self.srcrect = texture_or_image.get_rect()
         
-        self._blend_mode = textureOrImage.get_blend_mode()
+        self._blend_mode = texture_or_image.get_blend_mode()
 
         if srcrect is not None:
             rectptr = pgRect_FromObject(srcrect, &temp)
@@ -979,46 +1051,81 @@ cdef class Image:
             temp.y += self.srcrect.y
             self.srcrect = pgRect_New(&temp)
 
-    def get_color(self):
-        return self._color
-
-    def set_color(self, new_color):
-        self._color[:3] = new_color[:3]
-
     def get_origin(self):
+        """Get the Image's origin of rotation
+        
+        Get the Image's origin of rotation, a 2D coordinate relative to the topleft coordinate of the Image's
+        rectangular area. An origin of ``None`` means no origin was set and the Image will be rotated around
+        its center.
+        """
         if self._originptr == NULL:
             return None
         else:
             return (self._origin.x, self._origin.y)
 
-    def set_origin(self, new_origin):
-        if new_origin:
-            self._origin.x = <int>new_origin[0]
-            self._origin.y = <int>new_origin[1]
+    def set_origin(self, origin):
+        """Set the Image's origin of rotation
+
+        :param origin: The new origin, a 2D coordinate relative to the topleft coordinate of the Image's rectangular area.
+
+        An origin of ``None`` means the Image will be rotated around its center.
+        """
+        if origin:
+            self._origin.x = <int>origin[0]
+            self._origin.y = <int>origin[1]
             self._originptr = &self._origin
         else:
             self._originptr = NULL
 
+    def get_color(self):
+        """Get the Image color modifier
+        """
+        return self._color
+
+    def set_color(self, color):
+        """Set the Image color modifier
+        """
+        self._color[:3] = color[:3]
+
     def get_rect(self):
+        """Get the rectangular area of the Image
+
+        The returned :class:`Rect` object
+        might contain position information relative to the bounds of the :class:`Texture` or
+        Image object the Image was created from.
+        """
         return pgRect_New(&self.srcrect.r)
     
     def get_alpha(self):
+        """Get the Image alpha modifier
+        """
         return self._alpha
     
-    def set_alpha(self,alpha):
+    def set_alpha(self, alpha):
+        """Set the Image alpha modifier
+
+        :param int alpha: The new alpha value. Must be between 0-255.
+        """
         self._alpha=int(alpha)
     
     def get_blend_mode(self):
+        """Get the Image blend mode modifier
+        """
         return self._blend_mode
     
-    def set_blend_mode(self,blend):
-        self._blend_mode=blend
+    def set_blend_mode(self, blend_mode):
+        """Set the Image blend mode modifier
+        
+        :param int blend_mode: The blend mode. Can be set using one
+                               of the ``BLENDMODE_*`` constants or a custom one. 
+        """
+        self._blend_mode = blend_mode
 
     cpdef void draw(self, srcrect=None, dstrect=None):
-        """ Copy a portion of the image to the rendering target.
+        """Copy a portion of the image to the rendering target.
 
         :param srcrect: source rectangle specifying a sub-image, or None for the entire image.
-        :param dstrect: destination rectangle or position on the render target, or None for entire target.
+        :param dstrect: destination rectangle or position on the rendering target, or None for entire target.
                         The image is stretched to fill dstrect.
         """
         cdef SDL_Rect src
@@ -1091,16 +1198,32 @@ cdef class Renderer:
     def __init__(self, Window window, int index=-1,
                  int accelerated=-1, bint vsync=False,
                  bint target_texture=False):
-        """ Create a 2D rendering context for a window.
+        """Create a 2D rendering context for a window.
 
-        :param Window window: where rendering is displayed.
+        :param Window window: The window unto which the rendering context should be placed.
         :param int index: index of rendering driver to initialize,
                           or -1 to init the first supporting requested options.
-        :param int accelerated: if 1, the renderer uses hardware acceleration.
+        :param int accelerated: If 1, the renderer uses hardware acceleration.
                                 if 0, the renderer is a software fallback.
                                 -1 gives precedence to renderers using hardware acceleration.
-        :param bool vsync: .present() is synchronized with the refresh rate.
+        :param bool vsync: :meth:`Renderer.present` is synchronized with the refresh rate.
         :param bool target_texture: the renderer supports rendering to texture.
+
+        :class:`Renderer` objects provide a cross-platform API for rendering 2D graphics unto a :class:`Window`,
+        by using either Metal (MacOS), OpenGL (MacOS, Windows, Linux) or Direct3D (Windows, Xbox) graphics APIs,
+        depending on what is set during their creation.
+
+        They can be used to draw both :class:`Texture` objects and simple points, lines and rectangles
+        (which are colored based on :attr:`Renderer.draw_color`).
+
+        To present drawn content unto the window, :meth:`Renderer.present` should be called. :meth:`Renderer.clear`
+        should be called to clear any drawn content with the set Renderer draw color.  
+ 
+        When things are drawn unto Renderer objects, an internal batching system is used to batch those "draw
+        calls" together, to have all of them be processed in one go when :meth:`Renderer.present` is called. This
+        is unlike :class:`pygame.Surface` objects, on which modifications via blitting occur immediately, but lends
+        well to the behavior of GPUs, as draw calls can be expensive on low-end models. Therefore, batching drawing
+        operations is preferred where possible.
         """
         # https://wiki.libsdl.org/SDL_CreateRenderer
         # https://wiki.libsdl.org/SDL_RendererFlags
@@ -1129,44 +1252,44 @@ cdef class Renderer:
             SDL_DestroyRenderer(self._renderer)
 
     def get_draw_blend_mode(self):
-        """Get the blend mode used for drawing operations (Fill and Line).
+        """Get the blend mode used for primitive drawing operations
         """
         # https://wiki.libsdl.org/SDL_GetRenderDrawBlendMode
-        cdef SDL_BlendMode blendMode
-        cdef int res = SDL_GetRenderDrawBlendMode(self._renderer, &blendMode)
+        cdef SDL_BlendMode blend_mode
+        cdef int res = SDL_GetRenderDrawBlendMode(self._renderer, &blend_mode)
         if res < 0:
             raise error()
 
-        return blendMode
+        return blend_mode
 
-    def set_draw_blend_mode(self, blendMode):
-        """Set the blend mode used for drawing operations (Fill and Line).
+    def set_draw_blend_mode(self, blend_mode):
+        """Set the blend mode used for primitive drawing operations
         """
         # https://wiki.libsdl.org/SDL_SetRenderDrawBlendMode
-        cdef int res = SDL_SetRenderDrawBlendMode(self._renderer, blendMode)
+        cdef int res = SDL_SetRenderDrawBlendMode(self._renderer, blend_mode)
         if res < 0:
             raise error()
 
     def get_draw_color(self):
-        """ Get the color used by the drawing functions.
+        """Get the draw color used for primitive drawing operations
         """
         return self._draw_color
 
-    def set_draw_color(self, new_value):
-        """ Set color used by the drawing functions.
+    def set_draw_color(self, color):
+        """Set the draw color used for primitive drawing operations
         """
         # https://wiki.libsdl.org/SDL_SetRenderDrawColor
-        self._draw_color[:] = new_value
+        self._draw_color[:] = color
         cdef int res = SDL_SetRenderDrawColor(self._renderer,
-                                              new_value[0],
-                                              new_value[1],
-                                              new_value[2],
-                                              new_value[3])
+                                             color[0],
+                                             color[1],
+                                             color[2],
+                                             color[3])
         if res < 0:
             raise error()
 
     def clear(self):
-        """ Clear the current rendering target with the drawing color.
+        """Clear the current rendering target with the draw color
         """
         # https://wiki.libsdl.org/SDL_RenderClear
         cdef int res = SDL_RenderClear(self._renderer)
@@ -1174,65 +1297,25 @@ cdef class Renderer:
             raise error()
 
     def present(self):
-        """ Present the composed backbuffer to the screen.
-
-        Updates the screen with any rendering performed since previous call.
+        """Update the screen with any rendering performed since the previous call
         """
         # https://wiki.libsdl.org/SDL_RenderPresent
         SDL_RenderPresent(self._renderer)
 
     cpdef get_viewport(self):
-        """ Returns the drawing area on the target.
-
-        :rtype: pygame.Rect
+        """Get the drawing area on the rendering target
         """
         # https://wiki.libsdl.org/SDL_RenderGetViewport
         cdef SDL_Rect rect
         SDL_RenderGetViewport(self._renderer, &rect)
         return pgRect_New(&rect)
 
-    def get_logical_size(self):
-        """Get the device independent resolution for rendering.
-        """
-        cdef int w
-        cdef int h
-        SDL_RenderGetLogicalSize(self._renderer, &w, &h)
-        return (w, h)
-
-    def set_logical_size(self, size):
-        """Set a device independent resolution for rendering.
-        """
-        cdef int w = size[0]
-        cdef int h = size[1]
-        if (SDL_RenderSetLogicalSize(self._renderer, w, h) != 0):
-            raise error()
-
-    def get_scale(self):
-        """Get the drawing scale for the current target.
-        """
-        cdef float x
-        cdef float y
-        SDL_RenderGetScale(self._renderer, &x, &y)
-        return (x, y)
-
-    def set_scale(self, scale):
-        """Set a drawing scale for the current target.
-        """
-        cdef float x = scale[0]
-        cdef float y = scale[1]
-        if (SDL_RenderSetScale(self._renderer, x, y) != 0):
-            raise error()
-
-    # TODO ifdef
-    # def is_integer_scale(self):
-    #     return SDL_RenderGetIntegerScale(self._renderer)
-
     def set_viewport(self, area):
-        """ Set the drawing area on the target.
-        If this is set to ``None``, the entire target will be used.
+        """Set the drawing area on the rendering target
 
-        :param area: A ``pygame.Rect`` or tuple representing the
-                     drawing area on the target, or None.
+        :param area: A :class:`pygame.Rect` or tuple representing the
+                    drawing area on the target, or ``None`` to use the
+                    entire area of the current rendering target.
         """
         # https://wiki.libsdl.org/SDL_RenderSetViewport
         if area is None:
@@ -1248,24 +1331,68 @@ cdef class Renderer:
         if SDL_RenderSetViewport(self._renderer, rectptr) < 0:
             raise error()
 
-    def get_target(self):
-        """ Get the current render target. Set to ``None`` for the default target.
+    def get_logical_size(self):
+        """Get the logical Renderer size (a device independent resolution for rendering)
+        """
+        cdef int w
+        cdef int h
+        SDL_RenderGetLogicalSize(self._renderer, &w, &h)
+        return (w, h)
 
-        :rtype: Texture, None
+    def set_logical_size(self, size):
+        """Set the logical Renderer size (a device independent resolution for rendering)
+        
+        :param size: The new logical size.
+        """
+        cdef int w = size[0]
+        cdef int h = size[1]
+        if (SDL_RenderSetLogicalSize(self._renderer, w, h) != 0):
+            raise error()
+
+    def get_scale(self):
+        """Get the drawing scale for the current rendering target.
+        """
+        cdef float x
+    
+        cdef float y
+        SDL_RenderGetScale(self._renderer, &x, &y)
+        return (x, y)
+
+    def set_scale(self, scale):
+        """Set a drawing scale for the current rendering target.
+        """
+        cdef float x = scale[0]
+        cdef float y = scale[1]
+        if (SDL_RenderSetScale(self._renderer, x, y) != 0):
+            raise error()
+
+    # TODO ifdef
+    # def is_integer_scale(self):
+    #     return SDL_RenderGetIntegerScale(self._renderer)
+
+
+    def get_target(self):
+        """Get the current rendering target
+        
+        A value of ``None`` means that no custom rendering target was set and the Renderer's window
+        will be drawn unto.
         """
         # https://wiki.libsdl.org/SDL_GetRenderTarget
         return self._target
 
-    def set_target(self, newtarget):
-        """Get the current render target. Set to ``None`` for the default target.
+    def set_target(self, target):
+        """Set the current rendering target
+
+        :param Texture | None target: The :class:`Texture` object to use as a rendering target, or ``None``
+        to revert back to the default target (the window). 
         """
         # https://wiki.libsdl.org/SDL_SetRenderTarget
-        if newtarget is None:
+        if target is None:
             self._target = None
             if SDL_SetRenderTarget(self._renderer, NULL) < 0:
                 raise error()
-        elif isinstance(newtarget, Texture):
-            self._target = newtarget
+        elif isinstance(target, Texture):
+            self._target = target
             if SDL_SetRenderTarget(self._renderer,
                                    self._target._tex) < 0:
                 raise error()
@@ -1273,12 +1400,17 @@ cdef class Renderer:
             raise TypeError('target must be a Texture or None')
 
     cpdef object blit(self, object source, Rect dest=None, Rect area=None, int special_flags=0):
-        """ Only for compatibility.
-        Textures created by different Renderers cannot shared with each other!
-        :param source: A Texture or Image to draw.
-        :param dest: destination on the render target.
-        :param area: the portion of source texture.
+        """Draw textures using a Surface-like method
+
+        For compatibility purposes. Draw :class:`Texture` objects unto the Renderer using a method signature
+        similar to :meth:`pygame.Surface.blit`.
+
+        :param source: A :class:`Texture` or :class:`Image` to draw.
+        :param dest: The drawing destination on the rendering target.
+        :param area: The portion of the source texture or image to draw from.
         :param special_flags: have no effect at this moment.
+
+        Textures created by different Renderers cannot shared with each other!
         """
         if isinstance(source, Texture):
             (<Texture>source).draw(area, dest)
@@ -1392,17 +1524,19 @@ cdef class Renderer:
 
     def to_surface(self, surface=None, area=None):
         # https://wiki.libsdl.org/SDL_RenderReadPixels
-        """
-            Read pixels from the current rendering target and create a pygame.Surface.
-            WARNING: This is a very slow operation, and should not be used frequently.
+        """Read pixels from current rendering target and create a Surface (WARNING: Slow operation, use sparingly)
 
-        :param surface: A surface to read the pixel data into.
-                        It must be large enough to fit the area, or ``ValueError`` is
-                        raised.
-                        If ``None``, a new surface is returned.
+        Read pixel data from the current rendering target and return a :class:`pygame.Surface` containing it.
+
+        :param Surface surface: A :class:`pygame.Surface` object to read the pixel data into.
+                       It must be large enough to fit the area, otherwise ``ValueError`` is
+                       raised.
+                       If ``None``, a new surface will be created.
         :param area: The area of the screen to read pixels from. The area is
-                     clipped to fit inside the viewport.
-                     If ``None``, the entire viewport is used.
+                    clipped to fit inside the viewport.
+                    If ``None``, the entire viewport is used.
+
+        **WARNING**: This is a very slow operation, and should not be used frequently.  
         """
         cdef Uint32 format
         cdef SDL_Rect rarea
@@ -1463,7 +1597,7 @@ cdef class Renderer:
 
     @staticmethod
     def compose_custom_blend_mode(color_mode, alpha_mode):
-        """ Use this function to compose a custom blend mode.. 
+        """Compose a custom blend mode
 
         :param color_mode: A tuple (srcColorFactor, dstColorFactor, colorOperation)
         :param alpha_mode: A tuple (srcAlphaFactor, dstAlphaFactor, alphaOperation)
