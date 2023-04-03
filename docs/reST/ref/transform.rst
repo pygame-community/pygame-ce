@@ -46,11 +46,7 @@ Instead, always begin with the original image and scale to the desired size.)
    Surface. This destination surface must be the same as the size (width, height) passed
    in, and the same depth and format as the source Surface.
 
-   .. versionchanged:: 2.3.0 internal scaling algorithm was replaced with a nearly
-      equivalent one that is 40% faster. Scale results will be very slightly
-      different.
-
-   .. versionchanged:: 2.3.0 internal scaling algorithm was replaced with a nearly
+   .. versionchanged:: 2.2.1 internal scaling algorithm was replaced with a nearly
       equivalent one that is 40% faster. Scale results will be very slightly
       different.
 
