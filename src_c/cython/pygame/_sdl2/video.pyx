@@ -1142,13 +1142,17 @@ cdef class Renderer:
         """ Clear the current rendering target with the given color.
         """
         # https://wiki.libsdl.org/SDL_RenderClear
-        cdef int res = SDL_SetRenderDrawColor(self._renderer,
-                                              color[0],
-                                              color[1],
-                                              color[2],
-                                              color[3])
-        if res < 0:
-            raise error()
+        cdef int res
+
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
+
         res = SDL_RenderClear(self._renderer)
         if res < 0:
             raise error()
@@ -1271,13 +1275,16 @@ cdef class Renderer:
         return dest
 
     def draw_line(self, p1, p2, color=(255, 255, 255, 255)):
-        cdef int res = SDL_SetRenderDrawColor(self._renderer,
-                                              color[0],
-                                              color[1],
-                                              color[2],
-                                              color[3])
-        if res < 0:
-            raise error()
+        cdef int res
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
+
         if SDL_VERSION_ATLEAST(2,0,10):
             res = SDL_RenderDrawLineF(self._renderer,
                                      p1[0], p1[1],
@@ -1291,13 +1298,17 @@ cdef class Renderer:
 
     def draw_point(self, point, color=(255, 255, 255, 255)):
         # https://wiki.libsdl.org/SDL_RenderDrawPoint
-        cdef int res = SDL_SetRenderDrawColor(self._renderer,
-                                              color[0],
-                                              color[1],
-                                              color[2],
-                                              color[3])
-        if res < 0:
-            raise error()
+        cdef int res
+
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
+
         if SDL_VERSION_ATLEAST(2,0,10):
             res = SDL_RenderDrawPointF(self._renderer,
                                     point[0], point[1])
@@ -1313,13 +1324,16 @@ cdef class Renderer:
         cdef SDL_Rect *rectptr
         cdef SDL_FRect _frect
         cdef SDL_FRect *frectptr
-        cdef int res = SDL_SetRenderDrawColor(self._renderer,
-                                              color[0],
-                                              color[1],
-                                              color[2],
-                                              color[3])
-        if res < 0:
-            raise error()
+        cdef int res
+
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
 
         if SDL_VERSION_ATLEAST(2,0,10):
             frectptr = pgFRect_FromObject(rect, &_frect)
@@ -1344,13 +1358,16 @@ cdef class Renderer:
         cdef SDL_Rect *rectptr
         cdef SDL_FRect _frect
         cdef SDL_FRect *frectptr
-        cdef int res = SDL_SetRenderDrawColor(self._renderer,
-                                              color[0],
-                                              color[1],
-                                              color[2],
-                                              color[3])
-        if res < 0:
-            raise error()
+        cdef int res
+
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
 
         if SDL_VERSION_ATLEAST(2,0,10):
             frectptr = pgFRect_FromObject(rect, &_frect)
@@ -1373,13 +1390,17 @@ cdef class Renderer:
         # https://wiki.libsdl.org/SDL_RenderDrawLines
         cdef SDL_Point points[4]
         cdef SDL_FPoint fpoints[4]
-        cdef int res = SDL_SetRenderDrawColor(self._renderer,
-                                              color[0],
-                                              color[1],
-                                              color[2],
-                                              color[3])
-        if res < 0:
-            raise error()
+        cdef int res
+
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
+
         if SDL_VERSION_ATLEAST(2,0,10):
             for i, pos in enumerate((p1, p2, p3, p1)):
                 fpoints[i].x = pos[0]
@@ -1403,13 +1424,17 @@ cdef class Renderer:
             raise error("fill_triangle requires SDL 2.0.18 or newer")
 
         cdef SDL_Vertex vertices[3]
-        cdef int res = SDL_SetRenderDrawColor(self._renderer,
-                                              color[0],
-                                              color[1],
-                                              color[2],
-                                              color[3])
-        if res < 0:
-            raise error()
+        cdef int res
+
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
+
         for i, pos in enumerate((p1, p2, p3)):
             vertices[i].position.x = pos[0]
             vertices[i].position.y = pos[1]
@@ -1426,13 +1451,17 @@ cdef class Renderer:
         # https://wiki.libsdl.org/SDL_RenderDrawLines
         cdef SDL_Point points[5]
         cdef SDL_FPoint fpoints[5]
-        cdef int res = SDL_SetRenderDrawColor(self._renderer,
-                                              color[0],
-                                              color[1],
-                                              color[2],
-                                              color[3])
-        if res < 0:
-            raise error()
+        cdef int res
+
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
+
         if SDL_VERSION_ATLEAST(2,0,10):
             for i, pos in enumerate((p1, p2, p3, p4, p1)):
                 fpoints[i].x = pos[0]
@@ -1453,13 +1482,17 @@ cdef class Renderer:
         # https://wiki.libsdl.org/SDL_RenderGeometry
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("fill_quad requires SDL 2.0.18 or newer")
-        cdef int res = SDL_SetRenderDrawColor(self._renderer,
-                                              color[0],
-                                              color[1],
-                                              color[2],
-                                              color[3])
-        if res < 0:
-            raise error()
+        cdef int res
+
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
+
         cdef SDL_Vertex vertices[6]
         for i, pos in enumerate((p1, p2, p3, p3, p4, p1)):
             vertices[i].position.x = pos[0]
