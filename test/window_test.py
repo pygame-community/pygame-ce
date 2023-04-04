@@ -191,6 +191,7 @@ class WindowSurfaceTest(unittest.TestCase):
         win.destroy()
 
     def test_surface_convert(self):
+        pygame.display.init()
         win = pygame.window.Window()
 
         sf1 = pygame.Surface((12, 24))
