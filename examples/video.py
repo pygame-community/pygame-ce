@@ -58,7 +58,7 @@ clock = pg.time.Clock()
 backgrounds = [(255, 0, 0, 255), (0, 255, 0, 255), (0, 0, 255, 255)]
 bg_index = 0
 
-renderer.draw_color = backgrounds[bg_index]
+draw_color = backgrounds[bg_index]
 
 win2 = Window("2nd window", size=(256, 256), always_on_top=True)
 win2.opacity = 0.5
@@ -116,9 +116,9 @@ while running:
 
             elif event.key == pg.K_SPACE:
                 bg_index = (bg_index + 1) % len(backgrounds)
-                renderer.draw_color = backgrounds[bg_index]
+                draw_color = backgrounds[bg_index]
 
-    renderer.clear()
+    renderer.clear(draw_color)
 
     # update texture
     curtime = pg.time.get_ticks()
@@ -146,13 +146,11 @@ while running:
     # - rect(rect, width=0)->filled ? , instead of fill_rect
     #
     # TODO: should these work with pg.draw.line(renderer, ...) functions?
-    renderer.draw_color = (255, 255, 255, 255)
     renderer.draw_line((0, 0), (64, 64))
     renderer.draw_line((64, 64), (128, 0))
     renderer.draw_point((72, 32))
     renderer.draw_rect(pg.Rect(0, 64, 64, 64))
     renderer.fill_rect(pg.Rect(0, 128, 64, 64))
-    renderer.draw_color = backgrounds[bg_index]
 
     renderer.present()
 
