@@ -1620,7 +1620,8 @@ pg_DisplayFormat(SDL_Surface *surface)
 {
     SDL_Surface *displaysurf;
     SDL_PixelFormat *fmt = NULL;
-    if (fmt = pg_GetDefaultConvertFormat()) {
+    fmt = pg_GetDefaultConvertFormat();
+    if (fmt) {
         return SDL_ConvertSurface(surface, fmt, 0);
     }
     if (!pg_GetDefaultWindowSurface()) {

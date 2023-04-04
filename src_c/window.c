@@ -44,7 +44,7 @@ get_grabbed_window(PyObject *self)
 static PyObject *
 window_destroy(pgWindowObject *self)
 {
-    int i;
+    Py_ssize_t i;
     SDL_bool format_need_update = SDL_FALSE;
     SDL_bool format_updated = SDL_FALSE;
     PyObject *item;
