@@ -17,7 +17,7 @@
    If a window is destroyed, it will be removed from the tuple.
 
    Notice the window created by display module will never present in 
-   the tuple until you use :func:`Window.from_existing_window`
+   the tuple until you use :meth:`Window.from_existing_window`
    to get the window object.
 
    .. ## pygame.window.get_windows ##
@@ -192,6 +192,8 @@
       | :sl:`Update the window from surface`
       | :sg:`update_from_surface(*rects) -> None`
 
+      Update the window from surface.
+
       Example:
 
       ::
@@ -210,7 +212,7 @@
             (10,10,100,100),(210,210,100,100))
 
          # another way to update portions of window
-         rects=[FRect(i*10,i*10,5,5) for i in range(10)]
+         rects=[FRect(i*10,i*3.14,5,5) for i in range(0,1000,100)]
          window.update_from_surface(*rects)
 
 
@@ -377,7 +379,7 @@
 
       Notice the size of the surface will be automatically changed when the size of window is changed.
 
-      .. seealso:: :func:`update_from_surface`
+      .. seealso:: :meth:`update_from_surface`
 
       .. ## Window.get_surface ##
    
@@ -393,7 +395,7 @@
       | :sl:`Get whether the window is created by pygame`
       | :sg:`get_foreign() -> bool`
 
-      Returns True if the window is created by :func:`from_existing_window`.
+      Returns True if the window is created by :meth:`from_existing_window`.
 
       .. ## Window.get_foreign ##
 
