@@ -10,15 +10,24 @@
 
 .. function:: get_windows
 
-   | :sl:`docs_needed`
+   | :sl:`Get all windows`
    | :sg:`get_windows() -> Tuple[Window, ...]`
+
+   Returns a tuple include all windows. 
+   If a window is destroyed, it will be removed from the tuple.
+
+   Notice the window created by display module will never present in 
+   the tuple until you use :func:`Window.from_existing_window`
+   to get the window object.
 
    .. ## pygame.window.get_windows ##
 
 .. function:: get_grabbed_window
 
-   | :sl:`docs_needed`
+   | :sl:`Get the current grabbed window`
    | :sg:`get_grabbed_window() -> Optional[Window]`
+
+   Returns ``None`` if there is no grabbed window.
 
    .. ## pygame.window.get_grabbed_window ##
 
@@ -149,15 +158,21 @@
    
    .. method:: flash
 
-      | :sl:`docs_needed`
+      | :sl:`Flash the window icon to demand attention from the user`
       | :sg:`flash(briefly=False) -> None`
+
+      :param bool briefly: When set to ``True``, the window will flash briefly. When set to ``False``, the window will flash until it gets focus or :func:`flash_cancel` is called.
+
+      .. seealso:: :func:`flash_cancel`
 
       .. ## Window.flash ##
    
    .. method:: flash_cancel
 
-      | :sl:`docs_needed`
+      | :sl:`Cancel the flash`
       | :sg:`flash_cancel() -> None`
+
+      .. seealso:: :func:`flash`
 
       .. ## Window.flash_cancel ##
       
@@ -174,8 +189,30 @@
    
    .. method:: update_from_surface
 
-      | :sl:`docs_needed`
+      | :sl:`Update the window from surface`
       | :sg:`update_from_surface(*rects) -> None`
+
+      Example:
+
+      ::
+
+         window=Window()
+         surf=window.get_surface()
+
+         # update the full window
+         window.update_from_surface()
+
+         # update a portion of window
+         window.update_from_surface((10,10,100,100))
+
+         # update portions of window
+         window.update_from_surface(
+            (10,10,100,100),(210,210,100,100))
+
+         # another way to update portions of window
+         rects=[FRect(i*10,i*10,5,5) for i in range(10)]
+         window.update_from_surface(*rects)
+
 
       .. ## Window.update_from_surface ##
 
@@ -204,14 +241,14 @@
    
    .. method:: set_always_on_top
 
-      | :sl:`docs_needed`
+      | :sl:`Set whether the window is always on top`
       | :sg:`set_always_on_top(enable) -> None`
 
       .. ## Window.set_always_on_top ##
    
    .. method:: get_always_on_top
 
-      | :sl:`docs_needed`
+      | :sl:`Get whether the window is always on top`
       | :sg:`get_always_on_top() -> bool`
 
       .. ## Window.get_always_on_top ##
@@ -333,8 +370,14 @@
    
    .. method:: get_surface
 
-      | :sl:`docs_needed`
+      | :sl:`Get a reference to the currently set display surface of this window`
       | :sg:`get_surface() -> Surface`
+
+      Get a reference to the currently set display surface of this window.
+
+      Notice the size of the surface will be automatically changed when the size of window is changed.
+
+      .. seealso:: :func:`update_from_surface`
 
       .. ## Window.get_surface ##
    
@@ -347,15 +390,22 @@
 
    .. method:: get_foreign
 
-      | :sl:`docs_needed`
+      | :sl:`Get whether the window is created by pygame`
       | :sg:`get_foreign() -> bool`
+
+      Returns True if the window is created by :func:`from_existing_window`.
 
       .. ## Window.get_foreign ##
 
    .. method:: get_wm_info
 
-      | :sl:`docs_needed`
+      | :sl:`Get information about the current window`
       | :sg:`get_wm_info() -> dict`
+
+      Creates a dictionary filled with string keys. The strings and values are
+      arbitrarily created by the system. Some systems may have no information and
+      an empty dictionary will be returned. Most platforms will return a "window"
+      key with the value set to the system id for the current window.
 
       .. ## Window.get_wm_info ##
 
