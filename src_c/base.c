@@ -82,6 +82,7 @@ static int pg_sdl_was_init = 0;
 SDL_Window *pg_default_window = NULL;
 pgSurfaceObject *pg_default_screen = NULL;
 static char *pg_env_blend_alpha_SDL2 = NULL;
+static SDL_PixelFormat *_default_pixel_format = NULL;
 
 static void
 pg_install_parachute(void);
@@ -172,6 +173,10 @@ static void
 pg_SetDefaultWindowSurface(pgSurfaceObject *);
 static char *
 pg_EnvShouldBlendAlphaSDL2(void);
+static void
+pg_SetDefaultConvertFormat(SDL_PixelFormat *fmt);
+static SDL_PixelFormat *
+pg_GetDefaultConvertFormat();
 
 /* compare compiled to linked, raise python error on incompatibility */
 static int
@@ -411,6 +416,8 @@ _pg_quit(void)
         IMPPREFIX "joystick",
         IMPPREFIX "display", /* Display last, this also quits event,time */
         NULL};
+
+    pg_SetDefaultConvertFormat(NULL);
 
     if (pg_quit_functions) {
         privatefuncs = pg_quit_functions;
@@ -2063,6 +2070,18 @@ pg_uninstall_parachute(void)
 #endif
 }
 
+static void
+pg_SetDefaultConvertFormat(SDL_PixelFormat *fmt)
+{
+    _default_pixel_format = fmt;
+}
+
+static SDL_PixelFormat *
+pg_GetDefaultConvertFormat()
+{
+    return _default_pixel_format;
+}
+
 /* bind functions to python */
 
 static PyMethodDef _base_methods[] = {
@@ -2170,8 +2189,10 @@ MODINIT_DEFINE(base)
     c_api[21] = pg_GetDefaultWindowSurface;
     c_api[22] = pg_SetDefaultWindowSurface;
     c_api[23] = pg_EnvShouldBlendAlphaSDL2;
+    c_api[24] = pg_SetDefaultConvertFormat;
+    c_api[25] = pg_GetDefaultConvertFormat;
 
-#define FILLED_SLOTS 24
+#define FILLED_SLOTS 26
 
 #if PYGAMEAPI_BASE_NUMSLOTS != FILLED_SLOTS
 #error export slot count mismatch

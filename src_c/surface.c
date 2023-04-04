@@ -1619,6 +1619,10 @@ static SDL_Surface *
 pg_DisplayFormat(SDL_Surface *surface)
 {
     SDL_Surface *displaysurf;
+    SDL_PixelFormat *fmt = NULL;
+    if (fmt = pg_GetDefaultConvertFormat()) {
+        return SDL_ConvertSurface(surface, fmt, 0);
+    }
     if (!pg_GetDefaultWindowSurface()) {
         SDL_SetError("No video mode has been set");
         return NULL;
@@ -1638,12 +1642,17 @@ pg_DisplayFormatAlpha(SDL_Surface *surface)
     Uint32 gmask = 0x0000ff00;
     Uint32 bmask = 0x000000ff;
 
-    if (!pg_GetDefaultWindowSurface()) {
-        SDL_SetError("No video mode has been set");
-        return NULL;
+    dformat = pg_GetDefaultConvertFormat();
+    if (!dformat) {
+        if (pg_GetDefaultWindowSurface()) {
+            displaysurf = pgSurface_AsSurface(pg_GetDefaultWindowSurface());
+            dformat = displaysurf->format;
+        }
+        else {
+            SDL_SetError("No video mode has been set");
+            return NULL;
+        }
     }
-    displaysurf = pgSurface_AsSurface(pg_GetDefaultWindowSurface());
-    dformat = displaysurf->format;
 
     switch (dformat->BytesPerPixel) {
         case 2:

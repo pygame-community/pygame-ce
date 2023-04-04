@@ -10,7 +10,6 @@
 
 static PyTypeObject pgWindow_Type;
 PyObject *_window_list = NULL;
-SDL_Surface *_dummy_surface = NULL;
 PyObject *_pg_display_quit = NULL;
 
 #define pgWindow_Check(x) \
@@ -46,32 +45,56 @@ static PyObject *
 window_destroy(pgWindowObject *self)
 {
     int i;
+    SDL_bool format_need_update = SDL_FALSE;
+    SDL_bool format_updated = SDL_FALSE;
     PyObject *item;
 
     if (!self->win) {
         return RAISE(pgExc_SDLError, "Invalid window");
     }
 
+    if (self->surf) {
+        if (self->surf->surf->format == pg_GetDefaultConvertFormat()) {
+            format_need_update = SDL_TRUE;
+        }
+        Py_DECREF(self->surf);
+
+        // set the surface to a dummy one
+        // to prevent segfaut when writing the surface after
+        // the window is destroyed
+        self->surf->surf =
+            SDL_CreateRGBSurface(0, 1, 1, 24, 0xff0000, 0xff00, 0xff, 0);
+    }
+
     SDL_DestroyWindow(self->win);
-    Py_XDECREF(self->surf);
-
-    // set the surface to dummy
-    // to prevent segfaut when writing the surface after
-    // the window is destroyed
-    if (self->surf)
-        self->surf->surf = _dummy_surface;
-
     self->surf = NULL;
     self->win = NULL;
 
     for (i = 0; i < PySequence_Size(_window_list); i++) {
         item = PySequence_GetItem(_window_list, i);
+        Py_DECREF(item);
         if ((PyObject *)self == item) {
             PySequence_DelItem(_window_list, i);
-            Py_DECREF(self);
             break;
         }
-        Py_DECREF(item);
+    }
+
+    if (format_need_update) {
+        for (i = PySequence_Size(_window_list) - 1; i >= 0; i--) {
+            item = PySequence_GetItem(_window_list, i);
+            Py_DECREF(item);
+            if (((pgWindowObject *)item)->surf &&
+                ((pgWindowObject *)item)->surf->surf->format ==
+                    pg_GetDefaultConvertFormat()) {
+                pg_SetDefaultConvertFormat(
+                    ((pgWindowObject *)item)->surf->surf->format);
+                format_updated = SDL_TRUE;
+                break;
+            }
+        }
+        if (!format_updated) {
+            pg_SetDefaultConvertFormat(NULL);
+        }
     }
 
     // if the window is from display module
@@ -424,6 +447,8 @@ window_get_surface(pgWindowObject *self)
     }
     self->surf = (pgSurfaceObject *)surf;
     Py_INCREF(surf);
+    if (!pg_GetDefaultConvertFormat())
+        pg_SetDefaultConvertFormat(self->surf->surf->format);
     return surf;
 }
 
@@ -1069,9 +1094,6 @@ MODINIT_DEFINE(window)
     Py_XINCREF(_window_list);
 
     SDL_AddEventWatch(_resize_event_watch, NULL);
-
-    _dummy_surface =
-        SDL_CreateRGBSurface(0, 1, 1, 24, 0xff0000, 0xff00, 0xff, 0);
 
     c_api[0] = &pgWindow_Type;
     apiobj = encapsulate_api(c_api, "window");

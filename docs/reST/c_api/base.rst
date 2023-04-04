@@ -183,3 +183,11 @@ C header: src_c/include/pygame.h
    This functions is called by pygame.display.set_mode().
 
    Availability: SDL 2.
+
+.. c:function:: void pg_SetDefaultConvertFormat(SDL_PixelFormat* fmt)
+   
+   Set the default format of ``convert()``
+
+.. c:function:: SDL_PixelFormat* pg_GetDefaultConvertFormat()
+
+   Get the default format of ``convert()``. Returns NULL if there isn't one.

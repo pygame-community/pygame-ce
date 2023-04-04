@@ -170,27 +170,39 @@ class WindowTypeTest(unittest.TestCase):
 
 
 class WindowSurfaceTest(unittest.TestCase):
-    def setUp(self):
-        self.win = pygame.window.Window()
-        self.sf = self.win.get_surface()
-
     @unittest.skipIf(
         os.environ.get("SDL_VIDEODRIVER") == "dummy",
         "requires the SDL_VIDEODRIVER to be a non dummy value",
     )
     def test_surface_auto_resize(self):
-        size = (360, 360)
-        self.win.set_size(size)
-        self.assertTupleEqual(self.sf.get_size(), size)
-        size = (1280, 720)
-        self.win.set_size(size)
-        self.assertTupleEqual(self.sf.get_size(), size)
-        size = (640, 640)
-        self.win.set_size(size)
-        self.assertTupleEqual(self.sf.get_size(), size)
+        win = pygame.window.Window()
+        sf = win.get_surface()
 
-    def tearDown(self):
-        self.win.destroy()
+        size = (360, 360)
+        win.set_size(size)
+        self.assertTupleEqual(sf.get_size(), size)
+        size = (1280, 720)
+        win.set_size(size)
+        self.assertTupleEqual(sf.get_size(), size)
+        size = (640, 640)
+        win.set_size(size)
+        self.assertTupleEqual(sf.get_size(), size)
+
+        win.destroy()
+
+    def test_surface_convert(self):
+        win = pygame.window.Window()
+
+        sf1 = pygame.Surface((12, 24))
+        self.assertRaises(pygame.error, lambda: sf1.convert())
+        self.assertRaises(pygame.error, lambda: sf1.convert_alpha())
+
+        # when surface is get, convert should be ok
+        win.get_surface()
+        sf1.convert()
+        sf1.convert_alpha()
+
+        win.destroy()
 
 
 if __name__ == "__main__":
