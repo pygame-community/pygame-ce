@@ -65,7 +65,7 @@ import math
 t = 0
 running = True
 clock = pg.time.Clock()
-renderer.draw_color = (255, 0, 0, 255)
+draw_color = (255, 0, 0, 255)
 
 while running:
     for event in pg.event.get():
@@ -83,7 +83,7 @@ while running:
             elif event.key == pg.K_UP:
                 sprite.rect.y -= 5
 
-    renderer.clear()
+    renderer.clear(draw_color)
     t += 1
 
     img = sprite.image
