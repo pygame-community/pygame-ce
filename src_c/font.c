@@ -485,10 +485,12 @@ font_render(PyObject *self, PyObject *args, PyObject *kwarg)
     SDL_Surface *surf;
     const char *astring = "";
     int wraplength = 0;
-    char *kwds[] = {"text", "antialias","color","background","wraplength", NULL};
+    char *kwds[] = {"text",       "antialias",  "color",
+                    "background", "wraplength", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwarg, "OpO|Oi", kwds, &text, &antialias, &fg_rgba_obj,
-                          &bg_rgba_obj, &wraplength)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwarg, "OpO|Oi", kwds, &text,
+                                     &antialias, &fg_rgba_obj, &bg_rgba_obj,
+                                     &wraplength)) {
         return NULL;
     }
 
@@ -872,7 +874,8 @@ static PyMethodDef font_methods[] = {
     {"set_strikethrough", font_set_strikethrough, METH_O,
      DOC_FONT_FONT_SETSTRIKETHROUGH},
     {"metrics", font_metrics, METH_O, DOC_FONT_FONT_METRICS},
-    {"render", font_render, METH_VARARGS | METH_KEYWORDS, DOC_FONT_FONT_RENDER},
+    {"render", font_render, METH_VARARGS | METH_KEYWORDS,
+     DOC_FONT_FONT_RENDER},
     {"size", font_size, METH_O, DOC_FONT_FONT_SIZE},
     {"set_script", font_set_script, METH_O, DOC_FONT_FONT_SETSCRIPT},
     {"set_direction", (PyCFunction)font_set_direction,
