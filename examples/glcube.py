@@ -26,7 +26,7 @@ Keyboard Controls
 import math
 import ctypes
 
-import pygame as pg
+import pygame
 
 try:
     import OpenGL.GL as GL
@@ -521,7 +521,7 @@ def main():
     """run the demo"""
 
     # initialize pygame-ce and setup an opengl display
-    pg.init()
+    pygame.init()
 
     gl_version = (3, 0)  # GL Version number (Major, Minor)
     if USE_MODERN_GL:
@@ -529,16 +529,18 @@ def main():
 
         # By setting these attributes we can choose which Open GL Profile
         # to use, profiles greater than 3.2 use a different rendering path
-        pg.display.gl_set_attribute(pg.GL_CONTEXT_MAJOR_VERSION, gl_version[0])
-        pg.display.gl_set_attribute(pg.GL_CONTEXT_MINOR_VERSION, gl_version[1])
-        pg.display.gl_set_attribute(
-            pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, gl_version[0])
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, gl_version[1])
+        pygame.display.gl_set_attribute(
+            pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_CORE
         )
 
     fullscreen = False  # start in windowed mode
 
     display_size = (640, 480)
-    pg.display.set_mode(display_size, pg.OPENGL | pg.DOUBLEBUF | pg.RESIZABLE)
+    pygame.display.set_mode(
+        display_size, pygame.OPENGL | pygame.DOUBLEBUF | pygame.RESIZABLE
+    )
 
     if USE_MODERN_GL:
         gpu, f_indices, o_indices = init_gl_modern(display_size)
@@ -549,22 +551,24 @@ def main():
     going = True
     while going:
         # check for quit'n events
-        events = pg.event.get()
+        events = pygame.event.get()
         for event in events:
-            if event.type == pg.QUIT or (
-                event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE
+            if event.type == pygame.QUIT or (
+                event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE
             ):
                 going = False
 
-            elif event.type == pg.KEYDOWN and event.key == pg.K_f:
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_f:
                 if not fullscreen:
                     print("Changing to FULLSCREEN")
-                    pg.display.set_mode(
-                        (640, 480), pg.OPENGL | pg.DOUBLEBUF | pg.FULLSCREEN
+                    pygame.display.set_mode(
+                        (640, 480), pygame.OPENGL | pygame.DOUBLEBUF | pygame.FULLSCREEN
                     )
                 else:
                     print("Changing to windowed mode")
-                    pg.display.set_mode((640, 480), pg.OPENGL | pg.DOUBLEBUF)
+                    pygame.display.set_mode(
+                        (640, 480), pygame.OPENGL | pygame.DOUBLEBUF
+                    )
                 fullscreen = not fullscreen
                 if gl_version[0] >= 4 or (gl_version[0] == 3 and gl_version[1] >= 2):
                     gpu, f_indices, o_indices = init_gl_modern(display_size)
@@ -581,10 +585,10 @@ def main():
             GL.glRotatef(1, 0, 1, 0)
             drawcube_old()
 
-        pg.display.flip()
-        pg.time.wait(10)
+        pygame.display.flip()
+        pygame.time.wait(10)
 
-    pg.quit()
+    pygame.quit()
 
 
 if __name__ == "__main__":

@@ -115,6 +115,19 @@ class ScrapModuleTest(unittest.TestCase):
 
         self.assertEqual(r, b"buf")
 
+    def test_new_put(self):
+        """Ensures that text can be placed into the clipboard"""
+        text = "Welcome to scrap!"
+        scrap.put_text(text)
+        self.assertTrue(scrap.has_text())
+        self.assertEqual(scrap.get_text(), text)
+
+    def test_has_text_when_empty(self):
+        """Ensures that has_text returns False when clipboard is empty"""
+        scrap.put_text("")
+        self.assertFalse(scrap.has_text())
+        self.assertEqual(scrap.get_text(), "")
+
 
 class ScrapModuleClipboardNotOwnedTest(unittest.TestCase):
     """Test the scrap module's functionality when the pygame application is

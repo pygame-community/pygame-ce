@@ -11,7 +11,7 @@ Keyboard controls
 - 9, start camera 9.
 - 10, start camera... wait a minute! There's not 10 key!
 """
-import pygame as pg
+import pygame
 import pygame.camera
 
 
@@ -23,7 +23,7 @@ class VideoCapturePlayer:
         super().__init__(**argd)
 
         # create a display surface. standard pygame stuff
-        self.display = pg.display.set_mode(self.size)
+        self.display = pygame.display.set_mode(self.size)
         self.init_cams(0)
 
     def init_cams(self, which_cam_idx):
@@ -46,11 +46,11 @@ class VideoCapturePlayer:
         # starts the camera
         self.camera.start()
 
-        self.clock = pg.time.Clock()
+        self.clock = pygame.Clock()
 
         # create a surface to capture to.  for performance purposes, you want the
         # bit depth to be the same as that of the display surface.
-        self.snapshot = pg.surface.Surface(self.size, 0, self.display)
+        self.snapshot = pygame.surface.Surface(self.size, 0, self.display)
         # return the name of the camera being used, to be included in the window name
         return cam_id
 
@@ -77,7 +77,7 @@ class VideoCapturePlayer:
         #     self.snapshot = self.camera.get_image(self.display)
         #     # self.display.blit(self.snapshot, (0,0))
 
-        pg.display.flip()
+        pygame.display.flip()
 
     def main(self):
         # get the camera list. If there are no cameras, raise a value error.
@@ -97,13 +97,15 @@ class VideoCapturePlayer:
 
         going = True
         while going:
-            events = pg.event.get()
+            events = pygame.event.get()
             for e in events:
-                if e.type == pg.QUIT or (e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE):
+                if e.type == pygame.QUIT or (
+                    e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE
+                ):
                     going = False
-                if e.type == pg.KEYDOWN:
-                    if e.key in range(pg.K_0, pg.K_0 + 10):
-                        camera = self.init_cams(e.key - pg.K_0)
+                if e.type == pygame.KEYDOWN:
+                    if e.key in range(pygame.K_0, pygame.K_0 + 10):
+                        camera = self.init_cams(e.key - pygame.K_0)
 
             self.get_and_flip()
             self.clock.tick()
@@ -111,10 +113,10 @@ class VideoCapturePlayer:
 
 
 def main():
-    pg.init()
+    pygame.init()
     pygame.camera.init()
     VideoCapturePlayer().main()
-    pg.quit()
+    pygame.quit()
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pg.examples.textinput
+""" pygame.examples.textinput
 
 A little "console" where you can write in text.
 
@@ -9,7 +9,7 @@ import sys
 import os
 
 import pygame
-import pygame as pg
+import pygame
 import pygame.freetype as freetype
 
 # This environment variable is important
@@ -42,8 +42,10 @@ class TextInput:
         self.prompt = prompt
         self.print_event = print_event
         # position of chatlist and chatbox
-        self.CHAT_LIST_POS = pg.Rect((pos[0], pos[1] + 50), (screen_dimensions[0], 400))
-        self.CHAT_BOX_POS = pg.Rect(pos, (screen_dimensions[1], 40))
+        self.CHAT_LIST_POS = pygame.Rect(
+            (pos[0], pos[1] + 50), (screen_dimensions[0], 400)
+        )
+        self.CHAT_BOX_POS = pygame.Rect(pos, (screen_dimensions[1], 40))
         self.CHAT_LIST_MAXSIZE = 20
 
         self._ime_editing = False
@@ -68,7 +70,7 @@ class TextInput:
         Updates the text input widget
         """
         for event in events:
-            if event.type == pg.KEYDOWN:
+            if event.type == pygame.KEYDOWN:
                 if self.print_event:
                     print(event)
 
@@ -77,7 +79,7 @@ class TextInput:
                         self._ime_editing = False
                     continue
 
-                if event.key == pg.K_BACKSPACE:
+                if event.key == pygame.K_BACKSPACE:
                     if len(self._ime_text) > 0 and self._ime_text_pos > 0:
                         self._ime_text = (
                             self._ime_text[0 : self._ime_text_pos - 1]
@@ -85,19 +87,19 @@ class TextInput:
                         )
                         self._ime_text_pos = max(0, self._ime_text_pos - 1)
 
-                elif event.key == pg.K_DELETE:
+                elif event.key == pygame.K_DELETE:
                     self._ime_text = (
                         self._ime_text[0 : self._ime_text_pos]
                         + self._ime_text[self._ime_text_pos + 1 :]
                     )
-                elif event.key == pg.K_LEFT:
+                elif event.key == pygame.K_LEFT:
                     self._ime_text_pos = max(0, self._ime_text_pos - 1)
-                elif event.key == pg.K_RIGHT:
+                elif event.key == pygame.K_RIGHT:
                     self._ime_text_pos = min(
                         len(self._ime_text), self._ime_text_pos + 1
                     )
                 # Handle ENTER key
-                elif event.key in [pg.K_RETURN, pg.K_KP_ENTER]:
+                elif event.key in [pygame.K_RETURN, pygame.K_KP_ENTER]:
                     # Block if we have no text to append
                     if len(self._ime_text) == 0:
                         continue
@@ -109,14 +111,14 @@ class TextInput:
                     self._ime_text = ""
                     self._ime_text_pos = 0
 
-            elif event.type == pg.TEXTEDITING:
+            elif event.type == pygame.TEXTEDITING:
                 if self.print_event:
                     print(event)
                 self._ime_editing = True
                 self._ime_editing_text = event.text
                 self._ime_editing_pos = event.start
 
-            elif event.type == pg.TEXTINPUT:
+            elif event.type == pygame.TEXTINPUT:
                 if self.print_event:
                     print(event)
                 self._ime_editing = False
@@ -185,10 +187,10 @@ class Game:
 
     def __init__(self, caption: str) -> None:
         # Initialize
-        pg.init()
-        self.screen = pg.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
-        pg.display.set_caption(caption)
-        self.clock = pg.time.Clock()
+        pygame.init()
+        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+        pygame.display.set_caption(caption)
+        self.clock = pygame.Clock()
 
         # Text input
         # Set to true or add 'showevent' in argv to see IME and KEYDOWN events
@@ -202,15 +204,15 @@ class Game:
         )
 
     def main_loop(self) -> None:
-        pg.key.start_text_input()
-        input_rect = pg.Rect(80, 80, 320, 40)
-        pg.key.set_text_input_rect(input_rect)
+        pygame.key.start_text_input()
+        input_rect = pygame.Rect(80, 80, 320, 40)
+        pygame.key.set_text_input_rect(input_rect)
 
         while True:
-            events = pg.event.get()
+            events = pygame.event.get()
             for event in events:
-                if event.type == pg.QUIT:
-                    pg.quit()
+                if event.type == pygame.QUIT:
+                    pygame.quit()
                     return
 
             self.text_input.update(events)
@@ -219,7 +221,7 @@ class Game:
             self.screen.fill(self.BG_COLOR)
             self.text_input.draw(self.screen)
 
-            pg.display.update()
+            pygame.display.update()
             self.clock.tick(self.FPS)
 
 

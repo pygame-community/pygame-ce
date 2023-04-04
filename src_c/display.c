@@ -1340,10 +1340,11 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         char *xdg_session_type = SDL_getenv("XDG_SESSION_TYPE");
         char *wayland_display = SDL_getenv("WAYLAND_DISPLAY");
         if (NULL != wayland_display ||
-            SDL_strcmp(xdg_session_type, "wayland") == 0) {
+            (NULL != xdg_session_type &&
+             SDL_strcmp(xdg_session_type, "wayland") == 0)) {
             if (PyErr_WarnEx(PyExc_Warning,
                              "PyGame seems to be running through X11 "
-                             "on top if wayland, instead of wayland directly",
+                             "on top of wayland, instead of wayland directly",
                              1) != 0)
                 return NULL;
         }
