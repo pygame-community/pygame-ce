@@ -11,6 +11,9 @@
 static PyTypeObject pgWindow_Type;
 PyObject *_window_list = NULL;
 PyObject *_pg_display_quit = NULL;
+#ifdef WIN32
+void *_SetProcessDPIAware;
+#endif
 
 #define pgWindow_Check(x) \
     (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
@@ -775,8 +778,13 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 #endif
                 }
                 else if (!strcmp(_key_str, "allow_high_dpi")) {
-                    if (_value_bool)
+                    if (_value_bool) {
+#ifdef WIN32
+                        if (_SetProcessDPIAware)
+                            ((int (*)())_SetProcessDPIAware)();
+#endif
                         flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+                    }
                 }
                 else if (!strcmp(_key_str, "mouse_capture")) {
                     if (_value_bool)
@@ -1094,6 +1102,11 @@ MODINIT_DEFINE(window)
     Py_XINCREF(_window_list);
 
     SDL_AddEventWatch(_resize_event_watch, NULL);
+
+#ifdef WIN32
+    _SetProcessDPIAware = (void *)GetProcAddress(LoadLibrary("user32.dll"),
+                                                 "SetProcessDPIAware");
+#endif
 
     c_api[0] = &pgWindow_Type;
     apiobj = encapsulate_api(c_api, "window");
