@@ -12,7 +12,7 @@ static PyTypeObject pgWindow_Type;
 PyObject *_window_list = NULL;
 PyObject *_pg_display_quit = NULL;
 #ifdef WIN32
-void *_SetProcessDPIAware;
+int (*_SetProcessDPIAware)();
 #endif
 
 #define pgWindow_Check(x) \
@@ -781,7 +781,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                     if (_value_bool) {
 #ifdef WIN32
                         if (_SetProcessDPIAware)
-                            ((int (*)())_SetProcessDPIAware)();
+                            _SetProcessDPIAware();
 #endif
                         flags |= SDL_WINDOW_ALLOW_HIGHDPI;
                     }
@@ -1104,8 +1104,8 @@ MODINIT_DEFINE(window)
     SDL_AddEventWatch(_resize_event_watch, NULL);
 
 #ifdef WIN32
-    _SetProcessDPIAware = (void *)GetProcAddress(LoadLibrary("user32.dll"),
-                                                 "SetProcessDPIAware");
+    _SetProcessDPIAware =
+        GetProcAddress(LoadLibrary("user32.dll"), "SetProcessDPIAware");
 #endif
 
     c_api[0] = &pgWindow_Type;
