@@ -3,6 +3,7 @@ from typing import Any, Generator, Iterable, Optional, Tuple, Union
 from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
+from pygame.window import Window as NewWindow
 
 from .._common import RectValue, Literal
 
@@ -51,6 +52,8 @@ class Window:
     ) -> None: ...
     @classmethod
     def from_display_module(cls) -> Window: ...
+    @classmethod
+    def from_window(cls,window: NewWindow) -> Window: ...
     grab: bool
     relative_mouse: bool
     def set_windowed(self) -> None: ...
