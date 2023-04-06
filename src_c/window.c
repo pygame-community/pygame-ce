@@ -19,13 +19,19 @@ int (*_SetProcessDPIAware)();
     (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
 
 static PyObject *
-get_windows(PyObject *self)
+pg_GetWindows()
 {
     PyObject *t = PyTuple_New(PySequence_Size(_window_list));
     for (int i = 0; i < PySequence_Size(_window_list); i++) {
         PyTuple_SetItem(t, i, PySequence_GetItem(_window_list, i));
     }
     return t;
+}
+
+static PyObject *
+get_windows(PyObject *self)
+{
+    return pg_GetWindows();
 }
 
 static PyObject *
@@ -1109,6 +1115,7 @@ MODINIT_DEFINE(window)
 #endif
 
     c_api[0] = &pgWindow_Type;
+    c_api[1] = &pg_GetWindows;
     apiobj = encapsulate_api(c_api, "window");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);

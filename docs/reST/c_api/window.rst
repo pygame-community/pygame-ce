@@ -26,5 +26,9 @@ Header file: src_c/include/pygame.h
 
    Return true if *x* is a :py:class:`pygame.window.Window` instance
 
-   Will return false if *x* is not a subclass of `Surface`.
+   Will return false if *x* is not a subclass of `Window`.
    This is a macro. No check is made that *x* is not *NULL*.
+
+.. c:function:: PyObject * pg_GetWindows(PyObject *win)
+
+   Returns a tuple include all windows.

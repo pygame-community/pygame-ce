@@ -206,5 +206,24 @@ class WindowSurfaceTest(unittest.TestCase):
         win.destroy()
 
 
+class WindowVideoModuleCompatibilityTest(unittest.TestCase):
+    def test_from_window(self):
+        from pygame._sdl2 import video
+
+        win = pygame.window.Window()
+
+        _win = video.Window.from_window(win)
+        del _win
+
+        # when the object is deallocated the window should not be destroyed
+        self.assertTupleEqual((win,), pygame.window.get_windows())
+
+        _win = video.Window.from_window(win)
+        _win.destroy()
+
+        # when destroyed, the window should be removed from the tuple
+        self.assertTupleEqual(tuple(), pygame.window.get_windows())
+
+
 if __name__ == "__main__":
     unittest.main()

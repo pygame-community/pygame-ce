@@ -466,6 +466,7 @@ cdef extern from "pygame.h" nogil:
 cdef class Window:
     cdef SDL_Window* _win
     cdef int _is_borrowed
+    cdef int _is_from_window_module
 
 cdef class Renderer:
     cdef SDL_Renderer* _renderer

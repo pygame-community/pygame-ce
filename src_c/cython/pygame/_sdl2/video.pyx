@@ -64,6 +64,7 @@ cdef extern from "pygame.h" nogil:
     pgSurfaceObject *pgSurface_New2(SDL_Surface *info, int owner)
 
     int pgWindow_Check(object win)
+    object pg_GetWindows()
     void import_pygame_window()
 
 cdef extern from "pgcompat.h" nogil:
@@ -229,6 +230,8 @@ cdef class Window:
         if not _window:
             raise error()
         self._win=_window
+        self._is_borrowed=0
+        self._is_from_window_module=1
         return self
 
     @classmethod
@@ -239,6 +242,7 @@ cdef class Window:
             raise error()
         self._win=window
         self._is_borrowed=1
+        self._is_from_window_module=0
         SDL_SetWindowData(window, "pg_window", <PyObject*>self)
         return self
 
@@ -302,6 +306,7 @@ cdef class Window:
         self._win = SDL_CreateWindow(title.encode('utf8'), x, y,
                                      size[0], size[1], flags)
         self._is_borrowed=0
+        self._is_from_window_module=0
         if not self._win:
             raise error()
         SDL_SetWindowData(self._win, "pg_window", <PyObject*>self)
@@ -401,7 +406,13 @@ cdef class Window:
         """ Destroys the window.
         """
         # https://wiki.libsdl.org/SDL_DestroyWindow
-        if self._win:
+        if self._is_from_window_module:
+            for i in pg_GetWindows():
+                if i.get_window_id()==self.id:
+                    self._win = NULL
+                    i.destroy()
+                    break
+        elif self._win:
             SDL_DestroyWindow(self._win)
             self._win = NULL
 
@@ -545,7 +556,7 @@ cdef class Window:
             raise error()
 
     def __dealloc__(self):
-        if self._is_borrowed:
+        if self._is_borrowed or self._is_from_window_module:
             return
         self.destroy()
 

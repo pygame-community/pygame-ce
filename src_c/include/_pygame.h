@@ -476,10 +476,9 @@ typedef struct {
 
 #ifndef PYGAMEAPI_WINDOW_INTERNAL
 #define pgWindow_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(window, 0))
-#define pgWindow_GetAvailableSurface \
-    (*(PyObject * (*)(void)) PYGAMEAPI_GET_SLOT(window, 1))
 #define pgWindow_Check(x) \
     (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
+#define pg_GetWindows (*(PyObject * (*)()) PYGAMEAPI_GET_SLOT(window, 1))
 #define import_pygame_window() IMPORT_PYGAME_MODULE(window)
 #endif
 
