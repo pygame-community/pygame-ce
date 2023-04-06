@@ -153,6 +153,9 @@ PyMODINIT_FUNC
 PyInit_gfxdraw(void);
 
 PyMODINIT_FUNC
+PyInit_render(void);
+
+PyMODINIT_FUNC
 PyInit_audio(void);
 
 // pygame_static module
@@ -279,6 +282,8 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_event(), "event");
     load_submodule("pygame", PyInit_joystick(), "joystick");
 
+    load_submodule("pygame", PyInit_render(), "render");
+
     load_submodule("pygame", PyInit_pg_mixer(), "mixer");
 
     load_submodule("pygame.mixer", PyInit_mixer_music(), "music");
@@ -389,6 +394,7 @@ PyInit_pygame_static()
 #include "pixelarray.c"
 #include "pixelcopy.c"
 #include "newbuffer.c"
+#include "render.c"
 
 #include "_sdl2/controller_old.c"
 #include "_sdl2/touch.c"

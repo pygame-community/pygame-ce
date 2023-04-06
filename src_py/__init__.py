@@ -213,6 +213,11 @@ try:
 except (ImportError, OSError):
     pixelcopy = MissingModule("pixelcopy", urgent=1)
 
+try:
+    import pygame.render
+except (ImportError, OSError):
+    render = MissingModule("render", urgent=1)
+
 
 try:
     from pygame.surface import Surface, SurfaceType
