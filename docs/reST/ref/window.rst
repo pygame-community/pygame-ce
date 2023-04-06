@@ -43,7 +43,7 @@
    :param bool fullscreen_desktop: Create a fullscreen window using the current desktop resolution
    :param bool opengl: Create a window with support for an OpenGL context. You will still need to create an OpenGL context separately.
    :param bool vulkan: Create a window with support for a Vulkan instance.
-   :param bool vulkan: Create a window with support for Metal.
+   :param bool metal: Create a window with support for Metal.
    :param bool hidden: Create a hidden window.
    :param bool borderless: Create a window without borders.
    :param bool resizable: Create a resizable window.
