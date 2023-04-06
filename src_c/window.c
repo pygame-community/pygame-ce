@@ -1110,8 +1110,8 @@ MODINIT_DEFINE(window)
     SDL_AddEventWatch(_resize_event_watch, NULL);
 
 #ifdef WIN32
-    _SetProcessDPIAware =
-        GetProcAddress(LoadLibrary("user32.dll"), "SetProcessDPIAware");
+    _SetProcessDPIAware = *(int (*)())GetProcAddress(LoadLibrary("user32.dll"),
+                                                     "SetProcessDPIAware");
 #endif
 
     c_api[0] = &pgWindow_Type;
