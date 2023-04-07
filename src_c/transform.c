@@ -2958,6 +2958,12 @@ box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
 {
     // Reference : https://blog.csdn.net/blogshinelee/article/details/80997324
 
+    int inplace = 0;
+    if (dst == src) {
+        inplace = 1;
+        dst = newsurf_fromsurf(src, src->w, src->h);
+    }
+
     Uint8 *srcpx = (Uint8 *)src->pixels;
     Uint8 *dstpx = (Uint8 *)dst->pixels;
     Uint8 nb = src->format->BytesPerPixel;
@@ -3031,7 +3037,13 @@ box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
             }
         }
     }
-
+    if (inplace) {
+        for (i = 0; i < src->h; i++) {
+            memcpy(srcpx + i * src_pitch, dstpx + i * dst_pitch,
+                   sizeof(Uint8) * MIN(dst_pitch, src_pitch));
+        }
+        SDL_FreeSurface(dst);
+    }
     free(buf);
     free(sum_v);
     free(sum_h);
