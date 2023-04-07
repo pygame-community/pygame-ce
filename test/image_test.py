@@ -637,8 +637,7 @@ class ImageModuleTest(unittest.TestCase):
             self._assertSurfaceEqual(
                 test_surface,
                 test_to_from_fmt_bytes,
-                "tobytes/frombytes functions are not "
-                f"symmetric with '{fmt}' format",
+                "tobytes/frombytes functions are not " f"symmetric with '{fmt}' format",
             )
 
     def test_tobytes_depth_24(self):
@@ -662,13 +661,15 @@ class ImageModuleTest(unittest.TestCase):
             test_to_from_fmt_bytes,
             f'tobytes/frombytes functions are not symmetric with "{fmt}" format',
         )
-    
+
     def test_from_to_bytes_deprecation(self):
         test_surface = pygame.Surface((64, 256), flags=pygame.SRCALPHA, depth=32)
         with self.assertWarns(DeprecationWarning):
             test_surface_bytes = pygame.image.tostring(test_surface, "RGBA")
         with self.assertWarns(DeprecationWarning):
-            reconstructed_test_surface = pygame.image.fromstring(test_surface_bytes, (64, 256), "RGBA")
+            reconstructed_test_surface = pygame.image.fromstring(
+                test_surface_bytes, (64, 256), "RGBA"
+            )
 
     def test_frombuffer_8bit(self):
         """test reading pixel data from a bytes buffer"""
