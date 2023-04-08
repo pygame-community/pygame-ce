@@ -653,7 +653,7 @@ font_setter_point_size(PyFontObject *self, PyObject *value, void *closure)
 
     if (val <= 0) {
         PyErr_SetString(PyExc_ValueError,
-                        "point_size cannot be equal or less than 0");
+                        "point_size cannot be equal to, or less than 0");
         return -1;
     }
 
@@ -691,7 +691,7 @@ font_set_ptsize(PyObject *self, PyObject *arg)
 
     if (val <= 0) {
         PyErr_SetString(PyExc_ValueError,
-                        "point_size cannot be equal or less than 0");
+                        "point_size cannot be equal to, or less than 0");
         return NULL;
     }
 
