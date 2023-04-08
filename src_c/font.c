@@ -706,6 +706,9 @@ font_set_ptsize(PyObject *self, PyObject *arg)
                     "Incorrect SDL_TTF version (requires 2.0.18)");
     return NULL;
 #endif
+}
+
+static PyObject *
 font_getter_name(PyObject *self, void *closure)
 {
     TTF_Font *font = PyFont_AsFont(self);
@@ -923,10 +926,9 @@ static PyGetSetDef font_getsets[] = {
     {"strikethrough", (getter)font_getter_strikethrough,
      (setter)font_setter_strikethrough, DOC_FONT_FONT_STRIKETHROUGH, NULL},
     {"align", (getter)font_getter_align, (setter)font_setter_align,
-     DOC_FONTALIGN, NULL},
-    {"point_size", (getter)font_getter_point_size,
-     (setter)font_setter_point_size, DOC_FONTPOINTSIZE, NULL},
      DOC_FONT_FONT_ALIGN, NULL},
+    {"point_size", (getter)font_getter_point_size,
+     (setter)font_setter_point_size, DOC_FONT_FONT_POINTSIZE, NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyMethodDef font_methods[] = {
@@ -945,9 +947,10 @@ static PyMethodDef font_methods[] = {
     {"get_strikethrough", font_get_strikethrough, METH_NOARGS,
      DOC_FONT_FONT_GETSTRIKETHROUGH},
     {"set_strikethrough", font_set_strikethrough, METH_O,
-     DOC_FONTSETSTRIKETHROUGH},
-    {"get_point_size", font_get_ptsize, METH_NOARGS, DOC_FONTGETPOINTSIZE},
-    {"set_point_size", font_set_ptsize, METH_O, DOC_FONTSETPOINTSIZE},
+     DOC_FONT_FONT_SETSTRIKETHROUGH},
+    {"get_point_size", font_get_ptsize, METH_NOARGS,
+     DOC_FONT_FONT_GETPOINTSIZE},
+    {"set_point_size", font_set_ptsize, METH_O, DOC_FONT_FONT_SETPOINTSIZE},
     {"metrics", font_metrics, METH_O, DOC_FONT_FONT_METRICS},
     {"render", font_render, METH_VARARGS, DOC_FONT_FONT_RENDER},
     {"size", font_size, METH_O, DOC_FONT_FONT_SIZE},
