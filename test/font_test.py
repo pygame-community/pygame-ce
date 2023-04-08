@@ -557,7 +557,11 @@ class FontTypeTest(unittest.TestCase):
             return
 
         pygame_font.init()
-        f = pygame_font.Font(None, 25)
+        font_path = os.path.join(
+            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
+        )
+        f = pygame_font.Font(pathlib.Path(font_path), 25)
+        self.assertEqual(25, f.point_size)
         f.point_size = 10
         self.assertEqual(10, f.point_size)
         f.point_size += 23
@@ -579,6 +583,11 @@ class FontTypeTest(unittest.TestCase):
             return
 
         pygame_font.init()
+        font_path = os.path.join(
+            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
+        )
+        f = pygame_font.Font(pathlib.Path(font_path), 25)
+        self.assertEqual(25, f.point_size)
         f = pygame_font.Font(None, 25)
         f.set_point_size(10)
         self.assertEqual(10, f.get_point_size())
