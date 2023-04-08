@@ -515,7 +515,8 @@ solves no longer exists, it will likely be removed in the future.
       | :sg:`get_point_size() -> int`
 
       Returns the point_size of the font. Will not be accurate upon
-      initializing the font object.
+      initializing the font object when the font name is initalized
+      as ``None``
 
       .. ## Font.get_point_size ##
 
