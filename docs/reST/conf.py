@@ -1,5 +1,5 @@
 #
-# Pygame documentation build configuration file, created by
+# pygame-ce documentation build configuration file, created by
 # sphinx-quickstart on Sat Mar  5 11:56:39 2011.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -47,9 +47,9 @@ copyright = '2000-2022, pygame developers'
 # built documents.
 #
 # The short X.Y version.
-version = '2.1.4'
+version = '2.3.0'
 # The full version, including alpha/beta/rc tags.
-release = '2.1.4.dev3'
+release = '2.3.0.dev1'
 
 # Format strings for the version directives
 versionadded_format = 'New in pygame %s'
@@ -106,7 +106,7 @@ html_theme = 'classic'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {'home_uri': 'https://pyga.me'}
+html_theme_options = {'home_uri': 'https://pyga.me/docs'}
 
 # Add any paths that contain custom themes here, relative to this directory.
 html_theme_path = ['themes']

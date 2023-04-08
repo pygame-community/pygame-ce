@@ -68,8 +68,8 @@ following formats.
 .. function:: load
 
    | :sl:`load new image from a file (or file-like object)`
-   | :sg:`load(filename) -> Surface`
-   | :sg:`load(fileobj, namehint="") -> Surface`
+   | :sg:`load(file) -> Surface`
+   | :sg:`load(file, namehint="") -> Surface`
 
    Load an image from a file source. You can pass either a filename, a Python
    file-like object, or a pathlib.Path.
@@ -100,13 +100,15 @@ following formats.
 
      eg. asurf = pygame.image.load(os.path.join('data', 'bla.png'))
 
+   .. versionchanged:: 2.2.0 Now supports keyword arguments.
+
    .. ## pygame.image.load ##
 
 .. function:: save
 
    | :sl:`save an image to file (or file-like object)`
-   | :sg:`save(Surface, filename) -> None`
-   | :sg:`save(Surface, fileobj, namehint="") -> None`
+   | :sg:`save(Surface, file) -> None`
+   | :sg:`save(Surface, file, namehint="") -> None`
 
    This will save your Surface as either a ``BMP``, ``TGA``, ``PNG``, or
    ``JPEG`` image. If the filename extension is unrecognized it will default to
@@ -124,6 +126,7 @@ following formats.
                        The ``namehint`` parameter was added to make it possible
                        to save other formats than ``TGA`` to a file-like object.
                        Saving to a file-like object with JPEG is possible.
+   .. versionchanged:: 2.2.0 Now supports keyword arguments.
 
    .. ## pygame.image.save ##
 
@@ -193,6 +196,8 @@ following formats.
    .. note:: it is preferred to use :func:`tobytes` as of pygame 2.1.3
 
    .. versionadded:: 2.1.3 BGRA format
+   .. versionchanged:: 2.2.0 Now supports keyword arguments.
+
    .. ## pygame.image.tostring ##
 
 .. function:: tobytes
@@ -233,6 +238,7 @@ following formats.
              libraries (PIL, numpy, etc), and with people's expectations.
 
    .. versionadded:: 2.1.3 
+   .. versionchanged:: 2.2.0 Now supports keyword arguments.
 
    .. ## pygame.image.tobytes ##
 
@@ -355,8 +361,8 @@ following formats.
 .. function:: load_extended
 
    | :sl:`load an image from a file (or file-like object)`
-   | :sg:`load_extended(filename) -> Surface`
-   | :sg:`load_extended(fileobj, namehint="") -> Surface`
+   | :sg:`load_extended(file) -> Surface`
+   | :sg:`load_extended(file, namehint="") -> Surface`
 
    This function is similar to :func:`pygame.image.load()`, except that this
    function can only be used if pygame was built with extended image format
@@ -369,14 +375,15 @@ following formats.
                        Previously, this function may or may not be
                        available, depending on the state of extended image
                        format support.
+   .. versionchanged:: 2.2.0 Now supports keyword arguments.
 
    .. ## pygame.image.load_extended ##
 
 .. function:: save_extended
 
    | :sl:`save a png/jpg image to file (or file-like object)`
-   | :sg:`save_extended(Surface, filename) -> None`
-   | :sg:`save_extended(Surface, fileobj, namehint="") -> None`
+   | :sg:`save_extended(Surface, file) -> None`
+   | :sg:`save_extended(Surface, file, namehint="") -> None`
 
    This will save your Surface as either a ``PNG`` or ``JPEG`` image.
 
@@ -392,6 +399,7 @@ following formats.
                        Previously, this function may or may not be
                        available, depending on the state of extended image
                        format support.
+   .. versionchanged:: 2.2.0 Now supports keyword arguments.
 
    .. ## pygame.image.save_extended ##
 

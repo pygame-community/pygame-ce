@@ -1,4 +1,4 @@
-# pygame - Python Game Library
+# pygame-ce - Python Game Library
 # Copyright (C) 2000-2001  Pete Shinners
 #
 # This library is free software; you can redistribute it and/or
@@ -84,6 +84,40 @@ class MissingModule:
             print(message)
 
 
+# This is a special loader for WebAssembly platform
+# where pygame is in fact statically linked
+# mixing single phase (C) and multiphase modules (cython)
+if sys.platform in ("wasi", "emscripten"):
+    try:
+        import pygame_static
+    except ModuleNotFoundError:
+        pygame_static = None
+
+    if pygame_static:
+        pygame = sys.modules[__name__]
+
+        pygame.Color = pygame.color.Color
+
+        Vector2 = pygame.math.Vector2
+        Vector3 = pygame.math.Vector3
+
+        Rect = pygame.rect.Rect
+
+        BufferProxy = pygame.bufferproxy.BufferProxy
+
+        # cython modules use multiphase initialisation when not in builtin Inittab.
+
+        from pygame import _sdl2
+
+        import importlib.machinery
+
+        loader = importlib.machinery.FrozenImporter
+        spec = importlib.machinery.ModuleSpec("", loader)
+        pygame_static.import_cython(spec)
+        del loader, spec
+    del pygame_static
+
+
 # we need to import like this, each at a time. the cleanest way to import
 # our modules is with the import command (not the __import__ function)
 # isort: skip_file
@@ -92,8 +126,7 @@ class MissingModule:
 from pygame.base import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.constants import *  # now has __all__ pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.version import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
-from pygame.rect import Rect
-
+from pygame.rect import Rect, FRect
 from pygame.rwobject import encode_string, encode_file_path
 import pygame.surflock
 import pygame.color
@@ -278,15 +311,15 @@ except (ImportError, OSError):
     sndarray = MissingModule("sndarray", urgent=0)
 
 try:
-    import pygame.fastevent
-except (ImportError, OSError):
-    fastevent = MissingModule("fastevent", urgent=0)
-
-try:
     import pygame._debug
     from pygame._debug import print_debug_info
 except (ImportError, OSError):
     debug = MissingModule("_debug", urgent=0)
+
+try:
+    import pygame.system
+except (ImportError, OSError):
+    system = MissingModule("system", urgent=0)
 
 # there's also a couple "internal" modules not needed
 # by users, but putting them here helps "dependency finder"

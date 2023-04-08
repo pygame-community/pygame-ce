@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -135,7 +135,7 @@ _pg_remove_event_timer(pgEventObject *ev)
         else
             pg_event_timer = hunt->next;
         Py_DECREF(hunt->event);
-        PyMem_Del(hunt);
+        PyMem_Free(hunt);
     }
     /* Chances of it failing here are next to zero, dont do anything */
     SDL_UnlockMutex(timermutex);
@@ -450,12 +450,12 @@ clock_get_rawtime(PyObject *self, PyObject *_null)
 /* clock object internals */
 
 static struct PyMethodDef clock_methods[] = {
-    {"tick", clock_tick, METH_VARARGS, DOC_CLOCKTICK},
-    {"get_fps", clock_get_fps, METH_NOARGS, DOC_CLOCKGETFPS},
-    {"get_time", clock_get_time, METH_NOARGS, DOC_CLOCKGETTIME},
-    {"get_rawtime", clock_get_rawtime, METH_NOARGS, DOC_CLOCKGETRAWTIME},
+    {"tick", clock_tick, METH_VARARGS, DOC_TIME_CLOCK_TICK},
+    {"get_fps", clock_get_fps, METH_NOARGS, DOC_TIME_CLOCK_GETFPS},
+    {"get_time", clock_get_time, METH_NOARGS, DOC_TIME_CLOCK_GETTIME},
+    {"get_rawtime", clock_get_rawtime, METH_NOARGS, DOC_TIME_CLOCK_GETRAWTIME},
     {"tick_busy_loop", clock_tick_busy_loop, METH_VARARGS,
-     DOC_CLOCKTICKBUSYLOOP},
+     DOC_TIME_CLOCK_TICKBUSYLOOP},
     {NULL, NULL, 0, NULL}};
 
 static void
@@ -516,7 +516,7 @@ static PyTypeObject PyClock_Type = {
     .tp_dealloc = clock_dealloc,
     .tp_repr = clock_str,
     .tp_str = clock_str,
-    .tp_doc = DOC_PYGAMETIMECLOCK,
+    .tp_doc = DOC_TIME_CLOCK,
     .tp_methods = clock_methods,
     .tp_new = clock_new,
 };
@@ -526,12 +526,11 @@ static PyMethodDef _time_methods[] = {
      "auto initialize function for time"},
     {"_internal_mod_quit", (PyCFunction)pg_time_autoquit, METH_NOARGS,
      "auto quit function for time"},
-    {"get_ticks", (PyCFunction)time_get_ticks, METH_NOARGS,
-     DOC_PYGAMETIMEGETTICKS},
-    {"delay", time_delay, METH_O, DOC_PYGAMETIMEDELAY},
-    {"wait", time_wait, METH_O, DOC_PYGAMETIMEWAIT},
+    {"get_ticks", (PyCFunction)time_get_ticks, METH_NOARGS, DOC_TIME_GETTICKS},
+    {"delay", time_delay, METH_O, DOC_TIME_DELAY},
+    {"wait", time_wait, METH_O, DOC_TIME_WAIT},
     {"set_timer", (PyCFunction)time_set_timer, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETIMESETTIMER},
+     DOC_TIME_SETTIMER},
 
     {NULL, NULL, 0, NULL}};
 
@@ -545,7 +544,7 @@ MODINIT_DEFINE(time)
     PyObject *module;
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "time",
-                                         DOC_PYGAMETIME,
+                                         DOC_TIME,
                                          -1,
                                          _time_methods,
                                          NULL,

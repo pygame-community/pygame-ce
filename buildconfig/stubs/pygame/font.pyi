@@ -28,13 +28,14 @@ def SysFont(
 ) -> Font: ...
 
 class Font:
+    name: str
     bold: bool
     italic: bool
     underline: bool
     strikethrough: bool
     align: int
     point_size: int
-    def __init__(self, name: Optional[FileArg], size: int) -> None: ...
+    def __init__(self, filename: Optional[FileArg] = None, size: int = 20) -> None: ...
     def render(
         self,
         text: Union[str, bytes, None],

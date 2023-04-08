@@ -30,17 +30,17 @@ Herein lies a *BOLD* demo consisting of a mixture of various things.
 Enjoy!
 """
 import os
-import pygame as pg
+import pygame
 import pygame.freetype as freetype
 
 
 def run():
-    pg.init()
+    pygame.init()
 
     fontdir = os.path.dirname(os.path.abspath(__file__))
     font = freetype.Font(os.path.join(fontdir, "data", "sans.ttf"))
 
-    screen = pg.display.set_mode((800, 600))
+    screen = pygame.display.set_mode((800, 600))
     screen.fill("gray")
 
     font.underline_adjustment = 0.5
@@ -144,13 +144,17 @@ def run():
         style=freetype.STYLE_NORMAL,
     )
 
-    pg.display.flip()
+    pygame.display.flip()
 
     while True:
-        if pg.event.wait().type in (pg.QUIT, pg.KEYDOWN, pg.MOUSEBUTTONDOWN):
+        if pygame.event.wait().type in (
+            pygame.QUIT,
+            pygame.KEYDOWN,
+            pygame.MOUSEBUTTONDOWN,
+        ):
             break
 
-    pg.quit()
+    pygame.quit()
 
 
 if __name__ == "__main__":

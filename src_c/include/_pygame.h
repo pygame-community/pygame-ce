@@ -1,5 +1,5 @@
 /*
-    pygame - Python Game Library
+    pygame-ce - Python Game Library
     Copyright (C) 2000-2001  Pete Shinners
 
     This library is free software; you can redistribute it and/or
@@ -56,8 +56,8 @@
 
 /* version macros (defined since version 1.9.5) */
 #define PG_MAJOR_VERSION 2
-#define PG_MINOR_VERSION 1
-#define PG_PATCH_VERSION 4
+#define PG_MINOR_VERSION 3
+#define PG_PATCH_VERSION 0
 #define PG_VERSIONNUM(MAJOR, MINOR, PATCH) \
     (1000 * (MAJOR) + 100 * (MINOR) + (PATCH))
 #define PG_VERSION_ATLEAST(MAJOR, MINOR, PATCH)                             \
@@ -167,7 +167,13 @@ typedef struct {
     PyObject *weakreflist;
 } pgRectObject;
 
+typedef struct {
+    PyObject_HEAD SDL_FRect r;
+    PyObject *weakreflist;
+} pgFRectObject;
+
 #define pgRect_AsRect(x) (((pgRectObject *)x)->r)
+#define pgFRect_AsRect(x) (((pgFRectObject *)x)->r)
 #ifndef PYGAMEAPI_RECT_INTERNAL
 #define pgRect_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(rect, 0))
 
@@ -181,6 +187,20 @@ typedef struct {
     (*(SDL_Rect * (*)(PyObject *, SDL_Rect *)) PYGAMEAPI_GET_SLOT(rect, 3))
 
 #define pgRect_Normalize (*(void (*)(SDL_Rect *))PYGAMEAPI_GET_SLOT(rect, 4))
+
+#define pgFRect_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(rect, 5))
+
+#define pgFRect_Check(x) ((x)->ob_type == &pgFRect_Type)
+#define pgFRect_New \
+    (*(PyObject * (*)(SDL_FRect *)) PYGAMEAPI_GET_SLOT(rect, 6))
+
+#define pgFRect_New4 \
+    (*(PyObject * (*)(float, float, float, float)) PYGAMEAPI_GET_SLOT(rect, 7))
+
+#define pgFRect_FromObject \
+    (*(SDL_FRect * (*)(PyObject *, SDL_FRect *)) PYGAMEAPI_GET_SLOT(rect, 8))
+
+#define pgFRect_Normalize (*(void (*)(SDL_FRect *))PYGAMEAPI_GET_SLOT(rect, 9))
 
 #define import_pygame_rect() IMPORT_PYGAME_MODULE(rect)
 #endif /* ~PYGAMEAPI_RECT_INTERNAL */
@@ -479,6 +499,13 @@ PYGAMEAPI_EXTERN_SLOTS(math);
  *  functions There seems to be no good reason to stick to macro only
  *  functions in Python 3.
  */
+
+#define SURF_INIT_CHECK(surf)                                           \
+    {                                                                   \
+        if (!surf) {                                                    \
+            return RAISE(pgExc_SDLError, "Surface is not initialized"); \
+        }                                                               \
+    }
 
 static PG_INLINE PyObject *
 pg_tuple_couple_from_values_int(int val1, int val2)

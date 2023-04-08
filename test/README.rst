@@ -1,5 +1,5 @@
-run_tests.py
-************
+Pygame Unit Tests
+*****************
 
 The test runner for pygame was developed for these purposes:
     
