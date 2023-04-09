@@ -967,7 +967,7 @@ static PyNumberMethods pg_frect_as_number = {
     .nb_bool = (inquiry)pg_frect_bool,
 };
 
-/* the functions below are just not worth putting in teh template system (-_-)
+/* the functions below are just not worth putting in the template system (-_-)
  */
 static PyObject *
 pg_rect_repr(pgRectObject *self)

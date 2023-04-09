@@ -29,7 +29,7 @@ Header file: src_c/include/pygame.h
 
    The Pygame rectangle object type pygame.Rect.
 
-.. c:var:: PyTypeObject *pgRFect_Type
+.. c:var:: PyTypeObject *pgFRect_Type
 
    The Pygame rectangle object type pygame.FRect.
 
@@ -46,7 +46,7 @@ Header file: src_c/include/pygame.h
    Return a new :py:class:`pygame.Rect` instance from the SDL_Rect *r*.
    On failure, raise a Python exception and return *NULL*.
 
-.. c:function:: PyObject* pgRFect_New(SDL_FRect *r)
+.. c:function:: PyObject* pgFRect_New(SDL_FRect *r)
 
    Return a new :py:class:`pygame.FRect` instance from the SDL_FRect *r*.
    On failure, raise a Python exception and return *NULL*.
