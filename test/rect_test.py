@@ -2334,6 +2334,41 @@ class RectTypeTest(unittest.TestCase):
         r.collideobjectsall(objects, key=lambda o: o.rect1)
         self.assertRaises(TypeError, r.collideobjectsall, objects)
 
+    # def test_swizzle_get(self):
+    #     c = Rect(10, 20, 30, 40)
+
+    #     self.assertEqual(c.xy, (10, 20))
+    #     self.assertEqual(c.xw, (10, 30))
+    #     self.assertEqual(c.xx, (10, 10))
+
+    #     self.assertEqual(c.xyw, (10, 20, 30))
+
+    #     c.xywh = c.hwyx
+    #     # self.assertEqual(c.xywh, (40, 30, 20, 10))
+    #     # c.xywh = c.wyyh
+    #     # self.assertEqual(c.rgba, (40, 20, 20, 10))
+    #     # c.rg = c.gg
+    #     # self.assertEqual(c.rgba, (30, 30, 30, 10))
+
+    #     with self.assertRaises(AttributeError):
+    #         c.rr = (10, 10)
+    #         c.bb = (10, 10)
+    #         c.gg = (10, 10)
+    #         c.aa = (10, 10)
+    #         c.aaa = (10, 10, 100)
+    #         c.rgb = (256, 256, 256)
+
+    # def test_swizzle_return_types(self):
+    #     c = pygame.color.Color(10, 20, 30, 40)
+
+    #     self.assertEqual(type(c.rgb), tuple)
+    #     self.assertEqual(type(c.rgba), pygame.color.Color)
+    #     self.assertEqual(type(c.bgra), pygame.color.Color)
+    #     self.assertEqual(type(c.bg), tuple)
+    #     self.assertEqual(type(c.gr), tuple)
+    #     self.assertEqual(type(c.rr), tuple)
+    #     self.assertEqual(type(c.rrggbb), tuple)
+
     def test_collideobjectsall(self):
         r = Rect(1, 1, 10, 10)
 
