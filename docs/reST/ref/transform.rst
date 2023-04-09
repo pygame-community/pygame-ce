@@ -299,7 +299,7 @@ Instead, always begin with the original image and scale to the desired size.)
 .. function:: invert
 
    | :sl:`inverts the RGB elements of a surface`
-   | :sg:`average_color(surface, dest_surface=None) -> Surface`
+   | :sg:`invert(surface, dest_surface=None) -> Surface`
 
    Inverts each RGB pixel contained within the Surface, does not affect alpha channel.
 
