@@ -793,7 +793,7 @@ frect_setAttr_swizzle(pgFRectObject *self, PyObject *attr_name, PyObject *val)
             swizzle_err = SWIZZLE_ERR_DOUBLE_IDX;
         if (swizzle_err == SWIZZLE_ERR_NO_ERR) {
             entry_was_set[idx] = 1;
-            entry[idx] = PyFloat_AsDouble(PySequence_GetItem(val, i));
+            entry[idx] = (float)PyFloat_AsDouble(PySequence_GetItem(val, i));
             if (PyErr_Occurred())
                 swizzle_err = SWIZZLE_ERR_EXTRACTION_ERR;
         }
