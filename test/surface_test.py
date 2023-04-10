@@ -594,6 +594,18 @@ class SurfaceTypeTest(unittest.TestCase):
 
     ########################################################################
 
+    def test_get_frect(self):
+        """Ensure a surface's frect can be retrieved."""
+        size = (16.0, 16.0)
+        surf = pygame.Surface(size)
+        frect = surf.get_frect()
+
+        self.assertEqual(frect.topleft, (0.0, 0.0))
+        self.assertEqual(frect.size, size)
+        self.assertIsInstance(frect, pygame.FRect)
+
+    ########################################################################
+
     def test_get_width__size_and_height(self):
         """Ensure a surface's size, width and height can be retrieved."""
         for w in range(0, 255, 32):

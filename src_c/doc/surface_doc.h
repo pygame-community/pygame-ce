@@ -37,6 +37,7 @@
 #define DOC_SURFACE_GETWIDTH "get_width() -> width\nget the width of the Surface"
 #define DOC_SURFACE_GETHEIGHT "get_height() -> height\nget the height of the Surface"
 #define DOC_SURFACE_GETRECT "get_rect(**kwargs) -> Rect\nget the rectangular area of the Surface"
+#define DOC_SURFACE_GETFRECT "get_frect(**kwargs) -> FRect\nget the rectangular area of the Surface"
 #define DOC_SURFACE_GETBITSIZE "get_bitsize() -> int\nget the bit depth of the Surface pixel format"
 #define DOC_SURFACE_GETBYTESIZE "get_bytesize() -> int\nget the bytes used per Surface pixel"
 #define DOC_SURFACE_GETFLAGS "get_flags() -> int\nget the additional flags used for the Surface"
