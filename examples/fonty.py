@@ -8,16 +8,16 @@ Demonstrating several Font object attributes.
 
 - basic window, event, and font management.
 """
-import pygame as pg
+import pygame
 
 
 def main():
     # initialize
-    pg.init()
+    pygame.init()
     resolution = 400, 200
-    screen = pg.display.set_mode(resolution)
+    screen = pygame.display.set_mode(resolution)
 
-    ##    pg.mouse.set_cursor(*pg.cursors.diamond)
+    ##    pygame.mouse.set_cursor(*pygame.cursors.diamond)
 
     fg = 250, 240, 230
     bg = 5, 5, 5
@@ -27,7 +27,7 @@ def main():
     screen.fill(wincolor)
 
     # load font, prepare values
-    font = pg.font.Font(None, 80)
+    font = pygame.Font(None, 80)
     text = "Fonty"
     size = font.size(text)
 
@@ -41,7 +41,7 @@ def main():
     screen.blit(ren, (10, 40 + size[1]))
     font.set_underline(0)
 
-    a_sys_font = pg.font.SysFont("Arial", 60)
+    a_sys_font = pygame.font.SysFont("Arial", 60)
 
     # AA, no transparency, bold
     a_sys_font.set_bold(1)
@@ -69,12 +69,16 @@ def main():
     ##screen.blit(ren, (30 + size[0], 40 + size[1]))
 
     # show the surface and await user quit
-    pg.display.flip()
+    pygame.display.flip()
     while True:
         # use event.wait to keep from polling 100% cpu
-        if pg.event.wait().type in (pg.QUIT, pg.KEYDOWN, pg.MOUSEBUTTONDOWN):
+        if pygame.event.wait().type in (
+            pygame.QUIT,
+            pygame.KEYDOWN,
+            pygame.MOUSEBUTTONDOWN,
+        ):
             break
-    pg.quit()
+    pygame.quit()
 
 
 if __name__ == "__main__":
