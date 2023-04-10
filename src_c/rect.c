@@ -544,8 +544,6 @@ rect_setAttr_swizzle(pgRectObject *self, PyObject *attr_name, PyObject *val)
     int swizzle_err = SWIZZLE_ERR_NO_ERR;
     Py_ssize_t i;
 
-    if (len == 1)
-        return PyObject_GenericSetAttr((PyObject *)self, attr_name, val);
 
     /* if swizzling is enabled first try swizzle */
     for (i = 0; i < 4; ++i)
@@ -556,6 +554,10 @@ rect_setAttr_swizzle(pgRectObject *self, PyObject *attr_name, PyObject *val)
     if (attr_unicode == NULL)
         return -1;
     attr = PyUnicode_AsUTF8AndSize(attr_unicode, &len);
+
+    if (len == 1 || !strcmp(attr, "width") || !strcmp(attr, "height")) {
+        return PyObject_GenericSetAttr((PyObject *)self, attr_name, val);
+    }
 
     if (attr == NULL) {
         Py_DECREF(attr_unicode);
@@ -739,9 +741,6 @@ frect_setAttr_swizzle(pgFRectObject *self, PyObject *attr_name, PyObject *val)
     int swizzle_err = SWIZZLE_ERR_NO_ERR;
     Py_ssize_t i;
 
-    if (len == 1)
-        return PyObject_GenericSetAttr((PyObject *)self, attr_name, val);
-
     /* if swizzling is enabled first try swizzle */
     for (i = 0; i < 4; ++i)
         entry_was_set[i] = 0;
@@ -751,6 +750,10 @@ frect_setAttr_swizzle(pgFRectObject *self, PyObject *attr_name, PyObject *val)
     if (attr_unicode == NULL)
         return -1;
     attr = PyUnicode_AsUTF8AndSize(attr_unicode, &len);
+
+    if (len == 1 || !strcmp(attr, "width") || !strcmp(attr, "height")) {
+        return PyObject_GenericSetAttr((PyObject *)self, attr_name, val);
+    }
 
     if (attr == NULL) {
         Py_DECREF(attr_unicode);

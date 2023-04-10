@@ -2334,40 +2334,42 @@ class RectTypeTest(unittest.TestCase):
         r.collideobjectsall(objects, key=lambda o: o.rect1)
         self.assertRaises(TypeError, r.collideobjectsall, objects)
 
-    # def test_swizzle_get(self):
-    #     c = Rect(10, 20, 30, 40)
+    def test_swizzle_get(self):
+        c = Rect(10, 20, 30, 40)
 
-    #     self.assertEqual(c.xy, (10, 20))
-    #     self.assertEqual(c.xw, (10, 30))
-    #     self.assertEqual(c.xx, (10, 10))
+        self.assertEqual(c.xy, (10, 20))
+        self.assertEqual(c.xw, (10, 30))
+        self.assertEqual(c.xx, (10, 10))
 
-    #     self.assertEqual(c.xyw, (10, 20, 30))
+        self.assertEqual(c.xyw, (10, 20, 30))
 
-    #     c.xywh = c.hwyx
-    #     # self.assertEqual(c.xywh, (40, 30, 20, 10))
-    #     # c.xywh = c.wyyh
-    #     # self.assertEqual(c.rgba, (40, 20, 20, 10))
-    #     # c.rg = c.gg
-    #     # self.assertEqual(c.rgba, (30, 30, 30, 10))
+        c.xywh = c.hwyx
+        self.assertEqual(c.xywh, (40, 30, 20, 10))
 
-    #     with self.assertRaises(AttributeError):
-    #         c.rr = (10, 10)
-    #         c.bb = (10, 10)
-    #         c.gg = (10, 10)
-    #         c.aa = (10, 10)
-    #         c.aaa = (10, 10, 100)
-    #         c.rgb = (256, 256, 256)
+        with self.assertRaises(AttributeError):
+            c.rr = (10, 10)
+            c.bb = (10, 10)
+            c.gg = (10, 10)
+            c.aa = (10, 10)
+            c.aaa = (10, 10, 100)
+            c.rgb = (256, 256, 256)
 
-    # def test_swizzle_return_types(self):
-    #     c = pygame.color.Color(10, 20, 30, 40)
+    def test_swizzle_set(self):
+        c = Rect(10, 20, 30, 40)
 
-    #     self.assertEqual(type(c.rgb), tuple)
-    #     self.assertEqual(type(c.rgba), pygame.color.Color)
-    #     self.assertEqual(type(c.bgra), pygame.color.Color)
-    #     self.assertEqual(type(c.bg), tuple)
-    #     self.assertEqual(type(c.gr), tuple)
-    #     self.assertEqual(type(c.rr), tuple)
-    #     self.assertEqual(type(c.rrggbb), tuple)
+        c.xy = (50, 40)
+        self.assertEqual(c.xy, (50, 40))
+        c.xywh = (50, 40, 58, 3490857)
+        self.assertEqual(c.xywh, (50, 40, 58, 3490857))
+        c.yx = (5, 23)
+        self.assertEqual(c.xywh, (23, 5, 58, 3490857))
+        c.yxhw = (5, 23, 56, 23)
+        self.assertEqual(c.xywh, (23, 5, 23, 56))
+
+        with self.assertRaises(AttributeError):
+            c.yyyy = (1, 2, 3, 4)
+            c.xyhh = (1, 2, 3, 4)
+            c.xwwh = (1, 2, 3, 4)
 
     def test_collideobjectsall(self):
         r = Rect(1, 1, 10, 10)
@@ -2725,6 +2727,52 @@ class FRectTypeTest(RectTypeTest):
 
         self.assertRaises(TypeError, lambda: "string" in FRect(0, 0, 1, 2))
         self.assertRaises(TypeError, lambda: 4 + 3j in FRect(0, 0, 1, 2))
+
+    def test_swizzle_get(self):
+        c = FRect(10.34, 20.31, 30.39, 40.94)
+
+        res = c.xy
+        self.assertAlmostEqual(res[0], 10.34, 5)
+        self.assertAlmostEqual(res[1], 20.31, 5)
+        
+        res = c.xw
+        self.assertAlmostEqual(res[0], 10.34, 5)
+        self.assertAlmostEqual(res[1], 30.39, 5)
+
+        res = c.xx
+        self.assertAlmostEqual(res[0], 10.34, 5)
+        self.assertAlmostEqual(res[1], 10.34, 5)
+
+        res = c.xyw
+        self.assertAlmostEqual(res[0], 10.34, 5)
+        self.assertAlmostEqual(res[1], 20.31, 5)
+        self.assertAlmostEqual(res[2], 30.39, 5)
+
+        with self.assertRaises(AttributeError):
+            c.rr = (10.3421784, 10.3421784)
+            c.bb = (10.3421784, 10.3421784)
+            c.gg = (10.3421784, 10.3421784)
+            c.aa = (10.3421784, 10.3421784)
+            c.aaa = (10.3421784, 10.3421784, 10.3421784)
+            c.rgb = (256, 256, 256)
+
+    def test_swizzle_set(self):
+        c = FRect(10.39, 20.98, 30.43, 40.83)
+
+        c.xy = (50.48, 40.37)
+        self.assertAlmostEqual(c.x, 50.48, 5)
+        self.assertAlmostEqual(c.y, 40.37, 5)
+
+        c.xywh = (50.3984, 40.58, 58.4985, 37.98)
+        self.assertAlmostEqual(c.x, 50.3984, 5)
+        self.assertAlmostEqual(c.y, 40.58, 5)
+        self.assertAlmostEqual(c.w, 58.4985, 5)
+        self.assertAlmostEqual(c.h, 37.98, 5)
+
+        with self.assertRaises(AttributeError):
+            c.yyyy = (1, 2, 3, 4)
+            c.xyhh = (1, 2, 3, 4)
+            c.xwwh = (1, 2, 3, 4)
 
     def testCalculatedAttributes(self):
         r = FRect(1.0, 2.0, 3.0, 4.0)
