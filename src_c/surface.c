@@ -777,13 +777,19 @@ surf_get_at(PyObject *self, PyObject *args)
     SDL_PixelFormat *format = NULL;
     Uint8 *pixels = NULL;
     int x, y;
+    PyObject *position;
     Uint32 color;
     Uint8 *pix;
     Uint8 rgba[4] = {0, 0, 0, 255};
 
-    if (!PyArg_ParseTuple(args, "(ii)", &x, &y))
+    if (!PyArg_ParseTuple(args, "O", &position))
         return NULL;
     SURF_INIT_CHECK(surf)
+
+    if (!pg_TwoIntsFromObj(position, &x, &y)) {
+        return RAISE(PyExc_TypeError,
+                     "position must be a sequence containing 2 integers");
+    }
 
     if (x < 0 || x >= surf->w || y < 0 || y >= surf->h)
         return RAISE(PyExc_IndexError, "pixel index out of range");
@@ -835,16 +841,22 @@ surf_set_at(PyObject *self, PyObject *args)
     SDL_PixelFormat *format = NULL;
     Uint8 *pixels;
     int x, y;
+    PyObject *position;
     Uint32 color;
     Uint8 rgba[4] = {0, 0, 0, 0};
     PyObject *rgba_obj;
     Uint8 *byte_buf;
 
-    if (!PyArg_ParseTuple(args, "(ii)O", &x, &y, &rgba_obj))
+    if (!PyArg_ParseTuple(args, "OO", &position, &rgba_obj))
         return NULL;
     SURF_INIT_CHECK(surf)
 
     format = surf->format;
+
+    if (!pg_TwoIntsFromObj(position, &x, &y)) {
+        return RAISE(PyExc_TypeError,
+                     "position must be a sequence containing 2 integers");
+    }
 
     if (format->BytesPerPixel < 1 || format->BytesPerPixel > 4)
         return RAISE(PyExc_RuntimeError, "invalid color depth for surface");
@@ -916,12 +928,18 @@ surf_get_at_mapped(PyObject *self, PyObject *args)
     SDL_PixelFormat *format = NULL;
     Uint8 *pixels = NULL;
     int x, y;
+    PyObject *position;
     Sint32 color;
     Uint8 *pix;
 
-    if (!PyArg_ParseTuple(args, "(ii)", &x, &y))
+    if (!PyArg_ParseTuple(args, "O", &position))
         return NULL;
     SURF_INIT_CHECK(surf)
+
+    if (!pg_TwoIntsFromObj(position, &x, &y)) {
+        return RAISE(PyExc_TypeError,
+                     "position must be a sequence containing 2 integers");
+    }
 
     if (x < 0 || x >= surf->w || y < 0 || y >= surf->h)
         return RAISE(PyExc_IndexError, "pixel index out of range");
