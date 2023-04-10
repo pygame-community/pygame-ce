@@ -737,7 +737,7 @@ frect_setAttr_swizzle(pgFRectObject *self, PyObject *attr_name, PyObject *val)
     const char *attr = NULL;
     PyObject *attr_unicode;
     Py_ssize_t len = PySequence_Length(attr_name);
-    double entry[4];
+    float entry[4];
     int entry_was_set[4];
     int swizzle_err = SWIZZLE_ERR_NO_ERR;
     Py_ssize_t i;
