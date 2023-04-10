@@ -2734,7 +2734,7 @@ class FRectTypeTest(RectTypeTest):
         res = c.xy
         self.assertAlmostEqual(res[0], 10.34, 5)
         self.assertAlmostEqual(res[1], 20.31, 5)
-        
+
         res = c.xw
         self.assertAlmostEqual(res[0], 10.34, 5)
         self.assertAlmostEqual(res[1], 30.39, 5)

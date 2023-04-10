@@ -445,7 +445,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 static PyObject *
 rect_getAttr_swizzle(pgRectObject *self, PyObject *attr_name)
 {
-    double value;
+    int value;
     Py_ssize_t i, len;
     PyObject *attr_unicode = NULL;
     const char *attr = NULL;
@@ -500,16 +500,16 @@ rect_getAttr_swizzle(pgRectObject *self, PyObject *attr_name)
         if (len == 4) {
             switch (i) {
                 case 0:
-                    ((pgRectObject *)res)->r.x = value;   
+                    ((pgRectObject *)res)->r.x = value;
                     break;
                 case 1:
-                    ((pgRectObject *)res)->r.y = value;   
+                    ((pgRectObject *)res)->r.y = value;
                     break;
                 case 2:
-                    ((pgRectObject *)res)->r.w = value;   
+                    ((pgRectObject *)res)->r.w = value;
                     break;
                 case 3:
-                    ((pgRectObject *)res)->r.h = value;   
+                    ((pgRectObject *)res)->r.h = value;
                     break;
             }
         }
@@ -544,10 +544,11 @@ rect_setAttr_swizzle(pgRectObject *self, PyObject *attr_name, PyObject *val)
     int swizzle_err = SWIZZLE_ERR_NO_ERR;
     Py_ssize_t i;
 
-
     /* if swizzling is enabled first try swizzle */
-    for (i = 0; i < 4; ++i)
+    for (i = 0; i < 4; ++i) {
         entry_was_set[i] = 0;
+        entry[i] = 0;
+    }
 
     /* handle string and unicode uniformly */
     attr_unicode = PyUnicode_FromObject(attr_name);
@@ -697,16 +698,16 @@ frect_getAttr_swizzle(pgFRectObject *self, PyObject *attr_name)
         if (len == 4) {
             switch (i) {
                 case 0:
-                    ((pgFRectObject *)res)->r.x = value;   
+                    ((pgFRectObject *)res)->r.x = value;
                     break;
                 case 1:
-                    ((pgFRectObject *)res)->r.y = value;   
+                    ((pgFRectObject *)res)->r.y = value;
                     break;
                 case 2:
-                    ((pgFRectObject *)res)->r.w = value;   
+                    ((pgFRectObject *)res)->r.w = value;
                     break;
                 case 3:
-                    ((pgFRectObject *)res)->r.h = value;   
+                    ((pgFRectObject *)res)->r.h = value;
                     break;
             }
         }
@@ -742,8 +743,10 @@ frect_setAttr_swizzle(pgFRectObject *self, PyObject *attr_name, PyObject *val)
     Py_ssize_t i;
 
     /* if swizzling is enabled first try swizzle */
-    for (i = 0; i < 4; ++i)
+    for (i = 0; i < 4; ++i) {
         entry_was_set[i] = 0;
+        entry[i] = 0;
+    }
 
     /* handle string and unicode uniformly */
     attr_unicode = PyUnicode_FromObject(attr_name);
