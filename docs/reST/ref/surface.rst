@@ -714,15 +714,13 @@
       | :sl:`get the rectangular area of the Surface`
       | :sg:`get_frect(\**kwargs) -> FRect`
       
-      This is the same as ``.get_rect()`` but returns an FRect. FRect is similar
+      This is the same as :meth:`Surface.get_rect` but returns an FRect. FRect is similar
       to Rect, except it stores float values instead.
 
       You can pass keyword argument values to this function. These named values
       will be applied to the attributes of the FRect before it is returned. An
-      example would be ``mysurf.get_frect(center=(100.0, 100.0))`` to create a
+      example would be ``mysurf.get_frect(center=(100.5, 100.5))`` to create a
       rectangle for the Surface centered at a given position.
-
-      :ref:`Surface.get_rect`
 
       .. ## Surface.get_frect ##
 
