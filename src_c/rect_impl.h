@@ -804,10 +804,10 @@ RectExport_pgCoord_FromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
 {
     /*Check if there is only one argument*/
     if (nargs == 1) {
-        /*Attempt to convert the argument to two integers*/
+        /*Attempt to convert the argument to two floats/integers*/
         if (!twoPrimitivesFromObj(args[0], x, y)) {
             PyErr_SetString(PyExc_TypeError,
-                            "Invalid position. Must be a two-element "
+                            "Invalid argument. Must be a two-element "
                             "sequence of numbers");
             return 0;
         }
@@ -815,12 +815,12 @@ RectExport_pgCoord_FromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
     }
     /*Check if there are two arguments*/
     else if (nargs == 2) {
-        /*Attempt to convert the first argument to an integer*/
+        /*Attempt to convert the first argument to an float/integer*/
         if (!PrimitiveFromObj(args[0], x)) {
             PyErr_SetString(PyExc_TypeError, "x must be a numeric value");
             return 0;
         }
-        /*Attempt to convert the second argument to an integer*/
+        /*Attempt to convert the second argument to a float/integer*/
         if (!PrimitiveFromObj(args[1], y)) {
             PyErr_SetString(PyExc_TypeError, "y must be a numeric value");
             return 0;
@@ -828,8 +828,8 @@ RectExport_pgCoord_FromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
         return 1;
     }
     /*Raise a TypeError for invalid number of arguments*/
-    PyErr_SetString(PyExc_TypeError,
-                    "Invalid arguments number, must either be 1 or 2");
+    PyErr_Format(PyExc_TypeError,
+                 "function takes at most 2 arguments (%d given)", (int)nargs);
     return 0;
 }
 
