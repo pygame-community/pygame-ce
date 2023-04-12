@@ -60,8 +60,9 @@ class Font(_Font):
         self.ucs4 = True
         self.underline_adjustment = 1.0
         self.strikethrough = False
-        self._bold = 'bold' in self.stylename.lower()
-        self._italic = 'italic' in self.stylename.lower()
+        lower_style_name = self.stylename.lower() if file is not None else ""
+        self._bold = 'bold' in lower_style_name
+        self._italic = 'italic' in lower_style_name or 'slanted' in lower_style_name
 
     def render(self, text, antialias, color, background=None):
         """render(text, antialias, color, background=None) -> Surface
@@ -83,7 +84,7 @@ class Font(_Font):
                 s_size = s.get_size()
                 asc = self.get_ascent()
                 start_pos = (0, asc*15//24)
-                end_pos = (s_size[1], start_pos[1])
+                end_pos = (s_size[0], start_pos[1])
                 width = max(s_size[1] // 20, 1)
                 draw.line(s, color, start_pos, end_pos, width)
             return s
