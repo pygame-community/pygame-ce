@@ -34,8 +34,8 @@ window_destroy(pgWindowObject *self)
 {
     if (self->win) {
         SDL_DestroyWindow(self->win);
-        Py_RETURN_NONE;
     }
+    Py_RETURN_NONE;
 }
 
 static PyObject *
