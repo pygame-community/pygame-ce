@@ -63,6 +63,9 @@ cdef extern from "pygame.h" nogil:
     void import_pygame_color()
     pgSurfaceObject *pgSurface_New2(SDL_Surface *info, int owner)
 
+    int pgWindow_Check(object win)
+    void import_pygame_window()
+
 cdef extern from "pgcompat.h" nogil:
     pass
 
@@ -70,6 +73,7 @@ import_pygame_base()
 import_pygame_color()
 import_pygame_surface()
 import_pygame_rect()
+import_pygame_window()
 
 class RendererDriverInfo:
     def __repr__(self):
@@ -212,6 +216,21 @@ cdef class Window:
         'tooltip': _SDL_WINDOW_TOOLTIP,
         'popup_menu': _SDL_WINDOW_POPUP_MENU,
     }
+
+    @classmethod
+    def from_window(cls,window):
+        '''compatible with new window module'''
+        cdef Window self = cls.__new__(cls)
+        cdef SDL_Window* _window
+        if(not pgWindow_Check(window)):
+            raise TypeError("argument of from_window must be pygame.window.Window")
+
+        _window = SDL_GetWindowFromID(window.get_window_id())
+        if not _window:
+            raise error()
+        self._win=_window
+        self._is_borrowed=1
+        return self
 
     @classmethod
     def from_display_module(cls):

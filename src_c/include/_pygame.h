@@ -459,6 +459,22 @@ typedef struct pgColorObject pgColorObject;
 #define import_pygame_math() IMPORT_PYGAME_MODULE(math)
 #endif /* PYGAMEAPI_MATH_INTERNAL */
 
+/*
+ * Window module
+ */
+typedef struct {
+    PyObject_HEAD SDL_Window *win;
+    SDL_bool is_from_display;
+    pgSurfaceObject *surf;
+} pgWindowObject;
+
+#ifndef PYGAMEAPI_WINDOW_INTERNAL
+#define pgWindow_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(window, 0))
+#define pgWindow_Check(x) \
+    (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
+#define import_pygame_window() IMPORT_PYGAME_MODULE(window)
+#endif
+
 #define IMPORT_PYGAME_MODULE _IMPORT_PYGAME_MODULE
 
 /*
@@ -478,7 +494,8 @@ PYGAMEAPI_DEFINE_SLOTS(rwobject);
 PYGAMEAPI_DEFINE_SLOTS(pixelarray);
 PYGAMEAPI_DEFINE_SLOTS(color);
 PYGAMEAPI_DEFINE_SLOTS(math);
-#else  /* ~PYGAME_H */
+PYGAMEAPI_DEFINE_SLOTS(window);
+#else /* ~PYGAME_H */
 PYGAMEAPI_EXTERN_SLOTS(base);
 PYGAMEAPI_EXTERN_SLOTS(rect);
 PYGAMEAPI_EXTERN_SLOTS(cdrom);
@@ -491,6 +508,8 @@ PYGAMEAPI_EXTERN_SLOTS(rwobject);
 PYGAMEAPI_EXTERN_SLOTS(pixelarray);
 PYGAMEAPI_EXTERN_SLOTS(color);
 PYGAMEAPI_EXTERN_SLOTS(math);
+PYGAMEAPI_EXTERN_SLOTS(window);
+
 #endif /* ~PYGAME_H */
 
 #endif /* PYGAME_H */
