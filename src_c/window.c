@@ -528,8 +528,7 @@ static PyObject *
 window_from_display_module(PyTypeObject *cls)
 {
     SDL_Window *window;
-    int i;
-    pgWindowObject *self, *tmp_window;
+    pgWindowObject *self;
     window = pg_GetDefaultWindow();
     if (!window) {
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -601,7 +600,7 @@ static PyMethodDef _window_methods[] = {
 
 MODINIT_DEFINE(window)
 {
-    PyObject *module, *apiobj, *display_module;
+    PyObject *module, *apiobj;
     static void *c_api[PYGAMEAPI_WINDOW_NUMSLOTS];
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
