@@ -32,7 +32,7 @@ get_grabbed_window(PyObject *self)
 static PyObject *
 window_destroy(pgWindowObject *self)
 {
-    if(self->win){
+    if (self->win) {
         SDL_DestroyWindow(self->win);
         Py_RETURN_NONE;
     }
@@ -144,7 +144,7 @@ window_set_icon(pgWindowObject *self, PyObject *arg)
 }
 
 static PyObject *
-window_set_grab(pgWindowObject *self, PyObject *arg,void* v)
+window_set_grab(pgWindowObject *self, PyObject *arg, void *v)
 {
     int enable = PyObject_IsTrue(arg);
     if (enable == -1)
@@ -156,13 +156,13 @@ window_set_grab(pgWindowObject *self, PyObject *arg,void* v)
 }
 
 static PyObject *
-window_get_grab(pgWindowObject *self,void* v)
+window_get_grab(pgWindowObject *self, void *v)
 {
     return PyBool_FromLong(SDL_GetWindowGrab(self->win));
 }
 
 static PyObject *
-window_set_title(pgWindowObject *self, PyObject *arg,void* v)
+window_set_title(pgWindowObject *self, PyObject *arg, void *v)
 {
     const char *title;
     if (!PyUnicode_Check(arg)) {
@@ -174,14 +174,14 @@ window_set_title(pgWindowObject *self, PyObject *arg,void* v)
 }
 
 static PyObject *
-window_get_title(pgWindowObject *self,void* v)
+window_get_title(pgWindowObject *self, void *v)
 {
     const char *title = SDL_GetWindowTitle(self->win);
     return PyUnicode_FromString(title);
 }
 
 static PyObject *
-window_set_resizable(pgWindowObject *self, PyObject *arg,void* v)
+window_set_resizable(pgWindowObject *self, PyObject *arg, void *v)
 {
     int enable = PyObject_IsTrue(arg);
     if (enable == -1)
@@ -193,14 +193,14 @@ window_set_resizable(pgWindowObject *self, PyObject *arg,void* v)
 }
 
 static PyObject *
-window_get_resizable(pgWindowObject *self,void* v)
+window_get_resizable(pgWindowObject *self, void *v)
 {
     return PyBool_FromLong(SDL_GetWindowFlags(self->win) &
                            SDL_WINDOW_RESIZABLE);
 }
 
 static PyObject *
-window_set_borderless(pgWindowObject *self, PyObject *arg,void* v)
+window_set_borderless(pgWindowObject *self, PyObject *arg, void *v)
 {
     int enable = PyObject_IsTrue(arg);
     if (enable == -1)
@@ -212,7 +212,7 @@ window_set_borderless(pgWindowObject *self, PyObject *arg,void* v)
 }
 
 static PyObject *
-window_get_borderless(pgWindowObject *self,void* v)
+window_get_borderless(pgWindowObject *self, void *v)
 {
     return PyBool_FromLong(SDL_GetWindowFlags(self->win) &
                            SDL_WINDOW_BORDERLESS);
@@ -229,7 +229,7 @@ window_get_window_id(pgWindowObject *self)
 }
 
 static PyObject *
-window_set_size(pgWindowObject *self, PyObject *arg,void* v)
+window_set_size(pgWindowObject *self, PyObject *arg, void *v)
 {
     int w, h;
 
@@ -249,7 +249,7 @@ window_set_size(pgWindowObject *self, PyObject *arg,void* v)
 }
 
 static PyObject *
-window_get_size(pgWindowObject *self,void* v)
+window_get_size(pgWindowObject *self, void *v)
 {
     int w, h;
     PyObject *out = PyTuple_New(2);
@@ -262,7 +262,7 @@ window_get_size(pgWindowObject *self,void* v)
 }
 
 static PyObject *
-window_set_position(pgWindowObject *self, PyObject *arg,void* v)
+window_set_position(pgWindowObject *self, PyObject *arg, void *v)
 {
     int x, y;
 
@@ -282,7 +282,7 @@ window_set_position(pgWindowObject *self, PyObject *arg,void* v)
 }
 
 static PyObject *
-window_get_position(pgWindowObject *self,void* v)
+window_get_position(pgWindowObject *self, void *v)
 {
     int x, h;
     PyObject *out = PyTuple_New(2);
@@ -295,7 +295,7 @@ window_get_position(pgWindowObject *self,void* v)
 }
 
 static PyObject *
-window_set_opacity(pgWindowObject *self, PyObject *arg,void* v)
+window_set_opacity(pgWindowObject *self, PyObject *arg, void *v)
 {
     float opacity;
     opacity = (float)PyFloat_AsDouble(arg);
@@ -309,7 +309,7 @@ window_set_opacity(pgWindowObject *self, PyObject *arg,void* v)
 }
 
 static PyObject *
-window_get_opacity(pgWindowObject *self,void* v)
+window_get_opacity(pgWindowObject *self, void *v)
 {
     float opacity;
     if (SDL_GetWindowOpacity(self->win, &opacity)) {
@@ -570,11 +570,15 @@ static PyMethodDef window_methods[] = {
 static PyGetSetDef _window_getset[] = {
     {"grab", (getter)window_get_grab, (setter)window_set_grab, NULL, NULL},
     {"title", (getter)window_get_title, (setter)window_set_title, NULL, NULL},
-    {"resizable", (getter)window_get_resizable, (setter)window_set_resizable, NULL, NULL},
-    {"borderless", (getter)window_get_borderless, (setter)window_set_borderless, NULL, NULL},
+    {"resizable", (getter)window_get_resizable, (setter)window_set_resizable,
+     NULL, NULL},
+    {"borderless", (getter)window_get_borderless,
+     (setter)window_set_borderless, NULL, NULL},
     {"size", (getter)window_get_size, (setter)window_set_size, NULL, NULL},
-    {"position", (getter)window_get_position, (setter)window_set_position, NULL, NULL},
-    {"opacity", (getter)window_get_opacity, (setter)window_set_opacity, NULL, NULL},
+    {"position", (getter)window_get_position, (setter)window_set_position,
+     NULL, NULL},
+    {"opacity", (getter)window_get_opacity, (setter)window_set_opacity, NULL,
+     NULL},
     {"display_index", (getter)window_get_display_index, NULL, NULL, NULL},
     {"id", (getter)window_get_window_id, NULL, NULL, NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
@@ -588,8 +592,7 @@ static PyTypeObject pgWindow_Type = {
     .tp_methods = window_methods,
     .tp_init = (initproc)window_init,
     .tp_new = PyType_GenericNew,
-    .tp_getset = _window_getset
-};
+    .tp_getset = _window_getset};
 
 static PyMethodDef _window_methods[] = {
     {"get_grabbed_window", (PyCFunction)get_grabbed_window, METH_NOARGS,
