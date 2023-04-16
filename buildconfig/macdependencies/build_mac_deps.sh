@@ -81,7 +81,6 @@ bash opus/build-opus.sh # needs libogg (which is a container format)
 # fluidsynth (for sdl_mixer)
 bash gettext/build-gettext.sh
 bash glib/build-glib.sh # depends on gettext
-bash sndfile/build-sndfile.sh
 bash fluidsynth/build-fluidsynth.sh
 
 bash sdl_libs/build-sdl2-libs.sh
