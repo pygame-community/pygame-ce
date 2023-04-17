@@ -341,6 +341,7 @@ except (ImportError, OSError):
 
 try:
     import pygame.window
+    from pygame.window import Window
 except (ImportError, OSError):
     system = MissingModule("window", urgent=1)
 
