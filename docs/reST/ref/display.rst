@@ -147,7 +147,8 @@ required).
 
    On high resolution displays(4k, 1080p) and tiny graphics games (640x480)
    show up very small so that they are unplayable. SCALED scales up the window
-   for you. The game thinks it's a 640x480 window, but really it can be bigger.
+   for you up to the closest integer that fits inside the screen resolution. 
+   The game thinks it's a 640x480 window, but really it can be bigger.
    Mouse events are scaled for you, so your game doesn't need to do it. Note
    that SCALED is considered an experimental API and may change in future
    releases.
@@ -165,7 +166,7 @@ required).
       pygame.OPENGL        create an OpenGL-renderable display
       pygame.RESIZABLE     display window should be sizeable
       pygame.NOFRAME       display window will have no border or controls
-      pygame.SCALED        resolution depends on desktop size and scale graphics
+      pygame.SCALED        scales up the window to the closest integer that fits the screen
       pygame.SHOWN         window is opened in visible mode (default)
       pygame.HIDDEN        window is opened in hidden mode
 
