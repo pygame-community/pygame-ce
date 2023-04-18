@@ -50,8 +50,8 @@
 #ifndef RectExport_normalize
 #error RectExport_normalize needs to be defined
 #endif
-#ifndef RectExport_pgCoord_FromFastcallArgs
-#error RectExport_pgCoord_FromFastcallArgs needs to be defined
+#ifndef RectExport_pgTwoValues_FromFastcallArgs
+#error RectExport_pgTwoValues_FromFastcallArgs needs to be defined
 #endif
 #ifndef RectExport_move
 #error RectExport_move needs to be defined
@@ -419,8 +419,9 @@ RectExport_Normalize(InnerRect *rect);
 static PyObject *
 RectExport_normalize(RectObject *self, PyObject *args);
 static int
-RectExport_pgCoord_FromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
-                                    PrimitiveType *x, PrimitiveType *y);
+RectExport_pgTwoValues_FromFastcallArgs(PyObject *const *args,
+                                        Py_ssize_t nargs, PrimitiveType *x,
+                                        PrimitiveType *y);
 static PyObject *
 RectExport_move(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static PyObject *
@@ -799,8 +800,9 @@ RectExport_normalize(RectObject *self, PyObject *args)
 }
 
 static int
-RectExport_pgCoord_FromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
-                                    PrimitiveType *x, PrimitiveType *y)
+RectExport_pgTwoValues_FromFastcallArgs(PyObject *const *args,
+                                        Py_ssize_t nargs, PrimitiveType *x,
+                                        PrimitiveType *y)
 {
     /*Check if there is only one argument*/
     if (nargs == 1) {
@@ -817,12 +819,16 @@ RectExport_pgCoord_FromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
     else if (nargs == 2) {
         /*Attempt to convert the first argument to an float/integer*/
         if (!PrimitiveFromObj(args[0], x)) {
-            PyErr_SetString(PyExc_TypeError, "x must be a numeric value");
+            PyErr_SetString(PyExc_TypeError,
+                            "Invalid argument. The first argument must be a "
+                            "numeric value");
             return 0;
         }
         /*Attempt to convert the second argument to a float/integer*/
         if (!PrimitiveFromObj(args[1], y)) {
-            PyErr_SetString(PyExc_TypeError, "y must be a numeric value");
+            PyErr_SetString(PyExc_TypeError,
+                            "Invalid argument. The second argument must be a "
+                            "numeric value");
             return 0;
         }
         return 1;
@@ -838,7 +844,7 @@ RectExport_move(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     PrimitiveType x, y;
 
-    if (!RectExport_pgCoord_FromFastcallArgs(args, nargs, &x, &y)) {
+    if (!RectExport_pgTwoValues_FromFastcallArgs(args, nargs, &x, &y)) {
         return NULL;
     }
 
@@ -851,7 +857,7 @@ RectExport_moveIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     PrimitiveType x, y;
 
-    if (!RectExport_pgCoord_FromFastcallArgs(args, nargs, &x, &y)) {
+    if (!RectExport_pgTwoValues_FromFastcallArgs(args, nargs, &x, &y)) {
         return NULL;
     }
 
@@ -1046,7 +1052,7 @@ RectExport_collidepoint(RectObject *self, PyObject *const *args,
     InnerRect srect = self->r;
     InnerPoint p;
 
-    if (!RectExport_pgCoord_FromFastcallArgs(args, nargs, &p.x, &p.y)) {
+    if (!RectExport_pgTwoValues_FromFastcallArgs(args, nargs, &p.x, &p.y)) {
         return NULL;
     }
 
@@ -2582,7 +2588,7 @@ RectExport_iterator(RectObject *self)
 #undef RectExport_new
 #undef RectExport_dealloc
 #undef RectExport_normalize
-#undef RectExport_pgCoord_FromFastcallArgs
+#undef RectExport_pgTwoValues_FromFastcallArgs
 #undef RectExport_move
 #undef RectExport_moveIp
 #undef RectExport_inflate

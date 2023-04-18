@@ -54,7 +54,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_new pg_rect_new
 #define RectExport_dealloc pg_rect_dealloc
 #define RectExport_normalize pg_rect_normalize
-#define RectExport_pgCoord_FromFastcallArgs pgCoord_FromFastcallArgs_i
+#define RectExport_pgTwoValues_FromFastcallArgs pgCoord_FromFastcallArgs_i
 #define RectExport_move pg_rect_move
 #define RectExport_moveIp pg_rect_move_ip
 #define RectExport_inflate pg_rect_inflate
@@ -163,7 +163,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_dealloc pg_frect_dealloc
 #define RectExport_normalize pg_frect_normalize
 #define RectExport_move pg_frect_move
-#define RectExport_pgCoord_FromFastcallArgs pgCoord_FromFastcallArgs_f
+#define RectExport_pgTwoValues_FromFastcallArgs pgCoord_FromFastcallArgs_f
 #define RectExport_moveIp pg_frect_move_ip
 #define RectExport_inflate pg_frect_inflate
 #define RectExport_inflateIp pg_frect_inflate_ip
