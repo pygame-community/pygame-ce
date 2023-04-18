@@ -2635,6 +2635,7 @@ RectExport_iterator(RectObject *self)
 #undef RectExport_collideobjectsall
 #undef RectExport_collideobjects
 #undef RectExport_RectFromObjectAndKeyFunc
+#undef RectExport_pgTwoValuesFromFastcallArgs
 #undef RectExport_clip
 #undef RectExport_clipline
 #undef RectExport_do_rects_intresect
