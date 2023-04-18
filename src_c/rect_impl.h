@@ -366,6 +366,7 @@
 #define RectFromObject RectExport_RectFromObject
 #define subtype_new4 RectExport_subtypeNew4
 #define primitiveFromObjIndex RectImport_primitiveFromObjIndex
+#define pgTwoValuesFromFastcallArgs RectExport_pgTwoValuesFromFastcallArgs
 #define twoPrimitivesFromObj RectImport_twoPrimitivesFromObj
 #define fourPrimivitesFromObj RectImport_fourPrimiviteFromObj
 #define PrimitiveFromObj RectImport_PrimitiveFromObj
@@ -871,7 +872,7 @@ RectExport_move(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     PrimitiveType x, y;
 
-    if (!RectExport_pgTwoValuesFromFastcallArgs(args, nargs, &x, &y)) {
+    if (!pgTwoValuesFromFastcallArgs(args, nargs, &x, &y)) {
         return NULL;
     }
 
@@ -884,7 +885,7 @@ RectExport_moveIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     PrimitiveType x, y;
 
-    if (!RectExport_pgTwoValuesFromFastcallArgs(args, nargs, &x, &y)) {
+    if (!pgTwoValuesFromFastcallArgs(args, nargs, &x, &y)) {
         return NULL;
     }
 
@@ -1079,7 +1080,7 @@ RectExport_collidepoint(RectObject *self, PyObject *const *args,
     InnerRect srect = self->r;
     InnerPoint p;
 
-    if (!RectExport_pgTwoValuesFromFastcallArgs(args, nargs, &p.x, &p.y)) {
+    if (!pgTwoValuesFromFastcallArgs(args, nargs, &p.x, &p.y)) {
         return NULL;
     }
 
@@ -2615,6 +2616,7 @@ RectExport_iterator(RectObject *self)
 #undef RectExport_new
 #undef RectExport_dealloc
 #undef RectExport_normalize
+#undef pgTwoValuesFromFastcallArgs
 #undef RectExport_move
 #undef RectExport_moveIp
 #undef RectExport_inflate
