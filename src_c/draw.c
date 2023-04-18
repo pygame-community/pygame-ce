@@ -1537,7 +1537,7 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
             err += diff * dx;
             // Calculate change in x value (x = y/m), uses ceil for consistency
             // between positive/negative values
-            diff = ceil(((float)diff * dx) / (float)-dy);
+            diff = (int)ceil(((float)diff * dx) / (float)-dy);
             x1 += diff * sx;
             // Adjust err value to correct for change in x axis
             err += diff * dy;
@@ -1589,7 +1589,7 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
             err += diff * dy;
             // Calculate change in y value (y = mx), uses ceil for consistency
             // between positive/negative values
-            diff = ceil(((float)diff * -dy) / (float)dx);
+            diff = (int)ceil(((float)diff * -dy) / (float)dx);
             y1 += diff * sy;
             // Adjust err value to correct for change in y axis
             err += diff * dx;
