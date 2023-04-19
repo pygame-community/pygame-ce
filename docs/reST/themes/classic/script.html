@@ -1,0 +1,19 @@
+// named as script.html to avoid a conflict with the pathto() function used in template
+console.log("hi from script.js");
+
+if (localStorage.getItem('theme') === null) {
+    localStorage.setItem('theme', 'light-theme');
+    document.body.classList.add('light-theme');
+} else {
+    document.body.classList.add(localStorage.getItem('theme'));
+}
+// add event listeners to all theme icons and change the body class to the theme
+const theme_icons = document.querySelectorAll('.theme-icon');
+theme_icons.forEach((icon) => {
+    icon.addEventListener('click', () => {
+        const theme = icon.getAttribute('data-theme');
+        document.body.classList.remove('light-theme', 'dark-theme');
+        document.body.classList.add(theme);
+        localStorage.setItem('theme', theme);
+    });
+});
