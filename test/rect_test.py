@@ -2342,17 +2342,10 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual(c.xx, (10, 10))
 
         self.assertEqual(c.xyw, (10, 20, 30))
-
-        c.xywh = c.hwyx
-        self.assertEqual(c.xywh, (40, 30, 20, 10))
-
-        with self.assertRaises(AttributeError):
-            c.rr = (10, 10)
-            c.bb = (10, 10)
-            c.gg = (10, 10)
-            c.aa = (10, 10)
-            c.aaa = (10, 10, 100)
-            c.rgb = (256, 256, 256)
+        self.assertEqual(c.xxx, (10, 10, 10))
+        self.assertEqual(c.yyy, (20, 20, 20))
+        self.assertEqual(c.www, (30, 30, 30))
+        self.assertEqual(c.hhh, (40, 40, 40))
 
     def test_swizzle_set(self):
         c = Rect(10, 20, 30, 40)
@@ -2747,12 +2740,6 @@ class FRectTypeTest(RectTypeTest):
         self.assertAlmostEqual(res[0], 10.34, 5)
         self.assertAlmostEqual(res[1], 20.31, 5)
         self.assertAlmostEqual(res[2], 30.39, 5)
-
-        with self.assertRaises(AttributeError):
-            c.rr = (10.3421784, 10.3421784)
-            c.bb = (10.3421784, 10.3421784)
-            c.gg = (10.3421784, 10.3421784)
-            c.aa = (10.3421784, 10.3421784)
 
     def test_swizzle_set(self):
         c = FRect(10.39, 20.98, 30.43, 40.83)

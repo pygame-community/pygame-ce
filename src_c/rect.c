@@ -130,6 +130,8 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_setcenter pg_rect_setcenter
 #define RectExport_getsize pg_rect_getsize
 #define RectExport_setsize pg_rect_setsize
+#define RectExport_swizzle_get pg_rect_swizzle_get
+#define RectExport_swizzle_set pg_rect_swizzle_set
 #define RectImport_primitiveType int
 #define RectImport_RectCheck pgRect_Check
 #define RectImport_RectCheckExact pgRect_CheckExact
@@ -237,6 +239,8 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_setcenter pg_frect_setcenter
 #define RectExport_getsize pg_frect_getsize
 #define RectExport_setsize pg_frect_setsize
+#define RectExport_swizzle_get pg_frect_swizzle_get
+#define RectExport_swizzle_set pg_frect_swizzle_set
 #define RectImport_primitiveType float
 #define RectImport_RectCheck pgFRect_Check
 #define RectImport_RectCheckExact pgFRect_CheckExact
@@ -262,10 +266,6 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectOptional_Freelist_Num pg_frect_freelist_num
 #endif /* PYPY_VERSION */
 #include "rect_impl.h"
-
-#define SWIZZLE_ERR_NO_ERR 0
-#define SWIZZLE_ERR_DOUBLE_IDX 1
-#define SWIZZLE_ERR_EXTRACTION_ERR 2
 
 /* Helper method to extract 4 ints from an object.
  *
@@ -440,402 +440,6 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
     }
 
     return 1;
-}
-
-static PyObject *
-rect_getAttr_swizzle(pgRectObject *self, PyObject *attr_name)
-{
-    int value;
-    Py_ssize_t i, len;
-    PyObject *attr_unicode = NULL;
-    const char *attr = NULL;
-    PyObject *res = NULL;
-
-    len = PySequence_Length(attr_name);
-
-    if (len == 1) {
-        return PyObject_GenericGetAttr((PyObject *)self, attr_name);
-    }
-
-    if (len < 0)
-        goto swizzle_failed;
-    attr_unicode = PyUnicode_FromObject(attr_name);
-    if (attr_unicode == NULL)
-        goto swizzle_failed;
-    attr = PyUnicode_AsUTF8AndSize(attr_unicode, &len);
-    if (attr == NULL)
-        goto internal_error;
-    /* If we are not a swizzle, go straight to GenericGetAttr. */
-    if ((attr[0] != 'x') && (attr[0] != 'y') && (attr[0] != 'w') &&
-        (attr[0] != 'h')) {
-        goto swizzle_failed;
-    }
-
-    if (len == 4) {
-        res = (PyObject *)pgRect_New4(-1, -1, -1, -1);
-    }
-    else {
-        /* More than 4, we return a tuple. */
-        res = (PyObject *)PyTuple_New(len);
-    }
-    if (res == NULL)
-        goto internal_error;
-    for (i = 0; i < len; i++) {
-        switch (attr[i]) {
-            case 'x':
-                value = self->r.x;
-                break;
-            case 'y':
-                value = self->r.y;
-                break;
-            case 'w':
-                value = self->r.w;
-                break;
-            case 'h':
-                value = self->r.h;
-                break;
-            default:
-                goto swizzle_failed;
-        }
-        if (len == 4) {
-            switch (i) {
-                case 0:
-                    ((pgRectObject *)res)->r.x = value;
-                    break;
-                case 1:
-                    ((pgRectObject *)res)->r.y = value;
-                    break;
-                case 2:
-                    ((pgRectObject *)res)->r.w = value;
-                    break;
-                case 3:
-                    ((pgRectObject *)res)->r.h = value;
-                    break;
-            }
-        }
-        else {
-            if (PyTuple_SetItem(res, i, PyFloat_FromDouble(value)) != 0)
-                goto internal_error;
-        }
-    }
-    /* swizzling succeeded! */
-    Py_DECREF(attr_unicode);
-    return res;
-
-    /* swizzling failed! clean up and return NULL */
-swizzle_failed:
-    Py_XDECREF(res);
-    Py_XDECREF(attr_unicode);
-    return PyObject_GenericGetAttr((PyObject *)self, attr_name);
-internal_error:
-    Py_XDECREF(res);
-    Py_XDECREF(attr_unicode);
-    return NULL;
-}
-
-static int
-rect_setAttr_swizzle(pgRectObject *self, PyObject *attr_name, PyObject *val)
-{
-    const char *attr = NULL;
-    PyObject *attr_unicode;
-    Py_ssize_t len = PySequence_Length(attr_name);
-    int entry[4];
-    int entry_was_set[4];
-    int swizzle_err = SWIZZLE_ERR_NO_ERR;
-    Py_ssize_t i;
-
-    /* if swizzling is enabled first try swizzle */
-    for (i = 0; i < 4; ++i) {
-        entry_was_set[i] = 0;
-        entry[i] = 0;
-    }
-
-    /* handle string and unicode uniformly */
-    attr_unicode = PyUnicode_FromObject(attr_name);
-    if (attr_unicode == NULL)
-        return -1;
-    attr = PyUnicode_AsUTF8AndSize(attr_unicode, &len);
-
-    if (len == 1 || !strcmp(attr, "width") || !strcmp(attr, "height")) {
-        return PyObject_GenericSetAttr((PyObject *)self, attr_name, val);
-    }
-
-    if (attr == NULL) {
-        Py_DECREF(attr_unicode);
-        return -1;
-    }
-
-    for (i = 0; i < len; ++i) {
-        int idx;
-        switch (attr[i]) {
-            case 'x':
-                idx = 0;
-                break;
-            case 'y':
-                idx = 1;
-                break;
-            case 'w':
-                idx = 2;
-                break;
-            case 'h':
-                idx = 3;
-                break;
-            default:
-                /* swizzle failed. attempt generic attribute setting */
-                Py_DECREF(attr_unicode);
-                return PyObject_GenericSetAttr((PyObject *)self, attr_name,
-                                               val);
-        }
-        if (idx >= 4) {
-            /* swizzle failed. attempt generic attribute setting */
-            Py_DECREF(attr_unicode);
-            return PyObject_GenericSetAttr((PyObject *)self, attr_name, val);
-        }
-        if (entry_was_set[idx])
-            swizzle_err = SWIZZLE_ERR_DOUBLE_IDX;
-        if (swizzle_err == SWIZZLE_ERR_NO_ERR) {
-            entry_was_set[idx] = 1;
-            entry[idx] = PyLong_AsLong(PySequence_GetItem(val, i));
-            if (PyErr_Occurred())
-                swizzle_err = SWIZZLE_ERR_EXTRACTION_ERR;
-        }
-    }
-    Py_DECREF(attr_unicode);
-
-    switch (swizzle_err) {
-        case SWIZZLE_ERR_NO_ERR:
-            /* swizzle successful */
-            for (i = 0; i < 4; ++i)
-                if (entry_was_set[i]) {
-                    switch (i) {
-                        case 0:
-                            self->r.x = entry[i];
-                            break;
-                        case 1:
-                            self->r.y = entry[i];
-                            break;
-                        case 2:
-                            self->r.w = entry[i];
-                            break;
-                        case 3:
-                            self->r.h = entry[i];
-                            break;
-                    }
-                }
-            return 0;
-        case SWIZZLE_ERR_DOUBLE_IDX:
-            PyErr_SetString(PyExc_AttributeError,
-                            "Attribute assignment conflicts with swizzling.");
-            return -1;
-        case SWIZZLE_ERR_EXTRACTION_ERR:
-            /* exception was set by PySequence_GetItem_AsDouble */
-            return -1;
-        default:
-            /* this should NEVER happen and means a bug in the code */
-            PyErr_SetString(
-                PyExc_RuntimeError,
-                "Unhandled error in swizzle code. Please report "
-                "this bug to github.com/pygame-community/pygame-ce/issues");
-            return -1;
-    }
-}
-
-static PyObject *
-frect_getAttr_swizzle(pgFRectObject *self, PyObject *attr_name)
-{
-    float value;
-    Py_ssize_t i, len;
-    PyObject *attr_unicode = NULL;
-    const char *attr = NULL;
-    PyObject *res = NULL;
-
-    len = PySequence_Length(attr_name);
-
-    if (len == 1) {
-        return PyObject_GenericGetAttr((PyObject *)self, attr_name);
-    }
-
-    if (len < 0)
-        goto swizzle_failed;
-    attr_unicode = PyUnicode_FromObject(attr_name);
-    if (attr_unicode == NULL)
-        goto swizzle_failed;
-    attr = PyUnicode_AsUTF8AndSize(attr_unicode, &len);
-    if (attr == NULL)
-        goto internal_error;
-    /* If we are not a swizzle, go straight to GenericGetAttr. */
-    if ((attr[0] != 'x') && (attr[0] != 'y') && (attr[0] != 'w') &&
-        (attr[0] != 'h')) {
-        goto swizzle_failed;
-    }
-
-    if (len == 4) {
-        res = (PyObject *)pgFRect_New4(-1.0, -1.0, -1.0, -1.0);
-    }
-    else {
-        /* More than 4, we return a tuple. */
-        res = (PyObject *)PyTuple_New(len);
-    }
-    if (res == NULL)
-        goto internal_error;
-    for (i = 0; i < len; i++) {
-        switch (attr[i]) {
-            case 'x':
-                value = self->r.x;
-                break;
-            case 'y':
-                value = self->r.y;
-                break;
-            case 'w':
-                value = self->r.w;
-                break;
-            case 'h':
-                value = self->r.h;
-                break;
-            default:
-                goto swizzle_failed;
-        }
-        if (len == 4) {
-            switch (i) {
-                case 0:
-                    ((pgFRectObject *)res)->r.x = value;
-                    break;
-                case 1:
-                    ((pgFRectObject *)res)->r.y = value;
-                    break;
-                case 2:
-                    ((pgFRectObject *)res)->r.w = value;
-                    break;
-                case 3:
-                    ((pgFRectObject *)res)->r.h = value;
-                    break;
-            }
-        }
-        else {
-            if (PyTuple_SetItem(res, i, PyFloat_FromDouble(value)) != 0)
-                goto internal_error;
-        }
-    }
-    /* swizzling succeeded! */
-    Py_DECREF(attr_unicode);
-    return res;
-
-    /* swizzling failed! clean up and return NULL */
-swizzle_failed:
-    Py_XDECREF(res);
-    Py_XDECREF(attr_unicode);
-    return PyObject_GenericGetAttr((PyObject *)self, attr_name);
-internal_error:
-    Py_XDECREF(res);
-    Py_XDECREF(attr_unicode);
-    return NULL;
-}
-
-static int
-frect_setAttr_swizzle(pgFRectObject *self, PyObject *attr_name, PyObject *val)
-{
-    const char *attr = NULL;
-    PyObject *attr_unicode;
-    Py_ssize_t len = PySequence_Length(attr_name);
-    float entry[4];
-    int entry_was_set[4];
-    int swizzle_err = SWIZZLE_ERR_NO_ERR;
-    Py_ssize_t i;
-
-    /* if swizzling is enabled first try swizzle */
-    for (i = 0; i < 4; ++i) {
-        entry_was_set[i] = 0;
-        entry[i] = 0;
-    }
-
-    /* handle string and unicode uniformly */
-    attr_unicode = PyUnicode_FromObject(attr_name);
-    if (attr_unicode == NULL)
-        return -1;
-    attr = PyUnicode_AsUTF8AndSize(attr_unicode, &len);
-
-    if (len == 1 || !strcmp(attr, "width") || !strcmp(attr, "height")) {
-        return PyObject_GenericSetAttr((PyObject *)self, attr_name, val);
-    }
-
-    if (attr == NULL) {
-        Py_DECREF(attr_unicode);
-        return -1;
-    }
-
-    for (i = 0; i < len; ++i) {
-        int idx;
-        switch (attr[i]) {
-            case 'x':
-                idx = 0;
-                break;
-            case 'y':
-                idx = 1;
-                break;
-            case 'w':
-                idx = 2;
-                break;
-            case 'h':
-                idx = 3;
-                break;
-            default:
-                /* swizzle failed. attempt generic attribute setting */
-                Py_DECREF(attr_unicode);
-                return PyObject_GenericSetAttr((PyObject *)self, attr_name,
-                                               val);
-        }
-        if (idx >= 4) {
-            /* swizzle failed. attempt generic attribute setting */
-            Py_DECREF(attr_unicode);
-            return PyObject_GenericSetAttr((PyObject *)self, attr_name, val);
-        }
-        if (entry_was_set[idx])
-            swizzle_err = SWIZZLE_ERR_DOUBLE_IDX;
-        if (swizzle_err == SWIZZLE_ERR_NO_ERR) {
-            entry_was_set[idx] = 1;
-            entry[idx] = (float)PyFloat_AsDouble(PySequence_GetItem(val, i));
-            if (PyErr_Occurred())
-                swizzle_err = SWIZZLE_ERR_EXTRACTION_ERR;
-        }
-    }
-    Py_DECREF(attr_unicode);
-
-    switch (swizzle_err) {
-        case SWIZZLE_ERR_NO_ERR:
-            /* swizzle successful */
-            for (i = 0; i < 4; ++i)
-                if (entry_was_set[i]) {
-                    switch (i) {
-                        case 0:
-                            self->r.x = entry[i];
-                            break;
-                        case 1:
-                            self->r.y = entry[i];
-                            break;
-                        case 2:
-                            self->r.w = entry[i];
-                            break;
-                        case 3:
-                            self->r.h = entry[i];
-                            break;
-                    }
-                }
-            return 0;
-        case SWIZZLE_ERR_DOUBLE_IDX:
-            PyErr_SetString(PyExc_AttributeError,
-                            "Attribute assignment conflicts with swizzling.");
-            return -1;
-        case SWIZZLE_ERR_EXTRACTION_ERR:
-            /* exception was set by PySequence_GetItem_AsDouble */
-            return -1;
-        default:
-            /* this should NEVER happen and means a bug in the code */
-            PyErr_SetString(
-                PyExc_RuntimeError,
-                "Unhandled error in swizzle code. Please report "
-                "this bug to github.com/pygame-community/pygame-ce/issues");
-            return -1;
-    }
 }
 
 static struct PyMethodDef pg_rect_methods[] = {
@@ -1109,8 +713,8 @@ static PyTypeObject pgRect_Type = {
     .tp_repr = (reprfunc)pg_rect_repr, .tp_as_number = &pg_rect_as_number,
     .tp_as_sequence = &pg_rect_as_sequence,
     .tp_as_mapping = &pg_rect_as_mapping, .tp_str = (reprfunc)pg_rect_str,
-    .tp_getattro = (getattrofunc)rect_getAttr_swizzle,
-    .tp_setattro = (setattrofunc)rect_setAttr_swizzle,
+    .tp_getattro = (getattrofunc)pg_rect_swizzle_get,
+    .tp_setattro = (setattrofunc)pg_rect_swizzle_set,
     /* Space for future expansion */
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, .tp_doc = DOC_RECT,
     .tp_richcompare = (richcmpfunc)pg_rect_richcompare,
@@ -1128,8 +732,8 @@ static PyTypeObject pgFRect_Type = {
     .tp_repr = (reprfunc)pg_frect_repr, .tp_as_number = &pg_frect_as_number,
     .tp_as_sequence = &pg_frect_as_sequence,
     .tp_as_mapping = &pg_frect_as_mapping, .tp_str = (reprfunc)pg_frect_str,
-    .tp_getattro = (getattrofunc)frect_getAttr_swizzle,
-    .tp_setattro = (setattrofunc)frect_setAttr_swizzle,
+    .tp_getattro = (getattrofunc)pg_frect_swizzle_get,
+    .tp_setattro = (setattrofunc)pg_frect_swizzle_set,
     /* Space for future expansion */
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, .tp_doc = DOC_RECT,
     .tp_richcompare = (richcmpfunc)pg_frect_richcompare,

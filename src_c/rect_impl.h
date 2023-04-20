@@ -34,6 +34,10 @@
 
 #include <limits.h>
 
+#define SWIZZLE_ERR_NO_ERR 0
+#define SWIZZLE_ERR_DOUBLE_IDX 1
+#define SWIZZLE_ERR_EXTRACTION_ERR 2
+
 // #region RectExport
 #ifndef RectExport_init
 #error RectExport_init needs to be defined
@@ -277,6 +281,12 @@
 #endif
 #ifndef RectExport_iterator
 #error RectExpor_iterator needs to be defined
+#endif
+#ifndef RectExport_swizzle_get
+#error RectExport_swizzle_get needs to be defined
+#endif
+#ifndef RectExport_swizzle_set
+#error RectExport_swizzle_set needs to be defined
 #endif
 // #endregion
 
@@ -559,6 +569,11 @@ static int
 RectExport_setsize(RectObject *self, PyObject *value, void *closure);
 static PyObject *
 RectExport_iterator(RectObject *self);
+static PyObject *
+RectExport_swizzle_get(RectObject *self, PyObject *attr_name, void *closure);
+static int
+RectExport_swizzle_set(RectObject *self, PyObject *attr_name, PyObject *val,
+                       void *closure);
 
 #ifdef RectOptional_FREELIST
 const int RectOptional_FreelistlimitNumberName =
@@ -2557,6 +2572,187 @@ RectExport_iterator(RectObject *self)
     return iter;
 }
 
+static PyObject *
+RectExport_swizzle_get(RectObject *self, PyObject *attr_name, void *closure)
+{
+    PrimitiveType value;
+    Py_ssize_t i, len;
+    PyObject *attr_unicode = NULL;
+    const char *attr = NULL;
+    PyObject *res = NULL;
+
+    len = PySequence_Length(attr_name);
+
+    if (len == 1) {
+        return PyObject_GenericGetAttr((PyObject *)self, attr_name);
+    }
+
+    if (len < 0)
+        goto swizzle_failed;
+    attr_unicode = PyUnicode_FromObject(attr_name);
+    if (attr_unicode == NULL)
+        goto swizzle_failed;
+    attr = PyUnicode_AsUTF8AndSize(attr_unicode, &len);
+    if (attr == NULL)
+        goto internal_error;
+    /* If we are not a swizzle, go straight to GenericGetAttr. */
+    if ((attr[0] != 'x') && (attr[0] != 'y') && (attr[0] != 'w') &&
+        (attr[0] != 'h')) {
+        goto swizzle_failed;
+    }
+
+    res = (PyObject *)PyTuple_New(len);
+    if (res == NULL)
+        goto internal_error;
+    for (i = 0; i < len; i++) {
+        switch (attr[i]) {
+            case 'x':
+                value = self->r.x;
+                break;
+            case 'y':
+                value = self->r.y;
+                break;
+            case 'w':
+                value = self->r.w;
+                break;
+            case 'h':
+                value = self->r.h;
+                break;
+            default:
+                goto swizzle_failed;
+        }
+        if (PyTuple_SetItem(res, i, PythonNumberFromPrimitiveType(value)) != 0)
+            goto internal_error;
+    }
+    /* swizzling succeeded! */
+    Py_DECREF(attr_unicode);
+    return res;
+
+    /* swizzling failed! clean up and return NULL */
+swizzle_failed:
+    Py_XDECREF(res);
+    Py_XDECREF(attr_unicode);
+    return PyObject_GenericGetAttr((PyObject *)self, attr_name);
+internal_error:
+    Py_XDECREF(res);
+    Py_XDECREF(attr_unicode);
+    return NULL;
+}
+
+static int
+RectExport_swizzle_set(RectObject *self, PyObject *attr_name, PyObject *val,
+                       void *closure)
+{
+    const char *attr = NULL;
+    PyObject *attr_unicode;
+    Py_ssize_t len = PySequence_Length(attr_name);
+    PrimitiveType entry[4];
+    int entry_was_set[4];
+    int swizzle_err = SWIZZLE_ERR_NO_ERR;
+    Py_ssize_t i;
+
+    /* if swizzling is enabled first try swizzle */
+    for (i = 0; i < 4; ++i) {
+        entry_was_set[i] = 0;
+        entry[i] = 0;
+    }
+
+    /* handle string and unicode uniformly */
+    attr_unicode = PyUnicode_FromObject(attr_name);
+    if (attr_unicode == NULL)
+        return -1;
+    attr = PyUnicode_AsUTF8AndSize(attr_unicode, &len);
+
+    if (len == 1 || !strcmp(attr, "width") || !strcmp(attr, "height")) {
+        return PyObject_GenericSetAttr((PyObject *)self, attr_name, val);
+    }
+
+    if (attr == NULL) {
+        Py_DECREF(attr_unicode);
+        return -1;
+    }
+
+    for (i = 0; i < len; ++i) {
+        int idx;
+        switch (attr[i]) {
+            case 'x':
+                idx = 0;
+                break;
+            case 'y':
+                idx = 1;
+                break;
+            case 'w':
+                idx = 2;
+                break;
+            case 'h':
+                idx = 3;
+                break;
+            default:
+                /* swizzle failed. attempt generic attribute setting */
+                Py_DECREF(attr_unicode);
+                return PyObject_GenericSetAttr((PyObject *)self, attr_name,
+                                               val);
+        }
+        if (idx >= 4) {
+            /* swizzle failed. attempt generic attribute setting */
+            Py_DECREF(attr_unicode);
+            return PyObject_GenericSetAttr((PyObject *)self, attr_name, val);
+        }
+        if (entry_was_set[idx])
+            swizzle_err = SWIZZLE_ERR_DOUBLE_IDX;
+        if (swizzle_err == SWIZZLE_ERR_NO_ERR) {
+            entry_was_set[idx] = 1;
+            PyObject *item = PySequence_GetItem(val, i);
+            if (item == NULL) {
+                PyErr_SetString(PyExc_TypeError, "a sequence is expected");
+                return -1;
+            }
+            if (!PrimitiveFromObj(item, &entry[idx])) {
+                swizzle_err = SWIZZLE_ERR_EXTRACTION_ERR;
+            }
+            if (PyErr_Occurred())
+                swizzle_err = SWIZZLE_ERR_EXTRACTION_ERR;
+        }
+    }
+    Py_DECREF(attr_unicode);
+
+    switch (swizzle_err) {
+        case SWIZZLE_ERR_NO_ERR:
+            /* swizzle successful */
+            for (i = 0; i < 4; ++i)
+                if (entry_was_set[i]) {
+                    switch (i) {
+                        case 0:
+                            self->r.x = entry[i];
+                            break;
+                        case 1:
+                            self->r.y = entry[i];
+                            break;
+                        case 2:
+                            self->r.w = entry[i];
+                            break;
+                        case 3:
+                            self->r.h = entry[i];
+                            break;
+                    }
+                }
+            return 0;
+        case SWIZZLE_ERR_DOUBLE_IDX:
+            PyErr_SetString(PyExc_AttributeError,
+                            "Attribute assignment conflicts with swizzling.");
+            return -1;
+        case SWIZZLE_ERR_EXTRACTION_ERR:
+            return -1;
+        default:
+            /* this should NEVER happen and means a bug in the code */
+            PyErr_SetString(
+                PyExc_RuntimeError,
+                "Unhandled error in swizzle code. Please report "
+                "this bug to github.com/pygame-community/pygame-ce/issues");
+            return -1;
+    }
+}
+
 #undef RectExport_init
 #undef RectExport_subtypeNew4
 #undef RectExport_new
@@ -2638,6 +2834,8 @@ RectExport_iterator(RectObject *self)
 #undef RectExport_getsize
 #undef RectExport_setsize
 #undef RectExport_iterator
+#undef RectExport_swizzle_get
+#undef RectExport_swizzle_set
 
 #undef RectImport_PythonNumberCheck
 #undef RectImport_PythonNumberAsPrimitiveType
