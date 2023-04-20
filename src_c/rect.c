@@ -54,6 +54,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_new pg_rect_new
 #define RectExport_dealloc pg_rect_dealloc
 #define RectExport_normalize pg_rect_normalize
+#define RectExport_pgTwoValuesFromFastcallArgs pgTwoValuesFromFastcallArgs_i
 #define RectExport_move pg_rect_move
 #define RectExport_moveIp pg_rect_move_ip
 #define RectExport_inflate pg_rect_inflate
@@ -162,6 +163,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_dealloc pg_frect_dealloc
 #define RectExport_normalize pg_frect_normalize
 #define RectExport_move pg_frect_move
+#define RectExport_pgTwoValuesFromFastcallArgs pgTwoValuesFromFastcallArgs_f
 #define RectExport_moveIp pg_frect_move_ip
 #define RectExport_inflate pg_frect_inflate
 #define RectExport_inflateIp pg_frect_inflate_ip
@@ -849,13 +851,13 @@ static struct PyMethodDef pg_rect_methods[] = {
      DOC_RECT_CLAMPIP},
     {"copy", (PyCFunction)pg_rect_copy, METH_NOARGS, DOC_RECT_COPY},
     {"fit", (PyCFunction)pg_rect_fit, METH_VARARGS, DOC_RECT_FIT},
-    {"move", (PyCFunction)pg_rect_move, METH_VARARGS, DOC_RECT_MOVE},
+    {"move", (PyCFunction)pg_rect_move, METH_FASTCALL, DOC_RECT_MOVE},
     {"update", (PyCFunction)pg_rect_update, METH_VARARGS, DOC_RECT_UPDATE},
     {"inflate", (PyCFunction)pg_rect_inflate, METH_VARARGS, DOC_RECT_INFLATE},
     {"union", (PyCFunction)pg_rect_union, METH_VARARGS, DOC_RECT_UNION},
     {"unionall", (PyCFunction)pg_rect_unionall, METH_VARARGS,
      DOC_RECT_UNIONALL},
-    {"move_ip", (PyCFunction)pg_rect_move_ip, METH_VARARGS, DOC_RECT_MOVEIP},
+    {"move_ip", (PyCFunction)pg_rect_move_ip, METH_FASTCALL, DOC_RECT_MOVEIP},
     {"inflate_ip", (PyCFunction)pg_rect_inflate_ip, METH_VARARGS,
      DOC_RECT_INFLATEIP},
     {"union_ip", (PyCFunction)pg_rect_union_ip, METH_VARARGS,
@@ -895,13 +897,13 @@ static struct PyMethodDef pg_frect_methods[] = {
      DOC_RECT_CLAMPIP},
     {"copy", (PyCFunction)pg_frect_copy, METH_NOARGS, DOC_RECT_COPY},
     {"fit", (PyCFunction)pg_frect_fit, METH_VARARGS, DOC_RECT_FIT},
-    {"move", (PyCFunction)pg_frect_move, METH_VARARGS, DOC_RECT_MOVE},
+    {"move", (PyCFunction)pg_frect_move, METH_FASTCALL, DOC_RECT_MOVE},
     {"update", (PyCFunction)pg_frect_update, METH_VARARGS, DOC_RECT_UPDATE},
     {"inflate", (PyCFunction)pg_frect_inflate, METH_VARARGS, DOC_RECT_INFLATE},
     {"union", (PyCFunction)pg_frect_union, METH_VARARGS, DOC_RECT_UNION},
     {"unionall", (PyCFunction)pg_frect_unionall, METH_VARARGS,
      DOC_RECT_UNIONALL},
-    {"move_ip", (PyCFunction)pg_frect_move_ip, METH_VARARGS, DOC_RECT_MOVEIP},
+    {"move_ip", (PyCFunction)pg_frect_move_ip, METH_FASTCALL, DOC_RECT_MOVEIP},
     {"inflate_ip", (PyCFunction)pg_frect_inflate_ip, METH_VARARGS,
      DOC_RECT_INFLATEIP},
     {"union_ip", (PyCFunction)pg_frect_union_ip, METH_VARARGS,
