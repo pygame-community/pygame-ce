@@ -963,18 +963,23 @@ polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 
         /* Hollow poly */
         if (width > 0) {
-            Py_ssize_t k;
-            int x1, y1, x2, y2;
-            for (j = 0, k = curr_size - 1; j < curr_size; k = j++) {
-                item = PySequence_ITEM(points, j);
-                if (!pg_TwoIntsFromObj(item, &x1, &y1)) {
-                    Py_DECREF(item);
-                    pgSurface_Unlock(surfobj);
-                    PyMem_Free(xylist);
-                    goto on_error;
-                }
+            int xs, ys, x1, y1, x2, y2;
+
+            /* Get the first point */
+            item = PySequence_ITEM(points, 0);
+            if (!pg_TwoIntsFromObj(item, &xs, &ys)) {
                 Py_DECREF(item);
-                item = PySequence_ITEM(points, k);
+                pgSurface_Unlock(surfobj);
+                PyMem_Free(xylist);
+                goto on_error;
+            }
+            Py_DECREF(item);
+
+            x1 = xs;
+            y1 = ys;
+
+            for (j = 1; j < curr_size; j++) {
+                item = PySequence_ITEM(points, j);
                 if (!pg_TwoIntsFromObj(item, &x2, &y2)) {
                     Py_DECREF(item);
                     pgSurface_Unlock(surfobj);
@@ -984,7 +989,12 @@ polygons(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
                 Py_DECREF(item);
                 draw_line_width(surf, color, x1, y1, x2, y2, width,
                                 drawn_area);
+                x1 = x2;
+                y1 = y2;
             }
+
+            /* Draw the last line */
+            draw_line_width(surf, color, x1, y1, xs, ys, width, drawn_area);
         }
         /* Filled poly */
         else if (!width) {
