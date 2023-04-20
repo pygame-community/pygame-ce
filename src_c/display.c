@@ -702,7 +702,7 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
                 pgSurfaceObject *display_surface =
                     pg_GetDefaultWindowSurface();
                 SDL_Surface *surf = SDL_CreateRGBSurfaceWithFormat(
-                    0, w, h, 32, SDL_PIXELFORMAT_XRGB8888);
+                    0, w, h, 32, PG_PIXELFORMAT_XRGB8888);
 
                 SDL_FreeSurface(display_surface->surf);
                 display_surface->surf = surf;
@@ -1158,8 +1158,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
                 So we make a fake surface.
                 */
-                surf = SDL_CreateRGBSurfaceWithFormat(
-                    0, w, h, 32, SDL_PIXELFORMAT_XRGB8888);
+                surf = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32,
+                                                      PG_PIXELFORMAT_XRGB8888);
                 newownedsurf = surf;
             }
             else {
@@ -1260,8 +1260,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                         pg_renderer, SDL_PIXELFORMAT_ARGB8888,
                         SDL_TEXTUREACCESS_STREAMING, w, h);
                 }
-                surf = SDL_CreateRGBSurfaceWithFormat(
-                    0, w, h, 32, SDL_PIXELFORMAT_XRGB8888);
+                surf = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32,
+                                                      PG_PIXELFORMAT_XRGB8888);
                 newownedsurf = surf;
             }
             else {

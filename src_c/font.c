@@ -543,7 +543,7 @@ font_render(PyObject *self, PyObject *args)
     if (strlen(astring) == 0) { /* special 0 string case */
         int height = TTF_FontHeight(font);
         surf = SDL_CreateRGBSurfaceWithFormat(0, 0, height, 32,
-                                              SDL_PIXELFORMAT_XRGB8888);
+                                              PG_PIXELFORMAT_XRGB8888);
     }
     else { /* normal case */
 #if !SDL_TTF_VERSION_ATLEAST(2, 0, 15)

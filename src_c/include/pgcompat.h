@@ -23,6 +23,11 @@ typedef uint32_t Uint32;
 typedef uint8_t Uint8;
 #endif /* no SDL */
 
+// SDL_PIXELFORMAT_XRGB8888 is new in SDL 2.0.14, so let's make a custom
+// macro to use the new less confusing naming and still build on older
+// systems. SDL_PIXELFORMAT_RGB888 == SDL_PIXELFORMAT_XRGB8888.
+#define PG_PIXELFORMAT_XRGB8888 SDL_PIXELFORMAT_RGB888
+
 #if defined(SDL_VERSION_ATLEAST)
 
 #if SDL_VERSION_ATLEAST(2, 0, 18)

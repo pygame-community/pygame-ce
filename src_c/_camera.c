@@ -428,7 +428,7 @@ camera_get_image(pgCameraObject *self, PyObject *arg)
 
     if (!surfobj) {
         surf = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32,
-                                              SDL_PIXELFORMAT_XRGB8888);
+                                              PG_PIXELFORMAT_XRGB8888);
     }
     else {
         surf = pgSurface_AsSurface(surfobj);
