@@ -788,7 +788,7 @@ surf_get_at(PyObject *self, PyObject *args)
 
     if (!pg_TwoIntsFromObj(position, &x, &y)) {
         return RAISE(PyExc_TypeError,
-                     "position must be a sequence containing 2 integers");
+                     "position must be a sequence of two numbers");
     }
 
     if (x < 0 || x >= surf->w || y < 0 || y >= surf->h)
@@ -855,7 +855,7 @@ surf_set_at(PyObject *self, PyObject *args)
 
     if (!pg_TwoIntsFromObj(position, &x, &y)) {
         return RAISE(PyExc_TypeError,
-                     "position must be a sequence containing 2 integers");
+                     "position must be a sequence of two numbers");
     }
 
     if (format->BytesPerPixel < 1 || format->BytesPerPixel > 4)
