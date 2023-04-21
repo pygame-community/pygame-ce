@@ -1629,41 +1629,155 @@ static void
 draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
           int *drawn_area)
 {
-    int dx, dy, err, e2, sx, sy;
+    int dx, dy, err, e2, sx, sy, diff, exit, end;
+    int xinc = 0;
     if (x1 == x2 && y1 == y2) { /* Single point */
         set_and_check_rect(surf, x1, y1, color, drawn_area);
         return;
     }
-    if (y1 == y2) { /* Horizontal line */
-        dx = (x1 < x2) ? 1 : -1;
-        for (sx = 0; sx <= abs(x1 - x2); sx++) {
-            set_and_check_rect(surf, x1 + dx * sx, y1, color, drawn_area);
-        }
+    // Determine if the line is more vertical or horizontal for clipping
+    // purposes
+    if (abs(x1 - x2) <= abs(y1 - y2)) {
+        xinc = 1;
+    }
 
+    if (!clip_line(surf, &x1, &y1, &x2, &y2, 0, xinc))
+        return;
+
+    if (y1 == y2) { /* Horizontal line */
+        if (x1 < x2) {
+            drawhorzline(surf, color, MAX(x1, surf->clip_rect.x), y1,
+                         MIN(x2, surf->clip_rect.x + surf->clip_rect.w - 1));
+            add_line_to_drawn_list(
+                MAX(x1, surf->clip_rect.x), y1,
+                MIN(x2, surf->clip_rect.x + surf->clip_rect.w - 1), y1,
+                drawn_area);
+        }
+        else {
+            drawhorzline(surf, color, MAX(x2, surf->clip_rect.x), y1,
+                         MIN(x1, surf->clip_rect.x + surf->clip_rect.w - 1));
+            add_line_to_drawn_list(
+                MAX(x2, surf->clip_rect.x), y1,
+                MIN(x1, surf->clip_rect.x + surf->clip_rect.w - 1), y1,
+                drawn_area);
+        }
         return;
     }
     if (x1 == x2) { /* Vertical line */
-        dy = (y1 < y2) ? 1 : -1;
-        for (sy = 0; sy <= abs(y1 - y2); sy++)
-            set_and_check_rect(surf, x1, y1 + dy * sy, color, drawn_area);
+        if (y1 < y2) {
+            drawvertline(surf, color, MAX(y1, surf->clip_rect.y), x1,
+                         MIN(y2, surf->clip_rect.y + surf->clip_rect.h - 1));
+            add_line_to_drawn_list(
+                x1, MAX(y1, surf->clip_rect.y), x1,
+                MIN(y2, surf->clip_rect.y + surf->clip_rect.h - 1),
+                drawn_area);
+        }
+        else {
+            drawvertline(surf, color, MAX(y2, surf->clip_rect.y), x1,
+                         MIN(y1, surf->clip_rect.y + surf->clip_rect.h - 1));
+            add_line_to_drawn_list(
+                x1, MAX(y2, surf->clip_rect.y), x1,
+                MIN(y1, surf->clip_rect.y + surf->clip_rect.h - 1),
+                drawn_area);
+        }
         return;
     }
-    dx = abs(x2 - x1), sx = x1 < x2 ? 1 : -1;
-    dy = abs(y2 - y1), sy = y1 < y2 ? 1 : -1;
-    err = (dx > dy ? dx : -dy) / 2;
-    while (x1 != x2 || y1 != y2) {
-        set_and_check_rect(surf, x1, y1, color, drawn_area);
-        e2 = err;
-        if (e2 > -dx) {
-            err -= dy;
-            x1 += sx;
+    dx = abs(x2 - x1);
+    dy = -abs(y2 - y1);
+    sx = x2 > x1 ? 1 : -1;
+    sy = y2 > y1 ? 1 : -1;
+    err = dx + dy;
+    // If line is more vertical than horizontal
+    if (xinc) {
+        end = y2 + sy;
+        // Set exit to y value of where line will leave surface
+        // Set diff to difference between starting y coordinate and the y value
+        // of the line's entry point to the surface
+        if (y2 > y1) {
+            exit = surf->clip_rect.y + surf->clip_rect.h;
+            diff = surf->clip_rect.y - y1;
         }
-        if (e2 < dy) {
-            err += dx;
-            y1 += sy;
+        else {
+            exit = surf->clip_rect.y - 1;
+            diff = y1 - (surf->clip_rect.y + surf->clip_rect.h - 1);
+        }
+        // If line starts outside of surface
+        if (diff > 0) {
+            // Set y1 to entry y point
+            y1 += diff * sy;
+            // Adjust err by dx for the change in the y axis
+            err += diff * dx;
+            // Calculate change in x value (x = y/m), uses ceil for consistency
+            // between positive/negative values
+            diff = (int)ceil(((float)diff * dx) / (float)-dy);
+            x1 += diff * sx;
+            // Adjust err value to correct for change in x axis
+            err += diff * dy;
+        }
+
+        // Continue through normal Bresenham's line algorithm iteration
+        while (y1 != end) {
+            if (y1 != exit) {
+                set_and_check_rect(surf, x1, y1, color, drawn_area);
+            }
+            else
+                break;
+            e2 = err * 2;
+            if (e2 >= dy) {
+                err += dy;
+                x1 += sx;
+            }
+            if (e2 <= dx) {
+                err += dx;
+                y1 += sy;
+            }
         }
     }
-    set_and_check_rect(surf, x2, y2, color, drawn_area);
+    else {
+        end = x2 + sx;
+        // Set exit to x value of where line will leave surface
+        // Set diff to difference between starting x coordinate and the x value
+        // of the line's entry point to the surface
+        if (x2 > x1) {
+            diff = surf->clip_rect.x - x1;
+            exit = surf->clip_rect.x + surf->clip_rect.w;
+        }
+        else {
+            diff = x1 - (surf->clip_rect.x + surf->clip_rect.w - 1);
+            exit = surf->clip_rect.x - 1;
+        }
+        // If line starts outside of surface
+        if (diff > 0) {
+            // Set x1 to entry x point
+            x1 += diff * sx;
+            // Adjust err by dy for the change in the x axis
+            err += diff * dy;
+            // Calculate change in y value (y = mx), uses ceil for consistency
+            // between positive/negative values
+            diff = (int)ceil(((float)diff * -dy) / (float)dx);
+            y1 += diff * sy;
+            // Adjust err value to correct for change in y axis
+            err += diff * dx;
+        }
+
+        // Continue through normal Bresenham's line algorithm iteration
+        while (x1 != end) {
+            if (x1 != exit) {
+                set_and_check_rect(surf, x1, y1, color, drawn_area);
+            }
+            else
+                break;
+            e2 = err * 2;
+            if (e2 >= dy) {
+                err += dy;
+                x1 += sx;
+            }
+            if (e2 <= dx) {
+                err += dx;
+                y1 += sy;
+            }
+        }
+    }
 }
 
 static void
