@@ -203,7 +203,8 @@ Sprites are not thread safe. So lock them yourself if using threads.
 
    A simple container for Sprite objects. This class can be inherited to create
    containers with more specific behaviors. The constructor takes any number of
-   Sprite arguments to add to the Group. The group supports the following
+   Sprite arguments to add to the Group. All sprites in groups are stored in the
+   order they were added to the group. The group supports the following
    standard Python operations:
 
    ::
@@ -297,8 +298,7 @@ Sprites are not thread safe. So lock them yourself if using threads.
       ``Sprite.image`` attribute for the source surface, and ``Sprite.rect``
       for the position.
 
-      The Group does not keep sprites in any order, so the draw order is
-      arbitrary.
+      The Group keeps sprites in the order they were added, they will be drawn in this order.
 
       .. ## Group.draw ##
 
@@ -337,22 +337,6 @@ Sprites are not thread safe. So lock them yourself if using threads.
 
    .. ## pygame.sprite.Group ##
 
-.. class:: RenderPlain
-
-   | :sl:`Same as pygame.sprite.Group`
-
-   This class is an alias to ``pygame.sprite.Group()``. It has no additional functionality.
-
-   .. ## pygame.sprite.RenderClear ##
-
-.. class:: RenderClear
-
-   | :sl:`Same as pygame.sprite.Group`
-
-   This class is an alias to ``pygame.sprite.Group()``. It has no additional functionality.
-
-   .. ## pygame.sprite.RenderClear ##
-
 .. class:: RenderUpdates
 
    | :sl:`Group sub-class that tracks dirty updates.`
@@ -379,18 +363,6 @@ Sprites are not thread safe. So lock them yourself if using threads.
       .. ## RenderUpdates.draw ##
 
    .. ## pygame.sprite.RenderUpdates ##
-
-.. function:: OrderedUpdates
-
-   | :sl:`RenderUpdates sub-class that draws Sprites in order of addition.`
-   | :sg:`OrderedUpdates(*sprites) -> OrderedUpdates`
-
-   This class derives from ``pygame.sprite.RenderUpdates()``. It maintains the
-   order in which the Sprites were added to the Group for rendering. This makes
-   adding and removing Sprites from the Group a little slower than regular
-   Groups.
-
-   .. ## pygame.sprite.OrderedUpdates ##
 
 .. class:: LayeredUpdates
 
