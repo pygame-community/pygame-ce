@@ -1521,7 +1521,7 @@ draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
 
     Py_ssize_t y;
     for (y = p0y; y < p2y; y++) {
-        int x1 = p0x + (int)((y - p0y) * d1);
+        int x1 = p0x + (int)((y - p2y) * d1);
 
         int x2;
         if (y < p1y)
