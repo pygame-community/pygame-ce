@@ -434,9 +434,10 @@
       | :sl:`get the color value at a single pixel`
       | :sg:`get_at((x, y)) -> Color`
 
-      Return a copy of the ``RGBA`` Color value at the given pixel. If the
-      Surface has no per pixel alpha, then the alpha value will always be 255
-      (opaque). If the pixel position is outside the area of the Surface an
+      Return a copy of the ``RGBA`` Color value at the given pixel. The pixel can
+      either be given as Sequence or as a Vector2. If the Surface has no per 
+      pixel alpha, then the alpha value will always be 255 (opaque). 
+      If the pixel position is outside the area of the Surface an
       ``IndexError`` exception will be raised.
 
       Getting and setting pixels one at a time is generally too slow to be used
@@ -445,6 +446,8 @@
       methods - or by using :mod:`pygame.surfarray`/:mod:`pygame.PixelArray`.
 
       This function will temporarily lock and unlock the Surface as needed.
+
+      .. note:: Any floating point values given in the specified pixel coordiante will be truncated.
 
       .. versionadded:: 1.9
          Returning a Color instead of tuple. Use ``tuple(surf.get_at((x,y)))``
@@ -458,7 +461,8 @@
       | :sl:`set the color value for a single pixel`
       | :sg:`set_at((x, y), Color) -> None`
 
-      Set the ``RGBA`` or mapped integer color value for a single pixel. If the
+      Set the ``RGBA`` or mapped integer color value for a single pixel. The pixel can
+      either be given as Sequence or as a Vector2. If the
       Surface does not have per pixel alphas, the alpha value is ignored.
       Setting pixels outside the Surface area or outside the Surface clipping
       will have no effect.
@@ -470,6 +474,8 @@
 
       .. note:: If the surface is palettized, the pixel color will be set to the
                 most similar color in the palette.
+
+      .. note:: Any floating point values given in the specified pixel coordiante will be truncated.
 
       .. ## Surface.set_at ##
 
