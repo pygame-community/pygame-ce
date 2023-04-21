@@ -1515,9 +1515,9 @@ draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
         }
     }
 
-    float d1 = (p2x - p0x) / ((p2y - p0y) + 0.000001);
-    float d2 = (p1x - p0x) / ((p1y - p0y) + 0.000001);
-    float d3 = (p2x - p1x) / ((p2y - p1y) + 0.000001);
+    float d1 = (float)((p2x - p0x) / ((p2y - p0y) + 1e-17));
+    float d2 = (float)((p1x - p0x) / ((p1y - p0y) + 1e-17));
+    float d3 = (float)((p2x - p1x) / ((p2y - p1y) + 1e-17));
 
     int y;
     for (y = p0y; y < p2y; y++) {
