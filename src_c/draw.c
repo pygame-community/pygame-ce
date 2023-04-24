@@ -1507,7 +1507,7 @@ draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
 
     if (p2y < p1y) {
         swap_int(&p1x, &p2x);
-        swap_int(&p1y, &p2x);
+        swap_int(&p1y, &p2y);
 
         if (p1y < p0y) {
             swap_int(&p1x, &p0x);
@@ -1518,14 +1518,13 @@ draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
     float d1 = (float)((p2x - p0x) / ((p2y - p0y) + 1e-17));
     float d2 = (float)((p1x - p0x) / ((p1y - p0y) + 1e-17));
     float d3 = (float)((p2x - p1x) / ((p2y - p1y) + 1e-17));
-
     int y;
-    for (y = p0y; y < p2y; y++) {
-        int x1 = p0x + (int)((y - p2y) * d1);
+    for (y = p0y; y <= p2y; y++) {
+        int x1 = p0x + (int)((y - p0y) * d1);
 
         int x2;
         if (y < p1y)
-            x2 = p0x + (int)((y - p2y) * d2);
+            x2 = p0x + (int)((y - p0y) * d2);
         else
             x2 = p1x + (int)((y - p1y) * d3);
 
