@@ -166,7 +166,7 @@ following formats.
    | :sl:`transfer image to byte buffer`
    | :sg:`tostring(Surface, format, flipped=False) -> bytes`
 
-   DEPRECATED: Use tobytes() instead.
+   DEPRECATED: This function has the same functionality as :func:`tobytes()`, which is preferred and should be used.
 
    .. deprecated:: 2.3.0
 
@@ -219,7 +219,7 @@ following formats.
    | :sl:`create new Surface from a byte buffer`
    | :sg:`fromstring(bytes, size, format, flipped=False, pitch=-1) -> Surface`
 
-   DEPRECATED: Use frombytes() instead.
+   DEPRECATED: This function has the same functionality as :func:`frombytes()`, which is preferred and should be used.
 
    .. deprecated:: 2.3.0
 
