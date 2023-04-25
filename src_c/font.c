@@ -517,11 +517,10 @@ font_is_char_provided(PyObject *self, PyObject *textobj)
 
     if (length > 2) {
         Py_DECREF(obj);
-        return RAISE(PyExc_ValueError,
-                     "Too long, only 1 char supported.");
+        return RAISE(PyExc_ValueError, "Too long, only 1 char supported.");
     }
 
-    ch = buffer[1];/* skip BOM */
+    ch = buffer[1]; /* skip BOM */
     int index = TTF_GlyphIsProvided(font, ch);
     Py_DECREF(obj);
     if (!index) {
@@ -706,7 +705,7 @@ font_getter_style_name(PyObject *self, void *closure)
     return PyUnicode_FromString(font_name);
 }
 
-static PyObject*
+static PyObject *
 font_getter_path(PyObject *self, void *closure)
 {
     PyObject *path = ((PyFontObject *)self)->path;
@@ -951,7 +950,8 @@ static PyMethodDef font_methods[] = {
      DOC_FONT_FONT_SETSTRIKETHROUGH},
     {"metrics", font_metrics, METH_O, DOC_FONT_FONT_METRICS},
     {"render", font_render, METH_VARARGS, DOC_FONT_FONT_RENDER},
-    {"is_char_defined", font_is_char_provided, METH_O, DOC_FONT_FONT_ISCHARDEFINED},
+    {"is_char_defined", font_is_char_provided, METH_O,
+     DOC_FONT_FONT_ISCHARDEFINED},
     {"size", font_size, METH_O, DOC_FONT_FONT_SIZE},
     {"set_script", font_set_script, METH_O, DOC_FONT_FONT_SETSCRIPT},
     {"set_direction", (PyCFunction)font_set_direction,
@@ -1016,7 +1016,9 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     if (obj == Py_None) {
         /* default font */
         Py_DECREF(obj);
-        obj = font_resource(font_defaultname); // Returns an encoded file path, a file-like object or a NULL pointer.
+        obj = font_resource(
+            font_defaultname);  // Returns an encoded file path, a file-like
+                                // object or a NULL pointer.
         if (obj == NULL) {
             if (PyErr_Occurred() == NULL) {
                 PyErr_Format(PyExc_RuntimeError,
@@ -1045,7 +1047,9 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
              * default font */
             PyErr_Clear();
             Py_DECREF(obj);
-            obj = font_resource(font_defaultname); // Returns an encoded file path, a file-like object or a NULL pointer.
+            obj = font_resource(
+                font_defaultname);  // Returns an encoded file path, a
+                                    // file-like object or a NULL pointer.
             if (obj == NULL) {
                 if (PyErr_Occurred() == NULL) {
                     PyErr_Format(PyExc_RuntimeError,
@@ -1072,7 +1076,6 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
                 path = Py_None;
             }
         }
-
     }
 
     if (rw == NULL) {
@@ -1094,7 +1097,6 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
                 }
                 goto error;
             }
-
         }
         path = pg_EncodeString(path, "UTF-8", NULL, NULL);
         if (!path || path == Py_None) {
@@ -1105,7 +1107,6 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
             path = Py_None;
         }
     }
-
 
     if (fontsize <= 1)
         fontsize = 1;

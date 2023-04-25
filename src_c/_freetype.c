@@ -1457,7 +1457,7 @@ _ftfont_is_char_defined(pgFontObject *self, PyObject *textobj)
     face = _PGFT_GetFont(self->freetype, self);
     PGFT_char charcode = text->data[0];
     glyph_index = FT_Get_Char_Index(face, charcode);
-    if (glyph_index >0) {
+    if (glyph_index > 0) {
         free_string(text);
         Py_RETURN_TRUE;
     }
