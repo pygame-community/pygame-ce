@@ -602,13 +602,13 @@ class FontTypeTest(unittest.TestCase):
             pygame.freetype.quit()
 
     def test_font_path_from_obj(self):
-        font_name = pygame_font.get_default_font()
+        default_font_path = pygame_font.Font(None, 20).path
         font_path = os.path.join(
             os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
         )
         with open(font_path, "rb") as f:
             font = pygame_font.Font(f, 20)
-            self.assertIsNone(font.path, f"should be None but is '{font.path}'")
+            self.assertEqual(default_font_path, font.path, f"should be None but is '{font.path}'")
 
     def test_font_is_char_defined_true(self):
         f = pygame_font.Font(None, 20)

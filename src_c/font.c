@@ -1079,6 +1079,34 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
         goto error;
     }
 
+    // from _freetype.c line 825
+    if (pgRWops_IsFileObject(rw)) {
+        path = PyObject_GetAttrString(obj, "name");
+        if (!path) {
+            path = font_resource(
+                font_defaultname);  // Returns an encoded file path, a
+                                    // file-like object or a NULL pointer.
+            if (path == NULL) {
+                if (PyErr_Occurred() == NULL) {
+                    PyErr_Format(PyExc_RuntimeError,
+                                 "default font '%.1024s' not found",
+                                 font_defaultname);
+                }
+                goto error;
+            }
+
+        }
+        path = pg_EncodeString(path, "UTF-8", NULL, NULL);
+        if (!path || path == Py_None) {
+            /* if path is NULL, we are forwarding an error. If it is None,
+             * the object passed was not a bytes/string/pathlib object so
+             * handling of that is done after this function, exit early here */
+            Py_XDECREF(path);
+            path = Py_None;
+        }
+    }
+
+
     if (fontsize <= 1)
         fontsize = 1;
 
