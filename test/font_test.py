@@ -608,7 +608,11 @@ class FontTypeTest(unittest.TestCase):
         )
         with open(font_path, "rb") as f:
             font = pygame_font.Font(f, 20)
-            self.assertEqual(default_font_path, font.path, f"should be None but is '{font.path}'")
+            self.assertEqual(
+                default_font_path,
+                font.path,
+                f"should be default font path but is '{font.path}'",
+            )
 
     def test_font_is_char_defined_true(self):
         f = pygame_font.Font(None, 20)
