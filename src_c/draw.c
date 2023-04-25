@@ -2352,11 +2352,11 @@ draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
                 // end), or when we are on the lowest line (maxy)
                 intersect = (y - y1) * (x2 - x1) / (float)(y2 - y1);
                 if (n_intersections % 2 == 0) {
-                    intersect = floor(intersect);
+                    intersect = (float)floor(intersect);
                 }
                 else
-                    intersect = ceil(intersect);
-                x_intersect[n_intersections++] = intersect + x1;
+                    intersect = (float)ceil(intersect);
+                x_intersect[n_intersections++] = (int)intersect + x1;
             }
         }
         qsort(x_intersect, n_intersections, sizeof(int), compare_int);
