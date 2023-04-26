@@ -20,7 +20,7 @@ def set_version_formats(app, config):
 
 def setup(app):
     app.add_directive("versionextended", VersionChange)
-    versionlabels["versionextended"] = "Extended in pygame %s"
+    versionlabels["versionextended"] = "Extended in pygame-ce %s"
 
     if UPDATE_VERIONLABEL_CLASSES:
         versionlabel_classes["versionextended"] = "extended"

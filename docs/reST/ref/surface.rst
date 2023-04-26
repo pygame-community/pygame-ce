@@ -150,7 +150,7 @@
          ``True``, otherwise ``None``
       :rtype: list or None
 
-      New in pygame 1.9.4.
+      .. versionadded:: 1.9.4
 
       .. ## Surface.blits ##
 

@@ -43,7 +43,7 @@ The Bayer to ``RGB`` function is based on:
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  SUCH DAMAGE.
 
-New in pygame 1.9.0.
+.. versionadded:: 1.9.0
 
 .. function:: init
 
