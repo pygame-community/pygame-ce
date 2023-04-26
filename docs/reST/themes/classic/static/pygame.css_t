@@ -89,40 +89,6 @@ html {
 html:has( body.dark-theme) {
     background-color: {{ theme_dark_bgcolor }};
 }
-::-webkit-scrollbar {
-    background-color: {{ theme_scrollbarbgcolor }};
-}
-.dark-theme::-webkit-scrollbar {
-    background-color: {{ theme_dark_scrollbarbgcolor }};
-}
-::-webkit-scrollbar-thumb {
-    background-color: {{ theme_scrollbarcolor }};
-    border-radius: 0.8rem;
-}
-.dark-theme::-webkit-scrollbar-thumb {
-    background-color: {{ theme_dark_scrollbarcolor }};
-    border-radius: 0.8rem;
-}
--webkit-scrollbar-thumb:hover {
-    background-color: {{ theme_scrollbarcolor2 }};
-}
-.dark-theme -webkit-scrollbar-thumb:hover {
-    background-color: {{ theme_dark_scrollbarcolor2 }};
-}
-pre::-webkit-scrollbar-thumb {
-    background-color: {{ theme_scrollbarcolor }};
-    border-radius: 0.8rem;
-}
-.dark-theme pre::-webkit-scrollbar-thumb {
-    background-color: {{ theme_dark_scrollbarcolor }};
-    border-radius: 0.8rem;
-}
-pre::-webkit-scrollbar {
-    background-color: {{ theme_scrollbarbgcolor }};
-}
-.dark-theme pre::-webkit-scrollbar {
-    background-color: {{ theme_dark_scrollbarbgcolor }};
-}
 
 div.header {
     padding: 0.5em;
