@@ -3,7 +3,7 @@ from typing import Any, Generator, Iterable, Optional, Tuple, Union
 from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
-from pygame.window import Window as NewWindow
+from pygame.window import Window
 
 from .._common import RectValue, Literal
 
@@ -39,7 +39,7 @@ def messagebox(
     escape_button: int = 0,
 ) -> int: ...
 
-class Window:
+class _Window:
     DEFAULT_SIZE: Tuple[Literal[640], Literal[480]]
     def __init__(
         self,
@@ -51,9 +51,7 @@ class Window:
         **kwargs: bool
     ) -> None: ...
     @classmethod
-    def from_display_module(cls) -> Window: ...
-    @classmethod
-    def from_window(cls,window: NewWindow) -> Window: ...
+    def from_display_module(cls) -> _Window: ...
     grab: bool
     relative_mouse: bool
     def set_windowed(self) -> None: ...
@@ -156,14 +154,14 @@ class Image:
 class Renderer:
     def __init__(
         self,
-        window: Window,
+        window: Union[Window,_Window],
         index: int = -1,
         accelerated: int = -1,
         vsync: bool = False,
         target_texture: bool = False,
     ) -> None: ...
     @classmethod
-    def from_window(cls, window: Window) -> Renderer: ...
+    def from_window(cls, window: Union[Window,_Window]) -> Renderer: ...
     draw_blend_mode: int
     draw_color: Color
     def clear(self) -> None: ...

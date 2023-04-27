@@ -461,9 +461,12 @@ cdef extern from "pygame.h" nogil:
     ctypedef class pygame.Rect [object pgRectObject]:
         cdef SDL_Rect r
         cdef object weakreflist
+    
+    ctypedef class pygame.Window [object pgWindowObject]:
+        cdef SDL_Window *_win
+        cdef SDL_bool _is_borrowed
 
-
-cdef class Window:
+cdef class _Window:
     cdef SDL_Window* _win
     cdef int _is_borrowed
 

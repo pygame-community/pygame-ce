@@ -463,9 +463,8 @@ typedef struct pgColorObject pgColorObject;
  * Window module
  */
 typedef struct {
-    PyObject_HEAD SDL_Window *win;
-    SDL_bool is_from_display;
-    pgSurfaceObject *surf;
+    PyObject_HEAD SDL_Window *_win;
+    SDL_bool _is_borrowed;
 } pgWindowObject;
 
 #ifndef PYGAMEAPI_WINDOW_INTERNAL

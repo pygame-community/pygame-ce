@@ -193,7 +193,7 @@ def messagebox(title, message,
     return buttonid
 
 
-cdef class Window:
+cdef class _Window:
     DEFAULT_SIZE = 640, 480
 
     _kwarg_to_flag = {
@@ -216,21 +216,6 @@ cdef class Window:
         'tooltip': _SDL_WINDOW_TOOLTIP,
         'popup_menu': _SDL_WINDOW_POPUP_MENU,
     }
-
-    @classmethod
-    def from_window(cls,window):
-        '''compatible with new window module'''
-        cdef Window self = cls.__new__(cls)
-        cdef SDL_Window* _window
-        if(not pgWindow_Check(window)):
-            raise TypeError("argument of from_window must be pygame.window.Window")
-
-        _window = SDL_GetWindowFromID(window.get_window_id())
-        if not _window:
-            raise error()
-        self._win=_window
-        self._is_borrowed=1
-        return self
 
     @classmethod
     def from_display_module(cls):
@@ -1078,10 +1063,18 @@ cdef class Image:
 cdef class Renderer:
 
     @classmethod
-    def from_window(cls, Window window):
+    def from_window(cls, window):
+        cdef Window _window
+        if isinstance(window,(_Window,Window)):
+            _window = <Window> window
+        else:
+            raise TypeError(
+                "Argument 'window' has incorrect type "
+                "(expected pygame.Window or pygame._sdl2._Window, got %s)"%window.__class__.__name__
+            )
         cdef Renderer self = cls.__new__(cls)
-        self._win = window
-        if window._is_borrowed:
+        self._win = _window
+        if self._win._is_borrowed:
             self._is_borrowed=1
         else:
             raise error()
@@ -1097,7 +1090,7 @@ cdef class Renderer:
         self._target = None
         return self
 
-    def __init__(self, Window window, int index=-1,
+    def __init__(self, window, int index=-1,
                  int accelerated=-1, bint vsync=False,
                  bint target_texture=False):
         """ Create a 2D rendering context for a window.
@@ -1111,6 +1104,15 @@ cdef class Renderer:
         :param bool vsync: .present() is synchronized with the refresh rate.
         :param bool target_texture: the renderer supports rendering to texture.
         """
+        cdef Window _window
+        if isinstance(window,(_Window,Window)):
+            _window = <Window> window
+        else:
+            raise TypeError(
+                "Argument 'window' has incorrect type "
+                "(expected pygame.Window or pygame._sdl2._Window, got %s)"%window.__class__.__name__
+            )
+
         # https://wiki.libsdl.org/SDL_CreateRenderer
         # https://wiki.libsdl.org/SDL_RendererFlags
         flags = 0
@@ -1121,14 +1123,14 @@ cdef class Renderer:
         if target_texture:
             flags |= _SDL_RENDERER_TARGETTEXTURE
 
-        self._renderer = SDL_CreateRenderer(window._win, index, flags)
+        self._renderer = SDL_CreateRenderer(_window._win, index, flags)
         if not self._renderer:
             raise error()
 
         cdef Uint8[4] defaultColor = [255, 255, 255, 255]
         self._draw_color = pgColor_NewLength(defaultColor, 4)
         self._target = None
-        self._win = window
+        self._win = _window
         self._is_borrowed=0
 
     def __dealloc__(self):

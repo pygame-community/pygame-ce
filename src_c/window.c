@@ -32,8 +32,8 @@ get_grabbed_window(PyObject *self)
 static PyObject *
 window_destroy(pgWindowObject *self)
 {
-    if (self->win) {
-        SDL_DestroyWindow(self->win);
+    if (self->_win) {
+        SDL_DestroyWindow(self->_win);
     }
     Py_RETURN_NONE;
 }
@@ -41,7 +41,7 @@ window_destroy(pgWindowObject *self)
 static PyObject *
 window_set_windowed(pgWindowObject *self)
 {
-    if (SDL_SetWindowFullscreen(self->win, 0)) {
+    if (SDL_SetWindowFullscreen(self->_win, 0)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -59,7 +59,7 @@ window_set_fullscreen(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     if (desktop) {
         flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
     }
-    if (SDL_SetWindowFullscreen(self->win, flags)) {
+    if (SDL_SetWindowFullscreen(self->_win, flags)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -74,12 +74,12 @@ window_focus(pgWindowObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     if (input_only) {
-        if (SDL_SetWindowInputFocus(self->win)) {
+        if (SDL_SetWindowInputFocus(self->_win)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
     else {
-        SDL_RaiseWindow(self->win);
+        SDL_RaiseWindow(self->_win);
     }
     Py_RETURN_NONE;
 }
@@ -87,35 +87,35 @@ window_focus(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 window_hide(pgWindowObject *self)
 {
-    SDL_HideWindow(self->win);
+    SDL_HideWindow(self->_win);
     Py_RETURN_NONE;
 }
 
 static PyObject *
 window_show(pgWindowObject *self)
 {
-    SDL_ShowWindow(self->win);
+    SDL_ShowWindow(self->_win);
     Py_RETURN_NONE;
 }
 
 static PyObject *
 window_restore(pgWindowObject *self)
 {
-    SDL_RestoreWindow(self->win);
+    SDL_RestoreWindow(self->_win);
     Py_RETURN_NONE;
 }
 
 static PyObject *
 window_maximize(pgWindowObject *self)
 {
-    SDL_MaximizeWindow(self->win);
+    SDL_MaximizeWindow(self->_win);
     Py_RETURN_NONE;
 }
 
 static PyObject *
 window_minimize(pgWindowObject *self)
 {
-    SDL_MinimizeWindow(self->win);
+    SDL_MinimizeWindow(self->_win);
     Py_RETURN_NONE;
 }
 
@@ -126,7 +126,7 @@ window_set_modal_for(pgWindowObject *self, PyObject *arg)
         return RAISE(PyExc_TypeError,
                      "Argument to set_modal_for must be a Window.");
     }
-    if (!SDL_SetWindowModalFor(self->win, ((pgWindowObject *)arg)->win)) {
+    if (!SDL_SetWindowModalFor(self->_win, ((pgWindowObject *)arg)->_win)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -139,7 +139,7 @@ window_set_icon(pgWindowObject *self, PyObject *arg)
         return RAISE(PyExc_TypeError,
                      "Argument to set_icon must be a Surface.");
     }
-    SDL_SetWindowIcon(self->win, pgSurface_AsSurface(arg));
+    SDL_SetWindowIcon(self->_win, pgSurface_AsSurface(arg));
     Py_RETURN_NONE;
 }
 
@@ -150,7 +150,7 @@ window_set_grab(pgWindowObject *self, PyObject *arg, void *v)
     if (enable == -1)
         return NULL;
 
-    SDL_SetWindowGrab(self->win, enable);
+    SDL_SetWindowGrab(self->_win, enable);
 
     Py_RETURN_NONE;
 }
@@ -158,7 +158,7 @@ window_set_grab(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_grab(pgWindowObject *self, void *v)
 {
-    return PyBool_FromLong(SDL_GetWindowGrab(self->win));
+    return PyBool_FromLong(SDL_GetWindowGrab(self->_win));
 }
 
 static PyObject *
@@ -169,14 +169,14 @@ window_set_title(pgWindowObject *self, PyObject *arg, void *v)
         return RAISE(PyExc_TypeError, "Argument to set_title must be a str.");
     }
     title = PyUnicode_AsUTF8(arg);
-    SDL_SetWindowTitle(self->win, title);
+    SDL_SetWindowTitle(self->_win, title);
     Py_RETURN_NONE;
 }
 
 static PyObject *
 window_get_title(pgWindowObject *self, void *v)
 {
-    const char *title = SDL_GetWindowTitle(self->win);
+    const char *title = SDL_GetWindowTitle(self->_win);
     return PyUnicode_FromString(title);
 }
 
@@ -187,7 +187,7 @@ window_set_resizable(pgWindowObject *self, PyObject *arg, void *v)
     if (enable == -1)
         return NULL;
 
-    SDL_SetWindowResizable(self->win, enable);
+    SDL_SetWindowResizable(self->_win, enable);
 
     Py_RETURN_NONE;
 }
@@ -195,7 +195,7 @@ window_set_resizable(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_resizable(pgWindowObject *self, void *v)
 {
-    return PyBool_FromLong(SDL_GetWindowFlags(self->win) &
+    return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
                            SDL_WINDOW_RESIZABLE);
 }
 
@@ -206,7 +206,7 @@ window_set_borderless(pgWindowObject *self, PyObject *arg, void *v)
     if (enable == -1)
         return NULL;
 
-    SDL_SetWindowBordered(self->win, !enable);
+    SDL_SetWindowBordered(self->_win, !enable);
 
     Py_RETURN_NONE;
 }
@@ -214,14 +214,14 @@ window_set_borderless(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_borderless(pgWindowObject *self, void *v)
 {
-    return PyBool_FromLong(SDL_GetWindowFlags(self->win) &
+    return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
                            SDL_WINDOW_BORDERLESS);
 }
 
 static PyObject *
 window_get_window_id(pgWindowObject *self)
 {
-    Uint32 window_id = SDL_GetWindowID(self->win);
+    Uint32 window_id = SDL_GetWindowID(self->_win);
     if (!window_id) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -243,7 +243,7 @@ window_set_size(pgWindowObject *self, PyObject *arg, void *v)
             "width or height should not be less than or equal to zero.");
     }
 
-    SDL_SetWindowSize(self->win, w, h);
+    SDL_SetWindowSize(self->_win, w, h);
 
     Py_RETURN_NONE;
 }
@@ -254,7 +254,7 @@ window_get_size(pgWindowObject *self, void *v)
     int w, h;
     PyObject *out = PyTuple_New(2);
 
-    SDL_GetWindowSize(self->win, &w, &h);
+    SDL_GetWindowSize(self->_win, &w, &h);
     PyTuple_SetItem(out, 0, PyLong_FromLong(w));
     PyTuple_SetItem(out, 1, PyLong_FromLong(h));
 
@@ -276,7 +276,7 @@ window_set_position(pgWindowObject *self, PyObject *arg, void *v)
         return RAISE(PyExc_TypeError, "invalid position argument");
     }
 
-    SDL_SetWindowPosition(self->win, x, y);
+    SDL_SetWindowPosition(self->_win, x, y);
 
     Py_RETURN_NONE;
 }
@@ -287,7 +287,7 @@ window_get_position(pgWindowObject *self, void *v)
     int x, h;
     PyObject *out = PyTuple_New(2);
 
-    SDL_GetWindowPosition(self->win, &x, &h);
+    SDL_GetWindowPosition(self->_win, &x, &h);
     PyTuple_SetItem(out, 0, PyLong_FromLong(x));
     PyTuple_SetItem(out, 1, PyLong_FromLong(h));
 
@@ -302,7 +302,7 @@ window_set_opacity(pgWindowObject *self, PyObject *arg, void *v)
     if (PyErr_Occurred()) {
         return NULL;
     }
-    if (SDL_SetWindowOpacity(self->win, opacity)) {
+    if (SDL_SetWindowOpacity(self->_win, opacity)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
@@ -312,7 +312,7 @@ static PyObject *
 window_get_opacity(pgWindowObject *self, void *v)
 {
     float opacity;
-    if (SDL_GetWindowOpacity(self->win, &opacity)) {
+    if (SDL_GetWindowOpacity(self->_win, &opacity)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     return PyFloat_FromDouble(opacity);
@@ -321,7 +321,7 @@ window_get_opacity(pgWindowObject *self, void *v)
 static PyObject *
 window_get_display_index(pgWindowObject *self)
 {
-    int index = SDL_GetWindowDisplayIndex(self->win);
+    int index = SDL_GetWindowDisplayIndex(self->_win);
     if (index < 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -515,9 +515,8 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
-    self->win = _win;
-    self->is_from_display = SDL_FALSE;
-    self->surf = NULL;
+    self->_win = _win;
+    self->_is_borrowed = SDL_FALSE;
 
     SDL_SetWindowData(_win, "pg_window", self);
 
@@ -535,8 +534,8 @@ window_from_display_module(PyTypeObject *cls)
     }
 
     self = (pgWindowObject *)(cls->tp_new(cls, NULL, NULL));
-    self->win = window;
-    self->is_from_display = SDL_TRUE;
+    self->_win = window;
+    self->_is_borrowed = SDL_TRUE;
     SDL_SetWindowData(window, "pg_window", self);
     return (PyObject *)self;
 }
