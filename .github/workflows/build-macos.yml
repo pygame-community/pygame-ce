@@ -38,7 +38,7 @@ concurrency:
 jobs:
   deps:
     name: ${{ matrix.macarch }} deps
-    runs-on: macos-12
+    runs-on: macos-12-x1
     strategy:
       matrix:
         # make arm64 deps and x86_64 deps
@@ -75,7 +75,7 @@ jobs:
   build:
     name: ${{ matrix.name }}
     needs: deps
-    runs-on: macos-12
+    runs-on: macos-12-x1
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
@@ -129,6 +129,7 @@ jobs:
 
       # Setup MacOS dependencies
       CIBW_BEFORE_ALL: |
+        sed -i '' "s/-j3/-j$(nproc --all)/g" $PIP_CONFIG_FILE
         export MAC_ARCH="${{ matrix.macarch }}"
         brew install pkg-config
         cd buildconfig/macdependencies
