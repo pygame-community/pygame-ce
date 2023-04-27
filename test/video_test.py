@@ -14,7 +14,7 @@ class VideoModuleTest(unittest.TestCase):
     )
     def test_renderer_set_viewport(self):
         """works."""
-        window = video.Window(title=self.default_caption, size=(800, 600))
+        window = video._Window(title=self.default_caption, size=(800, 600))
         renderer = video.Renderer(window=window)
         renderer.logical_size = (1920, 1080)
         rect = pygame.Rect(0, 0, 1920, 1080)
