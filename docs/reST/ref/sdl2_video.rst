@@ -13,15 +13,15 @@
 
 | :sl:`Experimental pygame module for porting new SDL video systems`
 
-.. class:: Window
+.. class:: _Window
 
    | :sl:`pygame object that represents a window`
-   | :sg:`Window(title="pygame", size=(640, 480), position=None, fullscreen=False, fullscreen_desktop=False, keywords) -> Window`
+   | :sg:`_Window(title="pygame", size=(640, 480), position=None, fullscreen=False, fullscreen_desktop=False, keywords) -> Window`
 
    .. classmethod:: from_display_module
    
       | :sl:`Creates window using window created by pygame.display.set_mode().`
-      | :sg:`from_display_module() -> Window`
+      | :sg:`from_display_module() -> _Window`
 
    .. attribute:: grab
 
