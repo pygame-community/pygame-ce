@@ -1,7 +1,7 @@
 .. include:: common.txt
 
-:mod:`pygame.sdl2_video`
-========================
+:mod:`pygame._sdl2.video`
+=========================
 
 .. module:: pygame._sdl2.video
    :synopsis: Experimental pygame module for porting new SDL video systems
@@ -357,3 +357,13 @@
 
       | :sl:`Fills a quad.`
       | :sg:`fill_quad(p1, p2, p3, p4) -> None`
+
+   .. method:: draw_circle
+
+        :sl:`Draws a circle.`
+      | :sg:`draw_circle(center, radius) -> None`
+
+   .. method:: fill_circle
+
+        :sl:`Fills a circle.`
+      | :sg:`fill_circle(center, radius) -> None`

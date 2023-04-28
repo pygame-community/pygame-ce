@@ -2,6 +2,7 @@ from cpython cimport PyObject
 from pygame._sdl2.sdl2 import error
 from pygame._sdl2.sdl2 import error as errorfnc
 from libc.stdlib cimport free, malloc
+from libc.math cimport floor, ceil, sqrt, sin, cos, M_PI
 
 
 WINDOWPOS_UNDEFINED = _SDL_WINDOWPOS_UNDEFINED
@@ -1326,7 +1327,7 @@ cdef class Renderer:
             points[i].x = pos[0]
             points[i].y = pos[1]
 
-        res = SDL_RenderDrawLines(self._renderer, points, 4)
+        cdef int res = SDL_RenderDrawLines(self._renderer, points, 4)
         if res < 0:
             raise error()
 
@@ -1355,7 +1356,7 @@ cdef class Renderer:
             points[i].x = pos[0]
             points[i].y = pos[1]
 
-        res = SDL_RenderDrawLines(self._renderer, points, 5)
+        cdef int res = SDL_RenderDrawLines(self._renderer, points, 5)
         if res < 0:
             raise error()
 
@@ -1376,6 +1377,55 @@ cdef class Renderer:
         cdef int res = SDL_RenderGeometry(self._renderer, NULL, vertices, 6, NULL, 0)
         if res < 0:
             raise error()
+    
+    def draw_circle(self, (float, float) center, float radius):
+        # https://wiki.libsdl.org/SDL_RenderDrawLineF
+        if radius < 1:
+            return
+
+        cdef float perimeter = 2 * M_PI * radius
+
+        # Cython does not allow `cdef` variable declarations inside scopes.
+        cdef float angle, next_angle
+        cdef float from_x, from_y, to_x, to_y
+        cdef int res
+
+        cdef int SKIP = 2  # defines the precision. The lower, the better.
+        for arc in range(0, int(ceil(perimeter)), SKIP):
+            angle = arc / perimeter * 2 * M_PI
+            next_angle = min((arc + SKIP) / perimeter, 1) * 2 * M_PI
+
+            from_x = cos(angle) * radius + center[0]
+            from_y = sin(angle) * radius + center[1]
+            to_x = cos(next_angle) * radius + center[0]
+            to_y = sin(next_angle) * radius + center[1]
+
+            res = SDL_RenderDrawLineF(self._renderer,
+                                      from_x, from_y,
+                                      to_x, to_y)
+            if res < 0:
+                raise error()
+    
+    def fill_circle(self, (float, float) center, float radius):
+        # https://wiki.libsdl.org/SDL_RenderDrawLineF
+        if radius < 1:
+            return
+
+        # Cython does not allow `cdef` variable declarations inside scopes.
+        cdef float calc, from_x, to_x
+        cdef int res
+
+        for line in range(int(ceil(-radius)), int(floor(radius))):
+            calc = sqrt(1 - (float(line) / radius) * (float(line) / radius)) * radius
+            from_x = -calc + center[0]
+            to_x = calc + center[0]
+            line += center[1]
+
+            res = SDL_RenderDrawLineF(self._renderer,
+                                      from_x, float(line),
+                                      to_x, float(line))
+            if res < 0:
+                raise error()
 
     def to_surface(self, surface=None, area=None):
         # https://wiki.libsdl.org/SDL_RenderReadPixels

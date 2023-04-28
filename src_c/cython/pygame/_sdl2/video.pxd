@@ -405,6 +405,7 @@ cdef extern from "SDL.h" nogil:
                                             int    depth,
                                             Uint32 format)
     # https://wiki.libsdl.org/SDL_RenderDrawLine
+    # https://wiki.libsdl.org/SDL_RenderDrawLineF
     # https://wiki.libsdl.org/SDL_RenderDrawLines
     # https://wiki.libsdl.org/SDL_RenderDrawPoint
     # https://wiki.libsdl.org/SDL_RenderDrawRect
@@ -415,6 +416,11 @@ cdef extern from "SDL.h" nogil:
                            int y1,
                            int x2,
                            int y2)
+    int SDL_RenderDrawLineF(SDL_Renderer* renderer,
+                            float x1,
+                            float y1,
+                            float x2,
+                            float y2)
     int SDL_RenderDrawLines(SDL_Renderer* renderer,
                             const SDL_Point* points,
                             int count)
