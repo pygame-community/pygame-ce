@@ -34,6 +34,7 @@ window_destroy(pgWindowObject *self)
 {
     if (self->_win) {
         SDL_DestroyWindow(self->_win);
+        self->_win = NULL;
     }
     Py_RETURN_NONE;
 }
@@ -410,13 +411,28 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                     if (_value_bool)
                         flags |= SDL_WINDOW_MAXIMIZED;
                 }
-                else if (!strcmp(_key_str, "mouse_grabbed")) {
+                else if (!strcmp(_key_str, "input_grabbed")) {
                     if (_value_bool)
 #if SDL_VERSION_ATLEAST(2, 0, 16)
                         flags |= SDL_WINDOW_MOUSE_GRABBED;
 #else
                         flags |= SDL_WINDOW_INPUT_GRABBED;
 #endif
+                }
+                else if (!strcmp(_key_str, "input_focus")) {
+                    if (_value_bool) {
+                        flags |= SDL_WINDOW_INPUT_FOCUS;
+                    }
+                }
+                else if (!strcmp(_key_str, "mouse_focus")) {
+                    if (_value_bool) {
+                        flags |= SDL_WINDOW_MOUSE_FOCUS;
+                    }
+                }
+                else if (!strcmp(_key_str, "foreign")) {
+                    if (_value_bool) {
+                        flags |= SDL_WINDOW_FOREIGN;
+                    }
                 }
                 else if (!strcmp(_key_str, "allow_high_dpi")) {
                     if (_value_bool) {
@@ -447,23 +463,9 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                     if (_value_bool)
                         flags |= SDL_WINDOW_POPUP_MENU;
                 }
-                else if (!strcmp(_key_str, "keyboard_grabbed")) {
-                    if (_value_bool) {
-#if SDL_VERSION_ATLEAST(2, 0, 16)
-                        flags |= SDL_WINDOW_KEYBOARD_GRABBED;
-#endif
-                    }
-                }
                 else if (!strcmp(_key_str, "vulkan")) {
                     if (_value_bool)
                         flags |= SDL_WINDOW_VULKAN;
-                }
-                else if (!strcmp(_key_str, "metal")) {
-                    if (_value_bool) {
-#if SDL_VERSION_ATLEAST(2, 0, 14)
-                        flags |= SDL_WINDOW_METAL;
-#endif
-                    }
                 }
                 else {
                     sprintf(_exc_str, "__init__ got an unexpected flag \'%s\'",
