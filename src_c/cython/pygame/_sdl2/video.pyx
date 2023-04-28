@@ -818,8 +818,8 @@ cdef class Texture:
         if res < 0:
             raise error()
 
-    def draw_triangle(self, p1_xy, p2_xy, p3_xy,
-                      p1_uv=(0.0, 0.0), p2_uv=(1.0, 1.0), p3_uv=(0.0, 1.0),
+    def draw_triangle(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy,
+                      (float, float) p1_uv=(0.0, 0.0), (float, float) p2_uv=(1.0, 1.0), (float, float) p3_uv=(0.0, 1.0),
                       p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255), p3_mod=(255, 255, 255, 255)):
         """ Copy a triangle portion of the texture to the rendering target by vertices coordinates.
 
@@ -863,8 +863,9 @@ cdef class Texture:
         if res < 0:
             raise error()
 
-    def draw_quad(self, p1_xy, p2_xy, p3_xy, p4_xy,
-                  p1_uv=(0.0, 0.0), p2_uv=(1.0, 0.0), p3_uv=(1.0, 1.0), p4_uv=(0.0, 1.0),
+    def draw_quad(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy, (float, float) p4_xy,
+                  (float, float) p1_uv=(0.0, 0.0), (float, float) p2_uv=(1.0, 0.0),
+                  (float, float) p3_uv=(1.0, 1.0), (float, float) p4_uv=(0.0, 1.0),
                   p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255),
                   p3_mod=(255, 255, 255, 255), p4_mod=(255, 255, 255, 255)):
         """ Copy a quad portion of the texture to the rendering target by vertices coordinates.
@@ -1287,7 +1288,7 @@ cdef class Renderer:
             return self.get_viewport()
         return dest
 
-    def draw_line(self, p1, p2):
+    def draw_line(self, (float, float) p1, (float, float) p2):
         cdef int res
         if SDL_VERSION_ATLEAST(2,0,10):
             res = SDL_RenderDrawLineF(self._renderer,
@@ -1295,12 +1296,12 @@ cdef class Renderer:
                                      p2[0], p2[1])
         else:
             res = SDL_RenderDrawLine(self._renderer,
-                                     p1[0], p1[1],
-                                     p2[0], p2[1])
+                                     <int>p1[0], <int>p1[1],
+                                     <int>p2[0], <int>p2[1])
         if res < 0:
             raise error()
 
-    def draw_point(self, point):
+    def draw_point(self, (float, float) point):
         # https://wiki.libsdl.org/SDL_RenderDrawPoint
         cdef int res
         if SDL_VERSION_ATLEAST(2,0,10):
@@ -1308,7 +1309,7 @@ cdef class Renderer:
                                     point[0], point[1])
         else:
             res = SDL_RenderDrawPoint(self._renderer,
-                                    point[0], point[1])
+                                    <int>point[0], <int>point[1])
         if res < 0:
             raise error()
 
@@ -1362,7 +1363,7 @@ cdef class Renderer:
         if res < 0:
             raise error()
 
-    def draw_triangle(self, p1, p2, p3):
+    def draw_triangle(self, (float, float) p1, (float, float) p2, (float, float) p3):
         # https://wiki.libsdl.org/SDL_RenderDrawLines
         cdef SDL_Point points[4]
         cdef SDL_FPoint fpoints[4]
@@ -1383,7 +1384,7 @@ cdef class Renderer:
         if res < 0:
             raise error()
 
-    def fill_triangle(self, p1, p2, p3):
+    def fill_triangle(self, (float, float) p1, (float, float) p2, (float, float) p3):
         # https://wiki.libsdl.org/SDL_RenderGeometry
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("fill_triangle requires SDL 2.0.18 or newer")
@@ -1401,7 +1402,7 @@ cdef class Renderer:
         if res < 0:
             raise error()
 
-    def draw_quad(self, p1, p2, p3, p4):
+    def draw_quad(self, (float, float) p1, (float, float) p2, (float, float) p3, (float, float) p4):
         # https://wiki.libsdl.org/SDL_RenderDrawLines
         cdef SDL_Point points[5]
         cdef SDL_FPoint fpoints[5]
@@ -1421,7 +1422,7 @@ cdef class Renderer:
         if res < 0:
             raise error()
 
-    def fill_quad(self, p1, p2, p3, p4):
+    def fill_quad(self, (float, float) p1, (float, float) p2, (float, float) p3, (float, float) p4):
         # https://wiki.libsdl.org/SDL_RenderGeometry
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("fill_quad requires SDL 2.0.18 or newer")
