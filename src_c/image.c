@@ -1230,12 +1230,7 @@ image_tostring(PyObject *self, PyObject *arg, PyObject *kwarg)
         return NULL;
     }
 
-    PyObject *result = image_tobytes(self, arg, kwarg);
-    if (result == NULL) {
-        return NULL;
-    }
-
-    return result;
+    return image_tobytes(self, arg, kwarg);
 }
 
 PyObject *
@@ -1247,12 +1242,7 @@ image_fromstring(PyObject *self, PyObject *arg, PyObject *kwarg)
         return NULL;
     }
 
-    PyObject *result = image_frombytes(self, arg, kwarg);
-    if (result == NULL) {
-        return NULL;
-    }
-
-    return result;
+    return image_frombytes(self, arg, kwarg);
 }
 
 static int
