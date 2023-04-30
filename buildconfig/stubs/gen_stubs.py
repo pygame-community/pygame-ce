@@ -48,7 +48,7 @@ PG_AUTOIMPORT_SUBMODS = [
     "surface",
     "surflock",
     "sysfont",
-    "_debug"
+    "_debug",
     "system",
 ]
 
