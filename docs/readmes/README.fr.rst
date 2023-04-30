@@ -126,9 +126,8 @@ s'amuser.
 Très grands remerciements à James Paige en particulier pour avoir hébergé
 pygame bugzilla.
 
-(Comment traduire ?)
-Also a big thanks to Roger Dingledine and the crew at SEUL.ORG for our
-excellent hosting.
+Enfin nos meilleurs remerciements à Roger Dingledine et à toute l'équipe
+de SEUL.ORG pour notre excellent hébergement.
 
 Dépendances
 ------------
