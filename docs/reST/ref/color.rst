@@ -92,12 +92,12 @@
    :returns: a newly created :class:`Color` object
    :rtype: Color
 
-   .. versionchanged:: 2.0.0
+   .. versionchangedold:: 2.0.0
       Support for tuples, lists, and :class:`Color` objects when creating
       :class:`Color` objects.
-   .. versionchanged:: 1.9.2 Color objects export the C level array interface.
-   .. versionchanged:: 1.9.0 Color objects support 4-element tuples of integers.
-   .. versionchanged:: 1.8.1 New implementation of the class.
+   .. versionchangedold:: 1.9.2 Color objects export the C level array interface.
+   .. versionchangedold:: 1.9.0 Color objects support 4-element tuples of integers.
+   .. versionchangedold:: 1.8.1 New implementation of the class.
 
    .. attribute:: r
 
@@ -229,7 +229,7 @@
       get the length of a Color do ``len(acolor)``.
 
       .. deprecated:: 2.1.3
-      .. versionadded:: 1.9.0
+      .. versionaddedold:: 1.9.0
 
       .. ## Color.set_length ##
 
@@ -256,7 +256,7 @@
       It must be a value between 0 and 1 where 0 means self and 1 means
       other will be returned.
 
-      .. versionadded:: 2.0.1
+      .. versionaddedold:: 2.0.1
 
       .. ## Color.lerp ##
 
@@ -273,7 +273,7 @@
       flag for :meth:`pygame.Surface.blit()`, which assumes that all surfaces using
       it are using pre-multiplied alpha colors.
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Color.premul_alpha ##
 
@@ -287,7 +287,7 @@
       Sets the elements of the color. See parameters for :meth:`pygame.Color` for the
       parameters of this function. If the alpha value was not set it will not change.
 
-      .. versionadded:: 2.0.1
+      .. versionaddedold:: 2.0.1
 
       .. ## Color.update ##
    .. ## pygame.Color ##

@@ -75,9 +75,9 @@ resolution, in milliseconds, is given in the ``TIMER_RESOLUTION`` constant.
    ``loops`` replaces the ``once`` argument, and this does not break backward
    compatibility
 
-   .. versionadded:: 2.0.0.dev3 once argument added.
-   .. versionchanged:: 2.0.1 event argument supports ``pygame.event.Event`` object
-   .. versionadded:: 2.0.1 added loops argument to replace once argument
+   .. versionaddedold:: 2.0.0.dev3 once argument added.
+   .. versionchangedold:: 2.0.1 event argument supports ``pygame.event.Event`` object
+   .. versionaddedold:: 2.0.1 added loops argument to replace once argument
 
    .. ## pygame.time.set_timer ##
 
@@ -129,7 +129,7 @@ resolution, in milliseconds, is given in the ``TIMER_RESOLUTION`` constant.
       Note that this function uses :func:`pygame.time.delay`, which uses lots
       of CPU in a busy loop to make sure that timing is more accurate.
 
-      .. versionadded:: 1.8
+      .. versionaddedold:: 1.8
 
       .. ## Clock.tick_busy_loop ##
 
