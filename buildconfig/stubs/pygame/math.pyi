@@ -208,10 +208,6 @@ class VectorIterator:
     def __iter__(self) -> Iterator[float]: ...
     def __next__(self) -> float: ...
 
-# Not defined in code, only for type checking from_polar ClassObjectMethod
-class _from_polar_protocol(Protocol):
-    def __call__(self, value: Tuple[float, float]) -> Optional[_TVec]: ...
-
 class Vector2(_GenericVector):
     x: float
     y: float
@@ -219,7 +215,11 @@ class Vector2(_GenericVector):
     xy: Vector2
     yx: Vector2
     yy: Vector2
-    from_polar: _from_polar_protocol
+    @overload
+    @classmethod
+    def from_polar(cls, value: Tuple[float, float]) -> Vector2: ...
+    @overload
+    def from_polar(self, value: Tuple[float, float]) -> None: ...
     @overload
     def __init__(
         self: _TVec,
@@ -242,10 +242,6 @@ class Vector2(_GenericVector):
     ) -> None: ...
     @overload
     def update(self, x: float = 0, y: float = 0) -> None: ...
-
-# Not defined in code, only for type checking from_spherical ClassObjectMethod
-class _from_spherical_protocol(Protocol):
-    def __call__(self, value: Tuple[float, float, float]) -> Optional[_TVec]: ...
 
 class Vector3(_GenericVector):
     x: float
@@ -287,7 +283,11 @@ class Vector3(_GenericVector):
     zzx: Vector3
     zzy: Vector3
     zzz: Vector3
-    from_spherical: _from_spherical_protocol
+    @overload
+    @classmethod
+    def from_spherical(cls, value: Tuple[float, float, float]) -> Vector2: ...
+    @overload
+    def from_spherical(self, value: Tuple[float, float, float]) -> None: ...
     @overload
     def __init__(
         self: _TVec,
