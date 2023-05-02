@@ -2959,9 +2959,10 @@ box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
     // Reference : https://blog.csdn.net/blogshinelee/article/details/80997324
 
     int inplace = 0;
+    void *tmp_pixels;
     if (dst == src) {
         inplace = 1;
-        void *tmp_pixels = malloc((src->h) * (src->pitch));
+        tmp_pixels = malloc((src->h) * (src->pitch));
         memcpy(tmp_pixels, src->pixels, (src->h) * (src->pitch));
         dst = SDL_CreateRGBSurfaceWithFormatFrom(
             tmp_pixels, src->w, src->h, src->format->BitsPerPixel, src->pitch,
@@ -3044,6 +3045,7 @@ box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
     if (inplace) {
         memcpy(srcpx, dstpx, h * dst_pitch);
         SDL_FreeSurface(dst);
+        free(tmp_pixels);
     }
     free(buf);
     free(sum_v);
