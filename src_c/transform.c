@@ -2961,7 +2961,11 @@ box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
     int inplace = 0;
     if (dst == src) {
         inplace = 1;
-        dst = newsurf_fromsurf(src, src->w, src->h);
+        void *tmp_pixels = malloc((src->h) * (src->pitch));
+        memcpy(tmp_pixels, src->pixels, (src->h) * (src->pitch));
+        dst = SDL_CreateRGBSurfaceWithFormatFrom(
+            tmp_pixels, src->w, src->h, src->format->BitsPerPixel, src->pitch,
+            src->format->format);
     }
 
     Uint8 *srcpx = (Uint8 *)src->pixels;
@@ -3038,10 +3042,7 @@ box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
         }
     }
     if (inplace) {
-        for (i = 0; i < src->h; i++) {
-            memcpy(srcpx + i * src_pitch, dstpx + i * dst_pitch,
-                   sizeof(Uint8) * MIN(dst_pitch, src_pitch));
-        }
+        memcpy(srcpx, dstpx, h * dst_pitch);
         SDL_FreeSurface(dst);
     }
     free(buf);
