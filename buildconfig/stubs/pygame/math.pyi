@@ -15,8 +15,6 @@ from typing import (
     Optional,
 )
 
-from typing_extensions import Protocol
-
 if sys.version_info >= (3, 9):
     from collections.abc import Collection
 else:
