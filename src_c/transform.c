@@ -459,7 +459,7 @@ skew(SDL_Surface *src, SDL_Surface *new_surf, Uint32 bgcolor, SDL_Point* dst)
     if (1) {
         // mark by x change to ensure equality
         x1 = dst[0].x;
-        y1 = dst[1].y;
+        y1 = dst[0].y;
         x2 = dst[3].x;
         y2 = dst[3].y;
         i1 = 0;
@@ -527,13 +527,75 @@ skew(SDL_Surface *src, SDL_Surface *new_surf, Uint32 bgcolor, SDL_Point* dst)
         // draw fill poly method
         // top length / bottom length times bottom length times from y top  over y length at point
         // can get y length from diff between /=/ /
+        // actually use side length since we know that sides will be parallel thus there can be a known scaling
+        // but how to work out equivalent start points ?????
+        // gradient is consistent parallel to vertical lines
+        // this is the key
+
 
         // prob worked
 
         // scale x by diffx / w ???
+        // can get dist from top of left points list to bottom of list
+        SDL_Point* left_points = (SDL_Point*) malloc((dst[0].y - dst[3].y) * sizeof(SDL_Point));
+        // take how far down the y axis point by looking at how far down relative to y line is
+        // line to get to its equivalent left point which can thus get the point of the right side, giving the y_scale factor needed
+
+        x1 = dst[0].x;
+        y1 = dst[0].y;
+        x2 = dst[3].x;
+        y2 = dst[3].y;
+        i1 = 0;
+        // initialize top line vars
+        dx1 = abs(dst[3].x - dst[0].x);
+        dy1 = -abs(dst[3].y - dst[0].y);
+        sx1 = dst[3].x > dst[0].x ? 1 : -1;
+        sy1 = dst[3].y > dst[0].y ? 1 : -1;
+        err1 = dx1 + dy1;
+
+        SDL_Point p;
+        p.x = x1;
+        p.y = y1;
+        left_points[i1++] = p;
+
+        while (x1 != dst[3].x  && y1 != dst[3].y) {
+            // x1 y1 start
+            e1 = err1 * 2;
+            if (e1 >= dy1) {
+                err1 += dy1;
+                x1 += sx1;
+                if (left_points[i1].x < x1) {
+                    left_points[i1].x = x1;
+                }
+            }
+            if (e1 <= dx1) {
+                err1 += dx1;
+                y1 += sy1;
+                SDL_Point p;
+                p.x = x1;
+                p.y = y1;
+                left_points[i1++] = p;
+
+            }
+        }
+
 
         Uint8* src_pixels = (Uint8*) src->pixels;
         Uint8* dst_pixels = (Uint8*) new_surf->pixels;
+        bottom = 0;
+        top = diffy - 1;
+        while (true) {
+            vertical_length = sqrt(pow(left_points[top].x - left_points[bottom].x, 2) + pow(left_points[top].y - left_points[bottom].y, 2));
+            for (int i = bottom; i<= top; i++) {
+                scale_y = sqrt(pow(left_points[i].x - left_points[bottom].x, 2) + pow(left_points[i].y - left_points[bottom].y, 2)) / vertical_length;
+                y = scale_y * src->h;
+                leftp = SDL_Point p;
+                leftp.x = scale_y * (dst[3].x - dst[0].x) + dst[0].x;
+                leftp.y = scale_y * (dst[3].y - dst[0].y) + dst[0].y;
+                rightp.x = scale_y * (dst[2].x - dst[1].x) + dst[1].x;
+                rightp.y = scale_y * (dst[2].y - dst[1].y) + dst[1].y;
+            }
+        }
 
         scale_x = src->w / (float) diffx;
         for(int i = 0; i < diffx; i++) {
@@ -566,6 +628,9 @@ skew(SDL_Surface *src, SDL_Surface *new_surf, Uint32 bgcolor, SDL_Point* dst)
         }
 
     }
+    free(start_points);
+    free(end_points);
+    free(left_points);
     printf("wow");
 }
 
