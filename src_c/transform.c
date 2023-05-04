@@ -411,227 +411,105 @@ rotate(SDL_Surface *src, SDL_Surface *dst, Uint32 bgcolor, double sangle,
 static void
 skew(SDL_Surface *src, SDL_Surface *new_surf, Uint32 bgcolor, SDL_Point* dst)
 {
-    int dx, dy, dx1, dx2, dy1, dy2, leftx, rightx, bottomy, topy, x1, x2, y1, y2, i1, i2, diffx, diffy, err, err1, err2, e, e1, e2, sx1, sx2, sx, sy1, sy2, sy;
-    float scale_x, scale_y, y_length;
-    // Necessitates at least two parallel sides
+    int dx1, dx2, dy1, dy2, leftx, rightx, bottomy, topy, x1, x2, y1, y2, diffx, diffy, err1, err2, e1, e2, sx1, sx2, sy1, sy2;
+    int end_x, end_y;
+    SDL_Point start, end, smallstart, smallend;
+    float scale_x, scale_y, end_scale, width, small_length, long_length;
 
     SDL_Point srcpoint[4] = { {0, 0}, {src->w, 0}, {src->w, src->h}, {0, src->h} };
 
-    // sort points to top left, top right,  bot right, bot left,
-    // Assume sorted due to
-    // bias to toppest
 
     //check all points are in dest surface & parallel requirement
     // quicker axis aligned skew option ?
-    printf("im here\n");
-    dx1 = dst[1].x - dst[0].x;
-    dx2 = dst[2].x - dst[3].x;
-
-    dy1 = dst[1].y - dst[0].y;
-    dy2 = dst[2].y - dst[3].y;
 
     leftx = dst[0].x - dst[3].x;
     rightx = dst[1].x - dst[2].x;
 
-    topy = dst[1].y - dst[0].y;
-    bottomy = dst[2].y - dst[3].y;
-
-    diffx = dst[1].x - dst[0].x;
-    diffy = dst[1].y - dst[0].y;
-    printf("%d\n", leftx);
-    printf("%d\n", rightx);
-    printf("w%d\n", new_surf->w);
-    printf("h%d\n", new_surf->h);
-
-    SDL_Point* start_points = (SDL_Point*) malloc(diffx * sizeof(SDL_Point));
-    SDL_Point* end_points = (SDL_Point*) malloc(diffx * sizeof(SDL_Point));
-    if (leftx != rightx && topy != bottomy) {
-        // not aligned, raise error
-        ;
-    }
-
     if (leftx == 0 || topy == 0) {
-         // quicker version
+         // use quicker axis aligned version
          ;
     }
 
-    // need actual gradient checker
+    if (sqrt(pow(dst[2].x - dst[1].x, 2) + pow(dst[2].y - dst[1].y, 2)) > sqrt(pow(dst[3].x - dst[0].x, 2) + pow(dst[3].y - dst[0].y, 2))){
+        start = dst[1];
+        end = dst[2];
+        smallstart = dst[0];
+        smallend = dst[3];
+    }
+    else {
+        start = dst[0];
+        end = dst[3];
+        smallstart = dst[1];
+        smallend = dst[2];
+    }
+
+    small_length = sqrt(pow(smallend.x - smallstart.x, 2) + pow(smallend.y - smallstart.y, 2));
+    long_length = sqrt(pow(end.x - start.x, 2) + pow(end.y - start.y, 2));
     if (1) {
-        // mark by x change to ensure equality
-        x1 = dst[0].x;
-        y1 = dst[0].y;
-        x2 = dst[3].x;
-        y2 = dst[3].y;
-        i1 = 0;
-        i2 = 0;
-        // initialize top line vars
-        dx1 = abs(dst[1].x - dst[0].x);
-        dy1 = -abs(dst[1].y - dst[0].y);
-        sx1 = dst[1].x > dst[0].x ? 1 : -1;
-        sy1 = dst[1].y > dst[0].y ? 1 : -1;
+        x1 = start.x;
+        y1 = start.y;
+
+        dx1 = abs(end.x - start.x);
+        dy1 = -abs(end.y - start.y);
+        sx1 = end.x > start.x ? 1 : -1;
+        sy1 = end.y > start.y ? 1 : -1;
         err1 = dx1 + dy1;
-
-        // initialize bottom line vars
-        dx2 = dx1;
-        dy2 = -abs(dst[2].y - dst[3].y);
-        sx2 = sx1;
-        sy2 = dst[2].y > dst[3].y ? 1 : -1;
-        err2 = dx2 + dy2;
-
-        // Starting values before iteration
-        SDL_Point p;
-        p.x = x1;
-        p.y = y1;
-        start_points[i1++] = p;
-        p.x = x2;
-        p.y = y2;
-        end_points[i2++] = p;
-
-        while (x1 != dst[1].x + 1  && x2 != dst[2].x) {
-            // x1 y1 start
-            e1 = err1 * 2;
-            e2 = err2 * 2;
-            if (e1 >= dy1) {
-                err1 += dy1;
-                x1 += sx1;
-                SDL_Point p;
-                p.x = x1;
-                p.y = y1;
-                start_points[i1++] = p;
-            }
-            if (e1 <= dx1) {
-                err1 += dx1;
-                y1 += sy1;
-                if (start_points[i1].y > y1) {
-                    start_points[i1].y = y1;
-                }
-            }
-            if (e2 >= dy2) {
-                err2 += dy2;
-                x2 += sx2;
-                SDL_Point p;
-                p.x = x2;
-                p.y = y2;
-                end_points[i2++] = p;
-            }
-            if (e2 <= dx2) {
-                err2 += dx2;
-                y2 += sy2;
-                if (end_points[i2].y < y2) {
-                    end_points[i2].y = y2;
-                }
-            }
-        }
-
-        // record top bottom starting y/x values
-        // draw fill poly method
-        // top length / bottom length times bottom length times from y top  over y length at point
-        // can get y length from diff between /=/ /
-        // actually use side length since we know that sides will be parallel thus there can be a known scaling
-        // but how to work out equivalent start points ?????
-        // gradient is consistent parallel to vertical lines
-        // this is the key
-
-
-        // prob worked
-
-        // scale x by diffx / w ???
-        // can get dist from top of left points list to bottom of list
-        SDL_Point* left_points = (SDL_Point*) malloc((dst[0].y - dst[3].y) * sizeof(SDL_Point));
-        // take how far down the y axis point by looking at how far down relative to y line is
-        // line to get to its equivalent left point which can thus get the point of the right side, giving the y_scale factor needed
-
-        x1 = dst[0].x;
-        y1 = dst[0].y;
-        x2 = dst[3].x;
-        y2 = dst[3].y;
-        i1 = 0;
-        // initialize top line vars
-        dx1 = abs(dst[3].x - dst[0].x);
-        dy1 = -abs(dst[3].y - dst[0].y);
-        sx1 = dst[3].x > dst[0].x ? 1 : -1;
-        sy1 = dst[3].y > dst[0].y ? 1 : -1;
-        err1 = dx1 + dy1;
-
-        SDL_Point p;
-        p.x = x1;
-        p.y = y1;
-        left_points[i1++] = p;
-
-        while (x1 != dst[3].x  && y1 != dst[3].y) {
-            // x1 y1 start
-            e1 = err1 * 2;
-            if (e1 >= dy1) {
-                err1 += dy1;
-                x1 += sx1;
-                if (left_points[i1].x < x1) {
-                    left_points[i1].x = x1;
-                }
-            }
-            if (e1 <= dx1) {
-                err1 += dx1;
-                y1 += sy1;
-                SDL_Point p;
-                p.x = x1;
-                p.y = y1;
-                left_points[i1++] = p;
-
-            }
-        }
-
 
         Uint8* src_pixels = (Uint8*) src->pixels;
         Uint8* dst_pixels = (Uint8*) new_surf->pixels;
-        bottom = 0;
-        top = diffy - 1;
-        while (true) {
-            vertical_length = sqrt(pow(left_points[top].x - left_points[bottom].x, 2) + pow(left_points[top].y - left_points[bottom].y, 2));
-            for (int i = bottom; i<= top; i++) {
-                scale_y = sqrt(pow(left_points[i].x - left_points[bottom].x, 2) + pow(left_points[i].y - left_points[bottom].y, 2)) / vertical_length;
-                y = scale_y * src->h;
-                leftp = SDL_Point p;
-                leftp.x = scale_y * (dst[3].x - dst[0].x) + dst[0].x;
-                leftp.y = scale_y * (dst[3].y - dst[0].y) + dst[0].y;
-                rightp.x = scale_y * (dst[2].x - dst[1].x) + dst[1].x;
-                rightp.y = scale_y * (dst[2].y - dst[1].y) + dst[1].y;
+
+        while (x1 != end.x || y1 != end.y) {
+            x2 = x1;
+            y2 = y1;
+            end_scale = sqrt(pow(x1 - start.x, 2) + pow(y1 - start.y, 2)) / long_length;
+            scale_y = end_scale * src->h;
+            if (start.x == dst[0].x) {
+                end_x = (smallend.x - smallstart.x) * end_scale + smallstart.x;
+                end_y = (smallend.y - smallstart.y) * end_scale + smallstart.y;
             }
-        }
+            else {
+                end_x = round((smallend.x - smallstart.x) * end_scale) + smallstart.x;
+                end_y = round((smallend.y - smallstart.y) * end_scale) + smallstart.y;
+            }
 
-        scale_x = src->w / (float) diffx;
-        for(int i = 0; i < diffx; i++) {
-            x1 = start_points[i].x;
-            y1 = start_points[i].y;
-            x2 = end_points[i].x;
-            y2 = end_points[i].y;
-            y_length = sqrt(pow((x2 - x1), 2) + pow((y2 - y1), 2));
-            scale_y = src->h / y_length;
-            dx = abs(x2 - x1);
-            dy = -abs(y2 - y1);
-            sx = x2 > x1 ? 1 : -1;
-            sy = y2 > y1 ? 1 : -1;
-            err = dx + dy;
-            while (y1 <= y2 || x1 != x2) {
-                //Nearest neighbor
-                scale_x = src->w / (diffx + ((sqrt(pow((x1 - start_points[i].x), 2) + pow((y1 - start_points[i].y), 2))) / y_length) * ((dst[2].x - dst[3].x) - diffx));
-                *((Uint32 *)(dst_pixels +(int)(y1 * new_surf->pitch + x1 * new_surf->format->BytesPerPixel))) = *((Uint32 *)(src_pixels +(int)((int)((y1 - start_points[i].y) * scale_y) * src->pitch + (int)(i * scale_x) * src->format->BytesPerPixel)));
-
-                e = err * 2;
-                if (e >= dy) {
-                    err += dy;
-                    x1 += sx;
+            width = sqrt(pow(end_x - x1, 2) + pow(end_y - y1, 2));
+            dx2 = abs(end_x - x1);
+            dy2 = -abs(end_y - y1);
+            sx2 = end_x > x1 ? 1: -1;
+            sy2 = end_y > y1 ? 1 : -1;
+            err2 = dx2 + dy2;
+            while (x2 != end_x || y2 != end_y) {
+                // Using Nearest neighbor
+                scale_x = src->w * sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2)) / width;
+                *((Uint32 *)(dst_pixels +(int)(y2 * new_surf->pitch + x2 * new_surf->format->BytesPerPixel))) = *((Uint32 *)(src_pixels +(int)((int)(scale_y) * src->pitch + (int)(scale_x) * src->format->BytesPerPixel)));
+                e2 = err2 * 2;
+                if (e2 >= dy2) {
+                    err2 += dy2;
+                    x2 += sx2;
                 }
-                if (e <= dx) {
-                    err += dx;
-                    y1 += sy;
+                if (e2 <= dx2) {
+                    err2 += dx2;
+                    // extra assign for when y2 changes at the same time as x1 changes to prevent missing pixels
+                    scale_x = src->w * sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2)) / width;
+                    *((Uint32 *)(dst_pixels +(int)(y2 * new_surf->pitch + x2 * new_surf->format->BytesPerPixel))) = *((Uint32 *)(src_pixels +(int)((int)(scale_y) * src->pitch + (int)(scale_x) * src->format->BytesPerPixel)));
+
+                    y2 += sy2;
                 }
             }
-        }
 
+
+
+            e1 = err1 * 2;
+            if (e1 >= dy1) {
+                err1 += dy1;
+                x1 += sx1;
+            }
+            if (e1 <= dx1) {
+                err1 += dx1;
+                y1 += sy1;
+            }
+        }
     }
-    free(start_points);
-    free(end_points);
-    free(left_points);
-    printf("wow");
 }
 
 static SDL_Surface *
@@ -941,10 +819,7 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
     width = MAX(MAX(x1, x2), MAX(x3, x4)) - start;
     top = MIN(MIN(y1, y2), MIN(y3, y4));
     height = MAX(MAX(y1, y2), MAX(y3, y4)) - top;
-    printf("we made it");
     newsurf = SDL_CreateRGBSurfaceWithFormat(0, surf->w, surf->h, 32, surf->format->format);
-    printf("%d\n", newsurf->w);
-    printf("%d\n", surf->w);
 
     if (!newsurf)
         return NULL;
@@ -982,7 +857,6 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
     pgSurface_Lock(surfobj);
     SDL_Point points[4] = {{x1, y1}, {x2, y2}, {x3, y3}, {x4, y4}};
     Py_BEGIN_ALLOW_THREADS;
-    printf("helop\n");
 
     skew(surf, newsurf, bgcolor, points);
     Py_END_ALLOW_THREADS;
