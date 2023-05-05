@@ -2976,23 +2976,23 @@ box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
     int dst_pitch = dst->pitch;
     int src_pitch = src->pitch;
     int i, x, y, color;
-    Uint32 *buf = malloc(dst_pitch * sizeof(Uint32));
-    Uint32 *sum_v = malloc(dst_pitch * sizeof(Uint32));
+    Uint32 *buf = malloc(w * nb * sizeof(Uint32));
+    Uint32 *sum_v = malloc(w * nb * sizeof(Uint32));
     Uint32 *sum_h = malloc(nb * sizeof(Uint32));
 
-    memset(sum_v, 0, dst_pitch * sizeof(Uint32));
+    memset(sum_v, 0, w * nb * sizeof(Uint32));
     for (y = 0; y <= radius; y++) {  // y-pre
-        for (i = 0; i < dst_pitch; i++) {
+        for (i = 0; i < w * nb; i++) {
             sum_v[i] += srcpx[src_pitch * y + i];
         }
     }
     if (repeat) {
-        for (i = 0; i < dst_pitch; i++) {
+        for (i = 0; i < w * nb; i++) {
             sum_v[i] += srcpx[i] * radius;
         }
     }
     for (y = 0; y < h; y++) {  // y
-        for (i = 0; i < dst_pitch; i++) {
+        for (i = 0; i < w * nb; i++) {
             buf[i] = sum_v[i] / (radius * 2 + 1);
 
             // update vertical sum
@@ -3062,8 +3062,8 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
     int dst_pitch = dst->pitch;
     int src_pitch = src->pitch;
     int i, j, x, y, color;
-    float *buf = malloc(dst_pitch * sizeof(float));
-    float *buf2 = malloc(dst_pitch * sizeof(float));
+    float *buf = malloc(w * nb * sizeof(float));
+    float *buf2 = malloc(w * nb * sizeof(float));
     float *lut = malloc((radius + 1) * sizeof(float));
     float lut_sum = 0.0;
 
@@ -3080,14 +3080,14 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
         lut[i] /= lut_sum;
     }
 
-    for (i = 0; i < dst_pitch; i++) {
+    for (i = 0; i < w * nb; i++) {
         buf[i] = 0.0;
         buf2[i] = 0.0;
     }
 
     for (y = 0; y < h; y++) {
         for (j = -radius; j <= radius; j++) {
-            for (i = 0; i < dst_pitch; i++) {
+            for (i = 0; i < w * nb; i++) {
                 if (y + j >= 0 && y + j < h) {
                     buf[i] +=
                         (float)srcpx[src_pitch * (y + j) + i] * lut[abs(j)];
@@ -3123,7 +3123,7 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
                 }
             }
         }
-        for (i = 0; i < dst_pitch; i++) {
+        for (i = 0; i < w * nb; i++) {
             dstpx[dst_pitch * y + i] = (Uint8)buf2[i];
             buf[i] = 0.0;
             buf2[i] = 0.0;
