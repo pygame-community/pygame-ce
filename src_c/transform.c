@@ -407,30 +407,26 @@ rotate(SDL_Surface *src, SDL_Surface *dst, Uint32 bgcolor, double sangle,
     }
 }
 
-
 static void
-skew(SDL_Surface *src, SDL_Surface *new_surf, Uint32 bgcolor, SDL_Point* dst)
+skew(SDL_Surface *src, SDL_Surface *new_surf, Uint32 bgcolor, SDL_Point *dst,
+     int offsetx, int offsety)
 {
-    int dx1, dx2, dy1, dy2, leftx, rightx, bottomy, topy, x1, x2, y1, y2, diffx, diffy, err1, err2, e1, e2, sx1, sx2, sy1, sy2;
-    int end_x, end_y;
+    int dx1, dy1, x1, x2, y1, y2, err1, e1, sx1, sx2, sy1, sy2, length1,
+        length2, y_change;
+    float end_x, end_y, dx2, dy2, err2, e2, max_length1, max_length2;
     SDL_Point start, end, smallstart, smallend;
-    float scale_x, scale_y, end_scale, width, small_length, long_length;
+    float scale_x, scale_y, end_scale;
+    y_change = 0;
+    // check all points are in dest surface & parallel requirement
+    //  quicker axis aligned skew option ?
 
-    SDL_Point srcpoint[4] = { {0, 0}, {src->w, 0}, {src->w, src->h}, {0, src->h} };
-
-
-    //check all points are in dest surface & parallel requirement
-    // quicker axis aligned skew option ?
-
-    leftx = dst[0].x - dst[3].x;
-    rightx = dst[1].x - dst[2].x;
-
-    if (leftx == 0 || topy == 0) {
-         // use quicker axis aligned version
-         ;
+    if (dst[0].x - dst[3].x == dst[1].x - dst[2].x == 0) {
+        // use quicker axis aligned version
+        ;
     }
 
-    if (sqrt(pow(dst[2].x - dst[1].x, 2) + pow(dst[2].y - dst[1].y, 2)) > sqrt(pow(dst[3].x - dst[0].x, 2) + pow(dst[3].y - dst[0].y, 2))){
+    if (sqrt(pow(dst[2].y - dst[1].y, 2) + pow(dst[2].x - dst[1].x, 2)) >=
+        sqrt(pow(dst[3].y - dst[0].y, 2) + pow(dst[3].x - dst[0].x, 2))) {
         start = dst[1];
         end = dst[2];
         smallstart = dst[0];
@@ -443,70 +439,212 @@ skew(SDL_Surface *src, SDL_Surface *new_surf, Uint32 bgcolor, SDL_Point* dst)
         smallend = dst[2];
     }
 
-    small_length = sqrt(pow(smallend.x - smallstart.x, 2) + pow(smallend.y - smallstart.y, 2));
-    long_length = sqrt(pow(end.x - start.x, 2) + pow(end.y - start.y, 2));
-    if (1) {
-        x1 = start.x;
-        y1 = start.y;
+    x1 = start.x;
+    y1 = start.y;
 
-        dx1 = abs(end.x - start.x);
-        dy1 = -abs(end.y - start.y);
-        sx1 = end.x > start.x ? 1 : -1;
-        sy1 = end.y > start.y ? 1 : -1;
-        err1 = dx1 + dy1;
+    dx1 = abs(end.x - start.x);
+    dy1 = -abs(end.y - start.y);
+    sx1 = end.x > start.x ? 1 : -1;
+    sy1 = end.y > start.y ? 1 : -1;
+    err1 = dx1 + dy1;
+    max_length1 = (float)(dx1 - dy1);
+    length1 = 0;
+    Uint8 *src_pixels = (Uint8 *)src->pixels;
+    Uint8 *dst_pixels = (Uint8 *)new_surf->pixels;
 
-        Uint8* src_pixels = (Uint8*) src->pixels;
-        Uint8* dst_pixels = (Uint8*) new_surf->pixels;
+    // First iteration for beginning point
+    x2 = x1;
+    y2 = y1;
+    end_scale = length1 / max_length1;
+    scale_y = end_scale * (src->h - 1);
 
-        while (x1 != end.x || y1 != end.y) {
+    end_x = (smallend.x - smallstart.x) * end_scale + smallstart.x;
+    end_y = (smallend.y - smallstart.y) * end_scale + smallstart.y;
+    dx2 = (float)fabs(end_x - x1);
+    dy2 = (float)-fabs(end_y - y1);
+    sx2 = end_x > x1 ? 1 : -1;
+    sy2 = end_y > y1 ? 1 : -1;
+    err2 = dx2 + dy2;
+    length2 = 0;
+    max_length2 = round(dx2 - dy2);
+    while (1) {
+        // Using Nearest neighbor
+
+        if (length2 >= max_length2) {
+            break;
+        }
+
+        e2 = err2 * 2;
+        if (e2 >= dy2) {
+            err2 += dy2;
+            x2 += sx2;
+            length2 += 1;
+            scale_x = (float)((src->w - 1) * (length2 / max_length2));
+
+            *((Uint32 *)(dst_pixels +
+                         (int)(y2 * new_surf->pitch +
+                               x2 * new_surf->format->BytesPerPixel))) =
+                *((Uint32 *)(src_pixels + (int)((int)(scale_y)*src->pitch +
+                                                (int)(scale_x)*src->format
+                                                    ->BytesPerPixel)));
+        }
+        if (e2 <= dx2) {
+            err2 += dx2;
+            y2 += sy2;
+            length2 += 1;
+            // extra assign for when y2 changes at the same time as x1
+            // changes to prevent missing pixels
+            scale_x = (float)((src->w - 1) * (length2 / max_length2));
+            *((Uint32 *)(dst_pixels +
+                         (int)(y2 * new_surf->pitch +
+                               x2 * new_surf->format->BytesPerPixel))) =
+                *((Uint32 *)(src_pixels + (int)((int)(scale_y)*src->pitch +
+                                                (int)(scale_x)*src->format
+                                                    ->BytesPerPixel)));
+        }
+    }
+
+    while (1) {
+        if (length1 >= max_length1)
+            break;
+        e1 = err1 * 2;
+        if (e1 >= dy1) {
+            err1 += dy1;
+            x1 += sx1;
+            length1 += 1;
             x2 = x1;
             y2 = y1;
-            end_scale = sqrt(pow(x1 - start.x, 2) + pow(y1 - start.y, 2)) / long_length;
-            scale_y = end_scale * src->h;
-            if (start.x == dst[0].x) {
-                end_x = (smallend.x - smallstart.x) * end_scale + smallstart.x;
-                end_y = (smallend.y - smallstart.y) * end_scale + smallstart.y;
-            }
-            else {
-                end_x = round((smallend.x - smallstart.x) * end_scale) + smallstart.x;
-                end_y = round((smallend.y - smallstart.y) * end_scale) + smallstart.y;
-            }
+            end_scale = length1 / max_length1;
+            scale_y = end_scale * (src->h - 1);
 
-            width = sqrt(pow(end_x - x1, 2) + pow(end_y - y1, 2));
-            dx2 = abs(end_x - x1);
-            dy2 = -abs(end_y - y1);
-            sx2 = end_x > x1 ? 1: -1;
+            end_x = (smallend.x - smallstart.x) * end_scale + smallstart.x;
+            end_y = (smallend.y - smallstart.y) * end_scale + smallstart.y;
+            dx2 = (float)fabs(end_x - x1);
+            dy2 = (float)-fabs(end_y - y1);
+            sx2 = end_x > x1 ? 1 : -1;
             sy2 = end_y > y1 ? 1 : -1;
             err2 = dx2 + dy2;
-            while (x2 != end_x || y2 != end_y) {
+            length2 = 0;
+            max_length2 = round(dx2 - dy2);
+            scale_x = (float)((src->w - 1) * (length2 / max_length2));
+
+            *((Uint32 *)(dst_pixels +
+                         (int)(y2 * new_surf->pitch +
+                               x2 * new_surf->format->BytesPerPixel))) =
+                *((Uint32 *)(src_pixels + (int)((int)(scale_y)*src->pitch +
+                                                (int)(scale_x)*src->format
+                                                    ->BytesPerPixel)));
+            while (1) {
                 // Using Nearest neighbor
-                scale_x = src->w * sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2)) / width;
-                *((Uint32 *)(dst_pixels +(int)(y2 * new_surf->pitch + x2 * new_surf->format->BytesPerPixel))) = *((Uint32 *)(src_pixels +(int)((int)(scale_y) * src->pitch + (int)(scale_x) * src->format->BytesPerPixel)));
                 e2 = err2 * 2;
                 if (e2 >= dy2) {
                     err2 += dy2;
                     x2 += sx2;
+                    length2 += 1;
+                    scale_x = (float)((src->w - 1) * (length2 / max_length2));
+
+                    *((Uint32 *)(dst_pixels +
+                                 (int)(y2 * new_surf->pitch +
+                                       x2 *
+                                           new_surf->format->BytesPerPixel))) =
+                        *((Uint32 *)(src_pixels +
+                                     (int)((int)(scale_y)*src->pitch +
+                                           (int)(scale_x)*src->format
+                                               ->BytesPerPixel)));
+                }
+                if (length2 > max_length2) {
+                    break;
                 }
                 if (e2 <= dx2) {
                     err2 += dx2;
-                    // extra assign for when y2 changes at the same time as x1 changes to prevent missing pixels
-                    scale_x = src->w * sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2)) / width;
-                    *((Uint32 *)(dst_pixels +(int)(y2 * new_surf->pitch + x2 * new_surf->format->BytesPerPixel))) = *((Uint32 *)(src_pixels +(int)((int)(scale_y) * src->pitch + (int)(scale_x) * src->format->BytesPerPixel)));
+                    // extra assign for when y2 changes at the same time as x1
+                    // changes to prevent missing pixels
+                    scale_x = (float)((src->w - 1) * (length2 / max_length2));
+                    *((Uint32 *)(dst_pixels +
+                                 (int)(y2 * new_surf->pitch +
+                                       x2 *
+                                           new_surf->format->BytesPerPixel))) =
+                        *((Uint32 *)(src_pixels +
+                                     (int)((int)(scale_y)*src->pitch +
+                                           (int)(scale_x)*src->format
+                                               ->BytesPerPixel)));
 
                     y2 += sy2;
+                    length2 += 1;
+                }
+                if (length2 > max_length2) {
+                    break;
                 }
             }
+        }
+        if (e1 <= dx1) {
+            err1 += dx1;
+            y1 += sy1;
+            length1 += 1;
+            x2 = x1;
+            y2 = y1;
+            end_scale = length1 / max_length1;
+            scale_y = end_scale * (src->h - 1);
 
+            end_x = (smallend.x - smallstart.x) * end_scale + smallstart.x;
+            end_y = (smallend.y - smallstart.y) * end_scale + smallstart.y;
+            dx2 = (float)fabs(end_x - x1);
+            dy2 = (float)-fabs(end_y - y1);
+            sx2 = end_x > x1 ? 1 : -1;
+            sy2 = end_y > y1 ? 1 : -1;
+            err2 = dx2 + dy2;
+            length2 = 0;
+            max_length2 = round(dx2 - dy2);
+            scale_x = (float)((src->w - 1) * (length2 / max_length2));
 
+            *((Uint32 *)(dst_pixels +
+                         (int)(y2 * new_surf->pitch +
+                               x2 * new_surf->format->BytesPerPixel))) =
+                *((Uint32 *)(src_pixels + (int)((int)(scale_y)*src->pitch +
+                                                (int)(scale_x)*src->format
+                                                    ->BytesPerPixel)));
+            while (1) {
+                // Using Nearest neighbor
 
-            e1 = err1 * 2;
-            if (e1 >= dy1) {
-                err1 += dy1;
-                x1 += sx1;
-            }
-            if (e1 <= dx1) {
-                err1 += dx1;
-                y1 += sy1;
+                e2 = err2 * 2;
+                if (e2 >= dy2) {
+                    err2 += dy2;
+                    x2 += sx2;
+                    length2 += 1;
+                    scale_x = (float)((src->w - 1) * (length2 / max_length2));
+
+                    *((Uint32 *)(dst_pixels +
+                                 (int)(y2 * new_surf->pitch +
+                                       x2 *
+                                           new_surf->format->BytesPerPixel))) =
+                        *((Uint32 *)(src_pixels +
+                                     (int)((int)(scale_y)*src->pitch +
+                                           (int)(scale_x)*src->format
+                                               ->BytesPerPixel)));
+                }
+                if (length2 > max_length2) {
+                    break;
+                }
+                if (e2 <= dx2) {
+                    err2 += dx2;
+                    // extra assign for when y2 changes at the same time as x1
+                    // changes to prevent missing pixels
+                    scale_x = (float)((src->w - 1) * (length2 / max_length2));
+                    *((Uint32 *)(dst_pixels +
+                                 (int)(y2 * new_surf->pitch +
+                                       x2 *
+                                           new_surf->format->BytesPerPixel))) =
+                        *((Uint32 *)(src_pixels +
+                                     (int)((int)(scale_y)*src->pitch +
+                                           (int)(scale_x)*src->format
+                                               ->BytesPerPixel)));
+
+                    y2 += sy2;
+                    length2 += 1;
+                }
+                if (length2 > max_length2) {
+                    break;
+                }
             }
         }
     }
@@ -787,42 +925,58 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
     return (PyObject *)pgSurface_New(newsurf);
 }
 
-
 static PyObject *
 surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     pgSurfaceObject *surfobj;
+    pgSurfaceObject *dest_surf = NULL;
     SDL_Surface *surf, *newsurf;
-
+    int adjust_size = 0;
     int x1, y1, x2, y2, x3, y3, x4, y4;
     double x, y, cx, cy, sx, sy;
-    int start, width, top, height;
+    int start = 0, width, top = 0, height;
     int nxmax, nymax;
     Uint32 bgcolor;
-    static char *keywords[] = {"surface", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", NULL};
+    static char *keywords[] = {"surface", "points", "adjust_size", "dest_surf",
+                               NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!iiiiiiii", keywords,
-                                     &pgSurface_Type, &surfobj, &x1, &y1, &x2, &y2, &x3, &y3, &x4, &y4))
+    if (!PyArg_ParseTupleAndKeywords(
+            args, kwargs, "O!((ii)(ii)(ii)(ii))|pO!", keywords,
+            &pgSurface_Type, &surfobj, &x1, &y1, &x2, &y2, &x3, &y3, &x4, &y4,
+            &adjust_size, &pgSurface_Type, &dest_surf))
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
+    if (!dest_surf) {
+        if (adjust_size) {
+            start = MIN(MIN(x1, x2), MIN(x3, x4));
+            width = MAX(MAX(x1, x2), MAX(x3, x4)) - start;
+            top = MIN(MIN(y1, y2), MIN(y3, y4));
+            height = MAX(MAX(y1, y2), MAX(y3, y4)) - top;
+            newsurf = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32,
+                                                     surf->format->format);
+        }
+        else {
+            newsurf = SDL_CreateRGBSurfaceWithFormat(0, surf->w, surf->h, 32,
+                                                     surf->format->format);
+        }
+    }
+    else {
+        newsurf = pgSurface_AsSurface(dest_surf);
+        SURF_INIT_CHECK(newsurf)
+    }
 
     if (surf->w < 1 || surf->h < 1) {
         Py_INCREF(surfobj);
         return (PyObject *)surfobj;
     }
+    if (surf->format->format != newsurf->format->format) {
+        return RAISE(PyExc_ValueError, "Surface formats do not match");
+    }
 
     if (surf->format->BytesPerPixel == 0 || surf->format->BytesPerPixel > 4)
         return RAISE(PyExc_ValueError,
                      "unsupported Surface bit depth for transform");
-    start = MIN(MIN(x1, x2), MIN(x3, x4));
-    width = MAX(MAX(x1, x2), MAX(x3, x4)) - start;
-    top = MIN(MIN(y1, y2), MIN(y3, y4));
-    height = MAX(MAX(y1, y2), MAX(y3, y4)) - top;
-    newsurf = SDL_CreateRGBSurfaceWithFormat(0, surf->w, surf->h, 32, surf->format->format);
-
-    if (!newsurf)
-        return NULL;
 
     /* get the background color */
     if (SDL_GetColorKey(surf, &bgcolor) != 0) {
@@ -858,12 +1012,11 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
     SDL_Point points[4] = {{x1, y1}, {x2, y2}, {x3, y3}, {x4, y4}};
     Py_BEGIN_ALLOW_THREADS;
 
-    skew(surf, newsurf, bgcolor, points);
+    skew(surf, newsurf, bgcolor, points, start, top);
     Py_END_ALLOW_THREADS;
     pgSurface_Unlock(surfobj);
     SDL_UnlockSurface(newsurf);
     SDL_UnlockSurface(surf);
-
 
     return (PyObject *)pgSurface_New(newsurf);
 }
