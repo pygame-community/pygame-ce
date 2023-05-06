@@ -1,5 +1,4 @@
 // named as script.html to avoid a conflict with the pathto() function used in template
-console.log("hi from script.js");
 
 if (localStorage.getItem('theme') === null) {
     localStorage.setItem('theme', 'light-theme');
@@ -7,7 +6,7 @@ if (localStorage.getItem('theme') === null) {
 } else {
     document.body.classList.add(localStorage.getItem('theme'));
 }
-// add event listeners to all theme icons and change the body class to the theme
+
 const theme_icons = document.querySelectorAll('.theme-icon');
 theme_icons.forEach((icon) => {
     icon.addEventListener('click', () => {
