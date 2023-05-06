@@ -847,6 +847,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     int w, h;
     PyObject *size = NULL;
     int vsync = SDL_FALSE;
+    int swrender = SDL_FALSE;
     /* display will get overwritten by ParseTupleAndKeywords only if display
        parameter is given. By default, put the new window on the same
        screen as the old one */
@@ -857,12 +858,12 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
     SDL_VERSION(&wm_info.version);
 
-    char *keywords[] = {"size", "flags", "depth", "display", "vsync", NULL};
+    char *keywords[] = {"size", "flags", "depth", "display", "vsync", "software_render", NULL};
 
     scale_env = SDL_getenv("PYGAME_FORCE_SCALE");
 
-    if (!PyArg_ParseTupleAndKeywords(arg, kwds, "|Oiiii", keywords, &size,
-                                     &flags, &depth, &display, &vsync))
+    if (!PyArg_ParseTupleAndKeywords(arg, kwds, "|Oiiiii", keywords, &size,
+                                     &flags, &depth, &display, &vsync, &swrender))
         return NULL;
 
     if (scale_env != NULL) {
@@ -1213,7 +1214,15 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                     SDL_SetHintWithPriority(SDL_HINT_RENDER_SCALE_QUALITY,
                                             "nearest", SDL_HINT_DEFAULT);
 
-                    if (vsync) {
+                    if (vsync && swrender) {
+                        pg_renderer = SDL_CreateRenderer(
+                            win, -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_PRESENTVSYNC);
+                    }
+                    else if (vsync) {
+                        pg_renderer = SDL_CreateRenderer(
+                            win, -1, SDL_RENDERER_PRESENTVSYNC);
+                    }
+                    else if (swrender) {
                         pg_renderer = SDL_CreateRenderer(
                             win, -1, SDL_RENDERER_PRESENTVSYNC);
                     }
