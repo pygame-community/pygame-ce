@@ -1224,7 +1224,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                     }
                     else if (swrender) {
                         pg_renderer = SDL_CreateRenderer(
-                            win, -1, SDL_RENDERER_PRESENTVSYNC);
+                            win, -1, SDL_RENDERER_SOFTWARE);
                     }
                     else {
                         pg_renderer = SDL_CreateRenderer(win, -1, 0);
