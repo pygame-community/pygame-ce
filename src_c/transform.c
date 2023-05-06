@@ -412,11 +412,10 @@ skew(SDL_Surface *src, SDL_Surface *new_surf, Uint32 bgcolor, SDL_Point *dst,
      int offsetx, int offsety)
 {
     int dx1, dy1, x1, x2, y1, y2, err1, e1, sx1, sx2, sy1, sy2, length1,
-        length2, y_change;
+        length2, rev;
     float end_x, end_y, dx2, dy2, err2, e2, max_length1, max_length2;
     SDL_Point start, end, smallstart, smallend;
     float scale_x, scale_y, end_scale;
-    y_change = 0;
     // check all points are in dest surface & parallel requirement
     //  quicker axis aligned skew option ?
 
@@ -431,12 +430,14 @@ skew(SDL_Surface *src, SDL_Surface *new_surf, Uint32 bgcolor, SDL_Point *dst,
         end = dst[2];
         smallstart = dst[0];
         smallend = dst[3];
+        rev = 1;
     }
     else {
         start = dst[0];
         end = dst[3];
         smallstart = dst[1];
         smallend = dst[2];
+        rev = 0;
     }
 
     x1 = start.x;
@@ -466,9 +467,34 @@ skew(SDL_Surface *src, SDL_Surface *new_surf, Uint32 bgcolor, SDL_Point *dst,
     sy2 = end_y > y1 ? 1 : -1;
     err2 = dx2 + dy2;
     length2 = 0;
-    max_length2 = round(dx2 - dy2);
+    max_length2 = floor(dx2 - dy2);
+    if (rev) {
+        scale_x = (float)((src->w - 1) - (src->w - 1) * (length2 / max_length2));
+    }
+    else {
+        scale_x = (float)((src->w - 1) * (length2 / max_length2));
+    }
+    *((Uint32 *)(dst_pixels +
+                 (int)(y2 * new_surf->pitch +
+                       x2 * new_surf->format->BytesPerPixel))) =
+        *((Uint32 *)(src_pixels + (int)((int)(scale_y)*src->pitch +
+                                        (int)(scale_x)*src->format
+                                            ->BytesPerPixel)));
     while (1) {
         // Using Nearest neighbor
+         if (rev) {
+                scale_x = (float)((src->w - 1) - (src->w - 1) * (length2 / max_length2));
+            }
+            else {
+                scale_x = (float)((src->w - 1) * (length2 / max_length2));
+            }
+
+        *((Uint32 *)(dst_pixels +
+                     (int)(y2 * new_surf->pitch +
+                           x2 * new_surf->format->BytesPerPixel))) =
+            *((Uint32 *)(src_pixels + (int)((int)(scale_y)*src->pitch +
+                                            (int)(scale_x)*src->format
+                                                ->BytesPerPixel)));
 
         if (length2 >= max_length2) {
             break;
@@ -479,32 +505,29 @@ skew(SDL_Surface *src, SDL_Surface *new_surf, Uint32 bgcolor, SDL_Point *dst,
             err2 += dy2;
             x2 += sx2;
             length2 += 1;
-            scale_x = (float)((src->w - 1) * (length2 / max_length2));
 
-            *((Uint32 *)(dst_pixels +
-                         (int)(y2 * new_surf->pitch +
-                               x2 * new_surf->format->BytesPerPixel))) =
-                *((Uint32 *)(src_pixels + (int)((int)(scale_y)*src->pitch +
-                                                (int)(scale_x)*src->format
-                                                    ->BytesPerPixel)));
         }
         if (e2 <= dx2) {
             err2 += dx2;
             y2 += sy2;
             length2 += 1;
-            // extra assign for when y2 changes at the same time as x1
-            // changes to prevent missing pixels
-            scale_x = (float)((src->w - 1) * (length2 / max_length2));
-            *((Uint32 *)(dst_pixels +
-                         (int)(y2 * new_surf->pitch +
-                               x2 * new_surf->format->BytesPerPixel))) =
-                *((Uint32 *)(src_pixels + (int)((int)(scale_y)*src->pitch +
-                                                (int)(scale_x)*src->format
-                                                    ->BytesPerPixel)));
+
         }
     }
 
     while (1) {
+        if (rev) {
+            scale_x = (float)((src->w - 1));
+        }
+        else {
+            scale_x = (float)(0);
+        }
+        *((Uint32 *)(dst_pixels +
+                     (int)(y1 * new_surf->pitch +
+                           x1 * new_surf->format->BytesPerPixel))) =
+            *((Uint32 *)(src_pixels + (int)((int)(scale_y)*src->pitch +
+                                            (int)(scale_x)*src->format
+                                                ->BytesPerPixel)));
         if (length1 >= max_length1)
             break;
         e1 = err1 * 2;
@@ -525,15 +548,7 @@ skew(SDL_Surface *src, SDL_Surface *new_surf, Uint32 bgcolor, SDL_Point *dst,
             sy2 = end_y > y1 ? 1 : -1;
             err2 = dx2 + dy2;
             length2 = 0;
-            max_length2 = round(dx2 - dy2);
-            scale_x = (float)((src->w - 1) * (length2 / max_length2));
-
-            *((Uint32 *)(dst_pixels +
-                         (int)(y2 * new_surf->pitch +
-                               x2 * new_surf->format->BytesPerPixel))) =
-                *((Uint32 *)(src_pixels + (int)((int)(scale_y)*src->pitch +
-                                                (int)(scale_x)*src->format
-                                                    ->BytesPerPixel)));
+            max_length2 = floor(dx2- dy2);
             while (1) {
                 // Using Nearest neighbor
                 e2 = err2 * 2;
@@ -541,25 +556,39 @@ skew(SDL_Surface *src, SDL_Surface *new_surf, Uint32 bgcolor, SDL_Point *dst,
                     err2 += dy2;
                     x2 += sx2;
                     length2 += 1;
-                    scale_x = (float)((src->w - 1) * (length2 / max_length2));
+                    if (length2 != 2) {
+                        if (rev) {
+                            scale_x = (float)((src->w - 1) - (src->w - 1) * (length2 / max_length2));
+                        }
+                        else {
+                            scale_x = (float)((src->w - 1) * (length2 / max_length2));
+                        }
 
-                    *((Uint32 *)(dst_pixels +
-                                 (int)(y2 * new_surf->pitch +
-                                       x2 *
-                                           new_surf->format->BytesPerPixel))) =
-                        *((Uint32 *)(src_pixels +
-                                     (int)((int)(scale_y)*src->pitch +
-                                           (int)(scale_x)*src->format
-                                               ->BytesPerPixel)));
+                        *((Uint32 *)(dst_pixels +
+                                     (int)(y2 * new_surf->pitch +
+                                           x2 *
+                                               new_surf->format->BytesPerPixel))) =
+                            *((Uint32 *)(src_pixels +
+                                         (int)((int)(scale_y)*src->pitch +
+                                               (int)(scale_x)*src->format
+                                                   ->BytesPerPixel)));
+                    }
                 }
-                if (length2 > max_length2) {
+                if (length2 >= max_length2) {
                     break;
                 }
                 if (e2 <= dx2) {
                     err2 += dx2;
+                    y2 += sy2;
+                    length2 += 1;
                     // extra assign for when y2 changes at the same time as x1
                     // changes to prevent missing pixels
-                    scale_x = (float)((src->w - 1) * (length2 / max_length2));
+                    if (rev) {
+                        scale_x = (float)((src->w - 1) - (src->w - 1) * (length2 / max_length2));
+                    }
+                    else {
+                        scale_x = (float)((src->w - 1) * (length2 / max_length2));
+                    }
                     *((Uint32 *)(dst_pixels +
                                  (int)(y2 * new_surf->pitch +
                                        x2 *
@@ -569,15 +598,23 @@ skew(SDL_Surface *src, SDL_Surface *new_surf, Uint32 bgcolor, SDL_Point *dst,
                                            (int)(scale_x)*src->format
                                                ->BytesPerPixel)));
 
-                    y2 += sy2;
-                    length2 += 1;
+
                 }
-                if (length2 > max_length2) {
+                if (length2 >= max_length2) {
                     break;
                 }
             }
         }
+        if (length1 > max_length1)
+            break;
         if (e1 <= dx1) {
+            if (rev) {
+                scale_x = (float)((src->w - 1));
+            }
+            else {
+                scale_x = (float)(0);
+            }
+            
             err1 += dx1;
             y1 += sy1;
             length1 += 1;
@@ -594,15 +631,9 @@ skew(SDL_Surface *src, SDL_Surface *new_surf, Uint32 bgcolor, SDL_Point *dst,
             sy2 = end_y > y1 ? 1 : -1;
             err2 = dx2 + dy2;
             length2 = 0;
-            max_length2 = round(dx2 - dy2);
-            scale_x = (float)((src->w - 1) * (length2 / max_length2));
+            max_length2 = floor(dx2 - dy2);
 
-            *((Uint32 *)(dst_pixels +
-                         (int)(y2 * new_surf->pitch +
-                               x2 * new_surf->format->BytesPerPixel))) =
-                *((Uint32 *)(src_pixels + (int)((int)(scale_y)*src->pitch +
-                                                (int)(scale_x)*src->format
-                                                    ->BytesPerPixel)));
+
             while (1) {
                 // Using Nearest neighbor
 
@@ -611,25 +642,39 @@ skew(SDL_Surface *src, SDL_Surface *new_surf, Uint32 bgcolor, SDL_Point *dst,
                     err2 += dy2;
                     x2 += sx2;
                     length2 += 1;
-                    scale_x = (float)((src->w - 1) * (length2 / max_length2));
+                    if (length2 != 2) {
+                        if (rev) {
+                            scale_x = (float)((src->w - 1) - (src->w - 1) * (length2 / max_length2));
+                        }
+                        else {
+                            scale_x = (float)((src->w - 1) * (length2 / max_length2));
+                        }
 
-                    *((Uint32 *)(dst_pixels +
-                                 (int)(y2 * new_surf->pitch +
-                                       x2 *
-                                           new_surf->format->BytesPerPixel))) =
-                        *((Uint32 *)(src_pixels +
-                                     (int)((int)(scale_y)*src->pitch +
-                                           (int)(scale_x)*src->format
-                                               ->BytesPerPixel)));
+                        *((Uint32 *)(dst_pixels +
+                                     (int)(y2 * new_surf->pitch +
+                                           x2 *
+                                               new_surf->format->BytesPerPixel))) =
+                            *((Uint32 *)(src_pixels +
+                                         (int)((int)(scale_y)*src->pitch +
+                                               (int)(scale_x)*src->format
+                                                   ->BytesPerPixel)));
+                    }
                 }
-                if (length2 > max_length2) {
+                if (length2 >= max_length2) {
                     break;
                 }
                 if (e2 <= dx2) {
                     err2 += dx2;
+                    y2 += sy2;
+                    length2 += 1;
                     // extra assign for when y2 changes at the same time as x1
                     // changes to prevent missing pixels
-                    scale_x = (float)((src->w - 1) * (length2 / max_length2));
+                    if (rev) {
+                        scale_x = (float)((src->w - 1) - (src->w - 1) * (length2 / max_length2));
+                    }
+                    else {
+                        scale_x = (float)((src->w - 1) * (length2 / max_length2));
+                    }
                     *((Uint32 *)(dst_pixels +
                                  (int)(y2 * new_surf->pitch +
                                        x2 *
@@ -639,13 +684,56 @@ skew(SDL_Surface *src, SDL_Surface *new_surf, Uint32 bgcolor, SDL_Point *dst,
                                            (int)(scale_x)*src->format
                                                ->BytesPerPixel)));
 
-                    y2 += sy2;
-                    length2 += 1;
+
                 }
-                if (length2 > max_length2) {
+                if (length2 >= max_length2) {
                     break;
                 }
             }
+        }
+    }
+
+    //TODO: ADD FINAL PASS OF BRESENHAM ALONG SMALL LINE
+
+    x1 = smallstart.x;
+    y1 = smallstart.y;
+
+    dx1 = abs(smallend.x - smallstart.x);
+    dy1 = -abs(smallend.y - smallstart.y);
+    sx1 = smallend.x > smallstart.x ? 1 : -1;
+    sy1 = smallend.y > smallstart.y ? 1 : -1;
+    err1 = dx1 + dy1;
+    max_length1 = (float)(dx1 - dy1);
+    length1 = 0;
+    if (rev) {
+        scale_x = (float)((src->w - 1) - (src->w - 1));
+    }
+    else {
+        scale_x = (float)((src->w - 1));
+    }
+    while (1) {
+        if (length1 >= max_length1)
+            break;
+        scale_y = length1 / max_length1 * (src->h - 1);
+        /* *((Uint32 *)(dst_pixels +
+                     (int)(y1 * new_surf->pitch +
+                           x1 *
+                               new_surf->format->BytesPerPixel))) =
+            *((Uint32 *)(src_pixels +
+                         (int)((int)(scale_y)*src->pitch +
+                               (int)(scale_x)*src->format
+                                   ->BytesPerPixel))); */
+
+        e1 = err1 * 2;
+        if (e1 >= dy1) {
+            err1 += dy1;
+            x1 += sx1;
+            length1 += 1;
+        }
+        if (e1 <= dx1) {
+            err1 += dx1;
+            y1 += sy1;
+            length1 += 1;
         }
     }
 }
