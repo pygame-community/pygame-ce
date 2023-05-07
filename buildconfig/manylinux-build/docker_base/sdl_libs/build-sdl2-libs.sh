@@ -6,7 +6,7 @@ cd $(dirname `readlink -f "$0"`)
 SDL2="SDL2-2.26.4"
 IMG2="SDL2_image-2.0.5"
 TTF2="SDL2_ttf-2.20.2"
-MIX2="SDL2_mixer-2.6.3"
+MIX2="SDL2_mixer-2.6.2"
 
 
 # Download
