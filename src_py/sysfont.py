@@ -392,7 +392,7 @@ def _find_fontname_typos(comparison_word: str) -> str:
     comparison_word_len = len(comparison_word)
     for word in itertools.chain(Sysfonts, Sysalias):
         word_len = len(word)
-        if not (word_len - 1 <= comparison_word_len <= word_len + 1):
+        if not word_len - 1 <= comparison_word_len <= word_len + 1:
             continue
 
         if comparison_word.startswith(word) or word.startswith(comparison_word):
@@ -422,7 +422,7 @@ def _find_fontname_typos(comparison_word: str) -> str:
         return ""
     if len(results) == 1:
         return f"Did you mean: '{results[0]}'? "
-    elif len(results) == 2:
+    if len(results) == 2:
         return f"Did you mean: '{results[0]}' or '{results[1]}'? "
     else:
         return "Did you mean: '" + "', '".join(results[:-1]) + f"' or '{results[-1]}'? "
