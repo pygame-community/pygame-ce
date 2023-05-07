@@ -391,16 +391,31 @@ def _find_fontname_typos(comparison_word: str) -> str:
     results = []
     comparison_word_len = len(comparison_word)
     for word in itertools.chain(Sysfonts, Sysalias):
-        amount = 0
         word_len = len(word)
-        if comparison_word_len != word_len:
+        if not (word_len - 1 <= comparison_word_len <= word_len + 1):
             continue
-        for i in range(word_len):
+
+        if comparison_word.startswith(word) or word.startswith(comparison_word):
+            results.append(word)
+            continue
+
+        amount = 0
+        for i in range(min(word_len, comparison_word_len)):
             if comparison_word[i] != word[i]:
                 amount += 1
-            if amount == 2:
-                break
-        if amount == 1:
+                if amount == 2:
+                    break
+                if (
+                    word[:i] + word[i + 1 :]
+                    == comparison_word[:i] + comparison_word[i + 1 :]
+                    or word[:i] + word[i + 1 :] == comparison_word
+                    or word == comparison_word[:i] + comparison_word[i + 1 :]
+                ):
+                    results.append(word)
+                    amount = 0
+                    break
+
+        if amount == 1 and comparison_word_len == word_len:
             results.append(word)
 
     if len(results) == 0:
