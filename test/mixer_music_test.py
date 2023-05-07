@@ -160,7 +160,7 @@ class MixerMusicModuleTest(unittest.TestCase):
         pygame.mixer.music.queue(filename)
 
     def test_queue_xm(self):
-        """Ensures queue() accepts wav files.
+        """Ensures queue() accepts xm files (tracker music files).
 
         |tags:music|
         """
