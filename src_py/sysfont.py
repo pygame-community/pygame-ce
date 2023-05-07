@@ -424,8 +424,8 @@ def _find_fontname_typos(comparison_word: str) -> str:
         return f"Did you mean: '{results[0]}'? "
     if len(results) == 2:
         return f"Did you mean: '{results[0]}' or '{results[1]}'? "
-    else:
-        return "Did you mean: '" + "', '".join(results[:-1]) + f"' or '{results[-1]}'? "
+
+    return "Did you mean: '" + "', '".join(results[:-1]) + f"' or '{results[-1]}'? "
 
 
 # the exported functions
