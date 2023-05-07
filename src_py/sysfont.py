@@ -18,10 +18,11 @@
 # Pete Shinners
 # pete@shinners.org
 """sysfont, used in the font module to find system fonts"""
-
+import time
 import warnings
 import os
 import sys
+import itertools
 from os.path import basename, dirname, exists, join, splitext
 
 from pygame.font import Font
@@ -386,6 +387,33 @@ def font_constructor(fontpath, size, bold, italic):
     return font
 
 
+def _find_fontname_typos(comparison_word: str) -> str:
+    comparison_word = _simplename(comparison_word)
+    results = []
+    comparison_word_len = len(comparison_word)
+    for word in itertools.chain(Sysfonts, Sysalias):
+        amount = 0
+        word_len = len(word)
+        if comparison_word_len != word_len:
+            continue
+        for i in range(word_len):
+            if comparison_word[i] != word[i]:
+                amount += 1
+            if amount == 2:
+                break
+        if amount == 1:
+            results.append(word)
+
+    if len(results) == 0:
+        return ""
+    if len(results) == 1:
+        return f"Did you mean '{results[0]}'? "
+    elif len(results) == 2:
+        return f"Did you mean '{results[0]}' or '{results[1]}'? "
+    else:
+        return "Did you mean '" + "', '".join(results[:-1]) + f"' or '{results[-1]}'? "
+
+
 # the exported functions
 
 
@@ -467,7 +495,8 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
             else:
                 warnings.warn(
                     f"The system font '{name[0]}' couldn't be "
-                    "found. Using the default font instead."
+                    f"found. {_find_fontname_typos(name[0])}"
+                    f"Using the default font instead."
                 )
 
     set_bold = set_italic = False
