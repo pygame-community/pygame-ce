@@ -115,7 +115,8 @@ cd $MIX2
       --disable-music-ogg-vorbis-shared \
       --disable-music-ogg-tremor-shared \
       --disable-music-flac-libflac-shared \
-      --disable-music-mp3-mpg123-shared
+      --disable-music-mp3-mpg123-shared \
+      --disable-music-mod-modplug-shared
 
 make
 make install
