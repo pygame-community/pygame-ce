@@ -823,11 +823,23 @@ pg_encode_file_path(PyObject *self, PyObject *args, PyObject *keywds)
     return pg_EncodeFilePath(obj, eclass);
 }
 
+static PyObject *
+pg_rwop_test(PyObject *self, PyObject *arg)
+{
+    SDL_RWops *rw = pgRWops_FromObject(arg, NULL);
+
+    size_t datasize;
+    SDL_LoadFile_RW(rw, &datasize, SDL_FALSE);
+
+    return PyLong_FromLong((long)datasize);
+}
+
 static PyMethodDef _pg_rwobject_methods[] = {
     {"encode_string", (PyCFunction)pg_encode_string,
      METH_VARARGS | METH_KEYWORDS, DOC_ENCODESTRING},
     {"encode_file_path", (PyCFunction)pg_encode_file_path,
      METH_VARARGS | METH_KEYWORDS, DOC_ENCODEFILEPATH},
+    {"test_size", pg_rwop_test, METH_O, "not real"},
     {NULL, NULL, 0, NULL}};
 
 /*DOC*/ static char _pg_rwobject_doc[] =

@@ -70,6 +70,16 @@ class MixerMusicModuleTest(unittest.TestCase):
             with open(bmusfn, "rb") as musf:
                 pygame.mixer.music.load(musf)
 
+    def test_load_object_special(self):
+        data_fname = example_path("data")
+        path = os.path.join(data_fname, "surfonasinewave.xm")
+        if os.sep == "\\":
+            path = path.replace("\\", "\\\\")
+        bmusfn = path.encode()
+
+        with open(bmusfn, "rb") as musf:
+            self.assertEqual(pygame.rwobject.test_size(musf), 427614)
+
     def test_object_namehint(self):
         """test loading & queuing music from file-like objects with namehint argument."""
         filenames = [
