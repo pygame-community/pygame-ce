@@ -1014,39 +1014,39 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     pgSurfaceObject *surfobj;
     pgSurfaceObject *dest_surf = NULL;
+    PyObject *colorobj;
     SDL_Surface *surf, *newsurf;
     int adjust_size = 0;
     int x1, y1, x2, y2, x3, y3, x4, y4;
     int start = 0, width, top = 0, height;
     Uint32 bgcolor;
-    static char *keywords[] = {"surface", "points", "adjust_size", "dest_surf",
-                               NULL};
+    static char *keywords[] = {"surface",     "points",    "bgcolor",
+                               "adjust_size", "dest_surf", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(
-            args, kwargs, "O!((ii)(ii)(ii)(ii))|pO!", keywords,
+            args, kwargs, "O!((ii)(ii)(ii)(ii))|OpO!", keywords,
             &pgSurface_Type, &surfobj, &x1, &y1, &x2, &y2, &x3, &y3, &x4, &y4,
-            &adjust_size, &pgSurface_Type, &dest_surf))
+            &colorobj, &adjust_size, &pgSurface_Type, &dest_surf))
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
     if (!dest_surf) {
         if (adjust_size) {
             start = MIN(MIN(x1, x2), MIN(x3, x4));
-            width = MAX(MAX(x1, x2), MAX(x3, x4)) - start;
+            width = MAX(MAX(x1, x2), MAX(x3, x4)) - start + 1;
             top = MIN(MIN(y1, y2), MIN(y3, y4));
-            height = MAX(MAX(y1, y2), MAX(y3, y4)) - top;
-            newsurf = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32,
-                                                     surf->format->format);
+            height = MAX(MAX(y1, y2), MAX(y3, y4)) - top + 1;
+            newsurf = newsurf_fromsurf(surf, width, height);
         }
         else {
-            newsurf = SDL_CreateRGBSurfaceWithFormat(0, surf->w, surf->h, 32,
-                                                     surf->format->format);
+            newsurf = newsurf_fromsurf(surf, surf->w, surf->h);
         }
     }
     else {
         newsurf = pgSurface_AsSurface(dest_surf);
-        SURF_INIT_CHECK(newsurf)
     }
+    if (!newsurf)
+        return NULL;
 
     if (surf->w < 1 || surf->h < 1) {
         Py_INCREF(surfobj);
@@ -1075,31 +1075,36 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
     SDL_LockSurface(newsurf);
     SDL_LockSurface(surf);
     pgSurface_Lock(surfobj);
-
-    /* get the background color */
-    if (SDL_GetColorKey(surf, &bgcolor) != 0) {
-        switch (surf->format->BytesPerPixel) {
-            case 1:
-                bgcolor = *(Uint8 *)surf->pixels;
-                break;
-            case 2:
-                bgcolor = *(Uint16 *)surf->pixels;
-                break;
-            case 4:
-                bgcolor = *(Uint32 *)surf->pixels;
-                break;
-            default: /*case 3:*/
+    if (colorobj != Py_None) {
+        if (_color_from_obj(colorobj, surf->format, NULL, &bgcolor))
+            return RAISE(PyExc_TypeError, "invalid bg_color argument");
+    }
+    else {
+        /* get the background color */
+        if (SDL_GetColorKey(surf, &bgcolor) != 0) {
+            switch (surf->format->BytesPerPixel) {
+                case 1:
+                    bgcolor = *(Uint8 *)surf->pixels;
+                    break;
+                case 2:
+                    bgcolor = *(Uint16 *)surf->pixels;
+                    break;
+                case 4:
+                    bgcolor = *(Uint32 *)surf->pixels;
+                    break;
+                default: /*case 3:*/
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                bgcolor = (((Uint8 *)surf->pixels)[0]) +
-                          (((Uint8 *)surf->pixels)[1] << 8) +
-                          (((Uint8 *)surf->pixels)[2] << 16);
+                    bgcolor = (((Uint8 *)surf->pixels)[0]) +
+                              (((Uint8 *)surf->pixels)[1] << 8) +
+                              (((Uint8 *)surf->pixels)[2] << 16);
 #else
-                bgcolor = (((Uint8 *)surf->pixels)[2]) +
-                          (((Uint8 *)surf->pixels)[1] << 8) +
-                          (((Uint8 *)surf->pixels)[0] << 16);
+                    bgcolor = (((Uint8 *)surf->pixels)[2]) +
+                              (((Uint8 *)surf->pixels)[1] << 8) +
+                              (((Uint8 *)surf->pixels)[0] << 16);
 #endif
+            }
+            bgcolor &= ~surf->format->Amask;
         }
-        bgcolor &= ~surf->format->Amask;
     }
 
     SDL_FillRect(newsurf, NULL, bgcolor);
@@ -1110,8 +1115,12 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
     pgSurface_Unlock(surfobj);
     SDL_UnlockSurface(newsurf);
     SDL_UnlockSurface(surf);
-
-    return (PyObject *)pgSurface_New(newsurf);
+    if (dest_surf) {
+        Py_INCREF(dest_surf);
+        return dest_surf;
+    }
+    else
+        return (PyObject *)pgSurface_New(newsurf);
 }
 
 static PyObject *
