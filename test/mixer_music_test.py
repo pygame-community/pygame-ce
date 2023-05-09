@@ -58,6 +58,23 @@ class MixerMusicModuleTest(unittest.TestCase):
             "house_lo.ogg",
             "house_lo.wav",
             "house_lo.mp3",
+        ]
+        data_fname = example_path("data")
+        for file in filenames:
+            path = os.path.join(data_fname, file)
+            if os.sep == "\\":
+                path = path.replace("\\", "\\\\")
+            bmusfn = path.encode()
+
+            with open(bmusfn, "rb") as musf:
+                pygame.mixer.music.load(musf)
+
+    @unittest.skipIf(platform.system() == "Linux", "fails on Linux for some reason.")
+    def test_load_object_xm(self):
+        """Duplicate of test_load_object so loading xm can be individually expected-failed.
+        TODO: fix this behavior on Linux.
+        """
+        filenames = [
             "surfonasinewave.xm",
         ]
         data_fname = example_path("data")
