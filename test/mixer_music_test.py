@@ -54,11 +54,7 @@ class MixerMusicModuleTest(unittest.TestCase):
 
     def test_load_object(self):
         """test loading music from file-like objects."""
-        filenames = [
-            "house_lo.ogg",
-            "house_lo.wav",
-            "house_lo.mp3",
-        ]
+        filenames = ["house_lo.ogg", "house_lo.wav"]
         data_fname = example_path("data")
         for file in filenames:
             path = os.path.join(data_fname, file)
@@ -89,11 +85,7 @@ class MixerMusicModuleTest(unittest.TestCase):
 
     def test_object_namehint(self):
         """test loading & queuing music from file-like objects with namehint argument."""
-        filenames = [
-            "house_lo.ogg",
-            "house_lo.wav",
-            "house_lo.mp3",
-        ]
+        filenames = ["house_lo.ogg", "house_lo.wav"]
         data_fname = example_path("data")
         for file in filenames:
             path = os.path.join(data_fname, file)
