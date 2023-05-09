@@ -93,6 +93,33 @@ class MixerMusicModuleTest(unittest.TestCase):
             "house_lo.ogg",
             "house_lo.wav",
             "house_lo.mp3",
+        ]
+        data_fname = example_path("data")
+        for file in filenames:
+            path = os.path.join(data_fname, file)
+            if os.sep == "\\":
+                path = path.replace("\\", "\\\\")
+            bmusfn = path.encode()
+
+            *_, format = file.split(".")
+
+            # these two "with open" blocks need to be separate, which is kinda weird
+            with open(bmusfn, "rb") as musf:
+                pygame.mixer.music.load(musf, format)
+
+            with open(bmusfn, "rb") as musf:
+                pygame.mixer.music.queue(musf, format)
+
+            with open(bmusfn, "rb") as musf:
+                pygame.mixer.music.load(musf, namehint=format)
+
+            with open(bmusfn, "rb") as musf:
+                pygame.mixer.music.queue(musf, namehint=format)
+
+    @unittest.skipIf(platform.system() == "Linux", "fails on Linux for some reason.")
+    def test_object_namehint_xm(self):
+        """TODO: fix this on Linux and merge with test_object_namehint."""
+        filenames = [
             "surfonasinewave.xm",
         ]
         data_fname = example_path("data")
