@@ -54,25 +54,7 @@ class MixerMusicModuleTest(unittest.TestCase):
 
     def test_load_object(self):
         """test loading music from file-like objects."""
-        filenames = ["house_lo.ogg", "house_lo.wav"]
-        data_fname = example_path("data")
-        for file in filenames:
-            path = os.path.join(data_fname, file)
-            if os.sep == "\\":
-                path = path.replace("\\", "\\\\")
-            bmusfn = path.encode()
-
-            with open(bmusfn, "rb") as musf:
-                pygame.mixer.music.load(musf)
-
-    @unittest.skipIf(platform.system() == "Linux", "fails on Linux for some reason.")
-    def test_load_object_xm(self):
-        """Duplicate of test_load_object so loading xm can be individually expected-failed.
-        TODO: fix this behavior on Linux.
-        """
-        filenames = [
-            "surfonasinewave.xm",
-        ]
+        filenames = ["house_lo.ogg", "house_lo.wav", "surfonasinewave.xm"]
         data_fname = example_path("data")
         for file in filenames:
             path = os.path.join(data_fname, file)
@@ -85,35 +67,7 @@ class MixerMusicModuleTest(unittest.TestCase):
 
     def test_object_namehint(self):
         """test loading & queuing music from file-like objects with namehint argument."""
-        filenames = ["house_lo.ogg", "house_lo.wav"]
-        data_fname = example_path("data")
-        for file in filenames:
-            path = os.path.join(data_fname, file)
-            if os.sep == "\\":
-                path = path.replace("\\", "\\\\")
-            bmusfn = path.encode()
-
-            *_, format = file.split(".")
-
-            # these two "with open" blocks need to be separate, which is kinda weird
-            with open(bmusfn, "rb") as musf:
-                pygame.mixer.music.load(musf, format)
-
-            with open(bmusfn, "rb") as musf:
-                pygame.mixer.music.queue(musf, format)
-
-            with open(bmusfn, "rb") as musf:
-                pygame.mixer.music.load(musf, namehint=format)
-
-            with open(bmusfn, "rb") as musf:
-                pygame.mixer.music.queue(musf, namehint=format)
-
-    @unittest.skipIf(platform.system() == "Linux", "fails on Linux for some reason.")
-    def test_object_namehint_xm(self):
-        """TODO: fix this on Linux and merge with test_object_namehint."""
-        filenames = [
-            "surfonasinewave.xm",
-        ]
+        filenames = ["house_lo.ogg", "house_lo.wav", "surfonasinewave.xm"]
         data_fname = example_path("data")
         for file in filenames:
             path = os.path.join(data_fname, file)
