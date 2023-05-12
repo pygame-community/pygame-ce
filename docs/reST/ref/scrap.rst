@@ -74,7 +74,7 @@ For an example of how the scrap module works refer to the examples page
 (:func:`pygame.examples.scrap_clipboard.main`) or the code directly in GitHub
 (`pygame/examples/scrap_clipboard.py <https://github.com/pygame-community/pygame-ce/blob/main/examples/scrap_clipboard.py>`_).
 
-.. versionadded:: 1.8
+.. versionaddedold:: 1.8
 
 .. note::
    The scrap module is currently only supported for Windows, X11 and Mac OS X.
@@ -108,7 +108,7 @@ For an example of how the scrap module works refer to the examples page
       initialized, ``False`` otherwise
    :rtype: bool
 
-   .. versionadded:: 1.9.5
+   .. versionaddedold:: 1.9.5
    .. deprecated:: 2.2.0
 
    .. ## pygame.scrap.get_init ##

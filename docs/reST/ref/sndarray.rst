@@ -73,7 +73,7 @@ one.
    ``get_arraytypes()`` tuple and indicates which type of array module is used
    for the array creation. Using this function will raise a ``DeprecationWarning``.
 
-   .. versionadded:: 1.8
+   .. versionaddedold:: 1.8
 
    .. ## pygame.sndarray.get_arraytype ##
 
@@ -88,7 +88,7 @@ one.
    system could be found, None will be returned.  Using this function will raise a
    ``DeprecationWarning``.
 
-   .. versionadded:: 1.8
+   .. versionaddedold:: 1.8
 
    .. ## pygame.sndarray.get_arraytypes ##
 
