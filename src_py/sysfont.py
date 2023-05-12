@@ -387,7 +387,7 @@ def font_constructor(fontpath, size, bold, italic):
     return font
 
 
-def _load_single_font(name, bold = False, italic = False):
+def _load_single_font(name, bold=False, italic=False):
     fontname = None
     gotbold = False
     gotitalic = False
@@ -417,7 +417,9 @@ def _load_single_font(name, bold = False, italic = False):
             gotitalic = italic
     return fontname, gotbold, gotitalic
 
+
 # the exported functions
+
 
 def SysFont(name, size, bold=False, italic=False, constructor=None):
     """pygame.font.SysFont(name, size, bold=False, italic=False, constructor=None) -> Font
