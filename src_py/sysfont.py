@@ -467,7 +467,7 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
                 )
             else:
                 matches = difflib.get_close_matches(
-                    name[0], itertools.chain(Sysfonts, Sysalias), 2
+                    _simplename(name[0]), itertools.chain(Sysfonts, Sysalias), 2
                 )
                 if len(matches) == 0:
                     match_text = ""
