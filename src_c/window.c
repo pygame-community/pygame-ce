@@ -144,16 +144,16 @@ window_set_icon(pgWindowObject *self, PyObject *arg)
     Py_RETURN_NONE;
 }
 
-static PyObject *
+static int
 window_set_grab(pgWindowObject *self, PyObject *arg, void *v)
 {
     int enable = PyObject_IsTrue(arg);
     if (enable == -1)
-        return NULL;
+        return -1;
 
     SDL_SetWindowGrab(self->_win, enable);
 
-    Py_RETURN_NONE;
+    return 0;
 }
 
 static PyObject *
@@ -162,16 +162,18 @@ window_get_grab(pgWindowObject *self, void *v)
     return PyBool_FromLong(SDL_GetWindowGrab(self->_win));
 }
 
-static PyObject *
+static int
 window_set_title(pgWindowObject *self, PyObject *arg, void *v)
 {
     const char *title;
     if (!PyUnicode_Check(arg)) {
-        return RAISE(PyExc_TypeError, "Argument to set_title must be a str.");
+        PyErr_SetString(PyExc_TypeError,
+                        "Argument to set_title must be a str.");
+        return -1;
     }
     title = PyUnicode_AsUTF8(arg);
     SDL_SetWindowTitle(self->_win, title);
-    Py_RETURN_NONE;
+    return 0;
 }
 
 static PyObject *
@@ -181,16 +183,16 @@ window_get_title(pgWindowObject *self, void *v)
     return PyUnicode_FromString(title);
 }
 
-static PyObject *
+static int
 window_set_resizable(pgWindowObject *self, PyObject *arg, void *v)
 {
     int enable = PyObject_IsTrue(arg);
     if (enable == -1)
-        return NULL;
+        return -1;
 
     SDL_SetWindowResizable(self->_win, enable);
 
-    Py_RETURN_NONE;
+    return 0;
 }
 
 static PyObject *
@@ -200,16 +202,16 @@ window_get_resizable(pgWindowObject *self, void *v)
                            SDL_WINDOW_RESIZABLE);
 }
 
-static PyObject *
+static int
 window_set_borderless(pgWindowObject *self, PyObject *arg, void *v)
 {
     int enable = PyObject_IsTrue(arg);
     if (enable == -1)
-        return NULL;
+        return -1;
 
     SDL_SetWindowBordered(self->_win, !enable);
 
-    Py_RETURN_NONE;
+    return 0;
 }
 
 static PyObject *
@@ -229,24 +231,26 @@ window_get_window_id(pgWindowObject *self, PyObject *_null)
     return PyLong_FromLong(window_id);
 }
 
-static PyObject *
+static int
 window_set_size(pgWindowObject *self, PyObject *arg, void *v)
 {
     int w, h;
 
     if (!pg_TwoIntsFromObj(arg, &w, &h)) {
-        return RAISE(PyExc_TypeError, "invalid size argument");
+        PyErr_SetString(PyExc_TypeError, "invalid size argument");
+        return -1;
     }
 
     if (w <= 0 || h <= 0) {
-        return RAISE(
+        PyErr_SetString(
             PyExc_ValueError,
             "width or height should not be less than or equal to zero.");
+        return -1;
     }
 
     SDL_SetWindowSize(self->_win, w, h);
 
-    Py_RETURN_NONE;
+    return 0;
 }
 
 static PyObject *
@@ -264,7 +268,7 @@ window_get_size(pgWindowObject *self, void *v)
     return out;
 }
 
-static PyObject *
+static int
 window_set_position(pgWindowObject *self, PyObject *arg, void *v)
 {
     int x, y;
@@ -272,16 +276,18 @@ window_set_position(pgWindowObject *self, PyObject *arg, void *v)
     if (Py_TYPE(arg) == &PyLong_Type) {
         x = y = PyLong_AsLong(arg);
         if (x != SDL_WINDOWPOS_CENTERED && x != SDL_WINDOWPOS_UNDEFINED) {
-            return RAISE(PyExc_TypeError, "invalid position argument");
+            PyErr_SetString(PyExc_TypeError, "invalid position argument");
+            return -1;
         }
     }
     else if (!pg_TwoIntsFromObj(arg, &x, &y)) {
-        return RAISE(PyExc_TypeError, "invalid position argument");
+        PyErr_SetString(PyExc_TypeError, "invalid position argument");
+        return -1;
     }
 
     SDL_SetWindowPosition(self->_win, x, y);
 
-    Py_RETURN_NONE;
+    return 0;
 }
 
 static PyObject *
@@ -299,18 +305,19 @@ window_get_position(pgWindowObject *self, void *v)
     return out;
 }
 
-static PyObject *
+static int
 window_set_opacity(pgWindowObject *self, PyObject *arg, void *v)
 {
     float opacity;
     opacity = (float)PyFloat_AsDouble(arg);
     if (PyErr_Occurred()) {
-        return NULL;
+        return -1;
     }
     if (SDL_SetWindowOpacity(self->_win, opacity)) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return -1;
     }
-    Py_RETURN_NONE;
+    return 0;
 }
 
 static PyObject *
