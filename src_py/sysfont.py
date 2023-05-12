@@ -22,6 +22,7 @@ import warnings
 import os
 import sys
 import itertools
+import difflib
 from os.path import basename, dirname, exists, join, splitext
 
 from pygame.font import Font
@@ -386,48 +387,6 @@ def font_constructor(fontpath, size, bold, italic):
     return font
 
 
-def _find_fontname_typos(comparison_word: str) -> str:
-    comparison_word = _simplename(comparison_word)
-    results = []
-    comparison_word_len = len(comparison_word)
-    for word in itertools.chain(Sysfonts, Sysalias):
-        word_len = len(word)
-        if not word_len - 1 <= comparison_word_len <= word_len + 1:
-            continue
-
-        if comparison_word.startswith(word) or word.startswith(comparison_word):
-            results.append(word)
-            continue
-
-        amount = 0
-        for i in range(min(word_len, comparison_word_len)):
-            if comparison_word[i] != word[i]:
-                amount += 1
-                if amount == 2:
-                    break
-                if (
-                    word[:i] + word[i + 1 :]
-                    == comparison_word[:i] + comparison_word[i + 1 :]
-                    or word[:i] + word[i + 1 :] == comparison_word
-                    or word == comparison_word[:i] + comparison_word[i + 1 :]
-                ):
-                    results.append(word)
-                    amount = 0
-                    break
-
-        if amount == 1 and comparison_word_len == word_len:
-            results.append(word)
-
-    if len(results) == 0:
-        return ""
-    if len(results) == 1:
-        return f"Did you mean: '{results[0]}'? "
-    if len(results) == 2:
-        return f"Did you mean: '{results[0]}' or '{results[1]}'? "
-
-    return "Did you mean: '" + "', '".join(results[:-1]) + f"' or '{results[-1]}'? "
-
-
 # the exported functions
 
 
@@ -507,9 +466,25 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
                     f"Using the default font instead."
                 )
             else:
+                matches = difflib.get_close_matches(
+                    name[0], itertools.chain(Sysfonts, Sysalias), 2
+                )
+                if len(matches) == 0:
+                    match_text = ""
+                elif len(matches) == 1:
+                    match_text = f"Did you mean: '{matches[0]}'? "
+                elif len(matches) == 2:
+                    match_text = f"Did you mean: '{matches[0]}' or '{matches[1]}'? "
+                else:
+                    match_text = (
+                        "Did you mean: '"
+                        + ", ".join(matches[:-1])
+                        + f"' or '{matches[-1]}'? "
+                    )
+
                 warnings.warn(
                     f"The system font '{name[0]}' couldn't be "
-                    f"found. {_find_fontname_typos(name[0])}"
+                    f"found. {match_text}"
                     f"Using the default font instead."
                 )
 
