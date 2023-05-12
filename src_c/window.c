@@ -14,7 +14,7 @@ static PyTypeObject pgWindow_Type;
     (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
 
 static PyObject *
-get_grabbed_window(PyObject *self)
+get_grabbed_window(PyObject *self, PyObject *_null)
 {
     SDL_Window *grabbed = SDL_GetGrabbedWindow();
     PyObject *win_obj = NULL;
@@ -30,7 +30,7 @@ get_grabbed_window(PyObject *self)
 }
 
 static PyObject *
-window_destroy(pgWindowObject *self)
+window_destroy(pgWindowObject *self, PyObject *_null)
 {
     if (self->_win) {
         SDL_DestroyWindow(self->_win);
@@ -40,7 +40,7 @@ window_destroy(pgWindowObject *self)
 }
 
 static PyObject *
-window_set_windowed(pgWindowObject *self)
+window_set_windowed(pgWindowObject *self, PyObject *_null)
 {
     if (SDL_SetWindowFullscreen(self->_win, 0)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -86,35 +86,35 @@ window_focus(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
-window_hide(pgWindowObject *self)
+window_hide(pgWindowObject *self, PyObject *_null)
 {
     SDL_HideWindow(self->_win);
     Py_RETURN_NONE;
 }
 
 static PyObject *
-window_show(pgWindowObject *self)
+window_show(pgWindowObject *self, PyObject *_null)
 {
     SDL_ShowWindow(self->_win);
     Py_RETURN_NONE;
 }
 
 static PyObject *
-window_restore(pgWindowObject *self)
+window_restore(pgWindowObject *self, PyObject *_null)
 {
     SDL_RestoreWindow(self->_win);
     Py_RETURN_NONE;
 }
 
 static PyObject *
-window_maximize(pgWindowObject *self)
+window_maximize(pgWindowObject *self, PyObject *_null)
 {
     SDL_MaximizeWindow(self->_win);
     Py_RETURN_NONE;
 }
 
 static PyObject *
-window_minimize(pgWindowObject *self)
+window_minimize(pgWindowObject *self, PyObject *_null)
 {
     SDL_MinimizeWindow(self->_win);
     Py_RETURN_NONE;
@@ -220,7 +220,7 @@ window_get_borderless(pgWindowObject *self, void *v)
 }
 
 static PyObject *
-window_get_window_id(pgWindowObject *self)
+window_get_window_id(pgWindowObject *self, PyObject *_null)
 {
     Uint32 window_id = SDL_GetWindowID(self->_win);
     if (!window_id) {
@@ -320,7 +320,7 @@ window_get_opacity(pgWindowObject *self, void *v)
 }
 
 static PyObject *
-window_get_display_index(pgWindowObject *self)
+window_get_display_index(pgWindowObject *self, PyObject *_null)
 {
     int index = SDL_GetWindowDisplayIndex(self->_win);
     if (index < 0) {
@@ -330,7 +330,7 @@ window_get_display_index(pgWindowObject *self)
 }
 
 static void
-window_dealloc(pgWindowObject *self)
+window_dealloc(pgWindowObject *self, PyObject *_null)
 {
     PyObject_Free(self);
 }
@@ -526,7 +526,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
-window_from_display_module(PyTypeObject *cls)
+window_from_display_module(PyTypeObject *cls, PyObject *_null)
 {
     SDL_Window *window;
     pgWindowObject *self;
