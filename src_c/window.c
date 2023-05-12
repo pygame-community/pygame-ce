@@ -320,7 +320,7 @@ window_get_opacity(pgWindowObject *self, void *v)
     if (SDL_GetWindowOpacity(self->_win, &opacity)) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
-    return PyFloat_FromDouble(opacity);
+    return PyFloat_FromDouble((double)opacity);
 }
 
 static PyObject *
