@@ -1000,6 +1000,39 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
     return (PyObject *)pgSurface_New(newsurf);
 }
 
+/* _color_from_obj gets a color from a python object.
+
+Returns 0 if ok, and sets color to the color.
+   -1 means error.
+   If color_obj is NULL, use rgba_default.
+   If rgba_default is NULL, do not use a default color, return -1.
+*/
+int
+_color_from_obj(PyObject *color_obj, SDL_PixelFormat *format,
+                Uint8 rgba_default[4], Uint32 *color)
+{
+    if (color_obj) {
+        Uint8 rgba_color[4];
+
+        if (PyLong_Check(color_obj))
+            *color = (Uint32)PyLong_AsLong(color_obj);
+        else if (PyLong_Check(color_obj))
+            *color = (Uint32)PyLong_AsUnsignedLong(color_obj);
+        else if (pg_RGBAFromColorObj(color_obj, rgba_color))
+            *color = SDL_MapRGBA(format, rgba_color[0], rgba_color[1],
+                                 rgba_color[2], rgba_color[3]);
+        else
+            return -1;
+    }
+    else {
+        if (!rgba_default)
+            return -1;
+        *color = SDL_MapRGBA(format, rgba_default[0], rgba_default[1],
+                             rgba_default[2], rgba_default[3]);
+    }
+    return 0;
+}
+
 static int
 check_inside(SDL_Surface *surf, SDL_Point p)
 {
@@ -1117,7 +1150,7 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
     SDL_UnlockSurface(surf);
     if (dest_surf) {
         Py_INCREF(dest_surf);
-        return dest_surf;
+        return (PyObject *)dest_surf;
     }
     else
         return (PyObject *)pgSurface_New(newsurf);
@@ -2168,39 +2201,6 @@ get_threshold(SDL_Surface *dest_surf, SDL_Surface *surf,
         }
     }
     return similar;
-}
-
-/* _color_from_obj gets a color from a python object.
-
-Returns 0 if ok, and sets color to the color.
-   -1 means error.
-   If color_obj is NULL, use rgba_default.
-   If rgba_default is NULL, do not use a default color, return -1.
-*/
-int
-_color_from_obj(PyObject *color_obj, SDL_PixelFormat *format,
-                Uint8 rgba_default[4], Uint32 *color)
-{
-    if (color_obj) {
-        Uint8 rgba_color[4];
-
-        if (PyLong_Check(color_obj))
-            *color = (Uint32)PyLong_AsLong(color_obj);
-        else if (PyLong_Check(color_obj))
-            *color = (Uint32)PyLong_AsUnsignedLong(color_obj);
-        else if (pg_RGBAFromColorObj(color_obj, rgba_color))
-            *color = SDL_MapRGBA(format, rgba_color[0], rgba_color[1],
-                                 rgba_color[2], rgba_color[3]);
-        else
-            return -1;
-    }
-    else {
-        if (!rgba_default)
-            return -1;
-        *color = SDL_MapRGBA(format, rgba_default[0], rgba_default[1],
-                             rgba_default[2], rgba_default[3]);
-    }
-    return 0;
 }
 
 static PyObject *
