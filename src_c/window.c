@@ -253,11 +253,13 @@ static PyObject *
 window_get_size(pgWindowObject *self, void *v)
 {
     int w, h;
-    PyObject *out = PyTuple_New(2);
+    PyObject *out = NULL;
 
     SDL_GetWindowSize(self->_win, &w, &h);
-    PyTuple_SetItem(out, 0, PyLong_FromLong(w));
-    PyTuple_SetItem(out, 1, PyLong_FromLong(h));
+    out = Py_BuildValue("(i,i)", w, h);
+
+    if (!out)
+        return NULL;
 
     return out;
 }
@@ -285,12 +287,14 @@ window_set_position(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_position(pgWindowObject *self, void *v)
 {
-    int x, h;
-    PyObject *out = PyTuple_New(2);
+    int x, y;
+    PyObject *out = NULL;
 
-    SDL_GetWindowPosition(self->_win, &x, &h);
-    PyTuple_SetItem(out, 0, PyLong_FromLong(x));
-    PyTuple_SetItem(out, 1, PyLong_FromLong(h));
+    SDL_GetWindowPosition(self->_win, &x, &y);
+    out = Py_BuildValue("(i,i)", x, y);
+
+    if (!out)
+        return NULL;
 
     return out;
 }
