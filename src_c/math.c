@@ -171,6 +171,8 @@ static PyObject *
 vector_neg(pgVector *self);
 static PyObject *
 vector_pos(pgVector *self);
+static PyObject *
+vector_absolute(pgVector *self);
 static int
 vector_nonzero(pgVector *self);
 static Py_ssize_t
@@ -789,6 +791,12 @@ vector_pos(pgVector *self)
     return (PyObject *)ret;
 }
 
+static PyObject *
+vector_absolute(pgVector *self)
+{
+    return vector_length(self, NULL);
+}
+
 static int
 vector_nonzero(pgVector *self)
 {
@@ -906,6 +914,7 @@ static PyNumberMethods vector_as_number = {
     .nb_multiply = (binaryfunc)vector_mul,
     .nb_negative = (unaryfunc)vector_neg,
     .nb_positive = (unaryfunc)vector_pos,
+    .nb_absolute = (unaryfunc)vector_absolute,
     .nb_bool = (inquiry)vector_nonzero,
     .nb_inplace_add = (binaryfunc)vector_inplace_add,
     .nb_inplace_subtract = (binaryfunc)vector_inplace_sub,

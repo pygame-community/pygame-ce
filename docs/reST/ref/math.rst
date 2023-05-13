@@ -13,9 +13,10 @@ dimensions, ``Vector2`` and ``Vector3`` respectively.
 
 They support the following numerical operations: ``vec + vec``, ``vec - vec``, 
 ``vec * number``, ``number * vec``, ``vec / number``, ``vec // number``, ``vec += vec``, 
-``vec -= vec``, ``vec *= number``, ``vec /= number``, ``vec //= number``, ``round(vec, ndigits=0)``. 
+``vec -= vec``, ``vec *= number``, ``vec /= number``, ``vec //= number``, ``round(vec, ndigits=0)``, 
+``abs(vec)``. 
 
-All these operations will be performed elementwise.
+All these operations will be performed elementwise (except `abs`).
 In addition ``vec * vec`` will perform a scalar-product (a.k.a. dot-product). 
 If you want to multiply every element from vector v with every element from 
 vector w you can use the elementwise method: ``v.elementwise() * w``
@@ -48,6 +49,7 @@ Multiple coordinates can be set using slices or swizzling
 .. versionchangedold:: 1.9.4 Allow scalar construction like GLSL Vector2(2) == Vector2(2.0, 2.0)
 .. versionchangedold:: 1.9.4 :mod:`pygame.math` import not required. More convenient ``pygame.Vector2`` and ``pygame.Vector3``.
 .. versionchanged:: 2.1.4 `round` returns a new vector with components rounded to the specified digits.
+.. versionchanged:: 2.3.1 `abs` returns the magnitude of a vector.
 
 .. function:: clamp
 

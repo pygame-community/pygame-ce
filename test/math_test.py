@@ -207,6 +207,21 @@ class Vector2TypeTest(unittest.TestCase):
         self.assertRaises(TypeError, round, pygame.Vector2(1.0, 1.0), 1.5)
         self.assertRaises(TypeError, round, pygame.Vector2(1.0, 1.0), "a")
 
+    def test_abs(self):
+        zero = Vector2()
+        unit = Vector2(1, 0)
+        fvec = Vector2(1.5, 1.5)
+        std = Vector2(3, 4)
+        larger = Vector2(2**32 + 1, -(2**32) + 1)
+        negative = Vector2(-123, -321)
+
+        self.assertEqual(abs(zero), zero.magnitude())
+        self.assertEqual(abs(unit), unit.magnitude())
+        self.assertEqual(abs(fvec), fvec.magnitude())
+        self.assertEqual(abs(std), std.magnitude())
+        self.assertEqual(abs(larger), larger.magnitude())
+        self.assertEqual(abs(negative), negative.magnitude())
+
     def testCopy(self):
         v_copy0 = Vector2(2004.0, 2022.0)
         v_copy1 = v_copy0.copy()
@@ -1638,6 +1653,21 @@ class Vector3TypeTest(unittest.TestCase):
 
         self.assertRaises(TypeError, round, pygame.Vector3(1.0, 1.0, 1.0), 1.5)
         self.assertRaises(TypeError, round, pygame.Vector3(1.0, 1.0, 1.0), "a")
+
+    def test_abs(self):
+        zero = Vector3()
+        unit = Vector3(1, 0, 0)
+        fvec = Vector3(1.5, 1.5, 2.0)
+        std = Vector3(0, 3, 4)
+        larger = Vector3(2**32 + 1, -(2**32) + 1, 2**32 + 1)
+        negative = Vector3(-123, -321, -691)
+
+        self.assertEqual(abs(zero), zero.magnitude())
+        self.assertEqual(abs(unit), unit.magnitude())
+        self.assertEqual(abs(fvec), fvec.magnitude())
+        self.assertEqual(abs(std), std.magnitude())
+        self.assertEqual(abs(larger), larger.magnitude())
+        self.assertEqual(abs(negative), negative.magnitude())
 
     def test_rotate(self):
         v1 = Vector3(1, 0, 0)
