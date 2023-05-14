@@ -192,6 +192,7 @@ def messagebox(title, message,
     free(c_buttons)
     return buttonid
 
+globals()["Window"]=Window
 
 cdef class _Window:
     DEFAULT_SIZE = 640, 480

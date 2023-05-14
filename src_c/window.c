@@ -596,7 +596,7 @@ static PyGetSetDef _window_getset[] = {
 };
 
 static PyTypeObject pgWindow_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.window.Window",
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._window.Window",
     .tp_basicsize = sizeof(pgWindowObject),
     .tp_dealloc = (destructor)window_dealloc,
     .tp_doc = DOC_WINDOW_WINDOW,
@@ -610,13 +610,13 @@ static PyMethodDef _window_methods[] = {
      DOC_WINDOW_GETGRABBEDWINDOW},
     {NULL, NULL, 0, NULL}};
 
-MODINIT_DEFINE(window)
+MODINIT_DEFINE(_window)
 {
     PyObject *module, *apiobj;
     static void *c_api[PYGAMEAPI_WINDOW_NUMSLOTS];
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
-                                         "window",
+                                         "_window",
                                          DOC_WINDOW,
                                          -1,
                                          _window_methods,
@@ -667,7 +667,7 @@ MODINIT_DEFINE(window)
     }
 
     c_api[0] = &pgWindow_Type;
-    apiobj = encapsulate_api(c_api, "window");
+    apiobj = encapsulate_api(c_api, "_window");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);
         Py_DECREF(module);

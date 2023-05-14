@@ -340,10 +340,9 @@ except (ImportError, OSError):
     pass
 
 try:
-    import pygame.window
-    from pygame.window import Window
+    import pygame._window
 except (ImportError, OSError):
-    system = MissingModule("window", urgent=1)
+    system = MissingModule("_window", urgent=1)
 
 
 def packager_imports():
