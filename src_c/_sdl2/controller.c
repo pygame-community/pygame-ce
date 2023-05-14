@@ -258,7 +258,7 @@ controller_get_mapping(pgControllerObject *self, PyObject *_null)
             }
             Py_DECREF(value_obj);
         }
-        token = SDL_strtokr(NULL, ",", &saveptr);
+        token = strtok_r(NULL, ",", &saveptr);
     }
 
     SDL_free(saveptr);

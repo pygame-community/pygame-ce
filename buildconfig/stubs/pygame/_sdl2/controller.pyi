@@ -1,4 +1,4 @@
-from typing import Mapping, final
+from typing import final
 from pygame.joystick import JoystickType
 
 def init() -> None: ...
