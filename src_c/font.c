@@ -600,6 +600,44 @@ font_render(PyObject *self, PyObject *args)
 }
 
 static PyObject *
+font_render_to(PyObject *self, PyObject *args)
+{   
+    int antialias;
+    PyObject *text;
+    PyObject *fg_rgba_obj, *bg_rgba_obj = Py_None, *renderargs, *render_result;
+    pgSurfaceObject *surf_to_render;
+    
+    PyObject *dest_pos;
+    int dx, dy;
+    SDL_Rect dest_rect;
+
+    int wraplength = 0;
+    int blend_flags = 0;
+    if (!PyArg_ParseTuple(args, "O!OOpO|Oii", &pgSurface_Type, &surf_to_render, &dest_pos, &text, &antialias, &fg_rgba_obj, 
+                                            &bg_rgba_obj, &wraplength, &blend_flags)) {
+        return NULL;
+    }
+
+    renderargs = Py_BuildValue("(OiOOi)", text, antialias, fg_rgba_obj, bg_rgba_obj, wraplength);
+    render_result = font_render(self, renderargs);
+    if (!pg_TwoIntsFromObj(dest_pos, &dx, &dy)) {
+        return RAISE(PyExc_TypeError, "invalid destination position for blit");
+    }
+
+    SDL_Surface* _render_result = pgSurface_AsSurface(&render_result);
+
+    dest_rect.x = dx;
+    dest_rect.y = dy;
+    dest_rect.w = _render_result->w;
+    dest_rect.h = _render_result->h;
+
+    if (!blend_flags)
+        blend_flags = 0;
+    pgSurface_Blit(surf_to_render, (pgSurfaceObject *)render_result, &dest_rect, NULL, blend_flags);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 font_size(PyObject *self, PyObject *text)
 {
     TTF_Font *font = PyFont_AsFont(self);
@@ -872,6 +910,7 @@ static PyMethodDef font_methods[] = {
      DOC_FONT_FONT_SETSTRIKETHROUGH},
     {"metrics", font_metrics, METH_O, DOC_FONT_FONT_METRICS},
     {"render", font_render, METH_VARARGS, DOC_FONT_FONT_RENDER},
+    {"render_to", font_render_to, METH_VARARGS, DOC_FONT_FONT_RENDERTO},
     {"size", font_size, METH_O, DOC_FONT_FONT_SIZE},
     {"set_script", font_set_script, METH_O, DOC_FONT_FONT_SETSCRIPT},
     {"set_direction", (PyCFunction)font_set_direction,

@@ -333,6 +333,15 @@ solves no longer exists, it will likely be removed in the future.
       .. versionadded:: 2.1.4 wraplength parameter
 
       .. ## Font.render ##
+   
+   .. method:: render_to
+      
+      | :sl:`draw text on a given Surface`
+      | :sg:`render_to(text, antialias, color, surf_to_render, dest_pos, background=None, wraplength=0) -> Surface`
+
+      This blits text directly to a target Surface.
+
+      .. ## Font.render_to ##
 
    .. method:: size
 
