@@ -3144,6 +3144,11 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
         retsurf = pgSurface_AsSurface(dstobj);
     }
 
+    if (retsurf->pixels == src->pixels) {
+        return RAISE(PyExc_ValueError,
+                     "Source and destination surfaces are the same.");
+    }
+
     if ((retsurf->w) != (src->w) || (retsurf->h) != (src->h)) {
         return RAISE(PyExc_ValueError,
                      "Destination surface not the same size.");
