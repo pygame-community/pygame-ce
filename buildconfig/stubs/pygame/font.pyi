@@ -39,7 +39,7 @@ class Font:
         self,
         text: Union[str, bytes, None],
         antialias: bool,
-        fgcolor: ColorValue,
+        color: ColorValue,
         bgcolor: Optional[ColorValue] = None,
         wraplength: int = 0
     ) -> Surface: ...

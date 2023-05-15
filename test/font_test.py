@@ -250,7 +250,7 @@ class FontTest(unittest.TestCase):
             font_surface = f.render(
                 text="   bar",
                 antialias=True,
-                fgcolor=(0, 0, 0),
+                color=(0, 0, 0),
                 bgcolor=(255, 255, 255),
                 wraplength=0,
             )
@@ -258,7 +258,7 @@ class FontTest(unittest.TestCase):
             font_surface = f.render(
                 text="   bar",
                 antialias=True,
-                fgcolor=(0, 0, 0),
+                color=(0, 0, 0),
                 bgcolor=(255, 255, 255),
             )
         screen.fill((10, 10, 10))
