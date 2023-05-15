@@ -297,12 +297,14 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
       If you require getting the key presses in order use the event queue KEYDOWN events
 
    ::
+      
       if pygame.key.get_just_pressed()[pygame.K_b]:
          print("B key just pressed")
 
-   .. versionadded:: 2.2.0
+   .. versionadded:: 2.3.0
 
    .. ## pygame.key.get_just_pressed ##
+
 .. function:: get_just_released
 
    | :sl:`returns a pygame.key.ScancodeWrapper containing the most recent key releases`
@@ -321,10 +323,11 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
       If you require getting the key releases in order use the event queue KEYUP events.
 
    ::
+      
       if pygame.key.get_just_released()[pygame.K_b]:
          print("B key just released")
 
-   .. versionadded:: 2.2.0
+   .. versionadded:: 2.3.0
 
    .. ## pygame.key.get_just_released ##
 
