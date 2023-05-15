@@ -198,8 +198,11 @@ static PyObject *
 get_just_pressed()
 {
     char *pressed_keys = pgEvent_GetKeyDownInfo();
-    PyObject *key_tuple = PyTuple_New(SDL_NUM_SCANCODES);
+    PyObject *key_tuple = NULL;
     PyObject *ret_obj = NULL;
+
+    if (!(key_tuple = PyTuple_New(SDL_NUM_SCANCODES)))
+        return NULL;
 
     VIDEO_INIT_CHECK();
 
@@ -219,9 +222,11 @@ static PyObject *
 get_just_released()
 {
     char *released_keys = pgEvent_GetKeyUpInfo();
-    PyObject *key_tuple = PyTuple_New(SDL_NUM_SCANCODES);
-
+    PyObject *key_tuple = NULL;
     PyObject *ret_obj = NULL;
+
+    if (!(key_tuple = PyTuple_New(SDL_NUM_SCANCODES)))
+        return NULL;
 
     VIDEO_INIT_CHECK();
 
