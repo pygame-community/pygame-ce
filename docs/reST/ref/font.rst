@@ -368,6 +368,12 @@ solves no longer exists, it will likely be removed in the future.
       specific letter pairs. For example, the width for "ae" will not always
       match the width for "a" + "e".
 
+      .. note:: To use this function you must have a version of SDL TTF of at least 2.0.18
+
+      .. versionadded:: 2.3.0
+
+      .. ## Font.size_wrappped ##  
+
    .. method:: set_underline
 
       | :sl:`control if text is rendered with an underline`
