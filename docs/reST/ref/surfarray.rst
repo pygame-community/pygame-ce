@@ -149,7 +149,7 @@ will be locked during the lifetime of the array.
    the :meth:`pygame.Surface.lock` - lock the Surface memory for pixel
    access method).
 
-   .. versionadded:: 2.0.2
+   .. versionaddedold:: 2.0.2
 
    .. ## pygame.surfarray.array_red ##
 
@@ -183,7 +183,7 @@ will be locked during the lifetime of the array.
    the :meth:`pygame.Surface.lock` - lock the Surface memory for pixel
    access method).
 
-   .. versionadded:: 2.0.2
+   .. versionaddedold:: 2.0.2
 
    .. ## pygame.surfarray.array_green ##
 
@@ -217,7 +217,7 @@ will be locked during the lifetime of the array.
    the :meth:`pygame.Surface.lock` - lock the Surface memory for pixel
    access method).
 
-   .. versionadded:: 2.0.2
+   .. versionaddedold:: 2.0.2
 
    .. ## pygame.surfarray.array_blue ##
 
@@ -315,7 +315,7 @@ will be locked during the lifetime of the array.
    ``get_arraytypes()`` tuple and indicates which type of array module is used
    for the array creation. Using this function will raise a ``DeprecationWarning``.
 
-   .. versionadded:: 1.8
+   .. versionaddedold:: 1.8
 
    .. ## pygame.surfarray.get_arraytype ##
 
@@ -330,7 +330,7 @@ will be locked during the lifetime of the array.
    system could be found, None will be returned.  Using this function will raise a
    ``DeprecationWarning``.
 
-   .. versionadded:: 1.8
+   .. versionaddedold:: 1.8
 
    .. ## pygame.surfarray.get_arraytypes ##
 

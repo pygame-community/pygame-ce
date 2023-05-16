@@ -115,9 +115,9 @@ required).
    | :sl:`Initialize a window or screen for display`
    | :sg:`set_mode(size=(0, 0), flags=0, depth=0, display=0, vsync=0) -> Surface`
 
-   This function will create a display Surface. The arguments passed in are
-   requests for a display type. The actual created display will be the best
-   possible match supported by the system.
+   This will create a window or display output and return a display Surface.
+   The arguments passed in are requests for a display type. The actual created
+   display will be the best possible match supported by the system.
 
    Note that calling this function implicitly initializes ``pygame.display``, if
    it was not initialized before.
@@ -173,21 +173,42 @@ required).
    .. versionadded:: 2.0.0 ``SCALED``, ``SHOWN`` and ``HIDDEN``
 
    By setting the ``vsync`` parameter to ``1``, it is possible to get a display
-   with vertical sync, but you are not guaranteed to get one. The request only
-   works at all for calls to ``set_mode()`` with the ``pygame.OPENGL`` or
-   ``pygame.SCALED`` flags set, and is still not guaranteed even with one of
-   those set. What you get depends on the hardware and driver configuration
-   of the system pygame is running on. Here is an example usage of a call
+   with vertical sync at a constant frame rate. Subsequent calls to
+   :func:`pygame.display.flip()` will block (i.e. *wait*) until the screen has
+   refreshed.
+   Be careful when using this feature together with ``pygame.time.Clock`` or
+   :func:`pygame.time.delay()`, as multiple forms of waiting and frame rate
+   limiting may interact to cause skipped frames.
+
+   The request only works when graphics acceleration is available on the
+   system. The exact behaviour depends on the hardware and driver
+   configuration. When  ``vsync`` is requested, but unavailable,
+   ``set_mode()`` may raise an exception.
+
+   Setting the ``vsync`` parameter to ``-1`` in conjunction with  ``OPENGL``
+   will request the OpenGL-specific feature "adaptive vsync".
+
+   Here is an example usage of a call
    to ``set_mode()`` that may give you a display with vsync:
 
    ::
 
      flags = pygame.OPENGL | pygame.FULLSCREEN
-     window_surface = pygame.display.set_mode((1920, 1080), flags, vsync=1)
+     try:
+        window_surface = pygame.display.set_mode((1920, 1080), flags, vsync=1)
+        vsync_success=True
+     except pygame.error:
+        window_surface = pygame.display.set_mode((1920, 1080), flags)
+        vsync_success=False
 
-   Vsync behaviour is considered experimental, and may change in future releases.
+   .. versionaddedold:: 2.0.0 ``vsync`` parameter
 
-   .. versionadded:: 2.0.0 ``vsync``
+   .. versionchanged:: 2.2.0 passing ``vsync`` can raise an exception
+
+   .. versionchanged:: 2.2.0 explicit request for "adaptive vsync"
+
+   .. versionchanged:: 2.2.0 ``vsync=1`` does not require ``SCALED`` or ``OPENGL``
+
 
    Basic example:
 
@@ -203,7 +224,7 @@ required).
    environment variable.
 
 
-   .. versionchanged:: 1.9.5 ``display`` argument added
+   .. versionchangedold:: 1.9.5 ``display`` argument added
 
    .. versionchanged:: 2.1.3
       pygame now ensures that subsequent calls to this function clears the
@@ -321,7 +342,7 @@ required).
    an empty dictionary will be returned. Most platforms will return a "window"
    key with the value set to the system id for the current display.
 
-   .. versionadded:: 1.7.1
+   .. versionaddedold:: 1.7.1
 
    .. ## pygame.display.get_wm_info ##
 
@@ -343,7 +364,7 @@ required).
    mode, this function *should* be used to replace many use cases of
    ``pygame.display.list_modes()`` whenever applicable.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
 .. function:: list_modes
 
@@ -377,7 +398,7 @@ required).
    physical monitor resolution unless the user explicitly requests a different
    one (e.g. in an options menu or configuration file).
 
-   .. versionchanged:: 1.9.5 ``display`` argument added
+   .. versionchangedold:: 1.9.5 ``display`` argument added
 
    .. ## pygame.display.list_modes ##
 
@@ -399,7 +420,7 @@ required).
 
    The display index ``0`` means the default display is used.
 
-   .. versionchanged:: 1.9.5 ``display`` argument added
+   .. versionchangedold:: 1.9.5 ``display`` argument added
 
    .. ## pygame.display.mode_ok ##
 
@@ -463,7 +484,7 @@ required).
 
      Minimum bit size of the frame buffer. Defaults to 0.
 
-   .. versionadded:: 2.0.0 Additional attributes:
+   .. versionaddedold:: 2.0.0 Additional attributes:
 
    ::
 
@@ -662,7 +683,7 @@ required).
    Returns the number of available displays. This is always 1 if
    :func:`pygame.get_sdl_version()` returns a major version number below 2.
 
-   .. versionadded:: 1.9.5
+   .. versionaddedold:: 1.9.5
 
    .. ## pygame.display.get_num_displays ##
 
@@ -674,7 +695,7 @@ required).
    Returns the size of the window initialized with :func:`pygame.display.set_mode()`.
    This may differ from the size of the display surface if ``SCALED`` is used.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. ## pygame.display.get_window_size ##
 
@@ -692,7 +713,7 @@ required).
              :func:`pygame.display.set_allow_screensaver()` for
              caveats with screensaver support.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. ## pygame.display.get_allow_screensaver ##
 
@@ -721,9 +742,45 @@ required).
              ``SDL_HINT_VIDEO_ALLOW_SCREENSAVER`` is available in SDL 2.0.2 or later.
              SDL1.2 does not implement this.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
+
+.. function:: is_vsync
+
+   | :sl:`Returns True if vertical synchronisation for pygame.display.flip() is enabled`
+   | :sg:`is_vsync() -> bool`
+
+   .. versionadded:: 2.2.0
+
+.. function:: get_current_refresh_rate() -> int
+
+   | :sl:`Returns the screen refresh rate or 0 if unknown`
+   | :sg:`get_current_refresh_rate() -> int`
+
+   The screen refresh rate for the current window. In windowed mode, this
+   should be equal to the refresh rate of the desktop the window is on.
+
+   If no window is open, an exception is raised.
+
+   When a constant refresh rate cannot be determined, 0 is returned.
+
+   .. versionadded:: 2.2.0
+
+.. function:: get_desktop_refresh_rates() -> list
+
+   | :sl:`Returns the screen refresh rates for all displays (in windowed mode).`
+   | :sg:`get_desktop_refresh_rates() -> list`
+
+   If the current window is in full-screen mode, the actual refresh rate for
+   that window can differ.
+
+   This is safe to call when no window is open (i.e. before any calls to
+   :func:`pygame.display.set_mode()`
+
+   When a constant refresh rate cannot be determined, 0 is returned for that
+   desktop.
 
 
+   .. versionadded:: 2.2.0
    .. ## pygame.display.set_allow_screensaver ##
 
 .. ## pygame.display ##

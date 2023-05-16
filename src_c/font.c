@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -546,8 +546,8 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
 
     if (strlen(astring) == 0) { /* special 0 string case */
         int height = TTF_FontHeight(font);
-        surf = SDL_CreateRGBSurface(0, 0, height, 32, 0xff << 16, 0xff << 8,
-                                    0xff, 0);
+        surf = SDL_CreateRGBSurfaceWithFormat(0, 0, height, 32,
+                                              PG_PIXELFORMAT_XRGB8888);
     }
     else { /* normal case */
 #if !SDL_TTF_VERSION_ATLEAST(2, 0, 15)
