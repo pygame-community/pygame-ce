@@ -63,8 +63,9 @@ import math
 
 t = 0
 running = True
+
 clock = pygame.Clock()
-renderer.draw_color = (255, 0, 0, 255)
+draw_color = (255, 0, 0, 255)
 
 while running:
     for event in pygame.event.get():
@@ -82,7 +83,7 @@ while running:
             elif event.key == pygame.K_UP:
                 sprite.rect.y -= 5
 
-    renderer.clear()
+    renderer.clear(draw_color)
     t += 1
 
     img = sprite.image

@@ -3,6 +3,12 @@
 
 from .sdl2 cimport *
 
+cdef extern from "pgcompat_rect.h" nogil:
+    ctypedef struct SDL_FRect:
+        float x, y
+        float w, h
+
+
 cdef extern from "SDL.h" nogil:
     ctypedef struct SDL_Window
     ctypedef struct SDL_Texture
@@ -69,6 +75,32 @@ cdef extern from "SDL.h" nogil:
                 return 0;
             }
         #endif
+
+        #if !(SDL_VERSION_ATLEAST(2,0,10))
+            int SDL_RenderCopyExF(SDL_Renderer * renderer,
+                                  SDL_Texture * texture,
+                                  const SDL_Rect * srcrect,
+                                  const SDL_FRect * dstrect,
+                                  const double angle,
+                                  const SDL_FPoint *center,
+                                  const SDL_RendererFlip flip)
+                                  {return -1;}
+            int SDL_RenderDrawLineF(SDL_Renderer* renderer,float x1,float y1,
+                                    float x2,float y2)
+                                    {return -1;}
+            int SDL_RenderDrawPointF(SDL_Renderer * renderer,
+                                    float x, float y)
+                                    {return -1;}
+            int SDL_RenderDrawRectF(SDL_Renderer* renderer, const SDL_FRect* rect)
+                                    {return -1;}
+            int SDL_RenderFillRectF(SDL_Renderer* renderer, const SDL_FRect* rect)
+                                    {return -1;}
+            int SDL_RenderDrawLinesF(SDL_Renderer* renderer,
+                                    const SDL_FPoint* points,
+                                    int count)
+                                    {return -1;}
+                                    
+        #endif
         """
     ctypedef struct SDL_FPoint "_pgsdlFPoint":
         float x, y
@@ -134,6 +166,7 @@ cdef extern from "SDL.h" nogil:
     # https://wiki.libsdl.org/SDL_RenderClear
     # https://wiki.libsdl.org/SDL_RenderCopy
     # https://wiki.libsdl.org/SDL_RenderCopyEx
+    # https://wiki.libsdl.org/SDL_RenderCopyExF
     # https://wiki.libsdl.org/SDL_RenderPresent
     int SDL_SetRenderDrawColor(SDL_Renderer* renderer,
                                Uint8         r,
@@ -160,6 +193,13 @@ cdef extern from "SDL.h" nogil:
                          const double           angle,
                          const SDL_Point*       center,
                          const SDL_RendererFlip flip)
+    int SDL_RenderCopyExF(SDL_Renderer*          renderer,
+                          SDL_Texture*           texture,
+                          const SDL_Rect*        srcrect,
+                          const SDL_FRect*       dstrect,
+                          const double           angle,
+                          const SDL_FPoint*      center,
+                          const SDL_RendererFlip flip)
     void SDL_RenderPresent(SDL_Renderer* renderer)
     # https://wiki.libsdl.org/SDL_RenderGetViewport
     # https://wiki.libsdl.org/SDL_RenderSetViewport
@@ -405,27 +445,46 @@ cdef extern from "SDL.h" nogil:
                                             int    depth,
                                             Uint32 format)
     # https://wiki.libsdl.org/SDL_RenderDrawLine
+    # https://wiki.libsdl.org/SDL_RenderDrawLineF
     # https://wiki.libsdl.org/SDL_RenderDrawLines
+    # https://wiki.libsdl.org/SDL_RenderDrawLinesF
     # https://wiki.libsdl.org/SDL_RenderDrawPoint
+    # https://wiki.libsdl.org/SDL_RenderDrawPointF
     # https://wiki.libsdl.org/SDL_RenderDrawRect
+    # https://wiki.libsdl.org/SDL_RenderDrawRectF
     # https://wiki.libsdl.org/SDL_RenderFillRect
+    # https://wiki.libsdl.org/SDL_RenderFillRectF
     # https://wiki.libsdl.org/SDL_RenderGeometry
     int SDL_RenderDrawLine(SDL_Renderer* renderer,
                            int x1,
                            int y1,
                            int x2,
                            int y2)
+    int SDL_RenderDrawLineF(SDL_Renderer* renderer,
+                           float x1,
+                           float y1,
+                           float x2,
+                           float y2)
     int SDL_RenderDrawLines(SDL_Renderer* renderer,
                             const SDL_Point* points,
+                            int count)
+    int SDL_RenderDrawLinesF(SDL_Renderer* renderer,
+                            const SDL_FPoint* points,
                             int count)
     int SDL_RenderDrawPoint(SDL_Renderer* renderer,
                            int x,
                            int y)
+    int SDL_RenderDrawPointF(SDL_Renderer* renderer,
+                           float x,
+                           float y)
     int SDL_RenderDrawRect(SDL_Renderer* renderer,
                            const SDL_Rect* rect)
-
+    int SDL_RenderDrawRectF(SDL_Renderer* renderer,
+                           const SDL_FRect* rect)
     int SDL_RenderFillRect(SDL_Renderer*   renderer,
                            const SDL_Rect* rect)
+    int SDL_RenderFillRectF(SDL_Renderer*   renderer,
+                           const SDL_FRect* rect)
     int SDL_RenderGeometry(SDL_Renderer* renderer,
                            SDL_Texture* texture,
                            const SDL_Vertex* vertices,
@@ -469,7 +528,6 @@ cdef class Window:
 
 cdef class Renderer:
     cdef SDL_Renderer* _renderer
-    cdef Color _draw_color
     cdef Texture _target
     cdef Window _win
     cdef int _is_borrowed
@@ -484,9 +542,9 @@ cdef class Texture:
     cdef readonly int width
     cdef readonly int height
 
-    cdef draw_internal(self, SDL_Rect *csrcrect, SDL_Rect *cdstrect, float angle=*, SDL_Point *originptr=*,
-                       bint flip_x=*, bint flip_y=*)
     cpdef void draw(self, srcrect=*, dstrect=*, float angle=*, origin=*,
+                    bint flip_x=*, bint flip_y=*)
+    cdef _frect_draw(self,SDL_Rect *csrcrect, dstrect=*, float angle=*, origin=*,
                     bint flip_x=*, bint flip_y=*)
 
 cdef class Image:

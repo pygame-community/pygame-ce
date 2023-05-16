@@ -16,7 +16,7 @@ SCALEQUALITY_LINEAR=SDL_ScaleMode.SDL_ScaleModeLinear
 SCALEQUALITY_BEST=SDL_ScaleMode.SDL_ScaleModeBest
 
 cdef extern from "SDL.h" nogil:
-    int SDL_VERSION_ATLEAST(int major, int minor, int patch) 
+    int SDL_VERSION_ATLEAST(int major, int minor, int patch)
 
     Uint32 SDL_GetWindowPixelFormat(SDL_Window* window)
     SDL_bool SDL_IntersectRect(const SDL_Rect* A,
@@ -55,8 +55,12 @@ cdef extern from "pygame.h" nogil:
     object pgRect_New(SDL_Rect *r)
     object pgRect_New4(int x, int y, int w, int h)
     SDL_Rect pgRect_AsRect(object rect)
-    void import_pygame_rect()
 
+    int pgFRect_Check(object rect)
+    SDL_FRect *pgFRect_FromObject(object obj, SDL_FRect *temp)
+    object pgFRect_New(SDL_FRect *r)
+    object pgFRect_New4(float x, float y, float w, float h)
+    void import_pygame_rect()
 
     object pgColor_New(Uint8 rgba[])
     object pgColor_NewLength(Uint8 rgba[], Uint8 length)
@@ -613,7 +617,7 @@ cdef class Texture:
                                       width, height)
         if not self._tex:
             raise error()
-            
+
         if not scale_quality is None:
             if SDL_VERSION_ATLEAST(2,0,12):
                 SDL_SetTextureScaleMode(self._tex,scale_quality)
@@ -719,15 +723,40 @@ cdef class Texture:
 
         return rect
 
-    cdef draw_internal(self, SDL_Rect *csrcrect, SDL_Rect *cdstrect, float angle=0, SDL_Point *originptr=NULL,
-                       bint flip_x=False, bint flip_y=False):
+    cdef _frect_draw(self, SDL_Rect *csrcrect, dstrect=None, float angle=0, origin=None,
+                    bint flip_x=False, bint flip_y=False):
+
+        cdef SDL_FRect dst
+        cdef SDL_FRect *cdstrect = NULL
+        cdef SDL_FPoint corigin
+        cdef SDL_FPoint *originptr
+
+        if dstrect is not None:
+            cdstrect = pgFRect_FromObject(dstrect, &dst)
+            if cdstrect == NULL:
+                if len(dstrect) == 2:
+                    dst.x = dstrect[0]
+                    dst.y = dstrect[1]
+                    dst.w = self.width
+                    dst.h = self.height
+                    cdstrect = &dst
+                else:
+                    raise TypeError('dstrect must be a position, rect, or None')
+
+        if origin:
+            originptr = &corigin
+            corigin.x = origin[0]
+            corigin.y = origin[1]
+        else:
+            originptr = NULL
+
         cdef int flip = SDL_FLIP_NONE
         if flip_x:
             flip |= SDL_FLIP_HORIZONTAL
         if flip_y:
             flip |= SDL_FLIP_VERTICAL
 
-        cdef int res = SDL_RenderCopyEx(self.renderer._renderer, self._tex, csrcrect, cdstrect,
+        cdef int res = SDL_RenderCopyExF(self.renderer._renderer, self._tex, csrcrect, cdstrect,
                                         angle, originptr, <SDL_RendererFlip>flip)
         if res < 0:
             raise error()
@@ -756,6 +785,9 @@ cdef class Texture:
             if not csrcrect:
                 raise TypeError("the argument is not a rectangle or None")
 
+        if SDL_VERSION_ATLEAST(2,0,10):
+            self._frect_draw(csrcrect,dstrect,angle,origin,flip_x,flip_y)
+
         if dstrect is not None:
             cdstrect = pgRect_FromObject(dstrect, &dst)
             if cdstrect == NULL:
@@ -775,8 +807,16 @@ cdef class Texture:
         else:
             originptr = NULL
 
-        self.draw_internal(csrcrect, cdstrect, angle, originptr,
-                           flip_x, flip_y)
+        cdef int flip = SDL_FLIP_NONE
+        if flip_x:
+            flip |= SDL_FLIP_HORIZONTAL
+        if flip_y:
+            flip |= SDL_FLIP_VERTICAL
+
+        cdef int res = SDL_RenderCopyEx(self.renderer._renderer, self._tex, csrcrect, cdstrect,
+                                        angle, originptr, <SDL_RendererFlip>flip)
+        if res < 0:
+            raise error()
 
     def draw_triangle(self, p1_xy, p2_xy, p3_xy,
                       p1_uv=(0.0, 0.0), p2_uv=(1.0, 1.0), p3_uv=(0.0, 1.0),
@@ -795,7 +835,7 @@ cdef class Texture:
         """
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("draw_triangle requires SDL 2.0.18 or newer")
-        
+
         cdef Uint8 _r_mod, _g_mod, _b_mod, _a_mod
         SDL_GetTextureColorMod(self._tex, &_r_mod, &_g_mod, &_b_mod)
         SDL_GetTextureAlphaMod(self._tex, &_a_mod)
@@ -818,7 +858,7 @@ cdef class Texture:
             vertices[i].color.a = a_mod * mod[3] if len(mod) > 3 else _a_mod
             vertices[i].tex_coord.x = uv[0]
             vertices[i].tex_coord.y = uv[1]
-        
+
         cdef int res = SDL_RenderGeometry(self.renderer._renderer, self._tex, vertices, 3, NULL, 0)
         if res < 0:
             raise error()
@@ -844,7 +884,7 @@ cdef class Texture:
         """
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("draw_quad requires SDL 2.0.18 or newer")
-        
+
         cdef Uint8 _r_mod, _g_mod, _b_mod, _a_mod
         SDL_GetTextureColorMod(self._tex, &_r_mod, &_g_mod, &_b_mod)
         SDL_GetTextureAlphaMod(self._tex, &_a_mod)
@@ -1011,50 +1051,17 @@ cdef class Image:
         :param dstrect: destination rectangle or position on the render target, or None for entire target.
                         The image is stretched to fill dstrect.
         """
-        cdef SDL_Rect src
-        cdef SDL_Rect dst
-        cdef SDL_Rect *csrcrect = NULL
-        cdef SDL_Rect *cdstrect = NULL
-        cdef SDL_Rect *rectptr
-
-        if srcrect is None:
-            csrcrect = &self.srcrect.r
-        else:
-            if pgRect_Check(srcrect):
-                src = (<Rect>srcrect).r
-            else:
-
-                rectptr = pgRect_FromObject(srcrect, &src)
-                if rectptr == NULL:
-                    raise TypeError('srcrect must be a rect or None')
-                src.x = rectptr.x
-                src.y = rectptr.y
-                src.w = rectptr.w
-                src.h = rectptr.h
-
-            src.x += self.srcrect.x
-            src.y += self.srcrect.y
-            csrcrect = &src
-
-        if dstrect is not None:
-            cdstrect = pgRect_FromObject(dstrect, &dst)
-            if cdstrect == NULL:
-                if len(dstrect) == 2:
-                    dst.x = dstrect[0]
-                    dst.y = dstrect[1]
-                    dst.w = self.srcrect.w
-                    dst.h = self.srcrect.h
-                    cdstrect = &dst
-                else:
-                    raise TypeError('dstrect must be a position, rect, or None')
 
         self.texture.color = self._color
         self.texture.alpha = self.alpha
         self.texture.blend_mode = self.blend_mode
-
-        self.texture.draw_internal(csrcrect, cdstrect, self.angle,
-                                   self._originptr, self.flip_x, self.flip_y)
-
+        self.texture.draw(
+            (srcrect if not srcrect is None else self.srcrect),
+            dstrect,
+            self.angle,
+            self.origin,
+            self.flip_x,
+            self.flip_y)
 
 cdef class Renderer:
 
@@ -1073,8 +1080,6 @@ cdef class Renderer:
         if not self._renderer:
             raise error()
 
-        cdef Uint8[4] defaultColor = [255, 255, 255, 255]
-        self._draw_color = pgColor_NewLength(defaultColor, 4)
         self._target = None
         return self
 
@@ -1106,8 +1111,6 @@ cdef class Renderer:
         if not self._renderer:
             raise error()
 
-        cdef Uint8[4] defaultColor = [255, 255, 255, 255]
-        self._draw_color = pgColor_NewLength(defaultColor, 4)
         self._target = None
         self._win = window
         self._is_borrowed=0
@@ -1135,31 +1138,22 @@ cdef class Renderer:
         if res < 0:
             raise error()
 
-    @property
-    def draw_color(self):
-        """ Color used by the drawing functions.
-        """
-        return self._draw_color
-
-    @draw_color.setter
-    def draw_color(self, new_value):
-        """ color used by the drawing functions.
-        """
-        # https://wiki.libsdl.org/SDL_SetRenderDrawColor
-        self._draw_color[:] = new_value
-        cdef int res = SDL_SetRenderDrawColor(self._renderer,
-                                              new_value[0],
-                                              new_value[1],
-                                              new_value[2],
-                                              new_value[3])
-        if res < 0:
-            raise error()
-
-    def clear(self):
-        """ Clear the current rendering target with the drawing color.
+    def clear(self, color=(0, 0, 0, 255)):
+        """ Clear the current rendering target with the given color.
         """
         # https://wiki.libsdl.org/SDL_RenderClear
-        cdef int res = SDL_RenderClear(self._renderer)
+        cdef int res
+
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
+
+        res = SDL_RenderClear(self._renderer)
         if res < 0:
             raise error()
 
@@ -1280,100 +1274,235 @@ cdef class Renderer:
             return self.get_viewport()
         return dest
 
-    def draw_line(self, p1, p2):
-        # https://wiki.libsdl.org/SDL_RenderDrawLine
-        cdef int res = SDL_RenderDrawLine(self._renderer,
-                                          p1[0], p1[1],
-                                          p2[0], p2[1])
+    def draw_line(self, p1, p2, color=(255, 255, 255, 255)):
+        cdef int res
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
+
+        if SDL_VERSION_ATLEAST(2,0,10):
+            res = SDL_RenderDrawLineF(self._renderer,
+                                     p1[0], p1[1],
+                                     p2[0], p2[1])
+        else:
+            res = SDL_RenderDrawLine(self._renderer,
+                                     p1[0], p1[1],
+                                     p2[0], p2[1])
         if res < 0:
             raise error()
 
-    def draw_point(self, point):
+    def draw_point(self, point, color=(255, 255, 255, 255)):
         # https://wiki.libsdl.org/SDL_RenderDrawPoint
-        cdef int res = SDL_RenderDrawPoint(self._renderer,
-                                           point[0], point[1])
+        cdef int res
+
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
+
+        if SDL_VERSION_ATLEAST(2,0,10):
+            res = SDL_RenderDrawPointF(self._renderer,
+                                    point[0], point[1])
+        else:
+            res = SDL_RenderDrawPoint(self._renderer,
+                                    point[0], point[1])
         if res < 0:
             raise error()
 
-    def draw_rect(self, rect):
+    def draw_rect(self, rect, color=(255, 255, 255, 255)):
         # https://wiki.libsdl.org/SDL_RenderDrawRect
         cdef SDL_Rect _rect
-        cdef SDL_Rect *rectptr = pgRect_FromObject(rect, &_rect)
+        cdef SDL_Rect *rectptr
+        cdef SDL_FRect _frect
+        cdef SDL_FRect *frectptr
+        cdef int res
 
-        if rectptr == NULL:
-            raise TypeError('expected a rectangle')
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
 
-        cdef int res = SDL_RenderDrawRect(self._renderer, rectptr)
+        if SDL_VERSION_ATLEAST(2,0,10):
+            frectptr = pgFRect_FromObject(rect, &_frect)
+            if frectptr == NULL:
+                raise TypeError('expected a rectangle')
+
+            res = SDL_RenderDrawRectF(self._renderer, frectptr)
+
+        else:
+            rectptr = pgRect_FromObject(rect, &_rect)
+            if rectptr == NULL:
+                raise TypeError('expected a rectangle')
+
+            res = SDL_RenderDrawRect(self._renderer, rectptr)
+
         if res < 0:
             raise error()
 
-    def fill_rect(self, rect):
+    def fill_rect(self, rect, color=(255, 255, 255, 255)):
         # https://wiki.libsdl.org/SDL_RenderFillRect
         cdef SDL_Rect _rect
-        cdef SDL_Rect *rectptr = pgRect_FromObject(rect, &_rect)
+        cdef SDL_Rect *rectptr
+        cdef SDL_FRect _frect
+        cdef SDL_FRect *frectptr
+        cdef int res
 
-        if rectptr == NULL:
-            raise TypeError('expected a rectangle')
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
 
-        cdef int res = SDL_RenderFillRect(self._renderer, rectptr)
+        if SDL_VERSION_ATLEAST(2,0,10):
+            frectptr = pgFRect_FromObject(rect, &_frect)
+            if frectptr == NULL:
+                raise TypeError('expected a rectangle')
+
+            res = SDL_RenderFillRectF(self._renderer, frectptr)
+
+        else:
+            rectptr = pgRect_FromObject(rect, &_rect)
+            if rectptr == NULL:
+                raise TypeError('expected a rectangle')
+
+            res = SDL_RenderFillRect(self._renderer, rectptr)
+
         if res < 0:
             raise error()
 
-    def draw_triangle(self, p1, p2, p3):
+    def draw_triangle(self, p1, p2, p3, color=(255, 255, 255, 255)):
         # https://wiki.libsdl.org/SDL_RenderDrawLines
         cdef SDL_Point points[4]
-        for i, pos in enumerate((p1, p2, p3, p1)):
-            points[i].x = pos[0]
-            points[i].y = pos[1]
+        cdef SDL_FPoint fpoints[4]
+        cdef int res
 
-        res = SDL_RenderDrawLines(self._renderer, points, 4)
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
+
+        if SDL_VERSION_ATLEAST(2,0,10):
+            for i, pos in enumerate((p1, p2, p3, p1)):
+                fpoints[i].x = pos[0]
+                fpoints[i].y = pos[1]
+
+            res = SDL_RenderDrawLinesF(self._renderer, fpoints, 4)
+
+        else:
+            for i, pos in enumerate((p1, p2, p3, p1)):
+                points[i].x = pos[0]
+                points[i].y = pos[1]
+
+            res = SDL_RenderDrawLines(self._renderer, points, 4)
+
         if res < 0:
             raise error()
 
-    def fill_triangle(self, p1, p2, p3):
+    def fill_triangle(self, p1, p2, p3, color=(255, 255, 255, 255)):
         # https://wiki.libsdl.org/SDL_RenderGeometry
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("fill_triangle requires SDL 2.0.18 or newer")
 
         cdef SDL_Vertex vertices[3]
+        cdef int res
+
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
+
         for i, pos in enumerate((p1, p2, p3)):
             vertices[i].position.x = pos[0]
             vertices[i].position.y = pos[1]
-            vertices[i].color.r = self._draw_color[0]
-            vertices[i].color.g = self._draw_color[1]
-            vertices[i].color.b = self._draw_color[2]
-            vertices[i].color.a = self._draw_color[3]
+            vertices[i].color.r = color[0]
+            vertices[i].color.g = color[1]
+            vertices[i].color.b = color[2]
+            vertices[i].color.a = color[3]
 
-        cdef int res = SDL_RenderGeometry(self._renderer, NULL, vertices, 3, NULL, 0)
+        res = SDL_RenderGeometry(self._renderer, NULL, vertices, 3, NULL, 0)
         if res < 0:
             raise error()
 
-    def draw_quad(self, p1, p2, p3, p4):
+    def draw_quad(self, p1, p2, p3, p4, color=(255, 255, 255, 255)):
         # https://wiki.libsdl.org/SDL_RenderDrawLines
         cdef SDL_Point points[5]
-        for i, pos in enumerate((p1, p2, p3, p4, p1)):
-            points[i].x = pos[0]
-            points[i].y = pos[1]
+        cdef SDL_FPoint fpoints[5]
+        cdef int res
 
-        res = SDL_RenderDrawLines(self._renderer, points, 5)
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
+
+        if SDL_VERSION_ATLEAST(2,0,10):
+            for i, pos in enumerate((p1, p2, p3, p4, p1)):
+                fpoints[i].x = pos[0]
+                fpoints[i].y = pos[1]
+
+            res = SDL_RenderDrawLinesF(self._renderer, fpoints, 5)
+
+        else:
+            for i, pos in enumerate((p1, p2, p3, p4, p1)):
+                points[i].x = pos[0]
+                points[i].y = pos[1]
+
+            res = SDL_RenderDrawLines(self._renderer, points, 5)
         if res < 0:
             raise error()
 
-    def fill_quad(self, p1, p2, p3, p4):
+    def fill_quad(self, p1, p2, p3, p4, color=(255, 255, 255, 255)):
         # https://wiki.libsdl.org/SDL_RenderGeometry
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("fill_quad requires SDL 2.0.18 or newer")
+        cdef int res
+
+        if color is not None:
+            res = SDL_SetRenderDrawColor(self._renderer,
+                                                  color[0],
+                                                  color[1],
+                                                  color[2],
+                                                  color[3])
+            if res < 0:
+                raise error()
 
         cdef SDL_Vertex vertices[6]
         for i, pos in enumerate((p1, p2, p3, p3, p4, p1)):
             vertices[i].position.x = pos[0]
             vertices[i].position.y = pos[1]
-            vertices[i].color.r = self._draw_color[0]
-            vertices[i].color.g = self._draw_color[1]
-            vertices[i].color.b = self._draw_color[2]
-            vertices[i].color.a = self._draw_color[3]
+            vertices[i].color.r = color[0]
+            vertices[i].color.g = color[1]
+            vertices[i].color.b = color[2]
+            vertices[i].color.a = color[3]
 
-        cdef int res = SDL_RenderGeometry(self._renderer, NULL, vertices, 6, NULL, 0)
+        res = SDL_RenderGeometry(self._renderer, NULL, vertices, 6, NULL, 0)
         if res < 0:
             raise error()
 
@@ -1450,7 +1579,7 @@ cdef class Renderer:
 
     @staticmethod
     def compose_custom_blend_mode(color_mode, alpha_mode):
-        """ Use this function to compose a custom blend mode.. 
+        """ Use this function to compose a custom blend mode..
 
         :param color_mode: A tuple (srcColorFactor, dstColorFactor, colorOperation)
         :param alpha_mode: A tuple (srcAlphaFactor, dstAlphaFactor, alphaOperation)
