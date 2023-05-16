@@ -549,7 +549,8 @@ class FontTypeTest(unittest.TestCase):
         self.assertNotEqual(size, bsize)
 
     def test_size_wrapped(self):
-        try:
+        ttf_version = pygame_font.get_sdl_ttf_version()
+        if ttf_version >= (2, 0, 18):
             font = pygame_font.Font()
 
             strings = [
@@ -562,13 +563,11 @@ class FontTypeTest(unittest.TestCase):
             for s in strings:
                 for wraplength in range(0, 100):
                     s = "really really really really long text"
-                    w, h = font.size_wrapped(s, wraplength)
                     surface = font.render(s, False, (255, 255, 255), None, wraplength)
+                    w, h = font.size_wrapped(s, wraplength)
 
                     self.assertEqual(w, surface.get_width())
                     self.assertEqual(h, surface.get_height())
-        except NotImplementedError:
-            pass
 
     def test_font_name(self):
         f = pygame_font.Font(None, 20)
