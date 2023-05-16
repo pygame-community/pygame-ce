@@ -23,9 +23,6 @@
 /*
  *  font module for pygame
  */
-#include <math.h>
-#include <stdlib.h>
-#include "pgplatform.h"
 #define PYGAMEAPI_FONT_INTERNAL
 #include "font.h"
 
@@ -685,8 +682,11 @@ get_size_wraplength(int is_utf8, TTF_Font *font, const char *text, int wraplengt
 {
     int len;
     char *text_copy = strdup(text);
+    // this pointer is to allow for text_copy to be deleted before the function
+    // finishes
     char *top_of_text = text_copy;
-    int num_lines = 0;
+    char **lines = NULL;
+    int num_lines = 0, max_lines = 0;
     int height = 0, width = 0;
 
     if (is_utf8) {
@@ -701,74 +701,138 @@ get_size_wraplength(int is_utf8, TTF_Font *font, const char *text, int wraplengt
         }
     }
 
-    len = strlen(text_copy);
-    do {
-        int extent = 0, max_count = 0, char_count = 0;
-        int saved_len = 0;
-        char *saved_text = NULL;
-        num_lines++;
+    // so height has a minimum value if the string is empty
+    num_lines = 1;
 
-        int ecode;
-        if (is_utf8) {
-            ecode = TTF_MeasureUTF8(font, text_copy, wraplength, &extent, &max_count);
-        } else {
-            ecode = TTF_MeasureText(font, text_copy, wraplength, &extent, &max_count);
-        }
-        if (ecode < 0) {
-            TTF_SetError("Error measure text");
-            goto failure;
-        }
+    if (*text_copy) {
+        max_lines = 0;
+        num_lines = 0;
+        len = strlen(text_copy);
+        do {
+            int extent = 0, max_count = 0, char_count = 0;
+            int saved_len = 0;
+            char *saved_text = NULL;
 
-        if (max_count == 0) {
-            max_count = 1;
-        }
-
-        while (len > 0) {
-            int inc = 0;
-            unsigned long c = UTF8_getch(text_copy, len, &inc);
-            text_copy += inc;
-            len -= inc;
-
-            if (c == UNICODE_BOM_NATIVE || c == UNICODE_BOM_SWAPPED) {
-                continue;
+            if (num_lines >= max_lines) {
+                char **saved = lines;
+                if (wraplength == 0) {
+                   max_lines += 32;
+                } else {
+                    max_lines += (width / wraplength) + 1;
+                }
+                lines = (char **)realloc(lines, max_lines * sizeof(lines));
+                if (lines == NULL) {
+                    lines = saved;
+                    PyErr_NoMemory();
+                    goto failure;
+                }
             }
 
-            char_count += 1;
+            lines[num_lines++] = text_copy;
 
-            char is_delim = c == ' ' || c == '\t' || c == '\n' || c == '\r';
+            int ecode;
+            if (is_utf8) {
+                ecode = TTF_MeasureUTF8(font, text_copy, wraplength, &extent, &max_count);
+            } else {
+                ecode = TTF_MeasureText(font, text_copy, wraplength, &extent, &max_count);
+            }
+            if (ecode < 0) {
+                TTF_SetError("Error measure text");
+                goto failure;
+            }
+            if (wraplength != 0) {
+                if (max_count == 0) {
+                    max_count = 1;
+                }
+            }
 
-            if (is_delim) {
-                saved_len = len;
-                saved_text = text_copy;
-                if (c == '\n' || c == '\r') {
+            while (len > 0) {
+                int inc = 0;
+                unsigned long c = UTF8_getch(text_copy, len, &inc);
+                text_copy += inc;
+                len -= inc;
+
+                if (c == UNICODE_BOM_NATIVE || c == UNICODE_BOM_SWAPPED) {
+                    continue;
+                }
+                char_count += 1;
+
+                char is_delim;
+                if (wraplength > 0) {
+                    is_delim = c == ' ' || c == '\t' || c == '\n' || c == '\r';
+                } else {
+                    is_delim = c == '\n';
+                }
+
+                if (is_delim) {
+                    saved_len = len;
+                    saved_text = text_copy;
+                    if (c == '\n' || c == '\r') {
+                        *(text_copy - 1) = '\0';
+                        break;
+                    }
+                }
+                if (char_count == max_count) {
                     break;
                 }
             }
-            if (char_count == max_count) {
-                break;
-            }
-        }
 
-        if (len > 0) {
-            if (saved_text && saved_len) {
-                text_copy = saved_text;
-                len = saved_len;
+            if (len > 0) {
+                if (saved_text && saved_len) {
+                    text_copy = saved_text;
+                    len = saved_len;
+                }
             }
-        }
-    } while (len > 0);
-
+        } while (len > 0);
+    }
     int lineskip = TTF_FontLineSkip(font);
     int rowHeight = MAX(lineskip, height);
 
-    *h = rowHeight + lineskip * (num_lines - 1);
-    if (num_lines <= 1) {
-        *w = MIN(width, wraplength);
+    if (wraplength == 0) {
+        // find the max of all line lengths
+        if (num_lines > 1) {
+            width = 0;
+            char *temp;
+            for (int i = 0; i < num_lines; ++i) {
+                char c = 0;
+                int _w, _h;
+
+                if (lines) {
+                    text = lines[i];
+                    if (i + 1 < num_lines) {
+                        c = lines[i + 1][0];
+                        lines[i + 1][0] = '\0';
+                    }
+                }
+
+                if (TTF_SizeUTF8(font, temp, &_w, &_h) == 0) {
+                    width = MAX(_w, width);
+                }
+
+                if (lines) {
+                    if (i + 1 < num_lines) {
+                        lines[i + 1][0] = c;
+                    }
+                }
+            }
+        }
+        *w = width;
     } else {
-        *w = wraplength;
+        if (num_lines <= 1 && TTF_GetFontWrappedAlign(font) == TTF_WRAPPED_ALIGN_LEFT) {
+            *w = MIN(wraplength, width);
+        } else {
+            *w = wraplength;
+        }
     }
+
+    *h = rowHeight + lineskip * (num_lines - 1);
 
     if (top_of_text) {
         free(top_of_text);
+    }
+
+    if (lines) {
+        free(lines);
     }
 
     return 0;
@@ -777,11 +841,15 @@ failure:
     if (top_of_text) {
         free(top_of_text);
     }
+
+    if (lines) {
+        free(lines);
+    }
     return -1;
 }
 
 static PyObject *
-font_size(PyObject *self, PyObject *args, PyObject *kwargs)
+font_size_wrapped(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     static const int is_utf8 = 1;
     static char *kwlist[] = {
@@ -810,25 +878,50 @@ font_size(PyObject *self, PyObject *args, PyObject *kwargs)
             return NULL;
         }
         string = PyBytes_AS_STRING(bytes);
-        if (wraplength > 0) {
-            ecode = get_size_wraplength(is_utf8, font, string, wraplength, &w, &h);
-        } else {
-            ecode = TTF_SizeUTF8(font, string, &w, &h);
-        }
+        ecode = get_size_wraplength(is_utf8, font, string, wraplength, &w, &h);
         Py_DECREF(bytes);
-        if (ecode) {
+        if (ecode < 0) {
             return RAISE(pgExc_SDLError, TTF_GetError());
         }
     }
     else if (PyBytes_Check(text)) {
         int ecode;
         string = PyBytes_AS_STRING(text);
-        if (wraplength > 0) {
-            ecode = get_size_wraplength(!is_utf8, font, string, wraplength, &w, &h);
-        } else {
-            ecode = TTF_SizeText(font, string, &w, &h);
-        }
+        ecode = get_size_wraplength(!is_utf8, font, string, wraplength, &w, &h);
         if (ecode < 0) {
+            return RAISE(pgExc_SDLError, TTF_GetError());
+        }
+    }
+    else {
+        return RAISE_TEXT_TYPE_ERROR();
+    }
+    return Py_BuildValue("(ii)", w, h);
+}
+
+static PyObject *
+font_size(PyObject *self, PyObject *text)
+{
+    TTF_Font *font = PyFont_AsFont(self);
+    int w, h;
+    const char *string;
+
+    if (PyUnicode_Check(text)) {
+        PyObject *bytes = PyUnicode_AsEncodedString(text, "utf-8", "strict");
+        int ecode;
+
+        if (!bytes) {
+            return NULL;
+        }
+        string = PyBytes_AS_STRING(bytes);
+        ecode = TTF_SizeUTF8(font, string, &w, &h);
+        Py_DECREF(bytes);
+        if (ecode) {
+            return RAISE(pgExc_SDLError, TTF_GetError());
+        }
+    }
+    else if (PyBytes_Check(text)) {
+        string = PyBytes_AS_STRING(text);
+        if (TTF_SizeText(font, string, &w, &h) < 0) {
             return RAISE(pgExc_SDLError, TTF_GetError());
         }
     }
@@ -1078,7 +1171,8 @@ static PyMethodDef font_methods[] = {
      DOC_FONT_FONT_SETSTRIKETHROUGH},
     {"metrics", font_metrics, METH_O, DOC_FONT_FONT_METRICS},
     {"render", font_render, METH_VARARGS, DOC_FONT_FONT_RENDER},
-    {"size", (PyCFunction)font_size, METH_VARARGS | METH_KEYWORDS, DOC_FONT_FONT_SIZE},
+    {"size", font_size, METH_O, DOC_FONT_FONT_SIZE},
+    {"size_wrapped", (PyCFunction)font_size_wrapped, METH_VARARGS | METH_KEYWORDS, DOC_FONT_FONT_SIZEWRAPPED },
     {"set_script", font_set_script, METH_O, DOC_FONT_FONT_SETSCRIPT},
     {"set_direction", (PyCFunction)font_set_direction,
      METH_VARARGS | METH_KEYWORDS, DOC_FONT_FONT_SETDIRECTION},
