@@ -6,7 +6,7 @@
 
 #include <SDL_syswm.h>
 
-#include "doc/window_doc.h"
+#include "doc/sdl2_video_doc.h"
 
 static PyTypeObject pgWindow_Type;
 
@@ -555,43 +555,49 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
 
 static PyMethodDef window_methods[] = {
     {"destroy", (PyCFunction)window_destroy, METH_NOARGS,
-     DOC_WINDOW_WINDOW_DESTROY},
+     DOC_SDL2_VIDEO_WINDOW_DESTROY},
     {"set_windowed", (PyCFunction)window_set_windowed, METH_NOARGS,
-     DOC_WINDOW_WINDOW_SETWINDOWED},
+     DOC_SDL2_VIDEO_WINDOW_SETWINDOWED},
     {"set_fullscreen", (PyCFunction)window_set_fullscreen,
-     METH_VARARGS | METH_KEYWORDS, DOC_WINDOW_WINDOW_SETFULLSCREEN},
+     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_WINDOW_SETFULLSCREEN},
     {"focus", (PyCFunction)window_focus, METH_VARARGS | METH_KEYWORDS,
-     DOC_WINDOW_WINDOW_FOCUS},
-    {"hide", (PyCFunction)window_hide, METH_NOARGS, DOC_WINDOW_WINDOW_HIDE},
-    {"show", (PyCFunction)window_show, METH_NOARGS, DOC_WINDOW_WINDOW_SHOW},
+     DOC_SDL2_VIDEO_WINDOW_FOCUS},
+    {"hide", (PyCFunction)window_hide, METH_NOARGS,
+     DOC_SDL2_VIDEO_WINDOW_HIDE},
+    {"show", (PyCFunction)window_show, METH_NOARGS,
+     DOC_SDL2_VIDEO_WINDOW_SHOW},
     {"restore", (PyCFunction)window_restore, METH_NOARGS,
-     DOC_WINDOW_WINDOW_RESTORE},
+     DOC_SDL2_VIDEO_WINDOW_RESTORE},
     {"maximize", (PyCFunction)window_maximize, METH_NOARGS,
-     DOC_WINDOW_WINDOW_MAXIMIZE},
+     DOC_SDL2_VIDEO_WINDOW_MAXIMIZE},
     {"minimize", (PyCFunction)window_minimize, METH_NOARGS,
-     DOC_WINDOW_WINDOW_MINIMIZE},
+     DOC_SDL2_VIDEO_WINDOW_MINIMIZE},
     {"set_modal_for", (PyCFunction)window_set_modal_for, METH_O,
-     DOC_WINDOW_WINDOW_SETMODALFOR},
+     DOC_SDL2_VIDEO_WINDOW_SETMODALFOR},
     {"set_icon", (PyCFunction)window_set_icon, METH_O,
-     DOC_WINDOW_WINDOW_SETICON},
+     DOC_SDL2_VIDEO_WINDOW_SETICON},
     {"from_display_module", (PyCFunction)window_from_display_module,
-     METH_CLASS | METH_NOARGS, DOC_WINDOW_WINDOW_FROMDISPLAYMODULE},
+     METH_CLASS | METH_NOARGS, DOC_SDL2_VIDEO_WINDOW_FROMDISPLAYMODULE},
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef _window_getset[] = {
-    {"grab", (getter)window_get_grab, (setter)window_set_grab, NULL, NULL},
-    {"title", (getter)window_get_title, (setter)window_set_title, NULL, NULL},
+    {"grab", (getter)window_get_grab, (setter)window_set_grab,
+     DOC_SDL2_VIDEO_WINDOW_GRAB, NULL},
+    {"title", (getter)window_get_title, (setter)window_set_title,
+     DOC_SDL2_VIDEO_WINDOW_TITLE, NULL},
     {"resizable", (getter)window_get_resizable, (setter)window_set_resizable,
-     NULL, NULL},
+     DOC_SDL2_VIDEO_WINDOW_RESIZABLE, NULL},
     {"borderless", (getter)window_get_borderless,
-     (setter)window_set_borderless, NULL, NULL},
-    {"size", (getter)window_get_size, (setter)window_set_size, NULL, NULL},
+     (setter)window_set_borderless, DOC_SDL2_VIDEO_WINDOW_BORDERLESS, NULL},
+    {"size", (getter)window_get_size, (setter)window_set_size,
+     DOC_SDL2_VIDEO_WINDOW_SIZE, NULL},
     {"position", (getter)window_get_position, (setter)window_set_position,
-     NULL, NULL},
-    {"opacity", (getter)window_get_opacity, (setter)window_set_opacity, NULL,
-     NULL},
-    {"display_index", (getter)window_get_display_index, NULL, NULL, NULL},
-    {"id", (getter)window_get_window_id, NULL, NULL, NULL},
+     DOC_SDL2_VIDEO_WINDOW_POSITION, NULL},
+    {"opacity", (getter)window_get_opacity, (setter)window_set_opacity,
+     DOC_SDL2_VIDEO_WINDOW_OPACITY, NULL},
+    {"display_index", (getter)window_get_display_index, NULL,
+     DOC_SDL2_VIDEO_WINDOW_DISPLAYINDEX, NULL},
+    {"id", (getter)window_get_window_id, NULL, DOC_SDL2_VIDEO_WINDOW_ID, NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
 
@@ -599,7 +605,7 @@ static PyTypeObject pgWindow_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._window.Window",
     .tp_basicsize = sizeof(pgWindowObject),
     .tp_dealloc = (destructor)window_dealloc,
-    .tp_doc = DOC_WINDOW_WINDOW,
+    .tp_doc = DOC_SDL2_VIDEO_WINDOW,
     .tp_methods = window_methods,
     .tp_init = (initproc)window_init,
     .tp_new = PyType_GenericNew,
@@ -607,7 +613,7 @@ static PyTypeObject pgWindow_Type = {
 
 static PyMethodDef _window_methods[] = {
     {"get_grabbed_window", (PyCFunction)get_grabbed_window, METH_NOARGS,
-     DOC_WINDOW_GETGRABBEDWINDOW},
+     "docs_needed"},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(_window)
@@ -617,7 +623,7 @@ MODINIT_DEFINE(_window)
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "_window",
-                                         DOC_WINDOW,
+                                         "docs_needed",
                                          -1,
                                          _window_methods,
                                          NULL,
