@@ -830,10 +830,16 @@ get_size_wraplength(int is_utf8, TTF_Font *font, const char *text,
         *w = width;
     }
     else {
+#if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
         if (num_lines <= 1 &&
             TTF_GetFontWrappedAlign(font) == TTF_WRAPPED_ALIGN_LEFT) {
             *w = MIN(wraplength, width);
         }
+#else
+        if (num_lines <= 1) {
+            *w = MIN(wraplength, width);
+        }
+#endif
         else {
             *w = wraplength;
         }
