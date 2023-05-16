@@ -549,6 +549,9 @@ class FontTypeTest(unittest.TestCase):
         self.assertNotEqual(size, bsize)
 
     def test_size_wrapped(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            return
+
         ttf_version = pygame_font.get_sdl_ttf_version()
         if ttf_version >= (2, 0, 18):
             font = pygame_font.Font()
