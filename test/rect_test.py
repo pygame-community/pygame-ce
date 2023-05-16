@@ -1539,6 +1539,29 @@ class RectTypeTest(unittest.TestCase):
         expected_r2 = Rect(r.left + move_x, r.top + move_y, r.width, r.height)
         self.assertEqual(expected_r2, r2)
 
+    def test_move_to(self):
+        r = Rect(1, 2, 3, 4)
+        topleft = (10, 20)
+        center = (10, 20)
+
+        r2 = r.move_to(topleft=topleft)
+        r3 = r.move_to(center=center)
+
+        expected_r2 = Rect(r.x, r.y, r.width, r.height)
+        expected_r2.topleft = topleft
+
+        expected_r3 = Rect(r.x, r.y, r.width, r.height)
+        expected_r3.center = center
+
+        self.assertEqual(expected_r2, r2)
+        self.assertEqual(expected_r3, r3)
+
+        self.assertIsInstance(r2, Rect)
+
+        self.assertRaises(TypeError, r.move_to, 1, 2, 3)
+        with self.assertRaises(TypeError):
+            r.move_to()
+
     def test_update_XYWidthHeight(self):
         """Test update with 4 int values(x, y, w, h)"""
         rect = Rect(0, 0, 1, 1)
@@ -3278,6 +3301,13 @@ class SubclassTest(unittest.TestCase):
         mr1 = self.MyRect(1, 2, 10, 20)
         self.assertTrue(mr1.an_attribute)
         mr2 = mr1.move(1, 2)
+        self.assertTrue(isinstance(mr2, self.MyRect))
+        self.assertRaises(AttributeError, getattr, mr2, "an_attribute")
+
+    def test_move_to(self):
+        mr1 = self.MyRect(1, 2, 10, 20)
+        self.assertTrue(mr1.an_attribute)
+        mr2 = mr1.move_to(topleft=(10, 10))
         self.assertTrue(isinstance(mr2, self.MyRect))
         self.assertRaises(AttributeError, getattr, mr2, "an_attribute")
 

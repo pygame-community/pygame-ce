@@ -116,6 +116,23 @@
       Same as the ``Rect.move()`` method, but operates in place.
 
       .. ## Rect.move_ip ##
+   
+   .. method:: move_to
+
+      | :sl:`moves the rectangle to the specified position`
+      | :sg:`move_to(**kwargs) -> Rect`
+      
+      Returns a new rectangle that is moved to the given position. You must provide keyword
+      arguments to the method such as ``center``, ``left``, ``midbottom`` that correspond
+      to the rectangle's attributes and the method will return a new rectangle whose specified
+      attributes are set to the given value. 
+      
+      It is similar to :meth:`Surface.get_rect` but instead of a calling it as a surface method
+      you call it as a rectangle method.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Rect.move_to ##
 
    .. method:: inflate
 

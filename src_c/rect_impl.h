@@ -59,6 +59,9 @@
 #ifndef RectExport_moveIp
 #error RectExport_moveIp needs to be defined
 #endif
+#ifndef RectExport_moveTo
+#error RectExport_moveTo needs to be defined
+#endif
 #ifndef RectExport_inflate
 #error RectExport_inflate needs to be defined
 #endif
@@ -432,6 +435,9 @@ static PyObject *
 RectExport_move(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static PyObject *
 RectExport_moveIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
+static PyObject *
+RectExport_moveTo(RectObject *self, PyObject *const *args, Py_ssize_t nargs,
+                  PyObject *kwnames);
 static PyObject *
 RectExport_inflate(RectObject *self, PyObject *args);
 static PyObject *
@@ -902,6 +908,41 @@ RectExport_moveIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     self->r.x += x;
     self->r.y += y;
     Py_RETURN_NONE;
+}
+
+static PyObject *
+RectExport_moveTo(RectObject *self, PyObject *const *args, Py_ssize_t nargs,
+                  PyObject *kwnames)
+{
+    PyObject *rect = RectExport_copy(self, NULL);
+    if (!rect) {
+        return NULL;
+    }
+
+    if (nargs > 0) {
+        Py_DECREF(rect);
+        return RAISE(PyExc_TypeError, "move_to takes no positional arguments");
+    }
+
+    if (!kwnames) {
+        Py_DECREF(rect);
+        return RAISE(PyExc_TypeError,
+                     "move_to cannot be called without keyword arguments");
+    }
+
+    Py_ssize_t i, sequence_len;
+    PyObject **sequence_items;
+    sequence_items = PySequence_Fast_ITEMS(kwnames);
+    sequence_len = PyTuple_GET_SIZE(kwnames);
+
+    for (i = 0; i < sequence_len; ++i) {
+        if ((PyObject_SetAttr(rect, sequence_items[i], args[i]) == -1)) {
+            Py_DECREF(rect);
+            return NULL;
+        }
+    }
+
+    return rect;
 }
 
 static PyObject *
@@ -2685,6 +2726,7 @@ RectExport_iterator(RectObject *self)
 #undef pgTwoValuesFromFastcallArgs
 #undef RectExport_move
 #undef RectExport_moveIp
+#undef RectExport_moveTo
 #undef RectExport_inflate
 #undef RectExport_inflateIp
 #undef RectExport_scalebyIp
