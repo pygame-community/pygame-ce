@@ -292,9 +292,9 @@ solves no longer exists, it will likely be removed in the future.
       UCS-4 range are supported. For char strings a ``LATIN1`` encoding is
       assumed. The antialias argument is a boolean: if True the characters
       will have smooth edges. The color argument is the color of the text
-      [e.g.: (0,0,255) for blue]. The optional background argument is a color
-      to use for the text background. If no background is passed the area
-      outside the text will be transparent.
+      [e.g.: (0,0,255) for blue]. The optional bgcolor argument is a color
+      to use for the text background. If bgcolor is ``None`` the area outside
+      the text will be transparent.
 
       The `wraplength` argument describes the width (in pixels) a line of text
       should be before wrapping to a new line. See

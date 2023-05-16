@@ -8,7 +8,6 @@ import platform
 
 import pygame
 from pygame import font as pygame_font  # So font can be replaced with ftfont
-from pygame._freetype import STYLE_DEFAULT
 
 FONTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "fonts")
 
