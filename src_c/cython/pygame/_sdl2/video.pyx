@@ -295,21 +295,15 @@ cdef class Window:
         self.set_icon(surf)
 
     @property
-    def grab(self):
-        """ Window's input grab state (``True`` or ``False``).
-
-        Set it to ``True`` to grab, ``False`` to release.
-
-        When input is grabbed the mouse is confined to the window.
-        If the caller enables a grab while another window is currently grabbed,
-        the other window loses its grab in favor of the caller's window.
-
-        :rtype: bool
-        """
+    def grabbed(self):
         return SDL_GetWindowGrab(self._win) != 0
+    
+    @property
+    def grab_mode(self):
+        return SDL_GetWindowFlags(self._win) & _SDL_WINDOW_INPUT_GRABBED != 0
 
-    @grab.setter
-    def grab(self, bint grabbed):
+    @grab_mode.setter
+    def grab_mode(self, bint grabbed):
         # https://wiki.libsdl.org/SDL_SetWindowGrab
         SDL_SetWindowGrab(self._win, 1 if grabbed else 0)
 
