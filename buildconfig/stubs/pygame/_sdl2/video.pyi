@@ -1,9 +1,8 @@
-from typing import Any, Generator, Iterable, Optional, Tuple, Union
+from typing import Any, Generator, Iterable, Optional, Tuple, Union, final
 
 from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
-from pygame._window import Window
 
 from .._common import RectValue, Literal
 
@@ -39,7 +38,8 @@ def messagebox(
     escape_button: int = 0,
 ) -> int: ...
 
-class _Window:
+@final
+class Window:
     DEFAULT_SIZE: Tuple[Literal[640], Literal[480]]
     def __init__(
         self,
@@ -51,7 +51,7 @@ class _Window:
         **kwargs: bool
     ) -> None: ...
     @classmethod
-    def from_display_module(cls) -> _Window: ...
+    def from_display_module(cls) -> Window: ...
     grab: bool
     relative_mouse: bool
     def set_windowed(self) -> None: ...
@@ -73,6 +73,8 @@ class _Window:
     opacity: float
     display_index: int
     def set_modal_for(self, Window) -> None: ...
+
+_Window = Window
 
 class Texture:
     def __init__(
