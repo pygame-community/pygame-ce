@@ -58,24 +58,6 @@
 #define Py_UNICODE_IS_SURROGATE(ch) (0xD800 <= (ch) && (ch) <= 0xDFFF)
 #endif
 
-/* This is used in font_size as GCC throws an pragma warning that can be
- * safely ignored. The warning is for strncpy and it complains that it
- * can't guarantee strncpy will place a NULL character in the string.
- * The way to code is written there WILL be a NULL character that the code
- * places manually
- */
-#if  defined(__GNUC__) && !defined(__clang__)
-#define IGNORE_STRING_TRUNCATION_START \
-        _Pragma("GCC diagnostic push") \
-        _Pragma("GCC diagnostic ignored \"-Wstringop-truncation\"")
-#define IGNORE_STRING_TRUNCATION_END \
-        _Pragma("GCC diagnostic pop")
-#else
-#define IGNORE_STRING_TRUNCATION_START
-#define IGNORE_STRING_TRUNCATION_END
-#endif
-
-
 static PyTypeObject PyFont_Type;
 static PyObject *
 PyFont_New(TTF_Font *);
@@ -699,7 +681,7 @@ UTF8_getch(const char *src, size_t srclen, int *inc)
 
 
 static int
-get_size_wraplength(int is_utf8, TTF_Font *font, char *text, int wraplength, int *w, int *h)
+get_size_wraplength(int is_utf8, TTF_Font *font, const char *text, int wraplength, int *w, int *h)
 {
     int len;
     char *text_copy = strdup(text);
@@ -809,7 +791,7 @@ font_size(PyObject *self, PyObject *args, PyObject *kwargs)
     TTF_Font *font = PyFont_AsFont(self);
     int wraplength = 0;
     int w, h;
-    char *string;
+    const char *string;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|i", kwlist, &text, &wraplength)) {
         return NULL;
