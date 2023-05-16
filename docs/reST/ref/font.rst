@@ -349,6 +349,25 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.size ##
 
+   .. method:: size_wrapped
+
+      | :sl:`determine the amount of space needed to render text with a maximum width (wraplength)`
+      | :sg:`size_wrapped(text, wraplength=0) -> (width, height)`
+
+       
+      Returns the dimensions needed to render the text within the constraint that
+      the width is no larger than wraplength. This can be used to help determine
+      the positioning needed for text before it is rendered. It can also be used
+      for word wrapping and other layout effects.
+
+      If the text width is less than wraplength and it has been determine to
+      only take up one line, the width will be less than wraplength. Otherwise
+      width will be the same as wraplength.
+
+      Be aware that most fonts use kerning which adjusts the widths for
+      specific letter pairs. For example, the width for "ae" will not always
+      match the width for "a" + "e".
+
    .. method:: set_underline
 
       | :sl:`control if text is rendered with an underline`
