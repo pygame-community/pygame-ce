@@ -694,91 +694,108 @@ UTF8_getch(const char *src, size_t srclen, int *inc)
     return ch;
 }
 
+#define UNICODE_BOM_NATIVE  0xFEFF
+#define UNICODE_BOM_SWAPPED 0xFFFE
+
+
 static int
 get_size_wraplength(int is_utf8, TTF_Font *font, char *text, int wraplength, int *w, int *h)
 {
-    int index = 0;
-    int extent = 0, count = 0;
-    int len = strlen(text);
-    // we take a copy of the text provided the get the correct width and
-    // height from TTF_Size*() functions so that text remains untouched.
-    char *copy = NULL;
-    int max_copy = 0, copy_len = 0;
+    int len;
+    char *text_copy = strdup(text);
+    char *top_of_text = text_copy;
+    int num_lines = 0;
     int height = 0, width = 0;
-    int lines = 0;
 
-    printf("is_utf8 %d\n", is_utf8);
+    if (is_utf8) {
+        if ((TTF_SizeUTF8(font, text, &width, &height) < 0) && !width) {
+            TTF_SetError("Text has zero width");
+            return -1;
+        }
+    } else {
+        if ((TTF_SizeText(font, text, &width, &height) < 0) && !width) {
+            TTF_SetError("Text has zero width");
+            return -1;
+        }
+    }
 
-    while (index + 1 < len && *text != '\0') {
+    len = strlen(text_copy);
+    do {
+        int extent = 0, max_count = 0, char_count = 0;
+        int saved_len = 0;
+        char *saved_text = NULL;
+        num_lines++;
+
         int ecode;
         if (is_utf8) {
-            ecode = TTF_MeasureUTF8(font, text + index, wraplength, &extent, &count);
+            ecode = TTF_MeasureUTF8(font, text_copy, wraplength, &extent, &max_count);
         } else {
-            ecode = TTF_MeasureText(font, text + index, wraplength, &extent, &count);
+            ecode = TTF_MeasureText(font, text_copy, wraplength, &extent, &max_count);
         }
         if (ecode < 0) {
-            return ecode;
+            TTF_SetError("Error measure text");
+            goto failure;
         }
 
-        int chars_to_skip = 0;
-        if (is_utf8) {
-            char *temp_str = text + index;
-            int temp_len = strlen(temp_str);
-            while (count > 0) {
-                int inc = 0;
-                UTF8_getch(temp_str, temp_len, &inc);
-                count--;
-                chars_to_skip += inc;
-                temp_str += inc;
-                temp_len -= inc;
+        if (max_count == 0) {
+            max_count = 1;
+        }
+
+        while (len > 0) {
+            int inc = 0;
+            unsigned long c = UTF8_getch(text_copy, len, &inc);
+            text_copy += inc;
+            len -= inc;
+
+            if (c == UNICODE_BOM_NATIVE || c == UNICODE_BOM_SWAPPED) {
+                continue;
             }
-        } else {
-            chars_to_skip = count;
+
+            char_count += 1;
+
+            char is_delim = c == ' ' || c == '\t' || c == '\n' || c == '\r';
+
+            if (is_delim) {
+                saved_len = len;
+                saved_text = text_copy;
+                if (c == '\n' || c == '\r') {
+                    break;
+                }
+            }
+            if (char_count == max_count) {
+                break;
+            }
         }
 
-        copy_len = chars_to_skip;
-
-        if (copy_len > 0 && copy_len >= max_copy) {
-            max_copy = (int)floorf((float)copy_len * 1.5f);
-            copy = (char*)realloc(copy, max_copy);
+        if (len > 0) {
+            if (saved_text && saved_len) {
+                text_copy = saved_text;
+                len = saved_len;
+            }
         }
+    } while (len > 0);
 
-        IGNORE_STRING_TRUNCATION_START;
-        copy[chars_to_skip] = '\0';
-        strncpy(copy, text + index, chars_to_skip);
-        IGNORE_STRING_TRUNCATION_END;
-        int _w, _h;
-        if (is_utf8) {
-            ecode = TTF_SizeUTF8(font, copy, &_w, &_h);
-        } else {
-            ecode = TTF_SizeText(font, copy, &_w, &_h);
-        }
-
-        if (height == -1) {
-            height = _h;
-        }
-
-        width = MAX(_w, width);
-
-        lines++;
-        index += chars_to_skip;
-    }
     int lineskip = TTF_FontLineSkip(font);
     int rowHeight = MAX(lineskip, height);
 
-    printf("lines %d\n", lines);
-    *h = rowHeight + lineskip * (lines - 1);
-    if (lines <= 1) {
-        *w = width;
+    *h = rowHeight + lineskip * (num_lines - 1);
+    if (num_lines <= 1) {
+        *w = MIN(width, wraplength);
     } else {
         *w = wraplength;
     }
 
-    if (copy) {
-        free(copy);
+    if (top_of_text) {
+        free(top_of_text);
     }
 
     return 0;
+
+failure:
+    if (top_of_text) {
+        free(top_of_text);
+    }
+    return -1;
 }
 
 static PyObject *
