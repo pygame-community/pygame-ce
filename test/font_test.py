@@ -549,7 +549,7 @@ class FontTypeTest(unittest.TestCase):
         self.assertNotEqual(size, bsize)
 
     def test_size_wrapped(self):
-        f = pygame.Font()
+        f = pygame_font.Font()
 
         strings = [
             "really really really really long text",

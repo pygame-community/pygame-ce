@@ -37,6 +37,8 @@
 
 #include "structmember.h"
 
+#include <SDL_ttf.h>
+
 #ifndef SDL_TTF_VERSION_ATLEAST
 #define SDL_TTF_COMPILEDVERSION                                  \
     SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \
@@ -711,7 +713,7 @@ get_size_wraplength(int is_utf8, TTF_Font *font, const char *text,
     if (*text_copy) {
         max_lines = 0;
         num_lines = 0;
-        len = strlen(text_copy);
+        len = (int)strlen(text_copy);
         do {
             int extent = 0, max_count = 0, char_count = 0;
             int saved_len = 0;
@@ -807,7 +809,7 @@ get_size_wraplength(int is_utf8, TTF_Font *font, const char *text,
                 int _w, _h;
 
                 if (lines) {
-                    text = lines[i];
+                    temp = lines[i];
                     if (i + 1 < num_lines) {
                         c = lines[i + 1][0];
                         lines[i + 1][0] = '\0';
