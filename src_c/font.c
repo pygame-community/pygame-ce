@@ -601,6 +601,7 @@ font_render(PyObject *self, PyObject *args)
     return final;
 }
 
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
 // source: SDL_ttf.c
 /* Gets a unicode value from a UTF-8 encoded string
  * Ouputs increment to advance the string */
@@ -867,10 +868,12 @@ failure:
     }
     return -1;
 }
+#endif
 
 static PyObject *
 font_size_wrapped(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     static const int is_utf8 = 1;
     static char *kwlist[] = {"text", "wraplength", NULL};
     PyObject *text = NULL;
@@ -916,6 +919,10 @@ font_size_wrapped(PyObject *self, PyObject *args, PyObject *kwargs)
         return RAISE_TEXT_TYPE_ERROR();
     }
     return Py_BuildValue("(ii)", w, h);
+#else
+    return RAISE(PyExc_NotImplementedError,
+            "Font.size_wrapped requires at least version 2.0.18 of SDL2 TTF");
+#endif
 }
 
 static PyObject *
