@@ -562,8 +562,8 @@ class FontTypeTest(unittest.TestCase):
             for s in strings:
                 for wraplength in range(0, 100):
                     s = "really really really really long text"
-                    surface = font.render(s, False, (255, 255, 255), None, wraplength)
                     w, h = font.size_wrapped(s, wraplength)
+                    surface = font.render(s, False, (255, 255, 255), None, wraplength)
 
                     self.assertEqual(w, surface.get_width())
                     self.assertEqual(h, surface.get_height())

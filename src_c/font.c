@@ -805,23 +805,21 @@ get_size_wraplength(int is_utf8, TTF_Font *font, const char *text,
         if (num_lines > 1) {
             width = 0;
             char *temp;
-            for (int i = 0; i < num_lines; ++i) {
-                char c = 0;
-                int _w, _h;
+            if (lines) {
+                for (int i = 0; i < num_lines; ++i) {
+                    char c = 0;
+                    int _w, _h;
 
-                if (lines) {
                     temp = lines[i];
                     if (i + 1 < num_lines) {
                         c = lines[i + 1][0];
                         lines[i + 1][0] = '\0';
                     }
-                }
 
-                if (TTF_SizeUTF8(font, temp, &_w, &_h) == 0) {
-                    width = MAX(_w, width);
-                }
+                    if (TTF_SizeUTF8(font, temp, &_w, &_h) == 0) {
+                        width = MAX(_w, width);
+                    }
 
-                if (lines) {
                     if (i + 1 < num_lines) {
                         lines[i + 1][0] = c;
                     }
