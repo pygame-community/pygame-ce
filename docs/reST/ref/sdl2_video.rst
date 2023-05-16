@@ -23,10 +23,15 @@
       | :sl:`Creates window using window created by pygame.display.set_mode().`
       | :sg:`from_display_module() -> Window`
 
-   .. attribute:: grab
+   .. attribute:: grabbed
 
-      | :sl:`Gets or sets whether the mouse is confined to the window.`
-      | :sg:`grab -> bool`
+      | :sl:`Gets whether the mouse is confined to the window.`
+      | :sg:`grabbed -> bool`
+   
+   .. attribute:: grab_mode
+
+      | :sl:`Gets or sets whether the window is in grab mode.`
+      | :sg:`grab_mode -> bool`
 
    .. attribute:: relative_mouse
 
