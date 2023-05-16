@@ -557,7 +557,7 @@ class FontTypeTest(unittest.TestCase):
                 "",
                 " ",
                 "\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57"
-                 "\u0e55 hello world \u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57",
+                "\u0e55 hello world \u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57",
             ]
             for s in strings:
                 for wraplength in range(0, 100):

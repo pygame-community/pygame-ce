@@ -920,8 +920,9 @@ font_size_wrapped(PyObject *self, PyObject *args, PyObject *kwargs)
     }
     return Py_BuildValue("(ii)", w, h);
 #else
-    return RAISE(PyExc_NotImplementedError,
-            "Font.size_wrapped requires at least version 2.0.18 of SDL2 TTF");
+    return RAISE(
+        PyExc_NotImplementedError,
+        "Font.size_wrapped requires at least version 2.0.18 of SDL2 TTF");
 #endif
 }
 
