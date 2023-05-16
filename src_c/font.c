@@ -23,6 +23,9 @@
 /*
  *  font module for pygame
  */
+#include <math.h>
+#include <stdlib.h>
+#include "pgplatform.h"
 #define PYGAMEAPI_FONT_INTERNAL
 #include "font.h"
 
@@ -54,6 +57,24 @@
 #if defined(PYPY_VERSION)
 #define Py_UNICODE_IS_SURROGATE(ch) (0xD800 <= (ch) && (ch) <= 0xDFFF)
 #endif
+
+/* This is used in font_size as GCC throws an pragma warning that can be
+ * safely ignored. The warning is for strncpy and it complains that it
+ * can't guarantee strncpy will place a NULL character in the string.
+ * The way to code is written there WILL be a NULL character that the code
+ * places manually
+ */
+#if  defined(__GNUC__) && !defined(__clang__)
+#define IGNORE_STRING_TRUNCATION_START \
+        _Pragma("GCC diagnostic push") \
+        _Pragma("GCC diagnostic ignored \"-Wstringop-truncation\"")
+#define IGNORE_STRING_TRUNCATION_END \
+        _Pragma("GCC diagnostic pop")
+#else
+#define IGNORE_STRING_TRUNCATION_START
+#define IGNORE_STRING_TRUNCATION_END
+#endif
+
 
 static PyTypeObject PyFont_Type;
 static PyObject *
@@ -599,12 +620,188 @@ font_render(PyObject *self, PyObject *args)
     return final;
 }
 
-static PyObject *
-font_size(PyObject *self, PyObject *text)
+
+// source: SDL_ttf.c
+/* Gets a unicode value from a UTF-8 encoded string
+ * Ouputs increment to advance the string */
+#define UNKNOWN_UNICODE 0xFFFD
+static unsigned long
+UTF8_getch(const char *src, size_t srclen, int *inc)
 {
+    const Uint8 *p = (const Uint8 *)src;
+    size_t left = 0;
+    size_t save_srclen = srclen;
+    SDL_bool underflow = SDL_FALSE;
+    Uint32 ch = UNKNOWN_UNICODE;
+
+    if (srclen == 0) {
+        return UNKNOWN_UNICODE;
+    }
+    if (p[0] >= 0xFC) {
+        if ((p[0] & 0xFE) == 0xFC) {
+            ch = (Uint32) (p[0] & 0x01);
+            left = 5;
+        }
+    } else if (p[0] >= 0xF8) {
+        if ((p[0] & 0xFC) == 0xF8) {
+            ch = (Uint32) (p[0] & 0x03);
+            left = 4;
+        }
+    } else if (p[0] >= 0xF0) {
+        if ((p[0] & 0xF8) == 0xF0) {
+            ch = (Uint32) (p[0] & 0x07);
+            left = 3;
+        }
+    } else if (p[0] >= 0xE0) {
+        if ((p[0] & 0xF0) == 0xE0) {
+            ch = (Uint32) (p[0] & 0x0F);
+            left = 2;
+        }
+    } else if (p[0] >= 0xC0) {
+        if ((p[0] & 0xE0) == 0xC0) {
+            ch = (Uint32) (p[0] & 0x1F);
+            left = 1;
+        }
+    } else {
+        if ((p[0] & 0x80) == 0x00) {
+            ch = (Uint32) p[0];
+        }
+    }
+    --srclen;
+    while (left > 0 && srclen > 0) {
+        ++p;
+        if ((p[0] & 0xC0) != 0x80) {
+            ch = UNKNOWN_UNICODE;
+            break;
+        }
+        ch <<= 6;
+        ch |= (p[0] & 0x3F);
+        --srclen;
+        --left;
+    }
+    if (left > 0) {
+        underflow = SDL_TRUE;
+    }
+
+    if (underflow ||
+        (ch >= 0xD800 && ch <= 0xDFFF) ||
+        (ch == 0xFFFE || ch == 0xFFFF) || ch > 0x10FFFF) {
+        ch = UNKNOWN_UNICODE;
+    }
+
+    *inc = (int)(save_srclen - srclen);
+
+    return ch;
+}
+
+static int
+get_size_wraplength(int is_utf8, TTF_Font *font, char *text, int wraplength, int *w, int *h)
+{
+    int index = 0;
+    int extent = 0, count = 0;
+    int len = strlen(text);
+    // we take a copy of the text provided the get the correct width and
+    // height from TTF_Size*() functions so that text remains untouched.
+    char *copy = NULL;
+    int max_copy = 0, copy_len = 0;
+    int height = 0, width = 0;
+    int lines = 0;
+
+    printf("is_utf8 %d\n", is_utf8);
+
+    while (index + 1 < len && *text != '\0') {
+        int ecode;
+        if (is_utf8) {
+            ecode = TTF_MeasureUTF8(font, text + index, wraplength, &extent, &count);
+        } else {
+            ecode = TTF_MeasureText(font, text + index, wraplength, &extent, &count);
+        }
+        if (ecode < 0) {
+            return ecode;
+        }
+
+        int chars_to_skip = 0;
+        if (is_utf8) {
+            char *temp_str = text + index;
+            int temp_len = strlen(temp_str);
+            while (count > 0) {
+                int inc = 0;
+                UTF8_getch(temp_str, temp_len, &inc);
+                count--;
+                chars_to_skip += inc;
+                temp_str += inc;
+                temp_len -= inc;
+            }
+        } else {
+            chars_to_skip = count;
+        }
+
+        copy_len = chars_to_skip;
+
+        if (copy_len > 0 && copy_len >= max_copy) {
+            max_copy = (int)floorf((float)copy_len * 1.5f);
+            copy = (char*)realloc(copy, max_copy);
+        }
+
+        IGNORE_STRING_TRUNCATION_START;
+        copy[chars_to_skip] = '\0';
+        strncpy(copy, text + index, chars_to_skip);
+        IGNORE_STRING_TRUNCATION_END;
+        int _w, _h;
+        if (is_utf8) {
+            ecode = TTF_SizeUTF8(font, copy, &_w, &_h);
+        } else {
+            ecode = TTF_SizeText(font, copy, &_w, &_h);
+        }
+
+        if (height == -1) {
+            height = _h;
+        }
+
+        width = MAX(_w, width);
+
+        lines++;
+        index += chars_to_skip;
+    }
+    int lineskip = TTF_FontLineSkip(font);
+    int rowHeight = MAX(lineskip, height);
+
+    printf("lines %d\n", lines);
+    *h = rowHeight + lineskip * (lines - 1);
+    if (lines <= 1) {
+        *w = width;
+    } else {
+        *w = wraplength;
+    }
+
+    if (copy) {
+        free(copy);
+    }
+
+    return 0;
+}
+
+static PyObject *
+font_size(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    static const int is_utf8 = 1;
+    static char *kwlist[] = {
+        "text", "wraplength", NULL
+    };
+    PyObject *text = NULL;
     TTF_Font *font = PyFont_AsFont(self);
+    int wraplength = 0;
     int w, h;
-    const char *string;
+    char *string;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|i", kwlist, &text, &wraplength)) {
+        return NULL;
+    }
+
+    if (wraplength < 0) {
+        return RAISE(PyExc_ValueError,
+                     "wraplength parameter must be positive");
+    }
 
     if (PyUnicode_Check(text)) {
         PyObject *bytes = PyUnicode_AsEncodedString(text, "utf-8", "strict");
@@ -614,15 +811,25 @@ font_size(PyObject *self, PyObject *text)
             return NULL;
         }
         string = PyBytes_AS_STRING(bytes);
-        ecode = TTF_SizeUTF8(font, string, &w, &h);
+        if (wraplength > 0) {
+            ecode = get_size_wraplength(is_utf8, font, string, wraplength, &w, &h);
+        } else {
+            ecode = TTF_SizeUTF8(font, string, &w, &h);
+        }
         Py_DECREF(bytes);
         if (ecode) {
             return RAISE(pgExc_SDLError, TTF_GetError());
         }
     }
     else if (PyBytes_Check(text)) {
+        int ecode;
         string = PyBytes_AS_STRING(text);
-        if (TTF_SizeText(font, string, &w, &h)) {
+        if (wraplength > 0) {
+            ecode = get_size_wraplength(!is_utf8, font, string, wraplength, &w, &h);
+        } else {
+            ecode = TTF_SizeText(font, string, &w, &h);
+        }
+        if (ecode < 0) {
             return RAISE(pgExc_SDLError, TTF_GetError());
         }
     }
@@ -872,7 +1079,7 @@ static PyMethodDef font_methods[] = {
      DOC_FONT_FONT_SETSTRIKETHROUGH},
     {"metrics", font_metrics, METH_O, DOC_FONT_FONT_METRICS},
     {"render", font_render, METH_VARARGS, DOC_FONT_FONT_RENDER},
-    {"size", font_size, METH_O, DOC_FONT_FONT_SIZE},
+    {"size", (PyCFunction)font_size, METH_VARARGS | METH_KEYWORDS, DOC_FONT_FONT_SIZE},
     {"set_script", font_set_script, METH_O, DOC_FONT_FONT_SETSCRIPT},
     {"set_direction", (PyCFunction)font_set_direction,
      METH_VARARGS | METH_KEYWORDS, DOC_FONT_FONT_SETDIRECTION},
