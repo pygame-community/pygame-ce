@@ -599,7 +599,6 @@ font_render(PyObject *self, PyObject *args)
     return final;
 }
 
-
 // source: SDL_ttf.c
 /* Gets a unicode value from a UTF-8 encoded string
  * Ouputs increment to advance the string */
@@ -618,32 +617,37 @@ UTF8_getch(const char *src, size_t srclen, int *inc)
     }
     if (p[0] >= 0xFC) {
         if ((p[0] & 0xFE) == 0xFC) {
-            ch = (Uint32) (p[0] & 0x01);
+            ch = (Uint32)(p[0] & 0x01);
             left = 5;
         }
-    } else if (p[0] >= 0xF8) {
+    }
+    else if (p[0] >= 0xF8) {
         if ((p[0] & 0xFC) == 0xF8) {
-            ch = (Uint32) (p[0] & 0x03);
+            ch = (Uint32)(p[0] & 0x03);
             left = 4;
         }
-    } else if (p[0] >= 0xF0) {
+    }
+    else if (p[0] >= 0xF0) {
         if ((p[0] & 0xF8) == 0xF0) {
-            ch = (Uint32) (p[0] & 0x07);
+            ch = (Uint32)(p[0] & 0x07);
             left = 3;
         }
-    } else if (p[0] >= 0xE0) {
+    }
+    else if (p[0] >= 0xE0) {
         if ((p[0] & 0xF0) == 0xE0) {
-            ch = (Uint32) (p[0] & 0x0F);
+            ch = (Uint32)(p[0] & 0x0F);
             left = 2;
         }
-    } else if (p[0] >= 0xC0) {
+    }
+    else if (p[0] >= 0xC0) {
         if ((p[0] & 0xE0) == 0xC0) {
-            ch = (Uint32) (p[0] & 0x1F);
+            ch = (Uint32)(p[0] & 0x1F);
             left = 1;
         }
-    } else {
+    }
+    else {
         if ((p[0] & 0x80) == 0x00) {
-            ch = (Uint32) p[0];
+            ch = (Uint32)p[0];
         }
     }
     --srclen;
@@ -662,8 +666,7 @@ UTF8_getch(const char *src, size_t srclen, int *inc)
         underflow = SDL_TRUE;
     }
 
-    if (underflow ||
-        (ch >= 0xD800 && ch <= 0xDFFF) ||
+    if (underflow || (ch >= 0xD800 && ch <= 0xDFFF) ||
         (ch == 0xFFFE || ch == 0xFFFF) || ch > 0x10FFFF) {
         ch = UNKNOWN_UNICODE;
     }
@@ -673,12 +676,12 @@ UTF8_getch(const char *src, size_t srclen, int *inc)
     return ch;
 }
 
-#define UNICODE_BOM_NATIVE  0xFEFF
+#define UNICODE_BOM_NATIVE 0xFEFF
 #define UNICODE_BOM_SWAPPED 0xFFFE
 
-
 static int
-get_size_wraplength(int is_utf8, TTF_Font *font, const char *text, int wraplength, int *w, int *h)
+get_size_wraplength(int is_utf8, TTF_Font *font, const char *text,
+                    int wraplength, int *w, int *h)
 {
     int len;
     char *text_copy = strdup(text);
@@ -694,7 +697,8 @@ get_size_wraplength(int is_utf8, TTF_Font *font, const char *text, int wraplengt
             TTF_SetError("Text has zero width");
             return -1;
         }
-    } else {
+    }
+    else {
         if ((TTF_SizeText(font, text, &width, &height) < 0) && !width) {
             TTF_SetError("Text has zero width");
             return -1;
@@ -716,8 +720,9 @@ get_size_wraplength(int is_utf8, TTF_Font *font, const char *text, int wraplengt
             if (num_lines >= max_lines) {
                 char **saved = lines;
                 if (wraplength == 0) {
-                   max_lines += 32;
-                } else {
+                    max_lines += 32;
+                }
+                else {
                     max_lines += (width / wraplength) + 1;
                 }
                 lines = (char **)realloc(lines, max_lines * sizeof(lines));
@@ -732,9 +737,12 @@ get_size_wraplength(int is_utf8, TTF_Font *font, const char *text, int wraplengt
 
             int ecode;
             if (is_utf8) {
-                ecode = TTF_MeasureUTF8(font, text_copy, wraplength, &extent, &max_count);
-            } else {
-                ecode = TTF_MeasureText(font, text_copy, wraplength, &extent, &max_count);
+                ecode = TTF_MeasureUTF8(font, text_copy, wraplength, &extent,
+                                        &max_count);
+            }
+            else {
+                ecode = TTF_MeasureText(font, text_copy, wraplength, &extent,
+                                        &max_count);
             }
             if (ecode < 0) {
                 TTF_SetError("Error measure text");
@@ -760,7 +768,8 @@ get_size_wraplength(int is_utf8, TTF_Font *font, const char *text, int wraplengt
                 char is_delim;
                 if (wraplength > 0) {
                     is_delim = c == ' ' || c == '\t' || c == '\n' || c == '\r';
-                } else {
+                }
+                else {
                     is_delim = c == '\n';
                 }
 
@@ -817,10 +826,13 @@ get_size_wraplength(int is_utf8, TTF_Font *font, const char *text, int wraplengt
             }
         }
         *w = width;
-    } else {
-        if (num_lines <= 1 && TTF_GetFontWrappedAlign(font) == TTF_WRAPPED_ALIGN_LEFT) {
+    }
+    else {
+        if (num_lines <= 1 &&
+            TTF_GetFontWrappedAlign(font) == TTF_WRAPPED_ALIGN_LEFT) {
             *w = MIN(wraplength, width);
-        } else {
+        }
+        else {
             *w = wraplength;
         }
     }
@@ -852,16 +864,15 @@ static PyObject *
 font_size_wrapped(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     static const int is_utf8 = 1;
-    static char *kwlist[] = {
-        "text", "wraplength", NULL
-    };
+    static char *kwlist[] = {"text", "wraplength", NULL};
     PyObject *text = NULL;
     TTF_Font *font = PyFont_AsFont(self);
     int wraplength = 0;
     int w, h;
     const char *string;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|i", kwlist, &text, &wraplength)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|i", kwlist, &text,
+                                     &wraplength)) {
         return NULL;
     }
 
@@ -887,7 +898,8 @@ font_size_wrapped(PyObject *self, PyObject *args, PyObject *kwargs)
     else if (PyBytes_Check(text)) {
         int ecode;
         string = PyBytes_AS_STRING(text);
-        ecode = get_size_wraplength(!is_utf8, font, string, wraplength, &w, &h);
+        ecode =
+            get_size_wraplength(!is_utf8, font, string, wraplength, &w, &h);
         if (ecode < 0) {
             return RAISE(pgExc_SDLError, TTF_GetError());
         }
@@ -1172,7 +1184,8 @@ static PyMethodDef font_methods[] = {
     {"metrics", font_metrics, METH_O, DOC_FONT_FONT_METRICS},
     {"render", font_render, METH_VARARGS, DOC_FONT_FONT_RENDER},
     {"size", font_size, METH_O, DOC_FONT_FONT_SIZE},
-    {"size_wrapped", (PyCFunction)font_size_wrapped, METH_VARARGS | METH_KEYWORDS, DOC_FONT_FONT_SIZEWRAPPED },
+    {"size_wrapped", (PyCFunction)font_size_wrapped,
+     METH_VARARGS | METH_KEYWORDS, DOC_FONT_FONT_SIZEWRAPPED},
     {"set_script", font_set_script, METH_O, DOC_FONT_FONT_SETSCRIPT},
     {"set_direction", (PyCFunction)font_set_direction,
      METH_VARARGS | METH_KEYWORDS, DOC_FONT_FONT_SETDIRECTION},

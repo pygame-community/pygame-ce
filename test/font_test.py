@@ -551,12 +551,12 @@ class FontTypeTest(unittest.TestCase):
     def test_size_wrapped(self):
         f = pygame.Font()
 
-        strings= [
-                "really really really really long text",
-                "",
-                " ",
-                "\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57"
-                "\u0e55 hello world \u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57"
+        strings = [
+            "really really really really long text",
+            "",
+            " ",
+            "\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57"
+            "\u0e55 hello world \u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57",
         ]
         font = pygame.Font()
         for s in strings:
