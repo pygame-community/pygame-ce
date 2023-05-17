@@ -38,14 +38,18 @@ def run():
         if returncode == 0:
             add_js_files()
     except Exception:
-        print("---")
         print("Failed to add js files")
-        print("---")
         raise
 
     return returncode
 
 def add_js_files():
+    """Adds the script responsible for handling theme changing to the html files.
+    NOTE: This function might be removed for a better solution in the future.
+
+    Raises:
+        RuntimeError: If the file cannot find a body tag with the class "body" and role "main".
+    """
     files_to_change = ["search.html", "genindex.html"]
     tag_to_find = '<div class="body" role="main">'
     tag_to_add = '<script src="script.html"></script>'

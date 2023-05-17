@@ -257,14 +257,11 @@ div.document {
     background-color: {{ theme_dark_bgcolor }};
 }
 
-.theme-icon[data-theme="light-theme"] { 
+.theme-icon {
     cursor: pointer;
-    fill: {{ theme_dark_cli }};
-    transform: translate(0, 2px); /* Ignore this, the svg is a little bit higher up than it should be, this resets it */
 }
-.theme-icon[data-theme="dark-theme"] { 
-    cursor: pointer;
-    fill: {{ theme_dark_cli }};
+.theme-icon[data-theme="light-theme"] {
+    transform: translate(0, 2px); /* Ignore this, the svg is a little bit higher up than it should be, this resets it */
 }
 
 /* Dont show the same icon as the current theme */
