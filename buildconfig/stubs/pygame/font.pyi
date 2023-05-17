@@ -41,7 +41,7 @@ class Font:
         text: Union[str, bytes, None],
         antialias: bool,
         color: ColorValue,
-        background: Optional[ColorValue] = None,
+        bgcolor: Optional[ColorValue] = None,
         wraplength: int = 0
     ) -> Surface: ...
     def size(self, text: Union[str, bytes]) -> Tuple[int, int]: ...

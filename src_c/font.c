@@ -475,7 +475,7 @@ font_set_strikethrough(PyObject *self, PyObject *arg)
 }
 
 static PyObject *
-font_render(PyObject *self, PyObject *args)
+font_render(PyObject *self, PyObject *args, PyObject *kwds)
 {
     TTF_Font *font = PyFont_AsFont(self);
     int antialias;
@@ -486,8 +486,12 @@ font_render(PyObject *self, PyObject *args)
     const char *astring = "";
     int wraplength = 0;
 
-    if (!PyArg_ParseTuple(args, "OpO|Oi", &text, &antialias, &fg_rgba_obj,
-                          &bg_rgba_obj, &wraplength)) {
+    static char *kwlist[] = {"text",    "antialias",  "color",
+                             "bgcolor", "wraplength", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OpO|Oi", kwlist, &text,
+                                     &antialias, &fg_rgba_obj, &bg_rgba_obj,
+                                     &wraplength)) {
         return NULL;
     }
 
@@ -542,8 +546,8 @@ font_render(PyObject *self, PyObject *args)
 
     if (strlen(astring) == 0) { /* special 0 string case */
         int height = TTF_FontHeight(font);
-        surf = SDL_CreateRGBSurface(0, 0, height, 32, 0xff << 16, 0xff << 8,
-                                    0xff, 0);
+        surf = SDL_CreateRGBSurfaceWithFormat(0, 0, height, 32,
+                                              PG_PIXELFORMAT_XRGB8888);
     }
     else { /* normal case */
 #if !SDL_TTF_VERSION_ATLEAST(2, 0, 15)
@@ -952,7 +956,8 @@ static PyMethodDef font_methods[] = {
      DOC_FONT_FONT_GETPOINTSIZE},
     {"set_point_size", font_set_ptsize, METH_O, DOC_FONT_FONT_SETPOINTSIZE},
     {"metrics", font_metrics, METH_O, DOC_FONT_FONT_METRICS},
-    {"render", font_render, METH_VARARGS, DOC_FONT_FONT_RENDER},
+    {"render", (PyCFunction)font_render, METH_VARARGS | METH_KEYWORDS,
+     DOC_FONT_FONT_RENDER},
     {"size", font_size, METH_O, DOC_FONT_FONT_SIZE},
     {"set_script", font_set_script, METH_O, DOC_FONT_FONT_SETSCRIPT},
     {"set_direction", (PyCFunction)font_set_direction,

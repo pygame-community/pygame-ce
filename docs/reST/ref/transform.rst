@@ -20,7 +20,7 @@ are animating a bouncing spring which expands and contracts. If you applied the
 size changes incrementally to the previous images, you would lose detail.
 Instead, always begin with the original image and scale to the desired size.)
 
-.. versionchanged:: 2.0.2 transform functions now support keyword arguments.
+.. versionchangedold:: 2.0.2 transform functions now support keyword arguments.
 
 .. function:: flip
 
@@ -138,7 +138,7 @@ Instead, always begin with the original image and scale to the desired size.)
    Surface. This destination surface must be the same as the size (width, height) passed
    in, and the same depth and format as the source Surface.
 
-   .. versionadded:: 1.8
+   .. versionaddedold:: 1.8
 
    .. ## pygame.transform.smoothscale ##
 
@@ -218,7 +218,7 @@ Instead, always begin with the original image and scale to the desired size.)
    Surface. This destination surface must have the same dimensions (width, height) and
    depth as the source Surface.
 
-   .. versionadded:: 1.8
+   .. versionaddedold:: 1.8
 
    .. ## pygame.transform.laplacian ##
 
@@ -278,8 +278,8 @@ Instead, always begin with the original image and scale to the desired size.)
    Surface. This destination surface must have the same dimensions (width, height) and 
    depth as the first passed source Surface.
 
-   .. versionadded:: 1.8
-   .. versionadded:: 1.9 ``palette_colors`` argument
+   .. versionaddedold:: 1.8
+   .. versionaddedold:: 1.9 ``palette_colors`` argument
 
    .. ## pygame.transform.average_surfaces ##
 
@@ -292,14 +292,14 @@ Instead, always begin with the original image and scale to the desired size.)
    Rect, and returns it as a Color. If consider_alpha is set to True, then alpha is
    taken into account (removing the black artifacts).
 
-   .. versionadded:: 2.1.2 ``consider_alpha`` argument
+   .. versionaddedold:: 2.1.2 ``consider_alpha`` argument
 
    .. ## pygame.transform.average_color ##
 
 .. function:: invert
 
    | :sl:`inverts the RGB elements of a surface`
-   | :sg:`average_color(surface, dest_surface=None) -> Surface`
+   | :sg:`invert(surface, dest_surface=None) -> Surface`
 
    Inverts each RGB pixel contained within the Surface, does not affect alpha channel.
 
@@ -387,8 +387,8 @@ Instead, always begin with the original image and scale to the desired size.)
       :pyobject: TransformModuleTest.test_threshold_dest_surf_not_change
 
 
-   .. versionadded:: 1.8
-   .. versionchanged:: 1.9.4
+   .. versionaddedold:: 1.8
+   .. versionchangedold:: 1.9.4
       Fixed a lot of bugs and added keyword arguments. Test your code.
 
    .. ## pygame.transform.threshold ##
