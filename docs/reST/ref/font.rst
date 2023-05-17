@@ -280,8 +280,8 @@ solves no longer exists, it will likely be removed in the future.
       | :sl:`Gets or sets the font's point_size`
       | :sg:`point_size -> int`
 
-      The font's point_size will not entirely be accurate upon
-      initialization.
+      Returns the point_size of the font. Will not be accurate upon initializing
+      the font object when the font name is initalized as None
 
       .. versionadded:: 2.2
 
