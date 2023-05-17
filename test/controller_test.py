@@ -4,6 +4,7 @@ import pygame._sdl2.controller as controller
 from pygame.tests.test_utils import prompt, question
 
 
+@unittest.skip("Module is under construction")
 class ControllerModuleTest(unittest.TestCase):
     def setUp(self):
         controller.init()
@@ -62,6 +63,7 @@ class ControllerModuleTest(unittest.TestCase):
         self.assertIsNone(controller.name_forindex(-1))
 
 
+@unittest.skip("Module is under construction")
 class ControllerTypeTest(unittest.TestCase):
     def setUp(self):
         controller.init()
@@ -147,6 +149,7 @@ class ControllerTypeTest(unittest.TestCase):
             self.skipTest("No controller connected")
 
 
+@unittest.skip("Module is under construction")
 class ControllerInteractiveTest(unittest.TestCase):
     __tags__ = ["interactive"]
 

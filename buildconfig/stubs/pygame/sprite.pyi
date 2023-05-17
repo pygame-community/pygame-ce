@@ -28,6 +28,14 @@ _Group = AbstractGroup[_SpriteSupportsGroup]
 # protocol helps with structural subtyping for typevars in sprite group generics
 class _SupportsSprite(Protocol):
     @property
+    def image(self) -> Optional[Surface]: ...
+    @image.setter
+    def image(self, value: Optional[Surface]) -> None: ...
+    @property
+    def rect(self) -> Optional[Rect]: ...
+    @rect.setter
+    def rect(self, value: Optional[Rect]) -> None: ...
+    @property
     def layer(self) -> int: ...
     @layer.setter
     def layer(self, value: int) -> None: ...
@@ -53,6 +61,14 @@ class _SupportsDirtySprite(_SupportsSprite, Protocol):
 
 # concrete sprite implementation class
 class Sprite(_SupportsSprite):
+    @property
+    def image(self) -> Optional[Surface]: ...
+    @image.setter
+    def image(self, value: Optional[Surface]) -> None: ...
+    @property
+    def rect(self) -> Optional[Rect]: ...
+    @rect.setter
+    def rect(self, value: Optional[Rect]) -> None: ...
     @property
     def layer(self) -> int: ...
     @layer.setter
@@ -84,11 +100,13 @@ _TGroup = TypeVar("_TGroup", bound=AbstractGroup)
 # sprite functions don't need all sprite attributes to be present in the
 # arguments passed, they only use a few which are marked in the below protocols
 class _HasRect(Protocol):
-    rect: Rect
+    @property
+    def rect(self) -> Optional[Rect]: ...
 
 # image in addition to rect
 class _HasImageAndRect(_HasRect, Protocol):
-    image: Surface
+    @property
+    def image(self) -> Optional[Surface]: ...
 
 # mask in addition to rect
 class _HasMaskAndRect(_HasRect, Protocol):
@@ -115,7 +133,7 @@ _TDirtySprite = TypeVar("_TDirtySprite", bound=_DirtySpriteSupportsGroup)
 # missing image and rect attributes
 # a = Group(Sprite())
 
-# typechecker should error, other Sprite attibutes are also needed for Group
+# typechecker should error, other Sprite attributes are also needed for Group
 # class MySprite:
 #     image: Surface
 #     rect: Rect
@@ -244,7 +262,7 @@ class collide_circle_ratio:
     ) -> bool: ...
 
 # argument to collide_mask must either have mask or have image attribute, in
-# addtion to mandatorily having a rect attribute
+# addition to mandatorily having a rect attribute
 _SupportsCollideMask = Union[_HasImageAndRect, _HasMaskAndRect]
 
 def collide_mask(

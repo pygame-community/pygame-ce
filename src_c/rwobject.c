@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -489,7 +489,7 @@ pgRWops_ReleaseObject(SDL_RWops *context)
             Py_XDECREF(helper->read);
             Py_XDECREF(helper->close);
             Py_DECREF(fileobj);
-            PyMem_Del(helper);
+            PyMem_Free(helper);
             SDL_FreeRW(context);
         }
         else {

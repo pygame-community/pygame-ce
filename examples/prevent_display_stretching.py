@@ -6,7 +6,7 @@ Prevent display stretching on Windows.
 On some computers, the display environment can be configured to stretch
 all windows so that they will not appear too small on the screen for
 the user. This configuration is especially common on high-DPI displays.
-pygame graphics appear distorted when automatically stretched by the
+pygame-ce graphics appear distorted when automatically stretched by the
 display environment. This script demonstrates a technique for preventing
 this stretching and distortion.
 
@@ -28,7 +28,7 @@ AXISCOLOR = "white"
 if os.name != "nt" or sys.getwindowsversion()[0] < 6:
     raise NotImplementedError("this script requires Windows Vista or newer")
 
-import pygame as pg
+import pygame
 
 import ctypes
 
@@ -51,31 +51,31 @@ if selection == "y":
     user32.SetProcessDPIAware()
 
 # Show screen
-pg.display.init()
+pygame.display.init()
 RESOLUTION = (350, 350)
-screen = pg.display.set_mode(RESOLUTION)
+screen = pygame.display.set_mode(RESOLUTION)
 
 # Render message onto a surface
-pg.font.init()
-font = pg.font.Font(None, 36)
+pygame.font.init()
+font = pygame.Font(None, 36)
 msg_surf = font.render(msg, 1, TEXTCOLOR)
 res_surf = font.render("Intended resolution: %ix%i" % RESOLUTION, 1, TEXTCOLOR)
 
 # Control loop
 running = True
-clock = pg.time.Clock()
+clock = pygame.Clock()
 counter = 0
 while running:
-    for event in pg.event.get():
-        if event.type == pg.QUIT:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
             running = False
 
     screen.fill(BACKGROUNDCOLOR)
 
     # Draw lines which will be blurry if the window is stretched
     # or clear if the window is not stretched.
-    pg.draw.line(screen, AXISCOLOR, (0, counter), (RESOLUTION[0] - 1, counter))
-    pg.draw.line(screen, AXISCOLOR, (counter, 0), (counter, RESOLUTION[1] - 1))
+    pygame.draw.line(screen, AXISCOLOR, (0, counter), (RESOLUTION[0] - 1, counter))
+    pygame.draw.line(screen, AXISCOLOR, (counter, 0), (counter, RESOLUTION[1] - 1))
 
     # Blit message onto screen surface
     msg_blit_rect = screen.blit(msg_surf, (0, 0))
@@ -83,10 +83,10 @@ while running:
 
     clock.tick(10)
 
-    pg.display.flip()
+    pygame.display.flip()
 
     counter += 1
     if counter == RESOLUTION[0]:
         counter = 0
 
-pg.quit()
+pygame.quit()

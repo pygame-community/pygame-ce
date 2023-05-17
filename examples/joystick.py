@@ -9,7 +9,7 @@ pygame.init()
 class TextPrint:
     def __init__(self):
         self.reset()
-        self.font = pygame.font.Font(None, 25)
+        self.font = pygame.Font(None, 25)
 
     def tprint(self, screen, text):
         text_bitmap = self.font.render(text, True, (0, 0, 0))
@@ -34,12 +34,12 @@ def main():
     pygame.display.set_caption("Joystick example")
 
     # Used to manage how fast the screen updates.
-    clock = pygame.time.Clock()
+    clock = pygame.Clock()
 
     # Get ready to print.
     text_print = TextPrint()
 
-    # This dict can be left as-is, since pygame will generate a
+    # This dict can be left as-is, since pygame-ce will generate a
     # pygame.JOYDEVICEADDED event for every joystick connected
     # at the start of the program.
     joysticks = {}
