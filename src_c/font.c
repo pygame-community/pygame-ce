@@ -701,6 +701,7 @@ font_set_ptsize(PyObject *self, PyObject *arg)
 
     if (TTF_SetFontSize(font, val) == -1) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return NULL;
     }
     ((PyFontObject *)self)->ptsize = val;
 
