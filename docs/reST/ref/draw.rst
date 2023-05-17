@@ -179,6 +179,8 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :raises ValueError: if ``len(points) < 3`` (must have at least 3 points)
    :raises TypeError: if ``points`` is not a sequence or ``points`` does not
       contain number pairs
+      
+   .. versionadded:: 2.3.0
 
    .. ## pygame.draw.polygons ##
 
