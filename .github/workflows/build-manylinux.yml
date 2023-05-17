@@ -95,7 +95,7 @@ jobs:
 
     - name: Extract metadata (tags, labels) for Docker
       id: meta
-      uses: docker/metadata-action@507c2f2dc502c992ad446e3d7a5dfbe311567a96
+      uses: docker/metadata-action@c4ee3adeed93b1fa6a762f209fb01608c1a22f1e
       with:
         images: ghcr.io/${{ github.repository }}_${{ matrix.arch }}
         tags: type=raw,value=${{ hashFiles('buildconfig/manylinux-build/**') }}
@@ -118,7 +118,7 @@ jobs:
         CIBW_MANYLINUX_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
         CIBW_MANYLINUX_PYPY_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
 
-      uses: pypa/cibuildwheel@v2.12.1
+      uses: pypa/cibuildwheel@v2.12.3
 
     # We upload the generated files under github actions assets
     - name: Upload dist
