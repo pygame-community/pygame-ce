@@ -99,7 +99,7 @@ class TransformModuleTest(unittest.TestCase):
     def test_scale__destination(self):
         """see if the destination surface can be passed in to use."""
 
-        s = pygame.Surface((32, 32))
+        s = pygame.Surface((32, 32), depth=32)
         s2 = pygame.transform.scale(s, (64, 64))
         s3 = s2.copy()
 
@@ -119,6 +119,18 @@ class TransformModuleTest(unittest.TestCase):
 
         # the wrong size surface is past in.  Should raise an error.
         self.assertRaises(ValueError, pygame.transform.smoothscale, s, (33, 64), s3)
+
+        alpha_surf = pygame.Surface((64, 64), pygame.SRCALPHA)
+        pygame.transform.scale(alpha_surf, (32, 32), s)
+
+        alpha_surf_weird = pygame.Surface(
+            (64, 64), pygame.SRCALPHA, 32, (0xFF000000, 0xFF0000, 0xFF00, 0xFF)
+        )
+        assert alpha_surf_weird.get_shifts() != alpha_surf.get_shifts()
+
+        self.assertRaises(
+            ValueError, pygame.transform.scale, alpha_surf_weird, (32, 32), s
+        )
 
     def test_scale__vector2(self):
         s = pygame.Surface((32, 32))
