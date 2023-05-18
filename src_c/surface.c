@@ -356,9 +356,9 @@ static struct PyMethodDef surface_methods[] = {
     {"get_size", surf_get_size, METH_NOARGS, DOC_SURFACE_GETSIZE},
     {"get_width", surf_get_width, METH_NOARGS, DOC_SURFACE_GETWIDTH},
     {"get_height", surf_get_height, METH_NOARGS, DOC_SURFACE_GETHEIGHT},
-    {"get_rect", (PyCFunction)surf_get_rect, METH_VARARGS | METH_KEYWORDS,
+    {"get_rect", (PyCFunction)surf_get_rect, METH_FASTCALL | METH_KEYWORDS,
      DOC_SURFACE_GETRECT},
-    {"get_frect", (PyCFunction)surf_get_frect, METH_VARARGS | METH_KEYWORDS,
+    {"get_frect", (PyCFunction)surf_get_frect, METH_FASTCALL | METH_KEYWORDS,
      DOC_SURFACE_GETFRECT},
     {"get_pitch", surf_get_pitch, METH_NOARGS, DOC_SURFACE_GETPITCH},
     {"get_bitsize", surf_get_bitsize, METH_NOARGS, DOC_SURFACE_GETBITSIZE},
@@ -2533,25 +2533,34 @@ surf_get_height(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
-surf_get_rect(PyObject *self, PyObject *args, PyObject *kwargs)
+surf_generic_get_rect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
+                      PyObject *kwnames, char *type)
 {
     PyObject *rect;
     SDL_Surface *surf = pgSurface_AsSurface(self);
 
-    if (PyTuple_GET_SIZE(args) > 0) {
-        return RAISE(PyExc_TypeError,
-                     "get_rect only accepts keyword arguments");
+    if (nargs > 0) {
+        return PyErr_Format(PyExc_TypeError,
+                            "get_%s only accepts keyword arguments", type);
     }
 
     SURF_INIT_CHECK(surf)
 
-    rect = pgRect_New4(0, 0, surf->w, surf->h);
-    if (rect && kwargs) {
-        PyObject *key, *value;
-        Py_ssize_t pos = 0;
+    if (strcmp(type, "rect") == 0) {
+        rect = pgRect_New4(0, 0, surf->w, surf->h);
+    }
+    else if (strcmp(type, "frect") == 0) {
+        rect = pgFRect_New4(0, 0, surf->w, surf->h);
+    }
 
-        while (PyDict_Next(kwargs, &pos, &key, &value)) {
-            if ((PyObject_SetAttr(rect, key, value) == -1)) {
+    if (rect && kwnames) {
+        Py_ssize_t i, sequence_len;
+        PyObject **sequence_items;
+        sequence_items = PySequence_Fast_ITEMS(kwnames);
+        sequence_len = PySequence_Fast_GET_SIZE(kwnames);
+
+        for (i = 0; i < sequence_len; ++i) {
+            if ((PyObject_SetAttr(rect, sequence_items[i], args[i]) == -1)) {
                 Py_DECREF(rect);
                 return NULL;
             }
@@ -2561,31 +2570,17 @@ surf_get_rect(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
-surf_get_frect(PyObject *self, PyObject *args, PyObject *kwargs)
+surf_get_rect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
+              PyObject *kwnames)
 {
-    PyObject *rect;
-    SDL_Surface *surf = pgSurface_AsSurface(self);
+    return surf_generic_get_rect(self, args, nargs, kwnames, "rect");
+}
 
-    if (PyTuple_GET_SIZE(args) > 0) {
-        return RAISE(PyExc_TypeError,
-                     "get_frect only accepts keyword arguments");
-    }
-
-    SURF_INIT_CHECK(surf)
-
-    rect = pgFRect_New4(0.f, 0.f, (float)surf->w, (float)surf->h);
-    if (rect && kwargs) {
-        PyObject *key, *value;
-        Py_ssize_t pos = 0;
-
-        while (PyDict_Next(kwargs, &pos, &key, &value)) {
-            if ((PyObject_SetAttr(rect, key, value) == -1)) {
-                Py_DECREF(rect);
-                return NULL;
-            }
-        }
-    }
-    return rect;
+static PyObject *
+surf_get_frect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
+               PyObject *kwnames)
+{
+    return surf_generic_get_rect(self, args, nargs, kwnames, "frect");
 }
 
 static PyObject *
