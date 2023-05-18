@@ -216,7 +216,7 @@ solves no longer exists, it will likely be removed in the future.
 
       Read only. Returns the font's style name.
 
-      .. versionadded:: 2.2
+      .. versionadded:: 2.3
 
       .. ## Font.stylename ##
 

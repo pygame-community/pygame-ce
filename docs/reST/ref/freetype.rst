@@ -231,7 +231,7 @@ loaded. This module must be imported explicitly to be used. ::
 
       Read only. Returns the font's style name.
 
-      .. versionadded:: 2.2
+      .. versionadded:: 2.3
 
       .. ## Font.stylename ##
 
