@@ -238,6 +238,9 @@ Instead, always begin with the original image and scale to the desired size.)
 
    .. versionadded:: 2.2.0
 
+   .. versionchanged:: 2.3.0
+      Passing the calling surface as destination surface raises a ``ValueError``
+
    .. ## pygame.transform.box_blur ##
 
 .. function:: gaussian_blur
@@ -256,6 +259,9 @@ Instead, always begin with the original image and scale to the desired size.)
    depth and format as the source Surface.
 
    .. versionadded:: 2.2.0
+
+   .. versionchanged:: 2.3.0
+      Passing the calling surface as destination surface raises a ``ValueError``
 
    .. ## pygame.transform.gaussian_blur ##
 
