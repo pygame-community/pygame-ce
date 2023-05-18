@@ -194,9 +194,11 @@ surf_get_height(PyObject *self, PyObject *args);
 static PyObject *
 surf_get_pitch(PyObject *self, PyObject *args);
 static PyObject *
-surf_get_rect(PyObject *self, PyObject *args, PyObject *kwargs);
+surf_get_rect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
+              PyObject *kwnames);
 static PyObject *
-surf_get_frect(PyObject *self, PyObject *args, PyObject *kwargs);
+surf_get_frect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
+               PyObject *kwnames);
 static PyObject *
 surf_get_width(PyObject *self, PyObject *args);
 static PyObject *
