@@ -55,7 +55,7 @@
 #endif /* M_PI_2 */
 
 #define VECTOR_EPSILON (1e-6)
-#define VECTOR_MAX_SIZE (4)
+#define VECTOR_MAX_SIZE (3)
 #define STRING_BUF_SIZE_REPR (110)
 #define STRING_BUF_SIZE_STR (103)
 #define SWIZZLE_ERR_NO_ERR 0
@@ -96,9 +96,9 @@ static PyTypeObject pgVectorIter_Type;
 #define RAD2DEG(angle) ((angle)*180. / M_PI)
 
 typedef struct {
-    PyObject_HEAD double *coords; /* Coordinates */
-    Py_ssize_t dim;               /* Dimension of the vector */
-    double epsilon;               /* Small value for comparisons */
+    PyObject_HEAD double coords[VECTOR_MAX_SIZE]; /* Coordinates */
+    Py_ssize_t dim;                               /* Dimension of the vector */
+    double epsilon; /* Small value for comparisons */
 } pgVector;
 
 typedef struct {
@@ -594,7 +594,6 @@ pgVector_NEW(Py_ssize_t dim)
 static void
 vector_dealloc(pgVector *self)
 {
-    PyMem_Free(self->coords);
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -2152,11 +2151,6 @@ vector2_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if (vec != NULL) {
         vec->dim = 2;
         vec->epsilon = VECTOR_EPSILON;
-        vec->coords = PyMem_New(double, vec->dim);
-        if (vec->coords == NULL) {
-            Py_TYPE(vec)->tp_free((PyObject *)vec);
-            return NULL;
-        }
     }
 
     return (PyObject *)vec;
@@ -2590,11 +2584,6 @@ vector3_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if (vec != NULL) {
         vec->dim = 3;
         vec->epsilon = VECTOR_EPSILON;
-        vec->coords = PyMem_New(double, vec->dim);
-        if (vec->coords == NULL) {
-            Py_TYPE(vec)->tp_free((PyObject *)vec);
-            return NULL;
-        }
     }
 
     return (PyObject *)vec;
@@ -3260,7 +3249,8 @@ vector3_cross(pgVector *self, PyObject *other)
     pgVector *ret;
     double *ret_coords;
     double *self_coords;
-    double *other_coords;
+    double other_coords_static_mem[3];
+    double *other_coords = (double *)&other_coords_static_mem;
 
     if (!pgVectorCompatible_Check(other, self->dim)) {
         PyErr_SetString(PyExc_TypeError, "cannot calculate cross Product");
@@ -3272,21 +3262,13 @@ vector3_cross(pgVector *self, PyObject *other)
         other_coords = ((pgVector *)other)->coords;
     }
     else {
-        other_coords = PyMem_New(double, self->dim);
-        if (!other_coords) {
-            return PyErr_NoMemory();
-        }
-
         if (!PySequence_AsVectorCoords(other, other_coords, 3)) {
-            PyMem_Free(other_coords);
             return NULL;
         }
     }
 
     ret = _vector_subtype_new(self);
     if (ret == NULL) {
-        if (!pgVector_Check(other))
-            PyMem_Free(other_coords);
         return NULL;
     }
     ret_coords = ret->coords;
@@ -3296,9 +3278,6 @@ vector3_cross(pgVector *self, PyObject *other)
                      (self_coords[0] * other_coords[2]));
     ret_coords[2] = ((self_coords[0] * other_coords[1]) -
                      (self_coords[1] * other_coords[0]));
-
-    if (!pgVector_Check(other))
-        PyMem_Free(other_coords);
 
     return (PyObject *)ret;
 }
@@ -3627,13 +3606,9 @@ vector_elementwiseproxy_richcompare(PyObject *o1, PyObject *o2, int op)
     dim = vec->dim;
 
     if (pgVectorCompatible_Check(other, dim)) {
-        double *other_coords = PyMem_New(double, dim);
+        double other_coords[VECTOR_MAX_SIZE];
 
-        if (other_coords == NULL) {
-            return NULL;
-        }
         if (!PySequence_AsVectorCoords(other, other_coords, dim)) {
-            PyMem_Free(other_coords);
             return NULL;
         }
         /* use diff == diff to check for NaN */
@@ -3690,11 +3665,9 @@ vector_elementwiseproxy_richcompare(PyObject *o1, PyObject *o2, int op)
                 }
                 break;
             default:
-                PyMem_Free(other_coords);
                 PyErr_BadInternalCall();
                 return NULL;
         }
-        PyMem_Free(other_coords);
     }
     else if (RealNumber_Check(other)) {
         /* the following PyFloat_AsDouble call should never fail because
