@@ -29,6 +29,7 @@ def SysFont(
 
 class Font:
     name: str
+    path: str
     bold: bool
     italic: bool
     underline: bool
@@ -41,7 +42,7 @@ class Font:
         antialias: bool,
         color: ColorValue,
         bgcolor: Optional[ColorValue] = None,
-        wraplength: int = 0
+        wraplength: int = 0,
     ) -> Surface: ...
     def size(self, text: Union[str, bytes]) -> Tuple[int, int]: ...
     def set_underline(self, value: bool) -> None: ...

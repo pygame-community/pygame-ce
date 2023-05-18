@@ -29,6 +29,7 @@ typedef struct {
     PyObject_HEAD TTF_Font *font;
     PyObject *weakreflist;
     unsigned int ttf_init_generation;
+    PyObject *path;
 } PyFontObject;
 #define PyFont_AsFont(x) (((PyFontObject *)x)->font)
 

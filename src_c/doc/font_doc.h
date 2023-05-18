@@ -11,6 +11,7 @@
 #define DOC_FONT_FONT "Font(filename=None, size=20) -> Font\nFont(filename, size) -> Font\nFont(pathlib.Path, size) -> Font\nFont(object, size) -> Font\ncreate a new Font object from a file"
 #define DOC_FONT_FONT_BOLD "bold -> bool\nGets or sets whether the font should be rendered in (faked) bold."
 #define DOC_FONT_FONT_NAME "name -> str\nGets the font's name."
+#define DOC_FONT_FONT_PATH "path -> str\nGets the font's path or None."
 #define DOC_FONT_FONT_ITALIC "italic -> bool\nGets or sets whether the font should be rendered in (faked) italics."
 #define DOC_FONT_FONT_UNDERLINE "underline -> bool\nGets or sets whether the font should be rendered with an underline."
 #define DOC_FONT_FONT_STRIKETHROUGH "strikethrough -> bool\nGets or sets whether the font should be rendered with a strikethrough."
