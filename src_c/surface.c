@@ -2552,7 +2552,7 @@ surf_generic_get_rect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
         rect = pgRect_New4(0, 0, surf->w, surf->h);
     }
     else if (strcmp(type, "frect") == 0) {
-        rect = pgFRect_New4(0, 0, surf->w, surf->h);
+        rect = pgFRect_New4(0.f, 0.f, (float)surf->w, (float)surf->h);
     }
 
     if (rect && kwnames) {
