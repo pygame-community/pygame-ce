@@ -45,6 +45,7 @@ class Font:
     ascender: int
     descender: int
     style: int
+    stylename: str
     underline: bool
     strong: bool
     oblique: bool
