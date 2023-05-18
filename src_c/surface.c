@@ -2536,7 +2536,7 @@ static PyObject *
 surf_generic_get_rect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
                       PyObject *kwnames, char *type)
 {
-    PyObject *rect;
+    PyObject *rect = NULL;
     SDL_Surface *surf = pgSurface_AsSurface(self);
 
     if (nargs > 0) {
