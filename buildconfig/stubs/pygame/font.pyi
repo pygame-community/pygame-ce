@@ -43,6 +43,16 @@ class Font:
         background: Optional[ColorValue] = None,
         wraplength: int = 0
     ) -> Surface: ...
+    def render_to(
+        self,
+        surf: Surface,
+        pos: Tuple[int, int],
+        text: Union[str, bytes, None],
+        antialias: bool,
+        color: ColorValue,
+        background: Optional[ColorValue] = None,
+        wraplength: int = 0
+    ) -> Surface: ...
     def size(self, text: Union[str, bytes]) -> Tuple[int, int]: ...
     def set_underline(self, value: bool) -> None: ...
     def get_underline(self) -> bool: ...
