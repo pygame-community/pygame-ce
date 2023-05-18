@@ -155,6 +155,19 @@ _PGFT_Font_GetName(FreeTypeInstance *ft, pgFontObject *fontobj)
     return font->family_name ? font->family_name : "";
 }
 
+const char *
+_PGFT_Font_GetStyleName(FreeTypeInstance *ft, pgFontObject *fontobj)
+{
+    FT_Face font;
+    font = _PGFT_GetFont(ft, fontobj);
+
+    if (!font) {
+        PyErr_SetString(pgExc_SDLError, _PGFT_GetError(ft));
+        return 0;
+    }
+    return font->style_name ? font->style_name : "";
+}
+
 /* All the font metric functions raise an exception and return 0 on an error.
  * It is up to the caller to check PyErr_Occurred for a 0 return value.
  */

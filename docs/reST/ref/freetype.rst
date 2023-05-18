@@ -224,6 +224,17 @@ loaded. This module must be imported explicitly to be used. ::
       Read only. Returns the real (long) name of the font, as
       recorded in the font file.
 
+   .. attribute:: stylename
+
+      | :sl:`Gets the font's stylename.`
+      | :sg:`stylename -> str`
+
+      Read only. Returns the font's style name.
+
+      .. versionadded:: 2.2
+
+      .. ## Font.stylename ##
+
    .. attribute:: path
 
       | :sl:`Font file path`
