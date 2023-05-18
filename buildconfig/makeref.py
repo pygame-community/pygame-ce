@@ -33,45 +33,7 @@ def run():
         print("Have you installed sphinx?")
         print("---")
         raise
-
-    try:
-        if returncode == 0:
-            add_js_files()
-    except Exception:
-        print("Failed to add js files")
-        raise
-
     return returncode
-
-def add_js_files():
-    """Adds the script responsible for handling theme changing to the html files.
-    NOTE: This function might be removed for a better solution in the future.
-
-    Raises:
-        RuntimeError: If the file cannot find a body tag with the class "body" and role "main".
-    """
-    files_to_change = ["search.html", "genindex.html"]
-    tag_to_find = '<div class="body" role="main">'
-    tag_to_add = '<script src="script.html"></script>'
-
-    for file in files_to_change:
-        with open(os.path.join(rst_build_dir, file), "r") as f:
-            data = f.read()
-            index = data.find(tag_to_find)
-            if index == -1:
-                raise RuntimeError(
-                    f"Tag {tag_to_find} not found in {os.path.join(rst_build_dir, file)}"
-                )
-            index += len(tag_to_find) - 1
-            data = data[: index + 1] + "\n" + tag_to_add + data[index:]
-
-        with open(os.path.join(rst_build_dir, file), "w") as f:
-            f.write(data)
-
-    original = f"{os.path.join(rst_source_dir, 'themes/classic') + '/script.html'}"
-    target = f"{rst_build_dir}/script.html"
-    shutil.copyfile(original, target)
-
 
 if __name__ == "__main__":
     sys.exit(run())

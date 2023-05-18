@@ -1,5 +1,3 @@
-// named as script.html to avoid a conflict with the pathto() function used in template
-
 if (localStorage.getItem('theme') === null) {
     localStorage.setItem('theme', 'light-theme');
     document.body.classList.add('light-theme');
