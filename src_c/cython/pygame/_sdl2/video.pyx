@@ -764,8 +764,8 @@ cdef class Texture:
         if res < 0:
             raise error()
 
-    def draw_triangle(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy,
-                      (float, float) p1_uv=(0.0, 0.0), (float, float) p2_uv=(1.0, 1.0), (float, float) p3_uv=(0.0, 1.0),
+    def draw_triangle(self, (double, double) p1_xy, (double, double) p2_xy, (double, double) p3_xy,
+                      (double, double) p1_uv=(0.0, 0.0), (double, double) p2_uv=(1.0, 1.0), (double, double) p3_uv=(0.0, 1.0),
                       p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255), p3_mod=(255, 255, 255, 255)):
         """ Copy a triangle portion of the texture to the rendering target by vertices coordinates.
 
@@ -809,9 +809,9 @@ cdef class Texture:
         if res < 0:
             raise error()
 
-    def draw_quad(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy, (float, float) p4_xy,
-                  (float, float) p1_uv=(0.0, 0.0), (float, float) p2_uv=(1.0, 0.0),
-                  (float, float) p3_uv=(1.0, 1.0), (float, float) p4_uv=(0.0, 1.0),
+    def draw_quad(self, (double, double) p1_xy, (double, double) p2_xy, (double, double) p3_xy, (double, double) p4_xy,
+                  (double, double) p1_uv=(0.0, 0.0), (double, double) p2_uv=(1.0, 0.0),
+                  (double, double) p3_uv=(1.0, 1.0), (double, double) p4_uv=(0.0, 1.0),
                   p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255),
                   p3_mod=(255, 255, 255, 255), p4_mod=(255, 255, 255, 255)):
         """ Copy a quad portion of the texture to the rendering target by vertices coordinates.
@@ -1234,7 +1234,7 @@ cdef class Renderer:
             return self.get_viewport()
         return dest
 
-    def draw_line(self, (float, float) p1, (float, float) p2):
+    def draw_line(self, (double, double) p1, (double, double) p2):
         cdef int res
         if SDL_VERSION_ATLEAST(2,0,10):
             res = SDL_RenderDrawLineF(self._renderer,
@@ -1247,7 +1247,7 @@ cdef class Renderer:
         if res < 0:
             raise error()
 
-    def draw_point(self, (float, float) point):
+    def draw_point(self, (double, double) point):
         # https://wiki.libsdl.org/SDL_RenderDrawPoint
         cdef int res
         if SDL_VERSION_ATLEAST(2,0,10):
@@ -1309,7 +1309,7 @@ cdef class Renderer:
         if res < 0:
             raise error()
 
-    def draw_triangle(self, (float, float) p1, (float, float) p2, (float, float) p3):
+    def draw_triangle(self, (double, double) p1, (double, double) p2, (double, double) p3):
         # https://wiki.libsdl.org/SDL_RenderDrawLines
         cdef SDL_Point points[4]
         cdef SDL_FPoint fpoints[4]
@@ -1330,7 +1330,7 @@ cdef class Renderer:
         if res < 0:
             raise error()
 
-    def fill_triangle(self, (float, float) p1, (float, float) p2, (float, float) p3):
+    def fill_triangle(self, (double, double) p1, (double, double) p2, (double, double) p3):
         # https://wiki.libsdl.org/SDL_RenderGeometry
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("fill_triangle requires SDL 2.0.18 or newer")
@@ -1348,7 +1348,7 @@ cdef class Renderer:
         if res < 0:
             raise error()
 
-    def draw_quad(self, (float, float) p1, (float, float) p2, (float, float) p3, (float, float) p4):
+    def draw_quad(self, (double, double) p1, (double, double) p2, (double, double) p3, (double, double) p4):
         # https://wiki.libsdl.org/SDL_RenderDrawLines
         cdef SDL_Point points[5]
         cdef SDL_FPoint fpoints[5]
@@ -1368,7 +1368,7 @@ cdef class Renderer:
         if res < 0:
             raise error()
 
-    def fill_quad(self, (float, float) p1, (float, float) p2, (float, float) p3, (float, float) p4):
+    def fill_quad(self, (double, double) p1, (double, double) p2, (double, double) p3, (double, double) p4):
         # https://wiki.libsdl.org/SDL_RenderGeometry
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("fill_quad requires SDL 2.0.18 or newer")

@@ -1045,8 +1045,8 @@ struct __pyx_opt_args_6pygame_5_sdl2_5video_8Renderer_blit;
 struct __pyx_opt_args_6pygame_5_sdl2_5video_7Texture_draw;
 struct __pyx_opt_args_6pygame_5_sdl2_5video_7Texture__frect_draw;
 struct __pyx_opt_args_6pygame_5_sdl2_5video_5Image_draw;
-struct __pyx_ctuple_float__and_float;
-typedef struct __pyx_ctuple_float__and_float __pyx_ctuple_float__and_float;
+struct __pyx_ctuple_double__and_double;
+typedef struct __pyx_ctuple_double__and_double __pyx_ctuple_double__and_double;
 
 /* "pygame/_sdl2/video.pxd":587
  * 
@@ -1109,13 +1109,13 @@ struct __pyx_opt_args_6pygame_5_sdl2_5video_5Image_draw {
 /* "pygame/_sdl2/video.pyx":767
  *             raise error()
  * 
- *     def draw_triangle(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy,             # <<<<<<<<<<<<<<
- *                       (float, float) p1_uv=(0.0, 0.0), (float, float) p2_uv=(1.0, 1.0), (float, float) p3_uv=(0.0, 1.0),
+ *     def draw_triangle(self, (double, double) p1_xy, (double, double) p2_xy, (double, double) p3_xy,             # <<<<<<<<<<<<<<
+ *                       (double, double) p1_uv=(0.0, 0.0), (double, double) p2_uv=(1.0, 1.0), (double, double) p3_uv=(0.0, 1.0),
  *                       p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255), p3_mod=(255, 255, 255, 255)):
  */
-struct __pyx_ctuple_float__and_float {
-  float f0;
-  float f1;
+struct __pyx_ctuple_double__and_double {
+  double f0;
+  double f1;
 };
 
 /* "pygame/_sdl2/video.pxd":575
@@ -1872,10 +1872,10 @@ static void __Pyx_AddTraceback(const char *funcname, int c_line,
 #endif
 
 /* FromPyCTupleUtility.proto */
-static __pyx_ctuple_float__and_float __pyx_convert__from_py___pyx_ctuple_float__and_float(PyObject *);
+static __pyx_ctuple_double__and_double __pyx_convert__from_py___pyx_ctuple_double__and_double(PyObject *);
 
 /* ToPyCTupleUtility.proto */
-static PyObject* __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_ctuple_float__and_float);
+static PyObject* __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_ctuple_double__and_double);
 
 /* CIntToPy.proto */
 static CYTHON_INLINE PyObject* __Pyx_PyInt_From_int(int value);
@@ -2618,8 +2618,8 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_5color___get__(struct _
 static int __pyx_pf_6pygame_5_sdl2_5video_7Texture_5color_2__set__(struct __pyx_obj_6pygame_5_sdl2_5video_Texture *__pyx_v_self, PyObject *__pyx_v_new_value); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_8get_rect(struct __pyx_obj_6pygame_5_sdl2_5video_Texture *__pyx_v_self, PyObject *__pyx_v_kwargs); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_10draw(struct __pyx_obj_6pygame_5_sdl2_5video_Texture *__pyx_v_self, PyObject *__pyx_v_srcrect, PyObject *__pyx_v_dstrect, float __pyx_v_angle, PyObject *__pyx_v_origin, int __pyx_v_flip_x, int __pyx_v_flip_y); /* proto */
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_12draw_triangle(struct __pyx_obj_6pygame_5_sdl2_5video_Texture *__pyx_v_self, __pyx_ctuple_float__and_float __pyx_v_p1_xy, __pyx_ctuple_float__and_float __pyx_v_p2_xy, __pyx_ctuple_float__and_float __pyx_v_p3_xy, __pyx_ctuple_float__and_float __pyx_v_p1_uv, __pyx_ctuple_float__and_float __pyx_v_p2_uv, __pyx_ctuple_float__and_float __pyx_v_p3_uv, PyObject *__pyx_v_p1_mod, PyObject *__pyx_v_p2_mod, PyObject *__pyx_v_p3_mod); /* proto */
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_14draw_quad(struct __pyx_obj_6pygame_5_sdl2_5video_Texture *__pyx_v_self, __pyx_ctuple_float__and_float __pyx_v_p1_xy, __pyx_ctuple_float__and_float __pyx_v_p2_xy, __pyx_ctuple_float__and_float __pyx_v_p3_xy, __pyx_ctuple_float__and_float __pyx_v_p4_xy, __pyx_ctuple_float__and_float __pyx_v_p1_uv, __pyx_ctuple_float__and_float __pyx_v_p2_uv, __pyx_ctuple_float__and_float __pyx_v_p3_uv, __pyx_ctuple_float__and_float __pyx_v_p4_uv, PyObject *__pyx_v_p1_mod, PyObject *__pyx_v_p2_mod, PyObject *__pyx_v_p3_mod, PyObject *__pyx_v_p4_mod); /* proto */
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_12draw_triangle(struct __pyx_obj_6pygame_5_sdl2_5video_Texture *__pyx_v_self, __pyx_ctuple_double__and_double __pyx_v_p1_xy, __pyx_ctuple_double__and_double __pyx_v_p2_xy, __pyx_ctuple_double__and_double __pyx_v_p3_xy, __pyx_ctuple_double__and_double __pyx_v_p1_uv, __pyx_ctuple_double__and_double __pyx_v_p2_uv, __pyx_ctuple_double__and_double __pyx_v_p3_uv, PyObject *__pyx_v_p1_mod, PyObject *__pyx_v_p2_mod, PyObject *__pyx_v_p3_mod); /* proto */
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_14draw_quad(struct __pyx_obj_6pygame_5_sdl2_5video_Texture *__pyx_v_self, __pyx_ctuple_double__and_double __pyx_v_p1_xy, __pyx_ctuple_double__and_double __pyx_v_p2_xy, __pyx_ctuple_double__and_double __pyx_v_p3_xy, __pyx_ctuple_double__and_double __pyx_v_p4_xy, __pyx_ctuple_double__and_double __pyx_v_p1_uv, __pyx_ctuple_double__and_double __pyx_v_p2_uv, __pyx_ctuple_double__and_double __pyx_v_p3_uv, __pyx_ctuple_double__and_double __pyx_v_p4_uv, PyObject *__pyx_v_p1_mod, PyObject *__pyx_v_p2_mod, PyObject *__pyx_v_p3_mod, PyObject *__pyx_v_p4_mod); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_16update(struct __pyx_obj_6pygame_5_sdl2_5video_Texture *__pyx_v_self, PyObject *__pyx_v_surface, PyObject *__pyx_v_area); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_8renderer___get__(struct __pyx_obj_6pygame_5_sdl2_5video_Texture *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_5width___get__(struct __pyx_obj_6pygame_5_sdl2_5video_Texture *__pyx_v_self); /* proto */
@@ -2670,14 +2670,14 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_12set_viewport(struct 
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_6target___get__(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self); /* proto */
 static int __pyx_pf_6pygame_5_sdl2_5video_8Renderer_6target_2__set__(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, PyObject *__pyx_v_newtarget); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_14blit(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, PyObject *__pyx_v_source, pgRectObject *__pyx_v_dest, pgRectObject *__pyx_v_area, int __pyx_v_special_flags); /* proto */
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_16draw_line(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_float__and_float __pyx_v_p1, __pyx_ctuple_float__and_float __pyx_v_p2); /* proto */
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_18draw_point(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_float__and_float __pyx_v_point); /* proto */
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_16draw_line(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_double__and_double __pyx_v_p1, __pyx_ctuple_double__and_double __pyx_v_p2); /* proto */
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_18draw_point(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_double__and_double __pyx_v_point); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_20draw_rect(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, PyObject *__pyx_v_rect); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_22fill_rect(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, PyObject *__pyx_v_rect); /* proto */
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_24draw_triangle(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_float__and_float __pyx_v_p1, __pyx_ctuple_float__and_float __pyx_v_p2, __pyx_ctuple_float__and_float __pyx_v_p3); /* proto */
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_26fill_triangle(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_float__and_float __pyx_v_p1, __pyx_ctuple_float__and_float __pyx_v_p2, __pyx_ctuple_float__and_float __pyx_v_p3); /* proto */
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_28draw_quad(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_float__and_float __pyx_v_p1, __pyx_ctuple_float__and_float __pyx_v_p2, __pyx_ctuple_float__and_float __pyx_v_p3, __pyx_ctuple_float__and_float __pyx_v_p4); /* proto */
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_30fill_quad(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_float__and_float __pyx_v_p1, __pyx_ctuple_float__and_float __pyx_v_p2, __pyx_ctuple_float__and_float __pyx_v_p3, __pyx_ctuple_float__and_float __pyx_v_p4); /* proto */
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_24draw_triangle(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_double__and_double __pyx_v_p1, __pyx_ctuple_double__and_double __pyx_v_p2, __pyx_ctuple_double__and_double __pyx_v_p3); /* proto */
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_26fill_triangle(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_double__and_double __pyx_v_p1, __pyx_ctuple_double__and_double __pyx_v_p2, __pyx_ctuple_double__and_double __pyx_v_p3); /* proto */
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_28draw_quad(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_double__and_double __pyx_v_p1, __pyx_ctuple_double__and_double __pyx_v_p2, __pyx_ctuple_double__and_double __pyx_v_p3, __pyx_ctuple_double__and_double __pyx_v_p4); /* proto */
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_30fill_quad(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_double__and_double __pyx_v_p1, __pyx_ctuple_double__and_double __pyx_v_p2, __pyx_ctuple_double__and_double __pyx_v_p3, __pyx_ctuple_double__and_double __pyx_v_p4); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_32to_surface(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, PyObject *__pyx_v_surface, PyObject *__pyx_v_area); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_34compose_custom_blend_mode(PyObject *__pyx_v_color_mode, PyObject *__pyx_v_alpha_mode); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_36__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self); /* proto */
@@ -2696,13 +2696,13 @@ static PyObject *__pyx_int_480;
 static PyObject *__pyx_int_640;
 static PyObject *__pyx_k__3;
 static PyObject *__pyx_k__4;
-static __pyx_ctuple_float__and_float __pyx_k__17;
-static __pyx_ctuple_float__and_float __pyx_k__18;
-static __pyx_ctuple_float__and_float __pyx_k__19;
-static __pyx_ctuple_float__and_float __pyx_k__20;
-static __pyx_ctuple_float__and_float __pyx_k__21;
-static __pyx_ctuple_float__and_float __pyx_k__22;
-static __pyx_ctuple_float__and_float __pyx_k__23;
+static __pyx_ctuple_double__and_double __pyx_k__17;
+static __pyx_ctuple_double__and_double __pyx_k__18;
+static __pyx_ctuple_double__and_double __pyx_k__19;
+static __pyx_ctuple_double__and_double __pyx_k__20;
+static __pyx_ctuple_double__and_double __pyx_k__21;
+static __pyx_ctuple_double__and_double __pyx_k__22;
+static __pyx_ctuple_double__and_double __pyx_k__23;
 static PyObject *__pyx_codeobj_;
 static PyObject *__pyx_tuple__2;
 static PyObject *__pyx_tuple__5;
@@ -11440,7 +11440,7 @@ static void __pyx_f_6pygame_5_sdl2_5video_7Texture_draw(struct __pyx_obj_6pygame
  *         if res < 0:
  *             raise error()             # <<<<<<<<<<<<<<
  * 
- *     def draw_triangle(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy,
+ *     def draw_triangle(self, (double, double) p1_xy, (double, double) p2_xy, (double, double) p3_xy,
  */
     __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_error); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 765, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
@@ -11684,8 +11684,8 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_10draw(struct __pyx_obj
 /* "pygame/_sdl2/video.pyx":767
  *             raise error()
  * 
- *     def draw_triangle(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy,             # <<<<<<<<<<<<<<
- *                       (float, float) p1_uv=(0.0, 0.0), (float, float) p2_uv=(1.0, 1.0), (float, float) p3_uv=(0.0, 1.0),
+ *     def draw_triangle(self, (double, double) p1_xy, (double, double) p2_xy, (double, double) p3_xy,             # <<<<<<<<<<<<<<
+ *                       (double, double) p1_uv=(0.0, 0.0), (double, double) p2_uv=(1.0, 1.0), (double, double) p3_uv=(0.0, 1.0),
  *                       p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255), p3_mod=(255, 255, 255, 255)):
  */
 
@@ -11693,12 +11693,12 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_10draw(struct __pyx_obj
 static PyObject *__pyx_pw_6pygame_5_sdl2_5video_7Texture_13draw_triangle(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
 static char __pyx_doc_6pygame_5_sdl2_5video_7Texture_12draw_triangle[] = " Copy a triangle portion of the texture to the rendering target by vertices coordinates.\n\n        :param p1_xy: first vertex coordinate on the render target to be drawn at.\n        :param p2_xy: second vertex coordinate on the render target to be drawn at.\n        :param p3_xy: third vertex coordinate on the render target to be drawn at.\n        :param p1_uv: first vertex coordinate on the texture to be drawn from.\n        :param p2_uv: second vertex coordinate on the texture to be drawn from.\n        :param p3_uv: third vertex coordinate on the texture to be drawn from.\n        :param p1_mod: first vertex color modulation.\n        :param p2_mod: second vertex color modulation.\n        :param p3_mod: third vertex color modulation.\n        ";
 static PyObject *__pyx_pw_6pygame_5_sdl2_5video_7Texture_13draw_triangle(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  __pyx_ctuple_float__and_float __pyx_v_p1_xy;
-  __pyx_ctuple_float__and_float __pyx_v_p2_xy;
-  __pyx_ctuple_float__and_float __pyx_v_p3_xy;
-  __pyx_ctuple_float__and_float __pyx_v_p1_uv;
-  __pyx_ctuple_float__and_float __pyx_v_p2_uv;
-  __pyx_ctuple_float__and_float __pyx_v_p3_uv;
+  __pyx_ctuple_double__and_double __pyx_v_p1_xy;
+  __pyx_ctuple_double__and_double __pyx_v_p2_xy;
+  __pyx_ctuple_double__and_double __pyx_v_p3_xy;
+  __pyx_ctuple_double__and_double __pyx_v_p1_uv;
+  __pyx_ctuple_double__and_double __pyx_v_p2_uv;
+  __pyx_ctuple_double__and_double __pyx_v_p3_uv;
   PyObject *__pyx_v_p1_mod = 0;
   PyObject *__pyx_v_p2_mod = 0;
   PyObject *__pyx_v_p3_mod = 0;
@@ -11713,8 +11713,8 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_7Texture_13draw_triangle(PyObjec
     PyObject* values[9] = {0,0,0,0,0,0,0,0,0};
 
     /* "pygame/_sdl2/video.pyx":769
- *     def draw_triangle(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy,
- *                       (float, float) p1_uv=(0.0, 0.0), (float, float) p2_uv=(1.0, 1.0), (float, float) p3_uv=(0.0, 1.0),
+ *     def draw_triangle(self, (double, double) p1_xy, (double, double) p2_xy, (double, double) p3_xy,
+ *                       (double, double) p1_uv=(0.0, 0.0), (double, double) p2_uv=(1.0, 1.0), (double, double) p3_uv=(0.0, 1.0),
  *                       p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255), p3_mod=(255, 255, 255, 255)):             # <<<<<<<<<<<<<<
  *         """ Copy a triangle portion of the texture to the rendering target by vertices coordinates.
  * 
@@ -11825,21 +11825,21 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_7Texture_13draw_triangle(PyObjec
         default: goto __pyx_L5_argtuple_error;
       }
     }
-    __pyx_v_p1_xy = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 767, __pyx_L3_error)
-    __pyx_v_p2_xy = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[1]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 767, __pyx_L3_error)
-    __pyx_v_p3_xy = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[2]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 767, __pyx_L3_error)
+    __pyx_v_p1_xy = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 767, __pyx_L3_error)
+    __pyx_v_p2_xy = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[1]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 767, __pyx_L3_error)
+    __pyx_v_p3_xy = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[2]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 767, __pyx_L3_error)
     if (values[3]) {
-      __pyx_v_p1_uv = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[3]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 768, __pyx_L3_error)
+      __pyx_v_p1_uv = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[3]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 768, __pyx_L3_error)
     } else {
       __pyx_v_p1_uv = __pyx_k__17;
     }
     if (values[4]) {
-      __pyx_v_p2_uv = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[4]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 768, __pyx_L3_error)
+      __pyx_v_p2_uv = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[4]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 768, __pyx_L3_error)
     } else {
       __pyx_v_p2_uv = __pyx_k__18;
     }
     if (values[5]) {
-      __pyx_v_p3_uv = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[5]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 768, __pyx_L3_error)
+      __pyx_v_p3_uv = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[5]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 768, __pyx_L3_error)
     } else {
       __pyx_v_p3_uv = __pyx_k__19;
     }
@@ -11860,8 +11860,8 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_7Texture_13draw_triangle(PyObjec
   /* "pygame/_sdl2/video.pyx":767
  *             raise error()
  * 
- *     def draw_triangle(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy,             # <<<<<<<<<<<<<<
- *                       (float, float) p1_uv=(0.0, 0.0), (float, float) p2_uv=(1.0, 1.0), (float, float) p3_uv=(0.0, 1.0),
+ *     def draw_triangle(self, (double, double) p1_xy, (double, double) p2_xy, (double, double) p3_xy,             # <<<<<<<<<<<<<<
+ *                       (double, double) p1_uv=(0.0, 0.0), (double, double) p2_uv=(1.0, 1.0), (double, double) p3_uv=(0.0, 1.0),
  *                       p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255), p3_mod=(255, 255, 255, 255)):
  */
 
@@ -11870,7 +11870,7 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_7Texture_13draw_triangle(PyObjec
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_12draw_triangle(struct __pyx_obj_6pygame_5_sdl2_5video_Texture *__pyx_v_self, __pyx_ctuple_float__and_float __pyx_v_p1_xy, __pyx_ctuple_float__and_float __pyx_v_p2_xy, __pyx_ctuple_float__and_float __pyx_v_p3_xy, __pyx_ctuple_float__and_float __pyx_v_p1_uv, __pyx_ctuple_float__and_float __pyx_v_p2_uv, __pyx_ctuple_float__and_float __pyx_v_p3_uv, PyObject *__pyx_v_p1_mod, PyObject *__pyx_v_p2_mod, PyObject *__pyx_v_p3_mod) {
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_12draw_triangle(struct __pyx_obj_6pygame_5_sdl2_5video_Texture *__pyx_v_self, __pyx_ctuple_double__and_double __pyx_v_p1_xy, __pyx_ctuple_double__and_double __pyx_v_p2_xy, __pyx_ctuple_double__and_double __pyx_v_p3_xy, __pyx_ctuple_double__and_double __pyx_v_p1_uv, __pyx_ctuple_double__and_double __pyx_v_p2_uv, __pyx_ctuple_double__and_double __pyx_v_p3_uv, PyObject *__pyx_v_p1_mod, PyObject *__pyx_v_p2_mod, PyObject *__pyx_v_p3_mod) {
   Uint8 __pyx_v__r_mod;
   Uint8 __pyx_v__g_mod;
   Uint8 __pyx_v__b_mod;
@@ -12016,9 +12016,9 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_12draw_triangle(struct 
  */
   __Pyx_INCREF(__pyx_int_0);
   __pyx_t_2 = __pyx_int_0;
-  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p1_xy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 795, __pyx_L1_error)
+  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p1_xy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 795, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p1_uv); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 795, __pyx_L1_error)
+  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p1_uv); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 795, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_t_5 = PyTuple_New(3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 795, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
@@ -12039,9 +12039,9 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_12draw_triangle(struct 
  *                                   (p3_xy, p3_mod, p3_uv))):
  *             xy, mod, uv = vert
  */
-  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p2_xy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 796, __pyx_L1_error)
+  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p2_xy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 796, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p2_uv); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 796, __pyx_L1_error)
+  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p2_uv); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 796, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_6 = PyTuple_New(3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 796, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
@@ -12062,9 +12062,9 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_12draw_triangle(struct 
  *             xy, mod, uv = vert
  *             vertices[i].position.x = xy[0]
  */
-  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p3_xy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 797, __pyx_L1_error)
+  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p3_xy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 797, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p3_uv); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 797, __pyx_L1_error)
+  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p3_uv); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 797, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_t_7 = PyTuple_New(3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 797, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
@@ -12358,7 +12358,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_12draw_triangle(struct 
  *         if res < 0:
  *             raise error()             # <<<<<<<<<<<<<<
  * 
- *     def draw_quad(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy, (float, float) p4_xy,
+ *     def draw_quad(self, (double, double) p1_xy, (double, double) p2_xy, (double, double) p3_xy, (double, double) p4_xy,
  */
     __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_error); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 810, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
@@ -12393,8 +12393,8 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_12draw_triangle(struct 
   /* "pygame/_sdl2/video.pyx":767
  *             raise error()
  * 
- *     def draw_triangle(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy,             # <<<<<<<<<<<<<<
- *                       (float, float) p1_uv=(0.0, 0.0), (float, float) p2_uv=(1.0, 1.0), (float, float) p3_uv=(0.0, 1.0),
+ *     def draw_triangle(self, (double, double) p1_xy, (double, double) p2_xy, (double, double) p3_xy,             # <<<<<<<<<<<<<<
+ *                       (double, double) p1_uv=(0.0, 0.0), (double, double) p2_uv=(1.0, 1.0), (double, double) p3_uv=(0.0, 1.0),
  *                       p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255), p3_mod=(255, 255, 255, 255)):
  */
 
@@ -12424,23 +12424,23 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_12draw_triangle(struct 
 /* "pygame/_sdl2/video.pyx":812
  *             raise error()
  * 
- *     def draw_quad(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy, (float, float) p4_xy,             # <<<<<<<<<<<<<<
- *                   (float, float) p1_uv=(0.0, 0.0), (float, float) p2_uv=(1.0, 0.0),
- *                   (float, float) p3_uv=(1.0, 1.0), (float, float) p4_uv=(0.0, 1.0),
+ *     def draw_quad(self, (double, double) p1_xy, (double, double) p2_xy, (double, double) p3_xy, (double, double) p4_xy,             # <<<<<<<<<<<<<<
+ *                   (double, double) p1_uv=(0.0, 0.0), (double, double) p2_uv=(1.0, 0.0),
+ *                   (double, double) p3_uv=(1.0, 1.0), (double, double) p4_uv=(0.0, 1.0),
  */
 
 /* Python wrapper */
 static PyObject *__pyx_pw_6pygame_5_sdl2_5video_7Texture_15draw_quad(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
 static char __pyx_doc_6pygame_5_sdl2_5video_7Texture_14draw_quad[] = " Copy a quad portion of the texture to the rendering target by vertices coordinates.\n\n        :param p1_xy: first vertex coordinate on the render target to be drawn at.\n        :param p2_xy: second vertex coordinate on the render target to be drawn at.\n        :param p3_xy: third vertex coordinate on the render target to be drawn at.\n        :param p4_xy: fourth vertex coordinate on the render target to be drawn at.\n        :param p1_uv: first vertex coordinate on the texture to be drawn from.\n        :param p2_uv: second vertex coordinate on the texture to be drawn from.\n        :param p3_uv: third vertex coordinate on the texture to be drawn from.\n        :param p4_uv: fourth vertex coordinate on the texture to be drawn from.\n        :param p1_mod: first vertex color modulation.\n        :param p2_mod: second vertex color modulation.\n        :param p3_mod: third vertex color modulation.\n        :param p4_mod: fourth vertex color modulation.\n        ";
 static PyObject *__pyx_pw_6pygame_5_sdl2_5video_7Texture_15draw_quad(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  __pyx_ctuple_float__and_float __pyx_v_p1_xy;
-  __pyx_ctuple_float__and_float __pyx_v_p2_xy;
-  __pyx_ctuple_float__and_float __pyx_v_p3_xy;
-  __pyx_ctuple_float__and_float __pyx_v_p4_xy;
-  __pyx_ctuple_float__and_float __pyx_v_p1_uv;
-  __pyx_ctuple_float__and_float __pyx_v_p2_uv;
-  __pyx_ctuple_float__and_float __pyx_v_p3_uv;
-  __pyx_ctuple_float__and_float __pyx_v_p4_uv;
+  __pyx_ctuple_double__and_double __pyx_v_p1_xy;
+  __pyx_ctuple_double__and_double __pyx_v_p2_xy;
+  __pyx_ctuple_double__and_double __pyx_v_p3_xy;
+  __pyx_ctuple_double__and_double __pyx_v_p4_xy;
+  __pyx_ctuple_double__and_double __pyx_v_p1_uv;
+  __pyx_ctuple_double__and_double __pyx_v_p2_uv;
+  __pyx_ctuple_double__and_double __pyx_v_p3_uv;
+  __pyx_ctuple_double__and_double __pyx_v_p4_uv;
   PyObject *__pyx_v_p1_mod = 0;
   PyObject *__pyx_v_p2_mod = 0;
   PyObject *__pyx_v_p3_mod = 0;
@@ -12456,8 +12456,8 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_7Texture_15draw_quad(PyObject *_
     PyObject* values[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
 
     /* "pygame/_sdl2/video.pyx":815
- *                   (float, float) p1_uv=(0.0, 0.0), (float, float) p2_uv=(1.0, 0.0),
- *                   (float, float) p3_uv=(1.0, 1.0), (float, float) p4_uv=(0.0, 1.0),
+ *                   (double, double) p1_uv=(0.0, 0.0), (double, double) p2_uv=(1.0, 0.0),
+ *                   (double, double) p3_uv=(1.0, 1.0), (double, double) p4_uv=(0.0, 1.0),
  *                   p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255),             # <<<<<<<<<<<<<<
  *                   p3_mod=(255, 255, 255, 255), p4_mod=(255, 255, 255, 255)):
  *         """ Copy a quad portion of the texture to the rendering target by vertices coordinates.
@@ -12466,7 +12466,7 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_7Texture_15draw_quad(PyObject *_
     values[9] = ((PyObject *)__pyx_tuple__16);
 
     /* "pygame/_sdl2/video.pyx":816
- *                   (float, float) p3_uv=(1.0, 1.0), (float, float) p4_uv=(0.0, 1.0),
+ *                   (double, double) p3_uv=(1.0, 1.0), (double, double) p4_uv=(0.0, 1.0),
  *                   p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255),
  *                   p3_mod=(255, 255, 255, 255), p4_mod=(255, 255, 255, 255)):             # <<<<<<<<<<<<<<
  *         """ Copy a quad portion of the texture to the rendering target by vertices coordinates.
@@ -12606,27 +12606,27 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_7Texture_15draw_quad(PyObject *_
         default: goto __pyx_L5_argtuple_error;
       }
     }
-    __pyx_v_p1_xy = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 812, __pyx_L3_error)
-    __pyx_v_p2_xy = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[1]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 812, __pyx_L3_error)
-    __pyx_v_p3_xy = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[2]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 812, __pyx_L3_error)
-    __pyx_v_p4_xy = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[3]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 812, __pyx_L3_error)
+    __pyx_v_p1_xy = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 812, __pyx_L3_error)
+    __pyx_v_p2_xy = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[1]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 812, __pyx_L3_error)
+    __pyx_v_p3_xy = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[2]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 812, __pyx_L3_error)
+    __pyx_v_p4_xy = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[3]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 812, __pyx_L3_error)
     if (values[4]) {
-      __pyx_v_p1_uv = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[4]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 813, __pyx_L3_error)
+      __pyx_v_p1_uv = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[4]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 813, __pyx_L3_error)
     } else {
       __pyx_v_p1_uv = __pyx_k__20;
     }
     if (values[5]) {
-      __pyx_v_p2_uv = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[5]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 813, __pyx_L3_error)
+      __pyx_v_p2_uv = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[5]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 813, __pyx_L3_error)
     } else {
       __pyx_v_p2_uv = __pyx_k__21;
     }
     if (values[6]) {
-      __pyx_v_p3_uv = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[6]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 814, __pyx_L3_error)
+      __pyx_v_p3_uv = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[6]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 814, __pyx_L3_error)
     } else {
       __pyx_v_p3_uv = __pyx_k__22;
     }
     if (values[7]) {
-      __pyx_v_p4_uv = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[7]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 814, __pyx_L3_error)
+      __pyx_v_p4_uv = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[7]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 814, __pyx_L3_error)
     } else {
       __pyx_v_p4_uv = __pyx_k__23;
     }
@@ -12648,9 +12648,9 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_7Texture_15draw_quad(PyObject *_
   /* "pygame/_sdl2/video.pyx":812
  *             raise error()
  * 
- *     def draw_quad(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy, (float, float) p4_xy,             # <<<<<<<<<<<<<<
- *                   (float, float) p1_uv=(0.0, 0.0), (float, float) p2_uv=(1.0, 0.0),
- *                   (float, float) p3_uv=(1.0, 1.0), (float, float) p4_uv=(0.0, 1.0),
+ *     def draw_quad(self, (double, double) p1_xy, (double, double) p2_xy, (double, double) p3_xy, (double, double) p4_xy,             # <<<<<<<<<<<<<<
+ *                   (double, double) p1_uv=(0.0, 0.0), (double, double) p2_uv=(1.0, 0.0),
+ *                   (double, double) p3_uv=(1.0, 1.0), (double, double) p4_uv=(0.0, 1.0),
  */
 
   /* function exit code */
@@ -12658,7 +12658,7 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_7Texture_15draw_quad(PyObject *_
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_14draw_quad(struct __pyx_obj_6pygame_5_sdl2_5video_Texture *__pyx_v_self, __pyx_ctuple_float__and_float __pyx_v_p1_xy, __pyx_ctuple_float__and_float __pyx_v_p2_xy, __pyx_ctuple_float__and_float __pyx_v_p3_xy, __pyx_ctuple_float__and_float __pyx_v_p4_xy, __pyx_ctuple_float__and_float __pyx_v_p1_uv, __pyx_ctuple_float__and_float __pyx_v_p2_uv, __pyx_ctuple_float__and_float __pyx_v_p3_uv, __pyx_ctuple_float__and_float __pyx_v_p4_uv, PyObject *__pyx_v_p1_mod, PyObject *__pyx_v_p2_mod, PyObject *__pyx_v_p3_mod, PyObject *__pyx_v_p4_mod) {
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_14draw_quad(struct __pyx_obj_6pygame_5_sdl2_5video_Texture *__pyx_v_self, __pyx_ctuple_double__and_double __pyx_v_p1_xy, __pyx_ctuple_double__and_double __pyx_v_p2_xy, __pyx_ctuple_double__and_double __pyx_v_p3_xy, __pyx_ctuple_double__and_double __pyx_v_p4_xy, __pyx_ctuple_double__and_double __pyx_v_p1_uv, __pyx_ctuple_double__and_double __pyx_v_p2_uv, __pyx_ctuple_double__and_double __pyx_v_p3_uv, __pyx_ctuple_double__and_double __pyx_v_p4_uv, PyObject *__pyx_v_p1_mod, PyObject *__pyx_v_p2_mod, PyObject *__pyx_v_p3_mod, PyObject *__pyx_v_p4_mod) {
   Uint8 __pyx_v__r_mod;
   Uint8 __pyx_v__g_mod;
   Uint8 __pyx_v__b_mod;
@@ -12807,9 +12807,9 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_14draw_quad(struct __py
  */
   __Pyx_INCREF(__pyx_int_0);
   __pyx_t_2 = __pyx_int_0;
-  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p1_xy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 845, __pyx_L1_error)
+  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p1_xy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 845, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p1_uv); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 845, __pyx_L1_error)
+  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p1_uv); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 845, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_t_5 = PyTuple_New(3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 845, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
@@ -12830,9 +12830,9 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_14draw_quad(struct __py
  *                                   (p3_xy, p3_mod, p3_uv),
  *                                   (p3_xy, p3_mod, p3_uv),
  */
-  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p2_xy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 846, __pyx_L1_error)
+  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p2_xy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 846, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p2_uv); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 846, __pyx_L1_error)
+  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p2_uv); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 846, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_6 = PyTuple_New(3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 846, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
@@ -12853,9 +12853,9 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_14draw_quad(struct __py
  *                                   (p3_xy, p3_mod, p3_uv),
  *                                   (p4_xy, p4_mod, p4_uv),
  */
-  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p3_xy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 847, __pyx_L1_error)
+  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p3_xy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 847, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p3_uv); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 847, __pyx_L1_error)
+  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p3_uv); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 847, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_t_7 = PyTuple_New(3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 847, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
@@ -12876,9 +12876,9 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_14draw_quad(struct __py
  *                                   (p4_xy, p4_mod, p4_uv),
  *                                   (p1_xy, p1_mod, p1_uv))):
  */
-  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p3_xy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 848, __pyx_L1_error)
+  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p3_xy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 848, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p3_uv); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 848, __pyx_L1_error)
+  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p3_uv); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 848, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_8 = PyTuple_New(3); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 848, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
@@ -12899,9 +12899,9 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_14draw_quad(struct __py
  *                                   (p1_xy, p1_mod, p1_uv))):
  *             xy, mod, uv = vert
  */
-  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p4_xy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 849, __pyx_L1_error)
+  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p4_xy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 849, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p4_uv); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 849, __pyx_L1_error)
+  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p4_uv); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 849, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_t_9 = PyTuple_New(3); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 849, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
@@ -12922,9 +12922,9 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_14draw_quad(struct __py
  *             xy, mod, uv = vert
  *             vertices[i].position.x = xy[0]
  */
-  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p1_xy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 850, __pyx_L1_error)
+  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p1_xy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 850, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p1_uv); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 850, __pyx_L1_error)
+  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p1_uv); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 850, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_10 = PyTuple_New(3); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 850, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_10);
@@ -13262,9 +13262,9 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_14draw_quad(struct __py
   /* "pygame/_sdl2/video.pyx":812
  *             raise error()
  * 
- *     def draw_quad(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy, (float, float) p4_xy,             # <<<<<<<<<<<<<<
- *                   (float, float) p1_uv=(0.0, 0.0), (float, float) p2_uv=(1.0, 0.0),
- *                   (float, float) p3_uv=(1.0, 1.0), (float, float) p4_uv=(0.0, 1.0),
+ *     def draw_quad(self, (double, double) p1_xy, (double, double) p2_xy, (double, double) p3_xy, (double, double) p4_xy,             # <<<<<<<<<<<<<<
+ *                   (double, double) p1_uv=(0.0, 0.0), (double, double) p2_uv=(1.0, 0.0),
+ *                   (double, double) p3_uv=(1.0, 1.0), (double, double) p4_uv=(0.0, 1.0),
  */
 
   /* function exit code */
@@ -19125,7 +19125,7 @@ static PyObject *__pyx_f_6pygame_5_sdl2_5video_8Renderer_blit(struct __pyx_obj_6
  *             return self.get_viewport()
  *         return dest             # <<<<<<<<<<<<<<
  * 
- *     def draw_line(self, (float, float) p1, (float, float) p2):
+ *     def draw_line(self, (double, double) p1, (double, double) p2):
  */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_INCREF(((PyObject *)__pyx_v_dest));
@@ -19294,7 +19294,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_14blit(struct __pyx_ob
 /* "pygame/_sdl2/video.pyx":1237
  *         return dest
  * 
- *     def draw_line(self, (float, float) p1, (float, float) p2):             # <<<<<<<<<<<<<<
+ *     def draw_line(self, (double, double) p1, (double, double) p2):             # <<<<<<<<<<<<<<
  *         cdef int res
  *         if SDL_VERSION_ATLEAST(2,0,10):
  */
@@ -19302,8 +19302,8 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_14blit(struct __pyx_ob
 /* Python wrapper */
 static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_17draw_line(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
 static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_17draw_line(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  __pyx_ctuple_float__and_float __pyx_v_p1;
-  __pyx_ctuple_float__and_float __pyx_v_p2;
+  __pyx_ctuple_double__and_double __pyx_v_p1;
+  __pyx_ctuple_double__and_double __pyx_v_p2;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -19345,8 +19345,8 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_17draw_line(PyObject *
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
     }
-    __pyx_v_p1 = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1237, __pyx_L3_error)
-    __pyx_v_p2 = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[1]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1237, __pyx_L3_error)
+    __pyx_v_p1 = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1237, __pyx_L3_error)
+    __pyx_v_p2 = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[1]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1237, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
@@ -19363,7 +19363,7 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_17draw_line(PyObject *
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_16draw_line(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_float__and_float __pyx_v_p1, __pyx_ctuple_float__and_float __pyx_v_p2) {
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_16draw_line(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_double__and_double __pyx_v_p1, __pyx_ctuple_double__and_double __pyx_v_p2) {
   int __pyx_v_res;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -19377,7 +19377,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_16draw_line(struct __p
   __Pyx_RefNannySetupContext("draw_line", 0);
 
   /* "pygame/_sdl2/video.pyx":1239
- *     def draw_line(self, (float, float) p1, (float, float) p2):
+ *     def draw_line(self, (double, double) p1, (double, double) p2):
  *         cdef int res
  *         if SDL_VERSION_ATLEAST(2,0,10):             # <<<<<<<<<<<<<<
  *             res = SDL_RenderDrawLineF(self._renderer,
@@ -19396,7 +19396,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_16draw_line(struct __p
     __pyx_v_res = SDL_RenderDrawLineF(__pyx_v_self->_renderer, __pyx_v_p1.f0, __pyx_v_p1.f1, __pyx_v_p2.f0, __pyx_v_p2.f1);
 
     /* "pygame/_sdl2/video.pyx":1239
- *     def draw_line(self, (float, float) p1, (float, float) p2):
+ *     def draw_line(self, (double, double) p1, (double, double) p2):
  *         cdef int res
  *         if SDL_VERSION_ATLEAST(2,0,10):             # <<<<<<<<<<<<<<
  *             res = SDL_RenderDrawLineF(self._renderer,
@@ -19440,7 +19440,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_16draw_line(struct __p
  *         if res < 0:
  *             raise error()             # <<<<<<<<<<<<<<
  * 
- *     def draw_point(self, (float, float) point):
+ *     def draw_point(self, (double, double) point):
  */
     __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_error); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 1248, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
@@ -19475,7 +19475,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_16draw_line(struct __p
   /* "pygame/_sdl2/video.pyx":1237
  *         return dest
  * 
- *     def draw_line(self, (float, float) p1, (float, float) p2):             # <<<<<<<<<<<<<<
+ *     def draw_line(self, (double, double) p1, (double, double) p2):             # <<<<<<<<<<<<<<
  *         cdef int res
  *         if SDL_VERSION_ATLEAST(2,0,10):
  */
@@ -19498,7 +19498,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_16draw_line(struct __p
 /* "pygame/_sdl2/video.pyx":1250
  *             raise error()
  * 
- *     def draw_point(self, (float, float) point):             # <<<<<<<<<<<<<<
+ *     def draw_point(self, (double, double) point):             # <<<<<<<<<<<<<<
  *         # https://wiki.libsdl.org/SDL_RenderDrawPoint
  *         cdef int res
  */
@@ -19506,7 +19506,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_16draw_line(struct __p
 /* Python wrapper */
 static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_19draw_point(PyObject *__pyx_v_self, PyObject *__pyx_arg_point); /*proto*/
 static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_19draw_point(PyObject *__pyx_v_self, PyObject *__pyx_arg_point) {
-  __pyx_ctuple_float__and_float __pyx_v_point;
+  __pyx_ctuple_double__and_double __pyx_v_point;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -19514,7 +19514,7 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_19draw_point(PyObject 
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("draw_point (wrapper)", 0);
   assert(__pyx_arg_point); {
-    __pyx_v_point = __pyx_convert__from_py___pyx_ctuple_float__and_float(__pyx_arg_point); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1250, __pyx_L3_error)
+    __pyx_v_point = __pyx_convert__from_py___pyx_ctuple_double__and_double(__pyx_arg_point); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1250, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -19529,7 +19529,7 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_19draw_point(PyObject 
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_18draw_point(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_float__and_float __pyx_v_point) {
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_18draw_point(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_double__and_double __pyx_v_point) {
   int __pyx_v_res;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -19641,7 +19641,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_18draw_point(struct __
   /* "pygame/_sdl2/video.pyx":1250
  *             raise error()
  * 
- *     def draw_point(self, (float, float) point):             # <<<<<<<<<<<<<<
+ *     def draw_point(self, (double, double) point):             # <<<<<<<<<<<<<<
  *         # https://wiki.libsdl.org/SDL_RenderDrawPoint
  *         cdef int res
  */
@@ -20068,7 +20068,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_22fill_rect(struct __p
  *         if res < 0:
  *             raise error()             # <<<<<<<<<<<<<<
  * 
- *     def draw_triangle(self, (float, float) p1, (float, float) p2, (float, float) p3):
+ *     def draw_triangle(self, (double, double) p1, (double, double) p2, (double, double) p3):
  */
     __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_error); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 1310, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
@@ -20126,7 +20126,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_22fill_rect(struct __p
 /* "pygame/_sdl2/video.pyx":1312
  *             raise error()
  * 
- *     def draw_triangle(self, (float, float) p1, (float, float) p2, (float, float) p3):             # <<<<<<<<<<<<<<
+ *     def draw_triangle(self, (double, double) p1, (double, double) p2, (double, double) p3):             # <<<<<<<<<<<<<<
  *         # https://wiki.libsdl.org/SDL_RenderDrawLines
  *         cdef SDL_Point points[4]
  */
@@ -20134,9 +20134,9 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_22fill_rect(struct __p
 /* Python wrapper */
 static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_25draw_triangle(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
 static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_25draw_triangle(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  __pyx_ctuple_float__and_float __pyx_v_p1;
-  __pyx_ctuple_float__and_float __pyx_v_p2;
-  __pyx_ctuple_float__and_float __pyx_v_p3;
+  __pyx_ctuple_double__and_double __pyx_v_p1;
+  __pyx_ctuple_double__and_double __pyx_v_p2;
+  __pyx_ctuple_double__and_double __pyx_v_p3;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -20187,9 +20187,9 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_25draw_triangle(PyObje
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
       values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
     }
-    __pyx_v_p1 = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1312, __pyx_L3_error)
-    __pyx_v_p2 = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[1]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1312, __pyx_L3_error)
-    __pyx_v_p3 = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[2]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1312, __pyx_L3_error)
+    __pyx_v_p1 = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1312, __pyx_L3_error)
+    __pyx_v_p2 = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[1]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1312, __pyx_L3_error)
+    __pyx_v_p3 = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[2]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1312, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
@@ -20206,7 +20206,7 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_25draw_triangle(PyObje
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_24draw_triangle(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_float__and_float __pyx_v_p1, __pyx_ctuple_float__and_float __pyx_v_p2, __pyx_ctuple_float__and_float __pyx_v_p3) {
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_24draw_triangle(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_double__and_double __pyx_v_p1, __pyx_ctuple_double__and_double __pyx_v_p2, __pyx_ctuple_double__and_double __pyx_v_p3) {
   SDL_Point __pyx_v_points[4];
   _pgsdlFPoint __pyx_v_fpoints[4];
   PyObject *__pyx_v_i = NULL;
@@ -20249,13 +20249,13 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_24draw_triangle(struct
  */
     __Pyx_INCREF(__pyx_int_0);
     __pyx_t_2 = __pyx_int_0;
-    __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 1317, __pyx_L1_error)
+    __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 1317, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1317, __pyx_L1_error)
+    __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1317, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_5 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 1317, __pyx_L1_error)
+    __pyx_t_5 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 1317, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_6 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 1317, __pyx_L1_error)
+    __pyx_t_6 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 1317, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __pyx_t_7 = PyTuple_New(4); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 1317, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
@@ -20359,13 +20359,13 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_24draw_triangle(struct
   /*else*/ {
     __Pyx_INCREF(__pyx_int_0);
     __pyx_t_2 = __pyx_int_0;
-    __pyx_t_6 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 1324, __pyx_L1_error)
+    __pyx_t_6 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 1324, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_7 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 1324, __pyx_L1_error)
+    __pyx_t_7 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 1324, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_5 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 1324, __pyx_L1_error)
+    __pyx_t_5 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 1324, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1324, __pyx_L1_error)
+    __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1324, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_t_3 = PyTuple_New(4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 1324, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
@@ -20466,7 +20466,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_24draw_triangle(struct
  *         if res < 0:
  *             raise error()             # <<<<<<<<<<<<<<
  * 
- *     def fill_triangle(self, (float, float) p1, (float, float) p2, (float, float) p3):
+ *     def fill_triangle(self, (double, double) p1, (double, double) p2, (double, double) p3):
  */
     __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_error); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1331, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
@@ -20501,7 +20501,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_24draw_triangle(struct
   /* "pygame/_sdl2/video.pyx":1312
  *             raise error()
  * 
- *     def draw_triangle(self, (float, float) p1, (float, float) p2, (float, float) p3):             # <<<<<<<<<<<<<<
+ *     def draw_triangle(self, (double, double) p1, (double, double) p2, (double, double) p3):             # <<<<<<<<<<<<<<
  *         # https://wiki.libsdl.org/SDL_RenderDrawLines
  *         cdef SDL_Point points[4]
  */
@@ -20529,7 +20529,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_24draw_triangle(struct
 /* "pygame/_sdl2/video.pyx":1333
  *             raise error()
  * 
- *     def fill_triangle(self, (float, float) p1, (float, float) p2, (float, float) p3):             # <<<<<<<<<<<<<<
+ *     def fill_triangle(self, (double, double) p1, (double, double) p2, (double, double) p3):             # <<<<<<<<<<<<<<
  *         # https://wiki.libsdl.org/SDL_RenderGeometry
  *         if not SDL_VERSION_ATLEAST(2, 0, 18):
  */
@@ -20537,9 +20537,9 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_24draw_triangle(struct
 /* Python wrapper */
 static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_27fill_triangle(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
 static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_27fill_triangle(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  __pyx_ctuple_float__and_float __pyx_v_p1;
-  __pyx_ctuple_float__and_float __pyx_v_p2;
-  __pyx_ctuple_float__and_float __pyx_v_p3;
+  __pyx_ctuple_double__and_double __pyx_v_p1;
+  __pyx_ctuple_double__and_double __pyx_v_p2;
+  __pyx_ctuple_double__and_double __pyx_v_p3;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -20590,9 +20590,9 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_27fill_triangle(PyObje
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
       values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
     }
-    __pyx_v_p1 = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1333, __pyx_L3_error)
-    __pyx_v_p2 = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[1]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1333, __pyx_L3_error)
-    __pyx_v_p3 = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[2]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1333, __pyx_L3_error)
+    __pyx_v_p1 = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1333, __pyx_L3_error)
+    __pyx_v_p2 = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[1]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1333, __pyx_L3_error)
+    __pyx_v_p3 = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[2]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1333, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
@@ -20609,7 +20609,7 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_27fill_triangle(PyObje
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_26fill_triangle(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_float__and_float __pyx_v_p1, __pyx_ctuple_float__and_float __pyx_v_p2, __pyx_ctuple_float__and_float __pyx_v_p3) {
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_26fill_triangle(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_double__and_double __pyx_v_p1, __pyx_ctuple_double__and_double __pyx_v_p2, __pyx_ctuple_double__and_double __pyx_v_p3) {
   _pgsdlVertex __pyx_v_vertices[3];
   PyObject *__pyx_v_i = NULL;
   PyObject *__pyx_v_pos = NULL;
@@ -20632,7 +20632,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_26fill_triangle(struct
   __Pyx_RefNannySetupContext("fill_triangle", 0);
 
   /* "pygame/_sdl2/video.pyx":1335
- *     def fill_triangle(self, (float, float) p1, (float, float) p2, (float, float) p3):
+ *     def fill_triangle(self, (double, double) p1, (double, double) p2, (double, double) p3):
  *         # https://wiki.libsdl.org/SDL_RenderGeometry
  *         if not SDL_VERSION_ATLEAST(2, 0, 18):             # <<<<<<<<<<<<<<
  *             raise error("fill_triangle requires SDL 2.0.18 or newer")
@@ -20670,7 +20670,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_26fill_triangle(struct
     __PYX_ERR(0, 1336, __pyx_L1_error)
 
     /* "pygame/_sdl2/video.pyx":1335
- *     def fill_triangle(self, (float, float) p1, (float, float) p2, (float, float) p3):
+ *     def fill_triangle(self, (double, double) p1, (double, double) p2, (double, double) p3):
  *         # https://wiki.libsdl.org/SDL_RenderGeometry
  *         if not SDL_VERSION_ATLEAST(2, 0, 18):             # <<<<<<<<<<<<<<
  *             raise error("fill_triangle requires SDL 2.0.18 or newer")
@@ -20687,11 +20687,11 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_26fill_triangle(struct
  */
   __Pyx_INCREF(__pyx_int_0);
   __pyx_t_2 = __pyx_int_0;
-  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 1339, __pyx_L1_error)
+  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 1339, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1339, __pyx_L1_error)
+  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1339, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 1339, __pyx_L1_error)
+  __pyx_t_5 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 1339, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __pyx_t_6 = PyTuple_New(3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 1339, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
@@ -20843,7 +20843,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_26fill_triangle(struct
  *         if res < 0:
  *             raise error()             # <<<<<<<<<<<<<<
  * 
- *     def draw_quad(self, (float, float) p1, (float, float) p2, (float, float) p3, (float, float) p4):
+ *     def draw_quad(self, (double, double) p1, (double, double) p2, (double, double) p3, (double, double) p4):
  */
     __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_error); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 1349, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
@@ -20878,7 +20878,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_26fill_triangle(struct
   /* "pygame/_sdl2/video.pyx":1333
  *             raise error()
  * 
- *     def fill_triangle(self, (float, float) p1, (float, float) p2, (float, float) p3):             # <<<<<<<<<<<<<<
+ *     def fill_triangle(self, (double, double) p1, (double, double) p2, (double, double) p3):             # <<<<<<<<<<<<<<
  *         # https://wiki.libsdl.org/SDL_RenderGeometry
  *         if not SDL_VERSION_ATLEAST(2, 0, 18):
  */
@@ -20905,7 +20905,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_26fill_triangle(struct
 /* "pygame/_sdl2/video.pyx":1351
  *             raise error()
  * 
- *     def draw_quad(self, (float, float) p1, (float, float) p2, (float, float) p3, (float, float) p4):             # <<<<<<<<<<<<<<
+ *     def draw_quad(self, (double, double) p1, (double, double) p2, (double, double) p3, (double, double) p4):             # <<<<<<<<<<<<<<
  *         # https://wiki.libsdl.org/SDL_RenderDrawLines
  *         cdef SDL_Point points[5]
  */
@@ -20913,10 +20913,10 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_26fill_triangle(struct
 /* Python wrapper */
 static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_29draw_quad(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
 static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_29draw_quad(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  __pyx_ctuple_float__and_float __pyx_v_p1;
-  __pyx_ctuple_float__and_float __pyx_v_p2;
-  __pyx_ctuple_float__and_float __pyx_v_p3;
-  __pyx_ctuple_float__and_float __pyx_v_p4;
+  __pyx_ctuple_double__and_double __pyx_v_p1;
+  __pyx_ctuple_double__and_double __pyx_v_p2;
+  __pyx_ctuple_double__and_double __pyx_v_p3;
+  __pyx_ctuple_double__and_double __pyx_v_p4;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -20976,10 +20976,10 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_29draw_quad(PyObject *
       values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
       values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
     }
-    __pyx_v_p1 = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1351, __pyx_L3_error)
-    __pyx_v_p2 = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[1]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1351, __pyx_L3_error)
-    __pyx_v_p3 = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[2]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1351, __pyx_L3_error)
-    __pyx_v_p4 = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[3]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1351, __pyx_L3_error)
+    __pyx_v_p1 = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1351, __pyx_L3_error)
+    __pyx_v_p2 = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[1]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1351, __pyx_L3_error)
+    __pyx_v_p3 = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[2]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1351, __pyx_L3_error)
+    __pyx_v_p4 = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[3]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1351, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
@@ -20996,7 +20996,7 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_29draw_quad(PyObject *
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_28draw_quad(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_float__and_float __pyx_v_p1, __pyx_ctuple_float__and_float __pyx_v_p2, __pyx_ctuple_float__and_float __pyx_v_p3, __pyx_ctuple_float__and_float __pyx_v_p4) {
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_28draw_quad(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_double__and_double __pyx_v_p1, __pyx_ctuple_double__and_double __pyx_v_p2, __pyx_ctuple_double__and_double __pyx_v_p3, __pyx_ctuple_double__and_double __pyx_v_p4) {
   SDL_Point __pyx_v_points[5];
   _pgsdlFPoint __pyx_v_fpoints[5];
   PyObject *__pyx_v_i = NULL;
@@ -21040,15 +21040,15 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_28draw_quad(struct __p
  */
     __Pyx_INCREF(__pyx_int_0);
     __pyx_t_2 = __pyx_int_0;
-    __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 1356, __pyx_L1_error)
+    __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 1356, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1356, __pyx_L1_error)
+    __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1356, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_5 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 1356, __pyx_L1_error)
+    __pyx_t_5 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 1356, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_6 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p4); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 1356, __pyx_L1_error)
+    __pyx_t_6 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p4); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 1356, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_7 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 1356, __pyx_L1_error)
+    __pyx_t_7 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 1356, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __pyx_t_8 = PyTuple_New(5); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 1356, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
@@ -21155,15 +21155,15 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_28draw_quad(struct __p
   /*else*/ {
     __Pyx_INCREF(__pyx_int_0);
     __pyx_t_2 = __pyx_int_0;
-    __pyx_t_7 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 1363, __pyx_L1_error)
+    __pyx_t_7 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 1363, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_8 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 1363, __pyx_L1_error)
+    __pyx_t_8 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p2); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 1363, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
-    __pyx_t_6 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 1363, __pyx_L1_error)
+    __pyx_t_6 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 1363, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_5 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 1363, __pyx_L1_error)
+    __pyx_t_5 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 1363, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1363, __pyx_L1_error)
+    __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1363, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_t_3 = PyTuple_New(5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 1363, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
@@ -21267,7 +21267,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_28draw_quad(struct __p
  *         if res < 0:
  *             raise error()             # <<<<<<<<<<<<<<
  * 
- *     def fill_quad(self, (float, float) p1, (float, float) p2, (float, float) p3, (float, float) p4):
+ *     def fill_quad(self, (double, double) p1, (double, double) p2, (double, double) p3, (double, double) p4):
  */
     __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_error); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1369, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
@@ -21302,7 +21302,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_28draw_quad(struct __p
   /* "pygame/_sdl2/video.pyx":1351
  *             raise error()
  * 
- *     def draw_quad(self, (float, float) p1, (float, float) p2, (float, float) p3, (float, float) p4):             # <<<<<<<<<<<<<<
+ *     def draw_quad(self, (double, double) p1, (double, double) p2, (double, double) p3, (double, double) p4):             # <<<<<<<<<<<<<<
  *         # https://wiki.libsdl.org/SDL_RenderDrawLines
  *         cdef SDL_Point points[5]
  */
@@ -21331,7 +21331,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_28draw_quad(struct __p
 /* "pygame/_sdl2/video.pyx":1371
  *             raise error()
  * 
- *     def fill_quad(self, (float, float) p1, (float, float) p2, (float, float) p3, (float, float) p4):             # <<<<<<<<<<<<<<
+ *     def fill_quad(self, (double, double) p1, (double, double) p2, (double, double) p3, (double, double) p4):             # <<<<<<<<<<<<<<
  *         # https://wiki.libsdl.org/SDL_RenderGeometry
  *         if not SDL_VERSION_ATLEAST(2, 0, 18):
  */
@@ -21339,10 +21339,10 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_28draw_quad(struct __p
 /* Python wrapper */
 static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_31fill_quad(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
 static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_31fill_quad(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  __pyx_ctuple_float__and_float __pyx_v_p1;
-  __pyx_ctuple_float__and_float __pyx_v_p2;
-  __pyx_ctuple_float__and_float __pyx_v_p3;
-  __pyx_ctuple_float__and_float __pyx_v_p4;
+  __pyx_ctuple_double__and_double __pyx_v_p1;
+  __pyx_ctuple_double__and_double __pyx_v_p2;
+  __pyx_ctuple_double__and_double __pyx_v_p3;
+  __pyx_ctuple_double__and_double __pyx_v_p4;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -21402,10 +21402,10 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_31fill_quad(PyObject *
       values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
       values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
     }
-    __pyx_v_p1 = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1371, __pyx_L3_error)
-    __pyx_v_p2 = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[1]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1371, __pyx_L3_error)
-    __pyx_v_p3 = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[2]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1371, __pyx_L3_error)
-    __pyx_v_p4 = __pyx_convert__from_py___pyx_ctuple_float__and_float(values[3]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1371, __pyx_L3_error)
+    __pyx_v_p1 = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[0]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1371, __pyx_L3_error)
+    __pyx_v_p2 = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[1]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1371, __pyx_L3_error)
+    __pyx_v_p3 = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[2]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1371, __pyx_L3_error)
+    __pyx_v_p4 = __pyx_convert__from_py___pyx_ctuple_double__and_double(values[3]); if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 1371, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
@@ -21422,7 +21422,7 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_8Renderer_31fill_quad(PyObject *
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_30fill_quad(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_float__and_float __pyx_v_p1, __pyx_ctuple_float__and_float __pyx_v_p2, __pyx_ctuple_float__and_float __pyx_v_p3, __pyx_ctuple_float__and_float __pyx_v_p4) {
+static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_30fill_quad(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *__pyx_v_self, __pyx_ctuple_double__and_double __pyx_v_p1, __pyx_ctuple_double__and_double __pyx_v_p2, __pyx_ctuple_double__and_double __pyx_v_p3, __pyx_ctuple_double__and_double __pyx_v_p4) {
   _pgsdlVertex __pyx_v_vertices[6];
   PyObject *__pyx_v_i = NULL;
   PyObject *__pyx_v_pos = NULL;
@@ -21448,7 +21448,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_30fill_quad(struct __p
   __Pyx_RefNannySetupContext("fill_quad", 0);
 
   /* "pygame/_sdl2/video.pyx":1373
- *     def fill_quad(self, (float, float) p1, (float, float) p2, (float, float) p3, (float, float) p4):
+ *     def fill_quad(self, (double, double) p1, (double, double) p2, (double, double) p3, (double, double) p4):
  *         # https://wiki.libsdl.org/SDL_RenderGeometry
  *         if not SDL_VERSION_ATLEAST(2, 0, 18):             # <<<<<<<<<<<<<<
  *             raise error("fill_quad requires SDL 2.0.18 or newer")
@@ -21486,7 +21486,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_30fill_quad(struct __p
     __PYX_ERR(0, 1374, __pyx_L1_error)
 
     /* "pygame/_sdl2/video.pyx":1373
- *     def fill_quad(self, (float, float) p1, (float, float) p2, (float, float) p3, (float, float) p4):
+ *     def fill_quad(self, (double, double) p1, (double, double) p2, (double, double) p3, (double, double) p4):
  *         # https://wiki.libsdl.org/SDL_RenderGeometry
  *         if not SDL_VERSION_ATLEAST(2, 0, 18):             # <<<<<<<<<<<<<<
  *             raise error("fill_quad requires SDL 2.0.18 or newer")
@@ -21503,17 +21503,17 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_30fill_quad(struct __p
  */
   __Pyx_INCREF(__pyx_int_0);
   __pyx_t_2 = __pyx_int_0;
-  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 1377, __pyx_L1_error)
+  __pyx_t_3 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 1377, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1377, __pyx_L1_error)
+  __pyx_t_4 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1377, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 1377, __pyx_L1_error)
+  __pyx_t_5 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 1377, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_6 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 1377, __pyx_L1_error)
+  __pyx_t_6 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 1377, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_7 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p4); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 1377, __pyx_L1_error)
+  __pyx_t_7 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p4); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 1377, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  __pyx_t_8 = __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_v_p1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 1377, __pyx_L1_error)
+  __pyx_t_8 = __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_v_p1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 1377, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __pyx_t_9 = PyTuple_New(6); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 1377, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
@@ -21709,7 +21709,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_30fill_quad(struct __p
   /* "pygame/_sdl2/video.pyx":1371
  *             raise error()
  * 
- *     def fill_quad(self, (float, float) p1, (float, float) p2, (float, float) p3, (float, float) p4):             # <<<<<<<<<<<<<<
+ *     def fill_quad(self, (double, double) p1, (double, double) p2, (double, double) p3, (double, double) p4):             # <<<<<<<<<<<<<<
  *         # https://wiki.libsdl.org/SDL_RenderGeometry
  *         if not SDL_VERSION_ATLEAST(2, 0, 18):
  */
@@ -24179,8 +24179,8 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__15);
 
   /* "pygame/_sdl2/video.pyx":769
- *     def draw_triangle(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy,
- *                       (float, float) p1_uv=(0.0, 0.0), (float, float) p2_uv=(1.0, 1.0), (float, float) p3_uv=(0.0, 1.0),
+ *     def draw_triangle(self, (double, double) p1_xy, (double, double) p2_xy, (double, double) p3_xy,
+ *                       (double, double) p1_uv=(0.0, 0.0), (double, double) p2_uv=(1.0, 1.0), (double, double) p3_uv=(0.0, 1.0),
  *                       p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255), p3_mod=(255, 255, 255, 255)):             # <<<<<<<<<<<<<<
  *         """ Copy a triangle portion of the texture to the rendering target by vertices coordinates.
  * 
@@ -24785,7 +24785,7 @@ static CYTHON_SMALL_CODE int __pyx_pymod_exec_video(PyObject *__pyx_pyinit_modul
 {
   PyObject *__pyx_t_1 = NULL;
   PyObject *__pyx_t_2 = NULL;
-  __pyx_ctuple_float__and_float __pyx_t_3;
+  __pyx_ctuple_double__and_double __pyx_t_3;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -25447,8 +25447,8 @@ if (!__Pyx_RefNanny) {
 
   /* "pygame/_sdl2/video.pyx":768
  * 
- *     def draw_triangle(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy,
- *                       (float, float) p1_uv=(0.0, 0.0), (float, float) p2_uv=(1.0, 1.0), (float, float) p3_uv=(0.0, 1.0),             # <<<<<<<<<<<<<<
+ *     def draw_triangle(self, (double, double) p1_xy, (double, double) p2_xy, (double, double) p3_xy,
+ *                       (double, double) p1_uv=(0.0, 0.0), (double, double) p2_uv=(1.0, 1.0), (double, double) p3_uv=(0.0, 1.0),             # <<<<<<<<<<<<<<
  *                       p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255), p3_mod=(255, 255, 255, 255)):
  *         """ Copy a triangle portion of the texture to the rendering target by vertices coordinates.
  */
@@ -25464,9 +25464,9 @@ if (!__Pyx_RefNanny) {
 
   /* "pygame/_sdl2/video.pyx":813
  * 
- *     def draw_quad(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy, (float, float) p4_xy,
- *                   (float, float) p1_uv=(0.0, 0.0), (float, float) p2_uv=(1.0, 0.0),             # <<<<<<<<<<<<<<
- *                   (float, float) p3_uv=(1.0, 1.0), (float, float) p4_uv=(0.0, 1.0),
+ *     def draw_quad(self, (double, double) p1_xy, (double, double) p2_xy, (double, double) p3_xy, (double, double) p4_xy,
+ *                   (double, double) p1_uv=(0.0, 0.0), (double, double) p2_uv=(1.0, 0.0),             # <<<<<<<<<<<<<<
+ *                   (double, double) p3_uv=(1.0, 1.0), (double, double) p4_uv=(0.0, 1.0),
  *                   p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255),
  */
   __pyx_t_3.f0 = 0.0;
@@ -25477,9 +25477,9 @@ if (!__Pyx_RefNanny) {
   __pyx_k__21 = __pyx_t_3;
 
   /* "pygame/_sdl2/video.pyx":814
- *     def draw_quad(self, (float, float) p1_xy, (float, float) p2_xy, (float, float) p3_xy, (float, float) p4_xy,
- *                   (float, float) p1_uv=(0.0, 0.0), (float, float) p2_uv=(1.0, 0.0),
- *                   (float, float) p3_uv=(1.0, 1.0), (float, float) p4_uv=(0.0, 1.0),             # <<<<<<<<<<<<<<
+ *     def draw_quad(self, (double, double) p1_xy, (double, double) p2_xy, (double, double) p3_xy, (double, double) p4_xy,
+ *                   (double, double) p1_uv=(0.0, 0.0), (double, double) p2_uv=(1.0, 0.0),
+ *                   (double, double) p3_uv=(1.0, 1.0), (double, double) p4_uv=(0.0, 1.0),             # <<<<<<<<<<<<<<
  *                   p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255),
  *                   p3_mod=(255, 255, 255, 255), p4_mod=(255, 255, 255, 255)):
  */
@@ -28985,28 +28985,28 @@ bad:
     }
 
 /* FromPyCTupleUtility */
-static __pyx_ctuple_float__and_float __pyx_convert__from_py___pyx_ctuple_float__and_float(PyObject * o) {
-    __pyx_ctuple_float__and_float result;
+static __pyx_ctuple_double__and_double __pyx_convert__from_py___pyx_ctuple_double__and_double(PyObject * o) {
+    __pyx_ctuple_double__and_double result;
     if (!PyTuple_Check(o) || PyTuple_GET_SIZE(o) != 2) {
         PyErr_Format(PyExc_TypeError, "Expected %.16s of size %d, got %.200s", "a tuple", 2, Py_TYPE(o)->tp_name);
         goto bad;
     }
 #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        result.f0 = __pyx_PyFloat_AsFloat(PyTuple_GET_ITEM(o, 0));
-        if ((result.f0 == (float)-1) && PyErr_Occurred()) goto bad;
-        result.f1 = __pyx_PyFloat_AsFloat(PyTuple_GET_ITEM(o, 1));
-        if ((result.f1 == (float)-1) && PyErr_Occurred()) goto bad;
+        result.f0 = __pyx_PyFloat_AsDouble(PyTuple_GET_ITEM(o, 0));
+        if ((result.f0 == (double)-1) && PyErr_Occurred()) goto bad;
+        result.f1 = __pyx_PyFloat_AsDouble(PyTuple_GET_ITEM(o, 1));
+        if ((result.f1 == (double)-1) && PyErr_Occurred()) goto bad;
 #else
     {
         PyObject *item;
         item = PySequence_ITEM(o, 0);  if (unlikely(!item)) goto bad;
-        result.f0 = __pyx_PyFloat_AsFloat(item);
+        result.f0 = __pyx_PyFloat_AsDouble(item);
         Py_DECREF(item);
-        if ((result.f0 == (float)-1) && PyErr_Occurred()) goto bad;
+        if ((result.f0 == (double)-1) && PyErr_Occurred()) goto bad;
         item = PySequence_ITEM(o, 1);  if (unlikely(!item)) goto bad;
-        result.f1 = __pyx_PyFloat_AsFloat(item);
+        result.f1 = __pyx_PyFloat_AsDouble(item);
         Py_DECREF(item);
-        if ((result.f1 == (float)-1) && PyErr_Occurred()) goto bad;
+        if ((result.f1 == (double)-1) && PyErr_Occurred()) goto bad;
     }
 #endif
     return result;
@@ -29015,7 +29015,7 @@ bad:
 }
 
 /* ToPyCTupleUtility */
-static PyObject* __pyx_convert__to_py___pyx_ctuple_float__and_float(__pyx_ctuple_float__and_float value) {
+static PyObject* __pyx_convert__to_py___pyx_ctuple_double__and_double(__pyx_ctuple_double__and_double value) {
     PyObject* item = NULL;
     PyObject* result = PyTuple_New(2);
     if (!result) goto bad;
