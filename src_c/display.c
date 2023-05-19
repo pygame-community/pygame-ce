@@ -701,8 +701,8 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
                 int h = event->window.data2;
                 pgSurfaceObject *display_surface =
                     pg_GetDefaultWindowSurface();
-                SDL_Surface *surf = SDL_CreateRGBSurface(
-                    SDL_SWSURFACE, w, h, 32, 0xff << 16, 0xff << 8, 0xff, 0);
+                SDL_Surface *surf = SDL_CreateRGBSurfaceWithFormat(
+                    0, w, h, 32, PG_PIXELFORMAT_XRGB8888);
 
                 SDL_FreeSurface(display_surface->surf);
                 display_surface->surf = surf;
@@ -1158,8 +1158,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
                 So we make a fake surface.
                 */
-                surf = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32,
-                                            0xff << 16, 0xff << 8, 0xff, 0);
+                surf = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32,
+                                                      PG_PIXELFORMAT_XRGB8888);
                 newownedsurf = surf;
             }
             else {
@@ -1260,8 +1260,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                         pg_renderer, SDL_PIXELFORMAT_ARGB8888,
                         SDL_TEXTUREACCESS_STREAMING, w, h);
                 }
-                surf = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32,
-                                            0xff << 16, 0xff << 8, 0xff, 0);
+                surf = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32,
+                                                      PG_PIXELFORMAT_XRGB8888);
                 newownedsurf = surf;
             }
             else {
@@ -1340,10 +1340,11 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         char *xdg_session_type = SDL_getenv("XDG_SESSION_TYPE");
         char *wayland_display = SDL_getenv("WAYLAND_DISPLAY");
         if (NULL != wayland_display ||
-            SDL_strcmp(xdg_session_type, "wayland") == 0) {
+            (NULL != xdg_session_type &&
+             SDL_strcmp(xdg_session_type, "wayland") == 0)) {
             if (PyErr_WarnEx(PyExc_Warning,
                              "PyGame seems to be running through X11 "
-                             "on top if wayland, instead of wayland directly",
+                             "on top of wayland, instead of wayland directly",
                              1) != 0)
                 return NULL;
         }

@@ -15,61 +15,6 @@ SCALEQUALITY_NEAREST=SDL_ScaleMode.SDL_ScaleModeNearest
 SCALEQUALITY_LINEAR=SDL_ScaleMode.SDL_ScaleModeLinear
 SCALEQUALITY_BEST=SDL_ScaleMode.SDL_ScaleModeBest
 
-cdef extern from "SDL.h" nogil:
-    int SDL_VERSION_ATLEAST(int major, int minor, int patch) 
-
-    Uint32 SDL_GetWindowPixelFormat(SDL_Window* window)
-    SDL_bool SDL_IntersectRect(const SDL_Rect* A,
-                               const SDL_Rect* B,
-                               SDL_Rect*       result)
-    void SDL_SetWindowResizable(SDL_Window *window, SDL_bool resizable)
-    int SDL_GetWindowOpacity(SDL_Window *window, float *opacity)
-    int SDL_SetWindowOpacity(SDL_Window *window, float opacity)
-    int SDL_SetWindowModalFor(SDL_Window *modal_window, SDL_Window *parent_window)
-    int SDL_SetWindowInputFocus(SDL_Window *window)
-    int SDL_SetRelativeMouseMode(SDL_bool enabled)
-    SDL_bool SDL_GetRelativeMouseMode()
-    SDL_Renderer* SDL_GetRenderer(SDL_Window* window)
-    SDL_Window* SDL_GetWindowFromID(Uint32 id)
-    SDL_Surface * SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth, Uint32 format)
-    SDL_Surface* SDL_ConvertSurface(SDL_Surface * src, const SDL_PixelFormat * fmt, Uint32 flags)
-    void SDL_FreeSurface(SDL_Surface * surface)
-    SDL_PixelFormat * SDL_AllocFormat(Uint32 pixel_format)
-    void SDL_FreeFormat(SDL_PixelFormat *format)
-    int SDL_SetSurfaceBlendMode(SDL_Surface * surface, SDL_BlendMode blendMode)
-    int SDL_GetSurfaceBlendMode(SDL_Surface * surface, SDL_BlendMode *blendMode)
-
-cdef extern from "pygame.h" nogil:
-    ctypedef struct pgSurfaceObject:
-        pass
-
-    int pgSurface_Check(object surf)
-    SDL_Surface* pgSurface_AsSurface(object surf)
-    void import_pygame_surface()
-
-    SDL_Window* pg_GetDefaultWindow()
-    void import_pygame_base()
-
-    int pgRect_Check(object rect)
-    SDL_Rect *pgRect_FromObject(object obj, SDL_Rect *temp)
-    object pgRect_New(SDL_Rect *r)
-    object pgRect_New4(int x, int y, int w, int h)
-    SDL_Rect pgRect_AsRect(object rect)
-
-    int pgFRect_Check(object rect)
-    SDL_FRect *pgFRect_FromObject(object obj, SDL_FRect *temp)
-    object pgFRect_New(SDL_FRect *r)
-    object pgFRect_New4(float x, float y, float w, float h)
-    void import_pygame_rect()
-
-    object pgColor_New(Uint8 rgba[])
-    object pgColor_NewLength(Uint8 rgba[], Uint8 length)
-    void import_pygame_color()
-    pgSurfaceObject *pgSurface_New2(SDL_Surface *info, int owner)
-
-cdef extern from "pgcompat.h" nogil:
-    pass
-
 import_pygame_base()
 import_pygame_color()
 import_pygame_surface()

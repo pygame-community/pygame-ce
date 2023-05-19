@@ -13,7 +13,7 @@ pygame to compare the results. I didn't bother porting the text and
 sound stuff, that's an easy enough challenge for the reader :]
 """
 
-import pygame as pg
+import pygame
 import os
 from math import sin
 import time
@@ -23,14 +23,14 @@ main_dir = os.path.split(os.path.abspath(__file__))[0]
 
 def main():
     # initialize and setup screen
-    pg.init()
-    screen = pg.display.set_mode((640, 480), pg.HWSURFACE | pg.DOUBLEBUF)
+    pygame.init()
+    screen = pygame.display.set_mode((640, 480), pygame.DOUBLEBUF)
 
     # load image and quadruple
     imagename = os.path.join(main_dir, "data", "liquid.bmp")
-    bitmap = pg.image.load(imagename)
-    bitmap = pg.transform.scale2x(bitmap)
-    bitmap = pg.transform.scale2x(bitmap)
+    bitmap = pygame.image.load(imagename)
+    bitmap = pygame.transform.scale2x(bitmap)
+    bitmap = pygame.transform.scale2x(bitmap)
 
     # get the image and screen in the same format
     if screen.get_bitsize() == 8:
@@ -44,9 +44,9 @@ def main():
     # mainloop
     xblocks = range(0, 640, 20)
     yblocks = range(0, 480, 20)
-    stopevents = pg.QUIT, pg.KEYDOWN, pg.MOUSEBUTTONDOWN
+    stopevents = pygame.QUIT, pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN
     while True:
-        for e in pg.event.get():
+        for e in pygame.event.get():
             if e.type in stopevents:
                 return
 
@@ -57,13 +57,13 @@ def main():
                 ypos = (y + (sin(anim + y * 0.01) * 15)) + 20
                 screen.blit(bitmap, (x, y), (xpos, ypos, 20, 20))
 
-        pg.display.flip()
+        pygame.display.flip()
         time.sleep(0.01)
 
 
 if __name__ == "__main__":
     main()
-    pg.quit()
+    pygame.quit()
 
 
 """BTW, here is the code from the BlitzBasic example this was derived

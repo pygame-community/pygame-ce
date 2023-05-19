@@ -489,7 +489,7 @@ pgRWops_ReleaseObject(SDL_RWops *context)
             Py_XDECREF(helper->read);
             Py_XDECREF(helper->close);
             Py_DECREF(fileobj);
-            PyMem_Del(helper);
+            PyMem_Free(helper);
             SDL_FreeRW(context);
         }
         else {

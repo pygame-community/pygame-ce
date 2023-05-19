@@ -13,7 +13,7 @@ python -m pygame.examples.midi --input
 import sys
 import os
 
-import pygame as pg
+import pygame
 import pygame.midi
 
 # black and white piano keys use b/w color values directly
@@ -44,7 +44,7 @@ def _print_device_info():
 
 
 def input_main(device_id=None):
-    pg.init()
+    pygame.init()
 
     pygame.midi.init()
 
@@ -58,15 +58,15 @@ def input_main(device_id=None):
     print(f"using input_id :{input_id}:")
     i = pygame.midi.Input(input_id)
 
-    pg.display.set_mode((1, 1))
+    pygame.display.set_mode((1, 1))
 
     going = True
     while going:
         events = pygame.event.get()
         for e in events:
-            if e.type in [pg.QUIT]:
+            if e.type in [pygame.QUIT]:
                 going = False
-            if e.type in [pg.KEYDOWN]:
+            if e.type in [pygame.KEYDOWN]:
                 going = False
             if e.type in [pygame.midi.MIDIIN]:
                 print(e)
@@ -135,35 +135,35 @@ def output_main(device_id=None):
 
     key_mapping = make_key_mapping(
         [
-            pg.K_TAB,
-            pg.K_1,
-            pg.K_q,
-            pg.K_2,
-            pg.K_w,
-            pg.K_3,
-            pg.K_e,
-            pg.K_r,
-            pg.K_5,
-            pg.K_t,
-            pg.K_6,
-            pg.K_y,
-            pg.K_u,
-            pg.K_8,
-            pg.K_i,
-            pg.K_9,
-            pg.K_o,
-            pg.K_0,
-            pg.K_p,
-            pg.K_LEFTBRACKET,
-            pg.K_EQUALS,
-            pg.K_RIGHTBRACKET,
-            pg.K_BACKSPACE,
-            pg.K_BACKSLASH,
+            pygame.K_TAB,
+            pygame.K_1,
+            pygame.K_q,
+            pygame.K_2,
+            pygame.K_w,
+            pygame.K_3,
+            pygame.K_e,
+            pygame.K_r,
+            pygame.K_5,
+            pygame.K_t,
+            pygame.K_6,
+            pygame.K_y,
+            pygame.K_u,
+            pygame.K_8,
+            pygame.K_i,
+            pygame.K_9,
+            pygame.K_o,
+            pygame.K_0,
+            pygame.K_p,
+            pygame.K_LEFTBRACKET,
+            pygame.K_EQUALS,
+            pygame.K_RIGHTBRACKET,
+            pygame.K_BACKSPACE,
+            pygame.K_BACKSLASH,
         ],
         start_note,
     )
 
-    pg.init()
+    pygame.init()
     pygame.midi.init()
 
     _print_device_info()
@@ -180,25 +180,25 @@ def output_main(device_id=None):
         midi_out.set_instrument(instrument)
         keyboard = Keyboard(start_note, n_notes)
 
-        screen = pg.display.set_mode(keyboard.rect.size)
+        screen = pygame.display.set_mode(keyboard.rect.size)
         screen.fill(BACKGROUNDCOLOR)
-        pg.display.flip()
+        pygame.display.flip()
 
-        background = pg.Surface(screen.get_size())
+        background = pygame.Surface(screen.get_size())
         background.fill(BACKGROUNDCOLOR)
         dirty_rects = []
         keyboard.draw(screen, background, dirty_rects)
-        pg.display.update(dirty_rects)
+        pygame.display.update(dirty_rects)
 
-        regions = pg.Surface(screen.get_size())  # initial color (0,0,0)
+        regions = pygame.Surface(screen.get_size())  # initial color (0,0,0)
         keyboard.map_regions(regions)
 
-        pg.event.set_blocked(pg.MOUSEMOTION)
+        pygame.event.set_blocked(pygame.MOUSEMOTION)
         mouse_note = 0
         on_notes = set()
         while True:
-            e = pg.event.wait()
-            if e.type == pg.MOUSEBUTTONDOWN:
+            e = pygame.event.wait()
+            if e.type == pygame.MOUSEBUTTONDOWN:
                 mouse_note, velocity, __, __ = regions.get_at(e.pos)
                 if mouse_note and mouse_note not in on_notes:
                     keyboard.key_down(mouse_note)
@@ -206,16 +206,16 @@ def output_main(device_id=None):
                     on_notes.add(mouse_note)
                 else:
                     mouse_note = 0
-            elif e.type == pg.MOUSEBUTTONUP:
+            elif e.type == pygame.MOUSEBUTTONUP:
                 if mouse_note:
                     midi_out.note_off(mouse_note)
                     keyboard.key_up(mouse_note)
                     on_notes.remove(mouse_note)
                     mouse_note = 0
-            elif e.type == pg.QUIT:
+            elif e.type == pygame.QUIT:
                 break
-            elif e.type == pg.KEYDOWN:
-                if e.key == pg.K_ESCAPE:
+            elif e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_ESCAPE:
                     break
                 try:
                     note, velocity = key_mapping[e.key]
@@ -226,7 +226,7 @@ def output_main(device_id=None):
                         keyboard.key_down(note)
                         midi_out.note_on(note, velocity)
                         on_notes.add(note)
-            elif e.type == pg.KEYUP:
+            elif e.type == pygame.KEYUP:
                 try:
                     note, __ = key_mapping[e.key]
                 except KeyError:
@@ -239,7 +239,7 @@ def output_main(device_id=None):
 
             dirty_rects = []
             keyboard.draw(screen, background, dirty_rects)
-            pg.display.update(dirty_rects)
+            pygame.display.update(dirty_rects)
     finally:
         del midi_out
         pygame.midi.quit()
@@ -452,7 +452,7 @@ def key_class(updates, image_strip, image_rects, is_white_key=True):
             """
             if key_left is None:
                 key_left = null_key
-            rect = pg.Rect(posn[0], posn[1], c_width, c_height)
+            rect = pygame.Rect(posn[0], posn[1], c_width, c_height)
             self.rect = rect
             self._state = c_down_state_initial
             self._source_rect = c_down_state_rect_initial
@@ -461,7 +461,9 @@ def key_class(updates, image_strip, image_rects, is_white_key=True):
             self._notify_down = getattr(key_left, c_notify_down_method)
             self._notify_up = getattr(key_left, c_notify_up_method)
             self._key_left = key_left
-            self._background_rect = pg.Rect(rect.left, rect.bottom - 10, c_width, 10)
+            self._background_rect = pygame.Rect(
+                rect.left, rect.bottom - 10, c_width, 10
+            )
             c_updates.add(self)
 
         def down(self):
@@ -586,7 +588,7 @@ def key_images():
     white_key_height = 160
     black_key_width = 22
     black_key_height = 94
-    strip = pg.image.load(strip_file)
+    strip = pygame.image.load(strip_file)
     names = [
         "black none",
         "black self",
@@ -611,11 +613,11 @@ def key_images():
     ]
     rects = {}
     for i in range(2):
-        rects[names[i]] = pg.Rect(
+        rects[names[i]] = pygame.Rect(
             i * white_key_width, 0, black_key_width, black_key_height
         )
     for i in range(2, len(names)):
-        rects[names[i]] = pg.Rect(
+        rects[names[i]] = pygame.Rect(
             i * white_key_width, 0, white_key_width, white_key_height
         )
     return strip, rects
@@ -743,7 +745,7 @@ class Keyboard:
 
         kb_width = key_map[self._end_note].rect.right
         kb_height = self.white_key_height
-        self.rect = pg.Rect(0, 0, kb_width, kb_height)
+        self.rect = pygame.Rect(0, 0, kb_width, kb_height)
 
     def map_regions(self, regions):
         """Draw the key regions onto surface regions.
@@ -872,4 +874,4 @@ if __name__ == "__main__":
     else:
         usage()
 
-    pg.quit()
+    pygame.quit()

@@ -9,7 +9,7 @@ pygame.init()
 class TextPrint:
     def __init__(self):
         self.reset()
-        self.font = pygame.font.Font(None, 25)
+        self.font = pygame.Font(None, 25)
 
     def tprint(self, screen, text):
         text_bitmap = self.font.render(text, True, (0, 0, 0))
@@ -34,7 +34,7 @@ def main():
     pygame.display.set_caption("Joystick example")
 
     # Used to manage how fast the screen updates.
-    clock = pygame.time.Clock()
+    clock = pygame.Clock()
 
     # Get ready to print.
     text_print = TextPrint()

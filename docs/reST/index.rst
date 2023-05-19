@@ -43,10 +43,6 @@ Documents
 `Readme`_
   Basic information about pygame: what it is, who is involved, and where to find it.
 
-`Install`_
-  Steps needed to compile pygame on several platforms.
-  Also help on finding and installing prebuilt binaries for your system.
-
 :doc:`filepaths`
   How pygame handles file system paths.
 
@@ -212,8 +208,6 @@ Reference
 :ref:`search`
   Search pygame documents by keyword.
 
-.. _Readme: ../wiki/about
-
-.. _Install: ../wiki/GettingStarted#Pygame%20Installation
+.. _Readme: https://github.com/pygame-community/pygame-ce#readme
 
 .. _LGPL License: LGPL.txt

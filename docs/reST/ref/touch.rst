@@ -8,7 +8,7 @@
 
 | :sl:`pygame module to work with touch input`
 
-.. versionadded:: 2 This module requires SDL2.
+.. versionaddedold:: 2 This module requires SDL2.
 
 .. function:: get_num_devices
 
