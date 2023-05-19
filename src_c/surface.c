@@ -2534,9 +2534,12 @@ surf_get_height(PyObject *self, PyObject *_null)
     return PyLong_FromLong(surf->h);
 }
 
+#define GET_RECT_TYPE_RECT 1
+#define GET_RECT_TYPE_FRECT 2
+
 static PyObject *
 surf_generic_get_rect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
-                      PyObject *kwnames, char *type)
+                      PyObject *kwnames, int type)
 {
     PyObject *rect = NULL;
     SDL_Surface *surf = pgSurface_AsSurface(self);
@@ -2548,18 +2551,20 @@ surf_generic_get_rect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
 
     SURF_INIT_CHECK(surf)
 
-    if (strcmp(type, "rect") == 0) {
-        rect = pgRect_New4(0, 0, surf->w, surf->h);
-    }
-    else if (strcmp(type, "frect") == 0) {
-        rect = pgFRect_New4(0.f, 0.f, (float)surf->w, (float)surf->h);
+    switch (type) {
+        case GET_RECT_TYPE_RECT:
+            rect = pgRect_New4(0, 0, surf->w, surf->h);
+            break;
+        case GET_RECT_TYPE_FRECT:
+            rect = pgFRect_New4(0.f, 0.f, (float)surf->w, (float)surf->h);
+            break;
     }
 
     if (rect && kwnames) {
         Py_ssize_t i, sequence_len;
         PyObject **sequence_items;
         sequence_items = PySequence_Fast_ITEMS(kwnames);
-        sequence_len = PySequence_Fast_GET_SIZE(kwnames);
+        sequence_len = PyTuple_GET_SIZE(kwnames);
 
         for (i = 0; i < sequence_len; ++i) {
             if ((PyObject_SetAttr(rect, sequence_items[i], args[i]) == -1)) {
@@ -2575,15 +2580,20 @@ static PyObject *
 surf_get_rect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
               PyObject *kwnames)
 {
-    return surf_generic_get_rect(self, args, nargs, kwnames, "rect");
+    return surf_generic_get_rect(self, args, nargs, kwnames,
+                                 GET_RECT_TYPE_RECT);
 }
 
 static PyObject *
 surf_get_frect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
                PyObject *kwnames)
 {
-    return surf_generic_get_rect(self, args, nargs, kwnames, "frect");
+    return surf_generic_get_rect(self, args, nargs, kwnames,
+                                 GET_RECT_TYPE_FRECT);
 }
+
+#undef GET_RECT_TYPE_RECT
+#undef GET_RECT_TYPE_FRECT
 
 static PyObject *
 surf_get_bitsize(PyObject *self, PyObject *_null)
