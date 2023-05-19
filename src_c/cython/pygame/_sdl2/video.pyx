@@ -732,6 +732,7 @@ cdef class Texture:
         
         if SDL_VERSION_ATLEAST(2,0,10):
             self._frect_draw(csrcrect,dstrect,angle,origin,flip_x,flip_y)
+            return
 
         if dstrect is not None:
             cdstrect = pgRect_FromObject(dstrect, &dst)
