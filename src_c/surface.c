@@ -1943,9 +1943,12 @@ surf_pblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs,
         return NULL;
     }
 
-    if (!kwnames || PyTuple_GET_SIZE(kwnames) != 1) {
-        return RAISE(PyExc_TypeError,
-                     "pblit() must have a single keyword argument");
+    if (kwnames) {
+        if (PyTuple_GET_SIZE(kwnames) > 1) {
+            return RAISE(
+                PyExc_TypeError,
+                "pblit() must have at most a single keyword argument");
+        }
     }
 
     /* Handle the surface argument and the dest surface */
@@ -1967,75 +1970,121 @@ surf_pblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs,
     }
     rect = &pgRect_AsRect(pos_rect);
 
-    /* Check that the kwarg value is a sequence of length 2 */
-    if (!PySequence_Check(args[nargs]) || PySequence_Size(args[nargs]) != 2) {
-        if (!PySequence_Check(args[nargs])) {
-            PyErr_Format(
-                PyExc_TypeError,
-                "expected a sequence of length 2 as keyword argument, "
-                "got: '%s'",
-                args[nargs]->ob_type->tp_name);
+    /* set the blit position through a keyword only if there is one */
+    if (kwnames) {
+        /* Check that the kwarg value is a sequence of length 2 */
+        if (!PySequence_Check(args[nargs]) ||
+            PySequence_Size(args[nargs]) != 2) {
+            if (!PySequence_Check(args[nargs])) {
+                PyErr_Format(
+                    PyExc_TypeError,
+                    "expected a sequence of length 2 as keyword argument, "
+                    "got: '%s'",
+                    args[nargs]->ob_type->tp_name);
+            }
+            else {
+                PyErr_Format(
+                    PyExc_TypeError,
+                    "expected a sequence of size 2 as keyword argument, "
+                    "got size: %zd",
+                    PySequence_Size(args[nargs]));
+            }
+            Py_DECREF(pos_rect);
+            return NULL;
         }
-        else {
-            PyErr_Format(PyExc_TypeError,
-                         "expected a sequence of size 2 as keyword argument, "
-                         "got size: %zd",
-                         PySequence_Size(args[nargs]));
+
+        if (PyObject_SetAttr(pos_rect, PyTuple_GET_ITEM(kwnames, 0),
+                             args[nargs]) == -1) {
+            Py_DECREF(pos_rect);
+            return NULL;
         }
-        Py_DECREF(pos_rect);
-        return NULL;
-    }
 
-    if (PyObject_SetAttr(pos_rect, PyTuple_GET_ITEM(kwnames, 0),
-                         args[nargs]) == -1) {
-        Py_DECREF(pos_rect);
-        return NULL;
-    }
+        /* Handle the area argument case */
+        if (nargs >= 2) {
+            if (args[1] != Py_None) {
+                if (!(src_rect = pgRect_FromObject(args[1], &temp))) {
+                    Py_DECREF(pos_rect);
+                    PyErr_Format(PyExc_TypeError,
+                                 "invalid second argument, expected RectLike, "
+                                 "got: '%s'",
+                                 args[1]->ob_type->tp_name);
+                    return NULL;
+                }
+                rect->w = src_rect->w;
+                rect->h = src_rect->h;
+            }
 
-    /* Handle the blend_flag/area argument case */
-    if (nargs == 2) {
-        if (PyLong_Check(args[1])) {
-            blend_flags = PyLong_AsLong(args[1]);
-            if (PyErr_Occurred()) {
-                Py_DECREF(pos_rect);
-                return NULL;
+            if (nargs == 3) {
+                /* get the blend_flag */
+                if (!PyLong_Check(args[2])) {
+                    Py_DECREF(pos_rect);
+                    PyErr_Format(
+                        PyExc_TypeError,
+                        "expected 'special_flags' to be an int, got: '%s'",
+                        args[1]->ob_type->tp_name);
+                    return NULL;
+                }
+                blend_flags = PyLong_AsLong(args[2]);
+                if (PyErr_Occurred()) {
+                    Py_DECREF(pos_rect);
+                    return NULL;
+                }
             }
         }
-        else if ((src_rect = pgRect_FromObject(args[1], &temp))) {
-            rect->w = src_rect->w;
-            rect->h = src_rect->h;
-        }
-        else {
-            Py_DECREF(pos_rect);
-            PyErr_Format(PyExc_TypeError,
-                         "invalid second argument, expected int or RectLike, "
-                         "got: '%s'",
-                         args[1]->ob_type->tp_name);
-            return NULL;
-        }
     }
-    /* handle the blend_flag and area arguments case */
-    else if (nargs == 3) {
-        /* get the area */
-        if (!(src_rect = pgRect_FromObject(args[1], &temp))) {
-            Py_DECREF(pos_rect);
-            return RAISE(PyExc_TypeError, "Invalid rectstyle argument");
+    else {
+        if (nargs == 1) {
+            return RAISE(PyExc_TypeError,
+                         "pblit() without keyword takes at least 2 positional "
+                         "arguments");
         }
-        rect->w = src_rect->w;
-        rect->h = src_rect->h;
+        else if (nargs >= 2) {
+            /* get the blit position */
+            if ((src_rect = pgRect_FromObject(args[1], &temp))) {
+                rect->x = src_rect->x;
+                rect->y = src_rect->y;
+            }
+            else if (pg_TwoIntsFromObj(args[1], &rect->x, &rect->y)) {
+            }
+            else {
+                Py_DECREF(pos_rect);
+                return RAISE(PyExc_TypeError,
+                             "invalid destination position for pblit");
+            }
 
-        /* get the blend_flag */
-        if (!PyLong_Check(args[2])) {
-            Py_DECREF(pos_rect);
-            PyErr_Format(PyExc_TypeError,
-                         "expected 'special_flags' to be an int, got: '%s'",
-                         args[1]->ob_type->tp_name);
-            return NULL;
-        }
-        blend_flags = PyLong_AsLong(args[2]);
-        if (PyErr_Occurred()) {
-            Py_DECREF(pos_rect);
-            return NULL;
+            /* get the area parameter if there is one */
+            if (nargs == 3) {
+                if (args[2] != Py_None) {
+                    if (!(src_rect = pgRect_FromObject(args[2], &temp))) {
+                        Py_DECREF(pos_rect);
+                        PyErr_Format(
+                            PyExc_TypeError,
+                            "invalid second argument, expected RectLike, "
+                            "got: '%s'",
+                            args[2]->ob_type->tp_name);
+                        return NULL;
+                    }
+                    rect->w = src_rect->w;
+                    rect->h = src_rect->h;
+                }
+            }
+            /* get the special_flags parameter if there is one */
+            if (nargs == 4) {
+                /* get the blend_flag */
+                if (!PyLong_Check(args[3])) {
+                    Py_DECREF(pos_rect);
+                    PyErr_Format(
+                        PyExc_TypeError,
+                        "expected 'special_flags' to be an int, got: '%s'",
+                        args[3]->ob_type->tp_name);
+                    return NULL;
+                }
+                blend_flags = PyLong_AsLong(args[3]);
+                if (PyErr_Occurred()) {
+                    Py_DECREF(pos_rect);
+                    return NULL;
+                }
+            }
         }
     }
 

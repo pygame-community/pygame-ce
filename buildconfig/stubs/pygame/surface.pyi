@@ -61,11 +61,11 @@ class Surface:
     ) -> Rect: ...
     @overload
     def pblit(
-        self,
-        source: Surface,
-        special_flags: int = 0,
-        /,
-        **kwargs: Any,
+            self,
+            source: Surface,
+            dest: Union[Coordinate, RectValue],
+            area: Optional[RectValue] = None,
+            special_flags: int = 0,
     ) -> Rect: ...
     @overload
     def pblit(
