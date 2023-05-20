@@ -172,6 +172,9 @@ surf_get_clip(PyObject *self, PyObject *args);
 static PyObject *
 surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds);
 static PyObject *
+surf_pblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs,
+           PyObject *kwnames);
+static PyObject *
 surf_blits(pgSurfaceObject *self, PyObject *args, PyObject *keywds);
 static PyObject *
 surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs);
@@ -346,6 +349,7 @@ static struct PyMethodDef surface_methods[] = {
      DOC_SURFACE_FILL},
     {"blit", (PyCFunction)surf_blit, METH_VARARGS | METH_KEYWORDS,
      DOC_SURFACE_BLIT},
+    {"pblit", (PyCFunction)surf_pblit, METH_FASTCALL | METH_KEYWORDS, NULL},
     {"blits", (PyCFunction)surf_blits, METH_VARARGS | METH_KEYWORDS,
      DOC_SURFACE_BLITS},
     {"fblits", (PyCFunction)surf_fblits, METH_FASTCALL, DOC_SURFACE_FBLITS},
@@ -1914,6 +1918,133 @@ surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
         return NULL;
 
     return pgRect_New(&dest_rect);
+}
+
+static PyObject *
+surf_pblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs,
+           PyObject *kwnames)
+{
+    SDL_Surface *src, *dest;
+    pgSurfaceObject *src_surf;
+    PyObject *pos_rect;
+    SDL_Rect *src_rect = NULL, *rect, temp;
+    int blend_flags = 0;
+
+    /* The function always takes at least one positional argument (the first
+     * one) that represents the surface to blit. The second positional argument
+     * is optional and represents the blend_flag. The third argument is not
+     * optional and represents the name: position kwarg. */
+
+    if (nargs < 1 || nargs > 3) {
+        PyErr_Format(PyExc_TypeError,
+                     "pblit takes 1 or 2 positional arguments but %zd were "
+                     "given",
+                     nargs);
+        return NULL;
+    }
+
+    if (!kwnames || PyTuple_GET_SIZE(kwnames) != 1) {
+        return RAISE(PyExc_TypeError,
+                     "pblit() must have a single keyword argument");
+    }
+
+    /* Handle the surface argument and the dest surface */
+    if (!pgSurface_Check(args[0])) {
+        PyErr_Format(PyExc_TypeError,
+                     "expected a Surface as first argument, got: '%s'",
+                     args[0]->ob_type->tp_name);
+        return NULL;
+    }
+    src_surf = (pgSurfaceObject *)args[0];
+    src = src_surf->surf;
+    SURF_INIT_CHECK(src);
+    dest = pgSurface_AsSurface(self);
+    SURF_INIT_CHECK(dest);
+
+    pos_rect = pgRect_New4(0, 0, src->w, src->h);
+    if (!pos_rect) {
+        return NULL;
+    }
+    rect = &pgRect_AsRect(pos_rect);
+
+    /* Check that the kwarg value is a sequence of length 2 */
+    if (!PySequence_Check(args[nargs]) || PySequence_Size(args[nargs]) != 2) {
+        if (!PySequence_Check(args[nargs])) {
+            PyErr_Format(
+                PyExc_TypeError,
+                "expected a sequence of length 2 as keyword argument, "
+                "got: '%s'",
+                args[nargs]->ob_type->tp_name);
+        }
+        else {
+            PyErr_Format(PyExc_TypeError,
+                         "expected a sequence of size 2 as keyword argument, "
+                         "got size: %zd",
+                         PySequence_Size(args[nargs]));
+        }
+        Py_DECREF(pos_rect);
+        return NULL;
+    }
+
+    if (PyObject_SetAttr(pos_rect, PyTuple_GET_ITEM(kwnames, 0),
+                         args[nargs]) == -1) {
+        Py_DECREF(pos_rect);
+        return NULL;
+    }
+
+    /* Handle the blend_flag/area argument case */
+    if (nargs == 2) {
+        if (PyLong_Check(args[1])) {
+            blend_flags = PyLong_AsLong(args[1]);
+            if (PyErr_Occurred()) {
+                Py_DECREF(pos_rect);
+                return NULL;
+            }
+        }
+        else if ((src_rect = pgRect_FromObject(args[1], &temp))) {
+            rect->w = src_rect->w;
+            rect->h = src_rect->h;
+        }
+        else {
+            Py_DECREF(pos_rect);
+            PyErr_Format(PyExc_TypeError,
+                         "invalid second argument, expected int or RectLike, "
+                         "got: '%s'",
+                         args[1]->ob_type->tp_name);
+            return NULL;
+        }
+    }
+    /* handle the blend_flag and area arguments case */
+    else if (nargs == 3) {
+        /* get the area */
+        if (!(src_rect = pgRect_FromObject(args[1], &temp))) {
+            Py_DECREF(pos_rect);
+            return RAISE(PyExc_TypeError, "Invalid rectstyle argument");
+        }
+        rect->w = src_rect->w;
+        rect->h = src_rect->h;
+
+        /* get the blend_flag */
+        if (!PyLong_Check(args[2])) {
+            Py_DECREF(pos_rect);
+            PyErr_Format(PyExc_TypeError,
+                         "expected 'special_flags' to be an int, got: '%s'",
+                         args[1]->ob_type->tp_name);
+            return NULL;
+        }
+        blend_flags = PyLong_AsLong(args[2]);
+        if (PyErr_Occurred()) {
+            Py_DECREF(pos_rect);
+            return NULL;
+        }
+    }
+
+    if (pgSurface_Blit(self, src_surf, rect, src_rect, blend_flags)) {
+        Py_DECREF(pos_rect);
+        return NULL;
+    }
+
+    return pos_rect;
 }
 
 #define BLITS_ERR_SEQUENCE_REQUIRED 1

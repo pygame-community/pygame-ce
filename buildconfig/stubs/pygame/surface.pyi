@@ -59,6 +59,31 @@ class Surface:
         area: Optional[RectValue] = None,
         special_flags: int = 0,
     ) -> Rect: ...
+    @overload
+    def pblit(
+        self,
+        source: Surface,
+        special_flags: int = 0,
+        /,
+        **kwargs: Any,
+    ) -> Rect: ...
+    @overload
+    def pblit(
+        self,
+        source: Surface,
+        area: Optional[RectValue] = None,
+        /,
+        **kwargs: Any,
+    ) -> Rect: ...
+    @overload
+    def pblit(
+        self,
+        source: Surface,
+        area: Optional[RectValue] = None,
+        special_flags: int = 0,
+        /,
+        **kwargs: Any,
+    ) -> Rect: ...
     def blits(
         self,
         blit_sequence: Sequence[
