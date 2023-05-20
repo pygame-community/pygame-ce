@@ -3144,9 +3144,14 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
         retsurf = pgSurface_AsSurface(dstobj);
     }
 
-    if (retsurf->pixels == src->pixels) {
+    Uint8 *ret_start = retsurf->pixels;
+    Uint8 *ret_end = ret_start + retsurf->h * retsurf->pitch;
+    Uint8 *src_start = src->pixels;
+    Uint8 *src_end = src_start + src->h * src->pitch;
+    if ((ret_start <= src_start && ret_end >= src_start) ||
+        (src_start <= ret_start && src_end >= ret_start)) {
         return RAISE(PyExc_ValueError,
-                     "Source and destination surfaces are the same.");
+                     "Source and destination surfaces are overlapping.");
     }
 
     if ((retsurf->w) != (src->w) || (retsurf->h) != (src->h)) {

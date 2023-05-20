@@ -1425,20 +1425,21 @@ class TransformDisplayModuleTest(unittest.TestCase):
         data_fname = example_path("data")
         path = os.path.join(data_fname, "peppers3.tif")
         sf = pygame.image.load(path)
-        sub_sf = sf.subsurface((0, 0, *sf.get_size()))
+        sub1 = sf.subsurface((0, 0, 128, 128))
+        sub2 = sf.subsurface((20, 20, 128, 128))
 
         self.assertRaises(
             ValueError, lambda: pygame.transform.box_blur(sf, 10, dest_surface=sf)
         )
         self.assertRaises(
-            ValueError, lambda: pygame.transform.box_blur(sf, 10, dest_surface=sub_sf)
+            ValueError, lambda: pygame.transform.box_blur(sub1, 10, dest_surface=sub2)
         )
         self.assertRaises(
             ValueError, lambda: pygame.transform.gaussian_blur(sf, 10, dest_surface=sf)
         )
         self.assertRaises(
             ValueError,
-            lambda: pygame.transform.gaussian_blur(sf, 10, dest_surface=sub_sf),
+            lambda: pygame.transform.gaussian_blur(sub1, 10, dest_surface=sub2),
         )
 
     def test_box_blur(self):
