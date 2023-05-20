@@ -1940,10 +1940,13 @@ surf_pblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs,
     }
 
     if (kwnames) {
-        if (PyTuple_GET_SIZE(kwnames) > 1) {
-            return RAISE(
+        Py_ssize_t nkwargs = PyTuple_GET_SIZE(kwnames);
+        if (nkwargs > 1) {
+            PyErr_Format(
                 PyExc_TypeError,
-                "pblit() must have at most a single keyword argument");
+                "pblit() can have at most a single keyword argument, got: %zd",
+                nkwargs);
+            return NULL;
         }
     }
 
