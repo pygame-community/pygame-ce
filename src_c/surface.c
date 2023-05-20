@@ -1930,11 +1930,6 @@ surf_pblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs,
     SDL_Rect *src_rect = NULL, *rect, temp;
     int blend_flags = 0;
 
-    /* The function always takes at least one positional argument (the first
-     * one) that represents the surface to blit. The second positional argument
-     * is optional and represents the blend_flag. The third argument is not
-     * optional and represents the name: position kwarg. */
-
     if (nargs < 1 || nargs > 4) {
         PyErr_Format(PyExc_TypeError,
                      "pblit takes a minimum of one and maximum of 4 "
@@ -1971,37 +1966,21 @@ surf_pblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs,
     }
     rect = &pgRect_AsRect(pos_rect);
 
-    /* set the blit position through a keyword only if there is one */
     if (kwnames) {
-        /* Check that the kwarg value is a sequence of length 2 */
-        if (!PySequence_Check(args[nargs]) ||
-            PySequence_Size(args[nargs]) != 2) {
-            if (!PySequence_Check(args[nargs])) {
-                PyErr_Format(
-                    PyExc_TypeError,
-                    "expected a sequence of length 2 as keyword argument, "
-                    "got: '%s'",
-                    args[nargs]->ob_type->tp_name);
-            }
-            else {
-                PyErr_Format(
-                    PyExc_TypeError,
-                    "expected a sequence of size 2 as keyword argument, "
-                    "got size: %zd",
-                    PySequence_Size(args[nargs]));
-            }
-            Py_DECREF(pos_rect);
-            return NULL;
-        }
-
+        /* set the blit position through a keyword only if there is one */
         if (PyObject_SetAttr(pos_rect, PyTuple_GET_ITEM(kwnames, 0),
                              args[nargs]) == -1) {
             Py_DECREF(pos_rect);
+            PyErr_Clear();
+            PyErr_Format(PyExc_TypeError,
+                         "Invalid keyword argument, expected a valid sequence "
+                         "but got: '%s'",
+                         args[nargs]->ob_type->tp_name);
             return NULL;
         }
 
-        /* Handle the area argument case */
         if (nargs >= 2) {
+            /* get the area parameter if there is one */
             if (args[1] != Py_None) {
                 if (!(src_rect = pgRect_FromObject(args[1], &temp))) {
                     Py_DECREF(pos_rect);
@@ -2014,7 +1993,7 @@ surf_pblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs,
                 rect->w = src_rect->w;
                 rect->h = src_rect->h;
             }
-
+            /* get the special_flags parameter if there is one */
             if (nargs == 3) {
                 /* get the blend_flag */
                 if (!PyLong_Check(args[2])) {
