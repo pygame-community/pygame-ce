@@ -40,10 +40,6 @@
 #undef HAVE_STDLIB_H
 #endif
 
-// PNG_SKIP_SETJMP_CHECK : non-regression on #662 (build error on old libpng)
-#define PNG_SKIP_SETJMP_CHECK
-#include <png.h>
-
 #include "pgcompat.h"
 
 #include "doc/image_doc.h"
