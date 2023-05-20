@@ -1935,9 +1935,10 @@ surf_pblit(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs,
      * is optional and represents the blend_flag. The third argument is not
      * optional and represents the name: position kwarg. */
 
-    if (nargs < 1 || nargs > 3) {
+    if (nargs < 1 || nargs > 4) {
         PyErr_Format(PyExc_TypeError,
-                     "pblit takes 1 or 2 positional arguments but %zd were "
+                     "pblit takes a minimum of one and maximum of 4 "
+                     "positional arguments but %zd were "
                      "given",
                      nargs);
         return NULL;
