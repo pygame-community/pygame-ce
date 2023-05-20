@@ -854,7 +854,7 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
  */
 static PyGetSetDef font_getsets[] = {
     {"name", (getter)font_getter_name, NULL, DOC_FONT_FONT_NAME, NULL},
-    {"stylename", (getter)font_getter_style_name, NULL,
+    {"style_name", (getter)font_getter_style_name, NULL,
      DOC_FONT_FONT_STYLENAME, NULL},
     {"bold", (getter)font_getter_bold, (setter)font_setter_bold,
      DOC_FONT_FONT_BOLD, NULL},

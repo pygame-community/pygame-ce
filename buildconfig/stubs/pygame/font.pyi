@@ -34,7 +34,7 @@ class Font:
     underline: bool
     strikethrough: bool
     align: int
-    stylename: str
+    style_name: str
     def __init__(self, filename: Optional[FileArg] = None, size: int = 20) -> None: ...
     def render(
         self,

@@ -209,16 +209,16 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.name ##
 
-   .. attribute:: stylename
+   .. attribute:: style_name
 
-      | :sl:`Gets the font's stylename.`
-      | :sg:`stylename -> str`
+      | :sl:`Gets the font's style_name.`
+      | :sg:`style_name -> str`
 
       Read only. Returns the font's style name.
 
       .. versionadded:: 2.3
 
-      .. ## Font.stylename ##
+      .. ## Font.style_name ##
 
    .. attribute:: italic
 
