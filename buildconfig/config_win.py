@@ -364,6 +364,7 @@ def _add_sdl2_dll_deps(DEPS):
     DEPS.add_dll(r'(lib){0,1}tiff[-0-9]*\.dll$', 'tiff', ['tiff-[0-9]*'], ['jpeg', 'z'])
     DEPS.add_dll(r'(z|zlib1)\.dll$', 'z', ['zlib-[1-9].*'])
     DEPS.add_dll(r'(lib)?webp[-0-9]*\.dll$', 'webp', ['*webp-[0-9]*'])
+    DEPS.add_dll(r'(lib)?sharpyuv[-0-9]*\.dll$', 'sharpyuv', ['*sharpyuv-[0-9]*'])
 
 def setup():
     DEPS = DependencyGroup()
@@ -436,6 +437,7 @@ def setup_prebuilt_sdl2(prebuilt_dir):
         'tiff': imageDep.path,
         'z': imageDep.path,
         'webp': imageDep.path,
+        'sharpyuv': imageDep.path,
 
         'ogg': mixerDep.path,
         'modplug': mixerDep.path,

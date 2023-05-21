@@ -82,8 +82,8 @@ def get_urls(x86=True, x64=True):
         '0dea77fd5ead8c1a2134af3fc256578327e25879',
         ],
         [
-        'https://github.com/libsdl-org/SDL_image/releases/download/release-2.6.3/SDL2_image-devel-2.6.3-VC.zip',
-        '7d9d9e5d334e2a347a655547aca375a8ceb563dc',
+        'https://github.com/yunline/pygame-prebuilt/releases/download/0.0.0/SDL2_image-devel-2.6.3-VC.zip',
+        '5102577ed858d909745a0415de9c67c0336add32', # Temporary prebuilt lib
         ],
         [
         'https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.2/SDL2_ttf-devel-2.20.2-VC.zip',
