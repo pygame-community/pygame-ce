@@ -3,7 +3,6 @@
 import sys
 import os
 import subprocess
-import shutil
 
 rst_dir = 'docs'
 rst_source_dir = os.path.join(rst_dir, 'reST')
@@ -27,14 +26,13 @@ def run():
         if full_generation_flag:
             subprocess_args.append("-E")
         print("Executing sphinx in subprocess with args:", subprocess_args)
-        returncode = subprocess.run(subprocess_args).returncode
+        return subprocess.run(subprocess_args).returncode
     except Exception:
         print("---")
         print("Have you installed sphinx?")
         print("---")
         raise
-    return returncode
+
 
 if __name__ == "__main__":
     sys.exit(run())
-    
