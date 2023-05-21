@@ -10,13 +10,13 @@
 `English`_ `简体中文`_ **Français**
 ---------------------------------------------------------------------------------------------------
 
-Pygame est une librarie multi-plateforme, libre et open-source
+Pygame est une librairie multi-plateforme, libre et open-source
 permettant de développer des applications multimédias comme des jeux-vidéos, avec Python.
-Il utilise la librairie « Simple DirectMedia Layer » (SDL) et plusieurs autres libraries
+Il utilise la librairie « Simple DirectMedia Layer » (SDL) et plusieurs autres librairies
 populaires pour abstraire les fonctions les plus courantes et rendre l’écriture de programmes
 le plus intuitive possible.
 
-Cette distribution se nomme **'pygame - Community Edition'** ('pygame-ce' pour faire plus court).
+Cette distribution se nomme **« pygame - Community Edition »** (« pygame-ce » pour faire plus court).
 
 Ceci est un fork du projet initial par ses principaux anciens développeurs,
 il a été créé à cause de plusieurs obstacles impossibles à franchir, les empêchant de continuer
@@ -39,7 +39,7 @@ Aide
 
 Si vous venez de commencer avec pygame, vous devriez être capable de vous y lancer assez
 rapidement. Pygame vient avec un grand nombre de tutoriels et d'introductions. Il y a
-aussi une documentation très bien référencée sur toute la librarie. Naviguez dans la
+aussi une documentation très bien référencée sur toute la librairie. Naviguez dans la
 documentation sur la `docs page`_. Vous pouvez aussi y jeter un coup d'œil localement en
 lançant cette commande ``python -m pygame.docs`` dans votre terminal. Si la documentation
 n’est pas trouvé localement, cela va lancer le site web.
@@ -164,9 +164,9 @@ Versions des dépendances:
 Licence
 -------
 
-La librarie est distribuée sous la licence `GNU LGPL version 2.1`_, qui
+La librairie est distribuée sous la licence `GNU LGPL version 2.1`_, qui
 peut être retrouvée dans le fichier ``docs/LGPL.txt``. Nous nous réservons
-le droit de placer les futures versions de cette librarie sous une licence
+le droit de placer les futures versions de cette librairie sous une licence
 différente.
 
 Ceci veut en quelque sorte dire que vous êtes habilité à utiliser pygame
