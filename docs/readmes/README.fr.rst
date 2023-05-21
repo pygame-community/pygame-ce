@@ -49,7 +49,7 @@ développement sur github. Cela peut être un peu plus récent que la version de
 pygame que vous utilisez. Pour passer à la version sortie la plus récente, lancez
 ``pip install pygame-ce --upgrade`` dans votre terminal.
 
-Chose particulièrement intéressante, vous avez à votre disposition un dossier 
+Chose particulièrement intéressante : vous avez à votre disposition un dossier 
 d’exemples contenant beaucoup de petits programmes jouables, vous permettant
 de commencer à jouer avec le code tout de suite.
 
