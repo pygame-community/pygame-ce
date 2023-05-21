@@ -3150,8 +3150,11 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
     Uint8 *src_end = src_start + src->h * src->pitch;
     if ((ret_start <= src_start && ret_end >= src_start) ||
         (src_start <= ret_start && src_end >= ret_start)) {
-        return RAISE(PyExc_ValueError,
-                     "Source and destination surfaces are overlapping.");
+        return RAISE(
+            PyExc_ValueError,
+            "Blur routines do not support dest_surfaces that share pixels "
+            "with the source surface. Likely the surfaces are the same, one "
+            "of them is a subsurface, or they are sharing the same buffer.");
     }
 
     if ((retsurf->w) != (src->w) || (retsurf->h) != (src->h)) {
