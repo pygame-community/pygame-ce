@@ -2534,30 +2534,14 @@ surf_get_height(PyObject *self, PyObject *_null)
     return PyLong_FromLong(surf->h);
 }
 
-#define GET_RECT_TYPE_RECT 1
-#define GET_RECT_TYPE_FRECT 2
-
-static PyObject *
-surf_generic_get_rect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
-                      PyObject *kwnames, int type)
+static inline PyObject *
+_get_rect_helper(PyObject *rect, PyObject *const *args, Py_ssize_t nargs,
+                 PyObject *kwnames, char *type)
 {
-    PyObject *rect = NULL;
-    SDL_Surface *surf = pgSurface_AsSurface(self);
-
     if (nargs > 0) {
+        Py_DECREF(rect);
         return PyErr_Format(PyExc_TypeError,
                             "get_%s only accepts keyword arguments", type);
-    }
-
-    SURF_INIT_CHECK(surf)
-
-    switch (type) {
-        case GET_RECT_TYPE_RECT:
-            rect = pgRect_New4(0, 0, surf->w, surf->h);
-            break;
-        case GET_RECT_TYPE_FRECT:
-            rect = pgFRect_New4(0.f, 0.f, (float)surf->w, (float)surf->h);
-            break;
     }
 
     if (rect && kwnames) {
@@ -2580,20 +2564,25 @@ static PyObject *
 surf_get_rect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
               PyObject *kwnames)
 {
-    return surf_generic_get_rect(self, args, nargs, kwnames,
-                                 GET_RECT_TYPE_RECT);
+    SDL_Surface *surf = pgSurface_AsSurface(self);
+    SURF_INIT_CHECK(surf)
+
+    PyObject *rect = pgRect_New4(0, 0, surf->w, surf->h);
+
+    return _get_rect_helper(rect, args, nargs, kwnames, "rect");
 }
 
 static PyObject *
 surf_get_frect(PyObject *self, PyObject *const *args, Py_ssize_t nargs,
                PyObject *kwnames)
 {
-    return surf_generic_get_rect(self, args, nargs, kwnames,
-                                 GET_RECT_TYPE_FRECT);
-}
+    SDL_Surface *surf = pgSurface_AsSurface(self);
+    SURF_INIT_CHECK(surf)
 
-#undef GET_RECT_TYPE_RECT
-#undef GET_RECT_TYPE_FRECT
+    PyObject *rect = pgFRect_New4(0.f, 0.f, (float)surf->w, (float)surf->h);
+
+    return _get_rect_helper(rect, args, nargs, kwnames, "frect");
+}
 
 static PyObject *
 surf_get_bitsize(PyObject *self, PyObject *_null)
