@@ -4,8 +4,6 @@
 
 #include "pgcompat.h"
 
-#include <SDL_syswm.h>
-
 #include "doc/sdl2_video_doc.h"
 
 static PyTypeObject pgWindow_Type;
@@ -661,12 +659,6 @@ MODINIT_DEFINE(_window)
 
     Py_INCREF(&pgWindow_Type);
     if (PyModule_AddObject(module, "Window", (PyObject *)&pgWindow_Type)) {
-        Py_DECREF(&pgWindow_Type);
-        Py_DECREF(module);
-        return NULL;
-    }
-    Py_INCREF(&pgWindow_Type);
-    if (PyModule_AddObject(module, "WindowType", (PyObject *)&pgWindow_Type)) {
         Py_DECREF(&pgWindow_Type);
         Py_DECREF(module);
         return NULL;
