@@ -278,7 +278,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: render
 
       | :sl:`draw text on a new Surface`
-      | :sg:`render(text, antialias, color, background=None, wraplength=0) -> Surface`
+      | :sg:`render(text, antialias, color, bgcolor=None, wraplength=0) -> Surface`
 
       This creates a new Surface with the specified text rendered on it. 
       :mod:`pygame.font` provides no way to directly draw text on an existing
@@ -292,9 +292,9 @@ solves no longer exists, it will likely be removed in the future.
       UCS-4 range are supported. For char strings a ``LATIN1`` encoding is
       assumed. The antialias argument is a boolean: if True the characters
       will have smooth edges. The color argument is the color of the text
-      [e.g.: (0,0,255) for blue]. The optional background argument is a color
-      to use for the text background. If no background is passed the area
-      outside the text will be transparent.
+      [e.g.: (0,0,255) for blue]. The optional bgcolor argument is a color
+      to use for the text background. If bgcolor is ``None`` the area outside
+      the text will be transparent.
 
       The `wraplength` argument describes the width (in pixels) a line of text
       should be before wrapping to a new line. See
@@ -331,6 +331,8 @@ solves no longer exists, it will likely be removed in the future.
          multiple lines.
 
       .. versionadded:: 2.1.4 wraplength parameter
+
+      .. versionchanged:: 2.3.0 now supports keyword arguments.
 
       .. ## Font.render ##
 
