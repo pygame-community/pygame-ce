@@ -611,7 +611,7 @@ static PyTypeObject pgWindow_Type = {
 
 static PyMethodDef _window_methods[] = {
     {"get_grabbed_window", (PyCFunction)get_grabbed_window, METH_NOARGS,
-     "docs_needed"},
+     DOC_SDL2_VIDEO_GETGRABBEDWINDOW},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(_window)
