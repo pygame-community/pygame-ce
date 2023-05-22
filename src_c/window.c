@@ -271,7 +271,7 @@ window_set_position(pgWindowObject *self, PyObject *arg, void *v)
 {
     int x, y;
 
-    if (Py_TYPE(arg) == &PyLong_Type) {
+    if (PyLong_Check(arg)) {
         x = y = PyLong_AsLong(arg);
         if (x != SDL_WINDOWPOS_CENTERED && x != SDL_WINDOWPOS_UNDEFINED) {
             PyErr_SetString(PyExc_TypeError, "invalid position argument");
