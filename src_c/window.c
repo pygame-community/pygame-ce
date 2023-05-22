@@ -258,7 +258,7 @@ window_get_size(pgWindowObject *self, void *v)
     PyObject *out = NULL;
 
     SDL_GetWindowSize(self->_win, &w, &h);
-    out = Py_BuildValue("(i,i)", w, h);
+    out = Py_BuildValue("(ii)", w, h);
 
     if (!out)
         return NULL;
@@ -295,7 +295,7 @@ window_get_position(pgWindowObject *self, void *v)
     PyObject *out = NULL;
 
     SDL_GetWindowPosition(self->_win, &x, &y);
-    out = Py_BuildValue("(i,i)", x, y);
+    out = Py_BuildValue("(ii)", x, y);
 
     if (!out)
         return NULL;
