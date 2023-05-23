@@ -177,7 +177,7 @@ cdef class _Window:
         Creates a Window object that uses the same window data from the :mod:`pygame.display` module, created upon calling
         :func:`pygame.display.set_mode`.
         """
-        cdef Window self = cls.__new__(cls)
+        cdef _Window self = cls.__new__(cls)
         cdef SDL_Window* window = pg_GetDefaultWindow()
         if not window:
             raise error()

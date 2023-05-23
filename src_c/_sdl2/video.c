@@ -4286,7 +4286,7 @@ static PyObject *__pyx_pw_6pygame_5_sdl2_5video_7_Window_1from_display_module(Py
 }
 
 static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7_Window_from_display_module(PyTypeObject *__pyx_v_cls) {
-  pgWindowObject *__pyx_v_self = 0;
+  struct __pyx_obj_6pygame_5_sdl2_5video__Window *__pyx_v_self = 0;
   SDL_Window *__pyx_v_window;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -4302,7 +4302,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7_Window_from_display_module(PyT
   /* "pygame/_sdl2/video.pyx":180
  *         :func:`pygame.display.set_mode`.
  *         """
- *         cdef Window self = cls.__new__(cls)             # <<<<<<<<<<<<<<
+ *         cdef _Window self = cls.__new__(cls)             # <<<<<<<<<<<<<<
  *         cdef SDL_Window* window = pg_GetDefaultWindow()
  *         if not window:
  */
@@ -4312,13 +4312,13 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7_Window_from_display_module(PyT
   }
   __pyx_t_1 = __Pyx_tp_new(((PyObject *)__pyx_v_cls), __pyx_empty_tuple); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 180, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (!(likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_6pygame_5_sdl2_5video_Window)))) __PYX_ERR(0, 180, __pyx_L1_error)
-  __pyx_v_self = ((pgWindowObject *)__pyx_t_1);
+  if (!(likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_6pygame_5_sdl2_5video__Window)))) __PYX_ERR(0, 180, __pyx_L1_error)
+  __pyx_v_self = ((struct __pyx_obj_6pygame_5_sdl2_5video__Window *)__pyx_t_1);
   __pyx_t_1 = 0;
 
   /* "pygame/_sdl2/video.pyx":181
  *         """
- *         cdef Window self = cls.__new__(cls)
+ *         cdef _Window self = cls.__new__(cls)
  *         cdef SDL_Window* window = pg_GetDefaultWindow()             # <<<<<<<<<<<<<<
  *         if not window:
  *             raise error()
@@ -4326,7 +4326,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7_Window_from_display_module(PyT
   __pyx_v_window = pg_GetDefaultWindow();
 
   /* "pygame/_sdl2/video.pyx":182
- *         cdef Window self = cls.__new__(cls)
+ *         cdef _Window self = cls.__new__(cls)
  *         cdef SDL_Window* window = pg_GetDefaultWindow()
  *         if not window:             # <<<<<<<<<<<<<<
  *             raise error()
@@ -4364,7 +4364,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7_Window_from_display_module(PyT
     __PYX_ERR(0, 183, __pyx_L1_error)
 
     /* "pygame/_sdl2/video.pyx":182
- *         cdef Window self = cls.__new__(cls)
+ *         cdef _Window self = cls.__new__(cls)
  *         cdef SDL_Window* window = pg_GetDefaultWindow()
  *         if not window:             # <<<<<<<<<<<<<<
  *             raise error()

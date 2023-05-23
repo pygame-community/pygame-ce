@@ -341,7 +341,7 @@ window_get_display_index(pgWindowObject *self, PyObject *_null)
 static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
-    if (self->_win) {
+    if (!self->_is_borrowed && self->_win) {
         SDL_DestroyWindow(self->_win);
     }
     Py_TYPE(self)->tp_free(self);
