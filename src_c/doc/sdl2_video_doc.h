@@ -6,7 +6,6 @@
 #define DOC_SDL2_VIDEO_GETGRABBEDWINDOW "get_grabbed_window() -> Window or None\nGet the window with input grab enabled"
 #define DOC_SDL2_VIDEO_WINDOW "Window(title='pygame window', size=(640, 480), position=None, fullscreen=False, fullscreen_desktop=False, **kwargs) -> Window\npygame object that represents a window"
 #define DOC_SDL2_VIDEO_WINDOW_GRAB "grab -> bool\nGet or set the window's input grab state"
-#define DOC_SDL2_VIDEO_WINDOW_RELATIVEMOUSE "relative_mouse -> bool\nGet or set the window's relative mouse mode state"
 #define DOC_SDL2_VIDEO_WINDOW_TITLE "title -> str\nGet or set the window title"
 #define DOC_SDL2_VIDEO_WINDOW_RESIZABLE "resizable -> bool\nGet or set whether the window is resizable"
 #define DOC_SDL2_VIDEO_WINDOW_BORDERLESS "borderless -> bool\nGet or set whether the window is borderless"

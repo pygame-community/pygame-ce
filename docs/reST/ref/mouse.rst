@@ -230,13 +230,16 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    | :sl:`set relative mouse mode`
    | :sg:`set_relative_mode(enable) -> None`
 
-   While the mouse is in relative mode, the cursor is hidden, and the driver
-   will try to report continuous motion in the current window. Only relative
-   motion events will be delivered, the mouse position will not change.
+   Sets the relative mouse mode state.
+   SDL2 docs: *"While the mouse is in relative mode, the cursor is hidden,
+   the mouse position is constrained to the window, and SDL will report
+   continuous relative mouse motion even if the mouse is at the edge of the
+   window.*
 
-   Note that this function will not be able to provide continuous relative
-   motion when used over Microsoft Remote Desktop, instead motion is limited
-   to the bounds of the screen.
+   *This function will flush any pending mouse motion."*
+
+   Calling :func:`pygame.mouse.set_visible` with argument
+   ``True`` will exit relative mouse mode.
 
    .. ## pygame.mouse.set_relative_mode ##
 
