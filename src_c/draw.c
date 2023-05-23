@@ -1005,14 +1005,6 @@ swap(float *a, float *b)
     *b = temp;
 }
 
-static void
-swap_int(int *a, int *b)
-{
-    int temp = *a;
-    *a = *b;
-    *b = temp;
-}
-
 static int
 compare_int(const void *a, const void *b)
 {
@@ -1487,6 +1479,18 @@ drawhorzlineclipbounding(SDL_Surface *surf, Uint32 color, int x1, int y1,
     drawhorzline(surf, color, x1, y1, x2);
 }
 
+void
+swap_coordinates(int *x1, int *y1, int *x2, int *y2)
+{
+    int temp = *x1;
+    *x1 = *x2;
+    *x2 = temp;
+
+    temp = *y1;
+    *y1 = *y2;
+    *y2 = temp;
+}
+
 static int
 draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
              int *draw_area)
@@ -1501,18 +1505,19 @@ draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
     p2y = ylist[2];
 
     if (p1y < p0y) {
-        swap_int(&p1x, &p0x);
-        swap_int(&p1y, &p0y);
+        swap_coordinates(&p1x, &p1y, &p0x, &p0y);
     }
 
     if (p2y < p1y) {
-        swap_int(&p1x, &p2x);
-        swap_int(&p1y, &p2y);
+        swap_coordinates(&p1x, &p1y, &p2x, &p2y);
 
         if (p1y < p0y) {
-            swap_int(&p1x, &p0x);
-            swap_int(&p1y, &p0y);
+            swap_coordinates(&p1x, &p1y, &p0x, &p0y);
         }
+    }
+
+    if ((p0y == p1y) && (p1y == p2y) && (p0x == p1x) && (p1x != p2x)) {
+        swap_coordinates(&p1x, &p1y, &p2x, &p2y);
     }
 
     float d1 = (float)((p2x - p0x) / ((p2y - p0y) + 1e-17));
@@ -1527,9 +1532,6 @@ draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
             x2 = p0x + (int)((y - p0y) * d2);
         else
             x2 = p1x + (int)((y - p1y) * d3);
-
-        if (x1 > x2)
-            swap_int(&x1, &x2);
 
         drawhorzlineclipbounding(surf, color, x1, y, x2, draw_area);
     }
