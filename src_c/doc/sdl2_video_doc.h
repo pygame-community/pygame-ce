@@ -5,7 +5,7 @@
 #define DOC_SDL2_VIDEO_GETDRIVERS "get_drivers() -> Iterator[RendererDriverInfo]\nYield info about the rendering drivers available for Renderer objects"
 #define DOC_SDL2_VIDEO_GETGRABBEDWINDOW "get_grabbed_window() -> Window or None\nGet the window with input grab enabled"
 #define DOC_SDL2_VIDEO_WINDOW "Window(title='pygame window', size=(640, 480), position=None, fullscreen=False, fullscreen_desktop=False, **kwargs) -> Window\npygame object that represents a window"
-#define DOC_SDL2_VIDEO_WINDOW_GRABBED "grabbed -> bool\nGet whether the mouse is confined to the window."
+#define DOC_SDL2_VIDEO_WINDOW_GRABBED "grabbed -> bool\nGet whether the mouse is confined to the window. (**read-only**)"
 #define DOC_SDL2_VIDEO_WINDOW_GRABMODE "grab_mode -> bool\nGet or set whether the window is in grab mode."
 #define DOC_SDL2_VIDEO_WINDOW_RELATIVEMOUSE "relative_mouse -> bool\nGet or set the window's relative mouse mode state"
 #define DOC_SDL2_VIDEO_WINDOW_TITLE "title -> str\nGet or set the window title"

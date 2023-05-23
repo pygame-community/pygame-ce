@@ -101,13 +101,20 @@
 
    .. attribute:: grabbed
 
-      | :sl:`Get whether the mouse is confined to the window.`
+      | :sl:`Get whether the mouse is confined to the window. (**read-only**)`
       | :sg:`grabbed -> bool`
    
    .. attribute:: grab_mode
 
       | :sl:`Get or set whether the window is in grab mode.`
       | :sg:`grab_mode -> bool`
+
+      Get or set whether the window is in grab mode.
+      When set to ``True``, the window will be able to grab the mouse but
+      will not confine the mouse immediately. Once the window gains focus,
+      the mouse will be confined and :attr:`Window.grabbed` turns to ``True``.
+      Once this attribute is set to ``False`` or the window loses focus,
+      the mouse will be released and :attr:`Window.grabbed` turns to ``False``
 
    .. attribute:: relative_mouse
 
