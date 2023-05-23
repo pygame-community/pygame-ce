@@ -1791,7 +1791,7 @@ camera_dealloc(PyObject *self)
 #else
     free(((pgCameraObject *)self)->device_name);
 #endif
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 /*
 PyObject* camera_getattr(PyObject* self, char* attrname) {

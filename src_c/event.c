@@ -1305,7 +1305,7 @@ pg_event_dealloc(PyObject *self)
 {
     pgEventObject *e = (pgEventObject *)self;
     Py_XDECREF(e->dict);
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 
 #ifdef PYPY_VERSION
