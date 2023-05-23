@@ -341,7 +341,7 @@ window_get_display_index(pgWindowObject *self, PyObject *_null)
 static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 
 static int
