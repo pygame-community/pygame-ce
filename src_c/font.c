@@ -663,6 +663,7 @@ font_setter_point_size(PyFontObject *self, PyObject *value, void *closure)
 
     if (TTF_SetFontSize(font, val) == -1) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return -1;
     }
     self->ptsize = val;
 
