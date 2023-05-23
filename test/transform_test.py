@@ -1418,6 +1418,30 @@ class TransformDisplayModuleTest(unittest.TestCase):
         self.assertRaises(ValueError, lambda: pygame.transform.box_blur(sf, 10))
         self.assertRaises(ValueError, lambda: pygame.transform.gaussian_blur(sf, 10))
 
+    def test_blur_in_place(self):
+        # When source and destination surfaces are the same,
+        # A ValueError should be raised.
+
+        data_fname = example_path("data")
+        path = os.path.join(data_fname, "peppers3.tif")
+        sf = pygame.image.load(path)
+        sub1 = sf.subsurface((0, 0, 128, 128))
+        sub2 = sf.subsurface((20, 20, 128, 128))
+
+        self.assertRaises(
+            ValueError, lambda: pygame.transform.box_blur(sf, 10, dest_surface=sf)
+        )
+        self.assertRaises(
+            ValueError, lambda: pygame.transform.box_blur(sub1, 10, dest_surface=sub2)
+        )
+        self.assertRaises(
+            ValueError, lambda: pygame.transform.gaussian_blur(sf, 10, dest_surface=sf)
+        )
+        self.assertRaises(
+            ValueError,
+            lambda: pygame.transform.gaussian_blur(sub1, 10, dest_surface=sub2),
+        )
+
     def test_box_blur(self):
         data1 = {
             (1, 29): (67, 58, 26, 255),

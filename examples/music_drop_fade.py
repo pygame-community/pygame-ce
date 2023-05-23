@@ -165,7 +165,7 @@ def main():
     pygame.init()
     pygame.display.set_mode((640, 480))
     font = pygame.font.SysFont("Arial", 24)
-    clock = pygame.time.Clock()
+    clock = pygame.Clock()
 
     pygame.scrap.init()
     pygame.SCRAP_TEXT = pygame.scrap.get_types()[

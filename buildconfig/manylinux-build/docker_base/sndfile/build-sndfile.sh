@@ -13,7 +13,7 @@ tar xf ${SNDFILE}
 cd $SNDNAME
 # autoreconf -fvi
 
-./configure $ARCHS_CONFIG_FLAG
+./configure $ARCHS_CONFIG_FLAG --disable-mpeg
 make
 make install
 

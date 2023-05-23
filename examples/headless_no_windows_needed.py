@@ -28,11 +28,7 @@ screen = pygame.display.set_mode((1, 1))
 
 def scaleit(fin, fout, w, h):
     i = pygame.image.load(fin)
-
-    if hasattr(pygame.transform, "smoothscale"):
-        scaled_image = pygame.transform.smoothscale(i, (w, h))
-    else:
-        scaled_image = pygame.transform.scale(i, (w, h))
+    scaled_image = pygame.transform.smoothscale(i, (w, h))
     pygame.image.save(scaled_image, fout)
 
 

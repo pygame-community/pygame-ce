@@ -46,7 +46,7 @@ class VideoCapturePlayer:
         # starts the camera
         self.camera.start()
 
-        self.clock = pygame.time.Clock()
+        self.clock = pygame.Clock()
 
         # create a surface to capture to.  for performance purposes, you want the
         # bit depth to be the same as that of the display surface.

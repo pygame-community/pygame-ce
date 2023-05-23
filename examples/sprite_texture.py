@@ -12,8 +12,7 @@ pygame.sprite groups.
 import os
 import pygame
 
-if pygame.get_sdl_version()[0] < 2:
-    raise SystemExit("This example requires pygame-ce 2 and SDL2.")
+
 from pygame._sdl2 import Window, Texture, Image, Renderer
 
 
@@ -64,7 +63,7 @@ import math
 
 t = 0
 running = True
-clock = pygame.time.Clock()
+clock = pygame.Clock()
 renderer.draw_color = (255, 0, 0, 255)
 
 while running:

@@ -43,10 +43,10 @@ Multiple coordinates can be set using slices or swizzling
    v.xy = 1, 2
    v[:] = 1, 2
 
-.. versionadded:: 1.9.2pre
-.. versionchanged:: 1.9.4 Removed experimental notice.
-.. versionchanged:: 1.9.4 Allow scalar construction like GLSL Vector2(2) == Vector2(2.0, 2.0)
-.. versionchanged:: 1.9.4 :mod:`pygame.math` import not required. More convenient ``pygame.Vector2`` and ``pygame.Vector3``.
+.. versionaddedold:: 1.9.2pre
+.. versionchangedold:: 1.9.4 Removed experimental notice.
+.. versionchangedold:: 1.9.4 Allow scalar construction like GLSL Vector2(2) == Vector2(2.0, 2.0)
+.. versionchangedold:: 1.9.4 :mod:`pygame.math` import not required. More convenient ``pygame.Vector2`` and ``pygame.Vector3``.
 .. versionchanged:: 2.1.4 `round` returns a new vector with components rounded to the specified digits.
 
 .. function:: clamp
@@ -298,7 +298,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Vector2.rotate_rad ##
 
@@ -321,8 +321,8 @@ Multiple coordinates can be set using slices or swizzling
 
       DEPRECATED: Use rotate_rad_ip() instead.
 
-      .. versionadded:: 2.0.0
-      .. deprecated:: 2.1.1
+      .. versionaddedold:: 2.0.0
+      .. deprecatedold:: 2.1.1
 
       .. ## Vector2.rotate_rad_ip ##
 
@@ -336,7 +336,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.1.1
+      .. versionaddedold:: 2.1.1
 
       .. ## Vector2.rotate_rad_ip ##
 
@@ -384,7 +384,7 @@ Multiple coordinates can be set using slices or swizzling
       Returns the projected vector. This is useful for collision detection in finding the components in a certain direction (e.g. in direction of the wall). 
       For a more detailed explanation see `Wikipedia <https://en.wikipedia.org/wiki/Vector_projection>`_.
 
-      .. versionadded:: 2.0.2
+      .. versionaddedold:: 2.0.2
 
       .. ## Vector2.project ##
 
@@ -396,7 +396,7 @@ Multiple coordinates can be set using slices or swizzling
 
       Returns a new Vector2 having the same dimensions.
 
-      .. versionadded:: 2.1.1
+      .. versionaddedold:: 2.1.1
 
       .. ## Vector2.copy ##
    
@@ -451,7 +451,7 @@ Multiple coordinates can be set using slices or swizzling
 
       Sets coordinates x and y in place.
 
-      .. versionadded:: 1.9.5
+      .. versionaddedold:: 1.9.5
 
       .. ## Vector2.update ##
 
@@ -732,7 +732,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Vector3.rotate_rad ##
 
@@ -755,8 +755,8 @@ Multiple coordinates can be set using slices or swizzling
 
       DEPRECATED: Use rotate_rad_ip() instead.
 
-      .. versionadded:: 2.0.0
-      .. deprecated:: 2.1.1
+      .. versionaddedold:: 2.0.0
+      .. deprecatedold:: 2.1.1
 
       .. ## Vector3.rotate_ip_rad ##
 
@@ -770,7 +770,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.1.1
+      .. versionaddedold:: 2.1.1
 
       .. ## Vector3.rotate_rad_ip ##
 
@@ -796,7 +796,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Vector3.rotate_x_rad ##
 
@@ -819,8 +819,8 @@ Multiple coordinates can be set using slices or swizzling
 
       DEPRECATED: Use rotate_x_rad_ip() instead.
 
-      .. versionadded:: 2.0.0
-      .. deprecated:: 2.1.1
+      .. versionaddedold:: 2.0.0
+      .. deprecatedold:: 2.1.1
 
       .. ## Vector3.rotate_x_ip_rad ##
 
@@ -834,7 +834,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.1.1
+      .. versionaddedold:: 2.1.1
 
       .. ## Vector3.rotate_x_rad_ip ##
 
@@ -860,7 +860,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Vector3.rotate_y_rad ##
 
@@ -883,8 +883,8 @@ Multiple coordinates can be set using slices or swizzling
 
       DEPRECATED: Use rotate_y_rad_ip() instead.
 
-      .. versionadded:: 2.0.0
-      .. deprecated:: 2.1.1
+      .. versionaddedold:: 2.0.0
+      .. deprecatedold:: 2.1.1
 
       .. ## Vector3.rotate_y_ip_rad ##
 
@@ -898,7 +898,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.1.1
+      .. versionaddedold:: 2.1.1
 
       .. ## Vector3.rotate_y_rad_ip ##
 
@@ -924,7 +924,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Vector3.rotate_z_rad ##
 
@@ -947,7 +947,7 @@ Multiple coordinates can be set using slices or swizzling
 
       DEPRECATED: Use rotate_z_rad_ip() instead.
       
-      .. deprecated:: 2.1.1
+      .. deprecatedold:: 2.1.1
 
       .. ## Vector3.rotate_z_ip_rad ##
 
@@ -961,7 +961,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.1.1
+      .. versionaddedold:: 2.1.1
 
       .. ## Vector3.rotate_z_rad_ip ##
 
@@ -1002,7 +1002,7 @@ Multiple coordinates can be set using slices or swizzling
       Returns the projected vector. This is useful for collision detection in finding the components in a certain direction (e.g. in direction of the wall). 
       For a more detailed explanation see `Wikipedia <https://en.wikipedia.org/wiki/Vector_projection>`_.
 
-      .. versionadded:: 2.0.2
+      .. versionaddedold:: 2.0.2
 
       .. ## Vector3.project ##
    
@@ -1013,7 +1013,7 @@ Multiple coordinates can be set using slices or swizzling
 
       Returns a new Vector3 having the same dimensions.
 
-      .. versionadded:: 2.1.1
+      .. versionaddedold:: 2.1.1
 
       .. ## Vector3.copy ##
 
@@ -1064,7 +1064,7 @@ Multiple coordinates can be set using slices or swizzling
 
       Sets coordinates x, y, and z in place.
 
-      .. versionadded:: 1.9.5
+      .. versionaddedold:: 1.9.5
 
       .. ## Vector3.update ##
 

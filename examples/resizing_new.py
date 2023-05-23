@@ -5,7 +5,7 @@ pygame.init()
 
 RES = (160, 120)
 FPS = 30
-clock = pygame.time.Clock()
+clock = pygame.Clock()
 
 screen = pygame.display.set_mode(RES, pygame.RESIZABLE)
 pygame.display._set_autoresize(False)

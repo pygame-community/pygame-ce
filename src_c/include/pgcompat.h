@@ -23,81 +23,18 @@ typedef uint32_t Uint32;
 typedef uint8_t Uint8;
 #endif /* no SDL */
 
+// SDL_PIXELFORMAT_XRGB8888 is new in SDL 2.0.14, so let's make a custom
+// macro to use the new less confusing naming and still build on older
+// systems. SDL_PIXELFORMAT_RGB888 == SDL_PIXELFORMAT_XRGB8888.
+#define PG_PIXELFORMAT_XRGB8888 SDL_PIXELFORMAT_RGB888
+
 #if defined(SDL_VERSION_ATLEAST)
 
 #if SDL_VERSION_ATLEAST(2, 0, 18)
 #define PG_GetTicks SDL_GetTicks64
 #else
 #define PG_GetTicks SDL_GetTicks
-#endif
-
-#ifndef SDL_WINDOW_VULKAN
-#define SDL_WINDOW_VULKAN 0
-#endif
-
-#ifndef SDL_WINDOW_ALWAYS_ON_TOP
-#define SDL_WINDOW_ALWAYS_ON_TOP 0
-#endif
-
-#ifndef SDL_WINDOW_SKIP_TASKBAR
-#define SDL_WINDOW_SKIP_TASKBAR 0
-#endif
-
-#ifndef SDL_WINDOW_UTILITY
-#define SDL_WINDOW_UTILITY 0
-#endif
-
-#ifndef SDL_WINDOW_TOOLTIP
-#define SDL_WINDOW_TOOLTIP 0
-#endif
-
-#ifndef SDL_WINDOW_POPUP_MENU
-#define SDL_WINDOW_POPUP_MENU 0
-#endif
-
-#ifndef SDL_WINDOW_INPUT_GRABBED
-#define SDL_WINDOW_INPUT_GRABBED 0
-#endif
-
-#ifndef SDL_WINDOW_INPUT_FOCUS
-#define SDL_WINDOW_INPUT_FOCUS 0
-#endif
-
-#ifndef SDL_WINDOW_MOUSE_FOCUS
-#define SDL_WINDOW_MOUSE_FOCUS 0
-#endif
-
-#ifndef SDL_WINDOW_FOREIGN
-#define SDL_WINDOW_FOREIGN 0
-#endif
-
-#ifndef SDL_WINDOW_ALLOW_HIGHDPI
-#define SDL_WINDOW_ALLOW_HIGHDPI 0
-#endif
-
-#ifndef SDL_WINDOW_MOUSE_CAPTURE
-#define SDL_WINDOW_MOUSE_CAPTURE 0
-#endif
-
-#ifndef SDL_WINDOW_ALWAYS_ON_TOP
-#define SDL_WINDOW_ALWAYS_ON_TOP 0
-#endif
-
-#ifndef SDL_WINDOW_SKIP_TASKBAR
-#define SDL_WINDOW_SKIP_TASKBAR 0
-#endif
-
-#ifndef SDL_WINDOW_UTILITY
-#define SDL_WINDOW_UTILITY 0
-#endif
-
-#ifndef SDL_WINDOW_TOOLTIP
-#define SDL_WINDOW_TOOLTIP 0
-#endif
-
-#ifndef SDL_WINDOW_POPUP_MENU
-#define SDL_WINDOW_POPUP_MENU 0
-#endif
+#endif /* SDL_VERSION_ATLEAST(2, 0, 18) */
 
 #ifndef SDL_MOUSEWHEEL_FLIPPED
 #define NO_SDL_MOUSEWHEEL_FLIPPED

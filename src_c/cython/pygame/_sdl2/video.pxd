@@ -452,6 +452,33 @@ cdef extern from "SDL.h" nogil:
                                   int*          h)
     int SDL_RenderGetIntegerScale(SDL_Renderer* renderer)
 
+    int SDL_VERSION_ATLEAST(int major, int minor, int patch) 
+
+    # https://wiki.libsdl.org/SDL_GetWindowPixelFormat
+    # https://wiki.libsdl.org/SDL_IntersectRect
+    # https://wiki.libsdl.org/SDL_SetRelativeMouseMode
+    # https://wiki.libsdl.org/SDL_GetRelativeMouseMode
+    # https://wiki.libsdl.org/SDL_GetRenderer
+    # https://wiki.libsdl.org/SDL_ConvertSurface
+    # https://wiki.libsdl.org/SDL_FreeSurface
+    # https://wiki.libsdl.org/SDL_AllocFormat
+    # https://wiki.libsdl.org/SDL_FreeFormat
+    # https://wiki.libsdl.org/SDL_SetSurfaceBlendMode
+    # https://wiki.libsdl.org/SDL_GetSurfaceBlendMode
+    Uint32 SDL_GetWindowPixelFormat(SDL_Window* window)
+    SDL_bool SDL_IntersectRect(const SDL_Rect* A,
+                               const SDL_Rect* B,
+                               SDL_Rect*       result)
+    int SDL_SetRelativeMouseMode(SDL_bool enabled)
+    SDL_bool SDL_GetRelativeMouseMode()
+    SDL_Renderer* SDL_GetRenderer(SDL_Window* window)
+    SDL_Surface* SDL_ConvertSurface(SDL_Surface * src, const SDL_PixelFormat * fmt, Uint32 flags)
+    void SDL_FreeSurface(SDL_Surface * surface)
+    SDL_PixelFormat * SDL_AllocFormat(Uint32 pixel_format)
+    void SDL_FreeFormat(SDL_PixelFormat *format)
+    int SDL_SetSurfaceBlendMode(SDL_Surface * surface, SDL_BlendMode blendMode)
+    int SDL_GetSurfaceBlendMode(SDL_Surface * surface, SDL_BlendMode *blendMode)
+
 
 cdef extern from "pygame.h" nogil:
     ctypedef class pygame.Color [object pgColorObject]:
@@ -461,6 +488,25 @@ cdef extern from "pygame.h" nogil:
     ctypedef class pygame.Rect [object pgRectObject]:
         cdef SDL_Rect r
         cdef object weakreflist
+    
+    ctypedef struct pgSurfaceObject
+
+    int pgSurface_Check(object surf)
+    SDL_Surface* pgSurface_AsSurface(object surf)
+    void import_pygame_surface()
+
+    SDL_Window* pg_GetDefaultWindow()
+    void import_pygame_base()
+
+    int pgRect_Check(object rect)
+    SDL_Rect *pgRect_FromObject(object obj, SDL_Rect *temp)
+    object pgRect_New(SDL_Rect *r)
+    object pgRect_New4(int x, int y, int w, int h)
+    void import_pygame_rect()
+
+    object pgColor_NewLength(Uint8 rgba[], Uint8 length)
+    void import_pygame_color()
+    pgSurfaceObject *pgSurface_New2(SDL_Surface *info, int owner)
 
 
 cdef class Window:
