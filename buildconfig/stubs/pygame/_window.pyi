@@ -35,5 +35,3 @@ class Window:
     display_index: int
     @classmethod
     def from_display_module(cls) -> Window: ...
-
-WindowType = Window
