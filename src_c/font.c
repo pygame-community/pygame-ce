@@ -642,16 +642,16 @@ font_getter_name(PyObject *self, void *closure)
     TTF_Font *font = PyFont_AsFont(self);
     const char *font_name = TTF_FontFaceFamilyName(font);
 
-    return PyUnicode_FromString(font_name);
+    return font_name ? PyUnicode_FromString(font_name) : Null;
 }
 
 static PyObject *
 font_getter_style_name(PyObject *self, void *closure)
 {
     TTF_Font *font = PyFont_AsFont(self);
-    const char *font_name = TTF_FontFaceStyleName(font);
+    const char *font_style_name = TTF_FontFaceStyleName(font);
 
-    return PyUnicode_FromString(font_name);
+    return font_style_name ? PyUnicode_FromString(font_style_name) : NULL;
 }
 
 static PyObject *

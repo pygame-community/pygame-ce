@@ -1099,7 +1099,7 @@ _ftfont_getname(pgFontObject *self, void *closure)
 {
     if (pgFont_IS_ALIVE(self)) {
         const char *name = _PGFT_Font_GetName(self->freetype, self);
-        return name ? PyUnicode_FromString(name) : 0;
+        return name ? PyUnicode_FromString(name) : NULL;
     }
     return PyObject_Repr((PyObject *)self);
 }
@@ -1109,7 +1109,7 @@ _ftfont_getstylename(pgFontObject *self, void *closure)
 {
     if (pgFont_IS_ALIVE(self)) {
         const char *stylename = _PGFT_Font_GetStyleName(self->freetype, self);
-        return stylename ? PyUnicode_FromString(stylename) : 0;
+        return stylename ? PyUnicode_FromString(stylename) : NULL;
     }
     return PyObject_Repr((PyObject *)self);
 }
