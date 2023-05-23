@@ -33,7 +33,7 @@
    with the "ip" suffix.
 
    Rect objects support swizzling for their ``XYWH`` attributes, which allows
-   the creation of new color objects with the corresponding swizzled attributes
+   the creation of new rect objects with the corresponding swizzled attributes
    as its ``XYWH`` attributes. For example, ``rect.hwyx`` provides a shortcut to
    doing ``Rect(rect.h, rect.w, rect.y, rect.x)``. Swizzling with other than
    4 attributes will return a tuple consisting of the corresponding elements
