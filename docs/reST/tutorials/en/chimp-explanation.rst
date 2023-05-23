@@ -77,9 +77,7 @@ It also checks for the availability of some of the optional pygame modules. ::
 First, we import the standard "os" python module. This allow
 us to do things like create platform independent file paths.
 
-In the next line, we import the pygame package. In our case, we import
-pygame, all of the functionality of pygame is able to
-be referenced from this package.
+In the next line, we import the pygame package. 
 
 Some pygame modules are optional, and if they aren't found,
 they evaluate to ``False``. Because of that, we decide to print
