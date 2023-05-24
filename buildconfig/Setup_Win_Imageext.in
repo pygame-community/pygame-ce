@@ -1,1 +1,1 @@
-imageext src_c/imageext.c $(SDL) $(IMAGE) $(DEBUG)
+imageext src_c/imageext.c $(SDL) $(IMAGE) $(PNG) $(DEBUG)
