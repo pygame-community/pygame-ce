@@ -63,6 +63,7 @@ fi
 
 ./configure --enable-png --disable-png-shared --enable-jpg --disable-jpg-shared \
         --enable-tif --disable-tif-shared --enable-webp --disable-webp-shared \
+        --disable-stb-image \
         $SDL_IMAGE_CONFIGURE $ARCHS_CONFIG_FLAG
 make
 make install
