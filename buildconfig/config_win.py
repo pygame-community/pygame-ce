@@ -431,7 +431,6 @@ def setup_prebuilt_sdl2(prebuilt_dir):
 
     dllPaths = {
         'png': imageDep.path,
-        'jpeg': imageDep.path,
         'tiff': imageDep.path,
         'z': imageDep.path,
 
