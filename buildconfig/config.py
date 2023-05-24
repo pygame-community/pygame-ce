@@ -211,16 +211,21 @@ Only SDL2 is supported now.""")
 
     if sys.platform == 'win32':
         additional_platform_setup = open(
-            os.path.join(BASE_PATH, 'buildconfig', "Setup_Win_Camera.in")).readlines()
-    elif sys.platform == 'darwin':
-        additional_platform_setup = open(
-            os.path.join(BASE_PATH, 'buildconfig', "Setup_Darwin.in")).readlines()
-    elif sysconfig.get_config_var('MACHDEP') == 'emscripten':
-        additional_platform_setup = open(
-            os.path.join(BASE_PATH, 'buildconfig', "Setup.Emscripten.SDL2.in")).readlines()
+            os.path.join(BASE_PATH, 'buildconfig', "Setup_Win_Imageext.in")).readlines()
+        additional_platform_setup.extend(open(
+            os.path.join(BASE_PATH, 'buildconfig', "Setup_Win_Camera.in")).readlines())
     else:
         additional_platform_setup = open(
-            os.path.join(BASE_PATH, 'buildconfig', "Setup_Unix.in")).readlines()
+            os.path.join(BASE_PATH, 'buildconfig', "Setup_Non_Win_Imageext.in")).readlines()
+        if sys.platform == 'darwin':
+            additional_platform_setup.extend(open(
+            os.path.join(BASE_PATH, 'buildconfig', "Setup_Darwin.in")).readlines())
+        elif sysconfig.get_config_var('MACHDEP') == 'emscripten':
+            additional_platform_setup.extend(open(
+            os.path.join(BASE_PATH, 'buildconfig', "Setup.Emscripten.SDL2.in")).readlines())
+        else:
+            additional_platform_setup.extend(open(
+            os.path.join(BASE_PATH, 'buildconfig', "Setup_Unix.in")).readlines())
 
 
     if os.path.isfile('Setup'):

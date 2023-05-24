@@ -1,0 +1,1 @@
+imageext src_c/imageext.c $(SDL) $(IMAGE) $(DEBUG)
