@@ -220,16 +220,9 @@ input[type="text"]:focus{
     background-color: {{ theme_dark_searchbarbgcolor }};
 }
 
+
 input[type="submit"]{
-    background-color: transparent;
-    font-size: 1.1rem;
-    color: {{ theme_searchbarcolor }};
-    border: solid 3px {{ theme_searchbarcolor }};
-    border-radius: 0.5rem;
-}
-.dark-theme input[type="submit"]{
-    color: {{ theme_dark_searchbarcolor }};
-    border: solid 3px {{ theme_dark_searchbarcolor }};
+    display: none;
 }
 
 .searchbar-form{
@@ -242,12 +235,14 @@ input[type="submit"]{
 .searchbar-button{
     background-color: transparent;
     width: 1.8rem;
-    fill: {{ theme_searchbarcolor }};
+    /* fill: {{ theme_searchbarcolor }}; */
     cursor: pointer;
 }
+/*
 .dark-theme .searchbar-button{
     fill: {{ theme_dark_searchbarcolor }};
 }
+*/
 
 div.document {
     background-color: {{ theme_bgcolor }};
@@ -264,11 +259,11 @@ div.document {
     transform: translate(0, 2px); /* Ignore this, the svg is a little bit higher up than it should be, this resets it */
 }
 
-/* Dont show the same icon as the current theme */
-.dark-theme .theme-icon[data-theme="dark-theme"]{
+/* Show the items when they are the same theme and not a theme-change icon */
+.light-theme *[data-theme="dark-theme"]{
     display: none;
 }
-.light-theme .theme-icon[data-theme="light-theme"]{
+.dark-theme *[data-theme="light-theme"]{
     display: none;
 }
 
