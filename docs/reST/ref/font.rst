@@ -216,7 +216,9 @@ solves no longer exists, it will likely be removed in the future.
 
       Read only. Returns the font's style name. Style names are arbitrary, here are some examples:
 
-        'Black', 'Bold', 'Bold Italic', 'BoldOblique', 'Book', 'BookOblique', 'Condensed', 'Condensed Oblique', 'ExtraLight', 'Italic', 'Light', 'LightOblique', 'Medium', 'MediumOblique', 'Oblique', 'Regular', 'Semibold', 'Semilight', 'Slanted'
+        'Black', 'Bold', 'Bold Italic', 'BoldOblique', 'Book', 'BookOblique', 'Condensed', 'Condensed Oblique',
+        'ExtraLight', 'Italic', 'Light', 'LightOblique', 'Medium', 'MediumOblique', 'Oblique', 'Regular',
+        'Semibold', 'Semilight', 'Slanted'
 
 
       .. versionadded:: 2.3
