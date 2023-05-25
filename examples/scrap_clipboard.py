@@ -24,7 +24,6 @@ usage()
 
 
 def render_instructions():
-    screen.fill((0, 0, 0))
 
     text = font.render("Press 'v' to view the clipboard", True, (255, 255, 255))
     screen.blit(text, (10, 10))
@@ -51,8 +50,22 @@ font = pygame.font.Font(None, 20)
 # Initialize the scrap module and use the clipboard mode.
 pygame.scrap.init()
 pygame.scrap.set_mode(pygame.SCRAP_CLIPBOARD)
+clipboard_text = ''
 
 while running:
+    screen.fill((0, 0, 0))
+
+    render_instructions()
+    
+    text = "Text on the clipboard:"
+    text = font.render(text, True, (255, 255, 255))
+    screen.blit(text, (10, 80))
+    
+    text = font.render(clipboard_text, True, (255, 255, 255))
+    screen.blit(text, (10, 100))
+
+
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -61,10 +74,13 @@ while running:
             if event.key == pygame.K_v:
                 # Look for any text data in the clipboard.
                 print("Looking for text data in the clipboard..")
+               
                 if pygame.scrap.has_text():
                     print("Text found:")
                     text = pygame.scrap.get_text()
                     print(text)
+                    clipboard_text = text
+
                 else:
                     print("No text data in the clipboard.")
                 pass
@@ -75,6 +91,7 @@ while running:
                 pygame.scrap.put_text(
                     "Hello World! This is some text from the pygame scrap example.",
                 )
+                clipboard_text = pygame.scrap.get_text()
 
             elif event.key == pygame.K_ESCAPE:
                 running = False
@@ -82,7 +99,6 @@ while running:
             else:
                 usage()
 
-        render_instructions()
 
         pygame.display.flip()
         clock.tick(30)
