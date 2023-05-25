@@ -14,14 +14,6 @@ Keyboard Controls
 """
 
 
-def usage():
-    print("Press the 'v' key to view the current string in the clipboard")
-    print("Press the 'c' key to put a string into the clipboard")
-    print("Press the 'escape' key to quit")
-
-
-usage()
-
 
 def render_instructions():
 
@@ -50,6 +42,8 @@ font = pygame.font.Font(None, 20)
 # Initialize the scrap module and use the clipboard mode.
 pygame.scrap.init()
 pygame.scrap.set_mode(pygame.SCRAP_CLIPBOARD)
+
+
 clipboard_text = ''
 
 while running:
@@ -95,9 +89,6 @@ while running:
 
             elif event.key == pygame.K_ESCAPE:
                 running = False
-
-            else:
-                usage()
 
 
         pygame.display.flip()
