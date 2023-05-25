@@ -14,9 +14,7 @@ Keyboard Controls
 """
 
 
-
 def render_instructions():
-
     text = font.render("Press 'v' to view the clipboard", True, (255, 255, 255))
     screen.blit(text, (10, 10))
 
@@ -44,21 +42,19 @@ pygame.scrap.init()
 pygame.scrap.set_mode(pygame.SCRAP_CLIPBOARD)
 
 
-clipboard_text = ''
+clipboard_text = ""
 
 while running:
     screen.fill((0, 0, 0))
 
     render_instructions()
-    
+
     text = "Text on the clipboard:"
     text = font.render(text, True, (255, 255, 255))
     screen.blit(text, (10, 80))
-    
+
     text = font.render(clipboard_text, True, (255, 255, 255))
     screen.blit(text, (10, 100))
-
-
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -68,7 +64,7 @@ while running:
             if event.key == pygame.K_v:
                 # Look for any text data in the clipboard.
                 print("Looking for text data in the clipboard..")
-               
+
                 if pygame.scrap.has_text():
                     print("Text found:")
                     text = pygame.scrap.get_text()
@@ -89,7 +85,6 @@ while running:
 
             elif event.key == pygame.K_ESCAPE:
                 running = False
-
 
         pygame.display.flip()
         clock.tick(30)
