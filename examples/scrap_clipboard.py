@@ -8,89 +8,82 @@ Copy/paste!
 
 Keyboard Controls
 -----------------
+    v - View the current clipboard data.
+    c - Copy some text into the clipboard.
 
-g - get and print types in clipboard. If, image blit to screen.
-p - place some text into clipboard
-a - print types available in the clipboard
-i - put image into the clipboard
 """
-import os
-
-import pygame
-import pygame.scrap as scrap
-
-from io import BytesIO
 
 
 def usage():
-    print("Press the 'g' key to get all of the current clipboard data")
-    print("Press the 'p' key to put a string into the clipboard")
-    print("Press the 'a' key to get a list of the currently available types")
-    print("Press the 'i' key to put an image into the clipboard")
+    print("Press the 'v' key to view the current string in the clipboard")
+    print("Press the 'c' key to put a string into the clipboard")
+    print("Press the 'escape' key to quit")
 
-
-main_dir = os.path.split(os.path.abspath(__file__))[0]
-
-pygame.init()
-screen = pygame.display.set_mode((200, 200))
-c = pygame.Clock()
-going = True
-
-# Initialize the scrap module and use the clipboard mode.
-scrap.init()
-scrap.set_mode(pygame.SCRAP_CLIPBOARD)
 
 usage()
 
-while going:
-    for e in pygame.event.get():
-        if e.type == pygame.QUIT or (
-            e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE
-        ):
-            going = False
 
-        elif e.type == pygame.KEYDOWN and e.key == pygame.K_g:
-            # This means to look for data.
-            print("Getting the different clipboard data..")
-            for t in scrap.get_types():
-                r = scrap.get(t)
-                if r and len(r) > 500:
-                    print(f"Type {t} : (large {len(r)} byte buffer)")
-                elif r is None:
-                    print(f"Type {t} : None")
+def render_instructions():
+    screen.fill((0, 0, 0))
+
+    text = font.render("Press 'v' to view the clipboard", True, (255, 255, 255))
+    screen.blit(text, (10, 10))
+
+    text = font.render(
+        "Press 'c' to copy some text to the clipboard", True, (255, 255, 255)
+    )
+    screen.blit(text, (10, 30))
+
+    text = font.render("Press 'escape' to quit", True, (255, 255, 255))
+    screen.blit(text, (10, 50))
+
+
+import pygame
+
+pygame.init()
+screen = pygame.display.set_mode((500, 500))
+clock = pygame.time.Clock()
+running = True
+
+pygame.font.init()
+font = pygame.font.Font(None, 20)
+
+# Initialize the scrap module and use the clipboard mode.
+pygame.scrap.init()
+pygame.scrap.set_mode(pygame.SCRAP_CLIPBOARD)
+
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_v:
+                # Look for any text data in the clipboard.
+                print("Looking for text data in the clipboard..")
+                if pygame.scrap.has_text():
+                    print("Text found:")
+                    text = pygame.scrap.get_text()
+                    print(text)
                 else:
-                    print(f"Type {t} : '{r.decode('ascii', 'ignore')}'")
-                if "image" in t:
-                    namehint = t.split("/")[1]
-                    if namehint in ["bmp", "png", "jpg"]:
-                        f = BytesIO(r)
-                        loaded_surf = pygame.image.load(f, "." + namehint)
-                        screen.blit(loaded_surf, (0, 0))
+                    print("No text data in the clipboard.")
+                pass
 
-        elif e.type == pygame.KEYDOWN and e.key == pygame.K_p:
-            # Place some text into the selection.
-            print("Placing clipboard text.")
-            scrap.put(pygame.SCRAP_TEXT, b"Hello. This is a message from scrap.")
+            elif event.key == pygame.K_c:
+                # put some text into the clipboard.
+                print("Putting some text into the clipboard")
+                pygame.scrap.put_text(
+                    "Hello World! This is some text from the pygame scrap example.",
+                )
 
-        elif e.type == pygame.KEYDOWN and e.key == pygame.K_a:
-            # Get all available types.
-            print("Getting the available types from the clipboard.")
-            types = scrap.get_types()
-            print(types)
-            if len(types) > 0:
-                print(f"Contains {types[0]}: {scrap.contains(types[0])}")
-                print("Contains _INVALID_: ", scrap.contains("_INVALID_"))
+            elif event.key == pygame.K_ESCAPE:
+                running = False
 
-        elif e.type == pygame.KEYDOWN and e.key == pygame.K_i:
-            print("Putting image into the clipboard.")
-            scrap.set_mode(pygame.SCRAP_CLIPBOARD)
-            fp = open(os.path.join(main_dir, "data", "liquid.bmp"), "rb")
-            buf = fp.read()
-            scrap.put("image/bmp", buf)
-            fp.close()
+            else:
+                usage()
 
-        elif e.type in (pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
-            usage()
-    pygame.display.flip()
-    c.tick(40)
+        render_instructions()
+
+        pygame.display.flip()
+        clock.tick(30)
 pygame.quit()
