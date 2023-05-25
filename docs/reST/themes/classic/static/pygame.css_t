@@ -234,7 +234,7 @@ input[type="submit"]{
 
 .searchbar-button{
     background-color: transparent;
-    width: 1.8rem;
+    width: 24px;
     /* fill: {{ theme_searchbarcolor }}; */
     cursor: pointer;
 }
