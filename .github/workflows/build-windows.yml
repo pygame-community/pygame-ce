@@ -36,8 +36,55 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  deps:
+    name: ${{ matrix.name }} deps
+    run_on: windows-latest
+    strategy:
+      matrix: 
+        winarch: AMD64
+
+    steps:
+      - uses: actions/checkout@v3.5.2
+
+      - name: Test for Windows Deps cache hit
+        id: windep-cache
+        uses: actions/cache@v3.0.2
+        with:
+          path: |
+            ${{ github.workspace }}/prebuilt-x64
+            ${{ github.workspace }}/prebuilt-x86
+          # set hash, if hash changed, build again
+          key: windep-${{ hashFiles('buildconfig/windependencies/**') }}-${{ hashFiles('buildconfig/download_win_prebuilt.py') }}-${{ hashFiles('buildconfig/config_win.py') }}
+
+      - uses: TheMrMilchmann/setup-msvc-dev@v2  # this lets us use the developer command prompt on windows
+        if: steps.windep-cache.outputs.cache-hit != 'true'
+        with:
+          arch: ${{ matrix.msvc-dev-arch }}
+
+      - name: Setup (CMake)
+         if: steps.windep-cache.outputs.cache-hit != 'true'
+         uses: jwlawson/actions-setup-cmake@v1.12
+         with:
+           cmake-version: '3.16'
+
+      - name: Build Windows Deps
+        if: steps.windep-cache.outputs.cache-hit != 'true'
+        run: |
+          pip install requests
+          python buildconfig\windependencies\generate_sdl_image.py --all-arches
+
+      - name: Build Mac Deps
+        if: steps.macdep-cache.outputs.cache-hit != 'true'
+        run: |
+          export MAC_ARCH="${{ matrix.macarch }}"
+          brew install coreutils pkg-config
+          cd buildconfig/macdependencies
+          bash ./build_mac_deps.sh
+
+    
   build:
     name: ${{ matrix.name }}
+    needs: deps
     runs-on: windows-latest
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
@@ -151,6 +198,14 @@ jobs:
       - uses: TheMrMilchmann/setup-msvc-dev@v2  # this lets us use the developer command prompt on windows
         with:
           arch: ${{ matrix.msvc-dev-arch }}
+      - name: Fetch Windows deps
+        id: windep-cache
+        uses: actions/cache@v3.0.2
+        with:
+          path: |
+            ${{ github.workspace }}/prebuilt-x64
+            ${{ github.workspace }}/prebuilt-x86
+          key: windep-${{ hashFiles('buildconfig/windependencies/**') }}-${{ hashFiles('buildconfig/download_win_prebuilt.py') }}-${{ hashFiles('buildconfig/config_win.py') }}
       - name: Build and test wheels
         shell: cmd
         run: |

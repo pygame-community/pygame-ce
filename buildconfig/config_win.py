@@ -335,7 +335,7 @@ class DependencyGroup:
                     try:
                         from . import vstools
                     except ImportError:
-                        from buildconfig import vstools
+                        import vstools
                     from os.path import splitext
                     nonext_name = splitext(d.lib_dir)[0]
                     def_file = f'{nonext_name}.def'
@@ -463,13 +463,7 @@ def main(auto_config=False):
     }
     download_kwargs[machine_type] = True
 
-    if not auto_download:
-        if (not download_win_prebuilt.cached(**download_kwargs) or\
-            not os.path.isdir(prebuilt_dir))\
-            and download_win_prebuilt.ask(**download_kwargs):
-            use_prebuilt = True
-    else:
-        download_win_prebuilt.update(**download_kwargs)
+    download_win_prebuilt.update(**download_kwargs)
 
     if os.path.isdir(prebuilt_dir):
         if not use_prebuilt:

@@ -78,14 +78,6 @@ def get_urls(x86=True, x64=True):
     url_sha1 = []
     url_sha1.extend([
         [
-        'https://github.com/libsdl-org/SDL/releases/download/release-2.26.4/SDL2-devel-2.26.4-VC.zip',
-        '0dea77fd5ead8c1a2134af3fc256578327e25879',
-        ],
-        [
-        'https://github.com/yunline/pygame-prebuilt/releases/download/0.0.0/SDL2_image-devel-2.6.3-VC.zip',
-        '9233a058e4c9ac45f56422128d5e81a6da53a939', # Temporary prebuilt lib
-        ],
-        [
         'https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.2/SDL2_ttf-devel-2.20.2-VC.zip',
         'dee48e9c5184c139aa8bcab34a937d1b3df4f503'
         ],
@@ -201,17 +193,6 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2_image-devel-2.6.3-VC/SDL2_image-2.6.3'
-            ),
-            os.path.join(
-                move_to_dir,
-                prebuilt_dir,
-                'SDL2_image-2.6.3'
-            )
-        )
-        copy(
-            os.path.join(
-                temp_dir,
                 'SDL2_mixer-devel-2.6.2-VC/SDL2_mixer-2.6.2'
             ),
             os.path.join(
@@ -229,17 +210,6 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
                 move_to_dir,
                 prebuilt_dir,
                 'SDL2_ttf-2.20.2'
-            )
-        )
-        copy(
-            os.path.join(
-                temp_dir,
-                'SDL2-devel-2.26.4-VC/SDL2-2.26.4'
-            ),
-            os.path.join(
-                move_to_dir,
-                prebuilt_dir,
-                'SDL2-2.26.4'
             )
         )
 
