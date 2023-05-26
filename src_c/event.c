@@ -1518,7 +1518,7 @@ pgEvent_New(SDL_Event *event)
         e->dict = PyDict_New();
     }
     if (!e->dict) {
-        PyObject_Free(e);
+        Py_TYPE(e)->tp_free(e);
         return PyErr_NoMemory();
     }
     return (PyObject *)e;
@@ -1533,7 +1533,7 @@ pgEvent_New2(int type, PyObject *dict)
         return PyErr_NoMemory();
 
     if (_pg_event_populate(e, type, dict) == -1) {
-        PyObject_Free(e);
+        Py_TYPE(e)->tp_free(e);
         return NULL;
     }
     return (PyObject *)e;
