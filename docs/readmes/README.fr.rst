@@ -10,9 +10,9 @@
 `English`_ `简体中文`_ **Français**
 ---------------------------------------------------------------------------------------------------
 
-Pygame est une librairie multi-plateforme, libre et open-source
+Pygame est une bibliothèque multi-plateforme, libre et open-source
 permettant de développer des applications multimédias comme des jeux-vidéos, avec Python.
-Il utilise la librairie « Simple DirectMedia Layer » (SDL) et plusieurs autres librairies
+Il utilise la bibliiothèque « Simple DirectMedia Layer » (SDL) et plusieurs autres bibliothèque
 populaires pour abstraire les fonctions les plus courantes et rendre l’écriture de programmes
 le plus intuitive possible.
 
@@ -39,7 +39,7 @@ Aide
 
 Si vous venez de commencer avec pygame, vous devriez être capable de vous y lancer assez
 rapidement. Pygame vient avec un grand nombre de tutoriels et d'introductions. Il y a
-aussi une documentation très bien référencée sur toute la librairie. Naviguez dans la
+aussi une documentation très bien référencée sur toute la bibliothèque. Naviguez dans la
 documentation sur la `docs page`_. Vous pouvez aussi y jeter un coup d'œil localement en
 exécutant la commande ``python -m pygame.docs`` dans votre terminal. Si la documentation
 n’est pas trouvée localement, cela va lancer le site web.
@@ -132,7 +132,7 @@ Dépendances
 ------------
 
 Pygame est évidemment très dépendant de SDL et Python. Il a aussi
-des liens, mais de même intègre plusieurs autres petites librairies.
+des liens, mais de même intègre plusieurs autres petites bibliothèques.
 Le module font s’appuie sur SDL_ttf, qui est lui-même dépendant de freetype.
 Le module mixer (et mixer.music) dépend de SDL_mixer. Le module image
 dépend de SDL_image, qui dépend de libjpeg et libpng. Le module transform
@@ -164,9 +164,9 @@ Versions des dépendances:
 Licence
 -------
 
-La librairie est distribuée sous la licence `GNU LGPL version 2.1`_, qui
+La bibliothèque est distribuée sous la licence `GNU LGPL version 2.1`_, qui
 peut être retrouvée dans le fichier ``docs/LGPL.txt``. Nous nous réservons
-le droit de placer les futures versions de cette librairie sous une licence
+le droit de placer les futures versions de cette bibliothèque sous une licence
 différente.
 
 Ceci veut en quelque sorte dire que vous êtes habilité à utiliser pygame-ce
