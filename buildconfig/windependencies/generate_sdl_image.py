@@ -38,13 +38,11 @@ def main(x86=True,x64=True):
 
 if __name__=="__main__":
     import sys
-    arch = 'x64' if sys.maxsize > 2**32 else 'x86'
-    arch_kw = {
-        'x64':False,
-        'x86':False
-    }
-    arch_kw[arch]=True
-    if '--all-arches' in sys.argv:
-        main()
+    import platform
+    arch=platform.architecture()[0]
+    if arch=="64bit":
+        main(x64=True,x86=False)
+    elif arch=="32bit":
+        main(x64=False,x86=True)
     else:
-        main(**arch_kw)
+        raise RuntimeError("Unknonw arch")
