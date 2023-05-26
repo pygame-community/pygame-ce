@@ -474,7 +474,7 @@ static PyObject *
 mouse_set_relative_mode(PyObject *self, PyObject *arg)
 {
     int mode = PyObject_IsTrue(arg);
-    if (mode==-1) {
+    if (mode == -1) {
         return NULL;
     }
     if (SDL_SetRelativeMouseMode((SDL_bool)mode)) {
