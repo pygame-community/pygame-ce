@@ -267,7 +267,7 @@ pg_get_active(PyObject *self, PyObject *_null)
 static void
 pg_vidinfo_dealloc(PyObject *self)
 {
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject *
