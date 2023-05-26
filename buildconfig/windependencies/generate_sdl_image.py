@@ -39,7 +39,13 @@ def main(x86=True,x64=True):
 if __name__=="__main__":
     import sys
     import platform
-    arch=platform.architecture()[0]
+    if "--x64" in sys.argv:
+        arch="64bit"
+    elif "--x86" in sys.argv:
+        arch="32bit"
+    else:
+        arch=platform.architecture()[0]
+
     if arch=="64bit":
         main(x64=True,x86=False)
     elif arch=="32bit":
