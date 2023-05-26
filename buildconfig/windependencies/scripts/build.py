@@ -15,7 +15,7 @@ def get_cmd_config(arch):
         "--no-warn-unused-cli",
         f"-S{IMAGE_SRC}",
         f"-B{join(IMAGE_SRC,'build')}",
-        "-G Visual Studio 16 2019",
+        "-GVisual Studio 14 2015",
         f"-T host={arch[0]}",
         f"-A {arch[1]}",
         "-DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE",
