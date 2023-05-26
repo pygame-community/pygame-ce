@@ -12,7 +12,7 @@
 
 Pygame est une bibliothèque multi-plateforme, libre et open-source
 permettant de développer des applications multimédias comme des jeux-vidéos, avec Python.
-Il utilise la bibliiothèque « Simple DirectMedia Layer » (SDL) et plusieurs autres bibliothèque
+Il utilise la bibliiothèque « `Simple DirectMedia Layer`_ » (SDL) et plusieurs autres bibliothèque
 populaires pour abstraire les fonctions les plus courantes et rendre l’écriture de programmes
 le plus intuitive possible.
 
@@ -199,7 +199,7 @@ Voir les docs/licences pour les licences des dépendances.
     :target: https://github.com/psf/black
 
 .. _pygame: https://pyga.me
-.. _Simple DirectMedia Layer library: https://www.libsdl.org
+.. _Simple DirectMedia Layer: https://www.libsdl.org
 .. _We need your help: https://www.pygame.org/contribute.html
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
 .. _docs page: https://pyga.me/docs
