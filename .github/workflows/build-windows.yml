@@ -43,9 +43,18 @@ jobs:
       matrix:
         include:
           - {
-            name: "Build deps",
+            name: "Build deps x64",
             winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
+            deparch: x64
           }
+          - {
+            name: "Build deps x86",
+            winarch: x86,
+            msvc-dev-arch: x86,
+            deparch: x86
+          }
+
 
     steps:
       - uses: actions/checkout@v3.5.2
@@ -55,17 +64,23 @@ jobs:
         uses: actions/cache@v3.0.2
         with:
           path: |
-            ${{ github.workspace }}/prebuilt-x64
-            ${{ github.workspace }}/prebuilt-x86
+            ${{ github.workspace }}/prebuilt_downloads
+            ${{ github.workspace }}/prebuilt-${{ matrix.deparch }}
           # set hash, if hash changed, build again
-          key: windep-${{ hashFiles('buildconfig/windependencies/**') }}-${{ hashFiles('buildconfig/download_win_prebuilt.py') }}-${{ hashFiles('buildconfig/config_win.py') }}
+          key: windep-${{ hashFiles('buildconfig/windependencies/**') }}-${{ hashFiles('buildconfig/download_win_prebuilt.py') }}-${{ hashFiles('buildconfig/config_win.py') }}-${{ matrix.deparch }}
 
       - name: Set up Visual Studio 2022 Build Tools
+        if: steps.windep-cache.outputs.cache-hit != 'true'
         uses: microsoft/setup-msbuild@v1.0.2
         with:
           vs-version: '17'
+      
+      - uses: TheMrMilchmann/setup-msvc-dev@v2
+        with:
+          arch: ${{ matrix.msvc-dev-arch }}
 
       - name: Install CMake
+        if: steps.windep-cache.outputs.cache-hit != 'true'
         run: |
           choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
           cmake --version
@@ -74,7 +89,7 @@ jobs:
         if: steps.windep-cache.outputs.cache-hit != 'true'
         run: |
           pip install requests
-          python buildconfig/windependencies/generate_sdl_image.py --all-arches
+          python buildconfig/windependencies/generate_sdl_image.py
           python buildconfig/config.py
 
     
@@ -90,79 +105,92 @@ jobs:
             name: "CPython 3.11 (64 bit)",
             winarch: AMD64,
             msvc-dev-arch: x86_amd64,
-            pyversions: "cp311-*"
+            pyversions: "cp311-*",
+            deparch: x64
           }
           - {
             name: "CPython 3.10 (64 bit)",
             winarch: AMD64,
             msvc-dev-arch: x86_amd64,
-            pyversions: "cp310-*"
+            pyversions: "cp310-*",
+            deparch: x64
           }
           - {
             name: "CPython 3.9 (64 bit)",
             winarch: AMD64,
             msvc-dev-arch: x86_amd64,
-            pyversions: "cp39-*"
+            pyversions: "cp39-*",
+            deparch: x64
           }
           - {
             name: "CPython 3.8 (64 bit)",
             winarch: AMD64,
             msvc-dev-arch: x86_amd64,
-            pyversions: "cp38-*"
+            pyversions: "cp38-*",
+            deparch: x64
           }
           - {
             name: "CPython 3.7 (64 bit)",
             winarch: AMD64,
             msvc-dev-arch: x86_amd64,
-            pyversions: "cp37-*"
+            pyversions: "cp37-*",
+            deparch: x64
           }
           - {
             name: "CPython 3.11 (32 bit)",
             winarch: x86,
             msvc-dev-arch: x86,
-            pyversions: "cp311-win32"
+            pyversions: "cp311-win32",
+            deparch: x86
           }
           - {
             name: "CPython 3.10 (32 bit)",
             winarch: x86,
             msvc-dev-arch: x86,
-            pyversions: "cp310-win32"
+            pyversions: "cp310-win32",
+            deparch: x86
           }
           - {
             name: "CPython 3.9 (32 bit)",
             winarch: x86,
             msvc-dev-arch: x86,
-            pyversions: "cp39-win32"
+            pyversions: "cp39-win32",
+            deparch: x86
           }
           - {
             name: "CPython 3.8 (32 bit)",
             winarch: x86,
             msvc-dev-arch: x86,
-            pyversions: "cp38-win32"
+            pyversions: "cp38-win32",
+            deparch: x86
           }
           - {
             name: "CPython 3.7 (32 bit)",
             winarch: x86,
             msvc-dev-arch: x86,
-            pyversions: "cp37-win32"
+            pyversions: "cp37-win32",
+            deparch: x86
           }
           - {
             name: "Pypy 3.7",
             winarch: AMD64,
             msvc-dev-arch: x86_amd64,
-            pyversions: "pp37-*"
+            pyversions: "pp37-*",
+            deparch: x64
           }
           - {
             name: "Pypy 3.8",
             winarch: AMD64,
             msvc-dev-arch: x86_amd64,
-            pyversions: "pp38-*"
+            pyversions: "pp38-*",
+            deparch: x64
           }
           - {
             name: "Pypy 3.9",
             winarch: AMD64,
             msvc-dev-arch: x86_amd64,
-            pyversions: "pp39-*"
+            pyversions: "pp39-*",
+            deparch: x64
           }
 
 
@@ -199,9 +227,9 @@ jobs:
         uses: actions/cache@v3.0.2
         with:
           path: |
-            ${{ github.workspace }}/prebuilt-x64
-            ${{ github.workspace }}/prebuilt-x86
-          key: windep-${{ hashFiles('buildconfig/windependencies/**') }}-${{ hashFiles('buildconfig/download_win_prebuilt.py') }}-${{ hashFiles('buildconfig/config_win.py') }}
+            ${{ github.workspace }}/prebuilt_downloads
+            ${{ github.workspace }}/prebuilt-${{ matrix.deparch }}
+          key: windep-${{ hashFiles('buildconfig/windependencies/**') }}-${{ hashFiles('buildconfig/download_win_prebuilt.py') }}-${{ hashFiles('buildconfig/config_win.py') }}-${{ matrix.deparch }}
       - name: Build and test wheels
         shell: cmd
         run: |
