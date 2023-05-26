@@ -16,12 +16,12 @@ Il utilise la librairie « Simple DirectMedia Layer » (SDL) et plusieurs autr
 populaires pour abstraire les fonctions les plus courantes et rendre l’écriture de programmes
 le plus intuitive possible.
 
-Cette distribution se nomme **« pygame - Community Edition »** (« pygame-ce » pour faire plus court).
+Cette distribution se nomme **« pygame - Community Edition »** (abrégé « pygame-ce »).
 
 Ceci est un fork du projet initial par ses principaux anciens développeurs,
 il a été créé à cause de plusieurs obstacles impossibles à franchir, les empêchant de continuer
-le développement du projet initial. Cette nouvelle distribution a pour but d’offrir des mises à jours
-plus régulières, des améliorations et des correctifs, mais aussi une modèle de gouvernance plus
+le développement du projet initial. Cette nouvelle distribution a pour but d’offrir des mises à jour
+plus régulières, des améliorations et des correctifs, mais aussi un modèle de gouvernance plus
 démocratique. 
 
 Tout nouveau contributeur est le bienvenu ! 
@@ -41,8 +41,8 @@ Si vous venez de commencer avec pygame, vous devriez être capable de vous y lan
 rapidement. Pygame vient avec un grand nombre de tutoriels et d'introductions. Il y a
 aussi une documentation très bien référencée sur toute la librairie. Naviguez dans la
 documentation sur la `docs page`_. Vous pouvez aussi y jeter un coup d'œil localement en
-lançant cette commande ``python -m pygame.docs`` dans votre terminal. Si la documentation
-n’est pas trouvé localement, cela va lancer le site web.
+exécutant la commande ``python -m pygame.docs`` dans votre terminal. Si la documentation
+n’est pas trouvée localement, cela va lancer le site web.
 
 La documentation en ligne reste à jour avec la version de pygame en cours de
 développement sur github. Cela peut être un peu plus récent que la version de
@@ -61,12 +61,12 @@ ou que vous voulez contribuer à pygame, vous allez avoir besoin de
 build pygame localement grâce au code source, plutôt que de l’installer avec
 pip.
 
-L’installer grâce au code source est assez automatisé. La majeure
+Installer Pygame grâce au code source est assez automatisé. La majeure
 partie du travail sera de compiler et installer toutes les dépendances de 
 pygame. Une fois ceci fait, lancez le script ``setup.py`` qui va essayer 
-de l’auto-configurer, le build, et installer pygame.
+de l’auto-configurer, le build, et l’installer.
 
-Plus d’informations à propos de l’installation et de la compilation disponibles
+Plus d’informations à propos de l’installation et de la compilation sont disponibles
 sur `Compilation wiki page`_.
 
 Crédits
@@ -115,7 +115,7 @@ Il y a aussi pas mal de personnes présentes qui soumettent des idées utiles et
 qui ont permis à ce projet de continuer à vivre, et qui ont pratiquement rendu notre
 travail facile. Merci !
 
-Très grands remerciemments à toutes les personnes commentant la documentation,
+Très grands remerciements à toutes les personnes commentant la documentation,
 et ajoutant du nouveau contenu dans le wiki pygame.org.  
 
 Aussi de très grands remerciements à toutes les personnes créant des jeux et les 
@@ -169,7 +169,7 @@ peut être retrouvée dans le fichier ``docs/LGPL.txt``. Nous nous réservons
 le droit de placer les futures versions de cette librairie sous une licence
 différente.
 
-Ceci veut en quelque sorte dire que vous êtes habilité à utiliser pygame
+Ceci veut en quelque sorte dire que vous êtes habilité à utiliser pygame-ce
 dans n’importe quel projet que souhaitez, mais que si vous voulez effectuer des 
 changements ou des ajouts à pygame lui-même, alors vous serez dans l’obligation
 de les publier avec une licence compatible (de préférence en les soumettant au projet
