@@ -84,4 +84,4 @@ def main():
             logger.error(f"Failed to download {filename}")
             return_code = 1
     if return_code:
-        raise IOError("Download Failed.")
+        raise IOError("Download Failed")
