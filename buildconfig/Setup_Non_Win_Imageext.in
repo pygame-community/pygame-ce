@@ -1,0 +1,4 @@
+PNG = -lpng
+JPEG = -ljpeg
+
+imageext src_c/imageext.c $(SDL) $(IMAGE) $(PNG) $(JPEG) $(DEBUG)

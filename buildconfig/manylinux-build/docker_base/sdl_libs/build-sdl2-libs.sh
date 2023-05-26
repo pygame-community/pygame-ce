@@ -4,7 +4,7 @@ set -e -x
 cd $(dirname `readlink -f "$0"`)
 
 SDL2="SDL2-2.26.4"
-IMG2="SDL2_image-2.0.5"
+IMG2="SDL2_image-2.6.3"
 TTF2="SDL2_ttf-2.20.2"
 MIX2="SDL2_mixer-2.6.2"
 
@@ -63,6 +63,7 @@ fi
 
 ./configure --enable-png --disable-png-shared --enable-jpg --disable-jpg-shared \
         --enable-tif --disable-tif-shared --enable-webp --disable-webp-shared \
+        --disable-stb-image \
         $SDL_IMAGE_CONFIGURE $ARCHS_CONFIG_FLAG
 make
 make install
