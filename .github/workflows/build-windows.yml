@@ -62,24 +62,16 @@ jobs:
           arch: ${{ matrix.msvc-dev-arch }}
 
       - name: Setup (CMake)
-         if: steps.windep-cache.outputs.cache-hit != 'true'
-         uses: jwlawson/actions-setup-cmake@v1.12
-         with:
-           cmake-version: '3.16'
+        if: steps.windep-cache.outputs.cache-hit != 'true'
+        uses: jwlawson/actions-setup-cmake@v1.12
+        with:
+         cmake-version: '3.16'
 
       - name: Build Windows Deps
         if: steps.windep-cache.outputs.cache-hit != 'true'
         run: |
           pip install requests
           python buildconfig\windependencies\generate_sdl_image.py --all-arches
-
-      - name: Build Mac Deps
-        if: steps.macdep-cache.outputs.cache-hit != 'true'
-        run: |
-          export MAC_ARCH="${{ matrix.macarch }}"
-          brew install coreutils pkg-config
-          cd buildconfig/macdependencies
-          bash ./build_mac_deps.sh
 
     
   build:
