@@ -38,7 +38,6 @@ pygame.font.init()
 font = pygame.font.Font(None, 20)
 
 
-
 clipboard_text = ""
 
 while running:
