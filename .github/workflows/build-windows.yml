@@ -65,17 +65,16 @@ jobs:
         with:
           vs-version: '17'
 
-      - name: Setup (CMake)
-        if: steps.windep-cache.outputs.cache-hit != 'true'
-        uses: jwlawson/actions-setup-cmake@v1.12
-        with:
-         cmake-version: '3.16'
+      - name: Install CMake
+        run: |
+          choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+          cmake --version
 
       - name: Build Windows Deps
         if: steps.windep-cache.outputs.cache-hit != 'true'
         run: |
           pip install requests
-          python buildconfig/windependencies/generate_sdl_image.py
+          python buildconfig/windependencies/generate_sdl_image.py --all-arches
           python buildconfig/config.py
 
     
