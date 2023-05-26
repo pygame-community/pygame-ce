@@ -1376,9 +1376,8 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
         sdlrect.h = 0;
         sdlrect.w = 0;
 
-        surface = SDL_CreateRGBSurface(
-            0, 1, 1, 32, surf->format->Rmask, surf->format->Gmask,
-            surf->format->Bmask, surf->format->Amask);
+        surface =
+            SDL_CreateRGBSurfaceWithFormat(0, 1, 1, 32, surf->format->format);
 
         SDL_LowerBlit(surf, &sdlrect, surface, &sdlrect);
         SDL_FreeSurface(surface);
@@ -2679,9 +2678,9 @@ surf_subsurface(PyObject *self, PyObject *args)
     pixeloffset = rect->x * format->BytesPerPixel + rect->y * surf->pitch;
     startpixel = ((char *)surf->pixels) + pixeloffset;
 
-    sub = SDL_CreateRGBSurfaceFrom(
-        startpixel, rect->w, rect->h, format->BitsPerPixel, surf->pitch,
-        format->Rmask, format->Gmask, format->Bmask, format->Amask);
+    sub = SDL_CreateRGBSurfaceWithFormatFrom(startpixel, rect->w, rect->h,
+                                             format->BitsPerPixel, surf->pitch,
+                                             format->format);
 
     pgSurface_Unlock((pgSurfaceObject *)self);
 

@@ -69,8 +69,8 @@
    The BufferProxy class supports subclassing, instance variables, and weak
    references.
 
-   .. versionadded:: 1.8.0
-   .. versionextended:: 1.9.2
+   .. versionaddedold:: 1.8.0
+   .. versionextendedold:: 1.9.2
 
    .. attribute:: parent
 

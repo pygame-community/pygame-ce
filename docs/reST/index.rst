@@ -1,5 +1,5 @@
-Pygame Front Page
-=================
+Pygame-ce Front Page
+====================
 
 .. toctree::
    :maxdepth: 2
@@ -18,9 +18,10 @@ Pygame Front Page
 Quick start
 -----------
 
-Welcome to pygame! Once you've got pygame installed (:code:`pip install pygame-ce` or
-:code:`pip3 install pygame-ce` for most people), the next question is how to get a game
-loop running. Pygame, unlike some other libraries, gives you full control of program
+Welcome to pygame-ce! Once you've got pygame-ce installed
+(:code:`pip install pygame-ce` or :code:`pip3 install pygame-ce` for most
+people), the next question is how to get a game loop running. Pygame-ce,
+unlike some other libraries, gives you full control of program
 execution. That freedom means it is easy to mess up in your initial steps.
 
 Here is a good example of a basic setup (opens the window, updates the screen, and handles events)--

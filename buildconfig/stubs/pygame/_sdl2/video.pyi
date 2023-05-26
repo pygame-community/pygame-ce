@@ -133,7 +133,7 @@ class Texture:
 class Image:
     def __init__(
         self,
-        textureOrImage: Union[Texture, Image],
+        texture_or_image: Union[Texture, Image],
         srcrect: Optional[RectValue] = None,
     ) -> None: ...
     def get_rect(self, **kwargs: Any) -> Rect: ...

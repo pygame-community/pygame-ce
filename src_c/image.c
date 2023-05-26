@@ -1220,6 +1220,30 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
     return (PyObject *)pgSurface_New(surf);
 }
 
+PyObject *
+image_tostring(PyObject *self, PyObject *arg, PyObject *kwarg)
+{
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "pygame.image.tostring deprecated since 2.3.0",
+                     1) == -1) {
+        return NULL;
+    }
+
+    return image_tobytes(self, arg, kwarg);
+}
+
+PyObject *
+image_fromstring(PyObject *self, PyObject *arg, PyObject *kwarg)
+{
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "pygame.image.fromstring deprecated since 2.3.0",
+                     1) == -1) {
+        return NULL;
+    }
+
+    return image_frombytes(self, arg, kwarg);
+}
+
 static int
 _as_read_buffer(PyObject *obj, const void **buffer, Py_ssize_t *buffer_len)
 {
@@ -1692,11 +1716,11 @@ static PyMethodDef _image_methods[] = {
     {"get_sdl_image_version", (PyCFunction)image_get_sdl_image_version,
      METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_GETSDLIMAGEVERSION},
 
-    {"tostring", (PyCFunction)image_tobytes, METH_VARARGS | METH_KEYWORDS,
+    {"tostring", (PyCFunction)image_tostring, METH_VARARGS | METH_KEYWORDS,
      DOC_IMAGE_TOSTRING},
     {"tobytes", (PyCFunction)image_tobytes, METH_VARARGS | METH_KEYWORDS,
      DOC_IMAGE_TOBYTES},
-    {"fromstring", (PyCFunction)image_frombytes, METH_VARARGS | METH_KEYWORDS,
+    {"fromstring", (PyCFunction)image_fromstring, METH_VARARGS | METH_KEYWORDS,
      DOC_IMAGE_FROMSTRING},
     {"frombytes", (PyCFunction)image_frombytes, METH_VARARGS | METH_KEYWORDS,
      DOC_IMAGE_FROMBYTES},

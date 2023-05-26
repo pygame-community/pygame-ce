@@ -127,9 +127,8 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
         return (SDL_Surface *)(RAISE(
             PyExc_ValueError, "unsupported Surface bit depth for transform"));
 
-    newsurf = SDL_CreateRGBSurface(
-        0, width, height, surf->format->BitsPerPixel, surf->format->Rmask,
-        surf->format->Gmask, surf->format->Bmask, surf->format->Amask);
+    newsurf = SDL_CreateRGBSurfaceWithFormat(
+        0, width, height, surf->format->BitsPerPixel, surf->format->format);
     if (!newsurf)
         return (SDL_Surface *)(RAISE(pgExc_SDLError, SDL_GetError()));
 
@@ -859,8 +858,8 @@ surf_rotozoom(PyObject *self, PyObject *args, PyObject *kwargs)
     }
     else {
         Py_BEGIN_ALLOW_THREADS;
-        surf32 = SDL_CreateRGBSurface(0, surf->w, surf->h, 32, 0x000000ff,
-                                      0x0000ff00, 0x00ff0000, 0xff000000);
+        surf32 = SDL_CreateRGBSurfaceWithFormat(0, surf->w, surf->h, 32,
+                                                SDL_PIXELFORMAT_ABGR8888);
         SDL_BlitSurface(surf, NULL, surf32, NULL);
         Py_END_ALLOW_THREADS;
     }
@@ -3143,6 +3142,19 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
     }
     else {
         retsurf = pgSurface_AsSurface(dstobj);
+    }
+
+    Uint8 *ret_start = retsurf->pixels;
+    Uint8 *ret_end = ret_start + retsurf->h * retsurf->pitch;
+    Uint8 *src_start = src->pixels;
+    Uint8 *src_end = src_start + src->h * src->pitch;
+    if ((ret_start <= src_start && ret_end >= src_start) ||
+        (src_start <= ret_start && src_end >= ret_start)) {
+        return RAISE(
+            PyExc_ValueError,
+            "Blur routines do not support dest_surfaces that share pixels "
+            "with the source surface. Likely the surfaces are the same, one "
+            "of them is a subsurface, or they are sharing the same buffer.");
     }
 
     if ((retsurf->w) != (src->w) || (retsurf->h) != (src->h)) {
