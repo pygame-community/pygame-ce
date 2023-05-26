@@ -45,23 +45,23 @@ exécutant la commande ``python -m pygame.docs`` dans votre terminal. Si la docu
 n’est pas trouvée localement, cela va lancer le site web.
 
 La documentation en ligne reste à jour avec la version de pygame en cours de
-développement sur github. Cela peut être un peu plus récent que la version de
+développement sur GitHub. Cela peut être un peu plus récent que la version de
 pygame que vous utilisez. Pour passer à la version sortie la plus récente, lancez
 ``pip install pygame-ce --upgrade`` dans votre terminal.
 
-Chose particulièrement intéressante : vous avez à votre disposition un dossier 
+Un point particulièrement intéressant : vous avez à votre disposition un dossier 
 d’exemples contenant beaucoup de petits programmes jouables, vous permettant
 de commencer à jouer avec le code tout de suite.
 
-Build grâce au code source
+Build depuis le code source
 --------------------
 
-Si vous voulez utiliser des features en cours de développement,
+Si vous voulez utiliser des fonctionnalités en cours de développement,
 ou que vous voulez contribuer à pygame, vous allez avoir besoin de
-build pygame localement grâce au code source, plutôt que de l’installer avec
+build pygame localement depuis le code source, plutôt que de l’installer avec
 pip.
 
-Installer Pygame grâce au code source est assez automatisé. La majeure
+Installer Pygame depuis le code source est assez automatisé. La majeure
 partie du travail sera de compiler et installer toutes les dépendances de 
 pygame. Une fois ceci fait, lancez le script ``setup.py`` qui va essayer 
 de l’auto-configurer, le build, et l’installer.
