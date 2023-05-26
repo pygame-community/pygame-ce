@@ -235,6 +235,8 @@ input[type="submit"]{
 .searchbar-button{
     background-color: transparent;
     width: 24px;
+    position: relative;
+    top: 5px;
     /* fill: {{ theme_searchbarcolor }}; */
     cursor: pointer;
 }
@@ -254,9 +256,15 @@ div.document {
 
 .theme-icon {
     cursor: pointer;
+    position: relative;
+    top: 2px;
 }
+/* Ignore this, gets rid of minor positionaning difference*/
 .theme-icon[data-theme="light-theme"] {
-    transform: translate(0, 2px); /* Ignore this, the svg is a little bit higher up than it should be, this resets it */
+    transform: translate(0, 2px);
+}
+.theme-icon[data-theme="dark-theme"] {
+    transform: translate(-4px, 2px);
 }
 
 /* Show the items when they are the same theme and not a theme-change icon */
