@@ -37,9 +37,6 @@ running = True
 pygame.font.init()
 font = pygame.font.Font(None, 20)
 
-# Initialize the scrap module and use the clipboard mode.
-pygame.scrap.init()
-pygame.scrap.set_mode(pygame.SCRAP_CLIPBOARD)
 
 
 clipboard_text = ""
