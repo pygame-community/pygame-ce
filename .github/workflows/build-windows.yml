@@ -38,10 +38,16 @@ concurrency:
 jobs:
   deps:
     name: ${{ matrix.name }} deps
-    run_on: windows-latest
+    runs-on: windows-latest
     strategy:
-      matrix: 
-        winarch: AMD64
+      matrix:
+        include:
+          - {
+            name: "CPython 3.11 (64 bit)",
+            winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
+            pyversions: "cp311-*"
+          }
 
     steps:
       - uses: actions/checkout@v3.5.2
