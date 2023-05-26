@@ -63,9 +63,7 @@ jobs:
         id: windep-cache
         uses: actions/cache@v3.0.2
         with:
-          path: |
-            ${{ github.workspace }}/prebuilt_downloads
-            ${{ github.workspace }}/prebuilt-${{ matrix.deparch }}
+          path: ${{ github.workspace }}/prebuilt-${{ matrix.deparch }}
           # set hash, if hash changed, build again
           key: windep-${{ hashFiles('buildconfig/windependencies/**') }}-${{ hashFiles('buildconfig/download_win_prebuilt.py') }}-${{ hashFiles('buildconfig/config_win.py') }}-${{ matrix.deparch }}
 
@@ -74,10 +72,6 @@ jobs:
         uses: microsoft/setup-msbuild@v1.0.2
         with:
           vs-version: '17'
-      
-      - uses: TheMrMilchmann/setup-msvc-dev@v2
-        with:
-          arch: ${{ matrix.msvc-dev-arch }}
 
       - name: Install CMake
         if: steps.windep-cache.outputs.cache-hit != 'true'
@@ -90,7 +84,6 @@ jobs:
         run: |
           pip install requests
           python buildconfig/windependencies/generate_sdl_image.py
-          python buildconfig/config.py
 
     
   build:
@@ -226,9 +219,7 @@ jobs:
         id: windep-cache
         uses: actions/cache@v3.0.2
         with:
-          path: |
-            ${{ github.workspace }}/prebuilt_downloads
-            ${{ github.workspace }}/prebuilt-${{ matrix.deparch }}
+          path: ${{ github.workspace }}/prebuilt-${{ matrix.deparch }}
           key: windep-${{ hashFiles('buildconfig/windependencies/**') }}-${{ hashFiles('buildconfig/download_win_prebuilt.py') }}-${{ hashFiles('buildconfig/config_win.py') }}-${{ matrix.deparch }}
       - name: Build and test wheels
         shell: cmd
