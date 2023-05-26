@@ -61,7 +61,7 @@ def download_file(name):
 def main():
     return_code = 0
     if not (os.path.exists(DOWNLOAD) and os.path.isdir(DOWNLOAD)):
-        os.mkdir(DOWNLOAD)
+        os.makedirs(DOWNLOAD)
 
     existing_files = os.listdir(DOWNLOAD)
 

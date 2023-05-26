@@ -28,7 +28,7 @@ path_alias = {
 
 def main(arch):
     if not os.path.exists(BUILD):
-        os.mkdir(BUILD)
+        os.makedirs(BUILD)
 
     for name, _path in extract_path:
         path = join(BUILD, _path, name)

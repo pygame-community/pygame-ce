@@ -42,7 +42,7 @@ def unzip(arch):
 
 def main(target, arch=None):
     if not os.path.exists("./dist"):
-        os.mkdir("./dist")
+        os.makedirs("./dist")
 
     if target == "clear":
         with zipfile.ZipFile(OUTPUT_FILENAME, "w"):
