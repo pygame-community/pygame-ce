@@ -2,7 +2,7 @@ import logging
 import zipfile
 import os
 from os.path import join
-from .config import OUTPUT_FILENAME, IMAGE_SRC, OUTPUT_UNZIP_64, OUTPUT_UNZIP_86
+from .config import OUTPUT_ZIP_PATH, IMAGE_SRC, PREBUILT_64, PREBUILT_86, SDL2_IMAGE
 
 logger = logging.getLogger("Pack")
 
@@ -29,23 +29,23 @@ license_path_map = [
 
 
 def write_zip(path_map, path_in_zip):
-    with zipfile.ZipFile(OUTPUT_FILENAME, "a") as pack:
+    with zipfile.ZipFile(OUTPUT_ZIP_PATH, "a") as pack:
         for path, arc in path_map:
             logger.info(f"Adding '{join(IMAGE_SRC,path)}' to pack.")
             pack.write(join(IMAGE_SRC, path), join(path_in_zip, arc))
 
 def unzip(arch):
-    OUTPUT_UNZIP = {"x64":OUTPUT_UNZIP_64,"x86":OUTPUT_UNZIP_86}[arch]
-    logger.info(f"Extracting pack to '{OUTPUT_UNZIP}'")
-    with zipfile.ZipFile(OUTPUT_FILENAME, "r") as pack:
-        pack.extractall(OUTPUT_UNZIP)
+    PREBUILT_PATH = {"x64":PREBUILT_64,"x86":PREBUILT_86}[arch]
+    logger.info(f"Extracting pack to '{join(PREBUILT_PATH,SDL2_IMAGE)}'")
+    with zipfile.ZipFile(OUTPUT_ZIP_PATH, "r") as pack:
+        pack.extractall(join(PREBUILT_PATH,SDL2_IMAGE))
 
 def main(target, arch=None):
     if not os.path.exists("./dist"):
         os.makedirs("./dist")
 
     if target == "clear":
-        with zipfile.ZipFile(OUTPUT_FILENAME, "w"):
+        with zipfile.ZipFile(OUTPUT_ZIP_PATH, "w"):
             pass
     
     elif target == "unzip":

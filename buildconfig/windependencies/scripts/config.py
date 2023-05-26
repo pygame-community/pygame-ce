@@ -1,17 +1,15 @@
 from os.path import join
 
-DOWNLOAD = "./prebuilt_downloads/SDL_image_download"
+SDL2_IMAGE = "SDL2_image-2.7.0-pygame-ce"
+SDL2_VERSION ='2.26.4'
+
+DOWNLOAD = join("./prebuilt_downloads",f"{SDL2_IMAGE}_downloads")
 BUILD = "./build"
 IMAGE_SRC = join(BUILD, "SDL2_image")
-OUTPUT_PATH = "./prebuilt_downloads"
-OUTPUT_FILENAME = join(OUTPUT_PATH, "SDL2_image-2.7.0-pygame.zip")
+OUTPUT_ZIP_PATH = join("./prebuilt_downloads", SDL2_IMAGE+".zip")
 
-PREBUILT_PATH_64 = "./prebuilt-x64"
-PREBUILT_PATH_86 = "./prebuilt-x86"
-OUTPUT_UNZIP_64 = join(PREBUILT_PATH_64, "SDL2_image-2.7.0-pygame")
-OUTPUT_UNZIP_86 = join(PREBUILT_PATH_86, "SDL2_image-2.7.0-pygame")
+PREBUILT_64 = "./prebuilt-x64"
+PREBUILT_86 = "./prebuilt-x86"
 
-SDL2_VERSION ='2.26.4'
-SDL2_PATH_64 = join(PREBUILT_PATH_64, f"SDL2-{SDL2_VERSION}")
-SDL2_PATH_86 = join(PREBUILT_PATH_86, f"SDL2-{SDL2_VERSION}")
-
+SDL2_PATH_64 = join(PREBUILT_64, f"SDL2-{SDL2_VERSION}")
+SDL2_PATH_86 = join(PREBUILT_86, f"SDL2-{SDL2_VERSION}")

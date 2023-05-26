@@ -3,7 +3,7 @@ import logging
 import os
 import shutil
 from os.path import join
-from .config import DOWNLOAD, BUILD, SDL2_VERSION, PREBUILT_PATH_64, PREBUILT_PATH_86
+from .config import DOWNLOAD, BUILD, SDL2_VERSION, PREBUILT_64, PREBUILT_86
 
 logger = logging.getLogger("Extract")
 
@@ -46,7 +46,7 @@ def main(arch):
         logger.info(f"Renaming path...")
         os.rename(join(BUILD, _path, path_alias[name]), path)
     
-    PREBUILT_PATH = {"x64":PREBUILT_PATH_64,"x86":PREBUILT_PATH_86}[arch]
+    PREBUILT_PATH = {"x64":PREBUILT_64,"x86":PREBUILT_86}[arch]
     logger.info(f"Extracting 'SDL2-{SDL2_VERSION}.zip'")
     z = zipfile.ZipFile(join(DOWNLOAD, f'SDL2-{SDL2_VERSION}.zip'), "r")
     z.extractall(PREBUILT_PATH)
