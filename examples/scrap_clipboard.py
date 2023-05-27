@@ -18,15 +18,13 @@ import pygame
 
 
 def render_instructions():
-    text = font.render("Press 'v' to view the clipboard", True, (255, 255, 255))
+    text = font.render("Press 'v' to view the clipboard", True, "white")
     screen.blit(text, (10, 10))
 
-    text = font.render(
-        "Press 'c' to copy some text to the clipboard", True, (255, 255, 255)
-    )
+    text = font.render("Press 'c' to copy some text to the clipboard", True, "white")
     screen.blit(text, (10, 30))
 
-    text = font.render("Press 'escape' to quit", True, (255, 255, 255))
+    text = font.render("Press 'escape' to quit", True, "white")
     screen.blit(text, (10, 50))
 
 
@@ -46,10 +44,10 @@ while running:
     render_instructions()
 
     text = "Text on the clipboard:"
-    text = font.render(text, True, ("white"))
+    text = font.render(text, True, "white")
     screen.blit(text, (10, 80))
 
-    text = font.render(clipboard_text, True, ("white"), None, 480)
+    text = font.render(clipboard_text, True, "white", None, 480)
     screen.blit(text, (10, 100))
 
     for event in pygame.event.get():
