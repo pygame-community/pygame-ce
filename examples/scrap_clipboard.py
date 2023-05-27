@@ -30,7 +30,7 @@ def render_instructions():
 
 pygame.init()
 pygame.display.set_caption("Clipboard Example")
-screen = pygame.display.set_mode((800, 800))
+screen = pygame.display.set_mode((960, 540))
 clock = pygame.Clock()
 font = pygame.Font(None, 30)
 
