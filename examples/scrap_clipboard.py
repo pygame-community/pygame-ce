@@ -14,6 +14,9 @@ Keyboard Controls
 """
 
 
+import pygame
+
+
 def render_instructions():
     text = font.render("Press 'v' to view the clipboard", True, (255, 255, 255))
     screen.blit(text, (10, 10))
@@ -27,18 +30,15 @@ def render_instructions():
     screen.blit(text, (10, 50))
 
 
-import pygame
-
 pygame.init()
+pygame.display.set_caption("Clipboard Example")
 screen = pygame.display.set_mode((500, 500))
-clock = pygame.time.Clock()
-running = True
-
-pygame.font.init()
-font = pygame.font.Font(None, 20)
+clock = pygame.Clock()
+font = pygame.Font(None, 20)
 
 
 clipboard_text = ""
+running = True
 
 while running:
     screen.fill((0, 0, 0))
@@ -46,10 +46,10 @@ while running:
     render_instructions()
 
     text = "Text on the clipboard:"
-    text = font.render(text, True, (255, 255, 255))
+    text = font.render(text, True, ("white"))
     screen.blit(text, (10, 80))
 
-    text = font.render(clipboard_text, True, (255, 255, 255))
+    text = font.render(clipboard_text, True, ("white"), None, 480)
     screen.blit(text, (10, 100))
 
     for event in pygame.event.get():
@@ -83,5 +83,5 @@ while running:
                 running = False
 
         pygame.display.flip()
-        clock.tick(30)
+        clock.tick(60)
 pygame.quit()
