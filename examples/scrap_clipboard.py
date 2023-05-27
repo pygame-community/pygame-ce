@@ -47,7 +47,7 @@ while running:
     text = font.render(text, True, "white")
     screen.blit(text, (10, 80))
 
-    text = font.render(clipboard_text, True, "white", None, 480)
+    text = font.render(clipboard_text, True, "white", None, 790)
     screen.blit(text, (10, 110))
 
     for event in pygame.event.get():
