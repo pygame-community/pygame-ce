@@ -30,9 +30,9 @@ def render_instructions():
 
 pygame.init()
 pygame.display.set_caption("Clipboard Example")
-screen = pygame.display.set_mode((500, 500))
+screen = pygame.display.set_mode((800, 800))
 clock = pygame.Clock()
-font = pygame.Font(None, 20)
+font = pygame.Font(None, 30)
 
 
 clipboard_text = ""
@@ -48,7 +48,7 @@ while running:
     screen.blit(text, (10, 80))
 
     text = font.render(clipboard_text, True, "white", None, 480)
-    screen.blit(text, (10, 100))
+    screen.blit(text, (10, 110))
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
