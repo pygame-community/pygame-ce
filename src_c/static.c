@@ -131,11 +131,11 @@ PyInit_sdl2(void);
 PyMODINIT_FUNC
 PyInit_mixer(void);
 
-// PyMODINIT_FUNC
-// PyInit_context(void);
+PyMODINIT_FUNC
+PyInit_system(void);
 
 PyMODINIT_FUNC
-PyInit_controller(void);
+PyInit_controller_old(void);
 
 PyMODINIT_FUNC
 PyInit_transform(void);
@@ -226,8 +226,8 @@ mod_pygame_import_cython(PyObject *self, PyObject *spec)
 {
     load_submodule_mphase("pygame._sdl2", PyInit_sdl2(), spec, "sdl2");
     load_submodule_mphase("pygame._sdl2", PyInit_mixer(), spec, "mixer");
-    load_submodule_mphase("pygame._sdl2", PyInit_controller(), spec,
-                          "controller");
+    load_submodule_mphase("pygame._sdl2", PyInit_controller_old(), spec,
+                          "controller_old");
     load_submodule_mphase("pygame._sdl2", PyInit_audio(), spec, "audio");
     load_submodule_mphase("pygame._sdl2", PyInit_video(), spec, "video");
     // depends on pygame._sdl2.video
@@ -254,7 +254,7 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_pg_math(), "math");
     load_submodule("pygame", PyInit_display(), "display");
     load_submodule("pygame", PyInit_surface(), "surface");
-    //    load_submodule("pygame", PyInit_context(), "context");
+    load_submodule("pygame", PyInit_system(), "system");
     load_submodule("pygame", PyInit_key(), "key");
 
     load_submodule("pygame", PyInit_rect(), "rect");
@@ -291,6 +291,7 @@ PyInit_pygame_static()
 #include "base.c"
 
 #include "rect.c"
+#include "pgcompat_rect.c"
 
 #undef pgSurface_Lock
 #undef pgSurface_Unlock
@@ -364,6 +365,8 @@ PyInit_pygame_static()
 
 #include "time.c"
 
+#include "system.c"
+
 #include "_freetype.c"
 #include "freetype/ft_wrap.c"
 #include "freetype/ft_render.c"
@@ -371,10 +374,6 @@ PyInit_pygame_static()
 #include "freetype/ft_cache.c"
 #include "freetype/ft_layout.c"
 #include "freetype/ft_unicode.c"
-
-#undef DOC_FONTUNDERLINE
-#undef DOC_FONTRENDER
-#undef DOC_FONTSIZE
 
 #include "font.c"
 
@@ -391,7 +390,7 @@ PyInit_pygame_static()
 #include "pixelcopy.c"
 #include "newbuffer.c"
 
-#include "_sdl2/controller.c"
+#include "_sdl2/controller_old.c"
 #include "_sdl2/touch.c"
 #include "transform.c"
 // that remove some warnings

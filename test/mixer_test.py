@@ -93,7 +93,7 @@ class MixerModuleTest(unittest.TestCase):
             frequency, size, channels = init_conf.values()
             if (frequency, size) == (22050, 16):
                 continue
-            mixer.init(frequency, size, channels)
+            mixer.init(frequency, size, channels, allowedchanges=0)
 
             mixer_conf = mixer.get_init()
 
@@ -641,9 +641,9 @@ class MixerModuleTest(unittest.TestCase):
     def test_get_sdl_mixer_version__linked_equals_compiled(self):
         """Ensures get_sdl_mixer_version's linked/compiled versions are equal."""
         linked_version = pygame.mixer.get_sdl_mixer_version(linked=True)
-        complied_version = pygame.mixer.get_sdl_mixer_version(linked=False)
+        compiled_version = pygame.mixer.get_sdl_mixer_version(linked=False)
 
-        self.assertTupleEqual(linked_version, complied_version)
+        self.assertTupleEqual(linked_version, compiled_version)
 
 
 ############################## CHANNEL CLASS TESTS #############################

@@ -6,7 +6,7 @@ A pygame 2 experiment.
 * record sound from a microphone
 * play back the recorded sound
 """
-import pygame as pg
+import pygame
 import time
 
 from pygame._sdl2 import (
@@ -18,8 +18,8 @@ from pygame._sdl2 import (
 from pygame._sdl2.mixer import set_post_mix
 
 
-pg.mixer.pre_init(44100, 32, 2, 512)
-pg.init()
+pygame.mixer.pre_init(44100, 32, 2, 512)
+pygame.init()
 
 # init_subsystem(INIT_AUDIO)
 names = get_audio_device_names(True)
@@ -69,10 +69,10 @@ print(f"recording with '{names[0]}'")
 time.sleep(5)
 
 
-print("Turning data into a pg.mixer.Sound")
-sound = pg.mixer.Sound(buffer=b"".join(sound_chunks))
+print("Turning data into a pygame.mixer.Sound")
+sound = pygame.mixer.Sound(buffer=b"".join(sound_chunks))
 
 print("playing back recorded sound")
 sound.play()
 time.sleep(5)
-pg.quit()
+pygame.quit()

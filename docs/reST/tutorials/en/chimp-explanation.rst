@@ -63,11 +63,11 @@ It also checks for the availability of some of the optional pygame modules. ::
 
     # Import Modules
     import os
-    import pygame as pg
+    import pygame
 
-    if not pg.font:
+    if not pygame.font:
         print("Warning, fonts disabled")
-    if not pg.mixer:
+    if not pygame.mixer:
         print("Warning, sound disabled")
 
     main_dir = os.path.split(os.path.abspath(__file__))[0]
@@ -77,9 +77,7 @@ It also checks for the availability of some of the optional pygame modules. ::
 First, we import the standard "os" python module. This allow
 us to do things like create platform independent file paths.
 
-In the next line, we import the pygame package. In our case, we import
-pygame as ``pg``, so that all of the functionality of pygame is able to
-be referenced from the namespace ``pg``.
+In the next line, we import the pygame package. 
 
 Some pygame modules are optional, and if they aren't found,
 they evaluate to ``False``. Because of that, we decide to print
@@ -102,17 +100,17 @@ look at each function individually in this section. ::
 
     def load_image(name, colorkey=None, scale=1):
         fullname = os.path.join(data_dir, name)
-        image = pg.image.load(fullname)
+        image = pygame.image.load(fullname)
 
         size = image.get_size()
         size = (size[0] * scale, size[1] * scale)
-        image = pg.transform.scale(image, size)
+        image = pygame.transform.scale(image, size)
 
         image = image.convert()
         if colorkey is not None:
             if colorkey == -1:
                 colorkey = image.get_at((0, 0))
-            image.set_colorkey(colorkey, pg.RLEACCEL)
+            image.set_colorkey(colorkey, pygame.RLEACCEL)
         return image, image.get_rect()
 
 
@@ -148,11 +146,11 @@ that color for the colorkey. ::
             def play(self):
                 pass
 
-        if not pg.mixer or not pg.mixer.get_init():
+        if not pygame.mixer or not pygame.mixer.get_init():
             return NoneSound()
 
         fullname = os.path.join(data_dir, name)
-        sound = pg.mixer.Sound(fullname)
+        sound = pygame.mixer.Sound(fullname)
 
         return sound
 
@@ -175,18 +173,18 @@ Here we create two classes to represent the objects in our game. Almost
 all the logic for the game goes into these two classes. We will look over
 them one at a time here. ::
 
-    class Fist(pg.sprite.Sprite):
+    class Fist(pygame.sprite.Sprite):
         """moves a clenched fist on the screen, following the mouse"""
 
         def __init__(self):
-            pg.sprite.Sprite.__init__(self)  # call Sprite initializer
+            pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
             self.image, self.rect = load_image("fist.png", -1)
             self.fist_offset = (-235, -80)
             self.punching = False
 
         def update(self):
             """move the fist based on the mouse position"""
-            pos = pg.mouse.get_pos()
+            pos = pygame.mouse.get_pos()
             self.rect.topleft = pos
             self.rect.move_ip(self.fist_offset)
             if self.punching:
@@ -224,14 +222,14 @@ The following two functions `punch()` and `unpunch()` change the punching
 state for the fist. The `punch()` method also returns a true value if the fist
 is colliding with the given target sprite. ::
 
-    class Chimp(pg.sprite.Sprite):
+    class Chimp(pygame.sprite.Sprite):
         """moves a monkey critter across the screen. it can spin the
         monkey when it is punched."""
 
         def __init__(self):
-            pg.sprite.Sprite.__init__(self)  # call Sprite initializer
+            pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
             self.image, self.rect = load_image("chimp.png", -1, 4)
-            screen = pg.display.get_surface()
+            screen = pygame.display.get_surface()
             self.area = screen.get_rect()
             self.rect.topleft = 10, 90
             self.move = 18
@@ -251,7 +249,7 @@ is colliding with the given target sprite. ::
                 if self.rect.left < self.area.left or self.rect.right > self.area.right:
                     self.move = -self.move
                     newpos = self.rect.move((self.move, 0))
-                    self.image = pg.transform.flip(self.image, True, False)
+                    self.image = pygame.transform.flip(self.image, True, False)
             self.rect = newpos
 
         def _spin(self):
@@ -262,7 +260,7 @@ is colliding with the given target sprite. ::
                 self.dizzy = False
                 self.image = self.original
             else:
-                rotate = pg.transform.rotate
+                rotate = pygame.transform.rotate
                 self.image = rotate(self.original, self.dizzy)
             self.rect = self.image.get_rect(center=center)
 
@@ -321,10 +319,10 @@ Before we can do much with pygame, we need to make sure its modules
 are initialized. In this case we will also open a simple graphics window.
 Now we are in the `main()` function of the program, which actually runs everything. ::
 
-    pg.init()
-    screen = pg.display.set_mode((1280, 480), pg.SCALED)
-    pg.display.set_caption("Monkey Fever")
-    pg.mouse.set_visible(False)
+    pygame.init()
+    screen = pygame.display.set_mode((1280, 480), pygame.SCALED)
+    pygame.display.set_caption("Monkey Fever")
+    pygame.mouse.set_visible(False)
 
 The first line to initialize *pygame* takes care of a bit of
 work for us. It checks through the imported *pygame* modules and attempts
@@ -352,7 +350,7 @@ Our program is going to have text message in the background. It would
 be nice for us to create a single surface to represent the background and
 repeatedly use that. The first step is to create the surface. ::
 
-    background = pg.Surface(screen.get_size())
+    background = pygame.Surface(screen.get_size())
     background = background.convert()
     background.fill((170, 238, 187))
 
@@ -373,8 +371,8 @@ Now that we have a background surface, lets get the text rendered to it. We
 only do this if we see the :mod:`pygame.font` module has imported properly.
 If not, we just skip this section. ::
 
-    if pg.font:
-        font = pg.font.Font(None, 64)
+    if pygame.font:
+        font = pygame.font.Font(None, 64)
         text = font.render("Pummel The Chimp, And Win $$$", True, (10, 10, 10))
         textpos = text.get_rect(centerx=background.get_width() / 2, y=10)
         background.blit(text, textpos)
@@ -408,7 +406,7 @@ We still have a black window on the screen. Lets show our background
 while we wait for the other resources to load. ::
 
   screen.blit(background, (0, 0))
-  pg.display.flip()
+  pygame.display.flip()
 
 This will blit our entire background onto the display window. The
 blit is self explanatory, but what about this flip routine?
@@ -430,8 +428,8 @@ Here we create all the objects that the game is going to need.
     punch_sound = load_sound("punch.wav")
     chimp = Chimp()
     fist = Fist()
-    allsprites = pg.sprite.RenderPlain((chimp, fist))
-    clock = pg.time.Clock()
+    allsprites = pygame.sprite.RenderPlain((chimp, fist))
+    clock = pygame.time.Clock()
 
 First we load two sound effects using the `load_sound` function we defined
 above. Then we create an instance of each of our sprite classes. And lastly
@@ -473,18 +471,18 @@ Handle All Input Events
 
 This is an extremely simple case of working the event queue. ::
 
-    for event in pg.event.get():
-        if event.type == pg.QUIT:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
             going = False
-        elif event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             going = False
-        elif event.type == pg.MOUSEBUTTONDOWN:
+        elif event.type == pygame.MOUSEBUTTONDOWN:
             if fist.punch(chimp):
                 punch_sound.play()  # punch
                 chimp.punched()
             else:
                 whiff_sound.play()  # miss
-        elif event.type == pg.MOUSEBUTTONUP:
+        elif event.type == pygame.MOUSEBUTTONUP:
             fist.unpunch()
 
 First we get all the available Events from pygame and loop through each
@@ -518,7 +516,7 @@ Now that all the objects are in the right place, time to draw them. ::
 
   screen.blit(background, (0, 0))
   allsprites.draw(screen)
-  pg.display.flip()
+  pygame.display.flip()
 
 The first blit call will draw the background onto the entire screen. This
 erases everything we saw from the previous frame (slightly inefficient, but
@@ -534,8 +532,8 @@ Game Over
 
 User has quit, time to clean up. ::
 
-    pg.quit()
+    pygame.quit()
 
 Cleaning up the running game in *pygame* is extremely simple.
 Since all variables are automatically destructed, we don't really have to do
-anything, but calling `pg.quit()` explicitly cleans up pygame's internals.
+anything, but calling `pygame.quit()` explicitly cleans up pygame's internals.

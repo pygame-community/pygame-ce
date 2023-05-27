@@ -1,5 +1,5 @@
 /*
-    pygame - Python Game Library
+    pygame-ce - Python Game Library
     Copyright (C) 2006, 2007 Rene Dudfield, Marcus von Appen
 
     Originally put in the public domain by Sam Lantinga.

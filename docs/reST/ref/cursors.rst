@@ -214,6 +214,7 @@ The following strings can be converted into cursor bitmaps with
    correct size for the given width and height. Otherwise an exception is raised.
    
    .. method:: copy
+
       | :sl:`copy the current cursor`
       | :sg:`copy() -> Cursor`
       
@@ -223,7 +224,7 @@ The following strings can be converted into cursor bitmaps with
 
    .. attribute:: type
    
-      | :sl:`Gets the cursor type`
+      | :sl:`get the cursor type`
       | :sg:`type -> string`
 
       The type will be ``"system"``, ``"bitmap"``, or ``"color"``.
@@ -232,14 +233,14 @@ The following strings can be converted into cursor bitmaps with
 
    .. attribute:: data
 
-      | :sl:`Gets the cursor data`
+      | :sl:`get the cursor data`
       | :sg:`data -> tuple`
 
       Returns the data that was used to create this cursor object, wrapped up in a tuple.
 
    .. ## pygame.cursors.Cursor.data ##
 
-   .. versionadded:: 2.0.1
+   .. versionaddedold:: 2.0.1
 
    .. ## pygame.cursors.Cursor ##
    

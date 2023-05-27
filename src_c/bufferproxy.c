@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Module adapted from bufferproxy.c, Copyright (C) 2007  Marcus von Appen
 
   This library is free software; you can redistribute it and/or
@@ -457,7 +457,7 @@ proxy_write(pgBufproxyObject *self, PyObject *args, PyObject *kwds)
 
 static struct PyMethodDef proxy_methods[] = {
     {"write", (PyCFunction)proxy_write, METH_VARARGS | METH_KEYWORDS,
-     DOC_BUFFERPROXYWRITE},
+     DOC_BUFFERPROXY_WRITE},
     {0, 0, 0, 0}};
 
 /**
@@ -468,11 +468,11 @@ static PyGetSetDef proxy_getsets[] = {
      "Version 3 array interface, C level", 0},
     {"__array_interface__", (getter)proxy_get_arrayinterface, 0,
      "Version 3 array interface, Python level", 0},
-    {"parent", (getter)proxy_get_parent, 0, DOC_BUFFERPROXYPARENT, 0},
+    {"parent", (getter)proxy_get_parent, 0, DOC_BUFFERPROXY_PARENT, 0},
     {"__dict__", (getter)proxy_get___dict__, 0,
      "The object's attribute dictionary, read-only", 0},
-    {"raw", (getter)proxy_get_raw, 0, DOC_BUFFERPROXYRAW, 0},
-    {"length", (getter)proxy_get_length, 0, DOC_BUFFERPROXYLENGTH, 0},
+    {"raw", (getter)proxy_get_raw, 0, DOC_BUFFERPROXY_RAW, 0},
+    {"length", (getter)proxy_get_length, 0, DOC_BUFFERPROXY_LENGTH, 0},
     {0, 0, 0, 0, 0}};
 
 static int
@@ -530,7 +530,7 @@ static PyTypeObject pgBufproxy_Type = {
     .tp_repr = (reprfunc)proxy_repr,
     .tp_as_buffer = PROXY_BUFFERPROCS,
     .tp_flags = PROXY_TPFLAGS,
-    .tp_doc = DOC_PYGAMEBUFFERPROXY,
+    .tp_doc = DOC_BUFFERPROXY,
     .tp_traverse = (traverseproc)proxy_traverse,
     .tp_weaklistoffset = offsetof(pgBufproxyObject, weakrefs),
     .tp_methods = proxy_methods,
@@ -586,7 +586,7 @@ pgBufproxy_Trip(PyObject *obj)
     return _proxy_get_view((pgBufproxyObject *)obj) ? 0 : -1;
 }
 
-/*DOC*/ static char bufferproxy_doc[] = DOC_PYGAMEBUFFERPROXY;
+/*DOC*/ static char bufferproxy_doc[] = DOC_BUFFERPROXY;
 
 MODINIT_DEFINE(bufferproxy)
 {

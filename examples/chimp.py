@@ -10,11 +10,11 @@ follow along in the tutorial.
 
 # Import Modules
 import os
-import pygame as pg
+import pygame
 
-if not pg.font:
+if not pygame.font:
     print("Warning, fonts disabled")
-if not pg.mixer:
+if not pygame.mixer:
     print("Warning, sound disabled")
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
@@ -24,17 +24,17 @@ data_dir = os.path.join(main_dir, "data")
 # functions to create our resources
 def load_image(name, colorkey=None, scale=1):
     fullname = os.path.join(data_dir, name)
-    image = pg.image.load(fullname)
+    image = pygame.image.load(fullname)
     image = image.convert()
 
     size = image.get_size()
     size = (size[0] * scale, size[1] * scale)
-    image = pg.transform.scale(image, size)
+    image = pygame.transform.scale(image, size)
 
     if colorkey is not None:
         if colorkey == -1:
             colorkey = image.get_at((0, 0))
-        image.set_colorkey(colorkey, pg.RLEACCEL)
+        image.set_colorkey(colorkey, pygame.RLEACCEL)
     return image, image.get_rect()
 
 
@@ -43,28 +43,28 @@ def load_sound(name):
         def play(self):
             pass
 
-    if not pg.mixer or not pg.mixer.get_init():
+    if not pygame.mixer or not pygame.mixer.get_init():
         return NoneSound()
 
     fullname = os.path.join(data_dir, name)
-    sound = pg.mixer.Sound(fullname)
+    sound = pygame.mixer.Sound(fullname)
 
     return sound
 
 
 # classes for our game objects
-class Fist(pg.sprite.Sprite):
+class Fist(pygame.sprite.Sprite):
     """moves a clenched fist on the screen, following the mouse"""
 
     def __init__(self):
-        pg.sprite.Sprite.__init__(self)  # call Sprite initializer
+        pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
         self.image, self.rect = load_image("fist.png", -1)
         self.fist_offset = (-235, -80)
         self.punching = False
 
     def update(self):
         """move the fist based on the mouse position"""
-        pos = pg.mouse.get_pos()
+        pos = pygame.mouse.get_pos()
         self.rect.topleft = pos
         self.rect.move_ip(self.fist_offset)
         if self.punching:
@@ -82,14 +82,14 @@ class Fist(pg.sprite.Sprite):
         self.punching = False
 
 
-class Chimp(pg.sprite.Sprite):
+class Chimp(pygame.sprite.Sprite):
     """moves a monkey critter across the screen. it can spin the
     monkey when it is punched."""
 
     def __init__(self):
-        pg.sprite.Sprite.__init__(self)  # call Sprite initializer
+        pygame.sprite.Sprite.__init__(self)  # call Sprite initializer
         self.image, self.rect = load_image("chimp.png", -1, 4)
-        screen = pg.display.get_surface()
+        screen = pygame.display.get_surface()
         self.area = screen.get_rect()
         self.rect.topleft = 10, 90
         self.move = 18
@@ -109,7 +109,7 @@ class Chimp(pg.sprite.Sprite):
             if self.rect.left < self.area.left or self.rect.right > self.area.right:
                 self.move = -self.move
                 newpos = self.rect.move((self.move, 0))
-                self.image = pg.transform.flip(self.image, True, False)
+                self.image = pygame.transform.flip(self.image, True, False)
         self.rect = newpos
 
     def _spin(self):
@@ -120,7 +120,7 @@ class Chimp(pg.sprite.Sprite):
             self.dizzy = False
             self.image = self.original
         else:
-            rotate = pg.transform.rotate
+            rotate = pygame.transform.rotate
             self.image = rotate(self.original, self.dizzy)
         self.rect = self.image.get_rect(center=center)
 
@@ -136,34 +136,34 @@ def main():
     it initializes everything it needs, then runs in
     a loop until the function returns."""
     # Initialize Everything
-    pg.init()
-    screen = pg.display.set_mode((1280, 480), pg.SCALED)
-    pg.display.set_caption("Monkey Fever")
-    pg.mouse.set_visible(False)
+    pygame.init()
+    screen = pygame.display.set_mode((1280, 480), pygame.SCALED)
+    pygame.display.set_caption("Monkey Fever")
+    pygame.mouse.set_visible(False)
 
     # Create The Background
-    background = pg.Surface(screen.get_size())
+    background = pygame.Surface(screen.get_size())
     background = background.convert()
     background.fill((170, 238, 187))
 
     # Put Text On The Background, Centered
-    if pg.font:
-        font = pg.font.Font(None, 64)
+    if pygame.font:
+        font = pygame.Font(None, 64)
         text = font.render("Pummel The Chimp, And Win $$$", True, (10, 10, 10))
         textpos = text.get_rect(centerx=background.get_width() / 2, y=10)
         background.blit(text, textpos)
 
     # Display The Background
     screen.blit(background, (0, 0))
-    pg.display.flip()
+    pygame.display.flip()
 
     # Prepare Game Objects
     whiff_sound = load_sound("whiff.wav")
     punch_sound = load_sound("punch.wav")
     chimp = Chimp()
     fist = Fist()
-    allsprites = pg.sprite.RenderPlain((chimp, fist))
-    clock = pg.time.Clock()
+    allsprites = pygame.sprite.RenderPlain((chimp, fist))
+    clock = pygame.Clock()
 
     # Main Loop
     going = True
@@ -171,18 +171,18 @@ def main():
         clock.tick(60)
 
         # Handle Input Events
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
                 going = False
-            elif event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 going = False
-            elif event.type == pg.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN:
                 if fist.punch(chimp):
                     punch_sound.play()  # punch
                     chimp.punched()
                 else:
                     whiff_sound.play()  # miss
-            elif event.type == pg.MOUSEBUTTONUP:
+            elif event.type == pygame.MOUSEBUTTONUP:
                 fist.unpunch()
 
         allsprites.update()
@@ -190,9 +190,9 @@ def main():
         # Draw Everything
         screen.blit(background, (0, 0))
         allsprites.draw(screen)
-        pg.display.flip()
+        pygame.display.flip()
 
-    pg.quit()
+    pygame.quit()
 
 
 # Game Over

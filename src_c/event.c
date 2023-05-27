@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -1305,7 +1305,7 @@ pg_event_dealloc(PyObject *self)
 {
     pgEventObject *e = (pgEventObject *)self;
     Py_XDECREF(e->dict);
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 
 #ifdef PYPY_VERSION
@@ -1493,7 +1493,7 @@ static PyTypeObject pgEvent_Type = {
     .tp_getattro = PyObject_GenericGetAttr,
     .tp_setattro = PyObject_GenericSetAttr,
 #endif
-    .tp_doc = DOC_PYGAMEEVENTEVENT,
+    .tp_doc = DOC_EVENT_EVENT,
     .tp_richcompare = pg_event_richcompare,
     .tp_members = pg_event_members,
     .tp_dictoffset = offsetof(pgEventObject, dict),
@@ -1518,7 +1518,7 @@ pgEvent_New(SDL_Event *event)
         e->dict = PyDict_New();
     }
     if (!e->dict) {
-        PyObject_Free(e);
+        Py_TYPE(e)->tp_free(e);
         return PyErr_NoMemory();
     }
     return (PyObject *)e;
@@ -1533,7 +1533,7 @@ pgEvent_New2(int type, PyObject *dict)
         return PyErr_NoMemory();
 
     if (_pg_event_populate(e, type, dict) == -1) {
-        PyObject_Free(e);
+        Py_TYPE(e)->tp_free(e);
         return NULL;
     }
     return (PyObject *)e;
@@ -2212,31 +2212,31 @@ static PyMethodDef _event_methods[] = {
     {"_internal_mod_quit", (PyCFunction)pgEvent_AutoQuit, METH_NOARGS,
      "auto quit for event module"},
 
-    {"event_name", event_name, METH_VARARGS, DOC_PYGAMEEVENTEVENTNAME},
+    {"event_name", event_name, METH_VARARGS, DOC_EVENT_EVENTNAME},
 
-    {"set_grab", set_grab, METH_O, DOC_PYGAMEEVENTSETGRAB},
-    {"get_grab", (PyCFunction)get_grab, METH_NOARGS, DOC_PYGAMEEVENTGETGRAB},
+    {"set_grab", set_grab, METH_O, DOC_EVENT_SETGRAB},
+    {"get_grab", (PyCFunction)get_grab, METH_NOARGS, DOC_EVENT_GETGRAB},
 
-    {"pump", (PyCFunction)pg_event_pump, METH_NOARGS, DOC_PYGAMEEVENTPUMP},
+    {"pump", (PyCFunction)pg_event_pump, METH_NOARGS, DOC_EVENT_PUMP},
     {"wait", (PyCFunction)pg_event_wait, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEEVENTWAIT},
-    {"poll", (PyCFunction)pg_event_poll, METH_NOARGS, DOC_PYGAMEEVENTPOLL},
+     DOC_EVENT_WAIT},
+    {"poll", (PyCFunction)pg_event_poll, METH_NOARGS, DOC_EVENT_POLL},
     {"clear", (PyCFunction)pg_event_clear, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEEVENTCLEAR},
+     DOC_EVENT_CLEAR},
     {"get", (PyCFunction)pg_event_get, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEEVENTGET},
+     DOC_EVENT_GET},
     {"peek", (PyCFunction)pg_event_peek, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEEVENTPEEK},
-    {"post", (PyCFunction)pg_event_post, METH_O, DOC_PYGAMEEVENTPOST},
+     DOC_EVENT_PEEK},
+    {"post", (PyCFunction)pg_event_post, METH_O, DOC_EVENT_POST},
 
     {"set_allowed", (PyCFunction)pg_event_set_allowed, METH_O,
-     DOC_PYGAMEEVENTSETALLOWED},
+     DOC_EVENT_SETALLOWED},
     {"set_blocked", (PyCFunction)pg_event_set_blocked, METH_O,
-     DOC_PYGAMEEVENTSETBLOCKED},
+     DOC_EVENT_SETBLOCKED},
     {"get_blocked", (PyCFunction)pg_event_get_blocked, METH_O,
-     DOC_PYGAMEEVENTGETBLOCKED},
+     DOC_EVENT_GETBLOCKED},
     {"custom_type", (PyCFunction)pg_event_custom_type, METH_NOARGS,
-     DOC_PYGAMEEVENTCUSTOMTYPE},
+     DOC_EVENT_CUSTOMTYPE},
 
     {NULL, NULL, 0, NULL}};
 
@@ -2247,7 +2247,7 @@ MODINIT_DEFINE(event)
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "event",
-                                         DOC_PYGAMEEVENT,
+                                         DOC_EVENT,
                                          -1,
                                          _event_methods,
                                          NULL,

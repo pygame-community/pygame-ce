@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
   Copyright (C) 2008 Marcus von Appen
 
@@ -190,7 +190,7 @@ _lifelock_dealloc(PyObject *self)
     pgSurface_UnlockBy((pgSurfaceObject *)lifelock->surface,
                        lifelock->lockobj);
     Py_DECREF(lifelock->surface);
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject *

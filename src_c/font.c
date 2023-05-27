@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -475,7 +475,7 @@ font_set_strikethrough(PyObject *self, PyObject *arg)
 }
 
 static PyObject *
-font_render(PyObject *self, PyObject *args)
+font_render(PyObject *self, PyObject *args, PyObject *kwds)
 {
     TTF_Font *font = PyFont_AsFont(self);
     int antialias;
@@ -486,8 +486,12 @@ font_render(PyObject *self, PyObject *args)
     const char *astring = "";
     int wraplength = 0;
 
-    if (!PyArg_ParseTuple(args, "OpO|Oi", &text, &antialias, &fg_rgba_obj,
-                          &bg_rgba_obj, &wraplength)) {
+    static char *kwlist[] = {"text",    "antialias",  "color",
+                             "bgcolor", "wraplength", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OpO|Oi", kwlist, &text,
+                                     &antialias, &fg_rgba_obj, &bg_rgba_obj,
+                                     &wraplength)) {
         return NULL;
     }
 
@@ -542,8 +546,8 @@ font_render(PyObject *self, PyObject *args)
 
     if (strlen(astring) == 0) { /* special 0 string case */
         int height = TTF_FontHeight(font);
-        surf = SDL_CreateRGBSurface(0, 0, height, 32, 0xff << 16, 0xff << 8,
-                                    0xff, 0);
+        surf = SDL_CreateRGBSurfaceWithFormat(0, 0, height, 32,
+                                              PG_PIXELFORMAT_XRGB8888);
     }
     else { /* normal case */
 #if !SDL_TTF_VERSION_ATLEAST(2, 0, 15)
@@ -630,6 +634,15 @@ font_size(PyObject *self, PyObject *text)
         return RAISE_TEXT_TYPE_ERROR();
     }
     return Py_BuildValue("(ii)", w, h);
+}
+
+static PyObject *
+font_getter_name(PyObject *self, void *closure)
+{
+    TTF_Font *font = PyFont_AsFont(self);
+    const char *font_name = TTF_FontFaceFamilyName(font);
+
+    return PyUnicode_FromString(font_name);
 }
 
 static PyObject *
@@ -779,12 +792,12 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
             break;
         }
 
-/*  There is a bug in SDL2 up to 2.26.3 (the current release version as of
+/*  There is a bug in SDL_ttf up to 2.22.0 (the next release version as of
    writing this) This bug flips the top-to-bottom and bottom-to-top rendering.
    So, this is a compat patch for that behavior
  */
 #if SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \
-                   SDL_TTF_PATCHLEVEL) <= SDL_VERSIONNUM(2, 26, 3)
+                   SDL_TTF_PATCHLEVEL) < SDL_VERSIONNUM(2, 22, 0)
         case 2: {
             dir = TTF_DIRECTION_BTT;
             break;
@@ -831,39 +844,43 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
  * Getters and setters for the pgFontObject.
  */
 static PyGetSetDef font_getsets[] = {
-    {"bold", (getter)font_getter_bold, (setter)font_setter_bold, DOC_FONTBOLD,
-     NULL},
+    {"name", (getter)font_getter_name, NULL, DOC_FONT_FONT_NAME, NULL},
+    {"bold", (getter)font_getter_bold, (setter)font_setter_bold,
+     DOC_FONT_FONT_BOLD, NULL},
     {"italic", (getter)font_getter_italic, (setter)font_setter_italic,
-     DOC_FONTITALIC, NULL},
+     DOC_FONT_FONT_ITALIC, NULL},
     {"underline", (getter)font_getter_underline, (setter)font_setter_underline,
-     DOC_FONTUNDERLINE, NULL},
+     DOC_FONT_FONT_UNDERLINE, NULL},
     {"strikethrough", (getter)font_getter_strikethrough,
-     (setter)font_setter_strikethrough, DOC_FONTSTRIKETHROUGH, NULL},
+     (setter)font_setter_strikethrough, DOC_FONT_FONT_STRIKETHROUGH, NULL},
     {"align", (getter)font_getter_align, (setter)font_setter_align,
-     DOC_FONTALIGN, NULL},
+     DOC_FONT_FONT_ALIGN, NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyMethodDef font_methods[] = {
-    {"get_height", font_get_height, METH_NOARGS, DOC_FONTGETHEIGHT},
-    {"get_descent", font_get_descent, METH_NOARGS, DOC_FONTGETDESCENT},
-    {"get_ascent", font_get_ascent, METH_NOARGS, DOC_FONTGETASCENT},
-    {"get_linesize", font_get_linesize, METH_NOARGS, DOC_FONTGETLINESIZE},
-    {"get_bold", font_get_bold, METH_NOARGS, DOC_FONTGETBOLD},
-    {"set_bold", font_set_bold, METH_O, DOC_FONTSETBOLD},
-    {"get_italic", font_get_italic, METH_NOARGS, DOC_FONTGETITALIC},
-    {"set_italic", font_set_italic, METH_O, DOC_FONTSETITALIC},
-    {"get_underline", font_get_underline, METH_NOARGS, DOC_FONTGETUNDERLINE},
-    {"set_underline", font_set_underline, METH_O, DOC_FONTSETUNDERLINE},
+    {"get_height", font_get_height, METH_NOARGS, DOC_FONT_FONT_GETHEIGHT},
+    {"get_descent", font_get_descent, METH_NOARGS, DOC_FONT_FONT_GETDESCENT},
+    {"get_ascent", font_get_ascent, METH_NOARGS, DOC_FONT_FONT_GETASCENT},
+    {"get_linesize", font_get_linesize, METH_NOARGS,
+     DOC_FONT_FONT_GETLINESIZE},
+    {"get_bold", font_get_bold, METH_NOARGS, DOC_FONT_FONT_GETBOLD},
+    {"set_bold", font_set_bold, METH_O, DOC_FONT_FONT_SETBOLD},
+    {"get_italic", font_get_italic, METH_NOARGS, DOC_FONT_FONT_GETITALIC},
+    {"set_italic", font_set_italic, METH_O, DOC_FONT_FONT_SETITALIC},
+    {"get_underline", font_get_underline, METH_NOARGS,
+     DOC_FONT_FONT_GETUNDERLINE},
+    {"set_underline", font_set_underline, METH_O, DOC_FONT_FONT_SETUNDERLINE},
     {"get_strikethrough", font_get_strikethrough, METH_NOARGS,
-     DOC_FONTGETSTRIKETHROUGH},
+     DOC_FONT_FONT_GETSTRIKETHROUGH},
     {"set_strikethrough", font_set_strikethrough, METH_O,
-     DOC_FONTSETSTRIKETHROUGH},
-    {"metrics", font_metrics, METH_O, DOC_FONTMETRICS},
-    {"render", font_render, METH_VARARGS, DOC_FONTRENDER},
-    {"size", font_size, METH_O, DOC_FONTSIZE},
-    {"set_script", font_set_script, METH_O, DOC_FONTSETSCRIPT},
+     DOC_FONT_FONT_SETSTRIKETHROUGH},
+    {"metrics", font_metrics, METH_O, DOC_FONT_FONT_METRICS},
+    {"render", (PyCFunction)font_render, METH_VARARGS | METH_KEYWORDS,
+     DOC_FONT_FONT_RENDER},
+    {"size", font_size, METH_O, DOC_FONT_FONT_SIZE},
+    {"set_script", font_set_script, METH_O, DOC_FONT_FONT_SETSCRIPT},
     {"set_direction", (PyCFunction)font_set_direction,
-     METH_VARARGS | METH_KEYWORDS, DOC_FONTSETDIRECTION},
+     METH_VARARGS | METH_KEYWORDS, DOC_FONT_FONT_SETDIRECTION},
     {NULL, NULL, 0, NULL}};
 
 /*font object internals*/
@@ -984,7 +1001,7 @@ static PyTypeObject PyFont_Type = {
     .tp_basicsize = sizeof(PyFontObject),
     .tp_dealloc = (destructor)font_dealloc,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = DOC_PYGAMEFONTFONT,
+    .tp_doc = DOC_FONT_FONT,
     .tp_weaklistoffset = offsetof(PyFontObject, weakreflist),
     .tp_methods = font_methods,
     .tp_getset = font_getsets,
@@ -1022,14 +1039,13 @@ get_ttf_version(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyMethodDef _font_methods[] = {
-    {"init", (PyCFunction)fontmodule_init, METH_NOARGS, DOC_PYGAMEFONTINIT},
-    {"quit", (PyCFunction)fontmodule_quit, METH_NOARGS, DOC_PYGAMEFONTQUIT},
-    {"get_init", (PyCFunction)pg_font_get_init, METH_NOARGS,
-     DOC_PYGAMEFONTGETINIT},
+    {"init", (PyCFunction)fontmodule_init, METH_NOARGS, DOC_FONT_INIT},
+    {"quit", (PyCFunction)fontmodule_quit, METH_NOARGS, DOC_FONT_QUIT},
+    {"get_init", (PyCFunction)pg_font_get_init, METH_NOARGS, DOC_FONT_GETINIT},
     {"get_default_font", (PyCFunction)get_default_font, METH_NOARGS,
-     DOC_PYGAMEFONTGETDEFAULTFONT},
+     DOC_FONT_GETDEFAULTFONT},
     {"get_sdl_ttf_version", (PyCFunction)get_ttf_version,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMEFONTGETINIT},
+     METH_VARARGS | METH_KEYWORDS, DOC_FONT_GETINIT},
 
     {NULL, NULL, 0, NULL}};
 
@@ -1055,7 +1071,7 @@ MODINIT_DEFINE(font)
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "font",
-                                         DOC_PYGAMEFONT,
+                                         DOC_FONT,
                                          -1,
                                          _font_methods,
                                          NULL,

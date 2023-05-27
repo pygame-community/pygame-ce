@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Library General Public
@@ -24,7 +24,7 @@
  * This module allows for use of v4l2 webcams in pygame. The code is written
  * such that adding support for vfw cameras should be possible without
  * much modification of existing functions. v4l2 functions are kept separate
- * from functions available to pygame users and generic functions like
+ * from functions available to pygame-ce users and generic functions like
  * colorspace conversion.
  *
  * There is currently support for cameras that support MMAP and use
@@ -45,7 +45,7 @@
 #endif
 */
 
-/* functions available to pygame users */
+/* functions available to pygame-ce users */
 PyObject *
 surf_colorspace(PyObject *self, PyObject *arg);
 PyObject *
@@ -68,8 +68,8 @@ PyObject *
 camera_get_raw(pgCameraObject *self, PyObject *args);
 
 /*
- * Functions available to pygame users.  The idea is to make these as simple as
- * possible, and merely have them call functions specific to the type of
+ * Functions available to pygame-ce users.  The idea is to make these as simple
+ * as possible, and merely have them call functions specific to the type of
  * camera being used to do all the real work.  It currently just calls v4l2_*
  * functions, but it could check something like self->cameratype and depending
  * on the result, call v4l, v4l2, vfw, or other functions.
@@ -109,10 +109,9 @@ surf_colorspace(PyObject *self, PyObject *arg)
     surf = pgSurface_AsSurface(surfobj);
 
     if (!surfobj2) {
-        newsurf = SDL_CreateRGBSurface(
-            0, surf->w, surf->h, surf->format->BitsPerPixel,
-            surf->format->Rmask, surf->format->Gmask, surf->format->Bmask,
-            surf->format->Amask);
+        newsurf = SDL_CreateRGBSurfaceWithFormat(0, surf->w, surf->h,
+                                                 surf->format->BitsPerPixel,
+                                                 surf->format->format);
         if (!newsurf) {
             return NULL;
         }
@@ -376,8 +375,13 @@ camera_get_image(pgCameraObject *self, PyObject *arg)
         return NULL;
 
     if (!surfobj) {
-        surf = SDL_CreateRGBSurface(0, self->width, self->height, 24,
-                                    0xFF << 16, 0xFF << 8, 0xFF, 0);
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+        surf = SDL_CreateRGBSurfaceWithFormat(0, self->width, self->height, 24,
+                                              SDL_PIXELFORMAT_RGB24);
+#else
+        surf = SDL_CreateRGBSurfaceWithFormat(0, self->width, self->height, 24,
+                                              SDL_PIXELFORMAT_BGR24);
+#endif
     }
     else {
         surf = pgSurface_AsSurface(surfobj);
@@ -423,8 +427,8 @@ camera_get_image(pgCameraObject *self, PyObject *arg)
         return NULL;
 
     if (!surfobj) {
-        surf = SDL_CreateRGBSurface(0, width, height, 32,  // 24?
-                                    0xFF << 16, 0xFF << 8, 0xFF, 0);
+        surf = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32,
+                                              PG_PIXELFORMAT_XRGB8888);
     }
     else {
         surf = pgSurface_AsSurface(surfobj);
@@ -1760,18 +1764,20 @@ yuv420_to_yuv(const void *src, void *dst, int width, int height,
 
 /* Camera class definition */
 PyMethodDef cameraobj_builtins[] = {
-    {"start", (PyCFunction)camera_start, METH_NOARGS, DOC_CAMERASTART},
-    {"stop", (PyCFunction)camera_stop, METH_NOARGS, DOC_CAMERASTOP},
+    {"start", (PyCFunction)camera_start, METH_NOARGS, DOC_CAMERA_CAMERA_START},
+    {"stop", (PyCFunction)camera_stop, METH_NOARGS, DOC_CAMERA_CAMERA_STOP},
     {"get_controls", (PyCFunction)camera_get_controls, METH_NOARGS,
-     DOC_CAMERAGETCONTROLS},
+     DOC_CAMERA_CAMERA_GETCONTROLS},
     {"set_controls", (PyCFunction)camera_set_controls,
-     METH_VARARGS | METH_KEYWORDS, DOC_CAMERASETCONTROLS},
-    {"get_size", (PyCFunction)camera_get_size, METH_NOARGS, DOC_CAMERAGETSIZE},
+     METH_VARARGS | METH_KEYWORDS, DOC_CAMERA_CAMERA_SETCONTROLS},
+    {"get_size", (PyCFunction)camera_get_size, METH_NOARGS,
+     DOC_CAMERA_CAMERA_GETSIZE},
     {"query_image", (PyCFunction)camera_query_image, METH_NOARGS,
-     DOC_CAMERAQUERYIMAGE},
+     DOC_CAMERA_CAMERA_QUERYIMAGE},
     {"get_image", (PyCFunction)camera_get_image, METH_VARARGS,
-     DOC_CAMERAGETIMAGE},
-    {"get_raw", (PyCFunction)camera_get_raw, METH_NOARGS, DOC_CAMERAGETRAW},
+     DOC_CAMERA_CAMERA_GETIMAGE},
+    {"get_raw", (PyCFunction)camera_get_raw, METH_NOARGS,
+     DOC_CAMERA_CAMERA_GETRAW},
     {NULL, NULL, 0, NULL}};
 
 void
@@ -1785,7 +1791,7 @@ camera_dealloc(PyObject *self)
 #else
     free(((pgCameraObject *)self)->device_name);
 #endif
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 /*
 PyObject* camera_getattr(PyObject* self, char* attrname) {
@@ -1909,7 +1915,7 @@ PyTypeObject pgCamera_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.camera.Camera",
     .tp_basicsize = sizeof(pgCameraObject),
     .tp_dealloc = camera_dealloc,
-    .tp_doc = DOC_PYGAMECAMERACAMERA,
+    .tp_doc = DOC_CAMERA_CAMERA,
     .tp_methods = cameraobj_builtins,
     .tp_init = (initproc)camera_init,
     .tp_new = PyType_GenericNew,
@@ -1917,8 +1923,8 @@ PyTypeObject pgCamera_Type = {
 
 /* Camera module definition */
 PyMethodDef camera_builtins[] = {
-    {"colorspace", surf_colorspace, METH_VARARGS, DOC_PYGAMECAMERACOLORSPACE},
-    {"list_cameras", list_cameras, METH_NOARGS, DOC_PYGAMECAMERALISTCAMERAS},
+    {"colorspace", surf_colorspace, METH_VARARGS, DOC_CAMERA_COLORSPACE},
+    {"list_cameras", list_cameras, METH_NOARGS, DOC_CAMERA_LISTCAMERAS},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(_camera)
@@ -1930,7 +1936,7 @@ MODINIT_DEFINE(_camera)
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "_camera",
-                                         DOC_PYGAMECAMERA,
+                                         DOC_CAMERA,
                                          -1,
                                          camera_builtins,
                                          NULL,
