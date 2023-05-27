@@ -8,7 +8,9 @@ Copy/paste!
 
 Keyboard Controls
 -----------------
+    v - View the current clipboard data.
     c - Copy some text into the clipboard.
+
 """
 
 
@@ -29,29 +31,33 @@ running = True
 while running:
     screen.fill("black")
 
-    instruction = (
-        "Keyboard Controls: \n c - Copy some text into the clipboard. \n escape - Quit"
-    )
+    instruction = "Keyboard Controls:\nV - View the current clipboard data.\nC - Copy some text into the clipboard.\nEscape - Quit"
     text = font.render(instruction, True, "white")
-    screen.blit(text, (0, 00))
+    screen.blit(text, (0, 0))
 
-    text = font.render("Text on the clipboard:", True, "white")
-    screen.blit(text, (10, 100))
-
-    text = font.render(clipboard_text, True, "white", None, width - 20)
-    screen.blit(text, (10, 120))
-
-    # First, check if there is any text data in the clipboard.
-    if pygame.scrap.has_text():
-        # If there is, get it and display it.
-        clipboard_text = pygame.scrap.get_text()
+    text = font.render(
+        f"Text on the clipboard:\n{clipboard_text}", True, "white", None, width - 20
+    )
+    screen.blit(text, (0, 100))
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_c:
+            if event.key == pygame.K_v:
+                # Look for any text data in the clipboard.
+                print("Looking for text in the clipboard.")
+                if pygame.scrap.has_text():
+                    print("Text found in the clipboard.")
+                    clipboard_text = pygame.scrap.get_text()
+                else:
+                    print("No text in the clipboard.")
+
+            elif event.key == pygame.K_c:
+                # put some text into the clipboard.
+                print("Putting text into the clipboard.")
+
                 pygame.scrap.put_text(
                     "Hello World! This is some text from the pygame scrap example.",
                 )
