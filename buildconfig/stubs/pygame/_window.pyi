@@ -28,6 +28,7 @@ class Window:
     title: str
     resizable: bool
     borderless: bool
+    relative_mouse: bool
     id: int
     size: Iterable[int]
     position: Union[int, Iterable[int]]
