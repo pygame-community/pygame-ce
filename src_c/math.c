@@ -3514,7 +3514,7 @@ static void
 vectoriter_dealloc(vectoriter *it)
 {
     Py_XDECREF(it->vec);
-    PyObject_Free(it);
+    Py_TYPE(it)->tp_free(it);
 }
 
 static PyObject *
@@ -3593,7 +3593,7 @@ static void
 vector_elementwiseproxy_dealloc(vector_elementwiseproxy *it)
 {
     Py_XDECREF(it->vec);
-    PyObject_Free(it);
+    Py_TYPE(it)->tp_free(it);
 }
 
 static PyObject *
