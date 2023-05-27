@@ -39,7 +39,7 @@ clipboard_text = ""
 running = True
 
 while running:
-    screen.fill((0, 0, 0))
+    screen.fill("black")
 
     render_instructions()
 
