@@ -429,7 +429,7 @@ do this. Must be set before importing pygame.
 ::
 
  PYGAME_CAMERA -
- Set to "opencv" or "vidcapture"
+ Set to "opencv"
 
 Forces the library backend used in the camera
 module, overriding the platform defaults. Must

@@ -78,8 +78,6 @@ The Bayer to ``RGB`` function is based on:
       _camera (V4L2)    Linux     Builtin
       OpenCV            Any       Uses `opencv-python` module, can't enumerate cameras
       OpenCV-Mac        Mac       Same as OpenCV, but has camera enumeration
-      VideoCapture      Windows   Uses abandoned `VideoCapture` module, can't enumerate
-                                  cameras, may be removed in the future
 
    There are two main differences among backends.
 
@@ -132,7 +130,8 @@ The Bayer to ``RGB`` function is based on:
    | :sg:`Camera(device, (width, height), format) -> Camera`
 
    Loads a camera. On Linux, the device is typically something like
-   "/dev/video0". Default width and height are 640 by 480. 
+   "/dev/
+   eo0". Default width and height are 640 by 480. 
    Format is the desired colorspace of the output. 
    This is useful for computer vision purposes. The default is
    ``RGB``. The following are supported:
