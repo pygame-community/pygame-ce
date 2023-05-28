@@ -1111,7 +1111,7 @@ class LayeredDirtyTypeTest__DirtySprite(LayeredGroupBase, unittest.TestCase):
         #     use_source_rect - allows non-dirty sprites to be tested
         #         with (True) and without (False) a source_rect
         #
-        # This test was written to reproduce the behavior seen in 898.
+        # This test was written to reproduce the behavior seen in pygame-ce issue # 605.
         # A non-dirty sprite (using source_rect) was being redrawn incorrectly
         # after a dirty sprite intersected with it.
         #
