@@ -167,7 +167,7 @@ def main():
     font = pygame.font.SysFont("Arial", 24)
     clock = pygame.Clock()
 
-    clipped = ""  
+    clipped = ""
     if pygame.scrap.has_text():
         clipped = pygame.scrap.get_text()
 
