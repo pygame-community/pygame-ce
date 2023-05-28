@@ -473,21 +473,14 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
                     f"Using the default font instead."
                 )
             else:
+                # Identifies the closest matches to the font provided by the user from the list of available fonts.
                 matches = difflib.get_close_matches(
-                    _simplename(name[0]), itertools.chain(Sysfonts, Sysalias), 2
+                    _simplename(name[0]), itertools.chain(Sysfonts, Sysalias), 3
                 )
-                if len(matches) == 0:
-                    match_text = ""
-                elif len(matches) == 1:
-                    match_text = f"Did you mean: '{matches[0]}'? "
-                elif len(matches) == 2:
-                    match_text = f"Did you mean: '{matches[0]}' or '{matches[1]}'? "
+                if matches:
+                    match_text = f"Did you mean: '" + "', '".join(matches) + "'? "
                 else:
-                    match_text = (
-                        "Did you mean: '"
-                        + ", ".join(matches[:-1])
-                        + f"' or '{matches[-1]}'? "
-                    )
+                    match_text = ""
 
                 warnings.warn(
                     f"The system font '{name[0]}' couldn't be "
