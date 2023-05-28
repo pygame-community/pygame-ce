@@ -45,7 +45,7 @@ class SurfaceTypeTest(unittest.TestCase):
         surf = pygame.Surface((20, 20))
         self.assertEqual(surf.get_at((0, 0)), (0, 0, 0, 255))
 
-        # See https://github.com/pygame/pygame/issues/1395
+        # See https://github.com/pygame-community/pygame-ce/issues/796
         pygame.display.set_mode((500, 500))
         surf = pygame.Surface((20, 20))
         self.assertEqual(surf.get_at((0, 0)), (0, 0, 0, 255))
@@ -1139,8 +1139,8 @@ class GeneralSurfaceTests(unittest.TestCase):
         'requires a non-"dummy" SDL_VIDEODRIVER',
     )
     def test_image_convert_bug_131(self):
-        # bug #131: Unable to Surface.convert(32) some 1-bit images.
-        # https://github.com/pygame/pygame/issues/131
+        # bug #146: Unable to Surface.convert(32) some 1-bit images.
+        # https://github.com/pygame-community/pygame-ce/issues/146
 
         pygame.display.init()
         try:
@@ -2397,7 +2397,7 @@ class GeneralSurfaceTests(unittest.TestCase):
 
     def test_palette_colorkey(self):
         """test bug discovered by robertpfeiffer
-        https://github.com/pygame/pygame/issues/721
+        https://github.com/pygame-community/pygame-ce/issues/541
         """
         surf = pygame.image.load(example_path(os.path.join("data", "alien2.png")))
         key = surf.get_colorkey()
@@ -2508,7 +2508,7 @@ class GeneralSurfaceTests(unittest.TestCase):
         self.assertEqual(s.get_masks(), surf.get_masks())
         self.assertEqual(s.get_losses(), surf.get_losses())
 
-        # Issue https://github.com/pygame/pygame/issues/2
+        # Issue https://github.com/pygame-community/pygame-ce/issues/17
         surf = pygame.Surface.__new__(pygame.Surface)
         self.assertRaises(pygame.error, surf.subsurface, (0, 0, 0, 0))
 
@@ -3942,7 +3942,7 @@ class SurfaceBlendTest(unittest.TestCase):
 class SurfaceSelfBlitTest(unittest.TestCase):
     """Blit to self tests.
 
-    This test case is in response to https://github.com/pygame/pygame/issues/19
+    This test case is in response to https://github.com/pygame-community/pygame-ce/issues/34
     """
 
     def setUp(self):
@@ -4019,11 +4019,11 @@ class SurfaceSelfBlitTest(unittest.TestCase):
                 surf.blit(surf, (d_x, d_y), (s_x, s_y, 50, 50))
                 self.assertEqual(surf.get_at(test_posn), rectc_right)
 
-    # https://github.com/pygame/pygame/issues/370#issuecomment-364625291
+    # https://github.com/pygame-community/pygame-ce/issues/374, final comment by illume
     @unittest.skipIf("ppc64le" in platform.uname(), "known ppc64le issue")
     def test_colorkey(self):
         # Check a workaround for an SDL 1.2.13 surface self-blit problem
-        # https://github.com/pygame/pygame/issues/19
+        # https://github.com/pygame-community/pygame-ce/issues/34
         pygame.display.set_mode((100, 50))  # Needed for 8bit surface
         bitsizes = [8, 16, 24, 32]
         for bitsize in bitsizes:
@@ -4042,11 +4042,11 @@ class SurfaceSelfBlitTest(unittest.TestCase):
             comp.blit(tmp, (0, 0))
             self._assert_same(surf, comp)
 
-    # https://github.com/pygame/pygame/issues/370#issuecomment-364625291
+    # https://github.com/pygame-community/pygame-ce/issues/374 final comment by illume
     @unittest.skipIf("ppc64le" in platform.uname(), "known ppc64le issue")
     def test_blanket_alpha(self):
         # Check a workaround for an SDL 1.2.13 surface self-blit problem
-        # https://github.com/pygame/pygame/issues/19
+        # https://github.com/pygame-community/pygame-ce/issues/34
         pygame.display.set_mode((100, 50))  # Needed for 8bit surface
         bitsizes = [8, 16, 24, 32]
         for bitsize in bitsizes:
