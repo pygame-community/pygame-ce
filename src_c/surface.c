@@ -1583,7 +1583,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
             format.BytesPerPixel = (bpp + 7) / 8;
             if (format.BitsPerPixel > 8)
                 /* Allow a 8 bit source surface with an empty palette to be
-                 * converted to a format without a palette (Issue #131).
+                 * converted to a format without a palette (pygame-ce issue #146).
                  * If the target format has a non-NULL palette pointer then
                  * SDL_ConvertSurface checks that the palette is not empty--
                  * that at least one entry is not black.

@@ -228,7 +228,7 @@ class SurfaceTypeTest(unittest.TestCase):
         self.assertEqual(bound_rect.width, 31)
         self.assertEqual(bound_rect.height, 31)
 
-        # Issue #180
+        # pygame-ce issue #195
         pygame.display.init()
         try:
             surf = pygame.Surface((4, 1), 0, 8)
@@ -1796,7 +1796,7 @@ class GeneralSurfaceTests(unittest.TestCase):
             pygame.display.set_mode((60, 60))
 
             # This is accepted as an argument, but its values are ignored.
-            # See issue #599.
+            # See pygame-ce issue #493.
             surface = convert_surface.convert_alpha(depth_surface)
 
             self.assertIsNot(surface, depth_surface)
@@ -2640,7 +2640,7 @@ class GeneralSurfaceTests(unittest.TestCase):
 
 
 class SurfaceSubtypeTest(unittest.TestCase):
-    """Issue #280: Methods that return a new Surface preserve subclasses"""
+    """pygame-ce issue #295: Methods that return a new Surface preserve subclasses"""
 
     def setUp(self):
         pygame.display.init()
@@ -4125,7 +4125,7 @@ class SurfaceSelfBlitTest(unittest.TestCase):
         self.assertRaises(pygame.error, do_blit, surf, sub)
 
     def test_copy_alpha(self):
-        """issue 581: alpha of surface copy with SRCALPHA is set to 0."""
+        """pygame-ce issue 487: alpha of surface copy with SRCALPHA is set to 0."""
         surf = pygame.Surface((16, 16), pygame.SRCALPHA, 32)
         self.assertEqual(surf.get_alpha(), 255)
         surf2 = surf.copy()
