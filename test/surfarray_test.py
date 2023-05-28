@@ -482,9 +482,7 @@ class SurfarrayModuleTest(unittest.TestCase):
             pygame.surfarray.blit_array(surf, farr)
             for x in range(w):
                 for y in range(h):
-                    self.assertEqual(
-                        surf.get_at_mapped((x, y)), int(rint(farr[x, y]))
-                    )
+                    self.assertEqual(surf.get_at_mapped((x, y)), int(rint(farr[x, y])))
 
     # this test should be removed soon, when the function is deleted
     def test_get_arraytype(self):
@@ -525,9 +523,7 @@ class SurfarrayModuleTest(unittest.TestCase):
             surf = pygame.surfarray.make_surface(farr)
             for x in range(w):
                 for y in range(h):
-                    self.assertEqual(
-                        surf.get_at_mapped((x, y)), int(rint(farr[x, y]))
-                    )
+                    self.assertEqual(surf.get_at_mapped((x, y)), int(rint(farr[x, y])))
 
     def test_map_array(self):
         arr3d = self._make_src_array3d(uint8)
