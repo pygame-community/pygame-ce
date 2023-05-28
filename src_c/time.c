@@ -463,7 +463,7 @@ clock_dealloc(PyObject *self)
 {
     PyClockObject *_clock = (PyClockObject *)self;
     Py_XDECREF(_clock->rendered);
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 
 PyObject *

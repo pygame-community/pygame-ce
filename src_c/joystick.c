@@ -95,7 +95,7 @@ joy_dealloc(PyObject *self)
         jstick->next->prev = jstick->prev;
     }
 
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject *

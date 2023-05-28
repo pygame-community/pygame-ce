@@ -1311,7 +1311,7 @@ static PyMethodDef channel_methods[] = {
 static void
 channel_dealloc(PyObject *self)
 {
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 
 static int

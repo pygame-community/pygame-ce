@@ -43,7 +43,7 @@ class Window:
     DEFAULT_SIZE: Tuple[Literal[640], Literal[480]]
     def __init__(
         self,
-        title: str = "pygame",
+        title: str = "pygame window",
         size: Iterable[int] = (640, 480),
         position: Optional[Iterable[int]] = None,
         fullscreen: bool = False,
