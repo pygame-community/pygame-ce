@@ -167,12 +167,9 @@ def main():
     font = pygame.font.SysFont("Arial", 24)
     clock = pygame.Clock()
 
-    pygame.scrap.init()
-    pygame.SCRAP_TEXT = pygame.scrap.get_types()[
-        0
-    ]  # TODO remove when scrap module is fixed
-    clipped = pygame.scrap.get(pygame.SCRAP_TEXT).decode("UTF-8")
-    # store the current text from the clipboard TODO remove decode
+    clipped = ""
+    if pygame.scrap.has_text():
+        clipped = pygame.scrap.get_text()
 
     # add the command line arguments to the  music_file_list
     for arg in sys.argv[1:]:
@@ -235,11 +232,11 @@ def main():
             pygame.mixer.music.set_volume(volume)
             print("volume:", volume)
 
-        # TODO remove decode when SDL2 scrap is fixed
-        new_text = pygame.scrap.get(pygame.SCRAP_TEXT).decode("UTF-8")
-        if new_text != clipped:  # has the clipboard changed?
-            clipped = new_text
-            play_file(clipped)  # try to play the file if it has
+        if pygame.scrap.has_text():
+            new_text = pygame.scrap.get_text()
+            if new_text != clipped:
+                clipped = new_text
+                play_file(clipped)
 
         pygame.display.flip()
         clock.tick(9)  # keep CPU use down by updating screen less often
