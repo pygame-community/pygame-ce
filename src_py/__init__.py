@@ -340,11 +340,6 @@ try:
 except (ImportError, OSError):
     pass
 
-try:
-    import pygame._window
-except (ImportError, OSError):
-    system = MissingModule("_window", urgent=1)
-
 
 def packager_imports():
     """some additional imports that py2app/py2exe will want to see"""
