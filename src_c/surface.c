@@ -730,7 +730,8 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
          * could cause issues.
          * pygame Surfaces are supposed to be (0, 0, 0, 255) by default.
          * This is a simple fix to fill it with (0, 0, 0, 255) if necessary.
-         * See Github issue: https://github.com/pygame/pygame/issues/1395
+         * See Github issue:
+         * https://github.com/pygame-community/pygame-ce/issues/796
          */
         if (Amask != 0) {
             SDL_FillRect(surface, NULL,
@@ -1582,10 +1583,10 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
             format.BytesPerPixel = (bpp + 7) / 8;
             if (format.BitsPerPixel > 8)
                 /* Allow a 8 bit source surface with an empty palette to be
-                 * converted to a format without a palette (Issue #131).
-                 * If the target format has a non-NULL palette pointer then
-                 * SDL_ConvertSurface checks that the palette is not empty--
-                 * that at least one entry is not black.
+                 * converted to a format without a palette (pygame-ce issue
+                 * #146). If the target format has a non-NULL palette pointer
+                 * then SDL_ConvertSurface checks that the palette is not
+                 * empty-- that at least one entry is not black.
                  */
                 format.palette = NULL;
             newsurf = SDL_ConvertSurface(surf, &format, 0);

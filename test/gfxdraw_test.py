@@ -600,7 +600,7 @@ class GfxdrawDefaultTest(unittest.TestCase):
         difference between the 2 aatrigons is the order the points are drawn.
         The order of the points should have no impact on the final drawing.
 
-        Related to issue #622.
+        Related to pygame-ce issue #506.
         """
         bg_color = pygame.Color("white")
         line_color = pygame.Color("black")
@@ -733,7 +733,7 @@ class GfxdrawDefaultTest(unittest.TestCase):
         aapolygon() and the other using multiple line() calls. They should
         produce the same final drawing.
 
-        Related to issue #622.
+        Related to pygame-ce issue #506.
         """
         bg_color = pygame.Color("white")
         line_color = pygame.Color("black")
