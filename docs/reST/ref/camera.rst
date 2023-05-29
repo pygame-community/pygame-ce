@@ -13,6 +13,7 @@ with wider platform support available via an integrated OpenCV backend.
 
 .. versionaddedold:: 2.0.2 Windows native camera support
 .. versionaddedold:: 2.0.3 New OpenCV backends
+.. versionchanged:: 2.3.0 Removed deprecated vidcapture backend
 
 EXPERIMENTAL!: This API may change or disappear in later pygame releases. If
 you use this, your code will very likely break with the next pygame release.
