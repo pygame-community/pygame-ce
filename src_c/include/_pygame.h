@@ -229,6 +229,8 @@ typedef struct pgJoystickObject {
 
 #define pgJoystick_Check(x) ((x)->ob_type == &pgJoystick_Type)
 #define pgJoystick_New (*(PyObject * (*)(int)) PYGAMEAPI_GET_SLOT(joystick, 1))
+#define pgJoystick_GetDeviceIndexByInstanceID \
+    (*(int (*)(int))PYGAMEAPI_GET_SLOT(joystick, 2))
 
 #define import_pygame_joystick() IMPORT_PYGAME_MODULE(joystick)
 #endif
