@@ -382,7 +382,6 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     Py_ssize_t dict_pos = 0;
     PyObject *_key, *_value, *_kw;
     const char *_key_str;
-    char _exc_str[64];
     int _value_bool;
 
     _kw = PyDict_New();
@@ -500,9 +499,9 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                         flags |= SDL_WINDOW_VULKAN;
                 }
                 else {
-                    sprintf(_exc_str, "__init__ got an unexpected flag \'%s\'",
-                            _key_str);
-                    PyErr_SetString(PyExc_TypeError, _exc_str);
+                    PyErr_Format(PyExc_TypeError,
+                                 "__init__ got an unexpected flag \'%s\'",
+                                 _key_str);
                     return -1;
                 }
             }
