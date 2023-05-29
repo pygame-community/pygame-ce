@@ -216,7 +216,7 @@ class X11InteractiveTest(unittest.TestCase):
             __tags__ = ["interactive"]
         pygame.display.quit()
 
-    def test_issue_208(self):
+    def test_issue_223(self):
         """PATCH: pygame.scrap on X11, fix copying into PRIMARY selection
 
         Copying into theX11 PRIMARY selection (mouse copy/paste) would not

@@ -471,25 +471,18 @@ class SurfarrayModuleTest(unittest.TestCase):
         arr.shape = (1, 1, 1, 4)
         self.assertRaises(ValueError, do_blit, surf, arr)
 
-        # Issue #81: round from float to int
-        try:
-            rint
-        except NameError:
-            pass
-        else:
-            surf = pygame.Surface((10, 10), pygame.SRCALPHA, 32)
-            w, h = surf.get_size()
-            length = w * h
-            for dtype in [float32, float64]:
-                surf.fill((255, 255, 255, 0))
-                farr = arange(0, length, dtype=dtype)
-                farr.shape = w, h
-                pygame.surfarray.blit_array(surf, farr)
-                for x in range(w):
-                    for y in range(h):
-                        self.assertEqual(
-                            surf.get_at_mapped((x, y)), int(rint(farr[x, y]))
-                        )
+        # pygame-ce issue #96: round from float to int
+        surf = pygame.Surface((10, 10), pygame.SRCALPHA, 32)
+        w, h = surf.get_size()
+        length = w * h
+        for dtype in [float32, float64]:
+            surf.fill((255, 255, 255, 0))
+            farr = arange(0, length, dtype=dtype)
+            farr.shape = w, h
+            pygame.surfarray.blit_array(surf, farr)
+            for x in range(w):
+                for y in range(h):
+                    self.assertEqual(surf.get_at_mapped((x, y)), int(rint(farr[x, y])))
 
     # this test should be removed soon, when the function is deleted
     def test_get_arraytype(self):
@@ -520,24 +513,17 @@ class SurfarrayModuleTest(unittest.TestCase):
             surf = pygame.surfarray.make_surface(self._make_src_array3d(dtype))
             self._assert_surface(surf)
 
-        # Issue #81: round from float to int
-        try:
-            rint
-        except NameError:
-            pass
-        else:
-            w = 9
-            h = 11
-            length = w * h
-            for dtype in [float32, float64]:
-                farr = arange(0, length, dtype=dtype)
-                farr.shape = w, h
-                surf = pygame.surfarray.make_surface(farr)
-                for x in range(w):
-                    for y in range(h):
-                        self.assertEqual(
-                            surf.get_at_mapped((x, y)), int(rint(farr[x, y]))
-                        )
+        # pygame-ce issue #96: round from float to int
+        w = 9
+        h = 11
+        length = w * h
+        for dtype in [float32, float64]:
+            farr = arange(0, length, dtype=dtype)
+            farr.shape = w, h
+            surf = pygame.surfarray.make_surface(farr)
+            for x in range(w):
+                for y in range(h):
+                    self.assertEqual(surf.get_at_mapped((x, y)), int(rint(farr[x, y])))
 
     def test_map_array(self):
         arr3d = self._make_src_array3d(uint8)
