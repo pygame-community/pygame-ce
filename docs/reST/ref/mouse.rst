@@ -231,10 +231,10 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    | :sg:`set_relative_mode(enable) -> None`
 
    Sets the relative mouse mode state.
-   SDL2 docs: *"While the mouse is in relative mode, the cursor is hidden,
-   the mouse position is constrained to the window, and SDL will report
-   continuous relative mouse motion even if the mouse is at the edge of the
-   window.*
+   While the mouse is in relative mode, the cursor is hidden,
+   the mouse position is constrained to the window, and pygame
+   will report continuous relative mouse motion even if the 
+   mouse is at the edge of the window.
 
    *This function will flush any pending mouse motion."*
 
