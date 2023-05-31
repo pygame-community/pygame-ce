@@ -53,10 +53,10 @@ class Game:
             if event.type == TEXTINPUT:
                 last_line_pos = 0
                 for i, chr in enumerate(self.text):
-                        if chr == "\n":
-                            last_line_pos = i
-            
-                if y_pos < self.SCREEN_HEIGHT-100:
+                    if chr == "\n":
+                        last_line_pos = i
+
+                if y_pos < self.SCREEN_HEIGHT - 100:
                     self.text += event.text
                 if len(self.text) - last_line_pos < 35:
                     pass
@@ -80,31 +80,22 @@ class Game:
                 False,
                 (25, 255, 100),
             )
-            y_pos = self.input_img.get_height()+message_spacing
+            y_pos = self.input_img.get_height() + message_spacing
             msg_imgs = []
-            
+
             for msg in self.chat_list:
                 msg_imgs.append(self.small_font.render(msg, False, (25, 255, 100)))
-            
+
             # checks if the y position is bigger than 500, if its bigger than 500, it will remove the first three items of the chat list.
-            
 
-
-           
-            self.handle_events(y_pos) #checks for the events
+            self.handle_events(y_pos)  # checks for the events
             for msg_img in msg_imgs:
-                self.screen.blit(
-                    msg_img, (10, y_pos)
-                )
+                self.screen.blit(msg_img, (10, y_pos))
                 y_pos += msg_img.get_height()
             if y_pos > self.SCREEN_HEIGHT:
                 for i in range(3):
-               
                     if len(self.chat_list) > 0:
                         self.chat_list.pop(i)
-
-            
-            
 
             self.screen.blit(self.input_img, (0, 0))
             pygame.display.update()
