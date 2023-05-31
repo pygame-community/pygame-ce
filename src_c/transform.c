@@ -2238,7 +2238,6 @@ grayscale(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
         else {
             grayscale_non_simd(src, newsurf);
         }
-
     }
     else {
         grayscale_non_simd(src, newsurf);
