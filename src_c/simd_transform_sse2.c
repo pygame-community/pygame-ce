@@ -38,13 +38,12 @@ pg_neon_at_runtime_but_uncompiled()
 void
 grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
 {
-    int s_row_skip = (src->pitch -
-        src->w * src->format->BytesPerPixel) >> 2;
+    int s_row_skip = (src->pitch - src->w * src->format->BytesPerPixel) >> 2;
 
     // generate number of batches of pixels we need to loop through
     int pixel_batch_length = src->w * src->h;
     int num_batches = 1;
-    if (s_row_skip > 0){
+    if (s_row_skip > 0) {
         pixel_batch_length = src->w;
         num_batches = src->h;
     }
@@ -71,7 +70,7 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
     mm_rgb_weights =
         _mm_unpacklo_epi8(_mm_cvtsi32_si128(rgb_weights), mm_zero);
 
-    while (num_batches--){
+    while (num_batches--) {
         pixel_batch_counter = pixel_batch_length;
         while (pixel_batch_counter--) {
             mm_src = _mm_cvtsi32_si128(*srcp);
