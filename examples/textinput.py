@@ -23,24 +23,22 @@ class Game:
     def handle_events(self):
         # Handles the events
         for event in pygame.event.get():
-            if event.type == KEYUP:  # Checks if a key is released
+            if event.type == KEYUP:
                 if event.key == K_LSHIFT:
                     self.holding_shift = False
-            if event.type == KEYDOWN:  # Checks if a key is pressed
+            if event.type == KEYDOWN:
                 if event.key == K_RETURN:
                     self.chat_list.append(self.text)
 
-                if event.key == K_SPACE:  # Checks if the space key is pressed
-                    self.text += " "  # Adds a blank space to the text
+                if event.key == K_SPACE:
+                    self.text += " "
 
-                if event.key == K_LSHIFT:  # Checks if the shift key is being hold
+                if event.key == K_LSHIFT:
                     self.holding_shift = True
                 else:
                     if pygame.key.name(event.key) in self.char_list:
                         if not "\n" in self.text:
-                            if (
-                                not self.holding_shift
-                            ):  # Checks if the player is not holding shift
+                            if not self.holding_shift:
                                 self.text = self.text + pygame.key.name(event.key)
                             else:
                                 if pygame.key.name(event.key) not in list(
@@ -75,9 +73,7 @@ class Game:
                                     self.text += ">"
                                 elif pygame.key.name(event.key) == ",":
                                     self.text += "<"
-                            if (
-                                len(self.text) < 30
-                            ):  # Checks if the text variable has more than 30 characters
+                            if len(self.text) < 30:
                                 pass
                             else:
                                 self.text += "\n"
@@ -122,9 +118,7 @@ class Game:
                                 elif pygame.key.name(event.key) == ",":
                                     self.text += "<"
 
-                            if (
-                                len(self.text) - last_line_pos < 35
-                            ):  # Checks if the difference between
+                            if len(self.text) - last_line_pos < 35:
                                 pass
                             else:
                                 self.text += "\n"
