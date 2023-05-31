@@ -52,9 +52,22 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     //     1. Would be nice to only use AVX2 stuff for the single pixel stuff.
     //     2. Get inspiration from Starbuck's AVX2 macros
 
-    int pixel_length = src->w * src->h;
-    int remaining_pixels = pixel_length % 8;
-    int perfect_8_pixels = (pixel_length - remaining_pixels) / 8;
+    int s_row_skip = (src->pitch -
+        src->w * src->format->BytesPerPixel) >> 2;
+
+    // generate number of batches of pixels we need to loop through
+    int pixel_batch_length = src->w * src->h;
+    int num_batches = 1;
+    if (s_row_skip > 0){
+        pixel_batch_length = src->w;
+        num_batches = src->h;
+    }
+
+    int remaining_pixels = pixel_batch_length % 8;
+    int perfect_8_pixels = (pixel_batch_length - remaining_pixels) / 8;
+
+    int perfect_8_pixels_batch_counter = perfect_8_pixels;
+    int remaining_pixels_batch_counter = remaining_pixels;
 
     Uint32 *srcp = (Uint32 *)src->pixels;
     Uint32 *dstp = (Uint32 *)newsurf->pixels;
@@ -102,70 +115,76 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     mm256_rgb_mask = _mm256_set1_epi32(rgbmask);
     mm256_alpha_mask = _mm256_set1_epi32(amask);
 
-    while (perfect_8_pixels--) {
-        mm256_src = _mm256_loadu_si256(srcp256);
-        mm256_alpha = _mm256_subs_epu8(mm256_src, mm256_rgb_mask);
+    while(num_batches--){
+        perfect_8_pixels_batch_counter = perfect_8_pixels;
+        remaining_pixels_batch_counter = remaining_pixels;
+        while (perfect_8_pixels_batch_counter--) {
+            mm256_src = _mm256_loadu_si256(srcp256);
+            mm256_alpha = _mm256_subs_epu8(mm256_src, mm256_rgb_mask);
 
-        mm256_srcA = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_A);
-        mm256_srcB = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_B);
+            mm256_srcA = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_A);
+            mm256_srcB = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_B);
 
-        mm256_dstA =
-            _mm256_shuffle_epi8(mm256_rgb_weights, mm256_shuff_mask_A);
-        mm256_dstB =
-            _mm256_shuffle_epi8(mm256_rgb_weights, mm256_shuff_mask_B);
+            mm256_dstA =
+                _mm256_shuffle_epi8(mm256_rgb_weights, mm256_shuff_mask_A);
+            mm256_dstB =
+                _mm256_shuffle_epi8(mm256_rgb_weights, mm256_shuff_mask_B);
 
-        mm256_dstA = _mm256_mullo_epi16(mm256_srcA, mm256_dstA);
-        mm256_dstA = _mm256_add_epi16(mm256_dstA, mm256_two_five_fives);
-        mm256_dstA = _mm256_srli_epi16(mm256_dstA, 8);
+            mm256_dstA = _mm256_mullo_epi16(mm256_srcA, mm256_dstA);
+            mm256_dstA = _mm256_add_epi16(mm256_dstA, mm256_two_five_fives);
+            mm256_dstA = _mm256_srli_epi16(mm256_dstA, 8);
 
-        mm256_dstB = _mm256_mullo_epi16(mm256_srcB, mm256_dstB);
-        mm256_dstB = _mm256_add_epi16(mm256_dstB, mm256_two_five_fives);
-        mm256_dstB = _mm256_srli_epi16(mm256_dstB, 8);
+            mm256_dstB = _mm256_mullo_epi16(mm256_srcB, mm256_dstB);
+            mm256_dstB = _mm256_add_epi16(mm256_dstB, mm256_two_five_fives);
+            mm256_dstB = _mm256_srli_epi16(mm256_dstB, 8);
 
-        mm256_dst = _mm256_hadd_epi16(mm256_dstA, mm256_dstB);
-        mm256_dst =
-            _mm256_add_epi16(mm256_dst, _mm256_srli_epi32(mm256_dst, 16));
-        mm256_dst = _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_gray);
+            mm256_dst = _mm256_hadd_epi16(mm256_dstA, mm256_dstB);
+            mm256_dst =
+                _mm256_add_epi16(mm256_dst, _mm256_srli_epi32(mm256_dst, 16));
+            mm256_dst = _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_gray);
 
-        mm256_dst = _mm256_subs_epu8(mm256_dst, mm256_alpha_mask);
-        mm256_dst = _mm256_adds_epu8(mm256_dst, mm256_alpha);
+            mm256_dst = _mm256_subs_epu8(mm256_dst, mm256_alpha_mask);
+            mm256_dst = _mm256_adds_epu8(mm256_dst, mm256_alpha);
 
-        _mm256_storeu_si256(dstp256, mm256_dst);
+            _mm256_storeu_si256(dstp256, mm256_dst);
 
-        srcp256++;
-        dstp256++;
-    }
-    srcp = (Uint32 *)srcp256;
-    dstp = (Uint32 *)dstp256;
-    while (remaining_pixels--) {
-        mm_src = _mm_cvtsi32_si128(*srcp);
-        /*mm_src = 0x000000000000000000000000AARRGGBB*/
-        mm_alpha = _mm_subs_epu8(mm_src, mm_rgb_mask);
-        /*mm_src = 0x00000000000000000000000000RRGGBB*/
-        mm_src = _mm_unpacklo_epi8(mm_src, mm_zero);
-        /*mm_src = 0x0000000000000000000000RR00GG00BB*/
+            srcp256++;
+            dstp256++;
+        }
+        srcp = (Uint32 *)srcp256;
+        dstp = (Uint32 *)dstp256;
+        while (remaining_pixels_batch_counter--) {
+            mm_src = _mm_cvtsi32_si128(*srcp);
+            /*mm_src = 0x000000000000000000000000AARRGGBB*/
+            mm_alpha = _mm_subs_epu8(mm_src, mm_rgb_mask);
+            /*mm_src = 0x00000000000000000000000000RRGGBB*/
+            mm_src = _mm_unpacklo_epi8(mm_src, mm_zero);
+            /*mm_src = 0x0000000000000000000000RR00GG00BB*/
 
-        mm_dst = _mm_mullo_epi16(mm_src, mm_rgb_weights);
-        /*mm_dst = 0x00000000000000000000RRRRGGGGBBBB*/
-        mm_dst = _mm_add_epi16(mm_dst, mm_two_five_fives);
-        /*mm_dst = 0x00000000000000000000RRRRGGGGBBBB*/
-        mm_dst = _mm_srli_epi16(mm_dst, 8);
-        /*mm_dst = 0x0000000000000000000000RR00GG00BB*/
+            mm_dst = _mm_mullo_epi16(mm_src, mm_rgb_weights);
+            /*mm_dst = 0x00000000000000000000RRRRGGGGBBBB*/
+            mm_dst = _mm_add_epi16(mm_dst, mm_two_five_fives);
+            /*mm_dst = 0x00000000000000000000RRRRGGGGBBBB*/
+            mm_dst = _mm_srli_epi16(mm_dst, 8);
+            /*mm_dst = 0x0000000000000000000000RR00GG00BB*/
 
-        mm_dst = _mm_hadd_epi16(mm_dst, mm_dst);  // This requires SSE3
-        mm_dst = _mm_shufflelo_epi16(_mm_hadd_epi16(mm_dst, mm_dst),
-                                     _MM_SHUFFLE(0, 0, 0, 0));
-        /*mm_dst = 0x000000000000000000GrGr00GrGr00GrGr00GrGr*/
+            mm_dst = _mm_hadd_epi16(mm_dst, mm_dst);  // This requires SSE3
+            mm_dst = _mm_shufflelo_epi16(_mm_hadd_epi16(mm_dst, mm_dst),
+                                         _MM_SHUFFLE(0, 0, 0, 0));
+            /*mm_dst = 0x000000000000000000GrGr00GrGr00GrGr00GrGr*/
 
-        mm_dst = _mm_packus_epi16(mm_dst, mm_dst);
-        /*mm_dst = 0x000000000000000000000000GrGrGrGrGrGrGrGr*/
-        mm_dst = _mm_subs_epu8(mm_dst, mm_alpha_mask);
-        mm_dst = _mm_add_epi16(mm_dst, mm_alpha);
-        /*mm_dst = 0x000000000000000000000000AAGrGrGrGrGrGr*/
-        *dstp = _mm_cvtsi128_si32(mm_dst);
-        /*dstp = 0xAARRGGBB*/
-        srcp++;
-        dstp++;
+            mm_dst = _mm_packus_epi16(mm_dst, mm_dst);
+            /*mm_dst = 0x000000000000000000000000GrGrGrGrGrGrGrGr*/
+            mm_dst = _mm_subs_epu8(mm_dst, mm_alpha_mask);
+            mm_dst = _mm_add_epi16(mm_dst, mm_alpha);
+            /*mm_dst = 0x000000000000000000000000AAGrGrGrGrGrGr*/
+            *dstp = _mm_cvtsi128_si32(mm_dst);
+            /*dstp = 0xAARRGGBB*/
+            srcp++;
+            dstp++;
+        }
+        srcp += s_row_skip;
+        srcp256 = (__m256i *)srcp;
     }
 }
 #else
