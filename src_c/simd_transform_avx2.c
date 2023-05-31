@@ -52,13 +52,12 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     //     1. Would be nice to only use AVX2 stuff for the single pixel stuff.
     //     2. Get inspiration from Starbuck's AVX2 macros
 
-    int s_row_skip = (src->pitch -
-        src->w * src->format->BytesPerPixel) >> 2;
+    int s_row_skip = (src->pitch - src->w * src->format->BytesPerPixel) >> 2;
 
     // generate number of batches of pixels we need to loop through
     int pixel_batch_length = src->w * src->h;
     int num_batches = 1;
-    if (s_row_skip > 0){
+    if (s_row_skip > 0) {
         pixel_batch_length = src->w;
         num_batches = src->h;
     }
@@ -115,7 +114,7 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     mm256_rgb_mask = _mm256_set1_epi32(rgbmask);
     mm256_alpha_mask = _mm256_set1_epi32(amask);
 
-    while(num_batches--){
+    while (num_batches--) {
         perfect_8_pixels_batch_counter = perfect_8_pixels;
         remaining_pixels_batch_counter = remaining_pixels;
         while (perfect_8_pixels_batch_counter--) {
