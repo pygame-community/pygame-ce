@@ -2077,32 +2077,6 @@ clamp_4
 
 #endif
 
-void
-grayscale_non_simd(SDL_Surface *src, SDL_Surface *newsurf)
-{
-    int x, y;
-    for (y = 0; y < src->h; y++) {
-        for (x = 0; x < src->w; x++) {
-            Uint32 pixel;
-            Uint8 *pix;
-            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format,
-                        pix);
-            Uint8 r, g, b, a;
-            SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
-
-            // RGBA to GRAY formula used by OpenCV
-            Uint8 grayscale_pixel =
-                (Uint8)((((76 * r) + 255) >> 8) + (((150 * g) + 255) >> 8) +
-                        (((29 * b) + 255) >> 8));
-            Uint32 new_pixel =
-                SDL_MapRGBA(newsurf->format, grayscale_pixel, grayscale_pixel,
-                            grayscale_pixel, a);
-            SURF_SET_AT(new_pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
-                        newsurf->format, pix);
-        }
-    }
-}
-
 SDL_Surface *
 grayscale(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
 {
@@ -2130,26 +2104,26 @@ grayscale(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
             "Source and destination surfaces need the same format."));
     }
 
-    if (src->format->BytesPerPixel == 4 &&
-        src->format->Rmask == newsurf->format->Rmask &&
-        src->format->Gmask == newsurf->format->Gmask &&
-        src->format->Bmask == newsurf->format->Bmask &&
-        (src->pitch % src->format->BytesPerPixel == 0) &&
-        (newsurf->pitch == (newsurf->w * newsurf->format->BytesPerPixel))) {
-        if (pg_has_avx2()) {
-            grayscale_avx2(src, newsurf);
+    int x, y;
+    for (y = 0; y < src->h; y++) {
+        for (x = 0; x < src->w; x++) {
+            Uint32 pixel;
+            Uint8 *pix;
+            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format,
+                        pix);
+            Uint8 r, g, b, a;
+            SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
+
+            // RGBA to GRAY formula used by OpenCV
+            Uint8 grayscale_pixel =
+                (Uint8)((((76 * r) + 255) >> 8) + (((150 * g) + 255) >> 8) +
+                        (((29 * b) + 255) >> 8));
+            Uint32 new_pixel =
+                SDL_MapRGBA(newsurf->format, grayscale_pixel, grayscale_pixel,
+                            grayscale_pixel, a);
+            SURF_SET_AT(new_pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
+                        newsurf->format, pix);
         }
-#if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
-        if (pg_HasSSE_NEON()) {
-            grayscale_sse2(src, newsurf);
-        }
-        else {
-            grayscale_non_simd(src, newsurf);
-        }
-#endif  // defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
-    }
-    else {
-        grayscale_non_simd(src, newsurf);
     }
 
     SDL_UnlockSurface(newsurf);
