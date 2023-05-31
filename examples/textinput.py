@@ -20,7 +20,7 @@ class Game:
         self.small_font = pygame.font.SysFont("Arial", 22)  # Creates the small font
         self.holding_shift = False
 
-    def handle_events(self):
+    def handle_events(self, y_pos):
         # Handles the events
         for event in pygame.event.get():
             if event.type == KEYUP:
@@ -35,93 +35,6 @@ class Game:
 
                 if event.key == K_LSHIFT:
                     self.holding_shift = True
-                else:
-                    if pygame.key.name(event.key) in self.char_list:
-                        if not "\n" in self.text:
-                            if not self.holding_shift:
-                                self.text = self.text + pygame.key.name(event.key)
-                            else:
-                                if pygame.key.name(event.key) not in list(
-                                    "0123456789/.,"
-                                ):
-                                    self.text = (
-                                        self.text + pygame.key.name(event.key).upper()
-                                    )
-                                elif pygame.key.name(event.key) == "1":
-                                    self.text += "!"
-                                elif pygame.key.name(event.key) == "2":
-                                    self.text += "@"
-                                elif pygame.key.name(event.key) == "3":
-                                    self.text += "#"
-                                elif pygame.key.name(event.key) == "4":
-                                    self.text += "$"
-                                elif pygame.key.name(event.key) == "5":
-                                    self.text += "%"
-                                elif pygame.key.name(event.key) == "6":
-                                    self.text += "^"
-                                elif pygame.key.name(event.key) == "7":
-                                    self.text += "&"
-                                elif pygame.key.name(event.key) == "8":
-                                    self.text += "*"
-                                elif pygame.key.name(event.key) == "9":
-                                    self.text += "("
-                                elif pygame.key.name(event.key) == "0":
-                                    self.text += ")"
-                                elif pygame.key.name(event.key) == "/":
-                                    self.text += "?"
-                                elif pygame.key.name(event.key) == ".":
-                                    self.text += ">"
-                                elif pygame.key.name(event.key) == ",":
-                                    self.text += "<"
-                            if len(self.text) < 30:
-                                pass
-                            else:
-                                self.text += "\n"
-                        else:
-                            for i, chr in enumerate(self.text):
-                                if chr == "\n":
-                                    last_line_pos = i
-
-                            if not self.holding_shift:
-                                self.text = self.text + pygame.key.name(event.key)
-                            else:
-                                if pygame.key.name(event.key) not in list(
-                                    "0123456789/.,"
-                                ):
-                                    self.text = (
-                                        self.text + pygame.key.name(event.key).upper()
-                                    )
-                                elif pygame.key.name(event.key) == "1":
-                                    self.text += "!"
-                                elif pygame.key.name(event.key) == "2":
-                                    self.text += "@"
-                                elif pygame.key.name(event.key) == "3":
-                                    self.text += "#"
-                                elif pygame.key.name(event.key) == "4":
-                                    self.text += "$"
-                                elif pygame.key.name(event.key) == "5":
-                                    self.text += "%"
-                                elif pygame.key.name(event.key) == "6":
-                                    self.text += "^"
-                                elif pygame.key.name(event.key) == "7":
-                                    self.text += "&"
-                                elif pygame.key.name(event.key) == "8":
-                                    self.text += "*"
-                                elif pygame.key.name(event.key) == "9":
-                                    self.text += "("
-                                elif pygame.key.name(event.key) == "0":
-                                    self.text += ")"
-                                elif pygame.key.name(event.key) == "/":
-                                    self.text += "?"
-                                elif pygame.key.name(event.key) == ".":
-                                    self.text += ">"
-                                elif pygame.key.name(event.key) == ",":
-                                    self.text += "<"
-
-                            if len(self.text) - last_line_pos < 35:
-                                pass
-                            else:
-                                self.text += "\n"
 
                 if event.key == K_RETURN:
                     self.text = ""
@@ -137,6 +50,18 @@ class Game:
                         new_text += c
 
                     self.text = new_text
+            if event.type == TEXTINPUT:
+                last_line_pos = 0
+                for i, chr in enumerate(self.text):
+                    if chr == "\n":
+                        last_line_pos = i
+
+                if y_pos < self.SCREEN_HEIGHT - 100:
+                    self.text += event.text
+                if len(self.text) - last_line_pos < 35:
+                    pass
+                else:
+                    self.text += "\n"
 
             if event.type == QUIT:
                 pygame.quit()
@@ -145,6 +70,16 @@ class Game:
     def update(self):
         message_spacing = 40
         while True:
+            self.input_img = self.font.render(  # creates the font surface
+                "> "
+                + self.text
+                + ["|", ""][
+                    int(time.time() * 2 % 2)
+                ],  # "> " Makes the small little arrow, ["|", ""][int(time.time() * 2 % 2)] makes the cursor that you see when typing text
+                False,
+                (25, 255, 100),
+            )
+            y_pos = self.input_img.get_height() + message_spacing
             self.screen.fill((0, 0, 0))
             self.input_img = self.font.render(  # creates the font surface
                 "> "
@@ -157,25 +92,21 @@ class Game:
             )
 
             msg_imgs = []
-            y_pos = self.input_img.get_height() + message_spacing
+
             for msg in self.chat_list:
                 msg_imgs.append(self.small_font.render(msg, False, (25, 255, 100)))
 
             # checks if the y position is bigger than 500, if its bigger than 500, it will remove the first three items of the chat list.
-            if y_pos > 500:
-                for i in range(3):
-                    self.chat_list.pop(i)
-                y_pos = self.input_img.get_height() + 40
 
-            # checks for the events
-            self.handle_events()
-
+            self.handle_events(y_pos)  # checks for the events
             for msg_img in msg_imgs:
-                self.screen.blit(
-                    msg_img, (self.SCREEN_WIDTH // 2 - msg_img.get_width() // 2, y_pos)
-                )
+                self.screen.blit(msg_img, (0, y_pos))
                 y_pos += msg_img.get_height()
 
+            if y_pos > self.SCREEN_HEIGHT:
+                for i in range(3):
+                    if len(self.chat_list) > 0:
+                        self.chat_list.pop(i)
             self.screen.blit(self.input_img, (0, 0))
             pygame.display.update()
 
