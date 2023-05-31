@@ -80,13 +80,13 @@ body {
     text-align: left;
     border-style: none;
 }
-body.dark-theme {
-    color: {{ theme_dark_textcolor }};
-}
 html {
     background-color: {{ theme_bgcolor }};
 }
-html:has( body.dark-theme) {
+html.dark-theme body {
+    color: {{ theme_dark_textcolor }};
+}
+html:has(body.dark-theme) {
     background-color: {{ theme_dark_bgcolor }};
 }
 
