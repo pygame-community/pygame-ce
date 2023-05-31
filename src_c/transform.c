@@ -2115,9 +2115,7 @@ grayscale(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
             SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
 
             // RGBA to GRAY formula used by OpenCV
-            Uint8 grayscale_pixel =
-                (Uint8)((((76 * r) + 255) >> 8) + (((150 * g) + 255) >> 8) +
-                        (((29 * b) + 255) >> 8));
+            Uint8 grayscale_pixel = (Uint8)(0.299 * r + 0.587 * g + 0.114 * b);
             Uint32 new_pixel =
                 SDL_MapRGBA(newsurf->format, grayscale_pixel, grayscale_pixel,
                             grayscale_pixel, a);
