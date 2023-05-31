@@ -2234,10 +2234,11 @@ grayscale(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
         if (pg_HasSSE_NEON()) {
             grayscale_sse2(src, newsurf);
         }
+#endif  // defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
         else {
             grayscale_non_simd(src, newsurf);
         }
-#endif  // defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
+
     }
     else {
         grayscale_non_simd(src, newsurf);
