@@ -229,6 +229,16 @@ class TransformModuleTest(unittest.TestCase):
         self.assertEqual(pygame.transform.average_color(dest)[1], 76)
         self.assertEqual(pygame.transform.average_color(dest)[2], 72)
 
+        super_surf = pygame.Surface((64, 64), depth=32)
+        super_surf.fill((255, 255, 255))
+        super_surf.fill((255, 0, 0), pygame.Rect(0, 0, 32, 32))
+        sub_surf = super_surf.subsurface(pygame.Rect(0, 0, 32, 32))
+
+        grey_sub_surf = pygame.transform.grayscale(sub_surf)
+        self.assertEqual(pygame.transform.average_color(grey_sub_surf)[0], 76)
+        self.assertEqual(pygame.transform.average_color(grey_sub_surf)[0], 76)
+        self.assertEqual(pygame.transform.average_color(grey_sub_surf)[0], 76)
+
     def test_threshold__honors_third_surface(self):
         # __doc__ for threshold as of Tue 07/15/2008
 
