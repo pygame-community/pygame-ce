@@ -1,235 +1,115 @@
-#!/usr/bin/env python
-""" pygame.examples.textinput
-
-A little "console" where you can write in text.
-
-Shows how to use the TEXTEDITING and TEXTINPUT events.
-"""
-import sys
-import os
-
 import pygame
-import pygame
-import pygame.freetype as freetype
+from pygame.locals import *
+import time
 
-# This environment variable is important
-# If not added the candidate list will not show
-os.environ["SDL_IME_SHOW_UI"] = "1"
-
-
-class TextInput:
-    """
-    A simple TextInput class that allows you to receive inputs in pygame.
-    """
-
-    # Add font name for each language,
-    # otherwise some text can't be correctly displayed.
-    FONT_NAMES = [
-        "notosanscjktcregular",
-        "notosansmonocjktcregular",
-        "notosansregular",
-        "microsoftjhenghei",
-        "microsoftyahei",
-        "msgothic",
-        "msmincho",
-        "unifont",
-        "Arial",
-    ]
-
-    def __init__(
-        self, prompt: str, pos, screen_dimensions, print_event: bool, text_color="white"
-    ) -> None:
-        self.prompt = prompt
-        self.print_event = print_event
-        # position of chatlist and chatbox
-        self.CHAT_LIST_POS = pygame.Rect(
-            (pos[0], pos[1] + 50), (screen_dimensions[0], 400)
-        )
-        self.CHAT_BOX_POS = pygame.Rect(pos, (screen_dimensions[1], 40))
-        self.CHAT_LIST_MAXSIZE = 20
-
-        self._ime_editing = False
-        self._ime_text = ""
-        self._ime_text_pos = 0
-        self._ime_editing_text = ""
-        self._ime_editing_pos = 0
-        self.chat_list = []
-
-        # Freetype
-        # The font name can be a comma separated list
-        # of font names to search for.
-        self.FONT_NAMES = ",".join(str(x) for x in self.FONT_NAMES)
-        self.font = freetype.SysFont(self.FONT_NAMES, 24)
-        self.font_small = freetype.SysFont(self.FONT_NAMES, 16)
-        self.text_color = text_color
-
-        print("Using font: " + self.font.name)
-
-    def update(self, events) -> None:
-        """
-        Updates the text input widget
-        """
-        for event in events:
-            if event.type == pygame.KEYDOWN:
-                if self.print_event:
-                    print(event)
-
-                if self._ime_editing:
-                    if len(self._ime_editing_text) == 0:
-                        self._ime_editing = False
-                    continue
-
-                if event.key == pygame.K_BACKSPACE:
-                    if len(self._ime_text) > 0 and self._ime_text_pos > 0:
-                        self._ime_text = (
-                            self._ime_text[0 : self._ime_text_pos - 1]
-                            + self._ime_text[self._ime_text_pos :]
-                        )
-                        self._ime_text_pos = max(0, self._ime_text_pos - 1)
-
-                elif event.key == pygame.K_DELETE:
-                    self._ime_text = (
-                        self._ime_text[0 : self._ime_text_pos]
-                        + self._ime_text[self._ime_text_pos + 1 :]
-                    )
-                elif event.key == pygame.K_LEFT:
-                    self._ime_text_pos = max(0, self._ime_text_pos - 1)
-                elif event.key == pygame.K_RIGHT:
-                    self._ime_text_pos = min(
-                        len(self._ime_text), self._ime_text_pos + 1
-                    )
-                # Handle ENTER key
-                elif event.key in [pygame.K_RETURN, pygame.K_KP_ENTER]:
-                    # Block if we have no text to append
-                    if len(self._ime_text) == 0:
-                        continue
-
-                    # Append chat list
-                    self.chat_list.append(self._ime_text)
-                    if len(self.chat_list) > self.CHAT_LIST_MAXSIZE:
-                        self.chat_list.pop(0)
-                    self._ime_text = ""
-                    self._ime_text_pos = 0
-
-            elif event.type == pygame.TEXTEDITING:
-                if self.print_event:
-                    print(event)
-                self._ime_editing = True
-                self._ime_editing_text = event.text
-                self._ime_editing_pos = event.start
-
-            elif event.type == pygame.TEXTINPUT:
-                if self.print_event:
-                    print(event)
-                self._ime_editing = False
-                self._ime_editing_text = ""
-                self._ime_text = (
-                    self._ime_text[0 : self._ime_text_pos]
-                    + event.text
-                    + self._ime_text[self._ime_text_pos :]
-                )
-                self._ime_text_pos += len(event.text)
-
-    def draw(self, screen: pygame.Surface) -> None:
-        """
-        Draws the text input widget onto the provided surface
-        """
-
-        # Chat List updates
-        chat_height = self.CHAT_LIST_POS.height / self.CHAT_LIST_MAXSIZE
-        for i, chat in enumerate(self.chat_list):
-            self.font_small.render_to(
-                screen,
-                (self.CHAT_LIST_POS.x, self.CHAT_LIST_POS.y + i * chat_height),
-                chat,
-                self.text_color,
-            )
-
-        # Chat box updates
-        start_pos = self.CHAT_BOX_POS.copy()
-        ime_text_l = self.prompt + self._ime_text[0 : self._ime_text_pos]
-        ime_text_m = (
-            self._ime_editing_text[0 : self._ime_editing_pos]
-            + "|"
-            + self._ime_editing_text[self._ime_editing_pos :]
-        )
-        ime_text_r = self._ime_text[self._ime_text_pos :]
-
-        rect_text_l = self.font.render_to(
-            screen, start_pos, ime_text_l, self.text_color
-        )
-        start_pos.x += rect_text_l.width
-
-        # Editing texts should be underlined
-        rect_text_m = self.font.render_to(
-            screen,
-            start_pos,
-            ime_text_m,
-            self.text_color,
-            None,
-            freetype.STYLE_UNDERLINE,
-        )
-        start_pos.x += rect_text_m.width
-        self.font.render_to(screen, start_pos, ime_text_r, self.text_color)
+pygame.init()
 
 
 class Game:
-    """
-    A class that handles the game's events, mainloop etc.
-    """
-
-    # CONSTANTS
-    # Frames per second, the general speed of the program
-    FPS = 50
-    # Size of window
-    SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
-    BG_COLOR = "black"
-
-    def __init__(self, caption: str) -> None:
-        # Initialize
-        pygame.init()
-        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
-        pygame.display.set_caption(caption)
-        self.clock = pygame.Clock()
-
-        # Text input
-        # Set to true or add 'showevent' in argv to see IME and KEYDOWN events
-        self.print_event = "showevent" in sys.argv
-        self.text_input = TextInput(
-            prompt="> ",
-            pos=(0, 20),
-            screen_dimensions=(self.SCREEN_WIDTH, self.SCREEN_HEIGHT),
-            print_event=self.print_event,
-            text_color="green",
+    def __init__(self):
+        self.screen = pygame.display.set_mode((700, 500))
+        pygame.display.set_caption("Text Input")
+        self.pos = []
+        self.text = ""
+        self.SCREEN_WIDTH, self.SCREEN_HEIGHT = 700, 500
+        self.chat_list = []
+        self.char_list = list('abcdefghijklmnopqrstuvwxyz0123456789-=[]"') + list(
+            "';,./"
         )
+        self.font = pygame.font.SysFont("Arial", 32)  # Creates the normal font
+        self.small_font = pygame.font.SysFont("Arial", 22)  # Creates the small font
+        self.holding_shift = False
 
-    def main_loop(self) -> None:
-        pygame.key.start_text_input()
-        input_rect = pygame.Rect(80, 80, 320, 40)
-        pygame.key.set_text_input_rect(input_rect)
+    def handle_events(self, y_pos):
+        # Handles the events
+        for event in pygame.event.get():
+            if event.type == KEYUP:
+                if event.key == K_LSHIFT:
+                    self.holding_shift = False
+            if event.type == KEYDOWN:
+                if event.key == K_RETURN:
+                    self.chat_list.append(self.text)
 
+                if event.key == K_SPACE:
+                    self.text += " "
+
+                if event.key == K_LSHIFT:
+                    self.holding_shift = True
+
+                if event.key == K_RETURN:
+                    self.text = ""
+                if event.key == K_BACKSPACE:
+                    new_text_list = list(self.text)
+                    new_text = ""
+
+                    for i, char in enumerate(new_text_list):
+                        if i == len(new_text_list) - 1:
+                            new_text_list.pop(i)
+
+                    for c in new_text_list:
+                        new_text += c
+
+                    self.text = new_text
+            if event.type == TEXTINPUT:
+                last_line_pos = 0
+                for i, chr in enumerate(self.text):
+                        if chr == "\n":
+                            last_line_pos = i
+            
+                if y_pos < self.SCREEN_HEIGHT-100:
+                    self.text += event.text
+                if len(self.text) - last_line_pos < 35:
+                    pass
+                else:
+                    self.text += "\n"
+
+            if event.type == QUIT:
+                pygame.quit()
+                exit()
+
+    def update(self):
+        message_spacing = 40
         while True:
-            events = pygame.event.get()
-            for event in events:
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    return
+            self.screen.fill((0, 0, 0))
+            self.input_img = self.font.render(  # creates the font surface
+                "> "
+                + self.text
+                + ["|", ""][
+                    int(time.time() * 2 % 2)
+                ],  # "> " Makes the small little arrow, ["|", ""][int(time.time() * 2 % 2)] makes the cursor that you see when typing text
+                False,
+                (25, 255, 100),
+            )
+            y_pos = self.input_img.get_height()+message_spacing
+            msg_imgs = []
+            
+            for msg in self.chat_list:
+                msg_imgs.append(self.small_font.render(msg, False, (25, 255, 100)))
+            
+            # checks if the y position is bigger than 500, if its bigger than 500, it will remove the first three items of the chat list.
+            
 
-            self.text_input.update(events)
 
-            # Screen updates
-            self.screen.fill(self.BG_COLOR)
-            self.text_input.draw(self.screen)
+           
+            self.handle_events(y_pos) #checks for the events
+            for msg_img in msg_imgs:
+                self.screen.blit(
+                    msg_img, (10, y_pos)
+                )
+                y_pos += msg_img.get_height()
+            if y_pos > self.SCREEN_HEIGHT:
+                for i in range(3):
+               
+                    if len(self.chat_list) > 0:
+                        self.chat_list.pop(i)
 
+            
+            
+
+            self.screen.blit(self.input_img, (0, 0))
             pygame.display.update()
-            self.clock.tick(self.FPS)
-
-
-# Main loop process
-def main():
-    game = Game("Text Input Example")
-    game.main_loop()
 
 
 if __name__ == "__main__":
-    main()
+    game = Game()
+    game.update()
