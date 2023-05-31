@@ -643,7 +643,7 @@ font_getter_name(PyObject *self, void *closure)
     const char *font_name = TTF_FontFaceFamilyName(font);
 
     if (font_name) {
-        PyUnicode_FromString(font_name);
+        return PyUnicode_FromString(font_name);
     }
     else {
         return RAISE(pgExc_SDLError, TTF_GetError());
