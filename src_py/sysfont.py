@@ -468,9 +468,9 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
             if len(name) > 1:
                 names = "', '".join(name)
                 warnings.warn(
-                    f"None of the specified system fonts "
+                    "None of the specified system fonts "
                     f"('{names}') could be found. "
-                    f"Using the default font instead."
+                    "Using the default font instead."
                 )
             else:
                 # Identifies the closest matches to the font provided by
@@ -479,7 +479,7 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
                     _simplename(name[0]), itertools.chain(Sysfonts, Sysalias), 3
                 )
                 if matches:
-                    match_text = f"Did you mean: '" + "', '".join(matches) + "'? "
+                    match_text = "Did you mean: '" + "', '".join(matches) + "'? "
                 else:
                     match_text = ""
 
