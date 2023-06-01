@@ -100,7 +100,7 @@ def drawhistory(win, history):
     img = font.render("Event History Area", 1, (155, 155, 155), (0, 0, 0))
     win.blit(img, (2, 132))
 
-    img = font.render(history, 1, (50, 200, 50), (0, 0, 0))
+    img = font.render(history, 1, (50, 200, 50), (0, 0, 0), wraplength=640)
     win.blit(img, (10, 250))
 
 
