@@ -355,12 +355,6 @@ imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwarg)
     return RAISE(pgExc_SDLError,
                  "loading animation requires SDL_image 2.6.0+");
 }
-
-static PyObject *
-imageext_save_animation(PyObject *self, PyObject *arg, PyObject *kwarg)
-{
-    return RAISE(pgExc_SDLError, "saving animation requires SDL_image 2.6.0+");
-}
 #endif  // SDL_IMAGE_VERSION_ATLEAST(2, 6, 0)
 
 static PyMethodDef _imageext_methods[] = {
