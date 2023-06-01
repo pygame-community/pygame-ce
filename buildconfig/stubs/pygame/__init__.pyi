@@ -41,7 +41,12 @@ from pygame import (
 )
 
 from .rect import Rect as Rect, FRect as FRect
-from .surface import Surface as Surface, SurfaceType as SurfaceType
+from .surface import (
+    Surface as Surface,
+    SurfaceType as SurfaceType,
+    AnimatedSurface as AnimatedSurface,
+)
+
 from .color import Color as Color
 from .pixelarray import PixelArray as PixelArray
 from .math import Vector2 as Vector2, Vector3 as Vector3

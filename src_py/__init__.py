@@ -209,7 +209,7 @@ except (ImportError, OSError):
 
 
 try:
-    from pygame.surface import Surface, SurfaceType
+    from pygame.surface import Surface, SurfaceType, AnimatedSurface
 except (ImportError, OSError):
 
     def Surface(size, flags, depth, masks):  # pylint: disable=unused-argument

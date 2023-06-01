@@ -47,7 +47,17 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle);
 
 static PyObject *extloadobj = NULL;
 static PyObject *extsaveobj = NULL;
+static PyObject *animloadobj = NULL;
 static PyObject *extverobj = NULL;
+
+static PyObject *
+image_load_animation(PyObject *self, PyObject *arg, PyObject *kwarg)
+{
+    if (!animloadobj)
+        return RAISE(PyExc_NotImplementedError,
+                     "loading animation is not available");
+    return PyObject_Call(animloadobj, arg, kwarg);
+}
 
 static const char *
 find_extension(const char *fullname)
@@ -1659,11 +1669,14 @@ static PyMethodDef _image_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_LOADEXTENDED},
     {"load", (PyCFunction)image_load, METH_VARARGS | METH_KEYWORDS,
      DOC_IMAGE_LOAD},
+    {"load_animation", (PyCFunction)image_load_animation,
+     METH_VARARGS | METH_KEYWORDS, "docs_needed"},
 
     {"save_extended", (PyCFunction)image_save_extended,
      METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_SAVEEXTENDED},
     {"save", (PyCFunction)image_save, METH_VARARGS | METH_KEYWORDS,
      DOC_IMAGE_SAVE},
+
     {"get_extended", (PyCFunction)image_get_extended, METH_NOARGS,
      DOC_IMAGE_GETEXTENDED},
     {"get_sdl_image_version", (PyCFunction)image_get_sdl_image_version,
@@ -1727,6 +1740,10 @@ MODINIT_DEFINE(image)
         }
         extsaveobj = PyObject_GetAttrString(extmodule, "save_extended");
         if (!extsaveobj) {
+            goto error;
+        }
+        animloadobj = PyObject_GetAttrString(extmodule, "load_animation");
+        if (!animloadobj) {
             goto error;
         }
         extverobj =
