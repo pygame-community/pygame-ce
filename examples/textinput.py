@@ -1,25 +1,45 @@
 import pygame
 from pygame.locals import *
+import os
 import time
+import sys
+"""
+A little "console" where you can write in text.
+Shows how to use the TEXTEDITING and TEXTINPUT events.
+"""
+
+
+
+os.environ["SDL_IME_SHOW_UI"] = "1"
 
 pygame.init()
 
 
 class Game:
     def __init__(self):
+        
         self.screen = pygame.display.set_mode((700, 500))
         pygame.display.set_caption("Text Input")
         self.pos = []
         self.text = ""
         self.SCREEN_WIDTH, self.SCREEN_HEIGHT = 700, 500
         self.chat_list = []
-        self.char_list = list('abcdefghijklmnopqrstuvwxyz0123456789-=[]"') + list(
-            "';,./"
-        )
-        self.font = pygame.font.SysFont("Arial", 32)  # Creates the normal font
-        self.small_font = pygame.font.SysFont("Arial", 22)  # Creates the small font
+    
         self.holding_shift = False
-
+    def get_fonts(self):
+        self.font_names = ["notosanscjktcregular",
+        "notosansmonocjktcregular",
+        "notosansregular",
+        "microsoftjhenghei",
+        "microsoftyahei",
+        "msgothic",
+        "msmincho",
+        "unifont",
+        "Arial",
+    ]
+        self.FONT_NAMES = ",".join(str(x) for x in self.font_names)
+        self.font = pygame.font.SysFont(self.font_names, 32)
+        self.small_font = pygame.font.SysFont(self.font_names, 32)
     def handle_events(self, y_pos):
         # Handles the events
         for event in pygame.event.get():
@@ -28,7 +48,9 @@ class Game:
                     self.holding_shift = False
             if event.type == KEYDOWN:
                 if event.key == K_RETURN:
-                    self.chat_list.append(self.text)
+                    if self.text != "":
+                        self.chat_list.append(self.text)
+                    self.text = ""
 
                 if event.key == K_SPACE:
                     self.text += " "
@@ -36,8 +58,7 @@ class Game:
                 if event.key == K_LSHIFT:
                     self.holding_shift = True
 
-                if event.key == K_RETURN:
-                    self.text = ""
+                
                 if event.key == K_BACKSPACE:
                     new_text_list = list(self.text)
                     new_text = ""
@@ -68,40 +89,27 @@ class Game:
                 exit()
 
     def update(self):
-        message_spacing = 40
+        message_spacing = 50
+        self.get_fonts()
         while True:
-            self.input_img = self.font.render(  # creates the font surface
-                "> "
-                + self.text
-                + ["|", ""][
-                    int(time.time() * 2 % 2)
-                ],  # "> " Makes the small little arrow, ["|", ""][int(time.time() * 2 % 2)] makes the cursor that you see when typing text
-                False,
-                (25, 255, 100),
-            )
+            self.input_img = self.font.render(">" + self.text + ["|", ""][int(time.time()%2)],False, (25, 255, 100))
+            
             y_pos = self.input_img.get_height() + message_spacing
             self.screen.fill((0, 0, 0))
-            self.input_img = self.font.render(  # creates the font surface
-                "> "
-                + self.text
-                + ["|", ""][
-                    int(time.time() * 2 % 2)
-                ],  # "> " Makes the small little arrow, ["|", ""][int(time.time() * 2 % 2)] makes the cursor that you see when typing text
-                False,
-                (25, 255, 100),
-            )
-
+            
             msg_imgs = []
 
             for msg in self.chat_list:
-                msg_imgs.append(self.small_font.render(msg, False, (25, 255, 100)))
+                msg_imgs.append(self.small_font.render(msg,False, (25, 255, 100)))
 
             # checks if the y position is bigger than 500, if its bigger than 500, it will remove the first three items of the chat list.
 
             self.handle_events(y_pos)  # checks for the events
             for msg_img in msg_imgs:
+               
                 self.screen.blit(msg_img, (0, y_pos))
                 y_pos += msg_img.get_height()
+                
 
             if y_pos > self.SCREEN_HEIGHT:
                 for i in range(3):
