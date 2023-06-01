@@ -27,6 +27,7 @@ class Game:
         self.holding_shift = False
 
     def get_fonts(self):
+        """Gets the fonts"""
         self.font_names = [
             "notosanscjktcregular",
             "notosansmonocjktcregular",
