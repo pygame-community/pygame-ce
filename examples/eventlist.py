@@ -101,7 +101,8 @@ def drawhistory(win, history):
     win.blit(img, (2, 132))
 
     img = font.render(history, 1, (50, 200, 50), (0, 0, 0))
-    win.blit(img, (10 , 250))
+    win.blit(img, (10, 250))
+
 
 def main():
     pygame.init()
