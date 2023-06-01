@@ -538,6 +538,9 @@ dt code span.pre {
 }
 .dark-theme dt code span.pre {
     color: {{ theme_dark_h1color }};
+}
+.dark-theme dt.title code span.pre {
+    color: {{ theme_dark_h1color }};
     font-size: 1.8rem;
 }
 
