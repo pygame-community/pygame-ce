@@ -1165,11 +1165,21 @@ chan_set_source_location(PyObject *self, PyObject *args)
 {
     int channelnum = pgChannel_AsInt(self);
     Sint16 angle;
+    float angle_f;
     Uint8 distance;
+    float distance_f;
     PyThreadState *_save;
 
-    if (!PyArg_ParseTuple(args, "hb", &angle, &distance))
+    if (!PyArg_ParseTuple(args, "ff", &angle_f, &distance_f))
         return NULL;
+
+    angle = (Sint16)roundf(fmodf(angle_f, 360));
+    distance_f = roundf(distance_f);
+    if (0 > distance_f || 256 <= distance_f) {
+        return RAISE(PyExc_ValueError,
+                     "distance out of range, expected (0, 255)");
+    }
+    distance = (Uint8)distance_f;
 
     MIXER_INIT_CHECK();
     _save = PyEval_SaveThread();

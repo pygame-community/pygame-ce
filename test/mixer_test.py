@@ -898,6 +898,13 @@ class ChannelTypeTest(unittest.TestCase):
 
         self.fail()
 
+    def test_set_source_location(self):
+        ch = mixer.Channel(0)
+        ch.set_source_location(-3.14, 6.25)
+        self.assertRaises(ValueError, lambda: ch.set_source_location(0, -1))
+        self.assertRaises(ValueError, lambda: ch.set_source_location(0, 256.0))
+        self.assertRaises(TypeError, lambda: ch.set_source_location("", 6.25))
+
 
 class ChannelInteractiveTest(unittest.TestCase):
     __tags__ = ["interactive"]
