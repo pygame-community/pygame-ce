@@ -22,7 +22,7 @@ pgAnimatedSurface_New(int nframes)
 }
 
 Py_ssize_t
-pgAnimatedSurface_GetIndexByTime(pgAnimatedSurfaceObject *anim, Uint64 time)
+pgAnimatedSurface_GetIndexByTime(pgAnimatedSurfaceObject *anim, Sint64 time)
 {
     int i;
     Py_ssize_t size = PyList_Size(anim->frame_list);
