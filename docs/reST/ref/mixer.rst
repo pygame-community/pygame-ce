@@ -480,10 +480,10 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
 
       .. ## Channel.fadeout ##
 
-   .. method:: set_position
+   .. method:: set_source_location
 
       | :sl:`set the position of a playing channel`
-      | :sg:`set_volume(angle,distance) -> None`
+      | :sg:`set_source_location(angle,distance) -> None`
 
       Set the position (angle, distance) of a playing channel.
 
@@ -493,7 +493,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
       
       .. versionadded:: 2.3.0
       
-      .. ## Channel.set_position ##
+      .. ## Channel.set_source_location ##
 
    .. method:: set_volume
 

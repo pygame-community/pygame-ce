@@ -911,13 +911,13 @@ class ChannelInteractiveTest(unittest.TestCase):
         filename = example_path(os.path.join("data", "house_lo.mp3"))
         self.snd = mixer.Sound(filename)
 
-    def test_set_position(self):
-        prompt("Please wear earphones before the test for set_position() starts")
+    def test_set_source_location(self):
+        prompt("Please wear earphones before the test for set_source_location() starts")
         ch = self.snd.play()
         angle = 0
         distance = 100
         while ch.get_busy():
-            ch.set_position(angle, distance)
+            ch.set_source_location(angle, distance)
             angle += 1
             angle %= 360
             time.sleep(0.01)
@@ -929,7 +929,7 @@ class ChannelInteractiveTest(unittest.TestCase):
         distance = 0
         direction = 0
         while ch.get_busy():
-            ch.set_position(angle, distance)
+            ch.set_source_location(angle, distance)
             if distance == 0 or distance == 255:
                 direction = 1 - direction
             distance += 1 if direction else -1

@@ -1161,7 +1161,7 @@ chan_unpause(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
-chan_set_position(PyObject *self, PyObject *args)
+chan_set_source_location(PyObject *self, PyObject *args)
 {
     int channelnum = pgChannel_AsInt(self);
     Sint16 angle;
@@ -1311,8 +1311,8 @@ static PyMethodDef channel_methods[] = {
     {"pause", (PyCFunction)chan_pause, METH_NOARGS, DOC_MIXER_CHANNEL_PAUSE},
     {"unpause", (PyCFunction)chan_unpause, METH_NOARGS,
      DOC_MIXER_CHANNEL_UNPAUSE},
-    {"set_position", chan_set_position, METH_VARARGS,
-     DOC_MIXER_CHANNEL_SETPOSITION},
+    {"set_source_location", chan_set_source_location, METH_VARARGS,
+     DOC_MIXER_CHANNEL_SETSOURCELOCATION},
     {"set_volume", chan_set_volume, METH_VARARGS, DOC_MIXER_CHANNEL_SETVOLUME},
     {"get_volume", (PyCFunction)chan_get_volume, METH_NOARGS,
      DOC_MIXER_CHANNEL_GETVOLUME},
