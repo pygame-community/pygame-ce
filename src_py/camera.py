@@ -153,8 +153,8 @@ def init(backend=None):
         _setup_backend(backend)
     except ImportError:
         emsg = f"Backend '{backend}' is not supported on your platform!"
-        if backend in ("opencv", "opencv-mac", "videocapture"):
-            dep = "vidcap" if backend == "videocapture" else "OpenCV"
+        if backend in ("opencv", "opencv-mac"):
+            dep = "OpenCV"
             emsg += (
                 f" Make sure you have '{dep}' installed to be able to use this backend"
             )

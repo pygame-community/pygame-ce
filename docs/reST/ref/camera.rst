@@ -83,8 +83,8 @@ The Bayer to ``RGB`` function is based on:
    There are two main differences among backends.
 
    The _camera backends are built in to pygame itself, and require no third
-   party imports. All the other backends do. For the OpenCV and VideoCapture
-   backends, those modules need to be installed on your system.
+   party imports. All the other backends do. For the OpenCV backend,
+   the module will need to be installed on your system.
 
    The other big difference is "camera enumeration." Some backends don't have
    a way to list out camera names, or even the number of cameras on the
