@@ -91,18 +91,22 @@ html:has(body.dark-theme) {
 }
 
 div.header {
+	style: block;
     padding: 0.5em;
     line-height: 1.2em;
+	position: fixed;
 }
 
 div.header > div {
     border: {{ theme_headerborder }};
     border-collapse: collapse;
     background-color: {{ theme_headerbgcolor }};
+    /* background-image: linear-gradient(to bottom right, {{ theme_headerbgcolor}}, {{ theme_bgcolor }}); */
 }
 .dark-theme div.header > div {
     background-color: {{ theme_dark_headerbgcolor }};
     border: {{ theme_dark_headerborder }};
+    /* background-image: linear-gradient(to bottom right, {{ theme_dark_headerbgcolor}}, {{ theme_dark_bgcolor }}); */
 }
 div.header .logo {
     background-color: {{ theme_logobgcolor }};
@@ -185,6 +189,7 @@ div.header .pagelinks a:hover {
 
 .pagelinks .top{
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
     align-items: center;
 }
@@ -203,7 +208,7 @@ div.header .pagelinks a:hover {
 input[type="text"]{
     background-color: {{ theme_searchbarbgcolor }};
     color: {{ theme_searchbartextcolor }};
-    font-size: 1rem;
+    font-size: 0.9rem;
 }
 .dark-theme input[type="text"]{
     background-color: {{ theme_dark_searchbarbgcolor }};
@@ -259,7 +264,7 @@ div.document {
     position: relative;
     top: 2px;
 }
-/* Ignore this, gets rid of minor positionaning difference*/
+/* Ignore this, gets rid of minor positioning difference*/
 .theme-icon[data-theme="light-theme"] {
     transform: translate(0, 2px);
 }
@@ -276,8 +281,21 @@ div.document {
 }
 
 .flex-container {
-    display: flex;
-    flex-direction: row;
+    display: block;
+    flex-direction: column;
+    align-content: stretch;
+    justify-content: space-evenly;
+    align-items: flex-start;
+    width: 17vw;
+    height: 99vh;
+
+    transition-property: width;
+	transition-duration: 2s;
+	transition-timing-function: bezier;
+	transition-delay: 0.1s;
+}
+.flex-container:hover {
+	width: 20vw;
 }
 
 @media only screen and (max-width: 900px) {
@@ -290,6 +308,10 @@ div.document {
 @media only screen and (max-width: 680px) {
   .flex-container {
     flex-direction: column;
+    width: 5vw;
+  }
+  .bottom {
+    hidden
   }
 
   div.header .logo {

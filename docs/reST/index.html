@@ -1,0 +1,727 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.20.1: https://docutils.sourceforge.io/" />
+<title>Pygame-ce Front Page</title>
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 8954 2022-01-20 10:10:25Z milde $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See https://docutils.sourceforge.io/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+.subscript {
+  vertical-align: sub;
+  font-size: smaller }
+
+.superscript {
+  vertical-align: super;
+  font-size: smaller }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+object[type="image/svg+xml"], object[type="application/x-shockwave-flash"] {
+  overflow: hidden;
+}
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title, .code .error {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left, .figure.align-left, object.align-left, table.align-left {
+  clear: left ;
+  float: left ;
+  margin-right: 1em }
+
+img.align-right, .figure.align-right, object.align-right, table.align-right {
+  clear: right ;
+  float: right ;
+  margin-left: 1em }
+
+img.align-center, .figure.align-center, object.align-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+table.align-center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.align-left {
+  text-align: left }
+
+.align-center {
+  clear: both ;
+  text-align: center }
+
+.align-right {
+  text-align: right }
+
+/* reset inner alignment in figures */
+div.align-right {
+  text-align: inherit }
+
+/* div.align-center * { */
+/*   text-align: left } */
+
+.align-top    {
+  vertical-align: top }
+
+.align-middle {
+  vertical-align: middle }
+
+.align-bottom {
+  vertical-align: bottom }
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font: inherit }
+
+pre.literal-block, pre.doctest-block, pre.math, pre.code {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+pre.code .ln { color: grey; } /* line numbers */
+pre.code, code { background-color: #eeeeee }
+pre.code .comment, code .comment { color: #5C6576 }
+pre.code .keyword, code .keyword { color: #3B0D06; font-weight: bold }
+pre.code .literal.string, code .literal.string { color: #0C5404 }
+pre.code .name.builtin, code .name.builtin { color: #352B84 }
+pre.code .deleted, code .deleted { background-color: #DEB0A1}
+pre.code .inserted, code .inserted { background-color: #A3D289}
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+/* "booktabs" style (no vertical lines) */
+table.docutils.booktabs {
+  border: 0px;
+  border-top: 2px solid;
+  border-bottom: 2px solid;
+  border-collapse: collapse;
+}
+table.docutils.booktabs * {
+  border: 0px;
+}
+table.docutils.booktabs th {
+  border-bottom: thin solid;
+  text-align: left;
+}
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document" id="pygame-ce-front-page">
+<h1 class="title">Pygame-ce Front Page</h1>
+
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 4)</p>
+<p>Unknown directive type &quot;toctree&quot;.</p>
+<pre class="literal-block">
+.. toctree::
+   :maxdepth: 2
+   :glob:
+   :hidden:
+
+   ref/*
+   tutorials/en/*
+   tutorials/en/**/*
+   tutorials/ko/**/*
+   tutorials/es/*
+   c_api
+   filepaths
+   logos
+
+</pre>
+</div>
+<div class="section" id="quick-start">
+<h1>Quick start</h1>
+<p>Welcome to pygame-ce! Once you've got pygame-ce installed
+(<code>pip install pygame-ce</code> or <code>pip3 install pygame-ce</code> for most
+people), the next question is how to get a game loop running. Pygame-ce,
+unlike some other libraries, gives you full control of program
+execution. That freedom means it is easy to mess up in your initial steps.</p>
+<p>Here is a good example of a basic setup (opens the window, updates the screen, and handles events)--</p>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 29)</p>
+<p>Unknown directive type &quot;literalinclude&quot;.</p>
+<pre class="literal-block">
+.. literalinclude:: ref/code_examples/base_script.py
+
+</pre>
+</div>
+<p>Here is a slightly more fleshed out example, which shows you how to move something
+(a circle in this case) around on screen--</p>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 34)</p>
+<p>Unknown directive type &quot;literalinclude&quot;.</p>
+<pre class="literal-block">
+.. literalinclude:: ref/code_examples/base_script_example.py
+
+</pre>
+</div>
+<p>For more in depth reference, check out the <a href="#system-message-1"><span class="problematic" id="problematic-1">:ref:`tutorials-reference-label`</span></a>
+section below, check out a video tutorial (<a class="reference external" href="https://www.youtube.com/watch?v=AY9MnQ4x3zk">I'm a fan of this one</a>), or reference the API
+documentation by module.</p>
+<div class="system-message" id="system-message-1">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 36); <em><a href="#problematic-1">backlink</a></em></p>
+Unknown interpreted text role &quot;ref&quot;.</div>
+</div>
+<div class="section" id="documents">
+<h1>Documents</h1>
+<dl class="docutils">
+<dt><a class="reference external" href="https://github.com/pygame-community/pygame-ce#readme">Readme</a></dt>
+<dd>Basic information about pygame: what it is, who is involved, and where to find it.</dd>
+<dt><a href="#system-message-2"><span class="problematic" id="problematic-2">:doc:`filepaths`</span></a></dt>
+<dd><div class="first system-message" id="system-message-2">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 48); <em><a href="#problematic-2">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">How pygame handles file system paths.</p>
+</dd>
+<dt><a href="#system-message-3"><span class="problematic" id="problematic-3">:doc:`Pygame Logos &lt;logos&gt;`</span></a></dt>
+<dd><div class="first system-message" id="system-message-3">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 52); <em><a href="#problematic-3">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">The logos of Pygame in different resolutions.</p>
+</dd>
+<dt><a class="reference external" href="LGPL.txt">LGPL License</a></dt>
+<dd>This is the license pygame is distributed under.
+It provides for pygame to be distributed with open source and commercial software.
+Generally, if pygame is not changed, it can be used with any type of program.</dd>
+</dl>
+</div>
+<div class="section" id="tutorials">
+<span id="tutorials-reference-label"></span><h1>Tutorials</h1>
+<dl class="docutils">
+<dt><a href="#system-message-4"><span class="problematic" id="problematic-4">:doc:`Introduction to Pygame &lt;tutorials/en/intro-to-pygame&gt;`</span></a></dt>
+<dd><div class="first system-message" id="system-message-4">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 66); <em><a href="#problematic-4">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">An introduction to the basics of pygame.
+This is written for users of Python and appeared in volume two of the Py magazine.</p>
+</dd>
+<dt><a href="#system-message-5"><span class="problematic" id="problematic-5">:doc:`Import and Initialize &lt;tutorials/en/import-init&gt;`</span></a></dt>
+<dd><div class="first system-message" id="system-message-5">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 71); <em><a href="#problematic-5">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">The beginning steps on importing and initializing pygame.
+The pygame package is made of several modules.
+Some modules are not included on all platforms.</p>
+</dd>
+<dt><a href="#system-message-6"><span class="problematic" id="problematic-6">:doc:`How do I move an Image? &lt;tutorials/en/move-it&gt;`</span></a></dt>
+<dd><div class="first system-message" id="system-message-6">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 75); <em><a href="#problematic-6">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">A basic tutorial that covers the concepts behind 2D computer animation.
+Information about drawing and clearing objects to make them appear animated.</p>
+</dd>
+<dt><a href="#system-message-7"><span class="problematic" id="problematic-7">:doc:`Chimp Tutorial, Line by Line &lt;tutorials/en/chimp-explanation&gt;`</span></a></dt>
+<dd><div class="first system-message" id="system-message-7">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 80); <em><a href="#problematic-7">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">The pygame examples include a simple program with an interactive fist and a chimpanzee.
+This was inspired by the annoying flash banner of the early 2000s.
+This tutorial examines every line of code used in the example.</p>
+</dd>
+<dt><a href="#system-message-8"><span class="problematic" id="problematic-8">:doc:`Sprite Module Introduction &lt;tutorials/en/intro-to-sprites&gt;`</span></a></dt>
+<dd><div class="first system-message" id="system-message-8">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 86); <em><a href="#problematic-8">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Pygame includes a higher level sprite module to help organize games.
+The sprite module includes several classes that help manage details found in almost all games types.
+The Sprite classes are a bit more advanced than the regular pygame modules,
+and need more understanding to be properly used.</p>
+</dd>
+<dt><a href="#system-message-9"><span class="problematic" id="problematic-9">:doc:`Surfarray Introduction &lt;tutorials/en/intro-to-surfarray&gt;`</span></a></dt>
+<dd><div class="first system-message" id="system-message-9">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 91); <em><a href="#problematic-9">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Pygame used the NumPy python module to allow efficient per pixel effects on images.
+Using the surface arrays is an advanced feature that allows custom effects and filters.
+This also examines some of the simple effects from the pygame example, arraydemo.py.</p>
+</dd>
+<dt><a href="#system-message-10"><span class="problematic" id="problematic-10">:doc:`Camera Module Introduction &lt;tutorials/en/intro-to-camera&gt;`</span></a></dt>
+<dd><div class="first system-message" id="system-message-10">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 96); <em><a href="#problematic-10">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Pygame, as of 1.9, has a camera module that allows you to capture images,
+watch live streams, and do some basic computer vision.
+This tutorial covers those use cases.</p>
+</dd>
+<dt><a href="#system-message-11"><span class="problematic" id="problematic-11">:doc:`Newbie Guide &lt;tutorials/en/newbie-guide&gt;`</span></a></dt>
+<dd><div class="first system-message" id="system-message-11">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 99); <em><a href="#problematic-11">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">A list of thirteen helpful tips for people to get comfortable using pygame.</p>
+</dd>
+<dt><a href="#system-message-12"><span class="problematic" id="problematic-12">:doc:`Making Games Tutorial &lt;tutorials/en/make-games&gt;`</span></a></dt>
+<dd><div class="first system-message" id="system-message-12">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 102); <em><a href="#problematic-12">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">A large tutorial that covers the bigger topics needed to create an entire game.</p>
+</dd>
+<dt><a href="#system-message-13"><span class="problematic" id="problematic-13">:doc:`Display Modes &lt;tutorials/en/display-modes&gt;`</span></a></dt>
+<dd><div class="first system-message" id="system-message-13">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 105); <em><a href="#problematic-13">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Getting a display surface for the screen.</p>
+</dd>
+<dt><a href="#system-message-14"><span class="problematic" id="problematic-14">:doc:`한국어 튜토리얼 (Korean Tutorial) &lt;tutorials/ko/빨간블록 검은블록/개요&gt;`</span></a></dt>
+<dd><div class="first system-message" id="system-message-14">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 108); <em><a href="#problematic-14">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">빨간블록 검은블록</p>
+</dd>
+<dt><a href="#system-message-15"><span class="problematic" id="problematic-15">:doc:`Tutorial de Pygame - Ejemplo del Chimpancé, Línea Por Línea &lt;tutorials/es/ChimpanceLineaporLinea&gt;`</span></a></dt>
+<dd><div class="first system-message" id="system-message-15">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 114); <em><a href="#problematic-15">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Los ejemplos de pygame incluyen un sencillo programa con un puño interactivo y un chimpancé.
+Está inspirado en el molesto banner de flash de principios de la década de 2000.
+Este tutorial examina cada línea de código utilizada en el ejemplo.</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="reference">
+<h1>Reference</h1>
+<dl class="docutils">
+<dt><a href="#system-message-16"><span class="problematic" id="problematic-16">:ref:`genindex`</span></a></dt>
+<dd><div class="first system-message" id="system-message-16">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 120); <em><a href="#problematic-16">backlink</a></em></p>
+Unknown interpreted text role &quot;ref&quot;.</div>
+<p class="last">A list of all functions, classes, and methods in the pygame package.</p>
+</dd>
+<dt><a href="#system-message-17"><span class="problematic" id="problematic-17">:doc:`ref/bufferproxy`</span></a></dt>
+<dd><div class="first system-message" id="system-message-17">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 123); <em><a href="#problematic-17">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">An array protocol view of surface pixels</p>
+</dd>
+<dt><a href="#system-message-18"><span class="problematic" id="problematic-18">:doc:`ref/color`</span></a></dt>
+<dd><div class="first system-message" id="system-message-18">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 126); <em><a href="#problematic-18">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Color representation.</p>
+</dd>
+<dt><a href="#system-message-19"><span class="problematic" id="problematic-19">:doc:`ref/cursors`</span></a></dt>
+<dd><div class="first system-message" id="system-message-19">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 129); <em><a href="#problematic-19">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Loading and compiling cursor images.</p>
+</dd>
+<dt><a href="#system-message-20"><span class="problematic" id="problematic-20">:doc:`ref/display`</span></a></dt>
+<dd><div class="first system-message" id="system-message-20">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 132); <em><a href="#problematic-20">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Configure the display surface.</p>
+</dd>
+<dt><a href="#system-message-21"><span class="problematic" id="problematic-21">:doc:`ref/draw`</span></a></dt>
+<dd><div class="first system-message" id="system-message-21">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 135); <em><a href="#problematic-21">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Drawing simple shapes like lines and ellipses to surfaces.</p>
+</dd>
+<dt><a href="#system-message-22"><span class="problematic" id="problematic-22">:doc:`ref/event`</span></a></dt>
+<dd><div class="first system-message" id="system-message-22">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 138); <em><a href="#problematic-22">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Manage the incoming events from various input devices and the windowing platform.</p>
+</dd>
+<dt><a href="#system-message-23"><span class="problematic" id="problematic-23">:doc:`ref/examples`</span></a></dt>
+<dd><div class="first system-message" id="system-message-23">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 141); <em><a href="#problematic-23">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Various programs demonstrating the use of individual pygame modules.</p>
+</dd>
+<dt><a href="#system-message-24"><span class="problematic" id="problematic-24">:doc:`ref/font`</span></a></dt>
+<dd><div class="first system-message" id="system-message-24">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 144); <em><a href="#problematic-24">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Loading and rendering TrueType fonts.</p>
+</dd>
+<dt><a href="#system-message-25"><span class="problematic" id="problematic-25">:doc:`ref/freetype`</span></a></dt>
+<dd><div class="first system-message" id="system-message-25">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 147); <em><a href="#problematic-25">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Enhanced pygame module for loading and rendering font faces.</p>
+</dd>
+<dt><a href="#system-message-26"><span class="problematic" id="problematic-26">:doc:`ref/gfxdraw`</span></a></dt>
+<dd><div class="first system-message" id="system-message-26">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 150); <em><a href="#problematic-26">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Anti-aliasing draw functions.</p>
+</dd>
+<dt><a href="#system-message-27"><span class="problematic" id="problematic-27">:doc:`ref/image`</span></a></dt>
+<dd><div class="first system-message" id="system-message-27">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 153); <em><a href="#problematic-27">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Loading, saving, and transferring of surfaces.</p>
+</dd>
+<dt><a href="#system-message-28"><span class="problematic" id="problematic-28">:doc:`ref/joystick`</span></a></dt>
+<dd><div class="first system-message" id="system-message-28">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 156); <em><a href="#problematic-28">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Manage the joystick devices.</p>
+</dd>
+<dt><a href="#system-message-29"><span class="problematic" id="problematic-29">:doc:`ref/key`</span></a></dt>
+<dd><div class="first system-message" id="system-message-29">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 159); <em><a href="#problematic-29">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Manage the keyboard device.</p>
+</dd>
+<dt><a href="#system-message-30"><span class="problematic" id="problematic-30">:doc:`ref/locals`</span></a></dt>
+<dd><div class="first system-message" id="system-message-30">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 162); <em><a href="#problematic-30">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Pygame constants.</p>
+</dd>
+<dt><a href="#system-message-31"><span class="problematic" id="problematic-31">:doc:`ref/mixer`</span></a></dt>
+<dd><div class="first system-message" id="system-message-31">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 165); <em><a href="#problematic-31">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Load and play sounds</p>
+</dd>
+<dt><a href="#system-message-32"><span class="problematic" id="problematic-32">:doc:`ref/mouse`</span></a></dt>
+<dd><div class="first system-message" id="system-message-32">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 168); <em><a href="#problematic-32">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Manage the mouse device and display.</p>
+</dd>
+<dt><a href="#system-message-33"><span class="problematic" id="problematic-33">:doc:`ref/music`</span></a></dt>
+<dd><div class="first system-message" id="system-message-33">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 171); <em><a href="#problematic-33">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Play streaming music tracks.</p>
+</dd>
+<dt><a href="#system-message-34"><span class="problematic" id="problematic-34">:doc:`ref/pygame`</span></a></dt>
+<dd><div class="first system-message" id="system-message-34">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 174); <em><a href="#problematic-34">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Top level functions to manage pygame.</p>
+</dd>
+<dt><a href="#system-message-35"><span class="problematic" id="problematic-35">:doc:`ref/pixelarray`</span></a></dt>
+<dd><div class="first system-message" id="system-message-35">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 177); <em><a href="#problematic-35">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Manipulate image pixel data.</p>
+</dd>
+<dt><a href="#system-message-36"><span class="problematic" id="problematic-36">:doc:`ref/rect`</span></a></dt>
+<dd><div class="first system-message" id="system-message-36">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 180); <em><a href="#problematic-36">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Flexible container for a rectangle.</p>
+</dd>
+<dt><a href="#system-message-37"><span class="problematic" id="problematic-37">:doc:`ref/scrap`</span></a></dt>
+<dd><div class="first system-message" id="system-message-37">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 183); <em><a href="#problematic-37">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Native clipboard access.</p>
+</dd>
+<dt><a href="#system-message-38"><span class="problematic" id="problematic-38">:doc:`ref/sndarray`</span></a></dt>
+<dd><div class="first system-message" id="system-message-38">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 186); <em><a href="#problematic-38">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Manipulate sound sample data.</p>
+</dd>
+<dt><a href="#system-message-39"><span class="problematic" id="problematic-39">:doc:`ref/sprite`</span></a></dt>
+<dd><div class="first system-message" id="system-message-39">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 189); <em><a href="#problematic-39">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Higher level objects to represent game images.</p>
+</dd>
+<dt><a href="#system-message-40"><span class="problematic" id="problematic-40">:doc:`ref/surface`</span></a></dt>
+<dd><div class="first system-message" id="system-message-40">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 192); <em><a href="#problematic-40">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Objects for images and the screen.</p>
+</dd>
+<dt><a href="#system-message-41"><span class="problematic" id="problematic-41">:doc:`ref/surfarray`</span></a></dt>
+<dd><div class="first system-message" id="system-message-41">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 195); <em><a href="#problematic-41">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Manipulate image pixel data.</p>
+</dd>
+<dt><a href="#system-message-42"><span class="problematic" id="problematic-42">:doc:`ref/tests`</span></a></dt>
+<dd><div class="first system-message" id="system-message-42">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 198); <em><a href="#problematic-42">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Test pygame.</p>
+</dd>
+<dt><a href="#system-message-43"><span class="problematic" id="problematic-43">:doc:`ref/time`</span></a></dt>
+<dd><div class="first system-message" id="system-message-43">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 201); <em><a href="#problematic-43">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Manage timing and framerate.</p>
+</dd>
+<dt><a href="#system-message-44"><span class="problematic" id="problematic-44">:doc:`ref/transform`</span></a></dt>
+<dd><div class="first system-message" id="system-message-44">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 204); <em><a href="#problematic-44">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">Resize and move images.</p>
+</dd>
+<dt><a href="#system-message-45"><span class="problematic" id="problematic-45">:doc:`pygame C API &lt;c_api&gt;`</span></a></dt>
+<dd><div class="first system-message" id="system-message-45">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 207); <em><a href="#problematic-45">backlink</a></em></p>
+Unknown interpreted text role &quot;doc&quot;.</div>
+<p class="last">The C api shared amongst pygame extension modules.</p>
+</dd>
+<dt><a href="#system-message-46"><span class="problematic" id="problematic-46">:ref:`search`</span></a></dt>
+<dd><div class="first system-message" id="system-message-46">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">C:/Users/NotMEE12/OneDrive/Dokumenty/GitHub/pygame-ce/docs/reST/index.rst</tt>, line 210); <em><a href="#problematic-46">backlink</a></em></p>
+Unknown interpreted text role &quot;ref&quot;.</div>
+<p class="last">Search pygame documents by keyword.</p>
+</dd>
+</dl>
+</div>
+</div>
+</body>
+</html>
