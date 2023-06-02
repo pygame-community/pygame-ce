@@ -6,6 +6,7 @@
 
 #include "doc/sdl2_video_doc.h"
 
+#ifndef PYGAMEAPI_DISPLAY_INTERNAL  // to pass the static check
 // Copied from display.c
 #if !defined(__APPLE__)
 static char *icon_defaultname = "pygame_icon.bmp";
@@ -91,6 +92,8 @@ display_resource_end:
     Py_XDECREF(name);
     return result;
 }
+
+#endif  // PYGAMEAPI_DISPLAY_INTERNAL
 
 static PyTypeObject pgWindow_Type;
 
