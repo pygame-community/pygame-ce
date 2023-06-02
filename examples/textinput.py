@@ -108,7 +108,7 @@ class Game:
             msg_imgs = []
 
             for msg in self.chat_list:
-                msg_imgs.append(self.small_font.render(msg, False, (25, 255, 100)))
+                msg_imgs.append(self.small_font.render(msg, True, (25, 255, 100)))
 
             # checks if the y position is bigger than 500, if its bigger than 500, it will remove the first three items of the chat list.
 
