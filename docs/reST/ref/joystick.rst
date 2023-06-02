@@ -105,7 +105,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
    Once the device is initialized the pygame event queue will start receiving
    events about its input.
 
-   .. versionchanged:: 2.0.0 Joystick objects are now opened immediately on creation.
+   .. versionchangedold:: 2.0.0 Joystick objects are now opened immediately on creation.
 
    .. versionchanged:: 2.1.4 This class is also available through the ``pygame.Joystick`` 
       alias.
@@ -118,7 +118,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       Initialize the joystick, if it has been closed. It is safe to call this
       even if the joystick is already initialized.
 
-      .. deprecated:: 2.0.0
+      .. deprecatedold:: 2.0.0
 
          In future it will not be possible to reinitialise a closed Joystick
          object. Will be removed in Pygame 2.1.
@@ -155,7 +155,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       value that was passed to the ``Joystick()`` constructor. This method can
       safely be called while the Joystick is not initialized.
 
-      .. deprecated:: 2.0.0
+      .. deprecatedold:: 2.0.0
 
          The original device index is not useful in pygame 2. Use
          :meth:`.get_instance_id` instead. Will be removed in Pygame 2.1.
@@ -168,7 +168,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       Get the joystick instance ID. This matches the ``instance_id`` field
       that is given in joystick events.
 
-      .. versionadded:: 2.0.0dev11
+      .. versionaddedold:: 2.0.0dev11
 
    .. method:: get_guid() -> str
 
@@ -178,7 +178,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       Get the GUID string. This identifies the exact hardware of the joystick
       device.
 
-      .. versionadded:: 2.0.0dev11
+      .. versionaddedold:: 2.0.0dev11
 
    .. method:: get_power_level() -> str
 
@@ -190,7 +190,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       One of: ``empty``, ``low``, ``medium``, ``full``, ``wired``, ``max``, or
       ``unknown``.
 
-      .. versionadded:: 2.0.0dev11
+      .. versionaddedold:: 2.0.0dev11
 
       .. ## Joystick.get_id ##
 
@@ -340,7 +340,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       Returns True if the rumble was played successfully or False if the
       joystick does not support it or :meth:`pygame.version.SDL` is below 2.0.9.
 
-      .. versionadded:: 2.0.2
+      .. versionaddedold:: 2.0.2
 
       .. ## Joystick.rumble ##
 
@@ -352,7 +352,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       Stops any rumble effect playing on the joystick. See
       :meth:`Joystick.rumble` for more information.
 
-      .. versionadded:: 2.0.2
+      .. versionaddedold:: 2.0.2
 
       .. ## Joystick.stop_rumble ##
 

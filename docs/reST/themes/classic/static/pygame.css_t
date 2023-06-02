@@ -73,12 +73,21 @@ div.highlight-python.notranslate {
 /* -- page layout ----------------------------------------------------------- */
 
 body {
-    font-family: {{ theme_bodyfont }};
     color: {{ theme_textcolor }};
     font-style: normal;
+    font-family: {{ theme_bodyfont }};
     text-decoration: none;
     text-align: left;
     border-style: none;
+}
+html {
+    background-color: {{ theme_bgcolor }};
+}
+html.dark-theme body {
+    color: {{ theme_dark_textcolor }};
+}
+html:has(body.dark-theme) {
+    background-color: {{ theme_dark_bgcolor }};
 }
 
 div.header {
@@ -91,7 +100,10 @@ div.header > div {
     border-collapse: collapse;
     background-color: {{ theme_headerbgcolor }};
 }
-
+.dark-theme div.header > div {
+    background-color: {{ theme_dark_headerbgcolor }};
+    border: {{ theme_dark_headerborder }};
+}
 div.header .logo {
     background-color: {{ theme_logobgcolor }};
     padding: 0.3em;
@@ -101,7 +113,10 @@ div.header .logo {
     justify-content: center;
     flex-direction: column;
 }
-
+.dark-theme div.header .logo {
+    background-color: {{ theme_dark_logobgcolor }};
+    border: none;
+}
 div.header .logo img {
     min-width: 200px;
     min-height: 60px;
@@ -128,19 +143,148 @@ div.header p.bottom {
 div.header .pagelinks a {
     text-decoration: underline;
 }
+.dark-theme div.header .pagelinks a {
+    text-decoration: none;
+}
 
 div.header .pagelinks a:hover {
     text-decoration: none;
 }
+.dark-theme div.header .pagelinks a:hover {
+    text-decoration: underline;
+}
+
+.pagelinks .top a {
+    color: {{ theme_linkcolor }};
+    font-weight: 400;
+}
+.dark-theme .pagelinks .top a {
+    color: {{ theme_dark_linkcolor }};
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.pagelinks .bottom a {
+    font-weight: 400;
+    color: {{ theme_linkcolor2 }};
+}
+.dark-theme .pagelinks .bottom a {
+    color: {{ theme_dark_linkcolor2 }};
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.dl .dt{
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: {{ theme_linkcolor }};
+}
+.dark-theme .dl .dt{
+    color: {{ theme_dark_linkcolor }};
+}
+
+.pagelinks .top{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pagelinks .top .nav-top-wrapper{
+    flex-grow: 1;
+}
+
+.pagelinks .bottom b{
+    color: {{ theme_headertitlecolor }};
+}
+.dark-theme .pagelinks .bottom b{
+    color: {{ theme_dark_headertitlecolor }};
+}
+
+input[type="text"]{
+    background-color: {{ theme_searchbarbgcolor }};
+    color: {{ theme_searchbartextcolor }};
+    font-size: 1rem;
+}
+.dark-theme input[type="text"]{
+    background-color: {{ theme_dark_searchbarbgcolor }};
+    color: {{ theme_dark_searchbartextcolor }};
+    border-radius: {{ theme_searchbarborderradius }};
+    border: none;
+    padding: 0.3rem;
+}
+
+input[type="text"]:focus{
+    background-color: {{ theme_searchbarbgcolor }};
+}
+.dark-theme input[type="text"]:focus{
+    background-color: {{ theme_dark_searchbarbgcolor }};
+}
+
+
+input[type="submit"]{
+    display: none;
+}
+
+.searchbar-form{
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.searchbar-button{
+    background-color: transparent;
+    width: 24px;
+    position: relative;
+    top: 5px;
+    /* fill: {{ theme_searchbarcolor }}; */
+    cursor: pointer;
+}
+/*
+.dark-theme .searchbar-button{
+    fill: {{ theme_dark_searchbarcolor }};
+}
+*/
 
 div.document {
     background-color: {{ theme_bgcolor }};
     overflow: hidden;
 }
+.dark-theme div.document {
+    background-color: {{ theme_dark_bgcolor }};
+}
+
+.theme-icon {
+    cursor: pointer;
+    position: relative;
+    top: 2px;
+}
+/* Ignore this, gets rid of minor positionaning difference*/
+.theme-icon[data-theme="light-theme"] {
+    transform: translate(0, 2px);
+}
+.theme-icon[data-theme="dark-theme"] {
+    transform: translate(-4px, 2px);
+}
+
+/* Show the items when they are the same theme and not a theme-change icon */
+.light-theme *[data-theme="dark-theme"]{
+    display: none;
+}
+.dark-theme *[data-theme="light-theme"]{
+    display: none;
+}
 
 .flex-container {
     display: flex;
     flex-direction: row;
+}
+
+@media only screen and (max-width: 900px) {
+    .pagelinks .top{
+        flex-direction: column;
+        gap: 1rem;
+    }
 }
 
 @media only screen and (max-width: 680px) {
@@ -150,7 +294,6 @@ div.document {
 
   div.header .logo {
       border-right: none;
-      border-bottom: 3px solid black;
   }
 }
 
@@ -218,12 +361,18 @@ div.related {
     background-color: {{ theme_relbarbgcolor }};
     line-height: 30px;
     color: {{ theme_relbartextcolor }};
-    border-top: 3px solid black;
-    border-bottom: 3px solid black;
+    font-size: 1rem;
+}
+.dark-theme div.related {
+    background-color: {{ theme_dark_relbarbgcolor }};
+    color: {{ theme_dark_relbartextcolor }};
 }
 
 div.related a {
     color: {{ theme_relbarlinkcolor }};
+}
+.dark-theme div.related a {
+    color: {{ theme_dark_relbarlinkcolor }};
 }
 
 div.sphinxsidebar {
@@ -292,15 +441,25 @@ div.sphinxsidebar input {
 /* -- body styles ----------------------------------------------------------- */
 
 a {
-    color: {{ theme_linkcolor }};
     background-color: transparent;
     text-decoration: underline;
+    color: {{ theme_linkcolor2 }};
+    font-size: 1rem;
+}
+.dark-theme a {
+    color: {{ theme_dark_linkcolor2 }};
+    text-decoration: none;
+    font-weight: 600;
 }
 
 a:hover {
-    color: {{ theme_linkcolor }};
+    color: {{ theme_linkcolor2 }};
     background-color: transparent;
     text-decoration: none;
+}
+.dark-theme a:hover {
+    color: {{ theme_dark_linkcolor2 }};
+    text-decoration: underline;
 }
 
 p {
@@ -354,6 +513,80 @@ span.signature {
 
 span.pre {
     font-family: 'consolas', monospace;
+    color: {{ theme_cli }};
+}
+.dark-theme span.pre {
+    color: {{ theme_dark_cli }};
+}
+
+a.reference.internal span.pre {
+    color: {{ theme_linkcolor2 }};
+}
+.dark-theme a.reference.internal span.pre {
+    color: {{ theme_dark_linkcolor2 }};
+}
+
+a.tooltip.reference.internal span.pre {
+    color: {{ theme_cli }};
+}
+.dark-theme a.tooltip.reference.internal span.pre {
+    color: {{ theme_dark_cli }};
+}
+
+dt code span.pre {
+    color: {{ theme_h1color }};
+}
+.dark-theme dt code span.pre {
+    color: {{ theme_dark_h1color }};
+}
+.dark-theme dt.title code span.pre {
+    color: {{ theme_dark_h1color }};
+    font-size: 1.8rem;
+}
+
+/* Not sure if I need to enable this
+dt code {
+    background-color: transparent;
+}
+*/
+.dark-theme dt code {
+    background-color: transparent;
+}
+
+.highlight .o{
+    color: {{ theme_codedot }};
+}
+.dark-theme .highlight .o{
+    color: {{ theme_dark_codedot }};
+}
+
+.highlight .c1{
+    color: {{ theme_codecomment }};
+}
+.dark-theme .highlight .c1{
+    color: {{ theme_dark_codecomment }};
+}
+
+.highlight .kn, .highlight .k{
+    color: {{ theme_codekeyword }};
+}
+.dark-theme .highlight .kn, .dark-theme .highlight .k{
+    color: {{ theme_dark_codekeyword }};
+}
+
+.highlight .n{
+    color: {{ theme_codetextcolor }};
+}
+.dark-theme .highlight .n{
+    color: {{ theme_dark_codetextcolor }};
+}
+
+/* Doc strings */
+.highlight .sd{
+    color: {{ theme_codecomment }};
+}
+.dark-theme .highlight .sd{
+    color: {{ theme_dark_codecomment }};
 }
 
 code.download span.pre {
@@ -380,6 +613,8 @@ div.body h6 {
     font-weight: bold;
     margin: 1em 0 0.5em;
     text-align: left;
+    display: flex;
+    justify-content: center;
 }
 
 div.body h6 {
@@ -390,8 +625,19 @@ div.body h6 {
     line-height: 130%;
 }
 
-div.body h1 { font-size: 1.5em; }
-div.body h2 { font-size: 1.4em; }
+div.body h1 { 
+    font-size: 1.5em; color: {{ theme_h1color }};
+}
+.dark-theme div.body h1 { 
+    color: {{ theme_dark_h1color }};
+}
+div.body h2 { 
+    font-size: 1.4em;
+    color: {{ theme_h2color }};
+}
+.dark-theme div.body h2 { 
+    color: {{ theme_dark_h2color }};
+}
 div.body h3 { font-size: 1.3em; }
 div.body h4 { font-size: 1.2em; }
 div.body h5 { font-size: 1.1em; }
@@ -403,9 +649,16 @@ a.headerlink {
     padding: 0 4px 0 4px;
     text-decoration: none;
 }
+.dark-theme a.headerlink {
+    color: {{ theme_dark_headlinkcolor }};
+}
 
 a.headerlink:hover {
     background-color: {{ theme_headlinkcolor }};
+    color: white;
+}
+.dark-theme a.headerlink:hover {
+    background-color: {{ theme_dark_headlinkcolor }};
     color: white;
 }
 
@@ -487,12 +740,24 @@ p.linklist {
 dt:target,
 span.highlighted {
     background-color: {{ theme_highlightbgcolor }};
+    padding-left: 0.4rem;
+}
+.dark-theme .section:target > h2,
+.dark-theme .section:target > h3,
+.dark-theme .section:target > h4,
+.dark-theme dt:target,
+.dark-theme span.highlighted {
+    background-color: {{ theme_dark_highlightbgcolor }};
+    padding-left: 0.4rem;
 }
 
-code{
+code {
     border-radius: 0.25em;
     padding: 0 0.2em 0;
     background-color: {{ theme_codebgcolor }};
+}
+.dark-theme code {
+    background-color: {{ theme_dark_codebgcolor }};
 }
 
 pre {
@@ -500,13 +765,17 @@ pre {
     border: 1px solid #ac9;
     border-left: none;
     border-right: none;
-    color: #333333;
+    color: {{ theme_codetextcolor }};
     display: block;
     font-family: 'consolas', monospace;
     line-height: 120%;
     margin-bottom: 1em;
     padding: 5px 5px 5px 15px;
     text-align: justify;
+}
+.dark-theme pre {
+    background-color: {{ theme_dark_codebgcolor }};
+    color: {{ theme_dark_codetextcolor }};
 }
 
 div.highlight pre {
@@ -602,7 +871,6 @@ div.body span.codelineref {
 .py-class .pre,
 .reference.internal em {
     font-weight: bold;
-    background-color: {{ theme_keywordbgcolor }};
 }
 
 span.linenos {
@@ -638,6 +906,10 @@ div.example div.break {
 
 a.tooltip {
     text-decoration: underline;
+    color: {{ theme_tooltipcolor }};
+}
+.dark-theme a.tooltip {
+    color: {{ theme_dark_tooltipcolor }};
 }
 
 a.tooltip:hover {
@@ -655,6 +927,10 @@ a.tooltip:hover {
     box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.1);
     -webkit-box-shadow: 5px 5px rgba(0, 0, 0, 0.1);
     -moz-box-shadow: 5px 5px rgba(0, 0, 0, 0.1);
+}
+.dark-theme .tooltip-content {
+    background-color: {{ theme_dark_tooltipbgcolor }};
+    border: 1px solid {{ theme_dark_tooltipbdrcolor }};
 }
 
 /* -- comments style --------------------------------------------------------- */

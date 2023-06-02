@@ -475,7 +475,7 @@ font_set_strikethrough(PyObject *self, PyObject *arg)
 }
 
 static PyObject *
-font_render(PyObject *self, PyObject *args)
+font_render(PyObject *self, PyObject *args, PyObject *kwds)
 {
     TTF_Font *font = PyFont_AsFont(self);
     int antialias;
@@ -486,8 +486,12 @@ font_render(PyObject *self, PyObject *args)
     const char *astring = "";
     int wraplength = 0;
 
-    if (!PyArg_ParseTuple(args, "OpO|Oi", &text, &antialias, &fg_rgba_obj,
-                          &bg_rgba_obj, &wraplength)) {
+    static char *kwlist[] = {"text",    "antialias",  "color",
+                             "bgcolor", "wraplength", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OpO|Oi", kwlist, &text,
+                                     &antialias, &fg_rgba_obj, &bg_rgba_obj,
+                                     &wraplength)) {
         return NULL;
     }
 
@@ -938,7 +942,8 @@ static PyMethodDef font_methods[] = {
     {"set_strikethrough", font_set_strikethrough, METH_O,
      DOC_FONT_FONT_SETSTRIKETHROUGH},
     {"metrics", font_metrics, METH_O, DOC_FONT_FONT_METRICS},
-    {"render", font_render, METH_VARARGS, DOC_FONT_FONT_RENDER},
+    {"render", (PyCFunction)font_render, METH_VARARGS | METH_KEYWORDS,
+     DOC_FONT_FONT_RENDER},
     {"render_to", font_render_to, METH_VARARGS, DOC_FONT_FONT_RENDERTO},
     {"size", font_size, METH_O, DOC_FONT_FONT_SIZE},
     {"set_script", font_set_script, METH_O, DOC_FONT_FONT_SETSCRIPT},

@@ -76,6 +76,7 @@ mouse_get_pos(PyObject *self, PyObject *_null)
         if (sdlRenderer != NULL) {
             SDL_Rect vprect;
             float scalex, scaley;
+            int w, h;
 
             SDL_RenderGetScale(sdlRenderer, &scalex, &scaley);
             SDL_RenderGetViewport(sdlRenderer, &vprect);
@@ -83,17 +84,19 @@ mouse_get_pos(PyObject *self, PyObject *_null)
             x = (int)(x / scalex);
             y = (int)(y / scaley);
 
+            SDL_RenderGetLogicalSize(sdlRenderer, &w, &h);
+
             x -= vprect.x;
             y -= vprect.y;
 
             if (x < 0)
                 x = 0;
-            if (x >= vprect.w)
-                x = vprect.w - 1;
+            if (x >= w)
+                x = w - 1;
             if (y < 0)
                 y = 0;
-            if (y >= vprect.h)
-                y = vprect.h - 1;
+            if (y >= h)
+                y = h - 1;
         }
     }
 

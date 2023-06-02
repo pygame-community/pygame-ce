@@ -64,7 +64,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
          | if ``width < 0``, nothing will be drawn
          |
       
-      .. versionchanged:: 2.1.1 
+      .. versionchangedold:: 2.1.1
           Drawing rects with width now draws the width correctly inside the 
           rect's area, rather than using an internal call to draw.lines(), 
           which had half the width spill outside the rect area.
@@ -95,8 +95,8 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
       The :func:`pygame.Surface.fill()` method works just as well for drawing
       filled rectangles and can be hardware accelerated on some platforms.
 
-   .. versionchanged:: 2.0.0 Added support for keyword arguments.
-   .. versionchanged:: 2.0.0.dev8 Added support for border radius.
+   .. versionchangedold:: 2.0.0 Added support for keyword arguments.
+   .. versionchangedold:: 2.0.0.dev8 Added support for border radius.
 
    .. ## pygame.draw.rect ##
 
@@ -144,7 +144,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    .. note::
        For an aapolygon, use :func:`aalines()` with ``closed=True``.
 
-   .. versionchanged:: 2.0.0 Added support for keyword arguments.
+   .. versionchangedold:: 2.0.0 Added support for keyword arguments.
 
    .. ## pygame.draw.polygon ##
 
@@ -198,12 +198,12 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :raises TypeError: if ``center`` is not a sequence of two numbers
    :raises TypeError: if ``radius`` is not a number
 
-   .. versionchanged:: 2.0.0 Added support for keyword arguments.
+   .. versionchangedold:: 2.0.0 Added support for keyword arguments.
       Nothing is drawn when the radius is 0 (a pixel at the ``center`` coordinates
       used to be drawn when the radius equaled 0).
       Floats, and Vector2 are accepted for the ``center`` param.
       The drawing algorithm was improved to look more like a circle.
-   .. versionchanged:: 2.0.0.dev8 Added support for drawing circle quadrants.
+   .. versionchangedold:: 2.0.0.dev8 Added support for drawing circle quadrants.
 
    .. ## pygame.draw.circle ##
 
@@ -240,7 +240,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
       parameter and its width and height will be 0
    :rtype: Rect
 
-   .. versionchanged:: 2.0.0 Added support for keyword arguments.
+   .. versionchangedold:: 2.0.0 Added support for keyword arguments.
 
    .. ## pygame.draw.ellipse ##
 
@@ -293,7 +293,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
       parameter and its width and height will be 0
    :rtype: Rect
 
-   .. versionchanged:: 2.0.0 Added support for keyword arguments.
+   .. versionchangedold:: 2.0.0 Added support for keyword arguments.
 
    .. ## pygame.draw.arc ##
 
@@ -344,7 +344,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :raises TypeError: if ``start_pos`` or ``end_pos`` is not a sequence of
       two numbers
 
-   .. versionchanged:: 2.0.0 Added support for keyword arguments.
+   .. versionchangedold:: 2.0.0 Added support for keyword arguments.
 
    .. ## pygame.draw.line ##
 
@@ -393,7 +393,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :raises TypeError: if ``points`` is not a sequence or ``points`` does not
       contain number pairs
 
-   .. versionchanged:: 2.0.0 Added support for keyword arguments.
+   .. versionchangedold:: 2.0.0 Added support for keyword arguments.
 
    .. ## pygame.draw.lines ##
 
@@ -500,7 +500,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :raises TypeError: if ``start_pos`` or ``end_pos`` is not a sequence of
       two numbers
 
-   .. versionchanged:: 2.0.0 Added support for keyword arguments.
+   .. versionchangedold:: 2.0.0 Added support for keyword arguments.
 
    .. ## pygame.draw.aaline ##
 
@@ -542,7 +542,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :raises TypeError: if ``points`` is not a sequence or ``points`` does not
       contain number pairs
 
-   .. versionchanged:: 2.0.0 Added support for keyword arguments.
+   .. versionchangedold:: 2.0.0 Added support for keyword arguments.
 
    .. ## pygame.draw.aalines ##
 

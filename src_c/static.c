@@ -355,13 +355,13 @@ PyInit_pygame_static()
 #undef pgEvent_Type
 #undef pgEvent_New
 
+#include "joystick.c"
+
 #include "event.c"
 
 #include "mouse.c"
 
 #include "key.c"
-
-#include "joystick.c"
 
 #include "time.c"
 

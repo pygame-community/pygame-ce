@@ -11,8 +11,8 @@
 Pygame currently supports Linux (V4L2) and Windows (MSMF) cameras natively,
 with wider platform support available via an integrated OpenCV backend.
 
-.. versionadded:: 2.0.2 Windows native camera support
-.. versionadded:: 2.0.3 New OpenCV backends
+.. versionaddedold:: 2.0.2 Windows native camera support
+.. versionaddedold:: 2.0.3 New OpenCV backends
 
 EXPERIMENTAL!: This API may change or disappear in later pygame releases. If
 you use this, your code will very likely break with the next pygame release.
@@ -43,7 +43,7 @@ The Bayer to ``RGB`` function is based on:
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  SUCH DAMAGE.
 
-New in pygame 1.9.0.
+.. versionaddedold:: 1.9.0
 
 .. function:: init
 
@@ -57,7 +57,7 @@ New in pygame 1.9.0.
    want into this function. More about backends in
    :func:`get_backends()`.
 
-   .. versionchanged:: 2.0.3 Option to explicitly select backend
+   .. versionchangedold:: 2.0.3 Option to explicitly select backend
 
    .. ## pygame.camera.init ##
 
@@ -94,7 +94,7 @@ New in pygame 1.9.0.
    system, these backend ports will pass through a "camera index number" 
    through if you use that as the ``device`` parameter.
 
-   .. versionadded:: 2.0.3
+   .. versionaddedold:: 2.0.3
 
    .. ## pygame.camera.get_backends ##
 

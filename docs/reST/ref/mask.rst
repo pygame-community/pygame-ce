@@ -11,11 +11,11 @@
 Useful for fast pixel perfect collision detection. A mask uses 1 bit per-pixel
 to store which parts collide.
 
-.. versionadded:: 1.8
+.. versionaddedold:: 1.8
 
-.. versionchanged:: 2.0.2 Mask functions now support keyword arguments.
+.. versionchangedold:: 2.0.2 Mask functions now support keyword arguments.
 
-.. versionchanged:: 2.0.2 Mask functions that take positions or offsets now
+.. versionchangedold:: 2.0.2 Mask functions that take positions or offsets now
                     support :class:`pygame.math.Vector2` arguments.
 
 
@@ -137,14 +137,14 @@ to store which parts collide.
    :returns: a newly created :class:`Mask` object
    :rtype: Mask
 
-   .. versionchanged:: 2.0.0
+   .. versionchangedold:: 2.0.0
       Shallow copy support added. The :class:`Mask` class supports the special
       method ``__copy__()`` and shallow copying via ``copy.copy(mask)``.
-   .. versionchanged:: 2.0.0 Subclassing support added. The :class:`Mask` class
+   .. versionchangedold:: 2.0.0 Subclassing support added. The :class:`Mask` class
       can be used as a base class.
-   .. versionchanged:: 1.9.5 Added support for keyword arguments.
-   .. versionchanged:: 1.9.5 Added the optional keyword parameter ``fill``.
-   .. versionchanged:: 1.9.5 Added support for masks with a width and/or a
+   .. versionchangedold:: 1.9.5 Added support for keyword arguments.
+   .. versionchangedold:: 1.9.5 Added the optional keyword parameter ``fill``.
+   .. versionchangedold:: 1.9.5 Added support for masks with a width and/or a
       height of 0.
 
    .. method:: copy
@@ -170,7 +170,7 @@ to store which parts collide.
                     # Do any SubMask attribute copying here.
                     return new_mask
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Mask.copy ##
 
@@ -205,7 +205,7 @@ to store which parts collide.
          to it
       :rtype: Rect
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Mask.get_rect ##
 
@@ -633,7 +633,7 @@ to store which parts collide.
          defaults to ``None``, but ``unsetcolor`` defaults to a color value and
          therefore must be set to ``None``.
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Mask.to_surface ##
 

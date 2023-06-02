@@ -12,6 +12,7 @@ pygame C API
    c_api/display.rst
    c_api/event.rst
    c_api/freetype.rst
+   c_api/joystick.rst
    c_api/mixer.rst
    c_api/rect.rst
    c_api/rwobject.rst

@@ -21,8 +21,8 @@
 /* The follow bug was reported for the pygame.math module:
  *
  * Adjust gcc 4.4 optimization for floating point on x86-32 PCs running Linux.
- * This addresses bug 52:
- * https://github.com/pygame/pygame/issues/52
+ * This addresses bug 67:
+ * https://github.com/pygame-community/pygame-ce/issues/67
  * With this option, floats have consistent precision regardless of optimize
  * level.
  *

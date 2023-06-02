@@ -42,7 +42,7 @@ class Window:
     DEFAULT_SIZE: Tuple[Literal[640], Literal[480]]
     def __init__(
         self,
-        title: str = "pygame",
+        title: str = "pygame window",
         size: Iterable[int] = (640, 480),
         position: Optional[Iterable[int]] = None,
         fullscreen: bool = False,
@@ -133,7 +133,7 @@ class Texture:
 class Image:
     def __init__(
         self,
-        textureOrImage: Union[Texture, Image],
+        texture_or_image: Union[Texture, Image],
         srcrect: Optional[RectValue] = None,
     ) -> None: ...
     def get_rect(self, **kwargs: Any) -> Rect: ...

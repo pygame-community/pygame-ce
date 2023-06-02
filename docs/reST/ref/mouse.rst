@@ -103,7 +103,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    are added to the returned tuple. Only ``3`` and ``5`` are valid values 
    for this parameter.
    
-   .. versionchanged:: 2.0.0 ``num_buttons`` argument added
+   .. versionchangedold:: 2.0.0 ``num_buttons`` argument added
 
    .. ## pygame.mouse.get_pressed ##
 
@@ -160,7 +160,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    Get the current visibility state of the mouse cursor. ``True`` if the mouse is
    visible, ``False`` otherwise.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. ## pygame.mouse.get_visible ##
 
@@ -195,7 +195,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 
    See :class:`pygame.cursors.Cursor` for help creating cursors and for examples.
 
-   .. versionchanged:: 2.0.1
+   .. versionchangedold:: 2.0.1
 
    .. ## pygame.mouse.set_cursor ##
 
@@ -212,7 +212,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
              ``size, hotspot, xormasks, andmasks`` will still work,
 	     assuming the call returns an old school type cursor.
 
-   .. versionchanged:: 2.0.1
+   .. versionchangedold:: 2.0.1
 
    .. ## pygame.mouse.get_cursor ##
 
