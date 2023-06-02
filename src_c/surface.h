@@ -362,7 +362,7 @@ pg_warn_simd_at_runtime_but_uncompiled();
 PyTypeObject pgAnimatedSurface_Type;
 
 pgAnimatedSurfaceObject *
-pgAnimatedSurface_New();
+pgAnimatedSurface_New(int nframes);
 
 pgSurfaceObject *
 pgAnimatedSurface_AsSurface(PyObject *anim);
