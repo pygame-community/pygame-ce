@@ -602,6 +602,7 @@ font_render(PyObject *self, PyObject *args)
 static PyObject *
 font_render_to(PyObject *self, PyObject *args)
 {   
+    printf("font_render_to\n");
     int antialias;
     PyObject *text;
     PyObject *fg_rgba_obj, *bg_rgba_obj = Py_None, *renderargs, *render_result;
@@ -613,10 +614,15 @@ font_render_to(PyObject *self, PyObject *args)
 
     int wraplength = 0;
     int blend_flags = 0;
+    int result;
     if (!PyArg_ParseTuple(args, "O!OOpO|Oii", &pgSurface_Type, &surf_to_render, &dest_pos, &text, &antialias, &fg_rgba_obj, 
                                             &bg_rgba_obj, &wraplength, &blend_flags)) {
         return NULL;
     }
+
+    SURF_INIT_CHECK(surf_to_render);
+
+    printf("surf init check done\n");
 
     renderargs = Py_BuildValue("(OiOOi)", text, antialias, fg_rgba_obj, bg_rgba_obj, wraplength);
     render_result = font_render(self, renderargs);
@@ -633,8 +639,31 @@ font_render_to(PyObject *self, PyObject *args)
 
     if (!blend_flags)
         blend_flags = 0;
-    pgSurface_Blit(surf_to_render, (pgSurfaceObject *)render_result, &dest_rect, NULL, blend_flags);
-    Py_RETURN_NONE;
+    
+    printf("aaa2\n");
+
+    result = 
+        pgSurface_Blit(surf_to_render, (pgSurfaceObject *)render_result, &dest_rect, NULL, blend_flags);
+
+    if (result != 0)
+        return NULL;
+
+    printf("aaa4242\n");
+
+    /*
+    if (!blend_flags)
+        blend_flags = 0;
+
+    result =
+        pgSurface_Blit(self, srcobject, &dest_rect, src_rect, blend_flags);
+
+    if (result != 0)
+        return NULL;
+
+    return pgRect_New(&dest_rect);
+    */
+    printf("nearly the end\n");
+    return pgRect_New(&dest_rect);
 }
 
 static PyObject *
