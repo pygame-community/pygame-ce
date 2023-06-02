@@ -100,8 +100,14 @@ def drawhistory(win, history):
     img = font.render("Event History Area", 1, (155, 155, 155), (0, 0, 0))
     win.blit(img, (2, 132))
 
-    img = font.render(history, 1, (50, 200, 50), (0, 0, 0), wraplength=640)
+    img = font.render("\n".join(history), 1, (50, 200, 50), (0, 0, 0), wraplength=640)
     win.blit(img, (10, 250))
+
+
+def draw_usage_in_history(history, text):
+    for line in text.split("\n"):
+        if "===" not in line and line != "":
+            history.append(line)
 
 
 def main():
@@ -118,22 +124,22 @@ def main():
     img_on_off.append(font.render("Off", 1, (0, 0, 0), (255, 50, 50)))
     img_on_off.append(font.render("On", 1, (0, 0, 0), (50, 255, 50)))
 
-    # stores multiline text representing what has gone through the event queue
-    history = ""
+    # stores lines of text representing what has gone through the event queue
+    history = []
 
     # let's turn on the joysticks just so we can play with em
     for x in range(pygame.joystick.get_count()):
         if SDL2 and pygame._sdl2.controller.is_controller(x):
             c = pygame._sdl2.controller.Controller(x)
-            txt = f"Enabled controller: {c.name}\n"
+            txt = f"Enabled controller: {c.name}"
         else:
             j = pygame.joystick.Joystick(x)
-            txt = f"Enabled joystick: {j.get_name()}\n"
+            txt = f"Enabled joystick: {j.get_name()}"
 
-        history += txt
+        history.append(txt)
 
     if not pygame.joystick.get_count():
-        history += "No Joysticks to Initialize\n"
+        history.append("No Joysticks to Initialize")
 
     going = True
     while going:
@@ -145,7 +151,7 @@ def main():
                     global last_key
                     last_key = e.key
                 if e.key == pygame.K_h:
-                    history += usage.strip().replace("=", "").replace("\n\n", "")
+                    draw_usage_in_history(history, usage)
                 if SDL2 and e.key == pygame.K_c:
                     current_state = pygame._sdl2.controller.get_eventstate()
                     pygame._sdl2.controller.set_eventstate(not current_state)
@@ -157,9 +163,9 @@ def main():
                 pygame.mouse.set_visible(not pygame.mouse.get_visible())
 
             if e.type != pygame.MOUSEMOTION:
-                txt = f"{pygame.event.event_name(e.type)}: {e.dict}\n"
-                history += txt
-                history = "\n".join(history.split("\n")[-13:])
+                txt = f"{pygame.event.event_name(e.type)}: {e.dict}"
+                history.append(txt)
+                history = history[-13:]
 
             if e.type == pygame.VIDEORESIZE:
                 win = pygame.display.set_mode(e.size, pygame.RESIZABLE)
