@@ -2,7 +2,6 @@ import pygame
 from pygame.locals import *
 import os
 import time
-import sys
 
 """
 A little "console" where you can write in text.
