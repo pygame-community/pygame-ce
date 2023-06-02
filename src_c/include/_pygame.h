@@ -159,8 +159,20 @@ typedef struct pg_bufferinfo_s {
 #define pg_EnvShouldBlendAlphaSDL2 \
     (*(char *(*)(void))PYGAMEAPI_GET_SLOT(base, 23))
 
+#define pg_GetPkgdataResource \
+    (*(PyObject * (*)(const char *)) PYGAMEAPI_GET_SLOT(base, 24))
+
 #define import_pygame_base() IMPORT_PYGAME_MODULE(base)
 #endif /* ~PYGAMEAPI_BASE_INTERNAL */
+
+/*
+ * IMAGE module
+ */
+#ifndef PYGAMEAPI_IMAGE_INTERNAL
+#define pgImage_LoadBasic \
+    (*(PyObject * (*)(PyObject *)) PYGAMEAPI_GET_SLOT(image, 0))
+#define import_pygame_image() IMPORT_PYGAME_MODULE(image)
+#endif
 
 typedef struct {
     PyObject_HEAD SDL_Rect r;
@@ -480,6 +492,7 @@ PYGAMEAPI_DEFINE_SLOTS(rwobject);
 PYGAMEAPI_DEFINE_SLOTS(pixelarray);
 PYGAMEAPI_DEFINE_SLOTS(color);
 PYGAMEAPI_DEFINE_SLOTS(math);
+PYGAMEAPI_DEFINE_SLOTS(image);
 #else  /* ~PYGAME_H */
 PYGAMEAPI_EXTERN_SLOTS(base);
 PYGAMEAPI_EXTERN_SLOTS(rect);
@@ -493,6 +506,7 @@ PYGAMEAPI_EXTERN_SLOTS(rwobject);
 PYGAMEAPI_EXTERN_SLOTS(pixelarray);
 PYGAMEAPI_EXTERN_SLOTS(color);
 PYGAMEAPI_EXTERN_SLOTS(math);
+PYGAMEAPI_EXTERN_SLOTS(image);
 #endif /* ~PYGAME_H */
 
 #endif /* PYGAME_H */

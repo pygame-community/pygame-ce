@@ -24,6 +24,7 @@
 /*
  *  image module for pygame
  */
+#define PYGAMEAPI_IMAGE_INTERNAL
 #include "pygame.h"
 
 #include "pgcompat.h"
@@ -66,12 +67,12 @@ find_extension(const char *fullname)
 }
 
 static PyObject *
-image_load_basic(PyObject *self, PyObject *obj)
+pgImage_LoadBasic(PyObject *fileobj)
 {
     PyObject *final;
     SDL_Surface *surf;
 
-    SDL_RWops *rw = pgRWops_FromObject(obj, NULL);
+    SDL_RWops *rw = pgRWops_FromObject(fileobj, NULL);
     if (rw == NULL) {
         return NULL;
     }
@@ -88,6 +89,12 @@ image_load_basic(PyObject *self, PyObject *obj)
         SDL_FreeSurface(surf);
     }
     return final;
+}
+
+static PyObject *
+image_load_basic(PyObject *self, PyObject *obj)
+{
+    return pgImage_LoadBasic(obj);
 }
 
 static PyObject *
@@ -1732,6 +1739,9 @@ MODINIT_DEFINE(image)
 {
     PyObject *module;
     PyObject *extmodule;
+    PyObject *apiobj;
+
+    static void *c_api[PYGAMEAPI_IMAGE_NUMSLOTS];
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "image",
@@ -1787,6 +1797,15 @@ MODINIT_DEFINE(image)
         // if the module could not be loaded, dont treat it like an error
         PyErr_Clear();
     }
+
+    c_api[0] = pgImage_LoadBasic;
+
+    apiobj = encapsulate_api(c_api, "image");
+    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
+        Py_XDECREF(apiobj);
+        goto error;
+    }
+
     return module;
 
 error:

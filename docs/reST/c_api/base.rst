@@ -183,3 +183,8 @@ C header: src_c/include/pygame.h
    This functions is called by pygame.display.set_mode().
 
    Availability: SDL 2.
+
+.. c:function:: PyObject* pg_GetPkgdataResource(const char *filename)
+
+   Returns the encoded file path of the queried filename, 
+   returns *NULL* on failure.

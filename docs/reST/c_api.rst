@@ -19,6 +19,7 @@ pygame C API
    c_api/surface.rst
    c_api/surflock.rst
    c_api/version.rst
+   c_api/image.rst
 
 
 src_c/include/ contains header files for applications

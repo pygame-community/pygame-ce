@@ -169,8 +169,6 @@ _ftfont_getdebugcachestats(pgFontObject *, void *);
  */
 static PyObject *
 get_metrics(FontRenderMode *, pgFontObject *, PGFT_String *);
-static PyObject *
-load_font_res(const char *);
 static int
 parse_dest(PyObject *, int *, int *);
 static int
@@ -209,57 +207,6 @@ free_string(PGFT_String *);
     }
 
 #define DEFAULT_FONT_NAME "freesansbold.ttf"
-#define PKGDATA_MODULE_NAME "pygame.pkgdata"
-#define RESOURCE_FUNC_NAME "getResource"
-
-static PyObject *
-load_font_res(const char *filename)
-{
-    PyObject *load_basicfunc = 0;
-    PyObject *pkgdatamodule = 0;
-    PyObject *resourcefunc = 0;
-    PyObject *result = 0;
-    PyObject *tmp;
-
-    pkgdatamodule = PyImport_ImportModule(PKGDATA_MODULE_NAME);
-    if (!pkgdatamodule) {
-        goto font_resource_end;
-    }
-
-    resourcefunc = PyObject_GetAttrString(pkgdatamodule, RESOURCE_FUNC_NAME);
-    if (!resourcefunc) {
-        goto font_resource_end;
-    }
-
-    result = PyObject_CallFunction(resourcefunc, "s", filename);
-    if (!result) {
-        goto font_resource_end;
-    }
-
-    tmp = PyObject_GetAttrString(result, "name");
-    if (tmp) {
-        PyObject *closeret;
-        if (!(closeret = PyObject_CallMethod(result, "close", NULL))) {
-            Py_DECREF(result);
-            Py_DECREF(tmp);
-            result = NULL;
-            goto font_resource_end;
-        }
-        Py_DECREF(closeret);
-
-        Py_DECREF(result);
-        result = tmp;
-    }
-    else {
-        PyErr_Clear();
-    }
-
-font_resource_end:
-    Py_XDECREF(pkgdatamodule);
-    Py_XDECREF(resourcefunc);
-    Py_XDECREF(load_basicfunc);
-    return result;
-}
 
 static int
 parse_dest(PyObject *dest, int *x, int *y)
@@ -726,7 +673,7 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
         self->resolution = FREETYPE_STATE->resolution;
     }
     if (file == Py_None) {
-        file = load_font_res(DEFAULT_FONT_NAME);
+        file = pg_GetPkgdataResource(DEFAULT_FONT_NAME);
 
         if (!file) {
             PyErr_SetString(PyExc_RuntimeError, "Failed to find default font");

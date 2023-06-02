@@ -2063,6 +2063,78 @@ pg_uninstall_parachute(void)
 #endif
 }
 
+PyObject *
+pg_GetPkgdataResource(const char *filename)
+{
+    PyObject *pkgdatamodule = NULL;
+    PyObject *resourcefunc = NULL;
+    PyObject *fresult = NULL;
+    PyObject *close_result;
+    PyObject *name = NULL;
+    PyObject *encoded = NULL;
+
+    // import pygame.pkgdata
+    pkgdatamodule = PyImport_ImportModule("pygame.pkgdata");
+    if (!pkgdatamodule)
+        goto get_resource_end;
+
+    // resourcefunc = pygame.pkgdata.getResource
+    resourcefunc = PyObject_GetAttrString(pkgdatamodule, "getResource");
+    if (!resourcefunc)
+        goto get_resource_end;
+
+    // fresult = resourcefunc(filename)
+    fresult = PyObject_CallFunction(resourcefunc, "s", filename);
+    if (!fresult)
+        goto get_resource_end;
+
+    // if hasattr(fresult,"name"):
+    //    fresult.close()
+    //    fresult = fresult.name
+    name = PyObject_GetAttrString(fresult, "name");
+    if (name != NULL) {
+        if (PyUnicode_Check(name)) {
+            close_result = PyObject_CallMethod(fresult, "close", NULL);
+            if (close_result) {
+                Py_DECREF(close_result);
+            }
+            else {
+                PyErr_Clear();
+            }
+            Py_DECREF(fresult);
+            fresult = name;
+            name = NULL;
+        }
+    }
+    else {
+        PyErr_Clear();
+    }
+
+    // encoded = fresult.encode("UTF-8")
+    // if encoded is not None:
+    //     fresult = encoded
+    encoded = PyUnicode_AsEncodedString(fresult, "UTF-8", NULL);
+    if (encoded == NULL) {
+        Py_DECREF(fresult);
+        fresult = NULL;
+        goto get_resource_end;
+    }
+    else if (encoded != Py_None) {
+        Py_DECREF(fresult);
+        fresult = encoded;
+    }
+    else {
+        Py_DECREF(encoded);
+    }
+
+    // return fresult
+get_resource_end:
+    Py_XDECREF(pkgdatamodule);
+    Py_XDECREF(resourcefunc);
+    Py_XDECREF(name);
+    return fresult;
+}
+
 /* bind functions to python */
 
 static PyMethodDef _base_methods[] = {
@@ -2170,8 +2242,9 @@ MODINIT_DEFINE(base)
     c_api[21] = pg_GetDefaultWindowSurface;
     c_api[22] = pg_SetDefaultWindowSurface;
     c_api[23] = pg_EnvShouldBlendAlphaSDL2;
+    c_api[24] = pg_GetPkgdataResource;
 
-#define FILLED_SLOTS 24
+#define FILLED_SLOTS 25
 
 #if PYGAMEAPI_BASE_NUMSLOTS != FILLED_SLOTS
 #error export slot count mismatch

@@ -67,8 +67,6 @@ static unsigned int current_ttf_generation = 0;
 static int font_initialized = 1;
 #else
 static int font_initialized = 0;
-static const char pkgdatamodule_name[] = "pygame.pkgdata";
-static const char resourcefunc_name[] = "getResource";
 #endif
 static const char font_defaultname[] = "freesansbold.ttf";
 static const int font_defaultsize = 20;
@@ -103,66 +101,6 @@ utf_8_needs_UCS_4(const char *str)
     return 0;
 }
 #endif
-
-/* Return an encoded file path, a file-like object or a NULL pointer.
- * May raise a Python error. Use PyErr_Occurred to check.
- */
-static PyObject *
-font_resource(const char *filename)
-{
-    PyObject *pkgdatamodule = NULL;
-    PyObject *resourcefunc = NULL;
-    PyObject *result = NULL;
-    PyObject *tmp;
-
-    pkgdatamodule = PyImport_ImportModule(pkgdatamodule_name);
-    if (pkgdatamodule == NULL) {
-        return NULL;
-    }
-
-    resourcefunc = PyObject_GetAttrString(pkgdatamodule, resourcefunc_name);
-    Py_DECREF(pkgdatamodule);
-    if (resourcefunc == NULL) {
-        return NULL;
-    }
-
-    result = PyObject_CallFunction(resourcefunc, "s", filename);
-    Py_DECREF(resourcefunc);
-    if (result == NULL) {
-        return NULL;
-    }
-
-    tmp = PyObject_GetAttrString(result, "name");
-    if (tmp != NULL) {
-        PyObject *closeret;
-        if (!(closeret = PyObject_CallMethod(result, "close", NULL))) {
-            Py_DECREF(result);
-            Py_DECREF(tmp);
-            return NULL;
-        }
-        Py_DECREF(closeret);
-        Py_DECREF(result);
-        result = tmp;
-    }
-    else if (!PyErr_ExceptionMatches(PyExc_MemoryError)) {
-        PyErr_Clear();
-    }
-
-    tmp = pg_EncodeString(result, "UTF-8", NULL, NULL);
-    if (tmp == NULL) {
-        Py_DECREF(result);
-        return NULL;
-    }
-    else if (tmp != Py_None) {
-        Py_DECREF(result);
-        result = tmp;
-    }
-    else {
-        Py_DECREF(tmp);
-    }
-
-    return result;
-}
 
 static PyObject *
 fontmodule_init(PyObject *self, PyObject *_null)
@@ -935,7 +873,7 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     if (obj == Py_None) {
         /* default font */
         Py_DECREF(obj);
-        obj = font_resource(font_defaultname);
+        obj = pg_GetPkgdataResource(font_defaultname);
         if (obj == NULL) {
             if (PyErr_Occurred() == NULL) {
                 PyErr_Format(PyExc_RuntimeError,
@@ -955,7 +893,7 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
              * default font */
             PyErr_Clear();
             Py_DECREF(obj);
-            obj = font_resource(font_defaultname);
+            obj = pg_GetPkgdataResource(font_defaultname);
             if (obj == NULL) {
                 if (PyErr_Occurred() == NULL) {
                     PyErr_Format(PyExc_RuntimeError,
