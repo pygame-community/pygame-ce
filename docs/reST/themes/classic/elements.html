@@ -34,8 +34,8 @@
         </form>
       </div>
 	  </div>
+      <hr style="color:#424242;border-bottom:none;border-style: solid;border-bottom-style:none;">
       <div>
-        <hr style="color:black;border-bottom:none;border-style: dotted;border-bottom-style:none;">
 {#-
 
 We render those sections based on functionality.
@@ -53,7 +53,8 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%- set hidden = ['Overlay', 'cdrom', 'sdl2_video', 'sdl2_controller'] %}
 {%-   if pyg_sections %}
 
-        <p class="bottom"><b>Window</b><br>
+        <p class="bottom"><b>Window</b><br></p>
+        <div class="bottom" id="Window">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
 {%-       set docname = section['docname'] %}
@@ -64,12 +65,13 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%-         set uri = uri + '#' + section['refid'] %}
 {%-       endif %}
 {%-       if name in window %}
-{{- sep() }}	    <a href="{{ uri }}">{{ name }}</a>
+{{- sep() }}	    <a href="{{ uri }}" class="Window">{{ name }}</a>
 {%-       endif %}
 {%-     endfor %}
-        </p>
+        </div>
 
-        <p class="bottom"><b>Drawing / Surface</b><br>
+        <p class="bottom"><b>Drawing / Surface</b><br></p>
+        <div class="bottom" id="Drawing">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
 {%-       set docname = section['docname'] %}
@@ -80,12 +82,13 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%-         set uri = uri + '#' + section['refid'] %}
 {%-       endif %}
 {%-       if name in drawing %}
-{{- sep() }}	    <a href="{{ uri }}"> {{ name }}</a>
+{{- sep() }}	    <a href="{{ uri }}" class="Drawing">{{ name }}</a>
 {%-       endif %}
 {%-     endfor %}
-        </p>
+        </div>
 
-         <p class="bottom"><b>Events/Input</b><br>
+        <p class="bottom" onclick=""><b>Events/Input</b><br></p>
+        <div class="bottom" id="Events">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
 {%-       set docname = section['docname'] %}
@@ -96,12 +99,13 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%-         set uri = uri + '#' + section['refid'] %}
 {%-       endif %}
 {%-       if name in events %}
-{{- sep() }}	    <a href="{{ uri }}">{{ name }}</a>
+{{- sep() }}	    <a href="{{ uri }}" class="Events"> {{ name }}</a>
 {%-       endif %}
 {%-     endfor %}
-        </p>
+        </div>
 
-        <p class="bottom"><b>Collisions</b><br>
+        <p class="bottom"><b>Collisions</b><br></p>
+        <div class="bottom" id="Collisions">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
 {%-       set docname = section['docname'] %}
@@ -112,12 +116,13 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%-         set uri = uri + '#' + section['refid'] %}
 {%-       endif %}
 {%-       if name in collisions %}
-{{- sep() }}	    <a href="{{ uri }}">{{ name }}</a>
+{{- sep() }}	    <a href="{{ uri }}" class="Collisions">{{ name }}</a>
 {%-       endif %}
 {%-     endfor %}
-        </p>
+        </div>
 
-        <p class="bottom"><b>Music</b><br>
+        <p class="bottom"><b>Music</b><br></p>
+        <div class="bottom" id="Music">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
 {%-       set docname = section['docname'] %}
@@ -128,12 +133,13 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%-         set uri = uri + '#' + section['refid'] %}
 {%-       endif %}
 {%-       if name in music %}
-{{- sep() }}	    <a href="{{ uri }}">{{ name }}</a>
+{{- sep() }}	    <a href="{{ uri }}" class="Music">{{ name }}</a>
 {%-       endif %}
 {%-     endfor %}
-        </p>
+        </div>
 
-        <p class="bottom"><b>Other</b><br>
+        <p class="bottom"><b>Other</b><br></p>
+        <div class="bottom" id="Other">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
 {%-       set docname = section['docname'] %}
@@ -147,7 +153,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {{- sep() }}	    <a href="{{ uri }}">{{ name }}</a>
 {%-       endif %}
 {%-     endfor %}
-        </p>
+        </div>
       </div>
 
 {%-   endif  %}

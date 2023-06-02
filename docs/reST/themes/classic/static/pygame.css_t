@@ -95,23 +95,25 @@ div.header {
     padding: 0.5em;
     line-height: 1.2em;
 	position: fixed;
+	max-height: 98vh;
 }
 
 div.header > div {
-    border: {{ theme_headerborder }};
+    /* border: {{ theme_headerborder }}; */
     border-collapse: collapse;
     background-color: {{ theme_headerbgcolor }};
-    /* background-image: linear-gradient(to bottom right, {{ theme_headerbgcolor}}, {{ theme_bgcolor }}); */
+    background-image: linear-gradient(to bottom, {{ theme_headerbgcolor}}, {{ theme_bgcolor }});
 }
 .dark-theme div.header > div {
     background-color: {{ theme_dark_headerbgcolor }};
     border: {{ theme_dark_headerborder }};
-    /* background-image: linear-gradient(to bottom right, {{ theme_dark_headerbgcolor}}, {{ theme_dark_bgcolor }}); */
+    background-image: linear-gradient(to bottom, {{ theme_dark_headerbgcolor }}, {{ theme_dark_bgcolor }});
 }
 div.header .logo {
     background-color: {{ theme_logobgcolor }};
+    background-image: linear-gradient(to bottom, {{ theme_logobgcolor }}, {{ theme_headerbgcolor }});
     padding: 0.3em;
-    border-right: 3px solid black;
+    /* border-right: 3px solid black; */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -119,6 +121,7 @@ div.header .logo {
 }
 .dark-theme div.header .logo {
     background-color: {{ theme_dark_logobgcolor }};
+    background-image: linear-gradient(to bottom, {{ theme_dark_logobgcolor}}, {{ theme_dark_headerbgcolor }});
     border: none;
 }
 div.header .logo img {
@@ -129,7 +132,7 @@ div.header .logo img {
 
 div.header .pagelinks {
     padding: 0.3em;
-    text-align: center;
+    text-align: left;
     vertical-align: middle;
     flex-grow: 1;
 }
@@ -145,7 +148,7 @@ div.header p.bottom {
 }
 
 div.header .pagelinks a {
-    text-decoration: underline;
+	text-decoration: none;
 }
 .dark-theme div.header .pagelinks a {
     text-decoration: none;
@@ -176,6 +179,7 @@ div.header .pagelinks a:hover {
     color: {{ theme_dark_linkcolor2 }};
     font-size: 1.1rem;
     font-weight: 600;
+    margin-left: 1em;
 }
 
 .dl .dt{
@@ -195,6 +199,7 @@ div.header .pagelinks a:hover {
 }
 
 .pagelinks .top .nav-top-wrapper{
+	text-align: center;
     flex-grow: 1;
 }
 
@@ -287,7 +292,6 @@ div.document {
     justify-content: space-evenly;
     align-items: flex-start;
     width: 17vw;
-    height: 99vh;
 
     transition-property: width;
 	transition-duration: 2s;
@@ -303,12 +307,15 @@ div.document {
         flex-direction: column;
         gap: 1rem;
     }
+    .flex-container {
+        width: 30px;
+    }
 }
 
 @media only screen and (max-width: 680px) {
   .flex-container {
     flex-direction: column;
-    width: 5vw;
+    width: 30px;
   }
   .bottom {
     hidden
