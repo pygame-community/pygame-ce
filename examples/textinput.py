@@ -77,8 +77,8 @@ class Game:
                     self.text = new_text
             if event.type == TEXTINPUT:
                 last_line_pos = 0
-                for i, chr in enumerate(self.text):
-                    if chr == "\n":
+                for i, c in enumerate(self.text):
+                    if c == "\n":
                         last_line_pos = i
 
                 if y_pos < self.SCREEN_HEIGHT - 100:
