@@ -332,11 +332,6 @@ PyInit_pygame_static()
 #include "simd_blitters_avx2.c"
 #include "simd_blitters_sse2.c"
 
-#undef pgVidInfo_Type
-#undef pgVidInfo_New
-
-#include "display.c"
-
 #include "draw.c"
 
 #undef pg_EncodeString
@@ -353,6 +348,11 @@ PyInit_pygame_static()
 #include "image.c"
 
 #include "imageext.c"
+
+#undef pgVidInfo_Type
+#undef pgVidInfo_New
+
+#include "display.c"
 
 #include "mask.c"
 
