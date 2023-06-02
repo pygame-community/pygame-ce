@@ -22,7 +22,7 @@ pgAnimatedSurface_New(int nframes)
 }
 
 Py_ssize_t
-pgAnimatedSurface_GetIndexByTime(pgAnimatedSurfaceObject *anim, Sint64 time)
+pgAnimatedSurface_GetIndexByTime(pgAnimatedSurfaceObject *anim, Uint64 time)
 {
     int i;
     Py_ssize_t size = PyList_Size(anim->frame_list);
@@ -43,7 +43,7 @@ pgAnimatedSurface_GetIndexByTime(pgAnimatedSurfaceObject *anim, Sint64 time)
             break;
         case ANIM_LOOP_PINGPONG:
             time %= total_time * 2;
-            time = total_time - llabs(time - total_time);
+            time = total_time - llabs((Sint64)time - (Sint64)total_time);
             break;
         default:
             PyErr_SetString(PyExc_RuntimeError, "Unknown loop mode.");
