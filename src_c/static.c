@@ -25,6 +25,7 @@
 #undef import_pygame_bufferproxy
 #undef import_pygame_rwobject
 #undef import_pygame_event
+#undef import_pygame_image
 
 void
 import_pygame_base(void)
@@ -63,6 +64,11 @@ import_pygame_event(void)
 
 void
 import_pygame_joystick(void)
+{
+}
+
+void
+import_pygame_image(void)
 {
 }
 
