@@ -17,6 +17,7 @@ pygame.init()
 
 class Game:
     def __init__(self):
+        """Define the game's variables."""
         self.screen = pygame.display.set_mode((700, 500))
         pygame.display.set_caption("Text Input")
         self.pos = []
@@ -39,9 +40,11 @@ class Game:
             "unifont",
             "Arial",
         ]
+
         self.FONT_NAMES = ",".join(str(x) for x in self.font_names)
         self.font = pygame.font.SysFont(self.font_names, 32)
         self.small_font = pygame.font.SysFont(self.font_names, 32)
+        print("Using font: " + self.font.name)
 
     def handle_events(self, y_pos):
         # Handles the events
@@ -91,6 +94,7 @@ class Game:
                 exit()
 
     def update(self):
+        """Renders all of the text and all of the chat messages."""
         message_spacing = 50
         self.get_fonts()
         while True:
