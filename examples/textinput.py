@@ -95,7 +95,7 @@ class Game:
         self.get_fonts()
         while True:
             self.input_img = self.font.render(
-                ">" + self.text + ["|", ""][int(time.time() % 2)], False, (25, 255, 100)
+                ">" + self.text + ["|", ""][int(time.time() % 2)], True, (25, 255, 100)
             )
 
             y_pos = self.input_img.get_height() + message_spacing
