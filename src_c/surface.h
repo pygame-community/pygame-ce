@@ -359,7 +359,7 @@ int
 pg_warn_simd_at_runtime_but_uncompiled();
 
 #ifdef PYGAMEAPI_SURFACE_INTERNAL
-PyTypeObject pgAnimatedSurface_Type;
+extern PyTypeObject pgAnimatedSurface_Type;
 
 pgAnimatedSurfaceObject *
 pgAnimatedSurface_New(int nframes);
