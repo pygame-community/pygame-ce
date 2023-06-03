@@ -85,6 +85,7 @@ html {
 }
 html.dark-theme body {
     color: {{ theme_dark_textcolor }};
+    background-color: {{ theme_dark_bgcolor }};
 }
 html:has(body.dark-theme) {
     background-color: {{ theme_dark_bgcolor }};
@@ -285,7 +286,27 @@ div.document {
 .dark-theme *[data-theme="light-theme"]{
     display: none;
 }
-
+::-webkit-scrollbar {
+	border-radius: 5px;
+	width: 10px;
+}
+::-webkit-scrollbar-track {
+	background: rgba(0, 0, 0, 0);
+}
+::-webkit-scrollbar-thumb {
+	background: #6aee28;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: #4ace08;
+}
+.dark-theme {
+	::-webkit-scrollbar-thumb {
+		background: #888
+	}
+	::-webkit-scrollbar-thumb:hover {
+		background: #555;
+	}
+}
 .flex-container {
     display: block;
     flex-direction: column;
