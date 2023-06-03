@@ -1,0 +1,3 @@
+const page = document
+
+page.

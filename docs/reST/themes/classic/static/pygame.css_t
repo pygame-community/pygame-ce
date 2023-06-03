@@ -174,7 +174,7 @@ div.header .pagelinks a:hover {
 .pagelinks .bottom a {
     font-weight: 400;
     color: {{ theme_linkcolor2 }};
-}
+    margin-left: 1em;}
 .dark-theme .pagelinks .bottom a {
     color: {{ theme_dark_linkcolor2 }};
     font-size: 1.1rem;

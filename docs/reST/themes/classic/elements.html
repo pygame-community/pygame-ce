@@ -35,7 +35,7 @@
       </div>
 	  </div>
       <hr style="color:#424242;border-bottom:none;border-style: solid;border-bottom-style:none;">
-      <div>
+      <div style="overflow-y: auto; height: 75vh;direction:">
 {#-
 
 We render those sections based on functionality.
@@ -70,6 +70,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%-     endfor %}
         </div>
 
+        <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
         <p class="bottom"><b>Drawing / Surface</b><br></p>
         <div class="bottom" id="Drawing">
 {%      set sep = joiner("<br>") %}
@@ -87,6 +88,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%-     endfor %}
         </div>
 
+        <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
         <p class="bottom" onclick=""><b>Events/Input</b><br></p>
         <div class="bottom" id="Events">
 {%      set sep = joiner("<br>") %}
@@ -104,6 +106,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%-     endfor %}
         </div>
 
+        <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
         <p class="bottom"><b>Collisions</b><br></p>
         <div class="bottom" id="Collisions">
 {%      set sep = joiner("<br>") %}
@@ -121,6 +124,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%-     endfor %}
         </div>
 
+        <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
         <p class="bottom"><b>Music</b><br></p>
         <div class="bottom" id="Music">
 {%      set sep = joiner("<br>") %}
@@ -138,6 +142,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%-     endfor %}
         </div>
 
+        <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
         <p class="bottom"><b>Other</b><br></p>
         <div class="bottom" id="Other">
 {%      set sep = joiner("<br>") %}
