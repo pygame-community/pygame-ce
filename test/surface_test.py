@@ -1153,6 +1153,22 @@ class GeneralSurfaceTests(unittest.TestCase):
         finally:
             pygame.display.quit()
 
+    def test_convert_palettize(self):
+        pygame.display.init()
+        try:
+            pygame.display.set_mode((640, 480))
+
+            surf = pygame.Surface((150, 250))
+            surf.fill((255, 50, 0))
+            surf = surf.convert(8)
+            surf2 = pygame.Surface((150, 250), depth=8)
+            surf2.fill((255, 50, 0))
+
+            self.assertEqual(surf.get_at((50, 50)), surf2.get_at((50, 50)))
+
+        finally:
+            pygame.display.quit()
+
     def test_src_alpha_issue_1289(self):
         """blit should be white."""
         surf1 = pygame.Surface((1, 1), pygame.SRCALPHA, 32)
