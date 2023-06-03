@@ -195,6 +195,7 @@ controller_get_axis(pgControllerObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(pgExc_SDLError, "Invalid axis");
     }
 
+    // GetAxis returns values from -32768 to 32767
     return PyFloat_FromDouble(
         SDL_GameControllerGetAxis(self->controller, axis) / 32767.0);
 }
@@ -369,6 +370,7 @@ controller_rumble(pgControllerObject *self, PyObject *args, PyObject *kwargs)
     }
 
 #if SDL_VERSION_ATLEAST(2, 0, 9)
+    // rumble takes values in range 0 to 0xFFFF (65535)
     low_freq = MAX(MIN(low_freq, 1.0f), 0.0f) * 65535;
     high_freq = MAX(MIN(high_freq, 1.0f), 0.0f) * 65535;
 
