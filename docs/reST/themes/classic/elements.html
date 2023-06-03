@@ -35,7 +35,7 @@
       </div>
 	  </div>
       <hr style="color:#424242;border-bottom:none;border-style: solid;border-bottom-style:none;">
-      <div style="overflow-y: auto; height: 75vh;">
+      <div style="overflow-y: auto; height: 65vh;">
 {#-
 
 We render those sections based on functionality.
@@ -53,7 +53,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%- set hidden = ['Overlay', 'cdrom', 'sdl2_video', 'sdl2_controller'] %}
 {%-   if pyg_sections %}
 
-        <p class="bottom"><b>Window</b><br></p>
+        <p class="bottom" onclick="toggleSectionVisibility('Window');"><b>Window</b><br></p>
         <div class="bottom" id="Window">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -71,7 +71,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
         </div>
 
         <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
-        <p class="bottom"><b>Drawing / Surface</b><br></p>
+        <p class="bottom" onclick="toggleSectionVisibility('Drawing');"><b>Drawing / Surface</b><br></p>
         <div class="bottom" id="Drawing">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -89,7 +89,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
         </div>
 
         <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
-        <p class="bottom" onclick=""><b>Events/Input</b><br></p>
+        <p class="bottom" onclick="toggleSectionVisibility('Events');"><b>Events/Input</b><br></p>
         <div class="bottom" id="Events">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -107,7 +107,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
         </div>
 
         <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
-        <p class="bottom"><b>Collisions</b><br></p>
+        <p class="bottom" onclick="toggleSectionVisibility('Collisions');"><b>Collisions</b><br></p>
         <div class="bottom" id="Collisions">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -125,7 +125,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
         </div>
 
         <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
-        <p class="bottom"><b>Music</b><br></p>
+        <p class="bottom" onclick="toggleSectionVisibility('Music');"><b>Music</b><br></p>
         <div class="bottom" id="Music">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -143,7 +143,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
         </div>
 
         <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
-        <p class="bottom"><b>Other</b><br></p>
+        <p class="bottom" onclick="toggleSectionVisibility('Other')"><b>Other</b><br></p>
         <div class="bottom" id="Other">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -178,4 +178,11 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 
 {%- block relbaritems %}
     <script type="text/javascript" src="https://www.pyg ame.org/comment/jquery.plugin.docscomments.js"></script>
+    <script type="text/javascript">
+      if (localStorage.getItem('hidden') !== null){
+        localStorage.getItem('hidden').split("|").forEach(element => {
+          if (document.getElementById(element) !== null) {document.getElementById(element).hidden = true};
+        });
+      }
+    </script>
 {% endblock %}
