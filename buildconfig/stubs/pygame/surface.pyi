@@ -62,7 +62,7 @@ class Surface:
     copy = __copy__
     def blit(
         self,
-        source: Surface,
+        source: Union[Surface, AnimatedSurface],
         dest: Union[Coordinate, RectValue],
         area: Optional[RectValue] = None,
         special_flags: int = 0,
