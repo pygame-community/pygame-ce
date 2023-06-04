@@ -37,7 +37,7 @@ Installation
 Aide
 ----
 
-Si vous venez de commencer avec Pygame, vous devriez être capable de vous y lancer assez
+Si vous venez de commencer avec pygame, vous devriez être capable de vous y lancer assez
 rapidement. Pygame vient avec un grand nombre de tutoriels et d'introductions. Vous avez
 aussi une documentation très bien référencée sur toute la bibliothèque. Naviguez dans la
 documentation sur la `docs page`_. Vous pouvez aussi y jeter un coup d'œil localement en
@@ -116,7 +116,7 @@ qui ont permis à ce projet de continuer à vivre, et qui ont pratiquement rendu
 travail facile. Merci !
 
 Très grands remerciements à toutes les personnes commentant la documentation,
-et ajoutant du nouveau contenu dans le wiki sur pygame.org et sur pyga.me .  
+et ajoutant du nouveau contenu dans le wiki de `pygame`_ et sur `pygame-ce`_.  
 
 Aussi de très grands remerciements à toutes les personnes créant des jeux et les 
 partageant sur le site pygame.org pour permettre aux autres d'apprendre et de
@@ -171,7 +171,7 @@ différente.
 
 Ceci veut en quelque sorte dire que vous êtes habilité à utiliser pygame-ce
 dans n’importe quel projet que souhaitez, mais que si vous voulez effectuer des 
-changements ou des ajouts à Pygame lui-même, alors vous serez dans l’obligation
+changements ou des ajouts à pygame lui-même, alors vous serez dans l’obligation
 de les publier avec une licence compatible (de préférence en les soumettant au projet
 pygame-ce). Les codes propriétaires et les jeux commerciaux sont autorisés.
 
@@ -198,7 +198,8 @@ Voir les docs/licences pour les licences des dépendances.
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
-.. _pygame: https://pyga.me
+.. _pygame: https://www.pygame.org/docs/
+.. _pygame-ce: https://pyga.me/docs/
 .. _Simple DirectMedia Layer: https://www.libsdl.org
 .. _We need your help: https://www.pygame.org/contribute.html
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
