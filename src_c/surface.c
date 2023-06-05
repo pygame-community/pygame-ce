@@ -304,10 +304,9 @@ static PyGetSetDef surface_getsets[] = {
     {NULL, NULL, NULL, NULL, NULL}};
 
 static struct PyMethodDef surface_methods[] = {
-    {"get_at", surf_get_at, METH_VARARGS, DOC_SURFACE_GETAT},
-    {"set_at", surf_set_at, METH_VARARGS, DOC_SURFACE_SETAT},
-    {"get_at_mapped", surf_get_at_mapped, METH_VARARGS,
-     DOC_SURFACE_GETATMAPPED},
+    {"get_at", surf_get_at, METH_O, DOC_SURFACE_GETAT},
+    {"set_at", surf_set_at, METH_O, DOC_SURFACE_SETAT},
+    {"get_at_mapped", surf_get_at_mapped, METH_O, DOC_SURFACE_GETATMAPPED},
     {"map_rgb", surf_map_rgb, METH_VARARGS, DOC_SURFACE_MAPRGB},
     {"unmap_rgb", surf_unmap_rgb, METH_O, DOC_SURFACE_UNMAPRGB},
 

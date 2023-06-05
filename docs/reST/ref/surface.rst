@@ -434,8 +434,7 @@
       | :sl:`get the color value at a single pixel`
       | :sg:`get_at((x, y)) -> Color`
 
-      Return a copy of the ``RGBA`` Color value at the given pixel. The pixel can
-      either be given as Sequence or as a Vector2. If the Surface has no per 
+      Return a copy of the ``RGBA`` Color value at the given pixel. If the Surface has no per 
       pixel alpha, then the alpha value will always be 255 (opaque). 
       If the pixel position is outside the area of the Surface an
       ``IndexError`` exception will be raised.
@@ -447,13 +446,13 @@
 
       This function will temporarily lock and unlock the Surface as needed.
       
-      .. note:: Any floating point values given in the specified pixel coordiante will be truncated.
+      .. versionchanged:: 2.3.0 now can accept both float coordinates and Vector2s
       
          Returning a Color instead of tuple. Use ``tuple(surf.get_at((x,y)))``
          if you want a tuple, and not a Color. This should only matter if
          you want to use the color as a key in a dict.
       
-      .. versionadded:: 1.9
+      .. versionaddedold:: 1.9
       
       .. ## Surface.get_at ##
 
@@ -462,8 +461,7 @@
       | :sl:`set the color value for a single pixel`
       | :sg:`set_at((x, y), Color) -> None`
 
-      Set the ``RGBA`` or mapped integer color value for a single pixel. The pixel can
-      either be given as Sequence or as a Vector2. If the
+      Set the ``RGBA`` or mapped integer color value for a single pixel. If the
       Surface does not have per pixel alphas, the alpha value is ignored.
       Setting pixels outside the Surface area or outside the Surface clipping
       will have no effect.
@@ -476,7 +474,7 @@
       .. note:: If the surface is palettized, the pixel color will be set to the
                 most similar color in the palette.
 
-      .. note:: Any floating point values given in the specified pixel coordiante will be truncated.
+      .. versionchanged:: 2.3.0 now can accept both float coordinates and Vector2s
 
       .. ## Surface.set_at ##
 
