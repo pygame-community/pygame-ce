@@ -232,7 +232,7 @@ window_set_icon(pgWindowObject *self, PyObject *arg)
 }
 
 static int
-window_set_grab(pgWindowObject *self, PyObject *arg, void *v)
+window_set_grab_mode(pgWindowObject *self, PyObject *arg, void *v)
 {
     int enable = PyObject_IsTrue(arg);
     if (enable == -1)
@@ -244,7 +244,14 @@ window_set_grab(pgWindowObject *self, PyObject *arg, void *v)
 }
 
 static PyObject *
-window_get_grab(pgWindowObject *self, void *v)
+window_get_grab_mode(pgWindowObject *self, void *v)
+{
+    return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
+                           SDL_WINDOW_INPUT_GRABBED);
+}
+
+static PyObject *
+window_get_grabbed(pgWindowObject *self, void *v)
 {
     return PyBool_FromLong(SDL_GetWindowGrab(self->_win));
 }
@@ -703,8 +710,10 @@ static PyMethodDef window_methods[] = {
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef _window_getset[] = {
-    //{"grab", (getter)window_get_grab, (setter)window_set_grab,
-    // DOC_SDL2_VIDEO_WINDOW_GRAB, NULL},
+    {"grab_mode", (getter)window_get_grab_mode, (setter)window_set_grab_mode,
+     DOC_SDL2_VIDEO_WINDOW_GRABMODE, NULL},
+    {"grabbed", (getter)window_get_grabbed, NULL,
+     DOC_SDL2_VIDEO_WINDOW_GRABBED, NULL},
     {"title", (getter)window_get_title, (setter)window_set_title,
      DOC_SDL2_VIDEO_WINDOW_TITLE, NULL},
     {"resizable", (getter)window_get_resizable, (setter)window_set_resizable,
