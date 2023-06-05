@@ -663,7 +663,7 @@ blit_blend_rgba_mul_sse2(SDL_BlitInfo *info)
     __m128i mm_src, mm_dst, mm_zero, mm_two_five_fives;
 
     mm_zero = _mm_setzero_si128();
-    mm_two_five_fives = _mm_set_epi64x(0x00FF00FF00FF00FF, 0x00FF00FF00FF00FF);
+    mm_two_five_fives = _mm_set1_epi64x(0x00FF00FF00FF00FF);
 
     while (height--) {
         if (pre_2_width > 0) {
@@ -754,7 +754,7 @@ blit_blend_rgb_mul_sse2(SDL_BlitInfo *info)
     __m128i mm_src, mm_dst, mm_zero, mm_two_five_fives, mm_alpha_mask;
 
     mm_zero = _mm_setzero_si128();
-    mm_two_five_fives = _mm_set_epi64x(0x00FF00FF00FF00FF, 0x00FF00FF00FF00FF);
+    mm_two_five_fives = _mm_set1_epi64x(0x00FF00FF00FF00FF);
     mm_alpha_mask = _mm_set_epi64x(0x0000000000000000, amask64);
 
     while (height--) {
@@ -910,7 +910,7 @@ blit_blend_rgb_add_sse2(SDL_BlitInfo *info)
 
     __m128i mm_src, mm_dst, mm_alpha_mask;
 
-    mm_alpha_mask = _mm_set_epi32(amask, amask, amask, amask);
+    mm_alpha_mask = _mm_set1_epi32(amask);
 
     while (height--) {
         if (pre_4_width > 0) {
@@ -1038,7 +1038,7 @@ blit_blend_rgb_sub_sse2(SDL_BlitInfo *info)
 
     __m128i mm_src, mm_dst, mm_alpha_mask;
 
-    mm_alpha_mask = _mm_set_epi32(amask, amask, amask, amask);
+    mm_alpha_mask = _mm_set1_epi32(amask);
 
     while (height--) {
         if (pre_4_width > 0) {
@@ -1166,7 +1166,7 @@ blit_blend_rgb_max_sse2(SDL_BlitInfo *info)
 
     __m128i mm_src, mm_dst, mm_alpha_mask;
 
-    mm_alpha_mask = _mm_set_epi32(amask, amask, amask, amask);
+    mm_alpha_mask = _mm_set1_epi32(amask);
 
     while (height--) {
         if (pre_4_width > 0) {
@@ -1294,7 +1294,7 @@ blit_blend_rgb_min_sse2(SDL_BlitInfo *info)
 
     __m128i mm_src, mm_dst, mm_alpha_mask;
 
-    mm_alpha_mask = _mm_set_epi32(amask, amask, amask, amask);
+    mm_alpha_mask = _mm_set1_epi32(amask);
 
     while (height--) {
         if (pre_4_width > 0) {

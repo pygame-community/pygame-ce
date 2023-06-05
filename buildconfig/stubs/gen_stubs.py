@@ -67,7 +67,7 @@ PG_AUTOIMPORT_CLASSES = {
     "font": ["Font"],
     "mixer": ["Channel"],
     "time": ["Clock"],
-    "joystick": ["Joystick"]
+    "joystick": ["Joystick"],
 }
 
 # pygame modules from which __init__.py does the equivalent of
