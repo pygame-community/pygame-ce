@@ -24,7 +24,8 @@ class Window:
     def minimize(self) -> None: ...
     def set_modal_for(self, parent: Window) -> None: ...
     def set_icon(self, icon: Surface) -> None: ...
-    grab: bool
+    grab_mode: bool
+    grabbed: bool
     title: str
     resizable: bool
     borderless: bool
