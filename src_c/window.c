@@ -561,7 +561,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     self->_is_borrowed = SDL_FALSE;
 
     SDL_SetWindowData(_win, "pg_window", self);
-    
+
     PyObject *icon_fileobj = pg_GetPkgdataResource(icon_defaultname);
     PyObject *icon = pgImage_LoadBasic(icon_fileobj);
     if (!icon) {
