@@ -305,7 +305,7 @@ static PyGetSetDef surface_getsets[] = {
 
 static struct PyMethodDef surface_methods[] = {
     {"get_at", surf_get_at, METH_O, DOC_SURFACE_GETAT},
-    {"set_at", surf_set_at, METH_O, DOC_SURFACE_SETAT},
+    {"set_at", surf_set_at, METH_VARARGS, DOC_SURFACE_SETAT},
     {"get_at_mapped", surf_get_at_mapped, METH_O, DOC_SURFACE_GETATMAPPED},
     {"map_rgb", surf_map_rgb, METH_VARARGS, DOC_SURFACE_MAPRGB},
     {"unmap_rgb", surf_unmap_rgb, METH_O, DOC_SURFACE_UNMAPRGB},
@@ -773,19 +773,19 @@ _raise_create_surface_error(void)
 
 /* surface object methods */
 static PyObject *
-surf_get_at(PyObject *self, PyObject *args)
+surf_get_at(PyObject *self, PyObject *position)
 {
     SDL_Surface *surf = pgSurface_AsSurface(self);
     SDL_PixelFormat *format = NULL;
     Uint8 *pixels = NULL;
     int x, y;
-    PyObject *position;
     Uint32 color;
     Uint8 *pix;
     Uint8 rgba[4] = {0, 0, 0, 255};
 
-    if (!PyArg_ParseTuple(args, "O", &position))
-        return NULL;
+    if (!PySequence_Check(position))
+        return RAISE(PyExc_ValueError, "Argument must be a sequence type");
+
     SURF_INIT_CHECK(surf)
 
     if (!pg_TwoIntsFromObj(position, &x, &y)) {
@@ -924,18 +924,18 @@ surf_set_at(PyObject *self, PyObject *args)
 }
 
 static PyObject *
-surf_get_at_mapped(PyObject *self, PyObject *args)
+surf_get_at_mapped(PyObject *self, PyObject *position)
 {
     SDL_Surface *surf = pgSurface_AsSurface(self);
     SDL_PixelFormat *format = NULL;
     Uint8 *pixels = NULL;
     int x, y;
-    PyObject *position;
     Sint32 color;
     Uint8 *pix;
 
-    if (!PyArg_ParseTuple(args, "O", &position))
-        return NULL;
+    if (!PySequence_Check(position))
+        return RAISE(PyExc_ValueError, "Argument must be a sequence type");
+
     SURF_INIT_CHECK(surf)
 
     if (!pg_TwoIntsFromObj(position, &x, &y)) {
