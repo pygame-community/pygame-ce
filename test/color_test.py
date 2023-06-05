@@ -527,7 +527,7 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(c3.b, 164)
         self.assertEqual(c3.a, 255)
 
-        # Issue #286: Is type checking done for Python 3.x?
+        # pygame-ce issue #301: Is type checking done for Python 3.x?
         self.assertRaises(TypeError, operator.add, c1, None)
         self.assertRaises(TypeError, operator.add, None, c1)
 
@@ -556,7 +556,7 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(c3.b, 91)
         self.assertEqual(c3.a, 0)
 
-        # Issue #286: Is type checking done for Python 3.x?
+        # pygame-ce issue #301: Is type checking done for Python 3.x?
         self.assertRaises(TypeError, operator.sub, c1, None)
         self.assertRaises(TypeError, operator.sub, None, c1)
 
@@ -585,7 +585,7 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(c3.b, 9)
         self.assertEqual(c3.a, 255)
 
-        # Issue #286: Is type checking done for Python 3.x?
+        # pygame-ce issue #301: Is type checking done for Python 3.x?
         self.assertRaises(TypeError, operator.mul, c1, None)
         self.assertRaises(TypeError, operator.mul, None, c1)
 
@@ -614,7 +614,7 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(c3.b, 2)
         self.assertEqual(c3.a, 0)
 
-        # Issue #286: Is type checking done for Python 3.x?
+        # pygame-ce issue #301: Is type checking done for Python 3.x?
         self.assertRaises(TypeError, operator.floordiv, c1, None)
         self.assertRaises(TypeError, operator.floordiv, None, c1)
 
@@ -646,7 +646,7 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(c3.b, 7)
         self.assertEqual(c3.a, 15)
 
-        # Issue #286: Is type checking done for Python 3.x?
+        # pygame-ce issue #301: Is type checking done for Python 3.x?
         self.assertRaises(TypeError, operator.mod, c1, None)
         self.assertRaises(TypeError, operator.mod, None, c1)
 
@@ -867,7 +867,7 @@ class ColorTypeTest(unittest.TestCase):
             self.assertTrue(-0.5 <= i2 <= 0.5)
             self.assertTrue(-0.5 <= i3 <= 0.5)
 
-    def test_issue_269(self):
+    def test_issue_284(self):
         """PyColor OverflowError on HSVA with hue value of 360
 
         >>> c = pygame.Color(0)

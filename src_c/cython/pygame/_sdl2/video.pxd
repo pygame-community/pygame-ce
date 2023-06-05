@@ -489,6 +489,10 @@ cdef extern from "pygame.h" nogil:
         cdef SDL_Rect r
         cdef object weakreflist
     
+    ctypedef class pygame._window.Window [object pgWindowObject]:
+        cdef SDL_Window *_win
+        cdef SDL_bool _is_borrowed
+
     ctypedef struct pgSurfaceObject
 
     int pgSurface_Check(object surf)
@@ -508,8 +512,10 @@ cdef extern from "pygame.h" nogil:
     void import_pygame_color()
     pgSurfaceObject *pgSurface_New2(SDL_Surface *info, int owner)
 
+    int pgWindow_Check(object win)
+    void import_pygame_window()
 
-cdef class Window:
+cdef class _Window:
     cdef SDL_Window* _win
     cdef int _is_borrowed
 

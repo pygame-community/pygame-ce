@@ -39,8 +39,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'pygame'
-copyright = '2000-2022, pygame developers'
+project = 'pygame-ce'
+copyright = '2000-2022, pygame developers, 2023 pygame-ce developers'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
