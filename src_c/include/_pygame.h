@@ -172,7 +172,7 @@ typedef struct pg_bufferinfo_s {
 #define pgImage_LoadBasic \
     (*(PyObject * (*)(PyObject *)) PYGAMEAPI_GET_SLOT(image, 0))
 #define import_pygame_image() IMPORT_PYGAME_MODULE(image)
-#endif
+#endif /* ~PYGAMEAPI_IMAGE_INTERNAL */
 
 typedef struct {
     PyObject_HEAD SDL_Rect r;

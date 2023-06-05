@@ -6,7 +6,6 @@
 
 #include "doc/sdl2_video_doc.h"
 
-#ifndef PYGAMEAPI_DISPLAY_INTERNAL  // to pass the static check
 // Copied from display.c
 #if !defined(__APPLE__)
 static char *icon_defaultname = "pygame_icon.bmp";
@@ -15,85 +14,6 @@ static int icon_colorkey = 0;
 static char *icon_defaultname = "pygame_icon_mac.bmp";
 static int icon_colorkey = -1;
 #endif
-
-static char *pkgdatamodule_name = "pygame.pkgdata";
-static char *imagemodule_name = "pygame.image";
-static char *resourcefunc_name = "getResource";
-static char *load_basicfunc_name = "load_basic";
-
-// Copied from display.c
-static void
-pg_close_file(PyObject *fileobj)
-{
-    PyObject *result = PyObject_CallMethod(fileobj, "close", NULL);
-    if (result) {
-        Py_DECREF(result);
-    }
-    else {
-        PyErr_Clear();
-    }
-}
-
-// Copied from display.c
-static PyObject *
-pg_display_resource(char *filename)
-{
-    PyObject *imagemodule = NULL;
-    PyObject *load_basicfunc = NULL;
-    PyObject *pkgdatamodule = NULL;
-    PyObject *resourcefunc = NULL;
-    PyObject *fresult = NULL;
-    PyObject *result = NULL;
-    PyObject *name = NULL;
-
-    pkgdatamodule = PyImport_ImportModule(pkgdatamodule_name);
-    if (!pkgdatamodule)
-        goto display_resource_end;
-
-    resourcefunc = PyObject_GetAttrString(pkgdatamodule, resourcefunc_name);
-    if (!resourcefunc)
-        goto display_resource_end;
-
-    imagemodule = PyImport_ImportModule(imagemodule_name);
-    if (!imagemodule)
-        goto display_resource_end;
-
-    load_basicfunc = PyObject_GetAttrString(imagemodule, load_basicfunc_name);
-    if (!load_basicfunc)
-        goto display_resource_end;
-
-    fresult = PyObject_CallFunction(resourcefunc, "s", filename);
-    if (!fresult)
-        goto display_resource_end;
-
-    name = PyObject_GetAttrString(fresult, "name");
-    if (name != NULL) {
-        if (PyUnicode_Check(name)) {
-            pg_close_file(fresult);
-            Py_DECREF(fresult);
-            fresult = name;
-            name = NULL;
-        }
-    }
-    else {
-        PyErr_Clear();
-    }
-
-    result = PyObject_CallFunction(load_basicfunc, "O", fresult);
-    if (!result)
-        goto display_resource_end;
-
-display_resource_end:
-    Py_XDECREF(pkgdatamodule);
-    Py_XDECREF(resourcefunc);
-    Py_XDECREF(imagemodule);
-    Py_XDECREF(load_basicfunc);
-    Py_XDECREF(fresult);
-    Py_XDECREF(name);
-    return result;
-}
-
-#endif  // PYGAMEAPI_DISPLAY_INTERNAL
 
 static PyTypeObject pgWindow_Type;
 
@@ -641,8 +561,9 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     self->_is_borrowed = SDL_FALSE;
 
     SDL_SetWindowData(_win, "pg_window", self);
-
-    PyObject *icon = pg_display_resource(icon_defaultname);
+    
+    PyObject *icon_fileobj = pg_GetPkgdataResource(icon_defaultname);
+    PyObject *icon = pgImage_LoadBasic(icon_fileobj);
     if (!icon) {
         return -1;
     }
@@ -770,6 +691,11 @@ MODINIT_DEFINE(_window)
     }
 
     import_pygame_rect();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
+    import_pygame_image();
     if (PyErr_Occurred()) {
         return NULL;
     }
