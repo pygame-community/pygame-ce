@@ -507,13 +507,9 @@ PYGAMEAPI_DEFINE_SLOTS(rwobject);
 PYGAMEAPI_DEFINE_SLOTS(pixelarray);
 PYGAMEAPI_DEFINE_SLOTS(color);
 PYGAMEAPI_DEFINE_SLOTS(math);
-<<<<<<< HEAD
 PYGAMEAPI_DEFINE_SLOTS(image);
-#else  /* ~PYGAME_H */
-=======
 PYGAMEAPI_DEFINE_SLOTS(_window);
 #else /* ~PYGAME_H */
->>>>>>> main
 PYGAMEAPI_EXTERN_SLOTS(base);
 PYGAMEAPI_EXTERN_SLOTS(rect);
 PYGAMEAPI_EXTERN_SLOTS(cdrom);
@@ -526,12 +522,9 @@ PYGAMEAPI_EXTERN_SLOTS(rwobject);
 PYGAMEAPI_EXTERN_SLOTS(pixelarray);
 PYGAMEAPI_EXTERN_SLOTS(color);
 PYGAMEAPI_EXTERN_SLOTS(math);
-<<<<<<< HEAD
 PYGAMEAPI_EXTERN_SLOTS(image);
-=======
 PYGAMEAPI_EXTERN_SLOTS(_window);
 
->>>>>>> main
 #endif /* ~PYGAME_H */
 
 #endif /* PYGAME_H */
