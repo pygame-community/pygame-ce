@@ -19,6 +19,7 @@ import_pygame_base()
 import_pygame_color()
 import_pygame_surface()
 import_pygame_rect()
+import_pygame_window()
 
 class RendererDriverInfo:
     def __repr__(self):
@@ -143,8 +144,9 @@ def messagebox(title, message,
     free(c_buttons)
     return buttonid
 
+globals()["Window"]=Window
 
-cdef class Window:
+cdef class _Window:
     DEFAULT_SIZE = 640, 480
 
     _kwarg_to_flag = {
@@ -175,7 +177,7 @@ cdef class Window:
         Creates a Window object that uses the same window data from the :mod:`pygame.display` module, created upon calling
         :func:`pygame.display.set_mode`.
         """
-        cdef Window self = cls.__new__(cls)
+        cdef _Window self = cls.__new__(cls)
         cdef SDL_Window* window = pg_GetDefaultWindow()
         if not window:
             raise error()
@@ -1120,10 +1122,18 @@ cdef class Image:
 cdef class Renderer:
 
     @classmethod
-    def from_window(cls, Window window):
+    def from_window(cls, window):
+        cdef Window _window
+        if isinstance(window,(_Window,Window)):
+            _window = <Window> window
+        else:
+            raise TypeError(
+                "Argument 'window' has incorrect type "
+                "(expected pygame.Window or pygame._sdl2._Window, got %s)"%window.__class__.__name__
+            )
         cdef Renderer self = cls.__new__(cls)
-        self._win = window
-        if window._is_borrowed:
+        self._win = _window
+        if self._win._is_borrowed:
             self._is_borrowed=1
         else:
             raise error()
@@ -1139,7 +1149,7 @@ cdef class Renderer:
         self._target = None
         return self
 
-    def __init__(self, Window window, int index=-1,
+    def __init__(self, window, int index=-1,
                  int accelerated=-1, bint vsync=False,
                  bint target_texture=False):
         """pygame object wrapping a 2D rendering context for a window
@@ -1185,6 +1195,15 @@ cdef class Renderer:
         immediately, but lends well to the behavior of GPUs, as draw calls can be
         expensive on lower-end models.
         """
+        cdef Window _window
+        if isinstance(window,(_Window,Window)):
+            _window = <Window> window
+        else:
+            raise TypeError(
+                "Argument 'window' has incorrect type "
+                "(expected pygame.Window or pygame._sdl2._Window, got %s)"%window.__class__.__name__
+            )
+
         # https://wiki.libsdl.org/SDL_CreateRenderer
         # https://wiki.libsdl.org/SDL_RendererFlags
         flags = 0
@@ -1195,14 +1214,14 @@ cdef class Renderer:
         if target_texture:
             flags |= _SDL_RENDERER_TARGETTEXTURE
 
-        self._renderer = SDL_CreateRenderer(window._win, index, flags)
+        self._renderer = SDL_CreateRenderer(_window._win, index, flags)
         if not self._renderer:
             raise error()
 
         cdef Uint8[4] defaultColor = [255, 255, 255, 255]
         self._draw_color = pgColor_NewLength(defaultColor, 4)
         self._target = None
-        self._win = window
+        self._win = _window
         self._is_borrowed=0
 
     def __dealloc__(self):

@@ -267,7 +267,7 @@ pg_get_active(PyObject *self, PyObject *_null)
 static void
 pg_vidinfo_dealloc(PyObject *self)
 {
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject *
@@ -1112,7 +1112,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 /* set min size to (1,1) to erase any previously set min size
                  * relevant for windows leaving SCALED, which sets a min size
                  * only relevant on Windows, I believe.
-                 * See https://github.com/pygame/pygame/issues/2327 */
+                 * See
+                 * https://github.com/pygame-community/pygame-ce/issues/1194 */
                 SDL_SetWindowMinimumSize(win, 1, 1);
 
                 /* change existing window.
