@@ -299,14 +299,13 @@ div.document {
 ::-webkit-scrollbar-thumb:hover {
 	background: #4ace08;
 }
-.dark-theme {
-	::-webkit-scrollbar-thumb {
-		background: #888
-	}
-	::-webkit-scrollbar-thumb:hover {
-		background: #555;
-	}
+.dark-theme ::-webkit-scrollbar-thumb {
+	background: #888
 }
+.dark-theme	::-webkit-scrollbar-thumb:hover {
+	background: #555;
+}
+
 .flex-container {
     display: block;
     flex-direction: column;

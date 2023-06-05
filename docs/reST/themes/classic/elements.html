@@ -28,7 +28,7 @@
             <img class="theme-icon" data-theme="light-theme" src="{{ pathto('_static/dark-theme-icon.svg', 1) }}" width="24" height="24" alt="Dark Theme Icon">
           </div>
         <form action="{{ pathto('search') }}" method="get" class="searchbar-form" style="display:inline;float:right;">
-          <input name="q" value="" type="text">
+          <input name="q" value="" type="text" style="::-webkit-border-radius: 20px;-moz-border-radius: 20px; border-radius: 20px;">
           <img class="searchbar-button" src="{{ pathto('_static/searchbar-icon.svg', 1) }}" alt="Search">
           <input class="searchbar-submit" value="search" type="submit">
         </form>
@@ -53,7 +53,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%- set hidden = ['Overlay', 'cdrom', 'sdl2_video', 'sdl2_controller'] %}
 {%-   if pyg_sections %}
 
-        <p class="bottom" onclick="toggleSectionVisibility('Window');"><b>Window</b><br></p>
+        <p class="bottom" onclick="toggleSectionVisibility('Window');" id="W">▼<b>Window</b><br></p>
         <div class="bottom" id="Window">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -71,7 +71,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
         </div>
 
         <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
-        <p class="bottom" onclick="toggleSectionVisibility('Drawing');"><b>Drawing / Surface</b><br></p>
+        <p class="bottom" onclick="toggleSectionVisibility('Drawing');" id="D">▼<b>Drawing / Surface</b><br></p>
         <div class="bottom" id="Drawing">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -89,7 +89,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
         </div>
 
         <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
-        <p class="bottom" onclick="toggleSectionVisibility('Events');"><b>Events/Input</b><br></p>
+        <p class="bottom" onclick="toggleSectionVisibility('Events');" id="E">▼<b>Events/Input</b><br></p>
         <div class="bottom" id="Events">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -107,7 +107,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
         </div>
 
         <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
-        <p class="bottom" onclick="toggleSectionVisibility('Collisions');"><b>Collisions</b><br></p>
+        <p class="bottom" onclick="toggleSectionVisibility('Collisions');" id="C">▼<b>Collisions</b><br></p>
         <div class="bottom" id="Collisions">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -125,7 +125,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
         </div>
 
         <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
-        <p class="bottom" onclick="toggleSectionVisibility('Music');"><b>Music</b><br></p>
+        <p class="bottom" onclick="toggleSectionVisibility('Music');" id="M">▼<b>Music</b><br></p>
         <div class="bottom" id="Music">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -143,7 +143,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
         </div>
 
         <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
-        <p class="bottom" onclick="toggleSectionVisibility('Other')"><b>Other</b><br></p>
+        <p class="bottom" onclick="toggleSectionVisibility('Other')" id="O">▼<b>Other</b><br></p>
         <div class="bottom" id="Other">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -181,7 +181,11 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
     <script type="text/javascript">
       if (localStorage.getItem('hidden') !== null){
         localStorage.getItem('hidden').split("|").forEach(element => {
-          if (document.getElementById(element) !== null) {document.getElementById(element).hidden = true};
+          if (document.getElementById(element) !== null) {
+            document.getElementById(element).hidden = true
+            console.log(document.getElementById(element[0]).innerHTML)
+            document.getElementById(element[0]).innerHTML = document.getElementById(element[0]).innerHTML.replace('▼', '▲')
+          };
         });
       }
     </script>
