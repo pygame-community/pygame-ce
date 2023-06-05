@@ -29,6 +29,7 @@
 #define DOC_MIXER_CHANNEL_PAUSE "pause() -> None\ntemporarily stop playback of a channel"
 #define DOC_MIXER_CHANNEL_UNPAUSE "unpause() -> None\nresume pause playback of a channel"
 #define DOC_MIXER_CHANNEL_FADEOUT "fadeout(time) -> None\nstop playback after fading channel out"
+#define DOC_MIXER_CHANNEL_SETSOURCELOCATION "set_source_location(angle,distance) -> None\nset the position of a playing channel"
 #define DOC_MIXER_CHANNEL_SETVOLUME "set_volume(value) -> None\nset_volume(left, right) -> None\nset the volume of a playing channel"
 #define DOC_MIXER_CHANNEL_GETVOLUME "get_volume() -> value\nget the volume of the playing channel"
 #define DOC_MIXER_CHANNEL_GETBUSY "get_busy() -> bool\ncheck if the channel is active"

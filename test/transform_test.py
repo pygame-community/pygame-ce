@@ -99,7 +99,7 @@ class TransformModuleTest(unittest.TestCase):
     def test_scale__destination(self):
         """see if the destination surface can be passed in to use."""
 
-        s = pygame.Surface((32, 32))
+        s = pygame.Surface((32, 32), depth=32)
         s2 = pygame.transform.scale(s, (64, 64))
         s3 = s2.copy()
 
@@ -119,6 +119,18 @@ class TransformModuleTest(unittest.TestCase):
 
         # the wrong size surface is past in.  Should raise an error.
         self.assertRaises(ValueError, pygame.transform.smoothscale, s, (33, 64), s3)
+
+        alpha_surf = pygame.Surface((64, 64), pygame.SRCALPHA)
+        pygame.transform.scale(alpha_surf, (32, 32), s)
+
+        alpha_surf_weird = pygame.Surface(
+            (64, 64), pygame.SRCALPHA, 32, (0xFF000000, 0xFF0000, 0xFF00, 0xFF)
+        )
+        assert alpha_surf_weird.get_shifts() != alpha_surf.get_shifts()
+
+        self.assertRaises(
+            ValueError, pygame.transform.scale, alpha_surf_weird, (32, 32), s
+        )
 
     def test_scale__vector2(self):
         s = pygame.Surface((32, 32))
@@ -1417,6 +1429,30 @@ class TransformDisplayModuleTest(unittest.TestCase):
 
         self.assertRaises(ValueError, lambda: pygame.transform.box_blur(sf, 10))
         self.assertRaises(ValueError, lambda: pygame.transform.gaussian_blur(sf, 10))
+
+    def test_blur_in_place(self):
+        # When source and destination surfaces are the same,
+        # A ValueError should be raised.
+
+        data_fname = example_path("data")
+        path = os.path.join(data_fname, "peppers3.tif")
+        sf = pygame.image.load(path)
+        sub1 = sf.subsurface((0, 0, 128, 128))
+        sub2 = sf.subsurface((20, 20, 128, 128))
+
+        self.assertRaises(
+            ValueError, lambda: pygame.transform.box_blur(sf, 10, dest_surface=sf)
+        )
+        self.assertRaises(
+            ValueError, lambda: pygame.transform.box_blur(sub1, 10, dest_surface=sub2)
+        )
+        self.assertRaises(
+            ValueError, lambda: pygame.transform.gaussian_blur(sf, 10, dest_surface=sf)
+        )
+        self.assertRaises(
+            ValueError,
+            lambda: pygame.transform.gaussian_blur(sub1, 10, dest_surface=sub2),
+        )
 
     def test_box_blur(self):
         data1 = {

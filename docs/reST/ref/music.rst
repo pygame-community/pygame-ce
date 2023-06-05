@@ -198,10 +198,10 @@ MP3 in most cases.
    file, first call :func:`rewind`.
 
    Other file formats are unsupported. Newer versions of SDL_mixer have
-   better positioning support than earlier ones. An SDLError is raised if a
-   particular format does not support positioning.
+   better positioning support than earlier ones. A :exc:`pygame.error` is
+   raised if a particular format does not support positioning.
 
-   Function :func:`set_pos` calls underlining SDL_mixer function
+   Function :func:`set_pos` calls underlying SDL_mixer function
    ``Mix_SetMusicPosition``.
 
    .. versionaddedold:: 1.9.2

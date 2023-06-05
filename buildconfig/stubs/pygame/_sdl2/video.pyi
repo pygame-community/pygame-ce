@@ -1,4 +1,4 @@
-from typing import Any, Generator, Iterable, Optional, Tuple, Union
+from typing import Any, Generator, Iterable, Optional, Tuple, Union, final
 
 from pygame.color import Color
 from pygame.rect import Rect
@@ -38,11 +38,12 @@ def messagebox(
     escape_button: int = 0,
 ) -> int: ...
 
+@final
 class Window:
     DEFAULT_SIZE: Tuple[Literal[640], Literal[480]]
     def __init__(
         self,
-        title: str = "pygame",
+        title: str = "pygame window",
         size: Iterable[int] = (640, 480),
         position: Optional[Iterable[int]] = None,
         fullscreen: bool = False,
@@ -72,6 +73,8 @@ class Window:
     opacity: float
     display_index: int
     def set_modal_for(self, Window) -> None: ...
+
+_Window = Window
 
 class Texture:
     def __init__(
@@ -133,7 +136,7 @@ class Texture:
 class Image:
     def __init__(
         self,
-        textureOrImage: Union[Texture, Image],
+        texture_or_image: Union[Texture, Image],
         srcrect: Optional[RectValue] = None,
     ) -> None: ...
     def get_rect(self, **kwargs: Any) -> Rect: ...
@@ -153,14 +156,14 @@ class Image:
 class Renderer:
     def __init__(
         self,
-        window: Window,
+        window: Union[Window,_Window],
         index: int = -1,
         accelerated: int = -1,
         vsync: bool = False,
         target_texture: bool = False,
     ) -> None: ...
     @classmethod
-    def from_window(cls, window: Window) -> Renderer: ...
+    def from_window(cls, window: Union[Window,_Window]) -> Renderer: ...
     draw_blend_mode: int
     draw_color: Color
     def clear(self) -> None: ...
