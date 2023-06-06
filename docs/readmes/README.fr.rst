@@ -9,6 +9,8 @@
 
 `English`_ `简体中文`_ **Français**  `فارسی`_
 ---------------------------------------------------------------------------------------------------
+**Des différences de contenus sont présentes entre le README français et celui en anglais. Prenez donc bien soin de vérifier les informations de ce README avec le README anglais.**
+---------------------------------------------------------------------------------------------------
 
 Pygame est une bibliothèque multi-plateforme, libre et open-source
 permettant de développer des applications multimédias comme des jeux-vidéos, avec Python.
