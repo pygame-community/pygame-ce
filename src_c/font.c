@@ -629,7 +629,7 @@ font_render_to(PyObject *self, PyObject *args)
     printf("surf init check done\n");
 
     renderargs = Py_BuildValue("(OiOOi)", text, antialias, fg_rgba_obj, bg_rgba_obj, wraplength);
-    render_result = font_render(self, renderargs);
+    render_result = font_render(self, renderargs, NULL);
     if (!pg_TwoIntsFromObj(dest_pos, &dx, &dy)) {
         return RAISE(PyExc_TypeError, "invalid destination position for blit");
     }
@@ -667,7 +667,11 @@ font_render_to(PyObject *self, PyObject *args)
     return pgRect_New(&dest_rect);
     */
     printf("nearly the end\n");
-    return pgRect_New(&dest_rect);
+    // return pgRect_New(&dest_rect);
+    // return (PyObject *)dest_rect;
+    return pgRect_New4(dest_rect.x, dest_rect.x, dest_rect.w, dest_rect.h);
+    //return Py_BuildValue("{s:i, s:i, s:i, s:i}", "x", dest_rect.x, "y", dest_rect.y, "w", dest_rect.w, "h", dest_rect.h);
+
 }
 
 static PyObject *
