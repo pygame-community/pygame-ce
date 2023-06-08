@@ -32,6 +32,7 @@ music_file_types = ("mp3", "ogg", "mid", "mod", "it", "xm", "wav")
 music_can_seek = ("mp3", "ogg", "mod", "it", "xm")
 screen = None
 
+
 def add_file(filename):
     """
     This function will check if filename exists and is a music file
@@ -119,7 +120,6 @@ def play_next():
         starting_pos = -1
 
 
-
 def change_music_position(amount):
     """
     Changes current playback position by amount seconds.
@@ -175,7 +175,7 @@ LEFT and RIGHT will skip around the track
 UP and DOWN will change volume
 ENTER or SPACE will pause/unpause the track
 Other keys will start the next track"""
-    screen.blit(font.render(text, True, 'white', 'black', SCREEN_SIZE[0] - 20), (10, 5))
+    screen.blit(font.render(text, True, "white", "black", SCREEN_SIZE[0] - 20), (10, 5))
     """
     This is the main loop
     It will respond to drag and drop, clipboard changes, and key presses

@@ -100,7 +100,13 @@ class FontViewer:
         # display instructions at the top of the display
         font = pygame.font.SysFont(pygame.font.get_default_font(), font_size)
         instructions = f"Use the scroll wheel or click and drag to scroll up and down.  Fonts that don't use the Latin Alphabet might render incorrectly.  Here are your {len(fonts)} fonts"
-        surf = font.render(instructions, True, instruction_color, self.back_color, self.screen_size[0] - 20)
+        surf = font.render(
+            instructions,
+            True,
+            instruction_color,
+            self.back_color,
+            self.screen_size[0] - 20,
+        )
         font_surfaces.append((surf, total_height))
         total_height += surf.get_height() + padding
         max_width = max(max_width, surf.get_width())
@@ -113,7 +119,9 @@ class FontViewer:
                 continue
             line = text.replace("&N", name)
             try:
-                surf = font.render(line, 1, color, self.back_color, self.screen_size[0] - 20)
+                surf = font.render(
+                    line, 1, color, self.back_color, self.screen_size[0] - 20
+                )
             except pygame.error as e:
                 print(e)
                 break

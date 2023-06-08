@@ -119,7 +119,7 @@ def main():
         # draw the accumulated text
         lines = [indent(text, indentation_level) for indentation_level, text in lines]
         text = "\n".join(lines)
-        screen.blit(font.render(text, True, 'black', 'white', wraplength), (10, 10))
+        screen.blit(font.render(text, True, "black", "white", wraplength), (10, 10))
 
         # Go ahead and update the screen with what we've drawn.
         pygame.display.flip()
