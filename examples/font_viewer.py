@@ -45,10 +45,9 @@ class FontViewer:
 
         # create a window that uses 80 percent of the screen
         info = pygame.display.Info()
-        w = info.current_w
-        h = info.current_h
-        pygame.display.set_mode((int(w * 0.8), int(h * 0.8)))
-        self.font_size = h // 20
+        self.screen_size = (int(info.current_w * 0.8), int(info.current_h * 0.8))
+        pygame.display.set_mode(self.screen_size)
+        self.font_size = self.screen_size[1] // 16
 
         self.clock = pygame.Clock()
         self.y_offset = 0
@@ -94,24 +93,17 @@ class FontViewer:
         font_surfaces = []
         total_height = 0
         max_width = 0
+        padding = font_size // 2
 
         load_font = pygame.Font if path else pygame.font.SysFont
 
         # display instructions at the top of the display
         font = pygame.font.SysFont(pygame.font.get_default_font(), font_size)
-        lines = (
-            "Use the scroll wheel or click and drag",
-            "to scroll up and down.",
-            "Fonts that don't use the Latin Alphabet",
-            "might render incorrectly.",
-            f"Here are your {len(fonts)} fonts",
-            "",
-        )
-        for line in lines:
-            surf = font.render(line, 1, instruction_color, self.back_color)
-            font_surfaces.append((surf, total_height))
-            total_height += surf.get_height()
-            max_width = max(max_width, surf.get_width())
+        instructions = f"Use the scroll wheel or click and drag to scroll up and down.  Fonts that don't use the Latin Alphabet might render incorrectly.  Here are your {len(fonts)} fonts"
+        surf = font.render(instructions, True, instruction_color, self.back_color, self.screen_size[0] - 20)
+        font_surfaces.append((surf, total_height))
+        total_height += surf.get_height() + padding
+        max_width = max(max_width, surf.get_width())
 
         # render all the fonts and store them with the total height
         for name in sorted(fonts):
@@ -121,14 +113,14 @@ class FontViewer:
                 continue
             line = text.replace("&N", name)
             try:
-                surf = font.render(line, 1, color, self.back_color)
+                surf = font.render(line, 1, color, self.back_color, self.screen_size[0] - 20)
             except pygame.error as e:
                 print(e)
                 break
 
             max_width = max(max_width, surf.get_width())
             font_surfaces.append((surf, total_height))
-            total_height += surf.get_height()
+            total_height += surf.get_height() + padding
 
         # store variables for later usage
         self.total_height = total_height
@@ -155,8 +147,7 @@ class FontViewer:
                     bottom >= self.y_offset
                     and top <= self.y_offset + display.get_height()
                 ):
-                    x = center - surface.get_width() // 2
-                    display.blit(surface, (x, top - self.y_offset))
+                    display.blit(surface, (10, top - self.y_offset))
             # get input and update the screen
             if not self.handle_events():
                 break
