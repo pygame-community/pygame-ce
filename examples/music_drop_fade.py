@@ -19,7 +19,18 @@ import pygame
 import os, sys
 
 VOLUME_CHANGE_AMOUNT = 0.02  # how fast should up and down arrows change the volume?
+SCREEN_SIZE = (640, 480)
 
+MUSIC_DONE = pygame.event.custom_type()  # event to be set as mixer.music.set_endevent()
+main_dir = os.path.split(os.path.abspath(__file__))[0]
+data_dir = os.path.join(main_dir, "data")
+
+starting_pos = 0  # needed to fast forward and rewind
+volume = 0.75
+music_file_list = []
+music_file_types = ("mp3", "ogg", "mid", "mod", "it", "xm", "wav")
+music_can_seek = ("mp3", "ogg", "mod", "it", "xm")
+screen = None
 
 def add_file(filename):
     """
@@ -108,19 +119,6 @@ def play_next():
         starting_pos = -1
 
 
-def draw_text_line(text, y=0):
-    """
-    Draws a line of text onto the display surface
-    The text will be centered horizontally at the given y position
-    The text's height is added to y and returned to the caller
-    """
-    screen = pygame.display.get_surface()
-    surf = font.render(text, 1, (255, 255, 255))
-    y += surf.get_height()
-    x = (screen.get_width() - surf.get_width()) / 2
-    screen.blit(surf, (x, y))
-    return y
-
 
 def change_music_position(amount):
     """
@@ -140,20 +138,10 @@ def change_music_position(amount):
         print(f"jumped from {old_pos} to {starting_pos}")
 
 
-MUSIC_DONE = pygame.event.custom_type()  # event to be set as mixer.music.set_endevent()
-main_dir = os.path.split(os.path.abspath(__file__))[0]
-data_dir = os.path.join(main_dir, "data")
-
-starting_pos = 0  # needed to fast forward and rewind
-volume = 0.75
-music_file_list = []
-music_file_types = ("mp3", "ogg", "mid", "mod", "it", "xm", "wav")
-music_can_seek = ("mp3", "ogg", "mod", "it", "xm")
-
-
 def main():
     global font  # this will be used by the draw_text_line function
     global volume, starting_pos
+    global screen
     running = True
     paused = False
 
@@ -163,7 +151,7 @@ def main():
     change_volume = 0
 
     pygame.init()
-    pygame.display.set_mode((640, 480))
+    screen = pygame.display.set_mode(SCREEN_SIZE)
     font = pygame.font.SysFont("Arial", 24)
     clock = pygame.Clock()
 
@@ -177,14 +165,17 @@ def main():
     play_file("house_lo.ogg")  # play default music included with pygame
 
     # draw instructions on screen
-    y = draw_text_line("Drop music files or path names onto this window", 20)
-    y = draw_text_line("Copy file names into the clipboard", y)
-    y = draw_text_line("Or feed them from the command line", y)
-    y = draw_text_line("If it's music it will play!", y)
-    y = draw_text_line("SPACE to pause or UP/DOWN to change volume", y)
-    y = draw_text_line("LEFT and RIGHT will skip around the track", y)
-    draw_text_line("Other keys will start the next track", y)
+    text = """
+Drop music files or path names onto this window
+Copy file names into the clipboard
+Or feed them from the command line
+If it's music it will play!
 
+LEFT and RIGHT will skip around the track
+UP and DOWN will change volume
+ENTER or SPACE will pause/unpause the track
+Other keys will start the next track"""
+    screen.blit(font.render(text, True, 'white', 'black', SCREEN_SIZE[0] - 20), (10, 5))
     """
     This is the main loop
     It will respond to drag and drop, clipboard changes, and key presses
