@@ -42,7 +42,7 @@ def main():
             elif ev.type == pygame.DROPTEXT:
                 print(ev)
                 spr_file_text = font.render(
-                    ev.text, 1, (255, 255, 255), wraplength=screen_size[0] - 10
+                    ev.text, 1, 'white', 'black', screen_size[0] - 10
                 )
                 spr_file_text_rect = spr_file_text.get_rect()
                 spr_file_text_rect.center = surf.get_rect().center
