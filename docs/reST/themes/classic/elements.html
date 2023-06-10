@@ -4,12 +4,13 @@
 {%-   block relbar1 %}{# Do not want bar across the top #}{% endblock %}
 {%- endif %}
 
-{#- Classic header with Snakey on the left, page links sidebar.
+{#- Classic header with Snakey on the left, page links on the sidebar.
  #}
 {%- macro header() %}
   <div class="header">
 	<div class="flex-container">
 	<div class="logo">
+      <img class="three-lines" src="{{ pathto('_static/three_lines.svg', 1) }}" width="24px" height="24px" onclick="toggleChecked('header');">
 	  <a href="{{ theme_home_uri }}">
 	    <img src="{{logo_url}}"/>
 	  </a>
@@ -18,8 +19,7 @@
 	<div class="pagelinks">
 	  <div class="top">
       <div class="nav-top-wrapper">
-        <a href="{{ theme_home_uri }}">Pygame-ce Home</a> <br>
-        <a href="{{ pathto(master_doc) }}">Help Contents</a> <br>
+        <a href="{{ pathto(master_doc) }}">Pygame-ce Home</a> <br>
         <a href="{{ pathto('genindex') }}">Reference Index</a>
       </div>
       <div class="searchbar-container">
@@ -28,14 +28,14 @@
             <img class="theme-icon" data-theme="light-theme" src="{{ pathto('_static/dark-theme-icon.svg', 1) }}" width="24" height="24" alt="Dark Theme Icon">
           </div>
         <form action="{{ pathto('search') }}" method="get" class="searchbar-form" style="display:inline;float:right;">
-          <input name="q" value="" type="text" style="::-webkit-border-radius: 20px;-moz-border-radius: 20px; border-radius: 20px;">
+          <input name="q" value="" type="text" placeholder="search..." style=":-webkit-border-radius: 20px;-moz-border-radius: 20px; border-radius: 20px;padding-left:1em;width: 10vw;">
           <img class="searchbar-button" src="{{ pathto('_static/searchbar-icon.svg', 1) }}" alt="Search">
           <input class="searchbar-submit" value="search" type="submit">
         </form>
       </div>
 	  </div>
-      <hr style="color:#424242;border-bottom:none;border-style: solid;border-bottom-style:none;">
-      <div style="overflow-y: auto; height: 65vh;">
+      <hr class="split">
+      <div id="Sections">
 {#-
 
 We render those sections based on functionality.
@@ -53,7 +53,7 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%- set hidden = ['Overlay', 'cdrom', 'sdl2_video', 'sdl2_controller'] %}
 {%-   if pyg_sections %}
 
-        <p class="bottom" onclick="toggleSectionVisibility('Window');" id="W">▼<b>Window</b><br></p>
+        <p class="bottom" onclick="toggleSectionVisibility('Window');"><span id="W">▼</span><b>Window</b><br></p>
         <div class="bottom" id="Window">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -70,8 +70,8 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%-     endfor %}
         </div>
 
-        <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
-        <p class="bottom" onclick="toggleSectionVisibility('Drawing');" id="D">▼<b>Drawing / Surface</b><br></p>
+        <hr class="sub-split">
+        <p class="bottom" onclick="toggleSectionVisibility('Drawing');"><span id="D">▼</span><b>Drawing / Surface</b><br></p>
         <div class="bottom" id="Drawing">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -88,8 +88,8 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%-     endfor %}
         </div>
 
-        <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
-        <p class="bottom" onclick="toggleSectionVisibility('Events');" id="E">▼<b>Events/Input</b><br></p>
+        <hr class="sub-split">
+        <p class="bottom" onclick="toggleSectionVisibility('Events');"><span id="E">▼</span><b>Events/Input</b><br></p>
         <div class="bottom" id="Events">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -106,8 +106,8 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%-     endfor %}
         </div>
 
-        <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
-        <p class="bottom" onclick="toggleSectionVisibility('Collisions');" id="C">▼<b>Collisions</b><br></p>
+        <hr class="sub-split">
+        <p class="bottom" onclick="toggleSectionVisibility('Collisions');"><span id="C">▼</span><b>Collisions</b><br></p>
         <div class="bottom" id="Collisions">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -124,8 +124,8 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%-     endfor %}
         </div>
 
-        <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
-        <p class="bottom" onclick="toggleSectionVisibility('Music');" id="M">▼<b>Music</b><br></p>
+        <hr class="sub-split">
+        <p class="bottom" onclick="toggleSectionVisibility('Music');"><span id="M">▼</span><b>Music</b><br></p>
         <div class="bottom" id="Music">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -142,8 +142,8 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%-     endfor %}
         </div>
 
-        <hr style="color:#222222;border-bottom:none;border-style: solid;border-bottom-style:none;">
-        <p class="bottom" onclick="toggleSectionVisibility('Other')" id="O">▼<b>Other</b><br></p>
+        <hr class="sub-split">
+        <p class="bottom" onclick="toggleSectionVisibility('Other')"><span id="O">▼</span><b>Other</b><br></p>
         <div class="bottom" id="Other">
 {%      set sep = joiner("<br>") %}
 {%-     for section in pyg_sections %}
@@ -183,7 +183,6 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
         localStorage.getItem('hidden').split("|").forEach(element => {
           if (document.getElementById(element) !== null) {
             document.getElementById(element).hidden = true
-            console.log(document.getElementById(element[0]).innerHTML)
             document.getElementById(element[0]).innerHTML = document.getElementById(element[0]).innerHTML.replace('▼', '▲')
           };
         });

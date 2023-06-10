@@ -10,7 +10,7 @@ if (localStorage.getItem('theme') === null) {
 
 // Execute once the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-	document.body.className = localStorage.getItem('theme');
+	  document.body.className = localStorage.getItem('theme');
     const search_buttons = document.querySelectorAll('.searchbar-button');
     const search_submit = document.querySelector('.searchbar-submit');
 
@@ -25,10 +25,14 @@ document.addEventListener('DOMContentLoaded', () => {
     theme_icons.forEach((icon) => {
         icon.addEventListener('click', () => {
             const theme = icon.getAttribute('data-theme');
-            htmlElement.classList.add('light-theme', 'dark-theme');
-            htmlElement.classList.remove(theme);
-            localStorage.setItem('theme', htmlElement.classList[0]);
-		 	document.body.className = localStorage.getItem('theme');
+            if (theme === 'light-theme'){
+                new_theme = 'dark-theme';
+            } else {
+                new_theme = 'light-theme';
+            }
+            htmlElement.classList.replace(theme, new_theme);
+            localStorage.setItem('theme', new_theme);
+		 	      document.body.className = localStorage.getItem('theme');
       });
     });
 });
