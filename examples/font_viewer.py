@@ -93,12 +93,12 @@ class FontViewer:
         font_surfaces = []
         total_height = 0
         max_width = 0
-        padding = font_size // 2
 
         load_font = pygame.Font if path else pygame.font.SysFont
 
         # display instructions at the top of the display
         font = pygame.font.SysFont(pygame.font.get_default_font(), font_size)
+        font.align = pygame.FONT_CENTER
         instructions = f"Use the scroll wheel or click and drag to scroll up and down.  Fonts that don't use the Latin Alphabet might render incorrectly.  Here are your {len(fonts)} fonts"
         surf = font.render(
             instructions,
@@ -108,7 +108,7 @@ class FontViewer:
             self.screen_size[0] - 20,
         )
         font_surfaces.append((surf, total_height))
-        total_height += surf.get_height() + padding
+        total_height += surf.get_height()
         max_width = max(max_width, surf.get_width())
 
         # render all the fonts and store them with the total height
@@ -128,7 +128,7 @@ class FontViewer:
 
             max_width = max(max_width, surf.get_width())
             font_surfaces.append((surf, total_height))
-            total_height += surf.get_height() + padding
+            total_height += surf.get_height()
 
         # store variables for later usage
         self.total_height = total_height
@@ -155,7 +155,8 @@ class FontViewer:
                     bottom >= self.y_offset
                     and top <= self.y_offset + display.get_height()
                 ):
-                    display.blit(surface, (10, top - self.y_offset))
+                    x = (display.get_width() - surface.get_width()) // 2
+                    display.blit(surface, (x, top - self.y_offset))
             # get input and update the screen
             if not self.handle_events():
                 break
