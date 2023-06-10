@@ -1924,6 +1924,11 @@ surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
     dest_rect.w = src_rect->w;
     dest_rect.h = src_rect->h;
 
+    if (!SDL_HasIntersection(&dest_rect, &dest->clip_rect)) {
+        dest_rect.w = dest_rect.h = 0;
+        return pgRect_New(&dest_rect);
+    }
+
     if (!blend_flags)
         blend_flags = 0;
 
@@ -2088,6 +2093,10 @@ surf_blits(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
         dest_rect.y = dy;
         dest_rect.w = src_rect->w;
         dest_rect.h = src_rect->h;
+
+        if (!SDL_HasIntersection(&dest_rect, &dest->clip_rect)) {
+            continue;
+        }
 
         if (special_flags) {
             if (!pg_IntFromObj(special_flags, &blend_flags)) {
@@ -2259,6 +2268,10 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
 
             dest_rect.w = src->w;
             dest_rect.h = src->h;
+
+            if (!SDL_HasIntersection(&dest_rect, &dest->clip_rect)) {
+                continue;
+            }
 
             /* Perform the blit */
             if (pgSurface_Blit(self, (pgSurfaceObject *)src_surf, &dest_rect,
