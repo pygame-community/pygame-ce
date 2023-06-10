@@ -2347,6 +2347,10 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
             dest_rect.w = src->w;
             dest_rect.h = src->h;
 
+            if (!SDL_HasIntersection(&dest_rect, &dest->clip_rect)) {
+                continue;
+            }
+
             /* Perform the blit */
             if (pgSurface_Blit(self, (pgSurfaceObject *)src_surf, &dest_rect,
                                NULL, blend_flags)) {
