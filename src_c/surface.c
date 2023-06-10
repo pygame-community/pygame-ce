@@ -2112,6 +2112,13 @@ surf_blits(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
                 goto bliterror;
             }
             retrect = NULL; /* Clear to avoid double deref on errors */
+            Py_DECREF(srcobject);
+            Py_DECREF(argpos);
+            Py_XDECREF(argrect);
+            srcobject = NULL;
+            argpos = NULL;
+            argrect = NULL;
+            continue;
         }
 
         if (special_flags) {
@@ -2150,6 +2157,7 @@ surf_blits(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
             }
             retrect = NULL; /* Clear to avoid double deref on errors */
         }
+
         Py_DECREF(srcobject);
         Py_DECREF(argpos);
         Py_XDECREF(argrect);
