@@ -2095,7 +2095,23 @@ surf_blits(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
         dest_rect.h = src_rect->h;
 
         if (!SDL_HasIntersection(&dest_rect, &dest->clip_rect)) {
-            continue;
+            if (!doreturn)
+                continue;
+            dest_rect.w = dest_rect.h = 0;
+            retrect = pgRect_New(&dest_rect);
+            if (issequence) {
+                PyList_SET_ITEM(ret, curriter++, retrect);
+            }
+            else if (PyList_Append(ret, retrect) != -1) {
+                Py_DECREF(retrect);
+            }
+            else {
+                Py_DECREF(retrect);
+                retrect = NULL;
+                bliterrornum = BLITS_ERR_PY_EXCEPTION_RAISED;
+                goto bliterror;
+            }
+            retrect = NULL; /* Clear to avoid double deref on errors */
         }
 
         if (special_flags) {
