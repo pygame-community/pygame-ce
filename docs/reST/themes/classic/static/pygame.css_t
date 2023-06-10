@@ -76,12 +76,20 @@ body {
     color: {{ theme_textcolor }};
     font-style: normal;
     font-family: {{ theme_bodyfont }};
+    background-color: {{ theme_dark_bgcolor2 }};
     text-decoration: none;
     text-align: left;
     border-style: none;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 html {
     background-color: {{ theme_bgcolor }};
+    height: 100vh;
+}
+html.dark-theme {
+    background-color: {{ theme_dark_bgcolor }};
 }
 html.dark-theme body {
     color: {{ theme_dark_textcolor }};
@@ -274,6 +282,8 @@ input[type="submit"]{
 
 div.document {
     background-color: {{ theme_bgcolor }};
+    overflow: hidden;
+    flex-grow: 1
 }
 .dark-theme div.document {
     background-color: {{ theme_dark_bgcolor }};
