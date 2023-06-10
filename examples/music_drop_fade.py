@@ -153,6 +153,7 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode(SCREEN_SIZE)
     font = pygame.font.SysFont("Arial", 24)
+    font.align = pygame.FONT_CENTER
     clock = pygame.Clock()
 
     clipped = ""
