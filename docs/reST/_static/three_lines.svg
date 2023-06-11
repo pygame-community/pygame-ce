@@ -1,87 +1,42 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-<!-- thanks to ReaMart#7607 for the icon design -->
-<!-- edited by -->
-
 <svg
-   width="36.179886mm"
-   height="25.3437mm"
-   viewBox="0 0 36.179886 25.3437"
+   width="25.122183"
+   height="20.995148"
+   viewBox="0 0 6.6472546 5.5546996"
    version="1.1"
-   id="svg5"
+   id="svg4"
+   sodipodi:docname="three_stripes_for_notmee_2.svg"
    inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
-   sodipodi:docname="three_stripes_for_notmee.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs8" />
   <sodipodi:namedview
-     id="namedview7"
-     pagecolor="#ffffff"
-     bordercolor="#050000"
+     id="namedview6"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
      borderopacity="1"
      inkscape:pageshadow="0"
      inkscape:pageopacity="0"
-     inkscape:pagecheckerboard="true"
-     inkscape:document-units="mm"
-     showgrid="true"
-     guidehicolor="#ffffff"
-     guidehiopacity="0.49803922"
-     showguides="false"
-     inkscape:snap-object-midpoints="true"
-     inkscape:snap-center="true"
-     inkscape:zoom="3.6203867"
-     inkscape:cx="76.511164"
-     inkscape:cy="4.695631"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="14.401312"
+     inkscape:cx="28.990414"
+     inkscape:cy="1.3193242"
      inkscape:window-width="1920"
      inkscape:window-height="986"
      inkscape:window-x="-11"
      inkscape:window-y="-11"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1"
-     inkscape:snap-grids="false"
-     inkscape:object-paths="true"
-     inkscape:snap-intersection-paths="true"
-     inkscape:snap-bbox="true"
-     inkscape:snap-others="false"
-     inkscape:snap-page="true"
-     inkscape:snap-to-guides="false"
+     inkscape:current-layer="svg4"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0" />
-  <defs
-     id="defs2" />
-  <g
-     inkscape:label="Laag 1"
-     inkscape:groupmode="layer"
-     id="layer1">
-    <rect
-       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.405;stroke-linejoin:round;stroke-miterlimit:4.16107;stroke-dasharray:none;stop-color:#000000"
-       id="rect1087"
-       width="14.465096"
-       height="2.9257421"
-       x="-25.633976"
-       y="11.208984"
-       ry="1.4628711"
-       transform="scale(-1,1)" />
-    <rect
-       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.405259;stroke-linejoin:round;stroke-miterlimit:4.16107;stop-color:#000000"
-       id="rect1087-7"
-       width="14.465096"
-       height="2.9257421"
-       x="-25.633976"
-       y="5.9173899"
-       ry="1.4628711"
-       transform="scale(-1,1)" />
-    <rect
-       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.405259;stroke-linejoin:round;stroke-miterlimit:4.16107;stop-color:#000000"
-       id="rect1087-0"
-       width="14.465096"
-       height="2.9257421"
-       x="-25.633976"
-       y="16.50058"
-       ry="1.4628711"
-       transform="scale(-1,1)" />
-  </g>
+  <path
+     style="font-variation-settings:normal;fill:none;fill-opacity:1;stroke:#00ba10;stroke-width:0.992254;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.16107;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;stop-color:#000000"
+     d="M 0.49612701,0.49575705 H 6.1511276 M 0.49612701,5.0587565 H 6.1511276 M 0.49612701,2.7772567 H 6.1511276"
+     id="path2" />
 </svg>
