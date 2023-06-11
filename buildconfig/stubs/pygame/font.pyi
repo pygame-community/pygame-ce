@@ -1,6 +1,7 @@
 from typing import Callable, Hashable, Iterable, List, Optional, Tuple, Union
 
 from pygame.surface import Surface
+from pygame.rect import Rect
 
 from ._common import ColorValue, FileArg, Literal
 
@@ -52,7 +53,7 @@ class Font:
         color: ColorValue,
         background: Optional[ColorValue] = None,
         wraplength: int = 0
-    ) -> Surface: ...
+    ) -> Rect: ...
     def size(self, text: Union[str, bytes]) -> Tuple[int, int]: ...
     def set_underline(self, value: bool) -> None: ...
     def get_underline(self) -> bool: ...

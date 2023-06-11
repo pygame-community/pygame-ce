@@ -626,8 +626,6 @@ font_render_to(PyObject *self, PyObject *args)
 
     SURF_INIT_CHECK(surf_to_render);
 
-    printf("surf init check done\n");
-
     renderargs = Py_BuildValue("(OiOOi)", text, antialias, fg_rgba_obj, bg_rgba_obj, wraplength);
     render_result = font_render(self, renderargs, NULL);
     if (!pg_TwoIntsFromObj(dest_pos, &dx, &dy)) {
@@ -643,8 +641,6 @@ font_render_to(PyObject *self, PyObject *args)
 
     if (!blend_flags)
         blend_flags = 0;
-    
-    printf("aaa2\n");
 
     result = 
         pgSurface_Blit(surf_to_render, (pgSurfaceObject *)render_result, &dest_rect, NULL, blend_flags);
@@ -652,26 +648,7 @@ font_render_to(PyObject *self, PyObject *args)
     if (result != 0)
         return NULL;
 
-    printf("aaa4242\n");
-
-    /*
-    if (!blend_flags)
-        blend_flags = 0;
-
-    result =
-        pgSurface_Blit(self, srcobject, &dest_rect, src_rect, blend_flags);
-
-    if (result != 0)
-        return NULL;
-
-    return pgRect_New(&dest_rect);
-    */
-    printf("nearly the end\n");
-    // return pgRect_New(&dest_rect);
-    // return (PyObject *)dest_rect;
     return pgRect_New4(dest_rect.x, dest_rect.x, dest_rect.w, dest_rect.h);
-    //return Py_BuildValue("{s:i, s:i, s:i, s:i}", "x", dest_rect.x, "y", dest_rect.y, "w", dest_rect.w, "h", dest_rect.h);
-
 }
 
 static PyObject *
@@ -1155,6 +1132,10 @@ MODINIT_DEFINE(font)
        the module is not loaded.
     */
     import_pygame_base();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    import_pygame_rect();
     if (PyErr_Occurred()) {
         return NULL;
     }
