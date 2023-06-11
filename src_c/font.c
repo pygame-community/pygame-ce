@@ -605,13 +605,13 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
 
 static PyObject *
 font_render_to(PyObject *self, PyObject *args)
-{   
+{
     printf("font_render_to\n");
     int antialias;
     PyObject *text;
     PyObject *fg_rgba_obj, *bg_rgba_obj = Py_None, *renderargs, *render_result;
     pgSurfaceObject *surf_to_render;
-    
+
     PyObject *dest_pos;
     int dx, dy;
     SDL_Rect dest_rect;
@@ -619,20 +619,22 @@ font_render_to(PyObject *self, PyObject *args)
     int wraplength = 0;
     int blend_flags = 0;
     int result;
-    if (!PyArg_ParseTuple(args, "O!OOpO|Oii", &pgSurface_Type, &surf_to_render, &dest_pos, &text, &antialias, &fg_rgba_obj, 
-                                            &bg_rgba_obj, &wraplength, &blend_flags)) {
+    if (!PyArg_ParseTuple(args, "O!OOpO|Oii", &pgSurface_Type, &surf_to_render,
+                          &dest_pos, &text, &antialias, &fg_rgba_obj,
+                          &bg_rgba_obj, &wraplength, &blend_flags)) {
         return NULL;
     }
 
     SURF_INIT_CHECK(surf_to_render);
 
-    renderargs = Py_BuildValue("(OiOOi)", text, antialias, fg_rgba_obj, bg_rgba_obj, wraplength);
+    renderargs = Py_BuildValue("(OiOOi)", text, antialias, fg_rgba_obj,
+                               bg_rgba_obj, wraplength);
     render_result = font_render(self, renderargs, NULL);
     if (!pg_TwoIntsFromObj(dest_pos, &dx, &dy)) {
         return RAISE(PyExc_TypeError, "invalid destination position for blit");
     }
 
-    SDL_Surface* _render_result = pgSurface_AsSurface(&render_result);
+    SDL_Surface *_render_result = pgSurface_AsSurface(&render_result);
 
     dest_rect.x = dx;
     dest_rect.y = dy;
@@ -642,8 +644,8 @@ font_render_to(PyObject *self, PyObject *args)
     if (!blend_flags)
         blend_flags = 0;
 
-    result = 
-        pgSurface_Blit(surf_to_render, (pgSurfaceObject *)render_result, &dest_rect, NULL, blend_flags);
+    result = pgSurface_Blit(surf_to_render, (pgSurfaceObject *)render_result,
+                            &dest_rect, NULL, blend_flags);
 
     if (result != 0)
         return NULL;
