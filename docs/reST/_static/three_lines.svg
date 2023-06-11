@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 <!-- thanks to ReaMart#7607 for the icon design -->
+<!-- edited by -->
 
 <svg
    width="36.179886mm"
@@ -55,15 +56,6 @@
      inkscape:label="Laag 1"
      inkscape:groupmode="layer"
      id="layer1">
-    <rect
-       style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#ffffff;stroke-width:2.39;stroke-linejoin:round;stroke-miterlimit:4.16107;stroke-dasharray:none;stroke-opacity:1;stop-color:#000000"
-       id="rect881"
-       width="33.789886"
-       height="22.953701"
-       x="-34.984886"
-       y="1.1950001"
-       ry="2.7568069"
-       transform="scale(-1,1)" />
     <rect
        style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.405;stroke-linejoin:round;stroke-miterlimit:4.16107;stroke-dasharray:none;stop-color:#000000"
        id="rect1087"

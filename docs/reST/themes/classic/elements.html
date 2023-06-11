@@ -179,8 +179,8 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
 {%- block relbaritems %}
     <script type="text/javascript" src="https://www.pyg ame.org/comment/jquery.plugin.docscomments.js"></script>
     <script type="text/javascript">
-      if (localStorage.getItem('hidden') !== null){
-        localStorage.getItem('hidden').split("|").forEach(element => {
+      if (sessionStorage.getItem('hidden') !== null){
+        sessionStorage.getItem('hidden').split("|").forEach(element => {
           if (document.getElementById(element) !== null) {
             document.getElementById(element).hidden = true
             document.getElementById(element[0]).innerHTML = document.getElementById(element[0]).innerHTML.replace('▼', '▲')
