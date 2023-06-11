@@ -553,7 +553,7 @@ div.related {
     line-height: 30px;
     color: {{ theme_relbartextcolor }};
     font-size: 1rem;
-    position: absolute;
+    position: relative;
 }
 .dark-theme div.related {
     background-color: {{ theme_dark_relbarbgcolor }};
