@@ -3069,20 +3069,20 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int sigma, SDL_bool repeat)
     int dst_pitch = dst->pitch;
     int src_pitch = src->pitch;
     int i, j, x, y, color;
-    int radius = sigma * 2;
+    int kernel_radius = sigma * 2;
     float *buf = malloc(dst_pitch * sizeof(float));
     float *buf2 = malloc(dst_pitch * sizeof(float));
-    float *lut = malloc((radius + 1) * sizeof(float));
+    float *lut = malloc((kernel_radius + 1) * sizeof(float));
     float lut_sum = 0.0;
 
-    for (i = 0; i <= radius; i++) {  // init gaussian lut
+    for (i = 0; i <= kernel_radius; i++) {  // init gaussian lut
         // Gaussian function
-        lut[i] = expf(-powf((float)i, 2.0f) /
-                      (2.0f * powf((float)sigma, 2.0f)));
+        lut[i] =
+            expf(-powf((float)i, 2.0f) / (2.0f * powf((float)sigma, 2.0f)));
         lut_sum += lut[i] * 2;
     }
     lut_sum -= lut[0];
-    for (i = 0; i <= radius; i++) {
+    for (i = 0; i <= kernel_radius; i++) {
         lut[i] /= lut_sum;
     }
 
@@ -3092,7 +3092,7 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int sigma, SDL_bool repeat)
     }
 
     for (y = 0; y < h; y++) {
-        for (j = -radius; j <= radius; j++) {
+        for (j = -kernel_radius; j <= kernel_radius; j++) {
             for (i = 0; i < dst_pitch; i++) {
                 if (y + j >= 0 && y + j < h) {
                     buf[i] +=
@@ -3111,7 +3111,7 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int sigma, SDL_bool repeat)
         }
 
         for (x = 0; x < w; x++) {
-            for (j = -radius; j <= radius; j++) {
+            for (j = -kernel_radius; j <= kernel_radius; j++) {
                 for (color = 0; color < nb; color++) {
                     if (x + j >= 0 && x + j < w) {
                         buf2[nb * x + color] +=
