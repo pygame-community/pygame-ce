@@ -146,7 +146,7 @@ jobs:
       CIBW_BUILD_VERBOSITY: 2
 
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v3.5.3
 
       - uses: TheMrMilchmann/setup-msvc-dev@v2  # this lets us use the developer command prompt on windows
         with:

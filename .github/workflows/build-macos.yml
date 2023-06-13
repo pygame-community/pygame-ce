@@ -45,7 +45,7 @@ jobs:
         macarch: [arm64, x86_64]
 
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v3.5.3
 
       - name: Test for Mac Deps cache hit
         id: macdep-cache
@@ -150,7 +150,7 @@ jobs:
       CIBW_BUILD_VERBOSITY: 2
 
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v3.5.3
 
       - name: pip cache
         uses: actions/cache@v3.3.1
