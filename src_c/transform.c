@@ -3060,7 +3060,7 @@ box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
 }
 
 static void
-gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
+gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int sigma, SDL_bool repeat)
 {
     Uint8 *srcpx = (Uint8 *)src->pixels;
     Uint8 *dstpx = (Uint8 *)dst->pixels;
@@ -3069,15 +3069,16 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
     int dst_pitch = dst->pitch;
     int src_pitch = src->pitch;
     int i, j, x, y, color;
+    int radius = sigma * 2;
     float *buf = malloc(dst_pitch * sizeof(float));
     float *buf2 = malloc(dst_pitch * sizeof(float));
     float *lut = malloc((radius + 1) * sizeof(float));
     float lut_sum = 0.0;
 
     for (i = 0; i <= radius; i++) {  // init gaussian lut
-        // Gaussian function, radius=2*sigma
+        // Gaussian function
         lut[i] = expf(-powf((float)i, 2.0f) /
-                      (2.0f * powf((float)radius / 2.0f, 2.0f)));
+                      (2.0f * powf((float)sigma, 2.0f)));
         lut_sum += lut[i] * 2;
     }
     lut_sum -= lut[0];
