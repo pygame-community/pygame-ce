@@ -731,8 +731,9 @@ div.caution {
 }
 
 div.warning {
-    background-color: #ffe4e4;
+    background-color: #ffaec4;
     border: 1px solid #f66;
+    color: #000;
 }
 
 .warning tt {
