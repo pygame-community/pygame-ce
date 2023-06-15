@@ -4194,6 +4194,127 @@ math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 }
 
 static PyObject *
+math_lerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (nargs != 3 && nargs != 4)
+        return RAISE(PyExc_TypeError, "lerp requires 3 or 4 arguments");
+
+    PyObject *min = args[0];
+    PyObject *max = args[1];
+    PyObject *value = args[2];
+
+    if (PyNumber_Check(args[2]) != 1) {
+        return RAISE(PyExc_TypeError,
+                     "lerp requires the interpolation amount to be number");
+    }
+
+    double t = PyFloat_AsDouble(value);
+
+    if (nargs == 4 && !PyObject_IsTrue(args[3])) {
+        ;  // pass if do_clamp is false
+    }
+    else {
+        if (t < 0)
+            t = 0.0;
+        else if (t > 1)
+            t = 1.0;
+    }
+
+    if (PyNumber_Check(min) && PyNumber_Check(max)) {
+        return PyFloat_FromDouble(PyFloat_AsDouble(min) * (1 - t) +
+                                  PyFloat_AsDouble(max) * t);
+    }
+    else if (pgVector2_Check(min) && pgVector2_Check(max)) {
+        pgVector *vmin = (pgVector *)min;
+        pgVector *vmax = (pgVector *)max;
+        pgVector *ret = (pgVector *)pgVector_NEW(2);
+        if (ret == NULL) {
+            return NULL;
+        }
+        ret->coords[0] = vmin->coords[0] * (1 - t) + vmax->coords[0] * t;
+        ret->coords[1] = vmin->coords[1] * (1 - t) + vmax->coords[1] * t;
+        return (PyObject *)ret;
+    }
+    else if (pgVector3_Check(min) && pgVector3_Check(max)) {
+        pgVector *vmin = (pgVector *)min;
+        pgVector *vmax = (pgVector *)max;
+        pgVector *ret = (pgVector *)pgVector_NEW(3);
+        if (ret == NULL) {
+            return NULL;
+        }
+        ret->coords[0] = vmin->coords[0] * (1 - t) + vmax->coords[0] * t;
+        ret->coords[1] = vmin->coords[1] * (1 - t) + vmax->coords[1] * t;
+        ret->coords[2] = vmin->coords[2] * (1 - t) + vmax->coords[2] * t;
+        return (PyObject *)ret;
+    }
+    else {
+        return RAISE(
+            PyExc_TypeError,
+            "lerp requires the first two arguments to be of the same type");
+    }
+}
+
+static PyObject *
+math_smoothstep(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (nargs != 3)
+        return RAISE(PyExc_TypeError, "smoothstep requires 3 arguments");
+
+    PyObject *min = args[0];
+    PyObject *max = args[1];
+    PyObject *value = args[2];
+
+    if (PyNumber_Check(args[2]) != 1) {
+        return RAISE(PyExc_TypeError,
+                     "lerp requires the interpolation amount to be number");
+    }
+
+    double t = PyFloat_AsDouble(value);
+    if (t <= 0.0) {
+        t = 0;
+    }
+    else if (t >= 1.0) {
+        t = 1;
+    }
+    else {
+        t = t * t * (3.0f - 2.0f * t);
+    }
+
+    if (PyNumber_Check(min) && PyNumber_Check(max)) {
+        return PyFloat_FromDouble(PyFloat_AsDouble(min) * (1 - t) +
+                                  PyFloat_AsDouble(max) * t);
+    }
+    else if (pgVector2_Check(min) && pgVector2_Check(max)) {
+        pgVector *vmin = (pgVector *)min;
+        pgVector *vmax = (pgVector *)max;
+        pgVector *ret = (pgVector *)pgVector_NEW(2);
+        if (ret == NULL) {
+            return NULL;
+        }
+        ret->coords[0] = vmin->coords[0] * (1 - t) + vmax->coords[0] * t;
+        ret->coords[1] = vmin->coords[1] * (1 - t) + vmax->coords[1] * t;
+        return (PyObject *)ret;
+    }
+    else if (pgVector3_Check(min) && pgVector3_Check(max)) {
+        pgVector *vmin = (pgVector *)min;
+        pgVector *vmax = (pgVector *)max;
+        pgVector *ret = (pgVector *)pgVector_NEW(3);
+        if (ret == NULL) {
+            return NULL;
+        }
+        ret->coords[0] = vmin->coords[0] * (1 - t) + vmax->coords[0] * t;
+        ret->coords[1] = vmin->coords[1] * (1 - t) + vmax->coords[1] * t;
+        ret->coords[2] = vmin->coords[2] * (1 - t) + vmax->coords[2] * t;
+        return (PyObject *)ret;
+    }
+    else {
+        return RAISE(PyExc_TypeError,
+                     "smoothstep requires the first two arguments to be of "
+                     "the same type");
+    }
+}
+
+static PyObject *
 math_enable_swizzling(pgVector *self, PyObject *_null)
 {
     if (PyErr_WarnEx(PyExc_DeprecationWarning,
@@ -4221,6 +4342,9 @@ math_disable_swizzling(pgVector *self, PyObject *_null)
 
 static PyMethodDef _math_methods[] = {
     {"clamp", (PyCFunction)math_clamp, METH_FASTCALL, DOC_MATH_CLAMP},
+    {"lerp", (PyCFunction)math_lerp, METH_FASTCALL, DOC_MATH_LERP},
+    {"smoothstep", (PyCFunction)math_smoothstep, METH_FASTCALL,
+     DOC_MATH_SMOOTHSTEP},
     {"enable_swizzling", (PyCFunction)math_enable_swizzling, METH_NOARGS,
      "Deprecated, will be removed in a future version"},
     {"disable_swizzling", (PyCFunction)math_disable_swizzling, METH_NOARGS,

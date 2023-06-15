@@ -61,6 +61,33 @@ Multiple coordinates can be set using slices or swizzling
 
    .. ## math.clamp ##
 
+.. function:: lerp
+
+   | :sl:`returns value interpolated between a and b`
+   | :sg:`lerp(a, b, value, do_clamp=True) -> float`
+
+   Returns a Vector or number which is a linear interpolation between ``a``
+   and ``b``. The third parameter determines how far between ``a`` and
+   ``b`` the result is going to be.
+   If ``do_clamp`` is false, the result can overshoot.
+
+   .. versionadded:: 2.4.0
+
+   .. ## math.lerp ##
+
+ .. function:: smoothstep
+
+   | :sl:`returns value smoothly interpolated between a and b.`
+   | :sg:`smoothstep(a, b, value) -> float`
+
+   Returns a Vector or number which is a smooth interpolation between ``a``
+   and ``b``. The third parameter determines how far between ``a`` and
+   ``b`` the result is going to be.
+
+   .. versionadded:: 2.4.0
+
+   .. ## math.smoothstep ##
+
 .. class:: Vector2
 
    | :sl:`a 2-Dimensional Vector`
