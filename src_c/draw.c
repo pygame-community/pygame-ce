@@ -33,6 +33,12 @@
 
 #include <float.h>
 
+#if defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H)
+#include <immintrin.h>
+#define AVX2_ENABLED (1)
+static __m256i avx_color;
+#endif
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -154,6 +160,10 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
+#ifdef AVX2_ENABLED
+    avx_color = _mm256_set1_epi32(color);
+#endif
+
     draw_aaline(surf, color, startx, starty, endx, endy, blend, drawn_area);
 
     if (!pgSurface_Unlock(surfobj)) {
@@ -220,6 +230,10 @@ line(PyObject *self, PyObject *arg, PyObject *kwargs)
     if (!pgSurface_Lock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
+
+#ifdef AVX2_ENABLED
+    avx_color = _mm256_set1_epi32(color);
+#endif
 
     draw_line_width(surf, color, startx, starty, endx, endy, width,
                     drawn_area);
@@ -340,6 +354,10 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         PyMem_Free(ylist);
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
+
+#ifdef AVX2_ENABLED
+    avx_color = _mm256_set1_epi32(color);
+#endif
 
     for (loop = 1; loop < length; ++loop) {
         pts[0] = xlist[loop - 1];
@@ -470,6 +488,10 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
+#ifdef AVX2_ENABLED
+    avx_color = _mm256_set1_epi32(color);
+#endif
+
     for (loop = 1; loop < length; ++loop) {
         draw_line_width(surf, color, xlist[loop - 1], ylist[loop - 1],
                         xlist[loop], ylist[loop], width, drawn_area);
@@ -556,6 +578,10 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     width = MIN(width, MIN(rect->w, rect->h) / 2);
 
+#ifdef AVX2_ENABLED
+    avx_color = _mm256_set1_epi32(color);
+#endif
+
     for (loop = 0; loop < width; ++loop) {
         draw_arc(surf, rect->x + rect->w / 2, rect->y + rect->h / 2,
                  rect->w / 2 - loop, rect->h / 2 - loop, angle_start,
@@ -620,6 +646,10 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
     if (!pgSurface_Lock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
+
+#ifdef AVX2_ENABLED
+    avx_color = _mm256_set1_epi32(color);
+#endif
 
     if (!width ||
         width >= MIN(rect->w / 2 + rect->w % 2, rect->h / 2 + rect->h % 2)) {
@@ -718,6 +748,10 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
     if (!pgSurface_Lock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
+
+#ifdef AVX2_ENABLED
+    avx_color = _mm256_set1_epi32(color);
+#endif
 
     if ((top_right == 0 && top_left == 0 && bottom_left == 0 &&
          bottom_right == 0)) {
@@ -848,6 +882,10 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
+#ifdef AVX2_ENABLED
+    avx_color = _mm256_set1_epi32(color);
+#endif
+
     if (length != 3) {
         draw_fillpoly(surf, xlist, ylist, length, color, drawn_area);
     }
@@ -923,6 +961,10 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
     if (width < 0) {
         return pgRect_New4(rect->x, rect->y, 0, 0);
     }
+
+#ifdef AVX2_ENABLED
+    avx_color = _mm256_set1_epi32(color);
+#endif
 
     /* If there isn't any rounded rect-ness OR the rect is really thin in one
        direction. The "really thin in one direction" check is necessary because
@@ -1389,6 +1431,33 @@ drawhorzline(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2)
     }
 }
 
+#ifdef AVX2_ENABLED
+static void
+drawhorzlineavx(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2)
+{
+    Uint8 *pixel, *end;
+    pixel = ((Uint8 *)surf->pixels) + surf->pitch * y1;
+    end = pixel + x2 * surf->format->BytesPerPixel;
+    pixel += x1 * surf->format->BytesPerPixel;
+    int size = (4 * (x2 - x1));
+    int parallel = size / 32;
+    while (parallel) {
+        _mm256_storeu_si256((__m256i*)pixel, avx_color);
+        pixel += 32;
+        parallel--;
+    }
+    if (size >= 32) {
+        pixel = end - 28;
+        _mm256_storeu_si256((__m256i*)pixel, avx_color);
+    }
+    else {
+        for (; pixel <= end; pixel+=4) {
+            *(Uint32 *)pixel = color;
+        }
+    }
+}
+#endif
+
 static void
 drawvertline(SDL_Surface *surf, Uint32 color, int y1, int x1, int y2)
 {
@@ -1475,8 +1544,11 @@ drawhorzlineclipbounding(SDL_Surface *surf, Uint32 color, int x1, int y1,
     }
 
     add_line_to_drawn_list(x1, y1, x2, y1, pts);
-
+#ifdef AVX2_ENABLED
+    drawhorzlineavx(surf, color, x1, y1, x2);
+#else
     drawhorzline(surf, color, x1, y1, x2);
+#endif
 }
 
 void
