@@ -61,6 +61,10 @@ PyFont_New(TTF_Font *);
 #define PyFont_Check(x) ((x)->ob_type == &PyFont_Type)
 
 static unsigned int current_ttf_generation = 0;
+
+#define PgFont_GenerationCheck(x) \
+    (((PyFontObject *)(x))->ttf_init_generation == current_ttf_generation)
+
 #if defined(BUILD_STATIC)
 // SDL_Init + TTF_Init()  are made in main before CPython process the module
 // inittab so the emscripten handler knows it will use SDL2 next cycle.
@@ -486,6 +490,10 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
     const char *astring = "";
     int wraplength = 0;
 
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE(pgExc_SDLError, "Invalid font.");
+    }
+
     static char *kwlist[] = {"text",    "antialias",  "color",
                              "bgcolor", "wraplength", NULL};
 
@@ -610,6 +618,10 @@ font_size(PyObject *self, PyObject *text)
     int w, h;
     const char *string;
 
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE(pgExc_SDLError, "Invalid font.");
+    }
+
     if (PyUnicode_Check(text)) {
         PyObject *bytes = PyUnicode_AsEncodedString(text, "utf-8", "strict");
         int ecode;
@@ -663,6 +675,10 @@ font_metrics(PyObject *self, PyObject *textobj)
     Uint16 ch;
     PyObject *temp;
     int surrogate;
+
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE(pgExc_SDLError, "Invalid font.");
+    }
 
     if (PyUnicode_Check(textobj)) {
         obj = textobj;
