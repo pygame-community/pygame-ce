@@ -114,16 +114,16 @@ div.header > div {
     /* border: {{ theme_headerborder }}; */
     border-collapse: collapse;
     background-color: {{ theme_headerbgcolor }};
-    background-image: linear-gradient(to bottom, {{ theme_headerbgcolor}}, {{ theme_bgcolor }});
+    /* background-image: linear-gradient(to bottom, {{ theme_headerbgcolor}}, {{ theme_bgcolor }}); */
 }
 .dark-theme div.header > div {
     background-color: {{ theme_dark_headerbgcolor }};
     border: {{ theme_dark_headerborder }};
-    background-image: linear-gradient(to bottom, {{ theme_dark_headerbgcolor }}, {{ theme_dark_bgcolor }});
+    /* background-image: linear-gradient(to bottom, {{ theme_dark_headerbgcolor }}, {{ theme_dark_bgcolor }}); */
 }
 div.header .logo {
     background-color: {{ theme_logobgcolor }};
-    background-image: linear-gradient(to bottom, {{ theme_logobgcolor }}, {{ theme_headerbgcolor }});
+    /* background-image: linear-gradient(to bottom, {{ theme_logobgcolor }}, {{ theme_headerbgcolor }}); */
     padding: 0.3em;
     /* border-right: 3px solid black; */
     display: flex;
@@ -133,12 +133,14 @@ div.header .logo {
 }
 .dark-theme div.header .logo {
     background-color: {{ theme_dark_logobgcolor }};
-    background-image: linear-gradient(to bottom, {{ theme_dark_logobgcolor}}, {{ theme_dark_headerbgcolor }});
+    /* background-image: linear-gradient(to bottom, {{ theme_dark_logobgcolor}}, {{ theme_dark_headerbgcolor }}); */
     border: none;
 }
-div.header .logo img {
+div.header .logo a > img {
     min-width: 200px;
     min-height: 60px;
+    width: auto;
+    height: auto;
     border-style: none;
 }
 
@@ -254,6 +256,16 @@ input[type="text"]:focus{
 input[type="submit"]{
     display: none;
 }
+input[name="q"]{
+    :-webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    border-radius: 20px;
+    padding-left:1em;
+    width: 10vw;
+}
+.clicked input[name="q"]{
+    width: 40vh;
+}
 
 .searchbar-form{
     display: flex;
@@ -333,7 +345,10 @@ div.document {
   border: 0;
   margin: 0;
   padding: 0;
-  font-size: 20px
+  font-size: 20px;
+  padding-right: 25px;
+  min-width: 65px;
+  min-height: 35px;
 }
 .three-lines:hover {
   cursor: pointer;
@@ -343,6 +358,9 @@ div.document {
   overflow-y: auto;
   position: fixed;
   height: -webkit-fill-available;
+  height: -moz-available;
+  height: fill-available;
+  height: -moz-available;
   width: inherit;
   padding-bottom: 2.5rem;
 }
@@ -350,6 +368,8 @@ div.document {
   overflow-y: auto;
   position: fixed;
   height: -webkit-fill-available;
+  height: -moz-available;
+  height: fill-available;
   width: inherit;
   padding-bottom: 2.5rem;
 }
@@ -439,9 +459,10 @@ div.document {
   }
   .clicked .related {
     content-visibility: hidden;
+    display: none;
   }
-  .clicked .div.header .logo {
-    margin-right: 10px;
+  .clicked div.header .logo {
+    padding-right: 15px;
   }
   .div.header > div {height: 25vh;}
   div.header .logo {

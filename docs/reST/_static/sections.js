@@ -26,7 +26,6 @@ function toggleSectionVisibility(section, message){
 function toggleChecked(classname){
     if (window.innerWidth <= 1100) {
         el = document.getElementsByClassName(classname)[0];
-        console.log(el.id);
         if (el.id !== 'clicked') {
             el.id = 'clicked';
             htmlElement.classList.add('clicked');
