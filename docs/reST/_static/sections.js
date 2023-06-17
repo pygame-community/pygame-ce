@@ -1,26 +1,26 @@
-function toggleSectionVisibility(section, message){
-	document.getElementById(section).hidden = ! document.getElementById(section).hidden;
-	if (document.getElementById(section).hidden === true){ // show
-		items = sessionStorage.getItem('hidden');
-		if (items !== null){
-			if (!(items.includes(section))){
-				items = items + section + '|';
-			}
-			sessionStorage.setItem('hidden', items);
-		} else {
-			sessionStorage.setItem('hidden', section + '|');
-		}
-		document.getElementById(section[0]).innerHTML = document.getElementById(section[0]).innerHTML.replace('▼', '▲');
-	} else {  // hide
-		items = sessionStorage.getItem('hidden');
-		if (items !== null){
-			if (items.includes(section)){
-				items = items.replace(section + '|', '');
-			}
-			sessionStorage.setItem('hidden', items);
-		}
-		document.getElementById(section[0]).innerHTML = document.getElementById(section[0]).innerHTML.replace('▲', '▼');
-	}
+function toggleSectionVisibility(section){
+    document.getElementById(section).hidden = ! document.getElementById(section).hidden;
+    if (document.getElementById(section).hidden === true){ // show
+        items = sessionStorage.getItem('hidden');
+        if (items !== null){
+            if (!(items.includes(section))){
+                items = items + section + '|';
+            }
+            sessionStorage.setItem('hidden', items);
+            } else {
+                sessionStorage.setItem('hidden', section + '|');
+            }
+            document.getElementById(section[0]).innerHTML = document.getElementById(section[0]).innerHTML.replace('▼', '▲');
+    } else {  // hide
+        items = sessionStorage.getItem('hidden');
+        if (items !== null){
+            if (items.includes(section)){
+                items = items.replace(section + '|', '');
+            }
+            sessionStorage.setItem('hidden', items);
+        }
+        document.getElementById(section[0]).innerHTML = document.getElementById(section[0]).innerHTML.replace('▲', '▼');
+    }
 }
 
 function toggleChecked(classname){
@@ -34,4 +34,5 @@ function toggleChecked(classname){
             htmlElement.classList.remove('clicked');
         }
     }
+}
 }
