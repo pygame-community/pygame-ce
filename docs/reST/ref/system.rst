@@ -137,3 +137,53 @@ open just in case something obvious comes up.
    function again to get an updated copy of preferred locales.
 
    .. versionadded:: 2.2.0
+
+.. function:: get_power_state
+
+   | :sl:`get the current power supply state`
+   | :sg:`get_pref_power_state() -> power_state`
+
+   Returns a dict of power supply state.
+   Returns ``None`` if the power state is unknown.
+   
+   Here is an example of power state dict.
+   ::
+
+     {
+          'has_battery': True,
+          'plugged_in': False, 
+          'charging': False, 
+          'battery_seconds': None, 
+          'battery_percent': 91,
+     }
+
+   Key descriptions:
+
+   ``has_battery``: bool value, represents if current device has a battery.
+
+   ``plugged_in``: bool value, represents if AC power is plugged in, no matter 
+   whether the battery is fully charged.
+
+   ``charging``: bool value, represents if the battery is charging. If the battery
+   is not charging or is full, this value will be ``False``.
+
+   ``battery_seconds``: int value, represents the seconds of battery life left.
+   Can be ``None`` if the value is unknown.
+   
+   ``battery_percent``: int value, represents the percentage of battery life left.
+   Can be ``None`` if the value is unknown.
+
+   You should never take a battery status as absolute truth. Batteries
+   (especially failing batteries) are delicate hardware, and the values
+   reported here are best estimates based on what that hardware reports. It's
+   not uncommon for older batteries to lose stored power much faster than it
+   reports, or completely drain when reporting it has 20 percent left, etc.
+
+   Battery status can change at any time; if you are concerned with power
+   state, you should call this function frequently, and perhaps ignore changes
+   until they seem to be stable for a few seconds.
+
+   It's possible a platform can only report battery percentage or time left
+   but not both.
+
+   .. versionadded:: 2.3.1

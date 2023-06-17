@@ -77,6 +77,23 @@ class SystemModuleTest(unittest.TestCase):
         for arg in (None, 1, "hello"):
             self.assertRaises(TypeError, pygame.system.get_pref_locales, arg)
 
+    def test_get_power_state(self):
+        power_state = pygame.system.get_power_state()
+        self.assertIsInstance(power_state, (type(None), dict))
+
+        expected_types = {
+            "has_battery": bool,
+            "plugged_in": bool,
+            "charging": bool,
+            "battery_seconds": (type(None), int),
+            "battery_percent": (type(None), int),
+        }
+
+        if isinstance(power_state, dict):
+            for key in expected_types:
+                self.assertIn(key, power_state)
+                self.assertIsInstance(power_state[key], expected_types[key])
+
 
 if __name__ == "__main__":
     unittest.main()

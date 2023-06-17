@@ -161,6 +161,111 @@ error:
 #endif
 }
 
+static PyObject *
+pg_system_get_power_state(PyObject *self, PyObject *_null)
+{
+    int sec, pct;
+    SDL_PowerState power_state;
+    PyObject *return_dict = NULL;
+    PyObject *sec_py = NULL;
+    PyObject *pct_py = NULL;
+    PyObject *plugged_in;
+    PyObject *has_battery;
+    PyObject *charging;
+
+    power_state = SDL_GetPowerInfo(&sec, &pct);
+
+    if (power_state == SDL_POWERSTATE_UNKNOWN) {
+        Py_RETURN_NONE;
+    }
+
+    return_dict = PyDict_New();
+    if (!return_dict) {
+        goto error;
+    }
+
+    switch (power_state) {
+        case SDL_POWERSTATE_ON_BATTERY:
+            has_battery = Py_True;
+            plugged_in = Py_False;
+            charging = Py_False;
+            break;
+        case SDL_POWERSTATE_NO_BATTERY:
+            has_battery = Py_False;
+            plugged_in = Py_True;
+            charging = Py_False;
+            break;
+        case SDL_POWERSTATE_CHARGING:
+            has_battery = Py_True;
+            plugged_in = Py_True;
+            charging = Py_True;
+            break;
+        case SDL_POWERSTATE_CHARGED:
+            has_battery = Py_True;
+            plugged_in = Py_True;
+            charging = Py_False;
+            break;
+
+        default:
+            PyErr_SetString(PyExc_SystemError, "Unexpected power state");
+            goto error;
+            break;
+    }
+
+    if (sec == -1) {
+        sec_py = Py_None;
+        Py_INCREF(sec_py);
+    }
+    else {
+        sec_py = PyLong_FromLong((long)sec);
+        if (!sec_py) {
+            goto error;
+        }
+    }
+
+    if (pct == -1) {
+        pct_py = Py_None;
+        Py_INCREF(pct_py);
+    }
+    else {
+        pct_py = PyLong_FromLong((long)pct);
+        if (!pct_py) {
+            goto error;
+        }
+    }
+
+    if (PyDict_SetItemString(return_dict, "has_battery", has_battery)) {
+        goto error;
+    }
+
+    if (PyDict_SetItemString(return_dict, "plugged_in", plugged_in)) {
+        goto error;
+    }
+
+    if (PyDict_SetItemString(return_dict, "charging", charging)) {
+        goto error;
+    }
+
+    if (PyDict_SetItemString(return_dict, "battery_seconds", sec_py)) {
+        goto error;
+    }
+
+    if (PyDict_SetItemString(return_dict, "battery_percent", pct_py)) {
+        goto error;
+    }
+
+    Py_DECREF(sec_py);
+    Py_DECREF(pct_py);
+
+    return return_dict;
+
+error:
+    Py_XDECREF(sec_py);
+    Py_XDECREF(pct_py);
+    Py_XDECREF(return_dict);
+    return NULL;
+}
+
 static PyMethodDef _system_methods[] = {
     {"get_cpu_instruction_sets", pg_system_get_cpu_instruction_sets,
      METH_NOARGS, DOC_SYSTEM_GETCPUINSTRUCTIONSETS},
@@ -170,6 +275,8 @@ static PyMethodDef _system_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_SYSTEM_GETPREFPATH},
     {"get_pref_locales", pg_system_get_pref_locales, METH_NOARGS,
      DOC_SYSTEM_GETPREFLOCALES},
+    {"get_power_state", pg_system_get_power_state, METH_NOARGS,
+     DOC_SYSTEM_GETPOWERSTATE},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(system)
