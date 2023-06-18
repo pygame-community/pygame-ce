@@ -491,7 +491,8 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
     int wraplength = 0;
 
     if (!PgFont_GenerationCheck(self)) {
-        return RAISE(pgExc_SDLError, "Invalid font.");
+        return RAISE(pgExc_SDLError,
+                     "Invalid font (font module quit since font created)");
     }
 
     static char *kwlist[] = {"text",    "antialias",  "color",
@@ -619,7 +620,8 @@ font_size(PyObject *self, PyObject *text)
     const char *string;
 
     if (!PgFont_GenerationCheck(self)) {
-        return RAISE(pgExc_SDLError, "Invalid font.");
+        return RAISE(pgExc_SDLError,
+                     "Invalid font (font module quit since font created)");
     }
 
     if (PyUnicode_Check(text)) {
@@ -677,7 +679,8 @@ font_metrics(PyObject *self, PyObject *textobj)
     int surrogate;
 
     if (!PgFont_GenerationCheck(self)) {
-        return RAISE(pgExc_SDLError, "Invalid font.");
+        return RAISE(pgExc_SDLError,
+                     "Invalid font (font module quit since font created)");
     }
 
     if (PyUnicode_Check(textobj)) {
