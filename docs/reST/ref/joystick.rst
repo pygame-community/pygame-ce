@@ -389,17 +389,17 @@ The controller is recognized as "Wireless Gamepad"
 
 * **Buttons**::
 
-    D-pad Up        - Button 0
-    D-pad Down      - Button 1
-    D-pad Left      - Button 2
-    D-pad Right     - Button 3
-    SL              - Button 4
-    SR              - Button 5
-    -               - Button 8
-    Stick In        - Button 10
-    Capture         - Button 13
-    L               - Button 14
-    ZL              - Button 15
+    D-pad Up (toward SL and SR) - Button 2
+    D-pad Down                  - Button 1
+    D-pad Left                  - Button 3
+    D-pad Right                 - Button 0
+    SL                          - Button 9
+    SR                          - Button 10
+    -                           - Button 6
+    Stick In                    - Button 7
+    Capture                     - Button 5
+    L                           - Button 17
+    ZL                          - Button 19
 
 * **Hat/JoyStick**::
 
@@ -416,17 +416,17 @@ The controller is recognized as "Wireless Gamepad"
 
 * **Buttons**::
 
-    A Button        - Button 0
-    B Button        - Button 1
-    X Button        - Button 2
-    Y Button        - Button 3
-    SL              - Button 4
-    SR              - Button 5
-    +               - Button 9
-    Stick In        - Button 11
-    Home            - Button 12
-    R               - Button 14
-    ZR              - Button 15
+    A Button        - Button 1
+    B Button        - Button 3
+    X Button        - Button 0
+    Y Button        - Button 2
+    SL              - Button 9
+    SR              - Button 10
+    +               - Button 6
+    Stick In        - Button 7
+    Home            - Button 5
+    R               - Button 16
+    ZR              - Button 18
 
 * **Hat/JoyStick**::
 
