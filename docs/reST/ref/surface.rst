@@ -133,22 +133,54 @@
    .. method:: blits
 
       | :sl:`draw many images onto another`
-      | :sg:`blits(blit_sequence=((source, dest), ...), doreturn=1) -> [Rect, ...] or None`
+      | :sg:`blits(blit_sequence=((source, dest), ...), doreturn=True) -> [Rect, ...] or None`
       | :sg:`blits(((source, dest, area), ...)) -> [Rect, ...]`
       | :sg:`blits(((source, dest, area, special_flags), ...)) -> [Rect, ...]`
 
-      Draws many surfaces onto this Surface. It takes a sequence as input,
-      with each of the elements corresponding to the ones of :meth:`blit()`.
-      It needs at minimum a sequence of (source, dest).
+      The ``blits`` method efficiently draws a sequence of surfaces onto this ``Surface``.
 
-      :param blit_sequence: a sequence of surfaces and arguments to blit them,
-         they correspond to the :meth:`blit()` arguments
-      :param doreturn: if ``True``, return a list of rects of the areas changed,
-         otherwise return ``None``
+      **Parameters**
 
-      :returns: a list of rects of the areas changed if ``doreturn`` is
-         ``True``, otherwise ``None``
-      :rtype: list or None
+              - ``blit_sequence``: The sequence of surfaces to blit.
+              - ``doreturn``: (optional) Modifies the return value of the method.
+
+          The ``blit_sequence`` parameter is a sequence that contains each surface to be drawn
+          along with its associated blit arguments. See the **Sequence Item Formats** section below
+          for the possible formats.
+
+          The ``doreturn`` parameter controls the return value. When set to ``True``, it returns
+          a list of rectangles representing the changed areas. When set to ``False``, returns
+          ``None``.
+
+      **Return**
+
+          A list of rectangles or ``None``.
+
+      **Sequence Item Formats**
+
+          ``(source, dest)``
+            - ``source``: Surface object to be drawn.
+            - ``dest``: Position where the source Surface should be blitted.
+
+          ``(source, dest, area)``
+            - ``area``: (optional) Specific area of the source Surface to be drawn.
+
+          ``(source, dest, area, special_flags)``
+            - ``special_flags``: (optional) Controls the blending mode for drawing colors.
+
+      **Notes**
+
+          .. note:: ``blits`` is an advanced method. It is recommended to read the documentation
+                    of :meth:`blit` first.
+
+          .. note:: To draw a ``Surface`` with a special flag, you must specify an area as well, e.g.,
+                    ``(source, dest, None, special_flags)``.
+
+          .. note:: Prefer using :meth:`blits` over :meth:`blit` when drawing a multiple images
+                    for better performance. Use :meth:`blit` if you need to draw a single image.
+
+          .. note:: For drawing a sequence of (source, dest) pairs with whole source Surface
+                    and a singular special_flag, use the :meth:`fblits()` method.
 
       .. versionaddedold:: 1.9.4
 
