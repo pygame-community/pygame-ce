@@ -107,9 +107,9 @@
       has pixel or global alphas) if no flags are passed. See the **Special Flags** section
       below for a list of possible values.
 
-      The function returns a rectangle representing the area of this surface that
-      was affected by the blit operation, excluding any pixels outside this surface
-      or its clipping area.
+      The function always returns a rectangle (Rect) object representing the area of this
+      surface that was affected by the blit operation, excluding any pixels outside this
+      surface or its clipping area.
 
       Special Flags
       --------------
@@ -133,7 +133,7 @@
       - Special Alpha blending flags:
           - ``BLEND_PREMULTIPLIED``:
                 Uses premultiplied alpha blending for faster and accurate results when
-                the alpha channel is already multiplied into the color channels of the images.
+                the color channels are already multiplied by the alpha channel of the images.
                 You should only use this blend mode if you previously premultiplied the source
                 surface with :meth:`premul_alpha()`.
           - ``BLEND_ALPHA_SDL2``:
