@@ -87,82 +87,158 @@
    entire Surface. If it is changed, all drawing operations will only effect
    the smaller area.
 
+   **Special_Flags**
+
+   ----
+
+   In pygame, you can draw surfaces on other surfaces by using special flags. These flags
+   give you control over how the colors of the surfaces are combined or blended.
+   Functions like:
+
+       - :meth:`blit()`
+       - :meth:`blits()`
+       - :meth:`fblits()`
+       - :meth:`fill()`
+
+   can all utilize these flags.
+
+   By default, surfaces draw without any special flags. This means that pygame will
+   draw the Surface based on its bit depth, colorkey, and mask. Generally, this results in
+   surfaces being drawn with either pixel or global alpha, or opaque if no alpha is set.
+
+   If you need to explicitly request the default drawing mode, you can use the ``BLENDMODE_NONE``
+   flag.
+
+   The following is a list of all currently available flags, categorized into three sections:
+
+   **Blending without Alpha Channel (RGB)**
+       ``BLEND_ADD`` / ``BLEND_RGB_ADD``
+           Adds the source color channels to the destination color channels, clamped to a maximum of 255.
+           The result color is always a lighter color.
+
+           -) Adding black to any color leaves the color unchanged.
+
+           -) Adding white to any color produces white.
+
+           -) Adding any color to white produces white.
+
+       ``BLEND_SUB`` / ``BLEND_RGB_SUB``
+           Subtracts the source color channels from the destination color channels, clamped to a minimum of 0.
+           The result color is always a darker color.
+
+           -) Subtracting any color from black produces black.
+
+           -) Subtracting white from any color produces black.
+
+           -) Subtracting black from any color leaves the color unchanged.
+
+       ``BLEND_MULT`` / ``BLEND_RGB_MULT``
+           Multiplies the destination color channels by the source color channels, divided by 256 (or >> 8).
+           The result color is always a darker color.
+
+           -) Multiplying any color with black produces black.
+
+           -) Multiplying any color with white leaves the color unchanged.
+
+       ``BLEND_MIN`` / ``BLEND_RGB_MIN``
+           Takes the minimum value between the source and destination color channels.
+
+           -) Minimizing any color with black produces black.
+
+           -) Minimizing any color with white leaves the color unchanged.
+
+       ``BLEND_MAX`` / ``BLEND_RGB_MAX``
+           Takes the maximum value of each color channel
+
+           -) Maximizing any color with black leaves the color unchanged.
+
+           -) Maximizing any color with white produces white.
+
+   **Blending with Alpha Channel (RGBA)**
+       ``BLEND_RGBA_ADD``
+           Works like ``BLEND_RGB_ADD``, but also adds the alpha channel.
+       ``BLEND_RGBA_SUB``
+           Works like ``BLEND_RGB_SUB``, but also subtracts the alpha channel.
+       ``BLEND_RGBA_MULT``
+           Works like ``BLEND_RGB_MULT``, but also multiplies the alpha channel.
+       ``BLEND_RGBA_MIN``
+           Works like ``BLEND_RGB_MIN``, but also minimizes the alpha channel.
+       ``BLEND_RGBA_MAX``
+           Works like ``BLEND_RGB_MAX``, but also maximizes the alpha channel.
+
+   **Special Alpha Blending (RGBA)**
+       ``BLEND_PREMULTIPLIED``
+           Uses premultiplied alpha blending for faster and accurate results when
+           the color channels are already multiplied by the image alpha channel.
+           You should only use this blend mode if you previously premultiplied the source
+           surface with :meth:`premul_alpha()`.
+       ``BLEND_ALPHA_SDL2``
+           Uses the SDL2 blitter for alpha blending, which may give slightly different
+           results compared to the default blitter used in Pygame 1. This algorithm uses
+           different approximations for alpha blending and supports Run-Length Encoding
+           (RLE) on alpha-blended surfaces.
+
    .. method:: blit
 
       | :sl:`draw one image onto another`
       | :sg:`blit(source, dest, area=None, special_flags=0) -> Rect`
 
-      Draws a Surface onto this Surface. The placement of the ``source`` surface on this surface
-      can be specified by passing either a coordinate (x, y) or a Rect as the ``dest``
-      parameter. The ``dest`` parameter denotes the upper left corner from where the blit operation
-      will commence. In the case of a Rect, its top-left corner will be used.
+      Draws a Surface onto this Surface.
 
-      If you want to draw only a specific part of the source surface, you can pass a smaller
-      rectangle as the ``area`` parameter representing that area. It is optional and defaults
-      to ``None``, in which case the whole source surface will be drawn.
+      **Parameters**
 
-      The ``special_flags`` parameter can be used to control how the colors of the source
-      surface are combined with the colors of this surface. It is optional and defaults to `0`,
-      meaning a standard opaque blit will be performed (an alpha blit if the source surface
-      has pixel or global alphas) if no flags are passed. See the **Special Flags** section
-      below for a list of possible values.
+      -----
 
-      The function always returns a rectangle (Rect) object representing the area of this
-      surface that was affected by the blit operation, excluding any pixels outside this
-      surface or its clipping area.
+          - ``source`` is the Surface to draw onto this Surface.
+          - ``dest`` is the position where the source will be drawn on this Surface.
+          - ``area`` is a rectangle that represents the portion of the source Surface that will be drawn.
+          - ``special_flags`` is a special flag that controls how the source Surface is drawn.
 
-      Special Flags
-      --------------
+      The ``source`` parameter is the ``Surface`` object that will be drawn onto this Surface.
 
-      The following blending flags affect how the colors are blended between the two surfaces:
+      The ``dest`` parameter specifies the placement of the source ``Surface`` onto this
+      ``Surface``. It can take a coordinate (x, y) or a ``Rect`` (using its top-left corner).
 
-      - Blending without Alpha Channel (RGB):
-          - ``BLEND_ADD`` / ``BLEND_RGB_ADD``: Adds colors, excluding alpha.
-          - ``BLEND_SUB`` / ``BLEND_RGB_SUB``: Subtracts colors, excluding alpha.
-          - ``BLEND_MULT`` / ``BLEND_RGB_MULT``: Multiplies colors, excluding alpha.
-          - ``BLEND_MIN`` / ``BLEND_RGB_MIN``: Takes the minimum value of each color component, excluding alpha.
-          - ``BLEND_MAX`` / ``BLEND_RGB_MAX``: Takes the maximum value of each color component, excluding alpha.
+      The ``area`` parameter represents the portion of the source ``Surface`` that will be drawn.
+      It can be a ``Rect`` object representing that section. If not provided, the entire source
+      surface will be drawn.
 
-      - Blending with Alpha Channel (RGBA):
-          - ``BLEND_RGBA_ADD``: Adds colors, including alpha.
-          - ``BLEND_RGBA_SUB``: Subtracts colors, including alpha.
-          - ``BLEND_RGBA_MULT``: Multiplies colors, including alpha.
-          - ``BLEND_RGBA_MIN``: Takes the minimum value of each color component, including alpha.
-          - ``BLEND_RGBA_MAX``: Takes the maximum value of each color component, including alpha.
+      The ``special_flags`` parameter controls how the colors of the source Surface are combined
+      with this Surface. This parameter is optional and defaults to ``0`` (``BLENDMODE_NONE``),
+      resulting in an opaque blit. If the source surface has alpha transparency, an alpha blit
+      will be performed.
 
-      - Special Alpha blending flags:
-          - ``BLEND_PREMULTIPLIED``:
-                Uses premultiplied alpha blending for faster and accurate results when
-                the color channels are already multiplied by the alpha channel of the images.
-                You should only use this blend mode if you previously premultiplied the source
-                surface with :meth:`premul_alpha()`.
-          - ``BLEND_ALPHA_SDL2``:
-                Uses the SDL2 blitter for alpha blending, which may give slightly different
-                results compared to the default blitter used in Pygame 1. This algorithm uses
-                different approximations for alpha blending and supports Run-Length Encoding
-                (RLE) on alpha-blended surfaces.
+      For a detailed list and explanation of all possible flags, refer to the **Special Flags**
+      section in the documentation for :meth:`pygame.Surface()`.
 
-      Notes
-      --------------
+      **Return**
 
-      .. note:: The size of the destination rectangle does not effect the blit.
+      -----
 
-      .. note:: When using the ``area`` parameter as a rectangle with negative positions, the
-                resulting blit position will be different from the values passed. Specifically,
-                the negative values of the rectangle will be subtracted from the corresponding
-                ``dest`` coordinates. For example, if the original ``dest`` coordinates are
-                (15, 15) and the rectangle defined by the ``area`` is (-5, -5, 10, 10), the final
-                blit position will be (20, 20).
+      A ``Rect`` object representing the affected area of this ``Surface`` that was modified
+      by the blit operation. This area includes only the pixels within this ``Surface`` or
+      its clipping area (see :meth:`set_clip`).
 
-      .. note:: When blitting to an 8-bit surface, any transparency in the source surface will be ignored.
+      **Notes**
 
-      .. note:: If you perform a self-blit (blitting to the same surface) with colorkey or alpha
-                transparency, the resulting colors may appear slightly different compared to
-                copying to a different surface.
+      -----
 
-      .. note:: The blit will be ignored if the source surface is completely outside the
-                destination surface's clipping area. If the source surface is partially
-                inside/outside the destination surface, only the overlapping area will be blitted.
+      .. note:: If the ``dest`` parameter is a ``Rect`` object, only its ``x`` and ``y`` coordinates
+                are used, its will not affect the blit.
+
+      .. note:: If the ``area`` ``Rect`` has negative position, the final blit position will be
+                ``dest`` - ``area.topleft``.
+
+      .. note:: If the ``source`` ``Surface`` has transparency, transparent pixels will be ignored
+                when blittting to an 8-bit surface.
+
+      .. note:: When self-blitting (source ``Surface`` is the same as destination ``Surface``),
+                and there is a colorkey or alpha transparency, resulting colors may appear
+                slightly different compared to a non-self blit.
+
+      .. note:: The blit will be ignored if the ``source`` ``Surface`` is completely outside
+                this ``Surface``'s clipping area. If the ``source`` is partially inside/outside
+                this ``Surface``, only the overlapping area will be blitted.
 
       .. ## Surface.blit ##
 
