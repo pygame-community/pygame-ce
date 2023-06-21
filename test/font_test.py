@@ -640,8 +640,8 @@ class FontTypeTest(unittest.TestCase):
         font = pygame_font.Font(bytes_buffer)
 
         self.assertTrue(
-            font.path.startswith("<_io.BytesIO"),
-            f"font.path should be io.BytesIO description.",
+            "BytesIO" in font.path,
+            f"font.path should be io.BytesIO description. {font.path} != {str(bytes_buffer)}",
         )
         self.assertEqual(
             f"{bytes_buffer}",
