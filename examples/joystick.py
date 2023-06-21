@@ -18,7 +18,7 @@ def main():
 
     # Get ready to print.
     font = pygame.font.SysFont(None, 25)
-    wraplength = size[1] - 20
+    wraplength = size[0] - 20
 
     # This dict can be left as-is, since pygame-ce will generate a
     # pygame.JOYDEVICEADDED event for every joystick connected
