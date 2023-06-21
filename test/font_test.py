@@ -625,7 +625,31 @@ class FontTypeTest(unittest.TestCase):
             # cleanup
             pygame.freetype.quit()
 
-    def test_font_path_from_obj(self):
+    def test_font_path_from_io_bytes_obj(self):
+        default_font_path = pygame_font.Font(None, 20).path
+        font_path = os.path.join(
+            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
+        )
+        with open(font_path, "rb") as f:
+            fnt = f.read()
+
+        import io
+
+        bytes_buffer = io.BytesIO(fnt)
+
+        font = pygame_font.Font(bytes_buffer)
+
+        self.assertTrue(
+            font.path.startswith("<_io.BytesIO"),
+            f"font.path should be io.BytesIO description.",
+        )
+        self.assertEqual(
+            f"{bytes_buffer}",
+            font.path,
+            f"font.path should be {bytes_buffer} description.",
+        )
+
+    def test_font_path_from_file_obj(self):
         default_font_path = pygame_font.Font(None, 20).path
         font_path = os.path.join(
             os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
@@ -635,27 +659,7 @@ class FontTypeTest(unittest.TestCase):
             self.assertEqual(
                 default_font_path,
                 font.path,
-                f"should be default font path but is '{font.path}'",
-            )
-
-    def test_font_path_from_byte_buffer(self):
-        default_font_path = pygame_font.Font(None, 20).path
-        font_path = os.path.join(
-            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
-        )
-        with open(font_path, "rb") as f:
-            fnt = f.read()
-
-            import io
-
-            bytes_buffer = io.BytesIO(fnt)
-
-            font = pygame.font.Font(bytes_buffer)
-
-            self.assertEqual(
-                default_font_path,
-                font.path,
-                f"should be default font path but is '{font.path}'",
+                f"should be {default_font_path} but is '{font.path}'",
             )
 
     def test_font_file_not_found(self):
@@ -703,26 +707,6 @@ class FontTypeTest(unittest.TestCase):
         )
         with open(font_path, "rb") as f:
             font = pygame_font.Font(f, 20)
-
-    def test_font_path_from_obj(self):
-        default_font_path = pygame_font.Font(None, 20).path
-        font_path = os.path.join(
-            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
-        )
-        with open(font_path, "rb") as f:
-            fnt = f.read()
-
-        import io
-
-        bytes_buffer = io.BytesIO(fnt)
-
-        font = pygame_font.Font(bytes_buffer)
-
-        self.assertEqual(
-            default_font_path,
-            font.path,
-            f"should be default font path but is '{font.path}'",
-        )
 
     def test_load_from_file_obj_default(self):
         font_name = pygame_font.get_default_font()
