@@ -21,7 +21,7 @@ jobs:
     needs: [manylinux, macos, windows, sdist]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v3.5.3
 
       - name: Download all artifacts
         uses: actions/download-artifact@v3

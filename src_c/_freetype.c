@@ -877,7 +877,7 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
 
     /* Keep the current freetype 2 connection open while this object exists.
        Otherwise, the freetype library may be closed before the object frees
-       its local resources. See Pygame issue #187
+       its local resources. See pygame-ce issue #202
     */
     self->freetype = ft;
     ++ft->ref_count;

@@ -129,11 +129,10 @@ required).
    The Surface that gets returned can be drawn to like a regular Surface but
    changes will eventually be seen on the monitor.
 
-   If no size is passed or is set to ``(0, 0)`` and pygame uses ``SDL``
-   version 1.2.10 or above, the created Surface will have the same size as the
-   current screen resolution. If only the width or height are set to ``0``, the
-   Surface will have the same width or height as the screen resolution. Using a
-   ``SDL`` version prior to 1.2.10 will raise an exception.
+   If no size is passed or is set to ``(0, 0)``, the created Surface will have
+   the same size as the current screen resolution. If only the width or height
+   are set to ``0``, the Surface will have the same width or height as the
+   screen resolution.
 
    It is usually best to not pass the depth argument. It will default to the
    best and fastest color depth for the system. If your game requires a
@@ -581,7 +580,7 @@ required).
    .. Note:: :func:`toggle_fullscreen` doesn't work on Windows
              unless the window size is in :func:`pygame.display.list_modes()` or
              the window is created with the flag ``pygame.SCALED``.
-             See `issue #2380 <https://github.com/pygame/pygame/issues/2380>`_.
+             See `issue #1221 <https://github.com/pygame-community/pygame-ce/issues/1221>`_.
 
    .. ## pygame.display.toggle_fullscreen ##
 

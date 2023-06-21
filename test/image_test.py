@@ -104,7 +104,7 @@ class ImageModuleTest(unittest.TestCase):
         "SDL_image 2.0.5 and older has a big endian bug in jpeg saving",
     )
     def testSaveJPG(self):
-        """JPG equivalent to issue #211 - color channel swapping
+        """JPG equivalent to pygame-ce issue #226 - color channel swapping
 
         Make sure the SDL surface color masks represent the rgb memory format
         required by the JPG library. The masks are machine endian dependent

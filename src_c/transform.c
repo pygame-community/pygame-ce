@@ -413,6 +413,7 @@ scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
 {
     SDL_Surface *src = NULL;
     SDL_Surface *retsurf = NULL;
+    SDL_Surface *modsurf = NULL;
     int stretch_result_num = 0;
 
     if (width < 0 || height < 0)
@@ -421,12 +422,32 @@ scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
     src = pgSurface_AsSurface(srcobj);
 
     if (!dstobj) {
-        retsurf = newsurf_fromsurf(src, width, height);
+        modsurf = retsurf = newsurf_fromsurf(src, width, height);
         if (!retsurf)
             return NULL;
     }
     else {
-        retsurf = pgSurface_AsSurface(dstobj);
+        modsurf = retsurf = pgSurface_AsSurface(dstobj);
+        if (retsurf->format->BytesPerPixel != src->format->BytesPerPixel ||
+            retsurf->format->Rmask != src->format->Rmask ||
+            retsurf->format->Gmask != src->format->Gmask ||
+            retsurf->format->Bmask != src->format->Bmask) {
+            return RAISE(PyExc_ValueError,
+                         "Source and destination surfaces need to be "
+                         "compatible formats.");
+        }
+
+        /* If the surface formats are otherwise compatible but the alpha is
+         * not the same, use a proxy surface to modify the pixels of the
+         * existing dstobj return surface. Otherwise SDL_SoftStretch
+         * rejects the input.
+         * For example, RGBA and RGBX surfaces are compatible in this way. */
+        if (retsurf->format->Amask != src->format->Amask) {
+            modsurf = SDL_CreateRGBSurfaceWithFormatFrom(
+                retsurf->pixels, retsurf->w, retsurf->h,
+                retsurf->format->BitsPerPixel, retsurf->pitch,
+                src->format->format);
+        }
     }
 
     if (retsurf->w != width || retsurf->h != height) {
@@ -442,10 +463,14 @@ scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
         pgSurface_Lock(srcobj);
         Py_BEGIN_ALLOW_THREADS;
 
-        stretch_result_num = SDL_SoftStretch(src, NULL, retsurf, NULL);
+        stretch_result_num = SDL_SoftStretch(src, NULL, modsurf, NULL);
 
         Py_END_ALLOW_THREADS;
         pgSurface_Unlock(srcobj);
+
+        if (modsurf != retsurf) {
+            SDL_FreeSurface(modsurf);
+        }
 
         if (stretch_result_num < 0) {
             return (SDL_Surface *)(RAISE(pgExc_SDLError, SDL_GetError()));
@@ -3142,6 +3167,19 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
     }
     else {
         retsurf = pgSurface_AsSurface(dstobj);
+    }
+
+    Uint8 *ret_start = retsurf->pixels;
+    Uint8 *ret_end = ret_start + retsurf->h * retsurf->pitch;
+    Uint8 *src_start = src->pixels;
+    Uint8 *src_end = src_start + src->h * src->pitch;
+    if ((ret_start <= src_start && ret_end >= src_start) ||
+        (src_start <= ret_start && src_end >= ret_start)) {
+        return RAISE(
+            PyExc_ValueError,
+            "Blur routines do not support dest_surfaces that share pixels "
+            "with the source surface. Likely the surfaces are the same, one "
+            "of them is a subsurface, or they are sharing the same buffer.");
     }
 
     if ((retsurf->w) != (src->w) || (retsurf->h) != (src->h)) {
