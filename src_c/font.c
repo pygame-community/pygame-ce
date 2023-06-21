@@ -1023,9 +1023,10 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     if (pgRWops_IsFileObject(rw)) {
         path = PyObject_GetAttrString(obj, "name");
         if (!path) {
-            path = font_resource(
-                font_defaultname);  // Returns an encoded file path, a
-                                    // file-like object or a NULL pointer.
+            /* clear out existing file loading error before attempt to get */
+            PyErr_Clear();
+            path = PyBytes_FromFormat("<%s instance at %p>",
+                                     Py_TYPE(obj)->tp_name, (void *)obj);
             if (path == NULL) {
                 if (PyErr_Occurred() == NULL) {
                     PyErr_Format(PyExc_RuntimeError,
@@ -1035,6 +1036,7 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
                 goto error;
             }
         }
+
         path = pg_EncodeString(path, "UTF-8", NULL, NULL);
         if (!path || path == Py_None) {
             /* if path is NULL, we are forwarding an error. If it is None,
