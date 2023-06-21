@@ -773,7 +773,7 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
         path = PyObject_GetAttrString(original_file, "name");
         if (!path) {
             PyErr_Clear();
-            str = PyBytes_FromFormat("<%s instance at %p>",
+            str = PyBytes_FromFormat("<%s object at %p>",
                                      Py_TYPE(file)->tp_name, (void *)file);
             if (str) {
                 self->path =
@@ -820,7 +820,7 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
         if (!path) {
             PyObject *str;
             PyErr_Clear();
-            str = PyBytes_FromFormat("<%s instance at %p>",
+            str = PyBytes_FromFormat("<%s object at %p>",
                                      Py_TYPE(file)->tp_name, (void *)file);
             if (str) {
                 self->path =
