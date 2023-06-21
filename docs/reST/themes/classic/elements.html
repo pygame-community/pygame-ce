@@ -17,14 +17,22 @@
 	</div>
 	<div class="pagelinks">
 	  <div class="top">
-	    <a href="{{ theme_home_uri }}">Pygame Home</a> ||
-	    <a href="{{ pathto(master_doc) }}">Help Contents</a> ||
-	    <a href="{{ pathto('genindex') }}">Reference Index</a>
-
-        <form action="{{ pathto('search') }}" method="get" style="display:inline;float:right;">
+      <div class="nav-top-wrapper">
+        <a href="{{ theme_home_uri }}">Pygame-ce Home</a> ||
+        <a href="{{ pathto(master_doc) }}">Help Contents</a> ||
+        <a href="{{ pathto('genindex') }}">Reference Index</a>
+      </div>
+      <div class="nav-theme-container">
+        <img class="theme-icon" data-theme="dark-theme" src="{{ pathto('_static/light-theme-icon.svg', 1) }}" width="24" height="24" alt="Light Theme Icon">
+        <img class="theme-icon" data-theme="light-theme" src="{{ pathto('_static/dark-theme-icon.svg', 1) }}" width="24" height="24" alt="Dark Theme Icon">
+      </div>
+      <div class="searchbar-container">
+        <form action="{{ pathto('search') }}" method="get" class="searchbar-form" style="display:inline;float:right;">
           <input name="q" value="" type="text">
-          <input value="search" type="submit">
+          <img class="searchbar-button" src="{{ pathto('_static/searchbar-icon.svg', 1) }}" alt="Search">
+          <input class="searchbar-submit" value="search" type="submit">
         </form>
+      </div>
 	  </div>
 	  <hr style="color:black;border-bottom:none;border-style: dotted;border-bottom-style:none;">
 {#-

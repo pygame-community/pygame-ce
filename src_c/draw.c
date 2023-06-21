@@ -73,6 +73,9 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
 static void
 draw_fillpoly(SDL_Surface *surf, int *vx, int *vy, Py_ssize_t n, Uint32 color,
               int *drawn_area);
+static int
+draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
+             int *drawn_area);
 static void
 draw_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int width,
           Uint32 color);
@@ -845,7 +848,12 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
-    draw_fillpoly(surf, xlist, ylist, length, color, drawn_area);
+    if (length != 3) {
+        draw_fillpoly(surf, xlist, ylist, length, color, drawn_area);
+    }
+    else {
+        draw_filltri(surf, xlist, ylist, color, drawn_area);
+    }
     PyMem_Free(xlist);
     PyMem_Free(ylist);
 
@@ -1469,6 +1477,66 @@ drawhorzlineclipbounding(SDL_Surface *surf, Uint32 color, int x1, int y1,
     add_line_to_drawn_list(x1, y1, x2, y1, pts);
 
     drawhorzline(surf, color, x1, y1, x2);
+}
+
+void
+swap_coordinates(int *x1, int *y1, int *x2, int *y2)
+{
+    int temp = *x1;
+    *x1 = *x2;
+    *x2 = temp;
+
+    temp = *y1;
+    *y1 = *y2;
+    *y2 = temp;
+}
+
+static int
+draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
+             int *draw_area)
+{
+    int p0x, p0y, p1x, p1y, p2x, p2y;
+
+    p0x = xlist[0];
+    p1x = xlist[1];
+    p2x = xlist[2];
+    p0y = ylist[0];
+    p1y = ylist[1];
+    p2y = ylist[2];
+
+    if (p1y < p0y) {
+        swap_coordinates(&p1x, &p1y, &p0x, &p0y);
+    }
+
+    if (p2y < p1y) {
+        swap_coordinates(&p1x, &p1y, &p2x, &p2y);
+
+        if (p1y < p0y) {
+            swap_coordinates(&p1x, &p1y, &p0x, &p0y);
+        }
+    }
+
+    if ((p0y == p1y) && (p1y == p2y) && (p0x == p1x) && (p1x != p2x)) {
+        swap_coordinates(&p1x, &p1y, &p2x, &p2y);
+    }
+
+    float d1 = (float)((p2x - p0x) / ((p2y - p0y) + 1e-17));
+    float d2 = (float)((p1x - p0x) / ((p1y - p0y) + 1e-17));
+    float d3 = (float)((p2x - p1x) / ((p2y - p1y) + 1e-17));
+    int y;
+    for (y = p0y; y <= p2y; y++) {
+        int x1 = p0x + (int)((y - p0y) * d1);
+
+        int x2;
+        if (y < p1y)
+            x2 = p0x + (int)((y - p0y) * d2);
+        else
+            x2 = p1x + (int)((y - p1y) * d3);
+
+        drawhorzlineclipbounding(surf, color, x1, y, x2, draw_area);
+    }
+
+    return 0;
 }
 
 static void

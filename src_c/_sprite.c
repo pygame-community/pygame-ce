@@ -711,6 +711,37 @@ static CYTHON_INLINE float __PYX_NAN() {
 #include "pythread.h"
 #include "_pygame.h"
 #include "SDL.h"
+
+        #if SDL_VERSION_ATLEAST(2, 0, 18)
+            typedef SDL_FPoint _pgsdlFPoint;
+            typedef SDL_Vertex _pgsdlVertex;
+        #else
+            typedef struct {
+                float x;
+                float y;
+            } _pgsdlFPoint;
+
+            typedef struct {
+                _pgsdlFPoint position;
+                SDL_Color color;
+                _pgsdlFPoint tex_coord;
+            } _pgsdlVertex;
+        #endif
+
+        #if SDL_VERSION_ATLEAST(2,0,12)
+            typedef SDL_ScaleMode _pgsdlScaleMode;
+        #else
+            typedef enum {
+                SDL_ScaleModeNearest,
+                SDL_ScaleModeLinear,
+                SDL_ScaleModeBest,
+            } _pgsdlScaleMode;
+
+            int SDL_SetTextureScaleMode(SDL_Texture * texture, _pgsdlScaleMode scaleMode){
+                return 0;
+            }
+        #endif
+        
 #include "pygame.h"
 #ifdef _OPENMP
 #include <omp.h>
@@ -947,7 +978,7 @@ struct __pyx_opt_args_6pygame_5_sdl2_5video_7Texture_draw_internal;
 struct __pyx_opt_args_6pygame_5_sdl2_5video_7Texture_draw;
 struct __pyx_opt_args_6pygame_5_sdl2_5video_5Image_draw;
 
-/* "_sdl2/video.pxd":421
+/* "_sdl2/video.pxd":524
  * 
  *     cpdef object get_viewport(self)
  *     cpdef object blit(self, object source, Rect dest=*, Rect area=*, int special_flags=*)             # <<<<<<<<<<<<<<
@@ -961,7 +992,7 @@ struct __pyx_opt_args_6pygame_5_sdl2_5video_8Renderer_blit {
   int special_flags;
 };
 
-/* "_sdl2/video.pxd":430
+/* "_sdl2/video.pxd":533
  *     cdef readonly int height
  * 
  *     cdef draw_internal(self, SDL_Rect *csrcrect, SDL_Rect *cdstrect, float angle=*, SDL_Point *originptr=*,             # <<<<<<<<<<<<<<
@@ -976,7 +1007,7 @@ struct __pyx_opt_args_6pygame_5_sdl2_5video_7Texture_draw_internal {
   int flip_y;
 };
 
-/* "_sdl2/video.pxd":432
+/* "_sdl2/video.pxd":535
  *     cdef draw_internal(self, SDL_Rect *csrcrect, SDL_Rect *cdstrect, float angle=*, SDL_Point *originptr=*,
  *                        bint flip_x=*, bint flip_y=*)
  *     cpdef void draw(self, srcrect=*, dstrect=*, float angle=*, origin=*,             # <<<<<<<<<<<<<<
@@ -993,7 +1024,7 @@ struct __pyx_opt_args_6pygame_5_sdl2_5video_7Texture_draw {
   int flip_y;
 };
 
-/* "_sdl2/video.pxd":448
+/* "_sdl2/video.pxd":551
  *     cdef public Rect srcrect
  * 
  *     cpdef void draw(self, srcrect=*, dstrect=*)             # <<<<<<<<<<<<<<
@@ -1030,7 +1061,7 @@ struct __pyx_opt_args_6pygame_7_sprite_12LayeredDirty_add_internal {
   PyObject *layer;
 };
 
-/* "_sdl2/video.pxd":409
+/* "_sdl2/video.pxd":512
  * 
  * 
  * cdef class Window:             # <<<<<<<<<<<<<<
@@ -1044,7 +1075,7 @@ struct __pyx_obj_6pygame_5_sdl2_5video_Window {
 };
 
 
-/* "_sdl2/video.pxd":413
+/* "_sdl2/video.pxd":516
  *     cdef int _is_borrowed
  * 
  * cdef class Renderer:             # <<<<<<<<<<<<<<
@@ -1062,7 +1093,7 @@ struct __pyx_obj_6pygame_5_sdl2_5video_Renderer {
 };
 
 
-/* "_sdl2/video.pxd":423
+/* "_sdl2/video.pxd":526
  *     cpdef object blit(self, object source, Rect dest=*, Rect area=*, int special_flags=*)
  * 
  * cdef class Texture:             # <<<<<<<<<<<<<<
@@ -1080,7 +1111,7 @@ struct __pyx_obj_6pygame_5_sdl2_5video_Texture {
 };
 
 
-/* "_sdl2/video.pxd":435
+/* "_sdl2/video.pxd":538
  *                     bint flip_x=*, bint flip_y=*)
  * 
  * cdef class Image:             # <<<<<<<<<<<<<<
@@ -1217,7 +1248,7 @@ struct __pyx_obj_6pygame_7_sprite_GroupSingle {
 
 
 
-/* "_sdl2/video.pxd":413
+/* "_sdl2/video.pxd":516
  *     cdef int _is_borrowed
  * 
  * cdef class Renderer:             # <<<<<<<<<<<<<<
@@ -1232,7 +1263,7 @@ struct __pyx_vtabstruct_6pygame_5_sdl2_5video_Renderer {
 static struct __pyx_vtabstruct_6pygame_5_sdl2_5video_Renderer *__pyx_vtabptr_6pygame_5_sdl2_5video_Renderer;
 
 
-/* "_sdl2/video.pxd":423
+/* "_sdl2/video.pxd":526
  *     cpdef object blit(self, object source, Rect dest=*, Rect area=*, int special_flags=*)
  * 
  * cdef class Texture:             # <<<<<<<<<<<<<<
@@ -1247,7 +1278,7 @@ struct __pyx_vtabstruct_6pygame_5_sdl2_5video_Texture {
 static struct __pyx_vtabstruct_6pygame_5_sdl2_5video_Texture *__pyx_vtabptr_6pygame_5_sdl2_5video_Texture;
 
 
-/* "_sdl2/video.pxd":435
+/* "_sdl2/video.pxd":538
  *                     bint flip_x=*, bint flip_y=*)
  * 
  * cdef class Image:             # <<<<<<<<<<<<<<
@@ -27342,25 +27373,25 @@ static int __Pyx_modinit_type_import_code(void) {
   __pyx_ptype_7cpython_7complex_complex = __Pyx_ImportType(__pyx_t_1, __Pyx_BUILTIN_MODULE_NAME, "complex", sizeof(PyComplexObject), __Pyx_ImportType_CheckSize_Warn);
    if (!__pyx_ptype_7cpython_7complex_complex) __PYX_ERR(4, 15, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyImport_ImportModule("pygame"); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 400, __pyx_L1_error)
+  __pyx_t_1 = PyImport_ImportModule("pygame"); if (unlikely(!__pyx_t_1)) __PYX_ERR(5, 484, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_ptype_6pygame_5_sdl2_5video_Color = __Pyx_ImportType(__pyx_t_1, "pygame", "Color", sizeof(pgColorObject), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_6pygame_5_sdl2_5video_Color) __PYX_ERR(5, 400, __pyx_L1_error)
+   if (!__pyx_ptype_6pygame_5_sdl2_5video_Color) __PYX_ERR(5, 484, __pyx_L1_error)
   __pyx_ptype_6pygame_5_sdl2_5video_Rect = __Pyx_ImportType(__pyx_t_1, "pygame", "Rect", sizeof(pgRectObject), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_6pygame_5_sdl2_5video_Rect) __PYX_ERR(5, 404, __pyx_L1_error)
-  __pyx_t_2 = PyImport_ImportModule("pygame._sdl2.video"); if (unlikely(!__pyx_t_2)) __PYX_ERR(5, 409, __pyx_L1_error)
+   if (!__pyx_ptype_6pygame_5_sdl2_5video_Rect) __PYX_ERR(5, 488, __pyx_L1_error)
+  __pyx_t_2 = PyImport_ImportModule("pygame._sdl2.video"); if (unlikely(!__pyx_t_2)) __PYX_ERR(5, 512, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_ptype_6pygame_5_sdl2_5video_Window = __Pyx_ImportType(__pyx_t_2, "pygame._sdl2.video", "Window", sizeof(struct __pyx_obj_6pygame_5_sdl2_5video_Window), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_6pygame_5_sdl2_5video_Window) __PYX_ERR(5, 409, __pyx_L1_error)
+   if (!__pyx_ptype_6pygame_5_sdl2_5video_Window) __PYX_ERR(5, 512, __pyx_L1_error)
   __pyx_ptype_6pygame_5_sdl2_5video_Renderer = __Pyx_ImportType(__pyx_t_2, "pygame._sdl2.video", "Renderer", sizeof(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_6pygame_5_sdl2_5video_Renderer) __PYX_ERR(5, 413, __pyx_L1_error)
-  __pyx_vtabptr_6pygame_5_sdl2_5video_Renderer = (struct __pyx_vtabstruct_6pygame_5_sdl2_5video_Renderer*)__Pyx_GetVtable(__pyx_ptype_6pygame_5_sdl2_5video_Renderer->tp_dict); if (unlikely(!__pyx_vtabptr_6pygame_5_sdl2_5video_Renderer)) __PYX_ERR(5, 413, __pyx_L1_error)
+   if (!__pyx_ptype_6pygame_5_sdl2_5video_Renderer) __PYX_ERR(5, 516, __pyx_L1_error)
+  __pyx_vtabptr_6pygame_5_sdl2_5video_Renderer = (struct __pyx_vtabstruct_6pygame_5_sdl2_5video_Renderer*)__Pyx_GetVtable(__pyx_ptype_6pygame_5_sdl2_5video_Renderer->tp_dict); if (unlikely(!__pyx_vtabptr_6pygame_5_sdl2_5video_Renderer)) __PYX_ERR(5, 516, __pyx_L1_error)
   __pyx_ptype_6pygame_5_sdl2_5video_Texture = __Pyx_ImportType(__pyx_t_2, "pygame._sdl2.video", "Texture", sizeof(struct __pyx_obj_6pygame_5_sdl2_5video_Texture), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_6pygame_5_sdl2_5video_Texture) __PYX_ERR(5, 423, __pyx_L1_error)
-  __pyx_vtabptr_6pygame_5_sdl2_5video_Texture = (struct __pyx_vtabstruct_6pygame_5_sdl2_5video_Texture*)__Pyx_GetVtable(__pyx_ptype_6pygame_5_sdl2_5video_Texture->tp_dict); if (unlikely(!__pyx_vtabptr_6pygame_5_sdl2_5video_Texture)) __PYX_ERR(5, 423, __pyx_L1_error)
+   if (!__pyx_ptype_6pygame_5_sdl2_5video_Texture) __PYX_ERR(5, 526, __pyx_L1_error)
+  __pyx_vtabptr_6pygame_5_sdl2_5video_Texture = (struct __pyx_vtabstruct_6pygame_5_sdl2_5video_Texture*)__Pyx_GetVtable(__pyx_ptype_6pygame_5_sdl2_5video_Texture->tp_dict); if (unlikely(!__pyx_vtabptr_6pygame_5_sdl2_5video_Texture)) __PYX_ERR(5, 526, __pyx_L1_error)
   __pyx_ptype_6pygame_5_sdl2_5video_Image = __Pyx_ImportType(__pyx_t_2, "pygame._sdl2.video", "Image", sizeof(struct __pyx_obj_6pygame_5_sdl2_5video_Image), __Pyx_ImportType_CheckSize_Warn);
-   if (!__pyx_ptype_6pygame_5_sdl2_5video_Image) __PYX_ERR(5, 435, __pyx_L1_error)
-  __pyx_vtabptr_6pygame_5_sdl2_5video_Image = (struct __pyx_vtabstruct_6pygame_5_sdl2_5video_Image*)__Pyx_GetVtable(__pyx_ptype_6pygame_5_sdl2_5video_Image->tp_dict); if (unlikely(!__pyx_vtabptr_6pygame_5_sdl2_5video_Image)) __PYX_ERR(5, 435, __pyx_L1_error)
+   if (!__pyx_ptype_6pygame_5_sdl2_5video_Image) __PYX_ERR(5, 538, __pyx_L1_error)
+  __pyx_vtabptr_6pygame_5_sdl2_5video_Image = (struct __pyx_vtabstruct_6pygame_5_sdl2_5video_Image*)__Pyx_GetVtable(__pyx_ptype_6pygame_5_sdl2_5video_Image->tp_dict); if (unlikely(!__pyx_vtabptr_6pygame_5_sdl2_5video_Image)) __PYX_ERR(5, 538, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_RefNannyFinishContext();
@@ -28158,7 +28189,7 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "pygame/_sprite.pyx":1
- * ##    pygame - Python Game Library             # <<<<<<<<<<<<<<
+ * ##    pygame-ce - Python Game Library             # <<<<<<<<<<<<<<
  * ##    Copyright (C) 2000-2003, 2007  Pete Shinners
  * ##              (C) 2004 Joe Wreschnig
  */

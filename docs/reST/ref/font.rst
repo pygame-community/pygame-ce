@@ -57,6 +57,8 @@ solves no longer exists, it will likely be removed in the future.
 
    It is safe to call this function even if font is currently not initialized.
 
+   Previously created font objects will be invalid after the font module is quit.
+
    .. ## pygame.font.quit ##
 
 .. function:: get_init

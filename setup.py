@@ -16,7 +16,7 @@ EXTRAS = {}
 
 METADATA = {
     "name": "pygame-ce",
-    "version": "2.3.0.dev3",
+    "version": "2.3.1.dev1",
     "license": "LGPL",
     "url": "https://pyga.me",
     "author": "A community project.",
@@ -120,7 +120,7 @@ def spawn(self, cmd, **kwargs):
 distutils.ccompiler.CCompiler.__spawn = distutils.ccompiler.CCompiler.spawn
 distutils.ccompiler.CCompiler.spawn = spawn
 
-# A (bit hacky) fix for https://github.com/pygame/pygame/issues/2613
+# A (bit hacky) fix for https://github.com/pygame-community/pygame-ce/issues/1346
 # This is due to the fact that distutils uses command line args to 
 # export PyInit_* functions on windows, but those functions are already exported
 # and that is why compiler gives warnings
@@ -153,9 +153,9 @@ def compilation_help():
 
 if not hasattr(sys, 'version_info') or sys.version_info < (3, 7):
     compilation_help()
-    raise SystemExit("Pygame requires Python3 version 3.7 or above.")
+    raise SystemExit("Pygame-ce requires Python3 version 3.7 or above.")
 if IS_PYPY and sys.pypy_version_info < (7,):
-    raise SystemExit("Pygame requires PyPy version 7.0.0 above, compatible with CPython >= 3.7")
+    raise SystemExit("Pygame-ce requires PyPy version 7.0.0 above, compatible with CPython >= 3.7")
 
 
 def consume_arg(name):

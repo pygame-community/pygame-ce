@@ -7,21 +7,21 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ **Français**
+`English`_ `简体中文`_ **Français**  `فارسی`_
 ---------------------------------------------------------------------------------------------------
 
-Pygame est une librarie multi-plateforme, libre et open-source
+Pygame est une bibliothèque multi-plateforme, libre et open-source
 permettant de développer des applications multimédias comme des jeux-vidéos, avec Python.
-Il utilise la librarie "Simple DirectMedia Layer (SDL)" et plusieurs autres libraries
-populaires pour abstraire les fonctions les plus courantes et rendre l'écriture de programmes
+Il utilise la bibliiothèque « `Simple DirectMedia Layer`_ » (SDL) et plusieurs autres bibliothèque
+populaires pour abstraire les fonctions les plus courantes et rendre l’écriture de programmes
 le plus intuitive possible.
 
-Cette distribution se nomme **'pygame - Community Edition'** ('pygame-ce' pour faire plus court).
+Cette distribution se nomme **« pygame - Community Edition »** (abrégé « pygame-ce »).
 
 Ceci est un fork du projet initial par ses principaux anciens développeurs,
 il a été créé à cause de plusieurs obstacles impossibles à franchir, les empêchant de continuer
-le développement du projet initial. Cette nouvelle distribution a pour but d'offrir des mise à jours
-plus régulières, des améliorations et des correctifs, mais aussi une modèle de gouvernance plus
+le développement du projet initial. Cette nouvelle distribution a pour but d’offrir des mises à jour
+plus régulières, des améliorations et des correctifs, mais aussi un modèle de gouvernance plus
 démocratique. 
 
 Tout nouveau contributeur est le bienvenu ! 
@@ -37,37 +37,36 @@ Installation
 Aide
 ----
 
-Si vous venez de commencer avec pygame, vous devriez être capable d'y
-vous lancer assez rapidement. Pygame vous vient avec un grand nombre de
-tutoriels et d'introductions. Il y a aussi une documentation très bien référencée
-sur toute la librarie. Naviguez dans la documentation sur la `docs page`_. Vous pouvez
-aussi y jeter un coup d'oeil localement en lançant cette commande ``python -m pygame.docs``
-dans votre terminal. Si la documentation n'est pas trouvé localement, cela va lancer le
-site web.
+Si vous venez de commencer avec pygame, vous devriez être capable de vous y lancer assez
+rapidement. Pygame vient avec un grand nombre de tutoriels et d'introductions. Il y a
+aussi une documentation très bien référencée sur toute la bibliothèque. Naviguez dans la
+documentation sur la `docs page`_. Vous pouvez aussi y jeter un coup d'œil localement en
+exécutant la commande ``python -m pygame.docs`` dans votre terminal. Si la documentation
+n’est pas trouvée localement, cela va lancer le site web.
 
-La documentation en ligne reste à jour avec la version de pygame en cours de
-développement sur github. Cela peut être un peu plus récent que la version de
+La documentation en ligne reste à jour avec la version de pygame-ce en cours de
+développement sur GitHub. Cela peut être un peu plus récent que la version de
 pygame que vous utilisez. Pour passer à la version sortie la plus récente, lancez
 ``pip install pygame-ce --upgrade`` dans votre terminal.
 
-Chose particulièrement intéressante, c'est que vous avez à votre disposition un dossier 
-d'exemples contenant beaucoup de petits programmes jouables, vous permettant
+Un point particulièrement intéressant : vous avez à votre disposition un dossier 
+d’exemples contenant beaucoup de petits programmes jouables, vous permettant
 de commencer à jouer avec le code tout de suite.
 
-Build grâce au code source
+Build depuis le code source
 --------------------
 
-Si vous voulez utiliser des features en cours de développement,
+Si vous voulez utiliser des fonctionnalités en cours de développement,
 ou que vous voulez contribuer à pygame, vous allez avoir besoin de
-build pygame localement grâce au code source, plutôt que de l'installer avec
+build pygame localement depuis le code source, plutôt que de l’installer avec
 pip.
 
-L'installer grâce au code source est assez automatisé. La majeur
-partie du travail sera de compiler et installer toute les dépendances de 
+Installer Pygame depuis le code source est assez automatisé. La majeure
+partie du travail sera de compiler et d’installer toutes les dépendances de 
 pygame. Une fois ceci fait, lancez le script ``setup.py`` qui va essayer 
-de l'auto-configurer, le build, et installer pygame.
+de l’auto-configurer, le build, et l’installer.
 
-Plus d'informations à propos de l'installation et la compilation disponibles
+Plus d’informations à propos de l’installation et de la compilation sont disponibles
 sur `Compilation wiki page`_.
 
 Crédits
@@ -97,7 +96,7 @@ Des remerciements particuliers s'imposent également.
 * Nicholas Dudfield: many test improvements
 * Alex Folkner for pygame-ctypes
 
-Merci à celles et ceux qui ont proposé des correctifs: Niki Spahiev, Gordon
+Merci à celles et ceux qui ont proposé des correctifs : Niki Spahiev, Gordon
 Tyler, Nathaniel Pryce, Dave Wallace, John Popplewell, Michael Urman,
 Andrew Straw, Michael Hudson, Ole Martin Bjoerndalen, Herve Cauwelier,
 James Mazer, Lalo Martins, Timothy Stranex, Chad Lester, Matthias
@@ -108,20 +107,20 @@ Frankie Robertson, John Krukoff, Lorenz Quack, Nick Irvine,
 Michael George, Saul Spatz, Thomas Ibbotson, Tom Rothamel, Evan Kroske,
 Cambell Barton.
 
-Et à nos chasseurs de bugs: Angus, Guillaume Proux, Frank
+Et à nos chasseurs de bugs : Angus, Guillaume Proux, Frank
 Raiser, Austin Henry, Kaweh Kazemi, Arturo Aldama, Mike Mulcheck,
 Michael Benfield, David Lau
 
 Il y a aussi pas mal de personnes présentes qui soumettent des idées utiles et intéressantes,
 qui ont permis à ce projet de continuer à vivre, et qui ont pratiquement rendu notre
-travail facile. Merci !
+travail facile. Merci !
 
-Très grands remerciemments à toutes les personnes commentant la documentation,
+Très grands remerciements à toutes les personnes commentant la documentation,
 et ajoutant du nouveau contenu dans le wiki pygame.org.  
 
 Aussi de très grands remerciements à toutes les personnes créant des jeux et les 
 partageant sur le site pygame.org pour permettre aux autres d'apprendre et de
-s'amuser.
+s’amuser.
 
 Très grands remerciements à James Paige en particulier pour avoir hébergé
 pygame bugzilla.
@@ -133,8 +132,8 @@ Dépendances
 ------------
 
 Pygame est évidemment très dépendant de SDL et Python. Il a aussi
-des liens, mais de même intègre plusieurs autres petites librairies.
-Le module font s'appuie sur SDL_ttf, qui est lui même dépendant de freetype.
+des liens, mais de même intègre plusieurs autres petites bibliothèques.
+Le module font s’appuie sur SDL_ttf, qui est lui-même dépendant de freetype.
 Le module mixer (et mixer.music) dépend de SDL_mixer. Le module image
 dépend de SDL_image, qui dépend de libjpeg et libpng. Le module transform
 a une version intégrée de SDL_rotozoom pour ses propres fonctions de rotozoom.
@@ -162,18 +161,18 @@ Versions des dépendances:
 
 
 
-License
+Licence
 -------
 
-La librarie est distribuée sous la licence `GNU LGPL version 2.1`_, qui
+La bibliothèque est distribuée sous la licence `GNU LGPL version 2.1`_, qui
 peut être retrouvée dans le fichier ``docs/LGPL.txt``. Nous nous réservons
-le droit de placer les futures versions de cette librarie sous une licence
+le droit de placer les futures versions de cette bibliothèque sous une licence
 différente.
 
-Ceci veut en quelque sorte dire que vous êtes dans l'habilité d'utiliser pygame
-dans n'importe quel projet que souhaitez, mais que si vous voulez effectuer des 
-changements ou des ajouts à pygame lui-même, alors vous serez dans l'obligation
-de les publier avec une licence compatible (préférable de les soumettrent au projet
+Ceci veut en quelque sorte dire que vous êtes habilité à utiliser pygame-ce
+dans n’importe quel projet que souhaitez, mais que si vous voulez effectuer des 
+changements ou des ajouts à pygame lui-même, alors vous serez dans l’obligation
+de les publier avec une licence compatible (de préférence en les soumettant au projet
 pygame). Les codes propriétaires et les jeux commerciaux sont autorisés.
 
 Les programmes présents dans le sous-répertoire ``examples`` appartiennent 
@@ -190,8 +189,8 @@ Voir les docs/licences pour les licences des dépendances.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.2.1.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.2.1...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.3.0.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.3.0...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
@@ -200,7 +199,7 @@ Voir les docs/licences pour les licences des dépendances.
     :target: https://github.com/psf/black
 
 .. _pygame: https://pyga.me
-.. _Simple DirectMedia Layer library: https://www.libsdl.org
+.. _Simple DirectMedia Layer: https://www.libsdl.org
 .. _We need your help: https://www.pygame.org/contribute.html
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
 .. _docs page: https://pyga.me/docs
@@ -208,3 +207,4 @@ Voir les docs/licences pour les licences des dépendances.
 
 .. _简体中文: README.zh-cn.rst
 .. _English: ./../../README.rst
+.. _فارسی: README.fa.rst

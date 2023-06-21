@@ -45,16 +45,17 @@ jobs:
         macarch: [arm64, x86_64]
 
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v3.5.3
 
       - name: Test for Mac Deps cache hit
         id: macdep-cache
-        uses: actions/cache@v3.0.2
+        uses: actions/cache@v3.3.1
         with:
           path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
           # The hash of all files in buildconfig manylinux-build and macdependencies is 
           # the key to the cache. If anything changes here, the deps are built again
           key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}
+          lookup-only: true
 
       # build mac deps on cache miss
       - name: Build Mac Deps
@@ -116,6 +117,7 @@ jobs:
           }
 
     env:
+      MAC_ARCH: ${{ matrix.macarch }}
       # load pip config from this file. Define this in 'CIBW_ENVIRONMENT'
       # because this should not affect cibuildwheel machinery
       # also define environment variables needed for testing
@@ -129,7 +131,6 @@ jobs:
 
       # Setup MacOS dependencies
       CIBW_BEFORE_ALL: |
-        export MAC_ARCH="${{ matrix.macarch }}"
         brew install pkg-config
         cd buildconfig/macdependencies
         cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
@@ -149,23 +150,24 @@ jobs:
       CIBW_BUILD_VERBOSITY: 2
 
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v3.5.3
 
       - name: pip cache
-        uses: actions/cache@v3.0.2
+        uses: actions/cache@v3.3.1
         with:
           path: ~/Library/Caches/pip  # This cache path is only right on mac
           key: pip-cache-${{ matrix.name }}
 
       - name: Fetch Mac deps
         id: macdep-cache
-        uses: actions/cache@v3.0.2
+        uses: actions/cache@v3.3.1
         with:
           path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
           key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}
+          fail-on-cache-miss: true
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.12.3
+        uses: pypa/cibuildwheel@v2.13.1
 
       - uses: actions/upload-artifact@v3
         with:

@@ -39,17 +39,17 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'pygame'
-copyright = '2000-2022, pygame developers'
+project = 'pygame-ce'
+copyright = '2000-2022, pygame developers, 2023 pygame-ce developers'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '2.3.0'
+version = '2.3.1'
 # The full version, including alpha/beta/rc tags.
-release = '2.3.0.dev3'
+release = '2.3.1.dev1'
 
 # Format strings for the version directives
 versionadded_format = 'New in pygame-ce %s'
