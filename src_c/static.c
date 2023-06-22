@@ -372,6 +372,7 @@ PyInit_pygame_static()
 #include "time.c"
 
 #include "system.c"
+#include "geometry.c"
 
 #include "_freetype.c"
 #include "freetype/ft_wrap.c"

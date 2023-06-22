@@ -647,3 +647,7 @@ from .constants import (
     WINDOWSIZECHANGED as WINDOWSIZECHANGED,
     WINDOWTAKEFOCUS as WINDOWTAKEFOCUS,
 )
+from .geometry import (
+    Circle as Circle,
+    CircleType as CircleType
+)
