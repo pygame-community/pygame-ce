@@ -22,7 +22,6 @@ typedef struct {
 
 static PyTypeObject pgCircle_Type;
 
-// return 1 if success and 0 if failure
 static int
 pgCircle_FromObject(PyObject *obj, pgCircleBase *out);
 

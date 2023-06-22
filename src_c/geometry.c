@@ -25,7 +25,6 @@ MODINIT_DEFINE(geometry)
         return NULL;
     }
 
-    /* create the module */
     module = PyModule_Create(&_module);
     if (!module) {
         return NULL;
