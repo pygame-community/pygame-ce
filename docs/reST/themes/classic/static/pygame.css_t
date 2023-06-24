@@ -111,21 +111,15 @@ div.header {
 }
 
 div.header > div {
-    /* border: {{ theme_headerborder }}; */
     border-collapse: collapse;
     background-color: {{ theme_headerbgcolor }};
-    /* background-image: linear-gradient(to bottom, {{ theme_headerbgcolor}}, {{ theme_bgcolor }}); */
 }
 .dark-theme div.header > div {
     background-color: {{ theme_dark_headerbgcolor }};
-    border: {{ theme_dark_headerborder }};
-    /* background-image: linear-gradient(to bottom, {{ theme_dark_headerbgcolor }}, {{ theme_dark_bgcolor }}); */
 }
 div.header .logo {
     background-color: {{ theme_logobgcolor }};
-    /* background-image: linear-gradient(to bottom, {{ theme_logobgcolor }}, {{ theme_headerbgcolor }}); */
     padding: 0.3em;
-    /* border-right: 3px solid black; */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -133,7 +127,6 @@ div.header .logo {
 }
 .dark-theme div.header .logo {
     background-color: {{ theme_dark_logobgcolor }};
-    /* background-image: linear-gradient(to bottom, {{ theme_dark_logobgcolor}}, {{ theme_dark_headerbgcolor }}); */
     border: none;
 }
 div.header .logo a > img {
@@ -279,14 +272,8 @@ input[name="q"]{
     width: 24px;
     position: relative;
     top: 5px;
-    /* fill: {{ theme_searchbarcolor }}; */
     cursor: pointer;
 }
-/*
-.dark-theme .searchbar-button{
-    fill: {{ theme_dark_searchbarcolor }};
-}
-*/
 
 div.document {
     background-color: {{ theme_bgcolor }};
