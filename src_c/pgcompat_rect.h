@@ -8,6 +8,12 @@ typedef struct SDL_FRect {
     float x, y;
     float w, h;
 } SDL_FRect;
+
+typedef struct SDL_FPoint {
+    float x;
+    float y;
+} SDL_FPoint;
+
 #endif /* !(SDL_VERSION_ATLEAST(2, 0, 10)) */
 
 /* SDL 2.0.22 provides some utility functions for FRects */
