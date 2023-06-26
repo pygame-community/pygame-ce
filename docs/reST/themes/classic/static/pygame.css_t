@@ -124,6 +124,7 @@ div.header .logo {
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    text-align: center;
 }
 .dark-theme div.header .logo {
     background-color: {{ theme_dark_logobgcolor }};
@@ -257,7 +258,7 @@ input[name="q"]{
     width: 10vw;
 }
 .clicked input[name="q"]{
-    width: 40vh;
+    width: 40%;
 }
 
 .searchbar-form{
