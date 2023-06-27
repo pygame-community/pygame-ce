@@ -238,6 +238,24 @@ MP3 in most cases.
 
    .. ## pygame.mixer.music.set_soundfont ##
 
+.. function:: get_soundfont
+
+   | :sl:`get the soundfont for playing midi music`
+   | :sg:`get_soundfont() -> paths`
+
+   This gets the soundfont filepaths to be used in the playback of midi music.
+   The soundfont only affects the playback of MID, MIDI, and KAR file formats.
+   The meaning of "paths", a string (or multiple strings separated by a semi-colon),
+   will point to the soundfont file(s) to be searched for in order given if some
+   are missing.
+
+   Function :func:`get_soundfont` calls underlying SDL_mixer function
+   ``Mix_GetSoundFonts``.
+
+   .. versionaddedold:: 2.3.0
+
+   .. ## pygame.mixer.music.get_soundfont ##
+
 .. function:: queue
 
    | :sl:`queue a sound file to follow the current`
