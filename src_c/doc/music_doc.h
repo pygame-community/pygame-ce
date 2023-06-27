@@ -13,6 +13,7 @@
 #define DOC_MIXER_MUSIC_GETBUSY "get_busy() -> bool\ncheck if the music stream is playing"
 #define DOC_MIXER_MUSIC_SETPOS "set_pos(pos) -> None\nset position to play from"
 #define DOC_MIXER_MUSIC_GETPOS "get_pos() -> time\nget the music play time"
+#define DOC_MIXER_MUSIC_SETSOUNDFONT "set_soundfont(path) -> None\nset the soundfont for playing midi music"
 #define DOC_MIXER_MUSIC_QUEUE "queue(filename) -> None\nqueue(fileobj, namehint="", loops=0) -> None\nqueue a sound file to follow the current"
 #define DOC_MIXER_MUSIC_SETENDEVENT "set_endevent() -> None\nset_endevent(type) -> None\nhave the music send an event when playback stops"
 #define DOC_MIXER_MUSIC_GETENDEVENT "get_endevent() -> type\nget the event a channel sends when playback stops"
