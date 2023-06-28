@@ -641,7 +641,7 @@ class FontTypeTest(unittest.TestCase):
 
         self.assertFalse(
             font.path == "",
-            f"font.path should not be empty. {font.path} != \"\"",
+            f'font.path should not be empty. {font.path} != ""',
         )
 
     def test_font_path_from_file_obj(self):
