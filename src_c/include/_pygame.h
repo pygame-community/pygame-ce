@@ -87,6 +87,7 @@ typedef struct pg_bufferinfo_s {
 } pg_buffer;
 
 #include "pgimport.h"
+#include "../pgcompat_rect.h"
 
 /*
  * BASE module
