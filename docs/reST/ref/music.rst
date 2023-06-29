@@ -225,11 +225,15 @@ MP3 in most cases.
    | :sg:`set_soundfont(path) -> None`
 
    This sets the soundfont file to be used in the playback of midi music.
-   The soundfont only affects the playback of MID, MIDI, and KAR file formats.
-   The meaning of "path", a string (or multiple strings separated by a semi-colon),
-   will point to the soundfont file(s) to be searched for in order given if some
-   are missing. Passing None as the path resets the soundfont back to the system
-   default soundfont.
+   The soundfont only affects the playback of ``MID``, ``MIDI``, and ``KAR`` file formats.
+   The ``path`` argument, a string (or multiple strings separated by a semi-colon),
+   must point to the soundfont file(s) to be searched for in order given if some
+   are missing.
+
+   Note that while SDL_Mixer stores the soundfont path, whether the soundfont is
+   used in the playback is a different story. SDL_Mixer needs to be compiled with 
+   soundfont support for a given platform. Soundfonts work on Raspbian 64-bit, but 
+   not Windows 11. Other operation systems have not been tested.
 
    Function :func:`set_soundfont` calls underlying SDL_mixer function
    ``Mix_SetSoundFonts``.
@@ -243,11 +247,11 @@ MP3 in most cases.
    | :sl:`get the soundfont for playing midi music`
    | :sg:`get_soundfont() -> paths`
 
-   This gets the soundfont filepaths to be used in the playback of midi music.
-   The soundfont only affects the playback of MID, MIDI, and KAR file formats.
-   The meaning of "paths", a string (or multiple strings separated by a semi-colon),
-   will point to the soundfont file(s) to be searched for in order given if some
-   are missing.
+   This gets the soundfont filepaths as a string (each path is separated by a semi-colon) 
+   to be used in the playback of ``MID``, ``MIDI``, and ``KAR`` music file formats.
+
+   Note this function only retrieves ``soundfont_paths`` that is stored in the SDL_Mixer 
+   which may not be the soundfont used in the playback (reasons in :func:`set_soundfont`). 
 
    Function :func:`get_soundfont` calls underlying SDL_mixer function
    ``Mix_GetSoundFonts``.
