@@ -232,8 +232,8 @@ MP3 in most cases.
 
    Note that while SDL_Mixer stores the soundfont path, whether the soundfont is
    used in the playback is a different story. SDL_Mixer needs to be compiled with 
-   soundfont support for a given platform. Soundfonts work on Raspbian 64-bit, but 
-   not Windows 11. Other operation systems have not been tested.
+   soundfont support for a given operation system. Soundfonts work on Raspbian 64-bit, 
+   but not Windows. Other operation systems have not been tested.
 
    Function :func:`set_soundfont` calls underlying SDL_mixer function
    ``Mix_SetSoundFonts``.
