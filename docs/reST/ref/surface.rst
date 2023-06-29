@@ -187,58 +187,52 @@
 
       **Parameters**
 
-      -----
+              - ``source`` is the Surface to draw onto this Surface.
+              - ``dest`` is the position where the source will be drawn on this Surface.
+              - ``area`` is a rectangle that represents the portion of the source Surface that will be drawn.
+              - ``special_flags`` is a special flag that controls how the source Surface is drawn.
 
-          - ``source`` is the Surface to draw onto this Surface.
-          - ``dest`` is the position where the source will be drawn on this Surface.
-          - ``area`` is a rectangle that represents the portion of the source Surface that will be drawn.
-          - ``special_flags`` is a special flag that controls how the source Surface is drawn.
+          The ``source`` parameter is the ``Surface`` object that will be drawn onto this Surface.
 
-      The ``source`` parameter is the ``Surface`` object that will be drawn onto this Surface.
+          The ``dest`` parameter specifies the placement of the source ``Surface`` onto this
+          ``Surface``. It can take a coordinate (x, y) or a ``Rect`` (using its top-left corner).
 
-      The ``dest`` parameter specifies the placement of the source ``Surface`` onto this
-      ``Surface``. It can take a coordinate (x, y) or a ``Rect`` (using its top-left corner).
+          The ``area`` parameter represents the portion of the source ``Surface`` that will be drawn.
+          It can be a ``Rect`` object representing that section. If not provided, the entire source
+          surface will be drawn.
 
-      The ``area`` parameter represents the portion of the source ``Surface`` that will be drawn.
-      It can be a ``Rect`` object representing that section. If not provided, the entire source
-      surface will be drawn.
+          The ``special_flags`` parameter controls how the colors of the source Surface are combined
+          with this Surface. This parameter is optional and defaults to ``0`` (``BLENDMODE_NONE``),
+          resulting in an opaque blit. If the source surface has alpha transparency, an alpha blit
+          will be performed.
 
-      The ``special_flags`` parameter controls how the colors of the source Surface are combined
-      with this Surface. This parameter is optional and defaults to ``0`` (``BLENDMODE_NONE``),
-      resulting in an opaque blit. If the source surface has alpha transparency, an alpha blit
-      will be performed.
-
-      For a detailed list and explanation of all possible flags, refer to the **Special Flags**
-      section in the documentation for :meth:`pygame.Surface()`.
+          For a detailed list and explanation of all possible flags, refer to the **Special Flags**
+          section in the documentation for :meth:`pygame.Surface()`.
 
       **Return**
 
-      -----
-
-      A ``Rect`` object representing the affected area of this ``Surface`` that was modified
-      by the blit operation. This area includes only the pixels within this ``Surface`` or
-      its clipping area (see :meth:`set_clip`).
+          A ``Rect`` object representing the affected area of this ``Surface`` that was modified
+          by the blit operation. This area includes only the pixels within this ``Surface`` or
+          its clipping area (see :meth:`set_clip`).
 
       **Notes**
 
-      -----
+          .. note:: If the ``dest`` parameter is a ``Rect`` object, only its ``x`` and ``y`` coordinates
+                    are used, its will not affect the blit.
 
-      .. note:: If the ``dest`` parameter is a ``Rect`` object, only its ``x`` and ``y`` coordinates
-                are used, its will not affect the blit.
+          .. note:: If the ``area`` ``Rect`` has negative position, the final blit position will be
+                    ``dest`` - ``area.topleft``.
 
-      .. note:: If the ``area`` ``Rect`` has negative position, the final blit position will be
-                ``dest`` - ``area.topleft``.
+          .. note:: If the ``source`` ``Surface`` has transparency, transparent pixels will be ignored
+                    when blittting to an 8-bit surface.
 
-      .. note:: If the ``source`` ``Surface`` has transparency, transparent pixels will be ignored
-                when blittting to an 8-bit surface.
+          .. note:: When self-blitting (source ``Surface`` is the same as destination ``Surface``),
+                    and there is a colorkey or alpha transparency, resulting colors may appear
+                    slightly different compared to a non-self blit.
 
-      .. note:: When self-blitting (source ``Surface`` is the same as destination ``Surface``),
-                and there is a colorkey or alpha transparency, resulting colors may appear
-                slightly different compared to a non-self blit.
-
-      .. note:: The blit will be ignored if the ``source`` ``Surface`` is completely outside
-                this ``Surface``'s clipping area. If the ``source`` is partially inside/outside
-                this ``Surface``, only the overlapping area will be blitted.
+          .. note:: The blit will be ignored if the ``source`` ``Surface`` is completely outside
+                    this ``Surface``'s clipping area. If the ``source`` is partially inside/outside
+                    this ``Surface``, only the overlapping area will be blitted.
 
       .. ## Surface.blit ##
 
