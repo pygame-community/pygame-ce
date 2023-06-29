@@ -226,9 +226,10 @@ MP3 in most cases.
 
    This sets the soundfont file to be used in the playback of midi music.
    The soundfont only affects the playback of ``MID``, ``MIDI``, and ``KAR`` file formats.
-   The ``path`` argument, a string (or multiple strings separated by a semi-colon),
+   The optional ``path`` argument, a string (or multiple strings separated by a semi-colon),
    must point to the soundfont file(s) to be searched for in order given if some
-   are missing.
+   are missing. If ``path`` is an empty string or not specified, any specified soundfont paths
+   will be cleared from SDL_Mixer.
 
    Note that while SDL_Mixer stores the soundfont path, whether the soundfont is
    used in the playback is a different story. SDL_Mixer needs to be compiled with 
@@ -248,7 +249,8 @@ MP3 in most cases.
    | :sg:`get_soundfont() -> paths`
 
    This gets the soundfont filepaths as a string (each path is separated by a semi-colon) 
-   to be used in the playback of ``MID``, ``MIDI``, and ``KAR`` music file formats.
+   to be used in the playback of ``MID``, ``MIDI``, and ``KAR`` music file formats. If no
+   soundfont is specified, the return type is ``None``.
 
    Note this function only retrieves ``soundfont_paths`` that is stored in the SDL_Mixer 
    which may not be the soundfont used in the playback (reasons in :func:`set_soundfont`). 
