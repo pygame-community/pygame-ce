@@ -429,9 +429,6 @@ class MixerMusicModuleTest(unittest.TestCase):
         self.assertEqual(pygame.mixer.music.set_soundfont("test1.sf2;test2.sf2"), None)
         self.assertEqual(pygame.mixer.music.get_soundfont(), "test1.sf2;test2.sf2")
 
-        # There is no reasonable way to call this function so it raises pgExc_SDLError
-        # because this requires the memory is full
-
     def todo_test_get_soundfont(self):
         """Ensure retrieving an unset soundfont returns None"""
         self.assertEqual(pygame.mixer.music.get_soundfont(), None)
