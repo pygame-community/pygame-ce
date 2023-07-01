@@ -218,7 +218,7 @@
 
       **Special Flags**
 
-          - Blending without Alpha Channel (RGB):
+          Blending without Alpha Channel (RGB):
 
           ``BLEND_ADD`` / ``BLEND_RGB_ADD``,
           ``BLEND_SUB`` / ``BLEND_RGB_SUB``,
@@ -226,7 +226,7 @@
           ``BLEND_MIN`` / ``BLEND_RGB_MIN``,
           ``BLEND_MAX`` / ``BLEND_RGB_MAX``,
 
-          - Blending with Alpha Channel (RGBA):
+          Blending with Alpha Channel (RGBA):
 
           ``BLEND_RGBA_ADD``
           ``BLEND_RGBA_SUB``
@@ -234,7 +234,7 @@
           ``BLEND_RGBA_MIN``
           ``BLEND_RGBA_MAX``
 
-          - Special Alpha blending (RGBA):
+          Special Alpha blending (RGBA):
 
           ``BLEND_PREMULTIPLIED``
           ``BLEND_ALPHA_SDL2``
