@@ -31,12 +31,6 @@ MODINIT_DEFINE(geometry)
     }
 
     Py_INCREF(&pgCircle_Type);
-    if (PyModule_AddObject(module, "CircleType", (PyObject *)&pgCircle_Type)) {
-        Py_DECREF(&pgCircle_Type);
-        Py_DECREF(module);
-        return NULL;
-    }
-    Py_INCREF(&pgCircle_Type);
     if (PyModule_AddObject(module, "Circle", (PyObject *)&pgCircle_Type)) {
         Py_DECREF(&pgCircle_Type);
         Py_DECREF(module);
