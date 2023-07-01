@@ -239,7 +239,7 @@ MP3 in most cases.
    Function :func:`set_soundfont` calls underlying SDL_mixer function
    ``Mix_SetSoundFonts``.
 
-   .. versionaddedold:: 2.3.1
+   .. versionadded:: 2.3.1
 
    .. ## pygame.mixer.music.set_soundfont ##
 
@@ -258,7 +258,7 @@ MP3 in most cases.
    Function :func:`get_soundfont` calls underlying SDL_mixer function
    ``Mix_GetSoundFonts``.
 
-   .. versionaddedold:: 2.3.1
+   .. versionadded:: 2.3.1
 
    .. ## pygame.mixer.music.get_soundfont ##
 
