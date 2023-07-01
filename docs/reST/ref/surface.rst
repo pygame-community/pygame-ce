@@ -218,7 +218,7 @@
       **Notes**
 
           .. note:: If the ``dest`` parameter is a ``Rect`` object, only its ``x`` and ``y`` coordinates
-                    are used, its will not affect the blit.
+                    are used, its size will not affect the blit.
 
           .. note:: If the ``area`` ``Rect`` has negative position, the final blit position will be
                     ``dest`` - ``area.topleft``.
