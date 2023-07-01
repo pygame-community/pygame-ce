@@ -187,10 +187,10 @@
 
       **Parameters**
 
-              - ``source`` is the Surface to draw onto this Surface.
-              - ``dest`` is the position where the source will be drawn on this Surface.
-              - ``area`` is a rectangle that represents the portion of the source Surface that will be drawn.
-              - ``special_flags`` is a special flag that controls how the source Surface is drawn.
+              - ``source``: Surface object to be drawn.
+              - ``dest``: Position where the source Surface should be drawn.
+              - ``area``: (optional) Rectangle portion of the source Surface to be drawn.
+              - ``special_flags``: (optional) Controls how the source Surface is drawn.
 
           The ``source`` parameter is the ``Surface`` object that will be drawn onto this Surface.
 
