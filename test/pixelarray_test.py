@@ -1315,9 +1315,10 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
         """
         weird_surface = pygame.Surface((5, 0))
         self.assertRaises(ValueError, lambda: pygame.PixelArray(weird_surface))
-        
+
         weird_surface = pygame.Surface((0, 5))
         self.assertRaises(ValueError, lambda: pygame.PixelArray(weird_surface))
+
 
 @unittest.skipIf(IS_PYPY, "pypy having issues")
 class PixelArrayArrayInterfaceTest(unittest.TestCase, TestMixin):
