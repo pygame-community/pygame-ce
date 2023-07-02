@@ -102,10 +102,6 @@ _get_single_pixel(pgPixelArrayObject *array, Py_ssize_t x, Py_ssize_t y)
     if (array->surface == NULL) {
         return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
     }
-    if (array->pixels == NULL) {
-        return RAISE(PyExc_ValueError,
-                     "Cannot index into PixelArray with a zero-size surface");
-    }
     pixel_p = (array->pixels + x * array->strides[0] + y * array->strides[1]);
     surf = pgSurface_AsSurface(array->surface);
 
