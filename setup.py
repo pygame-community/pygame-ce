@@ -29,7 +29,7 @@ METADATA = {
         "Source": "https://github.com/pygame-community/pygame-ce",
     },
     "classifiers": [
-        "Development Status :: 6 - Mature",
+        "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
         "Programming Language :: Assembly",
         "Programming Language :: C",
@@ -53,10 +53,12 @@ METADATA = {
         "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
         "Topic :: Multimedia :: Graphics :: Graphics Conversion",
         "Topic :: Multimedia :: Graphics :: Viewers",
+        "Topic :: Software Development :: Libraries :: pygame",
         "Operating System :: Microsoft :: Windows",
         "Operating System :: POSIX",
         "Operating System :: Unix",
         "Operating System :: MacOS",
+        "Typing :: Typed"
     ],
     "python_requires": '>=3.7',
 }
