@@ -384,22 +384,25 @@ Nintendo Switch Left Joy-Con (pygame 2.x)
 *****************************************
 
 The Nintendo Switch Left Joy-Con has 4 axes, 11 buttons, and 0 hats. The values for the 4 axes never change.
-The controller is recognized as "Wireless Gamepad"
+The controller is recognized as "Wireless Gamepad".
+After SDL 2.24.0, The controller is recognized as "Nintendo Switch Joy-Con (L)".
 
 
 * **Buttons**::
+                        After SDL 2.24.0         Before SDL 2.24.0
+    D-pad Up                Button 2                  Button 3
+    D-pad Down              Button 1                  Button 0
+    D-pad Left              Button 3                  Button 2
+    D-pad Right             Button 0                  Button 1
+    SL                      Button 9                  Button 4
+    SR                      Button 10                 Button 5
+    -                       Button 6                  Button 8
+    Stick In                Button 7                  Button 10
+    Capture                 Button 5                  Button 13
+    L                       Button 17                 Button 14
+    ZL                      Button 19                 Button 15
 
-    D-pad Up (toward SL and SR) - Button 2
-    D-pad Down                  - Button 1
-    D-pad Left                  - Button 3
-    D-pad Right                 - Button 0
-    SL                          - Button 9
-    SR                          - Button 10
-    -                           - Button 6
-    Stick In                    - Button 7
-    Capture                     - Button 5
-    L                           - Button 17
-    ZL                          - Button 19
+Reference : D-pad Up points toward SL and SR buttons. 
 
 * **Hat/JoyStick**::
 
@@ -415,18 +418,18 @@ The controller is recognized as "Wireless Gamepad"
 
 
 * **Buttons**::
-
-    A Button        - Button 1
-    B Button        - Button 3
-    X Button        - Button 0
-    Y Button        - Button 2
-    SL              - Button 9
-    SR              - Button 10
-    +               - Button 6
-    Stick In        - Button 7
-    Home            - Button 5
-    R               - Button 16
-    ZR              - Button 18
+                  After SDL 2.24.0         Before SDL 2.24.0
+    A Button          Button 1                 Button 0
+    B Button          Button 3                 Button 2
+    X Button          Button 0                 Button 1
+    Y Button          Button 2                 Button 3
+    SL                Button 9                 Button 4
+    SR                Button 10                Button 5
+    +                 Button 6                 Button 9
+    Stick In          Button 7                 Button 11
+    Home              Button 5                 Button 12
+    R                 Button 16                Button 14
+    ZR                Button 18                Button 15
 
 * **Hat/JoyStick**::
 
