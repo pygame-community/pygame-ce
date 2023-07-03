@@ -389,6 +389,7 @@ After SDL 2.24.0, The controller is recognized as "Nintendo Switch Joy-Con (L)".
 
 
 * **Buttons**::
+
                         After SDL 2.24.0         Before SDL 2.24.0
     D-pad Up                Button 2                  Button 3
     D-pad Down              Button 1                  Button 0
@@ -418,6 +419,7 @@ The controller is recognized as "Wireless Gamepad"
 
 
 * **Buttons**::
+
                   After SDL 2.24.0         Before SDL 2.24.0
     A Button          Button 1                 Button 0
     B Button          Button 3                 Button 2
