@@ -46,7 +46,8 @@ def setup(app):
     app.setup_extension("ext.indexer")
 
     # Add js files for theme changing in docs.
-    app.add_js_file("script.js")
+    app.add_js_file("theme.js")
+    app.add_js_file("sections.js")
 
     # Documents to leave untransformed by boilerplate
     app.add_config_value("boilerplate_skip_transform", [], "")

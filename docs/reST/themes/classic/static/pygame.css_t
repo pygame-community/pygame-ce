@@ -86,56 +86,65 @@ body {
 }
 html {
     background-color: {{ theme_bgcolor }};
-    height: 100vh;
+    height: 100%;
 }
 html.dark-theme {
     background-color: {{ theme_dark_bgcolor }};
 }
 html.dark-theme body {
     color: {{ theme_dark_textcolor }};
+    background-color: {{ theme_dark_bgcolor }};
 }
 html:has(body.dark-theme) {
     background-color: {{ theme_dark_bgcolor }};
 }
 
 div.header {
-    padding: 0.5em;
-    line-height: 1.2em;
+	style: block;
+  line-height: 1.2em;
+	position: fixed;
+	padding: 0;
+	box-shadow: 20px 10px 15px 0px rgba(0, 0, 0, 0.2);
+	margin: 0;
+	top: 0;
+	height: 100%;
 }
 
 div.header > div {
-    border: {{ theme_headerborder }};
     border-collapse: collapse;
     background-color: {{ theme_headerbgcolor }};
 }
 .dark-theme div.header > div {
     background-color: {{ theme_dark_headerbgcolor }};
-    border: {{ theme_dark_headerborder }};
 }
 div.header .logo {
     background-color: {{ theme_logobgcolor }};
     padding: 0.3em;
-    border-right: 3px solid black;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    text-align: center;
 }
 .dark-theme div.header .logo {
     background-color: {{ theme_dark_logobgcolor }};
     border: none;
 }
-div.header .logo img {
+div.header .logo a > img {
     min-width: 200px;
     min-height: 60px;
+    width: auto;
+    height: auto;
     border-style: none;
 }
 
 div.header .pagelinks {
     padding: 0.3em;
-    text-align: center;
+    text-align: left;
     vertical-align: middle;
     flex-grow: 1;
+    height: inherit;
+    width: inherit;
 }
 
 div.header p.top {
@@ -146,10 +155,12 @@ div.header p.top {
 div.header p.bottom {
     margin-bottom: 0;
     text-align: left;
+    user-select: none;
+    cursor: pointer;
 }
 
 div.header .pagelinks a {
-    text-decoration: underline;
+	text-decoration: none;
 }
 .dark-theme div.header .pagelinks a {
     text-decoration: none;
@@ -175,11 +186,16 @@ div.header .pagelinks a:hover {
 .pagelinks .bottom a {
     font-weight: 400;
     color: {{ theme_linkcolor2 }};
+    margin-left: 1em;
 }
 .dark-theme .pagelinks .bottom a {
     color: {{ theme_dark_linkcolor2 }};
     font-size: 1.1rem;
     font-weight: 600;
+    margin-left: 1em;
+}
+.dark-theme .pagelinks .bottom span {
+    color: {{ theme_dark_arrow }};
 }
 
 .dl .dt{
@@ -193,11 +209,13 @@ div.header .pagelinks a:hover {
 
 .pagelinks .top{
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
     align-items: center;
 }
 
 .pagelinks .top .nav-top-wrapper{
+	text-align: center;
     flex-grow: 1;
 }
 
@@ -211,7 +229,7 @@ div.header .pagelinks a:hover {
 input[type="text"]{
     background-color: {{ theme_searchbarbgcolor }};
     color: {{ theme_searchbartextcolor }};
-    font-size: 1rem;
+    font-size: 0.9rem;
 }
 .dark-theme input[type="text"]{
     background-color: {{ theme_dark_searchbarbgcolor }};
@@ -232,6 +250,16 @@ input[type="text"]:focus{
 input[type="submit"]{
     display: none;
 }
+input[name="q"]{
+    :-webkit-border-radius: 20px;
+    -moz-border-radius: 20px;
+    border-radius: 20px;
+    padding-left:1em;
+    width: 10vw;
+}
+.clicked input[name="q"]{
+    width: 40%;
+}
 
 .searchbar-form{
     display: flex;
@@ -245,14 +273,8 @@ input[type="submit"]{
     width: 24px;
     position: relative;
     top: 5px;
-    /* fill: {{ theme_searchbarcolor }}; */
     cursor: pointer;
 }
-/*
-.dark-theme .searchbar-button{
-    fill: {{ theme_dark_searchbarcolor }};
-}
-*/
 
 div.document {
     background-color: {{ theme_bgcolor }};
@@ -268,7 +290,7 @@ div.document {
     position: relative;
     top: 2px;
 }
-/* Ignore this, gets rid of minor positionaning difference*/
+/* Ignore this, gets rid of minor positioning difference*/
 .theme-icon[data-theme="light-theme"] {
     transform: translate(0, 2px);
 }
@@ -283,28 +305,194 @@ div.document {
 .dark-theme *[data-theme="light-theme"]{
     display: none;
 }
-
-.flex-container {
-    display: flex;
-    flex-direction: row;
+::-webkit-scrollbar {
+	width: 10px;
+}
+::-webkit-scrollbar-track {
+	background: rgba(0, 0, 0, 0);
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+	background: {{ scrollbar }};
+	background: {{ theme_scrollbar }}
+}
+::-webkit-scrollbar-thumb:hover {
+	background: {{ scrollbar_hover }};
+}
+.dark-theme ::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+	background: {{ theme_dark_scrollbar }}
+}
+.dark-theme	::-webkit-scrollbar-thumb:hover {
+	background: {{ theme_dark_scrollbar_hover }};
 }
 
-@media only screen and (max-width: 900px) {
-    .pagelinks .top{
-        flex-direction: column;
-        gap: 1rem;
+.three-lines {
+  content-visibility: hidden;
+  display: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font-size: 20px;
+  padding-right: 25px;
+  min-width: 65px;
+  min-height: 35px;
+}
+.three-lines:hover {
+  cursor: pointer;
+}
+
+#Sections {
+  overflow-y: auto;
+  position: fixed;
+  height: -webkit-fill-available;
+  height: -moz-available;
+  height: fill-available;
+  height: -moz-available;
+  width: inherit;
+  padding-bottom: 2.5rem;
+}
+.dark-theme #Sections {
+  overflow-y: auto;
+  position: fixed;
+  height: -webkit-fill-available;
+  height: -moz-available;
+  height: fill-available;
+  width: inherit;
+  padding-bottom: 2.5rem;
+}
+
+.split {
+    color: {{ split_line }};
+    border-bottom: none;
+    border-style: solid;
+    border-bottom-style: none;
+    margin-right: 10px;
+    left: 0;
+    position: relative;
+    padding-left: 0;
+}
+.sub-split {
+    color: {{ sub_split_line }};
+    border-bottom: none;
+    border-style: solid;
+    border-bottom-style: none;
+    margin-right: 10px;
+    left: 0;
+    position: relative;
+    padding-left: 0;
+}
+.dark-theme .split {
+    color: {{ theme_dark_split_line }};
+    border-bottom: none;
+    border-style: solid;
+    border-bottom-style: none;
+    margin-right: 10px;
+    left: 0;
+    position: relative;
+    padding-left: 0;
+}
+.dark-theme .sub-split {
+    color: {{ theme_dark_sub_split_line }};
+    border-bottom: none;
+    border-style: solid;
+    border-bottom-style: none;
+    margin-right: 10px;
+    left: 0;
+    position: relative;
+    padding-left: 0;
+}
+
+.flex-container {
+    display: block;
+    flex-direction: column;
+    align-content: stretch;
+    justify-content: space-evenly;
+    align-items: flex-start;
+    width: 17vw;
+
+    height: inherit
+}
+
+@media only screen and (max-width: 1075px) {
+  .pagelinks .top{
+    flex-direction: column;
+    gap: 1rem;
+  }
+  div.header {
+    width: 100%;
+    height: 93px;
+    top: 0;
+  }
+  .three-lines {
+    content-visibility: visible;
+    display: inherit;
+  }
+  /*  clicked the navbar  */
+  .clicked .pagelinks {
+    content-visibility: visible;
+    display: initial;
+  }
+  .clicked #Sections {content-visibility: visible};
+  .clicked .flex-container {
+    width: 100%;
+    height: 100%;
+  }
+  .clicked .header {
+    top: 0;
+  }
+  .clicked .documentwrapper {
+    overflow: hidden;
+    display: none;
+  }
+  .clicked .related {
+    content-visibility: hidden;
+    display: none;
+  }
+  .clicked div.header .logo {
+    padding-right: 15px;
+  }
+  .div.header > div {height: 25vh;}
+  div.header .logo {
+    flex-direction: row;
+    height: 83px;
+  }
+  .pagelinks {
+    overflow: hidden;
+    display: none;
+  }
+  #Sections {
+		content-visibility: hidden;
+	}
+  .flex-container {
+    width: 100%;
+    height: 92px;
+  }
+  .pagelinks {
+    content-visibility: hidden;
+  }
+  #Sections {
+    content-visibility: hidden;
+	}
+  .documentwrapper {padding-top: 128px;}
+  .dark-theme {
+    .documentwrapper {padding-top: 128px;}
+    .flex-container {
+      width: 100%;
+      height: 93px;
+    }
+    .clicked .flex-container {
+        width: 100%;
+        height: 100%;
+    }
+  }
+}
+@media only screen and (max-width: 525px) {
+    div.header .logo h5 {
+        content-visibility: hidden;
     }
 }
 
-@media only screen and (max-width: 680px) {
-  .flex-container {
-    flex-direction: column;
-  }
-
-  div.header .logo {
-      border-right: none;
-  }
-}
 
 /* on wide screens center text, and max width for readable area.  */
 @media only screen and (min-width: 680px) {
@@ -371,6 +559,7 @@ div.related {
     line-height: 30px;
     color: {{ theme_relbartextcolor }};
     font-size: 1rem;
+    position: relative;
 }
 .dark-theme div.related {
     background-color: {{ theme_dark_relbarbgcolor }};
