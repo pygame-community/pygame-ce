@@ -54,6 +54,14 @@ cdef extern from "SDL.h" nogil:
                 SDL_Color color;
                 _pgsdlFPoint tex_coord;
             } _pgsdlVertex;
+
+            int SDL_RenderGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
+                  const _pgsdlVertex *vertices, int num_vertices,
+                  const int *indices, int num_indices)
+            {
+                SDL_SetError("Needs SDL 2.0.18");
+                return -1;
+            }
         #endif
 
         #if SDL_VERSION_ATLEAST(2,0,12)

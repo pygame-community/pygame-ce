@@ -262,6 +262,10 @@ Instead, always begin with the original image and scale to the desired size.)
 
    .. versionchanged:: 2.3.0
       Passing the calling surface as destination surface raises a ``ValueError``
+   
+   .. versionchanged:: 2.3.1
+      Now the standard deviation of the Gaussian kernel is equal to the radius. 
+      Blur results will be slightly different.
 
    .. ## pygame.transform.gaussian_blur ##
 

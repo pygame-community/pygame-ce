@@ -2,7 +2,6 @@ import os
 import pygame
 import sys
 import tempfile
-import time
 
 is_pygame_pkg = __name__.startswith("pygame.tests.")
 
@@ -73,22 +72,6 @@ def rgba_between(value, minimum=0, maximum=255):
         return maximum
     else:
         return value
-
-
-def combinations(seqs):
-    """
-
-    Recipe 496807 from ActiveState Python CookBook
-
-    Non-recursive technique for getting all possible combinations of a sequence
-    of sequences.
-
-    """
-
-    r = [[]]
-    for x in seqs:
-        r = [i + [y] for y in x for i in r]
-    return r
 
 
 def gradient(width, height):
