@@ -112,71 +112,83 @@
    The following is a list of all currently available flags, categorized into three sections:
 
    **Blending without Alpha Channel (RGB)**
-       ``BLEND_ADD`` / ``BLEND_RGB_ADD``
-           Adds the source color channels to the destination color channels, clamped to a maximum of 255.
-           The result color is always a lighter color.
 
-           -) Adding black to any color leaves the color unchanged.
+       .. versionaddedold:: 1.8 / 1.8.1
 
-           -) Adding white to any color produces white.
+           ``BLEND_ADD`` / ``BLEND_RGB_ADD``
+               Adds the source color channels to the destination color channels, clamped to a maximum of 255.
+               The result color is always a lighter color.
 
-           -) Adding any color to white produces white.
+               -) Adding black to any color leaves the color unchanged.
 
-       ``BLEND_SUB`` / ``BLEND_RGB_SUB``
-           Subtracts the source color channels from the destination color channels, clamped to a minimum of 0.
-           The result color is always a darker color.
+               -) Adding white to any color produces white.
 
-           -) Subtracting any color from black produces black.
+               -) Adding any color to white produces white.
 
-           -) Subtracting white from any color produces black.
+           ``BLEND_SUB`` / ``BLEND_RGB_SUB``
+               Subtracts the source color channels from the destination color channels, clamped to a minimum of 0.
+               The result color is always a darker color.
 
-           -) Subtracting black from any color leaves the color unchanged.
+               -) Subtracting any color from black produces black.
 
-       ``BLEND_MULT`` / ``BLEND_RGB_MULT``
-           Multiplies the destination color channels by the source color channels, divided by 256 (or >> 8).
-           The result color is always a darker color.
+               -) Subtracting white from any color produces black.
 
-           -) Multiplying any color with black produces black.
+               -) Subtracting black from any color leaves the color unchanged.
 
-           -) Multiplying any color with white leaves the color unchanged.
+           ``BLEND_MULT`` / ``BLEND_RGB_MULT``
+               Multiplies the destination color channels by the source color channels, divided by 256 (or >> 8).
+               The result color is always a darker color.
 
-       ``BLEND_MIN`` / ``BLEND_RGB_MIN``
-           Takes the minimum value between the source and destination color channels.
+               -) Multiplying any color with black produces black.
 
-           -) Minimizing any color with black produces black.
+               -) Multiplying any color with white leaves the color unchanged.
 
-           -) Minimizing any color with white leaves the color unchanged.
+           ``BLEND_MIN`` / ``BLEND_RGB_MIN``
+               Takes the minimum value between the source and destination color channels.
 
-       ``BLEND_MAX`` / ``BLEND_RGB_MAX``
-           Takes the maximum value of each color channel
+               -) Minimizing any color with black produces black.
 
-           -) Maximizing any color with black leaves the color unchanged.
+               -) Minimizing any color with white leaves the color unchanged.
 
-           -) Maximizing any color with white produces white.
+           ``BLEND_MAX`` / ``BLEND_RGB_MAX``
+               Takes the maximum value of each color channel
+
+               -) Maximizing any color with black leaves the color unchanged.
+
+               -) Maximizing any color with white produces white.
 
    **Blending with Alpha Channel (RGBA)**
-       ``BLEND_RGBA_ADD``
-           Works like ``BLEND_RGB_ADD``, but also adds the alpha channel.
-       ``BLEND_RGBA_SUB``
-           Works like ``BLEND_RGB_SUB``, but also subtracts the alpha channel.
-       ``BLEND_RGBA_MULT``
-           Works like ``BLEND_RGB_MULT``, but also multiplies the alpha channel.
-       ``BLEND_RGBA_MIN``
-           Works like ``BLEND_RGB_MIN``, but also minimizes the alpha channel.
-       ``BLEND_RGBA_MAX``
-           Works like ``BLEND_RGB_MAX``, but also maximizes the alpha channel.
+
+       .. versionaddedold:: 1.8.1
+
+           ``BLEND_RGBA_ADD``
+               Works like ``BLEND_RGB_ADD``, but also adds the alpha channel.
+           ``BLEND_RGBA_SUB``
+               Works like ``BLEND_RGB_SUB``, but also subtracts the alpha channel.
+           ``BLEND_RGBA_MULT``
+               Works like ``BLEND_RGB_MULT``, but also multiplies the alpha channel.
+           ``BLEND_RGBA_MIN``
+               Works like ``BLEND_RGB_MIN``, but also minimizes the alpha channel.
+           ``BLEND_RGBA_MAX``
+               Works like ``BLEND_RGB_MAX``, but also maximizes the alpha channel.
 
    **Special Alpha Blending (RGBA)**
-       ``BLEND_PREMULTIPLIED``
-           Uses premultiplied alpha blending for faster and accurate results when
-           the color channels are already multiplied by the image alpha channel.
-           You should only use this blend mode if you previously premultiplied the source
-           surface with :meth:`premul_alpha()`.
-       ``BLEND_ALPHA_SDL2``
-           Uses the SDL2 blitter for alpha blending, which may give slightly different
-           results compared to the default blitter used in Pygame 1. This algorithm uses
-           different approximations for alpha blending and supports Run-Length Encoding
-           (RLE) on alpha-blended surfaces.
+
+           .. versionaddedold:: 1.9.2
+
+           ``BLEND_PREMULTIPLIED``
+               Uses premultiplied alpha blending for faster and accurate results when
+               the color channels are already multiplied by the image alpha channel.
+               You should only use this blend mode if you previously premultiplied the source
+               surface with :meth:`premul_alpha()`.
+
+           .. versionaddedold:: 2.0.0
+
+           ``BLEND_ALPHA_SDL2``
+               Uses the SDL2 blitter for alpha blending, which may give slightly different
+               results compared to the default blitter used in Pygame 1. This algorithm uses
+               different approximations for alpha blending and supports Run-Length Encoding
+               (RLE) on alpha-blended surfaces.
 
    .. method:: blit
 
