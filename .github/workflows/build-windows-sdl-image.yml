@@ -11,6 +11,8 @@ on:
         required: true
         type: string
 
+    pull_reqest:
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-windows-sdl-image
   cancel-in-progress: true
