@@ -1,4 +1,4 @@
-name: Windows
+name: Windows-SDL-Image
 
 # Run CI only when a release is created, on changes to main branch, or any PR
 # to main. Do not run CI on any other branch. Also, skip any non-source changes
@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   deps:
-    name: ${{ matrix.name }}
+    name: "Build SDL Image"
     runs-on: windows-latest
     strategy:
       matrix:
