@@ -1,0 +1,70 @@
+name: Windows
+
+# Run CI only when a release is created, on changes to main branch, or any PR
+# to main. Do not run CI on any other branch. Also, skip any non-source changes
+# from running on CI
+on:
+  workflow_dispatch:
+    inputs:
+      targetHash:
+        description: 'Commit of SDL_image to build off of'
+        required: true
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-windows-sdl-image
+  cancel-in-progress: true
+
+jobs:
+  deps:
+    name: ${{ matrix.name }}
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - {
+            name: "Build deps x64",
+            winarch: AMD64,
+          }
+          - {
+            name: "Build deps x86",
+            winarch: x86,
+          }
+
+
+    steps:
+      - uses: actions/checkout@v3.5.2
+
+      - name: Set up Visual Studio 2022 Build Tools
+        if: steps.windep-cache.outputs.cache-hit != 'true'
+        uses: microsoft/setup-msbuild@v1.0.2
+        with:
+          vs-version: '17'
+
+      #- name: Install CMake
+      #  if: steps.windep-cache.outputs.cache-hit != 'true'
+      #  run: |
+      #    choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+      #    cmake --version
+
+      - name: Install requests
+      #  if: steps.windep-cache.outputs.cache-hit != 'true'
+        run: pip install requests
+
+      - name: Build Windows Deps x64
+      #  if: (steps.windep-cache.outputs.cache-hit != 'true') && (matrix.winarch == 'AMD64')
+        if: matrix.winarch == 'AMD64'
+        run: python buildconfig/windependencies/generate_sdl_image.py --x64
+      
+      - name: Build Windows Deps x86
+      #  if: (steps.windep-cache.outputs.cache-hit != 'true') && (matrix.winarch == 'x86')
+        if: matrix.winarch == 'x86'
+        run: python buildconfig/windependencies/generate_sdl_image.py --x86
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: pygame-sdl-image
+          path: |
+            prebuilt-x86/
+            prebuilt-x64/
+
