@@ -158,13 +158,13 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param surface: the surface to draw the polygons on
    :param draw_sequence: a sequence of (points, color, width) where:
 
+        - color: the color to draw the polygon with, the alpha value is optional if
+                 using a tuple ``(RGB[A])``
+                 
         - points: a sequence of 3 or more (x, y) coordinates that make up the vertices
                   of the polygon, each *coordinate* in the sequence must be a
                   tuple/list/:class:`pygame.math.Vector2` of 2 ints/floats,
                   e.g. ``[(x1, y1), (x2, y2), (x3, y3)]``
-
-        - color: the color to draw the polygon with, the alpha value is optional if
-                 using a tuple ``(RGB[A])``
 
         - width(optional): indicates the thickness of the polygon (default=0)
                            | if width == 0, fill the polygon
