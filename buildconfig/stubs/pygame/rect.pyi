@@ -33,18 +33,68 @@ class Rect(Collection[int]):
     left: int
     bottom: int
     right: int
-    topleft: Tuple[int, int]
-    bottomleft: Tuple[int, int]
-    topright: Tuple[int, int]
-    bottomright: Tuple[int, int]
-    midtop: Tuple[int, int]
-    midleft: Tuple[int, int]
-    midbottom: Tuple[int, int]
-    midright: Tuple[int, int]
-    center: Tuple[int, int]
+    @property
+    def topleft(self) -> Tuple[int, int]: ...
+    @topleft.setter
+    def topleft(self, value: Coordinate) -> None:
+        """The top left corner of the rect. Floats will be truncated to ints"""
+        ...
+    @property
+    def bottomleft(self) -> Tuple[int, int]: ...
+    @bottomleft.setter
+    def bottomleft (self, value: Coordinate) -> None:
+        """The bottom left corner of the rect. Floats will be truncated to ints"""
+        ...
+    @property
+    def topright(self) -> Tuple[int, int]: ...
+    @topright.setter
+    def topright(self, value: Coordinate) -> None:
+        """The top right corner of the rect. Floats will be truncated to ints"""
+        ...
+    @property
+    def bottomright(self) -> Tuple[int, int]: ...
+    @bottomright.setter
+    def bottomright(self, value: Coordinate) -> None:
+        """The bottom right corner of the rect. Floats will be truncated to ints"""
+        ...
+    @property
+    def midtop(self) -> Tuple[int, int]: ...
+    @midtop.setter
+    def midtop(self, value: Coordinate) -> None:
+        """The middle of the top edge of the rect. Floats will be truncated to ints"""
+        ...
+    @property
+    def midleft(self) -> Tuple[int, int]: ...
+    @midleft.setter
+    def midleft(self, value: Coordinate) -> None:
+        """The middle of the left edge of the rect. Floats will be truncated to ints"""
+        ...
+    @property
+    def midbottom(self) -> Tuple[int, int]: ...
+    @midbottom.setter
+    def midbottom(self, value: Coordinate) -> None:
+        """The middle of the bottom edge of the rect. Floats will be truncated to ints"""
+        ...
+    @property
+    def midright(self) -> Tuple[int, int]: ...
+    @midright.setter
+    def midright(self, value: Coordinate) -> None:
+        """The middle of the right edge of the rect. Floats will be truncated to ints"""
+        ...
+    @property
+    def center(self) -> Tuple[int, int]: ...
+    @center.setter
+    def center(self, value: Coordinate) -> None:
+        """The center of the rect. Floats will be truncated to ints"""
+        ...
     centerx: int
     centery: int
-    size: Tuple[int, int]
+    @property
+    def size(self) -> Tuple[int, int]: ...
+    @size.setter
+    def size(self, value: Coordinate) -> None:
+        """The size of the rect. Floats will be truncated to ints"""
+        ...
     width: int
     height: int
     w: int
@@ -204,18 +254,68 @@ class FRect(Collection[float]):
     left: float
     bottom: float
     right: float
-    topleft: Tuple[float, float]
-    bottomleft: Tuple[float, float]
-    topright: Tuple[float, float]
-    bottomright: Tuple[float, float]
-    midtop: Tuple[float, float]
-    midleft: Tuple[float, float]
-    midbottom: Tuple[float, float]
-    midright: Tuple[float, float]
-    center: Tuple[float, float]
+    @property
+    def topleft(self) -> Tuple[float, float]: ...
+    @topleft.setter
+    def topleft(self, value: Coordinate) -> None:
+        """The top left corner of the rect"""
+        ...
+    @property
+    def bottomleft(self) -> Tuple[float, float]: ...
+    @bottomleft.setter
+    def bottomleft (self, value: Coordinate) -> None:
+        """The bottom left corner of the rect"""
+        ...
+    @property
+    def topright(self) -> Tuple[float, float]: ...
+    @topright.setter
+    def topright(self, value: Coordinate) -> None:
+        """The top right corner of the rect"""
+        ...
+    @property
+    def bottomright(self) -> Tuple[float, float]: ...
+    @bottomright.setter
+    def bottomright(self, value: Coordinate) -> None:
+        """The bottom right corner of the rect"""
+        ...
+    @property
+    def midtop(self) -> Tuple[float, float]: ...
+    @midtop.setter
+    def midtop(self, value: Coordinate) -> None:
+        """The middle of the top edge of the rect"""
+        ...
+    @property
+    def midleft(self) -> Tuple[float, float]: ...
+    @midleft.setter
+    def midleft(self, value: Coordinate) -> None:
+        """The middle of the left edge of the rect"""
+        ...
+    @property
+    def midbottom(self) -> Tuple[float, float]: ...
+    @midbottom.setter
+    def midbottom(self, value: Coordinate) -> None:
+        """The middle of the bottom edge of the rect"""
+        ...
+    @property
+    def midright(self) -> Tuple[float, float]: ...
+    @midright.setter
+    def midright(self, value: Coordinate) -> None:
+        """The middle of the right edge of the rect"""
+        ...
+    @property
+    def center(self) -> Tuple[float, float]: ...
+    @center.setter
+    def center(self, value: Coordinate) -> None:
+        """The center of the rect"""
+        ...
     centerx: float
     centery: float
-    size: Tuple[float, float]
+    @property
+    def size(self) -> Tuple[float, float]: ...
+    @size.setter
+    def size(self, value: Coordinate) -> None:
+        """The size of the rect"""
+        ...
     width: float
     height: float
     w: float
