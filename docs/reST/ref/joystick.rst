@@ -440,6 +440,7 @@ After SDL 2.24.0, The controller is recognized as "Nintendo Switch Joy-Con (R)".
 
 Nintendo Switch Left/Right Joy-Con (pygame **2.3.0** / after SDL **2.24.0**)
 *********************************************************************
+This device is created, if Nintendo Switch Joy-con Left and Nintendo Switch Joy-con Right are connected (these two devices are removed).
 The Nintendo Switch Left/Right Joy-Con has 6 axes, 20 buttons, and 0 hats. The values for the 6 axes never change.
 The controller is recognized as "Nintendo Switch Joy-Con (L/R)".
 
