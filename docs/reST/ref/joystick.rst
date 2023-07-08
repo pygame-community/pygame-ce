@@ -415,8 +415,8 @@ Nintendo Switch Right Joy-Con (pygame 2.x)
 ******************************************
 
 The Nintendo Switch Right Joy-Con has 4 axes, 11 buttons, and 0 hats. The values for the 4 axes never change.
-The controller is recognized as "Wireless Gamepad"
-
+The controller is recognized as "Wireless Gamepad".
+After SDL 2.24.0, The controller is recognized as "Nintendo Switch Joy-Con (R)".
 
 * **Buttons**::
 
@@ -438,6 +438,43 @@ The controller is recognized as "Wireless Gamepad"
     Down -> Up      - Y Axis
     Left -> Right   - X Axis
 
+Nintendo Switch Left/Right Joy-Con (pygame **2.3.0** / after SDL **2.24.0**)
+*********************************************************************
+The Nintendo Switch Left/Right Joy-Con has 6 axes, 20 buttons, and 0 hats. The values for the 6 axes never change.
+The controller is recognized as "Nintendo Switch Joy-Con (L/R)".
+
+* **Left Stick**::
+
+    Left -> Right   - Axis 0
+    Up -> Down      - Axis 1
+
+* **Right Stick**::
+
+    Left -> Right   - Axis 2
+    Up -> Down      - Axis 3
+
+* **Buttons**::
+
+    A Button        - Button 0
+    B Button        - Button 1
+    X Button        - Button 2
+    Y Button        - Button 3
+    - Button        - Button 4
+    Home Button     - Button 5
+    + Button        - Button 6
+    ZL              - Button ? Missing
+    ZR              - Button ? Missing
+    L. Stick In     - Button 9
+    R. Stick In     - Button 10
+    D-pad Up        - Button 11
+    D-pad Down      - Button 12
+    D-pad Left      - Button 13
+    D-pad Right     - Button 14
+    Capture Button  - Button 15
+    Right SR        - Button 16
+    Left SR         - Button 17
+    Right SL        - Button 18
+    Left SL         - Button 19
 
 Nintendo Switch Pro Controller (pygame 2.x)
 *******************************************
