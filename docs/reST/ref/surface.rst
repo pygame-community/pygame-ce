@@ -219,37 +219,13 @@
           will be performed.
 
           For a detailed list and explanation of all possible flags, refer to the **Special Flags**
-          section in the documentation for :meth:`pygame.Surface()` or check the **Special Flags**
-          section below.
+          section in the documentation for :meth:`Surface()`.
 
       **Return**
 
           A ``Rect`` object representing the affected area of this ``Surface`` that was modified
           by the blit operation. This area includes only the pixels within this ``Surface`` or
           its clipping area (see :meth:`set_clip`).
-
-      **Special Flags**
-
-          Blending without Alpha Channel (RGB):
-
-          ``BLEND_ADD`` / ``BLEND_RGB_ADD``,
-          ``BLEND_SUB`` / ``BLEND_RGB_SUB``,
-          ``BLEND_MULT`` / ``BLEND_RGB_MULT``,
-          ``BLEND_MIN`` / ``BLEND_RGB_MIN``,
-          ``BLEND_MAX`` / ``BLEND_RGB_MAX``,
-
-          Blending with Alpha Channel (RGBA):
-
-          ``BLEND_RGBA_ADD``
-          ``BLEND_RGBA_SUB``
-          ``BLEND_RGBA_MULT``
-          ``BLEND_RGBA_MIN``
-          ``BLEND_RGBA_MAX``
-
-          Special Alpha blending (RGBA):
-
-          ``BLEND_PREMULTIPLIED``
-          ``BLEND_ALPHA_SDL2``
 
       **Notes**
 
