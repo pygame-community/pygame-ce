@@ -4107,7 +4107,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_5messagebox(CYTHON_UNUSED PyObje
 }
 
 /* "pygame/_sdl2/video.pyx":150
- * globals()["_Window"] = Window
+ * _Window = Window
  * 
  * cdef Uint32 format_from_depth(int depth):             # <<<<<<<<<<<<<<
  *     cdef Uint32 Rmask, Gmask, Bmask, Amask
@@ -4264,7 +4264,7 @@ static Uint32 __pyx_f_6pygame_5_sdl2_5video_format_from_depth(int __pyx_v_depth)
   goto __pyx_L0;
 
   /* "pygame/_sdl2/video.pyx":150
- * globals()["_Window"] = Window
+ * _Window = Window
  * 
  * cdef Uint32 format_from_depth(int depth):             # <<<<<<<<<<<<<<
  *     cdef Uint32 Rmask, Gmask, Bmask, Amask
@@ -20225,7 +20225,7 @@ if (!__Pyx_RefNanny) {
  *     return buttonid
  * 
  * globals()["Window"] = Window             # <<<<<<<<<<<<<<
- * globals()["_Window"] = Window
+ * _Window = Window
  * 
  */
   __pyx_t_1 = __Pyx_Globals(); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 147, __pyx_L1_error)
@@ -20236,14 +20236,11 @@ if (!__Pyx_RefNanny) {
   /* "pygame/_sdl2/video.pyx":148
  * 
  * globals()["Window"] = Window
- * globals()["_Window"] = Window             # <<<<<<<<<<<<<<
+ * _Window = Window             # <<<<<<<<<<<<<<
  * 
  * cdef Uint32 format_from_depth(int depth):
  */
-  __pyx_t_1 = __Pyx_Globals(); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 148, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (unlikely(PyObject_SetItem(__pyx_t_1, __pyx_n_s_Window_2, ((PyObject *)__pyx_ptype_6pygame_5_sdl2_5video_Window)) < 0)) __PYX_ERR(0, 148, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_Window_2, ((PyObject *)__pyx_ptype_6pygame_5_sdl2_5video_Window)) < 0) __PYX_ERR(0, 148, __pyx_L1_error)
 
   /* "pygame/_sdl2/video.pyx":273
  * 

@@ -145,7 +145,7 @@ def messagebox(title, message,
     return buttonid
 
 globals()["Window"] = Window
-globals()["_Window"] = Window
+_Window = Window
 
 cdef Uint32 format_from_depth(int depth):
     cdef Uint32 Rmask, Gmask, Bmask, Amask
