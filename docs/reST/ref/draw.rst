@@ -156,7 +156,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    Draws a sequence of polygons on the given surface.
 
    :param surface: the surface to draw the polygons on
-   :param draw_sequence: a sequence of (points, color, width) where:
+   :param draw_sequence: a sequence of (color, points, width) where:
 
         - color: the color to draw the polygon with, the alpha value is optional if
                  using a tuple ``(RGB[A])``
