@@ -24,7 +24,7 @@ def polygon(
 ) -> Rect: ...
 def polygons(
         surface: Surface,
-        draw_sequence: Sequence[Tuple[Sequence[Coordinate], ColorValue, Optional[int]]]
+        draw_sequence: Sequence[ColorValue, Tuple[Sequence[Coordinate], Optional[int]]]
 ) -> None: ...
 def circle(
     surface: Surface,
