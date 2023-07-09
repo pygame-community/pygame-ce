@@ -11,7 +11,7 @@ from typing import (
     Optional,
 )
 
-from ._common import Coordinate, Literal, RectValue
+from ._common import Coordinate, Literal, RectValue, RectTuple
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -27,8 +27,6 @@ _N = TypeVar("_N", int, float)
 _K = TypeVar("_K")
 _V = TypeVar("_V")
 _T = TypeVar("_T")
-
-RectTuple = Tuple[_N, _N, _N, _N]
 
 class _GenericRect(Collection[_N]):
     @property

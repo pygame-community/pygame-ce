@@ -1,5 +1,5 @@
 from os import PathLike
-from typing import IO, Callable, Sequence, Tuple, Union
+from typing import IO, Callable, Sequence, Tuple, Union, TypeVar
 
 from typing_extensions import Literal as Literal
 from typing_extensions import Protocol
@@ -37,4 +37,7 @@ class _HasRectAttribute(Protocol):
     # that returns a rect confirms to the rect protocol
     rect: Union[RectValue, Callable[[], RectValue]]
 
+_N = TypeVar("_N", int, float)
+
 RectValue = Union[_CanBeRect, _HasRectAttribute]
+RectTuple = Tuple[_N, _N, _N, _N]
