@@ -417,7 +417,7 @@ class MixerMusicModuleTest(unittest.TestCase):
 
         self.fail()
 
-    def todo_test_set_soundfont(self):
+    def test_set_soundfont(self):
         """Ensure soundfonts can be set, cleared, and retrieved"""
 
         self.assertEqual(pygame.mixer.music.set_soundfont(), None)
@@ -427,10 +427,12 @@ class MixerMusicModuleTest(unittest.TestCase):
         self.assertEqual(pygame.mixer.music.get_soundfont(), None)
 
         self.assertEqual(pygame.mixer.music.set_soundfont("test1.sf2;test2.sf2"), None)
+        self.assertEqual(type(pygame.mixer.music.get_soundfont()), str)
         self.assertEqual(pygame.mixer.music.get_soundfont(), "test1.sf2;test2.sf2")
 
-    def todo_test_get_soundfont(self):
+    def test_get_soundfont(self):
         """Ensure retrieving an unset soundfont returns None"""
+        self.assertEqual(type(pygame.mixer.music.get_soundfont()), type(None))
         self.assertEqual(pygame.mixer.music.get_soundfont(), None)
 
     def test_init(self):
