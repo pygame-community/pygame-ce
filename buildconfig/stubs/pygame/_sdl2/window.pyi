@@ -1,3 +1,1 @@
-from pygame._sdl2 import video
-
-Window: type[video.Window]
+from pygame._sdl2.video import Window as Window
