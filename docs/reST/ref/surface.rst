@@ -229,22 +229,30 @@
 
       **Notes**
 
-          .. note:: If the ``dest`` parameter is a ``Rect`` object, only its ``x`` and ``y`` coordinates
-                    are used, its size will not affect the blit.
+          - If the ``dest`` parameter is a ``Rect`` object, only its ``x`` and ``y`` coordinates
+            are used, its size will not affect the blit.
 
-          .. note:: If the ``area`` ``Rect`` has negative position, the final blit position will be
-                    ``dest`` - ``area.topleft``.
+          ----
 
-          .. note:: If the ``source`` ``Surface`` has transparency, transparent pixels will be ignored
-                    when blittting to an 8-bit surface.
+          - If the ``area`` ``Rect`` has negative position, the final blit position will be
+            ``dest`` - ``area.topleft``.
 
-          .. note:: When self-blitting (source ``Surface`` is the same as destination ``Surface``),
-                    and there is a colorkey or alpha transparency, resulting colors may appear
-                    slightly different compared to a non-self blit.
+          ----
 
-          .. note:: The blit will be ignored if the ``source`` ``Surface`` is completely outside
-                    this ``Surface``'s clipping area. If the ``source`` is partially inside/outside
-                    this ``Surface``, only the overlapping area will be blitted.
+          - If the ``source`` ``Surface`` has transparency, transparent pixels will be ignored
+            when blittting to an 8-bit surface.
+
+          ----
+
+          - When self-blitting (source ``Surface`` is the same as destination ``Surface``),
+            and there is a colorkey or alpha transparency, resulting colors may appear
+            slightly different compared to a non-self blit.
+
+          ----
+
+          - The blit will be ignored if the ``source`` ``Surface`` is completely outside
+            this ``Surface``'s clipping area. If the ``source`` is partially inside/outside
+            this ``Surface``, only the overlapping area will be blitted.
 
       .. ## Surface.blit ##
 
