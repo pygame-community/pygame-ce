@@ -468,10 +468,6 @@ typedef struct pgColorObject pgColorObject;
 #endif /* PYGAMEAPI_MATH_INTERNAL */
 
 #ifndef PYGAMEAPI_GEOMETRY_INTERNAL
-#define pgCircle_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(geometry, 0))
-
-#define pgCircle_Check(x) \
-    ((x)->ob_type == (PyTypeObject *)PYGAMEAPI_GET_SLOT(geometry, 0))
 
 #define import_pygame_geometry()        \
     do {                                \
