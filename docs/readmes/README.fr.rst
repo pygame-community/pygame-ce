@@ -12,7 +12,7 @@
 **Des différences de contenus peuvent être présentes entre le README français, et anglais. Prenez donc bien soin de vérifier les informations de ce README avec le README anglais.**
 ---------------------------------------------------------------------------------------------------
 
-`Pygames`_ est une bibliothèque multi-plateforme, libre et open-source
+`Pygame`_ est une bibliothèque multi-plateforme, libre et open-source
 permettant de développer des applications multimédias comme des jeux-vidéos, avec Python.
 Il utilise la bibliothèque « `Simple DirectMedia Layer`_ » (SDL) et plusieurs autres bibliothèques
 populaires pour abstraire les fonctions les plus courantes et rendre l’écriture de programmes
@@ -118,7 +118,7 @@ qui ont permis à ce projet de continuer à vivre, et qui ont pratiquement rendu
 travail facile. Merci !
 
 Très grands remerciements à toutes les personnes commentant la documentation,
-et ajoutant du nouveau contenu dans le wiki de `pygame`_ et sur `pygame-ce`_.  
+et ajoutant du nouveau contenu dans le `wiki de pygame`_ et sur le `wiki de pygame-ce`_.  
 
 Aussi de très grands remerciements à toutes les personnes créant des jeux et les 
 partageant sur le site pygame.org pour permettre aux autres d'apprendre et de
@@ -200,9 +200,9 @@ Voir les docs/licences pour les licences des dépendances.
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
-.. _Pygames: https://www.pyga.me/
-.. _pygame: https://www.pygame.org/docs/
-.. _pygame-ce: https://pyga.me/docs/
+.. _Pygame: https://www.pyga.me/
+.. _wiki de pygame: https://www.pygame.org/docs/
+.. _wiki de pygame-ce: https://pyga.me/docs/
 .. _Simple DirectMedia Layer: https://www.libsdl.org
 .. _We need your help: https://www.pygame.org/contribute.html
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
