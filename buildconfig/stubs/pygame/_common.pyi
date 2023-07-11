@@ -37,7 +37,4 @@ class _HasRectAttribute(Protocol):
     # that returns a rect confirms to the rect protocol
     rect: Union[RectValue, Callable[[], RectValue]]
 
-_N = TypeVar("_N", int, float)
-
 RectValue = Union[_CanBeRect, _HasRectAttribute]
-RectTuple = Tuple[_N, _N, _N, _N]

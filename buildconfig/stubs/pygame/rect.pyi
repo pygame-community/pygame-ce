@@ -11,7 +11,7 @@ from typing import (
     Optional,
 )
 
-from ._common import Coordinate, Literal, RectValue, RectTuple
+from ._common import Coordinate, Literal, RectValue
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -156,9 +156,9 @@ class _GenericRect(Collection[_N]):
     @overload
     def inflate_ip(self, inflate_by: Coordinate) -> None: ...
     @overload
-    def scale_by(self, x: float, y: float) -> Rect: ...
+    def scale_by(self, x: float, y: float) -> Self: ...
     @overload
-    def scale_by(self, scale_by: Coordinate) -> Rect: ...
+    def scale_by(self, scale_by: Coordinate) -> Self: ...
     @overload
     def scale_by_ip(self, x: float, y: float) -> None: ...
     @overload
@@ -256,12 +256,22 @@ class _GenericRect(Collection[_N]):
     # Also undocumented: the dict collision methods take a 'values' argument
     # that defaults to False. If it is False, the keys in rect_dict must be
     # Rect-like; otherwise, the values must be Rects.
+    @overload
     def collidedict(
-        self, rect_dict: Dict[RectTuple[_N], _V], values: bool = ...
+        self, rect_dict: Dict[RectValue, _V], values: bool = False
     ) -> Tuple[RectValue, _V]: ...
+    @overload
+    def collidedict(
+        self, rect_dict: Dict[_K, RectValue], values: bool = False
+    ) -> Tuple[_K, RectValue]: ...
+    @overload
     def collidedictall(
-        self, rect_dict: Dict[RectTuple[_N], _V], values: bool = ...
+        self, rect_dict: Dict[RectValue, _V], values: bool = False
     ) -> List[Tuple[RectValue, _V]]: ...
+    @overload
+    def collidedictall(
+        self, rect_dict: Dict[_K, RectValue], values: bool = False
+    ) -> List[Tuple[_K, RectValue]]: ...
 
 # Rect confirms to the Collection ABC, since it also confirms to
 # Sized, Iterable and Container ABCs
