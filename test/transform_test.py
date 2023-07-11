@@ -215,6 +215,38 @@ class TransformModuleTest(unittest.TestCase):
         self.assertEqual(pygame.transform.average_color(dest)[1], 76)
         self.assertEqual(pygame.transform.average_color(dest)[2], 72)
 
+    def test_solid_overlay(self):
+        test_surface = pygame.Surface((20, 20), pygame.SRCALPHA)
+        test_surface.fill((0, 0, 0, 0))
+        pygame.draw.rect(test_surface, (0, 0, 0), (10, 10, 10, 10))
+
+        surface = pygame.Surface((20, 20), pygame.SRCALPHA)
+        surface.fill((0, 0, 0, 0))
+        pygame.draw.rect(surface, (255, 0, 0), (10, 10, 10, 10))
+
+        surface = pygame.transform.solid_overlay(surface, (0, 0, 0))
+
+        for x in range(20):
+            for y in range(20):
+                self.assertTrue(surface.get_at((x, y)) == test_surface.get_at((x, y)))
+
+        pygame.transform.solid_overlay(surface, (0, 0, 0), surface)
+
+        for x in range(20):
+            for y in range(20):
+                self.assertTrue(surface.get_at((x, y)) == test_surface.get_at((x, y)))
+
+        test_surface.fill((0, 0, 0, 0))
+        pygame.draw.polygon(test_surface, (200, 100, 50), [(0, 0), (4, 4), (4, 2)])
+
+        surface.fill((0, 0, 0, 0))
+        pygame.draw.polygon(surface, (255, 0, 0), [(0, 0), (4, 4), (4, 2)])
+        surface = pygame.transform.solid_overlay(surface, (200, 100, 50))
+
+        for x in range(20):
+            for y in range(20):
+                self.assertTrue(surface.get_at((x, y)) == test_surface.get_at((x, y)))
+
     def test_threshold__honors_third_surface(self):
         # __doc__ for threshold as of Tue 07/15/2008
 

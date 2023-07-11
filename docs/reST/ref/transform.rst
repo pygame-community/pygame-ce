@@ -336,6 +336,28 @@ Instead, always begin with the original image and scale to the desired size.)
 
    .. ## pygame.transform.grayscale ##
 
+.. function:: solid_overlay
+
+   | :sl:`grayscale a surface`
+   | :sg:`grayscale(surface, color, dest_surface=None) -> Surface`
+
+   Returns a new version of the original surface with all non transparent pixels set to the color provided.
+
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the same dimensions (width, height) and
+   depth as the source Surface.
+   
+   :param pygame.Surface surf: The target surface.
+
+   :param pygame.Color color: Color which all non transparent within the target surface must be set to.
+
+   :param dest_surface: Optional destination surface to which the changes will be applied.
+   :type dest_surf: pygame.Surface or None
+
+   .. versionadded:: 2.3.1
+
+   .. ## pygame.transform.grayscale ##
+
 .. function:: threshold
 
    | :sl:`finds which, and how many pixels in a surface are within a threshold of a 'search_color' or a 'search_surf'.`
