@@ -783,9 +783,6 @@ surf_get_at(PyObject *self, PyObject *position)
     Uint8 *pix;
     Uint8 rgba[4] = {0, 0, 0, 255};
 
-    if (!PySequence_Check(position))
-        return RAISE(PyExc_ValueError, "Argument must be a sequence type");
-
     SURF_INIT_CHECK(surf)
 
     if (!pg_TwoIntsFromObj(position, &x, &y)) {
@@ -932,9 +929,6 @@ surf_get_at_mapped(PyObject *self, PyObject *position)
     int x, y;
     Sint32 color;
     Uint8 *pix;
-
-    if (!PySequence_Check(position))
-        return RAISE(PyExc_ValueError, "Argument must be a sequence type");
 
     SURF_INIT_CHECK(surf)
 
