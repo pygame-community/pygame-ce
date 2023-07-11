@@ -179,9 +179,6 @@ Reference
 :doc:`ref/rect`
   Flexible container for a rectangle.
 
-:doc:`ref/geometry`
-  Geometry types and operations.
-
 :doc:`ref/scrap`
   Native clipboard access.
 

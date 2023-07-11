@@ -7,7 +7,7 @@
    :synopsis: pygame geometry module
 
    .. warning::
-      **Experimetal Module**
+      **Experimental Module**
 
       **This module is a work in progress. Refrain from relying on any features provided by
       this module, as they are subject to change or removal without prior notice.**
