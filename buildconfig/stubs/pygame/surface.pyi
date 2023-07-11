@@ -3,7 +3,6 @@ from typing import Any, List, Optional, Sequence, Tuple, Union, overload, Iterab
 from pygame.bufferproxy import BufferProxy
 from pygame.color import Color
 from pygame.rect import Rect, FRect
-from pygame.math import Vector2
 
 from ._common import ColorValue, Coordinate, Literal, RectValue, RGBAOutput
 
