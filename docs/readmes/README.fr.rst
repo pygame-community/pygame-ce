@@ -12,7 +12,7 @@
 **Des différences de contenus peuvent être présentes entre le README français, et anglais. Prenez donc bien soin de vérifier les informations de ce README avec le README anglais.**
 ---------------------------------------------------------------------------------------------------
 
-`Pygame`_ est une bibliothèque multi-plateforme, libre et open-source
+`Pygames`_ est une bibliothèque multi-plateforme, libre et open-source
 permettant de développer des applications multimédias comme des jeux-vidéos, avec Python.
 Il utilise la bibliothèque « `Simple DirectMedia Layer`_ » (SDL) et plusieurs autres bibliothèques
 populaires pour abstraire les fonctions les plus courantes et rendre l’écriture de programmes
@@ -200,7 +200,7 @@ Voir les docs/licences pour les licences des dépendances.
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
-.. _Pygame: https://www.pyga.me/
+.. _Pygames: https://www.pyga.me/
 .. _pygame: https://www.pygame.org/docs/
 .. _pygame-ce: https://pyga.me/docs/
 .. _Simple DirectMedia Layer: https://www.libsdl.org
