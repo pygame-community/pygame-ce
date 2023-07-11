@@ -2157,7 +2157,8 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj)
     Uint8 *pix;
     for (y = 0; y < src->h; y++) {
         for (x = 0; x < src->w; x++) {
-            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format, pix);
+            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format,
+                        pix);
             SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
 
             if (a != 0) {
