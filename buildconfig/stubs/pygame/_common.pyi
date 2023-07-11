@@ -1,5 +1,5 @@
 from os import PathLike
-from typing import IO, Callable, Sequence, Tuple, Union, TypeVar
+from typing import IO, Callable, Sequence, Tuple, Union
 
 from typing_extensions import Literal as Literal
 from typing_extensions import Protocol
