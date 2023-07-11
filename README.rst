@@ -115,7 +115,7 @@ There's many more folks out there who've submitted helpful ideas, kept
 this project going, and basically made our life easier.  Thanks!
 
 Many thank you's for people making documentation comments, and adding to the
-`pygame`_ wiki and the `pygame-ce`_ wiki.
+`pygame wiki`_ and the `pygame-ce wiki`_.
 
 Also many thanks for people creating games and putting them on the
 pygame.org website for others to learn from and enjoy.
@@ -191,8 +191,9 @@ See docs/licenses for licenses of dependencies.
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
-.. _pygame: https://pyga.me
-.. _pygame: https://www.pygame.org/docs/
+.. _Pygame: https://pyga.me
+.. _pygame-ce wiki: https://www.pyga.me/docs/
+.. _pygame wiki: https://www.pygame.org/docs/
 .. _Simple DirectMedia Layer library: https://www.libsdl.org
 .. _We need your help: https://www.pygame.org/contribute.html
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
