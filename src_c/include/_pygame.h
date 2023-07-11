@@ -469,12 +469,7 @@ typedef struct pgColorObject pgColorObject;
 
 #ifndef PYGAMEAPI_GEOMETRY_INTERNAL
 
-#define import_pygame_geometry()        \
-    do {                                \
-        IMPORT_PYGAME_MODULE(geometry); \
-        if (PyErr_Occurred() != NULL)   \
-            break;                      \
-    } while (0)
+#define import_pygame_geometry() IMPORT_PYGAME_MODULE(geometry)
 
 #endif /* ~PYGAMEAPI_GEOMETRY_INTERNAL */
 
