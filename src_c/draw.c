@@ -972,9 +972,15 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
             rect->y += rect->h;
             rect->h = -rect->h;
         }
+        // Ignore negative values
+        radius = MAX(radius, 0);
+        top_left_radius = MAX(top_left_radius, 0);
+        top_right_radius = MAX(top_right_radius, 0);
+        bottom_left_radius = MAX(bottom_left_radius, 0);
+        bottom_right_radius = MAX(bottom_right_radius, 0);
 
         if (width > rect->w / 2 || width > rect->h / 2) {
-            width = MAX(rect->w / 2, rect->h / 2);
+            width = 0;
         }
 
         draw_round_rect(surf, rect->x, rect->y, rect->x + rect->w - 1,
@@ -2472,14 +2478,10 @@ draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
 {
     int pts[16], i;
     float q_top, q_left, q_bottom, q_right, f;
-    if (top_left < 0)
-        top_left = radius;
-    if (top_right < 0)
-        top_right = radius;
-    if (bottom_left < 0)
-        bottom_left = radius;
-    if (bottom_right < 0)
-        bottom_right = radius;
+    if (!top_left) top_left = radius;
+    if (!top_right) top_right = radius;
+    if (!bottom_left) bottom_left = radius;
+    if (!bottom_right) bottom_right = radius;
     if ((top_left + top_right) > (x2 - x1 + 1) ||
         (bottom_left + bottom_right) > (x2 - x1 + 1) ||
         (top_left + bottom_left) > (y2 - y1 + 1) ||
