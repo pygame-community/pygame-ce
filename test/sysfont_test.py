@@ -29,6 +29,8 @@ class SysfontModuleTest(unittest.TestCase):
         arial = pygame.font.SysFont("Arial", 40)
         self.assertTrue(isinstance(arial, pygame.font.Font))
 
+        pygame.font.SysFont(None, 40)
+
     @unittest.skipIf(
         ("Darwin" in platform.platform() or "Windows" in platform.platform()),
         "Not unix we skip.",

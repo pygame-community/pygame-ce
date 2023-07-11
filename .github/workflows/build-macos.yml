@@ -45,7 +45,7 @@ jobs:
         macarch: [arm64, x86_64]
 
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v3.5.3
 
       - name: Test for Mac Deps cache hit
         id: macdep-cache
@@ -88,32 +88,37 @@ jobs:
             name: "x86_64 (CPython 3.10 and above)",
             macarch: x86_64,
             # pattern matches any 2 digit number
-            pyversions: "cp3[1-9][0-9]-*"
+            pyversions: "cp3[1-9][0-9]-*",
+            cibw_platform: "macosx-10.11-x86_64"
           }
 
           - { 
             name: "x86_64 (Python 3.7)",
             macarch: x86_64,
-            pyversions: "?p37-*"
+            pyversions: "?p37-*",
+            cibw_platform: "macosx-10.11-x86_64"
           }
 
           - { 
             name: "x86_64 (Python 3.8)",
             macarch: x86_64,
-            pyversions: "?p38-*"
+            pyversions: "?p38-*",
+            cibw_platform: "macosx-10.11-x86_64"
           }
 
           - { 
             name: "x86_64 (Python 3.9)",
             macarch: x86_64,
-            pyversions: "?p39-*"
+            pyversions: "?p39-*",
+            cibw_platform: "macosx-10.11-x86_64"
           }
 
           - { 
             name: "arm64 (CPython 3.8 and above)",
             macarch: arm64,
             # pattern matches any number from 8 to 99
-            pyversions: "cp3{8,9,[1-9][0-9]}-*"
+            pyversions: "cp3{8,9,[1-9][0-9]}-*",
+            cibw_platform: "macosx-11.0-arm64"
           }
 
     env:
@@ -122,6 +127,10 @@ jobs:
       # because this should not affect cibuildwheel machinery
       # also define environment variables needed for testing
       CIBW_ENVIRONMENT: PIP_CONFIG_FILE=buildconfig/pip_config.ini SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
+
+      # Tell CIBW that the wheel should be for 10.11
+      # Related issue: https://github.com/pypa/cibuildwheel/issues/952
+      _PYTHON_HOST_PLATFORM: ${{ matrix.cibw_platform }}
 
       CIBW_BUILD: ${{ matrix.pyversions }}
 
@@ -150,7 +159,7 @@ jobs:
       CIBW_BUILD_VERBOSITY: 2
 
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v3.5.3
 
       - name: pip cache
         uses: actions/cache@v3.3.1
@@ -167,7 +176,7 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.13.0
+        uses: pypa/cibuildwheel@v2.13.1
 
       - uses: actions/upload-artifact@v3
         with:

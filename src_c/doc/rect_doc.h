@@ -5,6 +5,8 @@
 #define DOC_RECT_MOVEIP "move_ip(x, y) -> None\nmoves the rectangle, in place"
 #define DOC_RECT_INFLATE "inflate(x, y) -> Rect\ngrow or shrink the rectangle size"
 #define DOC_RECT_INFLATEIP "inflate_ip(x, y) -> None\ngrow or shrink the rectangle size, in place"
+#define DOC_RECT_SCALEBY "scale_by(scale_by) -> Rect\nscale_by(x, y) -> Rect\nscale the rectangle by given a multiplier"
+#define DOC_RECT_SCALEBYIP "scale_by_ip(scale_by) -> None\nscale_by_ip(x, y) -> None\ngrow or shrink the rectangle size, in place"
 #define DOC_RECT_UPDATE "update(left, top, width, height) -> None\nupdate((left, top), (width, height)) -> None\nupdate(object) -> None\nsets the position and size of the rectangle"
 #define DOC_RECT_CLAMP "clamp(Rect) -> Rect\nmoves the rectangle inside another"
 #define DOC_RECT_CLAMPIP "clamp_ip(Rect) -> None\nmoves the rectangle inside another, in place"
