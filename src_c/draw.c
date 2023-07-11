@@ -2478,10 +2478,14 @@ draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
 {
     int pts[16], i;
     float q_top, q_left, q_bottom, q_right, f;
-    if (!top_left) top_left = radius;
-    if (!top_right) top_right = radius;
-    if (!bottom_left) bottom_left = radius;
-    if (!bottom_right) bottom_right = radius;
+    if (!top_left)
+        top_left = radius;
+    if (!top_right)
+        top_right = radius;
+    if (!bottom_left)
+        bottom_left = radius;
+    if (!bottom_right)
+        bottom_right = radius;
     if ((top_left + top_right) > (x2 - x1 + 1) ||
         (bottom_left + bottom_right) > (x2 - x1 + 1) ||
         (top_left + bottom_left) > (y2 - y1 + 1) ||
