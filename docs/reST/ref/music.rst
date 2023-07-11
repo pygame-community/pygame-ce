@@ -232,9 +232,9 @@ MP3 in most cases.
    will be cleared from SDL_Mixer.
 
    Note that while SDL_Mixer stores the soundfont path, whether the soundfont is
-   used in the playback is a different story. SDL_Mixer needs to be compiled with 
-   soundfont support for a given operation system. Soundfonts work on Raspbian 64-bit, 
-   but not Windows. Other operation systems have not been tested.
+   used in the playback is a different story. Soundfonts work on Linux and Mac, 
+   but not Windows because the SDL_Mixer has not been compiled with soundfont 
+   support for a that operation system.
 
    Function :func:`set_soundfont` calls underlying SDL_mixer function
    ``Mix_SetSoundFonts``.
