@@ -446,7 +446,7 @@
 
       This function will temporarily lock and unlock the Surface as needed.
       
-      .. versionchanged:: 2.3.0 now can accept both float coordinates and Vector2s
+      .. versionchanged:: 2.3.1 now can accept both float coordinates and Vector2s
       
          Returning a Color instead of tuple. Use ``tuple(surf.get_at((x,y)))``
          if you want a tuple, and not a Color. This should only matter if
@@ -474,7 +474,7 @@
       .. note:: If the surface is palettized, the pixel color will be set to the
                 most similar color in the palette.
 
-      .. versionchanged:: 2.3.0 now can accept both float coordinates and Vector2s
+      .. versionchanged:: 2.3.1 now can accept both float coordinates and Vector2s
 
       .. ## Surface.set_at ##
 
