@@ -320,14 +320,6 @@ window_set_always_on_top(pgWindowObject *self, PyObject *arg, void *v)
 
     return 0;
 }
-
-static PyObject *
-window_get_always_on_top(pgWindowObject *self, void *v)
-{
-    return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
-                           SDL_WINDOW_ALWAYS_ON_TOP);
-}
-
 #else
 static int
 window_set_always_on_top(pgWindowObject *self, PyObject *arg, void *v)
@@ -335,13 +327,14 @@ window_set_always_on_top(pgWindowObject *self, PyObject *arg, void *v)
     PyErr_SetString(pgExc_SDLError, "'always_on_top' requires SDL 2.0.16+");
     return -1;
 }
+#endif  // SDL_VERSION_ATLEAST(2, 0, 16)
 
 static PyObject *
 window_get_always_on_top(pgWindowObject *self, void *v)
 {
-    return RAISE(pgExc_SDLError, "'always_on_top' requires SDL 2.0.16+")
+    return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
+                           SDL_WINDOW_ALWAYS_ON_TOP);
 }
-#endif  // SDL_VERSION_ATLEAST(2, 0, 16)
 
 static PyObject *
 window_get_window_id(pgWindowObject *self, PyObject *_null)
