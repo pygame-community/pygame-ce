@@ -361,7 +361,7 @@ On Android, the following events can be generated
 
 .. function:: set_blocked
 
-   | :sl:`control which events are allowed on the queue`
+   | :sl:`control which events are blocked on the queue`
    | :sg:`set_blocked(type) -> None`
    | :sg:`set_blocked(typelist) -> None`
    | :sg:`set_blocked(None) -> None`

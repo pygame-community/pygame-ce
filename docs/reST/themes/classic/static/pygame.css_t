@@ -694,7 +694,7 @@ p.admonition-title:after {
     content: ":";
 }
 
-dl.definition div.note, dl.definition div.seealso {
+dl.definition div.seealso {
     background: none;
     border: none;
 }
@@ -709,11 +709,16 @@ dl.definition .admonition-title {
 
 div.note {
     background-color: {{ theme_notebgcolor }};
-    border: 1px solid #ccc;
+    border: 1px solid {{ theme_notebordercolor }};
 }
 
 .note tt {
     background: #d6d6d6;
+}
+
+.dark-theme div.note {
+    background-color: {{ theme_dark_notebgcolor }};
+    border: 1px solid {{ theme_dark_notebordercolor }};
 }
 
 div.seealso {
