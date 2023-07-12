@@ -8,9 +8,6 @@ static PyObject *
 pg_system_get_cpu_instruction_sets(PyObject *self, PyObject *_null)
 {
     PyObject *tmp_bool = NULL;
-    PyObject *instruction_set_names = NULL;
-    PyObject *cpu_count = NULL;
-    PyObject *cache_line_size = NULL;
     PyObject *instruction_sets = NULL;
 
     instruction_sets = PyDict_New();
