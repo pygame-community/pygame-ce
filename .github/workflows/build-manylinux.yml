@@ -54,7 +54,7 @@ jobs:
       # also define environment variables needed for testing
       CIBW_ENVIRONMENT: PIP_CONFIG_FILE=buildconfig/pip_config.ini PORTMIDI_INC_PORTTIME=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
 
-      CIBW_BUILD: "cp3{[7-9],10,11}-* pp3[7-9]-*"
+      CIBW_BUILD: "cp3{[7-9],10,11,12}-* pp3[7-9]-*"
       CIBW_ARCHS: ${{ matrix.arch }}
 
       # skip musllinux for now
@@ -118,7 +118,7 @@ jobs:
         CIBW_MANYLINUX_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
         CIBW_MANYLINUX_PYPY_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
 
-      uses: pypa/cibuildwheel@v2.13.1
+      uses: pypa/cibuildwheel@v2.14.0
 
     # We upload the generated files under github actions assets
     - name: Upload dist

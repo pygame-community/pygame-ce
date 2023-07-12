@@ -88,7 +88,7 @@ jobs:
             name: "x86_64 (CPython 3.10 and above)",
             macarch: x86_64,
             # pattern matches any 2 digit number
-            pyversions: "cp3[1-9][0-9]-*",
+            pyversions: "cp3{10,11,12}-*",
             cibw_platform: "macosx-10.11-x86_64"
           }
 
@@ -117,7 +117,7 @@ jobs:
             name: "arm64 (CPython 3.8 and above)",
             macarch: arm64,
             # pattern matches any number from 8 to 99
-            pyversions: "cp3{8,9,[1-9][0-9]}-*",
+            pyversions: "cp3{8,9,10,11,12}-*",
             cibw_platform: "macosx-11.0-arm64"
           }
 
@@ -176,7 +176,7 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.13.1
+        uses: pypa/cibuildwheel@v2.14.0
 
       - uses: actions/upload-artifact@v3
         with:
