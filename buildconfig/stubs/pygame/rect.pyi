@@ -1,5 +1,6 @@
 import sys
 from typing import (
+    Any,
     Dict,
     List,
     Sequence,
@@ -9,6 +10,7 @@ from typing import (
     overload,
     Callable,
     Optional,
+    Literal
 )
 
 from ._common import Coordinate, Literal, RectValue
@@ -27,6 +29,8 @@ _N = TypeVar("_N", int, float)
 _K = TypeVar("_K")
 _V = TypeVar("_V")
 _T = TypeVar("_T")
+
+RectLike = TypeVar("RectLike", bound=RectValue, covariant=True)
 
 class _GenericRect(Collection[_N]):
     @property
@@ -156,11 +160,11 @@ class _GenericRect(Collection[_N]):
     @overload
     def inflate_ip(self, inflate_by: Coordinate) -> None: ...
     @overload
-    def scale_by(self, x: float, y: float) -> Self: ...
+    def scale_by(self, x: float, y: float = ...) -> Self: ...
     @overload
     def scale_by(self, scale_by: Coordinate) -> Self: ...
     @overload
-    def scale_by_ip(self, x: float, y: float) -> None: ...
+    def scale_by_ip(self, x: float, y: float = ...) -> None: ...
     @overload
     def scale_by_ip(self, scale_by: Coordinate) -> None: ...
     @overload
@@ -258,20 +262,20 @@ class _GenericRect(Collection[_N]):
     # Rect-like; otherwise, the values must be Rects.
     @overload
     def collidedict(
-        self, rect_dict: Dict[RectValue, _V], values: bool = False
-    ) -> Tuple[RectValue, _V]: ...
+        self, rect_dict: Dict[RectLike, _V], values: Literal[False] = False
+    ) -> Optional[Tuple[RectLike, _V]]: ...
     @overload
     def collidedict(
-        self, rect_dict: Dict[_K, RectValue], values: bool = False
-    ) -> Tuple[_K, RectValue]: ...
+        self, rect_dict: Dict[_K, RectLike], values: Literal[True]
+    ) -> Optional[Tuple[_K, RectLike]]: ...
     @overload
     def collidedictall(
-        self, rect_dict: Dict[RectValue, _V], values: bool = False
-    ) -> List[Tuple[RectValue, _V]]: ...
+        self, rect_dict: Dict[RectLike, _V], values: Literal[False] = False
+    ) -> List[Tuple[RectLike, _V]]: ...
     @overload
     def collidedictall(
-        self, rect_dict: Dict[_K, RectValue], values: bool = False
-    ) -> List[Tuple[_K, RectValue]]: ...
+        self, rect_dict: Dict[_K, RectLike], values: Literal[True]
+    ) -> List[Tuple[_K, RectLike]]: ...
 
 # Rect confirms to the Collection ABC, since it also confirms to
 # Sized, Iterable and Container ABCs
