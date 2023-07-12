@@ -64,17 +64,20 @@ error:
 }
 
 static PyObject *
-pg_system_get_cpu_count(PyObject *self, PyObject *_null){
+pg_system_get_cpu_count(PyObject *self, PyObject *_null)
+{
     return PyLong_FromLong(SDL_GetCPUCount());
 }
 
 static PyObject *
-pg_system_get_cpu_cache_line_size(PyObject *self, PyObject *_null){
+pg_system_get_cpu_cache_line_size(PyObject *self, PyObject *_null)
+{
     return PyLong_FromLong(SDL_GetCPUCacheLineSize());
 }
 
 static PyObject *
-pg_system_get_system_ram(PyObject *self, PyObject *_null){
+pg_system_get_system_ram(PyObject *self, PyObject *_null)
+{
     return PyLong_FromLong(SDL_GetSystemRAM());
 }
 
@@ -176,12 +179,10 @@ error:
 static PyMethodDef _system_methods[] = {
     {"get_cpu_instruction_sets", pg_system_get_cpu_instruction_sets,
      METH_NOARGS, "docs"},
-    {"get_cpu_count", pg_system_get_cpu_count,
-     METH_NOARGS, "docs"},
-    {"get_cpu_cache_line_size", pg_system_get_cpu_cache_line_size,
-     METH_NOARGS, "docs"},
-    {"get_system_ram", pg_system_get_system_ram,
-     METH_NOARGS, "docs"},
+    {"get_cpu_count", pg_system_get_cpu_count, METH_NOARGS, "docs"},
+    {"get_cpu_cache_line_size", pg_system_get_cpu_cache_line_size, METH_NOARGS,
+     "docs"},
+    {"get_system_ram", pg_system_get_system_ram, METH_NOARGS, "docs"},
     {"get_pref_path", (PyCFunction)pg_system_get_pref_path,
      METH_VARARGS | METH_KEYWORDS, DOC_SYSTEM_GETPREFPATH},
     {"get_pref_locales", pg_system_get_pref_locales, METH_NOARGS,
