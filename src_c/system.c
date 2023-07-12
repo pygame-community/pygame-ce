@@ -178,11 +178,13 @@ error:
 
 static PyMethodDef _system_methods[] = {
     {"get_cpu_instruction_sets", pg_system_get_cpu_instruction_sets,
-     METH_NOARGS, "docs"},
-    {"get_cpu_count", pg_system_get_cpu_count, METH_NOARGS, "docs"},
+     METH_NOARGS, DOC_SYSTEM_GETCPUINSTRUCTIONSETS},
+    {"get_cpu_count", pg_system_get_cpu_count, METH_NOARGS,
+     DOC_SYSTEM_GETCPUCOUNT},
     {"get_cpu_cache_line_size", pg_system_get_cpu_cache_line_size, METH_NOARGS,
-     "docs"},
-    {"get_system_ram", pg_system_get_system_ram, METH_NOARGS, "docs"},
+     DOC_SYSTEM_GETCPUCACHELINESIZE},
+    {"get_system_ram", pg_system_get_system_ram, METH_NOARGS,
+     DOC_SYSTEM_GETSYSTEMRAM},
     {"get_pref_path", (PyCFunction)pg_system_get_pref_path,
      METH_VARARGS | METH_KEYWORDS, DOC_SYSTEM_GETPREFPATH},
     {"get_pref_locales", pg_system_get_pref_locales, METH_NOARGS,

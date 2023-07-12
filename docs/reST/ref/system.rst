@@ -16,6 +16,71 @@ open just in case something obvious comes up.
 
 .. versionadded:: 2.2.0
 
+.. function:: get_cpu_instruction_sets
+
+   | :sl:`get the information of CPU instruction sets`
+   | :sg:`get_cpu_instruction_sets() -> instruction_sets`
+
+   Returns a dict of the information of CPU instruction sets. The keys of
+   the dict are the names of instruction sets and the values determine 
+   whether the instruction set is available.
+
+   Here is an example of the returned dict
+   ::
+
+     {
+          'RDTSC': True,
+          'ALTIVEC': False,
+          'MMX': True,
+          'SSE': True,
+          'SSE2': True,
+          'SSE3': True,
+          'SSE41': True,
+          'SSE42': True,
+          'AVX': True,
+          'AVX2': True, 
+          'AVX512F': False,
+          'NEON': False, 
+          'ARMSIMD': False,
+          'LSX': False, 
+          'LASX': False
+     }
+
+   .. Note:: The values of ``LSX`` and ``LASX`` will be always False if
+      SDL version<2.24.0. The value of ``ARMSIMD`` will be always False
+      if SDL version<2.0.12.
+   
+   .. versionadded:: 2.3.1
+
+.. function:: get_cpu_count
+
+   | :sl:`get the numbers of CPU cores available`
+   | :sg:`get_cpu_count() -> count`
+
+   Returns the total number of logical CPU cores. On CPUs that include
+   technologies such as hyperthreading, the number of logical cores
+   may be more than the number of physical cores.
+
+   .. versionadded:: 2.3.1
+
+.. function:: get_cpu_cache_line_size
+
+   | :sl:`get the L1 cache line size of CPU`
+   | :sg:`get_cpu_cache_line_size() -> size`
+
+   Returns the L1 cache line size of the CPU, in bytes.
+
+   .. versionadded:: 2.3.1
+
+.. function:: get_system_ram
+
+   | :sl:`get the amount of RAM configured in the system`
+   | :sg:`get_system_ram() -> ram_size`
+
+   Returns the amount of RAM configured in the system in MiB.
+
+   .. versionadded:: 2.3.1
+
 .. function:: get_pref_path
 
    | :sl:`get a writeable folder for your app`
