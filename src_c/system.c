@@ -41,16 +41,16 @@ pg_system_get_cpu_instruction_sets(PyObject *self, PyObject *_null)
 #if SDL_VERSION_ATLEAST(2, 0, 12)
     INSERT_INSTRUCTIONSET_INFO("ARMSIMD", SDL_HasARMSIMD);
 #else
-    if (PyDict_SetItemString(instruction_sets, "ARMSIMD", Py_None))
+    if (PyDict_SetItemString(instruction_sets, "ARMSIMD", Py_False))
         goto error;
 #endif
 #if SDL_VERSION_ATLEAST(2, 24, 0)
     INSERT_INSTRUCTIONSET_INFO("LSX", SDL_HasLSX);
     INSERT_INSTRUCTIONSET_INFO("LASX", SDL_HasLASX);
 #else
-    if (PyDict_SetItemString(instruction_sets, "LSX", Py_None))
+    if (PyDict_SetItemString(instruction_sets, "LSX", Py_False))
         goto error;
-    if (PyDict_SetItemString(instruction_sets, "LASX", Py_None))
+    if (PyDict_SetItemString(instruction_sets, "LASX", Py_False))
         goto error;
 #endif
 

@@ -15,9 +15,9 @@ class _InstructionSets(TypedDict):
     AVX2: bool
     AVX512F: bool
     NEON: bool
-    ARMSIMD: Optional[bool]
-    LSX: Optional[bool]
-    LASX: Optional[bool]
+    ARMSIMD: bool
+    LSX: bool
+    LASX: bool
 
 # dict at runtime, TypedDict exists solely for the typechecking benefits
 class _Locale(TypedDict):
