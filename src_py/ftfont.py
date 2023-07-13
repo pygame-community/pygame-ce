@@ -155,14 +155,6 @@ class Font(_Font):
 
         return self.get_rect(text).size
 
-    def get_point_size(self):
-        """"""
-        return self.get_point_size()
-
-    def set_point_size(self, val):
-        """"""
-        return self.set_point_size(val)
-
 
 FontType = Font
 
