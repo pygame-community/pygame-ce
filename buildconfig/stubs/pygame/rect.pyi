@@ -1,19 +1,14 @@
 import sys
 from typing import (
-    Any,
     Dict,
     List,
-    Sequence,
-    Tuple,
     TypeVar,
     Union,
     overload,
-    Callable,
     Optional,
-    Literal
 )
 
-from ._common import Coordinate, Literal, RectValue
+from ._common import Coordinate, Literal, RectValue, Sequence, Callable, Tuple
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -30,7 +25,7 @@ _K = TypeVar("_K")
 _V = TypeVar("_V")
 _T = TypeVar("_T")
 
-RectLike = TypeVar("RectLike", bound=RectValue, covariant=True)
+_RectTypeCompatible_co = TypeVar("_RectTypeCompatible_co", bound=RectValue, covariant=True)
 
 class _GenericRect(Collection[_N]):
     @property
@@ -219,8 +214,8 @@ class _GenericRect(Collection[_N]):
     def union_ip(
         self, left: float, top: float, width: float, height: float
     ) -> None: ...
-    def unionall(self, rect: Sequence[RectValue]) -> Self: ...
-    def unionall_ip(self, rect_sequence: Sequence[RectValue]) -> None: ...
+    def unionall(self, rect: Sequence[_RectTypeCompatible_co]) -> Self: ...
+    def unionall_ip(self, rect_sequence: Sequence[_RectTypeCompatible_co]) -> None: ...
     @overload
     def fit(self, rect: RectValue) -> Self: ...
     @overload
@@ -249,33 +244,30 @@ class _GenericRect(Collection[_N]):
     def colliderect(
         self, left: float, top: float, width: float, height: float
     ) -> bool: ...
-    def collidelist(self, rect_list: Sequence[RectValue]) -> int: ...
-    def collidelistall(self, rect_list: Sequence[RectValue]) -> List[int]: ...
+    def collidelist(self, rect_list: Sequence[_RectTypeCompatible_co]) -> int: ...
+    def collidelistall(self, rect_list: Sequence[_RectTypeCompatible_co]) -> List[int]: ...
     def collideobjectsall(
         self, objects: Sequence[_T], key: Optional[Callable[[_T], RectValue]] = None
     ) -> List[_T]: ...
     def collideobjects(
         self, objects: Sequence[_T], key: Optional[Callable[[_T], RectValue]] = None
     ) -> Optional[_T]: ...
-    # Also undocumented: the dict collision methods take a 'values' argument
-    # that defaults to False. If it is False, the keys in rect_dict must be
-    # Rect-like; otherwise, the values must be Rects.
     @overload
     def collidedict(
-        self, rect_dict: Dict[RectLike, _V], values: Literal[False] = False
-    ) -> Optional[Tuple[RectLike, _V]]: ...
+        self, rect_dict: Dict[_RectTypeCompatible_co, _V], use_values: Literal[False] = False
+    ) -> Optional[Tuple[_RectTypeCompatible_co, _V]]: ...
     @overload
     def collidedict(
-        self, rect_dict: Dict[_K, RectLike], values: Literal[True]
-    ) -> Optional[Tuple[_K, RectLike]]: ...
+        self, rect_dict: Dict[_K, _RectTypeCompatible_co], use_values: Literal[True]
+    ) -> Optional[Tuple[_K, _RectTypeCompatible_co]]: ...
     @overload
     def collidedictall(
-        self, rect_dict: Dict[RectLike, _V], values: Literal[False] = False
-    ) -> List[Tuple[RectLike, _V]]: ...
+        self, rect_dict: Dict[_RectTypeCompatible_co, _V], use_values: Literal[False] = False
+    ) -> List[Tuple[_RectTypeCompatible_co, _V]]: ...
     @overload
     def collidedictall(
-        self, rect_dict: Dict[_K, RectLike], values: Literal[True]
-    ) -> List[Tuple[_K, RectLike]]: ...
+        self, rect_dict: Dict[_K, _RectTypeCompatible_co], use_values: Literal[True]
+    ) -> List[Tuple[_K, _RectTypeCompatible_co]]: ...
 
 # Rect confirms to the Collection ABC, since it also confirms to
 # Sized, Iterable and Container ABCs
