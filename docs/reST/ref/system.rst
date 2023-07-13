@@ -52,26 +52,6 @@ open just in case something obvious comes up.
    
    .. versionadded:: 2.3.1
 
-.. function:: get_cpu_count
-
-   | :sl:`get the numbers of CPU cores available`
-   | :sg:`get_cpu_count() -> count`
-
-   Returns the total number of logical CPU cores. On CPUs that include
-   technologies such as hyperthreading, the number of logical cores
-   may be more than the number of physical cores.
-
-   .. versionadded:: 2.3.1
-
-.. function:: get_cpu_cache_line_size
-
-   | :sl:`get the L1 cache line size of CPU`
-   | :sg:`get_cpu_cache_line_size() -> size`
-
-   Returns the L1 cache line size of the CPU, in bytes.
-
-   .. versionadded:: 2.3.1
-
 .. function:: get_system_ram
 
    | :sl:`get the amount of RAM configured in the system`
