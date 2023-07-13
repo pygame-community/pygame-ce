@@ -8,7 +8,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.5.2
+      - uses: actions/checkout@v3.5.3
 
       - name: Pull all release assets
         uses: robinraju/release-downloader@v1.8

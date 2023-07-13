@@ -602,12 +602,12 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
             pos_x = pos_y = PyLong_AsLong(position);
             if (pos_x != SDL_WINDOWPOS_CENTERED &&
                 pos_x != SDL_WINDOWPOS_UNDEFINED) {
-                PyErr_SetString(PyExc_TypeError, "invalid positon argument");
+                PyErr_SetString(PyExc_TypeError, "invalid position argument");
                 return -1;
             }
         }
         else if (!pg_TwoIntsFromObj(position, &pos_x, &pos_y)) {
-            PyErr_SetString(PyExc_TypeError, "invalid positon argument");
+            PyErr_SetString(PyExc_TypeError, "invalid position argument");
             return -1;
         }
     }
