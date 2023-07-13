@@ -488,6 +488,8 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
                     f"found. {match_text}"
                     "Using the default font instead."
                 )
+    else:
+        fontname = None
 
     set_bold = set_italic = False
     if bold and not gotbold:
