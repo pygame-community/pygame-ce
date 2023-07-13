@@ -223,7 +223,7 @@ solves no longer exists, it will likely be removed in the future.
         'Semibold', 'Semilight', 'Slanted'
 
 
-      .. versionadded:: 2.3
+      .. versionadded:: 2.3.1
 
       .. ## Font.style_name ##
 
