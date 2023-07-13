@@ -471,7 +471,7 @@ RectExport_collideobjects(RectObject *self, PyObject *args, PyObject *kwargs);
 static PyObject *
 RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs);
 static PyObject *
-RectExport_collidedictall(RectObject *self, PyObject *args);
+RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs);
 static PyObject *
 RectExport_clip(RectObject *self, PyObject *args);
 static int
