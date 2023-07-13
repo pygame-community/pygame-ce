@@ -51,7 +51,7 @@ pg_system_get_cpu_instruction_sets(PyObject *self, PyObject *_null)
         goto error;
 #endif
 
-#undef INSERT_INSTRUCTIONSET_INF
+#undef INSERT_INSTRUCTIONSET_INFO
 
     return instruction_sets;
 
