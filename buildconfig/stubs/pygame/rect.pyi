@@ -2,13 +2,16 @@ import sys
 from typing import (
     Dict,
     List,
+    Sequence,
+    Tuple,
     TypeVar,
     Union,
     overload,
+    Callable,
     Optional,
 )
 
-from ._common import Coordinate, Literal, RectValue, Sequence, Callable, Tuple
+from ._common import Coordinate, Literal, RectValue
 
 if sys.version_info >= (3, 11):
     from typing import Self
