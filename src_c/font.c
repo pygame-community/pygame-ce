@@ -669,13 +669,7 @@ font_getter_style_name(PyObject *self, void *closure)
 {
     TTF_Font *font = PyFont_AsFont(self);
     const char *font_style_name = TTF_FontFaceStyleName(font);
-
-    if (font_style_name) {
-        return PyUnicode_FromString(font_style_name);
-    }
-    else {
-        return RAISE(pgExc_SDLError, TTF_GetError());
-    }
+    return PyUnicode_FromString(font_style_name);
 }
 
 static PyObject *
