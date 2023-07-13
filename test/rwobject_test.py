@@ -115,7 +115,7 @@ class RWopsEncodeFilePathTest(unittest.TestCase):
 
         self.assertIsInstance(encoded_file_path, bytes)
 
-    def test_error_fowarding(self):
+    def test_error_forwarding(self):
         self.assertRaises(SyntaxError, encode_file_path)
 
     def test_path_with_null_bytes(self):

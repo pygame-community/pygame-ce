@@ -268,8 +268,12 @@ pg_EncodeFilePath(PyObject *obj, PyObject *eclass)
 
     /* End code replacement section */
 
+    if (obj == NULL) {
+        PyErr_SetString(PyExc_SyntaxError, "Forwarded exception");
+    }
+
     PyObject *result =
-        pg_EncodeString(obj, encoding, UNICODE_DEF_FS_ERROR, eclass);
+        pg_EncodeString(obj, "utf-8", UNICODE_DEF_FS_ERROR, eclass);
     Py_DECREF(system_encoding_obj);
     if (result == NULL || result == Py_None) {
         return result;
@@ -843,9 +847,6 @@ pg_encode_file_path(PyObject *self, PyObject *args, PyObject *keywds)
         return NULL;
     }
 
-    if (obj == NULL) {
-        PyErr_SetString(PyExc_SyntaxError, "Forwarded exception");
-    }
     return pg_EncodeFilePath(obj, eclass);
 }
 
