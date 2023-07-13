@@ -283,7 +283,7 @@ solves no longer exists, it will likely be removed in the future.
       Returns the point_size of the font. Will not be accurate upon initializing
       the font object when the font name is initalized as None
 
-      .. versionadded:: 2.3
+      .. versionadded:: 2.3.1
 
       .. ## Font.point_size ##
 
@@ -510,7 +510,7 @@ solves no longer exists, it will likely be removed in the future.
       Sets the point_size of the font, which is the value that was used to
       initalize this font.
 
-      .. versionadded:: 2.3
+      .. versionadded:: 2.3.1
 
       .. ## Font.set_point_size ##
 
@@ -523,7 +523,7 @@ solves no longer exists, it will likely be removed in the future.
       initializing the font object when the font name is initalized
       as ``None``
       
-      .. versionadded:: 2.3
+      .. versionadded:: 2.3.1
 
       .. ## Font.get_point_size ##
 
