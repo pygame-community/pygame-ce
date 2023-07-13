@@ -507,8 +507,9 @@ solves no longer exists, it will likely be removed in the future.
       | :sl:`set the point_size of the font`
       | :sg:`set_point_size(val) -> int`
 
-      Sets the point_size of the font.
-      
+      Sets the point_size of the font, which is the value that was used to
+      initalize this font.
+
       .. versionadded:: 2.3
 
       .. ## Font.set_point_size ##
