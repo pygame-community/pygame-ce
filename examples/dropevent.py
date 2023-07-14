@@ -20,6 +20,7 @@ def main():
     screen_size = (640, 480)
     surf = pygame.display.set_mode(screen_size)
     font = pygame.font.SysFont("Arial", 24)
+    font.align = pygame.FONT_CENTER
     clock = pygame.Clock()
 
     spr_file_text = font.render("Feed me some file or image!", 1, (255, 255, 255))
