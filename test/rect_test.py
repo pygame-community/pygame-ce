@@ -3235,6 +3235,31 @@ class FRectTypeTest(RectTypeTest):
         with self.assertRaises(TypeError):
             r.scale_by_ip(scale_by=(1, 2), y=1)
 
+    def test_frect_subscript(self):
+        r = FRect(1.2, 2.4, 3.6, 4.8)
+        self.assertAlmostEqual5(r[0], 1.2)
+        self.assertAlmostEqual5(r[1], 2.4)
+        self.assertAlmostEqual5(r[2], 3.6)
+        self.assertAlmostEqual5(r[3], 4.8)
+        self.assertEqual(r[-1], r[3])
+        self.assertEqual(r[-2], r[2])
+        self.assertEqual(r[-3], r[1])
+        self.assertEqual(r[-4], r[0])
+        self.assertRaises(IndexError, r.__getitem__, 5)
+        self.assertRaises(IndexError, r.__getitem__, -5)
+        self.assertAlmostEqual5C(r[0:2], [1.2, 2.4])
+        self.assertAlmostEqual5C(r[0:4], [1.2, 2.4, 3.6, 4.8])
+        self.assertAlmostEqual5C(r[0:-1], [1.2, 2.4, 3.6])
+        self.assertAlmostEqual5C(r[:], [1.2, 2.4, 3.6, 4.8])
+        self.assertAlmostEqual5C(r[...], [1.2, 2.4, 3.6, 4.8])
+        self.assertEqual(r[0:4], r)
+        self.assertEqual(r[:], r)
+        self.assertEqual(r[...], r)
+        self.assertAlmostEqual5C(r[0:4:2], [1.2, 3.6])
+        self.assertAlmostEqual5C(r[0:4:3], [1.2, 4.8])
+        self.assertAlmostEqual5C(r[3::-1], [4.8, 3.6, 2.4, 1.2])
+        self.assertRaises(TypeError, r.__getitem__, None)
+
 
 class SubclassTest(unittest.TestCase):
     class MyRect(Rect):
