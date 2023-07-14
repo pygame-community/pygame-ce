@@ -39,7 +39,7 @@ typedef enum {
  * must be protected with an SDL mutex.
  * An SDL mutex would be redundant if python GIL was unconditionally held in
  * the C callback function. But acquiring GIL can be costlier than acquiring a
- * dedictated mutex for event timers, because the GIL is usually held more
+ * dedicated mutex for event timers, because the GIL is usually held more
  * often.
  */
 typedef struct pgEventTimer {
@@ -490,7 +490,7 @@ end_no_mutex:
         default:
             return RAISE(
                 pgExc_SDLError,
-                "Unknown and unhandled internal error occured while handling "
+                "Unknown and unhandled internal error occurred while handling "
                 "errors in time_set_timer! If you are seeing this message "
                 "report this to pygame devs");
     }

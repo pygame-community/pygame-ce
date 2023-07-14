@@ -46,7 +46,7 @@
  * state of number of events on queue and whether the owner of this struct
  * wants this dict freed. This DictProxy is only to be freed when there are no
  * more instances of this DictProxy on the event queue. Access to this is
- * safeguarded with a per-proxy spinlock, which is more optiminal than having
+ * safeguarded with a per-proxy spinlock, which is more optimal than having
  * to hold GIL in case of event timers */
 typedef struct _pgEventDictProxy {
     PyObject *dict;
