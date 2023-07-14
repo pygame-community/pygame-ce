@@ -183,7 +183,7 @@ class EventTypeTest(unittest.TestCase):
 
         for incorrect_type in ("string", 4 + 3j, [1, 2, 3], {"a": "b"}):
             self.assertRaises(TypeError, pygame.event.Event, incorrect_type)
-    
+
     def test_event_common_dict_changes(self):
         d = {}
         events = [pygame.Event(pygame.event.custom_type(), d) for _ in range(2)]
@@ -197,9 +197,9 @@ class EventTypeTest(unittest.TestCase):
         for ev in events:
             self.assertIs(d, ev.dict)
             self.assertEqual(ev.dict, {"hi": "hello", "hello": "hi", "amongus": "sus"})
-            self.assertEqual(ev.hi, "hello") 
-            self.assertEqual(ev.hello, "hi") 
-            self.assertEqual(ev.amongus, "sus") 
+            self.assertEqual(ev.hi, "hello")
+            self.assertEqual(ev.hello, "hi")
+            self.assertEqual(ev.amongus, "sus")
 
 
 race_condition_notification = """
