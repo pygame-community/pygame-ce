@@ -2972,20 +2972,20 @@ class FRectTypeTest(RectTypeTest):
         """
         self.assertAlmostEqual(first, second, places=5)
 
-    def assertAlmostEqual5C(self, first, second):
+    def assertSeqAlmostEqual5(self, first, second):
         """
-        This shouldn't be necessary but manylinux i686 python37
-        won't work with just assertAlmostEqual5-ing it.
+        Same as above but for sequences
         """
-        self.assertAlmostEqual(first[0], second[0], places=5)
-        self.assertAlmostEqual(first[1], second[1], places=5)
+        self.assertEqual(len(first), len(second))
+        for i, j in zip(first, second):
+            self.assertAlmostEqual5(i, j)
 
     def test_scale_by__larger_single_argument(self):
         """The scale method scales around the center of the rectangle"""
         r = FRect(2.1, 4, 6, 8.9)
         r2 = r.scale_by(2.3)
 
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         # ((w * scaling) - w) / 2 -> 3.9
         self.assertAlmostEqual5(r.left - 3.9, r2.left)
         self.assertAlmostEqual5(r.top - 5.785, r2.top)
@@ -3000,7 +3000,7 @@ class FRectTypeTest(RectTypeTest):
         r = FRect(2.1, 4, 6, 8.9)
         r2 = r.scale_by(x=2.3)
 
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         # ((w * scaling) - w) / 2 -> 3.9
         self.assertAlmostEqual5(r.left - 3.9, r2.left)
         self.assertAlmostEqual5(r.top - 5.785, r2.top)
@@ -3014,7 +3014,7 @@ class FRectTypeTest(RectTypeTest):
         r = FRect(2.1, 4, 6, 8.9)
         r2 = r.scale_by(0.5)
 
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left + 1.5, r2.left)
         self.assertAlmostEqual5(r.top + 2.225, r2.top)
         self.assertAlmostEqual5(r.right - 1.5, r2.right)
@@ -3029,7 +3029,7 @@ class FRectTypeTest(RectTypeTest):
         # act
         r2 = r.scale_by(2, 4)
         # assert
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left - 3, r2.left)
         self.assertAlmostEqual5(r.centery - r.h * 4 / 2, r2.top)
         self.assertAlmostEqual5(r.right + 3, r2.right)
@@ -3047,7 +3047,7 @@ class FRectTypeTest(RectTypeTest):
         # act
         r2 = r.scale_by(scale_by=(2, 4))
         # assert
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left - 3, r2.left)
         self.assertAlmostEqual5(r.centery - r.h * 4 / 2, r2.top)
         self.assertAlmostEqual5(r.right + 3, r2.right)
@@ -3065,7 +3065,7 @@ class FRectTypeTest(RectTypeTest):
         # act
         r2 = r.scale_by(x=2, y=4)
         # assert
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left - 3, r2.left)
         self.assertAlmostEqual5(r.centery - r.h * 4 / 2, r2.top)
         self.assertAlmostEqual5(r.right + 3, r2.right)
@@ -3080,7 +3080,7 @@ class FRectTypeTest(RectTypeTest):
         # act
         r2 = r.scale_by(0.5, 0.25)
         # assert
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left + 1.5, r2.left)
         self.assertAlmostEqual5(r.centery - r.h / 4 / 2, r2.top)
         self.assertAlmostEqual5(r.right - 1.5, r2.right)
@@ -3178,7 +3178,7 @@ class FRectTypeTest(RectTypeTest):
         r2 = FRect(r)
         r2.scale_by_ip(2.3)
 
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         # ((w * scaling) - w) / 2 -> 3.9
         self.assertAlmostEqual5(r.left - 3.9, r2.left)
         self.assertAlmostEqual5(r.top - 5.785, r2.top)
@@ -3193,7 +3193,7 @@ class FRectTypeTest(RectTypeTest):
         r2 = FRect(r)
         r2.scale_by_ip(0.5)
 
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left + 1.5, r2.left)
         self.assertAlmostEqual5(r.top + 2.225, r2.top)
         self.assertAlmostEqual5(r.right - 1.5, r2.right)
@@ -3247,17 +3247,17 @@ class FRectTypeTest(RectTypeTest):
         self.assertEqual(r[-4], r[0])
         self.assertRaises(IndexError, r.__getitem__, 5)
         self.assertRaises(IndexError, r.__getitem__, -5)
-        self.assertAlmostEqual5C(r[0:2], [1.2, 2.4])
-        self.assertAlmostEqual5C(r[0:4], [1.2, 2.4, 3.6, 4.8])
-        self.assertAlmostEqual5C(r[0:-1], [1.2, 2.4, 3.6])
-        self.assertAlmostEqual5C(r[:], [1.2, 2.4, 3.6, 4.8])
-        self.assertAlmostEqual5C(r[...], [1.2, 2.4, 3.6, 4.8])
+        self.assertSeqAlmostEqual5(r[0:2], [1.2, 2.4])
+        self.assertSeqAlmostEqual5(r[0:4], [1.2, 2.4, 3.6, 4.8])
+        self.assertSeqAlmostEqual5(r[0:-1], [1.2, 2.4, 3.6])
+        self.assertSeqAlmostEqual5(r[:], [1.2, 2.4, 3.6, 4.8])
+        self.assertSeqAlmostEqual5(r[...], [1.2, 2.4, 3.6, 4.8])
         self.assertEqual(r[0:4], r)
         self.assertEqual(r[:], r)
         self.assertEqual(r[...], r)
-        self.assertAlmostEqual5C(r[0:4:2], [1.2, 3.6])
-        self.assertAlmostEqual5C(r[0:4:3], [1.2, 4.8])
-        self.assertAlmostEqual5C(r[3::-1], [4.8, 3.6, 2.4, 1.2])
+        self.assertSeqAlmostEqual5(r[0:4:2], [1.2, 3.6])
+        self.assertSeqAlmostEqual5(r[0:4:3], [1.2, 4.8])
+        self.assertSeqAlmostEqual5(r[3::-1], [4.8, 3.6, 2.4, 1.2])
         self.assertRaises(TypeError, r.__getitem__, None)
 
 
