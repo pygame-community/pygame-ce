@@ -333,6 +333,31 @@ class TimeModuleTest(unittest.TestCase):
                 TypeError, pygame.time.set_timer, event=incorrect_type, millis=15
             )
 
+    def test_timer_common_reference(self):
+        pygame.init()
+        pygame.event.get()  # empty queue
+        for event in (
+            pygame.event.Event(pygame.event.custom_type(), attr=(1, 2, 3, 4)),
+            pygame.event.Event(pygame.event.custom_type(), dict={"test": "yes"}),
+            pygame.event.Event(pygame.event.custom_type()),
+            pygame.event.custom_type(),
+        ):
+            pygame.time.set_timer(event, 1, loops=2)
+            time.sleep(0.005)
+            events = pygame.event.get(pump=False)
+            self.assertEqual(len(events), 2)
+
+            if isinstance(event, int):
+                for ev in events:
+                    self.assertEqual(ev.type, event)
+                    self.assertEqual(ev.dict, {})
+                self.assertIsNot(events[0].dict, events[1].dict)
+            else:
+                for ev in events:
+                    self.assertEqual(ev.type, event.type)
+                    self.assertIs(ev.dict, event.dict)
+        pygame.quit()
+
     def test_delay(self):
         """Tests time.delay() function."""
         millis = 50  # millisecond to wait on each iteration

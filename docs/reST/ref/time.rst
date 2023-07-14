@@ -78,6 +78,8 @@ resolution, in milliseconds, is given in the ``TIMER_RESOLUTION`` constant.
    received on timer will be references to the same dict object in memory.
    Modifications on one dict can affect another, use deepcopy operations on the
    dict object if you don't want this behaviour.
+   However, calling this function with an integer event type would place event objects
+   on the queue that don't have a common dict reference.
 
    ``loops`` replaces the ``once`` argument, and this does not break backward
    compatibility.

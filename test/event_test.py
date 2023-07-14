@@ -183,6 +183,23 @@ class EventTypeTest(unittest.TestCase):
 
         for incorrect_type in ("string", 4 + 3j, [1, 2, 3], {"a": "b"}):
             self.assertRaises(TypeError, pygame.event.Event, incorrect_type)
+    
+    def test_event_common_dict_changes(self):
+        d = {}
+        events = [pygame.Event(pygame.event.custom_type(), d) for _ in range(2)]
+        self.assertNotEqual(events[0], events[1])
+
+        d["hi"] = "hello"
+        events[0].hello = "hi"
+        events[1].dict["amongus"] = "sus"
+
+        self.assertEqual(d, {"hi": "hello", "hello": "hi", "amongus": "sus"})
+        for ev in events:
+            self.assertIs(d, ev.dict)
+            self.assertEqual(ev.dict, {"hi": "hello", "hello": "hi", "amongus": "sus"})
+            self.assertEqual(ev.hi, "hello") 
+            self.assertEqual(ev.hello, "hi") 
+            self.assertEqual(ev.amongus, "sus") 
 
 
 race_condition_notification = """
@@ -458,12 +475,14 @@ class EventModuleTest(unittest.TestCase):
         """
         Test that event.post posts an event with a common reference to a dict.
         """
-        event = pygame.event.Event(pygame.USEREVENT, attr=(1, 2, 3, 4))
-        pygame.event.post(event)
-        e = pygame.event.poll()
-
-        self.assertEqual(e.type, pygame.USEREVENT)
-        self.assertIs(event.dict, e.dict)
+        for event in (
+            pygame.event.Event(pygame.event.custom_type(), attr=(1, 2, 3, 4)),
+            pygame.event.Event(pygame.event.custom_type()),
+        ):
+            pygame.event.post(event)
+            e = pygame.event.poll()
+            self.assertEqual(e.type, event.type)
+            self.assertIs(e.dict, event.dict)
 
     def test_post_blocked(self):
         """
