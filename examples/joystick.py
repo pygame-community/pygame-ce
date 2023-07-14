@@ -72,48 +72,48 @@ def main():
         for joystick in joysticks.values():
             jid = joystick.get_instance_id()
 
-            lines.append(indent("Joystick {jid}", indentation))
+            lines.append(indent(f"Joystick {jid}", indentation))
             indentation += 1
 
             # Get the name from the OS for the controller/joystick.
             name = joystick.get_name()
-            lines.append(indent("Joystick name: {name}", indentation))
+            lines.append(indent(f"Joystick name: {name}", indentation))
 
             guid = joystick.get_guid()
-            lines.append(indent("GUID: {guid}"))
+            lines.append(indent(f"GUID: {guid}", indentation))
 
             power_level = joystick.get_power_level()
-            lines.append(indent("Joystick's power level: {power_level}", indentation))
+            lines.append(indent(f"Joystick's power level: {power_level}", indentation))
 
             # Usually axis run in pairs, up/down for one, and left/right for
             # the other. Triggers count as axes.
             axes = joystick.get_numaxes()
-            lines.append(indent("Number of axes: {axes}", indentation))
+            lines.append(indent(f"Number of axes: {axes}", indentation))
             indentation += 1
 
             for i in range(axes):
                 axis = joystick.get_axis(i)
-                lines.append(indent("Axis {i} value: {axis:>6.3f}", indentation))
+                lines.append(indent(f"Axis {i} value: {axis:>6.3f}", indentation))
             indentation -= 1
 
             buttons = joystick.get_numbuttons()
-            lines.append(indent("Number of buttons: {buttons}", indentation))
+            lines.append(indent(f"Number of buttons: {buttons}", indentation))
             indentation += 1
 
             for i in range(buttons):
                 button = joystick.get_button(i)
-                lines.append(indent("Button {i:>2} value: {button}", indentation))
+                lines.append(indent(f"Button {i:>2} value: {button}", indentation))
             indentation -= 1
 
             hats = joystick.get_numhats()
-            lines.append(indent("Number of hats: {hats}", indentation))
+            lines.append(indent(f"Number of hats: {hats}", indentation))
             indentation += 1
 
             # Hat position. All or nothing for direction, not a float like
             # get_axis(). Position is a tuple of int values (x, y).
             for i in range(hats):
                 hat = joystick.get_hat(i)
-                lines.append(indent("Hat {i} value: {str(hat)}", indentation))
+                lines.append(indent(f"Hat {i} value: {str(hat)}", indentation))
             indentation -= 2
 
         # draw the accumulated text
