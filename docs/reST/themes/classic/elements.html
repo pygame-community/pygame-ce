@@ -22,11 +22,9 @@
         <a href="{{ pathto(master_doc) }}">Help Contents</a> ||
         <a href="{{ pathto('genindex') }}">Reference Index</a>
       </div>
-      <div class="nav-theme-container">
+      <div class="searchbar-container">
         <img class="theme-icon" data-theme="dark-theme" src="{{ pathto('_static/light-theme-icon.svg', 1) }}" width="24" height="24" alt="Light Theme Icon">
         <img class="theme-icon" data-theme="light-theme" src="{{ pathto('_static/dark-theme-icon.svg', 1) }}" width="24" height="24" alt="Dark Theme Icon">
-      </div>
-      <div class="searchbar-container">
         <form action="{{ pathto('search') }}" method="get" class="searchbar-form" style="display:inline;float:right;">
           <input name="q" value="" type="text">
           <img class="searchbar-button" src="{{ pathto('_static/searchbar-icon.svg', 1) }}" alt="Search">
