@@ -154,7 +154,9 @@
 
       Get or set whether the window is always on top.
 
-      .. note:: Setting the always-on-top mode requires SDL2.0.16+.
+      Setting the always-on-top mode requires SDL 2.0.16+.
+
+      .. versionadded:: 2.3.1
 
    .. attribute:: id
 
