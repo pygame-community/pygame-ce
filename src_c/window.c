@@ -308,10 +308,10 @@ window_get_borderless(pgWindowObject *self, void *v)
                            SDL_WINDOW_BORDERLESS);
 }
 
-#if SDL_VERSION_ATLEAST(2, 0, 16)
 static int
 window_set_always_on_top(pgWindowObject *self, PyObject *arg, void *v)
 {
+#if SDL_VERSION_ATLEAST(2, 0, 16)
     int enable = PyObject_IsTrue(arg);
     if (enable == -1)
         return -1;
@@ -319,15 +319,11 @@ window_set_always_on_top(pgWindowObject *self, PyObject *arg, void *v)
     SDL_SetWindowAlwaysOnTop(self->_win, enable);
 
     return 0;
-}
 #else
-static int
-window_set_always_on_top(pgWindowObject *self, PyObject *arg, void *v)
-{
     PyErr_SetString(pgExc_SDLError, "'always_on_top' requires SDL 2.0.16+");
     return -1;
-}
 #endif  // SDL_VERSION_ATLEAST(2, 0, 16)
+}
 
 static PyObject *
 window_get_always_on_top(pgWindowObject *self, void *v)
