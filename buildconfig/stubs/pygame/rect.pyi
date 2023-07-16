@@ -2,7 +2,6 @@ import sys
 from typing import (
     Dict,
     List,
-    Sequence,
     Tuple,
     TypeVar,
     Union,
@@ -11,7 +10,7 @@ from typing import (
     Optional,
 )
 
-from ._common import Coordinate, Literal, RectValue
+from ._common import Coordinate, Literal, RectValue, SupportsIndex, Sequence
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -132,7 +131,7 @@ class _GenericRect(Collection[_N]):
     def __len__(self) -> Literal[4]: ...
     def __iter__(self) -> Iterator[_N]: ...
     @overload
-    def __getitem__(self, i: int) -> _N: ...
+    def __getitem__(self, i: SupportsIndex) -> _N: ...
     @overload
     def __getitem__(self, s: slice) -> List[_N]: ...
     @overload
