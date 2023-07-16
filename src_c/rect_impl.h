@@ -1526,7 +1526,7 @@ RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs)
     PyObject *dict, *key, *val;
     PyObject *ret = NULL;
 
-    char *kwds[] = {"rect_dict", "use_values", NULL};
+    char *kwds[] = {"rect_dict", "values", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|i", kwds, &dict,
                                      &values)) {
@@ -1571,7 +1571,7 @@ RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs)
     PyObject *dict, *key, *val;
     PyObject *ret = NULL;
 
-    char *kwds[] = {"rect_dict", "use_values", NULL};
+    char *kwds[] = {"rect_dict", "values", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|i", kwds, &dict,
                                      &values)) {
