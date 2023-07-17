@@ -1357,6 +1357,7 @@ pg_EventSetAttr(PyObject *o, PyObject *name, PyObject *value)
     else {
         result = PyObject_GenericGetAttr(o, name);
         if (!result) {
+            PyErr_Clear();
             setInDict = 1;
         }
     }
