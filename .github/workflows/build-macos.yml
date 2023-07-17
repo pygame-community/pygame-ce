@@ -89,28 +89,24 @@ jobs:
             macarch: x86_64,
             # pattern matches any 2 digit number
             pyversions: "cp3[1-9][0-9]-*",
-            cibw_platform: "macosx-10.11-x86_64"
           }
 
           - { 
             name: "x86_64 (Python 3.7)",
             macarch: x86_64,
             pyversions: "?p37-*",
-            cibw_platform: "macosx-10.11-x86_64"
           }
 
           - { 
             name: "x86_64 (Python 3.8)",
             macarch: x86_64,
             pyversions: "?p38-*",
-            cibw_platform: "macosx-10.11-x86_64"
           }
 
           - { 
             name: "x86_64 (Python 3.9)",
             macarch: x86_64,
             pyversions: "?p39-*",
-            cibw_platform: "macosx-10.11-x86_64"
           }
 
           - { 
@@ -118,7 +114,6 @@ jobs:
             macarch: arm64,
             # pattern matches any number from 8 to 99
             pyversions: "cp3{8,9,[1-9][0-9]}-*",
-            cibw_platform: "macosx-11.0-arm64"
           }
 
     env:
@@ -128,9 +123,16 @@ jobs:
       # also define environment variables needed for testing
       CIBW_ENVIRONMENT: PIP_CONFIG_FILE=buildconfig/pip_config.ini SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
 
-      # Tell CIBW that the wheel should be for 10.11
+      # Explicitly tell CIBW what the wheel arch deployment target should be
+      # There seems to be no better way to set this than this env
+      # We need this because our minimum is 10.11, different from default
+      # of 10.9 on x86s
       # Related issue: https://github.com/pypa/cibuildwheel/issues/952
-      _PYTHON_HOST_PLATFORM: ${{ matrix.cibw_platform }}
+      _PYTHON_HOST_PLATFORM: ${{ matrix.macarch == 'x86_64' && 'macosx-10.11-x86_64' || 'macosx-11.0-arm64'}}
+
+      # Similarly, we need to tell CIBW that the wheel's linking steps
+      # should be for 10.11 on x86
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macarch == 'x86_64' && '10.11' || '11.0' }}
 
       CIBW_BUILD: ${{ matrix.pyversions }}
 
