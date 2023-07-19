@@ -66,7 +66,7 @@ in the future.
 
 ### Hidden modules
 
-Pygame still has documentation for the  Overlay module, which
+Pygame still has documentation for the Overlay module, which
 are discontinued in SDL2 based pygame (pygame 2). It just doesn't show them,
 because `docs/reST/themes/classic/elements.html` now has a list of
 "blacklisted" modules to not put into the top bar. It also uses this for the
