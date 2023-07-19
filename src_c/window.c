@@ -317,12 +317,14 @@ window_set_always_on_top(pgWindowObject *self, PyObject *arg, void *v)
         return -1;
 
     SDL_SetWindowAlwaysOnTop(self->_win, enable);
-
-    return 0;
 #else
-    PyErr_SetString(pgExc_SDLError, "'always_on_top' requires SDL 2.0.16+");
-    return -1;
+    if (PyErr_WarnEx(PyExc_Warning,
+                     "Setting 'always_on_top' requires SDL 2.0.16+",
+                     1) == -1) {
+        return -1;
+    }
 #endif  // SDL_VERSION_ATLEAST(2, 0, 16)
+    return 0;
 }
 
 static PyObject *
