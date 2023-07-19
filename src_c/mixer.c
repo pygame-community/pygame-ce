@@ -1468,6 +1468,43 @@ mixer_find_channel(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
+mixer_set_soundfont(PyObject *self, PyObject *args)
+{
+    int paths_set;
+    const char *paths = NULL;
+
+    if (!PyArg_ParseTuple(args, "|s", &paths))
+        return NULL;
+
+    MIXER_INIT_CHECK();
+
+    if ((paths == NULL) || (strlen(paths) == 0))
+        paths_set = Mix_SetSoundFonts(NULL);
+    else
+        paths_set = Mix_SetSoundFonts(paths);
+
+    if (paths_set == 0)
+        return RAISE(pgExc_SDLError, SDL_GetError());
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+mixer_get_soundfont(PyObject *self, PyObject *_null)
+{
+    const char *paths;
+
+    MIXER_INIT_CHECK();
+
+    paths = Mix_GetSoundFonts();
+
+    if (paths)
+        return PyUnicode_FromString(paths);
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 mixer_fadeout(PyObject *self, PyObject *args)
 {
     int _time;
@@ -1902,6 +1939,10 @@ static PyMethodDef _mixer_methods[] = {
     {"get_busy", (PyCFunction)get_busy, METH_NOARGS, DOC_MIXER_GETBUSY},
     {"find_channel", (PyCFunction)mixer_find_channel,
      METH_VARARGS | METH_KEYWORDS, DOC_MIXER_FINDCHANNEL},
+    {"set_soundfont", mixer_set_soundfont, METH_VARARGS,
+     DOC_MIXER_SETSOUNDFONT},
+    {"get_soundfont", mixer_get_soundfont, METH_NOARGS,
+     DOC_MIXER_GETSOUNDFONT},
     {"fadeout", mixer_fadeout, METH_VARARGS, DOC_MIXER_FADEOUT},
     {"stop", (PyCFunction)mixer_stop, METH_NOARGS, DOC_MIXER_STOP},
     {"pause", (PyCFunction)mixer_pause, METH_NOARGS, DOC_MIXER_PAUSE},
