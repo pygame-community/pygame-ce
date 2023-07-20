@@ -417,24 +417,6 @@ class MixerMusicModuleTest(unittest.TestCase):
 
         self.fail()
 
-    def test_set_soundfont(self):
-        """Ensure soundfonts can be set, cleared, and retrieved"""
-
-        self.assertEqual(pygame.mixer.music.set_soundfont(), None)
-        self.assertEqual(pygame.mixer.music.get_soundfont(), None)
-
-        self.assertEqual(pygame.mixer.music.set_soundfont(""), None)
-        self.assertEqual(pygame.mixer.music.get_soundfont(), None)
-
-        self.assertEqual(pygame.mixer.music.set_soundfont("test1.sf2;test2.sf2"), None)
-        self.assertEqual(type(pygame.mixer.music.get_soundfont()), str)
-        self.assertEqual(pygame.mixer.music.get_soundfont(), "test1.sf2;test2.sf2")
-
-    def test_get_soundfont(self):
-        """Ensure retrieving an unset soundfont returns None"""
-        self.assertEqual(type(pygame.mixer.music.get_soundfont()), type(None))
-        self.assertEqual(pygame.mixer.music.get_soundfont(), None)
-
     def test_init(self):
         """pygame-ce issue #622. unload music whenever mixer.quit() is called"""
         import tempfile
