@@ -30,3 +30,12 @@
 #include "_pygame.h"
 
 #endif /* ~PYGAME_INTERNAL_H */
+
+/* Python macro for comparing to Py_None
+ * Py_IsNone is naturally supported by Python 3.10 or higher
+ * so this macro can be removed after the minimum supported
+ * Python version reaches 3.10
+ */ 
+#ifndef Py_IsNone
+#define Py_IsNone(x) x == Py_None
+#endif

@@ -1479,10 +1479,10 @@ mixer_set_soundfont(PyObject *self, PyObject *args)
 
     MIXER_INIT_CHECK();
 
-    if (path != Py_None)
+    if (!Py_IsNone(path))
         string_path = PyUnicode_AsUTF8(path);
 
-    if (strlen(path) == 0)
+    if (strlen(string_path) == 0)
         paths_set = Mix_SetSoundFonts(NULL);
     else
         paths_set = Mix_SetSoundFonts(string_path);
