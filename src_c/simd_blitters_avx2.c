@@ -751,9 +751,9 @@ blit_blend_rgb_overlay_avx2(SDL_BlitInfo *info)
         multiply = _mm256_srli_epi16(multiply, 7);
 
         /* 255 - dst */
-        __m256i inverted_dst = _mm256_sub_epi16(mm256_255, shuff_dst);
+        __m256i inverted_dst = _mm256_subs_epu16(mm256_255, shuff_dst);
         /* 255 - src */
-        __m256i inverted_src = _mm256_sub_epi16(mm256_255, shuff_src);
+        __m256i inverted_src = _mm256_subs_epu16(mm256_255, shuff_src);
         /* dst * src */
         __m256i screen = _mm256_mullo_epi16(inverted_dst, inverted_src);
         /* divide by 127 */
