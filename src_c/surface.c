@@ -124,7 +124,7 @@ surface_move(Uint8 *src, Uint8 *dst, int h, int span, int srcpitch,
 static PyObject *
 surf_get_at(PyObject *self, PyObject *args);
 static PyObject *
-surf_set_at(PyObject *self, PyObject *args);
+surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs);
 static PyObject *
 surf_get_at_mapped(PyObject *self, PyObject *args);
 static PyObject *
@@ -305,7 +305,7 @@ static PyGetSetDef surface_getsets[] = {
 
 static struct PyMethodDef surface_methods[] = {
     {"get_at", surf_get_at, METH_VARARGS, DOC_SURFACE_GETAT},
-    {"set_at", surf_set_at, METH_VARARGS, DOC_SURFACE_SETAT},
+    {"set_at", surf_set_at, METH_FASTCALL, DOC_SURFACE_SETAT},
     {"get_at_mapped", surf_get_at_mapped, METH_VARARGS,
      DOC_SURFACE_GETATMAPPED},
     {"map_rgb", surf_map_rgb, METH_VARARGS, DOC_SURFACE_MAPRGB},
@@ -832,9 +832,10 @@ surf_get_at(PyObject *self, PyObject *args)
 }
 
 static PyObject *
-surf_set_at(PyObject *self, PyObject *args)
+surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     SDL_Surface *surf = pgSurface_AsSurface(self);
+    SURF_INIT_CHECK(surf)
     SDL_PixelFormat *format = NULL;
     Uint8 *pixels;
     int x, y;
@@ -843,12 +844,19 @@ surf_set_at(PyObject *self, PyObject *args)
     PyObject *rgba_obj;
     Uint8 *byte_buf;
 
-    if (!PyArg_ParseTuple(args, "(ii)O", &x, &y, &rgba_obj))
-        return NULL;
-    SURF_INIT_CHECK(surf)
+    if (nargs != 2) {
+        return PyErr_Format(PyExc_TypeError,
+                            "set_at takes exactly 2 arguments (%zd given)",
+                            nargs);
+    }
+
+    if (!pg_TwoIntsFromObj(args[0], &x, &y)) {
+        return RAISE(PyExc_TypeError, "invalid position argument");
+    }
+
+    rgba_obj = args[1];
 
     format = surf->format;
-
     if (format->BytesPerPixel < 1 || format->BytesPerPixel > 4)
         return RAISE(PyExc_RuntimeError, "invalid color depth for surface");
 
@@ -860,11 +868,6 @@ surf_set_at(PyObject *self, PyObject *args)
 
     if (PyLong_Check(rgba_obj)) {
         color = (Uint32)PyLong_AsLong(rgba_obj);
-        if (PyErr_Occurred() && (Sint32)color == -1)
-            return RAISE(PyExc_TypeError, "invalid color argument");
-    }
-    else if (PyLong_Check(rgba_obj)) {
-        color = (Uint32)PyLong_AsUnsignedLong(rgba_obj);
         if (PyErr_Occurred() && (Sint32)color == -1)
             return RAISE(PyExc_TypeError, "invalid color argument");
     }
@@ -909,6 +912,7 @@ surf_set_at(PyObject *self, PyObject *args)
 
     if (!pgSurface_Unlock((pgSurfaceObject *)self))
         return NULL;
+
     Py_RETURN_NONE;
 }
 
