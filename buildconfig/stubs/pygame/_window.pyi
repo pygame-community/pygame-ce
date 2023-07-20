@@ -28,6 +28,7 @@ class Window:
     title: str
     resizable: bool
     borderless: bool
+    always_on_top: bool
     relative_mouse: bool
     id: int
     size: Iterable[int]

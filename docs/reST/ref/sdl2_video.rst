@@ -146,6 +146,18 @@
       Gets or sets whether the window is borderless.
 
       .. note:: You can't change the border state of a fullscreen window.
+   
+   .. attribute:: always_on_top
+
+      | :sl:`Get or set whether the window is always on top`
+      | :sg:`always_on_top -> bool`
+
+      Get or set whether the window is always on top.
+
+      Setting the always-on-top mode requires SDL 2.0.16+.
+
+      .. versionadded:: 2.3.1
+
    .. attribute:: id
 
       | :sl:`Get the unique window ID (**read-only**)`
