@@ -1471,17 +1471,21 @@ static PyObject *
 mixer_set_soundfont(PyObject *self, PyObject *args)
 {
     int paths_set;
-    const char *paths = NULL;
+    PyObject *path = Py_None;
+    const char *string_path = "";
 
-    if (!PyArg_ParseTuple(args, "|s", &paths))
+    if (!PyArg_ParseTuple(args, "|O", &path))
         return NULL;
 
     MIXER_INIT_CHECK();
 
-    if ((paths == NULL) || (strlen(paths) == 0))
+    if (!Py_IsNone(path))
+        string_path = PyUnicode_AsUTF8(path);
+
+    if (strlen(path) == 0)
         paths_set = Mix_SetSoundFonts(NULL);
     else
-        paths_set = Mix_SetSoundFonts(paths);
+        paths_set = Mix_SetSoundFonts(string_path);
 
     if (paths_set == 0)
         return RAISE(pgExc_SDLError, SDL_GetError());
