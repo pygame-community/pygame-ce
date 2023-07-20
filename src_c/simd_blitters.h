@@ -83,3 +83,5 @@ void
 blit_blend_premultiplied_avx2(SDL_BlitInfo *info);
 void
 premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst);
+void
+blit_blend_rgb_overlay_avx2(SDL_BlitInfo *info);
