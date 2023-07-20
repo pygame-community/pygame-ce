@@ -177,6 +177,8 @@ object instead of the module, which can be used to test for availability.
    This function is used in encoding file paths. Keyword arguments are
    supported.
 
+   This function is not needed for normal pygame-ce usage.
+
    .. versionaddedold:: 1.9.2 (primarily for use in unit tests)
 
    .. ## pygame.encode_string ##
@@ -196,6 +198,8 @@ object instead of the module, which can be used to test for availability.
    This function is used to encode file paths in pygame. Encoding is to the
    codec as returned by ``sys.getfilesystemencoding()``. Keyword arguments are
    supported.
+
+   This function is not needed for normal pygame-ce usage.
 
    .. versionaddedold:: 1.9.2 (primarily for use in unit tests)
 
