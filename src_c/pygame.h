@@ -28,3 +28,5 @@
 
 #define PYGAME_H
 #include "_pygame.h"
+
+#endif /* ~PYGAME_INTERNAL_H */
