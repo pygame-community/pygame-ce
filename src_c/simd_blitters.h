@@ -81,3 +81,5 @@ void
 blit_blend_rgb_min_avx2(SDL_BlitInfo *info);
 void
 blit_blend_premultiplied_avx2(SDL_BlitInfo *info);
+void
+blit_blend_rgb_overlay_avx2(SDL_BlitInfo *info);
