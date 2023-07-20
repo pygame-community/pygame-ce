@@ -123,19 +123,14 @@ class MixerModuleTest(unittest.TestCase):
         self.assertEqual(mixer.set_soundfont(), None)
         self.assertEqual(mixer.get_soundfont(), None)
 
+        self.assertEqual(mixer.set_soundfont(None), None)
+        self.assertEqual(mixer.get_soundfont(), None)
+
         self.assertEqual(mixer.set_soundfont(""), None)
         self.assertEqual(mixer.get_soundfont(), None)
 
         self.assertEqual(mixer.set_soundfont("test1.sf2;test2.sf2"), None)
-        self.assertEqual(type(mixer.get_soundfont()), str)
         self.assertEqual(mixer.get_soundfont(), "test1.sf2;test2.sf2")
-
-    def test_get_soundfont(self):
-        """Ensure retrieving an unset soundfont returns None"""
-        mixer.init()
-
-        self.assertEqual(type(mixer.get_soundfont()), type(None))
-        self.assertEqual(mixer.get_soundfont(), None)
 
     def test_quit(self):
         """get_num_channels() Should throw pygame.error if uninitialized
