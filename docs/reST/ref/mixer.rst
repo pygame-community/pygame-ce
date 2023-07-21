@@ -77,7 +77,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    what the hardware supports. For example a sound card may not
    support 16bit sound samples, so instead it will use 8bit samples internally.
    If AUDIO_ALLOW_FORMAT_CHANGE is supplied, then the requested format will
-   change to the closest that SDL2 supports.
+   change to the closest that SDL supports.
 
    Apart from 0, allowedchanged accepts the following constants ORed together:
 

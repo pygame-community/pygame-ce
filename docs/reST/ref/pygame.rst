@@ -302,7 +302,7 @@ check which version of pygame has been imported.
 .. data:: SDL
 
    | :sl:`tupled integers of the SDL library version`
-   | :sg:`SDL = '(2, 0, 12)'`
+   | :sg:`SDL = '(2, 26, 5)'`
 
    This is the SDL library version represented as an extended tuple. It also has
    attributes 'major', 'minor' & 'patch' that can be accessed like this:
@@ -317,7 +317,7 @@ check which version of pygame has been imported.
    ::
 
     >>> pygame.version.SDL
-    SDLVersion(major=2, minor=0, patch=12)
+    SDLVersion(major=2, minor=26, patch=5)
 
    .. versionaddedold:: 2.0.0
 
