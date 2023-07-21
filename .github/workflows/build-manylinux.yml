@@ -56,7 +56,7 @@ jobs:
 
       CIBW_PRERELEASE_PYTHONS: True # for 3.12 testing
 
-      CIBW_BUILD: "cp3{[7-9],10,11,12}-* pp3[7-9]-*"
+      CIBW_BUILD: "cp3{[7-9],10,11,12}-* pp3{[8-9],10}-*"
       CIBW_ARCHS: ${{ matrix.arch }}
 
       # skip musllinux for now
