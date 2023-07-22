@@ -841,7 +841,6 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     SDL_PixelFormat *format = NULL;
     Uint8 *pixels;
     int x, y;
-    PyObject *position;
     Uint32 color;
     Uint8 rgba[4] = {0, 0, 0, 0};
     PyObject *rgba_obj;
@@ -860,11 +859,6 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     rgba_obj = args[1];
 
     format = surf->format;
-    if (!pg_TwoIntsFromObj(position, &x, &y)) {
-        return RAISE(PyExc_TypeError,
-                     "position must be a sequence of two numbers");
-    }
-
     if (format->BytesPerPixel < 1 || format->BytesPerPixel > 4)
         return RAISE(PyExc_RuntimeError, "invalid color depth for surface");
 
