@@ -66,6 +66,7 @@ class Window:
     def minimize(self) -> None: ...
     resizable: bool
     borderless: bool
+    always_on_top: bool
     def set_icon(self, surface: Surface) -> None: ...
     id: int
     size: Iterable[int]
@@ -156,14 +157,14 @@ class Image:
 class Renderer:
     def __init__(
         self,
-        window: Union[Window,_Window],
+        window: Window,
         index: int = -1,
         accelerated: int = -1,
         vsync: bool = False,
         target_texture: bool = False,
     ) -> None: ...
     @classmethod
-    def from_window(cls, window: Union[Window,_Window]) -> Renderer: ...
+    def from_window(cls, window: Window) -> Renderer: ...
     draw_blend_mode: int
     draw_color: Color
     def clear(self) -> None: ...

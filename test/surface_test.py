@@ -1113,7 +1113,7 @@ class TestSurfaceBlit(unittest.TestCase):
         width = len(combinations)
 
         # masks explicitly specified so direct pixel access of bytes below is
-        # gauranteed to be stable
+        # guaranteed to be stable
         surf1 = pygame.Surface((width, 1), depth=32, masks=(0xFF0000, 0xFF00, 0xFF, 0))
         surf2 = pygame.Surface(
             (width, 1),
