@@ -325,9 +325,7 @@ required).
      blit_sw_A:  1 if software Surface pixel alpha blitting is accelerated
      current_h, current_w:  Height and width of the current video mode, or
                  of the desktop mode if called before the display.set_mode
-                 is called. (current_h, current_w are available since
-                 SDL 1.2.10, and pygame 1.8.0). They are -1 on error, or if
-                 an old SDL is being used.
+                 is called. They are -1 on error.
 
    .. ## pygame.display.Info ##
 
@@ -735,11 +733,9 @@ required).
    .. note:: Disabling screensaver is subject to platform support.
              When platform support is absent, this function will
              silently appear to work even though the screensaver state
-             is unchanged.  The lack of feedback is due to SDL not
+             is unchanged. The lack of feedback is due to SDL not
              providing any supported method for determining whether
              it supports changing the screensaver state.
-             ``SDL_HINT_VIDEO_ALLOW_SCREENSAVER`` is available in SDL 2.0.2 or later.
-             SDL1.2 does not implement this.
 
    .. versionaddedold:: 2.0.0
 

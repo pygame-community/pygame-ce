@@ -54,7 +54,9 @@ jobs:
       # also define environment variables needed for testing
       CIBW_ENVIRONMENT: PIP_CONFIG_FILE=buildconfig/pip_config.ini PORTMIDI_INC_PORTTIME=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
 
-      CIBW_BUILD: "cp3{[7-9],10,11}-* pp3[7-9]-*"
+      CIBW_PRERELEASE_PYTHONS: True # for 3.12 testing
+
+      CIBW_BUILD: "cp3{[7-9],10,11,12}-* pp3[7-9]-*"
       CIBW_ARCHS: ${{ matrix.arch }}
 
       # skip musllinux for now
@@ -95,14 +97,14 @@ jobs:
 
     - name: Extract metadata (tags, labels) for Docker
       id: meta
-      uses: docker/metadata-action@2c0bd771b40637d97bf205cbccdd294a32112176
+      uses: docker/metadata-action@818d4b7b91585d195f67373fd9cb0332e31a7175
       with:
         images: ghcr.io/${{ github.repository }}_${{ matrix.arch }}
         tags: type=raw,value=${{ hashFiles('buildconfig/manylinux-build/**') }}
 
     - name: Build and push Docker image
       if: steps.inspect.outcome == 'failure'
-      uses: docker/build-push-action@44ea916f6c540f9302d50c2b1e5a8dc071f15cdf
+      uses: docker/build-push-action@2eb1c1961a95fc15694676618e422e8ba1d63825
       with:
         context: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base
         file: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base/Dockerfile-${{ matrix.arch }}
@@ -118,7 +120,7 @@ jobs:
         CIBW_MANYLINUX_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
         CIBW_MANYLINUX_PYPY_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
 
-      uses: pypa/cibuildwheel@v2.13.1
+      uses: pypa/cibuildwheel@v2.14.1
 
     # We upload the generated files under github actions assets
     - name: Upload dist

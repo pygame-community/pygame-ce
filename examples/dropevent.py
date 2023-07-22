@@ -17,8 +17,10 @@ pygame.init()
 
 def main():
     Running = True
-    surf = pygame.display.set_mode((640, 480))
+    screen_size = (640, 480)
+    surf = pygame.display.set_mode(screen_size)
     font = pygame.font.SysFont("Arial", 24)
+    font.align = pygame.FONT_CENTER
     clock = pygame.Clock()
 
     spr_file_text = font.render("Feed me some file or image!", 1, (255, 255, 255))
@@ -40,12 +42,16 @@ def main():
                 print("File drop complete!")
             elif ev.type == pygame.DROPTEXT:
                 print(ev)
-                spr_file_text = font.render(ev.text, 1, (255, 255, 255))
+                spr_file_text = font.render(
+                    ev.text, 1, (255, 255, 255), wraplength=screen_size[0] - 10
+                )
                 spr_file_text_rect = spr_file_text.get_rect()
                 spr_file_text_rect.center = surf.get_rect().center
             elif ev.type == pygame.DROPFILE:
                 print(ev)
-                spr_file_text = font.render(ev.file, 1, (255, 255, 255))
+                spr_file_text = font.render(
+                    ev.file, 1, (255, 255, 255), None, screen_size[0] - 10
+                )
                 spr_file_text_rect = spr_file_text.get_rect()
                 spr_file_text_rect.center = surf.get_rect().center
 

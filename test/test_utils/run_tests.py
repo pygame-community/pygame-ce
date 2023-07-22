@@ -91,7 +91,7 @@ def run(*args, **kwds):
     defining a __tags__ attribute, a list of tag strings used to selectively
     omit modules from a run. By default, only the 'interactive', 'ignore', and
     'subprocess_ignore' tags are ignored. 'interactive' is for modules that
-    take user input, like cdrom_test.py. 'ignore' and 'subprocess_ignore' for
+    take user input, like controller_test.py. 'ignore' and 'subprocess_ignore' for
     disabling modules for foreground and subprocess modes respectively.
     These are for disabling tests on optional modules or for experimental
     modules with known problems. These modules can be run from the console as

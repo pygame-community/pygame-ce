@@ -87,6 +87,7 @@ typedef struct pg_bufferinfo_s {
 } pg_buffer;
 
 #include "pgimport.h"
+#include "../pgcompat_rect.h"
 
 /*
  * BASE module
@@ -497,7 +498,6 @@ typedef struct {
 #ifdef PYGAME_H
 PYGAMEAPI_DEFINE_SLOTS(base);
 PYGAMEAPI_DEFINE_SLOTS(rect);
-PYGAMEAPI_DEFINE_SLOTS(cdrom);
 PYGAMEAPI_DEFINE_SLOTS(joystick);
 PYGAMEAPI_DEFINE_SLOTS(display);
 PYGAMEAPI_DEFINE_SLOTS(surface);
@@ -512,7 +512,6 @@ PYGAMEAPI_DEFINE_SLOTS(geometry);
 #else /* ~PYGAME_H */
 PYGAMEAPI_EXTERN_SLOTS(base);
 PYGAMEAPI_EXTERN_SLOTS(rect);
-PYGAMEAPI_EXTERN_SLOTS(cdrom);
 PYGAMEAPI_EXTERN_SLOTS(joystick);
 PYGAMEAPI_EXTERN_SLOTS(display);
 PYGAMEAPI_EXTERN_SLOTS(surface);
