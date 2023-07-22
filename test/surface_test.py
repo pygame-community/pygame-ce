@@ -1933,6 +1933,12 @@ class GeneralSurfaceTests(unittest.TestCase):
                 surf.map_rgb(color),
                 "%i != %i, bitsize: %i" % (pixel, surf.map_rgb(color), bitsize),
             )
+            pixel = surf.get_at_mapped(pygame.Vector2(0, 0))
+            self.assertEqual(
+                pixel,
+                surf.map_rgb(color),
+                "%i != %i, bitsize: %i" % (pixel, surf.map_rgb(color), bitsize),
+            )
 
     def test_get_bitsize(self):
         pygame.display.init()
