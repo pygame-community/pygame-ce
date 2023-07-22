@@ -58,10 +58,10 @@ open just in case something obvious comes up.
    
    .. versionadded:: 2.3.1
 
-.. function:: get_system_ram
+.. function:: get_total_ram
 
    | :sl:`get the amount of RAM configured in the system`
-   | :sg:`get_system_ram() -> ram_size`
+   | :sg:`get_total_ram() -> ram_size`
 
    Returns the amount of RAM configured in the system in MiB.
 

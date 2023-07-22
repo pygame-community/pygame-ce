@@ -12,8 +12,8 @@ class SystemModuleTest(unittest.TestCase):
             self.assertIsInstance(name, str)
             self.assertIsInstance(instruction_sets[name], bool)
 
-    def test_get_system_ram(self):
-        ram = pygame.system.get_system_ram()
+    def test_get_total_ram(self):
+        ram = pygame.system.get_total_ram()
 
         self.assertIsInstance(ram, int)
 

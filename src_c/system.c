@@ -61,7 +61,7 @@ error:
 }
 
 static PyObject *
-pg_system_get_system_ram(PyObject *self, PyObject *_null)
+pg_system_get_total_ram(PyObject *self, PyObject *_null)
 {
     return PyLong_FromLong(SDL_GetSystemRAM());
 }
@@ -164,7 +164,7 @@ error:
 static PyMethodDef _system_methods[] = {
     {"get_cpu_instruction_sets", pg_system_get_cpu_instruction_sets,
      METH_NOARGS, DOC_SYSTEM_GETCPUINSTRUCTIONSETS},
-    {"get_system_ram", pg_system_get_system_ram, METH_NOARGS,
+    {"get_total_ram", pg_system_get_total_ram, METH_NOARGS,
      DOC_SYSTEM_GETSYSTEMRAM},
     {"get_pref_path", (PyCFunction)pg_system_get_pref_path,
      METH_VARARGS | METH_KEYWORDS, DOC_SYSTEM_GETPREFPATH},
