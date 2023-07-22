@@ -238,6 +238,104 @@ line(PyObject *self, PyObject *arg, PyObject *kwargs)
         return pgRect_New4(startx, starty, 0, 0);
 }
 
+/* Draws a dashed line 
+ *
+ * returns a Rect bounding the affected area
+ *
+ */
+static PyObject*
+dashed_line(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    PyObject *colorobj, *start, *end;
+    SDL_Surface *surf = NULL;
+    int startx, starty, endx, endy;
+    Uint8 rgba[4];
+    Uint32 color;
+    int width = 1; /* Default width. */
+    int length = 10; /* Default dash width */
+    int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
+                         INT_MIN}; /* Used to store bounding box values */
+
+    static char *keywords[] = {"surface", "color", "start_pos",
+                               "end_pos", "width", "length", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!OOO|ii", keywords,
+                                     &pgSurface_Type, &surfobj, &colorobj,
+                                     &start, &end, &width, &length)) {
+        return NULL; /* Exception already set. */
+    }
+
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
+    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+        return PyErr_Format(PyExc_ValueError,
+                            "unsupported surface bit depth (%d) for drawing",
+                            surf->format->BytesPerPixel);
+    }
+
+    CHECK_LOAD_COLOR(colorobj)
+
+    if (!pg_TwoIntsFromObj(start, &startx, &starty)) {
+        return RAISE(PyExc_TypeError, "invalid start_pos argument");
+    }
+
+    if (!pg_TwoIntsFromObj(end, &endx, &endy)) {
+        return RAISE(PyExc_TypeError, "invalid end_pos argument");
+    }
+
+    if (width < 1) {
+        return pgRect_New4(startx, starty, 0, 0);
+    }
+
+    if (length < 1) {
+        return RAISE(PyExc_ValueError, "invalid length argument");
+    }
+
+    if (!pgSurface_Lock(surfobj)) {
+        return RAISE(PyExc_RuntimeError, "error locking surface");
+    }
+
+    int dx = endx - startx;
+    int dy = endy - starty;
+    double total_line_length = sqrt(dx*dx + dy*dy);
+    int number_segments = (int)total_line_length / length;
+    double xstep = (double)dx / number_segments;
+    double ystep = (double)dy / number_segments;
+
+    double currentx, currenty, stopx, stopy;
+
+    for (int i=0; i<number_segments; i++)
+    {
+        if (i%2) { continue; }
+
+        currentx = startx + i*xstep;
+        currenty = starty + i*ystep;
+        stopx = currentx + xstep;
+        stopy = currenty + ystep;
+
+        draw_line_width(surf, color, currentx, currenty, stopx, stopy,
+                        width, drawn_area);
+    }
+
+    // draw_line_width(surf, color, startx, starty, endx, endy, width,
+    //                 drawn_area);
+
+    if (!pgSurface_Unlock(surfobj)) {
+        return RAISE(PyExc_RuntimeError, "error unlocking surface");
+    }
+
+    /* Compute return rect. */
+    if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
+        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN)
+        return pgRect_New4(drawn_area[0], drawn_area[1],
+                           drawn_area[2] - drawn_area[0] + 1,
+                           drawn_area[3] - drawn_area[1] + 1);
+    else
+        return pgRect_New4(startx, starty, 0, 0);
+}
+
 /* Draws a series of antialiased lines on the given surface.
  *
  * Returns a Rect bounding the drawn area.
@@ -2590,6 +2688,7 @@ static PyMethodDef _draw_methods[] = {
     {"aaline", (PyCFunction)aaline, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_AALINE},
     {"line", (PyCFunction)line, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_LINE},
+    {"dashed_line", (PyCFunction)dashed_line, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_DASHEDLINE},
     {"aalines", (PyCFunction)aalines, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_AALINES},
     {"lines", (PyCFunction)lines, METH_VARARGS | METH_KEYWORDS,

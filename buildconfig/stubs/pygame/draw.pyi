@@ -49,6 +49,14 @@ def line(
     end_pos: Coordinate,
     width: int = 1,
 ) -> Rect: ...
+def dashed_line(
+    surface: Surface,
+    color: ColorValue,
+    start_pos: Coordinate,
+    end_pos: Coordinate,
+    width: int = 1,
+    length: int = 10,
+) -> Rect: ...
 def lines(
     surface: Surface,
     color: ColorValue,
