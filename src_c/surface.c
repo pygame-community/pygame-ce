@@ -304,10 +304,9 @@ static PyGetSetDef surface_getsets[] = {
     {NULL, NULL, NULL, NULL, NULL}};
 
 static struct PyMethodDef surface_methods[] = {
-    {"get_at", surf_get_at, METH_VARARGS, DOC_SURFACE_GETAT},
+    {"get_at", surf_get_at, METH_O, DOC_SURFACE_GETAT},
     {"set_at", (PyCFunction)surf_set_at, METH_FASTCALL, DOC_SURFACE_SETAT},
-    {"get_at_mapped", surf_get_at_mapped, METH_VARARGS,
-     DOC_SURFACE_GETATMAPPED},
+    {"get_at_mapped", surf_get_at_mapped, METH_O, DOC_SURFACE_GETATMAPPED},
     {"map_rgb", surf_map_rgb, METH_VARARGS, DOC_SURFACE_MAPRGB},
     {"unmap_rgb", surf_unmap_rgb, METH_O, DOC_SURFACE_UNMAPRGB},
 
@@ -774,7 +773,7 @@ _raise_create_surface_error(void)
 
 /* surface object methods */
 static PyObject *
-surf_get_at(PyObject *self, PyObject *args)
+surf_get_at(PyObject *self, PyObject *position)
 {
     SDL_Surface *surf = pgSurface_AsSurface(self);
     SDL_PixelFormat *format = NULL;
@@ -784,9 +783,12 @@ surf_get_at(PyObject *self, PyObject *args)
     Uint8 *pix;
     Uint8 rgba[4] = {0, 0, 0, 255};
 
-    if (!PyArg_ParseTuple(args, "(ii)", &x, &y))
-        return NULL;
     SURF_INIT_CHECK(surf)
+
+    if (!pg_TwoIntsFromObj(position, &x, &y)) {
+        return RAISE(PyExc_TypeError,
+                     "position must be a sequence of two numbers");
+    }
 
     if (x < 0 || x >= surf->w || y < 0 || y >= surf->h)
         return RAISE(PyExc_IndexError, "pixel index out of range");
@@ -839,6 +841,7 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     SDL_PixelFormat *format = NULL;
     Uint8 *pixels;
     int x, y;
+    PyObject *position;
     Uint32 color;
     Uint8 rgba[4] = {0, 0, 0, 0};
     PyObject *rgba_obj;
@@ -857,6 +860,11 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     rgba_obj = args[1];
 
     format = surf->format;
+    if (!pg_TwoIntsFromObj(position, &x, &y)) {
+        return RAISE(PyExc_TypeError,
+                     "position must be a sequence of two numbers");
+    }
+
     if (format->BytesPerPixel < 1 || format->BytesPerPixel > 4)
         return RAISE(PyExc_RuntimeError, "invalid color depth for surface");
 
@@ -917,7 +925,7 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 }
 
 static PyObject *
-surf_get_at_mapped(PyObject *self, PyObject *args)
+surf_get_at_mapped(PyObject *self, PyObject *position)
 {
     SDL_Surface *surf = pgSurface_AsSurface(self);
     SDL_PixelFormat *format = NULL;
@@ -926,9 +934,12 @@ surf_get_at_mapped(PyObject *self, PyObject *args)
     Sint32 color;
     Uint8 *pix;
 
-    if (!PyArg_ParseTuple(args, "(ii)", &x, &y))
-        return NULL;
     SURF_INIT_CHECK(surf)
+
+    if (!pg_TwoIntsFromObj(position, &x, &y)) {
+        return RAISE(PyExc_TypeError,
+                     "position must be a sequence of two numbers");
+    }
 
     if (x < 0 || x >= surf->w || y < 0 || y >= surf->h)
         return RAISE(PyExc_IndexError, "pixel index out of range");
