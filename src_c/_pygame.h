@@ -289,7 +289,7 @@ supported Python version. #endif */
  * Python version reaches 3.10
  */
 #ifndef Py_IsNone
-#define Py_IsNone(x) x == Py_None
+#define Py_IsNone(x) (x == Py_None)
 #endif
 
 /* Update this function if new sequences are added to the fast sequence
