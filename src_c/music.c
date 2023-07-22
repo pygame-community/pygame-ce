@@ -281,43 +281,6 @@ music_get_pos(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
-music_set_soundfont(PyObject *self, PyObject *args)
-{
-    int paths_set;
-    const char *paths = NULL;
-
-    if (!PyArg_ParseTuple(args, "|s", &paths))
-        return NULL;
-
-    MIXER_INIT_CHECK();
-
-    if ((paths == NULL) || (strlen(paths) == 0))
-        paths_set = Mix_SetSoundFonts(NULL);
-    else
-        paths_set = Mix_SetSoundFonts(paths);
-
-    if (paths_set == 0)
-        return RAISE(pgExc_SDLError, SDL_GetError());
-
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-music_get_soundfont(PyObject *self, PyObject *_null)
-{
-    const char *paths;
-
-    MIXER_INIT_CHECK();
-
-    paths = Mix_GetSoundFonts();
-
-    if (paths)
-        return PyUnicode_FromString(paths);
-
-    Py_RETURN_NONE;
-}
-
-static PyObject *
 music_set_endevent(PyObject *self, PyObject *args)
 {
     int eventid = SDL_NOEVENT;
@@ -607,10 +570,6 @@ static PyMethodDef _music_methods[] = {
     {"get_volume", music_get_volume, METH_NOARGS, DOC_MIXER_MUSIC_GETVOLUME},
     {"set_pos", music_set_pos, METH_O, DOC_MIXER_MUSIC_SETPOS},
     {"get_pos", music_get_pos, METH_NOARGS, DOC_MIXER_MUSIC_GETPOS},
-    {"set_soundfont", music_set_soundfont, METH_VARARGS,
-     DOC_MIXER_MUSIC_SETSOUNDFONT},
-    {"get_soundfont", music_get_soundfont, METH_NOARGS,
-     DOC_MIXER_MUSIC_GETSOUNDFONT},
     {"get_metadata", (PyCFunction)music_get_metadata,
      METH_VARARGS | METH_KEYWORDS, DOC_MIXER_MUSIC_GETMETADATA},
 
