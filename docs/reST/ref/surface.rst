@@ -434,9 +434,9 @@
       | :sl:`get the color value at a single pixel`
       | :sg:`get_at((x, y)) -> Color`
 
-      Return a copy of the ``RGBA`` Color value at the given pixel. If the
-      Surface has no per pixel alpha, then the alpha value will always be 255
-      (opaque). If the pixel position is outside the area of the Surface an
+      Return a copy of the ``RGBA`` Color value at the given pixel. If the Surface has no per 
+      pixel alpha, then the alpha value will always be 255 (opaque). 
+      If the pixel position is outside the area of the Surface an
       ``IndexError`` exception will be raised.
 
       Getting and setting pixels one at a time is generally too slow to be used
