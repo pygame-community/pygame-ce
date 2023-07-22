@@ -238,12 +238,12 @@ line(PyObject *self, PyObject *arg, PyObject *kwargs)
         return pgRect_New4(startx, starty, 0, 0);
 }
 
-/* Draws a dashed line 
+/* Draws a dashed line
  *
  * returns a Rect bounding the affected area
  *
  */
-static PyObject*
+static PyObject *
 dashed_line(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     pgSurfaceObject *surfobj;
@@ -252,13 +252,13 @@ dashed_line(PyObject *self, PyObject *args, PyObject *kwargs)
     int startx, starty, endx, endy;
     Uint8 rgba[4];
     Uint32 color;
-    int width = 1; /* Default width. */
+    int width = 1;   /* Default width. */
     int length = 10; /* Default dash width */
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
 
-    static char *keywords[] = {"surface", "color", "start_pos",
-                               "end_pos", "width", "length", NULL};
+    static char *keywords[] = {"surface", "color",  "start_pos", "end_pos",
+                               "width",   "length", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!OOO|ii", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
@@ -299,28 +299,26 @@ dashed_line(PyObject *self, PyObject *args, PyObject *kwargs)
 
     int dx = endx - startx;
     int dy = endy - starty;
-    double total_line_length = sqrt(dx*dx + dy*dy);
+    double total_line_length = sqrt(dx * dx + dy * dy);
     int number_segments = (int)total_line_length / length;
     double xstep = (double)dx / number_segments;
     double ystep = (double)dy / number_segments;
 
     double currentx, currenty, stopx, stopy;
 
-    for (int i=0; i<number_segments; i++)
-    {
-        if (i%2) { continue; }
+    for (int i = 0; i < number_segments; i++) {
+        if (i % 2) {
+            continue;
+        }
 
-        currentx = startx + i*xstep;
-        currenty = starty + i*ystep;
+        currentx = startx + i * xstep;
+        currenty = starty + i * ystep;
         stopx = currentx + xstep;
         stopy = currenty + ystep;
 
-        draw_line_width(surf, color, currentx, currenty, stopx, stopy,
-                        width, drawn_area);
+        draw_line_width(surf, color, currentx, currenty, stopx, stopy, width,
+                        drawn_area);
     }
-
-    // draw_line_width(surf, color, startx, starty, endx, endy, width,
-    //                 drawn_area);
 
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");
@@ -2688,7 +2686,8 @@ static PyMethodDef _draw_methods[] = {
     {"aaline", (PyCFunction)aaline, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_AALINE},
     {"line", (PyCFunction)line, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_LINE},
-    {"dashed_line", (PyCFunction)dashed_line, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_DASHEDLINE},
+    {"dashed_line", (PyCFunction)dashed_line, METH_VARARGS | METH_KEYWORDS,
+     DOC_DRAW_DASHEDLINE},
     {"aalines", (PyCFunction)aalines, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_AALINES},
     {"lines", (PyCFunction)lines, METH_VARARGS | METH_KEYWORDS,
