@@ -1502,7 +1502,7 @@ mixer_set_soundfont(PyObject *self, PyObject *args)
 static PyObject *
 mixer_get_soundfont(PyObject *self, PyObject *_null)
 {
-    const char *paths;
+    char *paths;
 
     MIXER_INIT_CHECK();
 
