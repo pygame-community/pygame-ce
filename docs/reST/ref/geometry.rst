@@ -12,7 +12,7 @@
       **This module is a work in progress. Refrain from relying on any features provided by
       this module, as they are subject to change or removal without prior notice.**
 
-   | :sl:`pygame module for the Circle, Rect, and Polygon objects`
+   | :sl:`pygame module for the Circle, Line, and Polygon objects`
 
 .. currentmodule:: pygame
 
@@ -65,7 +65,7 @@
 
    .. attribute:: y
 
-         | :sl:`y coordinate of the center of the circle`
+         | :sl:`center y coordinate of the circle`
          | :sg:`y -> float`
 
          The `y` coordinate of the center of the circle. It can be reassigned to move the circle.
