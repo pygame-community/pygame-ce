@@ -1,10 +1,18 @@
-from typing import Any, List, Optional, Sequence, Tuple, Union, overload, Iterable
+from typing import Any, Iterable, List, Optional, Tuple, Union, overload
 
 from pygame.bufferproxy import BufferProxy
 from pygame.color import Color
-from pygame.rect import Rect, FRect
+from pygame.rect import FRect, Rect
 
-from ._common import ColorValue, Coordinate, Literal, RectValue, RGBAOutput
+from ._common import (
+    ColorValue,
+    Coordinate,
+    IntCoordinate,
+    Literal,
+    RectValue,
+    RGBAOutput,
+    Sequence,
+)
 
 _ViewKind = Literal[
     "0",
@@ -61,7 +69,7 @@ class Surface:
     ) -> Rect: ...
     def blits(
         self,
-        blit_sequence: Sequence[
+        blit_sequence: Iterable[
             Union[
                 Tuple[Surface, Union[Coordinate, RectValue]],
                 Tuple[Surface, Union[Coordinate, RectValue], Union[RectValue, int]],
@@ -72,10 +80,7 @@ class Surface:
     ) -> Union[List[Rect], None]: ...
     def fblits(
         self,
-        blit_sequence: Union[
-            Sequence[Tuple[Surface, Union[Coordinate, RectValue]]],
-            Iterable[Tuple[Surface, Union[Coordinate, RectValue]]],
-        ],
+        blit_sequence: Iterable[Tuple[Surface, Union[Coordinate, RectValue]]],
         special_flags: int = 0,
     ) -> None: ...
     @overload
@@ -112,9 +117,9 @@ class Surface:
     def mustlock(self) -> bool: ...
     def get_locked(self) -> bool: ...
     def get_locks(self) -> Tuple[Any, ...]: ...
-    def get_at(self, x_y: Sequence[int]) -> Color: ...
-    def set_at(self, x_y: Sequence[int], color: ColorValue) -> None: ...
-    def get_at_mapped(self, x_y: Sequence[int]) -> int: ...
+    def get_at(self, x_y: IntCoordinate) -> Color: ...
+    def set_at(self, x_y: IntCoordinate, color: ColorValue) -> None: ...
+    def get_at_mapped(self, x_y: IntCoordinate) -> int: ...
     def get_palette(self) -> List[Color]: ...
     def get_palette_at(self, index: int) -> Color: ...
     def set_palette(self, palette: Sequence[ColorValue]) -> None: ...

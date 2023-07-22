@@ -1108,7 +1108,7 @@ class TestSurfaceBlit(unittest.TestCase):
         width = len(combinations)
 
         # masks explicitly specified so direct pixel access of bytes below is
-        # gauranteed to be stable
+        # guaranteed to be stable
         surf1 = pygame.Surface((width, 1), depth=32, masks=(0xFF0000, 0xFF00, 0xFF, 0))
         surf2 = pygame.Surface(
             (width, 1),
@@ -1229,6 +1229,22 @@ class GeneralSurfaceTests(unittest.TestCase):
             s1_alpha = s1.convert_alpha()
             self.assertEqual(s1_alpha.get_flags() & SRCALPHA, SRCALPHA)
             self.assertEqual(s1_alpha.get_alpha(), 255)
+        finally:
+            pygame.display.quit()
+
+    def test_convert_palettize(self):
+        pygame.display.init()
+        try:
+            pygame.display.set_mode((640, 480))
+
+            surf = pygame.Surface((150, 250))
+            surf.fill((255, 50, 0))
+            surf = surf.convert(8)
+            surf2 = pygame.Surface((150, 250), depth=8)
+            surf2.fill((255, 50, 0))
+
+            self.assertEqual(surf.get_at((50, 50)), surf2.get_at((50, 50)))
+
         finally:
             pygame.display.quit()
 

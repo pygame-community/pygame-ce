@@ -1441,7 +1441,7 @@ pg_list_modes(PyObject *self, PyObject *args, PyObject *kwds)
         }
         /* use reasonable defaults (cf. SDL_video.c) */
         if (!mode.format)
-            mode.format = SDL_PIXELFORMAT_RGB888;
+            mode.format = PG_PIXELFORMAT_XRGB8888;
         if (!mode.w)
             mode.w = 640;
         if (!mode.h)
