@@ -25,6 +25,10 @@ open just in case something obvious comes up.
    the dict are the names of instruction sets and the values determine 
    whether the instruction set is available.
 
+   Some of functions like ``Surface.blit`` can be accelerated by SIMD 
+   instruction sets like SSE2 or AVX2. By checking the availability of 
+   instruction sets, you can check if these accelerations are available.
+
    Here is an example of the returned dict
    ::
 
@@ -46,9 +50,11 @@ open just in case something obvious comes up.
           'LASX': False
      }
 
-   .. Note:: The values of ``LSX`` and ``LASX`` will be always False if
-      SDL version<2.24.0. The value of ``ARMSIMD`` will be always False
-      if SDL version<2.0.12.
+   .. Note:: The value of ``ARMSIMD`` will be always False if
+      SDL version < 2.0.12.
+      
+      The values of ``LSX`` and ``LASX`` will be always False if
+      SDL version < 2.24.0.
    
    .. versionadded:: 2.3.1
 
