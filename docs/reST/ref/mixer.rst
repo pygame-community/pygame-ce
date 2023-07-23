@@ -245,7 +245,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    Note that while SDL_Mixer stores the soundfont path, whether the soundfont is
    used in the playback is a different story. Soundfonts work on Linux and Mac, 
    but not Windows because the SDL_Mixer has not been compiled with soundfont 
-   support for a that operation system.
+   support for that operating system.
 
    Function :func:`set_soundfont` calls underlying SDL_mixer function
    ``Mix_SetSoundFonts``.
