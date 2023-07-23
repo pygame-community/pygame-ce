@@ -316,8 +316,8 @@ dashed_line(PyObject *self, PyObject *args, PyObject *kwargs)
         stopx = currentx + xstep;
         stopy = currenty + ystep;
 
-        draw_line_width(surf, color, currentx, currenty, stopx, stopy, width,
-                        drawn_area);
+        draw_line_width(surf, color, (int)currentx, (int)currenty, (int)stopx,
+                        (int)stopy, width, drawn_area);
     }
 
     if (!pgSurface_Unlock(surfobj)) {
@@ -326,12 +326,14 @@ dashed_line(PyObject *self, PyObject *args, PyObject *kwargs)
 
     /* Compute return rect. */
     if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
-        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN)
+        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN) {
         return pgRect_New4(drawn_area[0], drawn_area[1],
                            drawn_area[2] - drawn_area[0] + 1,
                            drawn_area[3] - drawn_area[1] + 1);
-    else
+    }
+    else {
         return pgRect_New4(startx, starty, 0, 0);
+    }
 }
 
 /* Draws a series of antialiased lines on the given surface.
