@@ -219,49 +219,6 @@ MP3 in most cases.
 
    .. ## pygame.mixer.music.get_pos ##
 
-.. function:: set_soundfont
-
-   | :sl:`set the soundfont for playing midi music`
-   | :sg:`set_soundfont(path) -> None`
-
-   This sets the soundfont file to be used in the playback of midi music.
-   The soundfont only affects the playback of ``MID``, ``MIDI``, and ``KAR`` file formats.
-   The optional ``path`` argument, a string (or multiple strings separated by a semi-colon),
-   must point to the soundfont file(s) to be searched for in order given if some
-   are missing. If ``path`` is an empty string or not specified, any specified soundfont paths
-   will be cleared from SDL_Mixer.
-
-   Note that while SDL_Mixer stores the soundfont path, whether the soundfont is
-   used in the playback is a different story. Soundfonts work on Linux and Mac, 
-   but not Windows because the SDL_Mixer has not been compiled with soundfont 
-   support for a that operation system.
-
-   Function :func:`set_soundfont` calls underlying SDL_mixer function
-   ``Mix_SetSoundFonts``.
-
-   .. versionadded:: 2.3.1
-
-   .. ## pygame.mixer.music.set_soundfont ##
-
-.. function:: get_soundfont
-
-   | :sl:`get the soundfont for playing midi music`
-   | :sg:`get_soundfont() -> paths`
-
-   This gets the soundfont filepaths as a string (each path is separated by a semi-colon) 
-   to be used in the playback of ``MID``, ``MIDI``, and ``KAR`` music file formats. If no
-   soundfont is specified, the return type is ``None``.
-
-   Note this function only retrieves ``soundfont_paths`` that is stored in the SDL_Mixer 
-   which may not be the soundfont used in the playback (reasons in :func:`set_soundfont`). 
-
-   Function :func:`get_soundfont` calls underlying SDL_mixer function
-   ``Mix_GetSoundFonts``.
-
-   .. versionadded:: 2.3.1
-
-   .. ## pygame.mixer.music.get_soundfont ##
-
 .. function:: queue
 
    | :sl:`queue a sound file to follow the current`
