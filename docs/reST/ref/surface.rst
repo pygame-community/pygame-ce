@@ -141,14 +141,14 @@
 
       **Parameters**
 
-      ``blit_sequence``
-            A sequence that contains each surface to be drawn along with its associated blit
-            arguments. See the **Sequence Item Formats** section below for the possible formats.
+          ``blit_sequence``
+                A sequence that contains each surface to be drawn along with its associated blit
+                arguments. See the **Sequence Item Formats** section below for the possible formats.
 
-      ``doreturn`` (optional)
-            The ``doreturn`` parameter controls the return value. When set to ``True``, it returns
-            a list of rectangles representing the changed areas. When set to ``False``, returns
-            ``None``.
+          ``doreturn`` (optional)
+                The ``doreturn`` parameter controls the return value. When set to ``True``, it returns
+                a list of rectangles representing the changed areas. When set to ``False``, returns
+                ``None``.
 
       **Return**
 
@@ -156,15 +156,15 @@
 
       **Sequence Item Formats**
 
-      ``(source, dest)``
-        - ``source``: Surface object to be drawn.
-        - ``dest``: Position where the source Surface should be blitted.
+          ``(source, dest)``
+            - ``source``: Surface object to be drawn.
+            - ``dest``: Position where the source Surface should be blitted.
 
-      ``(source, dest, area)``
-        - ``area``: (optional) Specific area of the source Surface to be drawn.
+          ``(source, dest, area)``
+            - ``area``: (optional) Specific area of the source Surface to be drawn.
 
-      ``(source, dest, area, special_flags)``
-        - ``special_flags``: (optional) Controls the blending mode for drawing colors.
+          ``(source, dest, area, special_flags)``
+            - ``special_flags``: (optional) Controls the blending mode for drawing colors.
 
       **Notes**
 
