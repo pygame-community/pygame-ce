@@ -165,7 +165,7 @@ static PyMethodDef _system_methods[] = {
     {"get_cpu_instruction_sets", pg_system_get_cpu_instruction_sets,
      METH_NOARGS, DOC_SYSTEM_GETCPUINSTRUCTIONSETS},
     {"get_total_ram", pg_system_get_total_ram, METH_NOARGS,
-     DOC_SYSTEM_GETSYSTEMRAM},
+     DOC_SYSTEM_GETTOTALRAM},
     {"get_pref_path", (PyCFunction)pg_system_get_pref_path,
      METH_VARARGS | METH_KEYWORDS, DOC_SYSTEM_GETPREFPATH},
     {"get_pref_locales", pg_system_get_pref_locales, METH_NOARGS,
