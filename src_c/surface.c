@@ -853,7 +853,8 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
 
     if (!pg_TwoIntsFromObj(args[0], &x, &y)) {
-        return RAISE(PyExc_TypeError, "invalid position argument");
+        return RAISE(PyExc_TypeError,
+                     "position must be a sequence of two numbers");
     }
 
     rgba_obj = args[1];
