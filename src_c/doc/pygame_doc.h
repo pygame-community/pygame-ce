@@ -17,4 +17,4 @@
 #define DOC_VERSION_VER "ver = '1.2'\nversion number as a string"
 #define DOC_VERSION_VERNUM "vernum = (1, 5, 3)\ntupled integers of the version"
 #define DOC_VERSION_REV "rev = 'a6f89747b551+'\nrepository revision of the build"
-#define DOC_VERSION_SDL "SDL = '(2, 0, 12)'\ntupled integers of the SDL library version"
+#define DOC_VERSION_SDL "SDL = '(2, 26, 5)'\ntupled integers of the SDL library version"

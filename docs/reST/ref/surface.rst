@@ -445,12 +445,15 @@
       methods - or by using :mod:`pygame.surfarray`/:mod:`pygame.PixelArray`.
 
       This function will temporarily lock and unlock the Surface as needed.
-
-      .. versionaddedold:: 1.9
+      
+      .. versionchanged:: 2.3.1 can now also accept both float coordinates and Vector2s for pixels.
+      
          Returning a Color instead of tuple. Use ``tuple(surf.get_at((x,y)))``
          if you want a tuple, and not a Color. This should only matter if
          you want to use the color as a key in a dict.
-
+      
+      .. versionaddedold:: 1.9
+      
       .. ## Surface.get_at ##
 
    .. method:: set_at
@@ -471,6 +474,8 @@
       .. note:: If the surface is palettized, the pixel color will be set to the
                 most similar color in the palette.
 
+      .. versionchanged:: 2.3.1 can now also accept both float coordinates and Vector2s for pixels.
+
       .. ## Surface.set_at ##
 
    .. method:: get_at_mapped
@@ -488,6 +493,8 @@
       This function will temporarily lock and unlock the Surface as needed.
 
       .. versionaddedold:: 1.9.2
+
+      .. versionchanged:: 2.3.1 can now also accept both float coordinates and Vector2s for pixels.
 
       .. ## Surface.get_at_mapped ##
 
