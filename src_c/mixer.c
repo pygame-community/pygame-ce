@@ -1474,14 +1474,16 @@ mixer_set_soundfont(PyObject *self, PyObject *args)
     PyObject *path = Py_None;
     const char *string_path = "";
 
-    if (!PyArg_ParseTuple(args, "|O", &path))
+    if (!PyArg_ParseTuple(args, "|O", &path)) {
         return NULL;
+    }
 
     MIXER_INIT_CHECK();
 
     if (!Py_IsNone(path)) {
-        if (PyUnicode_Check(path))
+        if (PyUnicode_Check(path)) {
             string_path = PyUnicode_AsUTF8(path);
+        }
         else {
             PyErr_SetString(PyExc_TypeError,
                             "Must pass string or None to set_soundfont");
@@ -1489,13 +1491,16 @@ mixer_set_soundfont(PyObject *self, PyObject *args)
         }
     }
 
-    if (strlen(string_path) == 0)
+    if (strlen(string_path) == 0) {
         paths_set = Mix_SetSoundFonts(NULL);
-    else
+    }
+    else {
         paths_set = Mix_SetSoundFonts(string_path);
+    }
 
-    if (paths_set == 0)
+    if (paths_set == 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
 
     Py_RETURN_NONE;
 }
@@ -1509,8 +1514,9 @@ mixer_get_soundfont(PyObject *self, PyObject *_null)
 
     paths = Mix_GetSoundFonts();
 
-    if (paths)
+    if (paths) {
         return PyUnicode_FromString(paths);
+    }
 
     Py_RETURN_NONE;
 }
