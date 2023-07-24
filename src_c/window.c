@@ -476,8 +476,13 @@ mouse_set_relative_mode(pgWindowObject *self, PyObject *arg, void *v)
 static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
-    if (!self->_is_borrowed && self->_win) {
-        SDL_DestroyWindow(self->_win);
+    if (self->_win) {
+        if (!self->_is_borrowed) {
+            SDL_DestroyWindow(self->_win);
+        }
+        else if (SDL_GetWindowData(self->_win, "pg_window") != NULL) {
+            SDL_SetWindowData(self->_win, "pg_window", NULL);
+        }
     }
     Py_TYPE(self)->tp_free(self);
 }
@@ -691,7 +696,14 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
     pgWindowObject *self;
     window = pg_GetDefaultWindow();
     if (!window) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISE(pgExc_SDLError,
+                     "display.set_mode has not been called yet.");
+    }
+
+    self = (pgWindowObject *)SDL_GetWindowData(window, "pg_window");
+    if (self != NULL) {
+        Py_INCREF(self);
+        return (PyObject *)self;
     }
 
     self = (pgWindowObject *)(cls->tp_new(cls, NULL, NULL));
