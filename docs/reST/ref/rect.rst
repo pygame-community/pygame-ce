@@ -571,10 +571,9 @@
          e.g. ``rect.collidedict({tuple(key_rect) : value})``
 
       .. versionchanged:: 2.3.1
-         ``values`` is now accepted as a keyword argument. Docs updated to reflect
-         the internal name of ``values`` from previously documented ``use_values``.
-         Type Stub updated to use boolean ``True`` or ``False``, but any truthy or falsy
-         value will be valid.
+         ``values`` is now accepted as a keyword argument. Type Stub updated
+         to use boolean ``True`` or ``False``, but any truthy or falsy value 
+         will be valid.
 
       .. ## Rect.collidedict ##
 
@@ -595,10 +594,9 @@
          e.g. ``rect.collidedictall({tuple(key_rect) : value})``
 
       .. versionchanged:: 2.3.1
-         ``values`` is now accepted as a keyword argument. Docs updated to reflect
-         the internal name of ``values`` from previously documented ``use_values``.
-         Type Stub updated to use boolean ``True`` or ``False``, but any truthy or falsy
-         value will be valid.
+         ``values`` is now accepted as a keyword argument. Type Stub updated
+         to use boolean ``True`` or ``False``, but any truthy or falsy value 
+         will be valid.
 
       .. ## Rect.collidedictall ##
 
