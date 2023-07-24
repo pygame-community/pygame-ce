@@ -184,6 +184,7 @@ except (ImportError, OSError):
 
 try:
     import pygame.cursors
+    import pygame.cursors as cursor
     from pygame.cursors import Cursor
 except (ImportError, OSError):
     cursors = MissingModule("cursors", urgent=1)
