@@ -301,8 +301,7 @@ dashed_line(PyObject *self, PyObject *args, PyObject *kwargs)
     int dy = endy - starty;
     double total_line_length = sqrt(dx * dx + dy * dy);
     int number_segments = (int)total_line_length / length;
-    if (!(number_segments % 2))
-    {
+    if (!(number_segments % 2)) {
         number_segments++;
     }
     double xstep = (double)dx / number_segments;
