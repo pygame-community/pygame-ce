@@ -48,8 +48,12 @@ static void
 draw_aaline(SDL_Surface *surf, Uint32 color, float startx, float starty,
             float endx, float endy, int blend, int *drawn_area);
 static void
-draw_arc(SDL_Surface *surf, int x, int y, int radius1, int radius2,
+old_draw_arc(SDL_Surface *surf, int x, int y, int radius1, int radius2,
          double angle_start, double angle_stop, Uint32 color, int *drawn_area);
+static void
+draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
+         int radius2, int width, double angle_start, double angle_stop,
+         Uint32 color, int *drawn_area);
 static void
 draw_circle_bresenham(SDL_Surface *surf, int x0, int y0, int radius,
                       int thickness, Uint32 color, int *drawn_area);
@@ -506,7 +510,6 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
     SDL_Surface *surf = NULL;
     Uint8 rgba[4];
     Uint32 color;
-    int loop;
     int width = 1; /* Default width. */
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
@@ -556,11 +559,8 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     width = MIN(width, MIN(rect->w, rect->h) / 2);
 
-    for (loop = 0; loop < width; ++loop) {
-        draw_arc(surf, rect->x + rect->w / 2, rect->y + rect->h / 2,
-                 rect->w / 2 - loop, rect->h / 2 - loop, angle_start,
-                 angle_stop, color, drawn_area);
-    }
+    draw_arc(surf, rect->x + rect->w / 2, rect->y + rect->h / 2, rect->w / 2,
+             rect->h / 2, width, angle_start, angle_stop, color, drawn_area);
 
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");
@@ -1676,49 +1676,51 @@ draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
 }
 
 static void
-draw_arc(SDL_Surface *surf, int x, int y, int radius1, int radius2,
-         double angle_start, double angle_stop, Uint32 color, int *drawn_area)
+draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
+         int radius2, int width, double angle_start, double angle_stop,
+         Uint32 color, int *drawn_area)
 {
-    double aStep;  // Angle Step (rad)
-    double a;      // Current Angle (rad)
-    int x_last, x_next, y_last, y_next;
+    // ensure stop angle is greater than start angle, this allows for proper
+    // inverse fill handling
+    //while (angle_stop < angle_start) angle_stop += 2 * M_PI;
 
-    // Angle step in rad
-    if (radius1 < radius2) {
-        if (radius1 < 1.0e-4) {
-            aStep = 1.0;
-        }
-        else {
-            aStep = asin(2.0 / radius1);
-        }
-    }
-    else {
-        if (radius2 < 1.0e-4) {
-            aStep = 1.0;
-        }
-        else {
-            aStep = asin(2.0 / radius2);
-        }
-    }
+    // Calculate the angle halfway from the start and stop. This is guaranteed
+    // to be within the final arc.
+    const double angle_middle = 0.5 * (angle_start + angle_stop);
 
-    if (aStep < 0.05) {
-        aStep = 0.05;
-    }
+    // Calculate the unit vector for said angle from the center of the circle
+    const double x_middle = sin(angle_middle);
+    const double y_middle = cos(angle_middle);
 
-    x_last = (int)(x + cos(angle_start) * radius1);
-    y_last = (int)(y - sin(angle_start) * radius2);
-    for (a = angle_start + aStep; a < aStep + angle_stop; a += aStep) {
-        int points[4];
-        x_next = (int)(x + cos(MIN(a, angle_stop)) * radius1);
-        y_next = (int)(y - sin(MIN(a, angle_stop)) * radius2);
-        points[0] = x_last;
-        points[1] = y_last;
-        points[2] = x_next;
-        points[3] = y_next;
-        draw_line(surf, points[0], points[1], points[2], points[3], color,
-                  drawn_area);
-        x_last = x_next;
-        y_last = y_next;
+    // Calculate inverse square inner and outer radii
+    const int inner_radius1 = radius1 - width;
+    const int inner_radius2 = radius2 - width;
+    const double invsqr_radius1 = 1 / (double)(radius1 * radius1);
+    const double invsqr_radius2 = 1 / (double)(radius2 * radius2);
+    const double invsqr_inner_radius1 = 1 / (double)(inner_radius1 * inner_radius1);
+    const double invsqr_inner_radius2 = 1 / (double)(inner_radius2 * inner_radius2);
+
+    // Calculate the minimum dot product which any point on the arc
+    // can have with the middle angle, if you normalise the point as a vector
+    // from the center of the circle
+    const double min_dotproduct = cos(angle_middle - angle_start);
+
+    // TODO: add code to dynamically reduce boundaries for better performance
+    // iterate over every pixel within the circle and
+    for (int y = - radius2; y < radius2; ++y) {
+        for (int x = - radius1; x < radius1; ++x) {
+            // Go to the next pixel if not within the given elliptical boundaries
+            if (
+                x*x * invsqr_radius1 + y*y * invsqr_radius2 >= 1 ||
+                x*x * invsqr_inner_radius1 + y*y * invsqr_inner_radius2 <= 1
+            ) continue;
+            // Check if the angle of the point is within the accepted range
+            if (x * x_middle + y * y_middle <= min_dotproduct * sqrt(x*x + y*y)) continue;
+
+            // Draw the point
+            set_and_check_rect(surf, x + x_center, y + y_center,
+                               color, drawn_area);
+        }
     }
 }
 
