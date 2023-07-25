@@ -24,6 +24,7 @@ All the drawing functions accept a color argument that can be one of the
 following formats:
 
    - a :mod:`pygame.Color` object
+   - a string (for :doc:`color_list`)
    - an ``(RGB)`` triplet (tuple/list)
    - an ``(RGBA)`` quadruplet (tuple/list)
    - an integer value that has been mapped to the surface's pixel format
@@ -53,7 +54,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param Rect rect: rectangle to draw, position and dimensions
    :param int width: (optional) used for line thickness or to indicate that
       the rectangle is to be filled (not to be confused with the width value
@@ -111,7 +112,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param points: a sequence of 3 or more (x, y) coordinates that make up the
       vertices of the polygon, each *coordinate* in the sequence must be a
       tuple/list/:class:`pygame.math.Vector2` of 2 ints/floats,
@@ -159,7 +160,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param center: center point of the circle as a sequence of 2 ints/floats,
       e.g. ``(x, y)``
    :type center: tuple(int or float, int or float) or
@@ -218,7 +219,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param Rect rect: rectangle to indicate the position and dimensions of the
       ellipse, the ellipse will be centered inside the rectangle and bounded
       by it
@@ -259,7 +260,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param Rect rect: rectangle to indicate the position and dimensions of the
       ellipse which the arc will be based on, the ellipse will be centered
       inside the rectangle
@@ -309,7 +310,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param start_pos: start position of the line, (x, y)
    :type start_pos: tuple(int or float, int or float) or
       list(int or float, int or float) or Vector2(int or float, int or float)
@@ -361,7 +362,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param bool closed: if ``True`` an additional line segment is drawn between
       the first and last points in the ``points`` sequence
    :param points: a sequence of 2 or more (x, y) coordinates, where each
@@ -469,7 +470,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
       along the y-axis instead of the x-axis (using ``y`` instead of ``x``,
       top instead of left and bottom instead of right).
 
-   .. note::
+str()   .. note::
       Regarding float values for coordinates, a point with coordinate
       consisting of two whole numbers is considered being right in the center
       of said pixel (and having a height and width of 1 pixel would therefore
@@ -482,7 +483,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param start_pos: start position of the line, (x, y)
    :type start_pos: tuple(int or float, int or float) or
       list(int or float, int or float) or Vector2(int or float, int or float)
@@ -516,7 +517,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param bool closed: if ``True`` an additional line segment is drawn between
       the first and last points in the ``points`` sequence
    :param points: a sequence of 2 or more (x, y) coordinates, where each
