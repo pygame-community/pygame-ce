@@ -116,12 +116,6 @@ jobs:
             pyversions: "cp37-win32"
           }
           - {
-            name: "Pypy 3.7",
-            winarch: AMD64,
-            msvc-dev-arch: x86_amd64,
-            pyversions: "pp37-*"
-          }
-          - {
             name: "Pypy 3.8",
             winarch: AMD64,
             msvc-dev-arch: x86_amd64,
@@ -132,6 +126,12 @@ jobs:
             winarch: AMD64,
             msvc-dev-arch: x86_amd64,
             pyversions: "pp39-*"
+          }
+          - {
+            name: "Pypy 3.10",
+            winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
+            pyversions: "pp310-*"
           }
 
 
