@@ -87,7 +87,6 @@ jobs:
           - { 
             name: "x86_64 (CPython 3.9 - 3.12)",
             macarch: x86_64,
-            # pattern matches any 2 digit number
             pyversions: "cp3{9,10,11,12}-*",
           }
 
