@@ -705,14 +705,21 @@ PyObject *
 window_repr(pgWindowObject *self)
 {
     const char *title;
+    int win_id;
     if (!self->_win) {
         return PyUnicode_FromString("<Window(Destroyed)>");
     }
+
+    title = SDL_GetWindowTitle(self->_win);
+    win_id = SDL_GetWindowID(self->_win);
+    if (win_id == 0) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
     if (self->_is_borrowed) {
         return PyUnicode_FromString("<Window(From Display)>");
     }
-    title = SDL_GetWindowTitle(self->_win);
-    return PyUnicode_FromFormat("<Window(title='%s')>", title);
+    return PyUnicode_FromFormat("<Window(id=%d, title='%s')>", win_id, title);
 }
 
 static PyMethodDef window_methods[] = {
