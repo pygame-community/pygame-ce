@@ -49,7 +49,8 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float startx, float starty,
             float endx, float endy, int blend, int *drawn_area);
 static void
 old_draw_arc(SDL_Surface *surf, int x, int y, int radius1, int radius2,
-         double angle_start, double angle_stop, Uint32 color, int *drawn_area);
+             double angle_start, double angle_stop, Uint32 color,
+             int *drawn_area);
 static void
 draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
          int radius2, int width, double angle_start, double angle_stop,
@@ -1682,23 +1683,24 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
 {
     // ensure stop angle is greater than start angle, this allows for proper
     // inverse fill handling
-    //while (angle_stop < angle_start) angle_stop += 2 * M_PI;
 
     // Calculate the angle halfway from the start and stop. This is guaranteed
     // to be within the final arc.
     const double angle_middle = 0.5 * (angle_start + angle_stop);
 
     // Calculate the unit vector for said angle from the center of the circle
-    const double x_middle = sin(angle_middle);
-    const double y_middle = cos(angle_middle);
+    const double x_middle = cos(angle_middle);
+    const double y_middle = -sin(angle_middle);
 
     // Calculate inverse square inner and outer radii
     const int inner_radius1 = radius1 - width;
     const int inner_radius2 = radius2 - width;
     const double invsqr_radius1 = 1 / (double)(radius1 * radius1);
     const double invsqr_radius2 = 1 / (double)(radius2 * radius2);
-    const double invsqr_inner_radius1 = 1 / (double)(inner_radius1 * inner_radius1);
-    const double invsqr_inner_radius2 = 1 / (double)(inner_radius2 * inner_radius2);
+    const double invsqr_inner_radius1 =
+        1 / (double)(inner_radius1 * inner_radius1);
+    const double invsqr_inner_radius2 =
+        1 / (double)(inner_radius2 * inner_radius2);
 
     // Calculate the minimum dot product which any point on the arc
     // can have with the middle angle, if you normalise the point as a vector
@@ -1707,19 +1709,25 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
 
     // TODO: add code to dynamically reduce boundaries for better performance
     // iterate over every pixel within the circle and
-    for (int y = - radius2; y < radius2; ++y) {
-        for (int x = - radius1; x < radius1; ++x) {
-            // Go to the next pixel if not within the given elliptical boundaries
-            if (
-                x*x * invsqr_radius1 + y*y * invsqr_radius2 >= 1 ||
-                x*x * invsqr_inner_radius1 + y*y * invsqr_inner_radius2 <= 1
-            ) continue;
+    for (int y = -radius2; y < radius2; ++y) {
+        for (int x = -radius1; x < radius1; ++x) {
+            // Go to the next pixel if not within the given elliptical
+            // boundaries
+            const double x_adjusted = x * x * invsqr_radius1;
+            const double y_adjusted = y * y * invsqr_radius2;
+            const double x_inner_adjusted = x * x * invsqr_inner_radius1;
+            const double y_inner_adjusted = y * y * invsqr_inner_radius2;
+            if (x_adjusted + y_adjusted >= 1 ||
+                x_inner_adjusted + y_inner_adjusted <= 1)
+                continue;
             // Check if the angle of the point is within the accepted range
-            if (x * x_middle + y * y_middle <= min_dotproduct * sqrt(x*x + y*y)) continue;
+            if (x * x_middle + y * y_middle <=
+                min_dotproduct * sqrt(x * x + y * y))
+                continue;
 
             // Draw the point
-            set_and_check_rect(surf, x + x_center, y + y_center,
-                               color, drawn_area);
+            set_and_check_rect(surf, x + x_center, y + y_center, color,
+                               drawn_area);
         }
     }
 }
