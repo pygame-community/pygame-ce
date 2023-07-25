@@ -85,35 +85,34 @@ jobs:
         # of these builds take roughly the same time
         include:
           - { 
-            name: "x86_64 (CPython 3.10 and above)",
+            name: "x86_64 (CPython 3.9 - 3.12)",
             macarch: x86_64,
-            # pattern matches any 2 digit number
-            pyversions: "cp3[1-9][0-9]-*",
+            pyversions: "cp3{9,10,11,12}-*",
           }
 
           - { 
-            name: "x86_64 (Python 3.7)",
+            name: "x86_64 (CPython 3.7 and Python 3.8)",
             macarch: x86_64,
-            pyversions: "?p37-*",
+            # CPython 3.7, CPython/PyPy 3.8
+            pyversions: "cp37-* ?p38-*",
           }
 
           - { 
-            name: "x86_64 (Python 3.8)",
+            name: "x86_64 (PyPy 3.9 and 3.10)",
             macarch: x86_64,
-            pyversions: "?p38-*",
+            pyversions: "pp39-* pp310-*",
           }
 
           - { 
-            name: "x86_64 (Python 3.9)",
-            macarch: x86_64,
-            pyversions: "?p39-*",
-          }
-
-          - { 
-            name: "arm64 (CPython 3.8 and above)",
+            name: "arm64 (CPython 3.8 - 3.10)",
             macarch: arm64,
-            # pattern matches any number from 8 to 99
-            pyversions: "cp3{8,9,[1-9][0-9]}-*",
+            pyversions: "cp3{8,9,10}-*",
+          }
+
+          - { 
+            name: "arm64 (CPython 3.11 - 3.12)",
+            macarch: arm64,
+            pyversions: "cp3{11,12}-*",
           }
 
     env:
