@@ -470,7 +470,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
       along the y-axis instead of the x-axis (using ``y`` instead of ``x``,
       top instead of left and bottom instead of right).
 
-str()   .. note::
+   .. note::
       Regarding float values for coordinates, a point with coordinate
       consisting of two whole numbers is considered being right in the center
       of said pixel (and having a height and width of 1 pixel would therefore
