@@ -48,10 +48,6 @@ static void
 draw_aaline(SDL_Surface *surf, Uint32 color, float startx, float starty,
             float endx, float endy, int blend, int *drawn_area);
 static void
-old_draw_arc(SDL_Surface *surf, int x, int y, int radius1, int radius2,
-             double angle_start, double angle_stop, Uint32 color,
-             int *drawn_area);
-static void
 draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
          int radius2, int width, double angle_start, double angle_stop,
          Uint32 color, int *drawn_area);
@@ -1681,8 +1677,12 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
          int radius2, int width, double angle_start, double angle_stop,
          Uint32 color, int *drawn_area)
 {
-    // ensure stop angle is greater than start angle, this allows for proper
-    // inverse fill handling
+    // handle case from documentation
+    if (angle_stop < angle_start)
+        angle_stop += 2 * M_PI;
+    // if angles are equal then don't draw anything either
+    if (angle_stop <= angle_start)
+        return;
 
     // Calculate the angle halfway from the start and stop. This is guaranteed
     // to be within the final arc.
@@ -1717,11 +1717,11 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
             const double y_adjusted = y * y * invsqr_radius2;
             const double x_inner_adjusted = x * x * invsqr_inner_radius1;
             const double y_inner_adjusted = y * y * invsqr_inner_radius2;
-            if (x_adjusted + y_adjusted >= 1 ||
-                x_inner_adjusted + y_inner_adjusted <= 1)
+            if (x_adjusted + y_adjusted > 1 ||
+                x_inner_adjusted + y_inner_adjusted < 1)
                 continue;
             // Check if the angle of the point is within the accepted range
-            if (x * x_middle + y * y_middle <=
+            if (x * x_middle + y * y_middle <
                 min_dotproduct * sqrt(x * x + y * y))
                 continue;
 
