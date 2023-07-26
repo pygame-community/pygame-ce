@@ -1709,8 +1709,6 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
     const double min_dotproduct =
         (angle_distance < M_PI) ? cos(angle_middle - angle_start) : -1.0;
 
-    // PERF: remove drawn area and just use bounding calculated here?
-
     // calculate bounding box
     // these values find the corners of the arc
     const double x_start = cos(angle_start);
@@ -1730,22 +1728,28 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
     // calculate maximums, accounting for each quadrant
     // We can't just fidn the maximum and minimum points because the arc may
     // span multiple quadrants, resulting in a maxima at the edge of the circle
-    const int minx = (-x_middle >= min_dotproduct)
-                        ? -radius1
-                        : MIN(MIN(x_start_inner, x_stop_inner),
-                              MIN(x_start_outer, x_stop_outer));
-    const int miny = (-y_middle >= min_dotproduct)
-                        ? -radius2
-                        : MIN(MIN(y_start_inner, y_stop_inner),
-                              MIN(y_start_outer, y_stop_outer));
-    const int maxx = (x_middle >= min_dotproduct)
-                        ? radius1
-                        : MAX(MAX(x_start_inner, x_stop_inner),
-                              MAX(x_start_outer, x_stop_outer));
-    const int maxy = (y_middle >= min_dotproduct)
-                        ? radius2
-                        : MAX(MAX(y_start_inner, y_stop_inner),
-                              MAX(y_start_outer, y_stop_outer));
+    // also account for the surfaces clip rect. This allows us to bypass the
+    // drawn area calculations
+    const int minx = MAX(((-x_middle >= min_dotproduct)
+                              ? -radius1
+                              : MIN(MIN(x_start_inner, x_stop_inner),
+                                    MIN(x_start_outer, x_stop_outer))),
+                         surf->clip_rect.x - x_center);
+    const int miny = MAX(((-y_middle >= min_dotproduct)
+                              ? -radius2
+                              : MIN(MIN(y_start_inner, y_stop_inner),
+                                    MIN(y_start_outer, y_stop_outer))),
+                         surf->clip_rect.y - y_center);
+    const int maxx = MIN(
+        ((x_middle >= min_dotproduct) ? radius1
+                                      : MAX(MAX(x_start_inner, x_stop_inner),
+                                            MAX(x_start_outer, x_stop_outer))),
+        surf->clip_rect.x + surf->clip_rect.w - x_center);
+    const int maxy = MIN(
+        ((y_middle >= min_dotproduct) ? radius2
+                                      : MAX(MAX(y_start_inner, y_stop_inner),
+                                            MAX(y_start_outer, y_stop_outer))),
+        surf->clip_rect.x + surf->clip_rect.w - y_center);
 
     // iterate over every pixel within the bounds
     for (int y = miny; y < maxy; ++y) {
@@ -1765,10 +1769,14 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
                 continue;
 
             // Draw the point
-            set_and_check_rect(surf, x + x_center, y + y_center, color,
-                               drawn_area);
+            set_at(surf, x + x_center, y + y_center, color);
         }
     }
+
+    drawn_area[0] = minx;
+    drawn_area[1] = miny;
+    drawn_area[2] = maxx;
+    drawn_area[3] = maxy;
 }
 
 /* Bresenham Circle Algorithm
