@@ -462,7 +462,7 @@
       | :sl:`set the color value for a single pixel`
       | :sg:`set_at((x, y), Color) -> None`
 
-      Set the color of a single pixel at the speficified co-ordinates to be an ``RGB``,
+      Set the color of a single pixel at the specified coordinates to be an ``RGB``,
       ``RGBA``, string (for :doc:`color_list`), or mapped integer color value. If the Surface
       does not have per pixel alphas, the alpha value is ignored. Setting pixels outside the
       Surface area or outside the Surface clipping will have no effect.
