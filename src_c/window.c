@@ -713,6 +713,28 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
     return (PyObject *)self;
 }
 
+PyObject *
+window_repr(pgWindowObject *self)
+{
+    const char *title;
+    int win_id;
+    if (!self->_win) {
+        return PyUnicode_FromString("<Window(Destroyed)>");
+    }
+
+    if (self->_is_borrowed) {
+        return PyUnicode_FromString("<Window(From Display)>");
+    }
+
+    title = SDL_GetWindowTitle(self->_win);
+    win_id = SDL_GetWindowID(self->_win);
+    if (win_id == 0) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    return PyUnicode_FromFormat("<Window(title='%s', id=%d)>", title, win_id);
+}
+
 static PyMethodDef window_methods[] = {
     {"destroy", (PyCFunction)window_destroy, METH_NOARGS,
      DOC_SDL2_VIDEO_WINDOW_DESTROY},
@@ -775,7 +797,8 @@ static PyTypeObject pgWindow_Type = {
     .tp_methods = window_methods,
     .tp_init = (initproc)window_init,
     .tp_new = PyType_GenericNew,
-    .tp_getset = _window_getset};
+    .tp_getset = _window_getset,
+    .tp_repr = (reprfunc)window_repr};
 
 static PyMethodDef _window_methods[] = {
     {"get_grabbed_window", (PyCFunction)get_grabbed_window, METH_NOARGS,
