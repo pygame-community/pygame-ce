@@ -2437,9 +2437,8 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
         if (y == (int)SDL_WINDOWPOS_UNDEFINED_DISPLAY(window_display))
             y = SDL_WINDOWPOS_CENTERED_DISPLAY(window_display);
 
-#if (SDL_VERSION_ATLEAST(2, 0, 5))
         SDL_SetWindowResizable(win, flags & SDL_WINDOW_RESIZABLE);
-#endif
+
         SDL_SetWindowBordered(win, (flags & SDL_WINDOW_BORDERLESS) == 0);
 
         SDL_SetWindowPosition(win, x, y);
