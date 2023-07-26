@@ -719,7 +719,7 @@ window_repr(pgWindowObject *self)
     if (self->_is_borrowed) {
         return PyUnicode_FromString("<Window(From Display)>");
     }
-    return PyUnicode_FromFormat("<Window(id=%d, title='%s')>", win_id, title);
+    return PyUnicode_FromFormat("<Window(title='%s', id=%d)>", title, win_id);
 }
 
 static PyMethodDef window_methods[] = {
