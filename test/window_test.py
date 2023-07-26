@@ -3,6 +3,7 @@ import pygame
 import os
 
 from pygame._sdl2.video import Window
+from pygame.version import SDL
 
 pygame.init()
 
@@ -49,6 +50,20 @@ class WindowTypeTest(unittest.TestCase):
         self.assertTrue(self.win.borderless)
         self.win.borderless = False
         self.assertFalse(self.win.borderless)
+
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER") == "dummy",
+        "requires the SDL_VIDEODRIVER to be a non dummy value",
+    )
+    @unittest.skipIf(
+        not (SDL.major >= 2 and SDL.minor >= 0 and SDL.patch >= 16),
+        "requires SDL 2.0.16+",
+    )
+    def test_always_on_top(self):
+        self.win.always_on_top = True
+        self.assertTrue(self.win.always_on_top)
+        self.win.always_on_top = False
+        self.assertFalse(self.win.always_on_top)
 
     def test_size(self):
         self.win.size = (1280, 720)
