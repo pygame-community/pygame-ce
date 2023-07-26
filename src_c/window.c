@@ -131,19 +131,30 @@ static PyObject *
 window_get_surface(pgWindowObject *self)
 {
     PyObject *surf = NULL;
-    SDL_Surface *_surf = SDL_GetWindowSurface(self->_win);
+    SDL_Surface *_surf;
+
+    if(self->_is_borrowed){
+        surf = pg_GetDefaultWindowSurface();
+        if(!surf){
+            return RAISE(pgExc_SDLError,
+                     "display.set_mode has not been called yet.");
+        }
+        Py_INCREF(surf);
+        return surf;
+    }
+
+    _surf = SDL_GetWindowSurface(self->_win);
     if (!_surf) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
-    surf = (PyObject *)pgSurface_New2(_surf, SDL_FALSE);
-    if (!surf) {
-        return NULL;
+    if(self->surf == NULL){
+        self->surf = pgSurface_New2(_surf, SDL_FALSE);
+        if (!self->surf)
+            return NULL;
     }
-    Py_INCREF(surf);
-    Py_XDECREF(self->surf);
-    self->surf = (pgSurfaceObject *)surf;
-    Py_INCREF(surf);
-    return surf;
+    self->surf->surf = _surf;
+    Py_INCREF(self->surf);
+    return self->surf;
 }
 
 static PyObject *
@@ -601,6 +612,7 @@ window_dealloc(pgWindowObject *self, PyObject *_null)
             SDL_SetWindowData(self->_win, "pg_window", NULL);
         }
     }
+    Py_XDECREF(self->surf);
     Py_TYPE(self)->tp_free(self);
 }
 
