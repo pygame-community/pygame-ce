@@ -144,380 +144,8 @@ def messagebox(title, message,
     free(c_buttons)
     return buttonid
 
-globals()["Window"]=Window
-
-cdef class _Window:
-    DEFAULT_SIZE = 640, 480
-
-    _kwarg_to_flag = {
-        'opengl': _SDL_WINDOW_OPENGL,
-        'vulkan': _SDL_WINDOW_VULKAN,
-        'hidden': _SDL_WINDOW_HIDDEN,
-        'borderless': _SDL_WINDOW_BORDERLESS,
-        'resizable': _SDL_WINDOW_RESIZABLE,
-        'minimized': _SDL_WINDOW_MINIMIZED,
-        'maximized': _SDL_WINDOW_MAXIMIZED,
-        'input_grabbed': _SDL_WINDOW_INPUT_GRABBED,
-        'input_focus': _SDL_WINDOW_INPUT_FOCUS,
-        'mouse_focus': _SDL_WINDOW_MOUSE_FOCUS,
-        'allow_highdpi': _SDL_WINDOW_ALLOW_HIGHDPI,
-        'foreign': _SDL_WINDOW_FOREIGN,
-        'mouse_capture': _SDL_WINDOW_MOUSE_CAPTURE,
-        'always_on_top': _SDL_WINDOW_ALWAYS_ON_TOP,
-        'skip_taskbar': _SDL_WINDOW_SKIP_TASKBAR,
-        'utility': _SDL_WINDOW_UTILITY,
-        'tooltip': _SDL_WINDOW_TOOLTIP,
-        'popup_menu': _SDL_WINDOW_POPUP_MENU,
-    }
-
-    @classmethod
-    def from_display_module(cls):
-        """Create a Window object using window data from display module
-
-        Creates a Window object that uses the same window data from the :mod:`pygame.display` module, created upon calling
-        :func:`pygame.display.set_mode`.
-        """
-        cdef _Window self = cls.__new__(cls)
-        cdef SDL_Window* window = pg_GetDefaultWindow()
-        if not window:
-            raise error()
-        self._win=window
-        self._is_borrowed=1
-        SDL_SetWindowData(window, "pg_window", <PyObject*>self)
-        return self
-
-    def __init__(self, title='pygame window',
-                 size=DEFAULT_SIZE,
-                 position=WINDOWPOS_UNDEFINED,
-                 bint fullscreen=False,
-                 bint fullscreen_desktop=False, **kwargs):
-        """pygame object that represents a window
-
-        Creates a window.
-
-        :param str title: The title of the window.
-        :param (int, int) size: The size of the window, in screen coordinates.
-        :param (int, int) or int position: A tuple specifying the window position, or
-                                           ``WINDOWPOS_CENTERED``, or ``WINDOWPOS_UNDEFINED``.
-        :param bool fullscreen: Create a fullscreen window using the window size as
-                                the resolution (videomode change).
-        :param bool fullscreen_desktop: Create a fullscreen window using the current
-                                        desktop resolution.
-        :param bool opengl: Create a window with support for an OpenGL context. You
-                            will still need to create an OpenGL context separately.
-        :param bool vulkan: Create a window with support for a Vulkan instance.
-        :param bool hidden: Create a hidden window.
-        :param bool borderless: Create a window without borders.
-        :param bool resizable: Create a resizable window.
-        :param bool minimized: Create a mimized window.
-        :param bool maximized: Create a maximized window.
-        :param bool input_grabbed: Create a window with a grabbed input focus.
-        :param bool input_focus: Create a window with input focus.
-        :param bool mouse_focus: Create a window with mouse focus.
-        :param bool foreign: Marks a window not created by SDL.
-        :param bool allow_highdpi: Create a window in high-DPI mode if supported
-                                   (>= SDL 2.0.1).
-        :param bool mouse_capture: Create a window that has the mouse captured
-                                   (unrelated to INPUT_GRABBED, >= SDL 2.0.4).
-        :param bool always_on_top: Create a window that is always on top
-                                   (X11 only, >= SDL 2.0.5).
-        :param bool skip_taskbar: Create a window that should not be added to the
-                                  taskbar (X11 only, >= SDL 2.0.5).
-        :param bool utility: Create a window that should be treated as a utility
-                             window (X11 only, >= SDL 2.0.5).
-        :param bool tooltip: Create a window that should be treated as a tooltip
-                             (X11 only, >= SDL 2.0.5).
-        :param bool popup_menu: Create a window that should be treated as a popup menu 
-                                (X11 only, >= SDL 2.0.5).
-        """
-        # https://wiki.libsdl.org/SDL_CreateWindow
-        # https://wiki.libsdl.org/SDL_WindowFlags
-        if position == WINDOWPOS_UNDEFINED:
-            x, y = WINDOWPOS_UNDEFINED, WINDOWPOS_UNDEFINED
-        elif position == WINDOWPOS_CENTERED:
-            x, y = WINDOWPOS_CENTERED, WINDOWPOS_CENTERED
-        else:
-            x, y = position
-
-        flags = 0
-        if fullscreen and fullscreen_desktop:
-            raise ValueError("fullscreen and fullscreen_desktop cannot be used at the same time.")
-        if fullscreen:
-            flags |= _SDL_WINDOW_FULLSCREEN
-        elif fullscreen_desktop:
-            flags |= _SDL_WINDOW_FULLSCREEN_DESKTOP
-
-        _kwarg_to_flag = self._kwarg_to_flag
-        for k, v in kwargs.items():
-            try:
-                flag = _kwarg_to_flag[k]
-                if v:
-                    flags |= flag
-            except KeyError:
-                raise TypeError("unknown parameter: %s" % k)
-
-        self._win = SDL_CreateWindow(title.encode('utf8'), x, y,
-                                     size[0], size[1], flags)
-        self._is_borrowed=0
-        if not self._win:
-            raise error()
-        SDL_SetWindowData(self._win, "pg_window", <PyObject*>self)
-
-        import pygame.pkgdata
-        surf = pygame.image.load(pygame.pkgdata.getResource(
-                                 'pygame_icon.bmp'))
-        surf.set_colorkey(0)
-        self.set_icon(surf)
-
-    @property
-    def grab(self):
-        """Get or set the window's input grab state
-
-        Gets or sets the window's input grab state.
-        When input is grabbed, the mouse is confined to the window.
-        If the caller enables a grab while another window is currently grabbed,
-        the other window loses its grab in favor of the caller's window.
-        """
-        return SDL_GetWindowGrab(self._win) != 0
-
-    @grab.setter
-    def grab(self, bint grabbed):
-        # https://wiki.libsdl.org/SDL_SetWindowGrab
-        SDL_SetWindowGrab(self._win, 1 if grabbed else 0)
-
-    @property
-    def relative_mouse(self):
-        """Get or set the window's relative mouse mode state
-
-        Gets or sets the window's relative mouse mode state.
-        SDL2 docs: *"While the mouse is in relative mode, the cursor is hidden,
-        the mouse position is constrained to the window, and SDL will report
-        continuous relative mouse motion even if the mouse is at the edge of the
-        window.*
-
-        *This function will flush any pending mouse motion."*
-
-        Calling :func:`pygame.mouse.set_visible` with argument
-        ``True`` will exit relative mouse mode.
-        """
-        return SDL_GetRelativeMouseMode()
-
-
-    @relative_mouse.setter
-    def relative_mouse(self, bint enable):
-        # https://wiki.libsdl.org/SDL_SetRelativeMouseMode
-        #SDL_SetWindowGrab(self._win, 1 if enable else 0)
-        SDL_SetRelativeMouseMode(1 if enable else 0)
-
-    def set_windowed(self):
-        """Enable windowed mode (exit fullscreen)
-
-        .. seealso:: :func:`set_fullscreen`
-        """
-        # https://wiki.libsdl.org/SDL_SetWindowFullscreen
-        if SDL_SetWindowFullscreen(self._win, 0):
-            raise error()
-
-    #TODO: not sure about this...
-    # Perhaps this is more readable:
-    #     window.fullscreen = True
-    #     window.fullscreen_desktop = True
-    #     window.windowed = True
-    def set_fullscreen(self, bint desktop=False):
-        """Enter fullscreen
-
-        :param bool desktop: If ``True``, use the current desktop resolution.
-         If ``False``, change the fullscreen resolution to the window size.
-
-        .. seealso:: :meth:`set_windowed`.
-        """
-        cdef int flags = 0
-        if desktop:
-            flags = _SDL_WINDOW_FULLSCREEN_DESKTOP
-        else:
-            flags = _SDL_WINDOW_FULLSCREEN
-        if SDL_SetWindowFullscreen(self._win, flags):
-            raise error()
-
-    @property
-    def title(self):
-        """Get or set the window title
-
-        Gets or sets the window title. An empty string means that no title is set.An empty string means that no title is set.
-        """
-        # https://wiki.libsdl.org/SDL_GetWindowTitle
-        return SDL_GetWindowTitle(self._win).decode('utf8')
-
-    @title.setter
-    def title(self, title):
-        # https://wiki.libsdl.org/SDL_SetWindowTitle
-        SDL_SetWindowTitle(self._win, title.encode('utf8'))
-
-    def destroy(self):
-        """Destroy the window
-
-        Destroys the internal window data of this Window object. This method is
-        called automatically when this Window object is garbage collected, so
-        there usually aren't any reasons to call it manually.
-
-        Other methods that try to manipulate that window data will raise an error.
-        """
-        # https://wiki.libsdl.org/SDL_DestroyWindow
-        if self._win:
-            SDL_DestroyWindow(self._win)
-            self._win = NULL
-
-    def hide(self):
-        """Hide the window
-        """
-        # https://wiki.libsdl.org/SDL_HideWindow
-        SDL_HideWindow(self._win)
-
-    def show(self):
-        """Show the window
-        """
-        # https://wiki.libsdl.org/SDL_ShowWindow
-        SDL_ShowWindow(self._win)
-
-    def focus(self, input_only=False):
-        """Set the window to be focused
-
-        Raises the window above other windows and sets the input focus.
-
-        :param bool input_only: if ``True``, the window will be given input focus
-                                but may be completely obscured by other windows.
-                                Only supported on X11.
-        """
-        # https://wiki.libsdl.org/SDL_RaiseWindow
-        if input_only:
-            if SDL_SetWindowInputFocus(self._win):
-                raise error()
-        else:
-            SDL_RaiseWindow(self._win)
-
-    def restore(self):
-        """Restore the size and position of a minimized or maximized window
-        """
-        SDL_RestoreWindow(self._win)
-
-    def maximize(self):
-        """Maximize the window
-        """
-        SDL_MaximizeWindow(self._win)
-
-    def minimize(self):
-        """Minimize the window
-        """
-        SDL_MinimizeWindow(self._win)
-
-    @property
-    def resizable(self):
-        """Get or set whether the window is resizable
-        """
-        return SDL_GetWindowFlags(self._win) & _SDL_WINDOW_RESIZABLE != 0
-
-    @resizable.setter
-    def resizable(self, enabled):
-        SDL_SetWindowResizable(self._win, 1 if enabled else 0)
-
-    @property
-    def borderless(self):
-        """Get or set whether the window is borderless
-
-        Gets or sets whether the window is borderless.
-
-        .. note:: You can't change the border state of a fullscreen window.
-        """
-        return SDL_GetWindowFlags(self._win) & _SDL_WINDOW_BORDERLESS != 0
-
-    @borderless.setter
-    def borderless(self, enabled):
-        SDL_SetWindowBordered(self._win, 0 if enabled else 1)
-
-    def set_icon(self, surface):
-        """Set the window icon
-
-        Sets the window icon.
-
-        :param pygame.Surface surface: A Surface to use as the icon.
-        """
-        if not pgSurface_Check(surface):
-            raise TypeError('surface must be a Surface object')
-        SDL_SetWindowIcon(self._win, pgSurface_AsSurface(surface))
-
-    @property
-    def id(self):
-        """Get the unique window ID (**read-only**)
-        """
-        return SDL_GetWindowID(self._win)
-
-    @property
-    def size(self):
-        """Get or set the window size in pixels"""
-        cdef int w, h
-        SDL_GetWindowSize(self._win, &w, &h)
-        return (w, h)
-
-    @size.setter
-    def size(self, size):
-        SDL_SetWindowSize(self._win, size[0], size[1])
-
-    @property
-    def position(self):
-        """Get or set the window position in screen coordinates
-        """
-        cdef int x, y
-        SDL_GetWindowPosition(self._win, &x, &y)
-        return (x, y)
-
-    @position.setter
-    def position(self, position):
-        cdef int x, y
-        if position == WINDOWPOS_UNDEFINED:
-            x, y = WINDOWPOS_UNDEFINED, WINDOWPOS_UNDEFINED
-        elif position == WINDOWPOS_CENTERED:
-            x, y = WINDOWPOS_CENTERED, WINDOWPOS_CENTERED
-        else:
-            x, y = position
-        SDL_SetWindowPosition(self._win, x, y)
-
-    @property
-    def opacity(self):
-        """Get or set the window opacity, a value between 0.0 (fully transparent) and 1.0 (fully opaque)
-        """
-        cdef float opacity
-        if SDL_GetWindowOpacity(self._win, &opacity):
-            raise error()
-        return opacity
-
-    @opacity.setter
-    def opacity(self, opacity):
-        if SDL_SetWindowOpacity(self._win, opacity):
-            raise error()
-
-    @property
-    def display_index(self):
-        """Get the index of the display that owns the window
-        """
-        cdef int index = SDL_GetWindowDisplayIndex(self._win)
-        if index < 0:
-            raise error()
-        return index
-
-    def set_modal_for(self, Window parent):
-        """Set the window as a modal for a parent window
-
-        :param Window parent: The parent window.
-
-        .. note:: This function is only supported on X11.
-        """
-        if SDL_SetWindowModalFor(self._win, parent._win):
-            raise error()
-
-    def __dealloc__(self):
-        if self._is_borrowed:
-            return
-        self.destroy()
+globals()["Window"] = Window
+_Window = Window
 
 cdef Uint32 format_from_depth(int depth):
     cdef Uint32 Rmask, Gmask, Bmask, Amask
@@ -1125,17 +753,9 @@ cdef class Image:
 cdef class Renderer:
 
     @classmethod
-    def from_window(cls, window):
-        cdef Window _window
-        if isinstance(window,(_Window,Window)):
-            _window = <Window> window
-        else:
-            raise TypeError(
-                "Argument 'window' has incorrect type "
-                "(expected pygame.Window or pygame._sdl2._Window, got %s)"%window.__class__.__name__
-            )
+    def from_window(cls, Window window):
         cdef Renderer self = cls.__new__(cls)
-        self._win = _window
+        self._win = window
         if self._win._is_borrowed:
             self._is_borrowed=1
         else:
@@ -1152,7 +772,7 @@ cdef class Renderer:
         self._target = None
         return self
 
-    def __init__(self, window, int index=-1,
+    def __init__(self,Window window, int index=-1,
                  int accelerated=-1, bint vsync=False,
                  bint target_texture=False):
         """pygame object wrapping a 2D rendering context for a window
@@ -1198,14 +818,6 @@ cdef class Renderer:
         immediately, but lends well to the behavior of GPUs, as draw calls can be
         expensive on lower-end models.
         """
-        cdef Window _window
-        if isinstance(window,(_Window,Window)):
-            _window = <Window> window
-        else:
-            raise TypeError(
-                "Argument 'window' has incorrect type "
-                "(expected pygame.Window or pygame._sdl2._Window, got %s)"%window.__class__.__name__
-            )
 
         # https://wiki.libsdl.org/SDL_CreateRenderer
         # https://wiki.libsdl.org/SDL_RendererFlags
@@ -1217,14 +829,14 @@ cdef class Renderer:
         if target_texture:
             flags |= _SDL_RENDERER_TARGETTEXTURE
 
-        self._renderer = SDL_CreateRenderer(_window._win, index, flags)
+        self._renderer = SDL_CreateRenderer(window._win, index, flags)
         if not self._renderer:
             raise error()
 
         cdef Uint8[4] defaultColor = [255, 255, 255, 255]
         self._draw_color = pgColor_NewLength(defaultColor, 4)
         self._target = None
-        self._win = _window
+        self._win = window
         self._is_borrowed=0
 
     def __dealloc__(self):

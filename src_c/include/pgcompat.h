@@ -23,12 +23,36 @@ typedef uint32_t Uint32;
 typedef uint8_t Uint8;
 #endif /* no SDL */
 
-// SDL_PIXELFORMAT_XRGB8888 is new in SDL 2.0.14, so let's make a custom
-// macro to use the new less confusing naming and still build on older
-// systems. SDL_PIXELFORMAT_RGB888 == SDL_PIXELFORMAT_XRGB8888.
-#define PG_PIXELFORMAT_XRGB8888 SDL_PIXELFORMAT_RGB888
+/* SDL_VERSION_ATLEAST is in every supported SDL version, but the code gets a
+ * warning without this check here, which is very weird. */
+#ifdef SDL_VERSION_ATLEAST
 
-#if defined(SDL_VERSION_ATLEAST)
+// SDL_PIXELFORMAT_XRGB8888 and SDL_PIXELFORMAT_XBGR8888 are new names
+// in SDL 2.0.14, the macros below let us use the new (less confusing)
+// naming while still building on old versions.
+
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+#define PG_PIXELFORMAT_XRGB8888 SDL_PIXELFORMAT_XRGB8888
+#else
+#define PG_PIXELFORMAT_XRGB8888 SDL_PIXELFORMAT_RGB888
+#endif
+
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+#define PG_PIXELFORMAT_XBGR8888 SDL_PIXELFORMAT_XBGR8888
+#else
+#define PG_PIXELFORMAT_XBGR8888 SDL_PIXELFORMAT_BGR888
+#endif
+
+// SDL does not provide endian independent names for 32 bit formats without
+// alpha channels the way they do for ones wiht alpha channels.
+// E.g. SDL_PIXELFORMAT_RGBA32. This macro allows us the convenience of the
+// endian independent name.
+
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#define PG_PIXELFORMAT_RGBX32 PG_PIXELFORMAT_XBGR8888
+#else
+#define PG_PIXELFORMAT_RGBX32 SDL_PIXELFORMAT_RGBX8888
+#endif
 
 #if SDL_VERSION_ATLEAST(2, 0, 18)
 #define PG_GetTicks SDL_GetTicks64
@@ -36,10 +60,10 @@ typedef uint8_t Uint8;
 #define PG_GetTicks SDL_GetTicks
 #endif /* SDL_VERSION_ATLEAST(2, 0, 18) */
 
+#endif /* defined(SDL_VERSION_ATLEAST) */
+
 #ifndef SDL_MOUSEWHEEL_FLIPPED
 #define NO_SDL_MOUSEWHEEL_FLIPPED
 #endif
-
-#endif /* defined(SDL_VERSION_ATLEAST) */
 
 #endif /* ~defined(PGCOMPAT_H) */

@@ -1,1 +1,1 @@
-from .video import _Window as Window  # pylint: disable=wildcard-import
+from .video import Window  # pylint: disable=wildcard-import

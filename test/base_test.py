@@ -510,7 +510,6 @@ class BaseModuleTest(unittest.TestCase):
             # Scrap is optional.
             pass
 
-        # pygame.cdrom
         # pygame.joystick
 
     def init_assertions(self):
