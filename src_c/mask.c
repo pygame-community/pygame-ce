@@ -1055,7 +1055,6 @@ mask_from_threshold(PyObject *self, PyObject *args, PyObject *kwargs)
     pgMaskObject *maskobj = NULL;
     SDL_Surface *surf = NULL, *surf2 = NULL;
     PyObject *rgba_obj_color, *rgba_obj_threshold = NULL;
-    Uint8 rgba_color[4];
     Uint8 rgba_threshold[4] = {0, 0, 0, 255};
     Uint32 color;
     Uint32 color_threshold;
@@ -1074,32 +1073,16 @@ mask_from_threshold(PyObject *self, PyObject *args, PyObject *kwargs)
         surf2 = pgSurface_AsSurface(surfobj2);
     }
 
-    if (PyLong_Check(rgba_obj_color)) {
-        color = (Uint32)PyLong_AsLong(rgba_obj_color);
-    }
-    else if (PyLong_Check(rgba_obj_color)) {
-        color = (Uint32)PyLong_AsUnsignedLong(rgba_obj_color);
-    }
-    else if (pg_RGBAFromColorObj(rgba_obj_color, rgba_color)) {
-        color = SDL_MapRGBA(surf->format, rgba_color[0], rgba_color[1],
-                            rgba_color[2], rgba_color[3]);
-    }
-    else {
-        return RAISE(PyExc_TypeError, "invalid color argument");
+    if (!pg_MappedColorFromObj(rgba_obj_color, surf->format, &color,
+                               PG_COLOR_HANDLE_INT)) {
+        return NULL;
     }
 
     if (rgba_obj_threshold) {
-        if (PyLong_Check(rgba_obj_threshold))
-            color_threshold = (Uint32)PyLong_AsLong(rgba_obj_threshold);
-        else if (PyLong_Check(rgba_obj_threshold))
-            color_threshold =
-                (Uint32)PyLong_AsUnsignedLong(rgba_obj_threshold);
-        else if (pg_RGBAFromColorObj(rgba_obj_threshold, rgba_threshold))
-            color_threshold =
-                SDL_MapRGBA(surf->format, rgba_threshold[0], rgba_threshold[1],
-                            rgba_threshold[2], rgba_threshold[3]);
-        else
-            return RAISE(PyExc_TypeError, "invalid threshold argument");
+        if (!pg_MappedColorFromObj(rgba_obj_threshold, surf->format,
+                                   &color_threshold, PG_COLOR_HANDLE_INT)) {
+            return NULL;
+        }
     }
     else {
         color_threshold =
@@ -1887,37 +1870,7 @@ extract_color(SDL_Surface *surf, PyObject *color_obj, Uint8 rgba_color[],
         return 1;
     }
 
-    if (PyLong_Check(color_obj)) {
-        long intval = PyLong_AsLong(color_obj);
-
-        if ((-1 == intval && PyErr_Occurred()) || intval > (long)0xFFFFFFFF) {
-            PyErr_SetString(PyExc_ValueError, "invalid color argument");
-            return 0;
-        }
-
-        *color = (Uint32)intval;
-        return 1;
-    }
-
-    if (PyLong_Check(color_obj)) {
-        unsigned long longval = PyLong_AsUnsignedLong(color_obj);
-
-        if (PyErr_Occurred() || longval > 0xFFFFFFFF) {
-            PyErr_SetString(PyExc_ValueError, "invalid color argument");
-            return 0;
-        }
-
-        *color = (Uint32)longval;
-        return 1;
-    }
-
-    if (pg_RGBAFromFuzzyColorObj(color_obj, rgba_color)) {
-        *color = SDL_MapRGBA(surf->format, rgba_color[0], rgba_color[1],
-                             rgba_color[2], rgba_color[3]);
-        return 1;
-    }
-
-    return 0; /* Exception already set. */
+    return pg_MappedColorFromObj(color_obj, surf->format, color, PG_COLOR_HANDLE_ALL);
 }
 
 /* Draws a mask on a surface.

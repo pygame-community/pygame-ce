@@ -1790,7 +1790,7 @@ pg_set_palette(PyObject *self, PyObject *args)
             return NULL;
         }
 
-        if (!pg_RGBAFromFuzzyColorObj(item, rgba)) {
+        if (!pg_RGBAFromObjEx(item, rgba, PG_COLOR_HANDLE_ALL)) {
             Py_DECREF(item);
             free((char *)colors);
             Py_DECREF(surface);
