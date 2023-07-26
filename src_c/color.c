@@ -346,8 +346,7 @@ _get_color_component(PyObject *val, Uint8 *color)
         return 1;
     }
 
-    PyErr_Format(PyExc_TypeError,
-                 "color component must be a number, not '%s'",
+    PyErr_Format(PyExc_TypeError, "color component must be a number, not '%s'",
                  Py_TYPE(val)->tp_name);
     return 0;
 }

@@ -1736,7 +1736,8 @@ _ftfont_render(pgFontObject *self, PyObject *args, PyObject *kwds)
     }
 
     if (fg_color_obj) {
-        if (!pg_RGBAFromObjEx(fg_color_obj, (Uint8 *)&fg_color, PG_COLOR_HANDLE_ALL)) {
+        if (!pg_RGBAFromObjEx(fg_color_obj, (Uint8 *)&fg_color,
+                              PG_COLOR_HANDLE_ALL)) {
             /* Exception already set for us */
             goto error;
         }
@@ -1749,7 +1750,8 @@ _ftfont_render(pgFontObject *self, PyObject *args, PyObject *kwds)
     }
 
     if (bg_color_obj) {
-        if (!pg_RGBAFromObjEx(bg_color_obj, (Uint8 *)&bg_color, PG_COLOR_HANDLE_ALL)) {
+        if (!pg_RGBAFromObjEx(bg_color_obj, (Uint8 *)&bg_color,
+                              PG_COLOR_HANDLE_ALL)) {
             /* Exception already set for us */
             goto error;
         }
@@ -1859,7 +1861,8 @@ _ftfont_render_to(pgFontObject *self, PyObject *args, PyObject *kwds)
     if (parse_dest(dest, &xpos, &ypos))
         goto error;
     if (fg_color_obj) {
-        if (!pg_RGBAFromObjEx(fg_color_obj, (Uint8 *)&fg_color, PG_COLOR_HANDLE_ALL)) {
+        if (!pg_RGBAFromObjEx(fg_color_obj, (Uint8 *)&fg_color,
+                              PG_COLOR_HANDLE_ALL)) {
             /* Exception already set for us */
             goto error;
         }
@@ -1871,7 +1874,8 @@ _ftfont_render_to(pgFontObject *self, PyObject *args, PyObject *kwds)
         fg_color.a = self->fgcolor[3];
     }
     if (bg_color_obj) {
-        if (!pg_RGBAFromObjEx(bg_color_obj, (Uint8 *)&bg_color, PG_COLOR_HANDLE_ALL)) {
+        if (!pg_RGBAFromObjEx(bg_color_obj, (Uint8 *)&bg_color,
+                              PG_COLOR_HANDLE_ALL)) {
             /* Exception already set for us */
             goto error;
         }

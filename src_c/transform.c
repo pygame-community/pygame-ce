@@ -1766,7 +1766,8 @@ _color_from_obj(PyObject *color_obj, SDL_PixelFormat *format,
                 Uint8 rgba_default[4], Uint32 *color)
 {
     if (color_obj) {
-        if (!pg_MappedColorFromObj(color_obj, format, color, PG_COLOR_HANDLE_INT)) {
+        if (!pg_MappedColorFromObj(color_obj, format, color,
+                                   PG_COLOR_HANDLE_INT)) {
             return -1;
         }
     }

@@ -1870,7 +1870,8 @@ extract_color(SDL_Surface *surf, PyObject *color_obj, Uint8 rgba_color[],
         return 1;
     }
 
-    return pg_MappedColorFromObj(color_obj, surf->format, color, PG_COLOR_HANDLE_ALL);
+    return pg_MappedColorFromObj(color_obj, surf->format, color,
+                                 PG_COLOR_HANDLE_ALL);
 }
 
 /* Draws a mask on a surface.
