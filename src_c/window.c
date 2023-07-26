@@ -128,6 +128,54 @@ window_destroy(pgWindowObject *self, PyObject *_null)
 }
 
 static PyObject *
+window_get_surface(pgWindowObject *self)
+{
+    PyObject *surf = NULL;
+    SDL_Surface *_surf = SDL_GetWindowSurface(self->_win);
+    if (!_surf) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    surf = (PyObject *)pgSurface_New2(_surf, SDL_FALSE);
+    if (!surf) {
+        return NULL;
+    }
+    Py_INCREF(surf);
+    Py_XDECREF(self->surf);
+    self->surf = (pgSurfaceObject *)surf;
+    Py_INCREF(surf);
+    return surf;
+}
+
+static PyObject *
+window_update_from_surface(pgWindowObject *self, PyObject *const *args,
+                           Py_ssize_t nargs)
+{
+    int i;
+    SDL_Rect *rects = NULL, tmp, *r;
+    if (nargs == 0) {
+        if (SDL_UpdateWindowSurface(self->_win)) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+    }
+    else {
+        rects = malloc(nargs * sizeof(SDL_Rect));
+        for (i = 0; i < nargs; i++) {
+            r = pgRect_FromObject(args[i], &tmp);
+            if (!r) {
+                return RAISE(PyExc_TypeError,
+                             "Arguments must be rect or rect-like objects.");
+            }
+            rects[i] = *r;
+            if (SDL_UpdateWindowSurfaceRects(self->_win, rects, (int)nargs)) {
+                return RAISE(pgExc_SDLError, SDL_GetError());
+            }
+        }
+        free(rects);
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 window_set_windowed(pgWindowObject *self, PyObject *_null)
 {
     if (SDL_SetWindowFullscreen(self->_win, 0)) {
@@ -739,6 +787,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     }
     self->_win = _win;
     self->_is_borrowed = SDL_FALSE;
+    self->surf = NULL;
 
     SDL_SetWindowData(_win, "pg_window", self);
 
@@ -827,6 +876,9 @@ static PyMethodDef window_methods[] = {
      DOC_SDL2_VIDEO_WINDOW_SETMODALFOR},
     {"set_icon", (PyCFunction)window_set_icon, METH_O,
      DOC_SDL2_VIDEO_WINDOW_SETICON},
+    {"update_from_surface", (PyCFunction)window_update_from_surface,
+     METH_FASTCALL, "docs"},
+    {"get_surface", (PyCFunction)window_get_surface, METH_NOARGS, "docs"},
     {"from_display_module", (PyCFunction)window_from_display_module,
      METH_CLASS | METH_NOARGS, DOC_SDL2_VIDEO_WINDOW_FROMDISPLAYMODULE},
     {NULL, NULL, 0, NULL}};
