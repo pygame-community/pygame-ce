@@ -1751,6 +1751,11 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
                                             MAX(y_start_outer, y_stop_outer))),
         surf->clip_rect.x + surf->clip_rect.w - y_center);
 
+    // Reimplement set_at to remove unnecessary checks
+    SDL_PixelFormat *format = surf->format;
+    Uint8 *pixels = (Uint8 *)surf->pixels;
+    Uint8 *byte_buf, rgb[4];
+
     // iterate over every pixel within the bounds
     for (int y = miny; y < maxy; ++y) {
         for (int x = minx; x < maxx; ++x) {
@@ -1769,7 +1774,36 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
                 continue;
 
             // Draw the point
-            set_at(surf, x + x_center, y + y_center, color);
+            // set_at(surf, x + x_center, y + y_center, color);
+            switch (format->BytesPerPixel) {
+                case 1:
+                    *((Uint8 *)pixels + (y + y_center) * surf->pitch + x +
+                      x_center) = (Uint8)color;
+                    break;
+                case 2:
+                    *((Uint16 *)(pixels + (y + y_center) * surf->pitch) + x +
+                      x_center) = (Uint16)color;
+                    break;
+                case 4:
+                    *((Uint32 *)(pixels + (y + y_center) * surf->pitch) + x +
+                      x_center) = color;
+                    break;
+                default: /*case 3:*/
+                    SDL_GetRGB(color, format, rgb, rgb + 1, rgb + 2);
+                    byte_buf =
+                        (Uint8 *)(pixels + (y + y_center) * surf->pitch) +
+                        (x + x_center) * 3;
+#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+                    *(byte_buf + (format->Rshift >> 3)) = rgb[0];
+                    *(byte_buf + (format->Gshift >> 3)) = rgb[1];
+                    *(byte_buf + (format->Bshift >> 3)) = rgb[2];
+#else
+                    *(byte_buf + 2 - (format->Rshift >> 3)) = rgb[0];
+                    *(byte_buf + 2 - (format->Gshift >> 3)) = rgb[1];
+                    *(byte_buf + 2 - (format->Bshift >> 3)) = rgb[2];
+#endif
+                    break;
+            }
         }
     }
 
