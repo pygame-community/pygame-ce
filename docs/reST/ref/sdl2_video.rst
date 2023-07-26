@@ -84,20 +84,19 @@
    :param bool input_focus: Create a window with input focus.
    :param bool mouse_focus: Create a window with mouse focus.
    :param bool foreign: Marks a window not created by SDL.
-   :param bool allow_highdpi: Create a window in high-DPI mode if supported
-                              (>= SDL 2.0.1).
+   :param bool allow_highdpi: Create a window in high-DPI mode if supported.
    :param bool mouse_capture: Create a window that has the mouse captured
-                              (unrelated to INPUT_GRABBED, >= SDL 2.0.4).
+                              (unrelated to INPUT_GRABBED).
    :param bool always_on_top: Create a window that is always on top
-                              (X11 only, >= SDL 2.0.5).
+                              (X11 only).
    :param bool skip_taskbar: Create a window that should not be added to the
-                             taskbar (X11 only, >= SDL 2.0.5).
+                             taskbar (X11 only).
    :param bool utility: Create a window that should be treated as a utility
-                        window (X11 only, >= SDL 2.0.5).
+                        window (X11 only).
    :param bool tooltip: Create a window that should be treated as a tooltip
-                        (X11 only, >= SDL 2.0.5).
+                        (X11 only).
    :param bool popup_menu: Create a window that should be treated as a popup menu 
-                           (X11 only, >= SDL 2.0.5).
+                           (X11 only).
 
 
    .. attribute:: grab
@@ -130,6 +129,18 @@
       Gets or sets whether the window is borderless.
 
       .. note:: You can't change the border state of a fullscreen window.
+   
+   .. attribute:: always_on_top
+
+      | :sl:`Get or set whether the window is always on top`
+      | :sg:`always_on_top -> bool`
+
+      Get or set whether the window is always on top.
+
+      Setting the always-on-top mode requires SDL 2.0.16+.
+
+      .. versionadded:: 2.3.1
+
    .. attribute:: id
 
       | :sl:`Get the unique window ID (**read-only**)`

@@ -1,7 +1,7 @@
 import sys
 from typing import Any, Dict, Iterator, Tuple, Union, overload
 
-from ._common import ColorValue
+from ._common import ColorValue, SupportsIndex
 
 if sys.version_info >= (3, 9):
     from collections.abc import Collection
@@ -28,7 +28,7 @@ class Color(Collection[int]):
     @overload
     def __init__(self, rgbvalue: ColorValue) -> None: ...
     @overload
-    def __getitem__(self, i: int) -> int: ...
+    def __getitem__(self, i: SupportsIndex) -> int: ...
     @overload
     def __getitem__(self, s: slice) -> Tuple[int]: ...
     def __setitem__(self, key: int, value: int) -> None: ...

@@ -308,6 +308,32 @@ window_get_borderless(pgWindowObject *self, void *v)
                            SDL_WINDOW_BORDERLESS);
 }
 
+static int
+window_set_always_on_top(pgWindowObject *self, PyObject *arg, void *v)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+    int enable = PyObject_IsTrue(arg);
+    if (enable == -1)
+        return -1;
+
+    SDL_SetWindowAlwaysOnTop(self->_win, enable);
+#else
+    if (PyErr_WarnEx(PyExc_Warning,
+                     "Setting 'always_on_top' requires SDL 2.0.16+",
+                     1) == -1) {
+        return -1;
+    }
+#endif  // SDL_VERSION_ATLEAST(2, 0, 16)
+    return 0;
+}
+
+static PyObject *
+window_get_always_on_top(pgWindowObject *self, void *v)
+{
+    return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
+                           SDL_WINDOW_ALWAYS_ON_TOP);
+}
+
 static PyObject *
 window_get_window_id(pgWindowObject *self, PyObject *_null)
 {
@@ -691,6 +717,9 @@ static PyGetSetDef _window_getset[] = {
      DOC_SDL2_VIDEO_WINDOW_RESIZABLE, NULL},
     {"borderless", (getter)window_get_borderless,
      (setter)window_set_borderless, DOC_SDL2_VIDEO_WINDOW_BORDERLESS, NULL},
+    {"always_on_top", (getter)window_get_always_on_top,
+     (setter)window_set_always_on_top, DOC_SDL2_VIDEO_WINDOW_ALWAYSONTOP,
+     NULL},
     {"size", (getter)window_get_size, (setter)window_set_size,
      DOC_SDL2_VIDEO_WINDOW_SIZE, NULL},
     {"position", (getter)window_get_position, (setter)window_set_position,

@@ -65,6 +65,7 @@ class Window:
     def minimize(self) -> None: ...
     resizable: bool
     borderless: bool
+    always_on_top: bool
     def set_icon(self, surface: Surface) -> None: ...
     id: int
     size: Iterable[int]

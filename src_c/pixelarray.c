@@ -1540,7 +1540,7 @@ _get_subslice(PyObject *op, Py_ssize_t length, Py_ssize_t *start,
         Py_ssize_t slicelen;
 
         /* Operator is a slice: array[x::, */
-        if (Slice_GET_INDICES_EX(op, length, start, stop, step, &slicelen)) {
+        if (PySlice_GetIndicesEx(op, length, start, stop, step, &slicelen)) {
             return -1;
         }
     }
@@ -1665,7 +1665,7 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
         Py_ssize_t start;
         Py_ssize_t stop;
 
-        if (Slice_GET_INDICES_EX(op, dim0, &start, &stop, &step, &slicelen)) {
+        if (PySlice_GetIndicesEx(op, dim0, &start, &stop, &step, &slicelen)) {
             return 0;
         }
         if (slicelen < 0) {
@@ -1817,7 +1817,7 @@ _pxarray_ass_subscript(pgPixelArrayObject *array, PyObject *op,
         Py_ssize_t stop;
         int retval;
 
-        if (Slice_GET_INDICES_EX(op, array->shape[0], &start, &stop, &step,
+        if (PySlice_GetIndicesEx(op, array->shape[0], &start, &stop, &step,
                                  &slicelen)) {
             return -1;
         }
