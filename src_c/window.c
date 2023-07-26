@@ -165,30 +165,37 @@ static PyObject *
 window_update_from_surface(pgWindowObject *self, PyObject *const *args,
                            Py_ssize_t nargs)
 {
-    int i;
+    int i, result;
     SDL_Rect *rects = NULL, tmp, *r;
     if (nargs == 0) {
-        if (SDL_UpdateWindowSurface(self->_win)) {
+        Py_BEGIN_ALLOW_THREADS;
+        result = SDL_UpdateWindowSurface(self->_win);
+        Py_END_ALLOW_THREADS;
+        if (result) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
+        Py_RETURN_NONE;
     }
-    else {
-        rects = malloc(nargs * sizeof(SDL_Rect));
-        for (i = 0; i < nargs; i++) {
-            r = pgRect_FromObject(args[i], &tmp);
-            if (!r) {
-                free(rects);
-                return RAISE(PyExc_TypeError,
-                             "Arguments must be rect or rect-like objects.");
-            }
-            rects[i] = *r;
-            if (SDL_UpdateWindowSurfaceRects(self->_win, rects, (int)nargs)) {
-                free(rects);
-                return RAISE(pgExc_SDLError, SDL_GetError());
-            }
+
+    rects = malloc(nargs * sizeof(SDL_Rect));
+    for (i = 0; i < nargs; i++) {
+        r = pgRect_FromObject(args[i], &tmp);
+        if (!r) {
+            free(rects);
+            return RAISE(PyExc_TypeError,
+                         "Arguments must be rect or rect-like objects.");
         }
-        free(rects);
+        rects[i] = *r;
     }
+
+    Py_BEGIN_ALLOW_THREADS;
+    result = SDL_UpdateWindowSurfaceRects(self->_win, rects, (int)nargs);
+    Py_END_ALLOW_THREADS;
+    if (result) {
+        free(rects);
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    free(rects);
     Py_RETURN_NONE;
 }
 
