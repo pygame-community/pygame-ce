@@ -530,15 +530,12 @@
    .. method:: set_palette
 
       | :sl:`set the color palette for an 8-bit Surface`
-      | :sg:`set_palette([color, color, color, ...]) -> None`
+      | :sg:`set_palette([RGB, RGB, RGB, ...]) -> None`
 
       Set the full palette for an 8-bit Surface. This will replace the colors in
       the existing palette. A partial palette can be passed and only the first
       colors in the original palette will be changed.
       
-      The color can be an ``RGB`` sequence, an ``RGBA`` sequence, a string
-      (for :doc:`color_list`), or a mapped color index.
-
       This function has no effect on a Surface with more than 8-bits per pixel.
 
       .. ## Surface.set_palette ##
@@ -546,14 +543,11 @@
    .. method:: set_palette_at
 
       | :sl:`set the color for a single index in an 8-bit Surface palette`
-      | :sg:`set_palette_at(index, color) -> None`
+      | :sg:`set_palette_at(index, RGB) -> None`
 
       Set the palette value for a single entry in a Surface palette. The index
       should be a value from 0 to 255.
       
-      The color can be an ``RGB`` sequence, an ``RGBA`` sequence, a string
-      (for :doc:`color_list`), or a mapped color index.
-
       This function has no effect on a Surface with more than 8-bits per pixel.
 
       .. ## Surface.set_palette_at ##
