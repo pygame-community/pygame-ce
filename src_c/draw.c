@@ -1718,34 +1718,34 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
     const double x_stop = cos(angle_stop);
     const double y_stop = -sin(angle_stop);
 
-    const double x_start_inner = x_start * inner_radius1;
-    const double y_start_inner = y_start * inner_radius2;
-    const double x_stop_inner = x_stop * inner_radius1;
-    const double y_stop_inner = y_stop * inner_radius2;
-    const double x_start_outer = x_start * radius1;
-    const double y_start_outer = y_start * radius2;
-    const double x_stop_outer = x_stop * radius1;
-    const double y_stop_outer = y_stop * radius2;
+    const int x_start_inner = (int)(x_start * inner_radius1);
+    const int y_start_inner = (int)(y_start * inner_radius2);
+    const int x_stop_inner = (int)(x_stop * inner_radius1);
+    const int y_stop_inner = (int)(y_stop * inner_radius2);
+    const int x_start_outer = (int)(x_start * radius1);
+    const int y_start_outer = (int)(y_start * radius2);
+    const int x_stop_outer = (int)(x_stop * radius1);
+    const int y_stop_outer = (int)(y_stop * radius2);
 
     // calculate maximums, accounting for each quadrant
     // We can't just fidn the maximum and minimum points because the arc may
     // span multiple quadrants, resulting in a maxima at the edge of the circle
-    const double minx = (-x_middle >= min_dotproduct)
-                            ? -radius1
-                            : MIN(MIN(x_start_inner, x_stop_inner),
-                                  MIN(x_start_outer, x_stop_outer));
-    const double miny = (-y_middle >= min_dotproduct)
-                            ? -radius2
-                            : MIN(MIN(y_start_inner, y_stop_inner),
-                                  MIN(y_start_outer, y_stop_outer));
-    const double maxx = (x_middle >= min_dotproduct)
-                            ? radius1
-                            : MAX(MAX(x_start_inner, x_stop_inner),
-                                  MAX(x_start_outer, x_stop_outer));
-    const double maxy = (y_middle >= min_dotproduct)
-                            ? radius2
-                            : MAX(MAX(y_start_inner, y_stop_inner),
-                                  MAX(y_start_outer, y_stop_outer));
+    const int minx = (-x_middle >= min_dotproduct)
+                        ? -radius1
+                        : MIN(MIN(x_start_inner, x_stop_inner),
+                              MIN(x_start_outer, x_stop_outer));
+    const int miny = (-y_middle >= min_dotproduct)
+                        ? -radius2
+                        : MIN(MIN(y_start_inner, y_stop_inner),
+                              MIN(y_start_outer, y_stop_outer));
+    const int maxx = (x_middle >= min_dotproduct)
+                        ? radius1
+                        : MAX(MAX(x_start_inner, x_stop_inner),
+                              MAX(x_start_outer, x_stop_outer));
+    const int maxy = (y_middle >= min_dotproduct)
+                        ? radius2
+                        : MAX(MAX(y_start_inner, y_stop_inner),
+                              MAX(y_start_outer, y_stop_outer));
 
     // iterate over every pixel within the bounds
     for (int y = miny; y < maxy; ++y) {
