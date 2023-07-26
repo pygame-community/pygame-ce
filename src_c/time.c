@@ -501,7 +501,6 @@ typedef struct {
     PyObject_HEAD Uint64 last_tick, fps_count, fps_tick;
     float fps;
     Uint64 timepassed, rawpassed;
-    PyObject *rendered;
 } PyClockObject;
 
 // to be called by the other tick functions.
@@ -559,7 +558,6 @@ clock_tick_base(PyObject *self, PyObject *arg, int use_accurate_delay)
             _clock->fps_count / ((nowtime - _clock->fps_tick) / 1000.0f);
         _clock->fps_count = 0;
         _clock->fps_tick = nowtime;
-        Py_XDECREF(_clock->rendered);
     }
     return PyLong_FromUnsignedLongLong(_clock->timepassed);
 }
@@ -611,8 +609,6 @@ static struct PyMethodDef clock_methods[] = {
 static void
 clock_dealloc(PyObject *self)
 {
-    PyClockObject *_clock = (PyClockObject *)self;
-    Py_XDECREF(_clock->rendered);
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -655,7 +651,6 @@ clock_new(PyTypeObject *type, PyObject *args, PyObject *kwargs)
     self->last_tick = PG_GetTicks();
     self->fps = 0.0f;
     self->fps_count = 0;
-    self->rendered = NULL;
 
     return (PyObject *)self;
 }
