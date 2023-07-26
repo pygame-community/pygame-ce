@@ -23,11 +23,9 @@ bounding box that encloses the affected area.
 All the drawing functions accept a color argument that can be one of the
 following formats:
 
-   - a :mod:`pygame.Color` object
-   - a string (for :doc:`color_list`)
-   - an ``(RGB)`` triplet (tuple/list)
-   - an ``(RGBA)`` quadruplet (tuple/list)
-   - an integer value that has been mapped to the surface's pixel format
+   - a :mod:`pygame.Color` object, or a type (apart from ``int``) that can be passed to
+     its constructor
+   - an ``int`` value which must be mapped to the pixel format of the surface
      (see :func:`pygame.Surface.map_rgb` and :func:`pygame.Surface.unmap_rgb`)
 
 A color's alpha value will be written directly into the surface (if the
