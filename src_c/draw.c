@@ -1705,7 +1705,9 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
     // Calculate the minimum dot product which any point on the arc
     // can have with the middle angle, if you normalise the point as a vector
     // from the center of the circle
-    const double min_dotproduct = cos(angle_middle - angle_start);
+    const double min_dotproduct = (angle_stop - angle_start < 2 * M_PI)
+                                      ? cos(angle_middle - angle_start)
+                                      : -1.0;
 
     // TODO: add code to dynamically reduce boundaries for better performance
     // iterate over every pixel within the circle and
