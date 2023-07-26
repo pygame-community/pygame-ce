@@ -44,7 +44,7 @@ typedef uint8_t Uint8;
 #endif
 
 // SDL does not provide endian independent names for 32 bit formats without
-// alpha channels the way they do for ones wiht alpha channels.
+// alpha channels the way they do for ones with alpha channels.
 // E.g. SDL_PIXELFORMAT_RGBA32. This macro allows us the convenience of the
 // endian independent name.
 
