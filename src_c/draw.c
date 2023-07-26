@@ -1687,6 +1687,7 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
     // Calculate the angle halfway from the start and stop. This is guaranteed
     // to be within the final arc.
     const double angle_middle = 0.5 * (angle_start + angle_stop);
+    const double angle_distance = angle_middle - angle_start;
 
     // Calculate the unit vector for said angle from the center of the circle
     const double x_middle = cos(angle_middle);
@@ -1705,14 +1706,50 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
     // Calculate the minimum dot product which any point on the arc
     // can have with the middle angle, if you normalise the point as a vector
     // from the center of the circle
-    const double min_dotproduct = (angle_stop - angle_start < 2 * M_PI)
-                                      ? cos(angle_middle - angle_start)
-                                      : -1.0;
+    const double min_dotproduct =
+        (angle_distance < M_PI) ? cos(angle_middle - angle_start) : -1.0;
 
-    // TODO: add code to dynamically reduce boundaries for better performance
-    // iterate over every pixel within the circle and
-    for (int y = -radius2; y < radius2; ++y) {
-        for (int x = -radius1; x < radius1; ++x) {
+    // PERF: remove drawn area and just use bounding calculated here?
+
+    // calculate bounding box
+    // these values find the corners of the arc
+    const double x_start = cos(angle_start);
+    const double y_start = -sin(angle_start);
+    const double x_stop = cos(angle_stop);
+    const double y_stop = -sin(angle_stop);
+
+    const double x_start_inner = x_start * inner_radius1;
+    const double y_start_inner = y_start * inner_radius2;
+    const double x_stop_inner = x_stop * inner_radius1;
+    const double y_stop_inner = y_stop * inner_radius2;
+    const double x_start_outer = x_start * radius1;
+    const double y_start_outer = y_start * radius2;
+    const double x_stop_outer = x_stop * radius1;
+    const double y_stop_outer = y_stop * radius2;
+
+    // calculate maximums, accounting for each quadrant
+    // We can't just fidn the maximum and minimum points because the arc may
+    // span multiple quadrants, resulting in a maxima at the edge of the circle
+    const double minx = (-x_middle >= min_dotproduct)
+                            ? -radius1
+                            : MIN(MIN(x_start_inner, x_stop_inner),
+                                  MIN(x_start_outer, x_stop_outer));
+    const double miny = (-y_middle >= min_dotproduct)
+                            ? -radius2
+                            : MIN(MIN(y_start_inner, y_stop_inner),
+                                  MIN(y_start_outer, y_stop_outer));
+    const double maxx = (x_middle >= min_dotproduct)
+                            ? radius1
+                            : MAX(MAX(x_start_inner, x_stop_inner),
+                                  MAX(x_start_outer, x_stop_outer));
+    const double maxy = (y_middle >= min_dotproduct)
+                            ? radius2
+                            : MAX(MAX(y_start_inner, y_stop_inner),
+                                  MAX(y_start_outer, y_stop_outer));
+
+    // iterate over every pixel within the bounds
+    for (int y = miny; y < maxy; ++y) {
+        for (int x = minx; x < maxx; ++x) {
             // Go to the next pixel if not within the given elliptical
             // boundaries
             const double x_adjusted = x * x * invsqr_radius1;
