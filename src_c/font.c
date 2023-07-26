@@ -48,6 +48,10 @@
 #define RAISE_TEXT_TYPE_ERROR() \
     RAISE(PyExc_TypeError, "text must be a unicode or bytes");
 
+#define RAISE_FONT_QUIT_ERROR() \
+    RAISE(pgExc_SDLError,       \
+          "Invalid font (font module quit since font created)");
+
 /* For filtering out UCS-4 and larger characters when Python is
  * built with Py_UNICODE_WIDE.
  */
@@ -491,8 +495,7 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
     int wraplength = 0;
 
     if (!PgFont_GenerationCheck(self)) {
-        return RAISE(pgExc_SDLError,
-                     "Invalid font (font module quit since font created)");
+        return RAISE_FONT_QUIT_ERROR()
     }
 
     static char *kwlist[] = {"text",    "antialias",  "color",
@@ -620,8 +623,7 @@ font_size(PyObject *self, PyObject *text)
     const char *string;
 
     if (!PgFont_GenerationCheck(self)) {
-        return RAISE(pgExc_SDLError,
-                     "Invalid font (font module quit since font created)");
+        return RAISE_FONT_QUIT_ERROR();
     }
 
     if (PyUnicode_Check(text)) {
@@ -653,6 +655,10 @@ font_size(PyObject *self, PyObject *text)
 static PyObject *
 font_getter_name(PyObject *self, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     const char *font_name = TTF_FontFaceFamilyName(font);
 
@@ -667,6 +673,10 @@ font_getter_name(PyObject *self, void *closure)
 static PyObject *
 font_getter_style_name(PyObject *self, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     const char *font_style_name = TTF_FontFaceStyleName(font);
     return PyUnicode_FromString(font_style_name);
@@ -690,10 +700,8 @@ font_metrics(PyObject *self, PyObject *textobj)
     Uint16 ch;
     PyObject *temp;
     int surrogate;
-
     if (!PgFont_GenerationCheck(self)) {
-        return RAISE(pgExc_SDLError,
-                     "Invalid font (font module quit since font created)");
+        return RAISE_FONT_QUIT_ERROR();
     }
 
     if (PyUnicode_Check(textobj)) {
