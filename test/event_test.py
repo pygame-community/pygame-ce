@@ -155,6 +155,52 @@ class EventTypeTest(unittest.TestCase):
         self.assertTrue(a != d)
         self.assertFalse(a == d)
 
+    def test_event_args(self):
+        """Test event creation with args"""
+        NESTED_DICT = {"haha": True, "no": 92138023, "test": ("y", "e", "s")}
+        EXPECTED_ATTRIBUTES = {
+            "foo": "bar",
+            "ratio": 100,
+            "favourite_numbers": [3, 26, 42],
+            "nested_dict": NESTED_DICT,
+            "complex": 3 + 4j,
+        }
+        for event in (
+            pygame.event.Event(1, EXPECTED_ATTRIBUTES),  # pass as dict
+            pygame.event.Event(1, **EXPECTED_ATTRIBUTES),  # pass as kwargs
+            pygame.event.Event(  # test passing both dict and kwargs
+                1,
+                {"nested_dict": NESTED_DICT, "complex": 3 + 4j},
+                foo="bar",
+                ratio=100,
+                favourite_numbers=[3, 26, 42],
+            ),
+        ):
+            self.assertDictEqual(event.dict, EXPECTED_ATTRIBUTES)
+
+        for out_of_range_val in (-1, -10, pygame.NUMEVENTS, pygame.NUMEVENTS + 1):
+            self.assertRaises(ValueError, pygame.event.Event, out_of_range_val)
+
+        for incorrect_type in ("string", 4 + 3j, [1, 2, 3], {"a": "b"}):
+            self.assertRaises(TypeError, pygame.event.Event, incorrect_type)
+
+    def test_event_common_dict_changes(self):
+        d = {}
+        events = [pygame.Event(pygame.event.custom_type(), d) for _ in range(2)]
+        self.assertNotEqual(events[0], events[1])
+
+        d["hi"] = "hello"
+        events[0].hello = "hi"
+        events[1].dict["amongus"] = "sus"
+
+        self.assertEqual(d, {"hi": "hello", "hello": "hi", "amongus": "sus"})
+        for ev in events:
+            self.assertIs(d, ev.dict)
+            self.assertEqual(ev.dict, {"hi": "hello", "hello": "hi", "amongus": "sus"})
+            self.assertEqual(ev.hi, "hello")
+            self.assertEqual(ev.hello, "hi")
+            self.assertEqual(ev.amongus, "sus")
+
 
 race_condition_notification = """
 This test is dependent on timing. The event queue is cleared in preparation for
@@ -424,6 +470,19 @@ class EventModuleTest(unittest.TestCase):
         self.assertEqual(e.type, pygame.USEREVENT)
         self.assertEqual(e.a, "a" * 1024)
         self.assertEqual(e.test, list(range(100)))
+
+    def test_post_same_reference(self):
+        """
+        Test that event.post posts an event with a common reference to a dict.
+        """
+        for event in (
+            pygame.event.Event(pygame.event.custom_type(), attr=(1, 2, 3, 4)),
+            pygame.event.Event(pygame.event.custom_type()),
+        ):
+            pygame.event.post(event)
+            e = pygame.event.poll()
+            self.assertEqual(e.type, event.type)
+            self.assertIs(e.dict, event.dict)
 
     def test_post_blocked(self):
         """

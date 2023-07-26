@@ -366,11 +366,11 @@ typedef struct pgEventObject pgEventObject;
 #define pgEvent_New \
     (*(PyObject * (*)(SDL_Event *)) PYGAMEAPI_GET_SLOT(event, 1))
 
-#define pgEvent_New2 \
-    (*(PyObject * (*)(int, PyObject *)) PYGAMEAPI_GET_SLOT(event, 2))
+#define pg_post_event \
+    (*(int (*)(Uint32, PyObject *))PYGAMEAPI_GET_SLOT(event, 2))
 
-#define pgEvent_FillUserEvent \
-    (*(int (*)(pgEventObject *, SDL_Event *))PYGAMEAPI_GET_SLOT(event, 3))
+#define pg_post_event_dictproxy \
+    (*(int (*)(Uint32, pgEventDictProxy *))PYGAMEAPI_GET_SLOT(event, 3))
 
 #define pg_EnableKeyRepeat (*(int (*)(int, int))PYGAMEAPI_GET_SLOT(event, 4))
 
