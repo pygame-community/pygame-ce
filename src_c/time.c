@@ -501,13 +501,12 @@ typedef struct {
     PyObject_HEAD Uint64 last_tick, fps_count, fps_tick;
     float fps;
     Uint64 timepassed, rawpassed;
-} PyClockObject;
+} pgClockObject;
 
 // to be called by the other tick functions.
 static PyObject *
-clock_tick_base(PyObject *self, PyObject *arg, int use_accurate_delay)
+clock_tick_base(pgClockObject *self, PyObject *arg, int use_accurate_delay)
 {
-    PyClockObject *_clock = (PyClockObject *)self;
     float framerate = 0.0f;
     Uint64 nowtime;
 
@@ -516,8 +515,8 @@ clock_tick_base(PyObject *self, PyObject *arg, int use_accurate_delay)
 
     if (framerate) {
         Sint64 delay, endtime = (Sint64)((1.0f / framerate) * 1000.0f);
-        _clock->rawpassed = PG_GetTicks() - _clock->last_tick;
-        delay = endtime - _clock->rawpassed;
+        self->rawpassed = PG_GetTicks() - self->last_tick;
+        delay = endtime - self->rawpassed;
 
         /*just doublecheck that timer is initialized*/
         if (!SDL_WasInit(SDL_INIT_TIMER)) {
@@ -543,66 +542,65 @@ clock_tick_base(PyObject *self, PyObject *arg, int use_accurate_delay)
     }
 
     nowtime = PG_GetTicks();
-    _clock->timepassed = nowtime - _clock->last_tick;
-    _clock->fps_count += 1;
-    _clock->last_tick = nowtime;
+    self->timepassed = nowtime - self->last_tick;
+    self->fps_count += 1;
+    self->last_tick = nowtime;
     if (!framerate)
-        _clock->rawpassed = _clock->timepassed;
+        self->rawpassed = self->timepassed;
 
-    if (!_clock->fps_tick) {
-        _clock->fps_count = 0;
-        _clock->fps_tick = nowtime;
+    if (!self->fps_tick) {
+        self->fps_count = 0;
+        self->fps_tick = nowtime;
     }
-    else if (_clock->fps_count >= 10) {
-        _clock->fps =
-            _clock->fps_count / ((nowtime - _clock->fps_tick) / 1000.0f);
-        _clock->fps_count = 0;
-        _clock->fps_tick = nowtime;
+    else if (self->fps_count >= 10) {
+        self->fps = self->fps_count / ((nowtime - self->fps_tick) / 1000.0f);
+        self->fps_count = 0;
+        self->fps_tick = nowtime;
     }
-    return PyLong_FromUnsignedLongLong(_clock->timepassed);
+    return PyLong_FromUnsignedLongLong(self->timepassed);
 }
 
 static PyObject *
-clock_tick(PyObject *self, PyObject *arg)
+clock_tick(pgClockObject *self, PyObject *arg)
 {
     return clock_tick_base(self, arg, 0);
 }
 
 static PyObject *
-clock_tick_busy_loop(PyObject *self, PyObject *arg)
+clock_tick_busy_loop(pgClockObject *self, PyObject *arg)
 {
     return clock_tick_base(self, arg, 1);
 }
 
 static PyObject *
-clock_get_fps(PyObject *self, PyObject *_null)
+clock_get_fps(pgClockObject *self, PyObject *_null)
 {
-    PyClockObject *_clock = (PyClockObject *)self;
-    return PyFloat_FromDouble(_clock->fps);
+    return PyFloat_FromDouble(self->fps);
 }
 
 static PyObject *
-clock_get_time(PyObject *self, PyObject *_null)
+clock_get_time(pgClockObject *self, PyObject *_null)
 {
-    PyClockObject *_clock = (PyClockObject *)self;
-    return PyLong_FromUnsignedLongLong(_clock->timepassed);
+    return PyLong_FromUnsignedLongLong(self->timepassed);
 }
 
 static PyObject *
-clock_get_rawtime(PyObject *self, PyObject *_null)
+clock_get_rawtime(pgClockObject *self, PyObject *_null)
 {
-    PyClockObject *_clock = (PyClockObject *)self;
-    return PyLong_FromUnsignedLongLong(_clock->rawpassed);
+    return PyLong_FromUnsignedLongLong(self->rawpassed);
 }
 
 /* clock object internals */
 
 static struct PyMethodDef clock_methods[] = {
-    {"tick", clock_tick, METH_VARARGS, DOC_TIME_CLOCK_TICK},
-    {"get_fps", clock_get_fps, METH_NOARGS, DOC_TIME_CLOCK_GETFPS},
-    {"get_time", clock_get_time, METH_NOARGS, DOC_TIME_CLOCK_GETTIME},
-    {"get_rawtime", clock_get_rawtime, METH_NOARGS, DOC_TIME_CLOCK_GETRAWTIME},
-    {"tick_busy_loop", clock_tick_busy_loop, METH_VARARGS,
+    {"tick", (PyCFunction)clock_tick, METH_VARARGS, DOC_TIME_CLOCK_TICK},
+    {"get_fps", (PyCFunction)clock_get_fps, METH_NOARGS,
+     DOC_TIME_CLOCK_GETFPS},
+    {"get_time", (PyCFunction)clock_get_time, METH_NOARGS,
+     DOC_TIME_CLOCK_GETTIME},
+    {"get_rawtime", (PyCFunction)clock_get_rawtime, METH_NOARGS,
+     DOC_TIME_CLOCK_GETRAWTIME},
+    {"tick_busy_loop", (PyCFunction)clock_tick_busy_loop, METH_VARARGS,
      DOC_TIME_CLOCK_TICKBUSYLOOP},
     {NULL, NULL, 0, NULL}};
 
@@ -613,12 +611,11 @@ clock_dealloc(PyObject *self)
 }
 
 PyObject *
-clock_str(PyObject *self)
+clock_str(pgClockObject *self)
 {
     char str[64];
-    PyClockObject *_clock = (PyClockObject *)self;
 
-    int ret = PyOS_snprintf(str, 64, "<Clock(fps=%.2f)>", _clock->fps);
+    int ret = PyOS_snprintf(str, 64, "<Clock(fps=%.2f)>", self->fps);
     if (ret < 0 || ret >= 64) {
         return RAISE(PyExc_RuntimeError,
                      "Internal PyOS_snprintf call failed!");
@@ -644,7 +641,7 @@ clock_new(PyTypeObject *type, PyObject *args, PyObject *kwargs)
         }
     }
 
-    PyClockObject *self = (PyClockObject *)(type->tp_alloc(type, 0));
+    pgClockObject *self = (pgClockObject *)(type->tp_alloc(type, 0));
     self->fps_tick = 0;
     self->timepassed = 0;
     self->rawpassed = 0;
@@ -657,10 +654,10 @@ clock_new(PyTypeObject *type, PyObject *args, PyObject *kwargs)
 
 static PyTypeObject PyClock_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.time.Clock",
-    .tp_basicsize = sizeof(PyClockObject),
+    .tp_basicsize = sizeof(pgClockObject),
     .tp_dealloc = clock_dealloc,
-    .tp_repr = clock_str,
-    .tp_str = clock_str,
+    .tp_repr = (reprfunc)clock_str,
+    .tp_str = (reprfunc)clock_str,
     .tp_doc = DOC_TIME_CLOCK,
     .tp_methods = clock_methods,
     .tp_new = clock_new,
