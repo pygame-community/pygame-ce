@@ -124,6 +124,10 @@ window_destroy(pgWindowObject *self, PyObject *_null)
         SDL_DestroyWindow(self->_win);
         self->_win = NULL;
     }
+    if (self->surf) {
+        self->surf->surf = NULL;
+        Py_DECREF(self->surf);
+    }
     Py_RETURN_NONE;
 }
 
@@ -133,11 +137,11 @@ window_get_surface(pgWindowObject *self)
     PyObject *surf = NULL;
     SDL_Surface *_surf;
 
-    if(self->_is_borrowed){
+    if (self->_is_borrowed) {
         surf = pg_GetDefaultWindowSurface();
-        if(!surf){
+        if (!surf) {
             return RAISE(pgExc_SDLError,
-                     "display.set_mode has not been called yet.");
+                         "display.set_mode has not been called yet.");
         }
         Py_INCREF(surf);
         return surf;
@@ -147,7 +151,7 @@ window_get_surface(pgWindowObject *self)
     if (!_surf) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
-    if(self->surf == NULL){
+    if (self->surf == NULL) {
         self->surf = pgSurface_New2(_surf, SDL_FALSE);
         if (!self->surf)
             return NULL;
@@ -173,11 +177,13 @@ window_update_from_surface(pgWindowObject *self, PyObject *const *args,
         for (i = 0; i < nargs; i++) {
             r = pgRect_FromObject(args[i], &tmp);
             if (!r) {
+                free(rects);
                 return RAISE(PyExc_TypeError,
                              "Arguments must be rect or rect-like objects.");
             }
             rects[i] = *r;
             if (SDL_UpdateWindowSurfaceRects(self->_win, rects, (int)nargs)) {
+                free(rects);
                 return RAISE(pgExc_SDLError, SDL_GetError());
             }
         }
@@ -612,7 +618,11 @@ window_dealloc(pgWindowObject *self, PyObject *_null)
             SDL_SetWindowData(self->_win, "pg_window", NULL);
         }
     }
-    Py_XDECREF(self->surf);
+    if (self->surf) {
+        self->surf->surf = NULL;
+        Py_DECREF(self->surf);
+    }
+
     Py_TYPE(self)->tp_free(self);
 }
 
