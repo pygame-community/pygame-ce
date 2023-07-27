@@ -138,7 +138,7 @@ window_get_surface(pgWindowObject *self)
     SDL_Surface *_surf;
 
     if (self->_is_borrowed) {
-        surf = pg_GetDefaultWindowSurface();
+        surf = (PyObject *)pg_GetDefaultWindowSurface();
         if (!surf) {
             return RAISE(pgExc_SDLError,
                          "display.set_mode has not been called yet.");
@@ -158,7 +158,7 @@ window_get_surface(pgWindowObject *self)
     }
     self->surf->surf = _surf;
     Py_INCREF(self->surf);
-    return self->surf;
+    return (PyObject *)self->surf;
 }
 
 static PyObject *
