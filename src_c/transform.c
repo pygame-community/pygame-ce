@@ -4225,6 +4225,116 @@ surf_invert(PyObject *self, PyObject *args, PyObject *kwargs)
     return (PyObject *)pgSurface_New(newsurf);
 }
 
+SDL_Surface *
+pixelate(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int pixel_size)
+{
+    SDL_Surface *src = pgSurface_AsSurface(srcobj);
+    SDL_Surface *newsurf;
+
+    if (!dstobj) {
+        newsurf = newsurf_fromsurf(src, srcobj->surf->w, srcobj->surf->h);
+        if (!newsurf)
+            return NULL;
+    }
+    else {
+        newsurf = pgSurface_AsSurface(dstobj);
+    }
+
+    if (newsurf->w != src->w || newsurf->h != src->h) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Destination surface must be the same size as source surface."));
+    }
+
+    if (src->format->BytesPerPixel != newsurf->format->BytesPerPixel) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Source and destination surfaces need the same format."));
+    }
+
+    int x, y;
+    for (y = 0; y < src->h; y += pixel_size) {
+        for (x = 0; x < src->w; x += pixel_size) {
+            unsigned char r, g, b, a;  // current
+            Uint64 ra, ga, ba, aa;     // averages
+            Uint64 size;
+            Uint32 color, average;
+            Uint8 *pix;
+            int width = min(pixel_size, src->w - x);
+            int height = min(pixel_size, src->h - y);
+
+            ra = 0;
+            ga = 0;
+            ba = 0;
+            aa = 0;
+            for (int w = 0; w < width; w++) {
+                for (int h = 0; h < height; h++) {
+                    SURF_GET_AT(color, src, x + w, y + h, (Uint8 *)src->pixels,
+                                src->format, pix);
+                    SDL_GetRGBA(color, src->format, &r, &g, &b, &a);
+                    ra += r;
+                    ga += g;
+                    ba += b;
+                    aa += a;
+                }
+            }
+            size = width * height;
+            ra /= size;
+            ga /= size;
+            ba /= size;
+            aa /= size;
+
+            average = SDL_MapRGBA(newsurf->format, ra, ga, ba, aa);
+
+            printf("%u\n", average);
+            for (int w = 0; w < width; w++) {
+                for (int h = 0; h < height; h++) {
+                    SURF_SET_AT(average, newsurf, x + w, y + h,
+                                (Uint8 *)newsurf->pixels, newsurf->format,
+                                pix);
+                }
+            }
+        }
+    }
+
+    SDL_UnlockSurface(newsurf);
+
+    return newsurf;
+}
+
+/*
+ * anticipated API: pygame.transform.pixelate(surface, pixel_size, dest_surface
+ * = None)
+ */
+static PyObject *
+surf_pixelate(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *src;
+    pgSurfaceObject *dst = NULL;
+    int pixel_size;
+    SDL_Surface *new_surf;
+
+    static char *kwds[] = {"surface", "pixel_size", "dest_surface", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!i|O!", kwds,
+                                     &pgSurface_Type, &src, &pixel_size,
+                                     &pgSurface_Type, &dst)) {
+        return NULL;
+    }
+
+    new_surf = pixelate(src, dst, pixel_size);
+
+    if (!new_surf) {
+        return NULL;
+    }
+
+    if (dst) {
+        Py_INCREF(dst);
+        return (PyObject *)dst;
+    }
+    return (PyObject *)pgSurface_New(new_surf);
+}
+
 static PyMethodDef _transform_methods[] = {
     {"scale", (PyCFunction)surf_scale, METH_VARARGS | METH_KEYWORDS,
      DOC_TRANSFORM_SCALE},
@@ -4268,6 +4378,8 @@ static PyMethodDef _transform_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_SOLIDOVERLAY},
     {"hsl", (PyCFunction)surf_hsl, METH_VARARGS | METH_KEYWORDS,
      DOC_TRANSFORM_HSL},
+    {"pixelate", (PyCFunction)surf_pixelate, METH_VARARGS | METH_KEYWORDS,
+     DOC_TRANSFORM_PIXELATE},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(transform)
