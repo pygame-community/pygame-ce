@@ -101,8 +101,8 @@ attributes.
 
 ::
 
-    AUDIODEVICEADDED   which, iscapture (SDL backend >= 2.0.4)
-    AUDIODEVICEREMOVED which, iscapture (SDL backend >= 2.0.4)
+    AUDIODEVICEADDED   which, iscapture
+    AUDIODEVICEREMOVED which, iscapture
     FINGERMOTION       touch_id, finger_id, x, y, dx, dy
     FINGERDOWN         touch_id, finger_id, x, y, dx, dy
     FINGERUP           touch_id, finger_id, x, y, dx, dy
@@ -140,9 +140,9 @@ pygame 2 also supports controller hot-plugging
    Event name               Attributes and notes
 
    DROPFILE                 file
-   DROPBEGIN                (SDL backend >= 2.0.5)
-   DROPCOMPLETE             (SDL backend >= 2.0.5)
-   DROPTEXT                 text (SDL backend >= 2.0.5)
+   DROPBEGIN
+   DROPCOMPLETE
+   DROPTEXT
    MIDIIN
    MIDIOUT
    CONTROLLERDEVICEADDED    device_index
@@ -150,10 +150,10 @@ pygame 2 also supports controller hot-plugging
    CONTROLLERDEVICEREMOVED  instance_id
    JOYDEVICEREMOVED         instance_id
    CONTROLLERDEVICEREMAPPED instance_id
-   KEYMAPCHANGED            (SDL backend >= 2.0.4)
+   KEYMAPCHANGED
    CLIPBOARDUPDATE
-   RENDER_TARGETS_RESET     (SDL backend >= 2.0.2)
-   RENDER_DEVICE_RESET      (SDL backend >= 2.0.4)
+   RENDER_TARGETS_RESET
+   RENDER_DEVICE_RESET
    LOCALECHANGED            (SDL backend >= 2.0.14)
 
 Also in this version, ``instance_id`` attributes were added to joystick events,
@@ -196,8 +196,8 @@ Here is a list of all window events, along with a short description
    WINDOWFOCUSGAINED      Window gained focus
    WINDOWFOCUSLOST        Window lost focus
    WINDOWCLOSE            Window was closed
-   WINDOWTAKEFOCUS        Window was offered focus (SDL backend >= 2.0.5)
-   WINDOWHITTEST          Window has a special hit test (SDL backend >= 2.0.5)
+   WINDOWTAKEFOCUS        Window was offered focus
+   WINDOWHITTEST          Window has a special hit test
    WINDOWICCPROFCHANGED   Window ICC profile changed (SDL backend >= 2.0.18)
    WINDOWDISPLAYCHANGED   Window moved on a new display (SDL backend >= 2.0.18)
 
@@ -436,6 +436,12 @@ On Android, the following events can be generated
 
    This is usually used for placing custom events on the event queue.
    Any type of event can be posted, and the events posted can have any attributes.
+
+   When this event is received on the event queue, it will be a shallow copy of
+   the event object posted by this function; the dict attribute of both events
+   will be a reference to the same dict object in memory. Modifications on one
+   dict can affect another, use deepcopy operations on the dict object if you
+   don't want this behaviour.
 
    This returns a boolean on whether the event was posted or not. Blocked events
    cannot be posted, and this function returns ``False`` if you try to post them.

@@ -39,14 +39,23 @@ Header file: src_c/include/pygame.h
    If *event* is ``NULL`` then create an empty event object.
    On failure raise a Python exception and return ``NULL``.
 
-.. c:function:: PyObject* pgEvent_New2(int type, PyObject *dict)
+.. c:function:: int pg_post_event(Uint32 type, PyObject *dict)
 
-   Return a new pygame event instance of SDL *type* and with
-   attribute dictionary *dict*.
-   If `dict` is ``NULL`` an empty attribute dictionary is created.
-   On failure raise a Python exception and return ``NULL``.
+   Posts a pygame event that is an ``SDL_USEREVENT`` on the SDL side. This
+   function takes a python dict, which can be NULL too.
+   This function does not need GIL to be held if dict is NULL, but needs GIL
+   otherwise. Just like the SDL ``SDL_PushEvent`` function, returns 1 on
+   success, 0 if the event was not posted due to it being blocked, and -1 on
+   failure.
 
-.. c:function:: int pgEvent_FillUserEvent(pgEventObject *e, SDL_Event *event)
+.. c:function:: int pg_post_event_dictproxy(Uint32 type, pgEventDictProxy *dict_proxy)
 
-   Fill SDL event *event* with information from pygame user event instance *e*.
-   Return ``0`` on success, ``-1`` otherwise.
+   Posts a pygame event that is an ``SDL_USEREVENT`` on the SDL side, can also
+   optionally take a dictproxy instance. Using this dictproxy API is especially
+   useful when multiple events that need to be posted share the same dict
+   attribute, like in the case of event timers. This way, the number of python
+   increfs and decrefs are reduced, and callers of this function don't need to
+   hold GIL for every event posted, the GIL only needs to be held during the
+   creation of the dictproxy instance, and when it is freed.
+   Just like the SDL ``SDL_PushEvent`` function, returns 1 on success, 0 if the
+   event was not posted due to it being blocked, and -1 on failure.

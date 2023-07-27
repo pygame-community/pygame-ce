@@ -308,6 +308,32 @@ window_get_borderless(pgWindowObject *self, void *v)
                            SDL_WINDOW_BORDERLESS);
 }
 
+static int
+window_set_always_on_top(pgWindowObject *self, PyObject *arg, void *v)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+    int enable = PyObject_IsTrue(arg);
+    if (enable == -1)
+        return -1;
+
+    SDL_SetWindowAlwaysOnTop(self->_win, enable);
+#else
+    if (PyErr_WarnEx(PyExc_Warning,
+                     "Setting 'always_on_top' requires SDL 2.0.16+",
+                     1) == -1) {
+        return -1;
+    }
+#endif  // SDL_VERSION_ATLEAST(2, 0, 16)
+    return 0;
+}
+
+static PyObject *
+window_get_always_on_top(pgWindowObject *self, void *v)
+{
+    return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
+                           SDL_WINDOW_ALWAYS_ON_TOP);
+}
+
 static PyObject *
 window_get_window_id(pgWindowObject *self, PyObject *_null)
 {
@@ -450,8 +476,13 @@ mouse_set_relative_mode(pgWindowObject *self, PyObject *arg, void *v)
 static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
-    if (!self->_is_borrowed && self->_win) {
-        SDL_DestroyWindow(self->_win);
+    if (self->_win) {
+        if (!self->_is_borrowed) {
+            SDL_DestroyWindow(self->_win);
+        }
+        else if (SDL_GetWindowData(self->_win, "pg_window") != NULL) {
+            SDL_SetWindowData(self->_win, "pg_window", NULL);
+        }
     }
     Py_TYPE(self)->tp_free(self);
 }
@@ -665,7 +696,14 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
     pgWindowObject *self;
     window = pg_GetDefaultWindow();
     if (!window) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISE(pgExc_SDLError,
+                     "display.set_mode has not been called yet.");
+    }
+
+    self = (pgWindowObject *)SDL_GetWindowData(window, "pg_window");
+    if (self != NULL) {
+        Py_INCREF(self);
+        return (PyObject *)self;
     }
 
     self = (pgWindowObject *)(cls->tp_new(cls, NULL, NULL));
@@ -673,6 +711,28 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
     self->_is_borrowed = SDL_TRUE;
     SDL_SetWindowData(window, "pg_window", self);
     return (PyObject *)self;
+}
+
+PyObject *
+window_repr(pgWindowObject *self)
+{
+    const char *title;
+    int win_id;
+    if (!self->_win) {
+        return PyUnicode_FromString("<Window(Destroyed)>");
+    }
+
+    if (self->_is_borrowed) {
+        return PyUnicode_FromString("<Window(From Display)>");
+    }
+
+    title = SDL_GetWindowTitle(self->_win);
+    win_id = SDL_GetWindowID(self->_win);
+    if (win_id == 0) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    return PyUnicode_FromFormat("<Window(title='%s', id=%d)>", title, win_id);
 }
 
 static PyMethodDef window_methods[] = {
@@ -711,6 +771,9 @@ static PyGetSetDef _window_getset[] = {
      DOC_SDL2_VIDEO_WINDOW_RESIZABLE, NULL},
     {"borderless", (getter)window_get_borderless,
      (setter)window_set_borderless, DOC_SDL2_VIDEO_WINDOW_BORDERLESS, NULL},
+    {"always_on_top", (getter)window_get_always_on_top,
+     (setter)window_set_always_on_top, DOC_SDL2_VIDEO_WINDOW_ALWAYSONTOP,
+     NULL},
     {"relative_mouse", (getter)mouse_get_relative_mode,
      (setter)mouse_set_relative_mode, DOC_SDL2_VIDEO_WINDOW_RELATIVEMOUSE,
      NULL},
@@ -734,7 +797,8 @@ static PyTypeObject pgWindow_Type = {
     .tp_methods = window_methods,
     .tp_init = (initproc)window_init,
     .tp_new = PyType_GenericNew,
-    .tp_getset = _window_getset};
+    .tp_getset = _window_getset,
+    .tp_repr = (reprfunc)window_repr};
 
 static PyMethodDef _window_methods[] = {
     {"get_grabbed_window", (PyCFunction)get_grabbed_window, METH_NOARGS,
