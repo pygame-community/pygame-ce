@@ -1672,11 +1672,11 @@ draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
     set_and_check_rect(surf, x2, y2, color, drawn_area);
 }
 
-// Helper function for draw_arc
 static inline int
-pixel_in_arc(int x, int y, double min_dotproduct, double invsqr_radius1,
-             double invsqr_radius2, double invsqr_inner_radius1,
-             double invsqr_inner_radius2, double x_middle, double y_middle)
+check_pixel_in_arc(int x, int y, double min_dotproduct, double invsqr_radius1,
+                   double invsqr_radius2, double invsqr_inner_radius1,
+                   double invsqr_inner_radius2, double x_middle,
+                   double y_middle)
 {
     // Check outer boundary
     const double x_adjusted = x * x * invsqr_radius1;
@@ -1693,45 +1693,15 @@ pixel_in_arc(int x, int y, double min_dotproduct, double invsqr_radius1,
     return x * x_middle + y * y_middle >= min_dotproduct * sqrt(x * x + y * y);
 }
 
-static void
-draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
-         int radius2, int width, double angle_start, double angle_stop,
-         Uint32 color, int *drawn_area)
+static inline void
+calc_arc_bounds(SDL_Surface *surf, double angle_start, double angle_stop,
+                int radius1, int radius2, int inner_radius1, int inner_radius2,
+                double invsqr_radius1, double invsqr_radius2,
+                double invsqr_inner_radius1, double invsqr_inner_radius2,
+                double min_dotproduct, double x_middle, double y_middle,
+                int x_center, int y_center, int *minxbound, int *minybound,
+                int *maxxbound, int *maxybound)
 {
-    // handle cases from documentation
-    if (width <= 0)
-        return;
-    if (angle_stop < angle_start)
-        angle_stop += 2 * M_PI;
-    // if angles are equal then don't draw anything either
-    if (angle_stop <= angle_start)
-        return;
-
-    // Calculate the angle halfway from the start and stop. This is guaranteed
-    // to be within the final arc.
-    const double angle_middle = 0.5 * (angle_start + angle_stop);
-    const double angle_distance = angle_middle - angle_start;
-
-    // Calculate the unit vector for said angle from the center of the circle
-    const double x_middle = cos(angle_middle);
-    const double y_middle = -sin(angle_middle);
-
-    // Calculate inverse square inner and outer radii
-    const int inner_radius1 = radius1 - width;
-    const int inner_radius2 = radius2 - width;
-    const double invsqr_radius1 = 1 / (double)(radius1 * radius1);
-    const double invsqr_radius2 = 1 / (double)(radius2 * radius2);
-    const double invsqr_inner_radius1 =
-        1 / (double)(inner_radius1 * inner_radius1);
-    const double invsqr_inner_radius2 =
-        1 / (double)(inner_radius2 * inner_radius2);
-
-    // Calculate the minimum dot product which any point on the arc
-    // can have with the middle angle, if you normalise the point as a vector
-    // from the center of the circle
-    const double min_dotproduct =
-        (angle_distance < M_PI) ? cos(angle_middle - angle_start) : -1.0;
-
     // calculate bounding box
     // these values find the corners of the arc
     const double x_start = cos(angle_start);
@@ -1787,9 +1757,9 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
 
         // For every pixel in the row
         for (int x = minx; x <= maxx; ++x) {
-            if (pixel_in_arc(x, miny, min_dotproduct, invsqr_radius1,
-                             invsqr_radius2, invsqr_inner_radius1,
-                             invsqr_inner_radius2, x_middle, y_middle)) {
+            if (check_pixel_in_arc(x, miny, min_dotproduct, invsqr_radius1,
+                                   invsqr_radius2, invsqr_inner_radius1,
+                                   invsqr_inner_radius2, x_middle, y_middle)) {
                 exists = 1;
                 break;
             }
@@ -1807,9 +1777,9 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
 
         // For every pixel in the row
         for (int x = minx; x <= maxx; ++x) {
-            if (pixel_in_arc(x, maxy, min_dotproduct, invsqr_radius1,
-                             invsqr_radius2, invsqr_inner_radius1,
-                             invsqr_inner_radius2, x_middle, y_middle)) {
+            if (check_pixel_in_arc(x, maxy, min_dotproduct, invsqr_radius1,
+                                   invsqr_radius2, invsqr_inner_radius1,
+                                   invsqr_inner_radius2, x_middle, y_middle)) {
                 exists = 1;
                 break;
             }
@@ -1827,9 +1797,9 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
 
         // For every pixel in the row
         for (int y = miny; y <= maxy; ++y) {
-            if (pixel_in_arc(minx, y, min_dotproduct, invsqr_radius1,
-                             invsqr_radius2, invsqr_inner_radius1,
-                             invsqr_inner_radius2, x_middle, y_middle)) {
+            if (check_pixel_in_arc(minx, y, min_dotproduct, invsqr_radius1,
+                                   invsqr_radius2, invsqr_inner_radius1,
+                                   invsqr_inner_radius2, x_middle, y_middle)) {
                 exists = 1;
                 break;
             }
@@ -1847,9 +1817,9 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
 
         // For every pixel in the row
         for (int y = miny; y <= maxy; ++y) {
-            if (pixel_in_arc(maxx, y, min_dotproduct, invsqr_radius1,
-                             invsqr_radius2, invsqr_inner_radius1,
-                             invsqr_inner_radius2, x_middle, y_middle)) {
+            if (check_pixel_in_arc(maxx, y, min_dotproduct, invsqr_radius1,
+                                   invsqr_radius2, invsqr_inner_radius1,
+                                   invsqr_inner_radius2, x_middle, y_middle)) {
                 exists = 1;
                 break;
             }
@@ -1858,19 +1828,32 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
         maxx -= !exists;
     }
 
+    *minxbound = minx;
+    *minybound = miny;
+    *maxxbound = maxx;
+    *maxybound = maxy;
+}
+
+static inline void
+draw_arc_by_pixel(SDL_Surface *surf, int minx, int miny, int maxx, int maxy,
+                  double min_dotproduct, double invsqr_radius1,
+                  double invsqr_radius2, double invsqr_inner_radius1,
+                  double invsqr_inner_radius2, int x_center, int y_center,
+                  double x_middle, double y_middle, Uint32 color)
+{
     // Reimplement set_at to remove unnecessary checks
     SDL_PixelFormat *format = surf->format;
     Uint8 *pixels = (Uint8 *)surf->pixels;
     Uint8 *byte_buf, rgb[4];
 
     // iterate over every pixel within the bounds
-    for (int y = miny; y <= maxy; ++y)
+    for (int y = miny; y <= maxy; ++y) {
         for (int x = minx; x <= maxx; ++x) {
             // Go to the next pixel if not within the given elliptical
             // boundaries
-            if (!pixel_in_arc(x, y, min_dotproduct, invsqr_radius1,
-                              invsqr_radius2, invsqr_inner_radius1,
-                              invsqr_inner_radius2, x_middle, y_middle))
+            if (!check_pixel_in_arc(x, y, min_dotproduct, invsqr_radius1,
+                                    invsqr_radius2, invsqr_inner_radius1,
+                                    invsqr_inner_radius2, x_middle, y_middle))
                 continue;
 
             // Draw the point - copy/pasted from the `set_at` function
@@ -1904,6 +1887,68 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
                     break;
             }
         }
+    }
+}
+
+static void
+draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
+         int radius2, int width, double angle_start, double angle_stop,
+         Uint32 color, int *drawn_area)
+{
+    // handle cases from documentation
+    if (width <= 0)
+        return;
+    if (angle_stop < angle_start)
+        angle_stop += 2 * M_PI;
+    // if angles are equal then don't draw anything either
+    if (angle_stop <= angle_start)
+        return;
+
+    // Calculate the angle halfway from the start and stop. This is guaranteed
+    // to be within the final arc.
+
+    const double angle_middle = 0.5 * (angle_start + angle_stop);
+    const double angle_distance = angle_middle - angle_start;
+
+    // Calculate the unit vector for said angle from the center of the circle
+    const double x_middle = cos(angle_middle);
+    const double y_middle = -sin(angle_middle);
+
+    // Calculate inverse square inner and outer radii
+    const int inner_radius1 = radius1 - width;
+    const int inner_radius2 = radius2 - width;
+    const double invsqr_radius1 = 1 / (double)(radius1 * radius1);
+    const double invsqr_radius2 = 1 / (double)(radius2 * radius2);
+    const double invsqr_inner_radius1 =
+        1 / (double)(inner_radius1 * inner_radius1);
+    const double invsqr_inner_radius2 =
+        1 / (double)(inner_radius2 * inner_radius2);
+
+    // Calculate the minimum dot product which any point on the arc
+    // can have with the middle angle, if you normalise the point as a vector
+    // from the center of the circle
+    const double min_dotproduct =
+        (angle_distance < M_PI) ? cos(angle_middle - angle_start) : -1.0;
+
+    // Calculate the bounding rect for the arc
+    int minx = 0;
+    int miny = 0;
+    int maxx = -1;
+    int maxy = -1;
+    calc_arc_bounds(surf, angle_start, angle_stop, radius1, radius2,
+                    inner_radius1, inner_radius2, invsqr_radius1,
+                    invsqr_radius2, invsqr_inner_radius1, invsqr_inner_radius2,
+                    min_dotproduct, x_middle, y_middle, x_center, y_center,
+                    &minx, &miny, &maxx, &maxy);
+
+    if (minx >= maxx || miny >= maxy)
+        return;
+
+    // iterate over every pixel within the bounds
+    draw_arc_by_pixel(surf, minx, miny, maxx, maxy, min_dotproduct,
+                      invsqr_radius1, invsqr_radius2, invsqr_inner_radius1,
+                      invsqr_inner_radius2, x_center, y_center, x_middle,
+                      y_middle, color);
 
     drawn_area[0] = minx + x_center;
     drawn_area[1] = miny + y_center;
