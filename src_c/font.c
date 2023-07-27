@@ -37,6 +37,8 @@
 
 #include "structmember.h"
 
+#include <SDL_ttf.h>
+
 #ifndef SDL_TTF_VERSION_ATLEAST
 #define SDL_TTF_COMPILEDVERSION                                  \
     SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \
@@ -612,6 +614,329 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
     return final;
 }
 
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+// source: SDL_ttf.c
+/* Gets a unicode value from a UTF-8 encoded string
+ * Ouputs increment to advance the string */
+#define UNKNOWN_UNICODE 0xFFFD
+static unsigned long
+UTF8_getch(const char *src, size_t srclen, int *inc)
+{
+    const Uint8 *p = (const Uint8 *)src;
+    size_t left = 0;
+    size_t save_srclen = srclen;
+    SDL_bool underflow = SDL_FALSE;
+    Uint32 ch = UNKNOWN_UNICODE;
+
+    if (srclen == 0) {
+        return UNKNOWN_UNICODE;
+    }
+    if (p[0] >= 0xFC) {
+        if ((p[0] & 0xFE) == 0xFC) {
+            ch = (Uint32)(p[0] & 0x01);
+            left = 5;
+        }
+    }
+    else if (p[0] >= 0xF8) {
+        if ((p[0] & 0xFC) == 0xF8) {
+            ch = (Uint32)(p[0] & 0x03);
+            left = 4;
+        }
+    }
+    else if (p[0] >= 0xF0) {
+        if ((p[0] & 0xF8) == 0xF0) {
+            ch = (Uint32)(p[0] & 0x07);
+            left = 3;
+        }
+    }
+    else if (p[0] >= 0xE0) {
+        if ((p[0] & 0xF0) == 0xE0) {
+            ch = (Uint32)(p[0] & 0x0F);
+            left = 2;
+        }
+    }
+    else if (p[0] >= 0xC0) {
+        if ((p[0] & 0xE0) == 0xC0) {
+            ch = (Uint32)(p[0] & 0x1F);
+            left = 1;
+        }
+    }
+    else {
+        if ((p[0] & 0x80) == 0x00) {
+            ch = (Uint32)p[0];
+        }
+    }
+    --srclen;
+    while (left > 0 && srclen > 0) {
+        ++p;
+        if ((p[0] & 0xC0) != 0x80) {
+            ch = UNKNOWN_UNICODE;
+            break;
+        }
+        ch <<= 6;
+        ch |= (p[0] & 0x3F);
+        --srclen;
+        --left;
+    }
+    if (left > 0) {
+        underflow = SDL_TRUE;
+    }
+
+    if (underflow || (ch >= 0xD800 && ch <= 0xDFFF) ||
+        (ch == 0xFFFE || ch == 0xFFFF) || ch > 0x10FFFF) {
+        ch = UNKNOWN_UNICODE;
+    }
+
+    *inc = (int)(save_srclen - srclen);
+
+    return ch;
+}
+
+#define UNICODE_BOM_NATIVE 0xFEFF
+#define UNICODE_BOM_SWAPPED 0xFFFE
+
+static int
+get_size_wraplength(int is_utf8, TTF_Font *font, const char *text,
+                    int wraplength, int *w, int *h)
+{
+    int len;
+    char *text_copy = strdup(text);
+    // this pointer is to allow for text_copy to be deleted before the function
+    // finishes
+    char *top_of_text = text_copy;
+    char **lines = NULL;
+    int num_lines = 0, max_lines = 0;
+    int height = 0, width = 0;
+
+    if (is_utf8) {
+        if ((TTF_SizeUTF8(font, text, &width, &height) < 0) && !width) {
+            TTF_SetError("Text has zero width");
+            return -1;
+        }
+    }
+    else {
+        if ((TTF_SizeText(font, text, &width, &height) < 0) && !width) {
+            TTF_SetError("Text has zero width");
+            return -1;
+        }
+    }
+
+    // so height has a minimum value if the string is empty
+    num_lines = 1;
+
+    if (*text_copy) {
+        max_lines = 0;
+        num_lines = 0;
+        len = (int)strlen(text_copy);
+        do {
+            int extent = 0, max_count = 0, char_count = 0;
+            int saved_len = 0;
+            char *saved_text = NULL;
+
+            if (num_lines >= max_lines) {
+                char **saved = lines;
+                if (wraplength == 0) {
+                    max_lines += 32;
+                }
+                else {
+                    max_lines += (width / wraplength) + 1;
+                }
+                lines = (char **)realloc(lines, max_lines * sizeof(lines));
+                if (lines == NULL) {
+                    lines = saved;
+                    PyErr_NoMemory();
+                    goto failure;
+                }
+            }
+
+            lines[num_lines++] = text_copy;
+
+            int ecode;
+            if (is_utf8) {
+                ecode = TTF_MeasureUTF8(font, text_copy, wraplength, &extent,
+                                        &max_count);
+            }
+            else {
+                ecode = TTF_MeasureText(font, text_copy, wraplength, &extent,
+                                        &max_count);
+            }
+            if (ecode < 0) {
+                TTF_SetError("Error measure text");
+                goto failure;
+            }
+            if (wraplength != 0) {
+                if (max_count == 0) {
+                    max_count = 1;
+                }
+            }
+
+            while (len > 0) {
+                int inc = 0;
+                unsigned long c = UTF8_getch(text_copy, len, &inc);
+                text_copy += inc;
+                len -= inc;
+
+                if (c == UNICODE_BOM_NATIVE || c == UNICODE_BOM_SWAPPED) {
+                    continue;
+                }
+                char_count += 1;
+
+                char is_delim;
+                if (wraplength > 0) {
+                    is_delim = c == ' ' || c == '\t' || c == '\n' || c == '\r';
+                }
+                else {
+                    is_delim = c == '\n';
+                }
+
+                if (is_delim) {
+                    saved_len = len;
+                    saved_text = text_copy;
+                    if (c == '\n' || c == '\r') {
+                        *(text_copy - 1) = '\0';
+                        break;
+                    }
+                }
+                if (char_count == max_count) {
+                    break;
+                }
+            }
+
+            if (len > 0) {
+                if (saved_text && saved_len) {
+                    text_copy = saved_text;
+                    len = saved_len;
+                }
+            }
+        } while (len > 0);
+    }
+    int lineskip = TTF_FontLineSkip(font);
+    int rowHeight = MAX(lineskip, height);
+
+    if (wraplength == 0) {
+        // find the max of all line lengths
+        if (num_lines > 1) {
+            width = 0;
+            char *temp;
+            if (lines) {
+                for (int i = 0; i < num_lines; ++i) {
+                    char c = 0;
+                    int _w, _h;
+
+                    temp = lines[i];
+                    if (i + 1 < num_lines) {
+                        c = lines[i + 1][0];
+                        lines[i + 1][0] = '\0';
+                    }
+
+                    if (TTF_SizeUTF8(font, temp, &_w, &_h) == 0) {
+                        width = MAX(_w, width);
+                    }
+
+                    if (i + 1 < num_lines) {
+                        lines[i + 1][0] = c;
+                    }
+                }
+            }
+        }
+        *w = width;
+    }
+    else {
+#if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
+        if (num_lines <= 1 &&
+            TTF_GetFontWrappedAlign(font) == TTF_WRAPPED_ALIGN_LEFT) {
+            *w = MIN(wraplength, width);
+        }
+#else
+        if (num_lines <= 1) {
+            *w = MIN(wraplength, width);
+        }
+#endif
+        else {
+            *w = wraplength;
+        }
+    }
+
+    *h = rowHeight + lineskip * (num_lines - 1);
+
+    if (top_of_text) {
+        free(top_of_text);
+    }
+
+    if (lines) {
+        free(lines);
+    }
+
+    return 0;
+
+failure:
+    if (top_of_text) {
+        free(top_of_text);
+    }
+
+    if (lines) {
+        free(lines);
+    }
+    return -1;
+}
+#endif
+
+static PyObject *
+font_size_wrapped(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+    static const int is_utf8 = 1;
+    static char *kwlist[] = {"text", "wraplength", NULL};
+    PyObject *text = NULL;
+    TTF_Font *font = PyFont_AsFont(self);
+    int wraplength = 0;
+    int w, h;
+    const char *string;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|i", kwlist, &text,
+                                     &wraplength)) {
+        return NULL;
+    }
+
+    if (wraplength < 0) {
+        return RAISE(PyExc_ValueError,
+                     "wraplength parameter must be positive");
+    }
+
+    if (PyUnicode_Check(text)) {
+        PyObject *bytes = PyUnicode_AsEncodedString(text, "utf-8", "strict");
+        int ecode;
+
+        if (!bytes) {
+            return NULL;
+        }
+        string = PyBytes_AS_STRING(bytes);
+        ecode = get_size_wraplength(is_utf8, font, string, wraplength, &w, &h);
+        Py_DECREF(bytes);
+        if (ecode < 0) {
+            return RAISE(pgExc_SDLError, TTF_GetError());
+        }
+    }
+    else if (PyBytes_Check(text)) {
+        int ecode;
+        string = PyBytes_AS_STRING(text);
+        ecode =
+            get_size_wraplength(!is_utf8, font, string, wraplength, &w, &h);
+        if (ecode < 0) {
+            return RAISE(pgExc_SDLError, TTF_GetError());
+        }
+    }
+    else {
+        return RAISE_TEXT_TYPE_ERROR();
+    }
+    return Py_BuildValue("(ii)", w, h);
+#else
+    return RAISE(
+        pgExc_SDLError,
+        "Font.size_wrapped requires at least version 2.0.18 of SDL2 TTF");
+#endif
+}
+
 static PyObject *
 font_size(PyObject *self, PyObject *text)
 {
@@ -640,7 +965,7 @@ font_size(PyObject *self, PyObject *text)
     }
     else if (PyBytes_Check(text)) {
         string = PyBytes_AS_STRING(text);
-        if (TTF_SizeText(font, string, &w, &h)) {
+        if (TTF_SizeText(font, string, &w, &h) < 0) {
             return RAISE(pgExc_SDLError, TTF_GetError());
         }
     }
@@ -897,6 +1222,8 @@ static PyMethodDef font_methods[] = {
     {"render", (PyCFunction)font_render, METH_VARARGS | METH_KEYWORDS,
      DOC_FONT_FONT_RENDER},
     {"size", font_size, METH_O, DOC_FONT_FONT_SIZE},
+    {"size_wrapped", (PyCFunction)font_size_wrapped,
+     METH_VARARGS | METH_KEYWORDS, DOC_FONT_FONT_SIZEWRAPPED},
     {"set_script", font_set_script, METH_O, DOC_FONT_FONT_SETSCRIPT},
     {"set_direction", (PyCFunction)font_set_direction,
      METH_VARARGS | METH_KEYWORDS, DOC_FONT_FONT_SETDIRECTION},

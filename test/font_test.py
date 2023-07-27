@@ -572,6 +572,30 @@ class FontTypeTest(unittest.TestCase):
 
         self.assertNotEqual(size, bsize)
 
+    def test_size_wrapped(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            return
+
+        ttf_version = pygame_font.get_sdl_ttf_version()
+        if ttf_version >= (2, 0, 18):
+            font = pygame_font.Font()
+
+            strings = [
+                "really really really really long text",
+                "",
+                " ",
+                "\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57"
+                "\u0e55 hello world \u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57\u0e55\u0e57",
+            ]
+            for s in strings:
+                for wraplength in range(0, 100):
+                    s = "really really really really long text"
+                    surface = font.render(s, False, (255, 255, 255), None, wraplength)
+                    w, h = font.size_wrapped(s, wraplength)
+
+                    self.assertEqual(w, surface.get_width())
+                    self.assertEqual(h, surface.get_height())
+
     def test_font_name(self):
         f = pygame_font.Font(None, 20)
         self.assertEqual(f.name, "FreeSans")
