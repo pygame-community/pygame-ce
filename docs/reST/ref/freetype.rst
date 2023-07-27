@@ -235,7 +235,7 @@ loaded. This module must be imported explicitly to be used. ::
         'ExtraLight', 'Italic', 'Light', 'LightOblique', 'Medium', 'MediumOblique', 'Oblique', 'Regular',
         'Semibold', 'Semilight', 'Slanted'
 
-      .. versionadded:: 2.3
+      .. versionadded:: 2.3.1
 
       .. ## Font.style_name ##
 
