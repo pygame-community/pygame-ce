@@ -127,6 +127,7 @@ window_destroy(pgWindowObject *self, PyObject *_null)
     if (self->surf) {
         self->surf->surf = NULL;
         Py_DECREF(self->surf);
+        self->surf = NULL;
     }
     Py_RETURN_NONE;
 }
@@ -197,6 +198,39 @@ window_update_from_surface(pgWindowObject *self, PyObject *const *args,
     }
     free(rects);
     Py_RETURN_NONE;
+}
+
+// Callback function for surface auto resize
+static int SDLCALL
+_resize_event_watch(void *userdata, SDL_Event *event)
+{
+    pgSurfaceObject *display_surf;
+    pgWindowObject *event_window_pg;
+    SDL_Window *event_window;
+    if ((event->type != SDL_WINDOWEVENT))
+        return 0;
+    if (event->window.event != SDL_WINDOWEVENT_SIZE_CHANGED)
+        return 0;
+    event_window = SDL_GetWindowFromID(event->window.windowID);
+    event_window_pg = SDL_GetWindowData(event_window, "pg_window");
+
+    if (!event_window_pg)
+        return 0;
+
+    if (event_window_pg->_is_borrowed) {
+        display_surf = pg_GetDefaultWindowSurface();
+        if (!display_surf) {
+            return 0;
+        }
+        display_surf->surf = SDL_GetWindowSurface(event_window);
+        return 0;
+    }
+
+    if (!event_window_pg->surf)
+        return 0;
+
+    event_window_pg->surf->surf = SDL_GetWindowSurface(event_window);
+    return 0;
 }
 
 static PyObject *
@@ -1016,6 +1050,8 @@ MODINIT_DEFINE(_window)
         Py_DECREF(module);
         return NULL;
     }
+
+    SDL_AddEventWatch(_resize_event_watch, NULL);
 
     return module;
 }
