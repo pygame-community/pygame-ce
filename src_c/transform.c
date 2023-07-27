@@ -4260,8 +4260,8 @@ pixelate(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int pixel_size)
             Uint64 size;
             Uint32 color, average;
             Uint8 *pix;
-            int width = min(pixel_size, src->w - x);
-            int height = min(pixel_size, src->h - y);
+            int width = (pixel_size > (src->w - x)) ? src->w - x : pixel_size;
+            int height = (pixel_size > (src->h - y)) ? src->h - y : pixel_size;
 
             ra = 0;
             ga = 0;
