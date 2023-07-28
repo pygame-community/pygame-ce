@@ -239,7 +239,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    The soundfont only affects the playback of ``MID``, ``MIDI``, and ``KAR`` file formats.
    The optional ``path`` argument, a string (or multiple strings separated by a semi-colon),
    must point to the soundfont file(s) to be searched for in order given if some
-   are missing. If ``path`` is an empty string or not specified, any specified soundfont paths
+   are missing. If ``path`` is an empty string or the default (``None``), any specified soundfont paths
    will be cleared from the mixer.
 
    Note on Windows, the mixer always uses the built-in soundfont instead of the one specified.
