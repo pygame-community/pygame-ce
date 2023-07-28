@@ -8,7 +8,7 @@
 #define DOC_SURFACE_COPY "copy() -> Surface\ncreate a new copy of a Surface"
 #define DOC_SURFACE_FILL "fill(color, rect=None, special_flags=0) -> Rect\nfill Surface with a solid color"
 #define DOC_SURFACE_SCROLL "scroll(dx=0, dy=0) -> None\nShift the surface image in place"
-#define DOC_SURFACE_SETCOLORKEY "set_colorkey(Color, flags=0) -> None\nset_colorkey(None) -> None\nSet the transparent colorkey"
+#define DOC_SURFACE_SETCOLORKEY "set_colorkey(color, flags=0) -> None\nset_colorkey(None) -> None\nSet the transparent colorkey"
 #define DOC_SURFACE_GETCOLORKEY "get_colorkey() -> RGB or None\nGet the current transparent colorkey"
 #define DOC_SURFACE_SETALPHA "set_alpha(value, flags=0) -> None\nset_alpha(None) -> None\nset the alpha value for the full Surface image"
 #define DOC_SURFACE_GETALPHA "get_alpha() -> int_value\nget the current Surface transparency value"
