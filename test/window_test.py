@@ -9,6 +9,8 @@ pygame.init()
 
 
 class WindowTypeTest(unittest.TestCase):
+    DEFAULT_TITLE = "pygame window"
+
     def setUp(self):
         self.win = Window()
 
@@ -22,11 +24,9 @@ class WindowTypeTest(unittest.TestCase):
         self.win.grab = False
         self.assertFalse(self.win.grab)
 
-    @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
-    )
     def test_title(self):
+        self.assertEqual(self.win.title, self.DEFAULT_TITLE)
+
         title = "Hello_World你好世界こにじわ"
         self.win.title = title
         self.assertEqual(self.win.title, title)
@@ -56,7 +56,7 @@ class WindowTypeTest(unittest.TestCase):
         "requires the SDL_VIDEODRIVER to be a non dummy value",
     )
     @unittest.skipIf(
-        not (SDL.major >= 2 and SDL.minor >= 0 and SDL.patch >= 16),
+        SDL < (2, 0, 16),
         "requires SDL 2.0.16+",
     )
     def test_always_on_top(self):
