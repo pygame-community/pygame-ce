@@ -92,10 +92,10 @@ open just in case something obvious comes up.
         C:\\Users\\bob\\AppData\\Roaming\\My Company\\My Program Name\\
 
         On macOS, it would resemble
-        /Users/bob/Library/Application Support/My Program Name/
+        /Users/bob/Library/Application Support/My Company/My Program Name/
 
         And on Linux it would resemble
-        /home/bob/.local/share/My Program Name/
+        /home/bob/.local/share/My Company/My Program Name/
 
    .. note::
         Since the organization and app names can potentially be used as
