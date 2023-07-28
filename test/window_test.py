@@ -129,6 +129,40 @@ class WindowTypeTest(unittest.TestCase):
         self.assertRaises(TypeError, lambda: Window(aaa=True))
         self.assertRaises(TypeError, lambda: Window(aaa=False))
 
+    def test_set_icon(self):
+        self.assertRaises(TypeError, lambda: self.win.set_icon(1234))
+
+        test_icon = pygame.Surface((32, 32))
+        test_icon.fill((255, 0, 0))
+
+        return_value = self.win.set_icon(test_icon)
+        self.assertIsNone(return_value)
+
+    def test_window_object_repr(self):
+        win = Window("awa")
+        self.assertEqual(repr(win), f"<Window(title='{win.title}', id={win.id})>")
+
+        win.destroy()
+        self.assertEqual(repr(win), "<Window(Destroyed)>")
+
+        pygame.display.set_mode((640, 480))
+        win = Window.from_display_module()
+        self.assertEqual(repr(win), "<Window(From Display)>")
+
+        pygame.display.quit()
+        pygame.init()
+
+    def test_from_display_module(self):
+        pygame.display.set_mode((640, 480))
+
+        win1 = Window.from_display_module()
+        win2 = Window.from_display_module()
+
+        self.assertIs(win1, win2)
+
+        pygame.display.quit()
+        pygame.init()
+
     def tearDown(self):
         self.win.destroy()
 
