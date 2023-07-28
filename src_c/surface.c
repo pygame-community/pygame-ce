@@ -870,6 +870,11 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
 
     if (PyLong_Check(rgba_obj)) {
+        color = (Uint32)PyLong_AsLong(rgba_obj);
+        if (PyErr_Occurred() && (Sint32)color == -1)
+            return RAISE(PyExc_TypeError, "invalid color argument");
+    }
+    else if (PyLong_Check(rgba_obj)) {
         color = (Uint32)PyLong_AsUnsignedLong(rgba_obj);
         if (PyErr_Occurred() && (Sint32)color == -1)
             return RAISE(PyExc_TypeError, "invalid color argument");
