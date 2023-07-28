@@ -240,10 +240,9 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    The optional ``path`` argument, a string (or multiple strings separated by a semi-colon),
    must point to the soundfont file(s) to be searched for in order given if some
    are missing. If ``path`` is an empty string or not specified, any specified soundfont paths
-   will be cleared from SDL_Mixer.
+   will be cleared from the mixer.
 
-   Note the SDL_Mixer will pass the soundfont path to a synthesizer for playback; however, on Windows,
-   the default synthesizer will use Window's built-in soundfont instead of the one specified.
+   Note on Windows, the mixer always uses the built-in soundfont instead of the one specified.
 
    Function :func:`set_soundfont` calls underlying SDL_mixer function
    ``Mix_SetSoundFonts``.
@@ -260,9 +259,6 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    This gets the soundfont filepaths as a string (each path is separated by a semi-colon) 
    to be used in the playback of ``MID``, ``MIDI``, and ``KAR`` music file formats. If no
    soundfont is specified, the return type is ``None``.
-
-   Note this function only retrieves ``soundfont_paths`` that is stored in the SDL_Mixer 
-   which may not be the soundfont used in the playback (reasons in :func:`set_soundfont`). 
 
    Function :func:`get_soundfont` calls underlying SDL_mixer function
    ``Mix_GetSoundFonts``.
