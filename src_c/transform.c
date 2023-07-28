@@ -4256,8 +4256,8 @@ pixelate(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int pixel_size)
     for (y = 0; y < src->h; y += pixel_size) {
         for (x = 0; x < src->w; x += pixel_size) {
             unsigned char r, g, b, a;  // current
-            Uint64 ra, ga, ba, aa;     // averages
-            Uint64 size;
+            Uint32 ra, ga, ba, aa;     // averages
+            Uint16 size;
             Uint32 color, average;
             Uint8 *pix;
             int width = (pixel_size > (src->w - x)) ? src->w - x : pixel_size;
@@ -4279,14 +4279,11 @@ pixelate(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int pixel_size)
                 }
             }
             size = width * height;
-            ra /= size;
-            ga /= size;
-            ba /= size;
-            aa /= size;
 
-            average = SDL_MapRGBA(newsurf->format, ra, ga, ba, aa);
+            average = SDL_MapRGBA(newsurf->format, (Uint8)(ra / size),
+                                  (Uint8)(ga / size), (Uint8)(ba / size),
+                                  (Uint8)(aa / size));
 
-            printf("%u\n", average);
             for (int w = 0; w < width; w++) {
                 for (int h = 0; h < height; h++) {
                     SURF_SET_AT(average, newsurf, x + w, y + h,
