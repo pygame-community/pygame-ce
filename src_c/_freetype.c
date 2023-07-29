@@ -1099,7 +1099,7 @@ _ftfont_getname(pgFontObject *self, void *closure)
 {
     if (pgFont_IS_ALIVE(self)) {
         const char *name = _PGFT_Font_GetName(self->freetype, self);
-        return PyUnicode_FromString(name ? name : "");
+        return name ? PyUnicode_FromString(name) : 0;
     }
 
     PyErr_SetString(PyExc_AttributeError, "<uninitialized Font object>");
@@ -1111,7 +1111,7 @@ _ftfont_getstylename(pgFontObject *self, void *closure)
 {
     if (pgFont_IS_ALIVE(self)) {
         const char *stylename = _PGFT_Font_GetStyleName(self->freetype, self);
-        return PyUnicode_FromString(stylename ? stylename : "");
+        return stylename ? PyUnicode_FromString(stylename) : 0;
     }
 
     PyErr_SetString(PyExc_AttributeError, "<uninitialized Font object>");
