@@ -1694,6 +1694,39 @@ check_pixel_in_arc(int x, int y, double min_dotproduct, double invsqr_radius1,
 }
 
 static inline void
+unsafe_set_at(SDL_Surface *surf, int x, int y, Uint32 color)
+{
+    SDL_PixelFormat *format = surf->format;
+    Uint8 *pixels = (Uint8 *)surf->pixels;
+    Uint8 *byte_buf, rgb[4];
+
+    switch (format->BytesPerPixel) {
+        case 1:
+            *((Uint8 *)pixels + y * surf->pitch + x) = (Uint8)color;
+            break;
+        case 2:
+            *((Uint16 *)(pixels + y * surf->pitch) + x) = (Uint16)color;
+            break;
+        case 4:
+            *((Uint32 *)(pixels + y * surf->pitch) + x) = color;
+            break;
+        default: /*case 3:*/
+            SDL_GetRGB(color, format, rgb, rgb + 1, rgb + 2);
+            byte_buf = (Uint8 *)(pixels + y * surf->pitch) + x * 3;
+#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+            *(byte_buf + (format->Rshift >> 3)) = rgb[0];
+            *(byte_buf + (format->Gshift >> 3)) = rgb[1];
+            *(byte_buf + (format->Bshift >> 3)) = rgb[2];
+#else
+            *(byte_buf + 2 - (format->Rshift >> 3)) = rgb[0];
+            *(byte_buf + 2 - (format->Gshift >> 3)) = rgb[1];
+            *(byte_buf + 2 - (format->Bshift >> 3)) = rgb[2];
+#endif
+            break;
+    }
+}
+
+static inline void
 calc_arc_bounds(SDL_Surface *surf, double angle_start, double angle_stop,
                 int radius1, int radius2, int inner_radius1, int inner_radius2,
                 double invsqr_radius1, double invsqr_radius2,
@@ -1723,30 +1756,34 @@ calc_arc_bounds(SDL_Surface *surf, double angle_start, double angle_stop,
     // span multiple quadrants, resulting in a maxima at the edge of the circle
     // also account for the surfaces clip rect. This allows us to bypass the
     // drawn area calculations
-    int minx = MAX(((-x_middle >= min_dotproduct)
-                        ? -radius1
-                        : MIN(MIN(x_start_inner, x_stop_inner),
-                              MIN(x_start_outer, x_stop_outer))),
-                   surf->clip_rect.x - x_center);
-    int miny = MAX(((-y_middle >= min_dotproduct)
-                        ? -radius2
-                        : MIN(MIN(y_start_inner, y_stop_inner),
-                              MIN(y_start_outer, y_stop_outer))),
-                   surf->clip_rect.y - y_center);
-    int maxx = MIN(
-        ((x_middle >= min_dotproduct) ? radius1
-                                      : MAX(MAX(x_start_inner, x_stop_inner),
-                                            MAX(x_start_outer, x_stop_outer))),
-        surf->clip_rect.x + surf->clip_rect.w - x_center - 1);
-    int maxy = MIN(
-        ((y_middle >= min_dotproduct) ? radius2
-                                      : MAX(MAX(y_start_inner, y_stop_inner),
-                                            MAX(y_start_outer, y_stop_outer))),
-        surf->clip_rect.y + surf->clip_rect.h - y_center - 1);
+    int minx = -radius1;
+    if (-x_middle < min_dotproduct)
+        minx = MIN(MIN(x_start_inner, x_stop_inner),
+                   MIN(x_start_outer, x_stop_outer));
+    minx = MAX(minx, surf->clip_rect.x - x_center);
+
+    int miny = -radius2;
+    if (-y_middle < min_dotproduct)
+        miny = MIN(MIN(y_start_inner, y_stop_inner),
+                   MIN(y_start_outer, y_stop_outer));
+    miny = MAX(miny, surf->clip_rect.y - y_center);
+
+    int maxx = radius1;
+    if (x_middle < min_dotproduct)
+        maxx = MAX(MAX(x_start_inner, x_stop_inner),
+                   MAX(x_start_outer, x_stop_outer));
+    maxx = MIN(maxx, surf->clip_rect.x + surf->clip_rect.w - x_center - 1);
+
+    int maxy = radius2;
+    if (y_middle < min_dotproduct)
+        maxy = MAX(MAX(y_start_inner, y_stop_inner),
+                   MAX(y_start_outer, y_stop_outer));
+    maxy = MIN(maxy, surf->clip_rect.y + surf->clip_rect.h - y_center - 1);
 
     // Early return to avoid setting drawn_area with possibly strange values
     if (minx >= maxx || miny >= maxy)
         return;
+
     // dynamically reduce bounds to handle special edge cases with clipping
     // I really hope you have code folding otherwise good luck I guess :)
     int exists = 0;
@@ -1755,7 +1792,7 @@ calc_arc_bounds(SDL_Surface *surf, double angle_start, double angle_stop,
         if (miny >= maxy)
             return;
 
-        // For every pixel in the row
+        // Go through each pixel in the circle
         for (int x = minx; x <= maxx; ++x) {
             if (check_pixel_in_arc(x, miny, min_dotproduct, invsqr_radius1,
                                    invsqr_radius2, invsqr_inner_radius1,
@@ -1834,62 +1871,6 @@ calc_arc_bounds(SDL_Surface *surf, double angle_start, double angle_stop,
     *maxybound = maxy;
 }
 
-static inline void
-draw_arc_by_pixel(SDL_Surface *surf, int minx, int miny, int maxx, int maxy,
-                  double min_dotproduct, double invsqr_radius1,
-                  double invsqr_radius2, double invsqr_inner_radius1,
-                  double invsqr_inner_radius2, int x_center, int y_center,
-                  double x_middle, double y_middle, Uint32 color)
-{
-    // Reimplement set_at to remove unnecessary checks
-    SDL_PixelFormat *format = surf->format;
-    Uint8 *pixels = (Uint8 *)surf->pixels;
-    Uint8 *byte_buf, rgb[4];
-
-    // iterate over every pixel within the bounds
-    for (int y = miny; y <= maxy; ++y) {
-        for (int x = minx; x <= maxx; ++x) {
-            // Go to the next pixel if not within the given elliptical
-            // boundaries
-            if (!check_pixel_in_arc(x, y, min_dotproduct, invsqr_radius1,
-                                    invsqr_radius2, invsqr_inner_radius1,
-                                    invsqr_inner_radius2, x_middle, y_middle))
-                continue;
-
-            // Draw the point - copy/pasted from the `set_at` function
-            switch (format->BytesPerPixel) {
-                case 1:
-                    *((Uint8 *)pixels + (y + y_center) * surf->pitch + x +
-                      x_center) = (Uint8)color;
-                    break;
-                case 2:
-                    *((Uint16 *)(pixels + (y + y_center) * surf->pitch) + x +
-                      x_center) = (Uint16)color;
-                    break;
-                case 4:
-                    *((Uint32 *)(pixels + (y + y_center) * surf->pitch) + x +
-                      x_center) = color;
-                    break;
-                default: /*case 3:*/
-                    SDL_GetRGB(color, format, rgb, rgb + 1, rgb + 2);
-                    byte_buf =
-                        (Uint8 *)(pixels + (y + y_center) * surf->pitch) +
-                        (x + x_center) * 3;
-#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-                    *(byte_buf + (format->Rshift >> 3)) = rgb[0];
-                    *(byte_buf + (format->Gshift >> 3)) = rgb[1];
-                    *(byte_buf + (format->Bshift >> 3)) = rgb[2];
-#else
-                    *(byte_buf + 2 - (format->Rshift >> 3)) = rgb[0];
-                    *(byte_buf + 2 - (format->Gshift >> 3)) = rgb[1];
-                    *(byte_buf + 2 - (format->Bshift >> 3)) = rgb[2];
-#endif
-                    break;
-            }
-        }
-    }
-}
-
 static void
 draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
          int radius2, int width, double angle_start, double angle_stop,
@@ -1906,7 +1887,6 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
 
     // Calculate the angle halfway from the start and stop. This is guaranteed
     // to be within the final arc.
-
     const double angle_middle = 0.5 * (angle_start + angle_stop);
     const double angle_distance = angle_middle - angle_start;
 
@@ -1941,14 +1921,72 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
                     min_dotproduct, x_middle, y_middle, x_center, y_center,
                     &minx, &miny, &maxx, &maxy);
 
+    // Early return to avoid weird bounding box issues
     if (minx >= maxx || miny >= maxy)
         return;
 
-    // iterate over every pixel within the bounds
-    draw_arc_by_pixel(surf, minx, miny, maxx, maxy, min_dotproduct,
-                      invsqr_radius1, invsqr_radius2, invsqr_inner_radius1,
-                      invsqr_inner_radius2, x_center, y_center, x_middle,
-                      y_middle, color);
+    // Iterate over every pixel within the circle and
+    // check if it's in the arc
+    int radius2_sqr = radius2 * radius2;
+    const int max_required_y = MAX(maxy, -miny);
+    for (int y = 0; y <= max_required_y; ++y) {
+        // Check if positive y is within the bounds
+        // and do the same for negative y
+        const int pos_y = (y >= miny) & (y <= maxy);
+        const int neg_y = (-y >= miny) & (-y <= maxy);
+
+        // Precalculate y squared
+        const int y2 = y * y;
+
+        // Find the boundaries of the outer and inner circle radii
+        // use 0 as the inner radius by default
+        const int x_outer = (int)(radius1 * sqrt(1.0 - y2 * invsqr_radius2));
+        int x_inner = 0;
+        if (y < inner_radius2)
+            x_inner =
+                (int)(inner_radius1 * sqrt(1.0 - y2 * invsqr_inner_radius2));
+
+        // Precalculate positive and negative y offsets
+        const int py_offset = y_center + y;
+        const int ny_offset = y_center - y;
+
+        // Precalculate the y component of the dot product
+        const double y_dot = y * y_middle;
+
+        // Iterate over every x value within the bounds
+        // of the circle
+        for (int x = x_inner; x <= x_outer; x++) {
+            // Check if positive x is within the bounds
+            // and do the same for negative x
+            const int pos_x = (x >= minx) & (x <= maxx);
+            const int neg_x = (-x >= minx) & (-x <= maxx);
+            // Skip coordinate to avoid unnecessary calculations if neither
+            // positive nor negative x are within the allowed ranges
+            if (!(pos_x | neg_x))
+                continue;
+
+            // Precalculate offsets for positive and negative x
+            const int px_offset = x_center + x;
+            const int nx_offset = x_center - x;
+
+            // Precalculate the minimum dot product require for the point to be
+            // within the arc's angles
+            const double cmp = min_dotproduct * sqrt(x * x + y2);
+
+            // Precalculate the x component of the dot product
+            const double x_dot = x * x_middle;
+
+            // Check if the point is within the arc for each quadrant
+            if (pos_y & pos_x & (x_dot + y_dot >= cmp))
+                unsafe_set_at(surf, px_offset, py_offset, color);
+            if (pos_y & neg_x & (-x_dot + y_dot >= cmp))
+                unsafe_set_at(surf, nx_offset, py_offset, color);
+            if (neg_y & pos_x & (x_dot - y_dot >= cmp))
+                unsafe_set_at(surf, px_offset, ny_offset, color);
+            if (neg_y & neg_x & (-x_dot - y_dot >= cmp))
+                unsafe_set_at(surf, nx_offset, ny_offset, color);
+        }
+    }
 
     drawn_area[0] = minx + x_center;
     drawn_area[1] = miny + y_center;
