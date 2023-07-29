@@ -820,6 +820,7 @@ if "bdist_msi" in sys.argv:
 # test command.  For doing 'python setup.py test'
 
 def _get_test_modules_as_string():
+    import glob
     listed = (i.replace("test" + os.path.sep, "").replace("_test.py", "") for i in glob.glob(os.path.join("test", "*_test.py")) if not i.startswith(os.path.join("test", "base_test.py")))
     mods = [i + "\t\t\t\t\t\t\t\t" for i in listed if not i.startswith("_")]
     return f"  ".join(mods)
@@ -828,7 +829,6 @@ def _get_test_modules_as_string():
 class TestCommand(Command):
     user_options = []
     description = "Launch the unittests without installing them. Meant for developers. See 'setup.py test --help' for more options."
-    import glob
     user_options = [
         (
             'commandline=', 'c',
