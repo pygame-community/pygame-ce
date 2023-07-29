@@ -15,7 +15,7 @@
 #define DOC_FONT_FONT_UNDERLINE "underline -> bool\nGets or sets whether the font should be rendered with an underline."
 #define DOC_FONT_FONT_STRIKETHROUGH "strikethrough -> bool\nGets or sets whether the font should be rendered with a strikethrough."
 #define DOC_FONT_FONT_ALIGN "align -> int\nSet how rendered text is aligned when given a wrap length"
-#define DOC_FONT_FONT_RENDER "render(text, antialias, color, background=None, wraplength=0) -> Surface\ndraw text on a new Surface"
+#define DOC_FONT_FONT_RENDER "render(text, antialias, color, bgcolor=None, wraplength=0) -> Surface\ndraw text on a new Surface"
 #define DOC_FONT_FONT_SIZE "size(text) -> (width, height)\ndetermine the amount of space needed to render text"
 #define DOC_FONT_FONT_SETUNDERLINE "set_underline(bool) -> None\ncontrol if text is rendered with an underline"
 #define DOC_FONT_FONT_GETUNDERLINE "get_underline() -> bool\ncheck if text will be rendered with an underline"

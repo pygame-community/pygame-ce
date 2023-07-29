@@ -10,7 +10,7 @@ Optional command line argument: audio file name
 """
 import os
 import sys
-import pygame as pg
+import pygame
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 
@@ -21,10 +21,10 @@ def main(file_path=None):
     :param str file_path: audio file (default data/secosmic_low.wav)
     """
     # choose a desired audio format
-    pg.mixer.init(11025)  # raises exception on fail
+    pygame.mixer.init(11025)  # raises exception on fail
 
     # load the sound
-    sound = pg.mixer.Sound(file_path)
+    sound = pygame.mixer.Sound(file_path)
 
     # start playing
     print("Playing Sound...")
@@ -33,9 +33,9 @@ def main(file_path=None):
     # poll until finished
     while channel.get_busy():  # still playing
         print("  ...still going...")
-        pg.time.wait(1000)
+        pygame.time.wait(1000)
     print("...Finished")
-    pg.quit()
+    pygame.quit()
 
 
 if __name__ == "__main__":

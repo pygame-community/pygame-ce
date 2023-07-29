@@ -57,6 +57,8 @@ solves no longer exists, it will likely be removed in the future.
 
    It is safe to call this function even if font is currently not initialized.
 
+   Previously created font objects will be invalid after the font module is quit.
+
    .. ## pygame.font.quit ##
 
 .. function:: get_init
@@ -121,7 +123,7 @@ solves no longer exists, it will likely be removed in the future.
    which case the set of names will be searched in order.
    If none of the given names are found, None is returned.
 
-   .. versionadded:: 2.0.1 Accept an iterable of font names.
+   .. versionaddedold:: 2.0.1 Accept an iterable of font names.
 
    .. versionchanged:: 2.1.3 Checks through user fonts instead of just global fonts for Windows.
 
@@ -150,7 +152,7 @@ solves no longer exists, it will likely be removed in the future.
    comma-separated font names, or a bytes of comma-separated font names, in
    which case the set of names will be searched in order.
 
-   .. versionadded:: 2.0.1 Accept an iterable of font names.
+   .. versionaddedold:: 2.0.1 Accept an iterable of font names.
 
    .. versionchanged:: 2.1.3 Checks through user fonts instead of just global fonts for Windows.
 
@@ -194,7 +196,7 @@ solves no longer exists, it will likely be removed in the future.
       normal. This can be mixed with the italic, underline and
       strikethrough modes.
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Font.bold ##
 
@@ -223,7 +225,7 @@ solves no longer exists, it will likely be removed in the future.
       than when normal. This can be mixed with the bold, underline and
       strikethrough modes.
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Font.italic ##
 
@@ -239,7 +241,7 @@ solves no longer exists, it will likely be removed in the future.
       of font size. This can be mixed with the bold, italic and
       strikethrough modes.
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Font.underline ##
    
@@ -278,7 +280,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: render
 
       | :sl:`draw text on a new Surface`
-      | :sg:`render(text, antialias, color, background=None, wraplength=0) -> Surface`
+      | :sg:`render(text, antialias, color, bgcolor=None, wraplength=0) -> Surface`
 
       This creates a new Surface with the specified text rendered on it. 
       :mod:`pygame.font` provides no way to directly draw text on an existing
@@ -292,9 +294,9 @@ solves no longer exists, it will likely be removed in the future.
       UCS-4 range are supported. For char strings a ``LATIN1`` encoding is
       assumed. The antialias argument is a boolean: if True the characters
       will have smooth edges. The color argument is the color of the text
-      [e.g.: (0,0,255) for blue]. The optional background argument is a color
-      to use for the text background. If no background is passed the area
-      outside the text will be transparent.
+      [e.g.: (0,0,255) for blue]. The optional bgcolor argument is a color
+      to use for the text background. If bgcolor is ``None`` the area outside
+      the text will be transparent.
 
       The `wraplength` argument describes the width (in pixels) a line of text
       should be before wrapping to a new line. See
@@ -322,7 +324,7 @@ solves no longer exists, it will likely be removed in the future.
       Font rendering is not thread safe: only a single thread can render text
       at any time.
 
-      .. versionchanged:: 2.0.3 Rendering UCS4 unicode works and does not
+      .. versionchangedold:: 2.0.3 Rendering UCS4 unicode works and does not
         raise an exception. Use `if hasattr(pygame.font, "UCS4"):` to see if
         pygame supports rendering UCS4 unicode including more languages and
         emoji.
@@ -331,6 +333,8 @@ solves no longer exists, it will likely be removed in the future.
          multiple lines.
 
       .. versionadded:: 2.1.4 wraplength parameter
+
+      .. versionchanged:: 2.3.0 now supports keyword arguments.
 
       .. ## Font.render ##
 

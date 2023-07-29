@@ -61,6 +61,10 @@ PyFont_New(TTF_Font *);
 #define PyFont_Check(x) ((x)->ob_type == &PyFont_Type)
 
 static unsigned int current_ttf_generation = 0;
+
+#define PgFont_GenerationCheck(x) \
+    (((PyFontObject *)(x))->ttf_init_generation == current_ttf_generation)
+
 #if defined(BUILD_STATIC)
 // SDL_Init + TTF_Init()  are made in main before CPython process the module
 // inittab so the emscripten handler knows it will use SDL2 next cycle.
@@ -475,7 +479,7 @@ font_set_strikethrough(PyObject *self, PyObject *arg)
 }
 
 static PyObject *
-font_render(PyObject *self, PyObject *args)
+font_render(PyObject *self, PyObject *args, PyObject *kwds)
 {
     TTF_Font *font = PyFont_AsFont(self);
     int antialias;
@@ -486,8 +490,17 @@ font_render(PyObject *self, PyObject *args)
     const char *astring = "";
     int wraplength = 0;
 
-    if (!PyArg_ParseTuple(args, "OpO|Oi", &text, &antialias, &fg_rgba_obj,
-                          &bg_rgba_obj, &wraplength)) {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE(pgExc_SDLError,
+                     "Invalid font (font module quit since font created)");
+    }
+
+    static char *kwlist[] = {"text",    "antialias",  "color",
+                             "bgcolor", "wraplength", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OpO|Oi", kwlist, &text,
+                                     &antialias, &fg_rgba_obj, &bg_rgba_obj,
+                                     &wraplength)) {
         return NULL;
     }
 
@@ -542,8 +555,8 @@ font_render(PyObject *self, PyObject *args)
 
     if (strlen(astring) == 0) { /* special 0 string case */
         int height = TTF_FontHeight(font);
-        surf = SDL_CreateRGBSurface(0, 0, height, 32, 0xff << 16, 0xff << 8,
-                                    0xff, 0);
+        surf = SDL_CreateRGBSurfaceWithFormat(0, 0, height, 32,
+                                              PG_PIXELFORMAT_XRGB8888);
     }
     else { /* normal case */
 #if !SDL_TTF_VERSION_ATLEAST(2, 0, 15)
@@ -606,6 +619,11 @@ font_size(PyObject *self, PyObject *text)
     int w, h;
     const char *string;
 
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE(pgExc_SDLError,
+                     "Invalid font (font module quit since font created)");
+    }
+
     if (PyUnicode_Check(text)) {
         PyObject *bytes = PyUnicode_AsEncodedString(text, "utf-8", "strict");
         int ecode;
@@ -659,6 +677,11 @@ font_metrics(PyObject *self, PyObject *textobj)
     Uint16 ch;
     PyObject *temp;
     int surrogate;
+
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE(pgExc_SDLError,
+                     "Invalid font (font module quit since font created)");
+    }
 
     if (PyUnicode_Check(textobj)) {
         obj = textobj;
@@ -871,7 +894,8 @@ static PyMethodDef font_methods[] = {
     {"set_strikethrough", font_set_strikethrough, METH_O,
      DOC_FONT_FONT_SETSTRIKETHROUGH},
     {"metrics", font_metrics, METH_O, DOC_FONT_FONT_METRICS},
-    {"render", font_render, METH_VARARGS, DOC_FONT_FONT_RENDER},
+    {"render", (PyCFunction)font_render, METH_VARARGS | METH_KEYWORDS,
+     DOC_FONT_FONT_RENDER},
     {"size", font_size, METH_O, DOC_FONT_FONT_SIZE},
     {"set_script", font_set_script, METH_O, DOC_FONT_FONT_SETSCRIPT},
     {"set_direction", (PyCFunction)font_set_direction,

@@ -9,7 +9,6 @@ import platform
 import pygame
 from pygame import font as pygame_font  # So font can be replaced with ftfont
 
-
 FONTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "fonts")
 
 
@@ -178,7 +177,7 @@ class FontModuleTest(unittest.TestCase):
             any(pygame_font.match_font(font, italic=True) for font in fonts)
         )
 
-    def test_issue_742(self):
+    def test_issue_553(self):
         """that the font background does not crash."""
         surf = pygame.Surface((320, 240))
         font = pygame_font.Font(None, 24)
@@ -187,7 +186,7 @@ class FontModuleTest(unittest.TestCase):
         image.set_alpha(255)
         surf.blit(image, (0, 0))
 
-        # not issue 742, but be sure to test that background color is
+        # not pygame-ce issue 553, but be sure to test that background color is
         # correctly issued on this mode
         self.assertEqual(surf.get_at((0, 0)), pygame.Color(0, 0, 0))
 
@@ -237,6 +236,31 @@ class FontTest(unittest.TestCase):
         f = pygame_font.Font(None, 20)
         screen.fill((10, 10, 10))
         font_surface = f.render("   bar", True, (0, 0, 0), (255, 255, 255))
+        font_rect = font_surface.get_rect()
+        font_rect.topleft = rect.topleft
+        self.assertTrue(font_surface)
+        screen.blit(font_surface, font_rect, font_rect)
+        pygame.display.update()
+        self.assertEqual(tuple(screen.get_at((0, 0)))[:3], (255, 255, 255))
+        self.assertEqual(tuple(screen.get_at(font_rect.topleft))[:3], (255, 255, 255))
+
+        # ftfont and font render with different arguments
+        if pygame_font.__name__ == "pygame.font":
+            font_surface = f.render(
+                text="   bar",
+                antialias=True,
+                color=(0, 0, 0),
+                bgcolor=(255, 255, 255),
+                wraplength=0,
+            )
+        else:
+            font_surface = f.render(
+                text="   bar",
+                antialias=True,
+                color=(0, 0, 0),
+                bgcolor=(255, 255, 255),
+            )
+        screen.fill((10, 10, 10))
         font_rect = font_surface.get_rect()
         font_rect.topleft = rect.topleft
         self.assertTrue(font_surface)
@@ -658,7 +682,7 @@ class FontTypeTest(unittest.TestCase):
         bfont_path = font_path.encode(filesystem_encoding, filesystem_errors)
         f = pygame_font.Font(bfont_path, 20)
 
-    def test_issue_3144(self):
+    def test_issue_1587(self):
         fpath = os.path.join(FONTDIR, "PlayfairDisplaySemibold.ttf")
 
         # issue in SDL_ttf 2.0.18 DLL on Windows

@@ -266,27 +266,20 @@ _format_view_to_audio(Py_buffer *view)
 static void
 _pg_push_mixer_event(int type, int code)
 {
-    pgEventObject *e;
     PyObject *dict, *dictcode;
-    SDL_Event event;
     PyGILState_STATE gstate = PyGILState_Ensure();
 
     dict = PyDict_New();
     if (dict) {
         if (type >= PGE_USEREVENT && type < PG_NUMEVENTS) {
             dictcode = PyLong_FromLong(code);
-            PyDict_SetItemString(dict, "code", dictcode);
-            Py_DECREF(dictcode);
+            if (dictcode) {
+                PyDict_SetItemString(dict, "code", dictcode);
+                Py_DECREF(dictcode);
+            }
         }
-        e = (pgEventObject *)pgEvent_New2(type, dict);
+        pg_post_event(type, dict);
         Py_DECREF(dict);
-
-        if (e) {
-            pgEvent_FillUserEvent(e, &event);
-            if (SDL_PushEvent(&event) <= 0)
-                Py_DECREF(dict);
-            Py_DECREF(e);
-        }
     }
     PyGILState_Release(gstate);
 }
@@ -1161,6 +1154,37 @@ chan_unpause(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
+chan_set_source_location(PyObject *self, PyObject *args)
+{
+    int channelnum = pgChannel_AsInt(self);
+    Sint16 angle;
+    float angle_f;
+    Uint8 distance;
+    float distance_f;
+    PyThreadState *_save;
+
+    if (!PyArg_ParseTuple(args, "ff", &angle_f, &distance_f))
+        return NULL;
+
+    angle = (Sint16)roundf(fmodf(angle_f, 360));
+    distance_f = roundf(distance_f);
+    if (0 > distance_f || 256 <= distance_f) {
+        return RAISE(PyExc_ValueError,
+                     "distance out of range, expected (0, 255)");
+    }
+    distance = (Uint8)distance_f;
+
+    MIXER_INIT_CHECK();
+    _save = PyEval_SaveThread();
+    if (!Mix_SetPosition(channelnum, angle, distance)) {
+        PyEval_RestoreThread(_save);
+        return RAISE(pgExc_SDLError, Mix_GetError());
+    }
+    PyEval_RestoreThread(_save);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 chan_set_volume(PyObject *self, PyObject *args)
 {
     int channelnum = pgChannel_AsInt(self);
@@ -1290,6 +1314,8 @@ static PyMethodDef channel_methods[] = {
     {"pause", (PyCFunction)chan_pause, METH_NOARGS, DOC_MIXER_CHANNEL_PAUSE},
     {"unpause", (PyCFunction)chan_unpause, METH_NOARGS,
      DOC_MIXER_CHANNEL_UNPAUSE},
+    {"set_source_location", chan_set_source_location, METH_VARARGS,
+     DOC_MIXER_CHANNEL_SETSOURCELOCATION},
     {"set_volume", chan_set_volume, METH_VARARGS, DOC_MIXER_CHANNEL_SETVOLUME},
     {"get_volume", (PyCFunction)chan_get_volume, METH_NOARGS,
      DOC_MIXER_CHANNEL_GETVOLUME},
@@ -1311,7 +1337,7 @@ static PyMethodDef channel_methods[] = {
 static void
 channel_dealloc(PyObject *self)
 {
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 
 static int

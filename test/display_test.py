@@ -582,7 +582,7 @@ class DisplayModuleTest(unittest.TestCase):
 
     def test_set_mode_unscaled(self):
         """Ensures a window created with SCALED can become smaller."""
-        # see https://github.com/pygame/pygame/issues/2327
+        # see https://github.com/pygame-community/pygame-ce/issues/1194
 
         screen = pygame.display.set_mode((300, 300), pygame.SCALED)
         self.assertEqual(screen.get_size(), (300, 300))
@@ -906,7 +906,7 @@ class DisplayOpenGLTest(unittest.TestCase):
 
 class X11CrashTest(unittest.TestCase):
     def test_x11_set_mode_crash_gh1654(self):
-        # Test for https://github.com/pygame/pygame/issues/1654
+        # Test for https://github.com/pygame-community/pygame-ce/issues/924
         # If unfixed, this will trip a segmentation fault
         pygame.display.init()
         pygame.display.quit()

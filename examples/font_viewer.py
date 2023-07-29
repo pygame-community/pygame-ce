@@ -25,7 +25,7 @@ Keyboard Controls:
 import sys
 import os
 
-import pygame as pg
+import pygame
 
 use_big_surface = False  # draw into large buffer and save png file
 
@@ -41,16 +41,15 @@ class FontViewer:
     MOUSE_SCROLL_SPEED = 50
 
     def __init__(self):
-        pg.init()
+        pygame.init()
 
         # create a window that uses 80 percent of the screen
-        info = pg.display.Info()
-        w = info.current_w
-        h = info.current_h
-        pg.display.set_mode((int(w * 0.8), int(h * 0.8)))
-        self.font_size = h // 20
+        info = pygame.display.Info()
+        self.screen_size = (int(info.current_w * 0.8), int(info.current_h * 0.8))
+        pygame.display.set_mode(self.screen_size)
+        self.font_size = self.screen_size[1] // 16
 
-        self.clock = pg.time.Clock()
+        self.clock = pygame.Clock()
         self.y_offset = 0
         self.grabbed = False
         self.render_fonts("&N abcDEF789")
@@ -77,7 +76,7 @@ class FontViewer:
             for font in os.listdir(path):
                 if font.endswith(".ttf"):
                     fonts.append(font)
-        return fonts or pg.font.get_fonts(), path
+        return fonts or pygame.font.get_fonts(), path
 
     def render_fonts(self, text="A display of font &N"):
         """
@@ -95,23 +94,27 @@ class FontViewer:
         total_height = 0
         max_width = 0
 
-        load_font = pg.font.Font if path else pg.font.SysFont
+        load_font = pygame.Font if path else pygame.font.SysFont
 
         # display instructions at the top of the display
-        font = pg.font.SysFont(pg.font.get_default_font(), font_size)
-        lines = (
-            "Use the scroll wheel or click and drag",
-            "to scroll up and down.",
-            "Fonts that don't use the Latin Alphabet",
-            "might render incorrectly.",
-            f"Here are your {len(fonts)} fonts",
-            "",
+        font = pygame.font.SysFont(pygame.font.get_default_font(), font_size)
+        font.align = pygame.FONT_CENTER
+        instructions = (
+            "Use the scroll wheel or click and drag to scroll up "
+            "and down.  Fonts that don't use the Latin Alphabet "
+            "might render incorrectly.  Here are your "
+            f"{len(fonts)} fonts"
         )
-        for line in lines:
-            surf = font.render(line, 1, instruction_color, self.back_color)
-            font_surfaces.append((surf, total_height))
-            total_height += surf.get_height()
-            max_width = max(max_width, surf.get_width())
+        surf = font.render(
+            instructions,
+            True,
+            instruction_color,
+            self.back_color,
+            self.screen_size[0] - 20,
+        )
+        font_surfaces.append((surf, total_height))
+        total_height += surf.get_height()
+        max_width = max(max_width, surf.get_width())
 
         # render all the fonts and store them with the total height
         for name in sorted(fonts):
@@ -121,8 +124,10 @@ class FontViewer:
                 continue
             line = text.replace("&N", name)
             try:
-                surf = font.render(line, 1, color, self.back_color)
-            except pg.error as e:
+                surf = font.render(
+                    line, 1, color, self.back_color, self.screen_size[0] - 20
+                )
+            except pygame.error as e:
                 print(e)
                 break
 
@@ -134,16 +139,16 @@ class FontViewer:
         self.total_height = total_height
         self.max_width = max_width
         self.font_surfaces = font_surfaces
-        self.max_y = total_height - pg.display.get_surface().get_height()
+        self.max_y = total_height - pygame.display.get_surface().get_height()
 
     def display_fonts(self):
         """
         Display the visible fonts based on the y_offset value(updated in
         handle_events) and the height of the pygame window.
         """
-        pg.display.set_caption("Font Viewer")
-        display = pg.display.get_surface()
-        clock = pg.time.Clock()
+        pygame.display.set_caption("Font Viewer")
+        display = pygame.display.get_surface()
+        clock = pygame.Clock()
         center = display.get_width() // 2
 
         while True:
@@ -155,12 +160,12 @@ class FontViewer:
                     bottom >= self.y_offset
                     and top <= self.y_offset + display.get_height()
                 ):
-                    x = center - surface.get_width() // 2
+                    x = center - surface.get_width() / 2
                     display.blit(surface, (x, top - self.y_offset))
             # get input and update the screen
             if not self.handle_events():
                 break
-            pg.display.flip()
+            pygame.display.flip()
             clock.tick(30)
 
     def render_surface(self):
@@ -173,7 +178,7 @@ class FontViewer:
         be useful for testing large surfaces.
         """
 
-        large_surface = pg.surface.Surface(
+        large_surface = pygame.surface.Surface(
             (self.max_width, self.total_height)
         ).convert()
         large_surface.fill(self.back_color)
@@ -195,7 +200,9 @@ class FontViewer:
             x = center - int(w / 2)
             large_surface.blit(surface, (x, y))
             y += surface.get_height()
-        self.max_y = large_surface.get_height() - pg.display.get_surface().get_height()
+        self.max_y = (
+            large_surface.get_height() - pygame.display.get_surface().get_height()
+        )
         self.surface = large_surface
 
     def display_surface(self, time=10):
@@ -204,12 +211,12 @@ class FontViewer:
         based on the y_offset value(set in handle_events) and the height of the
         pygame window.
         """
-        screen = pg.display.get_surface()
+        screen = pygame.display.get_surface()
 
         # Create a Rect equal to size of screen. Then we can just change its
         # top attribute to draw the desired part of the rendered font surface
         # to the display surface
-        rect = pg.rect.Rect(
+        rect = pygame.rect.Rect(
             0,
             0,
             self.surface.get_width(),
@@ -224,11 +231,11 @@ class FontViewer:
             screen.fill(self.back_color)
             rect.top = self.y_offset
             screen.blit(self.surface, (x, 0), rect)
-            pg.display.flip()
+            pygame.display.flip()
             self.clock.tick(20)
 
     def save_png(self, name="font_viewer.png"):
-        pg.image.save(self.surface, name)
+        pygame.image.save(self.surface, name)
         file_size = os.path.getsize(name) // 1024
         print(f"font surface saved to {name}\nsize: {file_size:,}Kb")
 
@@ -239,37 +246,37 @@ class FontViewer:
         changed based on mouse and keyboard input. display_fonts() and
         display_surface() use the y_offset to scroll display.
         """
-        events = pg.event.get()
+        events = pygame.event.get()
         for e in events:
-            if e.type == pg.QUIT:
+            if e.type == pygame.QUIT:
                 return False
-            elif e.type == pg.KEYDOWN:
-                if e.key == pg.K_ESCAPE:
+            elif e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_ESCAPE:
                     return False
-            elif e.type == pg.MOUSEWHEEL:
+            elif e.type == pygame.MOUSEWHEEL:
                 self.y_offset += e.y * self.MOUSE_SCROLL_SPEED * -1
-            elif e.type == pg.MOUSEBUTTONDOWN:
+            elif e.type == pygame.MOUSEBUTTONDOWN:
                 # enter dragging mode on mouse down
                 self.grabbed = True
-                pg.event.set_grab(True)
-            elif e.type == pg.MOUSEBUTTONUP:
+                pygame.event.set_grab(True)
+            elif e.type == pygame.MOUSEBUTTONUP:
                 # exit drag mode on mouse up
                 self.grabbed = False
-                pg.event.set_grab(False)
+                pygame.event.set_grab(False)
 
         # allow simple accelerated scrolling with the keyboard
-        keys = pg.key.get_pressed()
-        if keys[pg.K_UP]:
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_UP]:
             self.key_held += 1
             self.y_offset -= int(self.KEY_SCROLL_SPEED * (self.key_held // 10))
-        elif keys[pg.K_DOWN]:
+        elif keys[pygame.K_DOWN]:
             self.key_held += 1
             self.y_offset += int(self.KEY_SCROLL_SPEED * (self.key_held // 10))
         else:
             self.key_held = 20
 
         # set the y_offset for scrolling and keep it between 0 and max_y
-        y = pg.mouse.get_rel()[1]
+        y = pygame.mouse.get_rel()[1]
         if y and self.grabbed:
             self.y_offset -= y
 
@@ -278,4 +285,4 @@ class FontViewer:
 
 
 viewer = FontViewer()
-pg.quit()
+pygame.quit()
