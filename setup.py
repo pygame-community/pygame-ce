@@ -819,22 +819,45 @@ if "bdist_msi" in sys.argv:
 
 # test command.  For doing 'python setup.py test'
 
+def _get_test_modules_as_string():
+    listed = (i.replace("test" + os.path.sep, "").replace("_test.py", "") for i in glob.glob(os.path.join("test", "*_test.py")) if not i.startswith(os.path.join("test", "base_test.py")))
+    mods = [i + "\t\t\t\t\t\t\t\t" for i in listed if not i.startswith("_")]
+    return f"  ".join(mods)
+
 @add_command('test')
 class TestCommand(Command):
     user_options = []
-
+    description = "Launch the unittests without installing them. Meant for developers. See 'setup.py test --help' for more options."
+    import glob
+    user_options = [
+        (
+            'commandline=', 'c',
+            "If this option is not provided then all tests are run."\
+            "To open the help run \t\t\t\t\t"
+            "'setup.py test -c \"-h\"'\t\t\t\t\t"\
+            "e.g. to run the example from the help it would be: \t"
+            "'setup.py test -c \"sprite threads -sd\"'\t\t\t\t\t"
+            "Listening available modules:\t\t\t\t\t"
+            "\t\t\t\t\t" + _get_test_modules_as_string()
+        ),
+    ]
     def initialize_options(self):
         self._dir = os.getcwd()
+        self.commandline = None
+        self.testargs = []
 
     def finalize_options(self):
-        pass
+        if self.commandline:
+            self.testargs = self.commandline.split(" ")
 
     def run(self):
         '''
         runs the tests with default options.
         '''
+        call_args = [sys.executable, os.path.join('test', '__main__.py'), *self.testargs]
+        print("command line: ", " ".join(call_args))
         import subprocess
-        return subprocess.call([sys.executable, os.path.join('test', '__main__.py')])
+        return subprocess.call(call_args)
 
 
 class LintFormatCommand(Command):
