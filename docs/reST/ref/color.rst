@@ -191,6 +191,58 @@
       expect.
 
       .. ## Color.i1i2i3 ##
+   
+   .. classmethod:: from_cmy
+
+      | :sl:`Returns a Color object from a CMY representation`
+      | :sg:`from_cmy(object) -> Color`
+      | :sg:`from_cmy(c, m, y) -> Color`
+
+      Creates a Color object from the given CMY components. Refer to :attr:`Color.cmy`
+      for more information.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Color.from_cmy ##
+   
+   .. classmethod:: from_hsva
+
+      | :sl:`Returns a Color object from an HSVA representation`
+      | :sg:`from_hsva(object) -> Color`
+      | :sg:`from_hsva(h, s, v, a) -> Color`
+
+      Creates a Color object from the given HSVA components. Refer to :attr:`Color.hsva`
+      for more information.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Color.from_hsva ##
+   
+   .. classmethod:: from_hsla
+
+      | :sl:`Returns a Color object from an HSLA representation`
+      | :sg:`from_hsla(object) -> Color`
+      | :sg:`from_hsla(h, s, l, a) -> Color`
+
+      Creates a Color object from the given HSLA components. Refer to :attr:`Color.hsla`
+      for more information.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Color.from_hsla ##
+
+   .. classmethod:: from_i1i2i3
+
+      | :sl:`Returns a Color object from a I1I2I3 representation`
+      | :sg:`from_i1i2i3(object) -> Color`
+      | :sg:`from_i1i2i3(i1, i2, i3) -> Color`
+
+      Creates a Color object from the given I1I2I3 components. Refer to :attr:`Color.i1i2i3`
+      for more information.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Color.from_i1i2i3 ##
 
    .. method:: normalize
 
@@ -205,7 +257,7 @@
    .. method:: correct_gamma
 
       | :sl:`Applies a certain gamma value to the Color.`
-      | :sg:`correct_gamma (gamma) -> Color`
+      | :sg:`correct_gamma(gamma) -> Color`
 
       Applies a certain gamma value to the Color and returns a new Color with
       the adjusted ``RGBA`` values.

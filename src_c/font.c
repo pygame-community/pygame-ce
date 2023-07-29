@@ -48,6 +48,10 @@
 #define RAISE_TEXT_TYPE_ERROR() \
     RAISE(PyExc_TypeError, "text must be a unicode or bytes");
 
+#define RAISE_FONT_QUIT_ERROR() \
+    RAISE(pgExc_SDLError,       \
+          "Invalid font (font module quit since font created)");
+
 /* For filtering out UCS-4 and larger characters when Python is
  * built with Py_UNICODE_WIDE.
  */
@@ -61,6 +65,10 @@ PyFont_New(TTF_Font *);
 #define PyFont_Check(x) ((x)->ob_type == &PyFont_Type)
 
 static unsigned int current_ttf_generation = 0;
+
+#define PgFont_GenerationCheck(x) \
+    (((PyFontObject *)(x))->ttf_init_generation == current_ttf_generation)
+
 #if defined(BUILD_STATIC)
 // SDL_Init + TTF_Init()  are made in main before CPython process the module
 // inittab so the emscripten handler knows it will use SDL2 next cycle.
@@ -486,6 +494,10 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
     const char *astring = "";
     int wraplength = 0;
 
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR()
+    }
+
     static char *kwlist[] = {"text",    "antialias",  "color",
                              "bgcolor", "wraplength", NULL};
 
@@ -610,6 +622,10 @@ font_size(PyObject *self, PyObject *text)
     int w, h;
     const char *string;
 
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     if (PyUnicode_Check(text)) {
         PyObject *bytes = PyUnicode_AsEncodedString(text, "utf-8", "strict");
         int ecode;
@@ -725,10 +741,26 @@ font_set_ptsize(PyObject *self, PyObject *arg)
 static PyObject *
 font_getter_name(PyObject *self, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     const char *font_name = TTF_FontFaceFamilyName(font);
 
-    return PyUnicode_FromString(font_name);
+    return PyUnicode_FromString(font_name ? font_name : "");
+}
+
+static PyObject *
+font_getter_style_name(PyObject *self, void *closure)
+{
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
+    TTF_Font *font = PyFont_AsFont(self);
+    const char *font_style_name = TTF_FontFaceStyleName(font);
+    return PyUnicode_FromString(font_style_name ? font_style_name : "");
 }
 
 static PyObject *
@@ -749,6 +781,9 @@ font_metrics(PyObject *self, PyObject *textobj)
     Uint16 ch;
     PyObject *temp;
     int surrogate;
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
 
     if (PyUnicode_Check(textobj)) {
         obj = textobj;
@@ -931,6 +966,8 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
  */
 static PyGetSetDef font_getsets[] = {
     {"name", (getter)font_getter_name, NULL, DOC_FONT_FONT_NAME, NULL},
+    {"style_name", (getter)font_getter_style_name, NULL,
+     DOC_FONT_FONT_STYLENAME, NULL},
     {"bold", (getter)font_getter_bold, (setter)font_setter_bold,
      DOC_FONT_FONT_BOLD, NULL},
     {"italic", (getter)font_getter_italic, (setter)font_setter_italic,

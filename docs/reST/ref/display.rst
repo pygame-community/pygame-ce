@@ -129,11 +129,10 @@ required).
    The Surface that gets returned can be drawn to like a regular Surface but
    changes will eventually be seen on the monitor.
 
-   If no size is passed or is set to ``(0, 0)`` and pygame uses ``SDL``
-   version 1.2.10 or above, the created Surface will have the same size as the
-   current screen resolution. If only the width or height are set to ``0``, the
-   Surface will have the same width or height as the screen resolution. Using a
-   ``SDL`` version prior to 1.2.10 will raise an exception.
+   If no size is passed or is set to ``(0, 0)``, the created Surface will have
+   the same size as the current screen resolution. If only the width or height
+   are set to ``0``, the Surface will have the same width or height as the
+   screen resolution.
 
    It is usually best to not pass the depth argument. It will default to the
    best and fastest color depth for the system. If your game requires a
@@ -326,9 +325,7 @@ required).
      blit_sw_A:  1 if software Surface pixel alpha blitting is accelerated
      current_h, current_w:  Height and width of the current video mode, or
                  of the desktop mode if called before the display.set_mode
-                 is called. (current_h, current_w are available since
-                 SDL 1.2.10, and pygame 1.8.0). They are -1 on error, or if
-                 an old SDL is being used.
+                 is called. They are -1 on error.
 
    .. ## pygame.display.Info ##
 
@@ -581,7 +578,7 @@ required).
    .. Note:: :func:`toggle_fullscreen` doesn't work on Windows
              unless the window size is in :func:`pygame.display.list_modes()` or
              the window is created with the flag ``pygame.SCALED``.
-             See `issue #2380 <https://github.com/pygame/pygame/issues/2380>`_.
+             See `issue #1221 <https://github.com/pygame-community/pygame-ce/issues/1221>`_.
 
    .. ## pygame.display.toggle_fullscreen ##
 
@@ -736,11 +733,9 @@ required).
    .. note:: Disabling screensaver is subject to platform support.
              When platform support is absent, this function will
              silently appear to work even though the screensaver state
-             is unchanged.  The lack of feedback is due to SDL not
+             is unchanged. The lack of feedback is due to SDL not
              providing any supported method for determining whether
              it supports changing the screensaver state.
-             ``SDL_HINT_VIDEO_ALLOW_SCREENSAVER`` is available in SDL 2.0.2 or later.
-             SDL1.2 does not implement this.
 
    .. versionaddedold:: 2.0.0
 

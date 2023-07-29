@@ -3,13 +3,11 @@ from typing import (
     Dict,
     List,
     Optional,
-    Sequence,
-    SupportsInt,
-    Tuple,
     Union,
     final,
-    overload,
 )
+
+from ._common import Sequence
 
 @final
 class Event:
@@ -25,7 +23,7 @@ class Event:
     def __delattr__(self, name: str) -> None: ...
     def __bool__(self) -> bool: ...
 
-_EventTypes = Union[SupportsInt, Tuple[SupportsInt, ...], Sequence[SupportsInt]]
+_EventTypes = Union[int, Sequence[int]]
 
 def pump() -> None: ...
 def get(

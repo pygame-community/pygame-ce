@@ -5,6 +5,18 @@ import pygame
 
 
 class SystemModuleTest(unittest.TestCase):
+    def test_get_cpu_instruction_sets(self):
+        instruction_sets = pygame.system.get_cpu_instruction_sets()
+
+        for name in instruction_sets:
+            self.assertIsInstance(name, str)
+            self.assertIsInstance(instruction_sets[name], bool)
+
+    def test_get_total_ram(self):
+        ram = pygame.system.get_total_ram()
+
+        self.assertIsInstance(ram, int)
+
     def test_get_pref_path(self):
         get_pref_path = pygame.system.get_pref_path
 
