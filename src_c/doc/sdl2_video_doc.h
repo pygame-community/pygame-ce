@@ -20,7 +20,7 @@
 #define DOC_SDL2_VIDEO_WINDOW_DISPLAYINDEX "get_display_index -> int\nGet the index of the display that owns the window (**read-only**)"
 #define DOC_SDL2_VIDEO_WINDOW_FROMDISPLAYMODULE "from_display_module() -> Window\nCreate a Window object using window data from display module"
 #define DOC_SDL2_VIDEO_WINDOW_GETSURFACE "get_surface() -> Surface\nGet the window surface"
-#define DOC_SDL2_VIDEO_WINDOW_UPDATEFROMSURFACE "update_from_surface() -> None\nupdate_from_surface(rect1, rect2, ...) -> None\nSet the window as a modal for a parent window"
+#define DOC_SDL2_VIDEO_WINDOW_UPDATEFROMSURFACE "update_from_surface() -> None\nupdate_from_surface(rects) -> None\nUpdate the window surface to the window."
 #define DOC_SDL2_VIDEO_WINDOW_SETWINDOWED "set_windowed() -> None\nEnable windowed mode (exit fullscreen)"
 #define DOC_SDL2_VIDEO_WINDOW_SETFULLSCREEN "set_fullscreen(desktop=False) -> None\nEnter fullscreen"
 #define DOC_SDL2_VIDEO_WINDOW_DESTROY "destroy() -> None\nDestroy the window"

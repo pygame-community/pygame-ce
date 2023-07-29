@@ -237,14 +237,17 @@
    
    .. method:: update_from_surface
 
-      | :sl:`Set the window as a modal for a parent window`
+      | :sl:`Update the window surface to the window.`
       | :sg:`update_from_surface() -> None`
-      | :sg:`update_from_surface(rect1, rect2, ...) -> None`
+      | :sg:`update_from_surface(rects) -> None`
 
       Update content from the window surface to the window.
 
-      By default, this function will update the entire area of window.
-      Passing several rect like objects to update portions of the window.
+      You can pass the function a sequence of rectangles to update portions
+      of window. If no argument is passed it updates the entire window.
+
+      Unlike :func:`pygame.display.update`, if ``None`` is included in the
+      sequence, a ``ValueError`` is raised.
 
       .. versionaddedold:: 2.4.0
 

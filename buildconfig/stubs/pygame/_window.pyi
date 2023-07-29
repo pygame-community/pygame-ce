@@ -1,6 +1,6 @@
-from typing import Optional, Tuple, Union, final
+from typing import Optional, Tuple, Union, final, overload
 
-from pygame._common import Coordinate, RectValue
+from pygame._common import Coordinate, RectValue, Sequence
 from pygame.locals import WINDOWPOS_UNDEFINED
 from pygame.surface import Surface
 
@@ -26,7 +26,10 @@ class Window:
     def set_modal_for(self, parent: Window) -> None: ...
     def set_icon(self, icon: Surface) -> None: ...
     def get_surface(self) -> Surface: ...
-    def update_from_surface(self, *rects: RectValue) -> None: ...
+    @overload
+    def update_from_surface(self) -> None: ...
+    @overload
+    def update_from_surface(self, rects: Sequence[RectValue]) -> None: ...
     grab: bool
     title: str
     resizable: bool

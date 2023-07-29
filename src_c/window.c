@@ -166,8 +166,17 @@ static PyObject *
 window_update_from_surface(pgWindowObject *self, PyObject *const *args,
                            Py_ssize_t nargs)
 {
-    int i, result;
-    SDL_Rect *rects = NULL, tmp, *r;
+    int result;
+
+    if (nargs > 1) {
+        PyErr_Format(PyExc_TypeError,
+                     "update_from_surface() takes from 0 to 1 positional "
+                     "arguments but %d were given",
+                     nargs);
+        return NULL;
+    }
+
+    // no argument
     if (nargs == 0) {
         Py_BEGIN_ALLOW_THREADS;
         result = SDL_UpdateWindowSurface(self->_win);
@@ -178,25 +187,45 @@ window_update_from_surface(pgWindowObject *self, PyObject *const *args,
         Py_RETURN_NONE;
     }
 
-    rects = malloc(nargs * sizeof(SDL_Rect));
-    for (i = 0; i < nargs; i++) {
-        r = pgRect_FromObject(args[i], &tmp);
-        if (!r) {
-            free(rects);
-            return RAISE(PyExc_TypeError,
-                         "Arguments must be rect or rect-like objects.");
+    // argument is a sequence
+
+    PyObject *arg = args[0];
+
+    if (!PySequence_Check(arg)) {
+        return RAISE(
+            PyExc_ValueError,
+            "update_from_surface() requires a sequence of rect like objects");
+    }
+
+    Py_ssize_t seq_size = PySequence_Size(arg);
+    SDL_Rect tmp, *rect;
+    PyObject *item;
+    SDL_Rect *rect_array = malloc(seq_size * sizeof(SDL_Rect));
+    for (Py_ssize_t i = 0; i < seq_size; i++) {
+        item = PySequence_GetItem(arg, i);
+        if (!item) {
+            free(rect_array);
+            return NULL;
         }
-        rects[i] = *r;
+        rect = pgRect_FromObject(item, &tmp);
+        Py_DECREF(item);
+        if (!rect) {
+            free(rect_array);
+            return RAISE(PyExc_TypeError,
+                         "update_from_surface() requires a sequence of rect "
+                         "like objects");
+        }
+        rect_array[i] = *rect;
     }
 
     Py_BEGIN_ALLOW_THREADS;
-    result = SDL_UpdateWindowSurfaceRects(self->_win, rects, (int)nargs);
+    result = SDL_UpdateWindowSurfaceRects(self->_win, rect_array, seq_size);
     Py_END_ALLOW_THREADS;
     if (result) {
-        free(rects);
+        free(rect_array);
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
-    free(rects);
+    free(rect_array);
     Py_RETURN_NONE;
 }
 
