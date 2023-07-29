@@ -11,7 +11,7 @@ from typing import (
     Union,
     final,
     overload,
-    Optional
+    Optional,
 )
 
 if sys.version_info >= (3, 9):
@@ -106,9 +106,7 @@ class _GenericVector(Collection[float]):
     @overload
     def clamp_magnitude(self: _TVec, max_length: float) -> _TVec: ...
     @overload
-    def clamp_magnitude(
-        self: _TVec, min_length: float, max_length: float
-    ) -> _TVec: ...
+    def clamp_magnitude(self: _TVec, min_length: float, max_length: float) -> _TVec: ...
     @overload
     def clamp_magnitude_ip(self, max_length: float) -> None: ...
     @overload

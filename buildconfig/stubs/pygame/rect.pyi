@@ -27,7 +27,9 @@ _K = TypeVar("_K")
 _V = TypeVar("_V")
 _T = TypeVar("_T")
 
-_RectTypeCompatible_co = TypeVar("_RectTypeCompatible_co", bound=RectValue, covariant=True)
+_RectTypeCompatible_co = TypeVar(
+    "_RectTypeCompatible_co", bound=RectValue, covariant=True
+)
 
 class _GenericRect(Collection[_N]):
     @property
@@ -247,7 +249,9 @@ class _GenericRect(Collection[_N]):
         self, left: float, top: float, width: float, height: float
     ) -> bool: ...
     def collidelist(self, rect_list: Sequence[_RectTypeCompatible_co]) -> int: ...
-    def collidelistall(self, rect_list: Sequence[_RectTypeCompatible_co]) -> List[int]: ...
+    def collidelistall(
+        self, rect_list: Sequence[_RectTypeCompatible_co]
+    ) -> List[int]: ...
     def collideobjectsall(
         self, objects: Sequence[_T], key: Optional[Callable[[_T], RectValue]] = None
     ) -> List[_T]: ...
@@ -256,7 +260,9 @@ class _GenericRect(Collection[_N]):
     ) -> Optional[_T]: ...
     @overload
     def collidedict(
-        self, rect_dict: Dict[_RectTypeCompatible_co, _V], use_values: Literal[False] = False
+        self,
+        rect_dict: Dict[_RectTypeCompatible_co, _V],
+        use_values: Literal[False] = False,
     ) -> Optional[Tuple[_RectTypeCompatible_co, _V]]: ...
     @overload
     def collidedict(
@@ -264,7 +270,9 @@ class _GenericRect(Collection[_N]):
     ) -> Optional[Tuple[_K, _RectTypeCompatible_co]]: ...
     @overload
     def collidedictall(
-        self, rect_dict: Dict[_RectTypeCompatible_co, _V], use_values: Literal[False] = False
+        self,
+        rect_dict: Dict[_RectTypeCompatible_co, _V],
+        use_values: Literal[False] = False,
     ) -> List[Tuple[_RectTypeCompatible_co, _V]]: ...
     @overload
     def collidedictall(
@@ -273,11 +281,8 @@ class _GenericRect(Collection[_N]):
 
 # Rect confirms to the Collection ABC, since it also confirms to
 # Sized, Iterable and Container ABCs
-class Rect(_GenericRect[int]):
-    ...
-    
-class FRect(_GenericRect[float]):
-    ...
+class Rect(_GenericRect[int]): ...
+class FRect(_GenericRect[float]): ...
 
 RectType = Rect
 FRectType = FRect

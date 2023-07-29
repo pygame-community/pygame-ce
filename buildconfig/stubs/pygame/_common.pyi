@@ -19,6 +19,7 @@ class Sequence(Protocol[_T]):
     where only __getitem__ and __len__ is actually needed (basically almost all places
     where a sequence is used). The standard 'Sequence' abc has some extra methods.
     """
+
     def __getitem__(self, __i: SupportsIndex) -> _T: ...
     def __len__(self) -> int: ...
 

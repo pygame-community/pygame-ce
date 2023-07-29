@@ -37,7 +37,6 @@ def messagebox(
     return_button: int = 0,
     escape_button: int = 0,
 ) -> int: ...
-
 @final
 class Window:
     DEFAULT_SIZE: Tuple[Literal[640], Literal[480]]
@@ -85,7 +84,7 @@ class Texture:
         static: bool = False,
         streaming: bool = False,
         target: bool = False,
-        scale_quality: Optional[int] =None
+        scale_quality: Optional[int] = None,
     ) -> None: ...
     @staticmethod
     def from_surface(renderer: Renderer, surface: Surface) -> Texture: ...
@@ -123,10 +122,10 @@ class Texture:
         p2_xy: Iterable[float],
         p3_xy: Iterable[float],
         p4_xy: Iterable[float],
-        p1_uv: Iterable[float]=(0.0, 0.0),
-        p2_uv: Iterable[float]=(1.0, 0.0),
-        p3_uv: Iterable[float]=(1.0, 1.0),
-        p4_uv: Iterable[float]=(0.0, 1.0),
+        p1_uv: Iterable[float] = (0.0, 0.0),
+        p2_uv: Iterable[float] = (1.0, 0.0),
+        p3_uv: Iterable[float] = (1.0, 1.0),
+        p4_uv: Iterable[float] = (0.0, 1.0),
         p1_mod: Iterable[int] = (255, 255, 255, 255),
         p2_mod: Iterable[int] = (255, 255, 255, 255),
         p3_mod: Iterable[int] = (255, 255, 255, 255),
@@ -195,7 +194,11 @@ class Renderer:
         self, p1: Iterable[int], p2: Iterable[int], p3: Iterable[int], p4: Iterable[int]
     ) -> None: ...
     def fill_quad(
-        self, p1: Iterable[float], p2: Iterable[float], p3: Iterable[float], p4: Iterable[float]
+        self,
+        p1: Iterable[float],
+        p2: Iterable[float],
+        p3: Iterable[float],
+        p4: Iterable[float],
     ) -> None: ...
     def to_surface(
         self, surface: Optional[Surface] = None, area: Optional[RectValue] = None
