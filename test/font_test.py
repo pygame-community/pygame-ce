@@ -619,8 +619,8 @@ class FontTypeTest(unittest.TestCase):
 
         ttf_version = pygame_font.get_sdl_ttf_version()
         if ttf_version < (2, 0, 18):
-            self.assertRaises(pygame.error, f.get_point_size())
-            self.assertRaises(pygame.error, f.set_point_size(25))
+            self.assertRaises(pygame.error, f.get_point_size)
+            self.assertRaises(pygame.error, f.set_point_size, 25)
             return
 
         self.assertEqual(25, f.get_point_size())
