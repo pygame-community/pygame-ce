@@ -1927,7 +1927,6 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
 
     // Iterate over every pixel within the circle and
     // check if it's in the arc
-    int radius2_sqr = radius2 * radius2;
     const int max_required_y = MAX(maxy, -miny);
     for (int y = 0; y <= max_required_y; ++y) {
         // Check if positive y is within the bounds
