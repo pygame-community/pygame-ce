@@ -219,7 +219,8 @@ window_update_from_surface(pgWindowObject *self, PyObject *const *args,
     }
 
     Py_BEGIN_ALLOW_THREADS;
-    result = SDL_UpdateWindowSurfaceRects(self->_win, rect_array, seq_size);
+    result =
+        SDL_UpdateWindowSurfaceRects(self->_win, rect_array, (int)seq_size);
     Py_END_ALLOW_THREADS;
     if (result) {
         free(rect_array);
