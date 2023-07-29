@@ -1004,9 +1004,9 @@ class StubcheckCommand(Command):
         if result.returncode != 0:
             raise SystemExit("Stubcheck failed.")
 
-@add_command('localci')
+@add_command('local_ci')
 class LocalCiCommand(Command):
-    """ For running the CI steps locally with `python setup.py localci`.
+    """ For running the CI steps locally with `python setup.py local_ci`.
     """
     commands = [
         # install dependencies
@@ -1037,16 +1037,15 @@ class LocalCiCommand(Command):
         ([sys.executable, '-m', 'pygame.tests', '-v'], ""),
 
     ]
-    description = "run the ci steps locally. Meant for developers. See 'localci --help'"
-                  # "\t\t\tListing available steps:\n" \
-                  # "\t\t\t\t" + f"\n\t\t\t\t".join([f"{i}: " +  " ".join(c[0][1:]) for i, c in enumerate(commands)])
-    user_options = [ # todo add slice/list information?
+    description = "run the ci steps locally. Meant for developers. See 'setup.py local_ci --help'"
+    user_options = [
         (
             'steps=', 's',
-            "The steps that should be executed. For a list of all steps use '--help-commands'. "\
+            "The steps that should be executed. "\
             "Using slice notation individual steps can be chosen. Or just a single one. "\
-            "E.g. '--steps 3:' to execute step 3 and all following  or '-s 4' to execute step 4"\
-            "\t\t\tListing available steps:\n" \
+            "E.g. '--steps 3:' to execute step 3 and all following  or '-s 4' to execute step 4 or "
+            "as a comma separated list '-s 3,4,8'\t\t\t"\
+            "\t\t\tListing available steps:" \
             "\t\t\t\t\t" + f"  ".join([f"{i}: " + " ".join(c[0][1:]) + "\t\t\t\t\t\t" for i, c in enumerate(commands)])
         )
     ]
@@ -1069,18 +1068,16 @@ class LocalCiCommand(Command):
                 raise AssertionError(f"only slice with step 1 is supported: {s.step}")
             self.steps = step_indices[s]
     def run(self):
-        '''
+        """
         runs the ci steps locally.
-        '''
-        # import subprocess
-        # import warnings
-
+        """
         print(">>>Using python:", sys.executable)
         print(">>>steps:", self.steps)
         environ = os.environ
         if sys.platform == 'win32':
-            if "VSCMD_ARG_app_plat" not in environ: # todo will this check cause more problems than it solves?
-                raise SystemExit(f"please use a developer prompt") # todo change to warning?
+            # todo will this check cause more problems than it solves?
+            if "VSCMD_ARG_app_plat" not in environ:
+                raise SystemExit(f"please use a developer prompt!")
             environ["DISTUTILS_USE_SDK"] = "1"
             print(">>>add environ DISTUTILS_USE_SDK:", environ["DISTUTILS_USE_SDK"])
             environ["MSSdk"] = "1"
@@ -1088,7 +1085,9 @@ class LocalCiCommand(Command):
             # add Scripts path so the clang.exe is found
             environ["PATH"] += os.pathsep + os.path.join(os.path.dirname(sys.executable), "Scripts")
             print(">>>modified environ PATH:", environ["PATH"])
-        # todo check build guide for specific things for other platforms
+        else:
+            # add here other platform specific changes if needed
+            pass
 
         for step_idx in self.steps:
             if step_idx <0 or step_idx > len(self.commands):
