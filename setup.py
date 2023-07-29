@@ -915,7 +915,7 @@ class LintFormatCommand(Command):
             check_linter_exists(linter)
             result = subprocess.run([linter] + option)
             if result.returncode:
-                msg = f"'{linter}' failed."
+                msg = f"'{linter}' failed. Return code: {result.returncode}"
                 msg += " Please run: python setup.py format" if linter in formatters else ""
                 msg += f" Do you have the latest version of {linter}?"
                 raise SystemExit(msg)
@@ -924,11 +924,13 @@ class LintFormatCommand(Command):
 @add_command("lint")
 class LintCommand(LintFormatCommand):
     lint = True
+    description = "Check the existence and launch linters."
 
 
 @add_command("format")
 class FormatCommand(LintFormatCommand):
     format = True
+    description = "Reformatting the files according to the linters."
 
 
 @add_command('docs')
@@ -936,6 +938,7 @@ class DocsCommand(Command):
     """ For building the pygame-ce documentation with `python setup.py docs`.
     This generates html, and documentation .h header files.
     """
+    description = """ For building the pygame-ce documentation with `python setup.py docs`. This generates html, and documentation .h header files."""
     user_options = [
         (
             'fullgeneration',
@@ -971,6 +974,8 @@ class StubcheckCommand(Command):
     """ For checking the stubs with `python setup.py stubcheck`.
     """
     user_options = []
+    description = "For checking the stubs with `python setup.py stubcheck`. Uses mypy to check stubs consistency."
+
     def initialize_options(self):
         pass
         
@@ -998,6 +1003,109 @@ class StubcheckCommand(Command):
         os.chdir('../../')
         if result.returncode != 0:
             raise SystemExit("Stubcheck failed.")
+
+@add_command('localci')
+class LocalCiCommand(Command):
+    """ For running the CI steps locally with `python setup.py localci`.
+    """
+    commands = [
+        # install dependencies
+        ([sys.executable, '-m','pip', 'install', '-U', 'mypy'], ""),
+        ([sys.executable, '-m','pip', 'install', '-U', 'black'], ""),
+        ([sys.executable, '-m','pip', 'install', '-U', 'pylint'], ""),
+        ([sys.executable, '-m','pip', 'install', '-U', 'clang', '-format'], ""),
+        ([sys.executable, '-m','pip', 'install', '-U', 'sphinx'], ""),
+        ([sys.executable, '-m', 'buildconfig'], ""),
+
+        # run linters
+        ([sys.executable, '-m', 'black', 'buildconfig\stubs\pygame'], ""),
+        ([sys.executable, '-m', 'setup', 'format'], ""),
+        ([sys.executable, '-m', 'setup', 'lint'], ""),
+        # ([sys.executable, '-m', 'setup', 'format'], ""),
+
+        # rebuild
+        ([sys.executable, '-m', 'setup', 'clean', '--all'], ""),
+        ([sys.executable, '-m', 'setup', 'docs', '--fullgeneration'], "Failed to regenerate docs."),
+        ([sys.executable, '-m', 'setup', 'build'], "Failed to build."),
+
+        # install
+        ([sys.executable, '-m','pip', 'uninstall', '-y', 'pygame'], ""),
+        ([sys.executable, '-m', 'pip', 'install', '--no-deps','.'], ""),
+
+        # rem check stubs(against installed version!)
+        ([sys.executable, '-m', 'setup', 'stubcheck'], ""),
+        ([sys.executable, '-m', 'pygame.tests', '-v'], ""),
+
+    ]
+    description = "run the ci steps locally. Meant for developers. See 'localci --help'"
+                  # "\t\t\tListing available steps:\n" \
+                  # "\t\t\t\t" + f"\n\t\t\t\t".join([f"{i}: " +  " ".join(c[0][1:]) for i, c in enumerate(commands)])
+    user_options = [ # todo add slice/list information?
+        (
+            'steps=', 's',
+            "The steps that should be executed. For a list of all steps use '--help-commands'. "\
+            "Using slice notation individual steps can be chosen. Or just a single one. "\
+            "E.g. '--steps 3:' to execute step 3 and all following  or '-s 4' to execute step 4"\
+            "\t\t\tListing available steps:\n" \
+            "\t\t\t\t\t" + f"  ".join([f"{i}: " + " ".join(c[0][1:]) + "\t\t\t\t\t\t" for i, c in enumerate(commands)])
+        )
+    ]
+    def initialize_options(self):
+        self.steps = ":" # all steps in slice notation as default value
+
+    def finalize_options(self):
+        arg_steps = self.steps # string from command line arg
+        step_indices = list(range(len(self.commands)))
+        if arg_steps.count(":") == 0:
+            if arg_steps.count(",") == 0:
+                self.steps = [int(arg_steps)] # single step
+            else:
+                self.steps = [int(x) for x in arg_steps.split(",")] # comma separated list of steps
+                self.steps.sort()
+        else:
+            # slice of steps
+            s = slice(*((int(x) if x else x) for x in (y or None for y in arg_steps.split(":"))))
+            if s.step != 1 and s.step is not None:
+                raise AssertionError(f"only slice with step 1 is supported: {s.step}")
+            self.steps = step_indices[s]
+    def run(self):
+        '''
+        runs the ci steps locally.
+        '''
+        # import subprocess
+        # import warnings
+
+        print(">>>Using python:", sys.executable)
+        print(">>>steps:", self.steps)
+        environ = os.environ
+        if sys.platform == 'win32':
+            if "VSCMD_ARG_app_plat" not in environ: # todo will this check cause more problems than it solves?
+                raise SystemExit(f"please use a developer prompt") # todo change to warning?
+            environ["DISTUTILS_USE_SDK"] = "1"
+            print(">>>add environ DISTUTILS_USE_SDK:", environ["DISTUTILS_USE_SDK"])
+            environ["MSSdk"] = "1"
+            print(">>>add environ MSSdk:", environ["MSSdk"])
+            # add Scripts path so the clang.exe is found
+            environ["PATH"] += os.pathsep + os.path.join(os.path.dirname(sys.executable), "Scripts")
+            print(">>>modified environ PATH:", environ["PATH"])
+        # todo check build guide for specific things for other platforms
+
+        for step_idx in self.steps:
+            if step_idx <0 or step_idx > len(self.commands):
+                raise SystemExit(f"invalid step: {step_idx}")
+            self._run_subprocess(step_idx, *self.commands[step_idx], environ)
+
+    def _run_subprocess(self, step_idx, command_line, fail_message, environ):
+        command_line_as_string = " ".join(command_line)
+        print(f">>>run step {step_idx}: {command_line_as_string}")
+
+        import subprocess
+        proc = subprocess.run(command_line, capture_output=False, shell=True, check=True, env=environ,
+                              stdout=sys.stdout, stderr=sys.stderr)
+
+        if proc.returncode != 0:
+            raise SystemExit(fail_message)
+
 
 # Prune empty file lists.
 data_files = [(path, files) for path, files in data_files if files]
