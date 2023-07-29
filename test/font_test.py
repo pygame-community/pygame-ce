@@ -575,7 +575,7 @@ class FontTypeTest(unittest.TestCase):
     def test_point_size_property(self):
         if pygame_font.__name__ == "pygame.ftfont":
             return  # not a pygame.ftfont feature
-        
+
         pygame_font.init()
         font_path = os.path.join(
             os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
@@ -600,7 +600,7 @@ class FontTypeTest(unittest.TestCase):
 
         def test_neg():
             f.point_size = -500
-        
+
         def test_incorrect_type():
             f.point_size = "15"
 
@@ -610,7 +610,7 @@ class FontTypeTest(unittest.TestCase):
     def test_point_size_method(self):
         if pygame_font.__name__ == "pygame.ftfont":
             return  # not a pygame.ftfont feature
-        
+
         pygame_font.init()
         font_path = os.path.join(
             os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
