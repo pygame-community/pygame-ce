@@ -224,6 +224,30 @@
       Create a Window object that uses the same window data from the :mod:`pygame.display` module, created upon calling
       :func:`pygame.display.set_mode`.
 
+   .. method:: get_surface
+
+      | :sl:`Get the window surface`
+      | :sg:`get_surface() -> Surface`
+
+      Return a reference to the surface associated with the window.
+      
+      .. seealso:: :func:`update_from_surface`
+
+      .. versionaddedold:: 2.4.0
+   
+   .. method:: update_from_surface
+
+      | :sl:`Set the window as a modal for a parent window`
+      | :sg:`update_from_surface() -> None`
+      | :sg:`update_from_surface(rect1, rect2, ...) -> None`
+
+      Update content from the window surface to the window.
+
+      By default, this function will update the entire area of window.
+      Passing several rect like objects to update portions of the window.
+
+      .. versionaddedold:: 2.4.0
+
    .. method:: set_windowed
 
       | :sl:`Enable windowed mode (exit fullscreen)`

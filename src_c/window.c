@@ -940,8 +940,9 @@ static PyMethodDef window_methods[] = {
     {"set_icon", (PyCFunction)window_set_icon, METH_O,
      DOC_SDL2_VIDEO_WINDOW_SETICON},
     {"update_from_surface", (PyCFunction)window_update_from_surface,
-     METH_FASTCALL, "docs"},
-    {"get_surface", (PyCFunction)window_get_surface, METH_NOARGS, "docs"},
+     METH_FASTCALL, DOC_SDL2_VIDEO_WINDOW_UPDATEFROMSURFACE},
+    {"get_surface", (PyCFunction)window_get_surface, METH_NOARGS,
+     DOC_SDL2_VIDEO_WINDOW_GETSURFACE},
     {"from_display_module", (PyCFunction)window_from_display_module,
      METH_CLASS | METH_NOARGS, DOC_SDL2_VIDEO_WINDOW_FROMDISPLAYMODULE},
     {NULL, NULL, 0, NULL}};
