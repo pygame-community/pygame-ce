@@ -211,6 +211,23 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.name ##
 
+   .. attribute:: style_name
+
+      | :sl:`Gets the font's style_name.`
+      | :sg:`style_name -> str`
+
+      Read only. Returns the font's style name. Style names are arbitrary, can be an empty string. 
+      Here are some examples:
+
+        'Black', 'Bold', 'Bold Italic', 'BoldOblique', 'Book', 'BookOblique', 'Condensed', 'Condensed Oblique',
+        'ExtraLight', 'Italic', 'Light', 'LightOblique', 'Medium', 'MediumOblique', 'Oblique', 'Regular',
+        'Semibold', 'Semilight', 'Slanted'
+
+
+      .. versionadded:: 2.3.1
+
+      .. ## Font.style_name ##
+
    .. attribute:: italic
 
       | :sl:`Gets or sets whether the font should be rendered in (faked) italics.`
@@ -263,7 +280,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. attribute:: align
 
-      | :sl:`Set how rendered text is aligned when given a wrap length`
+      | :sl:`Set how rendered text is aligned when given a wrap length.`
       | :sg:`align -> int`
 
       Can be set to `pygame.FONT_LEFT`, `pygame.FONT_RIGHT`, or

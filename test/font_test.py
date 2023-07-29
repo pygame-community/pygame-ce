@@ -581,6 +581,20 @@ class FontTypeTest(unittest.TestCase):
 
         self.assertRaises(AttributeError, test_set_name)
 
+    def test_font_style_name(self):
+        f = pygame_font.Font(None, 20)
+        self.assertNotEqual(f.style_name, "")
+        self.assertNotEqual(f.style_name, None)
+        self.assertIsInstance(f.style_name, str)
+
+    def test_font_style_name_is_readonly(self):
+        f = pygame_font.Font(None, 20)
+
+        def _set_style_name():
+            f.style_name = "Say my other name."
+
+        self.assertRaises(AttributeError, _set_style_name)
+
     def test_font_file_not_found(self):
         # A per BUG reported by Bo Jangeborg on pygame-user mailing list,
         # http://www.mail-archive.com/pygame-users@seul.org/msg11675.html
