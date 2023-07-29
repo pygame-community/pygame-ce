@@ -15,7 +15,6 @@
 #define DOC_FONT_FONT_ITALIC "italic -> bool\nGets or sets whether the font should be rendered in (faked) italics."
 #define DOC_FONT_FONT_UNDERLINE "underline -> bool\nGets or sets whether the font should be rendered with an underline."
 #define DOC_FONT_FONT_STRIKETHROUGH "strikethrough -> bool\nGets or sets whether the font should be rendered with a strikethrough."
-#define DOC_FONT_FONT_ALIGN "align -> int\nSet how rendered text is aligned when given a wrap length"
 #define DOC_FONT_FONT_ALIGN "align -> int\nSet how rendered text is aligned when given a wrap length."
 #define DOC_FONT_FONT_POINTSIZE "point_size -> int\nGets or sets the font's point size"
 #define DOC_FONT_FONT_RENDER "render(text, antialias, color, bgcolor=None, wraplength=0) -> Surface\ndraw text on a new Surface"
