@@ -34,6 +34,7 @@ class Font:
     underline: bool
     strikethrough: bool
     align: int
+    style_name: str
     def __init__(self, filename: Optional[FileArg] = None, size: int = 20) -> None: ...
     def render(
         self,
@@ -41,7 +42,7 @@ class Font:
         antialias: bool,
         color: ColorValue,
         bgcolor: Optional[ColorValue] = None,
-        wraplength: int = 0
+        wraplength: int = 0,
     ) -> Surface: ...
     def size(self, text: Union[str, bytes]) -> Tuple[int, int]: ...
     def set_underline(self, value: bool) -> None: ...
