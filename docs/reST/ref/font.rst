@@ -277,11 +277,11 @@ solves no longer exists, it will likely be removed in the future.
 
    .. attribute:: point_size
 
-      | :sl:`Gets or sets the font's point_size`
+      | :sl:`Gets or sets the font's point size`
       | :sg:`point_size -> int`
 
-      Returns the point_size of the font. Will not be accurate upon initializing
-      the font object when the font name is initalized as None
+      Returns the point size of the font. Will not be accurate upon initializing
+      the font object when the font name is initalized as ``None``.
 
       .. versionadded:: 2.3.1
 
@@ -504,10 +504,10 @@ solves no longer exists, it will likely be removed in the future.
 
    .. method:: set_point_size
 
-      | :sl:`set the point_size of the font`
-      | :sg:`set_point_size(val) -> int`
+      | :sl:`set the point size of the font`
+      | :sg:`set_point_size(size) -> int`
 
-      Sets the point_size of the font, which is the value that was used to
+      Sets the point size of the font, which is the value that was used to
       initalize this font.
 
       .. versionadded:: 2.3.1
@@ -516,12 +516,12 @@ solves no longer exists, it will likely be removed in the future.
 
    .. method:: get_point_size
 
-      | :sl:`get the point_size of the font`
+      | :sl:`get the point size of the font`
       | :sg:`get_point_size() -> int`
 
-      Returns the point_size of the font. Will not be accurate upon
+      Returns the point size of the font. Will not be accurate upon
       initializing the font object when the font name is initalized
-      as ``None``
+      as ``None``.
       
       .. versionadded:: 2.3.1
 

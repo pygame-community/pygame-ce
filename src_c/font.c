@@ -642,7 +642,7 @@ font_getter_point_size(PyFontObject *self, void *closure)
 #if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     return PyLong_FromLong(self->ptsize);
 #else
-    PyErr_SetString(PyExc_SystemError,
+    PyErr_SetString(pgExc_SDLError,
                     "Incorrect SDL_TTF version (requires 2.0.18)");
     return NULL;
 #endif
@@ -654,6 +654,10 @@ font_setter_point_size(PyFontObject *self, PyObject *value, void *closure)
 #if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     TTF_Font *font = PyFont_AsFont(self);
     int val = PyLong_AsLong(value);
+
+    if (PyErr_Occurred() && val == -1) {
+        return -1;
+    }
 
     if (val <= 0) {
         PyErr_SetString(PyExc_ValueError,
@@ -669,7 +673,7 @@ font_setter_point_size(PyFontObject *self, PyObject *value, void *closure)
 
     return 0;
 #else
-    PyErr_SetString(PyExc_SystemError,
+    PyErr_SetString(pgExc_SDLError,
                     "Incorrect SDL_TTF version (requires 2.0.18)");
     return -1;
 #endif
@@ -681,7 +685,7 @@ font_get_ptsize(PyObject *self, PyObject *args)
 #if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     return PyLong_FromLong(((PyFontObject *)self)->ptsize);
 #else
-    PyErr_SetString(PyExc_SystemError,
+    PyErr_SetString(pgExc_SDLErrorr,
                     "Incorrect SDL_TTF version (requires 2.0.18)");
     return NULL;
 #endif
@@ -693,6 +697,10 @@ font_set_ptsize(PyObject *self, PyObject *arg)
 #if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     TTF_Font *font = PyFont_AsFont(self);
     int val = PyLong_AsLong(arg);
+
+    if (PyErr_Occurred() && val == -1) {
+        return NULL;
+    }
 
     if (val <= 0) {
         PyErr_SetString(PyExc_ValueError,
@@ -708,7 +716,7 @@ font_set_ptsize(PyObject *self, PyObject *arg)
 
     Py_RETURN_NONE;
 #else
-    PyErr_SetString(PyExc_SystemError,
+    PyErr_SetString(pgExc_SDLError,
                     "Incorrect SDL_TTF version (requires 2.0.18)");
     return NULL;
 #endif
