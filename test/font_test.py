@@ -585,6 +585,7 @@ class FontTypeTest(unittest.TestCase):
         f = pygame_font.Font(None, 20)
         self.assertNotEqual(f.style_name, "")
         self.assertNotEqual(f.style_name, None)
+        self.assertIsInstance(f.style_name, str)
 
     def test_font_style_name_is_readonly(self):
         f = pygame_font.Font(None, 20)
