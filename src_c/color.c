@@ -61,7 +61,7 @@ static PyObject *_COLORDICT = NULL;
 static int
 _get_double(PyObject *, double *);
 static int
-_get_color_component(PyObject *, Uint8 *);
+_get_color_int_component(PyObject *, Uint8 *);
 static int
 _hextoint(char *, Uint8 *);
 static tristate
@@ -332,7 +332,7 @@ _get_double(PyObject *obj, double *val)
 }
 
 static int
-_get_color_component(PyObject *val, Uint8 *color)
+_get_color_int_component(PyObject *val, Uint8 *color)
 {
     if (PyLong_Check(val)) {
         unsigned long longval = PyLong_AsUnsignedLong(val);
@@ -836,7 +836,7 @@ _color_update(pgColorObject *self, PyObject *const *args, Py_ssize_t nargs)
     else if (nargs == 3 || nargs == 4) {
         Py_ssize_t i;
         for (i = 0; i < nargs; i++) {
-            if (!_get_color_component(args[i], &rgba[i])) {
+            if (!_get_color_int_component(args[i], &rgba[i])) {
                 return NULL;
             }
         }
@@ -869,7 +869,7 @@ static int
 _color_set_r(pgColorObject *color, PyObject *value, void *closure)
 {
     DEL_ATTR_NOT_SUPPORTED_CHECK("r", value);
-    return _get_color_component(value, &(color->data[0])) - 1;
+    return _get_color_int_component(value, &(color->data[0])) - 1;
 }
 /**
  * color.g
@@ -887,7 +887,7 @@ static int
 _color_set_g(pgColorObject *color, PyObject *value, void *closure)
 {
     DEL_ATTR_NOT_SUPPORTED_CHECK("g", value);
-    return _get_color_component(value, &(color->data[1])) - 1;
+    return _get_color_int_component(value, &(color->data[1])) - 1;
 }
 
 /**
@@ -906,7 +906,7 @@ static int
 _color_set_b(pgColorObject *color, PyObject *value, void *closure)
 {
     DEL_ATTR_NOT_SUPPORTED_CHECK("b", value);
-    return _get_color_component(value, &(color->data[2])) - 1;
+    return _get_color_int_component(value, &(color->data[2])) - 1;
 }
 
 /**
@@ -925,7 +925,7 @@ static int
 _color_set_a(pgColorObject *color, PyObject *value, void *closure)
 {
     DEL_ATTR_NOT_SUPPORTED_CHECK("a", value);
-    return _get_color_component(value, &(color->data[3])) - 1;
+    return _get_color_int_component(value, &(color->data[3])) - 1;
 }
 
 /**
