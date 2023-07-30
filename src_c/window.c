@@ -382,6 +382,80 @@ window_get_size(pgWindowObject *self, void *v)
 }
 
 static int
+window_set_minimum_size(pgWindowObject *self, PyObject *arg, void *v)
+{
+    int w, h;
+
+    if (!pg_TwoIntsFromObj(arg, &w, &h)) {
+        PyErr_SetString(PyExc_TypeError, "invalid size argument");
+        return -1;
+    }
+
+    if (w <= 0 || h <= 0) {
+        PyErr_SetString(PyExc_ValueError,
+                        "minimum width or height should not be less than or "
+                        "equal to zero.");
+        return -1;
+    }
+
+    SDL_SetWindowMinimumSize(self->_win, w, h);
+
+    return 0;
+}
+
+static PyObject *
+window_get_minimum_size(pgWindowObject *self, void *v)
+{
+    int w, h;
+    PyObject *out = NULL;
+
+    SDL_GetWindowMinimumSize(self->_win, &w, &h);
+    out = Py_BuildValue("(ii)", w, h);
+
+    if (!out)
+        return NULL;
+
+    return out;
+}
+
+static int
+window_set_maximum_size(pgWindowObject *self, PyObject *arg, void *v)
+{
+    int w, h;
+
+    if (!pg_TwoIntsFromObj(arg, &w, &h)) {
+        PyErr_SetString(PyExc_TypeError, "invalid size argument");
+        return -1;
+    }
+
+    if (w <= 0 || h <= 0) {
+        PyErr_SetString(PyExc_ValueError,
+                        "maximum width or height should not be less than or "
+                        "equal to zero.");
+        return -1;
+    }
+
+    SDL_SetWindowMaximumSize(self->_win, w, h);
+
+    return 0;
+}
+
+static PyObject *
+window_get_maximum_size(pgWindowObject *self, void *v)
+{
+    int w, h;
+    PyObject *out = NULL;
+
+    SDL_GetWindowMaximumSize(self->_win, &w, &h);
+    out = Py_BuildValue("(ii)", w, h);
+
+    if (!out)
+        return NULL;
+
+    return out;
+}
+
+static int
 window_set_position(pgWindowObject *self, PyObject *arg, void *v)
 {
     int x, y;
@@ -779,6 +853,10 @@ static PyGetSetDef _window_getset[] = {
      NULL},
     {"size", (getter)window_get_size, (setter)window_set_size,
      DOC_SDL2_VIDEO_WINDOW_SIZE, NULL},
+    {"minimum_size", (getter)window_get_minimum_size,
+     (setter)window_set_minimum_size, DOC_SDL2_VIDEO_WINDOW_MINIMUMSIZE, NULL},
+    {"maximum_size", (getter)window_get_maximum_size,
+     (setter)window_set_maximum_size, DOC_SDL2_VIDEO_WINDOW_MAXIMUMSIZE, NULL},
     {"position", (getter)window_get_position, (setter)window_set_position,
      DOC_SDL2_VIDEO_WINDOW_POSITION, NULL},
     {"opacity", (getter)window_get_opacity, (setter)window_set_opacity,

@@ -166,6 +166,16 @@
 
       | :sl:`Get or set the window size in pixels`
       | :sg:`size -> (int, int)`
+   
+   .. attribute:: minimum_size
+
+      | :sl:`Get or set the minimum size of a window's client area`
+      | :sg:`minimum_size -> (int, int)`
+   
+   .. attribute:: maximum_size
+
+      | :sl:`Get or set the maximum size of a window's client area`
+      | :sg:`maximum_size -> (int, int)`
 
    .. attribute:: position
 

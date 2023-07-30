@@ -1,6 +1,6 @@
 from typing import Iterable, Optional, Tuple, Union, final
 from pygame.surface import Surface
-from ._common import RectValue
+from ._common import RectValue, Coordinate
 from pygame.locals import WINDOWPOS_UNDEFINED
 
 def get_grabbed_window() -> Optional[Window]: ...
@@ -32,6 +32,14 @@ class Window:
     relative_mouse: bool
     id: int
     size: Iterable[int]
+    @property
+    def minimum_size(self) -> Coordinate: ...
+    @minimum_size.setter
+    def minimum_size(self, value: Coordinate) -> None: ...
+    @property
+    def maximum_size(self) -> Coordinate: ...
+    @maximum_size.setter
+    def maximum_size(self, value: Coordinate) -> None: ...
     position: Union[int, Iterable[int]]
     opacity: float
     display_index: int
