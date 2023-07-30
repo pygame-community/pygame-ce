@@ -4,7 +4,7 @@ from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from .._common import RectValue, Literal
+from .._common import RectValue, Literal, Coordinate
 
 WINDOWPOS_UNDEFINED: int
 WINDOWPOS_CENTERED: int
@@ -70,6 +70,14 @@ class Window:
     def set_icon(self, surface: Surface) -> None: ...
     id: int
     size: Iterable[int]
+    @property
+    def minimum_size(self) -> Coordinate: ...
+    @minimum_size.setter
+    def minimum_size(self, value: Coordinate) -> None: ...
+    @property
+    def maximum_size(self) -> Coordinate: ...
+    @maximum_size.setter
+    def maximum_size(self, value: Coordinate) -> None: ...
     position: Union[int, Iterable[int]]
     opacity: float
     display_index: int
