@@ -20,7 +20,7 @@ def match_font(
     italic: Hashable = False,
 ) -> str: ...
 def SysFont(
-    name: Union[str, bytes, Iterable[Union[str, bytes]]],
+    name: Union[str, bytes, Iterable[Union[str, bytes]], None],
     size: int,
     bold: Hashable = False,
     italic: Hashable = False,
@@ -35,6 +35,8 @@ class Font:
     underline: bool
     strikethrough: bool
     align: int
+    style_name: str
+    point_size: int
     def __init__(self, filename: Optional[FileArg] = None, size: int = 20) -> None: ...
     def render(
         self,
@@ -62,5 +64,7 @@ class Font:
     def get_descent(self) -> int: ...
     def set_script(self, script_code: str) -> None: ...
     def set_direction(self, direction: int) -> None: ...
+    def get_point_size(self) -> int: ...
+    def set_point_size(self, val: int) -> None: ...
 
 FontType = Font

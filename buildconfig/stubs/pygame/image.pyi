@@ -1,9 +1,9 @@
-from typing import Optional, Sequence, Tuple, Union
+from typing import Optional, Tuple, Union
 
 from pygame.bufferproxy import BufferProxy
 from pygame.surface import Surface
 
-from ._common import FileArg, Literal
+from ._common import FileArg, Literal, IntCoordinate
 
 _BufferStyle = Union[BufferProxy, bytes, bytearray, memoryview]
 _to_string_format = Literal[
@@ -23,7 +23,7 @@ def tostring(
 ) -> bytes: ...
 def fromstring(
     bytes: bytes,
-    size: Union[Sequence[int], Tuple[int, int]],
+    size: IntCoordinate,
     format: _from_string_format,
     flipped: bool = False,
     pitch: int = -1,
@@ -35,14 +35,14 @@ def tobytes(
 ) -> bytes: ...
 def frombytes(
     bytes: bytes,
-    size: Union[Sequence[int], Tuple[int, int]],
+    size: IntCoordinate,
     format: _from_string_format,
     flipped: bool = False,
     pitch: int = -1,
 ) -> Surface: ...
 def frombuffer(
     bytes: _BufferStyle,
-    size: Union[Sequence[int], Tuple[int, int]],
+    size: IntCoordinate,
     format: _from_buffer_format,
     pitch: int = -1,
 ) -> Surface: ...

@@ -145,13 +145,6 @@ __version__ = ver
 
 # next, the "standard" modules
 # we still allow them to be missing for stripped down pygame distributions
-if get_sdl_version() < (2, 0, 0):
-    # cdrom only available for SDL 1.2.X
-    try:
-        import pygame.cdrom
-    except (ImportError, OSError):
-        cdrom = MissingModule("cdrom", urgent=1)
-
 try:
     import pygame.display
 except (ImportError, OSError):

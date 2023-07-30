@@ -28,43 +28,153 @@
 
 #define WORST_CLOCK_ACCURACY 12
 
+/* Enum containing some error codes used by timer related functions */
+typedef enum {
+    PG_TIMER_NO_ERROR,
+    PG_TIMER_SDL_ERROR,
+    PG_TIMER_MEMORY_ERROR,
+} pgSetTimerErr;
+
+/* This is a doubly linked list of event timers. Access to this linked list
+ * must be protected with an SDL mutex.
+ * An SDL mutex would be redundant if python GIL was unconditionally held in
+ * the C callback function. But acquiring GIL can be costlier than acquiring a
+ * dedicated mutex for event timers, because the GIL is usually held more
+ * often.
+ */
 typedef struct pgEventTimer {
+    /* Linked list attributes */
+    struct pgEventTimer *prev;
     struct pgEventTimer *next;
+
+    /* The unique ID of a timer. This helps the callback get the correct timer
+     * instance from the linked list */
     intptr_t timer_id;
-    pgEventObject *event;
+
+    /* A dictproxy instance */
+    pgEventDictProxy *dict_proxy;
+
+    /* event type of the associated event */
+    int event_type;
+
+    /* Number of times the event must be posted on the timer. If this number is
+     * non-positive, it means that there is no limit on the number of events on
+     * the timer */
     int repeat;
 } pgEventTimer;
 
+/* Pointer to head of timers linked list */
 static pgEventTimer *pg_event_timer = NULL;
-static SDL_mutex *timermutex = NULL;
+
+/* Timer ID incrementer */
 static intptr_t pg_timer_id = 0;
+
+#ifdef __EMSCRIPTEN__
+/* emscripten does not allow multithreading for now and SDL_CreateMutex fails.
+ * Don't bother with mutexes on emscripten for now. Mutex macros are no-ops */
+#define PG_LOCK_TIMER_MUTEX
+#define PG_UNLOCK_TIMER_MUTEX
+
+#else /* not on emscripten */
+
+/* SDL mutex to be held during access to above pointer.
+ * This mutex is intentionally immortalised (never freed during the entire
+ * duration of the program) because its cleanup can be messy with multiple
+ * threads trying to use it. Since it's a singleton we don't need to worry
+ * about memory leaks */
+static SDL_mutex *pg_timer_mutex = NULL;
+
+/* these macros are intended for use where python exceptions cannot be raised
+ * easily */
+#define PG_LOCK_TIMER_MUTEX                                                \
+    if (pg_timer_mutex) {                                                  \
+        if (SDL_LockMutex(pg_timer_mutex) < 0) {                           \
+            /* TODO: better error handling with future error-event API */  \
+            /* since this error is very rare, we can completely give up if \
+             * this happens for now */                                     \
+            printf("Fatal pygame error in SDL_LockMutex: %s",              \
+                   SDL_GetError());                                        \
+            PG_EXIT(1);                                                    \
+        }                                                                  \
+    }
+
+#define PG_UNLOCK_TIMER_MUTEX                                              \
+    if (pg_timer_mutex) {                                                  \
+        if (SDL_UnlockMutex(pg_timer_mutex) < 0) {                         \
+            /* TODO: handle errors with future error-event API */          \
+            /* since this error is very rare, we can completely give up if \
+             * this happens for now */                                     \
+            printf("Fatal pygame error in SDL_UnlockMutex: %s",            \
+                   SDL_GetError());                                        \
+            PG_EXIT(1);                                                    \
+        }                                                                  \
+    }
+
+#endif /* not on emscripten */
+
+/* Free a timer instance from linked list. Needs timer mutex held for data
+ * safety. This function call does not need GIL held, but can conditionally
+ * internally hold GIL if needed */
+static void
+_pg_timer_free(pgEventTimer *timer)
+{
+    if (!timer) {
+        return;
+    }
+
+    /* remove reference to current timer from linked list */
+    if (timer->prev) {
+        timer->prev->next = timer->next;
+        if (timer->next) {
+            timer->next->prev = timer->prev;
+        }
+    }
+    else {
+        /* current timer is head of the queue, replace head */
+        pg_event_timer = timer->next;
+        if (pg_event_timer) {
+            pg_event_timer->prev = NULL;
+        }
+    }
+
+    if (timer->dict_proxy) {
+        int is_fully_freed = 0;
+
+        SDL_AtomicLock(&timer->dict_proxy->lock);
+        /* Fully free dict and dict_proxy only if there are no references to it
+         * on the event queue. If there are any references, event functions
+         * will handle cleanups */
+        if (timer->dict_proxy->num_on_queue <= 0) {
+            is_fully_freed = 1;
+        }
+        else {
+            timer->dict_proxy->do_free_at_end = 1;
+        }
+        SDL_AtomicUnlock(&timer->dict_proxy->lock);
+
+        if (is_fully_freed) {
+            PyGILState_STATE gstate = PyGILState_Ensure();
+            Py_DECREF(timer->dict_proxy->dict);
+            PyGILState_Release(gstate);
+            free(timer->dict_proxy);
+        }
+    }
+    free(timer);
+}
 
 static PyObject *
 pg_time_autoquit(PyObject *self, PyObject *_null)
 {
-    pgEventTimer *hunt, *todel;
-    /* We can let errors silently pass in this function, because this
-     * needs to run */
-    if (timermutex) {
-        SDL_LockMutex(timermutex);
+    /* release GIL during quit because python GIL and pg_timer_mutex should
+     * not deadlock waiting for each other */
+    Py_BEGIN_ALLOW_THREADS;
+    PG_LOCK_TIMER_MUTEX
+    while (pg_event_timer) {
+        /* Keep freeing till all are freed */
+        _pg_timer_free(pg_event_timer);
     }
-    if (pg_event_timer) {
-        hunt = pg_event_timer;
-        while (hunt) {
-            todel = hunt;
-            hunt = hunt->next;
-            Py_DECREF(todel->event);
-            PyMem_Free(todel);
-        }
-        pg_event_timer = NULL;
-        pg_timer_id = 0;
-    }
-    if (timermutex) {
-        SDL_UnlockMutex(timermutex);
-        /* After we are done, we can destroy the mutex as well */
-        SDL_DestroyMutex(timermutex);
-        timermutex = NULL;
-    }
+    PG_UNLOCK_TIMER_MUTEX
+    Py_END_ALLOW_THREADS;
     Py_RETURN_NONE;
 }
 
@@ -72,84 +182,69 @@ static PyObject *
 pg_time_autoinit(PyObject *self, PyObject *_null)
 {
 #ifndef __EMSCRIPTEN__
-    /* allocate a mutex for timer data holding struct*/
-    if (!timermutex) {
-        timermutex = SDL_CreateMutex();
-        if (!timermutex)
+    /* allocate a mutex for timer data holding struct */
+    if (!pg_timer_mutex) {
+        pg_timer_mutex = SDL_CreateMutex();
+        if (!pg_timer_mutex)
             return RAISE(pgExc_SDLError, SDL_GetError());
     }
 #endif
     Py_RETURN_NONE;
 }
 
-static intptr_t
-_pg_add_event_timer(pgEventObject *ev, int repeat)
+/* Add a new timer in the timer linked list at the first index. Needs timer
+ * mutex held for data safety. The caller of this function need not hold GIL,
+ * but this function can internally hold GIL if needed.
+ * Returns pgSetTimerErr error codes */
+static pgSetTimerErr
+_pg_add_event_timer(int ev_type, PyObject *ev_dict, int repeat)
 {
-    pgEventTimer *new;
-
-    new = PyMem_New(pgEventTimer, 1);
+    pgEventTimer *new = (pgEventTimer *)malloc(sizeof(pgEventTimer));
     if (!new) {
-        PyErr_NoMemory();
-        return 0;
+        return PG_TIMER_MEMORY_ERROR;
     }
 
-    if (SDL_LockMutex(timermutex) < 0) {
-        /* this case will almost never happen, but still handle it */
-        PyMem_Free(new);
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return 0;
+    if (ev_dict) {
+        new->dict_proxy = (pgEventDictProxy *)malloc(sizeof(pgEventDictProxy));
+        if (!new->dict_proxy) {
+            free(new);
+            return PG_TIMER_MEMORY_ERROR;
+        }
+        PyGILState_STATE gstate = PyGILState_Ensure();
+        Py_INCREF(ev_dict);
+        PyGILState_Release(gstate);
+        new->dict_proxy->dict = ev_dict;
+        new->dict_proxy->lock = 0;
+        new->dict_proxy->num_on_queue = 0;
+        new->dict_proxy->do_free_at_end = 0;
     }
+    else {
+        new->dict_proxy = NULL;
+    }
+
+    /* insert the timer into the doubly linked list at the first index */
+    new->prev = NULL;
+    new->next = pg_event_timer;
 
     pg_timer_id++;
-
-    new->next = pg_event_timer;
     new->timer_id = pg_timer_id;
-    new->event = ev;
+    new->event_type = ev_type;
     new->repeat = repeat;
-    pg_event_timer = new;
 
-    /* Chances of it failing here are next to zero, dont do anything */
-    SDL_UnlockMutex(timermutex);
-    return new->timer_id;
-}
-
-static void
-_pg_remove_event_timer(pgEventObject *ev)
-{
-    pgEventTimer *hunt, *prev = NULL;
-
-    SDL_LockMutex(timermutex);
     if (pg_event_timer) {
-        hunt = pg_event_timer;
-        while (hunt->event->type != ev->type) {
-            prev = hunt;
-            hunt = hunt->next;
-            if (!hunt) {
-                /* Reached end without finding a match, quit early */
-                SDL_UnlockMutex(timermutex);
-                return;
-            }
-        }
-        if (prev)
-            prev->next = hunt->next;
-        else
-            pg_event_timer = hunt->next;
-        Py_DECREF(hunt->event);
-        PyMem_Free(hunt);
+        pg_event_timer->prev = new;
     }
-    /* Chances of it failing here are next to zero, dont do anything */
-    SDL_UnlockMutex(timermutex);
+    pg_event_timer = new;
+    return PG_TIMER_NO_ERROR;
 }
 
+/* Get event on timer queue. Needs timer mutex held for data safety. Does not
+ * need GIL held. Decrements repeat count of timer being returned.
+ * Returns NULL if timer is not found. */
 static pgEventTimer *
 _pg_get_event_on_timer(intptr_t timer_id)
 {
-    pgEventTimer *hunt;
-
-    if (SDL_LockMutex(timermutex) < 0)
-        return NULL;
-
-    hunt = pg_event_timer;
+    pgEventTimer *hunt = pg_event_timer;
     while (hunt) {
         if (hunt->timer_id == timer_id) {
             if (hunt->repeat >= 0) {
@@ -159,42 +254,53 @@ _pg_get_event_on_timer(intptr_t timer_id)
         }
         hunt = hunt->next;
     }
-
-    /* Chances of it failing here are next to zero, dont do anything */
-    SDL_UnlockMutex(timermutex);
     return hunt;
 }
 
+/* Clear event timer by type. Needs timer mutex held for data safety, but the
+ * caller need not hold GIL.
+ * Does not do anything if ev_type does not exist already.
+ */
+static void
+_pg_clear_event_timer_type(int ev_type)
+{
+    pgEventTimer *hunt = pg_event_timer;
+    while (hunt) {
+        if (hunt->event_type == ev_type) {
+            _pg_timer_free(hunt);
+            return;
+        }
+        hunt = hunt->next;
+    }
+}
+
+/* Timer callback function
+ * TODO: This needs better error handling and a way to report to the user */
 static Uint32
 timer_callback(Uint32 interval, void *param)
 {
     pgEventTimer *evtimer;
-    SDL_Event event;
-    PyGILState_STATE gstate;
-
+    PG_LOCK_TIMER_MUTEX
     evtimer = _pg_get_event_on_timer((intptr_t)param);
-    if (!evtimer)
-        return 0;
-
-    /* This function runs in a separate thread, so we acquire the GIL,
-     * pgEvent_FillUserEvent and _pg_remove_event_timer do python API calls */
-    gstate = PyGILState_Ensure();
-
-    if (SDL_WasInit(SDL_INIT_VIDEO)) {
-        pgEvent_FillUserEvent(evtimer->event, &event);
-        if (SDL_PushEvent(&event) <= 0)
-            Py_DECREF(evtimer->event->dict);
-    }
-    else
-        evtimer->repeat = 0;
-
-    if (!evtimer->repeat) {
-        /* This does memory cleanup */
-        _pg_remove_event_timer(evtimer->event);
+    if (!evtimer) {
         interval = 0;
     }
+    else {
+        if (SDL_WasInit(SDL_INIT_VIDEO)) {
+            pg_post_event_dictproxy((Uint32)evtimer->event_type,
+                                    evtimer->dict_proxy);
+        }
+        else {
+            evtimer->repeat = 0;
+        }
 
-    PyGILState_Release(gstate);
+        if (!evtimer->repeat) {
+            /* This does memory cleanup */
+            _pg_timer_free(evtimer);
+            interval = 0;
+        }
+    }
+    PG_UNLOCK_TIMER_MUTEX
     return interval;
 }
 
@@ -283,9 +389,10 @@ static PyObject *
 time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int ticks, loops = 0;
-    intptr_t timer_id;
-    PyObject *obj;
+    PyObject *obj, *ev_dict = NULL;
+    int ev_type;
     pgEventObject *e;
+    pgSetTimerErr ecode = PG_TIMER_NO_ERROR;
 
     static char *kwids[] = {"event", "millis", "loops", NULL};
 
@@ -300,50 +407,93 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
                                      &loops))
         return NULL;
 
-    if (!timermutex)
-        return RAISE(pgExc_SDLError, "pygame is not initialized");
-
     if (PyLong_Check(obj)) {
-        e = (pgEventObject *)pgEvent_New2(PyLong_AsLong(obj), NULL);
-        if (!e)
-            return NULL;
+        ev_type = (int)PyLong_AsLong(obj);
+        if (ev_type < 0 || ev_type >= PG_NUMEVENTS) {
+            if (PyErr_Occurred()) {
+                /* happens if PyLong_AsLong overflows, error is already set */
+                return NULL;
+            }
+            return RAISE(PyExc_ValueError, "event type out of range");
+        }
     }
     else if (pgEvent_Check(obj)) {
-        Py_INCREF(obj);
         e = (pgEventObject *)obj;
+        ev_type = e->type;
+        ev_dict = e->dict;
     }
-    else
+    else {
         return RAISE(PyExc_TypeError,
                      "first argument must be an event type or event object");
+    }
 
-    /* stop original timer, if it exists */
-    _pg_remove_event_timer(e);
+#ifndef __EMSCRIPTEN__
+    if (!pg_timer_mutex)
+        return RAISE(pgExc_SDLError, "pygame is not initialized");
+#endif /* emscripten */
 
+    /* release GIL because python GIL and pg_timer_mutex should not
+     * deadlock waiting for each other */
+    Py_BEGIN_ALLOW_THREADS;
+
+#ifndef __EMSCRIPTEN__
+    if (SDL_LockMutex(pg_timer_mutex) < 0) {
+        ecode = PG_TIMER_SDL_ERROR;
+        goto end_no_mutex;
+    }
+#endif /* emscripten */
+
+    /* get and clear original timer, if it exists */
+    _pg_clear_event_timer_type(ev_type);
+
+    /* This means that the user only wanted to remove an existing timer */
     if (ticks <= 0) {
-        Py_DECREF(e);
-        Py_RETURN_NONE;
+        goto end;
     }
 
     /* just doublecheck that timer is initialized */
     if (!SDL_WasInit(SDL_INIT_TIMER)) {
         if (SDL_InitSubSystem(SDL_INIT_TIMER)) {
-            Py_DECREF(e);
-            return RAISE(pgExc_SDLError, SDL_GetError());
+            ecode = PG_TIMER_SDL_ERROR;
+            goto end;
         }
     }
 
-    timer_id = _pg_add_event_timer(e, loops);
-    if (!timer_id) {
-        Py_DECREF(e);
-        return NULL;
+    ecode = _pg_add_event_timer(ev_type, ev_dict, loops);
+    if (ecode != PG_TIMER_NO_ERROR) {
+        goto end;
     }
 
-    if (!SDL_AddTimer(ticks, timer_callback, (void *)timer_id)) {
-        _pg_remove_event_timer(e); /* Does cleanup */
-        return RAISE(pgExc_SDLError, SDL_GetError());
+    if (!SDL_AddTimer(ticks, timer_callback, (void *)pg_timer_id)) {
+        _pg_timer_free(pg_event_timer); /* Does cleanup */
+        ecode = PG_TIMER_SDL_ERROR;
     }
 
-    Py_RETURN_NONE;
+end:
+#ifndef __EMSCRIPTEN__
+    if (SDL_UnlockMutex(pg_timer_mutex)) {
+        ecode = PG_TIMER_SDL_ERROR;
+    }
+
+/* This label is not used on emscripten, so it comes under this macro block */
+end_no_mutex:
+#endif /* emscripten */
+
+    Py_END_ALLOW_THREADS;
+    switch (ecode) {
+        case PG_TIMER_NO_ERROR:
+            Py_RETURN_NONE;
+        case PG_TIMER_SDL_ERROR:
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        case PG_TIMER_MEMORY_ERROR:
+            return PyErr_NoMemory();
+        default:
+            return RAISE(
+                pgExc_SDLError,
+                "Unknown and unhandled internal error occurred while handling "
+                "errors in time_set_timer! If you are seeing this message "
+                "report this to pygame devs");
+    }
 }
 
 /*clock object interface*/
@@ -351,14 +501,12 @@ typedef struct {
     PyObject_HEAD Uint64 last_tick, fps_count, fps_tick;
     float fps;
     Uint64 timepassed, rawpassed;
-    PyObject *rendered;
-} PyClockObject;
+} pgClockObject;
 
 // to be called by the other tick functions.
 static PyObject *
-clock_tick_base(PyObject *self, PyObject *arg, int use_accurate_delay)
+clock_tick_base(pgClockObject *self, PyObject *arg, int use_accurate_delay)
 {
-    PyClockObject *_clock = (PyClockObject *)self;
     float framerate = 0.0f;
     Uint64 nowtime;
 
@@ -367,8 +515,8 @@ clock_tick_base(PyObject *self, PyObject *arg, int use_accurate_delay)
 
     if (framerate) {
         Sint64 delay, endtime = (Sint64)((1.0f / framerate) * 1000.0f);
-        _clock->rawpassed = PG_GetTicks() - _clock->last_tick;
-        delay = endtime - _clock->rawpassed;
+        self->rawpassed = PG_GetTicks() - self->last_tick;
+        delay = endtime - self->rawpassed;
 
         /*just doublecheck that timer is initialized*/
         if (!SDL_WasInit(SDL_INIT_TIMER)) {
@@ -394,85 +542,80 @@ clock_tick_base(PyObject *self, PyObject *arg, int use_accurate_delay)
     }
 
     nowtime = PG_GetTicks();
-    _clock->timepassed = nowtime - _clock->last_tick;
-    _clock->fps_count += 1;
-    _clock->last_tick = nowtime;
+    self->timepassed = nowtime - self->last_tick;
+    self->fps_count += 1;
+    self->last_tick = nowtime;
     if (!framerate)
-        _clock->rawpassed = _clock->timepassed;
+        self->rawpassed = self->timepassed;
 
-    if (!_clock->fps_tick) {
-        _clock->fps_count = 0;
-        _clock->fps_tick = nowtime;
+    if (!self->fps_tick) {
+        self->fps_count = 0;
+        self->fps_tick = nowtime;
     }
-    else if (_clock->fps_count >= 10) {
-        _clock->fps =
-            _clock->fps_count / ((nowtime - _clock->fps_tick) / 1000.0f);
-        _clock->fps_count = 0;
-        _clock->fps_tick = nowtime;
-        Py_XDECREF(_clock->rendered);
+    else if (self->fps_count >= 10) {
+        self->fps = self->fps_count / ((nowtime - self->fps_tick) / 1000.0f);
+        self->fps_count = 0;
+        self->fps_tick = nowtime;
     }
-    return PyLong_FromUnsignedLongLong(_clock->timepassed);
+    return PyLong_FromUnsignedLongLong(self->timepassed);
 }
 
 static PyObject *
-clock_tick(PyObject *self, PyObject *arg)
+clock_tick(pgClockObject *self, PyObject *arg)
 {
     return clock_tick_base(self, arg, 0);
 }
 
 static PyObject *
-clock_tick_busy_loop(PyObject *self, PyObject *arg)
+clock_tick_busy_loop(pgClockObject *self, PyObject *arg)
 {
     return clock_tick_base(self, arg, 1);
 }
 
 static PyObject *
-clock_get_fps(PyObject *self, PyObject *_null)
+clock_get_fps(pgClockObject *self, PyObject *_null)
 {
-    PyClockObject *_clock = (PyClockObject *)self;
-    return PyFloat_FromDouble(_clock->fps);
+    return PyFloat_FromDouble(self->fps);
 }
 
 static PyObject *
-clock_get_time(PyObject *self, PyObject *_null)
+clock_get_time(pgClockObject *self, PyObject *_null)
 {
-    PyClockObject *_clock = (PyClockObject *)self;
-    return PyLong_FromUnsignedLongLong(_clock->timepassed);
+    return PyLong_FromUnsignedLongLong(self->timepassed);
 }
 
 static PyObject *
-clock_get_rawtime(PyObject *self, PyObject *_null)
+clock_get_rawtime(pgClockObject *self, PyObject *_null)
 {
-    PyClockObject *_clock = (PyClockObject *)self;
-    return PyLong_FromUnsignedLongLong(_clock->rawpassed);
+    return PyLong_FromUnsignedLongLong(self->rawpassed);
 }
 
 /* clock object internals */
 
 static struct PyMethodDef clock_methods[] = {
-    {"tick", clock_tick, METH_VARARGS, DOC_TIME_CLOCK_TICK},
-    {"get_fps", clock_get_fps, METH_NOARGS, DOC_TIME_CLOCK_GETFPS},
-    {"get_time", clock_get_time, METH_NOARGS, DOC_TIME_CLOCK_GETTIME},
-    {"get_rawtime", clock_get_rawtime, METH_NOARGS, DOC_TIME_CLOCK_GETRAWTIME},
-    {"tick_busy_loop", clock_tick_busy_loop, METH_VARARGS,
+    {"tick", (PyCFunction)clock_tick, METH_VARARGS, DOC_TIME_CLOCK_TICK},
+    {"get_fps", (PyCFunction)clock_get_fps, METH_NOARGS,
+     DOC_TIME_CLOCK_GETFPS},
+    {"get_time", (PyCFunction)clock_get_time, METH_NOARGS,
+     DOC_TIME_CLOCK_GETTIME},
+    {"get_rawtime", (PyCFunction)clock_get_rawtime, METH_NOARGS,
+     DOC_TIME_CLOCK_GETRAWTIME},
+    {"tick_busy_loop", (PyCFunction)clock_tick_busy_loop, METH_VARARGS,
      DOC_TIME_CLOCK_TICKBUSYLOOP},
     {NULL, NULL, 0, NULL}};
 
 static void
 clock_dealloc(PyObject *self)
 {
-    PyClockObject *_clock = (PyClockObject *)self;
-    Py_XDECREF(_clock->rendered);
     Py_TYPE(self)->tp_free(self);
 }
 
 PyObject *
-clock_str(PyObject *self)
+clock_str(pgClockObject *self)
 {
     char str[64];
-    PyClockObject *_clock = (PyClockObject *)self;
 
-    int ret = PyOS_snprintf(str, 64, "<Clock(fps=%.2f)>", _clock->fps);
+    int ret = PyOS_snprintf(str, 64, "<Clock(fps=%.2f)>", self->fps);
     if (ret < 0 || ret >= 64) {
         return RAISE(PyExc_RuntimeError,
                      "Internal PyOS_snprintf call failed!");
@@ -498,24 +641,23 @@ clock_new(PyTypeObject *type, PyObject *args, PyObject *kwargs)
         }
     }
 
-    PyClockObject *self = (PyClockObject *)(type->tp_alloc(type, 0));
+    pgClockObject *self = (pgClockObject *)(type->tp_alloc(type, 0));
     self->fps_tick = 0;
     self->timepassed = 0;
     self->rawpassed = 0;
     self->last_tick = PG_GetTicks();
     self->fps = 0.0f;
     self->fps_count = 0;
-    self->rendered = NULL;
 
     return (PyObject *)self;
 }
 
 static PyTypeObject PyClock_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.time.Clock",
-    .tp_basicsize = sizeof(PyClockObject),
+    .tp_basicsize = sizeof(pgClockObject),
     .tp_dealloc = clock_dealloc,
-    .tp_repr = clock_str,
-    .tp_str = clock_str,
+    .tp_repr = (reprfunc)clock_str,
+    .tp_str = (reprfunc)clock_str,
     .tp_doc = DOC_TIME_CLOCK,
     .tp_methods = clock_methods,
     .tp_new = clock_new,

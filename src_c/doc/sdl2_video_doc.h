@@ -10,6 +10,7 @@
 #define DOC_SDL2_VIDEO_WINDOW_TITLE "title -> str\nGet or set the window title"
 #define DOC_SDL2_VIDEO_WINDOW_RESIZABLE "resizable -> bool\nGet or set whether the window is resizable"
 #define DOC_SDL2_VIDEO_WINDOW_BORDERLESS "borderless -> bool\nGet or set whether the window is borderless"
+#define DOC_SDL2_VIDEO_WINDOW_ALWAYSONTOP "always_on_top -> bool\nGet or set whether the window is always on top"
 #define DOC_SDL2_VIDEO_WINDOW_ID "id -> int\nGet the unique window ID (**read-only**)"
 #define DOC_SDL2_VIDEO_WINDOW_SIZE "size -> (int, int)\nGet or set the window size in pixels"
 #define DOC_SDL2_VIDEO_WINDOW_POSITION "position -> (int, int) or WINDOWPOS_CENTERED or WINDOWPOS_UNDEFINED\nGet or set the window position in screen coordinates"

@@ -77,7 +77,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    what the hardware supports. For example a sound card may not
    support 16bit sound samples, so instead it will use 8bit samples internally.
    If AUDIO_ALLOW_FORMAT_CHANGE is supplied, then the requested format will
-   change to the closest that SDL2 supports.
+   change to the closest that SDL supports.
 
    Apart from 0, allowedchanged accepts the following constants ORed together:
 
@@ -229,6 +229,43 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    Channel with the longest running Sound and return it.
 
    .. ## pygame.mixer.find_channel ##
+
+.. function:: set_soundfont
+
+   | :sl:`set the soundfont for playing midi music`
+   | :sg:`set_soundfont(path) -> None`
+
+   This sets the soundfont file to be used in the playback of midi music.
+   The soundfont only affects the playback of ``MID``, ``MIDI``, and ``KAR`` file formats.
+   The optional ``path`` argument, a string (or multiple strings separated by a semi-colon),
+   must point to the soundfont file(s) to be searched for in order given if some
+   are missing. If ``path`` is an empty string or the default (``None``), any specified soundfont paths
+   will be cleared from the mixer.
+
+   Note on Windows, the mixer always uses the built-in soundfont instead of the one specified.
+
+   Function :func:`set_soundfont` calls underlying SDL_mixer function
+   ``Mix_SetSoundFonts``.
+
+   .. versionadded:: 2.3.1
+
+   .. ## pygame.mixer.set_soundfont ##
+
+.. function:: get_soundfont
+
+   | :sl:`get the soundfont for playing midi music`
+   | :sg:`get_soundfont() -> paths`
+
+   This gets the soundfont filepaths as a string (each path is separated by a semi-colon) 
+   to be used in the playback of ``MID``, ``MIDI``, and ``KAR`` music file formats. If no
+   soundfont is specified, the return type is ``None``.
+
+   Function :func:`get_soundfont` calls underlying SDL_mixer function
+   ``Mix_GetSoundFonts``.
+
+   .. versionadded:: 2.3.1
+
+   .. ## pygame.mixer.get_soundfont ##
 
 .. function:: get_busy
 

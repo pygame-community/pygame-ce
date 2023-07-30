@@ -1831,7 +1831,7 @@ _color_subscript(pgColorObject *self, PyObject *item)
         int len = 4;
         Py_ssize_t start, stop, step, slicelength;
 
-        if (Slice_GET_INDICES_EX(item, len, &start, &stop, &step,
+        if (PySlice_GetIndicesEx(item, len, &start, &stop, &step,
                                  &slicelength) < 0) {
             return NULL;
         }
@@ -1980,7 +1980,7 @@ _color_set_slice(pgColorObject *color, PyObject *idx, PyObject *val)
         int c;
         Py_ssize_t i, cur;
 
-        if (Slice_GET_INDICES_EX(idx, color->len, &start, &stop, &step,
+        if (PySlice_GetIndicesEx(idx, color->len, &start, &stop, &step,
                                  &slicelength) < 0) {
             return -1;
         }
