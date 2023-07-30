@@ -653,6 +653,92 @@ font_size(PyObject *self, PyObject *text)
 }
 
 static PyObject *
+font_getter_point_size(PyFontObject *self, void *closure)
+{
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+    return PyLong_FromLong(self->ptsize);
+#else
+    PyErr_SetString(pgExc_SDLError,
+                    "Incorrect SDL_TTF version (requires 2.0.18)");
+    return NULL;
+#endif
+}
+
+static int
+font_setter_point_size(PyFontObject *self, PyObject *value, void *closure)
+{
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+    TTF_Font *font = PyFont_AsFont(self);
+    int val = PyLong_AsLong(value);
+
+    if (PyErr_Occurred() && val == -1) {
+        return -1;
+    }
+
+    if (val <= 0) {
+        PyErr_SetString(PyExc_ValueError,
+                        "point_size cannot be equal to, or less than 0");
+        return -1;
+    }
+
+    if (TTF_SetFontSize(font, val) == -1) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return -1;
+    }
+    self->ptsize = val;
+
+    return 0;
+#else
+    PyErr_SetString(pgExc_SDLError,
+                    "Incorrect SDL_TTF version (requires 2.0.18)");
+    return -1;
+#endif
+}
+
+static PyObject *
+font_get_ptsize(PyObject *self, PyObject *args)
+{
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+    return PyLong_FromLong(((PyFontObject *)self)->ptsize);
+#else
+    PyErr_SetString(pgExc_SDLError,
+                    "Incorrect SDL_TTF version (requires 2.0.18)");
+    return NULL;
+#endif
+}
+
+static PyObject *
+font_set_ptsize(PyObject *self, PyObject *arg)
+{
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+    TTF_Font *font = PyFont_AsFont(self);
+    int val = PyLong_AsLong(arg);
+
+    if (PyErr_Occurred() && val == -1) {
+        return NULL;
+    }
+
+    if (val <= 0) {
+        PyErr_SetString(PyExc_ValueError,
+                        "point_size cannot be equal to, or less than 0");
+        return NULL;
+    }
+
+    if (TTF_SetFontSize(font, val) == -1) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return NULL;
+    }
+    ((PyFontObject *)self)->ptsize = val;
+
+    Py_RETURN_NONE;
+#else
+    PyErr_SetString(pgExc_SDLError,
+                    "Incorrect SDL_TTF version (requires 2.0.18)");
+    return NULL;
+#endif
+}
+
+static PyObject *
 font_getter_name(PyObject *self, void *closure)
 {
     if (!PgFont_GenerationCheck(self)) {
@@ -892,6 +978,8 @@ static PyGetSetDef font_getsets[] = {
      (setter)font_setter_strikethrough, DOC_FONT_FONT_STRIKETHROUGH, NULL},
     {"align", (getter)font_getter_align, (setter)font_setter_align,
      DOC_FONT_FONT_ALIGN, NULL},
+    {"point_size", (getter)font_getter_point_size,
+     (setter)font_setter_point_size, DOC_FONT_FONT_POINTSIZE, NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyMethodDef font_methods[] = {
@@ -911,6 +999,9 @@ static PyMethodDef font_methods[] = {
      DOC_FONT_FONT_GETSTRIKETHROUGH},
     {"set_strikethrough", font_set_strikethrough, METH_O,
      DOC_FONT_FONT_SETSTRIKETHROUGH},
+    {"get_point_size", font_get_ptsize, METH_NOARGS,
+     DOC_FONT_FONT_GETPOINTSIZE},
+    {"set_point_size", font_set_ptsize, METH_O, DOC_FONT_FONT_SETPOINTSIZE},
     {"metrics", font_metrics, METH_O, DOC_FONT_FONT_METRICS},
     {"render", (PyCFunction)font_render, METH_VARARGS | METH_KEYWORDS,
      DOC_FONT_FONT_RENDER},
@@ -1024,6 +1115,7 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
 
     Py_DECREF(obj);
     self->font = font;
+    self->ptsize = fontsize;
     self->ttf_init_generation = current_ttf_generation;
 
     return 0;
