@@ -116,21 +116,6 @@ get_count(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
-joy_init(PyObject *self, PyObject *_null)
-{
-    pgJoystickObject *jstick = (pgJoystickObject *)self;
-
-    if (!jstick->joy) {
-        jstick->joy = SDL_JoystickOpen(jstick->id);
-        if (!jstick->joy) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
-        }
-    }
-
-    Py_RETURN_NONE;
-}
-
-static PyObject *
 joy_quit(PyObject *self, PyObject *_null)
 {
     pgJoystickObject *joy = (pgJoystickObject *)self;
@@ -148,13 +133,6 @@ joy_get_init(PyObject *self, PyObject *_null)
 {
     SDL_Joystick *joy = pgJoystick_AsSDL(self);
     return PyBool_FromLong(joy != NULL);
-}
-
-static PyObject *
-joy_get_id(PyObject *self, PyObject *_null)
-{
-    int joy_id = pgJoystick_AsID(self);
-    return PyLong_FromLong(joy_id);
 }
 
 static PyObject *
@@ -473,11 +451,8 @@ joy_get_hat(PyObject *self, PyObject *args)
 }
 
 static PyMethodDef joy_methods[] = {
-    {"init", joy_init, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_INIT},
     {"quit", joy_quit, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_QUIT},
     {"get_init", joy_get_init, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_GETINIT},
-
-    {"get_id", joy_get_id, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_GETID},
     {"get_instance_id", joy_get_instance_id, METH_NOARGS,
      DOC_JOYSTICK_JOYSTICK_GETINSTANCEID},
     {"get_guid", joy_get_guid, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_GETGUID},
