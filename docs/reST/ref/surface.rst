@@ -95,44 +95,33 @@
       Draws a Surface onto this Surface.
 
       **Parameters**
-
-      ``source``
-          The ``Surface`` object that will be drawn onto this Surface.
-      ``dest``
-          Specifies the placement of the source ``Surface`` onto this
-          ``Surface``. It can take a coordinate (x, y) or a ``Rect`` (using its top-left corner).
-      ``area`` (optional)
-          Represents the portion of the source ``Surface`` that will be drawn.
-          It can be a ``Rect`` object representing that section. If not provided, the entire source
-          surface will be drawn.
-      ``special_flags`` (optional)
-          Controls how the colors of the source Surface are combined
-          with this Surface. If not provided it defaults to ``0`` (``BLENDMODE_NONE``),
-          resulting in an opaque blit or a transparent blit if the ``Surface`` has transparency.
-          See :doc:`special_flags_list` for a list of possible values.
-
+          - ``source``
+              The ``Surface`` object that will be drawn onto this ``Surface``.
+              If it has transparency, transparent pixels will be ignored when blittting to an 8-bit ``Surface``.
+          - ``dest``
+              Specifies the placement of the ``source`` onto this ``Surface``.
+              It can take a coordinate ``(x, y)`` or a ``Rect`` (using its top-left corner).
+              If a ``Rect`` is passed, its size will not affect the blit.
+          - ``area`` *(optional)*
+              Represents the portion of the ``source`` that will be drawn.
+              It can be a ``Rect`` object representing that section. If ``None`` or nothing
+              is provided, the entire source surface will be drawn.
+              If the ``Rect`` has negative position, the final blit position will be
+              ``dest`` - ``Rect.topleft``.
+          - ``special_flags`` *(optional)*
+              Controls how the colors of the ``source`` are combined with this Surface.
+              If not provided it defaults to ``BLENDMODE_NONE`` (``0``).
+              See :doc:`special_flags_list` for a list of possible values.
       **Return**
-
-          A ``Rect`` object representing the affected area of this ``Surface`` that was modified
+          A :doc:`rect` object representing the affected area of this ``Surface`` that was modified
           by the blit operation. This area includes only the pixels within this ``Surface`` or
           its clipping area (see :meth:`set_clip`).
-
       **Notes**
-
-          - If the ``dest`` parameter is a ``Rect`` object, only its ``x`` and ``y`` coordinates
-            are used, its size will not affect the blit.
-
-          - If the ``area`` ``Rect`` has negative position, the final blit position will be
-            ``dest`` - ``area.topleft``.
-
-          - If the ``source`` ``Surface`` has transparency, transparent pixels will be ignored
-            when blittting to an 8-bit surface.
-
-          - When self-blitting and there is a colorkey or alpha transparency, resulting colors
+          - When self-blitting and there is a colorkey or alpha transparency set, resulting colors
             may appear slightly different compared to a non-self blit.
 
-          - The blit is ignored if the ``source`` ``Surface`` is completely outside this ``Surface``'s
-            clipping area. Otherwise only the overlapping area will be blitted.
+          - The blit is ignored if the ``source`` is positioned completely outside this ``Surface``'s
+            clipping area. Otherwise only the overlapping area will be drawn.
 
       .. ## Surface.blit ##
 

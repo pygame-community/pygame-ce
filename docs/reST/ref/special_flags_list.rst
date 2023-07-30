@@ -93,8 +93,7 @@ Special Flags List
            Uses premultiplied alpha blending for faster and accurate results when
            the color channels are already multiplied by the image alpha channel.
            You should only use this blend mode if you previously premultiplied the Surface with
-           :meth:`premul_alpha()`. Check out :doc:`surface`'s :meth:`premul_alpha()` method for more
-           information about premultiplied alpha.
+           :meth:`Surface.premul_alpha()`.
 
     .. versionaddedold:: 2.0.0
 
