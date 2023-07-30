@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Trigger CircleCI builds on release
         id: circleci
-        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.0.5
+        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.1.0
         env:
           CCI_TOKEN: ${{ secrets.CCI_TOKEN }}
 
