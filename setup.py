@@ -840,22 +840,45 @@ class TestCommand(Command):
             "Listening available modules:\t\t\t\t\t"
             "\t\t\t\t\t" + _get_test_modules_as_string()
         ),
+        (
+            'copy=', None,
+            "Run tests from the repository by copying them to the installed pygame.tests directory. "
+            "Defaults to 'True'. Use '--copy False' to leave the pygame.tests directory in site-packages as it is."
+        ),
     ]
+
     def initialize_options(self):
         self._dir = os.getcwd()
         self.commandline = None
         self.testargs = []
+        self.copy = '1'
 
     def finalize_options(self):
         if self.commandline:
             self.testargs = self.commandline.split(" ")
+        self.copy = True if self.copy in ['1', 'True', 1, True, 'y', "yes"] else False
 
     def run(self):
-        '''
+        """
         runs the tests with default options.
-        '''
-        call_args = [sys.executable, os.path.join('test', '__main__.py'), *self.testargs]
-        print("command line: ", " ".join(call_args))
+        """
+        if self.copy:
+            # e.g. run the local test files
+            # copy local files to site-packages
+            import sysconfig
+            site_packages_path = sysconfig.get_path("purelib")
+            source_path = "test"
+            target_path = os.path.join(site_packages_path, "pygame", "tests")
+            if os.path.exists(target_path):
+                print(f"deleting '{target_path}'...")
+                shutil.rmtree(target_path)
+            print(f"copy files from '{source_path}' to '{target_path}' ...")
+            shutil.copytree(source_path, target_path)
+
+        #e.g. python -m pygame.tests surface_test font_test -v
+        call_args = [sys.executable, "-m", "pygame.tests", *self.testargs]
+        print("executing: ", " ".join(call_args))
+        print("")
         import subprocess
         return subprocess.call(call_args)
 
@@ -1106,7 +1129,9 @@ class LocalCiCommand(Command):
             environ["MSSdk"] = "1"
             print(">>>add environ MSSdk:", environ["MSSdk"])
             # add Scripts path so the clang.exe is found
-            environ["PATH"] += os.pathsep + os.path.join(os.path.dirname(sys.executable), "Scripts")
+            import sysconfig
+            scripts_dir = sysconfig.get_path("scripts")
+            environ["PATH"] += os.pathsep + scripts_dir
             print(">>>modified environ PATH:", environ["PATH"])
         else:
             # add here other platform specific changes if needed
