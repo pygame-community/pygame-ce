@@ -819,31 +819,41 @@ if "bdist_msi" in sys.argv:
 
 # test command.  For doing 'python setup.py test'
 
+
 def _get_test_modules_as_string():
     import glob
-    listed = (i.replace("test" + os.path.sep, "").replace("_test.py", "") for i in glob.glob(os.path.join("test", "*_test.py")) if not i.startswith(os.path.join("test", "base_test.py")))
+
+    listed = (
+        i.replace("test" + os.path.sep, "").replace("_test.py", "")
+        for i in glob.glob(os.path.join("test", "*_test.py"))
+        if not i.startswith(os.path.join("test", "base_test.py"))
+    )
     mods = [i + "\t\t\t\t\t\t\t\t" for i in listed if not i.startswith("_")]
     return f"  ".join(mods)
 
-@add_command('test')
+
+@add_command("test")
 class TestCommand(Command):
     user_options = []
     description = "Launch the unittests without installing them. Meant for developers. See 'setup.py test --help' for more options."
     user_options = [
         (
-            'commandline=', 'c',
-            "If this option is not provided then all tests are run."\
-            "To open the help run \t\t\t\t\t"
-            "'setup.py test -c \"-h\"'\t\t\t\t\t"\
+            "commandline=",
+            "c",
+            "If this option is not provided then all tests are run. "
+            "To open the help use \t\t\t\t\t"
+            "'setup.py test -c \"-h\"'\t\t\t\t\t"
             "e.g. to run the example from the help it would be: \t"
             "'setup.py test -c \"sprite threads -sd\"'\t\t\t\t\t"
             "Listening available modules:\t\t\t\t\t"
-            "\t\t\t\t\t" + _get_test_modules_as_string()
+            "\t\t\t\t\t" + _get_test_modules_as_string(),
         ),
         (
-            'copy=', None,
-            "Run tests from the repository by copying them to the installed pygame.tests directory. "
-            "Defaults to 'True'. Use '--copy False' to leave the pygame.tests directory in site-packages as it is."
+            "copy=",
+            None,
+            "Run tests from the repository by copying them to the installed pygame.tests directory "
+            "(e.g. site-packages/pygame/tests). "
+            "Defaults to 'False'.",
         ),
     ]
 
@@ -851,12 +861,12 @@ class TestCommand(Command):
         self._dir = os.getcwd()
         self.commandline = None
         self.testargs = []
-        self.copy = '1'
+        self.copy = "0"
 
     def finalize_options(self):
         if self.commandline:
             self.testargs = self.commandline.split(" ")
-        self.copy = True if self.copy in ['1', 'True', 1, True, 'y', "yes"] else False
+        self.copy = True if self.copy in ["1", "True", 1, True, "y", "yes"] else False
 
     def run(self):
         """
@@ -866,6 +876,7 @@ class TestCommand(Command):
             # e.g. run the local test files
             # copy local files to site-packages
             import sysconfig
+
             site_packages_path = sysconfig.get_path("purelib")
             source_path = "test"
             target_path = os.path.join(site_packages_path, "pygame", "tests")
@@ -875,11 +886,21 @@ class TestCommand(Command):
             print(f"copy files from '{source_path}' to '{target_path}' ...")
             shutil.copytree(source_path, target_path)
 
-        #e.g. python -m pygame.tests surface_test font_test -v
-        call_args = [sys.executable, "-m", "pygame.tests", *self.testargs]
+        if self.copy:
+            # e.g. python -m pygame.tests surface_test font_test -v
+            call_args = [sys.executable, "-m", "pygame.tests", *self.testargs]
+        else:
+            # original command and/or passing provided args
+            call_args = [
+                sys.executable,
+                os.path.join("test", "__main__.py"),
+                *self.testargs,
+            ]
+
         print("executing: ", " ".join(call_args))
         print("")
         import subprocess
+
         return subprocess.call(call_args)
 
 
