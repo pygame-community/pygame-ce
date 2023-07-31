@@ -416,12 +416,9 @@ static PyObject *
 window_get_minimum_size(pgWindowObject *self, void *v)
 {
     int w, h;
-    PyObject *out;
-
     SDL_GetWindowMinimumSize(self->_win, &w, &h);
-    out = Py_BuildValue("(ii)", w, h);
 
-    return out;
+    return Py_BuildValue("(ii)", w, h);
 }
 
 static int
@@ -459,12 +456,9 @@ static PyObject *
 window_get_maximum_size(pgWindowObject *self, void *v)
 {
     int w, h;
-    PyObject *out;
-
     SDL_GetWindowMaximumSize(self->_win, &w, &h);
-    out = Py_BuildValue("(ii)", w, h);
 
-    return out;
+    return Py_BuildValue("(ii)", w, h);
 }
 
 static int
