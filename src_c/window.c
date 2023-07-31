@@ -385,16 +385,25 @@ static int
 window_set_minimum_size(pgWindowObject *self, PyObject *arg, void *v)
 {
     int w, h;
+    int max_w, max_h;
 
     if (!pg_TwoIntsFromObj(arg, &w, &h)) {
         PyErr_SetString(PyExc_TypeError, "invalid size argument");
         return -1;
     }
 
-    if (w <= 0 || h <= 0) {
+    if (w < 0 || h < 0) {
+        PyErr_SetString(
+            PyExc_ValueError,
+            "minimum width or height should not be less than zero");
+        return -1;
+    }
+
+    SDL_GetWindowMaximumSize(self->_win, &max_w, &max_h);
+    if ((max_w > 0 && max_h > 0) && (w > max_w || h > max_h)) {
         PyErr_SetString(PyExc_ValueError,
-                        "minimum width or height should not be less than or "
-                        "equal to zero.");
+                        "minimum width or height should not be greater than "
+                        "maximum width or height respectively");
         return -1;
     }
 
@@ -407,13 +416,10 @@ static PyObject *
 window_get_minimum_size(pgWindowObject *self, void *v)
 {
     int w, h;
-    PyObject *out = NULL;
+    PyObject *out;
 
     SDL_GetWindowMinimumSize(self->_win, &w, &h);
     out = Py_BuildValue("(ii)", w, h);
-
-    if (!out)
-        return NULL;
 
     return out;
 }
@@ -422,16 +428,25 @@ static int
 window_set_maximum_size(pgWindowObject *self, PyObject *arg, void *v)
 {
     int w, h;
+    int min_w, min_h;
 
     if (!pg_TwoIntsFromObj(arg, &w, &h)) {
         PyErr_SetString(PyExc_TypeError, "invalid size argument");
         return -1;
     }
 
-    if (w <= 0 || h <= 0) {
+    if (w < 0 || h < 0) {
+        PyErr_SetString(
+            PyExc_ValueError,
+            "maximum width or height should not be less than zero");
+        return -1;
+    }
+
+    SDL_GetWindowMinimumSize(self->_win, &min_w, &min_h);
+    if (w < min_w || h < min_h) {
         PyErr_SetString(PyExc_ValueError,
-                        "maximum width or height should not be less than or "
-                        "equal to zero.");
+                        "maximum width or height should not be less than "
+                        "minimum width or height respectively");
         return -1;
     }
 
@@ -444,13 +459,10 @@ static PyObject *
 window_get_maximum_size(pgWindowObject *self, void *v)
 {
     int w, h;
-    PyObject *out = NULL;
+    PyObject *out;
 
     SDL_GetWindowMaximumSize(self->_win, &w, &h);
     out = Py_BuildValue("(ii)", w, h);
-
-    if (!out)
-        return NULL;
 
     return out;
 }
