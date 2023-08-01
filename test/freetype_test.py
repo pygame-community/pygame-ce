@@ -1689,7 +1689,7 @@ class FreeTypeFontTest(unittest.TestCase):
         self.assertEqual(font_name_2, font_name)
 
         # Check mixed list of bytes and string.
-        names = [fonts[0], fonts_b[1], fonts[2], fonts_b[3]]
+        names = [fonts_b[i] if i % 2 else str_font for i, str_font in enumerate(fonts)]
         font_name_2 = ft.SysFont(names, size).name
         self.assertEqual(font_name_2, font_name)
 
