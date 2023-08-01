@@ -1,8 +1,5 @@
 import os
 
-if os.environ.get("SDL_VIDEODRIVER") == "dummy":
-    __tags__ = ("ignore", "subprocess_ignore")
-
 import unittest
 import ctypes
 import weakref
