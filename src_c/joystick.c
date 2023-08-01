@@ -118,7 +118,6 @@ get_count(PyObject *self, PyObject *_null)
 static PyObject *
 joy_init(PyObject *self, PyObject *_null)
 {
-
     if (PyErr_WarnEx(
             PyExc_DeprecationWarning,
             "pygame.joystick.Joystick.init() is deprecated since 2.3.1. "
@@ -163,7 +162,6 @@ joy_get_init(PyObject *self, PyObject *_null)
 static PyObject *
 joy_get_id(PyObject *self, PyObject *_null)
 {
-
     if (PyErr_WarnEx(
             PyExc_DeprecationWarning,
             "pygame.joystick.Joystick.get_id() is deprecated since 2.3.1."
