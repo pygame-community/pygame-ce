@@ -457,6 +457,17 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    .. versionchanged:: 2.1.4 This class is also available through the ``pygame.Channel``
       alias.
 
+   .. method:: get_id
+
+      | :sl:`get the channel id for the Channel object`
+      | :sg:`get_id() -> int`
+
+      This simply returns the channel id used to create the ``Channel`` instance.
+
+      ..versionadded:: 2.3.1
+
+      .. ## Channel.get_id ##
+
    .. method:: play
 
       | :sl:`play a Sound on a specific Channel`

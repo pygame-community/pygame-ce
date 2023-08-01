@@ -73,6 +73,7 @@ class Sound:
 @final
 class Channel:
     def __init__(self, id: int) -> None: ...
+    def get_id() -> int: ...
     def play(
         self,
         sound: Sound,
