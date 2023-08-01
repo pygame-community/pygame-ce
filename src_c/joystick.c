@@ -116,6 +116,30 @@ get_count(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
+joy_init(PyObject *self, PyObject *_null)
+{
+
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "pygame.joystick.Joystick.init() is deprecated since 2.3.1."
+            "Bear in mind in future it will not be possible to reinitialise a closed Joystick object.",
+            1) == -1) {
+        return NULL;
+    }
+
+    pgJoystickObject *jstick = (pgJoystickObject *)self;
+
+    if (!jstick->joy) {
+        jstick->joy = SDL_JoystickOpen(jstick->id);
+        if (!jstick->joy) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+    }
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 joy_quit(PyObject *self, PyObject *_null)
 {
     pgJoystickObject *joy = (pgJoystickObject *)self;
@@ -133,6 +157,22 @@ joy_get_init(PyObject *self, PyObject *_null)
 {
     SDL_Joystick *joy = pgJoystick_AsSDL(self);
     return PyBool_FromLong(joy != NULL);
+}
+
+static PyObject *
+joy_get_id(PyObject *self, PyObject *_null)
+{
+
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "pygame.joystick.Joystick.get_id() is deprecated since 2.3.1."
+            "The original device index is not useful in pygame 2. Use get_instance_id() instead.",
+            1) == -1) {
+        return NULL;
+    }
+
+    int joy_id = pgJoystick_AsID(self);
+    return PyLong_FromLong(joy_id);
 }
 
 static PyObject *
@@ -451,8 +491,10 @@ joy_get_hat(PyObject *self, PyObject *args)
 }
 
 static PyMethodDef joy_methods[] = {
+    {"init", joy_init, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_INIT},
     {"quit", joy_quit, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_QUIT},
     {"get_init", joy_get_init, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_GETINIT},
+    {"get_id", joy_get_id, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_GETID},
     {"get_instance_id", joy_get_instance_id, METH_NOARGS,
      DOC_JOYSTICK_JOYSTICK_GETINSTANCEID},
     {"get_guid", joy_get_guid, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_GETGUID},
