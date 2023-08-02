@@ -548,7 +548,7 @@ class FreeTypeFontTest(unittest.TestCase):
         self.assertEqual(f.name, "Inconsolata")
 
         nf = nullfont()
-        self.assertEqual(nf.name, repr(nf))
+        self.assertRaises(pygame.error, lambda: nf.name)
 
     def test_freetype_Font_size(self):
         f = ft.Font(None, size=12)
@@ -1353,7 +1353,7 @@ class FreeTypeFontTest(unittest.TestCase):
 
     def test_freetype_Font_path(self):
         self.assertEqual(self._TEST_FONTS["sans"].path, self._sans_path)
-        self.assertRaises(AttributeError, getattr, nullfont(), "path")
+        self.assertRaises(pygame.error, lambda: nullfont().path)
 
     # This Font cache test is conditional on freetype being built by a debug
     # version of Python or with the C macro PGFT_DEBUG_CACHE defined.
@@ -1657,6 +1657,12 @@ class FreeTypeFontTest(unittest.TestCase):
     def test_freetype_SysFont_name(self):
         """that SysFont accepts names of various types"""
         fonts = pygame.font.get_fonts()
+        expected_min_fonts_count = 4
+        self.assertGreaterEqual(
+            len(fonts),
+            expected_min_fonts_count,
+            msg=f"at least {expected_min_fonts_count} fonts are needed for this test.",
+        )
         size = 12
 
         # Check single name string:
