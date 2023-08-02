@@ -115,6 +115,8 @@ _ftfont_setstyle(pgFontObject *, PyObject *, void *);
 static PyObject *
 _ftfont_getname(pgFontObject *, void *);
 static PyObject *
+_ftfont_getstylename(pgFontObject *, void *);
+static PyObject *
 _ftfont_getpath(pgFontObject *, void *);
 static PyObject *
 _ftfont_getscalable(pgFontObject *, void *);
@@ -550,6 +552,8 @@ static PyGetSetDef _ftfont_getsets[] = {
     {"descender", (getter)_ftfont_getfontmetric, 0,
      DOC_FREETYPE_FONT_DESCENDER, (void *)_PGFT_Font_GetDescender},
     {"name", (getter)_ftfont_getname, 0, DOC_FREETYPE_FONT_NAME, 0},
+    {"style_name", (getter)_ftfont_getstylename, 0,
+     DOC_FREETYPE_FONT_STYLENAME, 0},
     {"path", (getter)_ftfont_getpath, 0, DOC_FREETYPE_FONT_PATH, 0},
     {"scalable", (getter)_ftfont_getscalable, 0, DOC_FREETYPE_FONT_SCALABLE,
      0},
@@ -1097,7 +1101,21 @@ _ftfont_getname(pgFontObject *self, void *closure)
         const char *name = _PGFT_Font_GetName(self->freetype, self);
         return name ? PyUnicode_FromString(name) : 0;
     }
-    return PyObject_Repr((PyObject *)self);
+
+    PyErr_SetString(PyExc_AttributeError, "<uninitialized Font object>");
+    return NULL;
+}
+
+static PyObject *
+_ftfont_getstylename(pgFontObject *self, void *closure)
+{
+    if (pgFont_IS_ALIVE(self)) {
+        const char *stylename = _PGFT_Font_GetStyleName(self->freetype, self);
+        return stylename ? PyUnicode_FromString(stylename) : 0;
+    }
+
+    PyErr_SetString(PyExc_AttributeError, "<uninitialized Font object>");
+    return NULL;
 }
 
 static PyObject *

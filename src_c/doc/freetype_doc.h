@@ -13,6 +13,7 @@
 #define DOC_FREETYPE_GETDEFAULTFONT "get_default_font() -> string\nGet the filename of the default font"
 #define DOC_FREETYPE_FONT "Font(file, size=0, font_index=0, resolution=0, ucs4=False) -> Font\nFont(pathlib.Path) -> Font\nCreate a new Font instance from a supported font file."
 #define DOC_FREETYPE_FONT_NAME "name -> string\nProper font name."
+#define DOC_FREETYPE_FONT_STYLENAME "style_name -> str\nGets the font's style_name."
 #define DOC_FREETYPE_FONT_PATH "path -> unicode\nFont file path"
 #define DOC_FREETYPE_FONT_SIZE "size -> float\nsize -> (float, float)\nThe default point size used in rendering"
 #define DOC_FREETYPE_FONT_GETRECT "get_rect(text, style=STYLE_DEFAULT, rotation=0, size=0) -> rect\nReturn the size and offset of rendered text"

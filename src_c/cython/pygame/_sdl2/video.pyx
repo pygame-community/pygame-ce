@@ -121,7 +121,7 @@ def messagebox(title, message,
         data.numbuttons = 1
     else:
         buttons_utf8 = [s.encode('utf8') for s in buttons]
-        data.numbuttons = len(buttons)
+        data.numbuttons = <int>len(buttons)
         c_buttons =\
             <SDL_MessageBoxButtonData*>malloc(data.numbuttons * sizeof(SDL_MessageBoxButtonData))
         if not c_buttons:
@@ -459,10 +459,10 @@ cdef class Texture:
         SDL_GetTextureColorMod(self._tex, &_r_mod, &_g_mod, &_b_mod)
         SDL_GetTextureAlphaMod(self._tex, &_a_mod)
 
-        cdef float r_mod = float(_r_mod) / 255.0
-        cdef float g_mod = float(_g_mod) / 255.0
-        cdef float b_mod = float(_b_mod) / 255.0
-        cdef float a_mod = float(_a_mod) / 255.0
+        cdef float r_mod = <float>_r_mod / <float>255.0
+        cdef float g_mod = <float>_g_mod / <float>255.0
+        cdef float b_mod = <float>_b_mod / <float>255.0
+        cdef float a_mod = <float>_a_mod / <float>255.0
 
         cdef SDL_Vertex vertices[3]
         for i, vert in enumerate(((p1_xy, p1_mod, p1_uv),
@@ -508,10 +508,10 @@ cdef class Texture:
         SDL_GetTextureColorMod(self._tex, &_r_mod, &_g_mod, &_b_mod)
         SDL_GetTextureAlphaMod(self._tex, &_a_mod)
 
-        cdef float r_mod = float(_r_mod) / 255.0
-        cdef float g_mod = float(_g_mod) / 255.0
-        cdef float b_mod = float(_b_mod) / 255.0
-        cdef float a_mod = float(_a_mod) / 255.0
+        cdef float r_mod = <float>_r_mod / <float>255.0
+        cdef float g_mod = <float>_g_mod / <float>255.0
+        cdef float b_mod = <float>_b_mod / <float>255.0
+        cdef float a_mod = <float>_a_mod / <float>255.0
 
         cdef SDL_Vertex vertices[6]
         for i, vert in enumerate(((p1_xy, p1_mod, p1_uv),

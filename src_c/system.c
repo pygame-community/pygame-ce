@@ -5,6 +5,68 @@
 #include "doc/system_doc.h"
 
 static PyObject *
+pg_system_get_cpu_instruction_sets(PyObject *self, PyObject *_null)
+{
+    PyObject *tmp_bool = NULL;
+    PyObject *instruction_sets = NULL;
+
+    instruction_sets = PyDict_New();
+    if (!instruction_sets) {
+        goto error;
+    }
+
+#define INSERT_INSTRUCTIONSET_INFO(name, SDL_fn_name)               \
+    tmp_bool = PyBool_FromLong((SDL_fn_name)());                    \
+    if (PyDict_SetItemString(instruction_sets, (name), tmp_bool)) { \
+        Py_DECREF(tmp_bool);                                        \
+        goto error;                                                 \
+    }                                                               \
+    Py_DECREF(tmp_bool);
+
+    INSERT_INSTRUCTIONSET_INFO("RDTSC", SDL_HasRDTSC);
+    INSERT_INSTRUCTIONSET_INFO("ALTIVEC", SDL_HasAltiVec);
+    INSERT_INSTRUCTIONSET_INFO("MMX", SDL_HasMMX);
+    INSERT_INSTRUCTIONSET_INFO("SSE", SDL_HasSSE);
+    INSERT_INSTRUCTIONSET_INFO("SSE2", SDL_HasSSE2);
+    INSERT_INSTRUCTIONSET_INFO("SSE3", SDL_HasSSE3);
+    INSERT_INSTRUCTIONSET_INFO("SSE41", SDL_HasSSE41);
+    INSERT_INSTRUCTIONSET_INFO("SSE42", SDL_HasSSE42);
+    INSERT_INSTRUCTIONSET_INFO("AVX", SDL_HasAVX);
+    INSERT_INSTRUCTIONSET_INFO("AVX2", SDL_HasAVX2);
+    INSERT_INSTRUCTIONSET_INFO("AVX512F", SDL_HasAVX512F);
+    INSERT_INSTRUCTIONSET_INFO("NEON", SDL_HasNEON);
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+    INSERT_INSTRUCTIONSET_INFO("ARMSIMD", SDL_HasARMSIMD);
+#else
+    if (PyDict_SetItemString(instruction_sets, "ARMSIMD", Py_False))
+        goto error;
+#endif
+#if SDL_VERSION_ATLEAST(2, 24, 0)
+    INSERT_INSTRUCTIONSET_INFO("LSX", SDL_HasLSX);
+    INSERT_INSTRUCTIONSET_INFO("LASX", SDL_HasLASX);
+#else
+    if (PyDict_SetItemString(instruction_sets, "LSX", Py_False))
+        goto error;
+    if (PyDict_SetItemString(instruction_sets, "LASX", Py_False))
+        goto error;
+#endif
+
+#undef INSERT_INSTRUCTIONSET_INFO
+
+    return instruction_sets;
+
+error:
+    Py_XDECREF(instruction_sets);
+    return NULL;
+}
+
+static PyObject *
+pg_system_get_total_ram(PyObject *self, PyObject *_null)
+{
+    return PyLong_FromLong(SDL_GetSystemRAM());
+}
+
+static PyObject *
 pg_system_get_pref_path(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     char *org, *project;
@@ -100,6 +162,10 @@ error:
 }
 
 static PyMethodDef _system_methods[] = {
+    {"get_cpu_instruction_sets", pg_system_get_cpu_instruction_sets,
+     METH_NOARGS, DOC_SYSTEM_GETCPUINSTRUCTIONSETS},
+    {"get_total_ram", pg_system_get_total_ram, METH_NOARGS,
+     DOC_SYSTEM_GETTOTALRAM},
     {"get_pref_path", (PyCFunction)pg_system_get_pref_path,
      METH_VARARGS | METH_KEYWORDS, DOC_SYSTEM_GETPREFPATH},
     {"get_pref_locales", pg_system_get_pref_locales, METH_NOARGS,

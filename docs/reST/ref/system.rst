@@ -16,6 +16,57 @@ open just in case something obvious comes up.
 
 .. versionadded:: 2.2.0
 
+.. function:: get_cpu_instruction_sets
+
+   | :sl:`get the information of CPU instruction sets`
+   | :sg:`get_cpu_instruction_sets() -> instruction_sets`
+
+   Returns a dict of the information of CPU instruction sets. The keys of
+   the dict are the names of instruction sets and the values determine 
+   whether the instruction set is available.
+
+   Some of functions like ``Surface.blit`` can be accelerated by SIMD 
+   instruction sets like SSE2 or AVX2. By checking the availability of 
+   instruction sets, you can check if these accelerations are available.
+
+   Here is an example of the returned dict
+   ::
+
+     {
+          'RDTSC': True,
+          'ALTIVEC': False,
+          'MMX': True,
+          'SSE': True,
+          'SSE2': True,
+          'SSE3': True,
+          'SSE41': True,
+          'SSE42': True,
+          'AVX': True,
+          'AVX2': True, 
+          'AVX512F': False,
+          'NEON': False, 
+          'ARMSIMD': False,
+          'LSX': False, 
+          'LASX': False
+     }
+
+   .. Note:: The value of ``ARMSIMD`` will be always False if
+      SDL version < 2.0.12.
+      
+      The values of ``LSX`` and ``LASX`` will be always False if
+      SDL version < 2.24.0.
+   
+   .. versionadded:: 2.3.1
+
+.. function:: get_total_ram
+
+   | :sl:`get the amount of RAM configured in the system`
+   | :sg:`get_total_ram() -> ram_size`
+
+   Returns the amount of RAM configured in the system in MiB.
+
+   .. versionadded:: 2.3.1
+
 .. function:: get_pref_path
 
    | :sl:`get a writeable folder for your app`
@@ -41,10 +92,10 @@ open just in case something obvious comes up.
         C:\\Users\\bob\\AppData\\Roaming\\My Company\\My Program Name\\
 
         On macOS, it would resemble
-        /Users/bob/Library/Application Support/My Program Name/
+        /Users/bob/Library/Application Support/My Company/My Program Name/
 
         And on Linux it would resemble
-        /home/bob/.local/share/My Program Name/
+        /home/bob/.local/share/My Company/My Program Name/
 
    .. note::
         Since the organization and app names can potentially be used as

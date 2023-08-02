@@ -12,6 +12,8 @@
 #define DOC_MIXER_GETNUMCHANNELS "get_num_channels() -> count\nget the total number of playback channels"
 #define DOC_MIXER_SETRESERVED "set_reserved(count) -> count\nreserve channels from being automatically used"
 #define DOC_MIXER_FINDCHANNEL "find_channel(force=False) -> Channel\nfind an unused channel"
+#define DOC_MIXER_SETSOUNDFONT "set_soundfont(path) -> None\nset the soundfont for playing midi music"
+#define DOC_MIXER_GETSOUNDFONT "get_soundfont() -> paths\nget the soundfont for playing midi music"
 #define DOC_MIXER_GETBUSY "get_busy() -> bool\ntest if any sound is being mixed"
 #define DOC_MIXER_GETSDLMIXERVERSION "get_sdl_mixer_version() -> (major, minor, patch)\nget_sdl_mixer_version(linked=True) -> (major, minor, patch)\nget the mixer's SDL version"
 #define DOC_MIXER_SOUND "Sound(filename) -> Sound\nSound(file=filename) -> Sound\nSound(file=pathlib_path) -> Sound\nSound(buffer) -> Sound\nSound(buffer=buffer) -> Sound\nSound(object) -> Sound\nSound(file=object) -> Sound\nSound(array=object) -> Sound\nCreate a new Sound object from a file or buffer object"

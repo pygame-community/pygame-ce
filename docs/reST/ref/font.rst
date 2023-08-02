@@ -211,6 +211,23 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.name ##
 
+   .. attribute:: style_name
+
+      | :sl:`Gets the font's style_name.`
+      | :sg:`style_name -> str`
+
+      Read only. Returns the font's style name. Style names are arbitrary, can be an empty string. 
+      Here are some examples:
+
+        'Black', 'Bold', 'Bold Italic', 'BoldOblique', 'Book', 'BookOblique', 'Condensed', 'Condensed Oblique',
+        'ExtraLight', 'Italic', 'Light', 'LightOblique', 'Medium', 'MediumOblique', 'Oblique', 'Regular',
+        'Semibold', 'Semilight', 'Slanted'
+
+
+      .. versionadded:: 2.3.1
+
+      .. ## Font.style_name ##
+
    .. attribute:: italic
 
       | :sl:`Gets or sets whether the font should be rendered in (faked) italics.`
@@ -263,7 +280,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. attribute:: align
 
-      | :sl:`Set how rendered text is aligned when given a wrap length`
+      | :sl:`Set how rendered text is aligned when given a wrap length.`
       | :sg:`align -> int`
 
       Can be set to `pygame.FONT_LEFT`, `pygame.FONT_RIGHT`, or
@@ -276,6 +293,18 @@ solves no longer exists, it will likely be removed in the future.
       .. versionadded:: 2.1.4
 
       .. ## Font.align ##
+
+   .. attribute:: point_size
+
+      | :sl:`Gets or sets the font's point size`
+      | :sg:`point_size -> int`
+
+      Returns the point size of the font. Will not be accurate upon initializing
+      the font object when the font name is initalized as ``None``.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Font.point_size ##
 
    .. method:: render
 
@@ -491,6 +520,31 @@ solves no longer exists, it will likely be removed in the future.
       average size for each glyph in the font.
 
       .. ## Font.get_height ##
+
+   .. method:: set_point_size
+
+      | :sl:`set the point size of the font`
+      | :sg:`set_point_size(size) -> int`
+
+      Sets the point size of the font, which is the value that was used to
+      initalize this font.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Font.set_point_size ##
+
+   .. method:: get_point_size
+
+      | :sl:`get the point size of the font`
+      | :sg:`get_point_size() -> int`
+
+      Returns the point size of the font. Will not be accurate upon
+      initializing the font object when the font name is initalized
+      as ``None``.
+      
+      .. versionadded:: 2.3.1
+
+      .. ## Font.get_point_size ##
 
    .. method:: get_ascent
 

@@ -1003,7 +1003,7 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual(r.w, actual.w)
         self.assertEqual(r.h, actual.h)
 
-    def test_scale_by_negative_identity_single_argment(self):
+    def test_scale_by_negative_identity_single_argument(self):
         """The scale method scales around the center of the rectangle"""
         # arrange
         r = Rect(2, 4, 6, 8)
@@ -3160,7 +3160,7 @@ class FRectTypeTest(RectTypeTest):
         self.assertEqual(r.w, actual.w)
         self.assertEqual(r.h, actual.h)
 
-    def test_scale_by_negative_identity_single_argment(self):
+    def test_scale_by_negative_identity_single_argument(self):
         """The scale method scales around the center of the rectangle"""
         # arrange
         r = FRect(2.1, 4, 6, 8.9)

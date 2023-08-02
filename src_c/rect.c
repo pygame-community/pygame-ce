@@ -253,7 +253,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectImport_twoPrimitivesFromObj pg_TwoFloatsFromObj
 #define RectImport_PrimitiveFromObj pg_FloatFromObj
 #define RectImport_RectObject pgFRectObject
-#define RectImport_IntersectRectAndLine SDL_IntersectFRectAndLine
+#define RectImport_IntersectRectAndLine PG_IntersectFRectAndLine
 #define RectImport_TypeObject pgFRect_Type
 #define RectImport_PyBuildValueFormat "f"
 #define RectImport_ObjectName "pygame.rect.FRect"

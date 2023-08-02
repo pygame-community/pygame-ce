@@ -572,6 +572,64 @@ class FontTypeTest(unittest.TestCase):
 
         self.assertNotEqual(size, bsize)
 
+    def test_point_size_property(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            return  # not a pygame.ftfont feature
+
+        pygame_font.init()
+        font_path = os.path.join(
+            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
+        )
+        f = pygame_font.Font(pathlib.Path(font_path), 25)
+
+        ttf_version = pygame_font.get_sdl_ttf_version()
+        if ttf_version < (2, 0, 18):
+            with self.assertRaises(pygame.error):
+                f.point_size = 25
+            with self.assertRaises(pygame.error):
+                f.point_size
+            return
+
+        self.assertEqual(25, f.point_size)
+        f.point_size = 10
+        self.assertEqual(10, f.point_size)
+        f.point_size += 23
+        self.assertEqual(33, f.point_size)
+        f.point_size -= 2
+        self.assertEqual(31, f.point_size)
+
+        def test_neg():
+            f.point_size = -500
+
+        def test_incorrect_type():
+            f.point_size = "15"
+
+        self.assertRaises(ValueError, test_neg)
+        self.assertRaises(TypeError, test_incorrect_type)
+
+    def test_point_size_method(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            return  # not a pygame.ftfont feature
+
+        pygame_font.init()
+        font_path = os.path.join(
+            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
+        )
+        f = pygame_font.Font(pathlib.Path(font_path), 25)
+
+        ttf_version = pygame_font.get_sdl_ttf_version()
+        if ttf_version < (2, 0, 18):
+            self.assertRaises(pygame.error, f.get_point_size)
+            self.assertRaises(pygame.error, f.set_point_size, 25)
+            return
+
+        self.assertEqual(25, f.get_point_size())
+        f = pygame_font.Font(None, 25)
+        f.set_point_size(10)
+        self.assertEqual(10, f.get_point_size())
+        self.assertRaises(ValueError, f.set_point_size, -500)
+        self.assertRaises(TypeError, f.set_point_size, "15")
+
     def test_font_name(self):
         f = pygame_font.Font(None, 20)
         self.assertEqual(f.name, "FreeSans")
@@ -580,6 +638,20 @@ class FontTypeTest(unittest.TestCase):
             f.name = "Say my name."
 
         self.assertRaises(AttributeError, test_set_name)
+
+    def test_font_style_name(self):
+        f = pygame_font.Font(None, 20)
+        self.assertNotEqual(f.style_name, "")
+        self.assertNotEqual(f.style_name, None)
+        self.assertIsInstance(f.style_name, str)
+
+    def test_font_style_name_is_readonly(self):
+        f = pygame_font.Font(None, 20)
+
+        def _set_style_name():
+            f.style_name = "Say my other name."
+
+        self.assertRaises(AttributeError, _set_style_name)
 
     def test_font_file_not_found(self):
         # A per BUG reported by Bo Jangeborg on pygame-user mailing list,

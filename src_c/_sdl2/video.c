@@ -3724,7 +3724,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_5messagebox(CYTHON_UNUSED PyObje
  *         data.numbuttons = 1
  *     else:
  *         buttons_utf8 = [s.encode('utf8') for s in buttons]             # <<<<<<<<<<<<<<
- *         data.numbuttons = len(buttons)
+ *         data.numbuttons = <int>len(buttons)
  *         c_buttons =\
  */
   /*else*/ {
@@ -3806,15 +3806,15 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_5messagebox(CYTHON_UNUSED PyObje
     /* "pygame/_sdl2/video.pyx":124
  *     else:
  *         buttons_utf8 = [s.encode('utf8') for s in buttons]
- *         data.numbuttons = len(buttons)             # <<<<<<<<<<<<<<
+ *         data.numbuttons = <int>len(buttons)             # <<<<<<<<<<<<<<
  *         c_buttons =\
  *             <SDL_MessageBoxButtonData*>malloc(data.numbuttons * sizeof(SDL_MessageBoxButtonData))
  */
     __pyx_t_9 = PyObject_Length(__pyx_v_buttons); if (unlikely(__pyx_t_9 == ((Py_ssize_t)-1))) __PYX_ERR(0, 124, __pyx_L1_error)
-    __pyx_v_data.numbuttons = __pyx_t_9;
+    __pyx_v_data.numbuttons = ((int)__pyx_t_9);
 
     /* "pygame/_sdl2/video.pyx":126
- *         data.numbuttons = len(buttons)
+ *         data.numbuttons = <int>len(buttons)
  *         c_buttons =\
  *             <SDL_MessageBoxButtonData*>malloc(data.numbuttons * sizeof(SDL_MessageBoxButtonData))             # <<<<<<<<<<<<<<
  *         if not c_buttons:
@@ -7569,45 +7569,45 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_12draw_triangle(struct 
  *         SDL_GetTextureColorMod(self._tex, &_r_mod, &_g_mod, &_b_mod)
  *         SDL_GetTextureAlphaMod(self._tex, &_a_mod)             # <<<<<<<<<<<<<<
  * 
- *         cdef float r_mod = float(_r_mod) / 255.0
+ *         cdef float r_mod = <float>_r_mod / <float>255.0
  */
   (void)(SDL_GetTextureAlphaMod(__pyx_v_self->_tex, (&__pyx_v__a_mod)));
 
   /* "pygame/_sdl2/video.pyx":462
  *         SDL_GetTextureAlphaMod(self._tex, &_a_mod)
  * 
- *         cdef float r_mod = float(_r_mod) / 255.0             # <<<<<<<<<<<<<<
- *         cdef float g_mod = float(_g_mod) / 255.0
- *         cdef float b_mod = float(_b_mod) / 255.0
+ *         cdef float r_mod = <float>_r_mod / <float>255.0             # <<<<<<<<<<<<<<
+ *         cdef float g_mod = <float>_g_mod / <float>255.0
+ *         cdef float b_mod = <float>_b_mod / <float>255.0
  */
-  __pyx_v_r_mod = (((double)__pyx_v__r_mod) / 255.0);
+  __pyx_v_r_mod = (((float)__pyx_v__r_mod) / ((float)255.0));
 
   /* "pygame/_sdl2/video.pyx":463
  * 
- *         cdef float r_mod = float(_r_mod) / 255.0
- *         cdef float g_mod = float(_g_mod) / 255.0             # <<<<<<<<<<<<<<
- *         cdef float b_mod = float(_b_mod) / 255.0
- *         cdef float a_mod = float(_a_mod) / 255.0
+ *         cdef float r_mod = <float>_r_mod / <float>255.0
+ *         cdef float g_mod = <float>_g_mod / <float>255.0             # <<<<<<<<<<<<<<
+ *         cdef float b_mod = <float>_b_mod / <float>255.0
+ *         cdef float a_mod = <float>_a_mod / <float>255.0
  */
-  __pyx_v_g_mod = (((double)__pyx_v__g_mod) / 255.0);
+  __pyx_v_g_mod = (((float)__pyx_v__g_mod) / ((float)255.0));
 
   /* "pygame/_sdl2/video.pyx":464
- *         cdef float r_mod = float(_r_mod) / 255.0
- *         cdef float g_mod = float(_g_mod) / 255.0
- *         cdef float b_mod = float(_b_mod) / 255.0             # <<<<<<<<<<<<<<
- *         cdef float a_mod = float(_a_mod) / 255.0
+ *         cdef float r_mod = <float>_r_mod / <float>255.0
+ *         cdef float g_mod = <float>_g_mod / <float>255.0
+ *         cdef float b_mod = <float>_b_mod / <float>255.0             # <<<<<<<<<<<<<<
+ *         cdef float a_mod = <float>_a_mod / <float>255.0
  * 
  */
-  __pyx_v_b_mod = (((double)__pyx_v__b_mod) / 255.0);
+  __pyx_v_b_mod = (((float)__pyx_v__b_mod) / ((float)255.0));
 
   /* "pygame/_sdl2/video.pyx":465
- *         cdef float g_mod = float(_g_mod) / 255.0
- *         cdef float b_mod = float(_b_mod) / 255.0
- *         cdef float a_mod = float(_a_mod) / 255.0             # <<<<<<<<<<<<<<
+ *         cdef float g_mod = <float>_g_mod / <float>255.0
+ *         cdef float b_mod = <float>_b_mod / <float>255.0
+ *         cdef float a_mod = <float>_a_mod / <float>255.0             # <<<<<<<<<<<<<<
  * 
  *         cdef SDL_Vertex vertices[3]
  */
-  __pyx_v_a_mod = (((double)__pyx_v__a_mod) / 255.0);
+  __pyx_v_a_mod = (((float)__pyx_v__a_mod) / ((float)255.0));
 
   /* "pygame/_sdl2/video.pyx":468
  * 
@@ -8343,45 +8343,45 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_7Texture_14draw_quad(struct __py
  *         SDL_GetTextureColorMod(self._tex, &_r_mod, &_g_mod, &_b_mod)
  *         SDL_GetTextureAlphaMod(self._tex, &_a_mod)             # <<<<<<<<<<<<<<
  * 
- *         cdef float r_mod = float(_r_mod) / 255.0
+ *         cdef float r_mod = <float>_r_mod / <float>255.0
  */
   (void)(SDL_GetTextureAlphaMod(__pyx_v_self->_tex, (&__pyx_v__a_mod)));
 
   /* "pygame/_sdl2/video.pyx":511
  *         SDL_GetTextureAlphaMod(self._tex, &_a_mod)
  * 
- *         cdef float r_mod = float(_r_mod) / 255.0             # <<<<<<<<<<<<<<
- *         cdef float g_mod = float(_g_mod) / 255.0
- *         cdef float b_mod = float(_b_mod) / 255.0
+ *         cdef float r_mod = <float>_r_mod / <float>255.0             # <<<<<<<<<<<<<<
+ *         cdef float g_mod = <float>_g_mod / <float>255.0
+ *         cdef float b_mod = <float>_b_mod / <float>255.0
  */
-  __pyx_v_r_mod = (((double)__pyx_v__r_mod) / 255.0);
+  __pyx_v_r_mod = (((float)__pyx_v__r_mod) / ((float)255.0));
 
   /* "pygame/_sdl2/video.pyx":512
  * 
- *         cdef float r_mod = float(_r_mod) / 255.0
- *         cdef float g_mod = float(_g_mod) / 255.0             # <<<<<<<<<<<<<<
- *         cdef float b_mod = float(_b_mod) / 255.0
- *         cdef float a_mod = float(_a_mod) / 255.0
+ *         cdef float r_mod = <float>_r_mod / <float>255.0
+ *         cdef float g_mod = <float>_g_mod / <float>255.0             # <<<<<<<<<<<<<<
+ *         cdef float b_mod = <float>_b_mod / <float>255.0
+ *         cdef float a_mod = <float>_a_mod / <float>255.0
  */
-  __pyx_v_g_mod = (((double)__pyx_v__g_mod) / 255.0);
+  __pyx_v_g_mod = (((float)__pyx_v__g_mod) / ((float)255.0));
 
   /* "pygame/_sdl2/video.pyx":513
- *         cdef float r_mod = float(_r_mod) / 255.0
- *         cdef float g_mod = float(_g_mod) / 255.0
- *         cdef float b_mod = float(_b_mod) / 255.0             # <<<<<<<<<<<<<<
- *         cdef float a_mod = float(_a_mod) / 255.0
+ *         cdef float r_mod = <float>_r_mod / <float>255.0
+ *         cdef float g_mod = <float>_g_mod / <float>255.0
+ *         cdef float b_mod = <float>_b_mod / <float>255.0             # <<<<<<<<<<<<<<
+ *         cdef float a_mod = <float>_a_mod / <float>255.0
  * 
  */
-  __pyx_v_b_mod = (((double)__pyx_v__b_mod) / 255.0);
+  __pyx_v_b_mod = (((float)__pyx_v__b_mod) / ((float)255.0));
 
   /* "pygame/_sdl2/video.pyx":514
- *         cdef float g_mod = float(_g_mod) / 255.0
- *         cdef float b_mod = float(_b_mod) / 255.0
- *         cdef float a_mod = float(_a_mod) / 255.0             # <<<<<<<<<<<<<<
+ *         cdef float g_mod = <float>_g_mod / <float>255.0
+ *         cdef float b_mod = <float>_b_mod / <float>255.0
+ *         cdef float a_mod = <float>_a_mod / <float>255.0             # <<<<<<<<<<<<<<
  * 
  *         cdef SDL_Vertex vertices[6]
  */
-  __pyx_v_a_mod = (((double)__pyx_v__a_mod) / 255.0);
+  __pyx_v_a_mod = (((float)__pyx_v__a_mod) / ((float)255.0));
 
   /* "pygame/_sdl2/video.pyx":517
  * 

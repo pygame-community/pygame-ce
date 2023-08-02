@@ -248,10 +248,10 @@
       entire Surface will be filled. The rect argument will limit the fill to a
       specific area. The fill will also be contained by the Surface clip area.
 
-      The color argument can be either a ``RGB`` sequence, a ``RGBA`` sequence
-      or a mapped color index. If using ``RGBA``, the Alpha (A part of
-      ``RGBA``) is ignored unless the surface uses per pixel alpha (Surface has
-      the ``SRCALPHA`` flag).
+      The color argument can be an ``RGB`` sequence, an ``RGBA`` sequence,
+      a string (for :doc:`color_list`), or a mapped color index. If using ``RGBA``,
+      the Alpha (A part of ``RGBA``) is ignored unless the surface uses per pixel
+      alpha (Surface has the ``SRCALPHA`` flag).
 
       .. versionaddedold:: 1.8
          Optional ``special_flags``: ``BLEND_ADD``, ``BLEND_SUB``,
@@ -285,13 +285,14 @@
    .. method:: set_colorkey
 
       | :sl:`Set the transparent colorkey`
-      | :sg:`set_colorkey(Color, flags=0) -> None`
+      | :sg:`set_colorkey(color, flags=0) -> None`
       | :sg:`set_colorkey(None) -> None`
 
       Set the current color key for the Surface. When blitting this Surface
       onto a destination, any pixels that have the same color as the colorkey
-      will be transparent. The color can be an ``RGB`` color or a mapped color
-      integer. If ``None`` is passed, the colorkey will be unset.
+      will be transparent. The color can be an ``RGB`` color, a string
+      (for :doc:`color_list`), or a mapped color integer. If ``None`` is passed,
+      the colorkey will be unset.
 
       The colorkey will be ignored if the Surface is formatted to use per pixel
       alpha values. The colorkey can be mixed with the full Surface alpha
@@ -461,10 +462,10 @@
       | :sl:`set the color value for a single pixel`
       | :sg:`set_at((x, y), Color) -> None`
 
-      Set the ``RGBA`` or mapped integer color value for a single pixel. If the
-      Surface does not have per pixel alphas, the alpha value is ignored.
-      Setting pixels outside the Surface area or outside the Surface clipping
-      will have no effect.
+      Set the color of a single pixel at the specified coordinates to be an ``RGB``,
+      ``RGBA``, string (for :doc:`color_list`), or mapped integer color value. If the Surface
+      does not have per pixel alphas, the alpha value is ignored. Setting pixels outside the
+      Surface area or outside the Surface clipping will have no effect.
 
       Getting and setting pixels one at a time is generally too slow to be used
       in a game or realtime situation.
@@ -534,7 +535,7 @@
       Set the full palette for an 8-bit Surface. This will replace the colors in
       the existing palette. A partial palette can be passed and only the first
       colors in the original palette will be changed.
-
+      
       This function has no effect on a Surface with more than 8-bits per pixel.
 
       .. ## Surface.set_palette ##
@@ -546,7 +547,7 @@
 
       Set the palette value for a single entry in a Surface palette. The index
       should be a value from 0 to 255.
-
+      
       This function has no effect on a Surface with more than 8-bits per pixel.
 
       .. ## Surface.set_palette_at ##
