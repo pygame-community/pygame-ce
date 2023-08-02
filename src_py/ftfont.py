@@ -60,7 +60,7 @@ class Font(_Font):
         self.ucs4 = True
         self.underline_adjustment = 1.0
         self.strikethrough = False
-        lower_style_name = self.stylename.lower() if file is not None else ""
+        lower_style_name = self.style_name.lower() if file is not None else ""
         self._bold = "bold" in lower_style_name
         self._italic = "italic" in lower_style_name or "slanted" in lower_style_name
 
