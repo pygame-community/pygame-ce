@@ -849,6 +849,7 @@ class FontTypeTest(unittest.TestCase):
                 ("set_underline", (True,)),
                 ("size", ("any Text",)),
             ]
+            version = pygame.freetype.get_version()
         else:
             methods = [
                 ("get_height", tuple()),
@@ -871,12 +872,16 @@ class FontTypeTest(unittest.TestCase):
                 ("set_script", ("is it other text",)),
                 ("set_direction", ("is it text",)),
             ]
+            version = pygame.font.get_sdl_ttf_version()
+
         font = pygame_font.Font(None, 10)
-        actual_names = [
-            n
-            for n in sorted(dir(font))
-            if callable(getattr(font, n)) and not n.startswith("_")
-        ]
+        actual_names = []
+        for n in sorted(dir(font)):
+            if n == "align" and version < (2, 20, 0):
+                print(f"align skipped for sld ttf version {version} < 2.20.0")
+                continue
+            if callable(getattr(font, n)) and not n.startswith("_"):
+                actual_names.append(n)
         expected_names = [n for n, a in sorted(methods)]
         self.assertEqual(
             len(expected_names),
@@ -929,6 +934,7 @@ class FontTypeTest(unittest.TestCase):
                 ("italic", True),
                 ("resolution", None),
             ]
+            version = pygame.freetype.get_version()
         else:
             properties = [
                 ("name", None),
@@ -940,13 +946,19 @@ class FontTypeTest(unittest.TestCase):
                 ("align", 1),
                 ("point_size", 1),
             ]
+            version = pygame.font.get_sdl_ttf_version()
 
         font = pygame_font.Font(None, 10)
-        actual_names = [
-            n
-            for n in sorted(dir(font))
-            if not callable(getattr(font, n)) and not n.startswith("_")
-        ]
+        actual_names = []
+
+        for n in sorted(dir(font)):
+            if n == "align" and version < (2, 20, 0):
+                print(f"align skipped for sld ttf version {version} < 2.20.0")
+                continue
+
+            if not callable(getattr(font, n)) and not n.startswith("_"):
+                actual_names.append(n)
+
         expected_names = [n for n, a in sorted(properties)]
         self.assertEqual(
             len(expected_names),
