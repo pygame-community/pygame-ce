@@ -205,6 +205,10 @@ pg_font_get_init(PyObject *self, PyObject *_null)
 static PyObject *
 font_get_height(PyObject *self, PyObject *_null)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     return PyLong_FromLong(TTF_FontHeight(font));
 }
@@ -212,6 +216,10 @@ font_get_height(PyObject *self, PyObject *_null)
 static PyObject *
 font_get_descent(PyObject *self, PyObject *_null)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     return PyLong_FromLong(TTF_FontDescent(font));
 }
@@ -219,6 +227,10 @@ font_get_descent(PyObject *self, PyObject *_null)
 static PyObject *
 font_get_ascent(PyObject *self, PyObject *_null)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     return PyLong_FromLong(TTF_FontAscent(font));
 }
@@ -226,6 +238,10 @@ font_get_ascent(PyObject *self, PyObject *_null)
 static PyObject *
 font_get_linesize(PyObject *self, PyObject *_null)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     return PyLong_FromLong(TTF_FontLineSkip(font));
 }
@@ -252,6 +268,10 @@ _font_set_or_clear_style_flag(TTF_Font *font, int flag, int set_flag)
 static PyObject *
 font_getter_bold(PyObject *self, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     return _font_get_style_flag_as_py_bool(self, TTF_STYLE_BOLD);
 }
 
@@ -259,6 +279,11 @@ font_getter_bold(PyObject *self, void *closure)
 static int
 font_setter_bold(PyObject *self, PyObject *value, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        RAISE_FONT_QUIT_ERROR();
+        return -1;
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     int val;
 
@@ -277,6 +302,10 @@ font_setter_bold(PyObject *self, PyObject *value, void *closure)
 static PyObject *
 font_get_bold(PyObject *self, PyObject *_null)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     return _font_get_style_flag_as_py_bool(self, TTF_STYLE_BOLD);
 }
 
@@ -284,6 +313,11 @@ font_get_bold(PyObject *self, PyObject *_null)
 static PyObject *
 font_set_bold(PyObject *self, PyObject *arg)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        RAISE_FONT_QUIT_ERROR();
+        return NULL;
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     int val = PyObject_IsTrue(arg);
     if (val == -1) {
@@ -299,6 +333,10 @@ font_set_bold(PyObject *self, PyObject *arg)
 static PyObject *
 font_getter_italic(PyObject *self, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     return _font_get_style_flag_as_py_bool(self, TTF_STYLE_ITALIC);
 }
 
@@ -306,6 +344,11 @@ font_getter_italic(PyObject *self, void *closure)
 static int
 font_setter_italic(PyObject *self, PyObject *value, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        RAISE_FONT_QUIT_ERROR();
+        return -1;
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     int val;
 
@@ -324,6 +367,10 @@ font_setter_italic(PyObject *self, PyObject *value, void *closure)
 static PyObject *
 font_get_italic(PyObject *self, PyObject *_null)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     return _font_get_style_flag_as_py_bool(self, TTF_STYLE_ITALIC);
 }
 
@@ -331,6 +378,11 @@ font_get_italic(PyObject *self, PyObject *_null)
 static PyObject *
 font_set_italic(PyObject *self, PyObject *arg)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        RAISE_FONT_QUIT_ERROR();
+        return NULL;
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     int val = PyObject_IsTrue(arg);
     if (val == -1) {
@@ -346,6 +398,10 @@ font_set_italic(PyObject *self, PyObject *arg)
 static PyObject *
 font_getter_underline(PyObject *self, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     return _font_get_style_flag_as_py_bool(self, TTF_STYLE_UNDERLINE);
 }
 
@@ -353,6 +409,11 @@ font_getter_underline(PyObject *self, void *closure)
 static int
 font_setter_underline(PyObject *self, PyObject *value, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        RAISE_FONT_QUIT_ERROR();
+        return -1;
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     int val;
 
@@ -371,6 +432,10 @@ font_setter_underline(PyObject *self, PyObject *value, void *closure)
 static PyObject *
 font_get_underline(PyObject *self, PyObject *_null)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     return _font_get_style_flag_as_py_bool(self, TTF_STYLE_UNDERLINE);
 }
 
@@ -378,6 +443,10 @@ font_get_underline(PyObject *self, PyObject *_null)
 static PyObject *
 font_set_underline(PyObject *self, PyObject *arg)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     int val = PyObject_IsTrue(arg);
     if (val == -1) {
@@ -393,6 +462,10 @@ font_set_underline(PyObject *self, PyObject *arg)
 static PyObject *
 font_getter_strikethrough(PyObject *self, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     return _font_get_style_flag_as_py_bool(self, TTF_STYLE_STRIKETHROUGH);
 }
 
@@ -400,6 +473,11 @@ font_getter_strikethrough(PyObject *self, void *closure)
 static int
 font_setter_strikethrough(PyObject *self, PyObject *value, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        RAISE_FONT_QUIT_ERROR();
+        return -1;
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     int val;
 
@@ -418,6 +496,10 @@ font_setter_strikethrough(PyObject *self, PyObject *value, void *closure)
 static PyObject *
 font_getter_align(PyObject *self, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
 #if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
     TTF_Font *font = PyFont_AsFont(self);
     return PyLong_FromLong(TTF_GetFontWrappedAlign(font));
@@ -432,6 +514,11 @@ font_getter_align(PyObject *self, void *closure)
 static int
 font_setter_align(PyObject *self, PyObject *value, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        RAISE_FONT_QUIT_ERROR();
+        return -1;
+    }
+
 #if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
     TTF_Font *font = PyFont_AsFont(self);
 
@@ -464,6 +551,10 @@ font_setter_align(PyObject *self, PyObject *value, void *closure)
 static PyObject *
 font_get_strikethrough(PyObject *self, PyObject *args)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     return _font_get_style_flag_as_py_bool(self, TTF_STYLE_STRIKETHROUGH);
 }
 
@@ -471,6 +562,11 @@ font_get_strikethrough(PyObject *self, PyObject *args)
 static PyObject *
 font_set_strikethrough(PyObject *self, PyObject *arg)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        RAISE_FONT_QUIT_ERROR();
+        return NULL;
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     int val = PyObject_IsTrue(arg);
     if (val == -1) {
@@ -485,6 +581,10 @@ font_set_strikethrough(PyObject *self, PyObject *arg)
 static PyObject *
 font_render(PyObject *self, PyObject *args, PyObject *kwds)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     int antialias;
     PyObject *text, *final;
@@ -618,6 +718,10 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 font_size(PyObject *self, PyObject *text)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     int w, h;
     const char *string;
@@ -655,6 +759,10 @@ font_size(PyObject *self, PyObject *text)
 static PyObject *
 font_getter_point_size(PyFontObject *self, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
 #if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     return PyLong_FromLong(self->ptsize);
 #else
@@ -667,6 +775,11 @@ font_getter_point_size(PyFontObject *self, void *closure)
 static int
 font_setter_point_size(PyFontObject *self, PyObject *value, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        RAISE_FONT_QUIT_ERROR();
+        return -1;
+    }
+
 #if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     TTF_Font *font = PyFont_AsFont(self);
     int val = PyLong_AsLong(value);
@@ -698,6 +811,10 @@ font_setter_point_size(PyFontObject *self, PyObject *value, void *closure)
 static PyObject *
 font_get_ptsize(PyObject *self, PyObject *args)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
 #if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     return PyLong_FromLong(((PyFontObject *)self)->ptsize);
 #else
@@ -710,6 +827,10 @@ font_get_ptsize(PyObject *self, PyObject *args)
 static PyObject *
 font_set_ptsize(PyObject *self, PyObject *arg)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
 #if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     TTF_Font *font = PyFont_AsFont(self);
     int val = PyLong_AsLong(arg);
@@ -766,6 +887,10 @@ font_getter_style_name(PyObject *self, void *closure)
 static PyObject *
 font_metrics(PyObject *self, PyObject *textobj)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     PyObject *list;
     Py_ssize_t length;
@@ -851,6 +976,10 @@ font_metrics(PyObject *self, PyObject *textobj)
 static PyObject *
 font_set_script(PyObject *self, PyObject *arg)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
 /*Sadly, SDL_TTF_VERSION_ATLEAST is new in SDL_ttf 2.0.15, still too
  * new to use */
 #if SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \
@@ -884,6 +1013,10 @@ font_set_script(PyObject *self, PyObject *arg)
 static PyObject *
 font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
 /* Can't use SDL_TTF_VERSION_ATLEAST until SDL_ttf 2.0.15 is minimum supported
  */
 #if SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \

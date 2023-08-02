@@ -807,6 +807,170 @@ class FontTypeTest(unittest.TestCase):
         else:
             self.assertRaises(pygame.error, font.set_direction, pygame.DIRECTION_RTL)
 
+    def test_font_method_should_raise_exception_after_quit(self):
+        # arrange
+        if pygame_font.__name__ == "pygame.ftfont":
+            surf = pygame.Surface((1, 1))
+            methods = [
+                ("get_sized_height", tuple()),
+                ("get_sized_ascender", tuple()),
+                ("get_sized_glyph_height", tuple()),
+                ("get_rect", ("any text",)),
+                ("get_metrics", ("any text",)),
+                ("get_sizes", tuple()),
+                ("render", ("any text", True, "white")),
+                (
+                    "render_to",
+                    (
+                        surf,
+                        (10, 11),
+                        "text",
+                    ),
+                ),  # surf
+                ("render_raw", ("any text",)),
+                (
+                    "render_raw_to",
+                    (
+                        surf.get_view("2"),
+                        None,
+                    ),
+                ),
+                ("get_ascent", tuple()),
+                ("get_bold", tuple()),
+                ("get_descent", tuple()),
+                ("get_height", tuple()),
+                ("get_italic", tuple()),
+                ("get_linesize", tuple()),
+                ("get_sized_descender", tuple()),
+                ("get_underline", tuple()),
+                ("metrics", ("any text",)),
+                ("set_bold", (True,)),
+                ("set_italic", (True,)),
+                ("set_underline", (True,)),
+                ("size", ("any Text",)),
+            ]
+        else:
+            methods = [
+                ("get_height", tuple()),
+                ("get_descent", tuple()),
+                ("get_ascent", tuple()),
+                ("get_linesize", tuple()),
+                ("get_bold", tuple()),
+                ("set_bold", (True,)),
+                ("get_italic", tuple()),
+                ("set_italic", (True,)),
+                ("get_underline", tuple()),
+                ("set_underline", (True,)),
+                ("get_strikethrough", tuple()),
+                ("set_strikethrough", (True,)),
+                ("get_point_size", tuple()),
+                ("set_point_size", (34,)),
+                ("metrics", ("any text",)),
+                ("render", ("hello", True, "white")),
+                ("size", ("any text",)),
+                ("set_script", ("is it other text",)),
+                ("set_direction", ("is it text",)),
+            ]
+        font = pygame_font.Font(None, 10)
+        actual_names = [
+            n
+            for n in sorted(dir(font))
+            if callable(getattr(font, n)) and not n.startswith("_")
+        ]
+        expected_names = [n for n, a in sorted(methods)]
+        self.assertEqual(
+            len(expected_names),
+            len(actual_names),
+            msg=f"ensure all methods are checked \n{expected_names} \n!= \n{actual_names}",
+        )
+
+        for name, args in methods:
+            # import sys
+            # print("###", name,file=sys.__stdout__,flush=True)
+            with self.subTest(name=name):
+                # arrange
+                font = pygame_font.Font(None, 16)
+                pygame_font.quit()
+                pygame_font.init()
+
+                # act / assert
+                self.assertRaises(pygame.error, getattr(font, name), *args)
+
+    def test_font_property_should_raise_exception_after_quit(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            properties = [
+                ("style", 10.5),
+                ("height", None),
+                ("ascender", None),
+                ("descender", None),
+                ("name", None),
+                ("style_name", None),
+                ("path", None),
+                ("scalable", None),
+                ("fixed_width", None),
+                ("fixed_sizes", None),
+                ("antialiased", 45),
+                ("kerning", 46),
+                ("vertical", 47),
+                ("pad", 48),
+                ("oblique", 1),
+                ("strong", 1),
+                ("underline", 1),
+                ("wide", 1),
+                ("strength", 49),
+                ("underline_adjustment", 50),
+                ("ucs4", 1),
+                ("use_bitmap_strikes", 1),
+                ("rotation", 33),
+                ("fgcolor", (1, 1, 1)),
+                ("bgcolor", (2, 2, 2)),
+                ("origin", None),
+                ("bold", True),
+                ("italic", True),
+                ("resolution", None),
+            ]
+        else:
+            properties = [
+                ("name", None),
+                ("style_name", None),
+                ("bold", True),
+                ("italic", True),
+                ("underline", True),
+                ("strikethrough", True),
+                ("align", 1),
+                ("point_size", 1),
+            ]
+
+        font = pygame_font.Font(None, 10)
+        actual_names = [
+            n
+            for n in sorted(dir(font))
+            if not callable(getattr(font, n)) and not n.startswith("_")
+        ]
+        expected_names = [n for n, a in sorted(properties)]
+        self.assertEqual(
+            len(expected_names),
+            len(actual_names),
+            msg=f"ensure all properties are checked \n{expected_names} \n!= \n{actual_names}",
+        )
+
+        for name, arg in properties:
+            # import sys
+            # print(">>>", name,file=sys.__stdout__,flush=True)
+            with self.subTest(name=name + " get"):
+                # arrange
+                font = pygame_font.Font(None, 16)
+                pygame_font.quit()
+                pygame_font.init()
+
+                # act / assert
+                self.assertRaises(pygame.error, getattr, font, name)  # read
+
+            if arg is not None:
+                with self.subTest(name=name + " write"):
+                    # act / assert
+                    self.assertRaises(pygame.error, setattr, font, name, arg)  # write
+
 
 @unittest.skipIf(IS_PYPY, "pypy skip known failure")  # TODO
 class VisualTests(unittest.TestCase):
