@@ -943,10 +943,11 @@ class FontTypeTest(unittest.TestCase):
                 ("italic", True),
                 ("underline", True),
                 ("strikethrough", True),
-                ("align", 1),
                 ("point_size", 1),
             ]
             version = pygame.font.get_sdl_ttf_version()
+            if version >= (2, 20, 0):
+                properties.append(("align", 1))
 
         font = pygame_font.Font(None, 10)
         actual_names = []
