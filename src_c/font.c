@@ -48,6 +48,10 @@
 #define RAISE_TEXT_TYPE_ERROR() \
     RAISE(PyExc_TypeError, "text must be a unicode or bytes");
 
+#define RAISE_FONT_QUIT_ERROR_RETURN(r) \
+    RAISERETURN(pgExc_SDLError,         \
+                "Invalid font (font module quit since font created)", r)
+
 #define RAISE_FONT_QUIT_ERROR() \
     RAISE(pgExc_SDLError,       \
           "Invalid font (font module quit since font created)");
@@ -280,8 +284,7 @@ static int
 font_setter_bold(PyObject *self, PyObject *value, void *closure)
 {
     if (!PgFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return -1;
+        RAISE_FONT_QUIT_ERROR_RETURN(-1);
     }
 
     TTF_Font *font = PyFont_AsFont(self);
@@ -314,8 +317,7 @@ static PyObject *
 font_set_bold(PyObject *self, PyObject *arg)
 {
     if (!PgFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        return RAISE_FONT_QUIT_ERROR();
     }
 
     TTF_Font *font = PyFont_AsFont(self);
@@ -345,8 +347,7 @@ static int
 font_setter_italic(PyObject *self, PyObject *value, void *closure)
 {
     if (!PgFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return -1;
+        RAISE_FONT_QUIT_ERROR_RETURN(-1);
     }
 
     TTF_Font *font = PyFont_AsFont(self);
@@ -379,8 +380,7 @@ static PyObject *
 font_set_italic(PyObject *self, PyObject *arg)
 {
     if (!PgFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        return RAISE_FONT_QUIT_ERROR();
     }
 
     TTF_Font *font = PyFont_AsFont(self);
@@ -410,8 +410,7 @@ static int
 font_setter_underline(PyObject *self, PyObject *value, void *closure)
 {
     if (!PgFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return -1;
+        RAISE_FONT_QUIT_ERROR_RETURN(-1);
     }
 
     TTF_Font *font = PyFont_AsFont(self);
@@ -474,8 +473,7 @@ static int
 font_setter_strikethrough(PyObject *self, PyObject *value, void *closure)
 {
     if (!PgFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return -1;
+        RAISE_FONT_QUIT_ERROR_RETURN(-1);
     }
 
     TTF_Font *font = PyFont_AsFont(self);
@@ -515,8 +513,7 @@ static int
 font_setter_align(PyObject *self, PyObject *value, void *closure)
 {
     if (!PgFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return -1;
+        RAISE_FONT_QUIT_ERROR_RETURN(-1);
     }
 
 #if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
@@ -563,8 +560,7 @@ static PyObject *
 font_set_strikethrough(PyObject *self, PyObject *arg)
 {
     if (!PgFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        return RAISE_FONT_QUIT_ERROR();
     }
 
     TTF_Font *font = PyFont_AsFont(self);
@@ -776,8 +772,7 @@ static int
 font_setter_point_size(PyFontObject *self, PyObject *value, void *closure)
 {
     if (!PgFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return -1;
+        RAISE_FONT_QUIT_ERROR_RETURN(-1);
     }
 
 #if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
