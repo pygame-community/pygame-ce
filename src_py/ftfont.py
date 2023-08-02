@@ -115,7 +115,7 @@ class Font(_Font):
 
     def get_underline(self):
         """get_underline() -> bool
-        check if the text will be rendered underlined"""
+        check if the text will be rendered with an underline"""
 
         return self.underline
 
