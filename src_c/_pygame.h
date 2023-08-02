@@ -294,6 +294,17 @@ supported Python version. #endif */
 
 #define PyType_Init(x) (((x).ob_type) = &PyType_Type)
 
+/* Python macro for comparing to Py_None
+ * Py_IsNone is naturally supported by
+ * Python 3.10 or higher
+ * so this macro can be removed after the minimum
+ * supported
+ * Python version reaches 3.10
+ */
+#ifndef Py_IsNone
+#define Py_IsNone(x) (x == Py_None)
+#endif
+
 /* Update this function if new sequences are added to the fast sequence
  * type. */
 #ifndef pgSequenceFast_Check
