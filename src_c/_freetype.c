@@ -219,10 +219,12 @@ static unsigned int current_freetype_generation = 0;
 #define FreetypeFont_GenerationCheck(x) \
     (((pgFontObject *)(x))->init_generation == current_freetype_generation)
 
-#define RAISE_FONT_QUIT_ERROR()                                              \
-    RAISE(pgExc_SDLError,                                                    \
-          "Invalid freetype font (freetype module quit since freetype font " \
-          "created)");
+#define RAISE_FONT_QUIT_ERROR(r)                                           \
+    RAISERETURN(                                                           \
+        pgExc_SDLError,                                                    \
+        "Invalid freetype font (freetype module quit since freetype font " \
+        "created)",                                                        \
+        r);
 
 static PyObject *
 load_font_res(const char *filename)
@@ -919,8 +921,7 @@ static PyObject *
 _ftfont_getstyle_flag(pgFontObject *self, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     const intptr_t style_flag = (intptr_t)closure;
@@ -932,8 +933,7 @@ static int
 _ftfont_setstyle_flag(pgFontObject *self, PyObject *value, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return -1;
+        RAISE_FONT_QUIT_ERROR(-1);
     }
 
     const intptr_t style_flag = (intptr_t)closure;
@@ -969,8 +969,7 @@ static PyObject *
 _ftfont_getstyle(pgFontObject *self, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     return PyLong_FromLong(self->style);
@@ -980,8 +979,7 @@ static int
 _ftfont_setstyle(pgFontObject *self, PyObject *value, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return -1;
+        RAISE_FONT_QUIT_ERROR(-1);
     }
 
     FT_UInt32 style;
@@ -1025,8 +1023,7 @@ static PyObject *
 _ftfont_getstrength(pgFontObject *self, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     return PyFloat_FromDouble(self->strength);
@@ -1036,8 +1033,7 @@ static int
 _ftfont_setstrength(pgFontObject *self, PyObject *value, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return -1;
+        RAISE_FONT_QUIT_ERROR(-1);
     }
 
     PyObject *strengthobj = PyNumber_Float(value);
@@ -1063,7 +1059,7 @@ static PyObject *
 _ftfont_getsize(pgFontObject *self, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        return RAISE_FONT_QUIT_ERROR();
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     if (self->face_size.y == 0) {
@@ -1077,8 +1073,7 @@ static int
 _ftfont_setsize(pgFontObject *self, PyObject *value, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return -1;
+        RAISE_FONT_QUIT_ERROR(-1);
     }
 
     Scale_t face_size;
@@ -1098,8 +1093,7 @@ static PyObject *
 _ftfont_getunderlineadjustment(pgFontObject *self, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     return PyFloat_FromDouble(self->underline_adjustment);
@@ -1110,8 +1104,7 @@ _ftfont_setunderlineadjustment(pgFontObject *self, PyObject *value,
                                void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return -1;
+        RAISE_FONT_QUIT_ERROR(-1);
     }
 
     PyObject *adjustmentobj;
@@ -1144,7 +1137,7 @@ static PyObject *
 _ftfont_getfontmetric(pgFontObject *self, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        return RAISE_FONT_QUIT_ERROR();
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     typedef long (*getter)(FreeTypeInstance *, pgFontObject *);
@@ -1162,7 +1155,7 @@ static PyObject *
 _ftfont_getname(pgFontObject *self, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        return RAISE_FONT_QUIT_ERROR();
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     if (pgFont_IS_ALIVE(self)) {
@@ -1178,8 +1171,7 @@ static PyObject *
 _ftfont_getstylename(pgFontObject *self, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     if (pgFont_IS_ALIVE(self)) {
@@ -1195,8 +1187,7 @@ static PyObject *
 _ftfont_getpath(pgFontObject *self, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     PyObject *path = ((pgFontObject *)self)->path;
@@ -1213,8 +1204,7 @@ static PyObject *
 _ftfont_getscalable(pgFontObject *self, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     ASSERT_SELF_IS_ALIVE(self)
@@ -1225,8 +1215,7 @@ static PyObject *
 _ftfont_getfixedwidth(pgFontObject *self, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     long fixed_width;
@@ -1241,8 +1230,7 @@ static PyObject *
 _ftfont_getfixedsizes(pgFontObject *self, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     long num_fixed_sizes;
@@ -1257,8 +1245,7 @@ static PyObject *
 _ftfont_getrender_flag(pgFontObject *self, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     const intptr_t render_flag = (intptr_t)closure;
@@ -1270,8 +1257,7 @@ static int
 _ftfont_setrender_flag(pgFontObject *self, PyObject *value, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return -1;
+        RAISE_FONT_QUIT_ERROR(-1);
     }
 
     const intptr_t render_flag = (intptr_t)closure;
@@ -1299,8 +1285,7 @@ static PyObject *
 _ftfont_getresolution(pgFontObject *self, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     return PyLong_FromUnsignedLong((unsigned long)self->resolution);
@@ -1311,8 +1296,7 @@ static PyObject *
 _ftfont_getrotation(pgFontObject *self, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     return PyLong_FromLong((long)FX16_ROUND_TO_INT(self->rotation));
@@ -1322,8 +1306,7 @@ static int
 _ftfont_setrotation(pgFontObject *self, PyObject *value, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return -1;
+        RAISE_FONT_QUIT_ERROR(-1);
     }
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("rotation", value);
@@ -1347,8 +1330,7 @@ static PyObject *
 _ftfont_getfgcolor(pgFontObject *self, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     return pgColor_New(self->fgcolor);
@@ -1358,8 +1340,7 @@ static int
 _ftfont_setfgcolor(pgFontObject *self, PyObject *value, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return -1;
+        RAISE_FONT_QUIT_ERROR(-1);
     }
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("fgcolor", value);
@@ -1377,8 +1358,7 @@ static PyObject *
 _ftfont_getbgcolor(pgFontObject *self, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     return pgColor_New(self->bgcolor);
@@ -1388,8 +1368,7 @@ static int
 _ftfont_setbgcolor(pgFontObject *self, PyObject *value, void *closure)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return -1;
+        RAISE_FONT_QUIT_ERROR(-1);
     }
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("bgcolor", value);
@@ -1434,7 +1413,7 @@ static PyObject *
 _ftfont_getrect(pgFontObject *self, PyObject *args, PyObject *kwds)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        return RAISE_FONT_QUIT_ERROR();
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     /* MODIFIED
@@ -1534,7 +1513,7 @@ static PyObject *
 _ftfont_getmetrics(pgFontObject *self, PyObject *args, PyObject *kwds)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        return RAISE_FONT_QUIT_ERROR();
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     /* keyword list */
@@ -1586,7 +1565,7 @@ static PyObject *
 _ftfont_getsizedascender(pgFontObject *self, PyObject *args)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        return RAISE_FONT_QUIT_ERROR();
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     Scale_t face_size = FACE_SIZE_NONE;
@@ -1617,7 +1596,7 @@ static PyObject *
 _ftfont_getsizeddescender(pgFontObject *self, PyObject *args)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        return RAISE_FONT_QUIT_ERROR();
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     Scale_t face_size = FACE_SIZE_NONE;
@@ -1649,7 +1628,7 @@ static PyObject *
 _ftfont_getsizedheight(pgFontObject *self, PyObject *args)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        return RAISE_FONT_QUIT_ERROR();
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     Scale_t face_size = FACE_SIZE_NONE;
@@ -1680,7 +1659,7 @@ static PyObject *
 _ftfont_getsizedglyphheight(pgFontObject *self, PyObject *args)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        return RAISE_FONT_QUIT_ERROR();
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     Scale_t face_size = FACE_SIZE_NONE;
@@ -1712,7 +1691,7 @@ static PyObject *
 _ftfont_getsizes(pgFontObject *self, PyObject *_null)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        return RAISE_FONT_QUIT_ERROR();
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     int nsizes;
@@ -1753,7 +1732,7 @@ static PyObject *
 _ftfont_render_raw(pgFontObject *self, PyObject *args, PyObject *kwds)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        return RAISE_FONT_QUIT_ERROR();
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     /* keyword list */
@@ -1820,7 +1799,7 @@ static PyObject *
 _ftfont_render_raw_to(pgFontObject *self, PyObject *args, PyObject *kwds)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        return RAISE_FONT_QUIT_ERROR();
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     /* keyword list */
@@ -1889,8 +1868,7 @@ static PyObject *
 _ftfont_render(pgFontObject *self, PyObject *args, PyObject *kwds)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        RAISE_FONT_QUIT_ERROR();
-        return NULL;
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     /* keyword list */
@@ -2016,7 +1994,7 @@ static PyObject *
 _ftfont_render_to(pgFontObject *self, PyObject *args, PyObject *kwds)
 {
     if (!FreetypeFont_GenerationCheck(self)) {
-        return RAISE_FONT_QUIT_ERROR();
+        RAISE_FONT_QUIT_ERROR(NULL);
     }
 
     /* keyword list */
