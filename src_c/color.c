@@ -21,8 +21,8 @@
 /* The follow bug was reported for the pygame.math module:
  *
  * Adjust gcc 4.4 optimization for floating point on x86-32 PCs running Linux.
- * This addresses bug 52:
- * https://github.com/pygame/pygame/issues/52
+ * This addresses bug 67:
+ * https://github.com/pygame-community/pygame-ce/issues/67
  * With this option, floats have consistent precision regardless of optimize
  * level.
  *
@@ -98,6 +98,20 @@ static PyObject *
 _premul_alpha(pgColorObject *, PyObject *);
 static PyObject *
 _color_update(pgColorObject *self, PyObject *const *args, Py_ssize_t nargs);
+
+/* Generic functions */
+static PyObject *
+_color_from_space(char *space, PyObject *args);
+#define COLOR_FROM_SPACE(space)                                              \
+    static PyObject *_color_from_##space(PyTypeObject *self, PyObject *args) \
+    {                                                                        \
+        return _color_from_space(#space, args);                              \
+    }
+COLOR_FROM_SPACE(hsva);
+COLOR_FROM_SPACE(hsla);
+COLOR_FROM_SPACE(cmy);
+COLOR_FROM_SPACE(i1i2i3);
+#undef COLOR_FROM_SPACE
 
 /* Getters/setters */
 static PyObject *
@@ -201,6 +215,14 @@ pg_RGBAFromFuzzyColorObj(PyObject *color, Uint8 rgba[]);
  * Methods, which are bound to the pgColorObject type.
  */
 static PyMethodDef _color_methods[] = {
+    {"from_hsva", (PyCFunction)_color_from_hsva, METH_CLASS | METH_VARARGS,
+     DOC_COLOR_FROMHSVA},
+    {"from_hsla", (PyCFunction)_color_from_hsla, METH_CLASS | METH_VARARGS,
+     DOC_COLOR_FROMHSLA},
+    {"from_cmy", (PyCFunction)_color_from_cmy, METH_CLASS | METH_VARARGS,
+     DOC_COLOR_FROMCMY},
+    {"from_i1i2i3", (PyCFunction)_color_from_i1i2i3, METH_CLASS | METH_VARARGS,
+     DOC_COLOR_FROMI1I2I3},
     {"normalize", (PyCFunction)_color_normalize, METH_NOARGS,
      DOC_COLOR_NORMALIZE},
     {"correct_gamma", (PyCFunction)_color_correct_gamma, METH_VARARGS,
@@ -743,6 +765,41 @@ _color_iter(pgColorObject *self)
     iter = PyTuple_Type.tp_iter(tup);
     Py_DECREF(tup);
     return iter;
+}
+
+static PyObject *
+_color_from_space(char *space, PyObject *args)
+{
+    pgColorObject *color =
+        (pgColorObject *)pgColor_New((Uint8[]){0, 0, 0, 255});
+    int set_success = 1;
+
+    if (color == NULL) {
+        return NULL;
+    }
+
+    if (PyTuple_GET_SIZE(args) == 1) {
+        args = PyTuple_GET_ITEM(args, 0);
+    }
+
+    if (strcmp(space, "hsva") == 0) {
+        set_success = _color_set_hsva(color, args, NULL);
+    }
+    else if (strcmp(space, "hsla") == 0) {
+        set_success = _color_set_hsla(color, args, NULL);
+    }
+    else if (strcmp(space, "cmy") == 0) {
+        set_success = _color_set_cmy(color, args, NULL);
+    }
+    else if (strcmp(space, "i1i2i3") == 0) {
+        set_success = _color_set_i1i2i3(color, args, NULL);
+    }
+
+    if (set_success != 0) {
+        return NULL;
+    }
+
+    return (PyObject *)color;
 }
 
 /**
@@ -1774,7 +1831,7 @@ _color_subscript(pgColorObject *self, PyObject *item)
         int len = 4;
         Py_ssize_t start, stop, step, slicelength;
 
-        if (Slice_GET_INDICES_EX(item, len, &start, &stop, &step,
+        if (PySlice_GetIndicesEx(item, len, &start, &stop, &step,
                                  &slicelength) < 0) {
             return NULL;
         }
@@ -1923,7 +1980,7 @@ _color_set_slice(pgColorObject *color, PyObject *idx, PyObject *val)
         int c;
         Py_ssize_t i, cur;
 
-        if (Slice_GET_INDICES_EX(idx, color->len, &start, &stop, &step,
+        if (PySlice_GetIndicesEx(idx, color->len, &start, &stop, &step,
                                  &slicelength) < 0) {
             return -1;
         }
