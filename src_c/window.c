@@ -809,9 +809,10 @@ static PyMethodDef window_methods[] = {
 
 static PyGetSetDef _window_getset[] = {
     {"grab_mouse", (getter)window_get_grab_mouse,
-     (setter)window_set_grab_mouse, DOC_SDL2_VIDEO_WINDOW_GRAB, NULL},
+     (setter)window_set_grab_mouse, DOC_SDL2_VIDEO_WINDOW_GRABMOUSE, NULL},
     {"grab_keyboard", (getter)window_get_grab_keyboard,
-     (setter)window_set_grab_keyboard, DOC_SDL2_VIDEO_WINDOW_GRAB, NULL},
+     (setter)window_set_grab_keyboard, DOC_SDL2_VIDEO_WINDOW_GRABKEYBOARD,
+     NULL},
     {"title", (getter)window_get_title, (setter)window_set_title,
      DOC_SDL2_VIDEO_WINDOW_TITLE, NULL},
     {"resizable", (getter)window_get_resizable, (setter)window_set_resizable,

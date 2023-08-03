@@ -80,7 +80,8 @@
    :param bool resizable: Create a resizable window.
    :param bool minimized: Create a mimized window.
    :param bool maximized: Create a maximized window.
-   :param bool input_grabbed: Create a window with a grabbed input focus.
+   :param bool mouse_grabbed: Create a window with grabbed mouse input.
+   :param bool keyboard_grabbed: Create a window with grabbed keyboard input.
    :param bool input_focus: Create a window with input focus.
    :param bool mouse_focus: Create a window with mouse focus.
    :param bool foreign: Marks a window not created by SDL.
@@ -99,15 +100,25 @@
                            (X11 only).
 
 
-   .. attribute:: grab
+   .. attribute:: grab_mouse
 
-      | :sl:`Get or set the window's input grab state`
-      | :sg:`grab -> bool`
+      | :sl:`Get or set the window's mouse grab state`
+      | :sg:`grab_mouse -> bool`
 
-      Gets or sets the window's input grab state.
-      When input is grabbed, the mouse is confined to the window.
+      Get or set the window's mouse grab state.
+      When grabbed, the mouse is confined to the window.
+
       If the caller enables a grab while another window is currently grabbed,
       the other window loses its grab in favor of the caller's window.
+   
+   .. attribute:: grab_keyboard
+
+      | :sl:`Get or set the window's keyboard grab state`
+      | :sg:`grab_keyboard -> bool`
+
+      Keyboard grab enables capture of system keyboard shortcuts like Alt+Tab or
+      the Meta/Super key. Note that not all system keyboard shortcuts can be
+      captured by applications (one example is Ctrl+Alt+Del on Windows).
 
    .. attribute:: relative_mouse
 
