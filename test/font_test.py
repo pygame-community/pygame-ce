@@ -864,8 +864,6 @@ class FontTypeTest(unittest.TestCase):
                 ("set_underline", (True,)),
                 ("get_strikethrough", tuple()),
                 ("set_strikethrough", (True,)),
-                ("get_point_size", tuple()),
-                ("set_point_size", (34,)),
                 ("metrics", ("any text",)),
                 ("render", ("hello", True, "white")),
                 ("size", ("any text",)),
@@ -873,12 +871,21 @@ class FontTypeTest(unittest.TestCase):
                 ("set_direction", ("is it text",)),
             ]
             version = pygame.font.get_sdl_ttf_version()
+            if version >= (2, 0, 18):
+                methods.append(("get_point_size", tuple()))
+                methods.apend(("set_point_size", (34,)))
 
         font = pygame_font.Font(None, 10)
         actual_names = []
         for n in sorted(dir(font)):
             if n == "align" and version < (2, 20, 0):
                 print(f"align skipped for sld ttf version {version} < 2.20.0")
+                continue
+            if n == "get_point_size" and version < (2, 0, 18):
+                print(f"get_point_size skipped for sld ttf version {version} < 2.20.0")
+                continue
+            if n == "set_point_size" and version < (2, 0, 18):
+                print(f"set_point_size skipped for sld ttf version {version} < 2.20.0")
                 continue
             print("check: ", n)
             if callable(getattr(font, n)) and not n.startswith("_"):
@@ -944,11 +951,12 @@ class FontTypeTest(unittest.TestCase):
                 ("italic", True),
                 ("underline", True),
                 ("strikethrough", True),
-                ("point_size", 1),
             ]
             version = pygame.font.get_sdl_ttf_version()
             if version >= (2, 20, 0):
                 properties.append(("align", 1))
+            if version >= (2, 0, 18):
+                properties.append(("point_size", 1))
 
         font = pygame_font.Font(None, 10)
         actual_names = []
@@ -956,6 +964,9 @@ class FontTypeTest(unittest.TestCase):
         for n in sorted(dir(font)):
             if n == "align" and version < (2, 20, 0):
                 print(f"align skipped for sld ttf version {version} < 2.20.0")
+                continue
+            if n == "point_size" and version < (2, 0, 18):
+                print(f"point_size skipped for sld ttf version {version} < 2.0.18")
                 continue
             print("check: ", n)
             if not callable(getattr(font, n)) and not n.startswith("_"):
