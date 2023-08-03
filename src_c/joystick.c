@@ -120,7 +120,7 @@ joy_init(PyObject *self, PyObject *_null)
 {
     if (PyErr_WarnEx(
             PyExc_DeprecationWarning,
-            "pygame.joystick.Joystick.init() is deprecated since 2.3.1. "
+            "pygame.joystick.Joystick.init() is deprecated since 2.4.0. "
             "Bear in mind in future it will not be possible to "
             "reinitialise a closed Joystick object.",
             1) == -1) {
@@ -164,7 +164,7 @@ joy_get_id(PyObject *self, PyObject *_null)
 {
     if (PyErr_WarnEx(
             PyExc_DeprecationWarning,
-            "pygame.joystick.Joystick.get_id() is deprecated since 2.3.1."
+            "pygame.joystick.Joystick.get_id() is deprecated since 2.4.0. "
             "The original device index is not useful in pygame 2. "
             "Use get_instance_id() instead.",
             1) == -1) {
