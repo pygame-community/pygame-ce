@@ -773,6 +773,42 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(c.a, 146)
         self.assertEqual(int(c), int(0x33727592))
 
+    def test_from_cmy(self):
+        cmy = pygame.Color.from_cmy(0.5, 0.5, 0.5)
+        cmy_tuple = pygame.Color.from_cmy((0.5, 0.5, 0.5))
+
+        expected_cmy = (127, 127, 127)
+
+        self.assertEqual(expected_cmy, cmy)
+        self.assertEqual(expected_cmy, cmy_tuple)
+
+    def test_from_hsva(self):
+        hsva = pygame.Color.from_hsva(0, 100, 100, 100)
+        hsva_tuple = pygame.Color.from_hsva((0, 100, 100, 100))
+
+        expected_hsva = (255, 0, 0)
+
+        self.assertEqual(expected_hsva, hsva)
+        self.assertEqual(expected_hsva, hsva_tuple)
+
+    def test_from_hsla(self):
+        hsla = pygame.Color.from_hsla(0, 100, 100, 100)
+        hsla_tuple = pygame.Color.from_hsla((0, 100, 100, 100))
+
+        expected_hsla = (255, 255, 255)
+
+        self.assertEqual(expected_hsla, hsla)
+        self.assertEqual(expected_hsla, hsla_tuple)
+
+    def test_from_i1i2i3(self):
+        i1i2i3 = pygame.Color.from_i1i2i3(0, 0, 0)
+        i1i2i3_tuple = pygame.Color.from_i1i2i3((0, 0, 0))
+
+        expected_i1i2i3 = (0, 0, 0)
+
+        self.assertEqual(expected_i1i2i3, i1i2i3)
+        self.assertEqual(expected_i1i2i3, i1i2i3_tuple)
+
     def test_normalize(self):
         c = pygame.Color(204, 38, 194, 55)
         self.assertEqual(c.r, 204)

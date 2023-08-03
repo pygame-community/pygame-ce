@@ -13,6 +13,7 @@ with wider platform support available via an integrated OpenCV backend.
 
 .. versionaddedold:: 2.0.2 Windows native camera support
 .. versionaddedold:: 2.0.3 New OpenCV backends
+.. versionchanged:: 2.3.0 Removed deprecated vidcapture backend
 
 EXPERIMENTAL!: This API may change or disappear in later pygame releases. If
 you use this, your code will very likely break with the next pygame release.
@@ -78,14 +79,12 @@ The Bayer to ``RGB`` function is based on:
       _camera (V4L2)    Linux     Builtin
       OpenCV            Any       Uses `opencv-python` module, can't enumerate cameras
       OpenCV-Mac        Mac       Same as OpenCV, but has camera enumeration
-      VideoCapture      Windows   Uses abandoned `VideoCapture` module, can't enumerate
-                                  cameras, may be removed in the future
 
    There are two main differences among backends.
 
    The _camera backends are built in to pygame itself, and require no third
-   party imports. All the other backends do. For the OpenCV and VideoCapture
-   backends, those modules need to be installed on your system.
+   party imports. All the other backends do. For the OpenCV backend,
+   the module will need to be installed on your system.
 
    The other big difference is "camera enumeration." Some backends don't have
    a way to list out camera names, or even the number of cameras on the
@@ -132,7 +131,7 @@ The Bayer to ``RGB`` function is based on:
    | :sg:`Camera(device, (width, height), format) -> Camera`
 
    Loads a camera. On Linux, the device is typically something like
-   "/dev/video0". Default width and height are 640 by 480. 
+   "/dev/video0". Default width and height are 640 by 480.
    Format is the desired colorspace of the output. 
    This is useful for computer vision purposes. The default is
    ``RGB``. The following are supported:

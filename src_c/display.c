@@ -847,12 +847,13 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     int w, h;
     PyObject *size = NULL;
     int vsync = SDL_FALSE;
+    uint64_t hwnd = 0;
     /* display will get overwritten by ParseTupleAndKeywords only if display
        parameter is given. By default, put the new window on the same
        screen as the old one */
     int display = _get_display(win);
     char *title = state->title;
-    char *scale_env;
+    char *scale_env, *winid_env;
     SDL_SysWMinfo wm_info;
 
     SDL_VERSION(&wm_info.version);
@@ -860,10 +861,15 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     char *keywords[] = {"size", "flags", "depth", "display", "vsync", NULL};
 
     scale_env = SDL_getenv("PYGAME_FORCE_SCALE");
+    winid_env = SDL_getenv("SDL_WINDOWID");
 
     if (!PyArg_ParseTupleAndKeywords(arg, kwds, "|Oiiii", keywords, &size,
                                      &flags, &depth, &display, &vsync))
         return NULL;
+
+    if (hwnd == 0 && winid_env != NULL) {
+        hwnd = SDL_strtoull(winid_env, NULL, 0);
+    }
 
     if (scale_env != NULL) {
         flags |= PGS_SCALED;
@@ -1104,7 +1110,12 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
             if (!win) {
                 /*open window*/
-                win = SDL_CreateWindow(title, x, y, w_1, h_1, sdl_flags);
+                if (hwnd != 0) {
+                    win = SDL_CreateWindowFrom((void *)hwnd);
+                }
+                else {
+                    win = SDL_CreateWindow(title, x, y, w_1, h_1, sdl_flags);
+                }
                 if (!win)
                     return RAISE(pgExc_SDLError, SDL_GetError());
             }
@@ -1515,7 +1526,7 @@ pg_list_modes(PyObject *self, PyObject *args, PyObject *kwds)
         }
         /* use reasonable defaults (cf. SDL_video.c) */
         if (!mode.format)
-            mode.format = SDL_PIXELFORMAT_RGB888;
+            mode.format = PG_PIXELFORMAT_XRGB8888;
         if (!mode.w)
             mode.w = 640;
         if (!mode.h)
@@ -2437,9 +2448,8 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
         if (y == (int)SDL_WINDOWPOS_UNDEFINED_DISPLAY(window_display))
             y = SDL_WINDOWPOS_CENTERED_DISPLAY(window_display);
 
-#if (SDL_VERSION_ATLEAST(2, 0, 5))
         SDL_SetWindowResizable(win, flags & SDL_WINDOW_RESIZABLE);
-#endif
+
         SDL_SetWindowBordered(win, (flags & SDL_WINDOW_BORDERLESS) == 0);
 
         SDL_SetWindowPosition(win, x, y);

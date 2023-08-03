@@ -113,7 +113,7 @@ pygame显然依赖于SDL和Python。此外pygame还嵌入了几个较小的库�
 +----------+------------------------+
 | SDL_image| >= 2.0.2               |
 +----------+------------------------+
-| SDL_ttf  | >= 2.0.11              |
+| SDL_ttf  | >= 2.0.12              |
 +----------+------------------------+
 | SDL_gfx  | （可选，内置）         |
 +----------+------------------------+
@@ -143,8 +143,8 @@ pygame显然依赖于SDL和Python。此外pygame还嵌入了几个较小的库�
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.2.1.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.2.1...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.3.0.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.3.0...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/

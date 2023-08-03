@@ -1,8 +1,8 @@
-from typing import Any, Iterator, Sequence, Tuple, Union, overload
+from typing import Any, Iterator, Tuple, Union, overload
 
 from pygame.surface import Surface
 
-from ._common import FileArg, Literal
+from ._common import FileArg, Literal, IntCoordinate, Sequence
 
 _Small_string = Tuple[
     str, str, str, str, str, str, str, str, str, str, str, str, str, str, str, str
@@ -64,15 +64,15 @@ class Cursor:
     @overload
     def __init__(
         self,
-        size: Union[Tuple[int, int], Sequence[int]],
-        hotspot: Union[Tuple[int, int], Sequence[int]],
+        size: IntCoordinate,
+        hotspot: IntCoordinate,
         xormasks: Sequence[int],
         andmasks: Sequence[int],
     ) -> None: ...
     @overload
     def __init__(
         self,
-        hotspot: Union[Tuple[int, int], Sequence[int]],
+        hotspot: IntCoordinate,
         surface: Surface,
     ) -> None: ...
     def __iter__(self) -> Iterator[Any]: ...
@@ -81,11 +81,11 @@ class Cursor:
     def __hash__(self) -> int: ...
     def __getitem__(
         self, index: int
-    ) -> Union[int, Tuple[int, int], Sequence[int], Surface]: ...
+    ) -> Union[int, IntCoordinate, Surface]: ...
     copy = __copy__
     type: Literal["system", "color", "bitmap"]
     data: Union[
         Tuple[int],
         Tuple[Tuple[int, int], Tuple[int, int], Tuple[int, ...], Tuple[int, ...]],
-        Tuple[Union[Tuple[int, int], Sequence[int]], Surface],
+        Tuple[IntCoordinate, Surface],
     ]

@@ -56,7 +56,7 @@
 
 /* version macros (defined since version 1.9.5) */
 #define PG_MAJOR_VERSION 2
-#define PG_MINOR_VERSION 3
+#define PG_MINOR_VERSION 4
 #define PG_PATCH_VERSION 0
 #define PG_VERSIONNUM(MAJOR, MINOR, PATCH) \
     (1000 * (MAJOR) + 100 * (MINOR) + (PATCH))
@@ -87,6 +87,7 @@ typedef struct pg_bufferinfo_s {
 } pg_buffer;
 
 #include "pgimport.h"
+#include "../pgcompat_rect.h"
 
 /*
  * BASE module
@@ -365,11 +366,11 @@ typedef struct pgEventObject pgEventObject;
 #define pgEvent_New \
     (*(PyObject * (*)(SDL_Event *)) PYGAMEAPI_GET_SLOT(event, 1))
 
-#define pgEvent_New2 \
-    (*(PyObject * (*)(int, PyObject *)) PYGAMEAPI_GET_SLOT(event, 2))
+#define pg_post_event \
+    (*(int (*)(Uint32, PyObject *))PYGAMEAPI_GET_SLOT(event, 2))
 
-#define pgEvent_FillUserEvent \
-    (*(int (*)(pgEventObject *, SDL_Event *))PYGAMEAPI_GET_SLOT(event, 3))
+#define pg_post_event_dictproxy \
+    (*(int (*)(Uint32, pgEventDictProxy *))PYGAMEAPI_GET_SLOT(event, 3))
 
 #define pg_EnableKeyRepeat (*(int (*)(int, int))PYGAMEAPI_GET_SLOT(event, 4))
 
@@ -485,7 +486,6 @@ typedef struct {
 #ifdef PYGAME_H
 PYGAMEAPI_DEFINE_SLOTS(base);
 PYGAMEAPI_DEFINE_SLOTS(rect);
-PYGAMEAPI_DEFINE_SLOTS(cdrom);
 PYGAMEAPI_DEFINE_SLOTS(joystick);
 PYGAMEAPI_DEFINE_SLOTS(display);
 PYGAMEAPI_DEFINE_SLOTS(surface);
@@ -499,7 +499,6 @@ PYGAMEAPI_DEFINE_SLOTS(_window);
 #else /* ~PYGAME_H */
 PYGAMEAPI_EXTERN_SLOTS(base);
 PYGAMEAPI_EXTERN_SLOTS(rect);
-PYGAMEAPI_EXTERN_SLOTS(cdrom);
 PYGAMEAPI_EXTERN_SLOTS(joystick);
 PYGAMEAPI_EXTERN_SLOTS(display);
 PYGAMEAPI_EXTERN_SLOTS(surface);
