@@ -570,13 +570,27 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                     if (_value_bool)
                         flags |= SDL_WINDOW_MAXIMIZED;
                 }
-                else if (!strcmp(_key_str, "input_grabbed")) {
+                else if (!strcmp(_key_str, "mouse_grabbed")) {
                     if (_value_bool)
 #if SDL_VERSION_ATLEAST(2, 0, 16)
                         flags |= SDL_WINDOW_MOUSE_GRABBED;
 #else
                         flags |= SDL_WINDOW_INPUT_GRABBED;
 #endif
+                }
+                else if (!strcmp(_key_str, "keyboard_grabbed")) {
+                    if (_value_bool) {
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+                        flags |= SDL_WINDOW_KEYBOARD_GRABBED;
+#else
+                        if (PyErr_WarnEx(
+                                PyExc_Warning,
+                                "Keyword 'keyboard_grabbed' requires SDL 2.0.16+",
+                                1) == -1) {
+                            return -1;
+                        }
+#endif
+                    }
                 }
                 else if (!strcmp(_key_str, "input_focus")) {
                     if (_value_bool) {
