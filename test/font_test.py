@@ -881,6 +881,9 @@ class FontTypeTest(unittest.TestCase):
             if n == "align" and version < (2, 20, 0):
                 print(f"align skipped for sld ttf version {version} < 2.20.0")
                 continue
+            if n == "point_size" and version < (2, 0, 18):
+                print(f"point_size skipped for sld ttf version {version} < 2.20.0")
+                continue
             if n == "get_point_size" and version < (2, 0, 18):
                 print(f"get_point_size skipped for sld ttf version {version} < 2.20.0")
                 continue
