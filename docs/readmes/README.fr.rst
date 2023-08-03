@@ -201,7 +201,6 @@ Voir les docs/licences pour les licences des dépendances.
 .. _wiki de pygame: https://www.pygame.org/docs/
 .. _wiki de pygame-ce: https://pyga.me/docs/
 .. _Simple DirectMedia Layer: https://www.libsdl.org
-.. _We need your help: https://www.pygame.org/contribute.html
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
 .. _docs page: https://pyga.me/docs
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
