@@ -880,6 +880,7 @@ class FontTypeTest(unittest.TestCase):
             if n == "align" and version < (2, 20, 0):
                 print(f"align skipped for sld ttf version {version} < 2.20.0")
                 continue
+            print("check: ", n)
             if callable(getattr(font, n)) and not n.startswith("_"):
                 actual_names.append(n)
         expected_names = [n for n, a in sorted(methods)]
@@ -956,7 +957,7 @@ class FontTypeTest(unittest.TestCase):
             if n == "align" and version < (2, 20, 0):
                 print(f"align skipped for sld ttf version {version} < 2.20.0")
                 continue
-
+            print("check: ", n)
             if not callable(getattr(font, n)) and not n.startswith("_"):
                 actual_names.append(n)
 
