@@ -873,7 +873,7 @@ class FontTypeTest(unittest.TestCase):
             version = pygame.font.get_sdl_ttf_version()
             if version >= (2, 0, 18):
                 methods.append(("get_point_size", tuple()))
-                methods.apend(("set_point_size", (34,)))
+                methods.append(("set_point_size", (34,)))
 
         font = pygame_font.Font(None, 10)
         actual_names = []
