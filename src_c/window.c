@@ -238,7 +238,11 @@ window_set_grab_mouse(pgWindowObject *self, PyObject *arg, void *v)
     if (enable == -1)
         return -1;
 
+#if SDL_VERSION_ATLEAST(2, 0, 16)
     SDL_SetWindowMouseGrab(self->_win, enable);
+#else
+    SDL_SetWindowGrab(self->_win, enable);
+#endif
 
     return 0;
 }
@@ -246,27 +250,46 @@ window_set_grab_mouse(pgWindowObject *self, PyObject *arg, void *v)
 static PyObject *
 window_get_grab_mouse(pgWindowObject *self, void *v)
 {
+#if SDL_VERSION_ATLEAST(2, 0, 16)
     return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
                            SDL_WINDOW_MOUSE_GRABBED);
+#else
+    return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
+                           SDL_WINDOW_INPUT_GRABBED);
+#endif
 }
 
 static int
 window_set_grab_keyboard(pgWindowObject *self, PyObject *arg, void *v)
 {
+#if SDL_VERSION_ATLEAST(2, 0, 16)
     int enable = PyObject_IsTrue(arg);
     if (enable == -1)
         return -1;
 
     SDL_SetWindowKeyboardGrab(self->_win, enable);
-
+#else
+    if (PyErr_WarnEx(PyExc_Warning, "'grab_keyboard' requires SDL 2.0.16+",
+                     1) == -1) {
+        return -1;
+    }
+#endif
     return 0;
 }
 
 static PyObject *
 window_get_grab_keyboard(pgWindowObject *self, void *v)
 {
+#if SDL_VERSION_ATLEAST(2, 0, 16)
     return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
                            SDL_WINDOW_KEYBOARD_GRABBED);
+#else
+    if (PyErr_WarnEx(PyExc_Warning, "'grab_keyboard' requires SDL 2.0.16+",
+                     1) == -1) {
+        return NULL;
+    }
+    return PyBool_FromLong(SDL_FALSE);
+#endif
 }
 
 static int
@@ -583,10 +606,10 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 #if SDL_VERSION_ATLEAST(2, 0, 16)
                         flags |= SDL_WINDOW_KEYBOARD_GRABBED;
 #else
-                        if (PyErr_WarnEx(
-                                PyExc_Warning,
-                                "Keyword 'keyboard_grabbed' requires SDL 2.0.16+",
-                                1) == -1) {
+                        if (PyErr_WarnEx(PyExc_Warning,
+                                         "Keyword 'keyboard_grabbed' requires "
+                                         "SDL 2.0.16+",
+                                         1) == -1) {
                             return -1;
                         }
 #endif
