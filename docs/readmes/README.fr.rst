@@ -8,6 +8,7 @@
 |Python3| |GithubCommits| |BlackFormatBadge|
 
 `English`_ `简体中文`_ **Français**  `فارسی`_
+---------------------------------------------------------------------------------------------------------------------------------------------------
 
 `Pygame`_ est une bibliothèque multi-plateforme, libre et open-source
 permettant de développer des applications multimédias comme des jeux-vidéos, avec Python.
