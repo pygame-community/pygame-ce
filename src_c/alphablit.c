@@ -2368,7 +2368,6 @@ blit_blend_overlay(SDL_BlitInfo *info)
     int dstbpp = dstfmt->BytesPerPixel;
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
     Uint32 pixel;
-    Uint32 tmp;
     int srcppa = info->src_blend != SDL_BLENDMODE_NONE && srcfmt->Amask;
     int dstppa = info->dst_blend != SDL_BLENDMODE_NONE && dstfmt->Amask;
 
