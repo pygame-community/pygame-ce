@@ -890,7 +890,6 @@ class FontTypeTest(unittest.TestCase):
             if n == "set_point_size" and version < (2, 0, 18):
                 print(f"set_point_size skipped for sld ttf version {version} < 2.20.0")
                 continue
-            print("check: ", n)
             if callable(getattr(font, n)) and not n.startswith("_"):
                 actual_names.append(n)
         expected_names = [n for n, a in sorted(methods)]
@@ -971,7 +970,6 @@ class FontTypeTest(unittest.TestCase):
             if n == "point_size" and version < (2, 0, 18):
                 print(f"point_size skipped for sld ttf version {version} < 2.0.18")
                 continue
-            print("check: ", n)
             if not callable(getattr(font, n)) and not n.startswith("_"):
                 actual_names.append(n)
 

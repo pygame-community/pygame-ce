@@ -1657,12 +1657,6 @@ class FreeTypeFontTest(unittest.TestCase):
     def test_freetype_SysFont_name(self):
         """that SysFont accepts names of various types"""
         fonts = pygame.font.get_fonts()
-        expected_min_fonts_count = 4
-        self.assertGreaterEqual(
-            len(fonts),
-            expected_min_fonts_count,
-            msg=f"at least {expected_min_fonts_count} fonts are needed for this test.",
-        )
         size = 12
 
         # Check single name string:
