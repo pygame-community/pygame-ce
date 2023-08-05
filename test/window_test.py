@@ -5,6 +5,8 @@ import os
 from pygame._sdl2.video import Window
 from pygame.version import SDL
 
+# os.environ["SDL_VIDEODRIVER"] = "dummy"
+
 pygame.init()
 
 
@@ -111,21 +113,24 @@ class WindowTypeTest(unittest.TestCase):
         self.win.opacity = 1
         self.assertEqual(self.win.opacity, 1)
 
-    @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
-    )
     def test_init_flags(self):
         # test borderless
         win = Window(borderless=True)
         self.assertTrue(win.borderless)
         win.destroy()
 
+        # test always_on_top
+        if SDL >= (2, 0, 16):
+            win = Window(always_on_top=True)
+            self.assertTrue(win.always_on_top)
+            win.destroy()
+
         # test resizable
         win = Window(resizable=True)
         self.assertTrue(win.resizable)
         win.destroy()
 
+        # should raise a TypeError if keyword is random
         self.assertRaises(TypeError, lambda: Window(aaa=True))
         self.assertRaises(TypeError, lambda: Window(aaa=False))
 
