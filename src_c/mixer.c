@@ -1852,7 +1852,6 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
             }
             return -1;
         }
-
         Py_BEGIN_ALLOW_THREADS;
         chunk = Mix_LoadWAV_RW(rw, 1);
         Py_END_ALLOW_THREADS;
