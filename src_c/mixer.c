@@ -1841,10 +1841,14 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
 
     if (file != NULL) {
+        PyObject *path = PyOS_FSPath(file);
+        int file_is_bytes = PyBytes_Check(file);
+
         rw = pgRWops_FromObject(file, NULL);
 
         if (rw == NULL) {
-            if (PyErr_ExceptionMatches(PyExc_FileNotFoundError)) {
+            if (path && !file_is_bytes) {
+                Py_DECREF(path);
                 return -1;
             }
             if (obj) {
@@ -1854,6 +1858,8 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
             }
             return -1;
         }
+        Py_XDECREF(path);
+
         Py_BEGIN_ALLOW_THREADS;
         chunk = Mix_LoadWAV_RW(rw, 1);
         Py_END_ALLOW_THREADS;
