@@ -1796,7 +1796,8 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
         }
         obj = PyTuple_GET_ITEM(arg, 0);
 
-        if (PyUnicode_Check(obj)) {
+        if (PyUnicode_Check(obj) ||
+            PyObject_HasAttrString(obj, "__fspath__")) {
             file = obj;
             obj = NULL;
         }
@@ -1841,16 +1842,9 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
 
     if (file != NULL) {
-        PyObject *path = PyOS_FSPath(file);
-        int file_is_bytes = PyBytes_Check(file);
-
         rw = pgRWops_FromObject(file, NULL);
 
         if (rw == NULL) {
-            if (path && !file_is_bytes) {
-                Py_DECREF(path);
-                return -1;
-            }
             if (obj) {
                 /* use 'buffer' as fallback for single arg */
                 PyErr_Clear();
@@ -1858,7 +1852,6 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
             }
             return -1;
         }
-        Py_XDECREF(path);
 
         Py_BEGIN_ALLOW_THREADS;
         chunk = Mix_LoadWAV_RW(rw, 1);
