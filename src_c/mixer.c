@@ -1844,6 +1844,9 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
         rw = pgRWops_FromObject(file, NULL);
 
         if (rw == NULL) {
+            if (PyErr_ExceptionMatches(PyExc_FileNotFoundError)) {
+                return -1;
+            }
             if (obj) {
                 /* use 'buffer' as fallback for single arg */
                 PyErr_Clear();

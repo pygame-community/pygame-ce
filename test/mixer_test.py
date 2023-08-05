@@ -1019,6 +1019,10 @@ class SoundTypeTest(unittest.TestCase):
         self.assertIsInstance(sound1, mixer.Sound)
         self.assertIsInstance(sound2, mixer.Sound)
 
+        self.assertRaises(
+            FileNotFoundError, mixer.Sound, pathlib.Path("/aWH8ryIyWt5BL7xf327e")
+        )  # this path should not exist on any system really
+
     def todo_test_sound__from_buffer(self):
         """Ensure Sound() creation with a buffer works."""
         self.fail()
