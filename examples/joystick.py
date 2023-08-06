@@ -2,7 +2,6 @@ import pygame
 
 pygame.init()
 
-
 def indent(text, indentation_level=0):
     return ("    " * indentation_level) + text
 
@@ -50,11 +49,14 @@ def main():
                 # joystick, filling up the list without needing to create them manually.
                 joy = pygame.joystick.Joystick(event.device_index)
                 joysticks[joy.get_instance_id()] = joy
-                print(f"Joystick {joy.get_instance_id()} connencted")
+                print(f"Joystick {joy.get_instance_id()} connected")
 
             if event.type == pygame.JOYDEVICEREMOVED:
-                del joysticks[event.instance_id]
-                print(f"Joystick {event.instance_id} disconnected")
+                if event.instance_id in joysticks:
+                    del joysticks[event.instance_id]
+                    print(f"Joystick {event.instance_id} disconnected")
+                else:
+                    print("Tried to disconnect Joystick {event.instance_id}, but couldn't find it in the joystick list")
 
         # Drawing step
         # First, clear the screen to white. Don't put other drawing commands
@@ -69,6 +71,7 @@ def main():
         indentation += 1
 
         # For each joystick:
+        j = 0
         for joystick in joysticks.values():
             jid = joystick.get_instance_id()
 
@@ -116,10 +119,13 @@ def main():
                 lines.append(indent(f"Hat {i} value: {str(hat)}", indentation))
             indentation -= 2
 
+
+
         # draw the accumulated text
         screen.blit(
             font.render("\n".join(lines), True, "black", "white", wraplength), (10, 10)
         )
+            
 
         # Go ahead and update the screen with what we've drawn.
         pygame.display.flip()

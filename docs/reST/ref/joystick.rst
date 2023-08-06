@@ -390,25 +390,25 @@ After SDL 2.24.0, The controller is recognized as "Nintendo Switch Joy-Con (L)".
 
 * **Buttons**::
 
-                        After SDL 2.24.0         Before SDL 2.24.0
-    D-pad Up                Button 2                  Button 3
-    D-pad Down              Button 1                  Button 0
-    D-pad Left              Button 3                  Button 2
-    D-pad Right             Button 0                  Button 1
-    SL                      Button 9                  Button 4
-    SR                      Button 10                 Button 5
-    -                       Button 6                  Button 8
-    Stick In                Button 7                  Button 10
-    Capture                 Button 5                  Button 13
-    L                       Button 17                 Button 14
-    ZL                      Button 19                 Button 15
+                    After SDL 2.24.0         Before SDL 2.24.0
+    D-pad Up            Button 2                  Button 3
+    D-pad Down          Button 1                  Button 0
+    D-pad Left          Button 3                  Button 2
+    D-pad Right         Button 0                  Button 1
+    SL                  Button 9                  Button 4
+    SR                  Button 10                 Button 5
+    -                   Button 6                  Button 8
+    Stick In            Button 7                  Button 10
+    Capture             Button 5                  Button 13
+    L                   Button 17                 Button 14
+    ZL                  Button 19                 Button 15
 
 Reference : D-pad Up points toward SL and SR buttons. 
 
 * **Hat/JoyStick**::
 
-    Down -> Up      - Y Axis
-    Left -> Right   - X Axis
+    Down -> Up      -    Axis 1                    Axis Y
+    Left -> Right   -    Axis 0                    Axis X
 
 
 Nintendo Switch Right Joy-Con (pygame 2.x)
@@ -435,8 +435,8 @@ After SDL 2.24.0, The controller is recognized as "Nintendo Switch Joy-Con (R)".
 
 * **Hat/JoyStick**::
 
-    Down -> Up      - Y Axis
-    Left -> Right   - X Axis
+    Down -> Up      -  Axis 1                   Axis Y
+    Left -> Right   -  Axis 0                   Axis X
 
 Nintendo Switch Left/Right Joy-Con (after SDL **2.24.0**)
 *********************************************************
