@@ -41,14 +41,28 @@ _pg_has_avx2()
                      (Uint64)rect->x * pxl_skip;                        \
                                                                         \
     __m256i *mm256_pixels = (__m256i *)pixels;                          \
-                                                                        \
-    /* load color data */                                               \
-    __m256i mm256_color = _mm256_set1_epi32(color);                     \
-    __m128i mm_color = _mm_cvtsi32_si128(color);                        \
-                                                                        \
     __m128i mm_src;                                                     \
     __m256i mm256_src;                                                  \
     int n;
+
+#define COLOR_TO_REGISTERS(COLOR)                   \
+    __m256i mm256_color = _mm256_set1_epi32(COLOR); \
+    __m128i mm_color = _mm_cvtsi32_si128(COLOR);
+
+/* helper macro to preprocess the color before it is loaded into the
+ * registers. This is used for the RGB fillers to mask out the alpha
+ * channel or modify it to result in no change to the final color */
+#define SETUP_COLOR_M(COLOR, MASK, PREPROCESS_CODE) \
+    if (MASK) {                                     \
+        {                                           \
+            PREPROCESS_CODE                         \
+        }                                           \
+    }                                               \
+    COLOR_TO_REGISTERS(COLOR)
+
+/* helper macro that sets up the 128 bit and 256 bit registers for the
+ * color without preprocessing the color. This is used in all RGBA fillers*/
+#define SETUP_COLOR(color) COLOR_TO_REGISTERS(color)
 
 #define RUN_AVX2_FILLER(CODE_1, CODE_8)                           \
     while (height--) {                                            \
@@ -95,12 +109,7 @@ surface_fill_blend_add_avx2(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
 {
     SETUP_AVX2_FILLER
     Uint32 amask = surface->format->Amask;
-
-    if (amask) {
-        /* if Amask is set, subtract the alpha value from the color*/
-        mm256_color = _mm256_subs_epu8(mm256_color, _mm256_set1_epi32(amask));
-        mm_color = _mm_subs_epu8(mm_color, _mm_cvtsi32_si128(amask));
-    }
+    SETUP_COLOR_M(color, amask, { color &= ~amask; })
 
     RUN_AVX2_FILLER({ mm_src = _mm_adds_epu8(mm_src, mm_color); },
                     { mm256_src = _mm256_adds_epu8(mm256_src, mm256_color); });
@@ -124,6 +133,7 @@ surface_fill_blend_rgba_add_avx2(SDL_Surface *surface, SDL_Rect *rect,
                                  Uint32 color)
 {
     SETUP_AVX2_FILLER
+    SETUP_COLOR(color)
 
     RUN_AVX2_FILLER({ mm_src = _mm_adds_epu8(mm_src, mm_color); },
                     { mm256_src = _mm256_adds_epu8(mm256_src, mm256_color); });
