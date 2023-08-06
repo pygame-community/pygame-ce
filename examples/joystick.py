@@ -2,6 +2,7 @@ import pygame
 
 pygame.init()
 
+
 def indent(text, indentation_level=0):
     return ("    " * indentation_level) + text
 
@@ -56,7 +57,9 @@ def main():
                     del joysticks[event.instance_id]
                     print(f"Joystick {event.instance_id} disconnected")
                 else:
-                    print("Tried to disconnect Joystick {event.instance_id}, but couldn't find it in the joystick list")
+                    print(
+                        "Tried to disconnect Joystick {event.instance_id}, but couldn't find it in the joystick list"
+                    )
 
         # Drawing step
         # First, clear the screen to white. Don't put other drawing commands
@@ -119,13 +122,10 @@ def main():
                 lines.append(indent(f"Hat {i} value: {str(hat)}", indentation))
             indentation -= 2
 
-
-
         # draw the accumulated text
         screen.blit(
             font.render("\n".join(lines), True, "black", "white", wraplength), (10, 10)
         )
-            
 
         # Go ahead and update the screen with what we've drawn.
         pygame.display.flip()
