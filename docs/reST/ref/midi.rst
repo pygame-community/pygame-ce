@@ -208,7 +208,7 @@ midi events to pygame events.
    .. method:: pitch_bend
 
       | :sl:`modify the pitch of a channel.`
-      | :sg:`set_instrument(value=0, channel=0) -> None`
+      | :sg:`pitch_bend(value=0, channel=0) -> None`
 
       Adjust the pitch of a channel. The value is a signed integer
       from -8192 to +8191. For example, 0 means "no change", +4096 is
