@@ -189,7 +189,7 @@ midi events to pygame events.
    .. method:: note_on
 
       | :sl:`turns a midi note on (note must be off)`
-      | :sg:`note_on(note, velocity=None, channel=0) -> None`
+      | :sg:`note_on(note, velocity, channel=0) -> None`
 
       Turn a note on in the output stream. The note must already be off for
       this to work correctly.
