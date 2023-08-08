@@ -5,6 +5,7 @@
 #define PYGAMEAPI_JOYSTICK_INTERNAL
 #define PYGAMEAPI_BASE_INTERNAL
 #define PYGAMEAPI_SURFACE_INTERNAL
+#define PYGAMEAPI_WINDOW_INTERNAL
 
 #define pgSurface_New(surface) (pgSurfaceObject *)pgSurface_New2((surface), 1)
 #define pgSurface_NewNoOwn(surface) \
@@ -155,6 +156,9 @@ PyInit_gfxdraw(void);
 PyMODINIT_FUNC
 PyInit_audio(void);
 
+PyMODINIT_FUNC
+PyInit__window(void);
+
 // pygame_static module
 
 void
@@ -283,6 +287,8 @@ PyInit_pygame_static()
 
     load_submodule("pygame.mixer", PyInit_mixer_music(), "music");
 
+    load_submodule("pygame._window", PyInit__window(), "_window");
+
     return PyModule_Create(&mod_pygame_static);
 }
 
@@ -291,6 +297,7 @@ PyInit_pygame_static()
 #include "base.c"
 
 #include "rect.c"
+#include "pgcompat_rect.c"
 
 #undef pgSurface_Lock
 #undef pgSurface_Unlock
@@ -354,13 +361,13 @@ PyInit_pygame_static()
 #undef pgEvent_Type
 #undef pgEvent_New
 
+#include "joystick.c"
+
 #include "event.c"
 
 #include "mouse.c"
 
 #include "key.c"
-
-#include "joystick.c"
 
 #include "time.c"
 
@@ -396,3 +403,5 @@ PyInit_pygame_static()
 #undef MAX
 #undef MIN
 #include "scale2x.c"
+
+#include "window.c"

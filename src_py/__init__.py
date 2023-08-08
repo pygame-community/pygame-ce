@@ -25,6 +25,7 @@ Windows, macOS, OS X, BeOS, FreeBSD, IRIX, and Linux."""
 
 import os
 import sys
+import platform
 
 # Choose Windows display driver
 if os.name == "nt":
@@ -126,8 +127,7 @@ if sys.platform in ("wasi", "emscripten"):
 from pygame.base import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.constants import *  # now has __all__ pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.version import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
-from pygame.rect import Rect
-
+from pygame.rect import Rect, FRect
 from pygame.rwobject import encode_string, encode_file_path
 import pygame.surflock
 import pygame.color
@@ -145,13 +145,6 @@ __version__ = ver
 
 # next, the "standard" modules
 # we still allow them to be missing for stripped down pygame distributions
-if get_sdl_version() < (2, 0, 0):
-    # cdrom only available for SDL 1.2.X
-    try:
-        import pygame.cdrom
-    except (ImportError, OSError):
-        cdrom = MissingModule("cdrom", urgent=1)
-
 try:
     import pygame.display
 except (ImportError, OSError):
@@ -379,12 +372,13 @@ def __color_reduce(c):
 
 copyreg.pickle(Color, __color_reduce, __color_constructor)
 
-# Thanks for supporting pygame. Without support now, there won't be pygame later.
+# Thanks for supporting pygame-ce.
+# Without support now, there won't be pygame-ce later.
 if "PYGAME_HIDE_SUPPORT_PROMPT" not in os.environ:
     print(
-        "pygame-ce {} (SDL {}.{}.{}, Python {}.{}.{})".format(  # pylint: disable=consider-using-f-string
-            ver, *get_sdl_version() + sys.version_info[0:3]
-        )
+        f"pygame-ce {ver} (SDL {'.'.join(map(str, get_sdl_version()))}, "
+        f"Python {platform.python_version()})"
     )
+
 # cleanup namespace
-del pygame, os, sys, MissingModule, copyreg, packager_imports
+del pygame, os, sys, platform, MissingModule, copyreg, packager_imports
