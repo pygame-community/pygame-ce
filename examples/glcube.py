@@ -522,7 +522,7 @@ def main():
     # initialize pygame-ce and setup an opengl display
 
     pygame.init()
-    clock = pg.time.Clock()
+    clock = pygame.time.Clock()
 
     gl_version = (3, 0)  # GL Version number (Major, Minor)
     if USE_MODERN_GL:
@@ -540,10 +540,10 @@ def main():
     display_size = (640, 480)
     try:
         pygame.display.set_mode(
-            display_size, pg.OPENGL | pg.DOUBLEBUF | pg.RESIZABLE, vsync=1
+            display_size, pygame.OPENGL | pygame.DOUBLEBUF | pygame.RESIZABLE, vsync=1
         )
     except:
-        pygame.display.set_mode(display_size, pg.OPENGL | pg.DOUBLEBUF | pg.RESIZABLE)
+        pygame.display.set_mode(display_size, pygame.OPENGL | pygame.DOUBLEBUF | pygame.RESIZABLE)
 
     if USE_MODERN_GL:
         gpu, f_indices, o_indices = init_gl_modern(display_size)
@@ -562,15 +562,15 @@ def main():
             ):
                 going = False
 
-            elif event.type == pg.KEYDOWN and event.key == pg.K_f:
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_f:
                 if not pygame.display.is_fullscreen():
                     print("Changing to FULLSCREEN")
                     pygame.display.set_mode(
-                        display_size, pg.OPENGL | pg.DOUBLEBUF | pg.FULLSCREEN
+                        display_size, pygame.OPENGL | pygame.DOUBLEBUF | pygame.FULLSCREEN
                     )
                 else:
                     print("Changing to windowed mode")
-                    pygame.display.set_mode(display_size, pg.OPENGL | pg.DOUBLEBUF)
+                    pygame.display.set_mode(display_size, pygame.OPENGL | pygame.DOUBLEBUF)
 
                 if gl_version[0] >= 4 or (gl_version[0] == 3 and gl_version[1] >= 2):
                     gpu, f_indices, o_indices = init_gl_modern(display_size)
