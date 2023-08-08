@@ -543,7 +543,9 @@ def main():
             display_size, pygame.OPENGL | pygame.DOUBLEBUF | pygame.RESIZABLE, vsync=1
         )
     except:
-        pygame.display.set_mode(display_size, pygame.OPENGL | pygame.DOUBLEBUF | pygame.RESIZABLE)
+        pygame.display.set_mode(
+            display_size, pygame.OPENGL | pygame.DOUBLEBUF | pygame.RESIZABLE
+        )
 
     if USE_MODERN_GL:
         gpu, f_indices, o_indices = init_gl_modern(display_size)
@@ -566,11 +568,14 @@ def main():
                 if not pygame.display.is_fullscreen():
                     print("Changing to FULLSCREEN")
                     pygame.display.set_mode(
-                        display_size, pygame.OPENGL | pygame.DOUBLEBUF | pygame.FULLSCREEN
+                        display_size,
+                        pygame.OPENGL | pygame.DOUBLEBUF | pygame.FULLSCREEN
                     )
                 else:
                     print("Changing to windowed mode")
-                    pygame.display.set_mode(display_size, pygame.OPENGL | pygame.DOUBLEBUF)
+                    pygame.display.set_mode(
+                        display_size, pygame.OPENGL | pygame.DOUBLEBUF
+                    )
 
                 if gl_version[0] >= 4 or (gl_version[0] == 3 and gl_version[1] >= 2):
                     gpu, f_indices, o_indices = init_gl_modern(display_size)
