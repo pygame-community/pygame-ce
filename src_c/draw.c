@@ -1752,7 +1752,7 @@ calc_arc_bounds(SDL_Surface *surf, double angle_start, double angle_stop,
     const int y_stop_outer = (int)(y_stop * radius2 + 0.5);
 
     // calculate maximums, accounting for each quadrant
-    // We can't just fidn the maximum and minimum points because the arc may
+    // We can't just find the maximum and minimum points because the arc may
     // span multiple quadrants, resulting in a maxima at the edge of the circle
     // also account for the surfaces clip rect. This allows us to bypass the
     // drawn area calculations
