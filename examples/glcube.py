@@ -569,7 +569,7 @@ def main():
                     print("Changing to FULLSCREEN")
                     pygame.display.set_mode(
                         display_size,
-                        pygame.OPENGL | pygame.DOUBLEBUF | pygame.FULLSCREEN
+                        pygame.OPENGL | pygame.DOUBLEBUF | pygame.FULLSCREEN,
                     )
                 else:
                     print("Changing to windowed mode")
