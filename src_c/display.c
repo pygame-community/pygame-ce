@@ -2722,7 +2722,8 @@ static PyMethodDef _pg_display_methods[] = {
      DOC_DISPLAY_TOGGLEFULLSCREEN},
 
     {"_set_autoresize", (PyCFunction)pg_display_set_autoresize, METH_O,
-     "provisional API, subject to change"},
+     "DEPRECATED, never officially supported, kept only for compatibility "
+     "with release candidate"},
     {"_resize_event", (PyCFunction)pg_display_resize_event, METH_O,
      "DEPRECATED, never officially supported, kept only for compatibility "
      "with release candidate"},
@@ -2731,8 +2732,7 @@ static PyMethodDef _pg_display_methods[] = {
     {"get_desktop_sizes", (PyCFunction)pg_get_desktop_screen_sizes,
      METH_NOARGS, DOC_DISPLAY_GETDESKTOPSIZES},
     {"is_fullscreen", (PyCFunction)pg_is_fullscreen, METH_NOARGS,
-     "provisional API, subject to change"},
-
+     DOC_DISPLAY_ISFULLSCREEN},
     {"is_vsync", (PyCFunction)pg_is_vsync, METH_NOARGS, DOC_DISPLAY_ISVSYNC},
     {"get_desktop_refresh_rates", (PyCFunction)pg_desktop_refresh_rates,
      METH_NOARGS, DOC_DISPLAY_GETDESKTOPREFRESHRATES},
