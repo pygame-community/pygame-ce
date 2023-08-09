@@ -1672,7 +1672,7 @@ draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
     set_and_check_rect(surf, x2, y2, color, drawn_area);
 }
 
-static inline int
+static int
 check_pixel_in_arc(int x, int y, double min_dotproduct, double invsqr_radius1,
                    double invsqr_radius2, double invsqr_inner_radius1,
                    double invsqr_inner_radius2, double x_middle,
@@ -1693,7 +1693,11 @@ check_pixel_in_arc(int x, int y, double min_dotproduct, double invsqr_radius1,
     return x * x_middle + y * y_middle >= min_dotproduct * sqrt(x * x + y * y);
 }
 
-static inline void
+// This function directly sets the pixel, without updating the clip boundary
+// detection, hence it is unsafe. This has been removed for performance, as it
+// is faster to calculate the clip boundary beforehand and thus improve pixel
+// write performance
+static void
 unsafe_set_at(SDL_Surface *surf, int x, int y, Uint32 color)
 {
     SDL_PixelFormat *format = surf->format;
@@ -1726,7 +1730,7 @@ unsafe_set_at(SDL_Surface *surf, int x, int y, Uint32 color)
     }
 }
 
-static inline void
+static void
 calc_arc_bounds(SDL_Surface *surf, double angle_start, double angle_stop,
                 int radius1, int radius2, int inner_radius1, int inner_radius2,
                 double invsqr_radius1, double invsqr_radius2,
