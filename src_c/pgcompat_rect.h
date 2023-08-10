@@ -20,8 +20,10 @@ typedef struct SDL_FPoint {
 #if !(SDL_VERSION_ATLEAST(2, 0, 22))
 
 SDL_bool
-SDL_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
-                          float *Y2);
+PG_IntersectFRectAndLine(SDL_FRect *rect, float *X1, float *Y1, float *X2,
+                         float *Y2);
+#else
+#define PG_IntersectFRectAndLine SDL_IntersectFRectAndLine
 #endif /* !(SDL_VERSION_ATLEAST(2, 0, 22)) */
 
 #define pg_PyFloat_FromFloat(x) (PyFloat_FromDouble((double)x))
