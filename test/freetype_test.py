@@ -1,8 +1,5 @@
 import os
 
-if os.environ.get("SDL_VIDEODRIVER") == "dummy":
-    __tags__ = ("ignore", "subprocess_ignore")
-
 import unittest
 import ctypes
 import weakref
@@ -547,8 +544,7 @@ class FreeTypeFontTest(unittest.TestCase):
         f = self._TEST_FONTS["fixed"]
         self.assertEqual(f.name, "Inconsolata")
 
-        nf = nullfont()
-        self.assertRaises(pygame.error, lambda: nf.name)
+        self.assertRaises(AttributeError, lambda: nullfont().name)
 
     def test_freetype_Font_size(self):
         f = ft.Font(None, size=12)
@@ -1693,7 +1689,7 @@ class FreeTypeFontTest(unittest.TestCase):
         self.assertEqual(font_name_2, font_name)
 
         # Check mixed list of bytes and string.
-        names = [fonts[0], fonts_b[1], fonts[2], fonts_b[3]]
+        names = [fonts_b[i] if i % 2 else str_font for i, str_font in enumerate(fonts)]
         font_name_2 = ft.SysFont(names, size).name
         self.assertEqual(font_name_2, font_name)
 
