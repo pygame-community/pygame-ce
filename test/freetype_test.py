@@ -544,7 +544,7 @@ class FreeTypeFontTest(unittest.TestCase):
         f = self._TEST_FONTS["fixed"]
         self.assertEqual(f.name, "Inconsolata")
 
-        self.assertRaises(AttributeError, lambda: nullfont().name)
+        self.assertRaises(RuntimeError, lambda: nullfont().name)
 
     def test_freetype_Font_size(self):
         f = ft.Font(None, size=12)
