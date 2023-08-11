@@ -263,6 +263,7 @@ class SurfaceTypeTest(unittest.TestCase):
         s1.fill(color)
 
         import copy
+
         s2 = copy.deepcopy(s1)
 
         s1rect = s1.get_rect()
