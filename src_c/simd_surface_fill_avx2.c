@@ -58,36 +58,56 @@ _pg_has_avx2()
     }                                                                         \
     __m256i mm256_color = _mm256_set1_epi32(color);
 
-#define RUN_AVX2_FILLER(FILL_CODE)                            \
-    while (height--) {                                        \
-        if (pxl_excess > 0) {                                 \
-            /* load up to 7 pixels */                         \
-            mm256_dst = _mm256_maskload_epi32(pixels, mask);  \
-                                                              \
-            {FILL_CODE}                                       \
-                                                              \
-            /* store up to 7 pixels */                        \
-            _mm256_maskstore_epi32(pixels, mask, mm256_dst);  \
-                                                              \
-            pixels += pxl_skip * pxl_excess;                  \
-        }                                                     \
-        mm256_pixels = (__m256i *)pixels;                     \
-        if (n_iters_8 > 0) {                                  \
-            for (i = 0; i < n_iters_8; i++) {                 \
-                /* load 8 pixels */                           \
-                mm256_dst = _mm256_loadu_si256(mm256_pixels); \
-                                                              \
-                {FILL_CODE}                                   \
-                                                              \
-                /* store 8 pixels */                          \
-                _mm256_storeu_si256(mm256_pixels, mm256_dst); \
-                                                              \
-                mm256_pixels++;                               \
-            }                                                 \
-        }                                                     \
-                                                              \
-        pixels = (Uint32 *)mm256_pixels + skip;               \
+#define MASKED_CASE(FILL_CODE)                              \
+    /* load up to 7 pixels */                               \
+    mm256_dst = _mm256_maskload_epi32((int *)pixels, mask); \
+                                                            \
+    {FILL_CODE}                                             \
+                                                            \
+    /* store up to 7 pixels */                              \
+    _mm256_maskstore_epi32((int *)pixels, mask, mm256_dst); \
+                                                            \
+    pixels += pxl_skip * pxl_excess;
+
+#define NON_MASKED_CASE(FILL_CODE)                    \
+    for (i = 0; i < n_iters_8; i++) {                 \
+        /* load 8 pixels */                           \
+        mm256_dst = _mm256_loadu_si256(mm256_pixels); \
+                                                      \
+        {FILL_CODE}                                   \
+                                                      \
+        /* store 8 pixels */                          \
+        _mm256_storeu_si256(mm256_pixels, mm256_dst); \
+                                                      \
+        mm256_pixels++;                               \
     }
+
+#define AVX_FILLER_LOOP(CASE1, CASE2)           \
+    while (height--) {                          \
+        CASE1                                   \
+                                                \
+        mm256_pixels = (__m256i *)pixels;       \
+                                                \
+        CASE2                                   \
+                                                \
+        pixels = (Uint32 *)mm256_pixels + skip; \
+    }
+
+#define DISPATCH_FILLMODE(FILL_CODE)                                        \
+    if (pxl_excess && n_iters_8) {                                          \
+        AVX_FILLER_LOOP(MASKED_CASE(FILL_CODE), NON_MASKED_CASE(FILL_CODE)) \
+    }                                                                       \
+    else if (pxl_excess) {                                                  \
+        AVX_FILLER_LOOP(MASKED_CASE(FILL_CODE), {})                         \
+    }                                                                       \
+    else if (n_iters_8) {                                                   \
+        AVX_FILLER_LOOP({}, NON_MASKED_CASE(FILL_CODE))                     \
+    }                                                                       \
+    else {                                                                  \
+        return -1;                                                          \
+    }
+
+#define RUN_AVX2_FILLER(FILL_CODE) DISPATCH_FILLMODE(FILL_CODE)
 
 /* BLEND_ADD */
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
