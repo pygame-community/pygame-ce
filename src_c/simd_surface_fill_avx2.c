@@ -37,7 +37,7 @@ _pg_has_avx2()
     int pxl_excess = width % 8;                                               \
     /* indicates the number of 8-pixel blocks that can be processed */        \
     int n_iters_8 = width / 8;                                                \
-    int i;                                                                    \
+    int i, n;                                                                 \
     /* load pixel data */                                                     \
     Uint32 *pixels = (Uint32 *)surface->pixels +                              \
                      rect->y * (surface->pitch >> 2) + rect->x * pxl_skip;    \
@@ -69,18 +69,20 @@ _pg_has_avx2()
                                                             \
     pixels += pxl_skip * pxl_excess;
 
-#define NON_MASKED_CASE(FILL_CODE)                    \
-    for (i = 0; i < n_iters_8; i++) {                 \
-        /* load 8 pixels */                           \
-        mm256_dst = _mm256_loadu_si256(mm256_pixels); \
-                                                      \
-        {FILL_CODE}                                   \
-                                                      \
-        /* store 8 pixels */                          \
-        _mm256_storeu_si256(mm256_pixels, mm256_dst); \
-                                                      \
-        mm256_pixels++;                               \
-    }
+#define NON_MASKED_CASE(FILL_CODE)                        \
+    LOOP_UNROLLED4(                                       \
+        {                                                 \
+            /* load 8 pixels */                           \
+            mm256_dst = _mm256_loadu_si256(mm256_pixels); \
+                                                          \
+            {FILL_CODE}                                   \
+                                                          \
+            /* store 8 pixels */                          \
+            _mm256_storeu_si256(mm256_pixels, mm256_dst); \
+                                                          \
+            mm256_pixels++;                               \
+        },                                                \
+        n, n_iters_8);
 
 #define AVX_FILLER_LOOP(CASE1, CASE2)           \
     while (height--) {                          \
