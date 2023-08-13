@@ -26,79 +26,67 @@ _pg_has_avx2()
           !defined(SDL_DISABLE_IMMINTRIN_H) */
 }
 
-#define SETUP_AVX2_FILLER                                               \
-    /* initialize surface data */                                       \
-    int width = rect->w, height = rect->h;                              \
-    int skip =                                                          \
-        (surface->pitch - width * surface->format->BytesPerPixel) >> 2; \
-    int pxl_skip = surface->format->BytesPerPixel >> 2;                 \
-    int pre_8_width = width % 8;                                        \
-    int post_8_width = (width - pre_8_width) / 8;                       \
-                                                                        \
-    /* load pixel data */                                               \
-    Uint32 *pixels = (Uint32 *)surface->pixels +                        \
-                     (Uint64)rect->y * (surface->pitch >> 2) +          \
-                     (Uint64)rect->x * pxl_skip;                        \
-                                                                        \
-    __m256i *mm256_pixels = (__m256i *)pixels;                          \
-    __m128i mm_src;                                                     \
-    __m256i mm256_src;                                                  \
-    int n;
+#define SETUP_AVX2_FILLER(COLOR_PROCESS_CODE)                                 \
+    /* initialize surface data */                                             \
+    int width = rect->w, height = rect->h;                                    \
+    int bpp = surface->format->BytesPerPixel;                                 \
+    int skip = (surface->pitch - width * bpp) >> 2;                           \
+    int pxl_skip = bpp >> 2;                                                  \
+    /* indicates the number of pixels that can't be processed in 8-pixel      \
+     * blocks */                                                              \
+    int pxl_excess = width % 8;                                               \
+    /* indicates the number of 8-pixel blocks that can be processed */        \
+    int n_iters_8 = width / 8;                                                \
+    int i;                                                                    \
+    /* load pixel data */                                                     \
+    Uint32 *pixels = (Uint32 *)surface->pixels +                              \
+                     rect->y * (surface->pitch >> 2) + rect->x * pxl_skip;    \
+                                                                              \
+    __m256i *mm256_pixels = (__m256i *)pixels;                                \
+    __m256i mm256_dst;                                                        \
+    __m256i mask =                                                            \
+        _mm256_set_epi32(0, pxl_excess > 6 ? -1 : 0, pxl_excess > 5 ? -1 : 0, \
+                         pxl_excess > 4 ? -1 : 0, pxl_excess > 3 ? -1 : 0,    \
+                         pxl_excess > 2 ? -1 : 0, pxl_excess > 1 ? -1 : 0,    \
+                         pxl_excess > 0 ? -1 : 0);                            \
+    /* prep and load the color */                                             \
+    Uint32 amask = surface->format->Amask;                                    \
+    if (amask) {                                                              \
+        {                                                                     \
+            COLOR_PROCESS_CODE                                                \
+        }                                                                     \
+    }                                                                         \
+    __m256i mm256_color = _mm256_set1_epi32(color);
 
-#define COLOR_TO_REGISTERS(COLOR)                   \
-    __m256i mm256_color = _mm256_set1_epi32(COLOR); \
-    __m128i mm_color = _mm_cvtsi32_si128(COLOR);
-
-/* helper macro to preprocess the color before it is loaded into the
- * registers. This is used for the RGB fillers to mask out the alpha
- * channel or modify it to result in no change to the final color */
-#define SETUP_COLOR_M(COLOR, MASK, PREPROCESS_CODE) \
-    if (MASK) {                                     \
-        {                                           \
-            PREPROCESS_CODE                         \
-        }                                           \
-    }                                               \
-    COLOR_TO_REGISTERS(COLOR)
-
-/* helper macro that sets up the 128 bit and 256 bit registers for the
- * color without preprocessing the color. This is used in all RGBA fillers*/
-#define SETUP_COLOR(color) COLOR_TO_REGISTERS(color)
-
-#define RUN_AVX2_FILLER(CODE_1, CODE_8)                           \
-    while (height--) {                                            \
-        if (pre_8_width > 0) {                                    \
-            LOOP_UNROLLED4(                                       \
-                {                                                 \
-                    /* load 1 pixel */                            \
-                    mm_src = _mm_cvtsi32_si128(*pixels);          \
-                                                                  \
-                    CODE_1                                        \
-                                                                  \
-                    /* store 1 pixel */                           \
-                    *pixels = _mm_cvtsi128_si32(mm_src);          \
-                                                                  \
-                    pixels += pxl_skip;                           \
-                },                                                \
-                n, pre_8_width);                                  \
-        }                                                         \
-        mm256_pixels = (__m256i *)pixels;                         \
-        if (post_8_width > 0) {                                   \
-            LOOP_UNROLLED4(                                       \
-                {                                                 \
-                    /* load 8 pixels */                           \
-                    mm256_src = _mm256_loadu_si256(mm256_pixels); \
-                                                                  \
-                    CODE_8                                        \
-                                                                  \
-                    /* store 8 pixels */                          \
-                    _mm256_storeu_si256(mm256_pixels, mm256_src); \
-                                                                  \
-                    mm256_pixels++;                               \
-                },                                                \
-                n, post_8_width);                                 \
-        }                                                         \
-                                                                  \
-        pixels = (Uint32 *)mm256_pixels + skip;                   \
+#define RUN_AVX2_FILLER(FILL_CODE)                            \
+    while (height--) {                                        \
+        if (pxl_excess > 0) {                                 \
+            /* load up to 7 pixels */                         \
+            mm256_dst = _mm256_maskload_epi32(pixels, mask);  \
+                                                              \
+            {FILL_CODE}                                       \
+                                                              \
+            /* store up to 7 pixels */                        \
+            _mm256_maskstore_epi32(pixels, mask, mm256_dst);  \
+                                                              \
+            pixels += pxl_skip * pxl_excess;                  \
+        }                                                     \
+        mm256_pixels = (__m256i *)pixels;                     \
+        if (n_iters_8 > 0) {                                  \
+            for (i = 0; i < n_iters_8; i++) {                 \
+                /* load 8 pixels */                           \
+                mm256_dst = _mm256_loadu_si256(mm256_pixels); \
+                                                              \
+                {FILL_CODE}                                   \
+                                                              \
+                /* store 8 pixels */                          \
+                _mm256_storeu_si256(mm256_pixels, mm256_dst); \
+                                                              \
+                mm256_pixels++;                               \
+            }                                                 \
+        }                                                     \
+                                                              \
+        pixels = (Uint32 *)mm256_pixels + skip;               \
     }
 
 /* BLEND_ADD */
@@ -107,13 +95,8 @@ _pg_has_avx2()
 int
 surface_fill_blend_add_avx2(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
 {
-    SETUP_AVX2_FILLER
-    Uint32 amask = surface->format->Amask;
-    SETUP_COLOR_M(color, amask, { color &= ~amask; })
-
-    RUN_AVX2_FILLER({ mm_src = _mm_adds_epu8(mm_src, mm_color); },
-                    { mm256_src = _mm256_adds_epu8(mm256_src, mm256_color); });
-
+    SETUP_AVX2_FILLER({ color &= ~amask; })
+    RUN_AVX2_FILLER({ mm256_dst = _mm256_adds_epu8(mm256_dst, mm256_color); });
     return 0;
 }
 #else
@@ -132,12 +115,8 @@ int
 surface_fill_blend_rgba_add_avx2(SDL_Surface *surface, SDL_Rect *rect,
                                  Uint32 color)
 {
-    SETUP_AVX2_FILLER
-    SETUP_COLOR(color)
-
-    RUN_AVX2_FILLER({ mm_src = _mm_adds_epu8(mm_src, mm_color); },
-                    { mm256_src = _mm256_adds_epu8(mm256_src, mm256_color); });
-
+    SETUP_AVX2_FILLER({})
+    RUN_AVX2_FILLER({ mm256_dst = _mm256_adds_epu8(mm256_dst, mm256_color); });
     return 0;
 }
 #else
