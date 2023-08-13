@@ -37,7 +37,7 @@ _pg_has_avx2()
     int pxl_excess = width % 8;                                               \
     /* indicates the number of 8-pixel blocks that can be processed */        \
     int n_iters_8 = width / 8;                                                \
-    int i, n;                                                                 \
+    int n;                                                                    \
     /* load pixel data */                                                     \
     Uint32 *pixels = (Uint32 *)surface->pixels +                              \
                      rect->y * (surface->pitch >> 2) + rect->x * pxl_skip;    \
