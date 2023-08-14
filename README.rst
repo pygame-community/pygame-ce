@@ -7,7 +7,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-**English** `简体中文`_
+**English** `简体中文`_ `Français`_ `فارسی`_
 ---------------------------------------------------------------------------------------------------
 
 Pygame_ is a free and open-source cross-platform library
@@ -148,7 +148,7 @@ Dependency versions:
 +----------+------------------------+
 | SDL_image| >= 2.0.2               |
 +----------+------------------------+
-| SDL_ttf  | >= 2.0.11              |
+| SDL_ttf  | >= 2.0.12              |
 +----------+------------------------+
 | SDL_gfx  | (Optional, vendored in)|
 +----------+------------------------+
@@ -182,8 +182,8 @@ See docs/licenses for licenses of dependencies.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.2.1.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.2.1...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.3.0.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.3.0...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
@@ -199,3 +199,5 @@ See docs/licenses for licenses of dependencies.
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
 
 .. _简体中文: ./docs/readmes/README.zh-cn.rst
+.. _Français: ./docs/readmes/README.fr.rst
+.. _فارسی: ./docs/readmes/README.fa.rst

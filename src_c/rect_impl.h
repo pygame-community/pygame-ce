@@ -65,6 +65,12 @@
 #ifndef RectExport_inflateIp
 #error RectExport_inflateIp needs to be defined
 #endif
+#ifndef RectExport_scalebyIp
+#error RectExport_scalebyIp needs to be defined
+#endif
+#ifndef RectExport_scaleby
+#error RectExport_scaleby needs to be defined
+#endif
 #ifndef RectExport_update
 #error RectExport_update needs to be defined
 #endif
@@ -437,6 +443,10 @@ static PyObject *
 RectExport_inflate(RectObject *self, PyObject *args);
 static PyObject *
 RectExport_inflateIp(RectObject *self, PyObject *args);
+static PyObject *
+RectExport_scalebyIp(RectObject *self, PyObject *args, PyObject *kwargs);
+static PyObject *
+RectExport_scaleby(RectObject *self, PyObject *args, PyObject *kwargs);
 static PyObject *
 RectExport_update(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static PyObject *
@@ -956,6 +966,62 @@ RectExport_inflateIp(RectObject *self, PyObject *args)
     self->r.w += x;
     self->r.h += y;
     Py_RETURN_NONE;
+}
+
+static PyObject *
+RectExport_scalebyIp(RectObject *self, PyObject *args, PyObject *kwargs)
+{
+    float factor_x, factor_y = 0;
+
+    static char *keywords[] = {"x", "y", NULL};
+
+    if (kwargs) {
+        PyObject *scale_by = PyDict_GetItemString(kwargs, "scale_by");
+        float temp_x, temp_y = 0;
+
+        if (scale_by) {
+            if (PyDict_Size(kwargs) > 1) {
+                return RAISE(PyExc_TypeError,
+                             "The 'scale_by' keyword cannot be combined with "
+                             "other arguments.");
+            }
+            if (!pg_TwoFloatsFromObj(scale_by, &temp_x, &temp_y)) {
+                PyErr_SetString(PyExc_TypeError, "number pair expected");
+                return 0;
+            }
+            PyDict_SetItemString(kwargs, "x", PyFloat_FromDouble(temp_x));
+            PyDict_SetItemString(kwargs, "y", PyFloat_FromDouble(temp_y));
+            PyDict_DelItemString(kwargs, "scale_by");
+        }
+    }
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "f|f", keywords, &factor_x,
+                                     &factor_y)) {
+        PyErr_SetString(PyExc_TypeError, "Float values expected.");
+        return NULL;
+    }
+
+    factor_x = factor_x < 0 ? -factor_x : factor_x;
+    factor_y = factor_y < 0 ? -factor_y : factor_y;
+
+    factor_y = (factor_y > 0) ? factor_y : factor_x;
+
+    self->r.x = (RectImport_primitiveType)(self->r.x + (self->r.w / 2) -
+                                           (self->r.w * factor_x / 2));
+    self->r.y = (RectImport_primitiveType)(self->r.y + (self->r.h / 2) -
+                                           (self->r.h * factor_y / 2));
+    self->r.w = (RectImport_primitiveType)(self->r.w * factor_x);
+    self->r.h = (RectImport_primitiveType)(self->r.h * factor_y);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+RectExport_scaleby(RectObject *self, PyObject *args, PyObject *kwargs)
+{
+    RectObject *returnRect = (RectObject *)RectExport_subtypeNew4(
+        Py_TYPE(self), self->r.x, self->r.y, self->r.w, self->r.h);
+    RectExport_scalebyIp(returnRect, args, kwargs);
+    return (PyObject *)returnRect;
 }
 
 static PyObject *
@@ -1884,7 +1950,7 @@ RectExport_subscript(RectObject *self, PyObject *op)
             return NULL;
         }
         for (i = 0; i < slicelen; ++i) {
-            n = PyLong_FromSsize_t((Py_ssize_t)data[start + (step * i)]);
+            n = PythonNumberFromPrimitiveType(data[start + (step * i)]);
             if (n == NULL) {
                 Py_DECREF(slice);
                 return NULL;
@@ -2594,6 +2660,8 @@ RectExport_iterator(RectObject *self)
 #undef RectExport_moveIp
 #undef RectExport_inflate
 #undef RectExport_inflateIp
+#undef RectExport_scalebyIp
+#undef RectExport_scaleby
 #undef RectExport_update
 #undef RectExport_union
 #undef RectExport_unionIp

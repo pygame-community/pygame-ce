@@ -1,8 +1,6 @@
-from typing import Sequence
-
 from pygame.surface import Surface
 
-from ._common import ColorValue, Coordinate, RectValue
+from ._common import ColorValue, Coordinate, RectValue, Sequence
 
 def pixel(surface: Surface, x: int, y: int, color: ColorValue) -> None: ...
 def hline(surface: Surface, x1: int, x2: int, y: int, color: ColorValue) -> None: ...

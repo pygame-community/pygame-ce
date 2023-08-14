@@ -80,7 +80,7 @@
       r = Rect(0, 1, 2, 3)
       x, y, w, h = r
 
-   .. versionadded:: 1.9.2
+   .. versionaddedold:: 1.9.2
       The Rect class can be subclassed. Methods such as ``copy()`` and ``move()``
       will recognize this and return instances of the subclass.
       However, the subclass's ``__init__()`` method is not called,
@@ -138,6 +138,34 @@
 
       .. ## Rect.inflate_ip ##
 
+   .. method:: scale_by
+
+      | :sl:`scale the rectangle by given a multiplier`
+      | :sg:`scale_by(scale_by) -> Rect`
+      | :sg:`scale_by(x, y) -> Rect`
+
+      Returns a new rectangle with the size scaled by the given multipliers.
+      The rectangle remains centered around its current center. A single 
+      scalar or separate width and height scalars are allowed. Values above
+      one will increase the size of the rectangle, whereas values between
+      zero and one will decrease the size of the rectangle.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Rect.scale_by ##
+
+   .. method:: scale_by_ip
+
+      | :sl:`grow or shrink the rectangle size, in place`
+      | :sg:`scale_by_ip(scale_by) -> None`
+      | :sg:`scale_by_ip(x, y) -> None`
+
+      Same as the ``Rect.scale_by()`` method, but operates in place.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Rect.scale_by_ip ##
+
    .. method:: update
 
       | :sl:`sets the position and size of the rectangle`
@@ -148,7 +176,7 @@
       Sets the position and size of the rectangle, in place. See
       parameters for :meth:`pygame.Rect` for the parameters of this function.
 
-      .. versionadded:: 2.0.1
+      .. versionaddedold:: 2.0.1
 
       .. ## Rect.update ##
 
@@ -238,7 +266,7 @@
          else:
              print("No clipping. The line is fully outside the rect.")
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Rect.clipline ##
 
