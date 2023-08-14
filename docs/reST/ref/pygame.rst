@@ -177,6 +177,8 @@ object instead of the module, which can be used to test for availability.
    This function is used in encoding file paths. Keyword arguments are
    supported.
 
+   This function is not needed for normal pygame-ce usage.
+
    .. versionaddedold:: 1.9.2 (primarily for use in unit tests)
 
    .. ## pygame.encode_string ##
@@ -196,6 +198,8 @@ object instead of the module, which can be used to test for availability.
    This function is used to encode file paths in pygame. Encoding is to the
    codec as returned by ``sys.getfilesystemencoding()``. Keyword arguments are
    supported.
+
+   This function is not needed for normal pygame-ce usage.
 
    .. versionaddedold:: 1.9.2 (primarily for use in unit tests)
 
@@ -298,7 +302,7 @@ check which version of pygame has been imported.
 .. data:: SDL
 
    | :sl:`tupled integers of the SDL library version`
-   | :sg:`SDL = '(2, 0, 12)'`
+   | :sg:`SDL = '(2, 26, 5)'`
 
    This is the SDL library version represented as an extended tuple. It also has
    attributes 'major', 'minor' & 'patch' that can be accessed like this:
@@ -313,7 +317,7 @@ check which version of pygame has been imported.
    ::
 
     >>> pygame.version.SDL
-    SDLVersion(major=2, minor=0, patch=12)
+    SDLVersion(major=2, minor=26, patch=5)
 
    .. versionaddedold:: 2.0.0
 
@@ -429,7 +433,7 @@ do this. Must be set before importing pygame.
 ::
 
  PYGAME_CAMERA -
- Set to "opencv" or "vidcapture"
+ Set to "opencv"
 
 Forces the library backend used in the camera
 module, overriding the platform defaults. Must

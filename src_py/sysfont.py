@@ -18,10 +18,11 @@
 # Pete Shinners
 # pete@shinners.org
 """sysfont, used in the font module to find system fonts"""
-
 import warnings
 import os
 import sys
+import itertools
+import difflib
 from os.path import basename, dirname, exists, join, splitext
 
 from pygame.font import Font
@@ -386,6 +387,37 @@ def font_constructor(fontpath, size, bold, italic):
     return font
 
 
+def _load_single_font(name, bold=False, italic=False):
+    fontname = None
+    gotbold = False
+    gotitalic = False
+    single_name = _simplename(name)
+    styles = Sysfonts.get(single_name)
+    if not styles:
+        styles = Sysalias.get(single_name)
+    if styles:
+        plainname = styles.get((False, False))
+        fontname = styles.get((bold, italic))
+        if not (fontname or plainname):
+            # Neither requested style, nor plain font exists, so
+            # return a font with the name requested, but an
+            # arbitrary style.
+            (style, fontname) = list(styles.items())[0]
+            # Attempt to style it as requested. This can't
+            # unbold or unitalicize anything, but it can
+            # fake bold and/or fake italicize.
+            if bold and style[0]:
+                gotbold = True
+            if italic and style[1]:
+                gotitalic = True
+        elif not fontname:
+            fontname = plainname
+        elif plainname != fontname:
+            gotbold = bold
+            gotitalic = italic
+    return fontname, gotbold, gotitalic
+
+
 # the exported functions
 
 
@@ -418,7 +450,6 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
     initsysfonts()
 
     gotbold = gotitalic = False
-    fontname = None
     if name:
         if isinstance(name, (str, bytes)):
             name = name.split(b"," if isinstance(name, bytes) else ",")
@@ -429,30 +460,7 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
                 name[idx] = single_name.decode()
 
         for single_name in name:
-            single_name = _simplename(single_name)
-            styles = Sysfonts.get(single_name)
-            if not styles:
-                styles = Sysalias.get(single_name)
-            if styles:
-                plainname = styles.get((False, False))
-                fontname = styles.get((bold, italic))
-                if not (fontname or plainname):
-                    # Neither requested style, nor plain font exists, so
-                    # return a font with the name requested, but an
-                    # arbitrary style.
-                    (style, fontname) = list(styles.items())[0]
-                    # Attempt to style it as requested. This can't
-                    # unbold or unitalicize anything, but it can
-                    # fake bold and/or fake italicize.
-                    if bold and style[0]:
-                        gotbold = True
-                    if italic and style[1]:
-                        gotitalic = True
-                elif not fontname:
-                    fontname = plainname
-                elif plainname != fontname:
-                    gotbold = bold
-                    gotitalic = italic
+            fontname, gotbold, gotitalic = _load_single_font(single_name)
             if fontname:
                 break
 
@@ -460,15 +468,28 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
             if len(name) > 1:
                 names = "', '".join(name)
                 warnings.warn(
-                    f"None of the specified system fonts "
+                    "None of the specified system fonts "
                     f"('{names}') could be found. "
-                    f"Using the default font instead."
+                    "Using the default font instead."
                 )
             else:
+                # Identifies the closest matches to the font provided by
+                # the user from the list of available fonts.
+                matches = difflib.get_close_matches(
+                    _simplename(name[0]), itertools.chain(Sysfonts, Sysalias), 3
+                )
+                if matches:
+                    match_text = "Did you mean: '" + "', '".join(matches) + "'? "
+                else:
+                    match_text = ""
+
                 warnings.warn(
                     f"The system font '{name[0]}' couldn't be "
-                    "found. Using the default font instead."
+                    f"found. {match_text}"
+                    "Using the default font instead."
                 )
+    else:
+        fontname = None
 
     set_bold = set_italic = False
     if bold and not gotbold:
