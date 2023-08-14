@@ -2118,6 +2118,214 @@ surf_grayscale(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 }
 
+#define MIN3(a, b, c) MIN(MIN(a, b), c)
+#define MAX3(a, b, c) MAX(MAX(a, b), c)
+
+static void
+RGB_to_HSL(Uint8 r, Uint8 g, Uint8 b, float *h, float *s, float *l)
+{
+    float min, max, delta;
+    float r_1, g_1, b_1;
+    r_1 = r / 255.0;
+    g_1 = g / 255.0;
+    b_1 = b / 255.0;
+
+    min = MIN3(r_1, g_1, b_1);
+    max = MAX3(r_1, g_1, b_1);
+
+    float chroma = max - min;
+    *l = (max + min) / 2.0;
+
+    if (chroma == 0) {
+        *h = 0;
+    }
+    else if (max == r_1) {
+        *h = 60 * fmod(((g_1 - b_1) / chroma), 6);
+    }
+    else if (max == g_1) {
+        *h = 60 * (((b_1 - r_1) / chroma) + 2);
+    }
+    else if (max == b_1) {
+        *h = 60 * (((r_1 - g_1) / chroma) + 4);
+    }
+
+    if (*h < 0) {
+        *h += 360;
+    }
+
+    if (*l == 0 || *l == 1) {
+        *s = 0;
+    }
+    else {
+        *s = chroma / (1 - fabs(2 * *l - 1));
+    }
+}
+
+static void
+HSL_to_RGB(float h, float s, float l, Uint8 *r, Uint8 *g, Uint8 *b)
+{
+    /* 0 <= h <= 360, 0 <= s <= 1, 0 <= l <= 1 */
+    float chroma = (1 - fabs(2 * l - 1)) * s;
+    float h_1 = h / 60.0;
+    float x = chroma * (1 - fabs(fmod(h_1, 2) - 1));
+    float m = l - chroma / 2.0;
+
+    float r_1, g_1, b_1;
+    if (h_1 < 1) {
+        r_1 = chroma;
+        g_1 = x;
+        b_1 = 0;
+    }
+    else if (h_1 < 2) {
+        r_1 = x;
+        g_1 = chroma;
+        b_1 = 0;
+    }
+    else if (h_1 < 3) {
+        r_1 = 0;
+        g_1 = chroma;
+        b_1 = x;
+    }
+    else if (h_1 < 4) {
+        r_1 = 0;
+        g_1 = x;
+        b_1 = chroma;
+    }
+    else if (h_1 < 5) {
+        r_1 = x;
+        g_1 = 0;
+        b_1 = chroma;
+    }
+    else if (h_1 < 6) {
+        r_1 = chroma;
+        g_1 = 0;
+        b_1 = x;
+    }
+    else {
+        r_1 = 0;
+        g_1 = 0;
+        b_1 = 0;
+    }
+
+    *r = (Uint8)((r_1 + m) * 255);
+    *g = (Uint8)((g_1 + m) * 255);
+    *b = (Uint8)((b_1 + m) * 255);
+}
+
+static SDL_Surface *
+modify_hsl(pgSurfaceObject *src, pgSurfaceObject *dst, float h, float s,
+           float l)
+{
+    SDL_Surface *surf = pgSurface_AsSurface(src);
+    SURF_INIT_CHECK(surf)
+    SDL_Surface *newsurf;
+
+    if (!dst) {
+        newsurf = newsurf_fromsurf(surf, surf->w, surf->h);
+        if (!newsurf)
+            return NULL;
+    }
+    else {
+        newsurf = pgSurface_AsSurface(dst);
+    }
+
+    if (newsurf->w != surf->w || newsurf->h != surf->h) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Destination surface must be the same size as source surface."));
+    }
+    if (surf->format->BytesPerPixel != newsurf->format->BytesPerPixel) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Source and destination surfaces need the same format."));
+    }
+
+    int x, y;
+    Uint8 r, g, b, a;
+    Uint8 *pixels = (Uint8 *)surf->pixels, *pix;
+    float s_h, s_s, s_l;
+    Uint32 pixel;
+
+    for (y = 0; y < surf->h; y++) {
+        for (x = 0; x < surf->w; x++) {
+            SURF_GET_AT(pixel, surf, x, y, pixels, surf->format, pix);
+            SDL_GetRGBA(pixel, surf->format, &r, &g, &b, &a);
+            RGB_to_HSL(r, g, b, &s_h, &s_s, &s_l);
+
+            if (h != 0) {
+                s_h += h;
+                s_h = s_h > 360 ? s_h - 360 : s_h < 0 ? s_h + 360 : s_h;
+            }
+            if (s != 0) {
+                s_s = s_s * (1 + s);
+                s_s = s_s > 1 ? 1 : s_s < 0 ? 0 : s_s;
+            }
+            if (l != 0) {
+                if (l < 0) {
+                    s_l = s_l * (1 + l);
+                }
+                else {
+                    s_l = s_l * (1 - l) + l;
+                }
+                s_l = s_l > 1 ? 1 : s_l < 0 ? 0 : s_l;
+            }
+
+            HSL_to_RGB(s_h, s_s, s_l, &r, &g, &b);
+            pixel = SDL_MapRGBA(newsurf->format, r, g, b, a);
+            SURF_SET_AT(pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
+                        newsurf->format, pix);
+        }
+    }
+
+    SDL_UnlockSurface(newsurf);
+    return newsurf;
+}
+
+static PyObject *
+surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    SDL_Surface *surf = pgSurface_AsSurface(self);
+    SURF_INIT_CHECK(surf)
+    pgSurfaceObject *surfobj;
+    pgSurfaceObject *surfobj2 = NULL;
+    SDL_Surface *newsurf;
+    float h = 0, s = 0, l = 0;
+
+    const char *keywords[] = {"surface",   "hue",          "saturation",
+                              "lightness", "dest_surface", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!f|ffO!", keywords,
+                                     &pgSurface_Type, &surfobj, &h, &s, &l,
+                                     &pgSurface_Type, &surfobj2)) {
+        return NULL;
+    }
+
+    if (s < 0 || s > 1) {
+        return RAISE(PyExc_ValueError, "saturation must be between 0 and 1");
+    }
+    if (l < 0 || l > 1) {
+        return RAISE(PyExc_ValueError, "lightness must be between 0 and 1");
+    }
+
+    /* remap s to be within -1 to 1 range */
+    s = s * 2 - 1;
+    /* remap l to be within -1 to 1 range */
+    l = l * 2 - 1;
+
+    newsurf = modify_hsl(surfobj, surfobj2, h, s, l);
+
+    if (!newsurf) {
+        return NULL;
+    }
+
+    if (surfobj2) {
+        Py_INCREF(surfobj2);
+        return (PyObject *)surfobj2;
+    }
+    else {
+        return (PyObject *)pgSurface_New(newsurf);
+    }
+}
+
 /*
 number to use for missing samples
 */
@@ -3393,6 +3601,7 @@ static PyMethodDef _transform_methods[] = {
      DOC_TRANSFORM_INVERT},
     {"grayscale", (PyCFunction)surf_grayscale, METH_VARARGS | METH_KEYWORDS,
      DOC_TRANSFORM_GRAYSCALE},
+    {"hsl", (PyCFunction)surf_hsl, METH_VARARGS | METH_KEYWORDS, NULL},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(transform)
