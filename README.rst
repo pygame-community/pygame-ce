@@ -193,7 +193,7 @@ See docs/licenses for licenses of dependencies.
 
 .. _Pygame: https://pyga.me
 .. _pygame-ce wiki: https://www.pyga.me/docs/
-.. _pygame wiki: https://www.pygame.org/docs/
+.. _Old pygame wiki: https://www.pygame.org/wiki/
 .. _Simple DirectMedia Layer library: https://www.libsdl.org
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
 .. _docs page: https://pyga.me/docs
