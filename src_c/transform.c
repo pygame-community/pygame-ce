@@ -2242,7 +2242,7 @@ modify_hsl(pgSurfaceObject *src, pgSurfaceObject *dst, float h, float s,
     int x, y;
     Uint8 r, g, b, a;
     Uint8 *pixels = (Uint8 *)surf->pixels, *pix;
-    float s_h, s_s, s_l;
+    float s_h = 0, s_s = 0, s_l = 0;
     Uint32 pixel;
 
     for (y = 0; y < surf->h; y++) {
