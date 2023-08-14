@@ -2299,11 +2299,6 @@ static int __Pyx_validate_bases_tuple(const char *type_name, Py_ssize_t dictoffs
 /* PyType_Ready.proto */
 CYTHON_UNUSED static int __Pyx_PyType_Ready(PyTypeObject *t);
 
-/* SetupReduce.proto */
-#if !CYTHON_COMPILING_IN_LIMITED_API
-static int __Pyx_setup_reduce(PyObject* type_obj);
-#endif
-
 /* SetVTable.proto */
 static int __Pyx_SetVtable(PyTypeObject* typeptr , void* vtable);
 
@@ -2313,6 +2308,11 @@ static void* __Pyx_GetVtable(PyTypeObject *type);
 /* MergeVTables.proto */
 #if !CYTHON_COMPILING_IN_LIMITED_API
 static int __Pyx_MergeVtables(PyTypeObject *type);
+#endif
+
+/* SetupReduce.proto */
+#if !CYTHON_COMPILING_IN_LIMITED_API
+static int __Pyx_setup_reduce(PyObject* type_obj);
 #endif
 
 /* FetchSharedCythonModule.proto */
@@ -2629,6 +2629,13 @@ static PyObject *__pyx_memoryviewslice__get_base(struct __pyx_memoryviewslice_ob
 
 /* Module declarations from "pygame._sdl2.sdl2" */
 
+/* Module declarations from "cython.view" */
+static struct __pyx_array_obj *__pyx_array_new(PyObject *, Py_ssize_t, char *, char *, char *); /*proto*/
+
+/* Module declarations from "cython.dataclasses" */
+
+/* Module declarations from "cython" */
+
 /* Module declarations from "pygame._sdl2.audio" */
 static PyObject *__pyx_collections_abc_Sequence = 0;
 static PyObject *generic = 0;
@@ -2712,7 +2719,7 @@ static const char __pyx_k__12[] = "}";
 static const char __pyx_k__13[] = "(";
 static const char __pyx_k__14[] = ",";
 static const char __pyx_k__16[] = ")>";
-static const char __pyx_k__38[] = "?";
+static const char __pyx_k__35[] = "?";
 static const char __pyx_k_abc[] = "abc";
 static const char __pyx_k_and[] = " and ";
 static const char __pyx_k_got[] = " (got ";
@@ -2847,13 +2854,11 @@ static const char __pyx_k_AUDIO_ALLOW_FORMAT_CHANGE[] = "AUDIO_ALLOW_FORMAT_CHAN
 static const char __pyx_k_Dimension_d_is_not_direct[] = "Dimension %d is not direct";
 static const char __pyx_k_Index_out_of_bounds_axis_d[] = "Index out of bounds (axis %d)";
 static const char __pyx_k_AUDIO_ALLOW_CHANNELS_CHANGE[] = "AUDIO_ALLOW_CHANNELS_CHANGE";
-static const char __pyx_k_AudioDevice___reduce_cython[] = "AudioDevice.__reduce_cython__";
 static const char __pyx_k_Step_may_not_be_zero_axis_d[] = "Step may not be zero (axis %d)";
 static const char __pyx_k_devicename_must_be_a_string[] = "devicename must be a string";
 static const char __pyx_k_itemsize_0_for_cython_array[] = "itemsize <= 0 for cython.array";
 static const char __pyx_k_AUDIO_ALLOW_FREQUENCY_CHANGE[] = "AUDIO_ALLOW_FREQUENCY_CHANGE";
 static const char __pyx_k_Audio_system_not_initialised[] = "Audio system not initialised";
-static const char __pyx_k_AudioDevice___setstate_cython[] = "AudioDevice.__setstate_cython__";
 static const char __pyx_k_unable_to_allocate_array_data[] = "unable to allocate array data.";
 static const char __pyx_k_strided_and_direct_or_indirect[] = "<strided and direct or indirect>";
 static const char __pyx_k_src_c_cython_pygame__sdl2_audio[] = "src_c\\cython\\pygame\\_sdl2\\audio.pyx";
@@ -2929,8 +2934,6 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_9chunksize___get__
 static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_6__repr__(struct __pyx_obj_6pygame_5_sdl2_5audio_AudioDevice *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_8pause(struct __pyx_obj_6pygame_5_sdl2_5audio_AudioDevice *__pyx_v_self, int __pyx_v_pause_on); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_10close(struct __pyx_obj_6pygame_5_sdl2_5audio_AudioDevice *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_12__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_6pygame_5_sdl2_5audio_AudioDevice *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_14__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_6pygame_5_sdl2_5audio_AudioDevice *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
 static PyObject *__pyx_tp_new_6pygame_5_sdl2_5audio_AudioDevice(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_array(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_Enum(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
@@ -2962,6 +2965,12 @@ typedef struct {
   #endif
   #ifdef __Pyx_Coroutine_USED
   PyTypeObject *__pyx_CoroutineType;
+  #endif
+  #if CYTHON_USE_MODULE_STATE
+  #endif
+  #if CYTHON_USE_MODULE_STATE
+  #endif
+  #if CYTHON_USE_MODULE_STATE
   #endif
   #if CYTHON_USE_MODULE_STATE
   #endif
@@ -3005,8 +3014,6 @@ typedef struct {
   PyObject *__pyx_n_s_AssertionError;
   PyObject *__pyx_kp_s_AudioDevice;
   PyObject *__pyx_n_s_AudioDevice_2;
-  PyObject *__pyx_n_s_AudioDevice___reduce_cython;
-  PyObject *__pyx_n_s_AudioDevice___setstate_cython;
   PyObject *__pyx_n_s_AudioDevice_close;
   PyObject *__pyx_n_s_AudioDevice_pause;
   PyObject *__pyx_kp_s_Audio_system_not_initialised;
@@ -3046,7 +3053,7 @@ typedef struct {
   PyObject *__pyx_kp_s__16;
   PyObject *__pyx_kp_u__2;
   PyObject *__pyx_n_s__3;
-  PyObject *__pyx_n_s__38;
+  PyObject *__pyx_n_s__35;
   PyObject *__pyx_kp_u__6;
   PyObject *__pyx_kp_u__7;
   PyObject *__pyx_kp_b__9;
@@ -3186,13 +3193,10 @@ typedef struct {
   PyObject *__pyx_tuple__30;
   PyObject *__pyx_tuple__31;
   PyObject *__pyx_tuple__33;
-  PyObject *__pyx_tuple__36;
   PyObject *__pyx_codeobj__27;
   PyObject *__pyx_codeobj__29;
   PyObject *__pyx_codeobj__32;
   PyObject *__pyx_codeobj__34;
-  PyObject *__pyx_codeobj__35;
-  PyObject *__pyx_codeobj__37;
 } __pyx_mstate;
 
 #if CYTHON_USE_MODULE_STATE
@@ -3269,8 +3273,6 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_n_s_AssertionError);
   Py_CLEAR(clear_module_state->__pyx_kp_s_AudioDevice);
   Py_CLEAR(clear_module_state->__pyx_n_s_AudioDevice_2);
-  Py_CLEAR(clear_module_state->__pyx_n_s_AudioDevice___reduce_cython);
-  Py_CLEAR(clear_module_state->__pyx_n_s_AudioDevice___setstate_cython);
   Py_CLEAR(clear_module_state->__pyx_n_s_AudioDevice_close);
   Py_CLEAR(clear_module_state->__pyx_n_s_AudioDevice_pause);
   Py_CLEAR(clear_module_state->__pyx_kp_s_Audio_system_not_initialised);
@@ -3310,7 +3312,7 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_kp_s__16);
   Py_CLEAR(clear_module_state->__pyx_kp_u__2);
   Py_CLEAR(clear_module_state->__pyx_n_s__3);
-  Py_CLEAR(clear_module_state->__pyx_n_s__38);
+  Py_CLEAR(clear_module_state->__pyx_n_s__35);
   Py_CLEAR(clear_module_state->__pyx_kp_u__6);
   Py_CLEAR(clear_module_state->__pyx_kp_u__7);
   Py_CLEAR(clear_module_state->__pyx_kp_b__9);
@@ -3450,13 +3452,10 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_tuple__30);
   Py_CLEAR(clear_module_state->__pyx_tuple__31);
   Py_CLEAR(clear_module_state->__pyx_tuple__33);
-  Py_CLEAR(clear_module_state->__pyx_tuple__36);
   Py_CLEAR(clear_module_state->__pyx_codeobj__27);
   Py_CLEAR(clear_module_state->__pyx_codeobj__29);
   Py_CLEAR(clear_module_state->__pyx_codeobj__32);
   Py_CLEAR(clear_module_state->__pyx_codeobj__34);
-  Py_CLEAR(clear_module_state->__pyx_codeobj__35);
-  Py_CLEAR(clear_module_state->__pyx_codeobj__37);
   return 0;
 }
 #endif
@@ -3511,8 +3510,6 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_n_s_AssertionError);
   Py_VISIT(traverse_module_state->__pyx_kp_s_AudioDevice);
   Py_VISIT(traverse_module_state->__pyx_n_s_AudioDevice_2);
-  Py_VISIT(traverse_module_state->__pyx_n_s_AudioDevice___reduce_cython);
-  Py_VISIT(traverse_module_state->__pyx_n_s_AudioDevice___setstate_cython);
   Py_VISIT(traverse_module_state->__pyx_n_s_AudioDevice_close);
   Py_VISIT(traverse_module_state->__pyx_n_s_AudioDevice_pause);
   Py_VISIT(traverse_module_state->__pyx_kp_s_Audio_system_not_initialised);
@@ -3552,7 +3549,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_kp_s__16);
   Py_VISIT(traverse_module_state->__pyx_kp_u__2);
   Py_VISIT(traverse_module_state->__pyx_n_s__3);
-  Py_VISIT(traverse_module_state->__pyx_n_s__38);
+  Py_VISIT(traverse_module_state->__pyx_n_s__35);
   Py_VISIT(traverse_module_state->__pyx_kp_u__6);
   Py_VISIT(traverse_module_state->__pyx_kp_u__7);
   Py_VISIT(traverse_module_state->__pyx_kp_b__9);
@@ -3692,13 +3689,10 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_tuple__30);
   Py_VISIT(traverse_module_state->__pyx_tuple__31);
   Py_VISIT(traverse_module_state->__pyx_tuple__33);
-  Py_VISIT(traverse_module_state->__pyx_tuple__36);
   Py_VISIT(traverse_module_state->__pyx_codeobj__27);
   Py_VISIT(traverse_module_state->__pyx_codeobj__29);
   Py_VISIT(traverse_module_state->__pyx_codeobj__32);
   Py_VISIT(traverse_module_state->__pyx_codeobj__34);
-  Py_VISIT(traverse_module_state->__pyx_codeobj__35);
-  Py_VISIT(traverse_module_state->__pyx_codeobj__37);
   return 0;
 }
 #endif
@@ -3726,6 +3720,12 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #endif
 #ifdef __Pyx_Coroutine_USED
 #define __pyx_CoroutineType __pyx_mstate_global->__pyx_CoroutineType
+#endif
+#if CYTHON_USE_MODULE_STATE
+#endif
+#if CYTHON_USE_MODULE_STATE
+#endif
+#if CYTHON_USE_MODULE_STATE
 #endif
 #if CYTHON_USE_MODULE_STATE
 #endif
@@ -3769,8 +3769,6 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_n_s_AssertionError __pyx_mstate_global->__pyx_n_s_AssertionError
 #define __pyx_kp_s_AudioDevice __pyx_mstate_global->__pyx_kp_s_AudioDevice
 #define __pyx_n_s_AudioDevice_2 __pyx_mstate_global->__pyx_n_s_AudioDevice_2
-#define __pyx_n_s_AudioDevice___reduce_cython __pyx_mstate_global->__pyx_n_s_AudioDevice___reduce_cython
-#define __pyx_n_s_AudioDevice___setstate_cython __pyx_mstate_global->__pyx_n_s_AudioDevice___setstate_cython
 #define __pyx_n_s_AudioDevice_close __pyx_mstate_global->__pyx_n_s_AudioDevice_close
 #define __pyx_n_s_AudioDevice_pause __pyx_mstate_global->__pyx_n_s_AudioDevice_pause
 #define __pyx_kp_s_Audio_system_not_initialised __pyx_mstate_global->__pyx_kp_s_Audio_system_not_initialised
@@ -3810,7 +3808,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_kp_s__16 __pyx_mstate_global->__pyx_kp_s__16
 #define __pyx_kp_u__2 __pyx_mstate_global->__pyx_kp_u__2
 #define __pyx_n_s__3 __pyx_mstate_global->__pyx_n_s__3
-#define __pyx_n_s__38 __pyx_mstate_global->__pyx_n_s__38
+#define __pyx_n_s__35 __pyx_mstate_global->__pyx_n_s__35
 #define __pyx_kp_u__6 __pyx_mstate_global->__pyx_kp_u__6
 #define __pyx_kp_u__7 __pyx_mstate_global->__pyx_kp_u__7
 #define __pyx_kp_b__9 __pyx_mstate_global->__pyx_kp_b__9
@@ -3950,13 +3948,10 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_tuple__30 __pyx_mstate_global->__pyx_tuple__30
 #define __pyx_tuple__31 __pyx_mstate_global->__pyx_tuple__31
 #define __pyx_tuple__33 __pyx_mstate_global->__pyx_tuple__33
-#define __pyx_tuple__36 __pyx_mstate_global->__pyx_tuple__36
 #define __pyx_codeobj__27 __pyx_mstate_global->__pyx_codeobj__27
 #define __pyx_codeobj__29 __pyx_mstate_global->__pyx_codeobj__29
 #define __pyx_codeobj__32 __pyx_mstate_global->__pyx_codeobj__32
 #define __pyx_codeobj__34 __pyx_mstate_global->__pyx_codeobj__34
-#define __pyx_codeobj__35 __pyx_mstate_global->__pyx_codeobj__35
-#define __pyx_codeobj__37 __pyx_mstate_global->__pyx_codeobj__37
 /* #### Code section: module_code ### */
 
 /* "View.MemoryView":131
@@ -17636,7 +17631,7 @@ static PyObject *__pyx_format_from_typeinfo(__Pyx_TypeInfo *__pyx_v_type) {
   return __pyx_r;
 }
 
-/* "pygame/_sdl2/audio.pyx":46
+/* "pygame/_sdl2/audio.pyx":47
  * # https://wiki.libsdl.org/SDL_GetNumAudioDevices
  * # https://wiki.libsdl.org/SDL_GetAudioDeviceName
  * def get_audio_device_names(iscapture = False):             # <<<<<<<<<<<<<<
@@ -17690,12 +17685,12 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
         if (kw_args > 0) {
           PyObject* value = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_iscapture);
           if (value) { values[0] = value; kw_args--; }
-          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 46, __pyx_L3_error)
+          else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 47, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "get_audio_device_names") < 0)) __PYX_ERR(0, 46, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "get_audio_device_names") < 0)) __PYX_ERR(0, 47, __pyx_L3_error)
       }
     } else {
       switch (__pyx_nargs) {
@@ -17709,7 +17704,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("get_audio_device_names", 0, 0, 1, __pyx_nargs); __PYX_ERR(0, 46, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("get_audio_device_names", 0, 0, 1, __pyx_nargs); __PYX_ERR(0, 47, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pygame._sdl2.audio.get_audio_device_names", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -17743,17 +17738,17 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_get_audio_device_names(CYTHON_UN
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_audio_device_names", 0);
 
-  /* "pygame/_sdl2/audio.pyx":56
+  /* "pygame/_sdl2/audio.pyx":57
  *     """
  * 
  *     cdef int count = SDL_GetNumAudioDevices(iscapture)             # <<<<<<<<<<<<<<
  *     if count == -1:
  *         raise error('Audio system not initialised')
  */
-  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_iscapture); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 56, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_iscapture); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 57, __pyx_L1_error)
   __pyx_v_count = SDL_GetNumAudioDevices(__pyx_t_1);
 
-  /* "pygame/_sdl2/audio.pyx":57
+  /* "pygame/_sdl2/audio.pyx":58
  * 
  *     cdef int count = SDL_GetNumAudioDevices(iscapture)
  *     if count == -1:             # <<<<<<<<<<<<<<
@@ -17763,14 +17758,14 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_get_audio_device_names(CYTHON_UN
   __pyx_t_2 = (__pyx_v_count == -1L);
   if (unlikely(__pyx_t_2)) {
 
-    /* "pygame/_sdl2/audio.pyx":58
+    /* "pygame/_sdl2/audio.pyx":59
  *     cdef int count = SDL_GetNumAudioDevices(iscapture)
  *     if count == -1:
  *         raise error('Audio system not initialised')             # <<<<<<<<<<<<<<
  * 
  *     names = []
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_error); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 58, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_error); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 59, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_t_5 = NULL;
     __pyx_t_1 = 0;
@@ -17788,15 +17783,15 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_get_audio_device_names(CYTHON_UN
       PyObject *__pyx_callargs[2] = {__pyx_t_5, __pyx_kp_s_Audio_system_not_initialised};
       __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_4, __pyx_callargs+1-__pyx_t_1, 1+__pyx_t_1);
       __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-      if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 58, __pyx_L1_error)
+      if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 59, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     }
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __PYX_ERR(0, 58, __pyx_L1_error)
+    __PYX_ERR(0, 59, __pyx_L1_error)
 
-    /* "pygame/_sdl2/audio.pyx":57
+    /* "pygame/_sdl2/audio.pyx":58
  * 
  *     cdef int count = SDL_GetNumAudioDevices(iscapture)
  *     if count == -1:             # <<<<<<<<<<<<<<
@@ -17805,19 +17800,19 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_get_audio_device_names(CYTHON_UN
  */
   }
 
-  /* "pygame/_sdl2/audio.pyx":60
+  /* "pygame/_sdl2/audio.pyx":61
  *         raise error('Audio system not initialised')
  * 
  *     names = []             # <<<<<<<<<<<<<<
  *     for i in range(count):
  *         name = SDL_GetAudioDeviceName(i, iscapture)
  */
-  __pyx_t_3 = PyList_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 60, __pyx_L1_error)
+  __pyx_t_3 = PyList_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 61, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_v_names = ((PyObject*)__pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":61
+  /* "pygame/_sdl2/audio.pyx":62
  * 
  *     names = []
  *     for i in range(count):             # <<<<<<<<<<<<<<
@@ -17829,17 +17824,17 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_get_audio_device_names(CYTHON_UN
   for (__pyx_t_7 = 0; __pyx_t_7 < __pyx_t_6; __pyx_t_7+=1) {
     __pyx_v_i = __pyx_t_7;
 
-    /* "pygame/_sdl2/audio.pyx":62
+    /* "pygame/_sdl2/audio.pyx":63
  *     names = []
  *     for i in range(count):
  *         name = SDL_GetAudioDeviceName(i, iscapture)             # <<<<<<<<<<<<<<
  *         if not name:
  *             raise error()
  */
-    __pyx_t_8 = __Pyx_PyInt_As_int(__pyx_v_iscapture); if (unlikely((__pyx_t_8 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 62, __pyx_L1_error)
+    __pyx_t_8 = __Pyx_PyInt_As_int(__pyx_v_iscapture); if (unlikely((__pyx_t_8 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 63, __pyx_L1_error)
     __pyx_v_name = SDL_GetAudioDeviceName(__pyx_v_i, __pyx_t_8);
 
-    /* "pygame/_sdl2/audio.pyx":63
+    /* "pygame/_sdl2/audio.pyx":64
  *     for i in range(count):
  *         name = SDL_GetAudioDeviceName(i, iscapture)
  *         if not name:             # <<<<<<<<<<<<<<
@@ -17849,14 +17844,14 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_get_audio_device_names(CYTHON_UN
     __pyx_t_2 = (!(__pyx_v_name != 0));
     if (unlikely(__pyx_t_2)) {
 
-      /* "pygame/_sdl2/audio.pyx":64
+      /* "pygame/_sdl2/audio.pyx":65
  *         name = SDL_GetAudioDeviceName(i, iscapture)
  *         if not name:
  *             raise error()             # <<<<<<<<<<<<<<
  *         names.append(name.decode('utf8'))
  * 
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_error); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 64, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_error); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 65, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __pyx_t_5 = NULL;
       __pyx_t_8 = 0;
@@ -17874,15 +17869,15 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_get_audio_device_names(CYTHON_UN
         PyObject *__pyx_callargs[1] = {__pyx_t_5, };
         __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_4, __pyx_callargs+1-__pyx_t_8, 0+__pyx_t_8);
         __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 64, __pyx_L1_error)
+        if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 65, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_3);
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       }
       __Pyx_Raise(__pyx_t_3, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __PYX_ERR(0, 64, __pyx_L1_error)
+      __PYX_ERR(0, 65, __pyx_L1_error)
 
-      /* "pygame/_sdl2/audio.pyx":63
+      /* "pygame/_sdl2/audio.pyx":64
  *     for i in range(count):
  *         name = SDL_GetAudioDeviceName(i, iscapture)
  *         if not name:             # <<<<<<<<<<<<<<
@@ -17891,20 +17886,20 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_get_audio_device_names(CYTHON_UN
  */
     }
 
-    /* "pygame/_sdl2/audio.pyx":65
+    /* "pygame/_sdl2/audio.pyx":66
  *         if not name:
  *             raise error()
  *         names.append(name.decode('utf8'))             # <<<<<<<<<<<<<<
  * 
  *     return names
  */
-    __pyx_t_3 = __Pyx_decode_c_string(__pyx_v_name, 0, strlen(__pyx_v_name), NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 65, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_decode_c_string(__pyx_v_name, 0, strlen(__pyx_v_name), NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 66, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_9 = __Pyx_PyList_Append(__pyx_v_names, __pyx_t_3); if (unlikely(__pyx_t_9 == ((int)-1))) __PYX_ERR(0, 65, __pyx_L1_error)
+    __pyx_t_9 = __Pyx_PyList_Append(__pyx_v_names, __pyx_t_3); if (unlikely(__pyx_t_9 == ((int)-1))) __PYX_ERR(0, 66, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   }
 
-  /* "pygame/_sdl2/audio.pyx":67
+  /* "pygame/_sdl2/audio.pyx":68
  *         names.append(name.decode('utf8'))
  * 
  *     return names             # <<<<<<<<<<<<<<
@@ -17916,7 +17911,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_get_audio_device_names(CYTHON_UN
   __pyx_r = __pyx_v_names;
   goto __pyx_L0;
 
-  /* "pygame/_sdl2/audio.pyx":46
+  /* "pygame/_sdl2/audio.pyx":47
  * # https://wiki.libsdl.org/SDL_GetNumAudioDevices
  * # https://wiki.libsdl.org/SDL_GetAudioDeviceName
  * def get_audio_device_names(iscapture = False):             # <<<<<<<<<<<<<<
@@ -17938,7 +17933,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_get_audio_device_names(CYTHON_UN
   return __pyx_r;
 }
 
-/* "pygame/_sdl2/audio.pyx":70
+/* "pygame/_sdl2/audio.pyx":71
  * 
  * import traceback
  * cdef void recording_cb(void* userdata, Uint8* stream, int len) nogil:             # <<<<<<<<<<<<<<
@@ -17969,7 +17964,7 @@ static void __pyx_f_6pygame_5_sdl2_5audio_recording_cb(void *__pyx_v_userdata, U
   #endif
   __Pyx_RefNannySetupContext("recording_cb", 1);
 
-  /* "pygame/_sdl2/audio.pyx":75
+  /* "pygame/_sdl2/audio.pyx":76
  *     """
  *     cdef Uint8 [:] a_memoryview
  *     with gil:             # <<<<<<<<<<<<<<
@@ -17982,7 +17977,7 @@ static void __pyx_f_6pygame_5_sdl2_5audio_recording_cb(void *__pyx_v_userdata, U
       #endif
       /*try:*/ {
 
-        /* "pygame/_sdl2/audio.pyx":76
+        /* "pygame/_sdl2/audio.pyx":77
  *     cdef Uint8 [:] a_memoryview
  *     with gil:
  *         a_memoryview = <Uint8[:len]> stream             # <<<<<<<<<<<<<<
@@ -17991,23 +17986,23 @@ static void __pyx_f_6pygame_5_sdl2_5audio_recording_cb(void *__pyx_v_userdata, U
  */
         if (!__pyx_v_stream) {
           PyErr_SetString(PyExc_ValueError,"Cannot create cython.array from NULL pointer");
-          __PYX_ERR(0, 76, __pyx_L4_error)
+          __PYX_ERR(0, 77, __pyx_L4_error)
         }
-        __pyx_t_3 = __pyx_format_from_typeinfo(&__Pyx_TypeInfo_nn_Uint8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 76, __pyx_L4_error)
+        __pyx_t_3 = __pyx_format_from_typeinfo(&__Pyx_TypeInfo_nn_Uint8); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 77, __pyx_L4_error)
         __Pyx_GOTREF(__pyx_t_3);
-        __pyx_t_2 = Py_BuildValue((char*) "("  __PYX_BUILD_PY_SSIZE_T  ")", ((Py_ssize_t)__pyx_v_len)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 76, __pyx_L4_error)
+        __pyx_t_2 = Py_BuildValue((char*) "("  __PYX_BUILD_PY_SSIZE_T  ")", ((Py_ssize_t)__pyx_v_len)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 77, __pyx_L4_error)
         __Pyx_GOTREF(__pyx_t_2);
-        __pyx_t_1 = __pyx_array_new(__pyx_t_2, sizeof(Uint8), PyBytes_AS_STRING(__pyx_t_3), (char *) "c", (char *) __pyx_v_stream); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 76, __pyx_L4_error)
+        __pyx_t_1 = __pyx_array_new(__pyx_t_2, sizeof(Uint8), PyBytes_AS_STRING(__pyx_t_3), (char *) "c", (char *) __pyx_v_stream); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 77, __pyx_L4_error)
         __Pyx_GOTREF((PyObject *)__pyx_t_1);
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        __pyx_t_4 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn_Uint8(((PyObject *)__pyx_t_1), PyBUF_WRITABLE); if (unlikely(!__pyx_t_4.memview)) __PYX_ERR(0, 76, __pyx_L4_error)
+        __pyx_t_4 = __Pyx_PyObject_to_MemoryviewSlice_ds_nn_Uint8(((PyObject *)__pyx_t_1), PyBUF_WRITABLE); if (unlikely(!__pyx_t_4.memview)) __PYX_ERR(0, 77, __pyx_L4_error)
         __Pyx_DECREF((PyObject *)__pyx_t_1); __pyx_t_1 = 0;
         __pyx_v_a_memoryview = __pyx_t_4;
         __pyx_t_4.memview = NULL;
         __pyx_t_4.data = NULL;
 
-        /* "pygame/_sdl2/audio.pyx":77
+        /* "pygame/_sdl2/audio.pyx":78
  *     with gil:
  *         a_memoryview = <Uint8[:len]> stream
  *         try:             # <<<<<<<<<<<<<<
@@ -18023,16 +18018,16 @@ static void __pyx_f_6pygame_5_sdl2_5audio_recording_cb(void *__pyx_v_userdata, U
           __Pyx_XGOTREF(__pyx_t_7);
           /*try:*/ {
 
-            /* "pygame/_sdl2/audio.pyx":80
+            /* "pygame/_sdl2/audio.pyx":81
  *             # The userdata is the audio device.
  *             # The audio device is needed in some apps
  *             (<object>userdata).callback(<object>userdata, a_memoryview)             # <<<<<<<<<<<<<<
  *         except:
  *             traceback.print_exc()
  */
-            __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_userdata), __pyx_n_s_callback); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 80, __pyx_L6_error)
+            __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_userdata), __pyx_n_s_callback); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 81, __pyx_L6_error)
             __Pyx_GOTREF(__pyx_t_2);
-            __pyx_t_8 = __pyx_memoryview_fromslice(__pyx_v_a_memoryview, 1, (PyObject *(*)(char *)) __pyx_memview_get_nn_Uint8, (int (*)(char *, PyObject *)) __pyx_memview_set_nn_Uint8, 0);; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 80, __pyx_L6_error)
+            __pyx_t_8 = __pyx_memoryview_fromslice(__pyx_v_a_memoryview, 1, (PyObject *(*)(char *)) __pyx_memview_get_nn_Uint8, (int (*)(char *, PyObject *)) __pyx_memview_set_nn_Uint8, 0);; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 81, __pyx_L6_error)
             __Pyx_GOTREF(__pyx_t_8);
             __pyx_t_9 = NULL;
             __pyx_t_10 = 0;
@@ -18051,13 +18046,13 @@ static void __pyx_f_6pygame_5_sdl2_5audio_recording_cb(void *__pyx_v_userdata, U
               __pyx_t_3 = __Pyx_PyObject_FastCall(__pyx_t_2, __pyx_callargs+1-__pyx_t_10, 2+__pyx_t_10);
               __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
               __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-              if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 80, __pyx_L6_error)
+              if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 81, __pyx_L6_error)
               __Pyx_GOTREF(__pyx_t_3);
               __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
             }
             __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-            /* "pygame/_sdl2/audio.pyx":77
+            /* "pygame/_sdl2/audio.pyx":78
  *     with gil:
  *         a_memoryview = <Uint8[:len]> stream
  *         try:             # <<<<<<<<<<<<<<
@@ -18078,7 +18073,7 @@ static void __pyx_f_6pygame_5_sdl2_5audio_recording_cb(void *__pyx_v_userdata, U
           __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
           __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-          /* "pygame/_sdl2/audio.pyx":81
+          /* "pygame/_sdl2/audio.pyx":82
  *             # The audio device is needed in some apps
  *             (<object>userdata).callback(<object>userdata, a_memoryview)
  *         except:             # <<<<<<<<<<<<<<
@@ -18087,21 +18082,21 @@ static void __pyx_f_6pygame_5_sdl2_5audio_recording_cb(void *__pyx_v_userdata, U
  */
           /*except:*/ {
             __Pyx_AddTraceback("pygame._sdl2.audio.recording_cb", __pyx_clineno, __pyx_lineno, __pyx_filename);
-            if (__Pyx_GetException(&__pyx_t_3, &__pyx_t_2, &__pyx_t_8) < 0) __PYX_ERR(0, 81, __pyx_L8_except_error)
+            if (__Pyx_GetException(&__pyx_t_3, &__pyx_t_2, &__pyx_t_8) < 0) __PYX_ERR(0, 82, __pyx_L8_except_error)
             __Pyx_XGOTREF(__pyx_t_3);
             __Pyx_XGOTREF(__pyx_t_2);
             __Pyx_XGOTREF(__pyx_t_8);
 
-            /* "pygame/_sdl2/audio.pyx":82
+            /* "pygame/_sdl2/audio.pyx":83
  *             (<object>userdata).callback(<object>userdata, a_memoryview)
  *         except:
  *             traceback.print_exc()             # <<<<<<<<<<<<<<
  *             raise
  * 
  */
-            __Pyx_GetModuleGlobalName(__pyx_t_11, __pyx_n_s_traceback); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 82, __pyx_L8_except_error)
+            __Pyx_GetModuleGlobalName(__pyx_t_11, __pyx_n_s_traceback); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 83, __pyx_L8_except_error)
             __Pyx_GOTREF(__pyx_t_11);
-            __pyx_t_12 = __Pyx_PyObject_GetAttrStr(__pyx_t_11, __pyx_n_s_print_exc); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 82, __pyx_L8_except_error)
+            __pyx_t_12 = __Pyx_PyObject_GetAttrStr(__pyx_t_11, __pyx_n_s_print_exc); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 83, __pyx_L8_except_error)
             __Pyx_GOTREF(__pyx_t_12);
             __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
             __pyx_t_11 = NULL;
@@ -18120,13 +18115,13 @@ static void __pyx_f_6pygame_5_sdl2_5audio_recording_cb(void *__pyx_v_userdata, U
               PyObject *__pyx_callargs[1] = {__pyx_t_11, };
               __pyx_t_9 = __Pyx_PyObject_FastCall(__pyx_t_12, __pyx_callargs+1-__pyx_t_10, 0+__pyx_t_10);
               __Pyx_XDECREF(__pyx_t_11); __pyx_t_11 = 0;
-              if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 82, __pyx_L8_except_error)
+              if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 83, __pyx_L8_except_error)
               __Pyx_GOTREF(__pyx_t_9);
               __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
             }
             __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-            /* "pygame/_sdl2/audio.pyx":83
+            /* "pygame/_sdl2/audio.pyx":84
  *         except:
  *             traceback.print_exc()
  *             raise             # <<<<<<<<<<<<<<
@@ -18138,10 +18133,10 @@ static void __pyx_f_6pygame_5_sdl2_5audio_recording_cb(void *__pyx_v_userdata, U
             __Pyx_XGIVEREF(__pyx_t_8);
             __Pyx_ErrRestoreWithState(__pyx_t_3, __pyx_t_2, __pyx_t_8);
             __pyx_t_3 = 0; __pyx_t_2 = 0; __pyx_t_8 = 0; 
-            __PYX_ERR(0, 83, __pyx_L8_except_error)
+            __PYX_ERR(0, 84, __pyx_L8_except_error)
           }
 
-          /* "pygame/_sdl2/audio.pyx":77
+          /* "pygame/_sdl2/audio.pyx":78
  *     with gil:
  *         a_memoryview = <Uint8[:len]> stream
  *         try:             # <<<<<<<<<<<<<<
@@ -18158,7 +18153,7 @@ static void __pyx_f_6pygame_5_sdl2_5audio_recording_cb(void *__pyx_v_userdata, U
         }
       }
 
-      /* "pygame/_sdl2/audio.pyx":75
+      /* "pygame/_sdl2/audio.pyx":76
  *     """
  *     cdef Uint8 [:] a_memoryview
  *     with gil:             # <<<<<<<<<<<<<<
@@ -18182,7 +18177,7 @@ static void __pyx_f_6pygame_5_sdl2_5audio_recording_cb(void *__pyx_v_userdata, U
       }
   }
 
-  /* "pygame/_sdl2/audio.pyx":70
+  /* "pygame/_sdl2/audio.pyx":71
  * 
  * import traceback
  * cdef void recording_cb(void* userdata, Uint8* stream, int len) nogil:             # <<<<<<<<<<<<<<
@@ -18219,8 +18214,8 @@ static void __pyx_f_6pygame_5_sdl2_5audio_recording_cb(void *__pyx_v_userdata, U
   #endif
 }
 
-/* "pygame/_sdl2/audio.pyx":87
- * 
+/* "pygame/_sdl2/audio.pyx":90
+ * @cython.auto_pickle(False)
  * cdef class AudioDevice:
  *     def __cinit__(self):             # <<<<<<<<<<<<<<
  *         self._deviceid = 0
@@ -18250,7 +18245,7 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice___cinit__(struct __pyx_o
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__cinit__", 0);
 
-  /* "pygame/_sdl2/audio.pyx":88
+  /* "pygame/_sdl2/audio.pyx":91
  * cdef class AudioDevice:
  *     def __cinit__(self):
  *         self._deviceid = 0             # <<<<<<<<<<<<<<
@@ -18259,7 +18254,7 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice___cinit__(struct __pyx_o
  */
   __pyx_v_self->_deviceid = 0;
 
-  /* "pygame/_sdl2/audio.pyx":89
+  /* "pygame/_sdl2/audio.pyx":92
  *     def __cinit__(self):
  *         self._deviceid = 0
  *         self._iscapture = 0             # <<<<<<<<<<<<<<
@@ -18268,8 +18263,8 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice___cinit__(struct __pyx_o
  */
   __pyx_v_self->_iscapture = 0;
 
-  /* "pygame/_sdl2/audio.pyx":87
- * 
+  /* "pygame/_sdl2/audio.pyx":90
+ * @cython.auto_pickle(False)
  * cdef class AudioDevice:
  *     def __cinit__(self):             # <<<<<<<<<<<<<<
  *         self._deviceid = 0
@@ -18282,7 +18277,7 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice___cinit__(struct __pyx_o
   return __pyx_r;
 }
 
-/* "pygame/_sdl2/audio.pyx":91
+/* "pygame/_sdl2/audio.pyx":94
  *         self._iscapture = 0
  * 
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -18307,7 +18302,7 @@ static void __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_2__dealloc__(struct __p
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("__dealloc__", 0);
 
-  /* "pygame/_sdl2/audio.pyx":92
+  /* "pygame/_sdl2/audio.pyx":95
  * 
  *     def __dealloc__(self):
  *         if self._deviceid:             # <<<<<<<<<<<<<<
@@ -18317,7 +18312,7 @@ static void __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_2__dealloc__(struct __p
   __pyx_t_1 = (__pyx_v_self->_deviceid != 0);
   if (__pyx_t_1) {
 
-    /* "pygame/_sdl2/audio.pyx":93
+    /* "pygame/_sdl2/audio.pyx":96
  *     def __dealloc__(self):
  *         if self._deviceid:
  *             SDL_CloseAudioDevice(self._deviceid)             # <<<<<<<<<<<<<<
@@ -18326,7 +18321,7 @@ static void __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_2__dealloc__(struct __p
  */
     SDL_CloseAudioDevice(__pyx_v_self->_deviceid);
 
-    /* "pygame/_sdl2/audio.pyx":92
+    /* "pygame/_sdl2/audio.pyx":95
  * 
  *     def __dealloc__(self):
  *         if self._deviceid:             # <<<<<<<<<<<<<<
@@ -18335,7 +18330,7 @@ static void __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_2__dealloc__(struct __p
  */
   }
 
-  /* "pygame/_sdl2/audio.pyx":91
+  /* "pygame/_sdl2/audio.pyx":94
  *         self._iscapture = 0
  * 
  *     def __dealloc__(self):             # <<<<<<<<<<<<<<
@@ -18347,7 +18342,7 @@ static void __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_2__dealloc__(struct __p
   __Pyx_RefNannyFinishContext();
 }
 
-/* "pygame/_sdl2/audio.pyx":95
+/* "pygame/_sdl2/audio.pyx":98
  *             SDL_CloseAudioDevice(self._deviceid)
  * 
  *     def __init__(self,             # <<<<<<<<<<<<<<
@@ -18407,61 +18402,61 @@ static int __pyx_pw_6pygame_5_sdl2_5audio_11AudioDevice_5__init__(PyObject *__py
       switch (__pyx_nargs) {
         case  0:
         if (likely((values[0] = __Pyx_GetKwValue_VARARGS(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_devicename)) != 0)) kw_args--;
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 95, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 98, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
         CYTHON_FALLTHROUGH;
         case  1:
         if (likely((values[1] = __Pyx_GetKwValue_VARARGS(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_iscapture)) != 0)) kw_args--;
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 95, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 98, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("__init__", 1, 8, 8, 1); __PYX_ERR(0, 95, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("__init__", 1, 8, 8, 1); __PYX_ERR(0, 98, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_GetKwValue_VARARGS(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_frequency)) != 0)) kw_args--;
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 95, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 98, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("__init__", 1, 8, 8, 2); __PYX_ERR(0, 95, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("__init__", 1, 8, 8, 2); __PYX_ERR(0, 98, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (likely((values[3] = __Pyx_GetKwValue_VARARGS(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_audioformat)) != 0)) kw_args--;
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 95, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 98, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("__init__", 1, 8, 8, 3); __PYX_ERR(0, 95, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("__init__", 1, 8, 8, 3); __PYX_ERR(0, 98, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  4:
         if (likely((values[4] = __Pyx_GetKwValue_VARARGS(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_numchannels)) != 0)) kw_args--;
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 95, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 98, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("__init__", 1, 8, 8, 4); __PYX_ERR(0, 95, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("__init__", 1, 8, 8, 4); __PYX_ERR(0, 98, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  5:
         if (likely((values[5] = __Pyx_GetKwValue_VARARGS(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_chunksize)) != 0)) kw_args--;
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 95, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 98, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("__init__", 1, 8, 8, 5); __PYX_ERR(0, 95, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("__init__", 1, 8, 8, 5); __PYX_ERR(0, 98, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  6:
         if (likely((values[6] = __Pyx_GetKwValue_VARARGS(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_allowed_changes)) != 0)) kw_args--;
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 95, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 98, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("__init__", 1, 8, 8, 6); __PYX_ERR(0, 95, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("__init__", 1, 8, 8, 6); __PYX_ERR(0, 98, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  7:
         if (likely((values[7] = __Pyx_GetKwValue_VARARGS(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_callback)) != 0)) kw_args--;
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 95, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 98, __pyx_L3_error)
         else {
-          __Pyx_RaiseArgtupleInvalid("__init__", 1, 8, 8, 7); __PYX_ERR(0, 95, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("__init__", 1, 8, 8, 7); __PYX_ERR(0, 98, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "__init__") < 0)) __PYX_ERR(0, 95, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "__init__") < 0)) __PYX_ERR(0, 98, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 8)) {
       goto __pyx_L5_argtuple_error;
@@ -18486,7 +18481,7 @@ static int __pyx_pw_6pygame_5_sdl2_5audio_11AudioDevice_5__init__(PyObject *__py
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__init__", 1, 8, 8, __pyx_nargs); __PYX_ERR(0, 95, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("__init__", 1, 8, 8, __pyx_nargs); __PYX_ERR(0, 98, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pygame._sdl2.audio.AudioDevice.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -18517,7 +18512,7 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_4__init__(struct __pyx_o
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "pygame/_sdl2/audio.pyx":128
+  /* "pygame/_sdl2/audio.pyx":131
  *                    The audiodevice also has the format of the memory.
  *         """
  *         memset(&self.desired, 0, sizeof(SDL_AudioSpec))             # <<<<<<<<<<<<<<
@@ -18526,17 +18521,17 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_4__init__(struct __pyx_o
  */
   (void)(memset((&__pyx_v_self->desired), 0, (sizeof(SDL_AudioSpec))));
 
-  /* "pygame/_sdl2/audio.pyx":129
+  /* "pygame/_sdl2/audio.pyx":132
  *         """
  *         memset(&self.desired, 0, sizeof(SDL_AudioSpec))
  *         self._iscapture = iscapture             # <<<<<<<<<<<<<<
  *         self._callback = callback
  *         if not isinstance(devicename, str):
  */
-  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_iscapture); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 129, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_iscapture); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 132, __pyx_L1_error)
   __pyx_v_self->_iscapture = __pyx_t_1;
 
-  /* "pygame/_sdl2/audio.pyx":130
+  /* "pygame/_sdl2/audio.pyx":133
  *         memset(&self.desired, 0, sizeof(SDL_AudioSpec))
  *         self._iscapture = iscapture
  *         self._callback = callback             # <<<<<<<<<<<<<<
@@ -18549,7 +18544,7 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_4__init__(struct __pyx_o
   __Pyx_DECREF(__pyx_v_self->_callback);
   __pyx_v_self->_callback = __pyx_v_callback;
 
-  /* "pygame/_sdl2/audio.pyx":131
+  /* "pygame/_sdl2/audio.pyx":134
  *         self._iscapture = iscapture
  *         self._callback = callback
  *         if not isinstance(devicename, str):             # <<<<<<<<<<<<<<
@@ -18560,20 +18555,20 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_4__init__(struct __pyx_o
   __pyx_t_3 = (!__pyx_t_2);
   if (unlikely(__pyx_t_3)) {
 
-    /* "pygame/_sdl2/audio.pyx":132
+    /* "pygame/_sdl2/audio.pyx":135
  *         self._callback = callback
  *         if not isinstance(devicename, str):
  *             raise TypeError("devicename must be a string")             # <<<<<<<<<<<<<<
  *         self._devicename = devicename
  * 
  */
-    __pyx_t_4 = __Pyx_PyObject_Call(__pyx_builtin_TypeError, __pyx_tuple__15, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 132, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_Call(__pyx_builtin_TypeError, __pyx_tuple__15, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 135, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_Raise(__pyx_t_4, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __PYX_ERR(0, 132, __pyx_L1_error)
+    __PYX_ERR(0, 135, __pyx_L1_error)
 
-    /* "pygame/_sdl2/audio.pyx":131
+    /* "pygame/_sdl2/audio.pyx":134
  *         self._iscapture = iscapture
  *         self._callback = callback
  *         if not isinstance(devicename, str):             # <<<<<<<<<<<<<<
@@ -18582,7 +18577,7 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_4__init__(struct __pyx_o
  */
   }
 
-  /* "pygame/_sdl2/audio.pyx":133
+  /* "pygame/_sdl2/audio.pyx":136
  *         if not isinstance(devicename, str):
  *             raise TypeError("devicename must be a string")
  *         self._devicename = devicename             # <<<<<<<<<<<<<<
@@ -18595,47 +18590,47 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_4__init__(struct __pyx_o
   __Pyx_DECREF(__pyx_v_self->_devicename);
   __pyx_v_self->_devicename = __pyx_v_devicename;
 
-  /* "pygame/_sdl2/audio.pyx":135
+  /* "pygame/_sdl2/audio.pyx":138
  *         self._devicename = devicename
  * 
  *         self.desired.freq = frequency;             # <<<<<<<<<<<<<<
  *         self.desired.format = audioformat;
  *         self.desired.channels = numchannels;
  */
-  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_frequency); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 135, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_frequency); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 138, __pyx_L1_error)
   __pyx_v_self->desired.freq = __pyx_t_1;
 
-  /* "pygame/_sdl2/audio.pyx":136
+  /* "pygame/_sdl2/audio.pyx":139
  * 
  *         self.desired.freq = frequency;
  *         self.desired.format = audioformat;             # <<<<<<<<<<<<<<
  *         self.desired.channels = numchannels;
  *         self.desired.samples = chunksize;
  */
-  __pyx_t_5 = __Pyx_PyInt_As_Uint16(__pyx_v_audioformat); if (unlikely((__pyx_t_5 == ((SDL_AudioFormat)-1)) && PyErr_Occurred())) __PYX_ERR(0, 136, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyInt_As_Uint16(__pyx_v_audioformat); if (unlikely((__pyx_t_5 == ((SDL_AudioFormat)-1)) && PyErr_Occurred())) __PYX_ERR(0, 139, __pyx_L1_error)
   __pyx_v_self->desired.format = __pyx_t_5;
 
-  /* "pygame/_sdl2/audio.pyx":137
+  /* "pygame/_sdl2/audio.pyx":140
  *         self.desired.freq = frequency;
  *         self.desired.format = audioformat;
  *         self.desired.channels = numchannels;             # <<<<<<<<<<<<<<
  *         self.desired.samples = chunksize;
  *         self.desired.callback = <SDL_AudioCallback>recording_cb;
  */
-  __pyx_t_6 = __Pyx_PyInt_As_Uint8(__pyx_v_numchannels); if (unlikely((__pyx_t_6 == ((Uint8)-1)) && PyErr_Occurred())) __PYX_ERR(0, 137, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyInt_As_Uint8(__pyx_v_numchannels); if (unlikely((__pyx_t_6 == ((Uint8)-1)) && PyErr_Occurred())) __PYX_ERR(0, 140, __pyx_L1_error)
   __pyx_v_self->desired.channels = __pyx_t_6;
 
-  /* "pygame/_sdl2/audio.pyx":138
+  /* "pygame/_sdl2/audio.pyx":141
  *         self.desired.format = audioformat;
  *         self.desired.channels = numchannels;
  *         self.desired.samples = chunksize;             # <<<<<<<<<<<<<<
  *         self.desired.callback = <SDL_AudioCallback>recording_cb;
  *         self.desired.userdata = <void*>self
  */
-  __pyx_t_7 = __Pyx_PyInt_As_Uint16(__pyx_v_chunksize); if (unlikely((__pyx_t_7 == ((Uint16)-1)) && PyErr_Occurred())) __PYX_ERR(0, 138, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyInt_As_Uint16(__pyx_v_chunksize); if (unlikely((__pyx_t_7 == ((Uint16)-1)) && PyErr_Occurred())) __PYX_ERR(0, 141, __pyx_L1_error)
   __pyx_v_self->desired.samples = __pyx_t_7;
 
-  /* "pygame/_sdl2/audio.pyx":139
+  /* "pygame/_sdl2/audio.pyx":142
  *         self.desired.channels = numchannels;
  *         self.desired.samples = chunksize;
  *         self.desired.callback = <SDL_AudioCallback>recording_cb;             # <<<<<<<<<<<<<<
@@ -18644,7 +18639,7 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_4__init__(struct __pyx_o
  */
   __pyx_v_self->desired.callback = ((SDL_AudioCallback)__pyx_f_6pygame_5_sdl2_5audio_recording_cb);
 
-  /* "pygame/_sdl2/audio.pyx":140
+  /* "pygame/_sdl2/audio.pyx":143
  *         self.desired.samples = chunksize;
  *         self.desired.callback = <SDL_AudioCallback>recording_cb;
  *         self.desired.userdata = <void*>self             # <<<<<<<<<<<<<<
@@ -18653,14 +18648,14 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_4__init__(struct __pyx_o
  */
   __pyx_v_self->desired.userdata = ((void *)__pyx_v_self);
 
-  /* "pygame/_sdl2/audio.pyx":143
+  /* "pygame/_sdl2/audio.pyx":146
  * 
  *         self._deviceid = SDL_OpenAudioDevice(
  *             self._devicename.encode("utf-8"),             # <<<<<<<<<<<<<<
  *             self._iscapture,
  *             &self.desired,
  */
-  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_v_self->_devicename, __pyx_n_s_encode); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 143, __pyx_L1_error)
+  __pyx_t_8 = __Pyx_PyObject_GetAttrStr(__pyx_v_self->_devicename, __pyx_n_s_encode); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 146, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __pyx_t_9 = NULL;
   __pyx_t_1 = 0;
@@ -18678,22 +18673,22 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_4__init__(struct __pyx_o
     PyObject *__pyx_callargs[2] = {__pyx_t_9, __pyx_kp_s_utf_8};
     __pyx_t_4 = __Pyx_PyObject_FastCall(__pyx_t_8, __pyx_callargs+1-__pyx_t_1, 1+__pyx_t_1);
     __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
-    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 143, __pyx_L1_error)
+    if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 146, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   }
-  __pyx_t_10 = __Pyx_PyObject_AsString(__pyx_t_4); if (unlikely((!__pyx_t_10) && PyErr_Occurred())) __PYX_ERR(0, 143, __pyx_L1_error)
+  __pyx_t_10 = __Pyx_PyObject_AsString(__pyx_t_4); if (unlikely((!__pyx_t_10) && PyErr_Occurred())) __PYX_ERR(0, 146, __pyx_L1_error)
 
-  /* "pygame/_sdl2/audio.pyx":147
+  /* "pygame/_sdl2/audio.pyx":150
  *             &self.desired,
  *             &self.obtained,
  *             allowed_changes             # <<<<<<<<<<<<<<
  *         )
  * 
  */
-  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_allowed_changes); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 147, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_allowed_changes); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 150, __pyx_L1_error)
 
-  /* "pygame/_sdl2/audio.pyx":142
+  /* "pygame/_sdl2/audio.pyx":145
  *         self.desired.userdata = <void*>self
  * 
  *         self._deviceid = SDL_OpenAudioDevice(             # <<<<<<<<<<<<<<
@@ -18703,7 +18698,7 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_4__init__(struct __pyx_o
   __pyx_v_self->_deviceid = SDL_OpenAudioDevice(__pyx_t_10, __pyx_v_self->_iscapture, (&__pyx_v_self->desired), (&__pyx_v_self->obtained), __pyx_t_1);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":150
+  /* "pygame/_sdl2/audio.pyx":153
  *         )
  * 
  *         if self._deviceid == 0:             # <<<<<<<<<<<<<<
@@ -18713,14 +18708,14 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_4__init__(struct __pyx_o
   __pyx_t_3 = (__pyx_v_self->_deviceid == 0);
   if (unlikely(__pyx_t_3)) {
 
-    /* "pygame/_sdl2/audio.pyx":151
+    /* "pygame/_sdl2/audio.pyx":154
  * 
  *         if self._deviceid == 0:
  *             raise error()             # <<<<<<<<<<<<<<
  * 
  *     @property
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_error); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 151, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_error); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 154, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
     __pyx_t_9 = NULL;
     __pyx_t_1 = 0;
@@ -18738,15 +18733,15 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_4__init__(struct __pyx_o
       PyObject *__pyx_callargs[1] = {__pyx_t_9, };
       __pyx_t_4 = __Pyx_PyObject_FastCall(__pyx_t_8, __pyx_callargs+1-__pyx_t_1, 0+__pyx_t_1);
       __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
-      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 151, __pyx_L1_error)
+      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 154, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     }
     __Pyx_Raise(__pyx_t_4, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __PYX_ERR(0, 151, __pyx_L1_error)
+    __PYX_ERR(0, 154, __pyx_L1_error)
 
-    /* "pygame/_sdl2/audio.pyx":150
+    /* "pygame/_sdl2/audio.pyx":153
  *         )
  * 
  *         if self._deviceid == 0:             # <<<<<<<<<<<<<<
@@ -18755,7 +18750,7 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_4__init__(struct __pyx_o
  */
   }
 
-  /* "pygame/_sdl2/audio.pyx":95
+  /* "pygame/_sdl2/audio.pyx":98
  *             SDL_CloseAudioDevice(self._deviceid)
  * 
  *     def __init__(self,             # <<<<<<<<<<<<<<
@@ -18777,7 +18772,7 @@ static int __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_4__init__(struct __pyx_o
   return __pyx_r;
 }
 
-/* "pygame/_sdl2/audio.pyx":153
+/* "pygame/_sdl2/audio.pyx":156
  *             raise error()
  * 
  *     @property             # <<<<<<<<<<<<<<
@@ -18808,7 +18803,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_9iscapture___get__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__get__", 0);
 
-  /* "pygame/_sdl2/audio.pyx":157
+  /* "pygame/_sdl2/audio.pyx":160
  *         """ is the AudioDevice for capturing audio?
  *         """
  *         return self._iscapture             # <<<<<<<<<<<<<<
@@ -18816,13 +18811,13 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_9iscapture___get__
  *     @property
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_self->_iscapture); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 157, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_self->_iscapture); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 160, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "pygame/_sdl2/audio.pyx":153
+  /* "pygame/_sdl2/audio.pyx":156
  *             raise error()
  * 
  *     @property             # <<<<<<<<<<<<<<
@@ -18841,7 +18836,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_9iscapture___get__
   return __pyx_r;
 }
 
-/* "pygame/_sdl2/audio.pyx":159
+/* "pygame/_sdl2/audio.pyx":162
  *         return self._iscapture
  * 
  *     @property             # <<<<<<<<<<<<<<
@@ -18872,7 +18867,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_8deviceid___get__(
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__get__", 0);
 
-  /* "pygame/_sdl2/audio.pyx":163
+  /* "pygame/_sdl2/audio.pyx":166
  *         """ deviceid of the audio device relative to the devicename list.
  *         """
  *         return self._deviceid             # <<<<<<<<<<<<<<
@@ -18880,13 +18875,13 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_8deviceid___get__(
  *     @property
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_Uint32(__pyx_v_self->_deviceid); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 163, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_Uint32(__pyx_v_self->_deviceid); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 166, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "pygame/_sdl2/audio.pyx":159
+  /* "pygame/_sdl2/audio.pyx":162
  *         return self._iscapture
  * 
  *     @property             # <<<<<<<<<<<<<<
@@ -18905,7 +18900,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_8deviceid___get__(
   return __pyx_r;
 }
 
-/* "pygame/_sdl2/audio.pyx":165
+/* "pygame/_sdl2/audio.pyx":168
  *         return self._deviceid
  * 
  *     @property             # <<<<<<<<<<<<<<
@@ -18932,7 +18927,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_10devicename___get
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__", 0);
 
-  /* "pygame/_sdl2/audio.pyx":169
+  /* "pygame/_sdl2/audio.pyx":172
  *         """ devicename of the audio device from the devicename list.
  *         """
  *         return self._devicename             # <<<<<<<<<<<<<<
@@ -18944,7 +18939,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_10devicename___get
   __pyx_r = __pyx_v_self->_devicename;
   goto __pyx_L0;
 
-  /* "pygame/_sdl2/audio.pyx":165
+  /* "pygame/_sdl2/audio.pyx":168
  *         return self._deviceid
  * 
  *     @property             # <<<<<<<<<<<<<<
@@ -18959,7 +18954,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_10devicename___get
   return __pyx_r;
 }
 
-/* "pygame/_sdl2/audio.pyx":171
+/* "pygame/_sdl2/audio.pyx":174
  *         return self._devicename
  * 
  *     @property             # <<<<<<<<<<<<<<
@@ -18986,7 +18981,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_8callback___get__(
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__", 0);
 
-  /* "pygame/_sdl2/audio.pyx":175
+  /* "pygame/_sdl2/audio.pyx":178
  *         """ called in the sound thread with (audiodevice, memoryview)
  *         """
  *         return self._callback             # <<<<<<<<<<<<<<
@@ -18998,7 +18993,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_8callback___get__(
   __pyx_r = __pyx_v_self->_callback;
   goto __pyx_L0;
 
-  /* "pygame/_sdl2/audio.pyx":171
+  /* "pygame/_sdl2/audio.pyx":174
  *         return self._devicename
  * 
  *     @property             # <<<<<<<<<<<<<<
@@ -19013,7 +19008,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_8callback___get__(
   return __pyx_r;
 }
 
-/* "pygame/_sdl2/audio.pyx":177
+/* "pygame/_sdl2/audio.pyx":180
  *         return self._callback
  * 
  *     @property             # <<<<<<<<<<<<<<
@@ -19044,7 +19039,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_9frequency___get__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__get__", 0);
 
-  /* "pygame/_sdl2/audio.pyx":181
+  /* "pygame/_sdl2/audio.pyx":184
  *         """ Number of samples per second. 44100, 22050, ...
  *         """
  *         return self.obtained.freq             # <<<<<<<<<<<<<<
@@ -19052,13 +19047,13 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_9frequency___get__
  *     @property
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_self->obtained.freq); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 181, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_self->obtained.freq); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 184, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "pygame/_sdl2/audio.pyx":177
+  /* "pygame/_sdl2/audio.pyx":180
  *         return self._callback
  * 
  *     @property             # <<<<<<<<<<<<<<
@@ -19077,7 +19072,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_9frequency___get__
   return __pyx_r;
 }
 
-/* "pygame/_sdl2/audio.pyx":183
+/* "pygame/_sdl2/audio.pyx":186
  *         return self.obtained.freq
  * 
  *     @property             # <<<<<<<<<<<<<<
@@ -19108,7 +19103,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_11audioformat___ge
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__get__", 0);
 
-  /* "pygame/_sdl2/audio.pyx":187
+  /* "pygame/_sdl2/audio.pyx":190
  *         """ AUDIO_F32SYS, AUDIO_F32SYS, AUDIO_U16SYS, AUDIO_S16SYS, ...
  *         """
  *         return self.obtained.format             # <<<<<<<<<<<<<<
@@ -19116,13 +19111,13 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_11audioformat___ge
  *     @property
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_Uint16(__pyx_v_self->obtained.format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 187, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_Uint16(__pyx_v_self->obtained.format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 190, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "pygame/_sdl2/audio.pyx":183
+  /* "pygame/_sdl2/audio.pyx":186
  *         return self.obtained.freq
  * 
  *     @property             # <<<<<<<<<<<<<<
@@ -19141,7 +19136,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_11audioformat___ge
   return __pyx_r;
 }
 
-/* "pygame/_sdl2/audio.pyx":189
+/* "pygame/_sdl2/audio.pyx":192
  *         return self.obtained.format
  * 
  *     @property             # <<<<<<<<<<<<<<
@@ -19172,7 +19167,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_11numchannels___ge
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__get__", 0);
 
-  /* "pygame/_sdl2/audio.pyx":193
+  /* "pygame/_sdl2/audio.pyx":196
  *         """ 2 if stereo, 1 if mono.
  *         """
  *         return self.obtained.channels             # <<<<<<<<<<<<<<
@@ -19180,13 +19175,13 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_11numchannels___ge
  *     @property
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_Uint8(__pyx_v_self->obtained.channels); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 193, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_Uint8(__pyx_v_self->obtained.channels); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 196, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "pygame/_sdl2/audio.pyx":189
+  /* "pygame/_sdl2/audio.pyx":192
  *         return self.obtained.format
  * 
  *     @property             # <<<<<<<<<<<<<<
@@ -19205,7 +19200,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_11numchannels___ge
   return __pyx_r;
 }
 
-/* "pygame/_sdl2/audio.pyx":195
+/* "pygame/_sdl2/audio.pyx":198
  *         return self.obtained.channels
  * 
  *     @property             # <<<<<<<<<<<<<<
@@ -19236,7 +19231,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_9chunksize___get__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__get__", 0);
 
-  /* "pygame/_sdl2/audio.pyx":199
+  /* "pygame/_sdl2/audio.pyx":202
  *         """ number of samples buffered.
  *         """
  *         return self.obtained.samples             # <<<<<<<<<<<<<<
@@ -19244,13 +19239,13 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_9chunksize___get__
  *     def __repr__(self):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_Uint16(__pyx_v_self->obtained.samples); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 199, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_Uint16(__pyx_v_self->obtained.samples); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 202, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "pygame/_sdl2/audio.pyx":195
+  /* "pygame/_sdl2/audio.pyx":198
  *         return self.obtained.channels
  * 
  *     @property             # <<<<<<<<<<<<<<
@@ -19269,7 +19264,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_9chunksize___get__
   return __pyx_r;
 }
 
-/* "pygame/_sdl2/audio.pyx":201
+/* "pygame/_sdl2/audio.pyx":204
  *         return self.obtained.samples
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -19303,7 +19298,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_6__repr__(struct _
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__repr__", 0);
 
-  /* "pygame/_sdl2/audio.pyx":202
+  /* "pygame/_sdl2/audio.pyx":205
  * 
  *     def __repr__(self):
  *         ret = "<AudioDevice("             # <<<<<<<<<<<<<<
@@ -19313,133 +19308,133 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_6__repr__(struct _
   __Pyx_INCREF(__pyx_kp_s_AudioDevice);
   __pyx_v_ret = __pyx_kp_s_AudioDevice;
 
-  /* "pygame/_sdl2/audio.pyx":203
+  /* "pygame/_sdl2/audio.pyx":206
  *     def __repr__(self):
  *         ret = "<AudioDevice("
  *         ret += "devicename=%s, " % self.devicename             # <<<<<<<<<<<<<<
  *         ret += "iscapture=%s, " % self.iscapture
  *         ret += "frequency=%s, " % self.frequency
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_devicename); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 203, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_devicename); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 206, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyString_FormatSafe(__pyx_kp_s_devicename_s, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 203, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyString_FormatSafe(__pyx_kp_s_devicename_s, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 206, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyNumber_InPlaceAdd(__pyx_v_ret, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 203, __pyx_L1_error)
+  __pyx_t_1 = PyNumber_InPlaceAdd(__pyx_v_ret, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 206, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF_SET(__pyx_v_ret, __pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":204
+  /* "pygame/_sdl2/audio.pyx":207
  *         ret = "<AudioDevice("
  *         ret += "devicename=%s, " % self.devicename
  *         ret += "iscapture=%s, " % self.iscapture             # <<<<<<<<<<<<<<
  *         ret += "frequency=%s, " % self.frequency
  *         ret += "audioformat=%s, " % _audio_format_str[self.audioformat]
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_iscapture); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 204, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_iscapture); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 207, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyString_FormatSafe(__pyx_kp_s_iscapture_s, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 204, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyString_FormatSafe(__pyx_kp_s_iscapture_s, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 207, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyNumber_InPlaceAdd(__pyx_v_ret, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 204, __pyx_L1_error)
+  __pyx_t_1 = PyNumber_InPlaceAdd(__pyx_v_ret, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 207, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF_SET(__pyx_v_ret, __pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":205
+  /* "pygame/_sdl2/audio.pyx":208
  *         ret += "devicename=%s, " % self.devicename
  *         ret += "iscapture=%s, " % self.iscapture
  *         ret += "frequency=%s, " % self.frequency             # <<<<<<<<<<<<<<
  *         ret += "audioformat=%s, " % _audio_format_str[self.audioformat]
  *         ret += "numchannels=%s, " % self.numchannels
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_frequency); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 205, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_frequency); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 208, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyString_FormatSafe(__pyx_kp_s_frequency_s, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 205, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyString_FormatSafe(__pyx_kp_s_frequency_s, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 208, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyNumber_InPlaceAdd(__pyx_v_ret, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 205, __pyx_L1_error)
+  __pyx_t_1 = PyNumber_InPlaceAdd(__pyx_v_ret, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 208, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF_SET(__pyx_v_ret, __pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":206
+  /* "pygame/_sdl2/audio.pyx":209
  *         ret += "iscapture=%s, " % self.iscapture
  *         ret += "frequency=%s, " % self.frequency
  *         ret += "audioformat=%s, " % _audio_format_str[self.audioformat]             # <<<<<<<<<<<<<<
  *         ret += "numchannels=%s, " % self.numchannels
  *         ret += "chunksize=%s, " % self.chunksize
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_audio_format_str); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 206, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_audio_format_str); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 209, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_audioformat); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 206, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_audioformat); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 209, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_t_1, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 206, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_t_1, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 209, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyString_FormatSafe(__pyx_kp_s_audioformat_s, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 206, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyString_FormatSafe(__pyx_kp_s_audioformat_s, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 209, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyNumber_InPlaceAdd(__pyx_v_ret, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 206, __pyx_L1_error)
+  __pyx_t_3 = PyNumber_InPlaceAdd(__pyx_v_ret, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 209, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF_SET(__pyx_v_ret, __pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":207
+  /* "pygame/_sdl2/audio.pyx":210
  *         ret += "frequency=%s, " % self.frequency
  *         ret += "audioformat=%s, " % _audio_format_str[self.audioformat]
  *         ret += "numchannels=%s, " % self.numchannels             # <<<<<<<<<<<<<<
  *         ret += "chunksize=%s, " % self.chunksize
  *         ret += ")>"
  */
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_numchannels); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 207, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_numchannels); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 210, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_2 = __Pyx_PyString_FormatSafe(__pyx_kp_s_numchannels_s, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 207, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyString_FormatSafe(__pyx_kp_s_numchannels_s, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 210, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyNumber_InPlaceAdd(__pyx_v_ret, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 207, __pyx_L1_error)
+  __pyx_t_3 = PyNumber_InPlaceAdd(__pyx_v_ret, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 210, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF_SET(__pyx_v_ret, __pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":208
+  /* "pygame/_sdl2/audio.pyx":211
  *         ret += "audioformat=%s, " % _audio_format_str[self.audioformat]
  *         ret += "numchannels=%s, " % self.numchannels
  *         ret += "chunksize=%s, " % self.chunksize             # <<<<<<<<<<<<<<
  *         ret += ")>"
  *         return ret
  */
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_chunksize); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 208, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_chunksize); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 211, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_2 = __Pyx_PyString_FormatSafe(__pyx_kp_s_chunksize_s, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 208, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyString_FormatSafe(__pyx_kp_s_chunksize_s, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 211, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyNumber_InPlaceAdd(__pyx_v_ret, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 208, __pyx_L1_error)
+  __pyx_t_3 = PyNumber_InPlaceAdd(__pyx_v_ret, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 211, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF_SET(__pyx_v_ret, __pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":209
+  /* "pygame/_sdl2/audio.pyx":212
  *         ret += "numchannels=%s, " % self.numchannels
  *         ret += "chunksize=%s, " % self.chunksize
  *         ret += ")>"             # <<<<<<<<<<<<<<
  *         return ret
  * 
  */
-  __pyx_t_3 = PyNumber_InPlaceAdd(__pyx_v_ret, __pyx_kp_s__16); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 209, __pyx_L1_error)
+  __pyx_t_3 = PyNumber_InPlaceAdd(__pyx_v_ret, __pyx_kp_s__16); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 212, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF_SET(__pyx_v_ret, __pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":210
+  /* "pygame/_sdl2/audio.pyx":213
  *         ret += "chunksize=%s, " % self.chunksize
  *         ret += ")>"
  *         return ret             # <<<<<<<<<<<<<<
@@ -19451,7 +19446,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_6__repr__(struct _
   __pyx_r = __pyx_v_ret;
   goto __pyx_L0;
 
-  /* "pygame/_sdl2/audio.pyx":201
+  /* "pygame/_sdl2/audio.pyx":204
  *         return self.obtained.samples
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -19473,7 +19468,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_6__repr__(struct _
   return __pyx_r;
 }
 
-/* "pygame/_sdl2/audio.pyx":212
+/* "pygame/_sdl2/audio.pyx":215
  *         return ret
  * 
  *     def pause(self, int pause_on):             # <<<<<<<<<<<<<<
@@ -19524,23 +19519,23 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
       switch (__pyx_nargs) {
         case  0:
         if (likely((values[0] = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_pause_on)) != 0)) kw_args--;
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 212, __pyx_L3_error)
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(0, 215, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "pause") < 0)) __PYX_ERR(0, 212, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "pause") < 0)) __PYX_ERR(0, 215, __pyx_L3_error)
       }
     } else if (unlikely(__pyx_nargs != 1)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_Arg_FASTCALL(__pyx_args, 0);
     }
-    __pyx_v_pause_on = __Pyx_PyInt_As_int(values[0]); if (unlikely((__pyx_v_pause_on == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 212, __pyx_L3_error)
+    __pyx_v_pause_on = __Pyx_PyInt_As_int(values[0]); if (unlikely((__pyx_v_pause_on == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 215, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("pause", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 212, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("pause", 1, 1, 1, __pyx_nargs); __PYX_ERR(0, 215, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("pygame._sdl2.audio.AudioDevice.pause", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -19559,7 +19554,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_8pause(struct __py
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("pause", 0);
 
-  /* "pygame/_sdl2/audio.pyx":218
+  /* "pygame/_sdl2/audio.pyx":221
  *         """
  *         # https://wiki.libsdl.org/SDL_PauseAudioDevice
  *         if self._deviceid:             # <<<<<<<<<<<<<<
@@ -19569,7 +19564,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_8pause(struct __py
   __pyx_t_1 = (__pyx_v_self->_deviceid != 0);
   if (__pyx_t_1) {
 
-    /* "pygame/_sdl2/audio.pyx":219
+    /* "pygame/_sdl2/audio.pyx":222
  *         # https://wiki.libsdl.org/SDL_PauseAudioDevice
  *         if self._deviceid:
  *             SDL_PauseAudioDevice(self._deviceid, pause_on)             # <<<<<<<<<<<<<<
@@ -19578,7 +19573,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_8pause(struct __py
  */
     SDL_PauseAudioDevice(__pyx_v_self->_deviceid, __pyx_v_pause_on);
 
-    /* "pygame/_sdl2/audio.pyx":218
+    /* "pygame/_sdl2/audio.pyx":221
  *         """
  *         # https://wiki.libsdl.org/SDL_PauseAudioDevice
  *         if self._deviceid:             # <<<<<<<<<<<<<<
@@ -19587,7 +19582,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_8pause(struct __py
  */
   }
 
-  /* "pygame/_sdl2/audio.pyx":212
+  /* "pygame/_sdl2/audio.pyx":215
  *         return ret
  * 
  *     def pause(self, int pause_on):             # <<<<<<<<<<<<<<
@@ -19602,7 +19597,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_8pause(struct __py
   return __pyx_r;
 }
 
-/* "pygame/_sdl2/audio.pyx":221
+/* "pygame/_sdl2/audio.pyx":224
  *             SDL_PauseAudioDevice(self._deviceid, pause_on)
  * 
  *     def close(self):             # <<<<<<<<<<<<<<
@@ -19650,7 +19645,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_10close(struct __p
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("close", 0);
 
-  /* "pygame/_sdl2/audio.pyx":225
+  /* "pygame/_sdl2/audio.pyx":228
  *         """
  *         # https://wiki.libsdl.org/SDL_CloseAudioDevice
  *         if self._deviceid:             # <<<<<<<<<<<<<<
@@ -19660,7 +19655,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_10close(struct __p
   __pyx_t_1 = (__pyx_v_self->_deviceid != 0);
   if (__pyx_t_1) {
 
-    /* "pygame/_sdl2/audio.pyx":226
+    /* "pygame/_sdl2/audio.pyx":229
  *         # https://wiki.libsdl.org/SDL_CloseAudioDevice
  *         if self._deviceid:
  *             SDL_CloseAudioDevice(self._deviceid)             # <<<<<<<<<<<<<<
@@ -19668,14 +19663,14 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_10close(struct __p
  */
     SDL_CloseAudioDevice(__pyx_v_self->_deviceid);
 
-    /* "pygame/_sdl2/audio.pyx":227
+    /* "pygame/_sdl2/audio.pyx":230
  *         if self._deviceid:
  *             SDL_CloseAudioDevice(self._deviceid)
  *             self._deviceid = 0             # <<<<<<<<<<<<<<
  */
     __pyx_v_self->_deviceid = 0;
 
-    /* "pygame/_sdl2/audio.pyx":225
+    /* "pygame/_sdl2/audio.pyx":228
  *         """
  *         # https://wiki.libsdl.org/SDL_CloseAudioDevice
  *         if self._deviceid:             # <<<<<<<<<<<<<<
@@ -19684,7 +19679,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_10close(struct __p
  */
   }
 
-  /* "pygame/_sdl2/audio.pyx":221
+  /* "pygame/_sdl2/audio.pyx":224
  *             SDL_PauseAudioDevice(self._deviceid, pause_on)
  * 
  *     def close(self):             # <<<<<<<<<<<<<<
@@ -19694,187 +19689,6 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_10close(struct __p
 
   /* function exit code */
   __pyx_r = Py_None; __Pyx_INCREF(Py_None);
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* "(tree fragment)":1
- * def __reduce_cython__(self):             # <<<<<<<<<<<<<<
- *     raise TypeError, "no default __reduce__ due to non-trivial __cinit__"
- * def __setstate_cython__(self, __pyx_state):
- */
-
-/* Python wrapper */
-static PyObject *__pyx_pw_6pygame_5_sdl2_5audio_11AudioDevice_13__reduce_cython__(PyObject *__pyx_v_self, 
-#if CYTHON_METH_FASTCALL
-PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
-#else
-PyObject *__pyx_args, PyObject *__pyx_kwds
-#endif
-); /*proto*/
-static PyMethodDef __pyx_mdef_6pygame_5_sdl2_5audio_11AudioDevice_13__reduce_cython__ = {"__reduce_cython__", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_6pygame_5_sdl2_5audio_11AudioDevice_13__reduce_cython__, __Pyx_METH_FASTCALL|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_6pygame_5_sdl2_5audio_11AudioDevice_13__reduce_cython__(PyObject *__pyx_v_self, 
-#if CYTHON_METH_FASTCALL
-PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
-#else
-PyObject *__pyx_args, PyObject *__pyx_kwds
-#endif
-) {
-  #if !CYTHON_METH_FASTCALL
-  CYTHON_UNUSED const Py_ssize_t __pyx_nargs = PyTuple_GET_SIZE(__pyx_args);
-  #endif
-  CYTHON_UNUSED PyObject *const *__pyx_kwvalues = __Pyx_KwValues_FASTCALL(__pyx_args, __pyx_nargs);
-  PyObject *__pyx_r = 0;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("__reduce_cython__ (wrapper)", 0);
-  if (unlikely(__pyx_nargs > 0)) {
-    __Pyx_RaiseArgtupleInvalid("__reduce_cython__", 1, 0, 0, __pyx_nargs); return NULL;}
-  if (unlikely(__pyx_kwds) && __Pyx_NumKwargs_FASTCALL(__pyx_kwds) && unlikely(!__Pyx_CheckKeywordStrings(__pyx_kwds, "__reduce_cython__", 0))) return NULL;
-  __pyx_r = __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_12__reduce_cython__(((struct __pyx_obj_6pygame_5_sdl2_5audio_AudioDevice *)__pyx_v_self));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_12__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_6pygame_5_sdl2_5audio_AudioDevice *__pyx_v_self) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("__reduce_cython__", 0);
-
-  /* "(tree fragment)":2
- * def __reduce_cython__(self):
- *     raise TypeError, "no default __reduce__ due to non-trivial __cinit__"             # <<<<<<<<<<<<<<
- * def __setstate_cython__(self, __pyx_state):
- *     raise TypeError, "no default __reduce__ due to non-trivial __cinit__"
- */
-  __Pyx_Raise(__pyx_builtin_TypeError, __pyx_kp_s_no_default___reduce___due_to_non, 0, 0);
-  __PYX_ERR(1, 2, __pyx_L1_error)
-
-  /* "(tree fragment)":1
- * def __reduce_cython__(self):             # <<<<<<<<<<<<<<
- *     raise TypeError, "no default __reduce__ due to non-trivial __cinit__"
- * def __setstate_cython__(self, __pyx_state):
- */
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_AddTraceback("pygame._sdl2.audio.AudioDevice.__reduce_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = NULL;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* "(tree fragment)":3
- * def __reduce_cython__(self):
- *     raise TypeError, "no default __reduce__ due to non-trivial __cinit__"
- * def __setstate_cython__(self, __pyx_state):             # <<<<<<<<<<<<<<
- *     raise TypeError, "no default __reduce__ due to non-trivial __cinit__"
- */
-
-/* Python wrapper */
-static PyObject *__pyx_pw_6pygame_5_sdl2_5audio_11AudioDevice_15__setstate_cython__(PyObject *__pyx_v_self, 
-#if CYTHON_METH_FASTCALL
-PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
-#else
-PyObject *__pyx_args, PyObject *__pyx_kwds
-#endif
-); /*proto*/
-static PyMethodDef __pyx_mdef_6pygame_5_sdl2_5audio_11AudioDevice_15__setstate_cython__ = {"__setstate_cython__", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_6pygame_5_sdl2_5audio_11AudioDevice_15__setstate_cython__, __Pyx_METH_FASTCALL|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_6pygame_5_sdl2_5audio_11AudioDevice_15__setstate_cython__(PyObject *__pyx_v_self, 
-#if CYTHON_METH_FASTCALL
-PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
-#else
-PyObject *__pyx_args, PyObject *__pyx_kwds
-#endif
-) {
-  CYTHON_UNUSED PyObject *__pyx_v___pyx_state = 0;
-  #if !CYTHON_METH_FASTCALL
-  CYTHON_UNUSED const Py_ssize_t __pyx_nargs = PyTuple_GET_SIZE(__pyx_args);
-  #endif
-  CYTHON_UNUSED PyObject *const *__pyx_kwvalues = __Pyx_KwValues_FASTCALL(__pyx_args, __pyx_nargs);
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  PyObject *__pyx_r = 0;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("__setstate_cython__ (wrapper)", 0);
-  {
-    PyObject **__pyx_pyargnames[] = {&__pyx_n_s_pyx_state,0};
-    PyObject* values[1] = {0};
-    if (__pyx_kwds) {
-      Py_ssize_t kw_args;
-      switch (__pyx_nargs) {
-        case  1: values[0] = __Pyx_Arg_FASTCALL(__pyx_args, 0);
-        CYTHON_FALLTHROUGH;
-        case  0: break;
-        default: goto __pyx_L5_argtuple_error;
-      }
-      kw_args = __Pyx_NumKwargs_FASTCALL(__pyx_kwds);
-      switch (__pyx_nargs) {
-        case  0:
-        if (likely((values[0] = __Pyx_GetKwValue_FASTCALL(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_pyx_state)) != 0)) kw_args--;
-        else if (unlikely(PyErr_Occurred())) __PYX_ERR(1, 3, __pyx_L3_error)
-        else goto __pyx_L5_argtuple_error;
-      }
-      if (unlikely(kw_args > 0)) {
-        const Py_ssize_t kwd_pos_args = __pyx_nargs;
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "__setstate_cython__") < 0)) __PYX_ERR(1, 3, __pyx_L3_error)
-      }
-    } else if (unlikely(__pyx_nargs != 1)) {
-      goto __pyx_L5_argtuple_error;
-    } else {
-      values[0] = __Pyx_Arg_FASTCALL(__pyx_args, 0);
-    }
-    __pyx_v___pyx_state = values[0];
-  }
-  goto __pyx_L4_argument_unpacking_done;
-  __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__setstate_cython__", 1, 1, 1, __pyx_nargs); __PYX_ERR(1, 3, __pyx_L3_error)
-  __pyx_L3_error:;
-  __Pyx_AddTraceback("pygame._sdl2.audio.AudioDevice.__setstate_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __Pyx_RefNannyFinishContext();
-  return NULL;
-  __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_14__setstate_cython__(((struct __pyx_obj_6pygame_5_sdl2_5audio_AudioDevice *)__pyx_v_self), __pyx_v___pyx_state);
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static PyObject *__pyx_pf_6pygame_5_sdl2_5audio_11AudioDevice_14__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_6pygame_5_sdl2_5audio_AudioDevice *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("__setstate_cython__", 0);
-
-  /* "(tree fragment)":4
- *     raise TypeError, "no default __reduce__ due to non-trivial __cinit__"
- * def __setstate_cython__(self, __pyx_state):
- *     raise TypeError, "no default __reduce__ due to non-trivial __cinit__"             # <<<<<<<<<<<<<<
- */
-  __Pyx_Raise(__pyx_builtin_TypeError, __pyx_kp_s_no_default___reduce___due_to_non, 0, 0);
-  __PYX_ERR(1, 4, __pyx_L1_error)
-
-  /* "(tree fragment)":3
- * def __reduce_cython__(self):
- *     raise TypeError, "no default __reduce__ due to non-trivial __cinit__"
- * def __setstate_cython__(self, __pyx_state):             # <<<<<<<<<<<<<<
- *     raise TypeError, "no default __reduce__ due to non-trivial __cinit__"
- */
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_AddTraceback("pygame._sdl2.audio.AudioDevice.__setstate_cython__", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = NULL;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
@@ -19991,8 +19805,6 @@ static PyMethodDef __pyx_methods_6pygame_5_sdl2_5audio_AudioDevice[] = {
   {"__repr__", (PyCFunction)__pyx_specialmethod___pyx_pw_6pygame_5_sdl2_5audio_11AudioDevice_7__repr__, METH_NOARGS|METH_COEXIST, 0},
   {"pause", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_6pygame_5_sdl2_5audio_11AudioDevice_9pause, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_6pygame_5_sdl2_5audio_11AudioDevice_8pause},
   {"close", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_6pygame_5_sdl2_5audio_11AudioDevice_11close, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_6pygame_5_sdl2_5audio_11AudioDevice_10close},
-  {"__reduce_cython__", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_6pygame_5_sdl2_5audio_11AudioDevice_13__reduce_cython__, __Pyx_METH_FASTCALL|METH_KEYWORDS, 0},
-  {"__setstate_cython__", (PyCFunction)(void*)(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_6pygame_5_sdl2_5audio_11AudioDevice_15__setstate_cython__, __Pyx_METH_FASTCALL|METH_KEYWORDS, 0},
   {0, 0, 0, 0}
 };
 
@@ -21075,8 +20887,6 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_n_s_AssertionError, __pyx_k_AssertionError, sizeof(__pyx_k_AssertionError), 0, 0, 1, 1},
     {&__pyx_kp_s_AudioDevice, __pyx_k_AudioDevice, sizeof(__pyx_k_AudioDevice), 0, 0, 1, 0},
     {&__pyx_n_s_AudioDevice_2, __pyx_k_AudioDevice_2, sizeof(__pyx_k_AudioDevice_2), 0, 0, 1, 1},
-    {&__pyx_n_s_AudioDevice___reduce_cython, __pyx_k_AudioDevice___reduce_cython, sizeof(__pyx_k_AudioDevice___reduce_cython), 0, 0, 1, 1},
-    {&__pyx_n_s_AudioDevice___setstate_cython, __pyx_k_AudioDevice___setstate_cython, sizeof(__pyx_k_AudioDevice___setstate_cython), 0, 0, 1, 1},
     {&__pyx_n_s_AudioDevice_close, __pyx_k_AudioDevice_close, sizeof(__pyx_k_AudioDevice_close), 0, 0, 1, 1},
     {&__pyx_n_s_AudioDevice_pause, __pyx_k_AudioDevice_pause, sizeof(__pyx_k_AudioDevice_pause), 0, 0, 1, 1},
     {&__pyx_kp_s_Audio_system_not_initialised, __pyx_k_Audio_system_not_initialised, sizeof(__pyx_k_Audio_system_not_initialised), 0, 0, 1, 0},
@@ -21116,7 +20926,7 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_kp_s__16, __pyx_k__16, sizeof(__pyx_k__16), 0, 0, 1, 0},
     {&__pyx_kp_u__2, __pyx_k__2, sizeof(__pyx_k__2), 0, 1, 0, 0},
     {&__pyx_n_s__3, __pyx_k__3, sizeof(__pyx_k__3), 0, 0, 1, 1},
-    {&__pyx_n_s__38, __pyx_k__38, sizeof(__pyx_k__38), 0, 0, 1, 1},
+    {&__pyx_n_s__35, __pyx_k__35, sizeof(__pyx_k__35), 0, 0, 1, 1},
     {&__pyx_kp_u__6, __pyx_k__6, sizeof(__pyx_k__6), 0, 1, 0, 0},
     {&__pyx_kp_u__7, __pyx_k__7, sizeof(__pyx_k__7), 0, 1, 0, 0},
     {&__pyx_kp_b__9, __pyx_k__9, sizeof(__pyx_k__9), 0, 0, 0, 0},
@@ -21237,8 +21047,8 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
 }
 /* #### Code section: cached_builtins ### */
 static CYTHON_SMALL_CODE int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 61, __pyx_L1_error)
-  __pyx_builtin_TypeError = __Pyx_GetBuiltinName(__pyx_n_s_TypeError); if (!__pyx_builtin_TypeError) __PYX_ERR(0, 132, __pyx_L1_error)
+  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 62, __pyx_L1_error)
+  __pyx_builtin_TypeError = __Pyx_GetBuiltinName(__pyx_n_s_TypeError); if (!__pyx_builtin_TypeError) __PYX_ERR(0, 135, __pyx_L1_error)
   __pyx_builtin___import__ = __Pyx_GetBuiltinName(__pyx_n_s_import); if (!__pyx_builtin___import__) __PYX_ERR(1, 100, __pyx_L1_error)
   __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(1, 141, __pyx_L1_error)
   __pyx_builtin_MemoryError = __Pyx_GetBuiltinName(__pyx_n_s_MemoryError); if (!__pyx_builtin_MemoryError) __PYX_ERR(1, 156, __pyx_L1_error)
@@ -21293,14 +21103,14 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__8);
   __Pyx_GIVEREF(__pyx_tuple__8);
 
-  /* "pygame/_sdl2/audio.pyx":132
+  /* "pygame/_sdl2/audio.pyx":135
  *         self._callback = callback
  *         if not isinstance(devicename, str):
  *             raise TypeError("devicename must be a string")             # <<<<<<<<<<<<<<
  *         self._devicename = devicename
  * 
  */
-  __pyx_tuple__15 = PyTuple_Pack(1, __pyx_kp_s_devicename_must_be_a_string); if (unlikely(!__pyx_tuple__15)) __PYX_ERR(0, 132, __pyx_L1_error)
+  __pyx_tuple__15 = PyTuple_Pack(1, __pyx_kp_s_devicename_must_be_a_string); if (unlikely(!__pyx_tuple__15)) __PYX_ERR(0, 135, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__15);
   __Pyx_GIVEREF(__pyx_tuple__15);
 
@@ -21405,62 +21215,44 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GIVEREF(__pyx_tuple__26);
   __pyx_codeobj__27 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__26, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_stringsource, __pyx_n_s_pyx_unpickle_Enum, 1, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__27)) __PYX_ERR(1, 1, __pyx_L1_error)
 
-  /* "pygame/_sdl2/audio.pyx":46
+  /* "pygame/_sdl2/audio.pyx":47
  * # https://wiki.libsdl.org/SDL_GetNumAudioDevices
  * # https://wiki.libsdl.org/SDL_GetAudioDeviceName
  * def get_audio_device_names(iscapture = False):             # <<<<<<<<<<<<<<
  *     """ Returns a list of unique devicenames for each available audio device.
  * 
  */
-  __pyx_tuple__28 = PyTuple_Pack(5, __pyx_n_s_iscapture, __pyx_n_s_count, __pyx_n_s_names, __pyx_n_s_i, __pyx_n_s_name); if (unlikely(!__pyx_tuple__28)) __PYX_ERR(0, 46, __pyx_L1_error)
+  __pyx_tuple__28 = PyTuple_Pack(5, __pyx_n_s_iscapture, __pyx_n_s_count, __pyx_n_s_names, __pyx_n_s_i, __pyx_n_s_name); if (unlikely(!__pyx_tuple__28)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__28);
   __Pyx_GIVEREF(__pyx_tuple__28);
-  __pyx_codeobj__29 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__28, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_c_cython_pygame__sdl2_audio, __pyx_n_s_get_audio_device_names, 46, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__29)) __PYX_ERR(0, 46, __pyx_L1_error)
-  __pyx_tuple__30 = PyTuple_Pack(1, ((PyObject *)Py_False)); if (unlikely(!__pyx_tuple__30)) __PYX_ERR(0, 46, __pyx_L1_error)
+  __pyx_codeobj__29 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__28, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_c_cython_pygame__sdl2_audio, __pyx_n_s_get_audio_device_names, 47, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__29)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_tuple__30 = PyTuple_Pack(1, ((PyObject *)Py_False)); if (unlikely(!__pyx_tuple__30)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__30);
   __Pyx_GIVEREF(__pyx_tuple__30);
 
-  /* "pygame/_sdl2/audio.pyx":212
+  /* "pygame/_sdl2/audio.pyx":215
  *         return ret
  * 
  *     def pause(self, int pause_on):             # <<<<<<<<<<<<<<
  *         """ Use this to pause and unpause audio playback on this device.
  * 
  */
-  __pyx_tuple__31 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_pause_on); if (unlikely(!__pyx_tuple__31)) __PYX_ERR(0, 212, __pyx_L1_error)
+  __pyx_tuple__31 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_pause_on); if (unlikely(!__pyx_tuple__31)) __PYX_ERR(0, 215, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__31);
   __Pyx_GIVEREF(__pyx_tuple__31);
-  __pyx_codeobj__32 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__31, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_c_cython_pygame__sdl2_audio, __pyx_n_s_pause, 212, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__32)) __PYX_ERR(0, 212, __pyx_L1_error)
+  __pyx_codeobj__32 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__31, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_c_cython_pygame__sdl2_audio, __pyx_n_s_pause, 215, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__32)) __PYX_ERR(0, 215, __pyx_L1_error)
 
-  /* "pygame/_sdl2/audio.pyx":221
+  /* "pygame/_sdl2/audio.pyx":224
  *             SDL_PauseAudioDevice(self._deviceid, pause_on)
  * 
  *     def close(self):             # <<<<<<<<<<<<<<
  *         """ Use this to pause and unpause audio playback on this device.
  *         """
  */
-  __pyx_tuple__33 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__33)) __PYX_ERR(0, 221, __pyx_L1_error)
+  __pyx_tuple__33 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__33)) __PYX_ERR(0, 224, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__33);
   __Pyx_GIVEREF(__pyx_tuple__33);
-  __pyx_codeobj__34 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__33, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_c_cython_pygame__sdl2_audio, __pyx_n_s_close, 221, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__34)) __PYX_ERR(0, 221, __pyx_L1_error)
-
-  /* "(tree fragment)":1
- * def __reduce_cython__(self):             # <<<<<<<<<<<<<<
- *     raise TypeError, "no default __reduce__ due to non-trivial __cinit__"
- * def __setstate_cython__(self, __pyx_state):
- */
-  __pyx_codeobj__35 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__33, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_stringsource, __pyx_n_s_reduce_cython, 1, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__35)) __PYX_ERR(1, 1, __pyx_L1_error)
-
-  /* "(tree fragment)":3
- * def __reduce_cython__(self):
- *     raise TypeError, "no default __reduce__ due to non-trivial __cinit__"
- * def __setstate_cython__(self, __pyx_state):             # <<<<<<<<<<<<<<
- *     raise TypeError, "no default __reduce__ due to non-trivial __cinit__"
- */
-  __pyx_tuple__36 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_pyx_state); if (unlikely(!__pyx_tuple__36)) __PYX_ERR(1, 3, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__36);
-  __Pyx_GIVEREF(__pyx_tuple__36);
-  __pyx_codeobj__37 = (PyObject*)__Pyx_PyCode_New(2, 0, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__36, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_stringsource, __pyx_n_s_setstate_cython, 3, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__37)) __PYX_ERR(1, 3, __pyx_L1_error)
+  __pyx_codeobj__34 = (PyObject*)__Pyx_PyCode_New(1, 0, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__33, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_c_cython_pygame__sdl2_audio, __pyx_n_s_close, 224, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__34)) __PYX_ERR(0, 224, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -21543,15 +21335,15 @@ static int __Pyx_modinit_type_init_code(void) {
   __Pyx_RefNannySetupContext("__Pyx_modinit_type_init_code", 0);
   /*--- Type init code ---*/
   #if CYTHON_USE_TYPE_SPECS
-  __pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice = (PyTypeObject *) __Pyx_PyType_FromModuleAndSpec(__pyx_m, &__pyx_type_6pygame_5_sdl2_5audio_AudioDevice_spec, NULL); if (unlikely(!__pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice)) __PYX_ERR(0, 86, __pyx_L1_error)
-  if (__Pyx_fix_up_extension_type_from_spec(&__pyx_type_6pygame_5_sdl2_5audio_AudioDevice_spec, __pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice) < 0) __PYX_ERR(0, 86, __pyx_L1_error)
+  __pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice = (PyTypeObject *) __Pyx_PyType_FromModuleAndSpec(__pyx_m, &__pyx_type_6pygame_5_sdl2_5audio_AudioDevice_spec, NULL); if (unlikely(!__pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice)) __PYX_ERR(0, 89, __pyx_L1_error)
+  if (__Pyx_fix_up_extension_type_from_spec(&__pyx_type_6pygame_5_sdl2_5audio_AudioDevice_spec, __pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice) < 0) __PYX_ERR(0, 89, __pyx_L1_error)
   #else
   __pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice = &__pyx_type_6pygame_5_sdl2_5audio_AudioDevice;
   #endif
   #if !CYTHON_COMPILING_IN_LIMITED_API
   #endif
   #if !CYTHON_USE_TYPE_SPECS
-  if (__Pyx_PyType_Ready(__pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice) < 0) __PYX_ERR(0, 86, __pyx_L1_error)
+  if (__Pyx_PyType_Ready(__pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice) < 0) __PYX_ERR(0, 89, __pyx_L1_error)
   #endif
   #if PY_MAJOR_VERSION < 3
   __pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice->tp_print = 0;
@@ -21563,7 +21355,7 @@ static int __Pyx_modinit_type_init_code(void) {
   #endif
   #if CYTHON_UPDATE_DESCRIPTOR_DOC
   {
-    PyObject *wrapper = PyObject_GetAttrString((PyObject *)__pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice, "__init__"); if (unlikely(!wrapper)) __PYX_ERR(0, 86, __pyx_L1_error)
+    PyObject *wrapper = PyObject_GetAttrString((PyObject *)__pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice, "__init__"); if (unlikely(!wrapper)) __PYX_ERR(0, 89, __pyx_L1_error)
     if (__Pyx_IS_TYPE(wrapper, &PyWrapperDescr_Type)) {
       __pyx_wrapperbase_6pygame_5_sdl2_5audio_11AudioDevice_4__init__ = *((PyWrapperDescrObject *)wrapper)->d_base;
       __pyx_wrapperbase_6pygame_5_sdl2_5audio_11AudioDevice_4__init__.doc = __pyx_doc_6pygame_5_sdl2_5audio_11AudioDevice_4__init__;
@@ -21571,10 +21363,7 @@ static int __Pyx_modinit_type_init_code(void) {
     }
   }
   #endif
-  if (PyObject_SetAttr(__pyx_m, __pyx_n_s_AudioDevice_2, (PyObject *) __pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice) < 0) __PYX_ERR(0, 86, __pyx_L1_error)
-  #if !CYTHON_COMPILING_IN_LIMITED_API
-  if (__Pyx_setup_reduce((PyObject *) __pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice) < 0) __PYX_ERR(0, 86, __pyx_L1_error)
-  #endif
+  if (PyObject_SetAttr(__pyx_m, __pyx_n_s_AudioDevice_2, (PyObject *) __pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice) < 0) __PYX_ERR(0, 89, __pyx_L1_error)
   __pyx_vtabptr_array = &__pyx_vtable_array;
   __pyx_vtable_array.get_memview = (PyObject *(*)(struct __pyx_array_obj *))__pyx_array_get_memview;
   #if CYTHON_USE_TYPE_SPECS
@@ -22548,7 +22337,7 @@ if (!__Pyx_RefNanny) {
 
   /* "pygame/_sdl2/audio.pyx":1
  * from pygame._sdl2.sdl2 import error             # <<<<<<<<<<<<<<
- * 
+ * cimport cython
  * 
  */
   __pyx_t_7 = PyList_New(1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -22565,469 +22354,448 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":5
+  /* "pygame/_sdl2/audio.pyx":6
  * 
  * # expose constants to python.
  * AUDIO_U8 = _AUDIO_U8             # <<<<<<<<<<<<<<
  * AUDIO_S8 = _AUDIO_S8
  * AUDIO_U16LSB = _AUDIO_U16LSB
  */
-  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_U8); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 5, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_U8); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 6, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_U8, __pyx_t_4) < 0) __PYX_ERR(0, 5, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_U8, __pyx_t_4) < 0) __PYX_ERR(0, 6, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":6
+  /* "pygame/_sdl2/audio.pyx":7
  * # expose constants to python.
  * AUDIO_U8 = _AUDIO_U8
  * AUDIO_S8 = _AUDIO_S8             # <<<<<<<<<<<<<<
  * AUDIO_U16LSB = _AUDIO_U16LSB
  * AUDIO_S16LSB = _AUDIO_S16LSB
  */
-  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_S8); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 6, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_S8); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 7, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_S8, __pyx_t_4) < 0) __PYX_ERR(0, 6, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_S8, __pyx_t_4) < 0) __PYX_ERR(0, 7, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":7
+  /* "pygame/_sdl2/audio.pyx":8
  * AUDIO_U8 = _AUDIO_U8
  * AUDIO_S8 = _AUDIO_S8
  * AUDIO_U16LSB = _AUDIO_U16LSB             # <<<<<<<<<<<<<<
  * AUDIO_S16LSB = _AUDIO_S16LSB
  * AUDIO_U16MSB = _AUDIO_U16MSB
  */
-  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_U16LSB); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 7, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_U16LSB); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 8, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_U16LSB, __pyx_t_4) < 0) __PYX_ERR(0, 7, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_U16LSB, __pyx_t_4) < 0) __PYX_ERR(0, 8, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":8
+  /* "pygame/_sdl2/audio.pyx":9
  * AUDIO_S8 = _AUDIO_S8
  * AUDIO_U16LSB = _AUDIO_U16LSB
  * AUDIO_S16LSB = _AUDIO_S16LSB             # <<<<<<<<<<<<<<
  * AUDIO_U16MSB = _AUDIO_U16MSB
  * AUDIO_S16MSB = _AUDIO_S16MSB
  */
-  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_S16LSB); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 8, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_S16LSB); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 9, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_S16LSB, __pyx_t_4) < 0) __PYX_ERR(0, 8, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_S16LSB, __pyx_t_4) < 0) __PYX_ERR(0, 9, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":9
+  /* "pygame/_sdl2/audio.pyx":10
  * AUDIO_U16LSB = _AUDIO_U16LSB
  * AUDIO_S16LSB = _AUDIO_S16LSB
  * AUDIO_U16MSB = _AUDIO_U16MSB             # <<<<<<<<<<<<<<
  * AUDIO_S16MSB = _AUDIO_S16MSB
  * AUDIO_U16 = _AUDIO_U16
  */
-  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_U16MSB); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 9, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_U16MSB); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 10, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_U16MSB, __pyx_t_4) < 0) __PYX_ERR(0, 9, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_U16MSB, __pyx_t_4) < 0) __PYX_ERR(0, 10, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":10
+  /* "pygame/_sdl2/audio.pyx":11
  * AUDIO_S16LSB = _AUDIO_S16LSB
  * AUDIO_U16MSB = _AUDIO_U16MSB
  * AUDIO_S16MSB = _AUDIO_S16MSB             # <<<<<<<<<<<<<<
  * AUDIO_U16 = _AUDIO_U16
  * AUDIO_S16 = _AUDIO_S16
  */
-  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_S16MSB); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 10, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_S16MSB); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 11, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_S16MSB, __pyx_t_4) < 0) __PYX_ERR(0, 10, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_S16MSB, __pyx_t_4) < 0) __PYX_ERR(0, 11, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":11
+  /* "pygame/_sdl2/audio.pyx":12
  * AUDIO_U16MSB = _AUDIO_U16MSB
  * AUDIO_S16MSB = _AUDIO_S16MSB
  * AUDIO_U16 = _AUDIO_U16             # <<<<<<<<<<<<<<
  * AUDIO_S16 = _AUDIO_S16
  * AUDIO_S32LSB = _AUDIO_S32LSB
  */
-  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_U16); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 11, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_U16); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 12, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_U16, __pyx_t_4) < 0) __PYX_ERR(0, 11, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_U16, __pyx_t_4) < 0) __PYX_ERR(0, 12, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":12
+  /* "pygame/_sdl2/audio.pyx":13
  * AUDIO_S16MSB = _AUDIO_S16MSB
  * AUDIO_U16 = _AUDIO_U16
  * AUDIO_S16 = _AUDIO_S16             # <<<<<<<<<<<<<<
  * AUDIO_S32LSB = _AUDIO_S32LSB
  * AUDIO_S32MSB = _AUDIO_S32MSB
  */
-  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_S16); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 12, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_S16); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 13, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_S16, __pyx_t_4) < 0) __PYX_ERR(0, 12, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_S16, __pyx_t_4) < 0) __PYX_ERR(0, 13, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":13
+  /* "pygame/_sdl2/audio.pyx":14
  * AUDIO_U16 = _AUDIO_U16
  * AUDIO_S16 = _AUDIO_S16
  * AUDIO_S32LSB = _AUDIO_S32LSB             # <<<<<<<<<<<<<<
  * AUDIO_S32MSB = _AUDIO_S32MSB
  * AUDIO_S32 = _AUDIO_S32
  */
-  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_S32LSB); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 13, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_S32LSB); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 14, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_S32LSB, __pyx_t_4) < 0) __PYX_ERR(0, 13, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_S32LSB, __pyx_t_4) < 0) __PYX_ERR(0, 14, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":14
+  /* "pygame/_sdl2/audio.pyx":15
  * AUDIO_S16 = _AUDIO_S16
  * AUDIO_S32LSB = _AUDIO_S32LSB
  * AUDIO_S32MSB = _AUDIO_S32MSB             # <<<<<<<<<<<<<<
  * AUDIO_S32 = _AUDIO_S32
  * AUDIO_F32LSB = _AUDIO_F32LSB
  */
-  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_S32MSB); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 14, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_S32MSB); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 15, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_S32MSB, __pyx_t_4) < 0) __PYX_ERR(0, 14, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_S32MSB, __pyx_t_4) < 0) __PYX_ERR(0, 15, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":15
+  /* "pygame/_sdl2/audio.pyx":16
  * AUDIO_S32LSB = _AUDIO_S32LSB
  * AUDIO_S32MSB = _AUDIO_S32MSB
  * AUDIO_S32 = _AUDIO_S32             # <<<<<<<<<<<<<<
  * AUDIO_F32LSB = _AUDIO_F32LSB
  * AUDIO_F32MSB = _AUDIO_F32MSB
  */
-  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_S32); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 15, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_S32); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 16, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_S32, __pyx_t_4) < 0) __PYX_ERR(0, 15, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_S32, __pyx_t_4) < 0) __PYX_ERR(0, 16, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":16
+  /* "pygame/_sdl2/audio.pyx":17
  * AUDIO_S32MSB = _AUDIO_S32MSB
  * AUDIO_S32 = _AUDIO_S32
  * AUDIO_F32LSB = _AUDIO_F32LSB             # <<<<<<<<<<<<<<
  * AUDIO_F32MSB = _AUDIO_F32MSB
  * AUDIO_F32 = _AUDIO_F32
  */
-  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_F32LSB); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 16, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_F32LSB); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 17, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_F32LSB, __pyx_t_4) < 0) __PYX_ERR(0, 16, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_F32LSB, __pyx_t_4) < 0) __PYX_ERR(0, 17, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":17
+  /* "pygame/_sdl2/audio.pyx":18
  * AUDIO_S32 = _AUDIO_S32
  * AUDIO_F32LSB = _AUDIO_F32LSB
  * AUDIO_F32MSB = _AUDIO_F32MSB             # <<<<<<<<<<<<<<
  * AUDIO_F32 = _AUDIO_F32
  * # So we can get the audio formats as string.
  */
-  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_F32MSB); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 17, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_F32MSB); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 18, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_F32MSB, __pyx_t_4) < 0) __PYX_ERR(0, 17, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_F32MSB, __pyx_t_4) < 0) __PYX_ERR(0, 18, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":18
+  /* "pygame/_sdl2/audio.pyx":19
  * AUDIO_F32LSB = _AUDIO_F32LSB
  * AUDIO_F32MSB = _AUDIO_F32MSB
  * AUDIO_F32 = _AUDIO_F32             # <<<<<<<<<<<<<<
  * # So we can get the audio formats as string.
  * _audio_format_str = {
  */
-  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_F32); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 18, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_Uint16(AUDIO_F32); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 19, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_F32, __pyx_t_4) < 0) __PYX_ERR(0, 18, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_F32, __pyx_t_4) < 0) __PYX_ERR(0, 19, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":21
+  /* "pygame/_sdl2/audio.pyx":22
  * # So we can get the audio formats as string.
  * _audio_format_str = {
  *     AUDIO_U8: "AUDIO_U8",             # <<<<<<<<<<<<<<
  *     AUDIO_S8: "AUDIO_S8",
  *     AUDIO_U16LSB: "AUDIO_U16LSB",
  */
-  __pyx_t_4 = __Pyx_PyDict_NewPresized(14); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 21, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyDict_NewPresized(14); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_U8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 21, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_U8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_U8) < 0) __PYX_ERR(0, 21, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_U8) < 0) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":22
+  /* "pygame/_sdl2/audio.pyx":23
  * _audio_format_str = {
  *     AUDIO_U8: "AUDIO_U8",
  *     AUDIO_S8: "AUDIO_S8",             # <<<<<<<<<<<<<<
  *     AUDIO_U16LSB: "AUDIO_U16LSB",
  *     AUDIO_S16LSB: "AUDIO_S16LSB",
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_S8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 22, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_S8); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 23, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_S8) < 0) __PYX_ERR(0, 21, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_S8) < 0) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":23
+  /* "pygame/_sdl2/audio.pyx":24
  *     AUDIO_U8: "AUDIO_U8",
  *     AUDIO_S8: "AUDIO_S8",
  *     AUDIO_U16LSB: "AUDIO_U16LSB",             # <<<<<<<<<<<<<<
  *     AUDIO_S16LSB: "AUDIO_S16LSB",
  *     AUDIO_U16MSB: "AUDIO_U16MSB",
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_U16LSB); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 23, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_U16LSB); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 24, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_U16LSB) < 0) __PYX_ERR(0, 21, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_U16LSB) < 0) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":24
+  /* "pygame/_sdl2/audio.pyx":25
  *     AUDIO_S8: "AUDIO_S8",
  *     AUDIO_U16LSB: "AUDIO_U16LSB",
  *     AUDIO_S16LSB: "AUDIO_S16LSB",             # <<<<<<<<<<<<<<
  *     AUDIO_U16MSB: "AUDIO_U16MSB",
  *     AUDIO_S16MSB: "AUDIO_S16MSB",
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_S16LSB); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 24, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_S16LSB); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 25, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_S16LSB) < 0) __PYX_ERR(0, 21, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_S16LSB) < 0) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":25
+  /* "pygame/_sdl2/audio.pyx":26
  *     AUDIO_U16LSB: "AUDIO_U16LSB",
  *     AUDIO_S16LSB: "AUDIO_S16LSB",
  *     AUDIO_U16MSB: "AUDIO_U16MSB",             # <<<<<<<<<<<<<<
  *     AUDIO_S16MSB: "AUDIO_S16MSB",
  *     AUDIO_U16: "AUDIO_U16",
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_U16MSB); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 25, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_U16MSB); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 26, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_U16MSB) < 0) __PYX_ERR(0, 21, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_U16MSB) < 0) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":26
+  /* "pygame/_sdl2/audio.pyx":27
  *     AUDIO_S16LSB: "AUDIO_S16LSB",
  *     AUDIO_U16MSB: "AUDIO_U16MSB",
  *     AUDIO_S16MSB: "AUDIO_S16MSB",             # <<<<<<<<<<<<<<
  *     AUDIO_U16: "AUDIO_U16",
  *     AUDIO_S16: "AUDIO_S16",
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_S16MSB); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 26, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_S16MSB); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 27, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_S16MSB) < 0) __PYX_ERR(0, 21, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_S16MSB) < 0) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":27
+  /* "pygame/_sdl2/audio.pyx":28
  *     AUDIO_U16MSB: "AUDIO_U16MSB",
  *     AUDIO_S16MSB: "AUDIO_S16MSB",
  *     AUDIO_U16: "AUDIO_U16",             # <<<<<<<<<<<<<<
  *     AUDIO_S16: "AUDIO_S16",
  *     AUDIO_S32LSB: "AUDIO_S32LSB",
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_U16); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 27, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_U16); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 28, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_U16) < 0) __PYX_ERR(0, 21, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_U16) < 0) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":28
+  /* "pygame/_sdl2/audio.pyx":29
  *     AUDIO_S16MSB: "AUDIO_S16MSB",
  *     AUDIO_U16: "AUDIO_U16",
  *     AUDIO_S16: "AUDIO_S16",             # <<<<<<<<<<<<<<
  *     AUDIO_S32LSB: "AUDIO_S32LSB",
  *     AUDIO_S32MSB: "AUDIO_S32MSB",
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_S16); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 28, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_S16); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 29, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_S16) < 0) __PYX_ERR(0, 21, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_S16) < 0) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":29
+  /* "pygame/_sdl2/audio.pyx":30
  *     AUDIO_U16: "AUDIO_U16",
  *     AUDIO_S16: "AUDIO_S16",
  *     AUDIO_S32LSB: "AUDIO_S32LSB",             # <<<<<<<<<<<<<<
  *     AUDIO_S32MSB: "AUDIO_S32MSB",
  *     AUDIO_S32: "AUDIO_S32",
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_S32LSB); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 29, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_S32LSB); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 30, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_S32LSB) < 0) __PYX_ERR(0, 21, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_S32LSB) < 0) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":30
+  /* "pygame/_sdl2/audio.pyx":31
  *     AUDIO_S16: "AUDIO_S16",
  *     AUDIO_S32LSB: "AUDIO_S32LSB",
  *     AUDIO_S32MSB: "AUDIO_S32MSB",             # <<<<<<<<<<<<<<
  *     AUDIO_S32: "AUDIO_S32",
  *     AUDIO_F32LSB: "AUDIO_F32LSB",
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_S32MSB); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 30, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_S32MSB); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 31, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_S32MSB) < 0) __PYX_ERR(0, 21, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_S32MSB) < 0) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":31
+  /* "pygame/_sdl2/audio.pyx":32
  *     AUDIO_S32LSB: "AUDIO_S32LSB",
  *     AUDIO_S32MSB: "AUDIO_S32MSB",
  *     AUDIO_S32: "AUDIO_S32",             # <<<<<<<<<<<<<<
  *     AUDIO_F32LSB: "AUDIO_F32LSB",
  *     AUDIO_F32MSB: "AUDIO_F32MSB",
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_S32); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 31, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_S32); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 32, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_S32) < 0) __PYX_ERR(0, 21, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_S32) < 0) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":32
+  /* "pygame/_sdl2/audio.pyx":33
  *     AUDIO_S32MSB: "AUDIO_S32MSB",
  *     AUDIO_S32: "AUDIO_S32",
  *     AUDIO_F32LSB: "AUDIO_F32LSB",             # <<<<<<<<<<<<<<
  *     AUDIO_F32MSB: "AUDIO_F32MSB",
  *     AUDIO_F32: "AUDIO_F32",
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_F32LSB); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 32, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_F32LSB); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 33, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_F32LSB) < 0) __PYX_ERR(0, 21, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_F32LSB) < 0) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":33
+  /* "pygame/_sdl2/audio.pyx":34
  *     AUDIO_S32: "AUDIO_S32",
  *     AUDIO_F32LSB: "AUDIO_F32LSB",
  *     AUDIO_F32MSB: "AUDIO_F32MSB",             # <<<<<<<<<<<<<<
  *     AUDIO_F32: "AUDIO_F32",
  * }
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_F32MSB); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 33, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_F32MSB); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 34, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_F32MSB) < 0) __PYX_ERR(0, 21, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_F32MSB) < 0) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":34
+  /* "pygame/_sdl2/audio.pyx":35
  *     AUDIO_F32LSB: "AUDIO_F32LSB",
  *     AUDIO_F32MSB: "AUDIO_F32MSB",
  *     AUDIO_F32: "AUDIO_F32",             # <<<<<<<<<<<<<<
  * }
  * 
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_F32); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 34, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_AUDIO_F32); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 35, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_F32) < 0) __PYX_ERR(0, 21, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_4, __pyx_t_7, __pyx_n_s_AUDIO_F32) < 0) __PYX_ERR(0, 22, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_audio_format_str, __pyx_t_4) < 0) __PYX_ERR(0, 20, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_audio_format_str, __pyx_t_4) < 0) __PYX_ERR(0, 21, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":39
+  /* "pygame/_sdl2/audio.pyx":40
  * 
  * # for SDL_OpenAudioDevice.
  * AUDIO_ALLOW_FREQUENCY_CHANGE = _SDL_AUDIO_ALLOW_FREQUENCY_CHANGE             # <<<<<<<<<<<<<<
  * AUDIO_ALLOW_FORMAT_CHANGE = _SDL_AUDIO_ALLOW_FORMAT_CHANGE
  * AUDIO_ALLOW_CHANNELS_CHANGE = _SDL_AUDIO_ALLOW_CHANNELS_CHANGE
  */
-  __pyx_t_4 = __Pyx_PyInt_From_int(SDL_AUDIO_ALLOW_FREQUENCY_CHANGE); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 39, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_int(SDL_AUDIO_ALLOW_FREQUENCY_CHANGE); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 40, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_ALLOW_FREQUENCY_CHANGE, __pyx_t_4) < 0) __PYX_ERR(0, 39, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_ALLOW_FREQUENCY_CHANGE, __pyx_t_4) < 0) __PYX_ERR(0, 40, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":40
+  /* "pygame/_sdl2/audio.pyx":41
  * # for SDL_OpenAudioDevice.
  * AUDIO_ALLOW_FREQUENCY_CHANGE = _SDL_AUDIO_ALLOW_FREQUENCY_CHANGE
  * AUDIO_ALLOW_FORMAT_CHANGE = _SDL_AUDIO_ALLOW_FORMAT_CHANGE             # <<<<<<<<<<<<<<
  * AUDIO_ALLOW_CHANNELS_CHANGE = _SDL_AUDIO_ALLOW_CHANNELS_CHANGE
  * AUDIO_ALLOW_ANY_CHANGE = _SDL_AUDIO_ALLOW_ANY_CHANGE
  */
-  __pyx_t_4 = __Pyx_PyInt_From_int(SDL_AUDIO_ALLOW_FORMAT_CHANGE); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 40, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_int(SDL_AUDIO_ALLOW_FORMAT_CHANGE); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 41, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_ALLOW_FORMAT_CHANGE, __pyx_t_4) < 0) __PYX_ERR(0, 40, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_ALLOW_FORMAT_CHANGE, __pyx_t_4) < 0) __PYX_ERR(0, 41, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":41
+  /* "pygame/_sdl2/audio.pyx":42
  * AUDIO_ALLOW_FREQUENCY_CHANGE = _SDL_AUDIO_ALLOW_FREQUENCY_CHANGE
  * AUDIO_ALLOW_FORMAT_CHANGE = _SDL_AUDIO_ALLOW_FORMAT_CHANGE
  * AUDIO_ALLOW_CHANNELS_CHANGE = _SDL_AUDIO_ALLOW_CHANNELS_CHANGE             # <<<<<<<<<<<<<<
  * AUDIO_ALLOW_ANY_CHANGE = _SDL_AUDIO_ALLOW_ANY_CHANGE
  * 
  */
-  __pyx_t_4 = __Pyx_PyInt_From_int(SDL_AUDIO_ALLOW_CHANNELS_CHANGE); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 41, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_int(SDL_AUDIO_ALLOW_CHANNELS_CHANGE); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 42, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_ALLOW_CHANNELS_CHANGE, __pyx_t_4) < 0) __PYX_ERR(0, 41, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_ALLOW_CHANNELS_CHANGE, __pyx_t_4) < 0) __PYX_ERR(0, 42, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":42
+  /* "pygame/_sdl2/audio.pyx":43
  * AUDIO_ALLOW_FORMAT_CHANGE = _SDL_AUDIO_ALLOW_FORMAT_CHANGE
  * AUDIO_ALLOW_CHANNELS_CHANGE = _SDL_AUDIO_ALLOW_CHANNELS_CHANGE
  * AUDIO_ALLOW_ANY_CHANGE = _SDL_AUDIO_ALLOW_ANY_CHANGE             # <<<<<<<<<<<<<<
  * 
  * # https://wiki.libsdl.org/SDL_GetNumAudioDevices
  */
-  __pyx_t_4 = __Pyx_PyInt_From_int(SDL_AUDIO_ALLOW_ANY_CHANGE); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 42, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_int(SDL_AUDIO_ALLOW_ANY_CHANGE); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 43, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_ALLOW_ANY_CHANGE, __pyx_t_4) < 0) __PYX_ERR(0, 42, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_AUDIO_ALLOW_ANY_CHANGE, __pyx_t_4) < 0) __PYX_ERR(0, 43, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":46
+  /* "pygame/_sdl2/audio.pyx":47
  * # https://wiki.libsdl.org/SDL_GetNumAudioDevices
  * # https://wiki.libsdl.org/SDL_GetAudioDeviceName
  * def get_audio_device_names(iscapture = False):             # <<<<<<<<<<<<<<
  *     """ Returns a list of unique devicenames for each available audio device.
  * 
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_6pygame_5_sdl2_5audio_1get_audio_device_names, 0, __pyx_n_s_get_audio_device_names, NULL, __pyx_n_s_pygame__sdl2_audio, __pyx_d, ((PyObject *)__pyx_codeobj__29)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 46, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_6pygame_5_sdl2_5audio_1get_audio_device_names, 0, __pyx_n_s_get_audio_device_names, NULL, __pyx_n_s_pygame__sdl2_audio, __pyx_d, ((PyObject *)__pyx_codeobj__29)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_CyFunction_SetDefaultsTuple(__pyx_t_4, __pyx_tuple__30);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_audio_device_names, __pyx_t_4) < 0) __PYX_ERR(0, 46, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_audio_device_names, __pyx_t_4) < 0) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":69
+  /* "pygame/_sdl2/audio.pyx":70
  *     return names
  * 
  * import traceback             # <<<<<<<<<<<<<<
  * cdef void recording_cb(void* userdata, Uint8* stream, int len) nogil:
  *     """ This is called in a thread made by SDL.
  */
-  __pyx_t_4 = __Pyx_ImportDottedModule(__pyx_n_s_traceback, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 69, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_ImportDottedModule(__pyx_n_s_traceback, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 70, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_traceback, __pyx_t_4) < 0) __PYX_ERR(0, 69, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_traceback, __pyx_t_4) < 0) __PYX_ERR(0, 70, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "pygame/_sdl2/audio.pyx":212
+  /* "pygame/_sdl2/audio.pyx":215
  *         return ret
  * 
  *     def pause(self, int pause_on):             # <<<<<<<<<<<<<<
  *         """ Use this to pause and unpause audio playback on this device.
  * 
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_6pygame_5_sdl2_5audio_11AudioDevice_9pause, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_AudioDevice_pause, NULL, __pyx_n_s_pygame__sdl2_audio, __pyx_d, ((PyObject *)__pyx_codeobj__32)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 212, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_6pygame_5_sdl2_5audio_11AudioDevice_9pause, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_AudioDevice_pause, NULL, __pyx_n_s_pygame__sdl2_audio, __pyx_d, ((PyObject *)__pyx_codeobj__32)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 215, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem((PyObject *)__pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice->tp_dict, __pyx_n_s_pause, __pyx_t_4) < 0) __PYX_ERR(0, 212, __pyx_L1_error)
+  if (PyDict_SetItem((PyObject *)__pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice->tp_dict, __pyx_n_s_pause, __pyx_t_4) < 0) __PYX_ERR(0, 215, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   PyType_Modified(__pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice);
 
-  /* "pygame/_sdl2/audio.pyx":221
+  /* "pygame/_sdl2/audio.pyx":224
  *             SDL_PauseAudioDevice(self._deviceid, pause_on)
  * 
  *     def close(self):             # <<<<<<<<<<<<<<
  *         """ Use this to pause and unpause audio playback on this device.
  *         """
  */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_6pygame_5_sdl2_5audio_11AudioDevice_11close, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_AudioDevice_close, NULL, __pyx_n_s_pygame__sdl2_audio, __pyx_d, ((PyObject *)__pyx_codeobj__34)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 221, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_6pygame_5_sdl2_5audio_11AudioDevice_11close, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_AudioDevice_close, NULL, __pyx_n_s_pygame__sdl2_audio, __pyx_d, ((PyObject *)__pyx_codeobj__34)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 224, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem((PyObject *)__pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice->tp_dict, __pyx_n_s_close, __pyx_t_4) < 0) __PYX_ERR(0, 221, __pyx_L1_error)
+  if (PyDict_SetItem((PyObject *)__pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice->tp_dict, __pyx_n_s_close, __pyx_t_4) < 0) __PYX_ERR(0, 224, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   PyType_Modified(__pyx_ptype_6pygame_5_sdl2_5audio_AudioDevice);
 
-  /* "(tree fragment)":1
- * def __reduce_cython__(self):             # <<<<<<<<<<<<<<
- *     raise TypeError, "no default __reduce__ due to non-trivial __cinit__"
- * def __setstate_cython__(self, __pyx_state):
- */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_6pygame_5_sdl2_5audio_11AudioDevice_13__reduce_cython__, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_AudioDevice___reduce_cython, NULL, __pyx_n_s_pygame__sdl2_audio, __pyx_d, ((PyObject *)__pyx_codeobj__35)); if (unlikely(!__pyx_t_4)) __PYX_ERR(1, 1, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_reduce_cython, __pyx_t_4) < 0) __PYX_ERR(1, 1, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-
-  /* "(tree fragment)":3
- * def __reduce_cython__(self):
- *     raise TypeError, "no default __reduce__ due to non-trivial __cinit__"
- * def __setstate_cython__(self, __pyx_state):             # <<<<<<<<<<<<<<
- *     raise TypeError, "no default __reduce__ due to non-trivial __cinit__"
- */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_6pygame_5_sdl2_5audio_11AudioDevice_15__setstate_cython__, __Pyx_CYFUNCTION_CCLASS, __pyx_n_s_AudioDevice___setstate_cython, NULL, __pyx_n_s_pygame__sdl2_audio, __pyx_d, ((PyObject *)__pyx_codeobj__37)); if (unlikely(!__pyx_t_4)) __PYX_ERR(1, 3, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_4);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_setstate_cython, __pyx_t_4) < 0) __PYX_ERR(1, 3, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-
   /* "pygame/_sdl2/audio.pyx":1
  * from pygame._sdl2.sdl2 import error             # <<<<<<<<<<<<<<
- * 
+ * cimport cython
  * 
  */
   __pyx_t_4 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -25916,6 +25684,97 @@ static int __Pyx_PyType_Ready(PyTypeObject *t) {
 #endif
 }
 
+/* SetVTable */
+static int __Pyx_SetVtable(PyTypeObject *type, void *vtable) {
+    PyObject *ob = PyCapsule_New(vtable, 0, 0);
+    if (unlikely(!ob))
+        goto bad;
+#if CYTHON_COMPILING_IN_LIMITED_API
+    if (unlikely(PyObject_SetAttr((PyObject *) type, __pyx_n_s_pyx_vtable, ob) < 0))
+#else
+    if (unlikely(PyDict_SetItem(type->tp_dict, __pyx_n_s_pyx_vtable, ob) < 0))
+#endif
+        goto bad;
+    Py_DECREF(ob);
+    return 0;
+bad:
+    Py_XDECREF(ob);
+    return -1;
+}
+
+/* GetVTable */
+static void* __Pyx_GetVtable(PyTypeObject *type) {
+    void* ptr;
+#if CYTHON_COMPILING_IN_LIMITED_API
+    PyObject *ob = PyObject_GetAttr((PyObject *)type, __pyx_n_s_pyx_vtable);
+#else
+    PyObject *ob = PyObject_GetItem(type->tp_dict, __pyx_n_s_pyx_vtable);
+#endif
+    if (!ob)
+        goto bad;
+    ptr = PyCapsule_GetPointer(ob, 0);
+    if (!ptr && !PyErr_Occurred())
+        PyErr_SetString(PyExc_RuntimeError, "invalid vtable found for imported type");
+    Py_DECREF(ob);
+    return ptr;
+bad:
+    Py_XDECREF(ob);
+    return NULL;
+}
+
+/* MergeVTables */
+#if !CYTHON_COMPILING_IN_LIMITED_API
+static int __Pyx_MergeVtables(PyTypeObject *type) {
+    int i;
+    void** base_vtables;
+    __Pyx_TypeName tp_base_name;
+    __Pyx_TypeName base_name;
+    void* unknown = (void*)-1;
+    PyObject* bases = type->tp_bases;
+    int base_depth = 0;
+    {
+        PyTypeObject* base = type->tp_base;
+        while (base) {
+            base_depth += 1;
+            base = base->tp_base;
+        }
+    }
+    base_vtables = (void**) malloc(sizeof(void*) * (size_t)(base_depth + 1));
+    base_vtables[0] = unknown;
+    for (i = 1; i < PyTuple_GET_SIZE(bases); i++) {
+        void* base_vtable = __Pyx_GetVtable(((PyTypeObject*)PyTuple_GET_ITEM(bases, i)));
+        if (base_vtable != NULL) {
+            int j;
+            PyTypeObject* base = type->tp_base;
+            for (j = 0; j < base_depth; j++) {
+                if (base_vtables[j] == unknown) {
+                    base_vtables[j] = __Pyx_GetVtable(base);
+                    base_vtables[j + 1] = unknown;
+                }
+                if (base_vtables[j] == base_vtable) {
+                    break;
+                } else if (base_vtables[j] == NULL) {
+                    goto bad;
+                }
+                base = base->tp_base;
+            }
+        }
+    }
+    PyErr_Clear();
+    free(base_vtables);
+    return 0;
+bad:
+    tp_base_name = __Pyx_PyType_GetName(type->tp_base);
+    base_name = __Pyx_PyType_GetName((PyTypeObject*)PyTuple_GET_ITEM(bases, i));
+    PyErr_Format(PyExc_TypeError,
+        "multiple bases have vtable conflict: '" __Pyx_FMT_TYPENAME "' and '" __Pyx_FMT_TYPENAME "'", tp_base_name, base_name);
+    __Pyx_DECREF_TypeName(tp_base_name);
+    __Pyx_DECREF_TypeName(base_name);
+    free(base_vtables);
+    return -1;
+}
+#endif
+
 /* SetupReduce */
 #if !CYTHON_COMPILING_IN_LIMITED_API
 static int __Pyx_setup_reduce_is_named(PyObject* meth, PyObject* name) {
@@ -26024,97 +25883,6 @@ __PYX_GOOD:
     Py_XDECREF(setstate);
     Py_XDECREF(setstate_cython);
     return ret;
-}
-#endif
-
-/* SetVTable */
-static int __Pyx_SetVtable(PyTypeObject *type, void *vtable) {
-    PyObject *ob = PyCapsule_New(vtable, 0, 0);
-    if (unlikely(!ob))
-        goto bad;
-#if CYTHON_COMPILING_IN_LIMITED_API
-    if (unlikely(PyObject_SetAttr((PyObject *) type, __pyx_n_s_pyx_vtable, ob) < 0))
-#else
-    if (unlikely(PyDict_SetItem(type->tp_dict, __pyx_n_s_pyx_vtable, ob) < 0))
-#endif
-        goto bad;
-    Py_DECREF(ob);
-    return 0;
-bad:
-    Py_XDECREF(ob);
-    return -1;
-}
-
-/* GetVTable */
-static void* __Pyx_GetVtable(PyTypeObject *type) {
-    void* ptr;
-#if CYTHON_COMPILING_IN_LIMITED_API
-    PyObject *ob = PyObject_GetAttr((PyObject *)type, __pyx_n_s_pyx_vtable);
-#else
-    PyObject *ob = PyObject_GetItem(type->tp_dict, __pyx_n_s_pyx_vtable);
-#endif
-    if (!ob)
-        goto bad;
-    ptr = PyCapsule_GetPointer(ob, 0);
-    if (!ptr && !PyErr_Occurred())
-        PyErr_SetString(PyExc_RuntimeError, "invalid vtable found for imported type");
-    Py_DECREF(ob);
-    return ptr;
-bad:
-    Py_XDECREF(ob);
-    return NULL;
-}
-
-/* MergeVTables */
-#if !CYTHON_COMPILING_IN_LIMITED_API
-static int __Pyx_MergeVtables(PyTypeObject *type) {
-    int i;
-    void** base_vtables;
-    __Pyx_TypeName tp_base_name;
-    __Pyx_TypeName base_name;
-    void* unknown = (void*)-1;
-    PyObject* bases = type->tp_bases;
-    int base_depth = 0;
-    {
-        PyTypeObject* base = type->tp_base;
-        while (base) {
-            base_depth += 1;
-            base = base->tp_base;
-        }
-    }
-    base_vtables = (void**) malloc(sizeof(void*) * (size_t)(base_depth + 1));
-    base_vtables[0] = unknown;
-    for (i = 1; i < PyTuple_GET_SIZE(bases); i++) {
-        void* base_vtable = __Pyx_GetVtable(((PyTypeObject*)PyTuple_GET_ITEM(bases, i)));
-        if (base_vtable != NULL) {
-            int j;
-            PyTypeObject* base = type->tp_base;
-            for (j = 0; j < base_depth; j++) {
-                if (base_vtables[j] == unknown) {
-                    base_vtables[j] = __Pyx_GetVtable(base);
-                    base_vtables[j + 1] = unknown;
-                }
-                if (base_vtables[j] == base_vtable) {
-                    break;
-                } else if (base_vtables[j] == NULL) {
-                    goto bad;
-                }
-                base = base->tp_base;
-            }
-        }
-    }
-    PyErr_Clear();
-    free(base_vtables);
-    return 0;
-bad:
-    tp_base_name = __Pyx_PyType_GetName(type->tp_base);
-    base_name = __Pyx_PyType_GetName((PyTypeObject*)PyTuple_GET_ITEM(bases, i));
-    PyErr_Format(PyExc_TypeError,
-        "multiple bases have vtable conflict: '" __Pyx_FMT_TYPENAME "' and '" __Pyx_FMT_TYPENAME "'", tp_base_name, base_name);
-    __Pyx_DECREF_TypeName(tp_base_name);
-    __Pyx_DECREF_TypeName(base_name);
-    free(base_vtables);
-    return -1;
 }
 #endif
 
@@ -30101,7 +29869,7 @@ __Pyx_PyType_GetName(PyTypeObject* tp)
                                                __pyx_n_s_name_2);
     if (unlikely(name == NULL) || unlikely(!PyUnicode_Check(name))) {
         PyErr_Clear();
-        Py_XSETREF(name, __Pyx_NewRef(__pyx_n_s__38));
+        Py_XSETREF(name, __Pyx_NewRef(__pyx_n_s__35));
     }
     return name;
 }

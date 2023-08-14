@@ -1,4 +1,5 @@
 from cpython cimport PyObject
+cimport cython
 from pygame._sdl2.sdl2 import error
 from pygame._sdl2.sdl2 import error as errorfnc
 from libc.stdlib cimport free, malloc
@@ -165,6 +166,8 @@ cdef Uint32 format_from_depth(int depth):
                                       Rmask, Gmask, Bmask, Amask)
 
 
+# disable auto_pickle since it causes stubcheck error 
+@cython.auto_pickle(False)
 cdef class Texture:
     def __cinit__(self):
         cdef Uint8[4] defaultColor = [255, 255, 255, 255]
@@ -596,6 +599,8 @@ cdef class Texture:
         if res < 0:
             raise error()
 
+# disable auto_pickle since it causes stubcheck error 
+@cython.auto_pickle(False) 
 cdef class Image:
 
     def __cinit__(self):
@@ -750,6 +755,8 @@ cdef class Image:
                                    self._originptr, self.flip_x, self.flip_y)
 
 
+# disable auto_pickle since it causes stubcheck error 
+@cython.auto_pickle(False) 
 cdef class Renderer:
 
     @classmethod
