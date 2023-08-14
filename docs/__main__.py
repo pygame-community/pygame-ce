@@ -12,7 +12,7 @@ def _iterpath(path):
         yield last
 
 
-# for test suite to confirm pygame built with local docs
+# for test suite to confirm pygame-ce built with local docs
 def has_local_docs():
     pkg_dir = os.path.dirname(os.path.abspath(__file__))
     main_page = os.path.join(pkg_dir, "generated", "index.html")
@@ -29,7 +29,7 @@ def open_docs():
             url_path = f"{drive}/{url_path}"
         url = urlunparse(("file", "", url_path, "", "", ""))
     else:
-        url = "https://www.pyga.me/docs/"
+        url = "https://pyga.me/docs/"
     webbrowser.open(url)
 
 

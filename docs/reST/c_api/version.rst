@@ -13,7 +13,7 @@ Header file: src_c/include/pygame.h
 
 Version information can be retrieved at compile-time using these macros.
 
-.. versionadded:: 1.9.5
+.. versionaddedold:: 1.9.5
 
 .. c:macro:: PG_MAJOR_VERSION
 

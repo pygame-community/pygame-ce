@@ -3,12 +3,12 @@ set -e -x
 
 
 if [[ "$1" == "buildpypy" ]]; then
-    export SUPPORTED_PYTHONS="cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39 cp310-cp310 pp37-pypy37_pp73"
+    export SUPPORTED_PYTHONS="cp37-cp37m cp38-cp38 cp39-cp39 cp310-cp310 pp37-pypy37_pp73"
 else
     if [ `uname -m` == "aarch64" ]; then
-       export SUPPORTED_PYTHONS="cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39 cp310-cp310"
+       export SUPPORTED_PYTHONS="cp37-cp37m cp38-cp38 cp39-cp39 cp310-cp310"
     else
-       export SUPPORTED_PYTHONS="cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39"
+       export SUPPORTED_PYTHONS="cp37-cp37m cp38-cp38 cp39-cp39"
     fi
 fi
 
@@ -64,6 +64,6 @@ for PYVER in $SUPPORTED_PYTHONS; do
 	    PYTHON="/opt/python/${PYVER}/bin/pypy"
 	fi
 
-    ${PYTHON} -m pip install pygame --no-index -f /io/buildconfig/manylinux-build/wheelhouse
+    ${PYTHON} -m pip install pygame-ce --no-index -f /io/buildconfig/manylinux-build/wheelhouse
     (cd $HOME; ${PYTHON} -m pygame.tests -vv --exclude opengl,music,timing)
 done

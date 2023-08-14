@@ -1,5 +1,5 @@
 /*
-    pygame - Python Game Library
+    pygame-ce - Python Game Library
     Copyright (C) 2000-2001  Pete Shinners
 
     This library is free software; you can redistribute it and/or
@@ -41,6 +41,19 @@
 #endif
 
 #include <SDL.h>
+
+/* DictProxy is useful for event posting with an arbitrary dict. Maintains
+ * state of number of events on queue and whether the owner of this struct
+ * wants this dict freed. This DictProxy is only to be freed when there are no
+ * more instances of this DictProxy on the event queue. Access to this is
+ * safeguarded with a per-proxy spinlock, which is more optimal than having
+ * to hold GIL in case of event timers */
+typedef struct _pgEventDictProxy {
+    PyObject *dict;
+    SDL_SpinLock lock;
+    int num_on_queue;
+    Uint8 do_free_at_end;
+} pgEventDictProxy;
 
 /* SDL 1.2 constants removed from SDL 2 */
 typedef enum {
@@ -281,40 +294,22 @@ supported Python version. #endif */
 
 #define PyType_Init(x) (((x).ob_type) = &PyType_Type)
 
-/* CPython 3.6 had initial and undocumented FASTCALL support, but we play it
- * safe by not relying on implementation details */
-#if PY_VERSION_HEX < 0x03070000
+/* Python macro for comparing to Py_None
+ * Py_IsNone is naturally supported by
+ * Python 3.10 or higher
+ * so this macro can be removed after the minimum
+ * supported
+ * Python version reaches 3.10
+ */
+#ifndef Py_IsNone
+#define Py_IsNone(x) (x == Py_None)
+#endif
 
-/* Macro for naming a pygame fastcall wrapper function */
-#define PG_FASTCALL_NAME(func) _##func##_fastcall_wrap
-
-/* used to forward declare compat functions */
-#define PG_DECLARE_FASTCALL_FUNC(func, self_type) \
-    static PyObject *PG_FASTCALL_NAME(func)(self_type * self, PyObject * args)
-
-/* Using this macro on a function defined with the FASTCALL calling convention
- * adds a wrapper definition that uses regular python VARARGS convention.
- * Since it is guaranteed that the 'args' object is a tuple, we can directly
- * call PySequence_Fast_ITEMS and PyTuple_GET_SIZE on it (which are macros that
- * assume the same, and don't do error checking) */
-#define PG_WRAP_FASTCALL_FUNC(func, self_type)                            \
-    PG_DECLARE_FASTCALL_FUNC(func, self_type)                             \
-    {                                                                     \
-        return func(self, (PyObject *const *)PySequence_Fast_ITEMS(args), \
-                    PyTuple_GET_SIZE(args));                              \
-    }
-
-#define PG_FASTCALL METH_VARARGS
-
-#else /* PY_VERSION_HEX >= 0x03070000 */
-/* compat macros are no-op on python versions that support fastcall */
-#define PG_FASTCALL_NAME(func) func
-#define PG_DECLARE_FASTCALL_FUNC(func, self_type)
-#define PG_WRAP_FASTCALL_FUNC(func, self_type)
-
-#define PG_FASTCALL METH_FASTCALL
-
-#endif /* PY_VERSION_HEX >= 0x03070000 */
+/* Update this function if new sequences are added to the fast sequence
+ * type. */
+#ifndef pgSequenceFast_Check
+#define pgSequenceFast_Check(o) (PyList_Check(o) || PyTuple_Check(o))
+#endif /* ~pgSequenceFast_Check */
 
 /*
  * event module internals
@@ -359,8 +354,8 @@ struct pgColorObject {
  * Remember to keep these constants up to date.
  */
 
-#define PYGAMEAPI_RECT_NUMSLOTS 5
-#define PYGAMEAPI_JOYSTICK_NUMSLOTS 2
+#define PYGAMEAPI_RECT_NUMSLOTS 10
+#define PYGAMEAPI_JOYSTICK_NUMSLOTS 3
 #define PYGAMEAPI_DISPLAY_NUMSLOTS 2
 #define PYGAMEAPI_SURFACE_NUMSLOTS 4
 #define PYGAMEAPI_SURFLOCK_NUMSLOTS 8
@@ -370,5 +365,6 @@ struct pgColorObject {
 #define PYGAMEAPI_MATH_NUMSLOTS 2
 #define PYGAMEAPI_BASE_NUMSLOTS 24
 #define PYGAMEAPI_EVENT_NUMSLOTS 6
+#define PYGAMEAPI_WINDOW_NUMSLOTS 1
 
 #endif /* _PYGAME_INTERNAL_H */

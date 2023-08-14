@@ -1,4 +1,4 @@
-##    pygame - Python Game Library
+##    pygame-ce - Python Game Library
 ##    Copyright (C) 2008 Marcus von Appen
 ##
 ##    This library is free software; you can redistribute it and/or

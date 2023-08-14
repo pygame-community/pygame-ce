@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -28,14 +28,11 @@
 #include "doc/joystick_doc.h"
 
 static pgJoystickObject *joylist_head = NULL;
-#ifndef BUILD_STATIC
-static PyObject *joy_instance_map = NULL;
-#endif  // BUILD_STATIC joy_instance_map already defined in src_c/event.c:57
 static PyTypeObject pgJoystick_Type;
 static PyObject *
 pgJoystick_New(int);
 static int
-_joy_map_insert(pgJoystickObject *jstick);
+pgJoystick_GetDeviceIndexByInstanceID(int);
 #define pgJoystick_Check(x) ((x)->ob_type == &pgJoystick_Type)
 
 static PyObject *
@@ -95,7 +92,7 @@ joy_dealloc(PyObject *self)
         jstick->next->prev = jstick->prev;
     }
 
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject *
@@ -130,37 +127,7 @@ joy_init(PyObject *self, PyObject *_null)
         }
     }
 
-    if (-1 == _joy_map_insert(jstick)) {
-        return NULL;
-    }
-
     Py_RETURN_NONE;
-}
-
-static int
-_joy_map_insert(pgJoystickObject *jstick)
-{
-    SDL_JoystickID instance_id;
-    PyObject *k, *v;
-
-    if (!joy_instance_map) {
-        return -1;
-    }
-
-    instance_id = SDL_JoystickInstanceID(jstick->joy);
-    if (instance_id < 0) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
-    }
-    k = PyLong_FromLong(instance_id);
-    v = PyLong_FromLong(jstick->id);
-    if (k && v) {
-        PyDict_SetItem(joy_instance_map, k, v);
-    }
-    Py_XDECREF(k);
-    Py_XDECREF(v);
-
-    return 0;
 }
 
 static PyObject *
@@ -506,31 +473,35 @@ joy_get_hat(PyObject *self, PyObject *args)
 }
 
 static PyMethodDef joy_methods[] = {
-    {"init", joy_init, METH_NOARGS, DOC_JOYSTICKINIT},
-    {"quit", joy_quit, METH_NOARGS, DOC_JOYSTICKQUIT},
-    {"get_init", joy_get_init, METH_NOARGS, DOC_JOYSTICKGETINIT},
+    {"init", joy_init, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_INIT},
+    {"quit", joy_quit, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_QUIT},
+    {"get_init", joy_get_init, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_GETINIT},
 
-    {"get_id", joy_get_id, METH_NOARGS, DOC_JOYSTICKGETID},
+    {"get_id", joy_get_id, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_GETID},
     {"get_instance_id", joy_get_instance_id, METH_NOARGS,
-     DOC_JOYSTICKGETINSTANCEID},
-    {"get_guid", joy_get_guid, METH_NOARGS, DOC_JOYSTICKGETGUID},
+     DOC_JOYSTICK_JOYSTICK_GETINSTANCEID},
+    {"get_guid", joy_get_guid, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_GETGUID},
     {"get_power_level", joy_get_power_level, METH_NOARGS,
-     DOC_JOYSTICKGETPOWERLEVEL},
+     DOC_JOYSTICK_JOYSTICK_GETPOWERLEVEL},
     {"rumble", (PyCFunction)joy_rumble, METH_VARARGS | METH_KEYWORDS,
-     DOC_JOYSTICKRUMBLE},
+     DOC_JOYSTICK_JOYSTICK_RUMBLE},
     {"stop_rumble", (PyCFunction)joy_stop_rumble, METH_NOARGS,
-     DOC_JOYSTICKSTOPRUMBLE},
-    {"get_name", joy_get_name, METH_NOARGS, DOC_JOYSTICKGETNAME},
+     DOC_JOYSTICK_JOYSTICK_STOPRUMBLE},
+    {"get_name", joy_get_name, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_GETNAME},
 
-    {"get_numaxes", joy_get_numaxes, METH_NOARGS, DOC_JOYSTICKGETNUMAXES},
-    {"get_axis", joy_get_axis, METH_VARARGS, DOC_JOYSTICKGETAXIS},
+    {"get_numaxes", joy_get_numaxes, METH_NOARGS,
+     DOC_JOYSTICK_JOYSTICK_GETNUMAXES},
+    {"get_axis", joy_get_axis, METH_VARARGS, DOC_JOYSTICK_JOYSTICK_GETAXIS},
     {"get_numbuttons", joy_get_numbuttons, METH_NOARGS,
-     DOC_JOYSTICKGETNUMBUTTONS},
-    {"get_button", joy_get_button, METH_VARARGS, DOC_JOYSTICKGETBUTTON},
-    {"get_numballs", joy_get_numballs, METH_NOARGS, DOC_JOYSTICKGETNUMBALLS},
-    {"get_ball", joy_get_ball, METH_VARARGS, DOC_JOYSTICKGETBALL},
-    {"get_numhats", joy_get_numhats, METH_NOARGS, DOC_JOYSTICKGETNUMHATS},
-    {"get_hat", joy_get_hat, METH_VARARGS, DOC_JOYSTICKGETHAT},
+     DOC_JOYSTICK_JOYSTICK_GETNUMBUTTONS},
+    {"get_button", joy_get_button, METH_VARARGS,
+     DOC_JOYSTICK_JOYSTICK_GETBUTTON},
+    {"get_numballs", joy_get_numballs, METH_NOARGS,
+     DOC_JOYSTICK_JOYSTICK_GETNUMBALLS},
+    {"get_ball", joy_get_ball, METH_VARARGS, DOC_JOYSTICK_JOYSTICK_GETBALL},
+    {"get_numhats", joy_get_numhats, METH_NOARGS,
+     DOC_JOYSTICK_JOYSTICK_GETNUMHATS},
+    {"get_hat", joy_get_hat, METH_VARARGS, DOC_JOYSTICK_JOYSTICK_GETHAT},
 
     {NULL, NULL, 0, NULL}};
 
@@ -538,9 +509,23 @@ static PyTypeObject pgJoystick_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.joystick.Joystick",
     .tp_basicsize = sizeof(pgJoystickObject),
     .tp_dealloc = joy_dealloc,
-    .tp_doc = DOC_PYGAMEJOYSTICKJOYSTICK,
+    .tp_doc = DOC_JOYSTICK_JOYSTICK,
     .tp_methods = joy_methods,
 };
+
+static int
+pgJoystick_GetDeviceIndexByInstanceID(int instance_id)
+{
+    pgJoystickObject *cur;
+    cur = joylist_head;
+    while (cur) {
+        if (SDL_JoystickInstanceID(cur->joy) == instance_id) {
+            return cur->id;
+        }
+        cur = cur->next;
+    }
+    return -1;
+}
 
 static PyObject *
 pgJoystick_New(int id)
@@ -584,22 +569,15 @@ pgJoystick_New(int id)
     }
     joylist_head = jstick;
 
-    if (-1 == _joy_map_insert(jstick)) {
-        Py_DECREF(jstick);
-        return NULL;
-    }
-
     return (PyObject *)jstick;
 }
 
 static PyMethodDef _joystick_methods[] = {
-    {"init", (PyCFunction)init, METH_NOARGS, DOC_PYGAMEJOYSTICKINIT},
-    {"quit", (PyCFunction)quit, METH_NOARGS, DOC_PYGAMEJOYSTICKQUIT},
-    {"get_init", (PyCFunction)get_init, METH_NOARGS,
-     DOC_PYGAMEJOYSTICKGETINIT},
-    {"get_count", (PyCFunction)get_count, METH_NOARGS,
-     DOC_PYGAMEJOYSTICKGETCOUNT},
-    {"Joystick", Joystick, METH_VARARGS, DOC_PYGAMEJOYSTICKJOYSTICK},
+    {"init", (PyCFunction)init, METH_NOARGS, DOC_JOYSTICK_INIT},
+    {"quit", (PyCFunction)quit, METH_NOARGS, DOC_JOYSTICK_QUIT},
+    {"get_init", (PyCFunction)get_init, METH_NOARGS, DOC_JOYSTICK_GETINIT},
+    {"get_count", (PyCFunction)get_count, METH_NOARGS, DOC_JOYSTICK_GETCOUNT},
+    {"Joystick", Joystick, METH_VARARGS, DOC_JOYSTICK_JOYSTICK},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(joystick)
@@ -609,7 +587,7 @@ MODINIT_DEFINE(joystick)
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "joystick",
-                                         DOC_PYGAMEJOYSTICK,
+                                         DOC_JOYSTICK_JOYSTICK,
                                          -1,
                                          _joystick_methods,
                                          NULL,
@@ -630,17 +608,6 @@ MODINIT_DEFINE(joystick)
         return NULL;
     }
 
-    /* Grab the instance -> device id mapping */
-    module = PyImport_ImportModule("pygame.event");
-    if (!module) {
-        return NULL;
-    }
-    joy_instance_map = PyObject_GetAttrString(module, "_joy_instance_map");
-    Py_DECREF(module);
-    if (!joy_instance_map) {
-        return NULL;
-    }
-
     /* create the module */
     module = PyModule_Create(&_module);
     if (module == NULL) {
@@ -658,6 +625,7 @@ MODINIT_DEFINE(joystick)
     /* export the c api */
     c_api[0] = &pgJoystick_Type;
     c_api[1] = pgJoystick_New;
+    c_api[2] = pgJoystick_GetDeviceIndexByInstanceID;
     apiobj = encapsulate_api(c_api, "joystick");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);

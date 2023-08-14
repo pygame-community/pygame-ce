@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
 */
 
 /*
- *  pygame keyboard module
+ *  pygame-ce keyboard module
  */
 #include "pygame.h"
 
@@ -62,7 +62,7 @@ key_get_repeat(PyObject *self, PyObject *_null)
 /*
  * pgScancodeWrapper is for key_get_pressed in SDL2.
  * It converts key symbol indices to scan codes, as suggested in
- *     https://github.com/pygame/pygame/issues/659
+ *     https://github.com/pygame-community/pygame-ce/issues/519
  * so that they work with SDL_GetKeyboardState().
  */
 #define _PG_SCANCODEWRAPPER_TYPE_NAME "ScancodeWrapper"
@@ -88,6 +88,50 @@ pg_scancodewrapper_subscript(pgScancodeWrapper *self, PyObject *item)
     return ret;
 }
 
+static PyObject *
+pg_iter_raise(PyObject *self)
+{
+    PyErr_SetString(PyExc_TypeError,
+                    "Iterating over key states is not supported");
+    return NULL;
+}
+
+/**
+ * There is an issue in PyPy that causes __iter__ to be called
+ * on creation of a ScancodeWrapper. This stops this from
+ * happening.
+ */
+#ifdef PYPY_VERSION
+static PyObject *
+pg_scancodewrapper_new(PyTypeObject *subtype, PyObject *args, PyObject *kwds)
+{
+    PyObject *tuple = NULL;
+    Py_ssize_t size = PyTuple_Size(args);
+    if (size == 1) {
+        tuple = PyTuple_GET_ITEM(args, 0);
+        if (PyTuple_Check(tuple)) {
+            size = PyTuple_Size(tuple);
+        }
+        else {
+            tuple = NULL;
+        }
+    }
+
+    pgScancodeWrapper *obj =
+        (pgScancodeWrapper *)(subtype->tp_alloc(subtype, size));
+
+    if (obj && tuple) {
+        for (Py_ssize_t i = 0; i < size; ++i) {
+            PyObject *item = PyTuple_GET_ITEM((PyObject *)tuple, i);
+            PyTuple_SET_ITEM((PyObject *)obj, i, item);
+        }
+        Py_DECREF(tuple);
+    }
+
+    return (PyObject *)obj;
+}
+#endif /* PYPY_VERSION */
+
 static PyMappingMethods pg_scancodewrapper_mapping = {
     .mp_subscript = (binaryfunc)pg_scancodewrapper_subscript,
 };
@@ -106,6 +150,11 @@ static PyTypeObject pgScancodeWrapper_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.key.ScancodeWrapper",
     .tp_repr = (reprfunc)pg_scancodewrapper_repr,
     .tp_as_mapping = &pg_scancodewrapper_mapping,
+    .tp_iter = (getiterfunc)pg_iter_raise,
+    .tp_iternext = (iternextfunc)pg_iter_raise,
+#ifdef PYPY_VERSION
+    .tp_new = pg_scancodewrapper_new,
+#endif
     .tp_flags =
         Py_TPFLAGS_DEFAULT | Py_TPFLAGS_TUPLE_SUBCLASS | Py_TPFLAGS_BASETYPE,
 };
@@ -457,22 +506,22 @@ key_set_text_input_rect(PyObject *self, PyObject *obj)
 }
 
 static PyMethodDef _key_methods[] = {
-    {"set_repeat", key_set_repeat, METH_VARARGS, DOC_PYGAMEKEYSETREPEAT},
-    {"get_repeat", key_get_repeat, METH_NOARGS, DOC_PYGAMEKEYGETREPEAT},
-    {"get_pressed", key_get_pressed, METH_NOARGS, DOC_PYGAMEKEYGETPRESSED},
+    {"set_repeat", key_set_repeat, METH_VARARGS, DOC_KEY_SETREPEAT},
+    {"get_repeat", key_get_repeat, METH_NOARGS, DOC_KEY_GETREPEAT},
+    {"get_pressed", key_get_pressed, METH_NOARGS, DOC_KEY_GETPRESSED},
     {"name", (PyCFunction)key_name, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEKEYNAME},
+     DOC_KEY_NAME},
     {"key_code", (PyCFunction)key_code, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEKEYKEYCODE},
-    {"get_mods", key_get_mods, METH_NOARGS, DOC_PYGAMEKEYGETMODS},
-    {"set_mods", key_set_mods, METH_VARARGS, DOC_PYGAMEKEYSETMODS},
-    {"get_focused", key_get_focused, METH_NOARGS, DOC_PYGAMEKEYGETFOCUSED},
+     DOC_KEY_KEYCODE},
+    {"get_mods", key_get_mods, METH_NOARGS, DOC_KEY_GETMODS},
+    {"set_mods", key_set_mods, METH_VARARGS, DOC_KEY_SETMODS},
+    {"get_focused", key_get_focused, METH_NOARGS, DOC_KEY_GETFOCUSED},
     {"start_text_input", key_start_text_input, METH_NOARGS,
-     DOC_PYGAMEKEYSTARTTEXTINPUT},
+     DOC_KEY_STARTTEXTINPUT},
     {"stop_text_input", key_stop_text_input, METH_NOARGS,
-     DOC_PYGAMEKEYSTOPTEXTINPUT},
+     DOC_KEY_STOPTEXTINPUT},
     {"set_text_input_rect", key_set_text_input_rect, METH_O,
-     DOC_PYGAMEKEYSETTEXTINPUTRECT},
+     DOC_KEY_SETTEXTINPUTRECT},
 
     {NULL, NULL, 0, NULL}};
 
@@ -482,7 +531,7 @@ MODINIT_DEFINE(key)
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "key",
-                                         DOC_PYGAMEKEY,
+                                         DOC_KEY,
                                          -1,
                                          _key_methods,
                                          NULL,

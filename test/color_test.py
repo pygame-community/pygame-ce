@@ -500,8 +500,7 @@ class ColorTypeTest(unittest.TestCase):
 
     def test_repr(self):
         c = pygame.Color(68, 38, 26, 69)
-        t = "(68, 38, 26, 69)"
-        self.assertEqual(repr(c), t)
+        self.assertEqual(repr(c), "Color(68, 38, 26, 69)")
 
     def test_add(self):
         c1 = pygame.Color(0)
@@ -528,7 +527,7 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(c3.b, 164)
         self.assertEqual(c3.a, 255)
 
-        # Issue #286: Is type checking done for Python 3.x?
+        # pygame-ce issue #301: Is type checking done for Python 3.x?
         self.assertRaises(TypeError, operator.add, c1, None)
         self.assertRaises(TypeError, operator.add, None, c1)
 
@@ -557,7 +556,7 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(c3.b, 91)
         self.assertEqual(c3.a, 0)
 
-        # Issue #286: Is type checking done for Python 3.x?
+        # pygame-ce issue #301: Is type checking done for Python 3.x?
         self.assertRaises(TypeError, operator.sub, c1, None)
         self.assertRaises(TypeError, operator.sub, None, c1)
 
@@ -586,7 +585,7 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(c3.b, 9)
         self.assertEqual(c3.a, 255)
 
-        # Issue #286: Is type checking done for Python 3.x?
+        # pygame-ce issue #301: Is type checking done for Python 3.x?
         self.assertRaises(TypeError, operator.mul, c1, None)
         self.assertRaises(TypeError, operator.mul, None, c1)
 
@@ -615,7 +614,7 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(c3.b, 2)
         self.assertEqual(c3.a, 0)
 
-        # Issue #286: Is type checking done for Python 3.x?
+        # pygame-ce issue #301: Is type checking done for Python 3.x?
         self.assertRaises(TypeError, operator.floordiv, c1, None)
         self.assertRaises(TypeError, operator.floordiv, None, c1)
 
@@ -647,7 +646,7 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(c3.b, 7)
         self.assertEqual(c3.a, 15)
 
-        # Issue #286: Is type checking done for Python 3.x?
+        # pygame-ce issue #301: Is type checking done for Python 3.x?
         self.assertRaises(TypeError, operator.mod, c1, None)
         self.assertRaises(TypeError, operator.mod, None, c1)
 
@@ -774,6 +773,42 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(c.a, 146)
         self.assertEqual(int(c), int(0x33727592))
 
+    def test_from_cmy(self):
+        cmy = pygame.Color.from_cmy(0.5, 0.5, 0.5)
+        cmy_tuple = pygame.Color.from_cmy((0.5, 0.5, 0.5))
+
+        expected_cmy = (127, 127, 127)
+
+        self.assertEqual(expected_cmy, cmy)
+        self.assertEqual(expected_cmy, cmy_tuple)
+
+    def test_from_hsva(self):
+        hsva = pygame.Color.from_hsva(0, 100, 100, 100)
+        hsva_tuple = pygame.Color.from_hsva((0, 100, 100, 100))
+
+        expected_hsva = (255, 0, 0)
+
+        self.assertEqual(expected_hsva, hsva)
+        self.assertEqual(expected_hsva, hsva_tuple)
+
+    def test_from_hsla(self):
+        hsla = pygame.Color.from_hsla(0, 100, 100, 100)
+        hsla_tuple = pygame.Color.from_hsla((0, 100, 100, 100))
+
+        expected_hsla = (255, 255, 255)
+
+        self.assertEqual(expected_hsla, hsla)
+        self.assertEqual(expected_hsla, hsla_tuple)
+
+    def test_from_i1i2i3(self):
+        i1i2i3 = pygame.Color.from_i1i2i3(0, 0, 0)
+        i1i2i3_tuple = pygame.Color.from_i1i2i3((0, 0, 0))
+
+        expected_i1i2i3 = (0, 0, 0)
+
+        self.assertEqual(expected_i1i2i3, i1i2i3)
+        self.assertEqual(expected_i1i2i3, i1i2i3_tuple)
+
     def test_normalize(self):
         c = pygame.Color(204, 38, 194, 55)
         self.assertEqual(c.r, 204)
@@ -868,7 +903,7 @@ class ColorTypeTest(unittest.TestCase):
             self.assertTrue(-0.5 <= i2 <= 0.5)
             self.assertTrue(-0.5 <= i3 <= 0.5)
 
-    def test_issue_269(self):
+    def test_issue_284(self):
         """PyColor OverflowError on HSVA with hue value of 360
 
         >>> c = pygame.Color(0)
@@ -1110,6 +1145,31 @@ class ColorTypeTest(unittest.TestCase):
         self.assertRaises(TypeError, lambda: "string" in c)
         self.assertRaises(TypeError, lambda: 3.14159 in c)
 
+    def test_grayscale(self):
+        Color = pygame.color.Color
+
+        color = Color(255, 0, 0, 255)
+        self.assertEqual(color.grayscale(), Color(76, 76, 76, 255))
+        color = Color(3, 5, 7, 255)
+        self.assertEqual(color.grayscale(), Color(4, 4, 4, 255))
+        color = Color(3, 5, 70, 255)
+        self.assertEqual(color.grayscale(), Color(11, 11, 11, 255))
+        color = Color(3, 50, 70, 255)
+        self.assertEqual(color.grayscale(), Color(38, 38, 38, 255))
+        color = Color(30, 50, 70, 255)
+        self.assertEqual(color.grayscale(), Color(46, 46, 46, 255))
+
+        color = Color(255, 0, 0, 144)
+        self.assertEqual(color.grayscale(), Color(76, 76, 76, 144))
+        color = Color(3, 5, 7, 144)
+        self.assertEqual(color.grayscale(), Color(4, 4, 4, 144))
+        color = Color(3, 5, 70, 144)
+        self.assertEqual(color.grayscale(), Color(11, 11, 11, 144))
+        color = Color(3, 50, 70, 144)
+        self.assertEqual(color.grayscale(), Color(38, 38, 38, 144))
+        color = Color(30, 50, 70, 144)
+        self.assertEqual(color.grayscale(), Color(46, 46, 46, 144))
+
     def test_lerp(self):
         # setup
         Color = pygame.color.Color
@@ -1146,6 +1206,51 @@ class ColorTypeTest(unittest.TestCase):
         self.assertRaises(ValueError, lambda: color0.lerp((0, 0, 256, 0), 0.5))
         self.assertRaises(ValueError, lambda: color0.lerp((0, 0, 0, 256), 0.5))
         self.assertRaises(TypeError, lambda: color0.lerp(0.2, 0.5))
+
+    def test_swizzle_get(self):
+        c = pygame.color.Color(10, 20, 30, 40)
+
+        self.assertEqual(c.rg, (10, 20))
+        self.assertEqual(c.rb, (10, 30))
+        self.assertEqual(c.rr, (10, 10))
+
+        self.assertEqual(c.rgb, (10, 20, 30))
+        self.assertEqual(c.bgr, (30, 20, 10))
+        self.assertEqual(c.rrr, (10, 10, 10))
+        self.assertEqual(c.rrg, (10, 10, 20))
+        self.assertEqual(c.rrb, (10, 10, 30))
+        self.assertEqual(c.ggg, (20, 20, 20))
+        self.assertEqual(c.ggb, (20, 20, 30))
+        self.assertEqual(c.ggr, (20, 20, 10))
+        self.assertEqual(c.bbb, (30, 30, 30))
+        self.assertEqual(c.bbg, (30, 30, 20))
+        self.assertEqual(c.bbr, (30, 30, 10))
+
+        c.rgba = c.abgr
+        self.assertEqual(c.rgba, (40, 30, 20, 10))
+        c.rgba = c.rgga
+        self.assertEqual(c.rgba, (40, 30, 30, 10))
+        c.rg = c.gg
+        self.assertEqual(c.rgba, (30, 30, 30, 10))
+
+        with self.assertRaises(AttributeError):
+            c.rr = (10, 10)
+            c.bb = (10, 10)
+            c.gg = (10, 10)
+            c.aa = (10, 10)
+            c.aaa = (10, 10, 100)
+            c.rgb = (256, 256, 256)
+
+    def test_swizzle_return_types(self):
+        c = pygame.color.Color(10, 20, 30, 40)
+
+        self.assertEqual(type(c.rgb), tuple)
+        self.assertEqual(type(c.rgba), pygame.color.Color)
+        self.assertEqual(type(c.bgra), pygame.color.Color)
+        self.assertEqual(type(c.bg), tuple)
+        self.assertEqual(type(c.gr), tuple)
+        self.assertEqual(type(c.rr), tuple)
+        self.assertEqual(type(c.rrggbb), tuple)
 
     def test_premul_alpha(self):
         # setup

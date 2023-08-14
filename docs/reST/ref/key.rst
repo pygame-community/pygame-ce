@@ -28,7 +28,7 @@ The ``pygame.KEYDOWN`` event has the additional attributes ``unicode`` and
      keyboard to keyboard, but is useful for key selection of weird keys like
      the multimedia keys
 
-.. versionadded:: 2.0.0
+.. versionaddedold:: 2.0.0
     The ``pygame.TEXTINPUT`` event is preferred to the ``unicode`` attribute
     of ``pygame.KEYDOWN``. The attribute ``text`` contains the input.
 
@@ -266,6 +266,11 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
       translate these pushed keys into a fully translated character value. See
       the ``pygame.KEYDOWN`` events on the :mod:`pygame.event` queue for this
       functionality.
+   
+   .. versionchanged:: 2.1.4
+      The collection of bools returned by ``get_pressed`` can not be iterated
+      over because the indexes of the internal tuple does not correspond to the 
+      keycodes.
 
    .. ## pygame.key.get_pressed ##
 
@@ -312,7 +317,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
 
    :raises ValueError: if ``delay`` or ``interval`` is < 0
 
-   .. versionchanged:: 2.0.0 A ``ValueError`` is now raised (instead of a
+   .. versionchangedold:: 2.0.0 A ``ValueError`` is now raised (instead of a
       ``pygame.error``) if ``delay`` or ``interval`` is < 0.
 
    .. ## pygame.key.set_repeat ##
@@ -325,7 +330,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
    Get the ``delay`` and ``interval`` keyboard repeat values. Refer to
    :func:`pygame.key.set_repeat()` for a description of these values.
 
-   .. versionadded:: 1.8
+   .. versionaddedold:: 1.8
 
    .. ## pygame.key.get_repeat ##
 
@@ -342,9 +347,6 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
    expected to be the same across different pygame versions (provided the
    corresponding key constant exists and is unique). If the return value is
    passed to the ``key_code`` function, the original constant will be returned.
-
-   **Experimental:** ``use_compat`` paramater still in development for testing and feedback. It may change.
-   `Please leave use_compat feedback with authors <https://github.com/pygame/pygame/pull/3312>`_
 
    If this argument is ``False``, the returned name may be prettier to display
    and may cover a wider range of keys than with ``use_compat``, but there are
@@ -376,7 +378,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
 
    :raises ValueError: if the key name is not known.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. ## pygame.key.key_code ##
 
@@ -407,7 +409,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
 
    Text input events handling is on by default.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. ## pygame.key.start_text_input ##
 
@@ -427,7 +429,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
    should be disabled once text entry is finished, or when the user
    clicks outside of a text box.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. ## pygame.key.stop_text_input ##
 
@@ -439,7 +441,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
    This sets the rectangle used for typing with an IME.
    It controls where the candidate list will open, if supported.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. ## pygame.key.set_text_input_rect ##
 

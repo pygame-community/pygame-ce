@@ -33,7 +33,8 @@ MP3 in most cases.
    If you are loading from a file object, the namehint parameter can be used to specify
    the type of music data in the object. For example: :code:`load(fileobj, "ogg")`.
 
-   .. versionchanged:: 2.0.2 Added optional ``namehint`` argument
+   .. versionchangedold:: 2.0.2 Added optional ``namehint`` argument
+   .. versionchanged:: 2.2.0 Raises ``FileNotFoundError`` instead of :exc:`pygame.error` if file cannot be found
 
    .. ## pygame.mixer.music.load ##
 
@@ -44,7 +45,7 @@ MP3 in most cases.
 
    This closes resources like files for any music that may be loaded.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. ## pygame.mixer.music.load ##
 
@@ -76,7 +77,7 @@ MP3 in most cases.
    previously set by :func:`set_volume`). The sample may end before the fade-in
    is complete. If the music is already streaming ``fade_ms`` is ignored.
    
-   .. versionchanged:: 2.0.0 Added optional ``fade_ms`` argument
+   .. versionchangedold:: 2.0.0 Added optional ``fade_ms`` argument
 
    .. ## pygame.mixer.music.play ##
 
@@ -177,7 +178,7 @@ MP3 in most cases.
    False when the music is paused. In pygame 1 it returns True when the music
    is paused.
 
-   .. versionchanged:: 2.0.1 Returns False when music paused.
+   .. versionchangedold:: 2.0.1 Returns False when music paused.
 
    .. ## pygame.mixer.music.get_busy ##
 
@@ -197,13 +198,13 @@ MP3 in most cases.
    file, first call :func:`rewind`.
 
    Other file formats are unsupported. Newer versions of SDL_mixer have
-   better positioning support than earlier ones. An SDLError is raised if a
-   particular format does not support positioning.
+   better positioning support than earlier ones. A :exc:`pygame.error` is
+   raised if a particular format does not support positioning.
 
-   Function :func:`set_pos` calls underlining SDL_mixer function
+   Function :func:`set_pos` calls underlying SDL_mixer function
    ``Mix_SetMusicPosition``.
 
-   .. versionadded:: 1.9.2
+   .. versionaddedold:: 1.9.2
 
    .. ## pygame.mixer.music.set_pos ##
 
@@ -242,7 +243,8 @@ MP3 in most cases.
        pygame.mixer.music.play(5)        # Plays six times, not five!
        pygame.mixer.music.queue('mozart.ogg')
 
-   .. versionchanged:: 2.0.2 Added optional ``namehint`` argument
+   .. versionchangedold:: 2.0.2 Added optional ``namehint`` argument
+   .. versionchanged:: 2.2.0 Raises ``FileNotFoundError`` instead of :exc:`pygame.error` if file cannot be found
 
    .. ## pygame.mixer.music.queue ##
 
@@ -272,3 +274,31 @@ MP3 in most cases.
    .. ## pygame.mixer.music.get_endevent ##
 
 .. ## pygame.mixer.music ##
+
+.. function:: get_metadata
+
+   | :sl:`get metadata of the specified or currently loaded music stream`
+   | :sg:`get_metadata() -> dict`
+   | :sg:`get_metadata(filename) -> dict`
+   | :sg:`get_metadata(fileobj, namehint="") -> dict`
+   
+   If no arguments are passed returns a dictionary containing metadata 
+   of the currently loaded music stream, raises an exception if a music stream is not loaded. 
+   Available keys are ``"title"``, ``"album"``, ``"artist"``, ``"copyright"``. 
+   Values are strings containing corresponding retrieved metadata. 
+   If particular metadata was not found the value is an empty string.
+   Here is an example:
+   ``{'title': 'Small Tone', 'album': 'Tones', 'artist': 'Audacity Generator', 'copyright': ''}``
+   
+   Refer to the :func:`pygame.mixer.music.load` function for arguments regarding specifying a file or a file-like object 
+   whose metadata you want to retrieve. For this function all arguments are optional, 
+   however, specifying only the ``namehint`` will raise an exception.
+   
+   Since the underlying functionality was introduced in version 2.6.0 of SDL_mixer,
+   calling this function with an older version of SDL_mixer will return a dictionary
+   with all values being set to empty strings. You can find your version of SDL_mixer
+   by using :func:`pygame.mixer.get_sdl_mixer_version`.
+
+   .. versionadded:: 2.1.4
+   
+   .. ## pygame.mixer.music.get_metadata ##

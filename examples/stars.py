@@ -1,103 +1,136 @@
 #!/usr/bin/env python
-""" pg.examples.stars
+""" pygame.examples.stars
 
-    We are all in the gutter,
-    but some of us are looking at the stars.
-                                            -- Oscar Wilde
+We are all in the gutter,
+but some of us are looking at the stars.
+                                        -- Oscar Wilde
 
-A simple starfield example. Note you can move the 'center' of
-the starfield by leftclicking in the window. This example show
-the basics of creating a window, simple pixel plotting, and input
-event management.
+A simple starfield example. Note you can move the center of
+the starfield by leftclicking in the window. This example shows
+the basics of creating a window, simple pixel plotting, and event management.
 """
+
 import random
-import math
-import pygame as pg
+from typing import List
 
-# constants
-WINSIZE = [640, 480]
-WINCENTER = [320, 240]
-NUMSTARS = 150
+import pygame
 
 
-def init_star():
-    "creates new star values"
-    dir = random.randrange(100000)
-    velmult = random.random() * 0.6 + 0.4
-    vel = [math.sin(dir) * velmult, math.cos(dir) * velmult]
-    return vel, WINCENTER[:]
+class Particle:
+    def __init__(
+        self,
+        pos: List[int],
+        vel: pygame.Vector2,
+    ):
+        """
+        Parameters:
+            pos: Position of the particle
+            vel: How far does the particle move (x, y) every frame
+        """
+
+        self.pos = pos
+        self.vel = vel
+        self.color_list = [
+            (255, 210, 125),
+            (255, 163, 113),
+            (166, 168, 255),
+            (255, 250, 134),
+            (168, 123, 255),
+        ]
+
+    def draw(self, display: pygame.Surface):
+        """
+        Draws the particle on a pygame.Surface
+        Parameters:
+            display: The surface the particle is drawn on
+        """
+
+        pygame.draw.line(display, random.choice(self.color_list), self.pos, self.pos)
+
+    def update(self):
+        """
+        Moves the particle
+        """
+
+        self.pos += self.vel
 
 
-def initialize_stars():
-    "creates a new starfield"
-    stars = []
-    for x in range(NUMSTARS):
-        star = init_star()
-        vel, pos = star
-        steps = random.randint(0, WINCENTER[0])
-        pos[0] = pos[0] + (vel[0] * steps)
-        pos[1] = pos[1] + (vel[1] * steps)
-        vel[0] = vel[0] * (steps * 0.09)
-        vel[1] = vel[1] * (steps * 0.09)
-        stars.append(star)
-    move_stars(stars)
-    return stars
+def create_particle(particle_list: List[Particle], pos: pygame.Vector2):
+    """
+    Creates a new particle
+    Parameters:
+        particle_list: List of existing particles
+        pos: The coordinates the new particle will be spawned on
+    """
+
+    particle_list.append(
+        Particle(
+            pos=pos.copy(),
+            vel=pygame.Vector2(random.uniform(-5, 5), random.uniform(-5, 5)),
+        )
+    )
 
 
-def draw_stars(surface, stars, color):
-    "used to draw (and clear) the stars"
-    for vel, pos in stars:
-        pos = (int(pos[0]), int(pos[1]))
-        surface.set_at(pos, color)
+def update_particles(particle_list: List[Particle], screen_rect: pygame.Rect):
+    """
+    Updates the particles
+    Parameters:
+        particle_list: List of existing particles
+        screen_rect: A pygame.Rect that represents the screen
+                (used to determine whether a particle is visible on the screen)
+    """
+
+    for particle in particle_list:
+        if not screen_rect.collidepoint(particle.pos):
+            particle_list.remove(particle)
+
+        particle.update()
 
 
-def move_stars(stars):
-    "animate the star values"
-    for vel, pos in stars:
-        pos[0] = pos[0] + vel[0]
-        pos[1] = pos[1] + vel[1]
-        if not 0 <= pos[0] <= WINSIZE[0] or not 0 <= pos[1] <= WINSIZE[1]:
-            vel[:], pos[:] = init_star()
-        else:
-            vel[0] = vel[0] * 1.05
-            vel[1] = vel[1] * 1.05
+def draw_particles(particle_list: List[Particle], display: pygame.Surface):
+    """
+    Draws the particles
+    Parameters:
+        particle_list: List of existing particles
+        display: The surface the particle is drawn on
+    """
+    for particle in particle_list:
+        particle.draw(display)
 
 
 def main():
-    "This is the starfield code"
-    # create our starfield
-    random.seed()
-    stars = initialize_stars()
-    clock = pg.time.Clock()
-    # initialize and prepare screen
-    pg.init()
-    screen = pg.display.set_mode(WINSIZE)
-    pg.display.set_caption("pygame Stars Example")
-    white = 255, 240, 200
-    black = 20, 20, 40
-    screen.fill(black)
+    """
+    Contains the game variables and loop
+    """
+    screen = pygame.display.set_mode((600, 500))
+    clock = pygame.Clock()
+    pygame.display.set_caption("Pygame Stars")
+    particles = []
+    # how many particles to spawn every frame
+    particle_density = 10
 
-    # main game loop
-    done = 0
-    while not done:
-        draw_stars(screen, stars, black)
-        move_stars(stars)
-        draw_stars(screen, stars, white)
-        pg.display.update()
-        for e in pg.event.get():
-            if e.type == pg.QUIT or (e.type == pg.KEYUP and e.key == pg.K_ESCAPE):
-                done = 1
-                break
-            elif e.type == pg.MOUSEBUTTONDOWN and e.button == 1:
-                WINCENTER[:] = list(e.pos)
-        clock.tick(50)
-    pg.quit()
+    screen_rect = screen.get_rect()
+    spawn_point = pygame.Vector2(screen_rect.center)
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                spawn_point = pygame.Vector2(event.pos)
+
+        screen.fill((20, 20, 40))
+        for _ in range(particle_density):
+            create_particle(particles, spawn_point)
+        update_particles(particles, screen_rect)
+        draw_particles(particles, screen)
+
+        pygame.display.flip()
+        clock.tick(60)
+
+    pygame.quit()
 
 
-# if python says run, then we should run
 if __name__ == "__main__":
     main()
-
-    # I prefer the time of insects to the time of stars.
-    #
-    #                              -- Wisława Szymborska

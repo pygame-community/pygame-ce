@@ -22,6 +22,13 @@
    For the binary operators, the class of the returned color is that of the
    left hand color object of the operator.
 
+   Color objects support swizzling for their ``RGBA`` attributes, which allows
+   the creation of new color objects with the corresponding swizzled attributes
+   as its ``RGBA`` attributes. For example, ``color.bgra`` provides a shortcut to
+   doing ``Color(color.b, color.g, color.r, color.a)``. Swizzling with other than
+   4 attributes will return a tuple consisting of the corresponding elements
+   instead of a color object.
+
    Color objects support equality comparison with other color objects and 3 or
    4 element tuples of integers. There was a bug in pygame 1.8.1
    where the default alpha was 0, not 255 like previously.
@@ -85,12 +92,12 @@
    :returns: a newly created :class:`Color` object
    :rtype: Color
 
-   .. versionchanged:: 2.0.0
+   .. versionchangedold:: 2.0.0
       Support for tuples, lists, and :class:`Color` objects when creating
       :class:`Color` objects.
-   .. versionchanged:: 1.9.2 Color objects export the C level array interface.
-   .. versionchanged:: 1.9.0 Color objects support 4-element tuples of integers.
-   .. versionchanged:: 1.8.1 New implementation of the class.
+   .. versionchangedold:: 1.9.2 Color objects export the C level array interface.
+   .. versionchangedold:: 1.9.0 Color objects support 4-element tuples of integers.
+   .. versionchangedold:: 1.8.1 New implementation of the class.
 
    .. attribute:: r
 
@@ -184,6 +191,58 @@
       expect.
 
       .. ## Color.i1i2i3 ##
+   
+   .. classmethod:: from_cmy
+
+      | :sl:`Returns a Color object from a CMY representation`
+      | :sg:`from_cmy(object) -> Color`
+      | :sg:`from_cmy(c, m, y) -> Color`
+
+      Creates a Color object from the given CMY components. Refer to :attr:`Color.cmy`
+      for more information.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Color.from_cmy ##
+   
+   .. classmethod:: from_hsva
+
+      | :sl:`Returns a Color object from an HSVA representation`
+      | :sg:`from_hsva(object) -> Color`
+      | :sg:`from_hsva(h, s, v, a) -> Color`
+
+      Creates a Color object from the given HSVA components. Refer to :attr:`Color.hsva`
+      for more information.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Color.from_hsva ##
+   
+   .. classmethod:: from_hsla
+
+      | :sl:`Returns a Color object from an HSLA representation`
+      | :sg:`from_hsla(object) -> Color`
+      | :sg:`from_hsla(h, s, l, a) -> Color`
+
+      Creates a Color object from the given HSLA components. Refer to :attr:`Color.hsla`
+      for more information.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Color.from_hsla ##
+
+   .. classmethod:: from_i1i2i3
+
+      | :sl:`Returns a Color object from a I1I2I3 representation`
+      | :sg:`from_i1i2i3(object) -> Color`
+      | :sg:`from_i1i2i3(i1, i2, i3) -> Color`
+
+      Creates a Color object from the given I1I2I3 components. Refer to :attr:`Color.i1i2i3`
+      for more information.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Color.from_i1i2i3 ##
 
    .. method:: normalize
 
@@ -198,7 +257,7 @@
    .. method:: correct_gamma
 
       | :sl:`Applies a certain gamma value to the Color.`
-      | :sg:`correct_gamma (gamma) -> Color`
+      | :sg:`correct_gamma(gamma) -> Color`
 
       Applies a certain gamma value to the Color and returns a new Color with
       the adjusted ``RGBA`` values.
@@ -222,9 +281,21 @@
       get the length of a Color do ``len(acolor)``.
 
       .. deprecated:: 2.1.3
-      .. versionadded:: 1.9.0
+      .. versionaddedold:: 1.9.0
 
       .. ## Color.set_length ##
+
+   .. method:: grayscale
+
+      | :sl:`returns the grayscale of a Color`
+      | :sg:`grayscale() -> Color`
+      
+      Returns a new Color object which represents the grayscaled version of self, using the luminosity formula, 
+      which weights red, green, and blue according to their relative contribution to perceived brightness.
+
+      .. versionadded:: 2.1.4
+
+      .. ## Color.grayscale ##
 
    .. method:: lerp
 
@@ -237,7 +308,7 @@
       It must be a value between 0 and 1 where 0 means self and 1 means
       other will be returned.
 
-      .. versionadded:: 2.0.1
+      .. versionaddedold:: 2.0.1
 
       .. ## Color.lerp ##
 
@@ -254,7 +325,7 @@
       flag for :meth:`pygame.Surface.blit()`, which assumes that all surfaces using
       it are using pre-multiplied alpha colors.
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Color.premul_alpha ##
 
@@ -268,7 +339,7 @@
       Sets the elements of the color. See parameters for :meth:`pygame.Color` for the
       parameters of this function. If the alpha value was not set it will not change.
 
-      .. versionadded:: 2.0.1
+      .. versionaddedold:: 2.0.1
 
       .. ## Color.update ##
    .. ## pygame.Color ##

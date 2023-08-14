@@ -8,7 +8,7 @@
 
 | :sl:`pygame module for interacting with midi input and output.`
 
-.. versionadded:: 1.9.0
+.. versionaddedold:: 1.9.0
 
 The midi module can send output to midi devices and get input from midi
 devices. It can also list midi devices on the system.
@@ -23,7 +23,7 @@ future. The pyportmidi bindings are included with pygame.
 
 |
 
-.. versionadded:: 2.0.0
+.. versionaddedold:: 2.0.0
 
 These are pygame events (:mod:`pygame.event`) reserved for midi use. The
 ``MIDIIN`` event is used by :func:`pygame.midi.midis2events` when converting
@@ -71,7 +71,7 @@ midi events to pygame events.
    :returns: ``True`` if the :mod:`pygame.midi` module is currently initialized.
    :rtype: bool
 
-   .. versionadded:: 1.9.5
+   .. versionaddedold:: 1.9.5
 
    .. ## pygame.midi.get_init ##
 
@@ -218,7 +218,7 @@ midi events to pygame events.
 
       If no value is given, the pitch bend is returned to "no change".
 
-      .. versionadded:: 1.9.4
+      .. versionaddedold:: 1.9.4
 
    .. method:: write
 
@@ -439,7 +439,7 @@ midi events to pygame events.
 
        frequency_to_midi(27.5) == 21
 
-   .. versionadded:: 1.9.5
+   .. versionaddedold:: 1.9.5
 
    .. ## pygame.midi.frequency_to_midi ##
 
@@ -454,7 +454,7 @@ midi events to pygame events.
 
        midi_to_frequency(21) == 27.5
 
-   .. versionadded:: 1.9.5
+   .. versionaddedold:: 1.9.5
 
    .. ## pygame.midi.midi_to_frequency ##
 
@@ -469,7 +469,7 @@ midi events to pygame events.
 
        midi_to_ansi_note(21) == 'A0'
 
-   .. versionadded:: 1.9.5
+   .. versionaddedold:: 1.9.5
 
    .. ## pygame.midi.midi_to_ansi_note ##
 

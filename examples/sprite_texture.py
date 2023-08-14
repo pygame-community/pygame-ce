@@ -10,10 +10,9 @@ _sdl2.video.Image is a backwards compatible way with to use Texture with
 pygame.sprite groups.
 """
 import os
-import pygame as pg
+import pygame
 
-if pg.get_sdl_version()[0] < 2:
-    raise SystemExit("This example requires pygame 2 and SDL2.")
+
 from pygame._sdl2 import Window, Texture, Image, Renderer
 
 
@@ -21,20 +20,20 @@ data_dir = os.path.join(os.path.split(os.path.abspath(__file__))[0], "data")
 
 
 def load_img(file):
-    return pg.image.load(os.path.join(data_dir, file))
+    return pygame.image.load(os.path.join(data_dir, file))
 
 
-pg.display.init()
-pg.key.set_repeat(10, 10)
+pygame.display.init()
+pygame.key.set_repeat(10, 10)
 
 win = Window("asdf", resizable=True)
 renderer = Renderer(win)
 tex = Texture.from_surface(renderer, load_img("alien1.gif"))
 
 
-class Something(pg.sprite.Sprite):
+class Something(pygame.sprite.Sprite):
     def __init__(self, img):
-        pg.sprite.Sprite.__init__(self)
+        pygame.sprite.Sprite.__init__(self)
 
         self.rect = img.get_rect()
         self.image = img
@@ -56,7 +55,7 @@ sprite2.rect.y = 250
 sprite2.rect.w /= 2
 sprite2.rect.h /= 2
 
-group = pg.sprite.Group()
+group = pygame.sprite.Group()
 group.add(sprite2)
 group.add(sprite)
 
@@ -64,23 +63,23 @@ import math
 
 t = 0
 running = True
-clock = pg.time.Clock()
+clock = pygame.Clock()
 renderer.draw_color = (255, 0, 0, 255)
 
 while running:
-    for event in pg.event.get():
-        if event.type == pg.QUIT:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
             running = False
-        elif event.type == pg.KEYDOWN:
-            if event.key == pg.K_ESCAPE:
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
                 running = False
-            elif event.key == pg.K_LEFT:
+            elif event.key == pygame.K_LEFT:
                 sprite.rect.x -= 5
-            elif event.key == pg.K_RIGHT:
+            elif event.key == pygame.K_RIGHT:
                 sprite.rect.x += 5
-            elif event.key == pg.K_DOWN:
+            elif event.key == pygame.K_DOWN:
                 sprite.rect.y += 5
-            elif event.key == pg.K_UP:
+            elif event.key == pygame.K_UP:
                 sprite.rect.y -= 5
 
     renderer.clear()
@@ -101,4 +100,4 @@ while running:
     clock.tick(60)
     win.title = str(f"FPS: {clock.get_fps()}")
 
-pg.quit()
+pygame.quit()

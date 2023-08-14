@@ -34,7 +34,7 @@ class Font(_Font):
     __unull = "\x00"
     __bnull = b"\x00"
 
-    def __init__(self, file, size=-1):
+    def __init__(self, file=None, size=20):
         size = max(size, 1)
         if isinstance(file, str):
             try:
@@ -59,7 +59,7 @@ class Font(_Font):
         self.ucs4 = True
         self.underline_adjustment = 1.0
 
-    def render(self, text, antialias, color, background=None):
+    def render(self, text, antialias, color, bgcolor=None):
         """render(text, antialias, color, background=None) -> Surface
         draw text on a new Surface"""
 
@@ -74,7 +74,7 @@ class Font(_Font):
         )
         self.antialiased = bool(antialias)
         try:
-            s, _ = super().render(text, color, background)
+            s, _ = super().render(text, color, bgcolor)
             return s
         finally:
             self.antialiased = save_antialiased

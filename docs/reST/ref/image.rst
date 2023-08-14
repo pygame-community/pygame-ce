@@ -46,7 +46,7 @@ formats.
    * ``XPM``
    
    
-.. versionadded:: 2.0 Loading SVG, WebP, PNM
+.. versionaddedold:: 2.0 Loading SVG, WebP, PNM
 
 Saving images only supports a limited set of formats. You can save to the
 following formats.
@@ -62,14 +62,14 @@ following formats.
 
 ``JPEG`` and ``JPG``, as well as ``TIF`` and ``TIFF`` refer to the same file format
 
-.. versionadded:: 1.8 Saving PNG and JPEG files.
+.. versionaddedold:: 1.8 Saving PNG and JPEG files.
 
 
 .. function:: load
 
    | :sl:`load new image from a file (or file-like object)`
-   | :sg:`load(filename) -> Surface`
-   | :sg:`load(fileobj, namehint="") -> Surface`
+   | :sg:`load(file) -> Surface`
+   | :sg:`load(file, namehint="") -> Surface`
 
    Load an image from a file source. You can pass either a filename, a Python
    file-like object, or a pathlib.Path.
@@ -100,13 +100,15 @@ following formats.
 
      eg. asurf = pygame.image.load(os.path.join('data', 'bla.png'))
 
+   .. versionchanged:: 2.2.0 Now supports keyword arguments.
+
    .. ## pygame.image.load ##
 
 .. function:: save
 
    | :sl:`save an image to file (or file-like object)`
-   | :sg:`save(Surface, filename) -> None`
-   | :sg:`save(Surface, fileobj, namehint="") -> None`
+   | :sg:`save(Surface, file) -> None`
+   | :sg:`save(Surface, file, namehint="") -> None`
 
    This will save your Surface as either a ``BMP``, ``TGA``, ``PNG``, or
    ``JPEG`` image. If the filename extension is unrecognized it will default to
@@ -119,11 +121,12 @@ following formats.
              the object needs to be flushed after saving to it to make loading
              from it possible.
 
-   .. versionchanged:: 1.8 Saving PNG and JPEG files.
-   .. versionchanged:: 2.0.0
+   .. versionchangedold:: 1.8 Saving PNG and JPEG files.
+   .. versionchangedold:: 2.0.0
                        The ``namehint`` parameter was added to make it possible
                        to save other formats than ``TGA`` to a file-like object.
                        Saving to a file-like object with JPEG is possible.
+   .. versionchanged:: 2.2.0 Now supports keyword arguments.
 
    .. ## pygame.image.save ##
 
@@ -141,7 +144,7 @@ following formats.
    version of the library that Pygame is linked against, while ``linked=False``
    will return the version of the library that Pygame is compiled against.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. versionchanged:: 2.1.4 ``linked`` keyword argument added and default behavior changed from returning compiled version to returning linked version
 
@@ -163,36 +166,10 @@ following formats.
    | :sl:`transfer image to byte buffer`
    | :sg:`tostring(Surface, format, flipped=False) -> bytes`
 
-   Creates a string of bytes that can be transferred with the ``fromstring``
-   or ``frombytes`` methods in other Python imaging packages. Some Python
-   image packages prefer their images in bottom-to-top format (PyOpenGL for
-   example). If you pass ``True`` for the flipped argument, the byte buffer
-   will be vertically flipped.
+   DEPRECATED: This function has the same functionality as :func:`tobytes()`, which is preferred and should be used.
 
-   The format argument is a string of one of the following values. Note that
-   only 8-bit Surfaces can use the "P" format. The other formats will work for
-   any Surface. Also note that other Python image packages support more formats
-   than pygame.
+   .. deprecated:: 2.3.0
 
-      * ``P``, 8-bit palettized Surfaces
-
-      * ``RGB``, 24-bit image
-
-      * ``RGBX``, 32-bit image with unused space
-
-      * ``RGBA``, 32-bit image with an alpha channel
-
-      * ``ARGB``, 32-bit image with alpha channel first
-      
-      * ``BGRA``, 32-bit image with alpha channel, red and blue channels swapped
-
-      * ``RGBA_PREMULT``, 32-bit image with colors scaled by alpha channel
-
-      * ``ARGB_PREMULT``, 32-bit image with colors scaled by alpha channel, alpha channel first
-
-   .. note:: it is preferred to use :func:`tobytes` as of pygame 2.1.3
-
-   .. versionadded:: 2.1.3 BGRA format
    .. ## pygame.image.tostring ##
 
 .. function:: tobytes
@@ -227,12 +204,12 @@ following formats.
 
       * ``ARGB_PREMULT``, 32-bit image with colors scaled by alpha channel, alpha channel first
    
-   .. note:: this function is an alias for :func:`tostring`. The use of this
-             function is recommended over :func:`tostring` as of pygame 2.1.3.
+   .. note:: The use of this function is recommended over :func:`tostring` as of pygame 2.1.3.
              This function was introduced so it matches nicely with other 
              libraries (PIL, numpy, etc), and with people's expectations.
 
    .. versionadded:: 2.1.3 
+   .. versionchanged:: 2.2.0 Now supports keyword arguments.
 
    .. ## pygame.image.tobytes ##
 
@@ -240,27 +217,18 @@ following formats.
 .. function:: fromstring
 
    | :sl:`create new Surface from a byte buffer`
-   | :sg:`fromstring(bytes, size, format, flipped=False) -> Surface`
+   | :sg:`fromstring(bytes, size, format, flipped=False, pitch=-1) -> Surface`
 
-   This function takes arguments similar to :func:`pygame.image.tostring()`.
-   The size argument is a pair of numbers representing the width and height.
-   Once the new Surface is created it is independent from the memory of the
-   bytes passed in.
+   DEPRECATED: This function has the same functionality as :func:`frombytes()`, which is preferred and should be used.
 
-   The bytes and format passed must compute to the exact size of image
-   specified. Otherwise a ``ValueError`` will be raised.
-
-   See the :func:`pygame.image.frombuffer()` method for a potentially faster
-   way to transfer images into pygame.
-
-   .. note:: it is preferred to use :func:`frombytes` as of pygame 2.1.3
+   .. deprecated:: 2.3.0
 
    .. ## pygame.image.fromstring ##
 
 .. function:: frombytes
 
    | :sl:`create new Surface from a byte buffer`
-   | :sg:`frombytes(bytes, size, format, flipped=False) -> Surface`
+   | :sg:`frombytes(bytes, size, format, flipped=False, pitch=-1) -> Surface`
 
    This function takes arguments similar to :func:`pygame.image.tobytes()`.
    The size argument is a pair of numbers representing the width and height.
@@ -270,22 +238,28 @@ following formats.
    The bytes and format passed must compute to the exact size of image
    specified. Otherwise a ``ValueError`` will be raised.
 
+   The 'pitch' argument can be used specify the pitch/stride per horizontal line
+   of the image bytes in bytes. It must be equal to or greater than how many bytes
+   the pixel data of each horizontal line in the image bytes occupies without any
+   extra padding. By default, it is ``-1``, which means that the pitch/stride is 
+   the same size as how many bytes the pure pixel data of each horizontal line takes.
+
    See the :func:`pygame.image.frombuffer()` method for a potentially faster
    way to transfer images into pygame.
 
-   .. note:: this function is an alias for :func:`fromstring`. The use of this
-             function is recommended over :func:`fromstring` as of pygame 2.1.3.
+   .. note:: The use of this function is recommended over :func:`fromstring` as of pygame 2.1.3.
              This function was introduced so it matches nicely with other 
              libraries (PIL, numpy, etc), and with people's expectations.
 
-   .. versionadded:: 2.1.3 
+   .. versionadded:: 2.1.3
+   .. versionadded:: 2.1.4 Added a 'pitch' argument and support for keyword arguments.
 
    .. ## pygame.image.frombytes ##
 
 .. function:: frombuffer
 
    | :sl:`create a new Surface that shares data inside a bytes buffer`
-   | :sg:`frombuffer(buffer, size, format) -> Surface`
+   | :sg:`frombuffer(buffer, size, format, pitch=-1) -> Surface`
 
    Create a new Surface that shares pixel data directly from a buffer. This
    buffer can be bytes, a bytearray, a memoryview, a
@@ -311,8 +285,16 @@ following formats.
       * ``ARGB``, 32-bit image with alpha channel first
 
       * ``BGRA``, 32-bit image with alpha channel, red and blue channels swapped
-  
+
+   The 'pitch' argument can be used specify the pitch/stride per horizontal line
+   of the image buffer in bytes. It must be equal to or greater than how many bytes
+   the pixel data of each horizontal line in the image buffer occupies without any
+   extra padding. By default, it is ``-1``, which means that the pitch/stride is 
+   the same size as how many bytes the pure pixel data of each horizontal line takes.
+
    .. versionadded:: 2.1.3 BGRA format
+   .. versionadded:: 2.1.4 Added a 'pitch' argument and support for keyword arguments.
+
    .. ## pygame.image.frombuffer ##
 
 .. function:: load_basic
@@ -332,28 +314,29 @@ following formats.
 .. function:: load_extended
 
    | :sl:`load an image from a file (or file-like object)`
-   | :sg:`load_extended(filename) -> Surface`
-   | :sg:`load_extended(fileobj, namehint="") -> Surface`
+   | :sg:`load_extended(file) -> Surface`
+   | :sg:`load_extended(file, namehint="") -> Surface`
 
    This function is similar to :func:`pygame.image.load()`, except that this
    function can only be used if pygame was built with extended image format
    support.
 
-   .. versionchanged:: 2.0.1
+   .. versionchangedold:: 2.0.1
                        This function is always available, but raises an
                        ``NotImplementedError`` if extended image formats are
                        not supported.
                        Previously, this function may or may not be
                        available, depending on the state of extended image
                        format support.
+   .. versionchanged:: 2.2.0 Now supports keyword arguments.
 
    .. ## pygame.image.load_extended ##
 
 .. function:: save_extended
 
    | :sl:`save a png/jpg image to file (or file-like object)`
-   | :sg:`save_extended(Surface, filename) -> None`
-   | :sg:`save_extended(Surface, fileobj, namehint="") -> None`
+   | :sg:`save_extended(Surface, file) -> None`
+   | :sg:`save_extended(Surface, file, namehint="") -> None`
 
    This will save your Surface as either a ``PNG`` or ``JPEG`` image.
 
@@ -362,13 +345,14 @@ following formats.
    saved. Saves to ``JPEG`` in case the namehint was not specified while
    saving to a file-like object.
 
-   .. versionchanged:: 2.0.1
+   .. versionchangedold:: 2.0.1
                        This function is always available, but raises an
                        ``NotImplementedError`` if extended image formats are
                        not supported.
                        Previously, this function may or may not be
                        available, depending on the state of extended image
                        format support.
+   .. versionchanged:: 2.2.0 Now supports keyword arguments.
 
    .. ## pygame.image.save_extended ##
 

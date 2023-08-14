@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -2066,18 +2066,16 @@ pg_uninstall_parachute(void)
 /* bind functions to python */
 
 static PyMethodDef _base_methods[] = {
-    {"init", (PyCFunction)pg_init, METH_NOARGS, DOC_PYGAMEINIT},
-    {"quit", (PyCFunction)pg_quit, METH_NOARGS, DOC_PYGAMEQUIT},
-    {"get_init", (PyCFunction)pg_base_get_init, METH_NOARGS,
-     DOC_PYGAMEGETINIT},
-    {"register_quit", (PyCFunction)pg_register_quit, METH_O,
-     DOC_PYGAMEREGISTERQUIT},
-    {"get_error", (PyCFunction)pg_get_error, METH_NOARGS, DOC_PYGAMEGETERROR},
-    {"set_error", pg_set_error, METH_VARARGS, DOC_PYGAMESETERROR},
+    {"init", (PyCFunction)pg_init, METH_NOARGS, DOC_INIT},
+    {"quit", (PyCFunction)pg_quit, METH_NOARGS, DOC_QUIT},
+    {"get_init", (PyCFunction)pg_base_get_init, METH_NOARGS, DOC_GETINIT},
+    {"register_quit", (PyCFunction)pg_register_quit, METH_O, DOC_REGISTERQUIT},
+    {"get_error", (PyCFunction)pg_get_error, METH_NOARGS, DOC_GETERROR},
+    {"set_error", pg_set_error, METH_VARARGS, DOC_SETERROR},
     {"get_sdl_version", (PyCFunction)pg_get_sdl_version,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMEGETSDLVERSION},
+     METH_VARARGS | METH_KEYWORDS, DOC_GETSDLVERSION},
     {"get_sdl_byteorder", (PyCFunction)pg_get_sdl_byteorder, METH_NOARGS,
-     DOC_PYGAMEGETSDLBYTEORDER},
+     DOC_GETSDLBYTEORDER},
 
     {"get_array_interface", (PyCFunction)pg_get_array_interface, METH_O,
      "return an array struct interface as an interface dictionary"},

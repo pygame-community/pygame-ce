@@ -21,7 +21,6 @@ pygame\.tests.*
 pygame\.__pyinstaller.*
 
 # don't look for stubs for these private modules either
-pygame\.draw_py
 pygame\.ftfont
 pygame\.imageext
 pygame\.macosx
@@ -30,3 +29,7 @@ pygame\.pkgdata
 pygame\.pypm
 pygame\._sdl2\.mixer
 pygame\.sysfont.*
+
+# temporarily ignore the controller module while it is being converted
+# to C
+pygame\._sdl2\.controller

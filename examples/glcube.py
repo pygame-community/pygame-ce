@@ -26,7 +26,7 @@ Keyboard Controls
 import math
 import ctypes
 
-import pygame as pg
+import pygame
 
 try:
     import OpenGL.GL as GL
@@ -40,7 +40,6 @@ try:
 except ImportError:
     print("numpy missing. The GLCUBE example requires: pyopengl numpy")
     raise SystemExit
-
 
 # do we want to use the 'modern' OpenGL API or the old one?
 # This example shows you how to do both.
@@ -508,7 +507,7 @@ def draw_cube_modern(shader_data, filled_cube_indices, outline_cube_indices, rot
 
     # Rotate cube
     # rotation.theta += 1.0  # degrees
-    rotation.phi += 1.0  # degrees
+    # rotation.phi += 1.0  # degrees
     # rotation.psi += 1.0  # degrees
     model = eye(4, dtype=float32)
     # rotate(model, rotation.theta, 0, 0, 1)
@@ -520,8 +519,10 @@ def draw_cube_modern(shader_data, filled_cube_indices, outline_cube_indices, rot
 def main():
     """run the demo"""
 
-    # initialize pygame and setup an opengl display
-    pg.init()
+    # initialize pygame-ce and setup an opengl display
+
+    pygame.init()
+    clock = pygame.time.Clock()
 
     gl_version = (3, 0)  # GL Version number (Major, Minor)
     if USE_MODERN_GL:
@@ -529,16 +530,22 @@ def main():
 
         # By setting these attributes we can choose which Open GL Profile
         # to use, profiles greater than 3.2 use a different rendering path
-        pg.display.gl_set_attribute(pg.GL_CONTEXT_MAJOR_VERSION, gl_version[0])
-        pg.display.gl_set_attribute(pg.GL_CONTEXT_MINOR_VERSION, gl_version[1])
-        pg.display.gl_set_attribute(
-            pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, gl_version[0])
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, gl_version[1])
+        pygame.display.gl_set_attribute(
+            pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_CORE
         )
 
-    fullscreen = False  # start in windowed mode
-
+    # start in windowed mode
     display_size = (640, 480)
-    pg.display.set_mode(display_size, pg.OPENGL | pg.DOUBLEBUF | pg.RESIZABLE)
+    try:
+        pygame.display.set_mode(
+            display_size, pygame.OPENGL | pygame.DOUBLEBUF | pygame.RESIZABLE, vsync=1
+        )
+    except:
+        pygame.display.set_mode(
+            display_size, pygame.OPENGL | pygame.DOUBLEBUF | pygame.RESIZABLE
+        )
 
     if USE_MODERN_GL:
         gpu, f_indices, o_indices = init_gl_modern(display_size)
@@ -546,45 +553,55 @@ def main():
     else:
         init_gl_stuff_old()
 
+    delta_time = 0
     going = True
     while going:
         # check for quit'n events
-        events = pg.event.get()
+        events = pygame.event.get()
         for event in events:
-            if event.type == pg.QUIT or (
-                event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE
+            if event.type == pygame.QUIT or (
+                event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE
             ):
                 going = False
 
-            elif event.type == pg.KEYDOWN and event.key == pg.K_f:
-                if not fullscreen:
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_f:
+                if not pygame.display.is_fullscreen():
                     print("Changing to FULLSCREEN")
-                    pg.display.set_mode(
-                        (640, 480), pg.OPENGL | pg.DOUBLEBUF | pg.FULLSCREEN
+                    pygame.display.set_mode(
+                        display_size,
+                        pygame.OPENGL | pygame.DOUBLEBUF | pygame.FULLSCREEN,
                     )
                 else:
                     print("Changing to windowed mode")
-                    pg.display.set_mode((640, 480), pg.OPENGL | pg.DOUBLEBUF)
-                fullscreen = not fullscreen
+                    pygame.display.set_mode(
+                        display_size, pygame.OPENGL | pygame.DOUBLEBUF
+                    )
+
                 if gl_version[0] >= 4 or (gl_version[0] == 3 and gl_version[1] >= 2):
                     gpu, f_indices, o_indices = init_gl_modern(display_size)
                     rotation = Rotation()
                 else:
                     init_gl_stuff_old()
 
+        # orbit camera around by 60 degrees per second
+        angle = (delta_time / 1000) * 60
         if USE_MODERN_GL:
+            rotation.phi += angle
             draw_cube_modern(gpu, f_indices, o_indices, rotation)
         else:
             # clear screen and move camera
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
-            # orbit camera around by 1 degree
-            GL.glRotatef(1, 0, 1, 0)
+            # rotate camera to angle
+            GL.glRotatef(angle, 0, 1, 0)
             drawcube_old()
 
-        pg.display.flip()
-        pg.time.wait(10)
+        pygame.display.flip()
+        if pygame.display.is_vsync():
+            delta_time = clock.tick()
+        else:
+            delta_time = clock.tick(60)
 
-    pg.quit()
+    pygame.quit()
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -1215,18 +1215,18 @@ make_surface(PyObject *self, PyObject *arg)
 
 static PyMethodDef _pixelcopy_methods[] = {
     {"array_to_surface", array_to_surface, METH_VARARGS,
-     DOC_PYGAMEPIXELCOPYARRAYTOSURFACE},
+     DOC_PIXELCOPY_ARRAYTOSURFACE},
     {"surface_to_array", (PyCFunction)surface_to_array,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMEPIXELCOPYSURFACETOARRAY},
-    {"map_array", map_array, METH_VARARGS, DOC_PYGAMEPIXELCOPYMAPARRAY},
-    {"make_surface", make_surface, METH_O, DOC_PYGAMEPIXELCOPYMAKESURFACE},
+     METH_VARARGS | METH_KEYWORDS, DOC_PIXELCOPY_SURFACETOARRAY},
+    {"map_array", map_array, METH_VARARGS, DOC_PIXELCOPY_MAPARRAY},
+    {"make_surface", make_surface, METH_O, DOC_PIXELCOPY_MAKESURFACE},
     {0, 0, 0, 0}};
 
 MODINIT_DEFINE(pixelcopy)
 {
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "pixelcopy",
-                                         DOC_PYGAMEPIXELCOPY,
+                                         DOC_PIXELCOPY,
                                          -1,
                                          _pixelcopy_methods,
                                          NULL,

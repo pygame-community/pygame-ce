@@ -21,7 +21,7 @@ on:
       - '**.rst'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-format-lint
   cancel-in-progress: true
 
 jobs:
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.5.3
 
       - name: Install deps
         run: python3 -m pip install pylint black clang-format sphinx

@@ -32,6 +32,66 @@ cdef extern from "SDL.h" nogil:
 
     ctypedef struct SDL_Point:
         int x, y
+    ctypedef struct SDL_Color:
+        Uint8 r, g, b, a
+
+    SDL_bool SDL_SetHint(const char *name, const char *value)
+    char* SDL_HINT_RENDER_SCALE_QUALITY b'SDL_HINT_RENDER_SCALE_QUALITY'
+
+    cdef extern from *:
+        """
+        #if SDL_VERSION_ATLEAST(2, 0, 18)
+            typedef SDL_FPoint _pgsdlFPoint;
+            typedef SDL_Vertex _pgsdlVertex;
+        #else
+            typedef struct {
+                float x;
+                float y;
+            } _pgsdlFPoint;
+
+            typedef struct {
+                _pgsdlFPoint position;
+                SDL_Color color;
+                _pgsdlFPoint tex_coord;
+            } _pgsdlVertex;
+
+            int SDL_RenderGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
+                  const _pgsdlVertex *vertices, int num_vertices,
+                  const int *indices, int num_indices)
+            {
+                SDL_SetError("Needs SDL 2.0.18");
+                return -1;
+            }
+        #endif
+
+        #if SDL_VERSION_ATLEAST(2,0,12)
+            typedef SDL_ScaleMode _pgsdlScaleMode;
+        #else
+            typedef enum {
+                SDL_ScaleModeNearest,
+                SDL_ScaleModeLinear,
+                SDL_ScaleModeBest,
+            } _pgsdlScaleMode;
+
+            int SDL_SetTextureScaleMode(SDL_Texture * texture, _pgsdlScaleMode scaleMode){
+                return 0;
+            }
+        #endif
+        """
+    ctypedef struct SDL_FPoint "_pgsdlFPoint":
+        float x, y
+    ctypedef struct SDL_Vertex "_pgsdlVertex":
+        SDL_FPoint position
+        SDL_Color color
+        SDL_FPoint tex_coord
+    
+    ctypedef enum SDL_ScaleMode "_pgsdlScaleMode":
+        SDL_ScaleModeNearest,
+        SDL_ScaleModeLinear,
+        SDL_ScaleModeBest
+
+    int SDL_SetTextureScaleMode(SDL_Texture * texture, SDL_ScaleMode scaleMode)
+
     ctypedef enum SDL_RendererFlip:
         SDL_FLIP_NONE,
         SDL_FLIP_HORIZONTAL,
@@ -169,115 +229,14 @@ cdef extern from "SDL.h" nogil:
         SDL_BLENDFACTOR_ONE_MINUS_DST_ALPHA = 0x0000000A
 
     # WINDOW
-    # https://wiki.libsdl.org/SDL_CreateWindow
-    # https://wiki.libsdl.org/SDL_DestroyWindow
-    # https://wiki.libsdl.org/SDL_GetWindowTitle
-    # https://wiki.libsdl.org/SDL_SetWindowTitle
-    SDL_Window* SDL_CreateWindow(const char* title,
-                                 int         x,
-                                 int         y,
-                                 int         w,
-                                 int         h,
-                                 Uint32      flags)
-    void SDL_DestroyWindow(SDL_Window *window)
-    const char* SDL_GetWindowTitle(SDL_Window* window)
-    void SDL_SetWindowTitle(SDL_Window* window,
-                            const char* title)
     # https://wiki.libsdl.org/SDL_GetWindowData
-    # https://wiki.libsdl.org/SDL_SetWindowData
+    # https://wiki.libsdl.org/SDL_GetGrabbedWindow
     void* SDL_GetWindowData(SDL_Window* window,
                             const char* name)
-    void* SDL_SetWindowData(SDL_Window* window,
-                            const char* name,
-                            void*       userdata)
-    # https://wiki.libsdl.org/SDL_MaximizeWindow
-    # https://wiki.libsdl.org/SDL_MinimizeWindow
-    # https://wiki.libsdl.org/SDL_RestoreWindow
-    # https://wiki.libsdl.org/SDL_ShowWindow
-    # https://wiki.libsdl.org/SDL_HideWindow
-    # https://wiki.libsdl.org/SDL_RaiseWindow
-    # https://wiki.libsdl.org/SDL_SetWindowInputFocus
-    # https://wiki.libsdl.org/SDL_SetWindowResizable
-    # https://wiki.libsdl.org/SDL_SetWindowBordered
-    # https://wiki.libsdl.org/SDL_SetWindowIcon
-    void SDL_MaximizeWindow(SDL_Window* window)
-    void SDL_MinimizeWindow(SDL_Window* window)
-    void SDL_RestoreWindow(SDL_Window* window)
-    void SDL_ShowWindow(SDL_Window* window)
-    void SDL_HideWindow(SDL_Window* window)
-    void SDL_RaiseWindow(SDL_Window* window)
-    int SDL_SetWindowInputFocus(SDL_Window* window)
-    void SDL_SetWindowResizable(SDL_Window* window,
-                                SDL_bool    resizable)
-    void SDL_SetWindowBordered(SDL_Window* window,
-                               SDL_bool    bordered)
-    void SDL_SetWindowIcon(SDL_Window*  window,
-                           SDL_Surface* icon)
-    # https://wiki.libsdl.org/SDL_GetWindowFlags
-    # https://wiki.libsdl.org/SDL_GetWindowID
-    Uint32 SDL_GetWindowFlags(SDL_Window* window)
-    Uint32 SDL_GetWindowID(SDL_Window* window)
-    # https://wiki.libsdl.org/SDL_GetWindowSize
-    # https://wiki.libsdl.org/SDL_SetWindowSize
-    # https://wiki.libsdl.org/SDL_GetWindowPosition
-    # https://wiki.libsdl.org/SDL_SetWindowPosition
-    void SDL_GetWindowSize(SDL_Window* window,
-                           int*        w,
-                           int*        h)
-    void SDL_SetWindowSize(SDL_Window* window,
-                           int         w,
-                           int         h)
-    void SDL_GetWindowPosition(SDL_Window* window,
-                               int*        x,
-                               int*        y)
-    void SDL_SetWindowPosition(SDL_Window* window,
-                               int         x,
-                               int         y)
-    # https://wiki.libsdl.org/SDL_GetWindowOpacity
-    # https://wiki.libsdl.org/SDL_SetWindowOpacity
-    int SDL_GetWindowOpacity(SDL_Window* window,
-                             float*      opacity)
-    int SDL_SetWindowOpacity(SDL_Window* window,
-                             float       opacity)
-    # https://wiki.libsdl.org/SDL_GetWindowDisplayIndex
-    # https://wiki.libsdl.org/SDL_GetGrabbedWindow
-    # https://wiki.libsdl.org/SDL_GetWindowGrab
-    # https://wiki.libsdl.org/SDL_SetWindowGrab
-    # https://wiki.libsdl.org/SDL_SetWindowFullscreen
-    # https://wiki.libsdl.org/SDL_SetWindowModalFor
-    int SDL_GetWindowDisplayIndex(SDL_Window* window)
     SDL_Window* SDL_GetGrabbedWindow()
-    SDL_bool SDL_GetWindowGrab(SDL_Window* window)
-    void SDL_SetWindowGrab(SDL_Window* window,
-                           SDL_bool    grabbed)
-    int SDL_SetWindowFullscreen(SDL_Window* window,
-                                Uint32      flags)
-    int SDL_SetWindowModalFor(SDL_Window* modal_window,
-                              SDL_Window* parent_window)
 
     cdef int _SDL_WINDOWPOS_UNDEFINED "SDL_WINDOWPOS_UNDEFINED"
     cdef int _SDL_WINDOWPOS_CENTERED "SDL_WINDOWPOS_CENTERED"
-    cdef Uint32 _SDL_WINDOW_FULLSCREEN "SDL_WINDOW_FULLSCREEN"
-    cdef Uint32 _SDL_WINDOW_FULLSCREEN_DESKTOP "SDL_WINDOW_FULLSCREEN_DESKTOP"
-    cdef Uint32 _SDL_WINDOW_OPENGL "SDL_WINDOW_OPENGL"
-    cdef Uint32 _SDL_WINDOW_SHOWN "SDL_WINDOW_SHOWN"
-    cdef Uint32 _SDL_WINDOW_HIDDEN "SDL_WINDOW_HIDDEN"
-    cdef Uint32 _SDL_WINDOW_BORDERLESS "SDL_WINDOW_BORDERLESS"
-    cdef Uint32 _SDL_WINDOW_RESIZABLE "SDL_WINDOW_RESIZABLE"
-    cdef Uint32 _SDL_WINDOW_MINIMIZED "SDL_WINDOW_MINIMIZED"
-    cdef Uint32 _SDL_WINDOW_MAXIMIZED "SDL_WINDOW_MAXIMIZED"
-    cdef Uint32 _SDL_WINDOW_INPUT_GRABBED "SDL_WINDOW_INPUT_GRABBED"
-    cdef Uint32 _SDL_WINDOW_INPUT_FOCUS "SDL_WINDOW_INPUT_FOCUS"
-    cdef Uint32 _SDL_WINDOW_MOUSE_FOCUS "SDL_WINDOW_MOUSE_FOCUS"
-    cdef Uint32 _SDL_WINDOW_FOREIGN "SDL_WINDOW_FOREIGN"
-    cdef Uint32 _SDL_WINDOW_ALLOW_HIGHDPI "SDL_WINDOW_ALLOW_HIGHDPI"
-    cdef Uint32 _SDL_WINDOW_MOUSE_CAPTURE "SDL_WINDOW_MOUSE_CAPTURE"
-    cdef Uint32 _SDL_WINDOW_ALWAYS_ON_TOP "SDL_WINDOW_ALWAYS_ON_TOP"
-    cdef Uint32 _SDL_WINDOW_SKIP_TASKBAR "SDL_WINDOW_SKIP_TASKBAR"
-    cdef Uint32 _SDL_WINDOW_UTILITY "SDL_WINDOW_UTILITY"
-    cdef Uint32 _SDL_WINDOW_TOOLTIP "SDL_WINDOW_TOOLTIP"
-    cdef Uint32 _SDL_WINDOW_POPUP_MENU "SDL_WINDOW_POPUP_MENU"
-    cdef Uint32 _SDL_WINDOW_VULKAN "SDL_WINDOW_VULKAN"
 
     # TEXTURE
     # https://wiki.libsdl.org/SDL_CreateTexture
@@ -353,23 +312,33 @@ cdef extern from "SDL.h" nogil:
                                             int    depth,
                                             Uint32 format)
     # https://wiki.libsdl.org/SDL_RenderDrawLine
+    # https://wiki.libsdl.org/SDL_RenderDrawLines
     # https://wiki.libsdl.org/SDL_RenderDrawPoint
     # https://wiki.libsdl.org/SDL_RenderDrawRect
     # https://wiki.libsdl.org/SDL_RenderFillRect
+    # https://wiki.libsdl.org/SDL_RenderGeometry
     int SDL_RenderDrawLine(SDL_Renderer* renderer,
                            int x1,
                            int y1,
                            int x2,
                            int y2)
+    int SDL_RenderDrawLines(SDL_Renderer* renderer,
+                            const SDL_Point* points,
+                            int count)
     int SDL_RenderDrawPoint(SDL_Renderer* renderer,
                            int x,
                            int y)
-
     int SDL_RenderDrawRect(SDL_Renderer* renderer,
                            const SDL_Rect* rect)
 
     int SDL_RenderFillRect(SDL_Renderer*   renderer,
                            const SDL_Rect* rect)
+    int SDL_RenderGeometry(SDL_Renderer* renderer,
+                           SDL_Texture* texture,
+                           const SDL_Vertex* vertices,
+                           int num_vertices,
+                           const int* indices,
+                           int num_indices)
 
     # https://wiki.libsdl.org/SDL_RenderSetScale
     # https://wiki.libsdl.org/SDL_RenderGetScale
@@ -390,6 +359,33 @@ cdef extern from "SDL.h" nogil:
                                   int*          h)
     int SDL_RenderGetIntegerScale(SDL_Renderer* renderer)
 
+    int SDL_VERSION_ATLEAST(int major, int minor, int patch) 
+
+    # https://wiki.libsdl.org/SDL_GetWindowPixelFormat
+    # https://wiki.libsdl.org/SDL_IntersectRect
+    # https://wiki.libsdl.org/SDL_SetRelativeMouseMode
+    # https://wiki.libsdl.org/SDL_GetRelativeMouseMode
+    # https://wiki.libsdl.org/SDL_GetRenderer
+    # https://wiki.libsdl.org/SDL_ConvertSurface
+    # https://wiki.libsdl.org/SDL_FreeSurface
+    # https://wiki.libsdl.org/SDL_AllocFormat
+    # https://wiki.libsdl.org/SDL_FreeFormat
+    # https://wiki.libsdl.org/SDL_SetSurfaceBlendMode
+    # https://wiki.libsdl.org/SDL_GetSurfaceBlendMode
+    Uint32 SDL_GetWindowPixelFormat(SDL_Window* window)
+    SDL_bool SDL_IntersectRect(const SDL_Rect* A,
+                               const SDL_Rect* B,
+                               SDL_Rect*       result)
+    int SDL_SetRelativeMouseMode(SDL_bool enabled)
+    SDL_bool SDL_GetRelativeMouseMode()
+    SDL_Renderer* SDL_GetRenderer(SDL_Window* window)
+    SDL_Surface* SDL_ConvertSurface(SDL_Surface * src, const SDL_PixelFormat * fmt, Uint32 flags)
+    void SDL_FreeSurface(SDL_Surface * surface)
+    SDL_PixelFormat * SDL_AllocFormat(Uint32 pixel_format)
+    void SDL_FreeFormat(SDL_PixelFormat *format)
+    int SDL_SetSurfaceBlendMode(SDL_Surface * surface, SDL_BlendMode blendMode)
+    int SDL_GetSurfaceBlendMode(SDL_Surface * surface, SDL_BlendMode *blendMode)
+
 
 cdef extern from "pygame.h" nogil:
     ctypedef class pygame.Color [object pgColorObject]:
@@ -399,11 +395,32 @@ cdef extern from "pygame.h" nogil:
     ctypedef class pygame.Rect [object pgRectObject]:
         cdef SDL_Rect r
         cdef object weakreflist
+    
+    ctypedef class pygame._window.Window [object pgWindowObject]:
+        cdef SDL_Window *_win
+        cdef SDL_bool _is_borrowed
 
+    ctypedef struct pgSurfaceObject
 
-cdef class Window:
-    cdef SDL_Window* _win
-    cdef int _is_borrowed
+    int pgSurface_Check(object surf)
+    SDL_Surface* pgSurface_AsSurface(object surf)
+    void import_pygame_surface()
+
+    SDL_Window* pg_GetDefaultWindow()
+    void import_pygame_base()
+
+    int pgRect_Check(object rect)
+    SDL_Rect *pgRect_FromObject(object obj, SDL_Rect *temp)
+    object pgRect_New(SDL_Rect *r)
+    object pgRect_New4(int x, int y, int w, int h)
+    void import_pygame_rect()
+
+    object pgColor_NewLength(Uint8 rgba[], Uint8 length)
+    void import_pygame_color()
+    pgSurfaceObject *pgSurface_New2(SDL_Surface *info, int owner)
+
+    int pgWindow_Check(object win)
+    void import_pygame_window()
 
 cdef class Renderer:
     cdef SDL_Renderer* _renderer

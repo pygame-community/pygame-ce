@@ -1,5 +1,5 @@
-Pygame Front Page
-=================
+Pygame-ce Front Page
+====================
 
 .. toctree::
    :maxdepth: 2
@@ -7,10 +7,10 @@ Pygame Front Page
    :hidden:
 
    ref/*
-   tut/*
-   tut/en/**/*
-   tut/ko/**/*
-   tut/es/*
+   tutorials/en/*
+   tutorials/en/**/*
+   tutorials/ko/**/*
+   tutorials/es/*
    c_api
    filepaths
    logos
@@ -18,9 +18,10 @@ Pygame Front Page
 Quick start
 -----------
 
-Welcome to pygame! Once you've got pygame installed (:code:`pip install pygame-ce` or
-:code:`pip3 install pygame-ce` for most people), the next question is how to get a game
-loop running. Pygame, unlike some other libraries, gives you full control of program
+Welcome to pygame-ce! Once you've got pygame-ce installed
+(:code:`pip install pygame-ce` or :code:`pip3 install pygame-ce` for most
+people), the next question is how to get a game loop running. Pygame-ce,
+unlike some other libraries, gives you full control of program
 execution. That freedom means it is easy to mess up in your initial steps.
 
 Here is a good example of a basic setup (opens the window, updates the screen, and handles events)--
@@ -43,10 +44,6 @@ Documents
 `Readme`_
   Basic information about pygame: what it is, who is involved, and where to find it.
 
-`Install`_
-  Steps needed to compile pygame on several platforms.
-  Also help on finding and installing prebuilt binaries for your system.
-
 :doc:`filepaths`
   How pygame handles file system paths.
 
@@ -64,53 +61,53 @@ Documents
 Tutorials
 ---------
 
-:doc:`Introduction to Pygame <tut/PygameIntro>`
+:doc:`Introduction to Pygame <tutorials/en/intro-to-pygame>`
   An introduction to the basics of pygame.
   This is written for users of Python and appeared in volume two of the Py magazine.
 
-:doc:`Import and Initialize <tut/ImportInit>`
+:doc:`Import and Initialize <tutorials/en/import-init>`
   The beginning steps on importing and initializing pygame.
   The pygame package is made of several modules.
   Some modules are not included on all platforms.
 
-:doc:`How do I move an Image? <tut/MoveIt>`
+:doc:`How do I move an Image? <tutorials/en/move-it>`
   A basic tutorial that covers the concepts behind 2D computer animation.
   Information about drawing and clearing objects to make them appear animated.
 
-:doc:`Chimp Tutorial, Line by Line <tut/ChimpLineByLine>`
+:doc:`Chimp Tutorial, Line by Line <tutorials/en/chimp-explanation>`
   The pygame examples include a simple program with an interactive fist and a chimpanzee.
   This was inspired by the annoying flash banner of the early 2000s.
   This tutorial examines every line of code used in the example.
 
-:doc:`Sprite Module Introduction <tut/SpriteIntro>`
+:doc:`Sprite Module Introduction <tutorials/en/intro-to-sprites>`
   Pygame includes a higher level sprite module to help organize games.
   The sprite module includes several classes that help manage details found in almost all games types.
   The Sprite classes are a bit more advanced than the regular pygame modules,
   and need more understanding to be properly used.
 
-:doc:`Surfarray Introduction <tut/SurfarrayIntro>`
+:doc:`Surfarray Introduction <tutorials/en/intro-to-surfarray>`
   Pygame used the NumPy python module to allow efficient per pixel effects on images.
   Using the surface arrays is an advanced feature that allows custom effects and filters.
   This also examines some of the simple effects from the pygame example, arraydemo.py.
 
-:doc:`Camera Module Introduction <tut/CameraIntro>`
+:doc:`Camera Module Introduction <tutorials/en/intro-to-camera>`
   Pygame, as of 1.9, has a camera module that allows you to capture images,
   watch live streams, and do some basic computer vision.
   This tutorial covers those use cases.
 
-:doc:`Newbie Guide <tut/newbieguide>`
+:doc:`Newbie Guide <tutorials/en/newbie-guide>`
   A list of thirteen helpful tips for people to get comfortable using pygame.
 
-:doc:`Making Games Tutorial <tut/MakeGames>`
+:doc:`Making Games Tutorial <tutorials/en/make-games>`
   A large tutorial that covers the bigger topics needed to create an entire game.
 
-:doc:`Display Modes <tut/DisplayModes>`
+:doc:`Display Modes <tutorials/en/display-modes>`
   Getting a display surface for the screen.
 
-:doc:`한국어 튜토리얼 (Korean Tutorial) <tut/ko/빨간블록 검은블록/개요>`
+:doc:`한국어 튜토리얼 (Korean Tutorial) <tutorials/ko/빨간블록 검은블록/개요>`
   빨간블록 검은블록
 
-:doc:`Tutorial de Pygame - Ejemplo del Chimpancé, Línea Por Línea <tut/es/ChimpanceLineaporLinea>`
+:doc:`Tutorial de Pygame - Ejemplo del Chimpancé, Línea Por Línea <tutorials/es/ChimpanceLineaporLinea>`
   Los ejemplos de pygame incluyen un sencillo programa con un puño interactivo y un chimpancé.
   Está inspirado en el molesto banner de flash de principios de la década de 2000.
   Este tutorial examina cada línea de código utilizada en el ejemplo.
@@ -212,8 +209,6 @@ Reference
 :ref:`search`
   Search pygame documents by keyword.
 
-.. _Readme: ../wiki/about
-
-.. _Install: ../wiki/GettingStarted#Pygame%20Installation
+.. _Readme: https://github.com/pygame-community/pygame-ce#readme
 
 .. _LGPL License: LGPL.txt

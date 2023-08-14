@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -266,27 +266,20 @@ _format_view_to_audio(Py_buffer *view)
 static void
 _pg_push_mixer_event(int type, int code)
 {
-    pgEventObject *e;
     PyObject *dict, *dictcode;
-    SDL_Event event;
     PyGILState_STATE gstate = PyGILState_Ensure();
 
     dict = PyDict_New();
     if (dict) {
         if (type >= PGE_USEREVENT && type < PG_NUMEVENTS) {
             dictcode = PyLong_FromLong(code);
-            PyDict_SetItemString(dict, "code", dictcode);
-            Py_DECREF(dictcode);
+            if (dictcode) {
+                PyDict_SetItemString(dict, "code", dictcode);
+                Py_DECREF(dictcode);
+            }
         }
-        e = (pgEventObject *)pgEvent_New2(type, dict);
+        pg_post_event(type, dict);
         Py_DECREF(dict);
-
-        if (e) {
-            pgEvent_FillUserEvent(e, &event);
-            if (SDL_PushEvent(&event) <= 0)
-                Py_DECREF(dict);
-            Py_DECREF(e);
-        }
     }
     PyGILState_Release(gstate);
 }
@@ -838,15 +831,15 @@ snd_get_samples_address(PyObject *self, PyObject *closure)
 
 PyMethodDef sound_methods[] = {
     {"play", (PyCFunction)pgSound_Play, METH_VARARGS | METH_KEYWORDS,
-     DOC_SOUNDPLAY},
+     DOC_MIXER_SOUND_PLAY},
     {"get_num_channels", snd_get_num_channels, METH_NOARGS,
-     DOC_SOUNDGETNUMCHANNELS},
-    {"fadeout", snd_fadeout, METH_VARARGS, DOC_SOUNDFADEOUT},
-    {"stop", snd_stop, METH_NOARGS, DOC_SOUNDSTOP},
-    {"set_volume", snd_set_volume, METH_VARARGS, DOC_SOUNDSETVOLUME},
-    {"get_volume", snd_get_volume, METH_NOARGS, DOC_SOUNDGETVOLUME},
-    {"get_length", snd_get_length, METH_NOARGS, DOC_SOUNDGETLENGTH},
-    {"get_raw", snd_get_raw, METH_NOARGS, DOC_SOUNDGETRAW},
+     DOC_MIXER_SOUND_GETNUMCHANNELS},
+    {"fadeout", snd_fadeout, METH_VARARGS, DOC_MIXER_SOUND_FADEOUT},
+    {"stop", snd_stop, METH_NOARGS, DOC_MIXER_SOUND_STOP},
+    {"set_volume", snd_set_volume, METH_VARARGS, DOC_MIXER_SOUND_SETVOLUME},
+    {"get_volume", snd_get_volume, METH_NOARGS, DOC_MIXER_SOUND_GETVOLUME},
+    {"get_length", snd_get_length, METH_NOARGS, DOC_MIXER_SOUND_GETLENGTH},
+    {"get_raw", snd_get_raw, METH_NOARGS, DOC_MIXER_SOUND_GETRAW},
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef sound_getset[] = {
@@ -1024,7 +1017,7 @@ static PyTypeObject pgSound_Type = {
     .tp_as_buffer = sound_as_buffer,
     .tp_flags =
         (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_NEWBUFFER),
-    .tp_doc = DOC_PYGAMEMIXERSOUND,
+    .tp_doc = DOC_MIXER_SOUND,
     .tp_weaklistoffset = offsetof(pgSoundObject, weakreflist),
     .tp_methods = sound_methods,
     .tp_getset = sound_getset,
@@ -1161,6 +1154,37 @@ chan_unpause(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
+chan_set_source_location(PyObject *self, PyObject *args)
+{
+    int channelnum = pgChannel_AsInt(self);
+    Sint16 angle;
+    float angle_f;
+    Uint8 distance;
+    float distance_f;
+    PyThreadState *_save;
+
+    if (!PyArg_ParseTuple(args, "ff", &angle_f, &distance_f))
+        return NULL;
+
+    angle = (Sint16)roundf(fmodf(angle_f, 360));
+    distance_f = roundf(distance_f);
+    if (0 > distance_f || 256 <= distance_f) {
+        return RAISE(PyExc_ValueError,
+                     "distance out of range, expected (0, 255)");
+    }
+    distance = (Uint8)distance_f;
+
+    MIXER_INIT_CHECK();
+    _save = PyEval_SaveThread();
+    if (!Mix_SetPosition(channelnum, angle, distance)) {
+        PyEval_RestoreThread(_save);
+        return RAISE(pgExc_SDLError, Mix_GetError());
+    }
+    PyEval_RestoreThread(_save);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 chan_set_volume(PyObject *self, PyObject *args)
 {
     int channelnum = pgChannel_AsInt(self);
@@ -1281,25 +1305,30 @@ chan_get_endevent(PyObject *self, PyObject *_null)
 
 static PyMethodDef channel_methods[] = {
     {"play", (PyCFunction)chan_play, METH_VARARGS | METH_KEYWORDS,
-     DOC_CHANNELPLAY},
-    {"queue", chan_queue, METH_O, DOC_CHANNELQUEUE},
-    {"get_busy", (PyCFunction)chan_get_busy, METH_NOARGS, DOC_CHANNELGETBUSY},
-    {"fadeout", chan_fadeout, METH_VARARGS, DOC_CHANNELFADEOUT},
-    {"stop", (PyCFunction)chan_stop, METH_NOARGS, DOC_CHANNELSTOP},
-    {"pause", (PyCFunction)chan_pause, METH_NOARGS, DOC_CHANNELPAUSE},
-    {"unpause", (PyCFunction)chan_unpause, METH_NOARGS, DOC_CHANNELUNPAUSE},
-    {"set_volume", chan_set_volume, METH_VARARGS, DOC_CHANNELSETVOLUME},
+     DOC_MIXER_CHANNEL_PLAY},
+    {"queue", chan_queue, METH_O, DOC_MIXER_CHANNEL_QUEUE},
+    {"get_busy", (PyCFunction)chan_get_busy, METH_NOARGS,
+     DOC_MIXER_CHANNEL_GETBUSY},
+    {"fadeout", chan_fadeout, METH_VARARGS, DOC_MIXER_CHANNEL_FADEOUT},
+    {"stop", (PyCFunction)chan_stop, METH_NOARGS, DOC_MIXER_CHANNEL_STOP},
+    {"pause", (PyCFunction)chan_pause, METH_NOARGS, DOC_MIXER_CHANNEL_PAUSE},
+    {"unpause", (PyCFunction)chan_unpause, METH_NOARGS,
+     DOC_MIXER_CHANNEL_UNPAUSE},
+    {"set_source_location", chan_set_source_location, METH_VARARGS,
+     DOC_MIXER_CHANNEL_SETSOURCELOCATION},
+    {"set_volume", chan_set_volume, METH_VARARGS, DOC_MIXER_CHANNEL_SETVOLUME},
     {"get_volume", (PyCFunction)chan_get_volume, METH_NOARGS,
-     DOC_CHANNELGETVOLUME},
+     DOC_MIXER_CHANNEL_GETVOLUME},
 
     {"get_sound", (PyCFunction)chan_get_sound, METH_NOARGS,
-     DOC_CHANNELGETSOUND},
+     DOC_MIXER_CHANNEL_GETSOUND},
     {"get_queue", (PyCFunction)chan_get_queue, METH_NOARGS,
-     DOC_CHANNELGETQUEUE},
+     DOC_MIXER_CHANNEL_GETQUEUE},
 
-    {"set_endevent", chan_set_endevent, METH_VARARGS, DOC_CHANNELSETENDEVENT},
+    {"set_endevent", chan_set_endevent, METH_VARARGS,
+     DOC_MIXER_CHANNEL_SETENDEVENT},
     {"get_endevent", (PyCFunction)chan_get_endevent, METH_NOARGS,
-     DOC_CHANNELGETENDEVENT},
+     DOC_MIXER_CHANNEL_GETENDEVENT},
 
     {NULL, NULL, 0, NULL}};
 
@@ -1308,7 +1337,7 @@ static PyMethodDef channel_methods[] = {
 static void
 channel_dealloc(PyObject *self)
 {
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 
 static int
@@ -1341,7 +1370,7 @@ static PyTypeObject pgChannel_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.mixer.Channel",
     .tp_basicsize = sizeof(pgChannelObject),
     .tp_dealloc = channel_dealloc,
-    .tp_doc = DOC_PYGAMEMIXERCHANNEL,
+    .tp_doc = DOC_MIXER_CHANNEL,
     .tp_methods = channel_methods,
     .tp_init = (initproc)channel_init,
     .tp_new = PyType_GenericNew,
@@ -1429,6 +1458,58 @@ mixer_find_channel(PyObject *self, PyObject *args, PyObject *kwargs)
         chan = Mix_GroupOldest(-1);
     }
     return pgChannel_New(chan);
+}
+
+static PyObject *
+mixer_set_soundfont(PyObject *self, PyObject *args)
+{
+    int paths_set;
+    PyObject *path = Py_None;
+    const char *string_path = "";
+
+    if (!PyArg_ParseTuple(args, "|O", &path)) {
+        return NULL;
+    }
+
+    MIXER_INIT_CHECK();
+
+    if (PyUnicode_Check(path)) {
+        string_path = PyUnicode_AsUTF8(path);
+    }
+    else if (!Py_IsNone(path)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "Must pass string or None to set_soundfont");
+        return NULL;
+    }
+
+    if (strlen(string_path) == 0) {
+        paths_set = Mix_SetSoundFonts(NULL);
+    }
+    else {
+        paths_set = Mix_SetSoundFonts(string_path);
+    }
+
+    if (paths_set == 0) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+mixer_get_soundfont(PyObject *self, PyObject *_null)
+{
+    const char *paths;
+
+    MIXER_INIT_CHECK();
+
+    paths = Mix_GetSoundFonts();
+
+    if (paths) {
+        return PyUnicode_FromString(paths);
+    }
+
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1851,28 +1932,31 @@ static PyMethodDef _mixer_methods[] = {
     {"_internal_mod_init", (PyCFunction)pgMixer_AutoInit, METH_NOARGS,
      "auto initialize for mixer"},
     {"init", (PyCFunction)pg_mixer_init, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEMIXERINIT},
-    {"quit", (PyCFunction)mixer_quit, METH_NOARGS, DOC_PYGAMEMIXERQUIT},
+     DOC_MIXER_INIT},
+    {"quit", (PyCFunction)mixer_quit, METH_NOARGS, DOC_MIXER_QUIT},
     {"get_init", (PyCFunction)pg_mixer_get_init, METH_NOARGS,
-     DOC_PYGAMEMIXERGETINIT},
+     DOC_MIXER_GETINIT},
     {"pre_init", (PyCFunction)pre_init, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMEMIXERPREINIT},
+     DOC_MIXER_PREINIT},
     {"get_num_channels", (PyCFunction)get_num_channels, METH_NOARGS,
-     DOC_PYGAMEMIXERGETNUMCHANNELS},
+     DOC_MIXER_GETNUMCHANNELS},
     {"set_num_channels", set_num_channels, METH_VARARGS,
-     DOC_PYGAMEMIXERSETNUMCHANNELS},
-    {"set_reserved", set_reserved, METH_VARARGS, DOC_PYGAMEMIXERSETRESERVED},
+     DOC_MIXER_SETNUMCHANNELS},
+    {"set_reserved", set_reserved, METH_VARARGS, DOC_MIXER_SETRESERVED},
 
-    {"get_busy", (PyCFunction)get_busy, METH_NOARGS, DOC_PYGAMEMIXERGETBUSY},
+    {"get_busy", (PyCFunction)get_busy, METH_NOARGS, DOC_MIXER_GETBUSY},
     {"find_channel", (PyCFunction)mixer_find_channel,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMEMIXERFINDCHANNEL},
-    {"fadeout", mixer_fadeout, METH_VARARGS, DOC_PYGAMEMIXERFADEOUT},
-    {"stop", (PyCFunction)mixer_stop, METH_NOARGS, DOC_PYGAMEMIXERSTOP},
-    {"pause", (PyCFunction)mixer_pause, METH_NOARGS, DOC_PYGAMEMIXERPAUSE},
-    {"unpause", (PyCFunction)mixer_unpause, METH_NOARGS,
-     DOC_PYGAMEMIXERUNPAUSE},
+     METH_VARARGS | METH_KEYWORDS, DOC_MIXER_FINDCHANNEL},
+    {"set_soundfont", (PyCFunction)mixer_set_soundfont, METH_VARARGS,
+     DOC_MIXER_SETSOUNDFONT},
+    {"get_soundfont", (PyCFunction)mixer_get_soundfont, METH_NOARGS,
+     DOC_MIXER_GETSOUNDFONT},
+    {"fadeout", mixer_fadeout, METH_VARARGS, DOC_MIXER_FADEOUT},
+    {"stop", (PyCFunction)mixer_stop, METH_NOARGS, DOC_MIXER_STOP},
+    {"pause", (PyCFunction)mixer_pause, METH_NOARGS, DOC_MIXER_PAUSE},
+    {"unpause", (PyCFunction)mixer_unpause, METH_NOARGS, DOC_MIXER_UNPAUSE},
     {"get_sdl_mixer_version", (PyCFunction)mixer_get_sdl_mixer_version,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMEMIXERGETSDLMIXERVERSION},
+     METH_VARARGS | METH_KEYWORDS, DOC_MIXER_GETSDLMIXERVERSION},
     /*  { "lookup_frequency", lookup_frequency, 1, doc_lookup_frequency
        },*/
 
@@ -1921,7 +2005,7 @@ MODINIT_DEFINE(mixer)
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "mixer",
-                                         DOC_PYGAMEMIXER,
+                                         DOC_MIXER,
                                          -1,
                                          _mixer_methods,
                                          NULL,

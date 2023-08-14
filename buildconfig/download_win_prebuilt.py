@@ -78,16 +78,16 @@ def get_urls(x86=True, x64=True):
     url_sha1 = []
     url_sha1.extend([
         [
-        'https://www.libsdl.org/release/SDL2-devel-2.0.22-VC.zip',
-        'efa040633c4faf8b006c0c1e552456ca4e5a3a53',
+        'https://github.com/libsdl-org/SDL/releases/download/release-2.26.5/SDL2-devel-2.26.5-VC.zip',
+        'f040c352af677161200ec07463efe8d1325135e4',
         ],
         [
         'https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.5-VC.zip',
         '137f86474691f4e12e76e07d58d5920c8d844d5b',
         ],
         [
-        'https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.1/SDL2_ttf-devel-2.20.1-VC.zip',
-        '371606aceba450384428fd2852f73d2f6290b136'
+        'https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.2/SDL2_ttf-devel-2.20.2-VC.zip',
+        'dee48e9c5184c139aa8bcab34a937d1b3df4f503'
         ],
         [
         'https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.2/SDL2_mixer-devel-2.6.2-VC.zip',
@@ -223,23 +223,23 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2_ttf-devel-2.20.1-VC/SDL2_ttf-2.20.1'
+                'SDL2_ttf-devel-2.20.2-VC/SDL2_ttf-2.20.2'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2_ttf-2.20.1'
+                'SDL2_ttf-2.20.2'
             )
         )
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2-devel-2.0.22-VC/SDL2-2.0.22'
+                'SDL2-devel-2.26.5-VC/SDL2-2.26.5'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2-2.0.22'
+                'SDL2-2.26.5'
             )
         )
 

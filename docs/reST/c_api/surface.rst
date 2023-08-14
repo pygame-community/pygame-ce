@@ -42,11 +42,11 @@ Header file: src_c/include/pygame.h
    This is a macro. Argument *x* is assumed to be a Surface, or subclass of
    Surface, instance.
 
-.. c:function:: int pgSurface_Blit(PyObject *dstobj, PyObject *srcobj, SDL_Rect *dstrect, SDL_Rect *srcrect, int the_args)
+.. c:function:: int pgSurface_Blit(PyObject *dstobj, PyObject *srcobj, SDL_Rect *dstrect, SDL_Rect *srcrect, int blend_flags)
 
    Blit the *srcrect* portion of Surface *srcobj* onto Surface *dstobj* at *srcobj*
 
-   Argument *the_args* indicates the type of blit to perform:
+   Argument *blend_flags* indicates the type of blit to perform:
    Normal blit (``0``), ``PYGAME_BLEND_ADD``, ``PYGAME_BLEND_SUB``,
    ``PYGAME_BLEND_SUB``, ``PYGAME_BLEND_MULT``, ``PYGAME_BLEND_MIN``,
    ``PYGAME_BLEND_MAX``, ``PYGAME_BLEND_RGBA_ADD``, ``PYGAME_BLEND_RGBA_SUB``,

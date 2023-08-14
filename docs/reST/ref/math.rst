@@ -43,19 +43,16 @@ Multiple coordinates can be set using slices or swizzling
    v.xy = 1, 2
    v[:] = 1, 2
 
-.. versionadded:: 1.9.2pre
-.. versionchanged:: 1.9.4 Removed experimental notice.
-.. versionchanged:: 1.9.4 Allow scalar construction like GLSL Vector2(2) == Vector2(2.0, 2.0)
-.. versionchanged:: 1.9.4 :mod:`pygame.math` import not required. More convenient ``pygame.Vector2`` and ``pygame.Vector3``.
+.. versionaddedold:: 1.9.2pre
+.. versionchangedold:: 1.9.4 Removed experimental notice.
+.. versionchangedold:: 1.9.4 Allow scalar construction like GLSL Vector2(2) == Vector2(2.0, 2.0)
+.. versionchangedold:: 1.9.4 :mod:`pygame.math` import not required. More convenient ``pygame.Vector2`` and ``pygame.Vector3``.
 .. versionchanged:: 2.1.4 `round` returns a new vector with components rounded to the specified digits.
 
 .. function:: clamp
 
    | :sl:`returns value clamped to min and max.`
    | :sg:`clamp(value, min, max) -> float`
-
-   **Experimental:** feature still in development available for testing and feedback. It may change.
-   `Please leave clamp feedback with authors <https://github.com/pygame/pygame/pull/3326>`_
 
    Clamps a numeric ``value`` so that it's no lower than ``min``, and no higher
    than ``max``.
@@ -220,9 +217,6 @@ Multiple coordinates can be set using slices or swizzling
       | :sl:`returns a vector moved toward the target by a given distance.`
       | :sg:`move_towards(Vector2, float) -> Vector2`
 
-      **Experimental:** feature still in development available for testing and feedback. It may change.
-      `Please leave move_towards feedback with authors <https://github.com/pygame/pygame/pull/2929>`_
-
       Returns a Vector which is moved towards the given Vector by a given
       distance and does not overshoot past its target Vector.
       The first parameter determines the target Vector, while the second
@@ -237,9 +231,6 @@ Multiple coordinates can be set using slices or swizzling
 
       | :sl:`moves the vector toward its target at a given distance.`
       | :sg:`move_towards_ip(Vector2, float) -> None`
-
-      **Experimental:** feature still in development available for testing and feedback. It may change.
-      `Please leave move_towards_ip feedback with authors <https://github.com/pygame/pygame/pull/2929>`_
 
       Moves itself toward the given Vector at a given distance and does not
       overshoot past its target Vector.
@@ -307,7 +298,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Vector2.rotate_rad ##
 
@@ -330,8 +321,8 @@ Multiple coordinates can be set using slices or swizzling
 
       DEPRECATED: Use rotate_rad_ip() instead.
 
-      .. versionadded:: 2.0.0
-      .. deprecated:: 2.1.1
+      .. versionaddedold:: 2.0.0
+      .. deprecatedold:: 2.1.1
 
       .. ## Vector2.rotate_rad_ip ##
 
@@ -345,7 +336,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.1.1
+      .. versionaddedold:: 2.1.1
 
       .. ## Vector2.rotate_rad_ip ##
 
@@ -393,7 +384,7 @@ Multiple coordinates can be set using slices or swizzling
       Returns the projected vector. This is useful for collision detection in finding the components in a certain direction (e.g. in direction of the wall). 
       For a more detailed explanation see `Wikipedia <https://en.wikipedia.org/wiki/Vector_projection>`_.
 
-      .. versionadded:: 2.0.2
+      .. versionaddedold:: 2.0.2
 
       .. ## Vector2.project ##
 
@@ -405,7 +396,7 @@ Multiple coordinates can be set using slices or swizzling
 
       Returns a new Vector2 having the same dimensions.
 
-      .. versionadded:: 2.1.1
+      .. versionaddedold:: 2.1.1
 
       .. ## Vector2.copy ##
    
@@ -437,9 +428,6 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`clamp_magnitude_ip(max_length) -> None`
       | :sg:`clamp_magnitude_ip(min_length, max_length) -> None`
 
-      **Experimental:** feature still in development available for testing and feedback. It may change.
-      `Please leave clamp_magnitude_ip feedback with authors <https://github.com/pygame/pygame/pull/2990>`_
-
       Clamps the vector's magnitude between ``max_length`` and ``min_length``.
       If only one argument is passed, it is taken to be the ``max_length``
 
@@ -463,7 +451,7 @@ Multiple coordinates can be set using slices or swizzling
 
       Sets coordinates x and y in place.
 
-      .. versionadded:: 1.9.5
+      .. versionaddedold:: 1.9.5
 
       .. ## Vector2.update ##
 
@@ -663,9 +651,6 @@ Multiple coordinates can be set using slices or swizzling
       | :sl:`returns a vector moved toward the target by a given distance.`
       | :sg:`move_towards(Vector3, float) -> Vector3`
 
-      **Experimental:** feature still in development available for testing and feedback. It may change.
-      `Please leave move_towards feedback with authors <https://github.com/pygame/pygame/pull/2929>`_
-
       Returns a Vector which is moved towards the given Vector by a given
       distance and does not overshoot past its target Vector.
       The first parameter determines the target Vector, while the second
@@ -680,9 +665,6 @@ Multiple coordinates can be set using slices or swizzling
 
       | :sl:`moves the vector toward its target at a given distance.`
       | :sg:`move_towards_ip(Vector3, float) -> None`
-
-      **Experimental:** feature still in development available for testing and feedback. It may change.
-      `Please leave move_towards_ip feedback with authors <https://github.com/pygame/pygame/pull/2929>`_
 
       Moves itself toward the given Vector at a given distance and does not
       overshoot past its target Vector.
@@ -750,7 +732,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Vector3.rotate_rad ##
 
@@ -773,8 +755,8 @@ Multiple coordinates can be set using slices or swizzling
 
       DEPRECATED: Use rotate_rad_ip() instead.
 
-      .. versionadded:: 2.0.0
-      .. deprecated:: 2.1.1
+      .. versionaddedold:: 2.0.0
+      .. deprecatedold:: 2.1.1
 
       .. ## Vector3.rotate_ip_rad ##
 
@@ -788,7 +770,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.1.1
+      .. versionaddedold:: 2.1.1
 
       .. ## Vector3.rotate_rad_ip ##
 
@@ -814,7 +796,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Vector3.rotate_x_rad ##
 
@@ -837,8 +819,8 @@ Multiple coordinates can be set using slices or swizzling
 
       DEPRECATED: Use rotate_x_rad_ip() instead.
 
-      .. versionadded:: 2.0.0
-      .. deprecated:: 2.1.1
+      .. versionaddedold:: 2.0.0
+      .. deprecatedold:: 2.1.1
 
       .. ## Vector3.rotate_x_ip_rad ##
 
@@ -852,7 +834,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.1.1
+      .. versionaddedold:: 2.1.1
 
       .. ## Vector3.rotate_x_rad_ip ##
 
@@ -878,7 +860,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Vector3.rotate_y_rad ##
 
@@ -901,8 +883,8 @@ Multiple coordinates can be set using slices or swizzling
 
       DEPRECATED: Use rotate_y_rad_ip() instead.
 
-      .. versionadded:: 2.0.0
-      .. deprecated:: 2.1.1
+      .. versionaddedold:: 2.0.0
+      .. deprecatedold:: 2.1.1
 
       .. ## Vector3.rotate_y_ip_rad ##
 
@@ -916,7 +898,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.1.1
+      .. versionaddedold:: 2.1.1
 
       .. ## Vector3.rotate_y_rad_ip ##
 
@@ -942,7 +924,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Vector3.rotate_z_rad ##
 
@@ -965,7 +947,7 @@ Multiple coordinates can be set using slices or swizzling
 
       DEPRECATED: Use rotate_z_rad_ip() instead.
       
-      .. deprecated:: 2.1.1
+      .. deprecatedold:: 2.1.1
 
       .. ## Vector3.rotate_z_ip_rad ##
 
@@ -979,7 +961,7 @@ Multiple coordinates can be set using slices or swizzling
       (Note that due to pygame's inverted y coordinate system, the rotation
       will look clockwise if displayed).
 
-      .. versionadded:: 2.1.1
+      .. versionaddedold:: 2.1.1
 
       .. ## Vector3.rotate_z_rad_ip ##
 
@@ -1020,7 +1002,7 @@ Multiple coordinates can be set using slices or swizzling
       Returns the projected vector. This is useful for collision detection in finding the components in a certain direction (e.g. in direction of the wall). 
       For a more detailed explanation see `Wikipedia <https://en.wikipedia.org/wiki/Vector_projection>`_.
 
-      .. versionadded:: 2.0.2
+      .. versionaddedold:: 2.0.2
 
       .. ## Vector3.project ##
    
@@ -1031,7 +1013,7 @@ Multiple coordinates can be set using slices or swizzling
 
       Returns a new Vector3 having the same dimensions.
 
-      .. versionadded:: 2.1.1
+      .. versionaddedold:: 2.1.1
 
       .. ## Vector3.copy ##
 
@@ -1041,9 +1023,6 @@ Multiple coordinates can be set using slices or swizzling
       | :sl:`Returns a copy of a vector with the magnitude clamped between max_length and min_length.`
       | :sg:`clamp_magnitude(max_length) -> Vector3`
       | :sg:`clamp_magnitude(min_length, max_length) -> Vector3`
-
-      **Experimental:** feature still in development available for testing and feedback. It may change.
-      `Please leave clamp_magnitude feedback with authors <https://github.com/pygame/pygame/pull/2990>`_
 
       Returns a new copy of a vector with the magnitude clamped between 
       ``max_length`` and ``min_length``. If only one argument is passed, it is 
@@ -1062,9 +1041,6 @@ Multiple coordinates can be set using slices or swizzling
       | :sl:`Clamps the vector's magnitude between max_length and min_length`
       | :sg:`clamp_magnitude_ip(max_length) -> None`
       | :sg:`clamp_magnitude_ip(min_length, max_length) -> None`
-
-      **Experimental:** feature still in development available for testing and feedback. It may change.
-      `Please leave clamp_magnitude_ip feedback with authors <https://github.com/pygame/pygame/pull/2990>`_
 
       Clamps the vector's magnitude between ``max_length`` and ``min_length``.
       If only one argument is passed, it is taken to be the ``max_length``
@@ -1088,7 +1064,7 @@ Multiple coordinates can be set using slices or swizzling
 
       Sets coordinates x, y, and z in place.
 
-      .. versionadded:: 1.9.5
+      .. versionaddedold:: 1.9.5
 
       .. ## Vector3.update ##
 

@@ -4,12 +4,9 @@
 
 name: Debian Multiarch
 
-# Run CI only when a release is created, on changes to main branch, or any PR 
-# to main. Do not run CI on any other branch. Also, skip any non-source changes 
-# from running on CI
+# Run CI only on changes to main branch, or any PR to main. Do not run CI on
+# any other branch. Also, skip any non-source changes from running on CI
 on:
-  release:
-    types: [created]
   push:
     branches: main
     paths-ignore:
@@ -35,7 +32,7 @@ on:
       - '!.github/workflows/build-debian-multiarch.yml'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-debian-multiarch
   cancel-in-progress: true
 
 jobs:
@@ -50,10 +47,10 @@ jobs:
         arch: [s390x, ppc64le]
 
     steps:
-    - uses: actions/checkout@v3.3.0
+    - uses: actions/checkout@v3.5.3
 
     - name: Build sources and run tests
-      uses: uraimo/run-on-arch-action@v2.3.0
+      uses: uraimo/run-on-arch-action@v2.5.0
       id: build
       with:
         arch: ${{ matrix.arch }}

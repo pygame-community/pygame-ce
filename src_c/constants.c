@@ -1,5 +1,5 @@
 /*
-    pygame - Python Game Library
+    pygame-ce - Python Game Library
     Copyright (C) 2000-2001  Pete Shinners
 
     This library is free software; you can redistribute it and/or
@@ -619,6 +619,23 @@ MODINIT_DEFINE(constants)
 
 #define PYGAME_USEREVENT_DROPFILE 0x1000
     DEC_CONSTS(USEREVENT_DROPFILE, PYGAME_USEREVENT_DROPFILE);
+
+    /* constants for font direction */
+    DEC_CONSTS(DIRECTION_LTR, 0);
+    DEC_CONSTS(DIRECTION_RTL, 1);
+    DEC_CONSTS(DIRECTION_TTB, 2);
+    DEC_CONSTS(DIRECTION_BTT, 3);
+
+    /* Font alignment constants */
+    DEC_CONSTS(FONT_LEFT, 0);
+    DEC_CONSTS(FONT_CENTER, 1);
+    DEC_CONSTS(FONT_RIGHT, 2);
+
+    // https://github.com/pygame-community/pygame-ce/issues/1845
+    DEC_CONSTS(IS_CE, 1)
+
+    DEC_CONSTS(WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED);
+    DEC_CONSTS(WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
     if (PyModule_AddObject(module, "__all__", all_list)) {
         Py_DECREF(all_list);

@@ -3,8 +3,8 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-FREETYPE=freetype-2.12.1
-HARFBUZZ_VER=5.1.0
+FREETYPE="freetype-2.13.0"
+HARFBUZZ_VER=7.1.0
 HARFBUZZ_NAME="harfbuzz-$HARFBUZZ_VER"
 
 curl -sL --retry 10 http://download.savannah.gnu.org/releases/freetype/${FREETYPE}.tar.gz > ${FREETYPE}.tar.gz
@@ -47,6 +47,16 @@ make install
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # Install to mac deps cache dir as well
     make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
+
+    # We do a little hack...
+    # When freetype finds harfbuzz with pkg-config, we tell freetype a little
+    # lie that harfbuzz doesn't depend on freetype (even though it does).
+    # This ensures no direct circular dylib link happen.
+    # This is a bit of a brittle hack: This command removes the entire line that
+    # contains "freetype". This is fine for now when the harfbuzz we are
+    # building has no other dependencies
+    sed -i '' '/freetype/d' /usr/local/lib/pkgconfig/harfbuzz.pc
+    sed -i '' 's/ \/usr\/local\/lib\/libfreetype.la//g' /usr/local/lib/libharfbuzz.la
 fi
 
 cd ..
@@ -56,6 +66,9 @@ cd $FREETYPE
 
 # fully clean previous install
 make clean
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    make uninstall
+fi
 
 ./configure $ARCHS_CONFIG_FLAG --with-harfbuzz=yes
 make

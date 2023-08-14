@@ -1,4 +1,4 @@
-from typing import Any, Generator, Iterable, Optional, Tuple, Union
+from typing import Any, Generator, Iterable, Optional, Tuple, Union, final
 
 from pygame.color import Color
 from pygame.rect import Rect
@@ -12,6 +12,10 @@ WINDOWPOS_CENTERED: int
 MESSAGEBOX_ERROR: int
 MESSAGEBOX_WARNING: int
 MESSAGEBOX_INFORMATION: int
+
+SCALEQUALITY_NEAREST: int
+SCALEQUALITY_LINEAR: int
+SCALEQUALITY_BEST: int
 
 class RendererDriverInfo:
     name: str
@@ -34,40 +38,9 @@ def messagebox(
     escape_button: int = 0,
 ) -> int: ...
 
-class Window:
-    DEFAULT_SIZE: Tuple[Literal[640], Literal[480]]
-    def __init__(
-        self,
-        title: str = "pygame",
-        size: Iterable[int] = (640, 480),
-        position: Optional[Iterable[int]] = None,
-        fullscreen: bool = False,
-        fullscreen_desktop: bool = False,
-        **kwargs: bool
-    ) -> None: ...
-    @classmethod
-    def from_display_module(cls) -> Window: ...
-    grab: bool
-    relative_mouse: bool
-    def set_windowed(self) -> None: ...
-    def set_fullscreen(self, desktop: bool = False) -> None: ...
-    title: str
-    def destroy(self) -> None: ...
-    def hide(self) -> None: ...
-    def show(self) -> None: ...
-    def focus(self, input_only: bool = False) -> None: ...
-    def restore(self) -> None: ...
-    def maximize(self) -> None: ...
-    def minimize(self) -> None: ...
-    resizable: bool
-    borderless: bool
-    def set_icon(self, surface: Surface) -> None: ...
-    id: int
-    size: Iterable[int]
-    position: Union[int, Iterable[int]]
-    opacity: float
-    display_index: int
-    def set_modal_for(self, Window) -> None: ...
+from pygame._window import Window as Window
+
+_Window = Window
 
 class Texture:
     def __init__(
@@ -77,6 +50,7 @@ class Texture:
         static: bool = False,
         streaming: bool = False,
         target: bool = False,
+        scale_quality: Optional[int] =None
     ) -> None: ...
     @staticmethod
     def from_surface(renderer: Renderer, surface: Surface) -> Texture: ...
@@ -96,12 +70,39 @@ class Texture:
         flip_x: bool = False,
         flip_y: bool = False,
     ) -> None: ...
+    def draw_triangle(
+        self,
+        p1_xy: Iterable[float],
+        p2_xy: Iterable[float],
+        p3_xy: Iterable[float],
+        p1_uv: Iterable[float] = (0.0, 0.0),
+        p2_uv: Iterable[float] = (1.0, 1.0),
+        p3_uv: Iterable[float] = (0.0, 1.0),
+        p1_mod: Iterable[int] = (255, 255, 255, 255),
+        p2_mod: Iterable[int] = (255, 255, 255, 255),
+        p3_mod: Iterable[int] = (255, 255, 255, 255),
+    ) -> None: ...
+    def draw_quad(
+        self,
+        p1_xy: Iterable[float],
+        p2_xy: Iterable[float],
+        p3_xy: Iterable[float],
+        p4_xy: Iterable[float],
+        p1_uv: Iterable[float]=(0.0, 0.0),
+        p2_uv: Iterable[float]=(1.0, 0.0),
+        p3_uv: Iterable[float]=(1.0, 1.0),
+        p4_uv: Iterable[float]=(0.0, 1.0),
+        p1_mod: Iterable[int] = (255, 255, 255, 255),
+        p2_mod: Iterable[int] = (255, 255, 255, 255),
+        p3_mod: Iterable[int] = (255, 255, 255, 255),
+        p4_mod: Iterable[int] = (255, 255, 255, 255),
+    ) -> None: ...
     def update(self, surface: Surface, area: Optional[RectValue] = None) -> None: ...
 
 class Image:
     def __init__(
         self,
-        textureOrImage: Union[Texture, Image],
+        texture_or_image: Union[Texture, Image],
         srcrect: Optional[RectValue] = None,
     ) -> None: ...
     def get_rect(self, **kwargs: Any) -> Rect: ...
@@ -149,6 +150,18 @@ class Renderer:
     def draw_point(self, point: Iterable[int]) -> None: ...
     def draw_rect(self, rect: RectValue) -> None: ...
     def fill_rect(self, rect: RectValue) -> None: ...
+    def draw_triangle(
+        self, p1: Iterable[int], p2: Iterable[int], p3: Iterable[int]
+    ) -> None: ...
+    def fill_triangle(
+        self, p1: Iterable[float], p2: Iterable[float], p3: Iterable[float]
+    ) -> None: ...
+    def draw_quad(
+        self, p1: Iterable[int], p2: Iterable[int], p3: Iterable[int], p4: Iterable[int]
+    ) -> None: ...
+    def fill_quad(
+        self, p1: Iterable[float], p2: Iterable[float], p3: Iterable[float], p4: Iterable[float]
+    ) -> None: ...
     def to_surface(
         self, surface: Optional[Surface] = None, area: Optional[RectValue] = None
     ) -> Surface: ...

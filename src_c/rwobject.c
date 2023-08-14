@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -243,8 +243,39 @@ pg_EncodeString(PyObject *obj, const char *encoding, const char *errors,
 static PyObject *
 pg_EncodeFilePath(PyObject *obj, PyObject *eclass)
 {
-    PyObject *result = pg_EncodeString(obj, Py_FileSystemDefaultEncoding,
-                                       UNICODE_DEF_FS_ERROR, eclass);
+    /* All of this code is a replacement for Py_FileSystemDefaultEncoding,
+     * which is deprecated in Python 3.12
+     *
+     * But I'm not sure of the use of this function, so maybe it should be
+     * deprecated. */
+
+    PyObject *sys_module = PyImport_ImportModule("sys");
+    if (sys_module == NULL) {
+        return NULL;
+    }
+    PyObject *system_encoding_obj =
+        PyObject_CallMethod(sys_module, "getfilesystemencoding", NULL);
+    if (system_encoding_obj == NULL) {
+        Py_DECREF(sys_module);
+        return NULL;
+    }
+    Py_DECREF(sys_module);
+    const char *encoding = PyUnicode_AsUTF8(system_encoding_obj);
+    if (encoding == NULL) {
+        Py_DECREF(system_encoding_obj);
+        return NULL;
+    }
+
+    /* End code replacement section */
+
+    if (obj == NULL) {
+        PyErr_SetString(PyExc_SyntaxError, "Forwarded exception");
+    }
+
+    PyObject *result =
+        pg_EncodeString(obj, encoding, UNICODE_DEF_FS_ERROR, eclass);
+    Py_DECREF(system_encoding_obj);
+
     if (result == NULL || result == Py_None) {
         return result;
     }
@@ -465,15 +496,6 @@ pgRWops_FromFileObject(PyObject *obj)
     rw->write = _pg_rw_write;
     rw->close = _pg_rw_close;
 
-/* https://docs.python.org/3/c-api/init.html#c.PyEval_InitThreads */
-/* ^ in Python >= 3.7, we don't have to call this function, and in 3.11
- * it will be removed */
-#if PY_VERSION_HEX < 0x03070000
-#ifdef WITH_THREAD
-    PyEval_InitThreads();
-#endif /* WITH_THREAD */
-#endif
-
     return rw;
 }
 
@@ -498,7 +520,7 @@ pgRWops_ReleaseObject(SDL_RWops *context)
             Py_XDECREF(helper->read);
             Py_XDECREF(helper->close);
             Py_DECREF(fileobj);
-            PyMem_Del(helper);
+            PyMem_Free(helper);
             SDL_FreeRW(context);
         }
         else {
@@ -826,17 +848,14 @@ pg_encode_file_path(PyObject *self, PyObject *args, PyObject *keywds)
         return NULL;
     }
 
-    if (obj == NULL) {
-        PyErr_SetString(PyExc_SyntaxError, "Forwarded exception");
-    }
     return pg_EncodeFilePath(obj, eclass);
 }
 
 static PyMethodDef _pg_rwobject_methods[] = {
     {"encode_string", (PyCFunction)pg_encode_string,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMEENCODESTRING},
+     METH_VARARGS | METH_KEYWORDS, DOC_ENCODESTRING},
     {"encode_file_path", (PyCFunction)pg_encode_file_path,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMEENCODEFILEPATH},
+     METH_VARARGS | METH_KEYWORDS, DOC_ENCODEFILEPATH},
     {NULL, NULL, 0, NULL}};
 
 /*DOC*/ static char _pg_rwobject_doc[] =

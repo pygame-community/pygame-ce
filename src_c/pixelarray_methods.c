@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2007-2008 Marcus von Appen
 
   This library is free software; you can redistribute it and/or
@@ -169,16 +169,15 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
 
     /* Create the second surface. */
 
-    temp_surf = SDL_CreateRGBSurface(surf->flags, (int)dim0, (int)dim1,
-                                     surf->format->BitsPerPixel,
-                                     surf->format->Rmask, surf->format->Gmask,
-                                     surf->format->Bmask, surf->format->Amask);
+    temp_surf = SDL_CreateRGBSurfaceWithFormat(0, (int)dim0, (int)dim1,
+                                               surf->format->BitsPerPixel,
+                                               surf->format->format);
     if (!temp_surf) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
     /* Guarantee an identical format. */
-    new_surf = SDL_ConvertSurface(temp_surf, surf->format, surf->flags);
+    new_surf = SDL_ConvertSurface(temp_surf, surf->format, 0);
     SDL_FreeSurface(temp_surf);
     if (!new_surf) {
         return RAISE(pgExc_SDLError, SDL_GetError());

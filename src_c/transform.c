@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
   Copyright (C) 2007  Rene Dudfield, Richard Goedeken
 
@@ -53,8 +53,6 @@ struct _module_state {
 
 void
 scale2x(SDL_Surface *src, SDL_Surface *dst);
-void
-scale2xraw(SDL_Surface *src, SDL_Surface *dst);
 extern SDL_Surface *
 rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth);
 
@@ -129,10 +127,8 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
         return (SDL_Surface *)(RAISE(
             PyExc_ValueError, "unsupported Surface bit depth for transform"));
 
-    newsurf = SDL_CreateRGBSurface(surf->flags, width, height,
-                                   surf->format->BitsPerPixel,
-                                   surf->format->Rmask, surf->format->Gmask,
-                                   surf->format->Bmask, surf->format->Amask);
+    newsurf = SDL_CreateRGBSurfaceWithFormat(
+        0, width, height, surf->format->BitsPerPixel, surf->format->format);
     if (!newsurf)
         return (SDL_Surface *)(RAISE(pgExc_SDLError, SDL_GetError()));
 
@@ -411,118 +407,14 @@ rotate(SDL_Surface *src, SDL_Surface *dst, Uint32 bgcolor, double sangle,
     }
 }
 
-static void
-stretch(SDL_Surface *src, SDL_Surface *dst)
-{
-    int looph, loopw;
-
-    Uint8 *srcrow = (Uint8 *)src->pixels;
-    Uint8 *dstrow = (Uint8 *)dst->pixels;
-
-    int srcpitch = src->pitch;
-    int dstpitch = dst->pitch;
-
-    int dstwidth = dst->w;
-    int dstheight = dst->h;
-    int dstwidth2 = dst->w << 1;
-    int dstheight2 = dst->h << 1;
-
-    int srcwidth2 = src->w << 1;
-    int srcheight2 = src->h << 1;
-
-    int w_err, h_err = srcheight2 - dstheight2;
-
-    switch (src->format->BytesPerPixel) {
-        case 1:
-            for (looph = 0; looph < dstheight; ++looph) {
-                Uint8 *srcpix = (Uint8 *)srcrow, *dstpix = (Uint8 *)dstrow;
-                w_err = srcwidth2 - dstwidth2;
-                for (loopw = 0; loopw < dstwidth; ++loopw) {
-                    *dstpix++ = *srcpix;
-                    while (w_err >= 0) {
-                        ++srcpix;
-                        w_err -= dstwidth2;
-                    }
-                    w_err += srcwidth2;
-                }
-                while (h_err >= 0) {
-                    srcrow += srcpitch;
-                    h_err -= dstheight2;
-                }
-                dstrow += dstpitch;
-                h_err += srcheight2;
-            }
-            break;
-        case 2:
-            for (looph = 0; looph < dstheight; ++looph) {
-                Uint16 *srcpix = (Uint16 *)srcrow, *dstpix = (Uint16 *)dstrow;
-                w_err = srcwidth2 - dstwidth2;
-                for (loopw = 0; loopw < dstwidth; ++loopw) {
-                    *dstpix++ = *srcpix;
-                    while (w_err >= 0) {
-                        ++srcpix;
-                        w_err -= dstwidth2;
-                    }
-                    w_err += srcwidth2;
-                }
-                while (h_err >= 0) {
-                    srcrow += srcpitch;
-                    h_err -= dstheight2;
-                }
-                dstrow += dstpitch;
-                h_err += srcheight2;
-            }
-            break;
-        case 3:
-            for (looph = 0; looph < dstheight; ++looph) {
-                Uint8 *srcpix = (Uint8 *)srcrow, *dstpix = (Uint8 *)dstrow;
-                w_err = srcwidth2 - dstwidth2;
-                for (loopw = 0; loopw < dstwidth; ++loopw) {
-                    memcpy(dstpix, srcpix, 3);
-                    dstpix += 3;
-                    while (w_err >= 0) {
-                        srcpix += 3;
-                        w_err -= dstwidth2;
-                    }
-                    w_err += srcwidth2;
-                }
-                while (h_err >= 0) {
-                    srcrow += srcpitch;
-                    h_err -= dstheight2;
-                }
-                dstrow += dstpitch;
-                h_err += srcheight2;
-            }
-            break;
-        default: /*case 4:*/
-            for (looph = 0; looph < dstheight; ++looph) {
-                Uint32 *srcpix = (Uint32 *)srcrow, *dstpix = (Uint32 *)dstrow;
-                w_err = srcwidth2 - dstwidth2;
-                for (loopw = 0; loopw < dstwidth; ++loopw) {
-                    *dstpix++ = *srcpix;
-                    while (w_err >= 0) {
-                        ++srcpix;
-                        w_err -= dstwidth2;
-                    }
-                    w_err += srcwidth2;
-                }
-                while (h_err >= 0) {
-                    srcrow += srcpitch;
-                    h_err -= dstheight2;
-                }
-                dstrow += dstpitch;
-                h_err += srcheight2;
-            }
-            break;
-    }
-}
-
 static SDL_Surface *
 scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
          int height)
 {
     SDL_Surface *src = NULL;
     SDL_Surface *retsurf = NULL;
+    SDL_Surface *modsurf = NULL;
+    int stretch_result_num = 0;
 
     if (width < 0 || height < 0)
         return RAISE(PyExc_ValueError, "Cannot scale to negative size");
@@ -530,12 +422,32 @@ scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
     src = pgSurface_AsSurface(srcobj);
 
     if (!dstobj) {
-        retsurf = newsurf_fromsurf(src, width, height);
+        modsurf = retsurf = newsurf_fromsurf(src, width, height);
         if (!retsurf)
             return NULL;
     }
     else {
-        retsurf = pgSurface_AsSurface(dstobj);
+        modsurf = retsurf = pgSurface_AsSurface(dstobj);
+        if (retsurf->format->BytesPerPixel != src->format->BytesPerPixel ||
+            retsurf->format->Rmask != src->format->Rmask ||
+            retsurf->format->Gmask != src->format->Gmask ||
+            retsurf->format->Bmask != src->format->Bmask) {
+            return RAISE(PyExc_ValueError,
+                         "Source and destination surfaces need to be "
+                         "compatible formats.");
+        }
+
+        /* If the surface formats are otherwise compatible but the alpha is
+         * not the same, use a proxy surface to modify the pixels of the
+         * existing dstobj return surface. Otherwise SDL_SoftStretch
+         * rejects the input.
+         * For example, RGBA and RGBX surfaces are compatible in this way. */
+        if (retsurf->format->Amask != src->format->Amask) {
+            modsurf = SDL_CreateRGBSurfaceWithFormatFrom(
+                retsurf->pixels, retsurf->w, retsurf->h,
+                retsurf->format->BitsPerPixel, retsurf->pitch,
+                src->format->format);
+        }
     }
 
     if (retsurf->w != width || retsurf->h != height) {
@@ -544,27 +456,25 @@ scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
             "Destination surface not the given width or height."));
     }
 
-    if (src->format->BytesPerPixel != retsurf->format->BytesPerPixel) {
-        return (SDL_Surface *)(RAISE(
-            PyExc_ValueError,
-            "Source and destination surfaces need the same format."));
-    }
-
+    /* Testing width and height of src and dest, because pygame supports
+     * surfaces with "0" as the width or height, and for those nothing should
+     * happen here. */
     if ((width && height) && (src->w && src->h)) {
-        SDL_LockSurface(retsurf);
         pgSurface_Lock(srcobj);
-
         Py_BEGIN_ALLOW_THREADS;
-        if (width == 2 * src->w && height == 2 * src->h) {
-            scale2xraw(src, retsurf);
-        }
-        else {
-            stretch(src, retsurf);
-        }
-        Py_END_ALLOW_THREADS;
 
+        stretch_result_num = SDL_SoftStretch(src, NULL, modsurf, NULL);
+
+        Py_END_ALLOW_THREADS;
         pgSurface_Unlock(srcobj);
-        SDL_UnlockSurface(retsurf);
+
+        if (modsurf != retsurf) {
+            SDL_FreeSurface(modsurf);
+        }
+
+        if (stretch_result_num < 0) {
+            return (SDL_Surface *)(RAISE(pgExc_SDLError, SDL_GetError()));
+        }
     }
 
     return retsurf;
@@ -576,7 +486,7 @@ surf_scale(PyObject *self, PyObject *args, PyObject *kwargs)
     pgSurfaceObject *surfobj;
     pgSurfaceObject *surfobj2 = NULL;
     PyObject *size;
-    SDL_Surface *newsurf;
+    SDL_Surface *newsurf, *surf;
     int width, height;
     static char *keywords[] = {"surface", "size", "dest_surface", NULL};
 
@@ -584,6 +494,9 @@ surf_scale(PyObject *self, PyObject *args, PyObject *kwargs)
                                      &pgSurface_Type, &surfobj, &size,
                                      &pgSurface_Type, &surfobj2))
         return NULL;
+
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (!pg_TwoIntsFromObj(size, &width, &height))
         return RAISE(PyExc_TypeError, "size must be two numbers");
@@ -621,6 +534,8 @@ surf_scale_by(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
     newsurf = scale_to(surfobj, surfobj2, (int)(surf->w * scalex),
                        (int)(surf->h * scaley));
     if (!newsurf) {
@@ -649,6 +564,7 @@ surf_scale2x(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     /* if the second surface is not there, then make a new one. */
 
@@ -708,6 +624,8 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
                                      &pgSurface_Type, &surfobj, &angle))
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
     if (surf->w < 1 || surf->h < 1) {
         Py_INCREF(surfobj);
         return (PyObject *)surfobj;
@@ -805,6 +723,7 @@ surf_flip(PyObject *self, PyObject *args, PyObject *kwargs)
                                      &yaxis))
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     newsurf = newsurf_fromsurf(surf, surf->w, surf->h);
     if (!newsurf)
@@ -951,6 +870,8 @@ surf_rotozoom(PyObject *self, PyObject *args, PyObject *kwargs)
                                      &scale))
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
     if (scale == 0.0 || surf->w == 0 || surf->h == 0) {
         newsurf = newsurf_fromsurf(surf, 0, 0);
         return (PyObject *)pgSurface_New(newsurf);
@@ -962,9 +883,8 @@ surf_rotozoom(PyObject *self, PyObject *args, PyObject *kwargs)
     }
     else {
         Py_BEGIN_ALLOW_THREADS;
-        surf32 = SDL_CreateRGBSurface(SDL_SWSURFACE, surf->w, surf->h, 32,
-                                      0x000000ff, 0x0000ff00, 0x00ff0000,
-                                      0xff000000);
+        surf32 = SDL_CreateRGBSurfaceWithFormat(0, surf->w, surf->h, 32,
+                                                SDL_PIXELFORMAT_ABGR8888);
         SDL_BlitSurface(surf, NULL, surf32, NULL);
         Py_END_ALLOW_THREADS;
     }
@@ -1067,6 +987,8 @@ surf_chop(PyObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(PyExc_TypeError, "Rect argument is invalid");
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
     /* The function releases GIL internally, don't release here */
     newsurf = chop(surf, rect->x, rect->y, rect->w, rect->h);
 
@@ -1543,6 +1465,7 @@ surf_scalesmooth(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     pgSurfaceObject *surfobj;
     pgSurfaceObject *surfobj2 = NULL;
+    SDL_Surface *surf;
     PyObject *size;
     SDL_Surface *newsurf;
     int width, height;
@@ -1552,6 +1475,9 @@ surf_scalesmooth(PyObject *self, PyObject *args, PyObject *kwargs)
                                      &pgSurface_Type, &surfobj, &size,
                                      &pgSurface_Type, &surfobj2))
         return NULL;
+
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     if (!pg_TwoIntsFromObj(size, &width, &height))
         return RAISE(PyExc_TypeError, "size must be two numbers");
@@ -1589,6 +1515,7 @@ surf_scalesmooth_by(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     newsurf = smoothscale_to(self, surfobj, surfobj2, (int)(surf->w * scale),
                              (int)(surf->h * scaley));
@@ -1887,7 +1814,7 @@ surf_threshold(PyObject *self, PyObject *args, PyObject *kwds)
     int num_threshold_pixels = 0;
 
     /*
-    https://www.pygame.org/docs/ref/transform.html#pygame.transform.threshold
+    https://pyga.me/docs/ref/transform.html#pygame.transform.threshold
 
     Returns the number of pixels within the threshold.
     */
@@ -2110,6 +2037,87 @@ clamp_4
 
 #endif
 
+SDL_Surface *
+grayscale(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
+{
+    SDL_Surface *src = pgSurface_AsSurface(srcobj);
+    SDL_Surface *newsurf;
+
+    if (!dstobj) {
+        newsurf = newsurf_fromsurf(src, srcobj->surf->w, srcobj->surf->h);
+        if (!newsurf)
+            return NULL;
+    }
+    else {
+        newsurf = pgSurface_AsSurface(dstobj);
+    }
+
+    if (newsurf->w != src->w || newsurf->h != src->h) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Destination surface must be the same size as source surface."));
+    }
+
+    if (src->format->BytesPerPixel != newsurf->format->BytesPerPixel) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Source and destination surfaces need the same format."));
+    }
+
+    int x, y;
+    for (y = 0; y < src->h; y++) {
+        for (x = 0; x < src->w; x++) {
+            Uint32 pixel;
+            Uint8 *pix;
+            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format,
+                        pix);
+            Uint8 r, g, b, a;
+            SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
+
+            // RGBA to GRAY formula used by OpenCV
+            Uint8 grayscale_pixel = (Uint8)(0.299 * r + 0.587 * g + 0.114 * b);
+            Uint32 new_pixel =
+                SDL_MapRGBA(newsurf->format, grayscale_pixel, grayscale_pixel,
+                            grayscale_pixel, a);
+            SURF_SET_AT(new_pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
+                        newsurf->format, pix);
+        }
+    }
+
+    SDL_UnlockSurface(newsurf);
+
+    return newsurf;
+}
+
+static PyObject *
+surf_grayscale(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    pgSurfaceObject *surfobj2 = NULL;
+    SDL_Surface *newsurf;
+
+    static char *keywords[] = {"surface", "dest_surface", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!", keywords,
+                                     &pgSurface_Type, &surfobj,
+                                     &pgSurface_Type, &surfobj2))
+        return NULL;
+
+    newsurf = grayscale(surfobj, surfobj2);
+
+    if (!newsurf) {
+        return NULL;
+    }
+
+    if (surfobj2) {
+        Py_INCREF(surfobj2);
+        return (PyObject *)surfobj2;
+    }
+    else {
+        return (PyObject *)pgSurface_New(newsurf);
+    }
+}
+
 /*
 number to use for missing samples
 */
@@ -2321,6 +2329,7 @@ surf_laplacian(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
 
     /* if the second surface is not there, then make a new one. */
 
@@ -2966,37 +2975,424 @@ surf_average_color(PyObject *self, PyObject *args, PyObject *kwargs)
     return Py_BuildValue("(bbbb)", r, g, b, a);
 }
 
+static void
+box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
+{
+    // Reference : https://blog.csdn.net/blogshinelee/article/details/80997324
+
+    Uint8 *srcpx = (Uint8 *)src->pixels;
+    Uint8 *dstpx = (Uint8 *)dst->pixels;
+    Uint8 nb = src->format->BytesPerPixel;
+    int w = dst->w, h = dst->h;
+    int dst_pitch = dst->pitch;
+    int src_pitch = src->pitch;
+    int i, x, y, color;
+    Uint32 *buf = malloc(dst_pitch * sizeof(Uint32));
+    Uint32 *sum_v = malloc(dst_pitch * sizeof(Uint32));
+    Uint32 *sum_h = malloc(nb * sizeof(Uint32));
+
+    memset(sum_v, 0, dst_pitch * sizeof(Uint32));
+    for (y = 0; y <= radius; y++) {  // y-pre
+        for (i = 0; i < dst_pitch; i++) {
+            sum_v[i] += srcpx[src_pitch * y + i];
+        }
+    }
+    if (repeat) {
+        for (i = 0; i < dst_pitch; i++) {
+            sum_v[i] += srcpx[i] * radius;
+        }
+    }
+    for (y = 0; y < h; y++) {  // y
+        for (i = 0; i < dst_pitch; i++) {
+            buf[i] = sum_v[i] / (radius * 2 + 1);
+
+            // update vertical sum
+            if (y - radius >= 0) {
+                sum_v[i] -= srcpx[src_pitch * (y - radius) + i];
+            }
+            else if (repeat) {
+                sum_v[i] -= srcpx[i];
+            }
+            if (y + radius + 1 < h) {
+                sum_v[i] += srcpx[src_pitch * (y + radius + 1) + i];
+            }
+            else if (repeat) {
+                sum_v[i] += srcpx[src_pitch * (h - 1) + i];
+            }
+        }
+
+        memset(sum_h, 0, nb * sizeof(Uint32));
+        for (x = 0; x <= radius; x++) {  // x-pre
+            for (color = 0; color < nb; color++) {
+                sum_h[color] += buf[x * nb + color];
+            }
+        }
+        if (repeat) {
+            for (color = 0; color < nb; color++) {
+                sum_h[color] += buf[color] * radius;
+            }
+        }
+        for (x = 0; x < w; x++) {  // x
+            for (color = 0; color < nb; color++) {
+                dstpx[dst_pitch * y + nb * x + color] =
+                    sum_h[color] / (radius * 2 + 1);
+
+                // update horizontal sum
+                if (x - radius >= 0) {
+                    sum_h[color] -= buf[(x - radius) * nb + color];
+                }
+                else if (repeat) {
+                    sum_h[color] -= buf[color];
+                }
+                if (x + radius + 1 < w) {
+                    sum_h[color] += buf[(x + radius + 1) * nb + color];
+                }
+                else if (repeat) {
+                    sum_h[color] += buf[(w - 1) * nb + color];
+                }
+            }
+        }
+    }
+
+    free(buf);
+    free(sum_v);
+    free(sum_h);
+}
+
+static void
+gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int sigma, SDL_bool repeat)
+{
+    Uint8 *srcpx = (Uint8 *)src->pixels;
+    Uint8 *dstpx = (Uint8 *)dst->pixels;
+    Uint8 nb = src->format->BytesPerPixel;
+    int w = dst->w, h = dst->h;
+    int dst_pitch = dst->pitch;
+    int src_pitch = src->pitch;
+    int i, j, x, y, color;
+    int kernel_radius = sigma * 2;
+    float *buf = malloc(dst_pitch * sizeof(float));
+    float *buf2 = malloc(dst_pitch * sizeof(float));
+    float *lut = malloc((kernel_radius + 1) * sizeof(float));
+    float lut_sum = 0.0;
+
+    for (i = 0; i <= kernel_radius; i++) {  // init gaussian lut
+        // Gaussian function
+        lut[i] =
+            expf(-powf((float)i, 2.0f) / (2.0f * powf((float)sigma, 2.0f)));
+        lut_sum += lut[i] * 2;
+    }
+    lut_sum -= lut[0];
+    for (i = 0; i <= kernel_radius; i++) {
+        lut[i] /= lut_sum;
+    }
+
+    for (i = 0; i < dst_pitch; i++) {
+        buf[i] = 0.0;
+        buf2[i] = 0.0;
+    }
+
+    for (y = 0; y < h; y++) {
+        for (j = -kernel_radius; j <= kernel_radius; j++) {
+            for (i = 0; i < dst_pitch; i++) {
+                if (y + j >= 0 && y + j < h) {
+                    buf[i] +=
+                        (float)srcpx[src_pitch * (y + j) + i] * lut[abs(j)];
+                }
+                else if (repeat) {
+                    if (y + j < 0) {
+                        buf[i] += (float)srcpx[i] * lut[abs(j)];
+                    }
+                    else {
+                        buf[i] += (float)srcpx[src_pitch * (h - 1) + i] *
+                                  lut[abs(j)];
+                    }
+                }
+            }
+        }
+
+        for (x = 0; x < w; x++) {
+            for (j = -kernel_radius; j <= kernel_radius; j++) {
+                for (color = 0; color < nb; color++) {
+                    if (x + j >= 0 && x + j < w) {
+                        buf2[nb * x + color] +=
+                            buf[nb * (x + j) + color] * lut[abs(j)];
+                    }
+                    else if (repeat) {
+                        if (x + j < 0) {
+                            buf2[nb * x + color] += buf[color] * lut[abs(j)];
+                        }
+                        else {
+                            buf2[nb * x + color] +=
+                                buf[nb * (w - 1) + color] * lut[abs(j)];
+                        }
+                    }
+                }
+            }
+        }
+        for (i = 0; i < dst_pitch; i++) {
+            dstpx[dst_pitch * y + i] = (Uint8)buf2[i];
+            buf[i] = 0.0;
+            buf2[i] = 0.0;
+        }
+    }
+
+    free(buf);
+    free(buf2);
+    free(lut);
+}
+
+static SDL_Surface *
+blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
+     SDL_bool repeat, char algorithm)
+{
+    SDL_Surface *src = NULL;
+    SDL_Surface *retsurf = NULL;
+
+    if (radius < 0) {
+        return RAISE(PyExc_ValueError,
+                     "The radius should not be less than zero.");
+    }
+
+    src = pgSurface_AsSurface(srcobj);
+
+    if (src->format->palette) {
+        return RAISE(PyExc_ValueError, "Indexed surfaces cannot be blurred.");
+    }
+
+    if (!dstobj) {
+        retsurf = newsurf_fromsurf(src, src->w, src->h);
+        if (!retsurf)
+            return NULL;
+    }
+    else {
+        retsurf = pgSurface_AsSurface(dstobj);
+    }
+
+    Uint8 *ret_start = retsurf->pixels;
+    Uint8 *ret_end = ret_start + retsurf->h * retsurf->pitch;
+    Uint8 *src_start = src->pixels;
+    Uint8 *src_end = src_start + src->h * src->pitch;
+    if ((ret_start <= src_start && ret_end >= src_start) ||
+        (src_start <= ret_start && src_end >= ret_start)) {
+        return RAISE(
+            PyExc_ValueError,
+            "Blur routines do not support dest_surfaces that share pixels "
+            "with the source surface. Likely the surfaces are the same, one "
+            "of them is a subsurface, or they are sharing the same buffer.");
+    }
+
+    if ((retsurf->w) != (src->w) || (retsurf->h) != (src->h)) {
+        return RAISE(PyExc_ValueError,
+                     "Destination surface not the same size.");
+    }
+
+    if (src->format->BytesPerPixel != retsurf->format->BytesPerPixel) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Source and destination surfaces need the same format."));
+    }
+
+    if (radius > MIN(src->w, src->h)) {
+        radius = MIN(src->w, src->h) - 1;
+    }
+
+    SDL_LockSurface(retsurf);
+    pgSurface_Lock(srcobj);
+
+    Py_BEGIN_ALLOW_THREADS;
+
+    if (algorithm == 'b') {
+        box_blur(src, retsurf, radius, repeat);
+    }
+    else if (algorithm == 'g') {
+        gaussian_blur(src, retsurf, radius, repeat);
+    }
+
+    Py_END_ALLOW_THREADS;
+
+    pgSurface_Unlock(srcobj);
+    SDL_UnlockSurface(retsurf);
+
+    return retsurf;
+}
+
+static PyObject *
+surf_box_blur(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *dst_surf_obj = NULL;
+    pgSurfaceObject *src_surf_obj;
+    SDL_Surface *new_surf = NULL;
+    SDL_bool repeat_edge_pixels = SDL_TRUE;
+
+    int radius;
+
+    static char *kwlist[] = {"surface", "radius", "repeat_edge_pixels",
+                             "dest_surface", 0};
+
+    if (!PyArg_ParseTupleAndKeywords(
+            args, kwargs, "O!i|pO!", kwlist, &pgSurface_Type, &src_surf_obj,
+            &radius, &repeat_edge_pixels, &pgSurface_Type, &dst_surf_obj))
+        return NULL;
+
+    new_surf =
+        blur(src_surf_obj, dst_surf_obj, radius, repeat_edge_pixels, 'b');
+    if (!new_surf) {
+        return NULL;
+    }
+
+    if (dst_surf_obj) {
+        Py_INCREF(dst_surf_obj);
+        return (PyObject *)dst_surf_obj;
+    }
+
+    return (PyObject *)pgSurface_New(new_surf);
+}
+
+static PyObject *
+surf_gaussian_blur(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *dst_surf_obj = NULL;
+    pgSurfaceObject *src_surf_obj;
+    SDL_Surface *new_surf = NULL;
+    SDL_bool repeat_edge_pixels = SDL_TRUE;
+
+    int radius;
+
+    static char *kwlist[] = {"surface", "radius", "repeat_edge_pixels",
+                             "dest_surface", 0};
+
+    if (!PyArg_ParseTupleAndKeywords(
+            args, kwargs, "O!i|pO!", kwlist, &pgSurface_Type, &src_surf_obj,
+            &radius, &repeat_edge_pixels, &pgSurface_Type, &dst_surf_obj))
+        return NULL;
+
+    new_surf =
+        blur(src_surf_obj, dst_surf_obj, radius, repeat_edge_pixels, 'g');
+    if (!new_surf) {
+        return NULL;
+    }
+
+    if (dst_surf_obj) {
+        Py_INCREF(dst_surf_obj);
+        return (PyObject *)dst_surf_obj;
+    }
+
+    return (PyObject *)pgSurface_New(new_surf);
+}
+
+SDL_Surface *
+invert(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
+{
+    SDL_Surface *src = pgSurface_AsSurface(srcobj);
+    SDL_Surface *newsurf;
+
+    if (!dstobj) {
+        newsurf = newsurf_fromsurf(src, srcobj->surf->w, srcobj->surf->h);
+        if (!newsurf)
+            return NULL;
+    }
+    else {
+        newsurf = pgSurface_AsSurface(dstobj);
+    }
+
+    if (newsurf->w != src->w || newsurf->h != src->h) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Destination surface must be the same size as source surface."));
+    }
+
+    if (src->format->BytesPerPixel != newsurf->format->BytesPerPixel) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Source and destination surfaces need the same format."));
+    }
+
+    int x, y;
+    for (y = 0; y < src->h; y++) {
+        for (x = 0; x < src->w; x++) {
+            Uint32 pixel;
+            Uint8 *pix;
+            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format,
+                        pix);
+            unsigned char r, g, b, a;
+            SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
+            Uint32 new_pixel = SDL_MapRGBA(newsurf->format, ~r, ~g, ~b, a);
+            SURF_SET_AT(new_pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
+                        newsurf->format, pix);
+        }
+    }
+
+    SDL_UnlockSurface(newsurf);
+
+    return newsurf;
+}
+
+static PyObject *
+surf_invert(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    pgSurfaceObject *surfobj2 = NULL;
+    SDL_Surface *newsurf;
+
+    static char *keywords[] = {"surface", "dest_surface", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!", keywords,
+                                     &pgSurface_Type, &surfobj,
+                                     &pgSurface_Type, &surfobj2))
+        return NULL;
+
+    newsurf = invert(surfobj, surfobj2);
+
+    if (!newsurf) {
+        return NULL;
+    }
+
+    if (surfobj2) {
+        Py_INCREF(surfobj2);
+        return (PyObject *)surfobj2;
+    }
+    return (PyObject *)pgSurface_New(newsurf);
+}
+
 static PyMethodDef _transform_methods[] = {
     {"scale", (PyCFunction)surf_scale, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMSCALE},
+     DOC_TRANSFORM_SCALE},
     {"scale_by", (PyCFunction)surf_scale_by, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMSCALEBY},
+     DOC_TRANSFORM_SCALEBY},
     {"rotate", (PyCFunction)surf_rotate, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMROTATE},
+     DOC_TRANSFORM_ROTATE},
     {"flip", (PyCFunction)surf_flip, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMFLIP},
+     DOC_TRANSFORM_FLIP},
     {"rotozoom", (PyCFunction)surf_rotozoom, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMROTOZOOM},
+     DOC_TRANSFORM_ROTOZOOM},
     {"chop", (PyCFunction)surf_chop, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMCHOP},
+     DOC_TRANSFORM_CHOP},
     {"scale2x", (PyCFunction)surf_scale2x, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMSCALE2X},
+     DOC_TRANSFORM_SCALE2X},
     {"smoothscale", (PyCFunction)surf_scalesmooth,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMSMOOTHSCALE},
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_SMOOTHSCALE},
     {"smoothscale_by", (PyCFunction)surf_scalesmooth_by,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMSMOOTHSCALEBY},
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_SMOOTHSCALEBY},
     {"get_smoothscale_backend", surf_get_smoothscale_backend, METH_NOARGS,
-     DOC_PYGAMETRANSFORMGETSMOOTHSCALEBACKEND},
+     DOC_TRANSFORM_GETSMOOTHSCALEBACKEND},
     {"set_smoothscale_backend", (PyCFunction)surf_set_smoothscale_backend,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMSETSMOOTHSCALEBACKEND},
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_SETSMOOTHSCALEBACKEND},
     {"threshold", (PyCFunction)surf_threshold, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMTHRESHOLD},
+     DOC_TRANSFORM_THRESHOLD},
     {"laplacian", (PyCFunction)surf_laplacian, METH_VARARGS | METH_KEYWORDS,
-     DOC_PYGAMETRANSFORMTHRESHOLD},
+     DOC_TRANSFORM_THRESHOLD},
     {"average_surfaces", (PyCFunction)surf_average_surfaces,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMAVERAGESURFACES},
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_AVERAGESURFACES},
     {"average_color", (PyCFunction)surf_average_color,
-     METH_VARARGS | METH_KEYWORDS, DOC_PYGAMETRANSFORMAVERAGECOLOR},
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_AVERAGECOLOR},
+    {"box_blur", (PyCFunction)surf_box_blur, METH_VARARGS | METH_KEYWORDS,
+     DOC_TRANSFORM_BOXBLUR},
+    {"gaussian_blur", (PyCFunction)surf_gaussian_blur,
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_GAUSSIANBLUR},
+    {"invert", (PyCFunction)surf_invert, METH_VARARGS | METH_KEYWORDS,
+     DOC_TRANSFORM_INVERT},
+    {"grayscale", (PyCFunction)surf_grayscale, METH_VARARGS | METH_KEYWORDS,
+     DOC_TRANSFORM_GRAYSCALE},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(transform)
@@ -3006,7 +3402,7 @@ MODINIT_DEFINE(transform)
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "transform",
-                                         DOC_PYGAMETRANSFORM,
+                                         DOC_TRANSFORM,
                                          sizeof(struct _module_state),
                                          _transform_methods,
                                          NULL,

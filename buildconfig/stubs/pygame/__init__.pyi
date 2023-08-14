@@ -26,7 +26,6 @@ from pygame import (
     sprite as sprite,
     surfarray as surfarray,
     transform as transform,
-    fastevent as fastevent,
     scrap as scrap,
     threads as threads,
     version as version,
@@ -41,10 +40,11 @@ from pygame import (
     surface as surface,
     surflock as surflock,
     sysfont as sysfont,
-    _debug as _debug
+    _debug as _debug,
+    system as system,
 )
 
-from .rect import Rect as Rect
+from .rect import Rect as Rect, FRect as FRect
 from .surface import Surface as Surface, SurfaceType as SurfaceType
 from .color import Color as Color
 from .pixelarray import PixelArray as PixelArray
@@ -173,6 +173,10 @@ from .constants import (
     CONTROLLER_BUTTON_START as CONTROLLER_BUTTON_START,
     CONTROLLER_BUTTON_X as CONTROLLER_BUTTON_X,
     CONTROLLER_BUTTON_Y as CONTROLLER_BUTTON_Y,
+    DIRECTION_BTT as DIRECTION_BTT,
+    DIRECTION_LTR as DIRECTION_LTR,
+    DIRECTION_RTL as DIRECTION_RTL,
+    DIRECTION_TTB as DIRECTION_TTB,
     DOUBLEBUF as DOUBLEBUF,
     DROPBEGIN as DROPBEGIN,
     DROPCOMPLETE as DROPCOMPLETE,
@@ -181,6 +185,9 @@ from .constants import (
     FINGERDOWN as FINGERDOWN,
     FINGERMOTION as FINGERMOTION,
     FINGERUP as FINGERUP,
+    FONT_CENTER as FONT_CENTER,
+    FONT_LEFT as FONT_LEFT,
+    FONT_RIGHT as FONT_RIGHT,
     FULLSCREEN as FULLSCREEN,
     GL_ACCELERATED_VISUAL as GL_ACCELERATED_VISUAL,
     GL_ACCUM_ALPHA_SIZE as GL_ACCUM_ALPHA_SIZE,
@@ -228,6 +235,7 @@ from .constants import (
     HWACCEL as HWACCEL,
     HWPALETTE as HWPALETTE,
     HWSURFACE as HWSURFACE,
+    IS_CE as IS_CE,
     JOYAXISMOTION as JOYAXISMOTION,
     JOYBALLMOTION as JOYBALLMOTION,
     JOYBUTTONDOWN as JOYBUTTONDOWN,
@@ -631,6 +639,8 @@ from .constants import (
     WINDOWMAXIMIZED as WINDOWMAXIMIZED,
     WINDOWMINIMIZED as WINDOWMINIMIZED,
     WINDOWMOVED as WINDOWMOVED,
+    WINDOWPOS_CENTERED as WINDOWPOS_CENTERED,
+    WINDOWPOS_UNDEFINED as WINDOWPOS_UNDEFINED,
     WINDOWRESIZED as WINDOWRESIZED,
     WINDOWRESTORED as WINDOWRESTORED,
     WINDOWSHOWN as WINDOWSHOWN,

@@ -5,7 +5,6 @@ import warnings
 
 import pygame
 from pygame import draw
-from pygame import draw_py
 from pygame.locals import SRCALPHA
 from pygame.tests import test_utils
 from pygame.math import Vector2
@@ -174,21 +173,6 @@ class DrawTestCase(unittest.TestCase):
     draw_lines = staticmethod(draw.lines)
     draw_aaline = staticmethod(draw.aaline)
     draw_aalines = staticmethod(draw.aalines)
-
-
-class PythonDrawTestCase(unittest.TestCase):
-    """Base class to test draw_py module functions."""
-
-    # draw_py is currently missing some functions.
-    # draw_rect    = staticmethod(draw_py.draw_rect)
-    draw_polygon = staticmethod(draw_py.draw_polygon)
-    # draw_circle  = staticmethod(draw_py.draw_circle)
-    # draw_ellipse = staticmethod(draw_py.draw_ellipse)
-    # draw_arc     = staticmethod(draw_py.draw_arc)
-    draw_line = staticmethod(draw_py.draw_line)
-    draw_lines = staticmethod(draw_py.draw_lines)
-    draw_aaline = staticmethod(draw_py.draw_aaline)
-    draw_aalines = staticmethod(draw_py.draw_aalines)
 
 
 ### Ellipse Testing ###########################################################
@@ -1060,17 +1044,6 @@ class DrawEllipseTest(DrawEllipseMixin, DrawTestCase):
     """
 
 
-# Commented out to avoid cluttering the test output. Add back in if draw_py
-# ever properly supports drawing ellipses.
-# @unittest.skip('draw_py.draw_ellipse not supported yet')
-# class PythonDrawEllipseTest(DrawEllipseMixin, PythonDrawTestCase):
-#    """Test draw_py module function draw_ellipse.
-#
-#    This class inherits the general tests from DrawEllipseMixin. It is also
-#    the class to add any draw_py.draw_ellipse specific tests to.
-#    """
-
-
 ### Line/Lines/AALine/AALines Testing #########################################
 
 
@@ -1581,8 +1554,6 @@ class LineMixin(BaseLineMixin):
         Test lines with endpoints on and off the surface and a range of
         width/thickness values.
         """
-        if isinstance(self, PythonDrawTestCase):
-            self.skipTest("bounding rects not supported in draw_py.draw_line")
 
         line_color = pygame.Color("red")
         surf_color = pygame.Color("black")
@@ -1675,17 +1646,6 @@ class LineMixin(BaseLineMixin):
                     self.assertEqual(surface.get_at(pt), expected_color, pt)
 
                 surface.unlock()
-
-
-# Commented out to avoid cluttering the test output. Add back in if draw_py
-# ever fully supports drawing single lines.
-# @unittest.skip('draw_py.draw_line not fully supported yet')
-# class PythonDrawLineTest(LineMixin, PythonDrawTestCase):
-#    """Test draw_py module function line.
-#
-#    This class inherits the general tests from LineMixin. It is also the class
-#    to add any draw_py.draw_line specific tests to.
-#    """
 
 
 class DrawLineTest(LineMixin, DrawTestCase):
@@ -1830,6 +1790,61 @@ class DrawLineTest(LineMixin, DrawTestCase):
         check_white_line((50, 50), (140, 0))
         check_white_line((50, 50), (0, 120))
         check_white_line((50, 50), (199, 198))
+
+    def test_line_clipping_with_thickness(self):
+        width = 200
+        height = 200
+        start_points = [
+            (-50, -50),
+            (-50, 50),
+            (50, 50),
+            (250, 250),
+            (200, 203),
+            (-29, 131),
+            (203, 0),
+            (-10, -10),
+            (-10, 210),
+        ]
+        end_points = [
+            (20, 200),
+            (20, -20),
+            (-20, -10),
+            (120, 20),
+            (0, 202),
+            (21, 106),
+            (200, 200),
+            (210, 210),
+            (100, 150),
+        ]
+        check_points = [
+            ((2, 126), (255, 255, 255)),
+            ((2, 3), (255, 255, 255)),
+            ((50, 55), (255, 255, 255)),
+            ((199, 165), (255, 255, 255)),
+            ((99, 198), (255, 255, 255)),
+            ((70, 80), (0, 0, 0)),
+            ((199, 0), (255, 255, 255)),
+            ((105, 100), (255, 255, 255)),
+            ((5, 198), (255, 255, 255)),
+        ]
+
+        surf = pygame.Surface((width, height), pygame.SRCALPHA)
+        for n in range(len(start_points)):
+            surf.fill((0, 0, 0))
+            pygame.draw.line(surf, (255, 255, 255), start_points[n], end_points[n], 10)
+            self.assertEqual(
+                surf.get_at(check_points[n][0]),
+                check_points[n][1],
+                "start={}, end={}".format(start_points[n], end_points[n]),
+            )
+            surf.fill((0, 0, 0))
+            pygame.draw.line(surf, (255, 255, 255), end_points[n], start_points[n], 10)
+
+            self.assertEqual(
+                surf.get_at(check_points[n][0]),
+                check_points[n][1],
+                "start={}, end={}".format(end_points[n], start_points[n]),
+            )
 
 
 ### Lines Testing #############################################################
@@ -2405,16 +2420,6 @@ class LinesMixin(BaseLineMixin):
                     surface.unlock()
 
 
-# Commented out to avoid cluttering the test output. Add back in if draw_py
-# ever fully supports drawing lines.
-# class PythonDrawLinesTest(LinesMixin, PythonDrawTestCase):
-#    """Test draw_py module function lines.
-#
-#    This class inherits the general tests from LinesMixin. It is also the
-#    class to add any draw_py.draw_lines specific tests to.
-#    """
-
-
 class DrawLinesTest(LinesMixin, DrawTestCase):
     """Test draw module function lines.
 
@@ -2894,16 +2899,6 @@ class AALineMixin(BaseLineMixin):
                     self.assertEqual(surface.get_at(pt), surface_color, pt)
 
             surface.unlock()
-
-
-# Commented out to avoid cluttering the test output. Add back in if draw_py
-# ever fully supports drawing single aalines.
-# class PythonDrawAALineTest(AALineMixin, PythonDrawTestCase):
-#    """Test draw_py module function aaline.
-#
-#    This class inherits the general tests from AALineMixin. It is also the
-#    class to add any draw_py.draw_aaline specific tests to.
-#    """
 
 
 class DrawAALineTest(AALineMixin, DrawTestCase):
@@ -3655,16 +3650,6 @@ class AALinesMixin(BaseLineMixin):
                 surface.unlock()
 
 
-# Commented out to avoid cluttering the test output. Add back in if draw_py
-# ever fully supports drawing aalines.
-# class PythonDrawAALinesTest(AALinesMixin, PythonDrawTestCase):
-#    """Test draw_py module function aalines.
-#
-#    This class inherits the general tests from AALinesMixin. It is also the
-#    class to add any draw_py.draw_aalines specific tests to.
-#    """
-
-
 class DrawAALinesTest(AALinesMixin, DrawTestCase):
     """Test draw module function aalines.
 
@@ -4084,7 +4069,7 @@ class DrawPolygonMixin:
             self.assertEqual(self.surface.get_at((5, y)), RED)
 
     def test_draw_symetric_cross(self):
-        """non-regression on issue #234 : x and y where handled inconsistently.
+        """non-regression on pygame-ce issue #249 : x and y where handled inconsistently.
 
         Also, the result is/was different whether we fill or not the polygon.
         """
@@ -4119,7 +4104,7 @@ class DrawPolygonMixin:
                     self.assertEqual(self.surface.get_at((x, y)), RED)
 
     def test_illumine_shape(self):
-        """non-regression on issue #313"""
+        """non-regression on pygame-ce issue #328"""
         rect = pygame.Rect((0, 0, 20, 20))
         path_data = [
             (0, 0),
@@ -4286,17 +4271,6 @@ class DrawPolygonTest(DrawPolygonMixin, DrawTestCase):
     This class inherits the general tests from DrawPolygonMixin. It is also
     the class to add any draw.polygon specific tests to.
     """
-
-
-# Commented out to avoid cluttering the test output. Add back in if draw_py
-# ever fully supports drawing polygons.
-# @unittest.skip('draw_py.draw_polygon not fully supported yet')
-# class PythonDrawPolygonTest(DrawPolygonMixin, PythonDrawTestCase):
-#    """Test draw_py module function draw_polygon.
-#
-#    This class inherits the general tests from DrawPolygonMixin. It is also
-#    the class to add any draw_py.draw_polygon specific tests to.
-#    """
 
 
 ### Rect Testing ##############################################################
@@ -4754,7 +4728,7 @@ class DrawRectMixin:
 
             self.assertNotEqual(color_at_pt, self.color)
 
-        # Issue #310: Cannot draw rectangles that are 1 pixel high
+        # pygame-ce issue #325: Cannot draw rectangles that are 1 pixel high
         bgcolor = pygame.Color("black")
         self.surf.fill(bgcolor)
         hrect = pygame.Rect(1, 1, self.surf_w - 2, 1)
@@ -4936,17 +4910,6 @@ class DrawRectTest(DrawRectMixin, DrawTestCase):
     This class inherits the general tests from DrawRectMixin. It is also the
     class to add any draw.rect specific tests to.
     """
-
-
-# Commented out to avoid cluttering the test output. Add back in if draw_py
-# ever properly supports drawing rects.
-# @unittest.skip('draw_py.draw_rect not supported yet')
-# class PythonDrawRectTest(DrawRectMixin, PythonDrawTestCase):
-#    """Test draw_py module function draw_rect.
-#
-#    This class inherits the general tests from DrawRectMixin. It is also the
-#    class to add any draw_py.draw_rect specific tests to.
-#    """
 
 
 ### Circle Testing ############################################################
@@ -5710,6 +5673,63 @@ class DrawCircleMixin:
             self.assertEqual(bounding_rect.width, radius * 2)
             self.assertEqual(bounding_rect.height, radius * 2)
 
+    def test_circle__offscreen(self):
+        """Ensures that drawing a circle completely off-screen doesn't create
+        a solid band across the screen
+        see https://github.com/pygame/pygame/issues/3143
+        """
+        width = 200
+        height = 200
+        surf = pygame.Surface((width, height))
+        surf_center = surf.get_rect().center
+        radius = 10
+
+        # way way outside the screen
+        test_centers = [
+            (-1e30, height / 2),
+            (1e30, height / 2),
+            (width / 2, -1e30),
+            (width / 2, 1e30),
+        ]
+        for center in test_centers:
+            surf.fill("black")
+            self.draw_circle(surf, "white", center, radius)
+
+            self.assertEqual(
+                surf.get_at(surf_center)[0:3],
+                (0, 0, 0),
+                msg="pixel at center should be black, not white",
+            )
+
+    def test_circle__no_band(self):
+        """Ensures that drawing a circle with the center off-screen doesn't create a
+        solid band across the screen
+        This tests a bug introduced in
+        https://github.com/pygame-community/pygame-ce/commit/c88a1d8f7b31099cec84dc5cb7aeebdada783e83
+        """
+        width = 200
+        height = 200
+        surf = pygame.Surface((width, height))
+        surf_center = surf.get_rect().center
+        radius = 10
+
+        # one pixel outside the screen on the center of each edge
+        test_centers = [
+            (-1, height / 2),
+            (width + 1, height / 2),
+            (width / 2, -1),
+            (width / 2, height + 1),
+        ]
+        for center in test_centers:
+            surf.fill("black")
+            self.draw_circle(surf, "white", center, radius)
+
+            self.assertEqual(
+                surf.get_at(surf_center)[0:3],
+                (0, 0, 0),
+                msg="pixel at center should be black, not white",
+            )
+
 
 class DrawCircleTest(DrawCircleMixin, DrawTestCase):
     """Test draw module function circle.
@@ -5717,17 +5737,6 @@ class DrawCircleTest(DrawCircleMixin, DrawTestCase):
     This class inherits the general tests from DrawCircleMixin. It is also
     the class to add any draw.circle specific tests to.
     """
-
-
-# Commented out to avoid cluttering the test output. Add back in if draw_py
-# ever properly supports drawing circles.
-# @unittest.skip('draw_py.draw_circle not supported yet')
-# class PythonDrawCircleTest(DrawCircleMixin, PythonDrawTestCase):
-#    """Test draw_py module function draw_circle."
-#
-#    This class inherits the general tests from DrawCircleMixin. It is also
-#    the class to add any draw_py.draw_circle specific tests to.
-#    """
 
 
 ### Arc Testing ###############################################################
@@ -6300,17 +6309,6 @@ class DrawArcTest(DrawArcMixin, DrawTestCase):
     This class inherits the general tests from DrawArcMixin. It is also the
     class to add any draw.arc specific tests to.
     """
-
-
-# Commented out to avoid cluttering the test output. Add back in if draw_py
-# ever properly supports drawing arcs.
-# @unittest.skip('draw_py.draw_arc not supported yet')
-# class PythonDrawArcTest(DrawArcMixin, PythonDrawTestCase):
-#    """Test draw_py module function draw_arc.
-#
-#    This class inherits the general tests from DrawArcMixin. It is also the
-#    class to add any draw_py.draw_arc specific tests to.
-#    """
 
 
 ### Draw Module Testing #######################################################

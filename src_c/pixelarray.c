@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2007-2008 Marcus von Appen
 
   This library is free software; you can redistribute it and/or
@@ -185,20 +185,20 @@ _cleanup_array(pgPixelArrayObject *array)
  */
 static PyMethodDef _pxarray_methods[] = {
     {"compare", (PyCFunction)_compare, METH_VARARGS | METH_KEYWORDS,
-     DOC_PIXELARRAYCOMPARE},
+     DOC_PIXELARRAY_COMPARE},
     {"extract", (PyCFunction)_extract_color, METH_VARARGS | METH_KEYWORDS,
-     DOC_PIXELARRAYEXTRACT},
+     DOC_PIXELARRAY_EXTRACT},
     {"make_surface", (PyCFunction)_make_surface, METH_NOARGS,
-     DOC_PIXELARRAYMAKESURFACE},
-    {"close", (PyCFunction)_close_array, METH_NOARGS, DOC_PIXELARRAYCLOSE},
+     DOC_PIXELARRAY_MAKESURFACE},
+    {"close", (PyCFunction)_close_array, METH_NOARGS, DOC_PIXELARRAY_CLOSE},
     {"__enter__", (PyCFunction)_enter_context, METH_NOARGS,
-     DOC_PIXELARRAYCLOSE},
+     DOC_PIXELARRAY_CLOSE},
     {"__exit__", (PyCFunction)_exit_context, METH_VARARGS | METH_KEYWORDS,
-     DOC_PIXELARRAYEXTRACT},
+     DOC_PIXELARRAY_EXTRACT},
     {"replace", (PyCFunction)_replace_color, METH_VARARGS | METH_KEYWORDS,
-     DOC_PIXELARRAYREPLACE},
+     DOC_PIXELARRAY_REPLACE},
     {"transpose", (PyCFunction)_transpose, METH_NOARGS,
-     DOC_PIXELARRAYTRANSPOSE},
+     DOC_PIXELARRAY_TRANSPOSE},
     {NULL, NULL, 0, NULL}};
 
 static void
@@ -222,11 +222,11 @@ Text_ConcatAndDel(PyObject **string, PyObject *newpart)
  */
 static PyGetSetDef _pxarray_getsets[] = {
     {"__dict__", (getter)_pxarray_get_dict, 0, 0, 0},
-    {"surface", (getter)_pxarray_get_surface, 0, DOC_PIXELARRAYSURFACE, 0},
-    {"itemsize", (getter)_pxarray_get_itemsize, 0, DOC_PIXELARRAYITEMSIZE, 0},
-    {"shape", (getter)_pxarray_get_shape, 0, DOC_PIXELARRAYSHAPE, 0},
-    {"strides", (getter)_pxarray_get_strides, 0, DOC_PIXELARRAYSTRIDES, 0},
-    {"ndim", (getter)_pxarray_get_ndim, 0, DOC_PIXELARRAYNDIM, 0},
+    {"surface", (getter)_pxarray_get_surface, 0, DOC_PIXELARRAY_SURFACE, 0},
+    {"itemsize", (getter)_pxarray_get_itemsize, 0, DOC_PIXELARRAY_ITEMSIZE, 0},
+    {"shape", (getter)_pxarray_get_shape, 0, DOC_PIXELARRAY_SHAPE, 0},
+    {"strides", (getter)_pxarray_get_strides, 0, DOC_PIXELARRAY_STRIDES, 0},
+    {"ndim", (getter)_pxarray_get_ndim, 0, DOC_PIXELARRAY_NDIM, 0},
     {"__array_struct__", (getter)_pxarray_get_arraystruct, 0, "Version 3", 0},
     {"__array_interface__", (getter)_pxarray_get_arrayinterface, 0,
      "Version 3", 0},
@@ -272,7 +272,7 @@ static PyTypeObject pgPixelArray_Type = {
     .tp_as_mapping = &_pxarray_mapping,
     .tp_as_buffer = PXARRAY_BUFFERPROCS,
     .tp_flags = PXARRAY_TPFLAGS,
-    .tp_doc = DOC_PYGAMEPIXELARRAY,
+    .tp_doc = DOC_PIXELARRAY,
     .tp_traverse = (traverseproc)_pxarray_traverse,
     .tp_weaklistoffset = offsetof(pgPixelArrayObject, weakrefs),
     .tp_iter = PySeqIter_New,
@@ -1540,7 +1540,7 @@ _get_subslice(PyObject *op, Py_ssize_t length, Py_ssize_t *start,
         Py_ssize_t slicelen;
 
         /* Operator is a slice: array[x::, */
-        if (Slice_GET_INDICES_EX(op, length, start, stop, step, &slicelen)) {
+        if (PySlice_GetIndicesEx(op, length, start, stop, step, &slicelen)) {
             return -1;
         }
     }
@@ -1665,7 +1665,7 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
         Py_ssize_t start;
         Py_ssize_t stop;
 
-        if (Slice_GET_INDICES_EX(op, dim0, &start, &stop, &step, &slicelen)) {
+        if (PySlice_GetIndicesEx(op, dim0, &start, &stop, &step, &slicelen)) {
             return 0;
         }
         if (slicelen < 0) {
@@ -1817,7 +1817,7 @@ _pxarray_ass_subscript(pgPixelArrayObject *array, PyObject *op,
         Py_ssize_t stop;
         int retval;
 
-        if (Slice_GET_INDICES_EX(op, array->shape[0], &start, &stop, &step,
+        if (PySlice_GetIndicesEx(op, array->shape[0], &start, &stop, &step,
                                  &slicelen)) {
             return -1;
         }
@@ -1898,7 +1898,7 @@ MODINIT_DEFINE(pixelarray)
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
                                          "pixelarray",
-                                         NULL,
+                                         DOC_PIXELARRAY,
                                          -1,
                                          NULL,
                                          NULL,

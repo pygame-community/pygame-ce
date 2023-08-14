@@ -4,8 +4,6 @@ name: MacOS
 # to main. Do not run CI on any other branch. Also, skip any non-source changes 
 # from running on CI
 on:
-  release:
-    types: [created]
   push:
     branches: main
     paths-ignore:
@@ -29,9 +27,12 @@ on:
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
       - '!.github/workflows/build-macos.yml'
+  
+  # the github release drafter can call this workflow
+  workflow_call:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-macos
   cancel-in-progress: true
 
 jobs:
@@ -44,16 +45,17 @@ jobs:
         macarch: [arm64, x86_64]
 
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.5.3
 
       - name: Test for Mac Deps cache hit
         id: macdep-cache
-        uses: actions/cache@v3.0.2
+        uses: actions/cache@v3.3.1
         with:
           path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
           # The hash of all files in buildconfig manylinux-build and macdependencies is 
           # the key to the cache. If anything changes here, the deps are built again
           key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}
+          lookup-only: true
 
       # build mac deps on cache miss
       - name: Build Mac Deps
@@ -83,44 +85,57 @@ jobs:
         # of these builds take roughly the same time
         include:
           - { 
-            name: "x86_64 (CPython 3.6 3.10 and above)",
+            name: "x86_64 (CPython 3.9 - 3.12)",
             macarch: x86_64,
-            # pattern matches 6 or any 2 digit number
-            pyversions: "cp3{6,[1-9][0-9]}-*"
+            pyversions: "cp3{9,10,11,12}-*",
           }
 
           - { 
-            name: "x86_64 (Python 3.7)",
+            name: "x86_64 (CPython 3.7 and Python 3.8)",
             macarch: x86_64,
-            pyversions: "?p37-*"
+            # CPython 3.7, CPython/PyPy 3.8
+            pyversions: "cp37-* ?p38-*",
           }
 
           - { 
-            name: "x86_64 (Python 3.8)",
+            name: "x86_64 (PyPy 3.9 and 3.10)",
             macarch: x86_64,
-            pyversions: "?p38-*"
+            pyversions: "pp39-* pp310-*",
           }
 
           - { 
-            name: "x86_64 (Python 3.9)",
-            macarch: x86_64,
-            pyversions: "?p39-*"
-          }
-
-          - { 
-            name: "arm64 (CPython 3.8 and above)",
+            name: "arm64 (CPython 3.8 - 3.10)",
             macarch: arm64,
-            # pattern matches any number from 8 to 99
-            pyversions: "cp3{8,9,[1-9][0-9]}-*"
+            pyversions: "cp3{8,9,10}-*",
+          }
+
+          - { 
+            name: "arm64 (CPython 3.11 - 3.12)",
+            macarch: arm64,
+            pyversions: "cp3{11,12}-*",
           }
 
     env:
+      MAC_ARCH: ${{ matrix.macarch }}
       # load pip config from this file. Define this in 'CIBW_ENVIRONMENT'
       # because this should not affect cibuildwheel machinery
       # also define environment variables needed for testing
       CIBW_ENVIRONMENT: PIP_CONFIG_FILE=buildconfig/pip_config.ini SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
 
+      # Explicitly tell CIBW what the wheel arch deployment target should be
+      # There seems to be no better way to set this than this env
+      # We need this because our minimum is 10.11, different from default
+      # of 10.9 on x86s
+      # Related issue: https://github.com/pypa/cibuildwheel/issues/952
+      _PYTHON_HOST_PLATFORM: ${{ matrix.macarch == 'x86_64' && 'macosx-10.11-x86_64' || 'macosx-11.0-arm64'}}
+
+      # Similarly, we need to tell CIBW that the wheel's linking steps
+      # should be for 10.11 on x86
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macarch == 'x86_64' && '10.11' || '11.0' }}
+
       CIBW_BUILD: ${{ matrix.pyversions }}
+
+      CIBW_PRERELEASE_PYTHONS: True # for 3.12 testing
 
       # Build arm64 and x86_64 wheels too on an Intel runner.
       # Note that the arm64 wheels cannot be tested on CI in this configuration
@@ -128,14 +143,18 @@ jobs:
 
       # Setup MacOS dependencies
       CIBW_BEFORE_ALL: |
-        export MAC_ARCH="${{ matrix.macarch }}"
         brew install pkg-config
         cd buildconfig/macdependencies
+        cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
         bash ./install_mac_deps.sh
 
       CIBW_BEFORE_BUILD: |
         pip install requests numpy Sphinx cython
-        python3 setup.py docs
+        python setup.py docs
+        cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
+
+      # To remove any speculations about the wheel not being self-contained
+      CIBW_BEFORE_TEST: rm -rf ${{ github.workspace }}/pygame_mac_deps
 
       CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,timing --time_out 300
 
@@ -143,42 +162,27 @@ jobs:
       CIBW_BUILD_VERBOSITY: 2
 
     steps:
-      - uses: actions/checkout@v3.0.2
+      - uses: actions/checkout@v3.5.3
 
       - name: pip cache
-        uses: actions/cache@v3.0.2
+        uses: actions/cache@v3.3.1
         with:
           path: ~/Library/Caches/pip  # This cache path is only right on mac
           key: pip-cache-${{ matrix.name }}
 
       - name: Fetch Mac deps
         id: macdep-cache
-        uses: actions/cache@v3.0.2
+        uses: actions/cache@v3.3.1
         with:
           path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
           key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}
+          fail-on-cache-miss: true
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.10.2
+        uses: pypa/cibuildwheel@v2.14.1
 
       - uses: actions/upload-artifact@v3
         with:
-          name: pygame-wheels
+          name: pygame-wheels-macos
           path: ./wheelhouse/*.whl
 
-#   - name: Upload binaries to Github Releases
-#     if: github.event_name == 'release'
-#     uses: svenstaro/upload-release-action@v2
-#     with:
-#       repo_token: ${{ secrets.GITHUB_TOKEN }}
-#       file: ./wheelhouse/*.whl
-#       tag: ${{ github.ref }}
-#
-#   - name: Upload binaries to PyPI
-#     if: github.event_name == 'release'
-#     env:
-#      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-#      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-#     run: |
-#       python3 -m pip install twine
-#       twine upload ./wheelhouse/*.whl

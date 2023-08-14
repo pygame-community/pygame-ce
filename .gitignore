@@ -1,4 +1,4 @@
-# Pygame build process: config.py setup.py
+# pygame-ce build process: config.py setup.py
 /Setup
 *.pyc
 /build/
@@ -34,7 +34,7 @@
 
 #cython generateed files
 /src_c/_sdl2/audio.c
-/src_c/_sdl2/controller.c
+/src_c/_sdl2/controller_old.c
 /src_c/_sdl2/mixer.c
 /src_c/_sdl2/sdl2.c
 /src_c/_sdl2/video.c
@@ -44,6 +44,7 @@ src_c/pypm.c
 # Other
 envdev*
 .virtualenv*
+*venv*
 buildconfig/manylinux-build/wheelhouse/
 anenv
 dist

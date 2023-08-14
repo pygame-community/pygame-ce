@@ -1,9 +1,9 @@
-from typing import Optional, Sequence, Union
+from typing import Optional, Union
 
 from pygame.color import Color
 from pygame.surface import Surface
 
-from ._common import ColorValue, Coordinate, RectValue
+from ._common import ColorValue, Coordinate, RectValue, Sequence
 
 def flip(surface: Surface, flip_x: bool, flip_y: bool) -> Surface: ...
 def scale(
@@ -19,6 +19,7 @@ def scale_by(
 def rotate(surface: Surface, angle: float) -> Surface: ...
 def rotozoom(surface: Surface, angle: float, scale: float) -> Surface: ...
 def scale2x(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface: ...
+def grayscale(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface: ...
 def smoothscale(
     surface: Surface,
     size: Coordinate,
@@ -33,6 +34,7 @@ def get_smoothscale_backend() -> str: ...
 def set_smoothscale_backend(backend: str) -> None: ...
 def chop(surface: Surface, rect: RectValue) -> Surface: ...
 def laplacian(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface: ...
+def invert(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface: ...
 def average_surfaces(
     surfaces: Sequence[Surface],
     dest_surface: Optional[Surface] = None,
@@ -51,3 +53,15 @@ def threshold(
     search_surf: Optional[Surface] = None,
     inverse_set: bool = False,
 ) -> int: ...
+def box_blur(
+    surface: Surface,
+    radius: int,
+    repeat_edge_pixels: bool = True,
+    dest_surface: Optional[Surface] = None
+) -> Surface: ...
+def gaussian_blur(
+    surface: Surface,
+    radius: int,
+    repeat_edge_pixels: bool = True,
+    dest_surface: Optional[Surface] = None
+) -> Surface: ...

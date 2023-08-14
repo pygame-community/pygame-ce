@@ -9,7 +9,6 @@ import platform
 import pygame
 from pygame import font as pygame_font  # So font can be replaced with ftfont
 
-
 FONTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "fonts")
 
 
@@ -178,7 +177,7 @@ class FontModuleTest(unittest.TestCase):
             any(pygame_font.match_font(font, italic=True) for font in fonts)
         )
 
-    def test_issue_742(self):
+    def test_issue_553(self):
         """that the font background does not crash."""
         surf = pygame.Surface((320, 240))
         font = pygame_font.Font(None, 24)
@@ -187,7 +186,7 @@ class FontModuleTest(unittest.TestCase):
         image.set_alpha(255)
         surf.blit(image, (0, 0))
 
-        # not issue 742, but be sure to test that background color is
+        # not pygame-ce issue 553, but be sure to test that background color is
         # correctly issued on this mode
         self.assertEqual(surf.get_at((0, 0)), pygame.Color(0, 0, 0))
 
@@ -245,6 +244,31 @@ class FontTest(unittest.TestCase):
         self.assertEqual(tuple(screen.get_at((0, 0)))[:3], (255, 255, 255))
         self.assertEqual(tuple(screen.get_at(font_rect.topleft))[:3], (255, 255, 255))
 
+        # ftfont and font render with different arguments
+        if pygame_font.__name__ == "pygame.font":
+            font_surface = f.render(
+                text="   bar",
+                antialias=True,
+                color=(0, 0, 0),
+                bgcolor=(255, 255, 255),
+                wraplength=0,
+            )
+        else:
+            font_surface = f.render(
+                text="   bar",
+                antialias=True,
+                color=(0, 0, 0),
+                bgcolor=(255, 255, 255),
+            )
+        screen.fill((10, 10, 10))
+        font_rect = font_surface.get_rect()
+        font_rect.topleft = rect.topleft
+        self.assertTrue(font_surface)
+        screen.blit(font_surface, font_rect, font_rect)
+        pygame.display.update()
+        self.assertEqual(tuple(screen.get_at((0, 0)))[:3], (255, 255, 255))
+        self.assertEqual(tuple(screen.get_at(font_rect.topleft))[:3], (255, 255, 255))
+
         # If we don't have a real display, don't do this test.
         # Transparent background doesn't seem to work without a read video card.
         if os.environ.get("SDL_VIDEODRIVER") != "dummy":
@@ -268,6 +292,28 @@ class FontTest(unittest.TestCase):
             self.assertEqual(tuple(screen.get_at((0, 0)))[:3], (10, 10, 10))
             self.assertEqual(tuple(screen.get_at(font_rect.topleft))[:3], (10, 10, 10))
 
+    def test_render_multiline(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            return
+
+        if pygame.font.get_sdl_ttf_version() < (2, 0, 18):
+            # When the SDL_TTF version is too low, it just ignores the
+            # line wrap parameter and newlines
+            return
+
+        f = pygame_font.Font(None, 20)
+        one_line = f.render("hello", True, "black", "white", 200)
+        two_lines = f.render("hello\nworld", True, "black", "white", 200)
+        self.assertGreater(two_lines.get_height(), one_line.get_height())
+
+        one_line = f.render("hello", True, "black", None, 200)
+        two_lines = f.render("hello\nworld", True, "black", None, 200)
+        self.assertGreater(two_lines.get_height(), one_line.get_height())
+
+        one_line = f.render("hello", False, "black", None, 200)
+        two_lines = f.render("hello\nworld", False, "black", None, 200)
+        self.assertGreater(two_lines.get_height(), one_line.get_height())
+
 
 @unittest.skipIf(IS_PYPY, "pypy skip known failure")  # TODO
 class FontTypeTest(unittest.TestCase):
@@ -276,6 +322,9 @@ class FontTypeTest(unittest.TestCase):
 
     def tearDown(self):
         pygame_font.quit()
+
+    def test_default_parameters(self):
+        f = pygame_font.Font()
 
     def test_font_alias(self):
         """Check if pygame.Font is present and the correct type."""
@@ -304,7 +353,7 @@ class FontTypeTest(unittest.TestCase):
         self.assertTrue(isinstance(height, int))
         self.assertTrue(height > 0)
         s = f.render("X", False, (255, 255, 255))
-        self.assertTrue(s.get_size()[1] == height)
+        self.assertAlmostEqual(s.get_height(), height, delta=3)
 
     def test_get_linesize(self):
         # Checking linesize would need a custom test font to do properly.
@@ -484,6 +533,25 @@ class FontTypeTest(unittest.TestCase):
             f.strikethrough = False
             self.assertFalse(f.strikethrough)
 
+    def test_set_align_property(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            return
+
+        f = pygame_font.Font(None, 20)
+
+        if pygame.font.get_sdl_ttf_version() < (2, 20, 0):
+            with self.assertRaises(pygame.error):
+                f.align = pygame.FONT_CENTER
+            return
+
+        self.assertEqual(f.align, pygame.FONT_LEFT)
+        f.align = pygame.FONT_CENTER
+        self.assertEqual(f.align, pygame.FONT_CENTER)
+        f.align = pygame.FONT_RIGHT
+        self.assertEqual(f.align, pygame.FONT_RIGHT)
+        f.align = pygame.FONT_LEFT
+        self.assertEqual(f.align, pygame.FONT_LEFT)
+
     def test_size(self):
         f = pygame_font.Font(None, 20)
         text = "Xg"
@@ -504,6 +572,87 @@ class FontTypeTest(unittest.TestCase):
 
         self.assertNotEqual(size, bsize)
 
+    def test_point_size_property(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            return  # not a pygame.ftfont feature
+
+        pygame_font.init()
+        font_path = os.path.join(
+            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
+        )
+        f = pygame_font.Font(pathlib.Path(font_path), 25)
+
+        ttf_version = pygame_font.get_sdl_ttf_version()
+        if ttf_version < (2, 0, 18):
+            with self.assertRaises(pygame.error):
+                f.point_size = 25
+            with self.assertRaises(pygame.error):
+                f.point_size
+            return
+
+        self.assertEqual(25, f.point_size)
+        f.point_size = 10
+        self.assertEqual(10, f.point_size)
+        f.point_size += 23
+        self.assertEqual(33, f.point_size)
+        f.point_size -= 2
+        self.assertEqual(31, f.point_size)
+
+        def test_neg():
+            f.point_size = -500
+
+        def test_incorrect_type():
+            f.point_size = "15"
+
+        self.assertRaises(ValueError, test_neg)
+        self.assertRaises(TypeError, test_incorrect_type)
+
+    def test_point_size_method(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            return  # not a pygame.ftfont feature
+
+        pygame_font.init()
+        font_path = os.path.join(
+            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
+        )
+        f = pygame_font.Font(pathlib.Path(font_path), 25)
+
+        ttf_version = pygame_font.get_sdl_ttf_version()
+        if ttf_version < (2, 0, 18):
+            self.assertRaises(pygame.error, f.get_point_size)
+            self.assertRaises(pygame.error, f.set_point_size, 25)
+            return
+
+        self.assertEqual(25, f.get_point_size())
+        f = pygame_font.Font(None, 25)
+        f.set_point_size(10)
+        self.assertEqual(10, f.get_point_size())
+        self.assertRaises(ValueError, f.set_point_size, -500)
+        self.assertRaises(TypeError, f.set_point_size, "15")
+
+    def test_font_name(self):
+        f = pygame_font.Font(None, 20)
+        self.assertEqual(f.name, "FreeSans")
+
+        def test_set_name():
+            f.name = "Say my name."
+
+        self.assertRaises(AttributeError, test_set_name)
+
+    def test_font_style_name(self):
+        f = pygame_font.Font(None, 20)
+        self.assertNotEqual(f.style_name, "")
+        self.assertNotEqual(f.style_name, None)
+        self.assertIsInstance(f.style_name, str)
+
+    def test_font_style_name_is_readonly(self):
+        f = pygame_font.Font(None, 20)
+
+        def _set_style_name():
+            f.style_name = "Say my other name."
+
+        self.assertRaises(AttributeError, _set_style_name)
+
     def test_font_file_not_found(self):
         # A per BUG reported by Bo Jangeborg on pygame-user mailing list,
         # http://www.mail-archive.com/pygame-users@seul.org/msg11675.html
@@ -520,12 +669,27 @@ class FontTypeTest(unittest.TestCase):
         )
         f = pygame_font.Font(font_path, 20)
 
+    def test_load_from_file_default(self):
+        font_name = pygame_font.get_default_font()
+        font_path = os.path.join(
+            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
+        )
+        f = pygame_font.Font(font_path)
+
     def test_load_from_pathlib(self):
         font_name = pygame_font.get_default_font()
         font_path = os.path.join(
             os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
         )
         f = pygame_font.Font(pathlib.Path(font_path), 20)
+        f = pygame_font.Font(pathlib.Path(font_path))
+
+    def test_load_from_pathlib_default(self):
+        font_name = pygame_font.get_default_font()
+        font_path = os.path.join(
+            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
+        )
+        f = pygame_font.Font(pathlib.Path(font_path))
 
     def test_load_from_file_obj(self):
         font_name = pygame_font.get_default_font()
@@ -535,10 +699,23 @@ class FontTypeTest(unittest.TestCase):
         with open(font_path, "rb") as f:
             font = pygame_font.Font(f, 20)
 
+    def test_load_from_file_obj_default(self):
+        font_name = pygame_font.get_default_font()
+        font_path = os.path.join(
+            os.path.split(pygame.__file__)[0], pygame_font.get_default_font()
+        )
+        with open(font_path, "rb") as f:
+            font = pygame_font.Font(f)
+
     def test_load_default_font_filename(self):
         # In font_init, a special case is when the filename argument is
         # identical to the default font file name.
         f = pygame_font.Font(pygame_font.get_default_font(), 20)
+
+    def test_load_default_font_filename_default(self):
+        # In font_init, a special case is when the filename argument is
+        # identical to the default font file name.
+        f = pygame_font.Font(pygame_font.get_default_font())
 
     def _load_unicode(self, path):
         import shutil
@@ -577,7 +754,7 @@ class FontTypeTest(unittest.TestCase):
         bfont_path = font_path.encode(filesystem_encoding, filesystem_errors)
         f = pygame_font.Font(bfont_path, 20)
 
-    def test_issue_3144(self):
+    def test_issue_1587(self):
         fpath = os.path.join(FONTDIR, "PlayfairDisplaySemibold.ttf")
 
         # issue in SDL_ttf 2.0.18 DLL on Windows
@@ -607,6 +784,28 @@ class FontTypeTest(unittest.TestCase):
             font.set_script("Deva")
         else:
             self.assertRaises(pygame.error, font.set_script, "Deva")
+
+    def test_font_set_direction(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            return  # not a pygame.ftfont thing
+
+        font = pygame_font.Font(None, 16)
+
+        ttf_version = pygame.font.get_sdl_ttf_version()
+        if ttf_version >= (2, 20, 0):
+            self.assertRaises(TypeError, pygame.font.Font.set_direction)
+            self.assertRaises(TypeError, pygame.font.Font.set_direction, font)
+            self.assertRaises(TypeError, pygame.font.Font.set_direction, "font")
+            self.assertRaises(TypeError, font.set_direction, [1, 1])
+            self.assertRaises(TypeError, font.set_direction, "string1", "string2")
+
+            self.assertRaises(ValueError, font.set_direction, -1)
+            self.assertRaises(ValueError, font.set_direction, 4)
+
+            font.set_direction(pygame.DIRECTION_RTL)
+
+        else:
+            self.assertRaises(pygame.error, font.set_direction, pygame.DIRECTION_RTL)
 
 
 @unittest.skipIf(IS_PYPY, "pypy skip known failure")  # TODO
