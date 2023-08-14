@@ -2124,23 +2124,23 @@ surf_grayscale(PyObject *self, PyObject *args, PyObject *kwargs)
 static void
 RGB_to_HSL(Uint8 r, Uint8 g, Uint8 b, float *h, float *s, float *l)
 {
-    float min, max, delta;
+    float min, max;
     float r_1, g_1, b_1;
-    r_1 = r / 255.0;
-    g_1 = g / 255.0;
-    b_1 = b / 255.0;
+    r_1 = (float)(r / 255.0);
+    g_1 = (float)(g / 255.0);
+    b_1 = (float)(b / 255.0);
 
     min = MIN3(r_1, g_1, b_1);
     max = MAX3(r_1, g_1, b_1);
 
     float chroma = max - min;
-    *l = (max + min) / 2.0;
+    *l = (float)((max + min) / 2.0);
 
     if (chroma == 0) {
         *h = 0;
     }
     else if (max == r_1) {
-        *h = 60 * fmod(((g_1 - b_1) / chroma), 6);
+        *h = (float)(60 * fmod(((g_1 - b_1) / chroma), 6));
     }
     else if (max == g_1) {
         *h = 60 * (((b_1 - r_1) / chroma) + 2);
@@ -2164,11 +2164,10 @@ RGB_to_HSL(Uint8 r, Uint8 g, Uint8 b, float *h, float *s, float *l)
 static void
 HSL_to_RGB(float h, float s, float l, Uint8 *r, Uint8 *g, Uint8 *b)
 {
-    /* 0 <= h <= 360, 0 <= s <= 1, 0 <= l <= 1 */
     float chroma = (1 - fabs(2 * l - 1)) * s;
-    float h_1 = h / 60.0;
-    float x = chroma * (1 - fabs(fmod(h_1, 2) - 1));
-    float m = l - chroma / 2.0;
+    float h_1 = (float)(h / 60.0);
+    float x = (float)(chroma * (1 - fabs(fmod(h_1, 2) - 1)));
+    float m = (float)(l - chroma / 2.0);
 
     float r_1, g_1, b_1;
     if (h_1 < 1) {
@@ -3601,7 +3600,8 @@ static PyMethodDef _transform_methods[] = {
      DOC_TRANSFORM_INVERT},
     {"grayscale", (PyCFunction)surf_grayscale, METH_VARARGS | METH_KEYWORDS,
      DOC_TRANSFORM_GRAYSCALE},
-    {"hsl", (PyCFunction)surf_hsl, METH_VARARGS | METH_KEYWORDS, NULL},
+    {"hsl", (PyCFunction)surf_hsl, METH_VARARGS | METH_KEYWORDS,
+     DOC_TRANSFORM_HSL},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(transform)

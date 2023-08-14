@@ -67,8 +67,8 @@ def gaussian_blur(
 ) -> Surface: ...
 def hsl(
     surface: Surface,
-    hue: int,
-    saturation: int = 0.5,
-    lightness: int = 0.5,
+    hue: float,
+    saturation: float = 0.5,
+    lightness: float = 0.5,
     dest_surface: Optional[Surface] = None,
 ) -> Surface: ...
