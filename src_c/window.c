@@ -357,7 +357,7 @@ window_set_size(pgWindowObject *self, PyObject *arg, void *v)
     if (w <= 0 || h <= 0) {
         PyErr_SetString(
             PyExc_ValueError,
-            "width or height should not be less than or equal to zero.");
+            "width or height should not be less than or equal to zero");
         return -1;
     }
 
@@ -370,15 +370,9 @@ static PyObject *
 window_get_size(pgWindowObject *self, void *v)
 {
     int w, h;
-    PyObject *out = NULL;
-
     SDL_GetWindowSize(self->_win, &w, &h);
-    out = Py_BuildValue("(ii)", w, h);
 
-    if (!out)
-        return NULL;
-
-    return out;
+    return Py_BuildValue("(ii)", w, h);
 }
 
 static int
@@ -407,15 +401,9 @@ static PyObject *
 window_get_position(pgWindowObject *self, void *v)
 {
     int x, y;
-    PyObject *out = NULL;
-
     SDL_GetWindowPosition(self->_win, &x, &y);
-    out = Py_BuildValue("(ii)", x, y);
 
-    if (!out)
-        return NULL;
-
-    return out;
+    return Py_BuildValue("(ii)", x, y);
 }
 
 static int
@@ -476,8 +464,13 @@ mouse_set_relative_mode(pgWindowObject *self, PyObject *arg, void *v)
 static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
-    if (!self->_is_borrowed && self->_win) {
-        SDL_DestroyWindow(self->_win);
+    if (self->_win) {
+        if (!self->_is_borrowed) {
+            SDL_DestroyWindow(self->_win);
+        }
+        else if (SDL_GetWindowData(self->_win, "pg_window") != NULL) {
+            SDL_SetWindowData(self->_win, "pg_window", NULL);
+        }
     }
     Py_TYPE(self)->tp_free(self);
 }
@@ -691,7 +684,14 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
     pgWindowObject *self;
     window = pg_GetDefaultWindow();
     if (!window) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISE(pgExc_SDLError,
+                     "display.set_mode has not been called yet.");
+    }
+
+    self = (pgWindowObject *)SDL_GetWindowData(window, "pg_window");
+    if (self != NULL) {
+        Py_INCREF(self);
+        return (PyObject *)self;
     }
 
     self = (pgWindowObject *)(cls->tp_new(cls, NULL, NULL));
@@ -699,6 +699,28 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
     self->_is_borrowed = SDL_TRUE;
     SDL_SetWindowData(window, "pg_window", self);
     return (PyObject *)self;
+}
+
+PyObject *
+window_repr(pgWindowObject *self)
+{
+    const char *title;
+    int win_id;
+    if (!self->_win) {
+        return PyUnicode_FromString("<Window(Destroyed)>");
+    }
+
+    if (self->_is_borrowed) {
+        return PyUnicode_FromString("<Window(From Display)>");
+    }
+
+    title = SDL_GetWindowTitle(self->_win);
+    win_id = SDL_GetWindowID(self->_win);
+    if (win_id == 0) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    return PyUnicode_FromFormat("<Window(title='%s', id=%d)>", title, win_id);
 }
 
 static PyMethodDef window_methods[] = {
@@ -763,7 +785,8 @@ static PyTypeObject pgWindow_Type = {
     .tp_methods = window_methods,
     .tp_init = (initproc)window_init,
     .tp_new = PyType_GenericNew,
-    .tp_getset = _window_getset};
+    .tp_getset = _window_getset,
+    .tp_repr = (reprfunc)window_repr};
 
 static PyMethodDef _window_methods[] = {
     {"get_grabbed_window", (PyCFunction)get_grabbed_window, METH_NOARGS,
