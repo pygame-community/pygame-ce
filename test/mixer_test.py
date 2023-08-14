@@ -116,6 +116,25 @@ class MixerModuleTest(unittest.TestCase):
             mixer.set_num_channels(i)
             self.assertEqual(mixer.get_num_channels(), i)
 
+    def test_set_soundfont(self):
+        """Ensure soundfonts can be set, cleared, and retrieved"""
+        mixer.init()
+
+        mixer.set_soundfont()
+        self.assertEqual(mixer.get_soundfont(), None)
+
+        mixer.set_soundfont(None)
+        self.assertEqual(mixer.get_soundfont(), None)
+
+        mixer.set_soundfont("")
+        self.assertEqual(mixer.get_soundfont(), None)
+
+        mixer.set_soundfont("test1.sf2;test2.sf2")
+        self.assertEqual(mixer.get_soundfont(), "test1.sf2;test2.sf2")
+
+        self.assertRaises(TypeError, mixer.set_soundfont, 0)
+        self.assertRaises(TypeError, mixer.set_soundfont, ["one", "two"])
+
     def test_quit(self):
         """get_num_channels() Should throw pygame.error if uninitialized
         after mixer.quit()"""
@@ -123,8 +142,7 @@ class MixerModuleTest(unittest.TestCase):
         mixer.quit()
         self.assertRaises(pygame.error, mixer.get_num_channels)
 
-    # TODO: FIXME: appveyor and pypy (on linux) fails here sometimes.
-    @unittest.skipIf(sys.platform.startswith("win"), "See pygame-ce issue 601.")
+    # TODO: FIXME: pypy (on linux) fails here sometimes.
     @unittest.skipIf(IS_PYPY, "random errors here with pypy")
     def test_sound_args(self):
         def get_bytes(snd):
