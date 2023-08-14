@@ -235,7 +235,11 @@
       Makes a duplicate copy of a Surface. The new surface will have the same
       pixel formats, color palettes, transparency settings, and class as the
       original. If a Surface subclass also needs to copy any instance specific
-      attributes then it should override ``copy()``.
+      attributes then it should override ``copy()``. Shallow copy and deepcopy
+      are supported, Surface implements __copy__ and __deepcopy__ respectively.
+
+      .. versionadded:: 2.3.1
+         Added support for deepcopy by implementing __deepcopy__, calls copy() internally.
 
       .. ## Surface.copy ##
 
