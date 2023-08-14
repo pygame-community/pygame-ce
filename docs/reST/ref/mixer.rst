@@ -464,7 +464,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
 
       This simply returns the channel id used to create the ``Channel`` instance.
 
-      ..versionadded:: 2.3.1
+      ..versionadded:: 2.4.0
 
       .. ## Channel.get_id ##
 
