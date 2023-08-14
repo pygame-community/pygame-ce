@@ -2157,14 +2157,14 @@ RGB_to_HSL(Uint8 r, Uint8 g, Uint8 b, float *h, float *s, float *l)
         *s = 0;
     }
     else {
-        *s = chroma / (1 - fabs(2 * *l - 1));
+        *s = (float)(chroma / (1 - fabs(2 * *l - 1)));
     }
 }
 
 static void
 HSL_to_RGB(float h, float s, float l, Uint8 *r, Uint8 *g, Uint8 *b)
 {
-    float chroma = (1 - fabs(2 * l - 1)) * s;
+    float chroma = (float)((1 - fabs(2 * l - 1)) * s);
     float h_1 = (float)(h / 60.0);
     float x = (float)(chroma * (1 - fabs(fmod(h_1, 2) - 1)));
     float m = (float)(l - chroma / 2.0);
@@ -2290,8 +2290,8 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
     SDL_Surface *newsurf;
     float h = 0, s = 0, l = 0;
 
-    const char *keywords[] = {"surface",   "hue",          "saturation",
-                              "lightness", "dest_surface", NULL};
+    static char *keywords[] = {"surface",   "hue",          "saturation",
+                               "lightness", "dest_surface", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!f|ffO!", keywords,
                                      &pgSurface_Type, &surfobj, &h, &s, &l,
                                      &pgSurface_Type, &surfobj2)) {
