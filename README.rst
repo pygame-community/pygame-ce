@@ -192,7 +192,7 @@ See docs/licenses for licenses of dependencies.
     :target: https://github.com/psf/black
 
 .. _Pygame: https://pyga.me
-.. _pygame-ce wiki: https://www.pyga.me/docs/
+.. _pygame-ce wiki: https://github.com/pygame-community/pygame-ce/wiki
 .. _Old pygame wiki: https://www.pygame.org/wiki/
 .. _Simple DirectMedia Layer library: https://www.libsdl.org
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
