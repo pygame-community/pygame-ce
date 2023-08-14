@@ -33,6 +33,29 @@
 
 #include <float.h>
 
+#if defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H)
+#include <immintrin.h>
+#define AVX2_ENABLED (1)
+static __m256i avx_color;
+static __m256i _partial8_masks[7];
+static int masks_set_up = 0;
+
+static void
+avx_setup(Uint32 color) {
+    avx_color = _mm256_set1_epi32(color);
+    if (!masks_set_up) {
+        _partial8_masks[0] = _mm256_set_epi32(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80000000);
+        _partial8_masks[1] = _mm256_set_epi32(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80000000, 0x80000000); 
+        _partial8_masks[2] = _mm256_set_epi32(0x00, 0x00, 0x00, 0x00, 0x00, 0x80000000, 0x80000000, 0x80000000); 
+        _partial8_masks[3] = _mm256_set_epi32(0x00, 0x00, 0x00, 0x00, 0x80000000, 0x80000000, 0x80000000, 0x80000000); 
+        _partial8_masks[4] = _mm256_set_epi32(0x00, 0x00, 0x00, 0x80000000, 0x80000000, 0x80000000, 0x80000000, 0x80000000); 
+        _partial8_masks[5] = _mm256_set_epi32(0x00, 0x00, 0x80000000, 0x80000000, 0x80000000, 0x80000000, 0x80000000, 0x80000000); 
+        _partial8_masks[6] = _mm256_set_epi32(0x00, 0x80000000, 0x80000000, 0x80000000, 0x80000000, 0x80000000, 0x80000000, 0x80000000);
+        masks_set_up = 1;
+    }
+}
+#endif
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -154,6 +177,10 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
+#ifdef AVX2_ENABLED
+    avx_setup(color);
+#endif
+
     draw_aaline(surf, color, startx, starty, endx, endy, blend, drawn_area);
 
     if (!pgSurface_Unlock(surfobj)) {
@@ -220,6 +247,10 @@ line(PyObject *self, PyObject *arg, PyObject *kwargs)
     if (!pgSurface_Lock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
+
+#ifdef AVX2_ENABLED
+    avx_setup(color);
+#endif
 
     draw_line_width(surf, color, startx, starty, endx, endy, width,
                     drawn_area);
@@ -340,6 +371,10 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         PyMem_Free(ylist);
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
+
+#ifdef AVX2_ENABLED
+    avx_setup(color);
+#endif
 
     for (loop = 1; loop < length; ++loop) {
         pts[0] = xlist[loop - 1];
@@ -470,6 +505,10 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
+#ifdef AVX2_ENABLED
+    avx_setup(color);
+#endif
+
     for (loop = 1; loop < length; ++loop) {
         draw_line_width(surf, color, xlist[loop - 1], ylist[loop - 1],
                         xlist[loop], ylist[loop], width, drawn_area);
@@ -556,6 +595,10 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     width = MIN(width, MIN(rect->w, rect->h) / 2);
 
+#ifdef AVX2_ENABLED
+    avx_setup(color);
+#endif
+
     for (loop = 0; loop < width; ++loop) {
         draw_arc(surf, rect->x + rect->w / 2, rect->y + rect->h / 2,
                  rect->w / 2 - loop, rect->h / 2 - loop, angle_start,
@@ -620,6 +663,10 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
     if (!pgSurface_Lock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
+
+#ifdef AVX2_ENABLED
+    avx_setup(color);
+#endif
 
     if (!width ||
         width >= MIN(rect->w / 2 + rect->w % 2, rect->h / 2 + rect->h % 2)) {
@@ -718,6 +765,10 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
     if (!pgSurface_Lock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
+
+#ifdef AVX2_ENABLED
+    avx_setup(color);
+#endif
 
     if ((top_right == 0 && top_left == 0 && bottom_left == 0 &&
          bottom_right == 0)) {
@@ -848,6 +899,10 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
+#ifdef AVX2_ENABLED
+    avx_setup(color);
+#endif
+
     if (length != 3) {
         draw_fillpoly(surf, xlist, ylist, length, color, drawn_area);
     }
@@ -923,6 +978,10 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
     if (width < 0) {
         return pgRect_New4(rect->x, rect->y, 0, 0);
     }
+
+#ifdef AVX2_ENABLED
+    avx_setup(color);
+#endif
 
     /* If there isn't any rounded rect-ness OR the rect is really thin in one
        direction. The "really thin in one direction" check is necessary because
@@ -1389,6 +1448,39 @@ drawhorzline(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2)
     }
 }
 
+#ifdef AVX2_ENABLED
+static void
+drawhorzlineavx(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2)
+{
+    Uint8 *pixel, *end;
+    pixel = ((Uint8 *)surf->pixels) + surf->pitch * y1;
+    end = pixel + x2 * surf->format->BytesPerPixel;
+    pixel += x1 * surf->format->BytesPerPixel;
+    int width = x2 - x1 + 1;
+    switch (surf->format->BytesPerPixel) {
+        case 1:
+            // TODO
+            break;
+        case 2:
+            // TODO
+            break;
+        case 3:
+            // TODO
+            break;
+        default: /*case 4*/
+            if (width >= 8) {
+                while (end - pixel >= 28) {
+                    _mm256_storeu_si256((__m256i*)pixel, avx_color);
+                    pixel += 32;
+                }
+                if (width & 7) _mm256_storeu_si256((__m256i*)(end - 28), avx_color);
+            }
+            else _mm256_maskstore_epi32((int *)pixel, _partial8_masks[((width % 8) - 1)], avx_color);
+            break;
+    }
+}
+#endif
+
 static void
 drawvertline(SDL_Surface *surf, Uint32 color, int y1, int x1, int y2)
 {
@@ -1475,8 +1567,11 @@ drawhorzlineclipbounding(SDL_Surface *surf, Uint32 color, int x1, int y1,
     }
 
     add_line_to_drawn_list(x1, y1, x2, y1, pts);
-
+#ifdef AVX2_ENABLED
+    drawhorzlineavx(surf, color, x1, y1, x2);
+#else
     drawhorzline(surf, color, x1, y1, x2);
+#endif
 }
 
 void
