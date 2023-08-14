@@ -1796,7 +1796,8 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
         }
         obj = PyTuple_GET_ITEM(arg, 0);
 
-        if (PyUnicode_Check(obj)) {
+        if (PyUnicode_Check(obj) ||
+            PyObject_HasAttrString(obj, "__fspath__")) {
             file = obj;
             obj = NULL;
         }
