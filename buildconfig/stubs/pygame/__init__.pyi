@@ -44,7 +44,7 @@ from pygame import (
     system as system,
 )
 
-from .rect import Rect as Rect
+from .rect import Rect as Rect, FRect as FRect
 from .surface import Surface as Surface, SurfaceType as SurfaceType
 from .color import Color as Color
 from .pixelarray import PixelArray as PixelArray
@@ -639,6 +639,8 @@ from .constants import (
     WINDOWMAXIMIZED as WINDOWMAXIMIZED,
     WINDOWMINIMIZED as WINDOWMINIMIZED,
     WINDOWMOVED as WINDOWMOVED,
+    WINDOWPOS_CENTERED as WINDOWPOS_CENTERED,
+    WINDOWPOS_UNDEFINED as WINDOWPOS_UNDEFINED,
     WINDOWRESIZED as WINDOWRESIZED,
     WINDOWRESTORED as WINDOWRESTORED,
     WINDOWSHOWN as WINDOWSHOWN,

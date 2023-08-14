@@ -1,8 +1,16 @@
-from typing import Union, Tuple, List, Optional, Dict, Sequence, overload
+from typing import Dict, List, Optional, Tuple, Union, overload
 
-from pygame.surface import Surface
 from pygame.constants import FULLSCREEN
-from ._common import Coordinate, RectValue, ColorValue, RGBAOutput
+from pygame.surface import Surface
+
+from ._common import (
+    ColorValue,
+    Coordinate,
+    IntCoordinate,
+    RectValue,
+    RGBAOutput,
+    Sequence,
+)
 
 class _VidInfo:
     hw: int
@@ -52,7 +60,7 @@ def list_modes(
     display: int = 0,
 ) -> List[Tuple[int, int]]: ...
 def mode_ok(
-    size: Union[Sequence[int], Tuple[int, int]],
+    size: IntCoordinate,
     flags: int = 0,
     depth: int = 0,
     display: int = 0,

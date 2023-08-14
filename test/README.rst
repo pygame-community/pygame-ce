@@ -1,5 +1,5 @@
-run_tests.py
-************
+Pygame Unit Tests
+*****************
 
 The test runner for pygame was developed for these purposes:
     
@@ -65,12 +65,6 @@ Each class has corresponding TestCase[s] in form of $Class + "Type" ::
 
     pygame.color.Color : color_test.ColorTypeTest
     pygame.color.Color : color_test.ColorTypeTestOtherAspect
-
-**NOTE** 
-
-Use the names of the instantiator helper functions:
-
-eg ``pygame.cdrom.CD`` and not ``pygame.cdrom.CDType``
 
 Each test should be named in the form, test_$funcname__$comment ::
 

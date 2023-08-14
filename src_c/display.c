@@ -267,7 +267,7 @@ pg_get_active(PyObject *self, PyObject *_null)
 static void
 pg_vidinfo_dealloc(PyObject *self)
 {
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject *
@@ -701,8 +701,8 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
                 int h = event->window.data2;
                 pgSurfaceObject *display_surface =
                     pg_GetDefaultWindowSurface();
-                SDL_Surface *surf = SDL_CreateRGBSurface(
-                    SDL_SWSURFACE, w, h, 32, 0xff << 16, 0xff << 8, 0xff, 0);
+                SDL_Surface *surf = SDL_CreateRGBSurfaceWithFormat(
+                    0, w, h, 32, PG_PIXELFORMAT_XRGB8888);
 
                 SDL_FreeSurface(display_surface->surf);
                 display_surface->surf = surf;
@@ -851,7 +851,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     int w, h;
     PyObject *size = NULL;
     int vsync = SDL_FALSE;
-    long long hwnd = 0;
+    uint64_t hwnd = 0;
     /* display will get overwritten by ParseTupleAndKeywords only if display
        parameter is given. By default, put the new window on the same
        screen as the old one */
@@ -873,7 +873,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         return NULL;
 
     if (hwnd == 0 && winid_env != NULL) {
-        hwnd = SDL_strtol(winid_env, NULL, 0);
+        hwnd = SDL_strtoull(winid_env, NULL, 0);
     }
 
     if (scale_env != NULL) {
@@ -1151,7 +1151,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 /* set min size to (1,1) to erase any previously set min size
                  * relevant for windows leaving SCALED, which sets a min size
                  * only relevant on Windows, I believe.
-                 * See https://github.com/pygame/pygame/issues/2327 */
+                 * See
+                 * https://github.com/pygame-community/pygame-ce/issues/1194 */
                 SDL_SetWindowMinimumSize(win, 1, 1);
 
                 /* change existing window.
@@ -1197,8 +1198,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
                 So we make a fake surface.
                 */
-                surf = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32,
-                                            0xff << 16, 0xff << 8, 0xff, 0);
+                surf = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32,
+                                                      PG_PIXELFORMAT_XRGB8888);
                 newownedsurf = surf;
             }
             else {
@@ -1299,8 +1300,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                         pg_renderer, SDL_PIXELFORMAT_ARGB8888,
                         SDL_TEXTUREACCESS_STREAMING, w, h);
                 }
-                surf = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32,
-                                            0xff << 16, 0xff << 8, 0xff, 0);
+                surf = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32,
+                                                      PG_PIXELFORMAT_XRGB8888);
                 newownedsurf = surf;
             }
             else {
@@ -1379,10 +1380,11 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         char *xdg_session_type = SDL_getenv("XDG_SESSION_TYPE");
         char *wayland_display = SDL_getenv("WAYLAND_DISPLAY");
         if (NULL != wayland_display ||
-            SDL_strcmp(xdg_session_type, "wayland") == 0) {
+            (NULL != xdg_session_type &&
+             SDL_strcmp(xdg_session_type, "wayland") == 0)) {
             if (PyErr_WarnEx(PyExc_Warning,
                              "PyGame seems to be running through X11 "
-                             "on top if wayland, instead of wayland directly",
+                             "on top of wayland, instead of wayland directly",
                              1) != 0)
                 return NULL;
         }
@@ -1552,7 +1554,7 @@ pg_list_modes(PyObject *self, PyObject *args, PyObject *kwds)
         }
         /* use reasonable defaults (cf. SDL_video.c) */
         if (!mode.format)
-            mode.format = SDL_PIXELFORMAT_RGB888;
+            mode.format = PG_PIXELFORMAT_XRGB8888;
         if (!mode.w)
             mode.w = 640;
         if (!mode.h)
@@ -2474,9 +2476,8 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
         if (y == (int)SDL_WINDOWPOS_UNDEFINED_DISPLAY(window_display))
             y = SDL_WINDOWPOS_CENTERED_DISPLAY(window_display);
 
-#if (SDL_VERSION_ATLEAST(2, 0, 5))
         SDL_SetWindowResizable(win, flags & SDL_WINDOW_RESIZABLE);
-#endif
+
         SDL_SetWindowBordered(win, (flags & SDL_WINDOW_BORDERLESS) == 0);
 
         SDL_SetWindowPosition(win, x, y);
@@ -2748,7 +2749,8 @@ static PyMethodDef _pg_display_methods[] = {
      DOC_DISPLAY_TOGGLEFULLSCREEN},
 
     {"_set_autoresize", (PyCFunction)pg_display_set_autoresize, METH_O,
-     "provisional API, subject to change"},
+     "DEPRECATED, never officially supported, kept only for compatibility "
+     "with release candidate"},
     {"_resize_event", (PyCFunction)pg_display_resize_event, METH_O,
      "DEPRECATED, never officially supported, kept only for compatibility "
      "with release candidate"},
@@ -2757,8 +2759,7 @@ static PyMethodDef _pg_display_methods[] = {
     {"get_desktop_sizes", (PyCFunction)pg_get_desktop_screen_sizes,
      METH_NOARGS, DOC_DISPLAY_GETDESKTOPSIZES},
     {"is_fullscreen", (PyCFunction)pg_is_fullscreen, METH_NOARGS,
-     "provisional API, subject to change"},
-
+     DOC_DISPLAY_ISFULLSCREEN},
     {"is_vsync", (PyCFunction)pg_is_vsync, METH_NOARGS, DOC_DISPLAY_ISVSYNC},
     {"get_desktop_refresh_rates", (PyCFunction)pg_desktop_refresh_rates,
      METH_NOARGS, DOC_DISPLAY_GETDESKTOPREFRESHRATES},
