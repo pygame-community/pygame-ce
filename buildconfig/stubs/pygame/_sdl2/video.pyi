@@ -65,7 +65,7 @@ class Texture:
         self,
         srcrect: Optional[RectValue] = None,
         dstrect: Optional[RectValue] = None,
-        angle: int = 0,
+        angle: float = 0.0,
         origin: Optional[Iterable[int]] = None,
         flip_x: bool = False,
         flip_y: bool = False,
@@ -105,7 +105,7 @@ class Image:
         texture_or_image: Union[Texture, Image],
         srcrect: Optional[RectValue] = None,
     ) -> None: ...
-    def get_rect(self, **kwargs: Any) -> Rect: ...
+    def get_rect(self) -> Rect: ...
     def draw(
         self, srcrect: Optional[RectValue] = None, dstrect: Optional[RectValue] = None
     ) -> None: ...
