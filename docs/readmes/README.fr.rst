@@ -196,7 +196,7 @@ Voir les docs/licences pour les licences des dépendances.
     :target: https://github.com/psf/black
 
 .. _Pygame: https://www.pyga.me/
-.. _wiki de pygame: https://www.pygame.org/docs/
+.. _wiki de pygame: https://www.pygame.org/wiki/
 .. _wiki de pygame-ce: https://pyga.me/docs/
 .. _Simple DirectMedia Layer: https://www.libsdl.org
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
