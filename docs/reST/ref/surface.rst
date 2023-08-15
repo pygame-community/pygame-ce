@@ -89,23 +89,23 @@
 
    .. method:: blit
 
-      | :sl:`draw one image onto another`
+      | :sl:`draw another surface onto this one`
       | :sg:`blit(source, dest, area=None, special_flags=0) -> Rect`
 
-      Draws a Surface onto this Surface.
+      Draws another Surface onto this Surface.
 
       **Parameters**
           - ``source``
-              The ``Surface`` object that will be drawn onto this ``Surface``.
+              The ``Surface`` object to draw onto this ``Surface``.
               If it has transparency, transparent pixels will be ignored when blittting to an 8-bit ``Surface``.
           - ``dest``
-              Specifies the placement of the ``source`` onto this ``Surface``.
-              It can take a coordinate ``(x, y)`` or a ``Rect`` (using its top-left corner).
+              The ``source`` draw position onto this ``Surface``.
+              It can be a coordinate ``(x, y)`` or a ``Rect`` (using its top-left corner).
               If a ``Rect`` is passed, its size will not affect the blit.
           - ``area`` *(optional)*
-              Represents the portion of the ``source`` that will be drawn.
-              It can be a ``Rect`` object representing that section. If ``None`` or nothing
-              is provided, the entire source surface will be drawn.
+              The rectangular portion of the ``source`` to draw.
+              It can be a ``Rect`` object representing that section. If ``None`` or not provided,
+              the entire source surface will be drawn.
               If the ``Rect`` has negative position, the final blit position will be
               ``dest`` - ``Rect.topleft``.
           - ``special_flags`` *(optional)*
@@ -116,6 +116,10 @@
           A :doc:`rect` object representing the affected area of this ``Surface`` that was modified
           by the blit operation. This area includes only the pixels within this ``Surface`` or
           its clipping area (see :meth:`set_clip`).
+          Generally you don't need to use this return value, as it was initially designed to
+          pass it to :meth:`pygame.display.update` to optimize the updating of the display.
+          Since modern computers are fast enough to update the entire display at high speeds,
+          this return value is rarely used nowadays.
       **Notes**
           - When self-blitting and there is a colorkey or alpha transparency set, resulting colors
             may appear slightly different compared to a non-self blit.

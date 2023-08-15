@@ -8,7 +8,7 @@ What Are Special Flags?
 =======================
 
     **Special flags are a means of controlling how a** :class:`Surface` **is drawn onto another**.
-    They can be used to create visual effects, such as glowing particles, or to perform image
+    They can be used to create visual effects, such as glowing particles, or to perform surface
     masking or manipulation.
     They are used with the following methods:
 
@@ -90,8 +90,9 @@ Special Flags List
     .. versionaddedold:: 1.9.2
 
        - ``BLEND_PREMULTIPLIED``
-           Uses premultiplied alpha blending for faster and accurate results when
-           the color channels are already multiplied by the image alpha channel.
+           Uses premultiplied alpha blending for slightly faster blits and more
+           accurate blending results when the color channels are already multiplied
+           by the surface alpha channel.
            You should only use this blend mode if you previously premultiplied the Surface with
            :meth:`Surface.premul_alpha()`.
 
