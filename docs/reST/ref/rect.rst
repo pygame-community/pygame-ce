@@ -555,10 +555,10 @@
    .. method:: collidedict
 
       | :sl:`test if one rectangle in a dictionary intersects`
-      | :sg:`collidedict(dict) -> (key, value)`
-      | :sg:`collidedict(dict) -> None`
-      | :sg:`collidedict(dict, values=False) -> (key, value)`
-      | :sg:`collidedict(dict, values=False) -> None`
+      | :sg:`collidedict(rect_dict) -> (key, value)`
+      | :sg:`collidedict(rect_dict) -> None`
+      | :sg:`collidedict(rect_dict, values=False) -> (key, value)`
+      | :sg:`collidedict(rect_dict, values=False) -> None`
 
       Returns the first key and value pair that intersects with the calling
       Rect object. If no collisions are found, ``None`` is returned. If
@@ -580,8 +580,8 @@
    .. method:: collidedictall
 
       | :sl:`test if all rectangles in a dictionary intersect`
-      | :sg:`collidedictall(dict) -> [(key, value), ...]`
-      | :sg:`collidedictall(dict, values=False) -> [(key, value), ...]`
+      | :sg:`collidedictall(rect_dict) -> [(key, value), ...]`
+      | :sg:`collidedictall(rect_dict, values=False) -> [(key, value), ...]`
 
       Returns a list of all the key and value pairs that intersect with the
       calling Rect object. If no collisions are found an empty list is returned.

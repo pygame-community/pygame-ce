@@ -25,5 +25,5 @@
 #define DOC_RECT_COLLIDELISTALL "collidelistall(list) -> indices\ntest if all rectangles in a list intersect"
 #define DOC_RECT_COLLIDEOBJECTS "collideobjects(rect_list) -> object\ncollideobjects(obj_list, key=func) -> object\ntest if any object in a list intersects"
 #define DOC_RECT_COLLIDEOBJECTSALL "collideobjectsall(rect_list) -> objects\ncollideobjectsall(obj_list, key=func) -> objects\ntest if all objects in a list intersect"
-#define DOC_RECT_COLLIDEDICT "collidedict(dict) -> (key, value)\ncollidedict(dict) -> None\ncollidedict(dict, values=False) -> (key, value)\ncollidedict(dict, values=False) -> None\ntest if one rectangle in a dictionary intersects"
-#define DOC_RECT_COLLIDEDICTALL "collidedictall(dict) -> [(key, value), ...]\ncollidedictall(dict, values=False) -> [(key, value), ...]\ntest if all rectangles in a dictionary intersect"
+#define DOC_RECT_COLLIDEDICT "collidedict(rect_dict) -> (key, value)\ncollidedict(rect_dict) -> None\ncollidedict(rect_dict, values=False) -> (key, value)\ncollidedict(rect_dict, values=False) -> None\ntest if one rectangle in a dictionary intersects"
+#define DOC_RECT_COLLIDEDICTALL "collidedictall(rect_dict) -> [(key, value), ...]\ncollidedictall(rect_dict, values=False) -> [(key, value), ...]\ntest if all rectangles in a dictionary intersect"
