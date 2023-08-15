@@ -570,7 +570,7 @@
          hashable), so they must be converted to a tuple.
          e.g. ``rect.collidedict({tuple(key_rect) : value})``
 
-      .. versionchanged:: 2.3.1
+      .. versionchanged:: 2.4.0
          ``values`` is now accepted as a keyword argument. Type Stub updated
          to use boolean ``True`` or ``False``, but any truthy or falsy value 
          will be valid.
@@ -593,7 +593,7 @@
          hashable), so they must be converted to a tuple.
          e.g. ``rect.collidedictall({tuple(key_rect) : value})``
 
-      .. versionchanged:: 2.3.1
+      .. versionchanged:: 2.4.0
          ``values`` is now accepted as a keyword argument. Type Stub updated
          to use boolean ``True`` or ``False``, but any truthy or falsy value 
          will be valid.
