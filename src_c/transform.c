@@ -2280,17 +2280,27 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
 
     static char *keywords[] = {"surface",   "hue",          "saturation",
                                "lightness", "dest_surface", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!f|ffO!", keywords,
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|fffO!", keywords,
                                      &pgSurface_Type, &surfobj, &h, &s, &l,
                                      &pgSurface_Type, &surfobj2)) {
         return NULL;
     }
 
     if (s < -1 || s > 1) {
-        return RAISE(PyExc_ValueError, "saturation must be between -1 and 1");
+        PyObject *value = PyFloat_FromDouble((double)s);
+        PyErr_Format(PyExc_ValueError,
+                     "saturation value must be between -1 and 1, got %R",
+                     value);
+        Py_XDECREF(value);
+        return NULL;
     }
     if (l < -1 || l > 1) {
-        return RAISE(PyExc_ValueError, "lightness must be between -1 and 1");
+        PyObject *value = PyFloat_FromDouble((double)l);
+        PyErr_Format(PyExc_ValueError,
+                     "lightness value must be between -1 and 1, got %R",
+                     value);
+        Py_XDECREF(value);
+        return NULL;
     }
 
     if (h > 0) {
