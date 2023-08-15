@@ -36,7 +36,7 @@ Header file: src_c/include/pygame.h
    Argument *length* must be between ``1`` and ``4`` inclusive.
    On failure, raise a Python exception and return ``NULL``.
 
-.. c:function int pg_RGBAFromColorObj(PyObject *color, Uint8 rgba[])
+.. c:function:: int pg_RGBAFromColorObj(PyObject *color, Uint8 rgba[])
 
    Set the four element array *rgba* to the color represented by object *color*.
    Return ``1`` on success, ``0`` otherwise.
