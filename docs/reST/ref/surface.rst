@@ -120,6 +120,16 @@
           pass it to :meth:`pygame.display.update` to optimize the updating of the display.
           Since modern computers are fast enough to update the entire display at high speeds,
           this return value is rarely used nowadays.
+      **Example Use**
+           .. code-block:: python
+
+                  # create a surface of size 50x50 and fill it with red color
+                  red_surf = pygame.Surface((50, 50))
+                  red_surf.fill("red")
+
+                  # draw the surface on another surface at position (0, 0)
+                  another_surface.blit(red_surf, (0, 0))
+
       **Notes**
           - When self-blitting and there is a colorkey or alpha transparency set, resulting colors
             may appear slightly different compared to a non-self blit.
