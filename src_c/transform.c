@@ -2121,11 +2121,18 @@ surf_grayscale(PyObject *self, PyObject *args, PyObject *kwargs)
 #define MIN3(a, b, c) MIN(MIN(a, b), c)
 #define MAX3(a, b, c) MAX(MAX(a, b), c)
 
-static void
+/* Following hsl code is based on code from
+ * https://gist.github.com/ciembor/1494530
+ * and
+ * http://en.wikipedia.org/wiki/HSL_color_space
+ */
+static inline void
 RGB_to_HSL(Uint8 r, Uint8 g, Uint8 b, float *h, float *s, float *l)
 {
     float min, max;
     float r_1, g_1, b_1;
+    float chr, val;
+
     r_1 = (float)(r / 255.0);
     g_1 = (float)(g / 255.0);
     b_1 = (float)(b / 255.0);
@@ -2133,82 +2140,60 @@ RGB_to_HSL(Uint8 r, Uint8 g, Uint8 b, float *h, float *s, float *l)
     min = MIN3(r_1, g_1, b_1);
     max = MAX3(r_1, g_1, b_1);
 
-    float chroma = max - min;
-    *l = (float)((max + min) / 2.0);
+    chr = max - min;
+    val = max + min;
 
-    if (chroma == 0) {
-        *h = 0;
+    *l = (float)(val / 2.0);
+
+    if (chr == 0) {
+        *h = *s = 0;
+        return;
     }
-    else if (max == r_1) {
-        *h = (float)(60 * fmod(((g_1 - b_1) / chroma), 6));
+
+    *s = (float)(*l > 0.5 ? chr / (2.0 - val) : chr / val);
+
+    if (max == r_1) {
+        *h = (g_1 - b_1) / chr + (g_1 < b_1 ? 6 : 0);
     }
     else if (max == g_1) {
-        *h = 60 * (((b_1 - r_1) / chroma) + 2);
+        *h = (b_1 - r_1) / chr + 2;
     }
     else if (max == b_1) {
-        *h = 60 * (((r_1 - g_1) / chroma) + 4);
+        *h = (r_1 - g_1) / chr + 4;
     }
-
-    if (*h < 0) {
-        *h += 360;
-    }
-
-    if (*l == 0 || *l == 1) {
-        *s = 0;
-    }
-    else {
-        *s = (float)(chroma / (1 - fabs(2 * *l - 1)));
-    }
+    *h /= 6;
 }
 
-static void
+static inline Uint8
+hue_to_rgb(float v1, float v2, float vH)
+{
+    if (vH < 0)
+        vH += 1;
+    if (vH > 1)
+        vH -= 1;
+    if ((6 * vH) < 1)
+        return (Uint8)((v1 + (v2 - v1) * 6 * vH) * 255);
+    if ((2 * vH) < 1)
+        return (Uint8)(v2 * 255);
+    if ((3 * vH) < 2)
+        return (Uint8)((v1 + (v2 - v1) * ((2.0f / 3.0f) - vH) * 6) * 255);
+    return (Uint8)(v1 * 255);
+}
+
+static inline void
 HSL_to_RGB(float h, float s, float l, Uint8 *r, Uint8 *g, Uint8 *b)
 {
-    float chroma = (float)((1 - fabs(2 * l - 1)) * s);
-    float h_1 = (float)(h / 60.0);
-    float x = (float)(chroma * (1 - fabs(fmod(h_1, 2) - 1)));
-    float m = (float)(l - chroma / 2.0);
-
-    float r_1, g_1, b_1;
-    if (h_1 < 1) {
-        r_1 = chroma;
-        g_1 = x;
-        b_1 = 0;
-    }
-    else if (h_1 < 2) {
-        r_1 = x;
-        g_1 = chroma;
-        b_1 = 0;
-    }
-    else if (h_1 < 3) {
-        r_1 = 0;
-        g_1 = chroma;
-        b_1 = x;
-    }
-    else if (h_1 < 4) {
-        r_1 = 0;
-        g_1 = x;
-        b_1 = chroma;
-    }
-    else if (h_1 < 5) {
-        r_1 = x;
-        g_1 = 0;
-        b_1 = chroma;
-    }
-    else if (h_1 < 6) {
-        r_1 = chroma;
-        g_1 = 0;
-        b_1 = x;
-    }
-    else {
-        r_1 = 0;
-        g_1 = 0;
-        b_1 = 0;
+    if (s == 0) {
+        *r = *g = *b = (Uint8)(l * 255);
+        return;
     }
 
-    *r = (Uint8)((r_1 + m) * 255);
-    *g = (Uint8)((g_1 + m) * 255);
-    *b = (Uint8)((b_1 + m) * 255);
+    float v1, v2;
+    v2 = l < 0.5 ? l * (1 + s) : l + s - s * l;
+    v1 = 2 * l - v2;
+    *r = hue_to_rgb(v1, v2, h + (1.0f / 3.0f));
+    *g = hue_to_rgb(v1, v2, h);
+    *b = hue_to_rgb(v1, v2, h - (1.0f / 3.0f));
 }
 
 static SDL_Surface *
@@ -2251,15 +2236,18 @@ modify_hsl(pgSurfaceObject *src, pgSurfaceObject *dst, float h, float s,
             SDL_GetRGBA(pixel, surf->format, &r, &g, &b, &a);
             RGB_to_HSL(r, g, b, &s_h, &s_s, &s_l);
 
-            if (h != 0) {
+            if (h) {
                 s_h += h;
-                s_h = s_h > 360 ? s_h - 360 : s_h < 0 ? s_h + 360 : s_h;
+                if (s_h > 1)
+                    s_h -= 1;
+                else if (s_h < 0)
+                    s_h += 1;
             }
-            if (s != 0) {
+            if (s) {
                 s_s = s_s * (1 + s);
                 s_s = s_s > 1 ? 1 : s_s < 0 ? 0 : s_s;
             }
-            if (l != 0) {
+            if (l) {
                 if (l < 0) {
                     s_l = s_l * (1 + l);
                 }
@@ -2298,17 +2286,24 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    if (s < 0 || s > 1) {
-        return RAISE(PyExc_ValueError, "saturation must be between 0 and 1");
+    if (s < -1 || s > 1) {
+        return RAISE(PyExc_ValueError, "saturation must be between -1 and 1");
     }
-    if (l < 0 || l > 1) {
-        return RAISE(PyExc_ValueError, "lightness must be between 0 and 1");
+    if (l < -1 || l > 1) {
+        return RAISE(PyExc_ValueError, "lightness must be between -1 and 1");
     }
 
-    /* remap s to be within -1 to 1 range */
-    s = s * 2 - 1;
-    /* remap l to be within -1 to 1 range */
-    l = l * 2 - 1;
+    if (h > 0) {
+        while (h > 360) {
+            h -= 360;
+        }
+    }
+    else if (h < 0) {
+        while (h < -360) {
+            h += 360;
+        }
+    }
+    h /= 360.0;
 
     newsurf = modify_hsl(surfobj, surfobj2, h, s, l);
 

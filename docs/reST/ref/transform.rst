@@ -416,10 +416,10 @@ Instead, always begin with the original image and scale to the desired size.)
      while negative values rotate it counterclockwise. Value range: -360 to 360.
 
    :param float s: The amount to change the saturation. Positive values increase saturation,
-     while negative values decrease it. Value range: 0 to 1.
+     while negative values decrease it. Value range: -1 to 1.
 
    :param float l: The amount to change the lightness. Positive values increase lightness,
-     while negative values decrease it. Value range: 0 to 1.
+     while negative values decrease it. Value range: -1 to 1.
 
    :param pygame.Surface dest_surface: An optional destination surface to store the transformed image.
      If provided, it should have the same dimensions and depth as the source surface.
@@ -432,7 +432,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
    .. code-block:: python
 
-      new_surf = hsl(original_surf, 30, 0.7, 0.4)
+      new_surf = hsl(original_surf, 30, 0.2, -0.1)
 
    .. versionadded:: 2.4.0
 
