@@ -1315,8 +1315,7 @@ chan_get_endevent(PyObject *self, PyObject *_null)
 
 static PyGetSetDef _channel_getsets[] = {
     {"id", (getter)chan_get_id, NULL, DOC_MIXER_CHANNEL_ID, NULL},
-    {NULL, NULL, NULL, NULL, NULL}
-};
+    {NULL, NULL, NULL, NULL, NULL}};
 
 static PyMethodDef channel_methods[] = {
     {"play", (PyCFunction)chan_play, METH_VARARGS | METH_KEYWORDS,
