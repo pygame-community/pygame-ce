@@ -166,9 +166,6 @@ cdef Uint32 format_from_depth(int depth):
 
 
 cdef class Texture:
-    def __cinit__(self):
-        cdef Uint8[4] defaultColor = [255, 255, 255, 255]
-        self._color = pgColor_NewLength(defaultColor, 3)
 
     def __init__(self,
                  Renderer renderer,
@@ -340,23 +337,36 @@ cdef class Texture:
     def color(self):
         """Get or set the additional color value multiplied into texture drawing operations
         """
+        cdef Uint8 *rgba = <Uint8 *> malloc(3)
+        
         # https://wiki.libsdl.org/SDL_GetTextureColorMod
         cdef int res = SDL_GetTextureColorMod(self._tex,
-                                              &self._color.data[0],
-                                              &self._color.data[1],
-                                              &self._color.data[2])
+                                              &(rgba[0]),
+                                              &(rgba[1]),
+                                              &(rgba[2]))
+        
+        free(rgba)
         if res < 0:
             raise error()
 
-        return self._color
+        return pgColor_NewLength(rgba, 3)
 
     @color.setter
     def color(self, new_value):
+        cdef Uint8 *rgba = <Uint8 *> malloc(4)
+        try:
+            pg_RGBAFromObjEx(new_value, rgba, PG_COLOR_HANDLE_ALL)
+            # exception is set inside the function
+        except:
+            free(rgba)
+            raise
+
         # https://wiki.libsdl.org/SDL_SetTextureColorMod
         cdef int res = SDL_SetTextureColorMod(self._tex,
-                                              new_value[0],
-                                              new_value[1],
-                                              new_value[2])
+                                              rgba[0],
+                                              rgba[1],
+                                              rgba[2])
+        free(rgba)
         if res < 0:
             raise error()
 
@@ -661,7 +671,14 @@ cdef class Image:
 
     @color.setter
     def color(self, new_color):
-        self._color[:3] = new_color[:3]
+        cdef Uint8 *rgba = <Uint8 *> malloc(4)
+        try:
+            pg_RGBAFromObjEx(new_color, rgba, PG_COLOR_HANDLE_ALL)
+        except:
+            free(rgba)
+            raise
+        self._color[:3] = rgba[:3]
+        free(rgba)
 
     @property
     def origin(self):
