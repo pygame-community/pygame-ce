@@ -889,13 +889,20 @@ cdef class Renderer:
 
     @draw_color.setter
     def draw_color(self, new_value):
+        cdef Uint8 *rgba = <Uint8 *> malloc(4)
+        try:
+            pg_RGBAFromObjEx(new_value, rgba, PG_COLOR_HANDLE_ALL)
+        except:
+            free(rgba)
+            raise
+        self._draw_color[:] = rgba[:4]
         # https://wiki.libsdl.org/SDL_SetRenderDrawColor
-        self._draw_color[:] = new_value
         cdef int res = SDL_SetRenderDrawColor(self._renderer,
-                                              new_value[0],
-                                              new_value[1],
-                                              new_value[2],
-                                              new_value[3])
+                                              rgba[0],
+                                              rgba[1],
+                                              rgba[2],
+                                              rgba[3])
+        free(rgba)
         if res < 0:
             raise error()
 
