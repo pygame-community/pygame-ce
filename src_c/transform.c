@@ -2226,13 +2226,14 @@ modify_hsl(pgSurfaceObject *src, pgSurfaceObject *dst, float h, float s,
 
     int x, y;
     Uint8 r, g, b, a;
-    Uint8 *pixels = (Uint8 *)surf->pixels, *pix;
+    Uint8 *src_pixels = (Uint8 *)surf->pixels, *pix;
+    Uint8 *dst_pixels = (Uint8 *)newsurf->pixels;
     float s_h = 0, s_s = 0, s_l = 0;
     Uint32 pixel;
 
     for (y = 0; y < surf->h; y++) {
         for (x = 0; x < surf->w; x++) {
-            SURF_GET_AT(pixel, surf, x, y, pixels, surf->format, pix);
+            SURF_GET_AT(pixel, surf, x, y, src_pixels, surf->format, pix);
             SDL_GetRGBA(pixel, surf->format, &r, &g, &b, &a);
             RGB_to_HSL(r, g, b, &s_h, &s_s, &s_l);
 
@@ -2259,8 +2260,8 @@ modify_hsl(pgSurfaceObject *src, pgSurfaceObject *dst, float h, float s,
 
             HSL_to_RGB(s_h, s_s, s_l, &r, &g, &b);
             pixel = SDL_MapRGBA(newsurf->format, r, g, b, a);
-            SURF_SET_AT(pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
-                        newsurf->format, pix);
+            SURF_SET_AT(pixel, newsurf, x, y, dst_pixels, newsurf->format,
+                        pix);
         }
     }
 
@@ -2288,6 +2289,9 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (s < -1 || s > 1) {
         PyObject *value = PyFloat_FromDouble((double)s);
+        if (!value) {
+            return NULL;
+        }
         PyErr_Format(PyExc_ValueError,
                      "saturation value must be between -1 and 1, got %R",
                      value);
@@ -2296,6 +2300,9 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
     }
     if (l < -1 || l > 1) {
         PyObject *value = PyFloat_FromDouble((double)l);
+        if (!value) {
+            return NULL;
+        }
         PyErr_Format(PyExc_ValueError,
                      "lightness value must be between -1 and 1, got %R",
                      value);

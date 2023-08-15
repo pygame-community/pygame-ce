@@ -80,6 +80,7 @@ def threshold(
 
     return similar
 
+
 def rgb_to_hsl(rgb):
     r, g, b = rgb
     r, g, b = r / 255.0, g / 255.0, b / 255.0
@@ -102,31 +103,36 @@ def rgb_to_hsl(rgb):
     h /= 6.0
     h %= 1
     return h, s, l
+
+
 def hsl_to_rgb(hsl):
     h, s, l = hsl
     if s == 0:
         r = g = b = l
     else:
+
         def hue_to_rgb(p, q, t):
             if t < 0:
                 t += 1
             if t > 1:
                 t -= 1
-            if t < 1/6:
+            if t < 1 / 6:
                 return p + (q - p) * 6 * t
-            if t < 1/2:
+            if t < 1 / 2:
                 return q
-            if t < 2/3:
-                return p + (q - p) * (2/3 - t) * 6
+            if t < 2 / 3:
+                return p + (q - p) * (2 / 3 - t) * 6
             return p
 
         q = l * (1 + s) if l < 0.5 else l + s - l * s
         p = 2 * l - q
-        r = hue_to_rgb(p, q, h + 1/3)
+        r = hue_to_rgb(p, q, h + 1 / 3)
         g = hue_to_rgb(p, q, h)
-        b = hue_to_rgb(p, q, h - 1/3)
+        b = hue_to_rgb(p, q, h - 1 / 3)
 
     return int(r * 255), int(g * 255), int(b * 255)
+
+
 def modify_hsl(h, s, l, dh, ds, dl):
     if dh:
         h += dh
@@ -135,7 +141,7 @@ def modify_hsl(h, s, l, dh, ds, dl):
         elif h < 0:
             h += 1
     if ds:
-        s *= (1 + ds)
+        s *= 1 + ds
         if s > 1:
             s = 1
         elif s < 0:
