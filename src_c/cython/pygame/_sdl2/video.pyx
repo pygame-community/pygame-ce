@@ -388,8 +388,8 @@ cdef class Texture:
                 if len(dstrect) == 2:
                     dst.x = dstrect[0]
                     dst.y = dstrect[1]
-                    dst.w = self.width
-                    dst.h = self.height
+                    dst.w = <float> self.width
+                    dst.h = <float> self.height
                     cdstrect = &dst
                 else:
                     raise TypeError('dstrect must be a position, rect, or None')

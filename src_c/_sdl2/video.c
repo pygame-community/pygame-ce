@@ -6466,9 +6466,8 @@ static PyObject *__pyx_f_6pygame_5_sdl2_5video_7Texture__frect_draw(struct __pyx
   Py_ssize_t __pyx_t_3;
   PyObject *__pyx_t_4 = NULL;
   float __pyx_t_5;
-  int __pyx_t_6;
+  PyObject *__pyx_t_6 = NULL;
   PyObject *__pyx_t_7 = NULL;
-  PyObject *__pyx_t_8 = NULL;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -6546,7 +6545,7 @@ static PyObject *__pyx_f_6pygame_5_sdl2_5video_7Texture__frect_draw(struct __pyx
  *                 if len(dstrect) == 2:
  *                     dst.x = dstrect[0]             # <<<<<<<<<<<<<<
  *                     dst.y = dstrect[1]
- *                     dst.w = self.width
+ *                     dst.w = <float> self.width
  */
         __pyx_t_4 = __Pyx_GetItemInt(__pyx_v_dstrect, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 389, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
@@ -6558,8 +6557,8 @@ static PyObject *__pyx_f_6pygame_5_sdl2_5video_7Texture__frect_draw(struct __pyx
  *                 if len(dstrect) == 2:
  *                     dst.x = dstrect[0]
  *                     dst.y = dstrect[1]             # <<<<<<<<<<<<<<
- *                     dst.w = self.width
- *                     dst.h = self.height
+ *                     dst.w = <float> self.width
+ *                     dst.h = <float> self.height
  */
         __pyx_t_4 = __Pyx_GetItemInt(__pyx_v_dstrect, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 390, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
@@ -6570,26 +6569,24 @@ static PyObject *__pyx_f_6pygame_5_sdl2_5video_7Texture__frect_draw(struct __pyx
         /* "pygame/_sdl2/video.pyx":391
  *                     dst.x = dstrect[0]
  *                     dst.y = dstrect[1]
- *                     dst.w = self.width             # <<<<<<<<<<<<<<
- *                     dst.h = self.height
+ *                     dst.w = <float> self.width             # <<<<<<<<<<<<<<
+ *                     dst.h = <float> self.height
  *                     cdstrect = &dst
  */
-        __pyx_t_6 = __pyx_v_self->width;
-        __pyx_v_dst.w = __pyx_t_6;
+        __pyx_v_dst.w = ((float)__pyx_v_self->width);
 
         /* "pygame/_sdl2/video.pyx":392
  *                     dst.y = dstrect[1]
- *                     dst.w = self.width
- *                     dst.h = self.height             # <<<<<<<<<<<<<<
+ *                     dst.w = <float> self.width
+ *                     dst.h = <float> self.height             # <<<<<<<<<<<<<<
  *                     cdstrect = &dst
  *                 else:
  */
-        __pyx_t_6 = __pyx_v_self->height;
-        __pyx_v_dst.h = __pyx_t_6;
+        __pyx_v_dst.h = ((float)__pyx_v_self->height);
 
         /* "pygame/_sdl2/video.pyx":393
- *                     dst.w = self.width
- *                     dst.h = self.height
+ *                     dst.w = <float> self.width
+ *                     dst.h = <float> self.height
  *                     cdstrect = &dst             # <<<<<<<<<<<<<<
  *                 else:
  *                     raise TypeError('dstrect must be a position, rect, or None')
@@ -6798,23 +6795,23 @@ static PyObject *__pyx_f_6pygame_5_sdl2_5video_7Texture__frect_draw(struct __pyx
  * 
  *     cpdef void draw(self, srcrect=None, dstrect=None, float angle=0, origin=None,
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_error); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 413, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_8 = NULL;
-    if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_7))) {
-      __pyx_t_8 = PyMethod_GET_SELF(__pyx_t_7);
-      if (likely(__pyx_t_8)) {
-        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_7);
-        __Pyx_INCREF(__pyx_t_8);
+    __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_error); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 413, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_t_7 = NULL;
+    if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_6))) {
+      __pyx_t_7 = PyMethod_GET_SELF(__pyx_t_6);
+      if (likely(__pyx_t_7)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_6);
+        __Pyx_INCREF(__pyx_t_7);
         __Pyx_INCREF(function);
-        __Pyx_DECREF_SET(__pyx_t_7, function);
+        __Pyx_DECREF_SET(__pyx_t_6, function);
       }
     }
-    __pyx_t_4 = (__pyx_t_8) ? __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_8) : __Pyx_PyObject_CallNoArg(__pyx_t_7);
-    __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+    __pyx_t_4 = (__pyx_t_7) ? __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_t_7) : __Pyx_PyObject_CallNoArg(__pyx_t_6);
+    __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
     if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 413, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_Raise(__pyx_t_4, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __PYX_ERR(0, 413, __pyx_L1_error)
@@ -6841,8 +6838,8 @@ static PyObject *__pyx_f_6pygame_5_sdl2_5video_7Texture__frect_draw(struct __pyx
   goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_7);
-  __Pyx_XDECREF(__pyx_t_8);
   __Pyx_AddTraceback("pygame._sdl2.video.Texture._frect_draw", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
