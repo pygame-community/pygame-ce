@@ -865,7 +865,7 @@ class TestCommand(Command):
 
     def finalize_options(self):
         if self.commandline:
-            self.testargs = self.commandline.split(" ")
+            self.testargs = filter(None, self.commandline.split(" "))
         self.copy = True if self.copy in ["1", "True", 1, True, "y", "yes"] else False
 
     def run(self):
@@ -897,7 +897,8 @@ class TestCommand(Command):
                 *self.testargs,
             ]
 
-        print("executing: ", " ".join(call_args))
+        call_args_as_string = " ".join(call_args)
+        print(f"executing: '{call_args_as_string}'")
         print("")
         import subprocess
 
