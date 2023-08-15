@@ -26,7 +26,7 @@
 #define DOC_MIXER_SOUND_GETLENGTH "get_length() -> seconds\nget the length of the Sound"
 #define DOC_MIXER_SOUND_GETRAW "get_raw() -> bytes\nreturn a bytestring copy of the Sound samples."
 #define DOC_MIXER_CHANNEL "Channel(id) -> Channel\nCreate a Channel object for controlling playback"
-#define DOC_MIXER_CHANNEL_GETID "get_id() -> int\nget the channel id for the Channel object"
+#define DOC_MIXER_CHANNEL_ID "id -> int\nget the channel id for the Channel object"
 #define DOC_MIXER_CHANNEL_PLAY "play(Sound, loops=0, maxtime=0, fade_ms=0) -> None\nplay a Sound on a specific Channel"
 #define DOC_MIXER_CHANNEL_STOP "stop() -> None\nstop playback on a Channel"
 #define DOC_MIXER_CHANNEL_PAUSE "pause() -> None\ntemporarily stop playback of a channel"

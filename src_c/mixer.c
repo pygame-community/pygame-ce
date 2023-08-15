@@ -1313,8 +1313,12 @@ chan_get_endevent(PyObject *self, PyObject *_null)
     return PyLong_FromLong(channeldata[channelnum].endevent);
 }
 
+static PyGetSetDef _channel_getsets[] = {
+    {"id", (getter)chan_get_id, NULL, DOC_MIXER_CHANNEL_ID, NULL},
+    {NULL, NULL, NULL, NULL, NULL}
+};
+
 static PyMethodDef channel_methods[] = {
-    {"get_id", (PyCFunction)chan_get_id, METH_NOARGS, DOC_MIXER_CHANNEL_GETID},
     {"play", (PyCFunction)chan_play, METH_VARARGS | METH_KEYWORDS,
      DOC_MIXER_CHANNEL_PLAY},
     {"queue", chan_queue, METH_O, DOC_MIXER_CHANNEL_QUEUE},
@@ -1385,6 +1389,7 @@ static PyTypeObject pgChannel_Type = {
     .tp_methods = channel_methods,
     .tp_init = (initproc)channel_init,
     .tp_new = PyType_GenericNew,
+    .tp_getset = _channel_getsets,
 };
 
 /*mixer module methods*/
