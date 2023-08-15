@@ -923,12 +923,12 @@ class ChannelTypeTest(unittest.TestCase):
         self.assertRaises(ValueError, lambda: ch.set_source_location(0, 256.0))
         self.assertRaises(TypeError, lambda: ch.set_source_location("", 6.25))
 
-    def test_get_id(self):
+    def test_id_getter(self):
         ch1 = mixer.Channel(1)
         ch2 = mixer.Channel(2)
 
-        self.assertEqual(ch1.get_id(), 1)
-        self.assertEqual(ch2.get_id(), 2)
+        self.assertEqual(ch1.id, 1)
+        self.assertEqual(ch2.id, 2)
 
 
 class ChannelInteractiveTest(unittest.TestCase):
