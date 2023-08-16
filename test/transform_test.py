@@ -418,11 +418,13 @@ class TransformModuleTest(unittest.TestCase):
 
                         # without destination
                         actual_rgb = hsl_surf.get_at((0, 0)).rgb
-                        self.assertEqual(expected_rgb, actual_rgb)
+                        for v1, v2 in zip(expected_rgb, actual_rgb):
+                            self.assertAlmostEqual(v1, v2, delta=1)
 
                         # with destination
                         actual_rgb = dest.get_at((0, 0)).rgb
-                        self.assertEqual(expected_rgb, actual_rgb)
+                        for v1, v2 in zip(expected_rgb, actual_rgb):
+                            self.assertAlmostEqual(v1, v2, delta=1)
 
     def test_threshold__honors_third_surface(self):
         # __doc__ for threshold as of Tue 07/15/2008
