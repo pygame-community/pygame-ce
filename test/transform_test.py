@@ -355,6 +355,36 @@ class TransformModuleTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             pygame.transform.hsl(s, 0, dest_surface=s3)
 
+    def test_hsl_return_value(self):
+        """Ensures transform.hsl() returns a Surface"""
+        sources = [pygame.Surface((32, 32), depth=d) for d in [16, 24, 32]]
+        destinations = [pygame.Surface((32, 32), depth=d) for d in [16, 24, 32]]
+
+        hsl = pygame.transform.hsl
+
+        for src, dst in zip(sources, destinations):
+            # test that the return value is a surface
+            self.assertIsInstance(hsl(src, 1), pygame.Surface)
+            self.assertIsInstance(hsl(src, 1, 0.2), pygame.Surface)
+            self.assertIsInstance(hsl(src, 1, 0.2, 0.2), pygame.Surface)
+
+            # test that the return value is a surface when a destination surface is given
+            self.assertIsInstance(hsl(src, 1, dest_surface=dst), pygame.Surface)
+            self.assertIsInstance(hsl(src, 1, 0.2, dest_surface=dst), pygame.Surface)
+            self.assertIsInstance(
+                hsl(src, 1, 0.2, 0.2, dest_surface=dst), pygame.Surface
+            )
+
+            # test that the destination surface is returned
+            self.assertIs(hsl(src, 1, dest_surface=dst), dst)
+            self.assertIs(hsl(src, 1, 0.2, dest_surface=dst), dst)
+            self.assertIs(hsl(src, 1, 0.2, 0.12, dest_surface=dst), dst)
+
+            # test that the returned surface isn't the source surface
+            self.assertIsNot(hsl(src, 1), src)
+            self.assertIsNot(hsl(src, 1, 0.2), src)
+            self.assertIsNot(hsl(src, 1, 0.2, 0.2), src)
+
     def test_hsl(self):
         """Ensures the hsl() function works correctly, meaning it correctly
         modifies the hue, saturation, and lightness of a surface."""
