@@ -256,6 +256,22 @@ class SurfaceTypeTest(unittest.TestCase):
         self.assertEqual(s1rect.size, s2rect.size)
         self.assertEqual(s2.get_at((10, 10)), color)
 
+    def test_deepcopy(self):
+        """Ensure a surface can be copied."""
+        color = (25, 25, 25, 25)
+        s1 = pygame.Surface((32, 32), pygame.SRCALPHA, 32)
+        s1.fill(color)
+
+        import copy
+
+        s2 = copy.deepcopy(s1)
+
+        s1rect = s1.get_rect()
+        s2rect = s2.get_rect()
+
+        self.assertEqual(s1rect.size, s2rect.size)
+        self.assertEqual(s2.get_at((10, 10)), color)
+
     def test_fill(self):
         """Ensure a surface can be filled."""
         color = (25, 25, 25, 25)

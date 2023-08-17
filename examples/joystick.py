@@ -65,7 +65,7 @@ def main():
 
         # Get count of joysticks.
         joystick_count = pygame.joystick.get_count()
-        lines.append(indent("Number of joysticks: {joystick_count}", indentation))
+        lines.append(indent(f"Number of joysticks: {joystick_count}", indentation))
         indentation += 1
 
         # For each joystick:
