@@ -12,10 +12,10 @@ What Are Special Flags?
     masking or manipulation.
     They are used with the following methods:
 
-        - :meth:`Surface.blit`
-        - :meth:`Surface.blits`
-        - :meth:`Surface.blits`
-        - :meth:`Surface.fill`
+        - :meth:`pygame.Surface.blit`
+        - :meth:`pygame.Surface.blits`
+        - :meth:`pygame.Surface.blits`
+        - :meth:`pygame.Surface.fill`
 
     Specifically they are passed as the ``special_flags`` argument of these methods by using
     ``pygame.BLEND_*`` constants and allow you to choose how the colors of the surfaces are
@@ -94,7 +94,7 @@ Special Flags List
            accurate blending results when the color channels are already multiplied
            by the surface alpha channel.
            You should only use this blend mode if you previously premultiplied the Surface with
-           :meth:`Surface.premul_alpha()`.
+           :meth:`pygame.Surface.premul_alpha()`.
 
     .. versionaddedold:: 2.0.0
 
