@@ -354,6 +354,10 @@ _pxarray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     stride0 = (Py_ssize_t)surf->format->BytesPerPixel;
     stride1 = (Py_ssize_t)surf->pitch;
     pixels = surf->pixels;
+    if (pixels == NULL) {
+        return RAISE(PyExc_ValueError,
+                     "Cannot create pixelarray on zero-sized Surface");
+    }
     if (stride0 < 1 || stride0 > 4) {
         return RAISE(PyExc_ValueError,
                      "unsupported bit depth for reference array");

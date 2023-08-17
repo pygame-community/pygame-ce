@@ -142,8 +142,7 @@ class MixerModuleTest(unittest.TestCase):
         mixer.quit()
         self.assertRaises(pygame.error, mixer.get_num_channels)
 
-    # TODO: FIXME: appveyor and pypy (on linux) fails here sometimes.
-    @unittest.skipIf(sys.platform.startswith("win"), "See pygame-ce issue 601.")
+    # TODO: FIXME: pypy (on linux) fails here sometimes.
     @unittest.skipIf(IS_PYPY, "random errors here with pypy")
     def test_sound_args(self):
         def get_bytes(snd):
@@ -1018,6 +1017,10 @@ class SoundTypeTest(unittest.TestCase):
         sound2 = mixer.Sound(file=path)
         self.assertIsInstance(sound1, mixer.Sound)
         self.assertIsInstance(sound2, mixer.Sound)
+
+        self.assertRaises(
+            FileNotFoundError, mixer.Sound, pathlib.Path("/aWH8ryIyWt5BL7xf327e")
+        )  # this path should not exist on any system really
 
     def todo_test_sound__from_buffer(self):
         """Ensure Sound() creation with a buffer works."""

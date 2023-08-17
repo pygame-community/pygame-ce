@@ -336,6 +336,7 @@ static struct PyMethodDef surface_methods[] = {
 
     {"copy", (PyCFunction)surf_copy, METH_NOARGS, DOC_SURFACE_COPY},
     {"__copy__", (PyCFunction)surf_copy, METH_NOARGS, DOC_SURFACE_COPY},
+    {"__deepcopy__", (PyCFunction)surf_copy, METH_O, DOC_SURFACE_COPY},
     {"convert", (PyCFunction)surf_convert, METH_VARARGS, DOC_SURFACE_CONVERT},
     {"convert_alpha", (PyCFunction)surf_convert_alpha, METH_VARARGS,
      DOC_SURFACE_CONVERTALPHA},
