@@ -479,20 +479,29 @@ static int
 pg_IntFromObj(PyObject *obj, int *val)
 {
     int tmp_val;
+    PyObject *tmp_obj;
+    SDL_bool do_decref = SDL_FALSE;
 
-    if (PyFloat_Check(obj)) {
-        /* Python3.8 complains with deprecation warnings if we pass
-         * floats to PyLong_AsLong.
-         */
-        double dv = PyFloat_AsDouble(obj);
-        tmp_val = (int)dv;
+    if (PyLong_Check(obj)) {
+        tmp_obj = obj;
+    }
+    else if (PyNumber_Check(obj)) {
+        tmp_obj = PyNumber_Long(obj);
+        if (!tmp_obj)
+            return 0;
+
+        do_decref = SDL_TRUE;
     }
     else {
-        tmp_val = PyLong_AsLong(obj);
+        return 0;  // Not a number type
     }
 
+    tmp_val = PyLong_AsLong(tmp_obj);
+
+    if (do_decref)
+        Py_DECREF(tmp_obj);
+
     if (tmp_val == -1 && PyErr_Occurred()) {
-        PyErr_Clear();
         return 0;
     }
     *val = tmp_val;
