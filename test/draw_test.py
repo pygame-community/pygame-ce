@@ -5686,10 +5686,10 @@ class DrawCircleMixin:
 
         # way way outside the screen
         test_centers = [
-            (-1e30, height / 2),
-            (1e30, height / 2),
-            (width / 2, -1e30),
-            (width / 2, 1e30),
+            (-(1 << 30), height / 2),
+            (1 << 30, height / 2),
+            (width / 2, -(1 << 30)),
+            (width / 2, 1 << 30),
         ]
         for center in test_centers:
             surf.fill("black")
