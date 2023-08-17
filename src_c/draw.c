@@ -683,7 +683,10 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!pg_IntFromObj(radiusobj, &radius)) {
-        PyErr_SetString(PyExc_TypeError, "radius argument must be a number");
+        if (!PyErr_Occurred()) {
+            PyErr_SetString(PyExc_TypeError,
+                            "radius argument must be a number");
+        }
         return 0;
     }
 
