@@ -1941,15 +1941,6 @@ class RectTypeTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             collide_item = rect.collidedict(rect_values)
 
-    def test_collidedict__invalid_values_format(self):
-        """Ensures collidedict correctly handles invalid values parameters."""
-        rect = Rect(0, 0, 1, 1)
-        d = {}
-
-        for invalid_param in (None, d, 1.1):
-            with self.assertRaises(TypeError):
-                collide_item = rect.collidedict(d, invalid_param)
-
     def test_collidedict__kwarg(self):
         """Ensures the values keyword works with collidedict"""
         rects = [Rect(i, i, i, i) for i in range(1, 5)]
@@ -2219,17 +2210,6 @@ class RectTypeTest(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             collide_items = rect.collidedictall(rect_values)
-
-    def test_collidedictall__invalid_values_format(self):
-        """Ensures collidedictall correctly handles invalid values
-        parameters.
-        """
-        rect = Rect(0, 0, 1, 1)
-        d = {}
-
-        for invalid_param in (None, d, 1.1):
-            with self.assertRaises(TypeError):
-                collide_items = rect.collidedictall(d, invalid_param)
 
     def test_collidedictall__kwarg(self):
         """Ensures the values keyword works with collidedictall"""
