@@ -78,7 +78,7 @@ jobs:
           apt-get update --fix-missing
           apt-get upgrade -y
           apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libfreetype6-dev libportmidi-dev libjpeg-dev fontconfig -y
-          apt-get install python3-setuptools python3-dev python3-pip python3-wheel python3-sphinx=7.1.2 -y
+          apt-get install python3-setuptools python3-dev python3-pip python3-wheel python3-sphinx=="7.1.2" -y
 
         # Build a wheel, install it for running unit tests
         run: |
