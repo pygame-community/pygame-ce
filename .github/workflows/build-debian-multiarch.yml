@@ -37,6 +37,8 @@ concurrency:
 
 jobs:
   build-multiarch:
+    # Permissions
+    permissions: write-all
     name: Debian (Bullseye - 11) [${{ matrix.arch }}]
     runs-on: ubuntu-22.04
 
