@@ -74,20 +74,25 @@ jobs:
         # builds don't have to re-install them. The image layer is cached
         # publicly in your project's package repository, so it is vital that
         # no secrets are present in the container state or logs.
+        # apt-get install python3-setuptools python3-dev python3-pip python3-wheel python3-sphinx -y
         install: |
           apt-get update --fix-missing
           apt-get upgrade -y
           apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libfreetype6-dev libportmidi-dev libjpeg-dev fontconfig -y
-          apt-get install python3-setuptools python3-dev python3-pip python3-wheel python3-sphinx=="7.1.2" -y
+          apt-get install python3-dev python3-pip python3-venv
 
         # Build a wheel, install it for running unit tests
         run: |
+          echo "\nCreating virtual environment\n"
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install setuptools wheel sphinx"<7.2.0"
           export PIP_CONFIG_FILE=buildconfig/pip_config.ini
           echo "\nBuilding pygame wheel\n"
-          python3 setup.py docs
-          pip3 wheel . --wheel-dir /artifacts -vvv
+          python setup.py docs
+          pip wheel . --wheel-dir /artifacts -vvv
           echo "\nInstalling wheel\n"
-          pip3 install --no-index --pre --find-links /artifacts pygame-ce
+          pip install --no-index --pre --find-links /artifacts pygame-ce
           echo "\nRunning tests\n"
           export SDL_VIDEODRIVER=dummy
           export SDL_AUDIODRIVER=disk

@@ -64,7 +64,7 @@ jobs:
 
       # command that runs before every build
       CIBW_BEFORE_BUILD: |
-        pip install Sphinx=="7.1.2"
+        pip install Sphinx"<7.2.0"
         python setup.py docs
 
       CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,music,timing --time_out 300
