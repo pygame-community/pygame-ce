@@ -170,7 +170,7 @@ jobs:
         run: |
           set DISTUTILS_USE_SDK=1
           set MSSdk=1
-          python -m pip install setuptools wheel requests numpy Sphinx
+          python -m pip install setuptools wheel requests numpy Sphinx=="7.1.2"
           python setup.py docs
           python -m pip --disable-pip-version-check install cibuildwheel==2.14.1
           python -m cibuildwheel --output-dir wheelhouse

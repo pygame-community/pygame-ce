@@ -40,7 +40,7 @@ for PYVER in $SUPPORTED_PYTHONS; do
 	    PYTHON="/opt/python/${PYVER}/bin/pypy"
 	fi
 
-    ${PYTHON} -m pip install Sphinx
+    ${PYTHON} -m pip install Sphinx=="7.1.2"
     cd io
     ${PYTHON} setup.py docs
     cd ..
