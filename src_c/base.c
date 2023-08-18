@@ -542,14 +542,33 @@ pg_TwoIntsFromObj(PyObject *obj, int *val1, int *val2)
 static int
 pg_FloatFromObj(PyObject *obj, float *val)
 {
-    float f = (float)PyFloat_AsDouble(obj);
+    double tmp_val;
+    PyObject *tmp_obj;
+    SDL_bool do_decref = SDL_FALSE;
 
-    if (f == -1 && PyErr_Occurred()) {
-        PyErr_Clear();
-        return 0;
+    if (PyFloat_Check(obj)) {
+        tmp_obj = obj;
+    }
+    else if (PyNumber_Check(obj)) {
+        tmp_obj = PyNumber_Float(obj);
+        if (!tmp_obj)
+            return 0;
+
+        do_decref = SDL_TRUE;
+    }
+    else {
+        return 0;  // Not a number type
     }
 
-    *val = f;
+    tmp_val = PyFloat_AsDouble(tmp_obj);
+
+    if (do_decref)
+        Py_DECREF(tmp_obj);
+
+    if (tmp_val == -1 && PyErr_Occurred()) {
+        return 0;
+    }
+    *val = (float)tmp_val;
     return 1;
 }
 
