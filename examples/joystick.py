@@ -58,7 +58,8 @@ def main():
                     print(f"Joystick {event.instance_id} disconnected")
                 else:
                     print(
-                        "Tried to disconnect Joystick {event.instance_id}, but couldn't find it in the joystick list"
+                        f"Tried to disconnect Joystick {event.instance_id}, " 
+                        "but couldn't find it in the joystick list"
                     )
 
         # Drawing step
@@ -74,7 +75,6 @@ def main():
         indentation += 1
 
         # For each joystick:
-        j = 0
         for joystick in joysticks.values():
             jid = joystick.get_instance_id()
 

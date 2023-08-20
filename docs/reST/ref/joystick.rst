@@ -118,7 +118,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       Initialize the joystick, if it has been closed. It is safe to call this
       even if the joystick is already initialized.
 
-      .. deprecatedold:: 2.3.1
+      .. deprecatedold:: 2.0.0
 
          In future it will not be possible to reinitialise a closed Joystick
          object.
@@ -150,12 +150,12 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
 
       | :sl:`get the device index (deprecated)`
       | :sg:`get_id() -> int`
-      
+
       Returns the original device index for this device. This is the same
       value that was passed to the ``Joystick()`` constructor. This method can
       safely be called while the Joystick is not initialized.
 
-      .. deprecatedold:: 2.3.1
+      .. deprecatedold:: 2.0.0
 
          The original device index is not useful in pygame 2. Use
          :meth:`.get_instance_id` instead. 
