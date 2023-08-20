@@ -36,6 +36,9 @@
 #elif defined(__APPLE__)
 /* Mac does not implement lseek64 */
 #define PG_LSEEK lseek
+#elif defined(__EMSCRIPTEN__)
+/* emsdk mvp 1.0 does not implement lseek64  */
+#define PG_LSEEK lseek
 #else
 #define PG_LSEEK lseek64
 #endif
