@@ -112,6 +112,12 @@ class WindowTypeTest(unittest.TestCase):
         self.assertEqual(self.win.opacity, 0)
         self.win.opacity = 1
         self.assertEqual(self.win.opacity, 1)
+        self.win.opacity = -0.1
+        self.assertEqual(self.win.opacity, 0)
+        self.win.opacity = 1.1
+        self.assertEqual(self.win.opacity, 1)
+
+        self.assertRaises(TypeError, lambda: setattr(self.win, "opacity", "dummy str"))
 
     def test_init_flags(self):
         # test borderless
