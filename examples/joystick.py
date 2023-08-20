@@ -58,7 +58,7 @@ def main():
                     print(f"Joystick {event.instance_id} disconnected")
                 else:
                     print(
-                        f"Tried to disconnect Joystick {event.instance_id}, " 
+                        f"Tried to disconnect Joystick {event.instance_id}, "
                         "but couldn't find it in the joystick list"
                     )
 
