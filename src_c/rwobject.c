@@ -39,8 +39,11 @@
 #elif defined(__EMSCRIPTEN__)
 /* emsdk mvp 1.0 does not implement lseek64  */
 #define PG_LSEEK lseek
-#else
+#elif defined(_LARGEFILE64_SOURCE)
+/* for glibc system that support LFS */
 #define PG_LSEEK lseek64
+#else
+#define PG_LSEEK lseek
 #endif
 
 typedef struct {
