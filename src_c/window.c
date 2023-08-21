@@ -6,8 +6,9 @@
 
 #include "doc/sdl2_video_doc.h"
 
-#ifndef PYGAMEAPI_DISPLAY_INTERNAL  // to pass the static check
-// Copied from display.c
+// prevent that code block copied from display.c from being linked twice
+#ifndef BUILD_STATIC
+
 #if !defined(__APPLE__)
 static char *icon_defaultname = "pygame_icon.bmp";
 static int icon_colorkey = 0;
@@ -93,7 +94,7 @@ display_resource_end:
     return result;
 }
 
-#endif  // PYGAMEAPI_DISPLAY_INTERNAL
+#endif  // BUILD_STATIC
 
 static PyTypeObject pgWindow_Type;
 

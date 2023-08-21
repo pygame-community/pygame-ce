@@ -135,8 +135,6 @@ jobs:
 
       CIBW_BUILD: ${{ matrix.pyversions }}
 
-      CIBW_PRERELEASE_PYTHONS: True # for 3.12 testing
-
       # Build arm64 and x86_64 wheels too on an Intel runner.
       # Note that the arm64 wheels cannot be tested on CI in this configuration
       CIBW_ARCHS: ${{ matrix.macarch }}
@@ -149,7 +147,7 @@ jobs:
         bash ./install_mac_deps.sh
 
       CIBW_BEFORE_BUILD: |
-        pip install requests numpy Sphinx
+        pip install requests numpy Sphinx"<7.2.0"
         python setup.py docs
         cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
 

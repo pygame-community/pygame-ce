@@ -1001,6 +1001,16 @@ _color_set_hsva(pgColorObject *color, PyObject *value, void *closure)
         return -1;
     }
 
+    if (PySequence_Size(value) > 4) {
+        if (PyErr_WarnEx(
+                PyExc_DeprecationWarning,
+                "Passing sequences of size larger than 4 is deprecated, doing "
+                "this will error in a future version",
+                1) == -1) {
+            return -1;
+        }
+    }
+
     /* H */
     item = PySequence_GetItem(value, 0);
     if (!item || !_get_double(item, &(hsva[0])) || hsva[0] < 0 ||
@@ -1166,6 +1176,16 @@ _color_set_hsla(pgColorObject *color, PyObject *value, void *closure)
         return -1;
     }
 
+    if (PySequence_Size(value) > 4) {
+        if (PyErr_WarnEx(
+                PyExc_DeprecationWarning,
+                "Passing sequences of size larger than 4 is deprecated, doing "
+                "this will error in a future version",
+                1) == -1) {
+            return -1;
+        }
+    }
+
     /* H */
     item = PySequence_GetItem(value, 0);
     if (!item || !_get_double(item, &(hsla[0])) || hsla[0] < 0 ||
@@ -1326,6 +1346,21 @@ _color_set_i1i2i3(pgColorObject *color, PyObject *value, void *closure)
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("i1i2i3", value);
 
+    if (!PySequence_Check(value) || PySequence_Size(value) < 3) {
+        PyErr_SetString(PyExc_ValueError, "invalid I1I2I3 value");
+        return -1;
+    }
+
+    if (PySequence_Size(value) > 3) {
+        if (PyErr_WarnEx(
+                PyExc_DeprecationWarning,
+                "Passing sequences of size larger than 3 is deprecated, doing "
+                "this will error in a future version",
+                1) == -1) {
+            return -1;
+        }
+    }
+
     /* I1 */
     item = PySequence_GetItem(value, 0);
     if (!item || !_get_double(item, &(i1i2i3[0])) || i1i2i3[0] < 0 ||
@@ -1392,6 +1427,21 @@ _color_set_cmy(pgColorObject *color, PyObject *value, void *closure)
     double cmy[3] = {0, 0, 0};
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("cmy", value);
+
+    if (!PySequence_Check(value) || PySequence_Size(value) < 3) {
+        PyErr_SetString(PyExc_ValueError, "invalid CMY value");
+        return -1;
+    }
+
+    if (PySequence_Size(value) > 3) {
+        if (PyErr_WarnEx(
+                PyExc_DeprecationWarning,
+                "Passing sequences of size larger than 3 is deprecated, doing "
+                "this will error in a future version",
+                1) == -1) {
+            return -1;
+        }
+    }
 
     /* I1 */
     item = PySequence_GetItem(value, 0);

@@ -236,14 +236,6 @@ except (ImportError, OSError):
 
 
 try:
-    from pygame.overlay import Overlay
-except (ImportError, OSError):
-
-    def Overlay(format, size):  # pylint: disable=unused-argument
-        _attribute_undefined("pygame.Overlay")
-
-
-try:
     import pygame.time
     from pygame.time import Clock
 except (ImportError, OSError):
