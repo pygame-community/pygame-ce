@@ -1,5 +1,5 @@
 /* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
-#define DOC_SURFACE "Surface((width, height), flags=0, depth=0, masks=None) -> Surface\nSurface((width, height), flags=0, Surface) -> Surface\npygame object for representing images"
+#define DOC_SURFACE "Surface((width, height), flags=0, depth=0, masks=None, color=None) -> Surface\nSurface((width, height), flags=0, Surface) -> Surface\npygame object for representing images"
 #define DOC_SURFACE_BLIT "blit(source, dest, area=None, special_flags=0) -> Rect\ndraw one image onto another"
 #define DOC_SURFACE_BLITS "blits(blit_sequence=((source, dest), ...), doreturn=True) -> [Rect, ...] or None\nblits(((source, dest, area), ...)) -> [Rect, ...]\nblits(((source, dest, area, special_flags), ...)) -> [Rect, ...]\ndraw many images onto another"
 #define DOC_SURFACE_FBLITS "fblits(blit_sequence=((source, dest), ...), special_flags=0) -> None\ndraw many surfaces onto the calling surface at their corresponding location and the same special_flags"

@@ -8,7 +8,7 @@
 .. class:: Surface
 
    | :sl:`pygame object for representing images`
-   | :sg:`Surface((width, height), flags=0, depth=0, masks=None) -> Surface`
+   | :sg:`Surface((width, height), flags=0, depth=0, masks=None, color=None) -> Surface`
    | :sg:`Surface((width, height), flags=0, Surface) -> Surface`
 
    A pygame Surface is used to represent any image. The Surface has a fixed
@@ -31,6 +31,9 @@
 
    Both flags are only a request, and may not be possible for all displays and
    formats.
+
+   You can also set a color to fill the Surface with using the color argument. This is a
+   shortcut for calling :meth:`fill()` immediately after construction.
 
    Advance users can combine a set of bitmasks with a depth value. The masks
    are a set of 4 integers representing which bits in a pixel will represent

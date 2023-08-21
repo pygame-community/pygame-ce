@@ -49,6 +49,7 @@ class Surface:
         flags: int = 0,
         depth: int = 0,
         masks: Optional[ColorValue] = None,
+        color: Optional[ColorValue] = None,
     ) -> None: ...
     @overload
     def __init__(
