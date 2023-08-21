@@ -542,15 +542,15 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
 {
     Uint32 flags = 0;
     int width, height;
-    PyObject *depth = NULL, *masks = NULL, *size = NULL;
+    PyObject *depth = NULL, *masks = NULL, *size = NULL, *color_obj = NULL;
     int bpp;
     Uint32 Rmask, Gmask, Bmask, Amask;
     SDL_Surface *surface;
     SDL_PixelFormat default_format;
 
-    char *kwids[] = {"size", "flags", "depth", "masks", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|iOO", kwids, &size, &flags,
-                                     &depth, &masks))
+    char *kwids[] = {"size", "flags", "depth", "masks", "color", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|iOOO", kwids, &size,
+                                     &flags, &depth, &masks, &color_obj))
         return -1;
 
     if (PySequence_Check(size) && PySequence_Length(size) == 2) {
@@ -756,6 +756,24 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
         self->surf = surface;
         self->owner = 1;
         self->subsurface = NULL;
+    }
+
+    if (color_obj && color_obj != Py_None) {
+        Uint8 rgba[4];
+        Uint32 color;
+        if (PyLong_Check(color_obj))
+            color = (Uint32)PyLong_AsLong(color_obj);
+        else if (PyLong_Check(color_obj))
+            color = (Uint32)PyLong_AsUnsignedLong(color_obj);
+        else if (pg_RGBAFromFuzzyColorObj(color_obj, rgba))
+            color = pg_map_rgba(surface, rgba[0], rgba[1], rgba[2], rgba[3]);
+        else
+            return NULL; /* pg_RGBAFromFuzzyColorObj set an exception for us */
+
+        if (SDL_FillRect(surface, NULL, color) != 0) {
+            PyErr_SetString(pgExc_SDLError, SDL_GetError());
+            return -1;
+        }
     }
 
     return 0;
