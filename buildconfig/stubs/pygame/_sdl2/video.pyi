@@ -4,7 +4,7 @@ from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from .._common import RectValue, Literal
+from .._common import RectValue, Literal, Coordinate
 
 WINDOWPOS_UNDEFINED: int
 WINDOWPOS_CENTERED: int
