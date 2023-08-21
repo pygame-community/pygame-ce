@@ -143,35 +143,9 @@ open just in case something obvious comes up.
    | :sl:`get the current power supply state`
    | :sg:`get_pref_power_state() -> power_state`
 
-   Returns a dict of power supply state.
+   Returns a :class:`_PowerState` object representing the power supply state.
+   
    Returns ``None`` if the power state is unknown.
-   
-   Here is an example of power state dict.
-   ::
-
-     {
-          'has_battery': True,
-          'plugged_in': False, 
-          'charging': False, 
-          'battery_seconds': None, 
-          'battery_percent': 91,
-     }
-
-   Key descriptions:
-
-   ``has_battery``: bool value, represents if current device has a battery.
-
-   ``plugged_in``: bool value, represents if AC power is plugged in, no matter 
-   whether the battery is fully charged.
-
-   ``charging``: bool value, represents if the battery is charging. If the battery
-   is not charging or is full, this value will be ``False``.
-
-   ``battery_seconds``: int value, represents the seconds of battery life left.
-   Can be ``None`` if the value is unknown.
-   
-   ``battery_percent``: int value, represents the percentage of battery life left.
-   Can be ``None`` if the value is unknown.
 
    You should never take a battery status as absolute truth. Batteries
    (especially failing batteries) are delicate hardware, and the values
@@ -186,4 +160,51 @@ open just in case something obvious comes up.
    It's possible a platform can only report battery percentage or time left
    but not both.
 
-   .. versionadded:: 2.3.1
+   .. versionadded:: 2.4.0
+
+.. class:: _PowerState
+
+   | :sl:`pygame object encapsulating power supply information`
+
+   **Attributes:**
+
+   **battery_seconds**
+
+      An integer, representing the seconds of battery life left.
+      
+      Could be ``None`` if the value is unknown.
+   
+   **battery_percent**
+
+      An integer between 0 and 100, representing the percentage of battery
+      life left.
+      
+      Could be ``None`` if the value is unknown.
+   
+   **on_battery**
+
+      ``True`` if the device is running on the battery (not plugged in).
+   
+   **no_battery**
+
+      ``True`` if the device has no battery available (plugged in).
+   
+   **charging**
+
+      ``True`` if the device is charging battery (plugged in).
+   
+   **charged**
+
+      ``True`` if the battery of the device is fully charged (plugged in).
+   
+   **plugged_in**
+
+      ``True`` if the device is plugged in.
+      Equivalent to ``not on_battery``.
+   
+   **has_battery**
+
+      ``True`` if the device has battery.
+      Equivalent to ``on_battery or not no_battery``
+
+   .. versionadded:: 2.4.0

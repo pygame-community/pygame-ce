@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, final
 
 from typing_extensions import TypedDict
 
@@ -26,12 +26,16 @@ class _Locale(TypedDict):
 
 def get_cpu_instruction_sets() -> _InstructionSets: ...
 def get_total_ram() -> int: ...
-class _PowerState(TypedDict):
-    has_battery: bool
-    plugged_in: bool
-    charging: bool
+@final
+class _PowerState:
     battery_seconds: Optional[int]
     battery_percent: Optional[int]
+    on_battery: bool
+    no_battery: bool
+    charging: bool
+    charged: bool
+    plugged_in: bool
+    has_battery: bool
 
 def get_pref_path(org: str, app: str) -> str: ...
 def get_pref_locales() -> List[_Locale]: ...

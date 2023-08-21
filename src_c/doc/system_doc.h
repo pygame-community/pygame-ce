@@ -5,3 +5,4 @@
 #define DOC_SYSTEM_GETPREFPATH "get_pref_path(org, app) -> path\nget a writeable folder for your app"
 #define DOC_SYSTEM_GETPREFLOCALES "get_pref_locales() -> list[locale]\nget preferred locales set on the system"
 #define DOC_SYSTEM_GETPOWERSTATE "get_pref_power_state() -> power_state\nget the current power supply state"
+#define DOC_SYSTEM_POWERSTATE "pygame object encapsulating power supply information"

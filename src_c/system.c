@@ -161,17 +161,109 @@ error:
 #endif
 }
 
+static PyTypeObject _PowerState_Type;
+
+typedef struct {
+    PyObject_HEAD PyObject *dict;
+} _PowerStateObject;
+
+static void
+power_state_dealloc(PyObject *self)
+{
+    _PowerStateObject *power_state = (_PowerStateObject *)self;
+    Py_XDECREF(power_state->dict);
+    Py_TYPE(self)->tp_free(self);
+}
+
+PyObject *
+power_state_repr(_PowerStateObject *self)
+{
+    if (!self->dict)
+        return PyUnicode_FromString("<_PowerState(Invalid)>");
+    PyObject *dict_repr = PyObject_Repr(self->dict);
+    if (!dict_repr)
+        return NULL;
+
+    const char *dict_repr_str = PyUnicode_AsUTF8(dict_repr);
+    if (!dict_repr_str)
+        return NULL;
+    PyObject *return_value =
+        PyUnicode_FromFormat("<_PowerState(%s)>", dict_repr_str);
+    Py_DECREF(dict_repr);
+
+    return return_value;
+}
+
+#ifdef PYPY_VERSION
+/* Because pypy does not work with the __dict__ tp_dictoffset. */
+PyObject *
+power_state_get_attr(PyObject *o, PyObject *attr_name)
+{
+    PyObject *result =
+        PyDict_GetItem(((_PowerStateObject *)o)->dict, attr_name);
+    if (!result) {
+        return PyObject_GenericGetAttr(o, attr_name);
+    }
+    return result;
+}
+
+int
+power_state_set_attr(PyObject *o, PyObject *name, PyObject *value)
+{
+    /* if the variable is in the dict, deal with it there.
+       else if it's a normal attribute set it there.
+       else if it's not an attribute, or in the dict, set it in the dict.
+    */
+    int dictResult;
+    int setInDict = 0;
+    PyObject *result = PyDict_GetItem(((_PowerStateObject *)o)->dict, name);
+
+    if (result) {
+        setInDict = 1;
+    }
+    else {
+        result = PyObject_GenericGetAttr(o, name);
+        if (!result) {
+            PyErr_Clear();
+            setInDict = 1;
+        }
+    }
+
+    if (setInDict) {
+        dictResult =
+            PyDict_SetItem(((_PowerStateObject *)o)->dict, name, value);
+        if (dictResult) {
+            return -1;
+        }
+        return 0;
+    }
+    else {
+        return PyObject_GenericSetAttr(o, name, value);
+    }
+}
+#endif
+
+static PyTypeObject _PowerState_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.system._PowerState",
+    .tp_basicsize = sizeof(_PowerStateObject),
+    .tp_dealloc = (destructor)power_state_dealloc,
+    .tp_doc = DOC_SYSTEM_POWERSTATE,
+    .tp_new = PyType_GenericNew,
+    .tp_dictoffset = offsetof(_PowerStateObject, dict),
+    .tp_repr = (reprfunc)power_state_repr,
+#ifdef PYPY_VERSION
+    .tp_getattro = power_state_get_attr,
+    .tp_setattro = power_state_set_attr,
+#endif
+};
+
 static PyObject *
 pg_system_get_power_state(PyObject *self, PyObject *_null)
 {
     int sec, pct;
     SDL_PowerState power_state;
-    PyObject *return_dict = NULL;
-    PyObject *sec_py = NULL;
-    PyObject *pct_py = NULL;
-    PyObject *plugged_in;
-    PyObject *has_battery;
-    PyObject *charging;
+    PyObject *return_dict;
+    PyObject *sec_py, *pct_py;
 
     power_state = SDL_GetPowerInfo(&sec, &pct);
 
@@ -179,91 +271,53 @@ pg_system_get_power_state(PyObject *self, PyObject *_null)
         Py_RETURN_NONE;
     }
 
-    return_dict = PyDict_New();
-    if (!return_dict) {
-        goto error;
-    }
-
-    switch (power_state) {
-        case SDL_POWERSTATE_ON_BATTERY:
-            has_battery = Py_True;
-            plugged_in = Py_False;
-            charging = Py_False;
-            break;
-        case SDL_POWERSTATE_NO_BATTERY:
-            has_battery = Py_False;
-            plugged_in = Py_True;
-            charging = Py_False;
-            break;
-        case SDL_POWERSTATE_CHARGING:
-            has_battery = Py_True;
-            plugged_in = Py_True;
-            charging = Py_True;
-            break;
-        case SDL_POWERSTATE_CHARGED:
-            has_battery = Py_True;
-            plugged_in = Py_True;
-            charging = Py_False;
-            break;
-
-        default:
-            PyErr_SetString(PyExc_SystemError, "Unexpected power state");
-            goto error;
-            break;
-    }
-
     if (sec == -1) {
         sec_py = Py_None;
-        Py_INCREF(sec_py);
+        Py_INCREF(Py_None);
     }
     else {
-        sec_py = PyLong_FromLong((long)sec);
-        if (!sec_py) {
-            goto error;
-        }
+        sec_py = PyLong_FromLong(sec);
     }
 
     if (pct == -1) {
         pct_py = Py_None;
-        Py_INCREF(pct_py);
+        Py_INCREF(Py_None);
     }
     else {
-        pct_py = PyLong_FromLong((long)pct);
-        if (!pct_py) {
-            goto error;
-        }
+        pct_py = PyLong_FromLong(pct);
     }
+    // Error check will be done in Py_BuildValue
 
-    if (PyDict_SetItemString(return_dict, "has_battery", has_battery)) {
-        goto error;
-    }
+    int on_battery = (power_state == SDL_POWERSTATE_ON_BATTERY);
+    int no_battery = (power_state == SDL_POWERSTATE_NO_BATTERY);
+    int charging = (power_state == SDL_POWERSTATE_CHARGING);
+    int charged = (power_state == SDL_POWERSTATE_CHARGED);
 
-    if (PyDict_SetItemString(return_dict, "plugged_in", plugged_in)) {
-        goto error;
-    }
+    // clang-format off
+    return_dict = Py_BuildValue(
+        "{s:N,s:N,s:N,s:N,s:N,s:N,s:N,s:N}",
+        "battery_percent", pct_py,
+        "battery_seconds", sec_py,
+        "on_battery", PyBool_FromLong(on_battery),
+        "no_battery", PyBool_FromLong(no_battery),
+        "charging", PyBool_FromLong(charging), 
+        "charged", PyBool_FromLong(charged),
+        "plugged_in", PyBool_FromLong(!on_battery), 
+        "has_battery", PyBool_FromLong(on_battery || !no_battery)
+    );
+    // clang-format on
 
-    if (PyDict_SetItemString(return_dict, "charging", charging)) {
-        goto error;
-    }
+    if (!return_dict)
+        return NULL;
 
-    if (PyDict_SetItemString(return_dict, "battery_seconds", sec_py)) {
-        goto error;
-    }
+    _PowerStateObject *power_state_py =
+        PyObject_New(_PowerStateObject, &_PowerState_Type);
+    if (!power_state_py)
+        return PyErr_NoMemory();
 
-    if (PyDict_SetItemString(return_dict, "battery_percent", pct_py)) {
-        goto error;
-    }
+    power_state_py->dict = return_dict;
 
-    Py_DECREF(sec_py);
-    Py_DECREF(pct_py);
-
-    return return_dict;
-
-error:
-    Py_XDECREF(sec_py);
-    Py_XDECREF(pct_py);
-    Py_XDECREF(return_dict);
-    return NULL;
+    return (PyObject *)power_state_py;
 }
 
 static PyMethodDef _system_methods[] = {
@@ -298,9 +352,21 @@ MODINIT_DEFINE(system)
         return NULL;
     }
 
+    if (PyType_Ready(&_PowerState_Type) < 0) {
+        return NULL;
+    }
+
     /* create the module */
     module = PyModule_Create(&_module);
     if (!module) {
+        return NULL;
+    }
+
+    Py_INCREF(&_PowerState_Type);
+    if (PyModule_AddObject(module, "_PowerState",
+                           (PyObject *)&_PowerState_Type)) {
+        Py_DECREF(&_PowerState_Type);
+        Py_DECREF(module);
         return NULL;
     }
 

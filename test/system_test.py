@@ -79,20 +79,44 @@ class SystemModuleTest(unittest.TestCase):
 
     def test_get_power_state(self):
         power_state = pygame.system.get_power_state()
-        self.assertIsInstance(power_state, (type(None), dict))
+        self.assertIsInstance(power_state, (type(None), pygame.system._PowerState))
 
         expected_types = {
-            "has_battery": bool,
-            "plugged_in": bool,
-            "charging": bool,
             "battery_seconds": (type(None), int),
             "battery_percent": (type(None), int),
+            "on_battery": bool,
+            "no_battery": bool,
+            "charging": bool,
+            "charged": bool,
+            "plugged_in": bool,
+            "has_battery": bool,
         }
 
-        if isinstance(power_state, dict):
-            for key in expected_types:
-                self.assertIn(key, power_state)
-                self.assertIsInstance(power_state[key], expected_types[key])
+        if power_state is not None:
+            for attr_name in expected_types:
+                self.assertTrue(hasattr(power_state, attr_name))
+                self.assertIsInstance(
+                    getattr(power_state, attr_name), expected_types[attr_name]
+                )
+
+            self.assertTrue(power_state.plugged_in == (not power_state.on_battery))
+            self.assertTrue(
+                power_state.has_battery
+                == (power_state.on_battery or not power_state.no_battery)
+            )
+
+            # There should be only one `True`
+            self.assertEqual(
+                sum(
+                    [
+                        power_state.on_battery,
+                        power_state.no_battery,
+                        power_state.charged,
+                        power_state.charging,
+                    ]
+                ),
+                1,
+            )
 
 
 if __name__ == "__main__":
