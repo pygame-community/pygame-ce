@@ -1,7 +1,8 @@
-from typing import Iterable, Optional, Tuple, Union, final
-from pygame.surface import Surface
-from ._common import RectValue, Coordinate
+from typing import Optional, Tuple, Union, final
+
+from pygame._common import Coordinate
 from pygame.locals import WINDOWPOS_UNDEFINED
+from pygame.surface import Surface
 
 def get_grabbed_window() -> Optional[Window]: ...
 @final
@@ -9,8 +10,8 @@ class Window:
     def __init__(
         self,
         title: str = "pygame window",
-        size: Iterable[int] = (640, 480),
-        position: Union[int, Iterable[int]] = WINDOWPOS_UNDEFINED,
+        size: Coordinate = (640, 480),
+        position: Union[int, Coordinate] = WINDOWPOS_UNDEFINED,
         **flags: bool
     ) -> None: ...
     def destroy(self) -> None: ...
@@ -24,14 +25,23 @@ class Window:
     def minimize(self) -> None: ...
     def set_modal_for(self, parent: Window) -> None: ...
     def set_icon(self, icon: Surface) -> None: ...
+
     grab: bool
     title: str
     resizable: bool
     borderless: bool
     always_on_top: bool
     relative_mouse: bool
-    id: int
-    size: Iterable[int]
+    opacity: float
+
+    @property
+    def id(self) -> int: ...
+    @property
+    def display_index(self) -> int: ...
+    @property
+    def size(self) -> Tuple[int, int]: ...
+    @size.setter
+    def size(self, value: Coordinate) -> None: ...
     @property
     def minimum_size(self) -> Tuple[int, int]: ...
     @minimum_size.setter
@@ -40,8 +50,9 @@ class Window:
     def maximum_size(self) -> Tuple[int, int]: ...
     @maximum_size.setter
     def maximum_size(self, value: Coordinate) -> None: ...
-    position: Union[int, Iterable[int]]
-    opacity: float
-    display_index: int
+    @property
+    def position(self) -> Tuple[int, int]: ...
+    @position.setter
+    def position(self, value: Union[int, Coordinate]) -> None: ...
     @classmethod
     def from_display_module(cls) -> Window: ...

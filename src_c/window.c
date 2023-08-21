@@ -6,8 +6,9 @@
 
 #include "doc/sdl2_video_doc.h"
 
-#ifndef PYGAMEAPI_DISPLAY_INTERNAL  // to pass the static check
-// Copied from display.c
+// prevent that code block copied from display.c from being linked twice
+#ifndef BUILD_STATIC
+
 #if !defined(__APPLE__)
 static char *icon_defaultname = "pygame_icon.bmp";
 static int icon_colorkey = 0;
@@ -93,7 +94,7 @@ display_resource_end:
     return result;
 }
 
-#endif  // PYGAMEAPI_DISPLAY_INTERNAL
+#endif  // BUILD_STATIC
 
 static PyTypeObject pgWindow_Type;
 
@@ -357,7 +358,7 @@ window_set_size(pgWindowObject *self, PyObject *arg, void *v)
     if (w <= 0 || h <= 0) {
         PyErr_SetString(
             PyExc_ValueError,
-            "width or height should not be less than or equal to zero.");
+            "width or height should not be less than or equal to zero");
         return -1;
     }
 
@@ -370,15 +371,9 @@ static PyObject *
 window_get_size(pgWindowObject *self, void *v)
 {
     int w, h;
-    PyObject *out = NULL;
-
     SDL_GetWindowSize(self->_win, &w, &h);
-    out = Py_BuildValue("(ii)", w, h);
 
-    if (!out)
-        return NULL;
-
-    return out;
+    return Py_BuildValue("(ii)", w, h);
 }
 
 static int
@@ -487,15 +482,9 @@ static PyObject *
 window_get_position(pgWindowObject *self, void *v)
 {
     int x, y;
-    PyObject *out = NULL;
-
     SDL_GetWindowPosition(self->_win, &x, &y);
-    out = Py_BuildValue("(ii)", x, y);
 
-    if (!out)
-        return NULL;
-
-    return out;
+    return Py_BuildValue("(ii)", x, y);
 }
 
 static int
