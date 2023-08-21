@@ -96,11 +96,7 @@ for k in PG_STAR_IMPORTS:
     pygame_all_imports[f".{k}"] = get_all(getattr(pygame, k))
 
 # misc stubs that must be added to __init__.pyi
-misc_stubs = """
-from typing import Tuple, NoReturn
-
-def Overlay(format: int, size: Tuple[int, int]) -> NoReturn: ...
-"""
+misc_stubs = """"""
 
 # write constants.pyi file
 constants_file = pathlib.Path(__file__).parent / "pygame" / "constants.pyi"
