@@ -157,6 +157,9 @@ PyMODINIT_FUNC
 PyInit_audio(void);
 
 PyMODINIT_FUNC
+PyInit_pixelarray(void);
+
+PyMODINIT_FUNC
 PyInit__window(void);
 
 // pygame_static module
@@ -236,6 +239,7 @@ mod_pygame_import_cython(PyObject *self, PyObject *spec)
     load_submodule_mphase("pygame._sdl2", PyInit_video(), spec, "video");
     // depends on pygame._sdl2.video
     load_submodule_mphase("pygame", PyInit__sprite(), spec, "_sprite");
+
     Py_RETURN_NONE;
 }
 
@@ -284,10 +288,11 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_joystick(), "joystick");
 
     load_submodule("pygame", PyInit_pg_mixer(), "mixer");
-
     load_submodule("pygame.mixer", PyInit_mixer_music(), "music");
 
-    load_submodule("pygame._window", PyInit__window(), "_window");
+    load_submodule("pygame", PyInit__window(), "_window");
+
+    load_submodule("pygame", PyInit_pixelarray(), "pixelarray");
 
     return PyModule_Create(&mod_pygame_static);
 }
