@@ -145,7 +145,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       Return True if the Joystick object is currently initialised.
 
       .. ## Joystick.get_init ##
-    
+
    .. method:: get_id
 
       | :sl:`get the device index (deprecated)`
