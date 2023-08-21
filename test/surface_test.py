@@ -41,6 +41,48 @@ class SurfaceTypeTest(unittest.TestCase):
         self.assertEqual(surface.get_flags(), expected_flags)
         self.assertEqual(surface.get_bitsize(), expected_depth)
 
+    def test_init_coloring(self):
+        """Ensure a surface is initialized with the correct color."""
+        colors = [
+            (0, 0, 0, 255),
+            (255, 0, 0, 255),
+            (0, 12, 0, 128),
+            (0, 0, 0, 0),
+            "green",
+            pygame.Color("red"),
+            None,
+        ]
+        expected_results_SRCALPHA = [
+            (0, 0, 0, 255),
+            (255, 0, 0, 255),
+            (0, 12, 0, 128),
+            (0, 0, 0, 0),
+            (0, 255, 0, 255),
+            (255, 0, 0, 255),
+            (0, 0, 0, 0),
+        ]
+        expected_results_NOSRCALPHA = [
+            (0, 0, 0, 255),
+            (255, 0, 0, 255),
+            (0, 12, 0, 255),
+            (0, 0, 0, 255),
+            (0, 255, 0, 255),
+            (255, 0, 0, 255),
+            (0, 0, 0, 255),
+        ]
+        surface = pygame.Surface((1, 1), color=None, flags=SRCALPHA)
+        self.assertEqual((0, 0, 0, 0), tuple(surface.get_at((0, 0))))
+
+        # test with no SRCALPHA flag
+        for color, expected_result in zip(colors, expected_results_NOSRCALPHA):
+            surface = pygame.Surface((1, 1), color=color)
+            self.assertEqual(expected_result, tuple(surface.get_at((0, 0))))
+
+        # test with SRCALPHA flag
+        for color, expected_result in zip(colors, expected_results_SRCALPHA):
+            surface = pygame.Surface((1, 1), color=color, flags=SRCALPHA)
+            self.assertEqual(expected_result, tuple(surface.get_at((0, 0))))
+
     def test_surface_created_opaque_black(self):
         surf = pygame.Surface((20, 20))
         self.assertEqual(surf.get_at((0, 0)), (0, 0, 0, 255))

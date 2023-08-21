@@ -768,7 +768,7 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
         else if (pg_RGBAFromFuzzyColorObj(color_obj, rgba))
             color = pg_map_rgba(surface, rgba[0], rgba[1], rgba[2], rgba[3]);
         else
-            return NULL; /* pg_RGBAFromFuzzyColorObj set an exception for us */
+            return -1;
 
         if (SDL_FillRect(surface, NULL, color) != 0) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
