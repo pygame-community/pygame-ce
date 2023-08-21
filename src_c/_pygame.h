@@ -345,6 +345,24 @@ struct pgColorObject {
     Uint8 len;
 };
 
+typedef enum {
+    /* 0b000: Only handle RGB[A] sequence (which includes pygame.Color) */
+    PG_COLOR_HANDLE_SIMPLE = 0,
+
+    /* 0b001: In addition to PG_COLOR_HANDLE_SIMPLE, also handle str */
+    PG_COLOR_HANDLE_STR = 1,
+
+    /* 0b010: In addition to PG_COLOR_HANDLE_SIMPLE, also handles int */
+    PG_COLOR_HANDLE_INT = (PG_COLOR_HANDLE_STR << 1),
+
+    /* 0b100: A specialised flag, used to indicate that only tuple,
+       pygame.Color or subtypes of these both are allowed */
+    PG_COLOR_HANDLE_RESTRICT_SEQ = (PG_COLOR_HANDLE_INT << 1),
+
+    /* 0b011: equivalent to PG_COLOR_HANDLE_STR | PG_COLOR_HANDLE_INT */
+    PG_COLOR_HANDLE_ALL = PG_COLOR_HANDLE_STR | PG_COLOR_HANDLE_INT,
+} pgColorHandleFlags;
+
 /*
  * include public API
  */

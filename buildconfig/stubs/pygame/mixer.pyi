@@ -73,6 +73,8 @@ class Sound:
 @final
 class Channel:
     def __init__(self, id: int) -> None: ...
+    @property
+    def id(self) -> int: ...
     def play(
         self,
         sound: Sound,
