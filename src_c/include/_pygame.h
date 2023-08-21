@@ -427,17 +427,19 @@ typedef struct pgColorObject pgColorObject;
 #ifndef PYGAMEAPI_COLOR_INTERNAL
 #define pgColor_Type (*(PyObject *)PYGAMEAPI_GET_SLOT(color, 0))
 
-#define pgColor_Check(x) ((x)->ob_type == &pgColor_Type)
+#define pgColor_CheckExact(x) ((x)->ob_type == &pgColor_Type)
 #define pgColor_New (*(PyObject * (*)(Uint8 *)) PYGAMEAPI_GET_SLOT(color, 1))
 
 #define pgColor_NewLength \
     (*(PyObject * (*)(Uint8 *, Uint8)) PYGAMEAPI_GET_SLOT(color, 3))
 
-#define pg_RGBAFromColorObj \
-    (*(int (*)(PyObject *, Uint8 *))PYGAMEAPI_GET_SLOT(color, 2))
+#define pg_RGBAFromObjEx                                                    \
+    (*(int (*)(PyObject *, Uint8 *, pgColorHandleFlags))PYGAMEAPI_GET_SLOT( \
+        color, 2))
 
-#define pg_RGBAFromFuzzyColorObj \
-    (*(int (*)(PyObject *, Uint8 *))PYGAMEAPI_GET_SLOT(color, 4))
+#define pg_MappedColorFromObj                           \
+    (*(int (*)(PyObject *, SDL_PixelFormat *, Uint32 *, \
+               pgColorHandleFlags))PYGAMEAPI_GET_SLOT(color, 4))
 
 #define pgColor_AsArray(x) (((pgColorObject *)x)->data)
 #define pgColor_NumComponents(x) (((pgColorObject *)x)->len)

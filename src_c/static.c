@@ -312,8 +312,8 @@ PyInit_pygame_static()
 
 #undef pgColor_New
 #undef pgColor_NewLength
-#undef pg_RGBAFromColorObj
-#undef pg_RGBAFromFuzzyColorObj
+#undef pg_RGBAFromObjEx
+#undef pg_MappedColorFromObj
 #undef pgColor_Type
 
 #include "color.c"
