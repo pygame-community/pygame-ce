@@ -101,6 +101,76 @@ class WindowTypeTest(unittest.TestCase):
 
         self.assertRaises(TypeError, lambda: Window(position=123))
 
+    def test_maximum_size(self):
+        # Use a new window to prevent being influenced by other tests
+        self.win = Window()
+
+        self.win.maximum_size = (50, 50)
+        self.assertTupleEqual(self.win.maximum_size, (50, 50))
+
+        # size should be limited to the maximum_size
+        self.assertTupleEqual(self.win.size, (50, 50))
+
+        self.win.size = (640, 480)
+        # size should not larger than maximum_size
+        self.assertTupleEqual(self.win.size, (50, 50))
+
+        if SDL.major >= 3:
+            # This part should pass in SDL3
+            self.win.maximum_size = (0, 0)  # remove the size limit
+            self.win.size = (640, 480)
+            self.assertTupleEqual(self.win.size, (640, 480))
+
+        self.assertRaises(
+            ValueError, lambda: setattr(self.win, "maximum_size", (-1, -1))
+        )
+        self.assertRaises(
+            TypeError, lambda: setattr(self.win, "maximum_size", "dummy_str")
+        )
+
+    def test_minimum_size(self):
+        # Use a new window to prevent being influenced by other tests
+        self.win = Window()
+
+        self.win.minimum_size = (700, 700)
+        self.assertTupleEqual(self.win.minimum_size, (700, 700))
+
+        # size should be limited to the minimum_size
+        self.assertTupleEqual(self.win.size, (700, 700))
+
+        self.win.size = (640, 480)
+        # size should not small than minimum_size
+        self.assertTupleEqual(self.win.size, (700, 700))
+
+        if SDL.major >= 3:
+            # This part should pass in SDL3
+            self.win.minimum_size = (0, 0)  # remove the size limit
+            self.win.size = (640, 480)
+            self.assertTupleEqual(self.win.size, (640, 480))
+
+        self.assertRaises(
+            ValueError, lambda: setattr(self.win, "minimum_size", (-1, -1))
+        )
+        self.assertRaises(
+            TypeError, lambda: setattr(self.win, "minimum_size", "dummy_str")
+        )
+
+    def test_min_size_interact_with_max_size(self):
+        # Use a new window to prevent being influenced by other tests
+        self.win = Window()
+
+        self.win.maximum_size = (100, 100)
+        # min size should not larger than max size
+        self.assertRaises(
+            ValueError, lambda: setattr(self.win, "minimum_size", (200, 200))
+        )
+
+        self.win.minimum_size = (100, 100)
+        # max size should not smaller than min size
+        self.assertRaises(
+            ValueError, lambda: setattr(self.win, "maximum_size", (50, 50))
+        )
+
     @unittest.skipIf(
         os.environ.get("SDL_VIDEODRIVER") == "dummy",
         "requires the SDL_VIDEODRIVER to be a non dummy value",
