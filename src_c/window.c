@@ -260,6 +260,16 @@ window_get_grab_mouse(pgWindowObject *self, void *v)
 #endif
 }
 
+static PyObject *
+window_get_mouse_grabbed(pgWindowObject *self, void *v)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+    return PyBool_FromLong(SDL_GetWindowMouseGrab(self->_win));
+#else
+    return PyBool_FromLong(SDL_GetWindowGrab(self->_win));
+#endif
+}
+
 static int
 window_set_grab_keyboard(pgWindowObject *self, PyObject *arg, void *v)
 {
@@ -286,6 +296,20 @@ window_get_grab_keyboard(pgWindowObject *self, void *v)
                            SDL_WINDOW_KEYBOARD_GRABBED);
 #else
     if (PyErr_WarnEx(PyExc_Warning, "'grab_keyboard' requires SDL 2.0.16+",
+                     1) == -1) {
+        return NULL;
+    }
+    return PyBool_FromLong(SDL_FALSE);
+#endif
+}
+
+static PyObject *
+window_get_keyboard_grabbed(pgWindowObject *self, void *v)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+    return PyBool_FromLong(SDL_GetWindowKeyboardGrab(self->_win));
+#else
+    if (PyErr_WarnEx(PyExc_Warning, "'keyboard_captured' requires SDL 2.0.16+",
                      1) == -1) {
         return NULL;
     }
@@ -894,6 +918,10 @@ static PyGetSetDef _window_getset[] = {
     {"grab_keyboard", (getter)window_get_grab_keyboard,
      (setter)window_set_grab_keyboard, DOC_SDL2_VIDEO_WINDOW_GRABKEYBOARD,
      NULL},
+    {"mouse_grabbed", (getter)window_get_mouse_grabbed, NULL,
+     DOC_SDL2_VIDEO_WINDOW_MOUSEGRABBED, NULL},
+    {"keyboard_grabbed", (getter)window_get_keyboard_grabbed, NULL,
+     DOC_SDL2_VIDEO_WINDOW_KEYBOARDGRABBED, NULL},
     {"title", (getter)window_get_title, (setter)window_set_title,
      DOC_SDL2_VIDEO_WINDOW_TITLE, NULL},
     {"resizable", (getter)window_get_resizable, (setter)window_set_resizable,
