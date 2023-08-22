@@ -1766,17 +1766,10 @@ _color_from_obj(PyObject *color_obj, SDL_PixelFormat *format,
                 Uint8 rgba_default[4], Uint32 *color)
 {
     if (color_obj) {
-        Uint8 rgba_color[4];
-
-        if (PyLong_Check(color_obj))
-            *color = (Uint32)PyLong_AsLong(color_obj);
-        else if (PyLong_Check(color_obj))
-            *color = (Uint32)PyLong_AsUnsignedLong(color_obj);
-        else if (pg_RGBAFromColorObj(color_obj, rgba_color))
-            *color = SDL_MapRGBA(format, rgba_color[0], rgba_color[1],
-                                 rgba_color[2], rgba_color[3]);
-        else
+        if (!pg_MappedColorFromObj(color_obj, format, color,
+                                   PG_COLOR_HANDLE_INT)) {
             return -1;
+        }
     }
     else {
         if (!rgba_default)
