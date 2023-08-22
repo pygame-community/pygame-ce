@@ -2118,7 +2118,6 @@ pg_GetPkgdataResource(const char *filename)
     if (encoded == NULL) {
         Py_DECREF(fresult);
         fresult = NULL;
-        goto get_resource_end;
     }
     else if (encoded != Py_None) {
         Py_DECREF(fresult);
@@ -2129,6 +2128,8 @@ pg_GetPkgdataResource(const char *filename)
     }
 
     // return fresult
+    goto get_resource_end;
+
 get_resource_end:
     Py_XDECREF(pkgdatamodule);
     Py_XDECREF(resourcefunc);
