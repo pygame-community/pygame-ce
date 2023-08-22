@@ -116,12 +116,6 @@ jobs:
             pyversions: "cp37-win32"
           }
           - {
-            name: "Pypy 3.7",
-            winarch: AMD64,
-            msvc-dev-arch: x86_amd64,
-            pyversions: "pp37-*"
-          }
-          - {
             name: "Pypy 3.8",
             winarch: AMD64,
             msvc-dev-arch: x86_amd64,
@@ -133,6 +127,12 @@ jobs:
             msvc-dev-arch: x86_amd64,
             pyversions: "pp39-*"
           }
+          - {
+            name: "Pypy 3.10",
+            winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
+            pyversions: "pp310-*"
+          }
 
 
     env:
@@ -140,8 +140,6 @@ jobs:
       # because this should not affect cibuildwheel machinery
       # also define environment variables needed for testing
       CIBW_ENVIRONMENT: PIP_CONFIG_FILE=buildconfig/pip_config.ini SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
-
-      CIBW_PRERELEASE_PYTHONS: True # for 3.12 testing
 
       CIBW_BUILD: ${{ matrix.pyversions }}
       CIBW_ARCHS: ${{ matrix.winarch }}
@@ -170,9 +168,9 @@ jobs:
         run: |
           set DISTUTILS_USE_SDK=1
           set MSSdk=1
-          python -m pip install setuptools wheel requests numpy Sphinx
+          python -m pip install setuptools wheel requests numpy Sphinx"<7.2.0"
           python setup.py docs
-          python -m pip --disable-pip-version-check install cibuildwheel==2.14.1
+          python -m pip --disable-pip-version-check install cibuildwheel==2.15.0
           python -m cibuildwheel --output-dir wheelhouse
 
       - uses: actions/upload-artifact@v3

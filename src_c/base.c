@@ -611,6 +611,7 @@ pg_UintFromObjIndex(PyObject *obj, int _index, Uint32 *val)
     return result;
 }
 
+/* You probably want to use the pg_RGBAFromObjEx function instead of this. */
 static int
 pg_RGBAFromObj(PyObject *obj, Uint8 *RGBA)
 {

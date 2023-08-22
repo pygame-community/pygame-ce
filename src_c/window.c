@@ -6,8 +6,9 @@
 
 #include "doc/sdl2_video_doc.h"
 
-#ifndef PYGAMEAPI_DISPLAY_INTERNAL  // to pass the static check
-// Copied from display.c
+// prevent that code block copied from display.c from being linked twice
+#ifndef BUILD_STATIC
+
 #if !defined(__APPLE__)
 static char *icon_defaultname = "pygame_icon.bmp";
 static int icon_colorkey = 0;
@@ -16,7 +17,7 @@ static char *icon_defaultname = "pygame_icon_mac.bmp";
 static int icon_colorkey = -1;
 #endif
 
-#endif  // PYGAMEAPI_DISPLAY_INTERNAL
+#endif  // BUILD_STATIC
 
 static PyTypeObject pgWindow_Type;
 
@@ -280,7 +281,7 @@ window_set_size(pgWindowObject *self, PyObject *arg, void *v)
     if (w <= 0 || h <= 0) {
         PyErr_SetString(
             PyExc_ValueError,
-            "width or height should not be less than or equal to zero.");
+            "width or height should not be less than or equal to zero");
         return -1;
     }
 
@@ -293,15 +294,89 @@ static PyObject *
 window_get_size(pgWindowObject *self, void *v)
 {
     int w, h;
-    PyObject *out = NULL;
-
     SDL_GetWindowSize(self->_win, &w, &h);
-    out = Py_BuildValue("(ii)", w, h);
 
-    if (!out)
-        return NULL;
+    return Py_BuildValue("(ii)", w, h);
+}
 
-    return out;
+static int
+window_set_minimum_size(pgWindowObject *self, PyObject *arg, void *v)
+{
+    int w, h;
+    int max_w, max_h;
+
+    if (!pg_TwoIntsFromObj(arg, &w, &h)) {
+        PyErr_SetString(PyExc_TypeError, "invalid size argument");
+        return -1;
+    }
+
+    if (w < 0 || h < 0) {
+        PyErr_SetString(
+            PyExc_ValueError,
+            "minimum width or height should not be less than zero");
+        return -1;
+    }
+
+    SDL_GetWindowMaximumSize(self->_win, &max_w, &max_h);
+    if ((max_w > 0 && max_h > 0) && (w > max_w || h > max_h)) {
+        PyErr_SetString(PyExc_ValueError,
+                        "minimum width or height should not be greater than "
+                        "maximum width or height respectively");
+        return -1;
+    }
+
+    SDL_SetWindowMinimumSize(self->_win, w, h);
+
+    return 0;
+}
+
+static PyObject *
+window_get_minimum_size(pgWindowObject *self, void *v)
+{
+    int w, h;
+    SDL_GetWindowMinimumSize(self->_win, &w, &h);
+
+    return Py_BuildValue("(ii)", w, h);
+}
+
+static int
+window_set_maximum_size(pgWindowObject *self, PyObject *arg, void *v)
+{
+    int w, h;
+    int min_w, min_h;
+
+    if (!pg_TwoIntsFromObj(arg, &w, &h)) {
+        PyErr_SetString(PyExc_TypeError, "invalid size argument");
+        return -1;
+    }
+
+    if (w < 0 || h < 0) {
+        PyErr_SetString(
+            PyExc_ValueError,
+            "maximum width or height should not be less than zero");
+        return -1;
+    }
+
+    SDL_GetWindowMinimumSize(self->_win, &min_w, &min_h);
+    if (w < min_w || h < min_h) {
+        PyErr_SetString(PyExc_ValueError,
+                        "maximum width or height should not be less than "
+                        "minimum width or height respectively");
+        return -1;
+    }
+
+    SDL_SetWindowMaximumSize(self->_win, w, h);
+
+    return 0;
+}
+
+static PyObject *
+window_get_maximum_size(pgWindowObject *self, void *v)
+{
+    int w, h;
+    SDL_GetWindowMaximumSize(self->_win, &w, &h);
+
+    return Py_BuildValue("(ii)", w, h);
 }
 
 static int
@@ -330,15 +405,9 @@ static PyObject *
 window_get_position(pgWindowObject *self, void *v)
 {
     int x, y;
-    PyObject *out = NULL;
-
     SDL_GetWindowPosition(self->_win, &x, &y);
-    out = Py_BuildValue("(ii)", x, y);
 
-    if (!out)
-        return NULL;
-
-    return out;
+    return Py_BuildValue("(ii)", x, y);
 }
 
 static int
@@ -399,8 +468,13 @@ mouse_set_relative_mode(pgWindowObject *self, PyObject *arg, void *v)
 static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
-    if (!self->_is_borrowed && self->_win) {
-        SDL_DestroyWindow(self->_win);
+    if (self->_win) {
+        if (!self->_is_borrowed) {
+            SDL_DestroyWindow(self->_win);
+        }
+        else if (SDL_GetWindowData(self->_win, "pg_window") != NULL) {
+            SDL_SetWindowData(self->_win, "pg_window", NULL);
+        }
     }
     Py_TYPE(self)->tp_free(self);
 }
@@ -615,7 +689,14 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
     pgWindowObject *self;
     window = pg_GetDefaultWindow();
     if (!window) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        return RAISE(pgExc_SDLError,
+                     "display.set_mode has not been called yet.");
+    }
+
+    self = (pgWindowObject *)SDL_GetWindowData(window, "pg_window");
+    if (self != NULL) {
+        Py_INCREF(self);
+        return (PyObject *)self;
     }
 
     self = (pgWindowObject *)(cls->tp_new(cls, NULL, NULL));
@@ -623,6 +704,28 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
     self->_is_borrowed = SDL_TRUE;
     SDL_SetWindowData(window, "pg_window", self);
     return (PyObject *)self;
+}
+
+PyObject *
+window_repr(pgWindowObject *self)
+{
+    const char *title;
+    int win_id;
+    if (!self->_win) {
+        return PyUnicode_FromString("<Window(Destroyed)>");
+    }
+
+    if (self->_is_borrowed) {
+        return PyUnicode_FromString("<Window(From Display)>");
+    }
+
+    title = SDL_GetWindowTitle(self->_win);
+    win_id = SDL_GetWindowID(self->_win);
+    if (win_id == 0) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    return PyUnicode_FromFormat("<Window(title='%s', id=%d)>", title, win_id);
 }
 
 static PyMethodDef window_methods[] = {
@@ -669,6 +772,10 @@ static PyGetSetDef _window_getset[] = {
      NULL},
     {"size", (getter)window_get_size, (setter)window_set_size,
      DOC_SDL2_VIDEO_WINDOW_SIZE, NULL},
+    {"minimum_size", (getter)window_get_minimum_size,
+     (setter)window_set_minimum_size, DOC_SDL2_VIDEO_WINDOW_MINIMUMSIZE, NULL},
+    {"maximum_size", (getter)window_get_maximum_size,
+     (setter)window_set_maximum_size, DOC_SDL2_VIDEO_WINDOW_MAXIMUMSIZE, NULL},
     {"position", (getter)window_get_position, (setter)window_set_position,
      DOC_SDL2_VIDEO_WINDOW_POSITION, NULL},
     {"opacity", (getter)window_get_opacity, (setter)window_set_opacity,
@@ -687,7 +794,8 @@ static PyTypeObject pgWindow_Type = {
     .tp_methods = window_methods,
     .tp_init = (initproc)window_init,
     .tp_new = PyType_GenericNew,
-    .tp_getset = _window_getset};
+    .tp_getset = _window_getset,
+    .tp_repr = (reprfunc)window_repr};
 
 static PyMethodDef _window_methods[] = {
     {"get_grabbed_window", (PyCFunction)get_grabbed_window, METH_NOARGS,

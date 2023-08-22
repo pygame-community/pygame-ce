@@ -42,6 +42,19 @@
 
 #include <SDL.h>
 
+/* DictProxy is useful for event posting with an arbitrary dict. Maintains
+ * state of number of events on queue and whether the owner of this struct
+ * wants this dict freed. This DictProxy is only to be freed when there are no
+ * more instances of this DictProxy on the event queue. Access to this is
+ * safeguarded with a per-proxy spinlock, which is more optimal than having
+ * to hold GIL in case of event timers */
+typedef struct _pgEventDictProxy {
+    PyObject *dict;
+    SDL_SpinLock lock;
+    int num_on_queue;
+    Uint8 do_free_at_end;
+} pgEventDictProxy;
+
 /* SDL 1.2 constants removed from SDL 2 */
 typedef enum {
     SDL_HWSURFACE = 0,
@@ -281,6 +294,17 @@ supported Python version. #endif */
 
 #define PyType_Init(x) (((x).ob_type) = &PyType_Type)
 
+/* Python macro for comparing to Py_None
+ * Py_IsNone is naturally supported by
+ * Python 3.10 or higher
+ * so this macro can be removed after the minimum
+ * supported
+ * Python version reaches 3.10
+ */
+#ifndef Py_IsNone
+#define Py_IsNone(x) (x == Py_None)
+#endif
+
 /* Update this function if new sequences are added to the fast sequence
  * type. */
 #ifndef pgSequenceFast_Check
@@ -320,6 +344,24 @@ struct pgColorObject {
     PyObject_HEAD Uint8 data[4];
     Uint8 len;
 };
+
+typedef enum {
+    /* 0b000: Only handle RGB[A] sequence (which includes pygame.Color) */
+    PG_COLOR_HANDLE_SIMPLE = 0,
+
+    /* 0b001: In addition to PG_COLOR_HANDLE_SIMPLE, also handle str */
+    PG_COLOR_HANDLE_STR = 1,
+
+    /* 0b010: In addition to PG_COLOR_HANDLE_SIMPLE, also handles int */
+    PG_COLOR_HANDLE_INT = (PG_COLOR_HANDLE_STR << 1),
+
+    /* 0b100: A specialised flag, used to indicate that only tuple,
+       pygame.Color or subtypes of these both are allowed */
+    PG_COLOR_HANDLE_RESTRICT_SEQ = (PG_COLOR_HANDLE_INT << 1),
+
+    /* 0b011: equivalent to PG_COLOR_HANDLE_STR | PG_COLOR_HANDLE_INT */
+    PG_COLOR_HANDLE_ALL = PG_COLOR_HANDLE_STR | PG_COLOR_HANDLE_INT,
+} pgColorHandleFlags;
 
 /*
  * include public API

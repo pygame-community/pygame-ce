@@ -469,9 +469,9 @@ RectExport_collideobjectsall(RectObject *self, PyObject *args,
 static PyObject *
 RectExport_collideobjects(RectObject *self, PyObject *args, PyObject *kwargs);
 static PyObject *
-RectExport_collidedict(RectObject *self, PyObject *args);
+RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs);
 static PyObject *
-RectExport_collidedictall(RectObject *self, PyObject *args);
+RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs);
 static PyObject *
 RectExport_clip(RectObject *self, PyObject *args);
 static int
@@ -1518,7 +1518,7 @@ RectExport_collideobjects(RectObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
-RectExport_collidedict(RectObject *self, PyObject *args)
+RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs)
 {
     InnerRect *argrect, temp;
     Py_ssize_t loop = 0;
@@ -1526,7 +1526,10 @@ RectExport_collidedict(RectObject *self, PyObject *args)
     PyObject *dict, *key, *val;
     PyObject *ret = NULL;
 
-    if (!PyArg_ParseTuple(args, "O|i", &dict, &values)) {
+    char *kwds[] = {"rect_dict", "values", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|p", kwds, &dict,
+                                     &values)) {
         return NULL;
     }
 
@@ -1560,7 +1563,7 @@ RectExport_collidedict(RectObject *self, PyObject *args)
 }
 
 static PyObject *
-RectExport_collidedictall(RectObject *self, PyObject *args)
+RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs)
 {
     InnerRect *argrect, temp;
     Py_ssize_t loop = 0;
@@ -1568,7 +1571,10 @@ RectExport_collidedictall(RectObject *self, PyObject *args)
     PyObject *dict, *key, *val;
     PyObject *ret = NULL;
 
-    if (!PyArg_ParseTuple(args, "O|i", &dict, &values)) {
+    char *kwds[] = {"rect_dict", "values", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|p", kwds, &dict,
+                                     &values)) {
         return NULL;
     }
 

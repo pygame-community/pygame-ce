@@ -4,7 +4,7 @@ from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from .._common import RectValue, Literal
+from .._common import RectValue, Literal, Coordinate
 
 WINDOWPOS_UNDEFINED: int
 WINDOWPOS_CENTERED: int
@@ -38,42 +38,7 @@ def messagebox(
     escape_button: int = 0,
 ) -> int: ...
 
-@final
-class Window:
-    DEFAULT_SIZE: Tuple[Literal[640], Literal[480]]
-    def __init__(
-        self,
-        title: str = "pygame window",
-        size: Iterable[int] = (640, 480),
-        position: Optional[Iterable[int]] = None,
-        fullscreen: bool = False,
-        fullscreen_desktop: bool = False,
-        **kwargs: bool
-    ) -> None: ...
-    @classmethod
-    def from_display_module(cls) -> Window: ...
-    grab: bool
-    relative_mouse: bool
-    def set_windowed(self) -> None: ...
-    def set_fullscreen(self, desktop: bool = False) -> None: ...
-    title: str
-    def destroy(self) -> None: ...
-    def hide(self) -> None: ...
-    def show(self) -> None: ...
-    def focus(self, input_only: bool = False) -> None: ...
-    def restore(self) -> None: ...
-    def maximize(self) -> None: ...
-    def minimize(self) -> None: ...
-    resizable: bool
-    borderless: bool
-    always_on_top: bool
-    def set_icon(self, surface: Surface) -> None: ...
-    id: int
-    size: Iterable[int]
-    position: Union[int, Iterable[int]]
-    opacity: float
-    display_index: int
-    def set_modal_for(self, Window) -> None: ...
+from pygame._window import Window as Window
 
 _Window = Window
 

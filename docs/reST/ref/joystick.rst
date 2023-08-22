@@ -121,7 +121,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       .. deprecatedold:: 2.0.0
 
          In future it will not be possible to reinitialise a closed Joystick
-         object. Will be removed in Pygame 2.1.
+         object.
 
       .. ## Joystick.init ##
 
@@ -158,7 +158,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       .. deprecatedold:: 2.0.0
 
          The original device index is not useful in pygame 2. Use
-         :meth:`.get_instance_id` instead. Will be removed in Pygame 2.1.
+         :meth:`.get_instance_id` instead. 
 
    .. method:: get_instance_id() -> int
 
@@ -384,35 +384,75 @@ Nintendo Switch Left Joy-Con (pygame 2.x)
 *****************************************
 
 The Nintendo Switch Left Joy-Con has 4 axes, 11 buttons, and 0 hats. The values for the 4 axes never change.
-The controller is recognized as "Wireless Gamepad"
+The controller is recognized as "Wireless Gamepad".
+After SDL 2.24.0, The controller is recognized as "Nintendo Switch Joy-Con (L)".
 
 
 * **Buttons**::
 
-    D-pad Up        - Button 0
-    D-pad Down      - Button 1
-    D-pad Left      - Button 2
-    D-pad Right     - Button 3
-    SL              - Button 4
-    SR              - Button 5
-    -               - Button 8
-    Stick In        - Button 10
-    Capture         - Button 13
-    L               - Button 14
-    ZL              - Button 15
+                    After SDL 2.24.0         Before SDL 2.24.0
+    D-pad Up            Button 2                  Button 3
+    D-pad Down          Button 1                  Button 0
+    D-pad Left          Button 3                  Button 2
+    D-pad Right         Button 0                  Button 1
+    SL                  Button 9                  Button 4
+    SR                  Button 10                 Button 5
+    -                   Button 6                  Button 8
+    Stick In            Button 7                  Button 10
+    Capture             Button 5                  Button 13
+    L                   Button 17                 Button 14
+    ZL                  Button 19                 Button 15
+
+Reference : D-pad Up points toward SL and SR buttons. 
 
 * **Hat/JoyStick**::
 
-    Down -> Up      - Y Axis
-    Left -> Right   - X Axis
+    Down -> Up      -    Axis 1                    Axis Y
+    Left -> Right   -    Axis 0                    Axis X
 
 
 Nintendo Switch Right Joy-Con (pygame 2.x)
 ******************************************
 
 The Nintendo Switch Right Joy-Con has 4 axes, 11 buttons, and 0 hats. The values for the 4 axes never change.
-The controller is recognized as "Wireless Gamepad"
+The controller is recognized as "Wireless Gamepad".
+After SDL 2.24.0, The controller is recognized as "Nintendo Switch Joy-Con (R)".
 
+* **Buttons**::
+
+                  After SDL 2.24.0         Before SDL 2.24.0
+    A Button          Button 1                 Button 0
+    B Button          Button 3                 Button 2
+    X Button          Button 0                 Button 1
+    Y Button          Button 2                 Button 3
+    SL                Button 9                 Button 4
+    SR                Button 10                Button 5
+    +                 Button 6                 Button 9
+    Stick In          Button 7                 Button 11
+    Home              Button 5                 Button 12
+    R                 Button 16                Button 14
+    ZR                Button 18                Button 15
+
+* **Hat/JoyStick**::
+
+    Down -> Up      -  Axis 1                   Axis Y
+    Left -> Right   -  Axis 0                   Axis X
+
+Nintendo Switch Left/Right Joy-Con (after SDL **2.24.0**)
+*********************************************************
+This device is created, if Nintendo Switch Joy-con Left and Nintendo Switch Joy-con Right are connected (these two devices are removed).
+The Nintendo Switch Left/Right Joy-Con has 6 axes, 20 buttons, and 0 hats. The values for the 6 axes never change.
+The controller is recognized as "Nintendo Switch Joy-Con (L/R)".
+
+* **Left Stick**::
+
+    Left -> Right   - Axis 0
+    Up -> Down      - Axis 1
+
+* **Right Stick**::
+
+    Left -> Right   - Axis 2
+    Up -> Down      - Axis 3
 
 * **Buttons**::
 
@@ -420,19 +460,22 @@ The controller is recognized as "Wireless Gamepad"
     B Button        - Button 1
     X Button        - Button 2
     Y Button        - Button 3
-    SL              - Button 4
-    SR              - Button 5
-    +               - Button 9
-    Stick In        - Button 11
-    Home            - Button 12
-    R               - Button 14
-    ZR              - Button 15
-
-* **Hat/JoyStick**::
-
-    Down -> Up      - Y Axis
-    Left -> Right   - X Axis
-
+    - Button        - Button 4
+    Home Button     - Button 5
+    + Button        - Button 6
+    ZL              - Button ? Missing
+    ZR              - Button ? Missing
+    L. Stick In     - Button 9
+    R. Stick In     - Button 10
+    D-pad Up        - Button 11
+    D-pad Down      - Button 12
+    D-pad Left      - Button 13
+    D-pad Right     - Button 14
+    Capture Button  - Button 15
+    Right SR        - Button 16
+    Left SL         - Button 17
+    Right SL        - Button 18
+    Left SR         - Button 19
 
 Nintendo Switch Pro Controller (pygame 2.x)
 *******************************************

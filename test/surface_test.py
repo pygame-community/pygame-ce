@@ -114,6 +114,11 @@ class SurfaceTypeTest(unittest.TestCase):
         self.assertIsInstance(r, pygame.Color)
         self.assertEqual(r, (10, 10, 10, 255))
 
+        s.set_at(pygame.Vector2(0, 0), (10, 10, 10, 255))
+        r = s.get_at(pygame.Vector2(0, 0))
+        self.assertIsInstance(r, pygame.Color)
+        self.assertEqual(r, (10, 10, 10, 255))
+
         # try setting a color with a single integer.
         s.fill((0, 0, 0, 255))
         s.set_at((10, 1), 0x0000FF)
@@ -244,6 +249,22 @@ class SurfaceTypeTest(unittest.TestCase):
         s1.fill(color)
 
         s2 = s1.copy()
+
+        s1rect = s1.get_rect()
+        s2rect = s2.get_rect()
+
+        self.assertEqual(s1rect.size, s2rect.size)
+        self.assertEqual(s2.get_at((10, 10)), color)
+
+    def test_deepcopy(self):
+        """Ensure a surface can be copied."""
+        color = (25, 25, 25, 25)
+        s1 = pygame.Surface((32, 32), pygame.SRCALPHA, 32)
+        s1.fill(color)
+
+        import copy
+
+        s2 = copy.deepcopy(s1)
 
         s1rect = s1.get_rect()
         s2rect = s2.get_rect()
@@ -1905,10 +1926,15 @@ class GeneralSurfaceTests(unittest.TestCase):
         surf.set_at((1, 1), c11)
         c = surf.get_at((0, 0))
         self.assertIsInstance(c, pygame.Color)
+        c = surf.get_at(pygame.Vector2(0, 0))
+        self.assertIsInstance(c, pygame.Color)
         self.assertEqual(c, c00)
         self.assertEqual(surf.get_at((0, 1)), c01)
         self.assertEqual(surf.get_at((1, 0)), c10)
         self.assertEqual(surf.get_at((1, 1)), c11)
+        self.assertEqual(surf.get_at(pygame.Vector2(0, 1)), c01)
+        self.assertEqual(surf.get_at(pygame.Vector2(1, 0)), c10)
+        self.assertEqual(surf.get_at(pygame.Vector2(1, 1)), c11)
         for p in [(-1, 0), (0, -1), (2, 0), (0, 2)]:
             self.assertRaises(IndexError, surf.get_at, p)
 
@@ -1918,6 +1944,12 @@ class GeneralSurfaceTests(unittest.TestCase):
             surf = pygame.Surface((2, 2), 0, bitsize)
             surf.fill(color)
             pixel = surf.get_at_mapped((0, 0))
+            self.assertEqual(
+                pixel,
+                surf.map_rgb(color),
+                "%i != %i, bitsize: %i" % (pixel, surf.map_rgb(color), bitsize),
+            )
+            pixel = surf.get_at_mapped(pygame.Vector2(0, 0))
             self.assertEqual(
                 pixel,
                 surf.map_rgb(color),

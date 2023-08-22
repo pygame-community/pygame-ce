@@ -253,7 +253,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectImport_twoPrimitivesFromObj pg_TwoFloatsFromObj
 #define RectImport_PrimitiveFromObj pg_FloatFromObj
 #define RectImport_RectObject pgFRectObject
-#define RectImport_IntersectRectAndLine SDL_IntersectFRectAndLine
+#define RectImport_IntersectRectAndLine PG_IntersectFRectAndLine
 #define RectImport_TypeObject pgFRect_Type
 #define RectImport_PyBuildValueFormat "f"
 #define RectImport_ObjectName "pygame.rect.FRect"
@@ -480,10 +480,10 @@ static struct PyMethodDef pg_rect_methods[] = {
      DOC_RECT_COLLIDELIST},
     {"collidelistall", (PyCFunction)pg_rect_collidelistall, METH_O,
      DOC_RECT_COLLIDELISTALL},
-    {"collidedict", (PyCFunction)pg_rect_collidedict, METH_VARARGS,
-     DOC_RECT_COLLIDEDICT},
-    {"collidedictall", (PyCFunction)pg_rect_collidedictall, METH_VARARGS,
-     DOC_RECT_COLLIDEDICTALL},
+    {"collidedict", (PyCFunction)pg_rect_collidedict,
+     METH_VARARGS | METH_KEYWORDS, DOC_RECT_COLLIDEDICT},
+    {"collidedictall", (PyCFunction)pg_rect_collidedictall,
+     METH_VARARGS | METH_KEYWORDS, DOC_RECT_COLLIDEDICTALL},
     {"collideobjectsall", (PyCFunction)pg_rect_collideobjectsall,
      METH_VARARGS | METH_KEYWORDS, DOC_RECT_COLLIDEOBJECTSALL},
     {"collideobjects", (PyCFunction)pg_rect_collideobjects,
@@ -530,10 +530,10 @@ static struct PyMethodDef pg_frect_methods[] = {
      DOC_RECT_COLLIDELIST},
     {"collidelistall", (PyCFunction)pg_frect_collidelistall, METH_O,
      DOC_RECT_COLLIDELISTALL},
-    {"collidedict", (PyCFunction)pg_frect_collidedict, METH_VARARGS,
-     DOC_RECT_COLLIDEDICT},
-    {"collidedictall", (PyCFunction)pg_frect_collidedictall, METH_VARARGS,
-     DOC_RECT_COLLIDEDICTALL},
+    {"collidedict", (PyCFunction)pg_frect_collidedict,
+     METH_VARARGS | METH_KEYWORDS, DOC_RECT_COLLIDEDICT},
+    {"collidedictall", (PyCFunction)pg_frect_collidedictall,
+     METH_VARARGS | METH_KEYWORDS, DOC_RECT_COLLIDEDICTALL},
     {"collideobjectsall", (PyCFunction)pg_frect_collideobjectsall,
      METH_VARARGS | METH_KEYWORDS, DOC_RECT_COLLIDEOBJECTSALL},
     {"collideobjects", (PyCFunction)pg_frect_collideobjects,
