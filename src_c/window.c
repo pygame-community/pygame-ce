@@ -665,8 +665,8 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 
     SDL_SetWindowData(_win, "pg_window", self);
 
-    PyObject *icon_fileobj = pg_GetPkgdataResource(icon_defaultname);
-    PyObject *icon = pgImage_LoadBasic(icon_fileobj);
+    PyObject *icon_path_obj = pg_GetPkgdataResource(icon_defaultname);
+    PyObject *icon = pgImage_LoadBasic(icon_path_obj);
     if (!icon) {
         return -1;
     }

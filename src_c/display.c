@@ -1259,8 +1259,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
     /*set the window icon*/
     if (!state->icon) {
-        PyObject *icon_fileobj = pg_GetPkgdataResource(icon_defaultname);
-        state->icon = pgImage_LoadBasic(icon_fileobj);
+        PyObject *icon_path_obj = pg_GetPkgdataResource(icon_defaultname);
+        state->icon = pgImage_LoadBasic(icon_path_obj);
         if (!state->icon)
             PyErr_Clear();
         else if (icon_colorkey != -1) {
