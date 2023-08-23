@@ -81,13 +81,13 @@ _pg_has_avx2()
         pixels += pxl_skip * 8;                            \
     }
 
-#define AVX_FILLER_LOOP(CASE1, CASE2)    \
-    while (height--) {                   \
-        CASE1                            \
-                                         \
-        CASE2                            \
-                                         \
-        pixels += skip;                  \
+#define AVX_FILLER_LOOP(CASE1, CASE2) \
+    while (height--) {                \
+        CASE1                         \
+                                      \
+        CASE2                         \
+                                      \
+        pixels += skip;               \
     }
 
 #define RUN_AVX2_FILLER(FILL_CODE)                                          \
