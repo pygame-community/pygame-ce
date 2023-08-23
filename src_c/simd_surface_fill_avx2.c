@@ -37,6 +37,7 @@ _pg_has_avx2()
     int pxl_excess = width % 8;                                               \
     /* indicates the number of 8-pixel blocks that can be processed */        \
     int n_iters_8 = width / 8;                                                \
+    int excess_skip = pxl_excess * pxl_skip, block_skip = pxl_skip * 8;       \
     int i;                                                                    \
     /* load pixel data */                                                     \
     Uint32 *pixels = (Uint32 *)surface->pixels +                              \
@@ -66,7 +67,7 @@ _pg_has_avx2()
     /* store up to 7 pixels */                              \
     _mm256_maskstore_epi32((int *)pixels, mask, mm256_dst); \
                                                             \
-    pixels += pxl_skip * pxl_excess;
+    pixels += excess_skip;
 
 #define NON_MASKED_CASE(FILL_CODE)                         \
     for (i = 0; i < n_iters_8; i++) {                      \
@@ -78,7 +79,7 @@ _pg_has_avx2()
         /* store 8 pixels */                               \
         _mm256_storeu_si256((__m256i *)pixels, mm256_dst); \
                                                            \
-        pixels += pxl_skip * 8;                            \
+        pixels += block_skip;                              \
     }
 
 #define AVX_FILLER_LOOP(CASE1, CASE2) \
@@ -91,15 +92,19 @@ _pg_has_avx2()
     }
 
 #define RUN_AVX2_FILLER(FILL_CODE)                                          \
+    /* Surface width not multiple of 8, greater than 7 */                   \
     if (pxl_excess && n_iters_8) {                                          \
         AVX_FILLER_LOOP(NON_MASKED_CASE(FILL_CODE), MASKED_CASE(FILL_CODE)) \
     }                                                                       \
+    /* Surface width is between 1 and 7 */                                  \
     else if (pxl_excess) {                                                  \
-        AVX_FILLER_LOOP(MASKED_CASE(FILL_CODE), {})                         \
+        AVX_FILLER_LOOP({}, MASKED_CASE(FILL_CODE))                         \
     }                                                                       \
+    /* Surface width multiple of 8 */                                       \
     else if (n_iters_8) {                                                   \
-        AVX_FILLER_LOOP({}, NON_MASKED_CASE(FILL_CODE))                     \
+        AVX_FILLER_LOOP(NON_MASKED_CASE(FILL_CODE), {})                     \
     }                                                                       \
+    /* Surface width is 0 */                                                \
     else {                                                                  \
         return -1;                                                          \
     }
