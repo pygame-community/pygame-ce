@@ -42,7 +42,6 @@ _pg_has_avx2()
     Uint32 *pixels = (Uint32 *)surface->pixels +                              \
                      rect->y * (surface->pitch >> 2) + rect->x * pxl_skip;    \
                                                                               \
-    __m256i *mm256_pixels = (__m256i *)pixels;                                \
     __m256i mm256_dst;                                                        \
     __m256i mask =                                                            \
         _mm256_set_epi32(0, pxl_excess > 6 ? -1 : 0, pxl_excess > 5 ? -1 : 0, \
@@ -69,28 +68,26 @@ _pg_has_avx2()
                                                             \
     pixels += pxl_skip * pxl_excess;
 
-#define NON_MASKED_CASE(FILL_CODE)                    \
-    for (i = 0; i < n_iters_8; i++) {                 \
-        /* load 8 pixels */                           \
-        mm256_dst = _mm256_loadu_si256(mm256_pixels); \
-                                                      \
-        {FILL_CODE}                                   \
-                                                      \
-        /* store 8 pixels */                          \
-        _mm256_storeu_si256(mm256_pixels, mm256_dst); \
-                                                      \
-        mm256_pixels++;                               \
+#define NON_MASKED_CASE(FILL_CODE)                         \
+    for (i = 0; i < n_iters_8; i++) {                      \
+        /* load 8 pixels */                                \
+        mm256_dst = _mm256_loadu_si256((__m256i *)pixels); \
+                                                           \
+        {FILL_CODE}                                        \
+                                                           \
+        /* store 8 pixels */                               \
+        _mm256_storeu_si256((__m256i *)pixels, mm256_dst); \
+                                                           \
+        pixels += pxl_skip * 8;                            \
     }
 
-#define AVX_FILLER_LOOP(CASE1, CASE2)           \
-    while (height--) {                          \
-        mm256_pixels = (__m256i *)pixels;       \
-                                                \
-        CASE1                                   \
-                                                \
-        CASE2                                   \
-                                                \
-        pixels = (Uint32 *)mm256_pixels + skip; \
+#define AVX_FILLER_LOOP(CASE1, CASE2)    \
+    while (height--) {                   \
+        CASE1                            \
+                                         \
+        CASE2                            \
+                                         \
+        pixels += skip;                  \
     }
 
 #define RUN_AVX2_FILLER(FILL_CODE)                                          \
