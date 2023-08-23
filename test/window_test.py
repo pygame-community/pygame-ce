@@ -77,9 +77,12 @@ class WindowTypeTest(unittest.TestCase):
         self.assertRaises(ValueError, lambda: setattr(self.win, "size", (0, 0)))
 
         # test set size when init
-        win = Window(size=(12, 34))
-        self.assertTupleEqual((12, 34), win.size)
-        win.destroy()
+        # On Windows, if SDL <= 2.0.22, this test fails
+        # This bug have been fixed in SDL 2.24.0
+        if SDL > (2, 0, 22):
+            win = Window(size=(12, 34))
+            self.assertTupleEqual((12, 34), win.size)
+            win.destroy()
 
         self.assertRaises(ValueError, lambda: Window(size=(-1, 0)))
 
@@ -165,11 +168,20 @@ class WindowTypeTest(unittest.TestCase):
             ValueError, lambda: setattr(self.win, "minimum_size", (200, 200))
         )
 
-        self.win.minimum_size = (100, 100)
+        self.win.minimum_size = (90, 90)
         # max size should not smaller than min size
         self.assertRaises(
             ValueError, lambda: setattr(self.win, "maximum_size", (50, 50))
         )
+
+        # minimum size should be able to equal to maxium size
+        # This test fails in SDL <= 2.0.12
+        # have been fixed after SDL 2.0.18
+        if SDL >= (2, 0, 18):
+            self.win.minimum_size = (60, 60)
+            self.win.maximum_size = (60, 60)
+            self.assertTupleEqual(self.win.maximum_size, (60, 60))
+            self.assertTupleEqual(self.win.minimum_size, (60, 60))
 
     @unittest.skipIf(
         os.environ.get("SDL_VIDEODRIVER") == "dummy",
