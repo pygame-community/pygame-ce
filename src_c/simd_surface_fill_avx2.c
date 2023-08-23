@@ -37,7 +37,7 @@ _pg_has_avx2()
     int pxl_excess = width % 8;                                               \
     /* indicates the number of 8-pixel blocks that can be processed */        \
     int n_iters_8 = width / 8;                                                \
-    int n;                                                                    \
+    int i;                                                                    \
     /* load pixel data */                                                     \
     Uint32 *pixels = (Uint32 *)surface->pixels +                              \
                      rect->y * (surface->pitch >> 2) + rect->x * pxl_skip;    \
@@ -69,35 +69,33 @@ _pg_has_avx2()
                                                             \
     pixels += pxl_skip * pxl_excess;
 
-#define NON_MASKED_CASE(FILL_CODE)                        \
-    LOOP_UNROLLED4(                                       \
-        {                                                 \
-            /* load 8 pixels */                           \
-            mm256_dst = _mm256_loadu_si256(mm256_pixels); \
-                                                          \
-            {FILL_CODE}                                   \
-                                                          \
-            /* store 8 pixels */                          \
-            _mm256_storeu_si256(mm256_pixels, mm256_dst); \
-                                                          \
-            mm256_pixels++;                               \
-        },                                                \
-        n, n_iters_8);
+#define NON_MASKED_CASE(FILL_CODE)                    \
+    for (i = 0; i < n_iters_8; i++) {                 \
+        /* load 8 pixels */                           \
+        mm256_dst = _mm256_loadu_si256(mm256_pixels); \
+                                                      \
+        {FILL_CODE}                                   \
+                                                      \
+        /* store 8 pixels */                          \
+        _mm256_storeu_si256(mm256_pixels, mm256_dst); \
+                                                      \
+        mm256_pixels++;                               \
+    }
 
 #define AVX_FILLER_LOOP(CASE1, CASE2)           \
     while (height--) {                          \
-        CASE1                                   \
-                                                \
         mm256_pixels = (__m256i *)pixels;       \
+                                                \
+        CASE1                                   \
                                                 \
         CASE2                                   \
                                                 \
         pixels = (Uint32 *)mm256_pixels + skip; \
     }
 
-#define DISPATCH_FILLMODE(FILL_CODE)                                        \
+#define RUN_AVX2_FILLER(FILL_CODE)                                          \
     if (pxl_excess && n_iters_8) {                                          \
-        AVX_FILLER_LOOP(MASKED_CASE(FILL_CODE), NON_MASKED_CASE(FILL_CODE)) \
+        AVX_FILLER_LOOP(NON_MASKED_CASE(FILL_CODE), MASKED_CASE(FILL_CODE)) \
     }                                                                       \
     else if (pxl_excess) {                                                  \
         AVX_FILLER_LOOP(MASKED_CASE(FILL_CODE), {})                         \
@@ -108,8 +106,6 @@ _pg_has_avx2()
     else {                                                                  \
         return -1;                                                          \
     }
-
-#define RUN_AVX2_FILLER(FILL_CODE) DISPATCH_FILLMODE(FILL_CODE)
 
 /* BLEND_ADD */
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
