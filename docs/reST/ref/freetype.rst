@@ -59,7 +59,7 @@ loaded. This module must be imported explicitly to be used. ::
    import pygame
    import pygame.freetype
 
-.. versionadded:: 1.9.2 :mod:`freetype`
+.. versionaddedold:: 1.9.2 :mod:`freetype`
 
 
 .. function:: get_error
@@ -123,7 +123,7 @@ loaded. This module must be imported explicitly to be used. ::
 
    Returns ``True`` if the ``pygame.freetype`` module is currently initialized.
 
-   .. versionadded:: 1.9.5
+   .. versionaddedold:: 1.9.5
 
 .. function:: was_init
 
@@ -171,7 +171,7 @@ loaded. This module must be imported explicitly to be used. ::
    comma-separated font names, or a bytes of comma-separated font names, in
    which case the set of names will be searched in order.
 
-   .. versionadded:: 2.0.1 Accept an iterable of font names.
+   .. versionaddedold:: 2.0.1 Accept an iterable of font names.
 
 .. function:: get_default_font
 
@@ -223,6 +223,22 @@ loaded. This module must be imported explicitly to be used. ::
 
       Read only. Returns the real (long) name of the font, as
       recorded in the font file.
+
+   .. attribute:: style_name
+
+      | :sl:`Gets the font's style_name.`
+      | :sg:`style_name -> str`
+
+      Read only. Returns the font's style name. Style names are arbitrary, can be an empty string. 
+      Here are some examples:
+
+        'Black', 'Bold', 'Bold Italic', 'BoldOblique', 'Book', 'BookOblique', 'Condensed', 'Condensed Oblique',
+        'ExtraLight', 'Italic', 'Light', 'LightOblique', 'Medium', 'MediumOblique', 'Oblique', 'Regular',
+        'Semibold', 'Semilight', 'Slanted'
+
+      .. versionadded:: 2.3.1
+
+      .. ## Font.style_name ##
 
    .. attribute:: path
 
@@ -723,7 +739,7 @@ loaded. This module must be imported explicitly to be used. ::
       unset and text will render with a transparent background by default.
       Applies to :meth:`render` and :meth:`render_to`.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. attribute:: origin
 

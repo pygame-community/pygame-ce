@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pg.examples.testsprite
+""" pygame.examples.testsprite
 
 Like the testsprite.c that comes with libsdl, this pygame version shows
 lots of sprites moving around.
@@ -7,7 +7,7 @@ lots of sprites moving around.
 It is an abomination of ugly code, and mostly used for testing.
 
 
-See pg.examples.aliens for some prettyier code.
+See pygame.examples.aliens for some prettyier code.
 """
 import sys
 import os
@@ -15,16 +15,8 @@ import os
 from random import randint
 from time import time
 
-import pygame as pg
+import pygame
 
-
-if "-psyco" in sys.argv:
-    try:
-        import psyco
-
-        psyco.full()
-    except Exception:
-        print("No psyco for you!  psyco failed to import and run.")
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 data_dir = os.path.join(main_dir, "data")
@@ -51,22 +43,18 @@ if "-layered_dirty" in sys.argv:
 
 flags = 0
 if "-flip" in sys.argv:
-    flags ^= pg.DOUBLEBUF
+    flags ^= pygame.DOUBLEBUF
 
 if "-fullscreen" in sys.argv:
-    flags ^= pg.FULLSCREEN
+    flags ^= pygame.FULLSCREEN
 
 if "-sw" in sys.argv:
-    flags ^= pg.SWSURFACE
+    flags ^= pygame.SWSURFACE
 
 use_rle = True
 
-if "-hw" in sys.argv:
-    flags ^= pg.HWSURFACE
-    use_rle = False
-
 if "-scaled" in sys.argv:
-    flags ^= pg.SCALED
+    flags ^= pygame.SCALED
 
 screen_dims = [640, 480]
 
@@ -86,10 +74,10 @@ else:
 print(screen_dims)
 
 
-##class Thingy(pg.sprite.Sprite):
+##class Thingy(pygame.sprite.Sprite):
 ##    images = None
 ##    def __init__(self):
-##        pg.sprite.Sprite.__init__(self)
+##        pygame.sprite.Sprite.__init__(self)
 ##        self.image = Thingy.images[0]
 ##        self.rect = self.image.get_rect()
 ##        self.rect.x = randint(0, screen_dims[0])
@@ -106,12 +94,12 @@ print(screen_dims)
 ##            self.rect[i] = nv
 
 
-class Thingy(pg.sprite.DirtySprite):
+class Thingy(pygame.sprite.DirtySprite):
     images = None
 
     def __init__(self):
-        ##        pg.sprite.Sprite.__init__(self)
-        pg.sprite.DirtySprite.__init__(self)
+        ##        pygame.sprite.Sprite.__init__(self)
+        pygame.sprite.DirtySprite.__init__(self)
         self.image = Thingy.images[0]
         self.rect = self.image.get_rect()
         self.rect.x = randint(0, screen_dims[0])
@@ -129,11 +117,11 @@ class Thingy(pg.sprite.DirtySprite):
             self.rect[i] = nv
 
 
-class Static(pg.sprite.DirtySprite):
+class Static(pygame.sprite.DirtySprite):
     images = None
 
     def __init__(self):
-        pg.sprite.DirtySprite.__init__(self)
+        pygame.sprite.DirtySprite.__init__(self)
         self.image = Static.images[0]
         self.rect = self.image.get_rect()
         self.rect.x = randint(0, 3 * screen_dims[0] / 4)
@@ -163,31 +151,35 @@ def main(
     if use_layered_dirty:
         update_rects = True
 
-    pg.init()  # needed to initialise time module for get_ticks()
-    pg.display.init()
+    pygame.init()  # needed to initialise time module for get_ticks()
+    pygame.display.init()
 
     # if "-fast" in sys.argv:
 
-    screen = pg.display.set_mode(screen_dims, flags, vsync="-vsync" in sys.argv)
+    screen = pygame.display.set_mode(screen_dims, flags, vsync="-vsync" in sys.argv)
 
     # this is mainly for GP2X, so it can quit.
-    pg.joystick.init()
-    num_joysticks = pg.joystick.get_count()
+    pygame.joystick.init()
+    num_joysticks = pygame.joystick.get_count()
     if num_joysticks > 0:
-        stick = pg.joystick.Joystick(0)
+        stick = pygame.joystick.Joystick(0)
         stick.init()  # now we will receive events for the joystick
 
     screen.fill([0, 0, 0])
-    pg.display.flip()
-    sprite_surface = pg.image.load(os.path.join(data_dir, "asprite.bmp"))
-    sprite_surface2 = pg.image.load(os.path.join(data_dir, "static.png"))
+    pygame.display.flip()
+    sprite_surface = pygame.image.load(os.path.join(data_dir, "asprite.bmp"))
+    sprite_surface2 = pygame.image.load(os.path.join(data_dir, "static.png"))
 
     if use_rle:
-        sprite_surface.set_colorkey([0xFF, 0xFF, 0xFF], pg.SRCCOLORKEY | pg.RLEACCEL)
-        sprite_surface2.set_colorkey([0xFF, 0xFF, 0xFF], pg.SRCCOLORKEY | pg.RLEACCEL)
+        sprite_surface.set_colorkey(
+            [0xFF, 0xFF, 0xFF], pygame.SRCCOLORKEY | pygame.RLEACCEL
+        )
+        sprite_surface2.set_colorkey(
+            [0xFF, 0xFF, 0xFF], pygame.SRCCOLORKEY | pygame.RLEACCEL
+        )
     else:
-        sprite_surface.set_colorkey([0xFF, 0xFF, 0xFF], pg.SRCCOLORKEY)
-        sprite_surface2.set_colorkey([0xFF, 0xFF, 0xFF], pg.SRCCOLORKEY)
+        sprite_surface.set_colorkey([0xFF, 0xFF, 0xFF], pygame.SRCCOLORKEY)
+        sprite_surface2.set_colorkey([0xFF, 0xFF, 0xFF], pygame.SRCCOLORKEY)
 
     if use_alpha:
         sprite_surface = sprite_surface.convert_alpha()
@@ -209,13 +201,13 @@ def main(
         numsprites = 100
     sprites = None
     if use_layered_dirty:
-        ##        sprites = pg.sprite.FastRenderGroup()
-        sprites = pg.sprite.LayeredDirty()
+        ##        sprites = pygame.sprite.FastRenderGroup()
+        sprites = pygame.sprite.LayeredDirty()
     else:
         if update_rects:
-            sprites = pg.sprite.RenderUpdates()
+            sprites = pygame.sprite.RenderUpdates()
         else:
-            sprites = pg.sprite.Group()
+            sprites = pygame.sprite.Group()
 
     for i in range(0, numsprites):
         if use_static and i % 2 == 0:
@@ -225,7 +217,7 @@ def main(
     frames = 0
     start = time()
 
-    background = pg.Surface(screen.get_size())
+    background = pygame.Surface(screen.get_size())
     background = background.convert()
     background.fill([0, 0, 0])
 
@@ -243,18 +235,23 @@ def main(
 
         rects = sprites.draw(screen)
         if update_rects:
-            pg.display.update(rects)
+            pygame.display.update(rects)
         else:
-            pg.display.flip()
+            pygame.display.flip()
 
-        for event in pg.event.get():
-            if event.type in [pg.QUIT, pg.KEYDOWN, pg.QUIT, pg.JOYBUTTONDOWN]:
+        for event in pygame.event.get():
+            if event.type in [
+                pygame.QUIT,
+                pygame.KEYDOWN,
+                pygame.QUIT,
+                pygame.JOYBUTTONDOWN,
+            ]:
                 going = False
 
         frames += 1
     end = time()
     print(f"FPS: {frames / (end - start):f}")
-    pg.quit()
+    pygame.quit()
 
 
 if __name__ == "__main__":

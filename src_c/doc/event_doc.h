@@ -7,7 +7,7 @@
 #define DOC_EVENT_PEEK "peek(eventtype=None) -> bool\npeek(eventtype=None, pump=True) -> bool\ntest if event types are waiting on the queue"
 #define DOC_EVENT_CLEAR "clear(eventtype=None) -> None\nclear(eventtype=None, pump=True) -> None\nremove all events from the queue"
 #define DOC_EVENT_EVENTNAME "event_name(type) -> string\nget the string name from an event id"
-#define DOC_EVENT_SETBLOCKED "set_blocked(type) -> None\nset_blocked(typelist) -> None\nset_blocked(None) -> None\ncontrol which events are allowed on the queue"
+#define DOC_EVENT_SETBLOCKED "set_blocked(type) -> None\nset_blocked(typelist) -> None\nset_blocked(None) -> None\ncontrol which events are blocked on the queue"
 #define DOC_EVENT_SETALLOWED "set_allowed(type) -> None\nset_allowed(typelist) -> None\nset_allowed(None) -> None\ncontrol which events are allowed on the queue"
 #define DOC_EVENT_GETBLOCKED "get_blocked(type) -> bool\nget_blocked(typelist) -> bool\ntest if a type of event is blocked from the queue"
 #define DOC_EVENT_SETGRAB "set_grab(bool) -> None\ncontrol the sharing of input devices with other applications"

@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Library General Public
@@ -18,13 +18,14 @@
 */
 
 /* Adjust gcc 4.4 optimization for floating point on x86-32 PCs running Linux.
- * This addresses bug 52:
- * https://github.com/pygame/pygame/issues/52
+ * This addresses bug 67:
+ * https://github.com/pygame-community/pygame-ce/issues/67
  * With this option, floats have consistent precision regardless of optimize
  * level.
  */
 #if defined(__GNUC__) && defined(__linux__) && defined(__i386__) && \
-    __SIZEOF_POINTER__ == 4 && __GNUC__ == 4 && __GNUC_MINOR__ >= 4
+    __SIZEOF_POINTER__ == 4 &&                                      \
+    ((__GNUC__ == 4 && __GNUC_MINOR__ >= 4) || __GNUC__ >= 4)
 #pragma GCC optimize("float-store")
 #endif
 
@@ -55,8 +56,8 @@
 #endif /* M_PI_2 */
 
 #define VECTOR_EPSILON (1e-6)
-#define VECTOR_MAX_SIZE (4)
-#define STRING_BUF_SIZE_REPR (112)
+#define VECTOR_MAX_SIZE (3)
+#define STRING_BUF_SIZE_REPR (110)
 #define STRING_BUF_SIZE_STR (103)
 #define SWIZZLE_ERR_NO_ERR 0
 #define SWIZZLE_ERR_DOUBLE_IDX 1
@@ -96,9 +97,9 @@ static PyTypeObject pgVectorIter_Type;
 #define RAD2DEG(angle) ((angle)*180. / M_PI)
 
 typedef struct {
-    PyObject_HEAD double *coords; /* Coordinates */
-    Py_ssize_t dim;               /* Dimension of the vector */
-    double epsilon;               /* Small value for comparisons */
+    PyObject_HEAD double coords[VECTOR_MAX_SIZE]; /* Coordinates */
+    Py_ssize_t dim;                               /* Dimension of the vector */
+    double epsilon; /* Small value for comparisons */
 } pgVector;
 
 typedef struct {
@@ -594,7 +595,6 @@ pgVector_NEW(Py_ssize_t dim)
 static void
 vector_dealloc(pgVector *self)
 {
-    PyMem_Free(self->coords);
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -1753,20 +1753,20 @@ static PyObject *
 vector_repr(pgVector *self)
 {
     /* The repr() of the largest possible Vector3 looks like
-     * "<Vector3({d}, {d}, {d})>" where 'd' has a maximum size of 32 bytes
-     *  so allocate a 16 + 3 * 32 == 112 byte buffer
+     * "Vector3({d}, {d}, {d})" where 'd' has a maximum size of 32 bytes
+     *  so allocate a 14 + 3 * 32 == 110 byte buffer
      */
     char buffer[STRING_BUF_SIZE_REPR];
     int tmp;
 
     if (self->dim == 2) {
-        tmp = PyOS_snprintf(buffer, STRING_BUF_SIZE_REPR, "<Vector2(%g, %g)>",
+        tmp = PyOS_snprintf(buffer, STRING_BUF_SIZE_REPR, "Vector2(%g, %g)",
                             self->coords[0], self->coords[1]);
     }
     else if (self->dim == 3) {
-        tmp = PyOS_snprintf(buffer, STRING_BUF_SIZE_REPR,
-                            "<Vector3(%g, %g, %g)>", self->coords[0],
-                            self->coords[1], self->coords[2]);
+        tmp =
+            PyOS_snprintf(buffer, STRING_BUF_SIZE_REPR, "Vector3(%g, %g, %g)",
+                          self->coords[0], self->coords[1], self->coords[2]);
     }
     else {
         return RAISE(
@@ -2152,11 +2152,6 @@ vector2_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if (vec != NULL) {
         vec->dim = 2;
         vec->epsilon = VECTOR_EPSILON;
-        vec->coords = PyMem_New(double, vec->dim);
-        if (vec->coords == NULL) {
-            Py_TYPE(vec)->tp_free((PyObject *)vec);
-            return NULL;
-        }
     }
 
     return (PyObject *)vec;
@@ -2181,7 +2176,7 @@ _vector2_set(pgVector *self, PyObject *xOrSequence, PyObject *y)
                 return 0;
         }
         else if (PyUnicode_Check(xOrSequence)) {
-            char *delimiter[3] = {"<Vector2(", ", ", ")>"};
+            char *delimiter[3] = {"Vector2(", ", ", ")"};
             Py_ssize_t error_code;
             error_code = _vector_coords_from_string(xOrSequence, delimiter,
                                                     self->coords, self->dim);
@@ -2263,7 +2258,7 @@ _vector2_rotate_helper(double *dst_coords, const double *src_coords,
     if (fmod(angle + epsilon, M_PI_2) < 2 * epsilon) {
         switch ((int)((angle + epsilon) / M_PI_2)) {
             case 0: /* 0 degrees */
-            case 4: /* 360 degree (see issue 214) */
+            case 4: /* 360 degree (see pygame-ce issue 229) */
                 dst_coords[0] = src_coords[0];
                 dst_coords[1] = src_coords[1];
                 break;
@@ -2590,11 +2585,6 @@ vector3_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if (vec != NULL) {
         vec->dim = 3;
         vec->epsilon = VECTOR_EPSILON;
-        vec->coords = PyMem_New(double, vec->dim);
-        if (vec->coords == NULL) {
-            Py_TYPE(vec)->tp_free((PyObject *)vec);
-            return NULL;
-        }
     }
 
     return (PyObject *)vec;
@@ -2620,7 +2610,7 @@ _vector3_set(pgVector *self, PyObject *xOrSequence, PyObject *y, PyObject *z)
                 return 0;
         }
         else if (PyUnicode_Check(xOrSequence)) {
-            char *delimiter[4] = {"<Vector3(", ", ", ", ", ")>"};
+            char *delimiter[4] = {"Vector3(", ", ", ", ", ")"};
             Py_ssize_t error_code;
             error_code = _vector_coords_from_string(xOrSequence, delimiter,
                                                     self->coords, self->dim);
@@ -2728,7 +2718,7 @@ _vector3_rotate_helper(double *dst_coords, const double *src_coords,
     if (fmod(angle + epsilon, M_PI_2) < 2 * epsilon) {
         switch ((int)((angle + epsilon) / M_PI_2)) {
             case 0: /* 0 degrees */
-            case 4: /* 360 degrees (see issue 214) */
+            case 4: /* 360 degrees (see pygame-ce issue 229) */
                 memcpy(dst_coords, src_coords, 3 * sizeof(src_coords[0]));
                 break;
             case 1: /* 90 degrees */
@@ -3260,7 +3250,8 @@ vector3_cross(pgVector *self, PyObject *other)
     pgVector *ret;
     double *ret_coords;
     double *self_coords;
-    double *other_coords;
+    double other_coords_static_mem[3];
+    double *other_coords = (double *)&other_coords_static_mem;
 
     if (!pgVectorCompatible_Check(other, self->dim)) {
         PyErr_SetString(PyExc_TypeError, "cannot calculate cross Product");
@@ -3272,21 +3263,13 @@ vector3_cross(pgVector *self, PyObject *other)
         other_coords = ((pgVector *)other)->coords;
     }
     else {
-        other_coords = PyMem_New(double, self->dim);
-        if (!other_coords) {
-            return PyErr_NoMemory();
-        }
-
         if (!PySequence_AsVectorCoords(other, other_coords, 3)) {
-            PyMem_Free(other_coords);
             return NULL;
         }
     }
 
     ret = _vector_subtype_new(self);
     if (ret == NULL) {
-        if (!pgVector_Check(other))
-            PyMem_Free(other_coords);
         return NULL;
     }
     ret_coords = ret->coords;
@@ -3296,9 +3279,6 @@ vector3_cross(pgVector *self, PyObject *other)
                      (self_coords[0] * other_coords[2]));
     ret_coords[2] = ((self_coords[0] * other_coords[1]) -
                      (self_coords[1] * other_coords[0]));
-
-    if (!pgVector_Check(other))
-        PyMem_Free(other_coords);
 
     return (PyObject *)ret;
 }
@@ -3514,7 +3494,7 @@ static void
 vectoriter_dealloc(vectoriter *it)
 {
     Py_XDECREF(it->vec);
-    PyObject_Free(it);
+    Py_TYPE(it)->tp_free(it);
 }
 
 static PyObject *
@@ -3593,7 +3573,7 @@ static void
 vector_elementwiseproxy_dealloc(vector_elementwiseproxy *it)
 {
     Py_XDECREF(it->vec);
-    PyObject_Free(it);
+    Py_TYPE(it)->tp_free(it);
 }
 
 static PyObject *
@@ -3627,13 +3607,9 @@ vector_elementwiseproxy_richcompare(PyObject *o1, PyObject *o2, int op)
     dim = vec->dim;
 
     if (pgVectorCompatible_Check(other, dim)) {
-        double *other_coords = PyMem_New(double, dim);
+        double other_coords[VECTOR_MAX_SIZE];
 
-        if (other_coords == NULL) {
-            return NULL;
-        }
         if (!PySequence_AsVectorCoords(other, other_coords, dim)) {
-            PyMem_Free(other_coords);
             return NULL;
         }
         /* use diff == diff to check for NaN */
@@ -3690,11 +3666,9 @@ vector_elementwiseproxy_richcompare(PyObject *o1, PyObject *o2, int op)
                 }
                 break;
             default:
-                PyMem_Free(other_coords);
                 PyErr_BadInternalCall();
                 return NULL;
         }
-        PyMem_Free(other_coords);
     }
     else if (RealNumber_Check(other)) {
         /* the following PyFloat_AsDouble call should never fail because

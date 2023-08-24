@@ -5,6 +5,7 @@
 #define PYGAMEAPI_JOYSTICK_INTERNAL
 #define PYGAMEAPI_BASE_INTERNAL
 #define PYGAMEAPI_SURFACE_INTERNAL
+#define PYGAMEAPI_WINDOW_INTERNAL
 
 #define pgSurface_New(surface) (pgSurfaceObject *)pgSurface_New2((surface), 1)
 #define pgSurface_NewNoOwn(surface) \
@@ -131,11 +132,11 @@ PyInit_sdl2(void);
 PyMODINIT_FUNC
 PyInit_mixer(void);
 
-// PyMODINIT_FUNC
-// PyInit_context(void);
+PyMODINIT_FUNC
+PyInit_system(void);
 
 PyMODINIT_FUNC
-PyInit_controller(void);
+PyInit_controller_old(void);
 
 PyMODINIT_FUNC
 PyInit_transform(void);
@@ -154,6 +155,12 @@ PyInit_gfxdraw(void);
 
 PyMODINIT_FUNC
 PyInit_audio(void);
+
+PyMODINIT_FUNC
+PyInit_pixelarray(void);
+
+PyMODINIT_FUNC
+PyInit__window(void);
 
 // pygame_static module
 
@@ -226,12 +233,13 @@ mod_pygame_import_cython(PyObject *self, PyObject *spec)
 {
     load_submodule_mphase("pygame._sdl2", PyInit_sdl2(), spec, "sdl2");
     load_submodule_mphase("pygame._sdl2", PyInit_mixer(), spec, "mixer");
-    load_submodule_mphase("pygame._sdl2", PyInit_controller(), spec,
-                          "controller");
+    load_submodule_mphase("pygame._sdl2", PyInit_controller_old(), spec,
+                          "controller_old");
     load_submodule_mphase("pygame._sdl2", PyInit_audio(), spec, "audio");
     load_submodule_mphase("pygame._sdl2", PyInit_video(), spec, "video");
     // depends on pygame._sdl2.video
     load_submodule_mphase("pygame", PyInit__sprite(), spec, "_sprite");
+
     Py_RETURN_NONE;
 }
 
@@ -254,7 +262,7 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_pg_math(), "math");
     load_submodule("pygame", PyInit_display(), "display");
     load_submodule("pygame", PyInit_surface(), "surface");
-    //    load_submodule("pygame", PyInit_context(), "context");
+    load_submodule("pygame", PyInit_system(), "system");
     load_submodule("pygame", PyInit_key(), "key");
 
     load_submodule("pygame", PyInit_rect(), "rect");
@@ -280,8 +288,11 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_joystick(), "joystick");
 
     load_submodule("pygame", PyInit_pg_mixer(), "mixer");
-
     load_submodule("pygame.mixer", PyInit_mixer_music(), "music");
+
+    load_submodule("pygame", PyInit__window(), "_window");
+
+    load_submodule("pygame", PyInit_pixelarray(), "pixelarray");
 
     return PyModule_Create(&mod_pygame_static);
 }
@@ -291,6 +302,7 @@ PyInit_pygame_static()
 #include "base.c"
 
 #include "rect.c"
+#include "pgcompat_rect.c"
 
 #undef pgSurface_Lock
 #undef pgSurface_Unlock
@@ -305,8 +317,8 @@ PyInit_pygame_static()
 
 #undef pgColor_New
 #undef pgColor_NewLength
-#undef pg_RGBAFromColorObj
-#undef pg_RGBAFromFuzzyColorObj
+#undef pg_RGBAFromObjEx
+#undef pg_MappedColorFromObj
 #undef pgColor_Type
 
 #include "color.c"
@@ -354,15 +366,17 @@ PyInit_pygame_static()
 #undef pgEvent_Type
 #undef pgEvent_New
 
+#include "joystick.c"
+
 #include "event.c"
 
 #include "mouse.c"
 
 #include "key.c"
 
-#include "joystick.c"
-
 #include "time.c"
+
+#include "system.c"
 
 #include "_freetype.c"
 #include "freetype/ft_wrap.c"
@@ -387,10 +401,12 @@ PyInit_pygame_static()
 #include "pixelcopy.c"
 #include "newbuffer.c"
 
-#include "_sdl2/controller.c"
+#include "_sdl2/controller_old.c"
 #include "_sdl2/touch.c"
 #include "transform.c"
 // that remove some warnings
 #undef MAX
 #undef MIN
 #include "scale2x.c"
+
+#include "window.c"

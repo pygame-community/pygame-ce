@@ -1,5 +1,5 @@
 /*
-    pygame - Python Game Library
+    pygame-ce - Python Game Library
     Copyright (C) 2000-2001  Pete Shinners
 
     This library is free software; you can redistribute it and/or
@@ -633,6 +633,9 @@ MODINIT_DEFINE(constants)
 
     // https://github.com/pygame-community/pygame-ce/issues/1845
     DEC_CONSTS(IS_CE, 1)
+
+    DEC_CONSTS(WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED);
+    DEC_CONSTS(WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
     if (PyModule_AddObject(module, "__all__", all_list)) {
         Py_DECREF(all_list);

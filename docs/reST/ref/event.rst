@@ -83,9 +83,9 @@ specific attributes.
     VIDEOEXPOSE       none
     USEREVENT         code
 
-.. versionchanged:: 2.0.0 The ``joy`` attribute was deprecated, ``instance_id`` was added.
+.. versionchangedold:: 2.0.0 The ``joy`` attribute was deprecated, ``instance_id`` was added.
 
-.. versionchanged:: 2.0.1 The ``unicode`` attribute was added to ``KEYUP`` event.
+.. versionchangedold:: 2.0.1 The ``unicode`` attribute was added to ``KEYUP`` event.
 
 Note that ``ACTIVEEVENT``, ``VIDEORESIZE`` and ``VIDEOEXPOSE`` are considered
 as "legacy" events, the use of pygame2 ``WINDOWEVENT`` API is recommended over
@@ -101,8 +101,8 @@ attributes.
 
 ::
 
-    AUDIODEVICEADDED   which, iscapture (SDL backend >= 2.0.4)
-    AUDIODEVICEREMOVED which, iscapture (SDL backend >= 2.0.4)
+    AUDIODEVICEADDED   which, iscapture
+    AUDIODEVICEREMOVED which, iscapture
     FINGERMOTION       touch_id, finger_id, x, y, dx, dy
     FINGERDOWN         touch_id, finger_id, x, y, dx, dy
     FINGERUP           touch_id, finger_id, x, y, dx, dy
@@ -111,11 +111,11 @@ attributes.
     TEXTEDITING        text, start, length
     TEXTINPUT          text
 
-.. versionadded:: 1.9.5
+.. versionaddedold:: 1.9.5
 
-.. versionchanged:: 2.0.2 Fixed amount horizontal scroll (x, positive to the right and negative to the left).
+.. versionchangedold:: 2.0.2 Fixed amount horizontal scroll (x, positive to the right and negative to the left).
 
-.. versionchanged:: 2.0.2 The ``touch`` attribute was added to all the ``MOUSE`` events.
+.. versionchangedold:: 2.0.2 The ``touch`` attribute was added to all the ``MOUSE`` events.
 
 The ``touch`` attribute of ``MOUSE`` events indicates whether or not the events were generated
 by a touch input device, and not a real mouse. You might want to ignore such events, if your application
@@ -140,9 +140,9 @@ pygame 2 also supports controller hot-plugging
    Event name               Attributes and notes
 
    DROPFILE                 file
-   DROPBEGIN                (SDL backend >= 2.0.5)
-   DROPCOMPLETE             (SDL backend >= 2.0.5)
-   DROPTEXT                 text (SDL backend >= 2.0.5)
+   DROPBEGIN
+   DROPCOMPLETE
+   DROPTEXT
    MIDIIN
    MIDIOUT
    CONTROLLERDEVICEADDED    device_index
@@ -150,10 +150,10 @@ pygame 2 also supports controller hot-plugging
    CONTROLLERDEVICEREMOVED  instance_id
    JOYDEVICEREMOVED         instance_id
    CONTROLLERDEVICEREMAPPED instance_id
-   KEYMAPCHANGED            (SDL backend >= 2.0.4)
+   KEYMAPCHANGED
    CLIPBOARDUPDATE
-   RENDER_TARGETS_RESET     (SDL backend >= 2.0.2)
-   RENDER_DEVICE_RESET      (SDL backend >= 2.0.4)
+   RENDER_TARGETS_RESET
+   RENDER_DEVICE_RESET
    LOCALECHANGED            (SDL backend >= 2.0.14)
 
 Also in this version, ``instance_id`` attributes were added to joystick events,
@@ -168,7 +168,7 @@ not trigger this event.
 
 ``LOCALECHANGED`` is an event sent when user locale changes
 
-.. versionadded:: 2.0.0
+.. versionaddedold:: 2.0.0
 
 .. versionadded:: 2.1.3 ``KEYMAPCHANGED``, ``CLIPBOARDUPDATE``, 
    ``RENDER_TARGETS_RESET``, ``RENDER_DEVICE_RESET`` and ``LOCALECHANGED``
@@ -196,8 +196,8 @@ Here is a list of all window events, along with a short description
    WINDOWFOCUSGAINED      Window gained focus
    WINDOWFOCUSLOST        Window lost focus
    WINDOWCLOSE            Window was closed
-   WINDOWTAKEFOCUS        Window was offered focus (SDL backend >= 2.0.5)
-   WINDOWHITTEST          Window has a special hit test (SDL backend >= 2.0.5)
+   WINDOWTAKEFOCUS        Window was offered focus
+   WINDOWHITTEST          Window has a special hit test
    WINDOWICCPROFCHANGED   Window ICC profile changed (SDL backend >= 2.0.18)
    WINDOWDISPLAYCHANGED   Window moved on a new display (SDL backend >= 2.0.18)
 
@@ -206,7 +206,7 @@ Here is a list of all window events, along with a short description
 ``y`` attributes, ``WINDOWDISPLAYCHANGED`` has a ``display_index`` attribute.
 All windowevents have a ``window`` attribute.
 
-.. versionadded:: 2.0.1
+.. versionaddedold:: 2.0.1
 
 .. versionadded:: 2.1.3 ``WINDOWICCPROFCHANGED`` and ``WINDOWDISPLAYCHANGED``
 
@@ -274,8 +274,8 @@ On Android, the following events can be generated
 
    If ``pump`` is ``True`` (the default), then :func:`pygame.event.pump()` will be called.
 
-   .. versionchanged:: 1.9.5 Added ``pump`` argument
-   .. versionchanged:: 2.0.2 Added ``exclude`` argument
+   .. versionchangedold:: 1.9.5 Added ``pump`` argument
+   .. versionchangedold:: 2.0.2 Added ``exclude`` argument
 
    .. ## pygame.event.get ##
 
@@ -307,7 +307,7 @@ On Android, the following events can be generated
    sleep in an idle state. This is important for programs that want to share the
    system with other applications.
 
-   .. versionchanged:: 2.0.0.dev13 Added ``timeout`` argument
+   .. versionchangedold:: 2.0.0.dev13 Added ``timeout`` argument
 
    .. caution::
       This function should only be called in the thread that initialized :mod:`pygame.display`.
@@ -326,7 +326,7 @@ On Android, the following events can be generated
 
    If ``pump`` is ``True`` (the default), then :func:`pygame.event.pump()` will be called.
 
-   .. versionchanged:: 1.9.5 Added ``pump`` argument
+   .. versionchangedold:: 1.9.5 Added ``pump`` argument
 
    .. ## pygame.event.peek ##
 
@@ -342,7 +342,7 @@ On Android, the following events can be generated
 
    If ``pump`` is ``True`` (the default), then :func:`pygame.event.pump()` will be called.
 
-   .. versionchanged:: 1.9.5 Added ``pump`` argument
+   .. versionchangedold:: 1.9.5 Added ``pump`` argument
 
    .. ## pygame.event.clear ##
 
@@ -361,7 +361,7 @@ On Android, the following events can be generated
 
 .. function:: set_blocked
 
-   | :sl:`control which events are allowed on the queue`
+   | :sl:`control which events are blocked on the queue`
    | :sg:`set_blocked(type) -> None`
    | :sg:`set_blocked(typelist) -> None`
    | :sg:`set_blocked(None) -> None`
@@ -437,10 +437,16 @@ On Android, the following events can be generated
    This is usually used for placing custom events on the event queue.
    Any type of event can be posted, and the events posted can have any attributes.
 
+   When this event is received on the event queue, it will be a shallow copy of
+   the event object posted by this function; the dict attribute of both events
+   will be a reference to the same dict object in memory. Modifications on one
+   dict can affect another, use deepcopy operations on the dict object if you
+   don't want this behaviour.
+
    This returns a boolean on whether the event was posted or not. Blocked events
    cannot be posted, and this function returns ``False`` if you try to post them.
 
-   .. versionchanged:: 2.0.1 returns a boolean, previously returned ``None``
+   .. versionchangedold:: 2.0.1 returns a boolean, previously returned ``None``
 
    .. ## pygame.event.post ##
 
@@ -453,7 +459,7 @@ On Android, the following events can be generated
 
    If too many events are made a :exc:`pygame.error` is raised.
 
-   .. versionadded:: 2.0.0.dev3
+   .. versionaddedold:: 2.0.0.dev3
 
    .. ## pygame.event.custom_type ##
 
@@ -505,7 +511,7 @@ On Android, the following events can be generated
 
       .. ## pygame.event.Event.__dict__ ##
 
-   .. versionadded:: 1.9.2 Mutable attributes.
+   .. versionaddedold:: 1.9.2 Mutable attributes.
 
    .. ## pygame.event.Event ##
 

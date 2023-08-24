@@ -25,10 +25,10 @@ for the full API.
 .. note::
 
   As of Pygame 1.9, the camera module offers native support for cameras
-  that use v4l2 on Linux.  There is support for other platforms via Videocapture
-  or OpenCV, but this guide will focus on the native module.  Most of the code
-  will be valid for other platforms, but certain things like controls will not
-  work.  The module is also marked as **EXPERIMENTAL**, meaning the API could
+  that use v4l2 on Linux.  There is support for other platforms via OpenCV,
+  but this guide will focus on the native module. Most of the code will be
+  valid for other platforms, but certain things like controls will not work.
+  The module is also marked as **EXPERIMENTAL**, meaning the API could 
   change in subsequent versions.
 
 

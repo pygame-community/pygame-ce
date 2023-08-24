@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2021 Charlie Hayden
 
   This library is free software; you can redistribute it and/or

@@ -19,7 +19,7 @@ q     - stop
 """
 import sys
 
-import pygame as pg
+import pygame
 import pygame.freetype
 
 
@@ -39,17 +39,17 @@ class Window:
         if Window.instance is not None:
             return Window.instance
         self = object.__new__(cls)
-        pg.display.init()
-        self.screen = pg.display.set_mode((600, 400))
+        pygame.display.init()
+        self.screen = pygame.display.set_mode((600, 400))
         Window.instance = self
         return self
 
     def __init__(self, title):
-        pg.display.set_caption(title)
+        pygame.display.set_caption(title)
         self.text_color = (254, 231, 21, 255)
         self.background_color = (16, 24, 32, 255)
         self.screen.fill(self.background_color)
-        pg.display.flip()
+        pygame.display.flip()
 
         pygame.freetype.init()
         self.font = pygame.freetype.Font(None, 20)
@@ -75,7 +75,7 @@ class Window:
         return False
 
     def close(self):
-        pg.display.quit()
+        pygame.display.quit()
         Window.instance = None
 
     def write_lines(self, text, line=0):
@@ -92,7 +92,7 @@ class Window:
             )
             # Write new text.
             self.font.render_to(self.screen, (15, y), text_line, self.text_color)
-        pg.display.flip()
+        pygame.display.flip()
 
 
 def show_usage_message():
@@ -101,60 +101,62 @@ def show_usage_message():
 
 
 def main(file_path):
-    """Play an audio file with pg.mixer.music"""
+    """Play an audio file with pygame.mixer.music"""
+
+    EVENT_LOOP_TICK = pygame.event.custom_type()
 
     with Window(file_path) as win:
         win.write_lines("Loading ...", -1)
-        pg.mixer.init(frequency=44100)
+        pygame.mixer.init(frequency=44100)
         try:
             paused = False
-            pg.mixer.music.load(file_path)
+            pygame.mixer.music.load(file_path)
 
             # Make sure the event loop ticks over at least every 0.5 seconds.
-            pg.time.set_timer(pg.USEREVENT, 500)
+            pygame.time.set_timer(EVENT_LOOP_TICK, 500)
 
-            pg.mixer.music.play()
+            pygame.mixer.music.play()
             win.write_lines("Playing ...\n", -1)
 
-            while pg.mixer.music.get_busy() or paused:
-                e = pg.event.wait()
-                if e.type == pg.KEYDOWN:
+            while pygame.mixer.music.get_busy() or paused:
+                e = pygame.event.wait()
+                if e.type == pygame.KEYDOWN:
                     key = e.key
-                    if key == pg.K_SPACE:
+                    if key == pygame.K_SPACE:
                         if paused:
-                            pg.mixer.music.unpause()
+                            pygame.mixer.music.unpause()
                             paused = False
                             win.write_lines("Playing ...\n", -1)
                         else:
-                            pg.mixer.music.pause()
+                            pygame.mixer.music.pause()
                             paused = True
                             win.write_lines("Paused ...\n", -1)
-                    elif key == pg.K_r:
+                    elif key == pygame.K_r:
                         if file_path[-3:].lower() in ("ogg", "mp3", "mod"):
                             status = "Rewound."
-                            pg.mixer.music.rewind()
+                            pygame.mixer.music.rewind()
                         else:
                             status = "Restarted."
-                            pg.mixer.music.play()
+                            pygame.mixer.music.play()
                         if paused:
-                            pg.mixer.music.pause()
+                            pygame.mixer.music.pause()
                             win.write_lines(status, -1)
-                    elif key == pg.K_f:
+                    elif key == pygame.K_f:
                         win.write_lines("Fading out ...\n", -1)
-                        pg.mixer.music.fadeout(5000)
+                        pygame.mixer.music.fadeout(5000)
                         # when finished get_busy() will return False.
-                    elif key in [pg.K_q, pg.K_ESCAPE]:
+                    elif key in [pygame.K_q, pygame.K_ESCAPE]:
                         paused = False
-                        pg.mixer.music.stop()
+                        pygame.mixer.music.stop()
                         # get_busy() will now return False.
-                elif e.type == pg.QUIT:
+                elif e.type == pygame.QUIT:
                     paused = False
-                    pg.mixer.music.stop()
+                    pygame.mixer.music.stop()
                     # get_busy() will now return False.
-            pg.time.set_timer(pg.USEREVENT, 0)
+            pygame.time.set_timer(EVENT_LOOP_TICK, 0)
         finally:
-            pg.mixer.quit()
-    pg.quit()
+            pygame.mixer.quit()
+    pygame.quit()
 
 
 if __name__ == "__main__":

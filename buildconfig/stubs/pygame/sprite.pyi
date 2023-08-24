@@ -16,7 +16,7 @@ from typing import (
 # Protocol added in python 3.8
 from typing_extensions import Protocol
 
-from pygame.rect import Rect
+from pygame.rect import FRect, Rect
 from pygame.surface import Surface
 from pygame.mask import Mask
 
@@ -27,6 +27,14 @@ _Group = AbstractGroup[_SpriteSupportsGroup]
 
 # protocol helps with structural subtyping for typevars in sprite group generics
 class _SupportsSprite(Protocol):
+    @property
+    def image(self) -> Optional[Surface]: ...
+    @image.setter
+    def image(self, value: Optional[Surface]) -> None: ...
+    @property
+    def rect(self) -> Optional[Union[FRect, Rect]]: ...
+    @rect.setter
+    def rect(self, value: Optional[Union[FRect, Rect]]) -> None: ...
     @property
     def layer(self) -> int: ...
     @layer.setter
@@ -45,7 +53,7 @@ class _SupportsSprite(Protocol):
 class _SupportsDirtySprite(_SupportsSprite, Protocol):
     dirty: int
     blendmode: int
-    source_rect: Rect
+    source_rect: Union[FRect, Rect]
     visible: int
     _layer: int
     def _set_visible(self, val: int) -> None: ...
@@ -53,6 +61,14 @@ class _SupportsDirtySprite(_SupportsSprite, Protocol):
 
 # concrete sprite implementation class
 class Sprite(_SupportsSprite):
+    @property
+    def image(self) -> Optional[Surface]: ...
+    @image.setter
+    def image(self, value: Optional[Surface]) -> None: ...
+    @property
+    def rect(self) -> Optional[Union[FRect, Rect]]: ...
+    @rect.setter
+    def rect(self, value: Optional[Union[FRect, Rect]]) -> None: ...
     @property
     def layer(self) -> int: ...
     @layer.setter
@@ -71,7 +87,7 @@ class Sprite(_SupportsSprite):
 class DirtySprite(_SupportsDirtySprite):
     dirty: int
     blendmode: int
-    source_rect: Rect
+    source_rect: Union[FRect, Rect]
     visible: int
     _layer: int
     def _set_visible(self, val: int) -> None: ...
@@ -84,11 +100,13 @@ _TGroup = TypeVar("_TGroup", bound=AbstractGroup)
 # sprite functions don't need all sprite attributes to be present in the
 # arguments passed, they only use a few which are marked in the below protocols
 class _HasRect(Protocol):
-    rect: Rect
+    @property
+    def rect(self) -> Optional[Union[FRect, Rect]]: ...
 
 # image in addition to rect
 class _HasImageAndRect(_HasRect, Protocol):
-    image: Surface
+    @property
+    def image(self) -> Optional[Surface]: ...
 
 # mask in addition to rect
 class _HasMaskAndRect(_HasRect, Protocol):
@@ -115,7 +133,7 @@ _TDirtySprite = TypeVar("_TDirtySprite", bound=_DirtySpriteSupportsGroup)
 # missing image and rect attributes
 # a = Group(Sprite())
 
-# typechecker should error, other Sprite attibutes are also needed for Group
+# typechecker should error, other Sprite attributes are also needed for Group
 # class MySprite:
 #     image: Surface
 #     rect: Rect
@@ -130,8 +148,8 @@ _TDirtySprite = TypeVar("_TDirtySprite", bound=_DirtySpriteSupportsGroup)
 # b = Group(MySprite())
 
 class AbstractGroup(Generic[_TSprite]):
-    spritedict: Dict[_TSprite, Optional[Rect]]
-    lostsprites: List[Rect]
+    spritedict: Dict[_TSprite, Optional[Union[FRect, Rect]]]
+    lostsprites: List[Union[FRect, Rect]]
     def __init__(self) -> None: ...
     def __len__(self) -> int: ...
     def __iter__(self) -> Iterator[_TSprite]: ...
@@ -152,9 +170,11 @@ class AbstractGroup(Generic[_TSprite]):
         self, *sprites: Union[_TSprite, AbstractGroup[_TSprite], Iterable[_TSprite]]
     ) -> bool: ...
     def update(self, *args: Any, **kwargs: Any) -> None: ...
-    def draw(self, surface: Surface) -> List[Rect]: ...
+    def draw(self, surface: Surface) -> List[Union[FRect, Rect]]: ...
     def clear(
-        self, surface: Surface, bgd: Union[Surface, Callable[[Surface, Rect], Any]]
+        self,
+        surface: Surface,
+        bgd: Union[Surface, Callable[[Surface, Union[FRect, Rect]], Any]],
     ) -> None: ...
     def empty(self) -> None: ...
 
@@ -205,12 +225,14 @@ class LayeredUpdates(AbstractGroup[_TSprite]):
 
 class LayeredDirty(LayeredUpdates[_TDirtySprite]):
     def __init__(self, *sprites: _TDirtySprite, **kwargs: Any) -> None: ...
-    def draw(self, surface: Surface, bgd: Optional[Surface] = None) -> List[Rect]: ...
+    def draw(
+        self, surface: Surface, bgd: Optional[Surface] = None
+    ) -> List[Union[FRect, Rect]]: ...
     # clear breaks Liskov substitution principle in code
     def clear(self, surface: Surface, bgd: Surface) -> None: ...  # type: ignore[override]
     def repaint_rect(self, screen_rect: RectValue) -> None: ...
     def set_clip(self, screen_rect: Optional[RectValue] = None) -> None: ...
-    def get_clip(self) -> Rect: ...
+    def get_clip(self) -> Union[FRect, Rect]: ...
     def set_timing_threshold(
         self, time_ms: SupportsFloat
     ) -> None: ...  # This actually accept any value
@@ -244,7 +266,7 @@ class collide_circle_ratio:
     ) -> bool: ...
 
 # argument to collide_mask must either have mask or have image attribute, in
-# addtion to mandatorily having a rect attribute
+# addition to mandatorily having a rect attribute
 _SupportsCollideMask = Union[_HasImageAndRect, _HasMaskAndRect]
 
 def collide_mask(

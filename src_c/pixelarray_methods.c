@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2007-2008 Marcus von Appen
 
   This library is free software; you can redistribute it and/or
@@ -32,59 +32,19 @@
 #define WG_NTSC 0.587
 #define WB_NTSC 0.114
 
-/* Modified pg_RGBAFromColorObj that only accepts pygame.Color or tuple
- * objects.
- */
-static int
-_RGBAFromColorObj(PyObject *obj, Uint8 rgba[4])
-{
-    if (PyObject_IsInstance(obj, (PyObject *)&pgColor_Type) ||
-        PyTuple_Check(obj)) {
-        return pg_RGBAFromColorObj(obj, rgba);
-    }
-    PyErr_SetString(PyExc_ValueError, "invalid color argument");
-    return 0;
-}
-
 /**
  * Tries to retrieve a valid color for a Surface.
  */
 static int
 _get_color_from_object(PyObject *val, SDL_PixelFormat *format, Uint32 *color)
 {
-    Uint8 rgba[] = {0, 0, 0, 0};
-
     if (!val) {
         return 0;
     }
 
-    if (PyLong_Check(val)) {
-        long intval = PyLong_AsLong(val);
-        if (intval == -1 && PyErr_Occurred()) {
-            PyErr_SetString(PyExc_ValueError, "invalid color argument");
-            return 0;
-        }
-        *color = (Uint32)intval;
-        return 1;
-    }
-    else if (PyLong_Check(val)) {
-        unsigned long longval = PyLong_AsUnsignedLong(val);
-        if (PyErr_Occurred()) {
-            PyErr_SetString(PyExc_ValueError, "invalid color argument");
-            return 0;
-        }
-        *color = (Uint32)longval;
-        return 1;
-    }
-    else if (_RGBAFromColorObj(val, rgba)) {
-        *color =
-            (Uint32)SDL_MapRGBA(format, rgba[0], rgba[1], rgba[2], rgba[3]);
-        return 1;
-    }
-    else {
-        PyErr_SetString(PyExc_ValueError, "invalid color argument");
-    }
-    return 0;
+    return pg_MappedColorFromObj(
+        val, format, color,
+        PG_COLOR_HANDLE_INT | PG_COLOR_HANDLE_RESTRICT_SEQ);
 }
 
 /**
@@ -102,7 +62,6 @@ _get_single_pixel(pgPixelArrayObject *array, Py_ssize_t x, Py_ssize_t y)
     if (array->surface == NULL) {
         return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
     }
-
     pixel_p = (array->pixels + x * array->strides[0] + y * array->strides[1]);
     surf = pgSurface_AsSurface(array->surface);
 
@@ -169,16 +128,15 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
 
     /* Create the second surface. */
 
-    temp_surf = SDL_CreateRGBSurface(surf->flags, (int)dim0, (int)dim1,
-                                     surf->format->BitsPerPixel,
-                                     surf->format->Rmask, surf->format->Gmask,
-                                     surf->format->Bmask, surf->format->Amask);
+    temp_surf = SDL_CreateRGBSurfaceWithFormat(0, (int)dim0, (int)dim1,
+                                               surf->format->BitsPerPixel,
+                                               surf->format->format);
     if (!temp_surf) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
     /* Guarantee an identical format. */
-    new_surf = SDL_ConvertSurface(temp_surf, surf->format, surf->flags);
+    new_surf = SDL_ConvertSurface(temp_surf, surf->format, 0);
     SDL_FreeSurface(temp_surf);
     if (!new_surf) {
         return RAISE(pgExc_SDLError, SDL_GetError());

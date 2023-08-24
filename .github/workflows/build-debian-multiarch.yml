@@ -47,10 +47,10 @@ jobs:
         arch: [s390x, ppc64le]
 
     steps:
-    - uses: actions/checkout@v3.3.0
+    - uses: actions/checkout@v3.5.3
 
     - name: Build sources and run tests
-      uses: uraimo/run-on-arch-action@v2.5.0
+      uses: uraimo/run-on-arch-action@v2.5.1
       id: build
       with:
         arch: ${{ matrix.arch }}

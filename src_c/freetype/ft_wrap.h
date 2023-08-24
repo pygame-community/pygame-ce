@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2009 Vicent Marti
 
   This library is free software; you can redistribute it and/or
@@ -284,6 +284,8 @@ _PGFT_Font_GetAvailableSize(FreeTypeInstance *, pgFontObject *, long, long *,
                             long *, long *, double *, double *);
 const char *
 _PGFT_Font_GetName(FreeTypeInstance *, pgFontObject *);
+const char *
+_PGFT_Font_GetStyleName(FreeTypeInstance *, pgFontObject *);
 int
 _PGFT_TryLoadFont_Filename(FreeTypeInstance *, pgFontObject *, const char *,
                            long);

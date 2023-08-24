@@ -22,11 +22,10 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.5.3
 
       - name: Install deps
         run: |
-          sudo apt-mark hold grub-efi-amd64-signed
           sudo apt-get update --fix-missing
           sudo apt-get upgrade
           sudo apt install cppcheck

@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
   Copyright (C) 2006 Rene Dudfield
 
@@ -92,15 +92,16 @@ iext_find_extension(char *fullname)
 }
 
 static PyObject *
-image_load_ext(PyObject *self, PyObject *arg)
+image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     PyObject *obj;
     PyObject *final;
     char *name = NULL, *ext = NULL, *type = NULL;
     SDL_Surface *surf;
     SDL_RWops *rw = NULL;
+    static char *kwds[] = {"file", "namehint", NULL};
 
-    if (!PyArg_ParseTuple(arg, "O|s", &obj, &name)) {
+    if (!PyArg_ParseTupleAndKeywords(arg, kwarg, "O|s", kwds, &obj, &name)) {
         return NULL;
     }
 
@@ -332,7 +333,7 @@ pg_SavePNG(SDL_Surface *surface, const char *file)
 #endif /* end if PNG_H */
 
 static PyObject *
-image_save_ext(PyObject *self, PyObject *arg)
+image_save_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     pgSurfaceObject *surfobj;
     PyObject *obj;
@@ -342,9 +343,11 @@ image_save_ext(PyObject *self, PyObject *arg)
     int result = 1;
     char *name = NULL;
     SDL_RWops *rw = NULL;
+    static char *kwds[] = {"surface", "file", "namehint", NULL};
 
-    if (!PyArg_ParseTuple(arg, "O!O|s", &pgSurface_Type, &surfobj, &obj,
-                          &namehint)) {
+    if (!PyArg_ParseTupleAndKeywords(arg, kwarg, "O!O|s", kwds,
+                                     &pgSurface_Type, &surfobj, &obj,
+                                     &namehint)) {
         return NULL;
     }
 
@@ -454,8 +457,10 @@ _imageext_free(void *ptr)
 */
 
 static PyMethodDef _imageext_methods[] = {
-    {"load_extended", image_load_ext, METH_VARARGS, DOC_IMAGE_LOADEXTENDED},
-    {"save_extended", image_save_ext, METH_VARARGS, DOC_IMAGE_SAVEEXTENDED},
+    {"load_extended", (PyCFunction)image_load_ext,
+     METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_LOADEXTENDED},
+    {"save_extended", (PyCFunction)image_save_ext,
+     METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_SAVEEXTENDED},
     {"_get_sdl_image_version", (PyCFunction)imageext_get_sdl_image_version,
      METH_VARARGS | METH_KEYWORDS,
      "_get_sdl_image_version() -> (major, minor, patch)\n"

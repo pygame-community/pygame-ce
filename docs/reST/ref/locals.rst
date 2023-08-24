@@ -14,7 +14,7 @@ can use ``pygame.locals`` to include only the pygame constants with a ``from
 pygame.locals import *``.
 
 Detailed descriptions of the various constants can be found throughout the
-pygame documentation. Here are the locations of some of them.
+pygame-ce documentation. Here are the locations of some of them.
 
    - The :mod:`pygame.display` module contains flags like ``FULLSCREEN`` used
      by :func:`pygame.display.set_mode`.
