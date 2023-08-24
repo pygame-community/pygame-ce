@@ -109,13 +109,21 @@ _pg_has_avx2()
         return -1;                                                          \
     }
 
-/* BLEND_ADD */
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
 int
 surface_fill_blend_add_avx2(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
 {
     SETUP_AVX2_FILLER({ color &= ~amask; })
+    RUN_AVX2_FILLER({ mm256_dst = _mm256_adds_epu8(mm256_dst, mm256_color); });
+    return 0;
+}
+
+int
+surface_fill_blend_rgba_add_avx2(SDL_Surface *surface, SDL_Rect *rect,
+                                 Uint32 color)
+{
+    SETUP_AVX2_FILLER({})
     RUN_AVX2_FILLER({ mm256_dst = _mm256_adds_epu8(mm256_dst, mm256_color); });
     return 0;
 }
@@ -126,20 +134,7 @@ surface_fill_blend_add_avx2(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
     BAD_AVX2_FUNCTION_CALL;
     return -1;
 }
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
- !defined(SDL_DISABLE_IMMINTRIN_H) */
 
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
-int
-surface_fill_blend_rgba_add_avx2(SDL_Surface *surface, SDL_Rect *rect,
-                                 Uint32 color)
-{
-    SETUP_AVX2_FILLER({})
-    RUN_AVX2_FILLER({ mm256_dst = _mm256_adds_epu8(mm256_dst, mm256_color); });
-    return 0;
-}
-#else
 int
 surface_fill_blend_rgba_add_avx2(SDL_Surface *surface, SDL_Rect *rect,
                                  Uint32 color)
