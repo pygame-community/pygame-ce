@@ -346,7 +346,6 @@ def inject_template_globals(app, pagename, templatename, context, doctree):
         "freetype",
         "gfxdraw",
         "midi",
-        "Overlay",
         "PixelArray",
         "pixelcopy",
         "sndarray",

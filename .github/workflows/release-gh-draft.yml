@@ -5,6 +5,18 @@ on:
     branches: 'release/**'
 
 jobs:
+  manylinux-aarch64:
+    runs-on: ubuntu-latest
+    outputs:
+      pipeline_id: ${{ steps.circleci.outputs.id }}
+
+    steps:
+      - name: Trigger CircleCI builds on release
+        id: circleci
+        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.1.0
+        env:
+          CCI_TOKEN: ${{ secrets.CCI_TOKEN }}
+
   manylinux:
     uses: ./.github/workflows/build-manylinux.yml
 
@@ -18,14 +30,22 @@ jobs:
     uses: ./.github/workflows/build-ubuntu-sdist.yml
 
   draft-release:
-    needs: [manylinux, macos, windows, sdist]
+    needs: [manylinux-aarch64, manylinux, macos, windows, sdist]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3.5.3
 
       - name: Download all artifacts
         uses: actions/download-artifact@v3
-      
+
+      - name: Download manylinux-aarch64 artifacts from CircleCI
+        continue-on-error: true # incase things don't work here, can manually handle it
+        run: >
+          python3 buildconfig/ci/circleci/pull_circleci_artifacts.py
+          ${{ secrets.CCI_TOKEN }}
+          ${{ needs.manylinux-aarch64.outputs.pipeline_id }}
+          pygame-wheels-manylinux
+
       # Strips 'release/' from the ref_name, this helps us access the version
       # name as 'steps.ver.outputs.VER'
       - name: Get version

@@ -171,10 +171,15 @@ required).
 
    .. versionadded:: 2.0.0 ``SCALED``, ``SHOWN`` and ``HIDDEN``
 
+   .. versionadded:: 2.0.0 ``vsync`` parameter
+
    By setting the ``vsync`` parameter to ``1``, it is possible to get a display
-   with vertical sync at a constant frame rate. Subsequent calls to
-   :func:`pygame.display.flip()` will block (i.e. *wait*) until the screen has
-   refreshed.
+   with vertical sync at a constant frame rate determined by the monitor and
+   graphics drivers. Subsequent calls to :func:`pygame.display.flip()` or
+   :func:`pygame.display.update()` will block (i.e. *wait*) until the screen
+   has refreshed, in order to prevent "screen tearing"
+   <https://en.wikipedia.org/wiki/Screen_tearing>.
+
    Be careful when using this feature together with ``pygame.time.Clock`` or
    :func:`pygame.time.delay()`, as multiple forms of waiting and frame rate
    limiting may interact to cause skipped frames.
@@ -185,7 +190,7 @@ required).
    ``set_mode()`` may raise an exception.
 
    Setting the ``vsync`` parameter to ``-1`` in conjunction with  ``OPENGL``
-   will request the OpenGL-specific feature "adaptive vsync".
+   will request the OpenGL-specific feature "adaptive vsync" <https://www.khronos.org/opengl/wiki/Swap_Interval#Adaptive_Vsync>.
 
    Here is an example usage of a call
    to ``set_mode()`` that may give you a display with vsync:
@@ -739,9 +744,20 @@ required).
 
    .. versionaddedold:: 2.0.0
 
+.. function:: is_fullscreen
+
+   | :sl:`Returns True if the pygame window created by pygame.display.set_mode() is in full-screen mode`
+   | :sg:`is_fullscreen() -> bool`
+
+   Edge cases:
+   If the window is in windowed mode, but maximized, this will return `False`.
+   If the window is in "borderless fullscreen" mode, this will return `True`.
+
+   .. versionadded:: 2.2.0
+
 .. function:: is_vsync
 
-   | :sl:`Returns True if vertical synchronisation for pygame.display.flip() is enabled`
+   | :sl:`Returns True if vertical synchronisation for pygame.display.flip() and pygame.display.update() is enabled`
    | :sg:`is_vsync() -> bool`
 
    .. versionadded:: 2.2.0

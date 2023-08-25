@@ -266,27 +266,20 @@ _format_view_to_audio(Py_buffer *view)
 static void
 _pg_push_mixer_event(int type, int code)
 {
-    pgEventObject *e;
     PyObject *dict, *dictcode;
-    SDL_Event event;
     PyGILState_STATE gstate = PyGILState_Ensure();
 
     dict = PyDict_New();
     if (dict) {
         if (type >= PGE_USEREVENT && type < PG_NUMEVENTS) {
             dictcode = PyLong_FromLong(code);
-            PyDict_SetItemString(dict, "code", dictcode);
-            Py_DECREF(dictcode);
+            if (dictcode) {
+                PyDict_SetItemString(dict, "code", dictcode);
+                Py_DECREF(dictcode);
+            }
         }
-        e = (pgEventObject *)pgEvent_New2(type, dict);
+        pg_post_event(type, dict);
         Py_DECREF(dict);
-
-        if (e) {
-            pgEvent_FillUserEvent(e, &event);
-            if (SDL_PushEvent(&event) <= 0)
-                Py_DECREF(dict);
-            Py_DECREF(e);
-        }
     }
     PyGILState_Release(gstate);
 }
@@ -1070,6 +1063,16 @@ chan_play(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
+chan_get_id(PyObject *self, PyObject *empty_args)
+{
+    int channelnum = pgChannel_AsInt(self);
+
+    MIXER_INIT_CHECK();
+
+    return PyLong_FromLong(channelnum);
+}
+
+static PyObject *
 chan_queue(PyObject *self, PyObject *sound)
 {
     int channelnum = pgChannel_AsInt(self);
@@ -1310,6 +1313,10 @@ chan_get_endevent(PyObject *self, PyObject *_null)
     return PyLong_FromLong(channeldata[channelnum].endevent);
 }
 
+static PyGetSetDef _channel_getsets[] = {
+    {"id", (getter)chan_get_id, NULL, DOC_MIXER_CHANNEL_ID, NULL},
+    {NULL, NULL, NULL, NULL, NULL}};
+
 static PyMethodDef channel_methods[] = {
     {"play", (PyCFunction)chan_play, METH_VARARGS | METH_KEYWORDS,
      DOC_MIXER_CHANNEL_PLAY},
@@ -1381,6 +1388,7 @@ static PyTypeObject pgChannel_Type = {
     .tp_methods = channel_methods,
     .tp_init = (initproc)channel_init,
     .tp_new = PyType_GenericNew,
+    .tp_getset = _channel_getsets,
 };
 
 /*mixer module methods*/
@@ -1465,6 +1473,58 @@ mixer_find_channel(PyObject *self, PyObject *args, PyObject *kwargs)
         chan = Mix_GroupOldest(-1);
     }
     return pgChannel_New(chan);
+}
+
+static PyObject *
+mixer_set_soundfont(PyObject *self, PyObject *args)
+{
+    int paths_set;
+    PyObject *path = Py_None;
+    const char *string_path = "";
+
+    if (!PyArg_ParseTuple(args, "|O", &path)) {
+        return NULL;
+    }
+
+    MIXER_INIT_CHECK();
+
+    if (PyUnicode_Check(path)) {
+        string_path = PyUnicode_AsUTF8(path);
+    }
+    else if (!Py_IsNone(path)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "Must pass string or None to set_soundfont");
+        return NULL;
+    }
+
+    if (strlen(string_path) == 0) {
+        paths_set = Mix_SetSoundFonts(NULL);
+    }
+    else {
+        paths_set = Mix_SetSoundFonts(string_path);
+    }
+
+    if (paths_set == 0) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+mixer_get_soundfont(PyObject *self, PyObject *_null)
+{
+    const char *paths;
+
+    MIXER_INIT_CHECK();
+
+    paths = Mix_GetSoundFonts();
+
+    if (paths) {
+        return PyUnicode_FromString(paths);
+    }
+
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1751,7 +1811,8 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
         }
         obj = PyTuple_GET_ITEM(arg, 0);
 
-        if (PyUnicode_Check(obj)) {
+        if (PyUnicode_Check(obj) ||
+            PyObject_HasAttrString(obj, "__fspath__")) {
             file = obj;
             obj = NULL;
         }
@@ -1902,6 +1963,10 @@ static PyMethodDef _mixer_methods[] = {
     {"get_busy", (PyCFunction)get_busy, METH_NOARGS, DOC_MIXER_GETBUSY},
     {"find_channel", (PyCFunction)mixer_find_channel,
      METH_VARARGS | METH_KEYWORDS, DOC_MIXER_FINDCHANNEL},
+    {"set_soundfont", (PyCFunction)mixer_set_soundfont, METH_VARARGS,
+     DOC_MIXER_SETSOUNDFONT},
+    {"get_soundfont", (PyCFunction)mixer_get_soundfont, METH_NOARGS,
+     DOC_MIXER_GETSOUNDFONT},
     {"fadeout", mixer_fadeout, METH_VARARGS, DOC_MIXER_FADEOUT},
     {"stop", (PyCFunction)mixer_stop, METH_NOARGS, DOC_MIXER_STOP},
     {"pause", (PyCFunction)mixer_pause, METH_NOARGS, DOC_MIXER_PAUSE},

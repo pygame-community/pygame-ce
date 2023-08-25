@@ -56,8 +56,8 @@
 
 /* version macros (defined since version 1.9.5) */
 #define PG_MAJOR_VERSION 2
-#define PG_MINOR_VERSION 3
-#define PG_PATCH_VERSION 1
+#define PG_MINOR_VERSION 4
+#define PG_PATCH_VERSION 0
 #define PG_VERSIONNUM(MAJOR, MINOR, PATCH) \
     (1000 * (MAJOR) + 100 * (MINOR) + (PATCH))
 #define PG_VERSION_ATLEAST(MAJOR, MINOR, PATCH)                             \
@@ -372,11 +372,11 @@ typedef struct pgEventObject pgEventObject;
 #define pgEvent_New \
     (*(PyObject * (*)(SDL_Event *)) PYGAMEAPI_GET_SLOT(event, 1))
 
-#define pgEvent_New2 \
-    (*(PyObject * (*)(int, PyObject *)) PYGAMEAPI_GET_SLOT(event, 2))
+#define pg_post_event \
+    (*(int (*)(Uint32, PyObject *))PYGAMEAPI_GET_SLOT(event, 2))
 
-#define pgEvent_FillUserEvent \
-    (*(int (*)(pgEventObject *, SDL_Event *))PYGAMEAPI_GET_SLOT(event, 3))
+#define pg_post_event_dictproxy \
+    (*(int (*)(Uint32, pgEventDictProxy *))PYGAMEAPI_GET_SLOT(event, 3))
 
 #define pg_EnableKeyRepeat (*(int (*)(int, int))PYGAMEAPI_GET_SLOT(event, 4))
 
@@ -433,17 +433,19 @@ typedef struct pgColorObject pgColorObject;
 #ifndef PYGAMEAPI_COLOR_INTERNAL
 #define pgColor_Type (*(PyObject *)PYGAMEAPI_GET_SLOT(color, 0))
 
-#define pgColor_Check(x) ((x)->ob_type == &pgColor_Type)
+#define pgColor_CheckExact(x) ((x)->ob_type == &pgColor_Type)
 #define pgColor_New (*(PyObject * (*)(Uint8 *)) PYGAMEAPI_GET_SLOT(color, 1))
 
 #define pgColor_NewLength \
     (*(PyObject * (*)(Uint8 *, Uint8)) PYGAMEAPI_GET_SLOT(color, 3))
 
-#define pg_RGBAFromColorObj \
-    (*(int (*)(PyObject *, Uint8 *))PYGAMEAPI_GET_SLOT(color, 2))
+#define pg_RGBAFromObjEx                                                    \
+    (*(int (*)(PyObject *, Uint8 *, pgColorHandleFlags))PYGAMEAPI_GET_SLOT( \
+        color, 2))
 
-#define pg_RGBAFromFuzzyColorObj \
-    (*(int (*)(PyObject *, Uint8 *))PYGAMEAPI_GET_SLOT(color, 4))
+#define pg_MappedColorFromObj                           \
+    (*(int (*)(PyObject *, SDL_PixelFormat *, Uint32 *, \
+               pgColorHandleFlags))PYGAMEAPI_GET_SLOT(color, 4))
 
 #define pgColor_AsArray(x) (((pgColorObject *)x)->data)
 #define pgColor_NumComponents(x) (((pgColorObject *)x)->len)
