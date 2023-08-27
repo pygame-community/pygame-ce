@@ -130,7 +130,7 @@
       It is similar to :meth:`Surface.get_rect` but instead of a calling it as a surface method
       you call it as a rectangle method.
 
-      .. versionadded:: 2.3.1
+      .. versionadded:: 2.4.0
 
       .. ## Rect.move_to ##
 
