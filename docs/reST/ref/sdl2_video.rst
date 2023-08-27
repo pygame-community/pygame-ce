@@ -233,7 +233,7 @@
       
       .. seealso:: :func:`update_from_surface`
 
-      .. versionaddedold:: 2.4.0
+      .. versionadded:: 2.4.0
    
    .. method:: update_from_surface
 
@@ -249,7 +249,7 @@
       Unlike :func:`pygame.display.update`, if ``None`` is included in the
       sequence, a ``ValueError`` is raised.
 
-      .. versionaddedold:: 2.4.0
+      .. versionadded:: 2.4.0
 
    .. method:: set_windowed
 
