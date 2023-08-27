@@ -1935,8 +1935,8 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
     for (int y = 0; y <= max_required_y; ++y) {
         // Check if positive y is within the bounds
         // and do the same for negative y
-        const int pos_y = (y >= miny) & (y <= maxy);
-        const int neg_y = (-y >= miny) & (-y <= maxy);
+        const int pos_y = (y >= miny) && (y <= maxy);
+        const int neg_y = (-y >= miny) && (-y <= maxy);
 
         // Precalculate y squared
         const int y2 = y * y;
