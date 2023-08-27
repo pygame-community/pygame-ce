@@ -11,4 +11,3 @@
         "message, you have stumbled across a pygame bug, please report it "  \
         "to the devs!");                                                     \
     PG_EXIT(1)
-
