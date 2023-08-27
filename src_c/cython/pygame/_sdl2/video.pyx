@@ -337,15 +337,14 @@ cdef class Texture:
     def color(self):
         """Get or set the additional color value multiplied into texture drawing operations
         """
-        cdef Uint8 *rgba = <Uint8 *> malloc(3)
+        cdef Uint8[4] rgba
         
         # https://wiki.libsdl.org/SDL_GetTextureColorMod
         cdef int res = SDL_GetTextureColorMod(self._tex,
                                               &(rgba[0]),
                                               &(rgba[1]),
                                               &(rgba[2]))
-        
-        free(rgba)
+
         if res < 0:
             raise error()
 
@@ -353,20 +352,15 @@ cdef class Texture:
 
     @color.setter
     def color(self, new_value):
-        cdef Uint8 *rgba = <Uint8 *> malloc(4)
-        try:
-            pg_RGBAFromObjEx(new_value, rgba, PG_COLOR_HANDLE_ALL)
-            # exception is set inside the function
-        except:
-            free(rgba)
-            raise
+        cdef Uint8[4] rgba
+        pg_RGBAFromObjEx(new_value, rgba, PG_COLOR_HANDLE_ALL)
 
         # https://wiki.libsdl.org/SDL_SetTextureColorMod
         cdef int res = SDL_SetTextureColorMod(self._tex,
                                               rgba[0],
                                               rgba[1],
                                               rgba[2])
-        free(rgba)
+
         if res < 0:
             raise error()
 
@@ -671,14 +665,10 @@ cdef class Image:
 
     @color.setter
     def color(self, new_color):
-        cdef Uint8 *rgba = <Uint8 *> malloc(4)
-        try:
-            pg_RGBAFromObjEx(new_color, rgba, PG_COLOR_HANDLE_ALL)
-        except:
-            free(rgba)
-            raise
+        cdef Uint8[4] rgba
+        pg_RGBAFromObjEx(new_color, rgba, PG_COLOR_HANDLE_ALL)
+
         self._color[:3] = rgba[:3]
-        free(rgba)
 
     @property
     def origin(self):
@@ -889,12 +879,9 @@ cdef class Renderer:
 
     @draw_color.setter
     def draw_color(self, new_value):
-        cdef Uint8 *rgba = <Uint8 *> malloc(4)
-        try:
-            pg_RGBAFromObjEx(new_value, rgba, PG_COLOR_HANDLE_ALL)
-        except:
-            free(rgba)
-            raise
+        cdef Uint8[4] rgba
+        pg_RGBAFromObjEx(new_value, rgba, PG_COLOR_HANDLE_ALL)
+
         self._draw_color[:] = rgba[:4]
         # https://wiki.libsdl.org/SDL_SetRenderDrawColor
         cdef int res = SDL_SetRenderDrawColor(self._renderer,
@@ -902,7 +889,7 @@ cdef class Renderer:
                                               rgba[1],
                                               rgba[2],
                                               rgba[3])
-        free(rgba)
+
         if res < 0:
             raise error()
 
