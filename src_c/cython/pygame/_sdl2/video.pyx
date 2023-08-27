@@ -344,11 +344,12 @@ cdef class Texture:
                                               &(rgba[0]),
                                               &(rgba[1]),
                                               &(rgba[2]))
+        rgba[3] = 255    
 
         if res < 0:
             raise error()
 
-        return pgColor_NewLength(rgba, 3)
+        return pgColor_NewLength(rgba, 4)
 
     @color.setter
     def color(self, new_value):
@@ -611,7 +612,7 @@ cdef class Image:
         self.flip_y = False
 
         cdef Uint8[4] defaultColor = [255, 255, 255, 255]
-        self._color = pgColor_NewLength(defaultColor, 3)
+        self._color = pgColor_NewLength(defaultColor, 4)
         self.alpha = 255
 
     def __init__(self, texture_or_image, srcrect=None):
