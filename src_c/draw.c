@@ -1961,11 +1961,11 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
         for (int x = x_inner; x <= x_outer; x++) {
             // Check if positive x is within the bounds
             // and do the same for negative x
-            const int pos_x = (x >= minx) & (x <= maxx);
-            const int neg_x = (-x >= minx) & (-x <= maxx);
+            const int pos_x = (x >= minx) && (x <= maxx);
+            const int neg_x = (-x >= minx) && (-x <= maxx);
             // Skip coordinate to avoid unnecessary calculations if neither
             // positive nor negative x are within the allowed ranges
-            if (!(pos_x | neg_x))
+            if (!(pos_x || neg_x))
                 continue;
 
             // Precalculate offsets for positive and negative x
@@ -1980,13 +1980,13 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
             const double x_dot = x * x_middle;
 
             // Check if the point is within the arc for each quadrant
-            if (pos_y & pos_x & (x_dot + y_dot >= cmp))
+            if (pos_y && pos_x && (x_dot + y_dot >= cmp))
                 unsafe_set_at(surf, px_offset, py_offset, color);
-            if (pos_y & neg_x & (-x_dot + y_dot >= cmp))
+            if (pos_y && neg_x && (-x_dot + y_dot >= cmp))
                 unsafe_set_at(surf, nx_offset, py_offset, color);
-            if (neg_y & pos_x & (x_dot - y_dot >= cmp))
+            if (neg_y && pos_x && (x_dot - y_dot >= cmp))
                 unsafe_set_at(surf, px_offset, ny_offset, color);
-            if (neg_y & neg_x & (-x_dot - y_dot >= cmp))
+            if (neg_y && neg_x && (-x_dot - y_dot >= cmp))
                 unsafe_set_at(surf, nx_offset, ny_offset, color);
         }
     }
