@@ -169,9 +169,6 @@ cdef Uint32 format_from_depth(int depth):
 # disable auto_pickle since it causes stubcheck error 
 @cython.auto_pickle(False)
 cdef class Texture:
-    def __cinit__(self):
-        cdef Uint8[4] defaultColor = [255, 255, 255, 255]
-        self._color = pgColor_NewLength(defaultColor, 3)
 
     def __init__(self,
                  Renderer renderer,
@@ -343,23 +340,31 @@ cdef class Texture:
     def color(self):
         """Get or set the additional color value multiplied into texture drawing operations
         """
+        cdef Uint8[4] rgba
+        
         # https://wiki.libsdl.org/SDL_GetTextureColorMod
         cdef int res = SDL_GetTextureColorMod(self._tex,
-                                              &self._color.data[0],
-                                              &self._color.data[1],
-                                              &self._color.data[2])
+                                              &(rgba[0]),
+                                              &(rgba[1]),
+                                              &(rgba[2]))
+        rgba[3] = 255    
+
         if res < 0:
             raise error()
 
-        return self._color
+        return pgColor_NewLength(rgba, 4)
 
     @color.setter
     def color(self, new_value):
+        cdef Uint8[4] rgba
+        pg_RGBAFromObjEx(new_value, rgba, PG_COLOR_HANDLE_ALL)
+
         # https://wiki.libsdl.org/SDL_SetTextureColorMod
         cdef int res = SDL_SetTextureColorMod(self._tex,
-                                              new_value[0],
-                                              new_value[1],
-                                              new_value[2])
+                                              rgba[0],
+                                              rgba[1],
+                                              rgba[2])
+
         if res < 0:
             raise error()
 
@@ -612,7 +617,7 @@ cdef class Image:
         self.flip_y = False
 
         cdef Uint8[4] defaultColor = [255, 255, 255, 255]
-        self._color = pgColor_NewLength(defaultColor, 3)
+        self._color = pgColor_NewLength(defaultColor, 4)
         self.alpha = 255
 
     def __init__(self, texture_or_image, srcrect=None):
@@ -666,7 +671,10 @@ cdef class Image:
 
     @color.setter
     def color(self, new_color):
-        self._color[:3] = new_color[:3]
+        cdef Uint8[4] rgba
+        pg_RGBAFromObjEx(new_color, rgba, PG_COLOR_HANDLE_ALL)
+
+        self._color[:3] = rgba[:3]
 
     @property
     def origin(self):
@@ -774,8 +782,6 @@ cdef class Renderer:
         if not self._renderer:
             raise error()
 
-        cdef Uint8[4] defaultColor = [255, 255, 255, 255]
-        self._draw_color = pgColor_NewLength(defaultColor, 4)
         self._target = None
         return self
 
@@ -841,7 +847,6 @@ cdef class Renderer:
             raise error()
 
         cdef Uint8[4] defaultColor = [255, 255, 255, 255]
-        self._draw_color = pgColor_NewLength(defaultColor, 4)
         self._target = None
         self._win = window
         self._is_borrowed=0
@@ -875,17 +880,31 @@ cdef class Renderer:
     def draw_color(self):
         """Get or set the color used for primitive drawing operations
         """
-        return self._draw_color
+        cdef Uint8[4] rgba
+
+        cdef int res = SDL_GetRenderDrawColor(self._renderer,
+                                              &(rgba[0]),
+                                              &(rgba[1]),
+                                              &(rgba[2]),
+                                              &(rgba[3]))
+
+        if res < 0:
+            raise error()
+
+        return pgColor_NewLength(rgba, 4)
 
     @draw_color.setter
     def draw_color(self, new_value):
+        cdef Uint8[4] rgba
+        pg_RGBAFromObjEx(new_value, rgba, PG_COLOR_HANDLE_ALL)
+
         # https://wiki.libsdl.org/SDL_SetRenderDrawColor
-        self._draw_color[:] = new_value
         cdef int res = SDL_SetRenderDrawColor(self._renderer,
-                                              new_value[0],
-                                              new_value[1],
-                                              new_value[2],
-                                              new_value[3])
+                                              rgba[0],
+                                              rgba[1],
+                                              rgba[2],
+                                              rgba[3])
+
         if res < 0:
             raise error()
 
@@ -1094,17 +1113,28 @@ cdef class Renderer:
         # https://wiki.libsdl.org/SDL_RenderGeometry
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("fill_triangle requires SDL 2.0.18 or newer")
+        
+        cdef Uint8[4] rgba
+
+        cdef int res = SDL_GetRenderDrawColor(self._renderer,
+                                              &(rgba[0]),
+                                              &(rgba[1]),
+                                              &(rgba[2]),
+                                              &(rgba[3]))
+
+        if res < 0:
+            raise error()
 
         cdef SDL_Vertex vertices[3]
         for i, pos in enumerate((p1, p2, p3)):
             vertices[i].position.x = pos[0]
             vertices[i].position.y = pos[1]
-            vertices[i].color.r = self._draw_color[0]
-            vertices[i].color.g = self._draw_color[1]
-            vertices[i].color.b = self._draw_color[2]
-            vertices[i].color.a = self._draw_color[3]
+            vertices[i].color.r = rgba[0]
+            vertices[i].color.g = rgba[1]
+            vertices[i].color.b = rgba[2]
+            vertices[i].color.a = rgba[3]
 
-        cdef int res = SDL_RenderGeometry(self._renderer, NULL, vertices, 3, NULL, 0)
+        res = SDL_RenderGeometry(self._renderer, NULL, vertices, 3, NULL, 0)
         if res < 0:
             raise error()
 
@@ -1123,17 +1153,28 @@ cdef class Renderer:
         # https://wiki.libsdl.org/SDL_RenderGeometry
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("fill_quad requires SDL 2.0.18 or newer")
+        
+        cdef Uint8[4] rgba
+
+        cdef int res = SDL_GetRenderDrawColor(self._renderer,
+                                              &(rgba[0]),
+                                              &(rgba[1]),
+                                              &(rgba[2]),
+                                              &(rgba[3]))
+
+        if res < 0:
+            raise error()
 
         cdef SDL_Vertex vertices[6]
         for i, pos in enumerate((p1, p2, p3, p3, p4, p1)):
             vertices[i].position.x = pos[0]
             vertices[i].position.y = pos[1]
-            vertices[i].color.r = self._draw_color[0]
-            vertices[i].color.g = self._draw_color[1]
-            vertices[i].color.b = self._draw_color[2]
-            vertices[i].color.a = self._draw_color[3]
+            vertices[i].color.r = rgba[0]
+            vertices[i].color.g = rgba[1]
+            vertices[i].color.b = rgba[2]
+            vertices[i].color.a = rgba[3]
 
-        cdef int res = SDL_RenderGeometry(self._renderer, NULL, vertices, 6, NULL, 0)
+        res = SDL_RenderGeometry(self._renderer, NULL, vertices, 6, NULL, 0)
         if res < 0:
             raise error()
 
