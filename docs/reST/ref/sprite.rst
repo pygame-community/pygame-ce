@@ -19,9 +19,9 @@ of objects in the game. There is also a base Group class that simply stores
 sprites. A game could create new types of Group classes that operate on
 specially customized Sprite instances they contain.
 
-The basic Group class can draw the Sprites it contains to a Surface. The
-``Group.draw()`` method requires that each Sprite have a ``Surface.image``
-attribute and a ``Surface.rect``. The ``Group.clear()`` method requires these
+The basic Sprite class can draw the Sprites it contains to a Surface. The
+``Group.draw()`` method requires that each Sprite have a ``Sprite.image``
+attribute and a ``Sprite.rect``. The ``Group.clear()`` method requires these
 same attributes, and can be used to erase all the Sprites with background.
 There are also more advanced Groups: ``pygame.sprite.RenderUpdates()`` and
 ``pygame.sprite.OrderedUpdates()``.
