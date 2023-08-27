@@ -19,7 +19,7 @@ of objects in the game. There is also a base Group class that simply stores
 sprites. A game could create new types of Group classes that operate on
 specially customized Sprite instances they contain.
 
-The basic Sprite class can draw the Sprites it contains to a Surface. The
+The basic Group class can draw the Sprites it contains to a Surface. The
 ``Group.draw()`` method requires that each Sprite have a ``Surface.image``
 attribute and a ``Surface.rect``. The ``Group.clear()`` method requires these
 same attributes, and can be used to erase all the Sprites with background.
@@ -28,7 +28,7 @@ There are also more advanced Groups: ``pygame.sprite.RenderUpdates()`` and
 
 Lastly, this module contains several collision functions. These help find
 sprites inside multiple groups that have intersecting bounding rectangles. To
-find the collisions, the Sprites are required to have a ``Surface.rect``
+find the collisions, the Sprites are required to have a ``Sprite.rect``
 attribute assigned.
 
 The groups are designed for high efficiency in removing and adding Sprites to
