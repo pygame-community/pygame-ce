@@ -775,8 +775,6 @@ cdef class Renderer:
         if not self._renderer:
             raise error()
 
-        cdef Uint8[4] defaultColor = [255, 255, 255, 255]
-        self._draw_color = pgColor_NewLength(defaultColor, 4)
         self._target = None
         return self
 
@@ -842,7 +840,6 @@ cdef class Renderer:
             raise error()
 
         cdef Uint8[4] defaultColor = [255, 255, 255, 255]
-        self._draw_color = pgColor_NewLength(defaultColor, 4)
         self._target = None
         self._win = window
         self._is_borrowed=0
@@ -876,14 +873,24 @@ cdef class Renderer:
     def draw_color(self):
         """Get or set the color used for primitive drawing operations
         """
-        return self._draw_color
+        cdef Uint8[4] rgba
+
+        cdef int res = SDL_GetRenderDrawColor(self._renderer,
+                                              &(rgba[0]),
+                                              &(rgba[1]),
+                                              &(rgba[2]),
+                                              &(rgba[3]))
+
+        if res < 0:
+            raise error()
+
+        return pgColor_NewLength(rgba, 4)
 
     @draw_color.setter
     def draw_color(self, new_value):
         cdef Uint8[4] rgba
         pg_RGBAFromObjEx(new_value, rgba, PG_COLOR_HANDLE_ALL)
 
-        self._draw_color[:] = rgba[:4]
         # https://wiki.libsdl.org/SDL_SetRenderDrawColor
         cdef int res = SDL_SetRenderDrawColor(self._renderer,
                                               rgba[0],
@@ -1099,17 +1106,28 @@ cdef class Renderer:
         # https://wiki.libsdl.org/SDL_RenderGeometry
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("fill_triangle requires SDL 2.0.18 or newer")
+        
+        cdef Uint8[4] rgba
+
+        cdef int res = SDL_GetRenderDrawColor(self._renderer,
+                                              &(rgba[0]),
+                                              &(rgba[1]),
+                                              &(rgba[2]),
+                                              &(rgba[3]))
+
+        if res < 0:
+            raise error()
 
         cdef SDL_Vertex vertices[3]
         for i, pos in enumerate((p1, p2, p3)):
             vertices[i].position.x = pos[0]
             vertices[i].position.y = pos[1]
-            vertices[i].color.r = self._draw_color[0]
-            vertices[i].color.g = self._draw_color[1]
-            vertices[i].color.b = self._draw_color[2]
-            vertices[i].color.a = self._draw_color[3]
+            vertices[i].color.r = rgba[0]
+            vertices[i].color.g = rgba[1]
+            vertices[i].color.b = rgba[2]
+            vertices[i].color.a = rgba[3]
 
-        cdef int res = SDL_RenderGeometry(self._renderer, NULL, vertices, 3, NULL, 0)
+        res = SDL_RenderGeometry(self._renderer, NULL, vertices, 3, NULL, 0)
         if res < 0:
             raise error()
 
@@ -1128,17 +1146,28 @@ cdef class Renderer:
         # https://wiki.libsdl.org/SDL_RenderGeometry
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("fill_quad requires SDL 2.0.18 or newer")
+        
+        cdef Uint8[4] rgba
+
+        cdef int res = SDL_GetRenderDrawColor(self._renderer,
+                                              &(rgba[0]),
+                                              &(rgba[1]),
+                                              &(rgba[2]),
+                                              &(rgba[3]))
+
+        if res < 0:
+            raise error()
 
         cdef SDL_Vertex vertices[6]
         for i, pos in enumerate((p1, p2, p3, p3, p4, p1)):
             vertices[i].position.x = pos[0]
             vertices[i].position.y = pos[1]
-            vertices[i].color.r = self._draw_color[0]
-            vertices[i].color.g = self._draw_color[1]
-            vertices[i].color.b = self._draw_color[2]
-            vertices[i].color.a = self._draw_color[3]
+            vertices[i].color.r = rgba[0]
+            vertices[i].color.g = rgba[1]
+            vertices[i].color.b = rgba[2]
+            vertices[i].color.a = rgba[3]
 
-        cdef int res = SDL_RenderGeometry(self._renderer, NULL, vertices, 6, NULL, 0)
+        res = SDL_RenderGeometry(self._renderer, NULL, vertices, 6, NULL, 0)
         if res < 0:
             raise error()
 

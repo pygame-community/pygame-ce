@@ -143,6 +143,11 @@ cdef extern from "SDL.h" nogil:
     # https://wiki.libsdl.org/SDL_RenderCopy
     # https://wiki.libsdl.org/SDL_RenderCopyEx
     # https://wiki.libsdl.org/SDL_RenderPresent
+    int SDL_GetRenderDrawColor(SDL_Renderer* renderer,
+                               Uint8*        r, 
+                               Uint8*        g, 
+                               Uint8*        b,
+                               Uint8*        a)
     int SDL_SetRenderDrawColor(SDL_Renderer* renderer,
                                Uint8         r,
                                Uint8         g,
@@ -432,7 +437,6 @@ cdef extern from "pygame.h" nogil:
 
 cdef class Renderer:
     cdef SDL_Renderer* _renderer
-    cdef Color _draw_color
     cdef Texture _target
     cdef Window _win
     cdef int _is_borrowed
