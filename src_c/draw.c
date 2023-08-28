@@ -86,14 +86,11 @@ draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
                 int bottom_left, int bottom_right, int *drawn_area);
 
 // validation of a draw color
-#define CHECK_LOAD_COLOR(colorobj)                                         \
-    if (PyLong_Check(colorobj))                                            \
-        color = (Uint32)PyLong_AsLong(colorobj);                           \
-    else if (pg_RGBAFromFuzzyColorObj(colorobj, rgba))                     \
-        color =                                                            \
-            SDL_MapRGBA(surf->format, rgba[0], rgba[1], rgba[2], rgba[3]); \
-    else                                                                   \
-        return NULL; /* pg_RGBAFromFuzzyColorObj sets the exception for us */
+#define CHECK_LOAD_COLOR(colorobj)                               \
+    if (!pg_MappedColorFromObj((colorobj), surf->format, &color, \
+                               PG_COLOR_HANDLE_ALL)) {           \
+        return NULL;                                             \
+    }
 
 /* Definition of functions that get called in Python */
 
@@ -111,7 +108,6 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     int blend = 1; /* Default blend. */
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
-    Uint8 rgba[4];
     Uint32 color;
     static char *keywords[] = {"surface", "color", "start_pos",
                                "end_pos", "blend", NULL};
@@ -181,7 +177,6 @@ line(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *colorobj, *start, *end;
     SDL_Surface *surf = NULL;
     int startx, starty, endx, endy;
-    Uint8 rgba[4];
     Uint32 color;
     int width = 1; /* Default width. */
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
@@ -251,7 +246,6 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *points, *item = NULL;
     SDL_Surface *surf = NULL;
     Uint32 color;
-    Uint8 rgba[4];
     float pts[4];
     float *xlist, *ylist;
     float x, y;
@@ -388,7 +382,6 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *points, *item = NULL;
     SDL_Surface *surf = NULL;
     Uint32 color;
-    Uint8 rgba[4];
     int x, y, closed, result;
     int *xlist = NULL, *ylist = NULL;
     int width = 1; /* Default width. */
@@ -505,7 +498,6 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *colorobj, *rectobj;
     SDL_Rect *rect = NULL, temp;
     SDL_Surface *surf = NULL;
-    Uint8 rgba[4];
     Uint32 color;
     int width = 1; /* Default width. */
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
@@ -580,7 +572,6 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *colorobj, *rectobj;
     SDL_Rect *rect = NULL, temp;
     SDL_Surface *surf = NULL;
-    Uint8 rgba[4];
     Uint32 color;
     int width = 0; /* Default width. */
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
@@ -647,7 +638,6 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
     pgSurfaceObject *surfobj;
     PyObject *colorobj;
     SDL_Surface *surf = NULL;
-    Uint8 rgba[4];
     Uint32 color;
     SDL_Rect cliprect;
     PyObject *posobj, *radiusobj;
@@ -753,7 +743,6 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     pgSurfaceObject *surfobj;
     PyObject *colorobj, *points, *item = NULL;
     SDL_Surface *surf = NULL;
-    Uint8 rgba[4];
     Uint32 color;
     int *xlist = NULL, *ylist = NULL;
     int width = 0; /* Default width. */
@@ -874,7 +863,6 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
     PyObject *colorobj, *rectobj;
     SDL_Rect *rect = NULL, temp;
     SDL_Surface *surf = NULL;
-    Uint8 rgba[4];
     Uint32 color;
     int width = 0, radius = 0; /* Default values. */
     int top_left_radius = -1, top_right_radius = -1, bottom_left_radius = -1,
