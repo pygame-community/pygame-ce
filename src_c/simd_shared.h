@@ -65,18 +65,5 @@ pg_HasSSE_NEON()
 #endif
 }
 
-/* helper function that does a runtime check for AVX2. It has the added
- * functionality of also returning 0 if compile time support is missing */
-int
-pg_has_avx2()
-{
-#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-    !defined(SDL_DISABLE_IMMINTRIN_H)
-    return SDL_HasAVX2();
-#else
-    return 0;
-#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-          !defined(SDL_DISABLE_IMMINTRIN_H) */
-}
 
 #endif  // SIMD_SHARED_H
