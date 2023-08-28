@@ -147,7 +147,7 @@ jobs:
         bash ./install_mac_deps.sh
 
       CIBW_BEFORE_BUILD: |
-        pip install requests numpy Sphinx"<7.2.0" cython
+        pip install requests numpy Cython Sphinx"<7.2.0"
         python setup.py docs
         cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
 
