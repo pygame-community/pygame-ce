@@ -1,4 +1,5 @@
 from pygame._sdl2.sdl2 import error
+cimport cython
 
 cdef extern from "../pygame.h" nogil:
     int pgJoystick_Check(object joy)
@@ -99,6 +100,8 @@ def name_forindex(index):
 
     return None
 
+# disable auto_pickle since it causes stubcheck error 
+@cython.auto_pickle(False) 
 cdef class Controller:
     _controllers = []
 
