@@ -65,5 +65,4 @@ pg_HasSSE_NEON()
 #endif
 }
 
-
 #endif  // SIMD_SHARED_H
