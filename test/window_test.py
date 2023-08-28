@@ -16,11 +16,25 @@ class WindowTypeTest(unittest.TestCase):
     def setUp(self):
         self.win = Window()
 
+    # Used to check the presence and set-ability of boolean attributes without
+    # testing the results of the actions, since the results are not propagated
+    # by the dummy videodriver on CI for some things.
+    def bool_attr_test(self, attr):
+        setattr(self.win, attr, True)
+        setattr(self.win, attr, False)
+        setattr(self.win, attr, "a truthy string")
+        setattr(self.win, attr, "")
+        setattr(self.win, attr, 17)
+        self.assertIsInstance(getattr(self.win, attr), bool)
+
+    def test_grab(self):
+        self.bool_attr_test("grab")
+
     @unittest.skipIf(
         os.environ.get("SDL_VIDEODRIVER") == "dummy",
         "requires the SDL_VIDEODRIVER to be a non dummy value",
     )
-    def test_grab(self):
+    def test_grab_set(self):
         self.win.grab = True
         self.assertTrue(self.win.grab)
         self.win.grab = False
@@ -33,25 +47,38 @@ class WindowTypeTest(unittest.TestCase):
         self.win.title = title
         self.assertEqual(self.win.title, title)
 
-    @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
-    )
     def test_resizable(self):
-        self.win.resizable = True
-        self.assertTrue(self.win.resizable)
-        self.win.resizable = False
-        self.assertFalse(self.win.resizable)
+        self.bool_attr_test("resizable")
 
     @unittest.skipIf(
         os.environ.get("SDL_VIDEODRIVER") == "dummy",
         "requires the SDL_VIDEODRIVER to be a non dummy value",
     )
+    def test_resizable_set(self):
+        self.win.resizable = True
+        self.assertTrue(self.win.resizable)
+        self.win.resizable = False
+        self.assertFalse(self.win.resizable)
+
     def test_borderless(self):
+        self.bool_attr_test("borderless")
+
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER") == "dummy",
+        "requires the SDL_VIDEODRIVER to be a non dummy value",
+    )
+    def test_borderless_set(self):
         self.win.borderless = True
         self.assertTrue(self.win.borderless)
         self.win.borderless = False
         self.assertFalse(self.win.borderless)
+
+    @unittest.skipIf(
+        SDL < (2, 0, 16),
+        "requires SDL 2.0.16+",
+    )
+    def test_always_on_top(self):
+        self.bool_attr_test("always_on_top")
 
     @unittest.skipIf(
         os.environ.get("SDL_VIDEODRIVER") == "dummy",
@@ -61,7 +88,7 @@ class WindowTypeTest(unittest.TestCase):
         SDL < (2, 0, 16),
         "requires SDL 2.0.16+",
     )
-    def test_always_on_top(self):
+    def test_always_on_top_set(self):
         self.win.always_on_top = True
         self.assertTrue(self.win.always_on_top)
         self.win.always_on_top = False
@@ -183,11 +210,20 @@ class WindowTypeTest(unittest.TestCase):
             self.assertTupleEqual(self.win.maximum_size, (60, 60))
             self.assertTupleEqual(self.win.minimum_size, (60, 60))
 
+    def test_opacity(self):
+        self.win.opacity = 0.5
+
+        # these maybe shouldn't work, but they don't crash
+        self.win.opacity = 20.0
+        self.win.opacity = -10
+
+        self.assertIsInstance(self.win.opacity, float)
+
     @unittest.skipIf(
         os.environ.get("SDL_VIDEODRIVER") == "dummy",
         "requires the SDL_VIDEODRIVER to be a non dummy value",
     )
-    def test_opacity(self):
+    def test_opacity_set(self):
         self.win.opacity = 0.5
         self.assertEqual(self.win.opacity, 0.5)
         self.win.opacity = 0
