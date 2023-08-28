@@ -211,12 +211,9 @@ class WindowTypeTest(unittest.TestCase):
             self.assertTupleEqual(self.win.minimum_size, (60, 60))
 
     def test_opacity(self):
-        self.win.opacity = 0.5
-
-        # these maybe shouldn't work, but they don't crash
-        self.win.opacity = 20.0
-        self.win.opacity = -10
-
+        # Setting is not supported at all with SDL_VIDEODRIVER = dummy,
+        # all we can test here is that the attribute exists and is a
+        # float
         self.assertIsInstance(self.win.opacity, float)
 
     @unittest.skipIf(
