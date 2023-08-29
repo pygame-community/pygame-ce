@@ -3,6 +3,8 @@ from typing import Dict, List, Optional, Tuple, Union, overload
 from pygame.constants import FULLSCREEN
 from pygame.surface import Surface
 
+from pygame._sdl2 import Window
+
 from ._common import (
     ColorValue,
     Coordinate,
@@ -87,3 +89,14 @@ def is_fullscreen() -> bool: ...
 def is_vsync() -> bool: ...
 def get_current_refresh_rate() -> int: ...
 def get_desktop_refresh_rates() -> List[int]: ...
+def messagebox(
+    title: str,
+    message: Optional[str] = None,
+    parent_window: Optional[Window] = None,
+    info: bool = False,
+    warn: bool = False,
+    error: bool = False,
+    buttons: Sequence[str] = ("OK",),
+    return_button: int = 0,
+    escape_button: int = 0,
+) -> int: ...
