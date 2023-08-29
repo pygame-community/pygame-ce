@@ -985,10 +985,14 @@ dict_from_event(SDL_Event *event)
                        PyLong_FromLong(event->key.keysym.scancode));
             break;
         case SDL_MOUSEMOTION:
-            obj = Py_BuildValue("(ii)", event->motion.x, event->motion.y);
+            // Why cast x, y, xrel, and yrel to floats now? In SDL3, these
+            // mousemotion attributes are floats, so outputting the attributes
+            // as floats now prepares for that.
+            obj = Py_BuildValue("(ff)", (float)event->motion.x,
+                                (float)event->motion.y);
             _pg_insobj(dict, "pos", obj);
-            obj =
-                Py_BuildValue("(ii)", event->motion.xrel, event->motion.yrel);
+            obj = Py_BuildValue("(ff)", (float)event->motion.xrel,
+                                (float)event->motion.yrel);
             _pg_insobj(dict, "rel", obj);
             if ((tuple = PyTuple_New(3))) {
                 PyTuple_SET_ITEM(tuple, 0,
@@ -1008,7 +1012,11 @@ dict_from_event(SDL_Event *event)
             break;
         case SDL_MOUSEBUTTONDOWN:
         case SDL_MOUSEBUTTONUP:
-            obj = Py_BuildValue("(ii)", event->button.x, event->button.y);
+            // Why cast x and y to floats now? In SDL3, these button event
+            // attributes are floats, so outputting the attributes as floats
+            // now prepares for that.
+            obj = Py_BuildValue("(ff)", (float)event->button.x,
+                                (float)event->button.y);
             _pg_insobj(dict, "pos", obj);
             _pg_insobj(dict, "button", PyLong_FromLong(event->button.button));
             _pg_insobj(
@@ -1114,22 +1122,29 @@ dict_from_event(SDL_Event *event)
 #else
             _pg_insobj(dict, "flipped", PyBool_FromLong(0));
 #endif
-            _pg_insobj(dict, "x", PyLong_FromLong(event->wheel.x));
-            _pg_insobj(dict, "y", PyLong_FromLong(event->wheel.y));
-
-#if SDL_VERSION_ATLEAST(2, 0, 18)
-            _pg_insobj(dict, "precise_x",
-                       PyFloat_FromDouble((double)event->wheel.preciseX));
-            _pg_insobj(dict, "precise_y",
-                       PyFloat_FromDouble((double)event->wheel.preciseY));
-
-#else /* ~SDL_VERSION_ATLEAST(2, 0, 18) */
+            /* Previously, we had x and y as integers and precise_x and
+             * precise_y as floats. In SDL3, there is no "precise", it's always
+             * a float. To prepare for SDL3 then, lets starting outputting
+             * mousewheel position as floats and with maximum precision. */
+#if !SDL_VERSION_ATLEAST(2, 0, 18)
             /* fallback to regular x and y when SDL version used does not
              * support precise fields */
+            _pg_insobj(dict, "x", PyFloat_FromDouble((double)event->wheel.x));
+            _pg_insobj(dict, "y", PyFloat_FromDouble((double)event->wheel.y));
             _pg_insobj(dict, "precise_x",
                        PyFloat_FromDouble((double)event->wheel.x));
             _pg_insobj(dict, "precise_y",
                        PyFloat_FromDouble((double)event->wheel.y));
+
+#else /* ~SDL_VERSION_ATLEAST(2, 0, 18) */
+            _pg_insobj(dict, "x",
+                       PyFloat_FromDouble((double)event->wheel.preciseX));
+            _pg_insobj(dict, "y",
+                       PyFloat_FromDouble((double)event->wheel.preciseY));
+            _pg_insobj(dict, "precise_x",
+                       PyFloat_FromDouble((double)event->wheel.preciseX));
+            _pg_insobj(dict, "precise_y",
+                       PyFloat_FromDouble((double)event->wheel.preciseY));
 
 #endif /* ~SDL_VERSION_ATLEAST(2, 0, 18) */
             _pg_insobj(

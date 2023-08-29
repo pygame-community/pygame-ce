@@ -83,9 +83,14 @@ specific attributes.
     VIDEOEXPOSE       none
     USEREVENT         code
 
-.. versionchangedold:: 2.0.0 The ``joy`` attribute was deprecated, ``instance_id`` was added.
+.. versionchangedold:: 2.0.0 The ``joy`` attribute was deprecated,
+   ``instance_id`` was added.
 
 .. versionchangedold:: 2.0.1 The ``unicode`` attribute was added to ``KEYUP`` event.
+
+.. versionchanged:: 2.4.0 The ``pos`` and ``rel`` attributes of ``MOUSEMOTION``, 
+   ``MOUSEBUTTONUP``, and ``MOUSEBUTTONDOWN`` are now 2-tuples of floats, 
+   in preparation for SDL3.
 
 Note that ``ACTIVEEVENT``, ``VIDEORESIZE`` and ``VIDEOEXPOSE`` are considered
 as "legacy" events, the use of pygame2 ``WINDOWEVENT`` API is recommended over
@@ -106,7 +111,8 @@ attributes.
     FINGERMOTION       touch_id, finger_id, x, y, dx, dy
     FINGERDOWN         touch_id, finger_id, x, y, dx, dy
     FINGERUP           touch_id, finger_id, x, y, dx, dy
-    MOUSEWHEEL         which, flipped, x, y, touch, precise_x, precise_y
+    MOUSEWHEEL         which, flipped, x, y, touch,
+                       precise_x (deprecated), precise_y (deprecated)
     MULTIGESTURE       touch_id, x, y, pinched, rotated, num_fingers
     TEXTEDITING        text, start, length
     TEXTINPUT          text
@@ -122,6 +128,10 @@ by a touch input device, and not a real mouse. You might want to ignore such eve
 already handles ``FINGERMOTION``, ``FINGERDOWN`` and ``FINGERUP`` events.
 
 .. versionadded:: 2.1.3 Added ``precise_x`` and ``precise_y`` to ``MOUSEWHEEL`` events
+
+.. versionchanged:: 2.4.0 ``MOUSEWHEEL`` event ``x`` and ``y`` are now floats
+   instead of ints, and "precise" by default. This makes ``precise_x`` and
+   ``precise_y`` redundant, so they are now deprecated.
 
 |
 
