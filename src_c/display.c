@@ -2753,9 +2753,11 @@ pg_messagebox(PyObject *self, PyObject *arg, PyObject *kwargs)
         msgbox_data.numbuttons = 1;
     }
     else {
-        if (!PySequence_Check(buttons)) {
-            return RAISE(PyExc_TypeError,
-                         "'buttons' must be a sequence of string");
+        if (!PySequence_Check(buttons) || PyUnicode_Check(buttons)) {
+            PyErr_Format(PyExc_TypeError,
+                         "'buttons' should be a sequence of string, got '%s'",
+                         buttons->ob_type->tp_name);
+            return NULL;
         }
         Py_ssize_t num_buttons = PySequence_Size(buttons);
         if (num_buttons < 0) {
@@ -2774,7 +2776,7 @@ pg_messagebox(PyObject *self, PyObject *arg, PyObject *kwargs)
 
             if (!PyUnicode_Check(btn_name_obj)) {
                 PyErr_SetString(PyExc_TypeError,
-                                "'buttons' must be a sequence of string");
+                                "'buttons' should be a sequence of string");
                 goto error;
             }
 
