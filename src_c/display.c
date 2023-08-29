@@ -2727,7 +2727,9 @@ pg_messagebox(PyObject *self, PyObject *arg, PyObject *kwargs)
         return NULL;
     }
 
+#if SDL_VERSION_ATLEAST(2, 0, 12)
     msgbox_data.flags |= SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT;
+#endif
 
     if (parent_window == Py_None)
         msgbox_data.window = NULL;
@@ -2770,7 +2772,12 @@ pg_messagebox(PyObject *self, PyObject *arg, PyObject *kwargs)
         msgbox_data.numbuttons = (int)num_buttons;
         buttons_data = malloc(sizeof(SDL_MessageBoxButtonData) * num_buttons);
         for (Py_ssize_t i = 0; i < num_buttons; i++) {
+#if SDL_VERSION_ATLEAST(2, 0, 12)
             PyObject *btn_name_obj = PySequence_GetItem(buttons, i);
+#else
+            PyObject *btn_name_obj =
+                PySequence_GetItem(buttons, num_buttons - i - 1);
+#endif
             if (!btn_name_obj)
                 goto error;
 
@@ -2785,7 +2792,11 @@ pg_messagebox(PyObject *self, PyObject *arg, PyObject *kwargs)
                 goto error;
 
             buttons_data[i].text = btn_name;
+#if SDL_VERSION_ATLEAST(2, 0, 12)
             buttons_data[i].buttonid = (int)i;
+#else
+            buttons_data[i].buttonid = (int)(num_buttons - i - 1);
+#endif
             buttons_data[i].flags = 0;
             if (return_button_index == buttons_data[i].buttonid)
                 buttons_data[i].flags |=
