@@ -2689,8 +2689,8 @@ pg_set_allow_screensaver(PyObject *self, PyObject *arg, PyObject *kwargs)
 static PyObject *
 pg_messagebox(PyObject *self, PyObject *arg, PyObject *kwargs)
 {
-    const char *title = NULL, *message = NULL;
-    PyObject *parent_window = Py_None;
+    const char *title = NULL;
+    PyObject *message = Py_None, *parent_window = Py_None;
     const char *msgbox_type = "info";
     PyObject *buttons = NULL;
     int return_button_index = 0;
@@ -2701,7 +2701,7 @@ pg_messagebox(PyObject *self, PyObject *arg, PyObject *kwargs)
                                "escape_button", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(
-            arg, kwargs, "s|ssO!Oii", keywords, &title, &message, &msgbox_type,
+            arg, kwargs, "s|OsO!Oii", keywords, &title, &message, &msgbox_type,
             &pgWindow_Type, &parent_window, &buttons, &return_button_index,
             &escape_button_index)) {
         return NULL;
@@ -2736,12 +2736,22 @@ pg_messagebox(PyObject *self, PyObject *arg, PyObject *kwargs)
     else
         msgbox_data.window = ((pgWindowObject *)parent_window)->_win;
 
-    msgbox_data.colorScheme = NULL;  // use system settings
+    msgbox_data.colorScheme = NULL;  // use system color scheme settings
+
     msgbox_data.title = title;
-    if (message)
-        msgbox_data.message = message;
-    else
+    if (PyUnicode_Check(message)) {
+        msgbox_data.message = PyUnicode_AsUTF8(message);
+        if (!msgbox_data.message)
+            return NULL;
+    }
+    else if (message == Py_None) {
         msgbox_data.message = title;
+    }
+    else {
+        PyErr_Format(PyExc_TypeError, "'message' must be str, not '%s'",
+                     message->ob_type->tp_name);
+        return NULL;
+    }
 
     SDL_MessageBoxButtonData *buttons_data;
 

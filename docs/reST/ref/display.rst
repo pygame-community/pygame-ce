@@ -808,7 +808,7 @@ required).
    | :sg:`messagebox(title, message=None, parent_window=None, info=False, warn=False, buttons=('OK',), return_button=0, escape_button=0)`
 
    :param str title: A title string.
-   :param str message: A message string. If this parameter is not passed, the message will be the title.
+   :param str message: A message string. If this parameter is set to ``None``, the message will be the title.
    :param str type: Set the type of messagebox, could be ``"info"``, ``"warn"`` or ``"error"``.
    :param tuple buttons: An optional sequence of button name strings to show to the user.
    :param int return_button: Button index to use if the return key is hit (``-1`` for none).
