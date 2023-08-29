@@ -2754,11 +2754,17 @@ pg_messagebox(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
     else {
         if (!PySequence_Check(buttons)) {
-            PyErr_SetString(PyExc_TypeError,
-                            "'buttons' must be a sequence of string");
-            goto error;
+            return RAISE(PyExc_TypeError,
+                         "'buttons' must be a sequence of string");
         }
         Py_ssize_t num_buttons = PySequence_Size(buttons);
+        if (num_buttons < 0) {
+            return NULL;
+        }
+        else if (num_buttons == 0) {
+            return RAISE(PyExc_TypeError,
+                         "'buttons' should contain at least 1 button.");
+        }
         msgbox_data.numbuttons = num_buttons;
         buttons_data = malloc(sizeof(SDL_MessageBoxButtonData) * num_buttons);
         for (Py_ssize_t i = 0; i < num_buttons; i++) {
