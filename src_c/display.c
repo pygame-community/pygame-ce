@@ -2767,7 +2767,7 @@ pg_messagebox(PyObject *self, PyObject *arg, PyObject *kwargs)
             return RAISE(PyExc_TypeError,
                          "'buttons' should contain at least 1 button.");
         }
-        msgbox_data.numbuttons = num_buttons;
+        msgbox_data.numbuttons = (int)num_buttons;
         buttons_data = malloc(sizeof(SDL_MessageBoxButtonData) * num_buttons);
         for (Py_ssize_t i = 0; i < num_buttons; i++) {
             PyObject *btn_name_obj = PySequence_GetItem(buttons, i);
@@ -2785,7 +2785,7 @@ pg_messagebox(PyObject *self, PyObject *arg, PyObject *kwargs)
                 goto error;
 
             buttons_data[i].text = btn_name;
-            buttons_data[i].buttonid = i;
+            buttons_data[i].buttonid = (int)i;
             buttons_data[i].flags = 0;
             if (return_button_index == buttons_data[i].buttonid)
                 buttons_data[i].flags |=
