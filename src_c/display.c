@@ -2885,7 +2885,7 @@ static PyMethodDef _pg_display_methods[] = {
     {"set_allow_screensaver", (PyCFunction)pg_set_allow_screensaver,
      METH_VARARGS | METH_KEYWORDS, DOC_DISPLAY_SETALLOWSCREENSAVER},
     {"messagebox", (PyCFunction)pg_messagebox, METH_VARARGS | METH_KEYWORDS,
-     "docs"},
+     DOC_DISPLAY_MESSAGEBOX},
     {NULL, NULL, 0, NULL}};
 
 #ifndef PYPY_VERSION

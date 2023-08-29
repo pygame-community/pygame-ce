@@ -802,4 +802,32 @@ required).
    .. versionadded:: 2.2.0
    .. ## pygame.display.set_allow_screensaver ##
 
+.. function:: messagebox
+
+   | :sl:`Create a native GUI message box`
+   | :sg:`messagebox(title, message=None, parent_window=None, info=False, warn=False, buttons=('OK',), return_button=0, escape_button=0)`
+
+   :param str title: A title string.
+   :param str message: A message string. If this parameter is not passed, the message will be the title.
+   :param str type: Set the type of messagebox, could be ``"info"``, ``"warn"`` or ``"error"``.
+   :param tuple buttons: An optional sequence of button name strings to show to the user.
+   :param int return_button: Button index to use if the return key is hit (``-1`` for none).
+   :param int escape_button: Button index to use if the escape key is hit (``-1`` for none).
+
+..
+   (Uncomment this after the window API is published)
+   :param Winodw parent_window: The parent window of the messagebox
+..
+
+   :return: The index of the button that was pushed.
+
+   This function should be called on the thread that ``set_mode()`` is called.
+   It will block execution of that thread until the user clicks a button or
+   closes the messagebox.
+
+   This function may be called at any time, even before ``pygame.init()``.
+
+   .. versionadded:: 2.4.0
+   
+
 .. ## pygame.display ##
