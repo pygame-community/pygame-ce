@@ -95,6 +95,6 @@ def messagebox(
     type: Literal["info", "warn", "error"] = "info",
     parent_window: Optional[Window] = None,
     buttons: Sequence[str] = ("OK",),
-    return_button: int = 0,
-    escape_button: int = 0,
+    return_button: Optional[int] = 0,
+    escape_button: Optional[int] = 0,
 ) -> int: ...

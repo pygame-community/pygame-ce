@@ -811,8 +811,8 @@ required).
    :param str message: A message string. If this parameter is set to ``None``, the message will be the title.
    :param str type: Set the type of messagebox, could be ``"info"``, ``"warn"`` or ``"error"``.
    :param tuple buttons: An optional sequence of button name strings to show to the user.
-   :param int return_button: Button index to use if the return key is hit (``-1`` for none).
-   :param int escape_button: Button index to use if the escape key is hit (``-1`` for none).
+   :param int return_button: Button index to use if the return key is hit (``None`` for no button linked).
+   :param int escape_button: Button index to use if the escape key is hit (``None`` for no button linked).
 
 ..
    (Uncomment this after the window API is published)

@@ -2699,18 +2699,39 @@ pg_messagebox(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *message = Py_None, *parent_window = Py_None;
     const char *msgbox_type = "info";
     PyObject *buttons = NULL;
-    int return_button_index = 0;
-    int escape_button_index = 0;
+    PyObject *return_button_index_obj = Py_None;
+    PyObject *escape_button_index_obj = Py_None;
 
     static char *keywords[] = {"title",         "message", "type",
                                "parent_window", "buttons", "return_button",
                                "escape_button", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(
-            arg, kwargs, "s|OsO!Oii", keywords, &title, &message, &msgbox_type,
-            &pgWindow_Type, &parent_window, &buttons, &return_button_index,
-            &escape_button_index)) {
+            arg, kwargs, "s|OsO!OOO", keywords, &title, &message, &msgbox_type,
+            &pgWindow_Type, &parent_window, &buttons, &return_button_index_obj,
+            &escape_button_index_obj)) {
         return NULL;
+    }
+
+    int return_button_index;
+    int escape_button_index;
+
+    if (return_button_index_obj == Py_None) {
+        return_button_index = -1;
+    }
+    else {
+        return_button_index = PyLong_AsLong(return_button_index_obj);
+        if (return_button_index == -1 && PyErr_Occurred())
+            return NULL;
+    }
+
+    if (escape_button_index_obj == Py_None) {
+        escape_button_index = -1;
+    }
+    else {
+        int escape_button_index = PyLong_AsLong(escape_button_index_obj);
+        if (escape_button_index == -1 && PyErr_Occurred())
+            return NULL;
     }
 
     SDL_MessageBoxData msgbox_data;
