@@ -2691,21 +2691,18 @@ pg_messagebox(PyObject *self, PyObject *arg, PyObject *kwargs)
 {
     const char *title = NULL, *message = NULL;
     PyObject *parent_window = Py_None;
-    SDL_bool flag_info = SDL_FALSE;
-    SDL_bool flag_warn = SDL_FALSE;
-    SDL_bool flag_error = SDL_FALSE;
+    const char *msgbox_type = "info";
     PyObject *buttons = NULL;
     int return_button_index = 0;
     int escape_button_index = 0;
 
-    static char *keywords[] = {
-        "title", "message", "parent_window",    "info",      "warn",
-        "error", "buttons", "return_button", "escape_button", NULL};
+    static char *keywords[] = {"title",         "message", "type",
+                               "parent_window", "buttons", "return_button",
+                               "escape_button", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(
-            arg, kwargs, "s|sO!pppOii", keywords, &title, &message,
-            &pgWindow_Type, &parent_window, &flag_info, &flag_warn,
-            &flag_error, &buttons, &return_button_index,
+            arg, kwargs, "s|ssO!Oii", keywords, &title, &message, &msgbox_type,
+            &pgWindow_Type, &parent_window, &buttons, &return_button_index,
             &escape_button_index)) {
         return NULL;
     }
@@ -2713,12 +2710,22 @@ pg_messagebox(PyObject *self, PyObject *arg, PyObject *kwargs)
     SDL_MessageBoxData msgbox_data;
 
     msgbox_data.flags = 0;
-    if (flag_info)
+    if (!strcmp(msgbox_type, "info")) {
         msgbox_data.flags |= SDL_MESSAGEBOX_INFORMATION;
-    if (flag_warn)
+    }
+    else if (!strcmp(msgbox_type, "warn")) {
         msgbox_data.flags |= SDL_MESSAGEBOX_WARNING;
-    if (flag_error)
+    }
+    else if (!strcmp(msgbox_type, "error")) {
         msgbox_data.flags |= SDL_MESSAGEBOX_ERROR;
+    }
+    else {
+        PyErr_Format(PyExc_ValueError,
+                     "type should be 'info', 'warn' or 'error', "
+                     "got '%s'.",
+                     msgbox_type);
+        return NULL;
+    }
 
     msgbox_data.flags |= SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT;
 

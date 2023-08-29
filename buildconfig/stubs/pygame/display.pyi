@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple, Union, overload
+from typing import Dict, List, Optional, Tuple, Union, overload, Literal
 
 from pygame.constants import FULLSCREEN
 from pygame.surface import Surface
@@ -92,10 +92,8 @@ def get_desktop_refresh_rates() -> List[int]: ...
 def messagebox(
     title: str,
     message: Optional[str] = None,
+    type: Literal["info", "warn", "error"] = "info",
     parent_window: Optional[Window] = None,
-    info: bool = False,
-    warn: bool = False,
-    error: bool = False,
     buttons: Sequence[str] = ("OK",),
     return_button: int = 0,
     escape_button: int = 0,
