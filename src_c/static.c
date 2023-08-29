@@ -73,6 +73,11 @@ import_pygame_joystick(void)
 {
 }
 
+void
+import_pygame_window(void)
+{
+}
+
 PyMODINIT_FUNC
 PyInit_base(void);
 PyMODINIT_FUNC
