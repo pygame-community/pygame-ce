@@ -297,7 +297,7 @@ class MouseModuleTest(MouseTests):
         self.assertIsInstance(pos, tuple)
         self.assertEqual(len(pos), expected_length)
         for value in pos:
-            self.assertIsInstance(value, int)
+            self.assertIsInstance(value, float)
 
     def test_set_pos__invalid_pos(self):
         """Ensures set_pos handles invalid positions correctly."""
@@ -314,7 +314,7 @@ class MouseModuleTest(MouseTests):
         self.assertIsInstance(rel, tuple)
         self.assertEqual(len(rel), expected_length)
         for value in rel:
-            self.assertIsInstance(value, int)
+            self.assertIsInstance(value, float)
 
     def test_get_visible(self):
         """Ensures get_visible works correctly."""

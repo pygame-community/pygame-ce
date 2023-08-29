@@ -97,7 +97,7 @@ mouse_get_pos(PyObject *self, PyObject *_null)
         }
     }
 
-    return pg_tuple_couple_from_values_int(x, y);
+    return pg_tuple_couple_from_values_float((float)x, (float)y);
 }
 
 static PyObject *
@@ -121,7 +121,7 @@ mouse_get_rel(PyObject *self, PyObject *_null)
             y/=scaley;
         }
     */
-    return pg_tuple_couple_from_values_int(x, y);
+    return pg_tuple_couple_from_values_float((float)x, (float)y);
 }
 
 static PyObject *

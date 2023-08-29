@@ -117,6 +117,9 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    located outside of the display window, but is always constrained to the
    screen.
 
+   .. versionchanged:: 2.4.0 Now returns (x, y) as a Tuple of floats, instead
+      of ints, in preparation for future high precision APIs.
+
    .. ## pygame.mouse.get_pos ##
 
 .. function:: get_rel
@@ -128,6 +131,9 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    this function. The relative movement of the mouse cursor is constrained to
    the edges of the screen, but see the virtual input mouse mode for a way
    around this. Virtual input mode is described at the top of the page.
+
+   .. versionchanged:: 2.4.0 Now returns (x, y) as a Tuple of floats, instead
+      of ints, in preparation for future high precision APIs.
 
    .. ## pygame.mouse.get_rel ##
 

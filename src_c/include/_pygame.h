@@ -558,6 +558,31 @@ pg_tuple_couple_from_values_int(int val1, int val2)
 }
 
 static PG_INLINE PyObject *
+pg_tuple_couple_from_values_float(float val1, float val2)
+{
+    PyObject *tup = PyTuple_New(2);
+    if (!tup) {
+        return NULL;
+    }
+
+    PyObject *tmp = PyFloat_FromDouble((double)val1);
+    if (!tmp) {
+        Py_DECREF(tup);
+        return NULL;
+    }
+    PyTuple_SET_ITEM(tup, 0, tmp);
+
+    tmp = PyFloat_FromDouble((double)val2);
+    if (!tmp) {
+        Py_DECREF(tup);
+        return NULL;
+    }
+    PyTuple_SET_ITEM(tup, 1, tmp);
+
+    return tup;
+}
+
+static PG_INLINE PyObject *
 pg_tuple_triple_from_values_int(int val1, int val2, int val3)
 {
     /* This function turns three input integers into a python tuple object.
