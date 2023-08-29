@@ -93,6 +93,10 @@ _display_state_cleanup(_DisplayState *state)
     }
 }
 
+// prevent this code block from being linked twice
+// (this code block is copied by window.c)
+#ifndef BUILD_STATIC
+
 #if !defined(__APPLE__)
 static char *icon_defaultname = "pygame_icon.bmp";
 static int icon_colorkey = 0;
@@ -175,6 +179,8 @@ display_resource_end:
     Py_XDECREF(name);
     return result;
 }
+
+#endif  // BUILD_STATIC
 
 /* init routines */
 static PyObject *
