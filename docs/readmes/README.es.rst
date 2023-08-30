@@ -23,7 +23,7 @@ Esta es una bifurcación del proyecto original de sus principales desarrolladore
 
 ¡Cualquier nuevo colaborador es bienvenido!
 
-Instalación
+Instalacion
 -----------
 
 ::
@@ -134,13 +134,13 @@ Versiones de dependencia:
 Licencia
 --------
 
-La biblioteca se distribuye bajo la licencia  `GNU LGPL version 2.1`_, que se puede encontrar en el archivo ``docs/LGPL.txt``. Nos reservamos el derecho de licenciar versiones futuras de esta biblioteca bajo una licencia diferente.
+La biblioteca se distribuye bajo la licencia `GNU LGPL version 2.1`_, que se puede encontrar en el archivo ``docs/LGPL.txt``. Nos reservamos el derecho de licenciar versiones futuras de esta biblioteca bajo una licencia diferente.
 
 Esto significa que tienes derecho a usar pygame-ce en cualquier proyecto que desee, pero solo si desea realizar cambios o adiciones a Pygame en sí, entonces usted estará obligado publicarlos con una licencia compatible (preferiblemente enviándolos al proyecto pygame-ce). Se permiten códigos propietarios y juegos comerciales.
 
 Los programas que se encuentran en el subdirectorio ``examples`` pertenecen a el dominio público.
 
-Consulte documentos/licencias para ver las licencias de dependencia.
+Consulte docs/licenses para ver las licencias de dependencia.
 
 
 .. |PyPiVersion| image:: https://img.shields.io/pypi/v/pygame-ce.svg?v=1
