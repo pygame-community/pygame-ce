@@ -252,14 +252,11 @@ music_get_pos(PyObject *self, PyObject *_null)
 
     MIXER_INIT_CHECK();
 
-    if (music_pos_time < 0)
-        return PyLong_FromLong(-1);
-
     Uint16 intermediate_step = (music_format & 0xff) >> 3;
     long denominator = music_channels * music_frequency * intermediate_step;
-    if (denominator == 0) {
-        return RAISE(PyExc_ZeroDivisionError,
-                     "Division by zero in music.get_pos");
+    if (music_pos_time < 0 || denominator == 0)
+    {
+        return PyLong_FromLong(-1);
     }
 
     ticks = (long)(1000 * music_pos / denominator);
