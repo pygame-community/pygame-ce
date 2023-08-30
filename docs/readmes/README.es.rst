@@ -53,7 +53,7 @@ Si desea utilizar características en desarrollo, O quieres contribuir a pygame-
 La instalación de pygame-ce desde el código fuente está bastante automatizada. La mayor parte del trabajo consistirá en compilar e instalar todas las dependencias de 
 pygame. Una vez hecho esto, ejecute el script ``setup.py`` que intentará autoconfigúre, compile e instálelo.
 
-Más información sobre la instalación y compilación está disponible en `Compilation wiki page`_.
+Más información sobre la instalación y compilación está disponible en `La pagina wiki de compilando`_.
 
 Créditos
 --------
@@ -98,7 +98,7 @@ Michael Benfield, David Lau
 
 Hay muchas más personas por ahí que han presentado ideas útiles, han mantenido este proyecto en marcha y, básicamente, nos han hecho la vida más fácil. ¡Gracias!
 
-Muchas gracias por las personas que hacen comentarios de documentación y agregan a `documentation de pygame`_ y `documentation de pygame-ce`_.
+Muchas gracias por las personas que hacen comentarios de documentación y agregan a `documentacion de pygame`_ y `documentacion de pygame-ce`_.
 
 También muchas gracias por las personas que crean juegos y los ponen en el sitio web de pygame.org para que otros aprendan y disfruten.
 
@@ -132,7 +132,7 @@ Versiones de dependencia:
 +----------+-----------------------------+
 
 Licencia
--------
+--------
 
 La biblioteca se distribuye bajo la licencia  `GNU LGPL version 2.1`_, que se puede encontrar en el archivo ``docs/LGPL.txt``. Nos reservamos el derecho de licenciar versiones futuras de esta biblioteca bajo una licencia diferente.
 
@@ -161,10 +161,10 @@ Consulte documentos/licencias para ver las licencias de dependencia.
     :target: https://github.com/psf/black
 
 .. _Pygame: https://www.pyga.me/
-.. _documentación de pygame: https://www.pygame.org/docs/
-.. _documentación de pygame-ce: https://pyga.me/docs/
+.. _documentacion de pygame: https://www.pygame.org/docs/
+.. _documentacion de pygame-ce: https://pyga.me/docs/
 .. _Simple DirectMedia Layer: https://www.libsdl.org
-.. _La página wiki de compilando: https://github.com/pygame-community/pygame-ce/wiki#compiling
+.. _La pagina wiki de compilando: https://github.com/pygame-community/pygame-ce/wiki#compiling
 .. _docs page: https://pyga.me/docs
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
 
