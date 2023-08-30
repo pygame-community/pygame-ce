@@ -219,12 +219,6 @@ MP3 in most cases.
 
    Returns -1 if ``get_pos`` failed due to music not playing.
 
-   :returns: milliseconds (or -1 if failed)
-   :rtype: int
-
-   .. versionchanged:: 2.3.2 Returns -1 if getting pos failed due to nothing having
-                        been played yet
-
    .. ## pygame.mixer.music.get_pos ##
 
 .. function:: queue
