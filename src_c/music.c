@@ -254,8 +254,7 @@ music_get_pos(PyObject *self, PyObject *_null)
 
     Uint16 intermediate_step = (music_format & 0xff) >> 3;
     long denominator = music_channels * music_frequency * intermediate_step;
-    if (music_pos_time < 0 || denominator == 0)
-    {
+    if (music_pos_time < 0 || denominator == 0) {
         return PyLong_FromLong(-1);
     }
 
