@@ -9,6 +9,10 @@
 
 // SSE2 functions
 #if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
+void
+grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf);
 #endif /* (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)) */
 
 // AVX2 functions
+void
+grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf);
