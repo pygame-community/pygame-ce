@@ -761,7 +761,6 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
         }
     }
     else {
-        PyObject *str = 0;
         PyObject *path = 0;
 #ifndef WITH_THREAD
         goto end;
