@@ -716,6 +716,7 @@ class FontTypeTest(unittest.TestCase):
             font.path == "",
             f'font.path should not be empty. {font.path} != ""',
         )
+        self.assertEqual(None, font.path)
 
     def test_font_path_from_file_obj(self):
         default_font_path = pygame_font.Font(None, 20).path

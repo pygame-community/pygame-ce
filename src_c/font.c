@@ -1153,8 +1153,9 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
         if (!path) {
             /* clear out existing file loading error before attempt to get */
             PyErr_Clear();
-            path = PyBytes_FromFormat("<%s object at %p>",
-                                      Py_TYPE(obj)->tp_name, (void *)obj);
+            Py_INCREF(Py_None);
+            path = Py_None;
+
             if (path == NULL) {
                 if (PyErr_Occurred() == NULL) {
                     PyErr_Format(PyExc_RuntimeError,
