@@ -4,7 +4,7 @@ from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from .._common import RectValue, Literal
+from .._common import RectValue, ColorValue
 
 WINDOWPOS_UNDEFINED: int
 WINDOWPOS_CENTERED: int
@@ -59,13 +59,18 @@ class Texture:
     height: int
     alpha: int
     blend_mode: int
-    color: Color
+
+    @property
+    def color(self) -> Color: ...
+    @color.setter
+    def color(self, value: ColorValue) -> None: ...
+
     def get_rect(self, **kwargs: Any) -> Rect: ...
     def draw(
         self,
         srcrect: Optional[RectValue] = None,
         dstrect: Optional[RectValue] = None,
-        angle: int = 0,
+        angle: float = 0.0,
         origin: Optional[Iterable[int]] = None,
         flip_x: bool = False,
         flip_y: bool = False,
@@ -105,7 +110,7 @@ class Image:
         texture_or_image: Union[Texture, Image],
         srcrect: Optional[RectValue] = None,
     ) -> None: ...
-    def get_rect(self, **kwargs: Any) -> Rect: ...
+    def get_rect(self) -> Rect: ...
     def draw(
         self, srcrect: Optional[RectValue] = None, dstrect: Optional[RectValue] = None
     ) -> None: ...
@@ -113,11 +118,15 @@ class Image:
     origin: Optional[Iterable[float]]
     flip_x: bool
     flip_y: bool
-    color: Color
     alpha: float
     blend_mode: int
     texture: Texture
     srcrect: Rect
+
+    @property
+    def color(self) -> Color: ...
+    @color.setter
+    def color(self, value: ColorValue) -> None: ...
 
 class Renderer:
     def __init__(
@@ -131,7 +140,10 @@ class Renderer:
     @classmethod
     def from_window(cls, window: Window) -> Renderer: ...
     draw_blend_mode: int
-    draw_color: Color
+    @property
+    def draw_color(self) -> Color: ...
+    @draw_color.setter
+    def draw_color(self, value: ColorValue) -> None: ...
     def clear(self) -> None: ...
     def present(self) -> None: ...
     def get_viewport(self) -> Rect: ...

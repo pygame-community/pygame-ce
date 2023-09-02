@@ -603,7 +603,7 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
         return NULL;
     }
 
-    if (!pg_RGBAFromFuzzyColorObj(fg_rgba_obj, rgba)) {
+    if (!pg_RGBAFromObjEx(fg_rgba_obj, rgba, PG_COLOR_HANDLE_ALL)) {
         /* Exception already set for us */
         return NULL;
     }
@@ -613,7 +613,7 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
     SDL_Color backg = {0, 0, 0, SDL_ALPHA_OPAQUE};
 
     if (bg_rgba_obj != Py_None) {
-        if (!pg_RGBAFromFuzzyColorObj(bg_rgba_obj, rgba)) {
+        if (!pg_RGBAFromObjEx(bg_rgba_obj, rgba, PG_COLOR_HANDLE_ALL)) {
             /* Exception already set for us */
             return NULL;
         }

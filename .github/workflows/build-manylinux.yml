@@ -54,8 +54,6 @@ jobs:
       # also define environment variables needed for testing
       CIBW_ENVIRONMENT: PIP_CONFIG_FILE=buildconfig/pip_config.ini PORTMIDI_INC_PORTTIME=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
 
-      CIBW_PRERELEASE_PYTHONS: True # for 3.12 testing
-
       CIBW_BUILD: "cp3{[7-9],10,11,12}-* pp3{[8-9],10}-*"
       CIBW_ARCHS: ${{ matrix.arch }}
 
@@ -81,7 +79,7 @@ jobs:
       CIBW_BUILD_VERBOSITY: 2
 
     steps:
-    - uses: actions/checkout@v3.5.3
+    - uses: actions/checkout@v3.6.0
 
     - name: Log in to the Container registry
       uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc

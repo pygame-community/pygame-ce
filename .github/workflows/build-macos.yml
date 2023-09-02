@@ -45,7 +45,7 @@ jobs:
         macarch: [arm64, x86_64]
 
     steps:
-      - uses: actions/checkout@v3.5.3
+      - uses: actions/checkout@v3.6.0
 
       - name: Test for Mac Deps cache hit
         id: macdep-cache
@@ -135,8 +135,6 @@ jobs:
 
       CIBW_BUILD: ${{ matrix.pyversions }}
 
-      CIBW_PRERELEASE_PYTHONS: True # for 3.12 testing
-
       # Build arm64 and x86_64 wheels too on an Intel runner.
       # Note that the arm64 wheels cannot be tested on CI in this configuration
       CIBW_ARCHS: ${{ matrix.macarch }}
@@ -162,7 +160,7 @@ jobs:
       CIBW_BUILD_VERBOSITY: 2
 
     steps:
-      - uses: actions/checkout@v3.5.3
+      - uses: actions/checkout@v3.6.0
 
       - name: pip cache
         uses: actions/cache@v3.3.1
