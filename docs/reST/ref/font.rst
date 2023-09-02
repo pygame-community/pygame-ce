@@ -313,7 +313,7 @@ solves no longer exists, it will likely be removed in the future.
 
       This checks if the char is defined in this font.
 
-      .. versionadded:: 2.3.0
+      .. versionadded:: 2.4.0
 
       .. ## Font.is_char_defined ##
 

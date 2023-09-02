@@ -403,7 +403,7 @@ loaded. This module must be imported explicitly to be used. ::
 
       This checks if the char is defined in this font.
 
-      .. versionadded:: 2.3.0
+      .. versionadded:: 2.4.0
 
       .. ## Font.is_char_defined ##
 
