@@ -1,9 +1,7 @@
-from typing import Optional, Sequence
-
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from ._common import ColorValue, Coordinate, RectValue
+from ._common import ColorValue, Coordinate, RectValue, Sequence
 
 def rect(
     surface: Surface,

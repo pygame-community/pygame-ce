@@ -418,7 +418,7 @@ class MixerMusicModuleTest(unittest.TestCase):
         self.fail()
 
     def test_init(self):
-        """issue #955. unload music whenever mixer.quit() is called"""
+        """pygame-ce issue #622. unload music whenever mixer.quit() is called"""
         import tempfile
         import shutil
 

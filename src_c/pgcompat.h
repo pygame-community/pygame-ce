@@ -21,7 +21,4 @@
 #define Py_TPFLAGS_HAVE_NEWBUFFER 0
 #endif
 
-#define Slice_GET_INDICES_EX(slice, length, start, stop, step, slicelength) \
-    PySlice_GetIndicesEx(slice, length, start, stop, step, slicelength)
-
 #endif /* ~PGCOMPAT_INTERNAL_H */

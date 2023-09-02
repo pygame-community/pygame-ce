@@ -267,7 +267,7 @@ pg_get_active(PyObject *self, PyObject *_null)
 static void
 pg_vidinfo_dealloc(PyObject *self)
 {
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject *
@@ -847,12 +847,13 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     int w, h;
     PyObject *size = NULL;
     int vsync = SDL_FALSE;
+    uint64_t hwnd = 0;
     /* display will get overwritten by ParseTupleAndKeywords only if display
        parameter is given. By default, put the new window on the same
        screen as the old one */
     int display = _get_display(win);
     char *title = state->title;
-    char *scale_env;
+    char *scale_env, *winid_env;
     SDL_SysWMinfo wm_info;
 
     SDL_VERSION(&wm_info.version);
@@ -860,10 +861,15 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     char *keywords[] = {"size", "flags", "depth", "display", "vsync", NULL};
 
     scale_env = SDL_getenv("PYGAME_FORCE_SCALE");
+    winid_env = SDL_getenv("SDL_WINDOWID");
 
     if (!PyArg_ParseTupleAndKeywords(arg, kwds, "|Oiiii", keywords, &size,
                                      &flags, &depth, &display, &vsync))
         return NULL;
+
+    if (hwnd == 0 && winid_env != NULL) {
+        hwnd = SDL_strtoull(winid_env, NULL, 0);
+    }
 
     if (scale_env != NULL) {
         flags |= PGS_SCALED;
@@ -1104,7 +1110,12 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
             if (!win) {
                 /*open window*/
-                win = SDL_CreateWindow(title, x, y, w_1, h_1, sdl_flags);
+                if (hwnd != 0) {
+                    win = SDL_CreateWindowFrom((void *)hwnd);
+                }
+                else {
+                    win = SDL_CreateWindow(title, x, y, w_1, h_1, sdl_flags);
+                }
                 if (!win)
                     return RAISE(pgExc_SDLError, SDL_GetError());
             }
@@ -1112,7 +1123,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 /* set min size to (1,1) to erase any previously set min size
                  * relevant for windows leaving SCALED, which sets a min size
                  * only relevant on Windows, I believe.
-                 * See https://github.com/pygame/pygame/issues/2327 */
+                 * See
+                 * https://github.com/pygame-community/pygame-ce/issues/1194 */
                 SDL_SetWindowMinimumSize(win, 1, 1);
 
                 /* change existing window.
@@ -1514,7 +1526,7 @@ pg_list_modes(PyObject *self, PyObject *args, PyObject *kwds)
         }
         /* use reasonable defaults (cf. SDL_video.c) */
         if (!mode.format)
-            mode.format = SDL_PIXELFORMAT_RGB888;
+            mode.format = PG_PIXELFORMAT_XRGB8888;
         if (!mode.w)
             mode.w = 640;
         if (!mode.h)
@@ -1789,7 +1801,7 @@ pg_set_palette(PyObject *self, PyObject *args)
             return NULL;
         }
 
-        if (!pg_RGBAFromFuzzyColorObj(item, rgba)) {
+        if (!pg_RGBAFromObjEx(item, rgba, PG_COLOR_HANDLE_ALL)) {
             Py_DECREF(item);
             free((char *)colors);
             Py_DECREF(surface);
@@ -2436,9 +2448,8 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
         if (y == (int)SDL_WINDOWPOS_UNDEFINED_DISPLAY(window_display))
             y = SDL_WINDOWPOS_CENTERED_DISPLAY(window_display);
 
-#if (SDL_VERSION_ATLEAST(2, 0, 5))
         SDL_SetWindowResizable(win, flags & SDL_WINDOW_RESIZABLE);
-#endif
+
         SDL_SetWindowBordered(win, (flags & SDL_WINDOW_BORDERLESS) == 0);
 
         SDL_SetWindowPosition(win, x, y);
@@ -2710,7 +2721,8 @@ static PyMethodDef _pg_display_methods[] = {
      DOC_DISPLAY_TOGGLEFULLSCREEN},
 
     {"_set_autoresize", (PyCFunction)pg_display_set_autoresize, METH_O,
-     "provisional API, subject to change"},
+     "DEPRECATED, never officially supported, kept only for compatibility "
+     "with release candidate"},
     {"_resize_event", (PyCFunction)pg_display_resize_event, METH_O,
      "DEPRECATED, never officially supported, kept only for compatibility "
      "with release candidate"},
@@ -2719,8 +2731,7 @@ static PyMethodDef _pg_display_methods[] = {
     {"get_desktop_sizes", (PyCFunction)pg_get_desktop_screen_sizes,
      METH_NOARGS, DOC_DISPLAY_GETDESKTOPSIZES},
     {"is_fullscreen", (PyCFunction)pg_is_fullscreen, METH_NOARGS,
-     "provisional API, subject to change"},
-
+     DOC_DISPLAY_ISFULLSCREEN},
     {"is_vsync", (PyCFunction)pg_is_vsync, METH_NOARGS, DOC_DISPLAY_ISVSYNC},
     {"get_desktop_refresh_rates", (PyCFunction)pg_desktop_refresh_rates,
      METH_NOARGS, DOC_DISPLAY_GETDESKTOPREFRESHRATES},

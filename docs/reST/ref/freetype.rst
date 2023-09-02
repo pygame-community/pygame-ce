@@ -224,6 +224,22 @@ loaded. This module must be imported explicitly to be used. ::
       Read only. Returns the real (long) name of the font, as
       recorded in the font file.
 
+   .. attribute:: style_name
+
+      | :sl:`Gets the font's style_name.`
+      | :sg:`style_name -> str`
+
+      Read only. Returns the font's style name. Style names are arbitrary, can be an empty string. 
+      Here are some examples:
+
+        'Black', 'Bold', 'Bold Italic', 'BoldOblique', 'Book', 'BookOblique', 'Condensed', 'Condensed Oblique',
+        'ExtraLight', 'Italic', 'Light', 'LightOblique', 'Medium', 'MediumOblique', 'Oblique', 'Regular',
+        'Semibold', 'Semilight', 'Slanted'
+
+      .. versionadded:: 2.3.1
+
+      .. ## Font.style_name ##
+
    .. attribute:: path
 
       | :sl:`Font file path`

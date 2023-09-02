@@ -138,6 +138,34 @@
 
       .. ## Rect.inflate_ip ##
 
+   .. method:: scale_by
+
+      | :sl:`scale the rectangle by given a multiplier`
+      | :sg:`scale_by(scale_by) -> Rect`
+      | :sg:`scale_by(x, y) -> Rect`
+
+      Returns a new rectangle with the size scaled by the given multipliers.
+      The rectangle remains centered around its current center. A single 
+      scalar or separate width and height scalars are allowed. Values above
+      one will increase the size of the rectangle, whereas values between
+      zero and one will decrease the size of the rectangle.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Rect.scale_by ##
+
+   .. method:: scale_by_ip
+
+      | :sl:`grow or shrink the rectangle size, in place`
+      | :sg:`scale_by_ip(scale_by) -> None`
+      | :sg:`scale_by_ip(x, y) -> None`
+
+      Same as the ``Rect.scale_by()`` method, but operates in place.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Rect.scale_by_ip ##
+
    .. method:: update
 
       | :sl:`sets the position and size of the rectangle`
@@ -527,14 +555,14 @@
    .. method:: collidedict
 
       | :sl:`test if one rectangle in a dictionary intersects`
-      | :sg:`collidedict(dict) -> (key, value)`
-      | :sg:`collidedict(dict) -> None`
-      | :sg:`collidedict(dict, use_values=0) -> (key, value)`
-      | :sg:`collidedict(dict, use_values=0) -> None`
+      | :sg:`collidedict(rect_dict) -> (key, value)`
+      | :sg:`collidedict(rect_dict) -> None`
+      | :sg:`collidedict(rect_dict, values=False) -> (key, value)`
+      | :sg:`collidedict(rect_dict, values=False) -> None`
 
       Returns the first key and value pair that intersects with the calling
       Rect object. If no collisions are found, ``None`` is returned. If
-      ``use_values`` is 0 (default) then the dict's keys will be used in the
+      ``values`` is False (default) then the dict's keys will be used in the
       collision detection, otherwise the dict's values will be used.
 
       .. note ::
@@ -542,23 +570,33 @@
          hashable), so they must be converted to a tuple.
          e.g. ``rect.collidedict({tuple(key_rect) : value})``
 
+      .. versionchanged:: 2.4.0
+         ``values`` is now accepted as a keyword argument. Type Stub updated
+         to use boolean ``True`` or ``False``, but any truthy or falsy value 
+         will be valid.
+
       .. ## Rect.collidedict ##
 
    .. method:: collidedictall
 
       | :sl:`test if all rectangles in a dictionary intersect`
-      | :sg:`collidedictall(dict) -> [(key, value), ...]`
-      | :sg:`collidedictall(dict, use_values=0) -> [(key, value), ...]`
+      | :sg:`collidedictall(rect_dict) -> [(key, value), ...]`
+      | :sg:`collidedictall(rect_dict, values=False) -> [(key, value), ...]`
 
       Returns a list of all the key and value pairs that intersect with the
       calling Rect object. If no collisions are found an empty list is returned.
-      If ``use_values`` is 0 (default) then the dict's keys will be used in the
+      If ``values`` is False (default) then the dict's keys will be used in the
       collision detection, otherwise the dict's values will be used.
 
       .. note ::
          Rect objects cannot be used as keys in a dictionary (they are not
          hashable), so they must be converted to a tuple.
          e.g. ``rect.collidedictall({tuple(key_rect) : value})``
+
+      .. versionchanged:: 2.4.0
+         ``values`` is now accepted as a keyword argument. Type Stub updated
+         to use boolean ``True`` or ``False``, but any truthy or falsy value 
+         will be valid.
 
       .. ## Rect.collidedictall ##
 

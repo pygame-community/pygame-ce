@@ -413,6 +413,7 @@ scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
 {
     SDL_Surface *src = NULL;
     SDL_Surface *retsurf = NULL;
+    SDL_Surface *modsurf = NULL;
     int stretch_result_num = 0;
 
     if (width < 0 || height < 0)
@@ -421,12 +422,32 @@ scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
     src = pgSurface_AsSurface(srcobj);
 
     if (!dstobj) {
-        retsurf = newsurf_fromsurf(src, width, height);
+        modsurf = retsurf = newsurf_fromsurf(src, width, height);
         if (!retsurf)
             return NULL;
     }
     else {
-        retsurf = pgSurface_AsSurface(dstobj);
+        modsurf = retsurf = pgSurface_AsSurface(dstobj);
+        if (retsurf->format->BytesPerPixel != src->format->BytesPerPixel ||
+            retsurf->format->Rmask != src->format->Rmask ||
+            retsurf->format->Gmask != src->format->Gmask ||
+            retsurf->format->Bmask != src->format->Bmask) {
+            return RAISE(PyExc_ValueError,
+                         "Source and destination surfaces need to be "
+                         "compatible formats.");
+        }
+
+        /* If the surface formats are otherwise compatible but the alpha is
+         * not the same, use a proxy surface to modify the pixels of the
+         * existing dstobj return surface. Otherwise SDL_SoftStretch
+         * rejects the input.
+         * For example, RGBA and RGBX surfaces are compatible in this way. */
+        if (retsurf->format->Amask != src->format->Amask) {
+            modsurf = SDL_CreateRGBSurfaceWithFormatFrom(
+                retsurf->pixels, retsurf->w, retsurf->h,
+                retsurf->format->BitsPerPixel, retsurf->pitch,
+                src->format->format);
+        }
     }
 
     if (retsurf->w != width || retsurf->h != height) {
@@ -442,10 +463,14 @@ scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
         pgSurface_Lock(srcobj);
         Py_BEGIN_ALLOW_THREADS;
 
-        stretch_result_num = SDL_SoftStretch(src, NULL, retsurf, NULL);
+        stretch_result_num = SDL_SoftStretch(src, NULL, modsurf, NULL);
 
         Py_END_ALLOW_THREADS;
         pgSurface_Unlock(srcobj);
+
+        if (modsurf != retsurf) {
+            SDL_FreeSurface(modsurf);
+        }
 
         if (stretch_result_num < 0) {
             return (SDL_Surface *)(RAISE(pgExc_SDLError, SDL_GetError()));
@@ -1741,17 +1766,10 @@ _color_from_obj(PyObject *color_obj, SDL_PixelFormat *format,
                 Uint8 rgba_default[4], Uint32 *color)
 {
     if (color_obj) {
-        Uint8 rgba_color[4];
-
-        if (PyLong_Check(color_obj))
-            *color = (Uint32)PyLong_AsLong(color_obj);
-        else if (PyLong_Check(color_obj))
-            *color = (Uint32)PyLong_AsUnsignedLong(color_obj);
-        else if (pg_RGBAFromColorObj(color_obj, rgba_color))
-            *color = SDL_MapRGBA(format, rgba_color[0], rgba_color[1],
-                                 rgba_color[2], rgba_color[3]);
-        else
+        if (!pg_MappedColorFromObj(color_obj, format, color,
+                                   PG_COLOR_HANDLE_INT)) {
             return -1;
+        }
     }
     else {
         if (!rgba_default)
@@ -3035,7 +3053,7 @@ box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
 }
 
 static void
-gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
+gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int sigma, SDL_bool repeat)
 {
     Uint8 *srcpx = (Uint8 *)src->pixels;
     Uint8 *dstpx = (Uint8 *)dst->pixels;
@@ -3044,21 +3062,20 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
     int dst_pitch = dst->pitch;
     int src_pitch = src->pitch;
     int i, j, x, y, color;
+    int kernel_radius = sigma * 2;
     float *buf = malloc(dst_pitch * sizeof(float));
     float *buf2 = malloc(dst_pitch * sizeof(float));
-    float *lut = malloc((radius + 1) * sizeof(float));
+    float *lut = malloc((kernel_radius + 1) * sizeof(float));
     float lut_sum = 0.0;
 
-    for (i = 0; i <= radius; i++) {  // init gaussian lut
-        // Gaussian function, radius=2*sigma
-        lut[i] = (float)radius / 2.0f *
-                 expf(-powf((float)i, 2.0f) /
-                      (2.0f * powf((float)radius / 2.0f, 2.0f))) *
-                 0.3989422804014327f;
+    for (i = 0; i <= kernel_radius; i++) {  // init gaussian lut
+        // Gaussian function
+        lut[i] =
+            expf(-powf((float)i, 2.0f) / (2.0f * powf((float)sigma, 2.0f)));
         lut_sum += lut[i] * 2;
     }
     lut_sum -= lut[0];
-    for (i = 0; i <= radius; i++) {
+    for (i = 0; i <= kernel_radius; i++) {
         lut[i] /= lut_sum;
     }
 
@@ -3068,7 +3085,7 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
     }
 
     for (y = 0; y < h; y++) {
-        for (j = -radius; j <= radius; j++) {
+        for (j = -kernel_radius; j <= kernel_radius; j++) {
             for (i = 0; i < dst_pitch; i++) {
                 if (y + j >= 0 && y + j < h) {
                     buf[i] +=
@@ -3087,7 +3104,7 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
         }
 
         for (x = 0; x < w; x++) {
-            for (j = -radius; j <= radius; j++) {
+            for (j = -kernel_radius; j <= kernel_radius; j++) {
                 for (color = 0; color < nb; color++) {
                     if (x + j >= 0 && x + j < w) {
                         buf2[nb * x + color] +=
@@ -3142,6 +3159,19 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
     }
     else {
         retsurf = pgSurface_AsSurface(dstobj);
+    }
+
+    Uint8 *ret_start = retsurf->pixels;
+    Uint8 *ret_end = ret_start + retsurf->h * retsurf->pitch;
+    Uint8 *src_start = src->pixels;
+    Uint8 *src_end = src_start + src->h * src->pitch;
+    if ((ret_start <= src_start && ret_end >= src_start) ||
+        (src_start <= ret_start && src_end >= ret_start)) {
+        return RAISE(
+            PyExc_ValueError,
+            "Blur routines do not support dest_surfaces that share pixels "
+            "with the source surface. Likely the surfaces are the same, one "
+            "of them is a subsurface, or they are sharing the same buffer.");
     }
 
     if ((retsurf->w) != (src->w) || (retsurf->h) != (src->h)) {

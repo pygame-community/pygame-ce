@@ -7,7 +7,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-**English** `简体中文`_ `Français`_
+**English** `简体中文`_ `Français`_ `فارسی`_
 ---------------------------------------------------------------------------------------------------
 
 Pygame_ is a free and open-source cross-platform library
@@ -58,7 +58,7 @@ Building From Source
 --------------------
 
 If you want to use features that are currently in development,
-or you want to contribute to pygame, you will need to build pygame
+or you want to contribute to pygame-ce, you will need to build pygame-ce
 locally from its source code, rather than pip installing it.
 
 Installing from source is fairly automated. The most work will
@@ -115,7 +115,7 @@ There's many more folks out there who've submitted helpful ideas, kept
 this project going, and basically made our life easier.  Thanks!
 
 Many thank you's for people making documentation comments, and adding to the
-pygame.org wiki.
+`pygame documentation`_ and the `pygame-ce documentation`_.
 
 Also many thanks for people creating games and putting them on the
 pygame.org website for others to learn from and enjoy.
@@ -148,7 +148,7 @@ Dependency versions:
 +----------+------------------------+
 | SDL_image| >= 2.0.2               |
 +----------+------------------------+
-| SDL_ttf  | >= 2.0.11              |
+| SDL_ttf  | >= 2.0.12              |
 +----------+------------------------+
 | SDL_gfx  | (Optional, vendored in)|
 +----------+------------------------+
@@ -167,7 +167,7 @@ future versions of this library under a different license.
 This basically means you can use pygame in any project you want,
 but if you make any changes or additions to pygame itself, those
 must be released with a compatible license (preferably submitted
-back to the pygame project).  Closed source and commercial games are fine.
+back to the pygame-ce project).  Closed source and commercial games are fine.
 
 The programs in the ``examples`` subdirectory are in the public domain.
 
@@ -182,8 +182,8 @@ See docs/licenses for licenses of dependencies.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.2.1.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.2.1...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.3.0.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.3.0...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
@@ -191,12 +191,14 @@ See docs/licenses for licenses of dependencies.
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
-.. _pygame: https://pyga.me
+.. _Pygame: https://pyga.me
+.. _pygame-ce documentation: https://pyga.me/docs/
+.. _pygame documentation: https://www.pygame.org/docs/
 .. _Simple DirectMedia Layer library: https://www.libsdl.org
-.. _We need your help: https://www.pygame.org/contribute.html
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
 .. _docs page: https://pyga.me/docs
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
 
 .. _简体中文: ./docs/readmes/README.zh-cn.rst
 .. _Français: ./docs/readmes/README.fr.rst
+.. _فارسی: ./docs/readmes/README.fa.rst
