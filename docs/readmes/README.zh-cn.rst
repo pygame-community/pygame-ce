@@ -154,7 +154,6 @@ pygame显然依赖于SDL和Python。此外pygame还嵌入了几个较小的库�
 
 .. _pygame: https://www.pyga.me
 .. _Simple DirectMedia Layer library: https://www.libsdl.org
-.. _We need your help: https://www.pygame.org/contribute.html
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
 .. _docs page: https://pyga.me/docs
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html

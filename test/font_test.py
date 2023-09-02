@@ -117,7 +117,10 @@ class FontModuleTest(unittest.TestCase):
         for font in fonts:
             path = pygame_font.match_font(font)
             self.assertFalse(path is None)
-            self.assertTrue(os.path.isabs(path) and os.path.isfile(path))
+            self.assertTrue(
+                os.path.isabs(path) and os.path.isfile(path),
+                msg=f"path '{path}': exists: {os.path.exists(path)} is abs path:{os.path.isabs(path)} and is file:{os.path.isfile(path)} is link: {os.path.islink(path)} is mount: {os.path.ismount(path)} is dir: {os.path.isdir(path)}",
+            )
 
     def test_match_font_name(self):
         """That match_font accepts names of various types"""
@@ -492,13 +495,12 @@ class FontTypeTest(unittest.TestCase):
         self.assertFalse(f.get_underline())
 
     def test_set_strikethrough(self):
-        if pygame_font.__name__ != "pygame.ftfont":
-            f = pygame_font.Font(None, 20)
-            self.assertFalse(f.get_strikethrough())
-            f.set_strikethrough(True)
-            self.assertTrue(f.get_strikethrough())
-            f.set_strikethrough(False)
-            self.assertFalse(f.get_strikethrough())
+        f = pygame_font.Font(None, 20)
+        self.assertFalse(f.get_strikethrough())
+        f.set_strikethrough(True)
+        self.assertTrue(f.get_strikethrough())
+        f.set_strikethrough(False)
+        self.assertFalse(f.get_strikethrough())
 
     def test_bold_attr(self):
         f = pygame_font.Font(None, 20)
@@ -525,13 +527,12 @@ class FontTypeTest(unittest.TestCase):
         self.assertFalse(f.underline)
 
     def test_set_strikethrough_property(self):
-        if pygame_font.__name__ != "pygame.ftfont":
-            f = pygame_font.Font(None, 20)
-            self.assertFalse(f.strikethrough)
-            f.strikethrough = True
-            self.assertTrue(f.strikethrough)
-            f.strikethrough = False
-            self.assertFalse(f.strikethrough)
+        f = pygame_font.Font(None, 20)
+        self.assertFalse(f.strikethrough)
+        f.strikethrough = True
+        self.assertTrue(f.strikethrough)
+        f.strikethrough = False
+        self.assertFalse(f.strikethrough)
 
     def test_set_align_property(self):
         if pygame_font.__name__ == "pygame.ftfont":
@@ -939,16 +940,14 @@ class VisualTests(unittest.TestCase):
         f.set_bold(bold)
         f.set_italic(italic)
         f.set_underline(underline)
-        if pygame_font.__name__ != "pygame.ftfont":
-            f.set_strikethrough(strikethrough)
+        f.set_strikethrough(strikethrough)
         s = f.render(text, antialiase, (0, 0, 0))
         screen.blit(s, (offset, y))
         y += s.get_size()[1] + spacing
         f.set_bold(False)
         f.set_italic(False)
         f.set_underline(False)
-        if pygame_font.__name__ != "pygame.ftfont":
-            f.set_strikethrough(False)
+        f.set_strikethrough(False)
         s = f.render("(some comparison text)", False, (0, 0, 0))
         screen.blit(s, (offset, y))
         pygame.display.flip()
@@ -976,8 +975,7 @@ class VisualTests(unittest.TestCase):
         self.assertTrue(self.query(underline=True))
 
     def test_strikethrough(self):
-        if pygame_font.__name__ != "pygame.ftfont":
-            self.assertTrue(self.query(strikethrough=True))
+        self.assertTrue(self.query(strikethrough=True))
 
     def test_antialiase(self):
         self.assertTrue(self.query(antialiase=True))
@@ -989,8 +987,7 @@ class VisualTests(unittest.TestCase):
         self.assertTrue(self.query(italic=True, underline=True))
 
     def test_bold_strikethrough(self):
-        if pygame_font.__name__ != "pygame.ftfont":
-            self.assertTrue(self.query(bold=True, strikethrough=True))
+        self.assertTrue(self.query(bold=True, strikethrough=True))
 
 
 if __name__ == "__main__":
