@@ -891,8 +891,16 @@ class FontTypeTest(unittest.TestCase):
             if n == "set_point_size" and version < (2, 0, 18):
                 print(f"set_point_size skipped for sld ttf version {version} < 2.20.0")
                 continue
-            if callable(getattr(font, n)) and not n.startswith("_"):
-                actual_names.append(n)
+            if (
+                n == "get_strikethrough" or n == "set_strikethrough"
+            ) and pygame_font.__name__ == "pygame.ftfont":
+                # this is only emulated in python
+                continue
+            if n.startswith("_"):
+                continue
+            if not callable(getattr(font, n)):
+                continue
+            actual_names.append(n)
         expected_names = [n for n, a in sorted(methods)]
         self.assertEqual(
             len(expected_names),
@@ -971,8 +979,14 @@ class FontTypeTest(unittest.TestCase):
             if n == "point_size" and version < (2, 0, 18):
                 print(f"point_size skipped for sld ttf version {version} < 2.0.18")
                 continue
-            if not callable(getattr(font, n)) and not n.startswith("_"):
-                actual_names.append(n)
+            if n == "strikethrough" and pygame_font.__name__ == "pygame.ftfont":
+                # this is only emulated in python
+                continue
+            if n.startswith("_"):
+                continue
+            if callable(getattr(font, n)):
+                continue
+            actual_names.append(n)
 
         expected_names = [n for n, a in sorted(properties)]
         self.assertEqual(
