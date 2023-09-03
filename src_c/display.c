@@ -2693,7 +2693,7 @@ pg_set_allow_screensaver(PyObject *self, PyObject *arg, PyObject *kwargs)
 }
 
 static PyObject *
-pg_messagebox(PyObject *self, PyObject *arg, PyObject *kwargs)
+pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
 {
     const char *title = NULL;
     PyObject *message = Py_None, *parent_window = Py_None;
@@ -2932,7 +2932,7 @@ static PyMethodDef _pg_display_methods[] = {
      METH_NOARGS, DOC_DISPLAY_GETALLOWSCREENSAVER},
     {"set_allow_screensaver", (PyCFunction)pg_set_allow_screensaver,
      METH_VARARGS | METH_KEYWORDS, DOC_DISPLAY_SETALLOWSCREENSAVER},
-    {"messagebox", (PyCFunction)pg_messagebox, METH_VARARGS | METH_KEYWORDS,
+    {"message_box", (PyCFunction)pg_message_box, METH_VARARGS | METH_KEYWORDS,
      DOC_DISPLAY_MESSAGEBOX},
     {NULL, NULL, 0, NULL}};
 
