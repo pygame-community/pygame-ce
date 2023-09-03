@@ -816,7 +816,7 @@ required).
 
 ..
    (Uncomment this after the window API is published)
-   :param Winodw parent_window: The parent window of the messagebox
+   :param Window parent_window: The parent window of the messagebox
 ..
 
    :return: The index of the button that was pushed.
