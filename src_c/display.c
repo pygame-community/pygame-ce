@@ -2749,7 +2749,7 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
     else {
         PyErr_Format(PyExc_ValueError,
                      "type should be 'info', 'warn' or 'error', "
-                     "got '%s'.",
+                     "got '%s'",
                      msgbox_type);
         return NULL;
     }
@@ -2804,7 +2804,7 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
         }
         else if (num_buttons == 0) {
             return RAISE(PyExc_TypeError,
-                         "'buttons' should contain at least 1 button.");
+                         "'buttons' should contain at least 1 button");
         }
         msgbox_data.numbuttons = (int)num_buttons;
         buttons_data = malloc(sizeof(SDL_MessageBoxButtonData) * num_buttons);
