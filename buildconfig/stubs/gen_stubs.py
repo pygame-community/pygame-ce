@@ -109,7 +109,12 @@ with open(constants_file, "w") as f:
     for element in pygame_all_imports[".constants"]:
         constant_value = getattr(pygame.constants, element)
         constant_type = constant_value.__class__.__name__
-        f.write(f"{element}: {constant_type} = {constant_value}\n")
+        if constant_type == 'int':
+            f.write(f"{element}: {constant_type} = {constant_value}\n")
+        elif constant_type == 'str':
+            f.write(f"{element}: {constant_type} = '{constant_value}'\n")
+        else:
+            f.write(f"{element}: {constant_type}\n")
 
 
 # write __init__.pyi file
