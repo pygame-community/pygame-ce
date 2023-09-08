@@ -714,7 +714,6 @@ RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
     Py_DECREF(rectattr);
     return returnrect;
 
-    return NULL;
 }
 
 static PyObject *
