@@ -1,4 +1,4 @@
-#include "_surface.h"
+#include "simd_fill.h"
 
 #if defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H)
 #include <immintrin.h>
@@ -14,8 +14,8 @@
 
 /* helper function that does a runtime check for AVX2. It has the added
  * functionality of also returning 0 if compile time support is missing */
-int
-_pg_has_avx2()
+static int
+pg_has_avx2()
 {
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
@@ -24,6 +24,23 @@ _pg_has_avx2()
     return 0;
 #endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
           !defined(SDL_DISABLE_IMMINTRIN_H) */
+}
+
+/* This returns 1 when avx2 is available at runtime but support for it isn't
+ * compiled in, 0 in all other cases */
+static int
+pg_avx2_at_runtime_but_uncompiled()
+{
+    if (SDL_HasAVX2()) {
+#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
+    !defined(SDL_DISABLE_IMMINTRIN_H)
+        return 0;
+#else
+        return 1;
+#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
+          !defined(SDL_DISABLE_IMMINTRIN_H) */
+    }
+    return 0;
 }
 
 #define SETUP_AVX2_FILLER(COLOR_PROCESS_CODE)                                 \
