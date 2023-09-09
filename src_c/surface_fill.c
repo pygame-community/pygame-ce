@@ -871,7 +871,7 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (surface->format->BytesPerPixel == 4 &&
                 (surface->pitch % surface->format->BytesPerPixel == 0) &&
-                pg_has_avx2()) {
+                _pg_has_avx2()) {
                 result = surface_fill_blend_add_avx2(surface, rect, color);
                 break;
             }
@@ -902,7 +902,7 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (surface->format->BytesPerPixel == 4 &&
                 (surface->pitch % surface->format->BytesPerPixel == 0) &&
-                pg_has_avx2()) {
+                _pg_has_avx2()) {
                 result =
                     surface_fill_blend_rgba_add_avx2(surface, rect, color);
                 break;

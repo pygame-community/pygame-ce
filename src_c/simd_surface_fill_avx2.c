@@ -12,6 +12,20 @@
         "to the devs!");                                                     \
     PG_EXIT(1)
 
+/* helper function that does a runtime check for AVX2. It has the added
+ * functionality of also returning 0 if compile time support is missing */
+int
+_pg_has_avx2()
+{
+#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
+    !defined(SDL_DISABLE_IMMINTRIN_H)
+    return SDL_HasAVX2();
+#else
+    return 0;
+#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
+          !defined(SDL_DISABLE_IMMINTRIN_H) */
+}
+
 #define SETUP_AVX2_FILLER(COLOR_PROCESS_CODE)                                 \
     /* initialize surface data */                                             \
     int width = rect->w, height = rect->h;                                    \

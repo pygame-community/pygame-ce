@@ -7,6 +7,9 @@
 #define PG_ENABLE_ARM_NEON 1
 #endif
 
+int
+_pg_has_avx2();
+
 // SSE2 functions
 #if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
 #endif /* (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)) */
