@@ -19,7 +19,6 @@
 
 #define NO_PYGAME_C_API
 
-#include "simd_shared.h"
 #include "simd_fill.h"
 
 /*
