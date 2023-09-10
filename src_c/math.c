@@ -462,13 +462,12 @@ pgVectorCompatible_Check(PyObject *obj, Py_ssize_t dim)
     return 1;
 }
 
-// Returns 1 if obj was vector compatible to a vector of size "dim," and
+// Returns 1 if obj is vector compatible to a vector of size "dim," and
 // copies vector coordinates into "coords" array of size >= dim
 // managed by caller. Returns 0 if obj is not compatible or an error
-// occurred. If 0 is returned, an error may or may not be set. Callers should
-// set error themselves or clear the error if necessary.
-// This function is a combo of pgVectorCompatible_Check and
-// PySequence_AsVectorCoords
+// occurred. If 0 is returned, the error flag will not normally set. Callers
+// should set error themselves. This function is a combo of
+// pgVectorCompatible_Check and PySequence_AsVectorCoords
 static int
 pg_VectorCoordsFromObj(PyObject *obj, Py_ssize_t dim, double *const coords)
 {
@@ -500,15 +499,12 @@ pg_VectorCoordsFromObj(PyObject *obj, Py_ssize_t dim, double *const coords)
 
     for (i = 0; i < dim; ++i) {
         tmp = PySequence_GetItem(obj, i);
-        if (tmp == NULL || !RealNumber_Check(tmp)) {
-            Py_XDECREF(tmp);
-            return 0;
-        }
-        else {
+        if (tmp != NULL) {
             coords[i] = PyFloat_AsDouble(tmp);
         }
         Py_DECREF(tmp);
         if (PyErr_Occurred()) {
+            PyErr_Clear();
             return 0;
         }
     }
@@ -691,15 +687,6 @@ vector_generic_math(PyObject *o1, PyObject *o2, int op)
     }
     else {
         op |= OP_ARG_UNKNOWN;
-    }
-
-    // This guards against loose exceptions from
-    // pg_VectorCoordsFromObj.
-    // If an exception occurred there the input will either be a RealNumber
-    // and be fine, or the input will be OP_ARG_UNKNOWN and use the default
-    // switch case below.
-    if (PyErr_Occurred()) {
-        PyErr_Clear();
     }
 
     if (op & OP_INPLACE) {
