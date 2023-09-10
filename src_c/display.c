@@ -2699,39 +2699,28 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *message = Py_None, *parent_window = Py_None;
     const char *msgbox_type = "info";
     PyObject *buttons = NULL;
-    PyObject *return_button_index_obj = Py_None;
     PyObject *escape_button_index_obj = Py_None;
+
+    int return_button_index = 0;
 
     static char *keywords[] = {"title",         "message", "type",
                                "parent_window", "buttons", "return_button",
                                "escape_button", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(
-            arg, kwargs, "s|OsO!OOO", keywords, &title, &message, &msgbox_type,
-            &pgWindow_Type, &parent_window, &buttons, &return_button_index_obj,
+            arg, kwargs, "s|OsO!OiO", keywords, &title, &message, &msgbox_type,
+            &pgWindow_Type, &parent_window, &buttons, &return_button_index,
             &escape_button_index_obj)) {
         return NULL;
     }
 
-    int return_button_index;
-    int escape_button_index;
-
-    if (return_button_index_obj == Py_None) {
-        return_button_index = -1;
-    }
-    else {
-        return_button_index = PyLong_AsLong(return_button_index_obj);
-        if (return_button_index == -1 && PyErr_Occurred())
-            return NULL;
-    }
-
-    if (escape_button_index_obj == Py_None) {
-        escape_button_index = -1;
-    }
-    else {
+    int escape_button_index = -1;
+    SDL_bool escape_button_used = SDL_FALSE;
+    if (escape_button_index_obj != Py_None) {
         int escape_button_index = PyLong_AsLong(escape_button_index_obj);
         if (escape_button_index == -1 && PyErr_Occurred())
             return NULL;
+        escape_button_used = SDL_TRUE;
     }
 
     SDL_MessageBoxData msgbox_data;
@@ -2784,12 +2773,27 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     if (buttons == NULL) {
         buttons_data = malloc(sizeof(SDL_MessageBoxButtonData));
-        buttons_data->flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT |
-                              SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+        buttons_data->flags = 0;
         buttons_data->buttonid = 0;
         buttons_data->text = "OK";
 
         msgbox_data.numbuttons = 1;
+
+        if (!(-1 <= return_button_index < 1)) {
+            PyErr_SetString(PyExc_IndexError,
+                            "return_button index out of range.");
+            goto error;
+        }
+        buttons_data->flags |= SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+
+        if (escape_button_used) {
+            if (!(-1 <= escape_button_index < 1)) {
+                PyErr_SetString(PyExc_IndexError,
+                                "escape_button index out of range.");
+                goto error;
+            }
+            buttons_data->flags |= SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+        }
     }
     else {
         if (!PySequence_Check(buttons) || PyUnicode_Check(buttons)) {
@@ -2799,6 +2803,7 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
             return NULL;
         }
         Py_ssize_t num_buttons = PySequence_Size(buttons);
+        msgbox_data.numbuttons = (int)num_buttons;
         if (num_buttons < 0) {
             return NULL;
         }
@@ -2806,7 +2811,24 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
             return RAISE(PyExc_TypeError,
                          "'buttons' should contain at least 1 button");
         }
-        msgbox_data.numbuttons = (int)num_buttons;
+
+        if (!(-num_buttons <= return_button_index < num_buttons)) {
+            PyErr_SetString(PyExc_IndexError,
+                            "return_button index out of range.");
+            goto error;
+        }
+        if (!(-num_buttons <= escape_button_index < num_buttons)) {
+            PyErr_SetString(PyExc_IndexError,
+                            "escape_button index out of range.");
+            goto error;
+        }
+
+        if (return_button_index < 0)
+            return_button_index = (int)num_buttons + return_button_index;
+
+        if (escape_button_index < 0)
+            escape_button_index = (int)num_buttons + escape_button_index;
+
         buttons_data = malloc(sizeof(SDL_MessageBoxButtonData) * num_buttons);
         for (Py_ssize_t i = 0; i < num_buttons; i++) {
 #if SDL_VERSION_ATLEAST(2, 0, 12)
@@ -2838,7 +2860,8 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
             if (return_button_index == buttons_data[i].buttonid)
                 buttons_data[i].flags |=
                     SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
-            if (escape_button_index == buttons_data[i].buttonid)
+            if (escape_button_used &&
+                escape_button_index == buttons_data[i].buttonid)
                 buttons_data[i].flags |=
                     SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
         }
