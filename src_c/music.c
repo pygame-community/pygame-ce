@@ -383,8 +383,7 @@ _load_music(PyObject *obj, char *namehint)
     }
 
     if (!new_music) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return NULL;
+        return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
     return new_music;
@@ -500,10 +499,9 @@ music_get_metadata(PyObject *self, PyObject *args, PyObject *keywds)
         }
     }
     else if (namehint) {
-        PyErr_SetString(
+        return RAISE(
             pgExc_SDLError,
             "'namehint' specified without specifying 'filename' or 'fileobj'");
-        return NULL;
     }
 
     const char *title = "";

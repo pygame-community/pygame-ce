@@ -1492,9 +1492,8 @@ mixer_set_soundfont(PyObject *self, PyObject *args)
         string_path = PyUnicode_AsUTF8(path);
     }
     else if (!Py_IsNone(path)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "Must pass string or None to set_soundfont");
-        return NULL;
+        return RAISE(PyExc_TypeError,
+                     "Must pass string or None to set_soundfont");
     }
 
     if (strlen(string_path) == 0) {

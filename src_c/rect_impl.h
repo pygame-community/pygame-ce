@@ -951,8 +951,7 @@ RectExport_scalebyIp(RectObject *self, PyObject *args, PyObject *kwargs)
                              "other arguments.");
             }
             if (!pg_TwoFloatsFromObj(scale_by, &temp_x, &temp_y)) {
-                PyErr_SetString(PyExc_TypeError, "number pair expected");
-                return 0;
+                return RAISE(PyExc_TypeError, "number pair expected");
             }
             PyDict_SetItemString(kwargs, "x", PyFloat_FromDouble(temp_x));
             PyDict_SetItemString(kwargs, "y", PyFloat_FromDouble(temp_y));
@@ -962,8 +961,7 @@ RectExport_scalebyIp(RectObject *self, PyObject *args, PyObject *kwargs)
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "f|f", keywords, &factor_x,
                                      &factor_y)) {
-        PyErr_SetString(PyExc_TypeError, "Float values expected.");
-        return NULL;
+        return RAISE(PyExc_TypeError, "Float values expected.");
     }
 
     factor_x = factor_x < 0 ? -factor_x : factor_x;
@@ -1371,19 +1369,16 @@ RectExport_RectFromObjectAndKeyFunc(PyObject *obj, PyObject *keyfunc,
         InnerRect *ret = RectFromObject(obj_with_rect, temp);
         Py_DECREF(obj_with_rect);
         if (!ret) {
-            PyErr_SetString(
-                PyExc_TypeError,
-                "Key function must return rect or rect-like objects");
-            return NULL;
+            return RAISE(PyExc_TypeError,
+                         "Key function must return rect or rect-like objects");
         }
         return ret;
     }
     else {
         InnerRect *ret = RectFromObject(obj, temp);
         if (!ret) {
-            PyErr_SetString(PyExc_TypeError,
-                            "Sequence must contain rect or rect-like objects");
-            return NULL;
+            return RAISE(PyExc_TypeError,
+                         "Sequence must contain rect or rect-like objects");
         }
         return ret;
     }
