@@ -1,5 +1,5 @@
 /*
-    pygame - Python Game Library
+    pygame-ce - Python Game Library
     Copyright (C) 2000-2001  Pete Shinners
 
     This library is free software; you can redistribute it and/or
@@ -41,6 +41,60 @@
 #endif
 
 #include <SDL.h>
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+#define PG_INIT_NOPARACHUTE 0
+
+// UINT16 audio no longer exists in SDL3
+#define PG_AUDIO_U16LSB 0
+#define PG_AUDIO_U16MSB 0
+#define PG_AUDIO_U16SYS 0
+#define PG_AUDIO_U16 0
+
+// Allowed changes no longer exists, your request gets emulated if unavailable
+#define PG_AUDIO_ALLOW_FREQUENCY_CHANGE 0
+#define PG_AUDIO_ALLOW_FORMAT_CHANGE 0
+#define PG_AUDIO_ALLOW_CHANNELS_CHANGE 0
+#define PG_AUDIO_ALLOW_ANY_CHANGE 0
+
+// Todo: deal with multigesture.. See
+// https://github.com/pygame-community/pygame-ce/issues/2420
+#define PG_MULTIGESTURE 0
+
+#define PG_JOYBALLMOTION 0
+
+#else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
+
+#define PG_INIT_NOPARACHUTE SDL_INIT_NOPARACHUTE
+
+#define PG_AUDIO_U16LSB AUDIO_U16LSB
+#define PG_AUDIO_U16MSB AUDIO_U16MSB
+#define PG_AUDIO_U16SYS AUDIO_U16SYS
+#define PG_AUDIO_U16 AUDIO_U16
+
+#define PG_AUDIO_ALLOW_FREQUENCY_CHANGE SDL_AUDIO_ALLOW_FREQUENCY_CHANGE
+#define PG_AUDIO_ALLOW_FORMAT_CHANGE SDL_AUDIO_ALLOW_FORMAT_CHANGE
+#define PG_AUDIO_ALLOW_CHANNELS_CHANGE SDL_AUDIO_ALLOW_CHANNELS_CHANGE
+#define PG_AUDIO_ALLOW_ANY_CHANGE SDL_AUDIO_ALLOW_ANY_CHANGE
+
+#define PG_MULTIGESTURE SDL_MULTIGESTURE
+
+#define PG_JOYBALLMOTION SDL_JOYBALLMOTION
+
+#endif
+
+/* DictProxy is useful for event posting with an arbitrary dict. Maintains
+ * state of number of events on queue and whether the owner of this struct
+ * wants this dict freed. This DictProxy is only to be freed when there are no
+ * more instances of this DictProxy on the event queue. Access to this is
+ * safeguarded with a per-proxy spinlock, which is more optimal than having
+ * to hold GIL in case of event timers */
+typedef struct _pgEventDictProxy {
+    PyObject *dict;
+    SDL_SpinLock lock;
+    int num_on_queue;
+    Uint8 do_free_at_end;
+} pgEventDictProxy;
 
 /* SDL 1.2 constants removed from SDL 2 */
 typedef enum {
@@ -281,6 +335,17 @@ supported Python version. #endif */
 
 #define PyType_Init(x) (((x).ob_type) = &PyType_Type)
 
+/* Python macro for comparing to Py_None
+ * Py_IsNone is naturally supported by
+ * Python 3.10 or higher
+ * so this macro can be removed after the minimum
+ * supported
+ * Python version reaches 3.10
+ */
+#ifndef Py_IsNone
+#define Py_IsNone(x) (x == Py_None)
+#endif
+
 /* Update this function if new sequences are added to the fast sequence
  * type. */
 #ifndef pgSequenceFast_Check
@@ -321,6 +386,24 @@ struct pgColorObject {
     Uint8 len;
 };
 
+typedef enum {
+    /* 0b000: Only handle RGB[A] sequence (which includes pygame.Color) */
+    PG_COLOR_HANDLE_SIMPLE = 0,
+
+    /* 0b001: In addition to PG_COLOR_HANDLE_SIMPLE, also handle str */
+    PG_COLOR_HANDLE_STR = 1,
+
+    /* 0b010: In addition to PG_COLOR_HANDLE_SIMPLE, also handles int */
+    PG_COLOR_HANDLE_INT = (PG_COLOR_HANDLE_STR << 1),
+
+    /* 0b100: A specialised flag, used to indicate that only tuple,
+       pygame.Color or subtypes of these both are allowed */
+    PG_COLOR_HANDLE_RESTRICT_SEQ = (PG_COLOR_HANDLE_INT << 1),
+
+    /* 0b011: equivalent to PG_COLOR_HANDLE_STR | PG_COLOR_HANDLE_INT */
+    PG_COLOR_HANDLE_ALL = PG_COLOR_HANDLE_STR | PG_COLOR_HANDLE_INT,
+} pgColorHandleFlags;
+
 /*
  * include public API
  */
@@ -330,8 +413,8 @@ struct pgColorObject {
  * Remember to keep these constants up to date.
  */
 
-#define PYGAMEAPI_RECT_NUMSLOTS 5
-#define PYGAMEAPI_JOYSTICK_NUMSLOTS 2
+#define PYGAMEAPI_RECT_NUMSLOTS 10
+#define PYGAMEAPI_JOYSTICK_NUMSLOTS 3
 #define PYGAMEAPI_DISPLAY_NUMSLOTS 2
 #define PYGAMEAPI_SURFACE_NUMSLOTS 4
 #define PYGAMEAPI_SURFLOCK_NUMSLOTS 8
@@ -341,5 +424,6 @@ struct pgColorObject {
 #define PYGAMEAPI_MATH_NUMSLOTS 2
 #define PYGAMEAPI_BASE_NUMSLOTS 24
 #define PYGAMEAPI_EVENT_NUMSLOTS 8
+#define PYGAMEAPI_WINDOW_NUMSLOTS 1
 
 #endif /* _PYGAME_INTERNAL_H */

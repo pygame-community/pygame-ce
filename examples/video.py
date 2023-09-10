@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pg.examples.video
+""" pygame.examples.video
 
 Experimental!
 
@@ -10,23 +10,19 @@ Experimental!
 * Drawing lines, rects, and such onto Renderers.
 """
 import os
-import pygame as pg
+import pygame
 
-if pg.get_sdl_version()[0] < 2:
-    raise SystemExit(
-        "This example requires pygame 2 and SDL2. _sdl2 is experimental and will change."
-    )
 from pygame._sdl2 import Window, Texture, Image, Renderer, get_drivers, messagebox
 
 data_dir = os.path.join(os.path.split(os.path.abspath(__file__))[0], "data")
 
 
 def load_img(file):
-    return pg.image.load(os.path.join(data_dir, file))
+    return pygame.image.load(os.path.join(data_dir, file))
 
 
-pg.display.init()
-pg.key.set_repeat(1000, 10)
+pygame.display.init()
+pygame.key.set_repeat(1000, 10)
 
 for driver in get_drivers():
     print(driver)
@@ -53,7 +49,7 @@ tex = Texture.from_surface(renderer, load_img("alien1.gif"))
 running = True
 
 x, y = 250, 50
-clock = pg.time.Clock()
+clock = pygame.Clock()
 
 backgrounds = [(255, 0, 0, 255), (0, 255, 0, 255), (0, 0, 255, 255)]
 bg_index = 0
@@ -75,53 +71,53 @@ full = 0
 tex = Image(tex)
 
 
-surf = pg.Surface((64, 64))
+surf = pygame.Surface((64, 64))
 streamtex = Texture(renderer, (64, 64), streaming=True)
 tex_update_interval = 1000
-next_tex_update = pg.time.get_ticks()
+next_tex_update = pygame.time.get_ticks()
 
 
 while running:
-    for event in pg.event.get():
-        if event.type == pg.QUIT:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
             running = False
         elif getattr(event, "window", None) == win2:
             if (
-                event.type == pg.KEYDOWN
-                and event.key == pg.K_ESCAPE
-                or event.type == pg.WINDOWCLOSE
+                event.type == pygame.KEYDOWN
+                and event.key == pygame.K_ESCAPE
+                or event.type == pygame.WINDOWCLOSE
             ):
                 win2.destroy()
-        elif event.type == pg.KEYDOWN:
-            if event.key == pg.K_ESCAPE:
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
                 running = False
-            elif event.key == pg.K_LEFT:
+            elif event.key == pygame.K_LEFT:
                 x -= 5
-            elif event.key == pg.K_RIGHT:
+            elif event.key == pygame.K_RIGHT:
                 x += 5
-            elif event.key == pg.K_DOWN:
+            elif event.key == pygame.K_DOWN:
                 y += 5
-            elif event.key == pg.K_UP:
+            elif event.key == pygame.K_UP:
                 y -= 5
-            elif event.key == pg.K_f:
+            elif event.key == pygame.K_f:
                 if full == 0:
                     win.set_fullscreen(True)
                     full = 1
                 else:
                     win.set_windowed()
                     full = 0
-            elif event.key == pg.K_s:
+            elif event.key == pygame.K_s:
                 readsurf = renderer.to_surface()
-                pg.image.save(readsurf, "test.png")
+                pygame.image.save(readsurf, "test.png")
 
-            elif event.key == pg.K_SPACE:
+            elif event.key == pygame.K_SPACE:
                 bg_index = (bg_index + 1) % len(backgrounds)
                 renderer.draw_color = backgrounds[bg_index]
 
     renderer.clear()
 
     # update texture
-    curtime = pg.time.get_ticks()
+    curtime = pygame.time.get_ticks()
     if curtime >= next_tex_update:
         for x_ in range(streamtex.width // 4):
             for y_ in range(streamtex.height // 4):
@@ -135,7 +131,7 @@ while running:
                 surf.fill(newcol, area)
         streamtex.update(surf)
         next_tex_update = curtime + tex_update_interval
-    streamtex.draw(dstrect=pg.Rect(64, 128, 64, 64))
+    streamtex.draw(dstrect=pygame.Rect(64, 128, 64, 64))
 
     tex.draw(dstrect=(x, y))
 
@@ -145,13 +141,13 @@ while running:
     # - rect(rect, width=1)->draw 1 pixel, instead of draw_rect
     # - rect(rect, width=0)->filled ? , instead of fill_rect
     #
-    # TODO: should these work with pg.draw.line(renderer, ...) functions?
+    # TODO: should these work with pygame.draw.line(renderer, ...) functions?
     renderer.draw_color = (255, 255, 255, 255)
     renderer.draw_line((0, 0), (64, 64))
     renderer.draw_line((64, 64), (128, 0))
     renderer.draw_point((72, 32))
-    renderer.draw_rect(pg.Rect(0, 64, 64, 64))
-    renderer.fill_rect(pg.Rect(0, 128, 64, 64))
+    renderer.draw_rect(pygame.Rect(0, 64, 64, 64))
+    renderer.fill_rect(pygame.Rect(0, 128, 64, 64))
     renderer.draw_color = backgrounds[bg_index]
 
     renderer.present()
@@ -159,4 +155,4 @@ while running:
     clock.tick(60)
     win.title = str(f"FPS: {clock.get_fps()}")
 
-pg.quit()
+pygame.quit()

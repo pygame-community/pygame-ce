@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
 */
 
 /*
- *  pygame keyboard module
+ *  pygame-ce keyboard module
  */
 #include "pygame.h"
 
@@ -62,7 +62,7 @@ key_get_repeat(PyObject *self, PyObject *_null)
 /*
  * pgScancodeWrapper is for key_get_pressed in SDL2.
  * It converts key symbol indices to scan codes, as suggested in
- *     https://github.com/pygame/pygame/issues/659
+ *     https://github.com/pygame-community/pygame-ce/issues/519
  * so that they work with SDL_GetKeyboardState().
  */
 #define _PG_SCANCODEWRAPPER_TYPE_NAME "ScancodeWrapper"

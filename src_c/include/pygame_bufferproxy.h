@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
   Copyright (C) 2007  Rene Dudfield, Richard Goedeken
 

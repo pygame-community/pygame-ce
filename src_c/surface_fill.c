@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2007 Marcus von Appen
 
   This library is free software; you can redistribute it and/or
@@ -908,7 +908,7 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
         }
 
         default: {
-            result = -1;
+            result = SDL_SetError("invalid blend flag for this operation");
             break;
         }
     }

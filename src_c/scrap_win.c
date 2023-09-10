@@ -1,5 +1,5 @@
 /*
-    pygame - Python Game Library
+    pygame-ce - Python Game Library
     Copyright (C) 2006, 2007 Rene Dudfield, Marcus von Appen
 
     Originally written and put in the public domain by Sam Lantinga.
@@ -247,8 +247,7 @@ pygame_scrap_get(char *type, size_t *count)
     char *retval = NULL;
 
     if (!pygame_scrap_initialized()) {
-        PyErr_SetString(pgExc_SDLError, "scrap system not initialized.");
-        return NULL;
+        return RAISE(pgExc_SDLError, "scrap system not initialized.");
     }
 
     if (!pygame_scrap_lost())

@@ -1,10 +1,11 @@
 import sys
 import os
 import unittest
+import time
 import pathlib
 import platform
 
-from pygame.tests.test_utils import example_path
+from pygame.tests.test_utils import example_path, prompt, question
 
 import pygame
 from pygame import mixer
@@ -93,7 +94,7 @@ class MixerModuleTest(unittest.TestCase):
             frequency, size, channels = init_conf.values()
             if (frequency, size) == (22050, 16):
                 continue
-            mixer.init(frequency, size, channels)
+            mixer.init(frequency, size, channels, allowedchanges=0)
 
             mixer_conf = mixer.get_init()
 
@@ -115,6 +116,25 @@ class MixerModuleTest(unittest.TestCase):
             mixer.set_num_channels(i)
             self.assertEqual(mixer.get_num_channels(), i)
 
+    def test_set_soundfont(self):
+        """Ensure soundfonts can be set, cleared, and retrieved"""
+        mixer.init()
+
+        mixer.set_soundfont()
+        self.assertEqual(mixer.get_soundfont(), None)
+
+        mixer.set_soundfont(None)
+        self.assertEqual(mixer.get_soundfont(), None)
+
+        mixer.set_soundfont("")
+        self.assertEqual(mixer.get_soundfont(), None)
+
+        mixer.set_soundfont("test1.sf2;test2.sf2")
+        self.assertEqual(mixer.get_soundfont(), "test1.sf2;test2.sf2")
+
+        self.assertRaises(TypeError, mixer.set_soundfont, 0)
+        self.assertRaises(TypeError, mixer.set_soundfont, ["one", "two"])
+
     def test_quit(self):
         """get_num_channels() Should throw pygame.error if uninitialized
         after mixer.quit()"""
@@ -122,8 +142,7 @@ class MixerModuleTest(unittest.TestCase):
         mixer.quit()
         self.assertRaises(pygame.error, mixer.get_num_channels)
 
-    # TODO: FIXME: appveyor and pypy (on linux) fails here sometimes.
-    @unittest.skipIf(sys.platform.startswith("win"), "See github issue 892.")
+    # TODO: FIXME: pypy (on linux) fails here sometimes.
     @unittest.skipIf(IS_PYPY, "random errors here with pypy")
     def test_sound_args(self):
         def get_bytes(snd):
@@ -641,9 +660,9 @@ class MixerModuleTest(unittest.TestCase):
     def test_get_sdl_mixer_version__linked_equals_compiled(self):
         """Ensures get_sdl_mixer_version's linked/compiled versions are equal."""
         linked_version = pygame.mixer.get_sdl_mixer_version(linked=True)
-        complied_version = pygame.mixer.get_sdl_mixer_version(linked=False)
+        compiled_version = pygame.mixer.get_sdl_mixer_version(linked=False)
 
-        self.assertTupleEqual(linked_version, complied_version)
+        self.assertTupleEqual(linked_version, compiled_version)
 
 
 ############################## CHANNEL CLASS TESTS #############################
@@ -897,6 +916,62 @@ class ChannelTypeTest(unittest.TestCase):
 
         self.fail()
 
+    def test_set_source_location(self):
+        ch = mixer.Channel(0)
+        ch.set_source_location(-3.14, 6.25)
+        self.assertRaises(ValueError, lambda: ch.set_source_location(0, -1))
+        self.assertRaises(ValueError, lambda: ch.set_source_location(0, 256.0))
+        self.assertRaises(TypeError, lambda: ch.set_source_location("", 6.25))
+
+    def test_id_getter(self):
+        ch1 = mixer.Channel(1)
+        ch2 = mixer.Channel(2)
+
+        self.assertEqual(ch1.id, 1)
+        self.assertEqual(ch2.id, 2)
+
+
+class ChannelInteractiveTest(unittest.TestCase):
+    __tags__ = ["interactive"]
+
+    def tearDown(self):
+        mixer.quit()
+        mixer.pre_init(0, 0, 0, 0)
+
+    def setUp(self):
+        mixer.init()
+        filename = example_path(os.path.join("data", "house_lo.mp3"))
+        self.snd = mixer.Sound(filename)
+
+    def test_set_source_location(self):
+        prompt("Please wear earphones before the test for set_source_location() starts")
+        ch = self.snd.play()
+        angle = 0
+        distance = 100
+        while ch.get_busy():
+            ch.set_source_location(angle, distance)
+            angle += 1
+            angle %= 360
+            time.sleep(0.01)
+        ans = question("You heard the sound was running around you. Is that correct?")
+        self.assertTrue(ans)
+
+        ch = self.snd.play()
+        angle = 0
+        distance = 0
+        direction = 0
+        while ch.get_busy():
+            ch.set_source_location(angle, distance)
+            if distance == 0 or distance == 255:
+                direction = 1 - direction
+            distance += 1 if direction else -1
+            time.sleep(0.01)
+
+        ans = question(
+            "You heard the distance of the sound was changing. Is that correct?"
+        )
+        self.assertTrue(ans)
+
 
 ############################### SOUND CLASS TESTS ##############################
 
@@ -949,6 +1024,10 @@ class SoundTypeTest(unittest.TestCase):
         sound2 = mixer.Sound(file=path)
         self.assertIsInstance(sound1, mixer.Sound)
         self.assertIsInstance(sound2, mixer.Sound)
+
+        self.assertRaises(
+            FileNotFoundError, mixer.Sound, pathlib.Path("/aWH8ryIyWt5BL7xf327e")
+        )  # this path should not exist on any system really
 
     def todo_test_sound__from_buffer(self):
         """Ensure Sound() creation with a buffer works."""

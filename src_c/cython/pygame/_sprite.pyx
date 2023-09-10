@@ -1,4 +1,4 @@
-##    pygame - Python Game Library
+##    pygame-ce - Python Game Library
 ##    Copyright (C) 2000-2003, 2007  Pete Shinners
 ##              (C) 2004 Joe Wreschnig
 ##    This library is free software; you can redistribute it and/or

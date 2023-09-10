@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # This is the distutils setup script for pygame.
-# Full instructions are in https://www.pygame.org/wiki/GettingStarted
+# Full instructions are in https://github.com/pygame-community/pygame-ce/wiki
 #
 # To configure, compile, install, just run this script.
 #     python setup.py install
@@ -16,7 +16,7 @@ EXTRAS = {}
 
 METADATA = {
     "name": "pygame-ce",
-    "version": "2.2.0.dev1",
+    "version": "2.4.0.dev1",
     "license": "LGPL",
     "url": "https://pyga.me",
     "author": "A community project.",
@@ -29,7 +29,7 @@ METADATA = {
         "Source": "https://github.com/pygame-community/pygame-ce",
     },
     "classifiers": [
-        "Development Status :: 6 - Mature",
+        "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
         "Programming Language :: Assembly",
         "Programming Language :: C",
@@ -42,6 +42,7 @@ METADATA = {
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Games/Entertainment",
@@ -53,10 +54,12 @@ METADATA = {
         "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
         "Topic :: Multimedia :: Graphics :: Graphics Conversion",
         "Topic :: Multimedia :: Graphics :: Viewers",
+        "Topic :: Software Development :: Libraries :: pygame",
         "Operating System :: Microsoft :: Windows",
         "Operating System :: POSIX",
         "Operating System :: Unix",
         "Operating System :: MacOS",
+        "Typing :: Typed"
     ],
     "python_requires": '>=3.7',
 }
@@ -71,7 +74,7 @@ import distutils
 
 import distutils.ccompiler
 
-avx2_filenames = ['simd_blitters_avx2']
+avx2_filenames = ['simd_blitters_avx2', 'simd_transform_avx2']
 
 compiler_options = {
     'unix': ('-mavx2',),
@@ -120,7 +123,7 @@ def spawn(self, cmd, **kwargs):
 distutils.ccompiler.CCompiler.__spawn = distutils.ccompiler.CCompiler.spawn
 distutils.ccompiler.CCompiler.spawn = spawn
 
-# A (bit hacky) fix for https://github.com/pygame/pygame/issues/2613
+# A (bit hacky) fix for https://github.com/pygame-community/pygame-ce/issues/1346
 # This is due to the fact that distutils uses command line args to 
 # export PyInit_* functions on windows, but those functions are already exported
 # and that is why compiler gives warnings
@@ -134,47 +137,28 @@ IS_PYPY = '__pypy__' in sys.builtin_module_names
 def compilation_help():
     """ On failure point people to a web page for help.
     """
-    the_system = platform.system()
-    if the_system == 'Linux':
-        if hasattr(platform, 'linux_distribution'):
-            distro = platform.linux_distribution()
-            if distro[0].lower() == 'ubuntu':
-                the_system = 'Ubuntu'
-            elif distro[0].lower() == 'debian':
-                the_system = 'Debian'
-
     help_urls = {
-        'Linux': 'https://www.pygame.org/wiki/Compilation',
-        'Ubuntu': 'https://www.pygame.org/wiki/CompileUbuntu',
-        'Windows': 'https://www.pygame.org/wiki/CompileWindows',
-        'Darwin': 'https://www.pygame.org/wiki/MacCompile',
-        'RedHat': 'https://www.pygame.org/wiki/CompileRedHat',
-        # TODO There is nothing in the following pages yet
-        'Suse': 'https://www.pygame.org/wiki/CompileSuse',
-        'Python (from pypy.org)': 'https://www.pygame.org/wiki/CompilePyPy',
-        'Free BSD': 'https://www.pygame.org/wiki/CompileFreeBSD',
-        'Debian': 'https://www.pygame.org/wiki/CompileDebian',
+        'Linux': 'https://github.com/pygame-community/pygame-ce/wiki/Compiling-on-Linux',
+        'Windows': 'https://github.com/pygame-community/pygame-ce/wiki/Compiling-on-Windows',
+        'Darwin': 'https://github.com/pygame-community/pygame-ce/wiki/Compiling-on-macOS',
     }
 
-    default = 'https://www.pygame.org/wiki/Compilation'
-    url = help_urls.get(the_system, default)
-
-    if IS_PYPY:
-        url += '\n    https://www.pygame.org/wiki/CompilePyPy'
+    default = 'https://github.com/pygame-community/pygame-ce/wiki#compiling'
+    url = help_urls.get(platform.system(), default)
 
     print('\n---')
     print('For help with compilation see:')
     print(f'    {url}')
-    print('To contribute to pygame development see:')
+    print('To contribute to pygame-ce development see:')
     print('    https://github.com/pygame-community/pygame-ce')
     print('---\n')
 
 
 if not hasattr(sys, 'version_info') or sys.version_info < (3, 7):
     compilation_help()
-    raise SystemExit("Pygame requires Python3 version 3.7 or above.")
+    raise SystemExit("Pygame-ce requires Python3 version 3.7 or above.")
 if IS_PYPY and sys.pypy_version_info < (7,):
-    raise SystemExit("Pygame requires PyPy version 7.0.0 above, compatible with CPython >= 3.7")
+    raise SystemExit("Pygame-ce requires PyPy version 7.0.0 above, compatible with CPython >= 3.7")
 
 
 def consume_arg(name):
@@ -949,7 +933,7 @@ class FormatCommand(LintFormatCommand):
 
 @add_command('docs')
 class DocsCommand(Command):
-    """ For building the pygame documentation with `python setup.py docs`.
+    """ For building the pygame-ce documentation with `python setup.py docs`.
     This generates html, and documentation .h header files.
     """
     user_options = [

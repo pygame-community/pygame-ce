@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -52,27 +52,11 @@ mixmusic_callback(void *udata, Uint8 *stream, int len)
 }
 
 static void
-_pg_push_music_event(int type)
-{
-    pgEventObject *e;
-    SDL_Event event;
-    PyGILState_STATE gstate = PyGILState_Ensure();
-
-    e = (pgEventObject *)pgEvent_New2(type, NULL);
-    if (e) {
-        pgEvent_FillUserEvent(e, &event);
-        if (SDL_PushEvent(&event) <= 0)
-            Py_DECREF(e->dict);
-        Py_DECREF(e);
-    }
-    PyGILState_Release(gstate);
-}
-
-static void
 endmusic_callback(void)
 {
-    if (endmusic_event && SDL_WasInit(SDL_INIT_VIDEO))
-        _pg_push_music_event(endmusic_event);
+    if (endmusic_event && SDL_WasInit(SDL_INIT_VIDEO)) {
+        pg_post_event(endmusic_event, NULL);
+    }
 
     if (queue_music) {
         if (current_music)
@@ -268,12 +252,13 @@ music_get_pos(PyObject *self, PyObject *_null)
 
     MIXER_INIT_CHECK();
 
-    if (music_pos_time < 0)
+    Uint16 intermediate_step = (music_format & 0xff) >> 3;
+    long denominator = music_channels * music_frequency * intermediate_step;
+    if (music_pos_time < 0 || denominator == 0) {
         return PyLong_FromLong(-1);
+    }
 
-    ticks = (long)(1000 * music_pos /
-                   (music_channels * music_frequency *
-                    ((music_format & 0xff) >> 3)));
+    ticks = (long)(1000 * music_pos / denominator);
     if (!Mix_PausedMusic())
         ticks += PG_GetTicks() - music_pos_time;
 
@@ -375,19 +360,11 @@ _load_music(PyObject *obj, char *namehint)
     Mix_Music *new_music = NULL;
     char *ext = NULL, *type = NULL;
     SDL_RWops *rw = NULL;
-    PyObject *_type = NULL;
-    PyObject *error = NULL;
-    PyObject *_traceback = NULL;
 
     MIXER_INIT_CHECK();
 
     rw = pgRWops_FromObject(obj, &ext);
-    if (rw ==
-        NULL) { /* stop on NULL, error already set is what we SHOULD do */
-        PyErr_Fetch(&_type, &error, &_traceback);
-        PyErr_SetObject(pgExc_SDLError, error);
-        Py_XDECREF(_type);
-        Py_XDECREF(_traceback);
+    if (rw == NULL) {
         return NULL;
     }
     if (namehint) {
@@ -406,8 +383,7 @@ _load_music(PyObject *obj, char *namehint)
     }
 
     if (!new_music) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return NULL;
+        return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
     return new_music;
@@ -523,10 +499,9 @@ music_get_metadata(PyObject *self, PyObject *args, PyObject *keywds)
         }
     }
     else if (namehint) {
-        PyErr_SetString(
+        return RAISE(
             pgExc_SDLError,
             "'namehint' specified without specifying 'filename' or 'fileobj'");
-        return NULL;
     }
 
     const char *title = "";

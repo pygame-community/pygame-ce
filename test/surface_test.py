@@ -18,6 +18,7 @@ import platform
 import gc
 import weakref
 import ctypes
+import itertools
 
 IS_PYPY = "PyPy" == platform.python_implementation()
 
@@ -44,7 +45,7 @@ class SurfaceTypeTest(unittest.TestCase):
         surf = pygame.Surface((20, 20))
         self.assertEqual(surf.get_at((0, 0)), (0, 0, 0, 255))
 
-        # See https://github.com/pygame/pygame/issues/1395
+        # See https://github.com/pygame-community/pygame-ce/issues/796
         pygame.display.set_mode((500, 500))
         surf = pygame.Surface((20, 20))
         self.assertEqual(surf.get_at((0, 0)), (0, 0, 0, 255))
@@ -63,7 +64,31 @@ class SurfaceTypeTest(unittest.TestCase):
 
     def test_print(self):
         surf = pygame.Surface((70, 70), 0, 32)
-        self.assertEqual(repr(surf), "<Surface(70x70x32 SW)>")
+        self.assertEqual(repr(surf), "<Surface(70x70x32)>")
+
+        surf_global = pygame.Surface((70, 70), pygame.SRCALPHA, 32)
+        self.assertEqual(repr(surf_global), "<Surface(70x70x32, global_alpha=255)>")
+
+        surf_colorkey = pygame.Surface((70, 70), 0, 32)
+        surf_colorkey.set_colorkey("purple")
+        self.assertEqual(
+            repr(surf_colorkey), "<Surface(70x70x32, colorkey=(160, 32, 240, 255))>"
+        )
+
+        surf_colorkey_global = pygame.Surface((70, 70), 32)
+        surf_colorkey_global.set_colorkey("orange")
+        surf_colorkey_global.set_alpha(200)
+        self.assertEqual(
+            repr(surf_colorkey_global),
+            "<Surface(70x70x32, colorkey=(255, 165, 0, 255), global_alpha=200)>",
+        )
+
+        surf_16_global = pygame.Surface((70, 70), 0, 16)
+        surf_16_global.set_alpha(200)
+        self.assertEqual(repr(surf_16_global), "<Surface(70x70x16, global_alpha=200)>")
+
+        surf_8 = pygame.Surface((70, 70), 0, 8)
+        self.assertEqual(repr(surf_8), "<Surface(70x70x8)>")
 
     def test_keyword_arguments(self):
         surf = pygame.Surface((70, 70), flags=SRCALPHA, depth=32)
@@ -86,6 +111,11 @@ class SurfaceTypeTest(unittest.TestCase):
         # set it with a tuple.
         s.set_at((0, 0), (10, 10, 10, 255))
         r = s.get_at((0, 0))
+        self.assertIsInstance(r, pygame.Color)
+        self.assertEqual(r, (10, 10, 10, 255))
+
+        s.set_at(pygame.Vector2(0, 0), (10, 10, 10, 255))
+        r = s.get_at(pygame.Vector2(0, 0))
         self.assertIsInstance(r, pygame.Color)
         self.assertEqual(r, (10, 10, 10, 255))
 
@@ -203,7 +233,7 @@ class SurfaceTypeTest(unittest.TestCase):
         self.assertEqual(bound_rect.width, 31)
         self.assertEqual(bound_rect.height, 31)
 
-        # Issue #180
+        # pygame-ce issue #195
         pygame.display.init()
         try:
             surf = pygame.Surface((4, 1), 0, 8)
@@ -219,6 +249,22 @@ class SurfaceTypeTest(unittest.TestCase):
         s1.fill(color)
 
         s2 = s1.copy()
+
+        s1rect = s1.get_rect()
+        s2rect = s2.get_rect()
+
+        self.assertEqual(s1rect.size, s2rect.size)
+        self.assertEqual(s2.get_at((10, 10)), color)
+
+    def test_deepcopy(self):
+        """Ensure a surface can be copied."""
+        color = (25, 25, 25, 25)
+        s1 = pygame.Surface((32, 32), pygame.SRCALPHA, 32)
+        s1.fill(color)
+
+        import copy
+
+        s2 = copy.deepcopy(s1)
 
         s1rect = s1.get_rect()
         s2rect = s2.get_rect()
@@ -254,6 +300,17 @@ class SurfaceTypeTest(unittest.TestCase):
             blit_surf.mustlock(), (blit_surf.get_flags() & pygame.RLEACCEL) != 0
         )
         self.assertTrue(blit_surf.get_flags() & pygame.RLEACCEL)
+
+    def test_fill_raise_exceptions(self):
+        surf = pygame.Surface((5, 5))
+        invalid_rect_style_obj = 0
+        self.assertRaises(ValueError, surf.fill, "black", rect=invalid_rect_style_obj)
+        self.assertRaises(
+            pygame.error, surf.fill, "black", special_flags=pygame.BLEND_PREMULTIPLIED
+        )
+        self.assertRaises(
+            pygame.error, surf.fill, "black", special_flags=pygame.BLEND_ALPHA_SDL2
+        )
 
     def test_mustlock_rle(self):
         """Test RLEACCEL flag with mustlock()"""
@@ -566,6 +623,18 @@ class SurfaceTypeTest(unittest.TestCase):
         rect = surf.get_rect()
 
         self.assertEqual(rect.size, size)
+
+    ########################################################################
+
+    def test_get_frect(self):
+        """Ensure a surface's frect can be retrieved."""
+        size = (16.0, 16.0)
+        surf = pygame.Surface(size)
+        frect = surf.get_frect()
+
+        self.assertEqual(frect.topleft, (0.0, 0.0))
+        self.assertEqual(frect.size, size)
+        self.assertIsInstance(frect, pygame.FRect)
 
     ########################################################################
 
@@ -1060,6 +1129,41 @@ class TestSurfaceBlit(unittest.TestCase):
         source.set_at((0, 0), test_color)
         target.blit(source, (0, 0))
 
+    def test_blit__SCALPHA32_TO_OPAQUE32(self):
+        # Apparently these types of blits need to write 0 to the destination's
+        # alpha channel (it's not really an alpha channel but it's treated like one)
+        # See https://github.com/pygame-community/pygame-ce/pull/2067
+
+        alphas = [0, 10, 50, 122, 240, 255]
+
+        combinations = list(itertools.combinations_with_replacement(alphas, 2))
+        width = len(combinations)
+
+        # masks explicitly specified so direct pixel access of bytes below is
+        # guaranteed to be stable
+        surf1 = pygame.Surface((width, 1), depth=32, masks=(0xFF0000, 0xFF00, 0xFF, 0))
+        surf2 = pygame.Surface(
+            (width, 1),
+            pygame.SRCALPHA,
+            depth=32,
+            masks=(0xFF0000, 0xFF00, 0xFF, 0xFF000000),
+        )
+
+        for i in range(width):
+            alpha1, alpha2 = combinations[i]
+            surf1.set_at((i, 0), (0, 0, 0, alpha1))
+            surf2.set_at((i, 0), (0, 0, 0, alpha2))
+
+        surf1.blit(surf2, (0, 0))
+
+        # Why use get_buffer?
+        # get_at for RGBX surfaces seems to always think A=255, regardless
+        # of bytes in surface, which makes sense.
+        surf1_bytes = surf1.get_buffer().raw
+        for i in range(width):
+            # +3 gets the "alpha channel" in this pixel format
+            assert surf1_bytes[i * 4 + 3] == 0
+
 
 class GeneralSurfaceTests(unittest.TestCase):
     @unittest.skipIf(
@@ -1067,8 +1171,8 @@ class GeneralSurfaceTests(unittest.TestCase):
         'requires a non-"dummy" SDL_VIDEODRIVER',
     )
     def test_image_convert_bug_131(self):
-        # bug #131: Unable to Surface.convert(32) some 1-bit images.
-        # https://github.com/pygame/pygame/issues/131
+        # bug #146: Unable to Surface.convert(32) some 1-bit images.
+        # https://github.com/pygame-community/pygame-ce/issues/146
 
         pygame.display.init()
         try:
@@ -1080,12 +1184,16 @@ class GeneralSurfaceTests(unittest.TestCase):
             self.assertEqual(im.get_palette(), ((0, 0, 0, 255), (255, 255, 255, 255)))
             self.assertEqual(im2.get_palette(), ((0, 0, 0, 255), (0, 0, 0, 255)))
 
-            self.assertEqual(repr(im.convert(32)), "<Surface(24x24x32 SW)>")
-            self.assertEqual(repr(im2.convert(32)), "<Surface(469x137x32 SW)>")
+            self.assertEqual(
+                repr(im.convert(32)), "<Surface(24x24x32, colorkey=(0, 0, 0, 255))>"
+            )
+            self.assertEqual(
+                repr(im2.convert(32)), "<Surface(469x137x32, colorkey=(0, 0, 0, 255))>"
+            )
 
             # Ensure a palette format to palette format works.
             im3 = im.convert(8)
-            self.assertEqual(repr(im3), "<Surface(24x24x8 SW)>")
+            self.assertEqual(repr(im3), "<Surface(24x24x8, colorkey=(0, 0, 0, 255))>")
             self.assertEqual(im3.get_palette(), im.get_palette())
 
         finally:
@@ -1153,6 +1261,22 @@ class GeneralSurfaceTests(unittest.TestCase):
             s1_alpha = s1.convert_alpha()
             self.assertEqual(s1_alpha.get_flags() & SRCALPHA, SRCALPHA)
             self.assertEqual(s1_alpha.get_alpha(), 255)
+        finally:
+            pygame.display.quit()
+
+    def test_convert_palettize(self):
+        pygame.display.init()
+        try:
+            pygame.display.set_mode((640, 480))
+
+            surf = pygame.Surface((150, 250))
+            surf.fill((255, 50, 0))
+            surf = surf.convert(8)
+            surf2 = pygame.Surface((150, 250), depth=8)
+            surf2.fill((255, 50, 0))
+
+            self.assertEqual(surf.get_at((50, 50)), surf2.get_at((50, 50)))
+
         finally:
             pygame.display.quit()
 
@@ -1720,7 +1844,7 @@ class GeneralSurfaceTests(unittest.TestCase):
             pygame.display.set_mode((60, 60))
 
             # This is accepted as an argument, but its values are ignored.
-            # See issue #599.
+            # See pygame-ce issue #493.
             surface = convert_surface.convert_alpha(depth_surface)
 
             self.assertIsNot(surface, depth_surface)
@@ -1813,10 +1937,15 @@ class GeneralSurfaceTests(unittest.TestCase):
         surf.set_at((1, 1), c11)
         c = surf.get_at((0, 0))
         self.assertIsInstance(c, pygame.Color)
+        c = surf.get_at(pygame.Vector2(0, 0))
+        self.assertIsInstance(c, pygame.Color)
         self.assertEqual(c, c00)
         self.assertEqual(surf.get_at((0, 1)), c01)
         self.assertEqual(surf.get_at((1, 0)), c10)
         self.assertEqual(surf.get_at((1, 1)), c11)
+        self.assertEqual(surf.get_at(pygame.Vector2(0, 1)), c01)
+        self.assertEqual(surf.get_at(pygame.Vector2(1, 0)), c10)
+        self.assertEqual(surf.get_at(pygame.Vector2(1, 1)), c11)
         for p in [(-1, 0), (0, -1), (2, 0), (0, 2)]:
             self.assertRaises(IndexError, surf.get_at, p)
 
@@ -1826,6 +1955,12 @@ class GeneralSurfaceTests(unittest.TestCase):
             surf = pygame.Surface((2, 2), 0, bitsize)
             surf.fill(color)
             pixel = surf.get_at_mapped((0, 0))
+            self.assertEqual(
+                pixel,
+                surf.map_rgb(color),
+                "%i != %i, bitsize: %i" % (pixel, surf.map_rgb(color), bitsize),
+            )
+            pixel = surf.get_at_mapped(pygame.Vector2(0, 0))
             self.assertEqual(
                 pixel,
                 surf.map_rgb(color),
@@ -2321,7 +2456,7 @@ class GeneralSurfaceTests(unittest.TestCase):
 
     def test_palette_colorkey(self):
         """test bug discovered by robertpfeiffer
-        https://github.com/pygame/pygame/issues/721
+        https://github.com/pygame-community/pygame-ce/issues/541
         """
         surf = pygame.image.load(example_path(os.path.join("data", "alien2.png")))
         key = surf.get_colorkey()
@@ -2432,7 +2567,7 @@ class GeneralSurfaceTests(unittest.TestCase):
         self.assertEqual(s.get_masks(), surf.get_masks())
         self.assertEqual(s.get_losses(), surf.get_losses())
 
-        # Issue https://github.com/pygame/pygame/issues/2
+        # Issue https://github.com/pygame-community/pygame-ce/issues/17
         surf = pygame.Surface.__new__(pygame.Surface)
         self.assertRaises(pygame.error, surf.subsurface, (0, 0, 0, 0))
 
@@ -2564,7 +2699,7 @@ class GeneralSurfaceTests(unittest.TestCase):
 
 
 class SurfaceSubtypeTest(unittest.TestCase):
-    """Issue #280: Methods that return a new Surface preserve subclasses"""
+    """pygame-ce issue #295: Methods that return a new Surface preserve subclasses"""
 
     def setUp(self):
         pygame.display.init()
@@ -3654,6 +3789,39 @@ class SurfaceBlendTest(unittest.TestCase):
             )
         )
 
+    def test_blit_blend_premultiplied_pixelformats(self):
+        # first create two BGRA pixel format surfaces using
+        # tobytes & frombytes
+        argb_surf_a = pygame.Surface((64, 64), flags=pygame.SRCALPHA)
+        byte_surf_a = pygame.image.tobytes(argb_surf_a, "ARGB")
+        bgra_surf_a = pygame.image.frombytes(byte_surf_a, (64, 64), "ARGB")
+
+        argb_surf_b = pygame.Surface((64, 64), flags=pygame.SRCALPHA)
+        byte_surf_b = pygame.image.tobytes(argb_surf_b, "ARGB")
+        bgra_surf_b = pygame.image.frombytes(byte_surf_b, (64, 64), "ARGB")
+
+        argb_surf_a.fill((64, 0, 0, 128))
+        self.assertEqual(argb_surf_a.get_at((0, 0)), pygame.Color(64, 0, 0, 128))
+
+        # 128 green, 128 blue at 50% alpha, premultiplied
+        argb_surf_b.fill((0, 64, 64, 128))
+        self.assertEqual(argb_surf_b.get_at((0, 0)), pygame.Color(0, 64, 64, 128))
+
+        argb_surf_a.blit(argb_surf_b, (0, 0), special_flags=pygame.BLEND_PREMULTIPLIED)
+
+        self.assertEqual(argb_surf_a.get_at((0, 0)), pygame.Color(32, 64, 64, 192))
+
+        bgra_surf_a.fill((64, 0, 0, 128))  # 128 red at 50% alpha
+        self.assertEqual(bgra_surf_a.get_at((0, 0)), pygame.Color(64, 0, 0, 128))
+
+        # 128 green, 128 blue at 50% alpha, premultiplied
+        bgra_surf_b.fill((0, 64, 64, 128))
+        self.assertEqual(bgra_surf_b.get_at((0, 0)), pygame.Color(0, 64, 64, 128))
+
+        bgra_surf_a.blit(bgra_surf_b, (0, 0), special_flags=pygame.BLEND_PREMULTIPLIED)
+
+        self.assertEqual(bgra_surf_a.get_at((0, 0)), pygame.Color(32, 64, 64, 192))
+
     def test_blit_blend_big_rect(self):
         """test that an oversized rect works ok."""
         color = (1, 2, 3, 255)
@@ -3833,7 +4001,7 @@ class SurfaceBlendTest(unittest.TestCase):
 class SurfaceSelfBlitTest(unittest.TestCase):
     """Blit to self tests.
 
-    This test case is in response to https://github.com/pygame/pygame/issues/19
+    This test case is in response to https://github.com/pygame-community/pygame-ce/issues/34
     """
 
     def setUp(self):
@@ -3910,11 +4078,11 @@ class SurfaceSelfBlitTest(unittest.TestCase):
                 surf.blit(surf, (d_x, d_y), (s_x, s_y, 50, 50))
                 self.assertEqual(surf.get_at(test_posn), rectc_right)
 
-    # https://github.com/pygame/pygame/issues/370#issuecomment-364625291
+    # https://github.com/pygame-community/pygame-ce/issues/374, final comment by illume
     @unittest.skipIf("ppc64le" in platform.uname(), "known ppc64le issue")
     def test_colorkey(self):
         # Check a workaround for an SDL 1.2.13 surface self-blit problem
-        # https://github.com/pygame/pygame/issues/19
+        # https://github.com/pygame-community/pygame-ce/issues/34
         pygame.display.set_mode((100, 50))  # Needed for 8bit surface
         bitsizes = [8, 16, 24, 32]
         for bitsize in bitsizes:
@@ -3933,11 +4101,11 @@ class SurfaceSelfBlitTest(unittest.TestCase):
             comp.blit(tmp, (0, 0))
             self._assert_same(surf, comp)
 
-    # https://github.com/pygame/pygame/issues/370#issuecomment-364625291
+    # https://github.com/pygame-community/pygame-ce/issues/374 final comment by illume
     @unittest.skipIf("ppc64le" in platform.uname(), "known ppc64le issue")
     def test_blanket_alpha(self):
         # Check a workaround for an SDL 1.2.13 surface self-blit problem
-        # https://github.com/pygame/pygame/issues/19
+        # https://github.com/pygame-community/pygame-ce/issues/34
         pygame.display.set_mode((100, 50))  # Needed for 8bit surface
         bitsizes = [8, 16, 24, 32]
         for bitsize in bitsizes:
@@ -4016,7 +4184,7 @@ class SurfaceSelfBlitTest(unittest.TestCase):
         self.assertRaises(pygame.error, do_blit, surf, sub)
 
     def test_copy_alpha(self):
-        """issue 581: alpha of surface copy with SRCALPHA is set to 0."""
+        """pygame-ce issue 487: alpha of surface copy with SRCALPHA is set to 0."""
         surf = pygame.Surface((16, 16), pygame.SRCALPHA, 32)
         self.assertEqual(surf.get_alpha(), 255)
         surf2 = surf.copy()

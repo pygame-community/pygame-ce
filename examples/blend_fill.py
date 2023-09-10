@@ -11,7 +11,7 @@ Keyboard Controls:
 
 """
 import os
-import pygame as pg
+import pygame
 from pygame import K_1, K_2, K_3, K_4, K_5, K_6, K_7, K_8, K_9
 
 
@@ -32,63 +32,63 @@ def main():
     blendtype = 0
     step = 5
 
-    pg.init()
-    screen = pg.display.set_mode((640, 480), 0, 32)
+    pygame.init()
+    screen = pygame.display.set_mode((640, 480), 0, 32)
     screen.fill((100, 100, 100))
 
-    image = pg.image.load(os.path.join(data_dir, "liquid.bmp")).convert()
-    blendimage = pg.image.load(os.path.join(data_dir, "liquid.bmp")).convert()
+    image = pygame.image.load(os.path.join(data_dir, "liquid.bmp")).convert()
+    blendimage = pygame.image.load(os.path.join(data_dir, "liquid.bmp")).convert()
     screen.blit(image, (10, 10))
     screen.blit(blendimage, (200, 10))
 
-    pg.display.flip()
-    pg.key.set_repeat(500, 30)
+    pygame.display.flip()
+    pygame.key.set_repeat(500, 30)
     usage()
 
     going = True
     while going:
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
                 going = False
 
-            if event.type == pg.KEYDOWN:
+            if event.type == pygame.KEYDOWN:
                 usage()
 
-                if event.key == pg.K_ESCAPE:
+                if event.key == pygame.K_ESCAPE:
                     going = False
 
-                if event.key == pg.K_r:
+                if event.key == pygame.K_r:
                     color[0] += step
                     if color[0] > 255:
                         color[0] = 0
                     changed = True
 
-                elif event.key == pg.K_g:
+                elif event.key == pygame.K_g:
                     color[1] += step
                     if color[1] > 255:
                         color[1] = 0
                     changed = True
 
-                elif event.key == pg.K_b:
+                elif event.key == pygame.K_b:
                     color[2] += step
                     if color[2] > 255:
                         color[2] = 0
                     changed = True
 
-                elif event.key == pg.K_a:
-                    blendtype = pg.BLEND_ADD
+                elif event.key == pygame.K_a:
+                    blendtype = pygame.BLEND_ADD
                     changed = True
-                elif event.key == pg.K_s:
-                    blendtype = pg.BLEND_SUB
+                elif event.key == pygame.K_s:
+                    blendtype = pygame.BLEND_SUB
                     changed = True
-                elif event.key == pg.K_m:
-                    blendtype = pg.BLEND_MULT
+                elif event.key == pygame.K_m:
+                    blendtype = pygame.BLEND_MULT
                     changed = True
-                elif event.key == pg.K_PLUS:
-                    blendtype = pg.BLEND_MAX
+                elif event.key == pygame.K_PLUS:
+                    blendtype = pygame.BLEND_MAX
                     changed = True
-                elif event.key == pg.K_MINUS:
-                    blendtype = pg.BLEND_MIN
+                elif event.key == pygame.K_MINUS:
+                    blendtype = pygame.BLEND_MIN
                     changed = True
 
                 elif event.key in (K_1, K_2, K_3, K_4, K_5, K_6, K_7, K_8, K_9):
@@ -105,9 +105,9 @@ def main():
                     f"Color: {tuple(color)}, Pixel (0,0): {[blendimage.get_at((0, 0))]}"
                 )
                 changed = False
-                pg.display.flip()
+                pygame.display.flip()
 
-    pg.quit()
+    pygame.quit()
 
 
 if __name__ == "__main__":

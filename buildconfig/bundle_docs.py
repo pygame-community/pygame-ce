@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 
-"""Tar-zip the pygame documents and examples.
+"""Tar-zip the pygame-ce documents and examples.
 
-Run this script from the pygame source root directory.
+Run this script from the pygame-ce source root directory.
 """
 
 import os

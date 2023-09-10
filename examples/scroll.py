@@ -17,7 +17,7 @@ to quit.
 import sys
 import os
 
-import pygame as pg
+import pygame
 from pygame.transform import scale
 
 main_dir = os.path.dirname(os.path.abspath(__file__))
@@ -41,7 +41,7 @@ def draw_arrow(surf, color, posn, direction):
         pointlist = ((x + 30, y - 29), (x + 30, y + 30), (x - 29, y + 1), (x - 29, y))
     else:
         pointlist = ((x - 29, y - 29), (x - 29, y + 30), (x + 30, y + 1), (x + 30, y))
-    pg.draw.polygon(surf, color, pointlist)
+    pygame.draw.polygon(surf, color, pointlist)
 
 
 def add_arrow_button(screen, regions, posn, direction):
@@ -91,7 +91,7 @@ def scroll_view(screen, image, direction, view_rect):
             dst_rect.right = zoom_view_rect.right
     if src_rect is not None:
         scale(image.subsurface(src_rect), dst_rect.size, screen.subsurface(dst_rect))
-        pg.display.update(zoom_view_rect)
+        pygame.display.update(zoom_view_rect)
 
 
 def main(image_file=None):
@@ -101,21 +101,21 @@ def main(image_file=None):
     view_size = (30, 20)
     zoom_view_size = (view_size[0] * zoom_factor, view_size[1] * zoom_factor)
     win_size = (zoom_view_size[0] + 2 * margin, zoom_view_size[1] + 2 * margin)
-    background_color = pg.Color("beige")
+    background_color = pygame.Color("beige")
 
-    pg.init()
-    pg.display.set_caption("Scroll Example")
+    pygame.init()
+    pygame.display.set_caption("Scroll Example")
 
     # set up key repeating so we can hold down the key to scroll.
-    old_k_delay, old_k_interval = pg.key.get_repeat()
-    pg.key.set_repeat(500, 30)
+    old_k_delay, old_k_interval = pygame.key.get_repeat()
+    pygame.key.set_repeat(500, 30)
 
     try:
-        screen = pg.display.set_mode(win_size)
+        screen = pygame.display.set_mode(win_size)
         screen.fill(background_color)
-        pg.display.flip()
+        pygame.display.flip()
 
-        image = pg.image.load(image_file).convert()
+        image = pygame.image.load(image_file).convert()
         image_w, image_h = image.get_size()
 
         if image_w < view_size[0] or image_h < view_size[1]:
@@ -123,7 +123,7 @@ def main(image_file=None):
             print("A %i by %i or larger image is required." % zoom_view_size)
             return
 
-        regions = pg.Surface(win_size, 0, 24)
+        regions = pygame.Surface(win_size, 0, 24)
         add_arrow_button(screen, regions, (40, win_size[1] // 2), DIR_LEFT)
         add_arrow_button(
             screen, regions, (win_size[0] - 40, win_size[1] // 2), DIR_RIGHT
@@ -132,52 +132,52 @@ def main(image_file=None):
         add_arrow_button(
             screen, regions, (win_size[0] // 2, win_size[1] - 40), DIR_DOWN
         )
-        pg.display.flip()
+        pygame.display.flip()
 
         screen.set_clip((margin, margin, zoom_view_size[0], zoom_view_size[1]))
 
-        view_rect = pg.Rect(0, 0, view_size[0], view_size[1])
+        view_rect = pygame.Rect(0, 0, view_size[0], view_size[1])
 
         scale(
             image.subsurface(view_rect),
             zoom_view_size,
             screen.subsurface(screen.get_clip()),
         )
-        pg.display.flip()
+        pygame.display.flip()
 
         # the direction we will scroll in.
         direction = None
 
-        clock = pg.time.Clock()
+        clock = pygame.Clock()
         clock.tick()
 
         going = True
 
         while going:
             # wait for events before doing anything.
-            # events = [pg.event.wait()] + pg.event.get()
-            events = pg.event.get()
+            # events = [pygame.event.wait()] + pygame.event.get()
+            events = pygame.event.get()
 
             # During the loop, if a key is held, scroll the view.
-            keys = pg.key.get_pressed()
-            if keys[pg.K_UP]:
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_UP]:
                 scroll_view(screen, image, DIR_UP, view_rect)
-            if keys[pg.K_DOWN]:
+            if keys[pygame.K_DOWN]:
                 scroll_view(screen, image, DIR_DOWN, view_rect)
-            if keys[pg.K_LEFT]:
+            if keys[pygame.K_LEFT]:
                 scroll_view(screen, image, DIR_LEFT, view_rect)
-            if keys[pg.K_RIGHT]:
+            if keys[pygame.K_RIGHT]:
                 scroll_view(screen, image, DIR_RIGHT, view_rect)
 
             for e in events:
                 # quit if the event is quit.
-                if e.type == pg.QUIT:
+                if e.type == pygame.QUIT:
                     going = False
 
                 # handle mouse button presses on arrows.
-                elif e.type == pg.MOUSEBUTTONDOWN:
+                elif e.type == pygame.MOUSEBUTTONDOWN:
                     direction = regions.get_at(e.pos)[0]
-                elif e.type == pg.MOUSEBUTTONUP:
+                elif e.type == pygame.MOUSEBUTTONUP:
                     direction = None
 
             if direction:
@@ -185,8 +185,8 @@ def main(image_file=None):
             clock.tick(30)
 
     finally:
-        pg.key.set_repeat(old_k_delay, old_k_interval)
-        pg.quit()
+        pygame.key.set_repeat(old_k_delay, old_k_interval)
+        pygame.quit()
 
 
 if __name__ == "__main__":

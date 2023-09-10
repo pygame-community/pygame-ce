@@ -104,20 +104,6 @@ def _setup_backend(backend):
         list_cameras = _camera.list_cameras
         Camera = _camera.Camera
 
-    elif backend == "videocapture":
-        from pygame import _camera_vidcapture
-
-        warnings.warn(
-            "The VideoCapture backend is not recommended and may be removed."
-            "For Python3 and Windows 8+, there is now a native Windows "
-            "backend built into pygame.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
-        _camera_vidcapture.init()
-        list_cameras = _camera_vidcapture.list_cameras
-        Camera = _camera_vidcapture.Camera
     else:
         raise ValueError("unrecognized backend name")
 
@@ -136,20 +122,12 @@ def get_backends():
 
     possible_backends.append("OpenCV")
 
-    if sys.platform == "win32":
-        possible_backends.append("VideoCapture")
-
     # see if we have any user specified defaults in environments.
     camera_env = os.environ.get("PYGAME_CAMERA", "").lower()
     if camera_env == "opencv":  # prioritize opencv
         if "OpenCV" in possible_backends:
             possible_backends.remove("OpenCV")
         possible_backends = ["OpenCV"] + possible_backends
-
-    if camera_env in ("vidcapture", "videocapture"):  # prioritize vidcapture
-        if "VideoCapture" in possible_backends:
-            possible_backends.remove("VideoCapture")
-        possible_backends = ["VideoCapture"] + possible_backends
 
     return possible_backends
 
@@ -175,8 +153,8 @@ def init(backend=None):
         _setup_backend(backend)
     except ImportError:
         emsg = f"Backend '{backend}' is not supported on your platform!"
-        if backend in ("opencv", "opencv-mac", "videocapture"):
-            dep = "vidcap" if backend == "videocapture" else "OpenCV"
+        if backend in ("opencv", "opencv-mac"):
+            dep = "OpenCV"
             emsg += (
                 f" Make sure you have '{dep}' installed to be able to use this backend"
             )
