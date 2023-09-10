@@ -39,6 +39,22 @@ pg_neon_at_runtime_but_uncompiled()
 void
 grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
 {
+    /* For the SSE2 SIMD version of grayscale we do one pixel at a time
+     * Thus we can calculate the number of loops (and pixels) by multiplying
+     * the width of the surface to be grayscaled, by the height of that
+     * surface.
+     *
+     * We also need to calculate a 'skip value' in case our surface's rows are
+     * not contiguous in memory. For surfaces, a single row's worth of pixel
+     * data is always contiguous (i.e. each pixel is next to each other).
+     * However, a surface's rows may be seperated from one another in memory,
+     * most commonly this happens with sub surfaces.
+     * The vast majority of surfaces used in applications will probably also
+     * have contiguous rows as that is what happens when you create a standard
+     * 32bit surface with pygame.Surface. SIMD Transform algorithms,
+     * should treat this 'most normal' case as the critical path to maximise
+     * performance.
+     */
     int s_row_skip = (src->pitch - src->w * src->format->BytesPerPixel) >> 2;
 
     // generate number of batches of pixels we need to loop through
@@ -67,7 +83,7 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
     mm_zero = _mm_setzero_si128();
     mm_alpha_mask = _mm_cvtsi32_si128(amask);
     mm_rgb_mask = _mm_cvtsi32_si128(rgbmask);
-    mm_two_five_fives = _mm_set_epi64x(0x00FF00FF00FF00FF, 0x00FF00FF00FF00FF);
+    mm_two_five_fives = _mm_set1_epi64x(0x00FF00FF00FF00FF);
     mm_rgb_weights =
         _mm_unpacklo_epi8(_mm_cvtsi32_si128(rgb_weights), mm_zero);
 
@@ -76,11 +92,18 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
         while (pixel_batch_counter--) {
             mm_src = _mm_cvtsi32_si128(*srcp);
             /*mm_src = 0x000000000000000000000000AARRGGBB*/
+            /* First we strip out the alpha so we have one of our 4 channels
+               empty for the rest of the calculation */
             mm_alpha = _mm_subs_epu8(mm_src, mm_rgb_mask);
             /*mm_src = 0x00000000000000000000000000RRGGBB*/
+
+            /* This is where we do the efficient 8bit 'floating point multiply'
+               operation of each channel by the weights - using a 16bit integer
+               multiply, an add and a bitshift. We use this trick repeatedly
+               for multiplication by a 0 to 1 value in SIMD code.
+            */
             mm_src = _mm_unpacklo_epi8(mm_src, mm_zero);
             /*mm_src = 0x0000000000000000000000RR00GG00BB*/
-
             mm_dst = _mm_mullo_epi16(mm_src, mm_rgb_weights);
             /*mm_dst = 0x00000000000000000000RRRRGGGGBBBB*/
             mm_dst = _mm_add_epi16(mm_dst, mm_two_five_fives);
@@ -88,15 +111,28 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
             mm_dst = _mm_srli_epi16(mm_dst, 8);
             /*mm_dst = 0x0000000000000000000000RR00GG00BB*/
 
+            /* now we have the multiplied channels we 'shuffle them out' one
+             * at a time so there are four copies of red, four copies of green,
+             * four copies of blue etc. Then we add all these together
+             * so each of channels contains R+G+B.
+             */
             mm_dst = _mm_adds_epu8(
                 _mm_adds_epu8(
-                    _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(0, 0, 0, 0)),
-                    _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(1, 1, 1, 1))),
+                    _mm_shufflelo_epi16(mm_dst, _PG_SIMD_SHUFFLE(0, 0, 0, 0)),
+                    _mm_shufflelo_epi16(mm_dst, _PG_SIMD_SHUFFLE(1, 1, 1, 1))),
                 _mm_adds_epu8(
-                    _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(2, 2, 2, 2)),
-                    _mm_shufflelo_epi16(mm_dst, _MM_SHUFFLE(3, 3, 3, 3))));
-            /*mm_dst = 0x000000000000000000GrGr00GrGr00GrGr00GrGr*/
+                    _mm_shufflelo_epi16(mm_dst, _PG_SIMD_SHUFFLE(2, 2, 2, 2)),
+                    _mm_shufflelo_epi16(mm_dst,
+                                        _PG_SIMD_SHUFFLE(3, 3, 3, 3))));
+            /* Gr here stands for 'Gray' as we've now added all the channels
+             * back together after multiplying them above.
+             * mm_dst = 0x000000000000000000GrGr00GrGr00GrGr00GrGr
+             */
 
+            /* The rest is just packing the grayscale back to the original
+             * 8bit pixel layout and adding the alpha we removed earlier back
+             * in again
+             */
             mm_dst = _mm_packus_epi16(mm_dst, mm_dst);
             /*mm_dst = 0x000000000000000000000000GrGrGrGrGrGrGrGr*/
             mm_dst = _mm_subs_epu8(mm_dst, mm_alpha_mask);

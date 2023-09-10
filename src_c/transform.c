@@ -2045,7 +2045,11 @@ grayscale_non_simd(SDL_Surface *src, SDL_Surface *newsurf)
             Uint8 r, g, b, a;
             SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
 
-            // RGBA to GRAY formula used by OpenCV
+            /* RGBA to GRAY formula used by OpenCV
+             * We are using a bitshift and integer addition to align the
+             * calculation with what is fastest for SIMD operations.
+             * Results are almost identical to floating point multiplication.
+             */
             Uint8 grayscale_pixel =
                 (Uint8)((((76 * r) + 255) >> 8) + (((150 * g) + 255) >> 8) +
                         (((29 * b) + 255) >> 8));

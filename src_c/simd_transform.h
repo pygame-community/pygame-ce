@@ -1,6 +1,21 @@
 #define NO_PYGAME_C_API
 #include "_surface.h"
 
+/**
+ * MACRO borrowed from SSE2NEON - useful for making the shuffling family of
+ * intrinsics easier to understand by indicating clearly what will go where.
+ *
+ * SSE2Neon description follows...
+ * MACRO for shuffle parameter for _mm_shuffle_ps().
+ * Argument fp3 is a digit[0123] that represents the fp from argument "b"
+ * of mm_shuffle_ps that will be placed in fp3 of result. fp2 is the same
+ * for fp2 in result. fp1 is a digit[0123] that represents the fp from
+ * argument "a" of mm_shuffle_ps that will be places in fp1 of result.
+ * fp0 is the same for fp0 of result.
+ */
+#define _PG_SIMD_SHUFFLE(fp3, fp2, fp1, fp0) \
+    (((fp3) << 6) | ((fp2) << 4) | ((fp1) << 2) | ((fp0)))
+
 #if !defined(PG_ENABLE_ARM_NEON) && defined(__aarch64__)
 // arm64 has neon optimisations enabled by default, even when fpu=neon is not
 // passed

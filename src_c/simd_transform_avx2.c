@@ -48,27 +48,24 @@ pg_avx2_at_runtime_but_uncompiled()
 void
 grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
 {
-    // Current AVX2 process
-    // ------------------
-    // - pre loop: Load weights into register x8
-    // - in loop:
-    //     1. Load 8 pixels into register
-    //     2. remove the alpha channel for every pixel and save it.
-    //     3. multiply weights by pixels using standard shuffle to 2x 16bit
-    //        register, mul + 255 then left shift. See multiply blitter mode
-    //        for this operation in isolation.
-    //     4. pack pixels back together from A & B while adding with a
-    //        horizontal add (e.g. adds A+R and G+B in a ARGB layout)
-    //     5. shift and add to make final grey pixel colour in 0th
-    //        8Bit channel in each 'pixel'
-    //     6. shuffle again to push the grey from the 0th channel into every
-    //        channel of every pixel.
-    //     7. add the alpha channel back in.
-
-    // Things to fix:
-    //     1. Would be nice to only use AVX2 stuff for the single pixel stuff.
-    //     2. Get inspiration from Starbuck's AVX2 macros
-
+    /* See the SSE2 code for a simpler overview of this algorithm
+     * Current AVX2 process
+     * ------------------
+     * - pre loop: Load weights into register x8
+     * - in loop:
+     *     1. Load 8 pixels into register
+     *     2. remove the alpha channel for every pixel and save it.
+     *     3. multiply weights by pixels using standard shuffle to 2x 16bit
+     *        register, mul + 255 then left shift. See multiply blitter mode
+     *        for this operation in isolation.
+     *     4. pack pixels back together from A & B while adding with a
+     *        horizontal add (e.g. adds A+R and G+B in a ARGB layout)
+     *     5. shift and add to make final grey pixel colour in 0th
+     *        8Bit channel in each 'pixel'
+     *     6. shuffle again to push the grey from the 0th channel into every
+     *        channel of every pixel.
+     *     7. add the alpha channel back in.
+     */
     int s_row_skip = (src->pitch - src->w * src->format->BytesPerPixel) >> 2;
 
     // generate number of batches of pixels we need to loop through
@@ -122,7 +119,7 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     mm_zero = _mm_setzero_si128();
     mm_alpha_mask = _mm_cvtsi32_si128(amask);
     mm_rgb_mask = _mm_cvtsi32_si128(rgbmask);
-    mm_two_five_fives = _mm_set_epi64x(0x00FF00FF00FF00FF, 0x00FF00FF00FF00FF);
+    mm_two_five_fives = _mm_set1_epi64x(0x00FF00FF00FF00FF);
     mm_rgb_weights =
         _mm_unpacklo_epi8(_mm_cvtsi32_si128(rgb_weights), mm_zero);
 
@@ -130,6 +127,15 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     mm256_rgb_weights = _mm256_set1_epi32(rgb_weights);
     mm256_rgb_mask = _mm256_set1_epi32(rgbmask);
     mm256_alpha_mask = _mm256_set1_epi32(amask);
+
+    __m256i _partial8_mask =
+        _mm256_set_epi32(0x00, (remaining_pixels > 6) ? 0x80000000 : 0x00,
+                         (remaining_pixels > 5) ? 0x80000000 : 0x00,
+                         (remaining_pixels > 4) ? 0x80000000 : 0x00,
+                         (remaining_pixels > 3) ? 0x80000000 : 0x00,
+                         (remaining_pixels > 2) ? 0x80000000 : 0x00,
+                         (remaining_pixels > 1) ? 0x80000000 : 0x00,
+                         (remaining_pixels > 0) ? 0x80000000 : 0x00);
 
     while (num_batches--) {
         perfect_8_pixels_batch_counter = perfect_8_pixels;
@@ -169,35 +175,38 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
         }
         srcp = (Uint32 *)srcp256;
         dstp = (Uint32 *)dstp256;
-        while (remaining_pixels_batch_counter--) {
-            mm_src = _mm_cvtsi32_si128(*srcp);
-            /*mm_src = 0x000000000000000000000000AARRGGBB*/
-            mm_alpha = _mm_subs_epu8(mm_src, mm_rgb_mask);
-            /*mm_src = 0x00000000000000000000000000RRGGBB*/
-            mm_src = _mm_unpacklo_epi8(mm_src, mm_zero);
-            /*mm_src = 0x0000000000000000000000RR00GG00BB*/
+        if (remaining_pixels_batch_counter > 0) {
+            mm256_src = _mm256_maskload_epi32((int *)srcp, _partial8_mask);
+            mm256_alpha = _mm256_subs_epu8(mm256_src, mm256_rgb_mask);
 
-            mm_dst = _mm_mullo_epi16(mm_src, mm_rgb_weights);
-            /*mm_dst = 0x00000000000000000000RRRRGGGGBBBB*/
-            mm_dst = _mm_add_epi16(mm_dst, mm_two_five_fives);
-            /*mm_dst = 0x00000000000000000000RRRRGGGGBBBB*/
-            mm_dst = _mm_srli_epi16(mm_dst, 8);
-            /*mm_dst = 0x0000000000000000000000RR00GG00BB*/
+            mm256_srcA = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_A);
+            mm256_srcB = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_B);
 
-            mm_dst = _mm_hadd_epi16(mm_dst, mm_dst);  // This requires SSE3
-            mm_dst = _mm_shufflelo_epi16(_mm_hadd_epi16(mm_dst, mm_dst),
-                                         _MM_SHUFFLE(0, 0, 0, 0));
-            /*mm_dst = 0x000000000000000000GrGr00GrGr00GrGr00GrGr*/
+            mm256_dstA =
+                _mm256_shuffle_epi8(mm256_rgb_weights, mm256_shuff_mask_A);
+            mm256_dstB =
+                _mm256_shuffle_epi8(mm256_rgb_weights, mm256_shuff_mask_B);
 
-            mm_dst = _mm_packus_epi16(mm_dst, mm_dst);
-            /*mm_dst = 0x000000000000000000000000GrGrGrGrGrGrGrGr*/
-            mm_dst = _mm_subs_epu8(mm_dst, mm_alpha_mask);
-            mm_dst = _mm_add_epi16(mm_dst, mm_alpha);
-            /*mm_dst = 0x000000000000000000000000AAGrGrGrGrGrGr*/
-            *dstp = _mm_cvtsi128_si32(mm_dst);
-            /*dstp = 0xAARRGGBB*/
-            srcp++;
-            dstp++;
+            mm256_dstA = _mm256_mullo_epi16(mm256_srcA, mm256_dstA);
+            mm256_dstA = _mm256_add_epi16(mm256_dstA, mm256_two_five_fives);
+            mm256_dstA = _mm256_srli_epi16(mm256_dstA, 8);
+
+            mm256_dstB = _mm256_mullo_epi16(mm256_srcB, mm256_dstB);
+            mm256_dstB = _mm256_add_epi16(mm256_dstB, mm256_two_five_fives);
+            mm256_dstB = _mm256_srli_epi16(mm256_dstB, 8);
+
+            mm256_dst = _mm256_hadd_epi16(mm256_dstA, mm256_dstB);
+            mm256_dst =
+                _mm256_add_epi16(mm256_dst, _mm256_srli_epi32(mm256_dst, 16));
+            mm256_dst = _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_gray);
+
+            mm256_dst = _mm256_subs_epu8(mm256_dst, mm256_alpha_mask);
+            mm256_dst = _mm256_adds_epu8(mm256_dst, mm256_alpha);
+
+            _mm256_maskstore_epi32((int *)dstp, _partial8_mask, mm256_dst);
+
+            srcp += remaining_pixels_batch_counter;
+            dstp += remaining_pixels_batch_counter;
         }
         srcp += s_row_skip;
         srcp256 = (__m256i *)srcp;
