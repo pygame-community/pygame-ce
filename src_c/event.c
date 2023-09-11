@@ -93,8 +93,8 @@ static SDL_Event _pg_repeat_event;
 static SDL_Event _pg_last_keydown_event = {0};
 
 /* Not used as text, acts as an array of bools */
-static char pressed_keys[SDL_NUM_SCANCODES] = { 0 };
-static char released_keys[SDL_NUM_SCANCODES] = { 0 };
+static char pressed_keys[SDL_NUM_SCANCODES] = {0};
+static char released_keys[SDL_NUM_SCANCODES] = {0};
 
 #ifdef __EMSCRIPTEN__
 /* these macros are no-op here */
