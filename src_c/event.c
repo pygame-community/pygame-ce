@@ -93,8 +93,8 @@ static SDL_Event _pg_repeat_event;
 static SDL_Event _pg_last_keydown_event = {0};
 
 /* Not used as text, acts as an array of bools */
-char pressed_keys[SDL_NUM_SCANCODES];
-char released_keys[SDL_NUM_SCANCODES];
+static char pressed_keys[SDL_NUM_SCANCODES] = { 0 };
+static char released_keys[SDL_NUM_SCANCODES] = { 0 };
 
 #ifdef __EMSCRIPTEN__
 /* these macros are no-op here */
@@ -427,18 +427,6 @@ _pg_translate_windowevent(void *_, SDL_Event *event)
     return 1;
 }
 
-static int
-_pg_register_keys_just_pressed(void *_, SDL_Event *event)
-{
-    if (event->type == SDL_KEYDOWN) {
-        pressed_keys[event->key.keysym.scancode] = 1;
-    }
-    else if (event->type == SDL_KEYUP) {
-        released_keys[event->key.keysym.scancode] = 1;
-    }
-    return 1;
-}
-
 static int SDLCALL
 _pg_remove_pending_VIDEORESIZE(void *userdata, SDL_Event *event)
 {
@@ -508,6 +496,7 @@ pg_event_filter(void *_, SDL_Event *event)
             return 0;
 
         PG_LOCK_EVFILTER_MUTEX
+        pressed_keys[event->key.keysym.scancode] = 1;
         if (pg_key_repeat_delay > 0) {
             if (_pg_repeat_timer)
                 SDL_RemoveTimer(_pg_repeat_timer);
@@ -537,6 +526,7 @@ pg_event_filter(void *_, SDL_Event *event)
 
     else if (event->type == SDL_KEYUP) {
         PG_LOCK_EVFILTER_MUTEX
+        released_keys[event->key.keysym.scancode] = 1;
         if (_pg_repeat_timer && _pg_repeat_event.key.keysym.scancode ==
                                     event->key.keysym.scancode) {
             SDL_RemoveTimer(_pg_repeat_timer);
@@ -1603,17 +1593,13 @@ static void
 _pg_event_pump(int dopump)
 {
     if (dopump) {
-        SDL_PumpEvents();
-
-        /* This needs to be reset on pump, e.g. on calls to pygame.event.get(),
-         * but not on pygame.event.get(pump=False) */
+        /* This needs to be reset just before calling pump, e.g. on calls to
+         * pygame.event.get(), but not on pygame.event.get(pump=False). */
         memset(pressed_keys, 0, sizeof(pressed_keys));
         memset(released_keys, 0, sizeof(released_keys));
-    }
 
-    /* this could also be in an event filter like pg_event_filter
-     * but here it more predictable. */
-    SDL_FilterEvents(_pg_register_keys_just_pressed, NULL);
+        SDL_PumpEvents();
+    }
 
     /* We need to translate WINDOWEVENTS. But if we do that from the
      * from event filter, internal SDL stuff that rely on WINDOWEVENT

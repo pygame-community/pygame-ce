@@ -195,7 +195,7 @@ key_get_pressed(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
-get_just_pressed()
+get_just_pressed(PyObject *self, PyObject *_null)
 {
     VIDEO_INIT_CHECK();
 
@@ -210,6 +210,10 @@ get_just_pressed()
     for (i = 0; i < SDL_NUM_SCANCODES; i++) {
         PyObject *key_elem;
         key_elem = PyBool_FromLong(pressed_keys[i]);
+        if (!key_elem) {
+            Py_DECREF(key_tuple);
+            return NULL;
+        }
         PyTuple_SET_ITEM(key_tuple, i, key_elem);
     }
     ret_obj = PyObject_CallFunctionObjArgs((PyObject *)&pgScancodeWrapper_Type,
@@ -219,7 +223,7 @@ get_just_pressed()
 }
 
 static PyObject *
-get_just_released()
+get_just_released(PyObject *self, PyObject *_null)
 {
     VIDEO_INIT_CHECK();
 
@@ -234,6 +238,10 @@ get_just_released()
     for (i = 0; i < SDL_NUM_SCANCODES; i++) {
         PyObject *key_elem;
         key_elem = PyBool_FromLong(released_keys[i]);
+        if (!key_elem) {
+            Py_DECREF(key_tuple);
+            return NULL;
+        }
         PyTuple_SET_ITEM(key_tuple, i, key_elem);
     }
     ret_obj = PyObject_CallFunctionObjArgs((PyObject *)&pgScancodeWrapper_Type,
