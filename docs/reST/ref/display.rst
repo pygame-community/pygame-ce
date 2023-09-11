@@ -826,9 +826,6 @@ required).
 
    This function may be called at any time, even before ``pygame.init()``.
 
-   Negative index is supported for ``return_button`` and ``escape_button``.
-   For example, ``-1`` means the last button in ``buttons``.
-
    .. versionadded:: 2.4.0
    
 

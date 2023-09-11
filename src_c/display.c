@@ -2714,10 +2714,10 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
         return NULL;
     }
 
-    int escape_button_index = -1;
+    int escape_button_index = 0;
     SDL_bool escape_button_used = SDL_FALSE;
     if (escape_button_index_obj != Py_None) {
-        int escape_button_index = PyLong_AsLong(escape_button_index_obj);
+        escape_button_index = PyLong_AsLong(escape_button_index_obj);
         if (escape_button_index == -1 && PyErr_Occurred())
             return NULL;
         escape_button_used = SDL_TRUE;
@@ -2769,7 +2769,7 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
         return NULL;
     }
 
-    SDL_MessageBoxButtonData *buttons_data;
+    SDL_MessageBoxButtonData *buttons_data = NULL;
 
     if (buttons == NULL) {
         buttons_data = malloc(sizeof(SDL_MessageBoxButtonData));
@@ -2779,7 +2779,7 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
 
         msgbox_data.numbuttons = 1;
 
-        if (!(-1 <= return_button_index < 1)) {
+        if (0 > return_button_index || return_button_index >= 1) {
             PyErr_SetString(PyExc_IndexError,
                             "return_button index out of range.");
             goto error;
@@ -2787,7 +2787,7 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
         buttons_data->flags |= SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
 
         if (escape_button_used) {
-            if (!(-1 <= escape_button_index < 1)) {
+            if (0 > escape_button_index || escape_button_index >= 1) {
                 PyErr_SetString(PyExc_IndexError,
                                 "escape_button index out of range.");
                 goto error;
@@ -2812,22 +2812,16 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
                          "'buttons' should contain at least 1 button");
         }
 
-        if (!(-num_buttons <= return_button_index < num_buttons)) {
+        if (0 > return_button_index || return_button_index >= num_buttons) {
             PyErr_SetString(PyExc_IndexError,
                             "return_button index out of range.");
-            goto error;
+            return NULL;
         }
-        if (!(-num_buttons <= escape_button_index < num_buttons)) {
+        if (0 > escape_button_index || escape_button_index >= num_buttons) {
             PyErr_SetString(PyExc_IndexError,
                             "escape_button index out of range.");
-            goto error;
+            return NULL;
         }
-
-        if (return_button_index < 0)
-            return_button_index = (int)num_buttons + return_button_index;
-
-        if (escape_button_index < 0)
-            escape_button_index = (int)num_buttons + escape_button_index;
 
         buttons_data = malloc(sizeof(SDL_MessageBoxButtonData) * num_buttons);
         for (Py_ssize_t i = 0; i < num_buttons; i++) {
