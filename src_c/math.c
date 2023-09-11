@@ -465,8 +465,8 @@ pgVectorCompatible_Check(PyObject *obj, Py_ssize_t dim)
 // Returns 1 if obj is vector compatible to a vector of size "dim," and
 // copies vector coordinates into "coords" array of size >= dim
 // managed by caller. Returns 0 if obj is not compatible or an error
-// occurred. If 0 is returned, the error flag will not normally set. Callers
-// should set error themselves. This function is a combo of
+// occurred. If 0 is returned, the error flag will not normally be set.
+// Callers should set error themselves. This function is a combo of
 // pgVectorCompatible_Check and PySequence_AsVectorCoords
 static int
 pg_VectorCoordsFromObj(PyObject *obj, Py_ssize_t dim, double *const coords)
@@ -498,7 +498,7 @@ pg_VectorCoordsFromObj(PyObject *obj, Py_ssize_t dim, double *const coords)
     }
 
     for (i = 0; i < dim; ++i) {
-        tmp = PySequence_GetItem(obj, i);
+        tmp = PySequence_ITEM(obj, i);
         if (tmp != NULL) {
             coords[i] = PyFloat_AsDouble(tmp);
         }
