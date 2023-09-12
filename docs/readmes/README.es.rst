@@ -51,7 +51,7 @@ Construya a partir del código fuente
 Si desea utilizar características en desarrollo, O quieres contribuir a pygame-ce, vas a necesitar construya pygame-ce localmente a partir del código fuente, en lugar de instalarlo con pip.
 
 La instalación de pygame-ce desde el código fuente está bastante automatizada. La mayor parte del trabajo consistirá en compilar e instalar todas las dependencias de 
-pygame. Una vez hecho esto, ejecute el script ``setup.py`` que intentará autoconfigúre, compile e instálelo.
+pygame-ce. Una vez hecho esto, ejecute el script ``setup.py`` que intentará autoconfigurar, compilar e instalación.
 
 Más información sobre la instalación y compilación está disponible en `La pagina wiki de compilando`_.
 
