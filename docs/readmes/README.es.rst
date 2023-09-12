@@ -140,7 +140,7 @@ Esto significa que tienes derecho a usar pygame-ce en cualquier proyecto que des
 
 Los programas que se encuentran en el subdirectorio ``examples`` pertenecen a el dominio público.
 
-Consulte docs/licenses para ver las licencias de dependencia.
+Consulta docs/licenses para ver las licencias de dependencia.
 
 
 .. |PyPiVersion| image:: https://img.shields.io/pypi/v/pygame-ce.svg?v=1
