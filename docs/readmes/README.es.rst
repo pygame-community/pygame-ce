@@ -19,7 +19,7 @@ lo más intuitivo posible.
 Esta distribución se llama **« pygame - Community Edition »** (abreviado « pygame-ce »).
 
 
-Esta es una bifurcación del proyecto original de sus principales desarrolladores anteriores, Fue creado como resultado de muchos obstáculos que eran imposibles de superar, impidiéndoles continuar el desarrollo del proyecto inicial. Esta nueva distribución tiene como objetivo ofrecer actualizaciones más regular, mejoras y correcciones, pero también un modelo de gobernanza más democrático. 
+Esta es una bifurcación del proyecto original de sus principales desarrolladores anteriores. Fue creado como resultado de muchos obstáculos que eran imposibles de superar, impidiéndoles continuar el desarrollo del proyecto inicial. Esta nueva distribución tiene como objetivo ofrecer actualizaciones más regular, mejoras y correcciones, pero también un modelo de gobernanza más democrático. 
 
 ¡Cualquier nuevo colaborador es bienvenido!
 
