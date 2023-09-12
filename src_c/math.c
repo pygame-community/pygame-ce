@@ -502,7 +502,7 @@ pg_VectorCoordsFromObj(PyObject *obj, Py_ssize_t dim, double *const coords)
         if (tmp != NULL) {
             coords[i] = PyFloat_AsDouble(tmp);
         }
-        Py_DECREF(tmp);
+        Py_XDECREF(tmp);
         if (PyErr_Occurred()) {
             PyErr_Clear();
             return 0;
