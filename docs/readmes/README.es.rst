@@ -34,21 +34,21 @@ Instalacion
 Ayuda
 -----
 
-Si recién estás comenzando con pygame, deberías poder comenzar con él bastante rápidamente. Pygame viene con una gran cantidad de tutoriales e introducciones. Usted tiene también una documentación muy bien referenciada sobre toda la biblioteca. Navegue por el
+Si recién estás comenzando con pygame, deberías poder comenzar con él bastante rápidamente. Pygame viene con una gran cantidad de tutoriales e introducciones. Tienes también una documentación muy bien referenciada sobre toda la biblioteca. Navegas por el
 documentación en `docs page`_. También puedes echarle un vistazo localmente por ejecución del comando ``python -m pygame.docs`` en tu terminal. Si la documentación
 no se encuentra localmente, esto lanzará el sitio web.
 
 
 La documentación en línea permanece actualizada con la versión actual de pygame-ce
-desarrollo en GitHub. Esto puede ser un poco más nuevo que la versión de pygame-ce que usas. Para actualizar a la última versión publicada, ejecuta ``pip install pygame-ce --upgrade`` en su terminal.
+desarrollo en GitHub. Esto puede ser un poco más nuevo que la versión de pygame-ce que usas. Para actualizar a la última versión publicada, ejecuta ``pip install pygame-ce --upgrade`` en tu terminal.
 
 Un punto particularmente interesante: tienes a tu disposición un archivo de ejemplos que contienen muchos pequeños programas jugables, lo que le permite
 para empezar a jugar con el código de inmediato.
 
-Construya a partir del código fuente
+Construir a partir del código fuente
 ------------------------------------
 
-Si desea utilizar características en desarrollo, o quieres contribuir a pygame-ce, vas a necesitar construya pygame-ce localmente a partir del código fuente, en lugar de instalarlo con pip.
+Si deseas utilizar características en desarrollo, o quieres contribuir a pygame-ce, vas a necesitar construir pygame-ce localmente a partir del código fuente, en lugar de instalarlo con pip.
 
 La instalación de pygame-ce desde el código fuente está bastante automatizada. La mayor parte del trabajo consistirá en compilar e instalar todas las dependencias de 
 pygame-ce. Una vez hecho esto, ejecute el script ``setup.py`` que intentará autoconfigurar, compilar e instalación.
@@ -136,7 +136,7 @@ Licencia
 
 La biblioteca se distribuye bajo la licencia `GNU LGPL version 2.1`_, que se puede encontrar en el archivo ``docs/LGPL.txt``. Nos reservamos el derecho de licenciar versiones futuras de esta biblioteca bajo una licencia diferente.
 
-Esto significa que tienes derecho a usar pygame-ce en cualquier proyecto que desee, pero solo si desea realizar cambios o adiciones a Pygame en sí, entonces usted estará obligado publicarlos con una licencia compatible (preferiblemente enviándolos al proyecto pygame-ce). Se permiten códigos propietarios y juegos comerciales.
+Esto significa que tienes derecho a usar pygame-ce en cualquier proyecto que desee, pero solo si deseas realizar cambios o adiciones a Pygame-ce en sí, entonces estarás obligado publicarlos con una licencia compatible (preferiblemente enviándolos al proyecto pygame-ce). Se permiten códigos propietarios y juegos comerciales.
 
 Los programas que se encuentran en el subdirectorio ``examples`` pertenecen a el dominio público.
 
