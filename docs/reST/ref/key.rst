@@ -281,7 +281,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
 
    Returns a mapping from key codes to booleans indicating which keys were
    newly pressed as of the last time events were processed. This can be used
-   as a convenience function to detect keys that were pressed "this frame".
+   as a convenience function to detect keys that were pressed "this frame."
 
    The result of this function is updated when new events are processed,
    e.g. in :func:`pygame.event.get()` or :func:`pygame.event.pump()`.
@@ -291,10 +291,11 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
    again during the same frame. Multiple presses and releases of the same key
    are not distinguished from a single press with this function.
 
-   See also :func:`pygame.key.get_just_released()`.
+   .. seealso:: :func:`pygame.key.get_just_released()`
 
    .. note::
-      If you require getting the key presses in order use the event queue KEYDOWN events
+      If you require getting the key presses in order, use the event queue
+      ``KEYDOWN`` events
 
    ::
       
@@ -311,16 +312,17 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
    | :sg:`get_just_pressed() -> bools`
    
    Returns a mapping from key codes to booleans indicating which keys were
-   newly *released* as of the last time events were processed. This can be used
-   as a convenience function to detect keys that were *released* "this frame".
+   newly released as of the last time events were processed. This can be used
+   as a convenience function to detect keys that were released "this frame."
 
    The result of this function is updated when new events are processed,
    e.g. in :func:`pygame.event.get()` or :func:`pygame.event.pump()`.
 
-   See also :func:`pygame.key.get_just_pressed()`.
+   .. seealso:: :func:`pygame.key.get_just_pressed()`
 
    .. note::
-      If you require getting the key releases in order use the event queue KEYUP events.
+      If you require getting the key releases in order, use the event queue
+      ``KEYUP`` events.
 
    ::
       
