@@ -161,108 +161,15 @@ error:
 #endif
 }
 
-static PyTypeObject _PowerState_Type;
-
-typedef struct {
-    PyObject_HEAD PyObject *dict;
-} _PowerStateObject;
-
-static void
-power_state_dealloc(PyObject *self)
-{
-    _PowerStateObject *power_state = (_PowerStateObject *)self;
-    Py_XDECREF(power_state->dict);
-    Py_TYPE(self)->tp_free(self);
-}
-
-PyObject *
-power_state_repr(_PowerStateObject *self)
-{
-    if (!self->dict)
-        return PyUnicode_FromString("<_PowerState(Invalid)>");
-    PyObject *dict_repr = PyObject_Repr(self->dict);
-    if (!dict_repr)
-        return NULL;
-
-    const char *dict_repr_str = PyUnicode_AsUTF8(dict_repr);
-    if (!dict_repr_str)
-        return NULL;
-    PyObject *return_value =
-        PyUnicode_FromFormat("<_PowerState(%s)>", dict_repr_str);
-    Py_DECREF(dict_repr);
-
-    return return_value;
-}
-
-#ifdef PYPY_VERSION
-/* Because pypy does not work with the __dict__ tp_dictoffset. */
-PyObject *
-power_state_get_attr(PyObject *o, PyObject *attr_name)
-{
-    PyObject *result =
-        PyDict_GetItem(((_PowerStateObject *)o)->dict, attr_name);
-    if (!result) {
-        return PyObject_GenericGetAttr(o, attr_name);
-    }
-    return result;
-}
-
-int
-power_state_set_attr(PyObject *o, PyObject *name, PyObject *value)
-{
-    /* if the variable is in the dict, deal with it there.
-       else if it's a normal attribute set it there.
-       else if it's not an attribute, or in the dict, set it in the dict.
-    */
-    int dictResult;
-    int setInDict = 0;
-    PyObject *result = PyDict_GetItem(((_PowerStateObject *)o)->dict, name);
-
-    if (result) {
-        setInDict = 1;
-    }
-    else {
-        result = PyObject_GenericGetAttr(o, name);
-        if (!result) {
-            PyErr_Clear();
-            setInDict = 1;
-        }
-    }
-
-    if (setInDict) {
-        dictResult =
-            PyDict_SetItem(((_PowerStateObject *)o)->dict, name, value);
-        if (dictResult) {
-            return -1;
-        }
-        return 0;
-    }
-    else {
-        return PyObject_GenericSetAttr(o, name, value);
-    }
-}
-#endif
-
-static PyTypeObject _PowerState_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.system._PowerState",
-    .tp_basicsize = sizeof(_PowerStateObject),
-    .tp_dealloc = (destructor)power_state_dealloc,
-    .tp_doc = DOC_SYSTEM_POWERSTATE,
-    .tp_new = PyType_GenericNew,
-    .tp_dictoffset = offsetof(_PowerStateObject, dict),
-    .tp_repr = (reprfunc)power_state_repr,
-#ifdef PYPY_VERSION
-    .tp_getattro = power_state_get_attr,
-    .tp_setattro = power_state_set_attr,
-#endif
-};
+static PyObject *PowerState_class = NULL;
 
 static PyObject *
 pg_system_get_power_state(PyObject *self, PyObject *_null)
 {
     int sec, pct;
     SDL_PowerState power_state;
-    PyObject *return_dict;
+    PyObject *return_args;
+    PyObject *return_kwargs;
     PyObject *sec_py, *pct_py;
 
     power_state = SDL_GetPowerInfo(&sec, &pct);
@@ -294,7 +201,7 @@ pg_system_get_power_state(PyObject *self, PyObject *_null)
     int charged = (power_state == SDL_POWERSTATE_CHARGED);
 
     // clang-format off
-    return_dict = Py_BuildValue(
+    return_kwargs = Py_BuildValue(
         "{s:N,s:N,s:N,s:N,s:N,s:N,s:N,s:N}",
         "battery_percent", pct_py,
         "battery_seconds", sec_py,
@@ -307,17 +214,19 @@ pg_system_get_power_state(PyObject *self, PyObject *_null)
     );
     // clang-format on
 
-    if (!return_dict)
+    if (!return_kwargs)
         return NULL;
 
-    _PowerStateObject *power_state_py =
-        PyObject_New(_PowerStateObject, &_PowerState_Type);
-    if (!power_state_py)
-        return PyErr_NoMemory();
+    return_args = Py_BuildValue("()");
 
-    power_state_py->dict = return_dict;
+    if (!return_args)
+        return NULL;
 
-    return (PyObject *)power_state_py;
+    if (!PowerState_class) {
+        return RAISE(PyExc_SystemError, "PowerState class is not imported.");
+    }
+
+    return PyObject_Call(PowerState_class, return_args, return_kwargs);
 }
 
 static PyMethodDef _system_methods[] = {
@@ -352,21 +261,21 @@ MODINIT_DEFINE(system)
         return NULL;
     }
 
-    if (PyType_Ready(&_PowerState_Type) < 0) {
+    PyObject *data_classes_module =
+        PyImport_ImportModule("pygame.data_classes");
+    if (!data_classes_module) {
+        return NULL;
+    }
+
+    PowerState_class =
+        PyObject_GetAttrString(data_classes_module, "PowerState");
+    if (!PowerState_class) {
         return NULL;
     }
 
     /* create the module */
     module = PyModule_Create(&_module);
     if (!module) {
-        return NULL;
-    }
-
-    Py_INCREF(&_PowerState_Type);
-    if (PyModule_AddObject(module, "_PowerState",
-                           (PyObject *)&_PowerState_Type)) {
-        Py_DECREF(&_PowerState_Type);
-        Py_DECREF(module);
         return NULL;
     }
 

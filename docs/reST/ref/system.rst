@@ -141,11 +141,44 @@ open just in case something obvious comes up.
 .. function:: get_power_state
 
    | :sl:`get the current power supply state`
-   | :sg:`get_pref_power_state() -> power_state`
+   | :sg:`get_pref_power_state() -> PowerState`
 
-   Returns a :class:`_PowerState` object representing the power supply state.
+   Returns a ``PowerState`` object representing the power supply state.
    
    Returns ``None`` if the power state is unknown.
+
+   The PowerState object has several attributes:
+
+   .. code-block:: text
+
+        battery_percent:
+            An integer, representing the seconds of battery life left.
+            Could be None if the value is unknown.
+
+        battery_seconds:
+            An integer between 0 and 100, representing the percentage of
+            battery life left.
+    
+        on_battery:
+            True if the device is running on the battery (not plugged in).
+
+        no_battery:
+            True if the device has no battery available (plugged in).
+
+        charging:
+            True if the device is charging battery (plugged in).
+
+        charged:
+            True if the battery of the device is fully charged (plugged in).
+
+        plugged_in:
+            True if the device is plugged in.
+            Equivalent to `not on_battery`.
+
+        has_battery:
+            True if the device has battery.
+            Equivalent to `on_battery or not no_battery`.
+
 
    You should never take a battery status as absolute truth. Batteries
    (especially failing batteries) are delicate hardware, and the values
@@ -159,52 +192,5 @@ open just in case something obvious comes up.
 
    It's possible a platform can only report battery percentage or time left
    but not both.
-
-   .. versionadded:: 2.4.0
-
-.. class:: _PowerState
-
-   | :sl:`pygame object encapsulating power supply information`
-
-   **Attributes:**
-
-   **battery_seconds**
-
-      An integer, representing the seconds of battery life left.
-      
-      Could be ``None`` if the value is unknown.
-   
-   **battery_percent**
-
-      An integer between 0 and 100, representing the percentage of battery
-      life left.
-      
-      Could be ``None`` if the value is unknown.
-   
-   **on_battery**
-
-      ``True`` if the device is running on the battery (not plugged in).
-   
-   **no_battery**
-
-      ``True`` if the device has no battery available (plugged in).
-   
-   **charging**
-
-      ``True`` if the device is charging battery (plugged in).
-   
-   **charged**
-
-      ``True`` if the battery of the device is fully charged (plugged in).
-   
-   **plugged_in**
-
-      ``True`` if the device is plugged in.
-      Equivalent to ``not on_battery``.
-   
-   **has_battery**
-
-      ``True`` if the device has battery.
-      Equivalent to ``on_battery or not no_battery``
 
    .. versionadded:: 2.4.0
