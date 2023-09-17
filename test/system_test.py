@@ -78,10 +78,8 @@ class SystemModuleTest(unittest.TestCase):
             self.assertRaises(TypeError, pygame.system.get_pref_locales, arg)
 
     def test_get_power_state(self):
-        import pygame.data_classes
-
         power_state = pygame.system.get_power_state()
-        self.assertIsInstance(power_state, (type(None), pygame.data_classes.PowerState))
+        self.assertIsInstance(power_state, (type(None), pygame.system.PowerState))
 
         expected_types = {
             "battery_seconds": (type(None), int),

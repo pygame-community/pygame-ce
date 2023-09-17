@@ -312,6 +312,10 @@ except (ImportError, OSError):
 
 try:
     import pygame.system
+    from pygame._data_classes import PowerState as power_state
+
+    power_state.__module__ = "pygame.system"
+    del power_state
 except (ImportError, OSError):
     system = MissingModule("system", urgent=0)
 

@@ -262,7 +262,7 @@ MODINIT_DEFINE(system)
     }
 
     PyObject *data_classes_module =
-        PyImport_ImportModule("pygame.data_classes");
+        PyImport_ImportModule("pygame._data_classes");
     if (!data_classes_module) {
         return NULL;
     }
@@ -272,10 +272,17 @@ MODINIT_DEFINE(system)
     if (!PowerState_class) {
         return NULL;
     }
+    Py_DECREF(data_classes_module);
 
     /* create the module */
     module = PyModule_Create(&_module);
     if (!module) {
+        return NULL;
+    }
+
+    if (PyModule_AddObject(module, "PowerState", PowerState_class)) {
+        Py_DECREF(PowerState_class);
+        Py_DECREF(module);
         return NULL;
     }
 

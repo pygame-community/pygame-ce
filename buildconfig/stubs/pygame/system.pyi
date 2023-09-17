@@ -2,7 +2,7 @@ from typing import List, Optional, final
 
 from typing_extensions import TypedDict
 
-from pygame.data_classes import PowerState
+from pygame._data_classes import PowerState
 
 class _InstructionSets(TypedDict):
     RDTSC: bool
