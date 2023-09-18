@@ -2813,14 +2813,12 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
         }
 
         if (0 > return_button_index || return_button_index >= num_buttons) {
-            PyErr_SetString(PyExc_IndexError,
-                            "return_button index out of range.");
-            return NULL;
+            return RAISE(PyExc_IndexError,
+                         "return_button index out of range.");
         }
         if (0 > escape_button_index || escape_button_index >= num_buttons) {
-            PyErr_SetString(PyExc_IndexError,
-                            "escape_button index out of range.");
-            return NULL;
+            return RAISE(PyExc_IndexError,
+                         "escape_button index out of range.");
         }
 
         buttons_data = malloc(sizeof(SDL_MessageBoxButtonData) * num_buttons);
