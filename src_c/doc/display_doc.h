@@ -32,4 +32,4 @@
 #define DOC_DISPLAY_ISVSYNC "is_vsync() -> bool\nReturns True if vertical synchronisation for pygame.display.flip() and pygame.display.update() is enabled"
 #define DOC_DISPLAY_GETCURRENTREFRESHRATE "get_current_refresh_rate() -> int\nReturns the screen refresh rate or 0 if unknown"
 #define DOC_DISPLAY_GETDESKTOPREFRESHRATES "get_desktop_refresh_rates() -> list\nReturns the screen refresh rates for all displays (in windowed mode)."
-#define DOC_DISPLAY_MESSAGEBOX "message_box(title, message=None, type='info', parent_window=None, buttons=('OK',), return_button=0, escape_button=None)\nCreate a native GUI message box"
+#define DOC_DISPLAY_MESSAGEBOX "message_box(title, message=None, type='info', parent_window=None, buttons=('OK',), return_button=0, escape_button=None) -> int\nCreate a native GUI message box"

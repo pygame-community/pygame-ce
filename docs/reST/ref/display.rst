@@ -805,7 +805,7 @@ required).
 .. function:: message_box
 
    | :sl:`Create a native GUI message box`
-   | :sg:`message_box(title, message=None, type='info', parent_window=None, buttons=('OK',), return_button=0, escape_button=None)`
+   | :sg:`message_box(title, message=None, type='info', parent_window=None, buttons=('OK',), return_button=0, escape_button=None) -> int`
 
    :param str title: A title string.
    :param str message: A message string. If this parameter is set to ``None``, the message will be the title.
