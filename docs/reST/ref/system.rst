@@ -137,3 +137,60 @@ open just in case something obvious comes up.
    function again to get an updated copy of preferred locales.
 
    .. versionadded:: 2.2.0
+
+.. function:: get_power_state
+
+   | :sl:`get the current power supply state`
+   | :sg:`get_pref_power_state() -> PowerState`
+
+   Returns a ``PowerState`` object representing the power supply state.
+   
+   Returns ``None`` if the power state is unknown.
+
+   The PowerState object has several attributes:
+
+   .. code-block:: text
+
+        battery_percent:
+            An integer, representing the seconds of battery life left.
+            Could be None if the value is unknown.
+
+        battery_seconds:
+            An integer between 0 and 100, representing the percentage of
+            battery life left.
+    
+        on_battery:
+            True if the device is running on the battery (not plugged in).
+
+        no_battery:
+            True if the device has no battery available (plugged in).
+
+        charging:
+            True if the device is charging battery (plugged in).
+
+        charged:
+            True if the battery of the device is fully charged (plugged in).
+
+        plugged_in:
+            True if the device is plugged in.
+            Equivalent to `not on_battery`.
+
+        has_battery:
+            True if the device has battery.
+            Equivalent to `on_battery or not no_battery`.
+
+
+   You should never take a battery status as absolute truth. Batteries
+   (especially failing batteries) are delicate hardware, and the values
+   reported here are best estimates based on what that hardware reports. It's
+   not uncommon for older batteries to lose stored power much faster than it
+   reports, or completely drain when reporting it has 20 percent left, etc.
+
+   Battery status can change at any time; if you are concerned with power
+   state, you should call this function frequently, and perhaps ignore changes
+   until they seem to be stable for a few seconds.
+
+   It's possible a platform can only report battery percentage or time left
+   but not both.
+
+   .. versionadded:: 2.4.0
