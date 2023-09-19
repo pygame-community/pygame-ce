@@ -195,8 +195,8 @@
    .. classmethod:: from_cmy
 
       | :sl:`Returns a Color object from a CMY representation`
-      | :sg:`from_cmy(object) -> Color`
-      | :sg:`from_cmy(c, m, y) -> Color`
+      | :sg:`from_cmy(object, /) -> Color`
+      | :sg:`from_cmy(c, m, y, /) -> Color`
 
       Creates a Color object from the given CMY components. Refer to :attr:`Color.cmy`
       for more information.
@@ -208,8 +208,8 @@
    .. classmethod:: from_hsva
 
       | :sl:`Returns a Color object from an HSVA representation`
-      | :sg:`from_hsva(object) -> Color`
-      | :sg:`from_hsva(h, s, v, a) -> Color`
+      | :sg:`from_hsva(object, /) -> Color`
+      | :sg:`from_hsva(h, s, v, a, /) -> Color`
 
       Creates a Color object from the given HSVA components. Refer to :attr:`Color.hsva`
       for more information.
@@ -221,8 +221,8 @@
    .. classmethod:: from_hsla
 
       | :sl:`Returns a Color object from an HSLA representation`
-      | :sg:`from_hsla(object) -> Color`
-      | :sg:`from_hsla(h, s, l, a) -> Color`
+      | :sg:`from_hsla(object, /) -> Color`
+      | :sg:`from_hsla(h, s, l, a, /) -> Color`
 
       Creates a Color object from the given HSLA components. Refer to :attr:`Color.hsla`
       for more information.
@@ -234,8 +234,8 @@
    .. classmethod:: from_i1i2i3
 
       | :sl:`Returns a Color object from a I1I2I3 representation`
-      | :sg:`from_i1i2i3(object) -> Color`
-      | :sg:`from_i1i2i3(i1, i2, i3) -> Color`
+      | :sg:`from_i1i2i3(object, /) -> Color`
+      | :sg:`from_i1i2i3(i1, i2, i3, /) -> Color`
 
       Creates a Color object from the given I1I2I3 components. Refer to :attr:`Color.i1i2i3`
       for more information.
@@ -257,7 +257,7 @@
    .. method:: correct_gamma
 
       | :sl:`Applies a certain gamma value to the Color.`
-      | :sg:`correct_gamma(gamma) -> Color`
+      | :sg:`correct_gamma(gamma, /) -> Color`
 
       Applies a certain gamma value to the Color and returns a new Color with
       the adjusted ``RGBA`` values.
@@ -267,7 +267,7 @@
    .. method:: set_length
 
       | :sl:`Set the number of elements in the Color to 1,2,3, or 4.`
-      | :sg:`set_length(len) -> None`
+      | :sg:`set_length(len, /) -> None`
 
       DEPRECATED: You may unpack the values you need like so, 
       ``r, g, b, _ = pygame.Color(100, 100, 100)``
