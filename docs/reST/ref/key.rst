@@ -347,7 +347,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
 .. function:: set_mods
 
    | :sl:`temporarily set which modifier keys are pressed`
-   | :sg:`set_mods(int) -> None`
+   | :sg:`set_mods(int, /) -> None`
 
    Create a bitmask of the :ref:`modifier key constants <key-modifiers-label>`
    you want to impose on your program.
@@ -358,8 +358,8 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
 
    | :sl:`control how held keys are repeated`
    | :sg:`set_repeat() -> None`
-   | :sg:`set_repeat(delay) -> None`
-   | :sg:`set_repeat(delay, interval) -> None`
+   | :sg:`set_repeat(delay, /) -> None`
+   | :sg:`set_repeat(delay, interval, /) -> None`
 
    When the keyboard repeat is enabled, keys that are held down will generate
    multiple ``pygame.KEYDOWN`` events. The ``delay`` parameter is the number of
@@ -495,7 +495,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
 .. function:: set_text_input_rect
 
    | :sl:`controls the position of the candidate list`
-   | :sg:`set_text_input_rect(Rect) -> None`
+   | :sg:`set_text_input_rect(Rect, /) -> None`
 
    This sets the rectangle used for typing with an IME.
    It controls where the candidate list will open, if supported.
