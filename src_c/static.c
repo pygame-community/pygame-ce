@@ -151,6 +151,9 @@ PyMODINIT_FUNC
 PyInit_pixelcopy(void);
 
 PyMODINIT_FUNC
+PyInit_newbuffer(void);
+
+PyMODINIT_FUNC
 PyInit_gfxdraw(void);
 
 PyMODINIT_FUNC
@@ -275,6 +278,7 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_image(), "image");
     load_submodule("pygame", PyInit_font(), "font");
     load_submodule("pygame", PyInit_pixelcopy(), "pixelcopy");
+    load_submodule("pygame", PyInit_newbuffer(), "newbuffer");
 
     load_submodule("pygame", PyInit_color(), "color");
     load_submodule("pygame", PyInit_bufferproxy(), "bufferproxy");

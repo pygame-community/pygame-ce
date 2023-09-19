@@ -217,6 +217,8 @@ MP3 in most cases.
    The returned time only represents how long the music has been playing; it
    does not take into account any starting position offsets.
 
+   Returns -1 if ``get_pos`` failed due to music not playing.
+
    .. ## pygame.mixer.music.get_pos ##
 
 .. function:: queue

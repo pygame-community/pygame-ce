@@ -252,12 +252,13 @@ music_get_pos(PyObject *self, PyObject *_null)
 
     MIXER_INIT_CHECK();
 
-    if (music_pos_time < 0)
+    Uint16 intermediate_step = (music_format & 0xff) >> 3;
+    long denominator = music_channels * music_frequency * intermediate_step;
+    if (music_pos_time < 0 || denominator == 0) {
         return PyLong_FromLong(-1);
+    }
 
-    ticks = (long)(1000 * music_pos /
-                   (music_channels * music_frequency *
-                    ((music_format & 0xff) >> 3)));
+    ticks = (long)(1000 * music_pos / denominator);
     if (!Mix_PausedMusic())
         ticks += PG_GetTicks() - music_pos_time;
 
@@ -382,8 +383,7 @@ _load_music(PyObject *obj, char *namehint)
     }
 
     if (!new_music) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return NULL;
+        return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
     return new_music;
@@ -499,10 +499,9 @@ music_get_metadata(PyObject *self, PyObject *args, PyObject *keywds)
         }
     }
     else if (namehint) {
-        PyErr_SetString(
+        return RAISE(
             pgExc_SDLError,
             "'namehint' specified without specifying 'filename' or 'fileobj'");
-        return NULL;
     }
 
     const char *title = "";

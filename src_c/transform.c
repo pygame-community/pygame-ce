@@ -33,6 +33,8 @@
 #include <math.h>
 #include <string.h>
 
+#include "simd_shared.h"
+#include "simd_transform.h"
 #include "scale.h"
 
 typedef void (*SMOOTHSCALE_FILTER_P)(Uint8 *, Uint8 *, int, int, int, int,

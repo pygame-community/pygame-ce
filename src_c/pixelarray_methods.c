@@ -1007,8 +1007,7 @@ static PyObject *
 _transpose(pgPixelArrayObject *array, PyObject *args)
 {
     if (array->surface == NULL) {
-        PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
-        return NULL;
+        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
     }
 
     SDL_Surface *surf = pgSurface_AsSurface(array->surface);
@@ -1033,8 +1032,7 @@ static PyObject *
 _close_array(pgPixelArrayObject *array, PyObject *args)
 {
     if (array->surface == NULL) {
-        PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
-        return NULL;
+        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
     }
     _cleanup_array(array);
     Py_RETURN_NONE;
