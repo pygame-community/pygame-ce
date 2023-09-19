@@ -300,7 +300,7 @@ following formats.
 .. function:: load_basic
 
    | :sl:`load new BMP image from a file (or file-like object)`
-   | :sg:`load_basic(file) -> Surface`
+   | :sg:`load_basic(file, /) -> Surface`
 
    Load an image from a file source. You can pass either a filename or a Python
    file-like object, or a pathlib.Path.
