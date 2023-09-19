@@ -264,8 +264,8 @@ required).
 .. function:: update
 
    | :sl:`Update portions of the screen for software displays`
-   | :sg:`update(rectangle=None) -> None`
-   | :sg:`update(rectangle_list) -> None`
+   | :sg:`update(rectangle=None, /) -> None`
+   | :sg:`update(rectangle_list, /) -> None`
 
    This function is like an optimized version of ``pygame.display.flip()`` for
    software displays. It allows only a portion of the screen to be updated,
@@ -429,7 +429,7 @@ required).
 .. function:: gl_get_attribute
 
    | :sl:`Get the value for an OpenGL flag for the current display`
-   | :sg:`gl_get_attribute(flag) -> value`
+   | :sg:`gl_get_attribute(flag, /) -> value`
 
    After calling ``pygame.display.set_mode()`` with the ``pygame.OPENGL`` flag,
    it is a good idea to check the value of any requested OpenGL attributes. See
@@ -440,7 +440,7 @@ required).
 .. function:: gl_set_attribute
 
    | :sl:`Request an OpenGL display attribute for the display mode`
-   | :sg:`gl_set_attribute(flag, value) -> None`
+   | :sg:`gl_set_attribute(flag, value, /) -> None`
 
    When calling ``pygame.display.set_mode()`` with the ``pygame.OPENGL`` flag,
    Pygame automatically handles setting the OpenGL attributes like color and
@@ -590,7 +590,7 @@ required).
 .. function:: set_gamma
 
    | :sl:`Change the hardware gamma ramps`
-   | :sg:`set_gamma(red, green=None, blue=None) -> bool`
+   | :sg:`set_gamma(red, green=None, blue=None, /) -> bool`
 
    DEPRECATED: This functionality will go away in SDL3.
 
@@ -609,7 +609,7 @@ required).
 .. function:: set_gamma_ramp
 
    | :sl:`Change the hardware gamma ramps with a custom lookup`
-   | :sg:`set_gamma_ramp(red, green, blue) -> bool`
+   | :sg:`set_gamma_ramp(red, green, blue, /) -> bool`
 
    DEPRECATED: This functionality will go away in SDL3.
 
@@ -625,7 +625,7 @@ required).
 .. function:: set_icon
 
    | :sl:`Change the system image for the display window`
-   | :sg:`set_icon(Surface) -> None`
+   | :sg:`set_icon(Surface, /) -> None`
 
    Sets the runtime icon the system will use to represent the display window.
    All windows default to a simple pygame logo for the window icon.
@@ -646,7 +646,7 @@ required).
 .. function:: set_caption
 
    | :sl:`Set the current window caption`
-   | :sg:`set_caption(title, icontitle=None) -> None`
+   | :sg:`set_caption(title, icontitle=None, /) -> None`
 
    If the display has a window title, this function will change the name on the
    window. In pygame 1.x, some systems supported an alternate shorter title to
@@ -667,7 +667,7 @@ required).
 .. function:: set_palette
 
    | :sl:`Set the display color palette for indexed displays`
-   | :sg:`set_palette(palette=None) -> None`
+   | :sg:`set_palette(palette=None, /) -> None`
 
    This will change the video display color palette for 8-bit displays. This
    does not change the palette for the actual display Surface, only the palette
