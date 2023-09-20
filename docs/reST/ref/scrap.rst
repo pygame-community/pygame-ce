@@ -116,7 +116,7 @@ For an example of how the scrap module works refer to the examples page
 .. function:: get
 
    | :sl:`Gets the data for the specified type from the clipboard.`
-   | :sg:`get(type) -> bytes | None`
+   | :sg:`get(type, /) -> bytes | None`
 
    Retrieves the data for the specified type from the clipboard. The data is
    returned as a byte string and might need further processing (such as
@@ -168,7 +168,7 @@ For an example of how the scrap module works refer to the examples page
 .. function:: put
 
    | :sl:`Places data into the clipboard.`
-   | :sg:`put(type, data) -> None`
+   | :sg:`put(type, data, /) -> None`
 
    Places data for a given clipboard type into the clipboard. The data must
    be a string buffer. The type is a string identifying the type of data to be
@@ -199,7 +199,7 @@ For an example of how the scrap module works refer to the examples page
 .. function:: contains
 
    | :sl:`Checks whether data for a given type is available in the clipboard.`
-   | :sg:`contains(type) -> bool`
+   | :sg:`contains(type, /) -> bool`
 
    Checks whether data for the given type is currently available in the
    clipboard.
@@ -245,7 +245,7 @@ For an example of how the scrap module works refer to the examples page
 .. function:: set_mode
 
    | :sl:`Sets the clipboard access mode.`
-   | :sg:`set_mode(mode) -> None`
+   | :sg:`set_mode(mode, /) -> None`
 
    Sets the access mode for the clipboard. This is only of interest for X11
    environments where clipboard modes ``pygame.SCRAP_SELECTION`` (for mouse
@@ -267,7 +267,7 @@ For an example of how the scrap module works refer to the examples page
 .. function:: put_text
 
    | :sl:`Places text into the clipboard.`
-   | :sg:`put_text(text) -> None`
+   | :sg:`put_text(text, /) -> None`
 
    Places the input text into the clipboard. The data should be a string.
    This is the same clipboard as the legacy scrap API when using ``SCRAP_TEXT``.
