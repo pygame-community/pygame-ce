@@ -100,11 +100,6 @@ Hay muchas más personas por ahí que han presentado ideas útiles, han mantenid
 
 Muchas gracias por las personas que hacen comentarios de documentación y agregan a `documentacion de pygame-ce`_.
 
-También muchas gracias por las personas que crean juegos y los ponen en el sitio web de pygame.org para que otros aprendan y disfruten.
-
-Muchas gracias a James Paige en particular por ser anfitrión
-pygame bugzilla.
-
 También un gran agradecimiento a Roger Dingledine y la tripulación de SEUL.ORG por nuestro excelente alojamiento.
 
 Dépendances
