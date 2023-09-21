@@ -98,7 +98,7 @@ Michael Benfield, David Lau
 
 Hay muchas más personas por ahí que han presentado ideas útiles, han mantenido este proyecto en marcha y, básicamente, nos han hecho la vida más fácil. ¡Gracias!
 
-Muchas gracias por las personas que hacen comentarios de documentación y agregan a `documentacion de pygame`_ y `documentacion de pygame-ce`_.
+Muchas gracias por las personas que hacen comentarios de documentación y agregan a `documentacion de pygame-ce`_.
 
 También muchas gracias por las personas que crean juegos y los ponen en el sitio web de pygame.org para que otros aprendan y disfruten.
 
@@ -161,7 +161,6 @@ Consulta docs/licenses para ver las licencias de dependencia.
     :target: https://github.com/psf/black
 
 .. _Pygame: https://www.pyga.me/
-.. _documentacion de pygame: https://www.pygame.org/docs/
 .. _documentacion de pygame-ce: https://pyga.me/docs/
 .. _Simple DirectMedia Layer: https://www.libsdl.org
 .. _La pagina wiki de compilando: https://github.com/pygame-community/pygame-ce/wiki#compiling
