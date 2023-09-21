@@ -255,7 +255,7 @@ cdef class Controller:
         low = min(max(low_frequency, 0.0), 1.0)
         high = min(max(high_frequency, 0.0), 1.0)
 
-        return not PG_GameControllerRumble(
+        return not SDL_GameControllerRumble(
             self._controller, low * 0xFFFF, high * 0xFFFF, duration
         )
 
@@ -265,4 +265,4 @@ cdef class Controller:
         """
         _gamecontroller_init_check()
         self._CLOSEDCHECK()
-        PG_GameControllerRumble(self._controller, 0, 0, 1)
+        SDL_GameControllerRumble(self._controller, 0, 0, 1)

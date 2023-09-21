@@ -131,6 +131,8 @@ de SEUL.ORG pour notre excellent hébergement.
 Dépendances
 ------------
 
+**note:** This section translation is out of date (September 2023)
+
 Pygame est évidemment très dépendant de SDL et Python. Il a aussi
 des liens, mais de même intègre plusieurs autres petites bibliothèques.
 Le module font s’appuie sur SDL_ttf, qui est lui-même dépendant de freetype.
@@ -145,17 +147,13 @@ Versions des dépendances:
 +----------+-----------------------------+
 | CPython  | >= 3.7 (Ou utiliser PyPy3)  |
 +----------+-----------------------------+
-| SDL      | >= 2.0.8                    |
+| SDL      | >= 2.0.9                    |
 +----------+-----------------------------+
-| SDL_mixer| >= 2.0.0                    |
+| SDL_mixer| >= 2.0.4                    |
 +----------+-----------------------------+
-| SDL_image| >= 2.0.2                    |
+| SDL_image| >= 2.0.4                    |
 +----------+-----------------------------+
-| SDL_ttf  | >= 2.0.11                   |
-+----------+-----------------------------+
-| SDL_gfx  | (Optionel, fourni avec)     |
-+----------+-----------------------------+
-| NumPy    | >= 1.6.2 (Optionel)         |
+| SDL_ttf  | >= 2.0.15                   |
 +----------+-----------------------------+
 
 Licence
