@@ -137,6 +137,11 @@
    | :sl:`get the current power supply state`
    | :sg:`get_pref_power_state() -> PowerState`
 
+   **Experimental:** feature available for testing and feedback.
+   We don't anticipate it changing, but it might if something important
+   is brought up. `Please leave get_power_state feedback with 
+   authors <https://github.com/pygame-community/pygame-ce/pull/2257>`_
+
    Returns a ``PowerState`` object representing the power supply state.
    
    Returns ``None`` if the power state is unknown.
