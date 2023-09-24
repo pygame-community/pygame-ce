@@ -27,7 +27,7 @@
 #include "doc/time_doc.h"
 
 #define WORST_CLOCK_ACCURACY 12
-#define MAX_UINT_64 18446744073709551615
+#define MAX_UINT_64 18446744073709551615ULL
 
 /* Enum containing some error codes used by timer related functions */
 typedef enum {
