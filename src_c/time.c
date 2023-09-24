@@ -27,6 +27,7 @@
 #include "doc/time_doc.h"
 
 #define WORST_CLOCK_ACCURACY 12
+#define MAX_UINT_64 18446744073709551615
 
 /* Enum containing some error codes used by timer related functions */
 typedef enum {
@@ -330,7 +331,7 @@ accurate_delay(Sint64 ticks)
     }
     do {
         delay = ticks - (PG_GetTicks() - funcstart);
-    } while (delay > 0);
+    } while (delay > 0 && delay < (MAX_UINT_64 >> 1));
 
     return PG_GetTicks() - funcstart;
 }
