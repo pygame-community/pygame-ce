@@ -96,8 +96,6 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     __m256i *srcp256 = (__m256i *)src->pixels;
     __m256i *dstp256 = (__m256i *)newsurf->pixels;
 
-    __m128i mm_src, mm_dst, mm_alpha, mm_zero, mm_two_five_fives,
-        mm_rgb_weights, mm_alpha_mask, mm_rgb_mask;
     __m256i mm256_src, mm256_srcA, mm256_srcB, mm256_dst, mm256_dstA,
         mm256_dstB, mm256_shuff_mask_A, mm256_shuff_mask_B,
         mm256_two_five_fives, mm256_rgb_weights, mm256_shuff_mask_gray,
@@ -115,13 +113,6 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     mm256_shuff_mask_gray = _mm256_set_epi8(
         28, 28, 28, 28, 24, 24, 24, 24, 20, 20, 20, 20, 16, 16, 16, 16, 12, 12,
         12, 12, 8, 8, 8, 8, 4, 4, 4, 4, 0, 0, 0, 0);
-
-    mm_zero = _mm_setzero_si128();
-    mm_alpha_mask = _mm_cvtsi32_si128(amask);
-    mm_rgb_mask = _mm_cvtsi32_si128(rgbmask);
-    mm_two_five_fives = _mm_set1_epi64x(0x00FF00FF00FF00FF);
-    mm_rgb_weights =
-        _mm_unpacklo_epi8(_mm_cvtsi32_si128(rgb_weights), mm_zero);
 
     mm256_two_five_fives = _mm256_set1_epi16(0x00FF);
     mm256_rgb_weights = _mm256_set1_epi32(rgb_weights);
