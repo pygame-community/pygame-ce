@@ -1221,7 +1221,14 @@ smoothscale_init(struct _module_state *st)
     }
 
 #ifdef SCALE_MMX_SUPPORT
-    if (SDL_HasSSE()) {
+    if (SDL_HasSSE2()) {
+        st->filter_type = "SSE2";
+        st->filter_shrink_X = filter_shrink_X_SSE2;
+        st->filter_shrink_Y = filter_shrink_Y_SSE2;
+        st->filter_expand_X = filter_expand_X_SSE2;
+        st->filter_expand_Y = filter_expand_Y_SSE2;
+    }
+    else if (SDL_HasSSE()) {
         st->filter_type = "SSE";
         st->filter_shrink_X = filter_shrink_X_SSE;
         st->filter_shrink_Y = filter_shrink_Y_SSE;
@@ -1584,6 +1591,17 @@ surf_set_smoothscale_backend(PyObject *self, PyObject *args, PyObject *kwargs)
         st->filter_shrink_Y = filter_shrink_Y_SSE;
         st->filter_expand_X = filter_expand_X_SSE;
         st->filter_expand_Y = filter_expand_Y_SSE;
+    }
+    else if (strcmp(type, "SSE2") == 0) {
+        if (!SDL_HasSSE2()) {
+            return RAISE(PyExc_ValueError,
+                         "SSE2 not supported on this machine");
+        }
+        st->filter_type = "SSE2";
+        st->filter_shrink_X = filter_shrink_X_SSE2;
+        st->filter_shrink_Y = filter_shrink_Y_SSE2;
+        st->filter_expand_X = filter_expand_X_SSE2;
+        st->filter_expand_Y = filter_expand_Y_SSE2;
     }
     else {
         return PyErr_Format(PyExc_ValueError, "Unknown backend type %s", type);
