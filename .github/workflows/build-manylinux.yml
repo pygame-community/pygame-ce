@@ -61,6 +61,9 @@ jobs:
       CIBW_SKIP: '*-musllinux_*'
 
       # command that runs before every build
+      # urllib3 2.0.0+ needs a newer OpenSSL version than what the python 3.7 build in 
+      # the image has. So downgrade urllib3 for now, until we drop python 3.7 (after
+      # which there will be no need to downgrade)
       CIBW_BEFORE_BUILD: |
         pip install Sphinx"<7.2.0" urllib3"<2.0.0"
         python setup.py docs
