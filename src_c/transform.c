@@ -1610,7 +1610,8 @@ surf_set_smoothscale_backend(PyObject *self, PyObject *args, PyObject *kwargs)
 #else  /* Not an x86 processor */
     if (strcmp(type, "GENERIC") != 0) {
         if (strcmp(st->filter_type, "MMX") == 0 ||
-            strcmp(st->filter_type, "SSE") == 0) {
+            strcmp(st->filter_type, "SSE") == 0 ||
+            strcmp(st->filter_type, "SSE2") == 0) {
             return PyErr_Format(PyExc_ValueError,
                                 "%s not supported on this machine", type);
         }
