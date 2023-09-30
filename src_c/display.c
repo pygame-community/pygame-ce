@@ -2055,7 +2055,7 @@ pg_iconify(PyObject *self, PyObject *_null)
  * running on, or to inform the user when the game is not running with HW
  * acceleration, but openGL can still be available without HW acceleration. */
 static PyObject *
-pg_get_scaled_renderer_info(PyObject *self)
+pg_get_scaled_renderer_info(PyObject *self, PyObject *_null)
 {
     SDL_RendererInfo r_info;
 
@@ -2072,7 +2072,7 @@ pg_get_scaled_renderer_info(PyObject *self)
 }
 
 static PyObject *
-pg_get_desktop_screen_sizes(PyObject *self)
+pg_get_desktop_screen_sizes(PyObject *self, PyObject *_null)
 {
     int display_count, i;
     SDL_DisplayMode dm;
@@ -2126,7 +2126,7 @@ pg_is_fullscreen(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
-pg_is_vsync(PyObject *self)
+pg_is_vsync(PyObject *self, PyObject *_null)
 {
     SDL_Window *win = pg_GetDefaultWindow();
     _DisplayState *state = DISPLAY_STATE;
@@ -2158,7 +2158,7 @@ pg_is_vsync(PyObject *self)
 }
 
 static PyObject *
-pg_current_refresh_rate(PyObject *self)
+pg_current_refresh_rate(PyObject *self, PyObject *_null)
 {
     SDL_Window *win = pg_GetDefaultWindow();
     SDL_DisplayMode mode;
@@ -2179,7 +2179,7 @@ pg_current_refresh_rate(PyObject *self)
 }
 
 static PyObject *
-pg_desktop_refresh_rates(PyObject *self)
+pg_desktop_refresh_rates(PyObject *self, PyObject *_null)
 {
     int display_count, i;
     SDL_DisplayMode dm;
@@ -2644,7 +2644,7 @@ pg_display_resize_event(PyObject *self, PyObject *event)
 }
 
 static PyObject *
-pg_get_allow_screensaver(PyObject *self)
+pg_get_allow_screensaver(PyObject *self, PyObject *_null)
 {
     /* SDL_IsScreenSaverEnabled() unconditionally returns SDL_True if
      * the video system is not initialized.  Therefore we insist on
