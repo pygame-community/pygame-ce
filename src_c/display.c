@@ -336,8 +336,9 @@ pg_vidinfo_str(PyObject *self)
     pg_VideoInfo *info = &((pgVidInfoObject *)self)->info;
     PyObject *return_string = NULL;
     const char *pixel_format_name = SDL_GetPixelFormatName(info->vfmt->format);
-    char *trimmed_format_name = malloc(sizeof(char) * (strlen(pixel_format_name) - 4));
-    strcpy(trimmed_format_name, pixel_format_name+=4);
+    if (!strncmp(pixel_format_name, "SDL_", 4)) {
+        pixel_format_name += 4;
+    }
 
     SDL_version versioninfo;
     SDL_VERSION(&versioninfo);
@@ -348,7 +349,7 @@ pg_vidinfo_str(PyObject *self)
         current_h = info->current_h;
     }
 
-    return_string = PyUnicode_FromFormat(
+    return PyUnicode_FromFormat(
         "<VideoInfo(hw = %u, wm = %u,video_mem = %u\n"
         "         blit_hw = %u, blit_hw_CC = %u, blit_hw_A = %u,\n"
         "         blit_sw = %u, blit_sw_CC = %u, blit_sw_A = %u,\n"
@@ -366,12 +367,7 @@ pg_vidinfo_str(PyObject *self)
         info->vfmt->Amask, info->vfmt->Rshift, info->vfmt->Gshift,
         info->vfmt->Bshift, info->vfmt->Ashift, info->vfmt->Rloss,
         info->vfmt->Gloss, info->vfmt->Bloss, info->vfmt->Aloss, current_w,
-        current_h, trimmed_format_name);
-
-    free(trimmed_format_name);
-
-    return return_string;
-
+        current_h, pixel_format_name);
 }
 
 static PyTypeObject pgVidInfo_Type = {
