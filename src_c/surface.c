@@ -843,7 +843,6 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     Uint8 *pixels;
     int x, y;
     Uint32 color;
-    Uint8 rgba[4] = {0, 0, 0, 0};
     PyObject *rgba_obj;
     Uint8 *byte_buf;
 
@@ -870,20 +869,10 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         Py_RETURN_NONE;
     }
 
-    if (PyLong_Check(rgba_obj)) {
-        color = (Uint32)PyLong_AsLong(rgba_obj);
-        if (PyErr_Occurred() && (Sint32)color == -1)
-            return RAISE(PyExc_TypeError, "invalid color argument");
+    if (!pg_MappedColorFromObj(rgba_obj, surf->format, &color,
+                               PG_COLOR_HANDLE_ALL)) {
+        return NULL;
     }
-    else if (PyLong_Check(rgba_obj)) {
-        color = (Uint32)PyLong_AsUnsignedLong(rgba_obj);
-        if (PyErr_Occurred() && (Sint32)color == -1)
-            return RAISE(PyExc_TypeError, "invalid color argument");
-    }
-    else if (pg_RGBAFromFuzzyColorObj(rgba_obj, rgba))
-        color = pg_map_rgba(surf, rgba[0], rgba[1], rgba[2], rgba[3]);
-    else
-        return NULL; /* pg_RGBAFromFuzzyColorObj set an except for us */
 
     if (!pgSurface_Lock((pgSurfaceObject *)self))
         return NULL;
@@ -987,8 +976,9 @@ surf_map_rgb(PyObject *self, PyObject *args)
     Uint8 rgba[4];
     int color;
 
-    if (!pg_RGBAFromFuzzyColorObj(args, rgba))
+    if (!pg_RGBAFromObjEx(args, rgba, PG_COLOR_HANDLE_ALL))
         return NULL; /* Exception already set for us */
+
     SURF_INIT_CHECK(surf)
 
     color = pg_map_rgba(surf, rgba[0], rgba[1], rgba[2], rgba[3]);
@@ -1185,7 +1175,7 @@ surf_set_palette(PyObject *self, PyObject *seq)
     for (i = 0; i < len; i++) {
         item = PySequence_GetItem(seq, i);
 
-        ecode = pg_RGBAFromObj(item, rgba);
+        ecode = pg_RGBAFromObjEx(item, rgba, PG_COLOR_HANDLE_SIMPLE);
         Py_DECREF(item);
         if (!ecode) {
             return RAISE(PyExc_ValueError,
@@ -1224,9 +1214,8 @@ surf_set_palette_at(PyObject *self, PyObject *args)
         return NULL;
     SURF_INIT_CHECK(surf)
 
-    if (!pg_RGBAFromObj(color_obj, rgba)) {
-        return RAISE(PyExc_ValueError,
-                     "takes a sequence of integers of RGB for argument 2");
+    if (!pg_RGBAFromObjEx(color_obj, rgba, PG_COLOR_HANDLE_SIMPLE)) {
+        return NULL;
     }
 
     if (!SDL_ISPIXELFORMAT_INDEXED(surf->format->format))
@@ -1235,13 +1224,11 @@ surf_set_palette_at(PyObject *self, PyObject *args)
     pal = surf->format->palette;
 
     if (!pal) {
-        PyErr_SetString(pgExc_SDLError, "Surface is not palettized\n");
-        return NULL;
+        return RAISE(pgExc_SDLError, "Surface is not palettized\n");
     }
 
     if (_index >= pal->ncolors || _index < 0) {
-        PyErr_SetString(PyExc_IndexError, "index out of bounds");
-        return NULL;
+        return RAISE(PyExc_IndexError, "index out of bounds");
     }
 
     color.r = rgba[0];
@@ -1261,7 +1248,6 @@ surf_set_colorkey(pgSurfaceObject *self, PyObject *args)
     SDL_Surface *surf = pgSurface_AsSurface(self);
     Uint32 flags = 0, color = 0;
     PyObject *rgba_obj = NULL;
-    Uint8 rgba[4];
     int result;
     int hascolor = SDL_FALSE;
 
@@ -1271,24 +1257,11 @@ surf_set_colorkey(pgSurfaceObject *self, PyObject *args)
     SURF_INIT_CHECK(surf)
 
     if (rgba_obj && rgba_obj != Py_None) {
-        if (PyLong_Check(rgba_obj)) {
-            color = (Uint32)PyLong_AsLong(rgba_obj);
-            if (PyErr_Occurred() && (Sint32)color == -1)
-                return RAISE(PyExc_TypeError, "invalid color argument");
+        if (!pg_MappedColorFromObj(rgba_obj, surf->format, &color,
+                                   PG_COLOR_HANDLE_ALL)) {
+            return NULL;
         }
-        else if (PyLong_Check(rgba_obj)) {
-            color = (Uint32)PyLong_AsUnsignedLong(rgba_obj);
-            if (PyErr_Occurred() && (Sint32)color == -1)
-                return RAISE(PyExc_TypeError, "invalid color argument");
-        }
-        else if (pg_RGBAFromFuzzyColorObj(rgba_obj, rgba)) {
-            if (SDL_ISPIXELFORMAT_ALPHA(surf->format->format))
-                color = pg_map_rgba(surf, rgba[0], rgba[1], rgba[2], rgba[3]);
-            else
-                color = pg_map_rgb(surf, rgba[0], rgba[1], rgba[2]);
-        }
-        else
-            return NULL; /* pg_RGBAFromFuzzyColorObj set an exception for us */
+
         hascolor = SDL_TRUE;
     }
 
@@ -1353,12 +1326,11 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
 
     if (alpha_obj && alpha_obj != Py_None) {
         if (PyNumber_Check(alpha_obj) && (intobj = PyNumber_Long(alpha_obj))) {
-            if (PyLong_Check(intobj)) {
-                alphaval = (int)PyLong_AsLong(intobj);
-                Py_DECREF(intobj);
-            }
-            else
+            alphaval = (int)PyLong_AsLong(intobj);
+            Py_DECREF(intobj);
+            if (alphaval == -1 && PyErr_Occurred()) {
                 return RAISE(PyExc_TypeError, "invalid alpha argument");
+            }
         }
         else
             return RAISE(PyExc_TypeError, "invalid alpha argument");
@@ -1807,7 +1779,6 @@ surf_fill(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
     Uint32 color;
     int result;
     PyObject *rgba_obj;
-    Uint8 rgba[4];
     SDL_Rect sdlrect;
     int blendargs = 0;
 
@@ -1817,14 +1788,10 @@ surf_fill(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
         return NULL;
     SURF_INIT_CHECK(surf)
 
-    if (PyLong_Check(rgba_obj))
-        color = (Uint32)PyLong_AsLong(rgba_obj);
-    else if (PyLong_Check(rgba_obj))
-        color = (Uint32)PyLong_AsUnsignedLong(rgba_obj);
-    else if (pg_RGBAFromFuzzyColorObj(rgba_obj, rgba))
-        color = pg_map_rgba(surf, rgba[0], rgba[1], rgba[2], rgba[3]);
-    else
-        return NULL; /* pg_RGBAFromFuzzyColorObj set an exception for us */
+    if (!pg_MappedColorFromObj(rgba_obj, surf->format, &color,
+                               PG_COLOR_HANDLE_ALL)) {
+        return NULL;
+    }
 
     if (!r || r == Py_None) {
         rect = &temp;

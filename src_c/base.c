@@ -333,9 +333,9 @@ pg_init(PyObject *self, PyObject *_null)
     /*nice to initialize timer, so startup time will reflec pg_init() time*/
 #if defined(WITH_THREAD) && !defined(MS_WIN32) && defined(SDL_INIT_EVENTTHREAD)
     pg_sdl_was_init = SDL_Init(SDL_INIT_EVENTTHREAD | SDL_INIT_TIMER |
-                               SDL_INIT_NOPARACHUTE) == 0;
+                               PG_INIT_NOPARACHUTE) == 0;
 #else
-    pg_sdl_was_init = SDL_Init(SDL_INIT_TIMER | SDL_INIT_NOPARACHUTE) == 0;
+    pg_sdl_was_init = SDL_Init(SDL_INIT_TIMER | PG_INIT_NOPARACHUTE) == 0;
 #endif
 
     pg_env_blend_alpha_SDL2 = SDL_getenv("PYGAME_BLEND_ALPHA_SDL2");
@@ -611,6 +611,7 @@ pg_UintFromObjIndex(PyObject *obj, int _index, Uint32 *val)
     return result;
 }
 
+/* You probably want to use the pg_RGBAFromObjEx function instead of this. */
 static int
 pg_RGBAFromObj(PyObject *obj, Uint8 *RGBA)
 {

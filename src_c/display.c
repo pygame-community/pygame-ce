@@ -898,9 +898,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     }
 
     if ((vsync == -1) && ((flags & PGS_OPENGL) == 0)) {
-        PyErr_SetString(PyExc_ValueError,
-                        "requested adaptive vsync without OpenGL");
-        return NULL;
+        return RAISE(PyExc_ValueError,
+                     "requested adaptive vsync without OpenGL");
     }
 
     state->using_gl = (flags & PGS_OPENGL) != 0;
@@ -1801,7 +1800,7 @@ pg_set_palette(PyObject *self, PyObject *args)
             return NULL;
         }
 
-        if (!pg_RGBAFromFuzzyColorObj(item, rgba)) {
+        if (!pg_RGBAFromObjEx(item, rgba, PG_COLOR_HANDLE_ALL)) {
             Py_DECREF(item);
             free((char *)colors);
             Py_DECREF(surface);

@@ -143,6 +143,10 @@ class MixerModuleTest(unittest.TestCase):
         self.assertRaises(pygame.error, mixer.get_num_channels)
 
     # TODO: FIXME: pypy (on linux) fails here sometimes.
+    @unittest.skipIf(
+        sys.maxsize <= 2**32,
+        "randomly fails on comparing bytes",
+    )
     @unittest.skipIf(IS_PYPY, "random errors here with pypy")
     def test_sound_args(self):
         def get_bytes(snd):
@@ -922,6 +926,13 @@ class ChannelTypeTest(unittest.TestCase):
         self.assertRaises(ValueError, lambda: ch.set_source_location(0, -1))
         self.assertRaises(ValueError, lambda: ch.set_source_location(0, 256.0))
         self.assertRaises(TypeError, lambda: ch.set_source_location("", 6.25))
+
+    def test_id_getter(self):
+        ch1 = mixer.Channel(1)
+        ch2 = mixer.Channel(2)
+
+        self.assertEqual(ch1.id, 1)
+        self.assertEqual(ch2.id, 2)
 
 
 class ChannelInteractiveTest(unittest.TestCase):

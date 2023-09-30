@@ -448,10 +448,7 @@ obj_to_rotation(PyObject *o, void *p)
     long angle;
     int rval = 0;
 
-    if (PyLong_Check(o)) {
-        ;
-    }
-    else {
+    if (!PyLong_Check(o)) {
         PyErr_Format(PyExc_TypeError, "integer rotation expected, got %s",
                      Py_TYPE(o)->tp_name);
         goto finish;
@@ -1102,8 +1099,7 @@ _ftfont_getname(pgFontObject *self, void *closure)
         return name ? PyUnicode_FromString(name) : 0;
     }
 
-    PyErr_SetString(PyExc_AttributeError, "<uninitialized Font object>");
-    return NULL;
+    return RAISE(PyExc_AttributeError, "<uninitialized Font object>");
 }
 
 static PyObject *
@@ -1114,8 +1110,7 @@ _ftfont_getstylename(pgFontObject *self, void *closure)
         return stylename ? PyUnicode_FromString(stylename) : 0;
     }
 
-    PyErr_SetString(PyExc_AttributeError, "<uninitialized Font object>");
-    return NULL;
+    return RAISE(PyExc_AttributeError, "<uninitialized Font object>");
 }
 
 static PyObject *
@@ -1236,7 +1231,7 @@ _ftfont_setfgcolor(pgFontObject *self, PyObject *value, void *closure)
 {
     DEL_ATTR_NOT_SUPPORTED_CHECK("fgcolor", value);
 
-    if (!pg_RGBAFromObj(value, self->fgcolor)) {
+    if (!pg_RGBAFromObjEx(value, self->fgcolor, PG_COLOR_HANDLE_SIMPLE)) {
         PyErr_Format(PyExc_AttributeError,
                      "unable to convert %128s object to a color",
                      Py_TYPE(value)->tp_name);
@@ -1256,7 +1251,7 @@ _ftfont_setbgcolor(pgFontObject *self, PyObject *value, void *closure)
 {
     DEL_ATTR_NOT_SUPPORTED_CHECK("bgcolor", value);
 
-    if (!pg_RGBAFromObj(value, self->bgcolor)) {
+    if (!pg_RGBAFromObjEx(value, self->bgcolor, PG_COLOR_HANDLE_SIMPLE)) {
         PyErr_Format(PyExc_AttributeError,
                      "unable to convert %128s object to a color",
                      Py_TYPE(value)->tp_name);
@@ -1757,7 +1752,8 @@ _ftfont_render(pgFontObject *self, PyObject *args, PyObject *kwds)
     }
 
     if (fg_color_obj) {
-        if (!pg_RGBAFromFuzzyColorObj(fg_color_obj, (Uint8 *)&fg_color)) {
+        if (!pg_RGBAFromObjEx(fg_color_obj, (Uint8 *)&fg_color,
+                              PG_COLOR_HANDLE_ALL)) {
             /* Exception already set for us */
             goto error;
         }
@@ -1770,7 +1766,8 @@ _ftfont_render(pgFontObject *self, PyObject *args, PyObject *kwds)
     }
 
     if (bg_color_obj) {
-        if (!pg_RGBAFromFuzzyColorObj(bg_color_obj, (Uint8 *)&bg_color)) {
+        if (!pg_RGBAFromObjEx(bg_color_obj, (Uint8 *)&bg_color,
+                              PG_COLOR_HANDLE_ALL)) {
             /* Exception already set for us */
             goto error;
         }
@@ -1880,7 +1877,8 @@ _ftfont_render_to(pgFontObject *self, PyObject *args, PyObject *kwds)
     if (parse_dest(dest, &xpos, &ypos))
         goto error;
     if (fg_color_obj) {
-        if (!pg_RGBAFromFuzzyColorObj(fg_color_obj, (Uint8 *)&fg_color)) {
+        if (!pg_RGBAFromObjEx(fg_color_obj, (Uint8 *)&fg_color,
+                              PG_COLOR_HANDLE_ALL)) {
             /* Exception already set for us */
             goto error;
         }
@@ -1892,7 +1890,8 @@ _ftfont_render_to(pgFontObject *self, PyObject *args, PyObject *kwds)
         fg_color.a = self->fgcolor[3];
     }
     if (bg_color_obj) {
-        if (!pg_RGBAFromFuzzyColorObj(bg_color_obj, (Uint8 *)&bg_color)) {
+        if (!pg_RGBAFromObjEx(bg_color_obj, (Uint8 *)&bg_color,
+                              PG_COLOR_HANDLE_ALL)) {
             /* Exception already set for us */
             goto error;
         }

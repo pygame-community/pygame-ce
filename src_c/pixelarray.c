@@ -426,8 +426,7 @@ static pgSurfaceObject *
 _pxarray_get_surface(pgPixelArrayObject *self, void *closure)
 {
     if (self->surface == NULL) {
-        PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
-        return NULL;
+        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
     }
     Py_INCREF(self->surface);
     return self->surface;
@@ -441,8 +440,7 @@ static PyObject *
 _pxarray_get_itemsize(pgPixelArrayObject *self, void *closure)
 {
     if (self->surface == NULL) {
-        PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
-        return NULL;
+        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
     }
 
     SDL_Surface *surf = pgSurface_AsSurface(self->surface);
@@ -889,7 +887,6 @@ static PyObject *
 _pxarray_item(pgPixelArrayObject *array, Py_ssize_t index)
 {
     if (array->surface == NULL) {
-        PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
         return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
     }
     if (index < 0) {
@@ -1550,29 +1547,11 @@ _get_subslice(PyObject *op, Py_ssize_t length, Py_ssize_t *start,
     }
     else if (PyLong_Check(op)) {
         /* Plain index: array[x, */
-        *start = PyLong_AsLong(op);
+        *start = PyLong_AsSsize_t(op);
         if (*start < 0) {
-            *start += length;
-        }
-        if (*start >= length || *start < 0) {
-            PyErr_SetString(PyExc_IndexError, "invalid index");
-            return -1;
-        }
-        *stop = (*start) + 1;
-        *step = 0;
-    }
-    else if (PyLong_Check(op)) {
-        long long val = -1;
-        /* Plain index: array[x, */
-
-        val = PyLong_AsLong(op);
-        if ((val < INT_MIN) || (val > INT_MAX)) {
-            PyErr_SetString(PyExc_ValueError,
-                            "index too big for array access");
-            return -1;
-        }
-        *start = (int)val;
-        if (*start < 0) {
+            if (*start == -1 && PyErr_Occurred()) {
+                return -1;
+            }
             *start += length;
         }
         if (*start >= length || *start < 0) {
