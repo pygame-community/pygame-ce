@@ -176,7 +176,6 @@ Only SDL2 is supported now.""")
                 import buildconfig.config_msys2 as CFG
         else:
             print_('Using WINDOWS configuration...\n')
-            import os
             environ = os.environ
             environ["DISTUTILS_USE_SDK"] = "1"
             print(">>>add environ DISTUTILS_USE_SDK:", environ["DISTUTILS_USE_SDK"])
