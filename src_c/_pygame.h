@@ -42,6 +42,47 @@
 
 #include <SDL.h>
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+#define PG_INIT_NOPARACHUTE 0
+
+// UINT16 audio no longer exists in SDL3
+#define PG_AUDIO_U16LSB 0
+#define PG_AUDIO_U16MSB 0
+#define PG_AUDIO_U16SYS 0
+#define PG_AUDIO_U16 0
+
+// Allowed changes no longer exists, your request gets emulated if unavailable
+#define PG_AUDIO_ALLOW_FREQUENCY_CHANGE 0
+#define PG_AUDIO_ALLOW_FORMAT_CHANGE 0
+#define PG_AUDIO_ALLOW_CHANNELS_CHANGE 0
+#define PG_AUDIO_ALLOW_ANY_CHANGE 0
+
+// Todo: deal with multigesture.. See
+// https://github.com/pygame-community/pygame-ce/issues/2420
+#define PG_MULTIGESTURE 0
+
+#define PG_JOYBALLMOTION 0
+
+#else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
+
+#define PG_INIT_NOPARACHUTE SDL_INIT_NOPARACHUTE
+
+#define PG_AUDIO_U16LSB AUDIO_U16LSB
+#define PG_AUDIO_U16MSB AUDIO_U16MSB
+#define PG_AUDIO_U16SYS AUDIO_U16SYS
+#define PG_AUDIO_U16 AUDIO_U16
+
+#define PG_AUDIO_ALLOW_FREQUENCY_CHANGE SDL_AUDIO_ALLOW_FREQUENCY_CHANGE
+#define PG_AUDIO_ALLOW_FORMAT_CHANGE SDL_AUDIO_ALLOW_FORMAT_CHANGE
+#define PG_AUDIO_ALLOW_CHANNELS_CHANGE SDL_AUDIO_ALLOW_CHANNELS_CHANGE
+#define PG_AUDIO_ALLOW_ANY_CHANGE SDL_AUDIO_ALLOW_ANY_CHANGE
+
+#define PG_MULTIGESTURE SDL_MULTIGESTURE
+
+#define PG_JOYBALLMOTION SDL_JOYBALLMOTION
+
+#endif
+
 /* DictProxy is useful for event posting with an arbitrary dict. Maintains
  * state of number of events on queue and whether the owner of this struct
  * wants this dict freed. This DictProxy is only to be freed when there are no
@@ -385,7 +426,7 @@ typedef enum {
 #define PYGAMEAPI_COLOR_NUMSLOTS 5
 #define PYGAMEAPI_MATH_NUMSLOTS 2
 #define PYGAMEAPI_BASE_NUMSLOTS 24
-#define PYGAMEAPI_EVENT_NUMSLOTS 6
+#define PYGAMEAPI_EVENT_NUMSLOTS 8
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1
 
 #endif /* _PYGAME_INTERNAL_H */

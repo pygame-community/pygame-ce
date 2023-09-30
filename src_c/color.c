@@ -1745,8 +1745,7 @@ _color_subscript(pgColorObject *self, PyObject *item)
             return _color_slice(self, start, stop);
         }
         else {
-            PyErr_SetString(PyExc_TypeError, "slice steps not supported");
-            return NULL;
+            return RAISE(PyExc_TypeError, "slice steps not supported");
         }
     }
     else {

@@ -34,7 +34,10 @@ jobs:
       - CIBW_SKIP: '*-musllinux_*'
       - CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014_base_aarch64
       - CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: manylinux2014_base_aarch64
-      - CIBW_BEFORE_BUILD: pip install Sphinx"<7.2.0" && python setup.py docs
+      # urllib3 2.0.0+ needs a newer OpenSSL version than what the python 3.7 build in 
+      # the image has. So downgrade urllib3 for now, until we drop python 3.7 (after
+      # which there will be no need to downgrade)
+      - CIBW_BEFORE_BUILD: pip install Sphinx"<7.2.0" urllib3"<2.0.0" && python setup.py docs
       - CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,music,timing --time_out 300
       - CIBW_BUILD_VERBOSITY: 2
 
@@ -48,7 +51,7 @@ jobs:
       - run:
           name: Build the Linux wheels.
           command: |
-            pip3 install --user cibuildwheel==2.15.0
+            pip3 install --user cibuildwheel==2.16.1
             PATH="$HOME/.local/bin:$PATH" cibuildwheel --output-dir wheelhouse
 
       - store_artifacts:

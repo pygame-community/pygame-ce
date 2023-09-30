@@ -898,9 +898,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     }
 
     if ((vsync == -1) && ((flags & PGS_OPENGL) == 0)) {
-        PyErr_SetString(PyExc_ValueError,
-                        "requested adaptive vsync without OpenGL");
-        return NULL;
+        return RAISE(PyExc_ValueError,
+                     "requested adaptive vsync without OpenGL");
     }
 
     state->using_gl = (flags & PGS_OPENGL) != 0;

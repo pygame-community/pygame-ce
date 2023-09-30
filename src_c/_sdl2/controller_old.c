@@ -1092,7 +1092,6 @@ static CYTHON_INLINE float __PYX_NAN() {
 #include <string.h>
 #include <stdio.h>
 #include "SDL.h"
-#include "../controllercompat.c"
 #include "../pygame.h"
 #ifdef _OPENMP
 #include <omp.h>
@@ -1366,7 +1365,7 @@ static const char *__pyx_f[] = {
 /*--- Type declarations ---*/
 struct __pyx_obj_6pygame_5_sdl2_14controller_old_Controller;
 
-/* "pygame/_sdl2/controller_old.pxd":107
+/* "pygame/_sdl2/controller_old.pxd":105
  * cdef void _controller_autoquit()
  * 
  * cdef class Controller:             # <<<<<<<<<<<<<<
@@ -7761,7 +7760,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_14controller_old_10Controller_26rumble(
  *         low = min(max(low_frequency, 0.0), 1.0)
  *         high = min(max(high_frequency, 0.0), 1.0)             # <<<<<<<<<<<<<<
  * 
- *         return not PG_GameControllerRumble(
+ *         return not SDL_GameControllerRumble(
  */
   __pyx_t_8 = 1.0;
   __pyx_t_9 = 0.0;
@@ -7811,7 +7810,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_14controller_old_10Controller_26rumble(
   /* "pygame/_sdl2/controller_old.pyx":258
  *         high = min(max(high_frequency, 0.0), 1.0)
  * 
- *         return not PG_GameControllerRumble(             # <<<<<<<<<<<<<<
+ *         return not SDL_GameControllerRumble(             # <<<<<<<<<<<<<<
  *             self._controller, low * 0xFFFF, high * 0xFFFF, duration
  *         )
  */
@@ -7819,7 +7818,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_14controller_old_10Controller_26rumble(
 
   /* "pygame/_sdl2/controller_old.pyx":259
  * 
- *         return not PG_GameControllerRumble(
+ *         return not SDL_GameControllerRumble(
  *             self._controller, low * 0xFFFF, high * 0xFFFF, duration             # <<<<<<<<<<<<<<
  *         )
  * 
@@ -7837,11 +7836,11 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_14controller_old_10Controller_26rumble(
   /* "pygame/_sdl2/controller_old.pyx":258
  *         high = min(max(high_frequency, 0.0), 1.0)
  * 
- *         return not PG_GameControllerRumble(             # <<<<<<<<<<<<<<
+ *         return not SDL_GameControllerRumble(             # <<<<<<<<<<<<<<
  *             self._controller, low * 0xFFFF, high * 0xFFFF, duration
  *         )
  */
-  __pyx_t_1 = __Pyx_PyBool_FromLong((!(PG_GameControllerRumble(__pyx_v_self->_controller, __pyx_t_10, __pyx_t_11, __pyx_t_12) != 0))); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 258, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyBool_FromLong((!(SDL_GameControllerRumble(__pyx_v_self->_controller, __pyx_t_10, __pyx_t_11, __pyx_t_12) != 0))); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 258, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -7931,7 +7930,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_14controller_old_10Controller_28stop_ru
  *         """
  *         _gamecontroller_init_check()             # <<<<<<<<<<<<<<
  *         self._CLOSEDCHECK()
- *         PG_GameControllerRumble(self._controller, 0, 0, 1)
+ *         SDL_GameControllerRumble(self._controller, 0, 0, 1)
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_gamecontroller_init_check); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 266, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -7961,7 +7960,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_14controller_old_10Controller_28stop_ru
  *         """
  *         _gamecontroller_init_check()
  *         self._CLOSEDCHECK()             # <<<<<<<<<<<<<<
- *         PG_GameControllerRumble(self._controller, 0, 0, 1)
+ *         SDL_GameControllerRumble(self._controller, 0, 0, 1)
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_CLOSEDCHECK); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 267, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -7990,9 +7989,9 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_14controller_old_10Controller_28stop_ru
   /* "pygame/_sdl2/controller_old.pyx":268
  *         _gamecontroller_init_check()
  *         self._CLOSEDCHECK()
- *         PG_GameControllerRumble(self._controller, 0, 0, 1)             # <<<<<<<<<<<<<<
+ *         SDL_GameControllerRumble(self._controller, 0, 0, 1)             # <<<<<<<<<<<<<<
  */
-  (void)(PG_GameControllerRumble(__pyx_v_self->_controller, 0, 0, 1));
+  (void)(SDL_GameControllerRumble(__pyx_v_self->_controller, 0, 0, 1));
 
   /* "pygame/_sdl2/controller_old.pyx":262
  *         )
