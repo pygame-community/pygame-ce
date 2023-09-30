@@ -367,7 +367,6 @@ pg_vidinfo_str(PyObject *self)
         info->vfmt->Gloss, info->vfmt->Bloss, info->vfmt->Aloss, current_w,
         current_h, trimmed_format_name);
 
-        free(trimmed_format_name);
 }
 
 static PyTypeObject pgVidInfo_Type = {
