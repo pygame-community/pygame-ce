@@ -334,7 +334,6 @@ pg_vidinfo_str(PyObject *self)
     int current_w = -1;
     int current_h = -1;
     pg_VideoInfo *info = &((pgVidInfoObject *)self)->info;
-    PyObject *return_string = NULL;
     const char *pixel_format_name = SDL_GetPixelFormatName(info->vfmt->format);
     if (!strncmp(pixel_format_name, "SDL_", 4)) {
         pixel_format_name += 4;
