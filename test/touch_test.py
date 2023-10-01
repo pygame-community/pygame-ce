@@ -52,6 +52,10 @@ class TouchInteractiveTest(unittest.TestCase):
             os.environ["SDL_MOUSE_TOUCH_EVENTS"] = "1"
             pygame.init()
 
+    @classmethod
+    def tearDownClass(cls):
+        pygame.quit()
+
     def test_get_finger(self):
         """ask for touch input and check the dict"""
 
@@ -100,8 +104,6 @@ class TouchInteractiveTest(unittest.TestCase):
 
         response = question("Does the finger data seem correct?")
         self.assertTrue(response)
-
-        pygame.display.quit()
 
 
 if __name__ == "__main__":
