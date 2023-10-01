@@ -1085,7 +1085,7 @@ class LocalCiCommand(Command):
         # ("py", ([sys.executable, '-m','pip', 'install', '-U', 'black'], "")),
         ("ask_to_install", ('black', "")),
         ("py", ([sys.executable, '-m','pip', 'install', '-U', 'pylint'], "")),
-        ("py", ([sys.executable, '-m','pip', 'install', '-U', 'clang', '-format'], "")),
+        ("py", ([sys.executable, '-m','pip', 'install', '-U', 'clang-format'], "")),
         ("py", ([sys.executable, '-m','pip', 'install', '-U', 'sphinx'], "")),
         ("py", ([sys.executable, '-m', 'buildconfig'], "")),
 
