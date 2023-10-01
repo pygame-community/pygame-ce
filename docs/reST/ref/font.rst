@@ -233,7 +233,7 @@ solves no longer exists, it will likely be removed in the future.
       | :sl:`Gets the font's path or None.`
       | :sg:`path -> str`
 
-      Read only. Returns the font's path or None if it was loaded from a file like object.
+      Read only. Returns the path of the loaded font file or None if it was loaded from a file like object.
 
       .. versionadded:: 2.4.0
 

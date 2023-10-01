@@ -245,7 +245,7 @@ loaded. This module must be imported explicitly to be used. ::
       | :sl:`Font file path`
       | :sg:`path -> unicode`
 
-      Read only. Returns the path of the loaded font file
+      Read only. Returns the path of the loaded font file or None if it was loaded from a file like object.
 
    .. attribute:: size
 
