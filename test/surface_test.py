@@ -301,6 +301,17 @@ class SurfaceTypeTest(unittest.TestCase):
         )
         self.assertTrue(blit_surf.get_flags() & pygame.RLEACCEL)
 
+    def test_fill_raise_exceptions(self):
+        surf = pygame.Surface((5, 5))
+        invalid_rect_style_obj = 0
+        self.assertRaises(ValueError, surf.fill, "black", rect=invalid_rect_style_obj)
+        self.assertRaises(
+            pygame.error, surf.fill, "black", special_flags=pygame.BLEND_PREMULTIPLIED
+        )
+        self.assertRaises(
+            pygame.error, surf.fill, "black", special_flags=pygame.BLEND_ALPHA_SDL2
+        )
+
     def test_mustlock_rle(self):
         """Test RLEACCEL flag with mustlock()"""
         surf = pygame.Surface((100, 100))

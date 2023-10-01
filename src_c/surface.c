@@ -1224,13 +1224,11 @@ surf_set_palette_at(PyObject *self, PyObject *args)
     pal = surf->format->palette;
 
     if (!pal) {
-        PyErr_SetString(pgExc_SDLError, "Surface is not palettized\n");
-        return NULL;
+        return RAISE(pgExc_SDLError, "Surface is not palettized\n");
     }
 
     if (_index >= pal->ncolors || _index < 0) {
-        PyErr_SetString(PyExc_IndexError, "index out of bounds");
-        return NULL;
+        return RAISE(PyExc_IndexError, "index out of bounds");
     }
 
     color.r = rgba[0];
