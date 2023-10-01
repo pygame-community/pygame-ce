@@ -2094,12 +2094,12 @@ grayscale(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
         src->format->Gmask == newsurf->format->Gmask &&
         src->format->Bmask == newsurf->format->Bmask &&
         (src->pitch % src->format->BytesPerPixel == 0) &&
-        (newsurf->pitch == (newsurf->w * newsurf->format->BytesPerPixel))) {
+        (newsurf->pitch == (newsurf->w * 4))) {
         if (pg_has_avx2()) {
             grayscale_avx2(src, newsurf);
         }
 #if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
-        if (pg_HasSSE_NEON()) {
+        else if (pg_HasSSE_NEON()) {
             grayscale_sse2(src, newsurf);
         }
 #endif  // defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)

@@ -66,7 +66,7 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
      *        channel of every pixel.
      *     7. add the alpha channel back in.
      */
-    int s_row_skip = (src->pitch - src->w * src->format->BytesPerPixel) >> 2;
+    int s_row_skip = (src->pitch - src->w * 4) / 4;
 
     // generate number of batches of pixels we need to loop through
     int pixel_batch_length = src->w * src->h;
@@ -77,7 +77,7 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     }
 
     int remaining_pixels = pixel_batch_length % 8;
-    int perfect_8_pixels = (pixel_batch_length - remaining_pixels) / 8;
+    int perfect_8_pixels = pixel_batch_length / 8;
 
     int perfect_8_pixels_batch_counter = perfect_8_pixels;
     int remaining_pixels_batch_counter = remaining_pixels;
