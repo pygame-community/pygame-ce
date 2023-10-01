@@ -1076,33 +1076,37 @@ class StubcheckCommand(Command):
 class LocalCiCommand(Command):
     """ For running the CI steps locally with `python setup.py local_ci`.
     """
+    _outdated_cache = None
+
     commands = [
         # install dependencies
-        ([sys.executable, '-m','pip', 'install', '-U', 'mypy'], ""),
-        ([sys.executable, '-m','pip', 'install', '-U', 'black'], ""),
-        ([sys.executable, '-m','pip', 'install', '-U', 'pylint'], ""),
-        ([sys.executable, '-m','pip', 'install', '-U', 'clang', '-format'], ""),
-        ([sys.executable, '-m','pip', 'install', '-U', 'sphinx'], ""),
-        ([sys.executable, '-m', 'buildconfig'], ""),
+        # ([sys.executable, '-m','pip', 'install', '-U', 'mypy'], ""),
+        ("ask_to_install", ('mypy', "")),
+        # ("py", ([sys.executable, '-m','pip', 'install', '-U', 'black'], "")),
+        ("ask_to_install", ('black', "")),
+        ("py", ([sys.executable, '-m','pip', 'install', '-U', 'pylint'], "")),
+        ("py", ([sys.executable, '-m','pip', 'install', '-U', 'clang', '-format'], "")),
+        ("py", ([sys.executable, '-m','pip', 'install', '-U', 'sphinx'], "")),
+        ("py", ([sys.executable, '-m', 'buildconfig'], "")),
 
         # run linters
-        ([sys.executable, '-m', 'black', 'buildconfig\stubs\pygame'], ""),
-        ([sys.executable, '-m', 'setup', 'format'], ""),
-        ([sys.executable, '-m', 'setup', 'lint'], ""),
+        ("py", ([sys.executable, '-m', 'black', 'buildconfig\stubs\pygame'], "")),
+        ("py", ([sys.executable, '-m', 'setup', 'format'], "")),
+        ("py", ([sys.executable, '-m', 'setup', 'lint'], "")),
         # ([sys.executable, '-m', 'setup', 'format'], ""),
 
         # rebuild
-        ([sys.executable, '-m', 'setup', 'clean', '--all'], ""),
-        ([sys.executable, '-m', 'setup', 'docs', '--fullgeneration'], "Failed to regenerate docs."),
-        ([sys.executable, '-m', 'setup', 'build'], "Failed to build."),
+        ("py", ([sys.executable, '-m', 'setup', 'clean', '--all'], "")),
+        ("py", ([sys.executable, '-m', 'setup', 'docs', '--fullgeneration'], "Failed to regenerate docs.")),
+        ("py", ([sys.executable, '-m', 'setup', 'build'], "Failed to build.")),
 
         # install
-        ([sys.executable, '-m','pip', 'uninstall', '-y', 'pygame'], ""),
-        ([sys.executable, '-m', 'pip', 'install', '--no-deps','.'], ""),
+        ("py", ([sys.executable, '-m','pip', 'uninstall', '-y', 'pygame'], "")),
+        ("py", ([sys.executable, '-m', 'pip', 'install', '--no-deps','.'], "")),
 
         # rem check stubs(against installed version!)
-        ([sys.executable, '-m', 'setup', 'stubcheck'], ""),
-        ([sys.executable, '-m', 'pygame.tests', '-v'], ""),
+        ("py", ([sys.executable, '-m', 'setup', 'stubcheck'], "")),
+        ("py", ([sys.executable, '-m', 'pygame.tests', '-v'], "")),
 
     ]
     description = "run the ci steps locally. Meant for developers. See 'setup.py local_ci --help'"
@@ -1114,15 +1118,27 @@ class LocalCiCommand(Command):
             "E.g. '--steps 3:' to execute step 3 and all following  or '-s 4' to execute step 4 or "
             "as a comma separated list '-s 3,4,8'\t\t\t"\
             "\t\t\tListing available steps:" \
-            "\t\t\t\t\t" + f"  ".join([f"{i}: " + " ".join(c[0][1:]) + "\t\t\t\t\t\t" for i, c in enumerate(commands)])
+            # "\t\t\tusing: py = " + sys.executable +"" \
+            "\t\t\t\t\t" + f"  ".join([f"{idx}: {c[0]} " + (" ".join(c[1][0][1:]) if isinstance(c[1][0], (tuple, list))  else c[1][0] )+ "\t\t\t\t\t\t\t\t" for idx, c in enumerate(commands)])
+        ),
+        (
+            'pipchoice=', 'p','Override choice for the module updates using pip, either \'y\' or \'n\''
         )
     ]
+
+    yes = ("y", "yes", "ye", "")
+    no = ("n", "no")
+
     def initialize_options(self):
         self.steps = ":" # all steps in slice notation as default value
+        self.pipchoice = None
 
     def finalize_options(self):
         arg_steps = self.steps # string from command line arg
         step_indices = list(range(len(self.commands)))
+        if self.pipchoice is not None:
+            if self.pipchoice not in self.yes and self.pipchoice not in self.no:
+                raise AssertionError(f"provided value '{self.pipchoice}' for pipchoice is invalid, allowed values are: {','.join(self.yes)}{','.join(self.no)}")
         if arg_steps.count(":") == 0:
             if arg_steps.count(",") == 0:
                 self.steps = [int(arg_steps)] # single step
@@ -1141,6 +1157,7 @@ class LocalCiCommand(Command):
         """
         print(">>>Using python:", sys.executable)
         print(">>>steps:", self.steps)
+        print(">>>pipchoice:", self.pipchoice)
         environ = os.environ
         if sys.platform == 'win32':
             # todo will this check cause more problems than it solves?
@@ -1162,7 +1179,60 @@ class LocalCiCommand(Command):
         for step_idx in self.steps:
             if step_idx <0 or step_idx > len(self.commands):
                 raise SystemExit(f"invalid step: {step_idx}")
-            self._run_subprocess(step_idx, *self.commands[step_idx], environ)
+            cmd, cmd_arguments = self.commands[step_idx]
+            if cmd == "ask_to_install":
+                # cmd_arguments =  (name, fail_message)
+                self._check_and_ask_install_package(step_idx, *cmd_arguments, environ)
+            elif cmd == "py":
+                # cmd_arguments =  ([args], fail_message)
+                self._run_subprocess(step_idx, *cmd_arguments, environ)
+
+    def _check_and_ask_install_package(self, step_idx, name, fail_message, environ):
+        print(f">>>run step {step_idx}: check module installation for: {name}")
+        if self.pipchoice in self.no:
+            print(">>>default choice:", self.pipchoice)
+            return
+        if not self._outdated_cache:
+            import subprocess
+            sub_proc_args = [sys.executable, '-m', 'pip', 'list', '--outdated', '-v']
+            print(f">>>get outdated information, run: {' '.join(sub_proc_args)}")
+            process_result = subprocess.run(sub_proc_args, capture_output=True, text=True)
+            if process_result.returncode != 0:
+                raise SystemExit(fail_message)
+
+            # print(">>>process result:", process_result)  # todo print this with verbose flag?
+            line_tuples_itr = (tuple((_f.strip() for _f in _l.split(" ") if _f)) for _l in process_result.stdout.splitlines())
+            LocalCiCommand._outdated_cache = dict(((_t[0], _t) for _t in line_tuples_itr))
+            # print(LocalCiCommand._outdated_cache) # todo print this with verbose flag?
+
+        # ask to install if newer is available
+        if name in self._outdated_cache:
+            if self.pipchoice:
+                choice = True if self.pipchoice in self.yes else False
+                print(">>>default choice:", self.pipchoice)
+            else:
+                # ask for update
+                while True:
+                    print(">>>")
+                    print(f"<<<?? Update '{name}' from {self._outdated_cache[name][1]} to {self._outdated_cache[name][2]}? (y/n):")
+                    choice = input().lower()
+                    if choice in self.yes:
+                        choice = True
+                        break
+                    if choice in self.no:
+                        choice = False
+                        break
+
+            print(">>>")
+            if choice:
+                print(f">>>updating {name}...")
+                args = [sys.executable, '-m', 'pip', 'install', '-U', name]
+                self._run_subprocess(step_idx, args, fail_message, environ)
+            # else:
+            #     print(f">>>keeping {self._outdated_cache[name][1]} for {name}")
+        else:
+            # skip
+            print(f">>>module '{name}' is already up to date.")
 
     def _run_subprocess(self, step_idx, command_line, fail_message, environ):
         command_line_as_string = " ".join(command_line)
