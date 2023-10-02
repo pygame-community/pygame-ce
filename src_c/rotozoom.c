@@ -557,7 +557,6 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * -----------------------
          */
-
         int dstwidthhalf, dstheighthalf;
         double sanglezoom, canglezoom, sanglezoominv, canglezoominv;
 
