@@ -74,12 +74,6 @@ jobs:
             pyversions: "cp38-*"
           }
           - {
-            name: "CPython 3.7 (64 bit)",
-            winarch: AMD64,
-            msvc-dev-arch: x86_amd64,
-            pyversions: "cp37-*"
-          }
-          - {
             name: "CPython 3.12 (32 bit)",
             winarch: x86,
             msvc-dev-arch: x86,
@@ -108,12 +102,6 @@ jobs:
             winarch: x86,
             msvc-dev-arch: x86,
             pyversions: "cp38-win32"
-          }
-          - {
-            name: "CPython 3.7 (32 bit)",
-            winarch: x86,
-            msvc-dev-arch: x86,
-            pyversions: "cp37-win32"
           }
           - {
             name: "Pypy 3.8",
