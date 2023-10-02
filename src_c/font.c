@@ -37,14 +37,6 @@
 
 #include "structmember.h"
 
-#ifndef SDL_TTF_VERSION_ATLEAST
-#define SDL_TTF_COMPILEDVERSION                                  \
-    SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \
-                   SDL_TTF_PATCHLEVEL)
-#define SDL_TTF_VERSION_ATLEAST(X, Y, Z) \
-    (SDL_TTF_COMPILEDVERSION >= SDL_VERSIONNUM(X, Y, Z))
-#endif
-
 #define RAISE_TEXT_TYPE_ERROR() \
     RAISE(PyExc_TypeError, "text must be a unicode or bytes");
 
@@ -80,37 +72,6 @@ static const char resourcefunc_name[] = "getResource";
 #endif
 static const char font_defaultname[] = "freesansbold.ttf";
 static const int font_defaultsize = 20;
-
-#ifndef SDL_TTF_VERSION_ATLEAST
-/**
- *  This macro will evaluate to true if compiled with SDL_ttf at least X.Y.Z.
- *  New in SDL_ttf 2.0.15 so here it is in pygame for compat
- */
-#define SDL_TTF_VERSION_ATLEAST(X, Y, Z)                          \
-    ((SDL_TTF_MAJOR_VERSION >= X) &&                              \
-     (SDL_TTF_MAJOR_VERSION > X || SDL_TTF_MINOR_VERSION >= Y) && \
-     (SDL_TTF_MAJOR_VERSION > X || SDL_TTF_MINOR_VERSION > Y ||   \
-      SDL_TTF_PATCHLEVEL >= Z))
-#endif
-
-/*
- */
-#if !SDL_TTF_VERSION_ATLEAST(2, 0, 15)
-
-static int
-utf_8_needs_UCS_4(const char *str)
-{
-    static const Uint8 first = '\xF0';
-
-    while (*str) {
-        if ((Uint8)*str >= first) {
-            return 1;
-        }
-        ++str;
-    }
-    return 0;
-}
-#endif
 
 /* Return an encoded file path, a file-like object or a NULL pointer.
  * May raise a Python error. Use PyErr_Occurred to check.
@@ -558,18 +519,9 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
 
     if (strlen(astring) == 0) { /* special 0 string case */
         int height = TTF_FontHeight(font);
-        surf = SDL_CreateRGBSurfaceWithFormat(0, 0, height, 32,
-                                              PG_PIXELFORMAT_XRGB8888);
+        surf = PG_CreateSurface(0, height, PG_PIXELFORMAT_XRGB8888);
     }
     else { /* normal case */
-#if !SDL_TTF_VERSION_ATLEAST(2, 0, 15)
-        if (utf_8_needs_UCS_4(astring)) {
-            return RAISE(PyExc_UnicodeError,
-                         "a Unicode character above '\\uFFFF' was found;"
-                         " not supported with SDL_ttf version below 2.0.15");
-        }
-#endif
-
         if (antialias && bg_rgba_obj == Py_None) {
 #if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
             surf = TTF_RenderUTF8_Blended_Wrapped(font, astring, foreg,
@@ -658,9 +610,8 @@ font_getter_point_size(PyFontObject *self, void *closure)
 #if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     return PyLong_FromLong(self->ptsize);
 #else
-    PyErr_SetString(pgExc_SDLError,
-                    "Incorrect SDL_TTF version (requires 2.0.18)");
-    return NULL;
+    return RAISE(pgExc_SDLError,
+                 "Incorrect SDL_TTF version (requires 2.0.18)");
 #endif
 }
 
@@ -701,9 +652,8 @@ font_get_ptsize(PyObject *self, PyObject *args)
 #if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
     return PyLong_FromLong(((PyFontObject *)self)->ptsize);
 #else
-    PyErr_SetString(pgExc_SDLError,
-                    "Incorrect SDL_TTF version (requires 2.0.18)");
-    return NULL;
+    return RAISE(pgExc_SDLError,
+                 "Incorrect SDL_TTF version (requires 2.0.18)");
 #endif
 }
 
@@ -719,22 +669,19 @@ font_set_ptsize(PyObject *self, PyObject *arg)
     }
 
     if (val <= 0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "point_size cannot be equal to, or less than 0");
-        return NULL;
+        return RAISE(PyExc_ValueError,
+                     "point_size cannot be equal to, or less than 0");
     }
 
     if (TTF_SetFontSize(font, val) == -1) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return NULL;
+        return RAISE(pgExc_SDLError, SDL_GetError());
     }
     ((PyFontObject *)self)->ptsize = val;
 
     Py_RETURN_NONE;
 #else
-    PyErr_SetString(pgExc_SDLError,
-                    "Incorrect SDL_TTF version (requires 2.0.18)");
-    return NULL;
+    return RAISE(pgExc_SDLError,
+                 "Incorrect SDL_TTF version (requires 2.0.18)");
 #endif
 }
 
@@ -851,10 +798,7 @@ font_metrics(PyObject *self, PyObject *textobj)
 static PyObject *
 font_set_script(PyObject *self, PyObject *arg)
 {
-/*Sadly, SDL_TTF_VERSION_ATLEAST is new in SDL_ttf 2.0.15, still too
- * new to use */
-#if SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \
-                   SDL_TTF_PATCHLEVEL) >= SDL_VERSIONNUM(2, 20, 0)
+#if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
     TTF_Font *font = PyFont_AsFont(self);
     Py_ssize_t size;
     const char *script_code;
@@ -884,10 +828,7 @@ font_set_script(PyObject *self, PyObject *arg)
 static PyObject *
 font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
-/* Can't use SDL_TTF_VERSION_ATLEAST until SDL_ttf 2.0.15 is minimum supported
- */
-#if SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \
-                   SDL_TTF_PATCHLEVEL) >= SDL_VERSIONNUM(2, 20, 0)
+#if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
     TTF_Font *font = PyFont_AsFont(self);
     int direction;
     char *kwds[] = {"direction", NULL};

@@ -1099,8 +1099,7 @@ _ftfont_getname(pgFontObject *self, void *closure)
         return name ? PyUnicode_FromString(name) : 0;
     }
 
-    PyErr_SetString(PyExc_AttributeError, "<uninitialized Font object>");
-    return NULL;
+    return RAISE(PyExc_AttributeError, "<uninitialized Font object>");
 }
 
 static PyObject *
@@ -1111,8 +1110,7 @@ _ftfont_getstylename(pgFontObject *self, void *closure)
         return stylename ? PyUnicode_FromString(stylename) : 0;
     }
 
-    PyErr_SetString(PyExc_AttributeError, "<uninitialized Font object>");
-    return NULL;
+    return RAISE(PyExc_AttributeError, "<uninitialized Font object>");
 }
 
 static PyObject *
