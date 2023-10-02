@@ -536,6 +536,8 @@ updated. However, using this environment variable it is possible to get
 joystick updates even when the window is in the background. Must be set
 before calling :func:`pygame.init()` or :func:`pygame.joystick.init()`.
 
+|
+
 ::
 
  SDL_MOUSE_TOUCH_EVENTS

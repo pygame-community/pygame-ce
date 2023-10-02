@@ -31,7 +31,7 @@ class TouchTest(unittest.TestCase):
             if touch.get_device(0) >= 0:
                 # mice acting as touch devices have negative device IDs
                 # they also do not work with get_num_fingers()
-                touch.get_num_fingers()
+                touch.get_num_fingers(touch.get_device(0))
 
     def test_num_fingers__invalid(self):
         self.assertRaises(TypeError, touch.get_num_fingers, "test")
@@ -60,7 +60,7 @@ class TouchInteractiveTest(unittest.TestCase):
         """ask for touch input and check the dict"""
 
         os.environ["SDL_VIDEO_WINDOW_POS"] = "50,50"
-        screen = pygame.display.set_mode((800, 600))
+        screen = pygame.display.set_mode((1000, 600))
         screen.fill((255, 255, 255))
 
         font = pygame.font.Font(None, 32)
