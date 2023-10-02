@@ -621,9 +621,16 @@ class SurfaceTypeTest(unittest.TestCase):
         size = (16, 16)
         surf = pygame.Surface(size)
         rect = surf.get_rect()
+        rect_kwargs = surf.get_rect(topleft=(1.0, 1.0), center=(100, 100))
 
+        self.assertEqual(rect.topleft, (0.0, 0.0))
         self.assertEqual(rect.size, size)
-
+        self.assertIsInstance(rect, pygame.Rect)
+        self.assertEqual(rect_kwargs.center, (100, 100))
+        self.assertNotEqual(rect_kwargs.topleft, (1.0, 1.0))
+        with self.assertRaises(AttributeError):
+            surf.get_rect(centre=(100, 100))
+        
     ########################################################################
 
     def test_get_frect(self):
@@ -631,10 +638,15 @@ class SurfaceTypeTest(unittest.TestCase):
         size = (16.0, 16.0)
         surf = pygame.Surface(size)
         frect = surf.get_frect()
+        frect_kwargs = surf.get_frect(topleft=(1.0, 1.0), center=(100, 100))
 
         self.assertEqual(frect.topleft, (0.0, 0.0))
         self.assertEqual(frect.size, size)
         self.assertIsInstance(frect, pygame.FRect)
+        self.assertEqual(frect_kwargs.center, (100, 100))
+        self.assertNotEqual(frect_kwargs.topleft, (1.0, 1.0))
+        with self.assertRaises(AttributeError):
+            surf.get_frect(centre=(100, 100))
 
     ########################################################################
 
