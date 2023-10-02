@@ -890,6 +890,9 @@ surf_rotozoom(PyObject *self, PyObject *args, PyObject *kwargs)
 
     Py_BEGIN_ALLOW_THREADS;
     newsurf = rotozoomSurface(surf32, angle, scale, 1);
+    if (newsurf == NULL) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+    }
     Py_END_ALLOW_THREADS;
 
     if (surf32 == surf)
