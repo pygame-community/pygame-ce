@@ -696,23 +696,20 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
 
     if (state->unscaled_render && pg_renderer != NULL) {
         if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-            if (window == pygame_window) {
-                int w = event->window.data1;
-                int h = event->window.data2;
-                pgSurfaceObject *display_surface =
-                    pg_GetDefaultWindowSurface();
-                SDL_Surface *surf =
-                    PG_CreateSurface(w, h, PG_PIXELFORMAT_XRGB8888);
+            int w = event->window.data1;
+            int h = event->window.data2;
+            pgSurfaceObject *display_surface = pg_GetDefaultWindowSurface();
+            SDL_Surface *surf =
+                PG_CreateSurface(w, h, PG_PIXELFORMAT_XRGB8888);
 
-                SDL_FreeSurface(display_surface->surf);
-                display_surface->surf = surf;
+            SDL_FreeSurface(display_surface->surf);
+            display_surface->surf = surf;
 
-                SDL_DestroyTexture(pg_texture);
+            SDL_DestroyTexture(pg_texture);
 
-                pg_texture =
-                    SDL_CreateTexture(pg_renderer, SDL_PIXELFORMAT_ARGB8888,
-                                      SDL_TEXTUREACCESS_STREAMING, w, h);
-            }
+            pg_texture =
+                SDL_CreateTexture(pg_renderer, SDL_PIXELFORMAT_ARGB8888,
+                                  SDL_TEXTUREACCESS_STREAMING, w, h);
         }
         return 0;
     }
@@ -757,12 +754,10 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
     }
 
     if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-        if (window == pygame_window) {
-            SDL_Surface *sdl_surface = SDL_GetWindowSurface(window);
-            pgSurfaceObject *old_surface = pg_GetDefaultWindowSurface();
-            if (sdl_surface != old_surface->surf) {
-                old_surface->surf = sdl_surface;
-            }
+        SDL_Surface *sdl_surface = SDL_GetWindowSurface(window);
+        pgSurfaceObject *old_surface = pg_GetDefaultWindowSurface();
+        if (sdl_surface != old_surface->surf) {
+            old_surface->surf = sdl_surface;
         }
     }
     return 0;
