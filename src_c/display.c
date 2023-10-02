@@ -999,7 +999,6 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
         }
 
-#pragma PG_WARN(Not setting bpp ?)
 #pragma PG_WARN(Add mode stuff.)
         {
             int w_1 = w, h_1 = h;
@@ -1358,6 +1357,14 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                              "on top of wayland, instead of wayland directly",
                              1) != 0)
                 return NULL;
+        }
+    }
+
+    if (depth != 0 && surface->surf->format->BitsPerPixel != depth) {
+        if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                         "The depth argument is deprecated, and is ignored",
+                         1)) {
+            return NULL;
         }
     }
 
