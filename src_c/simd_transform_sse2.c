@@ -36,7 +36,7 @@ pg_neon_at_runtime_but_uncompiled()
 }
 
 #if (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON))
-void
+
 #if defined(ENV64BIT)
 #define LOAD_64_INTO_M128(num, reg) *reg = _mm_cvtsi64_si128(*num)
 #define STORE_M128_INTO_64(reg, num) *num = _mm_cvtsi128_si64(*reg)
@@ -46,8 +46,8 @@ void
 #define STORE_M128_INTO_64(reg, num) _mm_storel_epi64((__m128i *)num, *reg)
 #endif
 
-    void
-    grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
+void
+grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
 {
     /* For the SSE2 SIMD version of grayscale we do one pixel at a time
      * Thus we can calculate the number of loops (and pixels) by multiplying
@@ -85,8 +85,6 @@ void
 
     Uint32 rgbmask =
         (src->format->Rmask | src->format->Gmask | src->format->Bmask);
-    Uint32 amask = ~rgbmask;
-
     Uint64 rgbmask64 = ((Uint64)rgbmask << 32) | rgbmask;
     Uint64 amask64 = ~rgbmask64;
 
