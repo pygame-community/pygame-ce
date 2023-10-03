@@ -218,20 +218,6 @@ free_string(PGFT_String *);
         _var = PyObject_IsTrue(_pyobj);                        \
     }
 
-
-
-static unsigned int current_freetype_generation = 0;
-
-#define FreetypeFont_GenerationCheck(x) \
-    (((pgFontObject *)(x))->init_generation == current_freetype_generation)
-
-#define RAISE_FREETYPE_QUIT_ERROR(r)                                       \
-    RAISERETURN(                                                           \
-        pgExc_SDLError,                                                    \
-        "Invalid freetype font (freetype module quit since freetype font " \
-        "created)",                                                        \
-        r);
-
 static unsigned int current_freetype_generation = 0;
 
 #define FreetypeFont_GenerationCheck(x) \
