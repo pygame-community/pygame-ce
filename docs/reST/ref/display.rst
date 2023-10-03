@@ -134,10 +134,9 @@ required).
    are set to ``0``, the Surface will have the same width or height as the
    screen resolution.
 
-   It is usually best to not pass the depth argument. It will default to the
-   best and fastest color depth for the system. If your game requires a
-   specific color format you can control the depth with this argument. Pygame
-   will emulate an unavailable color depth which can be slow.
+   Since pygame 2, the depth argument is ignored, in favour of the best
+   and fastest one. It also raises a deprecation warning since pygame-ce
+   2.4.0 if the passed in depth is not 0 or the one pygame selects.
 
    When requesting fullscreen display modes, sometimes an exact match for the
    requested size cannot be made. In these situations pygame will select
@@ -212,6 +211,8 @@ required).
    .. versionchanged:: 2.2.0 explicit request for "adaptive vsync"
 
    .. versionchanged:: 2.2.0 ``vsync=1`` does not require ``SCALED`` or ``OPENGL``
+
+   .. deprecated:: 2.4.0 The depth argument is ignored, and will be set to the optimal value
 
 
    Basic example:
