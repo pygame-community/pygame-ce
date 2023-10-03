@@ -115,7 +115,7 @@ Instead, always begin with the original image and scale to the desired size.)
    image has pixel alphas, the padded area will be transparent. Otherwise pygame
    will pick a color that matches the Surface colorkey or the topleft pixel value.
 
-   .. versionadded:: 2.3.0
+   .. versionadded:: 2.4.0
 
    .. ## pygame.transform.skew ##
 
