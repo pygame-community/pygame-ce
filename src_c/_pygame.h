@@ -304,6 +304,9 @@ typedef enum {
 supported Python version. #endif */
 
 #define RAISE(x, y) (PyErr_SetString((x), (y)), NULL)
+#define RAISERETURN(x, y, r)   \
+    PyErr_SetString((x), (y)); \
+    return r;
 #define DEL_ATTR_NOT_SUPPORTED_CHECK(name, value)                            \
     do {                                                                     \
         if (!value) {                                                        \
