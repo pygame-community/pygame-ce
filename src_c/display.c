@@ -2779,17 +2779,17 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
 
         msgbox_data.numbuttons = 1;
 
-        if (0 > return_button_index || return_button_index >= 1) {
+        if (-1 > return_button_index || return_button_index >= 1) {
             PyErr_SetString(PyExc_IndexError,
-                            "return_button index out of range.");
+                            "return_button index out of range");
             goto error;
         }
         buttons_data->flags |= SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
 
         if (escape_button_used) {
-            if (0 > escape_button_index || escape_button_index >= 1) {
+            if (-1 > escape_button_index || escape_button_index >= 1) {
                 PyErr_SetString(PyExc_IndexError,
-                                "escape_button index out of range.");
+                                "escape_button index out of range");
                 goto error;
             }
             buttons_data->flags |= SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
@@ -2812,13 +2812,21 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
                          "'buttons' should contain at least 1 button");
         }
 
-        if (0 > return_button_index || return_button_index >= num_buttons) {
-            return RAISE(PyExc_IndexError,
-                         "return_button index out of range.");
+        if (return_button_index < 0) {
+            return_button_index = (int)num_buttons + return_button_index;
         }
-        if (0 > escape_button_index || escape_button_index >= num_buttons) {
-            return RAISE(PyExc_IndexError,
-                         "escape_button index out of range.");
+        if (0 > return_button_index || return_button_index >= num_buttons) {
+            return RAISE(PyExc_IndexError, "return_button index out of range");
+        }
+        if (escape_button_used) {
+            if (escape_button_index < 0) {
+                escape_button_index = (int)num_buttons + escape_button_index;
+            }
+            if (0 > escape_button_index ||
+                escape_button_index >= num_buttons) {
+                return RAISE(PyExc_IndexError,
+                             "escape_button index out of range");
+            }
         }
 
         buttons_data = malloc(sizeof(SDL_MessageBoxButtonData) * num_buttons);

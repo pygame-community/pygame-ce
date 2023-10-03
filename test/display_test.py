@@ -923,24 +923,24 @@ class MessageBoxTest(unittest.TestCase):
     def test_messagebox_args(self):
         mb = pygame.display.message_box
         self.assertRaises(IndexError, lambda: mb("", escape_button=1))
-        self.assertRaises(IndexError, lambda: mb("", escape_button=-1))
+        self.assertRaises(IndexError, lambda: mb("", escape_button=-2))
         self.assertRaises(IndexError, lambda: mb("", return_button=1))
-        self.assertRaises(IndexError, lambda: mb("", return_button=-1))
+        self.assertRaises(IndexError, lambda: mb("", return_button=-2))
         self.assertRaises(
             IndexError,
-            lambda: mb("", buttons=("A", "B", "C"), return_button=10),
+            lambda: mb("", buttons=("A", "B", "C"), return_button=3),
         )
         self.assertRaises(
             IndexError,
-            lambda: mb("", buttons=("A", "B", "C"), return_button=-1),
+            lambda: mb("", buttons=("A", "B", "C"), return_button=-4),
         )
         self.assertRaises(
             IndexError,
-            lambda: mb("", buttons=("A", "B", "C"), escape_button=10),
+            lambda: mb("", buttons=("A", "B", "C"), escape_button=3),
         )
         self.assertRaises(
             IndexError,
-            lambda: mb("", buttons=("A", "B", "C"), escape_button=-1),
+            lambda: mb("", buttons=("A", "B", "C"), escape_button=-4),
         )
         self.assertRaises(ValueError, lambda: mb("", type="random_str"))
         self.assertRaises(TypeError, lambda: mb("", buttons=()))
