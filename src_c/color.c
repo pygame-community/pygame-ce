@@ -93,7 +93,7 @@ _color_set_length(pgColorObject *, PyObject *);
 static PyObject *
 _color_lerp(pgColorObject *, PyObject *, PyObject *);
 static PyObject *
-_color_grayscale(pgColorObject *);
+_color_grayscale(pgColorObject *, PyObject *);
 static PyObject *
 _premul_alpha(pgColorObject *, PyObject *);
 static PyObject *
@@ -760,7 +760,7 @@ _color_correct_gamma(pgColorObject *color, PyObject *args)
  * color.grayscale()
  */
 static PyObject *
-_color_grayscale(pgColorObject *self)
+_color_grayscale(pgColorObject *self, PyObject *_null)
 {
     // RGBA to GRAY formula used by OpenCV
     Uint8 grayscale_pixel =

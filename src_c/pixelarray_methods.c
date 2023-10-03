@@ -128,9 +128,7 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
 
     /* Create the second surface. */
 
-    temp_surf = SDL_CreateRGBSurfaceWithFormat(0, (int)dim0, (int)dim1,
-                                               surf->format->BitsPerPixel,
-                                               surf->format->format);
+    temp_surf = PG_CreateSurface((int)dim0, (int)dim1, surf->format->format);
     if (!temp_surf) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }

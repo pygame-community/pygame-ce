@@ -63,6 +63,9 @@
 
 #define PG_JOYBALLMOTION 0
 
+#define PG_CreateSurface SDL_CreateSurface
+#define PG_CreateSurfaceFrom SDL_CreateSurfaceFrom
+
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 
 #define PG_INIT_NOPARACHUTE SDL_INIT_NOPARACHUTE
@@ -80,6 +83,11 @@
 #define PG_MULTIGESTURE SDL_MULTIGESTURE
 
 #define PG_JOYBALLMOTION SDL_JOYBALLMOTION
+
+#define PG_CreateSurface(width, height, format) \
+    SDL_CreateRGBSurfaceWithFormat(0, width, height, 0, format)
+#define PG_CreateSurfaceFrom(pixels, width, height, pitch, format) \
+    SDL_CreateRGBSurfaceWithFormatFrom(pixels, width, height, 0, pitch, format)
 
 #endif
 
@@ -296,6 +304,9 @@ typedef enum {
 supported Python version. #endif */
 
 #define RAISE(x, y) (PyErr_SetString((x), (y)), NULL)
+#define RAISERETURN(x, y, r)   \
+    PyErr_SetString((x), (y)); \
+    return r;
 #define DEL_ATTR_NOT_SUPPORTED_CHECK(name, value)                            \
     do {                                                                     \
         if (!value) {                                                        \

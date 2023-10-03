@@ -93,8 +93,8 @@ static PyTypeObject pgVectorIter_Type;
 #define _vector_subtype_new(x) \
     ((pgVector *)(Py_TYPE(x)->tp_new(Py_TYPE(x), NULL, NULL)))
 
-#define DEG2RAD(angle) ((angle)*M_PI / 180.)
-#define RAD2DEG(angle) ((angle)*180. / M_PI)
+#define DEG2RAD(angle) ((angle) * M_PI / 180.)
+#define RAD2DEG(angle) ((angle) * 180. / M_PI)
 
 typedef struct {
     PyObject_HEAD double coords[VECTOR_MAX_SIZE]; /* Coordinates */
@@ -325,7 +325,7 @@ vectoriter_dealloc(vectoriter *it);
 static PyObject *
 vectoriter_next(vectoriter *it);
 static PyObject *
-vectoriter_len(vectoriter *it);
+vectoriter_len(vectoriter *it, PyObject *_null);
 static PyObject *
 vector_iter(PyObject *vec);
 
@@ -3514,7 +3514,7 @@ vectoriter_next(vectoriter *it)
 }
 
 static PyObject *
-vectoriter_len(vectoriter *it)
+vectoriter_len(vectoriter *it, PyObject *_null)
 {
     Py_ssize_t len = 0;
     if (it && it->vec) {

@@ -7,7 +7,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-**English** `简体中文`_ `Français`_ `فارسی`_
+**English** `简体中文`_ `Français`_ `فارسی`_ `Español`_
 ---------------------------------------------------------------------------------------------------
 
 Pygame_ is a free and open-source cross-platform library
@@ -128,31 +128,25 @@ excellent hosting.
 Dependencies
 ------------
 
-Pygame is obviously strongly dependent on SDL and Python.  It also
-links to and embeds several other smaller libraries.  The font
-module relies on SDL_ttf, which is dependent on freetype.  The mixer
-(and mixer.music) modules depend on SDL_mixer.  The image module
-depends on SDL_image, which also can use libjpeg and libpng.  The
-transform module has an embedded version of SDL_rotozoom for its
-own rotozoom function.  The surfarray module requires the Python
-NumPy package for its multidimensional numeric arrays.
+Pygame is obviously strongly dependent on SDL and Python. It also
+links to and embeds several other smaller libraries. The font
+module relies on SDL_ttf, which is dependent on freetype. The mixer
+(and mixer.music) modules depend on SDL_mixer. The image module
+depends on SDL_image. Transform.rotozoom has an embedded version 
+of SDL_rotozoom, and gfxdraw has an embedded version of SDL_gfx.
 Dependency versions:
 
 
 +----------+------------------------+
-| CPython  | >= 3.7 (Or use PyPy3)  |
+| CPython  | >= 3.8 (Or use PyPy3)  |
 +----------+------------------------+
-| SDL      | >= 2.0.8               |
+| SDL      | >= 2.0.9               |
 +----------+------------------------+
-| SDL_mixer| >= 2.0.0               |
+| SDL_mixer| >= 2.0.4               |
 +----------+------------------------+
-| SDL_image| >= 2.0.2               |
+| SDL_image| >= 2.0.4               |
 +----------+------------------------+
-| SDL_ttf  | >= 2.0.12              |
-+----------+------------------------+
-| SDL_gfx  | (Optional, vendored in)|
-+----------+------------------------+
-| NumPy    | >= 1.6.2 (Optional)    |
+| SDL_ttf  | >= 2.0.15              |
 +----------+------------------------+
 
 
@@ -202,3 +196,4 @@ See docs/licenses for licenses of dependencies.
 .. _简体中文: ./docs/readmes/README.zh-cn.rst
 .. _Français: ./docs/readmes/README.fr.rst
 .. _فارسی: ./docs/readmes/README.fa.rst
+.. _Español: ./docs/readmes/README.es.rst
