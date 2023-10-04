@@ -614,8 +614,11 @@ RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
             }
             return temp;
         }
-        else if (length == 1) {
+        else if (PyTuple_Check(obj) && length == 1) {
             return RectExport_RectFromObject(items[0], temp);
+        }
+        else {
+            return NULL;
         }
     }
     else if (PySequence_Check(obj)) {
@@ -674,20 +677,12 @@ RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
             return temp;
         }
         /*looks like an arg?*/
-        else if (length == 1) {
-            item = PySequence_ITEM(obj, 0);
-            if (!item) {
+        else if (PyTuple_Check(obj) && length == 1) {
+            if (!(item = PyTuple_GET_ITEM(obj, 0)) || PyUnicode_Check(item)) {
                 return NULL;
             }
-            if (!PyUnicode_Check(item)) {
-                InnerRect *returnrect = RectExport_RectFromObject(item, temp);
-                Py_DECREF(item);
-                return returnrect;
-            }
-            else {
-                Py_DECREF(item);
-                return NULL;
-            }
+            InnerRect *returnrect = RectExport_RectFromObject(item, temp);
+            return returnrect;
         }
     }
 
@@ -713,7 +708,6 @@ RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
     returnrect = RectExport_RectFromObject(rectattr, temp);
     Py_DECREF(rectattr);
     return returnrect;
-
 }
 
 static PyObject *
