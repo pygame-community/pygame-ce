@@ -43,6 +43,10 @@
 #include <SDL.h>
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
+#define PG_ShowCursor SDL_ShowCursor
+#define PG_HideCursor SDL_HideCursor
+#define PG_CursorVisible SDL_CursorVisible
+
 #define PG_INIT_NOPARACHUTE 0
 
 // UINT16 audio no longer exists in SDL3
@@ -67,6 +71,9 @@
 #define PG_CreateSurfaceFrom SDL_CreateSurfaceFrom
 
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
+#define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
+#define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
+#define PG_CursorVisible() SDL_ShowCursor(SDL_QUERY)
 
 #define PG_INIT_NOPARACHUTE SDL_INIT_NOPARACHUTE
 
