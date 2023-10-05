@@ -54,7 +54,7 @@ For example:
    ``pygame.gfxdraw`` wraps the primitives from the library called SDL_gfx,
    rather than using modified versions.
 
-.. versionadded:: 1.9.0
+.. versionaddedold:: 1.9.0
 
 
 .. function:: pixel

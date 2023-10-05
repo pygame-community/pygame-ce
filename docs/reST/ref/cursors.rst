@@ -240,7 +240,7 @@ The following strings can be converted into cursor bitmaps with
 
    .. ## pygame.cursors.Cursor.data ##
 
-   .. versionadded:: 2.0.1
+   .. versionaddedold:: 2.0.1
 
    .. ## pygame.cursors.Cursor ##
    

@@ -28,7 +28,7 @@ The ``pygame.KEYDOWN`` event has the additional attributes ``unicode`` and
      keyboard to keyboard, but is useful for key selection of weird keys like
      the multimedia keys
 
-.. versionadded:: 2.0.0
+.. versionaddedold:: 2.0.0
     The ``pygame.TEXTINPUT`` event is preferred to the ``unicode`` attribute
     of ``pygame.KEYDOWN``. The attribute ``text`` contains the input.
 
@@ -274,6 +274,65 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
 
    .. ## pygame.key.get_pressed ##
 
+.. function:: get_just_pressed
+
+   | :sl:`returns a pygame.key.ScancodeWrapper containing the most recent key presses`
+   | :sg:`get_just_pressed() -> bools`
+
+   Returns a mapping from key codes to booleans indicating which keys were
+   newly pressed as of the last time events were processed. This can be used
+   as a convenience function to detect keys that were pressed "this frame."
+
+   The result of this function is updated when new events are processed,
+   e.g. in :func:`pygame.event.get()` or :func:`pygame.event.pump()`.
+
+   A key can be marked as "just pressed" even if it is not currently pressed
+   according to :func:`pygame.key.get_pressed()`, if it was pressed and released
+   again during the same frame. Multiple presses and releases of the same key
+   are not distinguished from a single press with this function.
+
+   .. seealso:: :func:`pygame.key.get_just_released()`
+
+   .. note::
+      If you require getting the key presses in order, use the event queue
+      ``KEYDOWN`` events
+
+   ::
+      
+      if pygame.key.get_just_pressed()[pygame.K_b]:
+         print("B key just pressed")
+
+   .. versionadded:: 2.4.0
+
+   .. ## pygame.key.get_just_pressed ##
+
+.. function:: get_just_released
+
+   | :sl:`returns a pygame.key.ScancodeWrapper containing the most recent key releases`
+   | :sg:`get_just_pressed() -> bools`
+   
+   Returns a mapping from key codes to booleans indicating which keys were
+   newly released as of the last time events were processed. This can be used
+   as a convenience function to detect keys that were released "this frame."
+
+   The result of this function is updated when new events are processed,
+   e.g. in :func:`pygame.event.get()` or :func:`pygame.event.pump()`.
+
+   .. seealso:: :func:`pygame.key.get_just_pressed()`
+
+   .. note::
+      If you require getting the key releases in order, use the event queue
+      ``KEYUP`` events.
+
+   ::
+      
+      if pygame.key.get_just_released()[pygame.K_b]:
+         print("B key just released")
+
+   .. versionadded:: 2.4.0
+
+   .. ## pygame.key.get_just_released ##
+
 .. function:: get_mods
 
    | :sl:`determine which modifier keys are being held`
@@ -317,7 +376,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
 
    :raises ValueError: if ``delay`` or ``interval`` is < 0
 
-   .. versionchanged:: 2.0.0 A ``ValueError`` is now raised (instead of a
+   .. versionchangedold:: 2.0.0 A ``ValueError`` is now raised (instead of a
       ``pygame.error``) if ``delay`` or ``interval`` is < 0.
 
    .. ## pygame.key.set_repeat ##
@@ -330,7 +389,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
    Get the ``delay`` and ``interval`` keyboard repeat values. Refer to
    :func:`pygame.key.set_repeat()` for a description of these values.
 
-   .. versionadded:: 1.8
+   .. versionaddedold:: 1.8
 
    .. ## pygame.key.get_repeat ##
 
@@ -378,7 +437,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
 
    :raises ValueError: if the key name is not known.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. ## pygame.key.key_code ##
 
@@ -409,7 +468,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
 
    Text input events handling is on by default.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. ## pygame.key.start_text_input ##
 
@@ -429,7 +488,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
    should be disabled once text entry is finished, or when the user
    clicks outside of a text box.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. ## pygame.key.stop_text_input ##
 
@@ -441,7 +500,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
    This sets the rectangle used for typing with an IME.
    It controls where the candidate list will open, if supported.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. ## pygame.key.set_text_input_rect ##
 

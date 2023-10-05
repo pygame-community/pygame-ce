@@ -190,7 +190,7 @@ _lifelock_dealloc(PyObject *self)
     pgSurface_UnlockBy((pgSurfaceObject *)lifelock->surface,
                        lifelock->lockobj);
     Py_DECREF(lifelock->surface);
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject *

@@ -4070,7 +4070,7 @@ class DrawPolygonMixin:
             self.assertEqual(self.surface.get_at((5, y)), RED)
 
     def test_draw_symetric_cross(self):
-        """non-regression on issue #234 : x and y where handled inconsistently.
+        """non-regression on pygame-ce issue #249 : x and y where handled inconsistently.
 
         Also, the result is/was different whether we fill or not the polygon.
         """
@@ -4105,7 +4105,7 @@ class DrawPolygonMixin:
                     self.assertEqual(self.surface.get_at((x, y)), RED)
 
     def test_illumine_shape(self):
-        """non-regression on issue #313"""
+        """non-regression on pygame-ce issue #328"""
         rect = pygame.Rect((0, 0, 20, 20))
         path_data = [
             (0, 0),
@@ -4740,7 +4740,7 @@ class DrawRectMixin:
 
             self.assertNotEqual(color_at_pt, self.color)
 
-        # Issue #310: Cannot draw rectangles that are 1 pixel high
+        # pygame-ce issue #325: Cannot draw rectangles that are 1 pixel high
         bgcolor = pygame.Color("black")
         self.surf.fill(bgcolor)
         hrect = pygame.Rect(1, 1, self.surf_w - 2, 1)

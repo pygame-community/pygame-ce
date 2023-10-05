@@ -74,7 +74,7 @@ object instead of the module, which can be used to test for availability.
 
    Returns ``True`` if pygame is currently initialized.
 
-   .. versionadded:: 1.9.5
+   .. versionaddedold:: 1.9.5
 
    .. ## pygame.get_init ##
 
@@ -126,7 +126,7 @@ object instead of the module, which can be used to test for availability.
    It can be used to detect which features may or may not be
    available through pygame.
 
-   .. versionadded:: 1.7.0
+   .. versionaddedold:: 1.7.0
 
    .. versionchanged:: 2.1.4 ``linked`` keyword argument added
 
@@ -140,7 +140,7 @@ object instead of the module, which can be used to test for availability.
    Returns the byte order of the SDL library. It returns ``1234`` for little
    endian byte order and ``4321`` for big endian byte order.
 
-   .. versionadded:: 1.8
+   .. versionaddedold:: 1.8
 
    .. ## pygame.get_sdl_byteorder ##
 
@@ -177,7 +177,9 @@ object instead of the module, which can be used to test for availability.
    This function is used in encoding file paths. Keyword arguments are
    supported.
 
-   .. versionadded:: 1.9.2 (primarily for use in unit tests)
+   This function is not needed for normal pygame-ce usage.
+
+   .. versionaddedold:: 1.9.2 (primarily for use in unit tests)
 
    .. ## pygame.encode_string ##
 
@@ -197,7 +199,9 @@ object instead of the module, which can be used to test for availability.
    codec as returned by ``sys.getfilesystemencoding()``. Keyword arguments are
    supported.
 
-   .. versionadded:: 1.9.2 (primarily for use in unit tests)
+   This function is not needed for normal pygame-ce usage.
+
+   .. versionaddedold:: 1.9.2 (primarily for use in unit tests)
 
    .. ## pygame.encode_file_path ##
 
@@ -257,7 +261,7 @@ check which version of pygame has been imported.
            print('Warning, older version of pygame (%s)' %  pygame.version.ver)
            disable_advanced_features = True
 
-   .. versionadded:: 1.9.6 Attributes ``major``, ``minor``, and ``patch``.
+   .. versionaddedold:: 1.9.6 Attributes ``major``, ``minor``, and ``patch``.
 
    ::
 
@@ -265,11 +269,11 @@ check which version of pygame has been imported.
       vernum.minor == vernum[1]
       vernum.patch == vernum[2]
 
-   .. versionchanged:: 1.9.6
+   .. versionchangedold:: 1.9.6
       ``str(pygame.version.vernum)`` returns a string like ``"2.0.0"`` instead
       of ``"(2, 0, 0)"``.
 
-   .. versionchanged:: 1.9.6
+   .. versionchangedold:: 1.9.6
       ``repr(pygame.version.vernum)`` returns a string like
       ``"PygameVersion(major=2, minor=0, patch=0)"`` instead of ``"(2, 0, 0)"``.
 
@@ -290,7 +294,7 @@ check which version of pygame has been imported.
    returning an empty string ``""``. 
    It has always been returning an empty string since ``v1.9.5``.
    
-   .. versionchanged:: 1.9.5
+   .. versionchangedold:: 1.9.5
       Always returns an empty string ``""``.
 
    .. ## pygame.version.rev ##
@@ -298,7 +302,7 @@ check which version of pygame has been imported.
 .. data:: SDL
 
    | :sl:`tupled integers of the SDL library version`
-   | :sg:`SDL = '(2, 0, 12)'`
+   | :sg:`SDL = '(2, 26, 5)'`
 
    This is the SDL library version represented as an extended tuple. It also has
    attributes 'major', 'minor' & 'patch' that can be accessed like this:
@@ -313,9 +317,9 @@ check which version of pygame has been imported.
    ::
 
     >>> pygame.version.SDL
-    SDLVersion(major=2, minor=0, patch=12)
+    SDLVersion(major=2, minor=26, patch=5)
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. ## pygame.version.SDL ##
 
@@ -429,7 +433,7 @@ do this. Must be set before importing pygame.
 ::
 
  PYGAME_CAMERA -
- Set to "opencv" or "vidcapture"
+ Set to "opencv"
 
 Forces the library backend used in the camera
 module, overriding the platform defaults. Must
@@ -531,3 +535,15 @@ By default, when the window is not in focus, input devices do not get
 updated. However, using this environment variable it is possible to get
 joystick updates even when the window is in the background. Must be set
 before calling :func:`pygame.init()` or :func:`pygame.joystick.init()`.
+
+|
+
+::
+
+ SDL_MOUSE_TOUCH_EVENTS
+ Set to "1" to make mouse events also generate touch events.
+
+Useful for testing touch events on desktop platforms (e.g. with a trackpad)
+where this is set to 0 by default.
+
+

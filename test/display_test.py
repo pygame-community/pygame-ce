@@ -150,22 +150,27 @@ class DisplayModuleTest(unittest.TestCase):
         # display.init() already called in setUp()
         self.assertTrue(display.get_init())
 
-    # This test can be uncommented when issues #991 and #993 are resolved.
-    @unittest.skipIf(True, "SDL2 issues")
     def test_get_surface(self):
         """Ensures get_surface gets the current display surface."""
         lengths = (1, 5, 100)
+        correct_depth = pygame.display.Info().bitsize
 
         for expected_size in ((w, h) for w in lengths for h in lengths):
-            for expected_depth in (8, 16, 24, 32):
-                expected_surface = display.set_mode(expected_size, 0, expected_depth)
+            for set_depth in (8, 16, 24, 32):
+                if set_depth == correct_depth:
+                    expected_surface = display.set_mode(expected_size, 0, set_depth)
+                else:
+                    with self.assertWarns(DeprecationWarning):
+                        expected_surface = pygame.display.set_mode(
+                            expected_size, 0, set_depth
+                        )
 
                 surface = pygame.display.get_surface()
 
                 self.assertEqual(surface, expected_surface)
                 self.assertIsInstance(surface, pygame.Surface)
                 self.assertEqual(surface.get_size(), expected_size)
-                self.assertEqual(surface.get_bitsize(), expected_depth)
+                self.assertEqual(surface.get_bitsize(), correct_depth)
 
     def test_get_surface__mode_not_set(self):
         """Ensures get_surface handles the display mode not being set."""
@@ -582,7 +587,7 @@ class DisplayModuleTest(unittest.TestCase):
 
     def test_set_mode_unscaled(self):
         """Ensures a window created with SCALED can become smaller."""
-        # see https://github.com/pygame/pygame/issues/2327
+        # see https://github.com/pygame-community/pygame-ce/issues/1194
 
         screen = pygame.display.set_mode((300, 300), pygame.SCALED)
         self.assertEqual(screen.get_size(), (300, 300))
@@ -906,7 +911,7 @@ class DisplayOpenGLTest(unittest.TestCase):
 
 class X11CrashTest(unittest.TestCase):
     def test_x11_set_mode_crash_gh1654(self):
-        # Test for https://github.com/pygame/pygame/issues/1654
+        # Test for https://github.com/pygame-community/pygame-ce/issues/924
         # If unfixed, this will trip a segmentation fault
         pygame.display.init()
         pygame.display.quit()
