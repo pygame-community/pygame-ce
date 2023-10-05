@@ -4274,9 +4274,7 @@ class DrawPolygonMixin:
         pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
         pygame.draw.polygon(self.surface, GREEN, RHOMBUS, 0)
         for x, y in key_polygon_points:
-            self.assertEqual(self.surface.get_at((x, y)), GREEN,
-                             msg=str((x, y)))
-
+            self.assertEqual(self.surface.get_at((x, y)), GREEN, msg=str((x, y)))
 
 
 class DrawPolygonTest(DrawPolygonMixin, DrawTestCase):
