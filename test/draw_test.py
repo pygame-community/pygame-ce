@@ -3662,6 +3662,7 @@ class DrawAALinesTest(AALinesMixin, DrawTestCase):
 
 SQUARE = ([0, 0], [3, 0], [3, 3], [0, 3])
 DIAMOND = [(1, 3), (3, 5), (5, 3), (3, 1)]
+RHOMBUS = [(1, 3), (4, 5), (7, 3), (4, 1)]
 CROSS = (
     [2, 0],
     [4, 0],
@@ -4263,6 +4264,19 @@ class DrawPolygonMixin:
                     self.assertEqual(surface.get_at(pt), expected_color, pt)
 
                 surface.unlock()
+
+    def test_polygon_filled_shape(self):
+        """non-regression on issue #515 (644)
+        Ensures the outline of a filled polygon is drawn the same as an
+        unfilled polygon.
+        """
+        key_polygon_points = [(2, 2), (6, 2), (2, 4), (6, 4)]
+        pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
+        pygame.draw.polygon(self.surface, GREEN, RHOMBUS, 0)
+        for x, y in key_polygon_points:
+            self.assertEqual(self.surface.get_at((x, y)), GREEN,
+                             msg=str((x, y)))
+
 
 
 class DrawPolygonTest(DrawPolygonMixin, DrawTestCase):
