@@ -633,6 +633,7 @@ class SurfaceTypeTest(unittest.TestCase):
         ):  # PyPy doesn't raise an AttributeError, so for PyPy we can just skip it.
             with self.assertRaises(AttributeError):
                 surf.get_rect(centre=(100, 100))
+
     ########################################################################
 
     def test_get_frect(self):
