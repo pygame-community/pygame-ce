@@ -1427,7 +1427,7 @@ surf_copy(pgSurfaceObject *self, PyObject *_null)
     SURF_INIT_CHECK(surf)
 
     pgSurface_Prep(self);
-    newsurf = SDL_ConvertSurface(surf, surf->format, 0);
+    newsurf = PG_ConvertSurface(surf, surf->format);
     pgSurface_Unprep(self);
 
     final = surf_subtype_new(Py_TYPE(self), newsurf, 1);
@@ -1473,7 +1473,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
     if (argobject) {
         if (pgSurface_Check(argobject)) {
             src = pgSurface_AsSurface(argobject);
-            newsurf = SDL_ConvertSurface(surf, src->format, 0);
+            newsurf = PG_ConvertSurface(surf, src->format);
         }
         else {
             /* will be updated later, initialize to make static analyzer happy
@@ -1594,7 +1594,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
                     SDL_SetPixelFormatPalette(&format, palette);
                 }
             }
-            newsurf = SDL_ConvertSurface(surf, &format, 0);
+            newsurf = PG_ConvertSurface(surf, &format);
             SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
             SDL_FreePalette(palette);
         }
@@ -1634,7 +1634,7 @@ pg_DisplayFormat(SDL_Surface *surface)
         return NULL;
     }
     displaysurf = pgSurface_AsSurface(pg_GetDefaultWindowSurface());
-    return SDL_ConvertSurface(surface, displaysurf->format, 0);
+    return PG_ConvertSurface(surface, displaysurf->format);
 }
 
 static SDL_Surface *
@@ -1687,7 +1687,7 @@ pg_DisplayFormatAlpha(SDL_Surface *surface)
         SDL_SetError("unknown pixel format");
         return NULL;
     }
-    return SDL_ConvertSurfaceFormat(surface, pfe, 0);
+    return PG_ConvertSurfaceFormat(surface, pfe);
 }
 
 static PyObject *
@@ -3213,7 +3213,7 @@ surf_premul_alpha(pgSurfaceObject *self, PyObject *_null)
 
     pgSurface_Prep(self);
     // Make a copy of the surface first
-    newsurf = SDL_ConvertSurface(surf, surf->format, 0);
+    newsurf = PG_ConvertSurface(surf, surf->format);
 
     if ((surf->w > 0 && surf->h > 0)) {
         // If the surface has no pixels we don't need to premul
@@ -3941,7 +3941,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
             newfmt.Rloss = fmt->Rloss;
             newfmt.Gloss = fmt->Gloss;
             newfmt.Bloss = fmt->Bloss;
-            src = SDL_ConvertSurface(src, &newfmt, 0);
+            src = PG_ConvertSurface(src, &newfmt);
             if (src) {
                 result = SDL_BlitSurface(src, srcrect, dst, dstrect);
                 SDL_FreeSurface(src);
