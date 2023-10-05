@@ -678,7 +678,7 @@ RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
         }
         /*looks like an arg?*/
         else if (PyTuple_Check(obj) && length == 1) {
-            if (!(item = PyTuple_GET_ITEM(obj, 0)) || PyUnicode_Check(item)) {
+            if (!(item = PyTuple_GET_ITEM(obj, 0))) {
                 return NULL;
             }
             InnerRect *returnrect = RectExport_RectFromObject(item, temp);
