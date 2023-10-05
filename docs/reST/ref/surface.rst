@@ -101,20 +101,20 @@
       An optional area rectangle can be passed as well. This represents a
       smaller portion of the source Surface to draw.
 
-      .. versionadded:: 1.8
+      .. versionaddedold:: 1.8
          Optional ``special_flags``: ``BLEND_ADD``, ``BLEND_SUB``,
          ``BLEND_MULT``, ``BLEND_MIN``, ``BLEND_MAX``.
 
-      .. versionadded:: 1.8.1
+      .. versionaddedold:: 1.8.1
          Optional ``special_flags``: ``BLEND_RGBA_ADD``, ``BLEND_RGBA_SUB``,
          ``BLEND_RGBA_MULT``, ``BLEND_RGBA_MIN``, ``BLEND_RGBA_MAX``
          ``BLEND_RGB_ADD``, ``BLEND_RGB_SUB``, ``BLEND_RGB_MULT``,
          ``BLEND_RGB_MIN``, ``BLEND_RGB_MAX``.
 
-      .. versionadded:: 1.9.2
+      .. versionaddedold:: 1.9.2
          Optional ``special_flags``: ``BLEND_PREMULTIPLIED``
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
          Optional ``special_flags``:  ``BLEND_ALPHA_SDL2`` - Uses the SDL2 blitter for alpha blending,
          this gives different results than the default blitter, which is modelled after SDL1, due to
          different approximations used for the alpha blending formula. The SDL2 blitter also supports
@@ -133,24 +133,54 @@
    .. method:: blits
 
       | :sl:`draw many images onto another`
-      | :sg:`blits(blit_sequence=((source, dest), ...), doreturn=1) -> [Rect, ...] or None`
+      | :sg:`blits(blit_sequence=((source, dest), ...), doreturn=True) -> [Rect, ...] or None`
       | :sg:`blits(((source, dest, area), ...)) -> [Rect, ...]`
       | :sg:`blits(((source, dest, area, special_flags), ...)) -> [Rect, ...]`
 
-      Draws many surfaces onto this Surface. It takes a sequence as input,
-      with each of the elements corresponding to the ones of :meth:`blit()`.
-      It needs at minimum a sequence of (source, dest).
+      The ``blits`` method efficiently draws a sequence of surfaces onto this ``Surface``.
 
-      :param blit_sequence: a sequence of surfaces and arguments to blit them,
-         they correspond to the :meth:`blit()` arguments
-      :param doreturn: if ``True``, return a list of rects of the areas changed,
-         otherwise return ``None``
+      **Parameters**
 
-      :returns: a list of rects of the areas changed if ``doreturn`` is
-         ``True``, otherwise ``None``
-      :rtype: list or None
+          ``blit_sequence``
+                A sequence that contains each surface to be drawn along with its associated blit
+                arguments. See the **Sequence Item Formats** section below for the possible formats.
 
-      New in pygame 1.9.4.
+          ``doreturn`` (optional)
+                The ``doreturn`` parameter controls the return value. When set to ``True``, it returns
+                a list of rectangles representing the changed areas. When set to ``False``, returns
+                ``None``.
+
+      **Return**
+
+          A list of rectangles or ``None``.
+
+      **Sequence Item Formats**
+
+          ``(source, dest)``
+            - ``source``: Surface object to be drawn.
+            - ``dest``: Position where the source Surface should be blitted.
+
+          ``(source, dest, area)``
+            - ``area``: (optional) Specific area of the source Surface to be drawn.
+
+          ``(source, dest, area, special_flags)``
+            - ``special_flags``: (optional) Controls the blending mode for drawing colors.
+
+      **Notes**
+
+          - ``blits`` is an advanced method. It is recommended to read the documentation
+            of :meth:`blit` first.
+
+          - To draw a ``Surface`` with a special flag, you must specify an area as well, e.g.,
+            ``(source, dest, None, special_flags)``.
+
+          - Prefer using :meth:`blits` over :meth:`blit` when drawing a multiple images
+            for better performance. Use :meth:`blit` if you need to draw a single image.
+
+          - For drawing a sequence of (source, dest) pairs with whole source Surface
+            and a singular special_flag, use the :meth:`fblits()` method.
+
+      .. versionaddedold:: 1.9.4
 
       .. ## Surface.blits ##
 
@@ -235,7 +265,11 @@
       Makes a duplicate copy of a Surface. The new surface will have the same
       pixel formats, color palettes, transparency settings, and class as the
       original. If a Surface subclass also needs to copy any instance specific
-      attributes then it should override ``copy()``.
+      attributes then it should override ``copy()``. Shallow copy and deepcopy
+      are supported, Surface implements __copy__ and __deepcopy__ respectively.
+
+      .. versionadded:: 2.3.1
+         Added support for deepcopy by implementing __deepcopy__, calls copy() internally.
 
       .. ## Surface.copy ##
 
@@ -248,16 +282,16 @@
       entire Surface will be filled. The rect argument will limit the fill to a
       specific area. The fill will also be contained by the Surface clip area.
 
-      The color argument can be either a ``RGB`` sequence, a ``RGBA`` sequence
-      or a mapped color index. If using ``RGBA``, the Alpha (A part of
-      ``RGBA``) is ignored unless the surface uses per pixel alpha (Surface has
-      the ``SRCALPHA`` flag).
+      The color argument can be an ``RGB`` sequence, an ``RGBA`` sequence,
+      a string (for :doc:`color_list`), or a mapped color index. If using ``RGBA``,
+      the Alpha (A part of ``RGBA``) is ignored unless the surface uses per pixel
+      alpha (Surface has the ``SRCALPHA`` flag).
 
-      .. versionadded:: 1.8
+      .. versionaddedold:: 1.8
          Optional ``special_flags``: ``BLEND_ADD``, ``BLEND_SUB``,
          ``BLEND_MULT``, ``BLEND_MIN``, ``BLEND_MAX``.
 
-      .. versionadded:: 1.8.1
+      .. versionaddedold:: 1.8.1
          Optional ``special_flags``: ``BLEND_RGBA_ADD``, ``BLEND_RGBA_SUB``,
          ``BLEND_RGBA_MULT``, ``BLEND_RGBA_MIN``, ``BLEND_RGBA_MAX``
          ``BLEND_RGB_ADD``, ``BLEND_RGB_SUB``, ``BLEND_RGB_MULT``,
@@ -278,20 +312,21 @@
       contained by the Surface clip area. It is safe to have dx and dy values
       that exceed the surface size.
 
-      .. versionadded:: 1.9
+      .. versionaddedold:: 1.9
 
       .. ## Surface.scroll ##
 
    .. method:: set_colorkey
 
       | :sl:`Set the transparent colorkey`
-      | :sg:`set_colorkey(Color, flags=0) -> None`
+      | :sg:`set_colorkey(color, flags=0) -> None`
       | :sg:`set_colorkey(None) -> None`
 
       Set the current color key for the Surface. When blitting this Surface
       onto a destination, any pixels that have the same color as the colorkey
-      will be transparent. The color can be an ``RGB`` color or a mapped color
-      integer. If ``None`` is passed, the colorkey will be unset.
+      will be transparent. The color can be an ``RGB`` color, a string
+      (for :doc:`color_list`), or a mapped color integer. If ``None`` is passed,
+      the colorkey will be unset.
 
       The colorkey will be ignored if the Surface is formatted to use per pixel
       alpha values. The colorkey can be mixed with the full Surface alpha
@@ -328,7 +363,7 @@
       This value is different than the per pixel Surface alpha. For a surface
       with per pixel alpha, blanket alpha is ignored and ``None`` is returned.
 
-      .. versionchanged:: 2.0 per-surface alpha can be combined with per-pixel
+      .. versionchangedold:: 2.0 per-surface alpha can be combined with per-pixel
                           alpha.
 
       The optional flags argument can be set to ``pygame.RLEACCEL`` to provide
@@ -445,12 +480,15 @@
       methods - or by using :mod:`pygame.surfarray`/:mod:`pygame.PixelArray`.
 
       This function will temporarily lock and unlock the Surface as needed.
-
-      .. versionadded:: 1.9
+      
+      .. versionchanged:: 2.3.1 can now also accept both float coordinates and Vector2s for pixels.
+      
          Returning a Color instead of tuple. Use ``tuple(surf.get_at((x,y)))``
          if you want a tuple, and not a Color. This should only matter if
          you want to use the color as a key in a dict.
-
+      
+      .. versionaddedold:: 1.9
+      
       .. ## Surface.get_at ##
 
    .. method:: set_at
@@ -458,10 +496,10 @@
       | :sl:`set the color value for a single pixel`
       | :sg:`set_at((x, y), Color) -> None`
 
-      Set the ``RGBA`` or mapped integer color value for a single pixel. If the
-      Surface does not have per pixel alphas, the alpha value is ignored.
-      Setting pixels outside the Surface area or outside the Surface clipping
-      will have no effect.
+      Set the color of a single pixel at the specified coordinates to be an ``RGB``,
+      ``RGBA``, string (for :doc:`color_list`), or mapped integer color value. If the Surface
+      does not have per pixel alphas, the alpha value is ignored. Setting pixels outside the
+      Surface area or outside the Surface clipping will have no effect.
 
       Getting and setting pixels one at a time is generally too slow to be used
       in a game or realtime situation.
@@ -470,6 +508,8 @@
 
       .. note:: If the surface is palettized, the pixel color will be set to the
                 most similar color in the palette.
+
+      .. versionchanged:: 2.3.1 can now also accept both float coordinates and Vector2s for pixels.
 
       .. ## Surface.set_at ##
 
@@ -487,7 +527,9 @@
 
       This function will temporarily lock and unlock the Surface as needed.
 
-      .. versionadded:: 1.9.2
+      .. versionaddedold:: 1.9.2
+
+      .. versionchanged:: 2.3.1 can now also accept both float coordinates and Vector2s for pixels.
 
       .. ## Surface.get_at_mapped ##
 
@@ -502,7 +544,7 @@
 
       Returning a list of ``Color(with length 3)`` instances instead of tuples.
 
-      .. versionadded:: 1.9
+      .. versionaddedold:: 1.9
 
       .. ## Surface.get_palette ##
 
@@ -514,7 +556,7 @@
       Returns the red, green, and blue color values for a single index in a
       Surface palette. The index should be a value from 0 to 255.
 
-      .. versionadded:: 1.9
+      .. versionaddedold:: 1.9
          Returning ``Color(with length 3)`` instance instead of a tuple.
 
       .. ## Surface.get_palette_at ##
@@ -527,7 +569,7 @@
       Set the full palette for an 8-bit Surface. This will replace the colors in
       the existing palette. A partial palette can be passed and only the first
       colors in the original palette will be changed.
-
+      
       This function has no effect on a Surface with more than 8-bits per pixel.
 
       .. ## Surface.set_palette ##
@@ -539,7 +581,7 @@
 
       Set the palette value for a single entry in a Surface palette. The index
       should be a value from 0 to 255.
-
+      
       This function has no effect on a Surface with more than 8-bits per pixel.
 
       .. ## Surface.set_palette_at ##
@@ -812,9 +854,9 @@
       .. note:: Starting in pygame 2.0, the masks are read-only and
          accordingly this method will raise a TypeError if called.
 
-      .. deprecated:: 2.0.0
+      .. deprecatedold:: 2.0.0
 
-      .. versionadded:: 1.8.1
+      .. versionaddedold:: 1.8.1
 
       .. ## Surface.set_masks ##
 
@@ -840,9 +882,9 @@
       .. note:: Starting in pygame 2.0, the shifts are read-only and
          accordingly this method will raise a TypeError if called.
 
-      .. deprecated:: 2.0.0
+      .. deprecatedold:: 2.0.0
 
-      .. versionadded:: 1.8.1
+      .. versionaddedold:: 1.8.1
 
       .. ## Surface.set_shifts ##
 
@@ -869,7 +911,7 @@
 
       This function will temporarily lock and unlock the Surface as needed.
 
-      .. versionadded:: 1.8
+      .. versionaddedold:: 1.8
 
       .. ## Surface.get_bounding_rect ##
 
@@ -917,7 +959,7 @@
       interface accesses, the surface remains locked until the BufferProxy
       object is released.
 
-      .. versionadded:: 1.9.2
+      .. versionaddedold:: 1.9.2
 
    .. method:: get_buffer
 
@@ -933,7 +975,7 @@
       This method implicitly locks the Surface. The lock will be released when
       the returned :mod:`pygame.BufferProxy` object is garbage collected.
 
-      .. versionadded:: 1.8
+      .. versionaddedold:: 1.8
 
       .. ## Surface.get_buffer ##
 
@@ -944,7 +986,7 @@
 
       The starting address of the surface's raw pixel bytes.
 
-      .. versionadded:: 1.9.2
+      .. versionaddedold:: 1.9.2
 
    .. method:: premul_alpha
 

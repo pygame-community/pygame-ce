@@ -76,7 +76,6 @@ mouse_get_pos(PyObject *self, PyObject *_null)
         if (sdlRenderer != NULL) {
             SDL_Rect vprect;
             float scalex, scaley;
-            int w, h;
 
             SDL_RenderGetScale(sdlRenderer, &scalex, &scaley);
             SDL_RenderGetViewport(sdlRenderer, &vprect);
@@ -84,19 +83,17 @@ mouse_get_pos(PyObject *self, PyObject *_null)
             x = (int)(x / scalex);
             y = (int)(y / scaley);
 
-            SDL_RenderGetLogicalSize(sdlRenderer, &w, &h);
-
             x -= vprect.x;
             y -= vprect.y;
 
             if (x < 0)
                 x = 0;
-            if (x >= w)
-                x = w - 1;
+            if (x >= vprect.w)
+                x = vprect.w - 1;
             if (y < 0)
                 y = 0;
-            if (y >= h)
-                y = h - 1;
+            if (y >= vprect.h)
+                y = vprect.h - 1;
         }
     }
 
@@ -168,8 +165,7 @@ mouse_get_pressed(PyObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 mouse_set_visible(PyObject *self, PyObject *args)
 {
-    int toggle;
-    int mode;
+    int toggle, prevstate;
     SDL_Window *win = NULL;
     Uint32 window_flags = 0;
 
@@ -179,7 +175,7 @@ mouse_set_visible(PyObject *self, PyObject *args)
 
     win = pg_GetDefaultWindow();
     if (win) {
-        mode = SDL_GetWindowGrab(win);
+        int mode = SDL_GetWindowGrab(win);
         if ((mode == SDL_ENABLE) & !toggle) {
             SDL_SetRelativeMouseMode(1);
         }
@@ -196,8 +192,20 @@ mouse_set_visible(PyObject *self, PyObject *args)
         }
     }
 
-    toggle = SDL_ShowCursor(toggle);
-    return PyBool_FromLong(toggle);
+    prevstate = PG_CursorVisible();
+
+    // Cursor visibility API **can** raise errors through SDL, but in
+    // practice it does not. (Ankith checked through the code)
+    // Historically we haven't error checked this, should that change in the
+    // future?
+    if (toggle) {
+        PG_ShowCursor();
+    }
+    else {
+        PG_HideCursor();
+    }
+
+    return PyBool_FromLong(prevstate);
 }
 
 static PyObject *
@@ -207,7 +215,7 @@ mouse_get_visible(PyObject *self, PyObject *_null)
 
     VIDEO_INIT_CHECK();
 
-    result = SDL_ShowCursor(SDL_QUERY);
+    result = PG_CursorVisible();
 
     if (0 > result) {
         return RAISE(pgExc_SDLError, SDL_GetError());

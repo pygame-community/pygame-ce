@@ -2431,7 +2431,7 @@ class Test(unittest.TestCase):
 
     def testRGBtoRGBA(self):
         "asRGBA8() on colour type 2 source." ""
-        # Test for Issue 26
+        # Test for pygame-ce issue 41
         r = Reader(bytes=_pngsuite["basn2c08"])
         x, y, pixels, meta = r.asRGBA8()
         # Test the pixels at row 9 columns 0 and 1.
@@ -2440,7 +2440,7 @@ class Test(unittest.TestCase):
 
     def testLtoRGBA(self):
         "asRGBA() on grey source." ""
-        # Test for Issue 60
+        # Test for pygame-ce issue 75
         r = Reader(bytes=_pngsuite["basi0g08"])
         x, y, pixels, meta = r.asRGBA()
         row9 = list(list(pixels)[9])
@@ -2448,7 +2448,7 @@ class Test(unittest.TestCase):
 
     def testCtrns(self):
         "Test colour type 2 and tRNS chunk."
-        # Test for Issue 25
+        # Test for pygame-ce issue 40
         r = Reader(bytes=_pngsuite["tbrn2c08"])
         x, y, pixels, meta = r.asRGBA8()
         # I just happen to know that the first pixel is transparent.
@@ -2621,7 +2621,7 @@ class Test(unittest.TestCase):
     def testPackedIter(self):
         """Test iterator for row when using write_packed.
 
-        Indicative for Issue 47.
+        Indicative for pygame-ce issue 62.
         """
         w = Writer(16, 2, greyscale=True, alpha=False, bitdepth=1)
         o = BytesIO()

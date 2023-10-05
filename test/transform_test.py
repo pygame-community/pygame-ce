@@ -99,7 +99,7 @@ class TransformModuleTest(unittest.TestCase):
     def test_scale__destination(self):
         """see if the destination surface can be passed in to use."""
 
-        s = pygame.Surface((32, 32))
+        s = pygame.Surface((32, 32), depth=32)
         s2 = pygame.transform.scale(s, (64, 64))
         s3 = s2.copy()
 
@@ -119,6 +119,18 @@ class TransformModuleTest(unittest.TestCase):
 
         # the wrong size surface is past in.  Should raise an error.
         self.assertRaises(ValueError, pygame.transform.smoothscale, s, (33, 64), s3)
+
+        alpha_surf = pygame.Surface((64, 64), pygame.SRCALPHA)
+        pygame.transform.scale(alpha_surf, (32, 32), s)
+
+        alpha_surf_weird = pygame.Surface(
+            (64, 64), pygame.SRCALPHA, 32, (0xFF000000, 0xFF0000, 0xFF00, 0xFF)
+        )
+        assert alpha_surf_weird.get_shifts() != alpha_surf.get_shifts()
+
+        self.assertRaises(
+            ValueError, pygame.transform.scale, alpha_surf_weird, (32, 32), s
+        )
 
     def test_scale__vector2(self):
         s = pygame.Surface((32, 32))
@@ -1418,6 +1430,30 @@ class TransformDisplayModuleTest(unittest.TestCase):
         self.assertRaises(ValueError, lambda: pygame.transform.box_blur(sf, 10))
         self.assertRaises(ValueError, lambda: pygame.transform.gaussian_blur(sf, 10))
 
+    def test_blur_in_place(self):
+        # When source and destination surfaces are the same,
+        # A ValueError should be raised.
+
+        data_fname = example_path("data")
+        path = os.path.join(data_fname, "peppers3.tif")
+        sf = pygame.image.load(path)
+        sub1 = sf.subsurface((0, 0, 128, 128))
+        sub2 = sf.subsurface((20, 20, 128, 128))
+
+        self.assertRaises(
+            ValueError, lambda: pygame.transform.box_blur(sf, 10, dest_surface=sf)
+        )
+        self.assertRaises(
+            ValueError, lambda: pygame.transform.box_blur(sub1, 10, dest_surface=sub2)
+        )
+        self.assertRaises(
+            ValueError, lambda: pygame.transform.gaussian_blur(sf, 10, dest_surface=sf)
+        )
+        self.assertRaises(
+            ValueError,
+            lambda: pygame.transform.gaussian_blur(sub1, 10, dest_surface=sub2),
+        )
+
     def test_box_blur(self):
         data1 = {
             (1, 29): (67, 58, 26, 255),
@@ -1466,36 +1502,36 @@ class TransformDisplayModuleTest(unittest.TestCase):
 
     def test_gaussian_blur(self):
         data1 = {
-            (10, 49): (109, 107, 48, 255),
-            (47, 66): (134, 138, 66, 255),
-            (84, 103): (139, 74, 47, 255),
-            (121, 140): (152, 129, 69, 255),
-            (148, 177): (162, 185, 91, 255),
-            (195, 214): (167, 125, 62, 255),
-            (232, 21): (153, 51, 36, 255),
-            (269, 288): (120, 163, 95, 255),
-            (306, 325): (115, 160, 92, 255),
-            (343, 362): (109, 145, 66, 255),
-            (384, 379): (112, 146, 71, 255),
-            (417, 436): (123, 83, 48, 255),
-            (454, 473): (170, 94, 74, 255),
-            (491, 510): (75, 42, 33, 255),
+            (10, 49): (74, 67, 32, 255),
+            (47, 66): (112, 93, 47, 255),
+            (84, 103): (141, 104, 57, 255),
+            (121, 140): (153, 118, 64, 255),
+            (148, 177): (161, 140, 73, 255),
+            (195, 214): (162, 137, 72, 255),
+            (232, 21): (124, 50, 35, 255),
+            (269, 288): (123, 146, 83, 255),
+            (306, 325): (118, 154, 85, 255),
+            (343, 362): (114, 141, 73, 255),
+            (384, 379): (114, 116, 61, 255),
+            (417, 436): (121, 78, 47, 255),
+            (454, 473): (107, 54, 39, 255),
+            (491, 510): (57, 28, 22, 255),
         }
         data2 = {
-            (10, 49): (109, 107, 48, 255),
-            (47, 66): (134, 138, 66, 255),
-            (84, 103): (139, 74, 47, 255),
-            (121, 140): (152, 129, 69, 255),
-            (148, 177): (162, 185, 91, 255),
-            (195, 214): (167, 125, 62, 255),
-            (232, 21): (153, 51, 36, 255),
-            (269, 288): (120, 163, 95, 255),
-            (306, 325): (115, 160, 92, 255),
-            (343, 362): (109, 145, 66, 255),
-            (384, 379): (112, 146, 71, 255),
-            (417, 436): (123, 83, 48, 255),
-            (454, 473): (170, 94, 74, 255),
-            (491, 510): (75, 42, 33, 255),
+            (10, 49): (74, 67, 32, 255),
+            (47, 66): (112, 93, 47, 255),
+            (84, 103): (141, 104, 57, 255),
+            (121, 140): (153, 118, 64, 255),
+            (148, 177): (161, 140, 73, 255),
+            (195, 214): (162, 137, 72, 255),
+            (232, 21): (124, 50, 35, 255),
+            (269, 288): (123, 146, 83, 255),
+            (306, 325): (118, 154, 85, 255),
+            (343, 362): (114, 141, 73, 255),
+            (384, 379): (114, 116, 61, 255),
+            (417, 436): (121, 78, 47, 255),
+            (454, 473): (107, 54, 39, 255),
+            (491, 510): (57, 28, 22, 255),
         }
 
         data_fname = example_path("data")

@@ -72,12 +72,21 @@ resolution, in milliseconds, is given in the ``TIMER_RESOLUTION`` constant.
    Setting an event timer for a particular event discards the old one for that
    event type.
 
-   ``loops`` replaces the ``once`` argument, and this does not break backward
-   compatibility
+   When this function is called with an ``Event`` object, the event(s) received
+   on the event queue will be a shallow copy; the dict attribute of the event
+   object passed as an argument and the dict attributes of the event objects
+   received on timer will be references to the same dict object in memory.
+   Modifications on one dict can affect another, use deepcopy operations on the
+   dict object if you don't want this behaviour.
+   However, calling this function with an integer event type would place event objects
+   on the queue that don't have a common dict reference.
 
-   .. versionadded:: 2.0.0.dev3 once argument added.
-   .. versionchanged:: 2.0.1 event argument supports ``pygame.event.Event`` object
-   .. versionadded:: 2.0.1 added loops argument to replace once argument
+   ``loops`` replaces the ``once`` argument, and this does not break backward
+   compatibility.
+
+   .. versionaddedold:: 2.0.0.dev3 once argument added.
+   .. versionchangedold:: 2.0.1 event argument supports ``pygame.event.Event`` object
+   .. versionaddedold:: 2.0.1 added loops argument to replace once argument
 
    .. ## pygame.time.set_timer ##
 
@@ -129,7 +138,7 @@ resolution, in milliseconds, is given in the ``TIMER_RESOLUTION`` constant.
       Note that this function uses :func:`pygame.time.delay`, which uses lots
       of CPU in a busy loop to make sure that timing is more accurate.
 
-      .. versionadded:: 1.8
+      .. versionaddedold:: 1.8
 
       .. ## Clock.tick_busy_loop ##
 
