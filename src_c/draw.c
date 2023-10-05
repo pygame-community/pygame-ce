@@ -2615,6 +2615,7 @@ draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
     int y, miny, maxy;
     int x1, y1;
     int x2, y2;
+    float intersect;
     /* x_intersect are the x-coordinates of intersections of the polygon
      * with some horizontal line */
     int *x_intersect = PyMem_New(int, num_points);
@@ -2680,12 +2681,16 @@ draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
             if (((y >= y1) && (y < y2)) || ((y == maxy) && (y2 == maxy))) {
                 // add intersection if y crosses the edge (excluding the lower
                 // end), or when we are on the lowest line (maxy)
-                x_intersect[n_intersections++] =
-                    (y - y1) * (x2 - x1) / (y2 - y1) + x1;
+                intersect = (y - y1) * (x2 - x1) / (float)(y2 - y1);
+                if (n_intersections % 2 == 0) {
+                    intersect = (float)floor(intersect);
+                }
+                else
+                    intersect = (float)ceil(intersect);
+                x_intersect[n_intersections++] = (int)intersect + x1;
             }
         }
         qsort(x_intersect, n_intersections, sizeof(int), compare_int);
-
         for (i = 0; (i < n_intersections); i += 2) {
             drawhorzlineclipbounding(surf, color, x_intersect[i], y,
                                      x_intersect[i + 1], drawn_area);
