@@ -69,6 +69,8 @@
 
 #define PG_CreateSurface SDL_CreateSurface
 #define PG_CreateSurfaceFrom SDL_CreateSurfaceFrom
+#define PG_ConvertSurface SDL_ConvertSurface
+#define PG_ConvertSurfaceFormat SDL_ConvertSurfaceFormat
 
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
@@ -95,6 +97,9 @@
     SDL_CreateRGBSurfaceWithFormat(0, width, height, 0, format)
 #define PG_CreateSurfaceFrom(pixels, width, height, pitch, format) \
     SDL_CreateRGBSurfaceWithFormatFrom(pixels, width, height, 0, pitch, format)
+#define PG_ConvertSurface(src, fmt) SDL_ConvertSurface(src, fmt, 0)
+#define PG_ConvertSurfaceFormat(src, pixel_format) \
+    SDL_ConvertSurfaceFormat(src, pixel_format, 0)
 
 #endif
 
