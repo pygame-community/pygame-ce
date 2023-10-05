@@ -256,8 +256,6 @@ static void
 _release_buffer(Py_buffer *view_p);
 static PyObject *
 _raise_get_view_ndim_error(int bitsize, SurfViewKind kind);
-static PyObject *
-_raise_create_surface_error(void);
 static SDL_Surface *
 pg_DisplayFormatAlpha(SDL_Surface *surface);
 static SDL_Surface *
@@ -717,12 +715,19 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
         }
     }
 
-    surface = SDL_CreateRGBSurface(0, width, height, bpp, Rmask, Gmask, Bmask,
-                                   Amask);
-    if (!surface) {
-        _raise_create_surface_error();
+    Uint32 pxformat =
+        SDL_MasksToPixelFormatEnum(bpp, Rmask, Gmask, Bmask, Amask);
+    if (pxformat == SDL_PIXELFORMAT_UNKNOWN) {
+        PyErr_SetString(PyExc_ValueError, "Invalid mask values");
         return -1;
     }
+
+    surface = PG_CreateSurface(width, height, pxformat);
+    if (!surface) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return -1;
+    }
+
     if (!(flags & PGS_SRCALPHA)) {
         /* We ignore the error if any. */
         SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
@@ -760,16 +765,6 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
     }
 
     return 0;
-}
-
-static PyObject *
-_raise_create_surface_error(void)
-{
-    const char *msg = SDL_GetError();
-
-    if (strcmp(msg, "Unknown pixel format") == 0)
-        return RAISE(PyExc_ValueError, "Invalid mask values");
-    return RAISE(pgExc_SDLError, msg);
 }
 
 /* surface object methods */
@@ -2680,7 +2675,7 @@ surf_subsurface(PyObject *self, PyObject *args)
     pgSurface_Unlock((pgSurfaceObject *)self);
 
     if (!sub)
-        return _raise_create_surface_error();
+        return RAISE(pgExc_SDLError, SDL_GetError());
 
     /* copy the colormap if we need it */
     if (SDL_ISPIXELFORMAT_INDEXED(surf->format->format) &&
