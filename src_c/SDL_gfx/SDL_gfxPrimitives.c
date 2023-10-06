@@ -6105,6 +6105,12 @@ double _evaluateBezier (double *data, int ndata, int t, int nstepdata)
 	result=0.0;
 	muk = 1;
 	munk = pow(1-mu,(double)n);
+
+    /* Ensure munk is not 0 which would cause coordinates to be (0, 0) */
+	if (munk <= 0) {
+	    return(data[ndata-1]);
+	}
+
 	for (k=0;k<=n;k++) {
 		nn = n;
 		kn = k;
