@@ -56,7 +56,9 @@ jobs:
     - name: Install deps
       # install numpy from pip and not apt because the one from pip is newer,
       # and has typestubs
+      # https://github.com/actions/runner-images/issues/7192
       run: |
+        echo 'APT::Get::Always-Include-Phased-Updates "false";' | sudo tee /etc/apt/apt.conf.d/99-phased-updates
         sudo apt-get update --fix-missing
         sudo apt-get upgrade
         sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libfreetype6-dev libportmidi-dev libjpeg-dev python3-setuptools python3-dev
