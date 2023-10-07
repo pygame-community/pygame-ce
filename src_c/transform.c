@@ -3368,6 +3368,11 @@ pixelate(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int pixel_size)
         newsurf = pgSurface_AsSurface(dstobj);
     }
 
+    if (pixel_size < 1) {
+        return (SDL_Surface *)(RAISE(PyExc_ValueError,
+                                     "pixel_size must be greater than 0."));
+    }
+
     if (newsurf->w != src->w || newsurf->h != src->h) {
         return (SDL_Surface *)(RAISE(
             PyExc_ValueError,
