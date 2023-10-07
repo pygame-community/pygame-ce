@@ -942,7 +942,7 @@ class MessageBoxTest(unittest.TestCase):
             IndexError,
             lambda: mb("", buttons=("A", "B", "C"), escape_button=-4),
         )
-        self.assertRaises(ValueError, lambda: mb("", type="random_str"))
+        self.assertRaises(ValueError, lambda: mb("", message_type="random_str"))
         self.assertRaises(TypeError, lambda: mb("", buttons=()))
         self.assertRaises(TypeError, lambda: mb("", parent_window=123456))
 
@@ -954,7 +954,7 @@ class MessageBoxInteractiveTest(unittest.TestCase):
         result = pygame.display.message_box(
             "Test",
             "Is this an error message box?",
-            type="error",
+            message_type="error",
             buttons=("Yes", "No"),
         )
         self.assertEqual(result, 0)
@@ -962,7 +962,7 @@ class MessageBoxInteractiveTest(unittest.TestCase):
         result = pygame.display.message_box(
             "Test",
             "Is this an info message box?",
-            type="info",
+            message_type="info",
             buttons=("Yes", "No"),
         )
         self.assertEqual(result, 0)
@@ -970,7 +970,7 @@ class MessageBoxInteractiveTest(unittest.TestCase):
         result = pygame.display.message_box(
             "Test",
             "Is this a warn message box?",
-            type="warn",
+            message_type="warn",
             buttons=("Yes", "No"),
         )
         self.assertEqual(result, 0)

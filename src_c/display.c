@@ -2703,7 +2703,7 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     int return_button_index = 0;
 
-    static char *keywords[] = {"title",         "message", "type",
+    static char *keywords[] = {"title",         "message", "message_type",
                                "parent_window", "buttons", "return_button",
                                "escape_button", NULL};
 

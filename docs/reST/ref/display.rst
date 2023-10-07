@@ -805,11 +805,11 @@ required).
 .. function:: message_box
 
    | :sl:`Create a native GUI message box`
-   | :sg:`message_box(title, message=None, type='info', parent_window=None, buttons=('OK',), return_button=0, escape_button=None) -> int`
+   | :sg:`message_box(title, message=None, message_type='info', parent_window=None, buttons=('OK',), return_button=0, escape_button=None) -> int`
 
    :param str title: A title string.
    :param str message: A message string. If this parameter is set to ``None``, the message will be the title.
-   :param str type: Set the type of message_box, could be ``"info"``, ``"warn"`` or ``"error"``.
+   :param str message_type: Set the type of message_box, could be ``"info"``, ``"warn"`` or ``"error"``.
    :param tuple buttons: An optional sequence of button name strings to show to the user.
    :param int return_button: Button index to use if the return key is hit, ``0`` by default.
    :param int escape_button: Button index to use if the escape key is hit, ``None`` for no button linked by default.

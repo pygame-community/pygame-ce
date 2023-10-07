@@ -92,7 +92,7 @@ def get_desktop_refresh_rates() -> List[int]: ...
 def message_box(
     title: str,
     message: Optional[str] = None,
-    type: Literal["info", "warn", "error"] = "info",
+    message_type: Literal["info", "warn", "error"] = "info",
     parent_window: Optional[Window] = None,
     buttons: Sequence[str] = ("OK",),
     return_button: int = 0,
