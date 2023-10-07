@@ -312,12 +312,12 @@ required).
    mode to verify specific display options were satisfied. The VidInfo object
    has several attributes:
 
-   ::
+   .. code-block:: text
 
      hw:         1 if the display is hardware accelerated
      wm:         1 if windowed display modes can be used
-     video_mem:  The megabytes of video memory on the display. This is 0 if
-                 unknown
+     video_mem:  The megabytes of video memory on the display.
+                 This is 0 if unknown
      bitsize:    Number of bits used to store each pixel
      bytesize:   Number of bytes used to store each pixel
      masks:      Four values used to pack RGBA values into pixels
@@ -325,13 +325,20 @@ required).
      losses:     Four values used to pack RGBA values into pixels
      blit_hw:    1 if hardware Surface blitting is accelerated
      blit_hw_CC: 1 if hardware Surface colorkey blitting is accelerated
-     blit_hw_A:  1 if hardware Surface pixel alpha blitting is accelerated
+     blit_hw_A:  1 if hardware Surface pixel alpha blitting is
+                 accelerated
      blit_sw:    1 if software Surface blitting is accelerated
-     blit_sw_CC: 1 if software Surface colorkey blitting is accelerated
-     blit_sw_A:  1 if software Surface pixel alpha blitting is accelerated
-     current_h, current_w:  Height and width of the current video mode, or
-                 of the desktop mode if called before the display.set_mode
-                 is called. They are -1 on error.
+     blit_sw_CC: 1 if software Surface colorkey blitting is
+                 accelerated
+     blit_sw_A:  1 if software Surface pixel alpha blitting is
+                 accelerated
+     current_h, current_w:  Height and width of the current video
+                 mode, or of the desktop mode if called before
+                 the display.set_mode is called. They are -1 on error.
+     pixel_format: The pixel format of the display Surface as a string.
+                 E.g PIXELFORMAT_RGB888.
+
+   .. versionchanged:: 2.4.0 ``pixel_format`` attribute added.
 
    .. ## pygame.display.Info ##
 
