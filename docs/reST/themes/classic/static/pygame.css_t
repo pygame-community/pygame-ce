@@ -1000,10 +1000,6 @@ pre.commentContent {
 /* -- responsive design --------------------------------------------------------- */
 
 @media only screen and (max-width: 680px) {
-    /* Make tables be responsive-ish. */
-    table, thead, tbody, th, td, tr {
-        display: block;
-    }
 
     div.body img.inlined-right {
         float: none;
