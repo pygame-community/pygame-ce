@@ -1072,7 +1072,7 @@ class BaseLineMixin:
         for size in ((49, 49), (50, 50)):
             for depth in (8, 16, 24, 32):
                 for flags in (0, SRCALPHA):
-                    surface = pygame.display.set_mode(size, flags, depth)
+                    surface = pygame.display.set_mode(size, flags)
                     surfaces.append(surface)
                     surfaces.append(surface.convert_alpha())
         return surfaces
@@ -2440,31 +2440,9 @@ class AALineMixin(BaseLineMixin):
     def test_aaline__args(self):
         """Ensures draw aaline accepts the correct args."""
         bounds_rect = self.draw_aaline(
-            pygame.Surface((3, 3)), (0, 10, 0, 50), (0, 0), (1, 1), 1
-        )
+            pygame.Surface((3, 3)), (0, 10, 0, 50), (0, 0), (1, 1))
 
         self.assertIsInstance(bounds_rect, pygame.Rect)
-
-    def test_aaline__args_without_blend(self):
-        """Ensures draw aaline accepts the args without a blend."""
-        bounds_rect = self.draw_aaline(
-            pygame.Surface((2, 2)), (0, 0, 0, 50), (0, 0), (2, 2)
-        )
-
-        self.assertIsInstance(bounds_rect, pygame.Rect)
-
-    def test_aaline__blend_warning(self):
-        """From pygame 2, blend=False should raise DeprecationWarning."""
-        with warnings.catch_warnings(record=True) as w:
-            # Cause all warnings to always be triggered.
-            warnings.simplefilter("always")
-            # Trigger DeprecationWarning.
-            self.draw_aaline(
-                pygame.Surface((2, 2)), (0, 0, 0, 50), (0, 0), (2, 2), False
-            )
-            # Check if there is only one warning and is a DeprecationWarning.
-            self.assertEqual(len(w), 1)
-            self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
 
     def test_aaline__kwargs(self):
         """Ensures draw aaline accepts the correct kwargs"""
@@ -2913,12 +2891,12 @@ class DrawAALineTest(AALineMixin, DrawTestCase):
         for depth in (24, 32):
             surface = pygame.Surface((5, 3), 0, depth)
             surface.fill(pygame.Color(0, 0, 0))
-            self.draw_aaline(surface, pygame.Color(255, 0, 0), (0, 1), (2, 1), 1)
+            self.draw_aaline(surface, pygame.Color(255, 0, 0), (0, 1), (2, 1))
 
             self.assertGreater(surface.get_at((1, 1)).r, 0, "there should be red here")
 
             surface.fill(pygame.Color(0, 0, 0))
-            self.draw_aaline(surface, pygame.Color(0, 0, 255), (0, 1), (2, 1), 1)
+            self.draw_aaline(surface, pygame.Color(0, 0, 255), (0, 1), (2, 1))
 
             self.assertGreater(surface.get_at((1, 1)).b, 0, "there should be blue here")
 
@@ -2930,7 +2908,7 @@ class DrawAALineTest(AALineMixin, DrawTestCase):
             should[from_point] = should[to_point] = FG_GREEN
 
         def check_one_direction(from_point, to_point, should):
-            self.draw_aaline(self.surface, FG_GREEN, from_point, to_point, True)
+            self.draw_aaline(self.surface, FG_GREEN, from_point, to_point)
 
             for pt in check_points:
                 color = should.get(pt, BG_RED)
@@ -3185,31 +3163,9 @@ class AALinesMixin(BaseLineMixin):
     def test_aalines__args(self):
         """Ensures draw aalines accepts the correct args."""
         bounds_rect = self.draw_aalines(
-            pygame.Surface((3, 3)), (0, 10, 0, 50), False, ((0, 0), (1, 1)), 1
-        )
+            pygame.Surface((3, 3)), (0, 10, 0, 50), False, ((0, 0), (1, 1)))
 
         self.assertIsInstance(bounds_rect, pygame.Rect)
-
-    def test_aalines__args_without_blend(self):
-        """Ensures draw aalines accepts the args without a blend."""
-        bounds_rect = self.draw_aalines(
-            pygame.Surface((2, 2)), (0, 0, 0, 50), False, ((0, 0), (1, 1))
-        )
-
-        self.assertIsInstance(bounds_rect, pygame.Rect)
-
-    def test_aalines__blend_warning(self):
-        """From pygame 2, blend=False should raise DeprecationWarning."""
-        with warnings.catch_warnings(record=True) as w:
-            # Cause all warnings to always be triggered.
-            warnings.simplefilter("always")
-            # Trigger DeprecationWarning.
-            self.draw_aalines(
-                pygame.Surface((2, 2)), (0, 0, 0, 50), False, ((0, 0), (1, 1)), False
-            )
-            # Check if there is only one warning and is a DeprecationWarning.
-            self.assertEqual(len(w), 1)
-            self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
 
     def test_aalines__kwargs(self):
         """Ensures draw aalines accepts the correct kwargs."""
@@ -3275,10 +3231,6 @@ class AALinesMixin(BaseLineMixin):
         color = pygame.Color("blue")
         closed = 0
         points = ((1, 2), (2, 1))
-
-        with self.assertRaises(TypeError):
-            # Invalid blend.
-            bounds_rect = self.draw_aalines(surface, color, closed, points, "1")
 
         with self.assertRaises(TypeError):
             # Invalid points.

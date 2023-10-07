@@ -7,5 +7,5 @@
 #define DOC_DRAW_ARC "arc(surface, color, rect, start_angle, stop_angle) -> Rect\narc(surface, color, rect, start_angle, stop_angle, width=1) -> Rect\ndraw an elliptical arc"
 #define DOC_DRAW_LINE "line(surface, color, start_pos, end_pos) -> Rect\nline(surface, color, start_pos, end_pos, width=1) -> Rect\ndraw a straight line"
 #define DOC_DRAW_LINES "lines(surface, color, closed, points) -> Rect\nlines(surface, color, closed, points, width=1) -> Rect\ndraw multiple contiguous straight line segments"
-#define DOC_DRAW_AALINE "aaline(surface, color, start_pos, end_pos) -> Rect\naaline(surface, color, start_pos, end_pos, blend=1) -> Rect\ndraw a straight antialiased line"
+#define DOC_DRAW_AALINE "aaline(surface, color, start_pos, end_pos) -> Rect\naaline(surface, color, start_pos, end_pos) -> Rect\ndraw a straight antialiased line"
 #define DOC_DRAW_AALINES "aalines(surface, color, closed, points) -> Rect\naalines(surface, color, closed, points, blend=1) -> Rect\ndraw multiple contiguous straight antialiased line segments"

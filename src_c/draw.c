@@ -46,7 +46,7 @@ draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
           int *drawn_area);
 static void
 draw_aaline(SDL_Surface *surf, Uint32 color, float startx, float starty,
-            float endx, float endy, int blend, int *drawn_area);
+            float endx, float endy, int *drawn_area);
 static void
 draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
          int radius2, int width, double angle_start, double angle_stop,
@@ -105,31 +105,20 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *colorobj, *start, *end;
     SDL_Surface *surf = NULL;
     float startx, starty, endx, endy;
-    int blend = 1; /* Default blend. */
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     Uint32 color;
     static char *keywords[] = {"surface", "color", "start_pos",
-                               "end_pos", "blend", NULL};
+                               "end_pos", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|i", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
-                                     &start, &end, &blend)) {
+                                     &start, &end)) {
         return NULL; /* Exception already set. */
     }
 
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
-
-    if (!blend) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "blend=False will be deprecated in pygame 2.2 and will "
-                "default to True",
-                1) == -1) {
-            return NULL;
-        }
-    }
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -151,7 +140,7 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
-    draw_aaline(surf, color, startx, starty, endx, endy, blend, drawn_area);
+    draw_aaline(surf, color, startx, starty, endx, endy, drawn_area);
 
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");
@@ -253,14 +242,12 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     int result, closed;
-    int blend = 1; /* Default blend. */
     Py_ssize_t loop, length;
-    static char *keywords[] = {"surface", "color", "closed",
-                               "points",  "blend", NULL};
+    static char *keywords[] = {"surface", "color", "closed", "points", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OpO|i", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
-                                     &closed, &points, &blend)) {
+                                     &closed, &points)) {
         return NULL; /* Exception already set. */
     }
 
@@ -271,16 +258,6 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
                             surf->format->BytesPerPixel);
-    }
-
-    if (!blend) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "blend=False will be deprecated in pygame 2.2 and will "
-                "default to True",
-                1) == -1) {
-            return NULL;
-        }
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -341,16 +318,14 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         pts[1] = ylist[loop - 1];
         pts[2] = xlist[loop];
         pts[3] = ylist[loop];
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], blend,
-                    drawn_area);
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area);
     }
     if (closed && length > 2) {
         pts[0] = xlist[length - 1];
         pts[1] = ylist[length - 1];
         pts[2] = xlist[0];
         pts[3] = ylist[0];
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], blend,
-                    drawn_area);
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area);
     }
 
     PyMem_Free(xlist);
@@ -1141,13 +1116,14 @@ set_and_check_rect(SDL_Surface *surf, int x, int y, Uint32 color,
 
 static void
 draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
-            float to_x, float to_y, int blend, int *drawn_area)
+            float to_x, float to_y, int *drawn_area)
 {
     float gradient, dx, dy, intersect_y, brightness;
     int x, x_pixel_start, x_pixel_end;
     Uint32 pixel_color;
     float x_gap, y_endpoint, clip_left, clip_right, clip_top, clip_bottom;
     int steep, y;
+    int blend = 1;
 
     dx = to_x - from_x;
     dy = to_y - from_y;
