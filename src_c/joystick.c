@@ -250,8 +250,6 @@ joy_get_power_level(PyObject *self, PyObject *_null)
 static PyObject *
 joy_rumble(pgJoystickObject *self, PyObject *args, PyObject *kwargs)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 9)
-
     SDL_Joystick *joy = self->joy;
     double lowf, highf;
     uint32_t low, high, duration;
@@ -293,19 +291,13 @@ joy_rumble(pgJoystickObject *self, PyObject *args, PyObject *kwargs)
         Py_RETURN_FALSE;
     }
     Py_RETURN_TRUE;
-
-#else
-    Py_RETURN_FALSE;
-#endif
 }
 
 static PyObject *
 joy_stop_rumble(pgJoystickObject *self, PyObject *_null)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 9)
     SDL_Joystick *joy = self->joy;
     SDL_JoystickRumble(joy, 0, 0, 1);
-#endif
     Py_RETURN_NONE;
 }
 

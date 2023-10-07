@@ -57,6 +57,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_pgTwoValuesFromFastcallArgs pgTwoValuesFromFastcallArgs_i
 #define RectExport_move pg_rect_move
 #define RectExport_moveIp pg_rect_move_ip
+#define RectExport_moveTo pg_rect_move_to
 #define RectExport_inflate pg_rect_inflate
 #define RectExport_inflateIp pg_rect_inflate_ip
 #define RectExport_scalebyIp pg_rect_scale_by_ip
@@ -79,6 +80,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_clipline pg_rect_clipline
 #define RectExport_do_rects_intresect _pg_do_rects_intersect
 #define RectExport_RectFromObject pgRect_FromObject
+#define RectExport_RectFromFastcallArgs pgRect_FromFastcallArgs
 #define RectExport_RectNew pgRect_New
 #define RectExport_RectNew4 pgRect_New4
 #define RectExport_Normalize pgRect_Normalize
@@ -167,6 +169,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_move pg_frect_move
 #define RectExport_pgTwoValuesFromFastcallArgs pgTwoValuesFromFastcallArgs_f
 #define RectExport_moveIp pg_frect_move_ip
+#define RectExport_moveTo pg_frect_move_to
 #define RectExport_inflate pg_frect_inflate
 #define RectExport_inflateIp pg_frect_inflate_ip
 #define RectExport_scalebyIp pg_frect_scale_by_ip
@@ -189,6 +192,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_clipline pg_frect_clipline
 #define RectExport_do_rects_intresect _pg_do_frects_intersect
 #define RectExport_RectFromObject pgFRect_FromObject
+#define RectExport_RectFromFastcallArgs pgFRect_FromFastcallArgs
 #define RectExport_RectNew pgFRect_New
 #define RectExport_RectNew4 pgFRect_New4
 #define RectExport_Normalize pgFRect_Normalize
@@ -447,28 +451,30 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 static struct PyMethodDef pg_rect_methods[] = {
     {"normalize", (PyCFunction)pg_rect_normalize, METH_NOARGS,
      DOC_RECT_NORMALIZE},
-    {"clip", (PyCFunction)pg_rect_clip, METH_VARARGS, DOC_RECT_CLIP},
+    {"clip", (PyCFunction)pg_rect_clip, METH_FASTCALL, DOC_RECT_CLIP},
     {"clipline", (PyCFunction)pg_rect_clipline, METH_VARARGS,
      DOC_RECT_CLIPLINE},
-    {"clamp", (PyCFunction)pg_rect_clamp, METH_VARARGS, DOC_RECT_CLAMP},
-    {"clamp_ip", (PyCFunction)pg_rect_clamp_ip, METH_VARARGS,
+    {"clamp", (PyCFunction)pg_rect_clamp, METH_FASTCALL, DOC_RECT_CLAMP},
+    {"clamp_ip", (PyCFunction)pg_rect_clamp_ip, METH_FASTCALL,
      DOC_RECT_CLAMPIP},
     {"copy", (PyCFunction)pg_rect_copy, METH_NOARGS, DOC_RECT_COPY},
-    {"fit", (PyCFunction)pg_rect_fit, METH_VARARGS, DOC_RECT_FIT},
+    {"fit", (PyCFunction)pg_rect_fit, METH_FASTCALL, DOC_RECT_FIT},
     {"move", (PyCFunction)pg_rect_move, METH_FASTCALL, DOC_RECT_MOVE},
-    {"update", (PyCFunction)pg_rect_update, METH_VARARGS, DOC_RECT_UPDATE},
+    {"update", (PyCFunction)pg_rect_update, METH_FASTCALL, DOC_RECT_UPDATE},
     {"inflate", (PyCFunction)pg_rect_inflate, METH_VARARGS, DOC_RECT_INFLATE},
-    {"union", (PyCFunction)pg_rect_union, METH_VARARGS, DOC_RECT_UNION},
+    {"union", (PyCFunction)pg_rect_union, METH_FASTCALL, DOC_RECT_UNION},
     {"unionall", (PyCFunction)pg_rect_unionall, METH_VARARGS,
      DOC_RECT_UNIONALL},
     {"move_ip", (PyCFunction)pg_rect_move_ip, METH_FASTCALL, DOC_RECT_MOVEIP},
+    {"move_to", (PyCFunction)pg_rect_move_to, METH_FASTCALL | METH_KEYWORDS,
+     DOC_RECT_MOVETO},
     {"inflate_ip", (PyCFunction)pg_rect_inflate_ip, METH_VARARGS,
      DOC_RECT_INFLATEIP},
     {"scale_by", (PyCFunction)pg_rect_scale_by, METH_VARARGS | METH_KEYWORDS,
      DOC_RECT_SCALEBY},
     {"scale_by_ip", (PyCFunction)pg_rect_scale_by_ip,
      METH_VARARGS | METH_KEYWORDS, DOC_RECT_SCALEBYIP},
-    {"union_ip", (PyCFunction)pg_rect_union_ip, METH_VARARGS,
+    {"union_ip", (PyCFunction)pg_rect_union_ip, METH_FASTCALL,
      DOC_RECT_UNIONIP},
     {"unionall_ip", (PyCFunction)pg_rect_unionall_ip, METH_VARARGS,
      DOC_RECT_UNIONALLIP},
@@ -497,28 +503,30 @@ static struct PyMethodDef pg_rect_methods[] = {
 static struct PyMethodDef pg_frect_methods[] = {
     {"normalize", (PyCFunction)pg_frect_normalize, METH_NOARGS,
      DOC_RECT_NORMALIZE},
-    {"clip", (PyCFunction)pg_frect_clip, METH_VARARGS, DOC_RECT_CLIP},
+    {"clip", (PyCFunction)pg_frect_clip, METH_FASTCALL, DOC_RECT_CLIP},
     {"clipline", (PyCFunction)pg_frect_clipline, METH_VARARGS,
      DOC_RECT_CLIPLINE},
-    {"clamp", (PyCFunction)pg_frect_clamp, METH_VARARGS, DOC_RECT_CLAMP},
-    {"clamp_ip", (PyCFunction)pg_frect_clamp_ip, METH_VARARGS,
+    {"clamp", (PyCFunction)pg_frect_clamp, METH_FASTCALL, DOC_RECT_CLAMP},
+    {"clamp_ip", (PyCFunction)pg_frect_clamp_ip, METH_FASTCALL,
      DOC_RECT_CLAMPIP},
     {"copy", (PyCFunction)pg_frect_copy, METH_NOARGS, DOC_RECT_COPY},
-    {"fit", (PyCFunction)pg_frect_fit, METH_VARARGS, DOC_RECT_FIT},
+    {"fit", (PyCFunction)pg_frect_fit, METH_FASTCALL, DOC_RECT_FIT},
     {"move", (PyCFunction)pg_frect_move, METH_FASTCALL, DOC_RECT_MOVE},
-    {"update", (PyCFunction)pg_frect_update, METH_VARARGS, DOC_RECT_UPDATE},
+    {"update", (PyCFunction)pg_frect_update, METH_FASTCALL, DOC_RECT_UPDATE},
     {"inflate", (PyCFunction)pg_frect_inflate, METH_VARARGS, DOC_RECT_INFLATE},
-    {"union", (PyCFunction)pg_frect_union, METH_VARARGS, DOC_RECT_UNION},
+    {"union", (PyCFunction)pg_frect_union, METH_FASTCALL, DOC_RECT_UNION},
     {"unionall", (PyCFunction)pg_frect_unionall, METH_VARARGS,
      DOC_RECT_UNIONALL},
     {"move_ip", (PyCFunction)pg_frect_move_ip, METH_FASTCALL, DOC_RECT_MOVEIP},
+    {"move_to", (PyCFunction)pg_frect_move_to, METH_FASTCALL | METH_KEYWORDS,
+     DOC_RECT_MOVETO},
     {"inflate_ip", (PyCFunction)pg_frect_inflate_ip, METH_VARARGS,
      DOC_RECT_INFLATEIP},
     {"scale_by", (PyCFunction)pg_frect_scale_by, METH_VARARGS | METH_KEYWORDS,
      DOC_RECT_SCALEBY},
     {"scale_by_ip", (PyCFunction)pg_frect_scale_by_ip,
      METH_VARARGS | METH_KEYWORDS, DOC_RECT_SCALEBYIP},
-    {"union_ip", (PyCFunction)pg_frect_union_ip, METH_VARARGS,
+    {"union_ip", (PyCFunction)pg_frect_union_ip, METH_FASTCALL,
      DOC_RECT_UNIONIP},
     {"unionall_ip", (PyCFunction)pg_frect_unionall_ip, METH_VARARGS,
      DOC_RECT_UNIONALLIP},

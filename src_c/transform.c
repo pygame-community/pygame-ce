@@ -33,6 +33,8 @@
 #include <math.h>
 #include <string.h>
 
+#include "simd_shared.h"
+#include "simd_transform.h"
 #include "scale.h"
 
 typedef void (*SMOOTHSCALE_FILTER_P)(Uint8 *, Uint8 *, int, int, int, int,
@@ -127,8 +129,7 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
         return (SDL_Surface *)(RAISE(
             PyExc_ValueError, "unsupported Surface bit depth for transform"));
 
-    newsurf = SDL_CreateRGBSurfaceWithFormat(
-        0, width, height, surf->format->BitsPerPixel, surf->format->format);
+    newsurf = PG_CreateSurface(width, height, surf->format->format);
     if (!newsurf)
         return (SDL_Surface *)(RAISE(pgExc_SDLError, SDL_GetError()));
 
@@ -443,10 +444,9 @@ scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
          * rejects the input.
          * For example, RGBA and RGBX surfaces are compatible in this way. */
         if (retsurf->format->Amask != src->format->Amask) {
-            modsurf = SDL_CreateRGBSurfaceWithFormatFrom(
-                retsurf->pixels, retsurf->w, retsurf->h,
-                retsurf->format->BitsPerPixel, retsurf->pitch,
-                src->format->format);
+            modsurf =
+                PG_CreateSurfaceFrom(retsurf->pixels, retsurf->w, retsurf->h,
+                                     retsurf->pitch, src->format->format);
         }
     }
 
@@ -883,8 +883,7 @@ surf_rotozoom(PyObject *self, PyObject *args, PyObject *kwargs)
     }
     else {
         Py_BEGIN_ALLOW_THREADS;
-        surf32 = SDL_CreateRGBSurfaceWithFormat(0, surf->w, surf->h, 32,
-                                                SDL_PIXELFORMAT_ABGR8888);
+        surf32 = PG_CreateSurface(surf->w, surf->h, SDL_PIXELFORMAT_ABGR8888);
         SDL_BlitSurface(surf, NULL, surf32, NULL);
         Py_END_ALLOW_THREADS;
     }
@@ -1953,79 +1952,86 @@ clamp_4
 
 */
 
-#define SURF_GET_AT(p_color, p_surf, p_x, p_y, p_pixels, p_format, p_pix)     \
-    switch (p_format->BytesPerPixel) {                                        \
-        case 1:                                                               \
-            p_color = (Uint32) *                                              \
-                      ((Uint8 *)(p_pixels) + (p_y)*p_surf->pitch + (p_x));    \
-            break;                                                            \
-        case 2:                                                               \
-            p_color = (Uint32) *                                              \
-                      ((Uint16 *)((p_pixels) + (p_y)*p_surf->pitch) + (p_x)); \
-            break;                                                            \
-        case 3:                                                               \
-            p_pix = ((Uint8 *)(p_pixels + (p_y)*p_surf->pitch) + (p_x)*3);    \
-            p_color = (SDL_BYTEORDER == SDL_LIL_ENDIAN)                       \
-                          ? (p_pix[0]) + (p_pix[1] << 8) + (p_pix[2] << 16)   \
-                          : (p_pix[2]) + (p_pix[1] << 8) + (p_pix[0] << 16);  \
-            break;                                                            \
-        default: /* case 4: */                                                \
-            p_color = *((Uint32 *)(p_pixels + (p_y)*p_surf->pitch) + (p_x));  \
-            break;                                                            \
+#define SURF_GET_AT(p_color, p_surf, p_x, p_y, p_pixels, p_format, p_pix)    \
+    switch (p_format->BytesPerPixel) {                                       \
+        case 1:                                                              \
+            p_color = (Uint32) *                                             \
+                      ((Uint8 *)(p_pixels) + (p_y) * p_surf->pitch + (p_x)); \
+            break;                                                           \
+        case 2:                                                              \
+            p_color =                                                        \
+                (Uint32) *                                                   \
+                ((Uint16 *)((p_pixels) + (p_y) * p_surf->pitch) + (p_x));    \
+            break;                                                           \
+        case 3:                                                              \
+            p_pix =                                                          \
+                ((Uint8 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x) * 3);   \
+            p_color = (SDL_BYTEORDER == SDL_LIL_ENDIAN)                      \
+                          ? (p_pix[0]) + (p_pix[1] << 8) + (p_pix[2] << 16)  \
+                          : (p_pix[2]) + (p_pix[1] << 8) + (p_pix[0] << 16); \
+            break;                                                           \
+        default: /* case 4: */                                               \
+            p_color =                                                        \
+                *((Uint32 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x));     \
+            break;                                                           \
     }
 
 #if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
 
-#define SURF_SET_AT(p_color, p_surf, p_x, p_y, p_pixels, p_format,            \
-                    p_byte_buf)                                               \
-    switch (p_format->BytesPerPixel) {                                        \
-        case 1:                                                               \
-            *((Uint8 *)p_pixels + (p_y)*p_surf->pitch + (p_x)) =              \
-                (Uint8)p_color;                                               \
-            break;                                                            \
-        case 2:                                                               \
-            *((Uint16 *)(p_pixels + (p_y)*p_surf->pitch) + (p_x)) =           \
-                (Uint16)p_color;                                              \
-            break;                                                            \
-        case 3:                                                               \
-            p_byte_buf = (Uint8 *)(p_pixels + (p_y)*p_surf->pitch) + (p_x)*3; \
-            *(p_byte_buf + (p_format->Rshift >> 3)) =                         \
-                (Uint8)(p_color >> p_format->Rshift);                         \
-            *(p_byte_buf + (p_format->Gshift >> 3)) =                         \
-                (Uint8)(p_color >> p_format->Gshift);                         \
-            *(p_byte_buf + (p_format->Bshift >> 3)) =                         \
-                (Uint8)(p_color >> p_format->Bshift);                         \
-            break;                                                            \
-        default:                                                              \
-            *((Uint32 *)(p_pixels + (p_y)*p_surf->pitch) + (p_x)) = p_color;  \
-            break;                                                            \
+#define SURF_SET_AT(p_color, p_surf, p_x, p_y, p_pixels, p_format,       \
+                    p_byte_buf)                                          \
+    switch (p_format->BytesPerPixel) {                                   \
+        case 1:                                                          \
+            *((Uint8 *)p_pixels + (p_y) * p_surf->pitch + (p_x)) =       \
+                (Uint8)p_color;                                          \
+            break;                                                       \
+        case 2:                                                          \
+            *((Uint16 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x)) =    \
+                (Uint16)p_color;                                         \
+            break;                                                       \
+        case 3:                                                          \
+            p_byte_buf =                                                 \
+                (Uint8 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x) * 3; \
+            *(p_byte_buf + (p_format->Rshift >> 3)) =                    \
+                (Uint8)(p_color >> p_format->Rshift);                    \
+            *(p_byte_buf + (p_format->Gshift >> 3)) =                    \
+                (Uint8)(p_color >> p_format->Gshift);                    \
+            *(p_byte_buf + (p_format->Bshift >> 3)) =                    \
+                (Uint8)(p_color >> p_format->Bshift);                    \
+            break;                                                       \
+        default:                                                         \
+            *((Uint32 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x)) =    \
+                p_color;                                                 \
+            break;                                                       \
     }
 
 #else
 
-#define SURF_SET_AT(p_color, p_surf, p_x, p_y, p_pixels, p_format,            \
-                    p_byte_buf)                                               \
-    switch (p_format->BytesPerPixel) {                                        \
-        case 1:                                                               \
-            *((Uint8 *)p_pixels + (p_y)*p_surf->pitch + (p_x)) =              \
-                (Uint8)p_color;                                               \
-            break;                                                            \
-        case 2:                                                               \
-            *((Uint16 *)(p_pixels + (p_y)*p_surf->pitch) + (p_x)) =           \
-                (Uint16)p_color;                                              \
-            break;                                                            \
-        case 3:                                                               \
-            p_byte_buf = (Uint8 *)(p_pixels + (p_y)*p_surf->pitch) + (p_x)*3; \
-            *(p_byte_buf + 2 - (p_format->Rshift >> 3)) =                     \
-                (Uint8)(p_color >> p_format->Rshift);                         \
-            *(p_byte_buf + 2 - (p_format->Gshift >> 3)) =                     \
-                (Uint8)(p_color >> p_format->Gshift);                         \
-            *(p_byte_buf + 2 - (p_format->Bshift >> 3)) =                     \
-                (Uint8)(p_color >> p_format->Bshift);                         \
-            break;                                                            \
-        default:                                                              \
-            *((Uint32 *)(p_pixels + (p_y)*p_surf->pitch) + (p_x)) = p_color;  \
-            break;                                                            \
+#define SURF_SET_AT(p_color, p_surf, p_x, p_y, p_pixels, p_format,       \
+                    p_byte_buf)                                          \
+    switch (p_format->BytesPerPixel) {                                   \
+        case 1:                                                          \
+            *((Uint8 *)p_pixels + (p_y) * p_surf->pitch + (p_x)) =       \
+                (Uint8)p_color;                                          \
+            break;                                                       \
+        case 2:                                                          \
+            *((Uint16 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x)) =    \
+                (Uint16)p_color;                                         \
+            break;                                                       \
+        case 3:                                                          \
+            p_byte_buf =                                                 \
+                (Uint8 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x) * 3; \
+            *(p_byte_buf + 2 - (p_format->Rshift >> 3)) =                \
+                (Uint8)(p_color >> p_format->Rshift);                    \
+            *(p_byte_buf + 2 - (p_format->Gshift >> 3)) =                \
+                (Uint8)(p_color >> p_format->Gshift);                    \
+            *(p_byte_buf + 2 - (p_format->Bshift >> 3)) =                \
+                (Uint8)(p_color >> p_format->Bshift);                    \
+            break;                                                       \
+        default:                                                         \
+            *((Uint32 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x)) =    \
+                p_color;                                                 \
+            break;                                                       \
     }
 
 #endif
