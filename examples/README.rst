@@ -78,9 +78,6 @@ music_drop_fade.py
    several events.  Uses fade_ms added in pygame2, as well as set_endevent,
    set_volume, drag and drop events, and the scrap module.
 
-overlay.py
-   An old way of displaying video content.
-
 pixelarray.py
    Process whole arrays of pixels at a time.
    Like numpy, but for pixels, and also built into pygame.

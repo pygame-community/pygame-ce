@@ -23,7 +23,7 @@
 the local namespace for your module"""
 
 import pygame
-from pygame.constants import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
+from pygame.constants import *  # pylint: disable=wildcard-import,unused-wildcard-import; lgtm[py/polluting-import]
 from pygame.rect import Rect
 from pygame.color import Color
 

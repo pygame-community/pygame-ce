@@ -398,8 +398,7 @@ _scrap_get_text(PyObject *self, PyObject *args)
     // vs just an empty string in the clipboard
     if (*text == '\0' && hasText == SDL_TRUE) {
         SDL_free(text);
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return NULL;
+        return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
     PyObject *returnValue = PyUnicode_FromString(text);

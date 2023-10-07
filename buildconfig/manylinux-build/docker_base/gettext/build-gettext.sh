@@ -3,6 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
+# Gettext 0.22 didn't work for some reason
 GETTEXT=gettext-0.21
 
 curl -sL --retry 10 https://ftp.gnu.org/gnu/gettext/${GETTEXT}.tar.gz > ${GETTEXT}.tar.gz

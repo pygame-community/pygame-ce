@@ -4,7 +4,7 @@ from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from .._common import RectValue, Literal
+from .._common import RectValue, ColorValue
 
 WINDOWPOS_UNDEFINED: int
 WINDOWPOS_CENTERED: int
@@ -38,42 +38,7 @@ def messagebox(
     escape_button: int = 0,
 ) -> int: ...
 
-@final
-class Window:
-    DEFAULT_SIZE: Tuple[Literal[640], Literal[480]]
-    def __init__(
-        self,
-        title: str = "pygame window",
-        size: Iterable[int] = (640, 480),
-        position: Optional[Iterable[int]] = None,
-        fullscreen: bool = False,
-        fullscreen_desktop: bool = False,
-        **kwargs: bool
-    ) -> None: ...
-    @classmethod
-    def from_display_module(cls) -> Window: ...
-    grab: bool
-    relative_mouse: bool
-    def set_windowed(self) -> None: ...
-    def set_fullscreen(self, desktop: bool = False) -> None: ...
-    title: str
-    def destroy(self) -> None: ...
-    def hide(self) -> None: ...
-    def show(self) -> None: ...
-    def focus(self, input_only: bool = False) -> None: ...
-    def restore(self) -> None: ...
-    def maximize(self) -> None: ...
-    def minimize(self) -> None: ...
-    resizable: bool
-    borderless: bool
-    always_on_top: bool
-    def set_icon(self, surface: Surface) -> None: ...
-    id: int
-    size: Iterable[int]
-    position: Union[int, Iterable[int]]
-    opacity: float
-    display_index: int
-    def set_modal_for(self, Window) -> None: ...
+from pygame._window import Window as Window
 
 _Window = Window
 
@@ -94,13 +59,18 @@ class Texture:
     height: int
     alpha: int
     blend_mode: int
-    color: Color
+
+    @property
+    def color(self) -> Color: ...
+    @color.setter
+    def color(self, value: ColorValue) -> None: ...
+
     def get_rect(self, **kwargs: Any) -> Rect: ...
     def draw(
         self,
         srcrect: Optional[RectValue] = None,
         dstrect: Optional[RectValue] = None,
-        angle: int = 0,
+        angle: float = 0.0,
         origin: Optional[Iterable[int]] = None,
         flip_x: bool = False,
         flip_y: bool = False,
@@ -140,7 +110,7 @@ class Image:
         texture_or_image: Union[Texture, Image],
         srcrect: Optional[RectValue] = None,
     ) -> None: ...
-    def get_rect(self, **kwargs: Any) -> Rect: ...
+    def get_rect(self) -> Rect: ...
     def draw(
         self, srcrect: Optional[RectValue] = None, dstrect: Optional[RectValue] = None
     ) -> None: ...
@@ -148,11 +118,15 @@ class Image:
     origin: Optional[Iterable[float]]
     flip_x: bool
     flip_y: bool
-    color: Color
     alpha: float
     blend_mode: int
     texture: Texture
     srcrect: Rect
+
+    @property
+    def color(self) -> Color: ...
+    @color.setter
+    def color(self, value: ColorValue) -> None: ...
 
 class Renderer:
     def __init__(
@@ -166,7 +140,10 @@ class Renderer:
     @classmethod
     def from_window(cls, window: Window) -> Renderer: ...
     draw_blend_mode: int
-    draw_color: Color
+    @property
+    def draw_color(self) -> Color: ...
+    @draw_color.setter
+    def draw_color(self, value: ColorValue) -> None: ...
     def clear(self) -> None: ...
     def present(self) -> None: ...
     def get_viewport(self) -> Rect: ...

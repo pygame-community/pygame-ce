@@ -1,4 +1,5 @@
 from pygame._sdl2.sdl2 import error
+cimport cython
 
 
 # expose constants to python.
@@ -83,6 +84,8 @@ cdef void recording_cb(void* userdata, Uint8* stream, int len) nogil:
             raise
 
 
+# disable auto_pickle since it causes stubcheck error 
+@cython.auto_pickle(False) 
 cdef class AudioDevice:
     def __cinit__(self):
         self._deviceid = 0

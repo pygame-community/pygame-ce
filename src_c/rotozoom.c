@@ -533,8 +533,7 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * New source surface is 32bit with a defined RGBA ordering
          */
-        rz_src = SDL_CreateRGBSurfaceWithFormat(0, src->w, src->h, 32,
-                                                SDL_PIXELFORMAT_ABGR8888);
+        rz_src = PG_CreateSurface(src->w, src->h, SDL_PIXELFORMAT_ABGR8888);
         SDL_BlitSurface(src, NULL, rz_src, NULL);
         src_converted = 1;
     }
@@ -583,8 +582,7 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * Target surface is 32bit with source RGBA/ABGR ordering
          */
-        rz_dst = SDL_CreateRGBSurfaceWithFormat(0, dstwidth, dstheight, 32,
-                                                rz_src->format->format);
+        rz_dst = PG_CreateSurface(dstwidth, dstheight, rz_src->format->format);
 
         /*
          * Lock source surface
@@ -630,8 +628,7 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * Target surface is 32bit with source RGBA/ABGR ordering
          */
-        rz_dst = SDL_CreateRGBSurfaceWithFormat(0, dstwidth, dstheight, 32,
-                                                rz_src->format->format);
+        rz_dst = PG_CreateSurface(dstwidth, dstheight, rz_src->format->format);
 
         /*
          * Lock source surface

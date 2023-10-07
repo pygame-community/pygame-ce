@@ -118,6 +118,15 @@ get_count(PyObject *self, PyObject *_null)
 static PyObject *
 joy_init(PyObject *self, PyObject *_null)
 {
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "pygame.joystick.Joystick.init() is deprecated since 2.4.0. "
+            "Bear in mind in future it will not be possible to "
+            "reinitialise a closed Joystick object.",
+            1) == -1) {
+        return NULL;
+    }
+
     pgJoystickObject *jstick = (pgJoystickObject *)self;
 
     if (!jstick->joy) {
@@ -153,6 +162,15 @@ joy_get_init(PyObject *self, PyObject *_null)
 static PyObject *
 joy_get_id(PyObject *self, PyObject *_null)
 {
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "pygame.joystick.Joystick.get_id() is deprecated since 2.4.0. "
+            "The original device index is not useful in pygame 2. "
+            "Use get_instance_id() instead.",
+            1) == -1) {
+        return NULL;
+    }
+
     int joy_id = pgJoystick_AsID(self);
     return PyLong_FromLong(joy_id);
 }
@@ -232,8 +250,6 @@ joy_get_power_level(PyObject *self, PyObject *_null)
 static PyObject *
 joy_rumble(pgJoystickObject *self, PyObject *args, PyObject *kwargs)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 9)
-
     SDL_Joystick *joy = self->joy;
     double lowf, highf;
     uint32_t low, high, duration;
@@ -275,19 +291,13 @@ joy_rumble(pgJoystickObject *self, PyObject *args, PyObject *kwargs)
         Py_RETURN_FALSE;
     }
     Py_RETURN_TRUE;
-
-#else
-    Py_RETURN_FALSE;
-#endif
 }
 
 static PyObject *
 joy_stop_rumble(pgJoystickObject *self, PyObject *_null)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 9)
     SDL_Joystick *joy = self->joy;
     SDL_JoystickRumble(joy, 0, 0, 1);
-#endif
     Py_RETURN_NONE;
 }
 
@@ -476,7 +486,6 @@ static PyMethodDef joy_methods[] = {
     {"init", joy_init, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_INIT},
     {"quit", joy_quit, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_QUIT},
     {"get_init", joy_get_init, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_GETINIT},
-
     {"get_id", joy_get_id, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_GETID},
     {"get_instance_id", joy_get_instance_id, METH_NOARGS,
      DOC_JOYSTICK_JOYSTICK_GETINSTANCEID},

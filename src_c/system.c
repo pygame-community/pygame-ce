@@ -23,7 +23,7 @@ pg_system_get_cpu_instruction_sets(PyObject *self, PyObject *_null)
     }                                                               \
     Py_DECREF(tmp_bool);
 
-    INSERT_INSTRUCTIONSET_INFO("RDTSC", SDL_HasRDTSC);
+    // Don't insert SDL_HasRDTSC because it's been removed in SDL3
     INSERT_INSTRUCTIONSET_INFO("ALTIVEC", SDL_HasAltiVec);
     INSERT_INSTRUCTIONSET_INFO("MMX", SDL_HasMMX);
     INSERT_INSTRUCTIONSET_INFO("SSE", SDL_HasSSE);
@@ -161,6 +161,74 @@ error:
 #endif
 }
 
+static PyObject *PowerState_class = NULL;
+
+static PyObject *
+pg_system_get_power_state(PyObject *self, PyObject *_null)
+{
+    int sec, pct;
+    SDL_PowerState power_state;
+    PyObject *return_args;
+    PyObject *return_kwargs;
+    PyObject *sec_py, *pct_py;
+
+    power_state = SDL_GetPowerInfo(&sec, &pct);
+
+    if (power_state == SDL_POWERSTATE_UNKNOWN) {
+        Py_RETURN_NONE;
+    }
+
+    if (sec == -1) {
+        sec_py = Py_None;
+        Py_INCREF(Py_None);
+    }
+    else {
+        sec_py = PyLong_FromLong(sec);
+    }
+
+    if (pct == -1) {
+        pct_py = Py_None;
+        Py_INCREF(Py_None);
+    }
+    else {
+        pct_py = PyLong_FromLong(pct);
+    }
+    // Error check will be done in Py_BuildValue
+
+    int on_battery = (power_state == SDL_POWERSTATE_ON_BATTERY);
+    int no_battery = (power_state == SDL_POWERSTATE_NO_BATTERY);
+    int charging = (power_state == SDL_POWERSTATE_CHARGING);
+    int charged = (power_state == SDL_POWERSTATE_CHARGED);
+
+    // clang-format off
+    return_kwargs = Py_BuildValue(
+        "{s:N,s:N,s:N,s:N,s:N,s:N,s:N,s:N}",
+        "battery_percent", pct_py,
+        "battery_seconds", sec_py,
+        "on_battery", PyBool_FromLong(on_battery),
+        "no_battery", PyBool_FromLong(no_battery),
+        "charging", PyBool_FromLong(charging), 
+        "charged", PyBool_FromLong(charged),
+        "plugged_in", PyBool_FromLong(!on_battery), 
+        "has_battery", PyBool_FromLong(on_battery || !no_battery)
+    );
+    // clang-format on
+
+    if (!return_kwargs)
+        return NULL;
+
+    return_args = Py_BuildValue("()");
+
+    if (!return_args)
+        return NULL;
+
+    if (!PowerState_class) {
+        return RAISE(PyExc_SystemError, "PowerState class is not imported.");
+    }
+
+    return PyObject_Call(PowerState_class, return_args, return_kwargs);
+}
+
 static PyMethodDef _system_methods[] = {
     {"get_cpu_instruction_sets", pg_system_get_cpu_instruction_sets,
      METH_NOARGS, DOC_SYSTEM_GETCPUINSTRUCTIONSETS},
@@ -170,6 +238,8 @@ static PyMethodDef _system_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_SYSTEM_GETPREFPATH},
     {"get_pref_locales", pg_system_get_pref_locales, METH_NOARGS,
      DOC_SYSTEM_GETPREFLOCALES},
+    {"get_power_state", pg_system_get_power_state, METH_NOARGS,
+     DOC_SYSTEM_GETPOWERSTATE},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(system)
@@ -191,9 +261,28 @@ MODINIT_DEFINE(system)
         return NULL;
     }
 
+    PyObject *data_classes_module =
+        PyImport_ImportModule("pygame._data_classes");
+    if (!data_classes_module) {
+        return NULL;
+    }
+
+    PowerState_class =
+        PyObject_GetAttrString(data_classes_module, "PowerState");
+    if (!PowerState_class) {
+        return NULL;
+    }
+    Py_DECREF(data_classes_module);
+
     /* create the module */
     module = PyModule_Create(&_module);
     if (!module) {
+        return NULL;
+    }
+
+    if (PyModule_AddObject(module, "PowerState", PowerState_class)) {
+        Py_DECREF(PowerState_class);
+        Py_DECREF(module);
         return NULL;
     }
 

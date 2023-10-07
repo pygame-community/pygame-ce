@@ -247,8 +247,7 @@ pygame_scrap_get(char *type, size_t *count)
     char *retval = NULL;
 
     if (!pygame_scrap_initialized()) {
-        PyErr_SetString(pgExc_SDLError, "scrap system not initialized.");
-        return NULL;
+        return RAISE(pgExc_SDLError, "scrap system not initialized.");
     }
 
     if (!pygame_scrap_lost())

@@ -264,13 +264,12 @@ pg_SavePNG_RW(SDL_Surface *surface, SDL_RWops *dst, int freedst)
                have alpha information, it should be converted to RGB24 before
                being passed through */
             png_color_type = PNG_COLOR_TYPE_RGB;
-            source =
-                SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGB24, 0);
+            source = PG_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGB24);
         }
         else if (surface->format->format != png_format) {
             /* Otherwise, (surface has alpha data), and it is not in the exact
                right format , so it should be converted to that */
-            source = SDL_ConvertSurfaceFormat(surface, png_format, 0);
+            source = PG_ConvertSurfaceFormat(surface, png_format);
         }
 
         png_set_write_fn(png_ptr, dst, png_write_fn, png_flush_fn);

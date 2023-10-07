@@ -109,9 +109,8 @@ def main():
             o.move(right=True)
             screen.blit(o.image, o.pos)
         screen.blit(p.image, p.pos)
-        clock.tick(60)
         pygame.display.update()
-        pygame.time.delay(100)
+        clock.tick(60)
 
 
 if __name__ == "__main__":

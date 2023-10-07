@@ -134,10 +134,9 @@ required).
    are set to ``0``, the Surface will have the same width or height as the
    screen resolution.
 
-   It is usually best to not pass the depth argument. It will default to the
-   best and fastest color depth for the system. If your game requires a
-   specific color format you can control the depth with this argument. Pygame
-   will emulate an unavailable color depth which can be slow.
+   Since pygame 2, the depth argument is ignored, in favour of the best
+   and fastest one. It also raises a deprecation warning since pygame-ce
+   2.4.0 if the passed in depth is not 0 or the one pygame selects.
 
    When requesting fullscreen display modes, sometimes an exact match for the
    requested size cannot be made. In these situations pygame will select
@@ -171,10 +170,15 @@ required).
 
    .. versionadded:: 2.0.0 ``SCALED``, ``SHOWN`` and ``HIDDEN``
 
+   .. versionadded:: 2.0.0 ``vsync`` parameter
+
    By setting the ``vsync`` parameter to ``1``, it is possible to get a display
-   with vertical sync at a constant frame rate. Subsequent calls to
-   :func:`pygame.display.flip()` will block (i.e. *wait*) until the screen has
-   refreshed.
+   with vertical sync at a constant frame rate determined by the monitor and
+   graphics drivers. Subsequent calls to :func:`pygame.display.flip()` or
+   :func:`pygame.display.update()` will block (i.e. *wait*) until the screen
+   has refreshed, in order to prevent "screen tearing"
+   <https://en.wikipedia.org/wiki/Screen_tearing>.
+
    Be careful when using this feature together with ``pygame.time.Clock`` or
    :func:`pygame.time.delay()`, as multiple forms of waiting and frame rate
    limiting may interact to cause skipped frames.
@@ -185,7 +189,7 @@ required).
    ``set_mode()`` may raise an exception.
 
    Setting the ``vsync`` parameter to ``-1`` in conjunction with  ``OPENGL``
-   will request the OpenGL-specific feature "adaptive vsync".
+   will request the OpenGL-specific feature "adaptive vsync" <https://www.khronos.org/opengl/wiki/Swap_Interval#Adaptive_Vsync>.
 
    Here is an example usage of a call
    to ``set_mode()`` that may give you a display with vsync:
@@ -207,6 +211,8 @@ required).
    .. versionchanged:: 2.2.0 explicit request for "adaptive vsync"
 
    .. versionchanged:: 2.2.0 ``vsync=1`` does not require ``SCALED`` or ``OPENGL``
+
+   .. deprecated:: 2.4.0 The depth argument is ignored, and will be set to the optimal value
 
 
    Basic example:
@@ -306,12 +312,12 @@ required).
    mode to verify specific display options were satisfied. The VidInfo object
    has several attributes:
 
-   ::
+   .. code-block:: text
 
      hw:         1 if the display is hardware accelerated
      wm:         1 if windowed display modes can be used
-     video_mem:  The megabytes of video memory on the display. This is 0 if
-                 unknown
+     video_mem:  The megabytes of video memory on the display.
+                 This is 0 if unknown
      bitsize:    Number of bits used to store each pixel
      bytesize:   Number of bytes used to store each pixel
      masks:      Four values used to pack RGBA values into pixels
@@ -319,13 +325,20 @@ required).
      losses:     Four values used to pack RGBA values into pixels
      blit_hw:    1 if hardware Surface blitting is accelerated
      blit_hw_CC: 1 if hardware Surface colorkey blitting is accelerated
-     blit_hw_A:  1 if hardware Surface pixel alpha blitting is accelerated
+     blit_hw_A:  1 if hardware Surface pixel alpha blitting is
+                 accelerated
      blit_sw:    1 if software Surface blitting is accelerated
-     blit_sw_CC: 1 if software Surface colorkey blitting is accelerated
-     blit_sw_A:  1 if software Surface pixel alpha blitting is accelerated
-     current_h, current_w:  Height and width of the current video mode, or
-                 of the desktop mode if called before the display.set_mode
-                 is called. They are -1 on error.
+     blit_sw_CC: 1 if software Surface colorkey blitting is
+                 accelerated
+     blit_sw_A:  1 if software Surface pixel alpha blitting is
+                 accelerated
+     current_h, current_w:  Height and width of the current video
+                 mode, or of the desktop mode if called before
+                 the display.set_mode is called. They are -1 on error.
+     pixel_format: The pixel format of the display Surface as a string.
+                 E.g PIXELFORMAT_RGB888.
+
+   .. versionchanged:: 2.4.0 ``pixel_format`` attribute added.
 
    .. ## pygame.display.Info ##
 
@@ -739,9 +752,20 @@ required).
 
    .. versionaddedold:: 2.0.0
 
+.. function:: is_fullscreen
+
+   | :sl:`Returns True if the pygame window created by pygame.display.set_mode() is in full-screen mode`
+   | :sg:`is_fullscreen() -> bool`
+
+   Edge cases:
+   If the window is in windowed mode, but maximized, this will return `False`.
+   If the window is in "borderless fullscreen" mode, this will return `True`.
+
+   .. versionadded:: 2.2.0
+
 .. function:: is_vsync
 
-   | :sl:`Returns True if vertical synchronisation for pygame.display.flip() is enabled`
+   | :sl:`Returns True if vertical synchronisation for pygame.display.flip() and pygame.display.update() is enabled`
    | :sg:`is_vsync() -> bool`
 
    .. versionadded:: 2.2.0

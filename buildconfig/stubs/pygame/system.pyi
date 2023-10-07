@@ -1,9 +1,10 @@
-from typing import List, Optional
+from typing import List, Optional, final
 
 from typing_extensions import TypedDict
 
+from pygame._data_classes import PowerState
+
 class _InstructionSets(TypedDict):
-    RDTSC: bool
     ALTIVEC: bool
     MMX: bool
     SSE: bool
@@ -28,3 +29,4 @@ def get_cpu_instruction_sets() -> _InstructionSets: ...
 def get_total_ram() -> int: ...
 def get_pref_path(org: str, app: str) -> str: ...
 def get_pref_locales() -> List[_Locale]: ...
+def get_power_state() -> Optional[PowerState]: ...

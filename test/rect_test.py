@@ -1941,14 +1941,19 @@ class RectTypeTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             collide_item = rect.collidedict(rect_values)
 
-    def test_collidedict__invalid_use_values_format(self):
-        """Ensures collidedict correctly handles invalid use_values parameters."""
-        rect = Rect(0, 0, 1, 1)
-        d = {}
+    def test_collidedict__kwarg(self):
+        """Ensures the values keyword works with collidedict"""
+        rects = [Rect(i, i, i, i) for i in range(1, 5)]
 
-        for invalid_param in (None, d, 1.1):
-            with self.assertRaises(TypeError):
-                collide_item = rect.collidedict(d, invalid_param)
+        rect_dict = {i: tuple(rect) for i, rect in enumerate(rects)}
+        rect_dict_inverted = {v: k for k, v in rect_dict.items()}
+
+        try:
+            Rect(1, 2, 3, 4).collidedict(rect_dict, values=True)
+
+            Rect(1, 2, 3, 4).collidedict(rect_dict_inverted, values=False)
+        except TypeError as e:
+            self.fail(f"collidedict raised a TypeError with traceback:\n{e}")
 
     def test_collidedictall(self):
         """Ensures collidedictall detects collisions."""
@@ -2206,16 +2211,19 @@ class RectTypeTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             collide_items = rect.collidedictall(rect_values)
 
-    def test_collidedictall__invalid_use_values_format(self):
-        """Ensures collidedictall correctly handles invalid use_values
-        parameters.
-        """
-        rect = Rect(0, 0, 1, 1)
-        d = {}
+    def test_collidedictall__kwarg(self):
+        """Ensures the values keyword works with collidedictall"""
+        rects = [Rect(i, i, i, i) for i in range(1, 5)]
 
-        for invalid_param in (None, d, 1.1):
-            with self.assertRaises(TypeError):
-                collide_items = rect.collidedictall(d, invalid_param)
+        rect_dict = {i: tuple(rect) for i, rect in enumerate(rects)}
+        rect_dict_inverted = {v: k for k, v in rect_dict.items()}
+
+        try:
+            Rect(1, 2, 3, 4).collidedictall(rect_dict, values=True)
+
+            Rect(1, 2, 3, 4).collidedictall(rect_dict_inverted, values=False)
+        except TypeError as e:
+            self.fail(f"collidedictall raised a TypeError with traceback:\n{e}")
 
     def test_collidelist(self):
         # __doc__ (as of 2008-08-02) for pygame.rect.Rect.collidelist:

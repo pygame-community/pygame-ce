@@ -256,19 +256,19 @@ class _GenericRect(Collection[_N]):
     ) -> Optional[_T]: ...
     @overload
     def collidedict(
-        self, rect_dict: Dict[_RectTypeCompatible_co, _V], use_values: Literal[False] = False
+        self, rect_dict: Dict[_RectTypeCompatible_co, _V], values: Literal[False] = False
     ) -> Optional[Tuple[_RectTypeCompatible_co, _V]]: ...
     @overload
     def collidedict(
-        self, rect_dict: Dict[_K, _RectTypeCompatible_co], use_values: Literal[True]
+        self, rect_dict: Dict[_K, _RectTypeCompatible_co], values: Literal[True]
     ) -> Optional[Tuple[_K, _RectTypeCompatible_co]]: ...
     @overload
     def collidedictall(
-        self, rect_dict: Dict[_RectTypeCompatible_co, _V], use_values: Literal[False] = False
+        self, rect_dict: Dict[_RectTypeCompatible_co, _V], values: Literal[False] = False
     ) -> List[Tuple[_RectTypeCompatible_co, _V]]: ...
     @overload
     def collidedictall(
-        self, rect_dict: Dict[_K, _RectTypeCompatible_co], use_values: Literal[True]
+        self, rect_dict: Dict[_K, _RectTypeCompatible_co], values: Literal[True]
     ) -> List[Tuple[_K, _RectTypeCompatible_co]]: ...
 
 # Rect confirms to the Collection ABC, since it also confirms to

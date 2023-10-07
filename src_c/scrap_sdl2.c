@@ -20,8 +20,7 @@ pygame_scrap_get(char *type, size_t *count)
     char *clipboard = NULL;
 
     if (!pygame_scrap_initialized()) {
-        PyErr_SetString(pgExc_SDLError, "scrap system not initialized.");
-        return NULL;
+        return RAISE(pgExc_SDLError, "scrap system not initialized.");
     }
 
     if (strcmp(type, pygame_scrap_plaintext_type) == 0) {

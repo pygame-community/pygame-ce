@@ -166,6 +166,40 @@
 
       | :sl:`Get or set the window size in pixels`
       | :sg:`size -> (int, int)`
+   
+   .. attribute:: minimum_size
+
+      | :sl:`Get or set the minimum size of the window's client area`
+      | :sg:`minimum_size -> (int, int)`
+
+      Initial value in most cases is ``(0, 0)``. If :func:`from_display_module`
+      was used to create the window and :func:`pygame.display.set_mode` was
+      called with the ``SCALED`` flag, the initial value is the size used in
+      that call.
+      
+      Raises a ``ValueError`` if negative values are provided or 
+      if the width or height provided are greater than set 
+      maximum width or height respectively. Unless maximum size 
+      is ``(0, 0)`` (initial value).
+
+      .. seealso:: :attr:`maximum_size`.
+
+      .. versionadded:: 2.4.0
+   
+   .. attribute:: maximum_size
+
+      | :sl:`Get or set the maximum size of the window's client area`
+      | :sg:`maximum_size -> (int, int)`
+
+      Initial value is ``(0, 0)``.
+
+      Raises a ``ValueError`` if negative values are provided or 
+      if the width or height provided are less than set minimum 
+      width or height respectively.
+
+      .. seealso:: :attr:`minimum_size`.
+
+      .. versionadded:: 2.4.0
 
    .. attribute:: position
 

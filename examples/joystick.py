@@ -50,11 +50,17 @@ def main():
                 # joystick, filling up the list without needing to create them manually.
                 joy = pygame.joystick.Joystick(event.device_index)
                 joysticks[joy.get_instance_id()] = joy
-                print(f"Joystick {joy.get_instance_id()} connencted")
+                print(f"Joystick {joy.get_instance_id()} connected")
 
             if event.type == pygame.JOYDEVICEREMOVED:
-                del joysticks[event.instance_id]
-                print(f"Joystick {event.instance_id} disconnected")
+                if event.instance_id in joysticks:
+                    del joysticks[event.instance_id]
+                    print(f"Joystick {event.instance_id} disconnected")
+                else:
+                    print(
+                        f"Tried to disconnect Joystick {event.instance_id}, "
+                        "but couldn't find it in the joystick list"
+                    )
 
         # Drawing step
         # First, clear the screen to white. Don't put other drawing commands
@@ -65,7 +71,7 @@ def main():
 
         # Get count of joysticks.
         joystick_count = pygame.joystick.get_count()
-        lines.append(indent("Number of joysticks: {joystick_count}", indentation))
+        lines.append(indent(f"Number of joysticks: {joystick_count}", indentation))
         indentation += 1
 
         # For each joystick:

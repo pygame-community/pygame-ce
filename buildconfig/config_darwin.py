@@ -134,9 +134,7 @@ def main(auto_config=False):
         Dependency('JPEG', 'jpeglib.h', 'libjpeg', ['jpeg']),
         Dependency('PORTMIDI', 'portmidi.h', 'libportmidi', ['portmidi']),
         Dependency('PORTTIME', 'porttime.h', '', []),
-        find_freetype(),
-        # Scrap is included in sdlmain_osx, there is nothing to look at.
-        # Dependency('SCRAP', '','',[]),
+        find_freetype()
     ])
 
     print('Hunting dependencies...')

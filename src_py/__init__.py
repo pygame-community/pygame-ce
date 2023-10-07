@@ -236,14 +236,6 @@ except (ImportError, OSError):
 
 
 try:
-    from pygame.overlay import Overlay
-except (ImportError, OSError):
-
-    def Overlay(format, size):  # pylint: disable=unused-argument
-        _attribute_undefined("pygame.Overlay")
-
-
-try:
     import pygame.time
     from pygame.time import Clock
 except (ImportError, OSError):
@@ -312,6 +304,10 @@ except (ImportError, OSError):
 
 try:
     import pygame.system
+    from pygame._data_classes import PowerState as power_state
+
+    power_state.__module__ = "pygame.system"
+    del power_state
 except (ImportError, OSError):
     system = MissingModule("system", urgent=0)
 
