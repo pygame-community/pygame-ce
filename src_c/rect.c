@@ -57,6 +57,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_pgTwoValuesFromFastcallArgs pgTwoValuesFromFastcallArgs_i
 #define RectExport_move pg_rect_move
 #define RectExport_moveIp pg_rect_move_ip
+#define RectExport_moveTo pg_rect_move_to
 #define RectExport_inflate pg_rect_inflate
 #define RectExport_inflateIp pg_rect_inflate_ip
 #define RectExport_scalebyIp pg_rect_scale_by_ip
@@ -168,6 +169,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_move pg_frect_move
 #define RectExport_pgTwoValuesFromFastcallArgs pgTwoValuesFromFastcallArgs_f
 #define RectExport_moveIp pg_frect_move_ip
+#define RectExport_moveTo pg_frect_move_to
 #define RectExport_inflate pg_frect_inflate
 #define RectExport_inflateIp pg_frect_inflate_ip
 #define RectExport_scalebyIp pg_frect_scale_by_ip
@@ -464,6 +466,8 @@ static struct PyMethodDef pg_rect_methods[] = {
     {"unionall", (PyCFunction)pg_rect_unionall, METH_VARARGS,
      DOC_RECT_UNIONALL},
     {"move_ip", (PyCFunction)pg_rect_move_ip, METH_FASTCALL, DOC_RECT_MOVEIP},
+    {"move_to", (PyCFunction)pg_rect_move_to, METH_FASTCALL | METH_KEYWORDS,
+     DOC_RECT_MOVETO},
     {"inflate_ip", (PyCFunction)pg_rect_inflate_ip, METH_VARARGS,
      DOC_RECT_INFLATEIP},
     {"scale_by", (PyCFunction)pg_rect_scale_by, METH_VARARGS | METH_KEYWORDS,
@@ -514,6 +518,8 @@ static struct PyMethodDef pg_frect_methods[] = {
     {"unionall", (PyCFunction)pg_frect_unionall, METH_VARARGS,
      DOC_RECT_UNIONALL},
     {"move_ip", (PyCFunction)pg_frect_move_ip, METH_FASTCALL, DOC_RECT_MOVEIP},
+    {"move_to", (PyCFunction)pg_frect_move_to, METH_FASTCALL | METH_KEYWORDS,
+     DOC_RECT_MOVETO},
     {"inflate_ip", (PyCFunction)pg_frect_inflate_ip, METH_VARARGS,
      DOC_RECT_INFLATEIP},
     {"scale_by", (PyCFunction)pg_frect_scale_by, METH_VARARGS | METH_KEYWORDS,
