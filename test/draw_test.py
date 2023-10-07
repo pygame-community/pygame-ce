@@ -2440,7 +2440,8 @@ class AALineMixin(BaseLineMixin):
     def test_aaline__args(self):
         """Ensures draw aaline accepts the correct args."""
         bounds_rect = self.draw_aaline(
-            pygame.Surface((3, 3)), (0, 10, 0, 50), (0, 0), (1, 1))
+            pygame.Surface((3, 3)), (0, 10, 0, 50), (0, 0), (1, 1)
+        )
 
         self.assertIsInstance(bounds_rect, pygame.Rect)
 
@@ -3163,7 +3164,8 @@ class AALinesMixin(BaseLineMixin):
     def test_aalines__args(self):
         """Ensures draw aalines accepts the correct args."""
         bounds_rect = self.draw_aalines(
-            pygame.Surface((3, 3)), (0, 10, 0, 50), False, ((0, 0), (1, 1)))
+            pygame.Surface((3, 3)), (0, 10, 0, 50), False, ((0, 0), (1, 1))
+        )
 
         self.assertIsInstance(bounds_rect, pygame.Rect)
 
