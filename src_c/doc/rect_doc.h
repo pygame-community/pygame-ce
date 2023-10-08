@@ -3,6 +3,7 @@
 #define DOC_RECT_COPY "copy() -> Rect\ncopy the rectangle"
 #define DOC_RECT_MOVE "move(x, y) -> Rect\nmoves the rectangle"
 #define DOC_RECT_MOVEIP "move_ip(x, y) -> None\nmoves the rectangle, in place"
+#define DOC_RECT_MOVETO "move_to(**kwargs) -> Rect\nmoves the rectangle to the specified position"
 #define DOC_RECT_INFLATE "inflate(x, y) -> Rect\ngrow or shrink the rectangle size"
 #define DOC_RECT_INFLATEIP "inflate_ip(x, y) -> None\ngrow or shrink the rectangle size, in place"
 #define DOC_RECT_SCALEBY "scale_by(scale_by) -> Rect\nscale_by(x, y) -> Rect\nscale the rectangle by given a multiplier"

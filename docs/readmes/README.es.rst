@@ -108,25 +108,23 @@ También un gran agradecimiento a Roger Dingledine y la tripulación de SEUL.ORG
 Dépendances
 ------------
 
+**note:** This section translation is out of date (September 2023)
+
 Pygame obviamente depende en gran medida de SDL y Python. También enlaza e incorpora varias otras bibliotecas más pequeñas. El módulo de fuentes se basa en SDL_ttf, que depende de freetype. Los módulos mixer (y mixer.music) dependen de SDL_mixer. El módulo de imagen depende de SDL_image, que también puede usar libjpeg y libpng. El módulo de transformación tiene una versión integrada de SDL_rotozoom para su propia función rotozoom. 
 El módulo surfarray necesita el paquete python numpy, para sus matrices numéricas multidimensionales.
 
 Versiones de dependencia:
 
 +----------+-----------------------------+
-| CPython  | >= 3.7 (Ou utiliser PyPy3)  |
+| CPython  | >= 3.8 (Ou utiliser PyPy3)  |
 +----------+-----------------------------+
-| SDL      | >= 2.0.8                    |
+| SDL      | >= 2.0.9                    |
 +----------+-----------------------------+
-| SDL_mixer| >= 2.0.0                    |
+| SDL_mixer| >= 2.0.4                    |
 +----------+-----------------------------+
-| SDL_image| >= 2.0.2                    |
+| SDL_image| >= 2.0.4                    |
 +----------+-----------------------------+
-| SDL_ttf  | >= 2.0.11                   |
-+----------+-----------------------------+
-| SDL_gfx  | (Opcional, suministrado con)|
-+----------+-----------------------------+
-| NumPy    | >= 1.6.2 (Opcional)         |
+| SDL_ttf  | >= 2.0.15                   |
 +----------+-----------------------------+
 
 Licencia

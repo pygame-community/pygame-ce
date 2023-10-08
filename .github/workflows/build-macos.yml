@@ -45,7 +45,7 @@ jobs:
         macarch: [arm64, x86_64]
 
     steps:
-      - uses: actions/checkout@v4.0.0
+      - uses: actions/checkout@v4.1.0
 
       - name: Test for Mac Deps cache hit
         id: macdep-cache
@@ -91,10 +91,10 @@ jobs:
           }
 
           - { 
-            name: "x86_64 (CPython 3.7 and Python 3.8)",
+            name: "x86_64 (Python 3.8)",
             macarch: x86_64,
-            # CPython 3.7, CPython/PyPy 3.8
-            pyversions: "cp37-* ?p38-*",
+            # CPython/PyPy 3.8
+            pyversions: "?p38-*",
           }
 
           - { 
@@ -160,7 +160,7 @@ jobs:
       CIBW_BUILD_VERBOSITY: 2
 
     steps:
-      - uses: actions/checkout@v4.0.0
+      - uses: actions/checkout@v4.1.0
 
       - name: pip cache
         uses: actions/cache@v3.3.2
@@ -177,7 +177,7 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.15.0
+        uses: pypa/cibuildwheel@v2.16.1
 
       - uses: actions/upload-artifact@v3
         with:

@@ -129,8 +129,7 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
         return (SDL_Surface *)(RAISE(
             PyExc_ValueError, "unsupported Surface bit depth for transform"));
 
-    newsurf = SDL_CreateRGBSurfaceWithFormat(
-        0, width, height, surf->format->BitsPerPixel, surf->format->format);
+    newsurf = PG_CreateSurface(width, height, surf->format->format);
     if (!newsurf)
         return (SDL_Surface *)(RAISE(pgExc_SDLError, SDL_GetError()));
 
@@ -445,10 +444,9 @@ scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
          * rejects the input.
          * For example, RGBA and RGBX surfaces are compatible in this way. */
         if (retsurf->format->Amask != src->format->Amask) {
-            modsurf = SDL_CreateRGBSurfaceWithFormatFrom(
-                retsurf->pixels, retsurf->w, retsurf->h,
-                retsurf->format->BitsPerPixel, retsurf->pitch,
-                src->format->format);
+            modsurf =
+                PG_CreateSurfaceFrom(retsurf->pixels, retsurf->w, retsurf->h,
+                                     retsurf->pitch, src->format->format);
         }
     }
 
@@ -885,8 +883,7 @@ surf_rotozoom(PyObject *self, PyObject *args, PyObject *kwargs)
     }
     else {
         Py_BEGIN_ALLOW_THREADS;
-        surf32 = SDL_CreateRGBSurfaceWithFormat(0, surf->w, surf->h, 32,
-                                                SDL_PIXELFORMAT_ABGR8888);
+        surf32 = PG_CreateSurface(surf->w, surf->h, SDL_PIXELFORMAT_ABGR8888);
         SDL_BlitSurface(surf, NULL, surf32, NULL);
         Py_END_ALLOW_THREADS;
     }

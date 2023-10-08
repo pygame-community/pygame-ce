@@ -735,6 +735,12 @@ div.caution {
     border: 1px solid #aabb88;
 }
 
+.dark-theme div.caution {
+    background-color: {{ theme_dark_cautionbgcolor }};
+    border: 1px solid;
+    border-color: {{ theme_dark_cautionbordercolor }};
+}
+
 div.warning {
     background-color: #ffaec4;
     border: 1px solid #f66;

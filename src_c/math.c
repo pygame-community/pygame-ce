@@ -325,7 +325,7 @@ vectoriter_dealloc(vectoriter *it);
 static PyObject *
 vectoriter_next(vectoriter *it);
 static PyObject *
-vectoriter_len(vectoriter *it);
+vectoriter_len(vectoriter *it, PyObject *_null);
 static PyObject *
 vector_iter(PyObject *vec);
 
@@ -3514,7 +3514,7 @@ vectoriter_next(vectoriter *it)
 }
 
 static PyObject *
-vectoriter_len(vectoriter *it)
+vectoriter_len(vectoriter *it, PyObject *_null)
 {
     Py_ssize_t len = 0;
     if (it && it->vec) {

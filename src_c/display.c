@@ -324,6 +324,14 @@ pg_vidinfo_getattr(PyObject *self, char *name)
         return PyLong_FromLong(current_h);
     else if (!strcmp(name, "current_w"))
         return PyLong_FromLong(current_w);
+    else if (!strcmp(name, "pixel_format")) {
+        const char *pixel_format_name =
+            SDL_GetPixelFormatName(info->vfmt->format);
+        if (!strncmp(pixel_format_name, "SDL_", 4)) {
+            pixel_format_name += 4;
+        }
+        return PyUnicode_FromString(pixel_format_name);
+    }
 
     return RAISE(PyExc_AttributeError, "does not exist in vidinfo");
 }
@@ -335,6 +343,9 @@ pg_vidinfo_str(PyObject *self)
     int current_h = -1;
     pg_VideoInfo *info = &((pgVidInfoObject *)self)->info;
     const char *pixel_format_name = SDL_GetPixelFormatName(info->vfmt->format);
+    if (!strncmp(pixel_format_name, "SDL_", 4)) {
+        pixel_format_name += 4;
+    }
 
     SDL_version versioninfo;
     SDL_VERSION(&versioninfo);
@@ -696,23 +707,20 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
 
     if (state->unscaled_render && pg_renderer != NULL) {
         if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-            if (window == pygame_window) {
-                int w = event->window.data1;
-                int h = event->window.data2;
-                pgSurfaceObject *display_surface =
-                    pg_GetDefaultWindowSurface();
-                SDL_Surface *surf = SDL_CreateRGBSurfaceWithFormat(
-                    0, w, h, 32, PG_PIXELFORMAT_XRGB8888);
+            int w = event->window.data1;
+            int h = event->window.data2;
+            pgSurfaceObject *display_surface = pg_GetDefaultWindowSurface();
+            SDL_Surface *surf =
+                PG_CreateSurface(w, h, PG_PIXELFORMAT_XRGB8888);
 
-                SDL_FreeSurface(display_surface->surf);
-                display_surface->surf = surf;
+            SDL_FreeSurface(display_surface->surf);
+            display_surface->surf = surf;
 
-                SDL_DestroyTexture(pg_texture);
+            SDL_DestroyTexture(pg_texture);
 
-                pg_texture =
-                    SDL_CreateTexture(pg_renderer, SDL_PIXELFORMAT_ARGB8888,
-                                      SDL_TEXTUREACCESS_STREAMING, w, h);
-            }
+            pg_texture =
+                SDL_CreateTexture(pg_renderer, SDL_PIXELFORMAT_ARGB8888,
+                                  SDL_TEXTUREACCESS_STREAMING, w, h);
         }
         return 0;
     }
@@ -757,12 +765,10 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
     }
 
     if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-        if (window == pygame_window) {
-            SDL_Surface *sdl_surface = SDL_GetWindowSurface(window);
-            pgSurfaceObject *old_surface = pg_GetDefaultWindowSurface();
-            if (sdl_surface != old_surface->surf) {
-                old_surface->surf = sdl_surface;
-            }
+        SDL_Surface *sdl_surface = SDL_GetWindowSurface(window);
+        pgSurfaceObject *old_surface = pg_GetDefaultWindowSurface();
+        if (sdl_surface != old_surface->surf) {
+            old_surface->surf = sdl_surface;
         }
     }
     return 0;
@@ -999,7 +1005,6 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
         }
 
-#pragma PG_WARN(Not setting bpp ?)
 #pragma PG_WARN(Add mode stuff.)
         {
             int w_1 = w, h_1 = h;
@@ -1169,8 +1174,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
                 So we make a fake surface.
                 */
-                surf = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32,
-                                                      PG_PIXELFORMAT_XRGB8888);
+                surf = PG_CreateSurface(w, h, PG_PIXELFORMAT_XRGB8888);
                 newownedsurf = surf;
             }
             else {
@@ -1271,8 +1275,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                         pg_renderer, SDL_PIXELFORMAT_ARGB8888,
                         SDL_TEXTUREACCESS_STREAMING, w, h);
                 }
-                surf = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32,
-                                                      PG_PIXELFORMAT_XRGB8888);
+                surf = PG_CreateSurface(w, h, PG_PIXELFORMAT_XRGB8888);
                 newownedsurf = surf;
             }
             else {
@@ -1358,6 +1361,14 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                              "on top of wayland, instead of wayland directly",
                              1) != 0)
                 return NULL;
+        }
+    }
+
+    if (depth != 0 && surface->surf->format->BitsPerPixel != depth) {
+        if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                         "The depth argument is deprecated, and is ignored",
+                         1)) {
+            return NULL;
         }
     }
 
@@ -2055,7 +2066,7 @@ pg_iconify(PyObject *self, PyObject *_null)
  * running on, or to inform the user when the game is not running with HW
  * acceleration, but openGL can still be available without HW acceleration. */
 static PyObject *
-pg_get_scaled_renderer_info(PyObject *self)
+pg_get_scaled_renderer_info(PyObject *self, PyObject *_null)
 {
     SDL_RendererInfo r_info;
 
@@ -2072,7 +2083,7 @@ pg_get_scaled_renderer_info(PyObject *self)
 }
 
 static PyObject *
-pg_get_desktop_screen_sizes(PyObject *self)
+pg_get_desktop_screen_sizes(PyObject *self, PyObject *_null)
 {
     int display_count, i;
     SDL_DisplayMode dm;
@@ -2126,7 +2137,7 @@ pg_is_fullscreen(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
-pg_is_vsync(PyObject *self)
+pg_is_vsync(PyObject *self, PyObject *_null)
 {
     SDL_Window *win = pg_GetDefaultWindow();
     _DisplayState *state = DISPLAY_STATE;
@@ -2158,7 +2169,7 @@ pg_is_vsync(PyObject *self)
 }
 
 static PyObject *
-pg_current_refresh_rate(PyObject *self)
+pg_current_refresh_rate(PyObject *self, PyObject *_null)
 {
     SDL_Window *win = pg_GetDefaultWindow();
     SDL_DisplayMode mode;
@@ -2179,7 +2190,7 @@ pg_current_refresh_rate(PyObject *self)
 }
 
 static PyObject *
-pg_desktop_refresh_rates(PyObject *self)
+pg_desktop_refresh_rates(PyObject *self, PyObject *_null)
 {
     int display_count, i;
     SDL_DisplayMode dm;
@@ -2644,7 +2655,7 @@ pg_display_resize_event(PyObject *self, PyObject *event)
 }
 
 static PyObject *
-pg_get_allow_screensaver(PyObject *self)
+pg_get_allow_screensaver(PyObject *self, PyObject *_null)
 {
     /* SDL_IsScreenSaverEnabled() unconditionally returns SDL_True if
      * the video system is not initialized.  Therefore we insist on
