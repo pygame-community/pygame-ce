@@ -737,19 +737,8 @@ div.caution {
 
 .dark-theme div.caution {
     background-color: {{ theme_dark_cautionbgcolor }};
-    border: none;
-    border-radius: 7px;
-}
-.dark-theme dl.definition .admonition-title {
-    font-weight: bold;
-    color: #BA1200;
-    font-size: 1.2rem;
-}
-.dark-theme div.admonition.caution {
-    padding: 10px;
-}
-.dark-theme div.admonition.caution code {
-    background-color: transparent;
+    border: 1px solid;
+    border-color: {{ theme_dark_cautionbordercolor }};
 }
 
 div.warning {
