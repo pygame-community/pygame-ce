@@ -575,6 +575,91 @@ pg_TwoFloatsFromObj(PyObject *obj, float *val1, float *val2)
     return 1;
 }
 
+static inline int
+pg_DoubleFromObj(PyObject *obj, double *val)
+{
+    if (PyFloat_Check(obj)) {
+        *val = PyFloat_AS_DOUBLE(obj);
+        return 1;
+    }
+
+    *val = (double)PyLong_AsLong(obj);
+    if (PyErr_Occurred()) {
+        PyErr_Clear();
+        return 0;
+    }
+
+    return 1;
+}
+
+/*Assumes obj is a Sequence, internal or conscious use only*/
+static inline int
+_pg_DoubleFromObjIndex(PyObject *obj, int index, double *val)
+{
+    int result = 0;
+
+    PyObject *item = PySequence_ITEM(obj, index);
+    if (!item) {
+        PyErr_Clear();
+        return 0;
+    }
+    result = pg_DoubleFromObj(item, val);
+    Py_DECREF(item);
+
+    return result;
+}
+
+static inline int
+pg_TwoDoublesFromObj(PyObject *obj, double *val1, double *val2)
+{
+    Py_ssize_t length;
+    /*Faster path for tuples and lists*/
+    if (pgSequenceFast_Check(obj)) {
+        length = PySequence_Fast_GET_SIZE(obj);
+        PyObject **f_arr = PySequence_Fast_ITEMS(obj);
+        if (length == 2) {
+            if (!pg_DoubleFromObj(f_arr[0], val1) ||
+                !pg_DoubleFromObj(f_arr[1], val2)) {
+                return 0;
+            }
+        }
+        else if (length == 1) {
+            /* Handle case of ((x, y), ) 'nested sequence' */
+            return pg_TwoDoublesFromObj(f_arr[0], val1, val2);
+        }
+        else {
+            return 0;
+        }
+    }
+    else if (PySequence_Check(obj)) {
+        length = PySequence_Length(obj);
+        if (length == 2) {
+            if (!_pg_DoubleFromObjIndex(obj, 0, val1)) {
+                return 0;
+            }
+            if (!_pg_DoubleFromObjIndex(obj, 1, val2)) {
+                return 0;
+            }
+        }
+        else if (length == 1 && !PyUnicode_Check(obj)) {
+            /* Handle case of ((x, y), ) 'nested sequence' */
+            PyObject *tmp = PySequence_ITEM(obj, 0);
+            int ret = pg_TwoDoublesFromObj(tmp, val1, val2);
+            Py_DECREF(tmp);
+            return ret;
+        }
+        else {
+            PyErr_Clear();
+            return 0;
+        }
+    }
+    else {
+        return 0;
+    }
+
+    return 1;
+}
+
 static int
 pg_UintFromObj(PyObject *obj, Uint32 *val)
 {
@@ -2171,8 +2256,10 @@ MODINIT_DEFINE(base)
     c_api[21] = pg_GetDefaultWindowSurface;
     c_api[22] = pg_SetDefaultWindowSurface;
     c_api[23] = pg_EnvShouldBlendAlphaSDL2;
+    c_api[24] = pg_DoubleFromObj;
+    c_api[25] = pg_TwoDoublesFromObj;
 
-#define FILLED_SLOTS 24
+#define FILLED_SLOTS 26
 
 #if PYGAMEAPI_BASE_NUMSLOTS != FILLED_SLOTS
 #error export slot count mismatch
