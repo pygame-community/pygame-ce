@@ -1707,13 +1707,14 @@ surf_convert_alpha(pgSurfaceObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "|O!", &pgSurface_Type, &srcsurf))
         return NULL;
 
-#pragma PG_WARN("srcsurf doesn't actually do anything?")
+    if (srcsurf != NULL) {
+        if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                         "depth argument deprecated since version 2.4.0",
+                         1) == -1) {
+            return NULL;
+        }
+    }
 
-    /*if (!srcsurf) {}*/
-    /*
-     * hmm, we have to figure this out, not all depths have good
-     * support for alpha
-     */
     newsurf = pg_DisplayFormatAlpha(surf);
     SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_BLEND);
     final = surf_subtype_new(Py_TYPE(self), newsurf, 1);
