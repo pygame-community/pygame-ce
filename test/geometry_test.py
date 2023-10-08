@@ -2,7 +2,7 @@ import unittest
 
 from pygame import Vector2
 
-from geometry import Circle
+from pygame.geometry import Circle
 
 
 class CircleTypeTest(unittest.TestCase):
