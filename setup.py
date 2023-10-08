@@ -883,7 +883,6 @@ class LintFormatCommand(Command):
         c_file_disallow = [
             "_sdl2/**",
             "pypm.c",
-            "SDL_gfx/**",
             "**/sse2neon.h",
             "doc/**",
             "_sprite.c",
