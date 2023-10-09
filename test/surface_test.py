@@ -11,6 +11,7 @@ try:
 except (ImportError, NameError):
     pass
 import pygame
+import pygame
 from pygame.locals import *
 from pygame.bufferproxy import BufferProxy
 
@@ -1781,15 +1782,22 @@ class GeneralSurfaceTests(unittest.TestCase):
         finally:
             pygame.display.quit()
 
+    def test_convert_alpha_argument_deprecation(self):
+        pygame.display.init()
+        pygame.display.set_mode((640, 480))
+
+        surf = pygame.Surface((64, 64))
+        surf_2 = pygame.Surface((64, 64))
+
+        with self.assertWarns(DeprecationWarning):
+            surf_2.convert_alpha(surf)
+
     def test_convert_alpha(self):
         """Ensure the surface returned by surf.convert_alpha
         has alpha values added"""
         pygame.display.init()
         try:
             pygame.display.set_mode((640, 480))
-
-            s1 = pygame.Surface((100, 100), 0, 32)
-            s1_alpha = pygame.Surface.convert_alpha(s1)
 
             s2 = pygame.Surface((100, 100), 0, 32)
             s2_alpha = s2.convert_alpha()
@@ -1809,7 +1817,6 @@ class GeneralSurfaceTests(unittest.TestCase):
             s7 = pygame.Surface((100, 100), 0, 24)
             s7_alpha = s7.convert_alpha()
 
-            self.assertEqual(s1_alpha.get_alpha(), 255)
             self.assertEqual(s2_alpha.get_alpha(), 255)
             self.assertEqual(s3_alpha.get_alpha(), 255)
             self.assertEqual(s4_alpha.get_alpha(), 255)
@@ -1817,7 +1824,6 @@ class GeneralSurfaceTests(unittest.TestCase):
             self.assertEqual(s6_alpha.get_alpha(), 255)
             self.assertEqual(s7_alpha.get_alpha(), 255)
 
-            self.assertEqual(s1_alpha.get_bitsize(), 32)
             self.assertEqual(s2_alpha.get_bitsize(), 32)
             self.assertEqual(s3_alpha.get_bitsize(), 32)
             self.assertEqual(s4_alpha.get_bitsize(), 32)
@@ -1837,17 +1843,13 @@ class GeneralSurfaceTests(unittest.TestCase):
         """Ensure convert_alpha accepts a Surface subclass argument."""
         expected_size = (23, 17)
         convert_surface = SurfaceSubclass(expected_size, SRCALPHA, 32)
-        depth_surface = SurfaceSubclass((31, 57), SRCALPHA, 32)
 
         pygame.display.init()
         try:
             pygame.display.set_mode((60, 60))
 
-            # This is accepted as an argument, but its values are ignored.
-            # See pygame-ce issue #493.
-            surface = convert_surface.convert_alpha(depth_surface)
+            surface = convert_surface.convert_alpha()
 
-            self.assertIsNot(surface, depth_surface)
             self.assertIsNot(surface, convert_surface)
             self.assertIsInstance(surface, pygame.Surface)
             self.assertIsInstance(surface, SurfaceSubclass)
@@ -2756,9 +2758,9 @@ class SurfaceSubtypeTest(unittest.TestCase):
         """
         pygame.display.set_mode((40, 40))
         expected_size = (32, 32)
-        s = pygame.Surface(expected_size, SRCALPHA, 16)
+
         ms1 = SurfaceSubclass(expected_size, SRCALPHA, 32)
-        ms2 = ms1.convert_alpha(s)
+        ms2 = ms1.convert_alpha()
 
         self.assertIsNot(ms1, ms2)
         self.assertIsInstance(ms1, pygame.Surface)

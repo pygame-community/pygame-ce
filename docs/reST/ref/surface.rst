@@ -253,6 +253,8 @@
       As with :meth:`convert()` the returned surface has the same class as
       the converted surface.
 
+      .. versionchanged:: 2.4.0 'Surface' argument deprecated.
+
       .. ## Surface.convert_alpha ##
 
    .. method:: copy
