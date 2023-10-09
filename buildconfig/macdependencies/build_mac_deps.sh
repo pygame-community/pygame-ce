@@ -34,6 +34,11 @@ export PG_BASE_CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=$PG_DEP_PREFIX \
 
 export PG_BASE_CONFIGURE_FLAGS="--prefix=$PG_DEP_PREFIX"
 
+export PG_BASE_MESON_FLAGS="--prefix=$PG_DEP_PREFIX \
+    -Dlibdir=lib \
+    -Dbuildtype=release \
+    -Ddefault_library=shared"
+
 if [[ "$MAC_ARCH" == "arm64" ]]; then
     # for scripts using ./configure to make arm64 binaries
     export CC="clang -target arm64-apple-macos11.0"
@@ -45,6 +50,9 @@ if [[ "$MAC_ARCH" == "arm64" ]]; then
     # configure cmake to cross-compile
     export PG_BASE_CMAKE_FLAGS="$PG_BASE_CMAKE_FLAGS -DCMAKE_OSX_ARCHITECTURES=arm64"
 
+    # configure meson to cross-compile
+    export PG_BASE_MESON_FLAGS="$PG_BASE_MESON_FLAGS --cross-file $(pwd)/macos_arm64.ini"
+
     # we don't need mac 10.9 support while compiling for apple M1 macs
     export MACOSX_DEPLOYMENT_TARGET=11.0
 else
@@ -54,12 +62,18 @@ else
     # SDL 2.26.5 new minimum macos is 10.11, so we build our x86 mac deps
     # for 10.11 as well.
     export MACOSX_DEPLOYMENT_TARGET=10.11
+
+    # needs native-file that has correct macosx deployment target
+    export PG_BASE_MESON_FLAGS="$PG_BASE_MESON_FLAGS --native-file $(pwd)/macos_x86_64.ini"
 fi
 
 cd ../manylinux-build/docker_base
 
 # Now start installing dependencies
 # ---------------------------------
+
+# install some buildtools
+bash buildtools/install.sh
 
 # sdl_image deps
 bash zlib-ng/build-zlib-ng.sh
