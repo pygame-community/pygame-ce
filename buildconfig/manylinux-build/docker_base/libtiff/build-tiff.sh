@@ -12,7 +12,7 @@ tar xzf ${TIFF}.tar.gz
 cd $TIFF
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    ./configure --disable-lzma --disable-webp --disable-zstd
+    ./configure $PG_BASE_CONFIGURE_FLAGS --disable-lzma --disable-webp --disable-zstd
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     # Use CMake on MacOS because arm64 builds fail with weird errors in ./configure
     cmake . $PG_BASE_CMAKE_FLAGS -Dlzma=OFF -Dwebp=OFF -Dzstd=OFF
@@ -20,8 +20,3 @@ fi
 
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi

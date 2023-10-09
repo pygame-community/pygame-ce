@@ -12,13 +12,7 @@ bzip2 -d ${MPG123}.tar.bz2
 tar xf ${MPG123}.tar
 cd $MPG123
 
-./configure $ARCHS_CONFIG_FLAG --enable-int-quality --disable-debug
+./configure $PG_BASE_CONFIGURE_FLAGS --enable-int-quality --disable-debug
 make
 make install
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi
-
-cd ..
