@@ -158,7 +158,7 @@ jobs:
           set MSSdk=1
           python -m pip install setuptools wheel requests numpy Sphinx"<7.2.0"
           python setup.py docs
-          python -m pip --disable-pip-version-check install cibuildwheel==2.16.1
+          python -m pip --disable-pip-version-check install cibuildwheel==2.16.2
           python -m cibuildwheel --output-dir wheelhouse
 
       - uses: actions/upload-artifact@v3
