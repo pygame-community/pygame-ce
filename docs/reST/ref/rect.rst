@@ -80,7 +80,7 @@
       r = Rect(0, 1, 2, 3)
       x, y, w, h = r
 
-   .. versionadded:: 1.9.2
+   .. versionaddedold:: 1.9.2
       The Rect class can be subclassed. Methods such as ``copy()`` and ``move()``
       will recognize this and return instances of the subclass.
       However, the subclass's ``__init__()`` method is not called,
@@ -116,6 +116,23 @@
       Same as the ``Rect.move()`` method, but operates in place.
 
       .. ## Rect.move_ip ##
+   
+   .. method:: move_to
+
+      | :sl:`moves the rectangle to the specified position`
+      | :sg:`move_to(**kwargs) -> Rect`
+      
+      Returns a new rectangle that is moved to the given position. You must provide keyword
+      arguments to the method such as ``center``, ``left``, ``midbottom`` that correspond
+      to the rectangle's attributes and the method will return a new rectangle whose specified
+      attributes are set to the given value. 
+      
+      It is similar to :meth:`Surface.get_rect` but instead of a calling it as a surface method
+      you call it as a rectangle method.
+
+      .. versionadded:: 2.4.0
+
+      .. ## Rect.move_to ##
 
    .. method:: inflate
 
@@ -138,6 +155,34 @@
 
       .. ## Rect.inflate_ip ##
 
+   .. method:: scale_by
+
+      | :sl:`scale the rectangle by given a multiplier`
+      | :sg:`scale_by(scale_by) -> Rect`
+      | :sg:`scale_by(x, y) -> Rect`
+
+      Returns a new rectangle with the size scaled by the given multipliers.
+      The rectangle remains centered around its current center. A single 
+      scalar or separate width and height scalars are allowed. Values above
+      one will increase the size of the rectangle, whereas values between
+      zero and one will decrease the size of the rectangle.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Rect.scale_by ##
+
+   .. method:: scale_by_ip
+
+      | :sl:`grow or shrink the rectangle size, in place`
+      | :sg:`scale_by_ip(scale_by) -> None`
+      | :sg:`scale_by_ip(x, y) -> None`
+
+      Same as the ``Rect.scale_by()`` method, but operates in place.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Rect.scale_by_ip ##
+
    .. method:: update
 
       | :sl:`sets the position and size of the rectangle`
@@ -148,7 +193,7 @@
       Sets the position and size of the rectangle, in place. See
       parameters for :meth:`pygame.Rect` for the parameters of this function.
 
-      .. versionadded:: 2.0.1
+      .. versionaddedold:: 2.0.1
 
       .. ## Rect.update ##
 
@@ -238,7 +283,7 @@
          else:
              print("No clipping. The line is fully outside the rect.")
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Rect.clipline ##
 
@@ -527,14 +572,14 @@
    .. method:: collidedict
 
       | :sl:`test if one rectangle in a dictionary intersects`
-      | :sg:`collidedict(dict) -> (key, value)`
-      | :sg:`collidedict(dict) -> None`
-      | :sg:`collidedict(dict, use_values=0) -> (key, value)`
-      | :sg:`collidedict(dict, use_values=0) -> None`
+      | :sg:`collidedict(rect_dict) -> (key, value)`
+      | :sg:`collidedict(rect_dict) -> None`
+      | :sg:`collidedict(rect_dict, values=False) -> (key, value)`
+      | :sg:`collidedict(rect_dict, values=False) -> None`
 
       Returns the first key and value pair that intersects with the calling
       Rect object. If no collisions are found, ``None`` is returned. If
-      ``use_values`` is 0 (default) then the dict's keys will be used in the
+      ``values`` is False (default) then the dict's keys will be used in the
       collision detection, otherwise the dict's values will be used.
 
       .. note ::
@@ -542,23 +587,33 @@
          hashable), so they must be converted to a tuple.
          e.g. ``rect.collidedict({tuple(key_rect) : value})``
 
+      .. versionchanged:: 2.4.0
+         ``values`` is now accepted as a keyword argument. Type Stub updated
+         to use boolean ``True`` or ``False``, but any truthy or falsy value 
+         will be valid.
+
       .. ## Rect.collidedict ##
 
    .. method:: collidedictall
 
       | :sl:`test if all rectangles in a dictionary intersect`
-      | :sg:`collidedictall(dict) -> [(key, value), ...]`
-      | :sg:`collidedictall(dict, use_values=0) -> [(key, value), ...]`
+      | :sg:`collidedictall(rect_dict) -> [(key, value), ...]`
+      | :sg:`collidedictall(rect_dict, values=False) -> [(key, value), ...]`
 
       Returns a list of all the key and value pairs that intersect with the
       calling Rect object. If no collisions are found an empty list is returned.
-      If ``use_values`` is 0 (default) then the dict's keys will be used in the
+      If ``values`` is False (default) then the dict's keys will be used in the
       collision detection, otherwise the dict's values will be used.
 
       .. note ::
          Rect objects cannot be used as keys in a dictionary (they are not
          hashable), so they must be converted to a tuple.
          e.g. ``rect.collidedictall({tuple(key_rect) : value})``
+
+      .. versionchanged:: 2.4.0
+         ``values`` is now accepted as a keyword argument. Type Stub updated
+         to use boolean ``True`` or ``False``, but any truthy or falsy value 
+         will be valid.
 
       .. ## Rect.collidedictall ##
 

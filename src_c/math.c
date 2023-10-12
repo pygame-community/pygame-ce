@@ -18,13 +18,14 @@
 */
 
 /* Adjust gcc 4.4 optimization for floating point on x86-32 PCs running Linux.
- * This addresses bug 52:
- * https://github.com/pygame/pygame/issues/52
+ * This addresses bug 67:
+ * https://github.com/pygame-community/pygame-ce/issues/67
  * With this option, floats have consistent precision regardless of optimize
  * level.
  */
 #if defined(__GNUC__) && defined(__linux__) && defined(__i386__) && \
-    __SIZEOF_POINTER__ == 4 && __GNUC__ == 4 && __GNUC_MINOR__ >= 4
+    __SIZEOF_POINTER__ == 4 &&                                      \
+    ((__GNUC__ == 4 && __GNUC_MINOR__ >= 4) || __GNUC__ >= 4)
 #pragma GCC optimize("float-store")
 #endif
 
@@ -55,7 +56,7 @@
 #endif /* M_PI_2 */
 
 #define VECTOR_EPSILON (1e-6)
-#define VECTOR_MAX_SIZE (4)
+#define VECTOR_MAX_SIZE (3)
 #define STRING_BUF_SIZE_REPR (110)
 #define STRING_BUF_SIZE_STR (103)
 #define SWIZZLE_ERR_NO_ERR 0
@@ -92,13 +93,13 @@ static PyTypeObject pgVectorIter_Type;
 #define _vector_subtype_new(x) \
     ((pgVector *)(Py_TYPE(x)->tp_new(Py_TYPE(x), NULL, NULL)))
 
-#define DEG2RAD(angle) ((angle)*M_PI / 180.)
-#define RAD2DEG(angle) ((angle)*180. / M_PI)
+#define DEG2RAD(angle) ((angle) * M_PI / 180.)
+#define RAD2DEG(angle) ((angle) * 180. / M_PI)
 
 typedef struct {
-    PyObject_HEAD double *coords; /* Coordinates */
-    Py_ssize_t dim;               /* Dimension of the vector */
-    double epsilon;               /* Small value for comparisons */
+    PyObject_HEAD double coords[VECTOR_MAX_SIZE]; /* Coordinates */
+    Py_ssize_t dim;                               /* Dimension of the vector */
+    double epsilon; /* Small value for comparisons */
 } pgVector;
 
 typedef struct {
@@ -125,6 +126,8 @@ PySequence_AsVectorCoords(PyObject *seq, double *const coords,
                           const Py_ssize_t size);
 static int
 pgVectorCompatible_Check(PyObject *obj, Py_ssize_t dim);
+static int
+pg_VectorCoordsFromObj(PyObject *obj, Py_ssize_t dim, double *const coords);
 static double
 _scalar_product(const double *coords1, const double *coords2, Py_ssize_t size);
 static int
@@ -322,7 +325,7 @@ vectoriter_dealloc(vectoriter *it);
 static PyObject *
 vectoriter_next(vectoriter *it);
 static PyObject *
-vectoriter_len(vectoriter *it);
+vectoriter_len(vectoriter *it, PyObject *_null);
 static PyObject *
 vector_iter(PyObject *vec);
 
@@ -459,6 +462,55 @@ pgVectorCompatible_Check(PyObject *obj, Py_ssize_t dim)
     return 1;
 }
 
+// Returns 1 if obj is vector compatible to a vector of size "dim," and
+// copies vector coordinates into "coords" array of size >= dim
+// managed by caller. Returns 0 if obj is not compatible or an error
+// occurred. If 0 is returned, the error flag will not normally be set.
+// Callers should set error themselves. This function is a combo of
+// pgVectorCompatible_Check and PySequence_AsVectorCoords
+static int
+pg_VectorCoordsFromObj(PyObject *obj, Py_ssize_t dim, double *const coords)
+{
+    Py_ssize_t i;
+    PyObject *tmp;
+
+    switch (dim) {
+        case 2:
+            if (pgVector2_Check(obj)) {
+                memcpy(coords, ((pgVector *)obj)->coords, 2 * sizeof(double));
+                return 1;
+            }
+            break;
+        case 3:
+            if (pgVector3_Check(obj)) {
+                memcpy(coords, ((pgVector *)obj)->coords, 3 * sizeof(double));
+                return 1;
+            }
+            break;
+        default:
+            PyErr_SetString(PyExc_SystemError,
+                            "Wrong internal call to pg_VectorCoordsFromObj.");
+            return 0;
+    }
+
+    if (!PySequence_Check(obj) || (PySequence_Length(obj) != dim)) {
+        return 0;
+    }
+
+    for (i = 0; i < dim; ++i) {
+        tmp = PySequence_ITEM(obj, i);
+        if (tmp != NULL) {
+            coords[i] = PyFloat_AsDouble(tmp);
+        }
+        Py_XDECREF(tmp);
+        if (PyErr_Occurred()) {
+            PyErr_Clear();
+            return 0;
+        }
+    }
+    return 1;
+}
+
 static double
 _scalar_product(const double *coords1, const double *coords2, Py_ssize_t size)
 {
@@ -585,16 +637,14 @@ pgVector_NEW(Py_ssize_t dim)
                     return vector4_new(&pgVector4_Type, NULL, NULL);
             */
         default:
-            PyErr_SetString(PyExc_SystemError,
-                            "Wrong internal call to pgVector_NEW.\n");
-            return NULL;
+            return RAISE(PyExc_SystemError,
+                         "Wrong internal call to pgVector_NEW.\n");
     }
 }
 
 static void
 vector_dealloc(pgVector *self)
 {
-    PyMem_Free(self->coords);
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -629,15 +679,15 @@ vector_generic_math(PyObject *o1, PyObject *o2, int op)
         return NULL;
     }
 
-    if (pgVectorCompatible_Check(other, dim)) {
+    if (pg_VectorCoordsFromObj(other, dim, other_coords)) {
         op |= OP_ARG_VECTOR;
-        if (!PySequence_AsVectorCoords(other, other_coords, dim))
-            return NULL;
     }
-    else if (RealNumber_Check(other))
+    else if (RealNumber_Check(other)) {
         op |= OP_ARG_NUMBER;
-    else
+    }
+    else {
         op |= OP_ARG_UNKNOWN;
+    }
 
     if (op & OP_INPLACE) {
         ret = vec;
@@ -930,8 +980,7 @@ static PyObject *
 vector_GetItem(pgVector *self, Py_ssize_t index)
 {
     if (index < 0 || index >= self->dim) {
-        PyErr_SetString(PyExc_IndexError, "subscript out of range.");
-        return NULL;
+        return RAISE(PyExc_IndexError, "subscript out of range.");
     }
     return PyFloat_FromDouble(self->coords[index]);
 }
@@ -1282,9 +1331,8 @@ vector_richcompare(PyObject *o1, PyObject *o2, int op)
             }
             Py_RETURN_FALSE;
         default:
-            PyErr_SetString(PyExc_TypeError,
-                            "This operation is not supported by vectors");
-            return NULL;
+            return RAISE(PyExc_TypeError,
+                         "This operation is not supported by vectors");
     }
 }
 
@@ -1331,9 +1379,8 @@ vector_normalize_ip(pgVector *self, PyObject *_null)
     length = sqrt(_scalar_product(self->coords, self->coords, self->dim));
 
     if (length == 0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Can't normalize Vector of length Zero");
-        return NULL;
+        return RAISE(PyExc_ValueError,
+                     "Can't normalize Vector of length zero");
     }
 
     for (i = 0; i < self->dim; ++i)
@@ -1358,9 +1405,8 @@ vector_dot(pgVector *self, PyObject *other)
 {
     double other_coords[VECTOR_MAX_SIZE];
     if (!PySequence_AsVectorCoords(other, other_coords, self->dim)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "Cannot perform dot product with this type.");
-        return NULL;
+        return RAISE(PyExc_TypeError,
+                     "Cannot perform dot product with this type.");
     }
     return PyFloat_FromDouble(
         _scalar_product(self->coords, other_coords, self->dim));
@@ -1381,9 +1427,8 @@ vector_scale_to_length(pgVector *self, PyObject *length)
     old_length = sqrt(_scalar_product(self->coords, self->coords, self->dim));
 
     if (old_length < self->epsilon) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Cannot scale a vector with zero length");
-        return NULL;
+        return RAISE(PyExc_ValueError,
+                     "Cannot scale a vector with zero length");
     }
 
     fraction = new_length / old_length;
@@ -1437,15 +1482,8 @@ vector_move_towards(pgVector *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "Od:move_towards", &target, &max_distance))
         return NULL;
 
-    if (!pgVectorCompatible_Check(target, self->dim)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "Target Vector is not the same size as self");
-        return NULL;
-    }
-
-    if (!PySequence_AsVectorCoords(target, target_coords, self->dim)) {
-        PyErr_SetString(PyExc_TypeError, "Expected Vector as argument 1");
-        return NULL;
+    if (!pg_VectorCoordsFromObj(target, self->dim, target_coords)) {
+        return RAISE(PyExc_TypeError, "Incompatible vector argument");
     }
 
     ret = _vector_subtype_new(self);
@@ -1471,15 +1509,8 @@ vector_move_towards_ip(pgVector *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "Od:move_towards_ip", &target, &max_distance))
         return NULL;
 
-    if (!pgVectorCompatible_Check(target, self->dim)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "Target Vector is not the same size as self");
-        return NULL;
-    }
-
-    if (!PySequence_AsVectorCoords(target, target_coords, self->dim)) {
-        PyErr_SetString(PyExc_TypeError, "Expected Vector as argument 1");
-        return NULL;
+    if (!pg_VectorCoordsFromObj(target, self->dim, target_coords)) {
+        return RAISE(PyExc_TypeError, "Incompatible vector argument");
     }
 
     _vector_move_towards_helper(self->dim, self->coords, target_coords,
@@ -1501,20 +1532,16 @@ vector_slerp(pgVector *self, PyObject *args)
         return NULL;
     }
     if (!PySequence_AsVectorCoords(other, other_coords, self->dim)) {
-        PyErr_SetString(PyExc_TypeError, "Argument 1 must be a vector.");
-        return NULL;
+        return RAISE(PyExc_TypeError, "Argument 1 must be a vector.");
     }
     if (fabs(t) > 1) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Argument 2 must be in range [-1, 1].");
-        return NULL;
+        return RAISE(PyExc_ValueError, "Argument 2 must be in range [-1, 1].");
     }
 
     length1 = sqrt(_scalar_product(self->coords, self->coords, self->dim));
     length2 = sqrt(_scalar_product(other_coords, other_coords, self->dim));
     if ((length1 < self->epsilon) || (length2 < self->epsilon)) {
-        PyErr_SetString(PyExc_ValueError, "can't use slerp with Zero-Vector");
-        return NULL;
+        return RAISE(PyExc_ValueError, "can't use slerp with Zero-Vector");
     }
     tmp = (_scalar_product(self->coords, other_coords, self->dim) /
            (length1 * length2));
@@ -1573,13 +1600,10 @@ vector_lerp(pgVector *self, PyObject *args)
         return NULL;
     }
     if (!PySequence_AsVectorCoords(other, other_coords, self->dim)) {
-        PyErr_SetString(PyExc_TypeError, "Expected Vector as argument 1");
-        return NULL;
+        return RAISE(PyExc_TypeError, "Expected Vector as argument 1");
     }
     if (t < 0 || t > 1) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Argument 2 must be in range [0, 1]");
-        return NULL;
+        return RAISE(PyExc_ValueError, "Argument 2 must be in range [0, 1]");
     }
 
     ret = _vector_subtype_new(self);
@@ -1821,8 +1845,7 @@ vector_project_onto(pgVector *self, PyObject *other)
     double b_dot_b;
 
     if (!PySequence_AsVectorCoords(other, other_coords, self->dim)) {
-        PyErr_SetString(PyExc_TypeError, "Expected Vector as argument 1");
-        return NULL;
+        return RAISE(PyExc_TypeError, "Expected Vector as argument 1");
     }
 
     ret = _vector_subtype_new(self);
@@ -2152,11 +2175,6 @@ vector2_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if (vec != NULL) {
         vec->dim = 2;
         vec->epsilon = VECTOR_EPSILON;
-        vec->coords = PyMem_New(double, vec->dim);
-        if (vec->coords == NULL) {
-            Py_TYPE(vec)->tp_free((PyObject *)vec);
-            return NULL;
-        }
     }
 
     return (PyObject *)vec;
@@ -2263,7 +2281,7 @@ _vector2_rotate_helper(double *dst_coords, const double *src_coords,
     if (fmod(angle + epsilon, M_PI_2) < 2 * epsilon) {
         switch ((int)((angle + epsilon) / M_PI_2)) {
             case 0: /* 0 degrees */
-            case 4: /* 360 degree (see issue 214) */
+            case 4: /* 360 degree (see pygame-ce issue 229) */
                 dst_coords[0] = src_coords[0];
                 dst_coords[1] = src_coords[1];
                 break;
@@ -2404,12 +2422,10 @@ vector2_cross(pgVector *self, PyObject *other)
     if (self == (pgVector *)other)
         return PyFloat_FromDouble(0.0);
 
-    if (!pgVectorCompatible_Check(other, self->dim)) {
-        PyErr_SetString(PyExc_TypeError, "cannot calculate cross Product");
-        return NULL;
-    }
-
-    if (!PySequence_AsVectorCoords(other, other_coords, 2)) {
+    if (!pg_VectorCoordsFromObj(other, 2, other_coords)) {
+        PyErr_SetString(
+            PyExc_TypeError,
+            "Incompatible vector argument: cannot calculate cross product");
         return NULL;
     }
 
@@ -2429,12 +2445,10 @@ vector2_angle_to(pgVector *self, PyObject *other)
     double angle;
     double other_coords[2];
 
-    if (!pgVectorCompatible_Check(other, self->dim)) {
-        PyErr_SetString(PyExc_TypeError, "expected an vector.");
-        return NULL;
-    }
-
-    if (!PySequence_AsVectorCoords(other, other_coords, 2)) {
+    if (!pg_VectorCoordsFromObj(other, 2, other_coords)) {
+        PyErr_SetString(
+            PyExc_TypeError,
+            "Incompatible vector argument: cannot calculate angle to");
         return NULL;
     }
 
@@ -2590,11 +2604,6 @@ vector3_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if (vec != NULL) {
         vec->dim = 3;
         vec->epsilon = VECTOR_EPSILON;
-        vec->coords = PyMem_New(double, vec->dim);
-        if (vec->coords == NULL) {
-            Py_TYPE(vec)->tp_free((PyObject *)vec);
-            return NULL;
-        }
     }
 
     return (PyObject *)vec;
@@ -2728,7 +2737,7 @@ _vector3_rotate_helper(double *dst_coords, const double *src_coords,
     if (fmod(angle + epsilon, M_PI_2) < 2 * epsilon) {
         switch ((int)((angle + epsilon) / M_PI_2)) {
             case 0: /* 0 degrees */
-            case 4: /* 360 degrees (see issue 214) */
+            case 4: /* 360 degrees (see pygame-ce issue 229) */
                 memcpy(dst_coords, src_coords, 3 * sizeof(src_coords[0]));
                 break;
             case 1: /* 90 degrees */
@@ -2818,12 +2827,9 @@ vector3_rotate_rad(pgVector *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "dO:rotate", &angle, &axis)) {
         return NULL;
     }
-    if (!pgVectorCompatible_Check(axis, self->dim)) {
-        PyErr_SetString(PyExc_TypeError, "axis must be a 3D Vector");
-        return NULL;
-    }
-    if (!PySequence_AsVectorCoords(axis, axis_coords, 3)) {
-        return NULL;
+    if (!pg_VectorCoordsFromObj(axis, 3, axis_coords)) {
+        return RAISE(PyExc_TypeError,
+                     "Incompatible vector argument: Axis must be a 3D vector");
     }
 
     ret = _vector_subtype_new(self);
@@ -2849,15 +2855,12 @@ vector3_rotate_rad_ip(pgVector *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "dO:rotate", &angle, &axis)) {
         return NULL;
     }
-    if (!pgVectorCompatible_Check(axis, self->dim)) {
-        PyErr_SetString(PyExc_TypeError, "axis must be a 3D Vector");
-        return NULL;
-    }
-    if (!PySequence_AsVectorCoords(axis, axis_coords, 3)) {
-        return NULL;
+    if (!pg_VectorCoordsFromObj(axis, 3, axis_coords)) {
+        return RAISE(PyExc_TypeError,
+                     "Incompatible vector argument: Axis must be a 3D vector");
     }
 
-    memcpy(tmp, self->coords, 3 * sizeof(self->coords[0]));
+    memcpy(tmp, self->coords, 3 * sizeof(double));
     if (!_vector3_rotate_helper(self->coords, tmp, axis_coords, angle,
                                 self->epsilon)) {
         return NULL;
@@ -2890,12 +2893,9 @@ vector3_rotate(pgVector *self, PyObject *args)
         return NULL;
     }
     angle = DEG2RAD(angle);
-    if (!pgVectorCompatible_Check(axis, self->dim)) {
-        PyErr_SetString(PyExc_TypeError, "axis must be a 3D Vector");
-        return NULL;
-    }
-    if (!PySequence_AsVectorCoords(axis, axis_coords, 3)) {
-        return NULL;
+    if (!pg_VectorCoordsFromObj(axis, 3, axis_coords)) {
+        return RAISE(PyExc_TypeError,
+                     "Incompatible vector argument: Axis must be a 3D vector");
     }
 
     ret = _vector_subtype_new(self);
@@ -2922,15 +2922,12 @@ vector3_rotate_ip(pgVector *self, PyObject *args)
         return NULL;
     }
     angle = DEG2RAD(angle);
-    if (!pgVectorCompatible_Check(axis, self->dim)) {
-        PyErr_SetString(PyExc_TypeError, "axis must be a 3D Vector");
-        return NULL;
-    }
-    if (!PySequence_AsVectorCoords(axis, axis_coords, 3)) {
-        return NULL;
+    if (!pg_VectorCoordsFromObj(axis, 3, axis_coords)) {
+        return RAISE(PyExc_TypeError,
+                     "Incompatible vector argument: Axis must be a 3D vector");
     }
 
-    memcpy(tmp, self->coords, 3 * sizeof(self->coords[0]));
+    memcpy(tmp, self->coords, 3 * sizeof(double));
     if (!_vector3_rotate_helper(self->coords, tmp, axis_coords, angle,
                                 self->epsilon)) {
         return NULL;
@@ -3260,33 +3257,19 @@ vector3_cross(pgVector *self, PyObject *other)
     pgVector *ret;
     double *ret_coords;
     double *self_coords;
-    double *other_coords;
+    double other_coords[3];
 
-    if (!pgVectorCompatible_Check(other, self->dim)) {
-        PyErr_SetString(PyExc_TypeError, "cannot calculate cross Product");
+    if (!pg_VectorCoordsFromObj(other, 3, other_coords)) {
+        PyErr_SetString(
+            PyExc_TypeError,
+            "Incompatible vector argument: cannot calculate cross product");
         return NULL;
     }
 
     self_coords = self->coords;
-    if (pgVector_Check(other)) {
-        other_coords = ((pgVector *)other)->coords;
-    }
-    else {
-        other_coords = PyMem_New(double, self->dim);
-        if (!other_coords) {
-            return PyErr_NoMemory();
-        }
-
-        if (!PySequence_AsVectorCoords(other, other_coords, 3)) {
-            PyMem_Free(other_coords);
-            return NULL;
-        }
-    }
 
     ret = _vector_subtype_new(self);
     if (ret == NULL) {
-        if (!pgVector_Check(other))
-            PyMem_Free(other_coords);
         return NULL;
     }
     ret_coords = ret->coords;
@@ -3297,9 +3280,6 @@ vector3_cross(pgVector *self, PyObject *other)
     ret_coords[2] = ((self_coords[0] * other_coords[1]) -
                      (self_coords[1] * other_coords[0]));
 
-    if (!pgVector_Check(other))
-        PyMem_Free(other_coords);
-
     return (PyObject *)ret;
 }
 
@@ -3307,23 +3287,20 @@ static PyObject *
 vector3_angle_to(pgVector *self, PyObject *other)
 {
     double angle, tmp, squared_length1, squared_length2;
-    double other_coords[VECTOR_MAX_SIZE];
+    double other_coords[3];
 
-    if (!pgVectorCompatible_Check(other, self->dim)) {
-        PyErr_SetString(PyExc_TypeError, "expected an vector.");
+    if (!pg_VectorCoordsFromObj(other, 3, other_coords)) {
+        PyErr_SetString(
+            PyExc_TypeError,
+            "Incompatible vector argument: cannot calculate angle to");
         return NULL;
     }
 
-    if (!PySequence_AsVectorCoords(other, other_coords, self->dim)) {
-        return NULL;
-    }
     squared_length1 = _scalar_product(self->coords, self->coords, self->dim);
     squared_length2 = _scalar_product(other_coords, other_coords, self->dim);
     tmp = sqrt(squared_length1 * squared_length2);
     if (tmp == 0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "angle to zero vector is undefined.");
-        return NULL;
+        return RAISE(PyExc_ValueError, "angle to zero vector is undefined.");
     }
     angle = acos(_scalar_product(self->coords, other_coords, self->dim) / tmp);
     return PyFloat_FromDouble(RAD2DEG(angle));
@@ -3514,7 +3491,7 @@ static void
 vectoriter_dealloc(vectoriter *it)
 {
     Py_XDECREF(it->vec);
-    PyObject_Free(it);
+    Py_TYPE(it)->tp_free(it);
 }
 
 static PyObject *
@@ -3537,7 +3514,7 @@ vectoriter_next(vectoriter *it)
 }
 
 static PyObject *
-vectoriter_len(vectoriter *it)
+vectoriter_len(vectoriter *it, PyObject *_null)
 {
     Py_ssize_t len = 0;
     if (it && it->vec) {
@@ -3593,7 +3570,7 @@ static void
 vector_elementwiseproxy_dealloc(vector_elementwiseproxy *it)
 {
     Py_XDECREF(it->vec);
-    PyObject_Free(it);
+    Py_TYPE(it)->tp_free(it);
 }
 
 static PyObject *
@@ -3627,13 +3604,9 @@ vector_elementwiseproxy_richcompare(PyObject *o1, PyObject *o2, int op)
     dim = vec->dim;
 
     if (pgVectorCompatible_Check(other, dim)) {
-        double *other_coords = PyMem_New(double, dim);
+        double other_coords[VECTOR_MAX_SIZE];
 
-        if (other_coords == NULL) {
-            return NULL;
-        }
         if (!PySequence_AsVectorCoords(other, other_coords, dim)) {
-            PyMem_Free(other_coords);
             return NULL;
         }
         /* use diff == diff to check for NaN */
@@ -3690,11 +3663,9 @@ vector_elementwiseproxy_richcompare(PyObject *o1, PyObject *o2, int op)
                 }
                 break;
             default:
-                PyMem_Free(other_coords);
                 PyErr_BadInternalCall();
                 return NULL;
         }
-        PyMem_Free(other_coords);
     }
     else if (RealNumber_Check(other)) {
         /* the following PyFloat_AsDouble call should never fail because
@@ -4010,10 +3981,9 @@ vector_elementwiseproxy_pow(PyObject *baseObj, PyObject *expoObj,
     PyObject *expos[VECTOR_MAX_SIZE] = {NULL};
     PyObject *ret, *result;
     if (mod != Py_None) {
-        PyErr_SetString(PyExc_TypeError,
-                        "pow() 3rd argument not "
-                        "supported for vectors");
-        return NULL;
+        return RAISE(PyExc_TypeError,
+                     "pow() 3rd argument not "
+                     "supported for vectors");
     }
 
     if (vector_elementwiseproxy_Check(baseObj)) {

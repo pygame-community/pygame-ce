@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-SNDFILEVER=1.1.0
+SNDFILEVER=1.2.2
 SNDNAME="libsndfile-$SNDFILEVER"
 SNDFILE="$SNDNAME.tar.xz"
 curl -sL --retry 10 https://github.com/libsndfile/libsndfile/releases/download/${SNDFILEVER}/${SNDFILE} > ${SNDFILE}
@@ -13,7 +13,7 @@ tar xf ${SNDFILE}
 cd $SNDNAME
 # autoreconf -fvi
 
-./configure $ARCHS_CONFIG_FLAG
+./configure $ARCHS_CONFIG_FLAG --disable-mpeg
 make
 make install
 

@@ -16,7 +16,7 @@ This demo will show you a few things:
 
 import os
 
-import pygame as pg
+import pygame
 from pygame import surfarray
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
@@ -24,19 +24,19 @@ main_dir = os.path.split(os.path.abspath(__file__))[0]
 
 def surfdemo_show(array_img, name):
     "displays a surface, waits for user to continue"
-    screen = pg.display.set_mode(array_img.shape[:2], 0, 32)
+    screen = pygame.display.set_mode(array_img.shape[:2], 0, 32)
     surfarray.blit_array(screen, array_img)
-    pg.display.flip()
-    pg.display.set_caption(name)
+    pygame.display.flip()
+    pygame.display.set_caption(name)
     while True:
-        e = pg.event.wait()
+        e = pygame.event.wait()
         # Force application to only advance when main button is released
-        if e.type == pg.MOUSEBUTTONUP and e.button == pg.BUTTON_LEFT:
+        if e.type == pygame.MOUSEBUTTONUP and e.button == pygame.BUTTON_LEFT:
             break
-        elif e.type == pg.KEYDOWN and e.key == pg.K_s:
-            pg.image.save(screen, name + ".png")
-        elif e.type == pg.QUIT:
-            pg.quit()
+        elif e.type == pygame.KEYDOWN and e.key == pygame.K_s:
+            pygame.image.save(screen, name + ".png")
+        elif e.type == pygame.QUIT:
+            pygame.quit()
             raise SystemExit()
 
 
@@ -45,7 +45,7 @@ def main():
     import numpy as np
     from numpy import int32, uint
 
-    pg.init()
+    pygame.init()
 
     print("Using Numpy")
     print("Press the left mouse button to advance image.")
@@ -65,7 +65,7 @@ def main():
 
     # rgbarray
     imagename = os.path.join(main_dir, "data", "arraydemo.bmp")
-    imgsurface = pg.image.load(imagename)
+    imgsurface = pygame.image.load(imagename)
     rgbarray = surfarray.array3d(imgsurface)
     surfdemo_show(rgbarray, "rgbarray")
 
@@ -113,7 +113,7 @@ def main():
     surfdemo_show(xfade, "xfade")
 
     # all done
-    pg.quit()
+    pygame.quit()
 
 
 if __name__ == "__main__":

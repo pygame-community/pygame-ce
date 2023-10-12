@@ -54,10 +54,14 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_new pg_rect_new
 #define RectExport_dealloc pg_rect_dealloc
 #define RectExport_normalize pg_rect_normalize
+#define RectExport_pgTwoValuesFromFastcallArgs pgTwoValuesFromFastcallArgs_i
 #define RectExport_move pg_rect_move
 #define RectExport_moveIp pg_rect_move_ip
+#define RectExport_moveTo pg_rect_move_to
 #define RectExport_inflate pg_rect_inflate
 #define RectExport_inflateIp pg_rect_inflate_ip
+#define RectExport_scalebyIp pg_rect_scale_by_ip
+#define RectExport_scaleby pg_rect_scale_by
 #define RectExport_update pg_rect_update
 #define RectExport_union pg_rect_union
 #define RectExport_unionIp pg_rect_union_ip
@@ -76,6 +80,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_clipline pg_rect_clipline
 #define RectExport_do_rects_intresect _pg_do_rects_intersect
 #define RectExport_RectFromObject pgRect_FromObject
+#define RectExport_RectFromFastcallArgs pgRect_FromFastcallArgs
 #define RectExport_RectNew pgRect_New
 #define RectExport_RectNew4 pgRect_New4
 #define RectExport_Normalize pgRect_Normalize
@@ -132,14 +137,17 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_setsize pg_rect_setsize
 #define RectImport_primitiveType int
 #define RectImport_RectCheck pgRect_Check
+#define RectImport_OtherRectCheck pgFRect_Check
 #define RectImport_RectCheckExact pgRect_CheckExact
 #define RectImport_innerRectStruct SDL_Rect
+#define RectImport_otherInnerRectStruct SDL_FRect
 #define RectImport_innerPointStruct SDL_Point
 #define RectImport_fourPrimiviteFromObj four_ints_from_obj
 #define RectImport_primitiveFromObjIndex pg_IntFromObjIndex
 #define RectImport_twoPrimitivesFromObj pg_TwoIntsFromObj
 #define RectImport_PrimitiveFromObj pg_IntFromObj
 #define RectImport_RectObject pgRectObject
+#define RectImport_OtherRectObject pgFRectObject
 #define RectImport_TypeObject pgRect_Type
 #define RectImport_IntersectRectAndLine SDL_IntersectRectAndLine
 #define RectImport_PyBuildValueFormat "i"
@@ -162,9 +170,13 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_dealloc pg_frect_dealloc
 #define RectExport_normalize pg_frect_normalize
 #define RectExport_move pg_frect_move
+#define RectExport_pgTwoValuesFromFastcallArgs pgTwoValuesFromFastcallArgs_f
 #define RectExport_moveIp pg_frect_move_ip
+#define RectExport_moveTo pg_frect_move_to
 #define RectExport_inflate pg_frect_inflate
 #define RectExport_inflateIp pg_frect_inflate_ip
+#define RectExport_scalebyIp pg_frect_scale_by_ip
+#define RectExport_scaleby pg_frect_scale_by
 #define RectExport_update pg_frect_update
 #define RectExport_union pg_frect_union
 #define RectExport_unionIp pg_frect_union_ip
@@ -183,6 +195,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_clipline pg_frect_clipline
 #define RectExport_do_rects_intresect _pg_do_frects_intersect
 #define RectExport_RectFromObject pgFRect_FromObject
+#define RectExport_RectFromFastcallArgs pgFRect_FromFastcallArgs
 #define RectExport_RectNew pgFRect_New
 #define RectExport_RectNew4 pgFRect_New4
 #define RectExport_Normalize pgFRect_Normalize
@@ -239,15 +252,18 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_setsize pg_frect_setsize
 #define RectImport_primitiveType float
 #define RectImport_RectCheck pgFRect_Check
+#define RectImport_OtherRectCheck pgRect_Check
 #define RectImport_RectCheckExact pgFRect_CheckExact
 #define RectImport_innerRectStruct SDL_FRect
+#define RectImport_otherInnerRectStruct SDL_Rect
 #define RectImport_innerPointStruct SDL_FPoint
 #define RectImport_fourPrimiviteFromObj four_floats_from_obj
 #define RectImport_primitiveFromObjIndex pg_FloatFromObjIndex
 #define RectImport_twoPrimitivesFromObj pg_TwoFloatsFromObj
 #define RectImport_PrimitiveFromObj pg_FloatFromObj
 #define RectImport_RectObject pgFRectObject
-#define RectImport_IntersectRectAndLine SDL_IntersectFRectAndLine
+#define RectImport_OtherRectObject pgRectObject
+#define RectImport_IntersectRectAndLine PG_IntersectFRectAndLine
 #define RectImport_TypeObject pgFRect_Type
 #define RectImport_PyBuildValueFormat "f"
 #define RectImport_ObjectName "pygame.rect.FRect"
@@ -441,24 +457,30 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 static struct PyMethodDef pg_rect_methods[] = {
     {"normalize", (PyCFunction)pg_rect_normalize, METH_NOARGS,
      DOC_RECT_NORMALIZE},
-    {"clip", (PyCFunction)pg_rect_clip, METH_VARARGS, DOC_RECT_CLIP},
+    {"clip", (PyCFunction)pg_rect_clip, METH_FASTCALL, DOC_RECT_CLIP},
     {"clipline", (PyCFunction)pg_rect_clipline, METH_VARARGS,
      DOC_RECT_CLIPLINE},
-    {"clamp", (PyCFunction)pg_rect_clamp, METH_VARARGS, DOC_RECT_CLAMP},
-    {"clamp_ip", (PyCFunction)pg_rect_clamp_ip, METH_VARARGS,
+    {"clamp", (PyCFunction)pg_rect_clamp, METH_FASTCALL, DOC_RECT_CLAMP},
+    {"clamp_ip", (PyCFunction)pg_rect_clamp_ip, METH_FASTCALL,
      DOC_RECT_CLAMPIP},
     {"copy", (PyCFunction)pg_rect_copy, METH_NOARGS, DOC_RECT_COPY},
-    {"fit", (PyCFunction)pg_rect_fit, METH_VARARGS, DOC_RECT_FIT},
-    {"move", (PyCFunction)pg_rect_move, METH_VARARGS, DOC_RECT_MOVE},
-    {"update", (PyCFunction)pg_rect_update, METH_VARARGS, DOC_RECT_UPDATE},
+    {"fit", (PyCFunction)pg_rect_fit, METH_FASTCALL, DOC_RECT_FIT},
+    {"move", (PyCFunction)pg_rect_move, METH_FASTCALL, DOC_RECT_MOVE},
+    {"update", (PyCFunction)pg_rect_update, METH_FASTCALL, DOC_RECT_UPDATE},
     {"inflate", (PyCFunction)pg_rect_inflate, METH_VARARGS, DOC_RECT_INFLATE},
-    {"union", (PyCFunction)pg_rect_union, METH_VARARGS, DOC_RECT_UNION},
+    {"union", (PyCFunction)pg_rect_union, METH_FASTCALL, DOC_RECT_UNION},
     {"unionall", (PyCFunction)pg_rect_unionall, METH_VARARGS,
      DOC_RECT_UNIONALL},
-    {"move_ip", (PyCFunction)pg_rect_move_ip, METH_VARARGS, DOC_RECT_MOVEIP},
+    {"move_ip", (PyCFunction)pg_rect_move_ip, METH_FASTCALL, DOC_RECT_MOVEIP},
+    {"move_to", (PyCFunction)pg_rect_move_to, METH_FASTCALL | METH_KEYWORDS,
+     DOC_RECT_MOVETO},
     {"inflate_ip", (PyCFunction)pg_rect_inflate_ip, METH_VARARGS,
      DOC_RECT_INFLATEIP},
-    {"union_ip", (PyCFunction)pg_rect_union_ip, METH_VARARGS,
+    {"scale_by", (PyCFunction)pg_rect_scale_by, METH_VARARGS | METH_KEYWORDS,
+     DOC_RECT_SCALEBY},
+    {"scale_by_ip", (PyCFunction)pg_rect_scale_by_ip,
+     METH_VARARGS | METH_KEYWORDS, DOC_RECT_SCALEBYIP},
+    {"union_ip", (PyCFunction)pg_rect_union_ip, METH_FASTCALL,
      DOC_RECT_UNIONIP},
     {"unionall_ip", (PyCFunction)pg_rect_unionall_ip, METH_VARARGS,
      DOC_RECT_UNIONALLIP},
@@ -470,10 +492,10 @@ static struct PyMethodDef pg_rect_methods[] = {
      DOC_RECT_COLLIDELIST},
     {"collidelistall", (PyCFunction)pg_rect_collidelistall, METH_O,
      DOC_RECT_COLLIDELISTALL},
-    {"collidedict", (PyCFunction)pg_rect_collidedict, METH_VARARGS,
-     DOC_RECT_COLLIDEDICT},
-    {"collidedictall", (PyCFunction)pg_rect_collidedictall, METH_VARARGS,
-     DOC_RECT_COLLIDEDICTALL},
+    {"collidedict", (PyCFunction)pg_rect_collidedict,
+     METH_VARARGS | METH_KEYWORDS, DOC_RECT_COLLIDEDICT},
+    {"collidedictall", (PyCFunction)pg_rect_collidedictall,
+     METH_VARARGS | METH_KEYWORDS, DOC_RECT_COLLIDEDICTALL},
     {"collideobjectsall", (PyCFunction)pg_rect_collideobjectsall,
      METH_VARARGS | METH_KEYWORDS, DOC_RECT_COLLIDEOBJECTSALL},
     {"collideobjects", (PyCFunction)pg_rect_collideobjects,
@@ -487,24 +509,30 @@ static struct PyMethodDef pg_rect_methods[] = {
 static struct PyMethodDef pg_frect_methods[] = {
     {"normalize", (PyCFunction)pg_frect_normalize, METH_NOARGS,
      DOC_RECT_NORMALIZE},
-    {"clip", (PyCFunction)pg_frect_clip, METH_VARARGS, DOC_RECT_CLIP},
+    {"clip", (PyCFunction)pg_frect_clip, METH_FASTCALL, DOC_RECT_CLIP},
     {"clipline", (PyCFunction)pg_frect_clipline, METH_VARARGS,
      DOC_RECT_CLIPLINE},
-    {"clamp", (PyCFunction)pg_frect_clamp, METH_VARARGS, DOC_RECT_CLAMP},
-    {"clamp_ip", (PyCFunction)pg_frect_clamp_ip, METH_VARARGS,
+    {"clamp", (PyCFunction)pg_frect_clamp, METH_FASTCALL, DOC_RECT_CLAMP},
+    {"clamp_ip", (PyCFunction)pg_frect_clamp_ip, METH_FASTCALL,
      DOC_RECT_CLAMPIP},
     {"copy", (PyCFunction)pg_frect_copy, METH_NOARGS, DOC_RECT_COPY},
-    {"fit", (PyCFunction)pg_frect_fit, METH_VARARGS, DOC_RECT_FIT},
-    {"move", (PyCFunction)pg_frect_move, METH_VARARGS, DOC_RECT_MOVE},
-    {"update", (PyCFunction)pg_frect_update, METH_VARARGS, DOC_RECT_UPDATE},
+    {"fit", (PyCFunction)pg_frect_fit, METH_FASTCALL, DOC_RECT_FIT},
+    {"move", (PyCFunction)pg_frect_move, METH_FASTCALL, DOC_RECT_MOVE},
+    {"update", (PyCFunction)pg_frect_update, METH_FASTCALL, DOC_RECT_UPDATE},
     {"inflate", (PyCFunction)pg_frect_inflate, METH_VARARGS, DOC_RECT_INFLATE},
-    {"union", (PyCFunction)pg_frect_union, METH_VARARGS, DOC_RECT_UNION},
+    {"union", (PyCFunction)pg_frect_union, METH_FASTCALL, DOC_RECT_UNION},
     {"unionall", (PyCFunction)pg_frect_unionall, METH_VARARGS,
      DOC_RECT_UNIONALL},
-    {"move_ip", (PyCFunction)pg_frect_move_ip, METH_VARARGS, DOC_RECT_MOVEIP},
+    {"move_ip", (PyCFunction)pg_frect_move_ip, METH_FASTCALL, DOC_RECT_MOVEIP},
+    {"move_to", (PyCFunction)pg_frect_move_to, METH_FASTCALL | METH_KEYWORDS,
+     DOC_RECT_MOVETO},
     {"inflate_ip", (PyCFunction)pg_frect_inflate_ip, METH_VARARGS,
      DOC_RECT_INFLATEIP},
-    {"union_ip", (PyCFunction)pg_frect_union_ip, METH_VARARGS,
+    {"scale_by", (PyCFunction)pg_frect_scale_by, METH_VARARGS | METH_KEYWORDS,
+     DOC_RECT_SCALEBY},
+    {"scale_by_ip", (PyCFunction)pg_frect_scale_by_ip,
+     METH_VARARGS | METH_KEYWORDS, DOC_RECT_SCALEBYIP},
+    {"union_ip", (PyCFunction)pg_frect_union_ip, METH_FASTCALL,
      DOC_RECT_UNIONIP},
     {"unionall_ip", (PyCFunction)pg_frect_unionall_ip, METH_VARARGS,
      DOC_RECT_UNIONALLIP},
@@ -516,10 +544,10 @@ static struct PyMethodDef pg_frect_methods[] = {
      DOC_RECT_COLLIDELIST},
     {"collidelistall", (PyCFunction)pg_frect_collidelistall, METH_O,
      DOC_RECT_COLLIDELISTALL},
-    {"collidedict", (PyCFunction)pg_frect_collidedict, METH_VARARGS,
-     DOC_RECT_COLLIDEDICT},
-    {"collidedictall", (PyCFunction)pg_frect_collidedictall, METH_VARARGS,
-     DOC_RECT_COLLIDEDICTALL},
+    {"collidedict", (PyCFunction)pg_frect_collidedict,
+     METH_VARARGS | METH_KEYWORDS, DOC_RECT_COLLIDEDICT},
+    {"collidedictall", (PyCFunction)pg_frect_collidedictall,
+     METH_VARARGS | METH_KEYWORDS, DOC_RECT_COLLIDEDICTALL},
     {"collideobjectsall", (PyCFunction)pg_frect_collideobjectsall,
      METH_VARARGS | METH_KEYWORDS, DOC_RECT_COLLIDEOBJECTSALL},
     {"collideobjects", (PyCFunction)pg_frect_collideobjects,

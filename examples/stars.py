@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pg.examples.stars
+""" pygame.examples.stars
 
 We are all in the gutter,
 but some of us are looking at the stars.
@@ -13,14 +13,14 @@ the basics of creating a window, simple pixel plotting, and event management.
 import random
 from typing import List
 
-import pygame as pg
+import pygame
 
 
 class Particle:
     def __init__(
         self,
         pos: List[int],
-        vel: pg.Vector2,
+        vel: pygame.Vector2,
     ):
         """
         Parameters:
@@ -38,14 +38,14 @@ class Particle:
             (168, 123, 255),
         ]
 
-    def draw(self, display: pg.Surface):
+    def draw(self, display: pygame.Surface):
         """
         Draws the particle on a pygame.Surface
         Parameters:
             display: The surface the particle is drawn on
         """
 
-        pg.draw.line(display, random.choice(self.color_list), self.pos, self.pos)
+        pygame.draw.line(display, random.choice(self.color_list), self.pos, self.pos)
 
     def update(self):
         """
@@ -55,7 +55,7 @@ class Particle:
         self.pos += self.vel
 
 
-def create_particle(particle_list: List[Particle], pos: pg.Vector2):
+def create_particle(particle_list: List[Particle], pos: pygame.Vector2):
     """
     Creates a new particle
     Parameters:
@@ -66,17 +66,17 @@ def create_particle(particle_list: List[Particle], pos: pg.Vector2):
     particle_list.append(
         Particle(
             pos=pos.copy(),
-            vel=pg.Vector2(random.uniform(-5, 5), random.uniform(-5, 5)),
+            vel=pygame.Vector2(random.uniform(-5, 5), random.uniform(-5, 5)),
         )
     )
 
 
-def update_particles(particle_list: List[Particle], screen_rect: pg.Rect):
+def update_particles(particle_list: List[Particle], screen_rect: pygame.Rect):
     """
     Updates the particles
     Parameters:
         particle_list: List of existing particles
-        screen_rect: A pg.Rect that represents the screen
+        screen_rect: A pygame.Rect that represents the screen
                 (used to determine whether a particle is visible on the screen)
     """
 
@@ -87,7 +87,7 @@ def update_particles(particle_list: List[Particle], screen_rect: pg.Rect):
         particle.update()
 
 
-def draw_particles(particle_list: List[Particle], display: pg.Surface):
+def draw_particles(particle_list: List[Particle], display: pygame.Surface):
     """
     Draws the particles
     Parameters:
@@ -102,23 +102,23 @@ def main():
     """
     Contains the game variables and loop
     """
-    screen = pg.display.set_mode((600, 500))
-    clock = pg.time.Clock()
-    pg.display.set_caption("Pygame Stars")
+    screen = pygame.display.set_mode((600, 500))
+    clock = pygame.Clock()
+    pygame.display.set_caption("Pygame Stars")
     particles = []
     # how many particles to spawn every frame
     particle_density = 10
 
     screen_rect = screen.get_rect()
-    spawn_point = pg.Vector2(screen_rect.center)
+    spawn_point = pygame.Vector2(screen_rect.center)
 
     running = True
     while running:
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
                 running = False
-            if event.type == pg.MOUSEBUTTONDOWN:
-                spawn_point = pg.Vector2(event.pos)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                spawn_point = pygame.Vector2(event.pos)
 
         screen.fill((20, 20, 40))
         for _ in range(particle_density):
@@ -126,10 +126,10 @@ def main():
         update_particles(particles, screen_rect)
         draw_particles(particles, screen)
 
-        pg.display.flip()
+        pygame.display.flip()
         clock.tick(60)
 
-    pg.quit()
+    pygame.quit()
 
 
 if __name__ == "__main__":

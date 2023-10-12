@@ -12,7 +12,7 @@ Fortunately, this is python, and we needn't wrestle with a pile of
 error codes.
 """
 import os
-import pygame as pg
+import pygame
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 
@@ -56,14 +56,14 @@ class GameObject:
 # quick function to load an image
 def load_image(name):
     path = os.path.join(main_dir, "data", name)
-    return pg.image.load(path).convert()
+    return pygame.image.load(path).convert()
 
 
 # here's the full code
 def main():
-    pg.init()
-    clock = pg.time.Clock()
-    screen = pg.display.set_mode((WIDTH, HEIGHT))
+    pygame.init()
+    clock = pygame.Clock()
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
     player = load_image("player1.gif")
     entity = load_image("alien1.gif")
@@ -71,8 +71,8 @@ def main():
 
     # scale the background image so that it fills the window and
     # successfully overwrites the old sprite position.
-    background = pg.transform.scale2x(background)
-    background = pg.transform.scale2x(background)
+    background = pygame.transform.scale2x(background)
+    background = pygame.transform.scale2x(background)
 
     screen.blit(background, (0, 0))
 
@@ -82,26 +82,26 @@ def main():
         o = GameObject(entity, x * 40, x)
         objects.append(o)
 
-    pg.display.set_caption("Move It!")
+    pygame.display.set_caption("Move It!")
 
     # This is a simple event handler that enables player input.
     while True:
         # Get all keys currently pressed, and move when an arrow key is held.
-        keys = pg.key.get_pressed()
-        if keys[pg.K_UP]:
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_UP]:
             p.move(up=True)
-        if keys[pg.K_DOWN]:
+        if keys[pygame.K_DOWN]:
             p.move(down=True)
-        if keys[pg.K_LEFT]:
+        if keys[pygame.K_LEFT]:
             p.move(left=True)
-        if keys[pg.K_RIGHT]:
+        if keys[pygame.K_RIGHT]:
             p.move(right=True)
 
         # Draw the background
         screen.blit(background, (0, 0))
-        for e in pg.event.get():
+        for e in pygame.event.get():
             # quit upon screen exit
-            if e.type == pg.QUIT:
+            if e.type == pygame.QUIT:
                 return
         for o in objects:
             screen.blit(background, o.pos, o.pos)
@@ -109,11 +109,10 @@ def main():
             o.move(right=True)
             screen.blit(o.image, o.pos)
         screen.blit(p.image, p.pos)
+        pygame.display.update()
         clock.tick(60)
-        pg.display.update()
-        pg.time.delay(100)
 
 
 if __name__ == "__main__":
     main()
-    pg.quit()
+    pygame.quit()

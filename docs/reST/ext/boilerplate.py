@@ -45,6 +45,9 @@ def setup(app):
     # This extension uses indexer collected tables.
     app.setup_extension("ext.indexer")
 
+    # Add js files for theme changing in docs.
+    app.add_js_file("script.js")
+
     # Documents to leave untransformed by boilerplate
     app.add_config_value("boilerplate_skip_transform", [], "")
 
@@ -334,6 +337,7 @@ def inject_template_globals(app, pagename, templatename, context, doctree):
         "music",
         "pygame",
         "Rect",
+        "geometry",
         "Surface",
         "sprite",
         "time",
@@ -342,7 +346,6 @@ def inject_template_globals(app, pagename, templatename, context, doctree):
         "freetype",
         "gfxdraw",
         "midi",
-        "Overlay",
         "PixelArray",
         "pixelcopy",
         "sndarray",
