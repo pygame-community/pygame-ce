@@ -148,6 +148,7 @@ class _GenericRect(Collection[_N]):
     def move_ip(self, x: float, y: float) -> None: ...
     @overload
     def move_ip(self, move_by: Coordinate) -> None: ...
+    def move_to(self, **kwargs: Union[float, Coordinate]) -> Self: ...
     @overload
     def inflate(self, x: float, y: float) -> Self: ...
     @overload
@@ -256,19 +257,19 @@ class _GenericRect(Collection[_N]):
     ) -> Optional[_T]: ...
     @overload
     def collidedict(
-        self, rect_dict: Dict[_RectTypeCompatible_co, _V], use_values: Literal[False] = False
+        self, rect_dict: Dict[_RectTypeCompatible_co, _V], values: Literal[False] = False
     ) -> Optional[Tuple[_RectTypeCompatible_co, _V]]: ...
     @overload
     def collidedict(
-        self, rect_dict: Dict[_K, _RectTypeCompatible_co], use_values: Literal[True]
+        self, rect_dict: Dict[_K, _RectTypeCompatible_co], values: Literal[True]
     ) -> Optional[Tuple[_K, _RectTypeCompatible_co]]: ...
     @overload
     def collidedictall(
-        self, rect_dict: Dict[_RectTypeCompatible_co, _V], use_values: Literal[False] = False
+        self, rect_dict: Dict[_RectTypeCompatible_co, _V], values: Literal[False] = False
     ) -> List[Tuple[_RectTypeCompatible_co, _V]]: ...
     @overload
     def collidedictall(
-        self, rect_dict: Dict[_K, _RectTypeCompatible_co], use_values: Literal[True]
+        self, rect_dict: Dict[_K, _RectTypeCompatible_co], values: Literal[True]
     ) -> List[Tuple[_K, _RectTypeCompatible_co]]: ...
 
 # Rect confirms to the Collection ABC, since it also confirms to

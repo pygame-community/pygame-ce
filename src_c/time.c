@@ -308,6 +308,10 @@ static Uint64
 accurate_delay(Sint64 ticks)
 {
     Uint64 funcstart, delay;
+    // Maximum delay, of the order of hundreds of millions of years. This
+    // should prevent Uint64 underflow issues with a CPU lag spike during the
+    // loop
+    Uint64 maximum_delay = (SDL_MAX_UINT64 >> 1);
 
     if (ticks <= 0)
         return 0;
@@ -330,7 +334,7 @@ accurate_delay(Sint64 ticks)
     }
     do {
         delay = ticks - (PG_GetTicks() - funcstart);
-    } while (delay > 0);
+    } while (delay > 0 && delay < maximum_delay);
 
     return PG_GetTicks() - funcstart;
 }

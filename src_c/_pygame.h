@@ -42,6 +42,67 @@
 
 #include <SDL.h>
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+#define PG_ShowCursor SDL_ShowCursor
+#define PG_HideCursor SDL_HideCursor
+#define PG_CursorVisible SDL_CursorVisible
+
+#define PG_INIT_NOPARACHUTE 0
+
+// UINT16 audio no longer exists in SDL3
+#define PG_AUDIO_U16LSB 0
+#define PG_AUDIO_U16MSB 0
+#define PG_AUDIO_U16SYS 0
+#define PG_AUDIO_U16 0
+
+// Allowed changes no longer exists, your request gets emulated if unavailable
+#define PG_AUDIO_ALLOW_FREQUENCY_CHANGE 0
+#define PG_AUDIO_ALLOW_FORMAT_CHANGE 0
+#define PG_AUDIO_ALLOW_CHANNELS_CHANGE 0
+#define PG_AUDIO_ALLOW_ANY_CHANGE 0
+
+// Todo: deal with multigesture.. See
+// https://github.com/pygame-community/pygame-ce/issues/2420
+#define PG_MULTIGESTURE 0
+
+#define PG_JOYBALLMOTION 0
+
+#define PG_CreateSurface SDL_CreateSurface
+#define PG_CreateSurfaceFrom SDL_CreateSurfaceFrom
+#define PG_ConvertSurface SDL_ConvertSurface
+#define PG_ConvertSurfaceFormat SDL_ConvertSurfaceFormat
+
+#else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
+#define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
+#define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
+#define PG_CursorVisible() SDL_ShowCursor(SDL_QUERY)
+
+#define PG_INIT_NOPARACHUTE SDL_INIT_NOPARACHUTE
+
+#define PG_AUDIO_U16LSB AUDIO_U16LSB
+#define PG_AUDIO_U16MSB AUDIO_U16MSB
+#define PG_AUDIO_U16SYS AUDIO_U16SYS
+#define PG_AUDIO_U16 AUDIO_U16
+
+#define PG_AUDIO_ALLOW_FREQUENCY_CHANGE SDL_AUDIO_ALLOW_FREQUENCY_CHANGE
+#define PG_AUDIO_ALLOW_FORMAT_CHANGE SDL_AUDIO_ALLOW_FORMAT_CHANGE
+#define PG_AUDIO_ALLOW_CHANNELS_CHANGE SDL_AUDIO_ALLOW_CHANNELS_CHANGE
+#define PG_AUDIO_ALLOW_ANY_CHANGE SDL_AUDIO_ALLOW_ANY_CHANGE
+
+#define PG_MULTIGESTURE SDL_MULTIGESTURE
+
+#define PG_JOYBALLMOTION SDL_JOYBALLMOTION
+
+#define PG_CreateSurface(width, height, format) \
+    SDL_CreateRGBSurfaceWithFormat(0, width, height, 0, format)
+#define PG_CreateSurfaceFrom(pixels, width, height, pitch, format) \
+    SDL_CreateRGBSurfaceWithFormatFrom(pixels, width, height, 0, pitch, format)
+#define PG_ConvertSurface(src, fmt) SDL_ConvertSurface(src, fmt, 0)
+#define PG_ConvertSurfaceFormat(src, pixel_format) \
+    SDL_ConvertSurfaceFormat(src, pixel_format, 0)
+
+#endif
+
 /* DictProxy is useful for event posting with an arbitrary dict. Maintains
  * state of number of events on queue and whether the owner of this struct
  * wants this dict freed. This DictProxy is only to be freed when there are no
@@ -255,6 +316,9 @@ typedef enum {
 supported Python version. #endif */
 
 #define RAISE(x, y) (PyErr_SetString((x), (y)), NULL)
+#define RAISERETURN(x, y, r)   \
+    PyErr_SetString((x), (y)); \
+    return r;
 #define DEL_ATTR_NOT_SUPPORTED_CHECK(name, value)                            \
     do {                                                                     \
         if (!value) {                                                        \
@@ -345,6 +409,24 @@ struct pgColorObject {
     Uint8 len;
 };
 
+typedef enum {
+    /* 0b000: Only handle RGB[A] sequence (which includes pygame.Color) */
+    PG_COLOR_HANDLE_SIMPLE = 0,
+
+    /* 0b001: In addition to PG_COLOR_HANDLE_SIMPLE, also handle str */
+    PG_COLOR_HANDLE_STR = 1,
+
+    /* 0b010: In addition to PG_COLOR_HANDLE_SIMPLE, also handles int */
+    PG_COLOR_HANDLE_INT = (PG_COLOR_HANDLE_STR << 1),
+
+    /* 0b100: A specialised flag, used to indicate that only tuple,
+       pygame.Color or subtypes of these both are allowed */
+    PG_COLOR_HANDLE_RESTRICT_SEQ = (PG_COLOR_HANDLE_INT << 1),
+
+    /* 0b011: equivalent to PG_COLOR_HANDLE_STR | PG_COLOR_HANDLE_INT */
+    PG_COLOR_HANDLE_ALL = PG_COLOR_HANDLE_STR | PG_COLOR_HANDLE_INT,
+} pgColorHandleFlags;
+
 /*
  * include public API
  */
@@ -363,8 +445,9 @@ struct pgColorObject {
 #define PYGAMEAPI_PIXELARRAY_NUMSLOTS 2
 #define PYGAMEAPI_COLOR_NUMSLOTS 5
 #define PYGAMEAPI_MATH_NUMSLOTS 2
-#define PYGAMEAPI_BASE_NUMSLOTS 24
-#define PYGAMEAPI_EVENT_NUMSLOTS 6
+#define PYGAMEAPI_BASE_NUMSLOTS 26
+#define PYGAMEAPI_EVENT_NUMSLOTS 8
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1
+#define PYGAMEAPI_GEOMETRY_NUMSLOTS 1
 
 #endif /* _PYGAME_INTERNAL_H */

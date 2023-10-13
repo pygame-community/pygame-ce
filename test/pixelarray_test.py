@@ -1309,6 +1309,16 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
         pixel = sf.get_at_mapped((0, 0))
         self.assertEqual(repr(ar), type(ar).__name__ + "([\n  [42, 42, 42]]\n)")
 
+    def test_zero_size_surface(self):
+        """Should not be able to create PixelArray on a surface with a width or height of 0
+        Regression test for pygame-ce issue 2275 (https://github.com/pygame-community/pygame-ce/issues/2275)
+        """
+        weird_surface = pygame.Surface((5, 0))
+        self.assertRaises(ValueError, lambda: pygame.PixelArray(weird_surface))
+
+        weird_surface = pygame.Surface((0, 5))
+        self.assertRaises(ValueError, lambda: pygame.PixelArray(weird_surface))
+
 
 @unittest.skipIf(IS_PYPY, "pypy having issues")
 class PixelArrayArrayInterfaceTest(unittest.TestCase, TestMixin):

@@ -176,6 +176,11 @@ cdef extern from "SDL.h" nogil:
     # https://wiki.libsdl.org/SDL_RenderCopyEx
     # https://wiki.libsdl.org/SDL_RenderCopyExF
     # https://wiki.libsdl.org/SDL_RenderPresent
+    int SDL_GetRenderDrawColor(SDL_Renderer* renderer,
+                               Uint8*        r, 
+                               Uint8*        g, 
+                               Uint8*        b,
+                               Uint8*        a)
     int SDL_SetRenderDrawColor(SDL_Renderer* renderer,
                                Uint8         r,
                                Uint8         g,
@@ -450,6 +455,13 @@ cdef extern from "pygame.h" nogil:
     ctypedef class pygame.Color [object pgColorObject]:
         cdef Uint8 data[4]
         cdef Uint8 len
+    
+    ctypedef enum pgColorHandleFlags:
+        PG_COLOR_HANDLE_SIMPLE
+        PG_COLOR_HANDLE_STR
+        PG_COLOR_HANDLE_INT
+        PG_COLOR_HANDLE_RESTRICT_SEQ
+        PG_COLOR_HANDLE_ALL
 
     ctypedef class pygame.Rect [object pgRectObject]:
         cdef SDL_Rect r
@@ -478,6 +490,7 @@ cdef extern from "pygame.h" nogil:
     object pgFRect_New4(float x, float y, float w, float h)
     void import_pygame_rect()
 
+    int pg_RGBAFromObjEx(object color, Uint8 rgba[], pgColorHandleFlags handle_flags) except 0
     object pgColor_NewLength(Uint8 rgba[], Uint8 length)
     void import_pygame_color()
     pgSurfaceObject *pgSurface_New2(SDL_Surface *info, int owner)
@@ -487,7 +500,6 @@ cdef extern from "pygame.h" nogil:
 
 cdef class Renderer:
     cdef SDL_Renderer* _renderer
-    cdef Color _draw_color
     cdef Texture _target
     cdef Window _win
     cdef int _is_borrowed
@@ -497,7 +509,6 @@ cdef class Renderer:
 
 cdef class Texture:
     cdef SDL_Texture* _tex
-    cdef Color _color
     cdef readonly Renderer renderer
     cdef readonly int width
     cdef readonly int height

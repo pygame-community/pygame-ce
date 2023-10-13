@@ -29,6 +29,7 @@ class _VidInfo:
     blit_sw_A: int
     current_h: int
     current_w: int
+    pixel_format: str
 
 def init() -> None: ...
 def quit() -> None: ...
