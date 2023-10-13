@@ -10,7 +10,7 @@ function toggleSectionVisibility(section){
             } else {
                 sessionStorage.setItem('hidden', section + '|');
             }
-            document.getElementById(section[0]).innerHTML = document.getElementById(section[0]).innerHTML.replace('▼', '▲');
+            document.getElementById(section[0]).innerHTML = document.getElementById(section[0]).innerHTML.replace('▼', '▶');
     } else {  // hide
         items = sessionStorage.getItem('hidden');
         if (items !== null){
@@ -19,7 +19,7 @@ function toggleSectionVisibility(section){
             }
             sessionStorage.setItem('hidden', items);
         }
-        document.getElementById(section[0]).innerHTML = document.getElementById(section[0]).innerHTML.replace('▲', '▼');
+        document.getElementById(section[0]).innerHTML = document.getElementById(section[0]).innerHTML.replace('▶', '▼');
     }
 }
 

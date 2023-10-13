@@ -183,9 +183,9 @@ For example: if module is for drawing, we will render it in "Drawing/Surface mod
         sessionStorage.getItem('hidden').split("|").forEach(element => {
           if (document.getElementById(element) !== null) {
             document.getElementById(element).hidden = true
-            document.getElementById(element[0]).innerHTML = document.getElementById(element[0]).innerHTML.replace('▼', '▲')
+            document.getElementById(element[0]).innerHTML = document.getElementById(element[0]).innerHTML.replace('▼', '▶')
           };
         });
       }
-    </script>
+	</script>
 {% endblock %}
