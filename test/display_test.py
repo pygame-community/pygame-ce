@@ -993,6 +993,13 @@ class MessageBoxInteractiveTest(unittest.TestCase):
         self.assertEqual(result, 4)
 
         result = pygame.display.message_box(
+            "Press Enter on your keyboard",
+            buttons=("O", "O", "O", "O", "O", "O"),
+            return_button=-3,
+        )
+        self.assertEqual(result, 3)
+
+        result = pygame.display.message_box(
             "Press Esc on your keyboard",
             buttons=("O", "O", "O", "O", "O", "O"),
             escape_button=2,
