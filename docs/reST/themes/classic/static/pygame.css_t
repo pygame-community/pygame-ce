@@ -251,8 +251,6 @@ input[type="submit"]{
     display: none;
 }
 input[name="q"]{
-    :-webkit-border-radius: 20px;
-    -moz-border-radius: 20px;
     border-radius: 20px;
     padding-left:1em;
     width: 10vw;
@@ -345,10 +343,8 @@ div.document {
 #Sections {
   overflow-y: auto;
   position: fixed;
+  height: 45%;
   height: -webkit-fill-available;
-  height: -moz-available;
-  height: fill-available;
-  height: -moz-available;
   width: inherit;
   padding-bottom: 2.5rem;
 }
@@ -356,8 +352,6 @@ div.document {
   overflow-y: auto;
   position: fixed;
   height: -webkit-fill-available;
-  height: -moz-available;
-  height: fill-available;
   width: inherit;
   padding-bottom: 2.5rem;
 }
@@ -1120,11 +1114,7 @@ a.tooltip:hover {
     border: 1px solid {{ theme_tooltipbdrcolor }};
     padding: 3px;
     border-radius: 5px 5px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
     box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.1);
-    -webkit-box-shadow: 5px 5px rgba(0, 0, 0, 0.1);
-    -moz-box-shadow: 5px 5px rgba(0, 0, 0, 0.1);
 }
 .dark-theme .tooltip-content {
     background-color: {{ theme_dark_tooltipbgcolor }};
