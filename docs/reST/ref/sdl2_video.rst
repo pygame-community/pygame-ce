@@ -134,7 +134,8 @@
       When keyboard grab is enabled, pygame will continue to handle ``Alt+Tab`` when
       the window is full-screen to ensure the user is not trapped in your application.
       If you have a custom keyboard shortcut to exit fullscreen mode, you may suppress
-      this behavior with ``SDL_HINT_ALLOW_ALT_TAB_WHILE_GRABBED``.
+      this behavior with an environment variable, e.g.
+       ``os.environ["SDL_ALLOW_ALT_TAB_WHILE_GRABBED"] = "0"``.
 
       This attribute requires SDL 2.0.16+.
 
