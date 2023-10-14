@@ -102,6 +102,7 @@ typedef struct {
 
     struct freetypeinstance_ *freetype; /* Personal reference */
     struct fontinternals_ *_internals;
+    unsigned int init_generation;
 } pgFontObject;
 
 #define pgFont_IS_ALIVE(o) (((pgFontObject *)(o))->_internals != 0)
