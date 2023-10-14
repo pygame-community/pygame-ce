@@ -164,7 +164,7 @@
       | :sl:`Get if the keyboard shortcuts are captured by the window (**read-only**)`
       | :sg:`keyboard_grabbed -> bool`
 
-      Get if the keyboard shortcuts is currently grabbed and captured by the window.
+      Get if the keyboard shortcuts are currently grabbed and captured by the window.
 
       Roughly equivalent to this expression:
          
