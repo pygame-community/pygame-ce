@@ -161,7 +161,7 @@
    
    .. attribute:: keyboard_grabbed
 
-      | :sl:`Get if the keyboard shortcuts is captured by the window (**read-only**)`
+      | :sl:`Get if the keyboard shortcuts are captured by the window (**read-only**)`
       | :sg:`keyboard_grabbed -> bool`
 
       Get if the keyboard shortcuts is currently grabbed and captured by the window.
