@@ -29,19 +29,16 @@ _pg_has_avx2()
 #define SETUP_AVX2_FILLER(COLOR_PROCESS_CODE)                                 \
     /* initialize surface data */                                             \
     int width = rect->w, height = rect->h;                                    \
-    int bpp = surface->format->BytesPerPixel;                                 \
-    int skip = (surface->pitch - width * bpp) >> 2;                           \
-    int pxl_skip = bpp >> 2;                                                  \
+    int skip = surface->pitch / 4 - width;                                    \
     /* indicates the number of pixels that can't be processed in 8-pixel      \
      * blocks */                                                              \
     int pxl_excess = width % 8;                                               \
     /* indicates the number of 8-pixel blocks that can be processed */        \
     int n_iters_8 = width / 8;                                                \
-    int excess_skip = pxl_excess * pxl_skip, block_skip = pxl_skip * 8;       \
     int i;                                                                    \
     /* load pixel data */                                                     \
-    Uint32 *pixels = (Uint32 *)surface->pixels +                              \
-                     rect->y * (surface->pitch >> 2) + rect->x * pxl_skip;    \
+    Uint32 *pixels =                                                          \
+        (Uint32 *)surface->pixels + rect->y * (surface->pitch / 4) + rect->x; \
                                                                               \
     __m256i mm256_dst;                                                        \
     __m256i mask =                                                            \
@@ -69,7 +66,7 @@ _pg_has_avx2()
             /* store 8 pixels */                                    \
             _mm256_storeu_si256((__m256i *)pixels, mm256_dst);      \
                                                                     \
-            pixels += block_skip;                                   \
+            pixels += 8;                                            \
         }                                                           \
                                                                     \
         if (pxl_excess) {                                           \
@@ -81,7 +78,7 @@ _pg_has_avx2()
             /* store up to 7 pixels */                              \
             _mm256_maskstore_epi32((int *)pixels, mask, mm256_dst); \
                                                                     \
-            pixels += excess_skip;                                  \
+            pixels += pxl_excess;                                   \
         }                                                           \
                                                                     \
         pixels += skip;                                             \

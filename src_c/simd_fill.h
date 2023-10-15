@@ -4,8 +4,6 @@
 int
 _pg_has_avx2();
 
-// SSE2 functions
-
 // AVX2 functions
 int
 surface_fill_blend_add_avx2(SDL_Surface *surface, SDL_Rect *rect,
