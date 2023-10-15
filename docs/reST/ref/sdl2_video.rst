@@ -80,7 +80,8 @@
    :param bool resizable: Create a resizable window.
    :param bool minimized: Create a mimized window.
    :param bool maximized: Create a maximized window.
-   :param bool input_grabbed: Create a window with a grabbed input focus.
+   :param bool mouse_grabbed: Create a window with grabbed mouse input.
+   :param bool keyboard_grabbed: Create a window with grabbed keyboard input.
    :param bool input_focus: Create a window with input focus.
    :param bool mouse_focus: Create a window with mouse focus.
    :param bool foreign: Marks a window not created by SDL.
@@ -99,15 +100,84 @@
                            (X11 only).
 
 
-   .. attribute:: grab
+   .. attribute:: grab_mouse
 
-      | :sl:`Get or set the window's input grab state`
-      | :sg:`grab -> bool`
+      | :sl:`Get or set the window's mouse grab mode`
+      | :sg:`grab_mouse -> bool`
 
-      Gets or sets the window's input grab state.
-      When input is grabbed, the mouse is confined to the window.
-      If the caller enables a grab while another window is currently grabbed,
-      the other window loses its grab in favor of the caller's window.
+      When this attribute is set to ``True``, the window will try to confine the mouse
+      cursor to itself.
+
+      Note this only set the "mode" of grab. The mouse may be confined to another window
+      depending on the window focus. To get if the mouse is currently restricted to this
+      window, please use :attr:`mouse_grabbed`.
+
+      .. seealso:: :attr:`mouse_grabbed`
+
+      .. versionadded:: 2.4.0
+   
+   .. attribute:: grab_keyboard
+
+      | :sl:`Get or set the window's keyboard grab mode`
+      | :sg:`grab_keyboard -> bool`
+      
+      When this attribute is set to ``True``, the window will try to capture system 
+      keyboard shortcuts like ``Alt+Tab`` or the ``Meta/Super`` key. 
+
+      This attribute only set the "mode" of grab. The keyboard may be captured by
+      another window depending on the window focus. To get if keyboard is currently 
+      captured by this window, please use :attr:`keyboard_grabbed`.
+      
+      Note that not all system keyboard shortcuts can be captured by applications
+      (one example is ``Ctrl+Alt+Del`` on Windows).
+
+      When keyboard grab is enabled, pygame will continue to handle ``Alt+Tab`` when
+      the window is full-screen to ensure the user is not trapped in your application.
+      If you have a custom keyboard shortcut to exit fullscreen mode, you may suppress
+      this behavior with an environment variable, e.g.
+       ``os.environ["SDL_ALLOW_ALT_TAB_WHILE_GRABBED"] = "0"``.
+
+      This attribute requires SDL 2.0.16+.
+
+      .. seealso:: :attr:`keyboard_grabbed`
+
+      .. versionadded:: 2.4.0
+      
+   .. attribute:: mouse_grabbed
+
+      | :sl:`Get if the mouse cursor is confined to the window (**read-only**)`
+      | :sg:`mouse_grabbed -> bool`
+
+      Get if the mouse cursor is currently grabbed and confined to the window.
+
+      Roughly equivalent to this expression:
+         
+      ::
+
+         win.grab_mouse and (win is get_grabbed_window())
+      
+      .. seealso:: :attr:`grab_mouse`
+      
+      .. versionadded:: 2.4.0
+   
+   .. attribute:: keyboard_grabbed
+
+      | :sl:`Get if the keyboard shortcuts are captured by the window (**read-only**)`
+      | :sg:`keyboard_grabbed -> bool`
+
+      Get if the keyboard shortcuts are currently grabbed and captured by the window.
+
+      Roughly equivalent to this expression:
+         
+      ::
+
+         win.grab_keyboard and (win is get_grabbed_window())
+      
+      This attribute requires SDL 2.0.16+.
+      
+      .. seealso:: :attr:`grab_keyboard`
+      
+      .. versionadded:: 2.4.0
 
    .. attribute:: title
 
@@ -150,6 +220,40 @@
 
       | :sl:`Get or set the window size in pixels`
       | :sg:`size -> (int, int)`
+   
+   .. attribute:: minimum_size
+
+      | :sl:`Get or set the minimum size of the window's client area`
+      | :sg:`minimum_size -> (int, int)`
+
+      Initial value in most cases is ``(0, 0)``. If :func:`from_display_module`
+      was used to create the window and :func:`pygame.display.set_mode` was
+      called with the ``SCALED`` flag, the initial value is the size used in
+      that call.
+      
+      Raises a ``ValueError`` if negative values are provided or 
+      if the width or height provided are greater than set 
+      maximum width or height respectively. Unless maximum size 
+      is ``(0, 0)`` (initial value).
+
+      .. seealso:: :attr:`maximum_size`.
+
+      .. versionadded:: 2.4.0
+   
+   .. attribute:: maximum_size
+
+      | :sl:`Get or set the maximum size of the window's client area`
+      | :sg:`maximum_size -> (int, int)`
+
+      Initial value is ``(0, 0)``.
+
+      Raises a ``ValueError`` if negative values are provided or 
+      if the width or height provided are less than set minimum 
+      width or height respectively.
+
+      .. seealso:: :attr:`minimum_size`.
+
+      .. versionadded:: 2.4.0
 
    .. attribute:: position
 

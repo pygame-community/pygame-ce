@@ -6,8 +6,6 @@
 
 #include "doc/sdl2_video_doc.h"
 
-#ifndef PYGAMEAPI_DISPLAY_INTERNAL  // to pass the static check
-// Copied from display.c
 #if !defined(__APPLE__)
 static char *icon_defaultname = "pygame_icon.bmp";
 static int icon_colorkey = 0;
@@ -92,8 +90,6 @@ display_resource_end:
     Py_XDECREF(name);
     return result;
 }
-
-#endif  // PYGAMEAPI_DISPLAY_INTERNAL
 
 static PyTypeObject pgWindow_Type;
 
@@ -232,21 +228,88 @@ window_set_icon(pgWindowObject *self, PyObject *arg)
 }
 
 static int
-window_set_grab(pgWindowObject *self, PyObject *arg, void *v)
+window_set_grab_mouse(pgWindowObject *self, PyObject *arg, void *v)
 {
     int enable = PyObject_IsTrue(arg);
     if (enable == -1)
         return -1;
 
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+    SDL_SetWindowMouseGrab(self->_win, enable);
+#else
     SDL_SetWindowGrab(self->_win, enable);
+#endif
 
     return 0;
 }
 
 static PyObject *
-window_get_grab(pgWindowObject *self, void *v)
+window_get_grab_mouse(pgWindowObject *self, void *v)
 {
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+    return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
+                           SDL_WINDOW_MOUSE_GRABBED);
+#else
+    return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
+                           SDL_WINDOW_INPUT_GRABBED);
+#endif
+}
+
+static PyObject *
+window_get_mouse_grabbed(pgWindowObject *self, void *v)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+    return PyBool_FromLong(SDL_GetWindowMouseGrab(self->_win));
+#else
     return PyBool_FromLong(SDL_GetWindowGrab(self->_win));
+#endif
+}
+
+static int
+window_set_grab_keyboard(pgWindowObject *self, PyObject *arg, void *v)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+    int enable = PyObject_IsTrue(arg);
+    if (enable == -1)
+        return -1;
+
+    SDL_SetWindowKeyboardGrab(self->_win, enable);
+#else
+    if (PyErr_WarnEx(PyExc_Warning, "'grab_keyboard' requires SDL 2.0.16+",
+                     1) == -1) {
+        return -1;
+    }
+#endif
+    return 0;
+}
+
+static PyObject *
+window_get_grab_keyboard(pgWindowObject *self, void *v)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+    return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
+                           SDL_WINDOW_KEYBOARD_GRABBED);
+#else
+    if (PyErr_WarnEx(PyExc_Warning, "'grab_keyboard' requires SDL 2.0.16+",
+                     1) == -1) {
+        return NULL;
+    }
+    return PyBool_FromLong(SDL_FALSE);
+#endif
+}
+
+static PyObject *
+window_get_keyboard_grabbed(pgWindowObject *self, void *v)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+    return PyBool_FromLong(SDL_GetWindowKeyboardGrab(self->_win));
+#else
+    if (PyErr_WarnEx(PyExc_Warning, "'keyboard_captured' requires SDL 2.0.16+",
+                     1) == -1) {
+        return NULL;
+    }
+    return PyBool_FromLong(SDL_FALSE);
+#endif
 }
 
 static int
@@ -371,6 +434,86 @@ window_get_size(pgWindowObject *self, void *v)
 {
     int w, h;
     SDL_GetWindowSize(self->_win, &w, &h);
+
+    return Py_BuildValue("(ii)", w, h);
+}
+
+static int
+window_set_minimum_size(pgWindowObject *self, PyObject *arg, void *v)
+{
+    int w, h;
+    int max_w, max_h;
+
+    if (!pg_TwoIntsFromObj(arg, &w, &h)) {
+        PyErr_SetString(PyExc_TypeError, "invalid size argument");
+        return -1;
+    }
+
+    if (w < 0 || h < 0) {
+        PyErr_SetString(
+            PyExc_ValueError,
+            "minimum width or height should not be less than zero");
+        return -1;
+    }
+
+    SDL_GetWindowMaximumSize(self->_win, &max_w, &max_h);
+    if ((max_w > 0 && max_h > 0) && (w > max_w || h > max_h)) {
+        PyErr_SetString(PyExc_ValueError,
+                        "minimum width or height should not be greater than "
+                        "maximum width or height respectively");
+        return -1;
+    }
+
+    SDL_SetWindowMinimumSize(self->_win, w, h);
+
+    return 0;
+}
+
+static PyObject *
+window_get_minimum_size(pgWindowObject *self, void *v)
+{
+    int w, h;
+    SDL_GetWindowMinimumSize(self->_win, &w, &h);
+
+    return Py_BuildValue("(ii)", w, h);
+}
+
+static int
+window_set_maximum_size(pgWindowObject *self, PyObject *arg, void *v)
+{
+    int w, h;
+    int min_w, min_h;
+
+    if (!pg_TwoIntsFromObj(arg, &w, &h)) {
+        PyErr_SetString(PyExc_TypeError, "invalid size argument");
+        return -1;
+    }
+
+    if (w < 0 || h < 0) {
+        PyErr_SetString(
+            PyExc_ValueError,
+            "maximum width or height should not be less than zero");
+        return -1;
+    }
+
+    SDL_GetWindowMinimumSize(self->_win, &min_w, &min_h);
+    if (w < min_w || h < min_h) {
+        PyErr_SetString(PyExc_ValueError,
+                        "maximum width or height should not be less than "
+                        "minimum width or height respectively");
+        return -1;
+    }
+
+    SDL_SetWindowMaximumSize(self->_win, w, h);
+
+    return 0;
+}
+
+static PyObject *
+window_get_maximum_size(pgWindowObject *self, void *v)
+{
+    int w, h;
+    SDL_GetWindowMaximumSize(self->_win, &w, &h);
 
     return Py_BuildValue("(ii)", w, h);
 }
@@ -530,13 +673,27 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                     if (_value_bool)
                         flags |= SDL_WINDOW_MAXIMIZED;
                 }
-                else if (!strcmp(_key_str, "input_grabbed")) {
+                else if (!strcmp(_key_str, "mouse_grabbed")) {
                     if (_value_bool)
 #if SDL_VERSION_ATLEAST(2, 0, 16)
                         flags |= SDL_WINDOW_MOUSE_GRABBED;
 #else
                         flags |= SDL_WINDOW_INPUT_GRABBED;
 #endif
+                }
+                else if (!strcmp(_key_str, "keyboard_grabbed")) {
+                    if (_value_bool) {
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+                        flags |= SDL_WINDOW_KEYBOARD_GRABBED;
+#else
+                        if (PyErr_WarnEx(PyExc_Warning,
+                                         "Keyword 'keyboard_grabbed' requires "
+                                         "SDL 2.0.16+",
+                                         1) == -1) {
+                            return -1;
+                        }
+#endif
+                    }
                 }
                 else if (!strcmp(_key_str, "input_focus")) {
                     if (_value_bool) {
@@ -731,8 +888,15 @@ static PyMethodDef window_methods[] = {
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef _window_getset[] = {
-    {"grab", (getter)window_get_grab, (setter)window_set_grab,
-     DOC_SDL2_VIDEO_WINDOW_GRAB, NULL},
+    {"grab_mouse", (getter)window_get_grab_mouse,
+     (setter)window_set_grab_mouse, DOC_SDL2_VIDEO_WINDOW_GRABMOUSE, NULL},
+    {"grab_keyboard", (getter)window_get_grab_keyboard,
+     (setter)window_set_grab_keyboard, DOC_SDL2_VIDEO_WINDOW_GRABKEYBOARD,
+     NULL},
+    {"mouse_grabbed", (getter)window_get_mouse_grabbed, NULL,
+     DOC_SDL2_VIDEO_WINDOW_MOUSEGRABBED, NULL},
+    {"keyboard_grabbed", (getter)window_get_keyboard_grabbed, NULL,
+     DOC_SDL2_VIDEO_WINDOW_KEYBOARDGRABBED, NULL},
     {"title", (getter)window_get_title, (setter)window_set_title,
      DOC_SDL2_VIDEO_WINDOW_TITLE, NULL},
     {"resizable", (getter)window_get_resizable, (setter)window_set_resizable,
@@ -744,6 +908,10 @@ static PyGetSetDef _window_getset[] = {
      NULL},
     {"size", (getter)window_get_size, (setter)window_set_size,
      DOC_SDL2_VIDEO_WINDOW_SIZE, NULL},
+    {"minimum_size", (getter)window_get_minimum_size,
+     (setter)window_set_minimum_size, DOC_SDL2_VIDEO_WINDOW_MINIMUMSIZE, NULL},
+    {"maximum_size", (getter)window_get_maximum_size,
+     (setter)window_set_maximum_size, DOC_SDL2_VIDEO_WINDOW_MAXIMUMSIZE, NULL},
     {"position", (getter)window_get_position, (setter)window_set_position,
      DOC_SDL2_VIDEO_WINDOW_POSITION, NULL},
     {"opacity", (getter)window_get_opacity, (setter)window_set_opacity,

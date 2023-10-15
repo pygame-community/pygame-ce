@@ -18,7 +18,7 @@ Header file: src_c/include/pygame.h
 
    The Pygame color object type :py:class:`pygame.Color`.
 
-.. c:function:: int pgColor_Check(PyObject *obj)
+.. c:function:: int pgColor_CheckExact(PyObject *obj)
 
    Return true if *obj* is an instance of type pgColor_Type,
    but not a pgColor_Type subclass instance.
@@ -36,10 +36,16 @@ Header file: src_c/include/pygame.h
    Argument *length* must be between ``1`` and ``4`` inclusive.
    On failure, raise a Python exception and return ``NULL``.
 
-.. c:function int pg_RGBAFromColorObj(PyObject *color, Uint8 rgba[])
+.. c:function:: int pg_RGBAFromObjEx(PyObject *color, Uint8 rgba[], pgColorHandleFlags handle_flags)
 
    Set the four element array *rgba* to the color represented by object *color*.
-   Return ``1`` on success, ``0`` otherwise.
-   No Python exceptions are raised.
+   Return ``1`` on success, ``0`` otherwise and sets a python exception.
    This in an extension of :c:func:`pg_RGBAFromObj` optimized for pgColor_Type
-   instances.
+   instances and tuples. It can also handle integer and string color inputs based
+   on ``handle_flags``.
+
+.. c:function:: int pg_MappedColorFromObj(PyObject *val, SDL_PixelFormat *format, Uint32 *color, pgColorHandleFlags handle_flags)
+
+   Like above function, but returns mapped color instead. One notable point of difference is
+   the way in which ints are handled (this function directly interprets the int passed as the
+   mapped color)

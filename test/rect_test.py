@@ -1539,6 +1539,29 @@ class RectTypeTest(unittest.TestCase):
         expected_r2 = Rect(r.left + move_x, r.top + move_y, r.width, r.height)
         self.assertEqual(expected_r2, r2)
 
+    def test_move_to(self):
+        r = Rect(1, 2, 3, 4)
+        topleft = (10, 20)
+        center = (10, 20)
+
+        r2 = r.move_to(topleft=topleft)
+        r3 = r.move_to(center=center)
+
+        expected_r2 = Rect(r.x, r.y, r.width, r.height)
+        expected_r2.topleft = topleft
+
+        expected_r3 = Rect(r.x, r.y, r.width, r.height)
+        expected_r3.center = center
+
+        self.assertEqual(expected_r2, r2)
+        self.assertEqual(expected_r3, r3)
+
+        self.assertIsInstance(r2, Rect)
+
+        self.assertRaises(TypeError, r.move_to, 1, 2, 3)
+        with self.assertRaises(TypeError):
+            r.move_to()
+
     def test_update_XYWidthHeight(self):
         """Test update with 4 int values(x, y, w, h)"""
         rect = Rect(0, 0, 1, 1)
@@ -1941,14 +1964,19 @@ class RectTypeTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             collide_item = rect.collidedict(rect_values)
 
-    def test_collidedict__invalid_use_values_format(self):
-        """Ensures collidedict correctly handles invalid use_values parameters."""
-        rect = Rect(0, 0, 1, 1)
-        d = {}
+    def test_collidedict__kwarg(self):
+        """Ensures the values keyword works with collidedict"""
+        rects = [Rect(i, i, i, i) for i in range(1, 5)]
 
-        for invalid_param in (None, d, 1.1):
-            with self.assertRaises(TypeError):
-                collide_item = rect.collidedict(d, invalid_param)
+        rect_dict = {i: tuple(rect) for i, rect in enumerate(rects)}
+        rect_dict_inverted = {v: k for k, v in rect_dict.items()}
+
+        try:
+            Rect(1, 2, 3, 4).collidedict(rect_dict, values=True)
+
+            Rect(1, 2, 3, 4).collidedict(rect_dict_inverted, values=False)
+        except TypeError as e:
+            self.fail(f"collidedict raised a TypeError with traceback:\n{e}")
 
     def test_collidedictall(self):
         """Ensures collidedictall detects collisions."""
@@ -2206,16 +2234,19 @@ class RectTypeTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             collide_items = rect.collidedictall(rect_values)
 
-    def test_collidedictall__invalid_use_values_format(self):
-        """Ensures collidedictall correctly handles invalid use_values
-        parameters.
-        """
-        rect = Rect(0, 0, 1, 1)
-        d = {}
+    def test_collidedictall__kwarg(self):
+        """Ensures the values keyword works with collidedictall"""
+        rects = [Rect(i, i, i, i) for i in range(1, 5)]
 
-        for invalid_param in (None, d, 1.1):
-            with self.assertRaises(TypeError):
-                collide_items = rect.collidedictall(d, invalid_param)
+        rect_dict = {i: tuple(rect) for i, rect in enumerate(rects)}
+        rect_dict_inverted = {v: k for k, v in rect_dict.items()}
+
+        try:
+            Rect(1, 2, 3, 4).collidedictall(rect_dict, values=True)
+
+            Rect(1, 2, 3, 4).collidedictall(rect_dict_inverted, values=False)
+        except TypeError as e:
+            self.fail(f"collidedictall raised a TypeError with traceback:\n{e}")
 
     def test_collidelist(self):
         # __doc__ (as of 2008-08-02) for pygame.rect.Rect.collidelist:
@@ -3278,6 +3309,13 @@ class SubclassTest(unittest.TestCase):
         mr1 = self.MyRect(1, 2, 10, 20)
         self.assertTrue(mr1.an_attribute)
         mr2 = mr1.move(1, 2)
+        self.assertTrue(isinstance(mr2, self.MyRect))
+        self.assertRaises(AttributeError, getattr, mr2, "an_attribute")
+
+    def test_move_to(self):
+        mr1 = self.MyRect(1, 2, 10, 20)
+        self.assertTrue(mr1.an_attribute)
+        mr2 = mr1.move_to(topleft=(10, 10))
         self.assertTrue(isinstance(mr2, self.MyRect))
         self.assertRaises(AttributeError, getattr, mr2, "an_attribute")
 

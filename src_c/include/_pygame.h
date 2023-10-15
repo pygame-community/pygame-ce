@@ -116,6 +116,12 @@ typedef struct pg_bufferinfo_s {
 #define pg_TwoFloatsFromObj \
     (*(int (*)(PyObject *, float *, float *))PYGAMEAPI_GET_SLOT(base, 7))
 
+#define pg_DoubleFromObj \
+    (*(int (*)(PyObject *, double *))PYGAMEAPI_GET_SLOT(base, 24))
+
+#define pg_TwoDoublesFromObj \
+    (*(int (*)(PyObject *, double *, double *))PYGAMEAPI_GET_SLOT(base, 25))
+
 #define pg_UintFromObj \
     (*(int (*)(PyObject *, Uint32 *))PYGAMEAPI_GET_SLOT(base, 8))
 
@@ -376,6 +382,10 @@ typedef struct pgEventObject pgEventObject;
 
 #define pg_GetKeyRepeat (*(void (*)(int *, int *))PYGAMEAPI_GET_SLOT(event, 5))
 
+#define pgEvent_GetKeyDownInfo (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 6))
+
+#define pgEvent_GetKeyUpInfo (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 7))
+
 #define import_pygame_event() IMPORT_PYGAME_MODULE(event)
 #endif
 
@@ -427,17 +437,19 @@ typedef struct pgColorObject pgColorObject;
 #ifndef PYGAMEAPI_COLOR_INTERNAL
 #define pgColor_Type (*(PyObject *)PYGAMEAPI_GET_SLOT(color, 0))
 
-#define pgColor_Check(x) ((x)->ob_type == &pgColor_Type)
+#define pgColor_CheckExact(x) ((x)->ob_type == &pgColor_Type)
 #define pgColor_New (*(PyObject * (*)(Uint8 *)) PYGAMEAPI_GET_SLOT(color, 1))
 
 #define pgColor_NewLength \
     (*(PyObject * (*)(Uint8 *, Uint8)) PYGAMEAPI_GET_SLOT(color, 3))
 
-#define pg_RGBAFromColorObj \
-    (*(int (*)(PyObject *, Uint8 *))PYGAMEAPI_GET_SLOT(color, 2))
+#define pg_RGBAFromObjEx                                                    \
+    (*(int (*)(PyObject *, Uint8 *, pgColorHandleFlags))PYGAMEAPI_GET_SLOT( \
+        color, 2))
 
-#define pg_RGBAFromFuzzyColorObj \
-    (*(int (*)(PyObject *, Uint8 *))PYGAMEAPI_GET_SLOT(color, 4))
+#define pg_MappedColorFromObj                           \
+    (*(int (*)(PyObject *, SDL_PixelFormat *, Uint32 *, \
+               pgColorHandleFlags))PYGAMEAPI_GET_SLOT(color, 4))
 
 #define pgColor_AsArray(x) (((pgColorObject *)x)->data)
 #define pgColor_NumComponents(x) (((pgColorObject *)x)->len)
@@ -461,6 +473,12 @@ typedef struct pgColorObject pgColorObject;
 */
 #define import_pygame_math() IMPORT_PYGAME_MODULE(math)
 #endif /* PYGAMEAPI_MATH_INTERNAL */
+
+#ifndef PYGAMEAPI_GEOMETRY_INTERNAL
+
+#define import_pygame_geometry() IMPORT_PYGAME_MODULE(geometry)
+
+#endif /* ~PYGAMEAPI_GEOMETRY_INTERNAL */
 
 /*
  * Window module
@@ -496,6 +514,7 @@ PYGAMEAPI_DEFINE_SLOTS(pixelarray);
 PYGAMEAPI_DEFINE_SLOTS(color);
 PYGAMEAPI_DEFINE_SLOTS(math);
 PYGAMEAPI_DEFINE_SLOTS(_window);
+PYGAMEAPI_DEFINE_SLOTS(geometry);
 #else /* ~PYGAME_H */
 PYGAMEAPI_EXTERN_SLOTS(base);
 PYGAMEAPI_EXTERN_SLOTS(rect);
@@ -509,6 +528,7 @@ PYGAMEAPI_EXTERN_SLOTS(pixelarray);
 PYGAMEAPI_EXTERN_SLOTS(color);
 PYGAMEAPI_EXTERN_SLOTS(math);
 PYGAMEAPI_EXTERN_SLOTS(_window);
+PYGAMEAPI_EXTERN_SLOTS(geometry);
 
 #endif /* ~PYGAME_H */
 
