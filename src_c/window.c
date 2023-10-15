@@ -6,9 +6,6 @@
 
 #include "doc/sdl2_video_doc.h"
 
-// prevent that code block copied from display.c from being linked twice
-#ifndef BUILD_STATIC
-
 #if !defined(__APPLE__)
 static char *icon_defaultname = "pygame_icon.bmp";
 static int icon_colorkey = 0;
@@ -93,8 +90,6 @@ display_resource_end:
     Py_XDECREF(name);
     return result;
 }
-
-#endif  // BUILD_STATIC
 
 static PyTypeObject pgWindow_Type;
 
