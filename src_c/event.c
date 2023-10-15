@@ -1562,7 +1562,7 @@ set_grab(PyObject *self, PyObject *arg)
     if (win) {
         if (doit) {
             SDL_SetWindowGrab(win, SDL_TRUE);
-            if (SDL_ShowCursor(SDL_QUERY) == SDL_DISABLE)
+            if (PG_CursorVisible() == SDL_DISABLE)
                 SDL_SetRelativeMouseMode(1);
             else
                 SDL_SetRelativeMouseMode(0);

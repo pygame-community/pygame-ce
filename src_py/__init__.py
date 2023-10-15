@@ -368,8 +368,6 @@ def __color_reduce(c):
 
 copyreg.pickle(Color, __color_reduce, __color_constructor)
 
-# Thanks for supporting pygame-ce.
-# Without support now, there won't be pygame-ce later.
 if "PYGAME_HIDE_SUPPORT_PROMPT" not in os.environ:
     print(
         f"pygame-ce {ver} (SDL {'.'.join(map(str, get_sdl_version()))}, "

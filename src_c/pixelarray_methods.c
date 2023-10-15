@@ -134,7 +134,7 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
     }
 
     /* Guarantee an identical format. */
-    new_surf = SDL_ConvertSurface(temp_surf, surf->format, 0);
+    new_surf = PG_ConvertSurface(temp_surf, surf->format);
     SDL_FreeSurface(temp_surf);
     if (!new_surf) {
         return RAISE(pgExc_SDLError, SDL_GetError());

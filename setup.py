@@ -16,7 +16,7 @@ EXTRAS = {}
 
 METADATA = {
     "name": "pygame-ce",
-    "version": "2.4.0.dev1",
+    "version": "2.4.0.dev3",
     "license": "LGPL",
     "url": "https://pyga.me",
     "author": "A community project.",
@@ -34,7 +34,6 @@ METADATA = {
         "Programming Language :: Assembly",
         "Programming Language :: C",
         "Programming Language :: Cython",
-        "Programming Language :: Objective C",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
@@ -884,7 +883,6 @@ class LintFormatCommand(Command):
         c_file_disallow = [
             "_sdl2/**",
             "pypm.c",
-            "SDL_gfx/**",
             "**/sse2neon.h",
             "doc/**",
             "_sprite.c",

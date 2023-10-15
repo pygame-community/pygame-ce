@@ -324,6 +324,14 @@ pg_vidinfo_getattr(PyObject *self, char *name)
         return PyLong_FromLong(current_h);
     else if (!strcmp(name, "current_w"))
         return PyLong_FromLong(current_w);
+    else if (!strcmp(name, "pixel_format")) {
+        const char *pixel_format_name =
+            SDL_GetPixelFormatName(info->vfmt->format);
+        if (!strncmp(pixel_format_name, "SDL_", 4)) {
+            pixel_format_name += 4;
+        }
+        return PyUnicode_FromString(pixel_format_name);
+    }
 
     return RAISE(PyExc_AttributeError, "does not exist in vidinfo");
 }
@@ -335,6 +343,9 @@ pg_vidinfo_str(PyObject *self)
     int current_h = -1;
     pg_VideoInfo *info = &((pgVidInfoObject *)self)->info;
     const char *pixel_format_name = SDL_GetPixelFormatName(info->vfmt->format);
+    if (!strncmp(pixel_format_name, "SDL_", 4)) {
+        pixel_format_name += 4;
+    }
 
     SDL_version versioninfo;
     SDL_VERSION(&versioninfo);
@@ -994,7 +1005,6 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
         }
 
-#pragma PG_WARN(Not setting bpp ?)
 #pragma PG_WARN(Add mode stuff.)
         {
             int w_1 = w, h_1 = h;
@@ -1351,6 +1361,14 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                              "on top of wayland, instead of wayland directly",
                              1) != 0)
                 return NULL;
+        }
+    }
+
+    if (depth != 0 && surface->surf->format->BitsPerPixel != depth) {
+        if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                         "The depth argument is deprecated, and is ignored",
+                         1)) {
+            return NULL;
         }
     }
 

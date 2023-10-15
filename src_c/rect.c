@@ -57,6 +57,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_pgTwoValuesFromFastcallArgs pgTwoValuesFromFastcallArgs_i
 #define RectExport_move pg_rect_move
 #define RectExport_moveIp pg_rect_move_ip
+#define RectExport_moveTo pg_rect_move_to
 #define RectExport_inflate pg_rect_inflate
 #define RectExport_inflateIp pg_rect_inflate_ip
 #define RectExport_scalebyIp pg_rect_scale_by_ip
@@ -136,14 +137,17 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_setsize pg_rect_setsize
 #define RectImport_primitiveType int
 #define RectImport_RectCheck pgRect_Check
+#define RectImport_OtherRectCheck pgFRect_Check
 #define RectImport_RectCheckExact pgRect_CheckExact
 #define RectImport_innerRectStruct SDL_Rect
+#define RectImport_otherInnerRectStruct SDL_FRect
 #define RectImport_innerPointStruct SDL_Point
 #define RectImport_fourPrimiviteFromObj four_ints_from_obj
 #define RectImport_primitiveFromObjIndex pg_IntFromObjIndex
 #define RectImport_twoPrimitivesFromObj pg_TwoIntsFromObj
 #define RectImport_PrimitiveFromObj pg_IntFromObj
 #define RectImport_RectObject pgRectObject
+#define RectImport_OtherRectObject pgFRectObject
 #define RectImport_TypeObject pgRect_Type
 #define RectImport_IntersectRectAndLine SDL_IntersectRectAndLine
 #define RectImport_PyBuildValueFormat "i"
@@ -168,6 +172,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_move pg_frect_move
 #define RectExport_pgTwoValuesFromFastcallArgs pgTwoValuesFromFastcallArgs_f
 #define RectExport_moveIp pg_frect_move_ip
+#define RectExport_moveTo pg_frect_move_to
 #define RectExport_inflate pg_frect_inflate
 #define RectExport_inflateIp pg_frect_inflate_ip
 #define RectExport_scalebyIp pg_frect_scale_by_ip
@@ -247,14 +252,17 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_setsize pg_frect_setsize
 #define RectImport_primitiveType float
 #define RectImport_RectCheck pgFRect_Check
+#define RectImport_OtherRectCheck pgRect_Check
 #define RectImport_RectCheckExact pgFRect_CheckExact
 #define RectImport_innerRectStruct SDL_FRect
+#define RectImport_otherInnerRectStruct SDL_Rect
 #define RectImport_innerPointStruct SDL_FPoint
 #define RectImport_fourPrimiviteFromObj four_floats_from_obj
 #define RectImport_primitiveFromObjIndex pg_FloatFromObjIndex
 #define RectImport_twoPrimitivesFromObj pg_TwoFloatsFromObj
 #define RectImport_PrimitiveFromObj pg_FloatFromObj
 #define RectImport_RectObject pgFRectObject
+#define RectImport_OtherRectObject pgRectObject
 #define RectImport_IntersectRectAndLine PG_IntersectFRectAndLine
 #define RectImport_TypeObject pgFRect_Type
 #define RectImport_PyBuildValueFormat "f"
@@ -464,6 +472,8 @@ static struct PyMethodDef pg_rect_methods[] = {
     {"unionall", (PyCFunction)pg_rect_unionall, METH_VARARGS,
      DOC_RECT_UNIONALL},
     {"move_ip", (PyCFunction)pg_rect_move_ip, METH_FASTCALL, DOC_RECT_MOVEIP},
+    {"move_to", (PyCFunction)pg_rect_move_to, METH_FASTCALL | METH_KEYWORDS,
+     DOC_RECT_MOVETO},
     {"inflate_ip", (PyCFunction)pg_rect_inflate_ip, METH_VARARGS,
      DOC_RECT_INFLATEIP},
     {"scale_by", (PyCFunction)pg_rect_scale_by, METH_VARARGS | METH_KEYWORDS,
@@ -514,6 +524,8 @@ static struct PyMethodDef pg_frect_methods[] = {
     {"unionall", (PyCFunction)pg_frect_unionall, METH_VARARGS,
      DOC_RECT_UNIONALL},
     {"move_ip", (PyCFunction)pg_frect_move_ip, METH_FASTCALL, DOC_RECT_MOVEIP},
+    {"move_to", (PyCFunction)pg_frect_move_to, METH_FASTCALL | METH_KEYWORDS,
+     DOC_RECT_MOVETO},
     {"inflate_ip", (PyCFunction)pg_frect_inflate_ip, METH_VARARGS,
      DOC_RECT_INFLATEIP},
     {"scale_by", (PyCFunction)pg_frect_scale_by, METH_VARARGS | METH_KEYWORDS,
