@@ -5,7 +5,7 @@ import os
 from pygame._sdl2.video import Window
 from pygame.version import SDL
 
-# os.environ["SDL_VIDEODRIVER"] = "dummy"
+os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 pygame.init()
 
@@ -27,18 +27,30 @@ class WindowTypeTest(unittest.TestCase):
         setattr(self.win, attr, 17)
         self.assertIsInstance(getattr(self.win, attr), bool)
 
-    def test_grab(self):
-        self.bool_attr_test("grab")
+    def test_grab_mouse_keyboard(self):
+        self.bool_attr_test("grab_mouse")
+        self.bool_attr_test("grab_keyboard")
 
-    @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
-    )
-    def test_grab_set(self):
-        self.win.grab = True
-        self.assertTrue(self.win.grab)
-        self.win.grab = False
-        self.assertFalse(self.win.grab)
+        self.win.grab_mouse = True
+        self.assertTrue(self.win.grab_mouse)
+        self.win.grab_mouse = False
+        self.assertFalse(self.win.grab_mouse)
+
+        if SDL >= (2, 0, 16):
+            self.win.grab_keyboard = True
+            self.assertTrue(self.win.grab_keyboard)
+            self.win.grab_keyboard = False
+            self.assertFalse(self.win.grab_keyboard)
+
+    def test_mouse_keyboard_grabbed(self):
+        self.assertIsInstance(getattr(self.win, "mouse_grabbed"), bool)
+        self.assertIsInstance(getattr(self.win, "keyboard_grabbed"), bool)
+        self.assertRaises(
+            AttributeError, lambda: setattr(self.win, "mouse_grabbed", False)
+        )
+        self.assertRaises(
+            AttributeError, lambda: setattr(self.win, "keyboard_grabbed", False)
+        )
 
     def test_title(self):
         self.assertEqual(self.win.title, self.DEFAULT_TITLE)
