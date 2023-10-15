@@ -234,7 +234,6 @@ window_update_from_surface(pgWindowObject *self, PyObject *const *args,
 static int SDLCALL
 _resize_event_watch(void *userdata, SDL_Event *event)
 {
-    pgSurfaceObject *display_surf;
     pgWindowObject *event_window_pg;
     SDL_Window *event_window;
     if ((event->type != SDL_WINDOWEVENT))
@@ -248,11 +247,7 @@ _resize_event_watch(void *userdata, SDL_Event *event)
         return 0;
 
     if (event_window_pg->_is_borrowed) {
-        display_surf = pg_GetDefaultWindowSurface();
-        if (!display_surf) {
-            return 0;
-        }
-        display_surf->surf = SDL_GetWindowSurface(event_window);
+        // have been handled by event watch in display.c
         return 0;
     }
 
