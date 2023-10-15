@@ -13,7 +13,8 @@ tar xf ${SNDFILE}
 cd $SNDNAME
 # autoreconf -fvi
 
-./configure $ARCHS_CONFIG_FLAG --disable-mpeg
+# alsa is only needed for examples here
+./configure $ARCHS_CONFIG_FLAG --disable-mpeg --disable-alsa
 make
 make install
 
