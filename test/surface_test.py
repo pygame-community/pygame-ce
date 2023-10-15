@@ -11,7 +11,6 @@ try:
 except (ImportError, NameError):
     pass
 import pygame
-import pygame
 from pygame.locals import *
 from pygame.bufferproxy import BufferProxy
 
