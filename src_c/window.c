@@ -125,7 +125,11 @@ window_destroy(pgWindowObject *self, PyObject *_null)
         self->_win = NULL;
     }
     if (self->surf) {
+        // Set the internal surface to NULL to make pygame surface invalid
+        // since this surface will be deallocated by SDL when the window is
+        // destroyed.
         self->surf->surf = NULL;
+
         Py_DECREF(self->surf);
         self->surf = NULL;
     }
@@ -685,7 +689,11 @@ window_dealloc(pgWindowObject *self, PyObject *_null)
         }
     }
     if (self->surf) {
+        // Set the internal surface to NULL to make pygame surface invalid
+        // since this surface will be deallocated by SDL when the window is
+        // destroyed.
         self->surf->surf = NULL;
+
         Py_DECREF(self->surf);
     }
 
