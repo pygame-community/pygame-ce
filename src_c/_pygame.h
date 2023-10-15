@@ -43,6 +43,10 @@
 #include <SDL.h>
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
+#define PG_ShowCursor SDL_ShowCursor
+#define PG_HideCursor SDL_HideCursor
+#define PG_CursorVisible SDL_CursorVisible
+
 #define PG_INIT_NOPARACHUTE 0
 
 // UINT16 audio no longer exists in SDL3
@@ -65,8 +69,13 @@
 
 #define PG_CreateSurface SDL_CreateSurface
 #define PG_CreateSurfaceFrom SDL_CreateSurfaceFrom
+#define PG_ConvertSurface SDL_ConvertSurface
+#define PG_ConvertSurfaceFormat SDL_ConvertSurfaceFormat
 
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
+#define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
+#define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
+#define PG_CursorVisible() SDL_ShowCursor(SDL_QUERY)
 
 #define PG_INIT_NOPARACHUTE SDL_INIT_NOPARACHUTE
 
@@ -88,6 +97,9 @@
     SDL_CreateRGBSurfaceWithFormat(0, width, height, 0, format)
 #define PG_CreateSurfaceFrom(pixels, width, height, pitch, format) \
     SDL_CreateRGBSurfaceWithFormatFrom(pixels, width, height, 0, pitch, format)
+#define PG_ConvertSurface(src, fmt) SDL_ConvertSurface(src, fmt, 0)
+#define PG_ConvertSurfaceFormat(src, pixel_format) \
+    SDL_ConvertSurfaceFormat(src, pixel_format, 0)
 
 #endif
 
@@ -304,6 +316,9 @@ typedef enum {
 supported Python version. #endif */
 
 #define RAISE(x, y) (PyErr_SetString((x), (y)), NULL)
+#define RAISERETURN(x, y, r)   \
+    PyErr_SetString((x), (y)); \
+    return r;
 #define DEL_ATTR_NOT_SUPPORTED_CHECK(name, value)                            \
     do {                                                                     \
         if (!value) {                                                        \
@@ -430,8 +445,9 @@ typedef enum {
 #define PYGAMEAPI_PIXELARRAY_NUMSLOTS 2
 #define PYGAMEAPI_COLOR_NUMSLOTS 5
 #define PYGAMEAPI_MATH_NUMSLOTS 2
-#define PYGAMEAPI_BASE_NUMSLOTS 24
+#define PYGAMEAPI_BASE_NUMSLOTS 26
 #define PYGAMEAPI_EVENT_NUMSLOTS 8
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1
+#define PYGAMEAPI_GEOMETRY_NUMSLOTS 1
 
 #endif /* _PYGAME_INTERNAL_H */

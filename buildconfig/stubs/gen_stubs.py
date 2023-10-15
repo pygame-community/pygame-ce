@@ -50,6 +50,7 @@ PG_AUTOIMPORT_SUBMODS = [
     "sysfont",
     "_debug",
     "system",
+    "geometry",
 ]
 
 # pygame classes that are autoimported into main namespace are kept in this dict
@@ -68,6 +69,7 @@ PG_AUTOIMPORT_CLASSES = {
     "mixer": ["Channel"],
     "time": ["Clock"],
     "joystick": ["Joystick"],
+    "geometry": ["Circle"],
 }
 
 # pygame modules from which __init__.py does the equivalent of

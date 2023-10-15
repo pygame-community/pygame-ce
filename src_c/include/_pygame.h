@@ -116,6 +116,12 @@ typedef struct pg_bufferinfo_s {
 #define pg_TwoFloatsFromObj \
     (*(int (*)(PyObject *, float *, float *))PYGAMEAPI_GET_SLOT(base, 7))
 
+#define pg_DoubleFromObj \
+    (*(int (*)(PyObject *, double *))PYGAMEAPI_GET_SLOT(base, 24))
+
+#define pg_TwoDoublesFromObj \
+    (*(int (*)(PyObject *, double *, double *))PYGAMEAPI_GET_SLOT(base, 25))
+
 #define pg_UintFromObj \
     (*(int (*)(PyObject *, Uint32 *))PYGAMEAPI_GET_SLOT(base, 8))
 
@@ -468,6 +474,12 @@ typedef struct pgColorObject pgColorObject;
 #define import_pygame_math() IMPORT_PYGAME_MODULE(math)
 #endif /* PYGAMEAPI_MATH_INTERNAL */
 
+#ifndef PYGAMEAPI_GEOMETRY_INTERNAL
+
+#define import_pygame_geometry() IMPORT_PYGAME_MODULE(geometry)
+
+#endif /* ~PYGAMEAPI_GEOMETRY_INTERNAL */
+
 /*
  * Window module
  */
@@ -503,6 +515,7 @@ PYGAMEAPI_DEFINE_SLOTS(pixelarray);
 PYGAMEAPI_DEFINE_SLOTS(color);
 PYGAMEAPI_DEFINE_SLOTS(math);
 PYGAMEAPI_DEFINE_SLOTS(_window);
+PYGAMEAPI_DEFINE_SLOTS(geometry);
 #else /* ~PYGAME_H */
 PYGAMEAPI_EXTERN_SLOTS(base);
 PYGAMEAPI_EXTERN_SLOTS(rect);
@@ -516,6 +529,7 @@ PYGAMEAPI_EXTERN_SLOTS(pixelarray);
 PYGAMEAPI_EXTERN_SLOTS(color);
 PYGAMEAPI_EXTERN_SLOTS(math);
 PYGAMEAPI_EXTERN_SLOTS(_window);
+PYGAMEAPI_EXTERN_SLOTS(geometry);
 
 #endif /* ~PYGAME_H */
 

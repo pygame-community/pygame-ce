@@ -21,6 +21,54 @@ in a future release of pygame.
    clipboard as the rest of the current API, but only strings are compatible with the 
    new API as of right now.
 
+.. function:: put_text
+
+   | :sl:`Places text into the clipboard.`
+   | :sg:`put_text(text) -> None`
+
+   Places the input text into the clipboard. The data should be a string.
+   This is the same clipboard as the legacy scrap API when using ``SCRAP_TEXT``.
+
+   :param string text: String to be placed into the clipboard
+   :rtype: None
+
+   :raises pygame.error: if video mode has not been set_mode
+
+   .. note:: ``pygame.display.set_mode()`` should be called before using the ``scrap`` module
+
+   .. versionadded:: 2.2.0
+
+   .. ## pygame.scrap.put_text
+
+.. function:: get_text
+   
+   | :sl:`Gets text from the clipboard.`
+   | :sg:`get_text() -> str`
+
+   Gets text from the clipboard and returns it. If the clipboard is empty,
+   returns an empty string. This is the same clipboard as the legacy scrap
+   API when using ``SCRAP_TEXT``.
+
+   :rtype: str
+
+   .. versionadded:: 2.2.0
+
+   .. ## pygame.scrap.get_text
+
+.. function:: has_text
+   
+   | :sl:`Checks if text is in the clipboard.`
+   | :sg:`has_text() -> bool`
+
+   Returns ``True`` if the clipboard has a string, otherwise returns ``False``.
+   This is the same clipboard as the legacy scrap API when using ``SCRAP_TEXT``.
+
+   :rtype: bool
+
+   .. versionadded:: 2.2.0
+
+   .. ## pygame.scrap.has_text
+
 **THE BELOW INFORMATION IS DEPRECATED IN PYGAME 2.2.0 AND WILL BE REMOVED IN THE FUTURE.**
 
 The scrap module is for transferring data to/from the clipboard. This allows
@@ -263,52 +311,4 @@ For an example of how the scrap module works refer to the examples page
    .. deprecated:: 2.2.0
 
    .. ## pygame.scrap.set_mode ##
-
-.. function:: put_text
-
-   | :sl:`Places text into the clipboard.`
-   | :sg:`put_text(text) -> None`
-
-   Places the input text into the clipboard. The data should be a string.
-   This is the same clipboard as the legacy scrap API when using ``SCRAP_TEXT``.
-
-   :param string text: String to be placed into the clipboard
-   :rtype: None
-
-   :raises pygame.error: if video mode has not been set_mode
-
-   .. note:: ``pygame.display.set_mode()`` should be called before using the ``scrap`` module
-
-   .. versionadded:: 2.2.0
-
-   .. ## pygame.scrap.put_text
-
-.. function:: get_text
-   
-   | :sl:`Gets text from the clipboard.`
-   | :sg:`get_text() -> str`
-
-   Gets text from the clipboard and returns it. If the clipboard is empty,
-   returns an empty string. This is the same clipboard as the legacy scrap
-   API when using ``SCRAP_TEXT``.
-
-   :rtype: str
-
-   .. versionadded:: 2.2.0
-
-   .. ## pygame.scrap.get_text
-
-.. function:: has_text
-   
-   | :sl:`Checks if text is in the clipboard.`
-   | :sg:`has_text() -> bool`
-
-   Returns ``True`` if the clipboard has a string, otherwise returns ``False``.
-   This is the same clipboard as the legacy scrap API when using ``SCRAP_TEXT``.
-
-   :rtype: bool
-
-   .. versionadded:: 2.2.0
-
-   .. ## pygame.scrap.has_text
 .. ## pygame.scrap ##

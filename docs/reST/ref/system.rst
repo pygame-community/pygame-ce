@@ -27,7 +27,6 @@
    ::
 
      {
-          'RDTSC': True,
           'ALTIVEC': False,
           'MMX': True,
           'SSE': True,
@@ -51,6 +50,9 @@
       SDL version < 2.24.0.
    
    .. versionadded:: 2.3.1
+
+    .. versionchanged:: 2.4.0 removed ``RDTSC`` key, 
+        as it has been removed in pre-release SDL3
 
 .. function:: get_total_ram
 
