@@ -827,7 +827,7 @@ required).
    This function may be called at any time, even before ``pygame.init()``.
 
    Negative values of ``return_button`` and ``escape_button`` are allowed
-   just like the list index.
+   just like standard Python list indexing.
 
    .. versionadded:: 2.4.0
    
