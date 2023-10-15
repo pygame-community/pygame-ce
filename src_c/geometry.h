@@ -37,5 +37,4 @@ pgCircle_FromObject(PyObject *obj, pgCircleBase *out);
 #define M_TWOPI 6.28318530717958647692
 #endif
 
-
 #endif  // PYGAME_CE_GEOMETRY_H
