@@ -14,7 +14,7 @@ What Are Special Flags?
 
         - :meth:`pygame.Surface.blit`
         - :meth:`pygame.Surface.blits`
-        - :meth:`pygame.Surface.blits`
+        - :meth:`pygame.Surface.fblits`
         - :meth:`pygame.Surface.fill`
 
     Specifically they are passed as the ``special_flags`` argument of these methods by using
