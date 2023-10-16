@@ -91,10 +91,10 @@ jobs:
           }
 
           - { 
-            name: "x86_64 (CPython 3.7 and Python 3.8)",
+            name: "x86_64 (Python 3.8)",
             macarch: x86_64,
-            # CPython 3.7, CPython/PyPy 3.8
-            pyversions: "cp37-* ?p38-*",
+            # CPython/PyPy 3.8
+            pyversions: "?p38-*",
           }
 
           - { 
@@ -177,7 +177,7 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.16.0
+        uses: pypa/cibuildwheel@v2.16.2
 
       - uses: actions/upload-artifact@v3
         with:

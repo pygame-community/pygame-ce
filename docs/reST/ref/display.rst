@@ -134,10 +134,9 @@ required).
    are set to ``0``, the Surface will have the same width or height as the
    screen resolution.
 
-   It is usually best to not pass the depth argument. It will default to the
-   best and fastest color depth for the system. If your game requires a
-   specific color format you can control the depth with this argument. Pygame
-   will emulate an unavailable color depth which can be slow.
+   Since pygame 2, the depth argument is ignored, in favour of the best
+   and fastest one. It also raises a deprecation warning since pygame-ce
+   2.4.0 if the passed in depth is not 0 or the one pygame selects.
 
    When requesting fullscreen display modes, sometimes an exact match for the
    requested size cannot be made. In these situations pygame will select
@@ -212,6 +211,8 @@ required).
    .. versionchanged:: 2.2.0 explicit request for "adaptive vsync"
 
    .. versionchanged:: 2.2.0 ``vsync=1`` does not require ``SCALED`` or ``OPENGL``
+
+   .. deprecated:: 2.4.0 The depth argument is ignored, and will be set to the optimal value
 
 
    Basic example:
@@ -311,12 +312,12 @@ required).
    mode to verify specific display options were satisfied. The VidInfo object
    has several attributes:
 
-   ::
+   .. code-block:: text
 
      hw:         1 if the display is hardware accelerated
      wm:         1 if windowed display modes can be used
-     video_mem:  The megabytes of video memory on the display. This is 0 if
-                 unknown
+     video_mem:  The megabytes of video memory on the display.
+                 This is 0 if unknown
      bitsize:    Number of bits used to store each pixel
      bytesize:   Number of bytes used to store each pixel
      masks:      Four values used to pack RGBA values into pixels
@@ -324,13 +325,20 @@ required).
      losses:     Four values used to pack RGBA values into pixels
      blit_hw:    1 if hardware Surface blitting is accelerated
      blit_hw_CC: 1 if hardware Surface colorkey blitting is accelerated
-     blit_hw_A:  1 if hardware Surface pixel alpha blitting is accelerated
+     blit_hw_A:  1 if hardware Surface pixel alpha blitting is
+                 accelerated
      blit_sw:    1 if software Surface blitting is accelerated
-     blit_sw_CC: 1 if software Surface colorkey blitting is accelerated
-     blit_sw_A:  1 if software Surface pixel alpha blitting is accelerated
-     current_h, current_w:  Height and width of the current video mode, or
-                 of the desktop mode if called before the display.set_mode
-                 is called. They are -1 on error.
+     blit_sw_CC: 1 if software Surface colorkey blitting is
+                 accelerated
+     blit_sw_A:  1 if software Surface pixel alpha blitting is
+                 accelerated
+     current_h, current_w:  Height and width of the current video
+                 mode, or of the desktop mode if called before
+                 the display.set_mode is called. They are -1 on error.
+     pixel_format: The pixel format of the display Surface as a string.
+                 E.g PIXELFORMAT_RGB888.
+
+   .. versionchanged:: 2.4.0 ``pixel_format`` attribute added.
 
    .. ## pygame.display.Info ##
 
@@ -793,5 +801,35 @@ required).
 
    .. versionadded:: 2.2.0
    .. ## pygame.display.set_allow_screensaver ##
+
+.. function:: message_box
+
+   | :sl:`Create a native GUI message box`
+   | :sg:`message_box(title, message=None, message_type='info', parent_window=None, buttons=('OK',), return_button=0, escape_button=None) -> int`
+
+   :param str title: A title string.
+   :param str message: A message string. If this parameter is set to ``None``, the message will be the title.
+   :param str message_type: Set the type of message_box, could be ``"info"``, ``"warn"`` or ``"error"``.
+   :param tuple buttons: An optional sequence of button name strings to show to the user.
+   :param int return_button: Button index to use if the return key is hit, ``0`` by default.
+   :param int escape_button: Button index to use if the escape key is hit, ``None`` for no button linked by default.
+..
+   (Uncomment this after the window API is published)
+   :param Window parent_window: The parent window of the message_box
+..
+
+   :return: The index of the button that was pushed.
+
+   This function should be called on the thread that ``set_mode()`` is called.
+   It will block execution of that thread until the user clicks a button or
+   closes the message_box.
+
+   This function may be called at any time, even before ``pygame.init()``.
+
+   Negative values of ``return_button`` and ``escape_button`` are allowed
+   just like standard Python list indexing.
+
+   .. versionadded:: 2.4.0
+   
 
 .. ## pygame.display ##
