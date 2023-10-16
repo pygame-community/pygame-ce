@@ -1,12 +1,18 @@
 from typing import (
     Sequence,
-    overload,
+    overload, Tuple,
 )
 
 class Circle:
     x: float
     y: float
     r: float
+    r_sqr: float
+    d: float
+    diameter: float
+    area: float
+    circumference: float
+    center: Tuple[float, float]
 
     @overload
     def __init__(self, x: float, y: float, r: float) -> None: ...
