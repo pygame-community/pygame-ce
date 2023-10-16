@@ -301,6 +301,10 @@
 
       Return a reference to the surface associated with the window.
       
+      The size of surface will automatically change to fit the window size.
+
+      The window surface become invalid when the window is destroyed.
+      
       .. seealso:: :func:`update_from_surface`
 
       .. versionadded:: 2.4.0
@@ -309,15 +313,21 @@
 
       | :sl:`Update the window surface to the window.`
       | :sg:`update_from_surface() -> None`
-      | :sg:`update_from_surface(rects) -> None`
 
       Update content from the window surface to the window.
 
-      You can pass the function a sequence of rectangles to update portions
-      of window. If no argument is passed it updates the entire window.
+      Here is an example of using ``get_surface`` and ``update_from_surface``:
 
-      Unlike :func:`pygame.display.update`, if ``None`` is included in the
-      sequence, a ``ValueError`` is raised.
+      .. code-block:: python
+
+         win = video.Window()
+         surf = win.get_surface() # get the window surface
+
+         # draw something on the surface
+         surf.fill((255,0,0))
+
+         win.update_from_surface() # update the surface to the window
+
 
       .. versionadded:: 2.4.0
 

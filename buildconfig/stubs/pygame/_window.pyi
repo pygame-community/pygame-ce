@@ -1,6 +1,6 @@
-from typing import Optional, Tuple, Union, final, overload
+from typing import Optional, Tuple, Union, final
 
-from pygame._common import Coordinate, RectValue, Sequence
+from pygame._common import Coordinate
 from pygame.locals import WINDOWPOS_UNDEFINED
 from pygame.surface import Surface
 
@@ -26,10 +26,7 @@ class Window:
     def set_modal_for(self, parent: Window) -> None: ...
     def set_icon(self, icon: Surface) -> None: ...
     def get_surface(self) -> Surface: ...
-    @overload
     def update_from_surface(self) -> None: ...
-    @overload
-    def update_from_surface(self, rects: Sequence[RectValue]) -> None: ...
     
     grab_mouse: bool
     grab_keyboard: bool

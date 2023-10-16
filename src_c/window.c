@@ -162,70 +162,15 @@ window_get_surface(pgWindowObject *self)
 }
 
 static PyObject *
-window_update_from_surface(pgWindowObject *self, PyObject *const *args,
-                           Py_ssize_t nargs)
+window_update_from_surface(pgWindowObject *self)
 {
     int result;
 
-    if (nargs > 1) {
-        PyErr_Format(PyExc_TypeError,
-                     "update_from_surface() takes from 0 to 1 positional "
-                     "arguments but %d were given",
-                     nargs);
-        return NULL;
-    }
-
-    // no argument
-    if (nargs == 0) {
-        Py_BEGIN_ALLOW_THREADS;
-        result = SDL_UpdateWindowSurface(self->_win);
-        Py_END_ALLOW_THREADS;
-        if (result) {
-            return RAISE(pgExc_SDLError, SDL_GetError());
-        }
-        Py_RETURN_NONE;
-    }
-
-    // argument is a sequence
-
-    PyObject *arg = args[0];
-
-    if (!PySequence_Check(arg)) {
-        return RAISE(
-            PyExc_ValueError,
-            "update_from_surface() requires a sequence of rect like objects");
-    }
-
-    Py_ssize_t seq_size = PySequence_Size(arg);
-    SDL_Rect tmp, *rect;
-    PyObject *item;
-    SDL_Rect *rect_array = malloc(seq_size * sizeof(SDL_Rect));
-    for (Py_ssize_t i = 0; i < seq_size; i++) {
-        item = PySequence_GetItem(arg, i);
-        if (!item) {
-            free(rect_array);
-            return NULL;
-        }
-        rect = pgRect_FromObject(item, &tmp);
-        Py_DECREF(item);
-        if (!rect) {
-            free(rect_array);
-            return RAISE(PyExc_TypeError,
-                         "update_from_surface() requires a sequence of rect "
-                         "like objects");
-        }
-        rect_array[i] = *rect;
-    }
-
     Py_BEGIN_ALLOW_THREADS;
-    result =
-        SDL_UpdateWindowSurfaceRects(self->_win, rect_array, (int)seq_size);
+    result = SDL_UpdateWindowSurface(self->_win);
     Py_END_ALLOW_THREADS;
-    if (result) {
-        free(rect_array);
+    if (result)
         return RAISE(pgExc_SDLError, SDL_GetError());
-    }
-    free(rect_array);
     Py_RETURN_NONE;
 }
 
@@ -1049,7 +994,7 @@ static PyMethodDef window_methods[] = {
     {"set_icon", (PyCFunction)window_set_icon, METH_O,
      DOC_SDL2_VIDEO_WINDOW_SETICON},
     {"update_from_surface", (PyCFunction)window_update_from_surface,
-     METH_FASTCALL, DOC_SDL2_VIDEO_WINDOW_UPDATEFROMSURFACE},
+     METH_NOARGS, DOC_SDL2_VIDEO_WINDOW_UPDATEFROMSURFACE},
     {"get_surface", (PyCFunction)window_get_surface, METH_NOARGS,
      DOC_SDL2_VIDEO_WINDOW_GETSURFACE},
     {"from_display_module", (PyCFunction)window_from_display_module,
