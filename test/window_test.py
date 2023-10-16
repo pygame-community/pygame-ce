@@ -5,8 +5,6 @@ import os
 from pygame._sdl2.video import Window
 from pygame.version import SDL
 
-os.environ["SDL_VIDEODRIVER"] = "dummy"
-
 pygame.init()
 
 
