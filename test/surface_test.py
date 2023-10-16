@@ -628,7 +628,9 @@ class SurfaceTypeTest(unittest.TestCase):
         self.assertIsInstance(rect, pygame.Rect)
         self.assertEqual(rect_kwargs.center, (100, 100))
         self.assertNotEqual(rect_kwargs.topleft, (1.0, 1.0))
-        if not IS_PYPY: #PyPy doesn't raise an AttributeError, so for PyPy we can just skip it.
+        if (
+            not IS_PYPY
+        ):  # PyPy doesn't raise an AttributeError, so for PyPy we can just skip it.
             with self.assertRaises(AttributeError):
                 surf.get_rect(centre=(100, 100))
             with self.assertRaises(TypeError):
@@ -650,7 +652,9 @@ class SurfaceTypeTest(unittest.TestCase):
         self.assertIsInstance(frect, pygame.FRect)
         self.assertEqual(frect_kwargs.center, (100, 100))
         self.assertNotEqual(frect_kwargs.topleft, (1.0, 1.0))
-        if not IS_PYPY: #PyPy doesn't raise an AttributeError, so for PyPy we can just skip it.
+        if (
+            not IS_PYPY
+        ):  # PyPy doesn't raise an AttributeError, so for PyPy we can just skip it.
             with self.assertRaises(AttributeError):
                 surf.get_frect(centre=(100, 100))
             with self.assertRaises(TypeError):
