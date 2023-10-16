@@ -5,7 +5,6 @@ from typing_extensions import TypedDict
 from pygame._data_classes import PowerState
 
 class _InstructionSets(TypedDict):
-    RDTSC: bool
     ALTIVEC: bool
     MMX: bool
     SSE: bool

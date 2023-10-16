@@ -438,7 +438,7 @@ _PGFT_Render_NewSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
     else {
         pixelformat = SDL_PIXELFORMAT_RGBA32;
     }
-    surface = SDL_CreateRGBSurfaceWithFormat(0, width, height, 0, pixelformat);
+    surface = PG_CreateSurface(width, height, pixelformat);
     if (!surface) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return 0;
