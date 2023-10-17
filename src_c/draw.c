@@ -1068,10 +1068,8 @@ clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2, int width,
         top = MIN(*y1, *y2) - width;
         bottom = MAX(*y1, *y2) + width;
     }
-    // 4 = no points within clip boundary
-    // 0 = all points within clip boundary
-    return ((surf->clip_rect.x > right) + (surf->clip_rect.y > bottom) +
-        (surf->clip_rect.x + surf->clip_rect.w <= left) +
+    return ((surf->clip_rect.x > right) || (surf->clip_rect.y > bottom) ||
+        (surf->clip_rect.x + surf->clip_rect.w <= left) ||
         (surf->clip_rect.y + surf->clip_rect.h <= top));
 }
 
@@ -1527,15 +1525,13 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     int extra_width = 1 - (width % 2);
 
     width = (width / 2);
-
     /* Decide which direction to grow (width/thickness). */
     if (abs(x1 - x2) <= abs(y1 - y2)) {
         /* The line's thickness will be in the x direction. The top/bottom
          * ends of the line will be flat. */
         xinc = 1;
     }
-    int clipval = clip_line(surf, &x1, &y1, &x2, &y2, width, xinc);
-    if (clipval == 4)
+    if (clip_line(surf, &x1, &y1, &x2, &y2, width, xinc))
         return;
 
     if (x1 == x2 && y1 == y2) { /* Single point */
@@ -1581,12 +1577,11 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
             err += diff * dx;
             // Calculate change in x value (x = y/m), uses ceil for consistency
             // between positive/negative values
-            diff = (int)ceil(((float)diff * dx) / (float)-dy);
+            diff = (int)ceil((diff * dx) / (float)-dy);
             x1 += diff * sx;
             // Adjust err value to correct for change in x axis
             err += diff * dy;
         }
-
         // Continue through normal Bresenham's line algorithm iteration
         while (y1 != exit) {
 
@@ -1622,7 +1617,7 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
         }
         else {
             diff = x1 - end_x;
-            exit = intmax(surf->clip_rect.x, x2 + sx);
+            exit = intmax(surf->clip_rect.x - 1, x2 + sx);
         }
         // If line starts outside of surface
         if (diff > 0) {
@@ -1632,11 +1627,12 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
             err += diff * dy;
             // Calculate change in y value (y = mx), uses ceil for consistency
             // between positive/negative values
-            diff = (int)ceil(((float)diff * -dy) / (float)dx);
+            diff = (int)ceil((diff * -dy) / (float)dx);
             y1 += diff * sy;
             // Adjust err value to correct for change in y axis
             err += diff * dx;
         }
+
 
         // Continue through normal Bresenham's line algorithm iteration
         while (x1 != exit) {
@@ -1648,8 +1644,6 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
                 drawvertline(surf, color, start_draw, x1, end_draw);
             }
 
-            else
-                break;
             e2 = err * 2;
             if (e2 >= dy) {
                 err += dy;
@@ -1682,7 +1676,7 @@ draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
         xinc = 1;
     }
 
-    if (clip_line(surf, &x1, &y1, &x2, &y2, 0, xinc) == 4)
+    if (clip_line(surf, &x1, &y1, &x2, &y2, 0, xinc))
         return;
 
     if (y1 == y2) { /* Horizontal line */
