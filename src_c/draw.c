@@ -1043,11 +1043,15 @@ add_line_to_drawn_list(int x1, int y1, int x2, int y2, int *pts)
 }
 
 // Prevents double evaluation
-inline static int intmin(int a, int b) {
+inline static int
+intmin(int a, int b)
+{
     return ((a) < (b) ? (a) : (b));
 }
 
-inline static int intmax(int a, int b) {
+inline static int
+intmax(int a, int b)
+{
     return ((a) > (b) ? (a) : (b));
 }
 
@@ -1069,8 +1073,8 @@ clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2, int width,
         bottom = MAX(*y1, *y2) + width;
     }
     return ((surf->clip_rect.x > right) || (surf->clip_rect.y > bottom) ||
-        (surf->clip_rect.x + surf->clip_rect.w <= left) ||
-        (surf->clip_rect.y + surf->clip_rect.h <= top));
+            (surf->clip_rect.x + surf->clip_rect.w <= left) ||
+            (surf->clip_rect.y + surf->clip_rect.h <= top));
 }
 
 static int
@@ -1509,8 +1513,6 @@ static void
 draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
                 int y2, int width, int *drawn_area)
 {
-
-
     if (width < 1)
         return;
     if (width == 1) {
@@ -1544,7 +1546,6 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
         return;
     }
 
-
     // Bresenham's line algorithm
     dx = abs(x2 - x1);
     dy = -abs(y2 - y1);
@@ -1553,7 +1554,8 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     err = dx + dy;
     // If line is more vertical than horizontal
     if (xinc) {
-        drawn_area[0] = intmax((intmin(x1, x2) - width) + extra_width, surf->clip_rect.x);
+        drawn_area[0] =
+            intmax((intmin(x1, x2) - width) + extra_width, surf->clip_rect.x);
         drawn_area[1] = intmax(intmin(y1, y2), surf->clip_rect.y);
         drawn_area[2] = intmin(intmax(x1, x2) + width, end_x);
         drawn_area[3] = intmin(intmax(y1, y2), end_y);
@@ -1584,9 +1586,7 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
         }
         // Continue through normal Bresenham's line algorithm iteration
         while (y1 != exit) {
-
-            start_draw =
-                intmax((x1 - width) + extra_width, surf->clip_rect.x);
+            start_draw = intmax((x1 - width) + extra_width, surf->clip_rect.x);
             end_draw = intmin(end_x, x1 + width);
             if (start_draw <= end_draw) {
                 drawhorzline(surf, color, start_draw, y1, end_draw);
@@ -1605,7 +1605,8 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
     }
     else {
         drawn_area[0] = intmax(intmin(x1, x2), surf->clip_rect.x);
-        drawn_area[1] = intmax((intmin(y1, y2) - width) + extra_width, surf->clip_rect.y);
+        drawn_area[1] =
+            intmax((intmin(y1, y2) - width) + extra_width, surf->clip_rect.y);
         drawn_area[2] = intmin(MAX(x1, x2), end_x);
         drawn_area[3] = intmin(intmax(y1, y2) + width, end_y);
         // Set exit to x value of where line will leave surface
@@ -1633,12 +1634,9 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
             err += diff * dx;
         }
 
-
         // Continue through normal Bresenham's line algorithm iteration
         while (x1 != exit) {
-
-            start_draw =
-                intmax((y1 - width) + extra_width, surf->clip_rect.y);
+            start_draw = intmax((y1 - width) + extra_width, surf->clip_rect.y);
             end_draw = intmin(end_y, y1 + width);
             if (start_draw <= end_draw) {
                 drawvertline(surf, color, start_draw, x1, end_draw);
@@ -1681,16 +1679,18 @@ draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
 
     if (y1 == y2) { /* Horizontal line */
         if (x1 < x2) {
-            drawhorzline(surf, color, intmax(x1, surf->clip_rect.x), y1,
-                         intmin(x2, surf->clip_rect.x + surf->clip_rect.w - 1));
+            drawhorzline(
+                surf, color, intmax(x1, surf->clip_rect.x), y1,
+                intmin(x2, surf->clip_rect.x + surf->clip_rect.w - 1));
             add_line_to_drawn_list(
                 intmax(x1, surf->clip_rect.x), y1,
                 intmin(x2, surf->clip_rect.x + surf->clip_rect.w - 1), y1,
                 drawn_area);
         }
         else {
-            drawhorzline(surf, color, intmax(x2, surf->clip_rect.x), y1,
-                         intmin(x1, surf->clip_rect.x + surf->clip_rect.w - 1));
+            drawhorzline(
+                surf, color, intmax(x2, surf->clip_rect.x), y1,
+                intmin(x1, surf->clip_rect.x + surf->clip_rect.w - 1));
             add_line_to_drawn_list(
                 intmax(x2, surf->clip_rect.x), y1,
                 intmin(x1, surf->clip_rect.x + surf->clip_rect.w - 1), y1,
@@ -1700,16 +1700,18 @@ draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
     }
     if (x1 == x2) { /* Vertical line */
         if (y1 < y2) {
-            drawvertline(surf, color, intmax(y1, surf->clip_rect.y), x1,
-                         intmin(y2, surf->clip_rect.y + surf->clip_rect.h - 1));
+            drawvertline(
+                surf, color, intmax(y1, surf->clip_rect.y), x1,
+                intmin(y2, surf->clip_rect.y + surf->clip_rect.h - 1));
             add_line_to_drawn_list(
                 x1, intmax(y1, surf->clip_rect.y), x1,
                 intmin(y2, surf->clip_rect.y + surf->clip_rect.h - 1),
                 drawn_area);
         }
         else {
-            drawvertline(surf, color, intmax(y2, surf->clip_rect.y), x1,
-                         intmin(y1, surf->clip_rect.y + surf->clip_rect.h - 1));
+            drawvertline(
+                surf, color, intmax(y2, surf->clip_rect.y), x1,
+                intmin(y1, surf->clip_rect.y + surf->clip_rect.h - 1));
             add_line_to_drawn_list(
                 x1, intmax(y2, surf->clip_rect.y), x1,
                 intmin(y1, surf->clip_rect.y + surf->clip_rect.h - 1),
@@ -1719,8 +1721,10 @@ draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
     }
     drawn_area[0] = intmax(intmin(x1, x2), surf->clip_rect.x);
     drawn_area[1] = intmax(intmin(y1, y2), surf->clip_rect.y);
-    drawn_area[2] = intmin(intmax(x1, x2), surf->clip_rect.x + surf->clip_rect.w - 1);
-    drawn_area[3] = intmin(intmax(y1, y2), surf->clip_rect.y + surf->clip_rect.h - 1);
+    drawn_area[2] =
+        intmin(intmax(x1, x2), surf->clip_rect.x + surf->clip_rect.w - 1);
+    drawn_area[3] =
+        intmin(intmax(y1, y2), surf->clip_rect.y + surf->clip_rect.h - 1);
     dx = abs(x2 - x1);
     dy = -abs(y2 - y1);
     sx = x2 > x1 ? 1 : -1;
