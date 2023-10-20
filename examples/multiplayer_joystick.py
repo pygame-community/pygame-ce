@@ -64,52 +64,51 @@ zero_joy_connected = True
 
 while True:
     for event in pygame.event.get():
-        match event.type:
-            case pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            case pygame.JOYDEVICEADDED:
-                if len(active_players) < len(players):
-                    # connect controller
-                    connect_joystick(event.device_index)
-                    zero_joy_connected = False
-            case pygame.JOYDEVICEREMOVED:
-                # disconnect controller
-                if event.instance_id in active_players:
-                    disconnect_joystick(event.instance_id)
-                    # check if there is at leat one controller connected
-                    zero_joy_connected = True
-                    for player in players:
-                        if player:
-                            zero_joy_connected = False
-                            break
-            case pygame.JOYBUTTONDOWN:
-                if event.instance_id in active_players:
-                    # join player
-                    if event.button == 0:
-                        index = active_players[event.instance_id]
-                        players[index]["joined"] = True
-                        print(f"P{index + 1} joined")
-                    # leave player
-                    if event.button == 1:
-                        index = active_players[event.instance_id]
-                        if players[index]["joined"]:
-                            players[index]["joined"] = False
-                            players[index]["pos"] = [WIDHT * 0.25 + index * 64, 128]
-                            print(f"P{index + 1} leave")
-            case pygame.JOYAXISMOTION:
-                if event.instance_id in active_players:
-                    # change the color if player still hasn't joined
-                    if event.axis == 0:
-                        index = active_players[event.instance_id]
-                        player = players[index]
-                        if not player["joined"]:
-                            if event.value >= 1.0:
-                                player["surf_idx"] += 1
-                            elif event.value <= -1.0:
-                                player["surf_idx"] -= 1
-                            player["surf_idx"] = player["surf_idx"] % len(colors)
-                            player["surf"] = colors[player["surf_idx"]]
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        elif event.type == pygame.JOYDEVICEADDED:
+            if len(active_players) < len(players):
+                # connect controller
+                connect_joystick(event.device_index)
+                zero_joy_connected = False
+        elif event.type == pygame.JOYDEVICEREMOVED:
+            # disconnect controller
+            if event.instance_id in active_players:
+                disconnect_joystick(event.instance_id)
+                # check if there is at leat one controller connected
+                zero_joy_connected = True
+                for player in players:
+                    if player:
+                        zero_joy_connected = False
+                        break
+        elif event.type == pygame.JOYBUTTONDOWN:
+            if event.instance_id in active_players:
+                # join player
+                if event.button == 0:
+                    index = active_players[event.instance_id]
+                    players[index]["joined"] = True
+                    print(f"P{index + 1} joined")
+                # leave player
+                if event.button == 1:
+                    index = active_players[event.instance_id]
+                    if players[index]["joined"]:
+                        players[index]["joined"] = False
+                        players[index]["pos"] = [WIDHT * 0.25 + index * 64, 128]
+                        print(f"P{index + 1} leave")
+        elif event.type == pygame.JOYAXISMOTION:
+            if event.instance_id in active_players:
+                # change the color if player still hasn't joined
+                if event.axis == 0:
+                    index = active_players[event.instance_id]
+                    player = players[index]
+                    if not player["joined"]:
+                        if event.value >= 1.0:
+                            player["surf_idx"] += 1
+                        elif event.value <= -1.0:
+                            player["surf_idx"] -= 1
+                        player["surf_idx"] = player["surf_idx"] % len(colors)
+                        player["surf"] = colors[player["surf_idx"]]
 
     screen.fill((30, 30, 30))
     pygame.draw.line(screen, (230, 230, 230), (0, 96), (WIDHT, 96), 2)
