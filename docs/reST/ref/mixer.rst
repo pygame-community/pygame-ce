@@ -67,6 +67,10 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    playback. The buffer size must be a power of two (if not it is rounded up to
    the next nearest power of 2).
 
+   The devicename parameter is the name of sound device to open for audio
+   playback.  Allowed device names will vary based on the host system.
+   If left as ``None`` then a sensible default will be chosen for you.
+
    Some platforms require the :mod:`pygame.mixer` module to be initialized
    after the display modules have initialized. The top level ``pygame.init()``
    takes care of this automatically, but cannot pass any arguments to the mixer
