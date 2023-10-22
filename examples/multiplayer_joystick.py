@@ -10,7 +10,6 @@ def connect_joystick(index):
         players[index] = {
             "joy": joy,
             "pos": [WIDTH * 0.25 + index * 64, 128],
-            "move": [0, 0],
             "surf_idx": index,
             "surf": colors[index],
             "joined": False,
@@ -30,10 +29,8 @@ def controll_player(player):  # move player
     joy = player["joy"]
     if not player["joined"]:
         return
-    player["move"][0] = joy.get_axis(0)
-    player["move"][1] = joy.get_axis(1)
-    player["pos"][0] += player["move"][0] * 5
-    player["pos"][1] += player["move"][1] * 5
+    player["pos"][0] += joy.get_axis(0) * 5
+    player["pos"][1] += joy.get_axis(1) * 5
 
 
 def create_surf(size, color):
