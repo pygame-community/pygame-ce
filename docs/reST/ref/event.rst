@@ -455,7 +455,8 @@ On Android, the following events can be generated
    | :sl:`make custom user event type`
    | :sg:`custom_type() -> int`
 
-   Reserves a ``pygame.USEREVENT`` for a custom use.
+   Returns an integer value that represents a reserved ``pygame.USEREVENT`` for a custom use.
+  
 
    If too many events are made a :exc:`pygame.error` is raised.
 
