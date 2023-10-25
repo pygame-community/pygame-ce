@@ -25,8 +25,9 @@ class Window:
     def minimize(self) -> None: ...
     def set_modal_for(self, parent: Window) -> None: ...
     def set_icon(self, icon: Surface) -> None: ...
-
-    grab: bool
+    
+    grab_mouse: bool
+    grab_keyboard: bool
     title: str
     resizable: bool
     borderless: bool
@@ -34,6 +35,10 @@ class Window:
     relative_mouse: bool
     opacity: float
 
+    @property
+    def mouse_grabbed(self) -> bool: ...
+    @property
+    def keyboard_grabbed(self) -> bool: ...
     @property
     def id(self) -> int: ...
     @property
