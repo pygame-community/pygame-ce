@@ -72,6 +72,8 @@
 #define PG_ConvertSurface SDL_ConvertSurface
 #define PG_ConvertSurfaceFormat SDL_ConvertSurfaceFormat
 
+#define PG_SurfaceHasRLE(src) SDL_SurfaceHasRLE(src)
+
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
 #define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
@@ -100,7 +102,7 @@
 #define PG_ConvertSurface(src, fmt) SDL_ConvertSurface(src, fmt, 0)
 #define PG_ConvertSurfaceFormat(src, pixel_format) \
     SDL_ConvertSurfaceFormat(src, pixel_format, 0)
-
+#define PG_SurfaceHasRLE(src) SDL_HasSurfaceRLE(src)
 #endif
 
 /* DictProxy is useful for event posting with an arbitrary dict. Maintains

@@ -11,6 +11,7 @@
 
 */
 
+#include "_pygame.h"
 #define NO_PYGAME_C_API
 #include "pygame.h"
 
@@ -585,8 +586,11 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
          */
         rz_dst = PG_CreateSurface(dstwidth, dstheight, rz_src->format->format);
         if (SDL_GetColorKey(src, &colorkey) == 0) {
-            if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0 ||
-                SDL_SetSurfaceRLE(rz_dst, SDL_TRUE) != 0) {
+            if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0) {
+                SDL_FreeSurface(rz_dst);
+                return NULL;
+            }
+            if (PG_SurfaceHasRLE(src) && SDL_SetSurfaceRLE(rz_dst, SDL_TRUE) != 0) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;
             }
@@ -636,10 +640,14 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * Target surface is 32bit with source RGBA/ABGR ordering
          */
+
         rz_dst = PG_CreateSurface(dstwidth, dstheight, rz_src->format->format);
         if (SDL_GetColorKey(src, &colorkey) == 0) {
-            if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0 ||
-                SDL_SetSurfaceRLE(rz_dst, SDL_TRUE) != 0) {
+            if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0) {
+                SDL_FreeSurface(rz_dst);
+                return NULL;
+            }
+            if (PG_SurfaceHasRLE(src) && SDL_SetSurfaceRLE(rz_dst, SDL_TRUE) != 0) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;
             }
