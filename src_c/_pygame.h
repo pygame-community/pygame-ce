@@ -106,7 +106,19 @@
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
 #else
 // vendored in until our lowest SDL version is 2.0.14
-#include "_blit_info.h"
+struct SDL_BlitMap
+{
+    SDL_Surface *dst;
+    int identity;
+    SDL_blit blit;
+    void *data;
+    SDL_BlitInfo info;
+
+    /* the version count matches the destination; mismatch indicates
+       an invalid mapping */
+    Uint32 dst_palette_version;
+    Uint32 src_palette_version;
+};
 #define SDL_COPY_RLE_DESIRED 0x00001000
 
 SDL_bool
