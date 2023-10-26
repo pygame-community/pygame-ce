@@ -220,10 +220,11 @@ sprite module.
 
   :class:`RenderUpdates <pygame.sprite.RenderUpdates>`
 
-    This is the Cadillac of rendering ``Groups``. It is inherited from
-    ``RenderClear``, but changes the ``draw()`` method to also return a list of
-    pygame ``Rects``, which represent all the areas on screen that have been
-    changed.
+    This group is inherited from ``RenderClear``, but changes the
+    ``draw()`` method to also return a list of pygame ``Rects``,
+    which represent all the areas on screen that have been changed.
+    Generally you don't need to use this group, but it is included for
+    completeness.
 
 That is the list of different groups available We'll discuss more about these
 rendering groups in the next section. There's nothing stopping you from
@@ -241,33 +242,9 @@ The Rendering Groups
 --------------------
 
 From above we can see there are three different rendering groups. We could
-probably just get away with the ``RenderUpdates`` one, but it adds overhead not
-really needed for something like a scrolling game. So we have a couple tools
-here, pick the right one for the right job.
-
-For a scrolling type game, where the background completely changes every frame,
-we obviously don't need to worry about python's update rectangles in the call
-to ``display.update()``. You should definitely go with the ``RenderPlain``
-group here to manage your rendering.
-
-For games where the background is more stationary, you definitely don't want
-pygame updating the entire screen (since it doesn't need to). This type of game
-usually involves erasing the old position of each object, then drawing it in a
-new place for each frame. This way we are only changing what is necessary.
-Most of the time you will just want to use the ``RenderUpdates`` class here.
-Since you will also want to pass this list of changes to the
-``display.update()`` function.
-
-The ``RenderUpdates`` class also does a good job at minimizing overlapping
-areas in the list of updated rectangles. If the previous position and current
-position of an object overlap, it will merge them into a single rectangle.
-Combined with the fact that it properly handles deleted objects, this is
-one powerful ``Group`` class. If you've written a game that manages the changed
-rectangles for the objects in a game, you know this the cause for a lot of
-messy code in your game. Especially once you start to throw in objects that can
-be deleted at any time. All this work is reduced to a ``clear()`` and
-``draw()`` method with this monster class. Plus with the overlap checking, it
-is likely faster than when you did it manually.
+probably just get away with the ``RenderPlain`` one. For a scrolling or stationary
+type game, you should probably go with the ``RenderPlain`` group here to manage
+your rendering.
 
 Also note that there's nothing stopping you from mixing and matching these
 render groups in your game. You should definitely use multiple rendering groups

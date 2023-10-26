@@ -253,9 +253,7 @@ required).
    | :sl:`Update the full display Surface to the screen`
    | :sg:`flip() -> None`
 
-   This will update the contents of the entire display. If your display mode is
-   using the flags ``pygame.HWSURFACE`` and ``pygame.DOUBLEBUF`` on pygame 1,
-   this will wait for a vertical retrace and swap the surfaces.
+   This will update the contents of the entire display.
 
    When using an ``pygame.OPENGL`` display mode this will perform a gl buffer
    swap.
@@ -264,23 +262,31 @@ required).
 
 .. function:: update
 
-   | :sl:`Update portions of the screen for software displays`
+   | :sl:`Update all, or a portion, of the display. For non-OpenGL displays.`
    | :sg:`update(rectangle=None) -> None`
    | :sg:`update(rectangle_list) -> None`
 
-   This function is like an optimized version of ``pygame.display.flip()`` for
-   software displays. It allows only a portion of the screen to be updated,
-   instead of the entire area. If no argument is passed it updates the entire
-   Surface area like ``pygame.display.flip()``.
+   For non OpenGL display Surfaces, this function is very similar to
+   ``pygame.display.flip()`` with an optional parameter that allows only
+   portions of the display surface to be updated, instead of the entire area.
+   If no argument is passed it updates the entire Surface area like
+   ``pygame.display.flip()``.
 
-   Note that calling ``display.update(None)`` means no part of the window is
-   updated. Whereas ``display.update()`` means the whole window is updated.
+   .. note:: calling ``display.update(None)`` means no part of the window is
+             updated. Whereas ``display.update()`` means the whole window is
+             updated.
 
    You can pass the function a single rectangle, or a sequence of rectangles.
-   It is more efficient to pass many rectangles at once than to call update
-   multiple times with single or a partial list of rectangles. If passing a
-   sequence of rectangles it is safe to include None values in the list, which
-   will be skipped.
+   Generally you do not want to pass a sequence of rectangles as there is a
+   performance cost per rectangle passed to the function. On modern hardware,
+   after a very small number of rectangles passed in, the per-rectangle cost
+   will exceed the saving of updating less pixels. In most applications it is
+   simply more efficient to update the entire display surface at once, it also
+   means  you do not need to keep track of a list of rectangles for each call
+   to update.
+
+   If passing a sequence of rectangles it is safe to include None
+   values in the list, which will be skipped.
 
    This call cannot be used on ``pygame.OPENGL`` displays and will generate an
    exception.
