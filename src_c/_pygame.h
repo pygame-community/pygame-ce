@@ -106,6 +106,9 @@
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
 #else
 // vendored in until our lowest SDL version is 2.0.14
+#include "_blit_info.h"
+#define SDL_COPY_RLE_DESIRED 0x00001000
+
 SDL_bool
 PG_SurfaceHasRLE(SDL_Surface *surface)
 {
