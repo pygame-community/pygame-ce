@@ -239,6 +239,16 @@ class TransformModuleTest(unittest.TestCase):
         self.assertEqual(pygame.transform.average_color(grey_sub_surf)[0], 76)
         self.assertEqual(pygame.transform.average_color(grey_sub_surf)[0], 76)
 
+    def test_grayscale_simd_assumptions(self):
+        # The grayscale SIMD algorithm relies on the destination surface pitch
+        # being exactly width * 4 (4 bytes per pixel), for maximum speed.
+        # This test is here to make sure that assumption is always true.
+        widths = [1, 5, 6, 23, 54, 233]
+        for width in widths:
+            self.assertEqual(
+                pygame.Surface((width, 1), depth=32).get_pitch(), width * 4
+            )
+
     def test_threshold__honors_third_surface(self):
         # __doc__ for threshold as of Tue 07/15/2008
 
