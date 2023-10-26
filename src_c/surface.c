@@ -2465,7 +2465,6 @@ _PgSurface_SrcAlpha(SDL_Surface *surf)
 static int
 _is_pg_window_active()
 {
-    pgSurfaceObject *default_win_surface = pg_GetDefaultWindowSurface();
     SDL_Surface *win_surface;
     if (!SDL_GetWindowSurface(&win_surface)) {
         return 0;
