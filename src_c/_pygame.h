@@ -138,18 +138,7 @@ struct SDL_BlitMap {
 #define SDL_COPY_RLE_DESIRED 0x00001000
 
 SDL_bool
-PG_SurfaceHasRLE(SDL_Surface *surface)
-{
-    if (surface == NULL) {
-        return SDL_FALSE;
-    }
-
-    if (!(surface->map->info.flags & SDL_COPY_RLE_DESIRED)) {
-        return SDL_FALSE;
-    }
-
-    return SDL_TRUE;
-}
+PG_SurfaceHasRLE(SDL_Surface *surface);
 #endif
 
 #endif
