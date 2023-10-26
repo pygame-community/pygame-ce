@@ -106,8 +106,25 @@
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
 #else
 // vendored in until our lowest SDL version is 2.0.14
-struct SDL_BlitMap
-{
+typedef struct {
+    int width;
+    int height;
+    Uint8 *s_pixels;
+    int s_pxskip;
+    int s_skip;
+    Uint8 *d_pixels;
+    int d_pxskip;
+    int d_skip;
+    SDL_PixelFormat *src;
+    SDL_PixelFormat *dst;
+    Uint8 src_blanket_alpha;
+    int src_has_colorkey;
+    Uint32 src_colorkey;
+    SDL_BlendMode src_blend;
+    SDL_BlendMode dst_blend;
+} SDL_BlitInfo;
+
+struct SDL_BlitMap {
     SDL_Surface *dst;
     int identity;
     SDL_blit blit;
