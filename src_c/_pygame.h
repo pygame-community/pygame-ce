@@ -107,21 +107,20 @@
 #else
 // vendored in until our lowest SDL version is 2.0.14
 typedef struct {
-    int width;
-    int height;
-    Uint8 *s_pixels;
-    int s_pxskip;
-    int s_skip;
-    Uint8 *d_pixels;
-    int d_pxskip;
-    int d_skip;
-    SDL_PixelFormat *src;
-    SDL_PixelFormat *dst;
-    Uint8 src_blanket_alpha;
-    int src_has_colorkey;
-    Uint32 src_colorkey;
-    SDL_BlendMode src_blend;
-    SDL_BlendMode dst_blend;
+    Uint8 *src;
+    int src_w, src_h;
+    int src_pitch;
+    int src_skip;
+    Uint8 *dst;
+    int dst_w, dst_h;
+    int dst_pitch;
+    int dst_skip;
+    SDL_PixelFormat *src_fmt;
+    SDL_PixelFormat *dst_fmt;
+    Uint8 *table;
+    int flags;
+    Uint32 colorkey;
+    Uint8 r, g, b, a;
 } SDL_BlitInfo;
 
 struct SDL_BlitMap {
