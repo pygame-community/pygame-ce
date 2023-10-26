@@ -121,14 +121,14 @@ typedef struct {
     int flags;
     Uint32 colorkey;
     Uint8 r, g, b, a;
-} SDL_BlitInfo;
+} SDL_InternalBlitInfo;
 
 struct SDL_BlitMap {
     SDL_Surface *dst;
     int identity;
     SDL_blit blit;
     void *data;
-    SDL_BlitInfo info;
+    SDL_InternalBlitInfo info;
 
     /* the version count matches the destination; mismatch indicates
        an invalid mapping */
