@@ -102,7 +102,25 @@
 #define PG_ConvertSurface(src, fmt) SDL_ConvertSurface(src, fmt, 0)
 #define PG_ConvertSurfaceFormat(src, pixel_format) \
     SDL_ConvertSurfaceFormat(src, pixel_format, 0)
+#if SDL_VERSION_ATLEAST(2, 0, 14)
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
+#else
+// vendored in until our lowest SDL version is 2.0.14
+SDL_bool
+PG_SurfaceHasRLE(SDL_Surface *surface)
+{
+    if (surface == NULL) {
+        return SDL_FALSE;
+    }
+
+    if (!(surface->map->info.flags & SDL_COPY_RLE_DESIRED)) {
+        return SDL_FALSE;
+    }
+
+    return SDL_TRUE;
+}
+#endif
+
 #endif
 
 /* DictProxy is useful for event posting with an arbitrary dict. Maintains
