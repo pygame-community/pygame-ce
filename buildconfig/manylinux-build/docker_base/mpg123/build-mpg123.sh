@@ -12,7 +12,8 @@ bzip2 -d ${MPG123}.tar.bz2
 tar xf ${MPG123}.tar
 cd $MPG123
 
-./configure $ARCHS_CONFIG_FLAG --enable-int-quality --disable-debug
+./configure $ARCHS_CONFIG_FLAG --enable-int-quality --disable-debug \
+    --disable-components --enable-libmpg123 --enable-libsyn123
 make
 make install
 
