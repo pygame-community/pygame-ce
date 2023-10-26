@@ -334,6 +334,9 @@ Instead, always begin with the original image and scale to the desired size.)
    
    .. versionadded:: 2.1.4
 
+   .. versionchanged:: 2.4.0 Adjusted formula slightly to support performance optimisation. It may return very slightly
+                       different pixels than before, but should run seven to eleven times faster on most systems.
+
    .. ## pygame.transform.grayscale ##
 
 .. function:: threshold
