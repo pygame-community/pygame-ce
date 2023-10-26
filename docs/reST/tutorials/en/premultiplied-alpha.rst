@@ -62,9 +62,9 @@ This kind of alpha composition uses the 'Straight Alpha' formula: ::
 In this formula our 'basic_surf' from the example code above would be the source, and our 'display_surf'
 would be the destination.
 
-The main advantage of this kind of alpha compositing is the independance of all the channels from one
-another and the simplicty of it's use. There is no setup required and most image editing programs will
-export alpha in this way as a seperate channel. This is why it is the default composition method in
+The main advantage of this kind of alpha compositing is the independence of all the channels from one
+another and the simplicity of its use. There is no setup required and most image editing programs will
+export alpha in this way as a separate channel. This is why it is the default composition method in
 pygame-ce.
 
 How to use Premultiplied Alpha blending
@@ -130,9 +130,9 @@ So far premultiplied alpha probably just seems like extra steps to get the same 
 want to use it over straight alpha?
 
 There are two main reasons - and the first is performance. As you saw in the two formulas above, there
-is one less methematical operation to do at composition time with premultiplied alpha. Assuming you are
+is one less mathematical operation to do at composition time with premultiplied alpha. Assuming you are
 not adjusting your alpha in real-time - and in most game development usages you won't be, that is one
-less operation to do per pixel which means, that on average your pre-multiplied alpha blits will be a
+less operation to do per pixel which means, that on average your premultiplied alpha blits will be a
 little bit faster than your straight alpha blits.
 
 The second reason is a little more complicated to demonstrate so I've prepared a program to demonstrate
@@ -183,13 +183,13 @@ messy. Here is the example program for straight alpha:
 This example approximates the sort of code you might use to add a semi-transparent 'tool-tip'
 pop up box in a pygame-ce application. You may need to change the path to the verdana font,
 copy it into a 'fonts/' subdirectory or use an alternative font. The issue is visible on all
-fonts but more obvious on some fonts than others depending on how much they rely on alpa pixels
+fonts but more obvious on some fonts than others depending on how much they rely on alpha pixels
 for visibility. If you run this program you will get a result that looks like this:
 
 .. image:: ../assets/straight_alpha_composition.png
    :alt: Example of Straight Alpha Composition
 
-Which to my eyes makes the text difficult to read and something of a strain on the eyes.
+Which, to my eyes, makes the text difficult to read and something of a strain on the eyes.
 
 If we rewrite the example to use premultiplied alpha composition instead:
 
@@ -256,7 +256,7 @@ blue text.
 
 In the premultiplied alpha formula all the color channels of both surfaces are already multiplied by
 their alpha channel - so we don't lose any information during the composition formula and the end
-result looks more like we would expect.
+result looks more like what we would expect.
 
 ---
 
