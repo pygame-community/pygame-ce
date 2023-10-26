@@ -589,6 +589,9 @@ dt code {
 .dark-theme .highlight .n{
     color: {{ theme_dark_codetextcolor }};
 }
+.dark-theme .highlight .hll{
+    background-color: {{ theme_dark_codelinehighlightcolor }};
+}
 
 /* Doc strings */
 .highlight .sd{
