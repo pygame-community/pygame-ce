@@ -1333,6 +1333,7 @@ class SpriteTypeTest(SpriteBase, unittest.TestCase):
         sprite.Group,
         sprite.LayeredUpdates,
         sprite.RenderUpdates,
+        sprite.OrderedUpdates,
     ]
 
 
@@ -1343,6 +1344,7 @@ class DirtySpriteTypeTest(SpriteBase, unittest.TestCase):
         sprite.Group,
         sprite.LayeredUpdates,
         sprite.RenderUpdates,
+        sprite.OrderedUpdates,
         sprite.LayeredDirty,
     ]
 
