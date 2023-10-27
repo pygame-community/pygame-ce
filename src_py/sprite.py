@@ -637,6 +637,29 @@ class AbstractGroup:
         if sprite_index < len(self._draw_list):
             self.lostsprites.append(self._draw_list[sprite_index][1])
 
+    @property
+    def spritedict(self):
+        warn(
+            "Direct access to undocumented spritedict attribute will "
+            "be removed from Group in 2.6.0. Use .sprites() instead to get "
+            "access to sprites.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        if self._draw_list:
+            return {sprite: sprite.rect for sprite in self._spritelist}
+        return {sprite: None for sprite in self._spritelist}
+
+    @spritedict.setter
+    def spritedict(self, _):
+        warn(
+            "Direct access to undocumented spritedict attribute will "
+            "be removed from Group in 2.6.0. Use .sprites() instead to get "
+            "access to sprites.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
 
 class Group(AbstractGroup):
     """container class for many Sprites
@@ -661,28 +684,6 @@ class Group(AbstractGroup):
     def __init__(self, *sprites):
         AbstractGroup.__init__(self)
         self.add(*sprites)
-        self.__spritedict = {}
-
-    @property
-    def spritedict(self):
-        warn(
-            "Direct access to undocumented spritedict attribute will "
-            "be removed from Group in 2.6.0. Use .sprites() instead to get "
-            "access to sprites.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return {sprite: None for sprite in self._spritelist}
-
-    @spritedict.setter
-    def spritedict(self, new_dict):
-        warn(
-            "Direct access to undocumented spritedict attribute will "
-            "be removed from Group in 2.6.0. Use .sprites() instead to get "
-            "access to sprites.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
 
 
 class RenderPlain(Group):
