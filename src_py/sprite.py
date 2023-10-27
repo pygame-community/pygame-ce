@@ -720,7 +720,7 @@ class RenderUpdates(Group):
         super().remove_internal(sprite)
         lost_rect = self.spritedict[sprite]
         if lost_rect:
-            self._lost_sprites.append(lost_rect)
+            self.lostsprites.append(lost_rect)
         del self.spritedict[sprite]
 
     def clear(self, surface, bgd):
@@ -735,14 +735,14 @@ class RenderUpdates(Group):
 
         """
         if callable(bgd):
-            for lost_clear_rect in self._lost_sprites:
+            for lost_clear_rect in self.lostsprites:
                 bgd(surface, lost_clear_rect)
             for clear_rect in self.spritedict.values():
                 if clear_rect:
                     bgd(surface, clear_rect)
         else:
             surface_blit = surface.blit
-            for lost_clear_rect in self._lost_sprites:
+            for lost_clear_rect in self.lostsprites:
                 surface_blit(bgd, lost_clear_rect, lost_clear_rect)
             for clear_rect in self.spritedict.values():
                 if clear_rect:
@@ -751,7 +751,7 @@ class RenderUpdates(Group):
     def draw(self, surface):
         surface_blit = surface.blit
         dirty = self.lostsprites
-        self._lost_sprites = []
+        self.lostsprites = []
         dirty_append = dirty.append
         for sprite in self.sprites():
             old_rect = self.spritedict[sprite]
@@ -926,7 +926,7 @@ class LayeredUpdates(AbstractGroup):
         spritedict = self.spritedict
         surface_blit = surface.blit
         dirty = self.lostsprites
-        self._lost_sprites = []
+        self.lostsprites = []
         dirty_append = dirty.append
         init_rect = self._init_rect
         for spr in self.sprites():
