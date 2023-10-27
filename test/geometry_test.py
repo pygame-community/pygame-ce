@@ -159,6 +159,11 @@ class CircleTypeTest(unittest.TestCase):
         self.assertEqual(c.y, expected_y)
         self.assertEqual(c.r, expected_radius)
 
+        c.radius = expected_radius
+        self.assertEqual(c.x, expected_x)
+        self.assertEqual(c.y, expected_y)
+        self.assertEqual(c.radius, expected_radius)
+
     def test_r__invalid_value(self):
         """Ensures the r attribute handles invalid values correctly."""
         c = Circle(0, 0, 1)
@@ -166,10 +171,14 @@ class CircleTypeTest(unittest.TestCase):
         for value in (None, [], "1", (1,), [1, 2, 3]):
             with self.assertRaises(TypeError):
                 c.r = value
+            with self.assertRaises(TypeError):
+                c.radius = value
 
         for value in (-10.3234, -1, 0, 0.0):
             with self.assertRaises(ValueError):
                 c.r = value
+            with self.assertRaises(ValueError):
+                c.radius = value
 
     def test_r__del(self):
         """Ensures the r attribute can't be deleted."""
@@ -177,6 +186,9 @@ class CircleTypeTest(unittest.TestCase):
 
         with self.assertRaises(AttributeError):
             del c.r
+
+        with self.assertRaises(AttributeError):
+            del c.radius
 
     def test_r_sqr(self):
         """Ensures setting the r_sqr attribute matches the r_sqr passed"""
@@ -208,9 +220,11 @@ class CircleTypeTest(unittest.TestCase):
 
         c.r_sqr = 4.0
         self.assertEqual(c.r, expected_r)
+        self.assertEqual(c.radius, expected_r)
 
         c.r_sqr = 13.33421
         self.assertEqual(c.r, sqrt(13.33421))
+        self.assertEqual(c.radius, sqrt(13.33421))
 
     def test_r_sqr__invalid_set(self):
         """Ensures the r_sqr attribute can't be set"""
@@ -370,6 +384,8 @@ class CircleTypeTest(unittest.TestCase):
         for value in (-10.3234, -1, 0, 0.0):
             with self.assertRaises(ValueError):
                 c.diameter = value
+            with self.assertRaises(ValueError):
+                c.d = value
 
     def test_diameter_del(self):
         """Ensures the diameter attribute can't be deleted."""
@@ -377,6 +393,9 @@ class CircleTypeTest(unittest.TestCase):
 
         with self.assertRaises(AttributeError):
             del c.diameter
+
+        with self.assertRaises(AttributeError):
+            del c.d
 
     def test__str__(self):
         """Checks whether the __str__ method works correctly."""

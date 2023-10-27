@@ -3,10 +3,13 @@ from typing import (
     overload, Tuple,
 )
 
+from ._common import Coordinate
+
 class Circle:
     x: float
     y: float
     r: float
+    radius: float
     r_sqr: float
     d: float
     diameter: float
@@ -17,7 +20,7 @@ class Circle:
     @overload
     def __init__(self, x: float, y: float, r: float) -> None: ...
     @overload
-    def __init__(self, pos: Sequence[float], r: float) -> None: ...
+    def __init__(self, pos: Coordinate, r: float) -> None: ...
     @overload
     def __init__(self, circle: Circle) -> None: ...
     @overload

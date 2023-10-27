@@ -435,6 +435,8 @@ static PyGetSetDef pg_circle_getsets[] = {
     {"x", (getter)pg_circle_getx, (setter)pg_circle_setx, DOC_CIRCLE_X, NULL},
     {"y", (getter)pg_circle_gety, (setter)pg_circle_sety, DOC_CIRCLE_Y, NULL},
     {"r", (getter)pg_circle_getr, (setter)pg_circle_setr, DOC_CIRCLE_R, NULL},
+    {"radius", (getter)pg_circle_getr, (setter)pg_circle_setr, DOC_CIRCLE_R,
+     NULL},
     {"r_sqr", (getter)pg_circle_getr_sqr, (setter)pg_circle_setr_sqr,
      DOC_CIRCLE_RSQR, NULL},
     {"d", (getter)pg_circle_getdiameter, (setter)pg_circle_setdiameter,
