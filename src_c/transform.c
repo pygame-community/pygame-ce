@@ -2322,7 +2322,9 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
     }
     h /= 360.0;
 
+    Py_BEGIN_ALLOW_THREADS;
     newsurf = modify_hsl(surfobj, surfobj2, h, s, l);
+    Py_END_ALLOW_THREADS;
 
     if (!newsurf) {
         return NULL;
