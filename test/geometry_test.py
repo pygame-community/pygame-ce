@@ -234,13 +234,19 @@ class CircleTypeTest(unittest.TestCase):
 
         p1 = (3, 3)
         p2 = (10, 10)
+        p3 = Vector2(3, 3)
+        p4 = Vector2(10, 10)
 
         # colliding single
         self.assertTrue(c.collidepoint(p1), "Expected True, point should collide here")
+        self.assertTrue(c.collidepoint(p3), "Expected True, point should collide here")
 
         # not colliding single
         self.assertFalse(
             c.collidepoint(p2), "Expected False, point should not collide here"
+        )
+        self.assertFalse(
+            c.collidepoint(p4), "Expected False, point should not collide here"
         )
 
         # colliding 2 args
