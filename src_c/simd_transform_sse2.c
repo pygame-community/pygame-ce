@@ -37,15 +37,6 @@ pg_neon_at_runtime_but_uncompiled()
 
 #if (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON))
 
-#if defined(ENV64BIT)
-#define LOAD_64_INTO_M128(num, reg) *reg = _mm_cvtsi64_si128(*num)
-#define STORE_M128_INTO_64(reg, num) *num = _mm_cvtsi128_si64(*reg)
-#else
-#define LOAD_64_INTO_M128(num, reg) \
-    *reg = _mm_loadl_epi64((const __m128i *)num)
-#define STORE_M128_INTO_64(reg, num) _mm_storel_epi64((__m128i *)num, *reg)
-#endif
-
 void
 invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
 {
@@ -58,10 +49,10 @@ invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
         pixel_batch_length = src->w;
         num_batches = src->h;
     }
-    int remaining_pixels = pixel_batch_length % 2;
-    int perfect_2_pixels = pixel_batch_length / 2;
+    int remaining_pixels = pixel_batch_length % 4;
+    int perfect_4_pixels = pixel_batch_length / 4;
 
-    int perfect_2_pixels_batch_counter = perfect_2_pixels;
+    int perfect_4_pixels_batch_counter = perfect_4_pixels;
     int remaining_pixels_batch_counter = remaining_pixels;
 
     Uint32 *srcp = (Uint32 *)src->pixels;
@@ -72,26 +63,26 @@ invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
     Uint64 rgbmask64 = ((Uint64)rgbmask << 32) | rgbmask;
     Uint64 amask64 = ~rgbmask64;
 
-    Uint64 *srcp64 = (Uint64 *)src->pixels;
-    Uint64 *dstp64 = (Uint64 *)newsurf->pixels;
-
     __m128i mm_src, mm_dst, mm_alpha, mm_two_five_fives,
         mm_alpha_mask, mm_rgb_mask;
 
-    LOAD_64_INTO_M128(&amask64, &mm_alpha_mask);
-    LOAD_64_INTO_M128(&rgbmask64, &mm_rgb_mask);
+    __m128i *srcp128 = (__m128i *)src->pixels;
+    __m128i *dstp128 = (__m128i *)newsurf->pixels;
+
+    mm_rgb_mask = _mm_set1_epi64x(rgbmask64);
+    mm_alpha_mask = _mm_set1_epi64x(amask64);
     mm_two_five_fives = _mm_set1_epi64x(0xFFFFFFFFFFFFFFFF);
 
     while (num_batches--) {
-        perfect_2_pixels_batch_counter = perfect_2_pixels;
+        perfect_4_pixels_batch_counter = perfect_4_pixels;
         remaining_pixels_batch_counter = remaining_pixels;
-        while (perfect_2_pixels_batch_counter--) {
-            LOAD_64_INTO_M128(srcp64, &mm_src);
-            /*mm_src = 0x0000000000000000AARRGGBBAARRGGBB*/
+        while (perfect_4_pixels_batch_counter--) {
+            mm_src = _mm_loadu_si128(srcp128);
+            /*mm_src = 0xAARRGGBBAARRGGBBAARRGGBBAARRGGBB*/
             /* First we strip out the alpha so we have one of our 4 channels
                empty for the rest of the calculation */
             mm_alpha = _mm_subs_epu8(mm_src, mm_rgb_mask);
-            /*mm_src = 0x000000000000000000RRGGBB00RRGGBB*/
+            /*mm_src = 0x00RRGGBB00RRGGBB00RRGGBB00RRGGBB*/
 
             /*invert the colours*/
             mm_dst = _mm_subs_epu8(mm_two_five_fives, mm_src);
@@ -99,14 +90,14 @@ invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
             /*add the alpha channel back*/
             mm_dst = _mm_subs_epu8(mm_dst, mm_alpha_mask);
             mm_dst = _mm_adds_epu8(mm_dst, mm_alpha);
-            /*mm_dst = 0x0000000000000000AAGrGrGrGrGrGrAAGrGrGrGrGrGr*/
-            STORE_M128_INTO_64(&mm_dst, dstp64);
-            /*dstp = 0xAARRGGBB*/
-            srcp64++;
-            dstp64++;
+            /*mm_dst = 0xAARRGGBBAARRGGBBAARRGGBBAARRGGBB*/
+            _mm_storeu_si128(dstp128, mm_dst);
+            /*dstp = 0xAARRGGBBAARRGGBBAARRGGBBAARRGGBB*/
+            srcp128++;
+            dstp128++;
         }
-        srcp = (Uint32 *)srcp64;
-        dstp = (Uint32 *)dstp64;
+        srcp = (Uint32 *)srcp128;
+        dstp = (Uint32 *)dstp128;
         if (remaining_pixels_batch_counter > 0) {
             mm_src = _mm_cvtsi32_si128(*srcp);
             /*mm_src = 0x000000000000000000000000AARRGGBB*/
@@ -121,14 +112,14 @@ invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
             /*add the alpha channel back*/
             mm_dst = _mm_subs_epu8(mm_dst, mm_alpha_mask);
             mm_dst = _mm_adds_epu8(mm_dst, mm_alpha);
-            /*mm_dst = 0x000000000000000000000000AAGrGrGrGrGrGr*/
+            /*mm_dst = 0x000000000000000000000000AARRGGBB*/
             *dstp = _mm_cvtsi128_si32(mm_dst);
             /*dstp = 0xAARRGGBB*/
             srcp++;
             dstp++;
         }
         srcp += s_row_skip;
-        srcp64 = (Uint64 *)srcp;
+        srcp128 = (__m128i*)srcp;
     }
 }
 #endif /* __SSE2__ || PG_ENABLE_ARM_NEON*/
