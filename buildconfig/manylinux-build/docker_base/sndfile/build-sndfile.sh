@@ -13,7 +13,8 @@ tar xf ${SNDFILE}
 cd $SNDNAME
 # autoreconf -fvi
 
-./configure $PG_BASE_CONFIGURE_FLAGS --disable-mpeg
+# alsa is only needed for examples here
+./configure $PG_BASE_CONFIGURE_FLAGS --disable-mpeg --disable-alsa
 make
 make install
 

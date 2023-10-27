@@ -314,6 +314,9 @@
 #ifndef RectImport_RectCheck
 #error RectImport_RectCheck needs to be Defined
 #endif
+#ifndef RectImport_OtherRectCheck
+#error RectImport_OtherRectCheck needs to be defined
+#endif
 #ifndef RectImport_RectCheckExact
 #error RectImport_RectCheckExact needs to be Defined
 #endif
@@ -323,6 +326,9 @@
 #ifndef RectImport_innerRectStruct
 #error RectImport_innerRectStruct needs to be defined
 #endif
+#ifndef RectImport_otherInnerRectStruct
+#error RectImport_otherInnerRectStruct needs to be defined
+#endif
 #ifndef RectImport_innerPointStruct
 #error RectImport_innerPointStruct needs to be defined
 #endif
@@ -331,6 +337,9 @@
 #endif
 #ifndef RectImport_RectObject
 #error RectImport_RectObject needs to be defined
+#endif
+#ifndef RectImport_OtherRectObject
+#error RectImport_OtherRectObject needs to be defined
 #endif
 #ifndef RectImport_TypeObject
 #error RectImport_TypeObject needs to be Defined
@@ -371,10 +380,13 @@
 
 #define PrimitiveType RectImport_primitiveType
 #define RectObject RectImport_RectObject
+#define OtherRectObject RectImport_OtherRectObject
 #define TypeObject RectImport_TypeObject
 #define InnerRect RectImport_innerRectStruct
+#define OtherInnerRect RectImport_otherInnerRectStruct
 #define InnerPoint RectImport_innerPointStruct
 #define RectCheck RectImport_RectCheck
+#define OtherRectCheck RectImport_OtherRectCheck
 #define RectFromObject RectExport_RectFromObject
 #define RectFromFastcallArgs RectExport_RectFromFastcallArgs
 #define subtype_new4 RectExport_subtypeNew4
@@ -605,6 +617,15 @@ RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
 
     if (RectCheck(obj)) {
         return &((RectObject *)obj)->r;
+    }
+
+    if (OtherRectCheck(obj)) {
+        OtherInnerRect rect = ((OtherRectObject *)obj)->r;
+        temp->x = (PrimitiveType)rect.x;
+        temp->y = (PrimitiveType)rect.y;
+        temp->w = (PrimitiveType)rect.w;
+        temp->h = (PrimitiveType)rect.h;
+        return temp;
     }
 
     if (pgSequenceFast_Check(obj)) {
@@ -2809,8 +2830,10 @@ RectExport_iterator(RectObject *self)
 #undef RectImport_PrimitiveTypeAsPythonNumber
 #undef RectImport_primitiveType
 #undef RectImport_RectCheck
+#undef RectImport_OtherRectCheck
 #undef RectImport_RectCheckExact
 #undef RectImport_innerRectStruct
+#undef RectImport_otherInnerRectStruct
 #undef RectImport_innerPointStruct
 #undef RectImport_fourPrimiviteFromObj
 #undef RectImport_primitiveFromObjIndex
@@ -2818,6 +2841,7 @@ RectExport_iterator(RectObject *self)
 #undef RectImport_PrimitiveFromObj
 #undef RectImport_IntersectRectAndLine
 #undef RectImport_RectObject
+#undef RectImport_OtherRectObject
 #undef RectImport_TypeObject
 #undef RectImport_PrimitiveFromObj
 #undef RectImport_PyBuildValueFormat
@@ -2825,10 +2849,13 @@ RectExport_iterator(RectObject *self)
 
 #undef PrimitiveType
 #undef RectObject
+#undef OtherRectObject
 #undef TypeObject
 #undef InnerRect
+#undef OtherInnerRect
 #undef InnerPoint
 #undef RectCheck
+#undef OtherRectCheck
 #undef RectFromObject
 #undef RectFromFastcallArgs
 #undef subtype_new4
