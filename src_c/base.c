@@ -326,7 +326,7 @@ pg_init(PyObject *self, PyObject *_null)
     const char *modnames[] = {
         IMPPREFIX "display", /* Display first, this also inits event,time */
         IMPPREFIX "joystick", IMPPREFIX "font", IMPPREFIX "freetype",
-        IMPPREFIX "mixer",
+        IMPPREFIX "mixer", IMPPREFIX "_window",
         /* IMPPREFIX "_sdl2.controller", Is this required? Comment for now*/
         NULL};
 
@@ -409,6 +409,7 @@ _pg_quit(void)
         IMPPREFIX "freetype",
         IMPPREFIX "font",
         IMPPREFIX "joystick",
+        IMPPREFIX "_window",
         IMPPREFIX "display", /* Display last, this also quits event,time */
         NULL};
 

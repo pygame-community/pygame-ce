@@ -970,6 +970,20 @@ window_repr(pgWindowObject *self)
     return PyUnicode_FromFormat("<Window(title='%s', id=%d)>", title, win_id);
 }
 
+static PyObject *
+_window_internal_mod_init(PyObject *self, PyObject *_null)
+{
+    SDL_AddEventWatch(_resize_event_watch, NULL);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+_window_internal_mod_quit(PyObject *self, PyObject *_null)
+{
+    SDL_DelEventWatch(_resize_event_watch, NULL);
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef window_methods[] = {
     {"destroy", (PyCFunction)window_destroy, METH_NOARGS,
      DOC_SDL2_VIDEO_WINDOW_DESTROY},
@@ -1053,6 +1067,10 @@ static PyTypeObject pgWindow_Type = {
 static PyMethodDef _window_methods[] = {
     {"get_grabbed_window", (PyCFunction)get_grabbed_window, METH_NOARGS,
      DOC_SDL2_VIDEO_GETGRABBEDWINDOW},
+    {"_internal_mod_init", (PyCFunction)_window_internal_mod_init, METH_NOARGS,
+     "auto initialize for _window module"},
+    {"_internal_mod_quit", (PyCFunction)_window_internal_mod_quit, METH_NOARGS,
+     "auto quit for _window module"},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(_window)
@@ -1112,8 +1130,6 @@ MODINIT_DEFINE(_window)
         Py_DECREF(module);
         return NULL;
     }
-
-    SDL_AddEventWatch(_resize_event_watch, NULL);
 
     return module;
 }
