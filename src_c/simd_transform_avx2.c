@@ -74,8 +74,8 @@ invert_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     __m256i *srcp256 = (__m256i *)src->pixels;
     __m256i *dstp256 = (__m256i *)newsurf->pixels;
 
-    __m256i mm256_src, mm256_dst, mm256_two_five_fives,
-        mm256_alpha, mm256_rgb_mask, mm256_alpha_mask;
+    __m256i mm256_src, mm256_dst, mm256_two_five_fives, mm256_alpha,
+        mm256_rgb_mask, mm256_alpha_mask;
 
     mm256_two_five_fives = _mm256_set1_epi16(0xFFFF);
     mm256_rgb_mask = _mm256_set1_epi32(rgbmask);
@@ -137,4 +137,3 @@ invert_avx2(SDL_Surface *src, SDL_Surface *newsurf)
 }
 #endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
           !defined(SDL_DISABLE_IMMINTRIN_H) */
-

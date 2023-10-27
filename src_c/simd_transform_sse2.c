@@ -63,8 +63,8 @@ invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
     Uint64 rgbmask64 = ((Uint64)rgbmask << 32) | rgbmask;
     Uint64 amask64 = ~rgbmask64;
 
-    __m128i mm_src, mm_dst, mm_alpha, mm_two_five_fives,
-        mm_alpha_mask, mm_rgb_mask;
+    __m128i mm_src, mm_dst, mm_alpha, mm_two_five_fives, mm_alpha_mask,
+        mm_rgb_mask;
 
     __m128i *srcp128 = (__m128i *)src->pixels;
     __m128i *dstp128 = (__m128i *)newsurf->pixels;
@@ -106,7 +106,7 @@ invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
             mm_alpha = _mm_subs_epu8(mm_src, mm_rgb_mask);
             /*mm_src = 0x00000000000000000000000000RRGGBB*/
 
-             /*invert the colours*/
+            /*invert the colours*/
             mm_dst = _mm_subs_epu8(mm_two_five_fives, mm_src);
 
             /*add the alpha channel back*/
@@ -119,7 +119,7 @@ invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
             dstp++;
         }
         srcp += s_row_skip;
-        srcp128 = (__m128i*)srcp;
+        srcp128 = (__m128i *)srcp;
     }
 }
 #endif /* __SSE2__ || PG_ENABLE_ARM_NEON*/
