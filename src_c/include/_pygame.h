@@ -122,8 +122,8 @@ typedef struct pg_bufferinfo_s {
 #define pg_TwoDoublesFromObj \
     (*(int (*)(PyObject *, double *, double *))PYGAMEAPI_GET_SLOT(base, 25))
 
-#define pg_TwoDoublesFromFastcallArgs             \
-    (*(int (*)(PyObject *const*, Py_ssize_t, double *, \
+#define pg_TwoDoublesFromFastcallArgs                   \
+    (*(int (*)(PyObject *const *, Py_ssize_t, double *, \
                double *))PYGAMEAPI_GET_SLOT(base, 26))
 
 #define pg_UintFromObj \
