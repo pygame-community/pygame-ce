@@ -674,6 +674,16 @@ class Group(AbstractGroup):
         )
         return {sprite: None for sprite in self._spritelist}
 
+    @spritedict.setter
+    def spritedict(self, new_dict):
+        warn(
+            "Direct access to undocumented spritedict attribute will "
+            "be removed from Group in 2.6.0. Use .sprites() instead to get "
+            "access to sprites.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
 
 class RenderPlain(Group):
     def __init__(self, *sprites):
@@ -712,6 +722,10 @@ class RenderUpdates(Group):
     @property
     def spritedict(self):
         return self.__spritedict
+
+    @spritedict.setter
+    def spritedict(self, new_dict):
+        self.__spritedict = new_dict
 
     def add_internal(
         self,
@@ -831,6 +845,10 @@ class LayeredUpdates(AbstractGroup):
     @property
     def spritedict(self):
         return self.__spritedict
+
+    @spritedict.setter
+    def spritedict(self, new_dict):
+        self.__spritedict = new_dict
 
     def add_internal(self, sprite, layer=None):
         """Do not use this method directly.
