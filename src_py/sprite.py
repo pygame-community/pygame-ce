@@ -86,7 +86,7 @@ Sprites are not thread safe, so lock them yourself if using threads.
 # specialized cases.
 
 from warnings import warn
-from typing import Optional
+from typing import List, Union, Tuple, Optional
 
 import pygame
 
@@ -124,6 +124,8 @@ class Sprite:
     @image.setter
     def image(self, value: Optional[pygame.surface.Surface]):
         self.__image = value
+        for group in self.__g:
+            group.should_rebuild_draw_list = True
 
     @property
     def rect(self):
@@ -132,6 +134,8 @@ class Sprite:
     @rect.setter
     def rect(self, value: Optional[pygame.rect.Rect]):
         self.__rect = value
+        for group in self.__g:
+            group.should_rebuild_draw_list = True
 
     def add(self, *groups):
         """add the sprite to groups
@@ -376,21 +380,17 @@ class AbstractGroup:
     _spritegroup = True
 
     def __init__(self):
-        self.spritedict = {}
-        self.lostsprites = []
+        self._sprite_list: List[Union[Sprite, DirtySprite]] = []
+        self._draw_list: List[Tuple[pygame.surface.Surface, pygame.Rect]] = []
+        self._lost_sprites = []
+        self.should_rebuild_draw_list = False
 
     def sprites(self):
-        """get a list of sprites in the group
+        """get a list copy of the sprites in the group
 
         Group.sprite(): return list
-
-        Returns an object that can be looped over with a 'for' loop. (For now,
-        it is always a list, but this could change in a future version of
-        pygame.) Alternatively, you can get the same information by iterating
-        directly over the sprite group, e.g. 'for sprite in group'.
-
         """
-        return list(self.spritedict)
+        return self._sprite_list.copy()
 
     def add_internal(
         self,
@@ -403,7 +403,8 @@ class AbstractGroup:
         :param sprite: The sprite we are adding.
         :param layer: the layer to add to, if the group type supports layers
         """
-        self.spritedict[sprite] = None
+        self._sprite_list.append(sprite)
+        self.should_rebuild_draw_list = True
 
     def remove_internal(self, sprite):
         """
@@ -411,10 +412,10 @@ class AbstractGroup:
 
         :param sprite: The sprite we are removing.
         """
-        lost_rect = self.spritedict[sprite]
-        if lost_rect:
-            self.lostsprites.append(lost_rect)
-        del self.spritedict[sprite]
+        sprite_index = self._sprite_list.index(sprite)
+        self.__add_sprite_drawn_rect_to_lost(sprite_index)
+        self._sprite_list.pop(sprite_index)
+        self.should_rebuild_draw_list = True
 
     def has_internal(self, sprite):
         """
@@ -422,7 +423,7 @@ class AbstractGroup:
 
         :param sprite: The sprite we are checking.
         """
-        return sprite in self.spritedict
+        return sprite in self._sprite_list
 
     def copy(self):
         """copy a group with all the same sprites
@@ -434,7 +435,7 @@ class AbstractGroup:
 
         """
         return self.__class__(  # noqa pylint: disable=too-many-function-args
-            self.sprites()  # Needed because copy() won't work on AbstractGroup
+            self._sprite_list  # Needed because copy() won't work on AbstractGroup
         )
 
     def __iter__(self):
@@ -552,7 +553,7 @@ class AbstractGroup:
         were passed to this method are passed to the Sprite update function.
 
         """
-        for sprite in self.sprites():
+        for sprite in self._sprite_list:
             sprite.update(*args, **kwargs)
 
     def draw(self, surface):
@@ -563,16 +564,14 @@ class AbstractGroup:
         Draws all of the member sprites onto the given surface.
 
         """
-        sprites = self.sprites()
-        if hasattr(surface, "blits"):
-            self.spritedict.update(
-                zip(sprites, surface.blits((spr.image, spr.rect) for spr in sprites))
-            )
-        else:
-            for spr in sprites:
-                self.spritedict[spr] = surface.blit(spr.image, spr.rect)
-        self.lostsprites = []
-        dirty = self.lostsprites
+        if self.should_rebuild_draw_list:
+            self._rebuild_draw_list()
+            self.should_rebuild_draw_list = False
+
+        surface.fblits(self._draw_list)
+
+        self._lost_sprites[:] = []
+        dirty = self._lost_sprites
 
         return dirty
 
@@ -588,17 +587,17 @@ class AbstractGroup:
 
         """
         if callable(bgd):
-            for lost_clear_rect in self.lostsprites:
+            for lost_clear_rect in self._lost_sprites:
                 bgd(surface, lost_clear_rect)
-            for clear_rect in self.spritedict.values():
-                if clear_rect:
+            for _, clear_rect in self._draw_list:
+                if clear_rect is not None:
                     bgd(surface, clear_rect)
         else:
             surface_blit = surface.blit
-            for lost_clear_rect in self.lostsprites:
+            for lost_clear_rect in self._lost_sprites:
                 surface_blit(bgd, lost_clear_rect, lost_clear_rect)
-            for clear_rect in self.spritedict.values():
-                if clear_rect:
+            for _, clear_rect in self._draw_list:
+                if clear_rect is not None:
                     surface_blit(bgd, clear_rect, clear_rect)
 
     def empty(self):
@@ -609,12 +608,14 @@ class AbstractGroup:
         Removes all the sprites from the group.
 
         """
-        for sprite in self.sprites():
-            self.remove_internal(sprite)
+        for index, sprite in enumerate(self._sprite_list):
+            self.__add_sprite_drawn_rect_to_lost(index)
             sprite.remove_internal(self)
+        self._sprite_list.clear()
+        self._draw_list.clear()
 
     def __bool__(self):
-        return bool(self.sprites())
+        return bool(self._sprite_list)
 
     def __len__(self):
         """return number of sprites in group
@@ -624,10 +625,17 @@ class AbstractGroup:
         Returns the number of sprites contained in the group.
 
         """
-        return len(self.sprites())
+        return len(self._sprite_list)
 
     def __repr__(self):
         return f"<{self.__class__.__name__}({len(self)} sprites)>"
+
+    def _rebuild_draw_list(self):
+        self._draw_list = [(sprite.image, sprite.rect) for sprite in self._sprite_list]
+
+    def __add_sprite_drawn_rect_to_lost(self, sprite_index):
+        if sprite_index < len(self._draw_list):
+            self._lost_sprites.append(self._draw_list[sprite_index][1])
 
 
 class Group(AbstractGroup):
@@ -685,10 +693,65 @@ class RenderUpdates(Group):
 
     """
 
+    def __init__(self, *sprites):
+        Group.__init__(self, sprites)
+        self.spritedict = {}
+
+    def add_internal(
+        self,
+        sprite,
+        layer=None,  # noqa pylint: disable=unused-argument; supporting legacy derived classes that override in non-pythonic way
+    ):
+        """
+        For adding a sprite to this group internally.
+
+        :param sprite: The sprite we are adding.
+        :param layer: the layer to add to, if the group type supports layers
+        """
+        super().add_internal(sprite, layer)
+        self.spritedict[sprite] = None
+
+    def remove_internal(self, sprite):
+        """
+        For removing a sprite from this group internally.
+
+        :param sprite: The sprite we are removing.
+        """
+        super().remove_internal(sprite)
+        lost_rect = self.spritedict[sprite]
+        if lost_rect:
+            self._lost_sprites.append(lost_rect)
+        del self.spritedict[sprite]
+
+    def clear(self, surface, bgd):
+        """erase the previous position of all sprites
+
+        Group.clear(surface, bgd): return None
+
+        Clears the area under every drawn sprite in the group. The bgd
+        argument should be Surface which is the same dimensions as the
+        screen surface. The bgd could also be a function which accepts
+        the given surface and the area to be cleared as arguments.
+
+        """
+        if callable(bgd):
+            for lost_clear_rect in self._lost_sprites:
+                bgd(surface, lost_clear_rect)
+            for clear_rect in self.spritedict.values():
+                if clear_rect:
+                    bgd(surface, clear_rect)
+        else:
+            surface_blit = surface.blit
+            for lost_clear_rect in self._lost_sprites:
+                surface_blit(bgd, lost_clear_rect, lost_clear_rect)
+            for clear_rect in self.spritedict.values():
+                if clear_rect:
+                    surface_blit(bgd, clear_rect, clear_rect)
+
     def draw(self, surface):
         surface_blit = surface.blit
-        dirty = self.lostsprites
-        self.lostsprites = []
+        dirty = self._lost_sprites
+        self._lost_sprites = []
         dirty_append = dirty.append
         for sprite in self.sprites():
             old_rect = self.spritedict[sprite]
@@ -743,8 +806,8 @@ class LayeredUpdates(AbstractGroup):
 
         """
         self._spritelayers = {}
-        self._spritelist = []
         AbstractGroup.__init__(self)
+        self.spritedict = {}
         self._default_layer = kwargs.get("default_layer", 0)
 
         self.add(*sprites, **kwargs)
@@ -766,7 +829,7 @@ class LayeredUpdates(AbstractGroup):
         elif hasattr(sprite, "_layer"):
             setattr(sprite, "_layer", layer)
 
-        sprites = self._spritelist  # speedup
+        sprites = self._sprite_list  # speedup
         sprites_layers = self._spritelayers
         sprites_layers[sprite] = layer
 
@@ -835,7 +898,7 @@ class LayeredUpdates(AbstractGroup):
         The group uses it to add a sprite.
 
         """
-        self._spritelist.remove(sprite)
+        self._sprite_list.remove(sprite)
         # these dirty rects are suboptimal for one frame
         old_rect = self.spritedict[sprite]
         if old_rect is not self._init_rect:
@@ -852,7 +915,7 @@ class LayeredUpdates(AbstractGroup):
         LayeredUpdates.sprites(): return sprites
 
         """
-        return self._spritelist.copy()
+        return self._sprite_list.copy()
 
     def draw(self, surface):
         """draw all sprites in the right order onto the passed surface
@@ -862,8 +925,8 @@ class LayeredUpdates(AbstractGroup):
         """
         spritedict = self.spritedict
         surface_blit = surface.blit
-        dirty = self.lostsprites
-        self.lostsprites = []
+        dirty = self._lost_sprites
+        self._lost_sprites = []
         dirty_append = dirty.append
         init_rect = self._init_rect
         for spr in self.sprites():
@@ -888,7 +951,7 @@ class LayeredUpdates(AbstractGroup):
         Bottom sprites are listed first; the top ones are listed last.
 
         """
-        _sprites = self._spritelist
+        _sprites = self._sprite_list
         rect = Rect(pos, (1, 1))
         colliding_idx = rect.collidelistall(_sprites)
         return [_sprites[i] for i in colliding_idx]
@@ -901,7 +964,7 @@ class LayeredUpdates(AbstractGroup):
         Raises IndexOutOfBounds if the idx is not within range.
 
         """
-        return self._spritelist[idx]
+        return self._sprite_list[idx]
 
     def remove_sprites_of_layer(self, layer_nr):
         """remove all sprites from a layer and return them as a list
@@ -931,7 +994,7 @@ class LayeredUpdates(AbstractGroup):
         checked.
 
         """
-        sprites = self._spritelist  # speedup
+        sprites = self._sprite_list  # speedup
         sprites_layers = self._spritelayers  # speedup
 
         sprites.remove(sprite)
@@ -972,7 +1035,7 @@ class LayeredUpdates(AbstractGroup):
         LayeredUpdates.get_top_layer(): return layer
 
         """
-        return self._spritelayers[self._spritelist[-1]]
+        return self._spritelayers[self._sprite_list[-1]]
 
     def get_bottom_layer(self):
         """return the bottom layer
@@ -980,7 +1043,7 @@ class LayeredUpdates(AbstractGroup):
         LayeredUpdates.get_bottom_layer(): return layer
 
         """
-        return self._spritelayers[self._spritelist[0]]
+        return self._spritelayers[self._sprite_list[0]]
 
     def move_to_front(self, sprite):
         """bring the sprite to front layer
@@ -1011,7 +1074,7 @@ class LayeredUpdates(AbstractGroup):
         LayeredUpdates.get_top_sprite(): return Sprite
 
         """
-        return self._spritelist[-1]
+        return self._sprite_list[-1]
 
     def get_sprites_from_layer(self, layer):
         """return all sprites from a layer ordered as they were added
@@ -1026,7 +1089,7 @@ class LayeredUpdates(AbstractGroup):
         sprites = []
         sprites_append = sprites.append
         sprite_layers = self._spritelayers
-        for spr in self._spritelist:
+        for spr in self._sprite_list:
             if sprite_layers[spr] == layer:
                 sprites_append(spr)
             elif sprite_layers[spr] > layer:
