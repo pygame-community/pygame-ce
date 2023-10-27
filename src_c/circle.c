@@ -242,26 +242,10 @@ pg_circle_collidepoint(pgCircleObject *self, PyObject *const *args,
 {
     double px, py;
 
-    if (nargs == 1) {
-        if (!pg_TwoDoublesFromObj(args[0], &px, &py)) {
-            return RAISE(
-                PyExc_TypeError,
-                "Circle.collidepoint requires a point or PointLike object");
-        }
-    }
-    else if (nargs == 2) {
-        if (!pg_DoubleFromObj(args[0], &px) ||
-            !pg_DoubleFromObj(args[1], &py)) {
-            return RAISE(
-                PyExc_TypeError,
-                "Circle.collidepoint requires a point or PointLike object");
-        }
-    }
-    else {
-        PyErr_Format(PyExc_TypeError,
-                     "Circle.collidepoint requires 1 or 2 arguments, got %zd",
-                     nargs);
-        return NULL;
+    if (!pg_TwoDoublesFromFastcallArgs(args, nargs, &px, &py)) {
+        return RAISE(
+            PyExc_TypeError,
+            "Circle.collidepoint requires a point or PointLike object");
     }
 
     return PyBool_FromLong(pgCollision_CirclePoint(&self->circle, px, py));
