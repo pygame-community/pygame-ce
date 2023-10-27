@@ -179,7 +179,12 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
     }
 
     if (SDL_GetColorKey(surf, &colorkey) == 0) {
-        if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0 ||
+        if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
+            PyErr_SetString(pgExc_SDLError, SDL_GetError());
+            SDL_FreeSurface(newsurf);
+            return NULL;
+        }
+        if (PG_SurfaceHasRLE(surf) &&
             SDL_SetSurfaceRLE(newsurf, SDL_TRUE) != 0) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
