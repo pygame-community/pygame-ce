@@ -373,7 +373,7 @@ These transparent pixels are not blitted when the rest of the image is blitted,
 and so don't obscure the background.  Simply call :meth:`.Surface.set_colorkey()`,
 and pass in an RGB tuple -- say (0,0,0). This would make every pixel in the source
 image transparent instead of black. It used to be significantly cheaper to blit
-than per pixel alpha, but this is no longer the case and in mayn cases it is
+than per pixel alpha, but this is no longer the case and in many cases it is
 actually slower.
 
 Surface 'Alpha' is also available it applies to the whole surface. Surface alpha
