@@ -1287,6 +1287,17 @@ class TransformModuleTest(unittest.TestCase):
         self.assertEqual(s1.get_rect(), pygame.Rect(0, 0, 0, 0))
         self.assertEqual(s2.get_rect(), pygame.Rect(0, 0, 0, 0))
 
+    def test_rotozoom_keeps_colorkey(self):
+        image = pygame.Surface((64, 64))
+        image.set_colorkey("black")
+        pygame.draw.circle(image, "red", (32, 32), 32, width=0)
+
+        no_rot = pygame.transform.rotozoom(image, 0, 1.1)
+        self.assertEqual(image.get_colorkey(), no_rot.get_colorkey())
+
+        with_rot = pygame.transform.rotozoom(image, 5, 1.1)
+        self.assertEqual(image.get_colorkey(), with_rot.get_colorkey())
+
     def test_invert(self):
         surface = pygame.Surface((10, 10), depth=32)
 

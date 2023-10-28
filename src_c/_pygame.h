@@ -72,6 +72,8 @@
 #define PG_ConvertSurface SDL_ConvertSurface
 #define PG_ConvertSurfaceFormat SDL_ConvertSurfaceFormat
 
+#define PG_SurfaceHasRLE SDL_SurfaceHasRLE
+
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
 #define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
@@ -100,6 +102,44 @@
 #define PG_ConvertSurface(src, fmt) SDL_ConvertSurface(src, fmt, 0)
 #define PG_ConvertSurfaceFormat(src, pixel_format) \
     SDL_ConvertSurfaceFormat(src, pixel_format, 0)
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+#define PG_SurfaceHasRLE SDL_HasSurfaceRLE
+#else
+// vendored in until our lowest SDL version is 2.0.14
+typedef struct {
+    Uint8 *src;
+    int src_w, src_h;
+    int src_pitch;
+    int src_skip;
+    Uint8 *dst;
+    int dst_w, dst_h;
+    int dst_pitch;
+    int dst_skip;
+    SDL_PixelFormat *src_fmt;
+    SDL_PixelFormat *dst_fmt;
+    Uint8 *table;
+    int flags;
+    Uint32 colorkey;
+    Uint8 r, g, b, a;
+} SDL_InternalBlitInfo;
+
+struct SDL_BlitMap {
+    SDL_Surface *dst;
+    int identity;
+    SDL_blit blit;
+    void *data;
+    SDL_InternalBlitInfo info;
+
+    /* the version count matches the destination; mismatch indicates
+       an invalid mapping */
+    Uint32 dst_palette_version;
+    Uint32 src_palette_version;
+};
+#define SDL_COPY_RLE_DESIRED 0x00001000
+
+SDL_bool
+PG_SurfaceHasRLE(SDL_Surface *surface);
+#endif
 
 #endif
 
