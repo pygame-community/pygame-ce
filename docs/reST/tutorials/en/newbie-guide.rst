@@ -438,7 +438,6 @@ variations of this, so don't stress about the small details too much):
         clock.tick(60)         # wait until next frame (at 60 FPS)
 
     pygame.quit()
-    raise SystemExit
 
 It does some initial setup, starts a loop, and then proceeds to repeatedly
 collect input, handle the game's logic, and draw the current frame forever until
