@@ -56,7 +56,7 @@ METADATA = {
         "Operating System :: Microsoft :: Windows",
         "Operating System :: POSIX",
         "Operating System :: Unix",
-        "Operating System :: MacOS",
+        "Operating System :: macOS",
         "Typing :: Typed"
     ],
     "python_requires": '>=3.8',

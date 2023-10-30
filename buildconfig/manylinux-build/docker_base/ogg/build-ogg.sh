@@ -16,7 +16,7 @@ cd $OGG
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     ./configure $ARCHS_CONFIG_FLAG
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-    # Use CMake on MacOS because ./configure doesn't generate dylib
+    # Use CMake on macOS because ./configure doesn't generate dylib
     cmake . $PG_BASE_CMAKE_FLAGS
 fi
 
@@ -35,7 +35,7 @@ cd $VORBIS
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     ./configure $ARCHS_CONFIG_FLAG
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-    # Use CMake on MacOS because ./configure doesn't generate dylib
+    # Use CMake on macOS because ./configure doesn't generate dylib
     cmake . $PG_BASE_CMAKE_FLAGS
 fi
 make

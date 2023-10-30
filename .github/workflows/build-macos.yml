@@ -139,7 +139,7 @@ jobs:
       # Note that the arm64 wheels cannot be tested on CI in this configuration
       CIBW_ARCHS: ${{ matrix.macarch }}
 
-      # Setup MacOS dependencies
+      # Setup macOS dependencies
       CIBW_BEFORE_ALL: |
         brew install pkg-config
         cd buildconfig/macdependencies
