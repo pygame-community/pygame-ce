@@ -1,4 +1,4 @@
-name: MacOS
+name: macOS
 
 # Run CI only when a release is created, on changes to main branch, or any PR 
 # to main. Do not run CI on any other branch. Also, skip any non-source changes 
