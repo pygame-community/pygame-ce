@@ -67,9 +67,8 @@ invert_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     Uint32 *srcp = (Uint32 *)src->pixels;
     Uint32 *dstp = (Uint32 *)newsurf->pixels;
 
-    Uint32 rgbmask =
-        (src->format->Rmask | src->format->Gmask | src->format->Bmask);
-    Uint32 amask = ~rgbmask;
+    Uint32 amask =
+        ~(src->format->Rmask | src->format->Gmask | src->format->Bmask);
 
     __m256i *srcp256 = (__m256i *)src->pixels;
     __m256i *dstp256 = (__m256i *)newsurf->pixels;
@@ -78,7 +77,6 @@ invert_avx2(SDL_Surface *src, SDL_Surface *newsurf)
         mm256_rgb_mask, mm256_alpha_mask;
 
     mm256_two_five_fives = _mm256_set1_epi16(0xFFFF);
-    mm256_rgb_mask = _mm256_set1_epi32(rgbmask);
     mm256_alpha_mask = _mm256_set1_epi32(amask);
 
     __m256i _partial8_mask =
@@ -95,13 +93,12 @@ invert_avx2(SDL_Surface *src, SDL_Surface *newsurf)
         remaining_pixels_batch_counter = remaining_pixels;
         while (perfect_8_pixels_batch_counter--) {
             mm256_src = _mm256_loadu_si256(srcp256);
-            mm256_alpha = _mm256_subs_epu8(mm256_src, mm256_rgb_mask);
 
             /* do the invert */
             mm256_dst = _mm256_subs_epu8(mm256_two_five_fives, mm256_src);
-
-            mm256_dst = _mm256_subs_epu8(mm256_dst, mm256_alpha_mask);
-            mm256_dst = _mm256_adds_epu8(mm256_dst, mm256_alpha);
+            /* blend the original alpha in */
+            mm256_dst =
+                _mm256_blendv_epi8(mm256_dst, mm256_src, mm256_alpha_mask);
 
             _mm256_storeu_si256(dstp256, mm256_dst);
 
@@ -112,13 +109,12 @@ invert_avx2(SDL_Surface *src, SDL_Surface *newsurf)
         dstp = (Uint32 *)dstp256;
         if (remaining_pixels_batch_counter > 0) {
             mm256_src = _mm256_maskload_epi32((int *)srcp, _partial8_mask);
-            mm256_alpha = _mm256_subs_epu8(mm256_src, mm256_rgb_mask);
 
             /* do the invert */
             mm256_dst = _mm256_subs_epu8(mm256_two_five_fives, mm256_src);
-
-            mm256_dst = _mm256_subs_epu8(mm256_dst, mm256_alpha_mask);
-            mm256_dst = _mm256_adds_epu8(mm256_dst, mm256_alpha);
+            /* blend the original alpha in */
+            mm256_dst =
+                _mm256_blendv_epi8(mm256_dst, mm256_src, mm256_alpha_mask);
 
             _mm256_maskstore_epi32((int *)dstp, _partial8_mask, mm256_dst);
 
