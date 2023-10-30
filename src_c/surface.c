@@ -262,8 +262,6 @@ static SDL_Surface *
 pg_DisplayFormat(SDL_Surface *surface);
 static int
 _PgSurface_SrcAlpha(SDL_Surface *surf);
-static int
-_is_pg_window_active();
 
 #if !SDL_VERSION_ATLEAST(2, 0, 10)
 static Uint32
@@ -1769,9 +1767,6 @@ surf_get_clip(PyObject *self, PyObject *_null)
 static PyObject *
 surf_fill(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
 {
-    if (!_is_pg_window_active())
-        return RAISE(PyExc_RuntimeError, "pygame display window is not active");
-
     SDL_Surface *surf = pgSurface_AsSurface(self);
     SDL_Rect *rect, temp;
     PyObject *r = NULL;
@@ -1860,9 +1855,6 @@ surf_fill(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
 static PyObject *
 surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
 {
-    if (!_is_pg_window_active())
-        return RAISE(PyExc_RuntimeError, "pygame display window is not active");
-
     SDL_Surface *src, *dest = pgSurface_AsSurface(self);
     SDL_Rect *src_rect, temp;
     PyObject *argpos, *argrect = NULL;
@@ -1935,9 +1927,6 @@ surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
 static PyObject *
 surf_blits(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
 {
-    if (!_is_pg_window_active())
-        return RAISE(PyExc_RuntimeError, "pygame display window is not active");
-
     SDL_Surface *src, *dest = pgSurface_AsSurface(self);
     SDL_Rect *src_rect, temp;
     PyObject *srcobject = NULL, *argpos = NULL, *argrect = NULL;
@@ -2180,9 +2169,6 @@ bliterror:
 static PyObject *
 surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
-    if (!_is_pg_window_active())
-        return RAISE(PyExc_RuntimeError, "pygame display window is not active");
-
     SDL_Surface *src, *dest = pgSurface_AsSurface(self);
     SURF_INIT_CHECK(dest)
 
@@ -2456,21 +2442,6 @@ _PgSurface_SrcAlpha(SDL_Surface *surf)
         return -1;
     }
     return (mode != SDL_BLENDMODE_NONE);
-}
-
-/*
- * Returns 1 if active, 0 if not.
- * See: https://github.com/pygame-community/pygame-ce/issues/2523
- */
-static int
-_is_pg_window_active()
-{
-    SDL_Surface *win_surface;
-    if (!SDL_GetWindowSurface(&win_surface)) {
-        return 0;
-    }
-
-    return 1;
 }
 
 static PyObject *

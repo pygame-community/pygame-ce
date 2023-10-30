@@ -116,6 +116,12 @@ static PyObject *
 window_destroy(pgWindowObject *self, PyObject *_null)
 {
     if (self->_win) {
+        if (self->_is_borrowed && pg_GetDefaultWindow() == self->_win) {
+            pgSurface_AsSurface(pg_GetDefaultWindowSurface()) = NULL;
+            pg_SetDefaultWindowSurface(NULL);
+            pg_SetDefaultWindow(NULL);
+        }
+
         SDL_DestroyWindow(self->_win);
         self->_win = NULL;
     }
