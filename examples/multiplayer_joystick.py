@@ -48,7 +48,7 @@ clock = pygame.Clock()
 font_b = pygame.font.SysFont(None, 25)
 font_a = pygame.font.SysFont(None, 16)
 
-players = [None, None] # two players limit
+players = [None, None]  # two players limit
 active_players = {}
 
 colors = [
