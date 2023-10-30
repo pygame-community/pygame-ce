@@ -25,7 +25,7 @@ def disconnect_joystick(instance_id: int):
     print(f"P{index + 1} Disconnected")
 
 
-def controll_player(player):  # move player
+def control_player(player):  # move player
     joy = player["joy"]
     if not player["joined"]:
         return
@@ -48,7 +48,7 @@ clock = pygame.Clock()
 font_b = pygame.font.SysFont(None, 25)
 font_a = pygame.font.SysFont(None, 16)
 
-players = [None, None]
+players = [None, None] # two players limit
 active_players = {}
 
 colors = [
@@ -57,7 +57,7 @@ colors = [
     create_surf((32, 32), (230, 20, 70)),
     create_surf((32, 32), (20, 170, 230)),
 ]
-zero_joy_connected = True
+are_no_controllers_connected = True
 
 while True:
     for event in pygame.event.get():
@@ -68,16 +68,16 @@ while True:
             if len(active_players) < len(players):
                 # connect controller
                 connect_joystick(event.device_index)
-                zero_joy_connected = False
+                are_no_controllers_connected = False
         elif event.type == pygame.JOYDEVICEREMOVED:
             # disconnect controller
             if event.instance_id in active_players:
                 disconnect_joystick(event.instance_id)
                 # check if there is at leat one controller connected
-                zero_joy_connected = True
+                are_no_controllers_connected = True
                 for player in players:
                     if player:
-                        zero_joy_connected = False
+                        are_no_controllers_connected = False
                         break
         elif event.type == pygame.JOYBUTTONDOWN:
             if event.instance_id in active_players:
@@ -113,15 +113,15 @@ while True:
     # update and draw players
     for player in players:
         if player:
-            controll_player(player)
+            control_player(player)
             screen.blit(player["surf"], player["pos"])
 
-    # draw avalible colors
+    # draw available colors
     for i, surf in enumerate(colors):
         screen.blit(surf, (WIDTH * 0.25 + i * 64, 32))
 
     # show message for connecting a controller
-    if zero_joy_connected:
+    if are_no_controllers_connected:
         screen.blit(
             font_b.render(
                 "Please connect a controller.", True, (230, 230, 230), None, 500 - 20
