@@ -63,15 +63,13 @@ invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
     Uint64 rgbmask64 = ((Uint64)rgbmask << 32) | rgbmask;
     Uint64 amask64 = ~rgbmask64;
 
-    __m128i mm_src, mm_dst, mm_alpha, mm_two_five_fives, mm_alpha_mask,
-        mm_rgb_mask;
+    __m128i mm_src, mm_dst, mm_alpha, mm_rgb_invert_mask, mm_alpha_mask;
 
     __m128i *srcp128 = (__m128i *)src->pixels;
     __m128i *dstp128 = (__m128i *)newsurf->pixels;
 
-    mm_rgb_mask = _mm_set1_epi64x(rgbmask64);
+    mm_rgb_invert_mask = _mm_set1_epi64x(rgbmask64);
     mm_alpha_mask = _mm_set1_epi64x(amask64);
-    mm_two_five_fives = _mm_set1_epi64x(0xFFFFFFFFFFFFFFFF);
 
     while (num_batches--) {
         perfect_4_pixels_batch_counter = perfect_4_pixels;
@@ -79,18 +77,16 @@ invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
         while (perfect_4_pixels_batch_counter--) {
             mm_src = _mm_loadu_si128(srcp128);
             /*mm_src = 0xAARRGGBBAARRGGBBAARRGGBBAARRGGBB*/
-            /* First we strip out the alpha so we have one of our 4 channels
-               empty for the rest of the calculation */
-            mm_alpha = _mm_subs_epu8(mm_src, mm_rgb_mask);
-            /*mm_src = 0x00RRGGBB00RRGGBB00RRGGBB00RRGGBB*/
 
-            /*invert the colours*/
-            mm_dst = _mm_subs_epu8(mm_two_five_fives, mm_src);
+            /* pull out the alpha */
+            mm_alpha = _mm_and_si128(mm_src, mm_alpha_mask);
 
-            /*add the alpha channel back*/
-            mm_dst = _mm_subs_epu8(mm_dst, mm_alpha_mask);
-            mm_dst = _mm_adds_epu8(mm_dst, mm_alpha);
-            /*mm_dst = 0xAARRGGBBAARRGGBBAARRGGBBAARRGGBB*/
+            /* do the invert */
+            mm_dst = _mm_andnot_si128(mm_src, mm_rgb_invert_mask);
+
+            /* put the alpha back in*/
+            mm_dst = _mm_or_si128(mm_dst, mm_alpha);
+
             _mm_storeu_si128(dstp128, mm_dst);
             /*dstp = 0xAARRGGBBAARRGGBBAARRGGBBAARRGGBB*/
             srcp128++;
@@ -101,18 +97,16 @@ invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
         if (remaining_pixels_batch_counter > 0) {
             mm_src = _mm_cvtsi32_si128(*srcp);
             /*mm_src = 0x000000000000000000000000AARRGGBB*/
-            /* First we strip out the alpha so we have one of our 4 channels
-               empty for the rest of the calculation */
-            mm_alpha = _mm_subs_epu8(mm_src, mm_rgb_mask);
-            /*mm_src = 0x00000000000000000000000000RRGGBB*/
 
-            /*invert the colours*/
-            mm_dst = _mm_subs_epu8(mm_two_five_fives, mm_src);
+            /* pull out the alpha */
+            mm_alpha = _mm_and_si128(mm_src, mm_alpha_mask);
 
-            /*add the alpha channel back*/
-            mm_dst = _mm_subs_epu8(mm_dst, mm_alpha_mask);
-            mm_dst = _mm_adds_epu8(mm_dst, mm_alpha);
-            /*mm_dst = 0x000000000000000000000000AARRGGBB*/
+            /* do the invert */
+            mm_dst = _mm_andnot_si128(mm_src, mm_rgb_invert_mask);
+
+            /* put the alpha back in*/
+            mm_dst = _mm_or_si128(mm_dst, mm_alpha);
+
             *dstp = _mm_cvtsi128_si32(mm_dst);
             /*dstp = 0xAARRGGBB*/
             srcp++;
