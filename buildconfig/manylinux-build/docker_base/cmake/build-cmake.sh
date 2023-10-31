@@ -11,7 +11,7 @@ cd $(dirname `readlink -f "$0"`)
 # manylinux2014 i686/x86_64/aarch64 wheels)
 
 # this file is only intended to work in our manylinux build system and not on
-# MacOS, which has a modern enough cmake already
+# macOS, which has a modern enough cmake already
 
 # any cpython version can be used here 
 # (this must be updated when we drop 3.10 support after a few years)
