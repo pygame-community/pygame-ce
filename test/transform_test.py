@@ -1637,7 +1637,9 @@ class TransformDisplayModuleTest(unittest.TestCase):
         pygame.Surface((100, 100)).blit(scaled_surf, (0, 0))
 
         self.assertEqual(
-            surf.get_flags() & pygame.RLEACCEL, scaled_surf.get_flags() & pygame.RLEACCEL)
+            surf.get_flags() & pygame.RLEACCEL,
+            scaled_surf.get_flags() & pygame.RLEACCEL,
+        )
         self.assertEqual(scaled_surf.get_at((8, 8)), (255, 0, 0, 255))
 
 
