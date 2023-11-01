@@ -2276,7 +2276,7 @@ MODINIT_DEFINE(base)
     }
 
     PyObject *version =
-        PyUnicode_FromFormat("%d.%d.%d.%s", PG_MAJOR_VERSION, PG_MINOR_VERSION,
+        PyUnicode_FromFormat("%d.%d.%d%s", PG_MAJOR_VERSION, PG_MINOR_VERSION,
                              PG_PATCH_VERSION, PG_VERSION_TAG);
     if (!version) {
         goto error;
