@@ -2275,6 +2275,17 @@ MODINIT_DEFINE(base)
         goto error;
     }
 
+    PyObject *version =
+        PyUnicode_FromFormat("%d.%d.%d%s", PG_MAJOR_VERSION, PG_MINOR_VERSION,
+                             PG_PATCH_VERSION, PG_VERSION_TAG);
+    if (!version) {
+        goto error;
+    }
+    if (PyModule_AddObject(module, "__version__", version)) {
+        Py_DECREF(version);
+        goto error;
+    }
+
     /*some initialization*/
     PyObject *quit = PyObject_GetAttrString(module, "quit");
     PyObject *rval;
