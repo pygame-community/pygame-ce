@@ -311,10 +311,161 @@ pg_circle_setr(pgCircleObject *self, PyObject *value, void *closure)
     return 0;
 }
 
+static PyObject *
+pg_circle_getr_sqr(pgCircleObject *self, void *closure)
+{
+    return PyFloat_FromDouble(self->circle.r * self->circle.r);
+}
+
+static int
+pg_circle_setr_sqr(pgCircleObject *self, PyObject *value, void *closure)
+{
+    double radius_squared;
+
+    DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
+
+    if (!pg_DoubleFromObj(value, &radius_squared)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "Invalid type for radius squared, must be numeric");
+        return -1;
+    }
+
+    if (radius_squared <= 0) {
+        PyErr_SetString(PyExc_ValueError,
+                        "Invalid radius squared value, must be > 0");
+        return -1;
+    }
+
+    self->circle.r = sqrt(radius_squared);
+
+    return 0;
+}
+
+static PyObject *
+pg_circle_getcenter(pgCircleObject *self, void *closure)
+{
+    return pg_tuple_couple_from_values_double(self->circle.x, self->circle.y);
+}
+
+static int
+pg_circle_setcenter(pgCircleObject *self, PyObject *value, void *closure)
+{
+    DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
+    if (!pg_TwoDoublesFromObj(value, &self->circle.x, &self->circle.y)) {
+        PyErr_SetString(PyExc_TypeError, "Expected a sequence of 2 numbers");
+        return -1;
+    }
+    return 0;
+}
+
+static PyObject *
+pg_circle_getarea(pgCircleObject *self, void *closure)
+{
+    return PyFloat_FromDouble(M_PI * self->circle.r * self->circle.r);
+}
+
+static int
+pg_circle_setarea(pgCircleObject *self, PyObject *value, void *closure)
+{
+    double area;
+
+    DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
+
+    if (!pg_DoubleFromObj(value, &area)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "Invalid type for area, must be numeric");
+        return -1;
+    }
+
+    if (area <= 0) {
+        PyErr_SetString(PyExc_ValueError, "Invalid area value, must be > 0");
+        return -1;
+    }
+
+    self->circle.r = sqrt(area / M_PI);
+
+    return 0;
+}
+
+static PyObject *
+pg_circle_getcircumference(pgCircleObject *self, void *closure)
+{
+    return PyFloat_FromDouble(M_TWOPI * self->circle.r);
+}
+
+static int
+pg_circle_setcircumference(pgCircleObject *self, PyObject *value,
+                           void *closure)
+{
+    double circumference;
+
+    DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
+
+    if (!pg_DoubleFromObj(value, &circumference)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "Invalid type for circumference, must be numeric");
+        return -1;
+    }
+
+    if (circumference <= 0) {
+        PyErr_SetString(PyExc_ValueError,
+                        "Invalid circumference value, must be > 0");
+        return -1;
+    }
+
+    self->circle.r = circumference / M_TWOPI;
+
+    return 0;
+}
+
+static PyObject *
+pg_circle_getdiameter(pgCircleObject *self, void *closure)
+{
+    return PyFloat_FromDouble(2 * self->circle.r);
+}
+
+static int
+pg_circle_setdiameter(pgCircleObject *self, PyObject *value, void *closure)
+{
+    double diameter;
+
+    DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
+
+    if (!pg_DoubleFromObj(value, &diameter)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "Invalid type for diameter, must be numeric");
+        return -1;
+    }
+
+    if (diameter <= 0) {
+        PyErr_SetString(PyExc_ValueError,
+                        "Invalid diameter value, must be > 0");
+        return -1;
+    }
+
+    self->circle.r = diameter / 2;
+
+    return 0;
+}
+
 static PyGetSetDef pg_circle_getsets[] = {
     {"x", (getter)pg_circle_getx, (setter)pg_circle_setx, DOC_CIRCLE_X, NULL},
     {"y", (getter)pg_circle_gety, (setter)pg_circle_sety, DOC_CIRCLE_Y, NULL},
     {"r", (getter)pg_circle_getr, (setter)pg_circle_setr, DOC_CIRCLE_R, NULL},
+    {"radius", (getter)pg_circle_getr, (setter)pg_circle_setr, DOC_CIRCLE_R,
+     NULL},
+    {"r_sqr", (getter)pg_circle_getr_sqr, (setter)pg_circle_setr_sqr,
+     DOC_CIRCLE_RSQR, NULL},
+    {"d", (getter)pg_circle_getdiameter, (setter)pg_circle_setdiameter,
+     DOC_CIRCLE_DIAMETER, NULL},
+    {"diameter", (getter)pg_circle_getdiameter, (setter)pg_circle_setdiameter,
+     DOC_CIRCLE_DIAMETER, NULL},
+    {"center", (getter)pg_circle_getcenter, (setter)pg_circle_setcenter,
+     DOC_CIRCLE_CENTER, NULL},
+    {"area", (getter)pg_circle_getarea, (setter)pg_circle_setarea,
+     DOC_CIRCLE_AREA, NULL},
+    {"circumference", (getter)pg_circle_getcircumference,
+     (setter)pg_circle_setcircumference, DOC_CIRCLE_CIRCUMFERENCE, NULL},
     {NULL, 0, NULL, NULL, NULL}};
 
 static PyTypeObject pgCircle_Type = {

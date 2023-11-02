@@ -617,3 +617,31 @@ pg_tuple_triple_from_values_int(int val1, int val2, int val3)
 
     return tup;
 }
+
+static PG_INLINE PyObject *
+pg_tuple_couple_from_values_double(double val1, double val2)
+{
+    /* This function turns two input doubles into a python tuple object.
+     * Currently, 5th November 2022, this is faster than using Py_BuildValue
+     * to do the same thing.
+     */
+    PyObject *tuple = PyTuple_New(2);
+    if (!tuple)
+        return NULL;
+
+    PyObject *tmp = PyFloat_FromDouble(val1);
+    if (!tmp) {
+        Py_DECREF(tuple);
+        return NULL;
+    }
+    PyTuple_SET_ITEM(tuple, 0, tmp);
+
+    tmp = PyFloat_FromDouble(val2);
+    if (!tmp) {
+        Py_DECREF(tuple);
+        return NULL;
+    }
+    PyTuple_SET_ITEM(tuple, 1, tmp);
+
+    return tuple;
+}
