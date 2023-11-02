@@ -1,23 +1,39 @@
 from typing import (
-    Sequence,
-    overload, Tuple,
+    overload,
+    Tuple,
 )
 
 from ._common import Coordinate
 
-
 class Circle:
-    x: float
-    y: float
-    r: float
-    radius: float
-    r_sqr: float
-    d: float
-    diameter: float
-    area: float
-    circumference: float
-    center: Tuple[float, float]
-
+    @property
+    def x(self) -> float: ...
+    @x.setter
+    def x(self, value: float) -> None: ...
+    @property
+    def y(self) -> float: ...
+    @y.setter
+    def y(self, value: float) -> None: ...
+    @property
+    def r(self) -> float: ...
+    @r.setter
+    def r(self, value: float) -> None: ...
+    @property
+    def radius(self) -> float: ...
+    @property
+    def r_sqr(self) -> float: ...
+    @property
+    def d(self) -> float: ...
+    @property
+    def diameter(self) -> float: ...
+    @property
+    def area(self) -> float: ...
+    @property
+    def circumference(self) -> float: ...
+    @property
+    def center(self) -> Tuple[float, float]: ...
+    @center.setter
+    def center(self, value: Coordinate) -> None: ...
     @overload
     def __init__(self, x: float, y: float, r: float) -> None: ...
     @overload
