@@ -236,7 +236,24 @@ pg_circle_str(pgCircleObject *self)
     return pg_circle_repr(self);
 }
 
+static PyObject *
+pg_circle_collidepoint(pgCircleObject *self, PyObject *const *args,
+                       Py_ssize_t nargs)
+{
+    double px, py;
+
+    if (!pg_TwoDoublesFromFastcallArgs(args, nargs, &px, &py)) {
+        return RAISE(
+            PyExc_TypeError,
+            "Circle.collidepoint requires a point or PointLike object");
+    }
+
+    return PyBool_FromLong(pgCollision_CirclePoint(&self->circle, px, py));
+}
+
 static struct PyMethodDef pg_circle_methods[] = {
+    {"collidepoint", (PyCFunction)pg_circle_collidepoint, METH_FASTCALL,
+     DOC_CIRCLE_COLLIDEPOINT},
     {"__copy__", (PyCFunction)pg_circle_copy, METH_NOARGS, DOC_CIRCLE_COPY},
     {"copy", (PyCFunction)pg_circle_copy, METH_NOARGS, DOC_CIRCLE_COPY},
     {NULL, NULL, 0, NULL}};
