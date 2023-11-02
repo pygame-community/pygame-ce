@@ -1,5 +1,4 @@
 from typing import (
-    Sequence,
     overload,
     Union,
     Callable,
@@ -8,7 +7,7 @@ from typing import (
 )
 
 from pygame import Vector3
-from pygame._common import Coordinate
+from ._common import Coordinate
 
 _CanBeCircle = Union[
     Circle,
@@ -25,15 +24,50 @@ class _HasCirclettribute(Protocol):
 
 _CircleValue = Union[_CanBeCircle, _HasCirclettribute]
 
-class Circle:
-    x: float
-    y: float
-    r: float
 
+class Circle:
+    @property
+    def x(self) -> float: ...
+    @x.setter
+    def x(self, value: float) -> None: ...
+    @property
+    def y(self) -> float: ...
+    @y.setter
+    def y(self, value: float) -> None: ...
+    @property
+    def r(self) -> float: ...
+    @r.setter
+    def r(self, value: float) -> None: ...
+
+    radius = r
+
+    @property
+    def r_sqr(self) -> float: ...
+    @r_sqr.setter
+    def r_sqr(self, value: float) -> None: ...
+    @property
+    def d(self) -> float: ...
+    @d.setter
+    def d(self, value: float) -> None: ...
+
+    diameter = d
+
+    @property
+    def area(self) -> float: ...
+    @area.setter
+    def area(self, value: float) -> None: ...
+    @property
+    def circumference(self) -> float: ...
+    @circumference.setter
+    def circumference(self, value: float) -> None: ...
+    @property
+    def center(self) -> Tuple[float, float]: ...
+    @center.setter
+    def center(self, value: Coordinate) -> None: ...
     @overload
     def __init__(self, x: float, y: float, r: float) -> None: ...
     @overload
-    def __init__(self, pos: Sequence[float], r: float) -> None: ...
+    def __init__(self, pos: Coordinate, r: float) -> None: ...
     @overload
     def __init__(self, circle: _CircleValue) -> None: ...
     @overload
