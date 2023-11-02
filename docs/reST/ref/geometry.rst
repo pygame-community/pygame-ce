@@ -144,6 +144,20 @@
 
    ----
 
+   .. method:: collidepoint
+
+         | :sl:`test if a point is inside the circle`
+         | :sg:`collidepoint((x, y)) -> bool`
+         | :sg:`collidepoint(x, y) -> bool`
+         | :sg:`collidepoint(Vector2) -> bool`
+
+         The `collidepoint` method tests whether a given point is inside the `Circle`
+         (including the edge of the `Circle`). It takes a tuple of (x, y) coordinates, two
+         separate x and y coordinates, or a `Vector2` object as its argument, and returns
+         `True` if the point is inside the `Circle`, `False` otherwise.
+
+         .. ## Circle.collidepoint ##
+
    .. method:: copy
 
          | :sl:`returns a copy of the circle`

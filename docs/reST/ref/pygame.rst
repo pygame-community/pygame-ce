@@ -546,4 +546,19 @@ before calling :func:`pygame.init()` or :func:`pygame.joystick.init()`.
 Useful for testing touch events on desktop platforms (e.g. with a trackpad)
 where this is set to 0 by default.
 
+|
+
+::
+
+ "SDL_WINDOWS_DPI_AWARENESS"
+ Set to "permonitorv2" on windows 10 (and later) to declare the pygame
+ window DPI aware and ignore the desktop scaling, "permonitor" for
+ windows 8.1 and later DPI awareness and "system" for windows Vista
+ and later DPI awareness (not per monitor). Finally set it to "unaware",
+ to have the pygame window scale with the desktop scaling.
+
+This hint only affects the windows platform, other platforms can control DPI awareness
+via a Window creation keyword parameter called "allow_high_dpi".
+
+
 

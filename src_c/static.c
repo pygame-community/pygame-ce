@@ -73,6 +73,11 @@ import_pygame_joystick(void)
 {
 }
 
+void
+import_pygame_window(void)
+{
+}
+
 PyMODINIT_FUNC
 PyInit_base(void);
 PyMODINIT_FUNC
@@ -349,6 +354,8 @@ PyInit_pygame_static()
 #include "simd_blitters_avx2.c"
 #include "simd_blitters_sse2.c"
 
+#include "window.c"
+
 #undef pgVidInfo_Type
 #undef pgVidInfo_New
 
@@ -422,5 +429,3 @@ PyInit_pygame_static()
 #undef MAX
 #undef MIN
 #include "scale2x.c"
-
-#include "window.c"

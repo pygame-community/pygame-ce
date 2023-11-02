@@ -5,6 +5,7 @@ from typing import (
 
 from ._common import Coordinate
 
+
 class Circle:
     x: float
     y: float
@@ -25,5 +26,9 @@ class Circle:
     def __init__(self, circle: Circle) -> None: ...
     @overload
     def __init__(self, obj_with_circle_attr) -> None: ...
+    @overload
+    def collidepoint(self, x: float, y: float) -> bool: ...
+    @overload
+    def collidepoint(self, point: Coordinate) -> bool: ...
     def __copy__(self) -> Circle: ...
     copy = __copy__

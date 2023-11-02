@@ -2,7 +2,8 @@ import unittest
 import math
 
 from math import sqrt
-from pygame import Vector2
+from pygame import Vector2, Vector3
+
 from pygame.geometry import Circle
 
 
@@ -425,6 +426,59 @@ class CircleTypeTest(unittest.TestCase):
 
         # check c2 is not c
         self.assertIsNot(c_2, c)
+
+    def test_collidepoint_argtype(self):
+        """tests if the function correctly handles incorrect types as parameters"""
+        invalid_types = (None, [], "1", (1,), Vector3(1, 1, 1), 1)
+
+        c = Circle(10, 10, 4)
+
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                c.collidepoint(value)
+
+    def test_collidepoint_argnum(self):
+        c = Circle(10, 10, 4)
+        args = [tuple(range(x)) for x in range(3, 13)]
+
+        # no params
+        with self.assertRaises(TypeError):
+            c.collidepoint()
+
+        # too many params
+        for arg in args:
+            with self.assertRaises(TypeError):
+                c.collidepoint(*arg)
+
+    def test_collidepoint(self):
+        c = Circle(0, 0, 5)
+
+        p1 = (3, 3)
+        p2 = (10, 10)
+        p3 = Vector2(3, 3)
+        p4 = Vector2(10, 10)
+
+        # colliding single
+        self.assertTrue(c.collidepoint(p1), "Expected True, point should collide here")
+        self.assertTrue(c.collidepoint(p3), "Expected True, point should collide here")
+
+        # not colliding single
+        self.assertFalse(
+            c.collidepoint(p2), "Expected False, point should not collide here"
+        )
+        self.assertFalse(
+            c.collidepoint(p4), "Expected False, point should not collide here"
+        )
+
+        # colliding 2 args
+        self.assertTrue(
+            c.collidepoint(3, 3), "Expected True, point should collide here"
+        )
+
+        # not colliding 2 args
+        self.assertFalse(
+            c.collidepoint(10, 10), "Expected False, point should not collide here"
+        )
 
 
 if __name__ == "__main__":
