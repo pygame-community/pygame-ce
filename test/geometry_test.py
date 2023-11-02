@@ -259,6 +259,75 @@ class CircleTypeTest(unittest.TestCase):
             c.collidepoint(10, 10), "Expected False, point should not collide here"
         )
 
+    def test_collidecircle_argtype(self):
+        """tests if the function correctly handles incorrect types as parameters"""
+        invalid_types = (None, [], "1", (1,), Vector2(1, 1), 1)
+
+        c = Circle(10, 10, 4)
+
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                c.collidecircle(value)
+
+    def test_collidecircle_argnum(self):
+        c = Circle(10, 10, 4)
+        # no params
+        with self.assertRaises(TypeError):
+            c.collidecircle()
+
+        with self.assertRaises(TypeError):
+            c.collidecircle(Circle(10, 10, 4), Circle(10, 10, 4))
+
+    def test_collidecircle(self):
+        c = Circle(0, 0, 5)
+        c_same = c.copy()
+        c2 = Circle(10, 0, 5)
+        c3 = Circle(100, 100, 5)
+        c4 = Circle(10, 0, 4.999999999999)
+        c5 = Circle(0, 0, 2)
+
+        c6 = Circle(10, 0, 7)
+
+        # touching
+        self.assertTrue(
+            c.collidecircle(c2), "Expected True, circles should collide here"
+        )
+
+        # partly colliding
+        self.assertTrue(
+            c.collidecircle(c6), "Expected True, circles should collide here"
+        )
+
+        # self colliding
+        self.assertTrue(
+            c.collidecircle(c), "Expected True, circles should collide with self"
+        )
+
+        # completely colliding
+        self.assertTrue(
+            c.collidecircle(c_same), "Expected True, circles should collide with self"
+        )
+
+        # not touching
+        self.assertFalse(
+            c.collidecircle(c3), "Expected False, circles should not collide here"
+        )
+
+        # barely not touching
+        self.assertFalse(
+            c.collidecircle(c4), "Expected False, circles should not collide here"
+        )
+
+        # small circle inside big circle
+        self.assertTrue(
+            c.collidecircle(c5), "Expected True, circles should collide here"
+        )
+
+        # big circle outside small circle
+        self.assertTrue(
+            c5.collidecircle(c), "Expected False, circles should collide here"
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

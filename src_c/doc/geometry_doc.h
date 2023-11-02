@@ -5,4 +5,5 @@
 #define DOC_CIRCLE_Y "y -> float\ncenter y coordinate of the circle"
 #define DOC_CIRCLE_R "r -> float\nradius of the circle"
 #define DOC_CIRCLE_COLLIDEPOINT "collidepoint((x, y)) -> bool\ncollidepoint(x, y) -> bool\ncollidepoint(Vector2) -> bool\ntest if a point is inside the circle"
+#define DOC_CIRCLE_COLLIDECIRCLE "collidecircle(Circle) -> bool\ncollidecircle(x, y, radius) -> bool\ncollidecircle((x, y), radius) -> bool\ntest if two circles collide"
 #define DOC_CIRCLE_COPY "copy() -> Circle\nreturns a copy of the circle"

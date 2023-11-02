@@ -103,6 +103,24 @@
 
          .. ## Circle.collidepoint ##
 
+   .. method:: collidecircle
+
+         | :sl:`test if two circles collide`
+         | :sg:`collidecircle(Circle) -> bool`
+         | :sg:`collidecircle(x, y, radius) -> bool`
+         | :sg:`collidecircle((x, y), radius) -> bool`
+
+         The `collidecircle` method tests whether two `Circle` objects overlap. It takes either
+         a `Circle` object, a tuple of (x, y) coordinates and a radius, or separate x and y
+         coordinates and a radius as its argument, and returns `True` if any portion of the two
+         `Circle` objects overlap, `False` otherwise.
+
+         .. note::
+             If this method is called with a `Circle` object that is the same as the `Circle`
+             it is called on, it will always return `True`.
+
+         .. ## Circle.collidecircle ##
+
    .. method:: copy
 
          | :sl:`returns a copy of the circle`
