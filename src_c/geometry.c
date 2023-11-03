@@ -1,4 +1,5 @@
 #include "geometry.h"
+#include "collisions.c"
 #include "circle.c"
 
 static PyMethodDef geometry_methods[] = {{NULL, NULL, 0, NULL}};

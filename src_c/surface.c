@@ -732,7 +732,7 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
         /* We ignore the error if any. */
         SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
 
-        /* When the display format has a full alpha channel (MacOS right now),
+        /* When the display format has a full alpha channel (macOS right now),
          * Surfaces may be created with an unreqested alpha channel, which
          * could cause issues.
          * pygame Surfaces are supposed to be (0, 0, 0, 255) by default.

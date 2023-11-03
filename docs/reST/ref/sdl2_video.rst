@@ -654,8 +654,8 @@
 
 
    :class:`Renderer` objects provide a cross-platform API for rendering 2D
-   graphics onto a :class:`Window`, by using either Metal (MacOS), OpenGL
-   (MacOS, Windows, Linux) or Direct3D (Windows) rendering drivers, depending
+   graphics onto a :class:`Window`, by using either Metal (macOS), OpenGL
+   (macOS, Windows, Linux) or Direct3D (Windows) rendering drivers, depending
    on what is set or is available on a system during their creation.
 
    They can be used to draw both :class:`Texture` objects and simple points,

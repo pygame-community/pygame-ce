@@ -85,9 +85,78 @@
 
          .. ## Circle.r ##
 
+   .. attribute:: r_sqr
+
+         | :sl:`radius of the circle squared`
+         | :sg:`r_sqr -> float`
+
+         It's equivalent to `r*r`. It can be reassigned. If reassigned, the radius
+         of the circle will be changed to the square root of the new value.
+         The circle will not be moved from its original position.
+
+         .. ## Circle.r_sqr ##
+
+   .. attribute:: center
+
+         | :sl:`x and y coordinates of the center of the circle`
+         | :sg:`center -> (float, float)`
+
+         It's a tuple containing the `x` and `y` coordinates that represent the center
+         of the circle. It can be reassigned. If reassigned, the circle will be moved
+         to the new position. The radius will not be affected.
+
+         .. ## Circle.center ##
+
+   .. attribute:: diameter
+
+         | :sl:`diameter of the circle`
+         | :sg:`diameter -> float`
+
+         It's calculated using the `d=2*r` formula. It can be reassigned. If reassigned
+         the radius will be changed to half the diameter.
+         The circle will not be moved from its original position.
+
+         .. ## Circle.diameter ##
+
+   .. attribute:: area
+
+         | :sl:`area of the circle`
+         | :sg:`area -> float`
+
+         It's calculated using the `area=pi*r*r` formula. It can be reassigned.
+         If reassigned the circle radius will be changed to produce a circle with matching
+         area. The circle will not be moved from its original position.
+
+         .. ## Circle.area ##
+
+   .. attribute:: circumference
+
+         | :sl:`circumference of the circle`
+         | :sg:`circumference -> float`
+
+         It's calculated using the `circumference=2*pi*r` formula. It can be reassigned.
+         If reassigned the circle radius will be changed to produce a circle with matching
+         circumference. The circle will not be moved from its original position.
+
+         .. ## Circle.circumference ##
+
    **Circle Methods**
 
    ----
+
+   .. method:: collidepoint
+
+         | :sl:`test if a point is inside the circle`
+         | :sg:`collidepoint((x, y)) -> bool`
+         | :sg:`collidepoint(x, y) -> bool`
+         | :sg:`collidepoint(Vector2) -> bool`
+
+         The `collidepoint` method tests whether a given point is inside the `Circle`
+         (including the edge of the `Circle`). It takes a tuple of (x, y) coordinates, two
+         separate x and y coordinates, or a `Vector2` object as its argument, and returns
+         `True` if the point is inside the `Circle`, `False` otherwise.
+
+         .. ## Circle.collidepoint ##
 
    .. method:: copy
 
