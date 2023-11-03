@@ -7,7 +7,6 @@ from typing import (
     Sequence,
 )
 
-from pygame import Vector3
 from ._common import Coordinate
 
 _CanBeCircle = Union[Circle, Tuple[Coordinate, float], Sequence[float]]
