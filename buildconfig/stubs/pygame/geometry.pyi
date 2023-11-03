@@ -3,17 +3,14 @@ from typing import (
     Union,
     Callable,
     Protocol,
-    Tuple, Sequence,
+    Tuple,
+    Sequence,
 )
 
 from pygame import Vector3
 from ._common import Coordinate
 
-_CanBeCircle = Union[
-    Circle,
-    Tuple[Coordinate, float],
-    Sequence[float]
-]
+_CanBeCircle = Union[Circle, Tuple[Coordinate, float], Sequence[float]]
 
 class _HasCirclettribute(Protocol):
     # An object that has a circle attribute that is either a circle, or a function
@@ -21,7 +18,6 @@ class _HasCirclettribute(Protocol):
     circle: Union[_CanBeCircle, Callable[[], _CanBeCircle]]
 
 _CircleValue = Union[_CanBeCircle, _HasCirclettribute]
-
 
 class Circle:
     @property
