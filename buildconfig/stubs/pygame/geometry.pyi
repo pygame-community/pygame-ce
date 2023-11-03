@@ -3,7 +3,7 @@ from typing import (
     Union,
     Callable,
     Protocol,
-    Tuple,
+    Tuple, Sequence,
 )
 
 from pygame import Vector3
@@ -11,10 +11,8 @@ from ._common import Coordinate
 
 _CanBeCircle = Union[
     Circle,
-    Tuple[float, float, float],
-    Tuple[Tuple[float, float], float],
-    Sequence[float],
-    Vector3,
+    Tuple[Coordinate, float],
+    Sequence[float]
 ]
 
 class _HasCirclettribute(Protocol):
@@ -70,8 +68,6 @@ class Circle:
     def __init__(self, pos: Coordinate, r: float) -> None: ...
     @overload
     def __init__(self, circle: _CircleValue) -> None: ...
-    @overload
-    def __init__(self, obj_with_circle_attr) -> None: ...
     @overload
     def collidepoint(self, x: float, y: float) -> bool: ...
     @overload
