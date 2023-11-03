@@ -494,7 +494,7 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
             /*mm_src = 0x0000000000000000AARRGGBBAARRGGBB*/
             /* First we strip out the alpha so we have one of our 4 channels
                empty for the rest of the calculation */
-            mm_alpha = _mm_subs_epu8(mm_src, mm_rgb_mask);
+            mm_alpha = _mm_and_si128(mm_src, mm_alpha_mask);
             /*mm_src = 0x000000000000000000RRGGBB00RRGGBB*/
 
             /* This is where we do the efficient 8bit 'floating point multiply'
@@ -544,8 +544,8 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
              */
             mm_dst = _mm_packus_epi16(mm_dst, mm_dst);
             /*mm_dst = 0x000000000000000000GrGrGrGrGrGr00GrGrGrGrGrGr*/
-            mm_dst = _mm_subs_epu8(mm_dst, mm_alpha_mask);
-            mm_dst = _mm_adds_epu8(mm_dst, mm_alpha);
+            mm_dst = _mm_and_si128(mm_dst, mm_rgb_mask);
+            mm_dst = _mm_or_si128(mm_dst, mm_alpha);
             /*mm_dst = 0x0000000000000000AAGrGrGrGrGrGrAAGrGrGrGrGrGr*/
             STORE_M128_INTO_64(&mm_dst, dstp64);
             /*dstp = 0xAARRGGBB*/
@@ -559,7 +559,7 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
             /*mm_src = 0x000000000000000000000000AARRGGBB*/
             /* First we strip out the alpha so we have one of our 4 channels
                empty for the rest of the calculation */
-            mm_alpha = _mm_subs_epu8(mm_src, mm_rgb_mask);
+            mm_alpha = _mm_and_si128(mm_src, mm_alpha_mask);
             /*mm_src = 0x00000000000000000000000000RRGGBB*/
 
             /* This is where we do the efficient 8bit 'floating point multiply'
@@ -600,8 +600,8 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
              */
             mm_dst = _mm_packus_epi16(mm_dst, mm_dst);
             /*mm_dst = 0x000000000000000000000000GrGrGrGrGrGrGrGr*/
-            mm_dst = _mm_subs_epu8(mm_dst, mm_alpha_mask);
-            mm_dst = _mm_adds_epu8(mm_dst, mm_alpha);
+            mm_dst = _mm_and_si128(mm_dst, mm_rgb_mask);
+            mm_dst = _mm_or_si128(mm_dst, mm_alpha);
             /*mm_dst = 0x000000000000000000000000AAGrGrGrGrGrGr*/
             *dstp = _mm_cvtsi128_si32(mm_dst);
             /*dstp = 0xAARRGGBB*/

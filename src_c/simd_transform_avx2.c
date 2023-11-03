@@ -133,7 +133,7 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
         remaining_pixels_batch_counter = remaining_pixels;
         while (perfect_8_pixels_batch_counter--) {
             mm256_src = _mm256_loadu_si256(srcp256);
-            mm256_alpha = _mm256_subs_epu8(mm256_src, mm256_rgb_mask);
+            mm256_alpha = _mm256_and_si256(mm256_src, mm256_alpha_mask);
 
             mm256_srcA = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_A);
             mm256_srcB = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_B);
@@ -156,8 +156,8 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
                 _mm256_add_epi16(mm256_dst, _mm256_srli_epi32(mm256_dst, 16));
             mm256_dst = _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_gray);
 
-            mm256_dst = _mm256_subs_epu8(mm256_dst, mm256_alpha_mask);
-            mm256_dst = _mm256_adds_epu8(mm256_dst, mm256_alpha);
+            mm256_dst = _mm256_and_si256(mm256_dst, mm256_rgb_mask);
+            mm256_dst = _mm256_or_si256(mm256_dst, mm256_alpha);
 
             _mm256_storeu_si256(dstp256, mm256_dst);
 
@@ -168,7 +168,7 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
         dstp = (Uint32 *)dstp256;
         if (remaining_pixels_batch_counter > 0) {
             mm256_src = _mm256_maskload_epi32((int *)srcp, _partial8_mask);
-            mm256_alpha = _mm256_subs_epu8(mm256_src, mm256_rgb_mask);
+            mm256_alpha = _mm256_and_si256(mm256_src, mm256_alpha_mask);
 
             mm256_srcA = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_A);
             mm256_srcB = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_B);
@@ -191,8 +191,8 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
                 _mm256_add_epi16(mm256_dst, _mm256_srli_epi32(mm256_dst, 16));
             mm256_dst = _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_gray);
 
-            mm256_dst = _mm256_subs_epu8(mm256_dst, mm256_alpha_mask);
-            mm256_dst = _mm256_adds_epu8(mm256_dst, mm256_alpha);
+            mm256_dst = _mm256_and_si256(mm256_dst, mm256_rgb_mask);
+            mm256_dst = _mm256_or_si256(mm256_dst, mm256_alpha);
 
             _mm256_maskstore_epi32((int *)dstp, _partial8_mask, mm256_dst);
 
