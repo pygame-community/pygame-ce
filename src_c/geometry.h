@@ -25,4 +25,16 @@ static PyTypeObject pgCircle_Type;
 static int
 pgCircle_FromObject(PyObject *obj, pgCircleBase *out);
 
+/* Constants */
+
+/* PI */
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+/* 2PI */
+#ifndef M_TWOPI
+#define M_TWOPI 6.28318530717958647692
+#endif
+
 #endif  // PYGAME_CE_GEOMETRY_H
