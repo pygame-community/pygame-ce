@@ -323,7 +323,7 @@ cdef class AbstractGroup:
 
     """
 
-    # dummy val to identify sprite groups, and avoid infinite recursion
+    # null val to identify sprite groups, and avoid infinite recursion
     _spritegroup = True
 
     cdef public dict spritedict

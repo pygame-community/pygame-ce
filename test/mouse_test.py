@@ -56,7 +56,7 @@ class MouseModuleInteractiveTest(MouseTests):
 
 class MouseModuleTest(MouseTests):
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER", "") == "dummy",
+        os.environ.get("SDL_VIDEODRIVER", "") == pygame.NULL_VIDEODRIVER,
         "Cursors not supported on headless test machines",
     )
     def test_get_cursor(self):
@@ -96,7 +96,7 @@ class MouseModuleTest(MouseTests):
                 pygame.mouse.get_cursor()
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER", "") == "dummy",
+        os.environ.get("SDL_VIDEODRIVER", "") == pygame.NULL_VIDEODRIVER,
         "mouse.set_system_cursor only available in SDL2",
     )
     def test_set_system_cursor(self):
@@ -138,7 +138,7 @@ class MouseModuleTest(MouseTests):
             )
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER", "") == "dummy",
+        os.environ.get("SDL_VIDEODRIVER", "") == pygame.NULL_VIDEODRIVER,
         "Cursors not supported on headless test machines",
     )
     def test_set_cursor(self):

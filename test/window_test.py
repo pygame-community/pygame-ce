@@ -16,7 +16,7 @@ class WindowTypeTest(unittest.TestCase):
 
     # Used to check the presence and set-ability of boolean attributes without
     # testing the results of the actions, since the results are not propagated
-    # by the dummy videodriver on CI for some things.
+    # by the NULL videodriver on CI for some things.
     def bool_attr_test(self, attr):
         setattr(self.win, attr, True)
         setattr(self.win, attr, False)
@@ -61,8 +61,8 @@ class WindowTypeTest(unittest.TestCase):
         self.bool_attr_test("resizable")
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     def test_resizable_set(self):
         self.win.resizable = True
@@ -74,8 +74,8 @@ class WindowTypeTest(unittest.TestCase):
         self.bool_attr_test("borderless")
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     def test_borderless_set(self):
         self.win.borderless = True
@@ -91,8 +91,8 @@ class WindowTypeTest(unittest.TestCase):
         self.bool_attr_test("always_on_top")
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     @unittest.skipIf(
         SDL < (2, 0, 16),
@@ -165,7 +165,7 @@ class WindowTypeTest(unittest.TestCase):
             ValueError, lambda: setattr(self.win, "maximum_size", (-1, -1))
         )
         self.assertRaises(
-            TypeError, lambda: setattr(self.win, "maximum_size", "dummy_str")
+            TypeError, lambda: setattr(self.win, "maximum_size", "null_str")
         )
 
     def test_minimum_size(self):
@@ -192,7 +192,7 @@ class WindowTypeTest(unittest.TestCase):
             ValueError, lambda: setattr(self.win, "minimum_size", (-1, -1))
         )
         self.assertRaises(
-            TypeError, lambda: setattr(self.win, "minimum_size", "dummy_str")
+            TypeError, lambda: setattr(self.win, "minimum_size", "null_str")
         )
 
     def test_min_size_interact_with_max_size(self):
@@ -221,14 +221,14 @@ class WindowTypeTest(unittest.TestCase):
             self.assertTupleEqual(self.win.minimum_size, (60, 60))
 
     def test_opacity(self):
-        # Setting is not supported at all with SDL_VIDEODRIVER = dummy,
+        # Setting is not supported at all with SDL_VIDEODRIVER = pygame.NULL_VIDEODRIVER,
         # all we can test here is that the attribute exists and is a
         # float
         self.assertIsInstance(self.win.opacity, float)
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     def test_opacity_set(self):
         self.win.opacity = 0.5
@@ -242,7 +242,7 @@ class WindowTypeTest(unittest.TestCase):
         self.win.opacity = 1.1
         self.assertEqual(self.win.opacity, 1)
 
-        self.assertRaises(TypeError, lambda: setattr(self.win, "opacity", "dummy str"))
+        self.assertRaises(TypeError, lambda: setattr(self.win, "opacity", "null str"))
 
     def test_init_flags(self):
         # test borderless

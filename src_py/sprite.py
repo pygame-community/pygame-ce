@@ -372,7 +372,7 @@ class AbstractGroup:
 
     """
 
-    # dummy val to identify sprite groups, and avoid infinite recursion
+    # null val to identify sprite groups, and avoid infinite recursion
     _spritegroup = True
 
     def __init__(self):
