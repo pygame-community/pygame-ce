@@ -220,7 +220,7 @@ static unsigned int current_freetype_generation = 0;
     (((pgFontObject *)(x))->init_generation == current_freetype_generation)
 
 #define RAISE_FREETYPE_QUIT_ERROR(r, font)                       \
-    char message[100];                                           \
+    char message[120];                                           \
     PyOS_snprintf(message, sizeof(message),                            \
                   "Invalid freetype font (freetype module quit "       \
                   "since freetype font "                               \
