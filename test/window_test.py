@@ -165,7 +165,7 @@ class WindowTypeTest(unittest.TestCase):
             ValueError, lambda: setattr(self.win, "maximum_size", (-1, -1))
         )
         self.assertRaises(
-            TypeError, lambda: setattr(self.win, "maximum_size", "null_str")
+            TypeError, lambda: setattr(self.win, "maximum_size", "placeholder_str")
         )
 
     def test_minimum_size(self):

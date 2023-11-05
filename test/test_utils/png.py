@@ -440,7 +440,7 @@ class Writer:
         """
 
         # At the moment the `planes` argument is ignored;
-        # its purpose is to act as a null argument so that
+        # its purpose is to act as a placeholder argument so that
         # ``Writer(x, y, **info)`` works, where `info` is a dictionary
         # returned by Reader.read and friends.
         # Ditto for `colormap`.
