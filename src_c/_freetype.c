@@ -221,13 +221,13 @@ static unsigned int current_freetype_generation = 0;
 
 #define RAISE_FREETYPE_QUIT_ERROR(r, font)                       \
     char message[120];                                           \
-    PyOS_snprintf(message, sizeof(message),                            \
-                  "Invalid freetype font (freetype module quit "       \
-                  "since freetype font "                               \
-                  "created) font generation: %d, "                     \
-                  "module generation: %d",                             \
-                  ((pgFontObject *)(font))->init_generation,          \
-                   current_freetype_generation);                       \
+    PyOS_snprintf(message, sizeof(message),                      \
+                  "Invalid freetype font (freetype module quit " \
+                  "since freetype font "                         \
+                  "created) font generation: %d, "               \
+                  "module generation: %d",                       \
+                  ((pgFontObject *)(font))->init_generation,     \
+                  current_freetype_generation);                  \
     RAISERETURN(pgExc_SDLError, message, r);
 
 static PyObject *
@@ -671,6 +671,7 @@ _ftfont_new(PyTypeObject *subtype, PyObject *args, PyObject *kwds)
         obj->bgcolor[1] = 0;
         obj->bgcolor[2] = 0;
         obj->bgcolor[3] = 0;
+        obj->init_generation = current_freetype_generation;
     }
     return (PyObject *)obj;
 }
@@ -908,12 +909,10 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
     */
     self->freetype = ft;
     ++ft->ref_count;
-    self->init_generation = current_freetype_generation;
 
     rval = 0;
 
 end:
-    self->init_generation = current_freetype_generation;
     Py_XDECREF(file);
     return rval;
 }
