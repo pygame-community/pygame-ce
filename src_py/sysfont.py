@@ -26,7 +26,7 @@ import difflib
 from os.path import basename, dirname, exists, join, splitext
 
 from pygame.font import Font
-from pygame.pkgdata import getResource
+from pygame import __file__ as pygame_main_file
 
 if sys.platform != "emscripten":
     if os.name == "nt":
@@ -362,9 +362,13 @@ def initsysfonts():
     else:
         fonts = initsysfonts_unix()
 
-    # Add the default font to sys fonts
-    default_font_path = getResource("freesansbold.ttf").name
-    _addfont("freesansbold", True, False, default_font_path, fonts)
+    # Try to add the default font to sys fonts
+    try:
+        pygame_folder = os.path.dirname(os.path.abspath(pygame_main_file))
+        default_font_path = os.path.join(pygame_folder, "freesansbold.ttf")
+        _addfont("freesansbold", True, False, default_font_path, fonts)
+    except (OSError, NotImplementedError):
+        pass
 
     Sysfonts.update(fonts)
     create_aliases()
