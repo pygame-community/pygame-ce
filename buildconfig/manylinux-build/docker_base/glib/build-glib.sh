@@ -18,11 +18,6 @@ if [[ "$MAC_ARCH" == "arm64" ]]; then
     export GLIB_COMPILE_EXTRA_FLAGS="--cache-file=../macos_arm64.cache"
 fi
 
-CFLAGS=-Wno-error ./configure $ARCHS_CONFIG_FLAG --with-pcre=internal $GLIB_COMPILE_EXTRA_FLAGS --disable-libmount --disable-dbus
+CFLAGS=-Wno-error ./configure $PG_BASE_CONFIGURE_FLAGS --with-pcre=internal $GLIB_COMPILE_EXTRA_FLAGS --disable-libmount --disable-dbus
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi

@@ -13,25 +13,15 @@ sha512sum -c opus.sha512
 tar xzf ${OPUS}.tar.gz
 cd $OPUS
 
-./configure $ARCHS_CONFIG_FLAG
+./configure $PG_BASE_CONFIGURE_FLAGS
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi
 
 cd ..
 
 tar xzf ${OPUS_FILE}.tar.gz
 cd $OPUS_FILE
 
-./configure $ARCHS_CONFIG_FLAG --disable-http
+./configure $PG_BASE_CONFIGURE_FLAGS --disable-http
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi
