@@ -2,6 +2,7 @@
 from re import T
 import sys
 import os
+import io
 import unittest
 import pathlib
 import platform
@@ -707,6 +708,11 @@ class FontTypeTest(unittest.TestCase):
         )
         with open(font_path, "rb") as f:
             font = pygame_font.Font(f)
+
+    def test_load_from_invalid_sized_file_obj(self):
+        f = io.StringIO()
+        with self.assertRaises(ValueError):
+            font = pygame.font.Font(f)
 
     def test_load_default_font_filename(self):
         # In font_init, a special case is when the filename argument is

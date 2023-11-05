@@ -1184,9 +1184,10 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     if (fontsize <= 1)
         fontsize = 1;
 
-    if (rw->size(rw) == -1 || rw->size(rw) == 0) {
-        PyErr_Format(PyExc_RuntimeError,
-                     "Font file object appears to be empty");
+    if (rw->size(rw) <= 0) {
+        PyErr_Format(PyExc_ValueError,
+                     "Font file object has an invalid file size: %lld",
+                     rw->size(rw));
         goto error;
     }
 

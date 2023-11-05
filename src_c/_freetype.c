@@ -783,6 +783,13 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
             goto end;
         }
 
+        if (source->size(source) <= 0) {
+            PyErr_Format(PyExc_ValueError,
+                         "Font file object has an invalid file size: %lld",
+                         source->size(source));
+            goto end;
+        }
+
         path = PyObject_GetAttrString(original_file, "name");
         if (!path) {
             PyErr_Clear();
@@ -824,6 +831,13 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
         goto end;
     source = pgRWops_FromObject(file, NULL);
     if (!source) {
+        goto end;
+    }
+
+    if (source->size(source) <= 0) {
+        PyErr_Format(PyExc_ValueError,
+                     "Font file object has an invalid file size: %lld",
+                     source->size(source));
         goto end;
     }
 

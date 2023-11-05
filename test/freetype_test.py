@@ -1,5 +1,5 @@
 import os
-
+import io
 import unittest
 import ctypes
 import weakref
@@ -157,6 +157,11 @@ class FreeTypeFontTest(unittest.TestCase):
         self.assertEqual(f.size, (x_ppem, y_ppem))
         f.__init__(self._bmp_8_75dpi_path, size=12)
         self.assertEqual(f.size, 12.0)
+
+    def test_load_from_invalid_sized_file_obj(self):
+        f = io.StringIO()
+        with self.assertRaises(ValueError):
+            font = f = ft.Font(f, size=24)
 
     @unittest.skipIf(IS_PYPY, "PyPy doesn't use refcounting")
     def test_freetype_Font_dealloc(self):
@@ -544,7 +549,7 @@ class FreeTypeFontTest(unittest.TestCase):
         f = self._TEST_FONTS["fixed"]
         self.assertEqual(f.name, "Inconsolata")
 
-        self.assertRaises(RuntimeError, lambda: nullfont().name)
+        self.assertRaises(AttributeError, lambda: nullfont().name)
 
     def test_freetype_Font_size(self):
         f = ft.Font(None, size=12)
@@ -1349,7 +1354,7 @@ class FreeTypeFontTest(unittest.TestCase):
 
     def test_freetype_Font_path(self):
         self.assertEqual(self._TEST_FONTS["sans"].path, self._sans_path)
-        self.assertRaises(pygame.error, lambda: nullfont().path)
+        self.assertRaises(AttributeError, lambda: nullfont().path)
 
     # This Font cache test is conditional on freetype being built by a debug
     # version of Python or with the C macro PGFT_DEBUG_CACHE defined.
