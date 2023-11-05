@@ -4,7 +4,7 @@
 #define DOC_SURFACE_BLITS "blits(blit_sequence=((source, dest), ...), doreturn=True) -> [Rect, ...] or None\nblits(((source, dest, area), ...)) -> [Rect, ...]\nblits(((source, dest, area, special_flags), ...)) -> [Rect, ...]\ndraw many images onto another"
 #define DOC_SURFACE_FBLITS "fblits(blit_sequence=((source, dest), ...), special_flags=0) -> None\ndraw many surfaces onto the calling surface at their corresponding location and the same special_flags"
 #define DOC_SURFACE_CONVERT "convert(Surface=None) -> Surface\nconvert(depth, flags=0) -> Surface\nconvert(masks, flags=0) -> Surface\nchange the pixel format of an image"
-#define DOC_SURFACE_CONVERTALPHA "convert_alpha(Surface) -> Surface\nconvert_alpha() -> Surface\nchange the pixel format of an image including per pixel alphas"
+#define DOC_SURFACE_CONVERTALPHA "convert_alpha() -> Surface\nchange the pixel format of an image including per pixel alphas"
 #define DOC_SURFACE_COPY "copy() -> Surface\ncreate a new copy of a Surface"
 #define DOC_SURFACE_FILL "fill(color, rect=None, special_flags=0) -> Rect\nfill Surface with a solid color"
 #define DOC_SURFACE_SCROLL "scroll(dx=0, dy=0) -> None\nShift the surface image in place"

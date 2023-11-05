@@ -73,7 +73,7 @@ Un agradecimiento especial también está en orden.
 * David Clark for filling the right-hand-man position
 * Ed Boraas and Francis Irving: Debian packages
 * Maxim Sobolev: FreeBSD packaging
-* Bob Ippolito: MacOS and OS X porting (much work!)
+* Bob Ippolito: macOS and OS X porting (much work!)
 * Jan Ekhol, Ray Kelm, and Peter Nicolai: putting up with early design ideas
 * Nat Pryce for starting our unit tests
 * Dan Richter for documentation work

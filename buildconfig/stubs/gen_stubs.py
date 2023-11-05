@@ -50,6 +50,7 @@ PG_AUTOIMPORT_SUBMODS = [
     "sysfont",
     "_debug",
     "system",
+    "geometry",
 ]
 
 # pygame classes that are autoimported into main namespace are kept in this dict
@@ -68,6 +69,9 @@ PG_AUTOIMPORT_CLASSES = {
     "mixer": ["Channel"],
     "time": ["Clock"],
     "joystick": ["Joystick"],
+    "base": ["__version__"],  # need an explicit import
+    # uncomment below line if Circle is added to the base namespace later
+    # "geometry": ["Circle"], 
 }
 
 # pygame modules from which __init__.py does the equivalent of
@@ -93,7 +97,11 @@ for k, v in PG_AUTOIMPORT_CLASSES.items():
     pygame_all_imports[f".{k}"] = v
 
 for k in PG_STAR_IMPORTS:
-    pygame_all_imports[f".{k}"] = get_all(getattr(pygame, k))
+    val = get_all(getattr(pygame, k))
+    try:
+        pygame_all_imports[f".{k}"].extend(val)
+    except KeyError:
+        pygame_all_imports[f".{k}"] = val
 
 # misc stubs that must be added to __init__.pyi
 misc_stubs = """"""

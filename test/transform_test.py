@@ -1160,7 +1160,7 @@ class TransformModuleTest(unittest.TestCase):
 
     def test_get_smoothscale_backend(self):
         filter_type = pygame.transform.get_smoothscale_backend()
-        self.assertTrue(filter_type in ["GENERIC", "MMX", "SSE"])
+        self.assertTrue(filter_type in ["GENERIC", "MMX", "SSE", "SSE2"])
         # It would be nice to test if a non-generic type corresponds to an x86
         # processor. But there is no simple test for this. platform.machine()
         # returns process version specific information, like 'i686'.
@@ -1192,8 +1192,9 @@ class TransformModuleTest(unittest.TestCase):
             pygame.transform.set_smoothscale_backend(1)
 
         self.assertRaises(TypeError, change)
+
         # Unsupported type, if possible.
-        if original_type != "SSE":
+        if original_type == "GENERIC":
 
             def change():
                 pygame.transform.set_smoothscale_backend("SSE")
@@ -1286,6 +1287,17 @@ class TransformModuleTest(unittest.TestCase):
 
         self.assertEqual(s1.get_rect(), pygame.Rect(0, 0, 0, 0))
         self.assertEqual(s2.get_rect(), pygame.Rect(0, 0, 0, 0))
+
+    def test_rotozoom_keeps_colorkey(self):
+        image = pygame.Surface((64, 64))
+        image.set_colorkey("black")
+        pygame.draw.circle(image, "red", (32, 32), 32, width=0)
+
+        no_rot = pygame.transform.rotozoom(image, 0, 1.1)
+        self.assertEqual(image.get_colorkey(), no_rot.get_colorkey())
+
+        with_rot = pygame.transform.rotozoom(image, 5, 1.1)
+        self.assertEqual(image.get_colorkey(), with_rot.get_colorkey())
 
     def test_invert(self):
         surface = pygame.Surface((10, 10), depth=32)

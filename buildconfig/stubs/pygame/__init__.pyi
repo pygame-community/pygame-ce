@@ -37,6 +37,7 @@ from pygame import (
     sysfont as sysfont,
     _debug as _debug,
     system as system,
+    geometry as geometry,
 )
 
 from .rect import Rect as Rect, FRect as FRect
@@ -54,6 +55,7 @@ from .mixer import Channel as Channel
 from .time import Clock as Clock
 from .joystick import Joystick as Joystick
 from .base import (
+    __version__ as __version__,
     BufferError as BufferError,
     HAVE_NEWBUF as HAVE_NEWBUF,
     error as error,

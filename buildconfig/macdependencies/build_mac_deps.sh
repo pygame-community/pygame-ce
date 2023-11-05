@@ -1,16 +1,16 @@
 # This uses manylinux build scripts to build dependencies
 #  on mac.
 #
-# Warning: this should probably not be run on your own mac.
-#   Since it will install all these deps all over the place,
-#   and they may conflict with existing installs you have.
+# Warning: this should not be run on your own mac as it cleans dependencies on the system
 
 set -e -x
 
-export MACDEP_CACHE_PREFIX_PATH=${GITHUB_WORKSPACE}/pygame_mac_deps_${MAC_ARCH}
+export PG_DEP_PREFIX=${GITHUB_WORKSPACE}/pygame_mac_deps_${MAC_ARCH}
 
 bash ./clean_usr_local.sh
-mkdir $MACDEP_CACHE_PREFIX_PATH
+mkdir $PG_DEP_PREFIX
+
+export PKG_CONFIG_PATH="$PG_DEP_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 # to use the gnu readlink, needs `brew install coreutils`
 export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
@@ -19,16 +19,20 @@ export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
 export MAKEFLAGS="-j 4"
 
 # With this we
-# 1) Force install prefix to /usr/local
-# 2) use lib directory within /usr/local (and not lib64)
+# 1) Force install prefix to $PG_DEP_PREFIX
+# 2) use lib directory within $PG_DEP_PREFIX (and not lib64)
 # 3) make release binaries
 # 4) build shared libraries
 # 5) not have @rpath in the linked dylibs (needed on macs only)
-export PG_BASE_CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=/usr/local/ \
+# 6) tell cmake to search in $PG_DEP_PREFIX for sub dependencies
+export PG_BASE_CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=$PG_DEP_PREFIX \
     -DCMAKE_INSTALL_LIBDIR:PATH=lib \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=true \
-    -DCMAKE_INSTALL_NAME_DIR=/usr/local/lib"
+    -DCMAKE_INSTALL_NAME_DIR=$PG_DEP_PREFIX/lib \
+    -DCMAKE_PREFIX_PATH=$PG_DEP_PREFIX"
+
+export PG_BASE_CONFIGURE_FLAGS="--prefix=$PG_DEP_PREFIX"
 
 if [[ "$MAC_ARCH" == "arm64" ]]; then
     # for scripts using ./configure to make arm64 binaries
@@ -36,8 +40,8 @@ if [[ "$MAC_ARCH" == "arm64" ]]; then
     export CXX="clang++ -target arm64-apple-macos11.0"
 
     # This does not do anything actually, but without this ./configure errors
-    export ARCHS_CONFIG_FLAG="--host=aarch64-apple-darwin20.0.0"
-    
+    export PG_BASE_CONFIGURE_FLAGS="$PG_BASE_CONFIGURE_FLAGS --host=aarch64-apple-darwin20.0.0"
+
     # configure cmake to cross-compile
     export PG_BASE_CMAKE_FLAGS="$PG_BASE_CMAKE_FLAGS -DCMAKE_OSX_ARCHITECTURES=arm64"
 
@@ -56,10 +60,6 @@ cd ../manylinux-build/docker_base
 
 # Now start installing dependencies
 # ---------------------------------
-
-sudo mkdir -p /usr/local/man/man1  # the install tries to put something in here
-sudo chmod 0777 /usr/local/man/man1  # so that install can put files here
-mkdir -p ${MACDEP_CACHE_PREFIX_PATH}/usr/local/man/man1
 
 # sdl_image deps
 bash zlib-ng/build-zlib-ng.sh

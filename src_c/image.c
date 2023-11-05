@@ -1509,7 +1509,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     Uint8 surf_alpha;
     int have_surf_colorkey = 0;
     Uint32 surf_colorkey;
-    Uint32 rmask, gmask, bmask, amask;
+    Uint32 format;
     SDL_Rect r;
     int bpp;
     Uint8 *rlebuf = NULL;
@@ -1535,7 +1535,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
             h.cmap_bits = 24;
         SETLE16(h.cmap_len, surface->format->palette->ncolors);
         h.pixel_bits = 8;
-        rmask = gmask = bmask = amask = 0;
+        format = SDL_PIXELFORMAT_INDEX8;
     }
     else {
         h.has_cmap = 0;
@@ -1545,21 +1545,12 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
         if (surface->format->Amask) {
             alpha = 1;
             h.pixel_bits = 32;
+            format = SDL_PIXELFORMAT_BGRA32;
         }
-        else
+        else {
             h.pixel_bits = 24;
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-        int s = alpha ? 0 : 8;
-        amask = 0x000000ff >> s;
-        rmask = 0x0000ff00 >> s;
-        gmask = 0x00ff0000 >> s;
-        bmask = 0xff000000 >> s;
-#else  /* SDL_BYTEORDER != SDL_BIG_ENDIAN */
-        amask = alpha ? 0xff000000 : 0;
-        rmask = 0x00ff0000;
-        gmask = 0x0000ff00;
-        bmask = 0x000000ff;
-#endif /* SDL_BYTEORDER != SDL_BIG_ENDIAN */
+            format = SDL_PIXELFORMAT_BGR24;
+        }
     }
     bpp = h.pixel_bits >> 3;
     if (rle)
@@ -1588,8 +1579,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
         }
     }
 
-    linebuf = SDL_CreateRGBSurface(0, surface->w, 1, h.pixel_bits, rmask,
-                                   gmask, bmask, amask);
+    linebuf = PG_CreateSurface(surface->w, 1, format);
     if (!linebuf)
         return -1;
 
