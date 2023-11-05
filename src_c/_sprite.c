@@ -35420,7 +35420,7 @@ if (!__Pyx_RefNanny) {
 
   /* "pygame/_sprite.pyx":327
  *
- *     # dummy val to identify sprite groups, and avoid infinite recursion
+ *     # null val to identify sprite groups, and avoid infinite recursion
  *     _spritegroup = True             # <<<<<<<<<<<<<<
  *
  *     cdef public dict spritedict
