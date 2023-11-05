@@ -909,6 +909,7 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
     rval = 0;
 
 end:
+    self->init_generation = current_freetype_generation;
     Py_XDECREF(file);
     return rval;
 }

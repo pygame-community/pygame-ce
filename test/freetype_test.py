@@ -549,16 +549,9 @@ class FreeTypeFontTest(unittest.TestCase):
         f = self._TEST_FONTS["fixed"]
         self.assertEqual(f.name, "Inconsolata")
 
-        with self.assertRaises(Exception) as cm:
-            # this test raises an attribute error locally but
-            # a pygame.error on the CI - I assume this is multi-threading
-            # related.
+        with self.assertRaises(AttributeError):
             null_font = ft.Font.__new__(ft.Font)
             null_font.name
-        exception_type = type(cm.exception)
-        self.assertTrue(
-            (exception_type == pygame.error) or (exception_type == AttributeError)
-        )
 
     def test_freetype_Font_size(self):
         f = ft.Font(None, size=12)
@@ -1364,16 +1357,9 @@ class FreeTypeFontTest(unittest.TestCase):
     def test_freetype_Font_path(self):
         self.assertEqual(self._TEST_FONTS["sans"].path, self._sans_path)
 
-        with self.assertRaises(Exception) as cm:
-            # this test raises an attribute error locally but
-            # a pygame.error on the CI - I assume this is multi-threading
-            # related.
+        with self.assertRaises(AttributeError):
             nullfont = ft.Font.__new__(ft.Font)
             nullfont.path
-        exception_type = type(cm.exception)
-        self.assertTrue(
-            (exception_type == pygame.error) or (exception_type == AttributeError)
-        )
 
     # This Font cache test is conditional on freetype being built by a debug
     # version of Python or with the C macro PGFT_DEBUG_CACHE defined.
