@@ -710,6 +710,7 @@ class FontTypeTest(unittest.TestCase):
             font = pygame_font.Font(f)
 
     def test_load_from_invalid_sized_file_obj(self):
+        pygame.font.init()
         f = io.StringIO()
         with self.assertRaises(ValueError):
             font = pygame.font.Font(f)
