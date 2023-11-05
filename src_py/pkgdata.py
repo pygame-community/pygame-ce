@@ -21,7 +21,25 @@ __all__ = ["getResource"]
 import sys
 import os
 
-from pkg_resources import resource_stream, resource_exists
+try:
+    from pkg_resources import resource_stream, resource_exists
+except ImportError:
+
+    def resource_exists(_package_or_requirement, _resource_name):
+        """
+        A stub for when we fail to import this function.
+
+        :return: Always returns False
+        """
+        return False
+
+    def resource_stream(_package_of_requirement, _resource_name):
+        """
+        A stub for when we fail to import this function.
+
+        Always raises a NotImplementedError when called.
+        """
+        raise NotImplementedError
 
 
 def getResource(identifier, pkgname=__name__):
