@@ -363,12 +363,9 @@ def initsysfonts():
         fonts = initsysfonts_unix()
 
     # Try to add the default font to sys fonts
-    try:
-        pygame_folder = os.path.dirname(os.path.abspath(pygame_main_file))
-        default_font_path = os.path.join(pygame_folder, "freesansbold.ttf")
-        _addfont("freesansbold", True, False, default_font_path, fonts)
-    except (OSError, NotImplementedError):
-        pass
+    pygame_folder = os.path.dirname(os.path.abspath(pygame_main_file))
+    default_font_path = os.path.join(pygame_folder, "freesansbold.ttf")
+    _addfont("freesansbold", True, False, default_font_path, fonts)
 
     Sysfonts.update(fonts)
     create_aliases()
