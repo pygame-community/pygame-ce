@@ -6,4 +6,7 @@
 static int
 pgCollision_CirclePoint(pgCircleBase *circle, double, double);
 
+static int
+pgCollision_CircleCircle(pgCircleBase *, pgCircleBase *);
+
 #endif /* ~_PG_COLLISIONS_H */
