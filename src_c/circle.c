@@ -158,6 +158,31 @@ pgCircle_FromObject(PyObject *obj, pgCircleBase *out)
     return 1;
 }
 
+static int
+pgCircle_FromObjectFastcall(PyObject *const *args, Py_ssize_t nargs,
+                            pgCircleBase *out)
+{
+    if (nargs == 1) {
+        return pgCircle_FromObject(args[0], out);
+    }
+    else if (nargs == 2) {
+        if (!pg_TwoDoublesFromObj(args[0], &out->x, &out->y) ||
+            !_pg_circle_set_radius(args[1], out)) {
+            return 0;
+        }
+        return 1;
+    }
+    else if (nargs == 3) {
+        if (!pg_DoubleFromObj(args[0], &out->x) ||
+            !pg_DoubleFromObj(args[1], &out->y) ||
+            !_pg_circle_set_radius(args[2], out)) {
+            return 0;
+        }
+        return 1;
+    }
+    return 0;
+}
+
 static PyObject *
 pg_circle_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
@@ -251,9 +276,25 @@ pg_circle_collidepoint(pgCircleObject *self, PyObject *const *args,
     return PyBool_FromLong(pgCollision_CirclePoint(&self->circle, px, py));
 }
 
+static PyObject *
+pg_circle_collidecircle(pgCircleObject *self, PyObject *const *args,
+                        Py_ssize_t nargs)
+{
+    pgCircleBase other_circle;
+
+    if (!pgCircle_FromObjectFastcall(args, nargs, &other_circle)) {
+        return RAISE(PyExc_TypeError, "A CircleType object was expected");
+    }
+
+    return PyBool_FromLong(
+        pgCollision_CircleCircle(&self->circle, &other_circle));
+}
+
 static struct PyMethodDef pg_circle_methods[] = {
     {"collidepoint", (PyCFunction)pg_circle_collidepoint, METH_FASTCALL,
      DOC_CIRCLE_COLLIDEPOINT},
+    {"collidecircle", (PyCFunction)pg_circle_collidecircle, METH_FASTCALL,
+     DOC_CIRCLE_COLLIDECIRCLE},
     {"__copy__", (PyCFunction)pg_circle_copy, METH_NOARGS, DOC_CIRCLE_COPY},
     {"copy", (PyCFunction)pg_circle_copy, METH_NOARGS, DOC_CIRCLE_COPY},
     {NULL, NULL, 0, NULL}};
