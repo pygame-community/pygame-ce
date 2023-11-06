@@ -253,8 +253,6 @@ mod_pygame_import_cython(PyObject *self, PyObject *spec)
                           "controller_old");
     load_submodule_mphase("pygame._sdl2", PyInit_audio(), spec, "audio");
     load_submodule_mphase("pygame._sdl2", PyInit_video(), spec, "video");
-    // depends on pygame._sdl2.video
-    load_submodule_mphase("pygame", PyInit__sprite(), spec, "_sprite");
 
     Py_RETURN_NONE;
 }

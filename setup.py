@@ -433,7 +433,7 @@ for e in extensions:
     if (
             "CI" in os.environ
             and not e.name.startswith("_sdl2")
-            and e.name not in ("pypm", "_sprite", "gfxdraw")
+            and e.name not in ("pypm", "gfxdraw")
     ):
         # Do -Werror only on CI, and exclude -Werror on Cython C files and gfxdraw
         e.extra_compile_args.append("/WX" if sys.platform == "win32" else "-Werror")
@@ -833,7 +833,6 @@ class LintFormatCommand(Command):
             "pypm.c",
             "**/sse2neon.h",
             "doc/**",
-            "_sprite.c",
         ]
         c_file_allow = ["_sdl2/touch.c"]
         c_files = filter_files(path_obj, c_files_unfiltered, c_file_allow, c_file_disallow)
