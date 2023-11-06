@@ -1266,7 +1266,7 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
         }
         brightness = 1 - brightness;
         pixel_color = get_antialiased_color(surf, x, y, color,
-                                            brightness * x_gap, blend);
+                                            brightness * x_gap);
         set_and_check_rect(surf, x, y, pixel_color, drawn_area);
     }
 
