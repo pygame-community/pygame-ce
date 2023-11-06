@@ -79,7 +79,7 @@ draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
              int *drawn_area);
 static void
 draw_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int width,
-          Uint32 color);
+          Uint32 color, int* drawn_area);
 static void
 draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
                 int width, Uint32 color, int top_left, int top_right,
@@ -91,6 +91,196 @@ draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
                                PG_COLOR_HANDLE_ALL)) {           \
         return NULL;                                             \
     }
+
+// Draw macros
+#define ADD_PIXEL_TO_DRAWN_LIST                  \
+    if (x < drawn_area[0]) {drawn_area[0] = x;}  \
+    if (y < drawn_area[1]) {drawn_area[1] = y;}  \
+    if (x > drawn_area[2]) {drawn_area[2] = x;}  \
+    if (y > drawn_area[3]) {drawn_area[3] = y;}
+
+#define CHECK_CLIP_RECT                                                        \
+    if (x < surf->clip_rect.x || x >= surf->clip_rect.x + surf->clip_rect.w || \
+        y < surf->clip_rect.y || y >= surf->clip_rect.y + surf->clip_rect.h)   \
+        {return 0;}                                                         
+
+#define SET32BIT                                                           \
+    *((Uint32 *)((Uint8 *)surf->pixels + y * surf->pitch) + x) = color;                                                       
+
+#define SET16BIT                                                                   \
+    *((Uint16 *)((Uint8 *)surf->pixels + y * surf->pitch) + x) = (Uint16)color; 
+
+#define SET8BIT                                                       \
+    *((Uint8 *)surf->pixels + y * surf->pitch + x) = (Uint8)color;
+
+#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
+#define SET24BIT                                                             \
+    Uint8 *byte_buf, rgb[3];                                                 \
+    SDL_GetRGB(color, surf->format, rgb, rgb + 1, rgb + 2);                  \
+    byte_buf = (Uint8 *)((Uint8 *)surf->pixels + y * surf->pitch) + x * 3;   \
+    *(byte_buf + (surf->format->Rshift >> 3)) = rgb[0];                      \
+    *(byte_buf + (surf->format->Gshift >> 3)) = rgb[1];                      \
+    *(byte_buf + (surf->format->Bshift >> 3)) = rgb[2];                      
+#else
+#define SET24BIT                                                             \
+    Uint8 *byte_buf, rgb[3];                                                 \
+    SDL_GetRGB(color, surf->format, rgb, rgb + 1, rgb + 2);                  \
+    byte_buf = (Uint8 *)((Uint8 *)surf->pixels + y * surf->pitch) + x * 3;   \
+    *(byte_buf + 2 - (surf->format->Rshift >> 3)) = rgb[0];                  \
+    *(byte_buf + 2 - (surf->format->Gshift >> 3)) = rgb[1];                  \
+    *(byte_buf + 2 - (surf->format->Bshift >> 3)) = rgb[2];                      
+#endif
+
+#define DRAWHORZLINE32BIT              \
+    for (; pixel <= end; pixel += 4) { \
+        *(Uint32 *)pixel = color;      \
+    }
+
+#define DRAWHORZLINE16BIT                 \
+    for (; pixel <= end; pixel += 2) {    \
+        *(Uint16 *)pixel = (Uint16)color; \
+    }
+
+#define DRAWHORZLINE8BIT            \
+    for (; pixel <= end; ++pixel) { \
+        *pixel = (Uint8)color;      \
+    }
+
+#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+#define DRAWHORZLINE24BIT                         \
+    color <<= 8;                                  \
+    for (; pixel <= end; pixel += 3) {            \
+        memcpy(pixel, &color, 3 * sizeof(Uint8)); \
+    }                     
+#else
+#define DRAWHORZLINE24BIT                         \
+    for (; pixel <= end; pixel += 3) {            \
+        memcpy(pixel, &color, 3 * sizeof(Uint8)); \
+    }                 
+#endif
+
+
+#define SET_AT(BPP)                                                                                                \
+    static int set_at_ ## BPP ## bpp_no_bounding(SDL_Surface *surf, int x, int y, Uint32 color, int *drawn_area) { \
+        SET ## BPP ## BIT                                                                                          \
+        return 1;                                                                                                  \
+    }
+
+#define SET_AT_BOUNDING(BPP)                                                                                    \
+    static int set_at_ ## BPP ## bpp_bounding(SDL_Surface *surf, int x, int y, Uint32 color, int *drawn_area) { \
+        SET ## BPP ## BIT                                                                                       \
+        ADD_PIXEL_TO_DRAWN_LIST                                                                                 \
+        return 1;                                                                                               \
+    }
+
+#define SET_AND_CHECK_RECT_BOUNDING(BPP)                                                                                    \
+    static int set_and_check_rect_ ## BPP ## bpp_bounding(SDL_Surface *surf, int x, int y, Uint32 color, int *drawn_area) { \
+        CHECK_CLIP_RECT                                                                                                     \
+        SET ## BPP ## BIT                                                                                                   \
+        ADD_PIXEL_TO_DRAWN_LIST                                                                                             \
+        return 1;                                                                                                           \
+    }
+
+#define DRAW_HORZ_LINE(BPP)                                                                                                         \
+    static void drawhorzline_no_clip_ ## BPP ## bpp_no_bounding(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2, int *drawn_area) { \
+        Uint8 *pixel, *end;                                                                                                         \
+        pixel = ((Uint8 *)surf->pixels) + surf->pitch * y1;                                                                         \
+        end = pixel + x2 * surf->format->BytesPerPixel;                                                                             \
+        pixel += x1 * surf->format->BytesPerPixel;                                                                                  \
+        DRAWHORZLINE ## BPP ## BIT                                                                                                  \
+    }
+
+#define DRAW_HORZ_LINE_CLIP(BPP)                                                                                                      \
+    static void drawhorzline_clip_ ## BPP ## bpp_no_bounding(SDL_Surface *surf, Uint32 color, int x, int y, int x1, int *drawn_area) { \
+        if (y < surf->clip_rect.y || y >= surf->clip_rect.y + surf->clip_rect.h) return;                                              \
+        if (x1 < x) {                                                                                                                 \
+            int temp = x;                                                                                                             \
+            x = x1;                                                                                                                   \
+            x1 = temp;                                                                                                                \
+        }                                                                                                                             \
+        x = MAX(x, surf->clip_rect.x);                                                                                                \
+        x1 = MIN(x1, surf->clip_rect.x + surf->clip_rect.w - 1);                                                                      \
+        if (x1 < surf->clip_rect.x || x >= surf->clip_rect.x + surf->clip_rect.w) return;                                             \
+        if (x == x1) {                                                                                                               \
+            SET ## BPP ## BIT                                                                                                         \
+            return;                                                                                                                   \
+        }                                                                                                                             \
+        Uint8 *pixel, *end;                                                                                                           \
+        pixel = ((Uint8 *)surf->pixels) + surf->pitch * y;                                                                            \
+        end = pixel + x1 * surf->format->BytesPerPixel;                                                                               \
+        pixel += x * surf->format->BytesPerPixel;                                                                                     \
+        DRAWHORZLINE ## BPP ## BIT                                                                                                    \
+    }
+
+#define DRAW_HORZ_LINE_CLIP_BOUNDING(BPP)                                                                                          \
+    static void drawhorzline_clip_ ## BPP ## bpp_bounding(SDL_Surface *surf, Uint32 color, int x, int y, int x1, int *drawn_area) { \
+        if (y < surf->clip_rect.y || y >= surf->clip_rect.y + surf->clip_rect.h) return;                                           \
+        if (x1 < x) {                                                                                                              \
+            int temp = x;                                                                                                          \
+            x = x1;                                                                                                                \
+            x1 = temp;                                                                                                             \
+        }                                                                                                                          \
+        x = MAX(x, surf->clip_rect.x);                                                                                             \
+        x1 = MIN(x1, surf->clip_rect.x + surf->clip_rect.w - 1);                                                                   \
+        if (x1 < surf->clip_rect.x || x >= surf->clip_rect.x + surf->clip_rect.w) return;                                          \
+        if (x == x1) {                                                                                                             \
+            SET ## BPP ## BIT                                                                                                      \
+            ADD_PIXEL_TO_DRAWN_LIST                                                                                                \
+            return;                                                                                                                \
+        }                                                                                                                          \
+        Uint8 *pixel, *end;                                                                                                        \
+        pixel = ((Uint8 *)surf->pixels) + surf->pitch * y;                                                                         \
+        end = pixel + x1 * surf->format->BytesPerPixel;                                                                            \
+        pixel += x * surf->format->BytesPerPixel;                                                                                  \
+        DRAWHORZLINE ## BPP ## BIT                                                                                                 \
+        if (x < drawn_area[0]) drawn_area[0] = x;                                                                                  \
+        if (y < drawn_area[1]) drawn_area[1] = y;                                                                                  \
+        if (x1 > drawn_area[2]) drawn_area[2] = x1;                                                                                \
+        if (y > drawn_area[3]) drawn_area[3] = y;                                                                                  \
+}
+
+
+SET_AT(8)
+SET_AT(16)
+SET_AT(24)
+SET_AT(32)
+SET_AT_BOUNDING(8)
+SET_AT_BOUNDING(16)
+SET_AT_BOUNDING(24)
+SET_AT_BOUNDING(32)
+SET_AND_CHECK_RECT_BOUNDING(8)
+SET_AND_CHECK_RECT_BOUNDING(16)
+SET_AND_CHECK_RECT_BOUNDING(24)
+SET_AND_CHECK_RECT_BOUNDING(32)
+
+DRAW_HORZ_LINE(8)
+DRAW_HORZ_LINE(16)
+DRAW_HORZ_LINE(24)
+DRAW_HORZ_LINE(32)
+DRAW_HORZ_LINE_CLIP(8)
+DRAW_HORZ_LINE_CLIP(16)
+DRAW_HORZ_LINE_CLIP(24)
+DRAW_HORZ_LINE_CLIP(32)
+DRAW_HORZ_LINE_CLIP_BOUNDING(8)
+DRAW_HORZ_LINE_CLIP_BOUNDING(16)
+DRAW_HORZ_LINE_CLIP_BOUNDING(24)
+DRAW_HORZ_LINE_CLIP_BOUNDING(32)
+
+#define BPPSWITCH(START_FUNC_NAME, AT_OR_CHECK_RECT, BOUNDING, ...)                            \
+    switch(surf->format->BytesPerPixel){                                                            \
+        case 4:                                                                                     \
+            START_FUNC_NAME ## AT_OR_CHECK_RECT ## _32bpp_ ## BOUNDING ## _inner_func(__VA_ARGS__); \
+            break;                                                                                  \
+        case 3:                                                                                     \
+            START_FUNC_NAME ## AT_OR_CHECK_RECT ## _24bpp_ ## BOUNDING ## _inner_func(__VA_ARGS__); \
+            break;                                                                                  \
+        case 1:                                                                                     \
+            START_FUNC_NAME ## AT_OR_CHECK_RECT ## _8bpp_ ## BOUNDING ## _inner_func(__VA_ARGS__);  \
+            break;                                                                                  \
+        case 2:                                                                                     \
+            START_FUNC_NAME ## AT_OR_CHECK_RECT ## _16bpp_ ## BOUNDING ## _inner_func(__VA_ARGS__); \
+            break;                                                                                  \
+    };
 
 /* Definition of functions that get called in Python */
 
@@ -904,7 +1094,7 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
         }
         if (width > 0 && (width * 2) < clipped.w && (width * 2) < clipped.h) {
             draw_rect(surf, sdlrect.x, sdlrect.y, sdlrect.x + sdlrect.w - 1,
-                      sdlrect.y + sdlrect.h - 1, width, color);
+                      sdlrect.y + sdlrect.h - 1, width, color, drawn_area);
         }
         else {
             pgSurface_Prep(surfobj);
@@ -1440,6 +1630,36 @@ drawhorzlineclipbounding(SDL_Surface *surf, Uint32 color, int x1, int y1,
     drawhorzline(surf, color, x1, y1, x2);
 }
 
+static void
+drawvertlineclipbounding(SDL_Surface *surf, Uint32 color, int y1, int x1,
+                         int y2, int *pts)
+{
+    if (x1 < surf->clip_rect.x || x1 >= surf->clip_rect.x + surf->clip_rect.w)
+        return;
+
+    if (y2 < y1) {
+        int temp = y1;
+        y1 = y2;
+        y2 = temp;
+    }
+
+    y1 = MAX(y1, surf->clip_rect.y);
+    y2 = MIN(y2, surf->clip_rect.y + surf->clip_rect.h - 1);
+
+    if (y2 < surf->clip_rect.y || y1 >= surf->clip_rect.y + surf->clip_rect.h)
+        return;
+    
+    if (y1 == y2) {
+        set_and_check_rect(surf, x1, y1, color, pts);
+        return;
+    }
+
+    add_line_to_drawn_list(x1, y1, x1, y2, pts);
+
+    drawvertline(surf, color, y1, x1, y2);
+
+}
+
 void
 swap_coordinates(int *x1, int *y1, int *x2, int *y2)
 {
@@ -1452,9 +1672,190 @@ swap_coordinates(int *x1, int *y1, int *x2, int *y2)
     *y2 = temp;
 }
 
+// Draw algorithms
+#define DRAW_LINE_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                                                \
+    static void draw_line_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x1,       \
+                                                                                            int y1, int x2, int y2,          \
+                                                                                            Uint32 color, int *drawn_area) { \
+        int dx, dy, err, e2, sx, sy;                                                                                         \
+        dx = abs(x2 - x1), sx = x1 < x2 ? 1 : -1;                                                                            \
+        dy = abs(y2 - y1), sy = y1 < y2 ? 1 : -1;                                                                            \
+        err = (dx > dy ? dx : -dy) / 2;                                                                                      \
+        e2 = err;                                                                                                            \
+        while (x1 != x2 || y1 != y2) {                                                                                       \
+            set_## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ##(surf, x1, y1, color, drawn_area);                       \
+            e2 = err;                                                                                                        \
+            if (e2 > -dx) {                                                                                                  \
+                err -= dy;                                                                                                   \
+                x1 += sx;                                                                                                    \
+            }                                                                                                                \
+            if (e2 < dy) {                                                                                                   \
+                err += dx;                                                                                                   \
+                y1 += sy;                                                                                                    \
+            }}}                                                                                          
+
+DRAW_LINE_INNER_LOOP(32, at_, no_bounding)
+DRAW_LINE_INNER_LOOP(24, at_, no_bounding)
+DRAW_LINE_INNER_LOOP(16, at_, no_bounding)
+DRAW_LINE_INNER_LOOP(8, at_, no_bounding)
+
+DRAW_LINE_INNER_LOOP(32, and_check_rect_, bounding)
+DRAW_LINE_INNER_LOOP(24, and_check_rect_, bounding)
+DRAW_LINE_INNER_LOOP(16, and_check_rect_, bounding)
+DRAW_LINE_INNER_LOOP(8, and_check_rect_, bounding)
+
+#define DRAW_ARC_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                           \
+    static void draw_arc_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int max_required_y, int miny, int maxy, int radius1, double invsqr_radius2, int inner_radius2, int inner_radius1, double invsqr_inner_radius2, int y_center, double y_middle, int minx, int maxx, int x_center, double min_dotproduct, double x_middle, Uint32 color, int *drawn_area) { \
+        for (int y = 0; y <= max_required_y; ++y) {                                                    \
+            const int pos_y = (y >= miny) && (y <= maxy);                                              \
+            const int neg_y = (-y >= miny) && (-y <= maxy);                                            \
+            const int y2 = y * y;                                                                      \
+            const int x_outer = (int)(radius1 * sqrt(1.0 - y2 * invsqr_radius2));                      \
+            int x_inner = 0;                                                                           \
+            if (y < inner_radius2)                                                                     \
+                x_inner = (int)(inner_radius1 * sqrt(1.0 - y2 * invsqr_inner_radius2));                \
+            const int py_offset = y_center + y;                                                        \
+            const int ny_offset = y_center - y;                                                        \
+            const double y_dot = y * y_middle;                                                         \
+            for (int x = x_inner; x <= x_outer; x++) {                                                 \
+                const int pos_x = (x >= minx) && (x <= maxx);                                          \
+                const int neg_x = (-x >= minx) && (-x <= maxx);                                        \
+                if (!(pos_x || neg_x))                                                                 \
+                    continue;                                                                          \
+                const int px_offset = x_center + x;                                                    \
+                const int nx_offset = x_center - x;                                                    \
+                const double cmp = min_dotproduct * sqrt(x * x + y2);                                  \
+                const double x_dot = x * x_middle;                                                     \
+                if (pos_y && pos_x && (x_dot + y_dot >= cmp))                                          \
+                    set_at_ ## BPP ## bpp_no_bounding(surf, px_offset, py_offset, color, drawn_area);  \
+                if (pos_y && neg_x && (-x_dot + y_dot >= cmp))                                         \
+                    set_at_ ## BPP ## bpp_no_bounding(surf, nx_offset, py_offset, color, drawn_area);  \
+                if (neg_y && pos_x && (x_dot - y_dot >= cmp))                                          \
+                    set_at_ ## BPP ## bpp_no_bounding(surf, px_offset, ny_offset, color, drawn_area);  \
+                if (neg_y && neg_x && (-x_dot - y_dot >= cmp))                                         \
+                    set_at_ ## BPP ## bpp_no_bounding(surf, nx_offset, ny_offset, color, drawn_area);  \
+        } } }
+
+DRAW_ARC_INNER_LOOP(32, at_, no_bounding)
+DRAW_ARC_INNER_LOOP(24, at_, no_bounding)
+DRAW_ARC_INNER_LOOP(16, at_, no_bounding)
+DRAW_ARC_INNER_LOOP(8, at_, no_bounding)
+
+#define DRAW_CIRCLE_BRESENHAM_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                    \
+    static void draw_circle_bresenham_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, int line, long long x, long long y, long long x_inner, Uint32 color, int *drawn_area) {  \
+        if (line) {                                                                                                                      \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 + (int)x - 1, drawn_area);               \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - 1, x0 + (int)x - 1, drawn_area);           \
+        }                                                                                                                                \
+        else {                                                                                                                           \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 - (int)x_inner, drawn_area);             \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - 1, x0 - (int)x_inner, drawn_area);         \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 + (int)x_inner - 1, y0 - (int)y, x0 + (int)x - 1, drawn_area);     \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 + (int)x_inner - 1, y0 + (int)y - 1, x0 + (int)x - 1, drawn_area); \
+        } }
+
+DRAW_CIRCLE_BRESENHAM_INNER_LOOP(32, and_check_rect_, bounding)
+DRAW_CIRCLE_BRESENHAM_INNER_LOOP(24, and_check_rect_, bounding)
+DRAW_CIRCLE_BRESENHAM_INNER_LOOP(16, and_check_rect_, bounding)
+DRAW_CIRCLE_BRESENHAM_INNER_LOOP(8, and_check_rect_, bounding)
+
+#define DRAW_CIRCLE_BRESENHAM_THIN_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                       \
+    static void draw_circle_bresenham_thin_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, int x, int y, Uint32 color, int *drawn_area) {  \
+        set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 + x - 1, y0 + y - 1, color, drawn_area); \
+        set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 - x, y0 + y - 1, color, drawn_area);     \
+        set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 + x - 1, y0 - y, color, drawn_area);     \
+        set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 - x, y0 - y, color, drawn_area);         \
+        set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 + y - 1, y0 + x - 1, color, drawn_area); \
+        set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 + y - 1, y0 - x, color, drawn_area);     \
+        set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 - y, y0 + x - 1, color, drawn_area);     \
+        set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 - y, y0 - x, color, drawn_area);         \
+    }
+
+DRAW_CIRCLE_BRESENHAM_THIN_INNER_LOOP(32, and_check_rect_, bounding)
+DRAW_CIRCLE_BRESENHAM_THIN_INNER_LOOP(24, and_check_rect_, bounding)
+DRAW_CIRCLE_BRESENHAM_THIN_INNER_LOOP(16, and_check_rect_, bounding)
+DRAW_CIRCLE_BRESENHAM_THIN_INNER_LOOP(8, and_check_rect_, bounding)
+
+#define DRAW_CIRCLE_FILLED_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                                     \
+    static void draw_circle_filled_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, int x, int y, int f, int xmax, Uint32 color, int *drawn_area) { \
+        if (f >= 0) {                                                                                                      \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - x, y0 + y - 1, x0 + MIN(x - 1, xmax), drawn_area); \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - x, y0 - y, x0 + MIN(x - 1, xmax), drawn_area);     \
+        }                                                                                                                  \
+        drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - y, y0 + x - 1, x0 + MIN(y - 1, xmax), drawn_area);     \
+        drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - y, y0 - x, x0 + MIN(y - 1, xmax), drawn_area);         \
+    }
+
+DRAW_CIRCLE_FILLED_INNER_LOOP(32, and_check_rect_, bounding)
+DRAW_CIRCLE_FILLED_INNER_LOOP(24, and_check_rect_, bounding)
+DRAW_CIRCLE_FILLED_INNER_LOOP(16, and_check_rect_, bounding)
+DRAW_CIRCLE_FILLED_INNER_LOOP(8, and_check_rect_, bounding)
+
+#define DRAW_ELLIPSE_FILLED_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                                                  \
+    static void draw_ellipse_filled_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, long long x, long long y, int x_offset, int y_offset, Uint32 color, int *drawn_area) { \
+        drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 + (int)x - x_offset, drawn_area);            \
+        drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - y_offset, x0 + (int)x - x_offset, drawn_area); \
+    }
+
+DRAW_ELLIPSE_FILLED_INNER_LOOP(32, and_check_rect_, bounding)
+DRAW_ELLIPSE_FILLED_INNER_LOOP(24, and_check_rect_, bounding)
+DRAW_ELLIPSE_FILLED_INNER_LOOP(16, and_check_rect_, bounding)
+DRAW_ELLIPSE_FILLED_INNER_LOOP(8, and_check_rect_, bounding)
+
+#define DRAW_ELLIPSE_THICKNESS_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                                                                    \
+    static void draw_ellipse_thickness_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, long long x, long long y, int x_offset, int y_offset, long long x_inner, int line, Uint32 color, int *drawn_area) {  \
+        if (line) {                                                                                                                                           \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 + (int)x - x_offset, drawn_area);                             \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - y_offset, x0 + (int)x - x_offset, drawn_area);                  \
+        }                                                                                                                                                     \
+        else {                                                                                                                                                \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 - (int)x_inner, drawn_area);                                  \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - y_offset, x0 - (int)x_inner, drawn_area);                       \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 + (int)x - x_offset, y0 - (int)y, x0 + (int)x_inner - x_offset, drawn_area);            \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 + (int)x - x_offset, y0 + (int)y - y_offset, x0 + (int)x_inner - x_offset, drawn_area); \
+        } }
+
+DRAW_ELLIPSE_THICKNESS_INNER_LOOP(32, and_check_rect_, bounding)
+DRAW_ELLIPSE_THICKNESS_INNER_LOOP(24, and_check_rect_, bounding)
+DRAW_ELLIPSE_THICKNESS_INNER_LOOP(16, and_check_rect_, bounding)
+DRAW_ELLIPSE_THICKNESS_INNER_LOOP(8, and_check_rect_, bounding)
+
+#define DRAW_RECT_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                                          \
+    static void draw_rect_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x1, int y1, int x2, int y2, int width, Uint32 color, int *drawn_area) {  \
+        int i;                                                                                                         \
+        for (i = 0; i < width; i++) {                                                                                  \
+            drawhorzline_clip_ ## BPP ## bpp_no_bounding(surf, color, x1, y1 + i, x2, drawn_area);                     \
+            drawhorzline_clip_ ## BPP ## bpp_no_bounding(surf, color, x1, y2 - i, x2, drawn_area);                     \
+        }                                                                                                              \
+        for (i = 0; i < (y2 - y1) - 2 * width + 1; i++) {                                                              \
+            drawhorzline_clip_ ## BPP ## bpp_no_bounding(surf, color, x1, y1 + width + i, x1 + width - 1, drawn_area); \
+            drawhorzline_clip_ ## BPP ## bpp_no_bounding(surf, color, x2 - width + 1, y1 + width + i, x2, drawn_area); \
+        } }
+
+DRAW_RECT_INNER_LOOP(32, and_check_rect_, no_bounding)
+DRAW_RECT_INNER_LOOP(24, and_check_rect_, no_bounding)
+DRAW_RECT_INNER_LOOP(16, and_check_rect_, no_bounding)
+DRAW_RECT_INNER_LOOP(8, and_check_rect_, no_bounding)
+
+#define DRAW_FILLTRI_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                           \
+    static void draw_filltri_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int p0x, int p0y, int p1x, int p1y, int p2x, int p2y, float d1, float d2, float d3, Uint32 color, int *drawn_area) {  \
+        int y;                                                                             \
+        for (y = p0y; y <= p2y; y++) {                                                     \
+            int x1 = p0x + (int)((y - p0y) * d1);                                          \
+            int x2;                                                                        \
+            if (y < p1y) x2 = p0x + (int)((y - p0y) * d2);                                 \
+            else         x2 = p1x + (int)((y - p1y) * d3);                                 \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x1, y, x2, drawn_area); \
+        } }
+
+DRAW_FILLTRI_INNER_LOOP(32, and_check_rect_, bounding)
+DRAW_FILLTRI_INNER_LOOP(24, and_check_rect_, bounding)
+DRAW_FILLTRI_INNER_LOOP(16, and_check_rect_, bounding)
+DRAW_FILLTRI_INNER_LOOP(8, and_check_rect_, bounding)
+
 static int
 draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
-             int *draw_area)
+             int *drawn_area)
 {
     int p0x, p0y, p1x, p1y, p2x, p2y;
 
@@ -1484,19 +1885,7 @@ draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
     float d1 = (float)((p2x - p0x) / ((p2y - p0y) + 1e-17));
     float d2 = (float)((p1x - p0x) / ((p1y - p0y) + 1e-17));
     float d3 = (float)((p2x - p1x) / ((p2y - p1y) + 1e-17));
-    int y;
-    for (y = p0y; y <= p2y; y++) {
-        int x1 = p0x + (int)((y - p0y) * d1);
-
-        int x2;
-        if (y < p1y)
-            x2 = p0x + (int)((y - p0y) * d2);
-        else
-            x2 = p1x + (int)((y - p1y) * d3);
-
-        drawhorzlineclipbounding(surf, color, x1, y, x2, draw_area);
-    }
-
+    BPPSWITCH(draw_filltri_, and_check_rect, bounding, surf, p0x, p0y, p1x, p1y, p2x, p2y, d1, d2, d3, color, drawn_area)
     return 0;
 }
 
@@ -1504,18 +1893,18 @@ static void
 draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
                 int y2, int width, int *drawn_area)
 {
-    int dx, dy, err, e2, sx, sy, start_draw, end_draw;
-    int end_x = surf->clip_rect.x + surf->clip_rect.w - 1;
-    int end_y = surf->clip_rect.y + surf->clip_rect.h - 1;
-    int xinc = 0;
-    int extra_width = 1 - (width % 2);
-
     if (width < 1)
         return;
     if (width == 1) {
         draw_line(surf, x1, y1, x2, y2, color, drawn_area);
         return;
     }
+
+    int dx, dy, err, e2, sx, sy, start_draw, end_draw;
+    int end_x = surf->clip_rect.x + surf->clip_rect.w - 1;
+    int end_y = surf->clip_rect.y + surf->clip_rect.h - 1;
+    int xinc = 0;
+    int extra_width = 1 - (width % 2);
 
     width = (width / 2);
 
@@ -1599,39 +1988,30 @@ static void
 draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
           int *drawn_area)
 {
-    int dx, dy, err, e2, sx, sy;
     if (x1 == x2 && y1 == y2) { /* Single point */
         set_and_check_rect(surf, x1, y1, color, drawn_area);
         return;
     }
     if (y1 == y2) { /* Horizontal line */
-        dx = (x1 < x2) ? 1 : -1;
-        for (sx = 0; sx <= abs(x1 - x2); sx++) {
-            set_and_check_rect(surf, x1 + dx * sx, y1, color, drawn_area);
-        }
-
+        drawhorzlineclipbounding(surf, color, x1, y1, x2, drawn_area);
         return;
     }
     if (x1 == x2) { /* Vertical line */
-        dy = (y1 < y2) ? 1 : -1;
-        for (sy = 0; sy <= abs(y1 - y2); sy++)
-            set_and_check_rect(surf, x1, y1 + dy * sy, color, drawn_area);
+        drawvertlineclipbounding(surf, color, y1, x1, y2, drawn_area);
         return;
     }
-    dx = abs(x2 - x1), sx = x1 < x2 ? 1 : -1;
-    dy = abs(y2 - y1), sy = y1 < y2 ? 1 : -1;
-    err = (dx > dy ? dx : -dy) / 2;
-    while (x1 != x2 || y1 != y2) {
-        set_and_check_rect(surf, x1, y1, color, drawn_area);
-        e2 = err;
-        if (e2 > -dx) {
-            err -= dy;
-            x1 += sx;
-        }
-        if (e2 < dy) {
-            err += dx;
-            y1 += sy;
-        }
+    if (x1 < surf->clip_rect.x || x1 >= surf->clip_rect.x + surf->clip_rect.w || 
+        y1 < surf->clip_rect.y || y1 >= surf->clip_rect.y + surf->clip_rect.h ||
+        x2 < surf->clip_rect.x || x2 >= surf->clip_rect.x + surf->clip_rect.w || 
+        y2 < surf->clip_rect.y || y2 >= surf->clip_rect.y + surf->clip_rect.h) {
+            BPPSWITCH(draw_line_, and_check_rect, bounding, surf, x1, y1, x2, y2, color, drawn_area)
+         }
+    else {
+        BPPSWITCH(draw_line_, at, no_bounding, surf, x1, y1, x2, y2, color, drawn_area)
+        if (x1 < x2) { if (x1 < drawn_area[0]) drawn_area[0] = x1; if (x2 > drawn_area[2]) drawn_area[2] = x2; }
+        else { if (x2 < drawn_area[0]) drawn_area[0] = x2; if (x1 > drawn_area[2]) drawn_area[2] = x1; }
+        if (y1 < y2) { if (y1 < drawn_area[1]) drawn_area[1] = y1; if (y2 > drawn_area[3]) drawn_area[3] = y2; }
+        else { if (y2 < drawn_area[1]) drawn_area[1] = y2; if (y1 > drawn_area[3]) drawn_area[3] = y1; }
     }
     set_and_check_rect(surf, x2, y2, color, drawn_area);
 }
@@ -1655,43 +2035,6 @@ check_pixel_in_arc(int x, int y, double min_dotproduct, double invsqr_radius1,
 
     // Return whether the angle of the point is within the accepted range
     return x * x_middle + y * y_middle >= min_dotproduct * sqrt(x * x + y * y);
-}
-
-// This function directly sets the pixel, without updating the clip boundary
-// detection, hence it is unsafe. This has been removed for performance, as it
-// is faster to calculate the clip boundary beforehand and thus improve pixel
-// write performance
-static void
-unsafe_set_at(SDL_Surface *surf, int x, int y, Uint32 color)
-{
-    SDL_PixelFormat *format = surf->format;
-    Uint8 *pixels = (Uint8 *)surf->pixels;
-    Uint8 *byte_buf, rgb[4];
-
-    switch (format->BytesPerPixel) {
-        case 1:
-            *((Uint8 *)pixels + y * surf->pitch + x) = (Uint8)color;
-            break;
-        case 2:
-            *((Uint16 *)(pixels + y * surf->pitch) + x) = (Uint16)color;
-            break;
-        case 4:
-            *((Uint32 *)(pixels + y * surf->pitch) + x) = color;
-            break;
-        default: /*case 3:*/
-            SDL_GetRGB(color, format, rgb, rgb + 1, rgb + 2);
-            byte_buf = (Uint8 *)(pixels + y * surf->pitch) + x * 3;
-#if (SDL_BYTEORDER == SDL_LIL_ENDIAN)
-            *(byte_buf + (format->Rshift >> 3)) = rgb[0];
-            *(byte_buf + (format->Gshift >> 3)) = rgb[1];
-            *(byte_buf + (format->Bshift >> 3)) = rgb[2];
-#else
-            *(byte_buf + 2 - (format->Rshift >> 3)) = rgb[0];
-            *(byte_buf + 2 - (format->Gshift >> 3)) = rgb[1];
-            *(byte_buf + 2 - (format->Bshift >> 3)) = rgb[2];
-#endif
-            break;
-    }
 }
 
 static void
@@ -1896,64 +2239,7 @@ draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
     // Iterate over every pixel within the circle and
     // check if it's in the arc
     const int max_required_y = MAX(maxy, -miny);
-    for (int y = 0; y <= max_required_y; ++y) {
-        // Check if positive y is within the bounds
-        // and do the same for negative y
-        const int pos_y = (y >= miny) && (y <= maxy);
-        const int neg_y = (-y >= miny) && (-y <= maxy);
-
-        // Precalculate y squared
-        const int y2 = y * y;
-
-        // Find the boundaries of the outer and inner circle radii
-        // use 0 as the inner radius by default
-        const int x_outer = (int)(radius1 * sqrt(1.0 - y2 * invsqr_radius2));
-        int x_inner = 0;
-        if (y < inner_radius2)
-            x_inner =
-                (int)(inner_radius1 * sqrt(1.0 - y2 * invsqr_inner_radius2));
-
-        // Precalculate positive and negative y offsets
-        const int py_offset = y_center + y;
-        const int ny_offset = y_center - y;
-
-        // Precalculate the y component of the dot product
-        const double y_dot = y * y_middle;
-
-        // Iterate over every x value within the bounds
-        // of the circle
-        for (int x = x_inner; x <= x_outer; x++) {
-            // Check if positive x is within the bounds
-            // and do the same for negative x
-            const int pos_x = (x >= minx) && (x <= maxx);
-            const int neg_x = (-x >= minx) && (-x <= maxx);
-            // Skip coordinate to avoid unnecessary calculations if neither
-            // positive nor negative x are within the allowed ranges
-            if (!(pos_x || neg_x))
-                continue;
-
-            // Precalculate offsets for positive and negative x
-            const int px_offset = x_center + x;
-            const int nx_offset = x_center - x;
-
-            // Precalculate the minimum dot product require for the point to be
-            // within the arc's angles
-            const double cmp = min_dotproduct * sqrt(x * x + y2);
-
-            // Precalculate the x component of the dot product
-            const double x_dot = x * x_middle;
-
-            // Check if the point is within the arc for each quadrant
-            if (pos_y && pos_x && (x_dot + y_dot >= cmp))
-                unsafe_set_at(surf, px_offset, py_offset, color);
-            if (pos_y && neg_x && (-x_dot + y_dot >= cmp))
-                unsafe_set_at(surf, nx_offset, py_offset, color);
-            if (neg_y && pos_x && (x_dot - y_dot >= cmp))
-                unsafe_set_at(surf, px_offset, ny_offset, color);
-            if (neg_y && neg_x && (-x_dot - y_dot >= cmp))
-                unsafe_set_at(surf, nx_offset, ny_offset, color);
-        }
-    }
+    BPPSWITCH(draw_arc_, at, no_bounding, surf, max_required_y, miny, maxy, radius1, invsqr_radius2, inner_radius2, inner_radius1, invsqr_inner_radius2, y_center, y_middle, minx, maxx, x_center, min_dotproduct, x_middle, color, drawn_area)
 
     drawn_area[0] = minx + x_center;
     drawn_area[1] = miny + y_center;
@@ -1994,23 +2280,7 @@ draw_circle_bresenham(SDL_Surface *surf, int x0, int y0, int radius,
             dx += double_radius_squared;
             d1 += dx + radius_squared;
         }
-        if (line) {
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                     x0 + (int)x - 1, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 + (int)y - 1,
-                                     x0 + (int)x - 1, drawn_area);
-        }
-        else {
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                     x0 - (int)x_inner, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 + (int)y - 1,
-                                     x0 - (int)x_inner, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 + (int)x_inner - 1,
-                                     y0 - (int)y, x0 + (int)x - 1, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 + (int)x_inner - 1,
-                                     y0 + (int)y - 1, x0 + (int)x - 1,
-                                     drawn_area);
-        }
+        BPPSWITCH(draw_circle_bresenham_, and_check_rect, bounding, surf, x0, y0, line, x, y, x_inner, color, drawn_area)
         x++;
         y--;
         dx += double_radius_squared;
@@ -2034,23 +2304,7 @@ draw_circle_bresenham(SDL_Surface *surf, int x0, int y0, int radius,
     d1 = radius_squared *
          ((x + 0.5) * (x + 0.5) + (y - 1) * (y - 1) - radius_squared);
     while (y >= 0) {
-        if (line) {
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                     x0 + (int)x - 1, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 + (int)y - 1,
-                                     x0 + (int)x - 1, drawn_area);
-        }
-        else {
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                     x0 - (int)x_inner, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 + (int)y - 1,
-                                     x0 - (int)x_inner, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 + (int)x_inner - 1,
-                                     y0 - (int)y, x0 + (int)x - 1, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 + (int)x_inner - 1,
-                                     y0 + (int)y - 1, x0 + (int)x - 1,
-                                     drawn_area);
-        }
+        BPPSWITCH(draw_circle_bresenham_, and_check_rect, bounding, surf, x0, y0, line, x, y, x_inner, color, drawn_area)
         if (d1 > 0) {
             y--;
             dy -= double_radius_squared;
@@ -2120,21 +2374,7 @@ draw_circle_bresenham_thin(SDL_Surface *surf, int x0, int y0, int radius,
         x++;
         ddF_x += 2;
         f += ddF_x + 1;
-
-        set_and_check_rect(surf, x0 + x - 1, y0 + y - 1, color,
-                           drawn_area); /* 7 */
-        set_and_check_rect(surf, x0 - x, y0 + y - 1, color,
-                           drawn_area); /* 6 */
-        set_and_check_rect(surf, x0 + x - 1, y0 - y, color,
-                           drawn_area);                              /* 2 */
-        set_and_check_rect(surf, x0 - x, y0 - y, color, drawn_area); /* 3 */
-        set_and_check_rect(surf, x0 + y - 1, y0 + x - 1, color,
-                           drawn_area); /* 8 */
-        set_and_check_rect(surf, x0 + y - 1, y0 - x, color,
-                           drawn_area); /* 1 */
-        set_and_check_rect(surf, x0 - y, y0 + x - 1, color,
-                           drawn_area);                              /* 5 */
-        set_and_check_rect(surf, x0 - y, y0 - x, color, drawn_area); /* 4 */
+        BPPSWITCH(draw_circle_bresenham_thin_, and_check_rect, bounding, surf, x0, y0, x, y, color, drawn_area)
     }
 }
 
@@ -2317,19 +2557,7 @@ draw_circle_filled(SDL_Surface *surf, int x0, int y0, int radius, Uint32 color,
         x++;
         ddF_x += 2;
         f += ddF_x + 1;
-
-        /* optimisation to avoid overdrawing and repeated return rect checks:
-           only draw a line if y-step is about to be decreased. */
-        if (f >= 0) {
-            drawhorzlineclipbounding(surf, color, x0 - x, y0 + y - 1,
-                                     x0 + MIN(x - 1, xmax), drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - x, y0 - y,
-                                     x0 + MIN(x - 1, xmax), drawn_area);
-        }
-        drawhorzlineclipbounding(surf, color, x0 - y, y0 + x - 1,
-                                 x0 + MIN(y - 1, xmax), drawn_area);
-        drawhorzlineclipbounding(surf, color, x0 - y, y0 - x,
-                                 x0 + MIN(y - 1, xmax), drawn_area);
+        BPPSWITCH(draw_circle_filled_, and_check_rect, bounding, surf, x0, y0, x, y, f, xmax, color, drawn_area)
     }
 }
 
@@ -2361,11 +2589,7 @@ draw_ellipse_filled(SDL_Surface *surf, int x0, int y0, int width, int height,
     dx = 2 * height * height * x;
     dy = 2 * width * width * y;
     while (dx < dy) {
-        drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                 x0 + (int)x - x_offset, drawn_area);
-        drawhorzlineclipbounding(surf, color, x0 - (int)x,
-                                 y0 + (int)y - y_offset,
-                                 x0 + (int)x - x_offset, drawn_area);
+        BPPSWITCH(draw_ellipse_filled_, and_check_rect, bounding, surf, x0, y0, x, y, x_offset, y_offset, color, drawn_area)
         if (d1 < 0) {
             x++;
             dx = dx + (2 * height * height);
@@ -2383,11 +2607,7 @@ draw_ellipse_filled(SDL_Surface *surf, int x0, int y0, int width, int height,
          (((double)width * width) * ((y - 1) * (y - 1))) -
          ((double)width * width * height * height);
     while (y >= 0) {
-        drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                 x0 + (int)x - x_offset, drawn_area);
-        drawhorzlineclipbounding(surf, color, x0 - (int)x,
-                                 y0 + (int)y - y_offset,
-                                 x0 + (int)x - x_offset, drawn_area);
+        BPPSWITCH(draw_ellipse_filled_, and_check_rect, bounding, surf, x0, y0, x, y, x_offset, y_offset, color, drawn_area)
         if (d2 > 0) {
             y--;
             dy = dy - (2 * width * width);
@@ -2432,26 +2652,7 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
     dx_inner = 2 * (height - thickness) * (height - thickness) * x_inner;
     dy_inner = 2 * (width - thickness) * (width - thickness) * y_inner;
     while (dx < dy) {
-        if (line) {
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                     x0 + (int)x - x_offset, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - (int)x,
-                                     y0 + (int)y - y_offset,
-                                     x0 + (int)x - x_offset, drawn_area);
-        }
-        else {
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                     x0 - (int)x_inner, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - (int)x,
-                                     y0 + (int)y - y_offset, x0 - (int)x_inner,
-                                     drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 + (int)x - x_offset,
-                                     y0 - (int)y, x0 + (int)x_inner - x_offset,
-                                     drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 + (int)x - x_offset,
-                                     y0 + (int)y - y_offset,
-                                     x0 + (int)x_inner - x_offset, drawn_area);
-        }
+        BPPSWITCH(draw_ellipse_thickness_, and_check_rect, bounding, surf, x0, y0, x, y, x_offset, y_offset, x_inner, line, color, drawn_area)
         if (d1 < 0) {
             x++;
             dx = dx + (2 * height * height);
@@ -2492,26 +2693,7 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
          (((double)width * width) * ((y - 1) * (y - 1))) -
          ((double)width * width * height * height);
     while (y >= 0) {
-        if (line) {
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                     x0 + (int)x - x_offset, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - (int)x,
-                                     y0 + (int)y - y_offset,
-                                     x0 + (int)x - x_offset, drawn_area);
-        }
-        else {
-            drawhorzlineclipbounding(surf, color, x0 - (int)x, y0 - (int)y,
-                                     x0 - (int)x_inner, drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 - (int)x,
-                                     y0 + (int)y - y_offset, x0 - (int)x_inner,
-                                     drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 + (int)x - x_offset,
-                                     y0 - (int)y, x0 + (int)x_inner - x_offset,
-                                     drawn_area);
-            drawhorzlineclipbounding(surf, color, x0 + (int)x - x_offset,
-                                     y0 + (int)y - y_offset,
-                                     x0 + (int)x_inner - x_offset, drawn_area);
-        }
+        BPPSWITCH(draw_ellipse_thickness_, and_check_rect, bounding, surf, x0, y0, x, y, x_offset, y_offset, x_inner, line,  color, drawn_area)
         if (d2 > 0) {
             y--;
             dy = dy - (2 * width * width);
@@ -2696,17 +2878,9 @@ draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
 
 static void
 draw_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int width,
-          Uint32 color)
+          Uint32 color, int* drawn_area)
 {
-    int i;
-    for (i = 0; i < width; i++) {
-        drawhorzlineclip(surf, color, x1, y1 + i, x2);
-        drawhorzlineclip(surf, color, x1, y2 - i, x2);
-    }
-    for (i = 0; i < (y2 - y1) - 2 * width + 1; i++) {
-        drawhorzlineclip(surf, color, x1, y1 + width + i, x1 + width - 1);
-        drawhorzlineclip(surf, color, x2 - width + 1, y1 + width + i, x2);
-    }
+    BPPSWITCH(draw_rect_, and_check_rect, no_bounding, surf, x1, y1, x2, y2, width, color, drawn_area)
 }
 
 static void
