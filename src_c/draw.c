@@ -1683,7 +1683,7 @@ swap_coordinates(int *x1, int *y1, int *x2, int *y2)
         err = (dx > dy ? dx : -dy) / 2;                                                                                      \
         e2 = err;                                                                                                            \
         while (x1 != x2 || y1 != y2) {                                                                                       \
-            set_## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ##(surf, x1, y1, color, drawn_area);                       \
+            set_## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING (surf, x1, y1, color, drawn_area);                       \
             e2 = err;                                                                                                        \
             if (e2 > -dx) {                                                                                                  \
                 err -= dy;                                                                                                   \
