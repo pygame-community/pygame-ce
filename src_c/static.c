@@ -178,6 +178,9 @@ PyInit_pixelarray(void);
 PyMODINIT_FUNC
 PyInit__window(void);
 
+PyMODINIT_FUNC
+PyInit__renderer(void);
+
 // pygame_static module
 
 void
@@ -308,6 +311,8 @@ PyInit_pygame_static()
 
     load_submodule("pygame", PyInit__window(), "_window");
 
+    load_submodule("pygame", PyInit__renderer(), "_renderer");
+
     load_submodule("pygame", PyInit_pixelarray(), "pixelarray");
 
     return PyModule_Create(&mod_pygame_static);
@@ -427,3 +432,5 @@ PyInit_pygame_static()
 #undef MAX
 #undef MIN
 #include "scale2x.c"
+
+#include "renderer.c"

@@ -502,6 +502,19 @@ typedef struct {
 #define import_pygame_window() IMPORT_PYGAME_MODULE(_window)
 #endif
 
+/*
+ * Renderer module
+ */
+typedef struct {
+    PyObject_HEAD SDL_Renderer *renderer;
+} pgRendererObject;
+#ifndef PYGAMEAPI_WINDOW_INTERNAL
+#define pgRenderer_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_renderer, 0))
+#define pgRenderer_Check(x) \
+    (PyObject_IsInstance((x), (PyObject *)&pgRenderer_Type))
+#define import_pygame_renderer() IMPORT_PYGAME_MODULE(_renderer)
+
+
 #define IMPORT_PYGAME_MODULE _IMPORT_PYGAME_MODULE
 
 /*
@@ -521,6 +534,7 @@ PYGAMEAPI_DEFINE_SLOTS(pixelarray);
 PYGAMEAPI_DEFINE_SLOTS(color);
 PYGAMEAPI_DEFINE_SLOTS(math);
 PYGAMEAPI_DEFINE_SLOTS(_window);
+PYGAMEAPI_DEFINE_SLOTS(_renderer);
 PYGAMEAPI_DEFINE_SLOTS(geometry);
 #else /* ~PYGAME_H */
 PYGAMEAPI_EXTERN_SLOTS(base);
@@ -535,6 +549,7 @@ PYGAMEAPI_EXTERN_SLOTS(pixelarray);
 PYGAMEAPI_EXTERN_SLOTS(color);
 PYGAMEAPI_EXTERN_SLOTS(math);
 PYGAMEAPI_EXTERN_SLOTS(_window);
+PYGAMEAPI_EXTERN_SLOTS(_renderer);
 PYGAMEAPI_EXTERN_SLOTS(geometry);
 
 #endif /* ~PYGAME_H */
