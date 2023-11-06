@@ -3347,7 +3347,9 @@ invert(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
             PyExc_ValueError,
             "Source and destination surfaces need the same format."));
     }
-
+#if defined(__EMSCRIPTEN__)
+    invert_non_simd(src, newsurf);
+#else  // !defined(__EMSCRIPTEN__)
     if (src->format->BytesPerPixel == 4 &&
         src->format->Rmask == newsurf->format->Rmask &&
         src->format->Gmask == newsurf->format->Gmask &&
@@ -3368,6 +3370,7 @@ invert(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
     else {
         invert_non_simd(src, newsurf);
     }
+#endif  // !defined(__EMSCRIPTEN__)
 
     SDL_UnlockSurface(newsurf);
 
