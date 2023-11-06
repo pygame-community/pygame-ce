@@ -648,8 +648,14 @@ RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
             }
             return temp;
         }
-        else if (PyTuple_Check(obj) && length == 1) {
-            return RectExport_RectFromObject(items[0], temp);
+        else if (PyTuple_Check(obj)) {
+            // If this is a tuple and the legth is 0, return temp? temp should be a 0,0,0,0 rect right?
+            // afaik the tuple  passed could be the args, so it would make pygame.Rect() possible?
+            if (length == 1) {
+                return RectExport_RectFromObject(items[0], temp);
+            } else {
+                return temp;
+            }
         }
         else {
             return NULL;
@@ -717,6 +723,11 @@ RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
             }
             InnerRect *returnrect = RectExport_RectFromObject(item, temp);
             return returnrect;
+        }
+        else if (length == 0) {
+            // if the length of the sequence passed is 0 return temp? temp should be a 0,0,0,0 rect right?
+            // afaik the sequence passed could be the args, so it would make pygame.Rect() possible?
+            return temp;
         }
     }
 

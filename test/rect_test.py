@@ -30,6 +30,13 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual(3, r.width)
         self.assertEqual(4, r.height)
 
+    def testConstructionNoArgs(self):
+        r = Rect()
+        self.assertEqual(0, r.left)
+        self.assertEqual(0, r.top)
+        self.assertEqual(0, r.width)
+        self.assertEqual(0, r.height)
+
     def testCalculatedAttributes(self):
         r = Rect(1, 2, 3, 4)
 
