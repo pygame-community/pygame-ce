@@ -1627,6 +1627,22 @@ class TransformDisplayModuleTest(unittest.TestCase):
         self.assertEqual(surf.get_at((0, 0)), surf2.get_at((0, 0)))
         self.assertEqual(surf2.get_at((0, 0)), (255, 0, 0, 255))
 
+    def test_unwanted_rle_not_added(self):
+        surf = pygame.Surface((16, 16))
+        surf.fill((255, 0, 0))
+        surf.set_colorkey((0, 0, 0))
+        surf.set_alpha(64)
+
+        #  scale it to the same size (size doesn't matter here)
+        scaled_surf = pygame.transform.scale(surf, (16, 16))
+        pygame.Surface((100, 100)).blit(scaled_surf, (0, 0))
+
+        self.assertEqual(
+            surf.get_flags() & pygame.RLEACCEL,
+            scaled_surf.get_flags() & pygame.RLEACCEL,
+        )
+        self.assertEqual(scaled_surf.get_at((8, 8)), (255, 0, 0, 255))
+
 
 if __name__ == "__main__":
     unittest.main()
