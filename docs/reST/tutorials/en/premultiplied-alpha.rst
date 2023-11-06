@@ -38,7 +38,11 @@ that has an alpha channel, and then blit that surface direct to our display surf
     pygame.display.set_caption("Basic Composition")
     display_surf = pygame.display.set_mode((300, 170))
 
+    # create a Surface with the SRCALPHA flag to add an extra channel of data
+    # to each pixel that indicates how transparent it should be (from 0 - fully
+    # transparent, to 255 - fully opaque.
     basic_surf = pygame.Surface((120, 120), flags=SRCALPHA)
+    # the fourth number here sets the alpha to 25 (highly translucent)
     basic_surf.fill(pygame.Color(50, 50, 50, 25))
 
     running = True
