@@ -1742,17 +1742,93 @@ DRAW_ARC_INNER_LOOP(16, at_, no_bounding)
 DRAW_ARC_INNER_LOOP(8, at_, no_bounding)
 
 #define DRAW_CIRCLE_BRESENHAM_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                    \
-    static void draw_circle_bresenham_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, int line, long long x, long long y, long long x_inner, Uint32 color, int *drawn_area) {  \
-        if (line) {                                                                                                                      \
-            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 + (int)x - 1, drawn_area);               \
-            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - 1, x0 + (int)x - 1, drawn_area);           \
-        }                                                                                                                                \
-        else {                                                                                                                           \
-            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 - (int)x_inner, drawn_area);             \
-            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - 1, x0 - (int)x_inner, drawn_area);         \
-            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 + (int)x_inner - 1, y0 - (int)y, x0 + (int)x - 1, drawn_area);     \
-            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 + (int)x_inner - 1, y0 + (int)y - 1, x0 + (int)x - 1, drawn_area); \
-        } }
+    static void draw_circle_bresenham_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, int line, long long x, long long y, long long x_inner, long long dx, long long dy, double d1, long long double_radius_squared, long long radius_squared, long long radius_inner, double d1_inner, long long dx_inner, long long double_radius_inner_squared, long long radius_inner_squared, long long y_inner, long long dy_inner, double d2_inner, Uint32 color, int *drawn_area) {  \
+        while (dx < dy) { \
+            while (d1 < 0) { \
+                x++; \
+                dx += double_radius_squared; \
+                d1 += dx + radius_squared; \
+            } \
+            if (line) {                                                                                                                      \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 + (int)x - 1, drawn_area);               \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - 1, x0 + (int)x - 1, drawn_area);           \
+            }                                                                                                                                \
+            else {                                                                                                                           \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 - (int)x_inner, drawn_area);             \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - 1, x0 - (int)x_inner, drawn_area);         \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 + (int)x_inner - 1, y0 - (int)y, x0 + (int)x - 1, drawn_area);     \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 + (int)x_inner - 1, y0 + (int)y - 1, x0 + (int)x - 1, drawn_area); \
+            } \
+            x++; \
+            y--; \
+            dx += double_radius_squared; \
+            dy -= double_radius_squared; \
+            d1 += dx - dy + radius_squared; \
+            if (line && y < radius_inner) line = 0;\
+            if (!line) { \
+                while (d1_inner < 0) { \
+                    x_inner += 1; \
+                    dx_inner += double_radius_inner_squared; \
+                    d1_inner += dx_inner + radius_inner_squared; \
+                } \
+                x_inner++; \
+                y_inner--; \
+                dx_inner += double_radius_inner_squared; \
+                dy_inner -= double_radius_inner_squared; \
+                d1_inner += dx_inner - dy_inner + radius_inner_squared; \
+            } } \
+        d1 = radius_squared * ((x + 0.5) * (x + 0.5) + (y - 1) * (y - 1) - radius_squared); \
+        while (y >= 0) { \
+            if (line) {                                                                                                                      \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 + (int)x - 1, drawn_area);               \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - 1, x0 + (int)x - 1, drawn_area);           \
+            }                                                                                                                                \
+            else {                                                                                                                           \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 - (int)x_inner, drawn_area);             \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - 1, x0 - (int)x_inner, drawn_area);         \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 + (int)x_inner - 1, y0 - (int)y, x0 + (int)x - 1, drawn_area);     \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 + (int)x_inner - 1, y0 + (int)y - 1, x0 + (int)x - 1, drawn_area); \
+            } \
+            if (d1 > 0) { \
+                y--; \
+                dy -= double_radius_squared; \
+                d1 += radius_squared - dy; \
+            } \
+            else { \
+                y--; \
+                x++; \
+                dx += double_radius_squared; \
+                dy -= double_radius_squared; \
+                d1 += dx - dy + radius_squared; \
+            } \
+            if (line && y < radius_inner) line = 0; \
+            if (!line) { \
+                if (dx_inner < dy_inner) { \
+                    while (d1_inner < 0) { \
+                        x_inner += 1; \
+                        dx_inner += double_radius_inner_squared; \
+                        d1_inner += dx_inner + radius_inner_squared; \
+                    } \
+                    x_inner++; \
+                    y_inner--; \
+                    dx_inner += double_radius_inner_squared; \
+                    dy_inner -= double_radius_inner_squared; \
+                    d1_inner += dx_inner - dy_inner + radius_inner_squared; \
+                } \
+                else { \
+                    if (!d2_inner) d2_inner = radius_inner_squared * ((x_inner + 0.5) * (x_inner + 0.5) + (y_inner - 1)  * (y_inner - 1) - radius_inner_squared); \
+                    if (d2_inner > 0) { \
+                        y_inner--; \
+                        dy_inner -= double_radius_inner_squared; \
+                        d2_inner += radius_inner_squared - dy_inner; \
+                    } \
+                    else { \
+                        y_inner--; \
+                        x_inner++; \
+                        dx_inner += double_radius_inner_squared; \
+                        dy_inner -= double_radius_inner_squared; \
+                        d2_inner += dx_inner - dy_inner + radius_inner_squared; \
+                    } } } } }
 
 DRAW_CIRCLE_BRESENHAM_INNER_LOOP(32, and_check_rect_, bounding)
 DRAW_CIRCLE_BRESENHAM_INNER_LOOP(24, and_check_rect_, bounding)
@@ -1760,16 +1836,25 @@ DRAW_CIRCLE_BRESENHAM_INNER_LOOP(16, and_check_rect_, bounding)
 DRAW_CIRCLE_BRESENHAM_INNER_LOOP(8, and_check_rect_, bounding)
 
 #define DRAW_CIRCLE_BRESENHAM_THIN_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                       \
-    static void draw_circle_bresenham_thin_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, int x, int y, Uint32 color, int *drawn_area) {  \
-        set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 + x - 1, y0 + y - 1, color, drawn_area); \
-        set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 - x, y0 + y - 1, color, drawn_area);     \
-        set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 + x - 1, y0 - y, color, drawn_area);     \
-        set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 - x, y0 - y, color, drawn_area);         \
-        set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 + y - 1, y0 + x - 1, color, drawn_area); \
-        set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 + y - 1, y0 - x, color, drawn_area);     \
-        set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 - y, y0 + x - 1, color, drawn_area);     \
-        set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 - y, y0 - x, color, drawn_area);         \
-    }
+    static void draw_circle_bresenham_thin_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, int x, int y, int f, int ddF_y, int ddF_x, Uint32 color, int *drawn_area) {  \
+        while (x < y) { \
+            if (f >= 0) { \
+                y--; \
+                ddF_y += 2; \
+                f += ddF_y; \
+            } \
+            x++; \
+            ddF_x += 2; \
+            f += ddF_x + 1; \
+            set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 + x - 1, y0 + y - 1, color, drawn_area); \
+            set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 - x, y0 + y - 1, color, drawn_area);     \
+            set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 + x - 1, y0 - y, color, drawn_area);     \
+            set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 - x, y0 - y, color, drawn_area);         \
+            set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 + y - 1, y0 + x - 1, color, drawn_area); \
+            set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 + y - 1, y0 - x, color, drawn_area);     \
+            set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 - y, y0 + x - 1, color, drawn_area);     \
+            set_and_check_rect_ ## BPP ## bpp_bounding(surf, x0 - y, y0 - x, color, drawn_area);         \
+        } }
 
 DRAW_CIRCLE_BRESENHAM_THIN_INNER_LOOP(32, and_check_rect_, bounding)
 DRAW_CIRCLE_BRESENHAM_THIN_INNER_LOOP(24, and_check_rect_, bounding)
@@ -1777,14 +1862,23 @@ DRAW_CIRCLE_BRESENHAM_THIN_INNER_LOOP(16, and_check_rect_, bounding)
 DRAW_CIRCLE_BRESENHAM_THIN_INNER_LOOP(8, and_check_rect_, bounding)
 
 #define DRAW_CIRCLE_FILLED_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                                     \
-    static void draw_circle_filled_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, int x, int y, int f, int xmax, Uint32 color, int *drawn_area) { \
-        if (f >= 0) {                                                                                                      \
-            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - x, y0 + y - 1, x0 + MIN(x - 1, xmax), drawn_area); \
-            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - x, y0 - y, x0 + MIN(x - 1, xmax), drawn_area);     \
-        }                                                                                                                  \
-        drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - y, y0 + x - 1, x0 + MIN(y - 1, xmax), drawn_area);     \
-        drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - y, y0 - x, x0 + MIN(y - 1, xmax), drawn_area);         \
-    }
+    static void draw_circle_filled_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, int x, int y, int f, int xmax, int ddF_y, int ddF_x, Uint32 color, int *drawn_area) { \
+        while (x < y) { \
+            if (f >= 0) { \
+                y--; \
+                ddF_y += 2; \
+                f += ddF_y; \
+            } \
+            x++; \
+            ddF_x += 2; \
+            f += ddF_x + 1; \
+            if (f >= 0) {                                                                                                      \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - x, y0 + y - 1, x0 + MIN(x - 1, xmax), drawn_area); \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - x, y0 - y, x0 + MIN(x - 1, xmax), drawn_area);     \
+            }                                                                                                                  \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - y, y0 + x - 1, x0 + MIN(y - 1, xmax), drawn_area);     \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - y, y0 - x, x0 + MIN(y - 1, xmax), drawn_area);         \
+        } }
 
 DRAW_CIRCLE_FILLED_INNER_LOOP(32, and_check_rect_, bounding)
 DRAW_CIRCLE_FILLED_INNER_LOOP(24, and_check_rect_, bounding)
@@ -1792,10 +1886,38 @@ DRAW_CIRCLE_FILLED_INNER_LOOP(16, and_check_rect_, bounding)
 DRAW_CIRCLE_FILLED_INNER_LOOP(8, and_check_rect_, bounding)
 
 #define DRAW_ELLIPSE_FILLED_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                                                  \
-    static void draw_ellipse_filled_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, long long x, long long y, int x_offset, int y_offset, Uint32 color, int *drawn_area) { \
-        drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 + (int)x - x_offset, drawn_area);            \
-        drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - y_offset, x0 + (int)x - x_offset, drawn_area); \
-    }
+    static void draw_ellipse_filled_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, long long x, long long y, int x_offset, int y_offset, long long dx, long long dy, double d1, int width, int height, double d2, Uint32 color, int *drawn_area) { \
+        while (dx < dy) { \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 + (int)x - x_offset, drawn_area);            \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - y_offset, x0 + (int)x - x_offset, drawn_area); \
+            if (d1 < 0) { \
+                x++; \
+                dx = dx + (2 * height * height); \
+                d1 = d1 + dx + (height * height); \
+            } \
+            else { \
+                x++; \
+                y--; \
+                dx = dx + (2 * height * height); \
+                dy = dy - (2 * width * width); \
+                d1 = d1 + dx - dy + (height * height); \
+            } } \
+        d2 = (((double)height * height) * ((x + 0.5) * (x + 0.5))) + (((double)width * width) * ((y - 1) * (y - 1))) - ((double)width * width * height * height); \
+        while (y >= 0) { \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 + (int)x - x_offset, drawn_area);            \
+            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - y_offset, x0 + (int)x - x_offset, drawn_area); \
+            if (d2 > 0) { \
+                y--; \
+                dy = dy - (2 * width * width); \
+                d2 = d2 + (width * width) - dy; \
+            } \
+            else { \
+                y--; \
+                x++; \
+                dx = dx + (2 * height * height); \
+                dy = dy - (2 * width * width); \
+                d2 = d2 + dx - dy + (width * width); \
+            } } }
 
 DRAW_ELLIPSE_FILLED_INNER_LOOP(32, and_check_rect_, bounding)
 DRAW_ELLIPSE_FILLED_INNER_LOOP(24, and_check_rect_, bounding)
@@ -1803,17 +1925,95 @@ DRAW_ELLIPSE_FILLED_INNER_LOOP(16, and_check_rect_, bounding)
 DRAW_ELLIPSE_FILLED_INNER_LOOP(8, and_check_rect_, bounding)
 
 #define DRAW_ELLIPSE_THICKNESS_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                                                                    \
-    static void draw_ellipse_thickness_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, long long x, long long y, int x_offset, int y_offset, long long x_inner, int line, Uint32 color, int *drawn_area) {  \
-        if (line) {                                                                                                                                           \
-            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 + (int)x - x_offset, drawn_area);                             \
-            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - y_offset, x0 + (int)x - x_offset, drawn_area);                  \
-        }                                                                                                                                                     \
-        else {                                                                                                                                                \
-            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 - (int)x_inner, drawn_area);                                  \
-            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - y_offset, x0 - (int)x_inner, drawn_area);                       \
-            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 + (int)x - x_offset, y0 - (int)y, x0 + (int)x_inner - x_offset, drawn_area);            \
-            drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 + (int)x - x_offset, y0 + (int)y - y_offset, x0 + (int)x_inner - x_offset, drawn_area); \
-        } }
+    static void draw_ellipse_thickness_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, long long x, long long y, int x_offset, int y_offset, long long x_inner, int line, long long dx, long long dy, double d1, int width, int height, int thickness, long long dx_inner, long long dy_inner, double d1_inner, long long y_inner, double d2, double d2_inner, Uint32 color, int *drawn_area) {  \
+        while (dx < dy) { \
+            if (line) {                                                                                                                                           \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 + (int)x - x_offset, drawn_area);                             \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - y_offset, x0 + (int)x - x_offset, drawn_area);                  \
+            }                                                                                                                                                     \
+            else {                                                                                                                                                \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 - (int)x_inner, drawn_area);                                  \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - y_offset, x0 - (int)x_inner, drawn_area);                       \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 + (int)x - x_offset, y0 - (int)y, x0 + (int)x_inner - x_offset, drawn_area);            \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 + (int)x - x_offset, y0 + (int)y - y_offset, x0 + (int)x_inner - x_offset, drawn_area); \
+            } \
+            if (d1 < 0) { \
+                x++; \
+                dx = dx + (2 * height * height); \
+                d1 = d1 + dx + (height * height); \
+            } \
+            else { \
+                x++; \
+                y--; \
+                dx = dx + (2 * height * height); \
+                dy = dy - (2 * width * width); \
+                d1 = d1 + dx - dy + (height * height); \
+                if (line && y < height - thickness) line = 0; \
+                if (!line) { \
+                    if (dx_inner < dy_inner) { \
+                        while (d1_inner < 0) { \
+                            x_inner++; \
+                            dx_inner = dx_inner + (2 * (height - thickness) * (height - thickness)); \
+                            d1_inner = d1_inner + dx_inner + ((height - thickness) * (height - thickness)); \
+                        } \
+                        x_inner++; \
+                        y_inner--; \
+                        dx_inner = dx_inner + (2 * (height - thickness) * (height - thickness)); \
+                        dy_inner = dy_inner - (2 * (width - thickness) * (width - thickness)); \
+                        d1_inner = d1_inner + dx_inner - dy_inner + ((height - thickness) * (height - thickness)); \
+                    } } } } \
+        d2 = (((double)height * height) * ((x + 0.5) * (x + 0.5))) + (((double)width * width) * ((y - 1) * (y - 1))) - ((double)width * width * height * height); \
+        while (y >= 0) { \
+            if (line) {                                                                                                                                           \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 + (int)x - x_offset, drawn_area);                             \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - y_offset, x0 + (int)x - x_offset, drawn_area);                  \
+            }                                                                                                                                                     \
+            else {                                                                                                                                                \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 - (int)x_inner, drawn_area);                                  \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - y_offset, x0 - (int)x_inner, drawn_area);                       \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 + (int)x - x_offset, y0 - (int)y, x0 + (int)x_inner - x_offset, drawn_area);            \
+                drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 + (int)x - x_offset, y0 + (int)y - y_offset, x0 + (int)x_inner - x_offset, drawn_area); \
+            } \
+            if (d2 > 0) { \
+                y--; \
+                dy = dy - (2 * width * width); \
+                d2 = d2 + (width * width) - dy; \
+            } \
+            else { \
+                y--; \
+                x++; \
+                dx = dx + (2 * height * height); \
+                dy = dy - (2 * width * width); \
+                d2 = d2 + dx - dy + (width * width); \
+            } \
+            if (line && y < height - thickness) line = 0; \
+            if (!line) { \
+                if (dx_inner < dy_inner) { \
+                    while (d1_inner < 0) { \
+                        x_inner++; \
+                        dx_inner = dx_inner + (2 * (height - thickness) * (height - thickness)); \
+                        d1_inner = d1_inner + dx_inner + ((height - thickness) * (height - thickness)); \
+                    } \
+                    x_inner++; \
+                    y_inner--; \
+                    dx_inner = dx_inner + (2 * (height - thickness) * (height - thickness)); \
+                    dy_inner = dy_inner - (2 * (width - thickness) * (width - thickness)); \
+                    d1_inner = d1_inner + dx_inner - dy_inner + ((height - thickness) * (height - thickness)); \
+                } \
+                else if (y_inner >= 0) { \
+                    if (d2_inner == 0) d2_inner = ((((double)height - thickness) * (height - thickness)) * ((x_inner + 0.5) * (x_inner + 0.5))) + ((((double)width - thickness) * (width - thickness)) *((y_inner - 1) * (y_inner - 1))) - (((double)width - thickness) * (width - thickness) * (height - thickness) * (height - thickness)); \
+                    if (d2_inner > 0) { \
+                        y_inner--; \
+                        dy_inner = dy_inner - (2 * (width - thickness) * (width - thickness)); \
+                        d2_inner = d2_inner + ((width - thickness) * (width - thickness)) - dy_inner; \
+                    } \
+                    else { \
+                        y_inner--; \
+                        x_inner++; \
+                        dx_inner = dx_inner + (2 * (height - thickness) * (height - thickness)); \
+                        dy_inner = dy_inner - (2 * (width - thickness) * (width - thickness)); \
+                        d2_inner = d2_inner + dx_inner - dy_inner + ((width - thickness) * (width - thickness)); \
+                    } } } } }
 
 DRAW_ELLIPSE_THICKNESS_INNER_LOOP(32, and_check_rect_, bounding)
 DRAW_ELLIPSE_THICKNESS_INNER_LOOP(24, and_check_rect_, bounding)
@@ -2274,85 +2474,7 @@ draw_circle_bresenham(SDL_Surface *surf, int x0, int y0, int radius,
     long long dx_inner = 0;
     long long dy_inner = double_radius_inner_squared * y_inner;
 
-    while (dx < dy) {
-        while (d1 < 0) {
-            x++;
-            dx += double_radius_squared;
-            d1 += dx + radius_squared;
-        }
-        BPPSWITCH(draw_circle_bresenham_, and_check_rect, bounding, surf, x0, y0, line, x, y, x_inner, color, drawn_area)
-        x++;
-        y--;
-        dx += double_radius_squared;
-        dy -= double_radius_squared;
-        d1 += dx - dy + radius_squared;
-        if (line && y < radius_inner)
-            line = 0;
-        if (!line) {
-            while (d1_inner < 0) {
-                x_inner += 1;
-                dx_inner += double_radius_inner_squared;
-                d1_inner += dx_inner + radius_inner_squared;
-            }
-            x_inner++;
-            y_inner--;
-            dx_inner += double_radius_inner_squared;
-            dy_inner -= double_radius_inner_squared;
-            d1_inner += dx_inner - dy_inner + radius_inner_squared;
-        }
-    }
-    d1 = radius_squared *
-         ((x + 0.5) * (x + 0.5) + (y - 1) * (y - 1) - radius_squared);
-    while (y >= 0) {
-        BPPSWITCH(draw_circle_bresenham_, and_check_rect, bounding, surf, x0, y0, line, x, y, x_inner, color, drawn_area)
-        if (d1 > 0) {
-            y--;
-            dy -= double_radius_squared;
-            d1 += radius_squared - dy;
-        }
-        else {
-            y--;
-            x++;
-            dx += double_radius_squared;
-            dy -= double_radius_squared;
-            d1 += dx - dy + radius_squared;
-        }
-        if (line && y < radius_inner)
-            line = 0;
-        if (!line) {
-            if (dx_inner < dy_inner) {
-                while (d1_inner < 0) {
-                    x_inner += 1;
-                    dx_inner += double_radius_inner_squared;
-                    d1_inner += dx_inner + radius_inner_squared;
-                }
-                x_inner++;
-                y_inner--;
-                dx_inner += double_radius_inner_squared;
-                dy_inner -= double_radius_inner_squared;
-                d1_inner += dx_inner - dy_inner + radius_inner_squared;
-            }
-            else {
-                if (!d2_inner)
-                    d2_inner =
-                        radius_inner_squared *
-                        ((x_inner + 0.5) * (x_inner + 0.5) +
-                         (y_inner - 1) * (y_inner - 1) - radius_inner_squared);
-                if (d2_inner > 0) {
-                    y_inner--;
-                    dy_inner -= double_radius_inner_squared;
-                    d2_inner += radius_inner_squared - dy_inner;
-                }
-                else {
-                    y_inner--;
-                    x_inner++;
-                    dx_inner += double_radius_inner_squared;
-                    dy_inner -= double_radius_inner_squared;
-                    d2_inner += dx_inner - dy_inner + radius_inner_squared;
-                }
-            }
-        }
-    }
+    BPPSWITCH(draw_circle_bresenham_, and_check_rect, bounding, surf, x0, y0, line, x, y, x_inner, dx, dy, d1, double_radius_squared, radius_squared, radius_inner, d1_inner, dx_inner, double_radius_inner_squared, radius_inner_squared, y_inner, dy_inner, d2_inner, color, drawn_area)
 }
 
 static void
@@ -2364,18 +2486,7 @@ draw_circle_bresenham_thin(SDL_Surface *surf, int x0, int y0, int radius,
     int ddF_y = -2 * radius;
     int x = 0;
     int y = radius;
-
-    while (x < y) {
-        if (f >= 0) {
-            y--;
-            ddF_y += 2;
-            f += ddF_y;
-        }
-        x++;
-        ddF_x += 2;
-        f += ddF_x + 1;
-        BPPSWITCH(draw_circle_bresenham_thin_, and_check_rect, bounding, surf, x0, y0, x, y, color, drawn_area)
-    }
+    BPPSWITCH(draw_circle_bresenham_thin_, and_check_rect, bounding, surf, x0, y0, x, y, f, ddF_y, ddF_x, color, drawn_area)
 }
 
 static void
@@ -2547,18 +2658,7 @@ draw_circle_filled(SDL_Surface *surf, int x0, int y0, int radius, Uint32 color,
     else {
         xmax = INT_MAX - x0;
     }
-
-    while (x < y) {
-        if (f >= 0) {
-            y--;
-            ddF_y += 2;
-            f += ddF_y;
-        }
-        x++;
-        ddF_x += 2;
-        f += ddF_x + 1;
-        BPPSWITCH(draw_circle_filled_, and_check_rect, bounding, surf, x0, y0, x, y, f, xmax, color, drawn_area)
-    }
+    BPPSWITCH(draw_circle_filled_, and_check_rect, bounding, surf, x0, y0, x, y, f, xmax, ddF_y, ddF_x, color, drawn_area)
 }
 
 static void
@@ -2567,7 +2667,7 @@ draw_ellipse_filled(SDL_Surface *surf, int x0, int y0, int width, int height,
 {
     long long dx, dy, x, y;
     int x_offset, y_offset;
-    double d1, d2;
+    double d1, d2 = 0;
     if (width == 1) {
         draw_line(surf, x0, y0, x0, y0 + height - 1, color, drawn_area);
         return;
@@ -2588,39 +2688,7 @@ draw_ellipse_filled(SDL_Surface *surf, int x0, int y0, int width, int height,
     d1 = (height * height) - (width * width * height) + (0.25 * width * width);
     dx = 2 * height * height * x;
     dy = 2 * width * width * y;
-    while (dx < dy) {
-        BPPSWITCH(draw_ellipse_filled_, and_check_rect, bounding, surf, x0, y0, x, y, x_offset, y_offset, color, drawn_area)
-        if (d1 < 0) {
-            x++;
-            dx = dx + (2 * height * height);
-            d1 = d1 + dx + (height * height);
-        }
-        else {
-            x++;
-            y--;
-            dx = dx + (2 * height * height);
-            dy = dy - (2 * width * width);
-            d1 = d1 + dx - dy + (height * height);
-        }
-    }
-    d2 = (((double)height * height) * ((x + 0.5) * (x + 0.5))) +
-         (((double)width * width) * ((y - 1) * (y - 1))) -
-         ((double)width * width * height * height);
-    while (y >= 0) {
-        BPPSWITCH(draw_ellipse_filled_, and_check_rect, bounding, surf, x0, y0, x, y, x_offset, y_offset, color, drawn_area)
-        if (d2 > 0) {
-            y--;
-            dy = dy - (2 * width * width);
-            d2 = d2 + (width * width) - dy;
-        }
-        else {
-            y--;
-            x++;
-            dx = dx + (2 * height * height);
-            dy = dy - (2 * width * width);
-            d2 = d2 + dx - dy + (width * width);
-        }
-    }
+    BPPSWITCH(draw_ellipse_filled_, and_check_rect, bounding, surf, x0, y0, x, y, x_offset, y_offset, dx, dy, d1, width, height, d2, color, drawn_area)
 }
 
 static void
@@ -2630,7 +2698,7 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
 {
     long long dx, dy, dx_inner, dy_inner, x, y, x_inner, y_inner;
     int line, x_offset, y_offset;
-    double d1, d2, d1_inner, d2_inner = 0;
+    double d1, d2 = 0, d1_inner, d2_inner = 0;
     x0 = x0 + width / 2;
     y0 = y0 + height / 2;
     x_offset = (width + 1) % 2;
@@ -2651,114 +2719,7 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
     dy = 2 * width * width * y;
     dx_inner = 2 * (height - thickness) * (height - thickness) * x_inner;
     dy_inner = 2 * (width - thickness) * (width - thickness) * y_inner;
-    while (dx < dy) {
-        BPPSWITCH(draw_ellipse_thickness_, and_check_rect, bounding, surf, x0, y0, x, y, x_offset, y_offset, x_inner, line, color, drawn_area)
-        if (d1 < 0) {
-            x++;
-            dx = dx + (2 * height * height);
-            d1 = d1 + dx + (height * height);
-        }
-        else {
-            x++;
-            y--;
-            dx = dx + (2 * height * height);
-            dy = dy - (2 * width * width);
-            d1 = d1 + dx - dy + (height * height);
-            if (line && y < height - thickness) {
-                line = 0;
-            }
-            if (!line) {
-                if (dx_inner < dy_inner) {
-                    while (d1_inner < 0) {
-                        x_inner++;
-                        dx_inner = dx_inner + (2 * (height - thickness) *
-                                               (height - thickness));
-                        d1_inner =
-                            d1_inner + dx_inner +
-                            ((height - thickness) * (height - thickness));
-                    }
-                    x_inner++;
-                    y_inner--;
-                    dx_inner = dx_inner + (2 * (height - thickness) *
-                                           (height - thickness));
-                    dy_inner = dy_inner -
-                               (2 * (width - thickness) * (width - thickness));
-                    d1_inner = d1_inner + dx_inner - dy_inner +
-                               ((height - thickness) * (height - thickness));
-                }
-            }
-        }
-    }
-    d2 = (((double)height * height) * ((x + 0.5) * (x + 0.5))) +
-         (((double)width * width) * ((y - 1) * (y - 1))) -
-         ((double)width * width * height * height);
-    while (y >= 0) {
-        BPPSWITCH(draw_ellipse_thickness_, and_check_rect, bounding, surf, x0, y0, x, y, x_offset, y_offset, x_inner, line,  color, drawn_area)
-        if (d2 > 0) {
-            y--;
-            dy = dy - (2 * width * width);
-            d2 = d2 + (width * width) - dy;
-        }
-        else {
-            y--;
-            x++;
-            dx = dx + (2 * height * height);
-            dy = dy - (2 * width * width);
-            d2 = d2 + dx - dy + (width * width);
-        }
-        if (line && y < height - thickness) {
-            line = 0;
-        }
-        if (!line) {
-            if (dx_inner < dy_inner) {
-                while (d1_inner < 0) {
-                    x_inner++;
-                    dx_inner = dx_inner + (2 * (height - thickness) *
-                                           (height - thickness));
-                    d1_inner = d1_inner + dx_inner +
-                               ((height - thickness) * (height - thickness));
-                }
-                x_inner++;
-                y_inner--;
-                dx_inner = dx_inner +
-                           (2 * (height - thickness) * (height - thickness));
-                dy_inner =
-                    dy_inner - (2 * (width - thickness) * (width - thickness));
-                d1_inner = d1_inner + dx_inner - dy_inner +
-                           ((height - thickness) * (height - thickness));
-            }
-            else if (y_inner >= 0) {
-                if (d2_inner == 0) {
-                    d2_inner =
-                        ((((double)height - thickness) *
-                          (height - thickness)) *
-                         ((x_inner + 0.5) * (x_inner + 0.5))) +
-                        ((((double)width - thickness) * (width - thickness)) *
-                         ((y_inner - 1) * (y_inner - 1))) -
-                        (((double)width - thickness) * (width - thickness) *
-                         (height - thickness) * (height - thickness));
-                }
-                if (d2_inner > 0) {
-                    y_inner--;
-                    dy_inner = dy_inner -
-                               (2 * (width - thickness) * (width - thickness));
-                    d2_inner = d2_inner +
-                               ((width - thickness) * (width - thickness)) -
-                               dy_inner;
-                }
-                else {
-                    y_inner--;
-                    x_inner++;
-                    dx_inner = dx_inner + (2 * (height - thickness) *
-                                           (height - thickness));
-                    dy_inner = dy_inner -
-                               (2 * (width - thickness) * (width - thickness));
-                    d2_inner = d2_inner + dx_inner - dy_inner +
-                               ((width - thickness) * (width - thickness));
-                }
-            }
-        }
-    }
+    BPPSWITCH(draw_ellipse_thickness_, and_check_rect, bounding, surf, x0, y0, x, y, x_offset, y_offset, x_inner, line, dx, dy, d1, width, height, thickness, dx_inner, dy_inner, d1_inner, y_inner, d2, d2_inner, color, drawn_area)
 }
 
 static void
