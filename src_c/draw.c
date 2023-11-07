@@ -979,6 +979,9 @@ get_antialiased_color(SDL_Surface *surf, int x, int y, Uint32 original_color,
     Uint32 *pixels = (Uint32 *)surf->pixels;
     SDL_GetRGBA(original_color, surf->format, &color_part[0], &color_part[1],
                 &color_part[2], &color_part[3]);
+    if (x < surf->clip_rect.x || x >= surf->clip_rect.x + surf->clip_rect.w ||
+        y < surf->clip_rect.y || y >= surf->clip_rect.y + surf->clip_rect.h)
+        return original_color;
     SDL_GetRGBA(pixels[(y * surf->w) + x], surf->format, &background_color[0],
                 &background_color[1], &background_color[2],
                 &background_color[3]);
