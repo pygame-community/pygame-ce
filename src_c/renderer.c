@@ -23,6 +23,29 @@ from_window(PyObject *self, PyObject *arg, PyObject *kwargs) {
 }*/
 
 static PyObject *
+compose_custom_blend_mode(PyObject *self, PyObject *args, PyObject *kwargs) {
+    PyObject *color_mode, *alpha_mode;
+    float mode[6];
+    int blend_mode;
+    static char *keywords[] = {"color_mode", "alpha_mode", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", keywords, &color_mode, &alpha_mode)) {
+        return NULL;
+    }
+    if (!PySequence_Check(color_mode)) return RAISE(PyExc_TypeError, "color_mode has to be sequence");
+    if (!PySequence_Check(alpha_mode)) return RAISE(PyExc_TypeError, "alpha_mode has to be sequence");
+    if (PySequence_Size(color_mode) != 3) return RAISE(PyExc_TypeError, "color_mode has to have 3 elements");
+    if (PySequence_Size(alpha_mode) != 3) return RAISE(PyExc_TypeError, "alpha_mode has to have 3 elements");
+    if (!pg_FloatFromObj(PySequence_GetItem(color_mode, 0), &mode[0])) return RAISE(PyExc_TypeError, "color_mode first element must be float");
+    if (!pg_FloatFromObj(PySequence_GetItem(color_mode, 1), &mode[1])) return RAISE(PyExc_TypeError, "color_mode second element must be float");
+    if (!pg_FloatFromObj(PySequence_GetItem(color_mode, 2), &mode[2])) return RAISE(PyExc_TypeError, "color_mode third element must be float");
+    if (!pg_FloatFromObj(PySequence_GetItem(alpha_mode, 0), &mode[3])) return RAISE(PyExc_TypeError, "alpha_mode first element must be float");
+    if (!pg_FloatFromObj(PySequence_GetItem(alpha_mode, 1), &mode[4])) return RAISE(PyExc_TypeError, "alpha_mode second element must be float");
+    if (!pg_FloatFromObj(PySequence_GetItem(alpha_mode, 2), &mode[5])) return RAISE(PyExc_TypeError, "alpha_mode third element must be float");
+    blend_mode = SDL_ComposeCustomBlendMode(mode[0], mode[1], mode[2], mode[3], mode[4], mode[5]);
+    return PyLong_FromLong((long) blend_mode);
+}
+
+static PyObject *
 renderer_draw_line(pgRendererObject *self, PyObject *args, PyObject *kwargs)
 {
     PyObject *start, *end;
@@ -255,6 +278,8 @@ renderer_set_viewport(pgRendererObject *self, PyObject *args, PyObject *kwargs) 
     Py_RETURN_NONE;
 }
 
+// TODO this has small problems
+/*
 static PyObject *
 renderer_to_surface(pgRendererObject *self, PyObject *args, PyObject *kwargs) {
     PyObject *surfobj = Py_None, *rectobj = Py_None;
@@ -312,6 +337,7 @@ renderer_to_surface(pgRendererObject *self, PyObject *args, PyObject *kwargs) {
     RENDERER_ERROR_CHECK(SDL_RenderReadPixels(self->renderer, areaparam, format, surf->pixels, surf->pitch))
     return surfobj;
 }
+*/
 
 // TODO For blit need Texture/Image
 /*static PyObject *
@@ -321,9 +347,9 @@ renderer_blit(pgRendererObject *self, PyObject *args, PyObject *kwargs) {
 
 static PyObject *
 renderer_get_draw_blend_mode(pgRendererObject *self, void *closure) {
-    SDL_BlendMode blendMode;
-    RENDERER_ERROR_CHECK(SDL_GetRenderDrawBlendMode(self->renderer, &blendMode))
-    return PyLong_FromLong((long) blendMode);
+    SDL_BlendMode blend_mode;
+    RENDERER_ERROR_CHECK(SDL_GetRenderDrawBlendMode(self->renderer, &blend_mode))
+    return PyLong_FromLong((long) blend_mode);
 }
 
 static PyObject *
@@ -466,8 +492,10 @@ static PyMethodDef renderer_methods[] = {
      DOC_SDL2_VIDEO_RENDERER_SETVIEWPORT},
     {"get_viewport", (PyCFunction)renderer_get_viewport, METH_NOARGS,
      DOC_SDL2_VIDEO_RENDERER_GETVIEWPORT},
-    {"to_surface", (PyCFunction)renderer_to_surface, METH_VARARGS | METH_KEYWORDS,
-     DOC_SDL2_VIDEO_RENDERER_TOSURFACE},
+    {"compose_custom_blend_mode", (PyCFunction)compose_custom_blend_mode, METH_VARARGS | METH_KEYWORDS | METH_CLASS,
+     DOC_SDL2_VIDEO_RENDERER_COMPOSECUSTOMBLENDMODE},
+    //{"to_surface", (PyCFunction)renderer_to_surface, METH_VARARGS | METH_KEYWORDS,
+    // DOC_SDL2_VIDEO_RENDERER_TOSURFACE},
     //{"blit", (PyCFunction)renderer_blit, METH_VARARGS | METH_KEYWORDS,
     // DOC_SDL2_VIDEO_RENDERER_SETVIEWPORT},
     {NULL, NULL, 0, NULL}
