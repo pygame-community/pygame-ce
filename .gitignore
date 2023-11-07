@@ -43,3 +43,9 @@ dist
 *.so
 __pycache__
 _headers/*
+
+# Damus666 @damusss
+
+Scripts/
+Lib/
+Include/
