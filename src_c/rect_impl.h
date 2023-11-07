@@ -613,7 +613,6 @@ int RectOptional_Freelist_Num = -1;
 static InnerRect *
 RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
 {
-    printf("I AM RUNNING LITTLE BITCHHH\n");
     Py_ssize_t length;
 
     if (RectCheck(obj)) {
@@ -655,7 +654,6 @@ RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
             if (length == 1) {
                 return RectExport_RectFromObject(items[0], temp);
             } else if (length == 0) {
-                printf("I am in PyTupleCheck UwU OwO\n");
                 temp->x = 0;
                 temp->y = 0;
                 temp->w = 0;
@@ -734,7 +732,6 @@ RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
         else if (length == 0) {
             // if the length of the sequence passed is 0 return temp? temp should be a 0,0,0,0 rect right?
             // afaik the sequence passed could be the args, so it would make pygame.Rect() possible?
-            printf("I am in PySequenceCheck OWOWOEUIWEUIW UwU OwO\n");
             temp->x = 0;
             temp->y = 0;
             temp->w = 0;
