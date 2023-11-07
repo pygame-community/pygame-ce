@@ -507,13 +507,15 @@ typedef struct {
  */
 typedef struct {
     PyObject_HEAD SDL_Renderer *renderer;
+    pgWindowObject *window;
+    int DELETETHIS;
 } pgRendererObject;
-#ifndef PYGAMEAPI_WINDOW_INTERNAL
+#ifndef PYGAMEAPI_RENDERER_INTERNAL
 #define pgRenderer_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_renderer, 0))
 #define pgRenderer_Check(x) \
     (PyObject_IsInstance((x), (PyObject *)&pgRenderer_Type))
 #define import_pygame_renderer() IMPORT_PYGAME_MODULE(_renderer)
-
+#endif
 
 #define IMPORT_PYGAME_MODULE _IMPORT_PYGAME_MODULE
 
