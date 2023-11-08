@@ -2116,7 +2116,7 @@ grayscale(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
             "Source and destination surfaces need the same format."));
     }
 #if defined(__EMSCRIPTEN__)
-    invert_non_simd(src, newsurf);
+    grayscale_non_simd(src, newsurf);
 #else  // !defined(__EMSCRIPTEN__)
     if (src->format->BytesPerPixel == 4 &&
         src->format->Rmask == newsurf->format->Rmask &&
