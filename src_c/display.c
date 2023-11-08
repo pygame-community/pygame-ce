@@ -105,9 +105,14 @@ pg_load_pygame_icon()
         return NULL;
     PyObject *loader_function =
         PyObject_GetAttrString(pkgdata_mod, "load_pygame_icon");
-    if (!loader_function)
+    if (!loader_function) {
+        Py_DECREF(pkgdata_mod);
         return NULL;
-    return PyObject_CallFunction(loader_function, "");
+    }
+    PyObject *result = PyObject_CallFunction(loader_function, "");
+    Py_DECREF(pkgdata_mod);
+    Py_DECREF(loader_function);
+    return result;
 }
 
 #endif  // BUILD_STATIC

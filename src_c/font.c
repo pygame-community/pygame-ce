@@ -83,9 +83,15 @@ font_get_default_font_path()
         return NULL;
     PyObject *path_function =
         PyObject_GetAttrString(pkgdata_mod, "get_resource_path");
-    if (!path_function)
+    if (!path_function) {
+        Py_DECREF(pkgdata_mod);
         return NULL;
-    return PyObject_CallFunction(path_function, "s", font_defaultname);
+    }
+    PyObject *result =
+        PyObject_CallFunction(path_function, "s", font_defaultname);
+    Py_DECREF(pkgdata_mod);
+    Py_DECREF(path_function);
+    return result;
 }
 
 static PyObject *
