@@ -62,6 +62,7 @@ rwobject src_c/void.c
 system src_c/void.c
 _window src_c/void.c
 _renderer src_c/void.c
+_texture src/void.c
 geometry src_c/void.c
 
 #_sdl2.controller src_c/_sdl2/controller.c $(SDL) $(DEBUG) -Isrc_c

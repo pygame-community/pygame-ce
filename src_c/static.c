@@ -181,6 +181,9 @@ PyInit__window(void);
 PyMODINIT_FUNC
 PyInit__renderer(void);
 
+PyMODINIT_FUNC
+PyInit__texture(void);
+
 // pygame_static module
 
 void
@@ -311,6 +314,7 @@ PyInit_pygame_static()
 
     load_submodule("pygame", PyInit__window(), "_window");
     load_submodule("pygame", PyInit__renderer(), "_renderer");
+    load_submodule("pygame", PyInit__texture(), "_texture");
 
     load_submodule("pygame", PyInit_pixelarray(), "pixelarray");
 
@@ -358,6 +362,7 @@ PyInit_pygame_static()
 
 #include "window.c"
 #include "renderer.c"
+#include "texture.c"
 
 #undef pgVidInfo_Type
 #undef pgVidInfo_New
