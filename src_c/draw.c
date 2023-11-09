@@ -1674,7 +1674,7 @@ swap_coordinates(int *x1, int *y1, int *x2, int *y2)
 
 // Draw algorithms
 #define DRAW_LINE_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                                                \
-    static void draw_line_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x1,       \
+    static void draw_line_ ## AT_OR_CHECK_RECT ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x1,       \
                                                                                             int y1, int x2, int y2,          \
                                                                                             Uint32 color, int *drawn_area) { \
         int dx, dy, err, e2, sx, sy;                                                                                         \
@@ -1683,7 +1683,7 @@ swap_coordinates(int *x1, int *y1, int *x2, int *y2)
         err = (dx > dy ? dx : -dy) / 2;                                                                                      \
         e2 = err;                                                                                                            \
         while (x1 != x2 || y1 != y2) {                                                                                       \
-            set_## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING (surf, x1, y1, color, drawn_area);                       \
+            set_## AT_OR_CHECK_RECT ## BPP ## bpp_ ## BOUNDING (surf, x1, y1, color, drawn_area);                       \
             e2 = err;                                                                                                        \
             if (e2 > -dx) {                                                                                                  \
                 err -= dy;                                                                                                   \
@@ -1705,7 +1705,7 @@ DRAW_LINE_INNER_LOOP(16, and_check_rect_, bounding)
 DRAW_LINE_INNER_LOOP(8, and_check_rect_, bounding)
 
 #define DRAW_ARC_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                           \
-    static void draw_arc_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int max_required_y, int miny, int maxy, int radius1, double invsqr_radius2, int inner_radius2, int inner_radius1, double invsqr_inner_radius2, int y_center, double y_middle, int minx, int maxx, int x_center, double min_dotproduct, double x_middle, Uint32 color, int *drawn_area) { \
+    static void draw_arc_ ## AT_OR_CHECK_RECT ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int max_required_y, int miny, int maxy, int radius1, double invsqr_radius2, int inner_radius2, int inner_radius1, double invsqr_inner_radius2, int y_center, double y_middle, int minx, int maxx, int x_center, double min_dotproduct, double x_middle, Uint32 color, int *drawn_area) { \
         for (int y = 0; y <= max_required_y; ++y) {                                                    \
             const int pos_y = (y >= miny) && (y <= maxy);                                              \
             const int neg_y = (-y >= miny) && (-y <= maxy);                                            \
@@ -1742,7 +1742,7 @@ DRAW_ARC_INNER_LOOP(16, at_, no_bounding)
 DRAW_ARC_INNER_LOOP(8, at_, no_bounding)
 
 #define DRAW_CIRCLE_BRESENHAM_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                    \
-    static void draw_circle_bresenham_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, int line, long long x, long long y, long long x_inner, long long dx, long long dy, double d1, long long double_radius_squared, long long radius_squared, long long radius_inner, double d1_inner, long long dx_inner, long long double_radius_inner_squared, long long radius_inner_squared, long long y_inner, long long dy_inner, double d2_inner, Uint32 color, int *drawn_area) {  \
+    static void draw_circle_bresenham_ ## AT_OR_CHECK_RECT ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, int line, long long x, long long y, long long x_inner, long long dx, long long dy, double d1, long long double_radius_squared, long long radius_squared, long long radius_inner, double d1_inner, long long dx_inner, long long double_radius_inner_squared, long long radius_inner_squared, long long y_inner, long long dy_inner, double d2_inner, Uint32 color, int *drawn_area) {  \
         while (dx < dy) { \
             while (d1 < 0) { \
                 x++; \
@@ -1836,7 +1836,7 @@ DRAW_CIRCLE_BRESENHAM_INNER_LOOP(16, and_check_rect_, bounding)
 DRAW_CIRCLE_BRESENHAM_INNER_LOOP(8, and_check_rect_, bounding)
 
 #define DRAW_CIRCLE_BRESENHAM_THIN_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                       \
-    static void draw_circle_bresenham_thin_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, int x, int y, int f, int ddF_y, int ddF_x, Uint32 color, int *drawn_area) {  \
+    static void draw_circle_bresenham_thin_ ## AT_OR_CHECK_RECT ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, int x, int y, int f, int ddF_y, int ddF_x, Uint32 color, int *drawn_area) {  \
         while (x < y) { \
             if (f >= 0) { \
                 y--; \
@@ -1862,7 +1862,7 @@ DRAW_CIRCLE_BRESENHAM_THIN_INNER_LOOP(16, and_check_rect_, bounding)
 DRAW_CIRCLE_BRESENHAM_THIN_INNER_LOOP(8, and_check_rect_, bounding)
 
 #define DRAW_CIRCLE_FILLED_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                                     \
-    static void draw_circle_filled_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, int x, int y, int f, int xmax, int ddF_y, int ddF_x, Uint32 color, int *drawn_area) { \
+    static void draw_circle_filled_ ## AT_OR_CHECK_RECT ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, int x, int y, int f, int xmax, int ddF_y, int ddF_x, Uint32 color, int *drawn_area) { \
         while (x < y) { \
             if (f >= 0) { \
                 y--; \
@@ -1886,7 +1886,7 @@ DRAW_CIRCLE_FILLED_INNER_LOOP(16, and_check_rect_, bounding)
 DRAW_CIRCLE_FILLED_INNER_LOOP(8, and_check_rect_, bounding)
 
 #define DRAW_ELLIPSE_FILLED_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                                                  \
-    static void draw_ellipse_filled_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, long long x, long long y, int x_offset, int y_offset, long long dx, long long dy, double d1, int width, int height, double d2, Uint32 color, int *drawn_area) { \
+    static void draw_ellipse_filled_ ## AT_OR_CHECK_RECT ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, long long x, long long y, int x_offset, int y_offset, long long dx, long long dy, double d1, int width, int height, double d2, Uint32 color, int *drawn_area) { \
         while (dx < dy) { \
             drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 + (int)x - x_offset, drawn_area);            \
             drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 + (int)y - y_offset, x0 + (int)x - x_offset, drawn_area); \
@@ -1925,7 +1925,7 @@ DRAW_ELLIPSE_FILLED_INNER_LOOP(16, and_check_rect_, bounding)
 DRAW_ELLIPSE_FILLED_INNER_LOOP(8, and_check_rect_, bounding)
 
 #define DRAW_ELLIPSE_THICKNESS_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                                                                    \
-    static void draw_ellipse_thickness_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, long long x, long long y, int x_offset, int y_offset, long long x_inner, int line, long long dx, long long dy, double d1, int width, int height, int thickness, long long dx_inner, long long dy_inner, double d1_inner, long long y_inner, double d2, double d2_inner, Uint32 color, int *drawn_area) {  \
+    static void draw_ellipse_thickness_ ## AT_OR_CHECK_RECT ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x0, int y0, long long x, long long y, int x_offset, int y_offset, long long x_inner, int line, long long dx, long long dy, double d1, int width, int height, int thickness, long long dx_inner, long long dy_inner, double d1_inner, long long y_inner, double d2, double d2_inner, Uint32 color, int *drawn_area) {  \
         while (dx < dy) { \
             if (line) {                                                                                                                                           \
                 drawhorzline_clip_ ## BPP ## bpp_bounding(surf, color, x0 - (int)x, y0 - (int)y, x0 + (int)x - x_offset, drawn_area);                             \
@@ -2021,7 +2021,7 @@ DRAW_ELLIPSE_THICKNESS_INNER_LOOP(16, and_check_rect_, bounding)
 DRAW_ELLIPSE_THICKNESS_INNER_LOOP(8, and_check_rect_, bounding)
 
 #define DRAW_RECT_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                                                          \
-    static void draw_rect_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x1, int y1, int x2, int y2, int width, Uint32 color, int *drawn_area) {  \
+    static void draw_rect_ ## AT_OR_CHECK_RECT ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int x1, int y1, int x2, int y2, int width, Uint32 color, int *drawn_area) {  \
         int i;                                                                                                         \
         for (i = 0; i < width; i++) {                                                                                  \
             drawhorzline_clip_ ## BPP ## bpp_no_bounding(surf, color, x1, y1 + i, x2, drawn_area);                     \
@@ -2038,7 +2038,7 @@ DRAW_RECT_INNER_LOOP(16, and_check_rect_, no_bounding)
 DRAW_RECT_INNER_LOOP(8, and_check_rect_, no_bounding)
 
 #define DRAW_FILLTRI_INNER_LOOP(BPP, AT_OR_CHECK_RECT, BOUNDING)                           \
-    static void draw_filltri_ ## AT_OR_CHECK_RECT ## ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int p0x, int p0y, int p1x, int p1y, int p2x, int p2y, float d1, float d2, float d3, Uint32 color, int *drawn_area) {  \
+    static void draw_filltri_ ## AT_OR_CHECK_RECT ## BPP ## bpp_ ## BOUNDING ## _inner_func(SDL_Surface *surf, int p0x, int p0y, int p1x, int p1y, int p2x, int p2y, float d1, float d2, float d3, Uint32 color, int *drawn_area) {  \
         int y;                                                                             \
         for (y = p0y; y <= p2y; y++) {                                                     \
             int x1 = p0x + (int)((y - p0y) * d1);                                          \
