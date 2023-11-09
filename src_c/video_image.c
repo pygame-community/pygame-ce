@@ -12,8 +12,15 @@ static PyTypeObject pgImage_Type;
     (PyObject_IsInstance((x), (PyObject *)&pgImage_Type))
 
 static int
-texture_init(pgTextureObject *self, PyObject *args, PyObject *kwargs) {
-    char *keywords[] = {"renderer", "size", "depth", "static", "streaming", "target", "scale_quality", NULL};   
+image_init(pgImageObject *self, PyObject *args, PyObject *kwargs) {
+    printf("Image: %d %d %d %d" self->angle, self->origin.x, self->origin.y, self->flip);
+    PyObject *texture_or_imageobj;
+    PyObject *srcrectobj;
+    char *keywords[] = {"texture_or_image", "srcrect", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", keywords, &texture_or_imageobj, &srcrectobj)) {
+        return -1;
+    }
+
 }
 
 static void

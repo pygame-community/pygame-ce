@@ -537,7 +537,9 @@ typedef struct {
  */
 typedef struct {
     PyObject_HEAD SDL_Texture *texture;
-
+    int angle;
+    SDL_Point origin;
+    SDL_RendererFlip flip;
 } pgImageObject;
 #ifndef PYGAMEAPI_IMAGE_INTERNAL
 #define pgImage_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_image, 0))
