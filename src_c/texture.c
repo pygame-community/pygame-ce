@@ -344,9 +344,10 @@ texture_update(pgTextureObject *self, PyObject *args, PyObject *kwargs) {
     SDL_Rect area, *areaptr = NULL;
     SDL_Surface *converted_surf = NULL;
     SDL_PixelFormat *pixel_format = NULL;
-    SDL_BlendMode blend = SDL_BLENDMODE_NONE;
+    SDL_BlendMode blend;
     Uint32 format;
     int res;
+    int dst_width, dst_height;
     static char *keywords[] = {"surface", "area", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O", keywords,
                                      &pgSurface_Type, &surfobj, &rectobj)) {
@@ -354,11 +355,26 @@ texture_update(pgTextureObject *self, PyObject *args, PyObject *kwargs) {
     }
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
+    area.x = 0;
+    area.y = 0;
     if (rectobj != Py_None) {
         if (!pgRect_Check(rectobj)) {
             return RAISE(PyExc_ValueError, "area must be a rectangle or None");
         }
         areaptr = pgRect_FromObject(rectobj, &area);
+    }
+    if (areaptr == NULL) {
+        dst_width = self->width;
+        dst_height = self->height;
+    }
+    else {
+        dst_width = area.w;
+        dst_height = area.h;
+    }
+    if (dst_width > surf->w || dst_height > surf->h) {
+        areaptr = &area;
+        area.w = surf->w;
+        area.h = surf->h;
     }
     TEXTURE_ERROR_CHECK(SDL_QueryTexture(self->texture, &format, NULL, NULL, NULL))
     if (format != surf->format->format) {
@@ -377,7 +393,6 @@ texture_update(pgTextureObject *self, PyObject *args, PyObject *kwargs) {
         SDL_FreeFormat(pixel_format);
     }
     else {
-        
         res = SDL_UpdateTexture(self->texture, areaptr, surf->pixels, surf->pitch);
     }
     if (res < 0) return RAISE(pgExc_SDLError, SDL_GetError());
