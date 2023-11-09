@@ -244,19 +244,19 @@ SET_AT(8)
 SET_AT(16)
 SET_AT(24)
 SET_AT(32)
-SET_AT_BOUNDING(8)
-SET_AT_BOUNDING(16)
-SET_AT_BOUNDING(24)
-SET_AT_BOUNDING(32)
+//SET_AT_BOUNDING(8)
+//SET_AT_BOUNDING(16)
+//SET_AT_BOUNDING(24)
+//SET_AT_BOUNDING(32)
 SET_AND_CHECK_RECT_BOUNDING(8)
 SET_AND_CHECK_RECT_BOUNDING(16)
 SET_AND_CHECK_RECT_BOUNDING(24)
 SET_AND_CHECK_RECT_BOUNDING(32)
 
-DRAW_HORZ_LINE(8)
-DRAW_HORZ_LINE(16)
-DRAW_HORZ_LINE(24)
-DRAW_HORZ_LINE(32)
+//DRAW_HORZ_LINE(8)
+//DRAW_HORZ_LINE(16)
+//DRAW_HORZ_LINE(24)
+//DRAW_HORZ_LINE(32)
 DRAW_HORZ_LINE_CLIP(8)
 DRAW_HORZ_LINE_CLIP(16)
 DRAW_HORZ_LINE_CLIP(24)
@@ -1574,31 +1574,6 @@ drawvertline(SDL_Surface *surf, Uint32 color, int y1, int x1, int y2)
             }
             break;
     }
-}
-
-static void
-drawhorzlineclip(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2)
-{
-    if (y1 < surf->clip_rect.y || y1 >= surf->clip_rect.y + surf->clip_rect.h)
-        return;
-
-    if (x2 < x1) {
-        int temp = x1;
-        x1 = x2;
-        x2 = temp;
-    }
-
-    x1 = MAX(x1, surf->clip_rect.x);
-    x2 = MIN(x2, surf->clip_rect.x + surf->clip_rect.w - 1);
-
-    if (x2 < surf->clip_rect.x || x1 >= surf->clip_rect.x + surf->clip_rect.w)
-        return;
-
-    if (x1 == x2) {
-        set_at(surf, x1, y1, color);
-        return;
-    }
-    drawhorzline(surf, color, x1, y1, x2);
 }
 
 static void
