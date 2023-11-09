@@ -313,6 +313,11 @@ except (ImportError, OSError):
     _texture = MissingModule("_texture", urgent=0)
 
 try:
+    import pygame._image
+except (ImportError, OSError):
+    _image = MissingModule("_image", urgent=0)
+
+try:
     import pygame.system
     from pygame._data_classes import PowerState as power_state
 

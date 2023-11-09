@@ -532,6 +532,20 @@ typedef struct {
 #define import_pygame_texture() IMPORT_PYGAME_MODULE(_texture)
 #endif
 
+/*
+ * video.Image module
+ */
+typedef struct {
+    PyObject_HEAD SDL_Texture *texture;
+
+} pgImageObject;
+#ifndef PYGAMEAPI_IMAGE_INTERNAL
+#define pgImage_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_image, 0))
+#define pgImage_Check(x) \
+    (PyObject_IsInstance((x), (PyObject *)&pgImage_Type))
+#define import_pygame_image() IMPORT_PYGAME_MODULE(_image)
+#endif
+
 #define IMPORT_PYGAME_MODULE _IMPORT_PYGAME_MODULE
 
 /*
@@ -553,6 +567,7 @@ PYGAMEAPI_DEFINE_SLOTS(math);
 PYGAMEAPI_DEFINE_SLOTS(_window);
 PYGAMEAPI_DEFINE_SLOTS(_renderer);
 PYGAMEAPI_DEFINE_SLOTS(_texture);
+PYGAMEAPI_DEFINE_SLOTS(_image);
 PYGAMEAPI_DEFINE_SLOTS(geometry);
 #else /* ~PYGAME_H */
 PYGAMEAPI_EXTERN_SLOTS(base);
@@ -569,6 +584,7 @@ PYGAMEAPI_EXTERN_SLOTS(math);
 PYGAMEAPI_EXTERN_SLOTS(_window);
 PYGAMEAPI_EXTERN_SLOTS(_renderer);
 PYGAMEAPI_EXTERN_SLOTS(_texture);
+PYGAMEAPI_EXTERN_SLOTS(_image);
 PYGAMEAPI_EXTERN_SLOTS(geometry);
 
 #endif /* ~PYGAME_H */
