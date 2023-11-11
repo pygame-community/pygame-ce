@@ -835,7 +835,7 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
                     Py_XDECREF(is_dir);
                     goto suggested_path_not_found;
                 }
-                Py_DECREF(actual_dirs);
+                Py_XDECREF(actual_dirs);
             }
             Py_XDECREF(path_comp);
             Py_XDECREF(is_dir);
