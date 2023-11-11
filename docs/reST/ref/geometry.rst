@@ -176,6 +176,45 @@
 
          .. ## Circle.collidecircle ##
 
+   .. method:: move
+
+         | :sl:`moves the circle by a given amount`
+         | :sg:`move((x, y)) -> Circle`
+         | :sg:`move(x, y) -> Circle`
+         | :sg:`move(Vector2) -> Circle`
+
+         The `move` method allows you to create a new `Circle` object that is moved by a given
+         offset from the original `Circle`. This is useful if you want to move a `Circle` without
+         modifying the original. The move method takes either a tuple of (x, y) coordinates,
+         two separate x and y coordinates, or a `Vector2` object as its argument, and returns
+         a new `Circle` object with the updated position.
+
+         .. note::
+             This method is equivalent(behaviour wise) to the following code:
+             ::
+                  Circle((circle.x + x, circle.y + y), circle.r)
+
+         .. ## Circle.move ##
+
+   .. method:: move_ip
+
+         | :sl:`moves the circle by a given amount, in place`
+         | :sg:`move_ip((x, y)) -> None`
+         | :sg:`move_ip(x, y) -> None`
+         | :sg:`move_ip(Vector2) -> None`
+
+         The `move_ip` method is similar to the move method, but it moves the `Circle` in place,
+         modifying the original `Circle` object. This method takes the same types of arguments
+         as move, and it always returns None.
+
+         .. note::
+             This method is equivalent(behaviour wise) to the following code:
+             ::
+                  circle.x += x
+                  circle.y += y
+
+         .. ## Circle.move_ip ##
+
    .. method:: copy
 
          | :sl:`returns a copy of the circle`

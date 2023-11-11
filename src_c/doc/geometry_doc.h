@@ -11,4 +11,6 @@
 #define DOC_CIRCLE_CIRCUMFERENCE "circumference -> float\ncircumference of the circle"
 #define DOC_CIRCLE_COLLIDEPOINT "collidepoint((x, y)) -> bool\ncollidepoint(x, y) -> bool\ncollidepoint(Vector2) -> bool\ntest if a point is inside the circle"
 #define DOC_CIRCLE_COLLIDECIRCLE "collidecircle(Circle) -> bool\ncollidecircle(x, y, radius) -> bool\ncollidecircle((x, y), radius) -> bool\ntest if two circles collide"
+#define DOC_CIRCLE_MOVE "move((x, y)) -> Circle\nmove(x, y) -> Circle\nmove(Vector2) -> Circle\nmoves the circle by a given amount"
+#define DOC_CIRCLE_MOVEIP "move_ip((x, y)) -> None\nmove_ip(x, y) -> None\nmove_ip(Vector2) -> None\nmoves the circle by a given amount, in place"
 #define DOC_CIRCLE_COPY "copy() -> Circle\nreturns a copy of the circle"
