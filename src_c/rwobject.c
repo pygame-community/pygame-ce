@@ -998,9 +998,10 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
             PyObject *abs_path = PyObject_Str(
                 PyObject_CallMethod(path_submodule, "normpath", "O", obj));
 
-            PyObject *suggested_valid_path = suggest_valid_path(
-                path_submodule, abs_path, PyUnicode_FromString(""));
-            Py_XDECREF(abs_path);
+//            PyObject *suggested_valid_path = suggest_valid_path(
+//                path_submodule, abs_path, PyUnicode_FromString(""));
+//            Py_XDECREF(abs_path);
+            PyObject *suggested_valid_path = abs_path;
 
             if (!suggested_valid_path)
                 goto simple_case;
@@ -1019,14 +1020,17 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
                          obj, suggested_valid_path);
 
             Py_XDECREF(suggested_valid_path);
+            Py_XDECREF(abs_path);
         }
         else {
             PyObject *rel_path = PyObject_Str(PyObject_CallMethod(
                 path_submodule, "relpath", "OO", obj, cwd));
 
-            PyObject *suggested_valid_path =
-                suggest_valid_path(path_submodule, rel_path, cwd);
-            Py_XDECREF(rel_path);
+            PyObject *suggested_valid_path = rel_path;
+
+//            PyObject *suggested_valid_path =
+//                suggest_valid_path(path_submodule, rel_path, cwd);
+//            Py_XDECREF(rel_path);
 
             if (!suggested_valid_path)
                 goto simple_case;
@@ -1048,6 +1052,7 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
                          obj, suggested_rel_path);
 
             Py_XDECREF(suggested_rel_path);
+            Py_XDECREF(rel_path);
         }
 
         Py_XDECREF(path_submodule);
