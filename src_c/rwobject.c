@@ -778,7 +778,6 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
                 PyObject *potential_dirs = get_contents_at_path(
                     os_module, path_submodule, longest_valid_path);
                 if (!potential_dirs) {
-                    Py_XDECREF(path_submodule);
                     Py_XDECREF(path_components);
                     Py_XDECREF(longest_valid_path);
                     Py_XDECREF(path_comp);
@@ -825,7 +824,6 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
                 else {
                     // no directories to match against,
                     // default to simple error
-                    Py_XDECREF(path_submodule);
                     Py_XDECREF(actual_dirs);
                     Py_XDECREF(path_components);
                     Py_XDECREF(longest_valid_path);
@@ -848,7 +846,6 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
         PyObject *potential_files = get_contents_at_path(
             os_module, path_submodule, longest_valid_path);
         if (!potential_files) {
-            Py_XDECREF(path_submodule);
             Py_XDECREF(longest_valid_path);
             Py_XDECREF(file_comp);
             goto suggested_path_not_found;
@@ -885,7 +882,6 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
         else {
             // no files to match against,
             // default to simple error
-            Py_XDECREF(path_submodule);
             Py_XDECREF(actual_files);
             Py_XDECREF(longest_valid_path);
             Py_XDECREF(file_comp);
@@ -893,13 +889,11 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
         }
         Py_XDECREF(actual_files);
         Py_XDECREF(file_comp);
-        Py_XDECREF(path_submodule);
         longest_valid_path = PyObject_CallMethod(path_submodule, "normpath",
                                                  "O", longest_valid_path);
         return longest_valid_path;
     }
     else {
-        Py_XDECREF(path_submodule);
         Py_XDECREF(path_components);
         goto suggested_path_not_found;
     }
@@ -998,10 +992,9 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
             PyObject *abs_path = PyObject_Str(
                 PyObject_CallMethod(path_submodule, "normpath", "O", obj));
 
-//            PyObject *suggested_valid_path = suggest_valid_path(
-//                path_submodule, abs_path, PyUnicode_FromString(""));
-//            Py_XDECREF(abs_path);
-            PyObject *suggested_valid_path = abs_path;
+            PyObject *suggested_valid_path = suggest_valid_path(
+                path_submodule, abs_path, PyUnicode_FromString(""));
+            Py_XDECREF(abs_path);
 
             if (!suggested_valid_path)
                 goto simple_case;
@@ -1020,17 +1013,14 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
                          obj, suggested_valid_path);
 
             Py_XDECREF(suggested_valid_path);
-            Py_XDECREF(abs_path);
         }
         else {
             PyObject *rel_path = PyObject_Str(PyObject_CallMethod(
                 path_submodule, "relpath", "OO", obj, cwd));
 
-            PyObject *suggested_valid_path = rel_path;
-
-//            PyObject *suggested_valid_path =
-//                suggest_valid_path(path_submodule, rel_path, cwd);
-//            Py_XDECREF(rel_path);
+            PyObject *suggested_valid_path =
+                suggest_valid_path(path_submodule, rel_path, cwd);
+            Py_XDECREF(rel_path);
 
             if (!suggested_valid_path)
                 goto simple_case;
@@ -1052,7 +1042,6 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
                          obj, suggested_rel_path);
 
             Py_XDECREF(suggested_rel_path);
-            Py_XDECREF(rel_path);
         }
 
         Py_XDECREF(path_submodule);
