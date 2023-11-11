@@ -262,6 +262,18 @@ pg_circle_str(pgCircleObject *self)
 }
 
 static PyObject *
+pg_circle_update(pgCircleObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (!pgCircle_FromObjectFastcall(args, nargs, &self->circle)) {
+        PyErr_SetString(
+            PyExc_TypeError,
+            "Circle.update requires a circle or CircleLike object");
+        return NULL;
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 pg_circle_collidepoint(pgCircleObject *self, PyObject *const *args,
                        Py_ssize_t nargs)
 {
@@ -295,6 +307,8 @@ static struct PyMethodDef pg_circle_methods[] = {
      DOC_CIRCLE_COLLIDEPOINT},
     {"collidecircle", (PyCFunction)pg_circle_collidecircle, METH_FASTCALL,
      DOC_CIRCLE_COLLIDECIRCLE},
+    {"update", (PyCFunction)pg_circle_update, METH_FASTCALL,
+     DOC_CIRCLE_UPDATE},
     {"__copy__", (PyCFunction)pg_circle_copy, METH_NOARGS, DOC_CIRCLE_COPY},
     {"copy", (PyCFunction)pg_circle_copy, METH_NOARGS, DOC_CIRCLE_COPY},
     {NULL, NULL, 0, NULL}};

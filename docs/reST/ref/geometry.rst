@@ -176,6 +176,25 @@
 
          .. ## Circle.collidecircle ##
 
+   .. method:: update
+
+         | :sl:`updates the circle position and radius`
+         | :sg:`update((x, y), radius) -> None`
+         | :sg:`update(x, y, radius) -> None`
+
+         The `update` method allows you to set the position and radius of a `Circle` object in
+         place. This method takes either a tuple of (x, y) coordinates, two separate x and
+         y coordinates, and a radius as its arguments, and it always returns `None`.
+
+         .. note::
+             This method is equivalent(behaviour wise) to the following code:
+             ::
+                 circle.x = x
+                 circle.y = y
+                 circle.r = radius
+
+         .. ## Circle.update ##
+
    .. method:: copy
 
          | :sl:`returns a copy of the circle`
