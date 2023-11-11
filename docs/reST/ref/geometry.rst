@@ -176,6 +176,19 @@
 
          .. ## Circle.collidecircle ##
 
+   .. method:: colliderect
+
+         | :sl:`checks if a rectangle intersects the circle`
+         | :sg:`colliderect(Rect) -> bool`
+         | :sg:`colliderect((x, y, width, height)) -> bool`
+         | :sg:`colliderect(x, y, width, height) -> bool`
+         | :sg:`colliderect((x, y), (width, height)) -> bool`
+
+         The `colliderect` method tests whether a given rectangle intersects the `Circle`. It
+         takes either a `Rect` object, a tuple of (x, y, width, height) coordinates, or separate
+         x, y coordinates and width, height as its argument. Returns `True` if any portion
+         of the rectangle overlaps with the `Circle`, `False` otherwise.
+
    .. method:: copy
 
          | :sl:`returns a copy of the circle`

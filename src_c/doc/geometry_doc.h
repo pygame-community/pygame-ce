@@ -11,4 +11,5 @@
 #define DOC_CIRCLE_CIRCUMFERENCE "circumference -> float\ncircumference of the circle"
 #define DOC_CIRCLE_COLLIDEPOINT "collidepoint((x, y)) -> bool\ncollidepoint(x, y) -> bool\ncollidepoint(Vector2) -> bool\ntest if a point is inside the circle"
 #define DOC_CIRCLE_COLLIDECIRCLE "collidecircle(Circle) -> bool\ncollidecircle(x, y, radius) -> bool\ncollidecircle((x, y), radius) -> bool\ntest if two circles collide"
+#define DOC_CIRCLE_COLLIDERECT "colliderect(Rect) -> bool\ncolliderect((x, y, width, height)) -> bool\ncolliderect(x, y, width, height) -> bool\ncolliderect((x, y), (width, height)) -> bool\nchecks if a rectangle intersects the circle"
 #define DOC_CIRCLE_COPY "copy() -> Circle\nreturns a copy of the circle"

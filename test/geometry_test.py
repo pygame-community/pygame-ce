@@ -2,7 +2,7 @@ import unittest
 import math
 
 from math import sqrt
-from pygame import Vector2, Vector3
+from pygame import Vector2, Vector3, Rect, FRect
 
 from pygame.geometry import Circle
 
@@ -548,6 +548,73 @@ class CircleTypeTest(unittest.TestCase):
         self.assertTrue(
             c5.collidecircle(c), "Expected False, circles should collide here"
         )
+
+    def test_colliderect_argtype(self):
+        """tests if the function correctly handles incorrect types as parameters"""
+        invalid_types = (None, [], "1", (1,), Vector3(1, 1, 1), 1, True, False)
+
+        c = Circle(10, 10, 4)
+
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                c.colliderect(value)
+
+    def test_colliderect_argnum(self):
+        """tests if the function correctly handles incorrect number of parameters"""
+        c = Circle(10, 10, 4)
+        args = [(1), (1, 1), (1, 1, 1), (1, 1, 1, 1, 1)]
+        # no params
+        with self.assertRaises(TypeError):
+            c.colliderect()
+
+        # invalid num
+        for arg in args:
+            with self.assertRaises(TypeError):
+                c.colliderect(*arg)
+
+    def test_colliderect(self):
+        """ensures the function correctly detects collisions with rects"""
+
+        msgt = "Expected True, rect should collide here"
+        msgf = "Expected False, rect should not collide here"
+        # ====================================================
+        c = Circle(0, 0, 5)
+
+        r1, r2, r3 = Rect(2, 2, 4, 4), Rect(10, 15, 43, 24), Rect(0, 5, 4, 4)
+        fr1, fr2, fr3 = FRect(r1), FRect(r2), FRect(r3)
+
+        # colliding single
+        for r in (r1, fr1):
+            self.assertTrue(c.colliderect(r), msgt)
+
+        # not colliding single
+        for r in (r2, fr2):
+            self.assertFalse(c.colliderect(r), msgf)
+
+        # barely colliding single
+        for r in (r3, fr3):
+            self.assertTrue(c.colliderect(r), msgt)
+
+        # colliding 4 args
+        self.assertTrue(c.colliderect(2, 2, 4, 4), msgt)
+
+        # not colliding 4 args
+        self.assertFalse(c.colliderect(10, 15, 43, 24), msgf)
+
+        # barely colliding single
+        self.assertTrue(c.colliderect(0, 4.9999999999999, 4, 4), msgt)
+
+        # ensure FRects aren't truncated
+        c2 = Circle(0, 0, 0.35)
+        c3 = Circle(2, 0, 0.65)
+        fr9 = FRect(0.4, 0.0, 1, 1)
+        self.assertFalse(c2.colliderect(fr9), msgf)
+        self.assertFalse(c2.colliderect(0.4, 0.0, 1, 1), msgf)
+        self.assertFalse(c2.colliderect((0.4, 0.0), (1, 1)), msgf)
+
+        self.assertTrue(c3.colliderect(fr9), msgt)
+        self.assertTrue(c3.colliderect(0.4, 0.0, 1, 1), msgt)
+        self.assertTrue(c3.colliderect((0.4, 0.0), (1, 1)), msgt)
 
 
 if __name__ == "__main__":
