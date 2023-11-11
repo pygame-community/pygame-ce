@@ -781,7 +781,7 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
         // match and add that instead.
         for (int i = 0; i < all_path_comp_len - 1; i++) {
             PyObject *path_comp = PySequence_GetItem(path_components, i);
-            int path_comp_len = (int)PySequence_Length(path_components);
+            int path_comp_len = (int)PySequence_Length(path_comp);
             // Skip empty path components
             if (path_comp_len > 0) {
                 temp_path =
