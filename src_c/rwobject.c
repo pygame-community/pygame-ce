@@ -766,12 +766,12 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
     Py_XDECREF(sep_obj);
     Py_XDECREF(norm_orig_path);
 
-    int path_comp_len = (int)PySequence_Length(path_components);
-    if (path_comp_len > 0) {
+    int all_path_comp_len = (int)PySequence_Length(path_components);
+    if (all_path_comp_len > 0) {
         // We have a path with at least some content, the file will be the last
         // chunk so grab that seperately
         PyObject *file_comp =
-            PySequence_GetItem(path_components, path_comp_len - 1);
+            PySequence_GetItem(path_components, all_path_comp_len - 1);
         PyObject *longest_valid_path = starting_path;
         PyObject *temp_path = NULL;
         // loop through all the non-file path components rebuilding the path
@@ -779,87 +779,92 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
         // path is valid.
         // If the path is not valid at any step, we search for the closest
         // match and add that instead.
-        for (int i = 0; i < path_comp_len - 1; i++) {
+        for (int i = 0; i < all_path_comp_len - 1; i++) {
             PyObject *path_comp = PySequence_GetItem(path_components, i);
-            temp_path =
-                add_to_path(path_submodule, longest_valid_path, path_comp);
-            PyObject *is_dir =
-                PyObject_CallMethod(path_submodule, "isdir", "O", temp_path);
-            if (is_dir == Py_True) {
-                // path step is valid, continue the loop
-                longest_valid_path = PyObject_CallMethod(
-                    path_submodule, "normpath", "O", temp_path);
-            }
-            else {
-                // path step is invalid, look for petential alternatives
-                PyObject *potential_dirs = get_contents_at_path(
-                    os_module, path_submodule, longest_valid_path);
-                if (!potential_dirs) {
-                    PyErr_Format(PyExc_FileNotFoundError,
-                                 "No Potential dirs at path: '%S'?",
-                                 longest_valid_path);
-                    Py_XDECREF(path_components);
-                    Py_XDECREF(longest_valid_path);
-                    Py_XDECREF(path_comp);
-                    Py_XDECREF(file_comp);
-                    Py_XDECREF(temp_path);
-                    Py_XDECREF(is_dir);
-                    goto suggested_path_not_found;
-                }
-
-                PyObject *actual_dirs = PyList_New(0);
-                int num_files_and_folders =
-                    (int)PySequence_Length(potential_dirs);
-                for (int j = 0; j < num_files_and_folders; j++) {
-                    PyObject *potential_dir =
-                        PySequence_GetItem(potential_dirs, j);
-                    PyObject *temp_potential_path = add_to_path(
-                        path_submodule, longest_valid_path, potential_dir);
-                    PyObject *potential_is_dir = PyObject_CallMethod(
-                        path_submodule, "isdir", "O", temp_potential_path);
-                    if (potential_is_dir == Py_True) {
-                        PyList_Append(actual_dirs, potential_dir);
-                    }
-                    Py_XDECREF(potential_is_dir);
-                    Py_XDECREF(temp_potential_path);
-                    Py_XDECREF(potential_dir);
-                }
-                Py_XDECREF(potential_dirs);
-                // we've found some actual directories that could be our path
-                // step pick the one closest to what we were given using
-                // difflib
-                if ((int)PySequence_Length(actual_dirs) > 0) {
-                    PyObject *closest_matches = PyObject_CallMethod(
-                        difflib_module, "get_close_matches", "OO", path_comp,
-                        actual_dirs);
-                    if ((int)PySequence_Length(closest_matches) > 0) {
-                        PyObject *closest_match =
-                            PySequence_GetItem(closest_matches, 0);
-                        longest_valid_path = add_to_path(
-                            path_submodule, longest_valid_path, closest_match);
-                        Py_XDECREF(closest_match);
-                    }
-                    Py_XDECREF(closest_matches);
+            int path_comp_len = (int)PySequence_Length(path_components);
+            // Skip empty path components
+            if (path_comp_len > 0) {
+                temp_path =
+                    add_to_path(path_submodule, longest_valid_path, path_comp);
+                PyObject *is_dir = PyObject_CallMethod(path_submodule, "isdir",
+                                                       "O", temp_path);
+                if (is_dir == Py_True) {
+                    // path step is valid, continue the loop
+                    longest_valid_path = PyObject_CallMethod(
+                        path_submodule, "normpath", "O", temp_path);
                 }
                 else {
-                    // no directories to match against,
-                    // default to simple error
-                    PyErr_Format(PyExc_FileNotFoundError,
-                                 "No actual dirs at path: '%S'?",
-                                 longest_valid_path);
+                    // path step is invalid, look for petential alternatives
+                    PyObject *potential_dirs = get_contents_at_path(
+                        os_module, path_submodule, longest_valid_path);
+                    if (!potential_dirs) {
+                        PyErr_Format(PyExc_FileNotFoundError,
+                                     "No Potential dirs at path: '%S'?",
+                                     longest_valid_path);
+                        Py_XDECREF(path_components);
+                        Py_XDECREF(longest_valid_path);
+                        Py_XDECREF(path_comp);
+                        Py_XDECREF(file_comp);
+                        Py_XDECREF(temp_path);
+                        Py_XDECREF(is_dir);
+                        goto suggested_path_not_found;
+                    }
+
+                    PyObject *actual_dirs = PyList_New(0);
+                    int num_files_and_folders =
+                        (int)PySequence_Length(potential_dirs);
+                    for (int j = 0; j < num_files_and_folders; j++) {
+                        PyObject *potential_dir =
+                            PySequence_GetItem(potential_dirs, j);
+                        PyObject *temp_potential_path = add_to_path(
+                            path_submodule, longest_valid_path, potential_dir);
+                        PyObject *potential_is_dir = PyObject_CallMethod(
+                            path_submodule, "isdir", "O", temp_potential_path);
+                        if (potential_is_dir == Py_True) {
+                            PyList_Append(actual_dirs, potential_dir);
+                        }
+                        Py_XDECREF(potential_is_dir);
+                        Py_XDECREF(temp_potential_path);
+                        Py_XDECREF(potential_dir);
+                    }
+                    Py_XDECREF(potential_dirs);
+                    // we've found some actual directories that could be our
+                    // path step pick the one closest to what we were given
+                    // using difflib
+                    if ((int)PySequence_Length(actual_dirs) > 0) {
+                        PyObject *closest_matches = PyObject_CallMethod(
+                            difflib_module, "get_close_matches", "OO",
+                            path_comp, actual_dirs);
+                        if ((int)PySequence_Length(closest_matches) > 0) {
+                            PyObject *closest_match =
+                                PySequence_GetItem(closest_matches, 0);
+                            longest_valid_path =
+                                add_to_path(path_submodule, longest_valid_path,
+                                            closest_match);
+                            Py_XDECREF(closest_match);
+                        }
+                        Py_XDECREF(closest_matches);
+                    }
+                    else {
+                        // no directories to match against,
+                        // default to simple error
+                        PyErr_Format(PyExc_FileNotFoundError,
+                                     "No actual dirs at path: '%S'?",
+                                     longest_valid_path);
+                        Py_XDECREF(actual_dirs);
+                        Py_XDECREF(path_components);
+                        Py_XDECREF(longest_valid_path);
+                        Py_XDECREF(path_comp);
+                        Py_XDECREF(file_comp);
+                        Py_XDECREF(temp_path);
+                        Py_XDECREF(is_dir);
+                        goto suggested_path_not_found;
+                    }
                     Py_XDECREF(actual_dirs);
-                    Py_XDECREF(path_components);
-                    Py_XDECREF(longest_valid_path);
-                    Py_XDECREF(path_comp);
-                    Py_XDECREF(file_comp);
-                    Py_XDECREF(temp_path);
-                    Py_XDECREF(is_dir);
-                    goto suggested_path_not_found;
                 }
-                Py_XDECREF(actual_dirs);
+                Py_XDECREF(is_dir);
             }
             Py_XDECREF(path_comp);
-            Py_XDECREF(is_dir);
         }
         Py_XDECREF(temp_path);
         Py_XDECREF(path_components);
@@ -1024,8 +1029,7 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
             Py_XDECREF(abs_path);
 
             if (!suggested_valid_path)
-                return NULL;
-            // goto simple_case;
+                goto simple_case;
 
             // we will elect to always provide suggested paths with forward
             // slashes as these will work in python/pygame-ce on all platforms
