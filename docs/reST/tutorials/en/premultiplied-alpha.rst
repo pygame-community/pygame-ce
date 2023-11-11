@@ -42,7 +42,7 @@ that has an alpha channel, and then blit that surface direct to our display surf
     # to each pixel that indicates how transparent it should be (from 0 - fully
     # transparent, to 255 - fully opaque.
     basic_surf = pygame.Surface((120, 120), flags=SRCALPHA)
-    # the fourth number here sets the alpha to 25 (highly translucent)
+    # the fourth number here sets the alpha to 25 (almost fully see through)
     basic_surf.fill(pygame.Color(50, 50, 50, 25))
 
     running = True
