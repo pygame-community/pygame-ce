@@ -1837,6 +1837,27 @@ class ImageModuleTest(unittest.TestCase):
         getattr(pygame.image, "frombytes")
         getattr(pygame.image, "tobytes")
 
+    def test_file_not_found_suggestions(self):
+        # test misspelled absolute path suggestion
+        absolute_fist_path = example_path("datar/first.png").replace("\\", "/")
+        expected_path = example_path("data/fist.png").replace("\\", "/")
+        error_message = f"File not found at path: '{absolute_fist_path}', did you mean: '{expected_path}'?"
+        with self.assertRaisesRegex(FileNotFoundError, error_message):
+            pygame.image.load(absolute_fist_path)
+
+        # test misspelled relative path suggestion
+        rel_fist_path = os.path.relpath(absolute_fist_path, os.getcwd()).replace("\\", "/")
+        rel_expected_path = os.path.relpath(expected_path, os.getcwd()).replace("\\", "/")
+        error_message = f"File not found at path: '{rel_fist_path}', did you mean: '{rel_expected_path}'?"
+        with self.assertRaisesRegex(FileNotFoundError, error_message):
+            pygame.image.load(rel_fist_path)
+
+        # test still get fallback FileNotFoundError when path is wrong number of directory steps
+        wrong_steps_fist_path = example_path("data/images/fist_images/fist.png").replace("\\", "/")
+        error_message = f"No such file or directory: '{wrong_steps_fist_path}'."
+        with self.assertRaisesRegex(FileNotFoundError, error_message):
+            pygame.image.load(wrong_steps_fist_path)
+
 
 if __name__ == "__main__":
     unittest.main()

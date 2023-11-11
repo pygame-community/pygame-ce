@@ -62,6 +62,7 @@ static const char pg_default_encoding[] = "unicode_escape";
 static const char pg_default_errors[] = "backslashreplace";
 
 static PyObject *os_module = NULL;
+static PyObject *difflib_module = NULL;
 
 static Sint64
 _pg_rw_size(SDL_RWops *);
@@ -684,6 +685,198 @@ end:
     return retval;
 }
 
+PyObject*
+add_to_path(PyObject* path, PyObject* existing_path, PyObject* new_part) {
+    // handles joining paths chunks which may include windows drive letters,
+    // windows drive letters require special handling to work correctly.
+    PyObject* temp_path = NULL;
+    int path_length = (int)PySequence_Length(existing_path);
+    if (path_length > 0) {
+        PyObject *last_char = PySequence_GetItem(existing_path, path_length-1);
+        if(PyUnicode_Compare(last_char, PyUnicode_FromString(":")) == 0)
+        {
+            // handle Windows drive letters
+            temp_path = PyObject_CallMethod(path, "join", "OOO", existing_path, PyUnicode_FromString("\\"), new_part);
+        }
+        Py_DECREF(last_char);
+    }
+
+    if (!temp_path) {
+        temp_path = PyObject_CallMethod(path, "join", "OO", existing_path, new_part);
+    }
+    return temp_path;
+}
+
+PyObject*
+get_contents_at_path(PyObject* os_module, PyObject* path_submodule, PyObject* path_to_check) {
+    // handles obtaining the contents of a directory.
+    // windows drive letters require special handling to work correctly.
+    PyObject *directories_found = NULL;
+    int path_length = (int)PySequence_Length(path_to_check);
+    if (path_length > 0) {
+        PyObject *last_char = PySequence_GetItem(path_to_check, path_length-1);
+        if(PyUnicode_Compare(last_char, PyUnicode_FromString(":")) == 0)
+        {
+            // handle Windows drive letters
+            path_to_check = PyObject_CallMethod(path_submodule, "join", "OO", path_to_check, PyUnicode_FromString("\\"));
+        }
+        Py_DECREF(last_char);
+        directories_found = PyObject_CallMethod(os_module, "listdir", "O", path_to_check);
+    }
+    return directories_found;
+}
+
+
+PyObject*
+suggest_valid_path(PyObject* path_submodule, PyObject* original_path, PyObject* starting_path) {
+    // To suggest a valid path from an invalid one we first normalise & split the provided path
+    // into components (directory/drive letter/file chunks).
+    PyObject* norm_orig_path = PyObject_CallMethod(path_submodule, "normpath", "O", original_path);
+    PyObject* sep_obj = PyObject_GetAttrString(os_module, "sep");
+    PyObject *path_components = PyObject_CallMethod(norm_orig_path, "split", "O", sep_obj);
+    Py_DECREF(sep_obj);
+    Py_DECREF(norm_orig_path);
+
+    int path_comp_len = (int)PySequence_Length(path_components);
+    if(path_comp_len > 0){
+        // We have a path with at least some content, the file will be the last chunk
+        // so grab that seperately
+        PyObject* file_comp = PySequence_GetItem(path_components, path_comp_len-1);
+        PyObject *longest_valid_path = starting_path;
+        PyObject *temp_path = NULL;
+        // loop through all the non-file path components rebuilding the path
+        // component-by-component and checking at each addition if the formed
+        // path is valid.
+        // If the path is not valid at any step, we search for the closest match
+        // and add that instead.
+        for(int i = 0; i <path_comp_len-1; i++){
+            PyObject *path_comp = PySequence_GetItem(path_components, i);
+            temp_path = add_to_path(path_submodule, longest_valid_path, path_comp);
+            PyObject *is_dir = PyObject_CallMethod(path_submodule, "isdir", "O", temp_path);
+            if( is_dir == Py_True){
+                // path step is valid, continue the loop
+                longest_valid_path = PyObject_CallMethod(path_submodule, "normpath", "O", temp_path);
+            }
+            else {
+                // path step is invalid, look for petential alternatives
+                PyObject *potential_dirs = get_contents_at_path(os_module, path_submodule, longest_valid_path);
+                if(!potential_dirs) {
+                    Py_DECREF(path_submodule);
+                    Py_DECREF(path_components);
+                    Py_DECREF(longest_valid_path);
+                    Py_DECREF(path_comp);
+                    Py_DECREF(file_comp);
+                    Py_DECREF(temp_path);
+                    Py_DECREF(is_dir);
+                    goto suggested_path_not_found;
+                }
+
+                PyObject *actual_dirs = PyList_New(0);
+                int num_files_and_folders = (int)PySequence_Length(potential_dirs);
+                for (int j= 0; j < num_files_and_folders; j++){
+                    PyObject *potential_dir = PySequence_GetItem(potential_dirs, j);
+                    PyObject *temp_potential_path = add_to_path(path_submodule, longest_valid_path, potential_dir);
+                    PyObject *potential_is_dir = PyObject_CallMethod(path_submodule, "isdir", "O", temp_potential_path);
+                    if( potential_is_dir == Py_True){
+                        PyList_Append(actual_dirs, potential_dir);
+                    }
+                    Py_DECREF(potential_is_dir);
+                    Py_DECREF(temp_potential_path);
+                    Py_DECREF(potential_dir);
+                }
+                Py_DECREF(potential_dirs);
+                // we've found some actual directories that could be our path step
+                // pick the one closest to what we were given using difflib
+                if ((int)PySequence_Length(actual_dirs) > 0){
+                    PyObject *closest_matches = PyObject_CallMethod(difflib_module, "get_close_matches", "OO", path_comp, actual_dirs);
+                    if ((int)PySequence_Length(closest_matches) > 0){
+                        PyObject *closest_match = PySequence_GetItem(closest_matches, 0);
+                        longest_valid_path = add_to_path(path_submodule, longest_valid_path, closest_match);
+                        Py_DECREF(closest_match);
+                    }
+                    Py_DECREF(closest_matches);
+                }
+                else
+                {
+                    // no directories to match against,
+                    // default to simple error
+                    Py_DECREF(path_submodule);
+                    Py_DECREF(actual_dirs);
+                    Py_DECREF(path_components);
+                    Py_DECREF(longest_valid_path);
+                    Py_DECREF(path_comp);
+                    Py_DECREF(file_comp);
+                    Py_DECREF(temp_path);
+                    Py_DECREF(is_dir);
+                    goto suggested_path_not_found;
+                }
+                Py_DECREF(actual_dirs);
+            }
+            Py_DECREF(path_comp);
+            Py_DECREF(is_dir);
+        }
+        Py_DECREF(temp_path);
+        Py_DECREF(path_components);
+        // We have the longest valid directory path that is the most similar
+        // to the given path. Now we look for the most similar file on that
+        // path.
+        PyObject *potential_files = get_contents_at_path(os_module, path_submodule, longest_valid_path);
+        if(!potential_files) {
+            Py_DECREF(path_submodule);
+            Py_DECREF(longest_valid_path);
+            Py_DECREF(file_comp);
+            goto suggested_path_not_found;
+        }
+        PyObject *actual_files = PyList_New(0);
+        int num_files_and_folders = (int)PySequence_Length(potential_files);
+        for (int j= 0; j < num_files_and_folders; j++){
+            PyObject *potential_file = PySequence_GetItem(potential_files, j);
+            PyObject *temp_potential_path = add_to_path(path_submodule, longest_valid_path, potential_file);
+            PyObject *potential_is_file = PyObject_CallMethod(path_submodule, "isfile", "O", temp_potential_path);
+            if( potential_is_file == Py_True){
+                PyList_Append(actual_files, potential_file);
+            }
+            Py_DECREF(potential_is_file);
+            Py_DECREF(temp_potential_path);
+            Py_DECREF(potential_file);
+        }
+        Py_DECREF(potential_files);
+        if ((int)PySequence_Length(actual_files) > 0){
+            PyObject *closest_matches = PyObject_CallMethod(difflib_module, "get_close_matches", "OO", file_comp, actual_files);
+            if ((int)PySequence_Length(closest_matches) > 0){
+                PyObject *closest_match = PySequence_GetItem(closest_matches, 0);
+                longest_valid_path = add_to_path(path_submodule, longest_valid_path, closest_match);
+                Py_DECREF(closest_match);
+            }
+            Py_DECREF(closest_matches);
+        }
+        else
+        {
+            // no files to match against,
+            // default to simple error
+            Py_DECREF(path_submodule);
+            Py_DECREF(actual_files);
+            Py_DECREF(longest_valid_path);
+            Py_DECREF(file_comp);
+            goto suggested_path_not_found;
+        }
+        Py_DECREF(actual_files);
+        Py_DECREF(file_comp);
+        Py_DECREF(path_submodule);
+        longest_valid_path = PyObject_CallMethod(path_submodule, "normpath", "O", longest_valid_path);
+        return longest_valid_path;
+    }
+    else
+    {
+        Py_DECREF(path_submodule);
+        Py_DECREF(path_components);
+        goto suggested_path_not_found;
+    }
+
+    suggested_path_not_found:
+        return NULL;
+}
+
 static SDL_RWops *
 _rwops_from_pystr(PyObject *obj, char **extptr)
 {
@@ -746,31 +939,81 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
      * errors correctly here */
     SDL_ClearError();
 
-    PyObject *cwd = NULL, *path = NULL, *isabs = NULL;
+    PyObject *cwd = NULL, *path_submodule = NULL, *isabs = NULL;
     if (!os_module)
-        goto simple_case;
+        goto simple_case_no_path;
 
     cwd = PyObject_CallMethod(os_module, "getcwd", NULL);
     if (!cwd)
+        goto simple_case_no_path;
+
+    path_submodule = PyObject_GetAttrString(os_module, "path");
+    if (!path_submodule)
         goto simple_case;
 
-    path = PyObject_GetAttrString(os_module, "path");
-    if (!path)
-        goto simple_case;
+    isabs = PyObject_CallMethod(path_submodule, "isabs", "O", obj);
 
-    isabs = PyObject_CallMethod(path, "isabs", "O", obj);
-    Py_DECREF(path);
-    if (!isabs || isabs == Py_True)
-        goto simple_case;
+    // At this point we should know that we can't find a file to load at the
+    // provided path. The error strategy is to check if the provided path is
+    // absolute or relative and then, if possible, suggest a path in that
+    // format that might have been intended.
+    // We cannot anticipate and correct all malformed paths - so we instead
+    // focus on provided paths where the correct number of sub-directories has
+    // been indicated and then select the most likely directory and file at
+    // each level.
+    if (!isabs || isabs == Py_True) {
+        PyObject* abs_path = PyObject_Str(PyObject_CallMethod(path_submodule, "normpath", "O", obj));
 
-    PyErr_Format(PyExc_FileNotFoundError,
-                 "No file '%S' found in working directory '%S'.", obj, cwd);
+        PyObject* suggested_valid_path = suggest_valid_path(path_submodule, abs_path, PyUnicode_FromString(""));
+        Py_DECREF(abs_path);
 
+        if (!suggested_valid_path)
+            goto simple_case;
+
+        // we will elect to always provide suggested paths with forward slashes
+        // as these will work in python/pygame-ce on all platforms and are less
+        // fiddly than back slash paths with escaped back slashes.
+        char *back_slash = "\\";
+        char *foward_slash = "/";
+        suggested_valid_path = PyObject_CallMethod(suggested_valid_path, "replace", "ss", back_slash, foward_slash);
+        PyErr_Format(PyExc_FileNotFoundError,
+         "File not found at path: '%S', did you mean: '%S'?", obj, suggested_valid_path);
+
+        Py_DECREF(suggested_valid_path);
+    }
+    else {
+        PyObject* rel_path = PyObject_Str(PyObject_CallMethod(path_submodule, "relpath", "OO", obj, cwd));
+
+        PyObject* suggested_valid_path = suggest_valid_path(path_submodule, rel_path, cwd);
+        Py_DECREF(rel_path);
+
+        if (!suggested_valid_path)
+            goto simple_case;
+
+        PyObject* suggested_rel_path = PyObject_Str(PyObject_CallMethod(path_submodule, "relpath", "OO", suggested_valid_path, cwd));
+        Py_DECREF(suggested_valid_path);
+
+        // we will elect to always provide suggested paths with forward slashes
+        // as these will work in python/pygame-ce on all platforms and are less
+        // fiddly than back slash paths with escaped back slashes.
+        char *back_slash = "\\";
+        char *foward_slash = "/";
+        suggested_rel_path = PyObject_CallMethod(suggested_rel_path, "replace", "ss", back_slash, foward_slash);
+        PyErr_Format(PyExc_FileNotFoundError,
+             "File not found at path: '%S', did you mean: '%S'?", obj, suggested_rel_path);
+
+        Py_DECREF(suggested_rel_path);
+    }
+
+    Py_DECREF(path_submodule);
     Py_DECREF(cwd);
     Py_DECREF(isabs);
     return NULL;
 
 simple_case:
+    Py_DECREF(path_submodule);
+    goto simple_case_no_path;
+simple_case_no_path:
     Py_XDECREF(cwd);
     Py_XDECREF(isabs);
     PyErr_Format(PyExc_FileNotFoundError, "No such file or directory: '%S'.",
@@ -905,6 +1148,10 @@ MODINIT_DEFINE(rwobject)
     /* import os, don't sweat if it errors, it will be checked before use */
     os_module = PyImport_ImportModule("os");
     if (os_module == NULL)
+        PyErr_Clear();
+
+    difflib_module = PyImport_ImportModule("difflib");
+    if (difflib_module == NULL)
         PyErr_Clear();
 
     return module;
