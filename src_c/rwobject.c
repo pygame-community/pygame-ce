@@ -778,6 +778,9 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
                 PyObject *potential_dirs = get_contents_at_path(
                     os_module, path_submodule, longest_valid_path);
                 if (!potential_dirs) {
+                    PyErr_Format(PyExc_FileNotFoundError,
+                                 "No Potential dirs at path: '%S'?",
+                                 longest_valid_path);
                     Py_XDECREF(path_components);
                     Py_XDECREF(longest_valid_path);
                     Py_XDECREF(path_comp);
@@ -824,6 +827,9 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
                 else {
                     // no directories to match against,
                     // default to simple error
+                    PyErr_Format(PyExc_FileNotFoundError,
+                                 "No actual dirs at path: '%S'?",
+                                 longest_valid_path);
                     Py_XDECREF(actual_dirs);
                     Py_XDECREF(path_components);
                     Py_XDECREF(longest_valid_path);
@@ -882,6 +888,8 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
         else {
             // no files to match against,
             // default to simple error
+            PyErr_Format(PyExc_FileNotFoundError,
+                         "No Actual files at path: '%S'?", longest_valid_path);
             Py_XDECREF(actual_files);
             Py_XDECREF(longest_valid_path);
             Py_XDECREF(file_comp);
@@ -894,6 +902,8 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
         return longest_valid_path;
     }
     else {
+        PyErr_Format(PyExc_FileNotFoundError, "unable to split path: '%S'?",
+                     norm_orig_path);
         Py_XDECREF(path_components);
         goto suggested_path_not_found;
     }
@@ -997,7 +1007,7 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
             Py_XDECREF(abs_path);
 
             if (!suggested_valid_path)
-                goto simple_case;
+                return NULL;
 
             // we will elect to always provide suggested paths with forward
             // slashes as these will work in python/pygame-ce on all platforms
