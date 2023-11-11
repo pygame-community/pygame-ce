@@ -708,12 +708,13 @@ add_to_path(PyObject *path, PyObject *existing_path, PyObject *new_part)
         // not windows drive letter
         int new_part_length = (int)PySequence_Length(new_part);
         if (new_part_length > 0) {
-            PyObject *last_char = PySequence_GetItem(new_part, new_part_length - 1);
+            PyObject *last_char =
+                PySequence_GetItem(new_part, new_part_length - 1);
             if (PyUnicode_Compare(last_char, PyUnicode_FromString(":")) != 0) {
                 // not a windows drive letter, so add a slash at the start
                 PyObject *sep_obj = PyObject_GetAttrString(os_module, "sep");
-                temp_path = PyObject_CallMethod(path, "join", "OOO", existing_path,
-                                                sep_obj, new_part);
+                temp_path = PyObject_CallMethod(
+                    path, "join", "OOO", existing_path, sep_obj, new_part);
                 Py_XDECREF(sep_obj);
             }
             Py_XDECREF(last_char);
@@ -1023,7 +1024,8 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
             Py_XDECREF(abs_path);
 
             if (!suggested_valid_path)
-                goto simple_case;
+                return NULL;
+            // goto simple_case;
 
             // we will elect to always provide suggested paths with forward
             // slashes as these will work in python/pygame-ce on all platforms
