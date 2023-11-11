@@ -1029,7 +1029,8 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
             Py_XDECREF(abs_path);
 
             if (!suggested_valid_path)
-                goto simple_case;
+                return NULL;
+            // goto simple_case;
 
             // we will elect to always provide suggested paths with forward
             // slashes as these will work in python/pygame-ce on all platforms
