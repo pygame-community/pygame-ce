@@ -1769,23 +1769,14 @@ RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 
         RectExport_Normalize(rect_copy);
         rect = rect_copy;
-
-        if (!RectImport_IntersectRectAndLine(rect, &x1, &y1, &x2, &y2)) {
-            Py_DECREF(rect_copy);
-            return PyTuple_New(0);
-        }
-
-        Py_DECREF(rect_copy);
-
-        return Py_BuildValue("((" TypeFMT "" TypeFMT ")(" TypeFMT "" TypeFMT
-                             "))",
-                             x1, y1, x2, y2);
     }
 
     if (!RectImport_IntersectRectAndLine(rect, &x1, &y1, &x2, &y2)) {
+        Py_XDECREF(rect_copy);
         return PyTuple_New(0);
     }
 
+    Py_XDECREF(rect_copy);
     return Py_BuildValue("((" TypeFMT "" TypeFMT ")(" TypeFMT "" TypeFMT "))",
                          x1, y1, x2, y2);
 }
