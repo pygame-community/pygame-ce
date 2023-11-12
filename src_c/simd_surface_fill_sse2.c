@@ -71,34 +71,27 @@ _pg_HasSSE_NEON()
     }
 
 /* Setup for RUN_16BIT_SHUFFLE_OUT */
-#define SETUP_SHUFFLE                                                        \
-    __m128i shuff_out_A = _mm_set_epi8(0x80, 7, 0x80, 6, 0x80, 5, 0x80, 4,   \
-                                       0x80, 3, 0x80, 2, 0x80, 1, 0x80, 0);  \
-                                                                             \
-    __m128i shuff_out_B =                                                    \
-        _mm_set_epi8(0x80, 15, 0x80, 14, 0x80, 13, 0x80, 12, 0x80, 11, 0x80, \
-                     10, 0x80, 9, 0x80, 8);                                  \
-                                                                             \
-    __m128i shuff_dst, _shuff16_temp, mm128_colorA, mm128_colorB;            \
-    mm128_colorA = _mm_shuffle_epi8(mm128_color, shuff_out_A);               \
-    mm128_colorB = _mm_shuffle_epi8(mm128_color, shuff_out_B);
+#define SETUP_SHUFFLE                                                   \
+    __m128i shuff_dst, _shuff16_temp, mm128_colorA, mm128_colorB;       \
+    mm128_colorA = _mm_unpacklo_epi8(mm128_color, _mm_setzero_si128()); \
+    mm128_colorB = _mm_unpackhi_epi8(mm128_color, _mm_setzero_si128());
 
-#define RUN_16BIT_SHUFFLE_OUT(FILL_CODE)                       \
-    /* ==== shuffle pixels out into two registers each, src */ \
-    /* and dst set up for 16 bit math, like 0A0R0G0B ==== */   \
-    shuff_dst = _mm_shuffle_epi8(mm128_dst, shuff_out_A);      \
-    mm128_color = mm128_colorA;                                \
-                                                               \
-    {FILL_CODE}                                                \
-                                                               \
-    _shuff16_temp = shuff_dst;                                 \
-                                                               \
-    shuff_dst = _mm_shuffle_epi8(mm128_dst, shuff_out_B);      \
-    mm128_color = mm128_colorB;                                \
-                                                               \
-    {FILL_CODE}                                                \
-                                                               \
-    /* ==== recombine A and B pixels ==== */                   \
+#define RUN_16BIT_SHUFFLE_OUT(FILL_CODE)                           \
+    /* ==== shuffle pixels out into two registers each, src */     \
+    /* and dst set up for 16 bit math, like 0A0R0G0B ==== */       \
+    shuff_dst = _mm_unpacklo_epi8(mm128_dst, _mm_setzero_si128()); \
+    mm128_color = mm128_colorA;                                    \
+                                                                   \
+    {FILL_CODE}                                                    \
+                                                                   \
+    _shuff16_temp = shuff_dst;                                     \
+                                                                   \
+    shuff_dst = _mm_unpackhi_epi8(mm128_dst, _mm_setzero_si128()); \
+    mm128_color = mm128_colorB;                                    \
+                                                                   \
+    {FILL_CODE}                                                    \
+                                                                   \
+    /* ==== recombine A and B pixels ==== */                       \
     mm128_dst = _mm_packus_epi16(_shuff16_temp, shuff_dst);
 
 #define FILLERS(NAME, COLOR_PROCESS_CODE, FILL_CODE)                        \
