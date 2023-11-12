@@ -43,7 +43,7 @@ that has an alpha channel, and then blit that surface direct to our display surf
     # transparent, to 255 - fully opaque.
     basic_surf = pygame.Surface((120, 120), flags=SRCALPHA)
     # the fourth number here sets the alpha to 25 (almost fully see through)
-    basic_surf.fill(pygame.Color(50, 50, 50, 25))
+    basic_surf.fill((50, 50, 50, 25))
 
     running = True
 
@@ -99,7 +99,7 @@ We can rewrite the example above to use premultiplied alpha:
     display_surf = pygame.display.set_mode((300, 170))
 
     basic_surf = pygame.Surface((120, 120), flags=SRCALPHA)
-    basic_surf.fill(pygame.Color(50, 50, 50, 25))
+    basic_surf.fill((50, 50, 50, 25))
     basic_surf = basic_surf.premul_alpha()
 
     running = True
@@ -162,12 +162,12 @@ messy. Here is the example program for straight alpha:
         "Some text in a box, to test alpha blending. "
         "A quick brown fox jumps over the lazy dog.",
         True,
-        pygame.Color((200, 200, 250)),
+        (200, 200, 250),
         wraplength=100,
     ).convert_alpha()
 
     tool_tip_surf = pygame.Surface((120, 120), flags=pygame.SRCALPHA)
-    tool_tip_surf.fill(pygame.Color(50, 50, 50, 25))
+    tool_tip_surf.fill((50, 50, 50, 25))
 
     tool_tip_surf.blit(tool_tip_text, (10, 10))
 
@@ -216,13 +216,13 @@ If we rewrite the example to use premultiplied alpha composition instead:
         "Some text in a box, to test alpha blending. "
         "A quick brown fox jumps over the lazy dog.",
         True,
-        pygame.Color((200, 200, 250)),
+        (200, 200, 250),
         wraplength=100,
     ).convert_alpha()
     tool_tip_text = tool_tip_text.premul_alpha()
 
     tool_tip_surf = pygame.Surface((120, 120), flags=pygame.SRCALPHA)
-    tool_tip_surf.fill(pygame.Color(50, 50, 50, 25))
+    tool_tip_surf.fill((50, 50, 50, 25))
     tool_tip_surf = tool_tip_surf.premul_alpha()
 
     tool_tip_surf.blit(tool_tip_text, (10, 10),
