@@ -29,15 +29,12 @@ _pg_HasSSE_NEON()
     int pxl_excess = width % 4;                                               \
     /* indicates the number of 4-pixel blocks that can be processed */        \
     int n_iters_4 = width / 4;                                                \
-    int i;                                                                    \
+    int i, j;                                                                 \
     /* load pixel data */                                                     \
     Uint32 *pixels =                                                          \
         (Uint32 *)surface->pixels + rect->y * (surface->pitch / 4) + rect->x; \
                                                                               \
     __m128i mm128_dst;                                                        \
-    __m128i mask =                                                            \
-        _mm_set_epi32(0, pxl_excess > 2 ? -1 : 0, pxl_excess > 1 ? -1 : 0,    \
-                      pxl_excess > 0 ? -1 : 0);                               \
     /* prep and load the color */                                             \
     Uint32 amask = surface->format->Amask;                                    \
     if (amask) {                                                              \
@@ -47,33 +44,30 @@ _pg_HasSSE_NEON()
     }                                                                         \
     __m128i mm128_color = _mm_set1_epi32(color);
 
-#define RUN_SSE2_FILLER(FILL_CODE)                               \
-    while (height--) {                                           \
-        for (i = 0; i < n_iters_4; i++) {                        \
-            /* load 4 pixels */                                  \
-            mm128_dst = _mm_loadu_si128((__m128i *)pixels);      \
-                                                                 \
-            {FILL_CODE}                                          \
-                                                                 \
-            /* store 4 pixels */                                 \
-            _mm_storeu_si128((__m128i *)pixels, mm128_dst);      \
-                                                                 \
-            pixels += 4;                                         \
-        }                                                        \
-                                                                 \
-        if (pxl_excess) {                                        \
-            /* load up to 3 pixels */                            \
-            mm128_dst = _mm_maskload_epi32((int *)pixels, mask); \
-                                                                 \
-            {FILL_CODE}                                          \
-                                                                 \
-            /* store up to 3 pixels */                           \
-            _mm_maskstore_epi32((int *)pixels, mask, mm128_dst); \
-                                                                 \
-            pixels += pxl_excess;                                \
-        }                                                        \
-                                                                 \
-        pixels += skip;                                          \
+#define RUN_SSE2_FILLER(FILL_CODE)                          \
+    while (height--) {                                      \
+        for (i = 0; i < n_iters_4; i++) {                   \
+            /* load 4 pixels */                             \
+            mm128_dst = _mm_loadu_si128((__m128i *)pixels); \
+                                                            \
+            {FILL_CODE}                                     \
+                                                            \
+            /* store 4 pixels */                            \
+            _mm_storeu_si128((__m128i *)pixels, mm128_dst); \
+                                                            \
+            pixels += 4;                                    \
+        }                                                   \
+                                                            \
+        if (pxl_excess) {                                   \
+            for (j = 0; j < pxl_excess; j++, pixels++) {    \
+                mm128_dst = _mm_cvtsi32_si128(*pixels);     \
+                                                            \
+                {FILL_CODE}                                 \
+                                                            \
+                    *pixels = _mm_cvtsi128_si32(mm128_dst); \
+            }                                               \
+        }                                                   \
+        pixels += skip;                                     \
     }
 
 /* Setup for RUN_16BIT_SHUFFLE_OUT */
