@@ -64,8 +64,6 @@ jobs:
         pip3 install sphinx"<7.2.0" numpy>=1.21.0
 
     - name: Make sdist and install it
-      env:
-        PIP_CONFIG_FILE: "buildconfig/pip_config.ini"
       run: |
         python3 setup.py docs
         python3 setup.py sdist
