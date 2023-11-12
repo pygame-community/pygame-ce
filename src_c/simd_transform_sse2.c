@@ -434,8 +434,7 @@ invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
     Uint32 *srcp = (Uint32 *)src->pixels;
     Uint32 *dstp = (Uint32 *)newsurf->pixels;
 
-    Uint32 rgbmask =
-        (src->format->Rmask | src->format->Gmask | src->format->Bmask);
+    Uint32 rgbmask = ~src->format->Amask;
     Uint64 rgbmask64 = ((Uint64)rgbmask << 32) | rgbmask;
     Uint64 amask64 = ~rgbmask64;
 
