@@ -85,9 +85,8 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     Uint32 *srcp = (Uint32 *)src->pixels;
     Uint32 *dstp = (Uint32 *)newsurf->pixels;
 
-    Uint32 rgbmask =
-        (src->format->Rmask | src->format->Gmask | src->format->Bmask);
-    Uint32 amask = ~rgbmask;
+    Uint32 amask = src->format->Amask;
+    Uint32 rgbmask = ~amask;
 
     int rgb_weights =
         ((0x4C << src->format->Rshift) | (0x96 << src->format->Gshift) |
@@ -99,7 +98,8 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     __m256i mm256_src, mm256_srcA, mm256_srcB, mm256_dst, mm256_dstA,
         mm256_dstB, mm256_shuff_mask_A, mm256_shuff_mask_B,
         mm256_two_five_fives, mm256_rgb_weights, mm256_shuff_mask_gray,
-        mm256_alpha, mm256_rgb_mask, mm256_alpha_mask;
+        mm256_alpha, mm256_rgb_mask, mm256_alpha_mask,
+        mm256_shuffled_weights_A, mm256_shuffled_weights_B;
 
     mm256_shuff_mask_A =
         _mm256_set_epi8(0x80, 23, 0x80, 22, 0x80, 21, 0x80, 20, 0x80, 19, 0x80,
@@ -119,43 +119,57 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     mm256_rgb_mask = _mm256_set1_epi32(rgbmask);
     mm256_alpha_mask = _mm256_set1_epi32(amask);
 
-    __m256i _partial8_mask =
-        _mm256_set_epi32(0x00, (remaining_pixels > 6) ? 0x80000000 : 0x00,
-                         (remaining_pixels > 5) ? 0x80000000 : 0x00,
-                         (remaining_pixels > 4) ? 0x80000000 : 0x00,
-                         (remaining_pixels > 3) ? 0x80000000 : 0x00,
-                         (remaining_pixels > 2) ? 0x80000000 : 0x00,
-                         (remaining_pixels > 1) ? 0x80000000 : 0x00,
-                         (remaining_pixels > 0) ? 0x80000000 : 0x00);
+    mm256_shuffled_weights_A =
+        _mm256_shuffle_epi8(mm256_rgb_weights, mm256_shuff_mask_A);
+    mm256_shuffled_weights_B =
+        _mm256_shuffle_epi8(mm256_rgb_weights, mm256_shuff_mask_B);
+
+    __m256i _partial8_mask = _mm256_set_epi32(
+        0, (remaining_pixels > 6) ? -1 : 0, (remaining_pixels > 5) ? -1 : 0,
+        (remaining_pixels > 4) ? -1 : 0, (remaining_pixels > 3) ? -1 : 0,
+        (remaining_pixels > 2) ? -1 : 0, (remaining_pixels > 1) ? -1 : 0,
+        (remaining_pixels > 0) ? -1 : 0);
 
     while (num_batches--) {
         perfect_8_pixels_batch_counter = perfect_8_pixels;
         remaining_pixels_batch_counter = remaining_pixels;
         while (perfect_8_pixels_batch_counter--) {
             mm256_src = _mm256_loadu_si256(srcp256);
+            // strip out the the alpha and store it
             mm256_alpha = _mm256_and_si256(mm256_src, mm256_alpha_mask);
 
+            // shuffle out the 8 pixels into two spaced out registers
+            // there are four pixels in each register with 16bits of room
+            // per channel. This gives us bit space for multiplication.
             mm256_srcA = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_A);
             mm256_srcB = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_B);
 
+            // Do the 'percentage multiplications' with the weights
+            // with accuracy correction so values like 255 * '255'
+            // (here effectively 1.0) = 255 and not 254.
+            // For our greyscale this should mean 255 white stays 255 white
+            // after greyscaling.
             mm256_dstA =
-                _mm256_shuffle_epi8(mm256_rgb_weights, mm256_shuff_mask_A);
-            mm256_dstB =
-                _mm256_shuffle_epi8(mm256_rgb_weights, mm256_shuff_mask_B);
-
-            mm256_dstA = _mm256_mullo_epi16(mm256_srcA, mm256_dstA);
+                _mm256_mullo_epi16(mm256_srcA, mm256_shuffled_weights_A);
             mm256_dstA = _mm256_add_epi16(mm256_dstA, mm256_two_five_fives);
             mm256_dstA = _mm256_srli_epi16(mm256_dstA, 8);
 
-            mm256_dstB = _mm256_mullo_epi16(mm256_srcB, mm256_dstB);
+            mm256_dstB =
+                _mm256_mullo_epi16(mm256_srcB, mm256_shuffled_weights_B);
             mm256_dstB = _mm256_add_epi16(mm256_dstB, mm256_two_five_fives);
             mm256_dstB = _mm256_srli_epi16(mm256_dstB, 8);
 
+            // Add up weighted R+G+B into the first channel of each of the 8
+            // pixels. This is the grey value we want in all our colour
+            // channels.
             mm256_dst = _mm256_hadd_epi16(mm256_dstA, mm256_dstB);
             mm256_dst =
                 _mm256_add_epi16(mm256_dst, _mm256_srli_epi32(mm256_dst, 16));
+            // Shuffle the grey value from ther first channel of each pixel
+            // into every channel of each pixel
             mm256_dst = _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_gray);
 
+            // Add the alpha back
             mm256_dst = _mm256_and_si256(mm256_dst, mm256_rgb_mask);
             mm256_dst = _mm256_or_si256(mm256_dst, mm256_alpha);
 
@@ -174,15 +188,12 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
             mm256_srcB = _mm256_shuffle_epi8(mm256_src, mm256_shuff_mask_B);
 
             mm256_dstA =
-                _mm256_shuffle_epi8(mm256_rgb_weights, mm256_shuff_mask_A);
-            mm256_dstB =
-                _mm256_shuffle_epi8(mm256_rgb_weights, mm256_shuff_mask_B);
-
-            mm256_dstA = _mm256_mullo_epi16(mm256_srcA, mm256_dstA);
+                _mm256_mullo_epi16(mm256_srcA, mm256_shuffled_weights_A);
             mm256_dstA = _mm256_add_epi16(mm256_dstA, mm256_two_five_fives);
             mm256_dstA = _mm256_srli_epi16(mm256_dstA, 8);
 
-            mm256_dstB = _mm256_mullo_epi16(mm256_srcB, mm256_dstB);
+            mm256_dstB =
+                _mm256_mullo_epi16(mm256_srcB, mm256_shuffled_weights_B);
             mm256_dstB = _mm256_add_epi16(mm256_dstB, mm256_two_five_fives);
             mm256_dstB = _mm256_srli_epi16(mm256_dstB, 8);
 

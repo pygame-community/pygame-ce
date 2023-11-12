@@ -45,11 +45,11 @@ pg_neon_at_runtime_but_uncompiled()
 
 #if defined(ENV64BIT)
 #define LOAD_64_INTO_M128(num, reg) *reg = _mm_cvtsi64_si128(*num)
-#define STORE_M128_INTO_64(reg, num) *num = _mm_cvtsi128_si64(*reg)
+#define STORE_M128_INTO_64(reg, num) *num = _mm_cvtsi128_si64(reg)
 #else
 #define LOAD_64_INTO_M128(num, reg) \
     *reg = _mm_loadl_epi64((const __m128i *)num)
-#define STORE_M128_INTO_64(reg, num) _mm_storel_epi64((__m128i *)num, *reg)
+#define STORE_M128_INTO_64(reg, num) _mm_storel_epi64((__m128i *)num, reg)
 #endif
 
 void
@@ -459,10 +459,8 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
     Uint32 *srcp = (Uint32 *)src->pixels;
     Uint32 *dstp = (Uint32 *)newsurf->pixels;
 
-    Uint32 rgbmask =
-        (src->format->Rmask | src->format->Gmask | src->format->Bmask);
-    Uint64 rgbmask64 = ((Uint64)rgbmask << 32) | rgbmask;
-    Uint64 amask64 = ~rgbmask64;
+    Uint64 amask64 = ((Uint64)src->format->Amask) | src->format->Amask;
+    Uint64 rgbmask64 = ~amask64;
 
     Uint64 rgb_weights =
         ((Uint64)((0x4C << src->format->Rshift) |
@@ -547,7 +545,7 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
             mm_dst = _mm_and_si128(mm_dst, mm_rgb_mask);
             mm_dst = _mm_or_si128(mm_dst, mm_alpha);
             /*mm_dst = 0x0000000000000000AAGrGrGrGrGrGrAAGrGrGrGrGrGr*/
-            STORE_M128_INTO_64(&mm_dst, dstp64);
+            STORE_M128_INTO_64(mm_dst, dstp64);
             /*dstp = 0xAARRGGBB*/
             srcp64++;
             dstp64++;
