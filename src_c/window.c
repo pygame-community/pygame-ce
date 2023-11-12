@@ -448,10 +448,10 @@ window_get_mouse_rect(pgWindowObject *self, void *v)
 #else
     if (PyErr_WarnEx(PyExc_Warning,
                      "Getting 'mouse_rect' requires SDL 2.0.18+", 1) == -1) {
-        return -1;
+        return NULL;
     }
+    Py_RETURN_NONE;
 #endif  // SDL_VERSION_ATLEAST(2, 0, 18)
-    return 0;
 }
 
 static int
