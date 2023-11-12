@@ -1035,9 +1035,8 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
             // slashes as these will work in python/pygame-ce on all platforms
             // and are less fiddly than back slash paths with escaped back
             // slashes.
-            suggested_valid_path =
-                PyObject_CallMethod(suggested_valid_path, "replace", "ss",
-                                    "\\", "/");
+            suggested_valid_path = PyObject_CallMethod(
+                suggested_valid_path, "replace", "ss", "\\", "/");
             PyErr_Format(PyExc_FileNotFoundError,
                          "File not found at path: '%S', did you mean: '%S'?",
                          obj, suggested_valid_path);
