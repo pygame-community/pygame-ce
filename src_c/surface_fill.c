@@ -879,18 +879,50 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
             break;
         }
         case PYGAME_BLEND_SUB: {
+#if !defined(__EMSCRIPTEN__)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+            if (surface->format->BytesPerPixel == 4 && _pg_has_avx2()) {
+                result = surface_fill_blend_sub_avx2(surface, rect, color);
+                break;
+            }
+#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
+#endif /* __EMSCRIPTEN__ */
             result = surface_fill_blend_sub(surface, rect, color);
             break;
         }
         case PYGAME_BLEND_MULT: {
+#if !defined(__EMSCRIPTEN__)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+            if (surface->format->BytesPerPixel == 4 && _pg_has_avx2()) {
+                result = surface_fill_blend_mult_avx2(surface, rect, color);
+                break;
+            }
+#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
+#endif /* __EMSCRIPTEN__ */
             result = surface_fill_blend_mult(surface, rect, color);
             break;
         }
         case PYGAME_BLEND_MIN: {
+#if !defined(__EMSCRIPTEN__)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+            if (surface->format->BytesPerPixel == 4 && _pg_has_avx2()) {
+                result = surface_fill_blend_min_avx2(surface, rect, color);
+                break;
+            }
+#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
+#endif /* __EMSCRIPTEN__ */
             result = surface_fill_blend_min(surface, rect, color);
             break;
         }
         case PYGAME_BLEND_MAX: {
+#if !defined(__EMSCRIPTEN__)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+            if (surface->format->BytesPerPixel == 4 && _pg_has_avx2()) {
+                result = surface_fill_blend_max_avx2(surface, rect, color);
+                break;
+            }
+#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
+#endif /* __EMSCRIPTEN__ */
             result = surface_fill_blend_max(surface, rect, color);
             break;
         }
@@ -909,18 +941,54 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
             break;
         }
         case PYGAME_BLEND_RGBA_SUB: {
+#if !defined(__EMSCRIPTEN__)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+            if (surface->format->BytesPerPixel == 4 && _pg_has_avx2()) {
+                result =
+                    surface_fill_blend_rgba_sub_avx2(surface, rect, color);
+                break;
+            }
+#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
+#endif /* __EMSCRIPTEN__ */
             result = surface_fill_blend_rgba_sub(surface, rect, color);
             break;
         }
         case PYGAME_BLEND_RGBA_MULT: {
+#if !defined(__EMSCRIPTEN__)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+            if (surface->format->BytesPerPixel == 4 && _pg_has_avx2()) {
+                result =
+                    surface_fill_blend_rgba_mult_avx2(surface, rect, color);
+                break;
+            }
+#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
+#endif /* __EMSCRIPTEN__ */
             result = surface_fill_blend_rgba_mult(surface, rect, color);
             break;
         }
         case PYGAME_BLEND_RGBA_MIN: {
+#if !defined(__EMSCRIPTEN__)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+            if (surface->format->BytesPerPixel == 4 && _pg_has_avx2()) {
+                result =
+                    surface_fill_blend_rgba_min_avx2(surface, rect, color);
+                break;
+            }
+#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
+#endif /* __EMSCRIPTEN__ */
             result = surface_fill_blend_rgba_min(surface, rect, color);
             break;
         }
         case PYGAME_BLEND_RGBA_MAX: {
+#if !defined(__EMSCRIPTEN__)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+            if (surface->format->BytesPerPixel == 4 && _pg_has_avx2()) {
+                result =
+                    surface_fill_blend_rgba_max_avx2(surface, rect, color);
+                break;
+            }
+#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
+#endif /* __EMSCRIPTEN__ */
             result = surface_fill_blend_rgba_max(surface, rect, color);
             break;
         }
