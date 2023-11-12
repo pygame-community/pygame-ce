@@ -1226,42 +1226,51 @@ smoothscale_init(struct _module_state *st)
         return;
     }
 
-#ifdef SCALE_MMX_SUPPORT
+#if !defined(__EMSCRIPTEN__)
+#if PG_ENABLE_SSE_NEON
     if (SDL_HasSSE2()) {
         st->filter_type = "SSE2";
         st->filter_shrink_X = filter_shrink_X_SSE2;
         st->filter_shrink_Y = filter_shrink_Y_SSE2;
         st->filter_expand_X = filter_expand_X_SSE2;
         st->filter_expand_Y = filter_expand_Y_SSE2;
+        return;
     }
-    else if (SDL_HasSSE()) {
+    if (SDL_HasNEON()) {
+        st->filter_type = "NEON";
+        st->filter_shrink_X = filter_shrink_X_SSE2;
+        st->filter_shrink_Y = filter_shrink_Y_SSE2;
+        st->filter_expand_X = filter_expand_X_SSE2;
+        st->filter_expand_Y = filter_expand_Y_SSE2;
+        return;
+    }
+#endif /* PG_ENABLE_SSE_NEON */
+#endif /* !__EMSCRIPTEN__ */
+#ifdef SCALE_MMX_SUPPORT
+    if (SDL_HasSSE()) {
         st->filter_type = "SSE";
         st->filter_shrink_X = filter_shrink_X_SSE;
         st->filter_shrink_Y = filter_shrink_Y_SSE;
         st->filter_expand_X = filter_expand_X_SSE;
         st->filter_expand_Y = filter_expand_Y_SSE;
+        return;
     }
-    else if (SDL_HasMMX()) {
+    if (SDL_HasMMX()) {
         st->filter_type = "MMX";
         st->filter_shrink_X = filter_shrink_X_MMX;
         st->filter_shrink_Y = filter_shrink_Y_MMX;
         st->filter_expand_X = filter_expand_X_MMX;
         st->filter_expand_Y = filter_expand_Y_MMX;
+        return;
     }
-    else {
-        st->filter_type = "GENERIC";
-        st->filter_shrink_X = filter_shrink_X_ONLYC;
-        st->filter_shrink_Y = filter_shrink_Y_ONLYC;
-        st->filter_expand_X = filter_expand_X_ONLYC;
-        st->filter_expand_Y = filter_expand_Y_ONLYC;
-    }
-#else  /* ~SCALE_MMX_SUPPORT */
+#endif /* ~SCALE_MMX_SUPPORT */
+
+    /* If no accelerated options were selected, falls through to generic */
     st->filter_type = "GENERIC";
     st->filter_shrink_X = filter_shrink_X_ONLYC;
     st->filter_shrink_Y = filter_shrink_Y_ONLYC;
     st->filter_expand_X = filter_expand_X_ONLYC;
     st->filter_expand_Y = filter_expand_Y_ONLYC;
-#endif /* ~SCALE_MMX_SUPPORT */
 }
 
 static void
@@ -1568,7 +1577,6 @@ surf_set_smoothscale_backend(PyObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", keywords, &type))
         return NULL;
 
-#if defined(SCALE_MMX_SUPPORT)
     if (strcmp(type, "GENERIC") == 0) {
         st->filter_type = "GENERIC";
         st->filter_shrink_X = filter_shrink_X_ONLYC;
@@ -1576,6 +1584,7 @@ surf_set_smoothscale_backend(PyObject *self, PyObject *args, PyObject *kwargs)
         st->filter_expand_X = filter_expand_X_ONLYC;
         st->filter_expand_Y = filter_expand_Y_ONLYC;
     }
+#if defined(SCALE_MMX_SUPPORT)
     else if (strcmp(type, "MMX") == 0) {
         if (!SDL_HasMMX()) {
             return RAISE(PyExc_ValueError,
@@ -1598,6 +1607,15 @@ surf_set_smoothscale_backend(PyObject *self, PyObject *args, PyObject *kwargs)
         st->filter_expand_X = filter_expand_X_SSE;
         st->filter_expand_Y = filter_expand_Y_SSE;
     }
+#else
+    else if (strcmp(st->filter_type, "MMX") == 0 ||
+             strcmp(st->filter_type, "SSE") == 0) {
+        return PyErr_Format(PyExc_ValueError,
+                            "%s not supported on this machine", type);
+    }
+#endif /* ~defined(SCALE_MMX_SUPPORT) */
+#if !defined(__EMSCRIPTEN__)
+#if PG_ENABLE_SSE_NEON
     else if (strcmp(type, "SSE2") == 0) {
         if (!SDL_HasSSE2()) {
             return RAISE(PyExc_ValueError,
@@ -1609,22 +1627,24 @@ surf_set_smoothscale_backend(PyObject *self, PyObject *args, PyObject *kwargs)
         st->filter_expand_X = filter_expand_X_SSE2;
         st->filter_expand_Y = filter_expand_Y_SSE2;
     }
+
+    else if (strcmp(type, "NEON") == 0) {
+        if (!SDL_HasNEON()) {
+            return RAISE(PyExc_ValueError,
+                         "NEON not supported on this machine");
+        }
+        st->filter_type = "NEON";
+        st->filter_shrink_X = filter_shrink_X_SSE2;
+        st->filter_shrink_Y = filter_shrink_Y_SSE2;
+        st->filter_expand_X = filter_expand_X_SSE2;
+        st->filter_expand_Y = filter_expand_Y_SSE2;
+    }
+#endif /* PG_ENABLE_SSE_NEON */
+#endif /* !__EMSCRIPTEN__ */
     else {
         return PyErr_Format(PyExc_ValueError, "Unknown backend type %s", type);
     }
     Py_RETURN_NONE;
-#else  /* Not an x86 processor */
-    if (strcmp(type, "GENERIC") != 0) {
-        if (strcmp(st->filter_type, "MMX") == 0 ||
-            strcmp(st->filter_type, "SSE") == 0 ||
-            strcmp(st->filter_type, "SSE2") == 0) {
-            return PyErr_Format(PyExc_ValueError,
-                                "%s not supported on this machine", type);
-        }
-        return PyErr_Format(PyExc_ValueError, "Unknown backend type %s", type);
-    }
-    Py_RETURN_NONE;
-#endif /* defined(SCALE_MMX_SUPPORT) */
 }
 
 /* _get_color_move_pixels is for iterating over pixels in a Surface.
