@@ -1229,45 +1229,43 @@ smoothscale_init(struct _module_state *st)
         st->filter_shrink_Y = filter_shrink_Y_SSE2;
         st->filter_expand_X = filter_expand_X_SSE2;
         st->filter_expand_Y = filter_expand_Y_SSE2;
+        return;
     }
-    else if (SDL_HasNEON()) {
+    if (SDL_HasNEON()) {
         st->filter_type = "NEON";
         st->filter_shrink_X = filter_shrink_X_SSE2;
         st->filter_shrink_Y = filter_shrink_Y_SSE2;
         st->filter_expand_X = filter_expand_X_SSE2;
         st->filter_expand_Y = filter_expand_Y_SSE2;
+        return;
     }
 #endif /* PG_ENABLE_SSE_NEON */
 #endif /* !__EMSCRIPTEN__ */
 #ifdef SCALE_MMX_SUPPORT
-    else if (SDL_HasSSE()) {
+    if (SDL_HasSSE()) {
         st->filter_type = "SSE";
         st->filter_shrink_X = filter_shrink_X_SSE;
         st->filter_shrink_Y = filter_shrink_Y_SSE;
         st->filter_expand_X = filter_expand_X_SSE;
         st->filter_expand_Y = filter_expand_Y_SSE;
+        return;
     }
-    else if (SDL_HasMMX()) {
+    if (SDL_HasMMX()) {
         st->filter_type = "MMX";
         st->filter_shrink_X = filter_shrink_X_MMX;
         st->filter_shrink_Y = filter_shrink_Y_MMX;
         st->filter_expand_X = filter_expand_X_MMX;
         st->filter_expand_Y = filter_expand_Y_MMX;
+        return;
     }
-    else {
-        st->filter_type = "GENERIC";
-        st->filter_shrink_X = filter_shrink_X_ONLYC;
-        st->filter_shrink_Y = filter_shrink_Y_ONLYC;
-        st->filter_expand_X = filter_expand_X_ONLYC;
-        st->filter_expand_Y = filter_expand_Y_ONLYC;
-    }
-#else  /* ~SCALE_MMX_SUPPORT */
+#endif /* ~SCALE_MMX_SUPPORT */
+
+    /* If no accelerated options were selected, falls through to generic */
     st->filter_type = "GENERIC";
     st->filter_shrink_X = filter_shrink_X_ONLYC;
     st->filter_shrink_Y = filter_shrink_Y_ONLYC;
     st->filter_expand_X = filter_expand_X_ONLYC;
     st->filter_expand_Y = filter_expand_Y_ONLYC;
-#endif /* ~SCALE_MMX_SUPPORT */
 }
 
 static void
