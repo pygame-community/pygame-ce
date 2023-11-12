@@ -67,9 +67,8 @@ invert_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     Uint32 *srcp = (Uint32 *)src->pixels;
     Uint32 *dstp = (Uint32 *)newsurf->pixels;
 
-    Uint32 rgbmask =
-        (src->format->Rmask | src->format->Gmask | src->format->Bmask);
-    Uint32 amask = ~rgbmask;
+    Uint32 amask = src->format->Amask;
+    Uint32 rgbmask = ~amask;
 
     __m256i *srcp256 = (__m256i *)src->pixels;
     __m256i *dstp256 = (__m256i *)newsurf->pixels;
