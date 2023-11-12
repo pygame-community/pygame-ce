@@ -1035,11 +1035,9 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
             // slashes as these will work in python/pygame-ce on all platforms
             // and are less fiddly than back slash paths with escaped back
             // slashes.
-            char *back_slash = "\\";
-            char *foward_slash = "/";
             suggested_valid_path =
                 PyObject_CallMethod(suggested_valid_path, "replace", "ss",
-                                    back_slash, foward_slash);
+                                    "\\", "/");
             PyErr_Format(PyExc_FileNotFoundError,
                          "File not found at path: '%S', did you mean: '%S'?",
                          obj, suggested_valid_path);
@@ -1055,7 +1053,7 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
             Py_XDECREF(rel_path);
 
             if (!suggested_valid_path)
-                goto simple_case;
+                goto simple_relative_case_w_path;
 
             PyObject *suggested_rel_path = PyObject_Str(PyObject_CallMethod(
                 path_submodule, "relpath", "OO", suggested_valid_path, cwd));
@@ -1065,13 +1063,13 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
             // slashes as these will work in python/pygame-ce on all platforms
             // and are less fiddly than back slash paths with escaped back
             // slashes.
-            char *back_slash = "\\";
-            char *foward_slash = "/";
             suggested_rel_path = PyObject_CallMethod(
-                suggested_rel_path, "replace", "ss", back_slash, foward_slash);
+                suggested_rel_path, "replace", "ss", "\\", "/");
+            cwd = PyObject_CallMethod(cwd, "replace", "ss", "\\", "/");
             PyErr_Format(PyExc_FileNotFoundError,
-                         "File not found at path: '%S', did you mean: '%S'?",
-                         obj, suggested_rel_path);
+                         "No file '%S' found in working directory '%S', did "
+                         "you mean: '%S'?",
+                         obj, cwd, suggested_rel_path);
 
             Py_XDECREF(suggested_rel_path);
         }
@@ -1085,6 +1083,14 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
 simple_case:
     Py_XDECREF(path_submodule);
     goto simple_case_no_path;
+simple_relative_case_w_path:
+    cwd = PyObject_CallMethod(cwd, "replace", "ss", "\\", "/");
+    PyErr_Format(PyExc_FileNotFoundError,
+                 "No file '%S' found in working directory '%S'.", obj, cwd);
+    Py_XDECREF(path_submodule);
+    Py_XDECREF(cwd);
+    Py_XDECREF(isabs);
+    return NULL;
 simple_case_no_path:
     Py_XDECREF(cwd);
     Py_XDECREF(isabs);

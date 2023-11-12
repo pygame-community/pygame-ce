@@ -1845,6 +1845,8 @@ class ImageModuleTest(unittest.TestCase):
         with self.assertRaisesRegex(FileNotFoundError, error_message):
             pygame.image.load(absolute_fist_path)
 
+        working_directory = os.getcwd().replace("\\", "/")
+
         # test misspelled relative path suggestion
         rel_fist_path = os.path.relpath(absolute_fist_path, os.getcwd()).replace(
             "\\", "/"
@@ -1852,7 +1854,7 @@ class ImageModuleTest(unittest.TestCase):
         rel_expected_path = os.path.relpath(expected_path, os.getcwd()).replace(
             "\\", "/"
         )
-        error_message = f"File not found at path: '{rel_fist_path}', did you mean: '{rel_expected_path}'?"
+        error_message = f"No file '{rel_fist_path}' found in working directory '{working_directory}', did you mean: '{rel_expected_path}'?"
         with self.assertRaisesRegex(FileNotFoundError, error_message):
             pygame.image.load(rel_fist_path)
 
