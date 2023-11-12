@@ -1,9 +1,22 @@
 from typing import (
     overload,
+    Union,
+    Callable,
+    Protocol,
     Tuple,
+    Sequence,
 )
 
 from ._common import Coordinate
+
+_CanBeCircle = Union[Circle, Tuple[Coordinate, float], Sequence[float]]
+
+class _HasCirclettribute(Protocol):
+    # An object that has a circle attribute that is either a circle, or a function
+    # that returns a circle
+    circle: Union[_CanBeCircle, Callable[[], _CanBeCircle]]
+
+_CircleValue = Union[_CanBeCircle, _HasCirclettribute]
 
 class Circle:
     @property
@@ -18,9 +31,10 @@ class Circle:
     def r(self) -> float: ...
     @r.setter
     def r(self, value: float) -> None: ...
-
-    radius = r
-
+    @property
+    def radius(self) -> float: ...
+    @radius.setter
+    def radius(self, value: float) -> None: ...
     @property
     def r_sqr(self) -> float: ...
     @r_sqr.setter
@@ -29,9 +43,10 @@ class Circle:
     def d(self) -> float: ...
     @d.setter
     def d(self, value: float) -> None: ...
-
-    diameter = d
-
+    @property
+    def diameter(self) -> float: ...
+    @diameter.setter
+    def diameter(self, value: float) -> None: ...
     @property
     def area(self) -> float: ...
     @area.setter
@@ -49,12 +64,16 @@ class Circle:
     @overload
     def __init__(self, pos: Coordinate, r: float) -> None: ...
     @overload
-    def __init__(self, circle: Circle) -> None: ...
-    @overload
-    def __init__(self, obj_with_circle_attr) -> None: ...
+    def __init__(self, circle: _CircleValue) -> None: ...
     @overload
     def collidepoint(self, x: float, y: float) -> bool: ...
     @overload
     def collidepoint(self, point: Coordinate) -> bool: ...
+    @overload
+    def collidecircle(self, circle: _CircleValue) -> bool: ...
+    @overload
+    def collidecircle(self, x: float, y: float, r: float) -> bool: ...
+    @overload
+    def collidecircle(self, center: Coordinate, r: float) -> bool: ...
     def __copy__(self) -> Circle: ...
     copy = __copy__
