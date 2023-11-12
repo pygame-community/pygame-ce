@@ -79,14 +79,11 @@ invert_avx2(SDL_Surface *src, SDL_Surface *newsurf)
     mm256_rgb_invert_mask = _mm256_set1_epi32(rgbmask);
     mm256_alpha_mask = _mm256_set1_epi32(amask);
 
-    __m256i _partial8_mask =
-        _mm256_set_epi32(0x00, (remaining_pixels > 6) ? 0x80000000 : 0x00,
-                         (remaining_pixels > 5) ? 0x80000000 : 0x00,
-                         (remaining_pixels > 4) ? 0x80000000 : 0x00,
-                         (remaining_pixels > 3) ? 0x80000000 : 0x00,
-                         (remaining_pixels > 2) ? 0x80000000 : 0x00,
-                         (remaining_pixels > 1) ? 0x80000000 : 0x00,
-                         (remaining_pixels > 0) ? 0x80000000 : 0x00);
+    __m256i _partial8_mask = _mm256_set_epi32(
+        0x00, (remaining_pixels > 6) ? -1 : 0, (remaining_pixels > 5) ? -1 : 0,
+        (remaining_pixels > 4) ? -1 : 0, (remaining_pixels > 3) ? -1 : 0,
+        (remaining_pixels > 2) ? -1 : 0, (remaining_pixels > 1) ? -1 : 0,
+        (remaining_pixels > 0) ? -1 : 0);
 
     while (num_batches--) {
         perfect_8_pixels_batch_counter = perfect_8_pixels;
