@@ -170,25 +170,20 @@ _pg_has_avx2()
 #define SUB_CODE mm256_dst = _mm256_subs_epu8(mm256_dst, mm256_color);
 #define MIN_CODE mm256_dst = _mm256_min_epu8(mm256_dst, mm256_color);
 #define MAX_CODE mm256_dst = _mm256_max_epu8(mm256_dst, mm256_color);
-#define MULT_CODE                                               \
-    {                                                           \
-        shuff_dst = _mm256_mullo_epi16(shuff_dst, mm256_color); \
-        shuff_dst = _mm256_srli_epi16(shuff_dst, 8);            \
+#define MULT_CODE                                                         \
+    {                                                                     \
+        shuff_dst = _mm256_mullo_epi16(shuff_dst, mm256_color);           \
+        shuff_dst = _mm256_adds_epu16(shuff_dst, _mm256_set1_epi16(255)); \
+        shuff_dst = _mm256_srli_epi16(shuff_dst, 8);                      \
     }
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
 FILLERS(add, color &= ~amask;, ADD_CODE)
 FILLERS(sub, color &= ~amask;, SUB_CODE)
-FILLERS(min, color &= ~amask;, MIN_CODE)
+FILLERS(min, color |= amask;, MIN_CODE)
 FILLERS(max, color &= ~amask;, MAX_CODE)
-FILLERS_SHUFF(
-    mult,
-    {
-        color &= ~amask;               /* clear the alpha channel */
-        color |= (0x01010101 & amask); /* set the alpha channel to 1 */
-    },
-    MULT_CODE)
+FILLERS_SHUFF(mult, color |= amask;, MULT_CODE)
 #else
 INVALID_DEFS(add)
 INVALID_DEFS(sub)
