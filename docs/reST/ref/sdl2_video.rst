@@ -240,7 +240,7 @@
       Setting this attribute to a :class:`pygame.Rect` to confine the
       cursor to the specified area of this window.
 
-      This attribute can be None, representing there is no mouse rect.
+      This attribute can be None, meaning that there is no mouse rect.
       
       Note that this does NOT grab the cursor, it only defines the area a
       cursor is restricted to when the window has mouse focus.
