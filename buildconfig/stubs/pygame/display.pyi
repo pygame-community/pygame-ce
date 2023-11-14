@@ -1,7 +1,9 @@
-from typing import Dict, List, Optional, Tuple, Union, overload
+from typing import Dict, List, Optional, Tuple, Union, overload, Literal
 
 from pygame.constants import FULLSCREEN
 from pygame.surface import Surface
+
+from pygame._sdl2 import Window
 
 from ._common import (
     ColorValue,
@@ -29,6 +31,7 @@ class _VidInfo:
     blit_sw_A: int
     current_h: int
     current_w: int
+    pixel_format: str
 
 def init() -> None: ...
 def quit() -> None: ...
@@ -86,3 +89,12 @@ def is_fullscreen() -> bool: ...
 def is_vsync() -> bool: ...
 def get_current_refresh_rate() -> int: ...
 def get_desktop_refresh_rates() -> List[int]: ...
+def message_box(
+    title: str,
+    message: Optional[str] = None,
+    message_type: Literal["info", "warn", "error"] = "info",
+    parent_window: Optional[Window] = None,
+    buttons: Sequence[str] = ("OK",),
+    return_button: int = 0,
+    escape_button: Optional[int] = None,
+) -> int: ...

@@ -7,7 +7,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ `Français`_ **فارسی**
+`English`_ `简体中文`_ `Français`_ **فارسی** `Español`_
 ---------------------------------------------------------------------------------------------------
 کتابخانه
 Pygame_
@@ -123,7 +123,7 @@ Credits
 * David Clark for filling the right-hand-man position
 * Ed Boraas and Francis Irving: Debian packages
 * Maxim Sobolev: FreeBSD packaging
-* Bob Ippolito: MacOS and OS X porting (much work!)
+* Bob Ippolito: macOS and OS X porting (much work!)
 * Jan Ekhol, Ray Kelm, and Peter Nicolai: putting up with early design ideas
 * Nat Pryce for starting our unit tests
 * Dan Richter for documentation work
@@ -169,6 +169,8 @@ Michael Benfield, David Lau
 Dependencies (وابستگی ها)
 ------------
 
+**note:** This section translation is out of date (September 2023)
+
 کتابخانه Pygame به وضوح به کتابخانه SDL و زبان Python وابسته است.
 همچنین به چندین کتابخانه کوچکتر دیگر نیز لینک می‌شود و از آنها استفاده می‌کند.
 ماژول فونت به کتابخانه SDL_ttf تکیه می کند که خود نیز به freetype وابسته است.
@@ -186,19 +188,15 @@ Dependencies (وابستگی ها)
 مشاهده کنید.
 
 +----------+------------------------+
-| CPython  | >= 3.7 (Or use PyPy3)  |
+| CPython  | >= 3.8 (Or use PyPy3)  |
 +----------+------------------------+
-| SDL      | >= 2.0.8               |
+| SDL      | >= 2.0.9               |
 +----------+------------------------+
-| SDL_mixer| >= 2.0.0               |
+| SDL_mixer| >= 2.0.4               |
 +----------+------------------------+
-| SDL_image| >= 2.0.2               |
+| SDL_image| >= 2.0.4               |
 +----------+------------------------+
-| SDL_ttf  | >= 2.0.11              |
-+----------+------------------------+
-| SDL_gfx  | (Optional, vendored in)|
-+----------+------------------------+
-| NumPy    | >= 1.6.2 (Optional)    |
+| SDL_ttf  | >= 2.0.15              |
 +----------+------------------------+
 
 
@@ -253,3 +251,4 @@ License
 .. _English: ./../../README.rst
 .. _简体中文: README.zh-cn.rst
 .. _Français: README.fr.rst
+.. _Español: README.es.rst

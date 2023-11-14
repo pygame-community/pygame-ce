@@ -23,7 +23,7 @@ pg_system_get_cpu_instruction_sets(PyObject *self, PyObject *_null)
     }                                                               \
     Py_DECREF(tmp_bool);
 
-    INSERT_INSTRUCTIONSET_INFO("RDTSC", SDL_HasRDTSC);
+    // Don't insert SDL_HasRDTSC because it's been removed in SDL3
     INSERT_INSTRUCTIONSET_INFO("ALTIVEC", SDL_HasAltiVec);
     INSERT_INSTRUCTIONSET_INFO("MMX", SDL_HasMMX);
     INSERT_INSTRUCTIONSET_INFO("SSE", SDL_HasSSE);

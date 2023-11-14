@@ -93,6 +93,10 @@ _display_state_cleanup(_DisplayState *state)
     }
 }
 
+// prevent this code block from being linked twice
+// (this code block is copied by window.c)
+#ifndef BUILD_STATIC
+
 #if !defined(__APPLE__)
 static char *icon_defaultname = "pygame_icon.bmp";
 static int icon_colorkey = 0;
@@ -175,6 +179,8 @@ display_resource_end:
     Py_XDECREF(name);
     return result;
 }
+
+#endif  // BUILD_STATIC
 
 /* init routines */
 static PyObject *
@@ -324,6 +330,14 @@ pg_vidinfo_getattr(PyObject *self, char *name)
         return PyLong_FromLong(current_h);
     else if (!strcmp(name, "current_w"))
         return PyLong_FromLong(current_w);
+    else if (!strcmp(name, "pixel_format")) {
+        const char *pixel_format_name =
+            SDL_GetPixelFormatName(info->vfmt->format);
+        if (!strncmp(pixel_format_name, "SDL_", 4)) {
+            pixel_format_name += 4;
+        }
+        return PyUnicode_FromString(pixel_format_name);
+    }
 
     return RAISE(PyExc_AttributeError, "does not exist in vidinfo");
 }
@@ -335,6 +349,9 @@ pg_vidinfo_str(PyObject *self)
     int current_h = -1;
     pg_VideoInfo *info = &((pgVidInfoObject *)self)->info;
     const char *pixel_format_name = SDL_GetPixelFormatName(info->vfmt->format);
+    if (!strncmp(pixel_format_name, "SDL_", 4)) {
+        pixel_format_name += 4;
+    }
 
     SDL_version versioninfo;
     SDL_VERSION(&versioninfo);
@@ -696,23 +713,20 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
 
     if (state->unscaled_render && pg_renderer != NULL) {
         if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-            if (window == pygame_window) {
-                int w = event->window.data1;
-                int h = event->window.data2;
-                pgSurfaceObject *display_surface =
-                    pg_GetDefaultWindowSurface();
-                SDL_Surface *surf = SDL_CreateRGBSurfaceWithFormat(
-                    0, w, h, 32, PG_PIXELFORMAT_XRGB8888);
+            int w = event->window.data1;
+            int h = event->window.data2;
+            pgSurfaceObject *display_surface = pg_GetDefaultWindowSurface();
+            SDL_Surface *surf =
+                PG_CreateSurface(w, h, PG_PIXELFORMAT_XRGB8888);
 
-                SDL_FreeSurface(display_surface->surf);
-                display_surface->surf = surf;
+            SDL_FreeSurface(display_surface->surf);
+            display_surface->surf = surf;
 
-                SDL_DestroyTexture(pg_texture);
+            SDL_DestroyTexture(pg_texture);
 
-                pg_texture =
-                    SDL_CreateTexture(pg_renderer, SDL_PIXELFORMAT_ARGB8888,
-                                      SDL_TEXTUREACCESS_STREAMING, w, h);
-            }
+            pg_texture =
+                SDL_CreateTexture(pg_renderer, SDL_PIXELFORMAT_ARGB8888,
+                                  SDL_TEXTUREACCESS_STREAMING, w, h);
         }
         return 0;
     }
@@ -757,12 +771,10 @@ pg_ResizeEventWatch(void *userdata, SDL_Event *event)
     }
 
     if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-        if (window == pygame_window) {
-            SDL_Surface *sdl_surface = SDL_GetWindowSurface(window);
-            pgSurfaceObject *old_surface = pg_GetDefaultWindowSurface();
-            if (sdl_surface != old_surface->surf) {
-                old_surface->surf = sdl_surface;
-            }
+        SDL_Surface *sdl_surface = SDL_GetWindowSurface(window);
+        pgSurfaceObject *old_surface = pg_GetDefaultWindowSurface();
+        if (sdl_surface != old_surface->surf) {
+            old_surface->surf = sdl_surface;
         }
     }
     return 0;
@@ -999,7 +1011,6 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
         }
 
-#pragma PG_WARN(Not setting bpp ?)
 #pragma PG_WARN(Add mode stuff.)
         {
             int w_1 = w, h_1 = h;
@@ -1169,8 +1180,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
                 So we make a fake surface.
                 */
-                surf = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32,
-                                                      PG_PIXELFORMAT_XRGB8888);
+                surf = PG_CreateSurface(w, h, PG_PIXELFORMAT_XRGB8888);
                 newownedsurf = surf;
             }
             else {
@@ -1271,8 +1281,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                         pg_renderer, SDL_PIXELFORMAT_ARGB8888,
                         SDL_TEXTUREACCESS_STREAMING, w, h);
                 }
-                surf = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32,
-                                                      PG_PIXELFORMAT_XRGB8888);
+                surf = PG_CreateSurface(w, h, PG_PIXELFORMAT_XRGB8888);
                 newownedsurf = surf;
             }
             else {
@@ -1358,6 +1367,14 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                              "on top of wayland, instead of wayland directly",
                              1) != 0)
                 return NULL;
+        }
+    }
+
+    if (depth != 0 && surface->surf->format->BitsPerPixel != depth) {
+        if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                         "The depth argument is deprecated, and is ignored",
+                         1)) {
+            return NULL;
         }
     }
 
@@ -2055,7 +2072,7 @@ pg_iconify(PyObject *self, PyObject *_null)
  * running on, or to inform the user when the game is not running with HW
  * acceleration, but openGL can still be available without HW acceleration. */
 static PyObject *
-pg_get_scaled_renderer_info(PyObject *self)
+pg_get_scaled_renderer_info(PyObject *self, PyObject *_null)
 {
     SDL_RendererInfo r_info;
 
@@ -2072,7 +2089,7 @@ pg_get_scaled_renderer_info(PyObject *self)
 }
 
 static PyObject *
-pg_get_desktop_screen_sizes(PyObject *self)
+pg_get_desktop_screen_sizes(PyObject *self, PyObject *_null)
 {
     int display_count, i;
     SDL_DisplayMode dm;
@@ -2126,7 +2143,7 @@ pg_is_fullscreen(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
-pg_is_vsync(PyObject *self)
+pg_is_vsync(PyObject *self, PyObject *_null)
 {
     SDL_Window *win = pg_GetDefaultWindow();
     _DisplayState *state = DISPLAY_STATE;
@@ -2158,7 +2175,7 @@ pg_is_vsync(PyObject *self)
 }
 
 static PyObject *
-pg_current_refresh_rate(PyObject *self)
+pg_current_refresh_rate(PyObject *self, PyObject *_null)
 {
     SDL_Window *win = pg_GetDefaultWindow();
     SDL_DisplayMode mode;
@@ -2179,7 +2196,7 @@ pg_current_refresh_rate(PyObject *self)
 }
 
 static PyObject *
-pg_desktop_refresh_rates(PyObject *self)
+pg_desktop_refresh_rates(PyObject *self, PyObject *_null)
 {
     int display_count, i;
     SDL_DisplayMode dm;
@@ -2644,7 +2661,7 @@ pg_display_resize_event(PyObject *self, PyObject *event)
 }
 
 static PyObject *
-pg_get_allow_screensaver(PyObject *self)
+pg_get_allow_screensaver(PyObject *self, PyObject *_null)
 {
     /* SDL_IsScreenSaverEnabled() unconditionally returns SDL_True if
      * the video system is not initialized.  Therefore we insist on
@@ -2673,6 +2690,198 @@ pg_set_allow_screensaver(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     Py_RETURN_NONE;
+}
+
+static PyObject *
+pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
+{
+    const char *title = NULL;
+    PyObject *message = Py_None, *parent_window = Py_None;
+    const char *msgbox_type = "info";
+    PyObject *buttons = NULL;
+    PyObject *escape_button_index_obj = Py_None;
+
+    int return_button_index = 0;
+
+    static char *keywords[] = {"title",         "message", "message_type",
+                               "parent_window", "buttons", "return_button",
+                               "escape_button", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(
+            arg, kwargs, "s|OsO!OiO", keywords, &title, &message, &msgbox_type,
+            &pgWindow_Type, &parent_window, &buttons, &return_button_index,
+            &escape_button_index_obj)) {
+        return NULL;
+    }
+
+    int escape_button_index = 0;
+    SDL_bool escape_button_used = SDL_FALSE;
+    if (escape_button_index_obj != Py_None) {
+        escape_button_index = PyLong_AsLong(escape_button_index_obj);
+        if (escape_button_index == -1 && PyErr_Occurred())
+            return NULL;
+        escape_button_used = SDL_TRUE;
+    }
+
+    SDL_MessageBoxData msgbox_data;
+
+    msgbox_data.flags = 0;
+    if (!strcmp(msgbox_type, "info")) {
+        msgbox_data.flags |= SDL_MESSAGEBOX_INFORMATION;
+    }
+    else if (!strcmp(msgbox_type, "warn")) {
+        msgbox_data.flags |= SDL_MESSAGEBOX_WARNING;
+    }
+    else if (!strcmp(msgbox_type, "error")) {
+        msgbox_data.flags |= SDL_MESSAGEBOX_ERROR;
+    }
+    else {
+        PyErr_Format(PyExc_ValueError,
+                     "type should be 'info', 'warn' or 'error', "
+                     "got '%s'",
+                     msgbox_type);
+        return NULL;
+    }
+
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+    msgbox_data.flags |= SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT;
+#endif
+
+    if (parent_window == Py_None)
+        msgbox_data.window = NULL;
+    else
+        msgbox_data.window = ((pgWindowObject *)parent_window)->_win;
+
+    msgbox_data.colorScheme = NULL;  // use system color scheme settings
+
+    msgbox_data.title = title;
+    if (PyUnicode_Check(message)) {
+        msgbox_data.message = PyUnicode_AsUTF8(message);
+        if (!msgbox_data.message)
+            return NULL;
+    }
+    else if (message == Py_None) {
+        msgbox_data.message = title;
+    }
+    else {
+        PyErr_Format(PyExc_TypeError, "'message' must be str, not '%s'",
+                     message->ob_type->tp_name);
+        return NULL;
+    }
+
+    SDL_MessageBoxButtonData *buttons_data = NULL;
+
+    if (buttons == NULL) {
+        buttons_data = malloc(sizeof(SDL_MessageBoxButtonData));
+        buttons_data->flags = 0;
+        buttons_data->buttonid = 0;
+        buttons_data->text = "OK";
+
+        msgbox_data.numbuttons = 1;
+
+        if (-1 > return_button_index || return_button_index >= 1) {
+            PyErr_SetString(PyExc_IndexError,
+                            "return_button index out of range");
+            goto error;
+        }
+        buttons_data->flags |= SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+
+        if (escape_button_used) {
+            if (-1 > escape_button_index || escape_button_index >= 1) {
+                PyErr_SetString(PyExc_IndexError,
+                                "escape_button index out of range");
+                goto error;
+            }
+            buttons_data->flags |= SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+        }
+    }
+    else {
+        if (!PySequence_Check(buttons) || PyUnicode_Check(buttons)) {
+            PyErr_Format(PyExc_TypeError,
+                         "'buttons' should be a sequence of string, got '%s'",
+                         buttons->ob_type->tp_name);
+            return NULL;
+        }
+        Py_ssize_t num_buttons = PySequence_Size(buttons);
+        msgbox_data.numbuttons = (int)num_buttons;
+        if (num_buttons < 0) {
+            return NULL;
+        }
+        else if (num_buttons == 0) {
+            return RAISE(PyExc_TypeError,
+                         "'buttons' should contain at least 1 button");
+        }
+
+        if (return_button_index < 0) {
+            return_button_index = (int)num_buttons + return_button_index;
+        }
+        if (0 > return_button_index || return_button_index >= num_buttons) {
+            return RAISE(PyExc_IndexError, "return_button index out of range");
+        }
+        if (escape_button_used) {
+            if (escape_button_index < 0) {
+                escape_button_index = (int)num_buttons + escape_button_index;
+            }
+            if (0 > escape_button_index ||
+                escape_button_index >= num_buttons) {
+                return RAISE(PyExc_IndexError,
+                             "escape_button index out of range");
+            }
+        }
+
+        buttons_data = malloc(sizeof(SDL_MessageBoxButtonData) * num_buttons);
+        for (Py_ssize_t i = 0; i < num_buttons; i++) {
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+            PyObject *btn_name_obj = PySequence_GetItem(buttons, i);
+#else
+            PyObject *btn_name_obj =
+                PySequence_GetItem(buttons, num_buttons - i - 1);
+#endif
+            if (!btn_name_obj)
+                goto error;
+
+            if (!PyUnicode_Check(btn_name_obj)) {
+                PyErr_SetString(PyExc_TypeError,
+                                "'buttons' should be a sequence of string");
+                goto error;
+            }
+
+            const char *btn_name = PyUnicode_AsUTF8(btn_name_obj);
+            if (!btn_name)
+                goto error;
+
+            buttons_data[i].text = btn_name;
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+            buttons_data[i].buttonid = (int)i;
+#else
+            buttons_data[i].buttonid = (int)(num_buttons - i - 1);
+#endif
+            buttons_data[i].flags = 0;
+            if (return_button_index == buttons_data[i].buttonid)
+                buttons_data[i].flags |=
+                    SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+            if (escape_button_used &&
+                escape_button_index == buttons_data[i].buttonid)
+                buttons_data[i].flags |=
+                    SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+        }
+    }
+
+    msgbox_data.buttons = buttons_data;
+
+    int clicked_button_id;
+
+    if (SDL_ShowMessageBox(&msgbox_data, &clicked_button_id)) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        goto error;
+    }
+
+    free(buttons_data);
+    return PyLong_FromLong(clicked_button_id);
+
+error:
+    free(buttons_data);
+    return NULL;
 }
 
 static PyMethodDef _pg_display_methods[] = {
@@ -2746,7 +2955,8 @@ static PyMethodDef _pg_display_methods[] = {
      METH_NOARGS, DOC_DISPLAY_GETALLOWSCREENSAVER},
     {"set_allow_screensaver", (PyCFunction)pg_set_allow_screensaver,
      METH_VARARGS | METH_KEYWORDS, DOC_DISPLAY_SETALLOWSCREENSAVER},
-
+    {"message_box", (PyCFunction)pg_message_box, METH_VARARGS | METH_KEYWORDS,
+     DOC_DISPLAY_MESSAGEBOX},
     {NULL, NULL, 0, NULL}};
 
 #ifndef PYPY_VERSION
@@ -2784,6 +2994,10 @@ MODINIT_DEFINE(display)
         return NULL;
     }
     import_pygame_surface();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    import_pygame_window();
     if (PyErr_Occurred()) {
         return NULL;
     }

@@ -6,7 +6,7 @@
 #define DOC_DISPLAY_SETMODE "set_mode(size=(0, 0), flags=0, depth=0, display=0, vsync=0) -> Surface\nInitialize a window or screen for display"
 #define DOC_DISPLAY_GETSURFACE "get_surface() -> Surface\nGet a reference to the currently set display surface"
 #define DOC_DISPLAY_FLIP "flip() -> None\nUpdate the full display Surface to the screen"
-#define DOC_DISPLAY_UPDATE "update(rectangle=None) -> None\nupdate(rectangle_list) -> None\nUpdate portions of the screen for software displays"
+#define DOC_DISPLAY_UPDATE "update(rectangle=None) -> None\nupdate(rectangle_list) -> None\nUpdate all, or a portion, of the display. For non-OpenGL displays."
 #define DOC_DISPLAY_GETDRIVER "get_driver() -> name\nGet the name of the pygame display backend"
 #define DOC_DISPLAY_INFO "Info() -> VideoInfo\nCreate a video display information object"
 #define DOC_DISPLAY_GETWMINFO "get_wm_info() -> dict\nGet information about the current windowing system"
@@ -32,3 +32,4 @@
 #define DOC_DISPLAY_ISVSYNC "is_vsync() -> bool\nReturns True if vertical synchronisation for pygame.display.flip() and pygame.display.update() is enabled"
 #define DOC_DISPLAY_GETCURRENTREFRESHRATE "get_current_refresh_rate() -> int\nReturns the screen refresh rate or 0 if unknown"
 #define DOC_DISPLAY_GETDESKTOPREFRESHRATES "get_desktop_refresh_rates() -> list\nReturns the screen refresh rates for all displays (in windowed mode)."
+#define DOC_DISPLAY_MESSAGEBOX "message_box(title, message=None, message_type='info', parent_window=None, buttons=('OK',), return_button=0, escape_button=None) -> int\nCreate a native GUI message box"

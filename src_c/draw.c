@@ -46,7 +46,7 @@ draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
           int *drawn_area);
 static void
 draw_aaline(SDL_Surface *surf, Uint32 color, float startx, float starty,
-            float endx, float endy, int blend, int *drawn_area);
+            float endx, float endy, int *drawn_area);
 static void
 draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
          int radius2, int width, double angle_start, double angle_stop,
@@ -105,31 +105,20 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *colorobj, *start, *end;
     SDL_Surface *surf = NULL;
     float startx, starty, endx, endy;
-    int blend = 1; /* Default blend. */
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     Uint32 color;
-    static char *keywords[] = {"surface", "color", "start_pos",
-                               "end_pos", "blend", NULL};
+    static char *keywords[] = {"surface", "color", "start_pos", "end_pos",
+                               NULL};
 
     if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|i", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
-                                     &start, &end, &blend)) {
+                                     &start, &end)) {
         return NULL; /* Exception already set. */
     }
 
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
-
-    if (!blend) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "blend=False will be deprecated in pygame 2.2 and will "
-                "default to True",
-                1) == -1) {
-            return NULL;
-        }
-    }
 
     if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
         return PyErr_Format(PyExc_ValueError,
@@ -151,7 +140,7 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
-    draw_aaline(surf, color, startx, starty, endx, endy, blend, drawn_area);
+    draw_aaline(surf, color, startx, starty, endx, endy, drawn_area);
 
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");
@@ -253,14 +242,12 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     int result, closed;
-    int blend = 1; /* Default blend. */
     Py_ssize_t loop, length;
-    static char *keywords[] = {"surface", "color", "closed",
-                               "points",  "blend", NULL};
+    static char *keywords[] = {"surface", "color", "closed", "points", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OpO|i", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
-                                     &closed, &points, &blend)) {
+                                     &closed, &points)) {
         return NULL; /* Exception already set. */
     }
 
@@ -271,16 +258,6 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
                             surf->format->BytesPerPixel);
-    }
-
-    if (!blend) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "blend=False will be deprecated in pygame 2.2 and will "
-                "default to True",
-                1) == -1) {
-            return NULL;
-        }
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -341,16 +318,14 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         pts[1] = ylist[loop - 1];
         pts[2] = xlist[loop];
         pts[3] = ylist[loop];
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], blend,
-                    drawn_area);
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area);
     }
     if (closed && length > 2) {
         pts[0] = xlist[length - 1];
         pts[1] = ylist[length - 1];
         pts[2] = xlist[0];
         pts[3] = ylist[0];
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], blend,
-                    drawn_area);
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area);
     }
 
     PyMem_Free(xlist);
@@ -998,36 +973,26 @@ compare_int(const void *a, const void *b)
 
 static Uint32
 get_antialiased_color(SDL_Surface *surf, int x, int y, Uint32 original_color,
-                      float brightness, int blend)
+                      float brightness)
 {
     Uint8 color_part[4], background_color[4];
     Uint32 *pixels = (Uint32 *)surf->pixels;
     SDL_GetRGBA(original_color, surf->format, &color_part[0], &color_part[1],
                 &color_part[2], &color_part[3]);
-    if (blend) {
-        if (x < surf->clip_rect.x ||
-            x >= surf->clip_rect.x + surf->clip_rect.w ||
-            y < surf->clip_rect.y ||
-            y >= surf->clip_rect.y + surf->clip_rect.h)
-            return original_color;
-        SDL_GetRGBA(pixels[(y * surf->w) + x], surf->format,
-                    &background_color[0], &background_color[1],
-                    &background_color[2], &background_color[3]);
-        color_part[0] = (Uint8)(brightness * color_part[0] +
-                                (1 - brightness) * background_color[0]);
-        color_part[1] = (Uint8)(brightness * color_part[1] +
-                                (1 - brightness) * background_color[1]);
-        color_part[2] = (Uint8)(brightness * color_part[2] +
-                                (1 - brightness) * background_color[2]);
-        color_part[3] = (Uint8)(brightness * color_part[3] +
-                                (1 - brightness) * background_color[3]);
-    }
-    else {
-        color_part[0] = (Uint8)(brightness * color_part[0]);
-        color_part[1] = (Uint8)(brightness * color_part[1]);
-        color_part[2] = (Uint8)(brightness * color_part[2]);
-        color_part[3] = (Uint8)(brightness * color_part[3]);
-    }
+    if (x < surf->clip_rect.x || x >= surf->clip_rect.x + surf->clip_rect.w ||
+        y < surf->clip_rect.y || y >= surf->clip_rect.y + surf->clip_rect.h)
+        return original_color;
+    SDL_GetRGBA(pixels[(y * surf->w) + x], surf->format, &background_color[0],
+                &background_color[1], &background_color[2],
+                &background_color[3]);
+    color_part[0] = (Uint8)(brightness * color_part[0] +
+                            (1 - brightness) * background_color[0]);
+    color_part[1] = (Uint8)(brightness * color_part[1] +
+                            (1 - brightness) * background_color[1]);
+    color_part[2] = (Uint8)(brightness * color_part[2] +
+                            (1 - brightness) * background_color[2]);
+    color_part[3] = (Uint8)(brightness * color_part[3] +
+                            (1 - brightness) * background_color[3]);
     original_color = SDL_MapRGBA(surf->format, color_part[0], color_part[1],
                                  color_part[2], color_part[3]);
     return original_color;
@@ -1141,7 +1106,7 @@ set_and_check_rect(SDL_Surface *surf, int x, int y, Uint32 color,
 
 static void
 draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
-            float to_x, float to_y, int blend, int *drawn_area)
+            float to_x, float to_y, int *drawn_area)
 {
     float gradient, dx, dy, intersect_y, brightness;
     int x, x_pixel_start, x_pixel_end;
@@ -1157,7 +1122,7 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
     if (fabs(dx) < 0.0001 && fabs(dy) < 0.0001) {
         pixel_color =
             get_antialiased_color(surf, (int)floor(from_x + 0.5),
-                                  (int)floor(from_y + 0.5), color, 1, blend);
+                                  (int)floor(from_y + 0.5), color, 1);
         set_and_check_rect(surf, (int)floor(from_x + 0.5),
                            (int)floor(from_y + 0.5), pixel_color, drawn_area);
         return;
@@ -1260,8 +1225,8 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
             y = (int)y_endpoint;
         }
         if ((int)y_endpoint < y_endpoint) {
-            pixel_color = get_antialiased_color(surf, x, y, color,
-                                                brightness * x_gap, blend);
+            pixel_color =
+                get_antialiased_color(surf, x, y, color, brightness * x_gap);
             set_and_check_rect(surf, x, y, pixel_color, drawn_area);
         }
         if (steep) {
@@ -1271,8 +1236,8 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
             y--;
         }
         brightness = 1 - brightness;
-        pixel_color = get_antialiased_color(surf, x, y, color,
-                                            brightness * x_gap, blend);
+        pixel_color =
+            get_antialiased_color(surf, x, y, color, brightness * x_gap);
         set_and_check_rect(surf, x, y, pixel_color, drawn_area);
         intersect_y += gradient;
         x_pixel_start++;
@@ -1292,8 +1257,8 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
             y = (int)y_endpoint;
         }
         if ((int)y_endpoint < y_endpoint) {
-            pixel_color = get_antialiased_color(surf, x, y, color,
-                                                brightness * x_gap, blend);
+            pixel_color =
+                get_antialiased_color(surf, x, y, color, brightness * x_gap);
             set_and_check_rect(surf, x, y, pixel_color, drawn_area);
         }
         if (steep) {
@@ -1303,8 +1268,8 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
             y--;
         }
         brightness = 1 - brightness;
-        pixel_color = get_antialiased_color(surf, x, y, color,
-                                            brightness * x_gap, blend);
+        pixel_color =
+            get_antialiased_color(surf, x, y, color, brightness * x_gap);
         set_and_check_rect(surf, x, y, pixel_color, drawn_area);
     }
 
@@ -1313,25 +1278,25 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
         y = (int)intersect_y;
         if (steep) {
             brightness = 1 - intersect_y + y;
-            pixel_color = get_antialiased_color(surf, y - 1, x, color,
-                                                brightness, blend);
+            pixel_color =
+                get_antialiased_color(surf, y - 1, x, color, brightness);
             set_and_check_rect(surf, y - 1, x, pixel_color, drawn_area);
             if (y < intersect_y) {
                 brightness = 1 - brightness;
-                pixel_color = get_antialiased_color(surf, y, x, color,
-                                                    brightness, blend);
+                pixel_color =
+                    get_antialiased_color(surf, y, x, color, brightness);
                 set_and_check_rect(surf, y, x, pixel_color, drawn_area);
             }
         }
         else {
             brightness = 1 - intersect_y + y;
-            pixel_color = get_antialiased_color(surf, x, y - 1, color,
-                                                brightness, blend);
+            pixel_color =
+                get_antialiased_color(surf, x, y - 1, color, brightness);
             set_and_check_rect(surf, x, y - 1, pixel_color, drawn_area);
             if (y < intersect_y) {
                 brightness = 1 - brightness;
-                pixel_color = get_antialiased_color(surf, x, y, color,
-                                                    brightness, blend);
+                pixel_color =
+                    get_antialiased_color(surf, x, y, color, brightness);
                 set_and_check_rect(surf, x, y, pixel_color, drawn_area);
             }
         }
@@ -2615,6 +2580,7 @@ draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
     int y, miny, maxy;
     int x1, y1;
     int x2, y2;
+    float intersect;
     /* x_intersect are the x-coordinates of intersections of the polygon
      * with some horizontal line */
     int *x_intersect = PyMem_New(int, num_points);
@@ -2680,12 +2646,16 @@ draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
             if (((y >= y1) && (y < y2)) || ((y == maxy) && (y2 == maxy))) {
                 // add intersection if y crosses the edge (excluding the lower
                 // end), or when we are on the lowest line (maxy)
-                x_intersect[n_intersections++] =
-                    (y - y1) * (x2 - x1) / (y2 - y1) + x1;
+                intersect = (y - y1) * (x2 - x1) / (float)(y2 - y1);
+                if (n_intersections % 2 == 0) {
+                    intersect = (float)floor(intersect);
+                }
+                else
+                    intersect = (float)ceil(intersect);
+                x_intersect[n_intersections++] = (int)intersect + x1;
             }
         }
         qsort(x_intersect, n_intersections, sizeof(int), compare_int);
-
         for (i = 0; (i < n_intersections); i += 2) {
             drawhorzlineclipbounding(surf, color, x_intersect[i], y,
                                      x_intersect[i + 1], drawn_area);

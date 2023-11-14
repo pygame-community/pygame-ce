@@ -8,12 +8,6 @@
 
 | :sl:`pygame module to provide additional context about the system`
 
-**EXPERIMENTAL!** This API may change or disappear in later pygame releases. 
-If you use this, your code may break with the next pygame release.
-This is a new module, so we are marking it experimental for now.
-We probably won't have to change API, but we're keeping the possibility
-open just in case something obvious comes up.
-
 .. versionadded:: 2.2.0
 
 .. function:: get_cpu_instruction_sets
@@ -33,7 +27,6 @@ open just in case something obvious comes up.
    ::
 
      {
-          'RDTSC': True,
           'ALTIVEC': False,
           'MMX': True,
           'SSE': True,
@@ -57,6 +50,9 @@ open just in case something obvious comes up.
       SDL version < 2.24.0.
    
    .. versionadded:: 2.3.1
+
+    .. versionchanged:: 2.4.0 removed ``RDTSC`` key, 
+        as it has been removed in pre-release SDL3
 
 .. function:: get_total_ram
 
@@ -142,6 +138,11 @@ open just in case something obvious comes up.
 
    | :sl:`get the current power supply state`
    | :sg:`get_pref_power_state() -> PowerState`
+
+   **Experimental:** feature available for testing and feedback.
+   We don't anticipate it changing, but it might if something important
+   is brought up. `Please leave get_power_state feedback with 
+   authors <https://github.com/pygame-community/pygame-ce/pull/2257>`_
 
    Returns a ``PowerState`` object representing the power supply state.
    
