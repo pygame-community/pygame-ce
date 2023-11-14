@@ -608,7 +608,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    .. method:: queue
 
       | :sl:`queue a Sound object to follow the current`
-      | :sg:`queue(Sound, /) -> None`
+      | :sg:`queue(sound, /) -> None`
 
       When a Sound is queued on a Channel, it will begin playing immediately
       after the current Sound is finished. Each channel can only have a single

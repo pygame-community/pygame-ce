@@ -625,7 +625,7 @@ required).
 .. function:: set_icon
 
    | :sl:`Change the system image for the display window`
-   | :sg:`set_icon(Surface, /) -> None`
+   | :sg:`set_icon(surface, /) -> None`
 
    Sets the runtime icon the system will use to represent the display window.
    All windows default to a simple pygame logo for the window icon.

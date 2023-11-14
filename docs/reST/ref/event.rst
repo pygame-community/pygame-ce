@@ -430,7 +430,7 @@ On Android, the following events can be generated
 .. function:: post
 
    | :sl:`place a new event on the queue`
-   | :sg:`post(Event, /) -> bool`
+   | :sg:`post(event, /) -> bool`
 
    Places the given event at the end of the event queue.
 

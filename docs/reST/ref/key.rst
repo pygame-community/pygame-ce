@@ -495,7 +495,7 @@ for ``KMOD_NONE``, which should be compared using equals ``==``). For example:
 .. function:: set_text_input_rect
 
    | :sl:`controls the position of the candidate list`
-   | :sg:`set_text_input_rect(Rect, /) -> None`
+   | :sg:`set_text_input_rect(rect, /) -> None`
 
    This sets the rectangle used for typing with an IME.
    It controls where the candidate list will open, if supported.

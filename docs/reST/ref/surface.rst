@@ -213,7 +213,7 @@
    .. method:: convert
 
       | :sl:`change the pixel format of an image`
-      | :sg:`convert(Surface=None, /) -> Surface`
+      | :sg:`convert(surface=None, /) -> Surface`
       | :sg:`convert(depth, flags=0, /) -> Surface`
       | :sg:`convert(masks, flags=0, /) -> Surface`
 
@@ -240,7 +240,7 @@
    .. method:: convert_alpha
 
       | :sl:`change the pixel format of an image including per pixel alphas`
-      | :sg:`convert_alpha(Surface, /) -> Surface`
+      | :sg:`convert_alpha(surface, /) -> Surface`
       | :sg:`convert_alpha() -> Surface`
 
       Creates a new copy of the surface with the desired pixel format. The new
@@ -589,7 +589,7 @@
    .. method:: map_rgb
 
       | :sl:`convert a color into a mapped color value`
-      | :sg:`map_rgb(Color, /) -> mapped_int`
+      | :sg:`map_rgb(color, /) -> mapped_int`
 
       Convert an ``RGBA`` color into the mapped integer value for this Surface.
       The returned integer will contain no more bits than the bit depth of the
@@ -647,7 +647,7 @@
    .. method:: subsurface
 
       | :sl:`create a new surface that references its parent`
-      | :sg:`subsurface(Rect, /) -> Surface`
+      | :sg:`subsurface(rect, /) -> Surface`
 
       Returns a new Surface that shares its pixels with its new parent. The new
       Surface is considered a child of the original. Modifications to either

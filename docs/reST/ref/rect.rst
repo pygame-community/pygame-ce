@@ -183,7 +183,7 @@
    .. method:: clamp
 
       | :sl:`moves the rectangle inside another`
-      | :sg:`clamp(Rect, /) -> Rect`
+      | :sg:`clamp(rect, /) -> Rect`
 
       Returns a new rectangle that is moved to be completely inside the
       argument Rect. If the rectangle is too large to fit inside, it is
@@ -194,7 +194,7 @@
    .. method:: clamp_ip
 
       | :sl:`moves the rectangle inside another, in place`
-      | :sg:`clamp_ip(Rect, /) -> None`
+      | :sg:`clamp_ip(rect, /) -> None`
 
       Same as the ``Rect.clamp()`` method, but operates in place.
 
@@ -203,7 +203,7 @@
    .. method:: clip
 
       | :sl:`crops a rectangle inside another`
-      | :sg:`clip(Rect, /) -> Rect`
+      | :sg:`clip(rect, /) -> Rect`
 
       Returns a new rectangle that is cropped to be completely inside the
       argument Rect. If the two rectangles do not overlap to begin with, a Rect
@@ -273,7 +273,7 @@
    .. method:: union
 
       | :sl:`joins two rectangles into one`
-      | :sg:`union(Rect, /) -> Rect`
+      | :sg:`union(rect, /) -> Rect`
 
       Returns a new rectangle that completely covers the area of the two
       provided rectangles. There may be area inside the new Rect that is not
@@ -284,7 +284,7 @@
    .. method:: union_ip
 
       | :sl:`joins two rectangles into one, in place`
-      | :sg:`union_ip(Rect, /) -> None`
+      | :sg:`union_ip(rect, /) -> None`
 
       Same as the ``Rect.union()`` method, but operates in place.
 
@@ -293,7 +293,7 @@
    .. method:: unionall
 
       | :sl:`the union of many rectangles`
-      | :sg:`unionall(Rect_sequence, /) -> Rect`
+      | :sg:`unionall(rect_sequence, /) -> Rect`
 
       Returns the union of one rectangle with a sequence of many rectangles.
 
@@ -302,7 +302,7 @@
    .. method:: unionall_ip
 
       | :sl:`the union of many rectangles, in place`
-      | :sg:`unionall_ip(Rect_sequence, /) -> None`
+      | :sg:`unionall_ip(rect_sequence, /) -> None`
 
       The same as the ``Rect.unionall()`` method, but operates in place.
 
@@ -311,7 +311,7 @@
    .. method:: fit
 
       | :sl:`resize and move a rectangle with aspect ratio`
-      | :sg:`fit(Rect, /) -> Rect`
+      | :sg:`fit(rect, /) -> Rect`
 
       Returns a new rectangle that is moved and resized to fit another. The
       aspect ratio of the original Rect is preserved, so the new rectangle may
@@ -333,7 +333,7 @@
    .. method:: contains
 
       | :sl:`test if one rectangle is inside another`
-      | :sg:`contains(Rect, /) -> bool`
+      | :sg:`contains(rect, /) -> bool`
 
       Returns true when the argument is completely inside the Rect.
 
@@ -357,7 +357,7 @@
    .. method:: colliderect
 
       | :sl:`test if two rectangles overlap`
-      | :sg:`colliderect(Rect, /) -> bool`
+      | :sg:`colliderect(rect, /) -> bool`
 
       Returns true if any portion of either rectangle overlap (except the
       top+bottom or left+right edges).
