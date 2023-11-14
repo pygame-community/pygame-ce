@@ -343,7 +343,7 @@
 
       | :sl:`test if a point is inside a rectangle`
       | :sg:`collidepoint(x, y, /) -> bool`
-      | :sg:`collidepoint((x,y), /) -> bool`
+      | :sg:`collidepoint((x, y), /) -> bool`
 
       Returns true if the given point is inside the rectangle. A point along
       the right or bottom edge is not considered to be inside the rectangle.

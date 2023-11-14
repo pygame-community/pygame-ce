@@ -213,9 +213,10 @@
    .. method:: convert
 
       | :sl:`change the pixel format of an image`
-      | :sg:`convert(surface=None, /) -> Surface`
+      | :sg:`convert(surface, /) -> Surface`
       | :sg:`convert(depth, flags=0, /) -> Surface`
       | :sg:`convert(masks, flags=0, /) -> Surface`
+      | :sg:`convert() -> Surface`
 
       Creates a new copy of the Surface with the pixel format changed. The new
       pixel format can be determined from another existing Surface. Otherwise
@@ -494,7 +495,7 @@
    .. method:: set_at
 
       | :sl:`set the color value for a single pixel`
-      | :sg:`set_at((x, y), Color, /) -> None`
+      | :sg:`set_at((x, y), color, /) -> None`
 
       Set the color of a single pixel at the specified coordinates to be an ``RGB``,
       ``RGBA``, string (for :doc:`color_list`), or mapped integer color value. If the Surface
@@ -847,7 +848,7 @@
    .. method:: set_masks
 
       | :sl:`set the bitmasks needed to convert between a color and a mapped integer`
-      | :sg:`set_masks((r,g,b,a), /) -> None`
+      | :sg:`set_masks((r, g, b, a), /) -> None`
 
       This is not needed for normal pygame usage.
 
@@ -875,7 +876,7 @@
    .. method:: set_shifts
 
       | :sl:`sets the bit shifts needed to convert between a color and a mapped integer`
-      | :sg:`set_shifts((r,g,b,a), /) -> None`
+      | :sg:`set_shifts((r, g, b, a), /) -> None`
 
       This is not needed for normal pygame usage.
 
