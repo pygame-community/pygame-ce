@@ -273,20 +273,26 @@ def collide_mask(
     left: _SupportsCollideMask, right: _SupportsCollideMask
 ) -> Optional[Tuple[int, int]]: ...
 def spritecollide(
-    sprite: _HasRect,
-    group: AbstractGroup[_TSprite],
+    sprite: _TSprite,
+    group: AbstractGroup[_TSprite2],
     dokill: bool,
-    collided: Optional[Callable[[_HasRect, _TSprite], bool]] = None,
-) -> List[_TSprite]: ...
+    collided: Optional[
+        Callable[[_TSprite, _TSprite2], bool | Optional[Tuple[int, int]]]
+    ] = None,
+) -> List[_TSprite2]: ...
 def groupcollide(
     groupa: AbstractGroup[_TSprite],
     groupb: AbstractGroup[_TSprite2],
     dokilla: bool,
     dokillb: bool,
-    collided: Optional[Callable[[_TSprite, _TSprite2], bool]] = None,
+    collided: Optional[
+        Callable[[_TSprite, _TSprite2], bool | Optional[Tuple[int, int]]]
+    ] = None,
 ) -> Dict[_TSprite, List[_TSprite2]]: ...
 def spritecollideany(
-    sprite: _HasRect,
-    group: AbstractGroup[_TSprite],
-    collided: Optional[Callable[[_HasRect, _TSprite], bool]] = None,
-) -> Optional[_TSprite]: ...
+    sprite: _TSprite,
+    group: AbstractGroup[_TSprite2],
+    collided: Optional[
+        Callable[[_TSprite, _TSprite2], bool | Optional[Tuple[int, int]]]
+    ] = None,
+) -> Optional[_TSprite2]: ...
