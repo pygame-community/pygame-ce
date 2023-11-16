@@ -502,7 +502,7 @@ RectExport_clip(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static int
 RectExport_contains_internal(RectObject *self, PyObject *arg);
 static PyObject *
-RectExport_contains(RectObject *self, PyObject *arg);
+RectExport_contains(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static int
 RectExport_containsSeq(RectObject *self, PyObject *arg);
 static PyObject *
