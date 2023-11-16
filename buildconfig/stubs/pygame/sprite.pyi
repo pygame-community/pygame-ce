@@ -276,23 +276,17 @@ def spritecollide(
     sprite: _TSprite,
     group: AbstractGroup[_TSprite2],
     dokill: bool,
-    collided: Optional[
-        Callable[[_TSprite, _TSprite2], bool | Optional[Tuple[int, int]]]
-    ] = None,
+    collided: Optional[Callable[[_TSprite, _TSprite2], Any]] = None,
 ) -> List[_TSprite2]: ...
 def groupcollide(
     groupa: AbstractGroup[_TSprite],
     groupb: AbstractGroup[_TSprite2],
     dokilla: bool,
     dokillb: bool,
-    collided: Optional[
-        Callable[[_TSprite, _TSprite2], bool | Optional[Tuple[int, int]]]
-    ] = None,
+    collided: Optional[Callable[[_TSprite, _TSprite2], Any]] = None,
 ) -> Dict[_TSprite, List[_TSprite2]]: ...
 def spritecollideany(
     sprite: _TSprite,
     group: AbstractGroup[_TSprite2],
-    collided: Optional[
-        Callable[[_TSprite, _TSprite2], bool | Optional[Tuple[int, int]]]
-    ] = None,
+    collided: Optional[Callable[[_TSprite, _TSprite2], Any]] = None,
 ) -> Optional[_TSprite2]: ...
