@@ -1796,13 +1796,19 @@ RectExport_contains_internal(RectObject *self, PyObject *arg)
 }
 
 static PyObject *
-RectExport_contains(RectObject *self, PyObject *arg)
+RectExport_contains(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
-    int ret = RectExport_contains_internal(self, arg);
-    if (ret < 0) {
+    InnerRect *argrect, temp_arg;
+    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp_arg))) {
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
     }
-    return PyBool_FromLong(ret);
+
+    return PyBool_FromLong(
+        (self->r.x <= argrect->x) && (self->r.y <= argrect->y) &&
+        (self->r.x + self->r.w >= argrect->x + argrect->w) &&
+        (self->r.y + self->r.h >= argrect->y + argrect->h) &&
+        (self->r.x + self->r.w > argrect->x) &&
+        (self->r.y + self->r.h > argrect->y));
 }
 
 static int
