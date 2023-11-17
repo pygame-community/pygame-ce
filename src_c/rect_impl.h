@@ -1801,15 +1801,10 @@ RectExport_contains_internal(RectObject *self, PyObject *const *args,
 static PyObject *
 RectExport_contains(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
-    InnerRect *argrect, temp_arg;
-    int result;
-
-    result = RectExport_contains_internal(self, args, nargs);
-
+    int result = RectExport_contains_internal(self, args, nargs);
     if (result == -1) {
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
     }
-
     return PyBool_FromLong(result);
 }
 
