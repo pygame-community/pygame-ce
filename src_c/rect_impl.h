@@ -500,7 +500,8 @@ RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs);
 static PyObject *
 RectExport_clip(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static int
-RectExport_contains_internal(RectObject *self, PyObject *arg);
+RectExport_contains_internal(RectObject *self, PyObject *const *args,
+                             Py_ssize_t nargs);
 static PyObject *
 RectExport_contains(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static int
@@ -1782,12 +1783,14 @@ RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 }
 
 static int
-RectExport_contains_internal(RectObject *self, PyObject *arg)
+RectExport_contains_internal(RectObject *self, PyObject *const *args,
+                             Py_ssize_t nargs)
 {
     InnerRect *argrect, temp_arg;
-    if (!(argrect = RectFromObject((PyObject *)arg, &temp_arg))) {
+    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp_arg))) {
         return -1;
     }
+
     return (self->r.x <= argrect->x) && (self->r.y <= argrect->y) &&
            (self->r.x + self->r.w >= argrect->x + argrect->w) &&
            (self->r.y + self->r.h >= argrect->y + argrect->h) &&
@@ -1799,16 +1802,15 @@ static PyObject *
 RectExport_contains(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     InnerRect *argrect, temp_arg;
-    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp_arg))) {
+    int result;
+
+    result = RectExport_contains_internal(self, args, nargs);
+
+    if (result == -1) {
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
     }
 
-    return PyBool_FromLong(
-        (self->r.x <= argrect->x) && (self->r.y <= argrect->y) &&
-        (self->r.x + self->r.w >= argrect->x + argrect->w) &&
-        (self->r.y + self->r.h >= argrect->y + argrect->h) &&
-        (self->r.x + self->r.w > argrect->x) &&
-        (self->r.y + self->r.h > argrect->y));
+    return PyBool_FromLong(result);
 }
 
 static int
@@ -1819,7 +1821,7 @@ RectExport_containsSeq(RectObject *self, PyObject *arg)
         return coord == self->r.x || coord == self->r.y ||
                coord == self->r.w || coord == self->r.h;
     }
-    int ret = RectExport_contains_internal(self, arg);
+    int ret = RectExport_contains_internal(self, (PyObject *const *)&arg, 1);
     if (ret < 0) {
         PyErr_SetString(PyExc_TypeError, "'in <" ObjectName
                                          ">' requires rect style object"
