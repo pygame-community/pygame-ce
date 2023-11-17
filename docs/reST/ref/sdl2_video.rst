@@ -237,7 +237,7 @@
       | :sl:`Get or set the mouse confinement rectangle of the window`
       | :sg:`mouse_rect -> Rect|None`
 
-      Setting this attribute to a :class:`pygame.Rect` to confine the
+      Setting this attribute to a rect-like object confines the
       cursor to the specified area of this window.
 
       This attribute can be None, meaning that there is no mouse rect.
