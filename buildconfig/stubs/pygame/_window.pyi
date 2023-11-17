@@ -1,7 +1,8 @@
 from typing import Optional, Tuple, Union, final
 
-from pygame._common import Coordinate
+from pygame._common import Coordinate, RectValue
 from pygame.locals import WINDOWPOS_UNDEFINED
+from pygame.rect import Rect
 from pygame.surface import Surface
 
 def get_grabbed_window() -> Optional[Window]: ...
@@ -43,6 +44,10 @@ class Window:
     def id(self) -> int: ...
     @property
     def display_index(self) -> int: ...
+    @property
+    def mouse_rect(self) -> Optional[Rect]: ...
+    @mouse_rect.setter
+    def mouse_rect(self, value: Optional[RectValue]) -> None: ...
     @property
     def size(self) -> Tuple[int, int]: ...
     @size.setter

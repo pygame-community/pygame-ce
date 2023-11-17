@@ -231,6 +231,21 @@
 
       | :sl:`Get the unique window ID (**read-only**)`
       | :sg:`id -> int`
+   
+   .. attribute:: mouse_rect
+
+      | :sl:`Get or set the mouse confinement rectangle of the window`
+      | :sg:`mouse_rect -> Rect|None`
+
+      Setting this attribute to a rect-like object confines the
+      cursor to the specified area of this window.
+
+      This attribute can be None, meaning that there is no mouse rect.
+      
+      Note that this does NOT grab the cursor, it only defines the area a
+      cursor is restricted to when the window has mouse focus.
+
+      .. versionadded:: 2.4.0
 
    .. attribute:: size
 

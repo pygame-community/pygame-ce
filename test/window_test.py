@@ -104,6 +104,26 @@ class WindowTypeTest(unittest.TestCase):
         self.win.always_on_top = False
         self.assertFalse(self.win.always_on_top)
 
+    @unittest.skipIf(
+        SDL < (2, 0, 18),
+        "requires SDL 2.0.18+",
+    )
+    def test_mouse_rect(self):
+        self.win.mouse_rect = None
+        self.assertIsNone(self.win.mouse_rect)
+
+        TEST_MOUSE_RECT = (10, 10, 123, 456)
+        self.win.mouse_rect = TEST_MOUSE_RECT
+        self.assertIsInstance(self.win.mouse_rect, pygame.Rect)
+        self.assertTupleEqual(tuple(self.win.mouse_rect), TEST_MOUSE_RECT)
+
+        self.assertRaises(
+            TypeError, lambda: setattr(self.win, "mouse_rect", "Incorrect type")
+        )
+
+        # clean the status
+        self.win.mouse_rect = None
+
     def test_size(self):
         self.win.size = (1280, 720)
         self.assertTupleEqual(self.win.size, (1280, 720))

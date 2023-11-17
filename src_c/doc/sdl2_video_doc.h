@@ -15,6 +15,7 @@
 #define DOC_SDL2_VIDEO_WINDOW_BORDERLESS "borderless -> bool\nGet or set whether the window is borderless"
 #define DOC_SDL2_VIDEO_WINDOW_ALWAYSONTOP "always_on_top -> bool\nGet or set whether the window is always on top"
 #define DOC_SDL2_VIDEO_WINDOW_ID "id -> int\nGet the unique window ID (**read-only**)"
+#define DOC_SDL2_VIDEO_WINDOW_MOUSERECT "mouse_rect -> Rect|None\nGet or set the mouse confinement rectangle of the window"
 #define DOC_SDL2_VIDEO_WINDOW_SIZE "size -> (int, int)\nGet or set the window size in pixels"
 #define DOC_SDL2_VIDEO_WINDOW_MINIMUMSIZE "minimum_size -> (int, int)\nGet or set the minimum size of the window's client area"
 #define DOC_SDL2_VIDEO_WINDOW_MAXIMUMSIZE "maximum_size -> (int, int)\nGet or set the maximum size of the window's client area"

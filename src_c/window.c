@@ -414,6 +414,47 @@ window_get_window_id(pgWindowObject *self, PyObject *_null)
 }
 
 static int
+window_set_mouse_rect(pgWindowObject *self, PyObject *arg, void *v)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 18)
+    SDL_Rect tmp_rect;
+    SDL_Rect *mouse_rect_p = pgRect_FromObject(arg, &tmp_rect);
+    if (mouse_rect_p == NULL && arg != Py_None) {
+        PyErr_SetString(PyExc_TypeError,
+                        "mouse_rect should be a Rect-like object or None");
+        return -1;
+    }
+    if (SDL_SetWindowMouseRect(self->_win, mouse_rect_p) < 0) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return -1;
+    }
+#else
+    if (PyErr_WarnEx(PyExc_Warning,
+                     "Setting 'mouse_rect' requires SDL 2.0.18+", 1) == -1) {
+        return -1;
+    }
+#endif  // SDL_VERSION_ATLEAST(2, 0, 18)
+    return 0;
+}
+
+static PyObject *
+window_get_mouse_rect(pgWindowObject *self, void *v)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 18)
+    const SDL_Rect *mouse_rect_p = SDL_GetWindowMouseRect(self->_win);
+    if (mouse_rect_p == NULL)
+        Py_RETURN_NONE;
+    return pgRect_New((SDL_Rect *)mouse_rect_p);
+#else
+    if (PyErr_WarnEx(PyExc_Warning,
+                     "Getting 'mouse_rect' requires SDL 2.0.18+", 1) == -1) {
+        return NULL;
+    }
+    Py_RETURN_NONE;
+#endif  // SDL_VERSION_ATLEAST(2, 0, 18)
+}
+
+static int
 window_set_size(pgWindowObject *self, PyObject *arg, void *v)
 {
     int w, h;
@@ -935,6 +976,8 @@ static PyGetSetDef _window_getset[] = {
     {"relative_mouse", (getter)mouse_get_relative_mode,
      (setter)mouse_set_relative_mode, DOC_SDL2_VIDEO_WINDOW_RELATIVEMOUSE,
      NULL},
+    {"mouse_rect", (getter)window_get_mouse_rect,
+     (setter)window_set_mouse_rect, DOC_SDL2_VIDEO_WINDOW_MOUSERECT, NULL},
     {"size", (getter)window_get_size, (setter)window_set_size,
      DOC_SDL2_VIDEO_WINDOW_SIZE, NULL},
     {"minimum_size", (getter)window_get_minimum_size,
