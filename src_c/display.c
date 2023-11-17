@@ -859,7 +859,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     int w, h;
     PyObject *size = NULL;
     int vsync = SDL_FALSE;
-    uint64_t hwnd = 0;
+    intptr_t hwnd = 0;
     /* display will get overwritten by ParseTupleAndKeywords only if display
        parameter is given. By default, put the new window on the same
        screen as the old one */
@@ -880,7 +880,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         return NULL;
 
     if (hwnd == 0 && winid_env != NULL) {
-        hwnd = SDL_strtoull(winid_env, NULL, 0);
+        hwnd = (intptr_t)SDL_strtoull(winid_env, NULL, 0);
     }
 
     if (scale_env != NULL) {
