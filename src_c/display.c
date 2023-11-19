@@ -1357,7 +1357,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         SDL_SetWindowIcon(win, pgSurface_AsSurface(state->icon));
 
     if (!SDL_GetWindowWMInfo(win, &wm_info)) {
-        // don't complain, might be dummy mode
+        // don't complain, might be null mode
     }
     else if (wm_info.subsystem == SDL_SYSWM_X11) {
         char *xdg_session_type = SDL_getenv("XDG_SESSION_TYPE");

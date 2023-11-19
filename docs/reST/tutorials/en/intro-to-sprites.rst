@@ -126,7 +126,7 @@ every sprite in the group. Passing the same arguments to each one. Usually in a
 game you need some function that updates the state of a game object. It's very
 easy to call your own methods using the ``Group.sprites()`` method, but this is
 a shortcut that's used enough to be included. Also note that the base
-``Sprite`` class has a "dummy" ``update()`` method that takes any sort of
+``Sprite`` class has a placeholder ``update()`` method that takes any sort of
 arguments and does nothing.
 
 Lastly, the Group has a couple other methods that allow you to use it with
@@ -379,7 +379,7 @@ the difference. Again you need an "add_internal()" and "remove_internal()"
 method that the sprites call when they want to belong or remove themselves from
 the group. The ``add_internal()`` and ``remove_internal()`` have a single
 argument which is a sprite. The only other requirement for the ``Group``
-classes is they have a dummy attribute named "_spritegroup". It doesn't matter
+classes is they have a placeholder attribute named "_spritegroup". It doesn't matter
 what the value is, as long as the attribute is present. The Sprite classes can
 look for this attribute to determine the difference between a "group" and any
 ordinary python container. (This is important, because several sprite methods

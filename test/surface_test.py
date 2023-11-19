@@ -554,8 +554,8 @@ class SurfaceTypeTest(unittest.TestCase):
         self.assertEqual(s1.get_flags(), pygame.SRCALPHA)
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        'requires a non-"dummy" SDL_VIDEODRIVER',
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires a non-null SDL_VIDEODRIVER",
     )
     def test_get_flags__display_surf(self):
         pygame.display.init()
@@ -1194,8 +1194,8 @@ class TestSurfaceBlit(unittest.TestCase):
 
 class GeneralSurfaceTests(unittest.TestCase):
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        'requires a non-"dummy" SDL_VIDEODRIVER',
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires a non-null SDL_VIDEODRIVER",
     )
     def test_image_convert_bug_131(self):
         # bug #146: Unable to Surface.convert(32) some 1-bit images.
@@ -1238,7 +1238,7 @@ class GeneralSurfaceTests(unittest.TestCase):
 
         pygame.display.init()
         try:
-            if os.environ.get("SDL_VIDEODRIVER") != "dummy":
+            if os.environ.get("SDL_VIDEODRIVER") != pygame.NULL_VIDEODRIVER:
                 try:
                     surf.convert(32)
                     surf.convert(pygame.Surface((1, 1)))
