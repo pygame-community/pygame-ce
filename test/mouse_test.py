@@ -340,6 +340,23 @@ class MouseModuleTest(MouseTests):
         for invalid_value in ((1,), [1, 2, 3], 1.1, "1", (1, "1"), []):
             with self.assertRaises(TypeError):
                 prev_visible = pygame.mouse.set_visible(invalid_value)
+    
+    def test_set_relative_mode(self):
+        """Tests that set_relative_mode hides the cursor."""
+        pygame.mouse.set_visible(True)
+        pygame.mouse.set_relative_mode(True)  # sets the mouse invisible
+        visible = pygame.mouse.get_visible()
+        self.assertEqual(visible, False)
+        pygame.mouse.set_relative_mode(False)  # sets the mouse visible
+        visible = pygame.mouse.get_visible()
+        self.assertEqual(visible, True)
+
+    def test_get_relative_mode(self):
+        """Tests that get_relative_mode correctly reports the relative mode"""
+        pygame.mouse.set_relative_mode(True)
+        self.assertEqual(pygame.mouse.get_relative_mode(), True)
+        pygame.mouse.set_relative_mode(False)
+        self.assertEqual(pygame.mouse.get_relative_mode(), False)
 
 
 ################################################################################
