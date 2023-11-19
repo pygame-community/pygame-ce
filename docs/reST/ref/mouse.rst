@@ -223,6 +223,8 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 
    Query whether relative mouse mode is enabled.
 
+   .. versionadded:: 2.4.0
+
    .. ## pygame.mouse.get_relative_mode ##
 
 .. function:: set_relative_mode
