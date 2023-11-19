@@ -973,36 +973,26 @@ compare_int(const void *a, const void *b)
 
 static Uint32
 get_antialiased_color(SDL_Surface *surf, int x, int y, Uint32 original_color,
-                      float brightness, int blend)
+                      float brightness)
 {
     Uint8 color_part[4], background_color[4];
     Uint32 *pixels = (Uint32 *)surf->pixels;
     SDL_GetRGBA(original_color, surf->format, &color_part[0], &color_part[1],
                 &color_part[2], &color_part[3]);
-    if (blend) {
-        if (x < surf->clip_rect.x ||
-            x >= surf->clip_rect.x + surf->clip_rect.w ||
-            y < surf->clip_rect.y ||
-            y >= surf->clip_rect.y + surf->clip_rect.h)
-            return original_color;
-        SDL_GetRGBA(pixels[(y * surf->w) + x], surf->format,
-                    &background_color[0], &background_color[1],
-                    &background_color[2], &background_color[3]);
-        color_part[0] = (Uint8)(brightness * color_part[0] +
-                                (1 - brightness) * background_color[0]);
-        color_part[1] = (Uint8)(brightness * color_part[1] +
-                                (1 - brightness) * background_color[1]);
-        color_part[2] = (Uint8)(brightness * color_part[2] +
-                                (1 - brightness) * background_color[2]);
-        color_part[3] = (Uint8)(brightness * color_part[3] +
-                                (1 - brightness) * background_color[3]);
-    }
-    else {
-        color_part[0] = (Uint8)(brightness * color_part[0]);
-        color_part[1] = (Uint8)(brightness * color_part[1]);
-        color_part[2] = (Uint8)(brightness * color_part[2]);
-        color_part[3] = (Uint8)(brightness * color_part[3]);
-    }
+    if (x < surf->clip_rect.x || x >= surf->clip_rect.x + surf->clip_rect.w ||
+        y < surf->clip_rect.y || y >= surf->clip_rect.y + surf->clip_rect.h)
+        return original_color;
+    SDL_GetRGBA(pixels[(y * surf->w) + x], surf->format, &background_color[0],
+                &background_color[1], &background_color[2],
+                &background_color[3]);
+    color_part[0] = (Uint8)(brightness * color_part[0] +
+                            (1 - brightness) * background_color[0]);
+    color_part[1] = (Uint8)(brightness * color_part[1] +
+                            (1 - brightness) * background_color[1]);
+    color_part[2] = (Uint8)(brightness * color_part[2] +
+                            (1 - brightness) * background_color[2]);
+    color_part[3] = (Uint8)(brightness * color_part[3] +
+                            (1 - brightness) * background_color[3]);
     original_color = SDL_MapRGBA(surf->format, color_part[0], color_part[1],
                                  color_part[2], color_part[3]);
     return original_color;
@@ -1123,7 +1113,6 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
     Uint32 pixel_color;
     float x_gap, y_endpoint, clip_left, clip_right, clip_top, clip_bottom;
     int steep, y;
-    int blend = 1;
 
     dx = to_x - from_x;
     dy = to_y - from_y;
@@ -1133,7 +1122,7 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
     if (fabs(dx) < 0.0001 && fabs(dy) < 0.0001) {
         pixel_color =
             get_antialiased_color(surf, (int)floor(from_x + 0.5),
-                                  (int)floor(from_y + 0.5), color, 1, blend);
+                                  (int)floor(from_y + 0.5), color, 1);
         set_and_check_rect(surf, (int)floor(from_x + 0.5),
                            (int)floor(from_y + 0.5), pixel_color, drawn_area);
         return;
@@ -1236,8 +1225,8 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
             y = (int)y_endpoint;
         }
         if ((int)y_endpoint < y_endpoint) {
-            pixel_color = get_antialiased_color(surf, x, y, color,
-                                                brightness * x_gap, blend);
+            pixel_color =
+                get_antialiased_color(surf, x, y, color, brightness * x_gap);
             set_and_check_rect(surf, x, y, pixel_color, drawn_area);
         }
         if (steep) {
@@ -1247,8 +1236,8 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
             y--;
         }
         brightness = 1 - brightness;
-        pixel_color = get_antialiased_color(surf, x, y, color,
-                                            brightness * x_gap, blend);
+        pixel_color =
+            get_antialiased_color(surf, x, y, color, brightness * x_gap);
         set_and_check_rect(surf, x, y, pixel_color, drawn_area);
         intersect_y += gradient;
         x_pixel_start++;
@@ -1268,8 +1257,8 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
             y = (int)y_endpoint;
         }
         if ((int)y_endpoint < y_endpoint) {
-            pixel_color = get_antialiased_color(surf, x, y, color,
-                                                brightness * x_gap, blend);
+            pixel_color =
+                get_antialiased_color(surf, x, y, color, brightness * x_gap);
             set_and_check_rect(surf, x, y, pixel_color, drawn_area);
         }
         if (steep) {
@@ -1279,8 +1268,8 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
             y--;
         }
         brightness = 1 - brightness;
-        pixel_color = get_antialiased_color(surf, x, y, color,
-                                            brightness * x_gap, blend);
+        pixel_color =
+            get_antialiased_color(surf, x, y, color, brightness * x_gap);
         set_and_check_rect(surf, x, y, pixel_color, drawn_area);
     }
 
@@ -1289,25 +1278,25 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
         y = (int)intersect_y;
         if (steep) {
             brightness = 1 - intersect_y + y;
-            pixel_color = get_antialiased_color(surf, y - 1, x, color,
-                                                brightness, blend);
+            pixel_color =
+                get_antialiased_color(surf, y - 1, x, color, brightness);
             set_and_check_rect(surf, y - 1, x, pixel_color, drawn_area);
             if (y < intersect_y) {
                 brightness = 1 - brightness;
-                pixel_color = get_antialiased_color(surf, y, x, color,
-                                                    brightness, blend);
+                pixel_color =
+                    get_antialiased_color(surf, y, x, color, brightness);
                 set_and_check_rect(surf, y, x, pixel_color, drawn_area);
             }
         }
         else {
             brightness = 1 - intersect_y + y;
-            pixel_color = get_antialiased_color(surf, x, y - 1, color,
-                                                brightness, blend);
+            pixel_color =
+                get_antialiased_color(surf, x, y - 1, color, brightness);
             set_and_check_rect(surf, x, y - 1, pixel_color, drawn_area);
             if (y < intersect_y) {
                 brightness = 1 - brightness;
-                pixel_color = get_antialiased_color(surf, x, y, color,
-                                                    brightness, blend);
+                pixel_color =
+                    get_antialiased_color(surf, x, y, color, brightness);
                 set_and_check_rect(surf, x, y, pixel_color, drawn_area);
             }
         }

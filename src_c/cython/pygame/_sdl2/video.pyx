@@ -565,16 +565,33 @@ cdef class Texture:
             raise TypeError("update source should be a Surface.")
 
         cdef SDL_Rect rect
+        rect.x = 0
+        rect.y = 0
         cdef SDL_Rect *rectptr = pgRect_FromObject(area, &rect)
         cdef SDL_Surface *surf = pgSurface_AsSurface(surface)
+
+        if rectptr == NULL and area is not None:
+            raise TypeError('area must be a rectangle or None')
+        
+        cdef int dst_width, dst_height
+        if rectptr == NULL:
+            dst_width = self.width
+            dst_height = self.height
+        else:
+            dst_width = rect.w
+            dst_height = rect.h
+        
+        if dst_height > surf.h or dst_width > surf.w:
+            # if the surface is smaller than the destination rect,
+            # clip the rect to prevent segfault
+            rectptr = &rect # make sure rectptr is not NULL
+            rect.h = surf.h
+            rect.w = surf.w
 
         # For converting the surface, if needed
         cdef SDL_Surface *converted_surf = NULL
         cdef SDL_PixelFormat *pixel_format = NULL
         cdef SDL_BlendMode blend
-
-        if rectptr == NULL and area is not None:
-            raise TypeError('area must be a rectangle or None')
 
         cdef Uint32 format_
         if (SDL_QueryTexture(self._tex, &format_, NULL, NULL, NULL) != 0):
