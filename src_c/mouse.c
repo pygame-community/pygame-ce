@@ -215,7 +215,7 @@ mouse_get_visible(PyObject *self, PyObject *_null)
 
     VIDEO_INIT_CHECK();
 
-    result = (PG_CursorVisible() || SDL_GetRelativeMouseMode());
+    result = (PG_CursorVisible() && !SDL_GetRelativeMouseMode());
 
     if (0 > result) {
         return RAISE(pgExc_SDLError, SDL_GetError());
