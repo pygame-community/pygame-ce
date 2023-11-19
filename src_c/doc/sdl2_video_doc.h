@@ -9,7 +9,6 @@
 #define DOC_SDL2_VIDEO_WINDOW_GRABKEYBOARD "grab_keyboard -> bool\nGet or set the window's keyboard grab mode"
 #define DOC_SDL2_VIDEO_WINDOW_MOUSEGRABBED "mouse_grabbed -> bool\nGet if the mouse cursor is confined to the window (**read-only**)"
 #define DOC_SDL2_VIDEO_WINDOW_KEYBOARDGRABBED "keyboard_grabbed -> bool\nGet if the keyboard shortcuts are captured by the window (**read-only**)"
-#define DOC_SDL2_VIDEO_WINDOW_RELATIVEMOUSE "relative_mouse -> bool\nGet or set the window's relative mouse mode state"
 #define DOC_SDL2_VIDEO_WINDOW_TITLE "title -> str\nGet or set the window title"
 #define DOC_SDL2_VIDEO_WINDOW_RESIZABLE "resizable -> bool\nGet or set whether the window is resizable"
 #define DOC_SDL2_VIDEO_WINDOW_BORDERLESS "borderless -> bool\nGet or set whether the window is borderless"

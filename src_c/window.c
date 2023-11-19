@@ -711,26 +711,6 @@ window_get_display_index(pgWindowObject *self, PyObject *_null)
     return PyLong_FromLong(index);
 }
 
-static PyObject *
-mouse_get_relative_mode(pgWindowObject *self, void *v)
-{
-    return PyBool_FromLong(SDL_GetRelativeMouseMode());
-}
-
-static int
-mouse_set_relative_mode(pgWindowObject *self, PyObject *arg, void *v)
-{
-    SDL_bool mode = SDL_FALSE;
-    if (PyObject_IsTrue(arg)) {
-        mode = SDL_TRUE;
-    }
-    if (SDL_SetRelativeMouseMode(mode)) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
-    }
-    return 0;
-}
-
 static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
@@ -1080,9 +1060,6 @@ static PyGetSetDef _window_getset[] = {
      (setter)window_set_borderless, DOC_SDL2_VIDEO_WINDOW_BORDERLESS, NULL},
     {"always_on_top", (getter)window_get_always_on_top,
      (setter)window_set_always_on_top, DOC_SDL2_VIDEO_WINDOW_ALWAYSONTOP,
-     NULL},
-    {"relative_mouse", (getter)mouse_get_relative_mode,
-     (setter)mouse_set_relative_mode, DOC_SDL2_VIDEO_WINDOW_RELATIVEMOUSE,
      NULL},
     {"mouse_rect", (getter)window_get_mouse_rect,
      (setter)window_set_mouse_rect, DOC_SDL2_VIDEO_WINDOW_MOUSERECT, NULL},

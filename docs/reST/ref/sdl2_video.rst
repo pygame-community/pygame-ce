@@ -179,22 +179,6 @@
       
       .. versionadded:: 2.4.0
 
-   .. attribute:: relative_mouse
-
-      | :sl:`Get or set the window's relative mouse mode state`
-      | :sg:`relative_mouse -> bool`
-
-      Gets or sets the window's relative mouse mode state.
-      SDL2 docs: *"While the mouse is in relative mode, the cursor is hidden,
-      the mouse position is constrained to the window, and SDL will report
-      continuous relative mouse motion even if the mouse is at the edge of the
-      window.*
-
-      *This function will flush any pending mouse motion."*
-
-      Calling :func:`pygame.mouse.set_visible` with argument
-      ``True`` will exit relative mouse mode.
-
    .. attribute:: title
 
       | :sl:`Get or set the window title`
