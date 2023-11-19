@@ -1,5 +1,7 @@
 from typing import Any, Tuple, Callable
 
+__version__: str
+
 class error(RuntimeError): ...
 class BufferError(Exception): ...
 

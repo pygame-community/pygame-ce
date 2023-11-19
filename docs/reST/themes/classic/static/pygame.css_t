@@ -589,6 +589,9 @@ dt code {
 .dark-theme .highlight .n{
     color: {{ theme_dark_codetextcolor }};
 }
+.dark-theme .highlight .hll{
+    background-color: {{ theme_dark_codelinehighlightcolor }};
+}
 
 /* Doc strings */
 .highlight .sd{
@@ -1006,10 +1009,6 @@ pre.commentContent {
 /* -- responsive design --------------------------------------------------------- */
 
 @media only screen and (max-width: 680px) {
-    /* Make tables be responsive-ish. */
-    table, thead, tbody, th, td, tr {
-        display: block;
-    }
 
     div.body img.inlined-right {
         float: none;

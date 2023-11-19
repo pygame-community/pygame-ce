@@ -5,8 +5,6 @@ import os
 from pygame._sdl2.video import Window
 from pygame.version import SDL
 
-os.environ["SDL_VIDEODRIVER"] = "dummy"
-
 pygame.init()
 
 
@@ -105,6 +103,26 @@ class WindowTypeTest(unittest.TestCase):
         self.assertTrue(self.win.always_on_top)
         self.win.always_on_top = False
         self.assertFalse(self.win.always_on_top)
+
+    @unittest.skipIf(
+        SDL < (2, 0, 18),
+        "requires SDL 2.0.18+",
+    )
+    def test_mouse_rect(self):
+        self.win.mouse_rect = None
+        self.assertIsNone(self.win.mouse_rect)
+
+        TEST_MOUSE_RECT = (10, 10, 123, 456)
+        self.win.mouse_rect = TEST_MOUSE_RECT
+        self.assertIsInstance(self.win.mouse_rect, pygame.Rect)
+        self.assertTupleEqual(tuple(self.win.mouse_rect), TEST_MOUSE_RECT)
+
+        self.assertRaises(
+            TypeError, lambda: setattr(self.win, "mouse_rect", "Incorrect type")
+        )
+
+        # clean the status
+        self.win.mouse_rect = None
 
     def test_size(self):
         self.win.size = (1280, 720)
@@ -300,6 +318,47 @@ class WindowTypeTest(unittest.TestCase):
 
         pygame.display.quit()
         pygame.init()
+
+    def test_window_surface(self):
+        win = Window(size=(640, 480))
+        surf = win.get_surface()
+
+        self.assertIsInstance(surf, pygame.Surface)
+
+        # test auto resize
+        self.assertTupleEqual(win.size, surf.get_size())
+        win.size = (100, 100)
+        self.assertTupleEqual(win.size, surf.get_size())
+        win.size = (1280, 720)
+        self.assertTupleEqual(win.size, surf.get_size())
+
+        # window surface should be invalid after the window is destroyed
+        win.destroy()
+        self.assertRaises(pygame.error, lambda: surf.fill((0, 0, 0)))
+
+    def test_window_surface_with_display_module(self):
+        # get_surface() should raise an error if the set_mode() is not called.
+        pygame.display.set_mode((640, 480))
+        win1 = Window.from_display_module()
+        pygame.display.quit()
+        pygame.init()
+        self.assertRaises(pygame.error, lambda: win1.get_surface())
+
+        # the surface returned by get_surface() should be
+        # the surface returned by set_mode()
+        surf1 = pygame.display.set_mode((640, 480))
+        win2 = Window.from_display_module()
+        surf2 = win2.get_surface()
+        self.assertIs(surf1, surf2)
+
+    def test_window_update_from_surface(self):
+        win = Window(size=(640, 480))
+        surf = win.get_surface()
+        surf.fill((255, 0, 0))
+
+        self.assertRaises(TypeError, lambda: win.update_from_surface("an argument"))
+        self.assertIs(win.update_from_surface(), None)
+        win.destroy()
 
     def tearDown(self):
         self.win.destroy()

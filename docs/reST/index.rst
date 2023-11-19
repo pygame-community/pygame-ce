@@ -112,6 +112,9 @@ Tutorials
   Está inspirado en el molesto banner de flash de principios de la década de 2000.
   Este tutorial examina cada línea de código utilizada en el ejemplo.
 
+:doc:`What is Premultiplied Alpha? <tutorials/en/premultiplied-alpha>`
+  An explanation of alpha compositing and the advantages of using premultipled alpha.
+
 
 Reference
 ---------

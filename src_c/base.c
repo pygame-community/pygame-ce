@@ -660,6 +660,20 @@ pg_TwoDoublesFromObj(PyObject *obj, double *val1, double *val2)
     return 1;
 }
 
+static inline int
+pg_TwoDoublesFromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
+                              double *val1, double *val2)
+{
+    if (nargs == 1 && pg_TwoDoublesFromObj(args[0], val1, val2)) {
+        return 1;
+    }
+    else if (nargs == 2 && pg_DoubleFromObj(args[0], val1) &&
+             pg_DoubleFromObj(args[1], val2)) {
+        return 1;
+    }
+    return 0;
+}
+
 static int
 pg_UintFromObj(PyObject *obj, Uint32 *val)
 {
@@ -2258,8 +2272,9 @@ MODINIT_DEFINE(base)
     c_api[23] = pg_EnvShouldBlendAlphaSDL2;
     c_api[24] = pg_DoubleFromObj;
     c_api[25] = pg_TwoDoublesFromObj;
+    c_api[26] = pg_TwoDoublesFromFastcallArgs;
 
-#define FILLED_SLOTS 26
+#define FILLED_SLOTS 27
 
 #if PYGAMEAPI_BASE_NUMSLOTS != FILLED_SLOTS
 #error export slot count mismatch
@@ -2272,6 +2287,17 @@ MODINIT_DEFINE(base)
     }
 
     if (PyModule_AddIntConstant(module, "HAVE_NEWBUF", 1)) {
+        goto error;
+    }
+
+    PyObject *version =
+        PyUnicode_FromFormat("%d.%d.%d%s", PG_MAJOR_VERSION, PG_MINOR_VERSION,
+                             PG_PATCH_VERSION, PG_VERSION_TAG);
+    if (!version) {
+        goto error;
+    }
+    if (PyModule_AddObject(module, "__version__", version)) {
+        Py_DECREF(version);
         goto error;
     }
 

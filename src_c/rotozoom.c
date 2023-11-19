@@ -11,6 +11,7 @@
 
 */
 
+#include "_pygame.h"
 #define NO_PYGAME_C_API
 #include "pygame.h"
 
@@ -29,6 +30,23 @@ typedef struct tColorRGBA {
 #endif
 #ifndef M_PI
 #define M_PI 3.141592654
+#endif
+
+#if !SDL_VERSION_ATLEAST(2, 0, 14)
+// Remove this when our minimum version is 2.0.14 or larger
+SDL_bool
+PG_SurfaceHasRLE(SDL_Surface *surface)
+{
+    if (surface == NULL) {
+        return SDL_FALSE;
+    }
+
+    if (!(surface->map->info.flags & SDL_COPY_RLE_DESIRED)) {
+        return SDL_FALSE;
+    }
+
+    return SDL_TRUE;
+}
 #endif
 
 /*
@@ -511,6 +529,7 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
     int dstwidth, dstheight;
     int is32bit;
     int src_converted;
+    Uint32 colorkey;
 
     /*
      * Sanity check
@@ -583,6 +602,17 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
          * Target surface is 32bit with source RGBA/ABGR ordering
          */
         rz_dst = PG_CreateSurface(dstwidth, dstheight, rz_src->format->format);
+        if (SDL_GetColorKey(src, &colorkey) == 0) {
+            if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0) {
+                SDL_FreeSurface(rz_dst);
+                return NULL;
+            }
+            if (PG_SurfaceHasRLE(src) &&
+                SDL_SetSurfaceRLE(rz_dst, SDL_TRUE) != 0) {
+                SDL_FreeSurface(rz_dst);
+                return NULL;
+            }
+        }
 
         /*
          * Lock source surface
@@ -628,7 +658,19 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * Target surface is 32bit with source RGBA/ABGR ordering
          */
+
         rz_dst = PG_CreateSurface(dstwidth, dstheight, rz_src->format->format);
+        if (SDL_GetColorKey(src, &colorkey) == 0) {
+            if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0) {
+                SDL_FreeSurface(rz_dst);
+                return NULL;
+            }
+            if (PG_SurfaceHasRLE(src) &&
+                SDL_SetSurfaceRLE(rz_dst, SDL_TRUE) != 0) {
+                SDL_FreeSurface(rz_dst);
+                return NULL;
+            }
+        }
 
         /*
          * Lock source surface

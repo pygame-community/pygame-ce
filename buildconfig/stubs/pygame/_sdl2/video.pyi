@@ -1,10 +1,10 @@
-from typing import Any, Generator, Iterable, Optional, Tuple, Union, final
+from typing import Any, Generator, Iterable, Optional, Tuple, Union
 
 from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from .._common import RectValue, ColorValue
+from .._common import ColorValue, RectValue
 
 WINDOWPOS_UNDEFINED: int
 WINDOWPOS_CENTERED: int
