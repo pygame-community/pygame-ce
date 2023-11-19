@@ -241,6 +241,8 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    Calling :func:`pygame.mouse.set_visible` with argument
    ``True`` will exit relative mouse mode.
 
+   .. versionadded:: 2.4.0
+
    .. ## pygame.mouse.set_relative_mode ##
 
 .. ## pygame.mouse ##
