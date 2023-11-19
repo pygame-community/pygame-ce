@@ -216,4 +216,31 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 
    .. ## pygame.mouse.get_cursor ##
 
+.. function:: get_relative_mode
+
+   | :sl:`query whether relative mouse mode is enabled`
+   | :sg:`get_relative_mode() -> bool`
+
+   Query whether relative mouse mode is enabled.
+
+   .. ## pygame.mouse.get_relative_mode ##
+
+.. function:: set_relative_mode
+
+   | :sl:`set relative mouse mode`
+   | :sg:`set_relative_mode(enable) -> None`
+
+   Sets the relative mouse mode state.
+   While the mouse is in relative mode, the cursor is hidden,
+   the mouse position is constrained to the window, and pygame
+   will report continuous relative mouse motion even if the 
+   mouse is at the edge of the window.
+
+   *This function will flush any pending mouse motion."*
+
+   Calling :func:`pygame.mouse.set_visible` with argument
+   ``True`` will exit relative mouse mode.
+
+   .. ## pygame.mouse.set_relative_mode ##
+
 .. ## pygame.mouse ##

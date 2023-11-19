@@ -500,9 +500,10 @@ RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs);
 static PyObject *
 RectExport_clip(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static int
-RectExport_contains_internal(RectObject *self, PyObject *arg);
+RectExport_contains_internal(RectObject *self, PyObject *const *args,
+                             Py_ssize_t nargs);
 static PyObject *
-RectExport_contains(RectObject *self, PyObject *arg);
+RectExport_contains(RectObject *self, PyObject *const *args, Py_ssize_t nargs);
 static int
 RectExport_containsSeq(RectObject *self, PyObject *arg);
 static PyObject *
@@ -1710,75 +1711,53 @@ RectExport_clip(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
  *         () - empty tuple, if no intersection
  */
 static PyObject *
-RectExport_clipline(RectObject *self, PyObject *args)
+RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
-    PyObject *arg1 = NULL, *arg2 = NULL, *arg3 = NULL, *arg4 = NULL;
     InnerRect *rect = &self->r, *rect_copy = NULL;
-    PrimitiveType x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+    PrimitiveType x1, y1, x2, y2;
 
-    if (!PyArg_ParseTuple(args, "O|OOO", &arg1, &arg2, &arg3, &arg4)) {
-        return NULL; /* Exception already set. */
-    }
-
-    if (arg2 == NULL) {
+    if (nargs == 1) {
         /* Handles formats:
          *     clipline(((x1, y1), (x2, y2)))
          *     clipline((x1, y1, x2, y2))
          */
-        if (!fourPrimivitesFromObj(arg1, &x1, &y1, &x2, &y2)) {
+        if (!fourPrimivitesFromObj(args[0], &x1, &y1, &x2, &y2)) {
             return NULL; /* Exception already set. */
         }
     }
-    else if (arg3 == NULL) {
+    else if (nargs == 2) {
         /* Handles format: clipline((x1, y1), (x2, y2)) */
-        int result = twoPrimitivesFromObj(arg1, &x1, &y1);
-
-        if (!result) {
+        if (!twoPrimitivesFromObj(args[0], &x1, &y1)) {
             return RAISE(PyExc_TypeError,
                          "number pair expected for first argument");
         }
-
         /* Get the other end of the line. */
-        result = twoPrimitivesFromObj(arg2, &x2, &y2);
-
-        if (!result) {
+        if (!twoPrimitivesFromObj(args[1], &x2, &y2)) {
             return RAISE(PyExc_TypeError,
                          "number pair expected for second argument");
         }
     }
-    else if (arg4 != NULL) {
+    else if (nargs == 4) {
         /* Handles format: clipline(x1, y1, x2, y2) */
-        int result = PrimitiveFromObj(arg1, &x1);
-
-        if (!result) {
+        if (!PrimitiveFromObj(args[0], &x1)) {
             return RAISE(PyExc_TypeError,
                          "number expected for first argument");
         }
-
-        result = PrimitiveFromObj(arg2, &y1);
-
-        if (!result) {
+        if (!PrimitiveFromObj(args[1], &y1)) {
             return RAISE(PyExc_TypeError,
                          "number expected for second argument");
         }
-
-        result = PrimitiveFromObj(arg3, &x2);
-
-        if (!result) {
+        if (!PrimitiveFromObj(args[2], &x2)) {
             return RAISE(PyExc_TypeError,
                          "number expected for third argument");
         }
-
-        result = PrimitiveFromObj(arg4, &y2);
-
-        if (!result) {
+        if (!PrimitiveFromObj(args[3], &y2)) {
             return RAISE(PyExc_TypeError,
                          "number expected for fourth argument");
         }
     }
     else {
-        return RAISE(PyExc_TypeError,
-                     "clipline() takes 1, 2, or 4 arguments (3 given)");
+        return RAISE(PyExc_TypeError, "clipline() takes 1, 2, or 4 arguments");
     }
 
     if ((self->r.w < 0) || (self->r.h < 0)) {
@@ -1804,12 +1783,14 @@ RectExport_clipline(RectObject *self, PyObject *args)
 }
 
 static int
-RectExport_contains_internal(RectObject *self, PyObject *arg)
+RectExport_contains_internal(RectObject *self, PyObject *const *args,
+                             Py_ssize_t nargs)
 {
     InnerRect *argrect, temp_arg;
-    if (!(argrect = RectFromObject((PyObject *)arg, &temp_arg))) {
+    if (!(argrect = RectFromFastcallArgs(args, nargs, &temp_arg))) {
         return -1;
     }
+
     return (self->r.x <= argrect->x) && (self->r.y <= argrect->y) &&
            (self->r.x + self->r.w >= argrect->x + argrect->w) &&
            (self->r.y + self->r.h >= argrect->y + argrect->h) &&
@@ -1818,13 +1799,13 @@ RectExport_contains_internal(RectObject *self, PyObject *arg)
 }
 
 static PyObject *
-RectExport_contains(RectObject *self, PyObject *arg)
+RectExport_contains(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
-    int ret = RectExport_contains_internal(self, arg);
-    if (ret < 0) {
+    int result = RectExport_contains_internal(self, args, nargs);
+    if (result == -1) {
         return RAISE(PyExc_TypeError, "Argument must be rect style object");
     }
-    return PyBool_FromLong(ret);
+    return PyBool_FromLong(result);
 }
 
 static int
@@ -1835,7 +1816,7 @@ RectExport_containsSeq(RectObject *self, PyObject *arg)
         return coord == self->r.x || coord == self->r.y ||
                coord == self->r.w || coord == self->r.h;
     }
-    int ret = RectExport_contains_internal(self, arg);
+    int ret = RectExport_contains_internal(self, (PyObject *const *)&arg, 1);
     if (ret < 0) {
         PyErr_SetString(PyExc_TypeError, "'in <" ObjectName
                                          ">' requires rect style object"
