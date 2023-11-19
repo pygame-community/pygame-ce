@@ -6,7 +6,7 @@ Shows an interactive image scaler.
 """
 import sys
 import time
-import pygame as pygame
+import pygame
 
 
 def main(imagefile, convert_alpha=False, run_speed_test=False):
@@ -29,68 +29,75 @@ def main(imagefile, convert_alpha=False, run_speed_test=False):
             pygame.display.set_mode((1, 1))
             background = background.convert_alpha()
 
-        SpeedTest(background)
+        speed_test(background)
         return
 
-    # start fullscreen mode
-    screen = pygame.display.set_mode((1024, 768), pygame.FULLSCREEN)
+    # start FULLSCREEN mode
+    # On Windows, the fullscreen mode doesn't work properly, to fix the problem, 
+    # add with it pygame.SCALED flag
+    screen = pygame.display.set_mode((1024, 768), pygame.FULLSCREEN|pygame.SCALED)
     if convert_alpha:
         background = background.convert_alpha()
 
     # turn off the mouse pointer
     pygame.mouse.set_visible(0)
-    # main loop
-    bRunning = True
-    bUp = False
-    bDown = False
-    bLeft = False
-    bRight = False
+
+    running = True
+    up = False
+    down = False
+    left = False
+    right = False
     cursize = [background.get_width(), background.get_height()]
-    while bRunning:
+
+    # main loop
+    while running:
+        
         image = pygame.transform.smoothscale(background, cursize)
         imgpos = image.get_rect(centerx=512, centery=384)
         screen.fill((255, 255, 255))
         screen.blit(image, imgpos)
+        
         pygame.display.flip()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (
                 event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE
             ):
-                bRunning = False
+                running = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
-                    bUp = True
+                    up = True
                 if event.key == pygame.K_DOWN:
-                    bDown = True
+                    down = True
                 if event.key == pygame.K_LEFT:
-                    bLeft = True
+                    left = True
                 if event.key == pygame.K_RIGHT:
-                    bRight = True
+                    right = True
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_UP:
-                    bUp = False
+                    up = False
                 if event.key == pygame.K_DOWN:
-                    bDown = False
+                    down = False
                 if event.key == pygame.K_LEFT:
-                    bLeft = False
+                    left = False
                 if event.key == pygame.K_RIGHT:
-                    bRight = False
-        if bUp:
+                    right = False
+        if up:
             cursize[1] -= 2
             if cursize[1] < 1:
                 cursize[1] = 1
-        if bDown:
+        if down:
             cursize[1] += 2
-        if bLeft:
+        if left:
             cursize[0] -= 2
             if cursize[0] < 1:
                 cursize[0] = 1
-        if bRight:
+        if right:
             cursize[0] += 2
     pygame.quit()
 
 
-def SpeedTest(image):
+def speed_test(image):
     print(f"\nImage Scaling Speed Test - Image Size {str(image.get_size())}\n")
 
     imgsize = [image.get_width(), image.get_height()]
