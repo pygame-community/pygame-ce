@@ -29,14 +29,15 @@ for driver in get_drivers():
 
 import random
 
-answer = messagebox(
+answer = pygame.display.message_box(
     "I will open two windows! Continue?",
     "Hello!",
-    info=True,
+    message_type="info",
     buttons=("Yes", "No", "Chance"),
     return_button=0,
     escape_button=1,
 )
+
 if answer == 1 or (answer == 2 and random.random() < 0.5):
     import sys
 
