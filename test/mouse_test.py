@@ -342,7 +342,7 @@ class MouseModuleTest(MouseTests):
                 prev_visible = pygame.mouse.set_visible(invalid_value)
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER", "") == "dummy",
+        os.environ.get("SDL_VIDEODRIVER", "") == pygame.NULL_VIDEODRIVER,
         "mouse.set_relative_mode requires non-null video driver",
     )
     def test_set_relative_mode(self):
@@ -356,7 +356,7 @@ class MouseModuleTest(MouseTests):
         self.assertEqual(visible, True)
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER", "") == "dummy",
+        os.environ.get("SDL_VIDEODRIVER", "") == pygame.NULL_VIDEODRIVER,
         "mouse.set_relative_mode requires non-null video driver",
     )
     def test_get_relative_mode(self):
