@@ -410,6 +410,9 @@ _select_source_type(pgCameraObject *self, IMFMediaType **mp)
             native_types[index], &MF_MT_FRAME_RATE, fps_max_ratio);
         HANDLEHR(hr);
     }
+    else {
+        hr = S_OK; /* clear error */
+    }
 
     *mp = native_types[index];
     goto cleanup;
