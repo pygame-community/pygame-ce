@@ -163,6 +163,10 @@ window_get_surface(pgWindowObject *self)
             return NULL;
     }
     self->surf->surf = _surf;
+
+    if (pg_GetDefaultConvertFormat() == NULL)
+        pg_SetDefaultConvertFormat(_surf->format);
+
     Py_INCREF(self->surf);
     return (PyObject *)self->surf;
 }

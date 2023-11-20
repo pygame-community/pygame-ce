@@ -2057,6 +2057,23 @@ pg_SetDefaultWindowSurface(pgSurfaceObject *screen)
     pg_default_screen = screen;
 }
 
+SDL_PixelFormat *pg_default_convert_format = NULL;
+
+static SDL_PixelFormat *
+pg_GetDefaultConvertFormat(void)
+{
+    if (pg_default_screen) {
+        return pg_default_screen->surf->format;
+    }
+    return pg_default_convert_format;
+}
+
+static void
+pg_SetDefaultConvertFormat(SDL_PixelFormat *fmt)
+{
+    pg_default_convert_format = fmt;
+}
+
 static char *
 pg_EnvShouldBlendAlphaSDL2(void)
 {
@@ -2273,8 +2290,10 @@ MODINIT_DEFINE(base)
     c_api[24] = pg_DoubleFromObj;
     c_api[25] = pg_TwoDoublesFromObj;
     c_api[26] = pg_TwoDoublesFromFastcallArgs;
+    c_api[27] = pg_GetDefaultConvertFormat;
+    c_api[28] = pg_SetDefaultConvertFormat;
 
-#define FILLED_SLOTS 27
+#define FILLED_SLOTS 29
 
 #if PYGAMEAPI_BASE_NUMSLOTS != FILLED_SLOTS
 #error export slot count mismatch

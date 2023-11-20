@@ -1590,19 +1590,19 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
 static SDL_Surface *
 pg_DisplayFormat(SDL_Surface *surface)
 {
-    SDL_Surface *displaysurf;
-    if (!pg_GetDefaultWindowSurface()) {
-        SDL_SetError("No video mode has been set");
+    if (!pg_GetDefaultConvertFormat()) {
+        SDL_SetError("No convert format has been set, try display.set_mode()"
+                     // " or Window.get_surface()"
+                     // (uncomment when Window API is published)
+        );
         return NULL;
     }
-    displaysurf = pgSurface_AsSurface(pg_GetDefaultWindowSurface());
-    return PG_ConvertSurface(surface, displaysurf->format);
+    return PG_ConvertSurface(surface, pg_GetDefaultConvertFormat());
 }
 
 static SDL_Surface *
 pg_DisplayFormatAlpha(SDL_Surface *surface)
 {
-    SDL_Surface *displaysurf;
     SDL_PixelFormat *dformat;
     Uint32 pfe;
     Uint32 amask = 0xff000000;
@@ -1610,12 +1610,14 @@ pg_DisplayFormatAlpha(SDL_Surface *surface)
     Uint32 gmask = 0x0000ff00;
     Uint32 bmask = 0x000000ff;
 
-    if (!pg_GetDefaultWindowSurface()) {
-        SDL_SetError("No video mode has been set");
+    if (!pg_GetDefaultConvertFormat()) {
+        SDL_SetError("No convert format has been set, try display.set_mode()"
+                     // " or Window.get_surface()"
+                     // (uncomment when Window API is published)
+        );
         return NULL;
     }
-    displaysurf = pgSurface_AsSurface(pg_GetDefaultWindowSurface());
-    dformat = displaysurf->format;
+    dformat = pg_GetDefaultConvertFormat();
 
     switch (dformat->BytesPerPixel) {
         case 2:
