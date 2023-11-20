@@ -196,6 +196,7 @@ pg_display_quit(PyObject *self, PyObject *_null)
 
     pg_mod_autoquit(IMPPREFIX "event");
     pg_mod_autoquit(IMPPREFIX "time");
+    pg_mod_autoquit(IMPPREFIX "_window");
 
     if (SDL_WasInit(SDL_INIT_VIDEO)) {
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
@@ -250,6 +251,8 @@ pg_display_init(PyObject *self, PyObject *_null)
     if (!pg_mod_autoinit(IMPPREFIX "time"))
         return NULL;
     if (!pg_mod_autoinit(IMPPREFIX "event"))
+        return NULL;
+    if (!pg_mod_autoinit(IMPPREFIX "_window"))
         return NULL;
 
     Py_RETURN_NONE;
@@ -1354,7 +1357,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         SDL_SetWindowIcon(win, pgSurface_AsSurface(state->icon));
 
     if (!SDL_GetWindowWMInfo(win, &wm_info)) {
-        // don't complain, might be dummy mode
+        // don't complain, might be null mode
     }
     else if (wm_info.subsystem == SDL_SYSWM_X11) {
         char *xdg_session_type = SDL_getenv("XDG_SESSION_TYPE");

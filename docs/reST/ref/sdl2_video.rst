@@ -179,22 +179,6 @@
       
       .. versionadded:: 2.4.0
 
-   .. attribute:: relative_mouse
-
-      | :sl:`Get or set the window's relative mouse mode state`
-      | :sg:`relative_mouse -> bool`
-
-      Gets or sets the window's relative mouse mode state.
-      SDL2 docs: *"While the mouse is in relative mode, the cursor is hidden,
-      the mouse position is constrained to the window, and SDL will report
-      continuous relative mouse motion even if the mouse is at the edge of the
-      window.*
-
-      *This function will flush any pending mouse motion."*
-
-      Calling :func:`pygame.mouse.set_visible` with argument
-      ``True`` will exit relative mouse mode.
-
    .. attribute:: title
 
       | :sl:`Get or set the window title`
@@ -308,6 +292,43 @@
 
       Create a Window object that uses the same window data from the :mod:`pygame.display` module, created upon calling
       :func:`pygame.display.set_mode`.
+
+   .. method:: get_surface
+
+      | :sl:`Get the window surface`
+      | :sg:`get_surface() -> Surface`
+
+      Return a reference to the surface associated with the window.
+      
+      The size of surface will automatically change to fit the window size.
+
+      The window surface become invalid when the window is destroyed.
+      
+      .. seealso:: :func:`update_from_surface`
+
+      .. versionadded:: 2.4.0
+   
+   .. method:: update_from_surface
+
+      | :sl:`Update the window surface to the window.`
+      | :sg:`update_from_surface() -> None`
+
+      Update content from the window surface to the window.
+
+      Here is an example of using ``get_surface`` and ``update_from_surface``:
+
+      .. code-block:: python
+
+         win = video.Window()
+         surf = win.get_surface() # get the window surface
+
+         # draw something on the surface
+         surf.fill((255,0,0))
+
+         win.update_from_surface() # update the surface to the window
+
+
+      .. versionadded:: 2.4.0
 
    .. method:: set_windowed
 

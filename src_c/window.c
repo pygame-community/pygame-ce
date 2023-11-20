@@ -125,7 +125,87 @@ window_destroy(pgWindowObject *self, PyObject *_null)
         SDL_DestroyWindow(self->_win);
         self->_win = NULL;
     }
+    if (self->surf) {
+        // Set the internal surface to NULL to make pygame surface invalid
+        // since this surface will be deallocated by SDL when the window is
+        // destroyed.
+        self->surf->surf = NULL;
+
+        Py_DECREF(self->surf);
+        self->surf = NULL;
+    }
     Py_RETURN_NONE;
+}
+
+static PyObject *
+window_get_surface(pgWindowObject *self)
+{
+    PyObject *surf = NULL;
+    SDL_Surface *_surf;
+
+    if (self->_is_borrowed) {
+        surf = (PyObject *)pg_GetDefaultWindowSurface();
+        if (!surf) {
+            return RAISE(pgExc_SDLError,
+                         "display.set_mode has not been called yet.");
+        }
+        Py_INCREF(surf);
+        return surf;
+    }
+
+    _surf = SDL_GetWindowSurface(self->_win);
+    if (!_surf) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    if (self->surf == NULL) {
+        self->surf = pgSurface_New2(_surf, SDL_FALSE);
+        if (!self->surf)
+            return NULL;
+    }
+    self->surf->surf = _surf;
+    Py_INCREF(self->surf);
+    return (PyObject *)self->surf;
+}
+
+static PyObject *
+window_update_from_surface(pgWindowObject *self)
+{
+    int result;
+
+    Py_BEGIN_ALLOW_THREADS;
+    result = SDL_UpdateWindowSurface(self->_win);
+    Py_END_ALLOW_THREADS;
+    if (result)
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    Py_RETURN_NONE;
+}
+
+// Callback function for surface auto resize
+static int SDLCALL
+_resize_event_watch(void *userdata, SDL_Event *event)
+{
+    pgWindowObject *event_window_pg;
+    SDL_Window *event_window;
+    if ((event->type != SDL_WINDOWEVENT))
+        return 0;
+    if (event->window.event != SDL_WINDOWEVENT_SIZE_CHANGED)
+        return 0;
+    event_window = SDL_GetWindowFromID(event->window.windowID);
+    event_window_pg = SDL_GetWindowData(event_window, "pg_window");
+
+    if (!event_window_pg)
+        return 0;
+
+    if (event_window_pg->_is_borrowed) {
+        // have been handled by event watch in display.c
+        return 0;
+    }
+
+    if (!event_window_pg->surf)
+        return 0;
+
+    event_window_pg->surf->surf = SDL_GetWindowSurface(event_window);
+    return 0;
 }
 
 static PyObject *
@@ -631,26 +711,6 @@ window_get_display_index(pgWindowObject *self, PyObject *_null)
     return PyLong_FromLong(index);
 }
 
-static PyObject *
-mouse_get_relative_mode(pgWindowObject *self, void *v)
-{
-    return PyBool_FromLong(SDL_GetRelativeMouseMode());
-}
-
-static int
-mouse_set_relative_mode(pgWindowObject *self, PyObject *arg, void *v)
-{
-    SDL_bool mode = SDL_FALSE;
-    if (PyObject_IsTrue(arg)) {
-        mode = SDL_TRUE;
-    }
-    if (SDL_SetRelativeMouseMode(mode)) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
-    }
-    return 0;
-}
-
 static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
@@ -662,6 +722,15 @@ window_dealloc(pgWindowObject *self, PyObject *_null)
             SDL_SetWindowData(self->_win, "pg_window", NULL);
         }
     }
+    if (self->surf) {
+        // Set the internal surface to NULL to make pygame surface invalid
+        // since this surface will be deallocated by SDL when the window is
+        // destroyed.
+        self->surf->surf = NULL;
+
+        Py_DECREF(self->surf);
+    }
+
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -862,6 +931,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     }
     self->_win = _win;
     self->_is_borrowed = SDL_FALSE;
+    self->surf = NULL;
 
     SDL_SetWindowData(_win, "pg_window", self);
 
@@ -927,6 +997,20 @@ window_repr(pgWindowObject *self)
     return PyUnicode_FromFormat("<Window(title='%s', id=%d)>", title, win_id);
 }
 
+static PyObject *
+_window_internal_mod_init(PyObject *self, PyObject *_null)
+{
+    SDL_AddEventWatch(_resize_event_watch, NULL);
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+_window_internal_mod_quit(PyObject *self, PyObject *_null)
+{
+    SDL_DelEventWatch(_resize_event_watch, NULL);
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef window_methods[] = {
     {"destroy", (PyCFunction)window_destroy, METH_NOARGS,
      DOC_SDL2_VIDEO_WINDOW_DESTROY},
@@ -950,6 +1034,10 @@ static PyMethodDef window_methods[] = {
      DOC_SDL2_VIDEO_WINDOW_SETMODALFOR},
     {"set_icon", (PyCFunction)window_set_icon, METH_O,
      DOC_SDL2_VIDEO_WINDOW_SETICON},
+    {"update_from_surface", (PyCFunction)window_update_from_surface,
+     METH_NOARGS, DOC_SDL2_VIDEO_WINDOW_UPDATEFROMSURFACE},
+    {"get_surface", (PyCFunction)window_get_surface, METH_NOARGS,
+     DOC_SDL2_VIDEO_WINDOW_GETSURFACE},
     {"from_display_module", (PyCFunction)window_from_display_module,
      METH_CLASS | METH_NOARGS, DOC_SDL2_VIDEO_WINDOW_FROMDISPLAYMODULE},
     {NULL, NULL, 0, NULL}};
@@ -972,9 +1060,6 @@ static PyGetSetDef _window_getset[] = {
      (setter)window_set_borderless, DOC_SDL2_VIDEO_WINDOW_BORDERLESS, NULL},
     {"always_on_top", (getter)window_get_always_on_top,
      (setter)window_set_always_on_top, DOC_SDL2_VIDEO_WINDOW_ALWAYSONTOP,
-     NULL},
-    {"relative_mouse", (getter)mouse_get_relative_mode,
-     (setter)mouse_set_relative_mode, DOC_SDL2_VIDEO_WINDOW_RELATIVEMOUSE,
      NULL},
     {"mouse_rect", (getter)window_get_mouse_rect,
      (setter)window_set_mouse_rect, DOC_SDL2_VIDEO_WINDOW_MOUSERECT, NULL},
@@ -1008,6 +1093,10 @@ static PyTypeObject pgWindow_Type = {
 static PyMethodDef _window_methods[] = {
     {"get_grabbed_window", (PyCFunction)get_grabbed_window, METH_NOARGS,
      DOC_SDL2_VIDEO_GETGRABBEDWINDOW},
+    {"_internal_mod_init", (PyCFunction)_window_internal_mod_init, METH_NOARGS,
+     "auto initialize for _window module"},
+    {"_internal_mod_quit", (PyCFunction)_window_internal_mod_quit, METH_NOARGS,
+     "auto quit for _window module"},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(_window)
