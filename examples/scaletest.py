@@ -33,9 +33,9 @@ def main(imagefile, convert_alpha=False, run_speed_test=False):
         return
 
     # start FULLSCREEN mode
-    # On Windows, the fullscreen mode doesn't work properly, to fix the problem, 
+    # On Windows, the fullscreen mode doesn't work properly, to fix the problem,
     # add with it pygame.SCALED flag
-    screen = pygame.display.set_mode((1024, 768), pygame.FULLSCREEN|pygame.SCALED)
+    screen = pygame.display.set_mode((1024, 768), pygame.FULLSCREEN | pygame.SCALED)
     if convert_alpha:
         background = background.convert_alpha()
 
@@ -51,12 +51,11 @@ def main(imagefile, convert_alpha=False, run_speed_test=False):
 
     # main loop
     while running:
-        
         image = pygame.transform.smoothscale(background, cursize)
         imgpos = image.get_rect(centerx=512, centery=384)
         screen.fill((255, 255, 255))
         screen.blit(image, imgpos)
-        
+
         pygame.display.flip()
 
         for event in pygame.event.get():
