@@ -162,7 +162,7 @@ def main():
     punch_sound = load_sound("punch.wav")
     chimp = Chimp()
     fist = Fist()
-    allsprites = pygame.sprite.RenderPlain((chimp, fist))
+    all_sprites = pygame.sprite.Group(chimp, fist)
     clock = pygame.Clock()
 
     # Main Loop
@@ -185,11 +185,11 @@ def main():
             elif event.type == pygame.MOUSEBUTTONUP:
                 fist.unpunch()
 
-        allsprites.update()
+        all_sprites.update()
 
         # Draw Everything
         screen.blit(background, (0, 0))
-        allsprites.draw(screen)
+        all_sprites.draw(screen)
         pygame.display.flip()
 
     pygame.quit()

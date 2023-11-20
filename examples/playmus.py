@@ -20,7 +20,6 @@ q     - stop
 import sys
 
 import pygame
-import pygame.freetype
 
 
 class Window:
@@ -51,8 +50,7 @@ class Window:
         self.screen.fill(self.background_color)
         pygame.display.flip()
 
-        pygame.freetype.init()
-        self.font = pygame.freetype.Font(None, 20)
+        self.font = pygame.sysfont.SysFont(None, 20)
         self.font.origin = True
         self.ascender = int(self.font.get_sized_ascender() * 1.5)
         self.descender = int(self.font.get_sized_descender() * 1.5)
@@ -102,6 +100,8 @@ def show_usage_message():
 
 def main(file_path):
     """Play an audio file with pygame.mixer.music"""
+
+    pygame.init()
 
     EVENT_LOOP_TICK = pygame.event.custom_type()
 

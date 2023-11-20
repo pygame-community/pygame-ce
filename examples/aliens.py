@@ -239,8 +239,7 @@ def main(winstyle=0):
     fullscreen = False
     # Set the display mode
     winstyle = 0  # |FULLSCREEN
-    bestdepth = pygame.display.mode_ok(SCREENRECT.size, winstyle, 32)
-    screen = pygame.display.set_mode(SCREENRECT.size, winstyle, bestdepth)
+    screen = pygame.display.set_mode(SCREENRECT.size, winstyle)
 
     # Load images, assign to sprite classes
     # (do this before the classes are used, after screen setup)
@@ -278,16 +277,16 @@ def main(winstyle=0):
     aliens = pygame.sprite.Group()
     shots = pygame.sprite.Group()
     bombs = pygame.sprite.Group()
-    all = pygame.sprite.RenderUpdates()
+    all_sprites = pygame.sprite.RenderUpdates()
     lastalien = pygame.sprite.GroupSingle()
 
     # assign default groups to each sprite class
-    Player.containers = all
-    Alien.containers = aliens, all, lastalien
-    Shot.containers = shots, all
-    Bomb.containers = bombs, all
-    Explosion.containers = all
-    Score.containers = all
+    Player.containers = all_sprites
+    Alien.containers = aliens, all_sprites, lastalien
+    Shot.containers = shots, all_sprites
+    Bomb.containers = bombs, all_sprites
+    Explosion.containers = all_sprites
+    Score.containers = all_sprites
 
     # Create Some Starting Values
     global score
@@ -299,7 +298,7 @@ def main(winstyle=0):
     player = Player()
     Alien()  # note, this 'lives' because it goes into a sprite group
     if pygame.font:
-        all.add(Score())
+        all_sprites.add(Score())
 
     # Run our main loop whilst the player is alive.
     while player.alive():
@@ -315,14 +314,14 @@ def main(winstyle=0):
                         print("Changing to FULLSCREEN")
                         screen_backup = screen.copy()
                         screen = pygame.display.set_mode(
-                            SCREENRECT.size, winstyle | pygame.FULLSCREEN, bestdepth
+                            SCREENRECT.size, winstyle | pygame.FULLSCREEN | pygame.SCALED,
                         )
                         screen.blit(screen_backup, (0, 0))
                     else:
                         print("Changing to windowed mode")
                         screen_backup = screen.copy()
                         screen = pygame.display.set_mode(
-                            SCREENRECT.size, winstyle, bestdepth
+                            SCREENRECT.size, winstyle,
                         )
                         screen.blit(screen_backup, (0, 0))
                     pygame.display.flip()
@@ -331,10 +330,10 @@ def main(winstyle=0):
         keystate = pygame.key.get_pressed()
 
         # clear/erase the last drawn sprites
-        all.clear(screen, background)
+        all_sprites.clear(screen, background)
 
         # update all the sprites
-        all.update()
+        all_sprites.update()
 
         # handle player input
         direction = keystate[pygame.K_RIGHT] - keystate[pygame.K_LEFT]
@@ -382,7 +381,7 @@ def main(winstyle=0):
             player.kill()
 
         # draw the scene
-        dirty = all.draw(screen)
+        dirty = all_sprites.draw(screen)
         pygame.display.update(dirty)
 
         # cap the framerate at 40fps. Also called 40HZ or 40 times per second.

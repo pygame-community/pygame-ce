@@ -10,7 +10,7 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((500, 500))
     screen.fill((255, 0, 0))
-    s = pygame.Surface(screen.get_size(), pygame.SRCALPHA, 32)
+    s = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
     pygame.draw.line(s, (0, 0, 0), (250, 250), (250 + 200, 250))
 
     width = 1
@@ -24,17 +24,17 @@ def main():
     pygame.draw.circle(screen, "black", (50, 100), 10, 1)
 
     pygame.display.flip()
-    try:
-        while True:
-            event = pygame.event.wait()
-            if event.type == pygame.QUIT:
-                break
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE or event.unicode == "q":
-                    break
-            pygame.display.flip()
-    finally:
-        pygame.quit()
+
+    running = True
+    
+    while running:
+        
+        event = pygame.event.wait()
+
+        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_q):
+            running = False
+    
+    pygame.quit()
 
 
 if __name__ == "__main__":
