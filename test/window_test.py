@@ -351,13 +351,13 @@ class WindowTypeTest(unittest.TestCase):
         surf2 = win2.get_surface()
         self.assertIs(surf1, surf2)
 
-    def test_window_update_from_surface(self):
+    def test_window_flip(self):
         win = Window(size=(640, 480))
         surf = win.get_surface()
         surf.fill((255, 0, 0))
 
-        self.assertRaises(TypeError, lambda: win.update_from_surface("an argument"))
-        self.assertIs(win.update_from_surface(), None)
+        self.assertRaises(TypeError, lambda: win.flip("an argument"))
+        self.assertIs(win.flip(), None)
         win.destroy()
 
     def tearDown(self):
