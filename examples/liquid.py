@@ -16,7 +16,6 @@ sound stuff, that's an easy enough challenge for the reader :]
 import pygame
 import os
 from math import sin
-import time
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 
