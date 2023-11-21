@@ -49,7 +49,6 @@ def main():
     clock = pygame.Clock()
 
     while True:
-
         clock.tick(60)
 
         for event in pygame.event.get():
