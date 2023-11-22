@@ -263,39 +263,6 @@ pg_DisplayFormat(SDL_Surface *surface);
 static int
 _PgSurface_SrcAlpha(SDL_Surface *surf);
 
-#if !SDL_VERSION_ATLEAST(2, 0, 10)
-static Uint32
-pg_map_rgb(SDL_Surface *surf, Uint8 r, Uint8 g, Uint8 b)
-{
-    /* SDL_MapRGB() returns wrong values for color keys
-       for indexed formats since since alpha = 0 */
-    Uint32 key;
-    if (!surf->format->palette)
-        return SDL_MapRGB(surf->format, r, g, b);
-    if (!SDL_GetColorKey(surf, &key)) {
-        Uint8 keyr, keyg, keyb;
-        SDL_GetRGB(key, surf->format, &keyr, &keyg, &keyb);
-        if (r == keyr && g == keyg && b == keyb)
-            return key;
-    }
-    else
-        SDL_ClearError();
-    return SDL_MapRGBA(surf->format, r, g, b, SDL_ALPHA_OPAQUE);
-}
-
-static Uint32
-pg_map_rgba(SDL_Surface *surf, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-{
-    if (!surf->format->palette)
-        return SDL_MapRGBA(surf->format, r, g, b, a);
-    return pg_map_rgb(surf, r, g, b);
-}
-#else /* SDL_VERSION_ATLEAST(2, 0, 10) */
-#define pg_map_rgb(surf, r, g, b) SDL_MapRGB((surf)->format, (r), (g), (b))
-#define pg_map_rgba(surf, r, g, b, a) \
-    SDL_MapRGBA((surf)->format, (r), (g), (b), (a))
-#endif /* SDL_VERSION_ATLEAST(2, 0, 10) */
-
 static PyGetSetDef surface_getsets[] = {
     {"_pixels_address", (getter)surf_get_pixels_address, NULL,
      "pixel buffer address (readonly)", NULL},
@@ -976,7 +943,7 @@ surf_map_rgb(PyObject *self, PyObject *args)
 
     SURF_INIT_CHECK(surf)
 
-    color = pg_map_rgba(surf, rgba[0], rgba[1], rgba[2], rgba[3]);
+    color = SDL_MapRGBA(surf->format, rgba[0], rgba[1], rgba[2], rgba[3]);
     return PyLong_FromLong(color);
 }
 
@@ -1604,7 +1571,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
     }
 
     if (has_colorkey) {
-        colorkey = pg_map_rgba(newsurf, key_r, key_g, key_b, key_a);
+        colorkey = SDL_MapRGBA(newsurf->format, key_r, key_g, key_b, key_a);
         if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
