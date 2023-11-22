@@ -43,14 +43,14 @@ def main():
             elif event.type == pygame.DROPTEXT:
                 print(event)
                 spr_file_text = font.render(
-                    event.text, 1, (255, 255, 255), wraplength=screen_size[0] - 10
+                    event.text, True, (255, 255, 255), wraplength=screen_size[0] - 10
                 )
                 spr_file_text_rect = spr_file_text.get_rect()
                 spr_file_text_rect.center = surf.get_rect().center
             elif event.type == pygame.DROPFILE:
                 print(event)
                 spr_file_text = font.render(
-                    event.file, 1, (255, 255, 255), None, screen_size[0] - 10
+                    event.file, True, (255, 255, 255), None, screen_size[0] - 10
                 )
                 spr_file_text_rect = spr_file_text.get_rect()
                 spr_file_text_rect.center = surf.get_rect().center

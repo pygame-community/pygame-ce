@@ -28,12 +28,14 @@ def main():
     running = True
 
     while running:
-        event = pygame.event.wait()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_q:
+                    running = False
 
-        if event.type == pygame.QUIT or (
-            event.type == pygame.KEYDOWN and event.key == pygame.K_q
-        ):
-            running = False
+        pygame.display.flip()
 
     pygame.quit()
 
