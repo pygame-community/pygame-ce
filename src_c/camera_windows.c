@@ -37,6 +37,8 @@
 #include "_camera.h"
 #include "pgcompat.h"
 
+#ifdef PYGAME_WINDOWS_CAMERA
+
 /*these are already included in camera.h, but having them here
  * makes all the types be recognized by VS code */
 #include <mfapi.h>
@@ -890,3 +892,5 @@ windows_read_raw(pgCameraObject *self)
     /* should this be an error instead? */
     Py_RETURN_NONE;
 }
+
+#endif /* PYGAME_WINDOWS_CAMERA */

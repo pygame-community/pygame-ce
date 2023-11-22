@@ -47,7 +47,7 @@
 #include <linux/videodev2.h>
 #endif
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) && defined(_MSC_VER)
 #define PYGAME_WINDOWS_CAMERA 1
 
 #include <mfapi.h>
