@@ -106,7 +106,7 @@ object instead of the module, which can be used to test for availability.
 .. function:: set_error
 
    | :sl:`set the current error message`
-   | :sg:`set_error(error_msg) -> None`
+   | :sg:`set_error(error_msg, /) -> None`
 
    SDL maintains an internal error message. This message will usually be
    given to you when :func:`pygame.error` is raised, so this function will
@@ -147,7 +147,7 @@ object instead of the module, which can be used to test for availability.
 .. function:: register_quit
 
    | :sl:`register a function to be called when pygame quits`
-   | :sg:`register_quit(callable) -> None`
+   | :sg:`register_quit(callable, /) -> None`
 
    When :func:`pygame.quit` is called, all registered quit functions are
    called. Pygame modules do this automatically when they are initializing, so

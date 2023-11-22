@@ -134,7 +134,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 .. function:: set_pos
 
    | :sl:`set the mouse cursor position`
-   | :sg:`set_pos([x, y]) -> None`
+   | :sg:`set_pos([x, y], /) -> None`
 
    Set the current mouse position to arguments given. If the mouse cursor is
    visible it will jump to the new coordinates. Moving the mouse will generate
@@ -145,7 +145,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 .. function:: set_visible
 
    | :sl:`hide or show the mouse cursor`
-   | :sg:`set_visible(bool) -> bool`
+   | :sg:`set_visible(bool, /) -> bool`
 
    If the bool argument is true, the mouse cursor will be visible. This will
    return the previous visible state of the cursor.

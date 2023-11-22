@@ -9,6 +9,6 @@
 #define DOC_IMAGE_FROMSTRING "fromstring(bytes, size, format, flipped=False, pitch=-1) -> Surface\ncreate new Surface from a byte buffer"
 #define DOC_IMAGE_FROMBYTES "frombytes(bytes, size, format, flipped=False, pitch=-1) -> Surface\ncreate new Surface from a byte buffer"
 #define DOC_IMAGE_FROMBUFFER "frombuffer(buffer, size, format, pitch=-1) -> Surface\ncreate a new Surface that shares data inside a bytes buffer"
-#define DOC_IMAGE_LOADBASIC "load_basic(file) -> Surface\nload new BMP image from a file (or file-like object)"
+#define DOC_IMAGE_LOADBASIC "load_basic(file, /) -> Surface\nload new BMP image from a file (or file-like object)"
 #define DOC_IMAGE_LOADEXTENDED "load_extended(file) -> Surface\nload_extended(file, namehint="") -> Surface\nload an image from a file (or file-like object)"
 #define DOC_IMAGE_SAVEEXTENDED "save_extended(Surface, file) -> None\nsave_extended(Surface, file, namehint="") -> None\nsave a png/jpg image to file (or file-like object)"

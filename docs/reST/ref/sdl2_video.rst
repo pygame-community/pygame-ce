@@ -416,7 +416,7 @@
    .. method:: set_icon
 
       | :sl:`Set the window icon`
-      | :sg:`set_icon(surface) -> None`
+      | :sg:`set_icon(surface, /) -> None`
 
       Sets the window icon.
 
@@ -425,7 +425,7 @@
    .. method:: set_modal_for
 
       | :sl:`Set the window as a modal for a parent window`
-      | :sg:`set_modal_for(parent) -> None`
+      | :sg:`set_modal_for(parent, /) -> None`
 
       :param Window parent: The parent window.
       
