@@ -404,7 +404,7 @@ cdef extern from "pygame.h" nogil:
         PG_COLOR_HANDLE_RESTRICT_SEQ
         PG_COLOR_HANDLE_ALL
 
-    ctypedef class pygame.Rect [object pgRectObject]:
+    ctypedef class pygame.rect.Rect [object pgRectObject]:
         cdef SDL_Rect r
         cdef object weakreflist
     
