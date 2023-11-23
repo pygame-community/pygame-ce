@@ -39,8 +39,8 @@ class TextInput:
     def __init__(
         self,
         prompt: str,
-        pos,
-        screen_dimensions,
+        pos: tuple[int, int],
+        screen_dimensions: tuple[int, int],
         print_event: bool,
         text_color="white",
         fps: int = 50,
