@@ -54,7 +54,6 @@ class TextInput:
         self._ime_text_pos = 0
         self._ime_editing_text = ""
         self._ime_editing_pos = 0
-        self.chat_list: list[str] = []
         self.chat = ""
 
         # Freetype
