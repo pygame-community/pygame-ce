@@ -37,8 +37,13 @@ class TextInput:
     ]
 
     def __init__(
-        self, prompt: str, pos, screen_dimensions, print_event: bool,
-        text_color="white", fps: int = 50
+        self,
+        prompt: str,
+        pos,
+        screen_dimensions,
+        print_event: bool,
+        text_color="white",
+        fps: int = 50,
     ) -> None:
         self.prompt = prompt
         self.print_event = print_event
@@ -65,12 +70,8 @@ class TextInput:
         self.font_small = pygame.font.SysFont(self.font_names, 16)
         self.text_color = text_color
 
-        self.prompt_surf = self.font.render(
-            self.prompt, True, self.text_color
-        )
-        self.prompt_rect = self.prompt_surf.get_rect(
-            topleft=self.CHAT_BOX_POS.topleft
-        )
+        self.prompt_surf = self.font.render(self.prompt, True, self.text_color)
+        self.prompt_rect = self.prompt_surf.get_rect(topleft=self.CHAT_BOX_POS.topleft)
 
         self.fps = fps
         self.second_counter = 0
@@ -105,8 +106,10 @@ class TextInput:
         self._ime_text_pos = self._clamp_to_text_range(self._ime_text_pos + by)
 
     def replace_chars(
-        self, remove_count: int = 0, to_insert: str = "",
-        text_after_cursor: bool = False
+        self,
+        remove_count: int = 0,
+        to_insert: str = "",
+        text_after_cursor: bool = False,
     ):
         """
         Removes given number of characters from the cursor location
@@ -116,9 +119,7 @@ class TextInput:
 
         if remove_count < 0:
             self._ime_text = (
-                self._ime_text[0:loc]
-                + to_insert
-                + self._ime_text[self._ime_text_pos:]
+                self._ime_text[0:loc] + to_insert + self._ime_text[self._ime_text_pos :]
             )
 
             if text_after_cursor:
@@ -127,7 +128,7 @@ class TextInput:
                 self.move_cursor_by(remove_count + len(to_insert))
         else:
             self._ime_text = (
-                self._ime_text[0:self._ime_text_pos]
+                self._ime_text[0 : self._ime_text_pos]
                 + to_insert
                 + self._ime_text[loc:]
             )
@@ -210,8 +211,7 @@ class TextInput:
         """
 
         chat_list_surf = self.font_small.render(
-            self.chat, True, self.text_color,
-            wraplength=self.CHAT_LIST_POS.width
+            self.chat, True, self.text_color, wraplength=self.CHAT_LIST_POS.width
         )
 
         screen.blit(chat_list_surf, self.CHAT_LIST_POS)
@@ -221,8 +221,7 @@ class TextInput:
         ime_text = self._get_ime_text()
 
         text_surf = self.font.render(
-            ime_text, True, self.text_color,
-            wraplength=self.CHAT_BOX_POS.width
+            ime_text, True, self.text_color, wraplength=self.CHAT_BOX_POS.width
         )
 
         text_rect = text_surf.get_rect(topleft=self.prompt_rect.topright)
@@ -249,8 +248,7 @@ class TextInput:
                 index += 1
 
             cursor_rect = pygame.Rect(
-                x_location + text_rect.x, text_rect.y,
-                2, self.font_height
+                x_location + text_rect.x, text_rect.y, 2, self.font_height
             )
             pygame.draw.rect(screen, self.text_color, cursor_rect)
 
@@ -270,8 +268,7 @@ class Game:
     def __init__(self, caption: str) -> None:
         # Initialize
         pygame.init()
-        self.screen = pygame.display.set_mode(
-            (self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
+        self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
         pygame.display.set_caption(caption)
         self.clock = pygame.Clock()
 
@@ -284,7 +281,7 @@ class Game:
             screen_dimensions=(self.SCREEN_WIDTH, self.SCREEN_HEIGHT),
             print_event=self.print_event,
             text_color="green",
-            fps=self.FPS
+            fps=self.FPS,
         )
 
     def main_loop(self) -> None:
