@@ -11,7 +11,6 @@ import sys
 import os
 
 import pygame
-import pygame.freetype as freetype
 
 # This environment variable is important
 # If not added the candidate list will not show
@@ -62,11 +61,17 @@ class TextInput:
         # The font name can be a comma separated list
         # of font names to search for.
         self.font_names = ",".join(self.FONT_NAMES)
-        self.font = freetype.SysFont(self.font_names, 24)
-        self.font.origin = True
-        self.font_height = self.font.get_sized_height(self.font.size)
-        self.font_small = freetype.SysFont(self.font_names, 16)
+        self.font = pygame.font.SysFont(self.font_names, 24)
+        self.font_height = self.font.get_height()
+        self.font_small = pygame.font.SysFont(self.font_names, 16)
         self.text_color = text_color
+
+        self.prompt_surf = self.font.render(
+            self.prompt, True, self.text_color
+        )
+        self.prompt_rect = self.prompt_surf.get_rect(
+            topleft=self.CHAT_BOX_POS.topleft
+        )
 
         self.fps = fps
         self.second_counter = 0
@@ -84,6 +89,15 @@ class TextInput:
 
         if self.second_counter >= self.fps:
             self.second_counter = 0
+
+        # Check if input fits in chat box
+        input_size = self.font.size(self._get_ime_text())
+        while input_size[0] > self.CHAT_BOX_POS.w - self.prompt_rect.w:
+            if self._ime_editing_text:
+                # Don't block.
+                break
+            self._ime_text = self._ime_text[:-1]
+            input_size = self.font.size(self._get_ime_text())
 
     def _clamp_to_text_range(self, num: int):
         return min(len(self._ime_text), max(0, num))
@@ -155,11 +169,14 @@ class TextInput:
                 if len(self._ime_text) == 0:
                     return
 
-                # Append chat list
-                self.chat_list.append(self._ime_text)
-                if len(self.chat_list) > self.CHAT_LIST_MAXSIZE:
-                    self.chat_list.pop(0)
+                # Add to chat log
                 self.chat += self._ime_text + "\n"
+
+                chat_lines = self.chat.split("\n")
+                if len(chat_lines) > self.CHAT_LIST_MAXSIZE:
+                    chat_lines.pop(0)
+                    self.chat = "\n".join(chat_lines)
+
                 self._ime_text = ""
                 self._ime_text_pos = 0
 
@@ -173,55 +190,69 @@ class TextInput:
             self._ime_editing_text = ""
             self.replace_chars(to_insert=event.text)
 
+    def _get_ime_text(self):
+        """
+        Returns text that is currently in input.
+        """
+        if self._ime_editing_text:
+            return (
+                f"{self._ime_text[0: self._ime_text_pos]}"
+                f"[{self._ime_editing_text}]"
+                f"{self._ime_text[self._ime_text_pos:]}"
+            )
+        return (
+            f"{self._ime_text[0: self._ime_text_pos]}"
+            f"{self._ime_text[self._ime_text_pos:]}"
+        )
+
     def draw(self, screen: pygame.Surface) -> None:
         """
         Draws the text input widget onto the provided surface
         """
 
-        # Chat List updates
-        chat_height = self.CHAT_LIST_POS.height / self.CHAT_LIST_MAXSIZE
-        for i, chat in enumerate(self.chat_list):
-            self.font_small.render_to(
-                screen,
-                (self.CHAT_LIST_POS.x, self.CHAT_LIST_POS.y + i * chat_height),
-                chat,
-                self.text_color,
-            )
+        chat_list_surf = self.font_small.render(
+            self.chat, True, self.text_color,
+            wraplength=self.CHAT_LIST_POS.width
+        )
+
+        screen.blit(chat_list_surf, self.CHAT_LIST_POS)
 
         # Chat box updates
         cursor_loc = self._ime_text_pos + self._ime_editing_pos
+        ime_text = self._get_ime_text()
 
-        ime_text_l = self.prompt + self._ime_text[0: self._ime_text_pos]
+        text_surf = self.font.render(
+            ime_text, True, self.text_color,
+            wraplength=self.CHAT_BOX_POS.width
+        )
 
-        if self._ime_editing_text:
-            ime_text_m = "[" + self._ime_editing_text + "]"
-            cursor_loc += 1  # Left parenthesis
-        else:
-            ime_text_m = ""
-
-        ime_text_r = self._ime_text[self._ime_text_pos:]
-        ime_text = ime_text_l + ime_text_m + ime_text_r
-
-        text_rect = self.font.render_to(screen, self.CHAT_BOX_POS, ime_text, self.text_color)
+        text_rect = text_surf.get_rect(topleft=self.prompt_rect.topright)
+        screen.blit(self.prompt_surf, self.prompt_rect)
+        screen.blit(text_surf, text_rect)
 
         # Show blinking cursor, blink twice a second.
         if self.second_counter * 2 < self.fps:
             # Characters can have different widths,
             # so calculating the correct location for the cursor is required.
-            metrics = self.font.get_metrics(ime_text)
-            x_location = text_rect.x
-            y_location = text_rect.y
+            metrics = self.font.metrics(ime_text)
+            x_location = 0
 
             index = 0
-            for _, _, _, _, x_advance, y_advance in metrics:
-                if index >= cursor_loc + len(self.prompt):
+            for metric in metrics:
+                if metric is None:
+                    continue
+
+                _, _, _, _, x_advance = metric
+
+                if index >= cursor_loc:
                     break
                 x_location += x_advance
-                y_location += y_advance
                 index += 1
 
-            cursor_rect = pygame.Rect(x_location, 0, 2, self.font_height)
-            cursor_rect.centery = text_rect.centery
+            cursor_rect = pygame.Rect(
+                x_location + text_rect.x, text_rect.y,
+                2, self.font_height
+            )
             pygame.draw.rect(screen, self.text_color, cursor_rect)
 
 
