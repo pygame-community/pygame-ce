@@ -85,8 +85,9 @@ static PyObject *
 pgSound_New(Mix_Chunk *);
 static PyObject *
 pgChannel_New(int);
-#define pgSound_Check(x) (PyObject_IsInstance(x, &pgSound_Type))
-#define pgChannel_Check(x) (PyObject_IsInstance(x, &pgChannel_Type))
+#define pgSound_Check(x) (PyObject_IsInstance(x, (PyObject *)&pgSound_Type))
+#define pgChannel_Check(x) \
+    (PyObject_IsInstance(x, (PyObject *)&pgChannel_Type))
 
 static int
 snd_getbuffer(PyObject *, Py_buffer *, int);
