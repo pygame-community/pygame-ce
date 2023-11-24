@@ -15,9 +15,9 @@ tar xf ${GLIB}.tar
 cd $GLIB
 
 # a minimal glib install will do for us
-meson _build $PG_BASE_MESON_FLAGS -Dtests=false \
+meson setup _build $PG_BASE_MESON_FLAGS -Dtests=false \
     -Dselinux=disabled -Dlibmount=disabled -Ddtrace=false -Dsystemtap=false -Dnls=disabled
 
-ninja -C _build
-ninja -C _build install
+meson compile -C _build
+meson install -C _build
 
