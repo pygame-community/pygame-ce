@@ -393,7 +393,7 @@ cdef extern from "SDL.h" nogil:
 
 
 cdef extern from "pygame.h" nogil:
-    ctypedef class pygame.Color [object pgColorObject]:
+    ctypedef class pygame.color.Color [object pgColorObject]:
         cdef Uint8 data[4]
         cdef Uint8 len
     
@@ -404,7 +404,7 @@ cdef extern from "pygame.h" nogil:
         PG_COLOR_HANDLE_RESTRICT_SEQ
         PG_COLOR_HANDLE_ALL
 
-    ctypedef class pygame.Rect [object pgRectObject]:
+    ctypedef class pygame.rect.Rect [object pgRectObject]:
         cdef SDL_Rect r
         cdef object weakreflist
     
