@@ -383,8 +383,8 @@ def main(winstyle=0):
             player.kill()
 
         # draw the scene
-        dirty = all_sprites.draw(screen)
-        pygame.display.update(dirty)
+        all_sprites.draw(screen)
+        pygame.display.flip()
 
         # cap the framerate at 40fps. Also called 40HZ or 40 times per second.
         clock.tick(40)

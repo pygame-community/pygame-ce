@@ -23,11 +23,13 @@ def main():
     pygame.draw.circle(screen, "green", (50, 100), 10)
     pygame.draw.circle(screen, "black", (50, 100), 10, 1)
 
-    pygame.display.flip()
-
     running = True
 
+    clock = pygame.Clock()
+
     while running:
+        clock.tick(10)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
