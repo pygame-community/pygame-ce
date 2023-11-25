@@ -298,34 +298,53 @@
       | :sl:`Get the window surface`
       | :sg:`get_surface() -> Surface`
 
-      Return a reference to the surface associated with the window.
-      
-      The size of surface will automatically change to fit the window size.
+      Returns a "display surface" for this Window. The surface returned is
+      analogous to the surface returned by :func:`pygame.display.set_mode`.
 
-      The window surface become invalid when the window is destroyed.
+      This method allows software rendering (classic pygame rendering) on top
+      of the Window API. This method should not be called when using hardware
+      rendering (coming soon).
+
+      Similarly to the "display surface" returned by :mod:`pygame.display`,
+      this surface will change size with the Window, and will become invalid
+      after the Window's destruction.
       
-      .. seealso:: :func:`update_from_surface`
+      .. seealso:: :func:`flip`
 
       .. versionadded:: 2.4.0
    
-   .. method:: update_from_surface
+   .. method:: flip
 
-      | :sl:`Update the window surface to the window.`
-      | :sg:`update_from_surface() -> None`
+      | :sl:`Update the display surface to the window.`
+      | :sg:`flip() -> None`
 
-      Update content from the window surface to the window.
+      Update content from the display surface to the window. This is the Window
+      class equivalent of :func:`pygame.display.flip`.
 
-      Here is an example of using ``get_surface`` and ``update_from_surface``:
+      This method allows software rendering (classic pygame rendering) on top
+      of the Window API. This method should not be called when using hardware
+      rendering (coming soon).
+
+      Here is a runnable example of using ``get_surface`` and ``flip``:
 
       .. code-block:: python
 
+         import pygame
+         from pygame._sdl2 import video
+
          win = video.Window()
-         surf = win.get_surface() # get the window surface
+         surf = win.get_surface()  # get the window surface
 
-         # draw something on the surface
-         surf.fill((255,0,0))
+         while True:
+            for event in pygame.event.get():
+               if event.type == pygame.QUIT:
+                     pygame.quit()
+                     raise SystemExit
 
-         win.update_from_surface() # update the surface to the window
+            # draw something on the surface
+            surf.fill("red")
+
+            win.flip()  # update the surface to the window
 
 
       .. versionadded:: 2.4.0
@@ -397,7 +416,7 @@
    .. method:: set_icon
 
       | :sl:`Set the window icon`
-      | :sg:`set_icon(surface) -> None`
+      | :sg:`set_icon(surface, /) -> None`
 
       Sets the window icon.
 
@@ -406,7 +425,7 @@
    .. method:: set_modal_for
 
       | :sl:`Set the window as a modal for a parent window`
-      | :sg:`set_modal_for(parent) -> None`
+      | :sg:`set_modal_for(parent, /) -> None`
 
       :param Window parent: The parent window.
       

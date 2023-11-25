@@ -168,7 +168,7 @@ window_get_surface(pgWindowObject *self)
 }
 
 static PyObject *
-window_update_from_surface(pgWindowObject *self)
+window_flip(pgWindowObject *self)
 {
     int result;
 
@@ -1034,8 +1034,8 @@ static PyMethodDef window_methods[] = {
      DOC_SDL2_VIDEO_WINDOW_SETMODALFOR},
     {"set_icon", (PyCFunction)window_set_icon, METH_O,
      DOC_SDL2_VIDEO_WINDOW_SETICON},
-    {"update_from_surface", (PyCFunction)window_update_from_surface,
-     METH_NOARGS, DOC_SDL2_VIDEO_WINDOW_UPDATEFROMSURFACE},
+    {"flip", (PyCFunction)window_flip, METH_NOARGS,
+     DOC_SDL2_VIDEO_WINDOW_FLIP},
     {"get_surface", (PyCFunction)window_get_surface, METH_NOARGS,
      DOC_SDL2_VIDEO_WINDOW_GETSURFACE},
     {"from_display_module", (PyCFunction)window_from_display_module,

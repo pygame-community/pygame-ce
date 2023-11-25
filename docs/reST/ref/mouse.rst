@@ -134,7 +134,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 .. function:: set_pos
 
    | :sl:`set the mouse cursor position`
-   | :sg:`set_pos([x, y]) -> None`
+   | :sg:`set_pos([x, y], /) -> None`
 
    Set the current mouse position to arguments given. If the mouse cursor is
    visible it will jump to the new coordinates. Moving the mouse will generate
@@ -145,7 +145,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 .. function:: set_visible
 
    | :sl:`hide or show the mouse cursor`
-   | :sg:`set_visible(bool) -> bool`
+   | :sg:`set_visible(bool, /) -> bool`
 
    If the bool argument is true, the mouse cursor will be visible. This will
    return the previous visible state of the cursor.
@@ -223,6 +223,8 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 
    Query whether relative mouse mode is enabled.
 
+   .. versionadded:: 2.4.0
+
    .. ## pygame.mouse.get_relative_mode ##
 
 .. function:: set_relative_mode
@@ -240,6 +242,8 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 
    Calling :func:`pygame.mouse.set_visible` with argument
    ``True`` will exit relative mouse mode.
+
+   .. versionadded:: 2.4.0
 
    .. ## pygame.mouse.set_relative_mode ##
 
