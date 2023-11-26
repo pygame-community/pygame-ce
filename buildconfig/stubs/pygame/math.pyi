@@ -214,7 +214,7 @@ class Vector2(_GenericVector):
     xy: Vector2
     yx: Vector2
     yy: Vector2
-    @overload
+    @overload  # type: ignore
     @classmethod
     def from_polar(cls, value: Tuple[float, float], /) -> Vector2: ...
     @overload
@@ -282,7 +282,7 @@ class Vector3(_GenericVector):
     zzx: Vector3
     zzy: Vector3
     zzz: Vector3
-    @overload
+    @overload  # type: ignore
     @classmethod
     def from_spherical(cls, value: Tuple[float, float, float], /) -> Vector2: ...
     @overload
