@@ -63,26 +63,40 @@ Multiple coordinates can be set using slices or swizzling
 
 .. function:: lerp
 
-   | :sl:`returns value interpolated between a and b`
-   | :sg:`lerp(a, b, value, do_clamp=True) -> float`
+   | :sl:`returns value linearly interpolated between a and b`
+   | :sg:`lerp(a, b, value, do_clamp=True, /) -> float`
 
-   Returns a Vector or number which is a linear interpolation between ``a``
+   Returns a number which is a linear interpolation between ``a``
    and ``b``. The third parameter determines how far between ``a`` and
    ``b`` the result is going to be.
-   If ``do_clamp`` is false, the result can overshoot.
+   If ``do_clamp`` is false, the result can exceed the range 0.0 to 1.0.
+
+   The formula is:
+
+   ``a * value + (1 - value) * b``.
 
    .. versionadded:: 2.4.0
 
    .. ## math.lerp ##
 
- .. function:: smoothstep
+.. function:: smoothstep
 
    | :sl:`returns value smoothly interpolated between a and b.`
-   | :sg:`smoothstep(a, b, value) -> float`
+   | :sg:`smoothstep(a, b, value, /) -> float`
 
-   Returns a Vector or number which is a smooth interpolation between ``a``
-   and ``b``. The third parameter determines how far between ``a`` and
+   Returns a number which is a "smooth" interpolation between ``a``
+   and ``b``. This means that the interpolation follows an s-shaped curve, with
+   change happening more slowly near the limits (0.0 and 1.0) and faster in the middle.
+   The third parameter determines how far between ``a`` and
    ``b`` the result is going to be.
+
+   The formula is:
+
+   ``a * interp + (1 - interp) * b``
+
+   where:
+
+   ``interp = value * value * (3 - 2 * value)``
 
    .. versionadded:: 2.4.0
 
@@ -293,6 +307,28 @@ Multiple coordinates can be set using slices or swizzling
       complement of the shortest path.
 
       .. ## Vector2.slerp ##
+
+   .. method:: smoothstep
+
+      | :sl:`returns a smooth interpolation to the given vector.`
+      | :sg:`smoothstep(Vector2, float, /) -> Vector2`
+
+      Returns a Vector which is a smooth interpolation between self and the
+      given Vector. This means that the interpolation follows an s-shaped curve, with
+      change happening more slowly near the limits (0.0 and 1.0) and faster in the middle.
+      The third parameter determines how far between the two vectors the result is going to be.
+
+      The formula is:
+
+      ``a * interp + (1 - interp) * b``
+
+      where:
+
+      ``interp = value * value * (3 - 2 * value)``
+
+      .. versionadded:: 2.4.0
+
+      .. ## Vector2.smoothstep ##
 
    .. method:: elementwise
 
@@ -727,6 +763,28 @@ Multiple coordinates can be set using slices or swizzling
       complement of the shortest path.
 
       .. ## Vector3.slerp ##
+
+   .. method:: smoothstep
+
+      | :sl:`returns a smooth interpolation to the given vector.`
+      | :sg:`smoothstep(Vector3, float, /) -> Vector3`
+
+      Returns a Vector which is a smooth interpolation between self and the
+      given Vector. This means that the interpolation follows an s-shaped curve, with
+      change happening more slowly near the limits (0.0 and 1.0) and faster in the middle.
+      The third parameter determines how far between the two vectors the result is going to be.
+
+      The formula is:
+
+      ``a * interp + (1 - interp) * b``
+
+      where:
+
+      ``interp = value * value * (3 - 2 * value)``
+
+      .. versionadded:: 2.4.0
+
+      .. ## Vector3.smoothstep ##
 
    .. method:: elementwise
 

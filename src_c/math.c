@@ -231,6 +231,8 @@ static PyObject *
 vector_slerp(pgVector *self, PyObject *args);
 static PyObject *
 vector_lerp(pgVector *self, PyObject *args);
+static PyObject *
+vector_smoothstep(pgVector *self, PyObject *args);
 static int
 _vector_reflect_helper(double *dst_coords, const double *src_coords,
                        PyObject *normal, Py_ssize_t dim, double epsilon);
@@ -1615,6 +1617,41 @@ vector_lerp(pgVector *self, PyObject *args)
     return (PyObject *)ret;
 }
 
+static PyObject *
+vector_smoothstep(pgVector *self, PyObject *args)
+{
+    Py_ssize_t i;
+    PyObject *other;
+    pgVector *ret;
+    double t;
+    double other_coords[VECTOR_MAX_SIZE];
+
+    if (!PyArg_ParseTuple(args, "Od:Vector.smoothstep", &other, &t)) {
+        return NULL;
+    }
+    if (!PySequence_AsVectorCoords(other, other_coords, self->dim)) {
+        return RAISE(PyExc_TypeError, "Expected Vector as argument 1");
+    }
+
+    if (t <= 0.0) {
+        t = 0;
+    }
+    else if (t >= 1.0) {
+        t = 1;
+    }
+    else {
+        t = t * t * (3.0f - 2.0f * t);
+    }
+
+    ret = _vector_subtype_new(self);
+    if (ret == NULL) {
+        return NULL;
+    }
+    for (i = 0; i < self->dim; ++i)
+        ret->coords[i] = self->coords[i] * (1 - t) + other_coords[i] * t;
+    return (PyObject *)ret;
+}
+
 static int
 _vector_reflect_helper(double *dst_coords, const double *src_coords,
                        PyObject *normal, Py_ssize_t dim, double epsilon)
@@ -2517,6 +2554,8 @@ static PyMethodDef vector2_methods[] = {
      DOC_MATH_VECTOR2_MOVETOWARDSIP},
     {"slerp", (PyCFunction)vector_slerp, METH_VARARGS, DOC_MATH_VECTOR2_SLERP},
     {"lerp", (PyCFunction)vector_lerp, METH_VARARGS, DOC_MATH_VECTOR2_LERP},
+    {"smoothstep", (PyCFunction)vector_smoothstep, METH_VARARGS,
+     DOC_MATH_VECTOR2_SMOOTHSTEP},
     {"normalize", (PyCFunction)vector_normalize, METH_NOARGS,
      DOC_MATH_VECTOR2_NORMALIZE},
     {"normalize_ip", (PyCFunction)vector_normalize_ip, METH_NOARGS,
@@ -3407,6 +3446,8 @@ static PyMethodDef vector3_methods[] = {
      DOC_MATH_VECTOR3_MOVETOWARDSIP},
     {"slerp", (PyCFunction)vector_slerp, METH_VARARGS, DOC_MATH_VECTOR3_SLERP},
     {"lerp", (PyCFunction)vector_lerp, METH_VARARGS, DOC_MATH_VECTOR3_LERP},
+    {"smoothstep", (PyCFunction)vector_smoothstep, METH_VARARGS,
+     DOC_MATH_VECTOR3_SMOOTHSTEP},
     {"normalize", (PyCFunction)vector_normalize, METH_NOARGS,
      DOC_MATH_VECTOR3_NORMALIZE},
     {"normalize_ip", (PyCFunction)vector_normalize_ip, METH_NOARGS,
@@ -4220,33 +4261,11 @@ math_lerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         return PyFloat_FromDouble(PyFloat_AsDouble(min) * (1 - t) +
                                   PyFloat_AsDouble(max) * t);
     }
-    else if (pgVector2_Check(min) && pgVector2_Check(max)) {
-        pgVector *vmin = (pgVector *)min;
-        pgVector *vmax = (pgVector *)max;
-        pgVector *ret = (pgVector *)pgVector_NEW(2);
-        if (ret == NULL) {
-            return NULL;
-        }
-        ret->coords[0] = vmin->coords[0] * (1 - t) + vmax->coords[0] * t;
-        ret->coords[1] = vmin->coords[1] * (1 - t) + vmax->coords[1] * t;
-        return (PyObject *)ret;
-    }
-    else if (pgVector3_Check(min) && pgVector3_Check(max)) {
-        pgVector *vmin = (pgVector *)min;
-        pgVector *vmax = (pgVector *)max;
-        pgVector *ret = (pgVector *)pgVector_NEW(3);
-        if (ret == NULL) {
-            return NULL;
-        }
-        ret->coords[0] = vmin->coords[0] * (1 - t) + vmax->coords[0] * t;
-        ret->coords[1] = vmin->coords[1] * (1 - t) + vmax->coords[1] * t;
-        ret->coords[2] = vmin->coords[2] * (1 - t) + vmax->coords[2] * t;
-        return (PyObject *)ret;
-    }
     else {
         return RAISE(
             PyExc_TypeError,
-            "lerp requires the first two arguments to be of the same type");
+            "math.lerp requires all the arguments to be numbers. To lerp "
+            "between two vectors, please use the Vector class methods.");
     }
 }
 
@@ -4280,33 +4299,12 @@ math_smoothstep(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         return PyFloat_FromDouble(PyFloat_AsDouble(min) * (1 - t) +
                                   PyFloat_AsDouble(max) * t);
     }
-    else if (pgVector2_Check(min) && pgVector2_Check(max)) {
-        pgVector *vmin = (pgVector *)min;
-        pgVector *vmax = (pgVector *)max;
-        pgVector *ret = (pgVector *)pgVector_NEW(2);
-        if (ret == NULL) {
-            return NULL;
-        }
-        ret->coords[0] = vmin->coords[0] * (1 - t) + vmax->coords[0] * t;
-        ret->coords[1] = vmin->coords[1] * (1 - t) + vmax->coords[1] * t;
-        return (PyObject *)ret;
-    }
-    else if (pgVector3_Check(min) && pgVector3_Check(max)) {
-        pgVector *vmin = (pgVector *)min;
-        pgVector *vmax = (pgVector *)max;
-        pgVector *ret = (pgVector *)pgVector_NEW(3);
-        if (ret == NULL) {
-            return NULL;
-        }
-        ret->coords[0] = vmin->coords[0] * (1 - t) + vmax->coords[0] * t;
-        ret->coords[1] = vmin->coords[1] * (1 - t) + vmax->coords[1] * t;
-        ret->coords[2] = vmin->coords[2] * (1 - t) + vmax->coords[2] * t;
-        return (PyObject *)ret;
-    }
     else {
-        return RAISE(PyExc_TypeError,
-                     "smoothstep requires the first two arguments to be of "
-                     "the same type");
+        return RAISE(
+            PyExc_TypeError,
+            "smoothstep requires all the arguments to be numbers. To "
+            "smoothstep "
+            "between two vectors, please use the Vector class methods.");
     }
 }
 
