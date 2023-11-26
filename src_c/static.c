@@ -22,6 +22,7 @@
 #undef import_pygame_base
 #undef import_pygame_rect
 #undef import_pygame_surface
+#undef import_pygame_geometry
 #undef import_pygame_color
 #undef import_pygame_bufferproxy
 #undef import_pygame_rwobject
@@ -39,6 +40,11 @@ import_pygame_rect(void)
 
 void
 import_pygame_surface(void)
+{
+}
+
+void
+import_pygame_geometry(void)
 {
 }
 
@@ -67,6 +73,11 @@ import_pygame_joystick(void)
 {
 }
 
+void
+import_pygame_window(void)
+{
+}
+
 PyMODINIT_FUNC
 PyInit_base(void);
 PyMODINIT_FUNC
@@ -77,6 +88,8 @@ PyMODINIT_FUNC
 PyInit_version(void);
 PyMODINIT_FUNC
 PyInit_rect(void);
+PyMODINIT_FUNC
+PyInit_geometry(void);
 PyMODINIT_FUNC
 PyInit_surflock(void);
 PyMODINIT_FUNC
@@ -240,8 +253,6 @@ mod_pygame_import_cython(PyObject *self, PyObject *spec)
                           "controller_old");
     load_submodule_mphase("pygame._sdl2", PyInit_audio(), spec, "audio");
     load_submodule_mphase("pygame._sdl2", PyInit_video(), spec, "video");
-    // depends on pygame._sdl2.video
-    load_submodule_mphase("pygame", PyInit__sprite(), spec, "_sprite");
 
     Py_RETURN_NONE;
 }
@@ -269,6 +280,7 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_key(), "key");
 
     load_submodule("pygame", PyInit_rect(), "rect");
+    load_submodule("pygame", PyInit_geometry(), "geometry");
     load_submodule("pygame", PyInit_gfxdraw(), "gfxdraw");
     load_submodule("pygame", PyInit_pg_time(), "time");
     load_submodule("pygame", PyInit__freetype(), "_freetype");
@@ -340,6 +352,8 @@ PyInit_pygame_static()
 #include "simd_blitters_avx2.c"
 #include "simd_blitters_sse2.c"
 
+#include "window.c"
+
 #undef pgVidInfo_Type
 #undef pgVidInfo_New
 
@@ -381,6 +395,7 @@ PyInit_pygame_static()
 #include "time.c"
 
 #include "system.c"
+#include "geometry.c"
 
 #include "_freetype.c"
 #include "freetype/ft_wrap.c"
@@ -412,5 +427,3 @@ PyInit_pygame_static()
 #undef MAX
 #undef MIN
 #include "scale2x.c"
-
-#include "window.c"

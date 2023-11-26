@@ -88,7 +88,7 @@ Des remerciements particuliers s'imposent également.
 * David Clark for filling the right-hand-man position
 * Ed Boraas and Francis Irving: Debian packages
 * Maxim Sobolev: FreeBSD packaging
-* Bob Ippolito: MacOS and OS X porting (much work!)
+* Bob Ippolito: macOS and OS X porting (much work!)
 * Jan Ekhol, Ray Kelm, and Peter Nicolai: putting up with early design ideas
 * Nat Pryce for starting our unit tests
 * Dan Richter for documentation work
@@ -145,9 +145,9 @@ multidimensionnels.
 Versions des dépendances:
 
 +----------+-----------------------------+
-| CPython  | >= 3.7 (Ou utiliser PyPy3)  |
+| CPython  | >= 3.8 (Ou utiliser PyPy3)  |
 +----------+-----------------------------+
-| SDL      | >= 2.0.9                    |
+| SDL      | >= 2.0.10                   |
 +----------+-----------------------------+
 | SDL_mixer| >= 2.0.4                    |
 +----------+-----------------------------+

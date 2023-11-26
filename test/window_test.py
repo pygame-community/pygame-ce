@@ -5,8 +5,6 @@ import os
 from pygame._sdl2.video import Window
 from pygame.version import SDL
 
-# os.environ["SDL_VIDEODRIVER"] = "dummy"
-
 pygame.init()
 
 
@@ -18,7 +16,7 @@ class WindowTypeTest(unittest.TestCase):
 
     # Used to check the presence and set-ability of boolean attributes without
     # testing the results of the actions, since the results are not propagated
-    # by the dummy videodriver on CI for some things.
+    # by the NULL videodriver on CI for some things.
     def bool_attr_test(self, attr):
         setattr(self.win, attr, True)
         setattr(self.win, attr, False)
@@ -27,18 +25,30 @@ class WindowTypeTest(unittest.TestCase):
         setattr(self.win, attr, 17)
         self.assertIsInstance(getattr(self.win, attr), bool)
 
-    def test_grab(self):
-        self.bool_attr_test("grab")
+    def test_grab_mouse_keyboard(self):
+        self.bool_attr_test("grab_mouse")
+        self.bool_attr_test("grab_keyboard")
 
-    @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
-    )
-    def test_grab_set(self):
-        self.win.grab = True
-        self.assertTrue(self.win.grab)
-        self.win.grab = False
-        self.assertFalse(self.win.grab)
+        self.win.grab_mouse = True
+        self.assertTrue(self.win.grab_mouse)
+        self.win.grab_mouse = False
+        self.assertFalse(self.win.grab_mouse)
+
+        if SDL >= (2, 0, 16):
+            self.win.grab_keyboard = True
+            self.assertTrue(self.win.grab_keyboard)
+            self.win.grab_keyboard = False
+            self.assertFalse(self.win.grab_keyboard)
+
+    def test_mouse_keyboard_grabbed(self):
+        self.assertIsInstance(getattr(self.win, "mouse_grabbed"), bool)
+        self.assertIsInstance(getattr(self.win, "keyboard_grabbed"), bool)
+        self.assertRaises(
+            AttributeError, lambda: setattr(self.win, "mouse_grabbed", False)
+        )
+        self.assertRaises(
+            AttributeError, lambda: setattr(self.win, "keyboard_grabbed", False)
+        )
 
     def test_title(self):
         self.assertEqual(self.win.title, self.DEFAULT_TITLE)
@@ -51,8 +61,8 @@ class WindowTypeTest(unittest.TestCase):
         self.bool_attr_test("resizable")
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     def test_resizable_set(self):
         self.win.resizable = True
@@ -64,8 +74,8 @@ class WindowTypeTest(unittest.TestCase):
         self.bool_attr_test("borderless")
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     def test_borderless_set(self):
         self.win.borderless = True
@@ -81,8 +91,8 @@ class WindowTypeTest(unittest.TestCase):
         self.bool_attr_test("always_on_top")
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     @unittest.skipIf(
         SDL < (2, 0, 16),
@@ -93,6 +103,26 @@ class WindowTypeTest(unittest.TestCase):
         self.assertTrue(self.win.always_on_top)
         self.win.always_on_top = False
         self.assertFalse(self.win.always_on_top)
+
+    @unittest.skipIf(
+        SDL < (2, 0, 18),
+        "requires SDL 2.0.18+",
+    )
+    def test_mouse_rect(self):
+        self.win.mouse_rect = None
+        self.assertIsNone(self.win.mouse_rect)
+
+        TEST_MOUSE_RECT = (10, 10, 123, 456)
+        self.win.mouse_rect = TEST_MOUSE_RECT
+        self.assertIsInstance(self.win.mouse_rect, pygame.Rect)
+        self.assertTupleEqual(tuple(self.win.mouse_rect), TEST_MOUSE_RECT)
+
+        self.assertRaises(
+            TypeError, lambda: setattr(self.win, "mouse_rect", "Incorrect type")
+        )
+
+        # clean the status
+        self.win.mouse_rect = None
 
     def test_size(self):
         self.win.size = (1280, 720)
@@ -155,7 +185,7 @@ class WindowTypeTest(unittest.TestCase):
             ValueError, lambda: setattr(self.win, "maximum_size", (-1, -1))
         )
         self.assertRaises(
-            TypeError, lambda: setattr(self.win, "maximum_size", "dummy_str")
+            TypeError, lambda: setattr(self.win, "maximum_size", "placeholder_str")
         )
 
     def test_minimum_size(self):
@@ -182,7 +212,7 @@ class WindowTypeTest(unittest.TestCase):
             ValueError, lambda: setattr(self.win, "minimum_size", (-1, -1))
         )
         self.assertRaises(
-            TypeError, lambda: setattr(self.win, "minimum_size", "dummy_str")
+            TypeError, lambda: setattr(self.win, "minimum_size", "null_str")
         )
 
     def test_min_size_interact_with_max_size(self):
@@ -211,14 +241,14 @@ class WindowTypeTest(unittest.TestCase):
             self.assertTupleEqual(self.win.minimum_size, (60, 60))
 
     def test_opacity(self):
-        # Setting is not supported at all with SDL_VIDEODRIVER = dummy,
+        # Setting is not supported at all with SDL_VIDEODRIVER = pygame.NULL_VIDEODRIVER,
         # all we can test here is that the attribute exists and is a
         # float
         self.assertIsInstance(self.win.opacity, float)
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     def test_opacity_set(self):
         self.win.opacity = 0.5
@@ -232,7 +262,7 @@ class WindowTypeTest(unittest.TestCase):
         self.win.opacity = 1.1
         self.assertEqual(self.win.opacity, 1)
 
-        self.assertRaises(TypeError, lambda: setattr(self.win, "opacity", "dummy str"))
+        self.assertRaises(TypeError, lambda: setattr(self.win, "opacity", "null str"))
 
     def test_init_flags(self):
         # test borderless
@@ -288,6 +318,47 @@ class WindowTypeTest(unittest.TestCase):
 
         pygame.display.quit()
         pygame.init()
+
+    def test_window_surface(self):
+        win = Window(size=(640, 480))
+        surf = win.get_surface()
+
+        self.assertIsInstance(surf, pygame.Surface)
+
+        # test auto resize
+        self.assertTupleEqual(win.size, surf.get_size())
+        win.size = (100, 100)
+        self.assertTupleEqual(win.size, surf.get_size())
+        win.size = (1280, 720)
+        self.assertTupleEqual(win.size, surf.get_size())
+
+        # window surface should be invalid after the window is destroyed
+        win.destroy()
+        self.assertRaises(pygame.error, lambda: surf.fill((0, 0, 0)))
+
+    def test_window_surface_with_display_module(self):
+        # get_surface() should raise an error if the set_mode() is not called.
+        pygame.display.set_mode((640, 480))
+        win1 = Window.from_display_module()
+        pygame.display.quit()
+        pygame.init()
+        self.assertRaises(pygame.error, lambda: win1.get_surface())
+
+        # the surface returned by get_surface() should be
+        # the surface returned by set_mode()
+        surf1 = pygame.display.set_mode((640, 480))
+        win2 = Window.from_display_module()
+        surf2 = win2.get_surface()
+        self.assertIs(surf1, surf2)
+
+    def test_window_flip(self):
+        win = Window(size=(640, 480))
+        surf = win.get_surface()
+        surf.fill((255, 0, 0))
+
+        self.assertRaises(TypeError, lambda: win.flip("an argument"))
+        self.assertIs(win.flip(), None)
+        win.destroy()
 
     def tearDown(self):
         self.win.destroy()

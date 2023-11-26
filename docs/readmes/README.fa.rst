@@ -123,7 +123,7 @@ Credits
 * David Clark for filling the right-hand-man position
 * Ed Boraas and Francis Irving: Debian packages
 * Maxim Sobolev: FreeBSD packaging
-* Bob Ippolito: MacOS and OS X porting (much work!)
+* Bob Ippolito: macOS and OS X porting (much work!)
 * Jan Ekhol, Ray Kelm, and Peter Nicolai: putting up with early design ideas
 * Nat Pryce for starting our unit tests
 * Dan Richter for documentation work
@@ -188,9 +188,9 @@ Dependencies (وابستگی ها)
 مشاهده کنید.
 
 +----------+------------------------+
-| CPython  | >= 3.7 (Or use PyPy3)  |
+| CPython  | >= 3.8 (Or use PyPy3)  |
 +----------+------------------------+
-| SDL      | >= 2.0.9               |
+| SDL      | >= 2.0.10              |
 +----------+------------------------+
 | SDL_mixer| >= 2.0.4               |
 +----------+------------------------+

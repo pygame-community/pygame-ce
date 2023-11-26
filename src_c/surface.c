@@ -256,47 +256,12 @@ static void
 _release_buffer(Py_buffer *view_p);
 static PyObject *
 _raise_get_view_ndim_error(int bitsize, SurfViewKind kind);
-static PyObject *
-_raise_create_surface_error(void);
 static SDL_Surface *
 pg_DisplayFormatAlpha(SDL_Surface *surface);
 static SDL_Surface *
 pg_DisplayFormat(SDL_Surface *surface);
 static int
 _PgSurface_SrcAlpha(SDL_Surface *surf);
-
-#if !SDL_VERSION_ATLEAST(2, 0, 10)
-static Uint32
-pg_map_rgb(SDL_Surface *surf, Uint8 r, Uint8 g, Uint8 b)
-{
-    /* SDL_MapRGB() returns wrong values for color keys
-       for indexed formats since since alpha = 0 */
-    Uint32 key;
-    if (!surf->format->palette)
-        return SDL_MapRGB(surf->format, r, g, b);
-    if (!SDL_GetColorKey(surf, &key)) {
-        Uint8 keyr, keyg, keyb;
-        SDL_GetRGB(key, surf->format, &keyr, &keyg, &keyb);
-        if (r == keyr && g == keyg && b == keyb)
-            return key;
-    }
-    else
-        SDL_ClearError();
-    return SDL_MapRGBA(surf->format, r, g, b, SDL_ALPHA_OPAQUE);
-}
-
-static Uint32
-pg_map_rgba(SDL_Surface *surf, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-{
-    if (!surf->format->palette)
-        return SDL_MapRGBA(surf->format, r, g, b, a);
-    return pg_map_rgb(surf, r, g, b);
-}
-#else /* SDL_VERSION_ATLEAST(2, 0, 10) */
-#define pg_map_rgb(surf, r, g, b) SDL_MapRGB((surf)->format, (r), (g), (b))
-#define pg_map_rgba(surf, r, g, b, a) \
-    SDL_MapRGBA((surf)->format, (r), (g), (b), (a))
-#endif /* SDL_VERSION_ATLEAST(2, 0, 10) */
 
 static PyGetSetDef surface_getsets[] = {
     {"_pixels_address", (getter)surf_get_pixels_address, NULL,
@@ -717,17 +682,24 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
         }
     }
 
-    surface = SDL_CreateRGBSurface(0, width, height, bpp, Rmask, Gmask, Bmask,
-                                   Amask);
-    if (!surface) {
-        _raise_create_surface_error();
+    Uint32 pxformat =
+        SDL_MasksToPixelFormatEnum(bpp, Rmask, Gmask, Bmask, Amask);
+    if (pxformat == SDL_PIXELFORMAT_UNKNOWN) {
+        PyErr_SetString(PyExc_ValueError, "Invalid mask values");
         return -1;
     }
+
+    surface = PG_CreateSurface(width, height, pxformat);
+    if (!surface) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return -1;
+    }
+
     if (!(flags & PGS_SRCALPHA)) {
         /* We ignore the error if any. */
         SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
 
-        /* When the display format has a full alpha channel (MacOS right now),
+        /* When the display format has a full alpha channel (macOS right now),
          * Surfaces may be created with an unreqested alpha channel, which
          * could cause issues.
          * pygame Surfaces are supposed to be (0, 0, 0, 255) by default.
@@ -760,16 +732,6 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
     }
 
     return 0;
-}
-
-static PyObject *
-_raise_create_surface_error(void)
-{
-    const char *msg = SDL_GetError();
-
-    if (strcmp(msg, "Unknown pixel format") == 0)
-        return RAISE(PyExc_ValueError, "Invalid mask values");
-    return RAISE(pgExc_SDLError, msg);
 }
 
 /* surface object methods */
@@ -981,7 +943,7 @@ surf_map_rgb(PyObject *self, PyObject *args)
 
     SURF_INIT_CHECK(surf)
 
-    color = pg_map_rgba(surf, rgba[0], rgba[1], rgba[2], rgba[3]);
+    color = SDL_MapRGBA(surf->format, rgba[0], rgba[1], rgba[2], rgba[3]);
     return PyLong_FromLong(color);
 }
 
@@ -1367,8 +1329,7 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
         sdlrect.h = 0;
         sdlrect.w = 0;
 
-        surface =
-            SDL_CreateRGBSurfaceWithFormat(0, 1, 1, 32, surf->format->format);
+        surface = PG_CreateSurface(1, 1, surf->format->format);
 
         SDL_LowerBlit(surf, &sdlrect, surface, &sdlrect);
         SDL_FreeSurface(surface);
@@ -1428,7 +1389,7 @@ surf_copy(pgSurfaceObject *self, PyObject *_null)
     SURF_INIT_CHECK(surf)
 
     pgSurface_Prep(self);
-    newsurf = SDL_ConvertSurface(surf, surf->format, 0);
+    newsurf = PG_ConvertSurface(surf, surf->format);
     pgSurface_Unprep(self);
 
     final = surf_subtype_new(Py_TYPE(self), newsurf, 1);
@@ -1474,7 +1435,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
     if (argobject) {
         if (pgSurface_Check(argobject)) {
             src = pgSurface_AsSurface(argobject);
-            newsurf = SDL_ConvertSurface(surf, src->format, 0);
+            newsurf = PG_ConvertSurface(surf, src->format);
         }
         else {
             /* will be updated later, initialize to make static analyzer happy
@@ -1595,7 +1556,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
                     SDL_SetPixelFormatPalette(&format, palette);
                 }
             }
-            newsurf = SDL_ConvertSurface(surf, &format, 0);
+            newsurf = PG_ConvertSurface(surf, &format);
             SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
             SDL_FreePalette(palette);
         }
@@ -1610,7 +1571,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
     }
 
     if (has_colorkey) {
-        colorkey = pg_map_rgba(newsurf, key_r, key_g, key_b, key_a);
+        colorkey = SDL_MapRGBA(newsurf->format, key_r, key_g, key_b, key_a);
         if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
@@ -1635,7 +1596,7 @@ pg_DisplayFormat(SDL_Surface *surface)
         return NULL;
     }
     displaysurf = pgSurface_AsSurface(pg_GetDefaultWindowSurface());
-    return SDL_ConvertSurface(surface, displaysurf->format, 0);
+    return PG_ConvertSurface(surface, displaysurf->format);
 }
 
 static SDL_Surface *
@@ -1688,7 +1649,7 @@ pg_DisplayFormatAlpha(SDL_Surface *surface)
         SDL_SetError("unknown pixel format");
         return NULL;
     }
-    return SDL_ConvertSurfaceFormat(surface, pfe, 0);
+    return PG_ConvertSurfaceFormat(surface, pfe);
 }
 
 static PyObject *
@@ -1708,13 +1669,14 @@ surf_convert_alpha(pgSurfaceObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "|O!", &pgSurface_Type, &srcsurf))
         return NULL;
 
-#pragma PG_WARN("srcsurf doesn't actually do anything?")
+    if (srcsurf != NULL) {
+        if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                         "depth argument deprecated since version 2.4.0",
+                         1) == -1) {
+            return NULL;
+        }
+    }
 
-    /*if (!srcsurf) {}*/
-    /*
-     * hmm, we have to figure this out, not all depths have good
-     * support for alpha
-     */
     newsurf = pg_DisplayFormatAlpha(surf);
     SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_BLEND);
     final = surf_subtype_new(Py_TYPE(self), newsurf, 1);
@@ -2675,14 +2637,13 @@ surf_subsurface(PyObject *self, PyObject *args)
     pixeloffset = rect->x * format->BytesPerPixel + rect->y * surf->pitch;
     startpixel = ((char *)surf->pixels) + pixeloffset;
 
-    sub = SDL_CreateRGBSurfaceWithFormatFrom(startpixel, rect->w, rect->h,
-                                             format->BitsPerPixel, surf->pitch,
-                                             format->format);
+    sub = PG_CreateSurfaceFrom(startpixel, rect->w, rect->h, surf->pitch,
+                               format->format);
 
     pgSurface_Unlock((pgSurfaceObject *)self);
 
     if (!sub)
-        return _raise_create_surface_error();
+        return RAISE(pgExc_SDLError, SDL_GetError());
 
     /* copy the colormap if we need it */
     if (SDL_ISPIXELFORMAT_INDEXED(surf->format->format) &&
@@ -3215,7 +3176,7 @@ surf_premul_alpha(pgSurfaceObject *self, PyObject *_null)
 
     pgSurface_Prep(self);
     // Make a copy of the surface first
-    newsurf = SDL_ConvertSurface(surf, surf->format, 0);
+    newsurf = PG_ConvertSurface(surf, surf->format);
 
     if ((surf->w > 0 && surf->h > 0)) {
         // If the surface has no pixels we don't need to premul
@@ -3943,7 +3904,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
             newfmt.Rloss = fmt->Rloss;
             newfmt.Gloss = fmt->Gloss;
             newfmt.Bloss = fmt->Bloss;
-            src = SDL_ConvertSurface(src, &newfmt, 0);
+            src = PG_ConvertSurface(src, &newfmt);
             if (src) {
                 result = SDL_BlitSurface(src, srcrect, dst, dstrect);
                 SDL_FreeSurface(src);

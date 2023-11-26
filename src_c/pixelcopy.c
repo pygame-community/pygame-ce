@@ -1165,7 +1165,7 @@ make_surface(PyObject *self, PyObject *arg)
     sizex = (int)view_p->shape[0];
     sizey = (int)view_p->shape[1];
 
-    surf = SDL_CreateRGBSurfaceWithFormat(0, sizex, sizey, 0, pixelformat);
+    surf = PG_CreateSurface(sizex, sizey, pixelformat);
     if (!surf) {
         pgBuffer_Release(&pg_view);
         return RAISE(pgExc_SDLError, SDL_GetError());
