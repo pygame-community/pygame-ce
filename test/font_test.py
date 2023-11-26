@@ -1042,6 +1042,7 @@ class FontTypeTest(unittest.TestCase):
             properties = [
                 ("name", None),
                 ("style_name", None),
+                ("path", None),
                 ("bold", True),
                 ("italic", True),
                 ("underline", True),

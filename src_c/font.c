@@ -829,12 +829,15 @@ font_getter_style_name(PyObject *self, void *closure)
 static PyObject *
 font_getter_path(PyObject *self, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
     PyObject *path = ((PyFontObject *)self)->path;
     if (path == Py_None) {
         Py_RETURN_NONE;
     }
-    const char *result = PyBytes_AS_STRING(path);
-    return PyUnicode_FromString(result);
+
+    return PyUnicode_FromObject(path);
 }
 
 static PyObject *
@@ -1168,15 +1171,26 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
             goto error;
         }
         fontsize = (int)(fontsize * .6875);
+        obj = PyUnicode_FromEncodedObject(obj, "UTF8", NULL);
     }
 
-    path = pg_EncodeString(obj, "UTF-8", NULL, NULL);
-    if (!path || path == Py_None) {
-        /* if path is NULL, we are forwarding an error. If it is None,
-         * the object passed was not a bytes/string/pathlib object so
-         * handling of that is done after this function, exit early here */
-        Py_XDECREF(path);
-        path = Py_None;
+    if (PyUnicode_Check(obj)) {
+        // python string file path or name
+        path = PyUnicode_FromObject(obj);
+    }
+    else if (PyBytes_Check(obj)) {
+        // possibly a bytes flie path
+        path = pg_EncodeString(obj, "UTF-8", NULL, NULL);
+        if (!path || path == Py_None) {
+            /* if path is NULL, we are forwarding an error. If it is None,
+             * the object passed was not a bytes/string/pathlib object so
+             * handling of that is done after this function, exit early here */
+            Py_XDECREF(path);
+            path = Py_None;
+        }
+        else {
+            path = PyUnicode_FromEncodedObject(path, "UTF8", NULL);
+        }
     }
 
     rw = pgRWops_FromObject(obj, NULL);
@@ -1206,15 +1220,8 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
 
             rw = pgRWops_FromObject(obj, NULL);
 
-            path = pg_EncodeString(obj, "UTF-8", NULL, NULL);
-            if (!path || path == Py_None) {
-                /* if path is NULL, we are forwarding an error. If it is None,
-                 * the object passed was not a bytes/string/pathlib object so
-                 * handling of that is done after this function, exit early
-                 * here */
-                Py_XDECREF(path);
-                path = Py_None;
-            }
+            // set the path when using the default font by name
+            obj = PyUnicode_FromEncodedObject(obj, "UTF8", NULL);
         }
     }
 
@@ -1248,6 +1255,9 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
              * handling of that is done after this function, exit early here */
             Py_XDECREF(path);
             path = Py_None;
+        }
+        else {
+            path = PyUnicode_FromEncodedObject(path, "UTF8", NULL);
         }
     }
 
