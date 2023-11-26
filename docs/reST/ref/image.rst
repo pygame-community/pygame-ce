@@ -46,7 +46,7 @@ formats.
    * ``XPM``
    
    
-.. versionadded:: 2.0 Loading SVG, WebP, PNM
+.. versionaddedold:: 2.0 Loading SVG, WebP, PNM
 
 Saving images only supports a limited set of formats. You can save to the
 following formats.
@@ -62,7 +62,7 @@ following formats.
 
 ``JPEG`` and ``JPG``, as well as ``TIF`` and ``TIFF`` refer to the same file format
 
-.. versionadded:: 1.8 Saving PNG and JPEG files.
+.. versionaddedold:: 1.8 Saving PNG and JPEG files.
 
 
 .. function:: load
@@ -121,8 +121,8 @@ following formats.
              the object needs to be flushed after saving to it to make loading
              from it possible.
 
-   .. versionchanged:: 1.8 Saving PNG and JPEG files.
-   .. versionchanged:: 2.0.0
+   .. versionchangedold:: 1.8 Saving PNG and JPEG files.
+   .. versionchangedold:: 2.0.0
                        The ``namehint`` parameter was added to make it possible
                        to save other formats than ``TGA`` to a file-like object.
                        Saving to a file-like object with JPEG is possible.
@@ -144,7 +144,7 @@ following formats.
    version of the library that Pygame is linked against, while ``linked=False``
    will return the version of the library that Pygame is compiled against.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. versionchanged:: 2.1.4 ``linked`` keyword argument added and default behavior changed from returning compiled version to returning linked version
 
@@ -300,7 +300,7 @@ following formats.
 .. function:: load_basic
 
    | :sl:`load new BMP image from a file (or file-like object)`
-   | :sg:`load_basic(file) -> Surface`
+   | :sg:`load_basic(file, /) -> Surface`
 
    Load an image from a file source. You can pass either a filename or a Python
    file-like object, or a pathlib.Path.
@@ -321,7 +321,7 @@ following formats.
    function can only be used if pygame was built with extended image format
    support.
 
-   .. versionchanged:: 2.0.1
+   .. versionchangedold:: 2.0.1
                        This function is always available, but raises an
                        ``NotImplementedError`` if extended image formats are
                        not supported.
@@ -345,7 +345,7 @@ following formats.
    saved. Saves to ``JPEG`` in case the namehint was not specified while
    saving to a file-like object.
 
-   .. versionchanged:: 2.0.1
+   .. versionchangedold:: 2.0.1
                        This function is always available, but raises an
                        ``NotImplementedError`` if extended image formats are
                        not supported.

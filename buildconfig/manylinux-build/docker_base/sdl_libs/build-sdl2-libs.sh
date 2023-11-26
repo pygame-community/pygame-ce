@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-SDL2="SDL2-2.26.4"
+SDL2="SDL2-2.28.5"
 IMG2="SDL2_image-2.0.5"
 TTF2="SDL2_ttf-2.20.2"
 MIX2="SDL2_mixer-2.6.3"
@@ -33,14 +33,9 @@ if [[ "$MAC_ARCH" == "arm64" ]]; then
 fi
 
 cd $SDL2
-./configure --disable-video-vulkan $ARCHS_CONFIG_FLAG $M1_MAC_EXTRA_FLAGS
+./configure --disable-video-vulkan $PG_BASE_CONFIGURE_FLAGS $M1_MAC_EXTRA_FLAGS
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi
 
 cd ..
 
@@ -63,14 +58,9 @@ fi
 
 ./configure --enable-png --disable-png-shared --enable-jpg --disable-jpg-shared \
         --enable-tif --disable-tif-shared --enable-webp --disable-webp-shared \
-        $SDL_IMAGE_CONFIGURE $ARCHS_CONFIG_FLAG
+        $SDL_IMAGE_CONFIGURE $PG_BASE_CONFIGURE_FLAGS
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi
 
 cd ..
 
@@ -80,14 +70,9 @@ cd $TTF2
 
 # We already build freetype+harfbuzz for pygame.freetype
 # So we make SDL_ttf use that instead of SDL_ttf vendored copies
-./configure $ARCHS_CONFIG_FLAG --disable-freetype-builtin --disable-harfbuzz-builtin
+./configure $PG_BASE_CONFIGURE_FLAGS --disable-freetype-builtin --disable-harfbuzz-builtin
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi
 
 cd ..
 
@@ -103,7 +88,7 @@ cd $MIX2
 # at the moment. This can be changed later if need arises.
 # For now, libmodplug is preferred over libxmp (but this may need changing
 # in the future)
-./configure $ARCHS_CONFIG_FLAG \
+./configure $PG_BASE_CONFIGURE_FLAGS \
       --disable-dependency-tracking \
       --disable-music-ogg-stb --enable-music-ogg-vorbis \
       --disable-music-flac-drflac --enable-music-flac-libflac \
@@ -115,14 +100,9 @@ cd $MIX2
       --disable-music-ogg-vorbis-shared \
       --disable-music-ogg-tremor-shared \
       --disable-music-flac-libflac-shared \
-      --disable-music-mp3-mpg123-shared
+      --disable-music-mp3-mpg123-shared \
+      --disable-music-mod-modplug-shared
 
 make
 make install
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi
-
-cd ..

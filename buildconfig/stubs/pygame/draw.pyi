@@ -1,9 +1,7 @@
-from typing import Optional, Sequence
-
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from ._common import ColorValue, Coordinate, RectValue
+from ._common import ColorValue, Coordinate, RectValue, Sequence
 
 def rect(
     surface: Surface,
@@ -63,12 +61,10 @@ def aaline(
     color: ColorValue,
     start_pos: Coordinate,
     end_pos: Coordinate,
-    blend: int = 1,
 ) -> Rect: ...
 def aalines(
     surface: Surface,
     color: ColorValue,
     closed: bool,
     points: Sequence[Coordinate],
-    blend: int = 1,
 ) -> Rect: ...

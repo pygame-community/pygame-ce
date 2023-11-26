@@ -109,9 +109,7 @@ surf_colorspace(PyObject *self, PyObject *arg)
     surf = pgSurface_AsSurface(surfobj);
 
     if (!surfobj2) {
-        newsurf = SDL_CreateRGBSurfaceWithFormat(0, surf->w, surf->h,
-                                                 surf->format->BitsPerPixel,
-                                                 surf->format->format);
+        newsurf = PG_CreateSurface(surf->w, surf->h, surf->format->format);
         if (!newsurf) {
             return NULL;
         }
@@ -376,11 +374,11 @@ camera_get_image(pgCameraObject *self, PyObject *arg)
 
     if (!surfobj) {
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-        surf = SDL_CreateRGBSurfaceWithFormat(0, self->width, self->height, 24,
-                                              SDL_PIXELFORMAT_RGB24);
+        surf =
+            PG_CreateSurface(self->width, self->height, SDL_PIXELFORMAT_RGB24);
 #else
-        surf = SDL_CreateRGBSurfaceWithFormat(0, self->width, self->height, 24,
-                                              SDL_PIXELFORMAT_BGR24);
+        surf =
+            PG_CreateSurface(self->width, self->height, SDL_PIXELFORMAT_BGR24);
 #endif
     }
     else {
@@ -427,8 +425,7 @@ camera_get_image(pgCameraObject *self, PyObject *arg)
         return NULL;
 
     if (!surfobj) {
-        surf = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32,
-                                              PG_PIXELFORMAT_XRGB8888);
+        surf = PG_CreateSurface(width, height, PG_PIXELFORMAT_XRGB8888);
     }
     else {
         surf = pgSurface_AsSurface(surfobj);
@@ -1791,7 +1788,7 @@ camera_dealloc(PyObject *self)
 #else
     free(((pgCameraObject *)self)->device_name);
 #endif
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 /*
 PyObject* camera_getattr(PyObject* self, char* attrname) {

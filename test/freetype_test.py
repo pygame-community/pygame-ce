@@ -1,8 +1,5 @@
 import os
-
-if os.environ.get("SDL_VIDEODRIVER") == "dummy":
-    __tags__ = ("ignore", "subprocess_ignore")
-
+import io
 import unittest
 import ctypes
 import weakref
@@ -161,6 +158,11 @@ class FreeTypeFontTest(unittest.TestCase):
         f.__init__(self._bmp_8_75dpi_path, size=12)
         self.assertEqual(f.size, 12.0)
 
+    def test_load_from_invalid_sized_file_obj(self):
+        f = io.StringIO()
+        with self.assertRaises(ValueError):
+            font = f = ft.Font(f, size=24)
+
     @unittest.skipIf(IS_PYPY, "PyPy doesn't use refcounting")
     def test_freetype_Font_dealloc(self):
         import sys
@@ -202,7 +204,7 @@ class FreeTypeFontTest(unittest.TestCase):
         Note: This does not test what changes occur to a rendered font by
               having kerning enabled.
 
-        Related to issue #367.
+        Related to pygame-ce issue #371.
         """
         surface = pygame.Surface((10, 10), 0, 32)
         TEST_TEXT = "Freetype Font"
@@ -547,8 +549,9 @@ class FreeTypeFontTest(unittest.TestCase):
         f = self._TEST_FONTS["fixed"]
         self.assertEqual(f.name, "Inconsolata")
 
-        nf = nullfont()
-        self.assertEqual(nf.name, repr(nf))
+        with self.assertRaises(AttributeError):
+            null_font = ft.Font.__new__(ft.Font)
+            null_font.name
 
     def test_freetype_Font_size(self):
         f = ft.Font(None, size=12)
@@ -1353,7 +1356,10 @@ class FreeTypeFontTest(unittest.TestCase):
 
     def test_freetype_Font_path(self):
         self.assertEqual(self._TEST_FONTS["sans"].path, self._sans_path)
-        self.assertRaises(AttributeError, getattr, nullfont(), "path")
+
+        with self.assertRaises(AttributeError):
+            nullfont = ft.Font.__new__(ft.Font)
+            nullfont.path
 
     # This Font cache test is conditional on freetype being built by a debug
     # version of Python or with the C macro PGFT_DEBUG_CACHE defined.
@@ -1481,10 +1487,10 @@ class FreeTypeFontTest(unittest.TestCase):
         self.assertIsNone(metrics[0])
         self.assertIsInstance(metrics[1], tuple)
 
-    def test_issue_242(self):
-        """Issue #242: get_rect() uses 0 as default style"""
+    def test_issue_257(self):
+        """pygame-ce issue #257: get_rect() uses 0 as default style"""
 
-        # Issue #242: freetype.Font.get_rect() ignores style defaults when
+        # pygame-ce issue #257: freetype.Font.get_rect() ignores style defaults when
         #             the style argument is not given
         #
         # The text boundary rectangle returned by freetype.Font.get_rect()
@@ -1541,10 +1547,10 @@ class FreeTypeFontTest(unittest.TestCase):
         finally:
             font.underline = prev_style
 
-    def test_issue_237(self):
-        """Issue #237: Memory overrun when rendered with underlining"""
+    def test_issue_252(self):
+        """pygame-ce issue #252: Memory overrun when rendered with underlining"""
 
-        # Issue #237: Memory overrun when text without descenders is rendered
+        # pygame-ce issue #252: Memory overrun when text without descenders is rendered
         #             with underlining
         #
         # The bug crashes the Python interpreter. The bug is caught with C
@@ -1564,10 +1570,10 @@ class FreeTypeFontTest(unittest.TestCase):
             font.underline_adjustment = adj
             s, r = font.render("Amazon", size=19)
 
-    def test_issue_243(self):
-        """Issue Y: trailing space ignored in boundary calculation"""
+    def test_issue_258(self):
+        """pygame-ce issue #258: trailing space ignored in boundary calculation"""
 
-        # Issue #243: For a string with trailing spaces, freetype ignores the
+        # pygame-ce issue #258: For a string with trailing spaces, freetype ignores the
         # last space in boundary calculations
         #
         font = self._TEST_FONTS["fixed"]
@@ -1693,7 +1699,7 @@ class FreeTypeFontTest(unittest.TestCase):
         self.assertEqual(font_name_2, font_name)
 
         # Check mixed list of bytes and string.
-        names = [fonts[0], fonts_b[1], fonts[2], fonts_b[3]]
+        names = [fonts_b[i] if i % 2 else str_font for i, str_font in enumerate(fonts)]
         font_name_2 = ft.SysFont(names, size).name
         self.assertEqual(font_name_2, font_name)
 

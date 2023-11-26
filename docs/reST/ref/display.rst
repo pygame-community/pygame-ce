@@ -129,16 +129,14 @@ required).
    The Surface that gets returned can be drawn to like a regular Surface but
    changes will eventually be seen on the monitor.
 
-   If no size is passed or is set to ``(0, 0)`` and pygame uses ``SDL``
-   version 1.2.10 or above, the created Surface will have the same size as the
-   current screen resolution. If only the width or height are set to ``0``, the
-   Surface will have the same width or height as the screen resolution. Using a
-   ``SDL`` version prior to 1.2.10 will raise an exception.
+   If no size is passed or is set to ``(0, 0)``, the created Surface will have
+   the same size as the current screen resolution. If only the width or height
+   are set to ``0``, the Surface will have the same width or height as the
+   screen resolution.
 
-   It is usually best to not pass the depth argument. It will default to the
-   best and fastest color depth for the system. If your game requires a
-   specific color format you can control the depth with this argument. Pygame
-   will emulate an unavailable color depth which can be slow.
+   Since pygame 2, the depth argument is ignored, in favour of the best
+   and fastest one. It also raises a deprecation warning since pygame-ce
+   2.4.0 if the passed in depth is not 0 or the one pygame selects.
 
    When requesting fullscreen display modes, sometimes an exact match for the
    requested size cannot be made. In these situations pygame will select
@@ -172,10 +170,15 @@ required).
 
    .. versionadded:: 2.0.0 ``SCALED``, ``SHOWN`` and ``HIDDEN``
 
+   .. versionadded:: 2.0.0 ``vsync`` parameter
+
    By setting the ``vsync`` parameter to ``1``, it is possible to get a display
-   with vertical sync at a constant frame rate. Subsequent calls to
-   :func:`pygame.display.flip()` will block (i.e. *wait*) until the screen has
-   refreshed.
+   with vertical sync at a constant frame rate determined by the monitor and
+   graphics drivers. Subsequent calls to :func:`pygame.display.flip()` or
+   :func:`pygame.display.update()` will block (i.e. *wait*) until the screen
+   has refreshed, in order to prevent "screen tearing"
+   <https://en.wikipedia.org/wiki/Screen_tearing>.
+
    Be careful when using this feature together with ``pygame.time.Clock`` or
    :func:`pygame.time.delay()`, as multiple forms of waiting and frame rate
    limiting may interact to cause skipped frames.
@@ -186,7 +189,7 @@ required).
    ``set_mode()`` may raise an exception.
 
    Setting the ``vsync`` parameter to ``-1`` in conjunction with  ``OPENGL``
-   will request the OpenGL-specific feature "adaptive vsync".
+   will request the OpenGL-specific feature "adaptive vsync" <https://www.khronos.org/opengl/wiki/Swap_Interval#Adaptive_Vsync>.
 
    Here is an example usage of a call
    to ``set_mode()`` that may give you a display with vsync:
@@ -201,13 +204,15 @@ required).
         window_surface = pygame.display.set_mode((1920, 1080), flags)
         vsync_success=False
 
-   .. versionadded:: 2.0.0 ``vsync`` parameter
+   .. versionaddedold:: 2.0.0 ``vsync`` parameter
 
    .. versionchanged:: 2.2.0 passing ``vsync`` can raise an exception
 
    .. versionchanged:: 2.2.0 explicit request for "adaptive vsync"
 
    .. versionchanged:: 2.2.0 ``vsync=1`` does not require ``SCALED`` or ``OPENGL``
+
+   .. deprecated:: 2.4.0 The depth argument is ignored, and will be set to the optimal value
 
 
    Basic example:
@@ -224,7 +229,7 @@ required).
    environment variable.
 
 
-   .. versionchanged:: 1.9.5 ``display`` argument added
+   .. versionchangedold:: 1.9.5 ``display`` argument added
 
    .. versionchanged:: 2.1.3
       pygame now ensures that subsequent calls to this function clears the
@@ -248,9 +253,7 @@ required).
    | :sl:`Update the full display Surface to the screen`
    | :sg:`flip() -> None`
 
-   This will update the contents of the entire display. If your display mode is
-   using the flags ``pygame.HWSURFACE`` and ``pygame.DOUBLEBUF`` on pygame 1,
-   this will wait for a vertical retrace and swap the surfaces.
+   This will update the contents of the entire display.
 
    When using an ``pygame.OPENGL`` display mode this will perform a gl buffer
    swap.
@@ -259,23 +262,31 @@ required).
 
 .. function:: update
 
-   | :sl:`Update portions of the screen for software displays`
-   | :sg:`update(rectangle=None) -> None`
-   | :sg:`update(rectangle_list) -> None`
+   | :sl:`Update all, or a portion, of the display. For non-OpenGL displays.`
+   | :sg:`update(rectangle=None, /) -> None`
+   | :sg:`update(rectangle_list, /) -> None`
 
-   This function is like an optimized version of ``pygame.display.flip()`` for
-   software displays. It allows only a portion of the screen to be updated,
-   instead of the entire area. If no argument is passed it updates the entire
-   Surface area like ``pygame.display.flip()``.
+   For non OpenGL display Surfaces, this function is very similar to
+   ``pygame.display.flip()`` with an optional parameter that allows only
+   portions of the display surface to be updated, instead of the entire area.
+   If no argument is passed it updates the entire Surface area like
+   ``pygame.display.flip()``.
 
-   Note that calling ``display.update(None)`` means no part of the window is
-   updated. Whereas ``display.update()`` means the whole window is updated.
+   .. note:: calling ``display.update(None)`` means no part of the window is
+             updated. Whereas ``display.update()`` means the whole window is
+             updated.
 
    You can pass the function a single rectangle, or a sequence of rectangles.
-   It is more efficient to pass many rectangles at once than to call update
-   multiple times with single or a partial list of rectangles. If passing a
-   sequence of rectangles it is safe to include None values in the list, which
-   will be skipped.
+   Generally you do not want to pass a sequence of rectangles as there is a
+   performance cost per rectangle passed to the function. On modern hardware,
+   after a very small number of rectangles passed in, the per-rectangle cost
+   will exceed the saving of updating less pixels. In most applications it is
+   simply more efficient to update the entire display surface at once, it also
+   means  you do not need to keep track of a list of rectangles for each call
+   to update.
+
+   If passing a sequence of rectangles it is safe to include None
+   values in the list, which will be skipped.
 
    This call cannot be used on ``pygame.OPENGL`` displays and will generate an
    exception.
@@ -307,12 +318,12 @@ required).
    mode to verify specific display options were satisfied. The VidInfo object
    has several attributes:
 
-   ::
+   .. code-block:: text
 
      hw:         1 if the display is hardware accelerated
      wm:         1 if windowed display modes can be used
-     video_mem:  The megabytes of video memory on the display. This is 0 if
-                 unknown
+     video_mem:  The megabytes of video memory on the display.
+                 This is 0 if unknown
      bitsize:    Number of bits used to store each pixel
      bytesize:   Number of bytes used to store each pixel
      masks:      Four values used to pack RGBA values into pixels
@@ -320,15 +331,20 @@ required).
      losses:     Four values used to pack RGBA values into pixels
      blit_hw:    1 if hardware Surface blitting is accelerated
      blit_hw_CC: 1 if hardware Surface colorkey blitting is accelerated
-     blit_hw_A:  1 if hardware Surface pixel alpha blitting is accelerated
+     blit_hw_A:  1 if hardware Surface pixel alpha blitting is
+                 accelerated
      blit_sw:    1 if software Surface blitting is accelerated
-     blit_sw_CC: 1 if software Surface colorkey blitting is accelerated
-     blit_sw_A:  1 if software Surface pixel alpha blitting is accelerated
-     current_h, current_w:  Height and width of the current video mode, or
-                 of the desktop mode if called before the display.set_mode
-                 is called. (current_h, current_w are available since
-                 SDL 1.2.10, and pygame 1.8.0). They are -1 on error, or if
-                 an old SDL is being used.
+     blit_sw_CC: 1 if software Surface colorkey blitting is
+                 accelerated
+     blit_sw_A:  1 if software Surface pixel alpha blitting is
+                 accelerated
+     current_h, current_w:  Height and width of the current video
+                 mode, or of the desktop mode if called before
+                 the display.set_mode is called. They are -1 on error.
+     pixel_format: The pixel format of the display Surface as a string.
+                 E.g PIXELFORMAT_RGB888.
+
+   .. versionchanged:: 2.4.0 ``pixel_format`` attribute added.
 
    .. ## pygame.display.Info ##
 
@@ -342,7 +358,7 @@ required).
    an empty dictionary will be returned. Most platforms will return a "window"
    key with the value set to the system id for the current display.
 
-   .. versionadded:: 1.7.1
+   .. versionaddedold:: 1.7.1
 
    .. ## pygame.display.get_wm_info ##
 
@@ -364,7 +380,7 @@ required).
    mode, this function *should* be used to replace many use cases of
    ``pygame.display.list_modes()`` whenever applicable.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
 .. function:: list_modes
 
@@ -398,7 +414,7 @@ required).
    physical monitor resolution unless the user explicitly requests a different
    one (e.g. in an options menu or configuration file).
 
-   .. versionchanged:: 1.9.5 ``display`` argument added
+   .. versionchangedold:: 1.9.5 ``display`` argument added
 
    .. ## pygame.display.list_modes ##
 
@@ -420,14 +436,14 @@ required).
 
    The display index ``0`` means the default display is used.
 
-   .. versionchanged:: 1.9.5 ``display`` argument added
+   .. versionchangedold:: 1.9.5 ``display`` argument added
 
    .. ## pygame.display.mode_ok ##
 
 .. function:: gl_get_attribute
 
    | :sl:`Get the value for an OpenGL flag for the current display`
-   | :sg:`gl_get_attribute(flag) -> value`
+   | :sg:`gl_get_attribute(flag, /) -> value`
 
    After calling ``pygame.display.set_mode()`` with the ``pygame.OPENGL`` flag,
    it is a good idea to check the value of any requested OpenGL attributes. See
@@ -438,7 +454,7 @@ required).
 .. function:: gl_set_attribute
 
    | :sl:`Request an OpenGL display attribute for the display mode`
-   | :sg:`gl_set_attribute(flag, value) -> None`
+   | :sg:`gl_set_attribute(flag, value, /) -> None`
 
    When calling ``pygame.display.set_mode()`` with the ``pygame.OPENGL`` flag,
    Pygame automatically handles setting the OpenGL attributes like color and
@@ -484,7 +500,7 @@ required).
 
      Minimum bit size of the frame buffer. Defaults to 0.
 
-   .. versionadded:: 2.0.0 Additional attributes:
+   .. versionaddedold:: 2.0.0 Additional attributes:
 
    ::
 
@@ -581,14 +597,14 @@ required).
    .. Note:: :func:`toggle_fullscreen` doesn't work on Windows
              unless the window size is in :func:`pygame.display.list_modes()` or
              the window is created with the flag ``pygame.SCALED``.
-             See `issue #2380 <https://github.com/pygame/pygame/issues/2380>`_.
+             See `issue #1221 <https://github.com/pygame-community/pygame-ce/issues/1221>`_.
 
    .. ## pygame.display.toggle_fullscreen ##
 
 .. function:: set_gamma
 
    | :sl:`Change the hardware gamma ramps`
-   | :sg:`set_gamma(red, green=None, blue=None) -> bool`
+   | :sg:`set_gamma(red, green=None, blue=None, /) -> bool`
 
    DEPRECATED: This functionality will go away in SDL3.
 
@@ -607,7 +623,7 @@ required).
 .. function:: set_gamma_ramp
 
    | :sl:`Change the hardware gamma ramps with a custom lookup`
-   | :sg:`set_gamma_ramp(red, green, blue) -> bool`
+   | :sg:`set_gamma_ramp(red, green, blue, /) -> bool`
 
    DEPRECATED: This functionality will go away in SDL3.
 
@@ -623,7 +639,7 @@ required).
 .. function:: set_icon
 
    | :sl:`Change the system image for the display window`
-   | :sg:`set_icon(Surface) -> None`
+   | :sg:`set_icon(surface, /) -> None`
 
    Sets the runtime icon the system will use to represent the display window.
    All windows default to a simple pygame logo for the window icon.
@@ -644,7 +660,7 @@ required).
 .. function:: set_caption
 
    | :sl:`Set the current window caption`
-   | :sg:`set_caption(title, icontitle=None) -> None`
+   | :sg:`set_caption(title, icontitle=None, /) -> None`
 
    If the display has a window title, this function will change the name on the
    window. In pygame 1.x, some systems supported an alternate shorter title to
@@ -665,7 +681,7 @@ required).
 .. function:: set_palette
 
    | :sl:`Set the display color palette for indexed displays`
-   | :sg:`set_palette(palette=None) -> None`
+   | :sg:`set_palette(palette=None, /) -> None`
 
    This will change the video display color palette for 8-bit displays. This
    does not change the palette for the actual display Surface, only the palette
@@ -683,7 +699,7 @@ required).
    Returns the number of available displays. This is always 1 if
    :func:`pygame.get_sdl_version()` returns a major version number below 2.
 
-   .. versionadded:: 1.9.5
+   .. versionaddedold:: 1.9.5
 
    .. ## pygame.display.get_num_displays ##
 
@@ -695,7 +711,7 @@ required).
    Returns the size of the window initialized with :func:`pygame.display.set_mode()`.
    This may differ from the size of the display surface if ``SCALED`` is used.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. ## pygame.display.get_window_size ##
 
@@ -713,7 +729,7 @@ required).
              :func:`pygame.display.set_allow_screensaver()` for
              caveats with screensaver support.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. ## pygame.display.get_allow_screensaver ##
 
@@ -736,17 +752,26 @@ required).
    .. note:: Disabling screensaver is subject to platform support.
              When platform support is absent, this function will
              silently appear to work even though the screensaver state
-             is unchanged.  The lack of feedback is due to SDL not
+             is unchanged. The lack of feedback is due to SDL not
              providing any supported method for determining whether
              it supports changing the screensaver state.
-             ``SDL_HINT_VIDEO_ALLOW_SCREENSAVER`` is available in SDL 2.0.2 or later.
-             SDL1.2 does not implement this.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
+
+.. function:: is_fullscreen
+
+   | :sl:`Returns True if the pygame window created by pygame.display.set_mode() is in full-screen mode`
+   | :sg:`is_fullscreen() -> bool`
+
+   Edge cases:
+   If the window is in windowed mode, but maximized, this will return `False`.
+   If the window is in "borderless fullscreen" mode, this will return `True`.
+
+   .. versionadded:: 2.2.0
 
 .. function:: is_vsync
 
-   | :sl:`Returns True if vertical synchronisation for pygame.display.flip() is enabled`
+   | :sl:`Returns True if vertical synchronisation for pygame.display.flip() and pygame.display.update() is enabled`
    | :sg:`is_vsync() -> bool`
 
    .. versionadded:: 2.2.0
@@ -782,5 +807,35 @@ required).
 
    .. versionadded:: 2.2.0
    .. ## pygame.display.set_allow_screensaver ##
+
+.. function:: message_box
+
+   | :sl:`Create a native GUI message box`
+   | :sg:`message_box(title, message=None, message_type='info', parent_window=None, buttons=('OK',), return_button=0, escape_button=None) -> int`
+
+   :param str title: A title string.
+   :param str message: A message string. If this parameter is set to ``None``, the message will be the title.
+   :param str message_type: Set the type of message_box, could be ``"info"``, ``"warn"`` or ``"error"``.
+   :param tuple buttons: An optional sequence of button name strings to show to the user.
+   :param int return_button: Button index to use if the return key is hit, ``0`` by default.
+   :param int escape_button: Button index to use if the escape key is hit, ``None`` for no button linked by default.
+..
+   (Uncomment this after the window API is published)
+   :param Window parent_window: The parent window of the message_box
+..
+
+   :return: The index of the button that was pushed.
+
+   This function should be called on the thread that ``set_mode()`` is called.
+   It will block execution of that thread until the user clicks a button or
+   closes the message_box.
+
+   This function may be called at any time, even before ``pygame.init()``.
+
+   Negative values of ``return_button`` and ``escape_button`` are allowed
+   just like standard Python list indexing.
+
+   .. versionadded:: 2.4.0
+   
 
 .. ## pygame.display ##

@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-FSYNTH_VER="2.3.1"
+FSYNTH_VER="2.3.4"
 FSYNTH="fluidsynth-$FSYNTH_VER"
 
 curl -sL --retry 10 https://github.com/FluidSynth/fluidsynth/archive/v${FSYNTH_VER}.tar.gz > ${FSYNTH}.tar.gz
@@ -14,16 +14,16 @@ cd $FSYNTH
 mkdir build
 cd build
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    export FLUIDSYNTH_EXTRA_PLAT_FLAGS="-Denable-alsa=NO -Denable-systemd=NO"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
     # We don't need fluidsynth framework on mac builds
-    export FLUIDSYNTH_EXTRA_MAC_FLAGS="-Denable-framework=NO"
+    export FLUIDSYNTH_EXTRA_PLAT_FLAGS="-Denable-framework=NO"
 fi
 
-cmake .. $PG_BASE_CMAKE_FLAGS -Denable-readline=OFF $FLUIDSYNTH_EXTRA_MAC_FLAGS
+cmake .. $PG_BASE_CMAKE_FLAGS -Denable-readline=OFF $FLUIDSYNTH_EXTRA_PLAT_FLAGS \
+    -Denable-pulseaudio=NO \
+    -Denable-pipewire=NO
+
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi

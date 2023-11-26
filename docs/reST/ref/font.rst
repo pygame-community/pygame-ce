@@ -57,6 +57,8 @@ solves no longer exists, it will likely be removed in the future.
 
    It is safe to call this function even if font is currently not initialized.
 
+   Previously created font objects will be invalid after the font module is quit.
+
    .. ## pygame.font.quit ##
 
 .. function:: get_init
@@ -121,7 +123,7 @@ solves no longer exists, it will likely be removed in the future.
    which case the set of names will be searched in order.
    If none of the given names are found, None is returned.
 
-   .. versionadded:: 2.0.1 Accept an iterable of font names.
+   .. versionaddedold:: 2.0.1 Accept an iterable of font names.
 
    .. versionchanged:: 2.1.3 Checks through user fonts instead of just global fonts for Windows.
 
@@ -150,7 +152,7 @@ solves no longer exists, it will likely be removed in the future.
    comma-separated font names, or a bytes of comma-separated font names, in
    which case the set of names will be searched in order.
 
-   .. versionadded:: 2.0.1 Accept an iterable of font names.
+   .. versionaddedold:: 2.0.1 Accept an iterable of font names.
 
    .. versionchanged:: 2.1.3 Checks through user fonts instead of just global fonts for Windows.
 
@@ -194,7 +196,7 @@ solves no longer exists, it will likely be removed in the future.
       normal. This can be mixed with the italic, underline and
       strikethrough modes.
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Font.bold ##
 
@@ -208,6 +210,23 @@ solves no longer exists, it will likely be removed in the future.
       .. versionadded:: 2.2
 
       .. ## Font.name ##
+
+   .. attribute:: style_name
+
+      | :sl:`Gets the font's style_name.`
+      | :sg:`style_name -> str`
+
+      Read only. Returns the font's style name. Style names are arbitrary, can be an empty string. 
+      Here are some examples:
+
+        'Black', 'Bold', 'Bold Italic', 'BoldOblique', 'Book', 'BookOblique', 'Condensed', 'Condensed Oblique',
+        'ExtraLight', 'Italic', 'Light', 'LightOblique', 'Medium', 'MediumOblique', 'Oblique', 'Regular',
+        'Semibold', 'Semilight', 'Slanted'
+
+
+      .. versionadded:: 2.3.1
+
+      .. ## Font.style_name ##
 
    .. attribute:: italic
 
@@ -223,7 +242,7 @@ solves no longer exists, it will likely be removed in the future.
       than when normal. This can be mixed with the bold, underline and
       strikethrough modes.
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Font.italic ##
 
@@ -239,7 +258,7 @@ solves no longer exists, it will likely be removed in the future.
       of font size. This can be mixed with the bold, italic and
       strikethrough modes.
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Font.underline ##
    
@@ -261,7 +280,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. attribute:: align
 
-      | :sl:`Set how rendered text is aligned when given a wrap length`
+      | :sl:`Set how rendered text is aligned when given a wrap length.`
       | :sg:`align -> int`
 
       Can be set to `pygame.FONT_LEFT`, `pygame.FONT_RIGHT`, or
@@ -275,10 +294,22 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.align ##
 
+   .. attribute:: point_size
+
+      | :sl:`Gets or sets the font's point size`
+      | :sg:`point_size -> int`
+
+      Returns the point size of the font. Will not be accurate upon initializing
+      the font object when the font name is initalized as ``None``.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Font.point_size ##
+
    .. method:: render
 
       | :sl:`draw text on a new Surface`
-      | :sg:`render(text, antialias, color, background=None, wraplength=0) -> Surface`
+      | :sg:`render(text, antialias, color, bgcolor=None, wraplength=0) -> Surface`
 
       This creates a new Surface with the specified text rendered on it. 
       :mod:`pygame.font` provides no way to directly draw text on an existing
@@ -292,9 +323,9 @@ solves no longer exists, it will likely be removed in the future.
       UCS-4 range are supported. For char strings a ``LATIN1`` encoding is
       assumed. The antialias argument is a boolean: if True the characters
       will have smooth edges. The color argument is the color of the text
-      [e.g.: (0,0,255) for blue]. The optional background argument is a color
-      to use for the text background. If no background is passed the area
-      outside the text will be transparent.
+      [e.g.: (0,0,255) for blue]. The optional bgcolor argument is a color
+      to use for the text background. If bgcolor is ``None`` the area outside
+      the text will be transparent.
 
       The `wraplength` argument describes the width (in pixels) a line of text
       should be before wrapping to a new line. See
@@ -322,7 +353,7 @@ solves no longer exists, it will likely be removed in the future.
       Font rendering is not thread safe: only a single thread can render text
       at any time.
 
-      .. versionchanged:: 2.0.3 Rendering UCS4 unicode works and does not
+      .. versionchangedold:: 2.0.3 Rendering UCS4 unicode works and does not
         raise an exception. Use `if hasattr(pygame.font, "UCS4"):` to see if
         pygame supports rendering UCS4 unicode including more languages and
         emoji.
@@ -332,12 +363,14 @@ solves no longer exists, it will likely be removed in the future.
 
       .. versionadded:: 2.1.4 wraplength parameter
 
+      .. versionchanged:: 2.3.0 now supports keyword arguments.
+
       .. ## Font.render ##
 
    .. method:: size
 
       | :sl:`determine the amount of space needed to render text`
-      | :sg:`size(text) -> (width, height)`
+      | :sg:`size(text, /) -> (width, height)`
 
       Returns the dimensions needed to render the text. This can be used to
       help determine the positioning needed for text before it is rendered. It
@@ -352,7 +385,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: set_underline
 
       | :sl:`control if text is rendered with an underline`
-      | :sg:`set_underline(bool) -> None`
+      | :sg:`set_underline(bool, /) -> None`
 
       When enabled, all rendered fonts will include an underline. The underline
       is always one pixel thick, regardless of font size. This can be mixed
@@ -376,7 +409,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: set_strikethrough
 
       | :sl:`control if text is rendered with a strikethrough`
-      | :sg:`set_strikethrough(bool) -> None`
+      | :sg:`set_strikethrough(bool, /) -> None`
 
       When enabled, all rendered fonts will include a strikethrough. The
       strikethrough is always one pixel thick, regardless of font size.
@@ -404,7 +437,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: set_bold
 
       | :sl:`enable fake rendering of bold text`
-      | :sg:`set_bold(bool) -> None`
+      | :sg:`set_bold(bool, /) -> None`
 
       Enables the bold rendering of text. This is a fake stretching of the font
       that doesn't look good on many font types. If possible load the font from
@@ -430,7 +463,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: set_italic
 
       | :sl:`enable fake rendering of italic text`
-      | :sg:`set_italic(bool) -> None`
+      | :sg:`set_italic(bool, /) -> None`
 
       Enables fake rendering of italic text. This is a fake skewing of the font
       that doesn't look good on many font types. If possible load the font from
@@ -445,7 +478,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: metrics
 
       | :sl:`gets the metrics for each character in the passed string`
-      | :sg:`metrics(text) -> list`
+      | :sg:`metrics(text, /) -> list`
 
       The list contains tuples for each character, which contain the minimum
       ``X`` offset, the maximum ``X`` offset, the minimum ``Y`` offset, the
@@ -488,6 +521,31 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.get_height ##
 
+   .. method:: set_point_size
+
+      | :sl:`set the point size of the font`
+      | :sg:`set_point_size(size, /) -> int`
+
+      Sets the point size of the font, which is the value that was used to
+      initalize this font.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Font.set_point_size ##
+
+   .. method:: get_point_size
+
+      | :sl:`get the point size of the font`
+      | :sg:`get_point_size() -> int`
+
+      Returns the point size of the font. Will not be accurate upon
+      initializing the font object when the font name is initalized
+      as ``None``.
+      
+      .. versionadded:: 2.3.1
+
+      .. ## Font.get_point_size ##
+
    .. method:: get_ascent
 
       | :sl:`get the ascent of the font`
@@ -511,7 +569,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: set_script
 
       | :sl:`set the script code for text shaping`
-      | :sg:`set_script(str) -> None`
+      | :sg:`set_script(str, /) -> None`
 
       Sets the script used by harfbuzz text shaping, taking a 4 character
       script code as input. For example, Hindi is written in the Devanagari

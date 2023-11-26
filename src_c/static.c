@@ -5,6 +5,7 @@
 #define PYGAMEAPI_JOYSTICK_INTERNAL
 #define PYGAMEAPI_BASE_INTERNAL
 #define PYGAMEAPI_SURFACE_INTERNAL
+#define PYGAMEAPI_WINDOW_INTERNAL
 
 #define pgSurface_New(surface) (pgSurfaceObject *)pgSurface_New2((surface), 1)
 #define pgSurface_NewNoOwn(surface) \
@@ -21,6 +22,7 @@
 #undef import_pygame_base
 #undef import_pygame_rect
 #undef import_pygame_surface
+#undef import_pygame_geometry
 #undef import_pygame_color
 #undef import_pygame_bufferproxy
 #undef import_pygame_rwobject
@@ -38,6 +40,11 @@ import_pygame_rect(void)
 
 void
 import_pygame_surface(void)
+{
+}
+
+void
+import_pygame_geometry(void)
 {
 }
 
@@ -66,6 +73,11 @@ import_pygame_joystick(void)
 {
 }
 
+void
+import_pygame_window(void)
+{
+}
+
 PyMODINIT_FUNC
 PyInit_base(void);
 PyMODINIT_FUNC
@@ -76,6 +88,8 @@ PyMODINIT_FUNC
 PyInit_version(void);
 PyMODINIT_FUNC
 PyInit_rect(void);
+PyMODINIT_FUNC
+PyInit_geometry(void);
 PyMODINIT_FUNC
 PyInit_surflock(void);
 PyMODINIT_FUNC
@@ -150,10 +164,19 @@ PyMODINIT_FUNC
 PyInit_pixelcopy(void);
 
 PyMODINIT_FUNC
+PyInit_newbuffer(void);
+
+PyMODINIT_FUNC
 PyInit_gfxdraw(void);
 
 PyMODINIT_FUNC
 PyInit_audio(void);
+
+PyMODINIT_FUNC
+PyInit_pixelarray(void);
+
+PyMODINIT_FUNC
+PyInit__window(void);
 
 // pygame_static module
 
@@ -230,8 +253,7 @@ mod_pygame_import_cython(PyObject *self, PyObject *spec)
                           "controller_old");
     load_submodule_mphase("pygame._sdl2", PyInit_audio(), spec, "audio");
     load_submodule_mphase("pygame._sdl2", PyInit_video(), spec, "video");
-    // depends on pygame._sdl2.video
-    load_submodule_mphase("pygame", PyInit__sprite(), spec, "_sprite");
+
     Py_RETURN_NONE;
 }
 
@@ -258,6 +280,7 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_key(), "key");
 
     load_submodule("pygame", PyInit_rect(), "rect");
+    load_submodule("pygame", PyInit_geometry(), "geometry");
     load_submodule("pygame", PyInit_gfxdraw(), "gfxdraw");
     load_submodule("pygame", PyInit_pg_time(), "time");
     load_submodule("pygame", PyInit__freetype(), "_freetype");
@@ -267,6 +290,7 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_image(), "image");
     load_submodule("pygame", PyInit_font(), "font");
     load_submodule("pygame", PyInit_pixelcopy(), "pixelcopy");
+    load_submodule("pygame", PyInit_newbuffer(), "newbuffer");
 
     load_submodule("pygame", PyInit_color(), "color");
     load_submodule("pygame", PyInit_bufferproxy(), "bufferproxy");
@@ -280,8 +304,11 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_joystick(), "joystick");
 
     load_submodule("pygame", PyInit_pg_mixer(), "mixer");
-
     load_submodule("pygame.mixer", PyInit_mixer_music(), "music");
+
+    load_submodule("pygame", PyInit__window(), "_window");
+
+    load_submodule("pygame", PyInit_pixelarray(), "pixelarray");
 
     return PyModule_Create(&mod_pygame_static);
 }
@@ -306,8 +333,8 @@ PyInit_pygame_static()
 
 #undef pgColor_New
 #undef pgColor_NewLength
-#undef pg_RGBAFromColorObj
-#undef pg_RGBAFromFuzzyColorObj
+#undef pg_RGBAFromObjEx
+#undef pg_MappedColorFromObj
 #undef pgColor_Type
 
 #include "color.c"
@@ -324,6 +351,8 @@ PyInit_pygame_static()
 #include "surface.c"
 #include "simd_blitters_avx2.c"
 #include "simd_blitters_sse2.c"
+
+#include "window.c"
 
 #undef pgVidInfo_Type
 #undef pgVidInfo_New
@@ -355,17 +384,18 @@ PyInit_pygame_static()
 #undef pgEvent_Type
 #undef pgEvent_New
 
+#include "joystick.c"
+
 #include "event.c"
 
 #include "mouse.c"
 
 #include "key.c"
 
-#include "joystick.c"
-
 #include "time.c"
 
 #include "system.c"
+#include "geometry.c"
 
 #include "_freetype.c"
 #include "freetype/ft_wrap.c"

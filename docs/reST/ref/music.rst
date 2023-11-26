@@ -33,7 +33,7 @@ MP3 in most cases.
    If you are loading from a file object, the namehint parameter can be used to specify
    the type of music data in the object. For example: :code:`load(fileobj, "ogg")`.
 
-   .. versionchanged:: 2.0.2 Added optional ``namehint`` argument
+   .. versionchangedold:: 2.0.2 Added optional ``namehint`` argument
    .. versionchanged:: 2.2.0 Raises ``FileNotFoundError`` instead of :exc:`pygame.error` if file cannot be found
 
    .. ## pygame.mixer.music.load ##
@@ -45,7 +45,7 @@ MP3 in most cases.
 
    This closes resources like files for any music that may be loaded.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. ## pygame.mixer.music.load ##
 
@@ -77,7 +77,7 @@ MP3 in most cases.
    previously set by :func:`set_volume`). The sample may end before the fade-in
    is complete. If the music is already streaming ``fade_ms`` is ignored.
    
-   .. versionchanged:: 2.0.0 Added optional ``fade_ms`` argument
+   .. versionchangedold:: 2.0.0 Added optional ``fade_ms`` argument
 
    .. ## pygame.mixer.music.play ##
 
@@ -129,7 +129,7 @@ MP3 in most cases.
 .. function:: fadeout
 
    | :sl:`stop music playback after fading out`
-   | :sg:`fadeout(time) -> None`
+   | :sg:`fadeout(time, /) -> None`
 
    Fade out and stop the currently playing music.
 
@@ -146,7 +146,7 @@ MP3 in most cases.
 .. function:: set_volume
 
    | :sl:`set the music volume`
-   | :sg:`set_volume(volume) -> None`
+   | :sg:`set_volume(volume, /) -> None`
 
    Set the volume of the music playback.
    
@@ -178,14 +178,14 @@ MP3 in most cases.
    False when the music is paused. In pygame 1 it returns True when the music
    is paused.
 
-   .. versionchanged:: 2.0.1 Returns False when music paused.
+   .. versionchangedold:: 2.0.1 Returns False when music paused.
 
    .. ## pygame.mixer.music.get_busy ##
 
 .. function:: set_pos
 
    | :sl:`set position to play from`
-   | :sg:`set_pos(pos) -> None`
+   | :sg:`set_pos(pos, /) -> None`
 
    This sets the position in the music file where playback will start.
    The meaning of "pos", a float (or a number that can be converted to a float),
@@ -198,13 +198,13 @@ MP3 in most cases.
    file, first call :func:`rewind`.
 
    Other file formats are unsupported. Newer versions of SDL_mixer have
-   better positioning support than earlier ones. An SDLError is raised if a
-   particular format does not support positioning.
+   better positioning support than earlier ones. A :exc:`pygame.error` is
+   raised if a particular format does not support positioning.
 
-   Function :func:`set_pos` calls underlining SDL_mixer function
+   Function :func:`set_pos` calls underlying SDL_mixer function
    ``Mix_SetMusicPosition``.
 
-   .. versionadded:: 1.9.2
+   .. versionaddedold:: 1.9.2
 
    .. ## pygame.mixer.music.set_pos ##
 
@@ -216,6 +216,8 @@ MP3 in most cases.
    This gets the number of milliseconds that the music has been playing for.
    The returned time only represents how long the music has been playing; it
    does not take into account any starting position offsets.
+
+   Returns -1 if ``get_pos`` failed due to music not playing.
 
    .. ## pygame.mixer.music.get_pos ##
 
@@ -243,7 +245,7 @@ MP3 in most cases.
        pygame.mixer.music.play(5)        # Plays six times, not five!
        pygame.mixer.music.queue('mozart.ogg')
 
-   .. versionchanged:: 2.0.2 Added optional ``namehint`` argument
+   .. versionchangedold:: 2.0.2 Added optional ``namehint`` argument
    .. versionchanged:: 2.2.0 Raises ``FileNotFoundError`` instead of :exc:`pygame.error` if file cannot be found
 
    .. ## pygame.mixer.music.queue ##
@@ -252,7 +254,7 @@ MP3 in most cases.
 
    | :sl:`have the music send an event when playback stops`
    | :sg:`set_endevent() -> None`
-   | :sg:`set_endevent(type) -> None`
+   | :sg:`set_endevent(type, /) -> None`
 
    This causes pygame to signal (by means of the event queue) when the music is
    done playing. The argument determines the type of event that will be queued.

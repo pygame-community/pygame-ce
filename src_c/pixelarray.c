@@ -354,6 +354,10 @@ _pxarray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     stride0 = (Py_ssize_t)surf->format->BytesPerPixel;
     stride1 = (Py_ssize_t)surf->pitch;
     pixels = surf->pixels;
+    if (pixels == NULL) {
+        return RAISE(PyExc_ValueError,
+                     "Cannot create pixelarray on zero-sized Surface");
+    }
     if (stride0 < 1 || stride0 > 4) {
         return RAISE(PyExc_ValueError,
                      "unsupported bit depth for reference array");
@@ -422,8 +426,7 @@ static pgSurfaceObject *
 _pxarray_get_surface(pgPixelArrayObject *self, void *closure)
 {
     if (self->surface == NULL) {
-        PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
-        return NULL;
+        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
     }
     Py_INCREF(self->surface);
     return self->surface;
@@ -437,8 +440,7 @@ static PyObject *
 _pxarray_get_itemsize(pgPixelArrayObject *self, void *closure)
 {
     if (self->surface == NULL) {
-        PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
-        return NULL;
+        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
     }
 
     SDL_Surface *surf = pgSurface_AsSurface(self->surface);
@@ -885,7 +887,6 @@ static PyObject *
 _pxarray_item(pgPixelArrayObject *array, Py_ssize_t index)
 {
     if (array->surface == NULL) {
-        PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
         return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
     }
     if (index < 0) {
@@ -1540,35 +1541,17 @@ _get_subslice(PyObject *op, Py_ssize_t length, Py_ssize_t *start,
         Py_ssize_t slicelen;
 
         /* Operator is a slice: array[x::, */
-        if (Slice_GET_INDICES_EX(op, length, start, stop, step, &slicelen)) {
+        if (PySlice_GetIndicesEx(op, length, start, stop, step, &slicelen)) {
             return -1;
         }
     }
     else if (PyLong_Check(op)) {
         /* Plain index: array[x, */
-        *start = PyLong_AsLong(op);
+        *start = PyLong_AsSsize_t(op);
         if (*start < 0) {
-            *start += length;
-        }
-        if (*start >= length || *start < 0) {
-            PyErr_SetString(PyExc_IndexError, "invalid index");
-            return -1;
-        }
-        *stop = (*start) + 1;
-        *step = 0;
-    }
-    else if (PyLong_Check(op)) {
-        long long val = -1;
-        /* Plain index: array[x, */
-
-        val = PyLong_AsLong(op);
-        if ((val < INT_MIN) || (val > INT_MAX)) {
-            PyErr_SetString(PyExc_ValueError,
-                            "index too big for array access");
-            return -1;
-        }
-        *start = (int)val;
-        if (*start < 0) {
+            if (*start == -1 && PyErr_Occurred()) {
+                return -1;
+            }
             *start += length;
         }
         if (*start >= length || *start < 0) {
@@ -1665,7 +1648,7 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
         Py_ssize_t start;
         Py_ssize_t stop;
 
-        if (Slice_GET_INDICES_EX(op, dim0, &start, &stop, &step, &slicelen)) {
+        if (PySlice_GetIndicesEx(op, dim0, &start, &stop, &step, &slicelen)) {
             return 0;
         }
         if (slicelen < 0) {
@@ -1817,7 +1800,7 @@ _pxarray_ass_subscript(pgPixelArrayObject *array, PyObject *op,
         Py_ssize_t stop;
         int retval;
 
-        if (Slice_GET_INDICES_EX(op, array->shape[0], &start, &stop, &step,
+        if (PySlice_GetIndicesEx(op, array->shape[0], &start, &stop, &step,
                                  &slicelen)) {
             return -1;
         }
