@@ -1640,6 +1640,8 @@ vector_smoothstep(pgVector *self, PyObject *args)
         t = 1;
     }
     else {
+        // See: https://en.wikipedia.org/wiki/Smoothstep for further
+        // explanation
         t = t * t * (3.0f - 2.0f * t);
     }
 
@@ -4280,8 +4282,9 @@ math_smoothstep(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     PyObject *value = args[2];
 
     if (PyNumber_Check(args[2]) != 1) {
-        return RAISE(PyExc_TypeError,
-                     "lerp requires the interpolation amount to be number");
+        return RAISE(
+            PyExc_TypeError,
+            "smoothstep requires the interpolation amount to be number");
     }
 
     double t = PyFloat_AsDouble(value);
@@ -4292,7 +4295,9 @@ math_smoothstep(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         t = 1;
     }
     else {
-        t = t * t * (3.0f - 2.0f * t);
+        // See: https://en.wikipedia.org/wiki/Smoothstep for further
+        // explanation
+        t = t * t * (3.0f - (2.0f * t));
     }
 
     if (PyNumber_Check(min) && PyNumber_Check(max)) {
