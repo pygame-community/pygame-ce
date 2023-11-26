@@ -58,18 +58,25 @@
 #include <mftransform.h>
 #endif
 
+#ifndef v4l2_fourcc
+/* Four-character-code (FOURCC), taken from v4l source */
+#define v4l2_fourcc(a, b, c, d)                               \
+    ((Uint32)(a) | ((Uint32)(b) << 8) | ((Uint32)(c) << 16) | \
+     ((Uint32)(d) << 24))
+#endif
+
 /* some constants used which are not defined on non-v4l machines. */
 #ifndef V4L2_PIX_FMT_RGB24
-#define V4L2_PIX_FMT_RGB24 'RGB3'
+#define V4L2_PIX_FMT_RGB24 v4l2_fourcc('R', 'G', 'B', '3')
 #endif
 #ifndef V4L2_PIX_FMT_RGB444
-#define V4L2_PIX_FMT_RGB444 'R444'
+#define V4L2_PIX_FMT_RGB444 v4l2_fourcc('R', '4', '4', '4')
 #endif
 #ifndef V4L2_PIX_FMT_YUYV
-#define V4L2_PIX_FMT_YUYV 'YUYV'
+#define V4L2_PIX_FMT_YUYV v4l2_fourcc('Y', 'U', 'Y', 'V')
 #endif
 #ifndef V4L2_PIX_FMT_XBGR32
-#define V4L2_PIX_FMT_XBGR32 'XR24'
+#define V4L2_PIX_FMT_XBGR32 v4l2_fourcc('X', 'R', '2', '4')
 #endif
 
 #define CLEAR(x) memset(&(x), 0, sizeof(x))

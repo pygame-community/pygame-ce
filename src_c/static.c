@@ -73,6 +73,11 @@ import_pygame_joystick(void)
 {
 }
 
+void
+import_pygame_window(void)
+{
+}
+
 PyMODINIT_FUNC
 PyInit_base(void);
 PyMODINIT_FUNC
@@ -248,8 +253,6 @@ mod_pygame_import_cython(PyObject *self, PyObject *spec)
                           "controller_old");
     load_submodule_mphase("pygame._sdl2", PyInit_audio(), spec, "audio");
     load_submodule_mphase("pygame._sdl2", PyInit_video(), spec, "video");
-    // depends on pygame._sdl2.video
-    load_submodule_mphase("pygame", PyInit__sprite(), spec, "_sprite");
 
     Py_RETURN_NONE;
 }
@@ -349,6 +352,8 @@ PyInit_pygame_static()
 #include "simd_blitters_avx2.c"
 #include "simd_blitters_sse2.c"
 
+#include "window.c"
+
 #undef pgVidInfo_Type
 #undef pgVidInfo_New
 
@@ -422,5 +427,3 @@ PyInit_pygame_static()
 #undef MAX
 #undef MIN
 #include "scale2x.c"
-
-#include "window.c"

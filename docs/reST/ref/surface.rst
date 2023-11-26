@@ -187,7 +187,7 @@
    .. method:: fblits
 
       | :sl:`draw many surfaces onto the calling surface at their corresponding location and the same special_flags`
-      | :sg:`fblits(blit_sequence=((source, dest), ...), special_flags=0) -> None`
+      | :sg:`fblits(blit_sequence=((source, dest), ...), special_flags=0, /) -> None`
 
       This method takes a sequence of tuples (source, dest) as input, where source is a Surface
       object and dest is its destination position on this Surface. It draws each source Surface
@@ -213,9 +213,10 @@
    .. method:: convert
 
       | :sl:`change the pixel format of an image`
-      | :sg:`convert(Surface=None) -> Surface`
-      | :sg:`convert(depth, flags=0) -> Surface`
-      | :sg:`convert(masks, flags=0) -> Surface`
+      | :sg:`convert(surface, /) -> Surface`
+      | :sg:`convert(depth, flags=0, /) -> Surface`
+      | :sg:`convert(masks, flags=0, /) -> Surface`
+      | :sg:`convert() -> Surface`
 
       Creates a new copy of the Surface with the pixel format changed. The new
       pixel format can be determined from another existing Surface. Otherwise
@@ -240,20 +241,20 @@
    .. method:: convert_alpha
 
       | :sl:`change the pixel format of an image including per pixel alphas`
-      | :sg:`convert_alpha(Surface) -> Surface`
       | :sg:`convert_alpha() -> Surface`
 
       Creates a new copy of the surface with the desired pixel format. The new
-      surface will be in a format suited for quick blitting to the given format
-      with per pixel alpha. If no surface is given, the new surface will be
-      optimized for blitting to the current display.
+      surface will be in a format suited for quick blitting to the display surface
+      with per pixel alpha.
 
       Unlike the :meth:`convert()` method, the pixel format for the new
-      image will not be exactly the same as the requested source, but it will
-      be optimized for fast alpha blitting to the destination.
+      image will not be exactly the same as the display surface, but it will
+      be optimized for fast alpha blitting to it.
 
       As with :meth:`convert()` the returned surface has the same class as
       the converted surface.
+
+      .. versionchanged:: 2.4.0 'Surface' argument deprecated.
 
       .. ## Surface.convert_alpha ##
 
@@ -304,7 +305,7 @@
    .. method:: scroll
 
       | :sl:`Shift the surface image in place`
-      | :sg:`scroll(dx=0, dy=0) -> None`
+      | :sg:`scroll(dx=0, dy=0, /) -> None`
 
       Move the image by dx pixels right and dy pixels down. dx and dy may be
       negative for left and up scrolls respectively. Areas of the surface that
@@ -319,7 +320,7 @@
    .. method:: set_colorkey
 
       | :sl:`Set the transparent colorkey`
-      | :sg:`set_colorkey(color, flags=0) -> None`
+      | :sg:`set_colorkey(color, flags=0, /) -> None`
       | :sg:`set_colorkey(None) -> None`
 
       Set the current color key for the Surface. When blitting this Surface
@@ -351,7 +352,7 @@
    .. method:: set_alpha
 
       | :sl:`set the alpha value for the full Surface image`
-      | :sg:`set_alpha(value, flags=0) -> None`
+      | :sg:`set_alpha(value, flags=0, /) -> None`
       | :sg:`set_alpha(None) -> None`
 
       Set the current alpha value for the Surface. When blitting this Surface
@@ -467,7 +468,7 @@
    .. method:: get_at
 
       | :sl:`get the color value at a single pixel`
-      | :sg:`get_at((x, y)) -> Color`
+      | :sg:`get_at((x, y), /) -> Color`
 
       Return a copy of the ``RGBA`` Color value at the given pixel. If the
       Surface has no per pixel alpha, then the alpha value will always be 255
@@ -494,7 +495,7 @@
    .. method:: set_at
 
       | :sl:`set the color value for a single pixel`
-      | :sg:`set_at((x, y), Color) -> None`
+      | :sg:`set_at((x, y), color, /) -> None`
 
       Set the color of a single pixel at the specified coordinates to be an ``RGB``,
       ``RGBA``, string (for :doc:`color_list`), or mapped integer color value. If the Surface
@@ -516,7 +517,7 @@
    .. method:: get_at_mapped
 
       | :sl:`get the mapped color value at a single pixel`
-      | :sg:`get_at_mapped((x, y)) -> Color`
+      | :sg:`get_at_mapped((x, y), /) -> Color`
 
       Return the integer value of the given pixel. If the pixel position is
       outside the area of the Surface an ``IndexError`` exception will be
@@ -551,7 +552,7 @@
    .. method:: get_palette_at
 
       | :sl:`get the color for a single entry in a palette`
-      | :sg:`get_palette_at(index) -> RGB`
+      | :sg:`get_palette_at(index, /) -> RGB`
 
       Returns the red, green, and blue color values for a single index in a
       Surface palette. The index should be a value from 0 to 255.
@@ -564,7 +565,7 @@
    .. method:: set_palette
 
       | :sl:`set the color palette for an 8-bit Surface`
-      | :sg:`set_palette([RGB, RGB, RGB, ...]) -> None`
+      | :sg:`set_palette([RGB, RGB, RGB, ...], /) -> None`
 
       Set the full palette for an 8-bit Surface. This will replace the colors in
       the existing palette. A partial palette can be passed and only the first
@@ -577,7 +578,7 @@
    .. method:: set_palette_at
 
       | :sl:`set the color for a single index in an 8-bit Surface palette`
-      | :sg:`set_palette_at(index, RGB) -> None`
+      | :sg:`set_palette_at(index, RGB, /) -> None`
 
       Set the palette value for a single entry in a Surface palette. The index
       should be a value from 0 to 255.
@@ -589,7 +590,7 @@
    .. method:: map_rgb
 
       | :sl:`convert a color into a mapped color value`
-      | :sg:`map_rgb(Color) -> mapped_int`
+      | :sg:`map_rgb(color, /) -> mapped_int`
 
       Convert an ``RGBA`` color into the mapped integer value for this Surface.
       The returned integer will contain no more bits than the bit depth of the
@@ -604,7 +605,7 @@
    .. method:: unmap_rgb
 
       | :sl:`convert a mapped integer color value into a Color`
-      | :sg:`unmap_rgb(mapped_int) -> Color`
+      | :sg:`unmap_rgb(mapped_int, /) -> Color`
 
       Convert an mapped integer color into the ``RGB`` color components for
       this Surface. Mapped color values are not often used inside pygame, but
@@ -618,7 +619,7 @@
    .. method:: set_clip
 
       | :sl:`set the current clipping area of the Surface`
-      | :sg:`set_clip(rect) -> None`
+      | :sg:`set_clip(rect, /) -> None`
       | :sg:`set_clip(None) -> None`
 
       Each Surface has an active clipping area. This is a rectangle that
@@ -647,7 +648,7 @@
    .. method:: subsurface
 
       | :sl:`create a new surface that references its parent`
-      | :sg:`subsurface(Rect) -> Surface`
+      | :sg:`subsurface(rect, /) -> Surface`
 
       Returns a new Surface that shares its pixels with its new parent. The new
       Surface is considered a child of the original. Modifications to either
@@ -847,7 +848,7 @@
    .. method:: set_masks
 
       | :sl:`set the bitmasks needed to convert between a color and a mapped integer`
-      | :sg:`set_masks((r,g,b,a)) -> None`
+      | :sg:`set_masks((r, g, b, a), /) -> None`
 
       This is not needed for normal pygame usage.
 
@@ -875,7 +876,7 @@
    .. method:: set_shifts
 
       | :sl:`sets the bit shifts needed to convert between a color and a mapped integer`
-      | :sg:`set_shifts((r,g,b,a)) -> None`
+      | :sg:`set_shifts((r, g, b, a), /) -> None`
 
       This is not needed for normal pygame usage.
 
@@ -918,7 +919,7 @@
    .. method:: get_view
 
       | :sl:`return a buffer view of the Surface's pixels.`
-      | :sg:`get_view(<kind>='2') -> BufferProxy`
+      | :sg:`get_view(kind='2', /) -> BufferProxy`
 
       Return an object which exports a surface's internal pixel buffer as
       a C level array struct, Python level array interface or a C level
@@ -993,9 +994,6 @@
       | :sl:`returns a copy of the surface with the RGB channels pre-multiplied by the alpha channel.`
       | :sg:`premul_alpha() -> Surface`
 
-      **Experimental:** feature still in development available for testing and feedback. It may change.
-      `Please leave premul_alpha feedback with authors <https://github.com/pygame/pygame/pull/3276>`_
-
       Returns a copy of the initial surface with the red, green and blue color channels multiplied
       by the alpha channel. This is intended to make it easier to work with the BLEND_PREMULTIPLED
       blend mode flag of the blit() method. Surfaces which have called this method will only look
@@ -1021,6 +1019,8 @@
       In general pre-multiplied alpha blitting is faster then 'straight alpha' blitting and produces
       superior results when blitting an alpha surface onto another surface with alpha - assuming both
       surfaces contain pre-multiplied alpha colours.
+
+      There is a `tutorial on premultiplied alpha blending here. <tutorials/en/premultiplied-alpha>`
 
       .. versionadded:: 2.1.4
 

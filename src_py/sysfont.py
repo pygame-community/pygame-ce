@@ -26,6 +26,7 @@ import difflib
 from os.path import basename, dirname, exists, join, splitext
 
 from pygame.font import Font
+from pygame import __file__ as pygame_main_file
 
 if sys.platform != "emscripten":
     if os.name == "nt":
@@ -189,7 +190,7 @@ def _font_finder_darwin():
 def initsysfonts_darwin():
     """Read the fonts on macOS, and OS X."""
     # if the X11 binary exists... try and use that.
-    #  Not likely to be there on pre 10.4.x ... or MacOS 10.10+
+    #  Not likely to be there on pre 10.4.x ... or macOS 10.10+
     if exists("/usr/X11/bin/fc-list"):
         fonts = initsysfonts_unix("/usr/X11/bin/fc-list")
     # This fc-list path will work with the X11 from the OS X 10.3 installation
@@ -360,6 +361,11 @@ def initsysfonts():
         fonts = initsysfonts_darwin()
     else:
         fonts = initsysfonts_unix()
+
+    # Try to add the default font to sys fonts
+    pygame_folder = os.path.dirname(os.path.abspath(pygame_main_file))
+    default_font_path = os.path.join(pygame_folder, "freesansbold.ttf")
+    _addfont("freesansbold", True, False, default_font_path, fonts)
 
     Sysfonts.update(fonts)
     create_aliases()

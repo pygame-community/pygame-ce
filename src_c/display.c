@@ -93,6 +93,10 @@ _display_state_cleanup(_DisplayState *state)
     }
 }
 
+// prevent this code block from being linked twice
+// (this code block is copied by window.c)
+#ifndef BUILD_STATIC
+
 #if !defined(__APPLE__)
 static char *icon_defaultname = "pygame_icon.bmp";
 static int icon_colorkey = 0;
@@ -176,6 +180,8 @@ display_resource_end:
     return result;
 }
 
+#endif  // BUILD_STATIC
+
 /* init routines */
 static PyObject *
 pg_display_quit(PyObject *self, PyObject *_null)
@@ -190,6 +196,7 @@ pg_display_quit(PyObject *self, PyObject *_null)
 
     pg_mod_autoquit(IMPPREFIX "event");
     pg_mod_autoquit(IMPPREFIX "time");
+    pg_mod_autoquit(IMPPREFIX "_window");
 
     if (SDL_WasInit(SDL_INIT_VIDEO)) {
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
@@ -244,6 +251,8 @@ pg_display_init(PyObject *self, PyObject *_null)
     if (!pg_mod_autoinit(IMPPREFIX "time"))
         return NULL;
     if (!pg_mod_autoinit(IMPPREFIX "event"))
+        return NULL;
+    if (!pg_mod_autoinit(IMPPREFIX "_window"))
         return NULL;
 
     Py_RETURN_NONE;
@@ -853,7 +862,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     int w, h;
     PyObject *size = NULL;
     int vsync = SDL_FALSE;
-    uint64_t hwnd = 0;
+    intptr_t hwnd = 0;
     /* display will get overwritten by ParseTupleAndKeywords only if display
        parameter is given. By default, put the new window on the same
        screen as the old one */
@@ -874,7 +883,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         return NULL;
 
     if (hwnd == 0 && winid_env != NULL) {
-        hwnd = SDL_strtoull(winid_env, NULL, 0);
+        hwnd = (intptr_t)SDL_strtoull(winid_env, NULL, 0);
     }
 
     if (scale_env != NULL) {
@@ -1348,7 +1357,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         SDL_SetWindowIcon(win, pgSurface_AsSurface(state->icon));
 
     if (!SDL_GetWindowWMInfo(win, &wm_info)) {
-        // don't complain, might be dummy mode
+        // don't complain, might be null mode
     }
     else if (wm_info.subsystem == SDL_SYSWM_X11) {
         char *xdg_session_type = SDL_getenv("XDG_SESSION_TYPE");
@@ -2686,6 +2695,198 @@ pg_set_allow_screensaver(PyObject *self, PyObject *arg, PyObject *kwargs)
     Py_RETURN_NONE;
 }
 
+static PyObject *
+pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
+{
+    const char *title = NULL;
+    PyObject *message = Py_None, *parent_window = Py_None;
+    const char *msgbox_type = "info";
+    PyObject *buttons = NULL;
+    PyObject *escape_button_index_obj = Py_None;
+
+    int return_button_index = 0;
+
+    static char *keywords[] = {"title",         "message", "message_type",
+                               "parent_window", "buttons", "return_button",
+                               "escape_button", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(
+            arg, kwargs, "s|OsO!OiO", keywords, &title, &message, &msgbox_type,
+            &pgWindow_Type, &parent_window, &buttons, &return_button_index,
+            &escape_button_index_obj)) {
+        return NULL;
+    }
+
+    int escape_button_index = 0;
+    SDL_bool escape_button_used = SDL_FALSE;
+    if (escape_button_index_obj != Py_None) {
+        escape_button_index = PyLong_AsLong(escape_button_index_obj);
+        if (escape_button_index == -1 && PyErr_Occurred())
+            return NULL;
+        escape_button_used = SDL_TRUE;
+    }
+
+    SDL_MessageBoxData msgbox_data;
+
+    msgbox_data.flags = 0;
+    if (!strcmp(msgbox_type, "info")) {
+        msgbox_data.flags |= SDL_MESSAGEBOX_INFORMATION;
+    }
+    else if (!strcmp(msgbox_type, "warn")) {
+        msgbox_data.flags |= SDL_MESSAGEBOX_WARNING;
+    }
+    else if (!strcmp(msgbox_type, "error")) {
+        msgbox_data.flags |= SDL_MESSAGEBOX_ERROR;
+    }
+    else {
+        PyErr_Format(PyExc_ValueError,
+                     "type should be 'info', 'warn' or 'error', "
+                     "got '%s'",
+                     msgbox_type);
+        return NULL;
+    }
+
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+    msgbox_data.flags |= SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT;
+#endif
+
+    if (parent_window == Py_None)
+        msgbox_data.window = NULL;
+    else
+        msgbox_data.window = ((pgWindowObject *)parent_window)->_win;
+
+    msgbox_data.colorScheme = NULL;  // use system color scheme settings
+
+    msgbox_data.title = title;
+    if (PyUnicode_Check(message)) {
+        msgbox_data.message = PyUnicode_AsUTF8(message);
+        if (!msgbox_data.message)
+            return NULL;
+    }
+    else if (message == Py_None) {
+        msgbox_data.message = title;
+    }
+    else {
+        PyErr_Format(PyExc_TypeError, "'message' must be str, not '%s'",
+                     message->ob_type->tp_name);
+        return NULL;
+    }
+
+    SDL_MessageBoxButtonData *buttons_data = NULL;
+
+    if (buttons == NULL) {
+        buttons_data = malloc(sizeof(SDL_MessageBoxButtonData));
+        buttons_data->flags = 0;
+        buttons_data->buttonid = 0;
+        buttons_data->text = "OK";
+
+        msgbox_data.numbuttons = 1;
+
+        if (-1 > return_button_index || return_button_index >= 1) {
+            PyErr_SetString(PyExc_IndexError,
+                            "return_button index out of range");
+            goto error;
+        }
+        buttons_data->flags |= SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+
+        if (escape_button_used) {
+            if (-1 > escape_button_index || escape_button_index >= 1) {
+                PyErr_SetString(PyExc_IndexError,
+                                "escape_button index out of range");
+                goto error;
+            }
+            buttons_data->flags |= SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+        }
+    }
+    else {
+        if (!PySequence_Check(buttons) || PyUnicode_Check(buttons)) {
+            PyErr_Format(PyExc_TypeError,
+                         "'buttons' should be a sequence of string, got '%s'",
+                         buttons->ob_type->tp_name);
+            return NULL;
+        }
+        Py_ssize_t num_buttons = PySequence_Size(buttons);
+        msgbox_data.numbuttons = (int)num_buttons;
+        if (num_buttons < 0) {
+            return NULL;
+        }
+        else if (num_buttons == 0) {
+            return RAISE(PyExc_TypeError,
+                         "'buttons' should contain at least 1 button");
+        }
+
+        if (return_button_index < 0) {
+            return_button_index = (int)num_buttons + return_button_index;
+        }
+        if (0 > return_button_index || return_button_index >= num_buttons) {
+            return RAISE(PyExc_IndexError, "return_button index out of range");
+        }
+        if (escape_button_used) {
+            if (escape_button_index < 0) {
+                escape_button_index = (int)num_buttons + escape_button_index;
+            }
+            if (0 > escape_button_index ||
+                escape_button_index >= num_buttons) {
+                return RAISE(PyExc_IndexError,
+                             "escape_button index out of range");
+            }
+        }
+
+        buttons_data = malloc(sizeof(SDL_MessageBoxButtonData) * num_buttons);
+        for (Py_ssize_t i = 0; i < num_buttons; i++) {
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+            PyObject *btn_name_obj = PySequence_GetItem(buttons, i);
+#else
+            PyObject *btn_name_obj =
+                PySequence_GetItem(buttons, num_buttons - i - 1);
+#endif
+            if (!btn_name_obj)
+                goto error;
+
+            if (!PyUnicode_Check(btn_name_obj)) {
+                PyErr_SetString(PyExc_TypeError,
+                                "'buttons' should be a sequence of string");
+                goto error;
+            }
+
+            const char *btn_name = PyUnicode_AsUTF8(btn_name_obj);
+            if (!btn_name)
+                goto error;
+
+            buttons_data[i].text = btn_name;
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+            buttons_data[i].buttonid = (int)i;
+#else
+            buttons_data[i].buttonid = (int)(num_buttons - i - 1);
+#endif
+            buttons_data[i].flags = 0;
+            if (return_button_index == buttons_data[i].buttonid)
+                buttons_data[i].flags |=
+                    SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+            if (escape_button_used &&
+                escape_button_index == buttons_data[i].buttonid)
+                buttons_data[i].flags |=
+                    SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+        }
+    }
+
+    msgbox_data.buttons = buttons_data;
+
+    int clicked_button_id;
+
+    if (SDL_ShowMessageBox(&msgbox_data, &clicked_button_id)) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        goto error;
+    }
+
+    free(buttons_data);
+    return PyLong_FromLong(clicked_button_id);
+
+error:
+    free(buttons_data);
+    return NULL;
+}
+
 static PyMethodDef _pg_display_methods[] = {
     {"init", (PyCFunction)pg_display_init, METH_NOARGS, DOC_DISPLAY_INIT},
     {"quit", (PyCFunction)pg_display_quit, METH_NOARGS, DOC_DISPLAY_QUIT},
@@ -2757,7 +2958,8 @@ static PyMethodDef _pg_display_methods[] = {
      METH_NOARGS, DOC_DISPLAY_GETALLOWSCREENSAVER},
     {"set_allow_screensaver", (PyCFunction)pg_set_allow_screensaver,
      METH_VARARGS | METH_KEYWORDS, DOC_DISPLAY_SETALLOWSCREENSAVER},
-
+    {"message_box", (PyCFunction)pg_message_box, METH_VARARGS | METH_KEYWORDS,
+     DOC_DISPLAY_MESSAGEBOX},
     {NULL, NULL, 0, NULL}};
 
 #ifndef PYPY_VERSION
@@ -2795,6 +2997,10 @@ MODINIT_DEFINE(display)
         return NULL;
     }
     import_pygame_surface();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    import_pygame_window();
     if (PyErr_Occurred()) {
         return NULL;
     }
