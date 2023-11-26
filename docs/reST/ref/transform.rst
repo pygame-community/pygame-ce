@@ -127,18 +127,19 @@ Instead, always begin with the original image and scale to the desired size.)
 
    Uses one of two different algorithms for scaling each dimension of the input
    surface as required. For shrinkage, the output pixels are area averages of
-   the colors they cover. For expansion, a bilinear filter is used. For the
-   x86-64 and i686 architectures, optimized ``MMX`` routines are included and
-   will run much faster than other machine types. The size is a 2 number
-   sequence for (width, height). This function only works for 24-bit or 32-bit
-   surfaces. An exception will be thrown if the input surface bit depth is less
-   than 24.
+   the colors they cover. The size is a 2 number sequence for (width, height). 
+   This function only works for 24-bit or 32-bit surfaces. A ``ValueError`` will
+   be thrown if the input surface bit depth is less than 24.
 
    An optional destination surface can be passed which is faster than creating a new
    Surface. This destination surface must be the same as the size (width, height) passed
    in, and the same depth and format as the source Surface.
 
    .. versionaddedold:: 1.8
+
+   .. versionchanged:: 2.4.0 now uses SSE2/NEON SIMD for acceleration on x86
+      and ARM machines, a performance improvement over previous MMX/SSE only 
+      supported on x86.
 
    .. ## pygame.transform.smoothscale ##
 
@@ -165,30 +166,33 @@ Instead, always begin with the original image and scale to the desired size.)
 
 .. function:: get_smoothscale_backend
 
-   | :sl:`return smoothscale filter version in use: 'GENERIC', 'MMX', or 'SSE'`
+   | :sl:`return smoothscale filter version in use: 'GENERIC', 'MMX', 'SSE', 'SSE2', or 'NEON'`
    | :sg:`get_smoothscale_backend() -> string`
 
-   Shows whether or not smoothscale is using ``MMX`` or ``SSE`` acceleration.
-   If no acceleration is available then "GENERIC" is returned. For a x86
-   processor the level of acceleration to use is determined at runtime.
+   Shows whether or not smoothscale is using SIMD accleration.
+   If no acceleration is available then "GENERIC" is returned. The level of
+   acceleration possible is automatically determined at runtime.
 
    This function is provided for pygame testing and debugging.
+
+   .. versionchanged:: 2.4.0 Added SSE2 and NEON backends, MMX and SSE are deprecated.
 
    .. ## pygame.transform.get_smoothscale_backend ##
 
 .. function:: set_smoothscale_backend
 
-   | :sl:`set smoothscale filter version to one of: 'GENERIC', 'MMX', or 'SSE'`
+   | :sl:`set smoothscale filter version to one of: 'GENERIC', 'MMX', 'SSE', 'SSE2', or 'NEON'`
    | :sg:`set_smoothscale_backend(backend) -> None`
 
    Sets smoothscale acceleration. Takes a string argument. A value of 'GENERIC'
-   turns off acceleration. 'MMX' uses ``MMX`` instructions only. 'SSE' allows
-   ``SSE`` extensions as well. A value error is raised if type is not
+   turns off acceleration. A value error is raised if type is not
    recognized or not supported by the current processor.
 
    This function is provided for pygame testing and debugging. If smoothscale
    causes an invalid instruction error then it is a pygame/SDL bug that should
    be reported. Use this function as a temporary fix only.
+
+   .. versionchanged:: 2.4.0 Added SSE2 and NEON backends, MMX and SSE are deprecated.
 
    .. ## pygame.transform.set_smoothscale_backend ##
 
@@ -262,6 +266,10 @@ Instead, always begin with the original image and scale to the desired size.)
 
    .. versionchanged:: 2.3.0
       Passing the calling surface as destination surface raises a ``ValueError``
+   
+   .. versionchanged:: 2.3.1
+      Now the standard deviation of the Gaussian kernel is equal to the radius. 
+      Blur results will be slightly different.
 
    .. ## pygame.transform.gaussian_blur ##
 
@@ -329,6 +337,9 @@ Instead, always begin with the original image and scale to the desired size.)
    depth as the source Surface.
    
    .. versionadded:: 2.1.4
+
+   .. versionchanged:: 2.4.0 Adjusted formula slightly to support performance optimisation. It may return very slightly
+                       different pixels than before, but should run seven to eleven times faster on most systems.
 
    .. ## pygame.transform.grayscale ##
 

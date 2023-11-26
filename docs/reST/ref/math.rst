@@ -52,7 +52,7 @@ Multiple coordinates can be set using slices or swizzling
 .. function:: clamp
 
    | :sl:`returns value clamped to min and max.`
-   | :sg:`clamp(value, min, max) -> float`
+   | :sg:`clamp(value, min, max, /) -> float`
 
    Clamps a numeric ``value`` so that it's no lower than ``min``, and no higher
    than ``max``.
@@ -107,14 +107,14 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: dot
 
       | :sl:`calculates the dot- or scalar-product with the other vector`
-      | :sg:`dot(Vector2) -> float`
+      | :sg:`dot(Vector2, /) -> float`
 
       .. ## Vector2.dot ##
 
    .. method:: cross
 
       | :sl:`calculates the cross- or vector-product`
-      | :sg:`cross(Vector2) -> float`
+      | :sg:`cross(Vector2, /) -> float`
 
       calculates the third component of the cross-product.
 
@@ -195,7 +195,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: scale_to_length
 
       | :sl:`scales the vector to a given length.`
-      | :sg:`scale_to_length(float) -> None`
+      | :sg:`scale_to_length(float, /) -> None`
 
       Scales the vector so that it has the given length. The direction of the
       vector is not changed. You can also scale to length ``0``. If the vector 
@@ -207,7 +207,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: reflect
 
       | :sl:`returns a vector reflected of a given normal.`
-      | :sg:`reflect(Vector2) -> Vector2`
+      | :sg:`reflect(Vector2, /) -> Vector2`
 
       Returns a new vector that points in the direction as if self would bounce
       of a surface characterized by the given surface normal. The length of the
@@ -218,7 +218,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: reflect_ip
 
       | :sl:`reflect the vector of a given normal in place.`
-      | :sg:`reflect_ip(Vector2) -> None`
+      | :sg:`reflect_ip(Vector2, /) -> None`
 
       Changes the direction of self as if it would have been reflected of a
       surface with the given surface normal.
@@ -228,21 +228,21 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: distance_to
 
       | :sl:`calculates the Euclidean distance to a given vector.`
-      | :sg:`distance_to(Vector2) -> float`
+      | :sg:`distance_to(Vector2, /) -> float`
 
       .. ## Vector2.distance_to ##
 
    .. method:: distance_squared_to
 
       | :sl:`calculates the squared Euclidean distance to a given vector.`
-      | :sg:`distance_squared_to(Vector2) -> float`
+      | :sg:`distance_squared_to(Vector2, /) -> float`
 
       .. ## Vector2.distance_squared_to ##
 
    .. method:: move_towards
 
       | :sl:`returns a vector moved toward the target by a given distance.`
-      | :sg:`move_towards(Vector2, float) -> Vector2`
+      | :sg:`move_towards(Vector2, float, /) -> Vector2`
 
       Returns a Vector which is moved towards the given Vector by a given
       distance and does not overshoot past its target Vector.
@@ -257,7 +257,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: move_towards_ip
 
       | :sl:`moves the vector toward its target at a given distance.`
-      | :sg:`move_towards_ip(Vector2, float) -> None`
+      | :sg:`move_towards_ip(Vector2, float, /) -> None`
 
       Moves itself toward the given Vector at a given distance and does not
       overshoot past its target Vector.
@@ -272,7 +272,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: lerp
 
       | :sl:`returns a linear interpolation to the given vector.`
-      | :sg:`lerp(Vector2, float) -> Vector2`
+      | :sg:`lerp(Vector2, float, /) -> Vector2`
 
       Returns a Vector which is a linear interpolation between self and the
       given Vector. The second parameter determines how far between self and
@@ -284,7 +284,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: slerp
 
       | :sl:`returns a spherical interpolation to the given vector.`
-      | :sg:`slerp(Vector2, float) -> Vector2`
+      | :sg:`slerp(Vector2, float, /) -> Vector2`
 
       Calculates the spherical interpolation from self to the given Vector. The
       second argument - often called t - must be in the range ``[-1, 1]``. It
@@ -306,7 +306,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate
 
       | :sl:`rotates a vector by a given angle in degrees.`
-      | :sg:`rotate(angle) -> Vector2`
+      | :sg:`rotate(angle, /) -> Vector2`
 
       Returns a vector which has the same length as self but is rotated
       counterclockwise by the given angle in degrees.
@@ -318,7 +318,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_rad
 
       | :sl:`rotates a vector by a given angle in radians.`
-      | :sg:`rotate_rad(angle) -> Vector2`
+      | :sg:`rotate_rad(angle, /) -> Vector2`
 
       Returns a vector which has the same length as self but is rotated
       counterclockwise by the given angle in radians.
@@ -332,7 +332,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_ip
 
       | :sl:`rotates the vector by a given angle in degrees in place.`
-      | :sg:`rotate_ip(angle) -> None`
+      | :sg:`rotate_ip(angle, /) -> None`
 
       Rotates the vector counterclockwise by the given angle in degrees. The
       length of the vector is not changed.
@@ -344,7 +344,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_ip_rad
 
       | :sl:`rotates the vector by a given angle in radians in place.`
-      | :sg:`rotate_ip_rad(angle) -> None`
+      | :sg:`rotate_ip_rad(angle, /) -> None`
 
       DEPRECATED: Use rotate_rad_ip() instead.
 
@@ -356,7 +356,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_rad_ip
 
       | :sl:`rotates the vector by a given angle in radians in place.`
-      | :sg:`rotate_rad_ip(angle) -> None`
+      | :sg:`rotate_rad_ip(angle, /) -> None`
 
       Rotates the vector counterclockwise by the given angle in radians. The
       length of the vector is not changed.
@@ -370,7 +370,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: angle_to
 
       | :sl:`calculates the angle to a given vector in degrees.`
-      | :sg:`angle_to(Vector2) -> float`
+      | :sg:`angle_to(Vector2, /) -> float`
 
       Returns the angle from self to the passed ``Vector2`` that would rotate self
       to be aligned with the passed ``Vector2`` without crossing over the negative 
@@ -396,7 +396,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: from_polar
 
       | :sl:`Sets x and y from a polar coordinates tuple.`
-      | :sg:`from_polar((r, phi)) -> None`
+      | :sg:`from_polar((r, phi), /) -> None`
 
       Sets x and y from a tuple (r, phi) where r is the radial distance, and
       phi is the azimuthal angle.
@@ -406,7 +406,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: project
 
       | :sl:`projects a vector onto another.`
-      | :sg:`project(Vector2) -> Vector2`
+      | :sg:`project(Vector2, /) -> Vector2`
 
       Returns the projected vector. This is useful for collision detection in finding the components in a certain direction (e.g. in direction of the wall). 
       For a more detailed explanation see `Wikipedia <https://en.wikipedia.org/wiki/Vector_projection>`_.
@@ -431,8 +431,8 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: clamp_magnitude
 
       | :sl:`Returns a copy of a vector with the magnitude clamped between max_length and min_length.`
-      | :sg:`clamp_magnitude(max_length) -> Vector2`
-      | :sg:`clamp_magnitude(min_length, max_length) -> Vector2`
+      | :sg:`clamp_magnitude(max_length, /) -> Vector2`
+      | :sg:`clamp_magnitude(min_length, max_length, /) -> Vector2`
 
       **Experimental:** feature still in development available for testing and feedback. It may change.
       `Please leave clamp_magnitude feedback with authors <https://github.com/pygame/pygame/pull/2990>`_
@@ -452,8 +452,8 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: clamp_magnitude_ip
 
       | :sl:`Clamps the vector's magnitude between max_length and min_length`
-      | :sg:`clamp_magnitude_ip(max_length) -> None`
-      | :sg:`clamp_magnitude_ip(min_length, max_length) -> None`
+      | :sg:`clamp_magnitude_ip(max_length, /) -> None`
+      | :sg:`clamp_magnitude_ip(min_length, max_length, /) -> None`
 
       Clamps the vector's magnitude between ``max_length`` and ``min_length``.
       If only one argument is passed, it is taken to be the ``max_length``
@@ -537,14 +537,14 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: dot
 
       | :sl:`calculates the dot- or scalar-product with the other vector`
-      | :sg:`dot(Vector3) -> float`
+      | :sg:`dot(Vector3, /) -> float`
 
       .. ## Vector3.dot ##
 
    .. method:: cross
 
       | :sl:`calculates the cross- or vector-product`
-      | :sg:`cross(Vector3) -> Vector3`
+      | :sg:`cross(Vector3, /) -> Vector3`
 
       calculates the cross-product.
 
@@ -629,7 +629,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: scale_to_length
 
       | :sl:`scales the vector to a given length.`
-      | :sg:`scale_to_length(float) -> None`
+      | :sg:`scale_to_length(float, /) -> None`
 
       Scales the vector so that it has the given length. The direction of the
       vector is not changed. You can also scale to length ``0``. If the vector 
@@ -641,7 +641,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: reflect
 
       | :sl:`returns a vector reflected of a given normal.`
-      | :sg:`reflect(Vector3) -> Vector3`
+      | :sg:`reflect(Vector3, /) -> Vector3`
 
       Returns a new vector that points in the direction as if self would bounce
       of a surface characterized by the given surface normal. The length of the
@@ -652,7 +652,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: reflect_ip
 
       | :sl:`reflect the vector of a given normal in place.`
-      | :sg:`reflect_ip(Vector3) -> None`
+      | :sg:`reflect_ip(Vector3, /) -> None`
 
       Changes the direction of self as if it would have been reflected of a
       surface with the given surface normal.
@@ -662,21 +662,21 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: distance_to
 
       | :sl:`calculates the Euclidean distance to a given vector.`
-      | :sg:`distance_to(Vector3) -> float`
+      | :sg:`distance_to(Vector3, /) -> float`
 
       .. ## Vector3.distance_to ##
 
    .. method:: distance_squared_to
 
       | :sl:`calculates the squared Euclidean distance to a given vector.`
-      | :sg:`distance_squared_to(Vector3) -> float`
+      | :sg:`distance_squared_to(Vector3, /) -> float`
 
       .. ## Vector3.distance_squared_to ##
 
    .. method:: move_towards
 
       | :sl:`returns a vector moved toward the target by a given distance.`
-      | :sg:`move_towards(Vector3, float) -> Vector3`
+      | :sg:`move_towards(Vector3, float, /) -> Vector3`
 
       Returns a Vector which is moved towards the given Vector by a given
       distance and does not overshoot past its target Vector.
@@ -691,7 +691,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: move_towards_ip
 
       | :sl:`moves the vector toward its target at a given distance.`
-      | :sg:`move_towards_ip(Vector3, float) -> None`
+      | :sg:`move_towards_ip(Vector3, float, /) -> None`
 
       Moves itself toward the given Vector at a given distance and does not
       overshoot past its target Vector.
@@ -706,7 +706,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: lerp
 
       | :sl:`returns a linear interpolation to the given vector.`
-      | :sg:`lerp(Vector3, float) -> Vector3`
+      | :sg:`lerp(Vector3, float, /) -> Vector3`
 
       Returns a Vector which is a linear interpolation between self and the
       given Vector. The second parameter determines how far between self an
@@ -718,7 +718,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: slerp
 
       | :sl:`returns a spherical interpolation to the given vector.`
-      | :sg:`slerp(Vector3, float) -> Vector3`
+      | :sg:`slerp(Vector3, float, /) -> Vector3`
 
       Calculates the spherical interpolation from self to the given Vector. The
       second argument - often called t - must be in the range ``[-1, 1]``. It
@@ -740,7 +740,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate
 
       | :sl:`rotates a vector by a given angle in degrees.`
-      | :sg:`rotate(angle, Vector3) -> Vector3`
+      | :sg:`rotate(angle, Vector3, /) -> Vector3`
 
       Returns a vector which has the same length as self but is rotated
       counterclockwise by the given angle in degrees around the given axis.
@@ -752,7 +752,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_rad
 
       | :sl:`rotates a vector by a given angle in radians.`
-      | :sg:`rotate_rad(angle, Vector3) -> Vector3`
+      | :sg:`rotate_rad(angle, Vector3, /) -> Vector3`
 
       Returns a vector which has the same length as self but is rotated
       counterclockwise by the given angle in radians around the given axis.
@@ -766,7 +766,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_ip
 
       | :sl:`rotates the vector by a given angle in degrees in place.`
-      | :sg:`rotate_ip(angle, Vector3) -> None`
+      | :sg:`rotate_ip(angle, Vector3, /) -> None`
 
       Rotates the vector counterclockwise around the given axis by the given
       angle in degrees. The length of the vector is not changed.
@@ -778,7 +778,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_ip_rad
 
       | :sl:`rotates the vector by a given angle in radians in place.`
-      | :sg:`rotate_ip_rad(angle, Vector3) -> None`
+      | :sg:`rotate_ip_rad(angle, Vector3, /) -> None`
 
       DEPRECATED: Use rotate_rad_ip() instead.
 
@@ -790,7 +790,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_rad_ip
 
       | :sl:`rotates the vector by a given angle in radians in place.`
-      | :sg:`rotate_rad_ip(angle, Vector3) -> None`
+      | :sg:`rotate_rad_ip(angle, Vector3, /) -> None`
 
       Rotates the vector counterclockwise around the given axis by the given
       angle in radians. The length of the vector is not changed.
@@ -804,7 +804,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_x
 
       | :sl:`rotates a vector around the x-axis by the angle in degrees.`
-      | :sg:`rotate_x(angle) -> Vector3`
+      | :sg:`rotate_x(angle, /) -> Vector3`
 
       Returns a vector which has the same length as self but is rotated
       counterclockwise around the x-axis by the given angle in degrees.
@@ -816,7 +816,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_x_rad
 
       | :sl:`rotates a vector around the x-axis by the angle in radians.`
-      | :sg:`rotate_x_rad(angle) -> Vector3`
+      | :sg:`rotate_x_rad(angle, /) -> Vector3`
 
       Returns a vector which has the same length as self but is rotated
       counterclockwise around the x-axis by the given angle in radians.
@@ -830,7 +830,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_x_ip
 
       | :sl:`rotates the vector around the x-axis by the angle in degrees in place.`
-      | :sg:`rotate_x_ip(angle) -> None`
+      | :sg:`rotate_x_ip(angle, /) -> None`
 
       Rotates the vector counterclockwise around the x-axis by the given angle
       in degrees. The length of the vector is not changed.
@@ -842,7 +842,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_x_ip_rad
 
       | :sl:`rotates the vector around the x-axis by the angle in radians in place.`
-      | :sg:`rotate_x_ip_rad(angle) -> None`
+      | :sg:`rotate_x_ip_rad(angle, /) -> None`
 
       DEPRECATED: Use rotate_x_rad_ip() instead.
 
@@ -854,7 +854,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_x_rad_ip
 
       | :sl:`rotates the vector around the x-axis by the angle in radians in place.`
-      | :sg:`rotate_x_rad_ip(angle) -> None`
+      | :sg:`rotate_x_rad_ip(angle, /) -> None`
 
       Rotates the vector counterclockwise around the x-axis by the given angle
       in radians. The length of the vector is not changed.
@@ -868,7 +868,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_y
 
       | :sl:`rotates a vector around the y-axis by the angle in degrees.`
-      | :sg:`rotate_y(angle) -> Vector3`
+      | :sg:`rotate_y(angle, /) -> Vector3`
 
       Returns a vector which has the same length as self but is rotated
       counterclockwise around the y-axis by the given angle in degrees.
@@ -880,7 +880,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_y_rad
 
       | :sl:`rotates a vector around the y-axis by the angle in radians.`
-      | :sg:`rotate_y_rad(angle) -> Vector3`
+      | :sg:`rotate_y_rad(angle, /) -> Vector3`
 
       Returns a vector which has the same length as self but is rotated
       counterclockwise around the y-axis by the given angle in radians.
@@ -894,7 +894,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_y_ip
 
       | :sl:`rotates the vector around the y-axis by the angle in degrees in place.`
-      | :sg:`rotate_y_ip(angle) -> None`
+      | :sg:`rotate_y_ip(angle, /) -> None`
 
       Rotates the vector counterclockwise around the y-axis by the given angle
       in degrees. The length of the vector is not changed.
@@ -906,7 +906,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_y_ip_rad
 
       | :sl:`rotates the vector around the y-axis by the angle in radians in place.`
-      | :sg:`rotate_y_ip_rad(angle) -> None`
+      | :sg:`rotate_y_ip_rad(angle, /) -> None`
 
       DEPRECATED: Use rotate_y_rad_ip() instead.
 
@@ -918,7 +918,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_y_rad_ip
 
       | :sl:`rotates the vector around the y-axis by the angle in radians in place.`
-      | :sg:`rotate_y_rad_ip(angle) -> None`
+      | :sg:`rotate_y_rad_ip(angle, /) -> None`
 
       Rotates the vector counterclockwise around the y-axis by the given angle
       in radians. The length of the vector is not changed.
@@ -932,7 +932,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_z
 
       | :sl:`rotates a vector around the z-axis by the angle in degrees.`
-      | :sg:`rotate_z(angle) -> Vector3`
+      | :sg:`rotate_z(angle, /) -> Vector3`
 
       Returns a vector which has the same length as self but is rotated
       counterclockwise around the z-axis by the given angle in degrees.
@@ -944,7 +944,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_z_rad
 
       | :sl:`rotates a vector around the z-axis by the angle in radians.`
-      | :sg:`rotate_z_rad(angle) -> Vector3`
+      | :sg:`rotate_z_rad(angle, /) -> Vector3`
 
       Returns a vector which has the same length as self but is rotated
       counterclockwise around the z-axis by the given angle in radians.
@@ -958,7 +958,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_z_ip
 
       | :sl:`rotates the vector around the z-axis by the angle in degrees in place.`
-      | :sg:`rotate_z_ip(angle) -> None`
+      | :sg:`rotate_z_ip(angle, /) -> None`
 
       Rotates the vector counterclockwise around the z-axis by the given angle
       in degrees. The length of the vector is not changed.
@@ -970,7 +970,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_z_ip_rad
 
       | :sl:`rotates the vector around the z-axis by the angle in radians in place.`
-      | :sg:`rotate_z_ip_rad(angle) -> None`
+      | :sg:`rotate_z_ip_rad(angle, /) -> None`
 
       DEPRECATED: Use rotate_z_rad_ip() instead.
       
@@ -981,7 +981,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: rotate_z_rad_ip
 
       | :sl:`rotates the vector around the z-axis by the angle in radians in place.`
-      | :sg:`rotate_z_rad_ip(angle) -> None`
+      | :sg:`rotate_z_rad_ip(angle, /) -> None`
 
       Rotates the vector counterclockwise around the z-axis by the given angle
       in radians. The length of the vector is not changed.
@@ -995,7 +995,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: angle_to
 
       | :sl:`calculates the angle to a given vector in degrees.`
-      | :sg:`angle_to(Vector3) -> float`
+      | :sg:`angle_to(Vector3, /) -> float`
 
       Returns the angle between self and the given vector.
 
@@ -1014,7 +1014,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: from_spherical
 
       | :sl:`Sets x, y and z from a spherical coordinates 3-tuple.`
-      | :sg:`from_spherical((r, theta, phi)) -> None`
+      | :sg:`from_spherical((r, theta, phi), /) -> None`
 
       Sets x, y and z from a tuple ``(r, theta, phi)`` where r is the radial
       distance, theta is the inclination angle and phi is the azimuthal angle.
@@ -1024,7 +1024,7 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: project
 
       | :sl:`projects a vector onto another.`
-      | :sg:`project(Vector3) -> Vector3`
+      | :sg:`project(Vector3, /) -> Vector3`
 
       Returns the projected vector. This is useful for collision detection in finding the components in a certain direction (e.g. in direction of the wall). 
       For a more detailed explanation see `Wikipedia <https://en.wikipedia.org/wiki/Vector_projection>`_.
@@ -1048,8 +1048,8 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: clamp_magnitude
 
       | :sl:`Returns a copy of a vector with the magnitude clamped between max_length and min_length.`
-      | :sg:`clamp_magnitude(max_length) -> Vector3`
-      | :sg:`clamp_magnitude(min_length, max_length) -> Vector3`
+      | :sg:`clamp_magnitude(max_length, /) -> Vector3`
+      | :sg:`clamp_magnitude(min_length, max_length, /) -> Vector3`
 
       Returns a new copy of a vector with the magnitude clamped between 
       ``max_length`` and ``min_length``. If only one argument is passed, it is 
@@ -1066,8 +1066,8 @@ Multiple coordinates can be set using slices or swizzling
    .. method:: clamp_magnitude_ip
 
       | :sl:`Clamps the vector's magnitude between max_length and min_length`
-      | :sg:`clamp_magnitude_ip(max_length) -> None`
-      | :sg:`clamp_magnitude_ip(min_length, max_length) -> None`
+      | :sg:`clamp_magnitude_ip(max_length, /) -> None`
+      | :sg:`clamp_magnitude_ip(min_length, max_length, /) -> None`
 
       Clamps the vector's magnitude between ``max_length`` and ``min_length``.
       If only one argument is passed, it is taken to be the ``max_length``

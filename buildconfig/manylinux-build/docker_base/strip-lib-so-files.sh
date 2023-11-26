@@ -7,8 +7,8 @@
 # This is a pretty scary looking command, let's break it down part-wise to
 # understand it
 
-# > find /usr/local/lib
-# searches everything recursively under /usr/local/lib (including the top dir)
+# > find $PG_DEP_PREFIX/lib
+# searches everything recursively under $PG_DEP_PREFIX/lib (including the top dir)
 
 # > \( -name "*.so*" -o -name "*.a" \)
 # matches names having a .so[suffix] OR .a extension
@@ -28,5 +28,5 @@
 # > strip --strip-unneeded
 # This is the actual command being run on all so files: this strips unneeded
 # info
-find /usr/local/lib \( -name "*.so*" -o -name "*.a" \) -type f -xtype f -print0 | \
+find $PG_DEP_PREFIX/lib \( -name "*.so*" -o -name "*.a" \) -type f -xtype f -print0 | \
     xargs -0 -t strip --strip-unneeded

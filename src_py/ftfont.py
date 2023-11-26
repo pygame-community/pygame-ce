@@ -16,6 +16,7 @@ from pygame._freetype import quit, get_default_font, get_init as _get_init
 from pygame._freetype import _internal_mod_init
 from pygame.sysfont import match_font, get_fonts, SysFont as _SysFont
 from pygame import encode_file_path
+from pygame import draw
 
 
 class Font(_Font):
@@ -58,6 +59,10 @@ class Font(_Font):
         self.pad = True
         self.ucs4 = True
         self.underline_adjustment = 1.0
+        self.strikethrough = False
+        lower_style_name = self.style_name.lower() if file is not None else ""
+        self._bold = "bold" in lower_style_name
+        self._italic = "italic" in lower_style_name or "slanted" in lower_style_name
 
     def render(self, text, antialias, color, bgcolor=None):
         """render(text, antialias, color, background=None) -> Surface
@@ -75,6 +80,13 @@ class Font(_Font):
         self.antialiased = bool(antialias)
         try:
             s, _ = super().render(text, color, bgcolor)
+            if self.strikethrough:
+                s_size = s.get_size()
+                asc = self.get_ascent()
+                start_pos = (0, asc * 15 // 24)
+                end_pos = (s_size[0], start_pos[1])
+                width = max(s_size[1] // 20, 1)
+                draw.line(s, color, start_pos, end_pos, width)
             return s
         finally:
             self.antialiased = save_antialiased
@@ -83,13 +95,14 @@ class Font(_Font):
         """set_bold(bool) -> None
         enable fake rendering of bold text"""
 
-        self.wide = bool(value)
+        if not self._bold:
+            self.wide = bool(value)
 
     def get_bold(self):
         """get_bold() -> bool
         check if text will be rendered bold"""
 
-        return self.wide
+        return self.wide or self._bold
 
     bold = property(get_bold, set_bold)
 
@@ -97,13 +110,14 @@ class Font(_Font):
         """set_italic(bool) -> None
         enable fake rendering of italic text"""
 
-        self.oblique = bool(value)
+        if not self._italic:
+            self.oblique = bool(value)
 
     def get_italic(self):
         """get_italic() -> bool
         check if the text will be rendered italic"""
 
-        return self.oblique
+        return self.oblique or self._italic
 
     italic = property(get_italic, set_italic)
 
@@ -114,10 +128,20 @@ class Font(_Font):
         self.underline = bool(value)
 
     def get_underline(self):
-        """set_bold(bool) -> None
-        enable fake rendering of bold text"""
+        """get_underline() -> bool
+        check if the text will be rendered with an underline"""
 
         return self.underline
+
+    def set_strikethrough(self, value):
+        """set_strikethrough(bool) -> None
+        control if the text is rendered struck through"""
+        self.strikethrough = value
+
+    def get_strikethrough(self):
+        """get_strikethrough() -> bool
+        check if the text will be rendered struck through"""
+        return self.strikethrough
 
     def metrics(self, text):
         """metrics(text) -> list

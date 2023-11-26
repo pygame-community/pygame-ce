@@ -404,10 +404,15 @@ _select_source_type(pgCameraObject *self, IMFMediaType **mp)
      * Although I haven't seen any upside from this either */
     hr = native_types[index]->lpVtbl->GetUINT64(
         native_types[index], &MF_MT_FRAME_RATE_RANGE_MAX, &fps_max_ratio);
-    HANDLEHR(hr);
-    hr = native_types[index]->lpVtbl->SetUINT64(
-        native_types[index], &MF_MT_FRAME_RATE, fps_max_ratio);
-    HANDLEHR(hr);
+    if (!FAILED(hr)) { /* If it fails to get max FPS, don't quit out, just skip
+                          this step */
+        hr = native_types[index]->lpVtbl->SetUINT64(
+            native_types[index], &MF_MT_FRAME_RATE, fps_max_ratio);
+        HANDLEHR(hr);
+    }
+    else {
+        hr = S_OK; /* clear error */
+    }
 
     *mp = native_types[index];
     goto cleanup;

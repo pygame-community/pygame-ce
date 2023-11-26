@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-OPUS=opus-1.3.1
+OPUS=opus-1.4
 OPUS_FILE=opusfile-0.12
 
 curl -sL --retry 10 http://downloads.xiph.org/releases/opus/${OPUS}.tar.gz > ${OPUS}.tar.gz
@@ -13,25 +13,15 @@ sha512sum -c opus.sha512
 tar xzf ${OPUS}.tar.gz
 cd $OPUS
 
-./configure $ARCHS_CONFIG_FLAG
+./configure $PG_BASE_CONFIGURE_FLAGS
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi
 
 cd ..
 
 tar xzf ${OPUS_FILE}.tar.gz
 cd $OPUS_FILE
 
-./configure $ARCHS_CONFIG_FLAG --disable-http
+./configure $PG_BASE_CONFIGURE_FLAGS --disable-http
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi
