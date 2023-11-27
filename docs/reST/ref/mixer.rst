@@ -460,6 +460,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
 
    .. versionchanged:: 2.1.4 This class is also available through the ``pygame.Channel``
       alias.
+   .. versionchanged:: 2.4.0 It is now possible to create subclasses of ``pygame.mixer.Channel``
 
    .. attribute:: id
 
