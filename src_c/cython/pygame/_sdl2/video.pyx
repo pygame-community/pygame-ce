@@ -382,13 +382,34 @@ cdef class Texture:
 
         return rect
 
-    cdef _frect_draw(self, SDL_Rect *csrcrect, dstrect=None, float angle=0, origin=None,
+    cpdef void draw(self, srcrect=None, dstrect=None, float angle=0, origin=None,
                     bint flip_x=False, bint flip_y=False):
-        
+        """Copy a portion of the texture to the rendering target
+
+        :param srcrect: The source rectangle on the texture, or ``None`` for the
+                        entire texture.
+        :param dstrect: The destination rectangle on the rendering target, or
+                        ``None`` for the entire rendering target. The texture
+                        will be stretched to fill ``dstrect``.
+        :param float angle: The angle (in degrees) to rotate dstrect around
+                            (clockwise).
+        :param origin: The point around which dstrect will be rotated.
+                       If ``None``, it will equal the center:
+                       ``(dstrect.w/2, dstrect.h/2)``.
+        :param bool flip_x: Flip the drawn texture portion horizontally (x - axis).
+        :param bool flip_y: Flip the drawn texture portion vertically (y - axis).
+        """
+        cdef SDL_Rect src
+        cdef SDL_Rect *csrcrect = NULL
         cdef SDL_FRect dst
         cdef SDL_FRect *cdstrect = NULL
         cdef SDL_FPoint corigin
         cdef SDL_FPoint *originptr
+
+        if srcrect is not None:
+            csrcrect = pgRect_FromObject(srcrect, &src)
+            if not csrcrect:
+                raise TypeError("the argument is not a rectangle or None")
 
         if dstrect is not None:
             cdstrect = pgFRect_FromObject(dstrect, &dst)
@@ -416,68 +437,6 @@ cdef class Texture:
             flip |= SDL_FLIP_VERTICAL
 
         cdef int res = SDL_RenderCopyExF(self.renderer._renderer, self._tex, csrcrect, cdstrect,
-                                        angle, originptr, <SDL_RendererFlip>flip)
-        if res < 0:
-            raise error()
-
-    cpdef void draw(self, srcrect=None, dstrect=None, float angle=0, origin=None,
-                    bint flip_x=False, bint flip_y=False):
-        """Copy a portion of the texture to the rendering target
-
-        :param srcrect: The source rectangle on the texture, or ``None`` for the
-                        entire texture.
-        :param dstrect: The destination rectangle on the rendering target, or
-                        ``None`` for the entire rendering target. The texture
-                        will be stretched to fill ``dstrect``.
-        :param float angle: The angle (in degrees) to rotate dstrect around
-                            (clockwise).
-        :param origin: The point around which dstrect will be rotated.
-                       If ``None``, it will equal the center:
-                       ``(dstrect.w/2, dstrect.h/2)``.
-        :param bool flip_x: Flip the drawn texture portion horizontally (x - axis).
-        :param bool flip_y: Flip the drawn texture portion vertically (y - axis).
-        """
-        cdef SDL_Rect src, dst
-        cdef SDL_Rect *csrcrect = NULL
-        cdef SDL_Rect *cdstrect = NULL
-        cdef SDL_Point corigin
-        cdef SDL_Point *originptr
-
-        if srcrect is not None:
-            csrcrect = pgRect_FromObject(srcrect, &src)
-            if not csrcrect:
-                raise TypeError("the argument is not a rectangle or None")
-        
-        if SDL_VERSION_ATLEAST(2,0,10):
-            self._frect_draw(csrcrect,dstrect,angle,origin,flip_x,flip_y)
-            return
-
-        if dstrect is not None:
-            cdstrect = pgRect_FromObject(dstrect, &dst)
-            if cdstrect == NULL:
-                if len(dstrect) == 2:
-                    dst.x = dstrect[0]
-                    dst.y = dstrect[1]
-                    dst.w = self.width
-                    dst.h = self.height
-                    cdstrect = &dst
-                else:
-                    raise TypeError('dstrect must be a position, rect, or None')
-
-        if origin:
-            originptr = &corigin
-            corigin.x = origin[0]
-            corigin.y = origin[1]
-        else:
-            originptr = NULL
-
-        cdef int flip = SDL_FLIP_NONE
-        if flip_x:
-            flip |= SDL_FLIP_HORIZONTAL
-        if flip_y:
-            flip |= SDL_FLIP_VERTICAL
-
-        cdef int res = SDL_RenderCopyEx(self.renderer._renderer, self._tex, csrcrect, cdstrect,
                                         angle, originptr, <SDL_RendererFlip>flip)
         if res < 0:
             raise error()
@@ -1071,14 +1030,9 @@ cdef class Renderer:
         :param p2: The line end point.
         """
         cdef int res
-        if SDL_VERSION_ATLEAST(2,0,10):
-            res = SDL_RenderDrawLineF(self._renderer,
-                                     p1[0], p1[1],
-                                     p2[0], p2[1])
-        else:
-            res = SDL_RenderDrawLine(self._renderer,
-                                     <int>p1[0], <int>p1[1],
-                                     <int>p2[0], <int>p2[1])
+        res = SDL_RenderDrawLineF(self._renderer,
+                                 p1[0], p1[1],
+                                 p2[0], p2[1])
         if res < 0:
             raise error()
 
@@ -1087,14 +1041,10 @@ cdef class Renderer:
 
         :param point: The point's coordinate.
         """
-        # https://wiki.libsdl.org/SDL_RenderDrawPoint
+        # https://wiki.libsdl.org/SDL_RenderDrawPointF
         cdef int res
-        if SDL_VERSION_ATLEAST(2,0,10):
-            res = SDL_RenderDrawPointF(self._renderer,
-                                    point[0], point[1])
-        else:
-            res = SDL_RenderDrawPoint(self._renderer,
-                                    <int>point[0], <int>point[1])
+        res = SDL_RenderDrawPointF(self._renderer,
+                                point[0], point[1])
         if res < 0:
             raise error()
 
@@ -1103,26 +1053,16 @@ cdef class Renderer:
 
         :param rect: The :class:`Rect`-like rectangle to draw.
         """
-        # https://wiki.libsdl.org/SDL_RenderDrawRect
-        cdef SDL_Rect _rect
-        cdef SDL_Rect *rectptr
+        # https://wiki.libsdl.org/SDL_RenderDrawRectF
         cdef SDL_FRect _frect
         cdef SDL_FRect *frectptr
         cdef int res
 
-        if SDL_VERSION_ATLEAST(2,0,10):
-            frectptr = pgFRect_FromObject(rect, &_frect)
-            if frectptr == NULL:
-                raise TypeError('expected a rectangle')
+        frectptr = pgFRect_FromObject(rect, &_frect)
+        if frectptr == NULL:
+            raise TypeError('expected a rectangle')
 
-            res = SDL_RenderDrawRectF(self._renderer, frectptr)
-
-        else:
-            rectptr = pgRect_FromObject(rect, &_rect)
-            if rectptr == NULL:
-                raise TypeError('expected a rectangle')
-
-            res = SDL_RenderDrawRect(self._renderer, rectptr)
+        res = SDL_RenderDrawRectF(self._renderer, frectptr)
 
         if res < 0:
             raise error()
@@ -1132,47 +1072,30 @@ cdef class Renderer:
 
         :param rect: The :class:`Rect`-like rectangle to draw.
         """
-        # https://wiki.libsdl.org/SDL_RenderFillRect
-        cdef SDL_Rect _rect
-        cdef SDL_Rect *rectptr
+        # https://wiki.libsdl.org/SDL_RenderFillRectF
         cdef SDL_FRect _frect
         cdef SDL_FRect *frectptr
         cdef int res
 
-        if SDL_VERSION_ATLEAST(2,0,10):
-            frectptr = pgFRect_FromObject(rect, &_frect)
-            if frectptr == NULL:
-                raise TypeError('expected a rectangle')
+        
+        frectptr = pgFRect_FromObject(rect, &_frect)
+        if frectptr == NULL:
+            raise TypeError('expected a rectangle')
 
-            res = SDL_RenderFillRectF(self._renderer, frectptr)
-
-        else:
-            rectptr = pgRect_FromObject(rect, &_rect)
-            if rectptr == NULL:
-                raise TypeError('expected a rectangle')
-
-            res = SDL_RenderFillRect(self._renderer, rectptr)
+        res = SDL_RenderFillRectF(self._renderer, frectptr)
 
         if res < 0:
             raise error()
 
     def draw_triangle(self, p1, p2, p3):
-        # https://wiki.libsdl.org/SDL_RenderDrawLines
-        cdef SDL_Point points[4]
+        # https://wiki.libsdl.org/SDL_RenderDrawLinesF
         cdef SDL_FPoint fpoints[4]
-        if SDL_VERSION_ATLEAST(2,0,10):
-            for i, pos in enumerate((p1, p2, p3, p1)):
-                fpoints[i].x = pos[0]
-                fpoints[i].y = pos[1]
 
-            res = SDL_RenderDrawLinesF(self._renderer, fpoints, 4)
+        for i, pos in enumerate((p1, p2, p3, p1)):
+            fpoints[i].x = pos[0]
+            fpoints[i].y = pos[1]
 
-        else:
-            for i, pos in enumerate((p1, p2, p3, p1)):
-                points[i].x = pos[0]
-                points[i].y = pos[1]
-
-            res = SDL_RenderDrawLines(self._renderer, points, 4)
+        res = SDL_RenderDrawLinesF(self._renderer, fpoints, 4)
 
         if res < 0:
             raise error()
@@ -1207,22 +1130,14 @@ cdef class Renderer:
             raise error()
 
     def draw_quad(self, p1, p2, p3, p4):
-        # https://wiki.libsdl.org/SDL_RenderDrawLines
-        cdef SDL_Point points[5]
+        # https://wiki.libsdl.org/SDL_RenderDrawLinesF
         cdef SDL_FPoint fpoints[5]
-        if SDL_VERSION_ATLEAST(2,0,10):
-            for i, pos in enumerate((p1, p2, p3, p4, p1)):
-                fpoints[i].x = pos[0]
-                fpoints[i].y = pos[1]
+        for i, pos in enumerate((p1, p2, p3, p4, p1)):
+            fpoints[i].x = pos[0]
+            fpoints[i].y = pos[1]
 
-            res = SDL_RenderDrawLinesF(self._renderer, fpoints, 5)
+        res = SDL_RenderDrawLinesF(self._renderer, fpoints, 5)
 
-        else:
-            for i, pos in enumerate((p1, p2, p3, p4, p1)):
-                points[i].x = pos[0]
-                points[i].y = pos[1]
-
-            res = SDL_RenderDrawLines(self._renderer, points, 5)
         if res < 0:
             raise error()
 

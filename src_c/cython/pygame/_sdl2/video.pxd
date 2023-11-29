@@ -83,32 +83,6 @@ cdef extern from "SDL.h" nogil:
                 return 0;
             }
         #endif
-
-        #if !(SDL_VERSION_ATLEAST(2,0,10))
-            int SDL_RenderCopyExF(SDL_Renderer * renderer,
-                                  SDL_Texture * texture,
-                                  const SDL_Rect * srcrect,
-                                  const SDL_FRect * dstrect,
-                                  const double angle,
-                                  const SDL_FPoint *center,
-                                  const SDL_RendererFlip flip)
-                                  {return -1;}
-            int SDL_RenderDrawLineF(SDL_Renderer* renderer,float x1,float y1,
-                                    float x2,float y2)
-                                    {return -1;}
-            int SDL_RenderDrawPointF(SDL_Renderer * renderer,
-                                    float x, float y)
-                                    {return -1;}
-            int SDL_RenderDrawRectF(SDL_Renderer* renderer, const SDL_FRect* rect)
-                                    {return -1;}
-            int SDL_RenderFillRectF(SDL_Renderer* renderer, const SDL_FRect* rect)
-                                    {return -1;}
-            int SDL_RenderDrawLinesF(SDL_Renderer* renderer,
-                                    const SDL_FPoint* points,
-                                    int count)
-                                    {return -1;}
-                                    
-        #endif
         """
     ctypedef struct SDL_FPoint "_pgsdlFPoint":
         float x, y
@@ -367,34 +341,19 @@ cdef extern from "SDL.h" nogil:
     # https://wiki.libsdl.org/SDL_RenderFillRect
     # https://wiki.libsdl.org/SDL_RenderFillRectF
     # https://wiki.libsdl.org/SDL_RenderGeometry
-    int SDL_RenderDrawLine(SDL_Renderer* renderer,
-                           int x1,
-                           int y1,
-                           int x2,
-                           int y2)
     int SDL_RenderDrawLineF(SDL_Renderer* renderer,
                            float x1,
                            float y1,
                            float x2,
                            float y2)
-    int SDL_RenderDrawLines(SDL_Renderer* renderer,
-                            const SDL_Point* points,
-                            int count)
     int SDL_RenderDrawLinesF(SDL_Renderer* renderer,
                             const SDL_FPoint* points,
                             int count)
-    int SDL_RenderDrawPoint(SDL_Renderer* renderer,
-                           int x,
-                           int y)
     int SDL_RenderDrawPointF(SDL_Renderer* renderer,
                            float x,
                            float y)
-    int SDL_RenderDrawRect(SDL_Renderer* renderer,
-                           const SDL_Rect* rect)
     int SDL_RenderDrawRectF(SDL_Renderer* renderer,
                            const SDL_FRect* rect)
-    int SDL_RenderFillRect(SDL_Renderer*   renderer,
-                           const SDL_Rect* rect)
     int SDL_RenderFillRectF(SDL_Renderer*   renderer,
                            const SDL_FRect* rect)
     int SDL_RenderGeometry(SDL_Renderer* renderer,
@@ -514,8 +473,6 @@ cdef class Texture:
     cdef readonly int height
 
     cpdef void draw(self, srcrect=*, dstrect=*, float angle=*, origin=*,
-                    bint flip_x=*, bint flip_y=*)
-    cdef _frect_draw(self,SDL_Rect *csrcrect, dstrect=*, float angle=*, origin=*,
                     bint flip_x=*, bint flip_y=*)
 
 cdef class Image:
