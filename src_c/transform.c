@@ -2196,38 +2196,13 @@ HSL_to_RGB(float h, float s, float l, Uint8 *r, Uint8 *g, Uint8 *b)
     *b = hue_to_rgb(v1, v2, h - (1.0f / 3.0f));
 }
 
-static SDL_Surface *
-modify_hsl(pgSurfaceObject *src, pgSurfaceObject *dst, float h, float s,
-           float l)
+static void
+modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
 {
-    SDL_Surface *surf = pgSurface_AsSurface(src);
-    SURF_INIT_CHECK(surf)
-    SDL_Surface *newsurf;
-
-    if (!dst) {
-        newsurf = newsurf_fromsurf(surf, surf->w, surf->h);
-        if (!newsurf)
-            return NULL;
-    }
-    else {
-        newsurf = pgSurface_AsSurface(dst);
-    }
-
-    if (newsurf->w != surf->w || newsurf->h != surf->h) {
-        return (SDL_Surface *)(RAISE(
-            PyExc_ValueError,
-            "Destination surface must be the same size as source surface."));
-    }
-    if (surf->format->BytesPerPixel != newsurf->format->BytesPerPixel) {
-        return (SDL_Surface *)(RAISE(
-            PyExc_ValueError,
-            "Source and destination surfaces need the same format."));
-    }
-
     int x, y;
     Uint8 r, g, b, a;
     Uint8 *src_pixels = (Uint8 *)surf->pixels, *pix;
-    Uint8 *dst_pixels = (Uint8 *)newsurf->pixels;
+    Uint8 *dst_pixels = (Uint8 *)dst->pixels;
     float s_h = 0, s_s = 0, s_l = 0;
     Uint32 pixel;
 
@@ -2259,24 +2234,20 @@ modify_hsl(pgSurfaceObject *src, pgSurfaceObject *dst, float h, float s,
             }
 
             HSL_to_RGB(s_h, s_s, s_l, &r, &g, &b);
-            pixel = SDL_MapRGBA(newsurf->format, r, g, b, a);
-            SURF_SET_AT(pixel, newsurf, x, y, dst_pixels, newsurf->format,
-                        pix);
+            pixel = SDL_MapRGBA(dst->format, r, g, b, a);
+            SURF_SET_AT(pixel, dst, x, y, dst_pixels, dst->format, pix);
         }
     }
 
-    SDL_UnlockSurface(newsurf);
-    return newsurf;
+    SDL_UnlockSurface(dst);
 }
 
 static PyObject *
 surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    SDL_Surface *surf = pgSurface_AsSurface(self);
-    SURF_INIT_CHECK(surf)
     pgSurfaceObject *surfobj;
     pgSurfaceObject *surfobj2 = NULL;
-    SDL_Surface *newsurf;
+    SDL_Surface *dst, *src;
     float h = 0, s = 0, l = 0;
 
     static char *keywords[] = {"surface",   "hue",          "saturation",
@@ -2322,20 +2293,39 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
     }
     h /= 360.0;
 
-    Py_BEGIN_ALLOW_THREADS;
-    newsurf = modify_hsl(surfobj, surfobj2, h, s, l);
-    Py_END_ALLOW_THREADS;
+    src = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(src);
 
-    if (!newsurf) {
-        return NULL;
+    if (!surfobj2) {
+        dst = newsurf_fromsurf(src, src->w, src->h);
+        if (!dst)
+            return NULL;
     }
+    else {
+        dst = pgSurface_AsSurface(surfobj2);
+    }
+
+    if (dst->w != src->w || dst->h != src->h) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Destination surface must be the same size as source surface."));
+    }
+    if (src->format->BytesPerPixel != dst->format->BytesPerPixel) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Source and destination surfaces need the same format."));
+    }
+
+    Py_BEGIN_ALLOW_THREADS;
+    modify_hsl(src, dst, h, s, l);
+    Py_END_ALLOW_THREADS;
 
     if (surfobj2) {
         Py_INCREF(surfobj2);
         return (PyObject *)surfobj2;
     }
     else {
-        return (PyObject *)pgSurface_New(newsurf);
+        return (PyObject *)pgSurface_New(dst);
     }
 }
 
