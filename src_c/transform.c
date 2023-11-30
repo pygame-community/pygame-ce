@@ -2399,14 +2399,13 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (dst->w != src->w || dst->h != src->h) {
-        return (SDL_Surface *)(RAISE(
+        return RAISE(
             PyExc_ValueError,
-            "Destination surface must be the same size as source surface."));
+            "Destination surface must be the same size as source surface.");
     }
     if (src->format->BytesPerPixel != dst->format->BytesPerPixel) {
-        return (SDL_Surface *)(RAISE(
-            PyExc_ValueError,
-            "Source and destination surfaces need the same format."));
+        return RAISE(PyExc_ValueError,
+                     "Source and destination surfaces need the same format.");
     }
 
     Py_BEGIN_ALLOW_THREADS;
