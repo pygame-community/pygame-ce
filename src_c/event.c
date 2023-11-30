@@ -92,6 +92,10 @@ static SDL_TimerID _pg_repeat_timer = 0;
 static SDL_Event _pg_repeat_event;
 static SDL_Event _pg_last_keydown_event = {0};
 
+/* Not used as text, acts as an array of bools */
+static char pressed_keys[SDL_NUM_SCANCODES] = {0};
+static char released_keys[SDL_NUM_SCANCODES] = {0};
+
 #ifdef __EMSCRIPTEN__
 /* these macros are no-op here */
 #define PG_LOCK_EVFILTER_MUTEX
@@ -271,7 +275,9 @@ _pg_put_event_unicode(SDL_Event *event, char *uni)
 static PyObject *
 _pg_get_event_unicode(SDL_Event *event)
 {
-    char c;
+    /* We only deal with one byte here, but still declare an array to silence
+     * compiler warnings. The other 3 bytes are unused */
+    char c[4];
     int i;
     for (i = 0; i < MAX_SCAN_UNICODE; i++) {
         if (scanunicode[i].key == event->key.keysym.scancode) {
@@ -285,8 +291,8 @@ _pg_get_event_unicode(SDL_Event *event)
     }
     /* fallback to function that determines unicode from the event.
      * We try to get the unicode attribute, and store it in memory*/
-    c = _pg_unicode_from_event(event);
-    if (_pg_put_event_unicode(event, &c))
+    *c = _pg_unicode_from_event(event);
+    if (_pg_put_event_unicode(event, c))
         return _pg_get_event_unicode(event);
     return PyUnicode_FromString("");
 }
@@ -492,6 +498,7 @@ pg_event_filter(void *_, SDL_Event *event)
             return 0;
 
         PG_LOCK_EVFILTER_MUTEX
+        pressed_keys[event->key.keysym.scancode] = 1;
         if (pg_key_repeat_delay > 0) {
             if (_pg_repeat_timer)
                 SDL_RemoveTimer(_pg_repeat_timer);
@@ -521,6 +528,7 @@ pg_event_filter(void *_, SDL_Event *event)
 
     else if (event->type == SDL_KEYUP) {
         PG_LOCK_EVFILTER_MUTEX
+        released_keys[event->key.keysym.scancode] = 1;
         if (_pg_repeat_timer && _pg_repeat_event.key.keysym.scancode ==
                                     event->key.keysym.scancode) {
             SDL_RemoveTimer(_pg_repeat_timer);
@@ -1556,7 +1564,7 @@ set_grab(PyObject *self, PyObject *arg)
     if (win) {
         if (doit) {
             SDL_SetWindowGrab(win, SDL_TRUE);
-            if (SDL_ShowCursor(SDL_QUERY) == SDL_DISABLE)
+            if (PG_CursorVisible() == SDL_DISABLE)
                 SDL_SetRelativeMouseMode(1);
             else
                 SDL_SetRelativeMouseMode(0);
@@ -1587,8 +1595,14 @@ static void
 _pg_event_pump(int dopump)
 {
     if (dopump) {
+        /* This needs to be reset just before calling pump, e.g. on calls to
+         * pygame.event.get(), but not on pygame.event.get(pump=False). */
+        memset(pressed_keys, 0, sizeof(pressed_keys));
+        memset(released_keys, 0, sizeof(released_keys));
+
         SDL_PumpEvents();
     }
+
     /* We need to translate WINDOWEVENTS. But if we do that from the
      * from event filter, internal SDL stuff that rely on WINDOWEVENT
      * might break. So after every event pump, we translate events from
@@ -1766,6 +1780,18 @@ _pg_event_append_to_list(PyObject *list, SDL_Event *event)
     }
     Py_DECREF(e);
     return 1;
+}
+
+char *
+pgEvent_GetKeyDownInfo(void)
+{
+    return pressed_keys;
+}
+
+char *
+pgEvent_GetKeyUpInfo(void)
+{
+    return released_keys;
 }
 
 static PyObject *
@@ -2274,13 +2300,15 @@ MODINIT_DEFINE(event)
     }
 
     /* export the c api */
-    assert(PYGAMEAPI_EVENT_NUMSLOTS == 6);
+    assert(PYGAMEAPI_EVENT_NUMSLOTS == 8);
     c_api[0] = &pgEvent_Type;
     c_api[1] = pgEvent_New;
     c_api[2] = pg_post_event;
     c_api[3] = pg_post_event_dictproxy;
     c_api[4] = pg_EnableKeyRepeat;
     c_api[5] = pg_GetKeyRepeat;
+    c_api[6] = pgEvent_GetKeyDownInfo;
+    c_api[7] = pgEvent_GetKeyUpInfo;
 
     apiobj = encapsulate_api(c_api, "event");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {

@@ -16,7 +16,7 @@ from typing import (
 # Protocol added in python 3.8
 from typing_extensions import Protocol
 
-from pygame.rect import Rect
+from pygame.rect import FRect, Rect
 from pygame.surface import Surface
 from pygame.mask import Mask
 
@@ -32,9 +32,9 @@ class _SupportsSprite(Protocol):
     @image.setter
     def image(self, value: Optional[Surface]) -> None: ...
     @property
-    def rect(self) -> Optional[Rect]: ...
+    def rect(self) -> Optional[Union[FRect, Rect]]: ...
     @rect.setter
-    def rect(self, value: Optional[Rect]) -> None: ...
+    def rect(self, value: Optional[Union[FRect, Rect]]) -> None: ...
     @property
     def layer(self) -> int: ...
     @layer.setter
@@ -53,7 +53,7 @@ class _SupportsSprite(Protocol):
 class _SupportsDirtySprite(_SupportsSprite, Protocol):
     dirty: int
     blendmode: int
-    source_rect: Rect
+    source_rect: Union[FRect, Rect]
     visible: int
     _layer: int
     def _set_visible(self, val: int) -> None: ...
@@ -66,9 +66,9 @@ class Sprite(_SupportsSprite):
     @image.setter
     def image(self, value: Optional[Surface]) -> None: ...
     @property
-    def rect(self) -> Optional[Rect]: ...
+    def rect(self) -> Optional[Union[FRect, Rect]]: ...
     @rect.setter
-    def rect(self, value: Optional[Rect]) -> None: ...
+    def rect(self, value: Optional[Union[FRect, Rect]]) -> None: ...
     @property
     def layer(self) -> int: ...
     @layer.setter
@@ -87,7 +87,7 @@ class Sprite(_SupportsSprite):
 class DirtySprite(_SupportsDirtySprite):
     dirty: int
     blendmode: int
-    source_rect: Rect
+    source_rect: Union[FRect, Rect]
     visible: int
     _layer: int
     def _set_visible(self, val: int) -> None: ...
@@ -101,7 +101,7 @@ _TGroup = TypeVar("_TGroup", bound=AbstractGroup)
 # arguments passed, they only use a few which are marked in the below protocols
 class _HasRect(Protocol):
     @property
-    def rect(self) -> Optional[Rect]: ...
+    def rect(self) -> Optional[Union[FRect, Rect]]: ...
 
 # image in addition to rect
 class _HasImageAndRect(_HasRect, Protocol):
@@ -148,8 +148,8 @@ _TDirtySprite = TypeVar("_TDirtySprite", bound=_DirtySpriteSupportsGroup)
 # b = Group(MySprite())
 
 class AbstractGroup(Generic[_TSprite]):
-    spritedict: Dict[_TSprite, Optional[Rect]]
-    lostsprites: List[Rect]
+    spritedict: Dict[_TSprite, Optional[Union[FRect, Rect]]]
+    lostsprites: List[Union[FRect, Rect]]
     def __init__(self) -> None: ...
     def __len__(self) -> int: ...
     def __iter__(self) -> Iterator[_TSprite]: ...
@@ -170,9 +170,11 @@ class AbstractGroup(Generic[_TSprite]):
         self, *sprites: Union[_TSprite, AbstractGroup[_TSprite], Iterable[_TSprite]]
     ) -> bool: ...
     def update(self, *args: Any, **kwargs: Any) -> None: ...
-    def draw(self, surface: Surface) -> List[Rect]: ...
+    def draw(self, surface: Surface) -> List[Union[FRect, Rect]]: ...
     def clear(
-        self, surface: Surface, bgd: Union[Surface, Callable[[Surface, Rect], Any]]
+        self,
+        surface: Surface,
+        bgd: Union[Surface, Callable[[Surface, Union[FRect, Rect]], Any]],
     ) -> None: ...
     def empty(self) -> None: ...
 
@@ -223,12 +225,14 @@ class LayeredUpdates(AbstractGroup[_TSprite]):
 
 class LayeredDirty(LayeredUpdates[_TDirtySprite]):
     def __init__(self, *sprites: _TDirtySprite, **kwargs: Any) -> None: ...
-    def draw(self, surface: Surface, bgd: Optional[Surface] = None) -> List[Rect]: ...
+    def draw(
+        self, surface: Surface, bgd: Optional[Surface] = None
+    ) -> List[Union[FRect, Rect]]: ...
     # clear breaks Liskov substitution principle in code
     def clear(self, surface: Surface, bgd: Surface) -> None: ...  # type: ignore[override]
     def repaint_rect(self, screen_rect: RectValue) -> None: ...
     def set_clip(self, screen_rect: Optional[RectValue] = None) -> None: ...
-    def get_clip(self) -> Rect: ...
+    def get_clip(self) -> Union[FRect, Rect]: ...
     def set_timing_threshold(
         self, time_ms: SupportsFloat
     ) -> None: ...  # This actually accept any value
@@ -272,17 +276,17 @@ def spritecollide(
     sprite: _HasRect,
     group: AbstractGroup[_TSprite],
     dokill: bool,
-    collided: Optional[Callable[[_HasRect, _TSprite], bool]] = None,
+    collided: Optional[Callable[[_TSprite, _TSprite2], Any]] = None,
 ) -> List[_TSprite]: ...
 def groupcollide(
     groupa: AbstractGroup[_TSprite],
     groupb: AbstractGroup[_TSprite2],
     dokilla: bool,
     dokillb: bool,
-    collided: Optional[Callable[[_TSprite, _TSprite2], bool]] = None,
+    collided: Optional[Callable[[_TSprite, _TSprite2], Any]] = None,
 ) -> Dict[_TSprite, List[_TSprite2]]: ...
 def spritecollideany(
     sprite: _HasRect,
     group: AbstractGroup[_TSprite],
-    collided: Optional[Callable[[_HasRect, _TSprite], bool]] = None,
+    collided: Optional[Callable[[_TSprite, _TSprite2], Any]] = None,
 ) -> Optional[_TSprite]: ...

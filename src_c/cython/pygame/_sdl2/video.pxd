@@ -3,6 +3,12 @@
 
 from .sdl2 cimport *
 
+cdef extern from "pgcompat_rect.h" nogil:
+    ctypedef struct SDL_FRect:
+        float x, y
+        float w, h
+
+
 cdef extern from "SDL.h" nogil:
     ctypedef struct SDL_Window
     ctypedef struct SDL_Texture
@@ -142,7 +148,13 @@ cdef extern from "SDL.h" nogil:
     # https://wiki.libsdl.org/SDL_RenderClear
     # https://wiki.libsdl.org/SDL_RenderCopy
     # https://wiki.libsdl.org/SDL_RenderCopyEx
+    # https://wiki.libsdl.org/SDL_RenderCopyExF
     # https://wiki.libsdl.org/SDL_RenderPresent
+    int SDL_GetRenderDrawColor(SDL_Renderer* renderer,
+                               Uint8*        r, 
+                               Uint8*        g, 
+                               Uint8*        b,
+                               Uint8*        a)
     int SDL_SetRenderDrawColor(SDL_Renderer* renderer,
                                Uint8         r,
                                Uint8         g,
@@ -168,6 +180,13 @@ cdef extern from "SDL.h" nogil:
                          const double           angle,
                          const SDL_Point*       center,
                          const SDL_RendererFlip flip)
+    int SDL_RenderCopyExF(SDL_Renderer*          renderer,
+                          SDL_Texture*           texture,
+                          const SDL_Rect*        srcrect,
+                          const SDL_FRect*       dstrect,
+                          const double           angle,
+                          const SDL_FPoint*      center,
+                          const SDL_RendererFlip flip)
     void SDL_RenderPresent(SDL_Renderer* renderer)
     # https://wiki.libsdl.org/SDL_RenderGetViewport
     # https://wiki.libsdl.org/SDL_RenderSetViewport
@@ -312,27 +331,31 @@ cdef extern from "SDL.h" nogil:
                                             int    depth,
                                             Uint32 format)
     # https://wiki.libsdl.org/SDL_RenderDrawLine
+    # https://wiki.libsdl.org/SDL_RenderDrawLineF
     # https://wiki.libsdl.org/SDL_RenderDrawLines
+    # https://wiki.libsdl.org/SDL_RenderDrawLinesF
     # https://wiki.libsdl.org/SDL_RenderDrawPoint
+    # https://wiki.libsdl.org/SDL_RenderDrawPointF
     # https://wiki.libsdl.org/SDL_RenderDrawRect
+    # https://wiki.libsdl.org/SDL_RenderDrawRectF
     # https://wiki.libsdl.org/SDL_RenderFillRect
+    # https://wiki.libsdl.org/SDL_RenderFillRectF
     # https://wiki.libsdl.org/SDL_RenderGeometry
-    int SDL_RenderDrawLine(SDL_Renderer* renderer,
-                           int x1,
-                           int y1,
-                           int x2,
-                           int y2)
-    int SDL_RenderDrawLines(SDL_Renderer* renderer,
-                            const SDL_Point* points,
+    int SDL_RenderDrawLineF(SDL_Renderer* renderer,
+                           float x1,
+                           float y1,
+                           float x2,
+                           float y2)
+    int SDL_RenderDrawLinesF(SDL_Renderer* renderer,
+                            const SDL_FPoint* points,
                             int count)
-    int SDL_RenderDrawPoint(SDL_Renderer* renderer,
-                           int x,
-                           int y)
-    int SDL_RenderDrawRect(SDL_Renderer* renderer,
-                           const SDL_Rect* rect)
-
-    int SDL_RenderFillRect(SDL_Renderer*   renderer,
-                           const SDL_Rect* rect)
+    int SDL_RenderDrawPointF(SDL_Renderer* renderer,
+                           float x,
+                           float y)
+    int SDL_RenderDrawRectF(SDL_Renderer* renderer,
+                           const SDL_FRect* rect)
+    int SDL_RenderFillRectF(SDL_Renderer*   renderer,
+                           const SDL_FRect* rect)
     int SDL_RenderGeometry(SDL_Renderer* renderer,
                            SDL_Texture* texture,
                            const SDL_Vertex* vertices,
@@ -388,11 +411,18 @@ cdef extern from "SDL.h" nogil:
 
 
 cdef extern from "pygame.h" nogil:
-    ctypedef class pygame.Color [object pgColorObject]:
+    ctypedef class pygame.color.Color [object pgColorObject]:
         cdef Uint8 data[4]
         cdef Uint8 len
+    
+    ctypedef enum pgColorHandleFlags:
+        PG_COLOR_HANDLE_SIMPLE
+        PG_COLOR_HANDLE_STR
+        PG_COLOR_HANDLE_INT
+        PG_COLOR_HANDLE_RESTRICT_SEQ
+        PG_COLOR_HANDLE_ALL
 
-    ctypedef class pygame.Rect [object pgRectObject]:
+    ctypedef class pygame.rect.Rect [object pgRectObject]:
         cdef SDL_Rect r
         cdef object weakreflist
     
@@ -413,8 +443,13 @@ cdef extern from "pygame.h" nogil:
     SDL_Rect *pgRect_FromObject(object obj, SDL_Rect *temp)
     object pgRect_New(SDL_Rect *r)
     object pgRect_New4(int x, int y, int w, int h)
+    int pgFRect_Check(object rect)
+    SDL_FRect *pgFRect_FromObject(object obj, SDL_FRect *temp)
+    object pgFRect_New(SDL_FRect *r)
+    object pgFRect_New4(float x, float y, float w, float h)
     void import_pygame_rect()
 
+    int pg_RGBAFromObjEx(object color, Uint8 rgba[], pgColorHandleFlags handle_flags) except 0
     object pgColor_NewLength(Uint8 rgba[], Uint8 length)
     void import_pygame_color()
     pgSurfaceObject *pgSurface_New2(SDL_Surface *info, int owner)
@@ -424,7 +459,6 @@ cdef extern from "pygame.h" nogil:
 
 cdef class Renderer:
     cdef SDL_Renderer* _renderer
-    cdef Color _draw_color
     cdef Texture _target
     cdef Window _win
     cdef int _is_borrowed
@@ -434,13 +468,10 @@ cdef class Renderer:
 
 cdef class Texture:
     cdef SDL_Texture* _tex
-    cdef Color _color
     cdef readonly Renderer renderer
     cdef readonly int width
     cdef readonly int height
 
-    cdef draw_internal(self, SDL_Rect *csrcrect, SDL_Rect *cdstrect, float angle=*, SDL_Point *originptr=*,
-                       bint flip_x=*, bint flip_y=*)
     cpdef void draw(self, srcrect=*, dstrect=*, float angle=*, origin=*,
                     bint flip_x=*, bint flip_y=*)
 

@@ -252,7 +252,8 @@ class DependencyDLL(Dependency):
                         return True
         return False
 
-class DependencyDummy:
+
+class DependencyPlaceholder:
     def __init__(self, name):
         self.name = name
         self.inc_dir = None
@@ -263,6 +264,7 @@ class DependencyDummy:
 
     def configure(self):
         pass
+
 
 class DependencyWin:
     def __init__(self, name, cflags):
@@ -312,8 +314,8 @@ class DependencyGroup:
         self.dlls.append(dep)
         return dep
 
-    def add_dummy(self, name):
-        self.dependencies.append(DependencyDummy(name))
+    def add_placeholder(self, name):
+        self.dependencies.append(DependencyPlaceholder(name))
 
     def find(self, name):
         for dep in self:
@@ -371,7 +373,7 @@ def setup():
     DEPS.add('SDL', 'SDL2', ['SDL2-[1-9].*'], r'(lib){0,1}SDL2\.dll$', required=1)
     DEPS.add('PORTMIDI', 'portmidi', ['portmidi'], r'portmidi\.dll$', find_header=r'portmidi\.h')
     #DEPS.add('PORTTIME', 'porttime', ['porttime'], r'porttime\.dll$')
-    DEPS.add_dummy('PORTTIME')
+    DEPS.add_placeholder('PORTTIME')
     DEPS.add('MIXER', 'SDL2_mixer', ['SDL2_mixer-[1-9].*'], r'(lib){0,1}SDL2_mixer\.dll$',
              ['SDL'])
     DEPS.add('PNG', 'png', ['SDL2_image-[2-9].*', 'libpng-[1-9].*'], r'(png|libpng)[-0-9]*\.dll$', ['z'],
@@ -413,7 +415,7 @@ def setup_prebuilt_sdl2(prebuilt_dir):
                         ['SDL'])
     DEPS.add('PORTMIDI', 'portmidi', ['portmidi'], r'portmidi\.dll$', find_header=r'portmidi\.h')
     #DEPS.add('PORTTIME', 'porttime', ['porttime'], r'porttime\.dll$')
-    DEPS.add_dummy('PORTTIME')
+    DEPS.add_placeholder('PORTTIME')
     DEPS.configure()
 
     DEPS.add('FREETYPE', 'freetype', ['freetype'], r'freetype[-0-9]*\.dll$',

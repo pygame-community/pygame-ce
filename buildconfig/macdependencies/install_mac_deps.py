@@ -58,4 +58,4 @@ def symtree(srcdir: Path, destdir: Path, verbose: bool = False):
             destpath.symlink_to(path)
 
 
-symtree(Path(sys.argv[1]), Path("/"), verbose=True)
+symtree(Path(sys.argv[1]), Path("/usr/local"), verbose=True)

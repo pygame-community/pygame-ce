@@ -75,7 +75,7 @@ New in pygame 1.9.2.
 .. function:: array_to_surface
 
    | :sl:`copy an array object to a surface`
-   | :sg:`array_to_surface(<surface>, <array>) -> None`
+   | :sg:`array_to_surface(surface, array, /) -> None`
 
    See :func:`pygame.surfarray.blit_array`.
 
@@ -84,7 +84,7 @@ New in pygame 1.9.2.
 .. function:: map_array
 
    | :sl:`copy an array to another array, using surface format`
-   | :sg:`map_array(<array>, <array>, <surface>) -> None`
+   | :sg:`map_array(array, array, surface, /) -> None`
 
    Map an array of color element values - (w, h, ..., 3) - to an array of
    pixels - (w, h) according to the format of <surface>.
@@ -94,7 +94,7 @@ New in pygame 1.9.2.
 .. function:: make_surface
 
    | :sl:`Copy an array to a new surface`
-   | :sg:`pygame.pixelcopy.make_surface(array) -> Surface`
+   | :sg:`pygame.pixelcopy.make_surface(array, /) -> Surface`
 
    Create a new Surface that best resembles the data and format of the array.
    The array can be 2D or 3D with any sized integer values.
