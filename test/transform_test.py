@@ -306,7 +306,7 @@ class TransformModuleTest(unittest.TestCase):
         self.assertEqual(pygame.transform.average_color(dest)[0], 72)
         self.assertEqual(pygame.transform.average_color(dest)[1], 76)
         self.assertEqual(pygame.transform.average_color(dest)[2], 72)
-        
+
         super_surf = pygame.Surface((64, 64), depth=32)
         super_surf.fill((255, 255, 255))
         super_surf.fill((255, 0, 0), pygame.Rect(0, 0, 32, 32))
