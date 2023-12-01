@@ -2338,7 +2338,9 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
         }
     }
 
-    SDL_UnlockSurface(dst);
+    if (surf_locked) {
+        SDL_UnlockSurface(dst);
+    }
 }
 
 static PyObject *
