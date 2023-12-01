@@ -881,11 +881,9 @@ font_metrics(PyObject *self, PyObject *textobj)
     for (i = 1 /* skip BOM */; i < length; i++) {
         ch = buffer[i];
         surrogate = Py_UNICODE_IS_SURROGATE(ch);
-        /* TODO:
-         * TTF_GlyphMetrics() seems to return a value for any character,
-         * using the default invalid character, if the char is not found.
-         */
-        if (!surrogate && /* conditional and */
+
+        if ((TTF_GlyphIsProvided(font, ch) != 0) &&
+            !surrogate && /* conditional and */
             !TTF_GlyphMetrics(font, (Uint16)ch, &minx, &maxx, &miny, &maxy,
                               &advance)) {
             listitem =

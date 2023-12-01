@@ -400,23 +400,8 @@ class FontTypeTest(unittest.TestCase):
         self.assertEqual(len(bm), 1)
         self.assertIsNone(bm[0])
 
-        return  # unfinished
-        # The documentation is useless here. How large a list?
-        # How do list positions relate to character codes?
-        # What about unicode characters?
-
-        # __doc__ (as of 2008-08-02) for pygame_font.Font.metrics:
-
-        # Font.metrics(text): return list
-        # Gets the metrics for each character in the passed string.
-        #
-        # The list contains tuples for each character, which contain the
-        # minimum X offset, the maximum X offset, the minimum Y offset, the
-        # maximum Y offset and the advance offset (bearing plus width) of the
-        # character. [(minx, maxx, miny, maxy, advance), (minx, maxx, miny,
-        # maxy, advance), ...]
-
-        self.fail()
+        unrecognized_char_metrics = f.metrics("経")
+        self.assertEqual(unrecognized_char_metrics[0], None)
 
     def test_render(self):
         f = pygame_font.Font(None, 20)
