@@ -2292,6 +2292,12 @@ HSL_to_RGB(float h, float s, float l, Uint8 *r, Uint8 *g, Uint8 *b)
 static void
 modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
 {
+    int surf_locked = 0;
+    if (SDL_MUSTLOCK(surf)) {
+        if (SDL_LockSurface(surf) == 0) {
+            surf_locked = 1;
+        }
+    }
     int x, y;
     Uint8 r, g, b, a;
     Uint8 *src_pixels = (Uint8 *)surf->pixels, *pix;
