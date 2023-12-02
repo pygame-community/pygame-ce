@@ -2298,6 +2298,12 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
             surf_locked = 1;
         }
     }
+    int dst_locked = 0;
+    if (SDL_MUSTLOCK(dst)) {
+        if (SDL_LockSurface(dst) == 0) {
+            dst_locked = 1;
+        }
+    }
     int x, y;
     Uint8 r, g, b, a;
     Uint8 *src_pixels = (Uint8 *)surf->pixels, *pix;
@@ -2339,6 +2345,9 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
     }
 
     if (surf_locked) {
+        SDL_UnlockSurface(surf);
+    }
+    if (dst_locked) {
         SDL_UnlockSurface(dst);
     }
 }
