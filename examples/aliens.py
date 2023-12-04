@@ -262,7 +262,6 @@ def main(winstyle=0):
     background = pygame.Surface(SCREENRECT.size)
     for x in range(0, SCREENRECT.width, bgdtile.get_width()):
         background.blit(bgdtile, (x, 0))
-    screen.blit(background, (0, 0))
     pygame.display.flip()
 
     # load the sound effects
@@ -277,7 +276,7 @@ def main(winstyle=0):
     aliens = pygame.sprite.Group()
     shots = pygame.sprite.Group()
     bombs = pygame.sprite.Group()
-    all_sprites = pygame.sprite.RenderUpdates()
+    all_sprites = pygame.sprite.Group()
     lastalien = pygame.sprite.GroupSingle()
 
     # assign default groups to each sprite class
@@ -302,6 +301,9 @@ def main(winstyle=0):
 
     # Run our main loop whilst the player is alive.
     while player.alive():
+        # Erase last frame by blitting the background to the screen
+        screen.blit(background, (0, 0))
+
         # get input
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -330,9 +332,6 @@ def main(winstyle=0):
                     fullscreen = not fullscreen
 
         keystate = pygame.key.get_pressed()
-
-        # clear/erase the last drawn sprites
-        all_sprites.clear(screen, background)
 
         # update all the sprites
         all_sprites.update()
