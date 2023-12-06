@@ -7,8 +7,7 @@ from typing import (
     Sequence,
 )
 
-from pygame import Rect, FRect
-from ._common import Coordinate
+from ._common import Coordinate, RectValue
 
 _CanBeCircle = Union[Circle, Tuple[Coordinate, float], Sequence[float]]
 
@@ -77,7 +76,7 @@ class Circle:
     @overload
     def collidecircle(self, center: Coordinate, r: float) -> bool: ...
     @overload
-    def colliderect(self, rect: Union[Rect, FRect]) -> bool: ...
+    def colliderect(self, rect: RectValue) -> bool: ...
     @overload
     def colliderect(self, x: float, y: float, w: float, h: float) -> bool: ...
     @overload
