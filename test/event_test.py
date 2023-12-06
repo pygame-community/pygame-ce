@@ -819,8 +819,8 @@ class EventModuleTest(unittest.TestCase):
         pygame.event.pump()
 
     # @unittest.skipIf(
-    #     os.environ.get("SDL_VIDEODRIVER") == "dummy",
-    #     'requires the SDL_VIDEODRIVER to be a non "dummy" value',
+    #     os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+    #     'requires the SDL_VIDEODRIVER to be a non-null value',
     # )
     # Fails on SDL 2.0.18
     @unittest.skip("flaky test, and broken on 2.0.18 windows")
@@ -889,8 +889,8 @@ class EventModuleTest(unittest.TestCase):
         self.assertTrue(blocked)
 
     # @unittest.skipIf(
-    #     os.environ.get("SDL_VIDEODRIVER") == "dummy",
-    #     'requires the SDL_VIDEODRIVER to be a non "dummy" value',
+    #     os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+    #     'requires the SDL_VIDEODRIVER to be a non-null value',
     # )
     # Fails on SDL 2.0.18
     @unittest.skip("flaky test, and broken on 2.0.18 windows")
