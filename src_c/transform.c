@@ -2391,7 +2391,7 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    h = fmodf(h, 360.0) / 360.0;
+    h = (float)(fmodf(h, 360.0) / 360.0);
 
     src = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(src);
