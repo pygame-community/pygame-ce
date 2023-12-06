@@ -540,10 +540,7 @@ double_compare(double a, double b)
 {
     /* Uses both a fixed epsilon and an adaptive epsilon */
     const double e = 1e-6;
-    if (fabs(a - b) < e) {
-        return 1;
-    }
-    return fabs(a - b) <= e * MAX(fabs(a), fabs(b));
+    return fabs(a - b) < e || fabs(a - b) <= e * MAX(fabs(a), fabs(b));
 }
 
 static PyObject *
