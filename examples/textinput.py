@@ -61,7 +61,6 @@ class TextInput:
         self._ime_editing_pos = 0
         self.chat = ""
 
-        # Freetype
         # The font name can be a comma separated list
         # of font names to search for.
         self.font_names = ",".join(self.FONT_NAMES)
