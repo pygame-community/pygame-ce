@@ -935,13 +935,8 @@ class ChannelTypeTest(unittest.TestCase):
         self.assertEqual(ch2.id, 2)
 
     def test_subclass(self):
-        try:
-
-            class MyChannel(mixer.Channel):
-                pass
-
-        except Exception:
-            self.fail("This should not raise an exception.")
+        class MyChannel(mixer.Channel):
+            pass
 
 
 class ChannelInteractiveTest(unittest.TestCase):
