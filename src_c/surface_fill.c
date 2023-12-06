@@ -891,8 +891,8 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (surface->format->BytesPerPixel == 4) {
                 if (_pg_has_avx2()) {
-                  result = surface_fill_blend_sub_avx2(surface, rect, color);
-                  break;
+                    result = surface_fill_blend_sub_avx2(surface, rect, color);
+                    break;
                 }
 #if PG_ENABLE_SSE_NEON
                 if (_pg_HasSSE_NEON()) {
@@ -911,8 +911,9 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (surface->format->BytesPerPixel == 4) {
                 if (_pg_has_avx2()) {
-                  result = surface_fill_blend_mult_avx2(surface, rect, color);
-                  break;
+                    result =
+                        surface_fill_blend_mult_avx2(surface, rect, color);
+                    break;
                 }
 #if PG_ENABLE_SSE_NEON
                 if (_pg_HasSSE_NEON()) {
@@ -932,8 +933,8 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (surface->format->BytesPerPixel == 4) {
                 if (_pg_has_avx2()) {
-                  result = surface_fill_blend_min_avx2(surface, rect, color);
-                  break;
+                    result = surface_fill_blend_min_avx2(surface, rect, color);
+                    break;
                 }
 #if PG_ENABLE_SSE_NEON
                 if (_pg_HasSSE_NEON()) {
@@ -952,8 +953,8 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (surface->format->BytesPerPixel == 4) {
                 if (_pg_has_avx2()) {
-                  result = surface_fill_blend_max_avx2(surface, rect, color);
-                  break;
+                    result = surface_fill_blend_max_avx2(surface, rect, color);
+                    break;
                 }
 #if PG_ENABLE_SSE_NEON
                 if (_pg_HasSSE_NEON()) {
@@ -995,8 +996,9 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (surface->format->BytesPerPixel == 4) {
                 if (_pg_has_avx2()) {
-                  result = surface_fill_blend_rgba_sub_avx2(surface, rect, color);
-                  break;
+                    result =
+                        surface_fill_blend_rgba_sub_avx2(surface, rect, color);
+                    break;
                 }
 #if PG_ENABLE_SSE_NEON
                 if (_pg_HasSSE_NEON()) {
@@ -1016,7 +1018,8 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (surface->format->BytesPerPixel == 4) {
                 if (_pg_has_avx2()) {
-                    result = surface_fill_blend_rgba_mult_avx2(surface, rect, color);
+                    result = surface_fill_blend_rgba_mult_avx2(surface, rect,
+                                                               color);
                     break;
                 }
 #if PG_ENABLE_SSE_NEON
@@ -1037,7 +1040,8 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (surface->format->BytesPerPixel == 4) {
                 if (_pg_has_avx2()) {
-                    result = surface_fill_blend_rgba_min_avx2(surface, rect, color);
+                    result =
+                        surface_fill_blend_rgba_min_avx2(surface, rect, color);
                     break;
                 }
 #if PG_ENABLE_SSE_NEON
@@ -1058,7 +1062,8 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             if (surface->format->BytesPerPixel == 4) {
                 if (_pg_has_avx2()) {
-                    result = surface_fill_blend_rgba_max_avx2(surface, rect, color);
+                    result =
+                        surface_fill_blend_rgba_max_avx2(surface, rect, color);
                     break;
                 }
 #if PG_ENABLE_SSE_NEON

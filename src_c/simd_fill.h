@@ -105,4 +105,4 @@ surface_fill_blend_max_sse2(SDL_Surface *surface, SDL_Rect *rect,
                             Uint32 color);
 int
 surface_fill_blend_rgba_max_sse2(SDL_Surface *surface, SDL_Rect *rect,
-                            Uint32 color);
+                                 Uint32 color);
