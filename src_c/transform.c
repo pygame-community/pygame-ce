@@ -2391,17 +2391,7 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    if (h > 0) {
-        while (h > 360) {
-            h -= 360;
-        }
-    }
-    else if (h < 0) {
-        while (h < -360) {
-            h += 360;
-        }
-    }
-    h /= 360.0;
+    h = fmodf(h, 360.0) / 360.0;
 
     src = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(src);
@@ -2420,7 +2410,9 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
             PyExc_ValueError,
             "Destination surface must be the same size as source surface.");
     }
-    if (src->format->BytesPerPixel != dst->format->BytesPerPixel) {
+    if (src->format->Rmask != dst->format->Rmask ||
+        src->format->Gmask != dst->format->Gmask ||
+        src->format->Bmask != dst->format->Bmask) {
         return RAISE(PyExc_ValueError,
                      "Source and destination surfaces need the same format.");
     }

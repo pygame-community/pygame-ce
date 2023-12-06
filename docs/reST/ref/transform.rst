@@ -413,7 +413,7 @@ Instead, always begin with the original image and scale to the desired size.)
 .. function:: hsl
 
    | :sl:`Change the hue, saturation, and lightness of a surface.`
-   | :sg:`hsl(surface, h, s, l, dest_surface=None) -> Surface`
+   | :sg:`hsl(surface, hue, saturation, lightness, dest_surface=None) -> Surface`
 
    This function allows you to modify the hue, saturation, and lightness of a given surface.
 
