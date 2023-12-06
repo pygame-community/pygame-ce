@@ -535,6 +535,17 @@ pg_circle_setdiameter(pgCircleObject *self, PyObject *value, void *closure)
     return 0;
 }
 
+static int
+double_compare(double a, double b)
+{
+    /* Uses both a fixed epsilon and an adaptive epsilon */
+    const double e = 1e-6;
+    if (fabs(a - b) < e) {
+        return 1;
+    }
+    return fabs(a - b) <= e * MAX(fabs(a), fabs(b));
+}
+
 static PyObject *
 pg_circle_richcompare(PyObject *self, PyObject *other, int op)
 {
@@ -543,7 +554,8 @@ pg_circle_richcompare(PyObject *self, PyObject *other, int op)
         Py_RETURN_NOTIMPLEMENTED;
     }
 
-    int equal = c1.x == c2.x && c1.y == c2.y && c1.r == c2.r;
+    int equal = double_compare(c1.x, c2.x) && double_compare(c1.y, c2.y) &&
+                double_compare(c1.r, c2.r);
 
     switch (op) {
         case Py_EQ:
