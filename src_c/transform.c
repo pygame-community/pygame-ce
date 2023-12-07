@@ -2249,13 +2249,13 @@ RGB_to_HSL(Uint8 r, Uint8 g, Uint8 b, float *h, float *s, float *l)
         *h = 0.0;
     }
     else if (max == r_1) {
-        *h = (g_1 - b_1) / chr + (g_1 < b_1 ? 6.0 : 0.0);
+        *h = (float)((g_1 - b_1) / chr + (g_1 < b_1 ? 6.0 : 0.0));
     }
     else if (max == g_1) {
-        *h = (b_1 - r_1) / chr + 2.0;
+        *h = (float)((b_1 - r_1) / chr + 2.0);
     }
     else if (max == b_1) {
-        *h = (r_1 - g_1) / chr + 4.0;
+        *h = (float)((r_1 - g_1) / chr + 4.0);
     }
     *h /= 6.0;
 }
@@ -2377,11 +2377,10 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
                 }
 
                 HSL_to_RGB(s_h, s_s, s_l, &r, &g, &b);
-                *dst_pixels32 = ((r >> fmt->Rloss) << fmt->Rshift) |
-                                ((g >> fmt->Gloss) << fmt->Gshift) |
-                                ((b >> fmt->Bloss) << fmt->Bshift) |
-                                (pixel & fmt->Amask);
-                dst_pixels32++;
+                *dst_pixels32++ = ((r >> fmt->Rloss) << fmt->Rshift) |
+                                  ((g >> fmt->Gloss) << fmt->Gshift) |
+                                  ((b >> fmt->Bloss) << fmt->Bshift) |
+                                  (pixel & fmt->Amask);
             }
             src_pixels32 += src_skip;
             dst_pixels32 += dst_skip;
