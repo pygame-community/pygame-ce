@@ -2238,23 +2238,26 @@ RGB_to_HSL(Uint8 r, Uint8 g, Uint8 b, float *h, float *s, float *l)
 
     *l = (float)(val / 2.0);
 
-    if (chr == 0) {
-        *h = *s = 0;
+    if (chr == 0.0) {
+        *h = *s = 0.0;
         return;
     }
 
     *s = (float)(*l > 0.5 ? chr / (2.0 - val) : chr / val);
 
-    if (max == r_1) {
-        *h = (g_1 - b_1) / chr + (g_1 < b_1 ? 6 : 0);
+    if (chr == 0.0) {
+        *h = 0.0;
+    }
+    else if (max == r_1) {
+        *h = (g_1 - b_1) / chr + (g_1 < b_1 ? 6.0 : 0.0);
     }
     else if (max == g_1) {
-        *h = (b_1 - r_1) / chr + 2;
+        *h = (b_1 - r_1) / chr + 2.0;
     }
     else if (max == b_1) {
-        *h = (r_1 - g_1) / chr + 4;
+        *h = (r_1 - g_1) / chr + 4.0;
     }
-    *h /= 6;
+    *h /= 6.0;
 }
 
 static inline Uint8
@@ -2264,12 +2267,12 @@ hue_to_rgb(float v1, float v2, float vH)
         vH += 1;
     if (vH > 1)
         vH -= 1;
-    if ((6 * vH) < 1)
+    if (vH < 1 / 6.0f)
         return (Uint8)((v1 + (v2 - v1) * 6 * vH) * 255);
-    if ((2 * vH) < 1)
+    if (vH < 1 / 2.0f)
         return (Uint8)(v2 * 255);
-    if ((3 * vH) < 2)
-        return (Uint8)((v1 + (v2 - v1) * ((2.0f / 3.0f) - vH) * 6) * 255);
+    if (vH < 2 / 3.0f)
+        return (Uint8)((v1 + (v2 - v1) * (2.0f / 3.0f - vH) * 6) * 255);
     return (Uint8)(v1 * 255);
 }
 
@@ -2284,9 +2287,9 @@ HSL_to_RGB(float h, float s, float l, Uint8 *r, Uint8 *g, Uint8 *b)
     float v1, v2;
     v2 = l < 0.5 ? l * (1 + s) : l + s - s * l;
     v1 = 2 * l - v2;
-    *r = hue_to_rgb(v1, v2, h + (1.0f / 3.0f));
+    *r = hue_to_rgb(v1, v2, h + 1.0f / 3.0f);
     *g = hue_to_rgb(v1, v2, h);
-    *b = hue_to_rgb(v1, v2, h - (1.0f / 3.0f));
+    *b = hue_to_rgb(v1, v2, h - 1.0f / 3.0f);
 }
 
 static void
@@ -2310,37 +2313,78 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
     Uint8 *dst_pixels = (Uint8 *)dst->pixels;
     float s_h = 0, s_s = 0, s_l = 0;
     Uint32 pixel;
+    SDL_PixelFormat *fmt = surf->format;
 
-    for (y = 0; y < surf->h; y++) {
-        for (x = 0; x < surf->w; x++) {
-            SURF_GET_AT(pixel, surf, x, y, src_pixels, surf->format, pix);
-            SDL_GetRGBA(pixel, surf->format, &r, &g, &b, &a);
-            RGB_to_HSL(r, g, b, &s_h, &s_s, &s_l);
+    if (surf->format->BytesPerPixel != 4) {
+        for (y = 0; y < surf->h; y++) {
+            for (x = 0; x < surf->w; x++) {
+                SURF_GET_AT(pixel, surf, x, y, src_pixels, fmt, pix);
+                SDL_GetRGBA(pixel, fmt, &r, &g, &b, &a);
+                RGB_to_HSL(r, g, b, &s_h, &s_s, &s_l);
 
-            if (h) {
-                s_h += h;
-                if (s_h > 1)
-                    s_h -= 1;
-                else if (s_h < 0)
-                    s_h += 1;
-            }
-            if (s) {
-                s_s = s_s * (1 + s);
-                s_s = s_s > 1 ? 1 : s_s < 0 ? 0 : s_s;
-            }
-            if (l) {
-                if (l < 0) {
-                    s_l = s_l * (1 + l);
+                if (h) {
+                    s_h += h;
+                    if (s_h > 1)
+                        s_h -= 1;
+                    else if (s_h < 0)
+                        s_h += 1;
                 }
-                else {
-                    s_l = s_l * (1 - l) + l;
+                if (s) {
+                    s_s = s_s * (1 + s);
+                    s_s = s_s > 1 ? 1 : s_s < 0 ? 0 : s_s;
                 }
-                s_l = s_l > 1 ? 1 : s_l < 0 ? 0 : s_l;
-            }
+                if (l) {
+                    s_l = l < 0 ? s_l * (1 + l) : s_l * (1 - l) + l;
+                    s_l = s_l > 1 ? 1 : s_l < 0 ? 0 : s_l;
+                }
 
-            HSL_to_RGB(s_h, s_s, s_l, &r, &g, &b);
-            pixel = SDL_MapRGBA(dst->format, r, g, b, a);
-            SURF_SET_AT(pixel, dst, x, y, dst_pixels, dst->format, pix);
+                HSL_to_RGB(s_h, s_s, s_l, &r, &g, &b);
+                pixel = SDL_MapRGBA(fmt, r, g, b, a);
+                SURF_SET_AT(pixel, dst, x, y, dst_pixels, fmt, pix);
+            }
+        }
+    }
+    else {
+        Uint32 *src_pixels32 = (Uint32 *)surf->pixels;
+        Uint32 *dst_pixels32 = (Uint32 *)dst->pixels;
+        Uint32 src_skip = (surf->pitch >> 2) - surf->w;
+        Uint32 dst_skip = (dst->pitch >> 2) - dst->w;
+        int height = surf->h;
+        Uint32 RightMask = 0x000000FF;
+
+        while (height--) {
+            for (x = 0; x < surf->w; x++) {
+                pixel = *src_pixels32++;
+                RGB_to_HSL((pixel >> fmt->Rshift) & RightMask,
+                           (pixel >> fmt->Gshift) & RightMask,
+                           (pixel >> fmt->Bshift) & RightMask, &s_h, &s_s,
+                           &s_l);
+
+                if (h) {
+                    s_h += h;
+                    if (s_h > 1)
+                        s_h -= 1;
+                    else if (s_h < 0)
+                        s_h += 1;
+                }
+                if (s) {
+                    s_s = s_s * (1 + s);
+                    s_s = s_s > 1 ? 1 : s_s < 0 ? 0 : s_s;
+                }
+                if (l) {
+                    s_l = l < 0 ? s_l * (1 + l) : s_l * (1 - l) + l;
+                    s_l = s_l > 1 ? 1 : s_l < 0 ? 0 : s_l;
+                }
+
+                HSL_to_RGB(s_h, s_s, s_l, &r, &g, &b);
+                *dst_pixels32 = ((r >> fmt->Rloss) << fmt->Rshift) |
+                                ((g >> fmt->Gloss) << fmt->Gshift) |
+                                ((b >> fmt->Bloss) << fmt->Bshift) |
+                                (pixel & fmt->Amask);
+                dst_pixels32++;
+            }
+            src_pixels32 += src_skip;
+            dst_pixels32 += dst_skip;
         }
     }
 
