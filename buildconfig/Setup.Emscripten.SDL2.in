@@ -4,9 +4,7 @@
 #FONT = -lSDL2_ttf
 #IMAGE = -lSDL2_image
 #MIXER = -lSDL2_mixer
-#JPEG = -ljpeg
 #SCRAP =
-#PNG = -lpng
 #FREETYPE = -lfreetype -lharfbuzz
 
 DEBUG =
