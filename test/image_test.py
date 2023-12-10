@@ -1763,6 +1763,9 @@ class ImageModuleTest(unittest.TestCase):
             ("scarlet.webp", (252, 14, 53, 255)),
         ]
 
+        if pygame.image.get_sdl_image_version() > (2, 0, 5):
+            filename_expected_color.append(("purple.qoi", (159, 38, 240, 255)))
+
         for filename, expected_color in filename_expected_color:
             if filename.endswith("svg") and sdl_image_svg_jpeg_save_bug:
                 # SDL_image 2.0.5 and older has an svg loading bug on big
