@@ -432,13 +432,13 @@ imageext_get_sdl_image_version(PyObject *self, PyObject *args,
     }
 
     if (linked) {
+        const SDL_version *v = IMG_Linked_Version();
+        return Py_BuildValue("iii", v->major, v->minor, v->patch);
+    }
+    else {
         SDL_version v;
         SDL_IMAGE_VERSION(&v);
         return Py_BuildValue("iii", v.major, v.minor, v.patch);
-    }
-    else {
-        const SDL_version *v = IMG_Linked_Version();
-        return Py_BuildValue("iii", v->major, v->minor, v->patch);
     }
 }
 
