@@ -69,8 +69,8 @@ class DisplayModuleTest(unittest.TestCase):
         self.assertEqual(pygame.display.get_active(), False)
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     def test_get_active_iconify(self):
         """Test the get_active function after an iconify"""
@@ -115,7 +115,7 @@ class DisplayModuleTest(unittest.TestCase):
             "dga",
             "directx",
             "directfb",
-            "dummy",
+            pygame.NULL_VIDEODRIVER,
             "emscripten",
             "fbcon",
             "ggi",
@@ -216,9 +216,9 @@ class DisplayModuleTest(unittest.TestCase):
     @unittest.skipIf(
         (
             "skipping for all because some failures on rasppi and maybe other platforms"
-            or os.environ.get("SDL_VIDEODRIVER") == "dummy"
+            or os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER
         ),
-        'OpenGL requires a non-"dummy" SDL_VIDEODRIVER',
+        "OpenGL requires a non-null SDL_VIDEODRIVER",
     )
     def test_gl_get_attribute(self):
         screen = display.set_mode((0, 0), pygame.OPENGL)
@@ -340,9 +340,9 @@ class DisplayModuleTest(unittest.TestCase):
     @unittest.skipIf(
         (
             "skipping for all because some failures on rasppi and maybe other platforms"
-            or os.environ.get("SDL_VIDEODRIVER") == "dummy"
+            or os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER
         ),
-        'OpenGL requires a non-"dummy" SDL_VIDEODRIVER',
+        "OpenGL requires a non-null SDL_VIDEODRIVER",
     )
     def test_gl_set_attribute(self):
         # __doc__ (as of 2008-08-02) for pygame.display.gl_set_attribute:
@@ -405,7 +405,7 @@ class DisplayModuleTest(unittest.TestCase):
             pygame.display.gl_get_attribute("DUMMY")
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") in ["dummy", "android"],
+        os.environ.get("SDL_VIDEODRIVER") in [pygame.NULL_VIDEODRIVER, "android"],
         "iconify is only supported on some video drivers/platforms",
     )
     def test_iconify(self):
@@ -509,7 +509,8 @@ class DisplayModuleTest(unittest.TestCase):
         self.assertFalse(display.get_init())
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy", "Needs a not dummy videodriver"
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "Needs a non-null videodriver",
     )
     def test_set_gamma(self):
         pygame.display.set_mode((1, 1))
@@ -522,7 +523,8 @@ class DisplayModuleTest(unittest.TestCase):
                 self.assertEqual(pygame.display.set_gamma(gamma), True)
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy", "Needs a not dummy videodriver"
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "Needs a non-null videodriver",
     )
     def test_set_gamma__tuple(self):
         pygame.display.set_mode((1, 1))
@@ -632,11 +634,11 @@ class DisplayModuleTest(unittest.TestCase):
             palette = [1, 2, 3]
             pygame.display.set_palette(palette)
 
-    skip_list = ["dummy", "android"]
+    skip_list = [pygame.NULL_VIDEODRIVER, "android"]
 
     @unittest.skipIf(
         os.environ.get("SDL_VIDEODRIVER") in skip_list,
-        "requires the SDL_VIDEODRIVER to be non dummy",
+        "requires the SDL_VIDEODRIVER to be non-null",
     )
     def test_toggle_fullscreen(self):
         """Test for toggle fullscreen"""
@@ -896,8 +898,8 @@ class FullscreenToggleTests(unittest.TestCase):
 
 
 @unittest.skipIf(
-    os.environ.get("SDL_VIDEODRIVER") == "dummy",
-    'OpenGL requires a non-"dummy" SDL_VIDEODRIVER',
+    os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+    "OpenGL requires a non-null SDL_VIDEODRIVER",
 )
 class DisplayOpenGLTest(unittest.TestCase):
     def test_screen_size_opengl(self):

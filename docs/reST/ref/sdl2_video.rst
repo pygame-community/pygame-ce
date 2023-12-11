@@ -179,22 +179,6 @@
       
       .. versionadded:: 2.4.0
 
-   .. attribute:: relative_mouse
-
-      | :sl:`Get or set the window's relative mouse mode state`
-      | :sg:`relative_mouse -> bool`
-
-      Gets or sets the window's relative mouse mode state.
-      SDL2 docs: *"While the mouse is in relative mode, the cursor is hidden,
-      the mouse position is constrained to the window, and SDL will report
-      continuous relative mouse motion even if the mouse is at the edge of the
-      window.*
-
-      *This function will flush any pending mouse motion."*
-
-      Calling :func:`pygame.mouse.set_visible` with argument
-      ``True`` will exit relative mouse mode.
-
    .. attribute:: title
 
       | :sl:`Get or set the window title`
@@ -231,6 +215,21 @@
 
       | :sl:`Get the unique window ID (**read-only**)`
       | :sg:`id -> int`
+   
+   .. attribute:: mouse_rect
+
+      | :sl:`Get or set the mouse confinement rectangle of the window`
+      | :sg:`mouse_rect -> Rect|None`
+
+      Setting this attribute to a rect-like object confines the
+      cursor to the specified area of this window.
+
+      This attribute can be None, meaning that there is no mouse rect.
+      
+      Note that this does NOT grab the cursor, it only defines the area a
+      cursor is restricted to when the window has mouse focus.
+
+      .. versionadded:: 2.4.0
 
    .. attribute:: size
 
@@ -293,6 +292,62 @@
 
       Create a Window object that uses the same window data from the :mod:`pygame.display` module, created upon calling
       :func:`pygame.display.set_mode`.
+
+   .. method:: get_surface
+
+      | :sl:`Get the window surface`
+      | :sg:`get_surface() -> Surface`
+
+      Returns a "display surface" for this Window. The surface returned is
+      analogous to the surface returned by :func:`pygame.display.set_mode`.
+
+      This method allows software rendering (classic pygame rendering) on top
+      of the Window API. This method should not be called when using hardware
+      rendering (coming soon).
+
+      Similarly to the "display surface" returned by :mod:`pygame.display`,
+      this surface will change size with the Window, and will become invalid
+      after the Window's destruction.
+      
+      .. seealso:: :func:`flip`
+
+      .. versionadded:: 2.4.0
+   
+   .. method:: flip
+
+      | :sl:`Update the display surface to the window.`
+      | :sg:`flip() -> None`
+
+      Update content from the display surface to the window. This is the Window
+      class equivalent of :func:`pygame.display.flip`.
+
+      This method allows software rendering (classic pygame rendering) on top
+      of the Window API. This method should not be called when using hardware
+      rendering (coming soon).
+
+      Here is a runnable example of using ``get_surface`` and ``flip``:
+
+      .. code-block:: python
+
+         import pygame
+         from pygame._sdl2 import video
+
+         win = video.Window()
+         surf = win.get_surface()  # get the window surface
+
+         while True:
+            for event in pygame.event.get():
+               if event.type == pygame.QUIT:
+                     pygame.quit()
+                     raise SystemExit
+
+            # draw something on the surface
+            surf.fill("red")
+
+            win.flip()  # update the surface to the window
+
+
+      .. versionadded:: 2.4.0
 
    .. method:: set_windowed
 
@@ -361,7 +416,7 @@
    .. method:: set_icon
 
       | :sl:`Set the window icon`
-      | :sg:`set_icon(surface) -> None`
+      | :sg:`set_icon(surface, /) -> None`
 
       Sets the window icon.
 
@@ -370,7 +425,7 @@
    .. method:: set_modal_for
 
       | :sl:`Set the window as a modal for a parent window`
-      | :sg:`set_modal_for(parent) -> None`
+      | :sg:`set_modal_for(parent, /) -> None`
 
       :param Window parent: The parent window.
       

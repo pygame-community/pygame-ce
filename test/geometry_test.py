@@ -552,7 +552,7 @@ class CircleTypeTest(unittest.TestCase):
     def test_colliderect_argtype(self):
         """tests if the function correctly handles incorrect types as parameters"""
         invalid_types = (None, [], "1", (1,), Vector3(1, 1, 1), 1, True, False)
-
+        
         c = Circle(10, 10, 4)
 
         for value in invalid_types:
@@ -615,6 +615,86 @@ class CircleTypeTest(unittest.TestCase):
         self.assertTrue(c3.colliderect(fr9), msgt)
         self.assertTrue(c3.colliderect(0.4, 0.0, 1, 1), msgt)
         self.assertTrue(c3.colliderect((0.4, 0.0), (1, 1)), msgt)
+        
+    def test_update(self):
+        """Ensures that updating the circle position
+        and dimension correctly updates position and dimension"""
+        c = Circle(0, 0, 10)
+
+        c.update(5, 5, 3)
+
+        self.assertEqual(c.x, 5.0)
+        self.assertEqual(c.y, 5.0)
+        self.assertEqual(c.r, 3.0)
+        self.assertEqual(c.r_sqr, 9.0)
+
+    def test_update_argtype(self):
+        """tests if the function correctly handles incorrect types as parameters"""
+        invalid_types = (None, [], "1", (1,), Vector2(1, 1), 1, 0.2324)
+
+        c = Circle(10, 10, 4)
+
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                c.update(value)
+
+    def test_update_argnum(self):
+        c = Circle(10, 10, 4)
+
+        # no params
+        with self.assertRaises(TypeError):
+            c.update()
+
+        # too many params
+        with self.assertRaises(TypeError):
+            c.update(1, 1, 1, 1)
+
+    def test_update_twice(self):
+        """Ensures that updating the circle position
+        and dimension correctly updates position and dimension"""
+        c = Circle(0, 0, 10)
+
+        c.update(5, 5, 3)
+        c.update(0, 0, 10)
+
+        self.assertEqual(c.x, 0.0)
+        self.assertEqual(c.y, 0.0)
+        self.assertEqual(c.r, 10)
+        self.assertEqual(c.r_sqr, 100)
+
+    def test_update_inplace(self):
+        """Ensures that updating the circle to its position doesn't
+        move the circle to another position"""
+        c = Circle(0, 0, 10)
+        centerx = c.x
+        centery = c.y
+        c_r = c.r
+        c_r_sqr = c.r_sqr
+
+        c.update(0, 0, 10)
+
+        self.assertEqual(c.x, centerx)
+        self.assertEqual(c.y, centery)
+        self.assertEqual(c.r, c_r)
+        self.assertEqual(c.r_sqr, c_r_sqr)
+
+        c.update(c)
+
+    def test_selfupdate(self):
+        """Ensures that updating the circle to its position doesn't
+        move the circle to another position"""
+        c = Circle(0, 0, 10)
+        centerx = c.x
+        centery = c.y
+        c_r = c.r
+        c_r_sqr = c.r_sqr
+
+        c.update(c)
+
+        self.assertEqual(c.x, centerx)
+        self.assertEqual(c.y, centery)
+        self.assertEqual(c.r, c_r)
+        self.assertEqual(c.r_sqr, c_r_sqr)
 
 
 if __name__ == "__main__":

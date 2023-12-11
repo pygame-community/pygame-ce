@@ -285,10 +285,17 @@ def run_test(
         print(output.read())
         output.seek(0)
 
+    # change in way skipped tested counted from Python 3.12.1 onwards
+    tests_run_and_skipped = results.testsRun
+    if sys.version_info.minor >= 13 or (
+        sys.version_info.minor == 12 and sys.version_info.micro >= 1
+    ):
+        tests_run_and_skipped += len(results.skipped)
+
     results = {
         module: {
             "output": output.getvalue(),
-            "num_tests": results.testsRun,
+            "num_tests": tests_run_and_skipped,
             "num_errors": len(results.errors),
             "num_failures": len(results.failures),
         }

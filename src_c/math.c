@@ -231,6 +231,8 @@ static PyObject *
 vector_slerp(pgVector *self, PyObject *args);
 static PyObject *
 vector_lerp(pgVector *self, PyObject *args);
+static PyObject *
+vector_smoothstep(pgVector *self, PyObject *args);
 static int
 _vector_reflect_helper(double *dst_coords, const double *src_coords,
                        PyObject *normal, Py_ssize_t dim, double epsilon);
@@ -1615,6 +1617,43 @@ vector_lerp(pgVector *self, PyObject *args)
     return (PyObject *)ret;
 }
 
+static PyObject *
+vector_smoothstep(pgVector *self, PyObject *args)
+{
+    Py_ssize_t i;
+    PyObject *other;
+    pgVector *ret;
+    double t;
+    double other_coords[VECTOR_MAX_SIZE];
+
+    if (!PyArg_ParseTuple(args, "Od:Vector.smoothstep", &other, &t)) {
+        return NULL;
+    }
+    if (!PySequence_AsVectorCoords(other, other_coords, self->dim)) {
+        return RAISE(PyExc_TypeError, "Expected Vector as argument 1");
+    }
+
+    if (t <= 0.0) {
+        t = 0;
+    }
+    else if (t >= 1.0) {
+        t = 1;
+    }
+    else {
+        // See: https://en.wikipedia.org/wiki/Smoothstep for further
+        // explanation
+        t = t * t * (3.0f - 2.0f * t);
+    }
+
+    ret = _vector_subtype_new(self);
+    if (ret == NULL) {
+        return NULL;
+    }
+    for (i = 0; i < self->dim; ++i)
+        ret->coords[i] = self->coords[i] * (1 - t) + other_coords[i] * t;
+    return (PyObject *)ret;
+}
+
 static int
 _vector_reflect_helper(double *dst_coords, const double *src_coords,
                        PyObject *normal, Py_ssize_t dim, double epsilon)
@@ -2517,6 +2556,8 @@ static PyMethodDef vector2_methods[] = {
      DOC_MATH_VECTOR2_MOVETOWARDSIP},
     {"slerp", (PyCFunction)vector_slerp, METH_VARARGS, DOC_MATH_VECTOR2_SLERP},
     {"lerp", (PyCFunction)vector_lerp, METH_VARARGS, DOC_MATH_VECTOR2_LERP},
+    {"smoothstep", (PyCFunction)vector_smoothstep, METH_VARARGS,
+     DOC_MATH_VECTOR2_SMOOTHSTEP},
     {"normalize", (PyCFunction)vector_normalize, METH_NOARGS,
      DOC_MATH_VECTOR2_NORMALIZE},
     {"normalize_ip", (PyCFunction)vector_normalize_ip, METH_NOARGS,
@@ -3407,6 +3448,8 @@ static PyMethodDef vector3_methods[] = {
      DOC_MATH_VECTOR3_MOVETOWARDSIP},
     {"slerp", (PyCFunction)vector_slerp, METH_VARARGS, DOC_MATH_VECTOR3_SLERP},
     {"lerp", (PyCFunction)vector_lerp, METH_VARARGS, DOC_MATH_VECTOR3_LERP},
+    {"smoothstep", (PyCFunction)vector_smoothstep, METH_VARARGS,
+     DOC_MATH_VECTOR3_SMOOTHSTEP},
     {"normalize", (PyCFunction)vector_normalize, METH_NOARGS,
      DOC_MATH_VECTOR3_NORMALIZE},
     {"normalize_ip", (PyCFunction)vector_normalize_ip, METH_NOARGS,
@@ -4190,6 +4233,87 @@ math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 }
 
 static PyObject *
+math_lerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (nargs != 3 && nargs != 4)
+        return RAISE(PyExc_TypeError, "lerp requires 3 or 4 arguments");
+
+    PyObject *min = args[0];
+    PyObject *max = args[1];
+    PyObject *value = args[2];
+
+    if (PyNumber_Check(args[2]) != 1) {
+        return RAISE(PyExc_TypeError,
+                     "lerp requires the interpolation amount to be number");
+    }
+
+    double t = PyFloat_AsDouble(value);
+
+    if (nargs == 4 && !PyObject_IsTrue(args[3])) {
+        ;  // pass if do_clamp is false
+    }
+    else {
+        if (t < 0)
+            t = 0.0;
+        else if (t > 1)
+            t = 1.0;
+    }
+
+    if (PyNumber_Check(min) && PyNumber_Check(max)) {
+        return PyFloat_FromDouble(PyFloat_AsDouble(min) * (1 - t) +
+                                  PyFloat_AsDouble(max) * t);
+    }
+    else {
+        return RAISE(
+            PyExc_TypeError,
+            "math.lerp requires all the arguments to be numbers. To lerp "
+            "between two vectors, please use the Vector class methods.");
+    }
+}
+
+static PyObject *
+math_smoothstep(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (nargs != 3)
+        return RAISE(PyExc_TypeError, "smoothstep requires 3 arguments");
+
+    PyObject *min = args[0];
+    PyObject *max = args[1];
+    PyObject *value = args[2];
+
+    if (PyNumber_Check(args[2]) != 1) {
+        return RAISE(
+            PyExc_TypeError,
+            "smoothstep requires the interpolation amount to be number");
+    }
+
+    double t = PyFloat_AsDouble(value);
+    if (t <= 0.0) {
+        t = 0;
+    }
+    else if (t >= 1.0) {
+        t = 1;
+    }
+    else {
+        // See: https://en.wikipedia.org/wiki/Smoothstep for further
+        // explanation
+        t = t * t * (3.0f - (2.0f * t));
+    }
+
+    if (PyNumber_Check(min) && PyNumber_Check(max)) {
+        return PyFloat_FromDouble(PyFloat_AsDouble(min) * (1 - t) +
+                                  PyFloat_AsDouble(max) * t);
+    }
+    else {
+        return RAISE(
+            PyExc_TypeError,
+            "smoothstep requires all the arguments to be numbers. To "
+            "smoothstep "
+            "between two vectors, please use the Vector class methods.");
+    }
+}
+
+static PyObject *
 math_enable_swizzling(pgVector *self, PyObject *_null)
 {
     if (PyErr_WarnEx(PyExc_DeprecationWarning,
@@ -4217,6 +4341,9 @@ math_disable_swizzling(pgVector *self, PyObject *_null)
 
 static PyMethodDef _math_methods[] = {
     {"clamp", (PyCFunction)math_clamp, METH_FASTCALL, DOC_MATH_CLAMP},
+    {"lerp", (PyCFunction)math_lerp, METH_FASTCALL, DOC_MATH_LERP},
+    {"smoothstep", (PyCFunction)math_smoothstep, METH_FASTCALL,
+     DOC_MATH_SMOOTHSTEP},
     {"enable_swizzling", (PyCFunction)math_enable_swizzling, METH_NOARGS,
      "Deprecated, will be removed in a future version"},
     {"disable_swizzling", (PyCFunction)math_disable_swizzling, METH_NOARGS,

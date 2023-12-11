@@ -55,6 +55,50 @@ class MathModuleTest(unittest.TestCase):
         # Non-numeric args
         self.assertRaises(TypeError, pygame.math.clamp, "hello", "py", "thon")
 
+    def test_lerp(self):
+        a = 0.0
+        b = 10.0
+        self.assertEqual(pygame.math.lerp(a, b, 0.5), 5.0)
+
+        a = 0.0
+        b = 10.0
+        self.assertEqual(pygame.math.lerp(a, b, 0.1), 1.0)
+
+        a = -10.0
+        b = 10.0
+        self.assertEqual(pygame.math.lerp(a, b, 0.5), 0.0)
+
+        a = -10.0
+        b = 10.0
+        self.assertEqual(pygame.math.lerp(a, b, 1.5), 10.0)
+
+        a = -10.0
+        b = 10.0
+        self.assertEqual(pygame.math.lerp(a, b, 1.5, False), 20.0)
+
+        with self.assertRaises(TypeError):
+            a = Vector2(0, 0)
+            b = Vector2(10.0, 10.0)
+            pygame.math.lerp(a, b, 0.5)
+
+        with self.assertRaises(TypeError):
+            a = 1
+            b = 2
+            pygame.math.lerp(a, b, Vector2(0, 0))
+
+    def test_smoothstep(self):
+        a = 0.0
+        b = 10.0
+        self.assertEqual(pygame.math.smoothstep(a, b, 0.5), 5.0)
+
+        a = 0.0
+        b = 10.0
+        self.assertEqual(pygame.math.smoothstep(a, b, 0.1), 0.28)
+
+        a = -10.0
+        b = 10.0
+        self.assertEqual(pygame.math.smoothstep(a, b, 0.5), 0.0)
+
 
 class Vector2TypeTest(unittest.TestCase):
     def setUp(self):
@@ -950,9 +994,26 @@ class Vector2TypeTest(unittest.TestCase):
         self.assertEqual(v1.lerp(v2, 0.5), (5, 5))
         self.assertRaises(ValueError, lambda: v1.lerp(v2, 2.5))
 
+        v1 = Vector2(0, 0)
+        v2 = Vector2(10, 10)
+        self.assertEqual(v1.lerp(v2, 0.1), (1, 1))
+
         v1 = Vector2(-10, -5)
         v2 = Vector2(10, 10)
         self.assertEqual(v1.lerp(v2, 0.5), (0, 2.5))
+
+    def test_smoothstep(self):
+        v1 = Vector2(0, 0)
+        v2 = Vector2(10, 10)
+        self.assertEqual(v1.smoothstep(v2, 0.5), (5, 5))
+
+        v1 = Vector2(0, 0)
+        v2 = Vector2(10, 10)
+        self.assertEqual(v1.smoothstep(v2, 0.1), (0.28, 0.28))
+
+        v1 = Vector2(-10, -5)
+        v2 = Vector2(10, 10)
+        self.assertEqual(v1.smoothstep(v2, 0.5), (0, 2.5))
 
     def test_polar(self):
         v = Vector2()
@@ -2520,9 +2581,26 @@ class Vector3TypeTest(unittest.TestCase):
         self.assertEqual(v1.lerp(v2, 0.5), (5, 5, 5))
         self.assertRaises(ValueError, lambda: v1.lerp(v2, 2.5))
 
+        v1 = Vector3(0, 0, 0)
+        v2 = Vector3(10, 10, 10)
+        self.assertEqual(v1.lerp(v2, 0.1), (1, 1, 1))
+
         v1 = Vector3(-10, -5, -20)
         v2 = Vector3(10, 10, -20)
         self.assertEqual(v1.lerp(v2, 0.5), (0, 2.5, -20))
+
+    def test_smoothstep(self):
+        v1 = Vector3(0, 0, 0)
+        v2 = Vector3(10, 10, 10)
+        self.assertEqual(v1.smoothstep(v2, 0.5), (5, 5, 5))
+
+        v1 = Vector3(0, 0, 0)
+        v2 = Vector3(10, 10, 10)
+        self.assertEqual(v1.smoothstep(v2, 0.1), (0.28, 0.28, 0.28))
+
+        v1 = Vector3(-10, -5, -20)
+        v2 = Vector3(10, 10, -20)
+        self.assertEqual(v1.smoothstep(v2, 0.5), (0, 2.5, -20))
 
     def test_spherical(self):
         v = Vector3()

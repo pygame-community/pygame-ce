@@ -11,8 +11,6 @@ SDL = -I/usr/include -D_REENTRANT -DSDL2 -lSDL2
 FONT = -lSDL2_ttf
 IMAGE = -lSDL2_image
 MIXER = -lSDL2_mixer
-PNG = -lpng
-JPEG = -ljpeg
 SCRAP = -lX11
 PORTMIDI = -lportmidi
 PORTTIME = -lporttime
@@ -25,7 +23,7 @@ DEBUG =
 #everything you can, but you can ignore ones you don't have
 #dependencies for, just comment them out
 
-imageext src_c/imageext.c $(SDL) $(IMAGE) $(PNG) $(JPEG) $(DEBUG)
+imageext src_c/imageext.c $(SDL) $(IMAGE) $(DEBUG)
 font src_c/font.c $(SDL) $(FONT) $(DEBUG)
 mixer src_c/mixer.c $(SDL) $(MIXER) $(DEBUG)
 mixer_music src_c/music.c $(SDL) $(MIXER) $(DEBUG)
@@ -47,7 +45,6 @@ gfxdraw src_c/gfxdraw.c $(SDL) $(GFX) $(DEBUG)
 #or the configuration script will choke!)
 _freetype src_c/freetype/ft_cache.c src_c/freetype/ft_wrap.c src_c/freetype/ft_render.c  src_c/freetype/ft_render_cb.c src_c/freetype/ft_layout.c src_c/freetype/ft_unicode.c src_c/_freetype.c $(SDL) $(FREETYPE) $(DEBUG)
 
-_sprite src_c/_sprite.c $(SDL) $(DEBUG)
 
 #these modules are required for pygame to run. they only require
 #SDL as a dependency. these should not be altered
@@ -61,7 +58,7 @@ key src_c/key.c $(SDL) $(DEBUG)
 mouse src_c/mouse.c $(SDL) $(DEBUG)
 rect src_c/rect.c src_c/pgcompat_rect.c $(SDL) $(DEBUG)
 rwobject src_c/rwobject.c $(SDL) $(DEBUG)
-surface src_c/simd_blitters_sse2.c src_c/simd_blitters_avx2.c src_c/surface.c src_c/alphablit.c src_c/surface_fill.c $(SDL) $(DEBUG)
+surface src_c/simd_blitters_sse2.c src_c/simd_blitters_avx2.c src_c/surface.c src_c/alphablit.c src_c/surface_fill.c src_c/simd_surface_fill_avx2.c src_c/simd_surface_fill_sse2.c $(SDL) $(DEBUG)
 surflock src_c/surflock.c $(SDL) $(DEBUG)
 time src_c/time.c $(SDL) $(DEBUG)
 joystick src_c/joystick.c $(SDL) $(DEBUG)
