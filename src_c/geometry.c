@@ -22,6 +22,11 @@ MODINIT_DEFINE(geometry)
         return NULL;
     }
 
+    import_pygame_rect();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
     if (PyType_Ready(&pgCircle_Type) < 0) {
         return NULL;
     }

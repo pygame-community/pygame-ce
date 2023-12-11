@@ -7,7 +7,7 @@ from typing import (
     Sequence,
 )
 
-from ._common import Coordinate
+from ._common import Coordinate, RectValue
 
 _CanBeCircle = Union[Circle, Tuple[Coordinate, float], Sequence[float]]
 
@@ -75,6 +75,12 @@ class Circle:
     def collidecircle(self, x: float, y: float, r: float) -> bool: ...
     @overload
     def collidecircle(self, center: Coordinate, r: float) -> bool: ...
+    @overload
+    def colliderect(self, rect: RectValue) -> bool: ...
+    @overload
+    def colliderect(self, x: float, y: float, w: float, h: float) -> bool: ...
+    @overload
+    def colliderect(self, topleft: Coordinate, size: Coordinate) -> bool: ...
     @overload
     def update(self, circle: _CircleValue) -> None: ...
     @overload
