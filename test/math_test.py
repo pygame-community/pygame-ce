@@ -1173,6 +1173,11 @@ class Vector2TypeTest(unittest.TestCase):
                 self.assertEqual(v1, v2)
                 self.assertEqual(v1, Vector2(1, 2))
 
+        v2 = Vector2()
+        self.assertEqual(v2.clamp_magnitude(1), Vector2())
+        v2.clamp_magnitude_ip(2)
+        self.assertEqual(v2.magnitude(), 0)
+
     def test_clamp_mag_v2_edge_cases(self):
         v1 = Vector2(1, 2)
         v2 = v1.clamp_magnitude(6, 6)
@@ -1206,10 +1211,10 @@ class Vector2TypeTest(unittest.TestCase):
                 self.assertRaises(ValueError, v1.clamp_magnitude, *invalid_args)
                 self.assertRaises(ValueError, v1.clamp_magnitude_ip, *invalid_args)
 
-        # 0 vector
+        # 0 vector with a min_length > 0
         v2 = Vector2()
-        self.assertRaises(ValueError, v2.clamp_magnitude, 3)
-        self.assertRaises(ValueError, v2.clamp_magnitude_ip, 4)
+        self.assertRaises(ValueError, v2.clamp_magnitude, 1, 2)
+        self.assertRaises(ValueError, v2.clamp_magnitude_ip, 2, 3)
 
     def test_subclassing_v2(self):
         """Check if Vector2 is subclassable"""
@@ -2828,6 +2833,11 @@ class Vector3TypeTest(unittest.TestCase):
                 self.assertEqual(v1, v2)
                 self.assertEqual(v1, Vector3(1, 2, 3))
 
+            v2 = Vector3()
+            self.assertEqual(v2.clamp_magnitude(1), Vector3())
+            v2.clamp_magnitude_ip(2)
+            self.assertEqual(v2.magnitude(), 0)
+
     def test_clamp_mag_v3_edge_cases(self):
         v1 = Vector3(1, 2, 1)
         v2 = v1.clamp_magnitude(6, 6)
@@ -2863,8 +2873,8 @@ class Vector3TypeTest(unittest.TestCase):
 
         # 0 vector
         v2 = Vector3()
-        self.assertRaises(ValueError, v2.clamp_magnitude, 3)
-        self.assertRaises(ValueError, v2.clamp_magnitude_ip, 4)
+        self.assertRaises(ValueError, v2.clamp_magnitude, 1, 2)
+        self.assertRaises(ValueError, v2.clamp_magnitude_ip, 2, 3)
 
     def test_subclassing_v3(self):
         """Check if Vector3 is subclassable"""

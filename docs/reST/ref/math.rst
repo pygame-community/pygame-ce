@@ -471,7 +471,7 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`clamp_magnitude(min_length, max_length, /) -> Vector2`
 
       **Experimental:** feature still in development available for testing and feedback. It may change.
-      `Please leave clamp_magnitude feedback with authors <https://github.com/pygame/pygame/pull/2990>`_
+      `Please leave clamp_magnitude feedback with authors <https://github.com/pygame-community/pygame-ce>`_
 
       Returns a new copy of a vector with the magnitude clamped between 
       ``max_length`` and ``min_length``. If only one argument is passed, it is 
@@ -481,6 +481,12 @@ Multiple coordinates can be set using slices or swizzling
       ``max_length``, or if either of these values are negative.
 
       .. versionadded:: 2.1.3
+
+      .. versionchanged:: 2.4.0 It is now possible to use ``clamp_magnitude`` on a zero-vector as long as ``min_length``
+         is unspecified or 0.
+      
+      .. note::
+         Before pygame-ce 2.4.0, attempting to clamp a zero vector would always raise a ``ValueError``
 
       .. ## Vector2.clamp_magnitude ##
    
@@ -498,6 +504,12 @@ Multiple coordinates can be set using slices or swizzling
       ``max_length``, or if either of these values are negative.
 
       .. versionadded:: 2.1.3
+
+      .. versionchanged:: 2.4.0 It is now possible to use ``clamp_magnitude`` on a zero-vector as long as ``min_length``
+         is unspecified or 0.
+      
+      .. note::
+         Before pygame-ce 2.4.0, attempting to clamp a zero vector would always raise a ``ValueError``
 
       .. ## Vector2.clamp_magnitude_ip ##
 
@@ -1118,6 +1130,12 @@ Multiple coordinates can be set using slices or swizzling
 
       .. versionadded:: 2.1.3
 
+      .. versionchanged:: 2.4.0 It is now possible to use ``clamp_magnitude`` on a zero-vector as long as ``min_length``
+         is unspecified or 0.
+      
+      .. note::
+         Before pygame-ce 2.4.0, attempting to clamp a zero vector would always raise a ``ValueError``
+
       .. ## Vector3.clamp_magnitude ##
    
 
@@ -1134,6 +1152,12 @@ Multiple coordinates can be set using slices or swizzling
       ``max_length``, or if either of these values are negative.
 
       .. versionadded:: 2.1.3
+
+      .. versionchanged:: 2.4.0 It is now possible to use ``clamp_magnitude`` on a zero-vector as long as ``min_length``
+         is unspecified or 0.
+      
+      .. note::
+         Before pygame-ce 2.4.0, attempting to clamp a zero vector would always raise a ``ValueError``
 
       .. ## Vector3.clamp_magnitude_ip ##
 
