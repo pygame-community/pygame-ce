@@ -592,6 +592,7 @@ class ImageModuleTest(unittest.TestCase):
 
         ####################################################################
         test_surface = pygame.Surface((64, 256), flags=pygame.SRCALPHA, depth=32)
+        byte_width = test_surface.get_width() * 4
         for i in range(256):
             for j in range(16):
                 intensity = j * 16 + 15
@@ -619,6 +620,20 @@ class ImageModuleTest(unittest.TestCase):
                 f"converting {pair[0]} to {pair[1]} and back is not symmetric",
             )
 
+            fmt1_buf = pygame.image.tobytes(test_surface, pair[0], pitch=byte_width + 4)
+            fmt1_convert_buf = convert(
+                pair[1], pair[0], convert(pair[0], pair[1], fmt1_buf)
+            )
+            test_convert_two_way = pygame.image.frombytes(
+                fmt1_convert_buf, test_surface.get_size(), pair[0], pitch=byte_width + 4
+            )
+
+            self._assertSurfaceEqual(
+                test_surface,
+                test_convert_two_way,
+                f"converting {pair[0]} to {pair[1]} and back using pitch is not symmetric",
+            )
+
         for pair in fmt_permutations:
             fmt1_buf = pygame.image.tobytes(test_surface, pair[0])
             fmt2_convert_buf = convert(pair[0], pair[1], fmt1_buf)
@@ -632,6 +647,18 @@ class ImageModuleTest(unittest.TestCase):
                 f"converting {pair[0]} to {pair[1]} failed",
             )
 
+            fmt1_buf = pygame.image.tobytes(test_surface, pair[0], pitch=byte_width + 4)
+            fmt2_convert_buf = convert(pair[0], pair[1], fmt1_buf)
+            test_convert_one_way = pygame.image.frombytes(
+                fmt2_convert_buf, test_surface.get_size(), pair[1], pitch=byte_width + 4
+            )
+
+            self._assertSurfaceEqual(
+                test_surface,
+                test_convert_one_way,
+                f"converting {pair[0]} to {pair[1]} using pitch failed",
+            )
+
         for fmt in fmts:
             test_buf = pygame.image.tobytes(test_surface, fmt)
             test_to_from_fmt_bytes = pygame.image.frombytes(
@@ -641,11 +668,23 @@ class ImageModuleTest(unittest.TestCase):
             self._assertSurfaceEqual(
                 test_surface,
                 test_to_from_fmt_bytes,
-                "tobytes/frombytes functions are not " f"symmetric with '{fmt}' format",
+                f"tobytes/frombytes functions are not symmetric with '{fmt}' format",
+            )
+
+            test_buf = pygame.image.tobytes(test_surface, fmt, pitch=byte_width + 4)
+            test_to_from_fmt_bytes = pygame.image.frombytes(
+                test_buf, test_surface.get_size(), fmt, pitch=byte_width + 4
+            )
+
+            self._assertSurfaceEqual(
+                test_surface,
+                test_to_from_fmt_bytes,
+                f"tobytes/frombytes functions are not symmetric using pitch with '{fmt}' format",
             )
 
     def test_tobytes_depth_24(self):
         test_surface = pygame.Surface((64, 256), depth=24)
+        byte_width = test_surface.get_width() * 3
         for i in range(256):
             for j in range(16):
                 intensity = j * 16 + 15
@@ -664,6 +703,17 @@ class ImageModuleTest(unittest.TestCase):
             test_surface,
             test_to_from_fmt_bytes,
             f'tobytes/frombytes functions are not symmetric with "{fmt}" format',
+        )
+
+        fmt_buf = pygame.image.tobytes(test_surface, fmt, pitch=byte_width + 2)
+        test_to_from_fmt_bytes = pygame.image.frombytes(
+            fmt_buf, test_surface.get_size(), fmt, pitch=byte_width + 2
+        )
+
+        self._assertSurfaceEqual(
+            test_surface,
+            test_to_from_fmt_bytes,
+            f'tobytes/frombytes functions are not symmetric using pitch with "{fmt}" format',
         )
 
     def test_from_to_bytes_deprecation(self):
