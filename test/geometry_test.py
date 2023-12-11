@@ -552,7 +552,7 @@ class CircleTypeTest(unittest.TestCase):
     def test_colliderect_argtype(self):
         """tests if the function correctly handles incorrect types as parameters"""
         invalid_types = (None, [], "1", (1,), Vector3(1, 1, 1), 1, True, False)
-        
+
         c = Circle(10, 10, 4)
 
         for value in invalid_types:
@@ -615,7 +615,7 @@ class CircleTypeTest(unittest.TestCase):
         self.assertTrue(c3.colliderect(fr9), msgt)
         self.assertTrue(c3.colliderect(0.4, 0.0, 1, 1), msgt)
         self.assertTrue(c3.colliderect((0.4, 0.0), (1, 1)), msgt)
-        
+
     def test_update(self):
         """Ensures that updating the circle position
         and dimension correctly updates position and dimension"""
