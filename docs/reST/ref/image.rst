@@ -35,6 +35,8 @@ formats.
    
    * ``PNM``
 
+   * ``QOI``
+
    * ``SVG`` (limited support, using Nano SVG)
 
    * ``TGA`` (uncompressed)
@@ -47,6 +49,8 @@ formats.
    
    
 .. versionaddedold:: 2.0 Loading SVG, WebP, PNM
+
+.. versionadded:: 2.4.0 Loading QOI (Relies on SDL_Image 2.6.0+)
 
 Saving images only supports a limited set of formats. You can save to the
 following formats.

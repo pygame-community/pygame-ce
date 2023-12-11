@@ -11,6 +11,6 @@ sha512sum -c webp.sha512
 tar xzf ${WEBP}.tar.gz
 cd $WEBP
 
-./configure $PG_BASE_CONFIGURE_FLAGS
+./configure --enable-libwebpdemux $PG_BASE_CONFIGURE_FLAGS
 make
 make install

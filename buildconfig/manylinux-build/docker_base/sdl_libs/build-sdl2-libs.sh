@@ -4,7 +4,7 @@ set -e -x
 cd $(dirname `readlink -f "$0"`)
 
 SDL2="SDL2-2.28.5"
-IMG2="SDL2_image-2.0.5"
+IMG2="SDL2_image-2.8.0"
 TTF2="SDL2_ttf-2.20.2"
 MIX2="SDL2_mixer-2.6.3"
 
@@ -56,9 +56,17 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
       export SDL_IMAGE_CONFIGURE=--disable-imageio
 fi
 
-./configure --enable-png --disable-png-shared --enable-jpg --disable-jpg-shared \
-        --enable-tif --disable-tif-shared --enable-webp --disable-webp-shared \
-        $SDL_IMAGE_CONFIGURE $PG_BASE_CONFIGURE_FLAGS
+# We prefer libpng and libjpeg-turbo over stb-image at the moment
+# We also don't compile avif and jxl support at the moment
+./configure $ARCHS_CONFIG_FLAG \
+      --disable-stb-image \
+      --disable-avif --disable-avif-shared \
+      --disable-jxl --disable-jxl-shared \
+      --enable-png --disable-png-shared \
+      --enable-jpg --disable-jpg-shared \
+      --enable-tif --disable-tif-shared \
+      --enable-webp --disable-webp-shared \
+      $SDL_IMAGE_CONFIGURE $PG_BASE_CONFIGURE_FLAGS
 make
 make install
 
