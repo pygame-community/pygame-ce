@@ -3,10 +3,14 @@
 
 #include "geometry.h"
 
-static int
+static inline int
 pgCollision_CirclePoint(pgCircleBase *circle, double, double);
 
-static int
+static inline int
 pgCollision_CircleCircle(pgCircleBase *, pgCircleBase *);
+
+static inline int
+pgCollision_RectCircle(double rx, double ry, double rw, double rh,
+                       pgCircleBase *circle);
 
 #endif /* ~_PG_COLLISIONS_H */

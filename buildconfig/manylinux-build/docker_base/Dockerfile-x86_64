@@ -30,11 +30,19 @@ ENV PG_BASE_CMAKE_FLAGS="-DCMAKE_INSTALL_PREFIX=$PG_DEP_PREFIX \
 
 ENV PG_BASE_CONFIGURE_FLAGS="--prefix=$PG_DEP_PREFIX"
 
+ENV PG_BASE_MESON_FLAGS="--prefix=$PG_DEP_PREFIX \
+  -Dlibdir=lib \
+  -Dbuildtype=release \
+  -Ddefault_library=shared"
+
+# remember to keep this updated when we drop 3.11 support
+ENV PATH="/opt/python/cp311-cp311/bin:$PATH"
+
 ADD pkg-config /pkg-config_build/
 RUN ["bash", "/pkg-config_build/build-pkg-config.sh"]
 
-ADD cmake /cmake_build/
-RUN ["bash", "/cmake_build/build-cmake.sh"]
+ADD buildtools /buildtools/
+RUN ["bash", "/buildtools/install.sh"]
 
 #ADD zlib-ng /zlib-ng_build/
 #RUN ["bash", "/zlib-ng_build/build-zlib-ng.sh"]
@@ -89,8 +97,9 @@ RUN ["bash", "/libmodplug_build/build-libmodplug.sh"]
 ADD libffi /libffi_build/
 RUN ["bash", "/libffi_build/build-libffi.sh"]
 
-ADD gettext /gettext_build/
-RUN ["bash", "/gettext_build/build-gettext.sh"]
+# explicit install not needed anymore
+# ADD gettext /gettext_build/
+# RUN ["bash", "/gettext_build/build-gettext.sh"]
 
 ADD glib /glib_build/
 RUN ["bash", "/glib_build/build-glib.sh"]
