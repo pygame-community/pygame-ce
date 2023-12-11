@@ -928,9 +928,10 @@ vector_clamp_magnitude_ip(pgVector *self, PyObject *const *args,
 
     /* Get magnitude of Vector */
     old_length_sq = _scalar_product(self->coords, self->coords, self->dim);
-    if (old_length_sq == 0) {
+    if (old_length_sq == 0 && min_length > 0) {
         return RAISE(PyExc_ValueError,
-                     "Cannot clamp a vector with zero length");
+                     "Cannot clamp a vector with zero length with a "
+                     "min_length greater than 0");
     }
 
     /* Notes for other contributors reading this code:
