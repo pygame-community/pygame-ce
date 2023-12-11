@@ -632,17 +632,13 @@ invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
     Uint32 *srcp = (Uint32 *)src->pixels;
     Uint32 *dstp = (Uint32 *)newsurf->pixels;
 
-    Uint32 rgbmask = ~src->format->Amask;
-    Uint64 rgbmask64 = ((Uint64)rgbmask << 32) | rgbmask;
-    Uint64 amask64 = ~rgbmask64;
-
     __m128i mm_src, mm_dst, mm_alpha, mm_rgb_invert_mask, mm_alpha_mask;
 
     __m128i *srcp128 = (__m128i *)src->pixels;
     __m128i *dstp128 = (__m128i *)newsurf->pixels;
 
-    mm_rgb_invert_mask = _mm_set1_epi64x(rgbmask64);
-    mm_alpha_mask = _mm_set1_epi64x(amask64);
+    mm_rgb_invert_mask = _mm_set1_epi32(~src->format->Amask);
+    mm_alpha_mask = _mm_set1_epi32(src->format->Amask);
 
     while (num_batches--) {
         perfect_4_pixels_batch_counter = perfect_4_pixels;
@@ -667,7 +663,7 @@ invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
         }
         srcp = (Uint32 *)srcp128;
         dstp = (Uint32 *)dstp128;
-        if (remaining_pixels_batch_counter > 0) {
+        while (remaining_pixels_batch_counter--) {
             mm_src = _mm_cvtsi32_si128(*srcp);
             /*mm_src = 0x000000000000000000000000AARRGGBB*/
 
