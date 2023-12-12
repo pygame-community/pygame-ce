@@ -2,6 +2,7 @@
 from re import T
 import sys
 import os
+import io
 import unittest
 import pathlib
 import platform
@@ -274,7 +275,7 @@ class FontTest(unittest.TestCase):
 
         # If we don't have a real display, don't do this test.
         # Transparent background doesn't seem to work without a read video card.
-        if os.environ.get("SDL_VIDEODRIVER") != "dummy":
+        if os.environ.get("SDL_VIDEODRIVER") != pygame.NULL_VIDEODRIVER:
             screen.fill((10, 10, 10))
             font_surface = f.render("   bar", True, (0, 0, 0), None)
             font_rect = font_surface.get_rect()
@@ -707,6 +708,12 @@ class FontTypeTest(unittest.TestCase):
         )
         with open(font_path, "rb") as f:
             font = pygame_font.Font(f)
+
+    def test_load_from_invalid_sized_file_obj(self):
+        pygame.font.init()
+        f = io.StringIO()
+        with self.assertRaises(ValueError):
+            font = pygame.font.Font(f)
 
     def test_load_default_font_filename(self):
         # In font_init, a special case is when the filename argument is

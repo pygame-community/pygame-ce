@@ -14,11 +14,7 @@ cd $SNDNAME
 # autoreconf -fvi
 
 # alsa is only needed for examples here
-./configure $ARCHS_CONFIG_FLAG --disable-mpeg --disable-alsa
+./configure $PG_BASE_CONFIGURE_FLAGS --disable-mpeg --disable-alsa
 make
 make install
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi
