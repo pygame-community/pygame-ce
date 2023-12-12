@@ -57,13 +57,13 @@ const PG_sample_format_t PG_SAMPLE_LITTLE_ENDIAN = 0;
 const PG_sample_format_t PG_SAMPLE_BIG_ENDIAN = 0x20000u;
 #endif
 const PG_sample_format_t PG_SAMPLE_CHAR_SIGN = (char)0xff > 0 ? 0 : 0x10000u;
-#define PG_SAMPLE_SIZE(sf) ((sf)&0x0ffffu)
-#define PG_IS_SAMPLE_SIGNED(sf) ((sf)&PG_SAMPLE_SIGNED != 0)
-#define PG_IS_SAMPLE_NATIVE_ENDIAN(sf) ((sf)&PG_SAMPLE_NATIVE_ENDIAN != 0)
+#define PG_SAMPLE_SIZE(sf) ((sf) & 0x0ffffu)
+#define PG_IS_SAMPLE_SIGNED(sf) ((sf) & PG_SAMPLE_SIGNED != 0)
+#define PG_IS_SAMPLE_NATIVE_ENDIAN(sf) ((sf) & PG_SAMPLE_NATIVE_ENDIAN != 0)
 #define PG_IS_SAMPLE_LITTLE_ENDIAN(sf) \
-    ((sf)&PG_SAMPLE_LITTLE_ENDIAN == PG_SAMPLE_LITTLE_ENDIAN)
+    ((sf) & PG_SAMPLE_LITTLE_ENDIAN == PG_SAMPLE_LITTLE_ENDIAN)
 #define PG_IS_SAMPLE_BIG_ENDIAN(sf) \
-    ((sf)&PG_SAMPLE_BIG_ENDIAN == PG_SAMPLE_BIG_ENDIAN)
+    ((sf) & PG_SAMPLE_BIG_ENDIAN == PG_SAMPLE_BIG_ENDIAN)
 
 /* Since they are documented, the default init values are defined here
    rather than taken from SDL_mixer. It also means that the default
@@ -85,8 +85,9 @@ static PyObject *
 pgSound_New(Mix_Chunk *);
 static PyObject *
 pgChannel_New(int);
-#define pgSound_Check(x) (Py_TYPE(x) == &pgSound_Type)
-#define pgChannel_Check(x) (Py_TYPE(x) == &pgChannel_Type)
+#define pgSound_Check(x) (PyObject_IsInstance(x, (PyObject *)&pgSound_Type))
+#define pgChannel_Check(x) \
+    (PyObject_IsInstance(x, (PyObject *)&pgChannel_Type))
 
 static int
 snd_getbuffer(PyObject *, Py_buffer *, int);
@@ -440,21 +441,10 @@ _init(int freq, int size, int channels, int chunk, char *devicename,
         if (SDL_InitSubSystem(SDL_INIT_AUDIO))
             return RAISE(pgExc_SDLError, SDL_GetError());
 
-/* This scary looking block is the expansion of
- * SDL_MIXER_VERSION_ATLEAST(2, 0, 2), but SDL_MIXER_VERSION_ATLEAST is new in
- * 2.0.2, and we currently aim to support down to 2.0.0 */
-#if ((SDL_MIXER_MAJOR_VERSION >= 2) &&                                \
-     (SDL_MIXER_MAJOR_VERSION > 2 || SDL_MIXER_MINOR_VERSION >= 0) && \
-     (SDL_MIXER_MAJOR_VERSION > 2 || SDL_MIXER_MINOR_VERSION > 0 ||   \
-      SDL_MIXER_PATCHLEVEL >= 2))
         if (Mix_OpenAudioDevice(freq, fmt, channels, chunk, devicename,
                                 allowedchanges) == -1) {
-#else
-        if (Mix_OpenAudio(freq, fmt, channels, chunk) == -1) {
-#endif
             SDL_QuitSubSystem(SDL_INIT_AUDIO);
             return RAISE(pgExc_SDLError, SDL_GetError());
-            ;
         }
         Mix_ChannelFinished(endsound_callback);
         Mix_VolumeMusic(127);
@@ -1384,6 +1374,7 @@ static PyTypeObject pgChannel_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.mixer.Channel",
     .tp_basicsize = sizeof(pgChannelObject),
     .tp_dealloc = channel_dealloc,
+    .tp_flags = (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE),
     .tp_doc = DOC_MIXER_CHANNEL,
     .tp_methods = channel_methods,
     .tp_init = (initproc)channel_init,
@@ -1492,9 +1483,8 @@ mixer_set_soundfont(PyObject *self, PyObject *args)
         string_path = PyUnicode_AsUTF8(path);
     }
     else if (!Py_IsNone(path)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "Must pass string or None to set_soundfont");
-        return NULL;
+        return RAISE(PyExc_TypeError,
+                     "Must pass string or None to set_soundfont");
     }
 
     if (strlen(string_path) == 0) {

@@ -337,6 +337,7 @@ def inject_template_globals(app, pagename, templatename, context, doctree):
         "music",
         "pygame",
         "Rect",
+        "geometry",
         "Surface",
         "sprite",
         "time",

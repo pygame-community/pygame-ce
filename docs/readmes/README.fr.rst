@@ -7,7 +7,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ **Français**  `فارسی`_
+`English`_ `简体中文`_ **Français**  `فارسی`_ `Español`_
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 `Pygame`_ est une bibliothèque multi-plateforme, libre et open-source
@@ -88,7 +88,7 @@ Des remerciements particuliers s'imposent également.
 * David Clark for filling the right-hand-man position
 * Ed Boraas and Francis Irving: Debian packages
 * Maxim Sobolev: FreeBSD packaging
-* Bob Ippolito: MacOS and OS X porting (much work!)
+* Bob Ippolito: macOS and OS X porting (much work!)
 * Jan Ekhol, Ray Kelm, and Peter Nicolai: putting up with early design ideas
 * Nat Pryce for starting our unit tests
 * Dan Richter for documentation work
@@ -131,6 +131,8 @@ de SEUL.ORG pour notre excellent hébergement.
 Dépendances
 ------------
 
+**note:** This section translation is out of date (September 2023)
+
 Pygame est évidemment très dépendant de SDL et Python. Il a aussi
 des liens, mais de même intègre plusieurs autres petites bibliothèques.
 Le module font s’appuie sur SDL_ttf, qui est lui-même dépendant de freetype.
@@ -143,19 +145,15 @@ multidimensionnels.
 Versions des dépendances:
 
 +----------+-----------------------------+
-| CPython  | >= 3.7 (Ou utiliser PyPy3)  |
+| CPython  | >= 3.8 (Ou utiliser PyPy3)  |
 +----------+-----------------------------+
-| SDL      | >= 2.0.8                    |
+| SDL      | >= 2.0.10                   |
 +----------+-----------------------------+
-| SDL_mixer| >= 2.0.0                    |
+| SDL_mixer| >= 2.0.4                    |
 +----------+-----------------------------+
-| SDL_image| >= 2.0.2                    |
+| SDL_image| >= 2.0.4                    |
 +----------+-----------------------------+
-| SDL_ttf  | >= 2.0.11                   |
-+----------+-----------------------------+
-| SDL_gfx  | (Optionel, fourni avec)     |
-+----------+-----------------------------+
-| NumPy    | >= 1.6.2 (Optionel)         |
+| SDL_ttf  | >= 2.0.15                   |
 +----------+-----------------------------+
 
 Licence
@@ -206,3 +204,4 @@ Voir les docs/licences pour les licences des dépendances.
 .. _简体中文: README.zh-cn.rst
 .. _English: ./../../README.rst
 .. _فارسی: README.fa.rst
+.. _Español: README.es.rst

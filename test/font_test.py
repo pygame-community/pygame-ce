@@ -2,6 +2,7 @@
 from re import T
 import sys
 import os
+import io
 import unittest
 import pathlib
 import platform
@@ -274,7 +275,7 @@ class FontTest(unittest.TestCase):
 
         # If we don't have a real display, don't do this test.
         # Transparent background doesn't seem to work without a read video card.
-        if os.environ.get("SDL_VIDEODRIVER") != "dummy":
+        if os.environ.get("SDL_VIDEODRIVER") != pygame.NULL_VIDEODRIVER:
             screen.fill((10, 10, 10))
             font_surface = f.render("   bar", True, (0, 0, 0), None)
             font_rect = font_surface.get_rect()
@@ -732,6 +733,12 @@ class FontTypeTest(unittest.TestCase):
         with open(font_path, "rb") as f:
             font = pygame_font.Font(f)
 
+    def test_load_from_invalid_sized_file_obj(self):
+        pygame.font.init()
+        f = io.StringIO()
+        with self.assertRaises(ValueError):
+            font = pygame.font.Font(f)
+
     def test_load_default_font_filename(self):
         # In font_init, a special case is when the filename argument is
         # identical to the default font file name.
@@ -831,6 +838,210 @@ class FontTypeTest(unittest.TestCase):
 
         else:
             self.assertRaises(pygame.error, font.set_direction, pygame.DIRECTION_RTL)
+
+    def test_font_method_should_raise_exception_after_quit(self):
+        # arrange
+        if pygame_font.__name__ == "pygame.ftfont":
+            surf = pygame.Surface((1, 1))
+            methods = [
+                ("get_sized_height", tuple()),
+                ("get_sized_ascender", tuple()),
+                ("get_sized_glyph_height", tuple()),
+                ("get_rect", ("any text",)),
+                ("get_metrics", ("any text",)),
+                ("get_sizes", tuple()),
+                ("render", ("any text", True, "white")),
+                (
+                    "render_to",
+                    (
+                        surf,
+                        (10, 11),
+                        "text",
+                    ),
+                ),  # surf
+                ("render_raw", ("any text",)),
+                (
+                    "render_raw_to",
+                    (
+                        surf.get_view("2"),
+                        None,
+                    ),
+                ),
+                ("get_ascent", tuple()),
+                ("get_bold", tuple()),
+                ("get_descent", tuple()),
+                ("get_height", tuple()),
+                ("get_italic", tuple()),
+                ("get_linesize", tuple()),
+                ("get_sized_descender", tuple()),
+                ("get_underline", tuple()),
+                ("metrics", ("any text",)),
+                ("set_bold", (True,)),
+                ("set_italic", (True,)),
+                ("set_underline", (True,)),
+                ("size", ("any Text",)),
+            ]
+            version = pygame.freetype.get_version()
+        else:
+            methods = [
+                ("get_height", tuple()),
+                ("get_descent", tuple()),
+                ("get_ascent", tuple()),
+                ("get_linesize", tuple()),
+                ("get_bold", tuple()),
+                ("set_bold", (True,)),
+                ("get_italic", tuple()),
+                ("set_italic", (True,)),
+                ("get_underline", tuple()),
+                ("set_underline", (True,)),
+                ("get_strikethrough", tuple()),
+                ("set_strikethrough", (True,)),
+                ("metrics", ("any text",)),
+                ("render", ("hello", True, "white")),
+                ("size", ("any text",)),
+                ("set_script", ("is it other text",)),
+                ("set_direction", ("is it text",)),
+            ]
+            version = pygame.font.get_sdl_ttf_version()
+            if version >= (2, 0, 18):
+                methods.append(("get_point_size", tuple()))
+                methods.append(("set_point_size", (34,)))
+
+        font = pygame_font.Font(None, 10)
+        actual_names = []
+        for n in sorted(dir(font)):
+            if n == "align" and version < (2, 20, 0):
+                print(f"align skipped for sld ttf version {version} < 2.20.0")
+                continue
+            if n == "point_size" and version < (2, 0, 18):
+                print(f"point_size skipped for sld ttf version {version} < 2.20.0")
+                continue
+            if n == "get_point_size" and version < (2, 0, 18):
+                print(f"get_point_size skipped for sld ttf version {version} < 2.20.0")
+                continue
+            if n == "set_point_size" and version < (2, 0, 18):
+                print(f"set_point_size skipped for sld ttf version {version} < 2.20.0")
+                continue
+            if (
+                n == "get_strikethrough" or n == "set_strikethrough"
+            ) and pygame_font.__name__ == "pygame.ftfont":
+                # this is only emulated in python
+                continue
+            if n.startswith("_"):
+                continue
+            if not callable(getattr(font, n)):
+                continue
+            actual_names.append(n)
+        expected_names = [n for n, a in sorted(methods)]
+        self.assertEqual(
+            len(expected_names),
+            len(actual_names),
+            msg=f"ensure all methods are checked \n{expected_names} \n!= \n{actual_names}",
+        )
+
+        for name, args in methods:
+            # import sys
+            # print("###", name,file=sys.__stdout__,flush=True)
+            with self.subTest(name=name):
+                # arrange
+                font = pygame_font.Font(None, 16)
+                pygame_font.quit()
+                pygame_font.init()
+
+                # act / assert
+                self.assertRaises(pygame.error, getattr(font, name), *args)
+
+    def test_font_property_should_raise_exception_after_quit(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            properties = [
+                ("style", 10.5),
+                ("height", None),
+                ("ascender", None),
+                ("descender", None),
+                ("name", None),
+                ("style_name", None),
+                ("path", None),
+                ("scalable", None),
+                ("fixed_width", None),
+                ("fixed_sizes", None),
+                ("antialiased", 45),
+                ("kerning", 46),
+                ("vertical", 47),
+                ("pad", 48),
+                ("oblique", 1),
+                ("strong", 1),
+                ("underline", 1),
+                ("wide", 1),
+                ("strength", 49),
+                ("underline_adjustment", 50),
+                ("ucs4", 1),
+                ("use_bitmap_strikes", 1),
+                ("rotation", 33),
+                ("fgcolor", (1, 1, 1)),
+                ("bgcolor", (2, 2, 2)),
+                ("origin", None),
+                ("bold", True),
+                ("italic", True),
+                ("resolution", None),
+            ]
+            version = pygame.freetype.get_version()
+        else:
+            properties = [
+                ("name", None),
+                ("style_name", None),
+                ("bold", True),
+                ("italic", True),
+                ("underline", True),
+                ("strikethrough", True),
+            ]
+            version = pygame.font.get_sdl_ttf_version()
+            if version >= (2, 20, 0):
+                properties.append(("align", 1))
+            if version >= (2, 0, 18):
+                properties.append(("point_size", 1))
+
+        font = pygame_font.Font(None, 10)
+        actual_names = []
+
+        for n in sorted(dir(font)):
+            if n == "align" and version < (2, 20, 0):
+                print(f"align skipped for sld ttf version {version} < 2.20.0")
+                continue
+            if n == "point_size" and version < (2, 0, 18):
+                print(f"point_size skipped for sld ttf version {version} < 2.0.18")
+                continue
+            if n == "strikethrough" and pygame_font.__name__ == "pygame.ftfont":
+                # this is only emulated in python
+                continue
+            if n.startswith("_"):
+                continue
+            if callable(getattr(font, n)):
+                continue
+            actual_names.append(n)
+
+        expected_names = [n for n, a in sorted(properties)]
+        self.assertEqual(
+            len(expected_names),
+            len(actual_names),
+            msg=f"ensure all properties are checked \n{expected_names} \n!= \n{actual_names}",
+        )
+
+        for name, arg in properties:
+            # import sys
+            # print(">>>", name,file=sys.__stdout__,flush=True)
+            with self.subTest(name=name + " get"):
+                # arrange
+                font = pygame_font.Font(None, 16)
+                pygame_font.quit()
+                pygame_font.init()
+
+                # act / assert
+                self.assertRaises(pygame.error, getattr, font, name)  # read
+
+            if arg is not None:
+                with self.subTest(name=name + " write"):
+                    # act / assert
+                    self.assertRaises(pygame.error, setattr, font, name, arg)  # write
 
 
 @unittest.skipIf(IS_PYPY, "pypy skip known failure")  # TODO

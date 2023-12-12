@@ -11,7 +11,14 @@ from pygame import sprite
 
 
 class SpriteModuleTest(unittest.TestCase):
-    pass
+    def test_deprecation__sprite_submodule(self):
+        # Test that using the old cython sprite module raises
+        # a deprecation warning.
+        with self.assertWarns(DeprecationWarning):
+            import pygame._sprite
+
+            pygame.init()
+            test_group = pygame.sprite.Group()
 
 
 ######################### SPRITECOLLIDE FUNCTIONS TEST #########################

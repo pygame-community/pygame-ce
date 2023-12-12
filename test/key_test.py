@@ -196,7 +196,7 @@ class KeyModuleTest(unittest.TestCase):
         self.assertFalse(focused)  # No window to focus
         self.assertIsInstance(focused, int)
         # Dummy video driver never gets keyboard focus.
-        if os.environ.get("SDL_VIDEODRIVER") != "dummy":
+        if os.environ.get("SDL_VIDEODRIVER") != pygame.NULL_VIDEODRIVER:
             # Positive test, fullscreen with events grabbed
             display_sizes = pygame.display.list_modes()
             if display_sizes == -1:
@@ -233,6 +233,14 @@ class KeyModuleTest(unittest.TestCase):
     def test_get_pressed(self):
         states = pygame.key.get_pressed()
         self.assertEqual(states[pygame.K_RIGHT], 0)
+
+    def test_get_just_pressed(self):
+        pressed_keys = pygame.key.get_just_pressed()
+        self.assertEqual(pressed_keys[pygame.K_RIGHT], 0)
+
+    def test_get_just_released(self):
+        released_keys = pygame.key.get_just_released()
+        self.assertEqual(released_keys[pygame.K_RIGHT], 0)
 
     def test_get_pressed_not_iter(self):
         states = pygame.key.get_pressed()
