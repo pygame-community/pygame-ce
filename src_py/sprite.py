@@ -395,7 +395,8 @@ class AbstractGroup:
     def add_internal(
         self,
         sprite,
-        layer=None,  # noqa pylint: disable=unused-argument; supporting legacy derived classes that override in non-pythonic way
+        layer=None,
+        # noqa pylint: disable=unused-argument; supporting legacy derived classes that override in non-pythonic way
     ):
         """
         For adding a sprite to this group internally.
@@ -435,7 +436,8 @@ class AbstractGroup:
 
         """
         return self.__class__(  # noqa pylint: disable=too-many-function-args
-            self._spritelist  # Needed because copy() won't work on AbstractGroup
+            self._spritelist
+            # Needed because copy() won't work on AbstractGroup
         )
 
     def __iter__(self):
@@ -652,12 +654,10 @@ class AbstractGroup:
 
     @spritedict.setter
     def spritedict(self, _):
-        warn(
-            "Direct access to undocumented spritedict attribute will "
-            "be removed from Group in 2.6.0. Use .sprites() instead to get "
-            "access to sprites.",
-            DeprecationWarning,
-            stacklevel=2,
+        raise AttributeError(
+            "Ability to set undocumented spritedict attribute has been removed."
+            "The attribute will be removed entirely from Group in 2.6.0. "
+            "Use .sprites() instead to get access to sprites."
         )
 
 
@@ -731,7 +731,8 @@ class RenderUpdates(Group):
     def add_internal(
         self,
         sprite,
-        layer=None,  # noqa pylint: disable=unused-argument; supporting legacy derived classes that override in non-pythonic way
+        layer=None,
+        # noqa pylint: disable=unused-argument; supporting legacy derived classes that override in non-pythonic way
     ):
         """
         For adding a sprite to this group internally.
