@@ -470,6 +470,27 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
     }
 }
 
+/* Defines the blit procedure at the core of
+ * alphablit_alpha_sse2_argb_no_surf_alpha_opaque_dst
+ *
+ * Input variables: src1, dst1, unpacked_alpha
+ *       containing unpacked 16 bit lanes of src, dst, and src alpha
+ * Output variables: sub_dst
+ * */
+#define ARGB_NO_SURF_ALPHA_OPAQUE_DST_PROCEDURE                      \
+    /* (srcRGB - dstRGB) */                                          \
+    sub_dst = _mm_sub_epi16(src1, dst1);                             \
+    /* (srcRGB - dstRGB) * srcA */                                   \
+    sub_dst = _mm_mullo_epi16(sub_dst, unpacked_alpha);              \
+    /* (srcRGB - dstRGB) * srcA + srcRGB */                          \
+    sub_dst = _mm_add_epi16(sub_dst, src1);                          \
+    /* (dstRGB << 8) */                                              \
+    dst1 = _mm_slli_epi16(dst1, 8);                                  \
+    /* ((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) */        \
+    sub_dst = _mm_add_epi16(sub_dst, dst1);                          \
+    /* (((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) >> 8) */ \
+    sub_dst = _mm_srli_epi16(sub_dst, 8);
+
 void
 alphablit_alpha_sse2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
 {
@@ -542,24 +563,9 @@ alphablit_alpha_sse2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
                 /* 0A0R0G0B0A0R0G0B -> dst1 */
                 dst1 = _mm_unpacklo_epi8(pixels_dst, mm_zero);
 
-                /* (srcRGB - dstRGB) */
-                sub_dst = _mm_sub_epi16(src1, dst1);
+                ARGB_NO_SURF_ALPHA_OPAQUE_DST_PROCEDURE
 
-                /* (srcRGB - dstRGB) * srcA */
-                sub_dst = _mm_mullo_epi16(sub_dst, unpacked_alpha);
-
-                /* (srcRGB - dstRGB) * srcA + srcRGB */
-                sub_dst = _mm_add_epi16(sub_dst, src1);
-
-                /* (dstRGB << 8) */
-                dst1 = _mm_slli_epi16(dst1, 8);
-
-                /* ((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) */
-                sub_dst = _mm_add_epi16(sub_dst, dst1);
-
-                /* (((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) >>
-                 * 8)*/
-                batch_a_dst = _mm_srli_epi16(sub_dst, 8);
+                batch_a_dst = sub_dst;
 
                 /*
                  * BATCH B (the 2 high pixels)
@@ -576,34 +582,14 @@ alphablit_alpha_sse2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
                 /* 0A0R0G0B0A0R0G0B -> dst1 */
                 dst1 = _mm_unpackhi_epi8(pixels_dst, mm_zero);
 
-                /* (srcRGB - dstRGB) */
-                sub_dst = _mm_sub_epi16(src1, dst1);
-
-                /* (srcRGB - dstRGB) * srcA */
-                sub_dst = _mm_mullo_epi16(sub_dst, unpacked_alpha);
-
-                /* (srcRGB - dstRGB) * srcA + srcRGB */
-                sub_dst = _mm_add_epi16(sub_dst, src1);
-
-                /* (dstRGB << 8) */
-                dst1 = _mm_slli_epi16(dst1, 8);
-
-                /* ((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) */
-                sub_dst = _mm_add_epi16(sub_dst, dst1);
-
-                /* (((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) >>
-                 * 8)*/
-                sub_dst = _mm_srli_epi16(sub_dst, 8);
+                ARGB_NO_SURF_ALPHA_OPAQUE_DST_PROCEDURE
 
                 /*
                  * Combine the batches and store
-                 */
-
-                /* pack everything back into a pixel with zeroed out alpha
+                 * pack everything back into a pixel with zeroed out alpha
                  */
                 sub_dst = _mm_packus_epi16(batch_a_dst, sub_dst);
                 sub_dst = _mm_and_si128(sub_dst, mm_rgb_mask);
-
                 _mm_storeu_si128(dstp128, sub_dst);
 
                 srcp128++;
@@ -625,7 +611,7 @@ alphablit_alpha_sse2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
             /* 0000000000000A0A -> rgb_src_alpha */
             mm_src_alpha = _mm_unpacklo_epi16(mm_src_alpha, mm_src_alpha);
             /* 000000000A0A0A0A -> rgb_src_alpha */
-            mm_src_alpha = _mm_unpacklo_epi32(mm_src_alpha, mm_src_alpha);
+            unpacked_alpha = _mm_unpacklo_epi32(mm_src_alpha, mm_src_alpha);
 
             /* 000000000A0R0G0B -> src1 */
             src1 = _mm_unpacklo_epi8(src1, mm_zero);
@@ -635,24 +621,7 @@ alphablit_alpha_sse2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
             /* 000000000A0R0G0B -> dst1 */
             dst1 = _mm_unpacklo_epi8(dst1, mm_zero);
 
-            /* (srcRGB - dstRGB) */
-            sub_dst = _mm_sub_epi16(src1, dst1);
-
-            /* (srcRGB - dstRGB) * srcA */
-            sub_dst = _mm_mullo_epi16(sub_dst, mm_src_alpha);
-
-            /* (srcRGB - dstRGB) * srcA + srcRGB */
-            sub_dst = _mm_add_epi16(sub_dst, src1);
-
-            /* (dstRGB << 8) */
-            dst1 = _mm_slli_epi16(dst1, 8);
-
-            /* ((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) */
-            sub_dst = _mm_add_epi16(sub_dst, dst1);
-
-            /* (((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) >>
-             * 8)*/
-            sub_dst = _mm_srli_epi16(sub_dst, 8);
+            ARGB_NO_SURF_ALPHA_OPAQUE_DST_PROCEDURE
 
             /* pack everything back into a pixel */
             sub_dst = _mm_packus_epi16(sub_dst, mm_zero);
