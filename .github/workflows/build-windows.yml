@@ -132,14 +132,8 @@ jobs:
       CIBW_BUILD: ${{ matrix.pyversions }}
       CIBW_ARCHS: ${{ matrix.winarch }}
 
-#      Not sure if we can use this later. I had to move the docs into the steps section for it
-#      to be included in the wheel
-#      CIBW_BEFORE_BUILD: |
-#        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
-#        set DISTUTILS_USE_SDK=1
-#        set MSSdk=1
-#        pip install setuptools wheel requests numpy Sphinx
-#        python setup.py docs
+      CIBW_BEFORE_BUILD: pip install numpy Sphinx"<7.2.0" && python setup.py docs
+
       CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,timing --time_out 300
 
       # Increase pip debugging output
@@ -151,15 +145,9 @@ jobs:
       - uses: TheMrMilchmann/setup-msvc-dev@v3  # this lets us use the developer command prompt on windows
         with:
           arch: ${{ matrix.msvc-dev-arch }}
+
       - name: Build and test wheels
-        shell: cmd
-        run: |
-          set DISTUTILS_USE_SDK=1
-          set MSSdk=1
-          python -m pip install setuptools wheel requests numpy Sphinx"<7.2.0"
-          python setup.py docs
-          python -m pip --disable-pip-version-check install cibuildwheel==2.16.4
-          python -m cibuildwheel --output-dir wheelhouse
+        uses: pypa/cibuildwheel@v2.16.5
 
       - uses: actions/upload-artifact@v4
         with:
