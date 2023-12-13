@@ -598,7 +598,7 @@ class ImageModuleTest(unittest.TestCase):
                 test_surface.set_at((j + 0, i), (intensity, i, i, i))
                 test_surface.set_at((j + 16, i), (i, intensity, i, i))
                 test_surface.set_at((j + 32, i), (i, i, intensity, i))
-                test_surface.set_at((j + 32, i), (i, i, i, intensity))
+                test_surface.set_at((j + 48, i), (i, i, i, intensity))
 
         self._assertSurfaceEqual(
             test_surface, test_surface, "failing with identical surfaces"
@@ -652,7 +652,7 @@ class ImageModuleTest(unittest.TestCase):
                 test_surface.set_at((j + 0, i), (intensity, i, i, i))
                 test_surface.set_at((j + 16, i), (i, intensity, i, i))
                 test_surface.set_at((j + 32, i), (i, i, intensity, i))
-                test_surface.set_at((j + 32, i), (i, i, i, intensity))
+                test_surface.set_at((j + 48, i), (i, i, i, intensity))
 
         fmt = "RGB"
         fmt_buf = pygame.image.tobytes(test_surface, fmt)
