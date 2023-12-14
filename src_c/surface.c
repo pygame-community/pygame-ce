@@ -1590,14 +1590,14 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
 static SDL_Surface *
 pg_DisplayFormat(SDL_Surface *surface)
 {
-    if (!pg_GetDefaultConvertFormat()) {
-        SDL_SetError("No convert format has been set, try display.set_mode()"
-                     // " or Window.get_surface()"
-                     // (uncomment when Window API is published)
-        );
+    SDL_PixelFormat *default_format = pg_GetDefaultConvertFormat();
+    if (!default_format) {
+        SDL_SetError(
+            "No convert format has been set, try display.set_mode()"
+            " or Window.get_surface().");
         return NULL;
     }
-    return PG_ConvertSurface(surface, pg_GetDefaultConvertFormat());
+    return PG_ConvertSurface(surface, default_format);
 }
 
 static SDL_Surface *
@@ -1611,10 +1611,9 @@ pg_DisplayFormatAlpha(SDL_Surface *surface)
     Uint32 bmask = 0x000000ff;
 
     if (!pg_GetDefaultConvertFormat()) {
-        SDL_SetError("No convert format has been set, try display.set_mode()"
-                     // " or Window.get_surface()"
-                     // (uncomment when Window API is published)
-        );
+        SDL_SetError(
+            "No convert format has been set, try display.set_mode()"
+            " or Window.get_surface().");
         return NULL;
     }
     dformat = pg_GetDefaultConvertFormat();
