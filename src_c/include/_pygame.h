@@ -497,10 +497,10 @@ typedef struct {
 } pgWindowObject;
 
 #ifndef PYGAMEAPI_WINDOW_INTERNAL
-#define pgWindow_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_window, 0))
+#define pgWindow_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(window, 0))
 #define pgWindow_Check(x) \
     (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
-#define import_pygame_window() IMPORT_PYGAME_MODULE(_window)
+#define import_pygame_window() IMPORT_PYGAME_MODULE(window)
 #endif
 
 #define IMPORT_PYGAME_MODULE _IMPORT_PYGAME_MODULE
@@ -521,7 +521,7 @@ PYGAMEAPI_DEFINE_SLOTS(rwobject);
 PYGAMEAPI_DEFINE_SLOTS(pixelarray);
 PYGAMEAPI_DEFINE_SLOTS(color);
 PYGAMEAPI_DEFINE_SLOTS(math);
-PYGAMEAPI_DEFINE_SLOTS(_window);
+PYGAMEAPI_DEFINE_SLOTS(window);
 PYGAMEAPI_DEFINE_SLOTS(geometry);
 #else /* ~PYGAME_H */
 PYGAMEAPI_EXTERN_SLOTS(base);
@@ -535,7 +535,7 @@ PYGAMEAPI_EXTERN_SLOTS(rwobject);
 PYGAMEAPI_EXTERN_SLOTS(pixelarray);
 PYGAMEAPI_EXTERN_SLOTS(color);
 PYGAMEAPI_EXTERN_SLOTS(math);
-PYGAMEAPI_EXTERN_SLOTS(_window);
+PYGAMEAPI_EXTERN_SLOTS(window);
 PYGAMEAPI_EXTERN_SLOTS(geometry);
 
 #endif /* ~PYGAME_H */

@@ -2567,7 +2567,7 @@ static PyObject *__pyx_f_6pygame_5_sdl2_5video_8Renderer_blit(struct __pyx_obj_6
 
 /* Module declarations from "pygame.rect" */
 
-/* Module declarations from "pygame._window" */
+/* Module declarations from "pygame.window" */
 
 /* Module declarations from "cpython.version" */
 
@@ -22937,9 +22937,9 @@ static int __Pyx_modinit_type_init_code(void) {
   __pyx_t_2 = PyImport_ImportModule("pygame.rect"); if (unlikely(!__pyx_t_2)) __PYX_ERR(2, 425, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_ptype_6pygame_5_sdl2_5video_Rect = __Pyx_ImportType_3_0_0(__pyx_t_2, "pygame.rect", "Rect", sizeof(pgRectObject), __PYX_GET_STRUCT_ALIGNMENT_3_0_0(pgRectObject),__Pyx_ImportType_CheckSize_Warn_3_0_0); if (!__pyx_ptype_6pygame_5_sdl2_5video_Rect) __PYX_ERR(2, 425, __pyx_L1_error)
-  __pyx_t_3 = PyImport_ImportModule("pygame._window"); if (unlikely(!__pyx_t_3)) __PYX_ERR(2, 429, __pyx_L1_error)
+  __pyx_t_3 = PyImport_ImportModule("pygame.window"); if (unlikely(!__pyx_t_3)) __PYX_ERR(2, 429, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_ptype_6pygame_5_sdl2_5video_Window = __Pyx_ImportType_3_0_0(__pyx_t_3, "pygame._window", "Window", sizeof(pgWindowObject), __PYX_GET_STRUCT_ALIGNMENT_3_0_0(pgWindowObject),__Pyx_ImportType_CheckSize_Warn_3_0_0); if (!__pyx_ptype_6pygame_5_sdl2_5video_Window) __PYX_ERR(2, 429, __pyx_L1_error)
+  __pyx_ptype_6pygame_5_sdl2_5video_Window = __Pyx_ImportType_3_0_0(__pyx_t_3, "pygame.window", "Window", sizeof(pgWindowObject), __PYX_GET_STRUCT_ALIGNMENT_3_0_0(pgWindowObject),__Pyx_ImportType_CheckSize_Warn_3_0_0); if (!__pyx_ptype_6pygame_5_sdl2_5video_Window) __PYX_ERR(2, 429, __pyx_L1_error)
   __pyx_vtabptr_6pygame_5_sdl2_5video_Renderer = &__pyx_vtable_6pygame_5_sdl2_5video_Renderer;
   __pyx_vtable_6pygame_5_sdl2_5video_Renderer.get_viewport = (PyObject *(*)(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *, int __pyx_skip_dispatch))__pyx_f_6pygame_5_sdl2_5video_8Renderer_get_viewport;
   __pyx_vtable_6pygame_5_sdl2_5video_Renderer.blit = (PyObject *(*)(struct __pyx_obj_6pygame_5_sdl2_5video_Renderer *, PyObject *, int __pyx_skip_dispatch, struct __pyx_opt_args_6pygame_5_sdl2_5video_8Renderer_blit *__pyx_optional_args))__pyx_f_6pygame_5_sdl2_5video_8Renderer_blit;
