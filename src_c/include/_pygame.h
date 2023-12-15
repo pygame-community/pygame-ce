@@ -177,7 +177,7 @@ typedef struct pg_bufferinfo_s {
     (*(SDL_PixelFormat * (*)(void)) PYGAMEAPI_GET_SLOT(base, 27))
 
 #define pg_SetDefaultConvertFormat \
-    (*(void (*)(SDL_PixelFormat *))PYGAMEAPI_GET_SLOT(base, 28))
+    (*(SDL_PixelFormat * (*)(Uint32)) PYGAMEAPI_GET_SLOT(base, 28))
 
 #define import_pygame_base() IMPORT_PYGAME_MODULE(base)
 #endif /* ~PYGAMEAPI_BASE_INTERNAL */

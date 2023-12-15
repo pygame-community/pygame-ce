@@ -164,8 +164,13 @@ window_get_surface(pgWindowObject *self)
     }
     self->surf->surf = _surf;
 
-    if (pg_GetDefaultConvertFormat() == NULL)
-        pg_SetDefaultConvertFormat(_surf->format);
+    if (pg_GetDefaultConvertFormat() == NULL) {
+        if (pg_SetDefaultConvertFormat(_surf->format->format) == NULL) {
+            /* This is very unlikely, I think only would happen if SDL runs
+             * out of memory when allocating the format. */
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+    }
 
     Py_INCREF(self->surf);
     return (PyObject *)self->surf;

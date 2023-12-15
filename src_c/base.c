@@ -2068,10 +2068,14 @@ pg_GetDefaultConvertFormat(void)
     return pg_default_convert_format;
 }
 
-static void
-pg_SetDefaultConvertFormat(SDL_PixelFormat *fmt)
+static SDL_PixelFormat *
+pg_SetDefaultConvertFormat(Uint32 format)
 {
-    pg_default_convert_format = fmt;
+    if (pg_default_convert_format != NULL) {
+        SDL_FreeFormat(pg_default_convert_format);
+    }
+    pg_default_convert_format = SDL_AllocFormat(format);
+    return pg_default_convert_format;  // returns for NULL error checking
 }
 
 static char *
