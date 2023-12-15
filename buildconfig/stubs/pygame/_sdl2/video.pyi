@@ -3,7 +3,7 @@ from typing import Any, Generator, Iterable, Optional, Tuple, Union
 from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
-from pygame.window import Window
+from pygame.window import Window as Window
 
 from .._common import ColorValue, RectValue, Coordinate
 
