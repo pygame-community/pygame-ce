@@ -1610,13 +1610,13 @@ pg_DisplayFormatAlpha(SDL_Surface *surface)
     Uint32 gmask = 0x0000ff00;
     Uint32 bmask = 0x000000ff;
 
-    if (!pg_GetDefaultConvertFormat()) {
+    dformat = pg_GetDefaultConvertFormat();
+    if (!dformat) {
         SDL_SetError(
             "No convert format has been set, try display.set_mode()"
             " or Window.get_surface().");
         return NULL;
     }
-    dformat = pg_GetDefaultConvertFormat();
 
     switch (dformat->BytesPerPixel) {
         case 2:
