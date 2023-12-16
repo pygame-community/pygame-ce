@@ -426,7 +426,7 @@ cdef extern from "pygame.h" nogil:
         cdef SDL_Rect r
         cdef object weakreflist
     
-    ctypedef class pygame._window.Window [object pgWindowObject]:
+    ctypedef class pygame.window.Window [object pgWindowObject]:
         cdef SDL_Window *_win
         cdef SDL_bool _is_borrowed
 

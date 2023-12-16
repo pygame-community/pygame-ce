@@ -3,6 +3,7 @@ from typing import Any, Generator, Iterable, Optional, Tuple, Union
 from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
+from pygame.window import Window as Window
 
 from .._common import ColorValue, RectValue, Coordinate
 
@@ -37,10 +38,6 @@ def messagebox(
     return_button: int = 0,
     escape_button: int = 0,
 ) -> int: ...
-
-from pygame._window import Window as Window
-
-_Window = Window
 
 class Texture:
     def __init__(
