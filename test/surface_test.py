@@ -1245,8 +1245,8 @@ class GeneralSurfaceTests(unittest.TestCase):
                 except pygame.error:
                     self.fail("convert() should not raise an exception here.")
 
-            self.assertRaisesRegex(pygame.error, "No video mode", surf.convert)
-            self.assertRaisesRegex(pygame.error, "No video mode", surf8bit.convert)
+            self.assertRaisesRegex(pygame.error, "No convert format", surf.convert)
+            self.assertRaisesRegex(pygame.error, "No convert format", surf8bit.convert)
 
             pygame.display.set_mode((640, 480))
             try:
@@ -1266,7 +1266,9 @@ class GeneralSurfaceTests(unittest.TestCase):
 
         pygame.display.init()
         try:
-            self.assertRaisesRegex(pygame.error, "No video mode", surf.convert_alpha)
+            self.assertRaisesRegex(
+                pygame.error, "No convert format", surf.convert_alpha
+            )
 
             pygame.display.set_mode((640, 480))
             try:
