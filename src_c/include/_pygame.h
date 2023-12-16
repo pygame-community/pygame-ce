@@ -496,10 +496,18 @@ typedef struct pgColorObject pgColorObject;
 /*
  * Window module
  */
+
+typedef struct {
+    SDL_Rect hit_area;
+    SDL_HitTestResult hit_type;
+} pgWindowHitTestData;
+
 typedef struct {
     PyObject_HEAD SDL_Window *_win;
     SDL_bool _is_borrowed;
     pgSurfaceObject *surf;
+    pgWindowHitTestData *hit_test_data;
+    int num_hit_test_data;
 } pgWindowObject;
 
 #ifndef PYGAMEAPI_WINDOW_INTERNAL

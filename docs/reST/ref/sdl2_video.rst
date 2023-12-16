@@ -349,6 +349,76 @@
 
       .. versionadded:: 2.4.0
 
+   .. method:: add_draggable_hit_test
+
+      | :sl:`Add a draggable hit test`
+      | :sg:`add_draggable_hit_test(hit_rect) -> None`
+
+      :param rect hit_rect: The rect for hit test.
+      :raises pygame.error: If platform don't support this functionality.
+
+      Normally windows are dragged and resized by decorations provided by the
+      system window manager (a title bar, borders, etc), but for some apps, it
+      makes sense to drag them from somewhere else inside the window itself; for
+      example, one might have a borderless window that wants to be draggable from
+      any part, or simulate its own title bar, etc.
+
+      This function allows you to create a "draggable hit test" rect on the window.
+      That means when user drags this rect, the whole window is dragged and moved.
+      
+      Multiple hit tests can be added by calling this function multiple times.
+      Use :func:`clear_hit_test` to remove all hit tests.
+
+      A ``WINDOWHITTEST`` event will be pushed to the event queue when a hit test
+      is triggered.
+
+      Mouse input may not be delivered to your application if it is within a
+      special area; the OS will often apply that input to moving the window or
+      resizing the window and not deliver it to the application.
+
+      .. seealso:: :func:`add_resize_hit_test`
+      .. seealso:: :func:`clear_hit_test`.
+      .. versionadded:: 2.4.0
+   
+   .. method:: add_resize_hit_test
+
+      | :sl:`Add a resize hit test`
+      | :sg:`add_resize_hit_test(hit_rect, orientation) -> None`
+
+      :param rect hit_rect: The rect for hit test.
+      :param str orientation: The orientation of resie.
+      :raises pygame.error: If platform don't support this functionality.
+
+      This function allows you to create a "resize hit test" rect. By dragging
+      this rect, user can resize the window (the window should be resizable).
+      Use ``orientation`` parameter to specify the orientation of resize.
+
+      The ``orientation`` can be ``"topleft"``, ``"left"``, ``"bottomleft"``, 
+      ``"bottom"``, ``"bottomright"``, ``"right"``, ``"topright"`` or ``"top"``.
+
+      Multiple hit tests can be added by calling this function multiple times.
+      Use :func:`clear_hit_test` to remove all hit tests.
+
+      For details about hit test, see :func:`add_draggable_hit_test`
+
+      .. seealso:: :func:`add_draggable_hit_test`
+      .. seealso:: :func:`clear_hit_test`
+      .. versionadded:: 2.4.0
+
+   .. method:: clear_hit_test
+
+      | :sl:`Clear all hit tests`
+      | :sg:`clear_hit_test() -> None`
+
+      :raises pygame.error: If platform don't support this functionality.
+
+      Clear all hit tests created by :func:`add_draggable_hit_test`
+      and :func:`add_resize_hit_test` on this window.
+
+      .. seealso:: :func:`add_draggable_hit_test`
+      .. seealso:: :func:`add_resize_hit_test`
+      .. versionadded:: 2.4.0
+
    .. method:: set_windowed
 
       | :sl:`Enable windowed mode (exit fullscreen)`

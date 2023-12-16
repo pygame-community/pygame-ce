@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, Union, final
+from typing import Literal, Optional, Tuple, Union, final
 
 from pygame._common import Coordinate, RectValue
 from pygame.locals import WINDOWPOS_UNDEFINED
@@ -28,6 +28,22 @@ class Window:
     def set_icon(self, icon: Surface, /) -> None: ...
     def get_surface(self) -> Surface: ...
     def flip(self) -> None: ...
+    def add_draggable_hit_test(self, hit_rect: RectValue) -> None: ...
+    def add_resize_hit_test(
+        self,
+        hit_rect: RectValue,
+        orientation: Literal[
+            'topleft',
+            'left',
+            'bottomleft',
+            'bottom',
+            'bottomright',
+            'right',
+            'topright',
+            'top'
+        ]
+    ) -> None: ...
+    def clear_hit_test(self) -> None: ...
     
     grab_mouse: bool
     grab_keyboard: bool

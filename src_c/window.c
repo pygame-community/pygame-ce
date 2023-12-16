@@ -96,6 +96,11 @@ static PyTypeObject pgWindow_Type;
 #define pgWindow_Check(x) \
     (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
 
+#define WINDOW_FREE_HIT_TEST_DATA(pg_window) \
+    free(pg_window->hit_test_data);          \
+    pg_window->hit_test_data = NULL;         \
+    pg_window->num_hit_test_data = 0;
+
 static PyObject *
 get_grabbed_window(PyObject *self, PyObject *_null)
 {
@@ -721,6 +726,117 @@ window_get_display_index(pgWindowObject *self, PyObject *_null)
     return PyLong_FromLong(index);
 }
 
+static SDL_HitTestResult
+_window_hit_test_callback(SDL_Window *win, const SDL_Point *point, void *data)
+{
+    pgWindowObject *pg_win = SDL_GetWindowData(win, "pg_window");
+    if (pg_win == NULL)
+        return SDL_HITTEST_NORMAL;
+
+    pgWindowHitTestData *hit_test_data = pg_win->hit_test_data;
+    if (hit_test_data == NULL)
+        return SDL_HITTEST_NORMAL;
+
+    for (int i = 0; i < pg_win->num_hit_test_data; i++) {
+        if (SDL_PointInRect(point, &(hit_test_data[i].hit_area)))
+            return hit_test_data[i].hit_type;
+    }
+
+    return SDL_HITTEST_NORMAL;
+}
+
+static PyObject *
+_window_add_hit_test(pgWindowObject *self, PyObject *hit_pg_rect,
+                     SDL_HitTestResult hit_type)
+{
+    SDL_Rect tmp_rect;
+    SDL_Rect *hit_rect;
+    SDL_bool need_set_hittest = SDL_FALSE;
+
+    if (self->num_hit_test_data == 0)
+        need_set_hittest = SDL_TRUE;
+
+    hit_rect = pgRect_FromObject(hit_pg_rect, &tmp_rect);
+    if (!hit_rect)
+        return RAISE(PyExc_TypeError, "area should be a rect-like object.");
+
+    pgWindowHitTestData *tmp =
+        realloc(self->hit_test_data,
+                (self->num_hit_test_data + 1) * sizeof(pgWindowHitTestData));
+    if (!tmp)
+        return PyErr_NoMemory();
+
+    self->hit_test_data = tmp;
+    self->num_hit_test_data++;
+    self->hit_test_data[self->num_hit_test_data - 1].hit_area = *hit_rect;
+    self->hit_test_data[self->num_hit_test_data - 1].hit_type = hit_type;
+
+    if (need_set_hittest) {
+        int result =
+            SDL_SetWindowHitTest(self->_win, _window_hit_test_callback, NULL);
+        if (result != 0)
+            return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+window_add_resize_hit_test(pgWindowObject *self, PyObject *args,
+                           PyObject *kwargs)
+{
+    PyObject *hit_rect = NULL;
+    SDL_HitTestResult hit_type;
+    char *orientation_str;
+    char *keywords[] = {"hit_rect", "orientation", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Os", keywords, &hit_rect,
+                                     &orientation_str))
+        return NULL;
+
+    if (!strcmp(orientation_str, "topleft"))
+        hit_type = SDL_HITTEST_RESIZE_TOPLEFT;
+    else if (!strcmp(orientation_str, "left"))
+        hit_type = SDL_HITTEST_RESIZE_LEFT;
+    else if (!strcmp(orientation_str, "bottomleft"))
+        hit_type = SDL_HITTEST_RESIZE_BOTTOMLEFT;
+    else if (!strcmp(orientation_str, "bottom"))
+        hit_type = SDL_HITTEST_RESIZE_BOTTOM;
+    else if (!strcmp(orientation_str, "bottomright"))
+        hit_type = SDL_HITTEST_RESIZE_BOTTOMRIGHT;
+    else if (!strcmp(orientation_str, "right"))
+        hit_type = SDL_HITTEST_RESIZE_RIGHT;
+    else if (!strcmp(orientation_str, "topright"))
+        hit_type = SDL_HITTEST_RESIZE_TOPRIGHT;
+    else if (!strcmp(orientation_str, "top"))
+        hit_type = SDL_HITTEST_RESIZE_TOP;
+    else
+        return RAISE(PyExc_TypeError,
+                     "orientation should be 'topleft', 'left', 'bottomleft', "
+                     "'bottom', 'bottomright', 'right', 'topright' or 'top'");
+    return _window_add_hit_test(self, hit_rect, hit_type);
+}
+
+static PyObject *
+window_add_draggable_hit_test(pgWindowObject *self, PyObject *args,
+                              PyObject *kwargs)
+{
+    PyObject *hit_rect = NULL;
+    char *keywords[] = {"hit_rect", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", keywords, &hit_rect))
+        return NULL;
+    return _window_add_hit_test(self, hit_rect, SDL_HITTEST_DRAGGABLE);
+}
+
+static PyObject *
+window_clear_hit_test(pgWindowObject *self)
+{
+    int result = SDL_SetWindowHitTest(self->_win, NULL, NULL);
+    if (result != 0)
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    WINDOW_FREE_HIT_TEST_DATA(self);
+    Py_RETURN_NONE;
+}
+
 static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
@@ -740,6 +856,8 @@ window_dealloc(pgWindowObject *self, PyObject *_null)
 
         Py_DECREF(self->surf);
     }
+
+    WINDOW_FREE_HIT_TEST_DATA(self);
 
     Py_TYPE(self)->tp_free(self);
 }
@@ -942,6 +1060,8 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     self->_win = _win;
     self->_is_borrowed = SDL_FALSE;
     self->surf = NULL;
+    self->hit_test_data = NULL;
+    self->num_hit_test_data = 0;
 
     SDL_SetWindowData(_win, "pg_window", self);
 
@@ -981,6 +1101,8 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
     self = (pgWindowObject *)(cls->tp_new(cls, NULL, NULL));
     self->_win = window;
     self->_is_borrowed = SDL_TRUE;
+    self->hit_test_data = NULL;
+    self->num_hit_test_data = 0;
     SDL_SetWindowData(window, "pg_window", self);
     return (PyObject *)self;
 }
@@ -1048,6 +1170,12 @@ static PyMethodDef window_methods[] = {
      DOC_SDL2_VIDEO_WINDOW_FLIP},
     {"get_surface", (PyCFunction)window_get_surface, METH_NOARGS,
      DOC_SDL2_VIDEO_WINDOW_GETSURFACE},
+    {"add_draggable_hit_test", (PyCFunction)window_add_draggable_hit_test,
+     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_WINDOW_ADDDRAGGABLEHITTEST},
+    {"add_resize_hit_test", (PyCFunction)window_add_resize_hit_test,
+     METH_VARARGS | METH_KEYWORDS, DOC_SDL2_VIDEO_WINDOW_ADDRESIZEHITTEST},
+    {"clear_hit_test", (PyCFunction)window_clear_hit_test, METH_NOARGS,
+     DOC_SDL2_VIDEO_WINDOW_CLEARHITTEST},
     {"from_display_module", (PyCFunction)window_from_display_module,
      METH_CLASS | METH_NOARGS, DOC_SDL2_VIDEO_WINDOW_FROMDISPLAYMODULE},
     {NULL, NULL, 0, NULL}};
