@@ -4514,8 +4514,7 @@ com_init(PyObject *self, PyObject *args, PyObject *kwds)
 
         if (PyDict_Size(kwds) > 0) {
             PyErr_SetString(PyExc_ValueError,
-                            "%.200s() takes no keyword arguments",
-                            "ClassObjectMethod");
+                            "ClassObjectMethod takes no keyword arguments");
             return -1;
         }
     }
