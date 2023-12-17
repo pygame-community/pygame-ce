@@ -1758,9 +1758,12 @@ class ImageModuleTest(unittest.TestCase):
             ("purple.xpm", (255, 0, 255, 255)),
             ("black.ppm", (0, 0, 0, 255)),
             ("grey.pgm", (120, 120, 120, 255)),
+            ("white.pbm", (255, 255, 255, 255)),
             ("teal.svg", (0, 128, 128, 255)),
             ("crimson.pnm", (220, 20, 60, 255)),
             ("scarlet.webp", (252, 14, 53, 255)),
+            ("tomato.xcf", (255, 99, 71, 255)),
+            ("magenta.lbm", (255, 0, 255, 255)),
         ]
 
         if pygame.image.get_sdl_image_version() > (2, 0, 5):
