@@ -4494,10 +4494,32 @@ com_init(PyObject *self, PyObject *args, PyObject *kwds)
     PyObject *cls_callable, *obj_callable;
 
     if (!PyArg_UnpackTuple(args, "ClassObjectMethod", 2, 2, &cls_callable,
-                           &obj_callable))
+                           &obj_callable)) {
         return -1;
-    if (!_PyArg_NoKeywords("ClassObjectMethod", kwds))
-        return -1;
+    }
+
+    // Original implementation from https://github.com/pygame/pygame/pull/3744
+    // used _PyArg_NoKeywords This is internal-use-only API from CPython and is
+    // removed in python 3.13. This is just an expansion of the implementation
+    // that uses less-likely-to-change API calls
+    if (kwds != NULL) {
+        // Not part of the stable ABI, so should investigate alternatives that
+        // use stable ABI at some point
+        if (!PyDict_CheckExact(kwds)) {
+            PyErr_SetString(PyExc_SystemError,
+                            "kwds internal is not exactly a dict, you should "
+                            "never see this");
+            return -1;
+        }
+
+        if (PyDict_Size(kwds) > 0) {
+            PyErr_SetString(PyExc_ValueError,
+                            "%.200s() takes no keyword arguments",
+                            "ClassObjectMethod");
+            return -1;
+        }
+    }
+
     Py_INCREF(cls_callable);
     Py_INCREF(obj_callable);
     com->cls_callable = cls_callable;
