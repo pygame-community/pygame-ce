@@ -37,7 +37,7 @@ formats.
 
    * ``QOI``
 
-   * ``SVG`` (limited support, using Nano SVG)
+   * ``SVG``
 
    * ``TGA`` (uncompressed)
 
@@ -108,6 +108,28 @@ following formats.
    .. versionchanged:: 2.2.0 Now supports keyword arguments.
 
    .. ## pygame.image.load ##
+
+.. function:: load_sized_svg
+
+   | :sl:`load an SVG image from a file (or file-like object) with the given size`
+   | :sg:`load_sized_svg(file, size) -> Surface`
+
+   This function rasterizes the input SVG at the size specified by the ``size``
+   argument. The ``file`` argument can be either a filename, a Python file-like
+   object, or a pathlib.Path.
+
+   The usage of this function for handling SVGs is recommended, as calling the
+   regular ``load`` function and then scaling the returned surface would not
+   preserve the quality that an SVG can provide.
+
+   It is to be noted that this function does not return a surface whose
+   dimensions exactly match the ``size`` argument. This function preserves
+   aspect ratio, so the returned surface could be smaller along atmost one
+   dimension.
+
+   .. versionadded:: 2.4.0
+
+   .. ## pygame.image.load_sized_svg ##
 
 .. function:: save
 
