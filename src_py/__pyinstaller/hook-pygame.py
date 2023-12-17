@@ -14,10 +14,6 @@ from pygame import __file__ as pygame_main_file
 # Get pygame's folder
 pygame_folder = os.path.dirname(os.path.abspath(pygame_main_file))
 
-# pygame._window is currently where the Window class lives. It is imported in
-# cython into _sdl2, which PyInstaller can't see.
-hiddenimports = ["pygame._window"]
-
 # datas is the variable that pyinstaller looks for while processing hooks
 datas = []
 

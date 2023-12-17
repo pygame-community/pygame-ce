@@ -311,6 +311,16 @@ try:
 except (ImportError, OSError):
     system = MissingModule("system", urgent=0)
 
+try:
+    from pygame.window import Window
+except (ImportError, OSError):
+
+    def Window(
+        title="pygame window", size=(640, 480), position=None, **kwargs
+    ):  # pylint: disable=unused-argument
+        _attribute_undefined("pygame.Window")
+
+
 # there's also a couple "internal" modules not needed
 # by users, but putting them here helps "dependency finder"
 # programs get everything they need (like py2exe)

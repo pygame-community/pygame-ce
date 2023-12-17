@@ -2,7 +2,7 @@ import unittest
 import pygame
 import os
 
-from pygame._sdl2.video import Window
+from pygame import Window
 from pygame.version import SDL
 
 pygame.init()

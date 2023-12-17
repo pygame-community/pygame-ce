@@ -47,7 +47,10 @@
 #include <linux/videodev2.h>
 #endif
 
-#if defined(__WIN32__)
+/* At the time of writing of this comment, _camera does not compile on windows
+ * while using the MinGW compiler (due to missing API). So we do a _MSC_VER
+ * check here to compile this only under the MSVC compiler */
+#if defined(__WIN32__) && defined(_MSC_VER)
 #define PYGAME_WINDOWS_CAMERA 1
 
 #include <mfapi.h>

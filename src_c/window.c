@@ -157,12 +157,22 @@ window_get_surface(pgWindowObject *self)
     if (!_surf) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
+
+    if (pg_GetDefaultConvertFormat() == NULL) {
+        if (pg_SetDefaultConvertFormat(_surf->format->format) == NULL) {
+            /* This is very unlikely, I think only would happen if SDL runs
+             * out of memory when allocating the format. */
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+    }
+
     if (self->surf == NULL) {
         self->surf = pgSurface_New2(_surf, SDL_FALSE);
         if (!self->surf)
             return NULL;
     }
     self->surf->surf = _surf;
+
     Py_INCREF(self->surf);
     return (PyObject *)self->surf;
 }
@@ -1080,7 +1090,7 @@ static PyGetSetDef _window_getset[] = {
 };
 
 static PyTypeObject pgWindow_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame._window.Window",
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.window.Window",
     .tp_basicsize = sizeof(pgWindowObject),
     .tp_dealloc = (destructor)window_dealloc,
     .tp_doc = DOC_SDL2_VIDEO_WINDOW,
@@ -1099,13 +1109,13 @@ static PyMethodDef _window_methods[] = {
      "auto quit for _window module"},
     {NULL, NULL, 0, NULL}};
 
-MODINIT_DEFINE(_window)
+MODINIT_DEFINE(window)
 {
     PyObject *module, *apiobj;
     static void *c_api[PYGAMEAPI_WINDOW_NUMSLOTS];
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
-                                         "_window",
+                                         "window",
                                          "docs_needed",
                                          -1,
                                          _window_methods,
@@ -1150,7 +1160,7 @@ MODINIT_DEFINE(_window)
     }
 
     c_api[0] = &pgWindow_Type;
-    apiobj = encapsulate_api(c_api, "_window");
+    apiobj = encapsulate_api(c_api, "window");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);
         Py_DECREF(module);

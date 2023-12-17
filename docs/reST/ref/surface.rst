@@ -89,44 +89,53 @@
 
    .. method:: blit
 
-      | :sl:`draw one image onto another`
+      | :sl:`draw another surface onto this one`
       | :sg:`blit(source, dest, area=None, special_flags=0) -> Rect`
 
-      Draws a source Surface onto this Surface. The draw can be positioned with
-      the dest argument. The dest argument can either be a pair of coordinates representing the position of
-      the upper left corner of the blit or a Rect, where the upper left corner of the rectangle will be used as the
-      position for the blit. The size of the destination rectangle does not
-      effect the blit.
+      Draws another Surface onto this Surface.
 
-      An optional area rectangle can be passed as well. This represents a
-      smaller portion of the source Surface to draw.
+      **Parameters**
+          - ``source``
+              The ``Surface`` object to draw onto this ``Surface``.
+              If it has transparency, transparent pixels will be ignored when blittting to an 8-bit ``Surface``.
+          - ``dest``
+              The ``source`` draw position onto this ``Surface``.
+              It can be a coordinate ``(x, y)`` or a ``Rect`` (using its top-left corner).
+              If a ``Rect`` is passed, its size will not affect the blit.
+          - ``area`` *(optional)*
+              The rectangular portion of the ``source`` to draw.
+              It can be a ``Rect`` object representing that section. If ``None`` or not provided,
+              the entire source surface will be drawn.
+              If the ``Rect`` has negative position, the final blit position will be
+              ``dest`` - ``Rect.topleft``.
+          - ``special_flags`` *(optional)*
+              Controls how the colors of the ``source`` are combined with this Surface.
+              If not provided it defaults to ``BLENDMODE_NONE`` (``0``).
+              See :doc:`special_flags_list` for a list of possible values.
+      **Return**
+          A :doc:`rect` object representing the affected area of this ``Surface`` that was modified
+          by the blit operation. This area includes only the pixels within this ``Surface`` or
+          its clipping area (see :meth:`set_clip`).
+          Generally you don't need to use this return value, as it was initially designed to
+          pass it to :meth:`pygame.display.update` to optimize the updating of the display.
+          Since modern computers are fast enough to update the entire display at high speeds,
+          this return value is rarely used nowadays.
+      **Example Use**
+           .. code-block:: python
 
-      .. versionaddedold:: 1.8
-         Optional ``special_flags``: ``BLEND_ADD``, ``BLEND_SUB``,
-         ``BLEND_MULT``, ``BLEND_MIN``, ``BLEND_MAX``.
+                  # create a surface of size 50x50 and fill it with red color
+                  red_surf = pygame.Surface((50, 50))
+                  red_surf.fill("red")
 
-      .. versionaddedold:: 1.8.1
-         Optional ``special_flags``: ``BLEND_RGBA_ADD``, ``BLEND_RGBA_SUB``,
-         ``BLEND_RGBA_MULT``, ``BLEND_RGBA_MIN``, ``BLEND_RGBA_MAX``
-         ``BLEND_RGB_ADD``, ``BLEND_RGB_SUB``, ``BLEND_RGB_MULT``,
-         ``BLEND_RGB_MIN``, ``BLEND_RGB_MAX``.
+                  # draw the surface on another surface at position (0, 0)
+                  another_surface.blit(red_surf, (0, 0))
 
-      .. versionaddedold:: 1.9.2
-         Optional ``special_flags``: ``BLEND_PREMULTIPLIED``
+      **Notes**
+          - When self-blitting and there is a colorkey or alpha transparency set, resulting colors
+            may appear slightly different compared to a non-self blit.
 
-      .. versionaddedold:: 2.0.0
-         Optional ``special_flags``:  ``BLEND_ALPHA_SDL2`` - Uses the SDL2 blitter for alpha blending,
-         this gives different results than the default blitter, which is modelled after SDL1, due to
-         different approximations used for the alpha blending formula. The SDL2 blitter also supports
-         RLE on alpha blended surfaces which the pygame one does not.
-
-      The return rectangle is the area of the affected pixels, excluding any
-      pixels outside the destination Surface, or outside the clipping area.
-
-      Pixel alphas will be ignored when blitting to an 8 bit Surface.
-
-      For a surface with colorkey or blanket alpha, a blit to self may give
-      slightly different colors than a non self-blit.
+          - The blit is ignored if the ``source`` is positioned completely outside this ``Surface``'s
+            clipping area. Otherwise only the overlapping area will be drawn.
 
       .. ## Surface.blit ##
 

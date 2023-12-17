@@ -6,7 +6,7 @@ python, and displaying that through SDL. You can look at the
 method of importing numpy and pygame.surfarray. This method
 will fail 'gracefully' if it is not available.
 I've tried mixing in a lot of comments where the code might
-not be self explanatory, nonetheless it may still seem a bit
+not be self-explanatory, nonetheless it may still seem a bit
 strange. Learning to use numpy for images like this takes a
 bit of learning, but the payoff is extremely fast image
 manipulation in python.
@@ -40,7 +40,7 @@ timer = 0
 
 
 def stopwatch(message=None):
-    "simple routine to time python code"
+    """simple routine to time python code"""
     global timer
     if not message:
         timer = pygame.time.get_ticks()
@@ -51,8 +51,8 @@ def stopwatch(message=None):
     timer = now
 
 
-def VertGradientColumn(surf, topcolor, bottomcolor):
-    "creates a new 3d vertical gradient array"
+def vert_gradient_column(surf, topcolor, bottomcolor):
+    """creates a new 3d vertical gradient array"""
     topcolor = np.array(topcolor, copy=False)
     bottomcolor = np.array(bottomcolor, copy=False)
     diff = bottomcolor - topcolor
@@ -68,11 +68,11 @@ def VertGradientColumn(surf, topcolor, bottomcolor):
     return pygame.surfarray.map_array(surf, column)
 
 
-def DisplayGradient(surf):
-    "choose random colors and show them"
+def display_gradient(surf):
+    """choose random colors and show them"""
     stopwatch()
     colors = np_random.randint(0, 255, (2, 3))
-    column = VertGradientColumn(surf, colors[0], colors[1])
+    column = vert_gradient_column(surf, colors[0], colors[1])
     pygame.surfarray.blit_array(surf, column)
     pygame.display.flip()
     stopwatch("Gradient:")
@@ -95,7 +95,7 @@ def main():
         if event.type in (pygame.QUIT, pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
             break
         elif event.type == TIMER_EVENT:
-            DisplayGradient(screen)
+            display_gradient(screen)
 
     pygame.quit()
 
