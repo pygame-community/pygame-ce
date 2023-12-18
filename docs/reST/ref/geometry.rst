@@ -203,7 +203,9 @@
 
          .. note::
              This method is equivalent(behaviour wise) to the following code:
-             ::
+
+             .. code-block:: python
+
                  circle.x = x
                  circle.y = y
                  circle.r = radius
