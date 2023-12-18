@@ -2848,13 +2848,18 @@ typedef struct {
 // Function to determine the side of point 'c' relative to the line formed by points 'a' and 'b'
 // Returns 1 if on the left side, -1 if on the right side, and 0 if collinear
 int side(Point a, Point b, Point c) {
+    // Calculate the determinant, a mathematical quantity used to determine the orientation of three points
     double det =
         (a.x * b.y + b.x * c.y + c.x * a.y) - (a.y * b.x + b.y * c.x + c.y * a.x);
+    // Check the sign of the determinant to determine the relative position of point 'c'   
     if (det > 0) {
         return 1;
+    // If the determinant is positive, point 'c' is on the left side of the line
     } else if (det < 0) {
+        // If the determinant is negative, point 'c' is on the right side of the line
         return -1;
     } else {
+        // If the determinant is zero, points 'a', 'b', and 'c' are collinear
         return 0;
     }
 }
@@ -2862,11 +2867,21 @@ int side(Point a, Point b, Point c) {
 // Function to find a parallel line to the line formed by 'pt1' and 'pt2' at a given distance
 // Returns a Line struct representing the parallel line
 Line find_parallel_line(Point pt1, Point pt2, Point pt3, int distance) {
+    
     // Calculate direction vector, normalize it, and find the perpendicular vector
+    
+    // Calculate direction vector from 'pt1' to 'pt2'
     Point direction_vector = {pt2.x - pt1.x, pt2.y - pt1.y};
+
+    // Calculate the magnitude of the direction vector
     float magnitude = sqrt(direction_vector.x * direction_vector.x + direction_vector.y * direction_vector.y);
+    
+    // Normalize the direction vector to get a unit vector
     Point normalized_direction = {direction_vector.x / magnitude, direction_vector.y / magnitude};
+    
+    // Calculate the perpendicular vector by swapping x and y components and negating one of them
     Point perpendicular_vector = {-normalized_direction.y, normalized_direction.x};
+    
     // Adjust the perpendicular vector based on the side of 'pt3' relative to 'pt1' and 'pt2'
     if (side(pt1, pt2, pt3) == -1) {
         perpendicular_vector.x *= -1;
@@ -2874,15 +2889,19 @@ Line find_parallel_line(Point pt1, Point pt2, Point pt3, int distance) {
     }
     // Create an offset vector and generate the parallel line.
     Point offset_vector = {perpendicular_vector.x * distance, perpendicular_vector.y * distance};
+    
+    // Generate the points for the parallel line based on the offset
     Line parallel_line = {{pt1.x + offset_vector.x, pt1.y + offset_vector.y}, {pt2.x + offset_vector.x, pt2.y + offset_vector.y}};
+    
+    // Return the Line struct representing the parallel line
     return parallel_line;
 }
+
 
 // Function to project a point onto a line segment defined by 'segment_start' and 'segment_end'
 Point project_point_onto_segment(Point point, Point segment_start,
                                  Point segment_end) {
-    // Calculate vectors, find the parameter 't' for projection, and calculate the projection.
-    // Ensure 't' is within the valid range [0, 1].
+   // Calculate vectors representing the line segment and the vector from 'segment_start' to 'point'
     Point segment_vector;
     segment_vector.x = segment_end.x - segment_start.x;
     segment_vector.y = segment_end.y - segment_start.y;
@@ -2891,18 +2910,24 @@ Point project_point_onto_segment(Point point, Point segment_start,
     point_vector.x = point.x - segment_start.x;
     point_vector.y = point.y - segment_start.y;
 
+    // Calculate the parameter 't' for the projection using the dot product
     double t =
         (point_vector.x * segment_vector.x + point_vector.y * segment_vector.y) /
         (segment_vector.x * segment_vector.x +
         segment_vector.y * segment_vector.y);
+
+    // Ensure 't' is within the valid range [0, 1] to guarantee the projection lies on the line segment    
     t = fmax(0, fmin(1, t));
 
+    // Calculate the coordinates of the projected point using the parameter 't'
     Point projection;
     projection.x = segment_start.x + t * segment_vector.x;
     projection.y = segment_start.y + t * segment_vector.y;
 
+    // Return the projected point on the line segment
     return projection;
 }
+
 
 // Function to find the intersection point of two line segments
 // Returns the intersection point as a Point struct
@@ -2919,6 +2944,7 @@ Point intersection(Point line1_start, Point line1_end, Point line2_start,
 
     // Check if the lines are parallel (det == 0) and handle the case
     double det = A1 * B2 - A2 * B1;
+    // If the lines are parallel (det == 0), they do not intersect, return a default Point
     if (det == 0) {
         return (Point){0, 0};
     } else {
@@ -2931,8 +2957,12 @@ Point intersection(Point line1_start, Point line1_end, Point line2_start,
 
 // Function to calculate the angle (in radians) between a center point and another point
 double angle(Point center, Point point) {
+    // Calculate the differences in x and y coordinates between the two points
     double x = point.x - center.x;
     double y = point.y - center.y;
+    // Use atan2 to calculate the angle formed by the vector from the center to the point
+    // The angle is measured counterclockwise from the positive x-axis
+    // Note: The negative sign is used to ensure the angle is measured clockwise, which is more common in Cartesian coordinates.
     return -atan2(y, x);
 }
 
@@ -2990,6 +3020,9 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width, int bor
             project_point_onto_segment(circles[i].center, points[i], points[b]);
 
         // Check if the border-radius size is valid
+
+        // Compare the distance between the projected points and the corresponding endpoints
+        // If the distance is greater than or equal to half of the corresponding line segment, it is considered invalid
         if ((sqrt(pow(proj1.x - points[i].x, 2) +
             pow(proj1.y - points[i].y, 2)) >= sqrt(pow(points[a].x - points[i].x, 2) +
                                                     pow(points[a].y - points[i].y, 2)) / 2) ||  
