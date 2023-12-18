@@ -13,11 +13,6 @@ sha512sum -c libffi.sha512
 tar xzf ${LIBFFI}.tar.gz
 cd $LIBFFI
 
-./configure $ARCHS_CONFIG_FLAG
+./configure $PG_BASE_CONFIGURE_FLAGS
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi

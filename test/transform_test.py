@@ -174,10 +174,24 @@ class TransformModuleTest(unittest.TestCase):
         s = pygame.Surface((32, 32))
         s.fill((255, 0, 0))
 
-        s2 = pygame.transform.grayscale(s)
-        self.assertEqual(pygame.transform.average_color(s2)[0], 76)
-        self.assertEqual(pygame.transform.average_color(s2)[1], 76)
-        self.assertEqual(pygame.transform.average_color(s2)[2], 76)
+        gray_red = pygame.transform.grayscale(s)
+        self.assertEqual(pygame.transform.average_color(gray_red)[0], 76)
+        self.assertEqual(pygame.transform.average_color(gray_red)[1], 76)
+        self.assertEqual(pygame.transform.average_color(gray_red)[2], 76)
+
+        green_surf = pygame.Surface((32, 32))
+        green_surf.fill((0, 255, 0))
+        gray_green = pygame.transform.grayscale(green_surf)
+        self.assertEqual(pygame.transform.average_color(gray_green)[0], 150)
+        self.assertEqual(pygame.transform.average_color(gray_green)[1], 150)
+        self.assertEqual(pygame.transform.average_color(gray_green)[2], 150)
+
+        blue_surf = pygame.Surface((32, 32))
+        blue_surf.fill((0, 0, 255))
+        blue_green = pygame.transform.grayscale(blue_surf)
+        self.assertEqual(pygame.transform.average_color(blue_green)[0], 29)
+        self.assertEqual(pygame.transform.average_color(blue_green)[1], 29)
+        self.assertEqual(pygame.transform.average_color(blue_green)[2], 29)
 
         dest = pygame.Surface((32, 32), depth=32)
         pygame.transform.grayscale(s, dest)
@@ -188,16 +202,16 @@ class TransformModuleTest(unittest.TestCase):
         dest = pygame.Surface((32, 32), depth=32)
         s.fill((34, 12, 65))
         pygame.transform.grayscale(s, dest)
-        self.assertEqual(pygame.transform.average_color(dest)[0], 24)
-        self.assertEqual(pygame.transform.average_color(dest)[1], 24)
-        self.assertEqual(pygame.transform.average_color(dest)[2], 24)
+        self.assertEqual(pygame.transform.average_color(dest)[0], 27)
+        self.assertEqual(pygame.transform.average_color(dest)[1], 27)
+        self.assertEqual(pygame.transform.average_color(dest)[2], 27)
 
         dest = pygame.Surface((32, 32), depth=32)
         s.fill((123, 123, 123))
         pygame.transform.grayscale(s, dest)
-        self.assertIn(pygame.transform.average_color(dest)[0], [123, 122])
-        self.assertIn(pygame.transform.average_color(dest)[1], [123, 122])
-        self.assertIn(pygame.transform.average_color(dest)[2], [123, 122])
+        self.assertIn(pygame.transform.average_color(dest)[0], [124, 122])
+        self.assertIn(pygame.transform.average_color(dest)[1], [124, 122])
+        self.assertIn(pygame.transform.average_color(dest)[2], [124, 122])
 
         s = pygame.Surface((32, 32), depth=24)
         s.fill((255, 0, 0))
@@ -214,6 +228,26 @@ class TransformModuleTest(unittest.TestCase):
         self.assertEqual(pygame.transform.average_color(dest)[0], 72)
         self.assertEqual(pygame.transform.average_color(dest)[1], 76)
         self.assertEqual(pygame.transform.average_color(dest)[2], 72)
+
+        super_surf = pygame.Surface((64, 64), depth=32)
+        super_surf.fill((255, 255, 255))
+        super_surf.fill((255, 0, 0), pygame.Rect(0, 0, 32, 32))
+        sub_surf = super_surf.subsurface(pygame.Rect(0, 0, 32, 32))
+
+        grey_sub_surf = pygame.transform.grayscale(sub_surf)
+        self.assertEqual(pygame.transform.average_color(grey_sub_surf)[0], 76)
+        self.assertEqual(pygame.transform.average_color(grey_sub_surf)[0], 76)
+        self.assertEqual(pygame.transform.average_color(grey_sub_surf)[0], 76)
+
+    def test_grayscale_simd_assumptions(self):
+        # The grayscale SIMD algorithm relies on the destination surface pitch
+        # being exactly width * 4 (4 bytes per pixel), for maximum speed.
+        # This test is here to make sure that assumption is always true.
+        widths = [1, 5, 6, 23, 54, 233]
+        for width in widths:
+            self.assertEqual(
+                pygame.Surface((width, 1), depth=32).get_pitch(), width * 4
+            )
 
     def test_threshold__honors_third_surface(self):
         # __doc__ for threshold as of Tue 07/15/2008
@@ -1160,7 +1194,7 @@ class TransformModuleTest(unittest.TestCase):
 
     def test_get_smoothscale_backend(self):
         filter_type = pygame.transform.get_smoothscale_backend()
-        self.assertTrue(filter_type in ["GENERIC", "MMX", "SSE"])
+        self.assertTrue(filter_type in ["GENERIC", "MMX", "SSE", "SSE2", "NEON"])
         # It would be nice to test if a non-generic type corresponds to an x86
         # processor. But there is no simple test for this. platform.machine()
         # returns process version specific information, like 'i686'.
@@ -1192,8 +1226,9 @@ class TransformModuleTest(unittest.TestCase):
             pygame.transform.set_smoothscale_backend(1)
 
         self.assertRaises(TypeError, change)
+
         # Unsupported type, if possible.
-        if original_type != "SSE":
+        if original_type == "GENERIC":
 
             def change():
                 pygame.transform.set_smoothscale_backend("SSE")
@@ -1202,6 +1237,14 @@ class TransformModuleTest(unittest.TestCase):
         # Should be back where we started.
         filter_type = pygame.transform.get_smoothscale_backend()
         self.assertEqual(filter_type, original_type)
+
+        try:
+            with self.assertWarns(DeprecationWarning):
+                pygame.transform.set_smoothscale_backend("MMX")
+            with self.assertWarns(DeprecationWarning):
+                pygame.transform.set_smoothscale_backend("SSE")
+        except ValueError:
+            pass  # Backends not supported on this CPU, also valid
 
     def test_chop(self):
         original_surface = pygame.Surface((20, 20))
@@ -1286,6 +1329,17 @@ class TransformModuleTest(unittest.TestCase):
 
         self.assertEqual(s1.get_rect(), pygame.Rect(0, 0, 0, 0))
         self.assertEqual(s2.get_rect(), pygame.Rect(0, 0, 0, 0))
+
+    def test_rotozoom_keeps_colorkey(self):
+        image = pygame.Surface((64, 64))
+        image.set_colorkey("black")
+        pygame.draw.circle(image, "red", (32, 32), 32, width=0)
+
+        no_rot = pygame.transform.rotozoom(image, 0, 1.1)
+        self.assertEqual(image.get_colorkey(), no_rot.get_colorkey())
+
+        with_rot = pygame.transform.rotozoom(image, 5, 1.1)
+        self.assertEqual(image.get_colorkey(), with_rot.get_colorkey())
 
     def test_invert(self):
         surface = pygame.Surface((10, 10), depth=32)
@@ -1614,6 +1668,22 @@ class TransformDisplayModuleTest(unittest.TestCase):
         surf2.blit(image_alpha, (0, 0))
         self.assertEqual(surf.get_at((0, 0)), surf2.get_at((0, 0)))
         self.assertEqual(surf2.get_at((0, 0)), (255, 0, 0, 255))
+
+    def test_unwanted_rle_not_added(self):
+        surf = pygame.Surface((16, 16))
+        surf.fill((255, 0, 0))
+        surf.set_colorkey((0, 0, 0))
+        surf.set_alpha(64)
+
+        #  scale it to the same size (size doesn't matter here)
+        scaled_surf = pygame.transform.scale(surf, (16, 16))
+        pygame.Surface((100, 100)).blit(scaled_surf, (0, 0))
+
+        self.assertEqual(
+            surf.get_flags() & pygame.RLEACCEL,
+            scaled_surf.get_flags() & pygame.RLEACCEL,
+        )
+        self.assertEqual(scaled_surf.get_at((8, 8)), (255, 0, 0, 255))
 
 
 if __name__ == "__main__":

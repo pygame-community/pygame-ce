@@ -155,9 +155,9 @@ refresh the entire display once per frame at 60 FPS and beyond.  You can have a 
 camera, or dynamic backgrounds and your game should run totally fine at 60 FPS.  CPUs are
 more powerful nowadays, and you can use ``display.flip()`` without fear.
 
-That being said there are still some times when this old technique is still useful
-for squeezing out a few extra FPS. For example, with a single screen game like
-an Asteroids or Space Invaders. Here is the rough process for how it works:
+That being said there are still a few rare times when this old technique is still useful
+for squeezing out a few extra FPS. For example, if you only need to update half of the display
+surface and have a stationary image in the other half. Here is the rough process for how it works:
 
 Instead of updating the whole screen every frame, only the parts that changed since
 the last frame are updated.  You do this by keeping track of those rectangles in a list,
@@ -171,8 +171,8 @@ for a moving sprite:
  * Append the sprite's new location to my dirty_rects list.
  * Call ``display.update(dirty_rects)``
 
-Even though this technique is not required for making performant 2D games with
-modern CPUs, it is still useful to be aware of. There are also still plenty of other ways
+Even though this technique is not really useful for making performant 2D games with
+modern CPUs, it is still nice to be aware of. There are also still plenty of other ways
 to accidentally tank your game's performance with poorly optimized rendering logic.
 For example, even on modern hardware it's probably too slow to call ``set_at`` once per pixel
 on the display surface. Being mindful of performance is still something you'll have to
@@ -209,9 +209,10 @@ but in reality it's pretty much just a wrapper around a ``Rect`` and a
 more intuitive (and fun) to write your game's core logic and classes from
 scratch.
 
+**Premultiplied Alpha**
 
-There is NO rule six.
----------------------
+Using this alpha blending mode can boost your blitting performance slightly, it even
+has its own `tutorial page <tutorials/en/premultiplied-alpha>.`
 
 
 Don't get distracted by side issues.
@@ -358,35 +359,30 @@ will avoid this.
 Colorkey vs. Alpha.
 -------------------
 
-There's a lot of confusion around these two techniques, and much of it comes
+There's a lot of confusion around these two terms, and much of it comes
 from the terminology used.
+
+Per pixel alpha is the best type of alpha to use, it will give you nice
+transparent and 'feathered' edges. Basically, each pixel in the source image
+has its own alpha value, from 0 to 255. Most image editors will let you export
+images with an alpha channel and pygame can load them.
 
 'Colorkey blitting' involves telling pygame that all pixels of a certain color
 in a certain image are transparent instead of whatever color they happen to be.
 These transparent pixels are not blitted when the rest of the image is blitted,
-and so don't obscure the background.  This is how we make sprites that aren't
-rectangular in shape.  Simply call :meth:`.Surface.set_colorkey()`, and pass in
-an RGB tuple -- say (0,0,0). This would make every pixel in the source image
-transparent instead of black.
+and so don't obscure the background.  Simply call :meth:`.Surface.set_colorkey()`,
+and pass in an RGB tuple -- say (0,0,0). This would make every pixel in the source
+image transparent instead of black. It used to be significantly cheaper to blit
+than per pixel alpha, but this is no longer the case and in many cases it is
+actually slower.
 
-'Alpha' is different, and it comes in two flavors. 'Image alpha' applies to the
-whole image, and is probably what you want.  Properly known as 'translucency',
-alpha causes each pixel in the source image to be only *partially* opaque.
-For example, if you set a surface's alpha to 192 and then blitted it onto a
+Surface 'Alpha' is also available it applies to the whole surface. Surface alpha
+causes each pixel in the source image to be only *partially* opaque.
+For example, if you set a Surface's alpha to 192 and then blitted it onto a
 background, 3/4 of each pixel's color would come from the source image, and 1/4
 from the background.  Alpha is measured from 255 to 0, where 0 is completely
-transparent, and 255 is completely opaque.  Note that colorkey and alpha
-blitting can be combined -- this produces an image that is fully transparent in
-some spots, and semi-transparent in others.
-
-'Per-pixel alpha' is the other flavor of alpha, and it's more complicated.
-Basically, each pixel in the source image has its own alpha value, from 0 to
-255.  Each pixel, therefore, can have a different opacity when blitted onto a
-background.  This type of alpha can't be mixed with colorkey blitting,
-and it overrides per-image alpha.  Per-pixel alpha is rarely used in
-games, and to use it you have to save your source image in a graphic
-editor with a special *alpha channel*.  It's complicated -- don't use it
-yet.
+transparent, and 255 is completely opaque. Note that surface alpha and alpha
+blitting can be combined.
 
 
 Software architecture, design patterns, and games.
@@ -407,7 +403,12 @@ you start due to somewhat nebulous organizational problems.
 
 This brings us to the concept of software architecture and design patterns. You
 may be familiar with pygame's "standard" base template (there are many equivalent
-variations of this, so don't stress about the small details too much)::
+variations of this, so don't stress about the small details too much):
+
+.. code-block:: python
+   :caption: Standard Pygame game loop
+   :name: game_loop.py
+   :linenos:
 
     import pygame
 
@@ -417,12 +418,13 @@ variations of this, so don't stress about the small details too much)::
 
     clock = pygame.time.Clock()
 
-    while True:
+    running = True
+
+    while running:
         # Process player inputs.
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                raise SystemExit
+                running = False
 
         # Do logical updates here.
         # ...
@@ -434,6 +436,8 @@ variations of this, so don't stress about the small details too much)::
 
         pygame.display.flip()  # Refresh on-screen display
         clock.tick(60)         # wait until next frame (at 60 FPS)
+
+    pygame.quit()
 
 It does some initial setup, starts a loop, and then proceeds to repeatedly
 collect input, handle the game's logic, and draw the current frame forever until
@@ -483,7 +487,7 @@ Now, go write that game!
 Repository, a showcase for community-submitted python game code.  He is also
 the author of Twitch, an entirely average pygame arcade game.*
 
-*This guide was substantially updated in 2022.*
+*This guide was substantially updated in 2022 and updated again in 2023.*
 
 .. _Pygame: https://pyga.me/
 .. _SDL: http://libsdl.org

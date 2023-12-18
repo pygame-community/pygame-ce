@@ -15,8 +15,3 @@ cd $BROTLI
 cmake . $PG_BASE_CMAKE_FLAGS
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi

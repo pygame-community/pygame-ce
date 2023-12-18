@@ -37,6 +37,8 @@
 #include "_camera.h"
 #include "pgcompat.h"
 
+#ifdef PYGAME_WINDOWS_CAMERA
+
 /*these are already included in camera.h, but having them here
  * makes all the types be recognized by VS code */
 #include <mfapi.h>
@@ -404,10 +406,15 @@ _select_source_type(pgCameraObject *self, IMFMediaType **mp)
      * Although I haven't seen any upside from this either */
     hr = native_types[index]->lpVtbl->GetUINT64(
         native_types[index], &MF_MT_FRAME_RATE_RANGE_MAX, &fps_max_ratio);
-    HANDLEHR(hr);
-    hr = native_types[index]->lpVtbl->SetUINT64(
-        native_types[index], &MF_MT_FRAME_RATE, fps_max_ratio);
-    HANDLEHR(hr);
+    if (!FAILED(hr)) { /* If it fails to get max FPS, don't quit out, just skip
+                          this step */
+        hr = native_types[index]->lpVtbl->SetUINT64(
+            native_types[index], &MF_MT_FRAME_RATE, fps_max_ratio);
+        HANDLEHR(hr);
+    }
+    else {
+        hr = S_OK; /* clear error */
+    }
 
     *mp = native_types[index];
     goto cleanup;
@@ -885,3 +892,5 @@ windows_read_raw(pgCameraObject *self)
     /* should this be an error instead? */
     Py_RETURN_NONE;
 }
+
+#endif /* PYGAME_WINDOWS_CAMERA */

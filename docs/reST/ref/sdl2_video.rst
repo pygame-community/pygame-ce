@@ -80,7 +80,8 @@
    :param bool resizable: Create a resizable window.
    :param bool minimized: Create a mimized window.
    :param bool maximized: Create a maximized window.
-   :param bool input_grabbed: Create a window with a grabbed input focus.
+   :param bool mouse_grabbed: Create a window with grabbed mouse input.
+   :param bool keyboard_grabbed: Create a window with grabbed keyboard input.
    :param bool input_focus: Create a window with input focus.
    :param bool mouse_focus: Create a window with mouse focus.
    :param bool foreign: Marks a window not created by SDL.
@@ -99,31 +100,84 @@
                            (X11 only).
 
 
-   .. attribute:: grab
+   .. attribute:: grab_mouse
 
-      | :sl:`Get or set the window's input grab state`
-      | :sg:`grab -> bool`
+      | :sl:`Get or set the window's mouse grab mode`
+      | :sg:`grab_mouse -> bool`
 
-      Gets or sets the window's input grab state.
-      When input is grabbed, the mouse is confined to the window.
-      If the caller enables a grab while another window is currently grabbed,
-      the other window loses its grab in favor of the caller's window.
+      When this attribute is set to ``True``, the window will try to confine the mouse
+      cursor to itself.
 
-   .. attribute:: relative_mouse
+      Note this only set the "mode" of grab. The mouse may be confined to another window
+      depending on the window focus. To get if the mouse is currently restricted to this
+      window, please use :attr:`mouse_grabbed`.
 
-      | :sl:`Get or set the window's relative mouse mode state`
-      | :sg:`relative_mouse -> bool`
+      .. seealso:: :attr:`mouse_grabbed`
 
-      Gets or sets the window's relative mouse mode state.
-      SDL2 docs: *"While the mouse is in relative mode, the cursor is hidden,
-      the mouse position is constrained to the window, and SDL will report
-      continuous relative mouse motion even if the mouse is at the edge of the
-      window.*
+      .. versionadded:: 2.4.0
+   
+   .. attribute:: grab_keyboard
 
-      *This function will flush any pending mouse motion."*
+      | :sl:`Get or set the window's keyboard grab mode`
+      | :sg:`grab_keyboard -> bool`
+      
+      When this attribute is set to ``True``, the window will try to capture system 
+      keyboard shortcuts like ``Alt+Tab`` or the ``Meta/Super`` key. 
 
-      Calling :func:`pygame.mouse.set_visible` with argument
-      ``True`` will exit relative mouse mode.
+      This attribute only set the "mode" of grab. The keyboard may be captured by
+      another window depending on the window focus. To get if keyboard is currently 
+      captured by this window, please use :attr:`keyboard_grabbed`.
+      
+      Note that not all system keyboard shortcuts can be captured by applications
+      (one example is ``Ctrl+Alt+Del`` on Windows).
+
+      When keyboard grab is enabled, pygame will continue to handle ``Alt+Tab`` when
+      the window is full-screen to ensure the user is not trapped in your application.
+      If you have a custom keyboard shortcut to exit fullscreen mode, you may suppress
+      this behavior with an environment variable, e.g.
+      ``os.environ["SDL_ALLOW_ALT_TAB_WHILE_GRABBED"] = "0"``.
+
+      This attribute requires SDL 2.0.16+.
+
+      .. seealso:: :attr:`keyboard_grabbed`
+
+      .. versionadded:: 2.4.0
+      
+   .. attribute:: mouse_grabbed
+
+      | :sl:`Get if the mouse cursor is confined to the window (**read-only**)`
+      | :sg:`mouse_grabbed -> bool`
+
+      Get if the mouse cursor is currently grabbed and confined to the window.
+
+      Roughly equivalent to this expression:
+         
+      ::
+
+         win.grab_mouse and (win is get_grabbed_window())
+      
+      .. seealso:: :attr:`grab_mouse`
+      
+      .. versionadded:: 2.4.0
+   
+   .. attribute:: keyboard_grabbed
+
+      | :sl:`Get if the keyboard shortcuts are captured by the window (**read-only**)`
+      | :sg:`keyboard_grabbed -> bool`
+
+      Get if the keyboard shortcuts are currently grabbed and captured by the window.
+
+      Roughly equivalent to this expression:
+         
+      ::
+
+         win.grab_keyboard and (win is get_grabbed_window())
+      
+      This attribute requires SDL 2.0.16+.
+      
+      .. seealso:: :attr:`grab_keyboard`
+      
+      .. versionadded:: 2.4.0
 
    .. attribute:: title
 
@@ -161,6 +215,21 @@
 
       | :sl:`Get the unique window ID (**read-only**)`
       | :sg:`id -> int`
+   
+   .. attribute:: mouse_rect
+
+      | :sl:`Get or set the mouse confinement rectangle of the window`
+      | :sg:`mouse_rect -> Rect|None`
+
+      Setting this attribute to a rect-like object confines the
+      cursor to the specified area of this window.
+
+      This attribute can be None, meaning that there is no mouse rect.
+      
+      Note that this does NOT grab the cursor, it only defines the area a
+      cursor is restricted to when the window has mouse focus.
+
+      .. versionadded:: 2.4.0
 
    .. attribute:: size
 
@@ -223,6 +292,62 @@
 
       Create a Window object that uses the same window data from the :mod:`pygame.display` module, created upon calling
       :func:`pygame.display.set_mode`.
+
+   .. method:: get_surface
+
+      | :sl:`Get the window surface`
+      | :sg:`get_surface() -> Surface`
+
+      Returns a "display surface" for this Window. The surface returned is
+      analogous to the surface returned by :func:`pygame.display.set_mode`.
+
+      This method allows software rendering (classic pygame rendering) on top
+      of the Window API. This method should not be called when using hardware
+      rendering (coming soon).
+
+      Similarly to the "display surface" returned by :mod:`pygame.display`,
+      this surface will change size with the Window, and will become invalid
+      after the Window's destruction.
+      
+      .. seealso:: :func:`flip`
+
+      .. versionadded:: 2.4.0
+   
+   .. method:: flip
+
+      | :sl:`Update the display surface to the window.`
+      | :sg:`flip() -> None`
+
+      Update content from the display surface to the window. This is the Window
+      class equivalent of :func:`pygame.display.flip`.
+
+      This method allows software rendering (classic pygame rendering) on top
+      of the Window API. This method should not be called when using hardware
+      rendering (coming soon).
+
+      Here is a runnable example of using ``get_surface`` and ``flip``:
+
+      .. code-block:: python
+
+         import pygame
+         from pygame._sdl2 import video
+
+         win = video.Window()
+         surf = win.get_surface()  # get the window surface
+
+         while True:
+            for event in pygame.event.get():
+               if event.type == pygame.QUIT:
+                     pygame.quit()
+                     raise SystemExit
+
+            # draw something on the surface
+            surf.fill("red")
+
+            win.flip()  # update the surface to the window
+
+
+      .. versionadded:: 2.4.0
 
    .. method:: set_windowed
 
@@ -291,7 +416,7 @@
    .. method:: set_icon
 
       | :sl:`Set the window icon`
-      | :sg:`set_icon(surface) -> None`
+      | :sg:`set_icon(surface, /) -> None`
 
       Sets the window icon.
 
@@ -300,7 +425,7 @@
    .. method:: set_modal_for
 
       | :sl:`Set the window as a modal for a parent window`
-      | :sg:`set_modal_for(parent) -> None`
+      | :sg:`set_modal_for(parent, /) -> None`
 
       :param Window parent: The parent window.
       
@@ -584,8 +709,8 @@
 
 
    :class:`Renderer` objects provide a cross-platform API for rendering 2D
-   graphics onto a :class:`Window`, by using either Metal (MacOS), OpenGL
-   (MacOS, Windows, Linux) or Direct3D (Windows) rendering drivers, depending
+   graphics onto a :class:`Window`, by using either Metal (macOS), OpenGL
+   (macOS, Windows, Linux) or Direct3D (Windows) rendering drivers, depending
    on what is set or is available on a system during their creation.
 
    They can be used to draw both :class:`Texture` objects and simple points,

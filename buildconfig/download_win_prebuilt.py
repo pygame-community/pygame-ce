@@ -78,12 +78,12 @@ def get_urls(x86=True, x64=True):
     url_sha1 = []
     url_sha1.extend([
         [
-        'https://github.com/libsdl-org/SDL/releases/download/release-2.26.5/SDL2-devel-2.26.5-VC.zip',
-        'f040c352af677161200ec07463efe8d1325135e4',
+        'https://github.com/libsdl-org/SDL/releases/download/release-2.28.5/SDL2-devel-2.28.5-VC.zip',
+        '7469e9ea44d30a48b0510328cd94b25596e0aa0f',
         ],
         [
-        'https://www.libsdl.org/projects/SDL_image/release/SDL2_image-devel-2.0.5-VC.zip',
-        '137f86474691f4e12e76e07d58d5920c8d844d5b',
+        'https://github.com/pygame-community/SDL_image/releases/download/2.8.0-pgce/SDL2_image-devel-2.8.0-VCpgce.zip',
+        'da6b6a18f1c53baa775394e769059404925e98d7'
         ],
         [
         'https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.2/SDL2_ttf-devel-2.20.2-VC.zip',
@@ -201,12 +201,12 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2_image-devel-2.0.5-VC/SDL2_image-2.0.5'
+                'SDL2_image-devel-2.8.0-VCpgce/SDL2_image-2.8.0'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2_image-2.0.5'
+                'SDL2_image-2.8.0'
             )
         )
         copy(
@@ -234,12 +234,12 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2-devel-2.26.5-VC/SDL2-2.26.5'
+                'SDL2-devel-2.28.5-VC/SDL2-2.28.5'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2-2.26.5'
+                'SDL2-2.28.5'
             )
         )
 

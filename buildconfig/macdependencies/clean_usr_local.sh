@@ -29,7 +29,7 @@ rm -rf /usr/local/Cellar/libtiff
 rm -rf /usr/local/Cellar/libsndfile
 rm -rf /usr/local/Cellar/glib
 rm -rf /usr/local/Cellar/brotli
-rm -rf /usr/local/Cellar/pcre
+rm -rf /usr/local/Cellar/pcre*
 rm -rf /usr/local/Cellar/opusfile
 rm -rf /usr/local/Cellar/opus
 rm -rf /usr/local/Cellar/freetype

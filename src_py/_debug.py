@@ -46,7 +46,7 @@ def attempt_import(module, function_name, output_str=""):
     except (ImportError, AttributeError):
         i = None
         output_str += f"There was a problem with {module} import\n"
-        output_str += "A dummy value will be returned for the version\n"
+        output_str += "A default value will be returned for the version\n"
         output_str += traceback.format_exc() + "\n" + "=" * 20 + "\n"
         success = False
 
@@ -65,7 +65,7 @@ def print_debug_info(filename=None):
     debug_str = ""
 
     # keyword for compat with getters
-    def dummy_return(linked=True):
+    def default_return(linked=True):
         # pylint: disable=unused-argument
         return (-1, -1, -1)
 
@@ -76,13 +76,13 @@ def print_debug_info(filename=None):
         "pygame.mixer", "get_sdl_mixer_version", debug_str
     )
     if not mixer[0]:
-        get_sdl_mixer_version = dummy_return
+        get_sdl_mixer_version = default_return
     else:
         get_sdl_mixer_version = mixer[1]
 
     debug_str, *font = attempt_import("pygame.font", "get_sdl_ttf_version", debug_str)
     if not font[0]:
-        get_sdl_ttf_version = dummy_return
+        get_sdl_ttf_version = default_return
     else:
         get_sdl_ttf_version = font[1]
 
@@ -90,13 +90,13 @@ def print_debug_info(filename=None):
         "pygame.image", "get_sdl_image_version", debug_str
     )
     if not image[0]:
-        get_sdl_image_version = dummy_return
+        get_sdl_image_version = default_return
     else:
         get_sdl_image_version = image[1]
 
     debug_str, *freetype = attempt_import("pygame.freetype", "get_version", debug_str)
     if not freetype[0]:
-        ft_version = dummy_return
+        ft_version = default_return
     else:
         ft_version = freetype[1]
 

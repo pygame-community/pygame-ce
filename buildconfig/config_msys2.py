@@ -269,7 +269,8 @@ class DependencyDLL(Dependency):
                         return True
         return False
 
-class DependencyDummy:
+
+class DependencyPlaceholder:
     def __init__(self, name):
         self.name = name
         self.inc_dir = None
@@ -280,6 +281,7 @@ class DependencyDummy:
 
     def configure(self):
         pass
+
 
 class DependencyWin:
     def __init__(self, name, cflags):
@@ -329,8 +331,8 @@ class DependencyGroup:
         self.dlls.append(dep)
         return dep
 
-    def add_dummy(self, name):
-        self.dependencies.append(DependencyDummy(name))
+    def add_placeholder(self, name):
+        self.dependencies.append(DependencyPlaceholder(name))
 
     def find(self, name):
         for dep in self:
@@ -410,7 +412,7 @@ def setup_prebuilt_sdl2(prebuilt_dir):
                         ['SDL', 'vorbisfile'])
     DEPS.add('PORTMIDI', 'portmidi', ['portmidi'], r'(lib){0,1}portmidi\.dll$', find_header=r'portmidi\.h')
     # #DEPS.add('PORTTIME', 'porttime', ['porttime'], r'porttime\.dll$')
-    DEPS.add_dummy('PORTTIME')
+    DEPS.add_placeholder('PORTTIME')
 
     # force use of the correct freetype DLL
     ftDep = DEPS.add('FREETYPE', 'freetype', ['SDL2_ttf-[2-9].*', 'freetype-[1-9].*'], r'(lib)?freetype[-0-9]*\.dll$',

@@ -589,6 +589,9 @@ dt code {
 .dark-theme .highlight .n{
     color: {{ theme_dark_codetextcolor }};
 }
+.dark-theme .highlight .hll{
+    background-color: {{ theme_dark_codelinehighlightcolor }};
+}
 
 /* Doc strings */
 .highlight .sd{
@@ -733,6 +736,12 @@ div.topic {
 div.caution {
     background-color: {{ theme_cautionbgcolor }};
     border: 1px solid #aabb88;
+}
+
+.dark-theme div.caution {
+    background-color: {{ theme_dark_cautionbgcolor }};
+    border: 1px solid;
+    border-color: {{ theme_dark_cautionbordercolor }};
 }
 
 div.warning {
@@ -1000,10 +1009,6 @@ pre.commentContent {
 /* -- responsive design --------------------------------------------------------- */
 
 @media only screen and (max-width: 680px) {
-    /* Make tables be responsive-ish. */
-    table, thead, tbody, th, td, tr {
-        display: block;
-    }
 
     div.body img.inlined-right {
         float: none;

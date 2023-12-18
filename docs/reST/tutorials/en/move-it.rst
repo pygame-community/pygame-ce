@@ -588,8 +588,7 @@ Take a look at the code and play with it, run it, learn it.
 
 Things you may want to work on is maybe having more than one type of object.
 Finding a way to cleanly "delete" objects when you don't want to show them
-any more. Also updating the display.update() call to pass a list of the areas
-on-screen that have changed.
+any more.
 
 There are also other tutorials and examples in pygame that cover these
 issues. So when you're ready to keep learning, keep on reading. :-)

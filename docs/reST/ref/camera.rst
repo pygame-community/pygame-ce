@@ -100,7 +100,7 @@ The Bayer to ``RGB`` function is based on:
 .. function:: colorspace
 
    | :sl:`Surface colorspace conversion`
-   | :sg:`colorspace(Surface, format, DestSurface = None) -> Surface`
+   | :sg:`colorspace(Surface, format, DestSurface = None, /) -> Surface`
 
    Allows for conversion from "RGB" to a destination colorspace of "HSV" or
    "YUV". The source and destination surfaces must be the same size and pixel
@@ -221,7 +221,7 @@ The Bayer to ``RGB`` function is based on:
    .. method:: get_image
 
       | :sl:`captures an image as a Surface`
-      | :sg:`get_image(Surface = None) -> Surface`
+      | :sg:`get_image(Surface = None, /) -> Surface`
 
       Pulls an image off of the buffer as an ``RGB`` Surface. It can optionally
       reuse an existing Surface to save time. The bit-depth of the surface is

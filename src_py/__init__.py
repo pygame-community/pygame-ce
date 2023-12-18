@@ -141,7 +141,7 @@ import pygame.math
 Vector2 = pygame.math.Vector2
 Vector3 = pygame.math.Vector3
 
-__version__ = ver
+from pygame.base import __version__
 
 # next, the "standard" modules
 # we still allow them to be missing for stripped down pygame distributions
@@ -311,6 +311,16 @@ try:
 except (ImportError, OSError):
     system = MissingModule("system", urgent=0)
 
+try:
+    from pygame.window import Window
+except (ImportError, OSError):
+
+    def Window(
+        title="pygame window", size=(640, 480), position=None, **kwargs
+    ):  # pylint: disable=unused-argument
+        _attribute_undefined("pygame.Window")
+
+
 # there's also a couple "internal" modules not needed
 # by users, but putting them here helps "dependency finder"
 # programs get everything they need (like py2exe)
@@ -368,8 +378,6 @@ def __color_reduce(c):
 
 copyreg.pickle(Color, __color_reduce, __color_constructor)
 
-# Thanks for supporting pygame-ce.
-# Without support now, there won't be pygame-ce later.
 if "PYGAME_HIDE_SUPPORT_PROMPT" not in os.environ:
     print(
         f"pygame-ce {ver} (SDL {'.'.join(map(str, get_sdl_version()))}, "

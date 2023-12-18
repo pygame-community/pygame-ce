@@ -157,7 +157,7 @@ that color for the colorkey. ::
 
 Next is the function to load a sound file. The first thing this function
 does is check to see if the :mod:`pygame.mixer` module was imported correctly.
-If not, it returns a small class instance that has a dummy play method.
+If not, it returns a small class instance that has a placeholder play method.
 This will act enough like a normal Sound object for this game to run without
 any extra error checking.
 

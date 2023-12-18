@@ -14,12 +14,12 @@ eg.  -scale in.png out.png 50 50
 
 import os
 import sys
-
-# set SDL to use the dummy NULL video driver,
-#   so it doesn't need a windowing system.
-os.environ["SDL_VIDEODRIVER"] = "dummy"
-
 import pygame
+
+# set SDL to use the NULL video driver,
+#   so it doesn't need a windowing system.
+os.environ["SDL_VIDEODRIVER"] = pygame.NULL_VIDEODRIVER
+
 
 # Some platforms need to init the display for some parts of pygame.
 pygame.display.init()

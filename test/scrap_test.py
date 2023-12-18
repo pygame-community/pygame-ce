@@ -1,13 +1,14 @@
 import os
 import sys
 
-if os.environ.get("SDL_VIDEODRIVER") == "dummy":
-    __tags__ = ("ignore", "subprocess_ignore")
 import unittest
 from pygame.tests.test_utils import trunk_relative_path
 
 import pygame
 from pygame import scrap
+
+if os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER:
+    __tags__ = ("ignore", "subprocess_ignore")
 
 
 class ScrapModuleTest(unittest.TestCase):

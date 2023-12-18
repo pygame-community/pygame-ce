@@ -196,6 +196,10 @@ class ImageModuleTest(unittest.TestCase):
             del reader
             os.remove(f_path)
 
+    @unittest.skipIf(
+        pygame.image.get_sdl_image_version() == (2, 0, 5),
+        "SDL image 2.0.5 png saving will save this 24 bit as RGBA, causing reader.asRGB8 to fail",
+    )
     def testSavePNG24(self):
         """see if we can save a png with color values in the proper channels."""
         # Create a PNG file with known colors
@@ -1758,6 +1762,9 @@ class ImageModuleTest(unittest.TestCase):
             ("crimson.pnm", (220, 20, 60, 255)),
             ("scarlet.webp", (252, 14, 53, 255)),
         ]
+
+        if pygame.image.get_sdl_image_version() > (2, 0, 5):
+            filename_expected_color.append(("purple.qoi", (159, 38, 240, 255)))
 
         for filename, expected_color in filename_expected_color:
             if filename.endswith("svg") and sdl_image_svg_jpeg_save_bug:

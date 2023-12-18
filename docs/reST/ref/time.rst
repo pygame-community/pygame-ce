@@ -25,7 +25,7 @@ resolution, in milliseconds, is given in the ``TIMER_RESOLUTION`` constant.
 .. function:: wait
 
    | :sl:`pause the program for an amount of time`
-   | :sg:`wait(milliseconds) -> time`
+   | :sg:`wait(milliseconds, /) -> time`
 
    Will pause for a given number of milliseconds. This function sleeps the
    process to share the processor with other programs. A program that waits for
@@ -39,7 +39,7 @@ resolution, in milliseconds, is given in the ``TIMER_RESOLUTION`` constant.
 .. function:: delay
 
    | :sl:`pause the program for an amount of time`
-   | :sg:`delay(milliseconds) -> time`
+   | :sg:`delay(milliseconds, /) -> time`
 
    Will pause for a given number of milliseconds. This function will use the
    processor (rather than sleeping) in order to make the delay more accurate
@@ -104,7 +104,7 @@ resolution, in milliseconds, is given in the ``TIMER_RESOLUTION`` constant.
    .. method:: tick
 
       | :sl:`update the clock`
-      | :sg:`tick(framerate=0) -> milliseconds`
+      | :sg:`tick(framerate=0, /) -> milliseconds`
 
       This method should be called once per frame. It will compute how many
       milliseconds have passed since the previous call.
@@ -124,7 +124,7 @@ resolution, in milliseconds, is given in the ``TIMER_RESOLUTION`` constant.
    .. method:: tick_busy_loop
 
       | :sl:`update the clock`
-      | :sg:`tick_busy_loop(framerate=0) -> milliseconds`
+      | :sg:`tick_busy_loop(framerate=0, /) -> milliseconds`
 
       This method should be called once per frame. It will compute how many
       milliseconds have passed since the previous call.

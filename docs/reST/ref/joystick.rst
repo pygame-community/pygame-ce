@@ -96,7 +96,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
 .. class:: Joystick
 
    | :sl:`Create a new Joystick object.`
-   | :sg:`Joystick(id) -> Joystick`
+   | :sg:`Joystick(id, /) -> Joystick`
 
    Create a new joystick to access a physical device. The id argument must be a
    value from ``0`` to ``pygame.joystick.get_count() - 1``.
@@ -229,7 +229,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
    .. method:: get_axis
 
       | :sl:`get the current position of an axis`
-      | :sg:`get_axis(axis_number) -> float`
+      | :sg:`get_axis(axis_number, /) -> float`
 
       Returns the current position of a joystick axis. The value will range
       from ``-1`` to ``1`` with a value of ``0`` being centered. You may want 
@@ -261,7 +261,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
    .. method:: get_ball
 
       | :sl:`get the relative position of a trackball`
-      | :sg:`get_ball(ball_number) -> x, y`
+      | :sg:`get_ball(ball_number, /) -> x, y`
 
       Returns the relative movement of a joystick button. The value is a ``x, y``
       pair holding the relative movement since the last call to get_ball.
@@ -286,7 +286,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
    .. method:: get_button
 
       | :sl:`get the current button state`
-      | :sg:`get_button(button) -> bool`
+      | :sg:`get_button(button, /) -> bool`
 
       Returns the current state of a joystick button.
 
@@ -311,7 +311,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
    .. method:: get_hat
 
       | :sl:`get the position of a joystick hat`
-      | :sg:`get_hat(hat_number) -> x, y`
+      | :sg:`get_hat(hat_number, /) -> x, y`
 
       Returns the current position of a position hat. The position is given as
       two values representing the ``x`` and ``y`` position for the hat. ``(0, 0)``

@@ -440,7 +440,7 @@ class Writer:
         """
 
         # At the moment the `planes` argument is ignored;
-        # its purpose is to act as a dummy so that
+        # its purpose is to act as a placeholder argument so that
         # ``Writer(x, y, **info)`` works, where `info` is a dictionary
         # returned by Reader.read and friends.
         # Ditto for `colormap`.
@@ -1496,7 +1496,7 @@ class Reader:
         # byte is used instead.
         fu = max(1, self.psize)
 
-        # For the first line of a pass, synthesize a dummy previous
+        # For the first line of a pass, synthesize a fake previous
         # line.  An alternative approach would be to observe that on the
         # first line 'up' is the same as 'null', 'paeth' is the same
         # as 'sub', with only 'average' requiring any special case.

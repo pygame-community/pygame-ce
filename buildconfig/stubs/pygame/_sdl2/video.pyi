@@ -1,10 +1,11 @@
-from typing import Any, Generator, Iterable, Optional, Tuple, Union, final
+from typing import Any, Generator, Iterable, Optional, Tuple, Union
 
 from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
+from pygame.window import Window as Window
 
-from .._common import RectValue, ColorValue
+from .._common import ColorValue, RectValue, Coordinate
 
 WINDOWPOS_UNDEFINED: int
 WINDOWPOS_CENTERED: int
@@ -37,10 +38,6 @@ def messagebox(
     return_button: int = 0,
     escape_button: int = 0,
 ) -> int: ...
-
-from pygame._window import Window as Window
-
-_Window = Window
 
 class Texture:
     def __init__(
@@ -77,26 +74,26 @@ class Texture:
     ) -> None: ...
     def draw_triangle(
         self,
-        p1_xy: Iterable[float],
-        p2_xy: Iterable[float],
-        p3_xy: Iterable[float],
-        p1_uv: Iterable[float] = (0.0, 0.0),
-        p2_uv: Iterable[float] = (1.0, 1.0),
-        p3_uv: Iterable[float] = (0.0, 1.0),
+        p1_xy: Coordinate,
+        p2_xy: Coordinate,
+        p3_xy: Coordinate,
+        p1_uv: Coordinate = (0.0, 0.0),
+        p2_uv: Coordinate = (1.0, 1.0),
+        p3_uv: Coordinate = (0.0, 1.0),
         p1_mod: Iterable[int] = (255, 255, 255, 255),
         p2_mod: Iterable[int] = (255, 255, 255, 255),
         p3_mod: Iterable[int] = (255, 255, 255, 255),
     ) -> None: ...
     def draw_quad(
         self,
-        p1_xy: Iterable[float],
-        p2_xy: Iterable[float],
-        p3_xy: Iterable[float],
-        p4_xy: Iterable[float],
-        p1_uv: Iterable[float]=(0.0, 0.0),
-        p2_uv: Iterable[float]=(1.0, 0.0),
-        p3_uv: Iterable[float]=(1.0, 1.0),
-        p4_uv: Iterable[float]=(0.0, 1.0),
+        p1_xy: Coordinate,
+        p2_xy: Coordinate,
+        p3_xy: Coordinate,
+        p4_xy: Coordinate,
+        p1_uv: Coordinate = (0.0, 0.0),
+        p2_uv: Coordinate = (1.0, 0.0),
+        p3_uv: Coordinate = (1.0, 1.0),
+        p4_uv: Coordinate = (0.0, 1.0),
         p1_mod: Iterable[int] = (255, 255, 255, 255),
         p2_mod: Iterable[int] = (255, 255, 255, 255),
         p3_mod: Iterable[int] = (255, 255, 255, 255),
@@ -158,21 +155,21 @@ class Renderer:
         area: Optional[RectValue] = None,
         special_flags: int = 0,
     ) -> Rect: ...
-    def draw_line(self, p1: Iterable[int], p2: Iterable[int]) -> None: ...
-    def draw_point(self, point: Iterable[int]) -> None: ...
+    def draw_line(self, p1: Coordinate, p2: Coordinate) -> None: ...
+    def draw_point(self, point: Coordinate) -> None: ...
     def draw_rect(self, rect: RectValue) -> None: ...
     def fill_rect(self, rect: RectValue) -> None: ...
     def draw_triangle(
-        self, p1: Iterable[int], p2: Iterable[int], p3: Iterable[int]
+        self, p1: Coordinate, p2: Coordinate, p3: Coordinate
     ) -> None: ...
     def fill_triangle(
-        self, p1: Iterable[float], p2: Iterable[float], p3: Iterable[float]
+        self, p1: Coordinate, p2: Coordinate, p3: Coordinate
     ) -> None: ...
     def draw_quad(
-        self, p1: Iterable[int], p2: Iterable[int], p3: Iterable[int], p4: Iterable[int]
+        self, p1: Coordinate, p2: Coordinate, p3: Coordinate, p4: Coordinate
     ) -> None: ...
     def fill_quad(
-        self, p1: Iterable[float], p2: Iterable[float], p3: Iterable[float], p4: Iterable[float]
+        self, p1: Coordinate, p2: Coordinate, p3: Coordinate, p4: Coordinate
     ) -> None: ...
     def to_surface(
         self, surface: Optional[Surface] = None, area: Optional[RectValue] = None

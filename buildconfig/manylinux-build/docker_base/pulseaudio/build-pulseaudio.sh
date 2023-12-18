@@ -12,6 +12,6 @@ unxz ${PULSEFILE}.tar.xz
 tar xf ${PULSEFILE}.tar
 
 cd ${PULSEFILE}
-./configure $ARCHS_CONFIG_FLAG --disable-manpages --disable-gsettings
+./configure $PG_BASE_CONFIGURE_FLAGS --disable-manpages --disable-gsettings
 make
 make install

@@ -287,8 +287,8 @@ pygame much earlier.
    Thumbnail generation with scaling is an example of what you can do with
    pygame.
 
-   ``NOTE``: the pygame scale function uses MMX/SSE if available, and can be
-   run in multiple threads.
+   ``NOTE``: the pygame scale function uses SIMD acceleration if available, 
+   and can be run in multiple threads.
 
    If ``headless_no_windows_needed.py`` is run as a program it takes the
    following command line arguments:

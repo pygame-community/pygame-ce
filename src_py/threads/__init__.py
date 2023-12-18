@@ -140,7 +140,7 @@ class WorkerQueue:
             self.pool.append(Thread(target=self.threadloop))
 
         for a_thread in self.pool:
-            a_thread.setDaemon(True)
+            a_thread.daemon = True
             a_thread.start()
 
     def do(self, f, *args, **kwArgs):
