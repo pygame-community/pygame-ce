@@ -4246,30 +4246,28 @@ surf_pixelate(PyObject *self, PyObject *args, PyObject *kwargs)
     double testWidth = round((double)src->surf->w / pixel_size);
     double testHeight = round((double)src->surf->h / pixel_size);
 
-    if (testWidth > INT_MAX || testWidth <= 0)
-    {
-        PyErr_SetString(PyExc_OverflowError, "Cannot scale width outside the range [0, INT_MAX]");
+    if (testWidth > INT_MAX || testWidth <= 0) {
+        PyErr_SetString(PyExc_OverflowError,
+                        "Cannot scale width outside the range [0, INT_MAX]");
         return NULL;
     }
 
-    if (testHeight > INT_MAX || testHeight <= 0)
-    {
-        PyErr_SetString(PyExc_OverflowError, "Cannot scale height outside the range [0, INT_MAX]");
+    if (testHeight > INT_MAX || testHeight <= 0) {
+        PyErr_SetString(PyExc_OverflowError,
+                        "Cannot scale height outside the range [0, INT_MAX]");
         return NULL;
     }
 
     int width = (int)testWidth;
     int height = (int)testHeight;
 
-    SDL_Surface* temp = scale_to(src, NULL, width, height);
+    SDL_Surface *temp = scale_to(src, NULL, width, height);
     intermediate = pgSurface_New(temp);
-    if (intermediate == NULL)
-    {
+    if (intermediate == NULL) {
         return NULL; /* Exception already set in scale_to */
     }
     new_surf = scale_to(intermediate, dst, src->surf->w, src->surf->h);
-    if (new_surf == NULL)
-    {
+    if (new_surf == NULL) {
         return NULL; /* Exception already set in scale_to */
     }
 
