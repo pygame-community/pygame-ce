@@ -32,6 +32,7 @@
 
 #include <math.h>
 #include <string.h>
+#include <limits.h>
 
 #include "simd_shared.h"
 #include "simd_transform.h"
@@ -4225,89 +4226,6 @@ surf_invert(PyObject *self, PyObject *args, PyObject *kwargs)
     return (PyObject *)pgSurface_New(newsurf);
 }
 
-SDL_Surface *
-pixelate(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int pixel_size)
-{
-    SDL_Surface *src = pgSurface_AsSurface(srcobj);
-    SDL_Surface *newsurf;
-
-    if (!dstobj) {
-        newsurf = newsurf_fromsurf(src, srcobj->surf->w, srcobj->surf->h);
-        if (!newsurf)
-            return NULL;
-    }
-    else {
-        newsurf = pgSurface_AsSurface(dstobj);
-    }
-
-    if (pixel_size < 1) {
-        return (SDL_Surface *)(RAISE(PyExc_ValueError,
-                                     "pixel_size must be greater than 0."));
-    }
-
-    if (newsurf->w != src->w || newsurf->h != src->h) {
-        return (SDL_Surface *)(RAISE(
-            PyExc_ValueError,
-            "Destination surface must be the same size as source surface."));
-    }
-
-    if (src->format->BytesPerPixel != newsurf->format->BytesPerPixel) {
-        return (SDL_Surface *)(RAISE(
-            PyExc_ValueError,
-            "Source and destination surfaces need the same format."));
-    }
-
-    int x, y;
-    for (y = 0; y < src->h; y += pixel_size) {
-        for (x = 0; x < src->w; x += pixel_size) {
-            unsigned char r, g, b, a;  // current
-            Uint32 ra, ga, ba, aa;     // averages
-            Uint16 size;
-            Uint32 color, average;
-            Uint8 *pix;
-            int width = (pixel_size > (src->w - x)) ? src->w - x : pixel_size;
-            int height = (pixel_size > (src->h - y)) ? src->h - y : pixel_size;
-
-            ra = 0;
-            ga = 0;
-            ba = 0;
-            aa = 0;
-            for (int w = 0; w < width; w++) {
-                for (int h = 0; h < height; h++) {
-                    SURF_GET_AT(color, src, x + w, y + h, (Uint8 *)src->pixels,
-                                src->format, pix);
-                    SDL_GetRGBA(color, src->format, &r, &g, &b, &a);
-                    ra += r;
-                    ga += g;
-                    ba += b;
-                    aa += a;
-                }
-            }
-            size = width * height;
-
-            average = SDL_MapRGBA(newsurf->format, (Uint8)(ra / size),
-                                  (Uint8)(ga / size), (Uint8)(ba / size),
-                                  (Uint8)(aa / size));
-
-            for (int w = 0; w < width; w++) {
-                for (int h = 0; h < height; h++) {
-                    SURF_SET_AT(average, newsurf, x + w, y + h,
-                                (Uint8 *)newsurf->pixels, newsurf->format,
-                                pix);
-                }
-            }
-        }
-    }
-
-    SDL_UnlockSurface(newsurf);
-
-    return newsurf;
-}
-
-/*
- * anticipated API: pygame.transform.pixelate(surface, pixel_size, dest_surface
- * = None)
- */
 static PyObject *
 surf_pixelate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -4315,6 +4233,7 @@ surf_pixelate(PyObject *self, PyObject *args, PyObject *kwargs)
     pgSurfaceObject *dst = NULL;
     int pixel_size;
     SDL_Surface *new_surf;
+    pgSurfaceObject *intermediate;
 
     static char *kwds[] = {"surface", "pixel_size", "dest_surface", NULL};
 
@@ -4324,10 +4243,34 @@ surf_pixelate(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    new_surf = pixelate(src, dst, pixel_size);
+    double testWidth = round((double)src->surf->w / pixel_size);
+    double testHeight = round((double)src->surf->h / pixel_size);
 
-    if (!new_surf) {
+    if (testWidth > INT_MAX || testWidth <= 0)
+    {
+        PyErr_SetString(PyExc_OverflowError, "Cannot scale width outside the range [0, INT_MAX]");
         return NULL;
+    }
+
+    if (testHeight > INT_MAX || testHeight <= 0)
+    {
+        PyErr_SetString(PyExc_OverflowError, "Cannot scale height outside the range [0, INT_MAX]");
+        return NULL;
+    }
+
+    int width = (int)testWidth;
+    int height = (int)testHeight;
+
+    SDL_Surface* temp = scale_to(src, NULL, width, height);
+    intermediate = pgSurface_New(temp);
+    if (intermediate == NULL)
+    {
+        return NULL; /* Exception already set in scale_to */
+    }
+    new_surf = scale_to(intermediate, dst, src->surf->w, src->surf->h);
+    if (new_surf == NULL)
+    {
+        return NULL; /* Exception already set in scale_to */
     }
 
     if (dst) {
