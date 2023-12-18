@@ -84,7 +84,7 @@ static void
 draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
                 int width, Uint32 color, int top_left, int top_right,
                 int bottom_left, int bottom_right, int *drawn_area);
-                static void
+static void
 draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width, int border_radius, 
                     int num_points, Uint32 color, int *drawn_area);
 
@@ -738,7 +738,7 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
         return NULL; /* Exception already set. */
     }
 
-    if (width && (border_radius==0)) {
+    if (width && (border_radius <= 0)) {
         PyObject *ret = NULL;
         PyObject *args =
             Py_BuildValue("(OOiOi)", surfobj, colorobj, 1, points, width);
@@ -814,11 +814,17 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
-    if (length != 3) {
-        if(border_radius != 0){ 
-            draw_round_polygon(surf, xlist, ylist, width, border_radius, length, color, drawn_area);
-        } else {
-        draw_fillpoly(surf, xlist, ylist, length, color, drawn_area);
+        if (length != 3) {
+        if ((border_radius > 0) && (width > 0)) {
+            int err;
+            err = draw_round_polygon(surf, xlist, ylist, width, border_radius,
+                                     length, color, drawn_area);
+            if (err == -1) {
+                return NULL;
+            }
+        }
+        else {
+            draw_fillpoly(surf, xlist, ylist, length, color, drawn_area);
         }
     }
     else {
@@ -2827,32 +2833,30 @@ draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
     }
 }
 
-// Define a structure representing a point with x and y coordinates
 typedef struct {
     double x;
     double y;
 } Point;
 
-// Define a structure representing a circle with a center (Point) and a radius
 typedef struct {
     Point center;
     double radius;
 } Circle;
 
-// Define a structure representing a line segment with start and end points
 typedef struct {
     Point start;
     Point end;
 } Line;
 
-// Function to determine the side of point 'c' relative to the line formed by points 'a' and 'b'
-// Returns 1 if on the left side, -1 if on the right side, and 0 if collinear
-int side(Point a, Point b, Point c) {
-    // Calculate the determinant, a mathematical quantity used to determine the orientation of three points
-    double det =
-        (a.x * b.y + b.x * c.y + c.x * a.y) - (a.y * b.x + b.y * c.x + c.y * a.x);
-    // Check the sign of the determinant to determine the relative position of point 'c'   
-    if (det > 0) {
+// Function to determine the side of point 'c' relative to the line formed by
+// points 'a' and 'b' Returns 1 if on the left side, -1 if on the right side,
+// and 0 if collinear
+int
+side(Point a, Point b, Point c)
+{
+    double det = (a.x * b.y + b.x * c.y + c.x * a.y) -
+                 (a.y * b.x + b.y * c.x + c.y * a.x);
+        if (det > 0) {
         return 1;
     // If the determinant is positive, point 'c' is on the left side of the line
     } else if (det < 0) {
@@ -2971,15 +2975,34 @@ double angle(Point center, Point point) {
 }
 
 // Define a function to draw a rounded polygon on an SDL surface
-static void
-draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width, int border_radius, int num_points, Uint32 color, int *drawn_area) {
-
+static int
+draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
+                   int border_radius, int num_points, Uint32 color,
+                   int *drawn_area)
+{
     // Define arrays to store path points and circle information
-    Point path[2 * num_points];
-    Circle circles[num_points];
+    Point *path;
+    Circle *circles;
+    Point *points;
 
-    // Define an array to store original polygon points
-    Point points[num_points];
+    path = (Point *)malloc(2 * num_points * sizeof(Point));
+    circles = (Circle *)malloc(num_points * sizeof(Circle));
+    points = (Point *)malloc(num_points * sizeof(Point));
+
+    if (points == NULL || circles == NULL || path == NULL) {
+        if (points) {
+            free(points);
+        }
+        if (circles) {
+            free(circles);
+        }
+        if (path) {
+            free(path);
+        }
+        PyErr_SetString(PyExc_MemoryError,
+                        "cannot allocate memory to draw polygon");
+        return -1;
+    }
 
     // Convert input coordinates to Point structures
     for (int i = 0; i < num_points; i++) {
@@ -2987,54 +3010,50 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width, int bor
         points[i].y = pts_y[i];
     }
 
-    // Iterate through each point in the polygon
-    for (int i = 0; i < num_points; i++) {
-        // Determine neighboring points for the current point
-        int a, b;
-        if (i == 0) {
-            a = num_points - 1;
-            b = 1;
-        } else if (i == (num_points - 1)) {
-            a = num_points - 2;
-            b = 0;
-        } else if (i == (num_points - 2)) {
-            a = num_points - 3;
-            b = num_points - 1;
-        } else {
-            a = i - 1;
-            b = i + 1;
-        }
+        for (int i = 0; i < num_points; i++) {
+        int a = (i - 1 + num_points) %
+                (num_points);            // index of the point before index i
+        int b = (i + 1) % (num_points);  // index of the point after index i
 
         // Check if the border-radius can be applied to the current angle
+// it can not be applied to a flat angle(if the three points are
+        // aligned)
         if (side(points[a], points[i], points[b]) == 0) {
-            printf("ValueError: Border-radius cannot be applied to a flat angle.\n"
-                    "Please ensure that the specified angle or curvature is within a valid range for border-radius drawing.\n");
-            return;
+            PyErr_SetString(
+                PyExc_ValueError,
+                "Border-radius cannot be applied to a flat angle.\nPlease "
+                "ensure that the specified angle or curvature is within a "
+                "valid range for border-radius drawing.\n");
+            return -1;
         }
 
         // Find parallel lines to the polygon sides at the current point
-        Line line1 = find_parallel_line(points[a], points[i], points[b], border_radius);
-        Line line2 = find_parallel_line(points[i], points[b], points[a], border_radius);
-        circles[i].center = intersection(line1.start, line1.end, line2.start, line2.end);
+        Line line1 =
+            find_parallel_line(points[a], points[i], points[b], border_radius);
+        Line line2 =
+            find_parallel_line(points[i], points[b], points[a], border_radius);
+        circles[i].center =
+            intersection(line1.start, line1.end, line2.start, line2.end);
 
-        // Project points onto the parallel lines
-        Point proj1 =
-            project_point_onto_segment(circles[i].center, points[a], points[i]);
-        Point proj2 =
-            project_point_onto_segment(circles[i].center, points[i], points[b]);
+        Point proj1 = project_point_onto_segment(circles[i].center, points[a],
+                                                 points[i]);
+        Point proj2 = project_point_onto_segment(circles[i].center, points[i],
+                                                 points[b]);
 
         // Check if the border-radius size is valid
-
-        // Compare the distance between the projected points and the corresponding endpoints
-        // If the distance is greater than or equal to half of the corresponding line segment, it is considered invalid
         if ((sqrt(pow(proj1.x - points[i].x, 2) +
-            pow(proj1.y - points[i].y, 2)) >= sqrt(pow(points[a].x - points[i].x, 2) +
-                                                    pow(points[a].y - points[i].y, 2)) / 2) ||  
+            pow(proj1.y - points[i].y, 2)) >=
+             sqrt(pow(points[a].x - points[i].x, 2) +
+                                                    pow(points[a].y - points[i].y, 2)) /
+                 2) ||  
             (sqrt(pow(proj2.x - points[i].x, 2) +
-                pow(proj2.y - points[i].y, 2)) >= sqrt(pow(points[b].x - points[i].x, 2) +
-                                                        pow(points[b].y - points[i].y, 2)) / 2)) {
-            printf("ValueError: Border-radius size must be smaller\n");
-            return;
+                pow(proj2.y - points[i].y, 2)) >=
+             sqrt(pow(points[b].x - points[i].x, 2) +
+                                                        pow(points[b].y - points[i].y, 2)) /
+                 2)) {
+            PyErr_SetString(PyExc_ValueError,
+                            "Border-radius size must be smaller\n");
+            return -1;
         }
 
         // Store projected points and circle radius in arrays
@@ -3051,8 +3070,7 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width, int bor
         Point pt3 = path[(i + 2) % (2 * num_points)];
         Circle circle = circles[i / 2];
 
-        // Calculate start and end angles for the arc
-        double start_angle = angle(circle.center, pt1);
+                double start_angle = angle(circle.center, pt1);
         double end_angle = angle(circle.center, pt2);
 
         // Adjust angles based on the side of the polygon
@@ -3062,33 +3080,17 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width, int bor
             end_angle = temp;
         }
 
-        // Ensure the end angle is greater than the start angle (in radians)
-        if (end_angle < start_angle) {
-            // Angle is in radians
-            end_angle += 2 * M_PI;
-        }
-
-        // Draw the arc and connecting line
-        draw_arc(surf,
-                circle.center.x,
-                circle.center.y,
-                circle.radius,
-                circle.radius,
-                width,
-                start_angle,
-                end_angle,
-                color,
+        draw_arc(surf, circle.center.x, circle.center.y, circle.radius,
+                circle.radius, width, start_angle, end_angle, color,
                 drawn_area);
 
-        draw_line_width(surf,
-                        color,
-                        pt2.x,
-                        pt2.y,
-                        pt3.x,
-                        pt3.y,
-                        width,
+        draw_line_width(surf, color, pt2.x, pt2.y, pt3.x, pt3.y, width,
                         drawn_area);
     }
+free(path);
+    free(circles);
+    free(points);
+    return 0;
 }
 
 /* List of python functions */
