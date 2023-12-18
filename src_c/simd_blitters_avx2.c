@@ -1530,25 +1530,25 @@ blit_blend_premultiplied_avx2(SDL_BlitInfo *info)
 #endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
           !defined(SDL_DISABLE_IMMINTRIN_H) */
 
-#define PREMUL_ALPHA_CODE                                        \
-    mm_alpha_in = _mm256_and_si256(mm_src, mm256_amask);         \
-    alpha_eq_mask = _mm256_cmpeq_epi8(mm_alpha_in, mm256_amask); \
-                                                                 \
-    alphaA = _mm256_shuffle_epi8(mm_src, shuffle_maskA);         \
-    alphaB = _mm256_shuffle_epi8(mm_src, shuffle_maskB);         \
-                                                                 \
-    mm_srcA = _mm256_unpacklo_epi8(mm_src, mm_zero);             \
-    mm_srcB = _mm256_unpackhi_epi8(mm_src, mm_zero);             \
-                                                                 \
-    mm_srcA = _mm256_mullo_epi16(mm_srcA, alphaA);               \
-    mm_srcB = _mm256_mullo_epi16(mm_srcB, alphaB);               \
-                                                                 \
-    mm_srcA = _mm256_srli_epi16(mm_srcA, 8);                     \
-    mm_srcB = _mm256_srli_epi16(mm_srcB, 8);                     \
-                                                                 \
-    mm_dst = _mm256_packus_epi16(mm_srcA, mm_srcB);              \
-    mm_dst = _mm256_or_si256(mm_dst, mm_alpha_in);               \
-    mm_dst = _mm256_blendv_epi8(mm_src, mm_dst, alpha_eq_mask);
+#define PREMUL_ALPHA_CODE                                         \
+    mm_alpha_in = _mm256_and_si256(mm_src, mm256_amask);          \
+    alpha_eq_mask = _mm256_cmpeq_epi32(mm_alpha_in, mm256_amask); \
+                                                                  \
+    alphaA = _mm256_shuffle_epi8(mm_src, shuffle_maskA);          \
+    alphaB = _mm256_shuffle_epi8(mm_src, shuffle_maskB);          \
+                                                                  \
+    mm_srcA = _mm256_unpacklo_epi8(mm_src, mm_zero);              \
+    mm_srcB = _mm256_unpackhi_epi8(mm_src, mm_zero);              \
+                                                                  \
+    mm_srcA = _mm256_mullo_epi16(mm_srcA, alphaA);                \
+    mm_srcB = _mm256_mullo_epi16(mm_srcB, alphaB);                \
+                                                                  \
+    mm_srcA = _mm256_srli_epi16(mm_srcA, 8);                      \
+    mm_srcB = _mm256_srli_epi16(mm_srcB, 8);                      \
+                                                                  \
+    mm_dst = _mm256_packus_epi16(mm_srcA, mm_srcB);               \
+    mm_dst = _mm256_or_si256(mm_dst, mm_alpha_in);                \
+    mm_dst = _mm256_blendv_epi8(mm_dst, mm_src, alpha_eq_mask);
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
