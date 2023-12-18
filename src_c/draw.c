@@ -2865,6 +2865,7 @@ int side(Point a, Point b, Point c) {
 }
 
 // Function to find a parallel line to the line formed by 'pt1' and 'pt2' at a given distance
+// 'pt3' is used to determin in which side of the line, the parallel line should be drawn
 // Returns a Line struct representing the parallel line
 Line find_parallel_line(Point pt1, Point pt2, Point pt3, int distance) {
     
@@ -2901,7 +2902,8 @@ Line find_parallel_line(Point pt1, Point pt2, Point pt3, int distance) {
 // Function to project a point onto a line segment defined by 'segment_start' and 'segment_end'
 Point project_point_onto_segment(Point point, Point segment_start,
                                  Point segment_end) {
-   // Calculate vectors representing the line segment and the vector from 'segment_start' to 'point'
+    // t is a parameter that represents the position of the projected point along the line segment defined by segment_start and segment_end.                               
+    // Calculate vectors, find the parameter 't' for projection, and calculate the projection.
     Point segment_vector;
     segment_vector.x = segment_end.x - segment_start.x;
     segment_vector.y = segment_end.y - segment_start.y;
@@ -2916,7 +2918,8 @@ Point project_point_onto_segment(Point point, Point segment_start,
         (segment_vector.x * segment_vector.x +
         segment_vector.y * segment_vector.y);
 
-    // Ensure 't' is within the valid range [0, 1] to guarantee the projection lies on the line segment    
+    // Ensure 't' is within the valid range [0, 1] to make sure that the projection of the point onto the line segment lies specifically within the boundaries of the segment
+    // See line 2906
     t = fmax(0, fmin(1, t));
 
     // Calculate the coordinates of the projected point using the parameter 't'
@@ -2949,6 +2952,7 @@ Point intersection(Point line1_start, Point line1_end, Point line2_start,
         return (Point){0, 0};
     } else {
         // Calculate the intersection point using Cramer's rule
+        // The lines never intersect out of the range given because of the condition limiting the value of boarder radius
         double x = (B2 * C1 - B1 * C2) / det;
         double y = (A1 * C2 - A2 * C1) / det;
         return (Point){x, y};
