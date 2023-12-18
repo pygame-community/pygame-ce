@@ -352,7 +352,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
    ``pixel_size`` is an integer describing how large you want the pixels in the final pixelated image to be.
    An optional destination surface can be passed which is faster than creating a new Surface. This destination
-   surface must have the same dimensions (width, height) and smae depth as the source surface.
+   surface must have the same dimensions (width, height) and same format as the source surface.
 
    .. versionadded:: 2.4.0
 
