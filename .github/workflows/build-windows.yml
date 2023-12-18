@@ -161,7 +161,7 @@ jobs:
           python -m pip --disable-pip-version-check install cibuildwheel==2.16.2
           python -m cibuildwheel --output-dir wheelhouse
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: pygame-wheels-windows
           path: ./wheelhouse/*.whl
