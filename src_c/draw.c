@@ -84,10 +84,10 @@ static void
 draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
                 int width, Uint32 color, int top_left, int top_right,
                 int bottom_left, int bottom_right, int *drawn_area);
-static void
-draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width, int border_radius, 
-                    int num_points, Uint32 color, int *drawn_area);
-
+static int
+draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
+                   int border_radius, int num_points, Uint32 color,
+                   int *drawn_area);
 
 // validation of a draw color
 #define CHECK_LOAD_COLOR(colorobj)                               \
@@ -724,13 +724,14 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     SDL_Surface *surf = NULL;
     Uint32 color;
     int *xlist = NULL, *ylist = NULL;
-    int width = 0; /* Default width. */
+    int width = 0;         /* Default width. */
     int border_radius = 0; /* Default border_radius. */
     int x, y, result, l, t;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     Py_ssize_t loop, length;
-    static char *keywords[] = {"surface", "color", "points", "width", "border_radius", NULL};
+    static char *keywords[] = {"surface", "color",         "points",
+                               "width",   "border_radius", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OO|ii", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
@@ -814,7 +815,7 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
-        if (length != 3) {
+    if (length != 3) {
         if ((border_radius > 0) && (width > 0)) {
             int err;
             err = draw_round_polygon(surf, xlist, ylist, width, border_radius,
@@ -2856,58 +2857,75 @@ side(Point a, Point b, Point c)
 {
     double det = (a.x * b.y + b.x * c.y + c.x * a.y) -
                  (a.y * b.x + b.y * c.x + c.y * a.x);
-        if (det > 0) {
+    if (det > 0) {
         return 1;
-    // If the determinant is positive, point 'c' is on the left side of the line
-    } else if (det < 0) {
-        // If the determinant is negative, point 'c' is on the right side of the line
+        // If the determinant is positive, point 'c' is on the left side of the
+        // line
+    }
+    else if (det < 0) {
+        // If the determinant is negative, point 'c' is on the right side of
+        // the line
         return -1;
-    } else {
+    }
+    else {
         // If the determinant is zero, points 'a', 'b', and 'c' are collinear
         return 0;
     }
 }
 
-// Function to find a parallel line to the line formed by 'pt1' and 'pt2' at a given distance
-// 'pt3' is used to determin in which side of the line, the parallel line should be drawn
-// Returns a Line struct representing the parallel line
-Line find_parallel_line(Point pt1, Point pt2, Point pt3, int distance) {
-    
-    // Calculate direction vector, normalize it, and find the perpendicular vector
-    
+// Function to find a parallel line to the line formed by 'pt1' and 'pt2' at a
+// given distance 'pt3' is used to determin in which side of the line, the
+// parallel line should be drawn Returns a Line struct representing the
+// parallel line
+Line
+find_parallel_line(Point pt1, Point pt2, Point pt3, int distance)
+{
+    // Calculate direction vector, normalize it, and find the perpendicular
+    // vector
+
     // Calculate direction vector from 'pt1' to 'pt2'
     Point direction_vector = {pt2.x - pt1.x, pt2.y - pt1.y};
 
     // Calculate the magnitude of the direction vector
-    float magnitude = sqrt(direction_vector.x * direction_vector.x + direction_vector.y * direction_vector.y);
-    
+    float magnitude = sqrt(direction_vector.x * direction_vector.x +
+                           direction_vector.y * direction_vector.y);
+
     // Normalize the direction vector to get a unit vector
-    Point normalized_direction = {direction_vector.x / magnitude, direction_vector.y / magnitude};
-    
-    // Calculate the perpendicular vector by swapping x and y components and negating one of them
-    Point perpendicular_vector = {-normalized_direction.y, normalized_direction.x};
-    
-    // Adjust the perpendicular vector based on the side of 'pt3' relative to 'pt1' and 'pt2'
+    Point normalized_direction = {direction_vector.x / magnitude,
+                                  direction_vector.y / magnitude};
+
+    // Calculate the perpendicular vector by swapping x and y components and
+    // negating one of them
+    Point perpendicular_vector = {-normalized_direction.y,
+                                  normalized_direction.x};
+
+    // Adjust the perpendicular vector based on the side of 'pt3' relative to
+    // 'pt1' and 'pt2'
     if (side(pt1, pt2, pt3) == -1) {
         perpendicular_vector.x *= -1;
         perpendicular_vector.y *= -1;
     }
     // Create an offset vector and generate the parallel line.
-    Point offset_vector = {perpendicular_vector.x * distance, perpendicular_vector.y * distance};
-    
+    Point offset_vector = {perpendicular_vector.x * distance,
+                           perpendicular_vector.y * distance};
+
     // Generate the points for the parallel line based on the offset
-    Line parallel_line = {{pt1.x + offset_vector.x, pt1.y + offset_vector.y}, {pt2.x + offset_vector.x, pt2.y + offset_vector.y}};
-    
+    Line parallel_line = {{pt1.x + offset_vector.x, pt1.y + offset_vector.y},
+                          {pt2.x + offset_vector.x, pt2.y + offset_vector.y}};
+
     // Return the Line struct representing the parallel line
     return parallel_line;
 }
 
-
-// Function to project a point onto a line segment defined by 'segment_start' and 'segment_end'
-Point project_point_onto_segment(Point point, Point segment_start,
-                                 Point segment_end) {
-    // t is a parameter that represents the position of the projected point along the line segment defined by segment_start and segment_end.                               
-    // Calculate vectors, find the parameter 't' for projection, and calculate the projection.
+// Function to project a point onto a line segment defined by 'segment_start'
+// and 'segment_end'
+Point
+project_point_onto_segment(Point point, Point segment_start, Point segment_end)
+{
+    // t is a parameter that represents the position of the projected point
+    // along the line segment defined by segment_start and segment_end.
+    // Calculate vectors, find the parameter 't' for projection, and calculate
+    // the projection.
     Point segment_vector;
     segment_vector.x = segment_end.x - segment_start.x;
     segment_vector.y = segment_end.y - segment_start.y;
@@ -2917,13 +2935,14 @@ Point project_point_onto_segment(Point point, Point segment_start,
     point_vector.y = point.y - segment_start.y;
 
     // Calculate the parameter 't' for the projection using the dot product
-    double t =
-        (point_vector.x * segment_vector.x + point_vector.y * segment_vector.y) /
-        (segment_vector.x * segment_vector.x +
-        segment_vector.y * segment_vector.y);
+    double t = (point_vector.x * segment_vector.x +
+                point_vector.y * segment_vector.y) /
+               (segment_vector.x * segment_vector.x +
+                segment_vector.y * segment_vector.y);
 
-    // Ensure 't' is within the valid range [0, 1] to make sure that the projection of the point onto the line segment lies specifically within the boundaries of the segment
-    // See line 2906
+    // Ensure 't' is within the valid range [0, 1] to make sure that the
+    // projection of the point onto the line segment lies specifically within
+    // the boundaries of the segment See line 2906
     t = fmax(0, fmin(1, t));
 
     // Calculate the coordinates of the projected point using the parameter 't'
@@ -2935,11 +2954,12 @@ Point project_point_onto_segment(Point point, Point segment_start,
     return projection;
 }
 
-
 // Function to find the intersection point of two line segments
 // Returns the intersection point as a Point struct
-Point intersection(Point line1_start, Point line1_end, Point line2_start,
-                   Point line2_end) {
+Point
+intersection(Point line1_start, Point line1_end, Point line2_start,
+             Point line2_end)
+{
     // Calculate coefficients for each line equation
     double A1 = line1_end.y - line1_start.y;
     double B1 = line1_start.x - line1_end.x;
@@ -2951,26 +2971,33 @@ Point intersection(Point line1_start, Point line1_end, Point line2_start,
 
     // Check if the lines are parallel (det == 0) and handle the case
     double det = A1 * B2 - A2 * B1;
-    // If the lines are parallel (det == 0), they do not intersect, return a default Point
+    // If the lines are parallel (det == 0), they do not intersect, return a
+    // default Point
     if (det == 0) {
         return (Point){0, 0};
-    } else {
+    }
+    else {
         // Calculate the intersection point using Cramer's rule
-        // The lines never intersect out of the range given because of the condition limiting the value of boarder radius
+        // The lines never intersect out of the range given because of the
+        // condition limiting the value of boarder radius
         double x = (B2 * C1 - B1 * C2) / det;
         double y = (A1 * C2 - A2 * C1) / det;
         return (Point){x, y};
     }
 }
 
-// Function to calculate the angle (in radians) between a center point and another point
-double angle(Point center, Point point) {
+// Function to calculate the angle (in radians) between a center point and
+// another point
+double
+angle(Point center, Point point)
+{
     // Calculate the differences in x and y coordinates between the two points
     double x = point.x - center.x;
     double y = point.y - center.y;
-    // Use atan2 to calculate the angle formed by the vector from the center to the point
-    // The angle is measured counterclockwise from the positive x-axis
-    // Note: The negative sign is used to ensure the angle is measured clockwise, which is more common in Cartesian coordinates.
+    // Use atan2 to calculate the angle formed by the vector from the center to
+    // the point The angle is measured counterclockwise from the positive
+    // x-axis Note: The negative sign is used to ensure the angle is measured
+    // clockwise, which is more common in Cartesian coordinates.
     return -atan2(y, x);
 }
 
@@ -3010,13 +3037,13 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
         points[i].y = pts_y[i];
     }
 
-        for (int i = 0; i < num_points; i++) {
+    for (int i = 0; i < num_points; i++) {
         int a = (i - 1 + num_points) %
                 (num_points);            // index of the point before index i
         int b = (i + 1) % (num_points);  // index of the point after index i
 
         // Check if the border-radius can be applied to the current angle
-// it can not be applied to a flat angle(if the three points are
+        // it can not be applied to a flat angle(if the three points are
         // aligned)
         if (side(points[a], points[i], points[b]) == 0) {
             PyErr_SetString(
@@ -3042,14 +3069,14 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
 
         // Check if the border-radius size is valid
         if ((sqrt(pow(proj1.x - points[i].x, 2) +
-            pow(proj1.y - points[i].y, 2)) >=
+                  pow(proj1.y - points[i].y, 2)) >=
              sqrt(pow(points[a].x - points[i].x, 2) +
-                                                    pow(points[a].y - points[i].y, 2)) /
-                 2) ||  
+                  pow(points[a].y - points[i].y, 2)) /
+                 2) ||
             (sqrt(pow(proj2.x - points[i].x, 2) +
-                pow(proj2.y - points[i].y, 2)) >=
+                  pow(proj2.y - points[i].y, 2)) >=
              sqrt(pow(points[b].x - points[i].x, 2) +
-                                                        pow(points[b].y - points[i].y, 2)) /
+                  pow(points[b].y - points[i].y, 2)) /
                  2)) {
             PyErr_SetString(PyExc_ValueError,
                             "Border-radius size must be smaller\n");
@@ -3070,7 +3097,7 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
         Point pt3 = path[(i + 2) % (2 * num_points)];
         Circle circle = circles[i / 2];
 
-                double start_angle = angle(circle.center, pt1);
+        double start_angle = angle(circle.center, pt1);
         double end_angle = angle(circle.center, pt2);
 
         // Adjust angles based on the side of the polygon
@@ -3081,13 +3108,13 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
         }
 
         draw_arc(surf, circle.center.x, circle.center.y, circle.radius,
-                circle.radius, width, start_angle, end_angle, color,
-                drawn_area);
+                 circle.radius, width, start_angle, end_angle, color,
+                 drawn_area);
 
         draw_line_width(surf, color, pt2.x, pt2.y, pt3.x, pt3.y, width,
                         drawn_area);
     }
-free(path);
+    free(path);
     free(circles);
     free(points);
     return 0;

@@ -103,7 +103,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    | :sl:`draw a polygon`
    | :sg:`polygon(surface, color, points) -> Rect`
-   | :sg:`polygon(surface, color, points, width=0) -> Rect`
+   | :sg:`polygon(surface, color, points, width=0, border_radius=0) -> Rect`
 
    Draws a polygon on the given surface.
 
@@ -129,6 +129,8 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
             outside the original boundary of the polygon. For more details on
             how the thickness for edge lines grow, refer to the ``width`` notes
             of the :func:`pygame.draw.line` function.
+   :param int border_radius: (optional, default: 0) determines the radius for rounded corners of the polygon.
+      Only active when both ``width > 0`` and ``border_radius > 0``.
 
    :returns: a rect bounding the changed pixels, if nothing is drawn the
       bounding rect's position will be the position of the first point in the
@@ -136,7 +138,9 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
       height will be 0
    :rtype: Rect
 
-   :raises ValueError: if ``len(points) < 3`` (must have at least 3 points)
+   :raises ValueError: if ``len(points) < 3`` (must have at least 3 points),
+      or if three of the given points provided in inputs are aligned,
+      or if the radius is very large in relation to the size of the adjacent edges.
    :raises TypeError: if ``points`` is not a sequence or ``points`` does not
       contain number pairs
 
