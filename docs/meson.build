@@ -10,6 +10,7 @@ if fs.is_dir('generated')
         ],
         exclude_files: ['.buildinfo', 'objects.inv'],
         install_dir: pg_dir / 'docs',
+        install_tag: 'pg-tag',
     )
 elif get_option('error_docs_missing')
     error('The "generated" docs folder does not exist!')

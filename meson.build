@@ -149,7 +149,7 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
     endif
 
     # put dlls in root of install
-    install_data(dlls, install_dir: pg_dir)
+    install_data(dlls, install_dir: pg_dir, install_tag: 'pg-tag')
 else
     bases = ['/usr/local', '/usr', '/opt/homebrew', '/opt/local']
     foreach inc_dir : bases
@@ -346,6 +346,6 @@ if not get_option('stripped')
     subdir('docs')
     subdir('test')
     subdir('buildconfig/stubs')
-    install_subdir('examples', install_dir: pg_dir)
+    install_subdir('examples', install_dir: pg_dir, install_tag: 'pg-tag')
     # TODO: install headers? not really important though
 endif

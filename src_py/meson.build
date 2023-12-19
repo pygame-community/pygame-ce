@@ -34,7 +34,7 @@ data_files = files(
     'pygame_icon.icns',
     'pygame_icon_mac.bmp',
 )
-install_data(data_files, install_dir: pg_dir)
+install_data(data_files, install_dir: pg_dir, install_tag: 'pg-tag')
 
 subdir('_sdl2')
 subdir('__pyinstaller')

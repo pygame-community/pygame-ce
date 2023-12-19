@@ -51,8 +51,9 @@ hook-dirs = 'pygame.__pyinstaller:get_hook_dirs'
 requires = ["meson-python", "ninja"]  # add cython here when needed
 build-backend = 'mesonpy'
 
+[tool.meson-python.args]
+install = ['--tags=runtime,python-runtime,pg-tag']
 # uncomment to get werror locally
-# [tool.meson-python.args]
 # setup = ["-Derror_on_warns=true"]
 
 [tool.cibuildwheel.config-settings]
