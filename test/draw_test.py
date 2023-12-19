@@ -3645,12 +3645,20 @@ class DrawPolygonMixin:
     def test_polygon__args(self):
         """Ensures draw polygon accepts the correct args."""
         bounds_rect = self.draw_polygon(
-            pygame.Surface((3, 3)), (0, 10, 0, 50), ((0, 0), (1, 1), (2, 2)), 1
+            pygame.Surface((3, 3)), (0, 10, 0, 50), ((0, 0), (1, 1), (2, 2)), 1, 1
         )
 
         self.assertIsInstance(bounds_rect, pygame.Rect)
 
-    def test_polygon__args_without_width(self):
+    def test_polygon__args_without_radius(self):
+        """Ensures draw polygon accepts the args without a width."""
+        bounds_rect = self.draw_polygon(
+            pygame.Surface((2, 2)), (0, 0, 0, 50), ((0, 0), (1, 1), (2, 2)), 1
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+    
+    def test_polygon__args_without_width_nor_radius(self):
         """Ensures draw polygon accepts the args without a width."""
         bounds_rect = self.draw_polygon(
             pygame.Surface((2, 2)), (0, 0, 0, 50), ((0, 0), (1, 1), (2, 2))
@@ -3666,6 +3674,7 @@ class DrawPolygonMixin:
         color = pygame.Color("yellow")
         points = ((0, 0), (1, 1), (2, 2))
         kwargs_list = [
+            {"surface": surface, "color": color, "points": points, "width": 1, "border_radius": 1},
             {"surface": surface, "color": color, "points": points, "width": 1},
             {"surface": surface, "color": color, "points": points},
         ]
@@ -3680,6 +3689,7 @@ class DrawPolygonMixin:
         bounds_rect = self.draw_polygon(
             color=(10, 20, 30),
             surface=pygame.Surface((3, 2)),
+            border_radius=1,
             width=0,
             points=((0, 1), (1, 2), (2, 3)),
         )
@@ -3707,6 +3717,7 @@ class DrawPolygonMixin:
             "color": pygame.Color("red"),
             "points": ((2, 1), (2, 2), (2, 3)),
             "width": 1,
+            "border_radius": 1,
         }
 
         for name in ("points", "color", "surface"):
@@ -3722,6 +3733,10 @@ class DrawPolygonMixin:
         color = pygame.Color("blue")
         points = ((0, 1), (1, 2), (1, 3))
 
+        with self.assertRaises(TypeError):
+            # Invalid border_radius.
+            bounds_rect = self.draw_polygon(surface, color, points, 1, "1")
+        
         with self.assertRaises(TypeError):
             # Invalid width.
             bounds_rect = self.draw_polygon(surface, color, points, "1")
@@ -3744,27 +3759,44 @@ class DrawPolygonMixin:
         color = pygame.Color("green")
         points = ((0, 0), (1, 0), (2, 0))
         width = 1
+        border_radius = 1
         kwargs_list = [
             {
                 "surface": pygame.Surface,  # Invalid surface.
                 "color": color,
                 "points": points,
                 "width": width,
+                "border_radius": border_radius,
             },
             {
                 "surface": surface,
-                "color": 2.3,  # Invalid color.
+                "color": 2.3,   # Invalid color.
                 "points": points,
                 "width": width,
+                "border_radius": border_radius,
             },
             {
                 "surface": surface,
                 "color": color,
                 "points": ((1,), (1,), (1,)),  # Invalid points.
                 "width": width,
+                "border_radius": border_radius,
             },
-            {"surface": surface, "color": color, "points": points, "width": 1.2},
-        ]  # Invalid width.
+            {
+                "surface": surface,
+                "color": color,
+                "points": points,
+                "width": 1.2,   # Invalid width.
+                "border_radius": border_radius,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "points": points,
+                "width": width,
+                "border_radius": 2.3, # Invalid border_radius.
+            },
+        ]  
 
         for kwargs in kwargs_list:
             with self.assertRaises(TypeError):
@@ -3781,9 +3813,10 @@ class DrawPolygonMixin:
                 "color": color,
                 "points": points,
                 "width": 1,
+                "border_radius": 1,
                 "invalid": 1,
             },
-            {"surface": surface, "color": color, "points": points, "invalid": 1},
+            {"surface": surface, "color": color, "points": points, "invalid": 1, "border_radius": 1},
         ]
 
         for kwargs in kwargs_list:
@@ -3796,9 +3829,10 @@ class DrawPolygonMixin:
         color = (255, 255, 0, 0)
         points = ((0, 1), (1, 2), (2, 3))
         width = 0
-        kwargs = {"surface": surface, "color": color, "points": points, "width": width}
+        border_radius = 0
+        kwargs = {"surface": surface, "color": color, "points": points, "width": width, "border_radius": border_radius}
 
-        for name in ("surface", "color", "points", "width"):
+        for name in ("surface", "color", "points", "width", "border_radius"):
             kwargs.pop(name)
 
             if "surface" == name:
@@ -3807,11 +3841,13 @@ class DrawPolygonMixin:
                 bounds_rect = self.draw_polygon(surface, color, **kwargs)
             elif "points" == name:
                 bounds_rect = self.draw_polygon(surface, color, points, **kwargs)
-            else:
+            elif "width" == name:
                 bounds_rect = self.draw_polygon(surface, color, points, width, **kwargs)
+            else:
+                bounds_rect = self.draw_polygon(surface, color, points, width, border_radius, **kwargs)
 
             self.assertIsInstance(bounds_rect, pygame.Rect)
-
+    
     def test_polygon__valid_width_values(self):
         """Ensures draw polygon accepts different width values."""
         surface_color = pygame.Color("white")
@@ -3822,6 +3858,7 @@ class DrawPolygonMixin:
             "color": color,
             "points": ((1, 1), (2, 1), (2, 2), (1, 2)),
             "width": None,
+            "border_radius": 0,
         }
         pos = kwargs["points"][0]
 
@@ -3845,6 +3882,7 @@ class DrawPolygonMixin:
             "color": expected_color,
             "points": None,
             "width": 0,
+            "border_radius": 0,
         }
 
         # The point type can be a tuple/list/Vector2.
@@ -3885,6 +3923,7 @@ class DrawPolygonMixin:
             "color": pygame.Color("red"),
             "points": None,
             "width": 0,
+            "border_radius": 0,
         }
 
         points_fmts = (
@@ -3910,6 +3949,7 @@ class DrawPolygonMixin:
             "color": pygame.Color("red"),
             "points": None,
             "width": 0,
+            "border_radius": 1,
         }
 
         points_fmts = (
@@ -3935,6 +3975,7 @@ class DrawPolygonMixin:
             "color": None,
             "points": ((1, 1), (2, 1), (2, 2), (1, 2)),
             "width": 0,
+            "border_radius": 0,
         }
         pos = kwargs["points"][0]
         greens = (
@@ -3965,6 +4006,7 @@ class DrawPolygonMixin:
             "color": None,
             "points": ((1, 1), (2, 1), (2, 2), (1, 2)),
             "width": 0,
+            "border_radius": 0,
         }
 
         for expected_color in (2.3, self):
@@ -3974,7 +4016,7 @@ class DrawPolygonMixin:
                 bounds_rect = self.draw_polygon(**kwargs)
 
     def test_draw_square(self):
-        self.draw_polygon(self.surface, RED, SQUARE, 0)
+        self.draw_polygon(self.surface, RED, SQUARE, 0, 0)
         # note : there is a discussion (#234) if draw.polygon should include or
         # not the right or lower border; here we stick with current behavior,
         # e.g. include those borders ...
@@ -3984,7 +4026,7 @@ class DrawPolygonMixin:
 
     def test_draw_diamond(self):
         pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
-        self.draw_polygon(self.surface, GREEN, DIAMOND, 0)
+        self.draw_polygon(self.surface, GREEN, DIAMOND, 0, 0)
         # this diamond shape is equivalent to its four corners, plus inner square
         for x, y in DIAMOND:
             self.assertEqual(self.surface.get_at((x, y)), GREEN, msg=str((x, y)))
@@ -3995,7 +4037,7 @@ class DrawPolygonMixin:
     def test_1_pixel_high_or_wide_shapes(self):
         # 1. one-pixel-high, filled
         pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
-        self.draw_polygon(self.surface, GREEN, [(x, 2) for x, _y in CROSS], 0)
+        self.draw_polygon(self.surface, GREEN, [(x, 2) for x, _y in CROSS], 0, 0)
         cross_size = 6  # the maximum x or y coordinate of the cross
         for x in range(cross_size + 1):
             self.assertEqual(self.surface.get_at((x, 1)), RED)
@@ -4003,21 +4045,21 @@ class DrawPolygonMixin:
             self.assertEqual(self.surface.get_at((x, 3)), RED)
         pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
         # 2. one-pixel-high, not filled
-        self.draw_polygon(self.surface, GREEN, [(x, 5) for x, _y in CROSS], 1)
+        self.draw_polygon(self.surface, GREEN, [(x, 5) for x, _y in CROSS], 1, 0)
         for x in range(cross_size + 1):
             self.assertEqual(self.surface.get_at((x, 4)), RED)
             self.assertEqual(self.surface.get_at((x, 5)), GREEN)
             self.assertEqual(self.surface.get_at((x, 6)), RED)
         pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
         # 3. one-pixel-wide, filled
-        self.draw_polygon(self.surface, GREEN, [(3, y) for _x, y in CROSS], 0)
+        self.draw_polygon(self.surface, GREEN, [(3, y) for _x, y in CROSS], 0, 0)
         for y in range(cross_size + 1):
             self.assertEqual(self.surface.get_at((2, y)), RED)
             self.assertEqual(self.surface.get_at((3, y)), GREEN)
             self.assertEqual(self.surface.get_at((4, y)), RED)
         pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
         # 4. one-pixel-wide, not filled
-        self.draw_polygon(self.surface, GREEN, [(4, y) for _x, y in CROSS], 1)
+        self.draw_polygon(self.surface, GREEN, [(4, y) for _x, y in CROSS], 1, 0)
         for y in range(cross_size + 1):
             self.assertEqual(self.surface.get_at((3, y)), RED)
             self.assertEqual(self.surface.get_at((4, y)), GREEN)
@@ -4030,7 +4072,7 @@ class DrawPolygonMixin:
         """
         # 1. case width = 1 (not filled: `polygon` calls  internally the `lines` function)
         pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
-        self.draw_polygon(self.surface, GREEN, CROSS, 1)
+        self.draw_polygon(self.surface, GREEN, CROSS, 1, 0)
         inside = [(x, 3) for x in range(1, 6)] + [(3, y) for y in range(1, 6)]
         for x in range(10):
             for y in range(10):
@@ -4045,7 +4087,7 @@ class DrawPolygonMixin:
 
         # 2. case width = 0 (filled; this is the example from #234)
         pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
-        self.draw_polygon(self.surface, GREEN, CROSS, 0)
+        self.draw_polygon(self.surface, GREEN, CROSS, 0, 0)
         inside = [(x, 3) for x in range(1, 6)] + [(3, y) for y in range(1, 6)]
         for x in range(10):
             for y in range(10):
@@ -4091,7 +4133,7 @@ class DrawPolygonMixin:
         pygame.draw.rect(self.surface, RED, (0, 0, 20, 20), 0)
 
         # 1. First without the corners 4 & 5
-        self.draw_polygon(self.surface, GREEN, path_data[:4], 0)
+        self.draw_polygon(self.surface, GREEN, path_data[:4], 0, 0)
         for x in range(20):
             self.assertEqual(self.surface.get_at((x, 0)), GREEN)  # upper border
         for x in range(4, rect.width - 5 + 1):
@@ -4099,7 +4141,7 @@ class DrawPolygonMixin:
 
         # 2. with the corners 4 & 5
         pygame.draw.rect(self.surface, RED, (0, 0, 20, 20), 0)
-        self.draw_polygon(self.surface, GREEN, path_data, 0)
+        self.draw_polygon(self.surface, GREEN, path_data, 0, 0)
         for x in range(4, rect.width - 5 + 1):
             self.assertEqual(self.surface.get_at((x, 4)), GREEN)  # upper inner
 
@@ -4124,6 +4166,7 @@ class DrawPolygonMixin:
         sizes = ((min_width, min_height), (max_width, max_height))
         surface = pygame.Surface((20, 20), 0, 32)
         surf_rect = surface.get_rect()
+        border_radius = 0
         # Make a rect that is bigger than the surface to help test drawing
         # polygons off and partially off the surface.
         big_rect = surf_rect.inflate(min_width * 2 + 1, min_height * 2 + 1)
@@ -4151,7 +4194,7 @@ class DrawPolygonMixin:
                         surface.fill(surf_color)  # Clear for each test.
 
                         bounding_rect = self.draw_polygon(
-                            surface, polygon_color, vertices, thickness
+                            surface, polygon_color, vertices, thickness, border_radius
                         )
 
                         # Calculating the expected_rect after the polygon
@@ -4176,6 +4219,7 @@ class DrawPolygonMixin:
         surface_color = pygame.Color("green")
         surface = pygame.Surface((surfw, surfh))
         surface.fill(surface_color)
+        border_radius = 0
 
         clip_rect = pygame.Rect((0, 0), (8, 10))
         clip_rect.center = surface.get_rect().center
@@ -4195,7 +4239,7 @@ class DrawPolygonMixin:
                 )
                 surface.set_clip(None)
                 surface.fill(surface_color)
-                self.draw_polygon(surface, polygon_color, vertices, width)
+                self.draw_polygon(surface, polygon_color, vertices, width, border_radius)
                 expected_pts = get_color_points(surface, polygon_color, clip_rect)
 
                 # Clear the surface and set the clip area. Redraw the polygon
@@ -4203,7 +4247,7 @@ class DrawPolygonMixin:
                 surface.fill(surface_color)
                 surface.set_clip(clip_rect)
 
-                self.draw_polygon(surface, polygon_color, vertices, width)
+                self.draw_polygon(surface, polygon_color, vertices, width, border_radius)
 
                 surface.lock()  # For possible speed up.
 
@@ -4226,7 +4270,7 @@ class DrawPolygonMixin:
         """
         key_polygon_points = [(2, 2), (6, 2), (2, 4), (6, 4)]
         pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
-        pygame.draw.polygon(self.surface, GREEN, RHOMBUS, 0)
+        pygame.draw.polygon(self.surface, GREEN, RHOMBUS, 0, 0)
         for x, y in key_polygon_points:
             self.assertEqual(self.surface.get_at((x, y)), GREEN, msg=str((x, y)))
 
