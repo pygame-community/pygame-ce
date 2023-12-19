@@ -30,7 +30,7 @@
 #include "doc/draw_doc.h"
 
 #include <math.h>
-#define sametype(A, B) _Generic(*((A *)0), B: true, default: false)
+
 #include <float.h>
 
 #ifndef M_PI
