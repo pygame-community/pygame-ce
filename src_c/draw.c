@@ -819,7 +819,7 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
         if ((border_radius > 0) && (width > 0)) {
             int err;
             err = draw_round_polygon(surf, xlist, ylist, width, border_radius,
-                                     length, color, drawn_area);
+                                     (int)length, color, drawn_area);
             if (err == -1) {
                 return NULL;
             }
@@ -2887,8 +2887,8 @@ find_parallel_line(Point pt1, Point pt2, Point pt3, int distance)
     Point direction_vector = {pt2.x - pt1.x, pt2.y - pt1.y};
 
     // Calculate the magnitude of the direction vector
-    float magnitude = sqrt(direction_vector.x * direction_vector.x +
-                           direction_vector.y * direction_vector.y);
+    double magnitude = sqrt(direction_vector.x * direction_vector.x +
+                            direction_vector.y * direction_vector.y);
 
     // Normalize the direction vector to get a unit vector
     Point normalized_direction = {direction_vector.x / magnitude,
@@ -3107,12 +3107,12 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
             end_angle = temp;
         }
 
-        draw_arc(surf, circle.center.x, circle.center.y, circle.radius,
-                 circle.radius, width, start_angle, end_angle, color,
-                 drawn_area);
+        draw_arc(surf, round(circle.center.x), round(circle.center.y),
+                 round(circle.radius), round(circle.radius), width,
+                 start_angle, end_angle, color, drawn_area);
 
-        draw_line_width(surf, color, pt2.x, pt2.y, pt3.x, pt3.y, width,
-                        drawn_area);
+        draw_line_width(surf, color, round(pt2.x), round(pt2.y), round(pt3.x),
+                        round(pt3.y), width, drawn_area);
     }
     free(path);
     free(circles);
