@@ -30,7 +30,7 @@
 #include "doc/draw_doc.h"
 
 #include <math.h>
-
+#define sametype(A, B) _Generic(*((A *)0), B: true, default: false)
 #include <float.h>
 
 #ifndef M_PI
@@ -2841,7 +2841,7 @@ typedef struct {
 
 typedef struct {
     Point center;
-    double radius;
+    int radius;
 } Circle;
 
 typedef struct {
@@ -3107,12 +3107,19 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
             end_angle = temp;
         }
 
-        draw_arc(surf, round(circle.center.x), round(circle.center.y),
-                 round(circle.radius), round(circle.radius), width,
-                 start_angle, end_angle, color, drawn_area);
+        int circle_center_x = round(circle.center.x);
+        int circle_center_y = round(circle.center.y);
+        int pt2_x = round(pt2.x);
+        int pt2_y = round(pt2.y);
+        int pt3_x = round(pt3.x);
+        int pt3_y = round(pt3.y);
 
-        draw_line_width(surf, color, round(pt2.x), round(pt2.y), round(pt3.x),
-                        round(pt3.y), width, drawn_area);
+        draw_arc(surf, circle_center_x, circle_center_y, circle.radius,
+                 circle.radius, width, start_angle, end_angle, color,
+                 drawn_area);
+
+        draw_line_width(surf, color, pt2_x, pt2_y, pt3_x, pt3_y, width,
+                        drawn_area);
     }
     free(path);
     free(circles);
