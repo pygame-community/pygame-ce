@@ -1758,13 +1758,19 @@ class ImageModuleTest(unittest.TestCase):
             ("purple.xpm", (255, 0, 255, 255)),
             ("black.ppm", (0, 0, 0, 255)),
             ("grey.pgm", (120, 120, 120, 255)),
+            ("white.pbm", (255, 255, 255, 255)),
             ("teal.svg", (0, 128, 128, 255)),
             ("crimson.pnm", (220, 20, 60, 255)),
             ("scarlet.webp", (252, 14, 53, 255)),
+            ("tomato.xcf", (255, 99, 71, 255)),
         ]
 
         if pygame.image.get_sdl_image_version() > (2, 0, 5):
             filename_expected_color.append(("purple.qoi", (159, 38, 240, 255)))
+
+        # SDL_image 2.8.0 and 2.8.1 have an LBM file loading regression
+        if not (2, 8, 0) <= pygame.image.get_sdl_image_version() < (2, 8, 2):
+            filename_expected_color.append(("magenta.lbm", (255, 0, 255, 255)))
 
         for filename, expected_color in filename_expected_color:
             if filename.endswith("svg") and sdl_image_svg_jpeg_save_bug:

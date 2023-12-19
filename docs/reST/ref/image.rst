@@ -27,13 +27,13 @@ formats.
 
    * ``JPEG``
 
-   * ``LBM`` (and ``PBM``, ``PGM``, ``PPM``)
+   * ``LBM``
 
    * ``PCX``
 
    * ``PNG``
-   
-   * ``PNM``
+
+   * ``PNM`` (``PBM``, ``PGM``, ``PPM``)
 
    * ``QOI``
 
@@ -46,8 +46,9 @@ formats.
    * ``WEBP``
 
    * ``XPM``
-   
-   
+
+   * ``XCF``
+
 .. versionaddedold:: 2.0 Loading SVG, WebP, PNM
 
 .. versionadded:: 2.4.0 Loading QOI (Relies on SDL_Image 2.6.0+)
