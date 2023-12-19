@@ -3657,7 +3657,7 @@ class DrawPolygonMixin:
         )
 
         self.assertIsInstance(bounds_rect, pygame.Rect)
-    
+
     def test_polygon__args_without_width_nor_radius(self):
         """Ensures draw polygon accepts the args without a width."""
         bounds_rect = self.draw_polygon(
@@ -3674,7 +3674,13 @@ class DrawPolygonMixin:
         color = pygame.Color("yellow")
         points = ((0, 0), (1, 1), (2, 2))
         kwargs_list = [
-            {"surface": surface, "color": color, "points": points, "width": 1, "border_radius": 1},
+            {
+                "surface": surface,
+                "color": color,
+                "points": points,
+                "width": 1,
+                "border_radius": 1,
+            },
             {"surface": surface, "color": color, "points": points, "width": 1},
             {"surface": surface, "color": color, "points": points},
         ]
@@ -3736,7 +3742,7 @@ class DrawPolygonMixin:
         with self.assertRaises(TypeError):
             # Invalid border_radius.
             bounds_rect = self.draw_polygon(surface, color, points, 1, "1")
-        
+
         with self.assertRaises(TypeError):
             # Invalid width.
             bounds_rect = self.draw_polygon(surface, color, points, "1")
@@ -3770,7 +3776,7 @@ class DrawPolygonMixin:
             },
             {
                 "surface": surface,
-                "color": 2.3,   # Invalid color.
+                "color": 2.3,  # Invalid color.
                 "points": points,
                 "width": width,
                 "border_radius": border_radius,
@@ -3786,7 +3792,7 @@ class DrawPolygonMixin:
                 "surface": surface,
                 "color": color,
                 "points": points,
-                "width": 1.2,   # Invalid width.
+                "width": 1.2,  # Invalid width.
                 "border_radius": border_radius,
             },
             {
@@ -3794,9 +3800,9 @@ class DrawPolygonMixin:
                 "color": color,
                 "points": points,
                 "width": width,
-                "border_radius": 2.3, # Invalid border_radius.
+                "border_radius": 2.3,  # Invalid border_radius.
             },
-        ]  
+        ]
 
         for kwargs in kwargs_list:
             with self.assertRaises(TypeError):
@@ -3816,7 +3822,13 @@ class DrawPolygonMixin:
                 "border_radius": 1,
                 "invalid": 1,
             },
-            {"surface": surface, "color": color, "points": points, "invalid": 1, "border_radius": 1},
+            {
+                "surface": surface,
+                "color": color,
+                "points": points,
+                "invalid": 1,
+                "border_radius": 1,
+            },
         ]
 
         for kwargs in kwargs_list:
@@ -3830,7 +3842,13 @@ class DrawPolygonMixin:
         points = ((0, 1), (1, 2), (2, 3))
         width = 0
         border_radius = 0
-        kwargs = {"surface": surface, "color": color, "points": points, "width": width, "border_radius": border_radius}
+        kwargs = {
+            "surface": surface,
+            "color": color,
+            "points": points,
+            "width": width,
+            "border_radius": border_radius,
+        }
 
         for name in ("surface", "color", "points", "width", "border_radius"):
             kwargs.pop(name)
@@ -3844,10 +3862,12 @@ class DrawPolygonMixin:
             elif "width" == name:
                 bounds_rect = self.draw_polygon(surface, color, points, width, **kwargs)
             else:
-                bounds_rect = self.draw_polygon(surface, color, points, width, border_radius, **kwargs)
+                bounds_rect = self.draw_polygon(
+                    surface, color, points, width, border_radius, **kwargs
+                )
 
             self.assertIsInstance(bounds_rect, pygame.Rect)
-    
+
     def test_polygon__valid_width_values(self):
         """Ensures draw polygon accepts different width values."""
         surface_color = pygame.Color("white")
@@ -4239,7 +4259,9 @@ class DrawPolygonMixin:
                 )
                 surface.set_clip(None)
                 surface.fill(surface_color)
-                self.draw_polygon(surface, polygon_color, vertices, width, border_radius)
+                self.draw_polygon(
+                    surface, polygon_color, vertices, width, border_radius
+                )
                 expected_pts = get_color_points(surface, polygon_color, clip_rect)
 
                 # Clear the surface and set the clip area. Redraw the polygon
@@ -4247,7 +4269,9 @@ class DrawPolygonMixin:
                 surface.fill(surface_color)
                 surface.set_clip(clip_rect)
 
-                self.draw_polygon(surface, polygon_color, vertices, width, border_radius)
+                self.draw_polygon(
+                    surface, polygon_color, vertices, width, border_radius
+                )
 
                 surface.lock()  # For possible speed up.
 
