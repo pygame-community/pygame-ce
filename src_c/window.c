@@ -712,16 +712,6 @@ window_get_opacity(pgWindowObject *self, void *v)
     return PyFloat_FromDouble((double)opacity);
 }
 
-static PyObject *
-window_get_display_index(pgWindowObject *self, PyObject *_null)
-{
-    int index = SDL_GetWindowDisplayIndex(self->_win);
-    if (index < 0) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
-    }
-    return PyLong_FromLong(index);
-}
-
 static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
@@ -869,22 +859,6 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                 else if (!strcmp(_key_str, "always_on_top")) {
                     if (_value_bool)
                         flags |= SDL_WINDOW_ALWAYS_ON_TOP;
-                }
-                else if (!strcmp(_key_str, "skip_taskbar")) {
-                    if (_value_bool)
-                        flags |= SDL_WINDOW_SKIP_TASKBAR;
-                }
-                else if (!strcmp(_key_str, "utility")) {
-                    if (_value_bool)
-                        flags |= SDL_WINDOW_UTILITY;
-                }
-                else if (!strcmp(_key_str, "tooltip")) {
-                    if (_value_bool)
-                        flags |= SDL_WINDOW_TOOLTIP;
-                }
-                else if (!strcmp(_key_str, "popup_menu")) {
-                    if (_value_bool)
-                        flags |= SDL_WINDOW_POPUP_MENU;
                 }
                 else if (!strcmp(_key_str, "vulkan")) {
                     if (_value_bool)
@@ -1076,8 +1050,6 @@ static PyGetSetDef _window_getset[] = {
      DOC_WINDOW_POSITION, NULL},
     {"opacity", (getter)window_get_opacity, (setter)window_set_opacity,
      DOC_WINDOW_OPACITY, NULL},
-    {"display_index", (getter)window_get_display_index, NULL,
-     DOC_WINDOW_DISPLAYINDEX, NULL},
     {"id", (getter)window_get_window_id, NULL, DOC_WINDOW_ID, NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
