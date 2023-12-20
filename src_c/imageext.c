@@ -140,6 +140,7 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
 static PyObject *
 imageext_load_sized_svg(PyObject *self, PyObject *arg, PyObject *kwargs)
 {
+#if SDL_IMAGE_VERSION_ATLEAST(2, 6, 0)
     PyObject *obj, *size, *final;
     SDL_Surface *surf;
     SDL_RWops *rw = NULL;
@@ -150,7 +151,6 @@ imageext_load_sized_svg(PyObject *self, PyObject *arg, PyObject *kwargs)
         return NULL;
     }
 
-#if SDL_IMAGE_VERSION_ATLEAST(2, 6, 0)
     if (!pg_TwoIntsFromObj(size, &width, &height)) {
         return RAISE(PyExc_TypeError, "size must be two numbers");
     }
