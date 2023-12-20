@@ -1544,6 +1544,9 @@ blit_blend_premultiplied_avx2(SDL_BlitInfo *info)
     mm_srcA = _mm256_unpacklo_epi8(mm_src, mm_zero);                  \
     mm_srcB = _mm256_unpackhi_epi8(mm_src, mm_zero);                  \
                                                                       \
+    mm_srcA = _mm256_add_epi16(mm_srcA, mm256_ones);                  \
+    mm_srcB = _mm256_add_epi16(mm_srcB, mm256_ones);                  \
+                                                                      \
     /*multiply the pixels by the alphas*/                             \
     mm_srcA = _mm256_mullo_epi16(mm_srcA, alphaA);                    \
     mm_srcB = _mm256_mullo_epi16(mm_srcB, alphaB);                    \
@@ -1587,6 +1590,7 @@ premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst)
                          pxl_excess > 4 ? -1 : 0, pxl_excess > 3 ? -1 : 0,
                          pxl_excess > 2 ? -1 : 0, pxl_excess > 1 ? -1 : 0,
                          pxl_excess > 0 ? -1 : 0);
+    const __m256i mm256_ones = _mm256_set1_epi16(0x0001);
 
     /* masks for shuffling the alpha to the RGB channels for multiplication */
     const __m256i shuffle_maskA = _mm256_set_epi8(

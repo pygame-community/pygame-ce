@@ -3959,10 +3959,6 @@ class SurfaceBlendTest(unittest.TestCase):
                 dst.fill(fill_color, special_flags=getattr(pygame, blend_name))
                 self._assert_surface(dst, p, f", {blend_name}")
 
-    def are_colors_almost_equal(self, c1, c2, delta=1):
-        for c_c1, c_c2 in zip(c1, c2):
-            self.assertAlmostEqual(c_c1, c_c2, delta=delta)
-
     def test_surface_premul_alpha(self):
         """Ensure that .premul_alpha() works correctly"""
 
@@ -3970,9 +3966,7 @@ class SurfaceBlendTest(unittest.TestCase):
         s1 = pygame.Surface((100, 100), pygame.SRCALPHA, 32)
         s1.fill(pygame.Color(255, 255, 255, 100))
         s1_alpha = s1.premul_alpha()
-        self.are_colors_almost_equal(
-            s1_alpha.get_at((50, 50)), pygame.Color(100, 100, 100, 100)
-        )
+        self.assertEqual(s1_alpha.get_at((50, 50)), pygame.Color(100, 100, 100, 100))
 
         # 16-bit colour has less precision
         s2 = pygame.Surface((100, 100), pygame.SRCALPHA, 16)
@@ -3985,7 +3979,7 @@ class SurfaceBlendTest(unittest.TestCase):
             )
         )
         s2_alpha = s2.premul_alpha()
-        self.are_colors_almost_equal(
+        self.assertEqual(
             s2_alpha.get_at((50, 50)),
             pygame.Color(
                 int(10 / 15 * 255),
@@ -4023,7 +4017,7 @@ class SurfaceBlendTest(unittest.TestCase):
                     surf = pygame.Surface((10, 10), pygame.SRCALPHA, 32)
                     surf.fill(pygame.Color(r, g, b, a))
                     surf = surf.premul_alpha()
-                    self.are_colors_almost_equal(
+                    self.assertEqual(
                         surf.get_at((5, 5)),
                         Color(
                             ((r + 1) * a) >> 8,
