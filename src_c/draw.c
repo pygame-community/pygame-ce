@@ -730,8 +730,8 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     Py_ssize_t loop, length;
-    static char *keywords[] = {"surface", "color",         "points",
-                               "width",   "border_radius", NULL};
+    static char *keywords[] = {"surface", "color", "points",
+                               "width", "border_radius", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OO|ii", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
@@ -2874,9 +2874,9 @@ side(Point a, Point b, Point c)
 }
 
 // Function to find a parallel line to the line formed by 'pt1' and 'pt2' at a
-// given distance 'pt3' is used to determin in which side of the line, the
-// parallel line should be drawn Returns a Line struct representing the
-// parallel line
+// given distance. 'pt3' is used to determine in which side of the line, the
+// parallel line should be drawn.
+// Returns a Line struct representing the parallel line
 Line
 find_parallel_line(Point pt1, Point pt2, Point pt3, int distance)
 {
@@ -2954,17 +2954,21 @@ project_point_onto_segment(Point point, Point segment_start, Point segment_end)
     return projection;
 }
 
-// Function to find the intersection point of two line segments
-// Returns the intersection point as a Point struct
+// Function to find the intersection point of two line segments.
+// Returns the intersection point as a Point struct.
 Point
 intersection(Point line1_start, Point line1_end, Point line2_start,
              Point line2_end)
 {
-    // Calculate coefficients for each line equation
+    // Calculate line equation coefficients where the form of the equation is :
+    // AX + BY = C
+
+    // Coefficients for the equation of the first line (A1*X + B1*Y = C1)
     double A1 = line1_end.y - line1_start.y;
     double B1 = line1_start.x - line1_end.x;
     double C1 = A1 * line1_start.x + B1 * line1_start.y;
 
+    // Coefficients for the equation of the second line (A2*X + B2*Y = C2)
     double A2 = line2_end.y - line2_start.y;
     double B2 = line2_start.x - line2_end.x;
     double C2 = A2 * line2_start.x + B2 * line2_start.y;
@@ -2987,9 +2991,9 @@ intersection(Point line1_start, Point line1_end, Point line2_start,
 }
 
 // Function to calculate the angle (in radians) between a center point and
-// another point
+// another point.
 double
-angle(Point center, Point point)
+computeVectorAngle(Point center, Point point)
 {
     // Calculate the differences in x and y coordinates between the two points
     double x = point.x - center.x;
@@ -3043,7 +3047,7 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
         int b = (i + 1) % (num_points);  // index of the point after index i
 
         // Check if the border-radius can be applied to the current angle
-        // it can not be applied to a flat angle(if the three points are
+        // it can not be applied to a flat angle (if the three points are
         // aligned)
         if (side(points[a], points[i], points[b]) == 0) {
             PyErr_SetString(
@@ -3051,6 +3055,9 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
                 "Border-radius cannot be applied to a flat angle.\nPlease "
                 "ensure that the specified angle or curvature is within a "
                 "valid range for border-radius drawing.\n");
+            free(path);
+            free(circles);
+            free(points);
             return -1;
         }
 
@@ -3067,19 +3074,28 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
         Point proj2 = project_point_onto_segment(circles[i].center, points[i],
                                                  points[b]);
 
+        // distance from the vertex to the projetion of the circle center on
+        // the first edge
+        double distanceProj1 = sqrt(pow(proj1.x - points[i].x, 2) +
+                                    pow(proj1.y - points[i].y, 2));
+        // distance from the vertex to the projetion of the circle center on
+        // the second edge
+        double distanceProj2 = sqrt(pow(proj2.x - points[i].x, 2) +
+                                    pow(proj2.y - points[i].y, 2));
+
+        // lenghts of both edges
+        double baseLength1 = sqrt(pow(points[a].x - points[i].x, 2) +
+                                  pow(points[a].y - points[i].y, 2));
+        double baseLength2 = sqrt(pow(points[b].x - points[i].x, 2) +
+                                  pow(points[b].y - points[i].y, 2));
+
         // Check if the border-radius size is valid
-        if ((sqrt(pow(proj1.x - points[i].x, 2) +
-                  pow(proj1.y - points[i].y, 2)) >=
-             sqrt(pow(points[a].x - points[i].x, 2) +
-                  pow(points[a].y - points[i].y, 2)) /
-                 2) ||
-            (sqrt(pow(proj2.x - points[i].x, 2) +
-                  pow(proj2.y - points[i].y, 2)) >=
-             sqrt(pow(points[b].x - points[i].x, 2) +
-                  pow(points[b].y - points[i].y, 2)) /
-                 2)) {
+        if ((distanceProj1 >= baseLength1 / 2) || (distanceProj2 >= baseLength2 / 2)) {
             PyErr_SetString(PyExc_ValueError,
                             "Border-radius size must be smaller\n");
+            free(path);
+            free(circles);
+            free(points);
             return -1;
         }
 
@@ -3097,8 +3113,8 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
         Point pt3 = path[(i + 2) % (2 * num_points)];
         Circle circle = circles[i / 2];
 
-        double start_angle = angle(circle.center, pt1);
-        double end_angle = angle(circle.center, pt2);
+        double start_angle = computeVectorAngle(circle.center, pt1);
+        double end_angle = computeVectorAngle(circle.center, pt2);
 
         // Adjust angles based on the side of the polygon
         if (side(pt1, pt2, pt3) == 1) {
