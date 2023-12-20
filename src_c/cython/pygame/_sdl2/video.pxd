@@ -464,7 +464,7 @@ cdef class Renderer:
     cdef int _is_borrowed
 
     cpdef object get_viewport(self)
-    cpdef object blit(self, object source, Rect dest=*, Rect area=*, int special_flags=*)
+    cpdef object blit(self, object source, object dest=*, object area=*, int special_flags=*)
 
 cdef class Texture:
     cdef SDL_Texture* _tex
