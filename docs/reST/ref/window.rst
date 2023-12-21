@@ -247,8 +247,13 @@
       | :sl:`Create a Window object using window data from display module`
       | :sg:`from_display_module() -> Window`
 
+      **DON'T USE THIS!** If you want to draw to a surface and use the window
+      API, use :func:`Window.get_surface` and :func:`Window.flip`.
+
       Create a Window object that uses the same window data from the :mod:`pygame.display` module, created upon calling
       :func:`pygame.display.set_mode`.
+
+      .. deprecated:: 2.4.0
 
    .. method:: get_surface
 
