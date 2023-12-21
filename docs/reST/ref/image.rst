@@ -124,7 +124,7 @@ following formats.
 
    It is to be noted that this function does not return a surface whose
    dimensions exactly match the ``size`` argument. This function preserves
-   aspect ratio, so the returned surface could be smaller along atmost one
+   aspect ratio, so the returned surface could be smaller along at most one
    dimension.
 
    .. versionadded:: 2.4.0
