@@ -37,7 +37,7 @@ formats.
 
    * ``QOI``
 
-   * ``SVG``
+   * ``SVG`` (limited support, using Nano SVG)
 
    * ``TGA`` (uncompressed)
 
