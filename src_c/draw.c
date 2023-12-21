@@ -730,8 +730,8 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     Py_ssize_t loop, length;
-    static char *keywords[] = {"surface", "color", "points",
-                               "width", "border_radius", NULL};
+    static char *keywords[] = {"surface", "color",         "points",
+                               "width",   "border_radius", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OO|ii", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
@@ -2877,8 +2877,9 @@ side(Point a, Point b, Point c)
 // given distance. 'pt3' is used to determine in which side of the line, the
 // parallel line should be drawn.
 // Returns a Line struct representing the parallel line
-Line
-find_parallel_line(Point pt1, Point pt2, Point pt3, int distance)
+int
+find_parallel_line(Point pt1, Point pt2, Point pt3, int distance,
+                   Line *line_result)
 {
     // Calculate direction vector, normalize it, and find the perpendicular
     // vector
@@ -2889,6 +2890,10 @@ find_parallel_line(Point pt1, Point pt2, Point pt3, int distance)
     // Calculate the magnitude of the direction vector
     double magnitude = sqrt(direction_vector.x * direction_vector.x +
                             direction_vector.y * direction_vector.y);
+
+    if (magnitude == 0) {
+        return 0;
+    }
 
     // Normalize the direction vector to get a unit vector
     Point normalized_direction = {direction_vector.x / magnitude,
@@ -2910,11 +2915,13 @@ find_parallel_line(Point pt1, Point pt2, Point pt3, int distance)
                            perpendicular_vector.y * distance};
 
     // Generate the points for the parallel line based on the offset
-    Line parallel_line = {{pt1.x + offset_vector.x, pt1.y + offset_vector.y},
-                          {pt2.x + offset_vector.x, pt2.y + offset_vector.y}};
+    line_result->start =
+        (Point){pt1.x + offset_vector.x, pt1.y + offset_vector.y};
+    line_result->end =
+        (Point){pt2.x + offset_vector.x, pt2.y + offset_vector.y};
 
     // Return the Line struct representing the parallel line
-    return parallel_line;
+    return 1;
 }
 
 // Function to project a point onto a line segment defined by 'segment_start'
@@ -2942,7 +2949,7 @@ project_point_onto_segment(Point point, Point segment_start, Point segment_end)
 
     // Ensure 't' is within the valid range [0, 1] to make sure that the
     // projection of the point onto the line segment lies specifically within
-    // the boundaries of the segment See line 2906
+    // the boundaries of the segment. (See line 2906)
     t = fmax(0, fmin(1, t));
 
     // Calculate the coordinates of the projected point using the parameter 't'
@@ -2956,9 +2963,9 @@ project_point_onto_segment(Point point, Point segment_start, Point segment_end)
 
 // Function to find the intersection point of two line segments.
 // Returns the intersection point as a Point struct.
-Point
-intersection(Point line1_start, Point line1_end, Point line2_start,
-             Point line2_end)
+int
+calculate_intersection(Point line1_start, Point line1_end, Point line2_start,
+                       Point line2_end, Point *intersection_result)
 {
     // Calculate line equation coefficients where the form of the equation is :
     // AX + BY = C
@@ -2978,15 +2985,18 @@ intersection(Point line1_start, Point line1_end, Point line2_start,
     // If the lines are parallel (det == 0), they do not intersect, return a
     // default Point
     if (det == 0) {
-        return (Point){0, 0};
+        return 0;
     }
     else {
-        // Calculate the intersection point using Cramer's rule
+        // Calculate the intersection point using Cramer's rule.
         // The lines never intersect out of the range given because of the
-        // condition limiting the value of boarder radius
+        // condition limiting the value of boarder radius.
         double x = (B2 * C1 - B1 * C2) / det;
         double y = (A1 * C2 - A2 * C1) / det;
-        return (Point){x, y};
+
+        intersection_result->x = x;
+        intersection_result->y = y;
+        return 1;
     }
 }
 
@@ -2999,8 +3009,8 @@ computeVectorAngle(Point center, Point point)
     double x = point.x - center.x;
     double y = point.y - center.y;
     // Use atan2 to calculate the angle formed by the vector from the center to
-    // the point The angle is measured counterclockwise from the positive
-    // x-axis Note: The negative sign is used to ensure the angle is measured
+    // the point. The angle is measured counterclockwise from the positive
+    // x-axis. Note: The negative sign is used to ensure the angle is measured
     // clockwise, which is more common in Cartesian coordinates.
     return -atan2(y, x);
 }
@@ -3011,6 +3021,10 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
                    int border_radius, int num_points, Uint32 color,
                    int *drawn_area)
 {
+    Point intersection;
+    Line line1;
+    Line line2;
+
     // Define arrays to store path points and circle information
     Point *path;
     Circle *circles;
@@ -3054,7 +3068,7 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
                 PyExc_ValueError,
                 "Border-radius cannot be applied to a flat angle.\nPlease "
                 "ensure that the specified angle or curvature is within a "
-                "valid range for border-radius drawing.\n");
+                "valid range for border-radius drawing.");
             free(path);
             free(circles);
             free(points);
@@ -3062,12 +3076,33 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
         }
 
         // Find parallel lines to the polygon sides at the current point
-        Line line1 =
-            find_parallel_line(points[a], points[i], points[b], border_radius);
-        Line line2 =
-            find_parallel_line(points[i], points[b], points[a], border_radius);
-        circles[i].center =
-            intersection(line1.start, line1.end, line2.start, line2.end);
+        if (!find_parallel_line(points[a], points[i], points[b], border_radius,
+                                &line1) ||
+            !find_parallel_line(points[i], points[b], points[a], border_radius,
+                                &line2)) {
+            PyErr_SetString(
+                PyExc_ValueError,
+                "Points parameter must consist of sequentially points, and no "
+                "three consecutive points should align.");
+            free(path);
+            free(circles);
+            free(points);
+            return -1;
+        }
+
+        if (!calculate_intersection(line1.start, line1.end, line2.start,
+                                    line2.end, &intersection)) {
+            PyErr_SetString(
+                PyExc_ValueError,
+                "Points parameter must consist of sequentially points, and no "
+                "three consecutive points should align.");
+            free(path);
+            free(circles);
+            free(points);
+            return -1;
+        }
+
+        circles[i].center = intersection;
 
         Point proj1 = project_point_onto_segment(circles[i].center, points[a],
                                                  points[i]);
@@ -3090,9 +3125,10 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
                                   pow(points[b].y - points[i].y, 2));
 
         // Check if the border-radius size is valid
-        if ((distanceProj1 >= baseLength1 / 2) || (distanceProj2 >= baseLength2 / 2)) {
+        if ((distanceProj1 >= baseLength1 / 2) ||
+            (distanceProj2 >= baseLength2 / 2)) {
             PyErr_SetString(PyExc_ValueError,
-                            "Border-radius size must be smaller\n");
+                            "Border-radius size must be smaller");
             free(path);
             free(circles);
             free(points);
@@ -3123,12 +3159,12 @@ draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
             end_angle = temp;
         }
 
-        int circle_center_x = round(circle.center.x);
-        int circle_center_y = round(circle.center.y);
-        int pt2_x = round(pt2.x);
-        int pt2_y = round(pt2.y);
-        int pt3_x = round(pt3.x);
-        int pt3_y = round(pt3.y);
+        int circle_center_x = (int)round(circle.center.x);
+        int circle_center_y = (int)round(circle.center.y);
+        int pt2_x = (int)round(pt2.x);
+        int pt2_y = (int)round(pt2.y);
+        int pt3_x = (int)round(pt3.x);
+        int pt3_y = (int)round(pt3.y);
 
         draw_arc(surf, circle_center_x, circle_center_y, circle.radius,
                  circle.radius, width, start_angle, end_angle, color,
