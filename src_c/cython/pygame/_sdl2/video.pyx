@@ -997,13 +997,13 @@ cdef class Renderer:
         else:
             raise TypeError('target must be a Texture or None')
 
-    cpdef object blit(self, object source, Rect dest=None, Rect area=None, int special_flags=0):
+    cpdef object blit(self, object source, object dest=None, object area=None, int special_flags=0):
         """Draw textures using a Surface-like API
 
         For compatibility purposes. Draws :class:`Texture` objects onto the
         Renderer using a method signature similar to :meth:`pygame.Surface.blit`.
 
-        :param source: A :class:`Texture` or :class:`Image` to draw.
+        :param source: A :class:`Texture` or :class:`Image` or :class:`Surface` to draw.
         :param dest: The drawing destination on the rendering target.
         :param area: The portion of the source texture or image to draw from.
         :param special_flags: have no effect at this moment.
@@ -1011,15 +1011,19 @@ cdef class Renderer:
         .. note:: Textures created by different Renderers cannot shared with each other!
         """
         if isinstance(source, Texture):
-            (<Texture>source).draw(area, dest)
+            if (<Texture>source).renderer != self:
+                raise TypeError("Source Texture is not created by this Renderer")
         elif isinstance(source, Image):
-            (<Image>source).draw(area, dest)
-        elif not hasattr(source, 'draw'):
-            raise TypeError('source must be drawable')
+            if (<Image>source).texture.renderer != self:
+                raise TypeError("Source Image is not created by this Renderer")
+        elif isinstance(source, Surface):
+            source = Texture.from_surface(self, source) # Warning: slow
         else:
-            source.draw(area, dest)
+            raise TypeError("Source should be Texture, Image or Surface")
+        
+        source.draw(srcrect=area, dstrect=dest)
 
-        if not dest:
+        if dest is None:
             return self.get_viewport()
         return dest
 
