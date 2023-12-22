@@ -358,4 +358,18 @@ premul_surf_color_by_alpha(SDL_Surface *src, SDL_Surface *dst);
 int
 pg_warn_simd_at_runtime_but_uncompiled();
 
+#ifdef PYGAMEAPI_SURFACE_INTERNAL
+extern PyTypeObject pgAnimatedSurface_Type;
+
+pgAnimatedSurfaceObject *
+pgAnimatedSurface_New(int nframes);
+
+pgSurfaceObject *
+pgAnimatedSurface_AsSurface(PyObject *anim);
+
+#define pgAnimatedSurface_Check(x) \
+    (PyObject_IsInstance((x), (PyObject *)&pgAnimatedSurface_Type))
+
+#endif /* PYGAMEAPI_SURFACE_INTERNAL */
+
 #endif /* SURFACE_H */

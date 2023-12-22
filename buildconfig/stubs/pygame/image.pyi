@@ -1,7 +1,7 @@
 from typing import Optional, Tuple, Union
 
 from pygame.bufferproxy import BufferProxy
-from pygame.surface import Surface
+from pygame.surface import Surface, AnimatedSurface
 
 from ._common import FileArg, Literal, IntCoordinate
 
@@ -14,6 +14,7 @@ _from_string_format = Literal["P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA"]
 
 def load(file: FileArg, namehint: str = "") -> Surface: ...
 def save(surface: Surface, file: FileArg, namehint: str = "") -> None: ...
+def load_animation(file: FileArg, namehint: str = "") -> AnimatedSurface: ...
 def get_sdl_image_version(linked: bool = True) -> Optional[Tuple[int, int, int]]: ...
 def get_extended() -> bool: ...
 def tostring(

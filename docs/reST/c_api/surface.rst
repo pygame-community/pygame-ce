@@ -18,9 +18,17 @@ Header file: src_c/include/pygame.h
 
    A :py:class:`pygame.Surface` instance.
 
+.. c:type:: pgAnimatedSurfaceObject
+
+   A :py:class:`pygame.AnimatedSurface` instance.
+
 .. c:var:: PyTypeObject *pgSurface_Type
 
    The :py:class:`pygame.Surface` Python type.
+
+.. c:var:: PyTypeObject *pgAnimatedSurface_Type
+
+   The :py:class:`pygame.AnimatedSurface` Python type.
 
 .. c:function:: int pgSurface_Check(PyObject *x)
 

@@ -307,6 +307,16 @@ typedef struct {
     PyObject *locklist;
     PyObject *dependency;
 } pgSurfaceObject;
+
+typedef struct {
+    PyObject_HEAD PyObject *frame_list;
+    Uint64 *delays;
+    Uint64 *delay_prefix_sum;
+    Uint64 play_start_time;
+    SDL_bool pause;
+    Uint64 pause_offset;
+    int loop_mode;
+} pgAnimatedSurfaceObject;
 #define pgSurface_AsSurface(x) (((pgSurfaceObject *)x)->surf)
 
 #ifndef PYGAMEAPI_SURFACE_INTERNAL
@@ -336,6 +346,13 @@ typedef struct {
 
 #define pgSurface_New(surface) pgSurface_New2((surface), 1)
 #define pgSurface_NewNoOwn(surface) pgSurface_New2((surface), 0)
+
+#define pgAnimatedSurface_Type \
+    (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(surface, 4))
+#define pgAnimatedSurface_Check(x) \
+    (PyObject_IsInstance((x), (PyObject *)&pgAnimatedSurface_Type))
+#define pgAnimatedSurface_New \
+    (*(pgAnimatedSurfaceObject * (*)(int)) PYGAMEAPI_GET_SLOT(surface, 5))
 
 #endif /* ~PYGAMEAPI_SURFACE_INTERNAL */
 

@@ -1827,6 +1827,7 @@ surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
     SDL_Surface *src, *dest = pgSurface_AsSurface(self);
     SDL_Rect *src_rect, temp;
     PyObject *argpos, *argrect = NULL;
+    PyObject *_srcobject;
     pgSurfaceObject *srcobject;
     int dx, dy, result;
     SDL_Rect dest_rect;
@@ -1834,11 +1835,23 @@ surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
     int blend_flags = 0;
 
     static char *kwids[] = {"source", "dest", "area", "special_flags", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, keywds, "O!O|Oi", kwids,
-                                     &pgSurface_Type, &srcobject, &argpos,
-                                     &argrect, &blend_flags))
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "OO|Oi", kwids, &_srcobject,
+                                     &argpos, &argrect, &blend_flags))
         return NULL;
-
+    if (pgSurface_Check(_srcobject)) {
+        srcobject = (pgSurfaceObject *)_srcobject;
+    }
+    else {
+        if (pgAnimatedSurface_Check(_srcobject)) {
+            srcobject = pgAnimatedSurface_AsSurface(_srcobject);
+            if (!srcobject) {
+                return NULL;
+            }
+        }
+        else {
+            return RAISE(PyExc_TypeError, "###############");
+        }
+    }
     src = pgSurface_AsSurface(srcobject);
     SURF_INIT_CHECK(src)
     SURF_INIT_CHECK(dest)
@@ -3999,6 +4012,10 @@ MODINIT_DEFINE(surface)
         return NULL;
     }
 
+    if (PyType_Ready(&pgAnimatedSurface_Type) < 0) {
+        return NULL;
+    }
+
     /* create the module */
     module = PyModule_Create(&_module);
     if (module == NULL) {
@@ -4023,11 +4040,21 @@ MODINIT_DEFINE(surface)
         return NULL;
     }
 
+    Py_INCREF(&pgAnimatedSurface_Type);
+    if (PyModule_AddObject(module, "AnimatedSurface",
+                           (PyObject *)&pgAnimatedSurface_Type)) {
+        Py_XDECREF(&pgAnimatedSurface_Type);
+        Py_DECREF(module);
+        return NULL;
+    }
+
     /* export the c api */
     c_api[0] = &pgSurface_Type;
     c_api[1] = pgSurface_New2;
     c_api[2] = pgSurface_Blit;
     c_api[3] = pgSurface_SetSurface;
+    c_api[4] = &pgAnimatedSurface_Type;
+    c_api[5] = &pgAnimatedSurface_New;
     apiobj = encapsulate_api(c_api, "surface");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);

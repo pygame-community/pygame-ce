@@ -256,11 +256,116 @@ _imageext_free(void *ptr)
 }
 */
 
+#if SDL_IMAGE_VERSION_ATLEAST(2, 6, 0)
+
+pgAnimatedSurfaceObject *
+pgAnimatedSurface_FromAnimation(IMG_Animation *anim)
+{
+    int i;
+    pgSurfaceObject *frame;
+    pgAnimatedSurfaceObject *pganim = pgAnimatedSurface_New(anim->count);
+    if (!pganim)
+        return NULL;
+    for (i = 0; i < anim->count; i++) {
+        frame = pgSurface_New(anim->frames[i]);
+        if (!frame) {
+            goto error;
+        }
+        if (PyList_SetItem(pganim->frame_list, i, (PyObject *)frame)) {
+            goto error;
+        }
+        if (i != 0) {
+            pganim->delay_prefix_sum[i] =
+                pganim->delay_prefix_sum[i - 1] + anim->delays[i];
+        }
+        else {
+            pganim->delay_prefix_sum[i] = anim->delays[i];
+        }
+        pganim->delays[i] = (Uint64)anim->delays[i];
+    }
+    return pganim;
+
+error:
+    Py_XDECREF(frame);
+    Py_XDECREF(pganim);
+    return NULL;
+}
+
+void
+pgAnimationCleanUp(IMG_Animation *anim)
+{
+    // free an IMG_Animation
+    // but don't free surface
+    SDL_free(anim->delays);
+    SDL_free(anim->frames);
+    SDL_free(anim);
+}
+
+static PyObject *
+imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwarg)
+{
+    PyObject *obj;
+    PyObject *final;
+    char *name = NULL, *ext = NULL, *type = NULL;
+    IMG_Animation *anim;
+    SDL_RWops *rw = NULL;
+    static char *kwds[] = {"file", "namehint", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(arg, kwarg, "O|s", kwds, &obj, &name)) {
+        return NULL;
+    }
+
+    rw = pgRWops_FromObject(obj, &ext);
+    if (rw == NULL) /* stop on NULL, error already set */
+        return NULL;
+
+    if (name) { /* override extension with namehint if given */
+        type = iext_find_extension(name);
+    }
+    else { /* Otherwise type should be whatever ext is, even if ext is NULL */
+        type = ext;
+    }
+
+#ifdef WITH_THREAD
+    Py_BEGIN_ALLOW_THREADS;
+    anim = IMG_LoadAnimationTyped_RW(rw, 1, type);
+    Py_END_ALLOW_THREADS;
+#else  /* ~WITH_THREAD */
+    anim = IMG_LoadAnimationTyped_RW(rw, 1, type);
+#endif /* ~WITH_THREAD */
+
+    if (ext) {
+        free(ext);
+    }
+
+    if (anim == NULL)
+        return RAISE(pgExc_SDLError, IMG_GetError());
+
+    final = (PyObject *)pgAnimatedSurface_FromAnimation(anim);
+
+    pgAnimationCleanUp(anim);
+
+    return final;
+}
+
+#else
+static PyObject *
+imageext_load_animation(PyObject *self, PyObject *arg, PyObject *kwarg)
+{
+    return RAISE(pgExc_SDLError,
+                 "loading animation requires SDL_image 2.6.0+");
+}
+#endif  // SDL_IMAGE_VERSION_ATLEAST(2, 6, 0)
+
 static PyMethodDef _imageext_methods[] = {
     {"load_extended", (PyCFunction)image_load_ext,
      METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_LOADEXTENDED},
     {"save_extended", (PyCFunction)image_save_ext,
      METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_SAVEEXTENDED},
+
+    {"load_animation", (PyCFunction)imageext_load_animation,
+     METH_VARARGS | METH_KEYWORDS, "docs_needed"},
+
     {"_get_sdl_image_version", (PyCFunction)imageext_get_sdl_image_version,
      METH_VARARGS | METH_KEYWORDS,
      "_get_sdl_image_version() -> (major, minor, patch)\n"

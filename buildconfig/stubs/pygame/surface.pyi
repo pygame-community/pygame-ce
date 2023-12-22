@@ -62,7 +62,7 @@ class Surface:
     copy = __copy__
     def blit(
         self,
-        source: Surface,
+        source: Union[Surface, AnimatedSurface],
         dest: Union[Coordinate, RectValue],
         area: Optional[RectValue] = None,
         special_flags: int = 0,
@@ -158,3 +158,11 @@ class Surface:
     def premul_alpha(self) -> Surface: ...
 
 SurfaceType = Surface
+
+class AnimatedSurface:
+    loop_mode: Literal["simple", "loop", "ping-pong"]
+    def __init__(self, /, *args, **kwargs) -> None: ...
+    def start_play(self,time_offset:int=0) -> None: ...
+    def pause(self) -> None: ...
+    def resume(self) -> None: ...
+    def toggle_pause(self) -> None: ...

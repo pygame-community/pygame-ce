@@ -349,6 +349,7 @@ PyInit_pygame_static()
 #undef pgSurface_SetSurface
 
 #include "surface.c"
+#include "surface_animation.c"
 #include "simd_blitters_avx2.c"
 #include "simd_blitters_sse2.c"
 
