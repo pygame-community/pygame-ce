@@ -18,6 +18,9 @@
    window class will continue to be developed, and we're excited to share
    the new functionality this class offers.
 
+   Example code showing the Window API in action: 
+   https://github.com/pygame-community/pygame-ce/blob/main/examples/window.py
+
    :param str title: The title of the window.
    :param (int, int) size: The size of the window, in screen coordinates.
    :param (int, int) or int position: A tuple specifying the window position, or

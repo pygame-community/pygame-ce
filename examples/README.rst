@@ -132,6 +132,11 @@ video.py
    It explores some new video APIs in pygame 2.
    Including multiple windows, Textures, and such.
 
+window.py
+   Shows how to use the Window() API, where Windows are managed
+   as objects instead of globally through pygame.display.set_mode.
+   Allows for more than one window at once!
+
 data/
    Directory with the resources for the examples.
 
