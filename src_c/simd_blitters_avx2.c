@@ -1592,16 +1592,23 @@ premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst)
                          pxl_excess > 0 ? -1 : 0);
     const __m256i mm256_ones = _mm256_set1_epi16(0x0001);
 
+    char _a_off = ((src->format->Amask >> 8) == 0)    ? 0
+                  : ((src->format->Amask >> 16) == 0) ? 1
+                  : ((src->format->Amask >> 24) == 0) ? 2
+                                                      : 3;
+
     /* masks for shuffling the alpha to the RGB channels for multiplication */
     const __m256i shuffle_maskA = _mm256_set_epi8(
-        0x80, 0x80, 0x80, 23, 0x80, 23, 0x80, 23, 0x80, 0x80, 0x80, 19, 0x80,
-        19, 0x80, 19, 0x80, 0x80, 0x80, 7, 0x80, 7, 0x80, 7, 0x80, 0x80, 0x80,
-        3, 0x80, 3, 0x80, 3);
+        -1, -1, -1, 20 + _a_off, -1, 20 + _a_off, -1, 20 + _a_off, -1, -1, -1,
+        16 + _a_off, -1, 16 + _a_off, -1, 16 + _a_off, -1, -1, -1, 4 + _a_off,
+        -1, 4 + _a_off, -1, 4 + _a_off, -1, -1, -1, _a_off, -1, _a_off, -1,
+        _a_off);
 
     const __m256i shuffle_maskB = _mm256_set_epi8(
-        0x80, 0x80, 0x80, 31, 0x80, 31, 0x80, 31, 0x80, 0x80, 0x80, 27, 0x80,
-        27, 0x80, 27, 0x80, 0x80, 0x80, 15, 0x80, 15, 0x80, 15, 0x80, 0x80,
-        0x80, 11, 0x80, 11, 0x80, 11);
+        -1, -1, -1, 28 + _a_off, -1, 28 + _a_off, -1, 28 + _a_off, -1, -1, -1,
+        24 + _a_off, -1, 24 + _a_off, -1, 24 + _a_off, -1, -1, -1, 12 + _a_off,
+        -1, 12 + _a_off, -1, 12 + _a_off, -1, -1, -1, 8 + _a_off, -1,
+        8 + _a_off, -1, 8 + _a_off);
 
     while (height--) {
         /* 8 pixels at a time */
