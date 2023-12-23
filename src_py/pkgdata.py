@@ -1,25 +1,40 @@
 """
 pkgdata is a simple, extensible way for a package to acquire data file
 resources.
-
-The getResource function is equivalent to the standard idioms, such as
-the following minimal implementation:
-
-    import sys, os
-
-    def getResource(identifier, pkgname=__name__):
-        pkgpath = os.path.dirname(sys.modules[pkgname].__file__)
-        path = os.path.join(pkgpath, identifier)
-        return file(os.path.normpath(path), mode='rb')
-
-When a __loader__ is present on the module given by __name__, it will defer
-getResource to its get_data implementation and return it as a file-like
-object (such as StringIO).
 """
 
-__all__ = ["getResource"]
-import sys
+__all__ = [
+    "get_resource_path",
+    "load_pygame_icon",
+    "getResource",
+]
+
 import os
+import platform
+
+import pygame
+
+
+def get_resource_path(resource_name: str) -> str:
+    path = os.path.join(os.path.dirname(pygame.__file__), resource_name)
+    return os.path.normpath(path)
+
+
+def load_pygame_icon() -> pygame.Surface:
+    if platform.system() == "Darwin":
+        path = get_resource_path("pygame_icon_mac.bmp")
+        icon = pygame.image.load(path)
+    else:
+        path = get_resource_path("pygame_icon.bmp")
+        icon = pygame.image.load(path)
+        icon.set_colorkey(0)
+    return icon
+
+
+# legacy pkgdata code
+
+import sys
+import warnings
 
 try:
     from pkg_resources import resource_stream, resource_exists
@@ -58,6 +73,10 @@ def getResource(identifier, pkgname=__name__):
     rather than use it as a file-like object.  For example, you may
     be handing data off to a C API.
     """
+    warnings.warn(
+        DeprecationWarning,
+        "pygame.pkgdata.getResource is deprecated. Use pygame.pkgdata.get_resource_path instead",
+    )
 
     # When pyinstaller (or similar tools) are used, resource_exists may raise
     # NotImplemented error
