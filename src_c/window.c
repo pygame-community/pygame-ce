@@ -939,15 +939,22 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 window_from_display_module(PyTypeObject *cls, PyObject *_null)
 {
-    SDL_Window *window;
-    pgWindowObject *self;
-    window = pg_GetDefaultWindow();
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "Please use Window.get_surface and Window.flip to use "
+                     "surface-rendering with Window. This method will be "
+                     "removed in a future version.",
+                     1) == -1) {
+        return NULL;
+    }
+
+    SDL_Window *window = pg_GetDefaultWindow();
     if (!window) {
         return RAISE(pgExc_SDLError,
                      "display.set_mode has not been called yet.");
     }
 
-    self = (pgWindowObject *)SDL_GetWindowData(window, "pg_window");
+    pgWindowObject *self =
+        (pgWindowObject *)SDL_GetWindowData(window, "pg_window");
     if (self != NULL) {
         Py_INCREF(self);
         return (PyObject *)self;
