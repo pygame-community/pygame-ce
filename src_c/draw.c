@@ -300,24 +300,33 @@ dashed_line(PyObject *self, PyObject *args, PyObject *kwargs)
     int dx = endx - startx;
     int dy = endy - starty;
     double total_line_length = sqrt(dx * dx + dy * dy);
-    int number_segments = (int)total_line_length / length;
-    if (!(number_segments % 2)) {
-        number_segments++;
-    }
+    double number_segments = total_line_length / length;
+    int rounded_number = ceil(number_segments);
+
     double xstep = (double)dx / number_segments;
     double ystep = (double)dy / number_segments;
 
     double currentx, currenty, stopx, stopy;
 
-    for (int i = 0; i < number_segments; i++) {
+    for (int i = 0; i < rounded_number; i++) {
         if (i % 2) {
             continue;
         }
 
-        currentx = startx + i * xstep;
-        currenty = starty + i * ystep;
-        stopx = currentx + xstep;
-        stopy = currenty + ystep;
+        if ((rounded_number > (int)number_segments) && (i == rounded_number-1))
+        {
+            currentx = startx + i * xstep;
+            currenty = starty + i * ystep;
+            stopx = endx;
+            stopy = endy;
+        }
+        else
+        {
+            currentx = startx + i * xstep;
+            currenty = starty + i * ystep;
+            stopx = currentx + xstep;
+            stopy = currenty + ystep;
+        }
 
         draw_line_width(surf, color, (int)currentx, (int)currenty, (int)stopx,
                         (int)stopy, width, drawn_area);
