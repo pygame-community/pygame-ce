@@ -127,6 +127,10 @@ following formats.
    aspect ratio, so the returned surface could be smaller along at most one
    dimension.
 
+   This function requires SDL_image 2.6.0 or above. If pygame was compiled with
+   an older version, ``pygame.error`` will be raised when this function is
+   called.
+
    .. versionadded:: 2.4.0
 
    .. ## pygame.image.load_sized_svg ##
