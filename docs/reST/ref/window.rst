@@ -44,15 +44,6 @@
                               (unrelated to INPUT_GRABBED).
    :param bool always_on_top: Create a window that is always on top
                               (X11 only).
-   :param bool skip_taskbar: Create a window that should not be added to the
-                             taskbar (X11 only).
-   :param bool utility: Create a window that should be treated as a utility
-                        window (X11 only).
-   :param bool tooltip: Create a window that should be treated as a tooltip
-                        (X11 only).
-   :param bool popup_menu: Create a window that should be treated as a popup menu 
-                           (X11 only).
-
 
    .. versionadded:: 2.4.0
 
@@ -236,11 +227,6 @@
 
       | :sl:`Get or set the window opacity, between 0.0 (fully transparent) and 1.0 (fully opaque)`
       | :sg:`opacity -> float`
-
-   .. attribute:: display_index
-
-      | :sl:`Get the index of the display that owns the window (**read-only**)`
-      | :sg:`get_display_index -> int`
 
    .. classmethod:: from_display_module
 
