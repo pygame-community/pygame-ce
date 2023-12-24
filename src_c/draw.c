@@ -237,10 +237,10 @@ dashed_line(PyObject *self, PyObject *args, PyObject *kwargs)
     SDL_Surface *surf = NULL;
     int start_x, start_y, end_x, end_y;
     Uint32 color;
-    int width = 1; /* Default width. */
+    int width = 1;       /* Default width. */
     int dash_width = 10; /* length of dashes */
-    int gap_width = 10; /* length of gaps, default matches dashes */
-    int delay_gap = 0; /* length of space before first segment */
+    int gap_width = 10;  /* length of gaps, default matches dashes */
+    int delay_gap = 0;   /* length of space before first segment */
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
 
