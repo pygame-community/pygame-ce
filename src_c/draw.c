@@ -296,6 +296,10 @@ dashed_line(PyObject *self, PyObject *args, PyObject *kwargs)
         return pgRect_New4(start_x, start_y, 0, 0);
     }
 
+    if (delay_gap < 0) {
+        return RAISE(PyExc_ValueError, "delay argument cannot be negative");
+    }
+
     const int dx = end_x - start_x;
     const int dy = end_y - start_y;
 
