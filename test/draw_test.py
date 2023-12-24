@@ -4229,26 +4229,42 @@ class DrawPolygonMixin:
         pygame.draw.polygon(self.surface, GREEN, RHOMBUS, 0)
         for x, y in key_polygon_points:
             self.assertEqual(self.surface.get_at((x, y)), GREEN, msg=str((x, y)))
-    
+
     def test_polygon__border_radius_args(self):
         """Ensures draw polygon accepts border_radius args."""
         bounds_rect = self.draw_polygon(
-            pygame.Surface((400, 400)), (0, 10, 0, 50), [[100,100], [300, 100], [300, 300], [100, 300]], 1, 1
+            pygame.Surface((400, 400)),
+            (0, 10, 0, 50),
+            [[100, 100], [300, 100], [300, 300], [100, 300]],
+            1,
+            1,
         )
 
         self.assertIsInstance(bounds_rect, pygame.Rect)
-    
+
     def test_polygon__border_radius_kwarg(self):
         """Ensures draw polygon accepts border_radius kwarg
         with and without a width arg and with different orders.
         """
         surface = pygame.Surface((400, 400))
         color = pygame.Color("yellow")
-        points = [[100,100], [300, 100], [300, 300], [100, 300]]
+        points = [[100, 100], [300, 100], [300, 300], [100, 300]]
         kwargs_list = [
-            {"surface": surface, "color": color, "points": points, "width": 1, "border_radius": 1},
+            {
+                "surface": surface,
+                "color": color,
+                "points": points,
+                "width": 1,
+                "border_radius": 1,
+            },
             {"surface": surface, "color": color, "points": points, "border_radius": 1},
-            {"points": points, "surface": surface, "border_radius": 1, "color": color, "width": 1},
+            {
+                "points": points,
+                "surface": surface,
+                "border_radius": 1,
+                "color": color,
+                "width": 1,
+            },
             {"surface": surface, "color": color, "border_radius": 1, "points": points},
             {"border_radius": 1, "surface": surface, "color": color, "points": points},
         ]
@@ -4262,17 +4278,17 @@ class DrawPolygonMixin:
         """Ensures draw polygon detects invalid border_radius arg type."""
         surface = pygame.Surface((400, 400))
         color = pygame.Color("blue")
-        points = [[100,100], [300, 100], [300, 300], [100, 300]]
+        points = [[100, 100], [300, 100], [300, 300], [100, 300]]
 
         with self.assertRaises(TypeError):
             # Invalid radius.
             bounds_rect = self.draw_polygon(surface, color, points, 1, "1")
-    
+
     def test_polygon__kwarg_border_radius_invalid_type_name(self):
         """Ensures draw polygon detects invalid kwarg border_radius type and name."""
         surface = pygame.Surface((400, 400))
         color = pygame.Color("green")
-        points = [[100,100], [300, 100], [300, 300], [100, 300]]
+        points = [[100, 100], [300, 100], [300, 300], [100, 300]]
         width = 1
         kwargs_list = [
             {
@@ -4280,36 +4296,42 @@ class DrawPolygonMixin:
                 "color": color,
                 "points": points,
                 "width": width,
-                "border_radius": "1" # Invalid border_radius type
+                "border_radius": "1",  # Invalid border_radius type
             },
             {
                 "surface": surface,
                 "color": color,
                 "points": points,
                 "width": width,
-                "border_radius": 2.3 # Invalid border_radius type
+                "border_radius": 2.3,  # Invalid border_radius type
             },
             {
                 "surface": surface,
                 "color": color,
                 "points": points,
                 "width": width,
-                "Invalid": 1 # Invalid border_radius name
+                "Invalid": 1,  # Invalid border_radius name
             },
         ]
 
         for kwargs in kwargs_list:
             with self.assertRaises(TypeError):
                 bounds_rect = self.draw_polygon(**kwargs)
-    
+
     def test_polygon__args_and_kwargs_border_radius(self):
         """Ensures draw polygon accepts a combination of args/kwargs with border_radius"""
         surface = pygame.Surface((400, 400))
         color = (255, 255, 0, 0)
-        points = [[100,100], [300, 100], [300, 300], [100, 300]]
+        points = [[100, 100], [300, 100], [300, 300], [100, 300]]
         width = 1
         border_radius = 1
-        kwargs = {"surface": surface, "color": color, "points": points, "width": width, "border_radius": border_radius}
+        kwargs = {
+            "surface": surface,
+            "color": color,
+            "points": points,
+            "width": width,
+            "border_radius": border_radius,
+        }
 
         for name in ("surface", "color", "points", "width", "border_radius"):
             kwargs.pop(name)
@@ -4323,10 +4345,12 @@ class DrawPolygonMixin:
             elif "width" == name:
                 bounds_rect = self.draw_polygon(surface, color, points, width, **kwargs)
             else:
-                bounds_rect = self.draw_polygon(surface, color, points, width, border_radius, **kwargs)
+                bounds_rect = self.draw_polygon(
+                    surface, color, points, width, border_radius, **kwargs
+                )
 
             self.assertIsInstance(bounds_rect, pygame.Rect)
-            
+
     def test_polygon__valid_border_radius_values(self):
         """Ensures draw polygon accepts different border_radius values."""
         surface_color = pygame.Color("white")
@@ -4335,11 +4359,11 @@ class DrawPolygonMixin:
         kwargs = {
             "surface": surface,
             "color": color,
-            "points": [[100,100], [300, 100], [300, 300], [100, 300]],
+            "points": [[100, 100], [300, 100], [300, 300], [100, 300]],
             "width": 1,
             "border_radius": None,
         }
-        
+
         pos1 = kwargs["points"][0]
         pos2 = kwargs["points"][1]
         pos = ((pos1[0] + pos2[0]) / 2, (pos1[1] + pos2[1]) / 2)
