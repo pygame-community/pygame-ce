@@ -45,10 +45,6 @@
 #define PG_PEEP_EVENT_ALL(x, y, z) \
     SDL_PeepEvents(x, y, z, SDL_FIRSTEVENT, SDL_LASTEVENT)
 
-/* These are used for checks. The checks are kinda redundant because we
- * have proxy events anyways, but this is needed for SDL1 */
-#define USEROBJ_CHECK (Sint32)0xFEEDF00D
-
 #define MAX_UINT32 0xFFFFFFFF
 
 #define PG_GET_LIST_LEN 128
@@ -95,6 +91,10 @@ static int pg_key_repeat_interval = 0;
 static SDL_TimerID _pg_repeat_timer = 0;
 static SDL_Event _pg_repeat_event;
 static SDL_Event _pg_last_keydown_event = {0};
+
+/* Not used as text, acts as an array of bools */
+static char pressed_keys[SDL_NUM_SCANCODES] = {0};
+static char released_keys[SDL_NUM_SCANCODES] = {0};
 
 #ifdef __EMSCRIPTEN__
 /* these macros are no-op here */
@@ -275,7 +275,9 @@ _pg_put_event_unicode(SDL_Event *event, char *uni)
 static PyObject *
 _pg_get_event_unicode(SDL_Event *event)
 {
-    char c;
+    /* We only deal with one byte here, but still declare an array to silence
+     * compiler warnings. The other 3 bytes are unused */
+    char c[4];
     int i;
     for (i = 0; i < MAX_SCAN_UNICODE; i++) {
         if (scanunicode[i].key == event->key.keysym.scancode) {
@@ -289,8 +291,8 @@ _pg_get_event_unicode(SDL_Event *event)
     }
     /* fallback to function that determines unicode from the event.
      * We try to get the unicode attribute, and store it in memory*/
-    c = _pg_unicode_from_event(event);
-    if (_pg_put_event_unicode(event, &c))
+    *c = _pg_unicode_from_event(event);
+    if (_pg_put_event_unicode(event, c))
         return _pg_get_event_unicode(event);
     return PyUnicode_FromString("");
 }
@@ -496,6 +498,7 @@ pg_event_filter(void *_, SDL_Event *event)
             return 0;
 
         PG_LOCK_EVFILTER_MUTEX
+        pressed_keys[event->key.keysym.scancode] = 1;
         if (pg_key_repeat_delay > 0) {
             if (_pg_repeat_timer)
                 SDL_RemoveTimer(_pg_repeat_timer);
@@ -525,6 +528,7 @@ pg_event_filter(void *_, SDL_Event *event)
 
     else if (event->type == SDL_KEYUP) {
         PG_LOCK_EVFILTER_MUTEX
+        released_keys[event->key.keysym.scancode] = 1;
         if (_pg_repeat_timer && _pg_repeat_event.key.keysym.scancode ==
                                     event->key.keysym.scancode) {
             SDL_RemoveTimer(_pg_repeat_timer);
@@ -654,19 +658,66 @@ pgEvent_AutoInit(PyObject *self, PyObject *_null)
     Py_RETURN_NONE;
 }
 
-/* This function can fill an SDL event from pygame event */
+/* Posts a pygame event that is an ``SDL_USEREVENT`` on the SDL side, can also
+ * optionally take a dictproxy instance. Using this dictproxy API is especially
+ * useful when multiple events that need to be posted share the same dict
+ * attribute, like in the case of event timers. This way, the number of python
+ * increfs and decrefs are reduced, and callers of this function don't need to
+ * hold GIL for every event posted, the GIL only needs to be held during the
+ * creation of the dictproxy instance, and when it is freed.
+ * Just like the SDL ``SDL_PushEvent`` function, returns 1 on success, 0 if the
+ * event was not posted due to it being blocked, and -1 on failure. */
 static int
-pgEvent_FillUserEvent(pgEventObject *e, SDL_Event *event)
+pg_post_event_dictproxy(Uint32 type, pgEventDictProxy *dict_proxy)
 {
-    Py_INCREF(e->dict);
+    int ret;
+    SDL_Event event = {0};
 
-    memset(event, 0, sizeof(SDL_Event));
-    event->type = _pg_pgevent_proxify(e->type);
-    event->user.code = USEROBJ_CHECK;
-    event->user.data1 = (void *)e->dict;
-    event->user.data2 = NULL;
+    event.type = _pg_pgevent_proxify(type);
+    event.user.data1 = (void *)dict_proxy;
 
-    return 0;
+    ret = SDL_PushEvent(&event);
+    if (ret == 1 && dict_proxy) {
+        /* successfully posted event with dictproxy */
+        SDL_AtomicLock(&dict_proxy->lock);
+        dict_proxy->num_on_queue++;
+        SDL_AtomicUnlock(&dict_proxy->lock);
+    }
+
+    return ret;
+}
+
+/* This function posts an SDL "UserEvent" event, can also optionally take a
+ * python dict. This function does not need GIL to be held if dict is NULL, but
+ * needs GIL otherwise  */
+static int
+pg_post_event(Uint32 type, PyObject *dict)
+{
+    int ret;
+    if (!dict) {
+        return pg_post_event_dictproxy(type, NULL);
+    }
+
+    pgEventDictProxy *dict_proxy =
+        (pgEventDictProxy *)malloc(sizeof(pgEventDictProxy));
+    if (!dict_proxy) {
+        return SDL_SetError("insufficient memory (internal malloc failed)");
+    }
+
+    Py_INCREF(dict);
+    dict_proxy->dict = dict;
+    /* initially set to 0 - unlocked state */
+    dict_proxy->lock = 0;
+    dict_proxy->num_on_queue = 0;
+    /* So that event function handling this frees it */
+    dict_proxy->do_free_at_end = 1;
+
+    ret = pg_post_event_dictproxy(type, dict_proxy);
+    if (ret != 1) {
+        Py_DECREF(dict);
+        free(dict_proxy);
+    }
+    return ret;
 }
 
 static char *
@@ -864,8 +915,29 @@ dict_from_event(SDL_Event *event)
     long state;
 
     /* check if a proxy event or userevent was posted */
-    if (event->type >= PGPOST_EVENTBEGIN && event->user.code == USEROBJ_CHECK)
-        return (PyObject *)event->user.data1;
+    if (event->type >= PGPOST_EVENTBEGIN) {
+        int to_free;
+        pgEventDictProxy *dict_proxy = (pgEventDictProxy *)event->user.data1;
+        if (!dict_proxy) {
+            /* the field being NULL implies empty dict */
+            return PyDict_New();
+        }
+
+        /* spinlocks must be held and released as quickly as possible */
+        SDL_AtomicLock(&dict_proxy->lock);
+        dict = dict_proxy->dict;
+        dict_proxy->num_on_queue--;
+        to_free = dict_proxy->num_on_queue <= 0 && dict_proxy->do_free_at_end;
+        SDL_AtomicUnlock(&dict_proxy->lock);
+
+        if (to_free) {
+            free(dict_proxy);
+        }
+        else {
+            Py_INCREF(dict);
+        }
+        return dict;
+    }
 
     dict = PyDict_New();
     if (!dict)
@@ -1293,6 +1365,7 @@ pg_EventSetAttr(PyObject *o, PyObject *name, PyObject *value)
     else {
         result = PyObject_GenericGetAttr(o, name);
         if (!result) {
+            PyErr_Clear();
             setInDict = 1;
         }
     }
@@ -1373,29 +1446,6 @@ Unimplemented:
 }
 
 static int
-_pg_event_populate(pgEventObject *event, int type, PyObject *dict)
-{
-    event->type = _pg_pgevent_deproxify(type);
-    if (!dict) {
-        dict = PyDict_New();
-        if (!dict) {
-            PyErr_NoMemory();
-            return -1;
-        }
-    }
-    else {
-        if (PyDict_GetItemString(dict, "type")) {
-            PyErr_SetString(PyExc_ValueError,
-                            "redundant type field in event dict");
-            return -1;
-        }
-        Py_INCREF(dict);
-    }
-    event->dict = dict;
-    return 0;
-}
-
-static int
 pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
 {
     int type;
@@ -1405,33 +1455,43 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
         return -1;
     }
 
-    if (!dict) {
-        dict = PyDict_New();
-        if (!dict) {
-            PyErr_NoMemory();
-            return -1;
-        }
-    }
-    else {
-        Py_INCREF(dict);
+    if (type < 0 || type >= PG_NUMEVENTS) {
+        PyErr_SetString(PyExc_ValueError, "event type out of range");
+        return -1;
     }
 
-    if (kwargs) {
-        PyObject *key, *value;
-        Py_ssize_t pos = 0;
-        while (PyDict_Next(kwargs, &pos, &key, &value)) {
-            if (PyDict_SetItem(dict, key, value) < 0) {
-                Py_DECREF(dict);
+    if (!dict) {
+        if (kwargs) {
+            dict = kwargs;
+            Py_INCREF(dict);
+        }
+        else {
+            dict = PyDict_New();
+            if (!dict) {
+                PyErr_NoMemory();
                 return -1;
             }
         }
     }
+    else {
+        if (kwargs) {
+            if (PyDict_Update(dict, kwargs) == -1) {
+                return -1;
+            }
+        }
+        /* So that dict is a new reference */
+        Py_INCREF(dict);
+    }
 
-    if (_pg_event_populate(self, type, dict) == -1) {
+    if (PyDict_GetItemString(dict, "type")) {
+        PyErr_SetString(PyExc_ValueError,
+                        "redundant type field in event dict");
+        Py_DECREF(dict);
         return -1;
     }
 
-    Py_DECREF(dict);
+    self->type = _pg_pgevent_deproxify(type);
+    self->dict = dict;
     return 0;
 }
 
@@ -1479,21 +1539,6 @@ pgEvent_New(SDL_Event *event)
     return (PyObject *)e;
 }
 
-static PyObject *
-pgEvent_New2(int type, PyObject *dict)
-{
-    pgEventObject *e;
-    e = PyObject_New(pgEventObject, &pgEvent_Type);
-    if (!e)
-        return PyErr_NoMemory();
-
-    if (_pg_event_populate(e, type, dict) == -1) {
-        Py_TYPE(e)->tp_free(e);
-        return NULL;
-    }
-    return (PyObject *)e;
-}
-
 /* event module functions */
 
 static PyObject *
@@ -1519,7 +1564,7 @@ set_grab(PyObject *self, PyObject *arg)
     if (win) {
         if (doit) {
             SDL_SetWindowGrab(win, SDL_TRUE);
-            if (SDL_ShowCursor(SDL_QUERY) == SDL_DISABLE)
+            if (PG_CursorVisible() == SDL_DISABLE)
                 SDL_SetRelativeMouseMode(1);
             else
                 SDL_SetRelativeMouseMode(0);
@@ -1550,8 +1595,14 @@ static void
 _pg_event_pump(int dopump)
 {
     if (dopump) {
+        /* This needs to be reset just before calling pump, e.g. on calls to
+         * pygame.event.get(), but not on pygame.event.get(pump=False). */
+        memset(pressed_keys, 0, sizeof(pressed_keys));
+        memset(released_keys, 0, sizeof(released_keys));
+
         SDL_PumpEvents();
     }
+
     /* We need to translate WINDOWEVENTS. But if we do that from the
      * from event filter, internal SDL stuff that rely on WINDOWEVENT
      * might break. So after every event pump, we translate events from
@@ -1729,6 +1780,18 @@ _pg_event_append_to_list(PyObject *list, SDL_Event *event)
     }
     Py_DECREF(e);
     return 1;
+}
+
+char *
+pgEvent_GetKeyDownInfo(void)
+{
+    return pressed_keys;
+}
+
+char *
+pgEvent_GetKeyUpInfo(void)
+{
+    return released_keys;
 }
 
 static PyObject *
@@ -2026,28 +2089,17 @@ pg_event_peek(PyObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 pg_event_post(PyObject *self, PyObject *obj)
 {
-    SDL_Event event;
-    pgEventObject *e;
-    int ret;
-
     VIDEO_INIT_CHECK();
     if (!pgEvent_Check(obj))
         return RAISE(PyExc_TypeError, "argument must be an Event object");
 
-    e = (pgEventObject *)obj;
-    if (SDL_EventState(_pg_pgevent_proxify(e->type), SDL_QUERY) == SDL_IGNORE)
-        Py_RETURN_FALSE;
-
-    pgEvent_FillUserEvent(e, &event);
-
-    ret = SDL_PushEvent(&event);
-    if (ret == 1)
-        Py_RETURN_TRUE;
-    else {
-        Py_DECREF(e->dict);
-        if (ret == 0)
+    pgEventObject *e = (pgEventObject *)obj;
+    switch (pg_post_event(e->type, e->dict)) {
+        case 0:
             Py_RETURN_FALSE;
-        else
+        case 1:
+            Py_RETURN_TRUE;
+        default:
             return RAISE(pgExc_SDLError, SDL_GetError());
     }
 }
@@ -2248,13 +2300,15 @@ MODINIT_DEFINE(event)
     }
 
     /* export the c api */
-    assert(PYGAMEAPI_EVENT_NUMSLOTS == 6);
+    assert(PYGAMEAPI_EVENT_NUMSLOTS == 8);
     c_api[0] = &pgEvent_Type;
     c_api[1] = pgEvent_New;
-    c_api[2] = pgEvent_New2;
-    c_api[3] = pgEvent_FillUserEvent;
+    c_api[2] = pg_post_event;
+    c_api[3] = pg_post_event_dictproxy;
     c_api[4] = pg_EnableKeyRepeat;
     c_api[5] = pg_GetKeyRepeat;
+    c_api[6] = pgEvent_GetKeyDownInfo;
+    c_api[7] = pgEvent_GetKeyUpInfo;
 
     apiobj = encapsulate_api(c_api, "event");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {

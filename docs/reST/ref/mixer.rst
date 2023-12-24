@@ -67,6 +67,10 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    playback. The buffer size must be a power of two (if not it is rounded up to
    the next nearest power of 2).
 
+   The devicename parameter is the name of sound device to open for audio
+   playback.  Allowed device names will vary based on the host system.
+   If left as ``None`` then a sensible default will be chosen for you.
+
    Some platforms require the :mod:`pygame.mixer` module to be initialized
    after the display modules have initialized. The top level ``pygame.init()``
    takes care of this automatically, but cannot pass any arguments to the mixer
@@ -172,7 +176,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
 .. function:: fadeout
 
    | :sl:`fade out the volume on all sounds before stopping`
-   | :sg:`fadeout(time) -> None`
+   | :sg:`fadeout(time, /) -> None`
 
    This will fade out the volume on all active channels over the time argument
    in milliseconds. After the sound is muted the playback will stop.
@@ -182,7 +186,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
 .. function:: set_num_channels
 
    | :sl:`set the total number of playback channels`
-   | :sg:`set_num_channels(count) -> None`
+   | :sg:`set_num_channels(count, /) -> None`
 
    Sets the number of available channels for the mixer. The default value is 8.
    The value can be increased or decreased. If the value is decreased, sounds
@@ -202,7 +206,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
 .. function:: set_reserved
 
    | :sl:`reserve channels from being automatically used`
-   | :sg:`set_reserved(count) -> count`
+   | :sg:`set_reserved(count, /) -> count`
 
    The mixer can reserve any number of channels that will not be automatically
    selected for playback by Sounds. This means that whenever you play a Sound 
@@ -229,6 +233,43 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    Channel with the longest running Sound and return it.
 
    .. ## pygame.mixer.find_channel ##
+
+.. function:: set_soundfont
+
+   | :sl:`set the soundfont for playing midi music`
+   | :sg:`set_soundfont(path, /) -> None`
+
+   This sets the soundfont file to be used in the playback of midi music.
+   The soundfont only affects the playback of ``MID``, ``MIDI``, and ``KAR`` file formats.
+   The optional ``path`` argument, a string (or multiple strings separated by a semi-colon),
+   must point to the soundfont file(s) to be searched for in order given if some
+   are missing. If ``path`` is an empty string or the default (``None``), any specified soundfont paths
+   will be cleared from the mixer.
+
+   Note on Windows, the mixer always uses the built-in soundfont instead of the one specified.
+
+   Function :func:`set_soundfont` calls underlying SDL_mixer function
+   ``Mix_SetSoundFonts``.
+
+   .. versionadded:: 2.3.1
+
+   .. ## pygame.mixer.set_soundfont ##
+
+.. function:: get_soundfont
+
+   | :sl:`get the soundfont for playing midi music`
+   | :sg:`get_soundfont() -> paths`
+
+   This gets the soundfont filepaths as a string (each path is separated by a semi-colon) 
+   to be used in the playback of ``MID``, ``MIDI``, and ``KAR`` music file formats. If no
+   soundfont is specified, the return type is ``None``.
+
+   Function :func:`get_soundfont` calls underlying SDL_mixer function
+   ``Mix_GetSoundFonts``.
+
+   .. versionadded:: 2.3.1
+
+   .. ## pygame.mixer.get_soundfont ##
 
 .. function:: get_busy
 
@@ -341,7 +382,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    .. method:: fadeout
 
       | :sl:`stop sound playback after fading out`
-      | :sg:`fadeout(time) -> None`
+      | :sg:`fadeout(time, /) -> None`
 
       This will stop playback of the sound after fading it out over the time
       argument in milliseconds. The Sound will fade and stop on all actively
@@ -352,7 +393,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    .. method:: set_volume
 
       | :sl:`set the playback volume for this Sound`
-      | :sg:`set_volume(value) -> None`
+      | :sg:`set_volume(value, /) -> None`
 
       This will set the playback volume (loudness) for this Sound. This will
       immediately affect the Sound if it is playing. It will also affect any
@@ -419,6 +460,19 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
 
    .. versionchanged:: 2.1.4 This class is also available through the ``pygame.Channel``
       alias.
+   .. versionchanged:: 2.4.0 It is now possible to create subclasses of ``pygame.mixer.Channel``
+
+   .. attribute:: id
+
+      | :sl:`get the channel id for the Channel object`
+      | :sg:`id -> int`
+
+      This simply returns the channel id used to create the ``Channel`` instance
+      as a read-only attribute
+
+      ..versionadded:: 2.4.0
+
+      .. ## Channel.id ##
 
    .. method:: play
 
@@ -473,7 +527,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    .. method:: fadeout
 
       | :sl:`stop playback after fading channel out`
-      | :sg:`fadeout(time) -> None`
+      | :sg:`fadeout(time, /) -> None`
 
       Stop playback of a channel after fading out the sound over the given time
       argument in milliseconds.
@@ -483,7 +537,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    .. method:: set_source_location
 
       | :sl:`set the position of a playing channel`
-      | :sg:`set_source_location(angle,distance) -> None`
+      | :sg:`set_source_location(angle, distance, /) -> None`
 
       Set the position (angle, distance) of a playing channel.
 
@@ -498,8 +552,8 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    .. method:: set_volume
 
       | :sl:`set the volume of a playing channel`
-      | :sg:`set_volume(value) -> None`
-      | :sg:`set_volume(left, right) -> None`
+      | :sg:`set_volume(value, /) -> None`
+      | :sg:`set_volume(left, right, /) -> None`
 
       Set the volume (loudness) of a playing sound. When a channel starts to
       play its volume value is reset. This only affects the current sound. The
@@ -559,7 +613,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    .. method:: queue
 
       | :sl:`queue a Sound object to follow the current`
-      | :sg:`queue(Sound) -> None`
+      | :sg:`queue(sound, /) -> None`
 
       When a Sound is queued on a Channel, it will begin playing immediately
       after the current Sound is finished. Each channel can only have a single
@@ -586,7 +640,7 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
 
       | :sl:`have the channel send an event when playback stops`
       | :sg:`set_endevent() -> None`
-      | :sg:`set_endevent(type) -> None`
+      | :sg:`set_endevent(type, /) -> None`
 
       When an endevent is set for a channel, it will send an event to the
       pygame queue every time a sound finishes playing on that channel (not

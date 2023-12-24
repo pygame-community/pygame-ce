@@ -96,7 +96,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
 .. class:: Joystick
 
    | :sl:`Create a new Joystick object.`
-   | :sg:`Joystick(id) -> Joystick`
+   | :sg:`Joystick(id, /) -> Joystick`
 
    Create a new joystick to access a physical device. The id argument must be a
    value from ``0`` to ``pygame.joystick.get_count() - 1``.
@@ -121,7 +121,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       .. deprecatedold:: 2.0.0
 
          In future it will not be possible to reinitialise a closed Joystick
-         object. Will be removed in Pygame 2.1.
+         object.
 
       .. ## Joystick.init ##
 
@@ -158,7 +158,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
       .. deprecatedold:: 2.0.0
 
          The original device index is not useful in pygame 2. Use
-         :meth:`.get_instance_id` instead. Will be removed in Pygame 2.1.
+         :meth:`.get_instance_id` instead. 
 
    .. method:: get_instance_id() -> int
 
@@ -229,7 +229,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
    .. method:: get_axis
 
       | :sl:`get the current position of an axis`
-      | :sg:`get_axis(axis_number) -> float`
+      | :sg:`get_axis(axis_number, /) -> float`
 
       Returns the current position of a joystick axis. The value will range
       from ``-1`` to ``1`` with a value of ``0`` being centered. You may want 
@@ -261,7 +261,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
    .. method:: get_ball
 
       | :sl:`get the relative position of a trackball`
-      | :sg:`get_ball(ball_number) -> x, y`
+      | :sg:`get_ball(ball_number, /) -> x, y`
 
       Returns the relative movement of a joystick button. The value is a ``x, y``
       pair holding the relative movement since the last call to get_ball.
@@ -286,7 +286,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
    .. method:: get_button
 
       | :sl:`get the current button state`
-      | :sg:`get_button(button) -> bool`
+      | :sg:`get_button(button, /) -> bool`
 
       Returns the current state of a joystick button.
 
@@ -311,7 +311,7 @@ variable. See :ref:`environment variables <environment-variables>` for more deta
    .. method:: get_hat
 
       | :sl:`get the position of a joystick hat`
-      | :sg:`get_hat(hat_number) -> x, y`
+      | :sg:`get_hat(hat_number, /) -> x, y`
 
       Returns the current position of a position hat. The position is given as
       two values representing the ``x`` and ``y`` position for the hat. ``(0, 0)``
@@ -390,25 +390,25 @@ After SDL 2.24.0, The controller is recognized as "Nintendo Switch Joy-Con (L)".
 
 * **Buttons**::
 
-                        After SDL 2.24.0         Before SDL 2.24.0
-    D-pad Up                Button 2                  Button 3
-    D-pad Down              Button 1                  Button 0
-    D-pad Left              Button 3                  Button 2
-    D-pad Right             Button 0                  Button 1
-    SL                      Button 9                  Button 4
-    SR                      Button 10                 Button 5
-    -                       Button 6                  Button 8
-    Stick In                Button 7                  Button 10
-    Capture                 Button 5                  Button 13
-    L                       Button 17                 Button 14
-    ZL                      Button 19                 Button 15
+                    After SDL 2.24.0         Before SDL 2.24.0
+    D-pad Up            Button 2                  Button 3
+    D-pad Down          Button 1                  Button 0
+    D-pad Left          Button 3                  Button 2
+    D-pad Right         Button 0                  Button 1
+    SL                  Button 9                  Button 4
+    SR                  Button 10                 Button 5
+    -                   Button 6                  Button 8
+    Stick In            Button 7                  Button 10
+    Capture             Button 5                  Button 13
+    L                   Button 17                 Button 14
+    ZL                  Button 19                 Button 15
 
 Reference : D-pad Up points toward SL and SR buttons. 
 
 * **Hat/JoyStick**::
 
-    Down -> Up      - Y Axis
-    Left -> Right   - X Axis
+    Down -> Up      -    Axis 1                    Axis Y
+    Left -> Right   -    Axis 0                    Axis X
 
 
 Nintendo Switch Right Joy-Con (pygame 2.x)
@@ -435,11 +435,11 @@ After SDL 2.24.0, The controller is recognized as "Nintendo Switch Joy-Con (R)".
 
 * **Hat/JoyStick**::
 
-    Down -> Up      - Y Axis
-    Left -> Right   - X Axis
+    Down -> Up      -  Axis 1                   Axis Y
+    Left -> Right   -  Axis 0                   Axis X
 
-Nintendo Switch Left/Right Joy-Con (pygame **2.3.0** / after SDL **2.24.0**)
-*********************************************************************
+Nintendo Switch Left/Right Joy-Con (after SDL **2.24.0**)
+*********************************************************
 This device is created, if Nintendo Switch Joy-con Left and Nintendo Switch Joy-con Right are connected (these two devices are removed).
 The Nintendo Switch Left/Right Joy-Con has 6 axes, 20 buttons, and 0 hats. The values for the 6 axes never change.
 The controller is recognized as "Nintendo Switch Joy-Con (L/R)".
@@ -473,9 +473,9 @@ The controller is recognized as "Nintendo Switch Joy-Con (L/R)".
     D-pad Right     - Button 14
     Capture Button  - Button 15
     Right SR        - Button 16
-    Left SR         - Button 17
+    Left SL         - Button 17
     Right SL        - Button 18
-    Left SL         - Button 19
+    Left SR         - Button 19
 
 Nintendo Switch Pro Controller (pygame 2.x)
 *******************************************

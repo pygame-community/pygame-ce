@@ -16,7 +16,7 @@ EXTRAS = {}
 
 METADATA = {
     "name": "pygame-ce",
-    "version": "2.3.1.dev3",
+    "version": "2.4.0.dev3",
     "license": "LGPL",
     "url": "https://pyga.me",
     "author": "A community project.",
@@ -34,10 +34,8 @@ METADATA = {
         "Programming Language :: Assembly",
         "Programming Language :: C",
         "Programming Language :: Cython",
-        "Programming Language :: Objective C",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
@@ -61,7 +59,7 @@ METADATA = {
         "Operating System :: MacOS",
         "Typing :: Typed"
     ],
-    "python_requires": '>=3.7',
+    "python_requires": '>=3.8',
 }
 
 import re
@@ -74,7 +72,7 @@ import distutils
 
 import distutils.ccompiler
 
-avx2_filenames = ['simd_blitters_avx2']
+avx2_filenames = ['simd_blitters_avx2', 'simd_transform_avx2', 'simd_surface_fill_avx2']
 
 compiler_options = {
     'unix': ('-mavx2',),
@@ -154,11 +152,11 @@ def compilation_help():
     print('---\n')
 
 
-if not hasattr(sys, 'version_info') or sys.version_info < (3, 7):
+if not hasattr(sys, 'version_info') or sys.version_info < (3, 8):
     compilation_help()
-    raise SystemExit("Pygame-ce requires Python3 version 3.7 or above.")
+    raise SystemExit("Pygame-ce requires Python3 version 3.8 or above.")
 if IS_PYPY and sys.pypy_version_info < (7,):
-    raise SystemExit("Pygame-ce requires PyPy version 7.0.0 above, compatible with CPython >= 3.7")
+    raise SystemExit("Pygame-ce requires PyPy version 7.0.0 above, compatible with CPython >= 3.8")
 
 
 def consume_arg(name):
@@ -435,7 +433,7 @@ for e in extensions:
     if (
             "CI" in os.environ
             and not e.name.startswith("_sdl2")
-            and e.name not in ("pypm", "_sprite", "gfxdraw")
+            and e.name not in ("pypm", "gfxdraw")
     ):
         # Do -Werror only on CI, and exclude -Werror on Cython C files and gfxdraw
         e.extra_compile_args.append("/WX" if sys.platform == "win32" else "-Werror")
@@ -527,58 +525,6 @@ add_datafiles(data_files, 'pygame/docs/generated',
                  ['*.txt',
                   ['ref',
                    ['*.txt']]]]]])
-
-
-# generate the version module
-def parse_version(ver):
-    return ', '.join(s for s in re.findall(r'\d+', ver)[0:3])
-
-
-def parse_source_version():
-    pgh_major = -1
-    pgh_minor = -1
-    pgh_patch = -1
-    major_exp_search = re.compile(r'define\s+PG_MAJOR_VERSION\s+([0-9]+)').search
-    minor_exp_search = re.compile(r'define\s+PG_MINOR_VERSION\s+([0-9]+)').search
-    patch_exp_search = re.compile(r'define\s+PG_PATCH_VERSION\s+([0-9]+)').search
-    pg_header = os.path.join('src_c', 'include', '_pygame.h')
-    with open(pg_header) as f:
-        for line in f:
-            if pgh_major == -1:
-                m = major_exp_search(line)
-                if m: pgh_major = int(m.group(1))
-            if pgh_minor == -1:
-                m = minor_exp_search(line)
-                if m: pgh_minor = int(m.group(1))
-            if pgh_patch == -1:
-                m = patch_exp_search(line)
-                if m: pgh_patch = int(m.group(1))
-    if pgh_major == -1:
-        raise SystemExit("_pygame.h: cannot find PG_MAJOR_VERSION")
-    if pgh_minor == -1:
-        raise SystemExit("_pygame.h: cannot find PG_MINOR_VERSION")
-    if pgh_patch == -1:
-        raise SystemExit("_pygame.h: cannot find PG_PATCH_VERSION")
-    return (pgh_major, pgh_minor, pgh_patch)
-
-
-def write_version_module(pygame_version, revision):
-    vernum = parse_version(pygame_version)
-    src_vernum = parse_source_version()
-    if vernum != ', '.join(str(e) for e in src_vernum):
-        raise SystemExit("_pygame.h version differs from 'METADATA' version"
-                         ": %s vs %s" % (vernum, src_vernum))
-    with open(os.path.join('buildconfig', 'version.py.in')) as header_file:
-        header = header_file.read()
-    with open(os.path.join('src_py', 'version.py'), 'w') as version_file:
-        version_file.write(header)
-        version_file.write('ver = "' + pygame_version + '"  # pylint: disable=invalid-name\n')
-        version_file.write(f'vernum = PygameVersion({vernum})\n')
-        version_file.write('rev = "' + revision + '"  # pylint: disable=invalid-name\n')
-        version_file.write('\n__all__ = ["SDL", "ver", "vernum", "rev"]\n')
-
-
-write_version_module(METADATA['version'], revision)
 
 # required. This will be filled if doing a Windows build.
 cmdclass = {}
@@ -885,10 +831,8 @@ class LintFormatCommand(Command):
         c_file_disallow = [
             "_sdl2/**",
             "pypm.c",
-            "SDL_gfx/**",
             "**/sse2neon.h",
             "doc/**",
-            "_sprite.c",
         ]
         c_file_allow = ["_sdl2/touch.c"]
         c_files = filter_files(path_obj, c_files_unfiltered, c_file_allow, c_file_disallow)
@@ -1011,17 +955,6 @@ PACKAGEDATA = {
                  'pygame._sdl2',
                  'pygame.tests',
                  'pygame.tests.test_utils',
-                 'pygame.tests.run_tests__tests',
-                 'pygame.tests.run_tests__tests.all_ok',
-                 'pygame.tests.run_tests__tests.failures1',
-                 'pygame.tests.run_tests__tests.incomplete',
-                 'pygame.tests.run_tests__tests.infinite_loop',
-                 'pygame.tests.run_tests__tests.print_stderr',
-                 'pygame.tests.run_tests__tests.print_stdout',
-                 'pygame.tests.run_tests__tests.incomplete_todo',
-                 'pygame.tests.run_tests__tests.exclude',
-                 'pygame.tests.run_tests__tests.timeout',
-                 'pygame.tests.run_tests__tests.everything',
                  'pygame.docs',
                  'pygame.examples',
                  'pygame.__pyinstaller'],
