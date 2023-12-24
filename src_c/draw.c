@@ -378,10 +378,10 @@ dashed_line(PyObject *self, PyObject *args, PyObject *kwargs)
         counter++;
     }
 
-    drawn_area[0] = fmin(start_x, end_x);
-    drawn_area[1] = fmin(start_y, end_y);
-    drawn_area[2] = fmax(start_x, end_x);
-    drawn_area[3] = fmax(start_y, end_y);
+    drawn_area[0] = (int)fmin(start_x, end_x);
+    drawn_area[1] = (int)fmin(start_y, end_y);
+    drawn_area[2] = (int)fmax(start_x, end_x);
+    drawn_area[3] = (int)fmax(start_y, end_y);
 
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");
