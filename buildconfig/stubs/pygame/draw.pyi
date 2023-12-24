@@ -1,3 +1,5 @@
+from typing import Union
+
 from pygame.rect import Rect
 from pygame.surface import Surface
 
@@ -55,7 +57,8 @@ def dashed_line(
     start_pos: Coordinate,
     end_pos: Coordinate,
     width: int = 1,
-    length: int = 10,
+    length: Union[int, Sequence[int]] = 10,
+    delay: int = 0,
 ) -> Rect: ...
 def lines(
     surface: Surface,

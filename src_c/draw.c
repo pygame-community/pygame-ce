@@ -248,21 +248,25 @@ dashed_line(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     pgSurfaceObject *surfobj;
     PyObject *colorobj, *start, *end;
+    PyObject *length = NULL;
     SDL_Surface *surf = NULL;
-    int startx, starty, endx, endy;
+    int start_x, start_y, end_x, end_y;
     Uint8 rgba[4];
     Uint32 color;
-    int width = 1;   /* Default width. */
-    int length = 10; /* Default dash width */
+    int width = 1; /* Default width. */
+    // int length = 10; /* Default dash width */
+    int dash_width = 10;
+    int gap_width = 10;
+    int delay_gap = 0;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
 
     static char *keywords[] = {"surface", "color",  "start_pos", "end_pos",
-                               "width",   "length", NULL};
+                               "width",   "length", "delay",     NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!OOO|ii", keywords,
-                                     &pgSurface_Type, &surfobj, &colorobj,
-                                     &start, &end, &width, &length)) {
+    if (!PyArg_ParseTupleAndKeywords(
+            args, kwargs, "O!OOO|iOi", keywords, &pgSurface_Type, &surfobj,
+            &colorobj, &start, &end, &width, &length, &delay_gap)) {
         return NULL; /* Exception already set. */
     }
 
@@ -277,60 +281,122 @@ dashed_line(PyObject *self, PyObject *args, PyObject *kwargs)
 
     CHECK_LOAD_COLOR(colorobj)
 
-    if (!pg_TwoIntsFromObj(start, &startx, &starty)) {
+    if (!pg_TwoIntsFromObj(start, &start_x, &start_y)) {
         return RAISE(PyExc_TypeError, "invalid start_pos argument");
     }
 
-    if (!pg_TwoIntsFromObj(end, &endx, &endy)) {
+    if (!pg_TwoIntsFromObj(end, &end_x, &end_y)) {
         return RAISE(PyExc_TypeError, "invalid end_pos argument");
     }
 
-    if (width < 1) {
-        return pgRect_New4(startx, starty, 0, 0);
+    if (length != NULL) {
+        if (PyLong_Check(length)) {
+            const int length_value = PyLong_AsLong(length);
+            if (length_value < 1) {
+                return RAISE(PyExc_ValueError,
+                             "length argument must be 1 or higher");
+            }
+            dash_width = length_value;
+            gap_width = length_value;
+        }
+        else {
+            if (!pg_TwoIntsFromObj(length, &dash_width, &gap_width) ||
+                dash_width < 1 || gap_width < 1) {
+                return RAISE(PyExc_TypeError,
+                             "invalid length argument, must be int or "
+                             "sequence of two ints");
+            }
+        }
     }
 
-    if (length < 1) {
-        return RAISE(PyExc_ValueError, "invalid length argument");
+    if (width < 1) {
+        return pgRect_New4(start_x, start_y, 0, 0);
+    }
+
+    const int dx = end_x - start_x;
+    const int dy = end_y - start_y;
+
+    const double total_length = sqrt(dx * dx + dy * dy);
+    if (total_length == 0) {
+        return pgRect_New4(start_x, start_y, 0, 0);
     }
 
     if (!pgSurface_Lock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
-    int dx = endx - startx;
-    int dy = endy - starty;
-    double total_line_length = sqrt(dx * dx + dy * dy);
-    double number_segments = total_line_length / length;
-    int rounded_number = ceil(number_segments);
+    const double gap_x = ((double)gap_width / total_length) * dx;
+    const double gap_y = ((double)gap_width / total_length) * dy;
 
-    double xstep = (double)dx / number_segments;
-    double ystep = (double)dy / number_segments;
+    const double dash_x = ((double)dash_width / total_length) * dx;
+    const double dash_y = ((double)dash_width / total_length) * dy;
 
-    double currentx, currenty, stopx, stopy;
+    const double delay_x = ((double)delay_gap / total_length) * dx;
+    const double delay_y = ((double)delay_gap / total_length) * dy;
 
-    for (int i = 0; i < rounded_number; i++) {
-        if (i % 2) {
-            continue;
+    double current_x = start_x + delay_x;
+    double current_y = start_y + delay_y;
+    unsigned char counter = 0;
+
+    double x_step = 0;
+    double y_step = 0;
+
+    while (current_x != end_x) {
+        if (dx >= 0) {
+            if (counter % 2) /* gap */
+            {
+                x_step = fmin(end_x - current_x, gap_x);
+            }
+            else {
+                x_step = fmin(end_x - current_x, dash_x);
+            }
+        }
+        else {
+            if (counter % 2) /* gap */
+            {
+                x_step = fmax(end_x - current_x, gap_x);
+            }
+            else {
+                x_step = fmax(end_x - current_x, dash_x);
+            }
         }
 
-        if ((rounded_number > (int)number_segments) && (i == rounded_number-1))
-        {
-            currentx = startx + i * xstep;
-            currenty = starty + i * ystep;
-            stopx = endx;
-            stopy = endy;
+        if (dy >= 0) {
+            if (counter % 2) /* gap */
+            {
+                y_step = fmin(end_y - current_y, gap_y);
+            }
+            else {
+                y_step = fmin(end_y - current_y, dash_y);
+            }
         }
-        else
-        {
-            currentx = startx + i * xstep;
-            currenty = starty + i * ystep;
-            stopx = currentx + xstep;
-            stopy = currenty + ystep;
+        else {
+            if (counter % 2) /* gap */
+            {
+                y_step = fmax(end_y - current_y, gap_y);
+            }
+            else {
+                y_step = fmax(end_y - current_y, dash_y);
+            }
         }
 
-        draw_line_width(surf, color, (int)currentx, (int)currenty, (int)stopx,
-                        (int)stopy, width, drawn_area);
+        double stop_x = current_x + x_step;
+        double stop_y = current_y + y_step;
+
+        if (counter % 2 == 0) {
+            draw_line_width(surf, color, (int)current_x, (int)current_y,
+                            (int)stop_x, (int)stop_y, width, drawn_area);
+        }
+
+        current_x = stop_x;
+        current_y = stop_y;
+        counter++;
     }
+
+    drawn_area[0] = fmin(start_x, end_x);
+    drawn_area[1] = fmin(start_y, end_y);
+    drawn_area[2] = fmax(start_x, end_x);
+    drawn_area[3] = fmax(start_y, end_y);
 
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");
@@ -344,7 +410,7 @@ dashed_line(PyObject *self, PyObject *args, PyObject *kwargs)
                            drawn_area[3] - drawn_area[1] + 1);
     }
     else {
-        return pgRect_New4(startx, starty, 0, 0);
+        return pgRect_New4(start_x, start_y, 0, 0);
     }
 }
 

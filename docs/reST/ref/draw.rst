@@ -352,7 +352,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    | :sl:`draw a straight dotted/dashed line`
    | :sg:`dashed_line(surface, color, start_pos, end_pos) -> Rect`
-   | :sg:`dashed_line(surface, color, start_pos, end_pos, width=1, length=10) -> Rect`
+   | :sg:`dashed_line(surface, color, start_pos, end_pos, width=1, length=10, delay=0) -> Rect`
 
    Draws a straight dashed line on the given surface. There are no endcaps. For thick
    lines the ends are squared off.
@@ -387,11 +387,14 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
             (vertical-ish) will have 1 more pixel of thickness to the right of
             the original line (in the x direction).
 
-   :param int length: (optional) used for dash length
+   :param int | Sequence[int] length: (optional) used for dash length
    
       . note::
-         The dash length is tracked along the length of the line, and the gaps
-         between dashes will be the same size as the dashes of the line.
+         If ``int``
+            The dash length is tracked along the length of the line, and the gaps
+            between dashes will be the same size as the dashes of the line.
+         If ``Sequence[int]``
+            The dash length is the first element and the gap length is the second element.
 
    :returns: a rect bounding the changed pixels, if nothing is drawn the
       bounding rect's position will be the ``start_pos`` parameter value (float
@@ -400,10 +403,11 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    :raises TypeError: if ``start_pos`` or ``end_pos`` is not a sequence of
       two numbers
+   :raises ValueError: if ``length`` is not an ``int`` or a sequence of two ``int``
    
-   :raises ValueError if ``length`` is less than 1
+   :raises ValueError: if ``length`` is less than 1 or has elements less than 1
 
-   .. versionadded:: 2.3.1
+   .. versionadded:: 2.4.0
 
    .. ## pygame.draw.dashed_line ##
 
