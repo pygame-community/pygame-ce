@@ -709,7 +709,6 @@ class CircleTypeTest(unittest.TestCase):
         c = Circle(0, 0, 10)
         self.assertEqual(c.as_rect(), Rect(-10, -10, 20, 20))
 
-
     def test_as_frect_invalid_args(self):
         c = Circle(0, 0, 10)
 
@@ -722,6 +721,7 @@ class CircleTypeTest(unittest.TestCase):
     def test_as_frect(self):
         c = Circle(0, 0, 10)
         self.assertEqual(c.as_frect(), FRect(-10, -10, 20, 20))
+
 
 if __name__ == "__main__":
     unittest.main()
