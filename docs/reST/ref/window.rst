@@ -42,8 +42,8 @@
    :param bool allow_highdpi: Create a window in high-DPI mode if supported.
    :param bool mouse_capture: Create a window that has the mouse captured
                               (unrelated to INPUT_GRABBED).
-   :param bool always_on_top: Create a window that is always on top
-                              (X11 only).
+   :param bool always_on_top: Create a window that is always presented above
+                              others.
 
    .. versionadded:: 2.4.0
 
