@@ -124,6 +124,7 @@ jobs:
     - name: Upload dist
       uses: actions/upload-artifact@v4
       with:
-        name: pygame-wheels-manylinux
+        name: pygame-wheels-manylinux-${{ matrix.arch }}
         path: ./wheelhouse/*.whl
+        compression-level: 0  # wheels are already zip files, no need for more compression
 

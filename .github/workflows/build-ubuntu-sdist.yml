@@ -92,4 +92,5 @@ jobs:
       with:
         name: pygame-wheels-sdist
         path: dist/*.tar.gz
+        compression-level: 0  # already compressed, no need for more compression
 

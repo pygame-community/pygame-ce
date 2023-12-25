@@ -181,6 +181,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: pygame-wheels-macos
+          name: pygame-wheels-macos-${{ matrix.name }}
           path: ./wheelhouse/*.whl
+          compression-level: 0  # wheels are already zip files, no need for more compression
 
