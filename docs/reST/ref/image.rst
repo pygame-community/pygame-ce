@@ -109,6 +109,32 @@ following formats.
 
    .. ## pygame.image.load ##
 
+.. function:: load_sized_svg
+
+   | :sl:`load an SVG image from a file (or file-like object) with the given size`
+   | :sg:`load_sized_svg(file, size) -> Surface`
+
+   This function rasterizes the input SVG at the size specified by the ``size``
+   argument. The ``file`` argument can be either a filename, a Python file-like
+   object, or a pathlib.Path.
+
+   The usage of this function for handling SVGs is recommended, as calling the
+   regular ``load`` function and then scaling the returned surface would not
+   preserve the quality that an SVG can provide.
+
+   It is to be noted that this function does not return a surface whose
+   dimensions exactly match the ``size`` argument. This function preserves
+   aspect ratio, so the returned surface could be smaller along at most one
+   dimension.
+
+   This function requires SDL_image 2.6.0 or above. If pygame was compiled with
+   an older version, ``pygame.error`` will be raised when this function is
+   called.
+
+   .. versionadded:: 2.4.0
+
+   .. ## pygame.image.load_sized_svg ##
+
 .. function:: save
 
    | :sl:`save an image to file (or file-like object)`
