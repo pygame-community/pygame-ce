@@ -300,7 +300,7 @@ pg_circle_move_ip(pgCircleObject *self, PyObject *const *args,
 
     self->circle.x += Dx;
     self->circle.y += Dy;
-  
+
     Py_RETURN_NONE;
 }
 
