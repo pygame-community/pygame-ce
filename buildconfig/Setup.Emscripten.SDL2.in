@@ -4,9 +4,7 @@
 #FONT = -lSDL2_ttf
 #IMAGE = -lSDL2_image
 #MIXER = -lSDL2_mixer
-#JPEG = -ljpeg
 #SCRAP =
-#PNG = -lpng
 #FREETYPE = -lfreetype -lharfbuzz
 
 DEBUG =
@@ -25,7 +23,6 @@ _sdl2.mixer src_c/_sdl2/mixer.c $(SDL) $(MIXER) $(DEBUG) -Isrc_c
 
 constants src_c/constants.c $(SDL) $(DEBUG)
 mask src_c/bitmask.c
-_sprite src_c/_sprite.c $(SDL) $(DEBUG)
 math src_c/math.c $(SDL) $(DEBUG)
 
 #GFX = src_c/SDL_gfx/SDL_gfxBlitFunc.c src_c/SDL_gfx/SDL_gfxPrimitives.c
@@ -61,7 +58,7 @@ surflock src_c/void.c
 rect src_c/void.c
 rwobject src_c/void.c
 system src_c/void.c
-_window src_c/void.c
+window src_c/void.c
 geometry src_c/void.c
 
 #_sdl2.controller src_c/_sdl2/controller.c $(SDL) $(DEBUG) -Isrc_c
@@ -70,7 +67,7 @@ _sdl2.controller_old src_c/void.c
 #_sdl2.touch src_c/_sdl2/touch.c $(SDL) $(DEBUG) -Isrc_c
 _sdl2.touch src_c/void.c
 
-#transform src_c/simd_transform_sse2.c src_c/simd_transform_avx2.c src_c/transform.c src_c/rotozoom.c src_c/scale2x.c src_c/scale_mmx.c $(SDL) $(DEBUG) -D_NO_MMX_FOR_X86_64
+#transform src_c/simd_transform_sse2.c src_c/simd_transform_avx2.c src_c/transform.c src_c/rotozoom.c src_c/scale2x.c src_c/scale_mmx.c src_c/simd_surface_fill_avx2.c src_c/simd_surface_fill_sse2.c $(SDL) $(DEBUG) -D_NO_MMX_FOR_X86_64
 transform src_c/void.c
 
 

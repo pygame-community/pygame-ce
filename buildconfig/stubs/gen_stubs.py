@@ -51,6 +51,7 @@ PG_AUTOIMPORT_SUBMODS = [
     "_debug",
     "system",
     "geometry",
+    "window",
 ]
 
 # pygame classes that are autoimported into main namespace are kept in this dict
@@ -69,6 +70,7 @@ PG_AUTOIMPORT_CLASSES = {
     "mixer": ["Channel"],
     "time": ["Clock"],
     "joystick": ["Joystick"],
+    "window": ["Window"],
     "base": ["__version__"],  # need an explicit import
     # uncomment below line if Circle is added to the base namespace later
     # "geometry": ["Circle"], 

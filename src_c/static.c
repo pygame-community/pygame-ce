@@ -176,7 +176,7 @@ PyMODINIT_FUNC
 PyInit_pixelarray(void);
 
 PyMODINIT_FUNC
-PyInit__window(void);
+PyInit_window(void);
 
 // pygame_static module
 
@@ -253,8 +253,6 @@ mod_pygame_import_cython(PyObject *self, PyObject *spec)
                           "controller_old");
     load_submodule_mphase("pygame._sdl2", PyInit_audio(), spec, "audio");
     load_submodule_mphase("pygame._sdl2", PyInit_video(), spec, "video");
-    // depends on pygame._sdl2.video
-    load_submodule_mphase("pygame", PyInit__sprite(), spec, "_sprite");
 
     Py_RETURN_NONE;
 }
@@ -308,7 +306,7 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_pg_mixer(), "mixer");
     load_submodule("pygame.mixer", PyInit_mixer_music(), "music");
 
-    load_submodule("pygame", PyInit__window(), "_window");
+    load_submodule("pygame", PyInit_window(), "window");
 
     load_submodule("pygame", PyInit_pixelarray(), "pixelarray");
 
@@ -368,7 +366,6 @@ PyInit_pygame_static()
 #undef pgRWops_IsFileObject
 #undef pgRWops_GetFileExtension
 #undef pgRWops_FromFileObject
-#undef pgRWops_ReleaseObject
 #undef pgRWops_FromObject
 
 #include "rwobject.c"

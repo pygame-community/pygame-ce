@@ -215,6 +215,42 @@
 
          .. ## Circle.move_ip ##
 
+   .. method:: colliderect
+
+         | :sl:`checks if a rectangle intersects the circle`
+         | :sg:`colliderect(Rect) -> bool`
+         | :sg:`colliderect((x, y, width, height)) -> bool`
+         | :sg:`colliderect(x, y, width, height) -> bool`
+         | :sg:`colliderect((x, y), (width, height)) -> bool`
+
+         The `colliderect` method tests whether a given rectangle intersects the `Circle`. It
+         takes either a `Rect` object, a tuple of (x, y, width, height) coordinates, or separate
+         x, y coordinates and width, height as its argument. Returns `True` if any portion
+         of the rectangle overlaps with the `Circle`, `False` otherwise.
+         
+         .. ## Circle.colliderect ##
+
+   .. method:: update
+
+         | :sl:`updates the circle position and radius`
+         | :sg:`update((x, y), radius) -> None`
+         | :sg:`update(x, y, radius) -> None`
+
+         The `update` method allows you to set the position and radius of a `Circle` object in
+         place. This method takes either a tuple of (x, y) coordinates, two separate x and
+         y coordinates, and a radius as its arguments, and it always returns `None`.
+
+         .. note::
+             This method is equivalent(behaviour wise) to the following code:
+
+             .. code-block:: python
+
+                 circle.x = x
+                 circle.y = y
+                 circle.r = radius
+
+         .. ## Circle.update ##
+
    .. method:: copy
 
          | :sl:`returns a copy of the circle`

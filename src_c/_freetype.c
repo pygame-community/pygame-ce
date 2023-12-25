@@ -667,6 +667,7 @@ _ftfont_new(PyTypeObject *subtype, PyObject *args, PyObject *kwds)
         obj->bgcolor[1] = 0;
         obj->bgcolor[2] = 0;
         obj->bgcolor[3] = 0;
+        obj->init_generation = current_freetype_generation;
     }
     return (PyObject *)obj;
 }
@@ -677,7 +678,7 @@ _ftfont_dealloc(pgFontObject *self)
     SDL_RWops *src = _PGFT_GetRWops(self);
     _PGFT_UnloadFont(self->freetype, self);
     if (src) {
-        pgRWops_ReleaseObject(src);
+        SDL_RWclose(src);
     }
     _PGFT_Quit(self->freetype);
 
@@ -783,6 +784,13 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
             goto end;
         }
 
+        if (source->size(source) <= 0) {
+            PyErr_Format(PyExc_ValueError,
+                         "Font file object has an invalid file size: %lld",
+                         source->size(source));
+            goto end;
+        }
+
         path = PyObject_GetAttrString(original_file, "name");
         if (!path) {
             PyErr_Clear();
@@ -824,6 +832,13 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
         goto end;
     source = pgRWops_FromObject(file, NULL);
     if (!source) {
+        goto end;
+    }
+
+    if (source->size(source) <= 0) {
+        PyErr_Format(PyExc_ValueError,
+                     "Font file object has an invalid file size: %lld",
+                     source->size(source));
         goto end;
     }
 
@@ -890,7 +905,6 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
     */
     self->freetype = ft;
     ++ft->ref_count;
-    self->init_generation = current_freetype_generation;
 
     rval = 0;
 

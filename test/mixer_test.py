@@ -934,6 +934,10 @@ class ChannelTypeTest(unittest.TestCase):
         self.assertEqual(ch1.id, 1)
         self.assertEqual(ch2.id, 2)
 
+    def test_subclass(self):
+        class MyChannel(mixer.Channel):
+            pass
+
 
 class ChannelInteractiveTest(unittest.TestCase):
     __tags__ = ["interactive"]
@@ -1263,6 +1267,17 @@ class SoundTypeTest(unittest.TestCase):
             correct.get_volume()
         except Exception:
             self.fail("This should not raise an exception.")
+
+        channel = mixer.Channel(0)
+        try:
+            channel.play(correct)
+        except Exception:
+            self.fail("This should not raise an exception.")
+
+        self.assertIsInstance(channel.get_sound(), CorrectSublass)
+        self.assertIs(channel.get_sound(), correct)
+
+        channel.stop()
 
     def test_incorrect_subclassing(self):
         class IncorrectSuclass(mixer.Sound):
