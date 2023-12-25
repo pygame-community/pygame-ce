@@ -345,6 +345,28 @@ pg_circle_colliderect(pgCircleObject *self, PyObject *const *args,
     return PyBool_FromLong(pgCollision_RectCircle(x, y, w, h, &self->circle));
 }
 
+static PyObject *
+pg_circle_as_rect(pgCircleObject *self, PyObject *_null)
+{
+    pgCircleBase *scirc = &self->circle;
+    int diameter = (int)(scirc->r * 2.0);
+    int x = (int)(scirc->x - scirc->r);
+    int y = (int)(scirc->y - scirc->r);
+
+    return pgRect_New4(x, y, diameter, diameter);
+}
+
+static PyObject *
+pg_circle_as_frect(pgCircleObject *self, PyObject *_null)
+{
+    pgCircleBase *scirc = &self->circle;
+    double diameter = scirc->r * 2.0;
+    double x = scirc->x - scirc->r;
+    double y = scirc->y - scirc->r;
+
+    return pgFRect_New4((float)x, (float)y, (float)diameter, (float)diameter);
+}
+
 static struct PyMethodDef pg_circle_methods[] = {
     {"collidepoint", (PyCFunction)pg_circle_collidepoint, METH_FASTCALL,
      DOC_CIRCLE_COLLIDEPOINT},
@@ -354,6 +376,10 @@ static struct PyMethodDef pg_circle_methods[] = {
      DOC_CIRCLE_COLLIDERECT},
     {"update", (PyCFunction)pg_circle_update, METH_FASTCALL,
      DOC_CIRCLE_UPDATE},
+    {"as_rect", (PyCFunction)pg_circle_as_rect, METH_NOARGS,
+     DOC_CIRCLE_ASRECT},
+    {"as_frect", (PyCFunction)pg_circle_as_frect, METH_NOARGS,
+     DOC_CIRCLE_ASFRECT},
     {"__copy__", (PyCFunction)pg_circle_copy, METH_NOARGS, DOC_CIRCLE_COPY},
     {"copy", (PyCFunction)pg_circle_copy, METH_NOARGS, DOC_CIRCLE_COPY},
     {NULL, NULL, 0, NULL}};

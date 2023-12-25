@@ -13,4 +13,6 @@
 #define DOC_CIRCLE_COLLIDECIRCLE "collidecircle(Circle) -> bool\ncollidecircle(x, y, radius) -> bool\ncollidecircle((x, y), radius) -> bool\ntest if two circles collide"
 #define DOC_CIRCLE_COLLIDERECT "colliderect(Rect) -> bool\ncolliderect((x, y, width, height)) -> bool\ncolliderect(x, y, width, height) -> bool\ncolliderect((x, y), (width, height)) -> bool\nchecks if a rectangle intersects the circle"
 #define DOC_CIRCLE_UPDATE "update((x, y), radius) -> None\nupdate(x, y, radius) -> None\nupdates the circle position and radius"
+#define DOC_CIRCLE_ASRECT "as_rect() -> Rect\nreturns the smallest pygame.Rect object that contains the circle"
+#define DOC_CIRCLE_ASFRECT "as_frect() -> FRect\nreturns the smallest pygame.FRect object that contains the circle"
 #define DOC_CIRCLE_COPY "copy() -> Circle\nreturns a copy of the circle"
