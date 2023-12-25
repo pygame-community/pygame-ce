@@ -241,16 +241,16 @@
 
       .. deprecated:: 2.4.0
 
-   .. method:: get_surface
+   .. attribute:: surface
 
       | :sl:`Get the window surface`
-      | :sg:`get_surface() -> Surface`
+      | :sg:`surface -> Surface`
 
-      Returns a "display surface" for this Window. The surface returned is
+      Get a "display surface" for this Window. The surface obtained by this is
       analogous to the surface returned by :func:`pygame.display.set_mode`.
 
-      This method allows software rendering (classic pygame rendering) on top
-      of the Window API. This method should not be called when using hardware
+      This property allows software rendering (classic pygame rendering) on top
+      of the Window API. This attribute should not be used when using hardware
       rendering (coming soon).
 
       Similarly to the "display surface" returned by :mod:`pygame.display`,
@@ -273,15 +273,13 @@
       of the Window API. This method should not be called when using hardware
       rendering (coming soon).
 
-      Here is a runnable example of using ``get_surface`` and ``flip``:
+      Here is a runnable example of using ``surface`` property and ``flip``:
 
       .. code-block:: python
 
          import pygame
 
          win = pygame.Window()
-         surf = win.get_surface()  # get the window surface
-
          while True:
             for event in pygame.event.get():
                if event.type == pygame.QUIT:
@@ -289,8 +287,7 @@
                      raise SystemExit
 
             # draw something on the surface
-            surf.fill("red")
-
+            win.surface.fill("red")
             win.flip()  # update the surface to the window
 
 
