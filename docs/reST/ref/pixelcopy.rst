@@ -9,23 +9,18 @@
 | :sl:`pygame module for general pixel array copying`
 
 The ``pygame.pixelcopy`` module contains functions for copying between
-surfaces and objects exporting an array structure interface. It is a backend
-for :mod:`pygame.surfarray`, adding NumPy support. But pixelcopy is more
-general, and intended for direct use.
-
-The array struct interface exposes an array's data in a standard way.
-It was introduced in NumPy. In Python 2.7 and above it is replaced by the
-new buffer protocol, though the buffer protocol is still a work in progress.
-The array struct interface, on the other hand, is stable and works with earlier
-Python versions. So for now the array struct interface is the predominate way
-pygame handles array introspection.
+surfaces and objects exporting the buffer protocol or the python array
+interface. It is a backend for :mod:`pygame.surfarray`, which adds NumPy
+support. But pixelcopy is more general, and intended for direct use.
 
 For 2d arrays of integer pixel values, the values are mapped to the
 pixel format of the related surface. To get the actual color of a pixel
 value use :meth:`pygame.Surface.unmap_rgb`. 2d arrays can only be used
 directly between surfaces having the same pixel layout.
 
-New in pygame 1.9.2.
+.. versionchanged:: 2.5.0 Removed array struct support
+
+.. versionaddedold:: 1.9.2
 
 .. function:: surface_to_array
 

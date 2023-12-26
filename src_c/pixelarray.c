@@ -79,8 +79,6 @@ _pxarray_get_strides(pgPixelArrayObject *, void *);
 static PyObject *
 _pxarray_get_ndim(pgPixelArrayObject *, void *);
 static PyObject *
-_pxarray_get_arraystruct(pgPixelArrayObject *, void *);
-static PyObject *
 _pxarray_get_arrayinterface(pgPixelArrayObject *, void *);
 static PyObject *
 _pxarray_get_pixelsaddress(pgPixelArrayObject *, void *);
@@ -227,7 +225,6 @@ static PyGetSetDef _pxarray_getsets[] = {
     {"shape", (getter)_pxarray_get_shape, 0, DOC_PIXELARRAY_SHAPE, 0},
     {"strides", (getter)_pxarray_get_strides, 0, DOC_PIXELARRAY_STRIDES, 0},
     {"ndim", (getter)_pxarray_get_ndim, 0, DOC_PIXELARRAY_NDIM, 0},
-    {"__array_struct__", (getter)_pxarray_get_arraystruct, 0, "Version 3", 0},
     {"__array_interface__", (getter)_pxarray_get_arrayinterface, 0,
      "Version 3", 0},
     {"_pixels_address", (getter)_pxarray_get_pixelsaddress, 0,
@@ -479,24 +476,6 @@ static PyObject *
 _pxarray_get_ndim(pgPixelArrayObject *self, void *closure)
 {
     return PyLong_FromLong(self->shape[1] ? 2L : 1L);
-}
-
-/**
- * Getter for PixelArray.__array_struct__
- * (array struct interface)
- */
-static PyObject *
-_pxarray_get_arraystruct(pgPixelArrayObject *self, void *closure)
-{
-    Py_buffer view;
-    PyObject *dict;
-
-    if (_pxarray_getbuffer(self, &view, PyBUF_RECORDS)) {
-        return 0;
-    }
-    dict = pgBuffer_AsArrayStruct(&view);
-    Py_XDECREF(view.obj);
-    return dict;
 }
 
 static PyObject *

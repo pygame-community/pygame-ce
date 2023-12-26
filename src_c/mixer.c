@@ -774,21 +774,6 @@ snd_get_raw(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
-snd_get_arraystruct(PyObject *self, void *closure)
-{
-    Py_buffer view;
-    PyObject *cobj;
-
-    if (snd_getbuffer(self, &view, PyBUF_RECORDS)) {
-        return 0;
-    }
-    cobj = pgBuffer_AsArrayStruct(&view);
-    snd_releasebuffer(view.obj, &view);
-    Py_XDECREF(view.obj);
-    return cobj;
-}
-
-static PyObject *
 snd_get_arrayinterface(PyObject *self, void *closure)
 {
     Py_buffer view;
@@ -833,7 +818,6 @@ PyMethodDef sound_methods[] = {
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef sound_getset[] = {
-    {"__array_struct__", snd_get_arraystruct, NULL, "Version 3", NULL},
     {"__array_interface__", snd_get_arrayinterface, NULL, "Version 3", NULL},
     {"_samples_address", (getter)snd_get_samples_address, NULL,
      "samples buffer address (readonly)", NULL},

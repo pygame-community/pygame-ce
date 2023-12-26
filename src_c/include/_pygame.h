@@ -145,8 +145,8 @@ typedef struct pg_bufferinfo_s {
 #define pgBuffer_AsArrayInterface \
     (*(PyObject * (*)(Py_buffer *)) PYGAMEAPI_GET_SLOT(base, 13))
 
-#define pgBuffer_AsArrayStruct \
-    (*(PyObject * (*)(Py_buffer *)) PYGAMEAPI_GET_SLOT(base, 14))
+#define pg_SetDefaultConvertFormat \
+    (*(SDL_PixelFormat * (*)(Uint32)) PYGAMEAPI_GET_SLOT(base, 14))
 
 #define pgObject_GetBuffer \
     (*(int (*)(PyObject *, pg_buffer *, int))PYGAMEAPI_GET_SLOT(base, 15))
@@ -175,9 +175,6 @@ typedef struct pg_bufferinfo_s {
 
 #define pg_GetDefaultConvertFormat \
     (*(SDL_PixelFormat * (*)(void)) PYGAMEAPI_GET_SLOT(base, 27))
-
-#define pg_SetDefaultConvertFormat \
-    (*(SDL_PixelFormat * (*)(Uint32)) PYGAMEAPI_GET_SLOT(base, 28))
 
 #define import_pygame_base() IMPORT_PYGAME_MODULE(base)
 #endif /* ~PYGAMEAPI_BASE_INTERNAL */

@@ -931,8 +931,7 @@
       | :sg:`get_view(kind='2', /) -> BufferProxy`
 
       Return an object which exports a surface's internal pixel buffer as
-      a C level array struct, Python level array interface or a C level
-      buffer interface. The new buffer protocol is supported.
+      a Python level array interface or a C level buffer interface.
 
       The kind argument is the length 1 string '0', '1', '2', '3',
       'r', 'g', 'b', or 'a'. The letters are case insensitive;

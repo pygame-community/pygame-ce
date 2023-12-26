@@ -20,11 +20,8 @@
 
 /*
   This module exports a proxy object that exposes another object's
-  data through the Python buffer protocol or the array interface.
-  The new buffer protocol is available for Python 3.x. For Python 2.x
-  only the old protocol is implemented (for PyPy compatibility).
-  Both the C level array structure - __array_struct__ - interface and
-  Python level - __array_interface__ - are exposed.
+  data through the Python buffer protocol or the python array
+  interface
  */
 
 #define PY_SSIZE_T_CLEAN
@@ -298,22 +295,6 @@ proxy_traverse(pgBufproxyObject *self, visitproc visit, void *arg)
 
 /**** Getter and setter access ****/
 static PyObject *
-proxy_get_arraystruct(pgBufproxyObject *self, PyObject *closure)
-{
-    Py_buffer *view_p = _proxy_get_view(self);
-    PyObject *capsule;
-
-    if (!view_p) {
-        return 0;
-    }
-    capsule = pgBuffer_AsArrayStruct(view_p);
-    if (!capsule) {
-        _proxy_release_view(self);
-    }
-    return capsule;
-}
-
-static PyObject *
 proxy_get_arrayinterface(pgBufproxyObject *self, PyObject *closure)
 {
     Py_buffer *view_p = _proxy_get_view(self);
@@ -464,8 +445,6 @@ static struct PyMethodDef proxy_methods[] = {
  * Getters and setters for the pgBufproxyObject.
  */
 static PyGetSetDef proxy_getsets[] = {
-    {"__array_struct__", (getter)proxy_get_arraystruct, 0,
-     "Version 3 array interface, C level", 0},
     {"__array_interface__", (getter)proxy_get_arrayinterface, 0,
      "Version 3 array interface, Python level", 0},
     {"parent", (getter)proxy_get_parent, 0, DOC_BUFFERPROXY_PARENT, 0},

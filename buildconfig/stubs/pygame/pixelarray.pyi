@@ -10,10 +10,7 @@ class PixelArray:
     ndim: int
     shape: Tuple[int, ...]
     strides: Tuple[int, ...]
-    # possibly going to be deprecated/removed soon, in which case these
-    # typestubs must be removed too
     __array_interface__: Dict[str, Any]
-    __array_struct__: Any
     def __init__(self, surface: Surface) -> None: ...
     def __enter__(self) -> PixelArray: ...
     def __exit__(self, *args, **kwargs) -> None: ...

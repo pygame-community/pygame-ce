@@ -146,8 +146,6 @@ static PyObject *
 _color_get_cmy(pgColorObject *, void *);
 static int
 _color_set_cmy(pgColorObject *, PyObject *, void *);
-static PyObject *
-_color_get_arraystruct(pgColorObject *, void *);
 
 /* Number protocol methods */
 static PyObject *
@@ -256,8 +254,6 @@ static PyGetSetDef _color_getsets[] = {
      DOC_COLOR_I1I2I3, NULL},
     {"cmy", (getter)_color_get_cmy, (setter)_color_set_cmy, DOC_COLOR_CMY,
      NULL},
-    {"__array_struct__", (getter)_color_get_arraystruct, NULL,
-     "array structure interface, read only", NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyNumberMethods _color_as_number = {
@@ -1475,20 +1471,6 @@ _color_set_cmy(pgColorObject *color, PyObject *value, void *closure)
     color->data[2] = (Uint8)((1.0 - cmy[2]) * 255);
 
     return 0;
-}
-
-static PyObject *
-_color_get_arraystruct(pgColorObject *color, void *closure)
-{
-    Py_buffer view;
-    PyObject *capsule;
-
-    if (_color_getbuffer(color, &view, PyBUF_FULL_RO)) {
-        return 0;
-    }
-    capsule = pgBuffer_AsArrayStruct(&view);
-    Py_DECREF(color);
-    return capsule;
 }
 
 /* Number protocol methods */

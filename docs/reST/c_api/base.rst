@@ -124,19 +124,14 @@ C header: src_c/include/pygame.h
    Return a Python array interface object representation of buffer *view_p*.
    On failure raise a Python exception and return *NULL*.
 
-.. c:function:: PyObject* pgBuffer_AsArrayStruct(Py_buffer *view_p)
-
-   Return a Python array struct object representation of buffer *view_p*.
-   On failure raise a Python exception and return *NULL*.
-
 .. c:function:: int pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
 
    Request a buffer for object *obj*.
    Argument *flags* are PyBUF options.
    Return the buffer description in *pg_view_p*.
-   An object may support the Python buffer interface, the NumPy array interface,
-   or the NumPy array struct interface.
-   Return ``0`` on success, raise a Python exception and return ``-1`` on failure.
+   An object may support the Python buffer interface or the NumPy python
+   object array interface. Return ``0`` on success, raise a Python exception
+   and return ``-1`` on failure.
 
 .. c:function:: void pgBuffer_Release(Pg_buffer *pg_view_p)
 

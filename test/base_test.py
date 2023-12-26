@@ -5,10 +5,6 @@ import platform
 
 IS_PYPY = "PyPy" == platform.python_implementation()
 
-try:
-    from pygame.tests.test_utils import arrinter
-except NameError:
-    pass
 import pygame
 
 
@@ -84,8 +80,6 @@ class BaseModuleTest(unittest.TestCase):
                 }
 
             __array_interface__ = property(get__array_interface__)
-            # Should be ignored by PgObject_GetBuffer
-            __array_struct__ = property(lambda self: None)
 
         _shape = [2, 3, 5, 7, 11]  # Some prime numbers
         for ndim in range(1, len(_shape)):
@@ -150,48 +144,6 @@ class BaseModuleTest(unittest.TestCase):
         o.free_dict()
         gc.collect()
         self.assertFalse(o.is_dict_alive())
-
-    def test_GetView_array_struct(self):
-        from pygame.bufferproxy import BufferProxy
-
-        class Exporter(self.ExporterBase):
-            def __init__(self, shape, typechar, itemsize):
-                super().__init__(shape, typechar, itemsize)
-                self.view = BufferProxy(self.__dict__)
-
-            def get__array_struct__(self):
-                return self.view.__array_struct__
-
-            __array_struct__ = property(get__array_struct__)
-            # Should not cause PgObject_GetBuffer to fail
-            __array_interface__ = property(lambda self: None)
-
-        _shape = [2, 3, 5, 7, 11]  # Some prime numbers
-        for ndim in range(1, len(_shape)):
-            o = Exporter(_shape[0:ndim], "i", 2)
-            v = BufferProxy(o)
-            self.assertSame(v, o)
-        ndim = 2
-        shape = _shape[0:ndim]
-        for typechar in ("i", "u"):
-            for itemsize in (1, 2, 4, 8):
-                o = Exporter(shape, typechar, itemsize)
-                v = BufferProxy(o)
-                self.assertSame(v, o)
-        for itemsize in (4, 8):
-            o = Exporter(shape, "f", itemsize)
-            v = BufferProxy(o)
-            self.assertSame(v, o)
-
-        # Check returned cobject/capsule reference count
-        try:
-            from sys import getrefcount
-        except ImportError:
-            # PyPy: no reference counting
-            pass
-        else:
-            o = Exporter(shape, typechar, itemsize)
-            self.assertEqual(getrefcount(o.__array_struct__), 1)
 
     if pygame.HAVE_NEWBUF:
         from pygame.tests.test_utils import buftools
@@ -380,105 +332,6 @@ class BaseModuleTest(unittest.TestCase):
         self.assertTrue(b.suboffsets is None)
         self.assertTrue(b.readonly)
         self.assertEqual(b.buf, 1000000)
-        self.assertRaises(BufferError, Importer, a, buftools.PyBUF_FULL)
-
-    @unittest.skipIf(IS_PYPY or (not pygame.HAVE_NEWBUF), "newbuf with ctypes")
-    def test_PgObject_AsBuffer_PyBUF_flags(self):
-        from pygame.bufferproxy import BufferProxy
-        import ctypes
-
-        is_lil_endian = pygame.get_sdl_byteorder() == pygame.LIL_ENDIAN
-        fsys, frev = ("<", ">") if is_lil_endian else (">", "<")
-        buftools = self.buftools
-        Importer = buftools.Importer
-        e = arrinter.Exporter(
-            (10, 2), typekind="f", itemsize=ctypes.sizeof(ctypes.c_double)
-        )
-        a = BufferProxy(e)
-        b = Importer(a, buftools.PyBUF_SIMPLE)
-        self.assertEqual(b.ndim, 0)
-        self.assertTrue(b.format is None)
-        self.assertEqual(b.len, e.len)
-        self.assertEqual(b.itemsize, e.itemsize)
-        self.assertTrue(b.shape is None)
-        self.assertTrue(b.strides is None)
-        self.assertTrue(b.suboffsets is None)
-        self.assertFalse(b.readonly)
-        self.assertEqual(b.buf, e.data)
-        b = Importer(a, buftools.PyBUF_WRITABLE)
-        self.assertEqual(b.ndim, 0)
-        self.assertTrue(b.format is None)
-        self.assertEqual(b.len, e.len)
-        self.assertEqual(b.itemsize, e.itemsize)
-        self.assertTrue(b.shape is None)
-        self.assertTrue(b.strides is None)
-        self.assertTrue(b.suboffsets is None)
-        self.assertFalse(b.readonly)
-        self.assertEqual(b.buf, e.data)
-        b = Importer(a, buftools.PyBUF_ND)
-        self.assertEqual(b.ndim, e.nd)
-        self.assertTrue(b.format is None)
-        self.assertEqual(b.len, a.length)
-        self.assertEqual(b.itemsize, e.itemsize)
-        self.assertEqual(b.shape, e.shape)
-        self.assertTrue(b.strides is None)
-        self.assertTrue(b.suboffsets is None)
-        self.assertFalse(b.readonly)
-        self.assertEqual(b.buf, e.data)
-        e = arrinter.Exporter((5, 10), typekind="i", itemsize=2, strides=(24, 2))
-        a = BufferProxy(e)
-        b = Importer(a, buftools.PyBUF_STRIDES)
-        self.assertEqual(b.ndim, e.nd)
-        self.assertTrue(b.format is None)
-        self.assertEqual(b.len, e.len)
-        self.assertEqual(b.itemsize, e.itemsize)
-        self.assertEqual(b.shape, e.shape)
-        self.assertEqual(b.strides, e.strides)
-        self.assertTrue(b.suboffsets is None)
-        self.assertFalse(b.readonly)
-        self.assertEqual(b.buf, e.data)
-        b = Importer(a, buftools.PyBUF_FULL_RO)
-        self.assertEqual(b.ndim, e.nd)
-        self.assertEqual(b.format, "=h")
-        self.assertEqual(b.len, e.len)
-        self.assertEqual(b.itemsize, e.itemsize)
-        self.assertEqual(b.shape, e.shape)
-        self.assertEqual(b.strides, e.strides)
-        self.assertTrue(b.suboffsets is None)
-        self.assertFalse(b.readonly)
-        self.assertEqual(b.buf, e.data)
-        self.assertRaises(BufferError, Importer, a, buftools.PyBUF_SIMPLE)
-        self.assertRaises(BufferError, Importer, a, buftools.PyBUF_WRITABLE)
-        self.assertRaises(BufferError, Importer, a, buftools.PyBUF_WRITABLE)
-        self.assertRaises(BufferError, Importer, a, buftools.PyBUF_ND)
-        self.assertRaises(BufferError, Importer, a, buftools.PyBUF_C_CONTIGUOUS)
-        self.assertRaises(BufferError, Importer, a, buftools.PyBUF_F_CONTIGUOUS)
-        self.assertRaises(BufferError, Importer, a, buftools.PyBUF_ANY_CONTIGUOUS)
-        self.assertRaises(BufferError, Importer, a, buftools.PyBUF_CONTIG)
-        self.assertRaises(BufferError, Importer, a, buftools.PyBUF_SIMPLE)
-        self.assertRaises(BufferError, Importer, a, buftools.PyBUF_ND)
-        self.assertRaises(BufferError, Importer, a, buftools.PyBUF_C_CONTIGUOUS)
-        self.assertRaises(BufferError, Importer, a, buftools.PyBUF_F_CONTIGUOUS)
-        self.assertRaises(BufferError, Importer, a, buftools.PyBUF_ANY_CONTIGUOUS)
-        self.assertRaises(BufferError, Importer, a, buftools.PyBUF_CONTIG)
-        e = arrinter.Exporter(
-            (3, 5, 10),
-            typekind="i",
-            itemsize=2,
-            strides=(120, 24, 2),
-            flags=arrinter.PAI_ALIGNED,
-        )
-        a = BufferProxy(e)
-        b = Importer(a, buftools.PyBUF_FULL_RO)
-        self.assertEqual(b.ndim, e.nd)
-        self.assertEqual(b.format, frev + "h")
-        self.assertEqual(b.len, e.len)
-        self.assertEqual(b.itemsize, e.itemsize)
-        self.assertEqual(b.shape, e.shape)
-        self.assertEqual(b.strides, e.strides)
-        self.assertTrue(b.suboffsets is None)
-        self.assertTrue(b.readonly)
-        self.assertEqual(b.buf, e.data)
         self.assertRaises(BufferError, Importer, a, buftools.PyBUF_FULL)
 
     def test_PgObject_GetBuffer_exception(self):

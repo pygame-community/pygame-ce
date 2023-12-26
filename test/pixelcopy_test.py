@@ -1,10 +1,6 @@
 import platform
 import unittest
 
-try:
-    from pygame.tests.test_utils import arrinter
-except NameError:
-    pass
 import pygame
 from pygame.locals import *
 from pygame.pixelcopy import surface_to_array, map_array, array_to_surface, make_surface
@@ -128,34 +124,6 @@ class PixelcopyModuleTest(unittest.TestCase):
                     dp = dst.get_at_mapped(posn)
                     self.assertEqual(
                         dp, sp, "%s != %s: bpp: %i" % (dp, sp, surf.get_bitsize())
-                    )
-
-        if IS_PYPY:
-            return
-        # Swapped endian destination array
-        pai_flags = arrinter.PAI_ALIGNED | arrinter.PAI_WRITEABLE
-        for surf in self.sources:
-            for itemsize in [1, 2, 4, 8]:
-                if itemsize < surf.get_bytesize():
-                    continue
-                a = arrinter.Array(surf.get_size(), "u", itemsize, flags=pai_flags)
-                surface_to_array(a, surf)
-                for posn, i in self.test_points:
-                    sp = unsigned32(surf.get_at_mapped(posn))
-                    dp = a[posn]
-                    self.assertEqual(
-                        dp,
-                        sp,
-                        "%s != %s: itemsize: %i, flags: %i"
-                        ", bpp: %i, posn: %s"
-                        % (
-                            dp,
-                            sp,
-                            itemsize,
-                            surf.get_flags(),
-                            surf.get_bitsize(),
-                            posn,
-                        ),
                     )
 
     def test_surface_to_array_3d(self):

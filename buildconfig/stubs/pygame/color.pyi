@@ -22,7 +22,6 @@ class Color(Collection[int]):
     hsla: Tuple[float, float, float, float]
     i1i2i3: Tuple[float, float, float]
     __hash__: None  # type: ignore
-    __array_struct__: Any
     @overload
     def __init__(self, r: int, g: int, b: int, a: int = 255) -> None: ...
     @overload

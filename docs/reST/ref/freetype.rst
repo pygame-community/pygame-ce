@@ -506,7 +506,7 @@ loaded. This module must be imported explicitly to be used. ::
       | :sl:`Render text into an array of ints`
       | :sg:`render_raw_to(array, text, dest=None, style=STYLE_DEFAULT, rotation=0, size=0, invert=False) -> Rect`
 
-      Render to an array object exposing an array struct interface. The array
+      Render to an array object exposing the buffer protocol. The array
       must be two dimensional with integer items. The default *dest* value,
       ``None``, is equivalent to position (0, 0). See :meth:`render_to`.
       As with the other render methods, *text* can be ``None`` to

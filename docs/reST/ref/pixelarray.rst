@@ -17,9 +17,9 @@
    for assignment. A pixel array sliced on a single column or row
    returns a one dimensional pixel array. Arithmetic and other operations
    are not supported. A pixel array can be safely assigned to itself.
-   Finally, pixel arrays export an array struct interface, allowing
-   them to interact with :mod:`pygame.pixelcopy` methods and NumPy
-   arrays.
+   Finally, pixel arrays export the buffer protocol as well as the python
+   array interface, allowing them to interact with :mod:`pygame.pixelcopy`
+   methods and NumPy arrays.
 
    A PixelArray pixel item can be assigned a raw integer values, a
    :class:`pygame.Color` instance, or a (r, g, b[, a]) tuple.
@@ -99,6 +99,8 @@
    are performed for all pixel sizes. To avoid code breakage when full mapped
    copying is implemented it is suggested PixelArray to PixelArray copies be
    only between surfaces of identical format.
+
+   .. versionchanged:: 2.5.0 Removed array struct support
 
    .. versionaddedold:: 1.9.4
 

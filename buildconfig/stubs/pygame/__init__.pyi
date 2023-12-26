@@ -61,7 +61,6 @@ from .base import (
     BufferError as BufferError,
     HAVE_NEWBUF as HAVE_NEWBUF,
     error as error,
-    get_array_interface as get_array_interface,
     get_error as get_error,
     get_init as get_init,
     get_sdl_byteorder as get_sdl_byteorder,
