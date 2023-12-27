@@ -71,7 +71,11 @@ class Camera:
         self._flipy = False
         self._brightness = 1
 
+        if self._cam.get(cv2.CAP_PROP_FPS) == 0:
+            raise ZeroDivisionError("Camera returning 0 FPS. Device ID:",self._device_index)
+
         self._frametime = 1 / self._cam.get(cv2.CAP_PROP_FPS)
+
         self._last_frame_time = 0
 
         self._open = True
