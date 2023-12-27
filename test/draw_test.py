@@ -3632,6 +3632,25 @@ CROSS = (
     [2, 2],
 )
 
+# Enlarged versions of the same shapes are utilized for testing purposes. This is because rounded polygons should possess sufficient size to visually demonstrate the curvature during the drawing process.
+LARGE_SQUARE = ([0, 0], [300, 0], [300, 300], [0, 300])
+LARGE_DIAMOND = [(100, 300), (300, 500), (500, 300), (300, 100)]
+LARGE_RHOMBUS = [(100, 300), (400, 500), (700, 300), (400, 100)]
+LARGE_CROSS = (
+    [200, 0],
+    [400, 0],
+    [400, 200],
+    [600, 200],
+    [600, 400],
+    [400, 400],
+    [400, 600],
+    [200, 600],
+    [200, 400],
+    [0, 400],
+    [0, 200],
+    [200, 200],
+)
+
 
 class DrawPolygonMixin:
     """Mixin tests for drawing polygons.
@@ -4377,6 +4396,103 @@ class DrawPolygonMixin:
 
             self.assertEqual(surface.get_at(pos), expected_color)
             self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_draw_round_square(self):
+        """Ensure square is drawn with rounded corner"""
+        surfw = surfh = 1000
+        polygon_color = pygame.Color("red")
+        surface_color = pygame.Color("black")
+        surface = pygame.Surface((surfw, surfh))
+        surface.fill(surface_color)
+
+        self.draw_polygon(surface, polygon_color, LARGE_SQUARE, 1, 5)
+
+        num_points = len(LARGE_SQUARE)
+
+        for i in range(num_points):
+            pos = x, y = LARGE_SQUARE[i]
+            x_next, y_next = LARGE_SQUARE[(i + 1) % num_points]
+            # Calculate the midpoint between the current point
+            # and the next point in the polygon.
+            mid = (x + x_next) / 2, (y + y_next) / 2
+            # The color at the current vertex should be equal
+            # to surface_color since the corner is rounded,
+            # while the color at the mid point of two consecutive
+            # vertices should always be equal to polygon_color
+            self.assertEqual(surface.get_at(pos), surface_color)
+            self.assertEqual(surface.get_at(mid), polygon_color)
+
+    def test_draw_round_diamond(self):
+        """Ensure diamond is drawn with rounded corner"""
+        surfw = surfh = 1000
+        polygon_color = pygame.Color("red")
+        surface_color = pygame.Color("black")
+        surface = pygame.Surface((surfw, surfh))
+        surface.fill(surface_color)
+
+        self.draw_polygon(surface, polygon_color, LARGE_DIAMOND, 1, 5)
+
+        num_points = len(LARGE_DIAMOND)
+        for i in range(num_points):
+            pos = x, y = LARGE_DIAMOND[i]
+            x_next, y_next = LARGE_DIAMOND[(i + 1) % num_points]
+            # Calculate the midpoint between the current point
+            # and the next point in the polygon.
+            mid = (x + x_next) / 2, (y + y_next) / 2
+            # The color at the current vertex should be equal
+            # to surface_color since the corner is rounded,
+            # while the color at the mid point of two consecutive
+            # vertices should always be equal to polygon_color
+            self.assertEqual(surface.get_at(pos), surface_color)
+            self.assertEqual(surface.get_at(mid), polygon_color)
+
+    def test_draw_round_rhombus(self):
+        """Ensure rhombus is drawn with rounded corner"""
+        surfw = surfh = 1000
+        polygon_color = pygame.Color("red")
+        surface_color = pygame.Color("black")
+        surface = pygame.Surface((surfw, surfh))
+        surface.fill(surface_color)
+
+        self.draw_polygon(surface, polygon_color, LARGE_RHOMBUS, 1, 5)
+
+        num_points = len(LARGE_RHOMBUS)
+        for i in range(num_points):
+            pos = x, y = LARGE_RHOMBUS[i]
+            x_next, y_next = LARGE_RHOMBUS[(i + 1) % num_points]
+            # Calculate the midpoint between the current point
+            # and the next point in the polygon.
+            mid = (x + x_next) / 2, (y + y_next) / 2
+            # The color at the current vertex should be equal
+            # to surface_color since the corner is rounded,
+            # while the color at the mid point of two consecutive
+            # vertices should always be equal to polygon_color
+            self.assertEqual(surface.get_at(pos), surface_color)
+            self.assertEqual(surface.get_at(mid), polygon_color)
+
+    def test_draw_round_cross(self):
+        """Ensure cross is drawn with rounded corner"""
+        surfw = surfh = 1000
+        polygon_color = pygame.Color("red")
+        surface_color = pygame.Color("black")
+        surface = pygame.Surface((surfw, surfh))
+        surface.fill(surface_color)
+
+        self.draw_polygon(surface, polygon_color, LARGE_CROSS, 1, 5)
+
+        num_points = len(LARGE_CROSS)
+        for i in range(num_points):
+            pos = x, y = LARGE_CROSS[i]
+            x_next, y_next = LARGE_CROSS[(i + 1) % num_points]
+            # Calculate the midpoint between the current point
+            # and the next point in the polygon.
+            mid = (x + x_next) / 2, (y + y_next) / 2
+            # The color at the current vertex should be equal
+            # to surface_color since the corner is rounded,
+            # while the color at the mid point of two consecutive
+            # vertices should always be equal to polygon_color
+            self.assertEqual(surface.get_at(pos), surface_color)
+            self.assertEqual(surface.get_at(mid), polygon_color)
 
 
 class DrawPolygonTest(DrawPolygonMixin, DrawTestCase):
