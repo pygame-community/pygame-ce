@@ -349,12 +349,6 @@ typedef enum {
     PGS_PREALLOC = 0x01000000
 } PygameSurfaceFlags;
 
-// TODO Implement check below in a way that does not break CI
-/* New buffer protocol (PEP 3118) implemented on all supported Py versions.
-#if !defined(Py_TPFLAGS_HAVE_NEWBUFFER)
-#error No support for PEP 3118/Py_TPFLAGS_HAVE_NEWBUFFER. Please use a
-supported Python version. #endif */
-
 #define RAISE(x, y) (PyErr_SetString((x), (y)), NULL)
 #define RAISERETURN(x, y, r)   \
     PyErr_SetString((x), (y)); \
