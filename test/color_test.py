@@ -1088,7 +1088,6 @@ class ColorTypeTest(unittest.TestCase):
             for j in range(i):
                 self.assertEqual(data[j], c[j])
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     def test_newbuf(self):
         from pygame.tests.test_utils import buftools
         from ctypes import cast, POINTER, c_uint8
