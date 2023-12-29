@@ -1530,38 +1530,33 @@ blit_blend_premultiplied_avx2(SDL_BlitInfo *info)
 #endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
           !defined(SDL_DISABLE_IMMINTRIN_H) */
 
-#define PREMUL_ALPHA_CODE                                             \
-    /* extract the alpha */                                           \
-    mm_alpha_in = _mm256_and_si256(mm_src, mm256_amask);              \
-    /*generate the mask for choosing which pixel to use with blendv*/ \
-    alpha_eq_mask = _mm256_cmpeq_epi32(mm_alpha_in, mm256_amask);     \
-                                                                      \
-    /*redistribute the alphas across the R, G, B channels*/           \
-    alphaA = _mm256_shuffle_epi8(mm_src, shuffle_maskA);              \
-    alphaB = _mm256_shuffle_epi8(mm_src, shuffle_maskB);              \
-                                                                      \
-    /*prep the pixels for 16-bit math*/                               \
-    mm_srcA = _mm256_unpacklo_epi8(mm_src, mm_zero);                  \
-    mm_srcB = _mm256_unpackhi_epi8(mm_src, mm_zero);                  \
-                                                                      \
-    mm_srcA = _mm256_add_epi16(mm_srcA, mm256_ones);                  \
-    mm_srcB = _mm256_add_epi16(mm_srcB, mm256_ones);                  \
-                                                                      \
-    /*multiply the pixels by the alphas*/                             \
-    mm_srcA = _mm256_mullo_epi16(mm_srcA, alphaA);                    \
-    mm_srcB = _mm256_mullo_epi16(mm_srcB, alphaB);                    \
-                                                                      \
-    /*shift the pixels back down to 8-bit*/                           \
-    mm_srcA = _mm256_srli_epi16(mm_srcA, 8);                          \
-    mm_srcB = _mm256_srli_epi16(mm_srcB, 8);                          \
-                                                                      \
-    /*pack the pixels back together*/                                 \
-    mm_dst = _mm256_packus_epi16(mm_srcA, mm_srcB);                   \
-    /*add the original alpha back in*/                                \
-    mm_dst = _mm256_or_si256(mm_dst, mm_alpha_in);                    \
-    /*if the original alpha=255, use base pixel, else use             \
-     * the premultiplied one*/                                        \
-    mm_dst = _mm256_blendv_epi8(mm_dst, mm_src, alpha_eq_mask);
+#define PREMUL_ALPHA_CODE                                   \
+    /* extract the alpha */                                 \
+    mm_alpha_in = _mm256_and_si256(mm_src, mm256_amask);    \
+                                                            \
+    /*redistribute the alphas across the R, G, B channels*/ \
+    alphaA = _mm256_shuffle_epi8(mm_src, shuffle_maskA);    \
+    alphaB = _mm256_shuffle_epi8(mm_src, shuffle_maskB);    \
+                                                            \
+    /*prep the pixels for 16-bit math*/                     \
+    mm_srcA = _mm256_unpacklo_epi8(mm_src, mm_zero);        \
+    mm_srcB = _mm256_unpackhi_epi8(mm_src, mm_zero);        \
+                                                            \
+    mm_srcA = _mm256_add_epi16(mm_srcA, mm256_ones);        \
+    mm_srcB = _mm256_add_epi16(mm_srcB, mm256_ones);        \
+                                                            \
+    /*multiply the pixels by the alphas*/                   \
+    mm_srcA = _mm256_mullo_epi16(mm_srcA, alphaA);          \
+    mm_srcB = _mm256_mullo_epi16(mm_srcB, alphaB);          \
+                                                            \
+    /*shift the pixels back down to 8-bit*/                 \
+    mm_srcA = _mm256_srli_epi16(mm_srcA, 8);                \
+    mm_srcB = _mm256_srli_epi16(mm_srcB, 8);                \
+                                                            \
+    /*pack the pixels back together*/                       \
+    mm_dst = _mm256_packus_epi16(mm_srcA, mm_srcB);         \
+    /*add the original alpha back in*/                      \
+    mm_dst = _mm256_or_si256(mm_dst, mm_alpha_in);
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
@@ -1581,7 +1576,7 @@ premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst)
     Uint32 *dstp = (Uint32 *)dst->pixels;
 
     __m256i mm_src, mm_dst, alphaA, alphaB, mm_alpha_in;
-    __m256i alpha_eq_mask, mm_srcA, mm_srcB;
+    __m256i mm_srcA, mm_srcB;
 
     const __m256i mm256_amask = _mm256_set1_epi32(src->format->Amask);
     const __m256i mm_zero = _mm256_setzero_si256();
