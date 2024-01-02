@@ -696,6 +696,55 @@ class CircleTypeTest(unittest.TestCase):
         self.assertEqual(c.r, c_r)
         self.assertEqual(c.r_sqr, c_r_sqr)
 
+    def test_circle_richcompare(self):
+        """Ensures that the circle correctly compares itself to other circles"""
+        c = Circle(0, 0, 10)
+        c2 = Circle(0, 0, 10)
+        c3 = Circle(0, 0, 5)
+        c4 = Circle(0, 0, 20)
+
+        self.assertTrue(c == c2)
+        self.assertFalse(c == c3)
+        self.assertFalse(c == c4)
+
+        # self compare
+        self.assertTrue(c == c)
+
+        # not implemented compare
+        with self.assertRaises(TypeError):
+            c > c2
+        with self.assertRaises(TypeError):
+            c < c2
+        with self.assertRaises(TypeError):
+            c >= c2
+        with self.assertRaises(TypeError):
+            c <= c2
+
+        # invalid types
+        invalid_types = (
+            None,
+            [],
+            "1",
+            (1,),
+            Vector2(1, 1),
+            1,
+            0.2324,
+            Rect(0, 0, 10, 10),
+            True,
+        )
+
+        for value in invalid_types:
+            self.assertFalse(c == value)
+            self.assertTrue(c != value)
+            with self.assertRaises(TypeError):
+                c > value
+            with self.assertRaises(TypeError):
+                c < value
+            with self.assertRaises(TypeError):
+                c >= value
+            with self.assertRaises(TypeError):
+                c <= value
+
     def test_move_invalid_args(self):
         """tests if the function correctly handles incorrect types as parameters"""
         invalid_types = (None, [], "1", (1,), Vector3(1, 1, 3), Circle(3, 3, 1))

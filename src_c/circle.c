@@ -606,12 +606,15 @@ static PyObject *
 pg_circle_richcompare(PyObject *self, PyObject *other, int op)
 {
     pgCircleBase c1, c2;
-    if (!pgCircle_FromObject(self, &c1) || !pgCircle_FromObject(other, &c2)) {
-        Py_RETURN_NOTIMPLEMENTED;
-    }
+    int equal;
 
-    int equal = double_compare(c1.x, c2.x) && double_compare(c1.y, c2.y) &&
+    if (!pgCircle_FromObject(self, &c1) || !pgCircle_FromObject(other, &c2)) {
+        equal = 0;
+    }
+    else {
+        equal = double_compare(c1.x, c2.x) && double_compare(c1.y, c2.y) &&
                 double_compare(c1.r, c2.r);
+    }
 
     switch (op) {
         case Py_EQ:
