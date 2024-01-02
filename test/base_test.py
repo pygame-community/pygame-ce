@@ -145,8 +145,7 @@ class BaseModuleTest(unittest.TestCase):
         gc.collect()
         self.assertFalse(o.is_dict_alive())
 
-    if pygame.HAVE_NEWBUF:
-        from pygame.tests.test_utils import buftools
+    from pygame.tests.test_utils import buftools
 
     def NEWBUF_assertSame(self, proxy, exp):
         buftools = self.buftools
@@ -161,7 +160,6 @@ class BaseModuleTest(unittest.TestCase):
         self.assertEqual(imp.strides, exp.strides)
         self.assertTrue(imp.suboffsets is None)
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     @unittest.skipIf(IS_PYPY, "pypy no likey")
     def test_newbuf(self):
         from pygame.bufferproxy import BufferProxy
@@ -202,7 +200,6 @@ class BaseModuleTest(unittest.TestCase):
             v = BufferProxy(o)
             self.NEWBUF_assertSame(v, o)
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     def test_bad_format(self):
         from pygame.bufferproxy import BufferProxy
         from pygame.newbuffer import BufferMixin
@@ -232,7 +229,6 @@ class BaseModuleTest(unittest.TestCase):
             b = BufferProxy(exp)
             self.assertRaises(ValueError, Importer, b, PyBUF_FORMAT)
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     @unittest.skipIf(IS_PYPY, "fails on pypy")
     def test_PgDict_AsBuffer_PyBUF_flags(self):
         from pygame.bufferproxy import BufferProxy

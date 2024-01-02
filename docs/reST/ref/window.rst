@@ -10,10 +10,10 @@
    | :sl:`pygame object that represents a window`
    | :sg:`Window(title='pygame window', size=(640, 480), position=None, fullscreen=False, fullscreen_desktop=False, **kwargs) -> Window`
 
-   The Window class (formerly known as _sdl2.video.Window), is a newly
-   published feature of pygame-ce 2.4.0. This class allows for programs
-   to drive multiple Windows on-screen at once, something not possible with
-   the :func:`pygame.display.set_mode` API. Not everything possible with
+   The Window class (formerly known as _sdl2.video.Window), is an experimental
+   feature of pygame-ce. This class allows for programs to drive multiple
+   Windows on-screen at once, something not possible with the 
+   :func:`pygame.display.set_mode` API. Not everything possible with
    :mod:`pygame.display` is possible yet in the Window API, but the new
    window class will continue to be developed, and we're excited to share
    the new functionality this class offers.
@@ -42,8 +42,8 @@
    :param bool allow_highdpi: Create a window in high-DPI mode if supported.
    :param bool mouse_capture: Create a window that has the mouse captured
                               (unrelated to INPUT_GRABBED).
-   :param bool always_on_top: Create a window that is always on top
-                              (X11 only).
+   :param bool always_on_top: Create a window that is always presented above
+                              others.
 
    .. versionadded:: 2.4.0
 
@@ -278,9 +278,8 @@
       .. code-block:: python
 
          import pygame
-         from pygame._sdl2 import video
 
-         win = video.Window()
+         win = pygame.Window()
          surf = win.get_surface()  # get the window surface
 
          while True:

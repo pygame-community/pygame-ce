@@ -211,7 +211,6 @@ class BufferProxyTest(unittest.TestCase):
         self.assertEqual(r[:2], "*<")
         self.assertEqual(r[-2:], ">*")
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     def NEWBUF_test_newbuf(self):
         from ctypes import string_at
 

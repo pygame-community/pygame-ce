@@ -895,12 +895,9 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
     flags |= PyBUF_PYGAME;
 #endif
 
-    if (PyObject_CheckBuffer(obj)) {
+    if (PyObject_GetBuffer(obj, view_p, flags) == 0) {
         char *fchar_p;
 
-        if (PyObject_GetBuffer(obj, view_p, flags)) {
-            return -1;
-        }
         pg_view_p->release_buffer = PyBuffer_Release;
 
         /* Check the format is a numeric type or pad bytes
@@ -971,6 +968,9 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
             return -1;
         }
         success = 1;
+    }
+    else {
+        PyErr_Clear();
     }
 
     if (!success && pgGetArrayInterface(&dict, obj) == 0) {

@@ -1066,7 +1066,6 @@ class ColorTypeTest(unittest.TestCase):
     ################################################################################
     # only available if ctypes module is also available
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     def test_newbuf(self):
         from pygame.tests.test_utils import buftools
         from ctypes import cast, POINTER, c_uint8

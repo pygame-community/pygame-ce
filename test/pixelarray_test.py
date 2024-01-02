@@ -1379,11 +1379,9 @@ class PixelArrayArrayInterfaceTest(unittest.TestCase, TestMixin):
             self.assert_surfaces_equal(sf3, sf2)
 
 
-@unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
 @unittest.skipIf(IS_PYPY, "pypy having issues")
 class PixelArrayNewBufferTest(unittest.TestCase, TestMixin):
-    if pygame.HAVE_NEWBUF:
-        from pygame.tests.test_utils import buftools
+    from pygame.tests.test_utils import buftools
 
     bitsize_to_format = {8: "B", 16: "=H", 24: "3x", 32: "=I"}
 

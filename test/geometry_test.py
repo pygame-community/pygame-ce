@@ -696,6 +696,194 @@ class CircleTypeTest(unittest.TestCase):
         self.assertEqual(c.r, c_r)
         self.assertEqual(c.r_sqr, c_r_sqr)
 
+    def test_circle_richcompare(self):
+        """Ensures that the circle correctly compares itself to other circles"""
+        c = Circle(0, 0, 10)
+        c2 = Circle(0, 0, 10)
+        c3 = Circle(0, 0, 5)
+        c4 = Circle(0, 0, 20)
+
+        self.assertTrue(c == c2)
+        self.assertFalse(c != c2)
+
+        self.assertFalse(c == c3)
+        self.assertTrue(c != c3)
+
+        self.assertFalse(c == c4)
+        self.assertTrue(c != c4)
+
+        # self compare
+        self.assertTrue(c == c)
+        self.assertFalse(c != c)
+
+        # not implemented compare
+        with self.assertRaises(TypeError):
+            c > c2
+        with self.assertRaises(TypeError):
+            c < c2
+        with self.assertRaises(TypeError):
+            c >= c2
+        with self.assertRaises(TypeError):
+            c <= c2
+
+        # invalid types
+        invalid_types = (
+            None,
+            [],
+            "1",
+            (1,),
+            Vector2(1, 1),
+            1,
+            0.2324,
+            Rect(0, 0, 10, 10),
+            True,
+        )
+
+        for value in invalid_types:
+            self.assertFalse(c == value)
+            self.assertTrue(c != value)
+            with self.assertRaises(TypeError):
+                c > value
+            with self.assertRaises(TypeError):
+                c < value
+            with self.assertRaises(TypeError):
+                c >= value
+            with self.assertRaises(TypeError):
+                c <= value
+
+    def test_move_invalid_args(self):
+        """tests if the function correctly handles incorrect types as parameters"""
+        invalid_types = (None, [], "1", (1,), Vector3(1, 1, 3), Circle(3, 3, 1))
+
+        c = Circle(10, 10, 4)
+
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                c.move(value)
+
+    def test_move_argnum(self):
+        c = Circle(10, 10, 4)
+
+        invalid_args = [(1, 1, 1), (1, 1, 1, 1)]
+
+        for arg in invalid_args:
+            with self.assertRaises(TypeError):
+                c.move(*arg)
+
+    def test_move_return_type(self):
+        c = Circle(10, 10, 4)
+
+        class CircleSub(Circle):
+            pass
+
+        cs = CircleSub(10, 10, 4)
+
+        self.assertIsInstance(c.move(1, 1), Circle)
+        self.assertIsInstance(cs.move(1, 1), CircleSub)
+
+    def test_move(self):
+        """Ensures that moving the circle position correctly updates position"""
+        c = Circle(0, 0, 3)
+
+        new_c = c.move(5, 5)
+
+        self.assertEqual(new_c.x, 5.0)
+        self.assertEqual(new_c.y, 5.0)
+        self.assertEqual(new_c.r, 3.0)
+        self.assertEqual(new_c.r_sqr, 9.0)
+
+        new_c = new_c.move(-5, -10)
+
+        self.assertEqual(new_c.x, 0.0)
+        self.assertEqual(new_c.y, -5.0)
+
+    def test_move_inplace(self):
+        """Ensures that moving the circle position by 0, 0 doesn't move the circle"""
+        c = Circle(1, 1, 3)
+
+        c.move(0, 0)
+
+        self.assertEqual(c.x, 1.0)
+        self.assertEqual(c.y, 1.0)
+        self.assertEqual(c.r, 3.0)
+        self.assertEqual(c.r_sqr, 9.0)
+
+    def test_move_equality(self):
+        """Ensures that moving the circle by 0, 0 will
+        return a circle that's equal to the original"""
+        c = Circle(1, 1, 3)
+
+        new_c = c.move(0, 0)
+
+        self.assertEqual(new_c, c)
+
+    def test_move_ip_invalid_args(self):
+        """tests if the function correctly handles incorrect types as parameters"""
+        invalid_types = (None, [], "1", (1,), Vector3(1, 1, 3), Circle(3, 3, 1))
+
+        c = Circle(10, 10, 4)
+
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                c.move_ip(value)
+
+    def test_move_ip_argnum(self):
+        """tests if the function correctly handles incorrect number of args"""
+        c = Circle(10, 10, 4)
+
+        invalid_args = [(1, 1, 1), (1, 1, 1, 1)]
+
+        for arg in invalid_args:
+            with self.assertRaises(TypeError):
+                c.move_ip(*arg)
+
+    def test_move_ip(self):
+        """Ensures that moving the circle position correctly updates position"""
+        c = Circle(0, 0, 3)
+
+        c.move_ip(5, 5)
+
+        self.assertEqual(c.x, 5.0)
+        self.assertEqual(c.y, 5.0)
+        self.assertEqual(c.r, 3.0)
+        self.assertEqual(c.r_sqr, 9.0)
+
+        c.move_ip(-5, -10)
+        self.assertEqual(c.x, 0.0)
+        self.assertEqual(c.y, -5.0)
+
+    def test_move_ip_inplace(self):
+        """Ensures that moving the circle position by 0, 0 doesn't move the circle"""
+        c = Circle(1, 1, 3)
+
+        c.move_ip(0, 0)
+
+        self.assertEqual(c.x, 1.0)
+        self.assertEqual(c.y, 1.0)
+        self.assertEqual(c.r, 3.0)
+        self.assertEqual(c.r_sqr, 9.0)
+
+    def test_move_ip_equality(self):
+        """Ensures that moving the circle by 0, 0 will
+        return a circle that's equal to the original"""
+        c = Circle(1, 1, 3)
+
+        c.move_ip(0, 0)
+
+        self.assertEqual(c, Circle(1, 1, 3))
+
+    def test_move_ip_return_type(self):
+        """Ensures that the move_ip method returns None"""
+        c = Circle(10, 10, 4)
+
+        class CircleSub(Circle):
+            pass
+
+        cs = CircleSub(10, 10, 4)
+
+        self.assertEqual(type(c.move_ip(1, 1)), type(None))
+        self.assertEqual(type(cs.move_ip(1, 1)), type(None))
+
 
 if __name__ == "__main__":
     unittest.main()
