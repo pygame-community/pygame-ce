@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Tuple, Union, final, overload
+from typing import Any, Dict, Optional, Tuple, Union, overload
 
 import numpy
 
@@ -70,7 +70,7 @@ class Sound:
     def get_length(self) -> float: ...
     def get_raw(self) -> bytes: ...
 
-@final
+
 class Channel:
     def __init__(self, id: int) -> None: ...
     @property

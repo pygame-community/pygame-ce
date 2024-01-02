@@ -1238,6 +1238,14 @@ class TransformModuleTest(unittest.TestCase):
         filter_type = pygame.transform.get_smoothscale_backend()
         self.assertEqual(filter_type, original_type)
 
+        try:
+            with self.assertWarns(DeprecationWarning):
+                pygame.transform.set_smoothscale_backend("MMX")
+            with self.assertWarns(DeprecationWarning):
+                pygame.transform.set_smoothscale_backend("SSE")
+        except ValueError:
+            pass  # Backends not supported on this CPU, also valid
+
     def test_chop(self):
         original_surface = pygame.Surface((20, 20))
         pygame.draw.rect(original_surface, (255, 0, 0), (0, 0, 10, 10))

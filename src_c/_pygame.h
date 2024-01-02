@@ -349,12 +349,6 @@ typedef enum {
     PGS_PREALLOC = 0x01000000
 } PygameSurfaceFlags;
 
-// TODO Implement check below in a way that does not break CI
-/* New buffer protocol (PEP 3118) implemented on all supported Py versions.
-#if !defined(Py_TPFLAGS_HAVE_NEWBUFFER)
-#error No support for PEP 3118/Py_TPFLAGS_HAVE_NEWBUFFER. Please use a
-supported Python version. #endif */
-
 #define RAISE(x, y) (PyErr_SetString((x), (y)), NULL)
 #define RAISERETURN(x, y, r)   \
     PyErr_SetString((x), (y)); \
@@ -481,11 +475,11 @@ typedef enum {
 #define PYGAMEAPI_DISPLAY_NUMSLOTS 2
 #define PYGAMEAPI_SURFACE_NUMSLOTS 4
 #define PYGAMEAPI_SURFLOCK_NUMSLOTS 8
-#define PYGAMEAPI_RWOBJECT_NUMSLOTS 6
+#define PYGAMEAPI_RWOBJECT_NUMSLOTS 5
 #define PYGAMEAPI_PIXELARRAY_NUMSLOTS 2
 #define PYGAMEAPI_COLOR_NUMSLOTS 5
 #define PYGAMEAPI_MATH_NUMSLOTS 2
-#define PYGAMEAPI_BASE_NUMSLOTS 27
+#define PYGAMEAPI_BASE_NUMSLOTS 29
 #define PYGAMEAPI_EVENT_NUMSLOTS 8
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1
 #define PYGAMEAPI_GEOMETRY_NUMSLOTS 1

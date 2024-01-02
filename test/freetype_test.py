@@ -1246,7 +1246,6 @@ class FreeTypeFontTest(unittest.TestCase):
 
         self.assertRaises(AttributeError, setattr, f, "bgcolor", None)
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     @unittest.skipIf(IS_PYPY, "pypy no likey")
     def test_newbuf(self):
         from pygame.tests.test_utils import buftools

@@ -359,13 +359,11 @@ class MixerModuleTest(unittest.TestCase):
         self.assertEqual(d["strides"], (2,))
         self.assertEqual(d["data"], (snd._samples_address, False))
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     @unittest.skipIf(IS_PYPY, "pypy no likey")
     def test_newbuf__one_channel(self):
         mixer.init(22050, -16, 1)
         self._NEWBUF_export_check()
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     @unittest.skipIf(IS_PYPY, "pypy no likey")
     def test_newbuf__twho_channel(self):
         mixer.init(22050, -16, 2)
@@ -934,6 +932,10 @@ class ChannelTypeTest(unittest.TestCase):
         self.assertEqual(ch1.id, 1)
         self.assertEqual(ch2.id, 2)
 
+    def test_subclass(self):
+        class MyChannel(mixer.Channel):
+            pass
+
 
 class ChannelInteractiveTest(unittest.TestCase):
     __tags__ = ["interactive"]
@@ -1263,6 +1265,17 @@ class SoundTypeTest(unittest.TestCase):
             correct.get_volume()
         except Exception:
             self.fail("This should not raise an exception.")
+
+        channel = mixer.Channel(0)
+        try:
+            channel.play(correct)
+        except Exception:
+            self.fail("This should not raise an exception.")
+
+        self.assertIsInstance(channel.get_sound(), CorrectSublass)
+        self.assertIs(channel.get_sound(), correct)
+
+        channel.stop()
 
     def test_incorrect_subclassing(self):
         class IncorrectSuclass(mixer.Sound):

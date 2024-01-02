@@ -623,6 +623,9 @@ For example:
    :raises IndexError: if ``len(coordinate) < 2`` (each coordinate must have
       at least 2 items)
 
+   .. note:: This function supports up to around 150-200 points before the algorithm
+             breaks down.
+
    .. ## pygame.gfxdraw.bezier ##
 
 .. ## pygame.gfxdraw ##

@@ -262,6 +262,18 @@ pg_circle_str(pgCircleObject *self)
 }
 
 static PyObject *
+pg_circle_update(pgCircleObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (!pgCircle_FromObjectFastcall(args, nargs, &self->circle)) {
+        PyErr_SetString(
+            PyExc_TypeError,
+            "Circle.update requires a circle or CircleLike object");
+        return NULL;
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 pg_circle_collidepoint(pgCircleObject *self, PyObject *const *args,
                        Py_ssize_t nargs)
 {
@@ -290,11 +302,58 @@ pg_circle_collidecircle(pgCircleObject *self, PyObject *const *args,
         pgCollision_CircleCircle(&self->circle, &other_circle));
 }
 
+static PyObject *
+pg_circle_colliderect(pgCircleObject *self, PyObject *const *args,
+                      Py_ssize_t nargs)
+{
+    double x, y, w, h;
+
+    if (nargs == 1) {
+        SDL_FRect temp, *tmp;
+        if (!(tmp = pgFRect_FromObject(args[0], &temp))) {
+            return RAISE(PyExc_TypeError,
+                         "Invalid rect, must be RectType or sequence of 4 "
+                         "numbers");
+        }
+        x = (double)tmp->x;
+        y = (double)tmp->y;
+        w = (double)tmp->w;
+        h = (double)tmp->h;
+    }
+    else if (nargs == 2) {
+        if (!pg_TwoDoublesFromObj(args[0], &x, &y) ||
+            !pg_TwoDoublesFromObj(args[1], &w, &h)) {
+            return RAISE(PyExc_TypeError,
+                         "Invalid rect, all 4 fields must be numeric");
+        }
+    }
+    else if (nargs == 4) {
+        if (!pg_DoubleFromObj(args[0], &x) || !pg_DoubleFromObj(args[1], &y) ||
+            !pg_DoubleFromObj(args[2], &w) || !pg_DoubleFromObj(args[3], &h)) {
+            return RAISE(PyExc_TypeError,
+                         "Invalid rect, all 4 fields must be numeric");
+        }
+    }
+    else {
+        PyErr_Format(
+            PyExc_TypeError,
+            "Invalid number of arguments, expected 1, 2 or 4 (got %zd)",
+            nargs);
+        return NULL;
+    }
+
+    return PyBool_FromLong(pgCollision_RectCircle(x, y, w, h, &self->circle));
+}
+
 static struct PyMethodDef pg_circle_methods[] = {
     {"collidepoint", (PyCFunction)pg_circle_collidepoint, METH_FASTCALL,
      DOC_CIRCLE_COLLIDEPOINT},
     {"collidecircle", (PyCFunction)pg_circle_collidecircle, METH_FASTCALL,
      DOC_CIRCLE_COLLIDECIRCLE},
+    {"colliderect", (PyCFunction)pg_circle_colliderect, METH_FASTCALL,
+     DOC_CIRCLE_COLLIDERECT},
+    {"update", (PyCFunction)pg_circle_update, METH_FASTCALL,
+     DOC_CIRCLE_UPDATE},
     {"__copy__", (PyCFunction)pg_circle_copy, METH_NOARGS, DOC_CIRCLE_COPY},
     {"copy", (PyCFunction)pg_circle_copy, METH_NOARGS, DOC_CIRCLE_COPY},
     {NULL, NULL, 0, NULL}};

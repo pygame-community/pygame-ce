@@ -252,7 +252,7 @@ pg_display_init(PyObject *self, PyObject *_null)
         return NULL;
     if (!pg_mod_autoinit(IMPPREFIX "event"))
         return NULL;
-    if (!pg_mod_autoinit(IMPPREFIX "_window"))
+    if (!pg_mod_autoinit(IMPPREFIX "window"))
         return NULL;
 
     Py_RETURN_NONE;

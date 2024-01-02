@@ -61,6 +61,47 @@ Multiple coordinates can be set using slices or swizzling
 
    .. ## math.clamp ##
 
+.. function:: lerp
+
+   | :sl:`returns value linearly interpolated between a and b`
+   | :sg:`lerp(a, b, value, do_clamp=True, /) -> float`
+
+   Returns a number which is a linear interpolation between ``a``
+   and ``b``. The third parameter determines how far between ``a`` and
+   ``b`` the result is going to be.
+   If ``do_clamp`` is false, the result can exceed the range 0.0 to 1.0.
+
+   The formula is:
+
+   ``a * value + (1 - value) * b``.
+
+   .. versionadded:: 2.4.0
+
+   .. ## math.lerp ##
+
+.. function:: smoothstep
+
+   | :sl:`returns value smoothly interpolated between a and b.`
+   | :sg:`smoothstep(a, b, value, /) -> float`
+
+   Returns a number which is a "smooth" interpolation between ``a``
+   and ``b``. This means that the interpolation follows an s-shaped curve, with
+   change happening more slowly near the limits (0.0 and 1.0) and faster in the middle.
+   The third parameter determines how far between ``a`` and
+   ``b`` the result is going to be.
+
+   The formula is:
+
+   ``a * interp + (1 - interp) * b``
+
+   where:
+
+   ``interp = value * value * (3 - 2 * value)``
+
+   .. versionadded:: 2.4.0
+
+   .. ## math.smoothstep ##
+
 .. class:: Vector2
 
    | :sl:`a 2-Dimensional Vector`
@@ -267,6 +308,28 @@ Multiple coordinates can be set using slices or swizzling
 
       .. ## Vector2.slerp ##
 
+   .. method:: smoothstep
+
+      | :sl:`returns a smooth interpolation to the given vector.`
+      | :sg:`smoothstep(Vector2, float, /) -> Vector2`
+
+      Returns a Vector which is a smooth interpolation between self and the
+      given Vector. This means that the interpolation follows an s-shaped curve, with
+      change happening more slowly near the limits (0.0 and 1.0) and faster in the middle.
+      The third parameter determines how far between the two vectors the result is going to be.
+
+      The formula is:
+
+      ``a * interp + (1 - interp) * b``
+
+      where:
+
+      ``interp = value * value * (3 - 2 * value)``
+
+      .. versionadded:: 2.4.0
+
+      .. ## Vector2.smoothstep ##
+
    .. method:: elementwise
 
       | :sl:`The next operation will be performed elementwise.`
@@ -408,7 +471,7 @@ Multiple coordinates can be set using slices or swizzling
       | :sg:`clamp_magnitude(min_length, max_length, /) -> Vector2`
 
       **Experimental:** feature still in development available for testing and feedback. It may change.
-      `Please leave clamp_magnitude feedback with authors <https://github.com/pygame/pygame/pull/2990>`_
+      `Please leave clamp_magnitude feedback with authors <https://github.com/pygame-community/pygame-ce>`_
 
       Returns a new copy of a vector with the magnitude clamped between 
       ``max_length`` and ``min_length``. If only one argument is passed, it is 
@@ -418,6 +481,12 @@ Multiple coordinates can be set using slices or swizzling
       ``max_length``, or if either of these values are negative.
 
       .. versionadded:: 2.1.3
+
+      .. versionchanged:: 2.4.0 It is now possible to use ``clamp_magnitude`` on a zero-vector as long as ``min_length``
+         is unspecified or 0.
+      
+      .. note::
+         Before pygame-ce 2.4.0, attempting to clamp a zero vector would always raise a ``ValueError``
 
       .. ## Vector2.clamp_magnitude ##
    
@@ -435,6 +504,12 @@ Multiple coordinates can be set using slices or swizzling
       ``max_length``, or if either of these values are negative.
 
       .. versionadded:: 2.1.3
+
+      .. versionchanged:: 2.4.0 It is now possible to use ``clamp_magnitude`` on a zero-vector as long as ``min_length``
+         is unspecified or 0.
+      
+      .. note::
+         Before pygame-ce 2.4.0, attempting to clamp a zero vector would always raise a ``ValueError``
 
       .. ## Vector2.clamp_magnitude_ip ##
 
@@ -700,6 +775,28 @@ Multiple coordinates can be set using slices or swizzling
       complement of the shortest path.
 
       .. ## Vector3.slerp ##
+
+   .. method:: smoothstep
+
+      | :sl:`returns a smooth interpolation to the given vector.`
+      | :sg:`smoothstep(Vector3, float, /) -> Vector3`
+
+      Returns a Vector which is a smooth interpolation between self and the
+      given Vector. This means that the interpolation follows an s-shaped curve, with
+      change happening more slowly near the limits (0.0 and 1.0) and faster in the middle.
+      The third parameter determines how far between the two vectors the result is going to be.
+
+      The formula is:
+
+      ``a * interp + (1 - interp) * b``
+
+      where:
+
+      ``interp = value * value * (3 - 2 * value)``
+
+      .. versionadded:: 2.4.0
+
+      .. ## Vector3.smoothstep ##
 
    .. method:: elementwise
 
@@ -1033,6 +1130,12 @@ Multiple coordinates can be set using slices or swizzling
 
       .. versionadded:: 2.1.3
 
+      .. versionchanged:: 2.4.0 It is now possible to use ``clamp_magnitude`` on a zero-vector as long as ``min_length``
+         is unspecified or 0.
+      
+      .. note::
+         Before pygame-ce 2.4.0, attempting to clamp a zero vector would always raise a ``ValueError``
+
       .. ## Vector3.clamp_magnitude ##
    
 
@@ -1049,6 +1152,12 @@ Multiple coordinates can be set using slices or swizzling
       ``max_length``, or if either of these values are negative.
 
       .. versionadded:: 2.1.3
+
+      .. versionchanged:: 2.4.0 It is now possible to use ``clamp_magnitude`` on a zero-vector as long as ``min_length``
+         is unspecified or 0.
+      
+      .. note::
+         Before pygame-ce 2.4.0, attempting to clamp a zero vector would always raise a ``ValueError``
 
       .. ## Vector3.clamp_magnitude_ip ##
 

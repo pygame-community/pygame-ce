@@ -85,8 +85,9 @@ static PyObject *
 pgSound_New(Mix_Chunk *);
 static PyObject *
 pgChannel_New(int);
-#define pgSound_Check(x) (Py_TYPE(x) == &pgSound_Type)
-#define pgChannel_Check(x) (Py_TYPE(x) == &pgChannel_Type)
+#define pgSound_Check(x) (PyObject_IsInstance(x, (PyObject *)&pgSound_Type))
+#define pgChannel_Check(x) \
+    (PyObject_IsInstance(x, (PyObject *)&pgChannel_Type))
 
 static int
 snd_getbuffer(PyObject *, Py_buffer *, int);
@@ -1004,8 +1005,7 @@ static PyTypeObject pgSound_Type = {
     .tp_basicsize = sizeof(pgSoundObject),
     .tp_dealloc = (destructor)sound_dealloc,
     .tp_as_buffer = sound_as_buffer,
-    .tp_flags =
-        (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_NEWBUFFER),
+    .tp_flags = (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE),
     .tp_doc = DOC_MIXER_SOUND,
     .tp_weaklistoffset = offsetof(pgSoundObject, weakreflist),
     .tp_methods = sound_methods,
@@ -1373,6 +1373,7 @@ static PyTypeObject pgChannel_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.mixer.Channel",
     .tp_basicsize = sizeof(pgChannelObject),
     .tp_dealloc = channel_dealloc,
+    .tp_flags = (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE),
     .tp_doc = DOC_MIXER_CHANNEL,
     .tp_methods = channel_methods,
     .tp_init = (initproc)channel_init,
