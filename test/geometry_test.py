@@ -704,11 +704,17 @@ class CircleTypeTest(unittest.TestCase):
         c4 = Circle(0, 0, 20)
 
         self.assertTrue(c == c2)
+        self.assertFalse(c != c2)
+
         self.assertFalse(c == c3)
+        self.assertTrue(c != c3)
+
         self.assertFalse(c == c4)
+        self.assertTrue(c != c4)
 
         # self compare
         self.assertTrue(c == c)
+        self.assertFalse(c != c)
 
         # not implemented compare
         with self.assertRaises(TypeError):
@@ -767,7 +773,13 @@ class CircleTypeTest(unittest.TestCase):
     def test_move_return_type(self):
         c = Circle(10, 10, 4)
 
+        class CircleSub(Circle):
+            pass
+
+        cs = CircleSub(10, 10, 4)
+
         self.assertIsInstance(c.move(1, 1), Circle)
+        self.assertIsInstance(cs.move(1, 1), CircleSub)
 
     def test_move(self):
         """Ensures that moving the circle position correctly updates position"""
@@ -864,7 +876,13 @@ class CircleTypeTest(unittest.TestCase):
         """Ensures that the move_ip method returns None"""
         c = Circle(10, 10, 4)
 
+        class CircleSub(Circle):
+            pass
+
+        cs = CircleSub(10, 10, 4)
+
         self.assertEqual(type(c.move_ip(1, 1)), type(None))
+        self.assertEqual(type(cs.move_ip(1, 1)), type(None))
 
 
 if __name__ == "__main__":
