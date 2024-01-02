@@ -27,7 +27,7 @@ pygame.init()
 def write_lines(
     dest: pygame.Surface,
     text: str,
-    font=pygame.font.Font(None, 30),
+    font=pygame.Font(None, 30),
     color=(254, 231, 21, 255),
     starting_line=0,
 ):
