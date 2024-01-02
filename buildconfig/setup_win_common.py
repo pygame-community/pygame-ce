@@ -6,9 +6,7 @@ Exports read and get_definitions.
 """
 
 import os
-
-PATH = os.path.join("buildconfig", "Setup_Win_Common.in")
-
+PATH = os.path.join('buildconfig', 'Setup_Win_Common.in')
 
 class Definition:
     def __init__(self, name, value):
@@ -30,7 +28,7 @@ def get_definitions():
     import re
 
     deps = []
-    match = re.compile(r"([a-zA-Z0-9_]+) += +(.+)$").match
+    match = re.compile(r'([a-zA-Z0-9_]+) += +(.+)$').match
 
     with open(PATH) as setup_in:
         for line in setup_in:
@@ -42,4 +40,4 @@ def get_definitions():
     return deps
 
 
-__all__ = ["read", "get_definitions"]
+__all__= ['read', 'get_definitions']

@@ -27,7 +27,9 @@ def load_image(name, colorkey=None, scale=1):
     image = pygame.image.load(fullname)
     image = image.convert()
 
-    image = pygame.transform.scale_by(image, scale)
+    size = image.get_size()
+    size = (size[0] * scale, size[1] * scale)
+    image = pygame.transform.scale(image, size)
 
     if colorkey is not None:
         if colorkey == -1:
@@ -41,7 +43,7 @@ def load_sound(name):
         def play(self):
             pass
 
-    if not pygame.mixer.get_init():
+    if not pygame.mixer or not pygame.mixer.get_init():
         return NoneSound()
 
     fullname = os.path.join(data_dir, name)
@@ -145,10 +147,11 @@ def main():
     background.fill((170, 238, 187))
 
     # Put Text On The Background, Centered
-    font = pygame.Font(None, 64)
-    text = font.render("Pummel The Chimp, And Win $$$", True, (10, 10, 10))
-    textpos = text.get_rect(centerx=background.get_width() / 2, y=10)
-    background.blit(text, textpos)
+    if pygame.font:
+        font = pygame.Font(None, 64)
+        text = font.render("Pummel The Chimp, And Win $$$", True, (10, 10, 10))
+        textpos = text.get_rect(centerx=background.get_width() / 2, y=10)
+        background.blit(text, textpos)
 
     # Display The Background
     screen.blit(background, (0, 0))

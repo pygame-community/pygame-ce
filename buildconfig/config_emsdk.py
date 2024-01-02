@@ -150,6 +150,7 @@ class Dependency:
             print(self.name + "        "[len(self.name) :] + ": found")
             self.found = 1
         else:
+
             if self.name in ["FONT", "IMAGE", "MIXER", "FREETYPE"]:
                 self.found = 1
                 print(
@@ -266,3 +267,4 @@ def main(auto_config=False):
 if __name__ == "__main__":
     print("This is the configuration subscript for Emscripten.")
     print('Please run "config.py" for full configuration.')
+

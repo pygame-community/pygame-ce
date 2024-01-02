@@ -81,8 +81,7 @@ class Surface:
     def fblits(
         self,
         blit_sequence: Iterable[Tuple[Surface, Union[Coordinate, RectValue]]],
-        special_flags: int = 0,
-        /,
+        special_flags: int = 0, /
     ) -> None: ...
     @overload
     def convert(self, surface: Surface, /) -> Surface: ...
@@ -129,9 +128,7 @@ class Surface:
     @overload
     def subsurface(self, rect: RectValue, /) -> Surface: ...
     @overload
-    def subsurface(
-        self, left_top: Coordinate, width_height: Coordinate, /
-    ) -> Surface: ...
+    def subsurface(self, left_top: Coordinate, width_height: Coordinate, /) -> Surface: ...
     @overload
     def subsurface(
         self, left: float, top: float, width: float, height: float, /
