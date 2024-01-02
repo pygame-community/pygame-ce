@@ -27,7 +27,9 @@ _K = TypeVar("_K")
 _V = TypeVar("_V")
 _T = TypeVar("_T")
 
-_RectTypeCompatible_co = TypeVar("_RectTypeCompatible_co", bound=RectValue, covariant=True)
+_RectTypeCompatible_co = TypeVar(
+    "_RectTypeCompatible_co", bound=RectValue, covariant=True
+)
 
 class _GenericRect(Collection[_N]):
     @property
@@ -166,7 +168,9 @@ class _GenericRect(Collection[_N]):
     @overload
     def scale_by_ip(self, scale_by: Coordinate) -> None: ...
     @overload
-    def update(self, left: float, top: float, width: float, height: float, /) -> None: ...
+    def update(
+        self, left: float, top: float, width: float, height: float, /
+    ) -> None: ...
     @overload
     def update(self, left_top: Coordinate, width_height: Coordinate, /) -> None: ...
     @overload
@@ -176,7 +180,9 @@ class _GenericRect(Collection[_N]):
     @overload
     def clamp(self, left_top: Coordinate, width_height: Coordinate, /) -> Self: ...
     @overload
-    def clamp(self, left: float, top: float, width: float, height: float, /) -> Self: ...
+    def clamp(
+        self, left: float, top: float, width: float, height: float, /
+    ) -> Self: ...
     @overload
     def clamp_ip(self, rect: RectValue, /) -> None: ...
     @overload
@@ -208,7 +214,9 @@ class _GenericRect(Collection[_N]):
     @overload
     def union(self, left_top: Coordinate, width_height: Coordinate, /) -> Self: ...
     @overload
-    def union(self, left: float, top: float, width: float, height: float, /) -> Self: ...
+    def union(
+        self, left: float, top: float, width: float, height: float, /
+    ) -> Self: ...
     @overload
     def union_ip(self, rect: RectValue, /) -> None: ...
     @overload
@@ -218,7 +226,9 @@ class _GenericRect(Collection[_N]):
         self, left: float, top: float, width: float, height: float, /
     ) -> None: ...
     def unionall(self, rect: Sequence[_RectTypeCompatible_co], /) -> Self: ...
-    def unionall_ip(self, rect_sequence: Sequence[_RectTypeCompatible_co], /) -> None: ...
+    def unionall_ip(
+        self, rect_sequence: Sequence[_RectTypeCompatible_co], /
+    ) -> None: ...
     @overload
     def fit(self, rect: RectValue, /) -> Self: ...
     @overload
@@ -242,13 +252,17 @@ class _GenericRect(Collection[_N]):
     @overload
     def colliderect(self, rect: RectValue, /) -> bool: ...
     @overload
-    def colliderect(self, left_top: Coordinate, width_height: Coordinate, /) -> bool: ...
+    def colliderect(
+        self, left_top: Coordinate, width_height: Coordinate, /
+    ) -> bool: ...
     @overload
     def colliderect(
         self, left: float, top: float, width: float, height: float, /
     ) -> bool: ...
     def collidelist(self, rect_list: Sequence[_RectTypeCompatible_co], /) -> int: ...
-    def collidelistall(self, rect_list: Sequence[_RectTypeCompatible_co], /) -> List[int]: ...
+    def collidelistall(
+        self, rect_list: Sequence[_RectTypeCompatible_co], /
+    ) -> List[int]: ...
     def collideobjectsall(
         self, objects: Sequence[_T], key: Optional[Callable[[_T], RectValue]] = None
     ) -> List[_T]: ...
@@ -257,7 +271,9 @@ class _GenericRect(Collection[_N]):
     ) -> Optional[_T]: ...
     @overload
     def collidedict(
-        self, rect_dict: Dict[_RectTypeCompatible_co, _V], values: Literal[False] = False
+        self,
+        rect_dict: Dict[_RectTypeCompatible_co, _V],
+        values: Literal[False] = False,
     ) -> Optional[Tuple[_RectTypeCompatible_co, _V]]: ...
     @overload
     def collidedict(
@@ -265,7 +281,9 @@ class _GenericRect(Collection[_N]):
     ) -> Optional[Tuple[_K, _RectTypeCompatible_co]]: ...
     @overload
     def collidedictall(
-        self, rect_dict: Dict[_RectTypeCompatible_co, _V], values: Literal[False] = False
+        self,
+        rect_dict: Dict[_RectTypeCompatible_co, _V],
+        values: Literal[False] = False,
     ) -> List[Tuple[_RectTypeCompatible_co, _V]]: ...
     @overload
     def collidedictall(
@@ -274,11 +292,8 @@ class _GenericRect(Collection[_N]):
 
 # Rect confirms to the Collection ABC, since it also confirms to
 # Sized, Iterable and Container ABCs
-class Rect(_GenericRect[int]):
-    ...
-    
-class FRect(_GenericRect[float]):
-    ...
+class Rect(_GenericRect[int]): ...
+class FRect(_GenericRect[float]): ...
 
 RectType = Rect
 FRectType = FRect

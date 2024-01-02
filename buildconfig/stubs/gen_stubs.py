@@ -73,7 +73,7 @@ PG_AUTOIMPORT_CLASSES = {
     "window": ["Window"],
     "base": ["__version__"],  # need an explicit import
     # uncomment below line if Circle is added to the base namespace later
-    # "geometry": ["Circle"], 
+    # "geometry": ["Circle"],
 }
 
 # pygame modules from which __init__.py does the equivalent of

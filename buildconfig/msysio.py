@@ -9,7 +9,7 @@
 import sys
 import os
 
-__all__ = ['print_', 'is_msys']
+__all__ = ["print_", "is_msys"]
 
 
 def print_(*args, **kwds):
@@ -19,9 +19,9 @@ def print_(*args, **kwds):
         file, sep, end
     """
 
-    stream = kwds.get('file', sys.stdout)
-    sep = kwds.get('sep', ' ')
-    end = kwds.get('end', '\n')
+    stream = kwds.get("file", sys.stdout)
+    sep = kwds.get("sep", " ")
+    end = kwds.get("end", "\n")
 
     if args:
         stream.write(sep.join([str(arg) for arg in args]))
@@ -32,11 +32,12 @@ def print_(*args, **kwds):
     except AttributeError:
         pass
 
+
 def is_msys():
     """Return true if the execution environment is MSYS"""
 
     try:
         # Unfortunately there is no longer an MSYS specific identifier.
-        return os.environ['TERM'] == 'cygwin'
+        return os.environ["TERM"] == "cygwin"
     except KeyError:
         return False

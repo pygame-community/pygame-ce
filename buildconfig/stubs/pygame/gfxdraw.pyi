@@ -11,7 +11,9 @@ def line(
 def rectangle(surface: Surface, rect: RectValue, color: ColorValue, /) -> None: ...
 def box(surface: Surface, rect: RectValue, color: ColorValue, /) -> None: ...
 def circle(surface: Surface, x: int, y: int, r: int, color: ColorValue, /) -> None: ...
-def aacircle(surface: Surface, x: int, y: int, r: int, color: ColorValue, /) -> None: ...
+def aacircle(
+    surface: Surface, x: int, y: int, r: int, color: ColorValue, /
+) -> None: ...
 def filled_circle(
     surface: Surface, x: int, y: int, r: int, color: ColorValue, /
 ) -> None: ...
@@ -31,7 +33,8 @@ def arc(
     r: int,
     start_angle: int,
     atp_angle: int,
-    color: ColorValue, /
+    color: ColorValue,
+    /,
 ) -> None: ...
 def pie(
     surface: Surface,
@@ -40,7 +43,8 @@ def pie(
     r: int,
     start_angle: int,
     atp_angle: int,
-    color: ColorValue, /
+    color: ColorValue,
+    /,
 ) -> None: ...
 def trigon(
     surface: Surface,
@@ -50,7 +54,8 @@ def trigon(
     y2: int,
     x3: int,
     y3: int,
-    color: ColorValue, /
+    color: ColorValue,
+    /,
 ) -> None: ...
 def aatrigon(
     surface: Surface,
@@ -60,7 +65,8 @@ def aatrigon(
     y2: int,
     x3: int,
     y3: int,
-    color: ColorValue, /
+    color: ColorValue,
+    /,
 ) -> None: ...
 def filled_trigon(
     surface: Surface,
@@ -70,7 +76,8 @@ def filled_trigon(
     y2: int,
     x3: int,
     y3: int,
-    color: ColorValue, /
+    color: ColorValue,
+    /,
 ) -> None: ...
 def polygon(
     surface: Surface, points: Sequence[Coordinate], color: ColorValue, /
@@ -82,7 +89,12 @@ def filled_polygon(
     surface: Surface, points: Sequence[Coordinate], color: ColorValue, /
 ) -> None: ...
 def textured_polygon(
-    surface: Surface, points: Sequence[Coordinate], texture: Surface, tx: int, ty: int, /
+    surface: Surface,
+    points: Sequence[Coordinate],
+    texture: Surface,
+    tx: int,
+    ty: int,
+    /,
 ) -> None: ...
 def bezier(
     surface: Surface, points: Sequence[Coordinate], steps: int, color: ColorValue, /

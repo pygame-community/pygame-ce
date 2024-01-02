@@ -10,7 +10,16 @@ else:
     UPDATE_VERIONLABEL_CLASSES = True
 
 
-labels = ("versionadded", "versionaddedold", "versionchanged", "versionchangedold", "deprecated", "deprecatedold", "versionextended", "versionextendedold")
+labels = (
+    "versionadded",
+    "versionaddedold",
+    "versionchanged",
+    "versionchangedold",
+    "deprecated",
+    "deprecatedold",
+    "versionextended",
+    "versionextendedold",
+)
 
 
 def set_version_formats(app, config):
@@ -31,7 +40,6 @@ def setup(app):
     versionlabels["deprecatedold"] = "Deprecated since pygame %s"
     versionlabels["versionextendedold"] = "Extended in pygame %s"
 
-
     if UPDATE_VERIONLABEL_CLASSES:
         versionlabel_classes["versionextended"] = "extended"
         versionlabel_classes["versionaddedold"] = "added"
@@ -40,8 +48,6 @@ def setup(app):
         versionlabel_classes["versionextendedold"] = "extended"
 
     for label in labels:
-        app.add_config_value(
-            f"{label}_format", str(versionlabels[label]), "env"
-        )
+        app.add_config_value(f"{label}_format", str(versionlabels[label]), "env")
 
     app.connect("config-inited", set_version_formats)

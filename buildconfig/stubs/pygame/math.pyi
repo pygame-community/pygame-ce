@@ -11,7 +11,7 @@ from typing import (
     Union,
     final,
     overload,
-    Optional
+    Optional,
 )
 
 if sys.version_info >= (3, 9):
@@ -82,31 +82,21 @@ class _GenericVector(Collection[float]):
         self: _TVec, other: Union[Sequence[float], _TVec], /
     ) -> float: ...
     def lerp(
-        self: _TVec,
-        other: Union[Sequence[float], _TVec],
-        value: float, /
+        self: _TVec, other: Union[Sequence[float], _TVec], value: float, /
     ) -> _TVec: ...
     def slerp(
-        self: _TVec,
-        other: Union[Sequence[float], _TVec],
-        value: float, /
+        self: _TVec, other: Union[Sequence[float], _TVec], value: float, /
     ) -> _TVec: ...
     def smoothstep(
-        self: _TVec,
-        other: Union[Sequence[float], _TVec],
-        value: float, /
+        self: _TVec, other: Union[Sequence[float], _TVec], value: float, /
     ) -> _TVec: ...
     def elementwise(self: _TVec) -> VectorElementwiseProxy[_TVec]: ...
     def angle_to(self: _TVec, other: Union[Sequence[float], _TVec], /) -> float: ...
     def move_towards(
-        self: _TVec,
-        target: Union[Sequence[float], _TVec],
-        max_distance: float, /
+        self: _TVec, target: Union[Sequence[float], _TVec], max_distance: float, /
     ) -> _TVec: ...
     def move_towards_ip(
-        self: _TVec,
-        target: Union[Sequence[float], _TVec],
-        max_distance: float, /
+        self: _TVec, target: Union[Sequence[float], _TVec], max_distance: float, /
     ) -> None: ...
     @overload
     def clamp_magnitude(self: _TVec, max_length: float, /) -> _TVec: ...
@@ -332,10 +322,8 @@ class Vector3(_GenericVector):
     @overload
     def update(self, x: int, y: int, z: int) -> None: ...
 
-
 def lerp(a: float, b: float, weight: float, do_clamp: bool = True, /) -> float: ...
 def smoothstep(a: float, b: float, weight: float, /) -> float: ...
-
 
 # typehints for deprecated functions, to be removed in a future version
 def enable_swizzling() -> None: ...

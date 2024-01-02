@@ -3,7 +3,13 @@
 from ext.utils import Visitor, get_name, GetError, get_refid, as_refid, as_refuri
 from ext.indexer import get_descinfo, get_descinfo_refid
 
-from sphinx.addnodes import desc, desc_content, desc_classname, desc_name, desc_signature
+from sphinx.addnodes import (
+    desc,
+    desc_content,
+    desc_classname,
+    desc_name,
+    desc_signature,
+)
 from sphinx.addnodes import index as section_prelude_end_class
 from sphinx.domains.python import PyClasslike
 
