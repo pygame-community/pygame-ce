@@ -11,6 +11,8 @@
 #define DOC_CIRCLE_CIRCUMFERENCE "circumference -> float\ncircumference of the circle"
 #define DOC_CIRCLE_COLLIDEPOINT "collidepoint((x, y)) -> bool\ncollidepoint(x, y) -> bool\ncollidepoint(Vector2) -> bool\ntest if a point is inside the circle"
 #define DOC_CIRCLE_COLLIDECIRCLE "collidecircle(Circle) -> bool\ncollidecircle(x, y, radius) -> bool\ncollidecircle((x, y), radius) -> bool\ntest if two circles collide"
+#define DOC_CIRCLE_MOVE "move((x, y)) -> Circle\nmove(x, y) -> Circle\nmove(Vector2) -> Circle\nmoves the circle by a given amount"
+#define DOC_CIRCLE_MOVEIP "move_ip((x, y)) -> None\nmove_ip(x, y) -> None\nmove_ip(Vector2) -> None\nmoves the circle by a given amount, in place"
 #define DOC_CIRCLE_COLLIDERECT "colliderect(Rect) -> bool\ncolliderect((x, y, width, height)) -> bool\ncolliderect(x, y, width, height) -> bool\ncolliderect((x, y), (width, height)) -> bool\nchecks if a rectangle intersects the circle"
 #define DOC_CIRCLE_UPDATE "update((x, y), radius) -> None\nupdate(x, y, radius) -> None\nupdates the circle position and radius"
 #define DOC_CIRCLE_ASRECT "as_rect() -> Rect\nreturns the smallest pygame.Rect object that contains the circle"
