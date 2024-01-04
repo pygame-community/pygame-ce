@@ -4192,7 +4192,7 @@ vector_elementwise(pgVector *vec, PyObject *_null)
     return (PyObject *)proxy;
 }
 
-double 
+double
 lerp(double a, double b, double v)
 {
     return a + (b - a) * v;
@@ -4201,7 +4201,7 @@ lerp(double a, double b, double v)
 double
 invlerp(double a, double b, double v)
 {
-    return (v - a)/(b - a);
+    return (v - a) / (b - a);
 }
 
 static PyObject *
@@ -4246,7 +4246,8 @@ math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 }
 
 static PyObject *
-math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs){
+math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
     if (nargs != 3)
         return RAISE(PyExc_TypeError, "invlerp requires 3 arguments");
 
@@ -4254,32 +4255,31 @@ math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs){
     PyObject *max = args[1];
     PyObject *value = args[2];
 
-    if(PyNumber_Check(args[2]) != 1)
+    if (PyNumber_Check(args[2]) != 1)
         return RAISE(PyExc_TypeError,
                      "invlerp requires the interpolation amount to be number");
-    
+
     double t = PyFloat_AsDouble(value);
 
     if (t < 0)
         t = 0.0;
     else if (t > 1)
         t = 1.0;
-    
 
     if (PyNumber_Check(min) && PyNumber_Check(max)) {
         double a = PyFloat_AsDouble(min);
         double b = PyFloat_AsDouble(max);
 
         if (b - a == 0)
-            return RAISE(PyExc_ZeroDivisionError,
-                         "the result of b - a needs to be different from zero");
+            return RAISE(
+                PyExc_ZeroDivisionError,
+                "the result of b - a needs to be different from zero");
 
         return PyFloat_FromDouble(invlerp(a, b, t));
     }
     else {
-        return RAISE(
-            PyExc_TypeError,
-            "math.invlerp requires all the arguments to be numbers.");
+        return RAISE(PyExc_TypeError,
+                     "math.invlerp requires all the arguments to be numbers.");
     }
 }
 
@@ -4288,35 +4288,36 @@ math_remap(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     if (nargs != 5)
         return RAISE(PyExc_TypeError, "remap requires 5 arguments");
-    
+
     PyObject *i_min = args[0];
     PyObject *i_max = args[1];
     PyObject *o_min = args[2];
     PyObject *o_max = args[3];
     PyObject *value = args[4];
 
-    if(PyNumber_Check(args[4]) != 1)
+    if (PyNumber_Check(args[4]) != 1)
         return RAISE(PyExc_TypeError,
                      "remap requires the value to be a number");
-    
+
     double v = PyFloat_AsDouble(value);
-    
-    if (PyNumber_Check(i_min) && PyNumber_Check(i_max) && PyNumber_Check(o_min) && PyNumber_Check(o_max)) {
+
+    if (PyNumber_Check(i_min) && PyNumber_Check(i_max) &&
+        PyNumber_Check(o_min) && PyNumber_Check(o_max)) {
         double a = PyFloat_AsDouble(i_min);
         double b = PyFloat_AsDouble(i_max);
         double c = PyFloat_AsDouble(o_min);
         double d = PyFloat_AsDouble(o_max);
 
         if (b - a == 0)
-            return RAISE(PyExc_ZeroDivisionError,
-                         "the result of i_max - i_min needs to be different from zero");
+            return RAISE(
+                PyExc_ZeroDivisionError,
+                "the result of i_max - i_min needs to be different from zero");
 
         return PyFloat_FromDouble(lerp(c, d, invlerp(a, b, v)));
     }
     else {
-        return RAISE(
-            PyExc_TypeError,
-            "math.remap requires all the arguments to be numbers.");
+        return RAISE(PyExc_TypeError,
+                     "math.remap requires all the arguments to be numbers.");
     }
 }
 
@@ -4337,8 +4338,7 @@ math_lerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     double t = PyFloat_AsDouble(value);
 
-    if (nargs != 4 || PyObject_IsTrue(args[3]))
-    {
+    if (nargs != 4 || PyObject_IsTrue(args[3])) {
         if (t < 0)
             t = 0.0;
         else if (t > 1)
