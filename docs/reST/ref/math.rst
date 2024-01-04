@@ -73,7 +73,7 @@ Multiple coordinates can be set using slices or swizzling
 
    The formula is:
 
-   ``a + (b - a) * value``.
+   ``a * value + (1 - value) * b``.
 
    .. versionadded:: 2.4.0
 
@@ -84,7 +84,7 @@ Multiple coordinates can be set using slices or swizzling
    | :sl:`returns value inverse interpolated between a and b`
    | :sg:`invlerp(a, b, value, /) -> float`
 
-   Returns a number which is a inverse interpolation between ``a``
+   Returns a number which is an inverse interpolation between ``a``
    and ``b``. The third parameter determines how far between ``a`` and
    ``b`` the result is going to be.
    If ``b - a`` is equal to 0, it raises a ``ZeroDivisionError``.
@@ -131,9 +131,12 @@ Multiple coordinates can be set using slices or swizzling
 
    Example:
 
-   ::
-   pygame.math.remap(0, 100, 0, 200, 50)
-   100.0
+   .. code-block:: python
+      
+      > value = 50
+      > pygame.math.remap(0, 100, 0, 200, value)
+      > 100.0
+      
 
    .. versionadded:: 2.5.0
 
