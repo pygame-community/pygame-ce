@@ -388,6 +388,44 @@ pg_circle_colliderect(pgCircleObject *self, PyObject *const *args,
     return PyBool_FromLong(pgCollision_RectCircle(x, y, w, h, &self->circle));
 }
 
+static PyObject *
+pg_circle_collideswith(pgCircleObject *self, PyObject *arg)
+{
+    int result = 0;
+    pgCircleBase *scirc = &self->circle;
+    if (pgCircle_Check(arg)) {
+        result = pgCollision_CircleCircle(&pgCircle_AsCircle(arg), scirc);
+    }
+    else if (pgRect_Check(arg)) {
+        SDL_Rect *argrect = &pgRect_AsRect(arg);
+        result = pgCollision_RectCircle((double)argrect->x, (double)argrect->y,
+                                        (double)argrect->w, (double)argrect->h,
+                                        scirc);
+    }
+    else if (pgFRect_Check(arg)) {
+        SDL_FRect *argrect = &pgFRect_AsRect(arg);
+        result = pgCollision_RectCircle((double)argrect->x, (double)argrect->y,
+                                        (double)argrect->w, (double)argrect->h,
+                                        scirc);
+    }
+    else if (PySequence_Check(arg)) {
+        double x, y;
+        if (!pg_TwoDoublesFromObj(arg, &x, &y)) {
+            return RAISE(
+                PyExc_TypeError,
+                "Invalid point argument, must be a sequence of 2 numbers");
+        }
+        result = pgCollision_CirclePoint(scirc, x, y);
+    }
+    else {
+        return RAISE(PyExc_TypeError,
+                     "Invalid shape argument, must be a CircleType, RectType, "
+                     "LineType, PolygonType or a sequence of 2 numbers");
+    }
+
+    return PyBool_FromLong(result);
+}
+
 static struct PyMethodDef pg_circle_methods[] = {
     {"collidepoint", (PyCFunction)pg_circle_collidepoint, METH_FASTCALL,
      DOC_CIRCLE_COLLIDEPOINT},
@@ -400,6 +438,8 @@ static struct PyMethodDef pg_circle_methods[] = {
      DOC_CIRCLE_COLLIDERECT},
     {"update", (PyCFunction)pg_circle_update, METH_FASTCALL,
      DOC_CIRCLE_UPDATE},
+    {"collideswith", (PyCFunction)pg_circle_collideswith, METH_O,
+     DOC_CIRCLE_COLLIDESWITH},
     {"__copy__", (PyCFunction)pg_circle_copy, METH_NOARGS, DOC_CIRCLE_COPY},
     {"copy", (PyCFunction)pg_circle_copy, METH_NOARGS, DOC_CIRCLE_COPY},
     {NULL, NULL, 0, NULL}};

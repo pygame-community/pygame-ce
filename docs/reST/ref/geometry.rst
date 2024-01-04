@@ -230,6 +230,26 @@
          
          .. ## Circle.colliderect ##
 
+   .. method:: collideswith
+
+         | :sl:`check if a shape or point collides with the circle`
+         | :sg:`collideswith(Circle) -> bool`
+         | :sg:`collideswith(Rect) -> bool`
+         | :sg:`collideswith(FRect) -> bool`
+         | :sg:`collideswith((x, y)) -> bool`
+         | :sg:`contains(Vector2) -> bool`
+
+         The `collideswith` method checks if a shape or point overlaps with a `Circle` object.
+         It takes a single argument which can be a `Circle`, `Rect`, `FRect`, or a point.
+         It returns `True` if there's an overlap, and `False` otherwise.
+
+         .. note::
+             The shape argument must be an actual shape object (`Circle`, `Rect`, or `FRect`).
+             You can't pass a tuple or list of coordinates representing the shape (except for a point),
+             because the shape type can't be determined from the coordinates alone.
+
+         .. ## Circle.collideswith ##
+
    .. method:: update
 
          | :sl:`updates the circle position and radius`
