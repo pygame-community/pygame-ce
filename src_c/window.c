@@ -183,17 +183,16 @@ window_flip(pgWindowObject *self)
 {
     int result;
 
-    VIDEO_INIT_CHECK();
+    if (!self->surf) {
+        return RAISE(pgExc_SDLError,
+                     "the Window has no surface associated with it, did "
+                     "you forget to call Window.get_surface()");
+    }
 
     Py_BEGIN_ALLOW_THREADS;
     result = SDL_UpdateWindowSurface(self->_win);
     Py_END_ALLOW_THREADS;
     if (result) {
-        if (!self->surf) {
-            return RAISE(pgExc_SDLError,
-                         "the Window has no surface associated with it, did "
-                         "you forget to call Window.get_surface()");
-        }
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
     Py_RETURN_NONE;
