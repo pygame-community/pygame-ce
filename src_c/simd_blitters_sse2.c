@@ -67,31 +67,28 @@ pg_neon_at_runtime_but_uncompiled()
 #endif
 #endif
 
-#define SETUP_SSE2_BLITTER                                \
-    int i, n;                                             \
-    int width = info->width;                              \
-    int height = info->height;                            \
-                                                          \
-    if (!width || !height) {                              \
-        return;                                           \
-    }                                                     \
-                                                          \
-    Uint32 *srcp = (Uint32 *)info->s_pixels;              \
-    Uint32 *dstp = (Uint32 *)info->d_pixels;              \
-    __m128i *srcp128 = (__m128i *)info->s_pixels;         \
-    __m128i *dstp128 = (__m128i *)info->d_pixels;         \
-                                                          \
-    const int srcskip = info->s_skip / 4;                 \
-    const int dstskip = info->d_skip / 4;                 \
-    const int pxl_excess = width % 4;                     \
-    const int n_iters_4 = width / 4;                      \
-                                                          \
-    __m128i mm128_src, mm128_dst;                         \
-                                                          \
-    Uint32 amask = info->src->Amask | info->dst->Amask;   \
-    const __m128i mm128_amask = _mm_set1_epi32(amask);    \
-    const __m128i mm128_rgbmask = _mm_set1_epi32(~amask); \
-    const __m128i mm128_255 = _mm_set1_epi16(0x00FF);
+#define SETUP_SSE2_BLITTER                        \
+    int n;                                        \
+    int width = info->width;                      \
+    int height = info->height;                    \
+                                                  \
+    if (!width || !height) {                      \
+        return;                                   \
+    }                                             \
+                                                  \
+    Uint32 *srcp = (Uint32 *)info->s_pixels;      \
+    Uint32 *dstp = (Uint32 *)info->d_pixels;      \
+    __m128i *srcp128 = (__m128i *)info->s_pixels; \
+    __m128i *dstp128 = (__m128i *)info->d_pixels; \
+                                                  \
+    const int srcskip = info->s_skip / 4;         \
+    const int dstskip = info->d_skip / 4;         \
+    const int pxl_excess = width % 4;             \
+    const int n_iters_4 = width / 4;              \
+                                                  \
+    __m128i mm128_src, mm128_dst;                 \
+                                                  \
+    Uint32 amask = info->src->Amask | info->dst->Amask;
 
 #define SETUP_16BIT_SHUFFLE_OUT                     \
     const __m128i mm128_zero = _mm_setzero_si128(); \
@@ -890,18 +887,20 @@ premul_surf_color_by_alpha_sse2(SDL_Surface *src, SDL_Surface *dst)
 }
 #endif /* __SSE2__ || PG_ENABLE_ARM_NEON*/
 
-#define ALPHA_CODE_0 mm128_src = _mm_and_si128(mm128_src, mm128_rgbmask);
-#define ALPHA_CODE_1 mm128_src = _mm_or_si128(mm128_src, mm128_amask);
+#define ALPHA_CODE_0 \
+    mm128_src = _mm_and_si128(mm128_src, _mm_set1_epi32(~amask));
+#define ALPHA_CODE_1 \
+    mm128_src = _mm_or_si128(mm128_src, _mm_set1_epi32(amask));
 
 #define ADD_CODE mm128_dst = _mm_adds_epu8(mm128_dst, mm128_src);
 #define SUB_CODE mm128_dst = _mm_subs_epu8(mm128_dst, mm128_src);
 #define MAX_CODE mm128_dst = _mm_max_epu8(mm128_dst, mm128_src);
 #define MIN_CODE mm128_dst = _mm_min_epu8(mm128_dst, mm128_src);
-#define MUL_CODE                                           \
-    {                                                      \
-        shuff_dst = _mm_mullo_epi16(shuff_dst, shuff_src); \
-        shuff_dst = _mm_add_epi16(shuff_dst, mm128_255);   \
-        shuff_dst = _mm_srli_epi16(shuff_dst, 8);          \
+#define MUL_CODE                                                      \
+    {                                                                 \
+        shuff_dst = _mm_mullo_epi16(shuff_dst, shuff_src);            \
+        shuff_dst = _mm_add_epi16(shuff_dst, _mm_set1_epi16(0x00FF)); \
+        shuff_dst = _mm_srli_epi16(shuff_dst, 8);                     \
     }
 
 #if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
