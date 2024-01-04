@@ -73,11 +73,29 @@ Multiple coordinates can be set using slices or swizzling
 
    The formula is:
 
-   ``a * value + (1 - value) * b``.
+   ``a + (b - a) * value``.
 
    .. versionadded:: 2.4.0
 
    .. ## math.lerp ##
+
+.. function:: invlerp
+
+   | :sl:`returns value inverse interpolated between a and b`
+   | :sg:`invlerp(a, b, value, /) -> float`
+
+   Returns a number which is a inverse interpolation between ``a``
+   and ``b``. The third parameter determines how far between ``a`` and
+   ``b`` the result is going to be.
+   If ``b - a`` is equal to 0, it raises a ``ZeroDivisionError``.
+
+   The formula is:
+
+   ``(v - a)/(b - a)``.
+
+   .. versionadded:: 2.5.0
+
+   .. ## math.invlerp ##
 
 .. function:: smoothstep
 
@@ -101,6 +119,25 @@ Multiple coordinates can be set using slices or swizzling
    .. versionadded:: 2.4.0
 
    .. ## math.smoothstep ##
+
+.. function:: remap
+
+   | :sl:`remaps value from i_range to o_range`
+   | :sg:`remap(i_min, i_max, o_min, o_max, value, /) -> float`
+
+   Returns a number which is the value remapped from ``i_range`` to
+   ``o_range``.
+   If ``i_max - i_min`` is equal to 0, it raises a ``ZeroDivisionError``.
+
+   Example:
+
+   ::
+   > pygame.math.remap(0, 100, 0, 200, 50)
+   > 100.0
+
+   .. versionadded:: 2.5.0
+
+   .. ## math.lerp ##
 
 .. class:: Vector2
 
