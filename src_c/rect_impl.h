@@ -850,7 +850,7 @@ RectExport_dealloc(RectObject *self)
 static int
 RectExport_init(RectObject *self, PyObject *args, PyObject *kwds)
 {
-    if (PySequence_Fast_GET_SIZE(args) == 0) {
+    if (PyTuple_GET_SIZE(args) == 0) {
         return 0;
     }
 
