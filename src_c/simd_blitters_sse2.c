@@ -86,9 +86,7 @@ pg_neon_at_runtime_but_uncompiled()
     const int pxl_excess = width % 4;             \
     const int n_iters_4 = width / 4;              \
                                                   \
-    __m128i mm128_src, mm128_dst;                 \
-                                                  \
-    Uint32 amask = info->src->Amask | info->dst->Amask;
+    __m128i mm128_src, mm128_dst;
 
 #define SETUP_16BIT_SHUFFLE_OUT                     \
     const __m128i mm128_zero = _mm_setzero_si128(); \
@@ -887,10 +885,12 @@ premul_surf_color_by_alpha_sse2(SDL_Surface *src, SDL_Surface *dst)
 }
 #endif /* __SSE2__ || PG_ENABLE_ARM_NEON*/
 
-#define ALPHA_CODE_0 \
-    mm128_src = _mm_and_si128(mm128_src, _mm_set1_epi32(~amask));
-#define ALPHA_CODE_1 \
-    mm128_src = _mm_or_si128(mm128_src, _mm_set1_epi32(amask));
+#define ALPHA_CODE_0           \
+    mm128_src = _mm_and_si128( \
+        mm128_src, _mm_set1_epi32(~(info->src->Amask | info->dst->Amask)));
+#define ALPHA_CODE_1          \
+    mm128_src = _mm_or_si128( \
+        mm128_src, _mm_set1_epi32(info->src->Amask | info->dst->Amask));
 
 #define ADD_CODE mm128_dst = _mm_adds_epu8(mm128_dst, mm128_src);
 #define SUB_CODE mm128_dst = _mm_subs_epu8(mm128_dst, mm128_src);
