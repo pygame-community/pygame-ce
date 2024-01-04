@@ -132,8 +132,8 @@ Multiple coordinates can be set using slices or swizzling
    Example:
 
    ::
-   > pygame.math.remap(0, 100, 0, 200, 50)
-   > 100.0
+   pygame.math.remap(0, 100, 0, 200, 50)
+   100.0
 
    .. versionadded:: 2.5.0
 
