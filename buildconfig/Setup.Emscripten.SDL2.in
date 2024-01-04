@@ -6,7 +6,8 @@
 #MIXER = -lSDL2_mixer
 #SCRAP =
 #FREETYPE = -lfreetype -lharfbuzz
-
+PNG = -lpng
+JPEG = -ljpeg
 DEBUG =
 
 # these can build alone and object files merged with ar
