@@ -2847,6 +2847,13 @@ class RectTypeTest(unittest.TestCase):
         self.assertTrue(isinstance(r, Collection))
         self.assertFalse(isinstance(r, Sequence))
 
+    def test_construction_no_args(self):
+        r = Rect()
+        self.assertEqual(r.x, 0)
+        self.assertEqual(r.y, 0)
+        self.assertEqual(r.w, 0)
+        self.assertEqual(r.h, 0)
+
 
 class FRectTypeTest(RectTypeTest):
     def setUp(self):
