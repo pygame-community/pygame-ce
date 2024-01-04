@@ -4192,6 +4192,18 @@ vector_elementwise(pgVector *vec, PyObject *_null)
     return (PyObject *)proxy;
 }
 
+double 
+lerp(double a, double b, double v)
+{
+    return a + (b - a) * v;
+}
+
+double
+invlerp(double a, double b, double v)
+{
+    return (v - a)/(b - a);
+}
+
 static PyObject *
 math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
@@ -4234,6 +4246,81 @@ math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 }
 
 static PyObject *
+math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs){
+    if (nargs != 3)
+        return RAISE(PyExc_TypeError, "invlerp requires 3 arguments");
+
+    PyObject *min = args[0];
+    PyObject *max = args[1];
+    PyObject *value = args[2];
+
+    if(PyNumber_Check(args[2]) != 1)
+        return RAISE(PyExc_TypeError,
+                     "invlerp requires the interpolation amount to be number");
+    
+    double t = PyFloat_AsDouble(value);
+
+    if (t < 0)
+        t = 0.0;
+    else if (t > 1)
+        t = 1.0;
+    
+
+    if (PyNumber_Check(min) && PyNumber_Check(max)) {
+        double a = PyFloat_AsDouble(min);
+        double b = PyFloat_AsDouble(max);
+
+        if (b - a == 0)
+            return RAISE(PyExc_ZeroDivisionError,
+                         "the result of b - a needs to be different from zero");
+
+        return PyFloat_FromDouble(invlerp(a, b, t));
+    }
+    else {
+        return RAISE(
+            PyExc_TypeError,
+            "math.invlerp requires all the arguments to be numbers.");
+    }
+}
+
+static PyObject *
+math_remap(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (nargs != 5)
+        return RAISE(PyExc_TypeError, "remap requires 5 arguments");
+    
+    PyObject *i_min = args[0];
+    PyObject *i_max = args[1];
+    PyObject *o_min = args[2];
+    PyObject *o_max = args[3];
+    PyObject *value = args[4];
+
+    if(PyNumber_Check(args[4]) != 1)
+        return RAISE(PyExc_TypeError,
+                     "remap requires the value to be a number");
+    
+    double v = PyFloat_AsDouble(value);
+    
+    if (PyNumber_Check(i_min) && PyNumber_Check(i_max) && PyNumber_Check(o_min) && PyNumber_Check(o_max)) {
+        double a = PyFloat_AsDouble(i_min);
+        double b = PyFloat_AsDouble(i_max);
+        double c = PyFloat_AsDouble(o_min);
+        double d = PyFloat_AsDouble(o_max);
+
+        if (b - a == 0)
+            return RAISE(PyExc_ZeroDivisionError,
+                         "the result of i_max - i_min needs to be different from zero");
+
+        return PyFloat_FromDouble(lerp(c, d, invlerp(a, b, v)));
+    }
+    else {
+        return RAISE(
+            PyExc_TypeError,
+            "math.remap requires all the arguments to be numbers.");
+    }
+}
+
+static PyObject *
 math_lerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     if (nargs != 3 && nargs != 4)
@@ -4250,10 +4337,8 @@ math_lerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     double t = PyFloat_AsDouble(value);
 
-    if (nargs == 4 && !PyObject_IsTrue(args[3])) {
-        ;  // pass if do_clamp is false
-    }
-    else {
+    if (nargs != 4 || PyObject_IsTrue(args[3]))
+    {
         if (t < 0)
             t = 0.0;
         else if (t > 1)
@@ -4261,8 +4346,10 @@ math_lerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
 
     if (PyNumber_Check(min) && PyNumber_Check(max)) {
-        return PyFloat_FromDouble(PyFloat_AsDouble(min) * (1 - t) +
-                                  PyFloat_AsDouble(max) * t);
+        double a = PyFloat_AsDouble(min);
+        double b = PyFloat_AsDouble(max);
+
+        return PyFloat_FromDouble(lerp(a, b, t));
     }
     else {
         return RAISE(
@@ -4343,6 +4430,8 @@ math_disable_swizzling(pgVector *self, PyObject *_null)
 static PyMethodDef _math_methods[] = {
     {"clamp", (PyCFunction)math_clamp, METH_FASTCALL, DOC_MATH_CLAMP},
     {"lerp", (PyCFunction)math_lerp, METH_FASTCALL, DOC_MATH_LERP},
+    {"invlerp", (PyCFunction)math_invlerp, METH_FASTCALL, DOC_MATH_INVLERP},
+    {"remap", (PyCFunction)math_remap, METH_FASTCALL, DOC_MATH_REMAP},
     {"smoothstep", (PyCFunction)math_smoothstep, METH_FASTCALL,
      DOC_MATH_SMOOTHSTEP},
     {"enable_swizzling", (PyCFunction)math_enable_swizzling, METH_NOARGS,
