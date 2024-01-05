@@ -46,7 +46,7 @@ _pg_HasSSE_NEON();
 // AVX2 functions
 int
 surface_fill_blend_rgba_none_avx2(SDL_Surface *surface, SDL_Rect *rect,
-                             Uint32 color);
+                                  Uint32 color);
 int
 surface_fill_blend_add_avx2(SDL_Surface *surface, SDL_Rect *rect,
                             Uint32 color);
@@ -81,7 +81,7 @@ surface_fill_blend_rgba_max_avx2(SDL_Surface *surface, SDL_Rect *rect,
 // SSE2 functions
 int
 surface_fill_blend_rgba_none_sse2(SDL_Surface *surface, SDL_Rect *rect,
-                            Uint32 color);
+                                  Uint32 color);
 int
 surface_fill_blend_add_sse2(SDL_Surface *surface, SDL_Rect *rect,
                             Uint32 color);
