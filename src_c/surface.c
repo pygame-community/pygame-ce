@@ -1804,17 +1804,7 @@ surf_fill(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
         if (sdlrect.w <= 0 || sdlrect.h <= 0) {
             return pgRect_New(&sdlrect);
         }
-
-        if (blendargs != 0) {
-            result = surface_fill_blend(surf, &sdlrect, color, blendargs);
-        }
-        else {
-            pgSurface_Prep(self);
-            pgSurface_Lock((pgSurfaceObject *)self);
-            result = SDL_FillRect(surf, &sdlrect, color);
-            pgSurface_Unlock((pgSurfaceObject *)self);
-            pgSurface_Unprep(self);
-        }
+        result = surface_fill_blend(surf, &sdlrect, color, blendargs);
         if (result == -1)
             return RAISE(pgExc_SDLError, SDL_GetError());
     }

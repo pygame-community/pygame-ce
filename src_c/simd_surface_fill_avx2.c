@@ -166,6 +166,7 @@ _pg_has_avx2()
         return -1;                                                          \
     }
 
+#define NONE_CODE mm256_dst = mm256_color;
 #define ADD_CODE mm256_dst = _mm256_adds_epu8(mm256_dst, mm256_color);
 #define SUB_CODE mm256_dst = _mm256_subs_epu8(mm256_dst, mm256_color);
 #define MIN_CODE mm256_dst = _mm256_min_epu8(mm256_dst, mm256_color);
@@ -179,12 +180,14 @@ _pg_has_avx2()
 
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
+FILLERS(none, color &= ~amask;, NONE_CODE)
 FILLERS(add, color &= ~amask;, ADD_CODE)
 FILLERS(sub, color &= ~amask;, SUB_CODE)
 FILLERS(min, color |= amask;, MIN_CODE)
 FILLERS(max, color &= ~amask;, MAX_CODE)
 FILLERS_SHUFF(mult, color |= amask;, MULT_CODE)
 #else
+INVALID_DEFS(none)
 INVALID_DEFS(add)
 INVALID_DEFS(sub)
 INVALID_DEFS(min)

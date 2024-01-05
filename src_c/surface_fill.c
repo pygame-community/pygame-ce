@@ -866,6 +866,26 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
     }
 
     switch (blendargs) {
+        case SDL_BLENDMODE_NONE: {
+#if !defined(__EMSCRIPTEN__)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+            if (surface->format->BytesPerPixel == 4) {
+                if (_pg_has_avx2()) {
+                    result = surface_fill_blend_rgba_none_avx2(surface, rect, color);
+                    break;
+                }
+#if PG_ENABLE_SSE_NEON
+                if (_pg_HasSSE_NEON()) {
+                    result = surface_fill_blend_rgba_none_sse2(surface, rect, color);
+                    break;
+                }
+#endif /* PG_ENABLE_SSE_NEON */
+            }
+#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
+#endif /* __EMSCRIPTEN__ */
+            result = SDL_FillRect(surface, rect, color);
+            break;
+        }
         case PYGAME_BLEND_ADD: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN

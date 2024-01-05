@@ -142,6 +142,7 @@ _pg_HasSSE_NEON()
         return -1;                                                          \
     }
 
+#define NONE_CODE mm128_dst = mm128_color;
 #define ADD_CODE mm128_dst = _mm_adds_epu8(mm128_dst, mm128_color);
 #define SUB_CODE mm128_dst = _mm_subs_epu8(mm128_dst, mm128_color);
 #define MIN_CODE mm128_dst = _mm_min_epu8(mm128_dst, mm128_color);
@@ -154,12 +155,14 @@ _pg_HasSSE_NEON()
     }
 
 #if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
+FILLERS(none, color &= ~amask;, NONE_CODE)
 FILLERS(add, color &= ~amask;, ADD_CODE)
 FILLERS(sub, color &= ~amask;, SUB_CODE)
 FILLERS(min, color |= amask;, MIN_CODE)
 FILLERS(max, color &= ~amask;, MAX_CODE)
 FILLERS_SHUFF(mult, color |= amask;, MULT_CODE)
 #else
+INVALID_DEFS(none)
 INVALID_DEFS(add)
 INVALID_DEFS(sub)
 INVALID_DEFS(min)
