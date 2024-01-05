@@ -156,36 +156,28 @@ pg_neon_at_runtime_but_uncompiled()
         dstp = (Uint32 *)dstp128 + dstskip;                   \
     }
 
-#define BLITTERS(NAME, BLITTER_CODE, ALPHA_PREP, ALPHA_CODE, \
-                 ADDITIONAL_SETUP)                           \
-    void blit_blend_rgb_##NAME##_sse2(SDL_BlitInfo *info)    \
-    {                                                        \
-        SETUP_SSE2_BLITTER;                                  \
-        ALPHA_PREP;                                          \
-        ADDITIONAL_SETUP                                     \
-        RUN_SSE2_BLITTER(BLITTER_CODE, ALPHA_CODE)           \
-    }                                                        \
-    void blit_blend_rgba_##NAME##_sse2(SDL_BlitInfo *info)   \
-    {                                                        \
-        SETUP_SSE2_BLITTER;                                  \
-        ADDITIONAL_SETUP                                     \
-        RUN_SSE2_BLITTER(BLITTER_CODE, {})                   \
+#define BLITTERS(NAME, BLITTER_CODE, ALPHA_CODE)           \
+    void blit_blend_rgb_##NAME##_sse2(SDL_BlitInfo *info)  \
+    {                                                      \
+        SETUP_SSE2_BLITTER;                                \
+        RUN_SSE2_BLITTER(BLITTER_CODE, ALPHA_CODE)         \
+    }                                                      \
+    void blit_blend_rgba_##NAME##_sse2(SDL_BlitInfo *info) \
+    {                                                      \
+        SETUP_SSE2_BLITTER;                                \
+        RUN_SSE2_BLITTER(BLITTER_CODE, {})                 \
     }
 
-#define BLITTERS_SHUFF(NAME, BLITTER_CODE, ALPHA_PREP, ALPHA_CODE,        \
-                       ADDITIONAL_SETUP)                                  \
+#define BLITTERS_SHUFF(NAME, BLITTER_CODE, ALPHA_CODE)                    \
     void blit_blend_rgb_##NAME##_sse2(SDL_BlitInfo *info)                 \
     {                                                                     \
         SETUP_SSE2_BLITTER;                                               \
-        ALPHA_PREP;                                                       \
-        ADDITIONAL_SETUP;                                                 \
         SETUP_16BIT_SHUFFLE_OUT;                                          \
         RUN_SSE2_BLITTER(RUN_16BIT_SHUFFLE_OUT(BLITTER_CODE), ALPHA_CODE) \
     }                                                                     \
     void blit_blend_rgba_##NAME##_sse2(SDL_BlitInfo *info)                \
     {                                                                     \
         SETUP_SSE2_BLITTER;                                               \
-        ADDITIONAL_SETUP;                                                 \
         SETUP_16BIT_SHUFFLE_OUT;                                          \
         RUN_SSE2_BLITTER(RUN_16BIT_SHUFFLE_OUT(BLITTER_CODE), {})         \
     }
@@ -893,33 +885,28 @@ premul_surf_color_by_alpha_sse2(SDL_Surface *src, SDL_Surface *dst)
 }
 #endif /* __SSE2__ || PG_ENABLE_ARM_NEON*/
 
-#define ALPHA_PREP_0              \
-    const __m128i mm128_rgbmask = \
-        _mm_set1_epi32(~(info->src->Amask | info->dst->Amask));
-#define ALPHA_CODE_0 mm128_src = _mm_and_si128(mm128_src, mm128_rgbmask);
-
-#define ALPHA_PREP_1            \
-    const __m128i mm128_amask = \
-        _mm_set1_epi32(info->src->Amask | info->dst->Amask);
-#define ALPHA_CODE_1 mm128_src = _mm_or_si128(mm128_src, mm128_amask);
-
-#define MM128_255 const __m128i mm128_255 = _mm_set1_epi16(0x00FF);
+#define ALPHA_CODE_0           \
+    mm128_src = _mm_and_si128( \
+        mm128_src, _mm_set1_epi32(~(info->src->Amask | info->dst->Amask)));
+#define ALPHA_CODE_1          \
+    mm128_src = _mm_or_si128( \
+        mm128_src, _mm_set1_epi32(info->src->Amask | info->dst->Amask));
 
 #define ADD_CODE mm128_dst = _mm_adds_epu8(mm128_dst, mm128_src);
 #define SUB_CODE mm128_dst = _mm_subs_epu8(mm128_dst, mm128_src);
 #define MAX_CODE mm128_dst = _mm_max_epu8(mm128_dst, mm128_src);
 #define MIN_CODE mm128_dst = _mm_min_epu8(mm128_dst, mm128_src);
-#define MUL_CODE                                           \
-    {                                                      \
-        shuff_dst = _mm_mullo_epi16(shuff_dst, shuff_src); \
-        shuff_dst = _mm_add_epi16(shuff_dst, mm128_255);   \
-        shuff_dst = _mm_srli_epi16(shuff_dst, 8);          \
+#define MUL_CODE                                                      \
+    {                                                                 \
+        shuff_dst = _mm_mullo_epi16(shuff_dst, shuff_src);            \
+        shuff_dst = _mm_add_epi16(shuff_dst, _mm_set1_epi16(0x00FF)); \
+        shuff_dst = _mm_srli_epi16(shuff_dst, 8);                     \
     }
 
 #if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
-BLITTERS(add, ADD_CODE, ALPHA_PREP_0, ALPHA_CODE_0, {})
-BLITTERS(sub, SUB_CODE, ALPHA_PREP_0, ALPHA_CODE_0, {})
-BLITTERS_SHUFF(mul, MUL_CODE, ALPHA_PREP_1, ALPHA_CODE_1, MM128_255)
-BLITTERS(max, MAX_CODE, ALPHA_PREP_0, ALPHA_CODE_0, {})
-BLITTERS(min, MIN_CODE, ALPHA_PREP_1, ALPHA_CODE_1, {})
+BLITTERS(add, ADD_CODE, ALPHA_CODE_0)
+BLITTERS(sub, SUB_CODE, ALPHA_CODE_0)
+BLITTERS_SHUFF(mul, MUL_CODE, ALPHA_CODE_1)
+BLITTERS(max, MAX_CODE, ALPHA_CODE_0)
+BLITTERS(min, MIN_CODE, ALPHA_CODE_1)
 #endif /* __SSE2__ || PG_ENABLE_ARM_NEON*/
