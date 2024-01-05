@@ -110,33 +110,37 @@ pg_neon_at_runtime_but_uncompiled()
     /* ==== recombine A and B pixels ==== */                   \
     mm128_dst = _mm_packus_epi16(_shuff16_temp, shuff_dst);
 
-#define RUN_SSE2_BLITTER(BLITTER_CODE)                      \
-    while (height--) {                                      \
-        for (i = 0; i < pxl_excess; i++) {                  \
-            mm128_src = _mm_cvtsi32_si128(*srcp++);         \
-            mm128_dst = _mm_cvtsi32_si128(*dstp);           \
-                                                            \
-            {BLITTER_CODE}                                  \
-                                                            \
-                *dstp++ = _mm_cvtsi128_si32(mm128_dst);     \
-        }                                                   \
-                                                            \
-        srcp128 = (__m128i *)srcp;                          \
-        dstp128 = (__m128i *)dstp;                          \
-        if (n_iters_4) {                                    \
-            LOOP_UNROLLED4(                                 \
-                {                                           \
-                    mm128_src = _mm_loadu_si128(srcp128++); \
-                    mm128_dst = _mm_loadu_si128(dstp128);   \
-                                                            \
-                    {BLITTER_CODE}                          \
-                                                            \
-                    _mm_storeu_si128(dstp128++, mm128_dst); \
-                },                                          \
-                n, n_iters_4);                              \
-        }                                                   \
-        srcp = (Uint32 *)srcp128 + srcskip;                 \
-        dstp = (Uint32 *)dstp128 + dstskip;                 \
+#define RUN_SSE2_BLITTER(BLITTER_CODE)                    \
+    while (height--) {                                    \
+        for (i = 0; i < pxl_excess; i++) {                \
+            mm128_src = _mm_cvtsi32_si128(*srcp);         \
+            mm128_dst = _mm_cvtsi32_si128(*dstp);         \
+                                                          \
+            {BLITTER_CODE}                                \
+                                                          \
+                *dstp = _mm_cvtsi128_si32(mm128_dst);     \
+            srcp++;                                       \
+            dstp++;                                       \
+        }                                                 \
+                                                          \
+        srcp128 = (__m128i *)srcp;                        \
+        dstp128 = (__m128i *)dstp;                        \
+        if (n_iters_4) {                                  \
+            LOOP_UNROLLED4(                               \
+                {                                         \
+                    mm128_src = _mm_loadu_si128(srcp128); \
+                    mm128_dst = _mm_loadu_si128(dstp128); \
+                                                          \
+                    {BLITTER_CODE}                        \
+                                                          \
+                    _mm_storeu_si128(dstp128, mm128_dst); \
+                    srcp128++;                            \
+                    dstp128++;                            \
+                },                                        \
+                n, n_iters_4);                            \
+        }                                                 \
+        srcp = (Uint32 *)srcp128 + srcskip;               \
+        dstp = (Uint32 *)dstp128 + dstskip;               \
     }
 
 #if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
