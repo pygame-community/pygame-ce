@@ -775,9 +775,7 @@ blit_blend_premultiplied_sse2(SDL_BlitInfo *info)
         dstp += dstskip;
     }
 }
-#endif /* (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)) */
 
-#if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
 void
 premul_surf_color_by_alpha_sse2(SDL_Surface *src, SDL_Surface *dst)
 {
@@ -840,9 +838,7 @@ premul_surf_color_by_alpha_sse2(SDL_Surface *src, SDL_Surface *dst)
             n, width);
     }
 }
-#endif /* __SSE2__ || PG_ENABLE_ARM_NEON*/
 
-#if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
 void
 blit_blend_rgb_add_sse2(SDL_BlitInfo *info)
 {
