@@ -72,10 +72,6 @@ pg_neon_at_runtime_but_uncompiled()
     int width = info->width;                      \
     int height = info->height;                    \
                                                   \
-    if (!width || !height) {                      \
-        return;                                   \
-    }                                             \
-                                                  \
     Uint32 *srcp = (Uint32 *)info->s_pixels;      \
     Uint32 *dstp = (Uint32 *)info->d_pixels;      \
     __m128i *srcp128 = (__m128i *)info->s_pixels; \
