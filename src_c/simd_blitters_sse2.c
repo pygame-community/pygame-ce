@@ -110,17 +110,13 @@ pg_neon_at_runtime_but_uncompiled()
     /* ==== recombine A and B pixels ==== */                   \
     mm128_dst = _mm_packus_epi16(_shuff16_temp, shuff_dst);
 
-#define RUN_SSE2_BLITTER(BLITTER_CODE, ALPHA_CODE)            \
+#define RUN_SSE2_BLITTER(BLITTER_CODE)                        \
     while (height--) {                                        \
         if (pxl_excess) {                                     \
             LOOP_UNROLLED4(                                   \
                 {                                             \
                     mm128_src = _mm_cvtsi32_si128(*srcp);     \
                     mm128_dst = _mm_cvtsi32_si128(*dstp);     \
-                                                              \
-                    {                                         \
-                        ALPHA_CODE                            \
-                    }                                         \
                                                               \
                     {BLITTER_CODE}                            \
                                                               \
@@ -139,10 +135,6 @@ pg_neon_at_runtime_but_uncompiled()
                     mm128_src = _mm_loadu_si128(srcp128);     \
                     mm128_dst = _mm_loadu_si128(dstp128);     \
                                                               \
-                    {                                         \
-                        ALPHA_CODE                            \
-                    }                                         \
-                                                              \
                     {BLITTER_CODE}                            \
                                                               \
                     _mm_storeu_si128(dstp128, mm128_dst);     \
@@ -154,32 +146,6 @@ pg_neon_at_runtime_but_uncompiled()
         }                                                     \
         srcp = (Uint32 *)srcp128 + srcskip;                   \
         dstp = (Uint32 *)dstp128 + dstskip;                   \
-    }
-
-#define BLITTERS(NAME, BLITTER_CODE, ALPHA_CODE)           \
-    void blit_blend_rgb_##NAME##_sse2(SDL_BlitInfo *info)  \
-    {                                                      \
-        SETUP_SSE2_BLITTER;                                \
-        RUN_SSE2_BLITTER(BLITTER_CODE, ALPHA_CODE)         \
-    }                                                      \
-    void blit_blend_rgba_##NAME##_sse2(SDL_BlitInfo *info) \
-    {                                                      \
-        SETUP_SSE2_BLITTER;                                \
-        RUN_SSE2_BLITTER(BLITTER_CODE, {})                 \
-    }
-
-#define BLITTERS_SHUFF(NAME, BLITTER_CODE, ALPHA_CODE)                    \
-    void blit_blend_rgb_##NAME##_sse2(SDL_BlitInfo *info)                 \
-    {                                                                     \
-        SETUP_SSE2_BLITTER;                                               \
-        SETUP_16BIT_SHUFFLE_OUT;                                          \
-        RUN_SSE2_BLITTER(RUN_16BIT_SHUFFLE_OUT(BLITTER_CODE), ALPHA_CODE) \
-    }                                                                     \
-    void blit_blend_rgba_##NAME##_sse2(SDL_BlitInfo *info)                \
-    {                                                                     \
-        SETUP_SSE2_BLITTER;                                               \
-        SETUP_16BIT_SHUFFLE_OUT;                                          \
-        RUN_SSE2_BLITTER(RUN_16BIT_SHUFFLE_OUT(BLITTER_CODE), {})         \
     }
 
 #if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
@@ -885,28 +851,115 @@ premul_surf_color_by_alpha_sse2(SDL_Surface *src, SDL_Surface *dst)
 }
 #endif /* __SSE2__ || PG_ENABLE_ARM_NEON*/
 
-#define ALPHA_CODE_0           \
-    mm128_src = _mm_and_si128( \
-        mm128_src, _mm_set1_epi32(~(info->src->Amask | info->dst->Amask)));
-#define ALPHA_CODE_1          \
-    mm128_src = _mm_or_si128( \
-        mm128_src, _mm_set1_epi32(info->src->Amask | info->dst->Amask));
-
-#define ADD_CODE mm128_dst = _mm_adds_epu8(mm128_dst, mm128_src);
-#define SUB_CODE mm128_dst = _mm_subs_epu8(mm128_dst, mm128_src);
-#define MAX_CODE mm128_dst = _mm_max_epu8(mm128_dst, mm128_src);
-#define MIN_CODE mm128_dst = _mm_min_epu8(mm128_dst, mm128_src);
-#define MUL_CODE                                                      \
-    {                                                                 \
-        shuff_dst = _mm_mullo_epi16(shuff_dst, shuff_src);            \
-        shuff_dst = _mm_add_epi16(shuff_dst, _mm_set1_epi16(0x00FF)); \
-        shuff_dst = _mm_srli_epi16(shuff_dst, 8);                     \
-    }
-
 #if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
-BLITTERS(add, ADD_CODE, ALPHA_CODE_0)
-BLITTERS(sub, SUB_CODE, ALPHA_CODE_0)
-BLITTERS_SHUFF(mul, MUL_CODE, ALPHA_CODE_1)
-BLITTERS(max, MAX_CODE, ALPHA_CODE_0)
-BLITTERS(min, MIN_CODE, ALPHA_CODE_1)
+void
+blit_blend_rgb_add_sse2(SDL_BlitInfo *info)
+{
+    SETUP_SSE2_BLITTER
+    const __m128i mm128_rgbmask =
+        _mm_set1_epi32(~(info->src->Amask | info->dst->Amask));
+
+    RUN_SSE2_BLITTER({
+        mm128_src = _mm_and_si128(mm128_src, mm128_rgbmask);
+        mm128_dst = _mm_adds_epu8(mm128_dst, mm128_src);
+    })
+}
+
+void
+blit_blend_rgba_add_sse2(SDL_BlitInfo *info)
+{
+    SETUP_SSE2_BLITTER
+    RUN_SSE2_BLITTER({ mm128_dst = _mm_adds_epu8(mm128_dst, mm128_src); })
+}
+
+void
+blit_blend_rgb_sub_sse2(SDL_BlitInfo *info)
+{
+    SETUP_SSE2_BLITTER
+    const __m128i mm128_rgbmask =
+        _mm_set1_epi32(~(info->src->Amask | info->dst->Amask));
+
+    RUN_SSE2_BLITTER({
+        mm128_src = _mm_and_si128(mm128_src, mm128_rgbmask);
+        mm128_dst = _mm_subs_epu8(mm128_dst, mm128_src);
+    })
+}
+
+void
+blit_blend_rgba_sub_sse2(SDL_BlitInfo *info)
+{
+    SETUP_SSE2_BLITTER
+    RUN_SSE2_BLITTER({ mm128_dst = _mm_subs_epu8(mm128_dst, mm128_src); })
+}
+
+void
+blit_blend_rgb_mul_sse2(SDL_BlitInfo *info)
+{
+    SETUP_SSE2_BLITTER
+    SETUP_16BIT_SHUFFLE_OUT
+    const __m128i mm128_amask =
+        _mm_set1_epi32(info->src->Amask | info->dst->Amask);
+    const __m128i mm128_255 = _mm_set1_epi16(0x00FF);
+
+    RUN_SSE2_BLITTER(mm128_src = _mm_or_si128(mm128_src, mm128_amask);
+                     RUN_16BIT_SHUFFLE_OUT({
+                         shuff_dst = _mm_mullo_epi16(shuff_dst, shuff_src);
+                         shuff_dst = _mm_add_epi16(shuff_dst, mm128_255);
+                         shuff_dst = _mm_srli_epi16(shuff_dst, 8);
+                     }))
+}
+
+void
+blit_blend_rgba_mul_sse2(SDL_BlitInfo *info)
+{
+    SETUP_SSE2_BLITTER
+    SETUP_16BIT_SHUFFLE_OUT
+    const __m128i mm128_255 = _mm_set1_epi16(0x00FF);
+
+    RUN_SSE2_BLITTER(RUN_16BIT_SHUFFLE_OUT({
+        shuff_dst = _mm_mullo_epi16(shuff_dst, shuff_src);
+        shuff_dst = _mm_add_epi16(shuff_dst, mm128_255);
+        shuff_dst = _mm_srli_epi16(shuff_dst, 8);
+    }))
+}
+
+void
+blit_blend_rgb_min_sse2(SDL_BlitInfo *info)
+{
+    SETUP_SSE2_BLITTER
+    const __m128i mm128_amask =
+        _mm_set1_epi32(info->src->Amask | info->dst->Amask);
+
+    RUN_SSE2_BLITTER({
+        mm128_src = _mm_or_si128(mm128_src, mm128_amask);
+        mm128_dst = _mm_min_epu8(mm128_dst, mm128_src);
+    })
+}
+
+void
+blit_blend_rgba_min_sse2(SDL_BlitInfo *info)
+{
+    SETUP_SSE2_BLITTER;
+    RUN_SSE2_BLITTER({ mm128_dst = _mm_min_epu8(mm128_dst, mm128_src); })
+}
+
+void
+blit_blend_rgb_max_sse2(SDL_BlitInfo *info)
+{
+    SETUP_SSE2_BLITTER
+    const __m128i mm128_rgbmask =
+        _mm_set1_epi32(~(info->src->Amask | info->dst->Amask));
+
+    RUN_SSE2_BLITTER({
+        mm128_src = _mm_and_si128(mm128_src, mm128_rgbmask);
+        mm128_dst = _mm_max_epu8(mm128_dst, mm128_src);
+    })
+}
+
+void
+blit_blend_rgba_max_sse2(SDL_BlitInfo *info)
+{
+    SETUP_SSE2_BLITTER
+    RUN_SSE2_BLITTER({ mm128_dst = _mm_max_epu8(mm128_dst, mm128_src); })
+}
 #endif /* __SSE2__ || PG_ENABLE_ARM_NEON*/
