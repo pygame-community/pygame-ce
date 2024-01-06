@@ -6,6 +6,9 @@
 #MIXER = -lSDL2_mixer
 #SCRAP =
 #FREETYPE = -lfreetype -lharfbuzz
+
+# png and jpeg are needed for decoders in SDL_image, when not using emscripten preload api because its async
+# which is the case for both pygbag or wasi (no browser, no emscripten js api emulation)
 PNG = -lpng
 JPEG = -ljpeg
 DEBUG =
