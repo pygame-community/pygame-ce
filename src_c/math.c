@@ -4192,13 +4192,13 @@ vector_elementwise(pgVector *vec, PyObject *_null)
     return (PyObject *)proxy;
 }
 
-double
+inline double
 lerp(double a, double b, double v)
 {
     return a + (b - a) * v;
 }
 
-double
+inline double
 invlerp(double a, double b, double v)
 {
     return (v - a) / (b - a);
@@ -4272,7 +4272,7 @@ math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     if (PyErr_Occurred())
         return RAISE(PyExc_ValueError,
-                     "Invalid argument values passed to invlerp.");
+                     "invalid argument values passed to invlerp, numbers might be too small or too big.");
 
     if (b - a == 0)
         return RAISE(PyExc_ZeroDivisionError,
@@ -4308,7 +4308,7 @@ math_remap(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     if (PyErr_Occurred())
         return RAISE(PyExc_ValueError,
-                     "Invalid argument values passed to remap.");
+                     "invalid argument values passed to remap, numbers might be too small or too big.");
 
     if (b - a == 0)
         return RAISE(
