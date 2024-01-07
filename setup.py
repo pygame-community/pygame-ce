@@ -765,22 +765,90 @@ if "bdist_msi" in sys.argv:
 
 # test command.  For doing 'python setup.py test'
 
-@add_command('test')
+
+def _get_test_modules_as_string():
+    import glob
+
+    listed = (
+        i.replace("test" + os.path.sep, "").replace("_test.py", "")
+        for i in glob.glob(os.path.join("test", "*_test.py"))
+        if not i.startswith(os.path.join("test", "base_test.py"))
+    )
+    mods = [i + "\t\t\t\t\t\t\t\t" for i in listed if not i.startswith("_")]
+    return f"  ".join(mods)
+
+
+@add_command("test")
 class TestCommand(Command):
     user_options = []
+    description = "Launch the unittests without installing them. Meant for developers. See 'setup.py test --help' for more options."
+    user_options = [
+        (
+            "commandline=",
+            "c",
+            "If this option is not provided then all tests are run. "
+            "To open the help use \t\t\t\t\t"
+            "'setup.py test -c \"-h\"'\t\t\t\t\t"
+            "e.g. to run the example from the help it would be: \t"
+            "'setup.py test -c \"sprite threads -sd\"'\t\t\t\t\t"
+            "Listening available modules:\t\t\t\t\t"
+            "\t\t\t\t\t" + _get_test_modules_as_string(),
+        ),
+        (
+            "copy=",
+            None,
+            "Run tests from the repository by copying them to the installed pygame.tests directory "
+            "(e.g. site-packages/pygame/tests). "
+            "Defaults to 'False'.",
+        ),
+    ]
 
     def initialize_options(self):
         self._dir = os.getcwd()
+        self.commandline = None
+        self.testargs = []
+        self.copy = "0"
 
     def finalize_options(self):
-        pass
+        if self.commandline:
+            self.testargs = filter(None, self.commandline.split(" "))
+        self.copy = True if self.copy in ["1", "True", 1, True, "y", "yes"] else False
 
     def run(self):
-        '''
+        """
         runs the tests with default options.
-        '''
+        """
+        if self.copy:
+            # e.g. run the local test files
+            # copy local files to site-packages
+            import sysconfig
+
+            site_packages_path = sysconfig.get_path("purelib")
+            source_path = "test"
+            target_path = os.path.join(site_packages_path, "pygame", "tests")
+            if os.path.exists(target_path):
+                print(f"deleting '{target_path}'...")
+                shutil.rmtree(target_path)
+            print(f"copy files from '{source_path}' to '{target_path}' ...")
+            shutil.copytree(source_path, target_path)
+
+        if self.copy:
+            # e.g. python -m pygame.tests surface_test font_test -v
+            call_args = [sys.executable, "-m", "pygame.tests", *self.testargs]
+        else:
+            # original command and/or passing provided args
+            call_args = [
+                sys.executable,
+                os.path.join("test", "__main__.py"),
+                *self.testargs,
+            ]
+
+        call_args_as_string = " ".join(call_args)
+        print(f"executing: '{call_args_as_string}'")
+        print("")
         import subprocess
-        return subprocess.call([sys.executable, os.path.join('test', '__main__.py')])
+
+        return subprocess.call(call_args)
 
 
 class LintFormatCommand(Command):
@@ -859,7 +927,7 @@ class LintFormatCommand(Command):
             check_linter_exists(linter)
             result = subprocess.run([linter] + option)
             if result.returncode:
-                msg = f"'{linter}' failed."
+                msg = f"'{linter}' failed. Return code: {result.returncode}"
                 msg += " Please run: python setup.py format" if linter in formatters else ""
                 msg += f" Do you have the latest version of {linter}?"
                 raise SystemExit(msg)
@@ -868,11 +936,13 @@ class LintFormatCommand(Command):
 @add_command("lint")
 class LintCommand(LintFormatCommand):
     lint = True
+    description = "Check the existence and launch linters."
 
 
 @add_command("format")
 class FormatCommand(LintFormatCommand):
     format = True
+    description = "Reformatting the files according to the linters."
 
 
 @add_command('docs')
@@ -880,6 +950,7 @@ class DocsCommand(Command):
     """ For building the pygame-ce documentation with `python setup.py docs`.
     This generates html, and documentation .h header files.
     """
+    description = """ For building the pygame-ce documentation with `python setup.py docs`. This generates html, and documentation .h header files."""
     user_options = [
         (
             'fullgeneration',
@@ -915,6 +986,8 @@ class StubcheckCommand(Command):
     """ For checking the stubs with `python setup.py stubcheck`.
     """
     user_options = []
+    description = "For checking the stubs with `python setup.py stubcheck`. Uses mypy to check stubs consistency."
+
     def initialize_options(self):
         pass
         
@@ -942,6 +1015,180 @@ class StubcheckCommand(Command):
         os.chdir('../../')
         if result.returncode != 0:
             raise SystemExit("Stubcheck failed.")
+
+@add_command('local_ci')
+class LocalCiCommand(Command):
+    """ For running the CI steps locally with `python setup.py local_ci`.
+    """
+    _outdated_cache = None
+
+    commands = [
+        # install dependencies
+        # ([sys.executable, '-m','pip', 'install', '-U', 'mypy'], ""),
+        ("ask_to_install", ('mypy', "")),
+        # ("py", ([sys.executable, '-m','pip', 'install', '-U', 'black'], "")),
+        ("ask_to_install", ('black', "")),
+        ("py", ([sys.executable, '-m','pip', 'install', '-U', 'pylint'], "")),
+        ("py", ([sys.executable, '-m','pip', 'install', '-U', 'clang-format'], "")),
+        ("py", ([sys.executable, '-m','pip', 'install', '-U', 'sphinx'], "")),
+        ("py", ([sys.executable, '-m', 'buildconfig'], "")),
+
+        # run linters
+        ("py", ([sys.executable, '-m', 'black', 'buildconfig\stubs\pygame'], "")),
+        ("py", ([sys.executable, '-m', 'setup', 'format'], "")),
+        ("py", ([sys.executable, '-m', 'setup', 'lint'], "")),
+        # ([sys.executable, '-m', 'setup', 'format'], ""),
+
+        # rebuild
+        ("py", ([sys.executable, '-m', 'setup', 'clean', '--all'], "")),
+        ("py", ([sys.executable, '-m', 'setup', 'docs', '--fullgeneration'], "Failed to regenerate docs.")),
+        ("py", ([sys.executable, '-m', 'setup', 'build'], "Failed to build.")),
+
+        # install
+        ("py", ([sys.executable, '-m','pip', 'uninstall', '-y', 'pygame'], "")),
+        ("py", ([sys.executable, '-m', 'pip', 'install', '--no-deps','.'], "")),
+
+        # rem check stubs(against installed version!)
+        ("py", ([sys.executable, '-m', 'setup', 'stubcheck'], "")),
+        ("py", ([sys.executable, '-m', 'pygame.tests', '-v'], "")),
+
+    ]
+    description = "run the ci steps locally. Meant for developers. See 'setup.py local_ci --help'"
+    user_options = [
+        (
+            'steps=', 's',
+            "The steps that should be executed. "\
+            "Using slice notation individual steps can be chosen. Or just a single one. "\
+            "E.g. '--steps 3:' to execute step 3 and all following  or '-s 4' to execute step 4 or "
+            "as a comma separated list '-s 3,4,8'\t\t\t"\
+            "\t\t\tListing available steps:" \
+            # "\t\t\tusing: py = " + sys.executable +"" \
+            "\t\t\t\t\t" + f"  ".join([f"{idx}: {c[0]} " + (" ".join(c[1][0][1:]) if isinstance(c[1][0], (tuple, list))  else c[1][0] )+ "\t\t\t\t\t\t\t\t" for idx, c in enumerate(commands)])
+        ),
+        (
+            'pipchoice=', 'p','Override choice for the module updates using pip, either \'y\' or \'n\''
+        )
+    ]
+
+    yes = ("y", "yes", "ye", "")
+    no = ("n", "no")
+
+    def initialize_options(self):
+        self.steps = ":" # all steps in slice notation as default value
+        self.pipchoice = None
+
+    def finalize_options(self):
+        arg_steps = self.steps # string from command line arg
+        step_indices = list(range(len(self.commands)))
+        if self.pipchoice is not None:
+            if self.pipchoice not in self.yes and self.pipchoice not in self.no:
+                raise AssertionError(f"provided value '{self.pipchoice}' for pipchoice is invalid, allowed values are: {','.join(self.yes)}{','.join(self.no)}")
+        if arg_steps.count(":") == 0:
+            if arg_steps.count(",") == 0:
+                self.steps = [int(arg_steps)] # single step
+            else:
+                self.steps = [int(x) for x in arg_steps.split(",")] # comma separated list of steps
+                self.steps.sort()
+        else:
+            # slice of steps
+            s = slice(*((int(x) if x else x) for x in (y or None for y in arg_steps.split(":"))))
+            if s.step != 1 and s.step is not None:
+                raise AssertionError(f"only slice with step 1 is supported: {s.step}")
+            self.steps = step_indices[s]
+    def run(self):
+        """
+        runs the ci steps locally.
+        """
+        print(">>>Using python:", sys.executable)
+        print(">>>steps:", self.steps)
+        print(">>>pipchoice:", self.pipchoice)
+        environ = os.environ
+        if sys.platform == 'win32':
+            # todo will this check cause more problems than it solves?
+            if "VSCMD_ARG_app_plat" not in environ:
+                raise SystemExit(f"please use a developer prompt!")
+            environ["DISTUTILS_USE_SDK"] = "1"
+            print(">>>add environ DISTUTILS_USE_SDK:", environ["DISTUTILS_USE_SDK"])
+            environ["MSSdk"] = "1"
+            print(">>>add environ MSSdk:", environ["MSSdk"])
+            # add Scripts path so the clang.exe is found
+            import sysconfig
+            scripts_dir = sysconfig.get_path("scripts")
+            environ["PATH"] += os.pathsep + scripts_dir
+            print(">>>modified environ PATH:", environ["PATH"])
+        else:
+            # add here other platform specific changes if needed
+            pass
+
+        for step_idx in self.steps:
+            if step_idx <0 or step_idx > len(self.commands):
+                raise SystemExit(f"invalid step: {step_idx}")
+            cmd, cmd_arguments = self.commands[step_idx]
+            if cmd == "ask_to_install":
+                # cmd_arguments =  (name, fail_message)
+                self._check_and_ask_install_package(step_idx, *cmd_arguments, environ)
+            elif cmd == "py":
+                # cmd_arguments =  ([args], fail_message)
+                self._run_subprocess(step_idx, *cmd_arguments, environ)
+
+    def _check_and_ask_install_package(self, step_idx, name, fail_message, environ):
+        print(f">>>run step {step_idx}: check module installation for: {name}")
+        if self.pipchoice in self.no:
+            print(">>>default choice:", self.pipchoice)
+            return
+        if not self._outdated_cache:
+            import subprocess
+            sub_proc_args = [sys.executable, '-m', 'pip', 'list', '--outdated', '-v']
+            print(f">>>get outdated information, run: {' '.join(sub_proc_args)}")
+            process_result = subprocess.run(sub_proc_args, capture_output=True, text=True)
+            if process_result.returncode != 0:
+                raise SystemExit(fail_message)
+
+            # print(">>>process result:", process_result)  # todo print this with verbose flag?
+            line_tuples_itr = (tuple((_f.strip() for _f in _l.split(" ") if _f)) for _l in process_result.stdout.splitlines())
+            LocalCiCommand._outdated_cache = dict(((_t[0], _t) for _t in line_tuples_itr))
+            # print(LocalCiCommand._outdated_cache) # todo print this with verbose flag?
+
+        # ask to install if newer is available
+        if name in self._outdated_cache:
+            if self.pipchoice:
+                choice = True if self.pipchoice in self.yes else False
+                print(">>>default choice:", self.pipchoice)
+            else:
+                # ask for update
+                while True:
+                    print(">>>")
+                    print(f"<<<?? Update '{name}' from {self._outdated_cache[name][1]} to {self._outdated_cache[name][2]}? (y/n):")
+                    choice = input().lower()
+                    if choice in self.yes:
+                        choice = True
+                        break
+                    if choice in self.no:
+                        choice = False
+                        break
+
+            print(">>>")
+            if choice:
+                print(f">>>updating {name}...")
+                args = [sys.executable, '-m', 'pip', 'install', '-U', name]
+                self._run_subprocess(step_idx, args, fail_message, environ)
+            # else:
+            #     print(f">>>keeping {self._outdated_cache[name][1]} for {name}")
+        else:
+            # skip
+            print(f">>>module '{name}' is already up to date.")
+
+    def _run_subprocess(self, step_idx, command_line, fail_message, environ):
+        command_line_as_string = " ".join(command_line)
+        print(f">>>run step {step_idx}: {command_line_as_string}")
+
+        import subprocess
+        proc = subprocess.run(command_line, capture_output=False, shell=True, check=True, env=environ,
+                              stdout=sys.stdout, stderr=sys.stderr)
+
+        if proc.returncode != 0:
+            raise SystemExit(fail_message)
+
 
 # Prune empty file lists.
 data_files = [(path, files) for path, files in data_files if files]
