@@ -3298,6 +3298,13 @@ class FRectTypeTest(RectTypeTest):
         self.assertSeqAlmostEqual5(r[3::-1], [4.8, 3.6, 2.4, 1.2])
         self.assertRaises(TypeError, r.__getitem__, None)
 
+    def test_construction_no_args(self):
+        r = FRect()
+        self.assertEqual(r.x, 0.0)
+        self.assertEqual(r.y, 0.0)
+        self.assertEqual(r.w, 0.0)
+        self.assertEqual(r.h, 0.0)
+
 
 class SubclassTest(unittest.TestCase):
     class MyRect(Rect):
@@ -3372,6 +3379,13 @@ class SubclassTest(unittest.TestCase):
         mr1 = self.MyRect(64, 70, 75, 30)
         self.assertTrue(isinstance(mr1, Collection))
         self.assertFalse(isinstance(mr1, Sequence))
+
+    def test_construction_no_args(self):
+        mr = self.MyRect()
+        self.assertEqual(mr.x, 0)
+        self.assertEqual(mr.y, 0)
+        self.assertEqual(mr.w, 0)
+        self.assertEqual(mr.h, 0)
 
 
 if __name__ == "__main__":
