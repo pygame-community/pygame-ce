@@ -851,7 +851,8 @@ static int
 RectExport_init(RectObject *self, PyObject *args, PyObject *kwds)
 {
     if (PyTuple_GET_SIZE(args) == 0) {
-        // Setting fields explicitly to 0 to eliminate any chance of bugs happening
+        // Setting fields explicitly to 0 to eliminate any chance of bugs
+        // happening
         self->r.x = self->r.y = (PrimitiveType)0;
         self->r.w = self->r.h = (PrimitiveType)0;
         self->weakreflist = NULL;
