@@ -191,8 +191,10 @@
 
          .. note::
              This method is equivalent(behaviour wise) to the following code:
-             ::
-                  Circle((circle.x + x, circle.y + y), circle.r)
+
+             .. code-block:: python
+
+                 Circle((circle.x + x, circle.y + y), circle.r)
 
          .. ## Circle.move ##
 
@@ -209,9 +211,11 @@
 
          .. note::
              This method is equivalent(behaviour wise) to the following code:
-             ::
-                  circle.x += x
-                  circle.y += y
+
+             .. code-block:: python
+
+                 circle.x += x
+                 circle.y += y
 
          .. ## Circle.move_ip ##
 
