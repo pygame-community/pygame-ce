@@ -388,6 +388,99 @@ pg_circle_colliderect(pgCircleObject *self, PyObject *const *args,
     return PyBool_FromLong(pgCollision_RectCircle(x, y, w, h, &self->circle));
 }
 
+static void
+_pg_rotate_circle_helper(pgCircleBase *circle, double angle, double rx,
+                         double ry)
+{
+    if (angle == 0.0 || fmod(angle, 360.0) == 0.0) {
+        return;
+    }
+
+    double x = circle->x - rx;
+    double y = circle->y - ry;
+
+    const double angle_rad = DEG_TO_RAD(angle);
+
+    double cos_theta = cos(angle_rad);
+    double sin_theta = sin(angle_rad);
+
+    circle->x = rx + x * cos_theta - y * sin_theta;
+    circle->y = ry + x * sin_theta + y * cos_theta;
+}
+
+static PyObject *
+pg_circle_rotate(pgCircleObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (!nargs || nargs > 2) {
+        return RAISE(PyExc_TypeError, "rotate requires 1 or 2 arguments");
+    }
+
+    pgCircleBase *circle = &self->circle;
+    double angle, rx, ry;
+
+    rx = circle->x;
+    ry = circle->y;
+
+    if (!pg_DoubleFromObj(args[0], &angle)) {
+        return RAISE(PyExc_TypeError,
+                     "Invalid angle argument, must be numeric");
+    }
+
+    if (nargs != 2) {
+        return _pg_circle_subtype_new(Py_TYPE(self), circle);
+    }
+
+    if (!pg_TwoDoublesFromObj(args[1], &rx, &ry)) {
+        return RAISE(PyExc_TypeError,
+                     "Invalid rotation point argument, must be a sequence of "
+                     "2 numbers");
+    }
+
+    PyObject *circle_obj = _pg_circle_subtype_new(Py_TYPE(self), circle);
+    if (!circle_obj) {
+        return NULL;
+    }
+
+    _pg_rotate_circle_helper(&pgCircle_AsCircle(circle_obj), angle, rx, ry);
+
+    return circle_obj;
+}
+
+static PyObject *
+pg_circle_rotate_ip(pgCircleObject *self, PyObject *const *args,
+                    Py_ssize_t nargs)
+{
+    if (!nargs || nargs > 2) {
+        return RAISE(PyExc_TypeError, "rotate requires 1 or 2 arguments");
+    }
+
+    pgCircleBase *circle = &self->circle;
+    double angle, rx, ry;
+
+    rx = circle->x;
+    ry = circle->y;
+
+    if (!pg_DoubleFromObj(args[0], &angle)) {
+        return RAISE(PyExc_TypeError,
+                     "Invalid angle argument, must be numeric");
+    }
+
+    if (nargs != 2) {
+        /* just return None */
+        Py_RETURN_NONE;
+    }
+
+    if (!pg_TwoDoublesFromObj(args[1], &rx, &ry)) {
+        return RAISE(PyExc_TypeError,
+                     "Invalid rotation point argument, must be a sequence "
+                     "of 2 numbers");
+    }
+
+    _pg_rotate_circle_helper(circle, angle, rx, ry);
+
+    Py_RETURN_NONE;
+}
+
 static struct PyMethodDef pg_circle_methods[] = {
     {"collidepoint", (PyCFunction)pg_circle_collidepoint, METH_FASTCALL,
      DOC_CIRCLE_COLLIDEPOINT},
@@ -402,6 +495,10 @@ static struct PyMethodDef pg_circle_methods[] = {
      DOC_CIRCLE_UPDATE},
     {"__copy__", (PyCFunction)pg_circle_copy, METH_NOARGS, DOC_CIRCLE_COPY},
     {"copy", (PyCFunction)pg_circle_copy, METH_NOARGS, DOC_CIRCLE_COPY},
+    {"rotate", (PyCFunction)pg_circle_rotate, METH_FASTCALL,
+     DOC_CIRCLE_ROTATE},
+    {"rotate_ip", (PyCFunction)pg_circle_rotate_ip, METH_FASTCALL,
+     DOC_CIRCLE_ROTATEIP},
     {NULL, NULL, 0, NULL}};
 
 #define GETTER_SETTER(name)                                                   \

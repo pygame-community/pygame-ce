@@ -15,4 +15,6 @@
 #define DOC_CIRCLE_MOVEIP "move_ip((x, y)) -> None\nmove_ip(x, y) -> None\nmove_ip(Vector2) -> None\nmoves the circle by a given amount, in place"
 #define DOC_CIRCLE_COLLIDERECT "colliderect(Rect) -> bool\ncolliderect((x, y, width, height)) -> bool\ncolliderect(x, y, width, height) -> bool\ncolliderect((x, y), (width, height)) -> bool\nchecks if a rectangle intersects the circle"
 #define DOC_CIRCLE_UPDATE "update((x, y), radius) -> None\nupdate(x, y, radius) -> None\nupdates the circle position and radius"
+#define DOC_CIRCLE_ROTATE ""
+#define DOC_CIRCLE_ROTATEIP "rotate_ip(angle, rotation_point=Circle.center) -> None\nrotates the circle in place"
 #define DOC_CIRCLE_COPY "copy() -> Circle\nreturns a copy of the circle"
