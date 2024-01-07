@@ -26,8 +26,7 @@
                            the resolution (videomode change).
    :param bool fullscreen_desktop: Create a fullscreen window using the current
                                    desktop resolution.
-   :param bool opengl: Create a window with support for an OpenGL context. You
-                       will still need to create an OpenGL context separately.
+   :param bool opengl: Create a window with support for an OpenGL context.
    :param bool vulkan: Create a window with support for a Vulkan instance.
    :param bool hidden: Create a hidden window.
    :param bool borderless: Create a window without borders.
@@ -46,6 +45,7 @@
                               others.
 
    .. versionadded:: 2.4.0
+   .. versionchanged:: 2.5.0 when ``opengl`` is ``True``, the ``Window`` has an OpenGL context created by pygame
 
 
    .. attribute:: grab_mouse

@@ -123,6 +123,10 @@ window_destroy(pgWindowObject *self, PyObject *_null)
             pg_SetDefaultWindow(NULL);
         }
 
+        if (self->context != NULL) {
+            SDL_GL_DeleteContext(self->_win);
+        }
+
         SDL_DestroyWindow(self->_win);
         self->_win = NULL;
     }
@@ -717,6 +721,9 @@ window_dealloc(pgWindowObject *self, PyObject *_null)
 {
     if (self->_win) {
         if (!self->_is_borrowed) {
+            if (self->context != NULL) {
+                SDL_GL_DeleteContext(self->_win);
+            }
             SDL_DestroyWindow(self->_win);
         }
         else if (SDL_GetWindowData(self->_win, "pg_window") != NULL) {
@@ -917,6 +924,17 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     self->_win = _win;
     self->_is_borrowed = SDL_FALSE;
     self->surf = NULL;
+
+    if (SDL_GetWindowFlags(self->_win) & SDL_WINDOW_OPENGL) {
+        SDL_GLContext context = SDL_GL_CreateContext(self->_win);
+        if (context == NULL) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+        self->context = context;
+    }
+    else {
+        self->context = NULL;
+    }
 
     SDL_SetWindowData(_win, "pg_window", self);
 
