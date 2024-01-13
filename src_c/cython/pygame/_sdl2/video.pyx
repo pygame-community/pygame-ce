@@ -1232,7 +1232,7 @@ cdef class Renderer:
             if surf == NULL:
                 raise MemoryError("not enough memory for the surface")
 
-            surface = <object>pgSurface_New2(surf, 1)
+            surface = pgSurface_New2(surf, 1)
         elif pgSurface_Check(surface):
             surf = pgSurface_AsSurface(surface)
             if surf.w < rarea.w or surf.h < rarea.h:

@@ -1415,11 +1415,11 @@ static const char *__pyx_filename;
 
 static const char *__pyx_f[] = {
   "src_c\\\\cython\\\\pygame\\\\_sdl2\\\\video.pyx",
-  "contextvars.pxd",
+  "venv\\\\lib\\\\site-packages\\\\Cython\\\\Includes\\\\cpython\\\\contextvars.pxd",
   "src_c\\\\cython\\\\pygame\\\\_sdl2\\\\video.pxd",
-  "type.pxd",
-  "bool.pxd",
-  "complex.pxd",
+  "venv\\\\lib\\\\site-packages\\\\Cython\\\\Includes\\\\cpython\\\\type.pxd",
+  "venv\\\\lib\\\\site-packages\\\\Cython\\\\Includes\\\\cpython\\\\bool.pxd",
+  "venv\\\\lib\\\\site-packages\\\\Cython\\\\Includes\\\\cpython\\\\complex.pxd",
 };
 /* #### Code section: utility_code_proto_before_types ### */
 /* #### Code section: numeric_typedefs ### */
@@ -20252,9 +20252,8 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_32to_surface(struct __
   int __pyx_t_3;
   PyObject *__pyx_t_4 = NULL;
   PyObject *__pyx_t_5 = NULL;
-  pgSurfaceObject *__pyx_t_6;
-  int __pyx_t_7;
-  Uint32 __pyx_t_8;
+  int __pyx_t_6;
+  Uint32 __pyx_t_7;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -20505,7 +20504,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_32to_surface(struct __
  *             if surf == NULL:
  *                 raise MemoryError("not enough memory for the surface")             # <<<<<<<<<<<<<<
  * 
- *             surface = <object>pgSurface_New2(surf, 1)
+ *             surface = pgSurface_New2(surf, 1)
  */
       __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_MemoryError, __pyx_tuple__24, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 1233, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
@@ -20525,13 +20524,12 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_32to_surface(struct __
     /* "pygame/_sdl2/video.pyx":1235
  *                 raise MemoryError("not enough memory for the surface")
  * 
- *             surface = <object>pgSurface_New2(surf, 1)             # <<<<<<<<<<<<<<
+ *             surface = pgSurface_New2(surf, 1)             # <<<<<<<<<<<<<<
  *         elif pgSurface_Check(surface):
  *             surf = pgSurface_AsSurface(surface)
  */
-    __pyx_t_6 = pgSurface_New2(__pyx_v_surf, 1);
-    __pyx_t_2 = ((PyObject *)__pyx_t_6);
-    __Pyx_INCREF(__pyx_t_2);
+    __pyx_t_2 = pgSurface_New2(__pyx_v_surf, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 1235, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF_SET(__pyx_v_surface, __pyx_t_2);
     __pyx_t_2 = 0;
 
@@ -20547,7 +20545,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_32to_surface(struct __
 
   /* "pygame/_sdl2/video.pyx":1236
  * 
- *             surface = <object>pgSurface_New2(surf, 1)
+ *             surface = pgSurface_New2(surf, 1)
  *         elif pgSurface_Check(surface):             # <<<<<<<<<<<<<<
  *             surf = pgSurface_AsSurface(surface)
  *             if surf.w < rarea.w or surf.h < rarea.h:
@@ -20556,7 +20554,7 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_32to_surface(struct __
   if (likely(__pyx_t_1)) {
 
     /* "pygame/_sdl2/video.pyx":1237
- *             surface = <object>pgSurface_New2(surf, 1)
+ *             surface = pgSurface_New2(surf, 1)
  *         elif pgSurface_Check(surface):
  *             surf = pgSurface_AsSurface(surface)             # <<<<<<<<<<<<<<
  *             if surf.w < rarea.w or surf.h < rarea.h:
@@ -20571,14 +20569,14 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_32to_surface(struct __
  *                 raise ValueError("the surface is too small")
  *             format = surf.format.format
  */
-    __pyx_t_7 = (__pyx_v_surf->w < __pyx_v_rarea.w);
-    if (!__pyx_t_7) {
+    __pyx_t_6 = (__pyx_v_surf->w < __pyx_v_rarea.w);
+    if (!__pyx_t_6) {
     } else {
-      __pyx_t_1 = __pyx_t_7;
+      __pyx_t_1 = __pyx_t_6;
       goto __pyx_L9_bool_binop_done;
     }
-    __pyx_t_7 = (__pyx_v_surf->h < __pyx_v_rarea.h);
-    __pyx_t_1 = __pyx_t_7;
+    __pyx_t_6 = (__pyx_v_surf->h < __pyx_v_rarea.h);
+    __pyx_t_1 = __pyx_t_6;
     __pyx_L9_bool_binop_done:;
     if (unlikely(__pyx_t_1)) {
 
@@ -20611,12 +20609,12 @@ static PyObject *__pyx_pf_6pygame_5_sdl2_5video_8Renderer_32to_surface(struct __
  *         else:
  *             raise TypeError("'surface' must be a surface or None")
  */
-    __pyx_t_8 = __pyx_v_surf->format->format;
-    __pyx_v_format = __pyx_t_8;
+    __pyx_t_7 = __pyx_v_surf->format->format;
+    __pyx_v_format = __pyx_t_7;
 
     /* "pygame/_sdl2/video.pyx":1236
  * 
- *             surface = <object>pgSurface_New2(surf, 1)
+ *             surface = pgSurface_New2(surf, 1)
  *         elif pgSurface_Check(surface):             # <<<<<<<<<<<<<<
  *             surf = pgSurface_AsSurface(surface)
  *             if surf.w < rarea.w or surf.h < rarea.h:
@@ -22492,7 +22490,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *             if surf == NULL:
  *                 raise MemoryError("not enough memory for the surface")             # <<<<<<<<<<<<<<
  * 
- *             surface = <object>pgSurface_New2(surf, 1)
+ *             surface = pgSurface_New2(surf, 1)
  */
   __pyx_tuple__24 = PyTuple_Pack(1, __pyx_kp_s_not_enough_memory_for_the_surfac); if (unlikely(!__pyx_tuple__24)) __PYX_ERR(0, 1233, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__24);
