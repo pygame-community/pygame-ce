@@ -20,6 +20,17 @@ class VideoModuleTest(unittest.TestCase):
         rect = pygame.Rect(0, 0, 1920, 1080)
         renderer.set_viewport(rect)
         self.assertEqual(renderer.get_viewport(), (0, 0, 1920, 1080))
+    
+    def test_renderer_to_surface_refcount(self):
+        """works."""
+        window = video.Window(title=self.default_caption, size=(800, 600))
+        renderer = video.Renderer(window=window)
+        surface = pygame.Surface(window.size)
+
+        # directly getting a refcount returns the actual refcount
+        # as opposed to using an itermediate variable where it's 1 more than expected
+        self.assertEqual(sys.getrefcount(renderer.to_surface()), 1)
+        self.assertEqual(sys.getrefcount(renderer.to_surface(surface=surface)), 2)
 
 
 if __name__ == "__main__":
