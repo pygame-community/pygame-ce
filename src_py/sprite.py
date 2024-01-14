@@ -35,8 +35,7 @@ The basic Sprite class can draw the Sprites it contains to a Surface. The
 Group.draw() method requires that each Sprite have a Surface.image attribute
 and a Surface.rect. The Group.clear() method requires these same attributes
 and can be used to erase all the Sprites with background. There are also
-more advanced Groups: pygame.sprite.RenderUpdates() and
-pygame.sprite.OrderedUpdates().
+more advanced Groups: pygame.sprite.RenderUpdates().
 
 Lastly, this module contains several collision functions. These help find
 sprites inside multiple groups that have intersecting bounding rectangles.
@@ -686,7 +685,7 @@ class RenderUpdates(Group):
 
 
 class LayeredUpdates(AbstractGroup):
-    """LayeredUpdates Group handles layers, which are drawn like OrderedUpdates
+    """LayeredUpdates Group handles layers, which are drawn like RenderUpdates
 
     pygame.sprite.LayeredUpdates(*sprites, **kwargs): return LayeredUpdates
 
