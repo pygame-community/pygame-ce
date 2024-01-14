@@ -16,7 +16,7 @@ You can get some of this info from the text that pops up in the console when you
 - **Operating system** (e.g. Windows, Linux(Debian), Linux(Ubuntu), Mac):
 - **Python version** (e.g. 3.7.9, 3.8.5) :
 - **SDL version** (e.g. SDL 2.0.12):
-- **PyGame version** (e.g. 2.0.0.dev10, 1.9.6):
+- **pygame-ce version** (e.g. 2.4.0.dev4, 2.1.3):
 - **Relevant hardware** (e.g. if reporting a bug about a controller, tell us the brand & name of it):
 
 **Current behavior:**
