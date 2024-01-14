@@ -428,7 +428,7 @@ Here we create all the objects that the game is going to need.
     punch_sound = load_sound("punch.wav")
     chimp = Chimp()
     fist = Fist()
-    allsprites = pygame.sprite.Group((chimp, fist))
+    allsprites = pygame.sprite.RenderPlain((chimp, fist))
     clock = pygame.time.Clock()
 
 First we load two sound effects using the `load_sound` function we defined
@@ -436,7 +436,11 @@ above. Then we create an instance of each of our sprite classes. And lastly
 we create a sprite :class:`Group <pygame.sprite.Group>` which will contain all
 our sprites.
 
-We create the group named "allsprites" by passing a list with all the sprites that
+We actually use a special sprite group named :class:`RenderPlain
+<pygame.sprite.RenderPlain>`. This sprite group can draw all the sprites it
+contains to the screen. It is called `RenderPlain` because there are actually
+more advanced Render groups. But for our game, we just need simple drawing. We
+create the group named "allsprites" by passing a list with all the sprites that
 should belong in the group. We could later on add or remove sprites from this
 group, but in this game we won't need to.
 
@@ -517,7 +521,7 @@ Now that all the objects are in the right place, time to draw them. ::
 The first blit call will draw the background onto the entire screen. This
 erases everything we saw from the previous frame (slightly inefficient, but
 good enough for this game). Next we call the `draw()` method of the sprite
-container. Since this sprite container is really an instance of the "Group"
+container. Since this sprite container is really an instance of the "RenderPlain"
 sprite group, it knows how to draw our sprites. Lastly, we `flip()` the contents
 of pygame's software double buffer to the screen. This makes everything we've
 drawn visible all at once.

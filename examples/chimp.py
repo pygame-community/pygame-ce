@@ -162,7 +162,7 @@ def main():
     punch_sound = load_sound("punch.wav")
     chimp = Chimp()
     fist = Fist()
-    allsprites = pygame.sprite.Group((chimp, fist))
+    allsprites = pygame.sprite.RenderPlain((chimp, fist))
     clock = pygame.Clock()
 
     # Main Loop
