@@ -163,6 +163,9 @@ class BlitTest(unittest.TestCase):
         self.assertEqual(dst.fblits(blit_list, 0), None)
         self.assertEqual(dst.fblits(blit_list, 1), dst.blits(blit_list, doreturn=0))
 
+        # make sure this doesn't segfault
+        dst.fblits((dst, dst.get_rect().topleft) for _ in range(1))
+
         t0 = time()
         results = blits(blit_list)
         t1 = time()
