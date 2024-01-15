@@ -12,6 +12,8 @@ from pygame.sprite import (
     Group,
     GroupSingle,
     AbstractGroup,
+    RenderClear,
+    RenderPlain,
     RenderUpdates,
     LayeredUpdates,
     LayeredDirty,

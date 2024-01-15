@@ -654,6 +654,26 @@ class Group(AbstractGroup):
         self.add(*sprites)
 
 
+class RenderPlain(Group):
+    def __init__(self, *sprites):
+        super().__init__(*sprites)
+        warn(
+            "This class is deprecated and will be removed in a future version.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+
+class RenderClear(Group):
+    def __init__(self, *sprites):
+        super().__init__(*sprites)
+        warn(
+            "This class is deprecated and will be removed in a future version.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+
 class RenderUpdates(Group):
     """Group class that tracks dirty updates
 
@@ -682,6 +702,18 @@ class RenderUpdates(Group):
                 dirty_append(new_rect)
             self.spritedict[sprite] = new_rect
         return dirty
+
+
+class OrderedUpdates(RenderUpdates):
+    def __init__(self, *sprites):
+        super().__init__(*sprites)
+        warn(
+            "OrderedUpdates is now just an alias to RenderUpdates, order of "
+            "sprites is now maintained in all sprite Group classes. This "
+            "class is deprecated and will be removed in a future version.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
 
 class LayeredUpdates(AbstractGroup):
