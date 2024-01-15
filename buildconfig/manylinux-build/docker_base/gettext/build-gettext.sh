@@ -3,6 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
+# Gettext 0.22 didn't work for some reason
 GETTEXT=gettext-0.21
 
 curl -sL --retry 10 https://ftp.gnu.org/gnu/gettext/${GETTEXT}.tar.gz > ${GETTEXT}.tar.gz
@@ -19,7 +20,7 @@ fi
 tar xzf ${GETTEXT}.tar.gz
 cd $GETTEXT
 
-./configure $ARCHS_CONFIG_FLAG $GETTEXT_CONFIGURE  \
+./configure $PG_BASE_CONFIGURE_FLAGS $GETTEXT_CONFIGURE  \
 --disable-dependency-tracking \
 --disable-silent-rules \
 --disable-debug \
@@ -37,7 +38,8 @@ cd $GETTEXT
 make
 make install
 
+# For some reason, this is needed for glib to find gettext
+# TODO: remove this, hopefully after glib is updated this won't be needed
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
+    make install prefix=/usr/local
 fi

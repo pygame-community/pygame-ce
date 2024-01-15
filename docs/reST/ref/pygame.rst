@@ -106,7 +106,7 @@ object instead of the module, which can be used to test for availability.
 .. function:: set_error
 
    | :sl:`set the current error message`
-   | :sg:`set_error(error_msg) -> None`
+   | :sg:`set_error(error_msg, /) -> None`
 
    SDL maintains an internal error message. This message will usually be
    given to you when :func:`pygame.error` is raised, so this function will
@@ -147,7 +147,7 @@ object instead of the module, which can be used to test for availability.
 .. function:: register_quit
 
    | :sl:`register a function to be called when pygame quits`
-   | :sg:`register_quit(callable) -> None`
+   | :sg:`register_quit(callable, /) -> None`
 
    When :func:`pygame.quit` is called, all registered quit functions are
    called. Pygame modules do this automatically when they are initializing, so
@@ -177,6 +177,8 @@ object instead of the module, which can be used to test for availability.
    This function is used in encoding file paths. Keyword arguments are
    supported.
 
+   This function is not needed for normal pygame-ce usage.
+
    .. versionaddedold:: 1.9.2 (primarily for use in unit tests)
 
    .. ## pygame.encode_string ##
@@ -196,6 +198,8 @@ object instead of the module, which can be used to test for availability.
    This function is used to encode file paths in pygame. Encoding is to the
    codec as returned by ``sys.getfilesystemencoding()``. Keyword arguments are
    supported.
+
+   This function is not needed for normal pygame-ce usage.
 
    .. versionaddedold:: 1.9.2 (primarily for use in unit tests)
 
@@ -298,7 +302,7 @@ check which version of pygame has been imported.
 .. data:: SDL
 
    | :sl:`tupled integers of the SDL library version`
-   | :sg:`SDL = '(2, 0, 12)'`
+   | :sg:`SDL = '(2, 26, 5)'`
 
    This is the SDL library version represented as an extended tuple. It also has
    attributes 'major', 'minor' & 'patch' that can be accessed like this:
@@ -313,7 +317,7 @@ check which version of pygame has been imported.
    ::
 
     >>> pygame.version.SDL
-    SDLVersion(major=2, minor=0, patch=12)
+    SDLVersion(major=2, minor=26, patch=5)
 
    .. versionaddedold:: 2.0.0
 
@@ -531,3 +535,30 @@ By default, when the window is not in focus, input devices do not get
 updated. However, using this environment variable it is possible to get
 joystick updates even when the window is in the background. Must be set
 before calling :func:`pygame.init()` or :func:`pygame.joystick.init()`.
+
+|
+
+::
+
+ SDL_MOUSE_TOUCH_EVENTS
+ Set to "1" to make mouse events also generate touch events.
+
+Useful for testing touch events on desktop platforms (e.g. with a trackpad)
+where this is set to 0 by default.
+
+|
+
+::
+
+ "SDL_WINDOWS_DPI_AWARENESS"
+ Set to "permonitorv2" on windows 10 (and later) to declare the pygame
+ window DPI aware and ignore the desktop scaling, "permonitor" for
+ windows 8.1 and later DPI awareness and "system" for windows Vista
+ and later DPI awareness (not per monitor). Finally set it to "unaware",
+ to have the pygame window scale with the desktop scaling.
+
+This hint only affects the windows platform, other platforms can control DPI awareness
+via a Window creation keyword parameter called "allow_high_dpi".
+
+
+

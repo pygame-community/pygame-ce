@@ -1003,7 +1003,7 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual(r.w, actual.w)
         self.assertEqual(r.h, actual.h)
 
-    def test_scale_by_negative_identity_single_argment(self):
+    def test_scale_by_negative_identity_single_argument(self):
         """The scale method scales around the center of the rectangle"""
         # arrange
         r = Rect(2, 4, 6, 8)
@@ -1539,6 +1539,29 @@ class RectTypeTest(unittest.TestCase):
         expected_r2 = Rect(r.left + move_x, r.top + move_y, r.width, r.height)
         self.assertEqual(expected_r2, r2)
 
+    def test_move_to(self):
+        r = Rect(1, 2, 3, 4)
+        topleft = (10, 20)
+        center = (10, 20)
+
+        r2 = r.move_to(topleft=topleft)
+        r3 = r.move_to(center=center)
+
+        expected_r2 = Rect(r.x, r.y, r.width, r.height)
+        expected_r2.topleft = topleft
+
+        expected_r3 = Rect(r.x, r.y, r.width, r.height)
+        expected_r3.center = center
+
+        self.assertEqual(expected_r2, r2)
+        self.assertEqual(expected_r3, r3)
+
+        self.assertIsInstance(r2, Rect)
+
+        self.assertRaises(TypeError, r.move_to, 1, 2, 3)
+        with self.assertRaises(TypeError):
+            r.move_to()
+
     def test_update_XYWidthHeight(self):
         """Test update with 4 int values(x, y, w, h)"""
         rect = Rect(0, 0, 1, 1)
@@ -1941,14 +1964,19 @@ class RectTypeTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             collide_item = rect.collidedict(rect_values)
 
-    def test_collidedict__invalid_use_values_format(self):
-        """Ensures collidedict correctly handles invalid use_values parameters."""
-        rect = Rect(0, 0, 1, 1)
-        d = {}
+    def test_collidedict__kwarg(self):
+        """Ensures the values keyword works with collidedict"""
+        rects = [Rect(i, i, i, i) for i in range(1, 5)]
 
-        for invalid_param in (None, d, 1.1):
-            with self.assertRaises(TypeError):
-                collide_item = rect.collidedict(d, invalid_param)
+        rect_dict = {i: tuple(rect) for i, rect in enumerate(rects)}
+        rect_dict_inverted = {v: k for k, v in rect_dict.items()}
+
+        try:
+            Rect(1, 2, 3, 4).collidedict(rect_dict, values=True)
+
+            Rect(1, 2, 3, 4).collidedict(rect_dict_inverted, values=False)
+        except TypeError as e:
+            self.fail(f"collidedict raised a TypeError with traceback:\n{e}")
 
     def test_collidedictall(self):
         """Ensures collidedictall detects collisions."""
@@ -2206,16 +2234,19 @@ class RectTypeTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             collide_items = rect.collidedictall(rect_values)
 
-    def test_collidedictall__invalid_use_values_format(self):
-        """Ensures collidedictall correctly handles invalid use_values
-        parameters.
-        """
-        rect = Rect(0, 0, 1, 1)
-        d = {}
+    def test_collidedictall__kwarg(self):
+        """Ensures the values keyword works with collidedictall"""
+        rects = [Rect(i, i, i, i) for i in range(1, 5)]
 
-        for invalid_param in (None, d, 1.1):
-            with self.assertRaises(TypeError):
-                collide_items = rect.collidedictall(d, invalid_param)
+        rect_dict = {i: tuple(rect) for i, rect in enumerate(rects)}
+        rect_dict_inverted = {v: k for k, v in rect_dict.items()}
+
+        try:
+            Rect(1, 2, 3, 4).collidedictall(rect_dict, values=True)
+
+            Rect(1, 2, 3, 4).collidedictall(rect_dict_inverted, values=False)
+        except TypeError as e:
+            self.fail(f"collidedictall raised a TypeError with traceback:\n{e}")
 
     def test_collidelist(self):
         # __doc__ (as of 2008-08-02) for pygame.rect.Rect.collidelist:
@@ -2972,20 +3003,20 @@ class FRectTypeTest(RectTypeTest):
         """
         self.assertAlmostEqual(first, second, places=5)
 
-    def assertAlmostEqual5C(self, first, second):
+    def assertSeqAlmostEqual5(self, first, second):
         """
-        This shouldn't be necessary but manylinux i686 python37
-        won't work with just assertAlmostEqual5-ing it.
+        Same as above but for sequences
         """
-        self.assertAlmostEqual(first[0], second[0], places=5)
-        self.assertAlmostEqual(first[1], second[1], places=5)
+        self.assertEqual(len(first), len(second))
+        for i, j in zip(first, second):
+            self.assertAlmostEqual5(i, j)
 
     def test_scale_by__larger_single_argument(self):
         """The scale method scales around the center of the rectangle"""
         r = FRect(2.1, 4, 6, 8.9)
         r2 = r.scale_by(2.3)
 
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         # ((w * scaling) - w) / 2 -> 3.9
         self.assertAlmostEqual5(r.left - 3.9, r2.left)
         self.assertAlmostEqual5(r.top - 5.785, r2.top)
@@ -3000,7 +3031,7 @@ class FRectTypeTest(RectTypeTest):
         r = FRect(2.1, 4, 6, 8.9)
         r2 = r.scale_by(x=2.3)
 
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         # ((w * scaling) - w) / 2 -> 3.9
         self.assertAlmostEqual5(r.left - 3.9, r2.left)
         self.assertAlmostEqual5(r.top - 5.785, r2.top)
@@ -3014,7 +3045,7 @@ class FRectTypeTest(RectTypeTest):
         r = FRect(2.1, 4, 6, 8.9)
         r2 = r.scale_by(0.5)
 
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left + 1.5, r2.left)
         self.assertAlmostEqual5(r.top + 2.225, r2.top)
         self.assertAlmostEqual5(r.right - 1.5, r2.right)
@@ -3029,7 +3060,7 @@ class FRectTypeTest(RectTypeTest):
         # act
         r2 = r.scale_by(2, 4)
         # assert
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left - 3, r2.left)
         self.assertAlmostEqual5(r.centery - r.h * 4 / 2, r2.top)
         self.assertAlmostEqual5(r.right + 3, r2.right)
@@ -3047,7 +3078,7 @@ class FRectTypeTest(RectTypeTest):
         # act
         r2 = r.scale_by(scale_by=(2, 4))
         # assert
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left - 3, r2.left)
         self.assertAlmostEqual5(r.centery - r.h * 4 / 2, r2.top)
         self.assertAlmostEqual5(r.right + 3, r2.right)
@@ -3065,7 +3096,7 @@ class FRectTypeTest(RectTypeTest):
         # act
         r2 = r.scale_by(x=2, y=4)
         # assert
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left - 3, r2.left)
         self.assertAlmostEqual5(r.centery - r.h * 4 / 2, r2.top)
         self.assertAlmostEqual5(r.right + 3, r2.right)
@@ -3080,7 +3111,7 @@ class FRectTypeTest(RectTypeTest):
         # act
         r2 = r.scale_by(0.5, 0.25)
         # assert
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left + 1.5, r2.left)
         self.assertAlmostEqual5(r.centery - r.h / 4 / 2, r2.top)
         self.assertAlmostEqual5(r.right - 1.5, r2.right)
@@ -3160,7 +3191,7 @@ class FRectTypeTest(RectTypeTest):
         self.assertEqual(r.w, actual.w)
         self.assertEqual(r.h, actual.h)
 
-    def test_scale_by_negative_identity_single_argment(self):
+    def test_scale_by_negative_identity_single_argument(self):
         """The scale method scales around the center of the rectangle"""
         # arrange
         r = FRect(2.1, 4, 6, 8.9)
@@ -3178,7 +3209,7 @@ class FRectTypeTest(RectTypeTest):
         r2 = FRect(r)
         r2.scale_by_ip(2.3)
 
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         # ((w * scaling) - w) / 2 -> 3.9
         self.assertAlmostEqual5(r.left - 3.9, r2.left)
         self.assertAlmostEqual5(r.top - 5.785, r2.top)
@@ -3193,7 +3224,7 @@ class FRectTypeTest(RectTypeTest):
         r2 = FRect(r)
         r2.scale_by_ip(0.5)
 
-        self.assertAlmostEqual5C(r.center, r2.center)
+        self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left + 1.5, r2.left)
         self.assertAlmostEqual5(r.top + 2.225, r2.top)
         self.assertAlmostEqual5(r.right - 1.5, r2.right)
@@ -3235,6 +3266,31 @@ class FRectTypeTest(RectTypeTest):
         with self.assertRaises(TypeError):
             r.scale_by_ip(scale_by=(1, 2), y=1)
 
+    def test_frect_subscript(self):
+        r = FRect(1.2, 2.4, 3.6, 4.8)
+        self.assertAlmostEqual5(r[0], 1.2)
+        self.assertAlmostEqual5(r[1], 2.4)
+        self.assertAlmostEqual5(r[2], 3.6)
+        self.assertAlmostEqual5(r[3], 4.8)
+        self.assertEqual(r[-1], r[3])
+        self.assertEqual(r[-2], r[2])
+        self.assertEqual(r[-3], r[1])
+        self.assertEqual(r[-4], r[0])
+        self.assertRaises(IndexError, r.__getitem__, 5)
+        self.assertRaises(IndexError, r.__getitem__, -5)
+        self.assertSeqAlmostEqual5(r[0:2], [1.2, 2.4])
+        self.assertSeqAlmostEqual5(r[0:4], [1.2, 2.4, 3.6, 4.8])
+        self.assertSeqAlmostEqual5(r[0:-1], [1.2, 2.4, 3.6])
+        self.assertSeqAlmostEqual5(r[:], [1.2, 2.4, 3.6, 4.8])
+        self.assertSeqAlmostEqual5(r[...], [1.2, 2.4, 3.6, 4.8])
+        self.assertEqual(r[0:4], r)
+        self.assertEqual(r[:], r)
+        self.assertEqual(r[...], r)
+        self.assertSeqAlmostEqual5(r[0:4:2], [1.2, 3.6])
+        self.assertSeqAlmostEqual5(r[0:4:3], [1.2, 4.8])
+        self.assertSeqAlmostEqual5(r[3::-1], [4.8, 3.6, 2.4, 1.2])
+        self.assertRaises(TypeError, r.__getitem__, None)
+
 
 class SubclassTest(unittest.TestCase):
     class MyRect(Rect):
@@ -3253,6 +3309,13 @@ class SubclassTest(unittest.TestCase):
         mr1 = self.MyRect(1, 2, 10, 20)
         self.assertTrue(mr1.an_attribute)
         mr2 = mr1.move(1, 2)
+        self.assertTrue(isinstance(mr2, self.MyRect))
+        self.assertRaises(AttributeError, getattr, mr2, "an_attribute")
+
+    def test_move_to(self):
+        mr1 = self.MyRect(1, 2, 10, 20)
+        self.assertTrue(mr1.an_attribute)
+        mr2 = mr1.move_to(topleft=(10, 10))
         self.assertTrue(isinstance(mr2, self.MyRect))
         self.assertRaises(AttributeError, getattr, mr2, "an_attribute")
 

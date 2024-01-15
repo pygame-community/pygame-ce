@@ -1,8 +1,5 @@
 import os
-
-if os.environ.get("SDL_VIDEODRIVER") == "dummy":
-    __tags__ = ("ignore", "subprocess_ignore")
-
+import io
 import unittest
 import ctypes
 import weakref
@@ -20,11 +17,7 @@ except NameError:
 
 import pygame
 
-try:
-    import pygame.freetype as ft
-except ImportError:
-    ft = None
-
+import pygame.freetype as ft
 
 FONTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "fonts")
 
@@ -160,6 +153,11 @@ class FreeTypeFontTest(unittest.TestCase):
         self.assertEqual(f.size, (x_ppem, y_ppem))
         f.__init__(self._bmp_8_75dpi_path, size=12)
         self.assertEqual(f.size, 12.0)
+
+    def test_load_from_invalid_sized_file_obj(self):
+        f = io.StringIO()
+        with self.assertRaises(ValueError):
+            font = f = ft.Font(f, size=24)
 
     @unittest.skipIf(IS_PYPY, "PyPy doesn't use refcounting")
     def test_freetype_Font_dealloc(self):
@@ -547,8 +545,9 @@ class FreeTypeFontTest(unittest.TestCase):
         f = self._TEST_FONTS["fixed"]
         self.assertEqual(f.name, "Inconsolata")
 
-        nf = nullfont()
-        self.assertEqual(nf.name, repr(nf))
+        with self.assertRaises(AttributeError):
+            null_font = ft.Font.__new__(ft.Font)
+            null_font.name
 
     def test_freetype_Font_size(self):
         f = ft.Font(None, size=12)
@@ -1243,7 +1242,6 @@ class FreeTypeFontTest(unittest.TestCase):
 
         self.assertRaises(AttributeError, setattr, f, "bgcolor", None)
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     @unittest.skipIf(IS_PYPY, "pypy no likey")
     def test_newbuf(self):
         from pygame.tests.test_utils import buftools
@@ -1353,7 +1351,10 @@ class FreeTypeFontTest(unittest.TestCase):
 
     def test_freetype_Font_path(self):
         self.assertEqual(self._TEST_FONTS["sans"].path, self._sans_path)
-        self.assertRaises(AttributeError, getattr, nullfont(), "path")
+
+        with self.assertRaises(AttributeError):
+            nullfont = ft.Font.__new__(ft.Font)
+            nullfont.path
 
     # This Font cache test is conditional on freetype being built by a debug
     # version of Python or with the C macro PGFT_DEBUG_CACHE defined.
@@ -1693,7 +1694,7 @@ class FreeTypeFontTest(unittest.TestCase):
         self.assertEqual(font_name_2, font_name)
 
         # Check mixed list of bytes and string.
-        names = [fonts[0], fonts_b[1], fonts[2], fonts_b[3]]
+        names = [fonts_b[i] if i % 2 else str_font for i, str_font in enumerate(fonts)]
         font_name_2 = ft.SysFont(names, size).name
         self.assertEqual(font_name_2, font_name)
 

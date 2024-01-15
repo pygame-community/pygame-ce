@@ -36,8 +36,14 @@
 #elif defined(__APPLE__)
 /* Mac does not implement lseek64 */
 #define PG_LSEEK lseek
-#else
+#elif defined(__EMSCRIPTEN__)
+/* emsdk mvp 1.0 does not implement lseek64  */
+#define PG_LSEEK lseek
+#elif defined(_LARGEFILE64_SOURCE)
+/* for glibc system that support LFS */
 #define PG_LSEEK lseek64
+#else
+#define PG_LSEEK lseek
 #endif
 
 typedef struct {
@@ -243,8 +249,39 @@ pg_EncodeString(PyObject *obj, const char *encoding, const char *errors,
 static PyObject *
 pg_EncodeFilePath(PyObject *obj, PyObject *eclass)
 {
-    PyObject *result = pg_EncodeString(obj, Py_FileSystemDefaultEncoding,
-                                       UNICODE_DEF_FS_ERROR, eclass);
+    /* All of this code is a replacement for Py_FileSystemDefaultEncoding,
+     * which is deprecated in Python 3.12
+     *
+     * But I'm not sure of the use of this function, so maybe it should be
+     * deprecated. */
+
+    PyObject *sys_module = PyImport_ImportModule("sys");
+    if (sys_module == NULL) {
+        return NULL;
+    }
+    PyObject *system_encoding_obj =
+        PyObject_CallMethod(sys_module, "getfilesystemencoding", NULL);
+    if (system_encoding_obj == NULL) {
+        Py_DECREF(sys_module);
+        return NULL;
+    }
+    Py_DECREF(sys_module);
+    const char *encoding = PyUnicode_AsUTF8(system_encoding_obj);
+    if (encoding == NULL) {
+        Py_DECREF(system_encoding_obj);
+        return NULL;
+    }
+
+    /* End code replacement section */
+
+    if (obj == NULL) {
+        PyErr_SetString(PyExc_SyntaxError, "Forwarded exception");
+    }
+
+    PyObject *result =
+        pg_EncodeString(obj, encoding, UNICODE_DEF_FS_ERROR, eclass);
+    Py_DECREF(system_encoding_obj);
+
     if (result == NULL || result == Py_None) {
         return result;
     }
@@ -466,50 +503,6 @@ pgRWops_FromFileObject(PyObject *obj)
     rw->close = _pg_rw_close;
 
     return rw;
-}
-
-static int
-pgRWops_ReleaseObject(SDL_RWops *context)
-{
-    int ret = 0;
-    if (pgRWops_IsFileObject(context)) {
-#ifdef WITH_THREAD
-        PyGILState_STATE state = PyGILState_Ensure();
-#endif /* WITH_THREAD */
-
-        pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
-        PyObject *fileobj = helper->file;
-        /* 5 helper functions */
-        Py_ssize_t filerefcnt = Py_REFCNT(fileobj) - 1 - 5;
-
-        if (filerefcnt) {
-            Py_XDECREF(helper->seek);
-            Py_XDECREF(helper->tell);
-            Py_XDECREF(helper->write);
-            Py_XDECREF(helper->read);
-            Py_XDECREF(helper->close);
-            Py_DECREF(fileobj);
-            PyMem_Free(helper);
-            SDL_FreeRW(context);
-        }
-        else {
-            ret = SDL_RWclose(context);
-            if (ret < 0) {
-                PyErr_SetString(PyExc_IOError, SDL_GetError());
-                Py_DECREF(fileobj);
-            }
-        }
-
-#ifdef WITH_THREAD
-        PyGILState_Release(state);
-#endif /* WITH_THREAD */
-    }
-    else {
-        ret = SDL_RWclose(context);
-        if (ret < 0)
-            PyErr_SetString(PyExc_IOError, SDL_GetError());
-    }
-    return ret;
 }
 
 static Sint64
@@ -817,9 +810,6 @@ pg_encode_file_path(PyObject *self, PyObject *args, PyObject *keywds)
         return NULL;
     }
 
-    if (obj == NULL) {
-        PyErr_SetString(PyExc_SyntaxError, "Forwarded exception");
-    }
     return pg_EncodeFilePath(obj, eclass);
 }
 
@@ -860,7 +850,6 @@ MODINIT_DEFINE(rwobject)
     c_api[2] = pg_EncodeFilePath;
     c_api[3] = pg_EncodeString;
     c_api[4] = pgRWops_FromFileObject;
-    c_api[5] = pgRWops_ReleaseObject;
     apiobj = encapsulate_api(c_api, "rwobject");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);

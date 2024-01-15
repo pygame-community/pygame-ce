@@ -116,6 +116,25 @@ class MixerModuleTest(unittest.TestCase):
             mixer.set_num_channels(i)
             self.assertEqual(mixer.get_num_channels(), i)
 
+    def test_set_soundfont(self):
+        """Ensure soundfonts can be set, cleared, and retrieved"""
+        mixer.init()
+
+        mixer.set_soundfont()
+        self.assertEqual(mixer.get_soundfont(), None)
+
+        mixer.set_soundfont(None)
+        self.assertEqual(mixer.get_soundfont(), None)
+
+        mixer.set_soundfont("")
+        self.assertEqual(mixer.get_soundfont(), None)
+
+        mixer.set_soundfont("test1.sf2;test2.sf2")
+        self.assertEqual(mixer.get_soundfont(), "test1.sf2;test2.sf2")
+
+        self.assertRaises(TypeError, mixer.set_soundfont, 0)
+        self.assertRaises(TypeError, mixer.set_soundfont, ["one", "two"])
+
     def test_quit(self):
         """get_num_channels() Should throw pygame.error if uninitialized
         after mixer.quit()"""
@@ -123,8 +142,11 @@ class MixerModuleTest(unittest.TestCase):
         mixer.quit()
         self.assertRaises(pygame.error, mixer.get_num_channels)
 
-    # TODO: FIXME: appveyor and pypy (on linux) fails here sometimes.
-    @unittest.skipIf(sys.platform.startswith("win"), "See pygame-ce issue 601.")
+    # TODO: FIXME: pypy (on linux) fails here sometimes.
+    @unittest.skipIf(
+        sys.maxsize <= 2**32,
+        "randomly fails on comparing bytes",
+    )
     @unittest.skipIf(IS_PYPY, "random errors here with pypy")
     def test_sound_args(self):
         def get_bytes(snd):
@@ -337,13 +359,11 @@ class MixerModuleTest(unittest.TestCase):
         self.assertEqual(d["strides"], (2,))
         self.assertEqual(d["data"], (snd._samples_address, False))
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     @unittest.skipIf(IS_PYPY, "pypy no likey")
     def test_newbuf__one_channel(self):
         mixer.init(22050, -16, 1)
         self._NEWBUF_export_check()
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     @unittest.skipIf(IS_PYPY, "pypy no likey")
     def test_newbuf__twho_channel(self):
         mixer.init(22050, -16, 2)
@@ -905,6 +925,17 @@ class ChannelTypeTest(unittest.TestCase):
         self.assertRaises(ValueError, lambda: ch.set_source_location(0, 256.0))
         self.assertRaises(TypeError, lambda: ch.set_source_location("", 6.25))
 
+    def test_id_getter(self):
+        ch1 = mixer.Channel(1)
+        ch2 = mixer.Channel(2)
+
+        self.assertEqual(ch1.id, 1)
+        self.assertEqual(ch2.id, 2)
+
+    def test_subclass(self):
+        class MyChannel(mixer.Channel):
+            pass
+
 
 class ChannelInteractiveTest(unittest.TestCase):
     __tags__ = ["interactive"]
@@ -999,6 +1030,10 @@ class SoundTypeTest(unittest.TestCase):
         sound2 = mixer.Sound(file=path)
         self.assertIsInstance(sound1, mixer.Sound)
         self.assertIsInstance(sound2, mixer.Sound)
+
+        self.assertRaises(
+            FileNotFoundError, mixer.Sound, pathlib.Path("/aWH8ryIyWt5BL7xf327e")
+        )  # this path should not exist on any system really
 
     def todo_test_sound__from_buffer(self):
         """Ensure Sound() creation with a buffer works."""
@@ -1230,6 +1265,17 @@ class SoundTypeTest(unittest.TestCase):
             correct.get_volume()
         except Exception:
             self.fail("This should not raise an exception.")
+
+        channel = mixer.Channel(0)
+        try:
+            channel.play(correct)
+        except Exception:
+            self.fail("This should not raise an exception.")
+
+        self.assertIsInstance(channel.get_sound(), CorrectSublass)
+        self.assertIs(channel.get_sound(), correct)
+
+        channel.stop()
 
     def test_incorrect_subclassing(self):
         class IncorrectSuclass(mixer.Sound):

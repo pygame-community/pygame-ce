@@ -1,8 +1,8 @@
-from typing import Any, Dict, Sequence, Tuple, Union, overload
+from typing import Any, Dict, Tuple, Union, overload
 
 from pygame.surface import Surface
 
-from ._common import ColorValue
+from ._common import ColorValue, Sequence
 
 class PixelArray:
     surface: Surface

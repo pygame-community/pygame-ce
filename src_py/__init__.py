@@ -141,17 +141,10 @@ import pygame.math
 Vector2 = pygame.math.Vector2
 Vector3 = pygame.math.Vector3
 
-__version__ = ver
+from pygame.base import __version__
 
 # next, the "standard" modules
 # we still allow them to be missing for stripped down pygame distributions
-if get_sdl_version() < (2, 0, 0):
-    # cdrom only available for SDL 1.2.X
-    try:
-        import pygame.cdrom
-    except (ImportError, OSError):
-        cdrom = MissingModule("cdrom", urgent=1)
-
 try:
     import pygame.display
 except (ImportError, OSError):
@@ -243,14 +236,6 @@ except (ImportError, OSError):
 
 
 try:
-    from pygame.overlay import Overlay
-except (ImportError, OSError):
-
-    def Overlay(format, size):  # pylint: disable=unused-argument
-        _attribute_undefined("pygame.Overlay")
-
-
-try:
     import pygame.time
     from pygame.time import Clock
 except (ImportError, OSError):
@@ -319,8 +304,22 @@ except (ImportError, OSError):
 
 try:
     import pygame.system
+    from pygame._data_classes import PowerState as power_state
+
+    power_state.__module__ = "pygame.system"
+    del power_state
 except (ImportError, OSError):
     system = MissingModule("system", urgent=0)
+
+try:
+    from pygame.window import Window
+except (ImportError, OSError):
+
+    def Window(
+        title="pygame window", size=(640, 480), position=None, **kwargs
+    ):  # pylint: disable=unused-argument
+        _attribute_undefined("pygame.Window")
+
 
 # there's also a couple "internal" modules not needed
 # by users, but putting them here helps "dependency finder"
@@ -379,8 +378,6 @@ def __color_reduce(c):
 
 copyreg.pickle(Color, __color_reduce, __color_constructor)
 
-# Thanks for supporting pygame-ce.
-# Without support now, there won't be pygame-ce later.
 if "PYGAME_HIDE_SUPPORT_PROMPT" not in os.environ:
     print(
         f"pygame-ce {ver} (SDL {'.'.join(map(str, get_sdl_version()))}, "

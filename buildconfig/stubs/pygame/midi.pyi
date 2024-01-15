@@ -1,6 +1,7 @@
-from typing import List, Sequence, Tuple, Union
+from typing import List, Tuple, Union
 
 from pygame.event import Event
+from ._common import Sequence
 
 MIDIIN: int
 MIDIOUT: int

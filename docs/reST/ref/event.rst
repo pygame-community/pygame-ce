@@ -101,8 +101,8 @@ attributes.
 
 ::
 
-    AUDIODEVICEADDED   which, iscapture (SDL backend >= 2.0.4)
-    AUDIODEVICEREMOVED which, iscapture (SDL backend >= 2.0.4)
+    AUDIODEVICEADDED   which, iscapture
+    AUDIODEVICEREMOVED which, iscapture
     FINGERMOTION       touch_id, finger_id, x, y, dx, dy
     FINGERDOWN         touch_id, finger_id, x, y, dx, dy
     FINGERUP           touch_id, finger_id, x, y, dx, dy
@@ -140,9 +140,9 @@ pygame 2 also supports controller hot-plugging
    Event name               Attributes and notes
 
    DROPFILE                 file
-   DROPBEGIN                (SDL backend >= 2.0.5)
-   DROPCOMPLETE             (SDL backend >= 2.0.5)
-   DROPTEXT                 text (SDL backend >= 2.0.5)
+   DROPBEGIN
+   DROPCOMPLETE
+   DROPTEXT
    MIDIIN
    MIDIOUT
    CONTROLLERDEVICEADDED    device_index
@@ -150,10 +150,10 @@ pygame 2 also supports controller hot-plugging
    CONTROLLERDEVICEREMOVED  instance_id
    JOYDEVICEREMOVED         instance_id
    CONTROLLERDEVICEREMAPPED instance_id
-   KEYMAPCHANGED            (SDL backend >= 2.0.4)
+   KEYMAPCHANGED
    CLIPBOARDUPDATE
-   RENDER_TARGETS_RESET     (SDL backend >= 2.0.2)
-   RENDER_DEVICE_RESET      (SDL backend >= 2.0.4)
+   RENDER_TARGETS_RESET
+   RENDER_DEVICE_RESET
    LOCALECHANGED            (SDL backend >= 2.0.14)
 
 Also in this version, ``instance_id`` attributes were added to joystick events,
@@ -196,8 +196,8 @@ Here is a list of all window events, along with a short description
    WINDOWFOCUSGAINED      Window gained focus
    WINDOWFOCUSLOST        Window lost focus
    WINDOWCLOSE            Window was closed
-   WINDOWTAKEFOCUS        Window was offered focus (SDL backend >= 2.0.5)
-   WINDOWHITTEST          Window has a special hit test (SDL backend >= 2.0.5)
+   WINDOWTAKEFOCUS        Window was offered focus
+   WINDOWHITTEST          Window has a special hit test
    WINDOWICCPROFCHANGED   Window ICC profile changed (SDL backend >= 2.0.18)
    WINDOWDISPLAYCHANGED   Window moved on a new display (SDL backend >= 2.0.18)
 
@@ -349,7 +349,7 @@ On Android, the following events can be generated
 .. function:: event_name
 
    | :sl:`get the string name from an event id`
-   | :sg:`event_name(type) -> string`
+   | :sg:`event_name(type, /) -> string`
 
    Returns a string representing the name (in CapWords style) of the given
    event type.
@@ -362,8 +362,8 @@ On Android, the following events can be generated
 .. function:: set_blocked
 
    | :sl:`control which events are blocked on the queue`
-   | :sg:`set_blocked(type) -> None`
-   | :sg:`set_blocked(typelist) -> None`
+   | :sg:`set_blocked(type, /) -> None`
+   | :sg:`set_blocked(typelist, /) -> None`
    | :sg:`set_blocked(None) -> None`
 
    The given event types are not allowed to appear on the event queue. By
@@ -378,8 +378,8 @@ On Android, the following events can be generated
 .. function:: set_allowed
 
    | :sl:`control which events are allowed on the queue`
-   | :sg:`set_allowed(type) -> None`
-   | :sg:`set_allowed(typelist) -> None`
+   | :sg:`set_allowed(type, /) -> None`
+   | :sg:`set_allowed(typelist, /) -> None`
    | :sg:`set_allowed(None) -> None`
 
    The given event types are allowed to appear on the event queue. By default,
@@ -394,8 +394,8 @@ On Android, the following events can be generated
 .. function:: get_blocked
 
    | :sl:`test if a type of event is blocked from the queue`
-   | :sg:`get_blocked(type) -> bool`
-   | :sg:`get_blocked(typelist) -> bool`
+   | :sg:`get_blocked(type, /) -> bool`
+   | :sg:`get_blocked(typelist, /) -> bool`
 
    Returns ``True`` if the given event type is blocked from the queue. If a
    sequence of event types is passed, this will return ``True`` if any of those
@@ -406,7 +406,7 @@ On Android, the following events can be generated
 .. function:: set_grab
 
    | :sl:`control the sharing of input devices with other applications`
-   | :sg:`set_grab(bool) -> None`
+   | :sg:`set_grab(bool, /) -> None`
 
    When your program runs in a windowed environment, it will share the mouse
    and keyboard devices with other applications that have focus. If your
@@ -430,12 +430,18 @@ On Android, the following events can be generated
 .. function:: post
 
    | :sl:`place a new event on the queue`
-   | :sg:`post(Event) -> bool`
+   | :sg:`post(event, /) -> bool`
 
    Places the given event at the end of the event queue.
 
    This is usually used for placing custom events on the event queue.
    Any type of event can be posted, and the events posted can have any attributes.
+
+   When this event is received on the event queue, it will be a shallow copy of
+   the event object posted by this function; the dict attribute of both events
+   will be a reference to the same dict object in memory. Modifications on one
+   dict can affect another, use deepcopy operations on the dict object if you
+   don't want this behaviour.
 
    This returns a boolean on whether the event was posted or not. Blocked events
    cannot be posted, and this function returns ``False`` if you try to post them.
@@ -449,7 +455,7 @@ On Android, the following events can be generated
    | :sl:`make custom user event type`
    | :sg:`custom_type() -> int`
 
-   Reserves a ``pygame.USEREVENT`` for a custom use.
+   Reserves an event slot for use in a custom event ``userevent`` and returns the integer that the event slot is reserved to.
 
    If too many events are made a :exc:`pygame.error` is raised.
 

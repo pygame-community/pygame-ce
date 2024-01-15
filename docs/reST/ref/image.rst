@@ -27,13 +27,15 @@ formats.
 
    * ``JPEG``
 
-   * ``LBM`` (and ``PBM``, ``PGM``, ``PPM``)
+   * ``LBM``
 
    * ``PCX``
 
    * ``PNG``
-   
-   * ``PNM``
+
+   * ``PNM`` (``PBM``, ``PGM``, ``PPM``)
+
+   * ``QOI``
 
    * ``SVG`` (limited support, using Nano SVG)
 
@@ -44,9 +46,12 @@ formats.
    * ``WEBP``
 
    * ``XPM``
-   
-   
+
+   * ``XCF``
+
 .. versionaddedold:: 2.0 Loading SVG, WebP, PNM
+
+.. versionadded:: 2.4.0 Loading QOI (Relies on SDL_Image 2.6.0+)
 
 Saving images only supports a limited set of formats. You can save to the
 following formats.
@@ -103,6 +108,32 @@ following formats.
    .. versionchanged:: 2.2.0 Now supports keyword arguments.
 
    .. ## pygame.image.load ##
+
+.. function:: load_sized_svg
+
+   | :sl:`load an SVG image from a file (or file-like object) with the given size`
+   | :sg:`load_sized_svg(file, size) -> Surface`
+
+   This function rasterizes the input SVG at the size specified by the ``size``
+   argument. The ``file`` argument can be either a filename, a Python file-like
+   object, or a pathlib.Path.
+
+   The usage of this function for handling SVGs is recommended, as calling the
+   regular ``load`` function and then scaling the returned surface would not
+   preserve the quality that an SVG can provide.
+
+   It is to be noted that this function does not return a surface whose
+   dimensions exactly match the ``size`` argument. This function preserves
+   aspect ratio, so the returned surface could be smaller along at most one
+   dimension.
+
+   This function requires SDL_image 2.6.0 or above. If pygame was compiled with
+   an older version, ``pygame.error`` will be raised when this function is
+   called.
+
+   .. versionadded:: 2.4.0
+
+   .. ## pygame.image.load_sized_svg ##
 
 .. function:: save
 
@@ -300,7 +331,7 @@ following formats.
 .. function:: load_basic
 
    | :sl:`load new BMP image from a file (or file-like object)`
-   | :sg:`load_basic(file) -> Surface`
+   | :sg:`load_basic(file, /) -> Surface`
 
    Load an image from a file source. You can pass either a filename or a Python
    file-like object, or a pathlib.Path.

@@ -1,6 +1,9 @@
 import os
 import unittest
 
+from importlib.metadata import version
+
+import pygame
 
 pg_header = os.path.join("src_c", "include", "_pygame.h")
 
@@ -10,8 +13,6 @@ class VersionTest(unittest.TestCase):
         not os.path.isfile(pg_header), "Skipping because we cannot find _pygame.h"
     )
     def test_pg_version_consistency(self):
-        from pygame import version
-
         pgh_major = -1
         pgh_minor = -1
         pgh_patch = -1
@@ -34,14 +35,16 @@ class VersionTest(unittest.TestCase):
                     m = patch_exp_search(line)
                     if m:
                         pgh_patch = int(m.group(1))
-        self.assertEqual(pgh_major, version.vernum[0])
-        self.assertEqual(pgh_minor, version.vernum[1])
-        self.assertEqual(pgh_patch, version.vernum[2])
+        self.assertEqual(pgh_major, pygame.version.vernum[0])
+        self.assertEqual(pgh_minor, pygame.version.vernum[1])
+        self.assertEqual(pgh_patch, pygame.version.vernum[2])
 
     def test_sdl_version(self):
-        from pygame import version
+        self.assertEqual(len(pygame.version.SDL), 3)
 
-        self.assertEqual(len(version.SDL), 3)
+    def test_installed_version_and_dunder(self):
+        self.assertEqual(pygame.__version__, pygame.version.ver)
+        self.assertEqual(pygame.__version__, version("pygame-ce"))
 
 
 if __name__ == "__main__":

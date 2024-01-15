@@ -69,8 +69,8 @@ class DisplayModuleTest(unittest.TestCase):
         self.assertEqual(pygame.display.get_active(), False)
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     def test_get_active_iconify(self):
         """Test the get_active function after an iconify"""
@@ -115,7 +115,7 @@ class DisplayModuleTest(unittest.TestCase):
             "dga",
             "directx",
             "directfb",
-            "dummy",
+            pygame.NULL_VIDEODRIVER,
             "emscripten",
             "fbcon",
             "ggi",
@@ -150,22 +150,27 @@ class DisplayModuleTest(unittest.TestCase):
         # display.init() already called in setUp()
         self.assertTrue(display.get_init())
 
-    # This test can be uncommented when issues #991 and #993 are resolved.
-    @unittest.skipIf(True, "SDL2 issues")
     def test_get_surface(self):
         """Ensures get_surface gets the current display surface."""
         lengths = (1, 5, 100)
+        correct_depth = pygame.display.Info().bitsize
 
         for expected_size in ((w, h) for w in lengths for h in lengths):
-            for expected_depth in (8, 16, 24, 32):
-                expected_surface = display.set_mode(expected_size, 0, expected_depth)
+            for set_depth in (8, 16, 24, 32):
+                if set_depth == correct_depth:
+                    expected_surface = display.set_mode(expected_size, 0, set_depth)
+                else:
+                    with self.assertWarns(DeprecationWarning):
+                        expected_surface = pygame.display.set_mode(
+                            expected_size, 0, set_depth
+                        )
 
                 surface = pygame.display.get_surface()
 
                 self.assertEqual(surface, expected_surface)
                 self.assertIsInstance(surface, pygame.Surface)
                 self.assertEqual(surface.get_size(), expected_size)
-                self.assertEqual(surface.get_bitsize(), expected_depth)
+                self.assertEqual(surface.get_bitsize(), correct_depth)
 
     def test_get_surface__mode_not_set(self):
         """Ensures get_surface handles the display mode not being set."""
@@ -211,9 +216,9 @@ class DisplayModuleTest(unittest.TestCase):
     @unittest.skipIf(
         (
             "skipping for all because some failures on rasppi and maybe other platforms"
-            or os.environ.get("SDL_VIDEODRIVER") == "dummy"
+            or os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER
         ),
-        'OpenGL requires a non-"dummy" SDL_VIDEODRIVER',
+        "OpenGL requires a non-null SDL_VIDEODRIVER",
     )
     def test_gl_get_attribute(self):
         screen = display.set_mode((0, 0), pygame.OPENGL)
@@ -335,9 +340,9 @@ class DisplayModuleTest(unittest.TestCase):
     @unittest.skipIf(
         (
             "skipping for all because some failures on rasppi and maybe other platforms"
-            or os.environ.get("SDL_VIDEODRIVER") == "dummy"
+            or os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER
         ),
-        'OpenGL requires a non-"dummy" SDL_VIDEODRIVER',
+        "OpenGL requires a non-null SDL_VIDEODRIVER",
     )
     def test_gl_set_attribute(self):
         # __doc__ (as of 2008-08-02) for pygame.display.gl_set_attribute:
@@ -400,7 +405,7 @@ class DisplayModuleTest(unittest.TestCase):
             pygame.display.gl_get_attribute("DUMMY")
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") in ["dummy", "android"],
+        os.environ.get("SDL_VIDEODRIVER") in [pygame.NULL_VIDEODRIVER, "android"],
         "iconify is only supported on some video drivers/platforms",
     )
     def test_iconify(self):
@@ -504,7 +509,8 @@ class DisplayModuleTest(unittest.TestCase):
         self.assertFalse(display.get_init())
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy", "Needs a not dummy videodriver"
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "Needs a non-null videodriver",
     )
     def test_set_gamma(self):
         pygame.display.set_mode((1, 1))
@@ -517,7 +523,8 @@ class DisplayModuleTest(unittest.TestCase):
                 self.assertEqual(pygame.display.set_gamma(gamma), True)
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy", "Needs a not dummy videodriver"
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "Needs a non-null videodriver",
     )
     def test_set_gamma__tuple(self):
         pygame.display.set_mode((1, 1))
@@ -627,11 +634,11 @@ class DisplayModuleTest(unittest.TestCase):
             palette = [1, 2, 3]
             pygame.display.set_palette(palette)
 
-    skip_list = ["dummy", "android"]
+    skip_list = [pygame.NULL_VIDEODRIVER, "android"]
 
     @unittest.skipIf(
         os.environ.get("SDL_VIDEODRIVER") in skip_list,
-        "requires the SDL_VIDEODRIVER to be non dummy",
+        "requires the SDL_VIDEODRIVER to be non-null",
     )
     def test_toggle_fullscreen(self):
         """Test for toggle fullscreen"""
@@ -891,8 +898,8 @@ class FullscreenToggleTests(unittest.TestCase):
 
 
 @unittest.skipIf(
-    os.environ.get("SDL_VIDEODRIVER") == "dummy",
-    'OpenGL requires a non-"dummy" SDL_VIDEODRIVER',
+    os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+    "OpenGL requires a non-null SDL_VIDEODRIVER",
 )
 class DisplayOpenGLTest(unittest.TestCase):
     def test_screen_size_opengl(self):
@@ -912,6 +919,101 @@ class X11CrashTest(unittest.TestCase):
         pygame.display.quit()
         screen = pygame.display.set_mode((640, 480), 0)
         self.assertEqual((640, 480), screen.get_size())
+
+
+class MessageBoxTest(unittest.TestCase):
+    def test_messagebox_args(self):
+        mb = pygame.display.message_box
+        self.assertRaises(IndexError, lambda: mb("", escape_button=1))
+        self.assertRaises(IndexError, lambda: mb("", escape_button=-2))
+        self.assertRaises(IndexError, lambda: mb("", return_button=1))
+        self.assertRaises(IndexError, lambda: mb("", return_button=-2))
+        self.assertRaises(
+            IndexError,
+            lambda: mb("", buttons=("A", "B", "C"), return_button=3),
+        )
+        self.assertRaises(
+            IndexError,
+            lambda: mb("", buttons=("A", "B", "C"), return_button=-4),
+        )
+        self.assertRaises(
+            IndexError,
+            lambda: mb("", buttons=("A", "B", "C"), escape_button=3),
+        )
+        self.assertRaises(
+            IndexError,
+            lambda: mb("", buttons=("A", "B", "C"), escape_button=-4),
+        )
+        self.assertRaises(ValueError, lambda: mb("", message_type="random_str"))
+        self.assertRaises(TypeError, lambda: mb("", buttons=()))
+        self.assertRaises(TypeError, lambda: mb("", parent_window=123456))
+
+
+class MessageBoxInteractiveTest(unittest.TestCase):
+    __tags__ = ["interactive"]
+
+    def test_message_box_type(self):
+        result = pygame.display.message_box(
+            "Test",
+            "Is this an error message box?",
+            message_type="error",
+            buttons=("Yes", "No"),
+        )
+        self.assertEqual(result, 0)
+
+        result = pygame.display.message_box(
+            "Test",
+            "Is this an info message box?",
+            message_type="info",
+            buttons=("Yes", "No"),
+        )
+        self.assertEqual(result, 0)
+
+        result = pygame.display.message_box(
+            "Test",
+            "Is this a warn message box?",
+            message_type="warn",
+            buttons=("Yes", "No"),
+        )
+        self.assertEqual(result, 0)
+
+    def test_message_box_buttons(self):
+        result = pygame.display.message_box("Hit the 'OK' button")
+        self.assertEqual(result, 0)
+
+        result = pygame.display.message_box(
+            "Hit the 'Hello' button",
+            buttons=("Nope", "Nope", "Nope", "Hello", "Nope", "Nope"),
+        )
+        self.assertEqual(result, 3)
+
+        result = pygame.display.message_box(
+            "Press Enter on your keyboard",
+            buttons=("O", "O", "O", "O", "O", "O"),
+            return_button=4,
+        )
+        self.assertEqual(result, 4)
+
+        result = pygame.display.message_box(
+            "Press Enter on your keyboard",
+            buttons=("O", "O", "O", "O", "O", "O"),
+            return_button=-3,
+        )
+        self.assertEqual(result, 3)
+
+        result = pygame.display.message_box(
+            "Press Esc on your keyboard",
+            buttons=("O", "O", "O", "O", "O", "O"),
+            escape_button=2,
+        )
+        self.assertEqual(result, 2)
+
+        result = pygame.display.message_box(
+            "Test",
+            "You saw 'Yes' on the left and 'No' on the right. Is this correct?",
+            buttons=("Yes", "No"),
+        )
+        self.assertEqual(result, 0)
 
 
 if __name__ == "__main__":
