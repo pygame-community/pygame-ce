@@ -1,8 +1,12 @@
+import platform
 import unittest
 import sys
 import pygame
 
 from pygame._sdl2 import video
+
+
+IS_PYPY = "PyPy" == platform.python_implementation()
 
 
 class VideoModuleTest(unittest.TestCase):
@@ -21,6 +25,7 @@ class VideoModuleTest(unittest.TestCase):
         renderer.set_viewport(rect)
         self.assertEqual(renderer.get_viewport(), (0, 0, 1920, 1080))
 
+    @unittest.skipIf(IS_PYPY, "PyPy doesn't have sys.getrefcount")
     def test_renderer_to_surface_refcount(self):
         """Make sure to_surface doesn't leak memory due to reference counting."""
         window = video.Window(title=self.default_caption, size=(800, 600))
