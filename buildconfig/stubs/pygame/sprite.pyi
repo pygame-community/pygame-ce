@@ -183,7 +183,12 @@ class Group(AbstractGroup[_TSprite]):
         self, *sprites: Union[_TSprite, AbstractGroup[_TSprite], Iterable[_TSprite]]
     ) -> None: ...
 
+# these are aliased in the code too
+RenderPlain = Group
+RenderClear = Group
+
 class RenderUpdates(Group[_TSprite]): ...
+class OrderedUpdates(RenderUpdates[_TSprite]): ...
 
 class LayeredUpdates(AbstractGroup[_TSprite]):
     def __init__(
