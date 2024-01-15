@@ -20,9 +20,9 @@ class VideoModuleTest(unittest.TestCase):
         rect = pygame.Rect(0, 0, 1920, 1080)
         renderer.set_viewport(rect)
         self.assertEqual(renderer.get_viewport(), (0, 0, 1920, 1080))
-    
+
     def test_renderer_to_surface_refcount(self):
-        """works."""
+        """Make sure to_surface doesn't leak memory due to reference counting."""
         window = video.Window(title=self.default_caption, size=(800, 600))
         renderer = video.Renderer(window=window)
         surface = pygame.Surface(window.size)
