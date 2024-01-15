@@ -25,4 +25,4 @@
 #define DOC_MASK_MASK_CONNECTEDCOMPONENT "connected_component() -> Mask\nconnected_component(pos) -> Mask\nReturns a mask containing a connected component"
 #define DOC_MASK_MASK_CONNECTEDCOMPONENTS "connected_components() -> [Mask, ...]\nconnected_components(minimum=0) -> [Mask, ...]\nReturns a list of masks of connected components"
 #define DOC_MASK_MASK_GETBOUNDINGRECTS "get_bounding_rects() -> [Rect, ...]\nReturns a list of bounding rects of connected components"
-#define DOC_MASK_MASK_TOSURFACE "to_surface() -> Surface\nto_surface(surface=None, setsurface=None, unsetsurface=None, setcolor=(255, 255, 255, 255), unsetcolor=(0, 0, 0, 255), dest=(0, 0)) -> Surface\nReturns a surface with the mask drawn on it"
+#define DOC_MASK_MASK_TOSURFACE "to_surface() -> Surface\nto_surface(surface=None, setsurface=None, unsetsurface=None, setcolor=(255, 255, 255, 255), unsetcolor=(0, 0, 0, 255), dest=(0, 0), area=None) -> Surface\nReturns a surface with the mask drawn on it"
