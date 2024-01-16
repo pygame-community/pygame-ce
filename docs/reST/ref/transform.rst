@@ -345,8 +345,8 @@ Instead, always begin with the original image and scale to the desired size.)
 
 .. function:: solid_overlay
 
-   | :sl:`grayscale a surface`
-   | :sg:`grayscale(surface, color, dest_surface=None) -> Surface`
+   | :sl:`replaces non transparent pixels with the provided color`
+   | :sg:`solid_overlay(surface, color, dest_surface=None) -> Surface`
 
    Returns a new version of the original surface with all non transparent pixels set to the color provided.
 
