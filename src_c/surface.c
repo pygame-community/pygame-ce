@@ -2274,7 +2274,7 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
 
 on_error:
     if (is_generator) {
-        Py_DECREF(item);
+        Py_XDECREF(item);
     }
     switch (error) {
         case BLITS_ERR_SEQUENCE_REQUIRED:
