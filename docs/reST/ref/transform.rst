@@ -365,7 +365,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
    .. versionadded:: 2.5.0
 
-   .. ## pygame.transform.grayscale ##
+   .. ## pygame.transform.solid_overlay ##
 
 .. function:: threshold
 
