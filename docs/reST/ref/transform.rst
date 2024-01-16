@@ -346,7 +346,7 @@ Instead, always begin with the original image and scale to the desired size.)
 .. function:: solid_overlay
 
    | :sl:`replaces non transparent pixels with the provided color`
-   | :sg:`solid_overlay(surface, color, dest_surface=None) -> Surface`
+   | :sg:`solid_overlay(surface, color, dest_surface=None, keep_alpha=False) -> Surface`
 
    Returns a new version of the original surface with all non transparent pixels set to the color provided.
 
@@ -360,6 +360,8 @@ Instead, always begin with the original image and scale to the desired size.)
 
    :param dest_surface: Optional destination surface to which the changes will be applied.
    :type dest_surf: pygame.Surface or None
+
+   :param bool keep_alpha: Optional parameter that controls whether to keep the surface alpha when replacing with the color.
 
    .. versionadded:: 2.5.0
 
