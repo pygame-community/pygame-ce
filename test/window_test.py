@@ -360,6 +360,15 @@ class WindowTypeTest(unittest.TestCase):
         self.assertIs(win.flip(), None)
         win.destroy()
 
+        # creates a new window with no surface associated
+        win = Window(size=(640, 480))
+        self.assertRaisesRegex(
+            pygame.error,
+            "the Window has no surface associated with it, did you forget to call Window.get_surface()",
+            win.flip,
+        )
+        win.destroy()
+
     def tearDown(self):
         self.win.destroy()
 
