@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -333,9 +333,9 @@ pg_init(PyObject *self, PyObject *_null)
     /*nice to initialize timer, so startup time will reflec pg_init() time*/
 #if defined(WITH_THREAD) && !defined(MS_WIN32) && defined(SDL_INIT_EVENTTHREAD)
     pg_sdl_was_init = SDL_Init(SDL_INIT_EVENTTHREAD | SDL_INIT_TIMER |
-                               SDL_INIT_NOPARACHUTE) == 0;
+                               PG_INIT_NOPARACHUTE) == 0;
 #else
-    pg_sdl_was_init = SDL_Init(SDL_INIT_TIMER | SDL_INIT_NOPARACHUTE) == 0;
+    pg_sdl_was_init = SDL_Init(SDL_INIT_TIMER | PG_INIT_NOPARACHUTE) == 0;
 #endif
 
     pg_env_blend_alpha_SDL2 = SDL_getenv("PYGAME_BLEND_ALPHA_SDL2");
@@ -692,6 +692,105 @@ pg_TwoFloatsFromObj(PyObject *obj, float *val1, float *val2)
     return 1;
 }
 
+static inline int
+pg_DoubleFromObj(PyObject *obj, double *val)
+{
+    if (PyFloat_Check(obj)) {
+        *val = PyFloat_AS_DOUBLE(obj);
+        return 1;
+    }
+
+    *val = (double)PyLong_AsLong(obj);
+    if (PyErr_Occurred()) {
+        PyErr_Clear();
+        return 0;
+    }
+
+    return 1;
+}
+
+/*Assumes obj is a Sequence, internal or conscious use only*/
+static inline int
+_pg_DoubleFromObjIndex(PyObject *obj, int index, double *val)
+{
+    int result = 0;
+
+    PyObject *item = PySequence_ITEM(obj, index);
+    if (!item) {
+        PyErr_Clear();
+        return 0;
+    }
+    result = pg_DoubleFromObj(item, val);
+    Py_DECREF(item);
+
+    return result;
+}
+
+static inline int
+pg_TwoDoublesFromObj(PyObject *obj, double *val1, double *val2)
+{
+    Py_ssize_t length;
+    /*Faster path for tuples and lists*/
+    if (pgSequenceFast_Check(obj)) {
+        length = PySequence_Fast_GET_SIZE(obj);
+        PyObject **f_arr = PySequence_Fast_ITEMS(obj);
+        if (length == 2) {
+            if (!pg_DoubleFromObj(f_arr[0], val1) ||
+                !pg_DoubleFromObj(f_arr[1], val2)) {
+                return 0;
+            }
+        }
+        else if (length == 1) {
+            /* Handle case of ((x, y), ) 'nested sequence' */
+            return pg_TwoDoublesFromObj(f_arr[0], val1, val2);
+        }
+        else {
+            return 0;
+        }
+    }
+    else if (PySequence_Check(obj)) {
+        length = PySequence_Length(obj);
+        if (length == 2) {
+            if (!_pg_DoubleFromObjIndex(obj, 0, val1)) {
+                return 0;
+            }
+            if (!_pg_DoubleFromObjIndex(obj, 1, val2)) {
+                return 0;
+            }
+        }
+        else if (length == 1 && !PyUnicode_Check(obj)) {
+            /* Handle case of ((x, y), ) 'nested sequence' */
+            PyObject *tmp = PySequence_ITEM(obj, 0);
+            int ret = pg_TwoDoublesFromObj(tmp, val1, val2);
+            Py_DECREF(tmp);
+            return ret;
+        }
+        else {
+            PyErr_Clear();
+            return 0;
+        }
+    }
+    else {
+        return 0;
+    }
+
+    return 1;
+}
+
+static inline int
+pg_TwoDoublesFromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
+                              double *val1, double *val2)
+{
+    if (nargs == 1 && pg_TwoDoublesFromObj(args[0], val1, val2)) {
+        return 1;
+    }
+    else if (nargs == 2 && pg_DoubleFromObj(args[0], val1) &&
+             pg_DoubleFromObj(args[1], val2)) {
+        return 1;
+    }
+    return 0;
+}
+
 static int
 pg_UintFromObj(PyObject *obj, Uint32 *val)
 {
@@ -728,6 +827,7 @@ pg_UintFromObjIndex(PyObject *obj, int _index, Uint32 *val)
     return result;
 }
 
+/* You probably want to use the pg_RGBAFromObjEx function instead of this. */
 static int
 pg_RGBAFromObj(PyObject *obj, Uint8 *RGBA)
 {
@@ -1165,12 +1265,9 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
     flags |= PyBUF_PYGAME;
 #endif
 
-    if (PyObject_CheckBuffer(obj)) {
+    if (PyObject_GetBuffer(obj, view_p, flags) == 0) {
         char *fchar_p;
 
-        if (PyObject_GetBuffer(obj, view_p, flags)) {
-            return -1;
-        }
         pg_view_p->release_buffer = PyBuffer_Release;
 
         /* Check the format is a numeric type or pad bytes
@@ -1241,6 +1338,9 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
             return -1;
         }
         success = 1;
+    }
+    else {
+        PyErr_Clear();
     }
 
     if (!success && pgGetArrayStruct(obj, &cobj, &inter_p) == 0) {
@@ -2074,6 +2174,27 @@ pg_SetDefaultWindowSurface(pgSurfaceObject *screen)
     pg_default_screen = screen;
 }
 
+SDL_PixelFormat *pg_default_convert_format = NULL;
+
+static SDL_PixelFormat *
+pg_GetDefaultConvertFormat(void)
+{
+    if (pg_default_screen) {
+        return pg_default_screen->surf->format;
+    }
+    return pg_default_convert_format;
+}
+
+static SDL_PixelFormat *
+pg_SetDefaultConvertFormat(Uint32 format)
+{
+    if (pg_default_convert_format != NULL) {
+        SDL_FreeFormat(pg_default_convert_format);
+    }
+    pg_default_convert_format = SDL_AllocFormat(format);
+    return pg_default_convert_format;  // returns for NULL error checking
+}
+
 static char *
 pg_EnvShouldBlendAlphaSDL2(void)
 {
@@ -2287,11 +2408,16 @@ MODINIT_DEFINE(base)
     c_api[21] = pg_GetDefaultWindowSurface;
     c_api[22] = pg_SetDefaultWindowSurface;
     c_api[23] = pg_EnvShouldBlendAlphaSDL2;
-    c_api[24] = pg_IntFromObjEx;
-    c_api[25] = pg_TwoIntsFromObjEx;
-    c_api[26] = pg_IntFromSeqIndexEx;
+    c_api[24] = pg_DoubleFromObj;
+    c_api[25] = pg_TwoDoublesFromObj;
+    c_api[26] = pg_TwoDoublesFromFastcallArgs;
+    c_api[27] = pg_GetDefaultConvertFormat;
+    c_api[28] = pg_SetDefaultConvertFormat;
+    c_api[29] = pg_IntFromObjEx;
+    c_api[30] = pg_TwoIntsFromObjEx;
+    c_api[31] = pg_IntFromSeqIndexEx;
 
-#define FILLED_SLOTS 27
+#define FILLED_SLOTS 32
 
 #if PYGAMEAPI_BASE_NUMSLOTS != FILLED_SLOTS
 #error export slot count mismatch
@@ -2304,6 +2430,17 @@ MODINIT_DEFINE(base)
     }
 
     if (PyModule_AddIntConstant(module, "HAVE_NEWBUF", 1)) {
+        goto error;
+    }
+
+    PyObject *version =
+        PyUnicode_FromFormat("%d.%d.%d%s", PG_MAJOR_VERSION, PG_MINOR_VERSION,
+                             PG_PATCH_VERSION, PG_VERSION_TAG);
+    if (!version) {
+        goto error;
+    }
+    if (PyModule_AddObject(module, "__version__", version)) {
+        Py_DECREF(version);
         goto error;
     }
 

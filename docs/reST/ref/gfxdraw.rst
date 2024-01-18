@@ -54,13 +54,13 @@ For example:
    ``pygame.gfxdraw`` wraps the primitives from the library called SDL_gfx,
    rather than using modified versions.
 
-.. versionadded:: 1.9.0
+.. versionaddedold:: 1.9.0
 
 
 .. function:: pixel
 
    | :sl:`draw a pixel`
-   | :sg:`pixel(surface, x, y, color) -> None`
+   | :sg:`pixel(surface, x, y, color, /) -> None`
 
    Draws a single pixel, at position (x ,y), on the given surface.
 
@@ -79,7 +79,7 @@ For example:
 .. function:: hline
 
    | :sl:`draw a horizontal line`
-   | :sg:`hline(surface, x1, x2, y, color) -> None`
+   | :sg:`hline(surface, x1, x2, y, color, /) -> None`
 
    Draws a straight horizontal line (``(x1, y)`` to ``(x2, y)``) on the given
    surface. There are no endcaps.
@@ -100,7 +100,7 @@ For example:
 .. function:: vline
 
    | :sl:`draw a vertical line`
-   | :sg:`vline(surface, x, y1, y2, color) -> None`
+   | :sg:`vline(surface, x, y1, y2, color, /) -> None`
 
    Draws a straight vertical line (``(x, y1)`` to ``(x, y2)``) on the given
    surface. There are no endcaps.
@@ -121,7 +121,7 @@ For example:
 .. function:: line
 
    | :sl:`draw a line`
-   | :sg:`line(surface, x1, y1, x2, y2, color) -> None`
+   | :sg:`line(surface, x1, y1, x2, y2, color, /) -> None`
 
    Draws a straight line (``(x1, y1)`` to ``(x2, y2)``) on the given surface.
    There are no endcaps.
@@ -143,7 +143,7 @@ For example:
 .. function:: rectangle
 
    | :sl:`draw a rectangle`
-   | :sg:`rectangle(surface, rect, color) -> None`
+   | :sg:`rectangle(surface, rect, color, /) -> None`
 
    Draws an unfilled rectangle on the given surface. For a filled rectangle use
    :meth:`box`.
@@ -167,7 +167,7 @@ For example:
 .. function:: box
 
    | :sl:`draw a filled rectangle`
-   | :sg:`box(surface, rect, color) -> None`
+   | :sg:`box(surface, rect, color, /) -> None`
 
    Draws a filled rectangle on the given surface. For an unfilled rectangle use
    :meth:`rectangle`.
@@ -197,7 +197,7 @@ For example:
 .. function:: circle
 
    | :sl:`draw a circle`
-   | :sg:`circle(surface, x, y, r, color) -> None`
+   | :sg:`circle(surface, x, y, r, color, /) -> None`
 
    Draws an unfilled circle on the given surface. For a filled circle use
    :meth:`filled_circle`.
@@ -218,7 +218,7 @@ For example:
 .. function:: aacircle
 
    | :sl:`draw an antialiased circle`
-   | :sg:`aacircle(surface, x, y, r, color) -> None`
+   | :sg:`aacircle(surface, x, y, r, color, /) -> None`
 
    Draws an unfilled antialiased circle on the given surface.
 
@@ -238,7 +238,7 @@ For example:
 .. function:: filled_circle
 
    | :sl:`draw a filled circle`
-   | :sg:`filled_circle(surface, x, y, r, color) -> None`
+   | :sg:`filled_circle(surface, x, y, r, color, /) -> None`
 
    Draws a filled circle on the given surface. For an unfilled circle use
    :meth:`circle`.
@@ -259,7 +259,7 @@ For example:
 .. function:: ellipse
 
    | :sl:`draw an ellipse`
-   | :sg:`ellipse(surface, x, y, rx, ry, color) -> None`
+   | :sg:`ellipse(surface, x, y, rx, ry, color, /) -> None`
 
    Draws an unfilled ellipse on the given surface. For a filled ellipse use
    :meth:`filled_ellipse`.
@@ -281,7 +281,7 @@ For example:
 .. function:: aaellipse
 
    | :sl:`draw an antialiased ellipse`
-   | :sg:`aaellipse(surface, x, y, rx, ry, color) -> None`
+   | :sg:`aaellipse(surface, x, y, rx, ry, color, /) -> None`
 
    Draws an unfilled antialiased ellipse on the given surface.
 
@@ -302,7 +302,7 @@ For example:
 .. function:: filled_ellipse
 
    | :sl:`draw a filled ellipse`
-   | :sg:`filled_ellipse(surface, x, y, rx, ry, color) -> None`
+   | :sg:`filled_ellipse(surface, x, y, rx, ry, color, /) -> None`
 
    Draws a filled ellipse on the given surface. For an unfilled ellipse use
    :meth:`ellipse`.
@@ -324,7 +324,7 @@ For example:
 .. function:: arc
 
    | :sl:`draw an arc`
-   | :sg:`arc(surface, x, y, r, start_angle, stop_angle, color) -> None`
+   | :sg:`arc(surface, x, y, r, start_angle, stop_angle, color, /) -> None`
 
    Draws an arc on the given surface. For an arc with its endpoints connected
    to its center use :meth:`pie`.
@@ -356,7 +356,7 @@ For example:
 .. function:: pie
 
    | :sl:`draw a pie`
-   | :sg:`pie(surface, x, y, r, start_angle, stop_angle, color) -> None`
+   | :sg:`pie(surface, x, y, r, start_angle, stop_angle, color, /) -> None`
 
    Draws an unfilled pie on the given surface. A pie is an :meth:`arc` with its
    endpoints connected to its center.
@@ -385,7 +385,7 @@ For example:
 .. function:: trigon
 
    | :sl:`draw a trigon/triangle`
-   | :sg:`trigon(surface, x1, y1, x2, y2, x3, y3, color) -> None`
+   | :sg:`trigon(surface, x1, y1, x2, y2, x3, y3, color, /) -> None`
 
    Draws an unfilled trigon (triangle) on the given surface. For a filled
    trigon use :meth:`filled_trigon`.
@@ -412,7 +412,7 @@ For example:
 .. function:: aatrigon
 
    | :sl:`draw an antialiased trigon/triangle`
-   | :sg:`aatrigon(surface, x1, y1, x2, y2, x3, y3, color) -> None`
+   | :sg:`aatrigon(surface, x1, y1, x2, y2, x3, y3, color, /) -> None`
 
    Draws an unfilled antialiased trigon (triangle) on the given surface.
 
@@ -438,7 +438,7 @@ For example:
 .. function:: filled_trigon
 
    | :sl:`draw a filled trigon/triangle`
-   | :sg:`filled_trigon(surface, x1, y1, x2, y2, x3, y3, color) -> None`
+   | :sg:`filled_trigon(surface, x1, y1, x2, y2, x3, y3, color, /) -> None`
 
    Draws a filled trigon (triangle) on the given surface. For an unfilled
    trigon use :meth:`trigon`.
@@ -465,7 +465,7 @@ For example:
 .. function:: polygon
 
    | :sl:`draw a polygon`
-   | :sg:`polygon(surface, points, color) -> None`
+   | :sg:`polygon(surface, points, color, /) -> None`
 
    Draws an unfilled polygon on the given surface. For a filled polygon use
    :meth:`filled_polygon`.
@@ -498,7 +498,7 @@ For example:
 .. function:: aapolygon
 
    | :sl:`draw an antialiased polygon`
-   | :sg:`aapolygon(surface, points, color) -> None`
+   | :sg:`aapolygon(surface, points, color, /) -> None`
 
    Draws an unfilled antialiased polygon on the given surface.
 
@@ -530,7 +530,7 @@ For example:
 .. function:: filled_polygon
 
    | :sl:`draw a filled polygon`
-   | :sg:`filled_polygon(surface, points, color) -> None`
+   | :sg:`filled_polygon(surface, points, color, /) -> None`
 
    Draws a filled polygon on the given surface. For an unfilled polygon use
    :meth:`polygon`.
@@ -563,7 +563,7 @@ For example:
 .. function:: textured_polygon
 
    | :sl:`draw a textured polygon`
-   | :sg:`textured_polygon(surface, points, texture, tx, ty) -> None`
+   | :sg:`textured_polygon(surface, points, texture, tx, ty, /) -> None`
 
    Draws a textured polygon on the given surface. For better performance, the
    surface and the texture should have the same format.
@@ -600,7 +600,7 @@ For example:
 .. function:: bezier
 
    | :sl:`draw a Bezier curve`
-   | :sg:`bezier(surface, points, steps, color) -> None`
+   | :sg:`bezier(surface, points, steps, color, /) -> None`
 
    Draws a Bézier curve on the given surface.
 
@@ -622,6 +622,9 @@ For example:
    :raises ValueError: if ``len(points) < 3`` (must have at least 3 points)
    :raises IndexError: if ``len(coordinate) < 2`` (each coordinate must have
       at least 2 items)
+
+   .. note:: This function supports up to around 150-200 points before the algorithm
+             breaks down.
 
    .. ## pygame.gfxdraw.bezier ##
 

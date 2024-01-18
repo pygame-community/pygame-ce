@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-SNDFILEVER=1.1.0
+SNDFILEVER=1.2.2
 SNDNAME="libsndfile-$SNDFILEVER"
 SNDFILE="$SNDNAME.tar.xz"
 curl -sL --retry 10 https://github.com/libsndfile/libsndfile/releases/download/${SNDFILEVER}/${SNDFILE} > ${SNDFILE}
@@ -13,11 +13,8 @@ tar xf ${SNDFILE}
 cd $SNDNAME
 # autoreconf -fvi
 
-./configure $ARCHS_CONFIG_FLAG
+# alsa is only needed for examples here
+./configure $PG_BASE_CONFIGURE_FLAGS --disable-mpeg --disable-alsa
 make
 make install
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi

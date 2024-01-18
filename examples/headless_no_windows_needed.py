@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """ pygame.examples.headless_no_windows_needed
 
-How to use pygame with no windowing system, like on headless servers.
+How to use pygame-ce with no windowing system, like on headless servers.
 
 Thumbnail generation with scaling is an example of what you can do with pygame.
 NOTE: the pygame scale function uses mmx/sse if available, and can be run
@@ -14,26 +14,22 @@ eg.  -scale in.png out.png 50 50
 
 import os
 import sys
+import pygame
 
-# set SDL to use the dummy NULL video driver,
+# set SDL to use the NULL video driver,
 #   so it doesn't need a windowing system.
-os.environ["SDL_VIDEODRIVER"] = "dummy"
+os.environ["SDL_VIDEODRIVER"] = pygame.NULL_VIDEODRIVER
 
-import pygame as pg
 
-# Some platforms need to init the display for some parts of pg.
-pg.display.init()
-screen = pg.display.set_mode((1, 1))
+# Some platforms need to init the display for some parts of pygame.
+pygame.display.init()
+screen = pygame.display.set_mode((1, 1))
 
 
 def scaleit(fin, fout, w, h):
-    i = pg.image.load(fin)
-
-    if hasattr(pg.transform, "smoothscale"):
-        scaled_image = pg.transform.smoothscale(i, (w, h))
-    else:
-        scaled_image = pg.transform.scale(i, (w, h))
-    pg.image.save(scaled_image, fout)
+    i = pygame.image.load(fin)
+    scaled_image = pygame.transform.smoothscale(i, (w, h))
+    pygame.image.save(scaled_image, fout)
 
 
 def main(fin, fout, w, h):

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-""" pg.examples.vgrade
+""" pygame.examples.vgrade
 
 This example demonstrates creating an image with numpy
 python, and displaying that through SDL. You can look at the
-method of importing numpy and pg.surfarray. This method
+method of importing numpy and pygame.surfarray. This method
 will fail 'gracefully' if it is not available.
 I've tried mixing in a lot of comments where the code might
-not be self explanatory, nonetheless it may still seem a bit
+not be self-explanatory, nonetheless it may still seem a bit
 strange. Learning to use numpy for images like this takes a
 bit of learning, but the payoff is extremely fast image
 manipulation in python.
@@ -28,7 +28,7 @@ The code also demonstrates use of the timer events.
 
 
 import os
-import pygame as pg
+import pygame
 
 try:
     import numpy as np
@@ -40,19 +40,19 @@ timer = 0
 
 
 def stopwatch(message=None):
-    "simple routine to time python code"
+    """simple routine to time python code"""
     global timer
     if not message:
-        timer = pg.time.get_ticks()
+        timer = pygame.time.get_ticks()
         return
-    now = pg.time.get_ticks()
+    now = pygame.time.get_ticks()
     runtime = (now - timer) / 1000.0 + 0.001
     print(f"{message} {runtime} seconds\t{(1.0 / runtime):.2f}fps")
     timer = now
 
 
-def VertGradientColumn(surf, topcolor, bottomcolor):
-    "creates a new 3d vertical gradient array"
+def vert_gradient_column(surf, topcolor, bottomcolor):
+    """creates a new 3d vertical gradient array"""
     topcolor = np.array(topcolor, copy=False)
     bottomcolor = np.array(bottomcolor, copy=False)
     diff = bottomcolor - topcolor
@@ -65,37 +65,39 @@ def VertGradientColumn(surf, topcolor, bottomcolor):
     # make the column a 3d image column by adding X
     column = column.astype("uint8")[np.newaxis, :, :]
     # 3d array into 2d array
-    return pg.surfarray.map_array(surf, column)
+    return pygame.surfarray.map_array(surf, column)
 
 
-def DisplayGradient(surf):
-    "choose random colors and show them"
+def display_gradient(surf):
+    """choose random colors and show them"""
     stopwatch()
     colors = np_random.randint(0, 255, (2, 3))
-    column = VertGradientColumn(surf, colors[0], colors[1])
-    pg.surfarray.blit_array(surf, column)
-    pg.display.flip()
+    column = vert_gradient_column(surf, colors[0], colors[1])
+    pygame.surfarray.blit_array(surf, column)
+    pygame.display.flip()
     stopwatch("Gradient:")
 
 
 def main():
-    pg.init()
-    pg.mixer.quit()  # remove ALSA underflow messages for Debian squeeze
+    pygame.init()
+    pygame.mixer.quit()  # remove ALSA underflow messages for Debian squeeze
     size = 600, 400
     os.environ["SDL_VIDEO_CENTERED"] = "1"
-    screen = pg.display.set_mode(size, pg.NOFRAME, 0)
+    screen = pygame.display.set_mode(size, pygame.NOFRAME, 0)
 
-    pg.event.set_blocked(pg.MOUSEMOTION)  # keep our queue cleaner
-    pg.time.set_timer(pg.USEREVENT, 500)
+    pygame.event.set_blocked(pygame.MOUSEMOTION)  # keep our queue cleaner
+
+    TIMER_EVENT = pygame.event.custom_type()
+    pygame.time.set_timer(TIMER_EVENT, 500)
 
     while True:
-        event = pg.event.wait()
-        if event.type in (pg.QUIT, pg.KEYDOWN, pg.MOUSEBUTTONDOWN):
+        event = pygame.event.wait()
+        if event.type in (pygame.QUIT, pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
             break
-        elif event.type == pg.USEREVENT:
-            DisplayGradient(screen)
+        elif event.type == TIMER_EVENT:
+            display_gradient(screen)
 
-    pg.quit()
+    pygame.quit()
 
 
 if __name__ == "__main__":

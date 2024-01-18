@@ -7,6 +7,9 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
+**English** `简体中文`_ `Français`_ `فارسی`_ `Español`_
+---------------------------------------------------------------------------------------------------
+
 Pygame_ is a free and open-source cross-platform library
 for the development of multimedia applications like video games using Python.
 It uses the `Simple DirectMedia Layer library`_ and several other
@@ -55,7 +58,7 @@ Building From Source
 --------------------
 
 If you want to use features that are currently in development,
-or you want to contribute to pygame, you will need to build pygame
+or you want to contribute to pygame-ce, you will need to build pygame-ce
 locally from its source code, rather than pip installing it.
 
 Installing from source is fairly automated. The most work will
@@ -85,7 +88,7 @@ Special thanks are also in order.
 * David Clark for filling the right-hand-man position
 * Ed Boraas and Francis Irving: Debian packages
 * Maxim Sobolev: FreeBSD packaging
-* Bob Ippolito: MacOS and OS X porting (much work!)
+* Bob Ippolito: macOS and OS X porting (much work!)
 * Jan Ekhol, Ray Kelm, and Peter Nicolai: putting up with early design ideas
 * Nat Pryce for starting our unit tests
 * Dan Richter for documentation work
@@ -112,7 +115,7 @@ There's many more folks out there who've submitted helpful ideas, kept
 this project going, and basically made our life easier.  Thanks!
 
 Many thank you's for people making documentation comments, and adding to the
-pygame.org wiki.
+`pygame documentation`_ and the `pygame-ce documentation`_.
 
 Also many thanks for people creating games and putting them on the
 pygame.org website for others to learn from and enjoy.
@@ -125,31 +128,25 @@ excellent hosting.
 Dependencies
 ------------
 
-Pygame is obviously strongly dependent on SDL and Python.  It also
-links to and embeds several other smaller libraries.  The font
-module relies on SDL_ttf, which is dependent on freetype.  The mixer
-(and mixer.music) modules depend on SDL_mixer.  The image module
-depends on SDL_image, which also can use libjpeg and libpng.  The
-transform module has an embedded version of SDL_rotozoom for its
-own rotozoom function.  The surfarray module requires the Python
-NumPy package for its multidimensional numeric arrays.
+Pygame is obviously strongly dependent on SDL and Python. It also
+links to and embeds several other smaller libraries. The font
+module relies on SDL_ttf, which is dependent on freetype. The mixer
+(and mixer.music) modules depend on SDL_mixer. The image module
+depends on SDL_image. Transform.rotozoom has an embedded version 
+of SDL_rotozoom, and gfxdraw has an embedded version of SDL_gfx.
 Dependency versions:
 
 
 +----------+------------------------+
-| CPython  | >= 3.7 (Or use PyPy3)  |
+| CPython  | >= 3.8 (Or use PyPy3)  |
 +----------+------------------------+
-| SDL      | >= 2.0.8               |
+| SDL      | >= 2.0.10              |
 +----------+------------------------+
-| SDL_mixer| >= 2.0.0               |
+| SDL_mixer| >= 2.0.4               |
 +----------+------------------------+
-| SDL_image| >= 2.0.2               |
+| SDL_image| >= 2.0.4               |
 +----------+------------------------+
-| SDL_ttf  | >= 2.0.11              |
-+----------+------------------------+
-| SDL_gfx  | (Optional, vendored in)|
-+----------+------------------------+
-| NumPy    | >= 1.6.2 (Optional)    |
+| SDL_ttf  | >= 2.0.15              |
 +----------+------------------------+
 
 
@@ -164,7 +161,7 @@ future versions of this library under a different license.
 This basically means you can use pygame in any project you want,
 but if you make any changes or additions to pygame itself, those
 must be released with a compatible license (preferably submitted
-back to the pygame project).  Closed source and commercial games are fine.
+back to the pygame-ce project).  Closed source and commercial games are fine.
 
 The programs in the ``examples`` subdirectory are in the public domain.
 
@@ -179,8 +176,8 @@ See docs/licenses for licenses of dependencies.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.1.4.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.1.4...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.3.0.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.3.0...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
@@ -188,9 +185,15 @@ See docs/licenses for licenses of dependencies.
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
-.. _pygame: https://pyga.me
+.. _Pygame: https://pyga.me
+.. _pygame-ce documentation: https://pyga.me/docs/
+.. _pygame documentation: https://www.pygame.org/docs/
 .. _Simple DirectMedia Layer library: https://www.libsdl.org
-.. _We need your help: https://www.pygame.org/contribute.html
-.. _Compilation wiki page: https://www.pygame.org/wiki/Compilation
+.. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
 .. _docs page: https://pyga.me/docs
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
+
+.. _简体中文: ./docs/readmes/README.zh-cn.rst
+.. _Français: ./docs/readmes/README.fr.rst
+.. _فارسی: ./docs/readmes/README.fa.rst
+.. _Español: ./docs/readmes/README.es.rst

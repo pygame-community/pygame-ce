@@ -1,4 +1,4 @@
-#    pygame - Python Game Library
+#    pygame-ce - Python Game Library
 #    Copyright (C) 2000-2003  Pete Shinners
 #
 #    This library is free software; you can redistribute it and/or
@@ -23,7 +23,7 @@
 the local namespace for your module"""
 
 import pygame
-from pygame.constants import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
+from pygame.constants import *  # pylint: disable=wildcard-import,unused-wildcard-import; lgtm[py/polluting-import]
 from pygame.rect import Rect
 from pygame.color import Color
 

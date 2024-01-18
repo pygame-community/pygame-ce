@@ -41,12 +41,12 @@ import os
 import random
 import sys
 
-import pygame as pg
+import pygame
 
 
 class Sprite:
     """
-    Moving Sprite demonstrating pixel-perfect collisions between pg.mask.Mask objects
+    Moving Sprite demonstrating pixel-perfect collisions between pygame.mask.Mask objects
     """
 
     def __init__(self, pos, vel, surface, mask=None):
@@ -54,18 +54,18 @@ class Sprite:
         Positional arguments:
             pos: Position of the sprite (sequence of 2 integers)
             vel: Movement velocity of the sprite (sequence of 2 integers)
-            surface: Image (as a pg.Surface) of the sprite
-            mask: pg.mask.Mask object (optional)
+            surface: Image (as a pygame.Surface) of the sprite
+            mask: pygame.mask.Mask object (optional)
         """
         self.surface = surface
         self.width, self.height = self.surface.get_size()
         if mask is not None:
             self.mask = mask
         else:
-            self.mask = pg.mask.from_surface(self.surface)
+            self.mask = pygame.mask.from_surface(self.surface)
 
-        self.pos = pg.Vector2(pos)
-        self.vel = pg.Vector2(vel)
+        self.pos = pygame.Vector2(pos)
+        self.vel = pygame.Vector2(vel)
 
     def collide(self, sprite):
         """
@@ -82,7 +82,7 @@ class Sprite:
         # Calculate collision normal
 
         # Number of collisions
-        n_collisions = pg.Vector2(
+        n_collisions = pygame.Vector2(
             # x axis
             self.mask.overlap_area(sprite.mask, (offset[0] + 1, offset[1]))
             - self.mask.overlap_area(sprite.mask, (offset[0] - 1, offset[1])),
@@ -122,23 +122,23 @@ def main(*args):
     Positional arguments:
       one or more image file names.
 
-    This pg.masks demo will display multiple moving sprites bouncing
+    This pygame.masks demo will display multiple moving sprites bouncing
     off each other. More than one sprite image can be provided.
     """
 
     if len(args) == 0:
         raise ValueError("Require at least one image file name: non given")
-    pg.init()
+    pygame.init()
 
     screen_size = (640, 480)
-    screen = pg.display.set_mode(screen_size)
-    clock = pg.time.Clock()
+    screen = pygame.display.set_mode(screen_size)
+    clock = pygame.Clock()
 
     images = []
     masks = []
     for image_path in args:
-        images.append(pg.image.load(image_path).convert_alpha())
-        masks.append(pg.mask.from_surface(images[-1]))
+        images.append(pygame.image.load(image_path).convert_alpha())
+        masks.append(pygame.mask.from_surface(images[-1]))
 
     sprites = []
     for i in range(20):
@@ -158,8 +158,8 @@ def main(*args):
         sprites.append(sprite)
 
     while True:
-        for event in pg.event.get():
-            if event.type in (pg.QUIT, pg.KEYDOWN):
+        for event in pygame.event.get():
+            if event.type in (pygame.QUIT, pygame.KEYDOWN):
                 return
 
         screen.fill((240, 220, 100))
@@ -186,7 +186,7 @@ def main(*args):
             screen.blit(sprite.surface, sprite.pos)
 
         clock.tick(30)
-        pg.display.flip()
+        pygame.display.flip()
 
 
 if __name__ == "__main__":
@@ -199,4 +199,4 @@ if __name__ == "__main__":
 
     else:
         main(*sys.argv[1:])
-    pg.quit()
+    pygame.quit()

@@ -1,5 +1,5 @@
 /*
-    pygame - Python Game Library
+    pygame-ce - Python Game Library
     Copyright (C) 2000-2001  Pete Shinners
 
     This library is free software; you can redistribute it and/or
@@ -56,8 +56,11 @@
 
 /* version macros (defined since version 1.9.5) */
 #define PG_MAJOR_VERSION 2
-#define PG_MINOR_VERSION 2
+#define PG_MINOR_VERSION 5
 #define PG_PATCH_VERSION 0
+/* The below is of the form ".devX" for dev releases, and "" (empty) for full
+ * releases */
+#define PG_VERSION_TAG ".dev1"
 #define PG_VERSIONNUM(MAJOR, MINOR, PATCH) \
     (1000 * (MAJOR) + 100 * (MINOR) + (PATCH))
 #define PG_VERSION_ATLEAST(MAJOR, MINOR, PATCH)                             \
@@ -87,6 +90,7 @@ typedef struct pg_bufferinfo_s {
 } pg_buffer;
 
 #include "pgimport.h"
+#include "../pgcompat_rect.h"
 
 /*
  * BASE module
@@ -114,6 +118,16 @@ typedef struct pg_bufferinfo_s {
 
 #define pg_TwoFloatsFromObj \
     (*(int (*)(PyObject *, float *, float *))PYGAMEAPI_GET_SLOT(base, 7))
+
+#define pg_DoubleFromObj \
+    (*(int (*)(PyObject *, double *))PYGAMEAPI_GET_SLOT(base, 24))
+
+#define pg_TwoDoublesFromObj \
+    (*(int (*)(PyObject *, double *, double *))PYGAMEAPI_GET_SLOT(base, 25))
+
+#define pg_TwoDoublesFromFastcallArgs                   \
+    (*(int (*)(PyObject *const *, Py_ssize_t, double *, \
+               double *))PYGAMEAPI_GET_SLOT(base, 26))
 
 #define pg_UintFromObj \
     (*(int (*)(PyObject *, Uint32 *))PYGAMEAPI_GET_SLOT(base, 8))
@@ -170,6 +184,12 @@ typedef struct pg_bufferinfo_s {
     (*(int (*)(PyObject *, int, int *, const char *))PYGAMEAPI_GET_SLOT(base, \
                                                                         26))
 
+#define pg_GetDefaultConvertFormat \
+    (*(SDL_PixelFormat * (*)(void)) PYGAMEAPI_GET_SLOT(base, 27))
+
+#define pg_SetDefaultConvertFormat \
+    (*(SDL_PixelFormat * (*)(Uint32)) PYGAMEAPI_GET_SLOT(base, 28))
+
 #define import_pygame_base() IMPORT_PYGAME_MODULE(base)
 #endif /* ~PYGAMEAPI_BASE_INTERNAL */
 
@@ -178,7 +198,13 @@ typedef struct {
     PyObject *weakreflist;
 } pgRectObject;
 
+typedef struct {
+    PyObject_HEAD SDL_FRect r;
+    PyObject *weakreflist;
+} pgFRectObject;
+
 #define pgRect_AsRect(x) (((pgRectObject *)x)->r)
+#define pgFRect_AsRect(x) (((pgFRectObject *)x)->r)
 #ifndef PYGAMEAPI_RECT_INTERNAL
 #define pgRect_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(rect, 0))
 
@@ -192,6 +218,20 @@ typedef struct {
     (*(SDL_Rect * (*)(PyObject *, SDL_Rect *)) PYGAMEAPI_GET_SLOT(rect, 3))
 
 #define pgRect_Normalize (*(void (*)(SDL_Rect *))PYGAMEAPI_GET_SLOT(rect, 4))
+
+#define pgFRect_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(rect, 5))
+
+#define pgFRect_Check(x) ((x)->ob_type == &pgFRect_Type)
+#define pgFRect_New \
+    (*(PyObject * (*)(SDL_FRect *)) PYGAMEAPI_GET_SLOT(rect, 6))
+
+#define pgFRect_New4 \
+    (*(PyObject * (*)(float, float, float, float)) PYGAMEAPI_GET_SLOT(rect, 7))
+
+#define pgFRect_FromObject \
+    (*(SDL_FRect * (*)(PyObject *, SDL_FRect *)) PYGAMEAPI_GET_SLOT(rect, 8))
+
+#define pgFRect_Normalize (*(void (*)(SDL_FRect *))PYGAMEAPI_GET_SLOT(rect, 9))
 
 #define import_pygame_rect() IMPORT_PYGAME_MODULE(rect)
 #endif /* ~PYGAMEAPI_RECT_INTERNAL */
@@ -220,6 +260,8 @@ typedef struct pgJoystickObject {
 
 #define pgJoystick_Check(x) ((x)->ob_type == &pgJoystick_Type)
 #define pgJoystick_New (*(PyObject * (*)(int)) PYGAMEAPI_GET_SLOT(joystick, 1))
+#define pgJoystick_GetDeviceIndexByInstanceID \
+    (*(int (*)(int))PYGAMEAPI_GET_SLOT(joystick, 2))
 
 #define import_pygame_joystick() IMPORT_PYGAME_MODULE(joystick)
 #endif
@@ -354,15 +396,19 @@ typedef struct pgEventObject pgEventObject;
 #define pgEvent_New \
     (*(PyObject * (*)(SDL_Event *)) PYGAMEAPI_GET_SLOT(event, 1))
 
-#define pgEvent_New2 \
-    (*(PyObject * (*)(int, PyObject *)) PYGAMEAPI_GET_SLOT(event, 2))
+#define pg_post_event \
+    (*(int (*)(Uint32, PyObject *))PYGAMEAPI_GET_SLOT(event, 2))
 
-#define pgEvent_FillUserEvent \
-    (*(int (*)(pgEventObject *, SDL_Event *))PYGAMEAPI_GET_SLOT(event, 3))
+#define pg_post_event_dictproxy \
+    (*(int (*)(Uint32, pgEventDictProxy *))PYGAMEAPI_GET_SLOT(event, 3))
 
 #define pg_EnableKeyRepeat (*(int (*)(int, int))PYGAMEAPI_GET_SLOT(event, 4))
 
 #define pg_GetKeyRepeat (*(void (*)(int *, int *))PYGAMEAPI_GET_SLOT(event, 5))
+
+#define pgEvent_GetKeyDownInfo (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 6))
+
+#define pgEvent_GetKeyUpInfo (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 7))
 
 #define import_pygame_event() IMPORT_PYGAME_MODULE(event)
 #endif
@@ -388,9 +434,6 @@ typedef struct pgEventObject pgEventObject;
 #define pgRWops_FromFileObject \
     (*(SDL_RWops * (*)(PyObject *)) PYGAMEAPI_GET_SLOT(rwobject, 4))
 
-#define pgRWops_ReleaseObject \
-    (*(int (*)(SDL_RWops *))PYGAMEAPI_GET_SLOT(rwobject, 5))
-
 #define import_pygame_rwobject() IMPORT_PYGAME_MODULE(rwobject)
 
 #endif
@@ -415,17 +458,19 @@ typedef struct pgColorObject pgColorObject;
 #ifndef PYGAMEAPI_COLOR_INTERNAL
 #define pgColor_Type (*(PyObject *)PYGAMEAPI_GET_SLOT(color, 0))
 
-#define pgColor_Check(x) ((x)->ob_type == &pgColor_Type)
+#define pgColor_CheckExact(x) ((x)->ob_type == &pgColor_Type)
 #define pgColor_New (*(PyObject * (*)(Uint8 *)) PYGAMEAPI_GET_SLOT(color, 1))
 
 #define pgColor_NewLength \
     (*(PyObject * (*)(Uint8 *, Uint8)) PYGAMEAPI_GET_SLOT(color, 3))
 
-#define pg_RGBAFromColorObj \
-    (*(int (*)(PyObject *, Uint8 *))PYGAMEAPI_GET_SLOT(color, 2))
+#define pg_RGBAFromObjEx                                                    \
+    (*(int (*)(PyObject *, Uint8 *, pgColorHandleFlags))PYGAMEAPI_GET_SLOT( \
+        color, 2))
 
-#define pg_RGBAFromFuzzyColorObj \
-    (*(int (*)(PyObject *, Uint8 *))PYGAMEAPI_GET_SLOT(color, 4))
+#define pg_MappedColorFromObj                           \
+    (*(int (*)(PyObject *, SDL_PixelFormat *, Uint32 *, \
+               pgColorHandleFlags))PYGAMEAPI_GET_SLOT(color, 4))
 
 #define pgColor_AsArray(x) (((pgColorObject *)x)->data)
 #define pgColor_NumComponents(x) (((pgColorObject *)x)->len)
@@ -450,6 +495,28 @@ typedef struct pgColorObject pgColorObject;
 #define import_pygame_math() IMPORT_PYGAME_MODULE(math)
 #endif /* PYGAMEAPI_MATH_INTERNAL */
 
+#ifndef PYGAMEAPI_GEOMETRY_INTERNAL
+
+#define import_pygame_geometry() IMPORT_PYGAME_MODULE(geometry)
+
+#endif /* ~PYGAMEAPI_GEOMETRY_INTERNAL */
+
+/*
+ * Window module
+ */
+typedef struct {
+    PyObject_HEAD SDL_Window *_win;
+    SDL_bool _is_borrowed;
+    pgSurfaceObject *surf;
+} pgWindowObject;
+
+#ifndef PYGAMEAPI_WINDOW_INTERNAL
+#define pgWindow_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(window, 0))
+#define pgWindow_Check(x) \
+    (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
+#define import_pygame_window() IMPORT_PYGAME_MODULE(window)
+#endif
+
 #define IMPORT_PYGAME_MODULE _IMPORT_PYGAME_MODULE
 
 /*
@@ -459,7 +526,6 @@ typedef struct pgColorObject pgColorObject;
 #ifdef PYGAME_H
 PYGAMEAPI_DEFINE_SLOTS(base);
 PYGAMEAPI_DEFINE_SLOTS(rect);
-PYGAMEAPI_DEFINE_SLOTS(cdrom);
 PYGAMEAPI_DEFINE_SLOTS(joystick);
 PYGAMEAPI_DEFINE_SLOTS(display);
 PYGAMEAPI_DEFINE_SLOTS(surface);
@@ -469,10 +535,11 @@ PYGAMEAPI_DEFINE_SLOTS(rwobject);
 PYGAMEAPI_DEFINE_SLOTS(pixelarray);
 PYGAMEAPI_DEFINE_SLOTS(color);
 PYGAMEAPI_DEFINE_SLOTS(math);
-#else  /* ~PYGAME_H */
+PYGAMEAPI_DEFINE_SLOTS(window);
+PYGAMEAPI_DEFINE_SLOTS(geometry);
+#else /* ~PYGAME_H */
 PYGAMEAPI_EXTERN_SLOTS(base);
 PYGAMEAPI_EXTERN_SLOTS(rect);
-PYGAMEAPI_EXTERN_SLOTS(cdrom);
 PYGAMEAPI_EXTERN_SLOTS(joystick);
 PYGAMEAPI_EXTERN_SLOTS(display);
 PYGAMEAPI_EXTERN_SLOTS(surface);
@@ -482,6 +549,9 @@ PYGAMEAPI_EXTERN_SLOTS(rwobject);
 PYGAMEAPI_EXTERN_SLOTS(pixelarray);
 PYGAMEAPI_EXTERN_SLOTS(color);
 PYGAMEAPI_EXTERN_SLOTS(math);
+PYGAMEAPI_EXTERN_SLOTS(window);
+PYGAMEAPI_EXTERN_SLOTS(geometry);
+
 #endif /* ~PYGAME_H */
 
 #endif /* PYGAME_H */
@@ -561,4 +631,32 @@ pg_tuple_triple_from_values_int(int val1, int val2, int val3)
     PyTuple_SET_ITEM(tup, 2, tmp);
 
     return tup;
+}
+
+static PG_INLINE PyObject *
+pg_tuple_couple_from_values_double(double val1, double val2)
+{
+    /* This function turns two input doubles into a python tuple object.
+     * Currently, 5th November 2022, this is faster than using Py_BuildValue
+     * to do the same thing.
+     */
+    PyObject *tuple = PyTuple_New(2);
+    if (!tuple)
+        return NULL;
+
+    PyObject *tmp = PyFloat_FromDouble(val1);
+    if (!tmp) {
+        Py_DECREF(tuple);
+        return NULL;
+    }
+    PyTuple_SET_ITEM(tuple, 0, tmp);
+
+    tmp = PyFloat_FromDouble(val2);
+    if (!tmp) {
+        Py_DECREF(tuple);
+        return NULL;
+    }
+    PyTuple_SET_ITEM(tuple, 1, tmp);
+
+    return tuple;
 }

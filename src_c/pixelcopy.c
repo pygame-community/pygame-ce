@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 
   This library is free software; you can redistribute it and/or
@@ -1140,8 +1140,8 @@ make_surface(PyObject *self, PyObject *arg)
     PyObject *args;
     PyObject *result;
     SDL_Surface *surf;
-    int sizex, sizey, bitsperpixel;
-    Uint32 rmask, gmask, bmask;
+    int sizex, sizey;
+    Uint32 pixelformat;
 
     if (pgObject_GetBuffer(arg, &pg_view, PyBUF_RECORDS_RO)) {
         return 0;
@@ -1157,22 +1157,15 @@ make_surface(PyObject *self, PyObject *arg)
     }
 
     if (view_p->ndim == 2) {
-        bitsperpixel = 8;
-        rmask = 0;
-        gmask = 0;
-        bmask = 0;
+        pixelformat = SDL_PIXELFORMAT_INDEX8;
     }
     else {
-        bitsperpixel = 32;
-        rmask = 0xFF << 16;
-        gmask = 0xFF << 8;
-        bmask = 0xFF;
+        pixelformat = PG_PIXELFORMAT_XRGB8888;
     }
     sizex = (int)view_p->shape[0];
     sizey = (int)view_p->shape[1];
 
-    surf = SDL_CreateRGBSurface(0, sizex, sizey, bitsperpixel, rmask, gmask,
-                                bmask, 0);
+    surf = PG_CreateSurface(sizex, sizey, pixelformat);
     if (!surf) {
         pgBuffer_Release(&pg_view);
         return RAISE(pgExc_SDLError, SDL_GetError());

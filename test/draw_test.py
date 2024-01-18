@@ -1072,7 +1072,7 @@ class BaseLineMixin:
         for size in ((49, 49), (50, 50)):
             for depth in (8, 16, 24, 32):
                 for flags in (0, SRCALPHA):
-                    surface = pygame.display.set_mode(size, flags, depth)
+                    surface = pygame.display.set_mode(size, flags)
                     surfaces.append(surface)
                     surfaces.append(surface.convert_alpha())
         return surfaces
@@ -1791,6 +1791,61 @@ class DrawLineTest(LineMixin, DrawTestCase):
         check_white_line((50, 50), (0, 120))
         check_white_line((50, 50), (199, 198))
 
+    def test_line_clipping_with_thickness(self):
+        width = 200
+        height = 200
+        start_points = [
+            (-50, -50),
+            (-50, 50),
+            (50, 50),
+            (250, 250),
+            (200, 203),
+            (-29, 131),
+            (203, 0),
+            (-10, -10),
+            (-10, 210),
+        ]
+        end_points = [
+            (20, 200),
+            (20, -20),
+            (-20, -10),
+            (120, 20),
+            (0, 202),
+            (21, 106),
+            (200, 200),
+            (210, 210),
+            (100, 150),
+        ]
+        check_points = [
+            ((2, 126), (255, 255, 255)),
+            ((2, 3), (255, 255, 255)),
+            ((50, 55), (255, 255, 255)),
+            ((199, 165), (255, 255, 255)),
+            ((99, 198), (255, 255, 255)),
+            ((70, 80), (0, 0, 0)),
+            ((199, 0), (255, 255, 255)),
+            ((105, 100), (255, 255, 255)),
+            ((5, 198), (255, 255, 255)),
+        ]
+
+        surf = pygame.Surface((width, height), pygame.SRCALPHA)
+        for n in range(len(start_points)):
+            surf.fill((0, 0, 0))
+            pygame.draw.line(surf, (255, 255, 255), start_points[n], end_points[n], 10)
+            self.assertEqual(
+                surf.get_at(check_points[n][0]),
+                check_points[n][1],
+                "start={}, end={}".format(start_points[n], end_points[n]),
+            )
+            surf.fill((0, 0, 0))
+            pygame.draw.line(surf, (255, 255, 255), end_points[n], start_points[n], 10)
+
+            self.assertEqual(
+                surf.get_at(check_points[n][0]),
+                check_points[n][1],
+                "start={}, end={}".format(end_points[n], start_points[n]),
+            )
+
 
 ### Lines Testing #############################################################
 
@@ -2385,31 +2440,10 @@ class AALineMixin(BaseLineMixin):
     def test_aaline__args(self):
         """Ensures draw aaline accepts the correct args."""
         bounds_rect = self.draw_aaline(
-            pygame.Surface((3, 3)), (0, 10, 0, 50), (0, 0), (1, 1), 1
+            pygame.Surface((3, 3)), (0, 10, 0, 50), (0, 0), (1, 1)
         )
 
         self.assertIsInstance(bounds_rect, pygame.Rect)
-
-    def test_aaline__args_without_blend(self):
-        """Ensures draw aaline accepts the args without a blend."""
-        bounds_rect = self.draw_aaline(
-            pygame.Surface((2, 2)), (0, 0, 0, 50), (0, 0), (2, 2)
-        )
-
-        self.assertIsInstance(bounds_rect, pygame.Rect)
-
-    def test_aaline__blend_warning(self):
-        """From pygame 2, blend=False should raise DeprecationWarning."""
-        with warnings.catch_warnings(record=True) as w:
-            # Cause all warnings to always be triggered.
-            warnings.simplefilter("always")
-            # Trigger DeprecationWarning.
-            self.draw_aaline(
-                pygame.Surface((2, 2)), (0, 0, 0, 50), (0, 0), (2, 2), False
-            )
-            # Check if there is only one warning and is a DeprecationWarning.
-            self.assertEqual(len(w), 1)
-            self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
 
     def test_aaline__kwargs(self):
         """Ensures draw aaline accepts the correct kwargs"""
@@ -2858,12 +2892,12 @@ class DrawAALineTest(AALineMixin, DrawTestCase):
         for depth in (24, 32):
             surface = pygame.Surface((5, 3), 0, depth)
             surface.fill(pygame.Color(0, 0, 0))
-            self.draw_aaline(surface, pygame.Color(255, 0, 0), (0, 1), (2, 1), 1)
+            self.draw_aaline(surface, pygame.Color(255, 0, 0), (0, 1), (2, 1))
 
             self.assertGreater(surface.get_at((1, 1)).r, 0, "there should be red here")
 
             surface.fill(pygame.Color(0, 0, 0))
-            self.draw_aaline(surface, pygame.Color(0, 0, 255), (0, 1), (2, 1), 1)
+            self.draw_aaline(surface, pygame.Color(0, 0, 255), (0, 1), (2, 1))
 
             self.assertGreater(surface.get_at((1, 1)).b, 0, "there should be blue here")
 
@@ -2875,7 +2909,7 @@ class DrawAALineTest(AALineMixin, DrawTestCase):
             should[from_point] = should[to_point] = FG_GREEN
 
         def check_one_direction(from_point, to_point, should):
-            self.draw_aaline(self.surface, FG_GREEN, from_point, to_point, True)
+            self.draw_aaline(self.surface, FG_GREEN, from_point, to_point)
 
             for pt in check_points:
                 color = should.get(pt, BG_RED)
@@ -3130,31 +3164,10 @@ class AALinesMixin(BaseLineMixin):
     def test_aalines__args(self):
         """Ensures draw aalines accepts the correct args."""
         bounds_rect = self.draw_aalines(
-            pygame.Surface((3, 3)), (0, 10, 0, 50), False, ((0, 0), (1, 1)), 1
+            pygame.Surface((3, 3)), (0, 10, 0, 50), False, ((0, 0), (1, 1))
         )
 
         self.assertIsInstance(bounds_rect, pygame.Rect)
-
-    def test_aalines__args_without_blend(self):
-        """Ensures draw aalines accepts the args without a blend."""
-        bounds_rect = self.draw_aalines(
-            pygame.Surface((2, 2)), (0, 0, 0, 50), False, ((0, 0), (1, 1))
-        )
-
-        self.assertIsInstance(bounds_rect, pygame.Rect)
-
-    def test_aalines__blend_warning(self):
-        """From pygame 2, blend=False should raise DeprecationWarning."""
-        with warnings.catch_warnings(record=True) as w:
-            # Cause all warnings to always be triggered.
-            warnings.simplefilter("always")
-            # Trigger DeprecationWarning.
-            self.draw_aalines(
-                pygame.Surface((2, 2)), (0, 0, 0, 50), False, ((0, 0), (1, 1)), False
-            )
-            # Check if there is only one warning and is a DeprecationWarning.
-            self.assertEqual(len(w), 1)
-            self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
 
     def test_aalines__kwargs(self):
         """Ensures draw aalines accepts the correct kwargs."""
@@ -3220,10 +3233,6 @@ class AALinesMixin(BaseLineMixin):
         color = pygame.Color("blue")
         closed = 0
         points = ((1, 2), (2, 1))
-
-        with self.assertRaises(TypeError):
-            # Invalid blend.
-            bounds_rect = self.draw_aalines(surface, color, closed, points, "1")
 
         with self.assertRaises(TypeError):
             # Invalid points.
@@ -3607,6 +3616,7 @@ class DrawAALinesTest(AALinesMixin, DrawTestCase):
 
 SQUARE = ([0, 0], [3, 0], [3, 3], [0, 3])
 DIAMOND = [(1, 3), (3, 5), (5, 3), (3, 1)]
+RHOMBUS = [(1, 3), (4, 5), (7, 3), (4, 1)]
 CROSS = (
     [2, 0],
     [4, 0],
@@ -4014,7 +4024,7 @@ class DrawPolygonMixin:
             self.assertEqual(self.surface.get_at((5, y)), RED)
 
     def test_draw_symetric_cross(self):
-        """non-regression on issue #234 : x and y where handled inconsistently.
+        """non-regression on pygame-ce issue #249 : x and y where handled inconsistently.
 
         Also, the result is/was different whether we fill or not the polygon.
         """
@@ -4049,7 +4059,7 @@ class DrawPolygonMixin:
                     self.assertEqual(self.surface.get_at((x, y)), RED)
 
     def test_illumine_shape(self):
-        """non-regression on issue #313"""
+        """non-regression on pygame-ce issue #328"""
         rect = pygame.Rect((0, 0, 20, 20))
         path_data = [
             (0, 0),
@@ -4208,6 +4218,17 @@ class DrawPolygonMixin:
                     self.assertEqual(surface.get_at(pt), expected_color, pt)
 
                 surface.unlock()
+
+    def test_polygon_filled_shape(self):
+        """non-regression on issue #515 (644)
+        Ensures the outline of a filled polygon is drawn the same as an
+        unfilled polygon.
+        """
+        key_polygon_points = [(2, 2), (6, 2), (2, 4), (6, 4)]
+        pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
+        pygame.draw.polygon(self.surface, GREEN, RHOMBUS, 0)
+        for x, y in key_polygon_points:
+            self.assertEqual(self.surface.get_at((x, y)), GREEN, msg=str((x, y)))
 
 
 class DrawPolygonTest(DrawPolygonMixin, DrawTestCase):
@@ -4673,7 +4694,7 @@ class DrawRectMixin:
 
             self.assertNotEqual(color_at_pt, self.color)
 
-        # Issue #310: Cannot draw rectangles that are 1 pixel high
+        # pygame-ce issue #325: Cannot draw rectangles that are 1 pixel high
         bgcolor = pygame.Color("black")
         self.surf.fill(bgcolor)
         hrect = pygame.Rect(1, 1, self.surf_w - 2, 1)
@@ -5617,6 +5638,63 @@ class DrawCircleMixin:
             bounding_rect = self.draw_circle(surf, color, center, radius, width)
             self.assertEqual(bounding_rect.width, radius * 2)
             self.assertEqual(bounding_rect.height, radius * 2)
+
+    def test_circle__offscreen(self):
+        """Ensures that drawing a circle completely off-screen doesn't create
+        a solid band across the screen
+        see https://github.com/pygame/pygame/issues/3143
+        """
+        width = 200
+        height = 200
+        surf = pygame.Surface((width, height))
+        surf_center = surf.get_rect().center
+        radius = 10
+
+        # way way outside the screen
+        test_centers = [
+            (-1e30, height / 2),
+            (1e30, height / 2),
+            (width / 2, -1e30),
+            (width / 2, 1e30),
+        ]
+        for center in test_centers:
+            surf.fill("black")
+            self.draw_circle(surf, "white", center, radius)
+
+            self.assertEqual(
+                surf.get_at(surf_center)[0:3],
+                (0, 0, 0),
+                msg="pixel at center should be black, not white",
+            )
+
+    def test_circle__no_band(self):
+        """Ensures that drawing a circle with the center off-screen doesn't create a
+        solid band across the screen
+        This tests a bug introduced in
+        https://github.com/pygame-community/pygame-ce/commit/c88a1d8f7b31099cec84dc5cb7aeebdada783e83
+        """
+        width = 200
+        height = 200
+        surf = pygame.Surface((width, height))
+        surf_center = surf.get_rect().center
+        radius = 10
+
+        # one pixel outside the screen on the center of each edge
+        test_centers = [
+            (-1, height / 2),
+            (width + 1, height / 2),
+            (width / 2, -1),
+            (width / 2, height + 1),
+        ]
+        for center in test_centers:
+            surf.fill("black")
+            self.draw_circle(surf, "white", center, radius)
+
+            self.assertEqual(
+                surf.get_at(surf_center)[0:3],
+                (0, 0, 0),
+                msg="pixel at center should be black, not white",
+            )
 
 
 class DrawCircleTest(DrawCircleMixin, DrawTestCase):

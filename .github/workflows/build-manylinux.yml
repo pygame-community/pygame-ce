@@ -54,7 +54,7 @@ jobs:
       # also define environment variables needed for testing
       CIBW_ENVIRONMENT: PIP_CONFIG_FILE=buildconfig/pip_config.ini PORTMIDI_INC_PORTTIME=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
 
-      CIBW_BUILD: "cp3{[7-9],10,11}-* pp3[7-9]-*"
+      CIBW_BUILD: "cp3{8,9,10,11,12}-* pp3{8,9,10}-*"
       CIBW_ARCHS: ${{ matrix.arch }}
 
       # skip musllinux for now
@@ -62,7 +62,7 @@ jobs:
 
       # command that runs before every build
       CIBW_BEFORE_BUILD: |
-        pip install Sphinx
+        pip install Sphinx"<7.2.0"
         python setup.py docs
 
       CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,music,timing --time_out 300
@@ -79,10 +79,10 @@ jobs:
       CIBW_BUILD_VERBOSITY: 2
 
     steps:
-    - uses: actions/checkout@v3.3.0
+    - uses: actions/checkout@v4.1.1
 
     - name: Log in to the Container registry
-      uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+      uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -95,14 +95,14 @@ jobs:
 
     - name: Extract metadata (tags, labels) for Docker
       id: meta
-      uses: docker/metadata-action@507c2f2dc502c992ad446e3d7a5dfbe311567a96
+      uses: docker/metadata-action@dbef88086f6cef02e264edb7dbf63250c17cef6c
       with:
         images: ghcr.io/${{ github.repository }}_${{ matrix.arch }}
         tags: type=raw,value=${{ hashFiles('buildconfig/manylinux-build/**') }}
 
     - name: Build and push Docker image
       if: steps.inspect.outcome == 'failure'
-      uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+      uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56
       with:
         context: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base
         file: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base/Dockerfile-${{ matrix.arch }}
@@ -118,12 +118,13 @@ jobs:
         CIBW_MANYLINUX_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
         CIBW_MANYLINUX_PYPY_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
 
-      uses: pypa/cibuildwheel@v2.12.0
+      uses: pypa/cibuildwheel@v2.16.2
 
     # We upload the generated files under github actions assets
     - name: Upload dist
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: pygame-wheels-manylinux
+        name: pygame-wheels-manylinux-${{ matrix.arch }}
         path: ./wheelhouse/*.whl
+        compression-level: 0  # wheels are already zip files, no need for more compression
 

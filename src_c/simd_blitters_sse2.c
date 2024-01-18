@@ -470,6 +470,27 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
     }
 }
 
+/* Defines the blit procedure at the core of
+ * alphablit_alpha_sse2_argb_no_surf_alpha_opaque_dst
+ *
+ * Input variables: src1, dst1, unpacked_alpha
+ *       containing unpacked 16 bit lanes of src, dst, and src alpha
+ * Output variables: sub_dst
+ * */
+#define ARGB_NO_SURF_ALPHA_OPAQUE_DST_PROCEDURE                      \
+    /* (srcRGB - dstRGB) */                                          \
+    sub_dst = _mm_sub_epi16(src1, dst1);                             \
+    /* (srcRGB - dstRGB) * srcA */                                   \
+    sub_dst = _mm_mullo_epi16(sub_dst, unpacked_alpha);              \
+    /* (srcRGB - dstRGB) * srcA + srcRGB */                          \
+    sub_dst = _mm_add_epi16(sub_dst, src1);                          \
+    /* (dstRGB << 8) */                                              \
+    dst1 = _mm_slli_epi16(dst1, 8);                                  \
+    /* ((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) */        \
+    sub_dst = _mm_add_epi16(sub_dst, dst1);                          \
+    /* (((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) >> 8) */ \
+    sub_dst = _mm_srli_epi16(sub_dst, 8);
+
 void
 alphablit_alpha_sse2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
 {
@@ -479,164 +500,129 @@ alphablit_alpha_sse2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
     int srcskip = info->s_skip >> 2;
     int dstskip = info->d_skip >> 2;
 
-    Uint64 *srcp64 = (Uint64 *)info->s_pixels;
-    Uint64 *dstp64 = (Uint64 *)info->d_pixels;
-
-    Uint64 rgb_mask64 = 0x00FFFFFF00FFFFFF;
-    Uint32 rgb_mask32 = 0x00FFFFFF;
-
     Uint32 *srcp32 = (Uint32 *)info->s_pixels;
     Uint32 *dstp32 = (Uint32 *)info->d_pixels;
 
-    __m128i src1, dst1, sub_dst, mm_src_alpha, mm_zero, mm_rgb_mask;
+    int pxl_excess = width % 4;
+    int n_iters_4 = width / 4;
 
-    /* There are two paths through this blitter:
-           1. Two pixels at once.
-           2. One pixel at a time.
-    */
-    if (((width % 2) == 0) && ((srcskip % 2) == 0) && ((dstskip % 2) == 0)) {
-        width = width / 2;
-        srcskip = srcskip / 2;
-        dstskip = dstskip / 2;
+    __m128i src1, dst1, sub_dst, mm_src_alpha;
+    __m128i unpacked_alpha, pixels_src, pixels_dst, batch_a_dst;
+    __m128i *srcp128, *dstp128;
+    __m128i mm_rgb_mask = _mm_set1_epi32(0x00FFFFFF);
+    __m128i mm_zero = _mm_setzero_si128();
 
-        mm_zero = _mm_setzero_si128();
+    while (height--) {
+        srcp128 = (__m128i *)srcp32;
+        dstp128 = (__m128i *)dstp32;
 
-        /* two pixels at a time */
-        LOAD_64_INTO_M128(&rgb_mask64, &mm_rgb_mask);
-        while (height--) {
-            LOOP_UNROLLED4(
-                {
-                    /* src(ARGB) -> src1 (00000000ARGBARGB) */
-                    LOAD_64_INTO_M128(srcp64, &src1);
+        LOOP_UNROLLED4(
+            {
+                /* ==== load 4 pixels into SSE registers ==== */
 
-                    /* isolate alpha channels
-                     * 00000000A1000A2000 -> mm_src_alpha */
-                    mm_src_alpha = _mm_andnot_si128(mm_rgb_mask, src1);
+                /*[AR][GB][AR][GB][AR][GB][AR][GB] -> pixels_src*/
+                pixels_src = _mm_loadu_si128(srcp128);
 
-                    /* shift right to position alpha channels for manipulation
-                     * 000000000A1000A200 -> mm_src_alpha*/
-                    mm_src_alpha = _mm_srli_si128(mm_src_alpha, 1);
+                /* isolate alpha channels
+                 * [A10][00 ][A20][00 ][A30][00 ][A40][00 ] -> mm_src_alpha*/
+                mm_src_alpha = _mm_andnot_si128(mm_rgb_mask, pixels_src);
 
-                    /* shuffle alpha channels to duplicate 16 bit pairs
-                     * shuffle (3, 3, 1, 1) (backed 2 bit numbers)
-                     * [00][00][00][00][0A1][00][0A2][00] -> mm_src_alpha
-                     * [7 ][6 ][5 ][4 ][ 3 ][2 ][ 1 ][0 ]
-                     * Therefore the previous contents of 16 bit number #1
-                     * Goes into 16 bit number #1 and #2, and the previous
-                     * content of 16 bit number #3 goes into #2 and #3 */
-                    mm_src_alpha =
-                        _mm_shufflelo_epi16(mm_src_alpha, 0b11110101);
+                /* shift right to position alpha channels for manipulation
+                 * [0A1][00 ][0A2][00 ][0A3][00 ][0A4][00 ] -> mm_src_alpha*/
+                mm_src_alpha = _mm_srli_si128(mm_src_alpha, 1);
 
-                    /* finally move into final config
-                     * spread out so they can be multiplied in 16 bit math
-                     * against all RGBA of both pixels being blit
-                     * 0A10A10A10A10A20A20A20A2 -> mm_src_alpha */
-                    mm_src_alpha =
-                        _mm_unpacklo_epi16(mm_src_alpha, mm_src_alpha);
+                /*[AR][GB][AR][GB][AR][GB][AR][GB] -> pixels_dst*/
+                pixels_dst = _mm_loadu_si128(dstp128);
 
-                    /* 0A0R0G0B0A0R0G0B -> src1 */
-                    src1 = _mm_unpacklo_epi8(src1, mm_zero);
+                /* ==== BATCH A (the 2 low pixels) ==== */
 
-                    /* dst(ARGB) -> dst1 (00000000ARGBARGB) */
-                    LOAD_64_INTO_M128(dstp64, &dst1);
-                    /* 0A0R0G0B0A0R0G0B -> dst1 */
-                    dst1 = _mm_unpacklo_epi8(dst1, mm_zero);
+                /* shuffle alpha channels to duplicate 16 bit pairs
+                 * [00 ][00 ][00 ][00 ][0A3][0A3][0A4][0A4] -> mm_src_alpha*/
+                unpacked_alpha = _mm_shufflelo_epi16(mm_src_alpha, 0b11110101);
 
-                    /* (srcRGB - dstRGB) */
-                    sub_dst = _mm_sub_epi16(src1, dst1);
+                /* spread alpha into final config for 16 bit math
+                 * [0A3][0A3][0A3][0A3][0A4][0A4][0A4][0A4] -> unpacked_alpha*/
+                unpacked_alpha =
+                    _mm_unpacklo_epi16(unpacked_alpha, unpacked_alpha);
 
-                    /* (srcRGB - dstRGB) * srcA */
-                    sub_dst = _mm_mullo_epi16(sub_dst, mm_src_alpha);
+                /* 0A0R0G0B0A0R0G0B -> src1 */
+                src1 = _mm_unpacklo_epi8(pixels_src, mm_zero);
 
-                    /* (srcRGB - dstRGB) * srcA + srcRGB */
-                    sub_dst = _mm_add_epi16(sub_dst, src1);
+                /* 0A0R0G0B0A0R0G0B -> dst1 */
+                dst1 = _mm_unpacklo_epi8(pixels_dst, mm_zero);
 
-                    /* (dstRGB << 8) */
-                    dst1 = _mm_slli_epi16(dst1, 8);
+                ARGB_NO_SURF_ALPHA_OPAQUE_DST_PROCEDURE
 
-                    /* ((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) */
-                    sub_dst = _mm_add_epi16(sub_dst, dst1);
+                batch_a_dst = sub_dst;
 
-                    /* (((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) >>
-                     * 8)*/
-                    sub_dst = _mm_srli_epi16(sub_dst, 8);
+                /* ==== BATCH B (the 2 high pixels) ==== */
 
-                    /* pack everything back into a pixel with zeroed out alpha
-                     */
-                    sub_dst = _mm_packus_epi16(sub_dst, mm_zero);
-                    sub_dst = _mm_and_si128(sub_dst, mm_rgb_mask);
-                    STORE_M128_INTO_64(&sub_dst, dstp64);
+                /*[00 ][00 ][00 ][00 ][0A1][0A1][0A2][0A2] -> unpacked_alpha*/
+                unpacked_alpha = _mm_shufflehi_epi16(mm_src_alpha, 0b11110101);
 
-                    ++srcp64;
-                    ++dstp64;
-                },
-                n, width);
-            srcp64 += srcskip;
-            dstp64 += dstskip;
+                /*[0A1][0A1][0A1][0A1][0A2][0A2][0A2][0A2] -> unpacked_alpha*/
+                unpacked_alpha =
+                    _mm_unpackhi_epi16(unpacked_alpha, unpacked_alpha);
+
+                /*[0A][0R][0G][0B][0A][0R][0G][0B] -> src1*/
+                src1 = _mm_unpackhi_epi8(pixels_src, mm_zero);
+
+                /*[0A][0R][0G][0B][0A][0R][0G][0B] -> dst1*/
+                dst1 = _mm_unpackhi_epi8(pixels_dst, mm_zero);
+
+                ARGB_NO_SURF_ALPHA_OPAQUE_DST_PROCEDURE
+
+                /* ==== combine batches and store ==== */
+
+                sub_dst = _mm_packus_epi16(batch_a_dst, sub_dst);
+                /* zero out alpha */
+                sub_dst = _mm_and_si128(sub_dst, mm_rgb_mask);
+                _mm_storeu_si128(dstp128, sub_dst);
+
+                srcp128++;
+                dstp128++;
+            },
+            n, n_iters_4);
+
+        srcp32 = (Uint32 *)srcp128;
+        dstp32 = (Uint32 *)dstp128;
+
+        for (int i = 0; i < pxl_excess; i++) {
+            /*[00][00][00][00][00][00][AR][GB] -> src1*/
+            src1 = _mm_cvtsi32_si128(*srcp32);
+
+            /*[00][00][00][00][00][00][00][0A] -> mm_src_alpha*/
+            mm_src_alpha = _mm_srli_si128(src1, 3);
+
+            /*[00][00][00][00][00][00][0A][0A] -> mm_src_alpha*/
+            mm_src_alpha = _mm_unpacklo_epi16(mm_src_alpha, mm_src_alpha);
+
+            /*[00][00][00][00][0A][0A][0A][0A] -> mm_src_alpha*/
+            unpacked_alpha = _mm_unpacklo_epi32(mm_src_alpha, mm_src_alpha);
+
+            /*[00][00][00][00][0A][0R][0G][0B] -> src1*/
+            src1 = _mm_unpacklo_epi8(src1, mm_zero);
+
+            /*[00][00][00][00][00][00][AR][GB] -> dst1*/
+            dst1 = _mm_cvtsi32_si128(*dstp32);
+
+            /*[00][00][00][00][0A][0R][0G][0B] -> dst1*/
+            dst1 = _mm_unpacklo_epi8(dst1, mm_zero);
+
+            ARGB_NO_SURF_ALPHA_OPAQUE_DST_PROCEDURE
+
+            /* pack everything back into a pixel */
+            sub_dst = _mm_packus_epi16(sub_dst, mm_zero);
+            sub_dst = _mm_and_si128(sub_dst, mm_rgb_mask);
+            /* reset alpha to 0 */
+            *dstp32 = _mm_cvtsi128_si32(sub_dst);
+
+            srcp32++;
+            dstp32++;
         }
-    }
-    else {
-        /* one pixel at a time */
-        mm_zero = _mm_setzero_si128();
-        mm_rgb_mask = _mm_cvtsi32_si128(rgb_mask32);
 
-        while (height--) {
-            LOOP_UNROLLED4(
-                {
-                    /* Do the actual blend */
-                    /* src(ARGB) -> src1 (000000000000ARGB) */
-                    src1 = _mm_cvtsi32_si128(*srcp32);
-                    /* src1 >> ashift -> mm_src_alpha(000000000000000A) */
-                    mm_src_alpha = _mm_srli_si128(src1, 3);
-
-                    /* Then Calc RGB */
-                    /* 0000000000000A0A -> rgb_src_alpha */
-                    mm_src_alpha =
-                        _mm_unpacklo_epi16(mm_src_alpha, mm_src_alpha);
-                    /* 000000000A0A0A0A -> rgb_src_alpha */
-                    mm_src_alpha =
-                        _mm_unpacklo_epi32(mm_src_alpha, mm_src_alpha);
-
-                    /* 000000000A0R0G0B -> src1 */
-                    src1 = _mm_unpacklo_epi8(src1, mm_zero);
-
-                    /* dst(ARGB) -> dst1 (000000000000ARGB) */
-                    dst1 = _mm_cvtsi32_si128(*dstp32);
-                    /* 000000000A0R0G0B -> dst1 */
-                    dst1 = _mm_unpacklo_epi8(dst1, mm_zero);
-
-                    /* (srcRGB - dstRGB) */
-                    sub_dst = _mm_sub_epi16(src1, dst1);
-
-                    /* (srcRGB - dstRGB) * srcA */
-                    sub_dst = _mm_mullo_epi16(sub_dst, mm_src_alpha);
-
-                    /* (srcRGB - dstRGB) * srcA + srcRGB */
-                    sub_dst = _mm_add_epi16(sub_dst, src1);
-
-                    /* (dstRGB << 8) */
-                    dst1 = _mm_slli_epi16(dst1, 8);
-
-                    /* ((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) */
-                    sub_dst = _mm_add_epi16(sub_dst, dst1);
-
-                    /* (((dstRGB << 8) + (srcRGB - dstRGB) * srcA + srcRGB) >>
-                     * 8)*/
-                    sub_dst = _mm_srli_epi16(sub_dst, 8);
-
-                    /* pack everything back into a pixel */
-                    sub_dst = _mm_packus_epi16(sub_dst, mm_zero);
-                    sub_dst = _mm_and_si128(sub_dst, mm_rgb_mask);
-                    /* reset alpha to 0 */
-                    *dstp32 = _mm_cvtsi128_si32(sub_dst);
-
-                    ++srcp32;
-                    ++dstp32;
-                },
-                n, width);
-            srcp32 += srcskip;
-            dstp32 += dstskip;
-        }
+        srcp32 += srcskip;
+        dstp32 += dstskip;
     }
 }
 
@@ -663,7 +649,7 @@ blit_blend_rgba_mul_sse2(SDL_BlitInfo *info)
     __m128i mm_src, mm_dst, mm_zero, mm_two_five_fives;
 
     mm_zero = _mm_setzero_si128();
-    mm_two_five_fives = _mm_set_epi64x(0x00FF00FF00FF00FF, 0x00FF00FF00FF00FF);
+    mm_two_five_fives = _mm_set1_epi64x(0x00FF00FF00FF00FF);
 
     while (height--) {
         if (pre_2_width > 0) {
@@ -754,7 +740,7 @@ blit_blend_rgb_mul_sse2(SDL_BlitInfo *info)
     __m128i mm_src, mm_dst, mm_zero, mm_two_five_fives, mm_alpha_mask;
 
     mm_zero = _mm_setzero_si128();
-    mm_two_five_fives = _mm_set_epi64x(0x00FF00FF00FF00FF, 0x00FF00FF00FF00FF);
+    mm_two_five_fives = _mm_set1_epi64x(0x00FF00FF00FF00FF);
     mm_alpha_mask = _mm_set_epi64x(0x0000000000000000, amask64);
 
     while (height--) {
@@ -910,7 +896,7 @@ blit_blend_rgb_add_sse2(SDL_BlitInfo *info)
 
     __m128i mm_src, mm_dst, mm_alpha_mask;
 
-    mm_alpha_mask = _mm_set_epi32(amask, amask, amask, amask);
+    mm_alpha_mask = _mm_set1_epi32(amask);
 
     while (height--) {
         if (pre_4_width > 0) {
@@ -1038,7 +1024,7 @@ blit_blend_rgb_sub_sse2(SDL_BlitInfo *info)
 
     __m128i mm_src, mm_dst, mm_alpha_mask;
 
-    mm_alpha_mask = _mm_set_epi32(amask, amask, amask, amask);
+    mm_alpha_mask = _mm_set1_epi32(amask);
 
     while (height--) {
         if (pre_4_width > 0) {
@@ -1166,7 +1152,7 @@ blit_blend_rgb_max_sse2(SDL_BlitInfo *info)
 
     __m128i mm_src, mm_dst, mm_alpha_mask;
 
-    mm_alpha_mask = _mm_set_epi32(amask, amask, amask, amask);
+    mm_alpha_mask = _mm_set1_epi32(amask);
 
     while (height--) {
         if (pre_4_width > 0) {
@@ -1294,7 +1280,7 @@ blit_blend_rgb_min_sse2(SDL_BlitInfo *info)
 
     __m128i mm_src, mm_dst, mm_alpha_mask;
 
-    mm_alpha_mask = _mm_set_epi32(amask, amask, amask, amask);
+    mm_alpha_mask = _mm_set1_epi32(amask);
 
     while (height--) {
         if (pre_4_width > 0) {

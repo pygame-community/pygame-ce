@@ -1,9 +1,9 @@
-from typing import Optional, Sequence, Union
+from typing import Optional, Union
 
 from pygame.color import Color
 from pygame.surface import Surface
 
-from ._common import ColorValue, Coordinate, RectValue
+from ._common import ColorValue, Coordinate, RectValue, Sequence
 
 def flip(surface: Surface, flip_x: bool, flip_y: bool) -> Surface: ...
 def scale(
@@ -53,3 +53,15 @@ def threshold(
     search_surf: Optional[Surface] = None,
     inverse_set: bool = False,
 ) -> int: ...
+def box_blur(
+    surface: Surface,
+    radius: int,
+    repeat_edge_pixels: bool = True,
+    dest_surface: Optional[Surface] = None
+) -> Surface: ...
+def gaussian_blur(
+    surface: Surface,
+    radius: int,
+    repeat_edge_pixels: bool = True,
+    dest_surface: Optional[Surface] = None
+) -> Surface: ...

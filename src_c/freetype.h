@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2009 Vicent Marti
 
   This library is free software; you can redistribute it and/or
@@ -102,6 +102,7 @@ typedef struct {
 
     struct freetypeinstance_ *freetype; /* Personal reference */
     struct fontinternals_ *_internals;
+    unsigned int init_generation;
 } pgFontObject;
 
 #define pgFont_IS_ALIVE(o) (((pgFontObject *)(o))->_internals != 0)

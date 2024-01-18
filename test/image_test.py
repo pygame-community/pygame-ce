@@ -104,7 +104,7 @@ class ImageModuleTest(unittest.TestCase):
         "SDL_image 2.0.5 and older has a big endian bug in jpeg saving",
     )
     def testSaveJPG(self):
-        """JPG equivalent to issue #211 - color channel swapping
+        """JPG equivalent to pygame-ce issue #226 - color channel swapping
 
         Make sure the SDL surface color masks represent the rgb memory format
         required by the JPG library. The masks are machine endian dependent
@@ -196,6 +196,10 @@ class ImageModuleTest(unittest.TestCase):
             del reader
             os.remove(f_path)
 
+    @unittest.skipIf(
+        pygame.image.get_sdl_image_version() == (2, 0, 5),
+        "SDL image 2.0.5 png saving will save this 24 bit as RGBA, causing reader.asRGB8 to fail",
+    )
     def testSavePNG24(self):
         """see if we can save a png with color values in the proper channels."""
         # Create a PNG file with known colors
@@ -493,8 +497,8 @@ class ImageModuleTest(unittest.TestCase):
                     )
                     self.fail(msg)
 
-    def test_to_string__premultiplied(self):
-        """test to make sure we can export a surface to a premultiplied alpha string"""
+    def test_to_bytes__premultiplied(self):
+        """test to make sure we can export a surface to a premultiplied alpha bytes"""
 
         def convertRGBAtoPremultiplied(surface_to_modify):
             for x in range(surface_to_modify.get_width()):
@@ -518,19 +522,19 @@ class ImageModuleTest(unittest.TestCase):
         premultiplied_copy = test_surface.copy()
         convertRGBAtoPremultiplied(premultiplied_copy)
         self.assertPremultipliedAreEqual(
-            pygame.image.tostring(test_surface, "RGBA_PREMULT"),
-            pygame.image.tostring(premultiplied_copy, "RGBA"),
-            pygame.image.tostring(test_surface, "RGBA"),
+            pygame.image.tobytes(test_surface, "RGBA_PREMULT"),
+            pygame.image.tobytes(premultiplied_copy, "RGBA"),
+            pygame.image.tobytes(test_surface, "RGBA"),
         )
         self.assertPremultipliedAreEqual(
-            pygame.image.tostring(test_surface, "ARGB_PREMULT"),
-            pygame.image.tostring(premultiplied_copy, "ARGB"),
-            pygame.image.tostring(test_surface, "ARGB"),
+            pygame.image.tobytes(test_surface, "ARGB_PREMULT"),
+            pygame.image.tobytes(premultiplied_copy, "ARGB"),
+            pygame.image.tobytes(test_surface, "ARGB"),
         )
 
         no_alpha_surface = pygame.Surface((256, 256), 0, 24)
         self.assertRaises(
-            ValueError, pygame.image.tostring, no_alpha_surface, "RGBA_PREMULT"
+            ValueError, pygame.image.tobytes, no_alpha_surface, "RGBA_PREMULT"
         )
 
     # Custom assert method to check for identical surfaces.
@@ -560,8 +564,8 @@ class ImageModuleTest(unittest.TestCase):
                     "%s (pixel: %d, %d)" % (msg, x, y),
                 )
 
-    def test_fromstring__and_tostring(self):
-        """Ensure methods tostring() and fromstring() are symmetric."""
+    def test_frombytes__and_tobytes(self):
+        """Ensure methods tobytes() and frombytes() are symmetric."""
 
         import itertools
 
@@ -601,11 +605,11 @@ class ImageModuleTest(unittest.TestCase):
         )
 
         for pair in fmt_combinations:
-            fmt1_buf = pygame.image.tostring(test_surface, pair[0])
+            fmt1_buf = pygame.image.tobytes(test_surface, pair[0])
             fmt1_convert_buf = convert(
                 pair[1], pair[0], convert(pair[0], pair[1], fmt1_buf)
             )
-            test_convert_two_way = pygame.image.fromstring(
+            test_convert_two_way = pygame.image.frombytes(
                 fmt1_convert_buf, test_surface.get_size(), pair[0]
             )
 
@@ -616,9 +620,9 @@ class ImageModuleTest(unittest.TestCase):
             )
 
         for pair in fmt_permutations:
-            fmt1_buf = pygame.image.tostring(test_surface, pair[0])
+            fmt1_buf = pygame.image.tobytes(test_surface, pair[0])
             fmt2_convert_buf = convert(pair[0], pair[1], fmt1_buf)
-            test_convert_one_way = pygame.image.fromstring(
+            test_convert_one_way = pygame.image.frombytes(
                 fmt2_convert_buf, test_surface.get_size(), pair[1]
             )
 
@@ -629,19 +633,18 @@ class ImageModuleTest(unittest.TestCase):
             )
 
         for fmt in fmts:
-            test_buf = pygame.image.tostring(test_surface, fmt)
-            test_to_from_fmt_string = pygame.image.fromstring(
+            test_buf = pygame.image.tobytes(test_surface, fmt)
+            test_to_from_fmt_bytes = pygame.image.frombytes(
                 test_buf, test_surface.get_size(), fmt
             )
 
             self._assertSurfaceEqual(
                 test_surface,
-                test_to_from_fmt_string,
-                "tostring/fromstring functions are not "
-                f"symmetric with '{fmt}' format",
+                test_to_from_fmt_bytes,
+                "tobytes/frombytes functions are not " f"symmetric with '{fmt}' format",
             )
 
-    def test_tostring_depth_24(self):
+    def test_tobytes_depth_24(self):
         test_surface = pygame.Surface((64, 256), depth=24)
         for i in range(256):
             for j in range(16):
@@ -652,16 +655,25 @@ class ImageModuleTest(unittest.TestCase):
                 test_surface.set_at((j + 32, i), (i, i, i, intensity))
 
         fmt = "RGB"
-        fmt_buf = pygame.image.tostring(test_surface, fmt)
-        test_to_from_fmt_string = pygame.image.fromstring(
+        fmt_buf = pygame.image.tobytes(test_surface, fmt)
+        test_to_from_fmt_bytes = pygame.image.frombytes(
             fmt_buf, test_surface.get_size(), fmt
         )
 
         self._assertSurfaceEqual(
             test_surface,
-            test_to_from_fmt_string,
-            f'tostring/fromstring functions are not symmetric with "{fmt}" format',
+            test_to_from_fmt_bytes,
+            f'tobytes/frombytes functions are not symmetric with "{fmt}" format',
         )
+
+    def test_from_to_bytes_deprecation(self):
+        test_surface = pygame.Surface((64, 256), flags=pygame.SRCALPHA, depth=32)
+        with self.assertWarns(DeprecationWarning):
+            test_surface_bytes = pygame.image.tostring(test_surface, "RGBA")
+        with self.assertWarns(DeprecationWarning):
+            reconstructed_test_surface = pygame.image.fromstring(
+                test_surface_bytes, (64, 256), "RGBA"
+            )
 
     def test_frombuffer_8bit(self):
         """test reading pixel data from a bytes buffer"""
@@ -1746,10 +1758,19 @@ class ImageModuleTest(unittest.TestCase):
             ("purple.xpm", (255, 0, 255, 255)),
             ("black.ppm", (0, 0, 0, 255)),
             ("grey.pgm", (120, 120, 120, 255)),
+            ("white.pbm", (255, 255, 255, 255)),
             ("teal.svg", (0, 128, 128, 255)),
             ("crimson.pnm", (220, 20, 60, 255)),
             ("scarlet.webp", (252, 14, 53, 255)),
+            ("tomato.xcf", (255, 99, 71, 255)),
         ]
+
+        if pygame.image.get_sdl_image_version() > (2, 0, 5):
+            filename_expected_color.append(("purple.qoi", (159, 38, 240, 255)))
+
+        # SDL_image 2.8.0 and 2.8.1 have an LBM file loading regression
+        if not (2, 8, 0) <= pygame.image.get_sdl_image_version() < (2, 8, 2):
+            filename_expected_color.append(("magenta.lbm", (255, 0, 255, 255)))
 
         for filename, expected_color in filename_expected_color:
             if filename.endswith("svg") and sdl_image_svg_jpeg_save_bug:
@@ -1764,6 +1785,85 @@ class ImageModuleTest(unittest.TestCase):
             ):
                 surf = pygame.image.load_extended(example_path("data/" + filename))
                 self.assertEqual(surf.get_at((0, 0)), expected_color)
+
+    @unittest.skipIf(
+        pygame.image.get_sdl_image_version() < (2, 6, 0),
+        "load_sized_svg requires SDL_image 2.6.0+",
+    )
+    def test_load_sized_svg(self):
+        EXPECTED_COLOR = (0, 128, 128, 255)
+        EXPECTED_ASPECT_RATIO = pygame.Vector2(1, 1).normalize()
+        for size in (
+            (10, 10),
+            [100, 100],
+            pygame.Vector2(1, 1),
+            [4, 2],
+            (1000, 30),
+        ):
+            with self.subTest(
+                f"Test loading SVG with size",
+                size=size,
+            ):
+                # test with both keywords and no keywords
+                surf = pygame.image.load_sized_svg(example_path("data/teal.svg"), size)
+                surf_kw = pygame.image.load_sized_svg(
+                    file=example_path("data/teal.svg"), size=size
+                )
+                self.assertEqual(surf.get_at((0, 0)), EXPECTED_COLOR)
+                self.assertEqual(surf_kw.get_at((0, 0)), EXPECTED_COLOR)
+                ret_size = surf.get_size()
+                self.assertEqual(surf_kw.get_size(), ret_size)
+
+                # test the returned surface exactly fits the size box
+                self.assertTrue(
+                    (ret_size[0] == size[0] and ret_size[1] <= size[1])
+                    or (ret_size[1] == size[1] and ret_size[0] <= size[0]),
+                    f"{ret_size = } must exactly fit {size = }",
+                )
+
+                # test that aspect ratio is maintained
+                self.assertEqual(
+                    pygame.Vector2(ret_size).normalize(), EXPECTED_ASPECT_RATIO
+                )
+
+    @unittest.skipIf(
+        pygame.image.get_sdl_image_version() < (2, 6, 0),
+        "load_sized_svg requires SDL_image 2.6.0+",
+    )
+    def test_load_sized_svg_erroring(self):
+        for type_error_size in (
+            [100],
+            (0, 0, 10, 3),
+            "foo",
+            pygame.Vector3(-3, 10, 10),
+        ):
+            with self.subTest(
+                f"Test TypeError",
+                type_error_size=type_error_size,
+            ):
+                self.assertRaises(
+                    TypeError,
+                    pygame.image.load_sized_svg,
+                    example_path("data/teal.svg"),
+                    type_error_size,
+                )
+
+        for value_error_size in (
+            [100, 0],
+            (0, 0),
+            [-2, -1],
+            pygame.Vector2(-3, 10),
+        ):
+            with self.subTest(
+                f"Test ValueError",
+                value_error_size=value_error_size,
+            ):
+                self.assertRaises(
+                    ValueError,
+                    pygame.image.load_sized_svg,
+                    example_path("data/teal.svg"),
+                    value_error_size,
+                )
 
     def test_load_pathlib(self):
         """works loading using a Path argument."""

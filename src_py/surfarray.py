@@ -1,4 +1,4 @@
-##    pygame - Python Game Library
+##    pygame-ce - Python Game Library
 ##    Copyright (C) 2007 Marcus von Appen
 ##
 ##    This library is free software; you can redistribute it and/or
@@ -60,7 +60,7 @@ numpy_floats = []
 for type_name in "float32 float64 float96".split():
     if hasattr(numpy, type_name):
         numpy_floats.append(getattr(numpy, type_name))
-# Added below due to deprecation of numpy.float. See issue #2814
+# Added below due to deprecation of numpy.float. See pygame-ce issue #1440
 numpy_floats.append(float)
 
 # Pixel sizes corresponding to NumPy supported integer sizes, and therefore

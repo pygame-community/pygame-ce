@@ -44,6 +44,12 @@ jobs:
       matrix:
         include:
           - {
+            name: "CPython 3.12 (64 bit)",
+            winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
+            pyversions: "cp312-*"
+          }
+          - {
             name: "CPython 3.11 (64 bit)",
             winarch: AMD64,
             msvc-dev-arch: x86_amd64,
@@ -68,10 +74,10 @@ jobs:
             pyversions: "cp38-*"
           }
           - {
-            name: "CPython 3.7 (64 bit)",
-            winarch: AMD64,
-            msvc-dev-arch: x86_amd64,
-            pyversions: "cp37-*"
+            name: "CPython 3.12 (32 bit)",
+            winarch: x86,
+            msvc-dev-arch: x86,
+            pyversions: "cp312-win32*"
           }
           - {
             name: "CPython 3.11 (32 bit)",
@@ -98,18 +104,6 @@ jobs:
             pyversions: "cp38-win32"
           }
           - {
-            name: "CPython 3.7 (32 bit)",
-            winarch: x86,
-            msvc-dev-arch: x86,
-            pyversions: "cp37-win32"
-          }
-          - {
-            name: "Pypy 3.7",
-            winarch: AMD64,
-            msvc-dev-arch: x86_amd64,
-            pyversions: "pp37-*"
-          }
-          - {
             name: "Pypy 3.8",
             winarch: AMD64,
             msvc-dev-arch: x86_amd64,
@@ -120,6 +114,12 @@ jobs:
             winarch: AMD64,
             msvc-dev-arch: x86_amd64,
             pyversions: "pp39-*"
+          }
+          - {
+            name: "Pypy 3.10",
+            winarch: AMD64,
+            msvc-dev-arch: x86_amd64,
+            pyversions: "pp310-*"
           }
 
 
@@ -146,9 +146,9 @@ jobs:
       CIBW_BUILD_VERBOSITY: 2
 
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v4.1.1
 
-      - uses: TheMrMilchmann/setup-msvc-dev@v2  # this lets us use the developer command prompt on windows
+      - uses: TheMrMilchmann/setup-msvc-dev@v3  # this lets us use the developer command prompt on windows
         with:
           arch: ${{ matrix.msvc-dev-arch }}
       - name: Build and test wheels
@@ -156,12 +156,13 @@ jobs:
         run: |
           set DISTUTILS_USE_SDK=1
           set MSSdk=1
-          python -m pip install setuptools wheel requests numpy Sphinx
+          python -m pip install setuptools wheel requests numpy Sphinx"<7.2.0"
           python setup.py docs
-          python -m pip --disable-pip-version-check install cibuildwheel==2.12.0
+          python -m pip --disable-pip-version-check install cibuildwheel==2.16.2
           python -m cibuildwheel --output-dir wheelhouse
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          name: pygame-wheels-windows
+          name: pygame-wheels-windows-${{ matrix.name }}
           path: ./wheelhouse/*.whl
+          compression-level: 0  # wheels are already zip files, no need for more compression

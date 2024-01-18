@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2009 Vicent Marti
 
   This library is free software; you can redistribute it and/or
@@ -400,14 +400,11 @@ _PGFT_Render_NewSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
                         const FontRenderMode *mode, PGFT_String *text,
                         FontColor *fgcolor, FontColor *bgcolor, SDL_Rect *r)
 {
-    FT_UInt32 rmask = 0;
-    FT_UInt32 gmask = 0;
-    FT_UInt32 bmask = 0;
-    FT_UInt32 amask = 0;
     int locked = 0;
     SDL_Surface *surface = 0;
     int bits_per_pixel =
         (bgcolor || mode->render_flags & FT_RFLAG_ANTIALIAS) ? 32 : 8;
+    Uint32 pixelformat;
 
     FontSurface font_surf;
     Layout *font_text;
@@ -435,21 +432,13 @@ _PGFT_Render_NewSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
         offset.y = -font_text->min_y;
     }
 
-    if (bits_per_pixel == 32) {
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-        rmask = 0xff000000;
-        gmask = 0x00ff0000;
-        bmask = 0x0000ff00;
-        amask = 0x000000ff;
-#else
-        rmask = 0x000000ff;
-        gmask = 0x0000ff00;
-        bmask = 0x00ff0000;
-        amask = 0xff000000;
-#endif
+    if (bits_per_pixel == 8) {
+        pixelformat = SDL_PIXELFORMAT_INDEX8;
     }
-    surface = SDL_CreateRGBSurface(0, width, height, bits_per_pixel, rmask,
-                                   gmask, bmask, amask);
+    else {
+        pixelformat = SDL_PIXELFORMAT_RGBA32;
+    }
+    surface = PG_CreateSurface(width, height, pixelformat);
     if (!surface) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return 0;

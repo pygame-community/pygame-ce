@@ -26,20 +26,24 @@ class MixerMusicModuleTest(unittest.TestCase):
 
     def test_load_mp3(self):
         "|tags:music|"
-        self.music_load("mp3")
+        self.music_load("house_lo.mp3")
 
     def test_load_ogg(self):
         "|tags:music|"
-        self.music_load("ogg")
+        self.music_load("house_lo.ogg")
 
     def test_load_wav(self):
         "|tags:music|"
-        self.music_load("wav")
+        self.music_load("house_lo.wav")
 
-    def music_load(self, format):
+    def test_load_xm(self):
+        "|tags:music|"
+        self.music_load("surfonasinewave.xm")
+
+    def music_load(self, filename):
         data_fname = example_path("data")
 
-        path = os.path.join(data_fname, f"house_lo.{format}")
+        path = os.path.join(data_fname, filename)
         if os.sep == "\\":
             path = path.replace("\\", "\\\\")
         umusfn = str(path)
@@ -50,10 +54,13 @@ class MixerMusicModuleTest(unittest.TestCase):
 
     def test_load_object(self):
         """test loading music from file-like objects."""
-        formats = ["ogg", "wav"]
+        filenames = ["house_lo.ogg", "house_lo.wav", "surfonasinewave.xm"]
+        if pygame.mixer.get_sdl_mixer_version() >= (2, 6, 0):
+            filenames.append("house_lo.mp3")
+
         data_fname = example_path("data")
-        for f in formats:
-            path = os.path.join(data_fname, f"house_lo.{f}")
+        for file in filenames:
+            path = os.path.join(data_fname, file)
             if os.sep == "\\":
                 path = path.replace("\\", "\\\\")
             bmusfn = path.encode()
@@ -63,26 +70,31 @@ class MixerMusicModuleTest(unittest.TestCase):
 
     def test_object_namehint(self):
         """test loading & queuing music from file-like objects with namehint argument."""
-        formats = ["wav", "ogg"]
+        filenames = ["house_lo.ogg", "house_lo.wav", "surfonasinewave.xm"]
+        if pygame.mixer.get_sdl_mixer_version() >= (2, 6, 0):
+            filenames.append("house_lo.mp3")
+
         data_fname = example_path("data")
-        for f in formats:
-            path = os.path.join(data_fname, f"house_lo.{f}")
+        for file in filenames:
+            path = os.path.join(data_fname, file)
             if os.sep == "\\":
                 path = path.replace("\\", "\\\\")
             bmusfn = path.encode()
 
+            *_, format = file.split(".")
+
             # these two "with open" blocks need to be separate, which is kinda weird
             with open(bmusfn, "rb") as musf:
-                pygame.mixer.music.load(musf, f)
+                pygame.mixer.music.load(musf, format)
 
             with open(bmusfn, "rb") as musf:
-                pygame.mixer.music.queue(musf, f)
+                pygame.mixer.music.queue(musf, format)
 
             with open(bmusfn, "rb") as musf:
-                pygame.mixer.music.load(musf, namehint=f)
+                pygame.mixer.music.load(musf, namehint=format)
 
             with open(bmusfn, "rb") as musf:
-                pygame.mixer.music.queue(musf, namehint=f)
+                pygame.mixer.music.queue(musf, namehint=format)
 
     def test_load_unicode(self):
         """test non-ASCII unicode path"""
@@ -143,6 +155,14 @@ class MixerMusicModuleTest(unittest.TestCase):
         filename = example_path(os.path.join("data", "house_lo.wav"))
         pygame.mixer.music.queue(filename)
 
+    def test_queue_xm(self):
+        """Ensures queue() accepts xm files (tracker music files).
+
+        |tags:music|
+        """
+        filename = example_path(os.path.join("data", "surfonasinewave.xm"))
+        pygame.mixer.music.queue(filename)
+
     def test_queue__multiple_calls(self):
         """Ensures queue() can be called multiple times."""
         ogg_file = example_path(os.path.join("data", "house_lo.ogg"))
@@ -174,7 +194,7 @@ class MixerMusicModuleTest(unittest.TestCase):
 
     def test_queue__invalid_filename(self):
         """Ensures queue() correctly handles invalid filenames."""
-        with self.assertRaises(pygame.error):
+        with self.assertRaises(FileNotFoundError):
             pygame.mixer.music.queue("")
 
     def test_music_pause__unpause(self):
@@ -358,7 +378,7 @@ class MixerMusicModuleTest(unittest.TestCase):
         # music is idle this returns False.
         #
 
-        self.music_load("ogg")
+        self.music_load("house_lo.ogg")
         self.assertFalse(pygame.mixer.music.get_busy())
         pygame.mixer.music.play()
         self.assertTrue(pygame.mixer.music.get_busy())
@@ -404,7 +424,7 @@ class MixerMusicModuleTest(unittest.TestCase):
         self.fail()
 
     def test_init(self):
-        """issue #955. unload music whenever mixer.quit() is called"""
+        """pygame-ce issue #622. unload music whenever mixer.quit() is called"""
         import tempfile
         import shutil
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # This is the distutils setup script for pygame.
-# Full instructions are in https://www.pygame.org/wiki/GettingStarted
+# Full instructions are in https://github.com/pygame-community/pygame-ce/wiki
 #
 # To configure, compile, install, just run this script.
 #     python setup.py install
@@ -16,7 +16,7 @@ EXTRAS = {}
 
 METADATA = {
     "name": "pygame-ce",
-    "version": "2.2.0.dev1",
+    "version": "2.5.0.dev1",
     "license": "LGPL",
     "url": "https://pyga.me",
     "author": "A community project.",
@@ -29,19 +29,18 @@ METADATA = {
         "Source": "https://github.com/pygame-community/pygame-ce",
     },
     "classifiers": [
-        "Development Status :: 6 - Mature",
+        "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
         "Programming Language :: Assembly",
         "Programming Language :: C",
         "Programming Language :: Cython",
-        "Programming Language :: Objective C",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Games/Entertainment",
@@ -53,12 +52,14 @@ METADATA = {
         "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
         "Topic :: Multimedia :: Graphics :: Graphics Conversion",
         "Topic :: Multimedia :: Graphics :: Viewers",
+        "Topic :: Software Development :: Libraries :: pygame",
         "Operating System :: Microsoft :: Windows",
         "Operating System :: POSIX",
         "Operating System :: Unix",
         "Operating System :: MacOS",
+        "Typing :: Typed"
     ],
-    "python_requires": '>=3.7',
+    "python_requires": '>=3.8',
 }
 
 import re
@@ -71,7 +72,7 @@ import distutils
 
 import distutils.ccompiler
 
-avx2_filenames = ['simd_blitters_avx2']
+avx2_filenames = ['simd_blitters_avx2', 'simd_transform_avx2', 'simd_surface_fill_avx2']
 
 compiler_options = {
     'unix': ('-mavx2',),
@@ -120,7 +121,7 @@ def spawn(self, cmd, **kwargs):
 distutils.ccompiler.CCompiler.__spawn = distutils.ccompiler.CCompiler.spawn
 distutils.ccompiler.CCompiler.spawn = spawn
 
-# A (bit hacky) fix for https://github.com/pygame/pygame/issues/2613
+# A (bit hacky) fix for https://github.com/pygame-community/pygame-ce/issues/1346
 # This is due to the fact that distutils uses command line args to 
 # export PyInit_* functions on windows, but those functions are already exported
 # and that is why compiler gives warnings
@@ -134,47 +135,28 @@ IS_PYPY = '__pypy__' in sys.builtin_module_names
 def compilation_help():
     """ On failure point people to a web page for help.
     """
-    the_system = platform.system()
-    if the_system == 'Linux':
-        if hasattr(platform, 'linux_distribution'):
-            distro = platform.linux_distribution()
-            if distro[0].lower() == 'ubuntu':
-                the_system = 'Ubuntu'
-            elif distro[0].lower() == 'debian':
-                the_system = 'Debian'
-
     help_urls = {
-        'Linux': 'https://www.pygame.org/wiki/Compilation',
-        'Ubuntu': 'https://www.pygame.org/wiki/CompileUbuntu',
-        'Windows': 'https://www.pygame.org/wiki/CompileWindows',
-        'Darwin': 'https://www.pygame.org/wiki/MacCompile',
-        'RedHat': 'https://www.pygame.org/wiki/CompileRedHat',
-        # TODO There is nothing in the following pages yet
-        'Suse': 'https://www.pygame.org/wiki/CompileSuse',
-        'Python (from pypy.org)': 'https://www.pygame.org/wiki/CompilePyPy',
-        'Free BSD': 'https://www.pygame.org/wiki/CompileFreeBSD',
-        'Debian': 'https://www.pygame.org/wiki/CompileDebian',
+        'Linux': 'https://github.com/pygame-community/pygame-ce/wiki/Compiling-on-Linux',
+        'Windows': 'https://github.com/pygame-community/pygame-ce/wiki/Compiling-on-Windows',
+        'Darwin': 'https://github.com/pygame-community/pygame-ce/wiki/Compiling-on-macOS',
     }
 
-    default = 'https://www.pygame.org/wiki/Compilation'
-    url = help_urls.get(the_system, default)
-
-    if IS_PYPY:
-        url += '\n    https://www.pygame.org/wiki/CompilePyPy'
+    default = 'https://github.com/pygame-community/pygame-ce/wiki#compiling'
+    url = help_urls.get(platform.system(), default)
 
     print('\n---')
     print('For help with compilation see:')
     print(f'    {url}')
-    print('To contribute to pygame development see:')
+    print('To contribute to pygame-ce development see:')
     print('    https://github.com/pygame-community/pygame-ce')
     print('---\n')
 
 
-if not hasattr(sys, 'version_info') or sys.version_info < (3, 7):
+if not hasattr(sys, 'version_info') or sys.version_info < (3, 8):
     compilation_help()
-    raise SystemExit("Pygame requires Python3 version 3.7 or above.")
+    raise SystemExit("Pygame-ce requires Python3 version 3.8 or above.")
 if IS_PYPY and sys.pypy_version_info < (7,):
-    raise SystemExit("Pygame requires PyPy version 7.0.0 above, compatible with CPython >= 3.7")
+    raise SystemExit("Pygame-ce requires PyPy version 7.0.0 above, compatible with CPython >= 3.8")
 
 
 def consume_arg(name):
@@ -451,7 +433,7 @@ for e in extensions:
     if (
             "CI" in os.environ
             and not e.name.startswith("_sdl2")
-            and e.name not in ("pypm", "_sprite", "gfxdraw")
+            and e.name not in ("pypm", "gfxdraw")
     ):
         # Do -Werror only on CI, and exclude -Werror on Cython C files and gfxdraw
         e.extra_compile_args.append("/WX" if sys.platform == "win32" else "-Werror")
@@ -543,58 +525,6 @@ add_datafiles(data_files, 'pygame/docs/generated',
                  ['*.txt',
                   ['ref',
                    ['*.txt']]]]]])
-
-
-# generate the version module
-def parse_version(ver):
-    return ', '.join(s for s in re.findall(r'\d+', ver)[0:3])
-
-
-def parse_source_version():
-    pgh_major = -1
-    pgh_minor = -1
-    pgh_patch = -1
-    major_exp_search = re.compile(r'define\s+PG_MAJOR_VERSION\s+([0-9]+)').search
-    minor_exp_search = re.compile(r'define\s+PG_MINOR_VERSION\s+([0-9]+)').search
-    patch_exp_search = re.compile(r'define\s+PG_PATCH_VERSION\s+([0-9]+)').search
-    pg_header = os.path.join('src_c', 'include', '_pygame.h')
-    with open(pg_header) as f:
-        for line in f:
-            if pgh_major == -1:
-                m = major_exp_search(line)
-                if m: pgh_major = int(m.group(1))
-            if pgh_minor == -1:
-                m = minor_exp_search(line)
-                if m: pgh_minor = int(m.group(1))
-            if pgh_patch == -1:
-                m = patch_exp_search(line)
-                if m: pgh_patch = int(m.group(1))
-    if pgh_major == -1:
-        raise SystemExit("_pygame.h: cannot find PG_MAJOR_VERSION")
-    if pgh_minor == -1:
-        raise SystemExit("_pygame.h: cannot find PG_MINOR_VERSION")
-    if pgh_patch == -1:
-        raise SystemExit("_pygame.h: cannot find PG_PATCH_VERSION")
-    return (pgh_major, pgh_minor, pgh_patch)
-
-
-def write_version_module(pygame_version, revision):
-    vernum = parse_version(pygame_version)
-    src_vernum = parse_source_version()
-    if vernum != ', '.join(str(e) for e in src_vernum):
-        raise SystemExit("_pygame.h version differs from 'METADATA' version"
-                         ": %s vs %s" % (vernum, src_vernum))
-    with open(os.path.join('buildconfig', 'version.py.in')) as header_file:
-        header = header_file.read()
-    with open(os.path.join('src_py', 'version.py'), 'w') as version_file:
-        version_file.write(header)
-        version_file.write('ver = "' + pygame_version + '"  # pylint: disable=invalid-name\n')
-        version_file.write(f'vernum = PygameVersion({vernum})\n')
-        version_file.write('rev = "' + revision + '"  # pylint: disable=invalid-name\n')
-        version_file.write('\n__all__ = ["SDL", "ver", "vernum", "rev"]\n')
-
-
-write_version_module(METADATA['version'], revision)
 
 # required. This will be filled if doing a Windows build.
 cmdclass = {}
@@ -901,10 +831,8 @@ class LintFormatCommand(Command):
         c_file_disallow = [
             "_sdl2/**",
             "pypm.c",
-            "SDL_gfx/**",
             "**/sse2neon.h",
             "doc/**",
-            "_sprite.c",
         ]
         c_file_allow = ["_sdl2/touch.c"]
         c_files = filter_files(path_obj, c_files_unfiltered, c_file_allow, c_file_disallow)
@@ -949,7 +877,7 @@ class FormatCommand(LintFormatCommand):
 
 @add_command('docs')
 class DocsCommand(Command):
-    """ For building the pygame documentation with `python setup.py docs`.
+    """ For building the pygame-ce documentation with `python setup.py docs`.
     This generates html, and documentation .h header files.
     """
     user_options = [
@@ -1027,17 +955,6 @@ PACKAGEDATA = {
                  'pygame._sdl2',
                  'pygame.tests',
                  'pygame.tests.test_utils',
-                 'pygame.tests.run_tests__tests',
-                 'pygame.tests.run_tests__tests.all_ok',
-                 'pygame.tests.run_tests__tests.failures1',
-                 'pygame.tests.run_tests__tests.incomplete',
-                 'pygame.tests.run_tests__tests.infinite_loop',
-                 'pygame.tests.run_tests__tests.print_stderr',
-                 'pygame.tests.run_tests__tests.print_stdout',
-                 'pygame.tests.run_tests__tests.incomplete_todo',
-                 'pygame.tests.run_tests__tests.exclude',
-                 'pygame.tests.run_tests__tests.timeout',
-                 'pygame.tests.run_tests__tests.everything',
                  'pygame.docs',
                  'pygame.examples',
                  'pygame.__pyinstaller'],

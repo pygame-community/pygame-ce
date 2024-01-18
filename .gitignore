@@ -1,8 +1,7 @@
-# Pygame build process: config.py setup.py
+# pygame-ce build process: config.py setup.py
 /Setup
 *.pyc
 /build/
-/src_py/version.py
 
 # Windows prebuilt external libraries
 /prebuilt-x??

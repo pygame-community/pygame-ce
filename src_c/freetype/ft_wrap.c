@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2009 Vicent Marti
 
   This library is free software; you can redistribute it and/or
@@ -153,6 +153,19 @@ _PGFT_Font_GetName(FreeTypeInstance *ft, pgFontObject *fontobj)
         return 0;
     }
     return font->family_name ? font->family_name : "";
+}
+
+const char *
+_PGFT_Font_GetStyleName(FreeTypeInstance *ft, pgFontObject *fontobj)
+{
+    FT_Face font;
+    font = _PGFT_GetFont(ft, fontobj);
+
+    if (!font) {
+        PyErr_SetString(pgExc_SDLError, _PGFT_GetError(ft));
+        return 0;
+    }
+    return font->style_name ? font->style_name : "";
 }
 
 /* All the font metric functions raise an exception and return 0 on an error.

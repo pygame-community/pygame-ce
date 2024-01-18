@@ -1,5 +1,5 @@
 /*
-  pygame - Python Game Library
+  pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
   Copyright (C) 2007 Marcus von Appen
 
@@ -346,11 +346,11 @@ surface_respect_clip_rect(SDL_Surface *surface, SDL_Rect *rect);
 
 int
 pygame_AlphaBlit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
-                 SDL_Rect *dstrect, int the_args);
+                 SDL_Rect *dstrect, int blend_flags);
 
 int
 pygame_Blit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
-            SDL_Rect *dstrect, int the_args);
+            SDL_Rect *dstrect, int blend_flags);
 
 int
 premul_surf_color_by_alpha(SDL_Surface *src, SDL_Surface *dst);
