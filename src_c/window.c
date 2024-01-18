@@ -187,17 +187,24 @@ window_flip(pgWindowObject *self)
 {
     int result;
 
-    if (!self->surf) {
-        return RAISE(pgExc_SDLError,
-                     "the Window has no surface associated with it, did "
-                     "you forget to call Window.get_surface()");
-    }
+    if (self->context == NULL)
+    {
+        if (!self->surf) {
+            return RAISE(pgExc_SDLError,
+                        "the Window has no surface associated with it, did "
+                        "you forget to call Window.get_surface()");
+        }
 
-    Py_BEGIN_ALLOW_THREADS;
-    result = SDL_UpdateWindowSurface(self->_win);
-    Py_END_ALLOW_THREADS;
-    if (result) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        Py_BEGIN_ALLOW_THREADS;
+        result = SDL_UpdateWindowSurface(self->_win);
+        Py_END_ALLOW_THREADS;
+        if (result) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+    }
+    else
+    {
+        SDL_GL_SwapWindow(self->_win);
     }
     Py_RETURN_NONE;
 }
@@ -723,6 +730,22 @@ window_get_opacity(pgWindowObject *self, void *v)
     return PyFloat_FromDouble((double)opacity);
 }
 
+static PyObject*
+window_get_opengl(pgWindowObject *self, void *v)
+{
+    long hasGL;
+    if (!self->_is_borrowed)
+    {
+        hasGL = self->context != NULL;
+    }
+    else
+    {
+        int flags = SDL_GetWindowFlags(self->_win);
+        hasGL = (flags & SDL_WINDOW_OPENGL) > 0;
+    }
+    return PyBool_FromLong(hasGL);
+}
+
 static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
@@ -794,7 +817,14 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 
                 if (!strcmp(_key_str, "opengl")) {
                     if (_value_bool)
+                    {
+                        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
                         flags |= SDL_WINDOW_OPENGL;
+                    }
+                    else
+                    {
+                        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
+                    }
                 }
                 else if (!strcmp(_key_str, "fullscreen")) {
                     if (_value_bool)
@@ -1084,6 +1114,7 @@ static PyGetSetDef _window_getset[] = {
     {"opacity", (getter)window_get_opacity, (setter)window_set_opacity,
      DOC_WINDOW_OPACITY, NULL},
     {"id", (getter)window_get_window_id, NULL, DOC_WINDOW_ID, NULL},
+    {"opengl", (getter)window_get_opengl, NULL, DOC_WINDOW_OPENGL, NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
 
