@@ -187,12 +187,11 @@ window_flip(pgWindowObject *self)
 {
     int result;
 
-    if (self->context == NULL)
-    {
+    if (self->context == NULL) {
         if (!self->surf) {
             return RAISE(pgExc_SDLError,
-                        "the Window has no surface associated with it, did "
-                        "you forget to call Window.get_surface()");
+                         "the Window has no surface associated with it, did "
+                         "you forget to call Window.get_surface()");
         }
 
         Py_BEGIN_ALLOW_THREADS;
@@ -202,8 +201,7 @@ window_flip(pgWindowObject *self)
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
     }
-    else
-    {
+    else {
         SDL_GL_SwapWindow(self->_win);
     }
     Py_RETURN_NONE;
@@ -730,16 +728,14 @@ window_get_opacity(pgWindowObject *self, void *v)
     return PyFloat_FromDouble((double)opacity);
 }
 
-static PyObject*
+static PyObject *
 window_get_opengl(pgWindowObject *self, void *v)
 {
     long hasGL;
-    if (!self->_is_borrowed)
-    {
+    if (!self->_is_borrowed) {
         hasGL = self->context != NULL;
     }
-    else
-    {
+    else {
         int flags = SDL_GetWindowFlags(self->_win);
         hasGL = (flags & SDL_WINDOW_OPENGL) > 0;
     }
@@ -816,13 +812,11 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                     return -1;
 
                 if (!strcmp(_key_str, "opengl")) {
-                    if (_value_bool)
-                    {
+                    if (_value_bool) {
                         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
                         flags |= SDL_WINDOW_OPENGL;
                     }
-                    else
-                    {
+                    else {
                         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
                     }
                 }
