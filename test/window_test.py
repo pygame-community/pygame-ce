@@ -286,11 +286,6 @@ class WindowTypeTest(unittest.TestCase):
         self.assertTrue(win.resizable)
         win.destroy()
 
-        # test opengl
-        win = Window(opengl=True)
-        self.assertTrue(win.opengl)
-        win.destroy()
-
         # should raise a TypeError if keyword is random
         self.assertRaises(TypeError, lambda: Window(aaa=True))
         self.assertRaises(TypeError, lambda: Window(aaa=False))
@@ -380,6 +375,10 @@ class WindowTypeTest(unittest.TestCase):
         )
         win.destroy()
 
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "OpenGL requires a non-null SDL_VIDEODRIVER",
+    )
     def test_window_opengl(self):
         win1 = Window(opengl=True)
         self.assertTrue(win1.opengl)
