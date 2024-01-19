@@ -4,7 +4,7 @@ set -e -x
 cd $(dirname `readlink -f "$0"`)
 
 SDL2="SDL2-2.28.5"
-IMG2="SDL2_image-2.8.0"
+IMG2="SDL2_image-2.8.2"
 TTF2="SDL2_ttf-2.20.2"
 MIX2="SDL2_mixer-2.6.3"
 
