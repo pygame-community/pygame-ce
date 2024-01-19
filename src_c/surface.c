@@ -2137,7 +2137,7 @@ bliterror:
 #define FBLITS_ERR_FLAG_NOT_NUMERIC 13
 
 int
-_surf_fblits_item_check_and_blit(PyObject *self, PyObject *item,
+_surf_fblits_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
                                  int blend_flags)
 {
     PyObject *src_surf, *blit_pos;
