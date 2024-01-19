@@ -452,7 +452,7 @@ cdef extern from "pygame.h" nogil:
     int pg_RGBAFromObjEx(object color, Uint8 rgba[], pgColorHandleFlags handle_flags) except 0
     object pgColor_NewLength(Uint8 rgba[], Uint8 length)
     void import_pygame_color()
-    object pgSurface_New2(SDL_Surface *info, int owner)
+    pgSurfaceObject *pgSurface_New2(SDL_Surface *info, int owner)
 
     int pgWindow_Check(object win)
     void import_pygame_window()
