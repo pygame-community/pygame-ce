@@ -73,6 +73,9 @@ pg_mm_blendv_epi8(__m128i a, __m128i b, __m128i mask)
     return _mm_or_si128(_mm_and_si128(mask, b), _mm_andnot_si128(mask, a));
 }
 
+#define DO_SSE2_DIV255_U16(MM128I) \
+    _mm_srli_epi16(_mm_mulhi_epu16(MM128I, _mm_set1_epi16((short)0x8081)), 7);
+
 void
 alphablit_alpha_sse2_argb_surf_alpha(SDL_BlitInfo *info)
 {
@@ -237,13 +240,13 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
     int srcskip = info->s_skip >> 2;
     int dstskip = info->d_skip >> 2;
 
-    Uint32 amask = info->src->Amask;
+    Uint32 amask = 0xFF000000;
     Uint32 *srcp = (Uint32 *)info->s_pixels;
     Uint32 *dstp = (Uint32 *)info->d_pixels;
 
     __m128i mm_src, mm_dst, mm_res_pixels;
     __m128i mm_src_alpha, mm_dst_alpha, mm_res_a, mm_src_alpha_A,
-        mm_src_alpha_B;
+        mm_src_alpha_B, temp;
     __m128i mm_srcA, mm_dstA, mm_srcB, mm_dstB, mm_sub, partial_A, partial_B;
 
     const __m128i mm_alpha_mask = _mm_set1_epi32(amask);
@@ -268,19 +271,16 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
                     mm_dst_alpha = _mm_and_si128(mm_dst, mm_alpha_mask);
 
                     __m128i mask = _mm_cmpeq_epi32(mm_dst_alpha, mm_zero);
-
-                    mm_res_a = _mm_adds_epu8(mm_src_alpha, mm_dst_alpha);
+                    mask = _mm_or_si128(
+                        mask, _mm_cmpeq_epi32(mm_src_alpha, mm_alpha_mask));
 
                     mm_src_alpha = _mm_srli_si128(mm_src_alpha, 3);
                     mm_dst_alpha = _mm_srli_si128(mm_dst_alpha, 3);
-
-                    mm_dst_alpha = _mm_mullo_epi16(mm_dst_alpha, mm_src_alpha);
-
-                    mm_dst_alpha = _mm_srli_epi16(mm_dst_alpha, 8);
-
-                    mm_dst_alpha = _mm_slli_si128(mm_dst_alpha, 3);
-
-                    mm_res_a = _mm_sub_epi16(mm_res_a, mm_dst_alpha);
+                    mm_res_a = _mm_add_epi16(mm_src_alpha, mm_dst_alpha);
+                    temp = _mm_mullo_epi16(mm_dst_alpha, mm_src_alpha);
+                    temp = DO_SSE2_DIV255_U16(temp);
+                    mm_res_a = _mm_subs_epi16(mm_res_a, temp);
+                    mm_res_a = _mm_slli_epi32(mm_res_a, 24);
                     /* === End of alpha calculation === */
 
                     /* === Calculate the new RGB === */
@@ -341,7 +341,7 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
         dstp = (Uint32 *)dstp128;
 
         for (i = 0; i < pxl_excess; i++) {
-            if (!(*dstp & amask)) {
+            if (!(*dstp & amask) || (*srcp & amask) == amask) {
                 *dstp++ = *srcp++;
                 continue;
             }
@@ -352,18 +352,14 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
             mm_src_alpha = _mm_and_si128(mm_src, mm_alpha_mask);
             mm_dst_alpha = _mm_and_si128(mm_dst, mm_alpha_mask);
 
-            mm_res_a = _mm_adds_epu8(mm_src_alpha, mm_dst_alpha);
-
             mm_src_alpha = _mm_srli_si128(mm_src_alpha, 3);
             mm_dst_alpha = _mm_srli_si128(mm_dst_alpha, 3);
 
-            mm_dst_alpha = _mm_mullo_epi16(mm_dst_alpha, mm_src_alpha);
-
-            mm_dst_alpha = _mm_srli_epi16(mm_dst_alpha, 8);
-
-            mm_dst_alpha = _mm_slli_si128(mm_dst_alpha, 3);
-
-            mm_res_a = _mm_sub_epi16(mm_res_a, mm_dst_alpha);
+            mm_res_a = _mm_add_epi16(mm_src_alpha, mm_dst_alpha);
+            temp = _mm_mullo_epi16(mm_dst_alpha, mm_src_alpha);
+            temp = DO_SSE2_DIV255_U16(temp);
+            mm_res_a = _mm_subs_epu16(mm_res_a, temp);
+            mm_res_a = _mm_slli_epi32(mm_res_a, 24);
             /* === End of alpha calculation === */
 
             /* === Calculate the new RGB === */
