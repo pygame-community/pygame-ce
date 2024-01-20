@@ -3300,6 +3300,9 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
     else if (algorithm == 'g') {
         gaussian_blur(src, retsurf, radius, repeat);
     }
+    else if (algorithm == 'k') {
+        gaussian_blur(src, retsurf, radius, repeat);
+    }
 
     Py_END_ALLOW_THREADS;
 
@@ -3361,6 +3364,38 @@ surf_gaussian_blur(PyObject *self, PyObject *args, PyObject *kwargs)
 
     new_surf =
         blur(src_surf_obj, dst_surf_obj, radius, repeat_edge_pixels, 'g');
+    if (!new_surf) {
+        return NULL;
+    }
+
+    if (dst_surf_obj) {
+        Py_INCREF(dst_surf_obj);
+        return (PyObject *)dst_surf_obj;
+    }
+
+    return (PyObject *)pgSurface_New(new_surf);
+}
+
+static PyObject *
+surf_bokeh_blur(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *dst_surf_obj = NULL;
+    pgSurfaceObject *src_surf_obj;
+    SDL_Surface *new_surf = NULL;
+    SDL_bool repeat_edge_pixels = SDL_TRUE;
+
+    int radius;
+
+    static char *kwlist[] = {"surface", "radius", "repeat_edge_pixels",
+                             "dest_surface", 0};
+
+    if (!PyArg_ParseTupleAndKeywords(
+            args, kwargs, "O!i|pO!", kwlist, &pgSurface_Type, &src_surf_obj,
+            &radius, &repeat_edge_pixels, &pgSurface_Type, &dst_surf_obj))
+        return NULL;
+
+    new_surf =
+        blur(src_surf_obj, dst_surf_obj, radius, repeat_edge_pixels, 'k');
     if (!new_surf) {
         return NULL;
     }
@@ -3482,6 +3517,8 @@ static PyMethodDef _transform_methods[] = {
      DOC_TRANSFORM_BOXBLUR},
     {"gaussian_blur", (PyCFunction)surf_gaussian_blur,
      METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_GAUSSIANBLUR},
+    {"bokeh_blur", (PyCFunction)surf_bokeh_blur, METH_VARARGS | METH_KEYWORDS,
+     "doc"},
     {"invert", (PyCFunction)surf_invert, METH_VARARGS | METH_KEYWORDS,
      DOC_TRANSFORM_INVERT},
     {"grayscale", (PyCFunction)surf_grayscale, METH_VARARGS | METH_KEYWORDS,
