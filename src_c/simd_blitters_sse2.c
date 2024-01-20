@@ -328,7 +328,7 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
                     mm_res_pixels = _mm_or_si128(mm_res_pixels, mm_res_a);
 
                     mm_res_pixels =
-                        pg_mm_blendv_epi8(mm_res_pixels, mm_dst, mask);
+                        pg_mm_blendv_epi8(mm_res_pixels, mm_src, mask);
 
                     _mm_storeu_si128(dstp128, mm_res_pixels);
                     srcp128++;
