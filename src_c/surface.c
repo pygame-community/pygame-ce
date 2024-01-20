@@ -1870,6 +1870,11 @@ surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
     dest_rect.w = src_rect->w;
     dest_rect.h = src_rect->h;
 
+    if (!SDL_HasIntersection(&dest_rect, &dest->clip_rect)) {
+        dest_rect.w = dest_rect.h = 0;
+        return pgRect_New(&dest_rect);
+    }
+
     if (!blend_flags)
         blend_flags = 0;
 
@@ -2035,6 +2040,33 @@ surf_blits(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
         dest_rect.w = src_rect->w;
         dest_rect.h = src_rect->h;
 
+        if (!SDL_HasIntersection(&dest_rect, &dest->clip_rect)) {
+            if (!doreturn)
+                continue;
+            dest_rect.w = dest_rect.h = 0;
+            retrect = pgRect_New(&dest_rect);
+            if (issequence) {
+                PyList_SET_ITEM(ret, curriter++, retrect);
+            }
+            else if (PyList_Append(ret, retrect) != -1) {
+                Py_DECREF(retrect);
+            }
+            else {
+                Py_DECREF(retrect);
+                retrect = NULL;
+                bliterrornum = BLITS_ERR_PY_EXCEPTION_RAISED;
+                goto bliterror;
+            }
+            retrect = NULL; /* Clear to avoid double deref on errors */
+            Py_DECREF(srcobject);
+            Py_DECREF(argpos);
+            Py_XDECREF(argrect);
+            srcobject = NULL;
+            argpos = NULL;
+            argrect = NULL;
+            continue;
+        }
+
         if (special_flags) {
             if (!pg_IntFromObj(special_flags, &blend_flags)) {
                 bliterrornum = BLITS_ERR_MUST_ASSIGN_NUMERIC;
@@ -2071,6 +2103,7 @@ surf_blits(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
             }
             retrect = NULL; /* Clear to avoid double deref on errors */
         }
+
         Py_DECREF(srcobject);
         Py_DECREF(argpos);
         Py_XDECREF(argrect);
@@ -2207,6 +2240,10 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
             dest_rect.w = src->w;
             dest_rect.h = src->h;
 
+            if (!SDL_HasIntersection(&dest_rect, &dest->clip_rect)) {
+                continue;
+            }
+
             /* Perform the blit */
             if (pgSurface_Blit(self, (pgSurfaceObject *)src_surf, &dest_rect,
                                NULL, blend_flags)) {
@@ -2254,6 +2291,10 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
 
             dest_rect.w = src->w;
             dest_rect.h = src->h;
+
+            if (!SDL_HasIntersection(&dest_rect, &dest->clip_rect)) {
+                continue;
+            }
 
             /* Perform the blit */
             if (pgSurface_Blit(self, (pgSurfaceObject *)src_surf, &dest_rect,
