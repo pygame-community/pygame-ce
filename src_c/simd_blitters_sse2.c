@@ -261,6 +261,8 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
                     mm_src_alpha = _mm_and_si128(mm_src, mm_alpha_mask);
                     mm_dst_alpha = _mm_and_si128(mm_dst, mm_alpha_mask);
 
+                    __m128i mask = _mm_cmpeq_epi32(mm_dst_alpha, mm_zero);
+
                     mm_res_a = _mm_adds_epu8(mm_src_alpha, mm_dst_alpha);
 
                     mm_src_alpha = _mm_srli_si128(mm_src_alpha, 3);
@@ -318,6 +320,9 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
                     mm_res_pixels = _mm_packus_epi16(partial_A, partial_B);
                     mm_res_pixels = _mm_and_si128(mm_res_pixels, mm_rgb_mask);
                     mm_res_pixels = _mm_or_si128(mm_res_pixels, mm_res_a);
+
+                    mm_res_pixels =
+                        _mm_blendv_epi8(mm_res_pixels, mm_dst, mask);
 
                     _mm_storeu_si128(dstp128, mm_res_pixels);
                     srcp128++;
