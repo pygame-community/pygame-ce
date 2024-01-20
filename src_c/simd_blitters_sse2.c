@@ -342,7 +342,7 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
 
         for (i = 0; i < pxl_excess; i++) {
             if (!(*dstp & amask)) {
-                *dstp = *srcp;
+                *dstp++ = *srcp++;
                 continue;
             }
             mm_src = _mm_cvtsi32_si128(*srcp);
