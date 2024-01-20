@@ -49,12 +49,6 @@ pg_neon_at_runtime_but_uncompiled()
     return 0;
 }
 
-static inline __m128i
-pg_mm_blendv_epi8(__m128i a, __m128i b, __m128i mask)
-{
-    return _mm_or_si128(_mm_and_si128(mask, b), _mm_andnot_si128(mask, a));
-}
-
 #if (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON))
 
 /* See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=32869
@@ -72,6 +66,12 @@ pg_mm_blendv_epi8(__m128i a, __m128i b, __m128i mask)
     *reg = _mm_loadl_epi64((const __m128i *)num)
 #define STORE_M128_INTO_64(reg, num) _mm_storel_epi64((__m128i *)num, *reg)
 #endif
+
+static inline __m128i
+pg_mm_blendv_epi8(__m128i a, __m128i b, __m128i mask)
+{
+    return _mm_or_si128(_mm_and_si128(mask, b), _mm_andnot_si128(mask, a));
+}
 
 void
 alphablit_alpha_sse2_argb_surf_alpha(SDL_BlitInfo *info)
