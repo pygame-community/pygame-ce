@@ -31,6 +31,29 @@ class SysfontModuleTest(unittest.TestCase):
 
         pygame.font.SysFont(None, 40)
 
+    @unittest.skipIf("Windows" not in platform.platform(), "Just for windows")
+    def test_sysfont_settings(self):
+        import pygame.font
+
+        pygame.font.init()
+
+        # The idea of this test is that we know we can expect Arial bold, Arial italic
+        # Arial, and Arial italic bold to load different fonts on Windows. If that
+        # isn't happening it may indicate a problem like
+        # https://github.com/pygame-community/pygame-ce/issues/2677
+
+        arial = pygame.font.SysFont("Arial", 40)
+        arial_bold = pygame.font.SysFont("Arial", 40, bold=True)
+        arial_italic = pygame.font.SysFont("Arial", 40, italic=True)
+        arial_bold_italic = pygame.font.SysFont("Arial", 40, bold=True, italic=True)
+
+        self.assertNotEqual(arial.style_name, arial_bold.style_name)
+        self.assertNotEqual(arial.style_name, arial_italic.style_name)
+        self.assertNotEqual(arial.style_name, arial_bold_italic.style_name)
+        self.assertNotEqual(arial_bold.style_name, arial_italic.style_name)
+        self.assertNotEqual(arial_italic.style_name, arial_bold_italic.style_name)
+        self.assertNotEqual(arial_bold.style_name, arial_bold_italic.style_name)
+
     @unittest.skipIf(
         ("Darwin" in platform.platform() or "Windows" in platform.platform()),
         "Not unix we skip.",
