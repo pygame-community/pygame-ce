@@ -32,6 +32,7 @@
 
 #include <math.h>
 #include <string.h>
+#include <limits.h>
 
 #include "simd_shared.h"
 #include "simd_transform.h"
@@ -3447,6 +3448,58 @@ surf_invert(PyObject *self, PyObject *args, PyObject *kwargs)
     return (PyObject *)pgSurface_New(newsurf);
 }
 
+static PyObject *
+surf_pixelate(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *src;
+    pgSurfaceObject *dst = NULL;
+    int pixel_size;
+    SDL_Surface *new_surf;
+    pgSurfaceObject *intermediate;
+
+    static char *kwds[] = {"surface", "pixel_size", "dest_surface", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!i|O!", kwds,
+                                     &pgSurface_Type, &src, &pixel_size,
+                                     &pgSurface_Type, &dst)) {
+        return NULL;
+    }
+
+    double testWidth = round((double)src->surf->w / pixel_size);
+    double testHeight = round((double)src->surf->h / pixel_size);
+
+    if (testWidth > INT_MAX || testWidth <= 0) {
+        PyErr_SetString(PyExc_OverflowError,
+                        "Cannot scale width outside the range [0, INT_MAX]");
+        return NULL;
+    }
+
+    if (testHeight > INT_MAX || testHeight <= 0) {
+        PyErr_SetString(PyExc_OverflowError,
+                        "Cannot scale height outside the range [0, INT_MAX]");
+        return NULL;
+    }
+
+    int width = (int)testWidth;
+    int height = (int)testHeight;
+
+    SDL_Surface *temp = scale_to(src, NULL, width, height);
+    intermediate = pgSurface_New(temp);
+    if (intermediate == NULL) {
+        return NULL; /* Exception already set in scale_to */
+    }
+    new_surf = scale_to(intermediate, dst, src->surf->w, src->surf->h);
+    if (new_surf == NULL) {
+        return NULL; /* Exception already set in scale_to */
+    }
+
+    if (dst) {
+        Py_INCREF(dst);
+        return (PyObject *)dst;
+    }
+    return (PyObject *)pgSurface_New(new_surf);
+}
+
 static PyMethodDef _transform_methods[] = {
     {"scale", (PyCFunction)surf_scale, METH_VARARGS | METH_KEYWORDS,
      DOC_TRANSFORM_SCALE},
@@ -3486,6 +3539,8 @@ static PyMethodDef _transform_methods[] = {
      DOC_TRANSFORM_INVERT},
     {"grayscale", (PyCFunction)surf_grayscale, METH_VARARGS | METH_KEYWORDS,
      DOC_TRANSFORM_GRAYSCALE},
+    {"pixelate", (PyCFunction)surf_pixelate, METH_VARARGS | METH_KEYWORDS,
+     DOC_TRANSFORM_PIXELATE},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(transform)
