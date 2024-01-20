@@ -2145,6 +2145,7 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
     PyObject *blit_sequence, *item, *src_surf, *blit_pos;
     int blend_flags = 0; /* Default flag is 0, opaque */
     int error = 0;
+    int is_generator = 0;
 
     if (nargs == 0 || nargs > 2) {
         error = FBLITS_ERR_INCORRECT_ARGS_NUM;
@@ -2216,11 +2217,11 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
     /* Generator path */
     else if (PyIter_Check(blit_sequence)) {
+        is_generator = 1;
         while ((item = PyIter_Next(blit_sequence))) {
             /* Check that the item is a tuple of length 2 */
             if (!PyTuple_Check(item) || PyTuple_GET_SIZE(item) != 2) {
                 error = FBLITS_ERR_TUPLE_REQUIRED;
-                Py_DECREF(item);
                 goto on_error;
             }
 
@@ -2228,8 +2229,6 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
              * (Surface, dest) tuple */
             src_surf = PyTuple_GET_ITEM(item, 0);
             blit_pos = PyTuple_GET_ITEM(item, 1);
-
-            Py_DECREF(item);
 
             /* Check that the source is a Surface */
             if (!pgSurface_Check(src_surf)) {
@@ -2262,6 +2261,8 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
                 error = BLITS_ERR_BLIT_FAIL;
                 goto on_error;
             }
+
+            Py_DECREF(item);
         }
     }
     else {
@@ -2272,6 +2273,9 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
     Py_RETURN_NONE;
 
 on_error:
+    if (is_generator) {
+        Py_XDECREF(item);
+    }
     switch (error) {
         case BLITS_ERR_SEQUENCE_REQUIRED:
             return RAISE(
