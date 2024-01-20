@@ -271,8 +271,6 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
                     mm_dst_alpha = _mm_and_si128(mm_dst, mm_alpha_mask);
 
                     __m128i mask = _mm_cmpeq_epi32(mm_dst_alpha, mm_zero);
-                    mask = _mm_or_si128(
-                        mask, _mm_cmpeq_epi32(mm_src_alpha, mm_alpha_mask));
 
                     mm_src_alpha = _mm_srli_si128(mm_src_alpha, 3);
                     mm_dst_alpha = _mm_srli_si128(mm_dst_alpha, 3);
@@ -341,7 +339,7 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
         dstp = (Uint32 *)dstp128;
 
         for (i = 0; i < pxl_excess; i++) {
-            if (!(*dstp & amask) || (*srcp & amask) == amask) {
+            if (!(*dstp & amask)) {
                 *dstp++ = *srcp++;
                 continue;
             }
