@@ -49,6 +49,12 @@ pg_neon_at_runtime_but_uncompiled()
     return 0;
 }
 
+static inline __m128i
+pg_mm_blendv_epi8(__m128i a, __m128i b, __m128i mask)
+{
+    return _mm_or_si128(_mm_and_si128(mask, b), _mm_andnot_si128(mask, a));
+}
+
 #if (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON))
 
 /* See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=32869
@@ -322,7 +328,7 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
                     mm_res_pixels = _mm_or_si128(mm_res_pixels, mm_res_a);
 
                     mm_res_pixels =
-                        _mm_blendv_epi8(mm_res_pixels, mm_dst, mask);
+                        pg_mm_blendv_epi8(mm_res_pixels, mm_dst, mask);
 
                     _mm_storeu_si128(dstp128, mm_res_pixels);
                     srcp128++;
@@ -335,6 +341,10 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
         dstp = (Uint32 *)dstp128;
 
         for (i = 0; i < pxl_excess; i++) {
+            if (!(*dstp & amask)) {
+                *dstp = *srcp;
+                continue;
+            }
             mm_src = _mm_cvtsi32_si128(*srcp);
             mm_dst = _mm_cvtsi32_si128(*dstp);
 
