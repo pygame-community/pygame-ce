@@ -15,7 +15,7 @@ cd $OGG
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     ./configure $PG_BASE_CONFIGURE_FLAGS
-elif [[ "$OSTYPE" == "darwin"* ]]; then
+else
     # Use CMake on macOS because ./configure doesn't generate dylib
     cmake . $PG_BASE_CMAKE_FLAGS
 fi
@@ -30,7 +30,11 @@ cd $VORBIS
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     ./configure $PG_BASE_CONFIGURE_FLAGS
-elif [[ "$OSTYPE" == "darwin"* ]]; then
+else
+    # some hackery needed to make libvorbis build under mingw
+    if [[ "$OSTYPE" != "darwin"* ]]; then
+        sed -i '/LIBRARY/d' win32/*.def
+    fi
     # Use CMake on macOS because ./configure doesn't generate dylib
     cmake . $PG_BASE_CMAKE_FLAGS
 fi
