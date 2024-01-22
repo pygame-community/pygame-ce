@@ -330,7 +330,7 @@ class FontTest(unittest.TestCase):
         two_newlines = f.render("\n\n", True, "black", "white")
         three_newlines = f.render("\n\n\n", True, "black", "white")
         self.assertTrue(
-            one_newline().get_height()
+            one_newline.get_height()
             < two_newlines.get_height()
             < three_newlines.get_height()
         )
