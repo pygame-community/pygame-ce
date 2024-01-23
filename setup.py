@@ -438,6 +438,11 @@ for e in extensions:
         # Do -Werror only on CI, and exclude -Werror on Cython C files and gfxdraw
         e.extra_compile_args.append("/WX" if sys.platform == "win32" else "-Werror")
 
+    if e.name.startswith("_sdl2") and sys.platform != "win32":
+        # even without Werror, incompatible-pointer-types warning errors
+        # wasm CI, so explicitly disable it
+        e.extra_compile_args.append("-Wno-error=incompatible-pointer-types")
+
 # if not building font, try replacing with ftfont
 alternate_font = os.path.join('src_py', 'font.py')
 if os.path.exists(alternate_font):
