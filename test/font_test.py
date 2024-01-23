@@ -334,6 +334,8 @@ class FontTest(unittest.TestCase):
             < two_newlines.get_height()
             < three_newlines.get_height()
         )
+        self.assertEqual(one_newline.get_height() * 2, two_newlines.get_height())
+        self.assertEqual(one_newline.get_height() * 3, three_newlines.get_height())
 
 
 @unittest.skipIf(IS_PYPY, "pypy skip known failure")  # TODO
