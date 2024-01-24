@@ -14,6 +14,7 @@
 #define DOC_COLOR_FROMHSLA "from_hsla(object, /) -> Color\nfrom_hsla(h, s, l, a, /) -> Color\nReturns a Color object from an HSLA representation"
 #define DOC_COLOR_FROMI1I2I3 "from_i1i2i3(object, /) -> Color\nfrom_i1i2i3(i1, i2, i3, /) -> Color\nReturns a Color object from a I1I2I3 representation"
 #define DOC_COLOR_FROMNORMALIZED "from_normalized(object)  -> Color\from_normalized(r, g, b, a, /) -> Color\nReturns a Color object from an RGBA representation\n that is normalized"
+#define DOC_COLOR_NORMALIZE "deprecated normalize() -> tuple\nReturns the normalized RGBA values of the Color."
 #define DOC_COLOR_CORRECTGAMMA "correct_gamma(gamma, /) -> Color\nApplies a certain gamma value to the Color."
 #define DOC_COLOR_SETLENGTH "set_length(len, /) -> None\nSet the number of elements in the Color to 1,2,3, or 4."
 #define DOC_COLOR_GRAYSCALE "grayscale() -> Color\nreturns the grayscale of a Color"

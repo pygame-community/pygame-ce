@@ -85,6 +85,8 @@ _color_repr(pgColorObject *);
 static PyObject *
 _color_iter(pgColorObject *);
 static PyObject *
+_color_normalize(pgColorObject *, PyObject *);
+static PyObject *
 _color_correct_gamma(pgColorObject *, PyObject *);
 static PyObject *
 _color_set_length(pgColorObject *, PyObject *);
@@ -230,6 +232,8 @@ static PyMethodDef _color_methods[] = {
      DOC_COLOR_FROMI1I2I3},
     {"from_normalized", (PyCFunction)_color_from_normalized, METH_CLASS | METH_VARARGS,
      DOC_COLOR_FROMNORMALIZED},
+    {"normalize", (PyCFunction)_color_normalize, METH_NOARGS,
+     DOC_COLOR_NORMALIZE},
     {"correct_gamma", (PyCFunction)_color_correct_gamma, METH_VARARGS,
      DOC_COLOR_CORRECTGAMMA},
     {"set_length", (PyCFunction)_color_set_length, METH_VARARGS,
@@ -712,6 +716,20 @@ _color_from_space(char *space, PyObject *args)
     }
 
     return (PyObject *)color;
+}
+
+/** deprecated
+ * color.normalize()
+ */
+static PyObject *
+_color_normalize(pgColorObject *color, PyObject *_null)
+{
+    double rgba[4];
+    rgba[0] = color->data[0] / 255.0;
+    rgba[1] = color->data[1] / 255.0;
+    rgba[2] = color->data[2] / 255.0;
+    rgba[3] = color->data[3] / 255.0;
+    return Py_BuildValue("(ffff)", rgba[0], rgba[1], rgba[2], rgba[3]);
 }
 
 /**
