@@ -844,6 +844,25 @@ class ColorTypeTest(unittest.TestCase):
 
         with self.assertWarns(DeprecationWarning):
             self.assertEqual(expected_i1i2i3, pygame.Color.from_i1i2i3((0, 0, 0, 0)))
+            
+    def test_from_normalized(self):
+        normal = pygame.Color.from_normalized(1, 1, 1, 1)
+        normal_tuple = pygame.Color.from_normalized((1, 1, 1, 1))
+
+        expected_normal = (255, 255, 255)
+
+        self.assertEqual(expected_normal, normal)
+        self.assertEqual(expected_normal, normal_tuple)
+
+        with self.assertWarns(DeprecationWarning):
+            self.assertEqual(
+                expected_normal, pygame.Color.from_normalized(1, 1, 1, 1, "lel")
+            )
+
+        with self.assertWarns(DeprecationWarning):
+            self.assertEqual(
+                expected_normal, pygame.Color.from_normalized((1, 1, 1, 1, "lel", "foo"))
+            )
 
     def test_normalize(self):
         c = pygame.Color(204, 38, 194, 55)

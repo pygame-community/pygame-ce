@@ -191,6 +191,21 @@
       expect.
 
       .. ## Color.i1i2i3 ##
+
+   .. attribute:: normalized
+
+      | :sl:`Gets or sets the normalized representation of the Color.`
+      | :sg:`normalized -> tuple`
+      
+      The ``Normalized``` representation of the Color. The ``Normalized``` components of are
+      in the ranges specified ``r`` = [0, 1], ``g`` = [0, 1], ``b`` = [0, 1]
+      and ``a`` = [0, 1] respectively. These valuse just represent the basic ``RGBA`` colors but normalized.
+      Note that this will not return the absolutely exact ``Normalized`` values for
+      the set ``RGBA`` values in all cases. Due to the ``RGB`` mapping from 0-255 and the
+      ``Normalized`` mapping from 0-1 rounding errors may cause the ``Normalized`` values to differ
+      slightly from what you might expect.
+
+      .. ## Color.normalized ##
    
    .. classmethod:: from_cmy
 
@@ -243,6 +258,17 @@
       .. versionadded:: 2.3.1
 
       .. ## Color.from_i1i2i3 ##
+
+   .. classmethod:: from_normalized
+
+      | :sl:`Returns a Color object from a Normalized representation`
+      | :sg:`from_normalized(object, /) -> Color`
+      | :sg:`from_normalized(r, g, b, a /) -> Color`
+
+      Creates a Color object from the given Normalized components. Refer to :attr:`Color.normalized`
+      for more information.
+
+      .. ## Color.from_normalized ##
 
    .. method:: normalize
 

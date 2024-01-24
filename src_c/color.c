@@ -718,7 +718,7 @@ _color_from_space(char *space, PyObject *args)
     return (PyObject *)color;
 }
 
-/** deprecated
+/**
  * color.normalize()
  */
 static PyObject *
@@ -1511,7 +1511,7 @@ _color_set_normalized(pgColorObject *color, PyObject *value, void *closure) {
     DEL_ATTR_NOT_SUPPORTED_CHECK("normalized", value);
 
     if (!PySequence_Check(value) || PySequence_Size(value) < 3) {
-        PyErr_SetString(PyExc_ValueError, "invalid CMY value");
+        PyErr_SetString(PyExc_ValueError, "invalid normalized value");
         return -1;
     }
 
