@@ -149,7 +149,7 @@ static int
 _color_set_cmy(pgColorObject *, PyObject *, void *);
 static PyObject *
 _color_get_normalized(pgColorObject *, void *);
-static int 
+static int
 _color_set_normalized(pgColorObject *, PyObject *, void *);
 static PyObject *
 _color_get_arraystruct(pgColorObject *, void *);
@@ -230,8 +230,8 @@ static PyMethodDef _color_methods[] = {
      DOC_COLOR_FROMCMY},
     {"from_i1i2i3", (PyCFunction)_color_from_i1i2i3, METH_CLASS | METH_VARARGS,
      DOC_COLOR_FROMI1I2I3},
-    {"from_normalized", (PyCFunction)_color_from_normalized, METH_CLASS | METH_VARARGS,
-     DOC_COLOR_FROMNORMALIZED},
+    {"from_normalized", (PyCFunction)_color_from_normalized,
+     METH_CLASS | METH_VARARGS, DOC_COLOR_FROMNORMALIZED},
     {"normalize", (PyCFunction)_color_normalize, METH_NOARGS,
      DOC_COLOR_NORMALIZE},
     {"correct_gamma", (PyCFunction)_color_correct_gamma, METH_VARARGS,
@@ -263,8 +263,8 @@ static PyGetSetDef _color_getsets[] = {
      DOC_COLOR_I1I2I3, NULL},
     {"cmy", (getter)_color_get_cmy, (setter)_color_set_cmy, DOC_COLOR_CMY,
      NULL},
-    {"normalized", (getter)_color_get_normalized, (setter)_color_set_normalized, DOC_COLOR_NORMALIZED,
-     NULL},
+    {"normalized", (getter)_color_get_normalized,
+     (setter)_color_set_normalized, DOC_COLOR_NORMALIZED, NULL},
     {"__array_struct__", (getter)_color_get_arraystruct, NULL,
      "array structure interface, read only", NULL},
     {NULL, NULL, NULL, NULL, NULL}};
@@ -1491,7 +1491,7 @@ _color_set_cmy(pgColorObject *color, PyObject *value, void *closure)
 
 static PyObject *
 _color_get_normalized(pgColorObject *color, void *closure)
-{   
+{
     double frgba[4];
 
     frgba[0] = color->data[0] / 255.0;
@@ -1502,9 +1502,9 @@ _color_get_normalized(pgColorObject *color, void *closure)
     return Py_BuildValue("(ffff)", frgba[0], frgba[1], frgba[2], frgba[3]);
 }
 
-static int 
-_color_set_normalized(pgColorObject *color, PyObject *value, void *closure) {
-
+static int
+_color_set_normalized(pgColorObject *color, PyObject *value, void *closure)
+{
     PyObject *item;
     double frgba[4] = {0.0, 0.0, 0.0, 1.0};
 
@@ -1526,7 +1526,8 @@ _color_set_normalized(pgColorObject *color, PyObject *value, void *closure) {
     }
 
     item = PySequence_GetItem(value, 0);
-    if (!item || !_get_double(item, &(frgba[0])) || frgba[0] < 0.0 || frgba[0] > 1.0) {
+    if (!item || !_get_double(item, &(frgba[0])) || frgba[0] < 0.0 ||
+        frgba[0] > 1.0) {
         Py_XDECREF(item);
         PyErr_SetString(PyExc_ValueError, "invalid normalized value");
         return -1;
@@ -1534,7 +1535,8 @@ _color_set_normalized(pgColorObject *color, PyObject *value, void *closure) {
     Py_DECREF(item);
 
     item = PySequence_GetItem(value, 1);
-    if (!item || !_get_double(item, &(frgba[1])) || frgba[1] < 0.0 || frgba[1] > 1.0) {
+    if (!item || !_get_double(item, &(frgba[1])) || frgba[1] < 0.0 ||
+        frgba[1] > 1.0) {
         Py_XDECREF(item);
         PyErr_SetString(PyExc_ValueError, "invalid normalized value");
         return -1;
@@ -1542,7 +1544,8 @@ _color_set_normalized(pgColorObject *color, PyObject *value, void *closure) {
     Py_DECREF(item);
 
     item = PySequence_GetItem(value, 2);
-    if (!item || !_get_double(item, &(frgba[2])) || frgba[2] < 0.0 || frgba[2] > 1.0) {
+    if (!item || !_get_double(item, &(frgba[2])) || frgba[2] < 0.0 ||
+        frgba[2] > 1.0) {
         Py_XDECREF(item);
         PyErr_SetString(PyExc_ValueError, "invalid normalized value");
         return -1;
@@ -1551,23 +1554,19 @@ _color_set_normalized(pgColorObject *color, PyObject *value, void *closure) {
 
     if (PySequence_Size(value) > 3) {
         item = PySequence_GetItem(value, 3);
-        if (!item || !_get_double(item, &(frgba[3])) || frgba[3] < 0.0 || frgba[3] > 1.0) {
+        if (!item || !_get_double(item, &(frgba[3])) || frgba[3] < 0.0 ||
+            frgba[3] > 1.0) {
             Py_XDECREF(item);
             PyErr_SetString(PyExc_ValueError, "invalid normalized value");
             return -1;
         }
         Py_DECREF(item);
     }
-    
-    /*
-    * the -1 is there so the rounding is more simular to int rounding in python
-    * than real world roundig
-    */
-    color->data[0] = (Uint8)round(frgba[0]*255.0)-1;
-    color->data[1] = (Uint8)round(frgba[1]*255.0)-1;
-    color->data[2] = (Uint8)round(frgba[2]*255.0)-1;
-    color->data[3] = (Uint8)round(frgba[3]*255.0)-1;
 
+    color->data[0] = (Uint8)round(frgba[0] * 255.0);
+    color->data[1] = (Uint8)round(frgba[1] * 255.0);
+    color->data[2] = (Uint8)round(frgba[2] * 255.0);
+    color->data[3] = (Uint8)round(frgba[3] * 255.0);
 
     return 0;
 }
