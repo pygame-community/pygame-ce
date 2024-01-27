@@ -350,7 +350,7 @@ pygame_AlphaBlit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
 
 int
 pygame_Blit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
-            SDL_Rect *dstrect, int blend_flags);
+            SDL_Rect *dstrect, int blend_flags, int colorkey_accel);
 
 int
 premul_surf_color_by_alpha(SDL_Surface *src, SDL_Surface *dst);

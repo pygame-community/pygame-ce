@@ -3856,7 +3856,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
          dst->pixels == src->pixels && srcrect != NULL &&
          surface_do_overlap(src, srcrect, dst, dstrect))) {
         /* Py_BEGIN_ALLOW_THREADS */
-        result = pygame_Blit(src, srcrect, dst, dstrect, blend_flags);
+        result = pygame_Blit(src, srcrect, dst, dstrect, blend_flags, 0);
         /* Py_END_ALLOW_THREADS */
     }
     /* can't blit alpha to 8bit, crashes SDL */
@@ -3865,7 +3865,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
               ((SDL_GetSurfaceAlphaMod(src, &alpha) == 0 && alpha != 255)))) {
         /* Py_BEGIN_ALLOW_THREADS */
         if (src->format->BytesPerPixel == 1) {
-            result = pygame_Blit(src, srcrect, dst, dstrect, 0);
+            result = pygame_Blit(src, srcrect, dst, dstrect, 0, 0);
         }
         else {
             SDL_PixelFormat *fmt = src->format;
@@ -3909,12 +3909,22 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
         /* If we have a 32bit source surface with per pixel alpha
            and no RLE we'll use pygame_Blit so we can mimic how SDL1
             behaved */
-        result = pygame_Blit(src, srcrect, dst, dstrect, blend_flags);
+        result = pygame_Blit(src, srcrect, dst, dstrect, blend_flags, 0);
     }
     else {
-        /* Py_BEGIN_ALLOW_THREADS */
-        result = SDL_BlitSurface(src, srcrect, dst, dstrect);
-        /* Py_END_ALLOW_THREADS */
+        if (SDL_GetColorKey(src, &key) == 0 && _PgSurface_SrcAlpha(src) == 0 &&
+            src->format->format == dst->format->format &&
+            src->format->BytesPerPixel == dst->format->BytesPerPixel &&
+            src->format->BytesPerPixel == 4 && !pg_HasSurfaceRLE(src) &&
+            !pg_HasSurfaceRLE(dst) && !(src->flags & SDL_RLEACCEL) &&
+            !(dst->flags & SDL_RLEACCEL)) {
+            result = pygame_Blit(src, srcrect, dst, dstrect, blend_flags, 1);
+        }
+        else {
+            /* Py_BEGIN_ALLOW_THREADS */
+            result = SDL_BlitSurface(src, srcrect, dst, dstrect);
+            /* Py_END_ALLOW_THREADS */
+        }
     }
 
     if (subsurface) {
