@@ -84,7 +84,7 @@ pg_neon_at_runtime_but_uncompiled()
                                                   \
     __m128i mm128_src, mm128_dst;
 
-#define SETUP_16BIT_SHUFFLE_OUT                     \
+#define SETUP_SSE_16BIT_SHUFFLE_OUT                     \
     const __m128i mm128_zero = _mm_setzero_si128(); \
     __m128i shuff_src, shuff_dst, _shuff16_temp;
 
@@ -883,7 +883,7 @@ void
 blit_blend_rgb_mul_sse2(SDL_BlitInfo *info)
 {
     SETUP_SSE2_BLITTER
-    SETUP_16BIT_SHUFFLE_OUT
+    SETUP_SSE_16BIT_SHUFFLE_OUT
     const __m128i mm128_amask =
         _mm_set1_epi32(info->src->Amask | info->dst->Amask);
     const __m128i mm128_255 = _mm_set1_epi16(0x00FF);
@@ -900,7 +900,7 @@ void
 blit_blend_rgba_mul_sse2(SDL_BlitInfo *info)
 {
     SETUP_SSE2_BLITTER
-    SETUP_16BIT_SHUFFLE_OUT
+    SETUP_SSE_16BIT_SHUFFLE_OUT
     const __m128i mm128_255 = _mm_set1_epi16(0x00FF);
 
     RUN_SSE2_BLITTER(RUN_16BIT_SHUFFLE_OUT({
