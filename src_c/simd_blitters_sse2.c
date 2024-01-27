@@ -84,7 +84,7 @@ pg_neon_at_runtime_but_uncompiled()
                                                   \
     __m128i mm128_src, mm128_dst;
 
-#define SETUP_SSE_16BIT_SHUFFLE_OUT                     \
+#define SETUP_SSE_16BIT_SHUFFLE_OUT                 \
     const __m128i mm128_zero = _mm_setzero_si128(); \
     __m128i shuff_src, shuff_dst, _shuff16_temp;
 
