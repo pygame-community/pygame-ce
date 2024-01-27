@@ -430,7 +430,8 @@ cdef extern from "pygame.h" nogil:
         cdef SDL_Window *_win
         cdef SDL_bool _is_borrowed
 
-    ctypedef struct pgSurfaceObject
+    ctypedef class pygame.surface.Surface [object pgSurfaceObject]:
+        pass
 
     int pgSurface_Check(object surf)
     SDL_Surface* pgSurface_AsSurface(object surf)
@@ -452,7 +453,7 @@ cdef extern from "pygame.h" nogil:
     int pg_RGBAFromObjEx(object color, Uint8 rgba[], pgColorHandleFlags handle_flags) except 0
     object pgColor_NewLength(Uint8 rgba[], Uint8 length)
     void import_pygame_color()
-    pgSurfaceObject *pgSurface_New2(SDL_Surface *info, int owner)
+    Surface pgSurface_New2(SDL_Surface *info, int owner)
 
     int pgWindow_Check(object win)
     void import_pygame_window()
@@ -464,7 +465,7 @@ cdef class Renderer:
     cdef int _is_borrowed
 
     cpdef object get_viewport(self)
-    cpdef object blit(self, object source, Rect dest=*, Rect area=*, int special_flags=*)
+    cpdef object blit(self, object source, object dest=*, object area=*, int special_flags=*)
 
 cdef class Texture:
     cdef SDL_Texture* _tex

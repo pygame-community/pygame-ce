@@ -432,12 +432,14 @@
       For compatibility purposes. Draws :class:`Texture` objects onto the
       Renderer using a method signature similar to :meth:`pygame.Surface.blit`.
 
-      :param source: A :class:`Texture` or :class:`Image` to draw.
+      :param source: A :class:`Texture` or :class:`Image` or :class:`Surface` to draw.
       :param dest: The drawing destination on the rendering target.
       :param area: The portion of the source texture or image to draw from.
       :param special_flags: have no effect at this moment.
 
       .. note:: Textures created by different Renderers cannot shared with each other!
+      .. note:: Blitting a surface to the renderer is slow. If you want to blit a surface
+         frequently, convert it to a Texture first.
 
    .. method:: draw_line
 

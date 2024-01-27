@@ -150,7 +150,7 @@ class Renderer:
     target: Optional[Texture]
     def blit(
         self,
-        source: Union[Texture, Image],
+        source: Union[Texture, Image, Surface],
         dest: Optional[RectValue] = None,
         area: Optional[RectValue] = None,
         special_flags: int = 0,
