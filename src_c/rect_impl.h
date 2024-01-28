@@ -413,7 +413,7 @@ RectExport_do_rects_intresect(InnerRect *A, InnerRect *B)
     }
 
     // A.left   < B.right  &&
-    // A.top    < A.bottom &&
+    // A.top    < B.bottom &&
     // A.right  > B.left   &&
     // A.bottom > b.top
     return (MIN(A->x, A->x + A->w) < MAX(B->x, B->x + B->w) &&
@@ -850,6 +850,10 @@ RectExport_dealloc(RectObject *self)
 static int
 RectExport_init(RectObject *self, PyObject *args, PyObject *kwds)
 {
+    if (PyTuple_GET_SIZE(args) == 0) {
+        return 0;
+    }
+
     InnerRect *argrect, temp;
 
     if (!(argrect = RectFromObject(args, &temp))) {
