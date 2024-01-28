@@ -218,6 +218,16 @@ class BlitTest(unittest.TestCase):
             TypeError, dst.fblits, [(pygame.Surface((10, 10), SRCALPHA, 32), None)]
         )
 
+    def test_fblits_generator_exception(self):
+        dst = pygame.Surface((100, 10), SRCALPHA, 32)
+        exc_type = Exception
+
+        def generate_exception():
+            yield pygame.Surface((10, 10)), (0, 0)
+            raise exc_type
+
+        self.assertRaises(exc_type, dst.fblits, generate_exception())
+
     def test_blits_not_sequence(self):
         dst = pygame.Surface((100, 10), SRCALPHA, 32)
         self.assertRaises(ValueError, dst.blits, None)
