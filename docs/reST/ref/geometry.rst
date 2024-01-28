@@ -257,8 +257,10 @@
 
 
    .. method:: rotate
+
          | :sl:`rotates the circle`
-         | :sg:`rotate(angle, rotation_point=Circle.center) -> None`
+         | :sg:`rotate(angle, rotation_point=Circle.center, /) -> Circle`
+         | :sg:`rotate(angle, /) -> Circle`
 
          Returns a new `Circle` that is rotated by the specified angle around a point.
          A positive angle rotates the circle clockwise, while a negative angle rotates it counter-clockwise.
@@ -270,7 +272,9 @@
     .. method:: rotate_ip
 
          | :sl:`rotates the circle in place`
-         | :sg:`rotate_ip(angle, rotation_point=Circle.center) -> None`
+         | :sg:`rotate_ip(angle, rotation_point=Circle.center, /) -> None`
+         | :sg:`rotate_ip(angle, /) -> None`
+
 
          This method rotates the circle by a specified angle around a point.
          A positive angle rotates the circle clockwise, while a negative angle rotates it counter-clockwise.
