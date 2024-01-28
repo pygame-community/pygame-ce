@@ -221,7 +221,7 @@ following formats.
 
    .. versionadded:: 2.1.3 
    .. versionchanged:: 2.2.0 Now supports keyword arguments.
-   .. versionchanged:: 2.4.0 Added a 'pitch' argument.
+   .. versionchanged:: 2.5.0 Added a 'pitch' argument.
 
    .. ## pygame.image.tobytes ##
 
