@@ -14,6 +14,6 @@
 #define DOC_CIRCLE_MOVE "move((x, y), /) -> Circle\nmove(x, y, /) -> Circle\nmove(vector2, /) -> Circle\nmoves the circle by a given amount"
 #define DOC_CIRCLE_MOVEIP "move_ip((x, y), /) -> None\nmove_ip(x, y, /) -> None\nmove_ip(vector2, /) -> None\nmoves the circle by a given amount, in place"
 #define DOC_CIRCLE_COLLIDERECT "colliderect(rect, /) -> bool\ncolliderect((x, y, width, height), /) -> bool\ncolliderect(x, y, width, height, /) -> bool\ncolliderect((x, y), (width, height), /) -> bool\nchecks if a rectangle intersects the circle"
-#define DOC_CIRCLE_COLLIDESWITH "collideswith(Circle) -> bool\ncollideswith(Rect) -> bool\ncollideswith(FRect) -> bool\ncollideswith((x, y)) -> bool\ncontains(Vector2) -> bool\ncheck if a shape or point collides with the circle"
+#define DOC_CIRCLE_COLLIDESWITH "collideswith(circle, /) -> bool\ncollideswith(rect, /) -> bool\ncollideswith((x, y), /) -> bool\ncollideswith(vector2, /) -> bool\ncheck if a shape or point collides with the circle"
 #define DOC_CIRCLE_UPDATE "update((x, y), radius, /) -> None\nupdate(x, y, radius, /) -> None\nupdates the circle position and radius"
 #define DOC_CIRCLE_COPY "copy() -> Circle\nreturns a copy of the circle"
