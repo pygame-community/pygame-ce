@@ -4,6 +4,3 @@ PKG_DIR: Path
 
 
 def has_local_docs() -> bool: ...
-
-
-def open_docs(): ...
