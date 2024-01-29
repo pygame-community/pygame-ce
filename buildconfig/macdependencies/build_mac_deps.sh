@@ -93,6 +93,7 @@ bash ogg/build-ogg.sh
 bash flac/build-flac.sh
 bash mpg123/build-mpg123.sh
 bash opus/build-opus.sh # needs libogg (which is a container format)
+bash wavpack/build-wavpack.sh
 
 # fluidsynth (for sdl_mixer)
 # bash gettext/build-gettext.sh

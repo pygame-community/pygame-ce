@@ -107,6 +107,9 @@ RUN ["bash", "/glib_build/build-glib.sh"]
 ADD fluidsynth /fluidsynth_build/
 RUN ["linux32", "bash", "/fluidsynth_build/build-fluidsynth.sh"]
 
+ADD wavpack /wavpack_build/
+RUN ["linux32", "bash", "/wavpack_build/build-wavpack.sh"]
+
 # Build and install SDL
 ADD sdl_libs /sdl_build/
 RUN ["linux32", "bash", "/sdl_build/build-sdl2-libs.sh"]

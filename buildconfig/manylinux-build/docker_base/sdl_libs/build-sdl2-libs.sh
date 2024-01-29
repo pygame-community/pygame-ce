@@ -104,6 +104,7 @@ cd $MIX2
       --enable-music-mod-xmp --disable-music-mod-xmp-shared \
       --enable-music-midi-fluidsynth --disable-music-midi-fluidsynth-shared \
       --enable-music-opus --disable-music-opus-shared \
+      --enable-music-wavpack --disable-music-wavpack-shared \
       --disable-music-ogg-vorbis-shared \
       --disable-music-ogg-tremor \
       --disable-music-flac-libflac-shared \
