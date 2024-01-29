@@ -1,13 +1,11 @@
-from pygame.docs import open_docs
+import platform
 
-
-def main():
-    print("Opening local documentation files in the browser.")
-    print(
-        "If you want to run a simple server instead, run 'python -m pygame.docs.serve'."
-    )
-    open_docs()
+from pygame.docs.serve import main as serve
+from pygame.docs.static import main as static
 
 
 if __name__ == "__main__":
-    main()
+    if platform.system() == "Linux":
+        serve()
+    else:
+        static()

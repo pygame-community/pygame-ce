@@ -25,6 +25,11 @@ TARGET = "localhost"
 
 
 def main():
+    print("Running a simple server to serve documentation.")
+    print(
+        "If you want to just open documentation files in the browser, "
+        "run 'python -m pygame.docs.static'."
+    )
     if not has_local_docs():
         print("ERROR: no local documentation found, cannot serve anything, exiting...")
         sys.exit(1)
