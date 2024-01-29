@@ -2137,14 +2137,63 @@ bliterror:
 #define FBLITS_ERR_TUPLE_REQUIRED 11
 #define FBLITS_ERR_INCORRECT_ARGS_NUM 12
 #define FBLITS_ERR_FLAG_NOT_NUMERIC 13
+
+int
+_surf_fblits_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
+                                 int blend_flags)
+{
+    PyObject *src_surf, *blit_pos;
+    SDL_Surface *src;
+    SDL_Rect *src_rect, temp, dest_rect;
+
+    /* Check that the item is a tuple of length 2 */
+    if (!PyTuple_Check(item) || PyTuple_GET_SIZE(item) != 2) {
+        return FBLITS_ERR_TUPLE_REQUIRED;
+    }
+
+    /* Extract the Surface and destination objects from the
+     * (Surface, dest) tuple */
+    src_surf = PyTuple_GET_ITEM(item, 0);
+    blit_pos = PyTuple_GET_ITEM(item, 1);
+
+    /* Check that the source is a Surface */
+    if (!pgSurface_Check(src_surf)) {
+        return BLITS_ERR_SOURCE_NOT_SURFACE;
+    }
+    if (!(src = pgSurface_AsSurface(src_surf))) {
+        return BLITS_ERR_SEQUENCE_SURF;
+    }
+
+    /* Try to extract a valid blit position */
+    if (pg_TwoIntsFromObj(blit_pos, &dest_rect.x, &dest_rect.y)) {
+    }
+    else if ((src_rect = pgRect_FromObject(blit_pos, &temp))) {
+        dest_rect.x = src_rect->x;
+        dest_rect.y = src_rect->y;
+    }
+    else {
+        return BLITS_ERR_INVALID_DESTINATION;
+    }
+
+    dest_rect.w = src->w;
+    dest_rect.h = src->h;
+
+    /* Perform the blit */
+    if (pgSurface_Blit(self, (pgSurfaceObject *)src_surf, &dest_rect, NULL,
+                       blend_flags)) {
+        return BLITS_ERR_BLIT_FAIL;
+    }
+
+    return 0;
+}
+
 static PyObject *
 surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
-    SDL_Surface *src, *dest = pgSurface_AsSurface(self);
+    SDL_Surface *dest = pgSurface_AsSurface(self);
     SURF_INIT_CHECK(dest)
 
-    SDL_Rect *src_rect, temp, dest_rect;
-    PyObject *blit_sequence, *item, *src_surf, *blit_pos;
+    PyObject *blit_sequence, *item;
     int blend_flags = 0; /* Default flag is 0, opaque */
     int error = 0;
     int is_generator = 0;
@@ -2172,47 +2221,9 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
         Py_ssize_t i;
         PyObject **sequence_items = PySequence_Fast_ITEMS(blit_sequence);
         for (i = 0; i < PySequence_Fast_GET_SIZE(blit_sequence); i++) {
-            /* Check that the item is a tuple of length 2 */
             item = sequence_items[i];
-            if (!PyTuple_Check(item) || PyTuple_GET_SIZE(item) != 2) {
-                error = FBLITS_ERR_TUPLE_REQUIRED;
-                goto on_error;
-            }
-
-            /* Extract the Surface and destination objects from the
-             * (Surface, dest) tuple */
-            src_surf = PyTuple_GET_ITEM(item, 0);
-            blit_pos = PyTuple_GET_ITEM(item, 1);
-
-            /* Check that the source is a Surface */
-            if (!pgSurface_Check(src_surf)) {
-                error = BLITS_ERR_SOURCE_NOT_SURFACE;
-                goto on_error;
-            }
-            if (!(src = pgSurface_AsSurface(src_surf))) {
-                error = BLITS_ERR_SEQUENCE_SURF;
-                goto on_error;
-            }
-
-            /* Try to extract a valid blit position */
-            if (pg_TwoIntsFromObj(blit_pos, &dest_rect.x, &dest_rect.y)) {
-            }
-            else if ((src_rect = pgRect_FromObject(blit_pos, &temp))) {
-                dest_rect.x = src_rect->x;
-                dest_rect.y = src_rect->y;
-            }
-            else {
-                error = BLITS_ERR_INVALID_DESTINATION;
-                goto on_error;
-            }
-
-            dest_rect.w = src->w;
-            dest_rect.h = src->h;
-
-            /* Perform the blit */
-            if (pgSurface_Blit(self, (pgSurfaceObject *)src_surf, &dest_rect,
-                               NULL, blend_flags)) {
-                error = BLITS_ERR_BLIT_FAIL;
+            error = _surf_fblits_item_check_and_blit(self, item, blend_flags);
+            if (error) {
                 goto on_error;
             }
         }
@@ -2221,50 +2232,16 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
     else if (PyIter_Check(blit_sequence)) {
         is_generator = 1;
         while ((item = PyIter_Next(blit_sequence))) {
-            /* Check that the item is a tuple of length 2 */
-            if (!PyTuple_Check(item) || PyTuple_GET_SIZE(item) != 2) {
-                error = FBLITS_ERR_TUPLE_REQUIRED;
+            error = _surf_fblits_item_check_and_blit(self, item, blend_flags);
+            if (error) {
                 goto on_error;
             }
-
-            /* Extract the Surface and destination objects from the
-             * (Surface, dest) tuple */
-            src_surf = PyTuple_GET_ITEM(item, 0);
-            blit_pos = PyTuple_GET_ITEM(item, 1);
-
-            /* Check that the source is a Surface */
-            if (!pgSurface_Check(src_surf)) {
-                error = BLITS_ERR_SOURCE_NOT_SURFACE;
-                goto on_error;
-            }
-            if (!(src = pgSurface_AsSurface(src_surf))) {
-                error = BLITS_ERR_SEQUENCE_SURF;
-                goto on_error;
-            }
-
-            /* Try to extract a valid blit position */
-            if (pg_TwoIntsFromObj(blit_pos, &dest_rect.x, &dest_rect.y)) {
-            }
-            else if ((src_rect = pgRect_FromObject(blit_pos, &temp))) {
-                dest_rect.x = src_rect->x;
-                dest_rect.y = src_rect->y;
-            }
-            else {
-                error = BLITS_ERR_INVALID_DESTINATION;
-                goto on_error;
-            }
-
-            dest_rect.w = src->w;
-            dest_rect.h = src->h;
-
-            /* Perform the blit */
-            if (pgSurface_Blit(self, (pgSurfaceObject *)src_surf, &dest_rect,
-                               NULL, blend_flags)) {
-                error = BLITS_ERR_BLIT_FAIL;
-                goto on_error;
-            }
-
             Py_DECREF(item);
+        }
+
+        /* If the generator raises an exception */
+        if (PyErr_Occurred()) {
+            return NULL;
         }
     }
     else {
