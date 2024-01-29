@@ -88,7 +88,7 @@ bash bzip2/build-bzip2.sh
 bash freetype/build-freetype.sh
 
 # sdl_mixer deps
-bash libmodplug/build-libmodplug.sh
+bash libxmp/build-libxmp.sh
 bash ogg/build-ogg.sh
 bash flac/build-flac.sh
 bash mpg123/build-mpg123.sh

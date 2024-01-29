@@ -91,8 +91,8 @@ RUN ["bash", "/sndfile_build/build-sndfile.sh"]
 ADD pulseaudio /pulseaudio_build/
 RUN ["bash", "/pulseaudio_build/build-pulseaudio.sh"]
 
-ADD libmodplug /libmodplug_build/
-RUN ["bash", "/libmodplug_build/build-libmodplug.sh"]
+ADD libxmp /libxmp_build/
+RUN ["bash", "/libxmp_build/build-libxmp.sh"]
 
 ADD libffi /libffi_build/
 RUN ["bash", "/libffi_build/build-libffi.sh"]
