@@ -314,14 +314,17 @@ _get_type_from_hint(char *namehint)
     else if (SDL_strcasecmp(namehint, "OGG") == 0) {
         type = MUS_OGG;
     }
-#ifdef MUS_OPUS
     else if (SDL_strcasecmp(namehint, "OPUS") == 0) {
         type = MUS_OPUS;
     }
-#endif
     else if (SDL_strcasecmp(namehint, "FLAC") == 0) {
         type = MUS_FLAC;
     }
+#if SDL_MIXER_VERSION_ATLEAST(2, 8, 0)
+    else if (SDL_strcasecmp(namehint, "WV") == 0) {
+        type = MUS_WAVPACK;
+    }
+#endif
     else if (SDL_strcasecmp(namehint, "MPG") == 0 ||
              SDL_strcasecmp(namehint, "MPEG") == 0 ||
              SDL_strcasecmp(namehint, "MP3") == 0 ||
@@ -334,6 +337,7 @@ _get_type_from_hint(char *namehint)
              SDL_strcasecmp(namehint, "DBM") == 0 ||
              SDL_strcasecmp(namehint, "DSM") == 0 ||
              SDL_strcasecmp(namehint, "FAR") == 0 ||
+             SDL_strcasecmp(namehint, "GDM") == 0 ||
              SDL_strcasecmp(namehint, "IT") == 0 ||
              SDL_strcasecmp(namehint, "MED") == 0 ||
              SDL_strcasecmp(namehint, "MDL") == 0 ||
@@ -351,6 +355,15 @@ _get_type_from_hint(char *namehint)
              SDL_strcasecmp(namehint, "XM") == 0) {
         type = MUS_MOD;
     }
+#if SDL_MIXER_VERSION_ATLEAST(2, 8, 0)
+    else if (SDL_strcasecmp(namehint, "GBS") == 0 ||
+             SDL_strcasecmp(namehint, "M3U") == 0 ||
+             SDL_strcasecmp(namehint, "NSF") == 0 ||
+             SDL_strcasecmp(namehint, "SPC") == 0 ||
+             SDL_strcasecmp(namehint, "VGM") == 0) {
+        type = MUS_GME;
+    }
+#endif
     return type;
 }
 
