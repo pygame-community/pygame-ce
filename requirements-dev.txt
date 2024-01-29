@@ -2,6 +2,6 @@ black<=23.7.0
 clang-format<=17.0.6
 numpy<=1.26.3
 opencv-python<=4.8.1.78
-pylin<=3.0.3
+pylint<=3.0.3
 Sphinx<=7.2.6
 Wheel<=0.42.0
