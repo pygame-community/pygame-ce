@@ -27,7 +27,7 @@ on:
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
       - '!.github/workflows/build-windows.yml'
-  
+
   # the github release drafter can call this workflow
   workflow_call:
 
@@ -156,7 +156,7 @@ jobs:
         run: |
           set DISTUTILS_USE_SDK=1
           set MSSdk=1
-          python -m pip install setuptools wheel requests numpy Sphinx"<7.2.0"
+          python -m pip install -r requirements-dev.txt
           python setup.py docs
           python -m pip --disable-pip-version-check install cibuildwheel==2.16.2
           python -m cibuildwheel --output-dir wheelhouse

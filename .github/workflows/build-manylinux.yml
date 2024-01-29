@@ -1,7 +1,7 @@
 name: ManyLinux
 
-# Run CI only when a release is created, on changes to main branch, or any PR 
-# to main. Do not run CI on any other branch. Also, skip any non-source changes 
+# Run CI only when a release is created, on changes to main branch, or any PR
+# to main. Do not run CI on any other branch. Also, skip any non-source changes
 # from running on CI
 on:
   push:
@@ -27,7 +27,7 @@ on:
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
       - '!.github/workflows/build-manylinux.yml'
-  
+
   # the github release drafter can call this workflow
   workflow_call:
 
@@ -42,12 +42,12 @@ jobs:
     permissions:
       contents: read
       packages: write
-    
+
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
         arch: [x86_64, i686]
-    
+
     env:
       # load pip config from this file. Define this in 'CIBW_ENVIRONMENT'
       # because this should not affect cibuildwheel machinery
@@ -62,7 +62,7 @@ jobs:
 
       # command that runs before every build
       CIBW_BEFORE_BUILD: |
-        pip install Sphinx"<7.2.0"
+        pip install -r requirements-dev.txt
         python setup.py docs
 
       CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,music,timing --time_out 300
@@ -87,7 +87,7 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-    
+
     - name: Inspect image, skip build if image exists
       id: inspect
       continue-on-error: true
