@@ -1551,7 +1551,7 @@ blit_rgb_colorkey_avx2(SDL_BlitInfo *info)
     __m256i *srcp256 = (__m256i *)info->s_pixels;
     __m256i *dstp256 = (__m256i *)info->d_pixels;
 
-    __m256i mm256_src, mm256_dst, mm256_eq_mask;
+    __m256i mm256_src, mm256_dst, mask;
 
     int h = info->height;
     int n;
@@ -1563,10 +1563,9 @@ blit_rgb_colorkey_avx2(SDL_BlitInfo *info)
                     mm256_src = _mm256_loadu_si256(srcp256);
                     mm256_dst = _mm256_loadu_si256(dstp256);
 
-                    mm256_eq_mask = _mm256_cmpeq_epi32(mm256_src, colorkey_8);
+                    mask = _mm256_cmpeq_epi32(mm256_src, colorkey_8);
+                    mm256_dst = _mm256_blendv_epi8(mm256_src, mm256_dst, mask);
 
-                    mm256_dst = _mm256_blendv_epi8(mm256_src, mm256_dst,
-                                                   mm256_eq_mask);
                     _mm256_storeu_si256(dstp256, mm256_dst);
 
                     srcp256++;
@@ -1579,19 +1578,14 @@ blit_rgb_colorkey_avx2(SDL_BlitInfo *info)
             mm256_src = _mm256_maskload_epi32((int *)srcp256, mask_excess);
             mm256_dst = _mm256_maskload_epi32((int *)dstp256, mask_excess);
 
-            mm256_eq_mask = _mm256_cmpeq_epi32(mm256_src, colorkey_8);
+            mask = _mm256_cmpeq_epi32(mm256_src, colorkey_8);
+            mm256_dst = _mm256_blendv_epi8(mm256_src, mm256_dst, mask);
 
-            mm256_dst =
-                _mm256_blendv_epi8(mm256_src, mm256_dst, mm256_eq_mask);
             _mm256_maskstore_epi32((int *)dstp256, mask_excess, mm256_dst);
-
-            srcp256 = (__m256i *)((Uint32 *)srcp256 + pxl_excess + src_skip);
-            dstp256 = (__m256i *)((Uint32 *)dstp256 + pxl_excess + dst_skip);
-            continue;
         }
 
-        srcp256 = (__m256i *)((Uint32 *)srcp256 + src_skip);
-        dstp256 = (__m256i *)((Uint32 *)dstp256 + dst_skip);
+        srcp256 = (__m256i *)((Uint32 *)srcp256 + src_skip + pxl_excess);
+        dstp256 = (__m256i *)((Uint32 *)dstp256 + dst_skip + pxl_excess);
     }
 }
 #else

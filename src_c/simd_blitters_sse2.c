@@ -1418,7 +1418,7 @@ blit_rgb_colorkey_sse2(SDL_BlitInfo *info)
     Uint32 *srcp = (Uint32 *)srcp128;
     Uint32 *dstp = (Uint32 *)dstp128;
 
-    __m128i mm128_src, mm128_dst, mm128_eq_mask;
+    __m128i mm128_src, mm128_dst, mask;
 
     int h = info->height;
     int n;
@@ -1430,10 +1430,8 @@ blit_rgb_colorkey_sse2(SDL_BlitInfo *info)
                     mm128_src = _mm_loadu_si128(srcp128);
                     mm128_dst = _mm_loadu_si128(dstp128);
 
-                    mm128_eq_mask = _mm_cmpeq_epi32(mm128_src, colorkey_4);
-
-                    mm128_dst =
-                        pg_mm_blendv_epi8(mm128_src, mm128_dst, mm128_eq_mask);
+                    mask = _mm_cmpeq_epi32(mm128_src, colorkey_4);
+                    mm128_dst = pg_mm_blendv_epi8(mm128_src, mm128_dst, mask);
 
                     _mm_storeu_si128(dstp128, mm128_dst);
 
