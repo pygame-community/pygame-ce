@@ -38,11 +38,13 @@ concurrency:
 jobs:
   deps:
     name: ${{ matrix.macarch }} deps
-    runs-on: macos-12
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         # make arm64 deps and x86_64 deps
-        macarch: [arm64, x86_64]
+        include:
+          - { macarch: arm64, os: macos-14 }
+          - { macarch: x86_64, os: macos-13 }
 
     steps:
       - uses: actions/checkout@v4.1.4
@@ -54,7 +56,7 @@ jobs:
           path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
           # The hash of all files in buildconfig manylinux-build and macdependencies is 
           # the key to the cache. If anything changes here, the deps are built again
-          key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}
+          key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}-${{ matrix.os }}
           lookup-only: true
 
       # build mac deps on cache miss
@@ -76,7 +78,7 @@ jobs:
   build:
     name: ${{ matrix.name }}
     needs: deps
-    runs-on: macos-12
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
@@ -87,12 +89,14 @@ jobs:
           - { 
             name: "x86_64 (CPython 3.9 - 3.12)",
             macarch: x86_64,
+            os: macos-13,
             pyversions: "cp3{9,10,11,12}-*",
           }
 
           - { 
             name: "x86_64 (Python 3.8)",
             macarch: x86_64,
+            os: macos-13,
             # CPython/PyPy 3.8
             pyversions: "?p38-*",
           }
@@ -100,18 +104,21 @@ jobs:
           - { 
             name: "x86_64 (PyPy 3.9 and 3.10)",
             macarch: x86_64,
+            os: macos-13,
             pyversions: "pp39-* pp310-*",
           }
 
           - { 
             name: "arm64 (CPython 3.8 - 3.10)",
             macarch: arm64,
+            os: macos-14,
             pyversions: "cp3{8,9,10}-*",
           }
 
           - { 
             name: "arm64 (CPython 3.11 - 3.12)",
             macarch: arm64,
+            os: macos-14,
             pyversions: "cp3{11,12}-*",
           }
 
@@ -135,8 +142,6 @@ jobs:
 
       CIBW_BUILD: ${{ matrix.pyversions }}
 
-      # Build arm64 and x86_64 wheels too on an Intel runner.
-      # Note that the arm64 wheels cannot be tested on CI in this configuration
       CIBW_ARCHS: ${{ matrix.macarch }}
 
       # Setup macOS dependencies
