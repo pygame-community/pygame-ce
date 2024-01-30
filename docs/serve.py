@@ -46,10 +46,10 @@ def main():
         help="specify alternate port (default: 8000)",
     )
     parser.add_argument(
-        "--open",
-        "-o",
-        action="store_true",
-        default=False,
+        "--no-browser",
+        "-n",
+        action="store_false",
+        default=True,
         dest="open_browser",
         help="whether to open a browser tab",
     )
