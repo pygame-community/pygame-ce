@@ -1236,6 +1236,85 @@ class ImageModuleTest(unittest.TestCase):
                 surf = pygame.image.load_extended(example_path("data/" + filename))
                 self.assertEqual(surf.get_at((0, 0)), expected_color)
 
+    @unittest.skipIf(
+        pygame.image.get_sdl_image_version() < (2, 6, 0),
+        "load_sized_svg requires SDL_image 2.6.0+",
+    )
+    def test_load_sized_svg(self):
+        EXPECTED_COLOR = (0, 128, 128, 255)
+        EXPECTED_ASPECT_RATIO = pygame.Vector2(1, 1).normalize()
+        for size in (
+            (10, 10),
+            [100, 100],
+            pygame.Vector2(1, 1),
+            [4, 2],
+            (1000, 30),
+        ):
+            with self.subTest(
+                f"Test loading SVG with size",
+                size=size,
+            ):
+                # test with both keywords and no keywords
+                surf = pygame.image.load_sized_svg(example_path("data/teal.svg"), size)
+                surf_kw = pygame.image.load_sized_svg(
+                    file=example_path("data/teal.svg"), size=size
+                )
+                self.assertEqual(surf.get_at((0, 0)), EXPECTED_COLOR)
+                self.assertEqual(surf_kw.get_at((0, 0)), EXPECTED_COLOR)
+                ret_size = surf.get_size()
+                self.assertEqual(surf_kw.get_size(), ret_size)
+
+                # test the returned surface exactly fits the size box
+                self.assertTrue(
+                    (ret_size[0] == size[0] and ret_size[1] <= size[1])
+                    or (ret_size[1] == size[1] and ret_size[0] <= size[0]),
+                    f"{ret_size = } must exactly fit {size = }",
+                )
+
+                # test that aspect ratio is maintained
+                self.assertEqual(
+                    pygame.Vector2(ret_size).normalize(), EXPECTED_ASPECT_RATIO
+                )
+
+    @unittest.skipIf(
+        pygame.image.get_sdl_image_version() < (2, 6, 0),
+        "load_sized_svg requires SDL_image 2.6.0+",
+    )
+    def test_load_sized_svg_erroring(self):
+        for type_error_size in (
+            [100],
+            (0, 0, 10, 3),
+            "foo",
+            pygame.Vector3(-3, 10, 10),
+        ):
+            with self.subTest(
+                f"Test TypeError",
+                type_error_size=type_error_size,
+            ):
+                self.assertRaises(
+                    TypeError,
+                    pygame.image.load_sized_svg,
+                    example_path("data/teal.svg"),
+                    type_error_size,
+                )
+
+        for value_error_size in (
+            [100, 0],
+            (0, 0),
+            [-2, -1],
+            pygame.Vector2(-3, 10),
+        ):
+            with self.subTest(
+                f"Test ValueError",
+                value_error_size=value_error_size,
+            ):
+                self.assertRaises(
+                    ValueError,
+                    pygame.image.load_sized_svg,
+                    example_path("data/teal.svg"),
+                    value_error_size,
+                )
+
     def test_load_pathlib(self):
         """works loading using a Path argument."""
         path = pathlib.Path(example_path("data/asprite.bmp"))

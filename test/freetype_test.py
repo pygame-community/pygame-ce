@@ -17,11 +17,7 @@ except NameError:
 
 import pygame
 
-try:
-    import pygame.freetype as ft
-except ImportError:
-    ft = None
-
+import pygame.freetype as ft
 
 FONTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "fonts")
 
@@ -1246,7 +1242,6 @@ class FreeTypeFontTest(unittest.TestCase):
 
         self.assertRaises(AttributeError, setattr, f, "bgcolor", None)
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     @unittest.skipIf(IS_PYPY, "pypy no likey")
     def test_newbuf(self):
         from pygame.tests.test_utils import buftools

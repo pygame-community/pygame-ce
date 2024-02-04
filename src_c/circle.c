@@ -13,6 +13,20 @@ _pg_circle_subtype_new(PyTypeObject *type, pgCircleBase *circle)
     return (PyObject *)circle_obj;
 }
 
+static PyObject *
+_pg_circle_subtype_new3(PyTypeObject *type, double x, double y, double r)
+{
+    pgCircleObject *circle_obj =
+        (pgCircleObject *)pgCircle_Type.tp_new(type, NULL, NULL);
+
+    if (circle_obj) {
+        circle_obj->circle.x = x;
+        circle_obj->circle.y = y;
+        circle_obj->circle.r = r;
+    }
+    return (PyObject *)circle_obj;
+}
+
 static int
 _pg_circle_set_radius(PyObject *value, pgCircleBase *circle)
 {
@@ -262,6 +276,35 @@ pg_circle_str(pgCircleObject *self)
 }
 
 static PyObject *
+pg_circle_move(pgCircleObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    double Dx, Dy;
+
+    if (!pg_TwoDoublesFromFastcallArgs(args, nargs, &Dx, &Dy)) {
+        return RAISE(PyExc_TypeError, "move requires a pair of numbers");
+    }
+
+    return _pg_circle_subtype_new3(Py_TYPE(self), self->circle.x + Dx,
+                                   self->circle.y + Dy, self->circle.r);
+}
+
+static PyObject *
+pg_circle_move_ip(pgCircleObject *self, PyObject *const *args,
+                  Py_ssize_t nargs)
+{
+    double Dx, Dy;
+
+    if (!pg_TwoDoublesFromFastcallArgs(args, nargs, &Dx, &Dy)) {
+        return RAISE(PyExc_TypeError, "move_ip requires a pair of numbers");
+    }
+
+    self->circle.x += Dx;
+    self->circle.y += Dy;
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 pg_circle_update(pgCircleObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     if (!pgCircle_FromObjectFastcall(args, nargs, &self->circle)) {
@@ -350,6 +393,9 @@ static struct PyMethodDef pg_circle_methods[] = {
      DOC_CIRCLE_COLLIDEPOINT},
     {"collidecircle", (PyCFunction)pg_circle_collidecircle, METH_FASTCALL,
      DOC_CIRCLE_COLLIDECIRCLE},
+    {"move", (PyCFunction)pg_circle_move, METH_FASTCALL, DOC_CIRCLE_MOVE},
+    {"move_ip", (PyCFunction)pg_circle_move_ip, METH_FASTCALL,
+     DOC_CIRCLE_MOVEIP},
     {"colliderect", (PyCFunction)pg_circle_colliderect, METH_FASTCALL,
      DOC_CIRCLE_COLLIDERECT},
     {"update", (PyCFunction)pg_circle_update, METH_FASTCALL,
@@ -548,6 +594,38 @@ pg_circle_setdiameter(pgCircleObject *self, PyObject *value, void *closure)
     return 0;
 }
 
+static int
+double_compare(double a, double b)
+{
+    /* Uses both a fixed epsilon and an adaptive epsilon */
+    const double e = 1e-6;
+    return fabs(a - b) < e || fabs(a - b) <= e * MAX(fabs(a), fabs(b));
+}
+
+static PyObject *
+pg_circle_richcompare(PyObject *self, PyObject *other, int op)
+{
+    pgCircleBase c1, c2;
+    int equal;
+
+    if (!pgCircle_FromObject(self, &c1) || !pgCircle_FromObject(other, &c2)) {
+        equal = 0;
+    }
+    else {
+        equal = double_compare(c1.x, c2.x) && double_compare(c1.y, c2.y) &&
+                double_compare(c1.r, c2.r);
+    }
+
+    switch (op) {
+        case Py_EQ:
+            return PyBool_FromLong(equal);
+        case Py_NE:
+            return PyBool_FromLong(!equal);
+        default:
+            Py_RETURN_NOTIMPLEMENTED;
+    }
+}
+
 static PyGetSetDef pg_circle_getsets[] = {
     {"x", (getter)pg_circle_getx, (setter)pg_circle_setx, DOC_CIRCLE_X, NULL},
     {"y", (getter)pg_circle_gety, (setter)pg_circle_sety, DOC_CIRCLE_Y, NULL},
@@ -581,4 +659,5 @@ static PyTypeObject pgCircle_Type = {
     .tp_getset = pg_circle_getsets,
     .tp_init = (initproc)pg_circle_init,
     .tp_new = pg_circle_new,
+    .tp_richcompare = pg_circle_richcompare,
 };

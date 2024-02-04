@@ -16,7 +16,7 @@ EXTRAS = {}
 
 METADATA = {
     "name": "pygame-ce",
-    "version": "2.4.0.dev3",
+    "version": "2.5.0.dev1",
     "license": "LGPL",
     "url": "https://pyga.me",
     "author": "A community project.",
@@ -839,13 +839,13 @@ class LintFormatCommand(Command):
 
 
         # Other files have too many issues for now. setup.py, buildconfig, etc
-        python_directories = ["src_py", "test", "examples"]
+        python_directories = ["src_py", "test", "examples", "docs", "--exclude", "docs/reST"]
         if self.lint:
             commands = {
                 "clang-format": ["--dry-run", "--Werror", "-i"] + c_files,
                 "black": ["--check", "--diff"] + python_directories,
                 # Test directory has too much pylint warning for now
-                "pylint": ["src_py"],
+                "pylint": ["src_py", "docs"],
             }
         else:
             commands = {

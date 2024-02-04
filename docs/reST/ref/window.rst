@@ -10,10 +10,10 @@
    | :sl:`pygame object that represents a window`
    | :sg:`Window(title='pygame window', size=(640, 480), position=None, fullscreen=False, fullscreen_desktop=False, **kwargs) -> Window`
 
-   The Window class (formerly known as _sdl2.video.Window), is a newly
-   published feature of pygame-ce 2.4.0. This class allows for programs
-   to drive multiple Windows on-screen at once, something not possible with
-   the :func:`pygame.display.set_mode` API. Not everything possible with
+   The Window class (formerly known as _sdl2.video.Window), is an experimental
+   feature of pygame-ce. This class allows for programs to drive multiple
+   Windows on-screen at once, something not possible with the 
+   :func:`pygame.display.set_mode` API. Not everything possible with
    :mod:`pygame.display` is possible yet in the Window API, but the new
    window class will continue to be developed, and we're excited to share
    the new functionality this class offers.
@@ -39,20 +39,11 @@
    :param bool input_focus: Create a window with input focus.
    :param bool mouse_focus: Create a window with mouse focus.
    :param bool foreign: Marks a window not created by SDL.
-   :param bool allow_highdpi: Create a window in high-DPI mode if supported.
+   :param bool allow_high_dpi: Create a window in high-DPI mode if supported.
    :param bool mouse_capture: Create a window that has the mouse captured
                               (unrelated to INPUT_GRABBED).
-   :param bool always_on_top: Create a window that is always on top
-                              (X11 only).
-   :param bool skip_taskbar: Create a window that should not be added to the
-                             taskbar (X11 only).
-   :param bool utility: Create a window that should be treated as a utility
-                        window (X11 only).
-   :param bool tooltip: Create a window that should be treated as a tooltip
-                        (X11 only).
-   :param bool popup_menu: Create a window that should be treated as a popup menu 
-                           (X11 only).
-
+   :param bool always_on_top: Create a window that is always presented above
+                              others.
 
    .. versionadded:: 2.4.0
 
@@ -237,18 +228,18 @@
       | :sl:`Get or set the window opacity, between 0.0 (fully transparent) and 1.0 (fully opaque)`
       | :sg:`opacity -> float`
 
-   .. attribute:: display_index
-
-      | :sl:`Get the index of the display that owns the window (**read-only**)`
-      | :sg:`get_display_index -> int`
-
    .. classmethod:: from_display_module
 
       | :sl:`Create a Window object using window data from display module`
       | :sg:`from_display_module() -> Window`
 
+      **DON'T USE THIS!** If you want to draw to a surface and use the window
+      API, use :func:`Window.get_surface` and :func:`Window.flip`.
+
       Create a Window object that uses the same window data from the :mod:`pygame.display` module, created upon calling
       :func:`pygame.display.set_mode`.
+
+      .. deprecated:: 2.4.0
 
    .. method:: get_surface
 
@@ -287,9 +278,8 @@
       .. code-block:: python
 
          import pygame
-         from pygame._sdl2 import video
 
-         win = video.Window()
+         win = pygame.Window()
          surf = win.get_surface()  # get the window surface
 
          while True:

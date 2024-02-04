@@ -505,50 +505,6 @@ pgRWops_FromFileObject(PyObject *obj)
     return rw;
 }
 
-static int
-pgRWops_ReleaseObject(SDL_RWops *context)
-{
-    int ret = 0;
-    if (pgRWops_IsFileObject(context)) {
-#ifdef WITH_THREAD
-        PyGILState_STATE state = PyGILState_Ensure();
-#endif /* WITH_THREAD */
-
-        pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
-        PyObject *fileobj = helper->file;
-        /* 5 helper functions */
-        Py_ssize_t filerefcnt = Py_REFCNT(fileobj) - 1 - 5;
-
-        if (filerefcnt) {
-            Py_XDECREF(helper->seek);
-            Py_XDECREF(helper->tell);
-            Py_XDECREF(helper->write);
-            Py_XDECREF(helper->read);
-            Py_XDECREF(helper->close);
-            Py_DECREF(fileobj);
-            PyMem_Free(helper);
-            SDL_FreeRW(context);
-        }
-        else {
-            ret = SDL_RWclose(context);
-            if (ret < 0) {
-                PyErr_SetString(PyExc_IOError, SDL_GetError());
-                Py_DECREF(fileobj);
-            }
-        }
-
-#ifdef WITH_THREAD
-        PyGILState_Release(state);
-#endif /* WITH_THREAD */
-    }
-    else {
-        ret = SDL_RWclose(context);
-        if (ret < 0)
-            PyErr_SetString(PyExc_IOError, SDL_GetError());
-    }
-    return ret;
-}
-
 static Sint64
 _pg_rw_seek(SDL_RWops *context, Sint64 offset, int whence)
 {
@@ -894,7 +850,6 @@ MODINIT_DEFINE(rwobject)
     c_api[2] = pg_EncodeFilePath;
     c_api[3] = pg_EncodeString;
     c_api[4] = pgRWops_FromFileObject;
-    c_api[5] = pgRWops_ReleaseObject;
     apiobj = encapsulate_api(c_api, "rwobject");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);

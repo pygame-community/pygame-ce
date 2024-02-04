@@ -48,6 +48,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle);
 static PyObject *extloadobj = NULL;
 static PyObject *extsaveobj = NULL;
 static PyObject *extverobj = NULL;
+static PyObject *ext_load_sized_svg = NULL;
 
 static inline void
 pad(char **data, int padding)
@@ -1670,12 +1671,25 @@ SaveTGA(SDL_Surface *surface, const char *file, int rle)
     return ret;
 }
 
+static PyObject *
+image_load_sized_svg(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    if (ext_load_sized_svg) {
+        return PyObject_Call(ext_load_sized_svg, args, kwargs);
+    }
+
+    return RAISE(PyExc_NotImplementedError,
+                 "Support for sized svg image loading was not compiled in.");
+}
+
 static PyMethodDef _image_methods[] = {
     {"load_basic", (PyCFunction)image_load_basic, METH_O, DOC_IMAGE_LOADBASIC},
     {"load_extended", (PyCFunction)image_load_extended,
      METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_LOADEXTENDED},
     {"load", (PyCFunction)image_load, METH_VARARGS | METH_KEYWORDS,
      DOC_IMAGE_LOAD},
+    {"load_sized_svg", (PyCFunction)image_load_sized_svg,
+     METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_LOADSIZEDSVG},
 
     {"save_extended", (PyCFunction)image_save_extended,
      METH_VARARGS | METH_KEYWORDS, DOC_IMAGE_SAVEEXTENDED},
@@ -1751,6 +1765,11 @@ MODINIT_DEFINE(image)
         if (!extverobj) {
             goto error;
         }
+        ext_load_sized_svg =
+            PyObject_GetAttrString(extmodule, "_load_sized_svg");
+        if (!ext_load_sized_svg) {
+            goto error;
+        }
         Py_DECREF(extmodule);
     }
     else {
@@ -1763,6 +1782,7 @@ error:
     Py_XDECREF(extloadobj);
     Py_XDECREF(extsaveobj);
     Py_XDECREF(extverobj);
+    Py_XDECREF(ext_load_sized_svg);
     Py_DECREF(extmodule);
     Py_DECREF(module);
     return NULL;

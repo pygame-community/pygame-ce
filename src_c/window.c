@@ -183,11 +183,18 @@ window_flip(pgWindowObject *self)
 {
     int result;
 
+    if (!self->surf) {
+        return RAISE(pgExc_SDLError,
+                     "the Window has no surface associated with it, did "
+                     "you forget to call Window.get_surface()");
+    }
+
     Py_BEGIN_ALLOW_THREADS;
     result = SDL_UpdateWindowSurface(self->_win);
     Py_END_ALLOW_THREADS;
-    if (result)
+    if (result) {
         return RAISE(pgExc_SDLError, SDL_GetError());
+    }
     Py_RETURN_NONE;
 }
 
@@ -712,16 +719,6 @@ window_get_opacity(pgWindowObject *self, void *v)
     return PyFloat_FromDouble((double)opacity);
 }
 
-static PyObject *
-window_get_display_index(pgWindowObject *self, PyObject *_null)
-{
-    int index = SDL_GetWindowDisplayIndex(self->_win);
-    if (index < 0) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
-    }
-    return PyLong_FromLong(index);
-}
-
 static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
@@ -870,22 +867,6 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                     if (_value_bool)
                         flags |= SDL_WINDOW_ALWAYS_ON_TOP;
                 }
-                else if (!strcmp(_key_str, "skip_taskbar")) {
-                    if (_value_bool)
-                        flags |= SDL_WINDOW_SKIP_TASKBAR;
-                }
-                else if (!strcmp(_key_str, "utility")) {
-                    if (_value_bool)
-                        flags |= SDL_WINDOW_UTILITY;
-                }
-                else if (!strcmp(_key_str, "tooltip")) {
-                    if (_value_bool)
-                        flags |= SDL_WINDOW_TOOLTIP;
-                }
-                else if (!strcmp(_key_str, "popup_menu")) {
-                    if (_value_bool)
-                        flags |= SDL_WINDOW_POPUP_MENU;
-                }
                 else if (!strcmp(_key_str, "vulkan")) {
                     if (_value_bool)
                         flags |= SDL_WINDOW_VULKAN;
@@ -965,15 +946,22 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 window_from_display_module(PyTypeObject *cls, PyObject *_null)
 {
-    SDL_Window *window;
-    pgWindowObject *self;
-    window = pg_GetDefaultWindow();
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "Please use Window.get_surface and Window.flip to use "
+                     "surface-rendering with Window. This method will be "
+                     "removed in a future version.",
+                     1) == -1) {
+        return NULL;
+    }
+
+    SDL_Window *window = pg_GetDefaultWindow();
     if (!window) {
         return RAISE(pgExc_SDLError,
                      "display.set_mode has not been called yet.");
     }
 
-    self = (pgWindowObject *)SDL_GetWindowData(window, "pg_window");
+    pgWindowObject *self =
+        (pgWindowObject *)SDL_GetWindowData(window, "pg_window");
     if (self != NULL) {
         Py_INCREF(self);
         return (PyObject *)self;
@@ -1076,8 +1064,6 @@ static PyGetSetDef _window_getset[] = {
      DOC_WINDOW_POSITION, NULL},
     {"opacity", (getter)window_get_opacity, (setter)window_set_opacity,
      DOC_WINDOW_OPACITY, NULL},
-    {"display_index", (getter)window_get_display_index, NULL,
-     DOC_WINDOW_DISPLAYINDEX, NULL},
     {"id", (getter)window_get_window_id, NULL, DOC_WINDOW_ID, NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
