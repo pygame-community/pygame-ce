@@ -251,6 +251,8 @@
              You can't pass a tuple or list of coordinates representing the shape (except for a point),
              because the shape type can't be determined from the coordinates alone.
 
+         .. versionadded:: 2.5.0
+
          .. ## Circle.collideswith ##
 
    .. method:: update
