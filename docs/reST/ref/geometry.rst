@@ -12,6 +12,8 @@
       **This module is a work in progress. Refrain from relying on any features provided by
       this module, as they are subject to change or removal without prior notice.**
 
+   .. versionadded:: 2.4.0
+
    | :sl:`pygame module for the Circle, Line, and Polygon objects`
 
 .. currentmodule:: pygame
@@ -61,6 +63,8 @@
          Reassigning the `x` attribute will move the circle to the new `x` coordinate.
          The `y` and `r` attributes will not be affected.
 
+         .. versionadded:: 2.4.0
+
          .. ## Circle.x ##
 
    .. attribute:: y
@@ -71,6 +75,8 @@
          The `y` coordinate of the center of the circle. It can be reassigned to move the circle.
          Reassigning the `y` attribute will move the circle to the new `y` coordinate.
          The `x` and `r` attributes will not be affected.
+
+         .. versionadded:: 2.4.0
 
          .. ## Circle.y ##
 
@@ -83,6 +89,8 @@
          If reassigned it will only change the radius of the circle.
          The circle will not be moved from its original position.
 
+         .. versionadded:: 2.4.0
+
          .. ## Circle.r ##
 
    .. attribute:: r_sqr
@@ -93,6 +101,8 @@
          It's equivalent to `r*r`. It can be reassigned. If reassigned, the radius
          of the circle will be changed to the square root of the new value.
          The circle will not be moved from its original position.
+
+         .. versionadded:: 2.4.0
 
          .. ## Circle.r_sqr ##
 
@@ -105,6 +115,8 @@
          of the circle. It can be reassigned. If reassigned, the circle will be moved
          to the new position. The radius will not be affected.
 
+         .. versionadded:: 2.4.0
+
          .. ## Circle.center ##
 
    .. attribute:: diameter
@@ -115,6 +127,8 @@
          It's calculated using the `d=2*r` formula. It can be reassigned. If reassigned
          the radius will be changed to half the diameter.
          The circle will not be moved from its original position.
+
+         .. versionadded:: 2.4.0
 
          .. ## Circle.diameter ##
 
@@ -127,6 +141,8 @@
          If reassigned the circle radius will be changed to produce a circle with matching
          area. The circle will not be moved from its original position.
 
+         .. versionadded:: 2.4.0
+
          .. ## Circle.area ##
 
    .. attribute:: circumference
@@ -137,6 +153,8 @@
          It's calculated using the `circumference=2*pi*r` formula. It can be reassigned.
          If reassigned the circle radius will be changed to produce a circle with matching
          circumference. The circle will not be moved from its original position.
+
+         .. versionadded:: 2.4.0
 
          .. ## Circle.circumference ##
 
@@ -156,6 +174,8 @@
          separate x and y coordinates, or a `Vector2` object as its argument, and returns
          `True` if the point is inside the `Circle`, `False` otherwise.
 
+         .. versionadded:: 2.4.0
+
          .. ## Circle.collidepoint ##
 
    .. method:: collidecircle
@@ -173,6 +193,8 @@
          .. note::
              If this method is called with a `Circle` object that is the same as the `Circle`
              it is called on, it will always return `True`.
+
+         .. versionadded:: 2.4.0
 
          .. ## Circle.collidecircle ##
 
@@ -196,6 +218,8 @@
 
                  Circle((circle.x + x, circle.y + y), circle.r)
 
+         .. versionadded:: 2.5.0
+
          .. ## Circle.move ##
 
    .. method:: move_ip
@@ -217,6 +241,8 @@
                  circle.x += x
                  circle.y += y
 
+         .. versionadded:: 2.5.0
+
          .. ## Circle.move_ip ##
 
    .. method:: colliderect
@@ -231,6 +257,8 @@
          takes either a `Rect` object, a tuple of (x, y, width, height) coordinates, or separate
          x, y coordinates and width, height as its argument. Returns `True` if any portion
          of the rectangle overlaps with the `Circle`, `False` otherwise.
+
+         .. versionadded:: 2.4.0
          
          .. ## Circle.colliderect ##
 
@@ -253,6 +281,8 @@
                  circle.y = y
                  circle.r = radius
 
+         .. versionadded:: 2.4.0
+
          .. ## Circle.update ##
 
    .. method:: copy
@@ -263,6 +293,8 @@
          The `copy` method returns a new `Circle` object having the same position and radius
          as the original `Circle` object. The function takes no arguments and returns the
          new `Circle` object.
+
+         .. versionadded:: 2.4.0
 
          .. ## Circle.copy ##
 
