@@ -267,6 +267,8 @@
          The rotation point can be a `tuple`, `list`, or `Vector2`.
          If no rotation point is given, the circle will be rotated around its center.
 
+         .. versionadded:: 2.5.0
+
          .. ## Circle.rotate ##
 
     .. method:: rotate_ip
@@ -280,6 +282,8 @@
          A positive angle rotates the circle clockwise, while a negative angle rotates it counter-clockwise.
          The rotation point can be a `tuple`, `list`, or `Vector2`.
          If no rotation point is given, the circle will be rotated around its center.
+
+         .. versionadded:: 2.5.0
 
          .. ## Circle.rotate_ip ##
 
