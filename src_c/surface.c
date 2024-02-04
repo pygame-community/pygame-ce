@@ -1563,7 +1563,8 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
     }
     else {
         newsurf = pg_DisplayFormat(surf);
-        SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
+        if (newsurf)
+            SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
     }
 
     if (newsurf == NULL) {
@@ -1679,7 +1680,8 @@ surf_convert_alpha(pgSurfaceObject *self, PyObject *args)
     }
 
     newsurf = pg_DisplayFormatAlpha(surf);
-    SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_BLEND);
+    if (newsurf)
+        SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_BLEND);
     final = surf_subtype_new(Py_TYPE(self), newsurf, 1);
 
     if (!final)
