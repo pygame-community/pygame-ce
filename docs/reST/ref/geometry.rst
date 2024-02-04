@@ -267,8 +267,12 @@
 
          .. note::
              This method is equivalent(behaviour wise) to the following code:
-             ::
+
+             .. code-block:: python
+
                  Rect(circle.x - circle.r, circle.y - circle.r, circle.r * 2, circle.r * 2)
+
+         .. versionadded:: 2.5.0
 
          .. ## Circle.as_rect ##
 
@@ -284,8 +288,12 @@
 
          .. note::
              This method is equivalent(behaviour wise) to the following code:
-             ::
+
+             .. code-block:: python
+
                  FRect(circle.x - circle.r, circle.y - circle.r, circle.r * 2, circle.r * 2)
+
+         .. versionadded:: 2.5.0
 
          .. ## Circle.as_frect ##
 
