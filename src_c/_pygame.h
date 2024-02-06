@@ -77,6 +77,22 @@
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
     SDL_SoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST)
 
+/* Emulating SDL2 SDL_LockMutex API. In SDL3, it returns void. */
+static inline int
+PG_LockMutex(SDL_mutex *mutex)
+{
+    SDL_LockMutex(mutex);
+    return 0;
+}
+
+/* Emulating SDL2 SDL_UnlockMutex API. In SDL3, it returns void. */
+static inline int
+PG_UnlockMutex(SDL_mutex *mutex)
+{
+    SDL_UnlockMutex(mutex);
+    return 0;
+}
+
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
 #define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
@@ -108,6 +124,18 @@
 
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
     SDL_SoftStretch(src, srcrect, dst, dstrect)
+
+static inline int
+PG_LockMutex(SDL_mutex *mutex)
+{
+    return SDL_LockMutex(mutex);
+}
+
+static inline int
+PG_UnlockMutex(SDL_mutex *mutex)
+{
+    return SDL_UnlockMutex(mutex);
+}
 
 #if SDL_VERSION_ATLEAST(2, 0, 14)
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
