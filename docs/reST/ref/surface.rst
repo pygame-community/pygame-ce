@@ -173,7 +173,8 @@
             - ``area``: (optional) Specific area of the source Surface to be drawn.
 
           ``(source, dest, area, special_flags)``
-            - ``special_flags``: (optional) Controls the blending mode for drawing colors. See :doc:`special_flags_list` for a list of possible values.
+            - ``special_flags``: (optional) Controls the blending mode for drawing colors.
+              See :doc:`special_flags_list` for a list of possible values.
 
       **Notes**
 
@@ -205,7 +206,8 @@
       mode specified by special_flags. The sequence must have at least one (source, dest) pair.
 
       :param blit_sequence: a sequence of (source, dest)
-      :param special_flags: the flag(s) representing the blend mode used for each surface. See :doc:`special_flags_list` for a list of possible values.
+      :param special_flags: the flag(s) representing the blend mode used for each surface.
+                            See :doc:`special_flags_list` for a list of possible values.
 
       :returns: ``None``
 
