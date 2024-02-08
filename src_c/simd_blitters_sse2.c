@@ -67,6 +67,7 @@ pg_neon_at_runtime_but_uncompiled()
 #endif
 #endif
 
+#if (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON))
 #define SETUP_SSE2_BLITTER                        \
     int i, n;                                     \
     int width = info->width;                      \
@@ -312,7 +313,12 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
     int srcskip = info->s_skip >> 2;
     int dstskip = info->d_skip >> 2;
 
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
     Uint32 amask = 0xFF000000;
+#else
+    Uint32 amask = 0x000000FF;
+#endif
+
     Uint32 *srcp = (Uint32 *)info->s_pixels;
     Uint32 *dstp = (Uint32 *)info->d_pixels;
 
