@@ -21,6 +21,7 @@ class Color(Collection[int]):
     hsva: Tuple[float, float, float, float]
     hsla: Tuple[float, float, float, float]
     i1i2i3: Tuple[float, float, float]
+    normalized: Tuple[float, float, float, float]
     __hash__: None  # type: ignore
     __array_struct__: Any
     @overload
@@ -70,6 +71,12 @@ class Color(Collection[int]):
     @overload
     @classmethod
     def from_i1i2i3(cls, i1: float, i2: float, i3: float, /) -> Color: ...
+    @overload
+    @classmethod
+    def from_normalized(cls, object: Tuple[float, float, float, float], /) -> Color: ...
+    @overload
+    @classmethod
+    def from_normalized(cls, r: float, g: float, b: float, a: float, /) -> Color: ...
     def normalize(self) -> Tuple[float, float, float, float]: ...
     def correct_gamma(self, gamma: float, /) -> Color: ...
     def set_length(self, length: int, /) -> None: ...

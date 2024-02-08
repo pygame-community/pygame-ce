@@ -147,9 +147,9 @@
    .. method:: collidepoint
 
          | :sl:`test if a point is inside the circle`
-         | :sg:`collidepoint((x, y)) -> bool`
-         | :sg:`collidepoint(x, y) -> bool`
-         | :sg:`collidepoint(Vector2) -> bool`
+         | :sg:`collidepoint((x, y), /) -> bool`
+         | :sg:`collidepoint(x, y, /) -> bool`
+         | :sg:`collidepoint(vector2, /) -> bool`
 
          The `collidepoint` method tests whether a given point is inside the `Circle`
          (including the edge of the `Circle`). It takes a tuple of (x, y) coordinates, two
@@ -161,9 +161,9 @@
    .. method:: collidecircle
 
          | :sl:`test if two circles collide`
-         | :sg:`collidecircle(Circle) -> bool`
-         | :sg:`collidecircle(x, y, radius) -> bool`
-         | :sg:`collidecircle((x, y), radius) -> bool`
+         | :sg:`collidecircle(circle, /) -> bool`
+         | :sg:`collidecircle(x, y, radius, /) -> bool`
+         | :sg:`collidecircle((x, y), radius, /) -> bool`
 
          The `collidecircle` method tests whether two `Circle` objects overlap. It takes either
          a `Circle` object, a tuple of (x, y) coordinates and a radius, or separate x and y
@@ -179,9 +179,9 @@
    .. method:: move
 
          | :sl:`moves the circle by a given amount`
-         | :sg:`move((x, y)) -> Circle`
-         | :sg:`move(x, y) -> Circle`
-         | :sg:`move(Vector2) -> Circle`
+         | :sg:`move((x, y), /) -> Circle`
+         | :sg:`move(x, y, /) -> Circle`
+         | :sg:`move(vector2, /) -> Circle`
 
          The `move` method allows you to create a new `Circle` object that is moved by a given
          offset from the original `Circle`. This is useful if you want to move a `Circle` without
@@ -201,9 +201,9 @@
    .. method:: move_ip
 
          | :sl:`moves the circle by a given amount, in place`
-         | :sg:`move_ip((x, y)) -> None`
-         | :sg:`move_ip(x, y) -> None`
-         | :sg:`move_ip(Vector2) -> None`
+         | :sg:`move_ip((x, y), /) -> None`
+         | :sg:`move_ip(x, y, /) -> None`
+         | :sg:`move_ip(vector2, /) -> None`
 
          The `move_ip` method is similar to the move method, but it moves the `Circle` in place,
          modifying the original `Circle` object. This method takes the same types of arguments
@@ -222,10 +222,10 @@
    .. method:: colliderect
 
          | :sl:`checks if a rectangle intersects the circle`
-         | :sg:`colliderect(Rect) -> bool`
-         | :sg:`colliderect((x, y, width, height)) -> bool`
-         | :sg:`colliderect(x, y, width, height) -> bool`
-         | :sg:`colliderect((x, y), (width, height)) -> bool`
+         | :sg:`colliderect(rect, /) -> bool`
+         | :sg:`colliderect((x, y, width, height), /) -> bool`
+         | :sg:`colliderect(x, y, width, height, /) -> bool`
+         | :sg:`colliderect((x, y), (width, height), /) -> bool`
 
          The `colliderect` method tests whether a given rectangle intersects the `Circle`. It
          takes either a `Rect` object, a tuple of (x, y, width, height) coordinates, or separate
@@ -237,8 +237,8 @@
    .. method:: update
 
          | :sl:`updates the circle position and radius`
-         | :sg:`update((x, y), radius) -> None`
-         | :sg:`update(x, y, radius) -> None`
+         | :sg:`update((x, y), radius, /) -> None`
+         | :sg:`update(x, y, radius, /) -> None`
 
          The `update` method allows you to set the position and radius of a `Circle` object in
          place. This method takes either a tuple of (x, y) coordinates, two separate x and

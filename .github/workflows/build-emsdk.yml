@@ -51,7 +51,7 @@ jobs:
 
     - name: Cache Cython
       id: cache-cython
-      uses: actions/cache@v3.3.3
+      uses: actions/cache@v4.0.0
       with:
         path: ${{ env.WHEELHOUSE_CYTHON }}
         key: wasm-ubuntu-cython-${{ env.LATEST_CYTHON_COMMIT }}-path-${{ env.WHEELHOUSE_CYTHON }}
