@@ -174,6 +174,7 @@
 
           ``(source, dest, area, special_flags)``
             - ``special_flags``: (optional) Controls the blending mode for drawing colors.
+              See :doc:`special_flags_list` for a list of possible values.
 
       **Notes**
 
@@ -205,7 +206,8 @@
       mode specified by special_flags. The sequence must have at least one (source, dest) pair.
 
       :param blit_sequence: a sequence of (source, dest)
-      :param special_flags: the flag(s) representing the blend mode used for each surface
+      :param special_flags: the flag(s) representing the blend mode used for each surface.
+                            See :doc:`special_flags_list` for a list of possible values.
 
       :returns: ``None``
 
@@ -297,15 +299,8 @@
       the Alpha (A part of ``RGBA``) is ignored unless the surface uses per pixel
       alpha (Surface has the ``SRCALPHA`` flag).
 
-      .. versionaddedold:: 1.8
-         Optional ``special_flags``: ``BLEND_ADD``, ``BLEND_SUB``,
-         ``BLEND_MULT``, ``BLEND_MIN``, ``BLEND_MAX``.
-
-      .. versionaddedold:: 1.8.1
-         Optional ``special_flags``: ``BLEND_RGBA_ADD``, ``BLEND_RGBA_SUB``,
-         ``BLEND_RGBA_MULT``, ``BLEND_RGBA_MIN``, ``BLEND_RGBA_MAX``
-         ``BLEND_RGB_ADD``, ``BLEND_RGB_SUB``, ``BLEND_RGB_MULT``,
-         ``BLEND_RGB_MIN``, ``BLEND_RGB_MAX``.
+      The special_flags argument controls how the colors are combined. See :doc:`special_flags_list`
+      for a list of possible values.
 
       This will return the affected Surface area.
 
