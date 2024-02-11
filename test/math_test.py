@@ -117,7 +117,7 @@ class MathModuleTest(unittest.TestCase):
             b = 2
             pygame.math.invlerp(a, b, Vector2(0, 0))
 
-        with self.assertRaises(ZeroDivisionError):
+        with self.assertRaises(ValueError):
             a = 5
             b = 5
             pygame.math.invlerp(a, b, 5)
@@ -166,7 +166,7 @@ class MathModuleTest(unittest.TestCase):
             d = 20
             pygame.math.remap(a, b, c, d, Vector2(0, 0))
 
-        with self.assertRaises(ZeroDivisionError):
+        with self.assertRaises(ValueError):
             a = 5
             b = 5
             c = 0
