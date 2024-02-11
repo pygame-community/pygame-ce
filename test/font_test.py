@@ -318,6 +318,25 @@ class FontTest(unittest.TestCase):
         two_lines = f.render("hello\nworld", False, "black", None, 200)
         self.assertGreater(two_lines.get_height(), one_line.get_height())
 
+    @unittest.skipIf(
+        pygame.font.get_sdl_ttf_version() < (2, 22, 0), "bug fixed in SDL_ttf 2.22.0"
+    )
+    def test_render_multiple_newlines(self):
+        if pygame_font.__name__ == "pygame.ftfont":
+            return
+
+        f = pygame_font.Font(None, 20)
+        one_newline = f.render("\n", True, "black", "white")
+        two_newlines = f.render("\n\n", True, "black", "white")
+        three_newlines = f.render("\n\n\n", True, "black", "white")
+        self.assertTrue(
+            one_newline.get_height()
+            < two_newlines.get_height()
+            < three_newlines.get_height()
+        )
+        self.assertEqual(one_newline.get_height() * 2, two_newlines.get_height())
+        self.assertEqual(one_newline.get_height() * 3, three_newlines.get_height())
+
 
 @unittest.skipIf(IS_PYPY, "pypy skip known failure")  # TODO
 class FontTypeTest(unittest.TestCase):

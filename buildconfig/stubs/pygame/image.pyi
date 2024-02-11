@@ -21,6 +21,7 @@ def tostring(
     surface: Surface,
     format: _to_string_format,
     flipped: bool = False,
+    pitch: int = -1,
 ) -> bytes: ...
 def fromstring(
     bytes: bytes,
@@ -32,7 +33,10 @@ def fromstring(
 
 # the use of tobytes/frombytes is preferred over tostring/fromstring
 def tobytes(
-    surface: Surface, format: _to_string_format, flipped: bool = False
+    surface: Surface,
+    format: _to_string_format,
+    flipped: bool = False,
+    pitch: int = -1,
 ) -> bytes: ...
 def frombytes(
     bytes: bytes,
