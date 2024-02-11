@@ -4261,12 +4261,6 @@ math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
                      "invlerp requires all the arguments to be numbers");
 
     double t = PyFloat_AsDouble(value);
-
-    if (t < 0)
-        t = 0.0;
-    else if (t > 1)
-        t = 1.0;
-
     double a = PyFloat_AsDouble(min);
     double b = PyFloat_AsDouble(max);
 
@@ -4276,7 +4270,7 @@ math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
                      "might be too small or too big");
 
     if (b - a == 0)
-        return RAISE(PyExc_ZeroDivisionError,
+        return RAISE(PyExc_ValueError,
                      "the result of b - a needs to be different from zero");
 
     return PyFloat_FromDouble(invlerp(a, b, t));
@@ -4314,7 +4308,7 @@ math_remap(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     if (b - a == 0)
         return RAISE(
-            PyExc_ZeroDivisionError,
+            PyExc_ValueError,
             "the result of i_max - i_min needs to be different from zero");
 
     return PyFloat_FromDouble(lerp(c, d, invlerp(a, b, v)));
