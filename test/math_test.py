@@ -101,7 +101,7 @@ class MathModuleTest(unittest.TestCase):
 
         a = -10.0
         b = 10.0
-        self.assertEqual(pygame.math.invlerp(a, b, 1.0), 0.55)
+        self.assertEqual(pygame.math.invlerp(a, b, 1.5), 0.575)
 
         a = 0.0
         b = 100.0
