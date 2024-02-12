@@ -26,6 +26,7 @@
 #define DOC_FREETYPE_FONT_GETSIZEDHEIGHT "get_sized_height(size=0, /) -> int\nThe scaled height of the font in pixels"
 #define DOC_FREETYPE_FONT_GETSIZEDGLYPHHEIGHT "get_sized_glyph_height(size=0, /) -> int\nThe scaled bounding box height of the font in pixels"
 #define DOC_FREETYPE_FONT_GETSIZES "get_sizes() -> [(int, int, int, float, float), ...]\nget_sizes() -> []\nreturn the available sizes of embedded bitmaps"
+#define DOC_FREETYPE_FONT_ISCHARDEFINED "is_char_defined(char) -> bool\nCheck if a char is defined in the font."
 #define DOC_FREETYPE_FONT_RENDER "render(text, fgcolor=None, bgcolor=None, style=STYLE_DEFAULT, rotation=0, size=0) -> (Surface, Rect)\nReturn rendered text as a surface"
 #define DOC_FREETYPE_FONT_RENDERTO "render_to(surf, dest, text, fgcolor=None, bgcolor=None, style=STYLE_DEFAULT, rotation=0, size=0) -> Rect\nRender text onto an existing surface"
 #define DOC_FREETYPE_FONT_RENDERRAW "render_raw(text, style=STYLE_DEFAULT, rotation=0, size=0, invert=False) -> (bytes, (int, int))\nReturn rendered text as a string of bytes"
