@@ -258,7 +258,7 @@ class TransformModuleTest(unittest.TestCase):
 
         for x in range(20):
             for y in range(20):
-                self.assertTrue(surface.get_at((x, y)) == test_surface.get_at((x, y)))
+                self.assertEqual(surface.get_at((x, y)), test_surface.get_at((x, y)))
 
         test_surface.fill((0, 0, 0, 0))
         pygame.draw.polygon(test_surface, (200, 100, 50), [(0, 0), (4, 4), (4, 2)])
