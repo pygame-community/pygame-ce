@@ -285,6 +285,48 @@
 
          .. ## Circle.update ##
 
+   .. method:: as_rect
+
+         | :sl:`returns the smallest pygame.Rect object that contains the circle`
+         | :sg:`as_rect() -> Rect`
+
+         The `as_rect` method returns a `pygame.Rect` object that represents the smallest
+         rectangle that completely contains the `Circle` object. This means that the `Rect`
+         object returned by as_rect will have dimensions such that it completely encloses
+         the `Circle`, with no part of the `Circle` extending outside of the `Rect`.
+
+         .. note::
+             This method is equivalent(behaviour wise) to the following code:
+
+             .. code-block:: python
+
+                 Rect(circle.x - circle.r, circle.y - circle.r, circle.r * 2, circle.r * 2)
+
+         .. versionadded:: 2.5.0
+
+         .. ## Circle.as_rect ##
+
+   .. method:: as_frect
+
+         | :sl:`returns the smallest pygame.FRect object that contains the circle`
+         | :sg:`as_frect() -> FRect`
+
+         The `as_frect` method returns a `pygame.FRect` object that represents the smallest
+         rectangle that completely contains the `Circle` object. This means that the `FRect`
+         object returned by as_rect will have dimensions such that it completely encloses
+         the `Circle`, with no part of the `Circle` extending outside of the `FRect`.
+
+         .. note::
+             This method is equivalent(behaviour wise) to the following code:
+
+             .. code-block:: python
+
+                 FRect(circle.x - circle.r, circle.y - circle.r, circle.r * 2, circle.r * 2)
+
+         .. versionadded:: 2.5.0
+
+         .. ## Circle.as_frect ##
+
    .. method:: copy
 
          | :sl:`returns a copy of the circle`
