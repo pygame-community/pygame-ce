@@ -10,10 +10,12 @@
    | :sl:`pygame object for storing rectangular coordinates`
    | :sg:`Rect(left, top, width, height) -> Rect`
    | :sg:`Rect((left, top), (width, height)) -> Rect`
+   | :sg:`Rect((width, height)) -> Rect`
    | :sg:`Rect(object) -> Rect`
    | :sg:`Rect() -> Rect`
    | :sg:`FRect(left, top, width, height) -> FRect`
    | :sg:`FRect((left, top), (width, height)) -> FRect`
+   | :sg:`FRect((width, height)) -> FRect`
    | :sg:`FRect(object) -> FRect`
    | :sg:`FRect() -> FRect`
 

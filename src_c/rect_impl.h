@@ -645,8 +645,14 @@ RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
         else if (length == 2) {
             if (!twoPrimitivesFromObj(items[0], &temp->x, &temp->y) ||
                 !twoPrimitivesFromObj(items[1], &temp->w, &temp->h)) {
-                return NULL;
+                if (!PrimitiveFromObj(items[0], &temp->w) ||
+                    !PrimitiveFromObj(items[1], &temp->h)) {
+                    return NULL;
+                }
+                temp->x = 0;
+                temp->y = 0;
             }
+
             return temp;
         }
         else if (PyTuple_Check(obj) && length == 1) {
