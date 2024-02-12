@@ -40,7 +40,7 @@ def main(imagefile, convert_alpha=False, run_speed_test=False):
         background = background.convert_alpha()
 
     # turn off the mouse pointer
-    pygame.mouse.set_visible(0)
+    pygame.mouse.set_visible(False)
 
     running = True
     up = False
