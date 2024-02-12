@@ -11,11 +11,7 @@ IS_PYPY = "PyPy" == platform.python_implementation()
 
 import pygame
 
-try:
-    import pygame.freetype as ft
-except ImportError:
-    ft = None
-
+import pygame.freetype as ft
 
 FONTDIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures", "fonts")
 

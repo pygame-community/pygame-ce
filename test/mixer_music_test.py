@@ -55,6 +55,9 @@ class MixerMusicModuleTest(unittest.TestCase):
     def test_load_object(self):
         """test loading music from file-like objects."""
         filenames = ["house_lo.ogg", "house_lo.wav", "surfonasinewave.xm"]
+        if pygame.mixer.get_sdl_mixer_version() >= (2, 6, 0):
+            filenames.append("house_lo.mp3")
+
         data_fname = example_path("data")
         for file in filenames:
             path = os.path.join(data_fname, file)
@@ -68,6 +71,9 @@ class MixerMusicModuleTest(unittest.TestCase):
     def test_object_namehint(self):
         """test loading & queuing music from file-like objects with namehint argument."""
         filenames = ["house_lo.ogg", "house_lo.wav", "surfonasinewave.xm"]
+        if pygame.mixer.get_sdl_mixer_version() >= (2, 6, 0):
+            filenames.append("house_lo.mp3")
+
         data_fname = example_path("data")
         for file in filenames:
             path = os.path.join(data_fname, file)
