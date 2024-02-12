@@ -53,7 +53,6 @@ typedef struct {
     PyObject *tell;
     PyObject *close;
     PyObject *file;
-    int fileno;
 } pgRWHelper;
 
 /*static const char pg_default_encoding[] = "unicode_escape";*/
@@ -450,9 +449,6 @@ pgRWops_FromFileObject(PyObject *obj)
     if (helper == NULL) {
         return (SDL_RWops *)PyErr_NoMemory();
     }
-    helper->fileno = PyObject_AsFileDescriptor(obj);
-    if (helper->fileno == -1)
-        PyErr_Clear();
     if (fetch_object_methods(helper, obj)) {
         PyMem_Free(helper);
         return NULL;
@@ -484,10 +480,6 @@ _pg_rw_seek(SDL_RWops *context, Sint64 offset, int whence)
     pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
     PyObject *result;
     Sint64 retval;
-
-    if (helper->fileno != -1) {
-        return PG_LSEEK(helper->fileno, offset, whence);
-    }
 
     if (!helper->seek || !helper->tell)
         return -1;
@@ -532,15 +524,6 @@ _pg_rw_read(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
     pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
     PyObject *result;
     Py_ssize_t retval;
-
-    if (helper->fileno != -1) {
-        retval = read(helper->fileno, ptr, (unsigned int)(size * maxnum));
-        if (retval == -1) {
-            return -1;
-        }
-        retval /= size;
-        return retval;
-    }
 
     if (!helper->read)
         return -1;
