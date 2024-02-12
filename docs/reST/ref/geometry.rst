@@ -263,7 +263,7 @@
          | :sg:`rotate(angle, /) -> Circle`
 
          Returns a new `Circle` that is rotated by the specified angle around a point.
-         A positive angle rotates the circle clockwise, while a negative angle rotates it counter-clockwise.
+         A positive angle rotates the circle clockwise, while a negative angle rotates it counter-clockwise. Angles should be specified in degrees.
          The rotation point can be a `tuple`, `list`, or `Vector2`.
          If no rotation point is given, the circle will be rotated around its center.
 
@@ -279,7 +279,7 @@
 
 
          This method rotates the circle by a specified angle around a point.
-         A positive angle rotates the circle clockwise, while a negative angle rotates it counter-clockwise.
+         A positive angle rotates the circle clockwise, while a negative angle rotates it counter-clockwise. Angles should be specified in degrees.
          The rotation point can be a `tuple`, `list`, or `Vector2`.
          If no rotation point is given, the circle will be rotated around its center.
 

@@ -996,7 +996,7 @@ class CircleTypeTest(unittest.TestCase):
                 c.rotate(*value)
 
     def test_meth_rotate_return(self):
-        """Ensures that the rotate method always returns a Line."""
+        """Ensures that the rotate method always returns a Circle."""
         c = Circle(0, 0, 1)
 
         class CircleSubclass(Circle):
