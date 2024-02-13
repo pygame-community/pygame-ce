@@ -37,7 +37,6 @@ typedef struct {
     PyObject *seek;
     PyObject *tell;
     PyObject *close;
-    PyObject *file;
 } pgRWHelper;
 
 /*static const char pg_default_encoding[] = "unicode_escape";*/
@@ -412,7 +411,6 @@ _pg_rw_close(SDL_RWops *context)
     Py_XDECREF(helper->write);
     Py_XDECREF(helper->read);
     Py_XDECREF(helper->close);
-    Py_XDECREF(helper->file);
 
     PyMem_Free(helper);
     PyGILState_Release(state);
@@ -444,9 +442,6 @@ pgRWops_FromFileObject(PyObject *obj)
         PyMem_Free(helper);
         return (SDL_RWops *)PyErr_NoMemory();
     }
-
-    helper->file = obj;
-    Py_INCREF(obj);
 
     /* Adding a helper to the hidden data to support file-like object RWops */
     rw->hidden.unknown.data1 = (void *)helper;
