@@ -896,6 +896,7 @@ class FontTypeTest(unittest.TestCase):
                 ("size", ("any text",)),
                 ("set_script", ("is it other text",)),
                 ("set_direction", ("is it text",)),
+                ("set_kerning", (False,)),
             ]
             version = pygame.font.get_sdl_ttf_version()
             if version >= (2, 0, 18):
