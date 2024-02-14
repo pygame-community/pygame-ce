@@ -120,17 +120,23 @@ class MixerModuleTest(unittest.TestCase):
         """Ensure soundfonts can be set, cleared, and retrieved"""
         mixer.init()
 
+        # test that initially, get_soundfont returns only real files
+        initial_sf = mixer.get_soundfont()
+        if initial_sf is not None:
+            for i in initial_sf.split(";"):
+                os.path.exists(i)
+
         mixer.set_soundfont()
         self.assertEqual(mixer.get_soundfont(), None)
 
         mixer.set_soundfont(None)
         self.assertEqual(mixer.get_soundfont(), None)
 
-        mixer.set_soundfont("")
-        self.assertEqual(mixer.get_soundfont(), None)
-
         mixer.set_soundfont("test1.sf2;test2.sf2")
         self.assertEqual(mixer.get_soundfont(), "test1.sf2;test2.sf2")
+
+        mixer.set_soundfont("")
+        self.assertEqual(mixer.get_soundfont(), None)
 
         self.assertRaises(TypeError, mixer.set_soundfont, 0)
         self.assertRaises(TypeError, mixer.set_soundfont, ["one", "two"])

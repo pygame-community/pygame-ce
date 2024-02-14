@@ -91,8 +91,8 @@ RUN ["bash", "/sndfile_build/build-sndfile.sh"]
 ADD pulseaudio /pulseaudio_build/
 RUN ["bash", "/pulseaudio_build/build-pulseaudio.sh"]
 
-ADD libmodplug /libmodplug_build/
-RUN ["bash", "/libmodplug_build/build-libmodplug.sh"]
+ADD libxmp /libxmp_build/
+RUN ["bash", "/libxmp_build/build-libxmp.sh"]
 
 ADD libffi /libffi_build/
 RUN ["bash", "/libffi_build/build-libffi.sh"]
@@ -106,6 +106,9 @@ RUN ["bash", "/glib_build/build-glib.sh"]
 
 ADD fluidsynth /fluidsynth_build/
 RUN ["bash", "/fluidsynth_build/build-fluidsynth.sh"]
+
+ADD wavpack /wavpack_build/
+RUN ["bash", "/wavpack_build/build-wavpack.sh"]
 
 ADD sdl_libs /sdl_build/
 RUN ["bash", "/sdl_build/build-sdl2-libs.sh"]
