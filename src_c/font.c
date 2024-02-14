@@ -770,6 +770,23 @@ font_get_ptsize(PyObject *self, PyObject *args)
 }
 
 static PyObject *
+font_set_kerning(PyObject *self, PyObject *arg)
+{
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+    TTF_Font *font = PyFont_AsFont(self);
+    int val = PyObject_IsTrue(arg);
+    if (val == -1) {
+        return NULL;
+    }
+
+    TTF_SetFontKerning(font, val);
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 font_set_ptsize(PyObject *self, PyObject *arg)
 {
     if (!PgFont_GenerationCheck(self)) {
@@ -1084,6 +1101,7 @@ static PyMethodDef font_methods[] = {
     {"set_script", font_set_script, METH_O, DOC_FONT_FONT_SETSCRIPT},
     {"set_direction", (PyCFunction)font_set_direction,
      METH_VARARGS | METH_KEYWORDS, DOC_FONT_FONT_SETDIRECTION},
+    {"set_kerning", font_set_kerning, METH_O, DOC_FONT_FONT_SETKERNING},
     {NULL, NULL, 0, NULL}};
 
 /*font object internals*/

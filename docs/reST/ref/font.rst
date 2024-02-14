@@ -607,6 +607,19 @@ solves no longer exists, it will likely be removed in the future.
       
       .. ## font.set_direction ##
 
+   .. method:: set_kerning
+
+      | :sl:`set whether kerning is enabled for font rendering or not`
+      | :sg:`set_kerning(bool, /) -> None`
+
+      Turns 'kerning' on and off when rendering text with this font. Kerning is a spacing adjustment between
+      certain letter pairs e.g. 'W' & 'o'. Kerning information is built into fonts. This setting
+      defaults to True.
+
+      .. versionadded:: 2.5.0
+
+      .. ## font.set_kerning ##
+
    .. ## pygame.font.Font ##
 
 .. ## pygame.font ##

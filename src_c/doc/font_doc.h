@@ -36,3 +36,4 @@
 #define DOC_FONT_FONT_GETDESCENT "get_descent() -> int\nget the descent of the font"
 #define DOC_FONT_FONT_SETSCRIPT "set_script(str, /) -> None\nset the script code for text shaping"
 #define DOC_FONT_FONT_SETDIRECTION "set_direction(direction) -> None\nset the script direction for text shaping"
+#define DOC_FONT_FONT_SETKERNING "set_kerning(bool, /) -> None\nset whether kerning is enabled for font rendering or not"
