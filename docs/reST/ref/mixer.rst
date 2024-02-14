@@ -40,6 +40,26 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
 :func:`pygame.mixer.init` or :func:`pygame.init` is called. For example:
 ``pygame.mixer.pre_init(44100,-16,2, 1024)``
 
+The following file formats are supported
+
+   * ``WAV``
+
+   * ``MP3``
+
+   * ``OGG``
+
+   * ``FLAC``
+
+   * ``OPUS``
+
+   * ``WV`` (WavPack)
+
+   * ``MOD`` ("Module file" family of music file formats)
+
+   * ``MIDI`` (see the :func:`get_soundfont` and :func:`set_soundfont` methods)
+
+.. versionadded:: 2.5.0 Loading WV (Relies on SDL_mixer 2.8.0+)
+
 
 .. function:: init
 
