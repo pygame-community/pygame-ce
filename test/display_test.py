@@ -1017,9 +1017,11 @@ class MessageBoxInteractiveTest(unittest.TestCase):
             buttons=("Yes", "No"),
         )
         self.assertEqual(result, 0)
-    
+
     def test_message_box_parent_window_none(self):
-        pygame.display.message_box("Test", "Just close this messagebox", parent_window=None)
+        pygame.display.message_box(
+            "Test", "Just close this messagebox", parent_window=None
+        )
 
 
 if __name__ == "__main__":
