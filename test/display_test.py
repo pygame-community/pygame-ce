@@ -948,6 +948,40 @@ class MessageBoxTest(unittest.TestCase):
         self.assertRaises(TypeError, lambda: mb("", buttons=()))
         self.assertRaises(TypeError, lambda: mb("", parent_window=123456))
 
+        # the important bit is `parent_window=None`
+        self.assertRaises(TypeError, lambda: mb("", buttons=(), parent_window=None))
+
+    @staticmethod
+    def _create_message_box_in_process(has_reached_message_box_flag):
+        has_reached_message_box_flag.value = 1
+        pygame.display.message_box("", parent_window=None)
+
+    @unittest.skipIf(
+        sys.platform.startswith("emscripten"), "multiprocessing not available"
+    )
+    def test_message_box_with_parent_window_none(self):
+        import multiprocessing
+
+        has_reached_message_box = multiprocessing.Value("i", 0)
+        proc = multiprocessing.Process(
+            target=self._create_message_box_in_process, args=(has_reached_message_box,)
+        )
+        proc.start()
+
+        # wait until the process actually reaches the line where it calls `message_box`
+        while not has_reached_message_box.value:
+            pass
+
+        # now that `message_box` has been called, wait for an arbitrary time period
+        # in hopes that if there is an exception, it will have been already raised
+        # and exited the process
+        time.sleep(2)
+
+        # if the process is alive, assume the message box was successfully created
+        self.assertTrue(proc.is_alive())
+        # make sure the process is terminated in case it is still alive
+        proc.terminate()
+
 
 class MessageBoxInteractiveTest(unittest.TestCase):
     __tags__ = ["interactive"]
