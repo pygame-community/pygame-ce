@@ -1,0 +1,118 @@
+.. include:: ../../common.txt
+
+*************************************
+  Objetos controláveis pelo usuário
+*************************************
+
+.. _makegames-5:
+
+5. Objetos controláveis pelo usuário
+====================================
+
+Até agora, você pode criar uma janela Pygame e renderizar uma bola que voará pela tela. O próximo passo é criar algumas raquetes que
+o usuário pode controlar. Isso é potencialmente muito mais simples do que a bola, porque não requer física (a menos que seu objeto controlado
+pelo usuário se mova de maneiras mais complexas do que para cima e para baixo, por exemplo, um personagem de plataforma como o Mario, nesse caso, você precisará de mais física).
+Objetos controláveis pelo usuário são bastante fáceis de criar, graças ao sistema de fila de eventos do Pygame, como você verá.
+
+
+.. _makegames-5-1:
+
+5.1. Uma classe simples de raquete
+----------------------------------
+
+O princípio por trás da classe de raquete é semelhante ao da classe de bola. Você precisa de uma função ``__init__`` para inicializar a
+bola (para que você possa criar instâncias de objeto para cada raquete), uma função ``update`` para realizar alterações por quadro na raquete antes
+que ela seja exibida na tela, e as funções que realmente definirão o que esta classe fará. Aqui está algum código de exemplo::
+
+  class Bat(pygame.sprite.Sprite):
+      """Movable tennis 'bat' with which one hits the ball
+      Returns: bat object
+      Functions: reinit, update, moveup, movedown
+      Attributes: which, speed"""
+
+      def __init__(self, side):
+          pygame.sprite.Sprite.__init__(self)
+          self.image, self.rect = load_png("bat.png")
+          screen = pygame.display.get_surface()
+          self.area = screen.get_rect()
+          self.side = side
+          self.speed = 10
+          self.state = "still"
+          self.reinit()
+
+      def reinit(self):
+          self.state = "still"
+          self.movepos = [0,0]
+          if self.side == "left":
+              self.rect.midleft = self.area.midleft
+          elif self.side == "right":
+              self.rect.midright = self.area.midright
+
+      def update(self):
+          newpos = self.rect.move(self.movepos)
+          if self.area.contains(newpos):
+              self.rect = newpos
+          pygame.event.pump()
+
+      def moveup(self):
+          self.movepos[1] = self.movepos[1] - (self.speed)
+          self.state = "moveup"
+
+      def movedown(self):
+          self.movepos[1] = self.movepos[1] + (self.speed)
+          self.state = "movedown"
+
+Como você pode ver, esta classe é muito semelhante à classe de bola em sua estrutura. Mas há diferenças no que cada função faz.
+Primeiro, há uma função reiniciar, que é usada quando uma rodada termina e a raquete precisa ser devolvida ao seu lugar de início,
+com todos os atributos definidos de volta para seus valores necessários. Em seguida, a maneira como a raquete é movida é um pouco mais complexa do que com a
+bola, porque aqui o movimento é simples (para cima/baixo), mas depende do usuário indicar para ela se mover, ao contrário da bola que apenas continua
+se movendo em cada quadro. Para entender como a raquete se move, é útil olhar para um diagrama rápido para mostrar a sequência de eventos:
+
+.. image:: ../assets/tom_event-flowchart.png
+
+O que acontece aqui é que a pessoa controlando a raquete pressiona a tecla que move a raquete para cima. Para cada iteração do loop principal
+do jogo (a cada quadro), se a tecla ainda estiver pressionada, então o atributo ``estado`` desse objeto de raquete será definido como
+"mover", e a função ``mover_cima`` será chamada, fazendo com que a posição y da bola seja reduzida pelo valor do
+atributo ``velocidade`` (neste exemplo, 10). Em outras palavras, enquanto a tecla estiver pressionada, a raquete se moverá para cima na tela
+por 10 pixels por quadro. O atributo ``estado`` ainda não é usado aqui, mas é útil saber se você está lidando com spin ou
+gostaria de alguma saída de depuração útil.
+
+Assim que o jogador soltar aquela tecla, o segundo conjunto de caixas é invocado, e o atributo ``estado`` do objeto de raquete
+será definido de volta para "parado", e o atributo ``movepos`` será definido de volta para [0,0], significando que quando a função ``update`` é chamada, ela não moverá mais a raquete. Então, quando o jogador soltar a tecla, a raquete para de se mover. Simples!
+
+
+.. _makegames-5-1-1:
+
+5.1.1. Diversão 3: Eventos do Pygame
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+Então, como sabemos quando o jogador está pressionando as teclas e depois as soltando? Com o sistema de fila de eventos do Pygame, é claro! É um
+sistema muito fácil de usar e entender, então isso não deve demorar muito :) Você já viu a fila de eventos em ação no programa Pygame básico,
+onde foi usada para verificar se o usuário estava encerrando a aplicação. O código para mover a raquete é tão simples quanto isso::
+
+  for event in pygame.event.get():
+      if event.type == QUIT:
+          return
+      elif event.type == KEYDOWN:
+          if event.key == K_UP:
+              player.moveup()
+          if event.key == K_DOWN:
+              player.movedown()
+      elif event.type == KEYUP:
+          if event.key == K_UP or event.key == K_DOWN:
+              player.movepos = [0,0]
+              player.state = "still"
+
+Aqui, suponha que você já tenha criado uma instância de uma raquete e chamado o objeto de ``jogador``. Você pode ver o layout familiar
+da estrutura ``for``, que itera por cada evento encontrado na fila de eventos do Pygame, que é obtida com
+a função :mod:`event.get() <pygame.event.get>`. Conforme o usuário pressiona teclas, clica nos botões do mouse e move o joystick, essas ações são
+injetadas na fila de eventos do Pygame e deixadas lá até serem tratadas. Portanto, em cada iteração do loop principal do jogo, você passa por
+esses eventos, verificando se são aqueles que você deseja lidar e, em seguida, lidando com eles adequadamente. A função :func:`event.pump() <pygame.event.pump>`
+que estava na função ``Raquete.update`` é chamada em cada iteração para liberar eventos antigos e manter a fila atualizada.
+
+Primeiro, verificamos se o usuário está encerrando o programa e encerramos se estiver. Em seguida, verificamos se alguma tecla está sendo pressionada e, se
+estiver, verificamos se são as teclas designadas para mover a raquete para cima e para baixo. Se forem, chamamos a função de movimento apropriada
+e definimos o estado do jogador adequadamente (embora os estados mover_cima e mover_baixo e sejam alterados nas funções ``mover_cima()`` e
+``mover_baixo()``), o que torna o código mais limpo e não quebra a *encapsulação*, o que significa que você
+atribui atributos ao objeto em si, sem se referir ao nome da instância desse objeto). Observe aqui que temos três
+estados: parado, mover_cima e mover_baixo. Novamente, esses são úteis se você quiser depurar ou calcular o spin.
