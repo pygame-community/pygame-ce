@@ -482,6 +482,44 @@ pg_circle_rotate_ip(pgCircleObject *self, PyObject *const *args,
 }
 
 static PyObject *
+pg_circle_collideswith(pgCircleObject *self, PyObject *arg)
+{
+    int result = 0;
+    pgCircleBase *scirc = &self->circle;
+    if (pgCircle_Check(arg)) {
+        result = pgCollision_CircleCircle(&pgCircle_AsCircle(arg), scirc);
+    }
+    else if (pgRect_Check(arg)) {
+        SDL_Rect *argrect = &pgRect_AsRect(arg);
+        result = pgCollision_RectCircle((double)argrect->x, (double)argrect->y,
+                                        (double)argrect->w, (double)argrect->h,
+                                        scirc);
+    }
+    else if (pgFRect_Check(arg)) {
+        SDL_FRect *argrect = &pgFRect_AsRect(arg);
+        result = pgCollision_RectCircle((double)argrect->x, (double)argrect->y,
+                                        (double)argrect->w, (double)argrect->h,
+                                        scirc);
+    }
+    else if (PySequence_Check(arg)) {
+        double x, y;
+        if (!pg_TwoDoublesFromObj(arg, &x, &y)) {
+            return RAISE(
+                PyExc_TypeError,
+                "Invalid point argument, must be a sequence of two numbers");
+        }
+        result = pgCollision_CirclePoint(scirc, x, y);
+    }
+    else {
+        return RAISE(PyExc_TypeError,
+                     "Invalid shape argument, must be a Circle, Rect / FRect, "
+                     "Line, Polygon or a sequence of two numbers");
+    }
+
+    return PyBool_FromLong(result);
+}
+
+static PyObject *
 pg_circle_as_rect(pgCircleObject *self, PyObject *_null)
 {
     pgCircleBase *scirc = &self->circle;
@@ -515,6 +553,8 @@ static struct PyMethodDef pg_circle_methods[] = {
      DOC_CIRCLE_COLLIDERECT},
     {"update", (PyCFunction)pg_circle_update, METH_FASTCALL,
      DOC_CIRCLE_UPDATE},
+    {"collideswith", (PyCFunction)pg_circle_collideswith, METH_O,
+     DOC_CIRCLE_COLLIDESWITH},
     {"as_rect", (PyCFunction)pg_circle_as_rect, METH_NOARGS,
      DOC_CIRCLE_ASRECT},
     {"as_frect", (PyCFunction)pg_circle_as_frect, METH_NOARGS,

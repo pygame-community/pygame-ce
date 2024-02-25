@@ -9,6 +9,8 @@ from typing import (
 
 from pygame import Rect, FRect
 from ._common import Coordinate, RectValue
+from .rect import Rect, FRect
+from .math import Vector2
 
 _CanBeCircle = Union[Circle, Tuple[Coordinate, float], Sequence[float]]
 
@@ -18,6 +20,7 @@ class _HasCirclettribute(Protocol):
     circle: Union[_CanBeCircle, Callable[[], _CanBeCircle]]
 
 _CircleValue = Union[_CanBeCircle, _HasCirclettribute]
+_CanBeCollided = Union[Circle, Rect, FRect, Coordinate, Vector2]
 
 class Circle:
     @property
@@ -90,6 +93,7 @@ class Circle:
     def colliderect(self, x: float, y: float, w: float, h: float, /) -> bool: ...
     @overload
     def colliderect(self, topleft: Coordinate, size: Coordinate, /) -> bool: ...
+    def collideswith(self, other: _CanBeCollided, /) -> bool: ...
     @overload
     def update(self, circle: _CircleValue, /) -> None: ...
     @overload
