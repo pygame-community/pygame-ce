@@ -2211,6 +2211,269 @@ surf_grayscale(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 }
 
+#define MIN3(a, b, c) MIN(MIN(a, b), c)
+#define MAX3(a, b, c) MAX(MAX(a, b), c)
+
+/* Following hsl code is based on code from
+ * https://gist.github.com/ciembor/1494530
+ * and
+ * http://en.wikipedia.org/wiki/HSL_color_space
+ */
+static inline void
+RGB_to_HSL(Uint8 r, Uint8 g, Uint8 b, float *h, float *s, float *l)
+{
+    float min, max;
+    float r_1, g_1, b_1;
+    float chr, val;
+
+    r_1 = (float)(r / 255.0);
+    g_1 = (float)(g / 255.0);
+    b_1 = (float)(b / 255.0);
+
+    min = MIN3(r_1, g_1, b_1);
+    max = MAX3(r_1, g_1, b_1);
+
+    chr = max - min;
+    val = max + min;
+
+    *l = (float)(val / 2.0);
+
+    if (chr == 0.0) {
+        *h = *s = 0.0;
+        return;
+    }
+
+    *s = (float)(*l > 0.5 ? chr / (2.0 - val) : chr / val);
+
+    if (chr == 0.0) {
+        *h = 0.0;
+    }
+    else if (max == r_1) {
+        *h = (float)((g_1 - b_1) / chr + (g_1 < b_1 ? 6.0 : 0.0));
+    }
+    else if (max == g_1) {
+        *h = (float)((b_1 - r_1) / chr + 2.0);
+    }
+    else if (max == b_1) {
+        *h = (float)((r_1 - g_1) / chr + 4.0);
+    }
+    *h /= 6.0;
+}
+
+static inline Uint8
+hue_to_rgb(float v1, float v2, float vH)
+{
+    if (vH < 0)
+        vH += 1;
+    if (vH > 1)
+        vH -= 1;
+    if (vH < 1 / 6.0f)
+        return (Uint8)((v1 + (v2 - v1) * 6 * vH) * 255);
+    if (vH < 1 / 2.0f)
+        return (Uint8)(v2 * 255);
+    if (vH < 2 / 3.0f)
+        return (Uint8)((v1 + (v2 - v1) * (2.0f / 3.0f - vH) * 6) * 255);
+    return (Uint8)(v1 * 255);
+}
+
+static inline void
+HSL_to_RGB(float h, float s, float l, Uint8 *r, Uint8 *g, Uint8 *b)
+{
+    if (s == 0) {
+        *r = *g = *b = (Uint8)(l * 255);
+        return;
+    }
+
+    float v1, v2;
+    v2 = l < 0.5 ? l * (1 + s) : l + s - s * l;
+    v1 = 2 * l - v2;
+    *r = hue_to_rgb(v1, v2, h + 1.0f / 3.0f);
+    *g = hue_to_rgb(v1, v2, h);
+    *b = hue_to_rgb(v1, v2, h - 1.0f / 3.0f);
+}
+
+static void
+modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
+{
+    int surf_locked = 0;
+    if (SDL_MUSTLOCK(surf)) {
+        if (SDL_LockSurface(surf) == 0) {
+            surf_locked = 1;
+        }
+    }
+    int dst_locked = 0;
+    if (SDL_MUSTLOCK(dst)) {
+        if (SDL_LockSurface(dst) == 0) {
+            dst_locked = 1;
+        }
+    }
+    int x, y;
+    Uint8 r, g, b, a;
+    Uint8 *src_pixels = (Uint8 *)surf->pixels, *pix;
+    Uint8 *dst_pixels = (Uint8 *)dst->pixels;
+    float s_h = 0, s_s = 0, s_l = 0;
+    Uint32 pixel;
+    SDL_PixelFormat *fmt = surf->format;
+
+    if (surf->format->BytesPerPixel != 4) {
+        for (y = 0; y < surf->h; y++) {
+            for (x = 0; x < surf->w; x++) {
+                SURF_GET_AT(pixel, surf, x, y, src_pixels, fmt, pix);
+                SDL_GetRGBA(pixel, fmt, &r, &g, &b, &a);
+                RGB_to_HSL(r, g, b, &s_h, &s_s, &s_l);
+
+                if (h) {
+                    s_h += h;
+                    if (s_h > 1)
+                        s_h -= 1;
+                    else if (s_h < 0)
+                        s_h += 1;
+                }
+                if (s) {
+                    s_s = s_s * (1 + s);
+                    s_s = s_s > 1 ? 1 : s_s < 0 ? 0 : s_s;
+                }
+                if (l) {
+                    s_l = l < 0 ? s_l * (1 + l) : s_l * (1 - l) + l;
+                    s_l = s_l > 1 ? 1 : s_l < 0 ? 0 : s_l;
+                }
+
+                HSL_to_RGB(s_h, s_s, s_l, &r, &g, &b);
+                pixel = SDL_MapRGBA(fmt, r, g, b, a);
+                SURF_SET_AT(pixel, dst, x, y, dst_pixels, fmt, pix);
+            }
+        }
+    }
+    else {
+        Uint32 *src_pixels32 = (Uint32 *)surf->pixels;
+        Uint32 *dst_pixels32 = (Uint32 *)dst->pixels;
+        Uint32 src_skip = (surf->pitch >> 2) - surf->w;
+        Uint32 dst_skip = (dst->pitch >> 2) - dst->w;
+        int height = surf->h;
+        Uint32 RightMask = 0x000000FF;
+
+        while (height--) {
+            for (x = 0; x < surf->w; x++) {
+                pixel = *src_pixels32++;
+                RGB_to_HSL((pixel >> fmt->Rshift) & RightMask,
+                           (pixel >> fmt->Gshift) & RightMask,
+                           (pixel >> fmt->Bshift) & RightMask, &s_h, &s_s,
+                           &s_l);
+
+                if (h) {
+                    s_h += h;
+                    if (s_h > 1)
+                        s_h -= 1;
+                    else if (s_h < 0)
+                        s_h += 1;
+                }
+                if (s) {
+                    s_s = s_s * (1 + s);
+                    s_s = s_s > 1 ? 1 : s_s < 0 ? 0 : s_s;
+                }
+                if (l) {
+                    s_l = l < 0 ? s_l * (1 + l) : s_l * (1 - l) + l;
+                    s_l = s_l > 1 ? 1 : s_l < 0 ? 0 : s_l;
+                }
+
+                HSL_to_RGB(s_h, s_s, s_l, &r, &g, &b);
+                *dst_pixels32++ = ((r >> fmt->Rloss) << fmt->Rshift) |
+                                  ((g >> fmt->Gloss) << fmt->Gshift) |
+                                  ((b >> fmt->Bloss) << fmt->Bshift) |
+                                  (pixel & fmt->Amask);
+            }
+            src_pixels32 += src_skip;
+            dst_pixels32 += dst_skip;
+        }
+    }
+
+    if (surf_locked) {
+        SDL_UnlockSurface(surf);
+    }
+    if (dst_locked) {
+        SDL_UnlockSurface(dst);
+    }
+}
+
+static PyObject *
+surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    pgSurfaceObject *surfobj2 = NULL;
+    SDL_Surface *dst, *src;
+    float h = 0, s = 0, l = 0;
+
+    static char *keywords[] = {"surface",   "hue",          "saturation",
+                               "lightness", "dest_surface", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|fffO!", keywords,
+                                     &pgSurface_Type, &surfobj, &h, &s, &l,
+                                     &pgSurface_Type, &surfobj2)) {
+        return NULL;
+    }
+
+    if (s < -1 || s > 1) {
+        PyObject *value = PyFloat_FromDouble((double)s);
+        if (!value) {
+            return NULL;
+        }
+        PyErr_Format(PyExc_ValueError,
+                     "saturation value must be between -1 and 1, got %R",
+                     value);
+        Py_XDECREF(value);
+        return NULL;
+    }
+    if (l < -1 || l > 1) {
+        PyObject *value = PyFloat_FromDouble((double)l);
+        if (!value) {
+            return NULL;
+        }
+        PyErr_Format(PyExc_ValueError,
+                     "lightness value must be between -1 and 1, got %R",
+                     value);
+        Py_XDECREF(value);
+        return NULL;
+    }
+
+    h = (float)(fmodf(h, 360.0) / 360.0);
+
+    src = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(src);
+
+    if (!surfobj2) {
+        dst = newsurf_fromsurf(src, src->w, src->h);
+        if (!dst)
+            return NULL;
+    }
+    else {
+        dst = pgSurface_AsSurface(surfobj2);
+    }
+
+    if (dst->w != src->w || dst->h != src->h) {
+        return RAISE(
+            PyExc_ValueError,
+            "Destination surface must be the same size as source surface.");
+    }
+    if (src->format->Rmask != dst->format->Rmask ||
+        src->format->Gmask != dst->format->Gmask ||
+        src->format->Bmask != dst->format->Bmask ||
+        src->format->BytesPerPixel != dst->format->BytesPerPixel) {
+        return RAISE(PyExc_ValueError,
+                     "Source and destination surfaces need the same format.");
+    }
+
+    Py_BEGIN_ALLOW_THREADS;
+    modify_hsl(src, dst, h, s, l);
+    Py_END_ALLOW_THREADS;
+
+    if (surfobj2) {
+        Py_INCREF(surfobj2);
+        return (PyObject *)surfobj2;
+    }
+    else {
+        return (PyObject *)pgSurface_New(dst);
+    }
+}
+
 /*
 number to use for missing samples
 */
@@ -3486,6 +3749,8 @@ static PyMethodDef _transform_methods[] = {
      DOC_TRANSFORM_INVERT},
     {"grayscale", (PyCFunction)surf_grayscale, METH_VARARGS | METH_KEYWORDS,
      DOC_TRANSFORM_GRAYSCALE},
+    {"hsl", (PyCFunction)surf_hsl, METH_VARARGS | METH_KEYWORDS,
+     DOC_TRANSFORM_HSL},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(transform)
