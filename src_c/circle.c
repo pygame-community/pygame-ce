@@ -418,7 +418,7 @@ pg_circle_collideswith(pgCircleObject *self, PyObject *arg)
     }
     else {
         return RAISE(PyExc_TypeError,
-                     "Invalid shape argument, must be a Circle, Rect / Frect "
+                     "Invalid shape argument, must be a Circle, Rect / FRect "
                      "or a Coordinate");
     }
 
