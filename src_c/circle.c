@@ -411,15 +411,16 @@ pg_circle_collideswith(pgCircleObject *self, PyObject *arg)
     else if (PySequence_Check(arg)) {
         double x, y;
         if (!pg_TwoDoublesFromObj(arg, &x, &y)) {
-            return RAISE(PyExc_TypeError,
-                         "Invalid point argument, must be a valid Coordinate");
+            return RAISE(
+                PyExc_TypeError,
+                "Invalid point argument, must be a sequence of two numbers");
         }
         result = pgCollision_CirclePoint(scirc, x, y);
     }
     else {
         return RAISE(PyExc_TypeError,
-                     "Invalid shape argument, must be a Circle, Rect / FRect "
-                     "or a Coordinate");
+                     "Invalid shape argument, must be a Circle, Rect / FRect, "
+                     "Line, Polygon or a sequence of two numbers");
     }
 
     return PyBool_FromLong(result);
