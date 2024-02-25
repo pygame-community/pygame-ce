@@ -19,11 +19,9 @@ can be run with the following command line statement:
 python -m pygame.tests.test_utils.array
 
 """
+
 import pygame
 
-if not pygame.HAVE_NEWBUF:
-    emsg = "This Pygame build does not support the new buffer protocol"
-    raise ImportError(emsg)
 import pygame.newbuffer
 from pygame.newbuffer import (
     PyBUF_SIMPLE,

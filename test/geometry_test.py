@@ -7,6 +7,15 @@ from pygame import Vector2, Vector3, Rect, FRect
 from pygame.geometry import Circle
 
 
+def float_range(a, b, step):
+    result = []
+    current_value = a
+    while current_value < b:
+        result.append(current_value)
+        current_value += step
+    return result
+
+
 class CircleTypeTest(unittest.TestCase):
     def testConstruction_invalid_type(self):
         """Checks whether passing wrong types to the constructor
@@ -695,6 +704,399 @@ class CircleTypeTest(unittest.TestCase):
         self.assertEqual(c.y, centery)
         self.assertEqual(c.r, c_r)
         self.assertEqual(c.r_sqr, c_r_sqr)
+
+    def test_as_rect_invalid_args(self):
+        c = Circle(0, 0, 10)
+
+        invalid_args = [None, [], "1", (1,), Vector2(1, 1), 1]
+
+        with self.assertRaises(TypeError):
+            for arg in invalid_args:
+                c.as_rect(arg)
+
+    def test_as_rect(self):
+        c = Circle(0, 0, 10)
+        self.assertEqual(c.as_rect(), Rect(-10, -10, 20, 20))
+
+    def test_as_frect_invalid_args(self):
+        c = Circle(0, 0, 10)
+
+        invalid_args = [None, [], "1", (1,), Vector2(1, 1), 1]
+
+        with self.assertRaises(TypeError):
+            for arg in invalid_args:
+                c.as_frect(arg)
+
+    def test_as_frect(self):
+        c = Circle(0, 0, 10)
+        self.assertEqual(c.as_frect(), FRect(-10, -10, 20, 20))
+
+    def test_circle_richcompare(self):
+        """Ensures that the circle correctly compares itself to other circles"""
+        c = Circle(0, 0, 10)
+        c2 = Circle(0, 0, 10)
+        c3 = Circle(0, 0, 5)
+        c4 = Circle(0, 0, 20)
+
+        self.assertTrue(c == c2)
+        self.assertFalse(c != c2)
+
+        self.assertFalse(c == c3)
+        self.assertTrue(c != c3)
+
+        self.assertFalse(c == c4)
+        self.assertTrue(c != c4)
+
+        # self compare
+        self.assertTrue(c == c)
+        self.assertFalse(c != c)
+
+        # not implemented compare
+        with self.assertRaises(TypeError):
+            c > c2
+        with self.assertRaises(TypeError):
+            c < c2
+        with self.assertRaises(TypeError):
+            c >= c2
+        with self.assertRaises(TypeError):
+            c <= c2
+
+        # invalid types
+        invalid_types = (
+            None,
+            [],
+            "1",
+            (1,),
+            Vector2(1, 1),
+            1,
+            0.2324,
+            Rect(0, 0, 10, 10),
+            True,
+        )
+
+        for value in invalid_types:
+            self.assertFalse(c == value)
+            self.assertTrue(c != value)
+            with self.assertRaises(TypeError):
+                c > value
+            with self.assertRaises(TypeError):
+                c < value
+            with self.assertRaises(TypeError):
+                c >= value
+            with self.assertRaises(TypeError):
+                c <= value
+
+    def test_move_invalid_args(self):
+        """tests if the function correctly handles incorrect types as parameters"""
+        invalid_types = (None, [], "1", (1,), Vector3(1, 1, 3), Circle(3, 3, 1))
+
+        c = Circle(10, 10, 4)
+
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                c.move(value)
+
+    def test_move_argnum(self):
+        c = Circle(10, 10, 4)
+
+        invalid_args = [(1, 1, 1), (1, 1, 1, 1)]
+
+        for arg in invalid_args:
+            with self.assertRaises(TypeError):
+                c.move(*arg)
+
+    def test_move_return_type(self):
+        c = Circle(10, 10, 4)
+
+        class CircleSub(Circle):
+            pass
+
+        cs = CircleSub(10, 10, 4)
+
+        self.assertIsInstance(c.move(1, 1), Circle)
+        self.assertIsInstance(cs.move(1, 1), CircleSub)
+
+    def test_move(self):
+        """Ensures that moving the circle position correctly updates position"""
+        c = Circle(0, 0, 3)
+
+        new_c = c.move(5, 5)
+
+        self.assertEqual(new_c.x, 5.0)
+        self.assertEqual(new_c.y, 5.0)
+        self.assertEqual(new_c.r, 3.0)
+        self.assertEqual(new_c.r_sqr, 9.0)
+
+        new_c = new_c.move(-5, -10)
+
+        self.assertEqual(new_c.x, 0.0)
+        self.assertEqual(new_c.y, -5.0)
+
+    def test_move_inplace(self):
+        """Ensures that moving the circle position by 0, 0 doesn't move the circle"""
+        c = Circle(1, 1, 3)
+
+        c.move(0, 0)
+
+        self.assertEqual(c.x, 1.0)
+        self.assertEqual(c.y, 1.0)
+        self.assertEqual(c.r, 3.0)
+        self.assertEqual(c.r_sqr, 9.0)
+
+    def test_move_equality(self):
+        """Ensures that moving the circle by 0, 0 will
+        return a circle that's equal to the original"""
+        c = Circle(1, 1, 3)
+
+        new_c = c.move(0, 0)
+
+        self.assertEqual(new_c, c)
+
+    def test_move_ip_invalid_args(self):
+        """tests if the function correctly handles incorrect types as parameters"""
+        invalid_types = (None, [], "1", (1,), Vector3(1, 1, 3), Circle(3, 3, 1))
+
+        c = Circle(10, 10, 4)
+
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                c.move_ip(value)
+
+    def test_move_ip_argnum(self):
+        """tests if the function correctly handles incorrect number of args"""
+        c = Circle(10, 10, 4)
+
+        invalid_args = [(1, 1, 1), (1, 1, 1, 1)]
+
+        for arg in invalid_args:
+            with self.assertRaises(TypeError):
+                c.move_ip(*arg)
+
+    def test_move_ip(self):
+        """Ensures that moving the circle position correctly updates position"""
+        c = Circle(0, 0, 3)
+
+        c.move_ip(5, 5)
+
+        self.assertEqual(c.x, 5.0)
+        self.assertEqual(c.y, 5.0)
+        self.assertEqual(c.r, 3.0)
+        self.assertEqual(c.r_sqr, 9.0)
+
+        c.move_ip(-5, -10)
+        self.assertEqual(c.x, 0.0)
+        self.assertEqual(c.y, -5.0)
+
+    def test_move_ip_inplace(self):
+        """Ensures that moving the circle position by 0, 0 doesn't move the circle"""
+        c = Circle(1, 1, 3)
+
+        c.move_ip(0, 0)
+
+        self.assertEqual(c.x, 1.0)
+        self.assertEqual(c.y, 1.0)
+        self.assertEqual(c.r, 3.0)
+        self.assertEqual(c.r_sqr, 9.0)
+
+    def test_move_ip_equality(self):
+        """Ensures that moving the circle by 0, 0 will
+        return a circle that's equal to the original"""
+        c = Circle(1, 1, 3)
+
+        c.move_ip(0, 0)
+
+        self.assertEqual(c, Circle(1, 1, 3))
+
+    def test_move_ip_return_type(self):
+        """Ensures that the move_ip method returns None"""
+        c = Circle(10, 10, 4)
+
+        class CircleSub(Circle):
+            pass
+
+        cs = CircleSub(10, 10, 4)
+
+        self.assertEqual(type(c.move_ip(1, 1)), type(None))
+        self.assertEqual(type(cs.move_ip(1, 1)), type(None))
+
+    def test_meth_rotate_ip_invalid_argnum(self):
+        """Ensures that the rotate_ip method correctly deals with invalid numbers of arguments."""
+        c = Circle(0, 0, 1)
+
+        with self.assertRaises(TypeError):
+            c.rotate_ip()
+
+        invalid_args = [
+            (1, (2, 2), 2),
+            (1, (2, 2), 2, 2),
+            (1, (2, 2), 2, 2, 2),
+            (1, (2, 2), 2, 2, 2, 2),
+            (1, (2, 2), 2, 2, 2, 2, 2),
+            (1, (2, 2), 2, 2, 2, 2, 2, 2),
+        ]
+
+        for args in invalid_args:
+            with self.assertRaises(TypeError):
+                c.rotate_ip(*args)
+
+    def test_meth_rotate_ip_invalid_argtype(self):
+        """Ensures that the rotate_ip method correctly deals with invalid argument types."""
+        c = Circle(0, 0, 1)
+
+        invalid_args = [
+            ("a",),  # angle str
+            (None,),  # angle str
+            ((1, 2)),  # angle tuple
+            ([1, 2]),  # angle list
+            (1, "a"),  # origin str
+            (1, None),  # origin None
+            (1, True),  # origin True
+            (1, False),  # origin False
+            (1, (1, 2, 3)),  # origin tuple
+            (1, [1, 2, 3]),  # origin list
+            (1, (1, "a")),  # origin str
+            (1, ("a", 1)),  # origin str
+            (1, (1, None)),  # origin None
+            (1, (None, 1)),  # origin None
+            (1, (1, (1, 2))),  # origin tuple
+            (1, (1, [1, 2])),  # origin list
+        ]
+
+        for value in invalid_args:
+            with self.assertRaises(TypeError):
+                c.rotate_ip(*value)
+
+    def test_meth_rotate_ip_return(self):
+        """Ensures that the rotate_ip method always returns None."""
+        c = Circle(0, 0, 1)
+
+        for angle in float_range(-360, 360, 1):
+            self.assertIsNone(c.rotate_ip(angle))
+            self.assertIsInstance(c.rotate_ip(angle), type(None))
+
+    def test_meth_rotate_invalid_argnum(self):
+        """Ensures that the rotate method correctly deals with invalid numbers of arguments."""
+        c = Circle(0, 0, 1)
+
+        with self.assertRaises(TypeError):
+            c.rotate()
+
+        invalid_args = [
+            (1, (2, 2), 2),
+            (1, (2, 2), 2, 2),
+            (1, (2, 2), 2, 2, 2),
+            (1, (2, 2), 2, 2, 2, 2),
+            (1, (2, 2), 2, 2, 2, 2, 2),
+            (1, (2, 2), 2, 2, 2, 2, 2, 2),
+        ]
+
+        for args in invalid_args:
+            with self.assertRaises(TypeError):
+                c.rotate(*args)
+
+    def test_meth_rotate_invalid_argtype(self):
+        """Ensures that the rotate method correctly deals with invalid argument types."""
+        c = Circle(0, 0, 1)
+
+        invalid_args = [
+            ("a",),  # angle str
+            (None,),  # angle str
+            ((1, 2)),  # angle tuple
+            ([1, 2]),  # angle list
+            (1, "a"),  # origin str
+            (1, None),  # origin None
+            (1, True),  # origin True
+            (1, False),  # origin False
+            (1, (1, 2, 3)),  # origin tuple
+            (1, [1, 2, 3]),  # origin list
+            (1, (1, "a")),  # origin str
+            (1, ("a", 1)),  # origin str
+            (1, (1, None)),  # origin None
+            (1, (None, 1)),  # origin None
+            (1, (1, (1, 2))),  # origin tuple
+            (1, (1, [1, 2])),  # origin list
+        ]
+
+        for value in invalid_args:
+            with self.assertRaises(TypeError):
+                c.rotate(*value)
+
+    def test_meth_rotate_return(self):
+        """Ensures that the rotate method always returns a Circle."""
+        c = Circle(0, 0, 1)
+
+        class CircleSubclass(Circle):
+            pass
+
+        cs = CircleSubclass(0, 0, 1)
+
+        for angle in float_range(-360, 360, 1):
+            self.assertIsInstance(c.rotate(angle), Circle)
+            self.assertIsInstance(cs.rotate(angle), CircleSubclass)
+
+    def test_meth_rotate(self):
+        """Ensures the Circle.rotate() method rotates the Circle correctly."""
+
+        def rotate_circle(circle: Circle, angle, center):
+            def rotate_point(x, y, rang, cx, cy):
+                x -= cx
+                y -= cy
+                x_new = x * math.cos(rang) - y * math.sin(rang)
+                y_new = x * math.sin(rang) + y * math.cos(rang)
+                return x_new + cx, y_new + cy
+
+            angle = math.radians(angle)
+            cx, cy = center if center is not None else circle.center
+            x, y = rotate_point(circle.x, circle.y, angle, cx, cy)
+            return Circle(x, y, circle.r)
+
+        def assert_approx_equal(circle1, circle2, eps=1e-12):
+            self.assertAlmostEqual(circle1.x, circle2.x, delta=eps)
+            self.assertAlmostEqual(circle1.y, circle2.y, delta=eps)
+            self.assertAlmostEqual(circle1.r, circle2.r, delta=eps)
+
+        c = Circle(0, 0, 1)
+        angles = float_range(-360, 360, 0.5)
+        centers = [(a, b) for a in range(-10, 10) for b in range(-10, 10)]
+        for angle in angles:
+            assert_approx_equal(c.rotate(angle), rotate_circle(c, angle, None))
+            for center in centers:
+                assert_approx_equal(
+                    c.rotate(angle, center), rotate_circle(c, angle, center)
+                )
+
+    def test_meth_rotate_ip(self):
+        """Ensures the Circle.rotate_ip() method rotates the Circle correctly."""
+
+        def rotate_circle(circle: Circle, angle, center):
+            def rotate_point(x, y, rang, cx, cy):
+                x -= cx
+                y -= cy
+                x_new = x * math.cos(rang) - y * math.sin(rang)
+                y_new = x * math.sin(rang) + y * math.cos(rang)
+                return x_new + cx, y_new + cy
+
+            angle = math.radians(angle)
+            cx, cy = center if center is not None else circle.center
+            x, y = rotate_point(circle.x, circle.y, angle, cx, cy)
+            circle.x = x
+            circle.y = y
+            return circle
+
+        def assert_approx_equal(circle1, circle2, eps=1e-12):
+            self.assertAlmostEqual(circle1.x, circle2.x, delta=eps)
+            self.assertAlmostEqual(circle1.y, circle2.y, delta=eps)
+            self.assertAlmostEqual(circle1.r, circle2.r, delta=eps)
+
+        c = Circle(0, 0, 1)
+        angles = float_range(-360, 360, 0.5)
+        centers = [(a, b) for a in range(-10, 10) for b in range(-10, 10)]
+        for angle in angles:
+            c.rotate_ip(angle)
+            assert_approx_equal(c, rotate_circle(c, angle, None))
+            for center in centers:
+                c.rotate_ip(angle, center)
+                assert_approx_equal(c, rotate_circle(c, angle, center))
 
 
 if __name__ == "__main__":

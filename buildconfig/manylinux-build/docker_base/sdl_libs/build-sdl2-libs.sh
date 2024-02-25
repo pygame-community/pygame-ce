@@ -3,10 +3,10 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-SDL2="SDL2-2.28.5"
-IMG2="SDL2_image-2.8.0"
-TTF2="SDL2_ttf-2.20.2"
-MIX2="SDL2_mixer-2.6.3"
+SDL2="SDL2-2.30.0"
+IMG2="SDL2_image-2.8.2"
+TTF2="SDL2_ttf-2.22.0"
+MIX2="SDL2_mixer-2.8.0"
 
 
 # Download
@@ -94,22 +94,22 @@ cd $MIX2
 # libraries into the wheel.
 # We prefer libflac, mpg123 and ogg-vorbis over SDL vendored implementations
 # at the moment. This can be changed later if need arises.
-# For now, libmodplug is preferred over libxmp (but this may need changing
-# in the future)
+# We don't build with libgme for now
 ./configure $PG_BASE_CONFIGURE_FLAGS \
       --disable-dependency-tracking \
       --disable-music-ogg-stb --enable-music-ogg-vorbis \
       --disable-music-flac-drflac --enable-music-flac-libflac \
-      --disable-music-mp3-drmp3 --enable-music-mp3-mpg123 \
-      --enable-music-mod-modplug --disable-music-mod-mikmod-shared \
-      --disable-music-mod-xmp --disable-music-mod-xmp-shared \
+      --disable-music-mp3-drmp3 --disable-music-mp3-minimp3 --enable-music-mp3-mpg123 \
+      --disable-music-mod-modplug \
+      --enable-music-mod-xmp --disable-music-mod-xmp-shared \
       --enable-music-midi-fluidsynth --disable-music-midi-fluidsynth-shared \
       --enable-music-opus --disable-music-opus-shared \
+      --enable-music-wavpack --disable-music-wavpack-shared \
       --disable-music-ogg-vorbis-shared \
-      --disable-music-ogg-tremor-shared \
+      --disable-music-ogg-tremor \
       --disable-music-flac-libflac-shared \
       --disable-music-mp3-mpg123-shared \
-      --disable-music-mod-modplug-shared
+      --disable-music-gme
 
 make
 make install

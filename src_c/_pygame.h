@@ -74,6 +74,25 @@
 
 #define PG_SurfaceHasRLE SDL_SurfaceHasRLE
 
+#define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
+    SDL_SoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST)
+
+/* Emulating SDL2 SDL_LockMutex API. In SDL3, it returns void. */
+static inline int
+PG_LockMutex(SDL_mutex *mutex)
+{
+    SDL_LockMutex(mutex);
+    return 0;
+}
+
+/* Emulating SDL2 SDL_UnlockMutex API. In SDL3, it returns void. */
+static inline int
+PG_UnlockMutex(SDL_mutex *mutex)
+{
+    SDL_UnlockMutex(mutex);
+    return 0;
+}
+
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
 #define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
@@ -102,6 +121,22 @@
 #define PG_ConvertSurface(src, fmt) SDL_ConvertSurface(src, fmt, 0)
 #define PG_ConvertSurfaceFormat(src, pixel_format) \
     SDL_ConvertSurfaceFormat(src, pixel_format, 0)
+
+#define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
+    SDL_SoftStretch(src, srcrect, dst, dstrect)
+
+static inline int
+PG_LockMutex(SDL_mutex *mutex)
+{
+    return SDL_LockMutex(mutex);
+}
+
+static inline int
+PG_UnlockMutex(SDL_mutex *mutex)
+{
+    return SDL_UnlockMutex(mutex);
+}
+
 #if SDL_VERSION_ATLEAST(2, 0, 14)
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
 #else
@@ -349,12 +384,6 @@ typedef enum {
     PGS_PREALLOC = 0x01000000
 } PygameSurfaceFlags;
 
-// TODO Implement check below in a way that does not break CI
-/* New buffer protocol (PEP 3118) implemented on all supported Py versions.
-#if !defined(Py_TPFLAGS_HAVE_NEWBUFFER)
-#error No support for PEP 3118/Py_TPFLAGS_HAVE_NEWBUFFER. Please use a
-supported Python version. #endif */
-
 #define RAISE(x, y) (PyErr_SetString((x), (y)), NULL)
 #define RAISERETURN(x, y, r)   \
     PyErr_SetString((x), (y)); \
@@ -481,7 +510,7 @@ typedef enum {
 #define PYGAMEAPI_DISPLAY_NUMSLOTS 2
 #define PYGAMEAPI_SURFACE_NUMSLOTS 4
 #define PYGAMEAPI_SURFLOCK_NUMSLOTS 8
-#define PYGAMEAPI_RWOBJECT_NUMSLOTS 6
+#define PYGAMEAPI_RWOBJECT_NUMSLOTS 5
 #define PYGAMEAPI_PIXELARRAY_NUMSLOTS 2
 #define PYGAMEAPI_COLOR_NUMSLOTS 5
 #define PYGAMEAPI_MATH_NUMSLOTS 2

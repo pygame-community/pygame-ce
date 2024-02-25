@@ -88,8 +88,9 @@ jobs:
     # We upload the generated files under github actions assets
     - name: Upload sdist
       if: matrix.os == 'ubuntu-20.04' # upload sdist only once
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: pygame-wheels-sdist
         path: dist/*.tar.gz
+        compression-level: 0  # already compressed, no need for more compression
 

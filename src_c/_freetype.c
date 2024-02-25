@@ -678,7 +678,7 @@ _ftfont_dealloc(pgFontObject *self)
     SDL_RWops *src = _PGFT_GetRWops(self);
     _PGFT_UnloadFont(self->freetype, self);
     if (src) {
-        pgRWops_ReleaseObject(src);
+        SDL_RWclose(src);
     }
     _PGFT_Quit(self->freetype);
 

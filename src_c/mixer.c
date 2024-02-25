@@ -1005,8 +1005,7 @@ static PyTypeObject pgSound_Type = {
     .tp_basicsize = sizeof(pgSoundObject),
     .tp_dealloc = (destructor)sound_dealloc,
     .tp_as_buffer = sound_as_buffer,
-    .tp_flags =
-        (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_NEWBUFFER),
+    .tp_flags = (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE),
     .tp_doc = DOC_MIXER_SOUND,
     .tp_weaklistoffset = offsetof(pgSoundObject, weakreflist),
     .tp_methods = sound_methods,
