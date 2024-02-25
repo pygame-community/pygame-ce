@@ -696,6 +696,32 @@ class CircleTypeTest(unittest.TestCase):
         self.assertEqual(c.r, c_r)
         self.assertEqual(c.r_sqr, c_r_sqr)
 
+    def test_as_rect_invalid_args(self):
+        c = Circle(0, 0, 10)
+
+        invalid_args = [None, [], "1", (1,), Vector2(1, 1), 1]
+
+        with self.assertRaises(TypeError):
+            for arg in invalid_args:
+                c.as_rect(arg)
+
+    def test_as_rect(self):
+        c = Circle(0, 0, 10)
+        self.assertEqual(c.as_rect(), Rect(-10, -10, 20, 20))
+
+    def test_as_frect_invalid_args(self):
+        c = Circle(0, 0, 10)
+
+        invalid_args = [None, [], "1", (1,), Vector2(1, 1), 1]
+
+        with self.assertRaises(TypeError):
+            for arg in invalid_args:
+                c.as_frect(arg)
+
+    def test_as_frect(self):
+        c = Circle(0, 0, 10)
+        self.assertEqual(c.as_frect(), FRect(-10, -10, 20, 20))
+
     def test_circle_richcompare(self):
         """Ensures that the circle correctly compares itself to other circles"""
         c = Circle(0, 0, 10)
