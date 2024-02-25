@@ -616,9 +616,8 @@ class CircleTypeTest(unittest.TestCase):
         self.assertTrue(c3.colliderect(0.4, 0.0, 1, 1), msgt)
         self.assertTrue(c3.colliderect((0.4, 0.0), (1, 1)), msgt)
 
-        def test_collideswith_argtype(self):
-            """tests if the function correctly handles incorrect types as parameters"""
-
+    def test_collideswith_argtype(self):
+        """tests if the function correctly handles incorrect types as parameters"""
         invalid_types = (None, [], "1", (1,), Vector3(1, 1, 1), 1)
 
         c = Circle(10, 10, 4)
