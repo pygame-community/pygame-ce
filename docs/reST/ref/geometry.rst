@@ -321,7 +321,7 @@
 
          .. ## Circle.rotate ##
 
-    .. method:: rotate_ip
+   .. method:: rotate_ip
 
          | :sl:`rotates the circle in place`
          | :sg:`rotate_ip(angle, rotation_point=Circle.center, /) -> None`
