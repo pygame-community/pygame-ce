@@ -22,6 +22,9 @@ def enum_font_from_lang(lang) -> Iterator[str]:
 def can_render_text(font_name, text, *, font_size=14) -> bool:
     """
     Whether a specified font is capable of rendering a specified text.
+
+    The result of this function is not guaranteed to be correct due to its
+    implementation strategy.
     """
     try:
         font = freetype.SysFont(font_name, font_size)
@@ -49,8 +52,8 @@ DISCRIMINANTS = {
 }
 """
 You may have noticed the 'AB' in the values of this dictionary.
-If you don't include ASCII characters, you might choose a font that cannot render them, such as a fallback font,
-which is probably not what you want.
+If you don't include ASCII characters, you might choose a font that cannot
+render them, such as a fallback font, which is probably not what you want.
 """
 
 
