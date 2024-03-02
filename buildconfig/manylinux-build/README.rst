@@ -172,5 +172,4 @@ TODO
 
 Maybe these need adding?
 
-- audio resampling for SDL: libsamplerate (handles samplerate conversions better)
 - vulkan, via mesa?
