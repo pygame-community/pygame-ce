@@ -69,7 +69,14 @@ def print_debug_info(filename=None):
         # pylint: disable=unused-argument
         return (-1, -1, -1)
 
-    from pygame.display import get_driver, get_init as display_init
+    from pygame.display import (
+        get_driver as get_display_driver,
+        get_init as display_init,
+    )
+    from pygame.mixer import (
+        get_driver as get_mixer_driver,
+        get_init as mixer_init,
+    )
     from pygame.base import get_sdl_version
 
     debug_str, *mixer = attempt_import(
@@ -118,9 +125,14 @@ def print_debug_info(filename=None):
     )
 
     if display_init():
-        debug_str += f"Driver:\t\t\t{get_driver()}\n\n"
+        debug_str += f"Display Driver:\t\t\t{get_display_driver()}\n\n"
     else:
-        debug_str += "Driver:\t\t\tDisplay Not Initialized\n\n"
+        debug_str += "Display Driver:\t\t\tDisplay Not Initialized\n\n"
+
+    if mixer_init():
+        debug_str += f"Mixer Driver:\t\t\t{get_mixer_driver()}\n\n"
+    else:
+        debug_str += "Mixer Driver:\t\t\tMixer Not Initialized\n\n"
 
     debug_str += f"Python:\t\t\t{platform.python_implementation()}\n"
 
