@@ -2822,7 +2822,6 @@ class MaskTypeTest(unittest.TestCase):
         assertSurfaceFilled(self, to_surface, expected_color, mask_rect)
         assertSurfaceFilledIgnoreArea(self, to_surface, surface_color, mask_rect)
 
-    @unittest.expectedFailure
     def test_to_surface__area_param(self):
         """Ensures to_surface accepts an area arg/kwarg."""
         expected_ref_count = 2
@@ -2853,6 +2852,60 @@ class MaskTypeTest(unittest.TestCase):
             self.assertEqual(to_surface.get_bitsize(), expected_depth)
             self.assertEqual(to_surface.get_size(), size)
             assertSurfaceFilled(self, to_surface, expected_color)
+
+    def test_to_surface__area_output(self):
+        dst = pygame.Surface((2, 2))
+        mask = pygame.mask.Mask((2, 2), fill=True)
+
+        white = (255, 255, 255, 255)
+        black = (0, 0, 0, 255)
+
+        # make sure the surface is black, this is to make sure the test surface and mask are different colors
+        self.assertEqual(dst.get_at((0, 0)), black)
+        # make sure the mask is set and the default color after conversion is white
+        self.assertEqual(mask.to_surface().get_at((0, 0)), white)
+
+        test_areas_plus_destinations_and_expected_pattern = [
+            [{"dest": (0, 0), "area": None}, [[white, white], [white, white]]],
+            [{"dest": (0, 0), "area": (0, 0, 1, 1)}, [[white, black], [black, black]]],
+            [{"dest": (0, 0), "area": (0, 0, 2, 2)}, [[white, white], [white, white]]],
+            [{"dest": (1, 0), "area": (0, 0, 1, 2)}, [[black, white], [black, white]]],
+            [{"dest": (0, 0), "area": (0, 0, 0, 0)}, [[black, black], [black, black]]],
+            [{"dest": (1, 0), "area": (-1, 0, 1, 1)}, [[black, black], [black, black]]],
+            [{"dest": (0, 0), "area": (-1, 0, 2, 1)}, [[black, white], [black, black]]],
+            [
+                {"dest": (1, 1), "area": (-2, -2, 1, 1)},
+                [[black, black], [black, black]],
+            ],
+            [
+                {"dest": (0, 1), "area": (0, 0, 50, 50)},
+                [[black, black], [white, white]],
+            ],
+            [
+                {"dest": (-1, 0), "area": (-1, 0, 2, 2)},
+                [[white, black], [white, black]],
+            ],
+            [
+                {"dest": (0, -1), "area": (-1, 0, 3, 2)},
+                [[black, white], [black, black]],
+            ],
+            [{"dest": (0, 0), "area": (2, 2, 2, 2)}, [[black, black], [black, black]]],
+            [
+                {"dest": (-5, -5), "area": (-5, -5, 6, 6)},
+                [[white, black], [black, black]],
+            ],
+            [
+                {"dest": (-5, -5), "area": (-5, -5, 1, 1)},
+                [[black, black], [black, black]],
+            ],
+        ]
+
+        for kwargs, pattern in test_areas_plus_destinations_and_expected_pattern:
+            surface = dst.copy()
+            mask.to_surface(surface=surface, **kwargs)
+            for y, row in enumerate(pattern):
+                for x, value in enumerate(row):
+                    self.assertEqual(surface.get_at((x, y)), value)
 
     def test_to_surface__area_default(self):
         """Ensures the default area is correct."""
