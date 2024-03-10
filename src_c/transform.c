@@ -2211,6 +2211,141 @@ surf_grayscale(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 }
 
+SDL_Surface *
+solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
+              const int keep_alpha)
+{
+    SDL_Surface *src = pgSurface_AsSurface(srcobj);
+    SDL_Surface *newsurf;
+
+    if (!dstobj) {
+        newsurf = newsurf_fromsurf(src, srcobj->surf->w, srcobj->surf->h);
+        if (!newsurf)
+            return NULL;
+    }
+    else {
+        newsurf = pgSurface_AsSurface(dstobj);
+    }
+
+    if (newsurf->w != src->w || newsurf->h != src->h) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Destination surface must be the same size as source surface."));
+    }
+
+    if (src->format->BytesPerPixel != newsurf->format->BytesPerPixel ||
+        src->format->Rmask != newsurf->format->Rmask ||
+        src->format->Gmask != newsurf->format->Gmask ||
+        src->format->Bmask != newsurf->format->Bmask ||
+        src->format->Amask != newsurf->format->Amask) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Source and destination surfaces need the same format."));
+    }
+
+    Uint8 c_R, c_G, c_B, c_A;
+    Uint8 a;
+    SDL_GetRGBA(color, src->format, &c_R, &c_G, &c_B, &c_A);
+    Uint32 color_p = SDL_MapRGBA(newsurf->format, c_R, c_G, c_B, c_A);
+    const int dst_ashift = newsurf->format->Ashift;
+
+    /* If we are keeping the src alpha, then we need to remove the alpha from
+     * the color so it's easier to add the base pixel alpha back in */
+    if (keep_alpha) {
+        color_p &= ~newsurf->format->Amask;
+    }
+
+    /* optimized path for 32bit surfaces */
+    if (src->format->BytesPerPixel == 4) {
+        const char _a_off = newsurf->format->Ashift >> 3;
+        Uint8 *srcp = (Uint8 *)src->pixels + _a_off;
+        Uint32 *dstp = (Uint32 *)newsurf->pixels;
+
+        const int src_skip = src->pitch - src->w * 4;
+        const int dst_skip = newsurf->pitch / 4 - newsurf->w;
+        int n, height = src->h;
+
+        while (height--) {
+            LOOP_UNROLLED4(
+                {
+                    if ((a = *srcp)) {
+                        *dstp =
+                            keep_alpha ? color_p | (a << dst_ashift) : color_p;
+                    }
+                    srcp += 4;
+                    dstp++;
+                },
+                n, src->w);
+            srcp += src_skip;
+            dstp += dst_skip;
+        }
+    }
+    else {
+        int x, y;
+        Uint32 pixel;
+        Uint8 r, g, b;
+        Uint8 *pix;
+        for (y = 0; y < src->h; y++) {
+            for (x = 0; x < src->w; x++) {
+                SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels,
+                            src->format, pix);
+                SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
+
+                if (a) {
+                    SURF_SET_AT(
+                        keep_alpha ? color_p | (a << dst_ashift) : color_p,
+                        newsurf, x, y, (Uint8 *)newsurf->pixels,
+                        newsurf->format, pix);
+                }
+            }
+        }
+    }
+
+    SDL_UnlockSurface(newsurf);
+
+    return newsurf;
+}
+
+static PyObject *
+surf_solid_overlay(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    PyObject *colorobj;
+    Uint32 color;
+
+    pgSurfaceObject *surfobj2 = NULL;
+    SDL_Surface *newsurf;
+    SDL_Surface *surf;
+    int keep_alpha = 0;
+
+    static char *keywords[] = {"surface", "color", "dest_surface",
+                               "keep_alpha", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O|O!i", keywords,
+                                     &pgSurface_Type, &surfobj, &colorobj,
+                                     &pgSurface_Type, &surfobj2, &keep_alpha))
+        return NULL;
+
+    surf = pgSurface_AsSurface(surfobj);
+
+    if (_color_from_obj(colorobj, surf->format, NULL, &color))
+        return RAISE(PyExc_TypeError, "invalid search_color argument");
+
+    newsurf = solid_overlay(surfobj, color, surfobj2, keep_alpha);
+
+    if (!newsurf) {
+        return NULL;
+    }
+
+    if (surfobj2) {
+        Py_INCREF(surfobj2);
+        return (PyObject *)surfobj2;
+    }
+    else {
+        return (PyObject *)pgSurface_New(newsurf);
+    }
+}
+
 /*
 number to use for missing samples
 */
@@ -3486,6 +3621,8 @@ static PyMethodDef _transform_methods[] = {
      DOC_TRANSFORM_INVERT},
     {"grayscale", (PyCFunction)surf_grayscale, METH_VARARGS | METH_KEYWORDS,
      DOC_TRANSFORM_GRAYSCALE},
+    {"solid_overlay", (PyCFunction)surf_solid_overlay,
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_SOLIDOVERLAY},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(transform)
