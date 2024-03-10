@@ -1,10 +1,13 @@
 """Debug functionality that allows for more useful issue reporting
 """
 
+import platform
 import sys
 import traceback
 import importlib
 from typing import Tuple, Optional, Callable
+
+from pygame.version import ver
 
 ImportResult = Tuple[str, bool, Optional[Callable]]
 
@@ -51,6 +54,24 @@ def attempt_import(module, function_name, output_str=""):
         success = False
 
     return (output_str, success, i)
+
+
+def _get_platform_info():
+    """
+    Internal helper to get platform information
+    """
+    ret = f"Platform:\t\t{platform.platform()}\n"
+    ret += f"System:\t\t\t{platform.system()}\n"
+    ret += f"System Version:\t\t{platform.version()}\n"
+    ret += f"Processor:\t\t{platform.processor()}\n"
+    ret += (
+        f"Architecture:\t\tBits: {platform.architecture()[0]}\t"
+        f"Linkage: {platform.architecture()[1]}\n\n"
+    )
+
+    ret += f"Python:\t\t\t{platform.python_implementation()} {sys.version}\n"
+    ret += f"pygame version:\t\t{ver}\n"
+    return ret
 
 
 def print_debug_info(filename=None):
@@ -107,38 +128,7 @@ def print_debug_info(filename=None):
     else:
         ft_version = freetype[1]
 
-    from pygame.version import ver
-
-    import platform
-
-    debug_str += f"Platform:\t\t{platform.platform()}\n"
-
-    debug_str += f"System:\t\t\t{platform.system()}\n"
-
-    debug_str += f"System Version:\t\t{platform.version()}\n"
-
-    debug_str += f"Processor:\t\t{platform.processor()}\n"
-
-    debug_str += (
-        f"Architecture:\t\tBits: {platform.architecture()[0]}\t"
-        f"Linkage: {platform.architecture()[1]}\n"
-    )
-
-    if display_init():
-        debug_str += f"Display Driver:\t\t\t{get_display_driver()}\n\n"
-    else:
-        debug_str += "Display Driver:\t\t\tDisplay Not Initialized\n\n"
-
-    if mixer_init():
-        debug_str += f"Mixer Driver:\t\t\t{get_mixer_driver()}\n\n"
-    else:
-        debug_str += "Mixer Driver:\t\t\tMixer Not Initialized\n\n"
-
-    debug_str += f"Python:\t\t\t{platform.python_implementation()}\n"
-
-    debug_str += f"pygame version:\t\t{ver}\n"
-
-    debug_str += f"python version:\t\t{str_from_tuple(sys.version_info[0:3])}\n\n"
+    debug_str += _get_platform_info()
 
     debug_str += (
         f"SDL versions:\t\tLinked: {str_from_tuple(get_sdl_version())}\t"
@@ -162,8 +152,18 @@ def print_debug_info(filename=None):
 
     debug_str += (
         f"Freetype versions:\tLinked: {str_from_tuple(ft_version())}\t"
-        f"Compiled: {str_from_tuple(ft_version(linked = False))}"
+        f"Compiled: {str_from_tuple(ft_version(linked = False))}\n\n"
     )
+
+    if display_init():
+        debug_str += f"Display Driver:\t\t{get_display_driver()}\n"
+    else:
+        debug_str += "Display Driver:\t\tDisplay Not Initialized\n"
+
+    if mixer_init():
+        debug_str += f"Mixer Driver:\t\t{get_mixer_driver()}"
+    else:
+        debug_str += "Mixer Driver:\t\tMixer Not Initialized"
 
     if filename is None:
         print(debug_str)
