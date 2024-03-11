@@ -269,6 +269,12 @@ static struct PyModuleDef mod_pygame_static = {PyModuleDef_HEAD_INIT,
 PyMODINIT_FUNC
 PyInit_pygame_static()
 {
+    // cannot fail here, and font_initialized is already set to 1 in font.c .
+    TTF_Init();
+
+    // for correct input in wasm worker
+    SDL_SetHint("SDL_EMSCRIPTEN_KEYBOARD_ELEMENT", "1");
+
     load_submodule("pygame", PyInit_base(), "base");
     load_submodule("pygame", PyInit_constants(), "constants");
     load_submodule("pygame", PyInit_surflock(), "surflock");
