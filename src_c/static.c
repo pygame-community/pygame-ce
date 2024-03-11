@@ -14,6 +14,8 @@
 #include "pygame.h"
 #include "Python.h"
 
+#include <SDL_ttf.h>
+
 #if defined(__EMSCRIPTEN__)
 #undef WITH_THREAD
 #endif
