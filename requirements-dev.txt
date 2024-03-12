@@ -1,6 +1,6 @@
-black<=23.7.0
-clang-format<=17.0.6
+black<=24.2.0
+clang-format<=18.1.1
 numpy
-pylint<=3.0.3
+pylint<=3.1.0
 Sphinx<=7.2.6
-Wheel<=0.42.0
+Wheel<=0.43.0
