@@ -1,14 +1,13 @@
-#include "geometry_utils.h"
+#include "geometry_common.h"
 
 int
 _pg_circle_set_radius(PyObject *value, pgCircleBase *circle)
 {
-    double radius = 0;
-    if (!pg_DoubleFromObj(value, &radius) || radius <= 0) {
+    double radius = 0.0;
+    if (!pg_DoubleFromObj(value, &radius) || radius <= 0.0) {
         return 0;
     }
     circle->r = radius;
-
     return 1;
 }
 
@@ -27,39 +26,25 @@ pgCircle_FromObject(PyObject *obj, pgCircleBase *out)
         PyObject **f_arr = PySequence_Fast_ITEMS(obj);
         length = PySequence_Fast_GET_SIZE(obj);
 
-        if (length == 3) {
-            if (!pg_DoubleFromObj(f_arr[0], &out->x) ||
-                !pg_DoubleFromObj(f_arr[1], &out->y) ||
-                !_pg_circle_set_radius(f_arr[2], out)) {
+        switch (length) {
+            case 3:
+                return pg_DoubleFromObj(f_arr[0], &out->x) &&
+                       pg_DoubleFromObj(f_arr[1], &out->y) &&
+                       _pg_circle_set_radius(f_arr[2], out);
+            case 1:
+                return pgCircle_FromObject(f_arr[0], out);
+            case 2:
+                return pg_TwoDoublesFromObj(f_arr[0], &out->x, &out->y) &&
+                       _pg_circle_set_radius(f_arr[1], out);
+            default:
                 return 0;
-            }
-            return 1;
-        }
-        else if (length == 1) {
-            if (!pgCircle_FromObject(f_arr[0], out)) {
-                return 0;
-            }
-            return 1;
-        }
-        else if (length == 2) {
-            if (!pg_TwoDoublesFromObj(f_arr[0], &out->x, &out->y) ||
-                !_pg_circle_set_radius(f_arr[1], out)) {
-                return 0;
-            }
-            return 1;
-        }
-        else {
-            /* Sequences of size other than 3 or 1 are not supported
-            (don't wanna support infinite sequence nesting anymore)*/
-            return 0;
         }
     }
     else if (PySequence_Check(obj)) {
         PyObject *tmp = NULL;
         length = PySequence_Length(obj);
+
         if (length == 3) {
-            /*These are to be substituted with better pg_DoubleFromSeqIndex()
-             * implementations*/
             tmp = PySequence_ITEM(obj, 0);
             if (!pg_DoubleFromObj(tmp, &out->x)) {
                 Py_DECREF(tmp);
@@ -110,8 +95,6 @@ pgCircle_FromObject(PyObject *obj, pgCircleBase *out)
             return 1;
         }
         else {
-            /* Sequences of size other than 3 or 1 are not supported
-            (don't wanna support infinite sequence nesting anymore)*/
             return 0;
         }
     }
@@ -149,25 +132,19 @@ int
 pgCircle_FromObjectFastcall(PyObject *const *args, Py_ssize_t nargs,
                             pgCircleBase *out)
 {
-    if (nargs == 1) {
-        return pgCircle_FromObject(args[0], out);
-    }
-    else if (nargs == 2) {
-        if (!pg_TwoDoublesFromObj(args[0], &out->x, &out->y) ||
-            !_pg_circle_set_radius(args[1], out)) {
+    switch (nargs) {
+        case 1:
+            return pgCircle_FromObject(args[0], out);
+        case 2:
+            return pg_TwoDoublesFromObj(args[0], &out->x, &out->y) &&
+                   _pg_circle_set_radius(args[1], out);
+        case 3:
+            return pg_DoubleFromObj(args[0], &out->x) &&
+                   pg_DoubleFromObj(args[1], &out->y) &&
+                   _pg_circle_set_radius(args[2], out);
+        default:
             return 0;
-        }
-        return 1;
     }
-    else if (nargs == 3) {
-        if (!pg_DoubleFromObj(args[0], &out->x) ||
-            !pg_DoubleFromObj(args[1], &out->y) ||
-            !_pg_circle_set_radius(args[2], out)) {
-            return 0;
-        }
-        return 1;
-    }
-    return 0;
 }
 
 /* === Collision Functions === */
@@ -184,13 +161,13 @@ inline int
 pgCollision_CircleCircle(pgCircleBase *A, pgCircleBase *B)
 {
     double dx, dy;
-    double sum_radi;
+    double sum_radii;
 
     dx = A->x - B->x;
     dy = A->y - B->y;
-    sum_radi = A->r + B->r;
+    sum_radii = A->r + B->r;
 
-    return dx * dx + dy * dy <= sum_radi * sum_radi;
+    return dx * dx + dy * dy <= sum_radii * sum_radii;
 }
 
 inline int

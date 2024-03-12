@@ -1,5 +1,5 @@
 #include "doc/geometry_doc.h"
-#include "geometry_utils.h"
+#include "geometry_common.h"
 
 static PyObject *
 _pg_circle_subtype_new(PyTypeObject *type, pgCircleBase *circle)

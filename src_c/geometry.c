@@ -1,5 +1,5 @@
 #include "circle.c"
-#include "geometry_utils.c"
+#include "geometry_common.c"
 
 static PyMethodDef geometry_methods[] = {{NULL, NULL, 0, NULL}};
 
