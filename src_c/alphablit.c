@@ -60,7 +60,7 @@ blit_blend_premultiplied(SDL_BlitInfo *info);
 
 static int
 SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
-               SDL_Rect *dstrect, int blend_flags);
+               SDL_Rect *dstrect, int blend_flags, int colorkey_accel);
 extern int
 SDL_RLESurface(SDL_Surface *surface);
 extern void
@@ -68,7 +68,7 @@ SDL_UnRLESurface(SDL_Surface *surface, int recode);
 
 static int
 SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
-               SDL_Rect *dstrect, int blend_flags)
+               SDL_Rect *dstrect, int blend_flags, int colorkey_accel)
 {
     int okay;
     int src_locked;
@@ -115,6 +115,7 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
         info.dst = dst->format;
         SDL_GetSurfaceAlphaMod(src, &info.src_blanket_alpha);
         info.src_has_colorkey = SDL_GetColorKey(src, &info.src_colorkey) == 0;
+
         if (SDL_GetSurfaceBlendMode(src, &info.src_blend) ||
             SDL_GetSurfaceBlendMode(dst, &info.dst_blend)) {
             okay = 0;
@@ -210,6 +211,39 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         alphablit_alpha(&info);
                     }
                     else if (info.src_has_colorkey) {
+                        if (colorkey_accel) {
+#if !defined(__EMSCRIPTEN__)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+                            if (src->format->BytesPerPixel == 4 &&
+                                dst->format->BytesPerPixel == 4 &&
+                                src->format->Rmask == dst->format->Rmask &&
+                                src->format->Gmask == dst->format->Gmask &&
+                                src->format->Bmask == dst->format->Bmask &&
+                                !(src->format->Amask != 0 &&
+                                  dst->format->Amask != 0 &&
+                                  src->format->Amask != dst->format->Amask) &&
+                                pg_has_avx2() && (src != dst)) {
+                                blit_rgb_colorkey_avx2(&info);
+                                break;
+                            }
+#if PG_ENABLE_SSE_NEON
+                            if (src->format->BytesPerPixel == 4 &&
+                                dst->format->BytesPerPixel == 4 &&
+                                src->format->Rmask == dst->format->Rmask &&
+                                src->format->Gmask == dst->format->Gmask &&
+                                src->format->Bmask == dst->format->Bmask &&
+                                !(src->format->Amask != 0 &&
+                                  dst->format->Amask != 0 &&
+                                  src->format->Amask != dst->format->Amask) &&
+                                pg_HasSSE_NEON() && (src != dst)) {
+                                blit_rgb_colorkey_sse2(&info);
+                                break;
+                            }
+#endif /* PG_ENABLE_SSE_NEON */
+#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
+#endif /* __EMSCRIPTEN__ */
+                            break;
+                        }
                         alphablit_colorkey(&info);
                     }
                     else {
@@ -2730,7 +2764,7 @@ alphablit_solid(SDL_BlitInfo *info)
 /*we assume the "dst" has pixel alpha*/
 int
 pygame_Blit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
-            SDL_Rect *dstrect, int blend_flags)
+            SDL_Rect *dstrect, int blend_flags, int colorkey_accel)
 {
     SDL_Rect fulldst;
     int srcx, srcy, w, h;
@@ -2816,7 +2850,8 @@ pygame_Blit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
         sr.y = srcy;
         sr.w = dstrect->w = w;
         sr.h = dstrect->h = h;
-        return SoftBlitPyGame(src, &sr, dst, dstrect, blend_flags);
+        return SoftBlitPyGame(src, &sr, dst, dstrect, blend_flags,
+                              colorkey_accel);
     }
     dstrect->w = dstrect->h = 0;
     return 0;
@@ -2826,7 +2861,7 @@ int
 pygame_AlphaBlit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                  SDL_Rect *dstrect, int blend_flags)
 {
-    return pygame_Blit(src, srcrect, dst, dstrect, blend_flags);
+    return pygame_Blit(src, srcrect, dst, dstrect, blend_flags, 0);
 }
 
 int

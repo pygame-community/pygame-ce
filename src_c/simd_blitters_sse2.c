@@ -67,6 +67,8 @@ pg_neon_at_runtime_but_uncompiled()
 #endif
 #endif
 
+#if (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON))
+
 #define SETUP_SSE2_BLITTER                        \
     int i, n;                                     \
     int width = info->width;                      \
@@ -139,7 +141,9 @@ pg_neon_at_runtime_but_uncompiled()
         dstp = (Uint32 *)dstp128 + dstskip;               \
     }
 
-#if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
+#define pg_mm_blendv_epi8(a, b, mask) \
+    _mm_or_si128(_mm_and_si128(mask, b), _mm_andnot_si128(mask, a));
+
 void
 alphablit_alpha_sse2_argb_surf_alpha(SDL_BlitInfo *info)
 {
@@ -773,6 +777,61 @@ blit_blend_premultiplied_sse2(SDL_BlitInfo *info)
         /* *INDENT-ON* */
         srcp += srcskip;
         dstp += dstskip;
+    }
+}
+
+void
+blit_rgb_colorkey_sse2(SDL_BlitInfo *info)
+{
+    const int n_iters_4 = info->width / 4;
+    const int pxl_excess = info->width % 4;
+    const int src_skip = info->s_skip / 4;
+    const int dst_skip = info->d_skip / 4;
+
+    const __m128i colorkey_4 = _mm_set1_epi32(info->src_colorkey);
+
+    __m128i *srcp128 = (__m128i *)info->s_pixels;
+    __m128i *dstp128 = (__m128i *)info->d_pixels;
+
+    Uint32 *srcp = (Uint32 *)srcp128;
+    Uint32 *dstp = (Uint32 *)dstp128;
+
+    __m128i mm128_src, mm128_dst, mask;
+
+    int h = info->height;
+    int n;
+
+    while (h--) {
+        if (n_iters_4) {
+            LOOP_UNROLLED4(
+                {
+                    mm128_src = _mm_loadu_si128(srcp128);
+                    mm128_dst = _mm_loadu_si128(dstp128);
+
+                    mask = _mm_cmpeq_epi32(mm128_src, colorkey_4);
+                    mm128_dst = pg_mm_blendv_epi8(mm128_src, mm128_dst, mask);
+
+                    _mm_storeu_si128(dstp128, mm128_dst);
+
+                    srcp128++;
+                    dstp128++;
+                },
+                n, n_iters_4);
+        }
+
+        srcp = (Uint32 *)srcp128;
+        dstp = (Uint32 *)dstp128;
+
+        for (int i = 0; i < pxl_excess; i++) {
+            if (*srcp != info->src_colorkey) {
+                *dstp = *srcp;
+            }
+            srcp++;
+            dstp++;
+        }
+
+        srcp128 = (__m128i *)(srcp + src_skip);
+        dstp128 = (__m128i *)(dstp + dst_skip);
     }
 }
 
