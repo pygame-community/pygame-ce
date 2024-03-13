@@ -1,5 +1,5 @@
-#ifndef PYGAME_CE_GEOMETRY_UTILS_H
-#define PYGAME_CE_GEOMETRY_UTILS_H
+#ifndef PYGAME_CE_GEOMETRY_COMMON_H
+#define PYGAME_CE_GEOMETRY_COMMON_H
 
 #include "geometry.h"
 
@@ -25,4 +25,4 @@ inline int
 pgCollision_RectCircle(double rx, double ry, double rw, double rh,
                        pgCircleBase *circle);
 
-#endif  // PYGAME_CE_GEOMETRY_UTILS_H
+#endif  // PYGAME_CE_GEOMETRY_COMMON_H

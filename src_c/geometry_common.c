@@ -27,15 +27,15 @@ pgCircle_FromObject(PyObject *obj, pgCircleBase *out)
         length = PySequence_Fast_GET_SIZE(obj);
 
         switch (length) {
-            case 3:
-                return pg_DoubleFromObj(f_arr[0], &out->x) &&
-                       pg_DoubleFromObj(f_arr[1], &out->y) &&
-                       _pg_circle_set_radius(f_arr[2], out);
             case 1:
                 return pgCircle_FromObject(f_arr[0], out);
             case 2:
                 return pg_TwoDoublesFromObj(f_arr[0], &out->x, &out->y) &&
                        _pg_circle_set_radius(f_arr[1], out);
+            case 3:
+                return pg_DoubleFromObj(f_arr[0], &out->x) &&
+                       pg_DoubleFromObj(f_arr[1], &out->y) &&
+                       _pg_circle_set_radius(f_arr[2], out);
             default:
                 return 0;
         }
