@@ -105,7 +105,7 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *colorobj, *start, *end;
     SDL_Surface *surf = NULL;
     float startx, starty, endx, endy;
-    PyObject *blend;
+    PyObject *blend = NULL;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     Uint32 color;
