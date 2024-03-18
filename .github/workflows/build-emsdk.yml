@@ -47,7 +47,7 @@ jobs:
       WHEELHOUSE_CYTHON: /tmp/wheelhouse/cython
 
     steps:
-    - uses: actions/checkout@v4.1.1
+    - uses: actions/checkout@v4.1.2
 
     - name: Cache Cython
       id: cache-cython
