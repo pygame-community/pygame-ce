@@ -610,4 +610,80 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
         srcp64 = (Uint64 *)srcp;
     }
 }
+
+void
+invert_sse2(SDL_Surface *src, SDL_Surface *newsurf)
+{
+    int s_row_skip = (src->pitch - src->w * 4) / 4;
+
+    // generate number of batches of pixels we need to loop through
+    int pixel_batch_length = src->w * src->h;
+    int num_batches = 1;
+    if (s_row_skip > 0) {
+        pixel_batch_length = src->w;
+        num_batches = src->h;
+    }
+    int remaining_pixels = pixel_batch_length % 4;
+    int perfect_4_pixels = pixel_batch_length / 4;
+
+    int perfect_4_pixels_batch_counter = perfect_4_pixels;
+    int remaining_pixels_batch_counter = remaining_pixels;
+
+    Uint32 *srcp = (Uint32 *)src->pixels;
+    Uint32 *dstp = (Uint32 *)newsurf->pixels;
+
+    __m128i mm_src, mm_dst, mm_alpha, mm_rgb_invert_mask, mm_alpha_mask;
+
+    __m128i *srcp128 = (__m128i *)src->pixels;
+    __m128i *dstp128 = (__m128i *)newsurf->pixels;
+
+    mm_rgb_invert_mask = _mm_set1_epi32(~src->format->Amask);
+    mm_alpha_mask = _mm_set1_epi32(src->format->Amask);
+
+    while (num_batches--) {
+        perfect_4_pixels_batch_counter = perfect_4_pixels;
+        remaining_pixels_batch_counter = remaining_pixels;
+        while (perfect_4_pixels_batch_counter--) {
+            mm_src = _mm_loadu_si128(srcp128);
+            /*mm_src = 0xAARRGGBBAARRGGBBAARRGGBBAARRGGBB*/
+
+            /* pull out the alpha */
+            mm_alpha = _mm_and_si128(mm_src, mm_alpha_mask);
+
+            /* do the invert */
+            mm_dst = _mm_andnot_si128(mm_src, mm_rgb_invert_mask);
+
+            /* put the alpha back in*/
+            mm_dst = _mm_or_si128(mm_dst, mm_alpha);
+
+            _mm_storeu_si128(dstp128, mm_dst);
+            /*dstp = 0xAARRGGBBAARRGGBBAARRGGBBAARRGGBB*/
+            srcp128++;
+            dstp128++;
+        }
+        srcp = (Uint32 *)srcp128;
+        dstp = (Uint32 *)dstp128;
+        while (remaining_pixels_batch_counter--) {
+            mm_src = _mm_cvtsi32_si128(*srcp);
+            /*mm_src = 0x000000000000000000000000AARRGGBB*/
+
+            /* pull out the alpha */
+            mm_alpha = _mm_and_si128(mm_src, mm_alpha_mask);
+
+            /* do the invert */
+            mm_dst = _mm_andnot_si128(mm_src, mm_rgb_invert_mask);
+
+            /* put the alpha back in*/
+            mm_dst = _mm_or_si128(mm_dst, mm_alpha);
+
+            *dstp = _mm_cvtsi128_si32(mm_dst);
+            /*dstp = 0xAARRGGBB*/
+            srcp++;
+            dstp++;
+        }
+        srcp += s_row_skip;
+        srcp128 = (__m128i *)srcp;
+    }
+}
+
 #endif /* __SSE2__ || PG_ENABLE_ARM_NEON*/

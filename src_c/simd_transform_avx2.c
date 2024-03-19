@@ -214,9 +214,98 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
         srcp256 = (__m256i *)srcp;
     }
 }
+
+void
+invert_avx2(SDL_Surface *src, SDL_Surface *newsurf)
+{
+    int s_row_skip = (src->pitch - src->w * 4) / 4;
+
+    // generate number of batches of pixels we need to loop through
+    int pixel_batch_length = src->w * src->h;
+    int num_batches = 1;
+    if (s_row_skip > 0) {
+        pixel_batch_length = src->w;
+        num_batches = src->h;
+    }
+
+    int remaining_pixels = pixel_batch_length % 8;
+    int perfect_8_pixels = pixel_batch_length / 8;
+
+    int perfect_8_pixels_batch_counter = perfect_8_pixels;
+    int remaining_pixels_batch_counter = remaining_pixels;
+
+    Uint32 *srcp = (Uint32 *)src->pixels;
+    Uint32 *dstp = (Uint32 *)newsurf->pixels;
+
+    Uint32 amask = src->format->Amask;
+    Uint32 rgbmask = ~amask;
+
+    __m256i *srcp256 = (__m256i *)src->pixels;
+    __m256i *dstp256 = (__m256i *)newsurf->pixels;
+
+    __m256i mm256_src, mm256_dst, mm256_rgb_invert_mask, mm256_alpha,
+        mm256_alpha_mask;
+
+    mm256_rgb_invert_mask = _mm256_set1_epi32(rgbmask);
+    mm256_alpha_mask = _mm256_set1_epi32(amask);
+
+    __m256i _partial8_mask = _mm256_set_epi32(
+        0x00, (remaining_pixels > 6) ? -1 : 0, (remaining_pixels > 5) ? -1 : 0,
+        (remaining_pixels > 4) ? -1 : 0, (remaining_pixels > 3) ? -1 : 0,
+        (remaining_pixels > 2) ? -1 : 0, (remaining_pixels > 1) ? -1 : 0,
+        (remaining_pixels > 0) ? -1 : 0);
+
+    while (num_batches--) {
+        perfect_8_pixels_batch_counter = perfect_8_pixels;
+        remaining_pixels_batch_counter = remaining_pixels;
+        while (perfect_8_pixels_batch_counter--) {
+            mm256_src = _mm256_loadu_si256(srcp256);
+
+            /* pull out the alpha */
+            mm256_alpha = _mm256_and_si256(mm256_src, mm256_alpha_mask);
+
+            /* do the invert */
+            mm256_dst = _mm256_andnot_si256(mm256_src, mm256_rgb_invert_mask);
+
+            /* put the alpha back in*/
+            mm256_dst = _mm256_or_si256(mm256_dst, mm256_alpha);
+
+            _mm256_storeu_si256(dstp256, mm256_dst);
+
+            srcp256++;
+            dstp256++;
+        }
+        srcp = (Uint32 *)srcp256;
+        dstp = (Uint32 *)dstp256;
+        if (remaining_pixels_batch_counter > 0) {
+            mm256_src = _mm256_maskload_epi32((int *)srcp, _partial8_mask);
+
+            /* pull out the alpha */
+            mm256_alpha = _mm256_and_si256(mm256_src, mm256_alpha_mask);
+
+            /* do the invert */
+            mm256_dst = _mm256_andnot_si256(mm256_src, mm256_rgb_invert_mask);
+
+            /* put the alpha back in*/
+            mm256_dst = _mm256_or_si256(mm256_dst, mm256_alpha);
+
+            _mm256_maskstore_epi32((int *)dstp, _partial8_mask, mm256_dst);
+
+            srcp += remaining_pixels_batch_counter;
+            dstp += remaining_pixels_batch_counter;
+        }
+        srcp += s_row_skip;
+        srcp256 = (__m256i *)srcp;
+    }
+}
 #else
 void
 grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
+{
+    BAD_AVX2_FUNCTION_CALL;
+}
+void
+invert_avx2(SDL_Surface *src, SDL_Surface *newsurf)
 {
     BAD_AVX2_FUNCTION_CALL;
 }
