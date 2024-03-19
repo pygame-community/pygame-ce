@@ -48,6 +48,48 @@ class MixerModuleTest(unittest.TestCase):
         mixer.quit()
         mixer.pre_init(0, 0, 0, 0)
 
+    def test_get_driver(self):
+        mixer.init()
+        drivers = [
+            pygame.NULL_VIDEODRIVER,
+            "pipewire",
+            "pulseaudio",
+            "alsa",
+            "jack",
+            "sndio",
+            "netbsd",
+            "dsp",
+            "qsa",
+            "audio",
+            "arts",
+            "esd",
+            "nacl",
+            "nas",
+            "wasapi",
+            "directsound",
+            "winmm",
+            "paud",
+            "haiku",
+            "coreaudio",
+            "disk",
+            "fusionsound",
+            "AAudio",
+            "openslES",
+            "android",
+            "ps2",
+            "psp",
+            "vita",
+            "n3ds",
+            "emscripten",
+            "DART",
+        ]
+        driver = mixer.get_driver()
+        self.assertIn(driver, drivers)
+
+        mixer.quit()
+        with self.assertRaises(pygame.error):
+            mixer.get_driver()
+
     def test_init__keyword_args(self):
         # note: this test used to loop over all CONFIGS, but it's very slow..
         mixer.init(**CONFIG)
