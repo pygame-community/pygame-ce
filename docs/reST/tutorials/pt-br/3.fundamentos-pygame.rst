@@ -1,0 +1,102 @@
+.. include:: ../../common.txt
+
+**************************
+  Dando início às coisas
+**************************
+
+.. role:: citetitle(ênfase)
+
+.. _makegames-3:
+
+3. Começando
+============
+
+As primeiras seções do código são relativamente simples e, uma vez escritas, geralmente podem ser reutilizadas em todos os jogos que você criar. Eles
+fará todas as tarefas genéricas e chatas, como carregar módulos, carregar imagens, abrir conexões de rede, tocar música e assim por diante
+sobre. Eles também incluirão algum tratamento de erros simples, mas eficaz, e qualquer personalização que você deseja fornecer além das funções
+fornecido por módulos como ``sys`` e ``pygame``.
+
+.. _makegames-3-1:
+
+3.1. As primeiras linhas e carregamento de módulos
+--------------------------------------------------
+
+Primeiro, você precisa iniciar o jogo e carregar seus módulos. É sempre uma boa ideia esclarecer algumas coisas no início
+o arquivo de origem principal, como o nome do arquivo, o que ele contém, a licença sob a qual está e qualquer outra informação útil que você possa
+quero dar àqueles que estarão olhando para ele. Então você pode carregar módulos, com alguma verificação de erros para que o Python não imprima
+um rastreamento desagradável, que os não-programadores não entenderão. O código é bastante simples, então não vou me preocupar em explicar nada dele::
+
+  #!/usr/bin/env python
+  #
+  # Tom's Pong
+  # A simple pong game with realistic physics and AI
+  # http://tomchance.org.uk/projects/pong
+  #
+  # Released under the GNU General Public License
+
+  VERSION = "0.4"
+
+  try:
+      import sys
+      import random
+      import math
+      import os
+      import getopt
+      import pygame
+      from socket import *
+      from pygame.locals import *
+  except ImportError, err:
+      print(f"couldn't load module. {err}")
+      sys.exit(2)
+
+
+.. _makegames-3-2:
+
+3.2. Funções de manipulação de recursos
+---------------------------------------
+
+No exemplo :doc:`Line By Line Chimp <chimp-explanation>`, o primeiro código a ser escrito foi para carregar imagens e sons. Como estes
+eram totalmente independentes de qualquer lógica ou objeto de jogo, eles foram escritos como funções separadas e foram escritos primeiro para
+que o código posterior poderia fazer uso deles. Geralmente coloco todo o meu código dessa natureza primeiro, em suas próprias funções sem classes; esses
+serão, de modo geral, funções de manipulação de recursos. É claro que você pode criar classes para eles, para poder agrupá-los
+juntos e talvez tenha um objeto com o qual você possa controlar todos os seus recursos. Como acontece com qualquer bom ambiente de programação, cabe
+para você desenvolver suas próprias melhores práticas e estilo.
+
+É sempre uma boa ideia escrever suas próprias funções de manipulação de recursos,
+pois embora o Pygame tenha métodos para abrir imagens e sons, e outros módulos terão seus métodos para abrir outros
+recursos, esses métodos podem ocupar mais de uma linha, podem exigir modificações consistentes por você mesmo e muitas vezes não
+fornecer tratamento de erros satisfatório. Escrever funções de manipulação de recursos fornece código sofisticado e reutilizável e oferece mais
+controle sobre seus recursos. Veja este exemplo de função de carregamento de imagem::
+
+  def load_png(name):
+      """ Load image and return image object"""
+      fullname = os.path.join("data", name)
+      try:
+          image = pygame.image.load(fullname)
+          if image.get_alpha() is None:
+              image = image.convert()
+          else:
+              image = image.convert_alpha()
+      except FileNotFoundError:
+          print(f"Cannot load image: {fullname}")
+          raise SystemExit
+      return image, image.get_rect()
+
+Aqui criamos uma função de carregamento de imagem mais sofisticada do que aquela fornecida por :func:`pygame.image.load`. Observe que
+a primeira linha da função é uma string de documentação que descreve o que a função faz e quais objetos ela retorna. O
+A função assume que todas as suas imagens estão em um diretório chamado data e, portanto, pega o nome do arquivo e cria o nome do caminho completo,
+por exemplo ``data/ball.png``, usando o módulo :citetitle:`os` para garantir compatibilidade entre plataformas. Então isso
+tenta carregar a imagem e converter quaisquer regiões alfa para que você possa obter transparência e retorna um erro mais legível por humanos
+se houver algum problema. Finalmente ele retorna o objeto de imagem e seu :class:`rect <pygame.Rect>`.
+
+Você pode criar funções semelhantes para carregar quaisquer outros recursos, como carregar sons. Você também pode criar classes de manipulação de recursos,
+para oferecer mais flexibilidade com recursos mais complexos. Por exemplo, você poderia fazer uma aula de música, com um ``__init__``
+função que carrega o som (talvez emprestada de uma função ``load_sound()``), uma função para pausar a música e uma função
+função para reiniciar. Outra classe útil de manipulação de recursos é para conexões de rede. Funções para abrir soquetes, passar dados com
+segurança adequada e verificação de erros, fechamento de soquetes, endereços digitais e outras tarefas de rede podem tornar a escrita de um jogo com rede
+capacidades relativamente indolores.
+
+Lembre-se de que a principal tarefa dessas funções/classes é garantir que, no momento em que você começar a escrever classes de objetos de jogo,
+e o loop principal, não há quase nada a fazer. A herança de classe pode tornar essas classes básicas especialmente úteis. Não vá
+embora ao mar; funções que serão usadas apenas por uma classe devem ser escritas como parte dessa classe, não como um global
+função.

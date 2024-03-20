@@ -1,0 +1,143 @@
+.. include:: ../../common.txt
+
+****************************
+  Classe e objetos do Jogo
+****************************
+
+.. role:: firstterm(ênfase)
+
+.. _makegames-4:
+
+4. Classe e objetos do Jogo
+===========================
+
+Depois de carregar seus módulos e escrever suas funções de manipulação de recursos, você desejará escrever alguns objetos de jogo.
+A forma como isso é feito é bastante simples, embora possa parecer complexa à primeira vista. Você escreve uma classe para cada tipo de objeto no jogo,
+e então crie uma instância dessas classes para os objetos. Você pode então usar os métodos dessas classes para manipular os objetos,
+dando aos objetos algum movimento e recursos interativos. Então seu jogo, em pseudocódigo, ficará assim::
+
+  #!/usr/bin/python
+
+  # [load modules here]
+
+  # [resource handling functions here]
+
+  class Ball:
+      # [ball functions (methods) here]
+      # [e.g. a function to calculate new position]
+      # [and a function to check if it hits the side]
+
+  def main:
+      # [initiate game environment here]
+
+      # [create new object as instance of ball class]
+      ball = Ball()
+
+      while True:
+          # [check for user input]
+
+          # [call ball's update function]
+          ball.update()
+
+Este é, obviamente, um exemplo muito simples, e você precisaria inserir todo o código, em vez daqueles pequenos comentários entre colchetes. Mas
+você deve ter a ideia básica. Você cria uma classe, na qual você coloca todas as funções de uma bola, incluindo ``__init__``,
+que criaria todos os atributos da bola, e ``update``, que moveria a bola para sua nova posição, antes de blitting
+na tela nesta posição.
+
+Você pode então criar mais classes para todos os outros objetos do jogo e, em seguida, criar instâncias deles para poder lidar com eles
+facilmente na função ``main`` e no loop principal do programa. Compare isso com iniciar a bola no ``principal``
+função e, em seguida, ter muitas funções sem classes para manipular um objeto set ball, e esperamos ver por que usar classes é
+uma vantagem: permite colocar todo o código de cada objeto em um só lugar; facilita o uso de objetos; faz adicionar novos
+objetos e manipulá-los de forma mais flexível. Em vez de adicionar mais código para cada novo objeto bola, você poderia simplesmente criar novos
+instâncias da classe ``Ball`` para cada novo objeto bola. Magia!
+
+
+.. _makegames-4-1:
+
+4.1. Uma aula de bola simples
+-----------------------------
+
+Aqui está uma classe simples com as funções necessárias para criar um objeto bola que irá, se a função ``update`` for chamada
+no loop principal, mova-se pela tela::
+
+  class Ball(pygame.sprite.Sprite):
+      """A ball that will move across the screen
+      Returns: ball object
+      Functions: update, calcnewpos
+      Attributes: area, vector"""
+
+      def __init__(self, vector):
+          pygame.sprite.Sprite.__init__(self)
+          self.image, self.rect = load_png('ball.png')
+          screen = pygame.display.get_surface()
+          self.area = screen.get_rect()
+          self.vector = vector
+
+      def update(self):
+          newpos = self.calcnewpos(self.rect,self.vector)
+          self.rect = newpos
+
+      def calcnewpos(self,rect,vector):
+          (angle,z) = vector
+          (dx,dy) = (z*math.cos(angle),z*math.sin(angle))
+          return rect.move(dx,dy)
+
+Aqui temos a classe ``Ball``, com uma função ``__init__`` que configura a bola, um ``update``
+função que altera o retângulo da bola para a nova posição e uma função ``calcnewpos`` para calcular a posição da bola
+nova posição com base em sua posição atual e no vetor pelo qual está se movendo. Explicarei a física em um momento. O outro
+O que devemos notar é a string de documentação, que desta vez é um pouco mais longa e explica o básico da classe. Essas cordas
+são úteis não apenas para você e outros programadores que analisam o código, mas também para ferramentas para analisar seu código e documentá-lo. Eles
+não fará muita diferença em programas pequenos, mas em programas grandes eles são inestimáveis, por isso é um bom hábito adquirir.
+
+
+.. _makegames-4-1-1:
+
+4.1.1. Desvio 1: Sprites
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+A outra razão para criar uma classe para cada objeto são os sprites. Cada imagem que você renderizar no seu jogo será um objeto sprite, e assim
+para começar, a classe de cada objeto deve herdar a classe :class:`Sprite <pygame.sprite.Sprite>`.
+Este é um recurso muito bom da classe Python
+herança. Agora a classe ``Ball`` tem todas as funções que vêm com a classe ``Sprite``, e qualquer objeto
+instâncias da classe ``Ball`` serão registradas pelo Pygame como sprites. Já com o texto e o plano de fundo, que não
+mover, não há problema em colocar o objeto no fundo, o Pygame lida com objetos sprite de uma maneira diferente, que você verá quando
+veja todo o código do programa.
+
+Basicamente, você cria um objeto bola e um objeto sprite para essa bola e, em seguida, chama a função de atualização da bola no
+objeto sprite, atualizando assim o sprite. Sprites também oferecem maneiras sofisticadas de determinar se dois objetos colidiram.
+Normalmente você poderia apenas verificar o loop principal para ver se seus retângulos se sobrepõem, mas isso envolveria muito código, o que seria
+ser um desperdício porque a classe ``Sprite`` fornece duas funções (``spritecollide`` e ``groupcollide``)
+para fazer isso por você.
+
+
+.. _makegames-4-1-2:
+
+4.1.2. Diversão 2: Física vetorial
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Além da estrutura da classe ``Ball``, a coisa notável sobre este código é a física vetorial, usada para calcular
+o movimento da bola. Com qualquer jogo que envolva movimento angular, você não irá muito longe a menos que esteja confortável com a trigonometria, então
+Vou apenas apresentar o básico que você precisa saber para entender a função ``calcnewpos``.
+
+Para começar, você notará que a bola possui um atributo ``vetor``, que é composto de ``ângulo`` e ``z``.
+O ângulo é medido em radianos e fornecerá a direção na qual a bola está se movendo. Z é a velocidade com que a bola
+se move. Então, usando esse vetor, podemos determinar a direção e a velocidade da bola e, portanto, quanto ela se moverá no x e
+eixos y:
+
+.. images:: ../assets/tom_radians.png
+
+O diagrama acima ilustra a matemática básica por trás dos vetores. No diagrama à esquerda, você pode ver o movimento projetado da bola
+representado pela linha azul. O comprimento dessa linha (z) representa sua velocidade, e o ângulo é a direção na qual
+ele se moverá. O ângulo do movimento da bola será sempre obtido a partir do eixo x à direita e é medido no sentido horário a partir de
+essa linha, como mostrado no diagrama.
+
+A partir do ângulo e da velocidade da bola, podemos calcular quanto ela se moveu ao longo dos eixos x e y. Precisamos fazer isso porque
+O Pygame não suporta vetores em si, e só podemos mover a bola movendo seu retângulo ao longo dos dois eixos. Então precisamos
+:firstterm:`resolve` o ângulo e a velocidade em seu movimento no eixo x (dx) e no eixo y (dy). Esta é uma simples questão de
+trigonometria, e pode ser feito com as fórmulas mostradas no diagrama.
+
+Se você já estudou trigonometria elementar antes, nada disso deveria ser novidade para você. Mas caso você esteja esquecido, aqui estão alguns
+fórmulas úteis para lembrar, que ajudarão você a visualizar os ângulos (acho mais fácil visualizar ângulos em graus do que em radianos!)
+
+.. images:: ../assets/tom_formulae.png
+

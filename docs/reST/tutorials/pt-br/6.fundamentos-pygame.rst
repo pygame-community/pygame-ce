@@ -1,0 +1,323 @@
+.. include:: ../../common.txt
+
+*****************
+  Juntando tudo
+*****************
+
+.. _makegames-6:
+
+6. Juntando tudo
+================
+
+Até agora, você aprendeu todos os conceitos básicos necessários para construir um jogo simples. Você deve entender como criar objetos Pygame, como o Pygame
+exibe objetos, como lida com eventos e como você pode usar a física para introduzir algum movimento em seu jogo. Agora eu vou mostrar como
+você pode pegar todos esses pedaços de código e colocá-los juntos em um jogo funcional. O que precisamos primeiro é deixar a bola atingir os lados
+da tela e permitir que a raquete atinja a bola, caso contrário, não haverá muita jogabilidade envolvida. Fazemos isso
+usando os métodos de colisão do Pygame (:meth:`collide <pygame.Rect.collidepoint>`).
+
+.. _makegames-6-1:
+
+6.1. Deixe a bola atingir os lados
+----------------------------------
+
+O princípio básico por trás de fazê-la quicar nos lados é fácil de entender. Você pega as coordenadas dos quatro cantos da bola,
+e verifica se correspondem à coordenada x ou y da borda da tela. Então, se os cantos superior direito e superior esquerdo tiverem ambos
+uma coordenada y de zero, você sabe que a bola está atualmente na borda superior da tela. Fazemos tudo isso na função ``update``,
+depois de termos calculado a nova posição da bola.
+
+::
+
+  if not self.area.contains(newpos):
+    tl = not self.area.collidepoint(newpos.topleft)
+    tr = not self.area.collidepoint(newpos.topright)
+    bl = not self.area.collidepoint(newpos.bottomleft)
+    br = not self.area.collidepoint(newpos.bottomright)
+    if tr and tl or (br and bl):
+        angle = -angle
+    if tl and bl:
+        self.offcourt(player=2)
+    if tr and br:
+        self.offcourt(player=1)
+
+  self.vector = (angle,z)
+
+Aqui verificamos se a ``area``
+contém a nova posição da bola (sempre deveria, então não precisamos de uma cláusula ``else``,
+embora em outras circunstâncias você possa querer considerar isso). Em seguida, verificamos se as coordenadas dos quatro cantos
+estão *colidindo* com as bordas da área e criamos objetos para cada resultado. Se estiverem, os objetos terão um valor de 1,
+ou ``True``. Se não estiverem, o valor será ``None`` ou ``False``. Em seguida, vemos se ela atingiu o topo ou a parte inferior, e se tiver,
+mudamos a direção da bola. Felizmente, usando radianos, podemos fazer isso simplesmente invertendo seu valor positivo/negativo.
+Também verificamos se a bola saiu dos lados, e se saiu, chamamos a função ``offcourt``.
+Isso, em meu jogo, reinicia a bola, adiciona 1 ponto à pontuação do jogador especificado ao chamar a função e exibe a nova pontuação.
+
+Finalmente, recompilamos o vetor com base no novo ângulo. E é isso. A bola agora quicará alegremente nas paredes e sairá
+com boa graça.
+
+.. _makegames-6-2:
+
+6.2. Deixe a bola atingir as raquetes
+-------------------------------------
+
+Fazer a bola atingir as raquetes é muito semelhante a fazê-la atingir os lados da tela. Ainda usamos o método de colisão, mas desta vez
+verificamos se os retângulos da bola e de uma das raquetes colidem. Neste código, também inseri algum código extra para evitar vários
+bugs. Você verá que terá que adicionar todo tipo de código extra para evitar falhas e bugs, então é bom se acostumar a vê-lo.
+
+::
+
+  else:
+      # Reduza os retângulos para que você não possa pegar uma bola atrás da raquete
+      player1.rect.inflate(-3, -3)
+      player2.rect.inflate(-3, -3)
+
+      # Bola e raquete colidem?
+      # Observe que inseri uma regra estranha que define self.hit como 1 quando colidem e desativa na próxima
+      # iteração. Isso é para evitar comportamento estranho da bola onde ela encontra uma colisão *dentro* do
+      # raquete, a bola reverte e ainda está dentro da raquete, então quica dentro.
+      # Dessa forma, a bola sempre pode escapar e quicar para longe limpinha
+      if self.rect.colliderect(player1.rect) == 1 and not self.hit:
+          angle = math.pi - angle
+          self.hit = not self.hit
+      elif self.rect.colliderect(player2.rect) == 1 and not self.hit:
+          angle = math.pi - angle
+          self.hit = not self.hit
+      elif self.hit:
+          self.hit = not self.hit
+  self.vector = (angle,z)
+
+Começamos esta seção com uma instrução ``else``, porque isso continua do trecho de código anterior para verificar se a bola
+atinge os lados. Faz sentido que se ela não atingir os lados, ela pode atingir uma raquete, então continuamos a instrução condicional. O
+primeiro ajuste de bug a ser corrigido é encolher os retângulos dos jogadores em 3 pixels em ambas as dimensões, para impedir que a raquete
+pegue uma bola que passa atrás delas (se você imaginar que move a raquete de modo que, à medida que a bola passa por trás dela, os retângulos se sobrepõem, e normalmente a
+bola então teria sido "atingida" - isso impede isso).
+
+Em seguida, verificamos se os retângulos colidem, com mais um ajuste de bug. Observe que comentei esses trechos de código estranhos - sempre é
+bom explicar trechos de código que são anormais, tanto para os outros que olham para o seu código, quanto para que você entenda quando voltar a
+ele. Sem o ajuste, a bola pode atingir um canto da raquete, mudar de direção e um quadro depois ainda se encontrar dentro da
+raquete. Em seguida, ela pensaria novamente que foi atingida e mudaria de direção. Isso pode acontecer várias vezes, tornando o movimento
+da bola completamente irrealista. Portanto, temos uma variável, ``self.hit``, que definimos como ``True`` quando ela foi atingida e ``False`` um quadro
+depois. Quando verificamos se os retângulos colidiram, também verificamos se ``self.hit`` é ``True``/``False``, para evitar quiques internos.
+
+O código importante aqui é bastante fácil de entender. Todos os retângulos têm um método :meth:`colliderect <pygame.Rect.colliderect>`,
+no qual você alimenta o retângulo de outro objeto, que retorna ``True`` se os retângulos se sobrepõem e ``False`` se não o fizerem.
+Se eles se sobrepõem, podemos mudar a direção subtraindo o ângulo atual de ``pi`` (novamente, um truque útil que você pode fazer com radianos,
+que ajustará o ângulo em 90 graus e o enviará na direção certa; você pode descobrir neste ponto que uma compreensão aprofundada de radianos é necessária!). Apenas para terminar a verificação de falhas, trocamos ``self.hit`` de volta para ``False`` se for o quadro
+após eles terem sido atingidos.
+
+Também recompilamos o vetor. Você, é claro, gostaria de remover a mesma linha no trecho de código anterior, para fazer isso apenas uma vez após a instrução condicional ``if-else``. E é isso! O código combinado agora permitirá que a bola atinja os lados e as raquetes.
+
+.. _makegames-6-3:
+
+6.3. O Produto Final
+--------------------
+
+O produto final, com todos os trechos de código reunidos, assim como alguns outros trechos de código para unir tudo, parecerá
+assim::
+
+  #
+  # Tom's Pong
+  # A simple pong game with realistic physics and AI
+  # http://tomchance.org.uk/projects/pong
+  #
+  # Released under the GNU General Public License
+
+  VERSION = "0.4"
+
+  try:
+      import sys
+      import random
+      import math
+      import os
+      import getopt
+      import pygame
+      from socket import *
+      from pygame.locals import *
+  except ImportError, err:
+      print(f"couldn't load module. {err}")
+      sys.exit(2)
+
+  def load_png(name):
+      """ Load image and return image object"""
+      fullname = os.path.join("data", name)
+      try:
+          image = pygame.image.load(fullname)
+          if image.get_alpha is None:
+              image = image.convert()
+          else:
+              image = image.convert_alpha()
+      except FileNotFoundError:
+          print(f"Cannot load image: {fullname}")
+          raise SystemExit
+      return image, image.get_rect()
+
+  class Ball(pygame.sprite.Sprite):
+      """A ball that will move across the screen
+      Returns: ball object
+      Functions: update, calcnewpos
+      Attributes: area, vector"""
+
+      def __init__(self, (xy), vector):
+          pygame.sprite.Sprite.__init__(self)
+          self.image, self.rect = load_png("ball.png")
+          screen = pygame.display.get_surface()
+          self.area = screen.get_rect()
+          self.vector = vector
+          self.hit = 0
+
+      def update(self):
+          newpos = self.calcnewpos(self.rect,self.vector)
+          self.rect = newpos
+          (angle,z) = self.vector
+
+          if not self.area.contains(newpos):
+              tl = not self.area.collidepoint(newpos.topleft)
+              tr = not self.area.collidepoint(newpos.topright)
+              bl = not self.area.collidepoint(newpos.bottomleft)
+              br = not self.area.collidepoint(newpos.bottomright)
+              if tr and tl or (br and bl):
+                  angle = -angle
+              if tl and bl:
+                  #self.offcourt()
+                  angle = math.pi - angle
+              if tr and br:
+                  angle = math.pi - angle
+                  #self.offcourt()
+          else:
+              # Deflate the rectangles so you can't catch a ball behind the bat
+              player1.rect.inflate(-3, -3)
+              player2.rect.inflate(-3, -3)
+
+              # Do ball and bat collide?
+              # Note I put in an odd rule that sets self.hit to 1 when they collide, and unsets it in the next
+              # iteration. this is to stop odd ball behaviour where it finds a collision *inside* the
+              # bat, the ball reverses, and is still inside the bat, so bounces around inside.
+              # This way, the ball can always escape and bounce away cleanly
+              if self.rect.colliderect(player1.rect) == 1 and not self.hit:
+                  angle = math.pi - angle
+                  self.hit = not self.hit
+              elif self.rect.colliderect(player2.rect) == 1 and not self.hit:
+                  angle = math.pi - angle
+                  self.hit = not self.hit
+              elif self.hit:
+                  self.hit = not self.hit
+          self.vector = (angle,z)
+
+      def calcnewpos(self,rect,vector):
+          (angle,z) = vector
+          (dx,dy) = (z*math.cos(angle),z*math.sin(angle))
+          return rect.move(dx,dy)
+
+  class Bat(pygame.sprite.Sprite):
+      """Movable tennis 'bat' with which one hits the ball
+      Returns: bat object
+      Functions: reinit, update, moveup, movedown
+      Attributes: which, speed"""
+
+      def __init__(self, side):
+          pygame.sprite.Sprite.__init__(self)
+          self.image, self.rect = load_png("bat.png")
+          screen = pygame.display.get_surface()
+          self.area = screen.get_rect()
+          self.side = side
+          self.speed = 10
+          self.state = "still"
+          self.reinit()
+
+      def reinit(self):
+          self.state = "still"
+          self.movepos = [0,0]
+          if self.side == "left":
+              self.rect.midleft = self.area.midleft
+          elif self.side == "right":
+              self.rect.midright = self.area.midright
+
+      def update(self):
+          newpos = self.rect.move(self.movepos)
+          if self.area.contains(newpos):
+              self.rect = newpos
+          pygame.event.pump()
+
+      def moveup(self):
+          self.movepos[1] = self.movepos[1] - (self.speed)
+          self.state = "moveup"
+
+      def movedown(self):
+          self.movepos[1] = self.movepos[1] + (self.speed)
+          self.state = "movedown"
+
+
+  def main():
+      # Initialise screen
+      pygame.init()
+      screen = pygame.display.set_mode((640, 480))
+      pygame.display.set_caption("Basic Pong")
+
+      # Fill background
+      background = pygame.Surface(screen.get_size())
+      background = background.convert()
+      background.fill((0, 0, 0))
+
+      # Initialise players
+      global player1
+      global player2
+      player1 = Bat("left")
+      player2 = Bat("right")
+
+      # Initialise ball
+      speed = 13
+      rand = ((0.1 * (random.randint(5,8))))
+      ball = Ball((0,0),(0.47,speed))
+
+      # Initialise sprites
+      playersprites = pygame.sprite.Group((player1, player2))
+      ballsprite = pygame.sprite.Group(ball)
+
+      # Blit everything to the screen
+      screen.blit(background, (0, 0))
+      pygame.display.flip()
+
+      # Initialise clock
+      clock = pygame.time.Clock()
+
+      # Event loop
+      while True:
+          # Make sure game doesn't run at more than 60 frames per second
+          clock.tick(60)
+
+          for event in pygame.event.get():
+              if event.type == QUIT:
+                  return
+              elif event.type == KEYDOWN:
+                  if event.key == K_a:
+                      player1.moveup()
+                  if event.key == K_z:
+                      player1.movedown()
+                  if event.key == K_UP:
+                      player2.moveup()
+                  if event.key == K_DOWN:
+                      player2.movedown()
+              elif event.type == KEYUP:
+                  if event.key == K_a or event.key == K_z:
+                      player1.movepos = [0,0]
+                      player1.state = "still"
+                  if event.key == K_UP or event.key == K_DOWN:
+                      player2.movepos = [0,0]
+                      player2.state = "still"
+
+          screen.blit(background, ball.rect, ball.rect)
+          screen.blit(background, player1.rect, player1.rect)
+          screen.blit(background, player2.rect, player2.rect)
+          ballsprite.update()
+          playersprites.update()
+          ballsprite.draw(screen)
+          playersprites.draw(screen)
+          pygame.display.flip()
+
+
+  if __name__ == "__main__":
+      main()
+
+Além de mostrar o produto final, vou indicar você de volta para o TomPong, no qual tudo isso é baseado. Faça o download, dê uma olhada
+no código-fonte e você verá uma implementação completa do Pong usando todo o código que você viu neste tutorial, além de muito
+outro código que adicionei em várias versões, como algumas físicas adicionais para o giro e várias outras correções de bugs.
+
+Ah, encontre o TomPong em http://tomchance.org.uk/projects/pong.
