@@ -197,10 +197,6 @@ try:
 except (ImportError, OSError):
     sprite = MissingModule("sprite", urgent=1)
 
-try:
-    import pygame.threads
-except (ImportError, OSError):
-    threads = MissingModule("threads", urgent=1)
 
 try:
     import pygame.pixelcopy
