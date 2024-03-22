@@ -110,6 +110,7 @@ _pg_has_avx2()
     mm256_dst = _mm256_packus_epi16(_shuff16_temp, shuff_dst);
 
 #define FILLERS(NAME, COLOR_PROCESS_CODE, FILL_CODE)                        \
+    __attribute__((target("avx2")))                                         \
     int surface_fill_blend_##NAME##_avx2(SDL_Surface *surface,              \
                                          SDL_Rect *rect, Uint32 color)      \
     {                                                                       \
@@ -117,6 +118,7 @@ _pg_has_avx2()
         RUN_AVX2_FILLER(FILL_CODE)                                          \
         return 0;                                                           \
     }                                                                       \
+    __attribute__((target("avx2")))                                         \
     int surface_fill_blend_rgba_##NAME##_avx2(SDL_Surface *surface,         \
                                               SDL_Rect *rect, Uint32 color) \
     {                                                                       \
@@ -126,6 +128,7 @@ _pg_has_avx2()
     }
 
 #define FILLERS_SHUFF(NAME, COLOR_PROCESS_CODE, FILL_CODE)                  \
+    __attribute__((target("avx2")))                                         \
     int surface_fill_blend_##NAME##_avx2(SDL_Surface *surface,              \
                                          SDL_Rect *rect, Uint32 color)      \
     {                                                                       \
@@ -134,6 +137,7 @@ _pg_has_avx2()
         RUN_AVX2_FILLER(RUN_16BIT_SHUFFLE_OUT(FILL_CODE))                   \
         return 0;                                                           \
     }                                                                       \
+    __attribute__((target("avx2")))                                         \
     int surface_fill_blend_rgba_##NAME##_avx2(SDL_Surface *surface,         \
                                               SDL_Rect *rect, Uint32 color) \
     {                                                                       \
