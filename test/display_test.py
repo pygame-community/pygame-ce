@@ -832,7 +832,7 @@ class DisplayInteractiveTest(unittest.TestCase):
         pygame.display.quit()
 
 
-class FullscreenToggleTests(unittest.TestCase):
+class FullscreenToggleTestsInteractive(unittest.TestCase):
     __tags__ = ["interactive"]
 
     screen = None
