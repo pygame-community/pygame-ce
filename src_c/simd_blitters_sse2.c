@@ -69,13 +69,14 @@ pg_neon_at_runtime_but_uncompiled()
 
 #if (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON))
 
-void ON_ENDIAN() {
-    unsigned int x = 1;
-    if (*(char *) &x) {
-        printf("Little endian\n");
-    } else {
-        printf("Big endian\n");
-    }
+void
+ON_ENDIAN()
+{
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    printf("Little endian SDL\n");
+#else
+    printf("Big endian SDL\n");
+#endif
 }
 
 #define SETUP_SSE2_BLITTER                        \
