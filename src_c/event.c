@@ -1028,8 +1028,9 @@ dict_from_event(SDL_Event *event)
             _pg_insobj(dict, "instance_id",
                        PyLong_FromLong(event->jaxis.which));
             _pg_insobj(dict, "axis", PyLong_FromLong(event->jaxis.axis));
+            // sdl report axis values as values between -32768 and 32767
             _pg_insobj(dict, "value",
-                       PyFloat_FromDouble(event->jaxis.value / 32767.0));
+                       PyFloat_FromDouble(event->jaxis.value / 32768.0));
             break;
         case SDL_JOYBALLMOTION:
             _pg_insobj(dict, "joy", get_joy_device_index(event->jaxis.which));
@@ -1172,7 +1173,9 @@ dict_from_event(SDL_Event *event)
             _pg_insobj(dict, "instance_id",
                        PyLong_FromLong(event->caxis.which));
             _pg_insobj(dict, "axis", PyLong_FromLong(event->caxis.axis));
-            _pg_insobj(dict, "value", PyLong_FromLong(event->caxis.value));
+            // sdl report axis values as values between -32768 and 32767
+            _pg_insobj(dict, "value",
+                       PyFloat_FromDouble(event->caxis.value / 32768.0));
             break;
         case SDL_CONTROLLERBUTTONDOWN:
         case SDL_CONTROLLERBUTTONUP:

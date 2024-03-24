@@ -4,7 +4,6 @@ import pygame._sdl2.controller as controller
 from pygame.tests.test_utils import prompt, question
 
 
-@unittest.skip("Module is under construction")
 class ControllerModuleTest(unittest.TestCase):
     def setUp(self):
         controller.init()
@@ -34,15 +33,6 @@ class ControllerModuleTest(unittest.TestCase):
     def test_get_init(self):
         self.assertTrue(controller.get_init())
 
-    def test_get_eventstate(self):
-        controller.set_eventstate(True)
-        self.assertTrue(controller.get_eventstate())
-
-        controller.set_eventstate(False)
-        self.assertFalse(controller.get_eventstate())
-
-        controller.set_eventstate(True)
-
     def test_get_count(self):
         self.assertGreaterEqual(controller.get_count(), 0)
 
@@ -59,11 +49,7 @@ class ControllerModuleTest(unittest.TestCase):
         with self.assertRaises(TypeError):
             controller.is_controller("Test")
 
-    def test_name_forindex(self):
-        self.assertIsNone(controller.name_forindex(-1))
 
-
-@unittest.skip("Module is under construction")
 class ControllerTypeTest(unittest.TestCase):
     def setUp(self):
         controller.init()
@@ -149,7 +135,6 @@ class ControllerTypeTest(unittest.TestCase):
             self.skipTest("No controller connected")
 
 
-@unittest.skip("Module is under construction")
 class ControllerInteractiveTest(unittest.TestCase):
     __tags__ = ["interactive"]
 
@@ -181,75 +166,6 @@ class ControllerInteractiveTest(unittest.TestCase):
         )
 
         self.assertTrue(ans)
-
-    def test_set_eventstate_on_interactive(self):
-        c = self._get_first_controller()
-        if not c:
-            self.skipTest("No controller connected")
-
-        pygame.display.init()
-        pygame.font.init()
-
-        screen = pygame.display.set_mode((400, 400))
-        font = pygame.font.Font(None, 20)
-        running = True
-
-        screen.fill((255, 255, 255))
-        screen.blit(
-            font.render("Press button 'x' (on ps4) or 'a' (on xbox).", True, (0, 0, 0)),
-            (0, 0),
-        )
-        pygame.display.update()
-
-        controller.set_eventstate(True)
-
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-
-                if event.type == pygame.CONTROLLERBUTTONDOWN:
-                    running = False
-
-        pygame.display.quit()
-        pygame.font.quit()
-
-    def test_set_eventstate_off_interactive(self):
-        c = self._get_first_controller()
-        if not c:
-            self.skipTest("No controller connected")
-
-        pygame.display.init()
-        pygame.font.init()
-
-        screen = pygame.display.set_mode((400, 400))
-        font = pygame.font.Font(None, 20)
-        running = True
-
-        screen.fill((255, 255, 255))
-        screen.blit(
-            font.render("Press button 'x' (on ps4) or 'a' (on xbox).", True, (0, 0, 0)),
-            (0, 0),
-        )
-        pygame.display.update()
-
-        controller.set_eventstate(False)
-
-        while running:
-            for event in pygame.event.get(pygame.QUIT):
-                if event:
-                    running = False
-
-            if c.get_button(pygame.CONTROLLER_BUTTON_A):
-                if pygame.event.peek(pygame.CONTROLLERBUTTONDOWN):
-                    pygame.display.quit()
-                    pygame.font.quit()
-                    self.fail()
-                else:
-                    running = False
-
-        pygame.display.quit()
-        pygame.font.quit()
 
     def test_get_button_interactive(self):
         c = self._get_first_controller()
@@ -326,7 +242,7 @@ class ControllerInteractiveTest(unittest.TestCase):
         )
 
         label3 = font.render(
-            'be in the range of 0-32767. Press "y" or "n" to confirm.', True, (0, 0, 0)
+            'be in the range of 0-1. Press "y" or "n" to confirm.', True, (0, 0, 0)
         )
 
         while running:
