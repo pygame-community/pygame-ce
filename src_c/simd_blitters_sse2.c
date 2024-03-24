@@ -484,7 +484,7 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
             mm_sub = _mm_sub_epi16(mm_srcA, mm_dstA);
 
             mm_src_alpha_A =
-                _mm_shufflelo_epi16(mm_src_alpha, _MM_SHUFFLE(3, 3, 3, 3));
+                _mm_shufflelo_epi16(mm_src, _MM_SHUFFLE(3, 3, 3, 3));
 
             if (IN) {
                 print__m128i("mm_srcA", mm_srcA);
