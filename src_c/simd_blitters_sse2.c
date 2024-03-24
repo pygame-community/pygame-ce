@@ -347,7 +347,7 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
     const int n_iters_4 = width / 4;
     const int pxl_excess = width % 4;
 
-    const int IN = (*srcp == 0x000A0000 && *dstp == 0xFF7B0000);
+    int IN = (*srcp == 0x4141FFC7 && *dstp == 0xFF00FFFF);
 
     while (height--) {
         if (n_iters_4) {
@@ -540,6 +540,8 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
             *dstp = _mm_cvtsi128_si32(mm_res_pixels);
             srcp++;
             dstp++;
+            if (IN)
+                IN = 0;
         }
 
         srcp128 = (__m128i *)(srcp + srcskip);
