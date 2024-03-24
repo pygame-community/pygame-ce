@@ -336,8 +336,6 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
 
     printf("===| DEBUG |===\n");
     printf("amask: %d\n", amask);
-    printf("mm_alpha_mask: %d\n", mm_alpha_mask);
-    printf("mm_rgb_mask: %d\n", mm_rgb_mask);
     printf("n_iters_4: %d\n", n_iters_4);
     printf("pxl_excess: %d\n", pxl_excess);
     printf("===| END |===\n");
