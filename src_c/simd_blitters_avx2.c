@@ -12,8 +12,6 @@
         "to the devs!");                                                     \
     PG_EXIT(1)
 
-#undef __AVX2__
-
 /* helper function that does a runtime check for AVX2. It has the added
  * functionality of also returning 0 if compile time support is missing */
 int

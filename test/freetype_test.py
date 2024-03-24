@@ -866,7 +866,6 @@ class FreeTypeFontTest(unittest.TestCase):
             font.antialiased = save_antialiased
 
     def test_freetype_Font_render_to_mono(self):
-        print("IN test_freetype_Font_render_to_mono")
         # Blitting is done in two stages. First the target is alpha filled
         # with the background color, if any. Second, the foreground
         # color is alpha blitted to the background.

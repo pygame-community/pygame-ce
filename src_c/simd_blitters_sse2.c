@@ -69,17 +69,6 @@ pg_neon_at_runtime_but_uncompiled()
 #endif
 
 #if (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON))
-#define PRINT_REG_FUNC(reg)                                \
-    void print##reg(const char *name, reg v)               \
-    {                                                      \
-        printf("%s: <", name);                             \
-        for (int i = 0; i < (int)(sizeof(reg) / 4); i++) { \
-            printf("%02x ", ((uint8_t *)&v)[i]);           \
-        }                                                  \
-        printf("\b>\n");                                   \
-    }
-
-PRINT_REG_FUNC(__m128i)
 
 #define SETUP_SSE2_BLITTER                        \
     int i, n;                                     \
@@ -327,7 +316,10 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
     int srcskip = info->s_skip >> 2;
     int dstskip = info->d_skip >> 2;
 
-    const Uint32 amask = info->src->Amask | info->dst->Amask;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    const Uint32 amask = 0xFF000000;
+#else
+    const Uint32 amask = 0x000000FF;
 
     Uint32 *srcp = (Uint32 *)info->s_pixels;
     Uint32 *dstp = (Uint32 *)info->d_pixels;
@@ -347,14 +339,6 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
     const int n_iters_4 = width / 4;
     const int pxl_excess = width % 4;
 
-    printf("===| DEBUG |===\n");
-    printf("amask: %d\n", amask);
-    printf("n_iters_4: %d\n", n_iters_4);
-    printf("pxl_excess: %d\n", pxl_excess);
-    printf("===| END |===\n");
-
-    int g = 0;
-
     while (height--) {
         if (n_iters_4) {
             LOOP_UNROLLED4(
@@ -367,17 +351,6 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
                     mm_dst_alpha = _mm_and_si128(mm_dst, mm_alpha_mask);
 
                     __m128i mask = _mm_cmpeq_epi32(mm_dst_alpha, mm_zero);
-
-                    if (g == 0) {
-                        printf("===| DEBUG |===\n");
-                        print__m128i("mm_src", mm_src);
-                        print__m128i("mm_dst", mm_dst);
-                        print__m128i("mm_src_alpha", mm_src_alpha);
-                        print__m128i("mm_dst_alpha", mm_dst_alpha);
-                        print__m128i("mask", mask);
-                        printf("===| END |===\n");
-                        g++;
-                    }
 
                     mm_src_alpha = _mm_srli_si128(mm_src_alpha, 3);
                     mm_dst_alpha = _mm_srli_si128(mm_dst_alpha, 3);
@@ -466,18 +439,6 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
             mm_res_a = _mm_subs_epu16(mm_res_a, temp);
             mm_res_a = _mm_slli_epi32(mm_res_a, 24);
             /* === End of alpha calculation === */
-
-            if (g == 0) {
-                printf("===| DEBUG |===\n");
-                print__m128i("mm_src", mm_src);
-                print__m128i("mm_dst", mm_dst);
-                print__m128i("mm_src_alpha", mm_src_alpha);
-                print__m128i("mm_dst_alpha", mm_dst_alpha);
-                print__m128i("mm_res_a", mm_res_a);
-                print__m128i("temp", temp);
-                printf("===| END |===\n");
-                g++;
-            }
 
             /* === Calculate the new RGB === */
 

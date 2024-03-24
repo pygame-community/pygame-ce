@@ -2472,7 +2472,6 @@ class GeneralSurfaceTests(unittest.TestCase):
         self.assertEqual(s2.get_at((0, 0))[0], 0, "the red component should be 0")
 
     def test_set_alpha_value(self):
-        print("IN test_set_alpha_value")
         """surf.set_alpha(x), where x != None, enables blending"""
         s = pygame.Surface((1, 1), SRCALPHA, 32)
         s.fill((0, 255, 0, 128))
