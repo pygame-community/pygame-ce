@@ -295,14 +295,14 @@ alphablit_alpha_sse2_argb_surf_alpha(SDL_BlitInfo *info)
     }
 }
 
-#define PRINT_REG_FUNC(reg)                                \
-    void print##reg(const char *name, reg v)               \
-    {                                                      \
-        printf("%s: <", name);                             \
-        for (int i = 0; i < (int)(sizeof(reg) / 4); i++) { \
-            printf("%02x ", ((uint8_t *)&v)[i]);           \
-        }                                                  \
-        printf("\b>\n");                                   \
+#define PRINT_REG_FUNC(reg)                          \
+    void print##reg(const char *name, reg v)         \
+    {                                                \
+        printf("%s: <", name);                       \
+        for (int i = 0; i < (int)sizeof(reg); i++) { \
+            printf("%02x ", ((uint8_t *)&v)[i]);     \
+        }                                            \
+        printf("\b>\n");                             \
     }
 
 PRINT_REG_FUNC(__m128i)
