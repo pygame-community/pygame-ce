@@ -295,6 +295,18 @@ alphablit_alpha_sse2_argb_surf_alpha(SDL_BlitInfo *info)
     }
 }
 
+#define PRINT_REG_FUNC(reg)                                \
+    void print##reg(const char *name, reg v)               \
+    {                                                      \
+        printf("%s: <", name);                             \
+        for (int i = 0; i < (int)(sizeof(reg) / 4); i++) { \
+            printf("%02x ", ((uint8_t *)&v)[i]);           \
+        }                                                  \
+        printf("\b>\n");                                   \
+    }
+
+PRINT_REG_FUNC(__m128i)
+
 void
 alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
 {
@@ -334,6 +346,8 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
 
     const int n_iters_4 = width / 4;
     const int pxl_excess = width % 4;
+
+    const int IN = (*srcp == 0x000A0000 && *dstp == 0xFF7B0000);
 
     while (height--) {
         if (n_iters_4) {
@@ -416,6 +430,8 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
 
         for (i = 0; i < pxl_excess; i++) {
             if (!(*dstp & amask)) {
+                if (IN)
+                    printf("dstp == & amask\n");
                 *dstp++ = *srcp++;
                 continue;
             }
@@ -426,14 +442,38 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
             mm_src_alpha = _mm_and_si128(mm_src, mm_alpha_mask);
             mm_dst_alpha = _mm_and_si128(mm_dst, mm_alpha_mask);
 
+            if (IN) {
+                print__m128i("mm_src", mm_src);
+                print__m128i("mm_dst", mm_dst);
+                print__m128i("mm_src_alpha", mm_src_alpha);
+                print__m128i("mm_dst_alpha", mm_dst_alpha);
+            }
+
             mm_src_alpha = _mm_srli_si128(mm_src_alpha, 3);
             mm_dst_alpha = _mm_srli_si128(mm_dst_alpha, 3);
 
             mm_res_a = _mm_add_epi16(mm_src_alpha, mm_dst_alpha);
             temp = _mm_mullo_epi16(mm_dst_alpha, mm_src_alpha);
+
+            if (IN) {
+                print__m128i("mm_src_alpha", mm_src_alpha);
+                print__m128i("mm_dst_alpha", mm_dst_alpha);
+                print__m128i("mm_res_a", mm_res_a);
+                print__m128i("temp", temp);
+            }
+
             temp = DO_SSE2_DIV255_U16(temp);
+
             mm_res_a = _mm_subs_epu16(mm_res_a, temp);
+            if (IN) {
+                print__m128i("temp", temp);
+                print__m128i("mm_res_a", mm_res_a);
+            }
             mm_res_a = _mm_slli_epi32(mm_res_a, 24);
+
+            if (IN) {
+                print__m128i("mm_res_a", mm_res_a);
+            }
             /* === End of alpha calculation === */
 
             /* === Calculate the new RGB === */
@@ -446,18 +486,56 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
             mm_src_alpha_A =
                 _mm_shufflelo_epi16(mm_src_alpha_A, _MM_SHUFFLE(3, 3, 3, 3));
 
+            if (IN) {
+                print__m128i("mm_srcA", mm_srcA);
+                print__m128i("mm_dstA", mm_dstA);
+                print__m128i("mm_sub", mm_sub);
+                print__m128i("mm_src_alpha_A", mm_src_alpha_A);
+            }
+
             mm_sub = _mm_mullo_epi16(mm_sub, mm_src_alpha_A);
+
+            if (IN) {
+                print__m128i("mm_sub", mm_sub);
+            }
             mm_sub = _mm_add_epi16(mm_sub, mm_srcA);
 
+            if (IN) {
+                print__m128i("mm_sub", mm_sub);
+            }
+
             partial_A = _mm_slli_epi16(mm_dstA, 8);
+
+            if (IN) {
+                print__m128i("partial_A", partial_A);
+            }
+
             partial_A = _mm_add_epi16(partial_A, mm_sub);
+
+            if (IN) {
+                print__m128i("partial_A", partial_A);
+            }
+
             partial_A = _mm_srli_epi16(partial_A, 8);
+
+            if (IN) {
+                print__m128i("partial_A", partial_A);
+            }
 
             /* === End of RGB calculation === */
 
             mm_res_pixels = _mm_packus_epi16(partial_A, mm_zero);
+            if (IN) {
+                print__m128i("mm_res_pixels", mm_res_pixels);
+            }
             mm_res_pixels = _mm_and_si128(mm_res_pixels, mm_rgb_mask);
+            if (IN) {
+                print__m128i("mm_res_pixels", mm_res_pixels);
+            }
             mm_res_pixels = _mm_or_si128(mm_res_pixels, mm_res_a);
+            if (IN) {
+                print__m128i("mm_res_pixels", mm_res_pixels);
+            }
 
             *dstp = _mm_cvtsi128_si32(mm_res_pixels);
             srcp++;
