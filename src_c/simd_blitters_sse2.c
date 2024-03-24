@@ -1,5 +1,4 @@
 #include "simd_blitters.h"
-#include <stdint.h>
 
 #if PG_ENABLE_ARM_NEON
 // sse2neon.h is from here: https://github.com/DLTcollab/sse2neon
@@ -69,6 +68,15 @@ pg_neon_at_runtime_but_uncompiled()
 #endif
 
 #if (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON))
+
+void ON_ENDIAN() {
+    unsigned int x = 1;
+    if (*(char *) &x) {
+        printf("Little endian\n");
+    } else {
+        printf("Big endian\n");
+    }
+}
 
 #define SETUP_SSE2_BLITTER                        \
     int i, n;                                     \
@@ -316,7 +324,9 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
     int srcskip = info->s_skip >> 2;
     int dstskip = info->d_skip >> 2;
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    ON_ENDIAN();
+
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
     const Uint32 amask = 0xFF000000;
 #else
     const Uint32 amask = 0x000000FF;
