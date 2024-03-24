@@ -1,4 +1,5 @@
 #include "simd_blitters.h"
+#include <stdint.h>
 
 #if PG_ENABLE_ARM_NEON
 // sse2neon.h is from here: https://github.com/DLTcollab/sse2neon
@@ -68,17 +69,16 @@ pg_neon_at_runtime_but_uncompiled()
 #endif
 
 #if (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON))
-#define PRINT_REG_FUNC(reg)                       \
-    void print##reg(const char *name, reg v)     \
-    {                                             \
-        printf("%s: <", name);                    \
-        for (int i = 0; i < sizeof(v) / 4; i++) { \
-            printf("%02x ", ((uint8_t *)&v)[i]);  \
-        }                                         \
-        printf("\b>\n");                          \
+#define PRINT_REG_FUNC(reg)                              \
+    void print##reg(const char *name, reg v)             \
+    {                                                    \
+        printf("%s: <", name);                           \
+        for (int i = 0; i < (int)(sizeof(v) / 4); i++) { \
+            printf("%02x ", ((uint8_t *)&v)[i]);         \
+        }                                                \
+        printf("\b>\n");                                 \
     }
 
-PRINT_REG_FUNC(__m256i)
 PRINT_REG_FUNC(__m128i)
 
 #define SETUP_SSE2_BLITTER                        \
