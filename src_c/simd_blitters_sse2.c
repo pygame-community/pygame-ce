@@ -69,7 +69,6 @@ pg_neon_at_runtime_but_uncompiled()
 
 #if (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON))
 
-
 #define SETUP_SSE2_BLITTER                        \
     int i, n;                                     \
     int width = info->width;                      \
