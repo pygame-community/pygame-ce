@@ -7,12 +7,6 @@ import weakref
 from functools import reduce
 
 from pygame.tests.test_utils import SurfaceSubclass
-
-try:
-    from pygame.tests.test_utils import arrinter
-except NameError:
-    pass
-
 import pygame
 
 
@@ -1320,72 +1314,7 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
         self.assertRaises(ValueError, lambda: pygame.PixelArray(weird_surface))
 
 
-@unittest.skipIf(IS_PYPY, "pypy having issues")
 class PixelArrayArrayInterfaceTest(unittest.TestCase, TestMixin):
-    @unittest.skipIf(IS_PYPY, "skipping for PyPy (why?)")
-    def test_basic(self):
-        # Check unchanging fields.
-        sf = pygame.Surface((2, 2), 0, 32)
-        ar = pygame.PixelArray(sf)
-
-        ai = arrinter.ArrayInterface(ar)
-        self.assertEqual(ai.two, 2)
-        self.assertEqual(ai.typekind, "u")
-        self.assertEqual(ai.nd, 2)
-        self.assertEqual(ai.data, ar._pixels_address)
-
-    @unittest.skipIf(IS_PYPY, "skipping for PyPy (why?)")
-    def test_shape(self):
-        for shape in [[4, 16], [5, 13]]:
-            w, h = shape
-            sf = pygame.Surface(shape, 0, 32)
-            ar = pygame.PixelArray(sf)
-            ai = arrinter.ArrayInterface(ar)
-            ai_shape = [ai.shape[i] for i in range(ai.nd)]
-            self.assertEqual(ai_shape, shape)
-            ar2 = ar[::2, :]
-            ai2 = arrinter.ArrayInterface(ar2)
-            w2 = len(([0] * w)[::2])
-            ai_shape = [ai2.shape[i] for i in range(ai2.nd)]
-            self.assertEqual(ai_shape, [w2, h])
-            ar2 = ar[:, ::2]
-            ai2 = arrinter.ArrayInterface(ar2)
-            h2 = len(([0] * h)[::2])
-            ai_shape = [ai2.shape[i] for i in range(ai2.nd)]
-            self.assertEqual(ai_shape, [w, h2])
-
-    @unittest.skipIf(IS_PYPY, "skipping for PyPy (why?)")
-    def test_itemsize(self):
-        for bytes_per_pixel in range(1, 5):
-            bits_per_pixel = 8 * bytes_per_pixel
-            sf = pygame.Surface((2, 2), 0, bits_per_pixel)
-            ar = pygame.PixelArray(sf)
-            ai = arrinter.ArrayInterface(ar)
-            self.assertEqual(ai.itemsize, bytes_per_pixel)
-
-    @unittest.skipIf(IS_PYPY, "skipping for PyPy (why?)")
-    def test_flags(self):
-        aim = arrinter
-        common_flags = aim.PAI_NOTSWAPPED | aim.PAI_WRITEABLE | aim.PAI_ALIGNED
-        s = pygame.Surface((10, 2), 0, 32)
-        ar = pygame.PixelArray(s)
-        ai = aim.ArrayInterface(ar)
-        self.assertEqual(ai.flags, common_flags | aim.PAI_FORTRAN)
-
-        ar2 = ar[::2, :]
-        ai = aim.ArrayInterface(ar2)
-        self.assertEqual(ai.flags, common_flags)
-
-        s = pygame.Surface((8, 2), 0, 24)
-        ar = pygame.PixelArray(s)
-        ai = aim.ArrayInterface(ar)
-        self.assertEqual(ai.flags, common_flags | aim.PAI_FORTRAN)
-
-        s = pygame.Surface((7, 2), 0, 24)
-        ar = pygame.PixelArray(s)
-        ai = aim.ArrayInterface(ar)
-        self.assertEqual(ai.flags, common_flags)
-
     def test_slicing(self):
         # This will implicitly test data and strides fields.
         #

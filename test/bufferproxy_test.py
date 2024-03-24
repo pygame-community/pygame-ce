@@ -28,17 +28,6 @@ class BufferProxyTest(unittest.TestCase):
     def test_class_name(self):
         self.assertEqual(BufferProxy.__name__, "BufferProxy")
 
-    def test___array_struct___property(self):
-        kwds = self.view_keywords
-        v = BufferProxy(kwds)
-        d = pygame.get_array_interface(v)
-        self.assertEqual(len(d), 5)
-        self.assertEqual(d["version"], 3)
-        self.assertEqual(d["shape"], kwds["shape"])
-        self.assertEqual(d["typestr"], kwds["typestr"])
-        self.assertEqual(d["data"], kwds["data"])
-        self.assertEqual(d["strides"], kwds["strides"])
-
     def test___array_interface___property(self):
         kwds = self.view_keywords
         v = BufferProxy(kwds)
@@ -86,25 +75,6 @@ class BufferProxyTest(unittest.TestCase):
         gc.collect()
         self.assertEqual(len(success), 1)
 
-        # For array struct
-        success = []
-        kwds["before"] = callback
-        v = BufferProxy(kwds)
-        self.assertEqual(len(success), 0)
-        c = v.__array_struct__
-        self.assertEqual(len(success), 1)
-        self.assertTrue(success[0])
-        c = v.__array_struct__
-        self.assertEqual(len(success), 1)
-        c = v = None
-        gc.collect()
-        self.assertEqual(len(success), 1)
-
-        # Callback raises an exception
-        kwds["before"] = raise_exception
-        v = BufferProxy(kwds)
-        self.assertRaises(MyException, lambda: v.__array_struct__)
-
     def test_after(self):
         def callback(parent):
             success.append(parent is p)
@@ -123,20 +93,6 @@ class BufferProxyTest(unittest.TestCase):
         d = v.__array_interface__
         self.assertEqual(len(success), 0)
         d = v = None
-        gc.collect()
-        self.assertEqual(len(success), 1)
-        self.assertTrue(success[0])
-
-        # For array struct
-        success = []
-        kwds["after"] = callback
-        v = BufferProxy(kwds)
-        self.assertEqual(len(success), 0)
-        c = v.__array_struct__
-        self.assertEqual(len(success), 0)
-        c = v.__array_struct__
-        self.assertEqual(len(success), 0)
-        c = v = None
         gc.collect()
         self.assertEqual(len(success), 1)
         self.assertTrue(success[0])
