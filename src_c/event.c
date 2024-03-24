@@ -104,7 +104,7 @@ static char released_keys[SDL_NUM_SCANCODES] = {0};
 
 #define PG_LOCK_EVFILTER_MUTEX                                             \
     if (pg_evfilter_mutex) {                                               \
-        if (SDL_LockMutex(pg_evfilter_mutex) < 0) {                        \
+        if (PG_LockMutex(pg_evfilter_mutex) < 0) {                         \
             /* TODO: better error handling with future error-event API */  \
             /* since this error is very rare, we can completely give up if \
              * this happens for now */                                     \
@@ -116,7 +116,7 @@ static char released_keys[SDL_NUM_SCANCODES] = {0};
 
 #define PG_UNLOCK_EVFILTER_MUTEX                                           \
     if (pg_evfilter_mutex) {                                               \
-        if (SDL_UnlockMutex(pg_evfilter_mutex) < 0) {                      \
+        if (PG_UnlockMutex(pg_evfilter_mutex) < 0) {                       \
             /* TODO: handle errors with future error-event API */          \
             /* since this error is very rare, we can completely give up if \
              * this happens for now */                                     \
@@ -1245,7 +1245,7 @@ dict_from_event(SDL_Event *event)
             }
             break;
 #endif /* (defined(unix) || ... */
-    }  /* switch (event->type) */
+    } /* switch (event->type) */
     /* Events that dont have any attributes are not handled in switch
      * statement */
     SDL_Window *window;

@@ -466,7 +466,7 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
                 name[idx] = single_name.decode()
 
         for single_name in name:
-            fontname, gotbold, gotitalic = _load_single_font(single_name)
+            fontname, gotbold, gotitalic = _load_single_font(single_name, bold, italic)
             if fontname:
                 break
 

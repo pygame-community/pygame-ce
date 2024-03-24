@@ -33,7 +33,7 @@ def main():
     step = 5
 
     pygame.init()
-    screen = pygame.display.set_mode((640, 480), 0, 32)
+    screen = pygame.display.set_mode((640, 480))
     screen.fill((100, 100, 100))
 
     image = pygame.image.load(os.path.join(data_dir, "liquid.bmp")).convert()
@@ -98,7 +98,6 @@ def main():
                 screen.fill((100, 100, 100))
                 screen.blit(image, (10, 10))
                 blendimage.blit(image, (0, 0))
-                # blendimage.fill (color, (0, 0, 20, 20), blendtype)
                 blendimage.fill(color, None, blendtype)
                 screen.blit(blendimage, (200, 10))
                 print(

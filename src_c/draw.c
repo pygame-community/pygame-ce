@@ -105,16 +105,27 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *colorobj, *start, *end;
     SDL_Surface *surf = NULL;
     float startx, starty, endx, endy;
+    PyObject *blend = NULL;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     Uint32 color;
-    static char *keywords[] = {"surface", "color", "start_pos", "end_pos",
-                               NULL};
+    static char *keywords[] = {"surface", "color", "start_pos",
+                               "end_pos", "blend", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|i", keywords,
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|O", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
-                                     &start, &end)) {
+                                     &start, &end, &blend)) {
         return NULL; /* Exception already set. */
+    }
+
+    if (blend != NULL) {
+        if (PyErr_WarnEx(
+                PyExc_DeprecationWarning,
+                "blend argument is deprecated and has no functionality and "
+                "will be completely removed in a future version of pygame-ce",
+                1) == -1) {
+            return NULL;
+        }
     }
 
     surf = pgSurface_AsSurface(surfobj);
@@ -239,16 +250,28 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     float *xlist, *ylist;
     float x, y;
     int l, t;
+    PyObject *blend = NULL;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     int result, closed;
     Py_ssize_t loop, length;
-    static char *keywords[] = {"surface", "color", "closed", "points", NULL};
+    static char *keywords[] = {"surface", "color", "closed",
+                               "points",  "blend", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OpO|i", keywords,
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OpO|O", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
-                                     &closed, &points)) {
+                                     &closed, &points, &blend)) {
         return NULL; /* Exception already set. */
+    }
+
+    if (blend != NULL) {
+        if (PyErr_WarnEx(
+                PyExc_DeprecationWarning,
+                "blend argument is deprecated and has no functionality and "
+                "will be completely removed in a future version of pygame-ce",
+                1) == -1) {
+            return NULL;
+        }
     }
 
     surf = pgSurface_AsSurface(surfobj);

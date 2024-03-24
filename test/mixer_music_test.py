@@ -36,6 +36,27 @@ class MixerMusicModuleTest(unittest.TestCase):
         "|tags:music|"
         self.music_load("house_lo.wav")
 
+    def test_load_flac(self):
+        "|tags:music|"
+        self.music_load("house_lo.flac")
+
+    @unittest.skipIf(
+        pygame.mixer.get_sdl_mixer_version() < (2, 8, 0),
+        "WavPack support added in SDL_mixer 2.8.0",
+    )
+    def test_load_wv(self):
+        "|tags:music|"
+        self.music_load("house_lo.wv")
+
+    def test_load_opus(self):
+        "|tags:music|"
+        self.music_load("house_lo.opus")
+
+    def test_load_midi(self):
+        "|tags:music|"
+        if pygame.mixer.get_soundfont() is not None:
+            self.music_load("MIDI_sample.mid")
+
     def test_load_xm(self):
         "|tags:music|"
         self.music_load("surfonasinewave.xm")
@@ -54,9 +75,21 @@ class MixerMusicModuleTest(unittest.TestCase):
 
     def test_load_object(self):
         """test loading music from file-like objects."""
-        filenames = ["house_lo.ogg", "house_lo.wav", "surfonasinewave.xm"]
+        filenames = [
+            "house_lo.ogg",
+            "house_lo.wav",
+            "house_lo.flac",
+            "house_lo.opus",
+            "surfonasinewave.xm",
+        ]
         if pygame.mixer.get_sdl_mixer_version() >= (2, 6, 0):
             filenames.append("house_lo.mp3")
+
+        if pygame.mixer.get_sdl_mixer_version() >= (2, 8, 0):
+            filenames.append("house_lo.wv")
+
+        if pygame.mixer.get_soundfont() is not None:
+            filenames.append("MIDI_sample.mid")
 
         data_fname = example_path("data")
         for file in filenames:
@@ -70,9 +103,21 @@ class MixerMusicModuleTest(unittest.TestCase):
 
     def test_object_namehint(self):
         """test loading & queuing music from file-like objects with namehint argument."""
-        filenames = ["house_lo.ogg", "house_lo.wav", "surfonasinewave.xm"]
+        filenames = [
+            "house_lo.ogg",
+            "house_lo.wav",
+            "house_lo.flac",
+            "house_lo.opus",
+            "surfonasinewave.xm",
+        ]
         if pygame.mixer.get_sdl_mixer_version() >= (2, 6, 0):
             filenames.append("house_lo.mp3")
+
+        if pygame.mixer.get_sdl_mixer_version() >= (2, 8, 0):
+            filenames.append("house_lo.wv")
+
+        if pygame.mixer.get_soundfont() is not None:
+            filenames.append("MIDI_sample.mid")
 
         data_fname = example_path("data")
         for file in filenames:
@@ -154,6 +199,43 @@ class MixerMusicModuleTest(unittest.TestCase):
         """
         filename = example_path(os.path.join("data", "house_lo.wav"))
         pygame.mixer.music.queue(filename)
+
+    def test_queue_flac(self):
+        """Ensures queue() accepts flac files.
+
+        |tags:music|
+        """
+        filename = example_path(os.path.join("data", "house_lo.flac"))
+        pygame.mixer.music.queue(filename)
+
+    @unittest.skipIf(
+        pygame.mixer.get_sdl_mixer_version() < (2, 8, 0),
+        "WavPack support added in SDL_mixer 2.8.0",
+    )
+    def test_queue_wv(self):
+        """Ensures queue() accepts wv files.
+
+        |tags:music|
+        """
+        filename = example_path(os.path.join("data", "house_lo.wv"))
+        pygame.mixer.music.queue(filename)
+
+    def test_queue_opus(self):
+        """Ensures queue() accepts opus files.
+
+        |tags:music|
+        """
+        filename = example_path(os.path.join("data", "house_lo.opus"))
+        pygame.mixer.music.queue(filename)
+
+    def test_queue_midi(self):
+        """Ensures queue() accepts midi files.
+
+        |tags:music|
+        """
+        if pygame.mixer.get_soundfont() is not None:
+            filename = example_path(os.path.join("data", "MIDI_sample.mid"))
+            pygame.mixer.music.queue(filename)
 
     def test_queue_xm(self):
         """Ensures queue() accepts xm files (tracker music files).

@@ -1,4 +1,5 @@
 from cpython cimport PyObject
+from cpython.ref cimport Py_DECREF
 cimport cython
 from pygame._sdl2.sdl2 import error
 from pygame._sdl2.sdl2 import error as errorfnc
@@ -1233,6 +1234,11 @@ cdef class Renderer:
                 raise MemoryError("not enough memory for the surface")
 
             surface = <object>pgSurface_New2(surf, 1)
+            # casting to <object> makes cython assume reference counting of the object and it increments
+            # it by one, however, pgSurface_New2 already returns a new reference to an object, so
+            # we need to decrement that reference cython has added on top
+            # see https://github.com/cython/cython/issues/2589#issuecomment-417604249 for additional context
+            Py_DECREF(surface)
         elif pgSurface_Check(surface):
             surf = pgSurface_AsSurface(surface)
             if surf.w < rarea.w or surf.h < rarea.h:

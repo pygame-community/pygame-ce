@@ -448,7 +448,7 @@ En este caso crearemos todos los objetos que el juego va a necesitar.
     punch_sound = load_sound("punch.wav")
     chimp = Chimp()
     fist = Fist()
-    allsprites = pg.sprite.RenderPlain((chimp, fist))
+    allsprites = pg.sprite.Group((chimp, fist))
     clock = pg.time.Clock()
 
 Primero cargamos dos efectos de sonido usando la función `load_sound`, que se
@@ -456,12 +456,7 @@ encuentra definida en código arriba. Luego, creamos una instancia para cada
 uno de los sprites de la clase. Por último, creamos el sprite 
 :class:`Group <pygame.sprite.Group>` que va a contener todos nuestros sprites.
 
-En realidad, nosotros usamos un grupo especial de sprites llamado 
-:class:`RenderPlain<pygame.sprite.RenderPlain>`. 
-Este grupo de sprites puede dibujar en la pantalla todos los sprites que contiene.
-Es llamado `RenderPlain` porque en realidad hay grupos Render más avanzados, pero
-para nuestro juego nosotros solo necesitamos un dibujo simple. Nosotros creamos
-el grupo llamado "allsprites" al pasar una lista con todos los sprites que deberían
+Nosotros creamos el grupo llamado "allsprites" al pasar una lista con todos los sprites que deberían
 pertenecer al grupo. Exise la posibilidad, si más adelante quisieramos, de agregar 
 o sacar sprites de este grupo, pero para este juego no sería necesario.
 

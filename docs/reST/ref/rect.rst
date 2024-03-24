@@ -11,9 +11,11 @@
    | :sg:`Rect(left, top, width, height) -> Rect`
    | :sg:`Rect((left, top), (width, height)) -> Rect`
    | :sg:`Rect(object) -> Rect`
+   | :sg:`Rect() -> Rect`
    | :sg:`FRect(left, top, width, height) -> FRect`
    | :sg:`FRect((left, top), (width, height)) -> FRect`
    | :sg:`FRect(object) -> FRect`
+   | :sg:`FRect() -> FRect`
 
    .. versionchanged:: 2.2 Since version 2.2 there is another class called FRect that serves the same purpose as as `Rect` but it can hold floats instead of integers.
 
@@ -25,6 +27,10 @@
    Any pygame function that requires a Rect argument also accepts any of these
    values to construct a Rect. This makes it easier to create Rects on the fly
    as arguments to functions.
+
+   If no arguments are given, a zero Rect will be created (x=0, y=0, w=0, h=0).
+   This will only work when using the Rect/FRect class and not with functions
+   that require a Rect argument.
 
    The Rect functions that change the position or size of a Rect return a new
    copy of the Rect with the affected changes. The original Rect is not

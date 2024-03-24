@@ -839,13 +839,13 @@ class LintFormatCommand(Command):
 
 
         # Other files have too many issues for now. setup.py, buildconfig, etc
-        python_directories = ["src_py", "test", "examples"]
+        python_directories = ["src_py", "test", "examples", "docs", "--exclude", "docs/reST"]
         if self.lint:
             commands = {
                 "clang-format": ["--dry-run", "--Werror", "-i"] + c_files,
                 "black": ["--check", "--diff"] + python_directories,
                 # Test directory has too much pylint warning for now
-                "pylint": ["src_py"],
+                "pylint": ["src_py", "docs"],
             }
         else:
             commands = {

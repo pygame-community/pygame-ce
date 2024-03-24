@@ -88,7 +88,7 @@ static SDL_mutex *pg_timer_mutex = NULL;
  * easily */
 #define PG_LOCK_TIMER_MUTEX                                                \
     if (pg_timer_mutex) {                                                  \
-        if (SDL_LockMutex(pg_timer_mutex) < 0) {                           \
+        if (PG_LockMutex(pg_timer_mutex) < 0) {                            \
             /* TODO: better error handling with future error-event API */  \
             /* since this error is very rare, we can completely give up if \
              * this happens for now */                                     \
@@ -100,7 +100,7 @@ static SDL_mutex *pg_timer_mutex = NULL;
 
 #define PG_UNLOCK_TIMER_MUTEX                                              \
     if (pg_timer_mutex) {                                                  \
-        if (SDL_UnlockMutex(pg_timer_mutex) < 0) {                         \
+        if (PG_UnlockMutex(pg_timer_mutex) < 0) {                          \
             /* TODO: handle errors with future error-event API */          \
             /* since this error is very rare, we can completely give up if \
              * this happens for now */                                     \
@@ -441,7 +441,7 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
     Py_BEGIN_ALLOW_THREADS;
 
 #ifndef __EMSCRIPTEN__
-    if (SDL_LockMutex(pg_timer_mutex) < 0) {
+    if (PG_LockMutex(pg_timer_mutex) < 0) {
         ecode = PG_TIMER_SDL_ERROR;
         goto end_no_mutex;
     }
@@ -475,7 +475,7 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
 
 end:
 #ifndef __EMSCRIPTEN__
-    if (SDL_UnlockMutex(pg_timer_mutex)) {
+    if (PG_UnlockMutex(pg_timer_mutex)) {
         ecode = PG_TIMER_SDL_ERROR;
     }
 

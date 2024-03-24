@@ -583,6 +583,18 @@ pg_mixer_get_init(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
+pg_mixer_get_driver(PyObject *self, PyObject *_null)
+{
+    const char *name = NULL;
+    MIXER_INIT_CHECK();
+    name = SDL_GetCurrentAudioDriver();
+    if (!name) {
+        name = "unknown";
+    }
+    return PyUnicode_FromString(name);
+}
+
+static PyObject *
 pre_init(PyObject *self, PyObject *args, PyObject *keywds)
 {
     static char *kwids[] = {"frequency", "size",       "channels",
@@ -1941,6 +1953,8 @@ static PyMethodDef _mixer_methods[] = {
     {"quit", (PyCFunction)mixer_quit, METH_NOARGS, DOC_MIXER_QUIT},
     {"get_init", (PyCFunction)pg_mixer_get_init, METH_NOARGS,
      DOC_MIXER_GETINIT},
+    {"get_driver", (PyCFunction)pg_mixer_get_driver, METH_NOARGS,
+     DOC_MIXER_GETDRIVER},
     {"pre_init", (PyCFunction)pre_init, METH_VARARGS | METH_KEYWORDS,
      DOC_MIXER_PREINIT},
     {"get_num_channels", (PyCFunction)get_num_channels, METH_NOARGS,

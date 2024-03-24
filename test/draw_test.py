@@ -2445,6 +2445,21 @@ class AALineMixin(BaseLineMixin):
 
         self.assertIsInstance(bounds_rect, pygame.Rect)
 
+    def test_aaline__blend_warning(self):
+        """Using the blend argument should raise a DeprecationWarning"""
+        faulty_blend_values = [0, 1, True, False, None, "", [], type]
+        with warnings.catch_warnings(record=True) as w:
+            for count, blend in enumerate(faulty_blend_values):
+                # Cause all warnings to always be triggered.
+                warnings.simplefilter("always")
+                # Trigger DeprecationWarning.
+                self.draw_aaline(
+                    pygame.Surface((2, 2)), (0, 0, 0, 50), (0, 0), (2, 2), blend
+                )
+                # Check if there is only one warning and is a DeprecationWarning.
+                self.assertEqual(len(w), count + 1)
+                self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
+
     def test_aaline__kwargs(self):
         """Ensures draw aaline accepts the correct kwargs"""
         surface = pygame.Surface((4, 4))
@@ -3168,6 +3183,25 @@ class AALinesMixin(BaseLineMixin):
         )
 
         self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aalines__blend_warning(self):
+        """Using the blend argument should raise a DeprecationWarning"""
+        faulty_blend_values = [0, 1, True, False, None, "", [], type]
+        with warnings.catch_warnings(record=True) as w:
+            for count, blend in enumerate(faulty_blend_values):
+                # Cause all warnings to always be triggered.
+                warnings.simplefilter("always")
+                # Trigger DeprecationWarning.
+                self.draw_aalines(
+                    pygame.Surface((2, 2)),
+                    (0, 0, 0, 50),
+                    False,
+                    ((0, 0), (1, 1)),
+                    blend,
+                )
+                # Check if there is only one warning and is a DeprecationWarning.
+                self.assertEqual(len(w), count + 1)
+                self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
 
     def test_aalines__kwargs(self):
         """Ensures draw aalines accepts the correct kwargs."""

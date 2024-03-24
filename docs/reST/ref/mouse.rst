@@ -230,7 +230,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 .. function:: set_relative_mode
 
    | :sl:`set relative mouse mode`
-   | :sg:`set_relative_mode(enable) -> None`
+   | :sg:`set_relative_mode(enable, /) -> None`
 
    Sets the relative mouse mode state.
    While the mouse is in relative mode, the cursor is hidden,

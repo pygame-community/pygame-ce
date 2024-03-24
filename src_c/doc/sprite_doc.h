@@ -20,7 +20,7 @@
 #define DOC_SPRITE_GROUP_EMPTY "empty() -> None\nremove all Sprites"
 #define DOC_SPRITE_RENDERUPDATES "RenderUpdates(*sprites) -> RenderUpdates\nGroup sub-class that tracks dirty updates."
 #define DOC_SPRITE_RENDERUPDATES_DRAW "draw(surface) -> Rect_list\nblit the Sprite images and track changed areas"
-#define DOC_SPRITE_LAYEREDUPDATES "LayeredUpdates(*sprites, **kwargs) -> LayeredUpdates\nLayeredUpdates is a sprite group that handles layers and draws like OrderedUpdates."
+#define DOC_SPRITE_LAYEREDUPDATES "LayeredUpdates(*sprites, **kwargs) -> LayeredUpdates\nLayeredUpdates is a sprite group that handles layers and draws like RenderUpdates."
 #define DOC_SPRITE_LAYEREDUPDATES_ADD "add(*sprites, **kwargs) -> None\nadd a sprite or sequence of sprites to a group"
 #define DOC_SPRITE_LAYEREDUPDATES_SPRITES "sprites() -> sprites\nreturns a ordered list of sprites (first back, last top)."
 #define DOC_SPRITE_LAYEREDUPDATES_DRAW "draw(surface) -> Rect_list\ndraw all sprites in the right order onto the passed surface."

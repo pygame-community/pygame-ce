@@ -83,7 +83,7 @@ def main():
     pygame.mixer.quit()  # remove ALSA underflow messages for Debian squeeze
     size = 600, 400
     os.environ["SDL_VIDEO_CENTERED"] = "1"
-    screen = pygame.display.set_mode(size, pygame.NOFRAME, 0)
+    screen = pygame.display.set_mode(size, pygame.NOFRAME)
 
     pygame.event.set_blocked(pygame.MOUSEMOTION)  # keep our queue cleaner
 

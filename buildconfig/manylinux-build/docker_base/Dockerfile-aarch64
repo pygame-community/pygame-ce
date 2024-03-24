@@ -11,10 +11,11 @@ RUN rpm --import /tmp/RPM-GPG-KEY.dag.txt
 
 #RUN rpm -i /tmp/${RPMFORGE_FILE}
 
+# systemd is needed for udev (for SDL and pulse)
 # it's okay to install X11 and friends from outdated centos repos because newer
 # libs are dynamically loaded at runtime
 RUN yum install -y zlib-devel dbus-devel fontconfig xz systemd-devel \
-  mesa-libGLU-devel libcap-devel libxkbcommon-devel \
+  libcap-devel libxkbcommon-devel \
   libX11-devel libXext-devel libXrandr-devel libXcursor-devel libXfixes-devel \
   libXi-devel libXScrnSaver-devel
 
@@ -43,6 +44,42 @@ RUN ["bash", "/pkg-config_build/build-pkg-config.sh"]
 
 ADD buildtools /buildtools/
 RUN ["bash", "/buildtools/install.sh"]
+
+ADD libffi /libffi_build/
+RUN ["bash", "/libffi_build/build-libffi.sh"]
+
+ADD libxml2 /libxml2_build/
+RUN ["bash", "/libxml2_build/build-libxml2.sh"]
+
+ADD wayland /wayland_build/
+RUN ["bash", "/wayland_build/build-wayland.sh"]
+
+ADD libdecor /libdecor_build/
+RUN ["bash", "/libdecor_build/build-libdecor.sh"]
+
+ADD xorg/macros /xorg_build/macros/
+RUN ["bash", "/xorg_build/macros/build-macros.sh"]
+
+ADD xorg/libpciaccess /xorg_build/libpciaccess/
+RUN ["bash", "/xorg_build/libpciaccess/build-libpciaccess.sh"]
+
+ADD mesa/libdrm /mesa_build/libdrm/
+RUN ["bash", "/mesa_build/libdrm/build-libdrm.sh"]
+
+ADD xorg/libxshmfence /xorg_build/libxshmfence/
+RUN ["bash", "/xorg_build/libxshmfence/build-libxshmfence.sh"]
+
+ADD mesa/glslang /mesa_build/glslang/
+RUN ["bash", "/mesa_build/glslang/build-glslang.sh"]
+
+ADD mesa/mako /mesa_build/mako/
+RUN ["bash", "/mesa_build/mako/build-mako.sh"]
+
+ADD mesa/flex /mesa_build/flex/
+RUN ["bash", "/mesa_build/flex/build-flex.sh"]
+
+ADD mesa/mesa /mesa_build/mesa/
+RUN ["bash", "/mesa_build/mesa/build-mesa.sh"]
 
 #ADD zlib-ng /zlib-ng_build/
 #RUN ["bash", "/zlib-ng_build/build-zlib-ng.sh"]
@@ -91,11 +128,11 @@ RUN ["bash", "/sndfile_build/build-sndfile.sh"]
 ADD pulseaudio /pulseaudio_build/
 RUN ["bash", "/pulseaudio_build/build-pulseaudio.sh"]
 
-ADD libmodplug /libmodplug_build/
-RUN ["bash", "/libmodplug_build/build-libmodplug.sh"]
+ADD libpipewire /libpipewire_build/
+RUN ["bash", "/libpipewire_build/build-libpipewire.sh"]
 
-ADD libffi /libffi_build/
-RUN ["bash", "/libffi_build/build-libffi.sh"]
+ADD libxmp /libxmp_build/
+RUN ["bash", "/libxmp_build/build-libxmp.sh"]
 
 # explicit install not needed anymore
 # ADD gettext /gettext_build/
@@ -106,6 +143,12 @@ RUN ["bash", "/glib_build/build-glib.sh"]
 
 ADD fluidsynth /fluidsynth_build/
 RUN ["bash", "/fluidsynth_build/build-fluidsynth.sh"]
+
+ADD wavpack /wavpack_build/
+RUN ["bash", "/wavpack_build/build-wavpack.sh"]
+
+ADD libsamplerate /libsamplerate_build/
+RUN ["bash", "/libsamplerate_build/build-libsamplerate.sh"]
 
 ADD sdl_libs /sdl_build/
 RUN ["bash", "/sdl_build/build-sdl2-libs.sh"]

@@ -468,7 +468,7 @@ scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
         pgSurface_Lock(srcobj);
         Py_BEGIN_ALLOW_THREADS;
 
-        stretch_result_num = SDL_SoftStretch(src, NULL, modsurf, NULL);
+        stretch_result_num = PG_SoftStretchNearest(src, NULL, modsurf, NULL);
 
         Py_END_ALLOW_THREADS;
         pgSurface_Unlock(srcobj);

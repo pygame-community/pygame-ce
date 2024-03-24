@@ -10,4 +10,4 @@
 #define DOC_MOUSE_SETCURSOR "set_cursor(pygame.cursors.Cursor) -> None\nset_cursor(size, hotspot, xormasks, andmasks) -> None\nset_cursor(hotspot, surface) -> None\nset_cursor(constant) -> None\nset the mouse cursor to a new cursor"
 #define DOC_MOUSE_GETCURSOR "get_cursor() -> pygame.cursors.Cursor\nget the current mouse cursor"
 #define DOC_MOUSE_GETRELATIVEMODE "get_relative_mode() -> bool\nquery whether relative mouse mode is enabled"
-#define DOC_MOUSE_SETRELATIVEMODE "set_relative_mode(enable) -> None\nset relative mouse mode"
+#define DOC_MOUSE_SETRELATIVEMODE "set_relative_mode(enable, /) -> None\nset relative mouse mode"

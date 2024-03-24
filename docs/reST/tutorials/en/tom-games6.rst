@@ -274,8 +274,8 @@ like this::
       ball = Ball((0,0),(0.47,speed))
 
       # Initialise sprites
-      playersprites = pygame.sprite.RenderPlain((player1, player2))
-      ballsprite = pygame.sprite.RenderPlain(ball)
+      playersprites = pygame.sprite.Group((player1, player2))
+      ballsprite = pygame.sprite.Group(ball)
 
       # Blit everything to the screen
       screen.blit(background, (0, 0))
