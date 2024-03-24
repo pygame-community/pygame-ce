@@ -314,11 +314,7 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
     int srcskip = info->s_skip >> 2;
     int dstskip = info->d_skip >> 2;
 
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-    const Uint32 amask = 0xFF000000;
-#else
-    const Uint32 amask = 0x000000FF;
-#endif
+    const Uint32 amask = info->src->Amask | info->dst->Amask;
 
     Uint32 *srcp = (Uint32 *)info->s_pixels;
     Uint32 *dstp = (Uint32 *)info->d_pixels;
