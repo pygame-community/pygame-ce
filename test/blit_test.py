@@ -6,6 +6,7 @@ from pygame.locals import *
 
 class BlitTest(unittest.TestCase):
     def test_SRCALPHA(self):
+        print("IN test_SRCALPHA test")
         """SRCALPHA tests."""
         # blend(s, 0, d) = d
         s = pygame.Surface((1, 1), SRCALPHA, 32)
