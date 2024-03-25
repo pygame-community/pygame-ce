@@ -257,9 +257,9 @@ if compile_cython:
             priority = 0
         if outdated:
             print(f'Compiling {pyx_file} because it changed.')
-            queue.append((priority, dict(pyx_file=pyx_file, c_file=c_file, fingerprint=None, quiet=False,
-                                         options=c_options, full_module_name=ext.name,
-                                         embedded_metadata=pyx_meta.get(ext.name))))
+            queue.append((priority, {'pyx_file': pyx_file, 'c_file': c_file, 'fingerprint': None, 'quiet': False,
+                                         'options': c_options, 'full_module_name': ext.name,
+                                         'embedded_metadata': pyx_meta.get(ext.name)}))
 
     # compile in right order
     queue.sort(key=lambda a: a[0])
@@ -462,16 +462,16 @@ data_files = [('pygame', pygame_data_files)]
 stub_dir = os.path.join('buildconfig', 'stubs', 'pygame')
 pygame_data_files.append(os.path.join(stub_dir, 'py.typed'))
 type_files = glob.glob(os.path.join(stub_dir, '*.pyi'))
-for type_file in type_files:
-    pygame_data_files.append(type_file)
+pygame_data_files.extend(type_files)
 
 if _sdl2_data_files := glob.glob(os.path.join(stub_dir, '_sdl2', '*.pyi')):
     data_files.append(('pygame/_sdl2', _sdl2_data_files))
 
 # add non .py files in lib directory
-for f in glob.glob(os.path.join('src_py', '*')):
-    if not f[-3:] == '.py' and not f[-4:] == '.doc' and os.path.isfile(f):
-        pygame_data_files.append(f)
+pygame_data_files += [
+    file_path for file_path in glob.glob(os.path.join('src_py', '*'))
+    if not file_path.endswith(('.doc', '.py')) and os.path.isfile(file_path)
+]
 
 # We don't need to deploy tests, example code, or docs inside a game
 
