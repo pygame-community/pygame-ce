@@ -1,6 +1,6 @@
 name: macOS
 
-# Run CI only when a release is created, on changes to main branch, or any PR 
+# Run CI only when a release is created, on changes to the main branch, or any PR 
 # to main. Do not run CI on any other branch. Also, skip any non-source changes 
 # from running on CI
 on:
@@ -13,7 +13,7 @@ on:
       - '*.rst'
       - '*.md'
       - '.github/workflows/*.yml'
-      # re-include current file to not be excluded
+      # re-include the current file to not be excluded
       - '!.github/workflows/build-macos.yml'
 
   pull_request:
@@ -25,10 +25,10 @@ on:
       - '*.rst'
       - '*.md'
       - '.github/workflows/*.yml'
-      # re-include current file to not be excluded
+      # re-include the current file to not be excluded
       - '!.github/workflows/build-macos.yml'
   
-  # the github release drafter can call this workflow
+  # the GitHub release drafter can call this workflow
   workflow_call:
 
 concurrency:
@@ -37,12 +37,18 @@ concurrency:
 
 jobs:
   deps:
-    name: ${{ matrix.macarch }} deps
-    runs-on: macos-12
+    name: ${{ matrix.macarch }} deps on ${{ matrix.macos }}
+    runs-on: ${{ matrix.macos }}
     strategy:
-      matrix:
+      matrix:  # macos-14 runs on an M1, macos-13 and less run on Intel
         # make arm64 deps and x86_64 deps
         macarch: [arm64, x86_64]
+        macos: [macos-12, macos-14]
+      exclude:
+        - macarch: arm64
+          macos: macos-12
+        - macarch: x86_64
+          macos: macos-14
 
     steps:
       - uses: actions/checkout@v4.1.2
