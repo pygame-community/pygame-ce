@@ -82,7 +82,6 @@ jobs:
 
         # Build a wheel, install it for running unit tests
         run: |
-          export PIP_CONFIG_FILE=buildconfig/pip_config.ini
           echo "\nBuilding pygame wheel\n"
           python3 setup.py docs
           pip3 wheel . --wheel-dir /artifacts -vvv
