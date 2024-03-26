@@ -85,7 +85,7 @@ def prepdep(dep, basepath):
         if isinstance(dep.lib_dir, str):
             lids.append(LPREFIX+dep.lib_dir[startind:])
         else:
-            lids.extend(LPREFIX+dir[startind:]for dir in dep.lib_dir)
+            lids.extend(LPREFIX+dir[startind:] for dir in dep.lib_dir)
     libs = ''
     for lib in dep.libs:
         libs += ' -l' + lib
