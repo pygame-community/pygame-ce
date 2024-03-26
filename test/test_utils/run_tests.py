@@ -233,7 +233,8 @@ def run(*args, **kwds):
             from test.test_utils.async_sub import proc_in_time_or_kill
 
         pass_on_args = ["--exclude", ",".join(option_exclude)] + [
-            f" --{field}" for field in ("randomize", "incomplete", "unbuffered", "verbosity")
+            f"--{field}"
+            for field in ("randomize", "incomplete", "unbuffered", "verbosity")
             if kwds.get(field)
         ]
 

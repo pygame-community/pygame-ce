@@ -1419,7 +1419,7 @@ class LineMixin(BaseLineMixin):
             (2, 1, 0),  # Too many coords.
             (2, "1"),  # Wrong type.
             {2, 1},  # Wrong type.
-            {2: 1,},
+            {2: 1},
         )  # Wrong type.
 
         for start_pos in start_pos_fmts:
@@ -1443,7 +1443,7 @@ class LineMixin(BaseLineMixin):
             (2, 1, 0),  # Too many coords.
             (2, "1"),  # Wrong type.
             {2, 1},  # Wrong type.
-            {2: 1,},
+            {2: 1},
         )  # Wrong type.
 
         for end_pos in end_pos_fmts:
@@ -2714,7 +2714,7 @@ class AALineMixin(BaseLineMixin):
             (2, 1, 0),  # Too many coords.
             (2, "1"),  # Wrong type.
             {2, 1},  # Wrong type.
-            {2: 1,},
+            {2: 1},
         )  # Wrong type.
 
         for start_pos in start_pos_fmts:
@@ -2737,7 +2737,7 @@ class AALineMixin(BaseLineMixin):
             (2, 1, 0),  # Too many coords.
             (2, "1"),  # Wrong type.
             {2, 1},  # Wrong type.
-            {2: 1,},
+            {2: 1},
         )  # Wrong type.
 
         for end_pos in end_pos_fmts:

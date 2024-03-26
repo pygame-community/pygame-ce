@@ -71,7 +71,7 @@ class FontViewer:
             path = os.path.join(sys.argv[1], "")
         fonts = []
         if os.path.exists(path):
-            fonts = [font for font in os.listdir(path) if font.endswith('.ttf')]
+            fonts = [font for font in os.listdir(path) if font.endswith(".ttf")]
         return fonts or pygame.font.get_fonts(), path
 
     def render_fonts(self, text="A display of font &N"):

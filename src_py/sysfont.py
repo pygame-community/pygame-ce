@@ -168,7 +168,9 @@ def _font_finder_darwin():
 
     strange_root = "/System/Library/Assets/com_apple_MobileAsset_Font3"
     if exists(strange_root):
-        locations += [f"{strange_root}/{loc}/AssetData" for loc in os.listdir(strange_root)]
+        locations += [
+            f"{strange_root}/{loc}/AssetData" for loc in os.listdir(strange_root)
+        ]
 
     fonts = {}
 
