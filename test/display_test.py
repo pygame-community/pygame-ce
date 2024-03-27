@@ -948,6 +948,9 @@ class MessageBoxTest(unittest.TestCase):
         self.assertRaises(TypeError, lambda: mb("", buttons=()))
         self.assertRaises(TypeError, lambda: mb("", parent_window=123456))
 
+        # the important bit is `parent_window=None`
+        self.assertRaises(TypeError, lambda: mb("", buttons=(), parent_window=None))
+
 
 class MessageBoxInteractiveTest(unittest.TestCase):
     __tags__ = ["interactive"]
@@ -1014,6 +1017,11 @@ class MessageBoxInteractiveTest(unittest.TestCase):
             buttons=("Yes", "No"),
         )
         self.assertEqual(result, 0)
+
+    def test_message_box_parent_window_none(self):
+        pygame.display.message_box(
+            "Test", "Just close this messagebox", parent_window=None
+        )
 
 
 if __name__ == "__main__":
