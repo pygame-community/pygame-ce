@@ -1419,7 +1419,7 @@ class LineMixin(BaseLineMixin):
             (2, 1, 0),  # Too many coords.
             (2, "1"),  # Wrong type.
             {2, 1},  # Wrong type.
-            dict(((2, 1),)),
+            {2: 1},
         )  # Wrong type.
 
         for start_pos in start_pos_fmts:
@@ -1443,7 +1443,7 @@ class LineMixin(BaseLineMixin):
             (2, 1, 0),  # Too many coords.
             (2, "1"),  # Wrong type.
             {2, 1},  # Wrong type.
-            dict(((2, 1),)),
+            {2: 1},
         )  # Wrong type.
 
         for end_pos in end_pos_fmts:
@@ -2137,9 +2137,9 @@ class LinesMixin(BaseLineMixin):
             ((1, 1), (2, 2, 2)),  # Too many coords.
             ((1, 1), (2, "2")),  # Wrong type.
             ((1, 1), {2, 3}),  # Wrong type.
-            ((1, 1), dict(((2, 2), (3, 3)))),  # Wrong type.
+            ((1, 1), {2: 2, 3: 3}),  # Wrong type.
             {(1, 1), (1, 2)},  # Wrong type.
-            dict(((1, 1), (4, 4))),
+            {1: 1, 4: 4},
         )  # Wrong type.
 
         for points in points_fmts:
@@ -2714,7 +2714,7 @@ class AALineMixin(BaseLineMixin):
             (2, 1, 0),  # Too many coords.
             (2, "1"),  # Wrong type.
             {2, 1},  # Wrong type.
-            dict(((2, 1),)),
+            {2: 1},
         )  # Wrong type.
 
         for start_pos in start_pos_fmts:
@@ -2737,7 +2737,7 @@ class AALineMixin(BaseLineMixin):
             (2, 1, 0),  # Too many coords.
             (2, "1"),  # Wrong type.
             {2, 1},  # Wrong type.
-            dict(((2, 1),)),
+            {2: 1},
         )  # Wrong type.
 
         for end_pos in end_pos_fmts:
@@ -3424,9 +3424,9 @@ class AALinesMixin(BaseLineMixin):
             ((1, 1), (2, 2, 2)),  # Too many coords.
             ((1, 1), (2, "2")),  # Wrong type.
             ((1, 1), {2, 3}),  # Wrong type.
-            ((1, 1), dict(((2, 2), (3, 3)))),  # Wrong type.
+            ((1, 1), {2: 2, 3: 3}),  # Wrong type.
             {(1, 1), (1, 2)},  # Wrong type.
-            dict(((1, 1), (4, 4))),
+            {1: 1, 4: 4},
         )  # Wrong type.
 
         for points in points_fmts:
@@ -3926,9 +3926,9 @@ class DrawPolygonMixin:
             ((1, 1), (2, 1), (2, 2, 2)),  # Too many coords.
             ((1, 1), (2, 1), (2, "2")),  # Wrong type.
             ((1, 1), (2, 1), {2, 3}),  # Wrong type.
-            ((1, 1), (2, 1), dict(((2, 2), (3, 3)))),  # Wrong type.
+            ((1, 1), (2, 1), {2: 2, 3: 3}),  # Wrong type.
             {(1, 1), (2, 1), (2, 2), (1, 2)},  # Wrong type.
-            dict(((1, 1), (2, 2), (3, 3), (4, 4))),
+            {1: 1, 2: 2, 3: 3, 4: 4},
         )  # Wrong type.
 
         for points in points_fmts:
@@ -3947,7 +3947,7 @@ class DrawPolygonMixin:
         }
 
         points_fmts = (
-            tuple(),  # Too few points.
+            (),  # Too few points.
             ((1, 1),),  # Too few points.
             ((1, 1), (2, 1)),
         )  # Too few points.
