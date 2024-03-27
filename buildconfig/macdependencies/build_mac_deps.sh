@@ -40,18 +40,8 @@ export PG_BASE_MESON_FLAGS="--prefix=$PG_DEP_PREFIX \
     -Ddefault_library=shared"
 
 if [[ "$MAC_ARCH" == "arm64" ]]; then
-    # for scripts using ./configure to make arm64 binaries
-    export CC="clang -target arm64-apple-macos11.0"
-    export CXX="clang++ -target arm64-apple-macos11.0"
-
-    # This does not do anything actually, but without this ./configure errors
-    export PG_BASE_CONFIGURE_FLAGS="$PG_BASE_CONFIGURE_FLAGS --host=aarch64-apple-darwin20.0.0"
-
-    # configure cmake to cross-compile
-    export PG_BASE_CMAKE_FLAGS="$PG_BASE_CMAKE_FLAGS -DCMAKE_OSX_ARCHITECTURES=arm64"
-
-    # configure meson to cross-compile
-    export PG_BASE_MESON_FLAGS="$PG_BASE_MESON_FLAGS --cross-file $(pwd)/macos_arm64.ini"
+    # needs native-file that has correct macosx deployment target
+    export PG_BASE_MESON_FLAGS="$PG_BASE_MESON_FLAGS --native-file $(pwd)/macos_arm64.ini"
 
     # we don't need mac 10.9 support while compiling for apple M1 macs
     export MACOSX_DEPLOYMENT_TARGET=11.0
