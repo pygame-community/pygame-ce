@@ -876,7 +876,7 @@ class FontTypeTest(unittest.TestCase):
                 ("set_underline", (True,)),
                 ("size", ("any Text",)),
             ]
-            skip_methods = set(("get_strikethrough", "set_strikethrough"))
+            skip_methods = {"get_strikethrough", "set_strikethrough"}
         else:
             methods = [
                 ("get_height", tuple()),
@@ -972,7 +972,7 @@ class FontTypeTest(unittest.TestCase):
                 ("italic", True),
                 ("resolution", None),
             ]
-            skip_properties = set(("strikethrough",))
+            skip_properties = {"strikethrough"}
         else:
             properties = [
                 ("name", None),
