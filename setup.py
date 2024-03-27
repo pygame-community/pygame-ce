@@ -465,12 +465,8 @@ type_files = glob.glob(os.path.join(stub_dir, '*.pyi'))
 for type_file in type_files:
     pygame_data_files.append(type_file)
 
-_sdl2 = glob.glob(os.path.join(stub_dir, '_sdl2', '*.pyi'))
-if _sdl2:
-    _sdl2_data_files = []
+if _sdl2_data_files := glob.glob(os.path.join(stub_dir, '_sdl2', '*.pyi')):
     data_files.append(('pygame/_sdl2', _sdl2_data_files))
-    for type_file in _sdl2:
-        _sdl2_data_files.append(type_file)
 
 # add non .py files in lib directory
 for f in glob.glob(os.path.join('src_py', '*')):
