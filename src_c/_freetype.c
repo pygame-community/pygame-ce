@@ -774,7 +774,6 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
         }
     }
     else {
-        PyObject *str = 0;
         PyObject *path = 0;
 #ifndef WITH_THREAD
         goto end;
@@ -794,13 +793,8 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
         path = PyObject_GetAttrString(original_file, "name");
         if (!path) {
             PyErr_Clear();
-            str = PyBytes_FromFormat("<%s instance at %p>",
-                                     Py_TYPE(file)->tp_name, (void *)file);
-            if (str) {
-                self->path =
-                    PyUnicode_FromEncodedObject(str, "ascii", "strict");
-                Py_DECREF(str);
-            }
+            Py_INCREF(Py_None);
+            self->path = Py_None;
         }
         else if (PyUnicode_Check(path)) {
             /* Make sure to save a pure Unicode object to prevent possible
@@ -846,15 +840,9 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
     if (pgRWops_IsFileObject(source)) {
         path = PyObject_GetAttrString(file, "name");
         if (!path) {
-            PyObject *str;
             PyErr_Clear();
-            str = PyBytes_FromFormat("<%s instance at %p>",
-                                     Py_TYPE(file)->tp_name, (void *)file);
-            if (str) {
-                self->path =
-                    PyUnicode_FromEncodedObject(str, "ascii", "strict");
-                Py_DECREF(str);
-            }
+            Py_INCREF(Py_None);
+            self->path = Py_None;
         }
     }
     else {
