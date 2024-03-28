@@ -1318,6 +1318,12 @@ _pxarray_ass_item(pgPixelArrayObject *array, Py_ssize_t index, PyObject *value)
             if (!tmparray) {
                 return -1;
             }
+            if (!pgPixelArrayObject_Check(tmparray)) {
+                PyErr_SetString(
+                    PyExc_ValueError,
+                    "cannot assign a pixel sequence to a single pixel");
+                return -1;
+            }
             retval =
                 _array_assign_sequence(tmparray, 0, tmparray->shape[0], value);
             Py_DECREF(tmparray);

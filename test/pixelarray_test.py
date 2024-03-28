@@ -1319,6 +1319,19 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
         weird_surface = pygame.Surface((0, 5))
         self.assertRaises(ValueError, lambda: pygame.PixelArray(weird_surface))
 
+    def test_assign_seq_to_single(self):
+        """
+        Regression test for https://github.com/pygame-community/pygame-ce/issues/2740
+        This usage should ValueError and not segfault (as list is to be interpreted as
+        pixel sequence, and not color)
+        """
+        test = pygame.PixelArray(pygame.Surface([800, 800]))
+        with self.assertRaises(ValueError):
+            test[400][400] = [255, 255, 0]
+
+        with self.assertRaises(ValueError):
+            test[400, 400] = [255, 255, 0]
+
 
 @unittest.skipIf(IS_PYPY, "pypy having issues")
 class PixelArrayArrayInterfaceTest(unittest.TestCase, TestMixin):
