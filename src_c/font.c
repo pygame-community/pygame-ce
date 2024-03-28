@@ -492,9 +492,9 @@ font_setter_align(PyObject *self, PyObject *value, void *closure)
     }
 
     if (val < 0 || val > 2) {
-        PyErr_SetString(
-            pgExc_SDLError,
-            "font.align should be FONT_LEFT, FONT_CENTER, or FONT_RIGHT, (0, 1 or 2)");
+        PyErr_SetString(pgExc_SDLError,
+                        "font.align should be FONT_LEFT, FONT_CENTER, or "
+                        "FONT_RIGHT, (0, 1 or 2)");
         return -1;
     }
 
