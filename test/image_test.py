@@ -6,6 +6,7 @@ import tempfile
 import unittest
 import glob
 import pathlib
+from concurrent.futures import ThreadPoolExecutor
 
 from pygame.tests.test_utils import example_path, png, tostring
 import pygame, pygame.image, pygame.pkgdata
@@ -1356,12 +1357,11 @@ class ImageModuleTest(unittest.TestCase):
             )
 
     def threads_load(self, images):
-        import pygame.threads
-
-        for i in range(10):
-            surfs = pygame.threads.tmap(pygame.image.load, images)
-            for s in surfs:
-                self.assertIsInstance(s, pygame.Surface)
+        for _ in range(10):
+            with ThreadPoolExecutor(max_workers=20) as executor:
+                surfs = executor.map(pygame.image.load, images)
+                for s in surfs:
+                    self.assertIsInstance(s, pygame.Surface)
 
     def test_load_png_threads(self):
         self.threads_load(glob.glob(example_path("data/*.png")))

@@ -947,7 +947,6 @@ data_files = [(path, files) for path, files in data_files if files]
 PACKAGEDATA = {
     "cmdclass": cmdclass,
     "packages": ['pygame',
-                 'pygame.threads',
                  'pygame._sdl2',
                  'pygame.tests',
                  'pygame.tests.test_utils',
@@ -956,7 +955,6 @@ PACKAGEDATA = {
                  'pygame.__pyinstaller'],
     "package_dir": {'pygame': 'src_py',
                     'pygame._sdl2': 'src_py/_sdl2',
-                    'pygame.threads': 'src_py/threads',
                     'pygame.tests': 'test',
                     'pygame.docs': 'docs',
                     'pygame.examples': 'examples',
@@ -977,11 +975,9 @@ if STRIPPED:
     PACKAGEDATA = {
         "cmdclass": cmdclass,
         "packages": ['pygame',
-                     'pygame.threads',
                      'pygame._sdl2'],
         "package_dir": {'pygame': 'src_py',
-                        'pygame._sdl2': 'src_py/_sdl2',
-                        'pygame.threads': 'src_py/threads'},
+                        'pygame._sdl2': 'src_py/_sdl2'},
         "ext_modules": extensions,
         "zip_safe": False,
         "data_files": data_files
