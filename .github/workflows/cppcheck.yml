@@ -28,9 +28,7 @@ jobs:
         # https://github.com/actions/runner-images/issues/7192
         # https://github.com/orgs/community/discussions/47863
         run: |
-          sudo apt-mark hold grub-efi-amd64-signed
           sudo apt-get update --fix-missing
-          sudo apt-get upgrade
           sudo apt install cppcheck
 
       - name: Run Static Checker
