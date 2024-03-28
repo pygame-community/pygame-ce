@@ -39,54 +39,44 @@
 static INLINE unsigned int
 bitcount(BITMASK_W n)
 {
-    const int bitmask_len = BITMASK_W_LEN;
-    if (bitmask_len == 32) {
+#if BITMASK_W_LEN == 32
 #ifdef GILLIES
-        /* (C) Donald W. Gillies, 1992.  All rights reserved.  You may reuse
-           this bitcount() function anywhere you please as long as you retain
-           this Copyright Notice. */
-        register unsigned long tmp;
-        return (tmp = (n) - (((n) >> 1) & 033333333333) -
-                      (((n) >> 2) & 011111111111),
-                tmp = ((tmp + (tmp >> 3)) & 030707070707),
-                tmp = (tmp + (tmp >> 6)),
-                tmp = (tmp + (tmp >> 12) + (tmp >> 24)) & 077);
+    /* (C) Donald W. Gillies, 1992.  All rights reserved.  You may reuse
+       this bitcount() function anywhere you please as long as you retain
+       this Copyright Notice. */
+    register unsigned long tmp;
+    return (
+        tmp = (n) - (((n) >> 1) & 033333333333) - (((n) >> 2) & 011111111111),
+        tmp = ((tmp + (tmp >> 3)) & 030707070707), tmp = (tmp + (tmp >> 6)),
+        tmp = (tmp + (tmp >> 12) + (tmp >> 24)) & 077);
 /* End of Donald W. Gillies bitcount code */
-#else
-        /* This piece taken from Jorg Arndt's "Algorithms for Programmers" */
-        n = ((n >> 1) & 0x55555555) + (n & 0x55555555);  // 0-2 in 2 bits
-        n = ((n >> 2) & 0x33333333) + (n & 0x33333333);  // 0-4 in 4 bits
-        n = ((n >> 4) + n) & 0x0f0f0f0f;                 // 0-8 in 4 bits
-        n += n >> 8;                                     // 0-16 in 8 bits
-        n += n >> 16;                                    // 0-32 in 8 bits
-        return n & 0xff;
-#endif
+#else  /* ~GILLIES */
+    /* This piece taken from Jorg Arndt's "Algorithms for Programmers" */
+    n = ((n >> 1) & 0x55555555) + (n & 0x55555555);  // 0-2 in 2 bits
+    n = ((n >> 2) & 0x33333333) + (n & 0x33333333);  // 0-4 in 4 bits
+    n = ((n >> 4) + n) & 0x0f0f0f0f;                 // 0-8 in 4 bits
+    n += n >> 8;                                     // 0-16 in 8 bits
+    n += n >> 16;                                    // 0-32 in 8 bits
+    return n & 0xff;
+#endif /* ~GILLIES */
+#elif BITMASK_W_LEN == 64
+    n = ((n >> 1) & 0x5555555555555555) + (n & 0x5555555555555555);
+    n = ((n >> 2) & 0x3333333333333333) + (n & 0x3333333333333333);
+    n = ((n >> 4) + n) & 0x0f0f0f0f0f0f0f0f;
+    n += n >> 8;
+    n += n >> 16;
+    n += n >> 32;
+    return n & 0xff;
+#else  /* BITMASK_W_LEN */
+    /* Handle non-32 or 64 bit case the slow way */
+    unsigned int nbits = 0;
+    while (n) {
+        if (n & 1)
+            nbits++;
+        n = n >> 1;
     }
-    else if (bitmask_len == 64) {
-        n = ((n >> 1) & 0x5555555555555555) + (n & 0x5555555555555555);
-        n = ((n >> 2) & 0x3333333333333333) + (n & 0x3333333333333333);
-        n = ((n >> 4) + n) & 0x0f0f0f0f0f0f0f0f;
-        n += n >> 8;
-        n += n >> 16;
-#ifdef _WIN32
-        /* Use explicit typecast to silence MSVC warning about large bitshift,
-         * even though this part code does not run on windows */
-        n += (long long)n >> 32;
-#else
-        n += n >> 32;
-#endif
-        return n & 0xff;
-    }
-    else {
-        /* Handle non-32 or 64 bit case the slow way */
-        unsigned int nbits = 0;
-        while (n) {
-            if (n & 1)
-                nbits++;
-            n = n >> 1;
-        }
-        return nbits;
-    }
+    return nbits;
+#endif /* BITMASK_W_LEN */
 }
 
 /* Positive modulo of the given dividend and divisor (dividend % divisor).

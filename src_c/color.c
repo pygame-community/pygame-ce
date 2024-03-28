@@ -2356,9 +2356,14 @@ _pg_pylong_to_uint32(PyObject *val, Uint32 *color, int handle_negative)
      * with most significant bit set could be incorrectly exposed as
      * negative
      */
-    if (longval > 0xFFFFFFFF || (longval < 0 && !handle_negative)) {
+    if (longval < 0 && !handle_negative) {
         goto error;
     }
+#if LONG_BIT > 32
+    if (longval > 0xFFFFFFFF) {
+        goto error;
+    }
+#endif
 
     *color = (Uint32)longval;
     return 1;
