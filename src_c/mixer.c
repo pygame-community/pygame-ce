@@ -255,7 +255,8 @@ _format_view_to_audio(Py_buffer *view)
                          view->format);
             return 0;
     }
-    if (view->itemsize && PG_SAMPLE_SIZE(format) != view->itemsize) {
+    if (view->itemsize &&
+        PG_SAMPLE_SIZE(format) != (unsigned int)view->itemsize) {
         PyErr_Format(PyExc_ValueError,
                      "Array item size %d does not match format '%s'",
                      (int)view->itemsize, view->format);

@@ -26,6 +26,8 @@ extern "C" {
 #endif
 
 #include <limits.h>
+#include <Python.h>
+
 /* Define INLINE for different compilers.  If your compiler does not
    support inlining then there might be a performance hit in
    bitmask_overlap_area().
@@ -42,8 +44,17 @@ extern "C" {
 #endif
 #endif
 
+#ifndef LONG_BIT
+/* Compat code for when LONG_BIT isn't defined */
+#if LONG_MAX == 2147483647
+#define LONG_BIT 32
+#else
+#define LONG_BIT 64
+#endif
+#endif
+
 #define BITMASK_W unsigned long int
-#define BITMASK_W_LEN (sizeof(BITMASK_W) * CHAR_BIT)
+#define BITMASK_W_LEN LONG_BIT
 #define BITMASK_W_MASK (BITMASK_W_LEN - 1)
 #define BITMASK_N(n) ((BITMASK_W)1 << (n))
 
