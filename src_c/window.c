@@ -139,7 +139,7 @@ window_destroy(pgWindowObject *self, PyObject *_null)
 }
 
 static PyObject *
-window_get_surface(pgWindowObject *self)
+window_get_surface(pgWindowObject *self, void *v)
 {
     PyObject *surf = NULL;
     SDL_Surface *_surf;
@@ -1029,13 +1029,12 @@ static PyMethodDef window_methods[] = {
      DOC_WINDOW_SETMODALFOR},
     {"set_icon", (PyCFunction)window_set_icon, METH_O, DOC_WINDOW_SETICON},
     {"flip", (PyCFunction)window_flip, METH_NOARGS, DOC_WINDOW_FLIP},
-    {"get_surface", (PyCFunction)window_get_surface, METH_NOARGS,
-     DOC_WINDOW_GETSURFACE},
     {"from_display_module", (PyCFunction)window_from_display_module,
      METH_CLASS | METH_NOARGS, DOC_WINDOW_FROMDISPLAYMODULE},
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef _window_getset[] = {
+    {"surface", (getter)window_get_surface, NULL, DOC_WINDOW_SURFACE, NULL},
     {"grab_mouse", (getter)window_get_grab_mouse,
      (setter)window_set_grab_mouse, DOC_WINDOW_GRABMOUSE, NULL},
     {"grab_keyboard", (getter)window_get_grab_keyboard,
