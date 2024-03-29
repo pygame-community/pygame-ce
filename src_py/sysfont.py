@@ -162,8 +162,7 @@ def _font_finder_darwin():
         "/System/Library/Fonts/Supplemental",
     ]
 
-    username = os.getenv("USER")
-    if username:
+    if username := os.getenv("USER"):
         locations.append(f"/Users/{username}/Library/Fonts")
 
     strange_root = "/System/Library/Assets/com_apple_MobileAsset_Font3"
