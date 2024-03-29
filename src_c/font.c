@@ -486,15 +486,15 @@ font_setter_align(PyObject *self, PyObject *value, void *closure)
     if (val == -1 && PyErr_Occurred()) {
         PyErr_SetString(
             PyExc_TypeError,
-            "font.align should be an integer."
+            "font.align must be an integer."
             "Must correspond with FONT_LEFT, FONT_CENTER, or FONT_RIGHT");
         return -1;
     }
 
     if (val < 0 || val > 2) {
         PyErr_SetString(pgExc_SDLError,
-                        "font.align should be FONT_LEFT, FONT_CENTER, or "
-                        "FONT_RIGHT, (0, 1 or 2)");
+                        "font.align must be FONT_LEFT, FONT_CENTER, or"
+                        "FONT_RIGHT.");
         return -1;
     }
 
