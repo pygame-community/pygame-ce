@@ -2264,9 +2264,9 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
         const char _a_off = newsurf->format->Ashift >> 3;
 #else
-        const char _a_off = 3 - (newsurf->format->Ashift >> 3);  
+        const char _a_off = 3 - (newsurf->format->Ashift >> 3);
 #endif
-        
+
         Uint8 *srcp = (Uint8 *)src->pixels + _a_off;
         Uint32 *dstp = (Uint32 *)newsurf->pixels;
 
