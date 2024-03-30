@@ -228,6 +228,17 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.style_name ##
 
+   .. attribute:: path
+
+      | :sl:`Gets the font's path or None.`
+      | :sg:`path -> str`
+
+      Read only. Returns the path of the loaded font file or None if it was loaded from a file like object.
+
+      .. versionadded:: 2.4.0
+
+      .. ## Font.path ##
+
    .. attribute:: italic
 
       | :sl:`Gets or sets whether the font should be rendered in (faked) italics.`

@@ -830,6 +830,20 @@ font_getter_style_name(PyObject *self, void *closure)
 }
 
 static PyObject *
+font_getter_path(PyObject *self, void *closure)
+{
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+    PyObject *path = ((PyFontObject *)self)->path;
+    if (path == Py_None) {
+        Py_RETURN_NONE;
+    }
+
+    return PyUnicode_FromObject(path);
+}
+
+static PyObject *
 font_metrics(PyObject *self, PyObject *textobj)
 {
     if (!PgFont_GenerationCheck(self)) {
@@ -1046,6 +1060,7 @@ static PyGetSetDef font_getsets[] = {
     {"name", (getter)font_getter_name, NULL, DOC_FONT_FONT_NAME, NULL},
     {"style_name", (getter)font_getter_style_name, NULL,
      DOC_FONT_FONT_STYLENAME, NULL},
+    {"path", (getter)font_getter_path, NULL, DOC_FONT_FONT_PATH, NULL},
     {"bold", (getter)font_getter_bold, (setter)font_setter_bold,
      DOC_FONT_FONT_BOLD, NULL},
     {"italic", (getter)font_getter_italic, (setter)font_setter_italic,
@@ -1103,6 +1118,11 @@ font_dealloc(PyFontObject *self)
         }
         TTF_CloseFont(font);
         self->font = NULL;
+        if (self->path != Py_None) {
+            Py_DECREF(self->path);
+        }
+
+        self->path = NULL;
     }
 
     if (self->weakreflist)
@@ -1116,6 +1136,7 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     int fontsize = font_defaultsize;
     TTF_Font *font = NULL;
     PyObject *obj = Py_None;
+    PyObject *path = Py_None;
     SDL_RWops *rw;
 
     static char *kwlist[] = {"filename", "size", NULL};
@@ -1141,7 +1162,9 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     if (obj == Py_None) {
         /* default font */
         Py_DECREF(obj);
-        obj = font_resource(font_defaultname);
+        obj = font_resource(
+            font_defaultname);  // Returns an encoded file path, a file-like
+                                // object or a NULL pointer.
         if (obj == NULL) {
             if (PyErr_Occurred() == NULL) {
                 PyErr_Format(PyExc_RuntimeError,
@@ -1151,6 +1174,26 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
             goto error;
         }
         fontsize = (int)(fontsize * .6875);
+        obj = PyUnicode_FromEncodedObject(obj, "UTF8", NULL);
+    }
+
+    if (PyUnicode_Check(obj)) {
+        // python string file path or name
+        path = PyUnicode_FromObject(obj);
+    }
+    else if (PyBytes_Check(obj)) {
+        // possibly a bytes flie path
+        path = pg_EncodeString(obj, "UTF-8", NULL, NULL);
+        if (!path || path == Py_None) {
+            /* if path is NULL, we are forwarding an error. If it is None,
+             * the object passed was not a bytes/string/pathlib object so
+             * handling of that is done after this function, exit early here */
+            Py_XDECREF(path);
+            path = Py_None;
+        }
+        else {
+            path = PyUnicode_FromEncodedObject(path, "UTF8", NULL);
+        }
     }
 
     rw = pgRWops_FromObject(obj, NULL);
@@ -1161,7 +1204,9 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
              * default font */
             PyErr_Clear();
             Py_DECREF(obj);
-            obj = font_resource(font_defaultname);
+            obj = font_resource(
+                font_defaultname);  // Returns an encoded file path, a
+                                    // file-like object or a NULL pointer.
             if (obj == NULL) {
                 if (PyErr_Occurred() == NULL) {
                     PyErr_Format(PyExc_RuntimeError,
@@ -1177,11 +1222,46 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
              * old one */
 
             rw = pgRWops_FromObject(obj, NULL);
+
+            // set the path when using the default font by name
+            obj = PyUnicode_FromEncodedObject(obj, "UTF8", NULL);
         }
     }
 
     if (rw == NULL) {
         goto error;
+    }
+
+    // from _freetype.c line 825
+    if (pgRWops_IsFileObject(rw)) {
+        path = PyObject_GetAttrString(obj, "name");
+        if (!path) {
+            /* clear out existing file loading error before attempt to get */
+            PyErr_Clear();
+            Py_INCREF(Py_None);
+            path = Py_None;
+
+            if (path == NULL) {
+                if (PyErr_Occurred() == NULL) {
+                    PyErr_Format(PyExc_RuntimeError,
+                                 "default font '%.1024s' not found",
+                                 font_defaultname);
+                }
+                goto error;
+            }
+        }
+
+        path = pg_EncodeString(path, "UTF-8", NULL, NULL);
+        if (!path || path == Py_None) {
+            /* if path is NULL, we are forwarding an error. If it is None,
+             * the object passed was not a bytes/string/pathlib object so
+             * handling of that is done after this function, exit early here */
+            Py_XDECREF(path);
+            path = Py_None;
+        }
+        else {
+            path = PyUnicode_FromEncodedObject(path, "UTF8", NULL);
+        }
     }
 
     if (fontsize <= 1)
@@ -1199,6 +1279,7 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     Py_END_ALLOW_THREADS;
 
     Py_DECREF(obj);
+    self->path = path;
     self->font = font;
     self->ptsize = fontsize;
     self->ttf_init_generation = current_ttf_generation;
