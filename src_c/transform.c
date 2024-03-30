@@ -2261,6 +2261,11 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
 
     /* optimized path for 32bit surfaces */
     if (src->format->BytesPerPixel == 4) {
+        /* This algorithm iterates over each pixel's alpha channel. If it's not
+         * zero, the pixel is set to the desired color. If the keep_alpha flag
+         * is set, the original alpha value is retained, allowing the overlay
+         * color to inherit the surface pixel's alpha value. */
+        
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
         const char _a_off = newsurf->format->Ashift >> 3;
 #else
