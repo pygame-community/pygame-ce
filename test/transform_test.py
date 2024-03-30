@@ -252,7 +252,7 @@ class TransformModuleTest(unittest.TestCase):
 
         for x in range(20):
             for y in range(20):
-                self.assertTrue(surface.get_at((x, y)) == test_surface.get_at((x, y)))
+                self.assertEqual(surface.get_at((x, y)), test_surface.get_at((x, y)))
 
         pygame.transform.solid_overlay(surface, (0, 0, 0), surface)
 
@@ -269,7 +269,7 @@ class TransformModuleTest(unittest.TestCase):
 
         for x in range(20):
             for y in range(20):
-                self.assertTrue(surface.get_at((x, y)) == test_surface.get_at((x, y)))
+                self.assertEqual(surface.get_at((x, y)), test_surface.get_at((x, y)))
 
     def test_grayscale_simd_assumptions(self):
         # The grayscale SIMD algorithm relies on the destination surface pitch
