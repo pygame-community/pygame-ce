@@ -2839,6 +2839,10 @@ premul_surf_color_by_alpha(SDL_Surface *src, SDL_Surface *dst)
         // since we know dst is a copy of src we can simplify the normal checks
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    if ((src->format->BytesPerPixel == 4) && pg_has_avx2()) {
+        premul_surf_color_by_alpha_avx2(src, dst);
+        return 0;
+    }
 #if defined(__SSE2__)
     if ((src->format->BytesPerPixel == 4) && SDL_HasSSE2()) {
         premul_surf_color_by_alpha_sse2(src, dst);

@@ -239,8 +239,7 @@ def main(winstyle=0):
     fullscreen = False
     # Set the display mode
     winstyle = 0  # |FULLSCREEN
-    bestdepth = pygame.display.mode_ok(SCREENRECT.size, winstyle, 32)
-    screen = pygame.display.set_mode(SCREENRECT.size, winstyle, bestdepth)
+    screen = pygame.display.set_mode(SCREENRECT.size, winstyle)
 
     # Load images, assign to sprite classes
     # (do this before the classes are used, after screen setup)
@@ -315,15 +314,13 @@ def main(winstyle=0):
                         print("Changing to FULLSCREEN")
                         screen_backup = screen.copy()
                         screen = pygame.display.set_mode(
-                            SCREENRECT.size, winstyle | pygame.FULLSCREEN, bestdepth
+                            SCREENRECT.size, winstyle | pygame.FULLSCREEN
                         )
                         screen.blit(screen_backup, (0, 0))
                     else:
                         print("Changing to windowed mode")
                         screen_backup = screen.copy()
-                        screen = pygame.display.set_mode(
-                            SCREENRECT.size, winstyle, bestdepth
-                        )
+                        screen = pygame.display.set_mode(SCREENRECT.size, winstyle)
                         screen.blit(screen_backup, (0, 0))
                     pygame.display.flip()
                     fullscreen = not fullscreen

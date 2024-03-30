@@ -673,7 +673,7 @@ required).
    | :sl:`Get the current window caption`
    | :sg:`get_caption() -> (title, icontitle)`
 
-   Returns the title and icontitle for the display window. In pygame 2.x
+   Returns the title and icontitle of the display window. In pygame 2.x
    these will always be the same value.
 
    .. ## pygame.display.get_caption ##

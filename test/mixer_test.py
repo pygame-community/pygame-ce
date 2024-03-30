@@ -48,6 +48,48 @@ class MixerModuleTest(unittest.TestCase):
         mixer.quit()
         mixer.pre_init(0, 0, 0, 0)
 
+    def test_get_driver(self):
+        mixer.init()
+        drivers = [
+            pygame.NULL_VIDEODRIVER,
+            "pipewire",
+            "pulseaudio",
+            "alsa",
+            "jack",
+            "sndio",
+            "netbsd",
+            "dsp",
+            "qsa",
+            "audio",
+            "arts",
+            "esd",
+            "nacl",
+            "nas",
+            "wasapi",
+            "directsound",
+            "winmm",
+            "paud",
+            "haiku",
+            "coreaudio",
+            "disk",
+            "fusionsound",
+            "AAudio",
+            "openslES",
+            "android",
+            "ps2",
+            "psp",
+            "vita",
+            "n3ds",
+            "emscripten",
+            "DART",
+        ]
+        driver = mixer.get_driver()
+        self.assertIn(driver, drivers)
+
+        mixer.quit()
+        with self.assertRaises(pygame.error):
+            mixer.get_driver()
+
     def test_init__keyword_args(self):
         # note: this test used to loop over all CONFIGS, but it's very slow..
         mixer.init(**CONFIG)
@@ -120,17 +162,23 @@ class MixerModuleTest(unittest.TestCase):
         """Ensure soundfonts can be set, cleared, and retrieved"""
         mixer.init()
 
+        # test that initially, get_soundfont returns only real files
+        initial_sf = mixer.get_soundfont()
+        if initial_sf is not None:
+            for i in initial_sf.split(";"):
+                os.path.exists(i)
+
         mixer.set_soundfont()
         self.assertEqual(mixer.get_soundfont(), None)
 
         mixer.set_soundfont(None)
         self.assertEqual(mixer.get_soundfont(), None)
 
-        mixer.set_soundfont("")
-        self.assertEqual(mixer.get_soundfont(), None)
-
         mixer.set_soundfont("test1.sf2;test2.sf2")
         self.assertEqual(mixer.get_soundfont(), "test1.sf2;test2.sf2")
+
+        mixer.set_soundfont("")
+        self.assertEqual(mixer.get_soundfont(), None)
 
         self.assertRaises(TypeError, mixer.set_soundfont, 0)
         self.assertRaises(TypeError, mixer.set_soundfont, ["one", "two"])
