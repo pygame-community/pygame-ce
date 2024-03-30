@@ -2254,6 +2254,12 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
     if (keep_alpha) {
         color_p &= ~newsurf->format->Amask;
     }
+    
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    printf("SDL_LIL_ENDIAN\n");
+#else
+    printf("SDL_BIG_ENDIAN\n");
+#endif
 
     /* optimized path for 32bit surfaces */
     if (src->format->BytesPerPixel == 4) {
@@ -2264,6 +2270,23 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
         const int src_skip = src->pitch - src->w * 4;
         const int dst_skip = newsurf->pitch / 4 - newsurf->w;
         int n, height = src->h;
+
+        printf("src->pitch: %i, src->w: %i, src->h: %i\n", src->pitch, src->w, src->h);
+        printf("newsurf->pitch: %i, newsurf->w: %i, newsurf->h: %i\n", newsurf->pitch, newsurf->w, newsurf->h);
+        printf("src_skip: %i, dst_skip: %i\n", src_skip, dst_skip);
+        printf("src->format->BytesPerPixel: %i\n", src->format->BytesPerPixel);
+        printf("newsurf->format->BytesPerPixel: %i\n", newsurf->format->BytesPerPixel);
+        printf("src->format->Rmask: %i\n", src->format->Rmask);
+        printf("newsurf->format->Rmask: %i\n", newsurf->format->Rmask);
+        printf("src->format->Gmask: %i\n", src->format->Gmask);
+        printf("newsurf->format->Gmask: %i\n", newsurf->format->Gmask);
+        printf("src->format->Bmask: %i\n", src->format->Bmask);
+        printf("newsurf->format->Bmask: %i\n", newsurf->format->Bmask);
+        printf("src->format->Amask: %i\n", src->format->Amask);
+        printf("newsurf->format->Amask: %i\n", newsurf->format->Amask);
+        printf("color_p: %i\n", color_p);
+        printf("dst_ashift: %i\n", dst_ashift);
+        printf("_a_off: %i\n", _a_off);
 
         while (height--) {
             LOOP_UNROLLED4(
