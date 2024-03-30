@@ -2265,7 +2265,7 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
          * zero, the pixel is set to the desired color. If the keep_alpha flag
          * is set, the original alpha value is retained, allowing the overlay
          * color to inherit the surface pixel's alpha value. */
-        
+
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
         const char _a_off = newsurf->format->Ashift >> 3;
 #else
