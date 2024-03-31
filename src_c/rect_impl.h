@@ -1164,17 +1164,14 @@ RectExport_unionIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 }
 
 static PyObject *
-RectExport_unionall(RectObject *self, PyObject *args)
+RectExport_unionall(RectObject *self, PyObject *arg)
 {
     InnerRect *argrect, temp;
     Py_ssize_t loop, size;
-    PyObject *list, *obj;
+    PyObject *obj;
     PrimitiveType t, l, b, r;
 
-    if (!PyArg_ParseTuple(args, "O", &list)) {
-        return NULL;
-    }
-    if (!PySequence_Check(list)) {
+    if (!PySequence_Check(arg)) {
         return RAISE(PyExc_TypeError,
                      "Argument must be a sequence of rectstyle objects.");
     }
@@ -1183,44 +1180,67 @@ RectExport_unionall(RectObject *self, PyObject *args)
     t = self->r.y;
     r = self->r.x + self->r.w;
     b = self->r.y + self->r.h;
-    size = PySequence_Length(list); /*warning, size could be -1 on error?*/
-    if (size < 1) {
-        if (size < 0) {
-            /*Error.*/
-            return NULL;
+
+    if (pgSequenceFast_Check(arg)) {
+        PyObject **items = PySequence_Fast_ITEMS(arg);
+        size = PySequence_Fast_GET_SIZE(arg);
+
+        if (size < 1) {
+            /*Empty arg: nothing to be done.*/
+            return RectExport_subtypeNew4(Py_TYPE(self), l, t, r - l, b - t);
         }
-        /*Empty list: nothing to be done.*/
-        return RectExport_subtypeNew4(Py_TYPE(self), l, t, r - l, b - t);
+
+        for (loop = 0; loop < size; ++loop) {
+            if (!(argrect = RectFromObject(items[loop], &temp))) {
+                return RAISE(
+                    PyExc_TypeError,
+                    "Argument must be a sequence of rectstyle objects.");
+            }
+            l = MIN(l, argrect->x);
+            t = MIN(t, argrect->y);
+            r = MAX(r, argrect->x + argrect->w);
+            b = MAX(b, argrect->y + argrect->h);
+        }
+    }
+    else {
+        size = PySequence_Length(arg); /*warning, size could be -1 on error?*/
+        if (size < 1) {
+            if (size < 0) {
+                /*Error.*/
+                return NULL;
+            }
+            /*Empty arg: nothing to be done.*/
+            return RectExport_subtypeNew4(Py_TYPE(self), l, t, r - l, b - t);
+        }
+
+        for (loop = 0; loop < size; ++loop) {
+            obj = PySequence_GetItem(arg, loop);
+            if (!obj || !(argrect = RectFromObject(obj, &temp))) {
+                Py_XDECREF(obj);
+                return RAISE(
+                    PyExc_TypeError,
+                    "Argument must be a sequence of rectstyle objects.");
+            }
+            l = MIN(l, argrect->x);
+            t = MIN(t, argrect->y);
+            r = MAX(r, argrect->x + argrect->w);
+            b = MAX(b, argrect->y + argrect->h);
+            Py_DECREF(obj);
+        }
     }
 
-    for (loop = 0; loop < size; ++loop) {
-        obj = PySequence_GetItem(list, loop);
-        if (!obj || !(argrect = RectFromObject(obj, &temp))) {
-            Py_XDECREF(obj);
-            return RAISE(PyExc_TypeError,
-                         "Argument must be a sequence of rectstyle objects.");
-        }
-        l = MIN(l, argrect->x);
-        t = MIN(t, argrect->y);
-        r = MAX(r, argrect->x + argrect->w);
-        b = MAX(b, argrect->y + argrect->h);
-        Py_DECREF(obj);
-    }
     return RectExport_subtypeNew4(Py_TYPE(self), l, t, r - l, b - t);
 }
 
 static PyObject *
-RectExport_unionallIp(RectObject *self, PyObject *args)
+RectExport_unionallIp(RectObject *self, PyObject *arg)
 {
     InnerRect *argrect, temp;
     Py_ssize_t loop, size;
-    PyObject *list, *obj;
+    PyObject *obj;
     PrimitiveType t, l, b, r;
 
-    if (!PyArg_ParseTuple(args, "O", &list)) {
-        return NULL;
-    }
-    if (!PySequence_Check(list)) {
+    if (!PySequence_Check(arg)) {
         return RAISE(PyExc_TypeError,
                      "Argument must be a sequence of rectstyle objects.");
     }
@@ -1230,34 +1250,59 @@ RectExport_unionallIp(RectObject *self, PyObject *args)
     r = self->r.x + self->r.w;
     b = self->r.y + self->r.h;
 
-    size = PySequence_Length(list); /*warning, size could be -1 on error?*/
-    if (size < 1) {
-        if (size < 0) {
-            /*Error.*/
-            return NULL;
-        }
-        /*Empty list: nothing to be done.*/
-        Py_RETURN_NONE;
-    }
+    if (pgSequenceFast_Check(arg)) {
+        PyObject **items = PySequence_Fast_ITEMS(arg);
+        size = PySequence_Fast_GET_SIZE(arg);
 
-    for (loop = 0; loop < size; ++loop) {
-        obj = PySequence_GetItem(list, loop);
-        if (!obj || !(argrect = RectFromObject(obj, &temp))) {
-            Py_XDECREF(obj);
-            return RAISE(PyExc_TypeError,
-                         "Argument must be a sequence of rectstyle objects.");
+        if (size < 1) {
+            /*Empty arg: nothing to be done.*/
+            Py_RETURN_NONE;
         }
-        l = MIN(l, argrect->x);
-        t = MIN(t, argrect->y);
-        r = MAX(r, argrect->x + argrect->w);
-        b = MAX(b, argrect->y + argrect->h);
-        Py_DECREF(obj);
+
+        for (loop = 0; loop < size; ++loop) {
+            if (!(argrect = RectFromObject(items[loop], &temp))) {
+                return RAISE(
+                    PyExc_TypeError,
+                    "Argument must be a sequence of rectstyle objects.");
+            }
+            l = MIN(l, argrect->x);
+            t = MIN(t, argrect->y);
+            r = MAX(r, argrect->x + argrect->w);
+            b = MAX(b, argrect->y + argrect->h);
+        }
+    }
+    else {
+        size = PySequence_Length(arg); /*warning, size could be -1 on error?*/
+        if (size < 1) {
+            if (size < 0) {
+                /*Error.*/
+                return NULL;
+            }
+            /*Empty arg: nothing to be done.*/
+            Py_RETURN_NONE;
+        }
+
+        for (loop = 0; loop < size; ++loop) {
+            obj = PySequence_GetItem(arg, loop);
+            if (!obj || !(argrect = RectFromObject(obj, &temp))) {
+                Py_XDECREF(obj);
+                return RAISE(
+                    PyExc_TypeError,
+                    "Argument must be a sequence of rectstyle objects.");
+            }
+            l = MIN(l, argrect->x);
+            t = MIN(t, argrect->y);
+            r = MAX(r, argrect->x + argrect->w);
+            b = MAX(b, argrect->y + argrect->h);
+            Py_DECREF(obj);
+        }
     }
 
     self->r.x = l;
     self->r.y = t;
     self->r.w = r - l;
     self->r.h = b - t;
+
     Py_RETURN_NONE;
 }
 
