@@ -140,12 +140,6 @@ pg_neon_at_runtime_but_uncompiled()
         dstp = (Uint32 *)dstp128 + dstskip;               \
     }
 
-static inline __m128i
-pg_mm_blendv_epi8(__m128i a, __m128i b, __m128i mask)
-{
-    return _mm_or_si128(_mm_and_si128(mask, b), _mm_andnot_si128(mask, a));
-}
-
 #define DO_SSE2_DIV255_U16(MM128I) \
     _mm_srli_epi16(_mm_mulhi_epu16(MM128I, _mm_set1_epi16((short)0x8081)), 7);
 
