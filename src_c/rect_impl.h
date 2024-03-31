@@ -1214,7 +1214,7 @@ RectExport_unionall(RectObject *self, PyObject *arg)
         }
 
         for (loop = 0; loop < size; ++loop) {
-            obj = PySequence_GetItem(arg, loop);
+            obj = PySequence_ITEM(arg, loop);
             if (!obj || !(argrect = RectFromObject(obj, &temp))) {
                 Py_XDECREF(obj);
                 return RAISE(
@@ -1283,7 +1283,7 @@ RectExport_unionallIp(RectObject *self, PyObject *arg)
         }
 
         for (loop = 0; loop < size; ++loop) {
-            obj = PySequence_GetItem(arg, loop);
+            obj = PySequence_ITEM(arg, loop);
             if (!obj || !(argrect = RectFromObject(obj, &temp))) {
                 Py_XDECREF(obj);
                 return RAISE(
