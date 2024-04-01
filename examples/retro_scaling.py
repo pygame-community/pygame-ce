@@ -52,11 +52,11 @@ def main():
         # Scale the canvas-surface.
         canvas = pygame.transform.scale_by(canvas, scale)
 
-        # Calculate the center the screen-surface.
+        # Calculate the center for the screen-surface.
         screen_center_x = math.floor(screen.get_width() / 2)
         screen_center_y = math.floor(screen.get_height() / 2)
 
-        # Calculate the center the canvas-surface.
+        # Calculate the center for the canvas-surface.
         canvas_center_x = math.floor(canvas.get_width() / 2)
         canvas_center_y = math.floor(canvas.get_height() / 2)
 
