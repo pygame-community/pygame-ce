@@ -351,7 +351,8 @@ Instead, always begin with the original image and scale to the desired size.)
    Returns a new version of the original surface with all non transparent pixels set to the color provided.
 
    An optional destination surface can be passed which is faster than creating a new
-   Surface. This destination surface must have the same dimensions (width, height) and
+   Surface. 
+   This destination surface must have the same dimensions (width, height) and
    depth as the source Surface.
 
    :param pygame.Surface surf: The target surface.
