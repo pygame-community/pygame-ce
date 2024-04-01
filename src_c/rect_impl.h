@@ -1292,16 +1292,31 @@ RectExport_colliderect(RectObject *self, PyObject *const *args,
     return PyBool_FromLong(_pg_do_rects_intersect(&self->r, argrect));
 }
 
+#ifndef OPTIMIZED_COLLIDERECT(r)
+#define OPTIMIZED_COLLIDERECT(r)                                 \
+    (a < MAX(r->x, r->x + r->w) && b < MAX(r->y, r->y + r->h) && \
+     c > MIN(r->x, r->x + r->w) && d > MIN(r->y, r->y + r->h))
+#endif
+
 static PyObject *
 RectExport_collidelist(RectObject *self, PyObject *arg)
 {
     InnerRect *argrect, *srect = &self->r, temp;
     int loop;
 
+    if (srect->w == 0 || srect->h == 0) {
+        return PyLong_FromLong(-1);
+    }
+
     if (!PySequence_Check(arg)) {
         return RAISE(PyExc_TypeError,
                      "Argument must be a sequence of rectstyle objects.");
     }
+
+    const PrimitiveType a = MIN(srect->x, srect->x + srect->w);
+    const PrimitiveType b = MIN(srect->y, srect->y + srect->h);
+    const PrimitiveType c = MAX(srect->x, srect->x + srect->w);
+    const PrimitiveType d = MAX(srect->y, srect->y + srect->h);
 
     /* If the sequence is a fast sequence, we can use the faster
      * PySequence_Fast_ITEMS() function to get the items. */
@@ -1313,7 +1328,12 @@ RectExport_collidelist(RectObject *self, PyObject *arg)
                     PyExc_TypeError,
                     "Argument must be a sequence of rectstyle objects.");
             }
-            if (_pg_do_rects_intersect(srect, argrect)) {
+
+            if (argrect->w == 0 || argrect->h == 0) {
+                continue;
+            }
+
+            if (OPTIMIZED_COLLIDERECT(argrect)) {
                 return PyLong_FromLong(loop);
             }
         }
@@ -1322,7 +1342,7 @@ RectExport_collidelist(RectObject *self, PyObject *arg)
      * PySequence_GetItem() function to get the items. */
     else {
         for (loop = 0; loop < PySequence_Length(arg); loop++) {
-            PyObject *obj = PySequence_GetItem(arg, loop);
+            PyObject *obj = PySequence_ITEM(arg, loop);
 
             if (!obj || !(argrect = RectFromObject(obj, &temp))) {
                 Py_XDECREF(obj);
@@ -1333,7 +1353,11 @@ RectExport_collidelist(RectObject *self, PyObject *arg)
 
             Py_DECREF(obj);
 
-            if (_pg_do_rects_intersect(srect, argrect)) {
+            if (argrect->w == 0 || argrect->h == 0) {
+                continue;
+            }
+
+            if (OPTIMIZED_COLLIDERECT(argrect)) {
                 return PyLong_FromLong(loop);
             }
         }
@@ -1358,6 +1382,15 @@ RectExport_collidelistall(RectObject *self, PyObject *arg)
         return NULL;
     }
 
+    if (srect->w == 0 || srect->h == 0) {
+        return ret;
+    }
+
+    const PrimitiveType a = MIN(srect->x, srect->x + srect->w);
+    const PrimitiveType b = MIN(srect->y, srect->y + srect->h);
+    const PrimitiveType c = MAX(srect->x, srect->x + srect->w);
+    const PrimitiveType d = MAX(srect->y, srect->y + srect->h);
+
     /* If the sequence is a fast sequence, we can use the faster
      * PySequence_Fast_ITEMS() function to get the items. */
     if (pgSequenceFast_Check(arg)) {
@@ -1370,7 +1403,11 @@ RectExport_collidelistall(RectObject *self, PyObject *arg)
                     "Argument must be a sequence of rectstyle objects.");
             }
 
-            if (_pg_do_rects_intersect(srect, argrect)) {
+            if (argrect->w == 0 || argrect->h == 0) {
+                continue;
+            }
+
+            if (OPTIMIZED_COLLIDERECT(argrect)) {
                 PyObject *num = PyLong_FromLong(loop);
                 if (!num) {
                     Py_DECREF(ret);
@@ -1400,7 +1437,11 @@ RectExport_collidelistall(RectObject *self, PyObject *arg)
 
             Py_DECREF(obj);
 
-            if (_pg_do_rects_intersect(srect, argrect)) {
+            if (argrect->w == 0 || argrect->h == 0) {
+                continue;
+            }
+
+            if (OPTIMIZED_COLLIDERECT(argrect)) {
                 PyObject *num = PyLong_FromLong(loop);
                 if (!num) {
                     Py_DECREF(ret);
@@ -1452,7 +1493,7 @@ static PyObject *
 RectExport_collideobjectsall(RectObject *self, PyObject *args,
                              PyObject *kwargs)
 {
-    InnerRect *argrect;
+    InnerRect *argrect, *srect = &self->r;
     InnerRect temp;
     Py_ssize_t size;
     int loop;
@@ -1485,6 +1526,15 @@ RectExport_collideobjectsall(RectObject *self, PyObject *args,
         return NULL;
     }
 
+    if (srect->w == 0 || srect->h == 0) {
+        return ret;
+    }
+
+    const PrimitiveType a = MIN(srect->x, srect->x + srect->w);
+    const PrimitiveType b = MIN(srect->y, srect->y + srect->h);
+    const PrimitiveType c = MAX(srect->x, srect->x + srect->w);
+    const PrimitiveType d = MAX(srect->y, srect->y + srect->h);
+
     size = PySequence_Length(list);
     if (size == -1) {
         Py_DECREF(ret);
@@ -1506,7 +1556,12 @@ RectExport_collideobjectsall(RectObject *self, PyObject *args,
             return NULL;
         }
 
-        if (_pg_do_rects_intersect(&self->r, argrect)) {
+        if (argrect->w == 0 || argrect->h == 0) {
+            Py_DECREF(obj);
+            continue;
+        }
+
+        if (OPTIMIZED_COLLIDERECT(argrect)) {
             if (0 != PyList_Append(ret, obj)) {
                 Py_DECREF(ret);
                 Py_DECREF(obj);
@@ -1522,7 +1577,7 @@ RectExport_collideobjectsall(RectObject *self, PyObject *args,
 static PyObject *
 RectExport_collideobjects(RectObject *self, PyObject *args, PyObject *kwargs)
 {
-    InnerRect *argrect;
+    InnerRect *argrect, *srect = &self->r;
     InnerRect temp;
     Py_ssize_t size;
     int loop;
@@ -1549,13 +1604,22 @@ RectExport_collideobjects(RectObject *self, PyObject *args, PyObject *kwargs)
                      "Key function must be callable with one argument.");
     }
 
+    if (srect->w == 0 || srect->h == 0) {
+        Py_RETURN_NONE;
+    }
+
+    const PrimitiveType a = MIN(srect->x, srect->x + srect->w);
+    const PrimitiveType b = MIN(srect->y, srect->y + srect->h);
+    const PrimitiveType c = MAX(srect->x, srect->x + srect->w);
+    const PrimitiveType d = MAX(srect->y, srect->y + srect->h);
+
     size = PySequence_Length(list);
     if (size == -1) {
         return NULL;
     }
 
     for (loop = 0; loop < size; ++loop) {
-        obj = PySequence_GetItem(list, loop);
+        obj = PySequence_ITEM(list, loop);
 
         if (!obj) {
             return NULL;
@@ -1567,7 +1631,12 @@ RectExport_collideobjects(RectObject *self, PyObject *args, PyObject *kwargs)
             return NULL;
         }
 
-        if (_pg_do_rects_intersect(&self->r, argrect)) {
+        if (argrect->w == 0 || argrect->h == 0) {
+            Py_DECREF(obj);
+            continue;
+        }
+
+        if (OPTIMIZED_COLLIDERECT(argrect)) {
             return obj;
         }
         Py_DECREF(obj);
@@ -1579,7 +1648,7 @@ RectExport_collideobjects(RectObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs)
 {
-    InnerRect *argrect, temp;
+    InnerRect *argrect, temp, *srect = &self->r;
     Py_ssize_t loop = 0;
     Py_ssize_t values = 0; /* Defaults to expecting keys as rects. */
     PyObject *dict, *key, *val;
@@ -1596,6 +1665,15 @@ RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(PyExc_TypeError, "first argument must be a dict");
     }
 
+    if (srect->w == 0 || srect->h == 0) {
+        Py_RETURN_NONE;
+    }
+
+    const PrimitiveType a = MIN(srect->x, srect->x + srect->w);
+    const PrimitiveType b = MIN(srect->y, srect->y + srect->h);
+    const PrimitiveType c = MAX(srect->x, srect->x + srect->w);
+    const PrimitiveType d = MAX(srect->y, srect->y + srect->h);
+
     while (PyDict_Next(dict, &loop, &key, &val)) {
         if (values) {
             if (!(argrect = RectFromObject(val, &temp))) {
@@ -1609,7 +1687,11 @@ RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs)
             }
         }
 
-        if (_pg_do_rects_intersect(&self->r, argrect)) {
+        if (argrect->w == 0 || argrect->h == 0) {
+            continue;
+        }
+
+        if (OPTIMIZED_COLLIDERECT(argrect)) {
             ret = Py_BuildValue("(OO)", key, val);
             break;
         }
@@ -1624,7 +1706,7 @@ RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs)
 {
-    InnerRect *argrect, temp;
+    InnerRect *argrect, temp, *srect = &self->r;
     Py_ssize_t loop = 0;
     Py_ssize_t values = 0; /* Defaults to expecting keys as rects. */
     PyObject *dict, *key, *val;
@@ -1645,6 +1727,15 @@ RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs)
     if (!ret)
         return NULL;
 
+    if (srect->w == 0 || srect->h == 0) {
+        return ret;
+    }
+
+    const PrimitiveType a = MIN(srect->x, srect->x + srect->w);
+    const PrimitiveType b = MIN(srect->y, srect->y + srect->h);
+    const PrimitiveType c = MAX(srect->x, srect->x + srect->w);
+    const PrimitiveType d = MAX(srect->y, srect->y + srect->h);
+
     while (PyDict_Next(dict, &loop, &key, &val)) {
         if (values) {
             if (!(argrect = RectFromObject(val, &temp))) {
@@ -1660,7 +1751,11 @@ RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs)
             }
         }
 
-        if (_pg_do_rects_intersect(&self->r, argrect)) {
+        if (argrect->w == 0 || argrect->h == 0) {
+            continue;
+        }
+
+        if (OPTIMIZED_COLLIDERECT(argrect)) {
             PyObject *num = Py_BuildValue("(OO)", key, val);
             if (!num) {
                 Py_DECREF(ret);
