@@ -1292,7 +1292,7 @@ RectExport_colliderect(RectObject *self, PyObject *const *args,
     return PyBool_FromLong(_pg_do_rects_intersect(&self->r, argrect));
 }
 
-#ifndef OPTIMIZED_COLLIDERECT(r)
+#ifndef OPTIMIZED_COLLIDERECT
 #define OPTIMIZED_COLLIDERECT(r)                                 \
     (a < MAX(r->x, r->x + r->w) && b < MAX(r->y, r->y + r->h) && \
      c > MIN(r->x, r->x + r->w) && d > MIN(r->y, r->y + r->h))
