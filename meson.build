@@ -40,9 +40,6 @@ else
 endif
 
 cc = meson.get_compiler('c')
-if plat == 'win' and cc.get_id() != 'msvc' and get_option('win_force_msvc')
-    error('Tried to compile with a non-msvc compiler when msvc is forced')
-endif
 
 fs = import('fs')
 

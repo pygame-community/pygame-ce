@@ -59,6 +59,6 @@ install = ['--tags=runtime,python-runtime,pg-tag']
 [tool.cibuildwheel.config-settings]
 setup-args = [
     "-Derror_on_warns=true",
-    "-Dwin_force_msvc=true",
+    "-Dvsenv=true",  # same effect as passing --vsenv
     "-Derror_docs_missing=true",
 ]

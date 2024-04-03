@@ -30,11 +30,6 @@ option('stripped', type: 'boolean', value: 'false')
 # behaviour is to not do this by default
 option('error_on_warns', type: 'boolean', value: 'false')
 
-# Controls whether to error on windows when a non msvc compiler is used. The
-# default behaviour is to not (and hence, the build can make use of something
-# like mingw). This option is ignored on other platforms.
-option('win_force_msvc', type: 'boolean', value: 'false')
-
 # Controls whether to error on build if generated docs are missing. Defaults to
 # false.
 option('error_docs_missing', type: 'boolean', value: 'false')
