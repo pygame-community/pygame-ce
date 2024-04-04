@@ -1293,9 +1293,9 @@ RectExport_colliderect(RectObject *self, PyObject *const *args,
 }
 
 #ifndef OPTIMIZED_COLLIDERECT
-#define OPTIMIZED_COLLIDERECT(r)                                 \
-    (a < MAX(r->x, r->x + r->w) && b < MAX(r->y, r->y + r->h) && \
-     c > MIN(r->x, r->x + r->w) && d > MIN(r->y, r->y + r->h))
+#define OPTIMIZED_COLLIDERECT(r)                                      \
+    (left < MAX(r->x, r->x + r->w) && top < MAX(r->y, r->y + r->h) && \
+     right > MIN(r->x, r->x + r->w) && bottom > MIN(r->y, r->y + r->h))
 #endif
 
 static PyObject *
@@ -1304,6 +1304,8 @@ RectExport_collidelist(RectObject *self, PyObject *arg)
     InnerRect *argrect, *srect = &self->r, temp;
     int loop;
 
+    /* If the calling rect has 0 width or height, it cannot collide with
+     * anything, hence return -1 directly. */
     if (srect->w == 0 || srect->h == 0) {
         return PyLong_FromLong(-1);
     }
@@ -1313,10 +1315,10 @@ RectExport_collidelist(RectObject *self, PyObject *arg)
                      "Argument must be a sequence of rectstyle objects.");
     }
 
-    const PrimitiveType a = MIN(srect->x, srect->x + srect->w);
-    const PrimitiveType b = MIN(srect->y, srect->y + srect->h);
-    const PrimitiveType c = MAX(srect->x, srect->x + srect->w);
-    const PrimitiveType d = MAX(srect->y, srect->y + srect->h);
+    const PrimitiveType left = MIN(srect->x, srect->x + srect->w);
+    const PrimitiveType top = MIN(srect->y, srect->y + srect->h);
+    const PrimitiveType right = MAX(srect->x, srect->x + srect->w);
+    const PrimitiveType bottom = MAX(srect->y, srect->y + srect->h);
 
     /* If the sequence is a fast sequence, we can use the faster
      * PySequence_Fast_ITEMS() function to get the items. */
@@ -1329,9 +1331,10 @@ RectExport_collidelist(RectObject *self, PyObject *arg)
                     "Argument must be a sequence of rectstyle objects.");
             }
 
-            if (argrect->w == 0 || argrect->h == 0) {
+            /* If 0 width or height, skip, preserves previous behaviour with
+             * _pg_do_rects_intersect */
+            if (argrect->w == 0 || argrect->h == 0)
                 continue;
-            }
 
             if (OPTIMIZED_COLLIDERECT(argrect)) {
                 return PyLong_FromLong(loop);
@@ -1353,9 +1356,10 @@ RectExport_collidelist(RectObject *self, PyObject *arg)
 
             Py_DECREF(obj);
 
-            if (argrect->w == 0 || argrect->h == 0) {
+            /* If 0 width or height, skip, preserves previous behaviour with
+             * _pg_do_rects_intersect */
+            if (argrect->w == 0 || argrect->h == 0)
                 continue;
-            }
 
             if (OPTIMIZED_COLLIDERECT(argrect)) {
                 return PyLong_FromLong(loop);
@@ -1382,14 +1386,16 @@ RectExport_collidelistall(RectObject *self, PyObject *arg)
         return NULL;
     }
 
+    /* If the calling rect has 0 width or height, it cannot collide with
+     * anything, hence return an empty list directly. */
     if (srect->w == 0 || srect->h == 0) {
         return ret;
     }
 
-    const PrimitiveType a = MIN(srect->x, srect->x + srect->w);
-    const PrimitiveType b = MIN(srect->y, srect->y + srect->h);
-    const PrimitiveType c = MAX(srect->x, srect->x + srect->w);
-    const PrimitiveType d = MAX(srect->y, srect->y + srect->h);
+    const PrimitiveType left = MIN(srect->x, srect->x + srect->w);
+    const PrimitiveType top = MIN(srect->y, srect->y + srect->h);
+    const PrimitiveType right = MAX(srect->x, srect->x + srect->w);
+    const PrimitiveType bottom = MAX(srect->y, srect->y + srect->h);
 
     /* If the sequence is a fast sequence, we can use the faster
      * PySequence_Fast_ITEMS() function to get the items. */
@@ -1403,9 +1409,10 @@ RectExport_collidelistall(RectObject *self, PyObject *arg)
                     "Argument must be a sequence of rectstyle objects.");
             }
 
-            if (argrect->w == 0 || argrect->h == 0) {
+            /* If 0 width or height, skip, preserves previous behaviour with
+             * _pg_do_rects_intersect */
+            if (!argrect->w || !argrect->h)
                 continue;
-            }
 
             if (OPTIMIZED_COLLIDERECT(argrect)) {
                 PyObject *num = PyLong_FromLong(loop);
@@ -1437,9 +1444,10 @@ RectExport_collidelistall(RectObject *self, PyObject *arg)
 
             Py_DECREF(obj);
 
-            if (argrect->w == 0 || argrect->h == 0) {
+            /* If 0 width or height, skip, preserves previous behaviour with
+             * _pg_do_rects_intersect */
+            if (argrect->w == 0 || argrect->h == 0)
                 continue;
-            }
 
             if (OPTIMIZED_COLLIDERECT(argrect)) {
                 PyObject *num = PyLong_FromLong(loop);
@@ -1526,14 +1534,16 @@ RectExport_collideobjectsall(RectObject *self, PyObject *args,
         return NULL;
     }
 
+    /* If the calling rect has 0 width or height, it cannot collide with
+     * anything, hence return an empty list directly. */
     if (srect->w == 0 || srect->h == 0) {
         return ret;
     }
 
-    const PrimitiveType a = MIN(srect->x, srect->x + srect->w);
-    const PrimitiveType b = MIN(srect->y, srect->y + srect->h);
-    const PrimitiveType c = MAX(srect->x, srect->x + srect->w);
-    const PrimitiveType d = MAX(srect->y, srect->y + srect->h);
+    const PrimitiveType left = MIN(srect->x, srect->x + srect->w);
+    const PrimitiveType top = MIN(srect->y, srect->y + srect->h);
+    const PrimitiveType right = MAX(srect->x, srect->x + srect->w);
+    const PrimitiveType bottom = MAX(srect->y, srect->y + srect->h);
 
     size = PySequence_Length(list);
     if (size == -1) {
@@ -1542,7 +1552,7 @@ RectExport_collideobjectsall(RectObject *self, PyObject *args,
     }
 
     for (loop = 0; loop < size; ++loop) {
-        obj = PySequence_GetItem(list, loop);
+        obj = PySequence_ITEM(list, loop);
 
         if (!obj) {
             Py_DECREF(ret);
@@ -1556,6 +1566,8 @@ RectExport_collideobjectsall(RectObject *self, PyObject *args,
             return NULL;
         }
 
+        /* If 0 width or height, skip, preserves previous behaviour with
+         * _pg_do_rects_intersect */
         if (argrect->w == 0 || argrect->h == 0) {
             Py_DECREF(obj);
             continue;
@@ -1604,14 +1616,16 @@ RectExport_collideobjects(RectObject *self, PyObject *args, PyObject *kwargs)
                      "Key function must be callable with one argument.");
     }
 
+    /* If the calling rect has 0 width or height, it cannot collide with
+     * anything, hence return None directly. */
     if (srect->w == 0 || srect->h == 0) {
         Py_RETURN_NONE;
     }
 
-    const PrimitiveType a = MIN(srect->x, srect->x + srect->w);
-    const PrimitiveType b = MIN(srect->y, srect->y + srect->h);
-    const PrimitiveType c = MAX(srect->x, srect->x + srect->w);
-    const PrimitiveType d = MAX(srect->y, srect->y + srect->h);
+    const PrimitiveType left = MIN(srect->x, srect->x + srect->w);
+    const PrimitiveType top = MIN(srect->y, srect->y + srect->h);
+    const PrimitiveType right = MAX(srect->x, srect->x + srect->w);
+    const PrimitiveType bottom = MAX(srect->y, srect->y + srect->h);
 
     size = PySequence_Length(list);
     if (size == -1) {
@@ -1631,6 +1645,8 @@ RectExport_collideobjects(RectObject *self, PyObject *args, PyObject *kwargs)
             return NULL;
         }
 
+        /* If 0 width or height, skip, preserves previous behaviour with
+         * _pg_do_rects_intersect */
         if (argrect->w == 0 || argrect->h == 0) {
             Py_DECREF(obj);
             continue;
@@ -1665,14 +1681,16 @@ RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(PyExc_TypeError, "first argument must be a dict");
     }
 
+    /* If the calling rect has 0 width or height, it cannot collide with
+     * anything, hence return None directly. */
     if (srect->w == 0 || srect->h == 0) {
         Py_RETURN_NONE;
     }
 
-    const PrimitiveType a = MIN(srect->x, srect->x + srect->w);
-    const PrimitiveType b = MIN(srect->y, srect->y + srect->h);
-    const PrimitiveType c = MAX(srect->x, srect->x + srect->w);
-    const PrimitiveType d = MAX(srect->y, srect->y + srect->h);
+    const PrimitiveType left = MIN(srect->x, srect->x + srect->w);
+    const PrimitiveType top = MIN(srect->y, srect->y + srect->h);
+    const PrimitiveType right = MAX(srect->x, srect->x + srect->w);
+    const PrimitiveType bottom = MAX(srect->y, srect->y + srect->h);
 
     while (PyDict_Next(dict, &loop, &key, &val)) {
         if (values) {
@@ -1687,12 +1705,14 @@ RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs)
             }
         }
 
+        /* If 0 width or height, skip, preserves previous behaviour with
+         * _pg_do_rects_intersect */
         if (argrect->w == 0 || argrect->h == 0) {
             continue;
         }
 
         if (OPTIMIZED_COLLIDERECT(argrect)) {
-            ret = Py_BuildValue("(OO)", key, val);
+            ret = PyTuple_Pack(2, key, val);
             break;
         }
     }
@@ -1727,14 +1747,16 @@ RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs)
     if (!ret)
         return NULL;
 
+    /* If the calling rect has 0 width or height, it cannot collide with
+     * anything, hence return an empty list directly. */
     if (srect->w == 0 || srect->h == 0) {
         return ret;
     }
 
-    const PrimitiveType a = MIN(srect->x, srect->x + srect->w);
-    const PrimitiveType b = MIN(srect->y, srect->y + srect->h);
-    const PrimitiveType c = MAX(srect->x, srect->x + srect->w);
-    const PrimitiveType d = MAX(srect->y, srect->y + srect->h);
+    const PrimitiveType left = MIN(srect->x, srect->x + srect->w);
+    const PrimitiveType top = MIN(srect->y, srect->y + srect->h);
+    const PrimitiveType right = MAX(srect->x, srect->x + srect->w);
+    const PrimitiveType bottom = MAX(srect->y, srect->y + srect->h);
 
     while (PyDict_Next(dict, &loop, &key, &val)) {
         if (values) {
@@ -1751,12 +1773,13 @@ RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs)
             }
         }
 
-        if (argrect->w == 0 || argrect->h == 0) {
+        /* If 0 width or height, skip, preserves previous behaviour with
+         * _pg_do_rects_intersect */
+        if (argrect->w == 0 || argrect->h == 0)
             continue;
-        }
 
         if (OPTIMIZED_COLLIDERECT(argrect)) {
-            PyObject *num = Py_BuildValue("(OO)", key, val);
+            PyObject *num = PyTuple_Pack(2, key, val);
             if (!num) {
                 Py_DECREF(ret);
                 return NULL;
