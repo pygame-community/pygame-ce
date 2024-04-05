@@ -371,6 +371,65 @@ pg_circle_as_frect(pgCircleObject *self, PyObject *_null)
     return pgFRect_New4((float)x, (float)y, (float)diameter, (float)diameter);
 }
 
+static PyObject *
+pg_circle_contains(pgCircleObject *self, PyObject *arg)
+{
+    int result = 0;
+    pgCircleBase *scirc = &self->circle;
+    double x, y;
+
+    if (pgCircle_Check(arg)) {
+        pgCircleBase *temp = &pgCircle_AsCircle(arg);
+        if (temp == scirc) {
+            /*a circle is always contained within itself*/
+            Py_RETURN_TRUE;
+        }
+        double dx, dy, dr;
+
+        dx = temp->x - scirc->x;
+        dy = temp->y - scirc->y;
+        dr = temp->r - scirc->r;
+
+        result = (dx * dx + dy * dy) <= (dr * dr);
+    }
+    else if (pgRect_Check(arg)) {
+        SDL_Rect *temp = &pgRect_AsRect(arg);
+
+        if (pgCollision_CirclePoint(scirc, (double)temp->x, (double)temp->y) &&
+            pgCollision_CirclePoint(scirc, (double)(temp->x + temp->w),
+                                    (double)temp->y) &&
+            pgCollision_CirclePoint(scirc, (double)temp->x,
+                                    (double)(temp->y + temp->h)) &&
+            pgCollision_CirclePoint(scirc, (double)(temp->x + temp->w),
+                                    (double)(temp->y + temp->h))) {
+            result = 1;
+        }
+    }
+    else if (pgFRect_Check(arg)) {
+        SDL_FRect *temp = &pgFRect_AsRect(arg);
+
+        if (pgCollision_CirclePoint(scirc, (double)temp->x, (double)temp->y) &&
+            pgCollision_CirclePoint(scirc, (double)(temp->x + temp->w),
+                                    (double)temp->y) &&
+            pgCollision_CirclePoint(scirc, (double)temp->x,
+                                    (double)(temp->y + temp->h)) &&
+            pgCollision_CirclePoint(scirc, (double)(temp->x + temp->w),
+                                    (double)(temp->y + temp->h))) {
+            result = 1;
+        }
+    }
+    else if (pg_TwoDoublesFromObj(arg, &x, &y)) {
+        result = pgCollision_CirclePoint(scirc, x, y);
+    }
+    else {
+        return RAISE(PyExc_TypeError,
+                     "Invalid shape argument, must be a Circle, Rect / Frect "
+                     "or a coordinate");
+    }
+
+    return PyBool_FromLong(result);
+}
+
 static struct PyMethodDef pg_circle_methods[] = {
     {"collidepoint", (PyCFunction)pg_circle_collidepoint, METH_FASTCALL,
      DOC_CIRCLE_COLLIDEPOINT},
@@ -395,6 +454,7 @@ static struct PyMethodDef pg_circle_methods[] = {
      DOC_CIRCLE_ROTATE},
     {"rotate_ip", (PyCFunction)pg_circle_rotate_ip, METH_FASTCALL,
      DOC_CIRCLE_ROTATEIP},
+    {"contains", (PyCFunction)pg_circle_contains, METH_O, DOC_CIRCLE_CONTAINS},
     {NULL, NULL, 0, NULL}};
 
 #define GETTER_SETTER(name)                                                   \

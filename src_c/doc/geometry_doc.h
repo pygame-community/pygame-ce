@@ -15,6 +15,7 @@
 #define DOC_CIRCLE_MOVEIP "move_ip((x, y), /) -> None\nmove_ip(x, y, /) -> None\nmove_ip(vector2, /) -> None\nmoves the circle by a given amount, in place"
 #define DOC_CIRCLE_COLLIDERECT "colliderect(rect, /) -> bool\ncolliderect((x, y, width, height), /) -> bool\ncolliderect(x, y, width, height, /) -> bool\ncolliderect((x, y), (width, height), /) -> bool\nchecks if a rectangle intersects the circle"
 #define DOC_CIRCLE_COLLIDESWITH "collideswith(circle, /) -> bool\ncollideswith(rect, /) -> bool\ncollideswith((x, y), /) -> bool\ncollideswith(vector2, /) -> bool\ncheck if a shape or point collides with the circle"
+#define DOC_CIRCLE_CONTAINS "contains(circle, /) -> bool\ncontains(rect, /) -> bool\ncontains((x, y), /) -> bool\ncontains(vector2, /) -> bool\ntest if a shape or point is inside the circle"
 #define DOC_CIRCLE_UPDATE "update((x, y), radius, /) -> None\nupdate(x, y, radius, /) -> None\nupdates the circle position and radius"
 #define DOC_CIRCLE_ROTATE "rotate(angle, rotation_point=Circle.center, /) -> Circle\nrotate(angle, /) -> Circle\nrotates the circle"
 #define DOC_CIRCLE_ROTATEIP "rotate_ip(angle, rotation_point=Circle.center, /) -> None\nrotate_ip(angle, /) -> None\nrotates the circle in place"
