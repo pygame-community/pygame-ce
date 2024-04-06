@@ -384,13 +384,16 @@ pg_circle_contains(pgCircleObject *self, PyObject *arg)
             /*a circle is always contained within itself*/
             Py_RETURN_TRUE;
         }
-        double dx, dy, dr;
+        /* a bigger circle can't be contained within a smaller circle */
+        if (temp->r > scirc->r) {
+            Py_RETURN_FALSE;
+        }
 
-        dx = temp->x - scirc->x;
-        dy = temp->y - scirc->y;
-        dr = temp->r - scirc->r;
+        double dx = temp->x - scirc->x;
+        double dy = temp->y - scirc->y;
+        double distance = sqrt(dx * dx + dy * dy);
 
-        result = (dx * dx + dy * dy) <= (dr * dr);
+        result = distance + temp->r <= scirc->r;
     }
     else if (pgRect_Check(arg)) {
         SDL_Rect *temp = &pgRect_AsRect(arg);
