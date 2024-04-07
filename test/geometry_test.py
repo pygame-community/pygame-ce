@@ -1199,6 +1199,10 @@ class CircleTypeTest(unittest.TestCase):
         # intersecting circle
         self.assertFalse(c.contains(c4))
 
+        # bigger circle not contained in smaller circle
+        self.assertFalse(c2.contains(c))
+        self.assertFalse(c3.contains(c4))
+
     def test_contains_point(self):
         """Ensures that the contains method correctly determines if a point is
         contained within the circle"""

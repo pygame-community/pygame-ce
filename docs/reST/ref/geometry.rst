@@ -285,17 +285,15 @@
 
    .. method:: contains
 
-         | :sl:`test if a shape or point is inside the circle`
+         | :sl:`check if a shape or point is inside the circle`
          | :sg:`contains(circle, /) -> bool`
          | :sg:`contains(rect, /) -> bool`
          | :sg:`contains((x, y), /) -> bool`
          | :sg:`contains(vector2, /) -> bool`
 
-         The `contains` method tests whether a given shape or point is completely contained
-         within a `Circle` object. The function takes a single argument which can be a `Circle`,
-         `Rect`, `FRect`, or a point.
-         It returns `True` if the shape or point is completely contained, and `False` otherwise.
-
+         Checks whether a given shape or point is completely contained within the `Circle`.
+         Takes a single argument which can be a `Circle`, `Rect`, `FRect`, or a point.
+         Returns `True` if the shape or point is completely contained, and `False` otherwise.
 
          .. note::
              The shape argument must be an actual shape object (`Circle`, `Rect`, or `FRect`).

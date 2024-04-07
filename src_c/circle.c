@@ -380,20 +380,18 @@ pg_circle_contains(pgCircleObject *self, PyObject *arg)
 
     if (pgCircle_Check(arg)) {
         pgCircleBase *temp = &pgCircle_AsCircle(arg);
-        if (temp == scirc) {
-            /*a circle is always contained within itself*/
+        /*a circle is always contained within itself*/
+        if (temp == scirc)
             Py_RETURN_TRUE;
-        }
         /* a bigger circle can't be contained within a smaller circle */
-        if (temp->r > scirc->r) {
+        if (temp->r > scirc->r)
             Py_RETURN_FALSE;
-        }
 
-        double dx = temp->x - scirc->x;
-        double dy = temp->y - scirc->y;
-        double distance = sqrt(dx * dx + dy * dy);
+        const double dx = temp->x - scirc->x;
+        const double dy = temp->y - scirc->y;
+        const double dr = temp->r - scirc->r;
 
-        result = distance + temp->r <= scirc->r;
+        result = (dx * dx + dy * dy) <= (dr * dr);
     }
     else if (pgRect_Check(arg)) {
         SDL_Rect *temp = &pgRect_AsRect(arg);
