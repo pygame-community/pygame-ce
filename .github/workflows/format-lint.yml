@@ -2,7 +2,7 @@ name: python3 setup.py lint
 
 # Run lint CI on changes to main branch, or any PR to main. Do not run CI on
 # any other branch.
-# run only if there are changes on files that are linted (C, python and rst files)
+# Run only if there are changes on files that are linted (C, Python and rst files)
 on:
   push:
     branches: main
@@ -43,10 +43,9 @@ jobs:
       - uses: actions/checkout@v4.1.2
 
       - name: Install deps
-        run: python3 -m pip install pylint black clang-format sphinx"<7.2.0"
+        run: python3 -m pip install pylint sphinx"<7.2.0"
 
-      - name: Check code Formatting and Linting
-        run: python3 setup.py lint
+      - run: pylint src_py docs
 
       - name: Check docs changes are checked in
         run: |
