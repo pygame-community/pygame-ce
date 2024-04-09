@@ -383,7 +383,8 @@ class MixerModuleTest(unittest.TestCase):
             )
         a2 = array(snd)
         a3 = a.astype(a2.dtype)
-        if (lshift := abs(format) - 8 * a.itemsize) >= 0:
+        lshift = abs(format) - 8 * a.itemsize
+        if lshift >= 0:
             # This is asymmetric with respect to downcasting.
             a3 <<= lshift
         self.assertTrue(all_(a2 == a3), "Format %i, dtype %s" % (format, a.dtype))
