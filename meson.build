@@ -33,8 +33,9 @@ elif host_machine.system() == 'emscripten'
     )
 else
     # here it one of: cygwin, dragonfly, freebsd, gnu, haiku, netbsd, openbsd, sunos
-    error(
-        'pygame-ce does not support building on your platform:',
+    plat = 'unix'
+    warning(
+        'pygame-ce does not actively support building on your platform:',
         host_machine.system(),
     )
 endif

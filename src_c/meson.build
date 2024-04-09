@@ -343,8 +343,6 @@ _camera = py.extension_module(
 pg_scrap_link = [] # TODO: should this link logic be improved/made meson-ey?
 if plat == 'win'
     pg_scrap_link += ['-luser32', '-lgdi32']
-elif plat == 'linux'
-    pg_scrap_link += '-lX11'
 endif
 
 scrap = py.extension_module(

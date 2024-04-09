@@ -24,9 +24,9 @@ else:
     import ast
 
     finds = re.findall(r"^version\s*=(.*)", config_text, flags=re.MULTILINE)
-    if not finds:
-        raise RuntimeError(f"Could not find version from {config_file}")
+    if len(finds) != 1:
+        raise RuntimeError(f"Could not find precise version from {config_file}")
 
-    version = ast.literal_eval(finds[-1].strip())
+    version = ast.literal_eval(finds[0].strip())
 
 print(version)
