@@ -45,7 +45,8 @@ jobs:
       - name: Install deps
         run: python3 -m pip install pylint sphinx"<7.2.0"
 
-      - run: pylint src_py docs
+      - name: Check code linting
+        run: pylint src_py docs
 
       - name: Check docs changes are checked in
         run: |
