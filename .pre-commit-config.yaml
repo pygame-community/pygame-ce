@@ -13,12 +13,11 @@ repos:
             (?x)^(
                 ^buildconfig/.*$
                 | ^docs/reST/.*$
-                | setup.py
             )$
 
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v18.1.2
+    rev: v18.1.3
     hooks:
       - id: clang-format
         exclude: |
