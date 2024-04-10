@@ -277,14 +277,17 @@ summary(
     section: 'Dependencies',
 )
 
+simd_avx2 = false
 simd_avx2_flags = []
 if host_machine.cpu_family().startswith('x86')
     flag = (cc.get_argument_syntax() == 'msvc') ? '/arch:AVX2' : '-mavx2'
     if cc.has_argument(flag)
         simd_avx2_flags += flag
+        simd_avx2 = true
     endif
 endif
 
+simd_sse2_neon = false
 simd_sse2_neon_flags = []
 if host_machine.cpu_family() == 'arm'
     # first check if compiler supports the flag, and use it then. Needed only
@@ -292,12 +295,24 @@ if host_machine.cpu_family() == 'arm'
     flag = '-mfpu=neon'
     if cc.has_argument(flag)
         simd_sse2_neon_flags += flag
-        add_global_arguments('-DPG_ENABLE_ARM_NEON=1', language: 'c')
+        simd_sse2_neon = true
     endif
 elif host_machine.cpu_family() == 'aarch64'
     # no explicit flag needed in this case
+    simd_sse2_neon = true
+endif
+
+if simd_sse2_neon
     add_global_arguments('-DPG_ENABLE_ARM_NEON=1', language: 'c')
 endif
+
+summary(
+    {
+        'AVX2': simd_avx2,
+        'NEON': simd_sse2_neon,
+    },
+    section: 'SIMD',
+)
 
 # stores werror
 warnings_error = []
