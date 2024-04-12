@@ -3373,6 +3373,25 @@ surf_gaussian_blur(PyObject *self, PyObject *args, PyObject *kwargs)
     return (PyObject *)pgSurface_New(new_surf);
 }
 
+void
+invert_non_simd(SDL_Surface *src, SDL_Surface *newsurf)
+{
+    int x, y;
+    for (y = 0; y < src->h; y++) {
+        for (x = 0; x < src->w; x++) {
+            Uint32 pixel;
+            Uint8 *pix;
+            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format,
+                        pix);
+            unsigned char r, g, b, a;
+            SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
+            Uint32 new_pixel = SDL_MapRGBA(newsurf->format, ~r, ~g, ~b, a);
+            SURF_SET_AT(new_pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
+                        newsurf->format, pix);
+        }
+    }
+}
+
 SDL_Surface *
 invert(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
 {
@@ -3399,21 +3418,30 @@ invert(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
             PyExc_ValueError,
             "Source and destination surfaces need the same format."));
     }
-
-    int x, y;
-    for (y = 0; y < src->h; y++) {
-        for (x = 0; x < src->w; x++) {
-            Uint32 pixel;
-            Uint8 *pix;
-            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format,
-                        pix);
-            unsigned char r, g, b, a;
-            SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
-            Uint32 new_pixel = SDL_MapRGBA(newsurf->format, ~r, ~g, ~b, a);
-            SURF_SET_AT(new_pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
-                        newsurf->format, pix);
+#if defined(__EMSCRIPTEN__)
+    invert_non_simd(src, newsurf);
+#else  // !defined(__EMSCRIPTEN__)
+    if (src->format->BytesPerPixel == 4 &&
+        src->format->Rmask == newsurf->format->Rmask &&
+        src->format->Gmask == newsurf->format->Gmask &&
+        src->format->Bmask == newsurf->format->Bmask &&
+        (src->pitch % 4 == 0) && (newsurf->pitch == (newsurf->w * 4))) {
+        if (pg_has_avx2()) {
+            invert_avx2(src, newsurf);
+        }
+#if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
+        else if (pg_HasSSE_NEON()) {
+            invert_sse2(src, newsurf);
+        }
+#endif  // defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
+        else {
+            invert_non_simd(src, newsurf);
         }
     }
+    else {
+        invert_non_simd(src, newsurf);
+    }
+#endif  // !defined(__EMSCRIPTEN__)
 
     SDL_UnlockSurface(newsurf);
 
