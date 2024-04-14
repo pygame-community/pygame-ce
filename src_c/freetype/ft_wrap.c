@@ -401,12 +401,11 @@ ft_wrap_init(FreeTypeInstance *ft, pgFontObject *fontobj)
     }
     fontobj->is_scalable = FT_IS_SCALABLE(font) ? ~0 : 0;
 
-    fontobj->_internals = _PGFT_malloc(sizeof(FontInternals));
+    fontobj->_internals = _PGFT_calloc(1, sizeof(FontInternals));
     if (!fontobj->_internals) {
         PyErr_NoMemory();
         return -1;
     }
-    memset(fontobj->_internals, 0x0, sizeof(FontInternals));
 
     if (_PGFT_LayoutInit(ft, fontobj)) {
         _PGFT_free(fontobj->_internals);
@@ -493,12 +492,11 @@ _PGFT_TryLoadFont_RWops(FreeTypeInstance *ft, pgFontObject *fontobj,
         return -1;
     }
 
-    stream = _PGFT_malloc(sizeof(*stream));
+    stream = _PGFT_calloc(1, sizeof(*stream));
     if (!stream) {
         PyErr_NoMemory();
         return -1;
     }
-    memset(stream, 0, sizeof(*stream));
     stream->read = RWops_read;
     stream->descriptor.pointer = src;
     stream->pos = (unsigned long)position;
