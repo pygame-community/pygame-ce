@@ -540,8 +540,8 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
     /*
      * Determine if source surface is 32bit or 8bit
      */
-    is32bit = (src->format->BitsPerPixel == 32);
-    if ((is32bit) || (src->format->BitsPerPixel == 8)) {
+    is32bit = (PG_SURF_BitsPerPixel(src) == 32);
+    if ((is32bit) || (PG_SURF_BitsPerPixel(src) == 8)) {
         /*
          * Use source surface 'as is'
          */
