@@ -31,6 +31,17 @@ def circle(
     draw_bottom_left: bool = False,
     draw_bottom_right: bool = False,
 ) -> Rect: ...
+def aacircle(
+    surface: Surface,
+    color: ColorValue,
+    center: Coordinate,
+    radius: float,
+    width: int = 0,
+    draw_top_right: bool = False,
+    draw_top_left: bool = False,
+    draw_bottom_left: bool = False,
+    draw_bottom_right: bool = False,
+) -> Rect: ...
 def ellipse(
     surface: Surface, color: ColorValue, rect: RectValue, width: int = 0
 ) -> Rect: ...
