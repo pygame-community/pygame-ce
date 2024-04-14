@@ -820,31 +820,35 @@ aacircle(PyObject *self, PyObject *args, PyObject *kwargs)
     if ((top_right == 0 && top_left == 0 && bottom_left == 0 &&
          bottom_right == 0)) {
         if (!width || width == radius) {
-            draw_circle_filled(surf, posx, posy, radius-1, color, drawn_area);
-            draw_circle_xaolinwu(surf, posx, posy, radius, 2, color,
-                                  1, 1, 1, 1, drawn_area);
+            draw_circle_filled(surf, posx, posy, radius - 1, color,
+                               drawn_area);
+            draw_circle_xaolinwu(surf, posx, posy, radius, 2, color, 1, 1, 1,
+                                 1, drawn_area);
         }
         else if (width == 1) {
-            draw_circle_xaolinwu_thin(surf, posx, posy, radius, color,
-                                      1, 1, 1, 1, drawn_area);
+            draw_circle_xaolinwu_thin(surf, posx, posy, radius, color, 1, 1, 1,
+                                      1, drawn_area);
         }
         else {
-            draw_circle_xaolinwu(surf, posx, posy, radius, width, color,
-                                 1, 1, 1, 1, drawn_area);
+            draw_circle_xaolinwu(surf, posx, posy, radius, width, color, 1, 1,
+                                 1, 1, drawn_area);
         }
     }
     else {
         if (!width || width == radius) {
-            draw_circle_xaolinwu(surf, posx, posy, radius, radius, color, top_right,
-                                 top_left, bottom_left, bottom_right, drawn_area);
+            draw_circle_xaolinwu(surf, posx, posy, radius, radius, color,
+                                 top_right, top_left, bottom_left,
+                                 bottom_right, drawn_area);
         }
         else if (width == 1) {
-            draw_circle_xaolinwu_thin(surf, posx, posy, radius, color, top_right,
-                                      top_left, bottom_left, bottom_right, drawn_area);
+            draw_circle_xaolinwu_thin(surf, posx, posy, radius, color,
+                                      top_right, top_left, bottom_left,
+                                      bottom_right, drawn_area);
         }
         else {
-            draw_circle_xaolinwu(surf, posx, posy, radius, width, color, top_right,
-                                 top_left, bottom_left, bottom_right, drawn_area);
+            draw_circle_xaolinwu(surf, posx, posy, radius, width, color,
+                                 top_right, top_left, bottom_left,
+                                 bottom_right, drawn_area);
         }
     }
 
@@ -2471,33 +2475,43 @@ draw_circle_filled(SDL_Surface *surf, int x0, int y0, int radius, Uint32 color,
 }
 
 static void
-eight_pixels(SDL_Surface *surf, int x0, int y0, Uint32 color, int x, int y, 
-             double opacity, int top_right, int top_left, int bottom_left, 
-             int bottom_right, int *drawn_area) {
+draw_eight_symetric_pixels(SDL_Surface *surf, int x0, int y0, Uint32 color,
+                           int x, int y, float opacity, int top_right,
+                           int top_left, int bottom_left, int bottom_right,
+                           int *drawn_area)
+{
     opacity = opacity / 255;
     Uint32 pixel_color;
     if (top_right == 1) {
-        pixel_color = get_antialiased_color(surf, x0 + x, y0 - y, color, opacity);
+        pixel_color =
+            get_antialiased_color(surf, x0 + x, y0 - y, color, opacity);
         set_and_check_rect(surf, x0 + x, y0 - y, pixel_color, drawn_area);
-        pixel_color = get_antialiased_color(surf, x0 + y, y0 - x, color, opacity);
+        pixel_color =
+            get_antialiased_color(surf, x0 + y, y0 - x, color, opacity);
         set_and_check_rect(surf, x0 + y, y0 - x, pixel_color, drawn_area);
     }
     if (top_left == 1) {
-        pixel_color = get_antialiased_color(surf, x0 - x, y0 - y, color, opacity);
+        pixel_color =
+            get_antialiased_color(surf, x0 - x, y0 - y, color, opacity);
         set_and_check_rect(surf, x0 - x, y0 - y, pixel_color, drawn_area);
-        pixel_color = get_antialiased_color(surf, x0 - y, y0 - x, color, opacity);
+        pixel_color =
+            get_antialiased_color(surf, x0 - y, y0 - x, color, opacity);
         set_and_check_rect(surf, x0 - y, y0 - x, pixel_color, drawn_area);
     }
     if (bottom_left == 1) {
-        pixel_color = get_antialiased_color(surf, x0 - x, y0 + y, color, opacity);
+        pixel_color =
+            get_antialiased_color(surf, x0 - x, y0 + y, color, opacity);
         set_and_check_rect(surf, x0 - x, y0 + y, pixel_color, drawn_area);
-        pixel_color = get_antialiased_color(surf, x0 - y, y0 + x, color, opacity);
+        pixel_color =
+            get_antialiased_color(surf, x0 - y, y0 + x, color, opacity);
         set_and_check_rect(surf, x0 - y, y0 + x, pixel_color, drawn_area);
     }
     if (bottom_right == 1) {
-        pixel_color = get_antialiased_color(surf, x0 + x, y0 + y, color, opacity);
+        pixel_color =
+            get_antialiased_color(surf, x0 + x, y0 + y, color, opacity);
         set_and_check_rect(surf, x0 + x, y0 + y, pixel_color, drawn_area);
-        pixel_color = get_antialiased_color(surf, x0 + y, y0 + x, color, opacity);
+        pixel_color =
+            get_antialiased_color(surf, x0 + y, y0 + x, color, opacity);
         set_and_check_rect(surf, x0 + y, y0 + x, pixel_color, drawn_area);
     }
 }
@@ -2514,48 +2528,56 @@ draw_circle_xaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
     for (int radius_ = radius - thickness; radius_ <= radius; radius_++) {
         int x = 0;
         int y = radius_;
-        double prev_opacity = 0;
+        float prev_opacity = 0;
         if (radius_ == radius - thickness) {
             while (x < y) {
-                double height = sqrt(pow(radius_, 2) - pow(x, 2));
-                double opacity = 255 * (ceil(height) - height);
+                x++;
+                float height = sqrt(pow(radius_, 2) - pow(x - 1, 2));
+                float opacity = 255 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
                     y--;
                 }
                 prev_opacity = opacity;
-                eight_pixels(surf, x0, y0, color, x, y, 255,
-                             top_right, top_left, bottom_left, bottom_right, drawn_area);
-                eight_pixels(surf, x0, y0, color, x, y - 1, opacity,
-                             top_right, top_left, bottom_left, bottom_right, drawn_area);
-                x++;
+                draw_eight_symetric_pixels(surf, x0, y0, color, x - 1, y, 255,
+                                           top_right, top_left, bottom_left,
+                                           bottom_right, drawn_area);
+                draw_eight_symetric_pixels(
+                    surf, x0, y0, color, x - 1, y - 1, opacity, top_right,
+                    top_left, bottom_left, bottom_right, drawn_area);
             }
-        } else if (radius_ == radius) {
+        }
+        else if (radius_ == radius) {
             while (x < y) {
-                double height = sqrt(pow(radius_, 2) - pow(x, 2));
-                double opacity = 255 * (ceil(height) - height);
+                x++;
+                float height = sqrt(pow(radius_, 2) - pow(x - 1, 2));
+                float opacity = 255 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
                     y--;
                 }
                 prev_opacity = opacity;
-                eight_pixels(surf, x0, y0, color, x, y, 255 - opacity,
-                             top_right, top_left, bottom_left, bottom_right, drawn_area);
-                eight_pixels(surf, x0, y0, color, x, y - 1, 255,
-                             top_right, top_left, bottom_left, bottom_right, drawn_area);
-                x++;
+                draw_eight_symetric_pixels(
+                    surf, x0, y0, color, x - 1, y, 255 - opacity, top_right,
+                    top_left, bottom_left, bottom_right, drawn_area);
+                draw_eight_symetric_pixels(
+                    surf, x0, y0, color, x - 1, y - 1, 255, top_right,
+                    top_left, bottom_left, bottom_right, drawn_area);
             }
-        } else {
+        }
+        else {
             while (x < y) {
-                double height = sqrt(pow(radius_, 2) - pow(x, 2));
-                double opacity = 255 * (ceil(height) - height);
+                x++;
+                float height = sqrt(pow(radius_, 2) - pow(x - 1, 2));
+                float opacity = 255 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
                     y--;
                 }
                 prev_opacity = opacity;
-                eight_pixels(surf, x0, y0, color, x, y, 255,
-                             top_right, top_left, bottom_left, bottom_right, drawn_area);
-                eight_pixels(surf, x0, y0, color, x, y - 1, 255,
-                             top_right, top_left, bottom_left, bottom_right, drawn_area);
-                x++;
+                draw_eight_symetric_pixels(surf, x0, y0, color, x - 1, y, 255,
+                                           top_right, top_left, bottom_left,
+                                           bottom_right, drawn_area);
+                draw_eight_symetric_pixels(
+                    surf, x0, y0, color, x - 1, y - 1, 255, top_right,
+                    top_left, bottom_left, bottom_right, drawn_area);
             }
         }
     }
@@ -2568,19 +2590,21 @@ draw_circle_xaolinwu_thin(SDL_Surface *surf, int x0, int y0, int radius,
 {
     int x = 0;
     int y = radius;
-    double prev_opacity = 0;
+    float prev_opacity = 0;
     while (x < y) {
-        double height = sqrt(pow(radius, 2) - pow(x, 2));
-        double opacity = 255 * (ceil(height) - height);
+        x++;
+        float height = sqrt(pow(radius, 2) - pow(x - 1, 2));
+        float opacity = 255 * (ceil(height) - height);
         if (opacity < prev_opacity) {
             y--;
         }
         prev_opacity = opacity;
-        eight_pixels(surf, x0, y0, color, x, y, 255 - opacity,
-                             top_right, top_left, bottom_left, bottom_right, drawn_area);
-        eight_pixels(surf, x0, y0, color, x, y - 1, opacity,
-                             top_right, top_left, bottom_left, bottom_right, drawn_area);
-        x++;
+        draw_eight_symetric_pixels(surf, x0, y0, color, x - 1, y,
+                                   255 - opacity, top_right, top_left,
+                                   bottom_left, bottom_right, drawn_area);
+        draw_eight_symetric_pixels(surf, x0, y0, color, x - 1, y - 1, opacity,
+                                   top_right, top_left, bottom_left,
+                                   bottom_right, drawn_area);
     }
 }
 
@@ -3094,7 +3118,7 @@ static PyMethodDef _draw_methods[] = {
     {"arc", (PyCFunction)arc, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_ARC},
     {"circle", (PyCFunction)circle, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_CIRCLE},
-     {"aacircle", (PyCFunction)aacircle, METH_VARARGS | METH_KEYWORDS,
+    {"aacircle", (PyCFunction)aacircle, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_AACIRCLE},
     {"polygon", (PyCFunction)polygon, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_POLYGON},

@@ -37,6 +37,13 @@ def aacircle(
     center: Coordinate,
     radius: float,
     width: int = 0,
+) -> Rect: ...
+def aacircle(
+    surface: Surface,
+    color: ColorValue,
+    center: Coordinate,
+    radius: float,
+    width: int = 0,
     draw_top_right: bool = False,
     draw_top_left: bool = False,
     draw_bottom_left: bool = False,
