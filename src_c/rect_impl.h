@@ -1293,9 +1293,14 @@ RectExport_colliderect(RectObject *self, PyObject *const *args,
 }
 
 #ifndef OPTIMIZED_COLLIDERECT
-#define OPTIMIZED_COLLIDERECT(r)                                      \
-    (left < MAX(r->x, r->x + r->w) && top < MAX(r->y, r->y + r->h) && \
-     right > MIN(r->x, r->x + r->w) && bottom > MIN(r->y, r->y + r->h))
+/* This macro is used to optimize the colliderect function. Makes use of
+ * precalculated values to avoid unnecessary calculations. It also checks
+ * whether the other rect has 0 width or height, in which case we don't
+ * collide. */
+#define OPTIMIZED_COLLIDERECT(r)                                       \
+    (r->w && r->h && left < MAX(r->x, r->x + r->w) &&                  \
+     top < MAX(r->y, r->y + r->h) && right > MIN(r->x, r->x + r->w) && \
+     bottom > MIN(r->y, r->y + r->h))
 #endif
 
 static PyObject *
@@ -1331,11 +1336,6 @@ RectExport_collidelist(RectObject *self, PyObject *arg)
                     "Argument must be a sequence of rectstyle objects.");
             }
 
-            /* If 0 width or height, skip, preserves previous behaviour with
-             * _pg_do_rects_intersect */
-            if (argrect->w == 0 || argrect->h == 0)
-                continue;
-
             if (OPTIMIZED_COLLIDERECT(argrect)) {
                 return PyLong_FromLong(loop);
             }
@@ -1355,11 +1355,6 @@ RectExport_collidelist(RectObject *self, PyObject *arg)
             }
 
             Py_DECREF(obj);
-
-            /* If 0 width or height, skip, preserves previous behaviour with
-             * _pg_do_rects_intersect */
-            if (argrect->w == 0 || argrect->h == 0)
-                continue;
 
             if (OPTIMIZED_COLLIDERECT(argrect)) {
                 return PyLong_FromLong(loop);
@@ -1409,11 +1404,6 @@ RectExport_collidelistall(RectObject *self, PyObject *arg)
                     "Argument must be a sequence of rectstyle objects.");
             }
 
-            /* If 0 width or height, skip, preserves previous behaviour with
-             * _pg_do_rects_intersect */
-            if (!argrect->w || !argrect->h)
-                continue;
-
             if (OPTIMIZED_COLLIDERECT(argrect)) {
                 PyObject *num = PyLong_FromLong(loop);
                 if (!num) {
@@ -1443,11 +1433,6 @@ RectExport_collidelistall(RectObject *self, PyObject *arg)
             }
 
             Py_DECREF(obj);
-
-            /* If 0 width or height, skip, preserves previous behaviour with
-             * _pg_do_rects_intersect */
-            if (argrect->w == 0 || argrect->h == 0)
-                continue;
 
             if (OPTIMIZED_COLLIDERECT(argrect)) {
                 PyObject *num = PyLong_FromLong(loop);
@@ -1566,13 +1551,6 @@ RectExport_collideobjectsall(RectObject *self, PyObject *args,
             return NULL;
         }
 
-        /* If 0 width or height, skip, preserves previous behaviour with
-         * _pg_do_rects_intersect */
-        if (argrect->w == 0 || argrect->h == 0) {
-            Py_DECREF(obj);
-            continue;
-        }
-
         if (OPTIMIZED_COLLIDERECT(argrect)) {
             if (0 != PyList_Append(ret, obj)) {
                 Py_DECREF(ret);
@@ -1645,13 +1623,6 @@ RectExport_collideobjects(RectObject *self, PyObject *args, PyObject *kwargs)
             return NULL;
         }
 
-        /* If 0 width or height, skip, preserves previous behaviour with
-         * _pg_do_rects_intersect */
-        if (argrect->w == 0 || argrect->h == 0) {
-            Py_DECREF(obj);
-            continue;
-        }
-
         if (OPTIMIZED_COLLIDERECT(argrect)) {
             return obj;
         }
@@ -1703,12 +1674,6 @@ RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs)
             if (!(argrect = RectFromObject(key, &temp))) {
                 return RAISE(PyExc_TypeError, "dict must have rectstyle keys");
             }
-        }
-
-        /* If 0 width or height, skip, preserves previous behaviour with
-         * _pg_do_rects_intersect */
-        if (argrect->w == 0 || argrect->h == 0) {
-            continue;
         }
 
         if (OPTIMIZED_COLLIDERECT(argrect)) {
@@ -1772,11 +1737,6 @@ RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs)
                 return RAISE(PyExc_TypeError, "dict must have rectstyle keys");
             }
         }
-
-        /* If 0 width or height, skip, preserves previous behaviour with
-         * _pg_do_rects_intersect */
-        if (argrect->w == 0 || argrect->h == 0)
-            continue;
 
         if (OPTIMIZED_COLLIDERECT(argrect)) {
             PyObject *num = PyTuple_Pack(2, key, val);
