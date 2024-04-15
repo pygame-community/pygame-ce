@@ -2531,53 +2531,53 @@ draw_circle_xaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
         float prev_opacity = 0;
         if (radius_ == radius - thickness) {
             while (x < y) {
-                x++;
-                float height = sqrt(pow(radius_, 2) - pow(x - 1, 2));
+                float height = sqrt(pow(radius_, 2) - pow(x, 2));
                 float opacity = 255 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
-                    y--;
+                    --y;
                 }
                 prev_opacity = opacity;
-                draw_eight_symetric_pixels(surf, x0, y0, color, x - 1, y, 255,
+                draw_eight_symetric_pixels(surf, x0, y0, color, x, y, 255,
                                            top_right, top_left, bottom_left,
                                            bottom_right, drawn_area);
                 draw_eight_symetric_pixels(
-                    surf, x0, y0, color, x - 1, y - 1, opacity, top_right,
+                    surf, x0, y0, color, x, y - 1, opacity, top_right,
                     top_left, bottom_left, bottom_right, drawn_area);
+                ++x;
             }
         }
         else if (radius_ == radius) {
             while (x < y) {
-                x++;
-                float height = sqrt(pow(radius_, 2) - pow(x - 1, 2));
+                float height = sqrt(pow(radius_, 2) - pow(x, 2));
                 float opacity = 255 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
-                    y--;
+                    --y;
                 }
                 prev_opacity = opacity;
                 draw_eight_symetric_pixels(
-                    surf, x0, y0, color, x - 1, y, 255 - opacity, top_right,
+                    surf, x0, y0, color, x, y, 255 - opacity, top_right,
                     top_left, bottom_left, bottom_right, drawn_area);
-                draw_eight_symetric_pixels(
-                    surf, x0, y0, color, x - 1, y - 1, 255, top_right,
-                    top_left, bottom_left, bottom_right, drawn_area);
+                draw_eight_symetric_pixels(surf, x0, y0, color, x, y - 1, 255,
+                                           top_right, top_left, bottom_left,
+                                           bottom_right, drawn_area);
+                ++x;
             }
         }
         else {
             while (x < y) {
-                x++;
-                float height = sqrt(pow(radius_, 2) - pow(x - 1, 2));
+                float height = sqrt(pow(radius_, 2) - pow(x, 2));
                 float opacity = 255 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
-                    y--;
+                    --y;
                 }
                 prev_opacity = opacity;
-                draw_eight_symetric_pixels(surf, x0, y0, color, x - 1, y, 255,
+                draw_eight_symetric_pixels(surf, x0, y0, color, x, y, 255,
                                            top_right, top_left, bottom_left,
                                            bottom_right, drawn_area);
-                draw_eight_symetric_pixels(
-                    surf, x0, y0, color, x - 1, y - 1, 255, top_right,
-                    top_left, bottom_left, bottom_right, drawn_area);
+                draw_eight_symetric_pixels(surf, x0, y0, color, x, y - 1, 255,
+                                           top_right, top_left, bottom_left,
+                                           bottom_right, drawn_area);
+                ++x;
             }
         }
     }
@@ -2592,19 +2592,19 @@ draw_circle_xaolinwu_thin(SDL_Surface *surf, int x0, int y0, int radius,
     int y = radius;
     float prev_opacity = 0;
     while (x < y) {
-        x++;
-        float height = sqrt(pow(radius, 2) - pow(x - 1, 2));
+        float height = sqrt(pow(radius, 2) - pow(x, 2));
         float opacity = 255 * (ceil(height) - height);
         if (opacity < prev_opacity) {
-            y--;
+            --y;
         }
         prev_opacity = opacity;
-        draw_eight_symetric_pixels(surf, x0, y0, color, x - 1, y,
-                                   255 - opacity, top_right, top_left,
-                                   bottom_left, bottom_right, drawn_area);
-        draw_eight_symetric_pixels(surf, x0, y0, color, x - 1, y - 1, opacity,
+        draw_eight_symetric_pixels(surf, x0, y0, color, x, y, 255 - opacity,
                                    top_right, top_left, bottom_left,
                                    bottom_right, drawn_area);
+        draw_eight_symetric_pixels(surf, x0, y0, color, x, y - 1, opacity,
+                                   top_right, top_left, bottom_left,
+                                   bottom_right, drawn_area);
+        ++x;
     }
 }
 

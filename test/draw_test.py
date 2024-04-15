@@ -5761,7 +5761,9 @@ class DrawAACircleMixin:
     def test_aacircle__args_without_width(self):
         """Ensures draw aacircle accepts the args without a width and
         quadrants."""
-        bounds_rect = self.draw_aacircle(pygame.Surface((2, 2)), (0, 0, 0, 50), (1, 1), 1)
+        bounds_rect = self.draw_aacircle(
+            pygame.Surface((2, 2)), (0, 0, 0, 50), (1, 1), 1
+        )
 
         self.assertIsInstance(bounds_rect, pygame.Rect)
 
@@ -6106,7 +6108,9 @@ class DrawAACircleMixin:
             elif "center" == name:
                 bounds_rect = self.draw_aacircle(surface, color, center, **kwargs)
             elif "radius" == name:
-                bounds_rect = self.draw_aacircle(surface, color, center, radius, **kwargs)
+                bounds_rect = self.draw_aacircle(
+                    surface, color, center, radius, **kwargs
+                )
             elif "width" == name:
                 bounds_rect = self.draw_aacircle(
                     surface, color, center, radius, width, **kwargs

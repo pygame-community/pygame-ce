@@ -1,5 +1,6 @@
 from pygame.rect import Rect
 from pygame.surface import Surface
+from typing import overload
 
 from ._common import ColorValue, Coordinate, RectValue, Sequence
 
@@ -31,6 +32,7 @@ def circle(
     draw_bottom_left: bool = False,
     draw_bottom_right: bool = False,
 ) -> Rect: ...
+@overload
 def aacircle(
     surface: Surface,
     color: ColorValue,
@@ -38,6 +40,7 @@ def aacircle(
     radius: float,
     width: int = 0,
 ) -> Rect: ...
+@overload
 def aacircle(
     surface: Surface,
     color: ColorValue,

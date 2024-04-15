@@ -4226,7 +4226,8 @@ lrint(double flt)
 #include <armintr.h>
 #pragma warning(push)
 #pragma warning(disable : 4716)
-__declspec(naked) long int lrint(double flt)
+__declspec(naked) long int
+lrint(double flt)
 {
     __emit(0xEC410B10);  // fmdrr  d0, r0, r1
     __emit(0xEEBD0B40);  // ftosid s0, d0
