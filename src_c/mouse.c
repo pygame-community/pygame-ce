@@ -58,7 +58,9 @@ mouse_set_pos(PyObject *self, PyObject *args)
         }
     }
 
+    PG_HideCursor();
     SDL_WarpMouseInWindow(NULL, (Uint16)x, (Uint16)y);
+    PG_ShowCursor();
     Py_RETURN_NONE;
 }
 
