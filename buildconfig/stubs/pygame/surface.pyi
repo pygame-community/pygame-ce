@@ -42,6 +42,16 @@ _ViewKind = Literal[
 
 class Surface:
     _pixels_address: int
+    @property
+    def w(self) -> int: ...
+    @property
+    def width(self) -> int: ...
+    @property
+    def h(self) -> int: ...
+    @property
+    def height(self) -> int: ...
+    @property
+    def size(self) -> Tuple[int, int]: ...
     @overload
     def __init__(
         self,
