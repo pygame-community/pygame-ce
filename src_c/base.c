@@ -1,5 +1,4 @@
 /*
-
   pygame-ce - Python Game Library
   Copyright (C) 2000-2001  Pete Shinners
 

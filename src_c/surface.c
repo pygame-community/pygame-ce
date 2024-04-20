@@ -266,6 +266,11 @@ _PgSurface_SrcAlpha(SDL_Surface *surf);
 static PyGetSetDef surface_getsets[] = {
     {"_pixels_address", (getter)surf_get_pixels_address, NULL,
      "pixel buffer address (readonly)", NULL},
+    {"width", (getter)surf_get_width, NULL, NULL, NULL},
+    {"height", (getter)surf_get_height, NULL, NULL, NULL},
+    {"w", (getter)surf_get_width, NULL, NULL, NULL},
+    {"h", (getter)surf_get_height, NULL, NULL, NULL},
+    {"size", (getter)surf_get_size, NULL, NULL, NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static struct PyMethodDef surface_methods[] = {
