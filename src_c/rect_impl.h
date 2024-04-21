@@ -1292,6 +1292,17 @@ RectExport_colliderect(RectObject *self, PyObject *const *args,
     return PyBool_FromLong(_pg_do_rects_intersect(&self->r, argrect));
 }
 
+#ifndef OPTIMIZED_COLLIDERECT_SETUP
+/* This macro is used to optimize the colliderect function. It calculates
+ * the left, top, right and bottom values of the calling rect only once
+ * and uses them in the OPTIMIZED_COLLIDERECT macro. */
+#define OPTIMIZED_COLLIDERECT_SETUP                                 \
+    const PrimitiveType left = MIN(srect->x, srect->x + srect->w);  \
+    const PrimitiveType top = MIN(srect->y, srect->y + srect->h);   \
+    const PrimitiveType right = MAX(srect->x, srect->x + srect->w); \
+    const PrimitiveType bottom = MAX(srect->y, srect->y + srect->h);
+#endif
+
 #ifndef OPTIMIZED_COLLIDERECT
 /* This macro is used to optimize the colliderect function. Makes use of
  * precalculated values to avoid unnecessary calculations. It also checks
@@ -1320,10 +1331,7 @@ RectExport_collidelist(RectObject *self, PyObject *arg)
                      "Argument must be a sequence of rectstyle objects.");
     }
 
-    const PrimitiveType left = MIN(srect->x, srect->x + srect->w);
-    const PrimitiveType top = MIN(srect->y, srect->y + srect->h);
-    const PrimitiveType right = MAX(srect->x, srect->x + srect->w);
-    const PrimitiveType bottom = MAX(srect->y, srect->y + srect->h);
+    OPTIMIZED_COLLIDERECT_SETUP;
 
     /* If the sequence is a fast sequence, we can use the faster
      * PySequence_Fast_ITEMS() function to get the items. */
@@ -1342,7 +1350,7 @@ RectExport_collidelist(RectObject *self, PyObject *arg)
         }
     }
     /* If the sequence is not a fast sequence, we have to use the slower
-     * PySequence_GetItem() function to get the items. */
+     * PySequence_ITEM() function to get the items. */
     else {
         for (loop = 0; loop < PySequence_Length(arg); loop++) {
             PyObject *obj = PySequence_ITEM(arg, loop);
@@ -1387,10 +1395,7 @@ RectExport_collidelistall(RectObject *self, PyObject *arg)
         return ret;
     }
 
-    const PrimitiveType left = MIN(srect->x, srect->x + srect->w);
-    const PrimitiveType top = MIN(srect->y, srect->y + srect->h);
-    const PrimitiveType right = MAX(srect->x, srect->x + srect->w);
-    const PrimitiveType bottom = MAX(srect->y, srect->y + srect->h);
+    OPTIMIZED_COLLIDERECT_SETUP;
 
     /* If the sequence is a fast sequence, we can use the faster
      * PySequence_Fast_ITEMS() function to get the items. */
@@ -1525,10 +1530,7 @@ RectExport_collideobjectsall(RectObject *self, PyObject *args,
         return ret;
     }
 
-    const PrimitiveType left = MIN(srect->x, srect->x + srect->w);
-    const PrimitiveType top = MIN(srect->y, srect->y + srect->h);
-    const PrimitiveType right = MAX(srect->x, srect->x + srect->w);
-    const PrimitiveType bottom = MAX(srect->y, srect->y + srect->h);
+    OPTIMIZED_COLLIDERECT_SETUP;
 
     size = PySequence_Length(list);
     if (size == -1) {
@@ -1600,10 +1602,7 @@ RectExport_collideobjects(RectObject *self, PyObject *args, PyObject *kwargs)
         Py_RETURN_NONE;
     }
 
-    const PrimitiveType left = MIN(srect->x, srect->x + srect->w);
-    const PrimitiveType top = MIN(srect->y, srect->y + srect->h);
-    const PrimitiveType right = MAX(srect->x, srect->x + srect->w);
-    const PrimitiveType bottom = MAX(srect->y, srect->y + srect->h);
+    OPTIMIZED_COLLIDERECT_SETUP;
 
     size = PySequence_Length(list);
     if (size == -1) {
@@ -1658,10 +1657,7 @@ RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs)
         Py_RETURN_NONE;
     }
 
-    const PrimitiveType left = MIN(srect->x, srect->x + srect->w);
-    const PrimitiveType top = MIN(srect->y, srect->y + srect->h);
-    const PrimitiveType right = MAX(srect->x, srect->x + srect->w);
-    const PrimitiveType bottom = MAX(srect->y, srect->y + srect->h);
+    OPTIMIZED_COLLIDERECT_SETUP;
 
     while (PyDict_Next(dict, &loop, &key, &val)) {
         if (values) {
@@ -1718,10 +1714,7 @@ RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs)
         return ret;
     }
 
-    const PrimitiveType left = MIN(srect->x, srect->x + srect->w);
-    const PrimitiveType top = MIN(srect->y, srect->y + srect->h);
-    const PrimitiveType right = MAX(srect->x, srect->x + srect->w);
-    const PrimitiveType bottom = MAX(srect->y, srect->y + srect->h);
+    OPTIMIZED_COLLIDERECT_SETUP;
 
     while (PyDict_Next(dict, &loop, &key, &val)) {
         if (values) {
