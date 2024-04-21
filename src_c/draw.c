@@ -775,14 +775,12 @@ aacircle(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL; /* Exception already set. */
 
     if (!pg_TwoIntsFromObj(posobj, &posx, &posy)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "center argument must be a pair of numbers");
-        return 0;
+        return RAISE(PyExc_TypeError,
+                     "center argument must be a pair of numbers");
     }
 
     if (!pg_IntFromObj(radiusobj, &radius)) {
-        PyErr_SetString(PyExc_TypeError, "radius argument must be a number");
-        return 0;
+        return RAISE(PyExc_TypeError, "radius argument must be a number");
     }
 
     surf = pgSurface_AsSurface(surfobj);
