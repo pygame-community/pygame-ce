@@ -683,12 +683,10 @@ class SurfaceTypeTest(unittest.TestCase):
         self.assertEqual(s.height, 50)
         self.assertEqual(s.size, (100, 50))
 
-        with self.assertRaises(AttributeError):
-            s.w = 200
-            s.width = 200
-            s.h = 200
-            s.height = 200
-            s.size = (200, 200)
+        attrs = ["width", "height", "size", "w", "h"]
+        for attr in attrs:
+            with self.assertRaises(AttributeError):
+                setattr(s, attr, 200)
 
     def test_get_view(self):
         """Ensure a buffer view of the surface's pixels can be retrieved."""

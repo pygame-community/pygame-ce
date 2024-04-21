@@ -95,6 +95,8 @@
       size
       w, h
 
+   .. versionadded:: 2.5.0
+
    .. method:: blit
 
       | :sl:`draw another surface onto this one`
