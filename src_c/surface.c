@@ -1415,12 +1415,15 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
     Uint8 key_r, key_g, key_b, key_a = 255;
     int has_colorkey = SDL_FALSE;
 
-    if (!SDL_WasInit(SDL_INIT_VIDEO))
-        return RAISE(pgExc_SDLError,
-                     "cannot convert without pygame.display initialized");
-
     if (!PyArg_ParseTuple(args, "|Oi", &argobject, &flags))
         return NULL;
+
+
+    if (!argobject && !SDL_WasInit(SDL_INIT_VIDEO))
+        return RAISE(pgExc_SDLError,
+                     "cannot convert without format "
+                     "when pygame.display is not initialized");
+
 
     SURF_INIT_CHECK(surf)
 
