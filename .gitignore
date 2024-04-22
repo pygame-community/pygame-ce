@@ -2,6 +2,7 @@
 /Setup
 *.pyc
 /build/
+/.mesonpy-*
 
 # Windows prebuilt external libraries
 /prebuilt-x??

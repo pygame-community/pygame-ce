@@ -162,8 +162,7 @@ def _font_finder_darwin():
         "/System/Library/Fonts/Supplemental",
     ]
 
-    username = os.getenv("USER")
-    if username:
+    if username := os.getenv("USER"):
         locations.append(f"/Users/{username}/Library/Fonts")
 
     strange_root = "/System/Library/Assets/com_apple_MobileAsset_Font3"
@@ -466,7 +465,7 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
                 name[idx] = single_name.decode()
 
         for single_name in name:
-            fontname, gotbold, gotitalic = _load_single_font(single_name)
+            fontname, gotbold, gotitalic = _load_single_font(single_name, bold, italic)
             if fontname:
                 break
 

@@ -88,11 +88,12 @@ bash bzip2/build-bzip2.sh
 bash freetype/build-freetype.sh
 
 # sdl_mixer deps
-bash libmodplug/build-libmodplug.sh
+bash libxmp/build-libxmp.sh
 bash ogg/build-ogg.sh
 bash flac/build-flac.sh
 bash mpg123/build-mpg123.sh
 bash opus/build-opus.sh # needs libogg (which is a container format)
+bash wavpack/build-wavpack.sh
 
 # fluidsynth (for sdl_mixer)
 # bash gettext/build-gettext.sh

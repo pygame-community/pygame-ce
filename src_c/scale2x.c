@@ -61,7 +61,11 @@ scale2x(SDL_Surface *src, SDL_Surface *dst)
     const int width = src->w;
     const int height = src->h;
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    switch (src->format->bytes_per_pixel) {
+#else
     switch (src->format->BytesPerPixel) {
+#endif
         case 1: {
             Uint8 E0, E1, E2, E3, B, D, E, F, H;
             for (looph = 0; looph < height; ++looph) {

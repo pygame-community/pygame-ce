@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Trigger CircleCI builds on release
         id: circleci
-        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.1.0
+        uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.2.0
         env:
           CCI_TOKEN: ${{ secrets.CCI_TOKEN }}
 
@@ -33,10 +33,13 @@ jobs:
     needs: [manylinux-aarch64, manylinux, macos, windows, sdist]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v4.1.2
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
+        with:
+          path: pygame-wheels
+          merge-multiple: true
 
       - name: Download manylinux-aarch64 artifacts from CircleCI
         continue-on-error: true # incase things don't work here, can manually handle it
@@ -44,7 +47,7 @@ jobs:
           python3 buildconfig/ci/circleci/pull_circleci_artifacts.py
           ${{ secrets.CCI_TOKEN }}
           ${{ needs.manylinux-aarch64.outputs.pipeline_id }}
-          pygame-wheels-manylinux
+          pygame-wheels
 
       # Strips 'release/' from the ref_name, this helps us access the version
       # name as 'steps.ver.outputs.VER'
@@ -53,11 +56,11 @@ jobs:
         run: echo "VER=${GITHUB_REF_NAME#'release/'}" >> $GITHUB_OUTPUT
 
       - name: Draft a release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           draft: true
           prerelease: ${{ contains(steps.ver.outputs.VER, 'dev') }}
-          files: pygame-wheels-*/*
+          files: pygame-wheels/*
           name: '${{ steps.ver.outputs.VER }} - {TODO put a title here} [DRAFTED BY CI]'
           tag_name: ${{ steps.ver.outputs.VER }}
           target_commitish: ${{ github.ref_name }}
