@@ -911,7 +911,9 @@ class Vector2TypeTest(unittest.TestCase):
         self.assertEqual(
             v2.elementwise() // v1.elementwise(), (v2.x // v1.x, v2.y // v1.y)
         )
-        self.assertEqual(v2.elementwise() ** v1.elementwise(), (v2.x**v1.x, v2.y**v1.y))
+        self.assertEqual(
+            v2.elementwise() ** v1.elementwise(), (v2.x**v1.x, v2.y**v1.y)
+        )
         self.assertEqual(
             v2.elementwise() % v1.elementwise(), (v2.x % v1.x, v2.y % v1.y)
         )

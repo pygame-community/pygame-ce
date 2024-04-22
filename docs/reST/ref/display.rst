@@ -715,6 +715,28 @@ required).
 
    .. ## pygame.display.get_window_size ##
 
+.. function:: get_window_pos
+
+   | :sl:`Return the position of the window or screen`
+   | :sg:`get_window_pos() -> tuple`
+
+   Returns the position of the window initialized with :func:`pygame.display.set_mode()`.
+   The position will change when the user moves the window or when the position is set manually with :func:`pygame.display.set_window_pos()`.
+   Coordinates could be negative or outside of the desktop size bounds.
+
+   .. ## pygame.display.get_window_pos ##
+
+.. function:: set_window_pos
+
+   | :sl:`Set the current window position`
+   | :sg:`set_window_pos(int, int) -> None`
+
+   Sets the position of the window initialized with :func:`pygame.display.set_mode()`.
+   This differs from updating environment variables as this function can be called after the display has been initialised.
+   The user will still be able to move the window after this call. See also :func:`pygame.display.get_window_pos()`.
+
+   .. ## pygame.display.set_window_pos ##
+
 .. function:: get_allow_screensaver
 
    | :sl:`Return whether the screensaver is allowed to run.`
