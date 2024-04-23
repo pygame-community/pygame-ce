@@ -681,7 +681,7 @@ class DisplayModuleTest(unittest.TestCase):
 
     def test_get_set_window_pos(self):
         pygame.display.set_mode((500, 500))
-        pygame.display.set_window_pos(420, 360)
+        pygame.display.set_window_pos((420, 360))
         position = pygame.display.get_window_pos()
         self.assertEqual(position[0], 420)
         self.assertEqual(position[1], 360)

@@ -27,7 +27,7 @@
 #define DOC_DISPLAY_GETNUMDISPLAYS "get_num_displays() -> int\nReturn the number of displays"
 #define DOC_DISPLAY_GETWINDOWSIZE "get_window_size() -> tuple\nReturn the size of the window or screen"
 #define DOC_DISPLAY_GETWINDOWPOS "get_window_pos() -> tuple\nReturn the position of the window or screen"
-#define DOC_DISPLAY_SETWINDOWPOS "set_window_pos(int, int) -> None\nSet the current window position"
+#define DOC_DISPLAY_SETWINDOWPOS "set_window_pos((x, y)) -> None\nSet the current window position"
 #define DOC_DISPLAY_GETALLOWSCREENSAVER "get_allow_screensaver() -> bool\nReturn whether the screensaver is allowed to run."
 #define DOC_DISPLAY_SETALLOWSCREENSAVER "set_allow_screensaver(bool) -> None\nSet whether the screensaver may run"
 #define DOC_DISPLAY_ISFULLSCREEN "is_fullscreen() -> bool\nReturns True if the pygame window created by pygame.display.set_mode() is in full-screen mode"

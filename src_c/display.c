@@ -1462,10 +1462,16 @@ static PyObject *
 pg_set_window_pos(PyObject *self, PyObject *arg)
 {
     SDL_Window *win = pg_GetDefaultWindow();
+    PyObject* pos = NULL;
     int x, y = 0;
 
-    if (!PyArg_ParseTuple(arg, "i|i", &x, &y))
+    if (!PyArg_ParseTuple(arg, "O", &pos))
         return NULL;
+
+    if (pos != NULL) {
+        if (!pg_TwoIntsFromObj(pos, &x, &y))
+            return RAISE(PyExc_TypeError, "pos must be two numbers");
+    }
 
     if (win)
         SDL_SetWindowPosition(win, x, y);
