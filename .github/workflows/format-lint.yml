@@ -11,6 +11,7 @@ on:
       - '**.c'
       - '**.py'
       - '**.rst'
+      - '.pre-commit-config.yaml'
 
   pull_request:
     branches: main
@@ -19,17 +20,27 @@ on:
       - '**.c'
       - '**.py'
       - '**.rst'
+      - '.pre-commit-config.yaml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-format-lint
   cancel-in-progress: true
 
 jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.1.2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+      - uses: pre-commit/action@v3.0.1
+
   format-lint-code-check:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v4.1.2
 
       - name: Install deps
         run: python3 -m pip install pylint black clang-format sphinx"<7.2.0"

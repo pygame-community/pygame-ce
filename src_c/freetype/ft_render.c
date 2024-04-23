@@ -335,7 +335,7 @@ _PGFT_Render_ExistingSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
         surf_offset.y += offset.y;
     }
 
-    if (!surface->format->BytesPerPixel) {
+    if (!PG_SURF_BytesPerPixel(surface)) {
         // This should never happen, error to make static analyzer happy
         PyErr_SetString(pgExc_SDLError, "Got surface of invalid format");
         return -1;
@@ -349,9 +349,9 @@ _PGFT_Render_ExistingSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
     font_surf.height = surface->h;
     font_surf.pitch = surface->pitch;
     font_surf.format = surface->format;
-    font_surf.render_gray = __SDLrenderFuncs[surface->format->BytesPerPixel];
-    font_surf.render_mono = __MONOrenderFuncs[surface->format->BytesPerPixel];
-    font_surf.fill = __RGBfillFuncs[surface->format->BytesPerPixel];
+    font_surf.render_gray = __SDLrenderFuncs[PG_SURF_BytesPerPixel(surface)];
+    font_surf.render_mono = __MONOrenderFuncs[PG_SURF_BytesPerPixel(surface)];
+    font_surf.fill = __RGBfillFuncs[PG_SURF_BytesPerPixel(surface)];
 
     /*
      * if bg color exists, paint background

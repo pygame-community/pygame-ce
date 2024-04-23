@@ -1,0 +1,32 @@
+# Learn more about this config here: https://pre-commit.com/
+
+# To enable these pre-commit hooks run:
+# `brew install pre-commit` or `python3 -m pip install pre-commit`
+# Then in the project root directory run `pre-commit install`
+
+repos:
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 24.3.0
+    hooks:
+      - id: black
+        exclude: |
+            (?x)^(
+                ^buildconfig/.*$
+                | ^docs/reST/.*$
+                | setup.py
+            )$
+
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v18.1.2
+    hooks:
+      - id: clang-format
+        exclude: |
+            (?x)^(
+                ^src_c/_sdl2/.*$
+                | ^src_c/doc/.*$
+                | docs/reST/_static/script.js
+                | docs/reST/_templates/header.h
+                | src_c/include/sse2neon.h
+                | src_c/pypm.c
+            )$

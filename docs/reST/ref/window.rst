@@ -38,7 +38,7 @@
    :param bool input_focus: Create a window with input focus.
    :param bool mouse_focus: Create a window with mouse focus.
    :param bool foreign: Marks a window not created by SDL.
-   :param bool allow_highdpi: Create a window in high-DPI mode if supported.
+   :param bool allow_high_dpi: Create a window in high-DPI mode if supported.
    :param bool mouse_capture: Create a window that has the mouse captured
                               (unrelated to INPUT_GRABBED).
    :param bool always_on_top: Create a window that is always presented above
