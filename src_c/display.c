@@ -1462,7 +1462,7 @@ static PyObject *
 pg_set_window_pos(PyObject *self, PyObject *arg)
 {
     SDL_Window *win = pg_GetDefaultWindow();
-    PyObject* pos = NULL;
+    PyObject *pos = NULL;
     int x, y = 0;
 
     if (!PyArg_ParseTuple(arg, "O", &pos))
