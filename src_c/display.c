@@ -317,9 +317,9 @@ pg_vidinfo_getattr(PyObject *self, char *name)
     else if (!strcmp(name, "video_mem"))
         return PyLong_FromLong(info->video_mem);
     else if (!strcmp(name, "bitsize"))
-        return PyLong_FromLong(info->vfmt->BitsPerPixel);
+        return PyLong_FromLong(PG_FORMAT_BitsPerPixel(info->vfmt));
     else if (!strcmp(name, "bytesize"))
-        return PyLong_FromLong(info->vfmt->BytesPerPixel);
+        return PyLong_FromLong(PG_FORMAT_BytesPerPixel(info->vfmt));
     else if (!strcmp(name, "masks"))
         return Py_BuildValue("(iiii)", info->vfmt->Rmask, info->vfmt->Gmask,
                              info->vfmt->Bmask, info->vfmt->Amask);
@@ -378,12 +378,13 @@ pg_vidinfo_str(PyObject *self)
         ">",
         info->hw_available, info->wm_available, info->video_mem, info->blit_hw,
         info->blit_hw_CC, info->blit_hw_A, info->blit_sw, info->blit_sw_CC,
-        info->blit_sw_A, info->vfmt->BitsPerPixel, info->vfmt->BytesPerPixel,
-        info->vfmt->Rmask, info->vfmt->Gmask, info->vfmt->Bmask,
-        info->vfmt->Amask, info->vfmt->Rshift, info->vfmt->Gshift,
-        info->vfmt->Bshift, info->vfmt->Ashift, info->vfmt->Rloss,
-        info->vfmt->Gloss, info->vfmt->Bloss, info->vfmt->Aloss, current_w,
-        current_h, pixel_format_name);
+        info->blit_sw_A, PG_FORMAT_BitsPerPixel(info->vfmt),
+        PG_FORMAT_BytesPerPixel(info->vfmt), info->vfmt->Rmask,
+        info->vfmt->Gmask, info->vfmt->Bmask, info->vfmt->Amask,
+        info->vfmt->Rshift, info->vfmt->Gshift, info->vfmt->Bshift,
+        info->vfmt->Ashift, info->vfmt->Rloss, info->vfmt->Gloss,
+        info->vfmt->Bloss, info->vfmt->Aloss, current_w, current_h,
+        pixel_format_name);
 }
 
 static PyTypeObject pgVidInfo_Type = {
@@ -1373,7 +1374,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         }
     }
 
-    if (depth != 0 && surface->surf->format->BitsPerPixel != depth) {
+    if (depth != 0 && PG_SURF_BitsPerPixel(surface->surf) != depth) {
         if (PyErr_WarnEx(PyExc_DeprecationWarning,
                          "The depth argument is deprecated, and is ignored",
                          1)) {
@@ -1780,7 +1781,7 @@ pg_set_palette(PyObject *self, PyObject *args)
     Py_INCREF(surface);
     surf = pgSurface_AsSurface(surface);
     pal = surf->format->palette;
-    if (surf->format->BytesPerPixel != 1 || !pal) {
+    if (PG_SURF_BytesPerPixel(surf) != 1 || !pal) {
         Py_DECREF(surface);
         return RAISE(pgExc_SDLError, "Display mode is not colormapped");
     }

@@ -84,7 +84,7 @@ surface_fill_blend_add(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
     int width = rect->w;
     int height = rect->h;
     int skip;
-    int bpp = surface->format->BytesPerPixel;
+    int bpp = PG_SURF_BytesPerPixel(surface);
     int n;
     SDL_PixelFormat *fmt = surface->format;
     Uint8 sR, sG, sB, sA, cR, cG, cB, cA;
@@ -170,7 +170,7 @@ surface_fill_blend_sub(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
     int width = rect->w;
     int height = rect->h;
     int skip;
-    int bpp = surface->format->BytesPerPixel;
+    int bpp = PG_SURF_BytesPerPixel(surface);
     int n;
     SDL_PixelFormat *fmt = surface->format;
     Uint8 sR, sG, sB, sA, cR, cG, cB, cA;
@@ -256,7 +256,7 @@ surface_fill_blend_mult(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
     int width = rect->w;
     int height = rect->h;
     int skip;
-    int bpp = surface->format->BytesPerPixel;
+    int bpp = PG_SURF_BytesPerPixel(surface);
     int n;
     SDL_PixelFormat *fmt = surface->format;
     Uint8 sR, sG, sB, sA, cR, cG, cB, cA;
@@ -341,7 +341,7 @@ surface_fill_blend_min(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
     int width = rect->w;
     int height = rect->h;
     int skip;
-    int bpp = surface->format->BytesPerPixel;
+    int bpp = PG_SURF_BytesPerPixel(surface);
     int n;
     SDL_PixelFormat *fmt = surface->format;
     Uint8 sR, sG, sB, sA, cR, cG, cB, cA;
@@ -426,7 +426,7 @@ surface_fill_blend_max(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
     int width = rect->w;
     int height = rect->h;
     int skip;
-    int bpp = surface->format->BytesPerPixel;
+    int bpp = PG_SURF_BytesPerPixel(surface);
     int n;
     SDL_PixelFormat *fmt = surface->format;
     Uint8 sR, sG, sB, sA, cR, cG, cB, cA;
@@ -513,7 +513,7 @@ surface_fill_blend_rgba_add(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
     int width = rect->w;
     int height = rect->h;
     int skip;
-    int bpp = surface->format->BytesPerPixel;
+    int bpp = PG_SURF_BytesPerPixel(surface);
     int n;
     SDL_PixelFormat *fmt = surface->format;
     Uint8 sR, sG, sB, sA, cR, cG, cB, cA;
@@ -582,7 +582,7 @@ surface_fill_blend_rgba_sub(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
     int width = rect->w;
     int height = rect->h;
     int skip;
-    int bpp = surface->format->BytesPerPixel;
+    int bpp = PG_SURF_BytesPerPixel(surface);
     int n;
     SDL_PixelFormat *fmt = surface->format;
     Uint8 sR, sG, sB, sA, cR, cG, cB, cA;
@@ -652,7 +652,7 @@ surface_fill_blend_rgba_mult(SDL_Surface *surface, SDL_Rect *rect,
     int width = rect->w;
     int height = rect->h;
     int skip;
-    int bpp = surface->format->BytesPerPixel;
+    int bpp = PG_SURF_BytesPerPixel(surface);
     int n;
     SDL_PixelFormat *fmt = surface->format;
     Uint8 sR, sG, sB, sA, cR, cG, cB, cA;
@@ -720,7 +720,7 @@ surface_fill_blend_rgba_min(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
     int width = rect->w;
     int height = rect->h;
     int skip;
-    int bpp = surface->format->BytesPerPixel;
+    int bpp = PG_SURF_BytesPerPixel(surface);
     int n;
     SDL_PixelFormat *fmt = surface->format;
     Uint8 sR, sG, sB, sA, cR, cG, cB, cA;
@@ -788,7 +788,7 @@ surface_fill_blend_rgba_max(SDL_Surface *surface, SDL_Rect *rect, Uint32 color)
     int width = rect->w;
     int height = rect->h;
     int skip;
-    int bpp = surface->format->BytesPerPixel;
+    int bpp = PG_SURF_BytesPerPixel(surface);
     int n;
     SDL_PixelFormat *fmt = surface->format;
     Uint8 sR, sG, sB, sA, cR, cG, cB, cA;
@@ -869,7 +869,7 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
         case PYGAME_BLEND_ADD: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-            if (surface->format->BytesPerPixel == 4) {
+            if (PG_SURF_BytesPerPixel(surface) == 4) {
                 if (_pg_has_avx2()) {
                     result = surface_fill_blend_add_avx2(surface, rect, color);
                     break;
@@ -889,7 +889,7 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
         case PYGAME_BLEND_SUB: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-            if (surface->format->BytesPerPixel == 4) {
+            if (PG_SURF_BytesPerPixel(surface) == 4) {
                 if (_pg_has_avx2()) {
                     result = surface_fill_blend_sub_avx2(surface, rect, color);
                     break;
@@ -909,7 +909,7 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
         case PYGAME_BLEND_MULT: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-            if (surface->format->BytesPerPixel == 4) {
+            if (PG_SURF_BytesPerPixel(surface) == 4) {
                 if (_pg_has_avx2()) {
                     result =
                         surface_fill_blend_mult_avx2(surface, rect, color);
@@ -931,7 +931,7 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
         case PYGAME_BLEND_MIN: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-            if (surface->format->BytesPerPixel == 4) {
+            if (PG_SURF_BytesPerPixel(surface) == 4) {
                 if (_pg_has_avx2()) {
                     result = surface_fill_blend_min_avx2(surface, rect, color);
                     break;
@@ -951,7 +951,7 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
         case PYGAME_BLEND_MAX: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-            if (surface->format->BytesPerPixel == 4) {
+            if (PG_SURF_BytesPerPixel(surface) == 4) {
                 if (_pg_has_avx2()) {
                     result = surface_fill_blend_max_avx2(surface, rect, color);
                     break;
@@ -972,7 +972,7 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
         case PYGAME_BLEND_RGBA_ADD: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-            if (surface->format->BytesPerPixel == 4) {
+            if (PG_SURF_BytesPerPixel(surface) == 4) {
                 if (_pg_has_avx2()) {
                     result =
                         surface_fill_blend_rgba_add_avx2(surface, rect, color);
@@ -994,7 +994,7 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
         case PYGAME_BLEND_RGBA_SUB: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-            if (surface->format->BytesPerPixel == 4) {
+            if (PG_SURF_BytesPerPixel(surface) == 4) {
                 if (_pg_has_avx2()) {
                     result =
                         surface_fill_blend_rgba_sub_avx2(surface, rect, color);
@@ -1016,7 +1016,7 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
         case PYGAME_BLEND_RGBA_MULT: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-            if (surface->format->BytesPerPixel == 4) {
+            if (PG_SURF_BytesPerPixel(surface) == 4) {
                 if (_pg_has_avx2()) {
                     result = surface_fill_blend_rgba_mult_avx2(surface, rect,
                                                                color);
@@ -1038,7 +1038,7 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
         case PYGAME_BLEND_RGBA_MIN: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-            if (surface->format->BytesPerPixel == 4) {
+            if (PG_SURF_BytesPerPixel(surface) == 4) {
                 if (_pg_has_avx2()) {
                     result =
                         surface_fill_blend_rgba_min_avx2(surface, rect, color);
@@ -1060,7 +1060,7 @@ surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
         case PYGAME_BLEND_RGBA_MAX: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-            if (surface->format->BytesPerPixel == 4) {
+            if (PG_SURF_BytesPerPixel(surface) == 4) {
                 if (_pg_has_avx2()) {
                     result =
                         surface_fill_blend_rgba_max_avx2(surface, rect, color);

@@ -93,6 +93,11 @@ PG_UnlockMutex(SDL_mutex *mutex)
     return 0;
 }
 
+#define PG_SURF_BitsPerPixel(surf) surf->format->bits_per_pixel
+#define PG_SURF_BytesPerPixel(surf) surf->format->bytes_per_pixel
+#define PG_FORMAT_BitsPerPixel(format) format->bits_per_pixel
+#define PG_FORMAT_BytesPerPixel(format) format->bytes_per_pixel
+
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
 #define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
@@ -136,6 +141,11 @@ PG_UnlockMutex(SDL_mutex *mutex)
 {
     return SDL_UnlockMutex(mutex);
 }
+
+#define PG_SURF_BitsPerPixel(surf) surf->format->BitsPerPixel
+#define PG_SURF_BytesPerPixel(surf) surf->format->BytesPerPixel
+#define PG_FORMAT_BitsPerPixel(format) format->BitsPerPixel
+#define PG_FORMAT_BytesPerPixel(format) format->BytesPerPixel
 
 #if SDL_VERSION_ATLEAST(2, 0, 14)
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
