@@ -1455,7 +1455,7 @@ pg_get_window_pos(PyObject *self, PyObject *_null)
     if (!win)
         return RAISE(pgExc_SDLError, "No open window");
     SDL_GetWindowPosition(win, &x, &y);
-    return Py_BuildValue("(ii)", x, y);
+    return pg_tuple_couple_from_values_int(x, y);
 }
 
 static PyObject *
