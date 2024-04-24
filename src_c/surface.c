@@ -2463,7 +2463,7 @@ surf_get_size(PyObject *self, PyObject *_null)
     SDL_Surface *surf = pgSurface_AsSurface(self);
 
     SURF_INIT_CHECK(surf)
-    return Py_BuildValue("(ii)", surf->w, surf->h);
+    return pg_tuple_couple_from_values_int(surf->w, surf->h);
 }
 
 static PyObject *
@@ -2716,8 +2716,8 @@ surf_get_offset(PyObject *self, PyObject *_null)
 
     subdata = ((pgSurfaceObject *)self)->subsurface;
     if (!subdata)
-        return Py_BuildValue("(ii)", 0, 0);
-    return Py_BuildValue("(ii)", subdata->offsetx, subdata->offsety);
+        return pg_tuple_couple_from_values_int(0, 0);
+    return pg_tuple_couple_from_values_int(subdata->offsetx, subdata->offsety);
 }
 
 static PyObject *
@@ -2732,7 +2732,7 @@ surf_get_abs_offset(PyObject *self, PyObject *_null)
 
     subdata = ((pgSurfaceObject *)self)->subsurface;
     if (!subdata)
-        return Py_BuildValue("(ii)", 0, 0);
+        return pg_tuple_couple_from_values_int(0, 0);
 
     subdata = ((pgSurfaceObject *)self)->subsurface;
     owner = subdata->owner;
@@ -2745,7 +2745,7 @@ surf_get_abs_offset(PyObject *self, PyObject *_null)
         offsetx += subdata->offsetx;
         offsety += subdata->offsety;
     }
-    return Py_BuildValue("(ii)", offsetx, offsety);
+    return pg_tuple_couple_from_values_int(offsetx, offsety);
 }
 
 static PyObject *
