@@ -1444,7 +1444,7 @@ pg_window_size(PyObject *self, PyObject *_null)
     if (!win)
         return RAISE(pgExc_SDLError, "No open window");
     SDL_GetWindowSize(win, &w, &h);
-    return pg_tuple_couple_from_values_int( w, h);
+    return pg_tuple_couple_from_values_int(w, h);
 }
 
 static PyObject *
@@ -1557,7 +1557,7 @@ pg_list_modes(PyObject *self, PyObject *args, PyObject *kwds)
             last_width != -1) {
             continue;
         }
-        if (!(size = pg_tuple_couple_from_values_int( mode.w, mode.h))) {
+        if (!(size = pg_tuple_couple_from_values_int(mode.w, mode.h))) {
             Py_DECREF(list);
             return NULL;
         }
@@ -2117,7 +2117,7 @@ pg_get_desktop_screen_sizes(PyObject *self, PyObject *_null)
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
 
-        size_tuple = pg_tuple_couple_from_values_int( dm.w, dm.h);
+        size_tuple = pg_tuple_couple_from_values_int(dm.w, dm.h);
         if (!size_tuple) {
             Py_DECREF(result);
             return NULL;

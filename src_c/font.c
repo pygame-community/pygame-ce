@@ -704,7 +704,7 @@ font_size(PyObject *self, PyObject *text)
     else {
         return RAISE_TEXT_TYPE_ERROR();
     }
-    return pg_tuple_couple_from_values_int( w, h);
+    return pg_tuple_couple_from_values_int(w, h);
 }
 
 static PyObject *
