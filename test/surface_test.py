@@ -677,13 +677,11 @@ class SurfaceTypeTest(unittest.TestCase):
     def test_attributes(self):
         """Test width, height, and size attributes of surface"""
         s = pygame.Surface((100, 50))
-        self.assertEqual(s.w, 100)
         self.assertEqual(s.width, 100)
-        self.assertEqual(s.h, 50)
         self.assertEqual(s.height, 50)
         self.assertEqual(s.size, (100, 50))
 
-        attrs = ["width", "height", "size", "w", "h"]
+        attrs = ["width", "height", "size"]
         for attr in attrs:
             with self.assertRaises(AttributeError):
                 setattr(s, attr, 200)

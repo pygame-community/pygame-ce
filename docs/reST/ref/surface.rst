@@ -93,7 +93,6 @@
       
       width, height
       size
-      w, h
 
    .. versionadded:: 2.5.0
 

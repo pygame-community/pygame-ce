@@ -268,8 +268,6 @@ static PyGetSetDef surface_getsets[] = {
      "pixel buffer address (readonly)", NULL},
     {"width", (getter)surf_get_width, NULL, NULL, NULL},
     {"height", (getter)surf_get_height, NULL, NULL, NULL},
-    {"w", (getter)surf_get_width, NULL, NULL, NULL},
-    {"h", (getter)surf_get_height, NULL, NULL, NULL},
     {"size", (getter)surf_get_size, NULL, NULL, NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
