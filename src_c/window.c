@@ -202,7 +202,9 @@ window_flip(pgWindowObject *self)
         }
     }
     else {
+        Py_BEGIN_ALLOW_THREADS;
         SDL_GL_SwapWindow(self->_win);
+        Py_END_ALLOW_THREADS;
     }
     Py_RETURN_NONE;
 }
