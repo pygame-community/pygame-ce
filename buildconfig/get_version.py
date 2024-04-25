@@ -29,4 +29,29 @@ else:
 
     version = ast.literal_eval(finds[0].strip())
 
-print(version)
+
+_splits = version.split(".")
+
+# handle optional dev tag
+if len(_splits) == 3:
+    _splits.append('""')
+elif len(_splits) == 4:
+    _splits[3] = f'".{_splits[3]}"'
+else:
+    raise ValueError("Invalid version!")
+
+version_short = ".".join(_splits[:3])
+version_macros = tuple(
+    zip(
+        ("PG_MAJOR_VERSION", "PG_MINOR_VERSION", "PG_PATCH_VERSION", "PG_VERSION_TAG"),
+        _splits,
+    )
+)
+
+
+if __name__ == "__main__":
+    print(
+        "\n".join(f"-D{key}={value}" for key, value in version_macros)
+        if "--macros" in sys.argv
+        else version
+    )
