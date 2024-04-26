@@ -639,7 +639,6 @@ SoftCachedBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
 
     /* Everything is okay at the beginning...  */
     okay = 1;
-    int error = 0;
 
     /* Lock the destination if it's in hardware */
     dst_locked = 0;
@@ -665,18 +664,18 @@ SoftCachedBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
         PyObject *tup = list_items[i];
 
         if (!PyTuple_Check(tup) || PyTuple_GET_SIZE(tup) != 2) {
-            error = -1;
+            okay = 0;
             break;
         }
 
         if (!pg_IntFromObj2(PyTuple_GET_ITEM(tup, 0), &x) ||
             !pg_IntFromObj2(PyTuple_GET_ITEM(tup, 1), &y)) {
-            error = -1;
+            okay = 0;
             break;
         }
 
         if (x < 0 || x > dst->w - src->w || y < 0 || y > dst->h - src->h) {
-            error = -1;
+            okay = 0;
             break;
         }
 
