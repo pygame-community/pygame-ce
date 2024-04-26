@@ -83,3 +83,6 @@ void
 blit_blend_premultiplied_avx2(SDL_BlitInfo *info);
 void
 premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst);
+void
+_pg_cached_blitcopy_avx2(SDL_Surface *src, SDL_Surface *dst,
+                         Uint32 **destinations, Py_ssize_t destinations_size);

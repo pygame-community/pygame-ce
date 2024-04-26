@@ -190,6 +190,41 @@ pg_avx2_at_runtime_but_uncompiled()
     _mm256_srli_epi16(             \
         _mm256_mulhi_epu16(MM256I, _mm256_set1_epi16((short)0x8081)), 7);
 
+#define CACHED_BLIT_SETUP_AVX2                                                \
+    Py_ssize_t j, k, y;                                                       \
+    Uint32 *srcp;                                                             \
+    int n_iters_8 = src->w / 8, pxl_excess = src->w % 8;                      \
+    int src_skip = src->pitch / 4 - src->w;                                   \
+    int dst_skip = dst->pitch / 4 - src->w;                                   \
+    int h, n;                                                                 \
+                                                                              \
+    __m256i *srcp256 = (__m256i *)src->pixels;                                \
+    __m256i *dstp256;                                                         \
+                                                                              \
+    __m256i mm256_src, mm256_dst;                                             \
+    __m256i mask =                                                            \
+        _mm256_set_epi32(0, pxl_excess > 6 ? -1 : 0, pxl_excess > 5 ? -1 : 0, \
+                         pxl_excess > 4 ? -1 : 0, pxl_excess > 3 ? -1 : 0,    \
+                         pxl_excess > 2 ? -1 : 0, pxl_excess > 1 ? -1 : 0,    \
+                         pxl_excess > 0 ? -1 : 0);                            \
+                                                                              \
+    Py_ssize_t cache_size = (n_iters_8 + (pxl_excess ? 1 : 0)) * src->h;      \
+    __m256i *cache = (__m256i *)malloc(cache_size * sizeof(__m256i));         \
+    if (!cache) {                                                             \
+        return;                                                               \
+    }                                                                         \
+                                                                              \
+    /* Load the cache with the source pixels */                               \
+    for (j = src->h, k = 0; j--;) {                                           \
+        for (n = 0; n < n_iters_8; n++, k++, srcp256++)                       \
+            cache[k] = _mm256_loadu_si256(srcp256);                           \
+                                                                              \
+        if (pxl_excess)                                                       \
+            cache[k++] = _mm256_maskload_epi32((int *)srcp256, mask);         \
+                                                                              \
+        srcp256 = (__m256i *)((Uint32 *)srcp256 + src_skip + pxl_excess);     \
+    }
+
 #if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
     !defined(SDL_DISABLE_IMMINTRIN_H)
 void
@@ -1638,6 +1673,40 @@ premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst)
 #else
 void
 premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst)
+{
+    BAD_AVX2_FUNCTION_CALL;
+}
+#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
+!defined(SDL_DISABLE_IMMINTRIN_H) */
+
+#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
+    !defined(SDL_DISABLE_IMMINTRIN_H)
+void
+_pg_cached_blitcopy_avx2(SDL_Surface *src, SDL_Surface *dst,
+                         Uint32 **destinations, Py_ssize_t destinations_size)
+{
+    CACHED_BLIT_SETUP_AVX2;
+
+    /* Blit the cache */
+    for (j = 0; j < destinations_size; j++) {
+        dstp256 = destinations[j];
+        for (y = src->h, k = 0; y--;) {
+            for (n = 0; n < n_iters_8; n++, k++, dstp256++)
+                _mm256_storeu_si256(dstp256, cache[k]);
+
+            if (pxl_excess)
+                _mm256_maskstore_epi32((int *)dstp256, mask, cache[k++]);
+
+            dstp256 = (__m256i *)((Uint32 *)dstp256 + dst_skip + pxl_excess);
+        }
+    }
+
+    free(cache);
+}
+#else
+void
+_pg_cached_blitcopy_avx2(SDL_Surface *src, SDL_Surface *dst,
+                         Uint32 **destinations, Py_ssize_t destinations_size)
 {
     BAD_AVX2_FUNCTION_CALL;
 }

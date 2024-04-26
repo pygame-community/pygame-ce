@@ -61,6 +61,16 @@ blit_blend_premultiplied(SDL_BlitInfo *info);
 static int
 SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                SDL_Rect *dstrect, int blend_flags);
+
+int
+SoftCachedBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
+                     Uint32 ***destinations, Py_ssize_t destinations_size,
+                     PyObject *list);
+
+static void
+pg_cached_blitcopy(SDL_Surface *src, SDL_Surface *dst, Uint32 **destinations,
+                   Py_ssize_t destinations_size);
+
 extern int
 SDL_RLESurface(SDL_Surface *surface);
 extern void
@@ -568,6 +578,129 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                     break;
                 }
             }
+        }
+    }
+
+    /* We need to unlock the surfaces if they're locked */
+    if (dst_locked)
+        SDL_UnlockSurface(dst);
+    if (src_locked)
+        SDL_UnlockSurface(src);
+    /* Blit is done! */
+    return (okay ? 0 : -1);
+}
+
+static int
+pg_IntFromObj2(PyObject *obj, int *val)
+{
+    int tmp_val;
+
+    if (PyFloat_Check(obj)) {
+        double dv = PyFloat_AsDouble(obj);
+        tmp_val = (int)dv;
+    }
+    else {
+        tmp_val = PyLong_AsLong(obj);
+    }
+
+    if (tmp_val == -1 && PyErr_Occurred()) {
+        PyErr_Clear();
+        return 0;
+    }
+    *val = tmp_val;
+    return 1;
+}
+
+static void
+pg_cached_blitcopy(SDL_Surface *src, SDL_Surface *dst, Uint32 **destinations,
+                   Py_ssize_t destinations_size)
+{
+#if !defined(__EMSCRIPTEN__)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    if (pg_has_avx2()) {
+        _pg_cached_blitcopy_avx2(src, dst, destinations, destinations_size);
+        return;
+    }
+#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
+#endif /* __EMSCRIPTEN__ */
+}
+
+int
+SoftCachedBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
+                     Uint32 ***destinations, Py_ssize_t destinations_size,
+                     PyObject *list)
+{
+    int okay;
+    int src_locked;
+    int dst_locked;
+    Uint32 colorkey;
+    SDL_BlendMode src_blend;
+    Py_ssize_t i;
+
+    /* Everything is okay at the beginning...  */
+    okay = 1;
+    int error = 0;
+
+    /* Lock the destination if it's in hardware */
+    dst_locked = 0;
+    if (SDL_MUSTLOCK(dst)) {
+        if (SDL_LockSurface(dst) < 0)
+            okay = 0;
+        else
+            dst_locked = 1;
+    }
+    /* Lock the source if it's in hardware */
+    src_locked = 0;
+    if (SDL_MUSTLOCK(src)) {
+        if (SDL_LockSurface(src) < 0)
+            okay = 0;
+        else
+            src_locked = 1;
+    }
+
+    /* load destinations */
+    PyObject **list_items = PySequence_Fast_ITEMS(list);
+    for (i = 0; i < destinations_size; i++) {
+        int x, y;
+        PyObject *tup = list_items[i];
+
+        if (!PyTuple_Check(tup) || PyTuple_GET_SIZE(tup) != 2) {
+            error = -1;
+            break;
+        }
+
+        if (!pg_IntFromObj2(PyTuple_GET_ITEM(tup, 0), &x) ||
+            !pg_IntFromObj2(PyTuple_GET_ITEM(tup, 1), &y)) {
+            error = -1;
+            break;
+        }
+
+        if (x < 0 || x > dst->w - src->w || y < 0 || y > dst->h - src->h) {
+            error = -1;
+            break;
+        }
+
+        (*destinations)[i] = (Uint32 *)dst->pixels + y * dst->pitch / 4 + x;
+    }
+
+    /* Set up source and destination buffer pointers, and BLIT! */
+    if (okay) {
+        switch (blend_flags) {
+            case 0:
+                /* unhandled cases */
+                if (SDL_GetSurfaceBlendMode(src, &src_blend) != 0 ||
+                    (src_blend == SDL_BLENDMODE_NONE && src->format->Amask) ||
+                    SDL_GetColorKey(src, &colorkey) == 0) {
+                    okay = 0;
+                    break;
+                }
+
+                /* blitcopy */
+                pg_cached_blitcopy(src, dst, *destinations, destinations_size);
+                break;
+            default:
+                okay = 0;
+                break;
         }
     }
 

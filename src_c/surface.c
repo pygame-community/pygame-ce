@@ -262,6 +262,8 @@ static SDL_Surface *
 pg_DisplayFormat(SDL_Surface *surface);
 static int
 _PgSurface_SrcAlpha(SDL_Surface *surf);
+int
+pg_HasSurfaceRLE(SDL_Surface *surface);
 
 static PyGetSetDef surface_getsets[] = {
     {"_pixels_address", (getter)surf_get_pixels_address, NULL,
@@ -2150,6 +2152,11 @@ bliterror:
 #define FBLITS_ERR_TUPLE_REQUIRED 11
 #define FBLITS_ERR_INCORRECT_ARGS_NUM 12
 #define FBLITS_ERR_FLAG_NOT_NUMERIC 13
+#define FBLITS_ERR_CACHE_NOT_NUMERIC 14
+#define FBLITS_ERR_CACHE_NOT_SAMEFMT 15
+#define FBLITS_ERR_CACHE_RLE_NOT_SUPPORTED 16
+#define FBLITS_ERR_FLAG_NOT_SUPPORTED 17
+#define FBLITS_ERR_NO_MEMORY 18
 
 int
 _surf_fblits_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
@@ -2200,6 +2207,117 @@ _surf_fblits_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
     return 0;
 }
 
+int
+_surf_fblits_cached_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
+                                        int blend_flags,
+                                        Uint32 ***destinations,
+                                        Py_ssize_t *allocated_size)
+{
+    PyObject *src_surf, *pos_list;
+    SDL_Surface *src, *dst = pgSurface_AsSurface(self);
+    SDL_Surface *subsurface;
+    int suboffsetx = 0, suboffsety = 0;
+    SDL_Rect orig_clip, sub_clip;
+    Py_ssize_t i;
+    int error = 0;
+
+    /* Check that the item is a tuple of length 2 */
+    if (!PyTuple_Check(item) || PyTuple_GET_SIZE(item) != 2) {
+        return FBLITS_ERR_TUPLE_REQUIRED;
+    }
+
+    /* Extract the Surface and sequence of destination objects from the
+     * (Surface, positions) tuple */
+    src_surf = PyTuple_GET_ITEM(item, 0);
+    pos_list = PyTuple_GET_ITEM(item, 1);
+
+    if (!PyList_Check(pos_list)) {
+        return BLITS_ERR_SEQUENCE_REQUIRED;
+    }
+
+    /* Check that the source is a Surface */
+    if (!pgSurface_Check(src_surf)) {
+        return BLITS_ERR_SOURCE_NOT_SURFACE;
+    }
+    if (!(src = pgSurface_AsSurface(src_surf))) {
+        return BLITS_ERR_SEQUENCE_SURF;
+    }
+
+    /* Check that the source and destination surfaces have the same format */
+    if (src->format->format != dst->format->format ||
+        src->format->BytesPerPixel != dst->format->BytesPerPixel ||
+        src->format->BytesPerPixel != 4) {
+        return FBLITS_ERR_CACHE_NOT_SAMEFMT;
+    }
+
+    /* rule out RLE */
+    if (pg_HasSurfaceRLE(src) || pg_HasSurfaceRLE(dst) ||
+        (src->flags & SDL_RLEACCEL) || (dst->flags & SDL_RLEACCEL)) {
+        return FBLITS_ERR_CACHE_RLE_NOT_SUPPORTED;
+    }
+
+    /* manage destinations memory allocation or reallocation */
+    Py_ssize_t new_size = PyList_GET_SIZE(pos_list);
+    if (!*destinations) {
+        *destinations = (Uint32 **)malloc(new_size * sizeof(Uint32 *));
+        if (!*destinations) {
+            return FBLITS_ERR_NO_MEMORY;
+        }
+    }
+    else {
+        if (new_size > *allocated_size) {
+            *destinations =
+                (Uint32 **)realloc(*destinations, new_size * sizeof(Uint32 *));
+
+            if (!*destinations)
+                return FBLITS_ERR_NO_MEMORY;
+        }
+    }
+    *allocated_size = new_size;
+
+    if (self->subsurface) {
+        PyObject *owner;
+        struct pgSubSurface_Data *subdata;
+
+        subdata = self->subsurface;
+        owner = subdata->owner;
+        subsurface = pgSurface_AsSurface(owner);
+        suboffsetx = subdata->offsetx;
+        suboffsety = subdata->offsety;
+
+        while (((pgSurfaceObject *)owner)->subsurface) {
+            subdata = ((pgSurfaceObject *)owner)->subsurface;
+            owner = subdata->owner;
+            subsurface = pgSurface_AsSurface(owner);
+            suboffsetx += subdata->offsetx;
+            suboffsety += subdata->offsety;
+        }
+
+        SDL_GetClipRect(subsurface, &orig_clip);
+        SDL_GetClipRect(dst, &sub_clip);
+        sub_clip.x += suboffsetx;
+        sub_clip.y += suboffsety;
+        SDL_SetClipRect(subsurface, &sub_clip);
+        dst = subsurface;
+    }
+    else {
+        pgSurface_Prep(self);
+        subsurface = NULL;
+    }
+    pgSurface_Prep((pgSurfaceObject *)src_surf);
+
+    error = SoftCachedBlitPyGame(src, dst, blend_flags, destinations,
+                                 *allocated_size, pos_list);
+
+    if (subsurface)
+        SDL_SetClipRect(subsurface, &orig_clip);
+    else
+        pgSurface_Unprep(self);
+    pgSurface_Unprep((pgSurfaceObject *)src_surf);
+
+    return error;
+}
+
 static PyObject *
 surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
@@ -2210,13 +2328,16 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
     int blend_flags = 0; /* Default flag is 0, opaque */
     int error = 0;
     int is_generator = 0;
+    int cache = 0;
+    Uint32 **destinations = NULL;
+    Py_ssize_t destinations_size = 0;
 
-    if (nargs == 0 || nargs > 2) {
+    if (nargs == 0 || nargs > 3) {
         error = FBLITS_ERR_INCORRECT_ARGS_NUM;
         goto on_error;
     }
     /* Get the blend flags if they are passed */
-    else if (nargs == 2) {
+    else if (nargs >= 2) {
         if (!PyLong_Check(args[1])) {
             error = FBLITS_ERR_FLAG_NOT_NUMERIC;
             goto on_error;
@@ -2224,6 +2345,17 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
         blend_flags = PyLong_AsLong(args[1]);
         if (PyErr_Occurred()) {
             return NULL;
+        }
+
+        if (nargs == 3) {
+            if (!PyBool_Check(args[2])) {
+                error = FBLITS_ERR_CACHE_NOT_NUMERIC;
+                goto on_error;
+            }
+            cache = PyObject_IsTrue(args[2]);
+            if (PyErr_Occurred()) {
+                return NULL;
+            }
         }
     }
 
@@ -2235,26 +2367,18 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
         PyObject **sequence_items = PySequence_Fast_ITEMS(blit_sequence);
         for (i = 0; i < PySequence_Fast_GET_SIZE(blit_sequence); i++) {
             item = sequence_items[i];
-            error = _surf_fblits_item_check_and_blit(self, item, blend_flags);
+            if (cache) {
+                error = _surf_fblits_cached_item_check_and_blit(
+                    self, item, blend_flags, &destinations,
+                    &destinations_size);
+            }
+            else {
+                error =
+                    _surf_fblits_item_check_and_blit(self, item, blend_flags);
+            }
             if (error) {
                 goto on_error;
             }
-        }
-    }
-    /* Generator path */
-    else if (PyIter_Check(blit_sequence)) {
-        is_generator = 1;
-        while ((item = PyIter_Next(blit_sequence))) {
-            error = _surf_fblits_item_check_and_blit(self, item, blend_flags);
-            if (error) {
-                goto on_error;
-            }
-            Py_DECREF(item);
-        }
-
-        /* If the generator raises an exception */
-        if (PyErr_Occurred()) {
-            return NULL;
         }
     }
     else {
@@ -2262,12 +2386,15 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
         goto on_error;
     }
 
+    free(destinations);
+
     Py_RETURN_NONE;
 
 on_error:
     if (is_generator) {
         Py_XDECREF(item);
     }
+    free(destinations);
     switch (error) {
         case BLITS_ERR_SEQUENCE_REQUIRED:
             return RAISE(
@@ -2300,10 +2427,25 @@ on_error:
         case FBLITS_ERR_INCORRECT_ARGS_NUM:
             return RAISE(PyExc_ValueError,
                          "Incorrect number of parameters passed: need at "
-                         "least one, 2 at max");
+                         "least one, 3 at max");
         case FBLITS_ERR_FLAG_NOT_NUMERIC:
             return RAISE(PyExc_TypeError,
                          "The special_flags parameter must be an int");
+        case FBLITS_ERR_CACHE_NOT_NUMERIC:
+            return RAISE(PyExc_TypeError,
+                         "The cache parameter must be a bool");
+        case FBLITS_ERR_CACHE_NOT_SAMEFMT:
+            return RAISE(PyExc_TypeError,
+                         "The source surface has wrong format");
+        case FBLITS_ERR_CACHE_RLE_NOT_SUPPORTED:
+            return RAISE(PyExc_TypeError,
+                         "RLE acceleration while caching is not supported");
+        case FBLITS_ERR_FLAG_NOT_SUPPORTED:
+            return RAISE(PyExc_NotImplementedError,
+                         "The flag used or blit mode selected is not "
+                         "supported for this operation");
+        case FBLITS_ERR_NO_MEMORY:
+            return RAISE(PyExc_MemoryError, "No memory available");
     }
     return RAISE(PyExc_TypeError, "Unknown error");
 }
