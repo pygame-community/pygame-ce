@@ -357,7 +357,7 @@ SoftCachedBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
                      Uint32 ***destinations, Py_ssize_t destinations_size,
                      PyObject *list);
 
-static void
+void
 pg_cached_blitcopy(SDL_Surface *src, SDL_Surface *dst, Uint32 **destinations,
                    Py_ssize_t destinations_size);
 
