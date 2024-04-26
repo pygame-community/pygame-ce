@@ -192,16 +192,14 @@ pg_avx2_at_runtime_but_uncompiled()
 
 #define CACHED_BLIT_SETUP_AVX2                                                \
     Py_ssize_t j, k, y;                                                       \
-    Uint32 *srcp;                                                             \
     int n_iters_8 = src->w / 8, pxl_excess = src->w % 8;                      \
     int src_skip = src->pitch / 4 - src->w;                                   \
     int dst_skip = dst->pitch / 4 - src->w;                                   \
-    int h, n;                                                                 \
+    int n;                                                                    \
                                                                               \
     __m256i *srcp256 = (__m256i *)src->pixels;                                \
     __m256i *dstp256;                                                         \
                                                                               \
-    __m256i mm256_src, mm256_dst;                                             \
     __m256i mask =                                                            \
         _mm256_set_epi32(0, pxl_excess > 6 ? -1 : 0, pxl_excess > 5 ? -1 : 0, \
                          pxl_excess > 4 ? -1 : 0, pxl_excess > 3 ? -1 : 0,    \
@@ -1689,7 +1687,7 @@ _pg_cached_blitcopy_avx2(SDL_Surface *src, SDL_Surface *dst,
 
     /* Blit the cache */
     for (j = 0; j < destinations_size; j++) {
-        dstp256 = destinations[j];
+        dstp256 = (__m256i *)destinations[j];
         for (y = src->h, k = 0; y--;) {
             for (n = 0; n < n_iters_8; n++, k++, dstp256++)
                 _mm256_storeu_si256(dstp256, cache[k]);
