@@ -829,6 +829,26 @@ font_getter_style_name(PyObject *self, void *closure)
     return PyUnicode_FromString(font_style_name ? font_style_name : "");
 }
 
+static int
+font_setter_outline(PyObject *self, PyObject *value, void *closure)
+{
+    TTF_Font *font = PyFont_AsFont(self);
+    int val;
+
+    DEL_ATTR_NOT_SUPPORTED_CHECK("outline", value);
+
+    val = PyLong_AsLong(value);
+
+    TTF_SetFontOutline(font, val);
+    return 0;
+}
+
+static PyObject *
+font_getter_outline(PyObject *self, void *closure)
+{
+    return PyLong_FromLong(TTF_GetFontOutline(PyFont_AsFont(self)));
+}
+
 static PyObject *
 font_metrics(PyObject *self, PyObject *textobj)
 {
@@ -1058,6 +1078,8 @@ static PyGetSetDef font_getsets[] = {
      DOC_FONT_FONT_ALIGN, NULL},
     {"point_size", (getter)font_getter_point_size,
      (setter)font_setter_point_size, DOC_FONT_FONT_POINTSIZE, NULL},
+    {"outline", (getter)font_getter_outline, (setter)font_setter_outline,
+     "TODO", NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyMethodDef font_methods[] = {

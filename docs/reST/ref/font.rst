@@ -306,6 +306,17 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.point_size ##
 
+   .. attribute:: outline
+
+      | :sl:`Gets or sets the font's outline size`
+      | :sg:`outline -> int`
+
+      Returns the size of the outline.
+
+      .. versionadded:: 2.5.0
+
+      .. ## Font.outline ##
+
    .. method:: render
 
       | :sl:`draw text on a new Surface`
