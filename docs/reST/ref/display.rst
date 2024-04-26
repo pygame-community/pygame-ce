@@ -76,7 +76,11 @@ required).
    ::
 
       Windows : windib, directx
-      Unix    : x11, dga, fbcon, directfb, ggi, vgl, svgalib, aalib
+      Unix    : x11, dga, fbcon, directfb, ggi, vgl, svgalib, aalib, wayland
+
+   :note: By default, ``pygame-ce`` uses XWayland when running on Wayland.
+     Setting the ``SDL_VIDEODRIVER`` environment variable to ``"wayland"``
+     will cause pygame-ce to run on wayland directly.
 
    On some platforms it is possible to embed the pygame display into an already
    existing window. To do this, the environment variable ``SDL_WINDOWID`` must
@@ -85,6 +89,8 @@ required).
    there can be many strange side effects when running in an embedded display.
 
    It is harmless to call this more than once, repeated calls have no effect.
+
+   .. versionchanged:: 2.5.0 ``wayland`` is now supported instead of just xwayland
 
    .. ## pygame.display.init ##
 
@@ -213,6 +219,8 @@ required).
    .. versionchanged:: 2.2.0 ``vsync=1`` does not require ``SCALED`` or ``OPENGL``
 
    .. deprecated:: 2.4.0 The depth argument is ignored, and will be set to the optimal value
+
+   .. versionchanged:: 2.5.0 No longer emits warning when running on xwayland, see :func:`pygame.display.init` for details on running on wayland directly
 
 
    Basic example:
@@ -836,6 +844,6 @@ required).
    just like standard Python list indexing.
 
    .. versionadded:: 2.4.0
-   
+
 
 .. ## pygame.display ##
