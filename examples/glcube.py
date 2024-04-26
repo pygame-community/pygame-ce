@@ -319,9 +319,7 @@ def init_gl_modern(display_size):
     # ------------------------------------------
 
     # Cube Data
-    vertices = zeros(
-        8, [("vertex_position", float32, 3), ("vertex_color", float32, 4)]
-    )
+    vertices = zeros(8, [("vertex_position", float32, 3), ("vertex_color", float32, 4)])
 
     vertices["vertex_position"] = [
         [1, 1, 1],
