@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.music_drop_fade
+"""pygame.examples.music_drop_fade
 Fade in and play music from a list while observing several events
 
 Adds music files to a playlist whenever played by one of the following methods

@@ -398,7 +398,7 @@ class FontTypeTest(unittest.TestCase):
         self.assertIsNotNone(um[0])
         self.assertEqual(um, bm)
 
-        u = "\u212A"
+        u = "\u212a"
         b = u.encode("UTF-16")[2:]  # Keep byte order consistent. [2:] skips BOM
         bm = f.metrics(b)
 
@@ -465,7 +465,7 @@ class FontTypeTest(unittest.TestCase):
         su = f.render(".", False, [0, 0, 0], [255, 255, 255])
         sb = f.render(b".", False, [0, 0, 0], [255, 255, 255])
         self.assertTrue(equal_images(su, sb))
-        u = "\u212A"
+        u = "\u212a"
         b = u.encode("UTF-16")[2:]  # Keep byte order consistent. [2:] skips BOM
         sb = f.render(b, False, [0, 0, 0], [255, 255, 255])
         try:  # FIXME why do we do this try/except ?
@@ -485,7 +485,7 @@ class FontTypeTest(unittest.TestCase):
         # If the font module is SDL_ttf < 2.0.15 based, then it only supports UCS-2
         # it will raise an exception for an out-of-range UCS-4 code point.
         if hasattr(pygame_font, "UCS4"):
-            ucs_2 = "\uFFEE"
+            ucs_2 = "\uffee"
             s = f.render(ucs_2, False, [0, 0, 0], [255, 255, 255])
             ucs_4 = "\U00010000"
             s = f.render(ucs_4, False, [0, 0, 0], [255, 255, 255])
@@ -586,7 +586,7 @@ class FontTypeTest(unittest.TestCase):
         self.assertEqual(s.get_size(), size)
         self.assertEqual(f.size(btext), size)
 
-        text = "\u212A"
+        text = "\u212a"
         btext = text.encode("UTF-16")[2:]  # Keep the byte order consistent.
         bsize = f.size(btext)
         size = f.size(text)

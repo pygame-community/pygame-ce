@@ -62,3 +62,13 @@ setup-args = [
     "-Dvsenv=true",  # same effect as passing --vsenv
     "-Derror_docs_missing=true",
 ]
+
+[tool.ruff]
+exclude = [
+  "buildconfig/",
+  "docs/reST/",
+  "setup.py",
+]
+
+[tool.ruff.format]
+quote-style = "preserve"

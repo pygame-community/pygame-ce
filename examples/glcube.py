@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.glcube
+"""pygame.examples.glcube
 
 Draw a cube on the screen.
 
@@ -23,6 +23,7 @@ Keyboard Controls
 * f key to toggle fullscreen.
 
 """
+
 import math
 import ctypes
 

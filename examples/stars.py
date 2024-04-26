@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.stars
+"""pygame.examples.stars
 
 We are all in the gutter,
 but some of us are looking at the stars.

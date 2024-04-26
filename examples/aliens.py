@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.aliens
+"""pygame.examples.aliens
 
 Shows a mini game where you have to defend against aliens.
 
