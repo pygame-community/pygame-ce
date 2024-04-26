@@ -2219,6 +2219,7 @@ _surf_fblits_cached_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
     int suboffsetx = 0, suboffsety = 0;
     SDL_Rect orig_clip, sub_clip;
     int error = 0;
+    Py_ssize_t i;
 
     /* Check that the item is a tuple of length 2 */
     if (!PyTuple_Check(item) || PyTuple_GET_SIZE(item) != 2) {
@@ -2274,6 +2275,28 @@ _surf_fblits_cached_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
     }
     *allocated_size = new_size;
 
+    /* load destinations */
+    PyObject **list_items = PySequence_Fast_ITEMS(pos_list);
+    for (i = 0; i < *allocated_size; i++) {
+        int x, y;
+        PyObject *tup = list_items[i];
+
+        if (!PyTuple_Check(tup) || PyTuple_GET_SIZE(tup) != 2) {
+            return FBLITS_ERR_TUPLE_REQUIRED;
+        }
+
+        if (!pg_IntFromObj(PyTuple_GET_ITEM(tup, 0), &x) ||
+            !pg_IntFromObj(PyTuple_GET_ITEM(tup, 1), &y)) {
+            return FBLITS_ERR_INCORRECT_ARGS_NUM;
+        }
+
+        if (x < 0 || x > dst->w - src->w || y < 0 || y > dst->h - src->h) {
+            return BLITS_ERR_INVALID_DESTINATION;
+        }
+
+        (*destinations)[i] = (Uint32 *)dst->pixels + y * dst->pitch / 4 + x;
+    }
+
     if (self->subsurface) {
         PyObject *owner;
         struct pgSubSurface_Data *subdata;
@@ -2306,7 +2329,7 @@ _surf_fblits_cached_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
     pgSurface_Prep((pgSurfaceObject *)src_surf);
 
     error = SoftCachedBlitPyGame(src, dst, blend_flags, destinations,
-                                 *allocated_size, pos_list);
+                                 *allocated_size);
 
     if (subsurface)
         SDL_SetClipRect(subsurface, &orig_clip);

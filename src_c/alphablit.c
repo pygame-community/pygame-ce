@@ -64,8 +64,7 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
 
 int
 SoftCachedBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
-                     Uint32 ***destinations, Py_ssize_t destinations_size,
-                     PyObject *list);
+                     Uint32 ***destinations, Py_ssize_t destinations_size);
 
 void
 pg_cached_blitcopy(SDL_Surface *src, SDL_Surface *dst, Uint32 **destinations,
@@ -590,27 +589,6 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
     return (okay ? 0 : -1);
 }
 
-static int
-pg_IntFromObj2(PyObject *obj, int *val)
-{
-    int tmp_val;
-
-    if (PyFloat_Check(obj)) {
-        double dv = PyFloat_AsDouble(obj);
-        tmp_val = (int)dv;
-    }
-    else {
-        tmp_val = PyLong_AsLong(obj);
-    }
-
-    if (tmp_val == -1 && PyErr_Occurred()) {
-        PyErr_Clear();
-        return 0;
-    }
-    *val = tmp_val;
-    return 1;
-}
-
 void
 pg_cached_blitcopy(SDL_Surface *src, SDL_Surface *dst, Uint32 **destinations,
                    Py_ssize_t destinations_size)
@@ -627,15 +605,13 @@ pg_cached_blitcopy(SDL_Surface *src, SDL_Surface *dst, Uint32 **destinations,
 
 int
 SoftCachedBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
-                     Uint32 ***destinations, Py_ssize_t destinations_size,
-                     PyObject *list)
+                     Uint32 ***destinations, Py_ssize_t destinations_size)
 {
     int okay;
     int src_locked;
     int dst_locked;
     Uint32 colorkey;
     SDL_BlendMode src_blend;
-    Py_ssize_t i;
 
     /* Everything is okay at the beginning...  */
     okay = 1;
@@ -657,32 +633,6 @@ SoftCachedBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
             src_locked = 1;
     }
 
-    /* load destinations */
-    PyObject **list_items = PySequence_Fast_ITEMS(list);
-    for (i = 0; i < destinations_size; i++) {
-        int x, y;
-        PyObject *tup = list_items[i];
-
-        if (!PyTuple_Check(tup) || PyTuple_GET_SIZE(tup) != 2) {
-            okay = 0;
-            break;
-        }
-
-        if (!pg_IntFromObj2(PyTuple_GET_ITEM(tup, 0), &x) ||
-            !pg_IntFromObj2(PyTuple_GET_ITEM(tup, 1), &y)) {
-            okay = 0;
-            break;
-        }
-
-        if (x < 0 || x > dst->w - src->w || y < 0 || y > dst->h - src->h) {
-            okay = 0;
-            break;
-        }
-
-        (*destinations)[i] = (Uint32 *)dst->pixels + y * dst->pitch / 4 + x;
-    }
-
-    /* Set up source and destination buffer pointers, and BLIT! */
     if (okay) {
         switch (blend_flags) {
             case 0:
