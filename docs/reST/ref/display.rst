@@ -90,7 +90,7 @@ required).
 
    It is harmless to call this more than once, repeated calls have no effect.
 
-   .. versionchanged:: 2.5.0 ``wayland`` is now supported instead of just xwayland
+   .. versionchanged:: 2.5.0 the manylinux wheels distributed by us now support the ``wayland`` videodriver
 
    .. ## pygame.display.init ##
 
