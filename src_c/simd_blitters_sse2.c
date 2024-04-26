@@ -1009,7 +1009,11 @@ _pg_cached_blitcopy_sse2(SDL_Surface *src, SDL_Surface *dst,
                 switch (pxl_excess) {
                     case 1:
                         dstp32 = (Uint32 *)dstp128;
+#if defined(WIN32) && defined(_MSC_VER)
                         *dstp32 = cache[k++].m128i_u32[0];
+#else
+                        *dstp32 = _mm_cvtsi128_si32(cache[k++]);
+#endif
                         break;
                     case 2:
                         _mm_storel_epi64(dstp128, cache[k++]);
@@ -1017,7 +1021,12 @@ _pg_cached_blitcopy_sse2(SDL_Surface *src, SDL_Surface *dst,
                     case 3:
                         _mm_storel_epi64(dstp128, cache[k++]);
                         dstp32 = (Uint32 *)dstp128;
+#if defined(WIN32) && defined(_MSC_VER)
                         *dstp32 = cache[k++].m128i_u32[2];
+#else
+                        __m128i temp = _mm_srli_si128(cache[k++], 8);
+                        *dstp32 = _mm_cvtsi128_si32(temp);
+#endif
                         break;
                 }
             }
