@@ -839,12 +839,12 @@ class FontTypeTest(unittest.TestCase):
         if pygame_font.__name__ == "pygame.ftfont":
             surf = pygame.Surface((1, 1))
             methods = [
-                ("get_sized_height", tuple()),
-                ("get_sized_ascender", tuple()),
-                ("get_sized_glyph_height", tuple()),
+                ("get_sized_height", ()),
+                ("get_sized_ascender", ()),
+                ("get_sized_glyph_height", ()),
                 ("get_rect", ("any text",)),
                 ("get_metrics", ("any text",)),
-                ("get_sizes", tuple()),
+                ("get_sizes", ()),
                 ("render", ("any text", True, "white")),
                 (
                     "render_to",
@@ -862,14 +862,14 @@ class FontTypeTest(unittest.TestCase):
                         None,
                     ),
                 ),
-                ("get_ascent", tuple()),
-                ("get_bold", tuple()),
-                ("get_descent", tuple()),
-                ("get_height", tuple()),
-                ("get_italic", tuple()),
-                ("get_linesize", tuple()),
-                ("get_sized_descender", tuple()),
-                ("get_underline", tuple()),
+                ("get_ascent", ()),
+                ("get_bold", ()),
+                ("get_descent", ()),
+                ("get_height", ()),
+                ("get_italic", ()),
+                ("get_linesize", ()),
+                ("get_sized_descender", ()),
+                ("get_underline", ()),
                 ("metrics", ("any text",)),
                 ("set_bold", (True,)),
                 ("set_italic", (True,)),
@@ -879,17 +879,17 @@ class FontTypeTest(unittest.TestCase):
             skip_methods = {"get_strikethrough", "set_strikethrough"}
         else:
             methods = [
-                ("get_height", tuple()),
-                ("get_descent", tuple()),
-                ("get_ascent", tuple()),
-                ("get_linesize", tuple()),
-                ("get_bold", tuple()),
+                ("get_height", ()),
+                ("get_descent", ()),
+                ("get_ascent", ()),
+                ("get_linesize", ()),
+                ("get_bold", ()),
                 ("set_bold", (True,)),
-                ("get_italic", tuple()),
+                ("get_italic", ()),
                 ("set_italic", (True,)),
-                ("get_underline", tuple()),
+                ("get_underline", ()),
                 ("set_underline", (True,)),
-                ("get_strikethrough", tuple()),
+                ("get_strikethrough", ()),
                 ("set_strikethrough", (True,)),
                 ("metrics", ("any text",)),
                 ("render", ("hello", True, "white")),
@@ -900,7 +900,7 @@ class FontTypeTest(unittest.TestCase):
             skip_methods = set()
             version = pygame.font.get_sdl_ttf_version()
             if version >= (2, 0, 18):
-                methods.append(("get_point_size", tuple()))
+                methods.append(("get_point_size", ()))
                 methods.append(("set_point_size", (34,)))
             else:
                 skip_methods.add("get_point_size")

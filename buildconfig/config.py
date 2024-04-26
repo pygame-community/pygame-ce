@@ -80,14 +80,12 @@ def prepdep(dep, basepath):
         if isinstance(dep.inc_dir, str):
             incs.append(IPREFIX+dep.inc_dir[startind:])
         else:
-            for dir in dep.inc_dir:
-                incs.append(IPREFIX+dir[startind:])
+            incs.extend(IPREFIX+dir[startind:] for dir in dep.inc_dir)
     if dep.lib_dir:
         if isinstance(dep.lib_dir, str):
             lids.append(LPREFIX+dep.lib_dir[startind:])
         else:
-            for dir in dep.lib_dir:
-                lids.append(LPREFIX+dir[startind:])
+            lids.extend(LPREFIX+dir[startind:] for dir in dep.lib_dir)
     libs = ''
     for lib in dep.libs:
         libs += ' -l' + lib
