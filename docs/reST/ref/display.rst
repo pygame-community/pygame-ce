@@ -78,9 +78,10 @@ required).
       Windows : windib, directx
       Unix    : x11, dga, fbcon, directfb, ggi, vgl, svgalib, aalib, wayland
 
-   :note: By default, ``pygame-ce`` uses XWayland when running on Wayland.
-     Setting the ``SDL_VIDEODRIVER`` environment variable to ``"wayland"``
-     will cause pygame-ce to run on wayland directly.
+   :note: On wayland desktops, pygame-ce may choose to use the X11 video driver to run on Xwayland.
+      This behaviour is determined by the SDL library and might change in the future, so it's suggested
+      to account for this and not rely on the default behavior. The Wayland video driver can be forced
+      by setting the ``SDL_VIDEODRIVER`` environment variable to ``"wayland"``
 
    On some platforms it is possible to embed the pygame display into an already
    existing window. To do this, the environment variable ``SDL_WINDOWID`` must
