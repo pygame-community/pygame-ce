@@ -262,8 +262,6 @@ static SDL_Surface *
 pg_DisplayFormat(SDL_Surface *surface);
 static int
 _PgSurface_SrcAlpha(SDL_Surface *surf);
-int
-pg_HasSurfaceRLE(SDL_Surface *surface);
 
 static PyGetSetDef surface_getsets[] = {
     {"_pixels_address", (getter)surf_get_pixels_address, NULL,

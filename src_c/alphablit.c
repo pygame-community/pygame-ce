@@ -599,6 +599,12 @@ pg_cached_blitcopy(SDL_Surface *src, SDL_Surface *dst, Uint32 **destinations,
         _pg_cached_blitcopy_avx2(src, dst, destinations, destinations_size);
         return;
     }
+#if PG_ENABLE_SSE_NEON
+    if (pg_HasSSE_NEON()) {
+        _pg_cached_blitcopy_sse2(src, dst, destinations, destinations_size);
+        return;
+    }
+#endif /* PG_ENABLE_SSE_NEON */
 #endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
 #endif /* __EMSCRIPTEN__ */
 }
