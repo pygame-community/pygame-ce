@@ -2218,7 +2218,6 @@ _surf_fblits_cached_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
     SDL_Surface *subsurface;
     int suboffsetx = 0, suboffsety = 0;
     SDL_Rect orig_clip, sub_clip;
-    Py_ssize_t i;
     int error = 0;
 
     /* Check that the item is a tuple of length 2 */
