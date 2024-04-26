@@ -2478,7 +2478,7 @@ draw_eight_symetric_pixels(SDL_Surface *surf, int x0, int y0, Uint32 color,
                            int top_left, int bottom_left, int bottom_right,
                            int *drawn_area)
 {
-    opacity = opacity / 255;
+    opacity = opacity / 255.0f;
     Uint32 pixel_color;
     if (top_right == 1) {
         pixel_color =
@@ -2526,11 +2526,11 @@ draw_circle_xaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
     for (int radius_ = radius - thickness; radius_ <= radius; radius_++) {
         int x = 0;
         int y = radius_;
-        double prev_opacity = 0;
+        double prev_opacity = 0.0;
         if (radius_ == radius - thickness) {
             while (x < y) {
                 double height = sqrt(pow(radius_, 2) - pow(x, 2));
-                double opacity = 255 * (ceil(height) - height);
+                double opacity = 255.0f * (ceil(height) - height);
                 if (opacity < prev_opacity) {
                     --y;
                 }
@@ -2547,14 +2547,15 @@ draw_circle_xaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
         else if (radius_ == radius) {
             while (x < y) {
                 double height = sqrt(pow(radius_, 2) - pow(x, 2));
-                double opacity = 255 * (ceil(height) - height);
+                double opacity = 255.0f * (ceil(height) - height);
                 if (opacity < prev_opacity) {
                     --y;
                 }
                 prev_opacity = opacity;
-                draw_eight_symetric_pixels(
-                    surf, x0, y0, color, x, y, 255 - (float)opacity, top_right,
-                    top_left, bottom_left, bottom_right, drawn_area);
+                draw_eight_symetric_pixels(surf, x0, y0, color, x, y,
+                                           255.0f - (float)opacity, top_right,
+                                           top_left, bottom_left, bottom_right,
+                                           drawn_area);
                 draw_eight_symetric_pixels(
                     surf, x0, y0, color, x, y - 1, 255.0f, top_right, top_left,
                     bottom_left, bottom_right, drawn_area);
@@ -2564,7 +2565,7 @@ draw_circle_xaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
         else {
             while (x < y) {
                 double height = sqrt(pow(radius_, 2) - pow(x, 2));
-                double opacity = 255 * (ceil(height) - height);
+                double opacity = 255.0f * (ceil(height) - height);
                 if (opacity < prev_opacity) {
                     --y;
                 }
@@ -2588,17 +2589,17 @@ draw_circle_xaolinwu_thin(SDL_Surface *surf, int x0, int y0, int radius,
 {
     int x = 0;
     int y = radius;
-    double prev_opacity = 0;
+    double prev_opacity = 0.0;
     while (x < y) {
         double height = sqrt(pow(radius, 2) - pow(x, 2));
-        double opacity = 255 * (ceil(height) - height);
+        double opacity = 255.0f * (ceil(height) - height);
         if (opacity < prev_opacity) {
             --y;
         }
         prev_opacity = opacity;
-        draw_eight_symetric_pixels(surf, x0, y0, color, x, y,
-                                   255 - (float)opacity, top_right, top_left,
-                                   bottom_left, bottom_right, drawn_area);
+        draw_eight_symetric_pixels(
+            surf, x0, y0, color, x, y, 255.0f - (float)opacity, top_right,
+            top_left, bottom_left, bottom_right, drawn_area);
         draw_eight_symetric_pixels(surf, x0, y0, color, x, y - 1,
                                    (float)opacity, top_right, top_left,
                                    bottom_left, bottom_right, drawn_area);
