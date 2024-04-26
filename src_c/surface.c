@@ -2381,6 +2381,29 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
             }
         }
     }
+    else if (PyIter_Check(blit_sequence)) {
+        is_generator = 1;
+        while ((item = PyIter_Next(blit_sequence))) {
+            if (cache) {
+                error = _surf_fblits_cached_item_check_and_blit(
+                    self, item, blend_flags, &destinations,
+                    &destinations_size);
+            }
+            else {
+                error =
+                    _surf_fblits_item_check_and_blit(self, item, blend_flags);
+            }
+            if (error) {
+                goto on_error;
+            }
+            Py_DECREF(item);
+        }
+
+        /* If the generator raises an exception */
+        if (PyErr_Occurred()) {
+            return NULL;
+        }
+    }
     else {
         error = BLITS_ERR_SEQUENCE_REQUIRED;
         goto on_error;
