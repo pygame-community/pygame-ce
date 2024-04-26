@@ -3034,7 +3034,7 @@ class MaskTypeTest(unittest.TestCase):
     def test_to_surface__kwargs_invalid_name(self):
         """Ensures to_surface detects invalid kwarg names."""
         mask = pygame.mask.Mask((3, 2))
-        kwargs = {"setcolour": pygame.Color("red")}
+        kwargs = {"setcolor": pygame.Color("red")}
 
         with self.assertRaises(TypeError):
             mask.to_surface(**kwargs)

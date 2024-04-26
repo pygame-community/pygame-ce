@@ -2477,7 +2477,7 @@ average_surfaces(SDL_Surface **surfaces, size_t num_surfaces,
 
         palette_colors - if true we average the colors in palette, otherwise we
             average the pixel values.  This is useful if the surface is
-            actually greyscale colors, and not palette colors.
+            actually grayscale colors, and not palette colors.
 
     */
 
@@ -2553,7 +2553,7 @@ average_surfaces(SDL_Surface **surfaces, size_t num_surfaces,
              PG_FORMAT_BytesPerPixel(destformat) == 1) &&
             (format->palette) && (destformat->palette) && (!palette_colors)) {
             /*
-            This is useful if the surface is actually greyscale colors,
+            This is useful if the surface is actually grayscale colors,
             and not palette colors.
             */
             for (y = 0; y < height; y++) {
@@ -2645,7 +2645,7 @@ average_surfaces(SDL_Surface **surfaces, size_t num_surfaces,
 
     palette_colors - if true we average the colors in palette, otherwise we
         average the pixel values.  This is useful if the surface is
-        actually greyscale colors, and not palette colors.
+        actually grayscale colors, and not palette colors.
 
 */
 static PyObject *

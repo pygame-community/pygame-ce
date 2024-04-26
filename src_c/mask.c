@@ -888,7 +888,7 @@ mask_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 palette_colors - this only affects surfaces with a palette
     if true we look at the colors from the palette,
     otherwise we threshold the pixel values.  This is useful if
-    the surface is actually greyscale colors, and not palette colors.
+    the surface is actually grayscale colors, and not palette colors.
 
 */
 

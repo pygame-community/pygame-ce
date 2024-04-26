@@ -3592,7 +3592,7 @@ class SurfaceBlendTest(unittest.TestCase):
 
             return (expected_col, actual_col)
 
-        # # Colour Tests
+        # # Color Tests
         self.assertEqual(
             *test_premul_surf(pygame.Color(40, 20, 0, 51), pygame.Color(40, 20, 0, 51))
         )
@@ -3962,7 +3962,7 @@ class SurfaceBlendTest(unittest.TestCase):
         s1_alpha = s1.premul_alpha()
         self.assertEqual(s1_alpha.get_at((50, 50)), pygame.Color(100, 100, 100, 100))
 
-        # 16-bit colour has less precision
+        # 16-bit color has less precision
         s2 = pygame.Surface((100, 100), pygame.SRCALPHA, 16)
         s2.fill(
             pygame.Color(

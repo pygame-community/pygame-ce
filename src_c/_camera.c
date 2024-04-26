@@ -665,7 +665,7 @@ rgb_to_hsv(const void *src, void *dst, int length, unsigned long source,
             min = MIN(MIN(r, g), b);
             delta = max - min;
             v = max;      /* value (similar to luminosity) */
-            if (!delta) { /* grey, zero hue and saturation */
+            if (!delta) { /* gray, zero hue and saturation */
                 s = 0;
                 h = 0;
             }
@@ -733,7 +733,7 @@ rgb_to_hsv(const void *src, void *dst, int length, unsigned long source,
             min = MIN(MIN(r, g), b);
             delta = max - min;
             v = max;      /* value (similar to luminosity) */
-            if (!delta) { /* grey, zero hue and saturation */
+            if (!delta) { /* gray, zero hue and saturation */
                 s = 0;
                 h = 0;
             }
