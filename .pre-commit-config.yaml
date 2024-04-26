@@ -8,9 +8,6 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.4.2
     hooks:  # See pyproject.toml for configuration options.
-      #- id: ruff  # Run the linter
-      #  types_or: [ python, pyi, jupyter ]
-      #  args: [ --fix ]
       - id: ruff-format  # Run the formatter
         types_or: [ python, pyi, jupyter ]
 
