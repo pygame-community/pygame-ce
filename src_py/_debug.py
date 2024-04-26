@@ -161,7 +161,10 @@ def print_debug_info(filename=None):
         if driver.upper() != "X11":
             debug_str += f"Display Driver:\t\t{driver}\n"
         else:
-            is_xwayland = ("XDG_SESSION_TYPE" in environ and environ["XDG_SESSION_TYPE"] == "wayland") or ("WAYLAND_DISPLAY" in environ)
+            is_xwayland = (
+                "XDG_SESSION_TYPE" in environ
+                and environ["XDG_SESSION_TYPE"] == "wayland"
+            ) or ("WAYLAND_DISPLAY" in environ)
             debug_str += f"Display Driver:\t\t{driver} ( xwayland == {is_xwayland} )\n"
     else:
         debug_str += "Display Driver:\t\tDisplay Not Initialized\n"
