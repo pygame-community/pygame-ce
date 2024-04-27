@@ -593,20 +593,17 @@ void
 pg_cached_blitcopy(SDL_Surface *src, SDL_Surface *dst, Uint32 **destinations,
                    Py_ssize_t destinations_size)
 {
-#if !defined(__EMSCRIPTEN__)
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-    if (pg_has_avx2()) {
-        _pg_cached_blitcopy_avx2(src, dst, destinations, destinations_size);
-        return;
+    Py_ssize_t i, y;
+    for (i = 0; i < destinations_size; i++) {
+        Uint32 *dstp32 = destinations[i];
+        Uint32 *srcp32 = (Uint32 *)src->pixels;
+        y = src->h;
+        while (y--) {
+            memcpy(dstp32, srcp32, src->pitch);
+            srcp32 += src->w;
+            dstp32 += dst->w;
+        }
     }
-#if PG_ENABLE_SSE_NEON
-    if (pg_HasSSE_NEON()) {
-        _pg_cached_blitcopy_sse2(src, dst, destinations, destinations_size);
-        return;
-    }
-#endif /* PG_ENABLE_SSE_NEON */
-#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
-#endif /* __EMSCRIPTEN__ */
 }
 
 int

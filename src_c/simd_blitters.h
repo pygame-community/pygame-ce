@@ -37,10 +37,6 @@ void
 blit_blend_rgb_min_sse2(SDL_BlitInfo *info);
 void
 blit_blend_premultiplied_sse2(SDL_BlitInfo *info);
-void
-_pg_cached_blitcopy_sse2(SDL_Surface *src, SDL_Surface *dst,
-                         Uint32 **destinations, Py_ssize_t destinations_size);
-
 #endif /* (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)) */
 
 /* Deliberately putting these outside of the preprocessor guards as I want to
@@ -87,6 +83,3 @@ void
 blit_blend_premultiplied_avx2(SDL_BlitInfo *info);
 void
 premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst);
-void
-_pg_cached_blitcopy_avx2(SDL_Surface *src, SDL_Surface *dst,
-                         Uint32 **destinations, Py_ssize_t destinations_size);

@@ -139,47 +139,6 @@ pg_neon_at_runtime_but_uncompiled()
         dstp = (Uint32 *)dstp128 + dstskip;               \
     }
 
-#define CACHED_BLIT_SETUP_SSE2                                            \
-    Py_ssize_t j, k, y;                                                   \
-    const int n_iters_4 = src->w / 4, pxl_excess = src->w % 4;            \
-    int src_skip = src->pitch / 4 - src->w;                               \
-    int dst_skip = dst->pitch / 4 - src->w;                               \
-    int n;                                                                \
-                                                                          \
-    __m128i *srcp128 = (__m128i *)src->pixels;                            \
-    __m128i *dstp128;                                                     \
-                                                                          \
-    Py_ssize_t cache_size = (n_iters_4 + (pxl_excess ? 1 : 0)) * src->h;  \
-    __m128i *cache = (__m128i *)malloc(cache_size * sizeof(__m128i));     \
-    if (!cache) {                                                         \
-        return;                                                           \
-    }                                                                     \
-                                                                          \
-    /* Load the cache with the source pixels */                           \
-    for (j = src->h, k = 0; j--;) {                                       \
-        for (n = 0; n < n_iters_4; n++, k++, srcp128++)                   \
-            cache[k] = _mm_loadu_si128(srcp128);                          \
-                                                                          \
-        if (pxl_excess) {                                                 \
-            Uint32 *srcp = (Uint32 *)srcp128;                             \
-            __m128i tmp =                                                 \
-                _mm_loadu_si128((__m128i *)(srcp - 4 + pxl_excess));      \
-            switch (pxl_excess) {                                         \
-                case 1:                                                   \
-                    cache[k++] = _mm_srli_si128(tmp, 12);                 \
-                    break;                                                \
-                case 2:                                                   \
-                    cache[k++] = _mm_srli_si128(tmp, 8);                  \
-                    break;                                                \
-                case 3:                                                   \
-                    cache[k++] = _mm_srli_si128(tmp, 4);                  \
-                    break;                                                \
-            }                                                             \
-        }                                                                 \
-                                                                          \
-        srcp128 = (__m128i *)((Uint32 *)srcp128 + src_skip + pxl_excess); \
-    }
-
 #if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
 void
 alphablit_alpha_sse2_argb_surf_alpha(SDL_BlitInfo *info)
@@ -989,52 +948,5 @@ blit_blend_rgba_max_sse2(SDL_BlitInfo *info)
 {
     SETUP_SSE2_BLITTER
     RUN_SSE2_BLITTER({ mm128_dst = _mm_max_epu8(mm128_dst, mm128_src); })
-}
-
-void
-_pg_cached_blitcopy_sse2(SDL_Surface *src, SDL_Surface *dst,
-                         Uint32 **destinations, Py_ssize_t destinations_size)
-{
-    CACHED_BLIT_SETUP_SSE2;
-
-    /* Blit the cache */
-    for (j = 0; j < destinations_size; j++) {
-        dstp128 = (__m128i *)destinations[j];
-        for (y = src->h, k = 0; y--;) {
-            for (n = 0; n < n_iters_4; n++, k++, dstp128++)
-                _mm_storeu_si128(dstp128, cache[k]);
-
-            if (pxl_excess) {
-                Uint32 *dstp32;
-                switch (pxl_excess) {
-                    case 1:
-                        dstp32 = (Uint32 *)dstp128;
-#if defined(WIN32) && defined(_MSC_VER)
-                        *dstp32 = cache[k++].m128i_u32[0];
-#else
-                        *dstp32 = _mm_cvtsi128_si32(cache[k++]);
-#endif
-                        break;
-                    case 2:
-                        _mm_storel_epi64(dstp128, cache[k++]);
-                        break;
-                    case 3:
-                        _mm_storel_epi64(dstp128, cache[k++]);
-                        dstp32 = (Uint32 *)dstp128;
-#if defined(WIN32) && defined(_MSC_VER)
-                        *dstp32 = cache[k++].m128i_u32[2];
-#else
-                        __m128i temp = _mm_srli_si128(cache[k++], 8);
-                        *dstp32 = _mm_cvtsi128_si32(temp);
-#endif
-                        break;
-                }
-            }
-
-            dstp128 = (__m128i *)((Uint32 *)dstp128 + dst_skip + pxl_excess);
-        }
-    }
-
-    free(cache);
 }
 #endif /* __SSE2__ || PG_ENABLE_ARM_NEON*/
