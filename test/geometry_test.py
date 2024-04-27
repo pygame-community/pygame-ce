@@ -625,6 +625,57 @@ class CircleTypeTest(unittest.TestCase):
         self.assertTrue(c3.colliderect(0.4, 0.0, 1, 1), msgt)
         self.assertTrue(c3.colliderect((0.4, 0.0), (1, 1)), msgt)
 
+    def test_collideswith_argtype(self):
+        """tests if the function correctly handles incorrect types as parameters"""
+        invalid_types = (None, [], "1", (1,), Vector3(1, 1, 1), 1)
+
+        c = Circle(10, 10, 4)
+
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                c.collideswith(value)
+
+    def test_collideswith_argnum(self):
+        c = Circle(10, 10, 4)
+        args = [tuple(range(x)) for x in range(2, 4)]
+
+        # no params
+        with self.assertRaises(TypeError):
+            c.collideswith()
+
+        # too many params
+        for arg in args:
+            with self.assertRaises(TypeError):
+                c.collideswith(*arg)
+
+    def test_collideswith(self):
+        """Ensures the collideswith function correctly registers collisions with circles, lines, rects and points"""
+        c = Circle(0, 0, 5)
+
+        # circle
+        c2 = Circle(0, 10, 15)
+        c3 = Circle(100, 100, 1)
+        self.assertTrue(c.collideswith(c2))
+        self.assertFalse(c.collideswith(c3))
+
+        # rect
+        r = Rect(0, 0, 10, 10)
+        r2 = Rect(50, 0, 10, 10)
+        self.assertTrue(c.collideswith(r))
+        self.assertFalse(c.collideswith(r2))
+
+        # rect
+        r = FRect(0, 0, 10, 10)
+        r2 = FRect(50, 0, 10, 10)
+        self.assertTrue(c.collideswith(r))
+        self.assertFalse(c.collideswith(r2))
+
+        # point
+        p = (0, 0)
+        p2 = (50, 0)
+        self.assertTrue(c.collideswith(p))
+        self.assertFalse(c.collideswith(p2))
+
     def test_update(self):
         """Ensures that updating the circle position
         and dimension correctly updates position and dimension"""

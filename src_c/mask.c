@@ -100,7 +100,7 @@ static PyObject *
 mask_get_size(PyObject *self, PyObject *_null)
 {
     bitmask_t *mask = pgMask_AsBitmap(self);
-    return Py_BuildValue("(ii)", mask->w, mask->h);
+    return pg_tuple_couple_from_values_int(mask->w, mask->h);
 }
 
 /* Creates a Rect object based on the given mask's size. The rect's
@@ -224,7 +224,7 @@ mask_overlap(PyObject *self, PyObject *args, PyObject *kwargs)
 
     val = bitmask_overlap_pos(mask, othermask, x, y, &xp, &yp);
     if (val) {
-        return Py_BuildValue("(ii)", xp, yp);
+        return pg_tuple_couple_from_values_int(xp, yp);
     }
     else {
         Py_INCREF(Py_None);
@@ -521,7 +521,7 @@ mask_outline(PyObject *self, PyObject *args, PyObject *kwargs)
             if (bitmask_getbit(m, x, y)) {
                 firstx = x;
                 firsty = y;
-                value = Py_BuildValue("(ii)", x - 1, y - 1);
+                value = pg_tuple_couple_from_values_int(x - 1, y - 1);
 
                 if (NULL == value) {
                     Py_DECREF(plist);
@@ -562,7 +562,7 @@ mask_outline(PyObject *self, PyObject *args, PyObject *kwargs)
             e--;
             if (!e) {
                 e = every;
-                value = Py_BuildValue("(ii)", secx - 1, secy - 1);
+                value = pg_tuple_couple_from_values_int(secx - 1, secy - 1);
 
                 if (NULL == value) {
                     Py_DECREF(plist);
@@ -606,7 +606,8 @@ mask_outline(PyObject *self, PyObject *args, PyObject *kwargs)
                         break;
                     }
 
-                    value = Py_BuildValue("(ii)", nextx - 1, nexty - 1);
+                    value =
+                        pg_tuple_couple_from_values_int(nextx - 1, nexty - 1);
 
                     if (NULL == value) {
                         Py_DECREF(plist);
@@ -770,7 +771,7 @@ static void
 set_from_threshold(SDL_Surface *surf, bitmask_t *bitmask, int threshold)
 {
     SDL_PixelFormat *format = surf->format;
-    Uint8 bpp = format->BytesPerPixel;
+    Uint8 bpp = PG_FORMAT_BytesPerPixel(format);
     Uint8 *pixel = NULL;
     Uint8 rgba[4];
     int x, y;
@@ -802,7 +803,7 @@ set_from_threshold(SDL_Surface *surf, bitmask_t *bitmask, int threshold)
 static void
 set_from_colorkey(SDL_Surface *surf, bitmask_t *bitmask, Uint32 colorkey)
 {
-    Uint8 bpp = surf->format->BytesPerPixel;
+    Uint8 bpp = PG_SURF_BytesPerPixel(surf);
     Uint8 *pixel = NULL;
     int x, y;
 
@@ -887,7 +888,7 @@ mask_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 palette_colors - this only affects surfaces with a palette
     if true we look at the colors from the palette,
     otherwise we threshold the pixel values.  This is useful if
-    the surface is actually greyscale colors, and not palette colors.
+    the surface is actually grayscale colors, and not palette colors.
 
 */
 
@@ -915,7 +916,7 @@ bitmask_threshold(bitmask_t *m, SDL_Surface *surf, SDL_Surface *surf2,
     rloss = format->Rloss;
     gloss = format->Gloss;
     bloss = format->Bloss;
-    bpp1 = surf->format->BytesPerPixel;
+    bpp1 = PG_SURF_BytesPerPixel(surf);
 
     if (surf2) {
         format2 = surf2->format;
@@ -929,7 +930,7 @@ bitmask_threshold(bitmask_t *m, SDL_Surface *surf, SDL_Surface *surf2,
         gloss2 = format2->Gloss;
         bloss2 = format2->Bloss;
         pixels2 = (Uint8 *)surf2->pixels;
-        bpp2 = surf->format->BytesPerPixel;
+        bpp2 = PG_SURF_BytesPerPixel(surf);
     }
     else { /* make gcc stop complaining */
         rmask2 = gmask2 = bmask2 = 0;
@@ -1919,7 +1920,7 @@ draw_to_surface(SDL_Surface *surf, bitmask_t *bitmask, int x_dest, int y_dest,
         return;
     }
 
-    bpp = surf->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(surf);
 
     xm_start = (x_dest < 0) ? -x_dest : 0;
     x_start = (x_dest > 0) ? x_dest : 0;
@@ -2055,8 +2056,8 @@ draw_to_surface(SDL_Surface *surf, bitmask_t *bitmask, int x_dest, int y_dest,
 static int
 check_surface_pixel_format(SDL_Surface *surf, SDL_Surface *check_surf)
 {
-    if ((surf->format->BytesPerPixel != check_surf->format->BytesPerPixel) ||
-        (surf->format->BitsPerPixel != check_surf->format->BitsPerPixel) ||
+    if ((PG_SURF_BytesPerPixel(surf) != PG_SURF_BytesPerPixel(check_surf)) ||
+        (PG_SURF_BitsPerPixel(surf) != PG_SURF_BitsPerPixel(check_surf)) ||
         (surf->format->format != check_surf->format->format)) {
         return 0;
     }

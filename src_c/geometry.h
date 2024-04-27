@@ -21,13 +21,6 @@ typedef struct {
 #define pgCircle_Check(o) ((o)->ob_type == &pgCircle_Type)
 
 static PyTypeObject pgCircle_Type;
-
-static int
-pgCircle_FromObject(PyObject *obj, pgCircleBase *out);
-
-static int
-pgCircle_FromObjectFastcall(PyObject *const *args, Py_ssize_t nargs,
-                            pgCircleBase *out);
 /* Constants */
 
 /* PI */

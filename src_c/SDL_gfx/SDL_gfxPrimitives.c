@@ -79,7 +79,7 @@ fastPixelColorNolock(SDL_Surface *dst, Sint16 x, Sint16 y, Uint32 color)
         /*
          * Get destination format
          */
-        bpp = dst->format->BytesPerPixel;
+        bpp = GFX_SURF_BytesPerPixel(dst);
         p = (Uint8 *)dst->pixels + y * dst->pitch + x * bpp;
         switch (bpp) {
             case 1:
@@ -131,7 +131,7 @@ int fastPixelColorNolockNoclip(SDL_Surface * dst, Sint16 x, Sint16 y, Uint32 col
 	/*
 	* Get destination format
 	*/
-	bpp = dst->format->BytesPerPixel;
+	bpp = GFX_SURF_BytesPerPixel(dst);
 	p = (Uint8 *) dst->pixels + y * dst->pitch + x * bpp;
 	switch (bpp) {
 	case 1:
@@ -287,7 +287,7 @@ _putPixelAlpha(SDL_Surface *dst, Sint16 x, Sint16 y, Uint32 color, Uint8 alpha)
         y <= clip_ymax(dst)) {
         format = dst->format;
 
-        switch (format->BytesPerPixel) {
+        switch (GFX_FORMAT_BytesPerPixel(format)) {
             case 1: { /* Assuming 8-bpp */
                 if (alpha == 255) {
                     *((Uint8 *)dst->pixels + y * dst->pitch + x) = color;
@@ -602,7 +602,7 @@ _filledRectAlpha(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
     Sint16 x, y;
 
     format = dst->format;
-    switch (format->BytesPerPixel) {
+    switch (GFX_FORMAT_BytesPerPixel(format)) {
         case 1: { /* Assuming 8-bpp */
             Uint8 *row, *pixel;
             Uint8 dR, dG, dB;
@@ -1098,14 +1098,14 @@ hlineColorStore(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y, Uint32 color)
      * More variable setup
      */
     dx = w;
-    pixx = dst->format->BytesPerPixel;
+    pixx = GFX_SURF_BytesPerPixel(dst);
     pixy = dst->pitch;
     pixel = ((Uint8 *)dst->pixels) + pixx * (int)x1 + pixy * (int)y;
 
     /*
      * Draw
      */
-    switch (dst->format->BytesPerPixel) {
+    switch (GFX_SURF_BytesPerPixel(dst)) {
         case 1:
             memset(pixel, color, dx + 1);
             break;
@@ -1288,14 +1288,14 @@ hlineColor(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y, Uint32 color)
         /*
          * More variable setup
          */
-        pixx = dst->format->BytesPerPixel;
+        pixx = GFX_SURF_BytesPerPixel(dst);
         pixy = dst->pitch;
         pixel = ((Uint8 *)dst->pixels) + pixx * (int)x1 + pixy * (int)y;
 
         /*
          * Draw
          */
-        switch (dst->format->BytesPerPixel) {
+        switch (GFX_SURF_BytesPerPixel(dst)) {
             case 1:
                 memset(pixel, color, dx + 1);
                 break;
@@ -1484,7 +1484,7 @@ vlineColor(SDL_Surface *dst, Sint16 x, Sint16 y1, Sint16 y2, Uint32 color)
          * More variable setup
          */
         dy = h;
-        pixx = dst->format->BytesPerPixel;
+        pixx = GFX_SURF_BytesPerPixel(dst);
         pixy = dst->pitch;
         pixel = ((Uint8 *)dst->pixels) + pixx * (int)x + pixy * (int)y1;
         pixellast = pixel + pixy * dy;
@@ -1492,7 +1492,7 @@ vlineColor(SDL_Surface *dst, Sint16 x, Sint16 y1, Sint16 y2, Uint32 color)
         /*
          * Draw
          */
-        switch (dst->format->BytesPerPixel) {
+        switch (GFX_SURF_BytesPerPixel(dst)) {
             case 1:
                 for (; pixel <= pixellast; pixel += pixy) {
                     *(Uint8 *)pixel = color;
@@ -2265,7 +2265,7 @@ boxColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
          */
         dx = w;
         dy = h;
-        pixx = dst->format->BytesPerPixel;
+        pixx = GFX_SURF_BytesPerPixel(dst);
         pixy = dst->pitch;
         pixel = ((Uint8 *)dst->pixels) + pixx * (int)x1 + pixy * (int)y1;
         pixellast = pixel + pixx * dx + pixy * dy;
@@ -2274,7 +2274,7 @@ boxColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
         /*
          * Draw
          */
-        switch (dst->format->BytesPerPixel) {
+        switch (GFX_SURF_BytesPerPixel(dst)) {
             case 1:
                 for (; pixel <= pixellast; pixel += pixy) {
                     memset(pixel, (Uint8)color, dx);
@@ -2463,7 +2463,7 @@ lineColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
          */
         dx = sx * dx + 1;
         dy = sy * dy + 1;
-        pixx = dst->format->BytesPerPixel;
+        pixx = GFX_SURF_BytesPerPixel(dst);
         pixy = dst->pitch;
         pixel = ((Uint8 *)dst->pixels) + pixx * (int)x1 + pixy * (int)y1;
         pixx *= sx;
@@ -2482,7 +2482,7 @@ lineColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
          */
         x = 0;
         y = 0;
-        switch (dst->format->BytesPerPixel) {
+        switch (GFX_SURF_BytesPerPixel(dst)) {
             case 1:
                 for (; x < dx; x++, pixel += pixx) {
                     *pixel = color;
@@ -4226,7 +4226,8 @@ lrint(double flt)
 #include <armintr.h>
 #pragma warning(push)
 #pragma warning(disable : 4716)
-__declspec(naked) long int lrint(double flt)
+__declspec(naked) long int
+lrint(double flt)
 {
     __emit(0xEC410B10);  // fmdrr  d0, r0, r1
     __emit(0xEEBD0B40);  // ftosid s0, d0

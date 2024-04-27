@@ -410,8 +410,7 @@ class AbstractGroup:
 
         :param sprite: The sprite we are removing.
         """
-        lost_rect = self.spritedict[sprite]
-        if lost_rect:
+        if lost_rect := self.spritedict[sprite]:
             self.lostsprites.append(lost_rect)
         del self.spritedict[sprite]
 
