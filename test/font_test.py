@@ -953,7 +953,6 @@ class FontTypeTest(unittest.TestCase):
                 ("fixed_width", None),
                 ("fixed_sizes", None),
                 ("antialiased", 45),
-                ("outline", 10),
                 ("kerning", 46),
                 ("vertical", 47),
                 ("pad", 48),
@@ -993,6 +992,10 @@ class FontTypeTest(unittest.TestCase):
                 properties.append(("point_size", 1))
             else:
                 skip_properties.add("point_size")
+            if version >= (2, 0, 12):
+                properties.append(("outline", 2006))
+            else:
+                skip_properties.add("outline")
 
         font = pygame_font.Font(None, 10)
         actual_names = []

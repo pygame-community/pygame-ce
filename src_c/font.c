@@ -832,6 +832,10 @@ font_getter_style_name(PyObject *self, void *closure)
 static int
 font_setter_outline(PyObject *self, PyObject *value, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        RAISE_FONT_QUIT_ERROR_RETURN(-1);
+    }
+
     TTF_Font *font = PyFont_AsFont(self);
     int val;
 
@@ -846,6 +850,10 @@ font_setter_outline(PyObject *self, PyObject *value, void *closure)
 static PyObject *
 font_getter_outline(PyObject *self, void *closure)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     return PyLong_FromLong(TTF_GetFontOutline(PyFont_AsFont(self)));
 }
 
@@ -1079,7 +1087,7 @@ static PyGetSetDef font_getsets[] = {
     {"point_size", (getter)font_getter_point_size,
      (setter)font_setter_point_size, DOC_FONT_FONT_POINTSIZE, NULL},
     {"outline", (getter)font_getter_outline, (setter)font_setter_outline,
-     "TODO", NULL},
+     DOC_FONT_FONT_OUTLINE, NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyMethodDef font_methods[] = {
