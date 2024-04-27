@@ -842,6 +842,8 @@ font_setter_outline(PyObject *self, PyObject *value, void *closure)
     DEL_ATTR_NOT_SUPPORTED_CHECK("outline", value);
 
     val = PyLong_AsLong(value);
+    if ((val == -1) && (PyErr_Occurred() != NULL))
+        return -1;
 
     TTF_SetFontOutline(font, val);
     return 0;

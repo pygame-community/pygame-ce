@@ -981,6 +981,7 @@ class FontTypeTest(unittest.TestCase):
                 ("italic", True),
                 ("underline", True),
                 ("strikethrough", True),
+                ("outline", 2),
             ]
             skip_properties = set()
             version = pygame.font.get_sdl_ttf_version()
@@ -992,10 +993,6 @@ class FontTypeTest(unittest.TestCase):
                 properties.append(("point_size", 1))
             else:
                 skip_properties.add("point_size")
-            if version >= (2, 0, 12):
-                properties.append(("outline", 2006))
-            else:
-                skip_properties.add("outline")
 
         font = pygame_font.Font(None, 10)
         actual_names = []
@@ -1061,7 +1058,7 @@ class VisualTests(unittest.TestCase):
         underline=False,
         strikethrough=False,
         antialiase=False,
-        outline=False,
+        outline=2,
     ):
         if self.aborted:
             return False
