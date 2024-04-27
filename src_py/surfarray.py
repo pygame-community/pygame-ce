@@ -386,9 +386,9 @@ def map_array(surface, array):
     format to control the conversion.
 
     Note: arrays do not need to be 3D, as long as the minor axis has
-    three elements giving the component colours, any array shape can be
-    used (for example, a single colour can be mapped, or an array of
-    colours). The array shape is limited to eleven dimensions maximum,
+    three elements giving the component colors, any array shape can be
+    used (for example, a single color can be mapped, or an array of
+    colors). The array shape is limited to eleven dimensions maximum,
     including the three element minor axis.
     """
     if array.ndim == 0:

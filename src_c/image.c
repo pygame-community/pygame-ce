@@ -1509,7 +1509,7 @@ rle_line(Uint8 *src, Uint8 *dst, int w, int bpp)
 /*
  * Save a surface to an output stream in TGA format.
  * 8bpp surfaces are saved as indexed images with 24bpp palette, or with
- *     32bpp palette if colourkeying is used.
+ *     32bpp palette if colorkeying is used.
  * 15, 16, 24 and 32bpp surfaces are saved as 24bpp RGB images,
  * or as 32bpp RGBA images if alpha channel is used.
  *
@@ -1618,7 +1618,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
         }
     }
 
-    /* Temporarily remove colourkey and alpha from surface so copies are
+    /* Temporarily remove colorkey and alpha from surface so copies are
        opaque */
     SDL_SetSurfaceAlphaMod(surface, SDL_ALPHA_OPAQUE);
     if (have_surf_colorkey)

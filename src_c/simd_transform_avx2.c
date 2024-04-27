@@ -60,9 +60,9 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
      *        for this operation in isolation.
      *     4. pack pixels back together from A & B while adding with a
      *        horizontal add (e.g. adds A+R and G+B in a ARGB layout)
-     *     5. shift and add to make final grey pixel colour in 0th
+     *     5. shift and add to make final gray pixel color in 0th
      *        8Bit channel in each 'pixel'
-     *     6. shuffle again to push the grey from the 0th channel into every
+     *     6. shuffle again to push the gray from the 0th channel into every
      *        channel of every pixel.
      *     7. add the alpha channel back in.
      */
@@ -147,8 +147,8 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
             // Do the 'percentage multiplications' with the weights
             // with accuracy correction so values like 255 * '255'
             // (here effectively 1.0) = 255 and not 254.
-            // For our greyscale this should mean 255 white stays 255 white
-            // after greyscaling.
+            // For our grayscale this should mean 255 white stays 255 white
+            // after grayscaling.
             mm256_dstA =
                 _mm256_mullo_epi16(mm256_srcA, mm256_shuffled_weights_A);
             mm256_dstA = _mm256_add_epi16(mm256_dstA, mm256_two_five_fives);
@@ -160,12 +160,12 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
             mm256_dstB = _mm256_srli_epi16(mm256_dstB, 8);
 
             // Add up weighted R+G+B into the first channel of each of the 8
-            // pixels. This is the grey value we want in all our colour
+            // pixels. This is the gray value we want in all our color
             // channels.
             mm256_dst = _mm256_hadd_epi16(mm256_dstA, mm256_dstB);
             mm256_dst =
                 _mm256_add_epi16(mm256_dst, _mm256_srli_epi32(mm256_dst, 16));
-            // Shuffle the grey value from ther first channel of each pixel
+            // Shuffle the gray value from ther first channel of each pixel
             // into every channel of each pixel
             mm256_dst = _mm256_shuffle_epi8(mm256_dst, mm256_shuff_mask_gray);
 

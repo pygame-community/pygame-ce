@@ -283,7 +283,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
    palette_colors - if true we average the colors in palette, otherwise we
    average the pixel values. This is useful if the surface is actually
-   greyscale colors, and not palette colors.
+   grayscale colors, and not palette colors.
 
    Note, this function currently does not handle palette using surfaces
    correctly.
