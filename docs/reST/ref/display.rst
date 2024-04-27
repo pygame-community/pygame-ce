@@ -722,8 +722,8 @@ required).
 
    Returns the position of the window initialized with :func:`pygame.display.set_mode()`.
    The position will change when the user moves the window or when the position is set manually with :func:`pygame.display.set_window_pos()`.
-   Coordinates could be negative or outside of the desktop size bounds.
-   The position is relative to the topleft of the monitor the window is contained in and the y coordinate ignores the window frame.
+   Coordinates could be negative or outside the desktop size bounds.
+   The position is relative to the topleft of the primary monitor and the y coordinate ignores the window frame.
 
    .. ## pygame.display.get_window_pos ##
 
@@ -734,7 +734,7 @@ required).
 
    Sets the position of the window initialized with :func:`pygame.display.set_mode()`.
    This differs from updating environment variables as this function can be called after the display has been initialised.
-   The position is expected to be relative to the topleft of the monitor the window is contained in.
+   The position is expected to be relative to the topleft of the primary monitor.
    The y coordinate will ignore the window frame (y = 0 means the frame is hidden).
    The user will still be able to move the window after this call. See also :func:`pygame.display.get_window_pos()`.
 
