@@ -33,6 +33,7 @@
 #define NO_PYGAME_C_API
 #include "doc/math_doc.h"
 
+#include "base.c"
 #include "pygame.h"
 
 #include "structmember.h"
@@ -297,9 +298,11 @@ vector2_angle_to(pgVector *self, PyObject *other);
 static PyObject *
 vector2_as_polar(pgVector *self, PyObject *args);
 static PyObject *
-vector2_from_polar_cls(PyObject *self, PyObject *args);
+vector2_from_polar_cls(PyObject *self, PyObject *const *args,
+                       Py_ssize_t nargs);
 static PyObject *
-vector2_from_polar_obj(PyObject *self, PyObject *args);
+vector2_from_polar_obj(PyObject *self, PyObject *const *args,
+                       Py_ssize_t nargs);
 
 /* vector3 specific functions */
 static PyObject *
@@ -321,9 +324,11 @@ vector3_angle_to(pgVector *self, PyObject *other);
 static PyObject *
 vector3_as_spherical(pgVector *self, PyObject *args);
 static PyObject *
-vector3_from_spherical_cls(PyObject *self, PyObject *args);
+vector3_from_spherical_cls(PyObject *self, PyObject *const *args,
+                           Py_ssize_t nargs);
 static PyObject *
-vector3_from_spherical_obj(PyObject *self, PyObject *args);
+vector3_from_spherical_obj(PyObject *self, PyObject *const *args,
+                           Py_ssize_t nargs);
 
 /* vector iterator functions */
 static void
@@ -2511,13 +2516,21 @@ vector2_as_polar(pgVector *self, PyObject *_null)
 }
 
 static PyObject *
-vector2_from_polar_cls(PyObject *self, PyObject *args)
+vector2_from_polar_cls(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     PyObject *type, *argList, *vec;
     double r, phi;
-    if (!PyArg_ParseTuple(args, "O(dd):Vector.from_polar", &type, &r, &phi) ||
-        type == NULL) {
-        return NULL;
+
+    if (nargs != 2) {
+        return RAISE(PyExc_TypeError,
+                     "Incorrect number of arguments passed to "
+                     "Vector2.from_polar, expected cls and sequence");
+    }
+
+    type = args[0];
+    if (!pg_TwoDoublesFromFastcallArgs(args + 1, nargs - 1, &r, &phi)) {
+        return RAISE(PyExc_TypeError,
+                     "Vector2.fromPolar expects sequence of two floats");
     }
 
     phi = DEG2RAD(phi);
@@ -2529,14 +2542,22 @@ vector2_from_polar_cls(PyObject *self, PyObject *args)
 }
 
 static PyObject *
-vector2_from_polar_obj(PyObject *self, PyObject *args)
+vector2_from_polar_obj(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
     PyObject *obj;
     pgVector *vec;
     double r, phi;
-    if (!PyArg_ParseTuple(args, "O(dd):Vector2.from_polar", &obj, &r, &phi) ||
-        obj == NULL) {
-        return NULL;
+
+    if (nargs != 2) {
+        return RAISE(PyExc_TypeError,
+                     "Incorrect number of arguments passed to "
+                     "Vector2.from_polar, expected self and sequence");
+    }
+
+    obj = args[0];
+    if (!pg_TwoDoublesFromFastcallArgs(args + 1, nargs - 1, &r, &phi)) {
+        return RAISE(PyExc_TypeError,
+                     "Vector2.fromPolar expects sequence of two floats");
     }
 
     vec = (pgVector *)obj;
@@ -3388,14 +3409,24 @@ vector3_as_spherical(pgVector *self, PyObject *_null)
 }
 
 static PyObject *
-vector3_from_spherical_cls(PyObject *self, PyObject *args)
+vector3_from_spherical_cls(PyObject *self, PyObject *const *args,
+                           Py_ssize_t nargs)
 {
     PyObject *type, *argList, *vec;
     double r, theta, phi;
-    if (!PyArg_ParseTuple(args, "O(ddd):Vector3.from_spherical", &type, &r,
-                          &theta, &phi) ||
-        type == NULL) {
-        return NULL;
+
+    if (nargs != 2) {
+        return RAISE(PyExc_TypeError,
+                     "Incorrect number of arguments passed to "
+                     "Vector3.from_spherical, expected cls and sequence");
+    }
+
+    type = args[0];
+    if (!pg_ThreeDoublesFromFastcallArgs(args + 1, nargs - 1, &r, &theta,
+                                         &phi)) {
+        return RAISE(
+            PyExc_TypeError,
+            "Vector3.from_spherical expects sequence of three floats");
     }
 
     theta = DEG2RAD(theta);
@@ -3408,15 +3439,25 @@ vector3_from_spherical_cls(PyObject *self, PyObject *args)
 }
 
 static PyObject *
-vector3_from_spherical_obj(PyObject *self, PyObject *args)
+vector3_from_spherical_obj(PyObject *self, PyObject *const *args,
+                           Py_ssize_t nargs)
 {
     PyObject *obj;
     pgVector *vec;
     double r, theta, phi;
-    if (!PyArg_ParseTuple(args, "O(ddd):Vector3.from_spherical", &obj, &r,
-                          &theta, &phi) ||
-        obj == NULL) {
-        return NULL;
+
+    if (nargs != 2) {
+        return RAISE(PyExc_TypeError,
+                     "Incorrect number of arguments passed to "
+                     "Vector3.from_spherical, expected self and sequence");
+    }
+
+    obj = args[0];
+    if (!pg_ThreeDoublesFromFastcallArgs(args + 1, nargs - 1, &r, &theta,
+                                         &phi)) {
+        return RAISE(
+            PyExc_TypeError,
+            "Vector3.from_spherical expects sequence of three floats");
     }
 
     vec = (pgVector *)obj;
@@ -4556,13 +4597,13 @@ pgClassObjectMethod_New(PyObject *cls_callable, PyObject *obj_callable)
 }
 
 static PyMethodDef classobject_defs[] = {
-    {"from_polar", (PyCFunction)vector2_from_polar_cls, METH_VARARGS,
+    {"from_polar", (PyCFunction)vector2_from_polar_cls, METH_FASTCALL,
      DOC_MATH_VECTOR2_FROMPOLAR},
-    {"from_polar", (PyCFunction)vector2_from_polar_obj, METH_VARARGS,
+    {"from_polar", (PyCFunction)vector2_from_polar_obj, METH_FASTCALL,
      DOC_MATH_VECTOR2_FROMPOLAR},
-    {"from_spherical", (PyCFunction)vector3_from_spherical_cls, METH_VARARGS,
+    {"from_spherical", (PyCFunction)vector3_from_spherical_cls, METH_FASTCALL,
      DOC_MATH_VECTOR3_FROMSPHERICAL},
-    {"from_spherical", (PyCFunction)vector3_from_spherical_obj, METH_VARARGS,
+    {"from_spherical", (PyCFunction)vector3_from_spherical_obj, METH_FASTCALL,
      DOC_MATH_VECTOR3_FROMSPHERICAL},
     {NULL} /* Sentinel */
 };

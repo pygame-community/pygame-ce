@@ -661,6 +661,61 @@ pg_TwoDoublesFromObj(PyObject *obj, double *val1, double *val2)
 }
 
 static inline int
+pg_ThreeDoublesFromObj(PyObject *obj, double *val1, double *val2, double *val3)
+{
+    Py_ssize_t length;
+    /*Faster path for tuples and lists*/
+    if (pgSequenceFast_Check(obj)) {
+        length = PySequence_Fast_GET_SIZE(obj);
+        PyObject **f_arr = PySequence_Fast_ITEMS(obj);
+        if (length == 3) {
+            if (!pg_DoubleFromObj(f_arr[0], val1) ||
+                !pg_DoubleFromObj(f_arr[1], val2) ||
+                !pg_DoubleFromObj(f_arr[2], val3)) {
+                return 0;
+            }
+        }
+        else if (length == 1) {
+            /* Handle case of ((x, y, z), ) 'nested sequence' */
+            return pg_ThreeDoublesFromObj(f_arr[0], val1, val2, val3);
+        }
+        else {
+            return 0;
+        }
+    }
+    else if (PySequence_Check(obj)) {
+        length = PySequence_Length(obj);
+        if (length == 3) {
+            if (!_pg_DoubleFromObjIndex(obj, 0, val1)) {
+                return 0;
+            }
+            if (!_pg_DoubleFromObjIndex(obj, 1, val2)) {
+                return 0;
+            }
+            if (!_pg_DoubleFromObjIndex(obj, 2, val3)) {
+                return 0;
+            }
+        }
+        else if (length == 1 && !PyUnicode_Check(obj)) {
+            /* Handle case of ((x, y, z), ) 'nested sequence' */
+            PyObject *tmp = PySequence_ITEM(obj, 0);
+            int ret = pg_ThreeDoublesFromObj(tmp, val1, val2, val3);
+            Py_DECREF(tmp);
+            return ret;
+        }
+        else {
+            PyErr_Clear();
+            return 0;
+        }
+    }
+    else {
+        return 0;
+    }
+
+    return 1;
+}
+
+static inline int
 pg_TwoDoublesFromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
                               double *val1, double *val2)
 {
@@ -669,6 +724,21 @@ pg_TwoDoublesFromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
     }
     else if (nargs == 2 && pg_DoubleFromObj(args[0], val1) &&
              pg_DoubleFromObj(args[1], val2)) {
+        return 1;
+    }
+    return 0;
+}
+
+static inline int
+pg_ThreeDoublesFromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
+                                double *val1, double *val2, double *val3)
+{
+    if (nargs == 1 && pg_ThreeDoublesFromObj(args[0], val1, val2, val3)) {
+        return 1;
+    }
+    else if (nargs == 3 && pg_DoubleFromObj(args[0], val1) &&
+             pg_DoubleFromObj(args[1], val2) &&
+             pg_DoubleFromObj(args[2], val3)) {
         return 1;
     }
     return 0;
@@ -2296,8 +2366,10 @@ MODINIT_DEFINE(base)
     c_api[26] = pg_TwoDoublesFromFastcallArgs;
     c_api[27] = pg_GetDefaultConvertFormat;
     c_api[28] = pg_SetDefaultConvertFormat;
+    c_api[29] = pg_ThreeDoublesFromObj;
+    c_api[30] = pg_ThreeDoublesFromFastcallArgs;
 
-#define FILLED_SLOTS 29
+#define FILLED_SLOTS 31
 
 #if PYGAMEAPI_BASE_NUMSLOTS != FILLED_SLOTS
 #error export slot count mismatch
