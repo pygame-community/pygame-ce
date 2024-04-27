@@ -4,8 +4,6 @@
 #include <immintrin.h>
 #endif /* defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H) */
 
-#undef __AVX2__
-
 #define BAD_AVX2_FUNCTION_CALL                                               \
     printf(                                                                  \
         "Fatal Error: Attempted calling an AVX2 function when both compile " \
