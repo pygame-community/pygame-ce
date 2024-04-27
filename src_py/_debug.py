@@ -6,6 +6,7 @@ import sys
 import traceback
 import importlib
 from typing import Tuple, Optional, Callable
+from os import environ
 
 from pygame.version import ver
 
@@ -156,7 +157,14 @@ def print_debug_info(filename=None):
     )
 
     if display_init():
-        debug_str += f"Display Driver:\t\t{get_display_driver()}\n"
+        driver = get_display_driver()
+        if driver.upper() != "X11":
+            debug_str += f"Display Driver:\t\t{driver}\n"
+        else:
+            is_xwayland = (environ.get("XDG_SESSION_TYPE") == "wayland") or (
+                "WAYLAND_DISPLAY" in environ
+            )
+            debug_str += f"Display Driver:\t\t{driver} ( xwayland == {is_xwayland} )\n"
     else:
         debug_str += "Display Driver:\t\tDisplay Not Initialized\n"
 

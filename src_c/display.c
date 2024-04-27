@@ -1357,23 +1357,6 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     if (state->icon)
         SDL_SetWindowIcon(win, pgSurface_AsSurface(state->icon));
 
-    if (!SDL_GetWindowWMInfo(win, &wm_info)) {
-        // don't complain, might be null mode
-    }
-    else if (wm_info.subsystem == SDL_SYSWM_X11) {
-        char *xdg_session_type = SDL_getenv("XDG_SESSION_TYPE");
-        char *wayland_display = SDL_getenv("WAYLAND_DISPLAY");
-        if (NULL != wayland_display ||
-            (NULL != xdg_session_type &&
-             SDL_strcmp(xdg_session_type, "wayland") == 0)) {
-            if (PyErr_WarnEx(PyExc_Warning,
-                             "PyGame seems to be running through X11 "
-                             "on top of wayland, instead of wayland directly",
-                             1) != 0)
-                return NULL;
-        }
-    }
-
     if (depth != 0 && PG_SURF_BitsPerPixel(surface->surf) != depth) {
         if (PyErr_WarnEx(PyExc_DeprecationWarning,
                          "The depth argument is deprecated, and is ignored",
