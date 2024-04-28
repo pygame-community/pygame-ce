@@ -1,6 +1,7 @@
 import unittest
 import pygame
 import os
+import time
 
 from pygame import Window
 from pygame.version import SDL
@@ -327,9 +328,14 @@ class WindowTypeTest(unittest.TestCase):
 
         # test auto resize
         self.assertTupleEqual(win.size, surf.get_size())
+        # autoresize uses an event callback that may take some time to get
+        # processed by the system event queue, sleep for 3 seconds to give
+        # the queue chance to catch up
         win.size = (100, 100)
+        time.sleep(3)
         self.assertTupleEqual(win.size, surf.get_size())
         win.size = (1280, 720)
+        time.sleep(3)
         self.assertTupleEqual(win.size, surf.get_size())
 
         # window surface should be invalid after the window is destroyed
