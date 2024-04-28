@@ -55,12 +55,22 @@
 #include <Python.h>
 
 /* version macros (defined since version 1.9.5) */
-#define PG_MAJOR_VERSION 2
-#define PG_MINOR_VERSION 5
-#define PG_PATCH_VERSION 0
-/* The below is of the form ".devX" for dev releases, and "" (empty) for full
- * releases */
-#define PG_VERSION_TAG ".dev3"
+#ifndef PG_MAJOR_VERSION
+#error PG_MAJOR_VERSION must be defined
+#endif
+
+#ifndef PG_MINOR_VERSION
+#error PG_MINOR_VERSION must be defined
+#endif
+
+#ifndef PG_PATCH_VERSION
+#error PG_PATCH_VERSION must be defined
+#endif
+
+#ifndef PG_VERSION_TAG
+#error PG_VERSION_TAG must be defined
+#endif
+
 #define PG_VERSIONNUM(MAJOR, MINOR, PATCH) \
     (1000 * (MAJOR) + 100 * (MINOR) + (PATCH))
 #define PG_VERSION_ATLEAST(MAJOR, MINOR, PATCH)                             \

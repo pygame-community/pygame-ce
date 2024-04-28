@@ -11,6 +11,14 @@ project(
     ],
 )
 
+defines = run_command(
+    [find_program('python3', 'python'), 'buildconfig/get_version.py', '--macros'],
+    check: true,
+).stdout().strip().split()
+foreach define : defines
+    add_global_arguments(define, language: 'c')
+endforeach
+
 pg = 'pygame' # python base package name
 
 if host_machine.system() == 'windows'

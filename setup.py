@@ -9,6 +9,8 @@
 import platform
 import sysconfig
 
+import buildconfig.get_version as pg_ver
+
 with open('README.rst', encoding='utf-8') as readme:
     LONG_DESCRIPTION = readme.read()
 
@@ -16,7 +18,7 @@ EXTRAS = {}
 
 METADATA = {
     "name": "pygame-ce",
-    "version": "2.5.0.dev3",
+    "version": pg_ver.version,
     "license": "LGPL",
     "url": "https://pyga.me",
     "author": "A community project.",
@@ -406,6 +408,9 @@ else:
         raise
 
 for e in extensions:
+    # define version macros
+    e.define_macros.extend(pg_ver.version_macros)
+
     # Only define the ARM_NEON defines if they have been enabled at build time.
     if enable_arm_neon:
         e.define_macros.append(('PG_ENABLE_ARM_NEON', '1'))
