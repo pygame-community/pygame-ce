@@ -4446,9 +4446,9 @@ static PyMethodDef _math_methods[] = {
  * ClassObjectMethod Descriptor
  ********************************/
 
-/* This is a descriptor for a method that have a different functionality
+/* This is a descriptor for a method that has a different functionality
  * when called from the class and when called from an object. Its
- * funcionaliy and its use for implementing the from_polar method is
+ * functionality and its use for implementing the from_polar method is
  * equal to:
 
     from math import cos, sin
