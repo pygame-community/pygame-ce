@@ -306,16 +306,27 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.point_size ##
 
-   .. attribute:: outline
+   .. attribute:: outline_size
 
       | :sl:`Gets or sets the font's outline size`
-      | :sg:`outline -> int`
+      | :sg:`outline_size -> int`
 
       Returns the size of the outline.
 
       .. versionadded:: 2.5.0
 
-      .. ## Font.outline ##
+      .. ## Font.outline_size ##
+
+   .. attribute:: outline_color
+
+      | :sl:`Gets or sets the font's outline color`
+      | :sg:`outline_size -> RGB`
+
+      Returns the color of the outline.
+
+      .. versionadded:: 2.5.0
+
+      .. ## Font.outline_color ##
 
    .. method:: render
 

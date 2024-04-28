@@ -981,7 +981,8 @@ class FontTypeTest(unittest.TestCase):
                 ("italic", True),
                 ("underline", True),
                 ("strikethrough", True),
-                ("outline", 2),
+                ("outline_size", 2),
+                ("outline_color", (20, 0, 6)),
             ]
             skip_properties = set()
             version = pygame.font.get_sdl_ttf_version()
@@ -1058,7 +1059,8 @@ class VisualTests(unittest.TestCase):
         underline=False,
         strikethrough=False,
         antialiase=False,
-        outline=2,
+        outline_size=2,
+        outline_color=(20, 0, 6),
     ):
         if self.aborted:
             return False
@@ -1069,7 +1071,15 @@ class VisualTests(unittest.TestCase):
         screen = self.screen
         screen.fill((255, 255, 255))
         pygame.display.flip()
-        if not (bold or italic or underline or strikethrough or antialiase or outline):
+        if not (
+            bold
+            or italic
+            or underline
+            or strikethrough
+            or antialiase
+            or outline_size
+            or outline_color
+        ):
             text = "normal"
         else:
             modes = []
@@ -1083,14 +1093,17 @@ class VisualTests(unittest.TestCase):
                 modes.append("strikethrough")
             if antialiase:
                 modes.append("antialiased")
-            if outline:
-                modes.append("outline")
+            if outline_size:
+                modes.append("outline_size")
+            if outline_color:
+                modes.append("outline_color")
             text = f"{'-'.join(modes)} (y/n):"
         f.set_bold(bold)
         f.set_italic(italic)
         f.set_underline(underline)
         f.set_strikethrough(strikethrough)
-        f.outline = outline
+        f.outline_size = outline_size
+        f.outline_color = outline_color
         s = f.render(text, antialiase, (0, 0, 0))
         screen.blit(s, (offset, y))
         y += s.get_size()[1] + spacing
@@ -1130,8 +1143,11 @@ class VisualTests(unittest.TestCase):
     def test_antialiase(self):
         self.assertTrue(self.query(antialiase=True))
 
-    def test_outline(self):
-        self.assertTrue(self.query(outline=True))
+    def test_outline_size(self):
+        self.assertTrue(self.query(outline_size=2))
+
+    def test_outline_color(self):
+        self.assertTrue(self.query(outline_color=(20, 0, 6)))
 
     def test_bold_antialiase(self):
         self.assertTrue(self.query(bold=True, antialiase=True))

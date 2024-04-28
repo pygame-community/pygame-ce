@@ -829,34 +829,91 @@ font_getter_style_name(PyObject *self, void *closure)
     return PyUnicode_FromString(font_style_name ? font_style_name : "");
 }
 
+static PyObject *
+font_getter_outline_size(PyFontObject *self, void *closure)
+{
+    if (!PgFont_GenerationCheck(self))
+        return RAISE_FONT_QUIT_ERROR();
+
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 12)
+    return PyLong_FromLong(self->outline_size);
+#else
+    return RAISE(pgExc_SDLError,
+                 "Incorrect SDL_TTF version (requires 2.0.12)");
+#endif
+}
+
 static int
-font_setter_outline(PyObject *self, PyObject *value, void *closure)
+font_setter_outline_size(PyFontObject *self, PyObject *value, void *closure)
 {
     if (!PgFont_GenerationCheck(self)) {
         RAISE_FONT_QUIT_ERROR_RETURN(-1);
     }
 
-    TTF_Font *font = PyFont_AsFont(self);
-    int val;
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 12)
+    int val = PyLong_AsLong(value);
 
-    DEL_ATTR_NOT_SUPPORTED_CHECK("outline", value);
-
-    val = PyLong_AsLong(value);
-    if ((val == -1) && (PyErr_Occurred() != NULL))
+    if (PyErr_Occurred() && val == -1)
         return -1;
 
-    TTF_SetFontOutline(font, val);
+    if (val < 0) {
+        PyErr_SetString(PyExc_ValueError,
+                        "outline_size cannot be less than 0");
+        return -1;
+    }
+
+    self->outline_size = val;
+
     return 0;
+#else
+    PyErr_SetString(pgExc_SDLError,
+                    "Incorrect SDL_TTF version (requires 2.0.12)");
+    return -1;
+#endif
 }
 
 static PyObject *
-font_getter_outline(PyObject *self, void *closure)
+font_getter_outline_color(PyFontObject *self, void *closure)
 {
-    if (!PgFont_GenerationCheck(self)) {
+    if (!PgFont_GenerationCheck(self))
         return RAISE_FONT_QUIT_ERROR();
+
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 12)
+    return Py_BuildValue("(bbbb)", self->outline_color.r,
+                         self->outline_color.g, self->outline_color.b,
+                         self->outline_color.a);
+#else
+    return RAISE(pgExc_SDLError,
+                 "Incorrect SDL_TTF version (requires 2.0.12)");
+#endif
+}
+
+static int
+font_setter_outline_color(PyFontObject *self, PyObject *value, void *closure)
+{
+    Uint8 rgba[] = {0, 0, 0, 0};
+
+    if (!PgFont_GenerationCheck(self)) {
+        RAISE_FONT_QUIT_ERROR_RETURN(-1);
     }
 
-    return PyLong_FromLong(TTF_GetFontOutline(PyFont_AsFont(self)));
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 12)
+    if (!pg_RGBAFromObjEx(value, rgba, PG_COLOR_HANDLE_ALL)) {
+        return -1;
+    }
+
+    if (PyErr_Occurred())
+        return -1;
+
+    SDL_Color val = {rgba[0], rgba[1], rgba[2], SDL_ALPHA_OPAQUE};
+    self->outline_color = val;
+
+    return 0;
+#else
+    PyErr_SetString(pgExc_SDLError,
+                    "Incorrect SDL_TTF version (requires 2.0.12)");
+    return -1;
+#endif
 }
 
 static PyObject *
@@ -1088,8 +1145,10 @@ static PyGetSetDef font_getsets[] = {
      DOC_FONT_FONT_ALIGN, NULL},
     {"point_size", (getter)font_getter_point_size,
      (setter)font_setter_point_size, DOC_FONT_FONT_POINTSIZE, NULL},
-    {"outline", (getter)font_getter_outline, (setter)font_setter_outline,
-     DOC_FONT_FONT_OUTLINE, NULL},
+    {"outline_color", (getter)font_getter_outline_color,
+     (setter)font_setter_outline_color, DOC_FONT_FONT_OUTLINECOLOR, NULL},
+    {"outline_size", (getter)font_getter_outline_size,
+     (setter)font_setter_outline_size, DOC_FONT_FONT_OUTLINESIZE, NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyMethodDef font_methods[] = {
