@@ -6,7 +6,7 @@
         "depends": [],
         "name": "pygame._sdl2.controller_old",
         "sources": [
-            "src_c\\cython\\pygame\\_sdl2\\controller_old.pyx"
+            "src_c/cython/pygame/_sdl2/controller_old.pyx"
         ]
     },
     "module_name": "pygame._sdl2.controller_old"
@@ -1355,7 +1355,7 @@ static const char *__pyx_filename;
 /* #### Code section: filename_table ### */
 
 static const char *__pyx_f[] = {
-  "src_c\\\\cython\\\\pygame\\\\_sdl2\\\\controller_old.pyx",
+  "src_c/cython/pygame/_sdl2/controller_old.pyx",
 };
 /* #### Code section: utility_code_proto_before_types ### */
 /* #### Code section: numeric_typedefs ### */
@@ -2227,7 +2227,7 @@ static const char __pyx_k_called_on_a_closed_controller[] = "called on a closed 
 static const char __pyx_k_Index_is_invalid_or_not_a_suppor[] = "Index is invalid or not a supported joystick.";
 static const char __pyx_k_gamecontroller_system_not_initia[] = "gamecontroller system not initialized";
 static const char __pyx_k_should_be_a_pygame_joystick_Joys[] = "should be a pygame.joystick.Joystick object.";
-static const char __pyx_k_src_c_cython_pygame__sdl2_contro[] = "src_c\\cython\\pygame\\_sdl2\\controller_old.pyx";
+static const char __pyx_k_src_c_cython_pygame__sdl2_contro[] = "src_c/cython/pygame/_sdl2/controller_old.pyx";
 /* #### Code section: decls ### */
 static PyObject *__pyx_pf_6pygame_5_sdl2_14controller_old__gamecontroller_init_check(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_14controller_old_2_internal_mod_init(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_kwargs); /* proto */

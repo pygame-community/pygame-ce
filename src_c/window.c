@@ -93,9 +93,13 @@ display_resource_end:
 }
 
 static PyTypeObject pgWindow_Type;
+static PyTypeObject pgSurfaceWindow_Type;
 
 #define pgWindow_Check(x) \
     (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
+
+#define pgSurfaceWindow_Check(x) \
+    (PyObject_IsInstance((x), (PyObject *)&pgSurfaceWindow_Type))
 
 static PyObject *
 get_grabbed_window(PyObject *self, PyObject *_null)
@@ -117,15 +121,15 @@ static PyObject *
 window_destroy(pgWindowObject *self, PyObject *_null)
 {
     if (self->_win) {
-        if (self->_is_borrowed && pg_GetDefaultWindow() == self->_win) {
-            pgSurface_AsSurface(pg_GetDefaultWindowSurface()) = NULL;
-            pg_SetDefaultWindowSurface(NULL);
-            pg_SetDefaultWindow(NULL);
-        }
-
         SDL_DestroyWindow(self->_win);
         self->_win = NULL;
     }
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+surfacewindow_destroy(pgSurfaceWindowObject *self, PyObject *_null)
+{
     if (self->surf) {
         // Set the internal surface to NULL to make pygame surface invalid
         // since this surface will be deallocated by SDL when the window is
@@ -135,26 +139,15 @@ window_destroy(pgWindowObject *self, PyObject *_null)
         Py_DECREF(self->surf);
         self->surf = NULL;
     }
-    Py_RETURN_NONE;
+    return window_destroy((pgWindowObject *)self, _null);
 }
 
 static PyObject *
-window_get_surface(pgWindowObject *self)
+surfacewindow_get_surface(pgSurfaceWindowObject *self)
 {
-    PyObject *surf = NULL;
     SDL_Surface *_surf;
 
-    if (self->_is_borrowed) {
-        surf = (PyObject *)pg_GetDefaultWindowSurface();
-        if (!surf) {
-            return RAISE(pgExc_SDLError,
-                         "display.set_mode has not been called yet.");
-        }
-        Py_INCREF(surf);
-        return surf;
-    }
-
-    _surf = SDL_GetWindowSurface(self->_win);
+    _surf = SDL_GetWindowSurface(self->base._win);
     if (!_surf) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -179,7 +172,7 @@ window_get_surface(pgWindowObject *self)
 }
 
 static PyObject *
-window_flip(pgWindowObject *self)
+surfacewindow_flip(pgSurfaceWindowObject *self)
 {
     int result;
 
@@ -190,7 +183,7 @@ window_flip(pgWindowObject *self)
     }
 
     Py_BEGIN_ALLOW_THREADS;
-    result = SDL_UpdateWindowSurface(self->_win);
+    result = SDL_UpdateWindowSurface(self->base._win);
     Py_END_ALLOW_THREADS;
     if (result) {
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -214,15 +207,13 @@ _resize_event_watch(void *userdata, SDL_Event *event)
     if (!event_window_pg)
         return 0;
 
-    if (event_window_pg->_is_borrowed) {
-        // have been handled by event watch in display.c
-        return 0;
+    if (pgSurfaceWindow_Check((PyObject *)event_window_pg)) {
+        pgSurfaceWindowObject *ev_surfwindow =
+            (pgSurfaceWindowObject *)event_window_pg;
+        if (ev_surfwindow->surf) {
+            ev_surfwindow->surf->surf = SDL_GetWindowSurface(event_window);
+        }
     }
-
-    if (!event_window_pg->surf)
-        return 0;
-
-    event_window_pg->surf->surf = SDL_GetWindowSurface(event_window);
     return 0;
 }
 
@@ -723,13 +714,14 @@ static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
     if (self->_win) {
-        if (!self->_is_borrowed) {
-            SDL_DestroyWindow(self->_win);
-        }
-        else if (SDL_GetWindowData(self->_win, "pg_window") != NULL) {
-            SDL_SetWindowData(self->_win, "pg_window", NULL);
-        }
+        SDL_DestroyWindow(self->_win);
     }
+    Py_TYPE(self)->tp_free(self);
+}
+
+static void
+surfacewindow_dealloc(pgSurfaceWindowObject *self, PyObject *_null)
+{
     if (self->surf) {
         // Set the internal surface to NULL to make pygame surface invalid
         // since this surface will be deallocated by SDL when the window is
@@ -739,7 +731,7 @@ window_dealloc(pgWindowObject *self, PyObject *_null)
         Py_DECREF(self->surf);
     }
 
-    Py_TYPE(self)->tp_free(self);
+    window_dealloc((pgWindowObject *)self, _null);
 }
 
 static int
@@ -922,9 +914,6 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
         return -1;
     }
     self->_win = _win;
-    self->_is_borrowed = SDL_FALSE;
-    self->surf = NULL;
-
     SDL_SetWindowData(_win, "pg_window", self);
 
     PyObject *icon = pg_display_resource(icon_defaultname);
@@ -943,35 +932,15 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     return 0;
 }
 
-static PyObject *
-window_from_display_module(PyTypeObject *cls, PyObject *_null)
+static int
+surfacewindow_init(pgSurfaceWindowObject *self, PyObject *args,
+                   PyObject *kwargs)
 {
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "Please use Window.get_surface and Window.flip to use "
-                     "surface-rendering with Window. This method will be "
-                     "removed in a future version.",
-                     1) == -1) {
-        return NULL;
+    if (window_init((pgWindowObject *)self, args, kwargs) < 0) {
+        return -1;
     }
-
-    SDL_Window *window = pg_GetDefaultWindow();
-    if (!window) {
-        return RAISE(pgExc_SDLError,
-                     "display.set_mode has not been called yet.");
-    }
-
-    pgWindowObject *self =
-        (pgWindowObject *)SDL_GetWindowData(window, "pg_window");
-    if (self != NULL) {
-        Py_INCREF(self);
-        return (PyObject *)self;
-    }
-
-    self = (pgWindowObject *)(cls->tp_new(cls, NULL, NULL));
-    self->_win = window;
-    self->_is_borrowed = SDL_TRUE;
-    SDL_SetWindowData(window, "pg_window", self);
-    return (PyObject *)self;
+    self->surf = NULL;
+    return 0;
 }
 
 PyObject *
@@ -981,10 +950,6 @@ window_repr(pgWindowObject *self)
     int win_id;
     if (!self->_win) {
         return PyUnicode_FromString("<Window(Destroyed)>");
-    }
-
-    if (self->_is_borrowed) {
-        return PyUnicode_FromString("<Window(From Display)>");
     }
 
     title = SDL_GetWindowTitle(self->_win);
@@ -1028,11 +993,6 @@ static PyMethodDef window_methods[] = {
     {"set_modal_for", (PyCFunction)window_set_modal_for, METH_O,
      DOC_WINDOW_SETMODALFOR},
     {"set_icon", (PyCFunction)window_set_icon, METH_O, DOC_WINDOW_SETICON},
-    {"flip", (PyCFunction)window_flip, METH_NOARGS, DOC_WINDOW_FLIP},
-    {"get_surface", (PyCFunction)window_get_surface, METH_NOARGS,
-     DOC_WINDOW_GETSURFACE},
-    {"from_display_module", (PyCFunction)window_from_display_module,
-     METH_CLASS | METH_NOARGS, DOC_WINDOW_FROMDISPLAYMODULE},
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef _window_getset[] = {
@@ -1070,11 +1030,32 @@ static PyGetSetDef _window_getset[] = {
 
 static PyTypeObject pgWindow_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.window.Window",
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_basicsize = sizeof(pgWindowObject),
     .tp_dealloc = (destructor)window_dealloc,
     .tp_doc = DOC_WINDOW,
     .tp_methods = window_methods,
     .tp_init = (initproc)window_init,
+    .tp_new = PyType_GenericNew,
+    .tp_getset = _window_getset,
+    .tp_repr = (reprfunc)window_repr};
+
+static PyMethodDef surfacewindow_methods[] = {
+    {"destroy", (PyCFunction)surfacewindow_destroy, METH_NOARGS,
+     DOC_WINDOW_DESTROY},
+    {"flip", (PyCFunction)surfacewindow_flip, METH_NOARGS, DOC_WINDOW_FLIP},
+    {"get_surface", (PyCFunction)surfacewindow_get_surface, METH_NOARGS,
+     DOC_WINDOW_GETSURFACE},
+    {NULL, NULL, 0, NULL}};
+
+static PyTypeObject pgSurfaceWindow_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.window.SurfaceWindow",
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_basicsize = sizeof(pgSurfaceWindowObject),
+    .tp_dealloc = (destructor)surfacewindow_dealloc,
+    .tp_doc = DOC_WINDOW,
+    .tp_methods = surfacewindow_methods,
+    .tp_init = (initproc)surfacewindow_init,
     .tp_new = PyType_GenericNew,
     .tp_getset = _window_getset,
     .tp_repr = (reprfunc)window_repr};
@@ -1125,6 +1106,11 @@ MODINIT_DEFINE(window)
         return NULL;
     }
 
+    pgSurfaceWindow_Type.tp_base = &pgWindow_Type;
+    if (PyType_Ready(&pgSurfaceWindow_Type) < 0) {
+        return NULL;
+    }
+
     /* create the module */
     module = PyModule_Create(&_module);
     if (module == 0) {
@@ -1134,6 +1120,14 @@ MODINIT_DEFINE(window)
     Py_INCREF(&pgWindow_Type);
     if (PyModule_AddObject(module, "Window", (PyObject *)&pgWindow_Type)) {
         Py_DECREF(&pgWindow_Type);
+        Py_DECREF(module);
+        return NULL;
+    }
+
+    Py_INCREF(&pgSurfaceWindow_Type);
+    if (PyModule_AddObject(module, "SurfaceWindow",
+                           (PyObject *)&pgSurfaceWindow_Type)) {
+        Py_DECREF(&pgSurfaceWindow_Type);
         Py_DECREF(module);
         return NULL;
     }

@@ -308,13 +308,15 @@ except (ImportError, OSError):
     system = MissingModule("system", urgent=0)
 
 try:
-    from pygame.window import Window
+    from pygame.window import Window, SurfaceWindow
 except (ImportError, OSError):
 
     def Window(
         title="pygame window", size=(640, 480), position=None, **kwargs
     ):  # pylint: disable=unused-argument
         _attribute_undefined("pygame.Window")
+
+    SurfaceWindow = Window
 
 
 # there's also a couple "internal" modules not needed
