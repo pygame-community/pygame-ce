@@ -38,11 +38,11 @@
 #include "structmember.h"
 
 #define RAISE_TEXT_TYPE_ERROR() \
-    RAISE(PyExc_TypeError, "text must be a unicode or bytes");
+    RAISE(PyExc_TypeError, "text must be a unicode or bytes")
 
 #define RAISE_FONT_QUIT_ERROR_RETURN(r) \
     RAISERETURN(pgExc_SDLError,         \
-                "Invalid font (font module quit since font created)", r)
+                "Invalid font (font module quit since font created)", r);
 
 #define RAISE_FONT_QUIT_ERROR() \
     RAISE(pgExc_SDLError,       \
@@ -538,38 +538,19 @@ font_set_strikethrough(PyObject *self, PyObject *arg)
     Py_RETURN_NONE;
 }
 
-static PyObject *
-font_render(PyObject *self, PyObject *args, PyObject *kwds)
+static SDL_Surface *
+_create_font_surface(TTF_Font *font, PyObject *text, int antialias,
+                     PyObject *fg_rgba_obj, PyObject *bg_rgba_obj,
+                     int wraplength)
 {
-    if (!PgFont_GenerationCheck(self)) {
-        return RAISE_FONT_QUIT_ERROR();
-    }
-
-    TTF_Font *font = PyFont_AsFont(self);
-    int antialias;
-    PyObject *text, *final;
-    PyObject *fg_rgba_obj, *bg_rgba_obj = Py_None;
-    Uint8 rgba[] = {0, 0, 0, 0};
     SDL_Surface *surf;
+    Uint8 rgba[] = {0, 0, 0, 0};
     const char *astring = "";
-    int wraplength = 0;
 
-    if (!PgFont_GenerationCheck(self)) {
-        return RAISE_FONT_QUIT_ERROR()
-    }
-
-    static char *kwlist[] = {"text",    "antialias",  "color",
-                             "bgcolor", "wraplength", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OpO|Oi", kwlist, &text,
-                                     &antialias, &fg_rgba_obj, &bg_rgba_obj,
-                                     &wraplength)) {
-        return NULL;
-    }
-
+    // 글꼴 생성
     if (!pg_RGBAFromObjEx(fg_rgba_obj, rgba, PG_COLOR_HANDLE_ALL)) {
         /* Exception already set for us */
-        return NULL;
+        return (SDL_Surface *)(NULL);
     }
 
     SDL_Color foreg = {rgba[0], rgba[1], rgba[2], SDL_ALPHA_OPAQUE};
@@ -579,29 +560,29 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
     if (bg_rgba_obj != Py_None) {
         if (!pg_RGBAFromObjEx(bg_rgba_obj, rgba, PG_COLOR_HANDLE_ALL)) {
             /* Exception already set for us */
-            return NULL;
+            return (SDL_Surface *)(NULL);
         }
         backg = (SDL_Color){rgba[0], rgba[1], rgba[2], SDL_ALPHA_OPAQUE};
     }
 
     if (!PyUnicode_Check(text) && !PyBytes_Check(text) && text != Py_None) {
-        return RAISE_TEXT_TYPE_ERROR();
+        return (SDL_Surface *)(RAISE_TEXT_TYPE_ERROR());
     }
 
     if (wraplength < 0) {
-        return RAISE(PyExc_ValueError,
-                     "wraplength parameter must be positive");
+        return (SDL_Surface *)(RAISE(PyExc_ValueError,
+                                     "wraplength parameter must be positive"));
     }
 
     if (PyUnicode_Check(text)) {
         Py_ssize_t _size = -1;
         astring = PyUnicode_AsUTF8AndSize(text, &_size);
         if (astring == NULL) { /* exception already set */
-            return NULL;
+            return (SDL_Surface *)(NULL);
         }
         if (strlen(astring) != (size_t)_size) {
-            return RAISE(PyExc_ValueError,
-                         "A null character was found in the text");
+            return (SDL_Surface *)(RAISE(
+                PyExc_ValueError, "A null character was found in the text"));
         }
     }
 
@@ -609,7 +590,7 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
         /* Bytes_AsStringAndSize with NULL arg for length emits
            ValueError if internal NULL bytes are present */
         if (PyBytes_AsStringAndSize(text, (char **)&astring, NULL) == -1) {
-            return NULL; /* exception already set */
+            return (SDL_Surface *)(NULL); /* exception already set */
         }
     }
 
@@ -656,8 +637,41 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
     }
 
     if (surf == NULL) {
-        return RAISE(pgExc_SDLError, TTF_GetError());
+        return (SDL_Surface *)(RAISE(pgExc_SDLError, TTF_GetError()));
     }
+
+    return surf;
+}
+
+static PyObject *
+font_render(PyObject *self, PyObject *args, PyObject *kwds)
+{
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
+    int antialias;
+    PyObject *text, *final;
+    PyObject *fg_rgba_obj, *bg_rgba_obj = Py_None;
+    SDL_Surface *surf;
+    int wraplength = 0;
+    TTF_Font *font = PyFont_AsFont(self);
+
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR()
+    }
+
+    static char *kwlist[] = {"text",    "antialias",  "color",
+                             "bgcolor", "wraplength", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OpO|Oi", kwlist, &text,
+                                     &antialias, &fg_rgba_obj, &bg_rgba_obj,
+                                     &wraplength)) {
+        return NULL;
+    }
+
+    surf = _create_font_surface(font, text, antialias, fg_rgba_obj,
+                                bg_rgba_obj, wraplength);
 
     final = (PyObject *)pgSurface_New(surf);
     if (final == NULL) {
