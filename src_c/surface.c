@@ -516,7 +516,7 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
 
     char *kwids[] = {"size", "flags", "depth", "masks", "color", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|iOOO", kwids, &size,
-+                                     &flags, &depth, &masks, &colorobj))
++                                    &flags, &depth, &masks, &colorobj))
         return -1;
 
     if (PySequence_Check(size) && PySequence_Length(size) == 2) {
@@ -716,7 +716,7 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
     if (colorobj && colorobj != Py_None) {
         Uint32 color;
         if (!pg_MappedColorFromObj(colorobj, surface->format, &color,
-                                    PG_COLOR_HANDLE_ALL)) {
+                                   PG_COLOR_HANDLE_ALL)) {
             SDL_FreeSurface(surface);
             return -1;
         }
