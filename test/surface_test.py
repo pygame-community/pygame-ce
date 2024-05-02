@@ -70,7 +70,8 @@ class SurfaceTypeTest(unittest.TestCase):
         # when using a surface in the constructor the color is only available as a keyword argument
         self.assertRaises(
             ValueError,
-            pygame.Surface, (20, 20),
+            pygame.Surface,
+            (20, 20),
             pygame.SRCALPHA,
             pygame.Surface((10, 10)),
             (255, 0, 0, 255)
