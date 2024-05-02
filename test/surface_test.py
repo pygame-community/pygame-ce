@@ -68,7 +68,13 @@ class SurfaceTypeTest(unittest.TestCase):
         self.assertEqual(surf.get_at((0, 0)), (255, 0, 0, 255))
 
         # when using a surface in the constructor the color is only available as a keyword argument
-        self.assertRaises(ValueError, pygame.Surface, (20, 20), pygame.SRCALPHA, pygame.Surface((10, 10)), (255, 0, 0, 255))
+        self.assertRaises(
+            ValueError,
+            pygame.Surface, (20, 20),
+            pygame.SRCALPHA,
+            pygame.Surface((10, 10)),
+            (255, 0, 0, 255)
+        )
 
     def test_set_clip(self):
         """see if surface.set_clip(None) works correctly."""
