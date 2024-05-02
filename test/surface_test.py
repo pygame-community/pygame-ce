@@ -74,7 +74,7 @@ class SurfaceTypeTest(unittest.TestCase):
             (20, 20),
             pygame.SRCALPHA,
             pygame.Surface((10, 10)),
-            (255, 0, 0, 255)
+            (255, 0, 0, 255),
         )
 
     def test_set_clip(self):
