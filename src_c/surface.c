@@ -516,7 +516,7 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
 
     char *kwids[] = {"size", "flags", "depth", "masks", "color", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|iOOO", kwids, &size,
-+                                     &flags, &depth, &masks, &colorobj))
+                                     &flags, &depth, &masks, &colorobj))
         return -1;
 
     if (PySequence_Check(size) && PySequence_Length(size) == 2) {
