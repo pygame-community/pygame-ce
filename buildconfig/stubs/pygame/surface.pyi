@@ -49,6 +49,7 @@ class Surface:
         flags: int = 0,
         depth: int = 0,
         masks: Optional[ColorValue] = None,
+        color: Optional[ColorValue] = None,
     ) -> None: ...
     @overload
     def __init__(
@@ -56,6 +57,7 @@ class Surface:
         size: Coordinate,
         flags: int = 0,
         surface: Surface = ...,
+        *, color: Optional[ColorValue] = None,
     ) -> None: ...
     def __copy__(self) -> Surface: ...
     def __deepcopy__(self, memo) -> Surface: ...

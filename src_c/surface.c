@@ -508,15 +508,15 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
 {
     Uint32 flags = 0;
     int width, height;
-    PyObject *depth = NULL, *masks = NULL, *size = NULL;
+    PyObject *depth = NULL, *masks = NULL, *size = NULL, *colorobj = NULL;
     int bpp;
     Uint32 Rmask, Gmask, Bmask, Amask;
     SDL_Surface *surface;
     SDL_PixelFormat default_format;
 
-    char *kwids[] = {"size", "flags", "depth", "masks", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|iOO", kwids, &size, &flags,
-                                     &depth, &masks))
+    char *kwids[] = {"size", "flags", "depth", "masks", "color", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|iOOO", kwids, &size, &flags,
+                                     &depth, &masks, &colorobj))
         return -1;
 
     if (PySequence_Check(size) && PySequence_Length(size) == 2) {
@@ -710,6 +710,20 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
         if (Amask != 0) {
             SDL_FillRect(surface, NULL,
                          SDL_MapRGBA(surface->format, 0, 0, 0, 255));
+        }
+    }
+
+    if (colorobj && colorobj != Py_None) {
+        Uint32 color;
+        if (!pg_MappedColorFromObj(colorobj, surface->format, &color,
+                               PG_COLOR_HANDLE_ALL)) {
+            SDL_FreeSurface(surface);
+            return -1;
+        }
+        if (SDL_FillRect(surface, NULL, color) == -1) {
+            PyErr_SetString(pgExc_SDLError, SDL_GetError());
+            SDL_FreeSurface(surface);
+            return -1;
         }
     }
 

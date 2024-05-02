@@ -50,6 +50,26 @@ class SurfaceTypeTest(unittest.TestCase):
         surf = pygame.Surface((20, 20))
         self.assertEqual(surf.get_at((0, 0)), (0, 0, 0, 255))
 
+    def test_surface_color_argument(self):
+        # surface without SRCALPHA should ignore the color's alpha value
+        surf = pygame.Surface((20, 20), color=(255, 0, 0, 100))
+        self.assertEqual(surf.get_at((0, 0)), (255, 0, 0, 255))
+
+        surf = pygame.Surface((20, 20), pygame.SRCALPHA, color=(255, 0, 0, 100))
+        self.assertEqual(surf.get_at((0, 0)), (255, 0, 0, 100))
+
+        # color = None should work as stated in the stubs and not raise TypeError
+        surf = pygame.Surface((20, 20), color=None)
+        self.assertEqual(surf.get_at((0, 0)), (0, 0, 0, 255))
+
+        surf = pygame.Surface(
+            (20, 20), pygame.SRCALPHA, 32, (0, 0, 0, 0), (255, 0, 0, 255)
+        )
+        self.assertEqual(surf.get_at((0, 0)), (255, 0, 0, 255))
+
+        # when using a surface in the constructor the color is only available as a keyword argument
+        self.assertRaises(ValueError, pygame.Surface, (20, 20), pygame.SRCALPHA, pygame.Surface((10, 10)), (255, 0, 0, 255))
+
     def test_set_clip(self):
         """see if surface.set_clip(None) works correctly."""
         s = pygame.Surface((800, 600))

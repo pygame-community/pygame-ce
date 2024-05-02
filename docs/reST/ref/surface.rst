@@ -8,17 +8,17 @@
 .. class:: Surface
 
    | :sl:`pygame object for representing images`
-   | :sg:`Surface((width, height), flags=0, depth=0, masks=None) -> Surface`
-   | :sg:`Surface((width, height), flags=0, Surface) -> Surface`
+   | :sg:`Surface((width, height), flags=0, depth=0, masks=None, color=None) -> Surface`
+   | :sg:`Surface((width, height), flags=0, Surface, *, color=None) -> Surface`
 
    A pygame Surface is used to represent any image. The Surface has a fixed
    resolution and pixel format. Surfaces with 8-bit pixels use a color palette
    to map to 24-bit color.
 
    Call :meth:`pygame.Surface()` to create a new image object. The Surface will
-   be cleared to all black. The only required arguments are the sizes. With no
-   additional arguments, the Surface will be created in a format that best
-   matches the display Surface.
+   be cleared to all black or to the color specified in the constructor.
+   The only required arguments are the sizes. With no additional arguments, 
+   the Surface will be created in a format that best matches the display Surface.
 
    The pixel format can be controlled by passing the bit depth or an existing
    Surface. The flags argument is a bitmask of additional features for the
