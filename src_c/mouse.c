@@ -163,6 +163,72 @@ mouse_get_pressed(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
+mouse_get_just_pressed(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    PyObject *tuple;
+    int num_buttons = 3;
+
+    static char *kwids[] = {"num_buttons", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|i", kwids, &num_buttons))
+        return NULL;
+    VIDEO_INIT_CHECK();
+
+    if (num_buttons != 3 && num_buttons != 5)
+        return RAISE(PyExc_ValueError,
+                     "Number of buttons needs to be 3 or 5.");
+
+    char *pressed_buttons = pgEvent_GetButtonDownInfo();
+    if (!(tuple = PyTuple_New(num_buttons)))
+        return NULL;
+
+    for (int i = 0; i < 3; i++) {
+        PyTuple_SET_ITEM(tuple, i, PyBool_FromLong(pressed_buttons[i]));
+    }
+
+    if (num_buttons == 5) {
+        for (int i = 3; i < 5; i++) {
+            PyTuple_SET_ITEM(tuple, i, PyBool_FromLong(pressed_buttons[i]));
+        }
+    }
+
+    return tuple;
+}
+
+static PyObject *
+mouse_get_just_released(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    PyObject *tuple;
+    int num_buttons = 3;
+
+    static char *kwids[] = {"num_buttons", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|i", kwids, &num_buttons))
+        return NULL;
+    VIDEO_INIT_CHECK();
+
+    if (num_buttons != 3 && num_buttons != 5)
+        return RAISE(PyExc_ValueError,
+                     "Number of buttons needs to be 3 or 5.");
+
+    char *released_buttons = pgEvent_GetButtonUpInfo();
+    if (!(tuple = PyTuple_New(num_buttons)))
+        return NULL;
+
+    for (int i = 0; i < 3; i++) {
+        PyTuple_SET_ITEM(tuple, i, PyBool_FromLong(released_buttons[i]));
+    }
+
+    if (num_buttons == 5) {
+        for (int i = 3; i < 5; i++) {
+            PyTuple_SET_ITEM(tuple, i, PyBool_FromLong(released_buttons[i]));
+        }
+    }
+
+    return tuple;
+}
+
+static PyObject *
 mouse_set_visible(PyObject *self, PyObject *args)
 {
     int toggle, prevstate;
@@ -497,6 +563,10 @@ static PyMethodDef _mouse_methods[] = {
     {"get_rel", (PyCFunction)mouse_get_rel, METH_NOARGS, DOC_MOUSE_GETREL},
     {"get_pressed", (PyCFunction)mouse_get_pressed,
      METH_VARARGS | METH_KEYWORDS, DOC_MOUSE_GETPRESSED},
+    {"get_just_pressed", (PyCFunction)mouse_get_just_pressed,
+     METH_VARARGS | METH_KEYWORDS, DOC_MOUSE_GETJUSTPRESSED},
+    {"get_just_released", (PyCFunction)mouse_get_just_released,
+     METH_VARARGS | METH_KEYWORDS, DOC_MOUSE_GETJUSTRELEASED},
     {"set_visible", mouse_set_visible, METH_VARARGS, DOC_MOUSE_SETVISIBLE},
     {"get_visible", mouse_get_visible, METH_NOARGS, DOC_MOUSE_GETVISIBLE},
     {"get_focused", (PyCFunction)mouse_get_focused, METH_NOARGS,
@@ -534,6 +604,10 @@ MODINIT_DEFINE(mouse)
         return NULL;
     }
     import_pygame_surface();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    import_pygame_event();
     if (PyErr_Occurred()) {
         return NULL;
     }

@@ -288,6 +288,62 @@ class MouseModuleTest(MouseTests):
         with self.assertRaises(ValueError):
             pygame.mouse.get_pressed(4)
 
+    def test_get_just_pressed(self):
+        expected_length = 3
+        buttons = pygame.mouse.get_just_pressed()
+        self.assertIsInstance(buttons, tuple)
+        self.assertEqual(len(buttons), expected_length)
+        for value in buttons:
+            self.assertIsInstance(value, bool)
+            self.assertEqual(value, 0)
+
+        expected_length = 5
+        buttons = pygame.mouse.get_just_pressed(expected_length)
+        self.assertIsInstance(buttons, tuple)
+        self.assertEqual(len(buttons), expected_length)
+        for value in buttons:
+            self.assertIsInstance(value, bool)
+            self.assertEqual(value, 0)
+
+        expected_length = 3
+        buttons = pygame.mouse.get_just_pressed(num_buttons=expected_length)
+        self.assertIsInstance(buttons, tuple)
+        self.assertEqual(len(buttons), expected_length)
+        for value in buttons:
+            self.assertIsInstance(value, bool)
+            self.assertEqual(value, 0)
+
+        with self.assertRaises(ValueError):
+            pygame.mouse.get_just_pressed(4)
+
+    def test_get_just_released(self):
+        expected_length = 3
+        buttons = pygame.mouse.get_just_released()
+        self.assertIsInstance(buttons, tuple)
+        self.assertEqual(len(buttons), expected_length)
+        for value in buttons:
+            self.assertIsInstance(value, bool)
+            self.assertEqual(value, 0)
+
+        expected_length = 5
+        buttons = pygame.mouse.get_just_released(expected_length)
+        self.assertIsInstance(buttons, tuple)
+        self.assertEqual(len(buttons), expected_length)
+        for value in buttons:
+            self.assertIsInstance(value, bool)
+            self.assertEqual(value, 0)
+
+        expected_length = 3
+        buttons = pygame.mouse.get_just_released(num_buttons=expected_length)
+        self.assertIsInstance(buttons, tuple)
+        self.assertEqual(len(buttons), expected_length)
+        for value in buttons:
+            self.assertIsInstance(value, bool)
+            self.assertEqual(value, 0)
+
+        with self.assertRaises(ValueError):
+            pygame.mouse.get_just_released(4)
+
     def test_get_pos(self):
         """Ensures get_pos returns the correct types."""
         expected_length = 2
