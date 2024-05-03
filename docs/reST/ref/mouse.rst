@@ -107,7 +107,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 
    .. ## pygame.mouse.get_pressed ##
 
-.. :function:: get_just_pressed
+.. function:: get_just_pressed
 
    | :sl:`get the most recently pressed buttons`
    | :sg:`get_just_pressed(num_buttons=3) -> (button1, button2, button3)`
@@ -134,7 +134,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 
    .. ## pygame.mouse.get_just_pressed ##
 
-.. :function:: get_just_released
+.. function:: get_just_released
 
    | :sl:`get the most recently released buttons`
    | :sg:`get_just_released(num_buttons=3) -> (button1, button2, button3)`
