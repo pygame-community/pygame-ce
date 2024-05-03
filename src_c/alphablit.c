@@ -619,7 +619,6 @@ SoftCachedBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
     int okay;
     int src_locked;
     int dst_locked;
-    Uint32 colorkey;
     SDL_BlendMode src_blend;
 
     /* Everything is okay at the beginning...  */
