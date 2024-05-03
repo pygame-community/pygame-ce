@@ -648,7 +648,7 @@ SoftCachedBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
                 /* unhandled cases */
                 if (SDL_GetSurfaceBlendMode(src, &src_blend) != 0 ||
                     (src_blend == SDL_BLENDMODE_NONE && src->format->Amask) ||
-                    SDL_GetColorKey(src, &colorkey) == 0) {
+                    SDL_HasColorKey(src)) {
                     okay = 0;
                     break;
                 }
