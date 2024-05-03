@@ -178,7 +178,7 @@ mouse_get_just_pressed(PyObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(PyExc_ValueError,
                      "Number of buttons needs to be 3 or 5.");
 
-    char *pressed_buttons = pgEvent_GetButtonDownInfo();
+    char *pressed_buttons = pgEvent_GetMouseButtonDownInfo();
     if (!(tuple = PyTuple_New(num_buttons)))
         return NULL;
 
@@ -211,7 +211,7 @@ mouse_get_just_released(PyObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(PyExc_ValueError,
                      "Number of buttons needs to be 3 or 5.");
 
-    char *released_buttons = pgEvent_GetButtonUpInfo();
+    char *released_buttons = pgEvent_GetMouseButtonUpInfo();
     if (!(tuple = PyTuple_New(num_buttons)))
         return NULL;
 

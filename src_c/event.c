@@ -1810,13 +1810,13 @@ pgEvent_GetKeyUpInfo(void)
 }
 
 char *
-pgEvent_GetButtonDownInfo(void)
+pgEvent_GetMouseButtonDownInfo(void)
 {
     return pressed_mouse_buttons;
 }
 
 char *
-pgEvent_GetButtonUpInfo(void)
+pgEvent_GetMouseButtonUpInfo(void)
 {
     return released_mouse_buttons;
 }
@@ -2336,8 +2336,8 @@ MODINIT_DEFINE(event)
     c_api[5] = pg_GetKeyRepeat;
     c_api[6] = pgEvent_GetKeyDownInfo;
     c_api[7] = pgEvent_GetKeyUpInfo;
-    c_api[8] = pgEvent_GetButtonDownInfo;
-    c_api[9] = pgEvent_GetButtonUpInfo;
+    c_api[8] = pgEvent_GetMouseButtonDownInfo;
+    c_api[9] = pgEvent_GetMouseButtonUpInfo;
 
     apiobj = encapsulate_api(c_api, "event");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {

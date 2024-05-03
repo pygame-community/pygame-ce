@@ -49,12 +49,12 @@ Header file: src_c/include/pygame.h
    Return an array of bools (using char) of length SDL_NUM_SCANCODES
    with the most recent key releases.
 
-.. c:function:: char* pgEvent_GetButtonDownInfo(void)
+.. c:function:: char* pgEvent_GetMouseButtonDownInfo(void)
 
    Return an array of bools (using char) of length 5
    with the most recent button presses.
 
-.. c:function:: char* pgEvent_GetButtonUpInfo(void)
+.. c:function:: char* pgEvent_GetMouseButtonUpInfo(void)
 
    Return an array of bools (using char) of length 5
    with the most recent button releases.
