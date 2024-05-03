@@ -95,8 +95,8 @@ static SDL_Event _pg_last_keydown_event = {0};
 /* Not used as text, acts as an array of bools */
 static char pressed_keys[SDL_NUM_SCANCODES] = {0};
 static char released_keys[SDL_NUM_SCANCODES] = {0};
-static char pressed_buttons[5] = {0};
-static char released_buttons[5] = {0};
+static char pressed_mouse_buttons[5] = {0};
+static char released_mouse_buttons[5] = {0};
 
 #ifdef __EMSCRIPTEN__
 /* these macros are no-op here */
@@ -543,11 +543,11 @@ pg_event_filter(void *_, SDL_Event *event)
              event->type == SDL_MOUSEBUTTONUP) {
         if (event->type == SDL_MOUSEBUTTONDOWN &&
             event->button.button - 1 < 5) {
-            pressed_buttons[event->button.button - 1] = 1;
+            pressed_mouse_buttons[event->button.button - 1] = 1;
         }
         else if (event->type == SDL_MOUSEBUTTONUP &&
                  event->button.button - 1 < 5) {
-            released_buttons[event->button.button - 1] = 1;
+            released_mouse_buttons[event->button.button - 1] = 1;
         }
         if (event->button.button & PGM_BUTTON_KEEP)
             event->button.button ^= PGM_BUTTON_KEEP;
@@ -1612,8 +1612,8 @@ _pg_event_pump(int dopump)
          * pygame.event.get(), but not on pygame.event.get(pump=False). */
         memset(pressed_keys, 0, sizeof(pressed_keys));
         memset(released_keys, 0, sizeof(released_keys));
-        memset(pressed_buttons, 0, sizeof(pressed_buttons));
-        memset(released_buttons, 0, sizeof(released_buttons));
+        memset(pressed_mouse_buttons, 0, sizeof(pressed_mouse_buttons));
+        memset(released_mouse_buttons, 0, sizeof(released_mouse_buttons));
 
         SDL_PumpEvents();
     }
@@ -1812,13 +1812,13 @@ pgEvent_GetKeyUpInfo(void)
 char *
 pgEvent_GetButtonDownInfo(void)
 {
-    return pressed_buttons;
+    return pressed_mouse_buttons;
 }
 
 char *
 pgEvent_GetButtonUpInfo(void)
 {
-    return released_buttons;
+    return released_mouse_buttons;
 }
 
 static PyObject *
