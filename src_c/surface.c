@@ -2157,6 +2157,8 @@ bliterror:
 #define FBLITS_ERR_CACHE_RLE_NOT_SUPPORTED 16
 #define FBLITS_ERR_FLAG_NOT_SUPPORTED 17
 #define FBLITS_ERR_NO_MEMORY 18
+#define FBLITS_ERR_INVALID_SEQUENCE_LENGTH 19
+#define FBLITS_ERR_INVALID_DESTINATION 20
 
 int
 _surf_fblits_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
@@ -2255,20 +2257,10 @@ _surf_fblits_cached_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
         return FBLITS_ERR_CACHE_RLE_NOT_SUPPORTED;
     }
 
-    /* manage destinations memory allocation or reallocation */
+    /* manage destinations memory */
     Py_ssize_t new_size = PyList_GET_SIZE(pos_list);
-    if (destinations->sequence == NULL) {
-        destinations->sequence =
-            (CachedBlitDest *)malloc(new_size * sizeof(CachedBlitDest));
-        destinations->size = destinations->alloc_size = new_size;
-        if (!destinations->sequence) {
-            return FBLITS_ERR_NO_MEMORY;
-        }
-    }
-    else if (new_size > 0 && new_size <= destinations->alloc_size) {
-        destinations->size = new_size;
-    }
-    else if (new_size > destinations->alloc_size) {
+    if (new_size > destinations->alloc_size) {
+        /* no realloc as we don't care about the previous destinations */
         destinations->sequence = (CachedBlitDest *)realloc(
             destinations->sequence, new_size * sizeof(CachedBlitDest));
 
@@ -2277,8 +2269,13 @@ _surf_fblits_cached_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
 
         destinations->size = destinations->alloc_size = new_size;
     }
+    else if (new_size > 0 && new_size <= destinations->alloc_size) {
+        destinations->size = new_size;
+    }
     else {
-        return FBLITS_ERR_INCORRECT_ARGS_NUM;
+        if (new_size == 0)
+            return 0;
+        return FBLITS_ERR_INVALID_SEQUENCE_LENGTH;
     }
 
     /* load destinations */
@@ -2294,7 +2291,7 @@ _surf_fblits_cached_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
 
         if (!pg_IntFromObj(PyTuple_GET_ITEM(tup, 0), &x) ||
             !pg_IntFromObj(PyTuple_GET_ITEM(tup, 1), &y)) {
-            return FBLITS_ERR_INCORRECT_ARGS_NUM;
+            return FBLITS_ERR_INVALID_DESTINATION;
         }
 
         if (x < -src->w || x > dst->w || y < -src->h || y > dst->h)
@@ -2366,6 +2363,9 @@ _surf_fblits_cached_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
     else
         pgSurface_Unprep(self);
     pgSurface_Unprep((pgSurfaceObject *)src_surf);
+
+    if (error == -1)
+        error = BLITS_ERR_BLIT_FAIL;
 
     return error;
 }
@@ -2518,6 +2518,12 @@ on_error:
                          "supported for this operation");
         case FBLITS_ERR_NO_MEMORY:
             return RAISE(PyExc_MemoryError, "No memory available");
+        case FBLITS_ERR_INVALID_SEQUENCE_LENGTH:
+            return RAISE(PyExc_ValueError,
+                         "Invalid sequence length for cached blit");
+        case FBLITS_ERR_INVALID_DESTINATION:
+            return RAISE(PyExc_TypeError,
+                         "Invalid destination position for cached blit");
     }
     return RAISE(PyExc_TypeError, "Unknown error");
 }

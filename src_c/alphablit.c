@@ -597,9 +597,9 @@ pg_cached_blitcopy(SDL_Surface *src, SDL_Surface *dst,
     for (i = 0; i < destinations->size; i++) {
         CachedBlitDest *item = &destinations->sequence[i];
 
-        const Py_ssize_t src_pitch = item->w * sizeof(Uint32);
-        const Py_ssize_t src_skip = src->pitch / 4;
-        const Py_ssize_t dst_skip = dst->pitch / 4;
+        const int src_pitch = item->w * sizeof(Uint32);
+        const int src_skip = src->pitch / 4;
+        const int dst_skip = dst->pitch / 4;
 
         Uint32 *srcp32 = (Uint32 *)src->pixels + item->x + item->y * src_skip;
         Uint32 *dstp32 = item->pixels;
@@ -616,24 +616,15 @@ int
 SoftCachedBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
                      BlitSequence *destinations)
 {
-    int okay;
-    int src_locked;
-    int dst_locked;
-    SDL_BlendMode src_blend;
+    int okay = 1;
+    int src_locked = 0, dst_locked = 0;
 
-    /* Everything is okay at the beginning...  */
-    okay = 1;
-
-    /* Lock the destination if it's in hardware */
-    dst_locked = 0;
     if (SDL_MUSTLOCK(dst)) {
         if (SDL_LockSurface(dst) < 0)
             okay = 0;
         else
             dst_locked = 1;
     }
-    /* Lock the source if it's in hardware */
-    src_locked = 0;
     if (SDL_MUSTLOCK(src)) {
         if (SDL_LockSurface(src) < 0)
             okay = 0;
@@ -642,6 +633,7 @@ SoftCachedBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
     }
 
     if (okay) {
+        SDL_BlendMode src_blend;
         switch (blend_flags) {
             case 0:
                 /* unhandled cases */
@@ -661,13 +653,12 @@ SoftCachedBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
         }
     }
 
-    /* We need to unlock the surfaces if they're locked */
     if (dst_locked)
         SDL_UnlockSurface(dst);
     if (src_locked)
         SDL_UnlockSurface(src);
-    /* Blit is done! */
-    return (okay ? 0 : -1);
+
+    return okay ? 0 : -1;
 }
 
 /* --------------------------------------------------------- */
