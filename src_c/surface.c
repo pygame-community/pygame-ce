@@ -2260,7 +2260,6 @@ _surf_fblits_cached_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
     /* manage destinations memory */
     Py_ssize_t new_size = PyList_GET_SIZE(pos_list);
     if (new_size > destinations->alloc_size) {
-        /* no realloc as we don't care about the previous destinations */
         destinations->sequence = (CachedBlitDest *)realloc(
             destinations->sequence, new_size * sizeof(CachedBlitDest));
 
@@ -2294,31 +2293,20 @@ _surf_fblits_cached_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
             return FBLITS_ERR_INVALID_DESTINATION;
         }
 
-        if (x < -src->w || x > dst->w || y < -src->h || y > dst->h)
+        SDL_Rect *clip_rect = &dst->clip_rect;
+        SDL_Rect clipped;
+        if (!SDL_IntersectRect(clip_rect, &(SDL_Rect){x, y, src->w, src->h},
+                               &clipped))
             continue; /* Skip out of bounds destinations */
 
         CachedBlitDest *blit_struct = &destinations->sequence[current_size++];
-        blit_struct->pixels = (Uint32 *)dst->pixels;
 
-        if (x < 0) {
-            blit_struct->w = src->w + x;
-            blit_struct->x = -x;
-        }
-        else {
-            blit_struct->pixels += x;
-            blit_struct->w = x > dst->w - src->w ? dst->w - x : src->w;
-            blit_struct->x = 0;
-        }
-
-        if (y < 0) {
-            blit_struct->h = src->h + y;
-            blit_struct->y = -y;
-        }
-        else {
-            blit_struct->pixels += y * dst->pitch / 4;
-            blit_struct->h = y > dst->h - src->h ? dst->h - y : src->h;
-            blit_struct->y = 0;
-        }
+        blit_struct->pixels =
+            (Uint32 *)dst->pixels + clipped.y * dst->pitch / 4 + clipped.x;
+        blit_struct->w = clipped.w;
+        blit_struct->h = clipped.h;
+        blit_struct->x = x < clip_rect->x ? clip_rect->x - x : 0;
+        blit_struct->y = y < clip_rect->y ? clip_rect->y - y : 0;
     }
 
     if (!(destinations->size = current_size))
