@@ -107,6 +107,60 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 
    .. ## pygame.mouse.get_pressed ##
 
+.. :function:: get_just_pressed
+
+   | :sl:`get the most recently pressed buttons`
+   | :sg:`get_just_pressed(num_buttons=3) -> (button1, button2, button3)`
+   | :sg:`get_just_pressed(num_buttons=5) -> (button1, button2, button3, button4, button5)`
+
+   Very similar to :func:`pygame.mouse.get_pressed()`, returing a tuple
+   of length 3 or 5 with the important difference that the buttons are 
+   True only in the frame they start to get pressed. This can be convenient
+   for checking the buttons pressed "this frame" but for more precise results
+   and to have the correct order the pygame.MOUSEBUTTONDOWN event could be
+   preferred.
+
+   The result of this function is updated when new events are processed,
+   e.g. in :func:`pygame.event.get()` or :func:`pygame.event.pump()`.
+
+   .. seealso:: :func:`pygame.mouse.get_just_released()`
+
+   ::
+      
+      if pygame.mouse.get_just_pressed()[0]:
+         print("LMB just pressed")
+
+   .. versionadded:: 2.5.0
+
+   .. ## pygame.mouse.get_just_pressed ##
+
+.. :function:: get_just_released
+
+   | :sl:`get the most recently released buttons`
+   | :sg:`get_just_released(num_buttons=3) -> (button1, button2, button3)`
+   | :sg:`get_just_released(num_buttons=5) -> (button1, button2, button3, button4, button5)`
+
+   Similar to :func:`pygame.mouse.get_pressed()`, returing a tuple
+   of length 3 or 5 with the important difference that the buttons are 
+   True only in the frame they stop to get pressed. This can be convenient
+   for checking the buttons released "this frame" but for more precise results
+   and to have the correct order the pygame.MOUSEBUTTONUP event could be
+   preferred.
+
+   The result of this function is updated when new events are processed,
+   e.g. in :func:`pygame.event.get()` or :func:`pygame.event.pump()`.
+
+   .. seealso:: :func:`pygame.mouse.get_just_pressed()`
+
+   ::
+      
+      if pygame.mouse.get_just_released()[0]:
+         print("LMB just released")
+
+   .. versionadded:: 2.5.0
+
+   .. ## pygame.mouse.get_just_released ##
+
 .. function:: get_pos
 
    | :sl:`get the mouse cursor position`
