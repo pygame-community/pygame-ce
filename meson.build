@@ -69,7 +69,7 @@ pg_inc_dirs = []
 pg_lib_dirs = []
 if plat == 'win' and host_machine.cpu_family().startswith('x86')
     # yes, this is a bit ugly and hardcoded but it is what it is
-    # TODO (middle-term goal) - Should migrate away from this 
+    # TODO (middle-term goal) - Should migrate away from this
     # consider meson wraps? Hopefully can also get the same build path as below
     arch_suffix = 'x' + host_machine.cpu_family().substring(-2)
     base_dir = meson.current_source_dir()
@@ -86,7 +86,7 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
         )
     endif
 
-    sdl_ver = '2.30.2'
+    sdl_ver = '2.30.3'
     sdl_image_ver = '2.8.2'
     sdl_mixer_ver = '2.8.0'
     sdl_ttf_ver = '2.22.0'
