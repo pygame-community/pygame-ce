@@ -640,7 +640,11 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
             pix = pgSurface_AsSurface(pg_GetDefaultWindowSurface())->format;
         else {
             pix = &default_format;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            pix->bits_per_pixel = 32;
+#else
             pix->BitsPerPixel = 32;
+#endif
             pix->Amask = 0;
             pix->Rmask = 0xFF0000;
             pix->Gmask = 0xFF00;
@@ -1534,9 +1538,14 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
                     PyExc_ValueError,
                     "invalid argument specifying new format to convert to");
             }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            format.bits_per_pixel = (Uint8)bpp;
+            format.bytes_per_pixel = (bpp + 7) / 8;
+#else
             format.BitsPerPixel = (Uint8)bpp;
             format.BytesPerPixel = (bpp + 7) / 8;
-            if (format.BitsPerPixel > 8)
+#endif
+            if (PG_FORMAT_BitsPerPixel((&format)) > 8)
                 /* Allow a 8 bit source surface with an empty palette to be
                  * converted to a format without a palette (pygame-ce issue
                  * #146). If the target format has a non-NULL palette pointer
@@ -1545,8 +1554,8 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
                  */
                 format.palette = NULL;
             if (SDL_ISPIXELFORMAT_INDEXED(SDL_MasksToPixelFormatEnum(
-                    format.BitsPerPixel, format.Rmask, format.Gmask,
-                    format.Bmask, format.Amask))) {
+                    PG_FORMAT_BitsPerPixel((&format)), format.Rmask,
+                    format.Gmask, format.Bmask, format.Amask))) {
                 if (SDL_ISPIXELFORMAT_INDEXED(surf->format->format)) {
                     SDL_SetPixelFormatPalette(&format, surf->format->palette);
                 }
@@ -2434,8 +2443,7 @@ surf_get_flags(PyObject *self, PyObject *_null)
     if ((sdl_flags & SDL_RLEACCEL))
         flags |= PGS_RLEACCEL;
     if (is_window_surf) {
-        if (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP ||
-            window_flags & SDL_WINDOW_FULLSCREEN)
+        if (window_flags & PG_WINDOW_FULLSCREEN_INCLUSIVE)
             flags |= PGS_FULLSCREEN;
         if (window_flags & SDL_WINDOW_OPENGL)
             flags |= PGS_OPENGL;

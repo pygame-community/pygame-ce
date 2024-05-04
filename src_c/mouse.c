@@ -183,8 +183,7 @@ mouse_set_visible(PyObject *self, PyObject *args)
             SDL_SetRelativeMouseMode(0);
         }
         window_flags = SDL_GetWindowFlags(win);
-        if (!toggle && (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP ||
-                        window_flags & SDL_WINDOW_FULLSCREEN)) {
+        if (!toggle && (window_flags & PG_WINDOW_FULLSCREEN_INCLUSIVE)) {
             SDL_SetHint(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, "0");
         }
         else {
