@@ -1418,12 +1418,10 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "|Oi", &argobject, &flags))
         return NULL;
 
-
     if (!argobject && !SDL_WasInit(SDL_INIT_VIDEO))
         return RAISE(pgExc_SDLError,
                      "cannot convert without format "
                      "when pygame.display is not initialized");
-
 
     SURF_INIT_CHECK(surf)
 

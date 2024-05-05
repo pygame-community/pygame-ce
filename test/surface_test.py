@@ -1234,7 +1234,7 @@ class GeneralSurfaceTests(unittest.TestCase):
         filename = example_path(os.path.join("data", "alien3.png"))  # 8bit PNG
         surf8bit = pygame.image.load(filename)
 
-        self.assertRaisesRegex(pygame.error, "display initialized", surf.convert)
+        self.assertRaisesRegex(pygame.error, "display is not initialized", surf.convert)
 
         pygame.display.init()
         try:
