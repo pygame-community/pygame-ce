@@ -1045,7 +1045,8 @@ flood_fill(PyObject *self, PyObject *arg, PyObject *kwargs)
         }
     }
 
-    flood_fill_result = flood_fill_inner(surf, startx, starty, color, pattern, drawn_area);
+    flood_fill_result =
+        flood_fill_inner(surf, startx, starty, color, pattern, drawn_area);
 
     if (pattern != NULL) {
         SDL_FreeSurface(pattern);
@@ -1057,7 +1058,7 @@ flood_fill(PyObject *self, PyObject *arg, PyObject *kwargs)
         }
     }
 
-    if(flood_fill_result == -1){
+    if (flood_fill_result == -1) {
         return RAISE(PyExc_RuntimeError, "flood fill allocation fail");
     }
 
@@ -1791,8 +1792,6 @@ draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
                 *((Uint32 *)(p_pixels + (p_y) * p_surf->pitch) + (p_x));     \
             break;                                                           \
     }
-
-
 
 static int
 flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
@@ -3145,7 +3144,7 @@ static PyMethodDef _draw_methods[] = {
     {"ellipse", (PyCFunction)ellipse, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_ELLIPSE},
     {"flood_fill", (PyCFunction)flood_fill, METH_VARARGS | METH_KEYWORDS,
-    DOC_DRAW_FLOODFILL},
+     DOC_DRAW_FLOODFILL},
     {"arc", (PyCFunction)arc, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_ARC},
     {"circle", (PyCFunction)circle, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_CIRCLE},
