@@ -1,5 +1,6 @@
 from pygame.rect import Rect
 from pygame.surface import Surface
+from typing import Union
 
 from ._common import ColorValue, Coordinate, RectValue, Sequence
 
@@ -67,4 +68,9 @@ def aalines(
     color: ColorValue,
     closed: bool,
     points: Sequence[Coordinate],
+) -> Rect: ...
+def flood_fill(
+    surface: Surface,
+    color: Union[ColorValue, Surface],
+    start_point: Coordinate
 ) -> Rect: ...
