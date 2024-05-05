@@ -9,3 +9,4 @@
 #define DOC_DRAW_LINES "lines(surface, color, closed, points) -> Rect\nlines(surface, color, closed, points, width=1) -> Rect\ndraw multiple contiguous straight line segments"
 #define DOC_DRAW_AALINE "aaline(surface, color, start_pos, end_pos) -> Rect\ndraw a straight antialiased line"
 #define DOC_DRAW_AALINES "aalines(surface, color, closed, points) -> Rect\ndraw multiple contiguous straight antialiased line segments"
+#define DOC_DRAW_FLOODFILL "flood_fill(surface, color, starting_point) -> Rect\nflood_fill(surface, pattern_surface, starting_point) -> Rect\nfill in a connected area of same-color pixels"

@@ -541,6 +541,33 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    .. versionchanged:: 2.5.0 ``blend`` argument readded for backcompat, but will always raise a deprecation exception when used
 
    .. ## pygame.draw.aalines ##
+      
+.. function:: flood_fill
+
+   | :sl:`fill in a connected area of same-color pixels`
+   | :sg:`flood_fill(surface, color, starting_point) -> Rect`
+   | :sg:`flood_fill(surface, pattern_surface, starting_point) -> Rect`
+
+   Replace the color of a cluster of connected same-color pixels, beginning
+   from the starting point, with a repeating pattern or solid single color
+   
+   :param Surface surface: surface to draw on
+   :param color: color to draw with, the alpha value is optional if using a
+      tuple ``(RGB[A])``
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+   :param pattern_surface: pattern to fill with, as a surface
+   :param starting_point: starting point as a sequence of 2 ints/floats,
+      e.g. ``(x, y)``
+   :type starting_point: tuple(int or float, int or float) or
+      list(int or float, int or float) or Vector2(int or float, int or float)
+
+   :returns: a rect bounding the changed pixels, if nothing is drawn the
+      bounding rect's position will be the position of the starting point
+      and its width and height will be 0
+   :rtype: Rect
+
+   .. versionadded:: 2.5.0
+   .. ## pygame.draw.flood_fill ##
 
 .. ## pygame.draw ##
 
