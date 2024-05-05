@@ -352,7 +352,49 @@
       set then ``None`` is returned.
 
       .. ## Surface.get_colorkey ##
+	 
+   .. method:: set_colorkey_raw
 
+      | :sl:`Set the transparent colorkey`
+      | :sg:`set_colorkey_raw(color) -> None`
+
+      Low-level method to set the color key for the Surface.
+      The color parameter must be a be an integer that represents a valid
+      mapped color value or palette index for the surface. This is mainly
+      useful for edge cases in indexed surfaces.
+
+      Most use cases should be covered by `get_colorkey()`
+
+      .. versionadded:: 2.5.0
+
+      .. ## Surface.set_colorkey_raw ##
+      
+   .. method:: get_colorkey_raw
+
+      | :sl:`Get the mapped value of the current transparent colorkey`
+      | :sg:`get_colorkey_raw() -> int`
+
+      Return the current colorkey value for the Surface. If the colorkey is not
+      set, an exception is raised.
+
+      This function is mainly of interest for low-level manipulation of
+      indexed surfaces. Most use cases should be covered by `get_colorkey()`
+
+      .. versionadded:: 2.5.0
+
+      .. ## Surface.get_colorkey_raw ##
+	 
+   .. method:: has_colorkey
+
+      | :sl:`Check whether the surface has a colorkey`
+      | :sg:`has_colorkey() -> bool`
+
+      If the colorkey is set, return ``True``, otherwise ``False``.
+
+      .. versionadded:: 2.5.0
+
+      .. ## Surface.has_colorkey ##
+	 
    .. method:: set_alpha
 
       | :sl:`set the alpha value for the full Surface image`

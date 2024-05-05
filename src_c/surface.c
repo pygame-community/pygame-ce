@@ -290,8 +290,13 @@ static struct PyMethodDef surface_methods[] = {
 
     {"set_colorkey", (PyCFunction)surf_set_colorkey, METH_VARARGS,
      DOC_SURFACE_SETCOLORKEY},
+    {"set_colorkey_raw", (PyCFunction)surf_set_colorkey_raw, METH_VARARGS,
+     DOC_SURFACE_SETCOLORKEYRAW},
     {"get_colorkey", (PyCFunction)surf_get_colorkey, METH_NOARGS,
      DOC_SURFACE_GETCOLORKEY},
+    {"get_colorkey_raw", (PyCFunction)surf_get_colorkey_raw, METH_NOARGS,
+     DOC_SURFACE_GETCOLORKEYRAW},
+    {"has_colorkey", (PyCFunction)surf_has_colorkey, METH_NOARGS, DOC_SURFACE_HASCOLORKEY},
     {"set_alpha", (PyCFunction)surf_set_alpha, METH_VARARGS,
      DOC_SURFACE_SETALPHA},
     {"get_alpha", (PyCFunction)surf_get_alpha, METH_NOARGS,
@@ -1062,7 +1067,8 @@ surf_get_palette(PyObject *self, PyObject *_null)
         rgba[0] = c->r;
         rgba[1] = c->g;
         rgba[2] = c->b;
-        color = pgColor_NewLength(rgba, 3);
+        rgba[3] = c->a;
+        color = pgColor_New(rgba);
 
         if (!color) {
             Py_DECREF(list);
@@ -1253,6 +1259,29 @@ surf_set_colorkey(pgSurfaceObject *self, PyObject *args)
 }
 
 static PyObject *
+surf_set_colorkey_raw(pgSurfaceObject *self, PyObject *args)
+{
+    SDL_Surface *surf = pgSurface_AsSurface(self);
+    Uint32 flags = 0, color = 0;
+    int result;
+    int hascolor = SDL_FALSE;
+
+    if (!PyArg_ParseTuple(args, "I", &color))
+        return NULL;
+
+    SURF_INIT_CHECK(surf)
+
+    pgSurface_Prep(self);
+    result = SDL_SetColorKey(surf, SDL_TRUE, color);
+    pgSurface_Unprep(self);
+
+    if (result == -1)
+        return RAISE(pgExc_SDLError, SDL_GetError());
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 surf_get_colorkey(pgSurfaceObject *self, PyObject *_null)
 {
     SDL_Surface *surf = pgSurface_AsSurface(self);
@@ -1261,10 +1290,11 @@ surf_get_colorkey(pgSurfaceObject *self, PyObject *_null)
 
     SURF_INIT_CHECK(surf)
 
-    if (SDL_GetColorKey(surf, &mapped_color) != 0) {
-        SDL_ClearError();
+    if (!SDL_HasColorKey(surf)) {
         Py_RETURN_NONE;
     }
+
+    SDL_GetColorKey(surf, &mapped_color);
 
     if (SDL_ISPIXELFORMAT_ALPHA(surf->format->format))
         SDL_GetRGBA(mapped_color, surf->format, &r, &g, &b, &a);
@@ -1272,6 +1302,39 @@ surf_get_colorkey(pgSurfaceObject *self, PyObject *_null)
         SDL_GetRGB(mapped_color, surf->format, &r, &g, &b);
 
     return Py_BuildValue("(bbbb)", r, g, b, a);
+}
+
+static PyObject *
+surf_get_colorkey_raw(pgSurfaceObject *self, PyObject *_null)
+{
+    SDL_Surface *surf = pgSurface_AsSurface(self);
+    Uint32 mapped_color;
+    Uint8 r, g, b, a = 255;
+
+    SURF_INIT_CHECK(surf)
+
+    if (SDL_GetColorKey(surf, &mapped_color) != 0) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+
+    return PyLong_FromLong(mapped_color);
+}
+
+static PyObject *
+surf_has_colorkey(pgSurfaceObject *self, PyObject *_null)
+{
+    SDL_Surface *surf = pgSurface_AsSurface(self);
+    Uint32 mapped_color;
+    Uint8 r, g, b, a = 255;
+
+    SURF_INIT_CHECK(surf)
+
+    if (SDL_HasColorKey(surf)) {
+        Py_RETURN_TRUE;
+    }
+    else {
+        Py_RETURN_FALSE;
+    }
 }
 
 static PyObject *
@@ -2425,7 +2488,7 @@ surf_get_flags(PyObject *self, PyObject *_null)
     if (is_alpha) {
         flags |= PGS_SRCALPHA;
     }
-    if (SDL_GetColorKey(surf, NULL) == 0)
+    if (SDL_HasColorKey(surf, NULL))
         flags |= PGS_SRCCOLORKEY;
     if (sdl_flags & SDL_PREALLOC)
         flags |= PGS_PREALLOC;
@@ -2831,7 +2894,7 @@ surf_get_bounding_rect(PyObject *self, PyObject *args, PyObject *kwargs)
 
     format = surf->format;
 
-    if (SDL_GetColorKey(surf, &colorkey) == 0) {
+    if (SDL_HasColorKey(surf, &colorkey)) {
         has_colorkey = 1;
         SDL_GetRGBA(colorkey, surf->format, &keyr, &keyg, &keyb, &a);
     }
@@ -3860,7 +3923,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
     pgSurface_Prep(srcobj);
 
     if ((blend_flags != 0 && blend_flags != PYGAME_BLEND_ALPHA_SDL2) ||
-        ((SDL_GetColorKey(src, &key) == 0 || _PgSurface_SrcAlpha(src) == 1) &&
+        ((SDL_HasColorKey(src) || _PgSurface_SrcAlpha(src) == 1) &&
          /* This simplification is possible because a source subsurface
             is converted to its owner with a clip rect and a dst
             subsurface cannot be blitted to its owner because the
