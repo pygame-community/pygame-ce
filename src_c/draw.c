@@ -1797,11 +1797,15 @@ static int
 flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
                  SDL_Surface *pattern, int *drawn_area)
 {
+    // breadth first flood fill, like graph search
     SDL_Rect cliprect;
+    size_t mask_idx;
 
     SDL_GetClipRect(surf, &cliprect);
     size_t frontier_bufsize = 8, frontier_size = 1, next_frontier_size = 0;
 
+    // Instead of a queue, we use two arrays and swap them between steps.
+    // This makes implementation easier, especially memory management.
     struct point2d *frontier =
         malloc(frontier_bufsize * sizeof(struct point2d));
     if (frontier == NULL) {
@@ -1815,8 +1819,9 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
         free(frontier);
         return -1;
     }
-    size_t mask_size = cliprect.w * cliprect.h;
 
+    // 2D bitmask for queued nodes
+    size_t mask_size = cliprect.w * cliprect.h;
     unsigned int *mask = calloc((mask_size) / 8 + 1, sizeof(unsigned int));
     if (mask == NULL) {
         free(frontier);
@@ -1827,6 +1832,7 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
     Uint32 old_color = 0;
     Uint8 *pix;
 
+    // Von Neumann neighbourhood
     int VN_X[] = {0, 0, 1, -1};
     int VN_Y[] = {1, -1, 0, 0};
 
@@ -1841,6 +1847,7 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
                 pix);
 
     if (pattern == NULL && old_color == new_color) {
+        // not an error, but nothing to do here
         free(frontier);
         free(mask);
         free(frontier_next);
@@ -1850,17 +1857,18 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
     frontier[0].x = x1;
     frontier[0].y = y1;
 
+    // mark starting point already queued
+    mask_idx = (y1 - cliprect.y) * cliprect.w + (x1 - cliprect.x);
+    _bitarray_set(mask, mask_idx, SDL_TRUE);
+
     while (frontier_size != 0) {
         next_frontier_size = 0;
 
         for (size_t i = 0; i < frontier_size; i++) {
             unsigned int x = frontier[i].x;
             unsigned int y = frontier[i].y;
-            size_t mask_idx = (y - cliprect.y) * cliprect.w + (x - cliprect.x);
 
             Uint32 current_color = 0;
-
-            _bitarray_set(mask, mask_idx, SDL_TRUE);
 
             SURF_GET_AT(current_color, surf, x, y, (Uint8 *)surf->pixels,
                         surf->format, pix);
@@ -1874,13 +1882,13 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
                             (Uint8 *)pattern->pixels, pattern->format, pix);
             }
 
+            // clipping and color mapping have already happened here
             unsafe_set_at(surf, x, y, new_color);
             add_pixel_to_drawn_list(x, y, drawn_area);
 
             for (int n = 0; n < 4; n++) {
                 long nx = x + VN_X[n];
                 long ny = y + VN_Y[n];
-                SDL_bool found_in_frontier = SDL_FALSE;
 
                 if (!(nx >= cliprect.x && nx < cliprect.x + cliprect.w &&
                       ny >= cliprect.y && ny < cliprect.y + cliprect.h)) {
@@ -1891,12 +1899,11 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
                 if (_bitarray_get(mask, mask_idx))
                     continue;
 
+                // only queue node once
                 _bitarray_set(mask, mask_idx, SDL_TRUE);
-                if (found_in_frontier) {
-                    continue;
-                }
 
                 if (next_frontier_size == frontier_bufsize) {
+                    // grow frontier arrays
                     struct point2d *old_buf = frontier_next;
 
                     frontier_bufsize *= 4;
@@ -1927,6 +1934,7 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
                 next_frontier_size++;
             }
         }
+        // swap buffers
         struct point2d *temp_buf;
         temp_buf = frontier;
         frontier = frontier_next;
