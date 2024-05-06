@@ -3822,7 +3822,6 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
     int result, suboffsetx = 0, suboffsety = 0;
     SDL_Rect orig_clip, sub_clip;
     Uint8 alpha;
-    Uint32 key;
 
     /* passthrough blits to the real surface */
     if (((pgSurfaceObject *)dstobj)->subsurface) {
@@ -3860,7 +3859,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
     pgSurface_Prep(srcobj);
 
     if ((blend_flags != 0 && blend_flags != PYGAME_BLEND_ALPHA_SDL2) ||
-        ((SDL_GetColorKey(src, &key) == 0 || _PgSurface_SrcAlpha(src) == 1) &&
+        ((SDL_HasColorKey(src) || _PgSurface_SrcAlpha(src) == 1) &&
          /* This simplification is possible because a source subsurface
             is converted to its owner with a clip rect and a dst
             subsurface cannot be blitted to its owner because the
@@ -3916,8 +3915,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
         /* Py_END_ALLOW_THREADS */
     }
     else if (blend_flags != PYGAME_BLEND_ALPHA_SDL2 &&
-             !(pg_EnvShouldBlendAlphaSDL2()) &&
-             SDL_GetColorKey(src, &key) != 0 &&
+             !(pg_EnvShouldBlendAlphaSDL2()) && !SDL_HasColorKey(src) &&
              (PG_SURF_BytesPerPixel(dst) == 4 ||
               PG_SURF_BytesPerPixel(dst) == 2) &&
              _PgSurface_SrcAlpha(src) &&
