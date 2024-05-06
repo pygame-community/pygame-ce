@@ -98,6 +98,9 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_FORMAT_BitsPerPixel(format) format->bits_per_pixel
 #define PG_FORMAT_BytesPerPixel(format) format->bytes_per_pixel
 
+/* Mask to test if surface flags are in a fullscreen window. */
+#define PG_WINDOW_FULLSCREEN_INCLUSIVE SDL_WINDOW_FULLSCREEN
+
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
 #define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
@@ -146,6 +149,11 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_SURF_BytesPerPixel(surf) surf->format->BytesPerPixel
 #define PG_FORMAT_BitsPerPixel(format) format->BitsPerPixel
 #define PG_FORMAT_BytesPerPixel(format) format->BytesPerPixel
+
+/* Mask to test if surface flags are in a fullscreen window.
+ * SDL_WINDOW_FULLSCREEN_DESKTOP works here because it also contains
+ * SDL_WINDOW_FULLSCREEN. */
+#define PG_WINDOW_FULLSCREEN_INCLUSIVE SDL_WINDOW_FULLSCREEN_DESKTOP
 
 #if SDL_VERSION_ATLEAST(2, 0, 14)
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
