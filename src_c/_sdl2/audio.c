@@ -6,7 +6,7 @@
         "depends": [],
         "name": "pygame._sdl2.audio",
         "sources": [
-            "src_c\\cython\\pygame\\_sdl2\\audio.pyx"
+            "src_c/cython/pygame/_sdl2/audio.pyx"
         ]
     },
     "module_name": "pygame._sdl2.audio"
@@ -1356,7 +1356,7 @@ static const char *__pyx_filename;
 /* #### Code section: filename_table ### */
 
 static const char *__pyx_f[] = {
-  "src_c\\\\cython\\\\pygame\\\\_sdl2\\\\audio.pyx",
+  "src_c/cython/pygame/_sdl2/audio.pyx",
   "<stringsource>",
 };
 /* #### Code section: utility_code_proto_before_types ### */
@@ -2861,7 +2861,7 @@ static const char __pyx_k_AUDIO_ALLOW_FREQUENCY_CHANGE[] = "AUDIO_ALLOW_FREQUENC
 static const char __pyx_k_Audio_system_not_initialised[] = "Audio system not initialised";
 static const char __pyx_k_unable_to_allocate_array_data[] = "unable to allocate array data.";
 static const char __pyx_k_strided_and_direct_or_indirect[] = "<strided and direct or indirect>";
-static const char __pyx_k_src_c_cython_pygame__sdl2_audio[] = "src_c\\cython\\pygame\\_sdl2\\audio.pyx";
+static const char __pyx_k_src_c_cython_pygame__sdl2_audio[] = "src_c/cython/pygame/_sdl2/audio.pyx";
 static const char __pyx_k_All_dimensions_preceding_dimensi[] = "All dimensions preceding dimension %d must be indexed and not sliced";
 static const char __pyx_k_Buffer_view_does_not_expose_stri[] = "Buffer view does not expose strides";
 static const char __pyx_k_Can_only_create_a_buffer_that_is[] = "Can only create a buffer that is contiguous in memory.";

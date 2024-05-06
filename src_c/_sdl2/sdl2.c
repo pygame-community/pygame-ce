@@ -6,7 +6,7 @@
         "depends": [],
         "name": "pygame._sdl2.sdl2",
         "sources": [
-            "src_c\\cython\\pygame\\_sdl2\\sdl2.pyx"
+            "src_c/cython/pygame/_sdl2/sdl2.pyx"
         ]
     },
     "module_name": "pygame._sdl2.sdl2"
@@ -1354,7 +1354,7 @@ static const char *__pyx_filename;
 /* #### Code section: filename_table ### */
 
 static const char *__pyx_f[] = {
-  "src_c\\\\cython\\\\pygame\\\\_sdl2\\\\sdl2.pyx",
+  "src_c/cython/pygame/_sdl2/sdl2.pyx",
 };
 /* #### Code section: utility_code_proto_before_types ### */
 /* #### Code section: numeric_typedefs ### */
@@ -1985,7 +1985,7 @@ static const char __pyx_k_pygame__sdl2_sdl2[] = "pygame._sdl2.sdl2";
 static const char __pyx_k_asyncio_coroutines[] = "asyncio.coroutines";
 static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";
 static const char __pyx_k_INIT_GAMECONTROLLER[] = "INIT_GAMECONTROLLER";
-static const char __pyx_k_src_c_cython_pygame__sdl2_sdl2_p[] = "src_c\\cython\\pygame\\_sdl2\\sdl2.pyx";
+static const char __pyx_k_src_c_cython_pygame__sdl2_sdl2_p[] = "src_c/cython/pygame/_sdl2/sdl2.pyx";
 /* #### Code section: decls ### */
 static PyObject *__pyx_pf_6pygame_5_sdl2_4sdl2_5error___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_message); /* proto */
 static PyObject *__pyx_pf_6pygame_5_sdl2_4sdl2_init_subsystem(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_flags); /* proto */

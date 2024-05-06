@@ -392,11 +392,6 @@
       A value of ``None`` means that no custom rendering target was set and the
       Renderer's window will be used as the target.
 
-   .. classmethod:: from_window
-
-      | :sl:`Create a Renderer from an existing window`
-      | :sg:`from_window(window) -> Renderer`
-
    .. method:: clear
 
       | :sl:`Clear the current rendering target with the drawing color`

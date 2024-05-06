@@ -36,7 +36,6 @@
 #define DOC_SDL2_VIDEO_RENDERER_LOGICALSIZE "logical_size -> (int width, int height)\nGet or set the logical Renderer size (a device independent resolution for rendering)"
 #define DOC_SDL2_VIDEO_RENDERER_SCALE "scale -> (float, float)\nGet the drawing scale for the current rendering target"
 #define DOC_SDL2_VIDEO_RENDERER_TARGET "target -> Texture or None\nGet or set the current rendering target"
-#define DOC_SDL2_VIDEO_RENDERER_FROMWINDOW "from_window(window) -> Renderer\nCreate a Renderer from an existing window"
 #define DOC_SDL2_VIDEO_RENDERER_CLEAR "clear() -> None\nClear the current rendering target with the drawing color"
 #define DOC_SDL2_VIDEO_RENDERER_PRESENT "present() -> None\nUpdate the screen with any rendering performed since the previous call"
 #define DOC_SDL2_VIDEO_RENDERER_GETVIEWPORT "get_viewport() -> Rect\nGet the drawing area on the rendering target"

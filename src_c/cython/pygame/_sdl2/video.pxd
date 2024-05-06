@@ -428,7 +428,6 @@ cdef extern from "pygame.h" nogil:
     
     ctypedef class pygame.window.Window [object pgWindowObject]:
         cdef SDL_Window *_win
-        cdef SDL_bool _is_borrowed
 
     ctypedef struct pgSurfaceObject
 
@@ -461,7 +460,6 @@ cdef class Renderer:
     cdef SDL_Renderer* _renderer
     cdef Texture _target
     cdef Window _win
-    cdef int _is_borrowed
 
     cpdef object get_viewport(self)
     cpdef object blit(self, object source, Rect dest=*, Rect area=*, int special_flags=*)

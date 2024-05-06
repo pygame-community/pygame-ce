@@ -749,24 +749,6 @@ cdef class Image:
 @cython.auto_pickle(False) 
 cdef class Renderer:
 
-    @classmethod
-    def from_window(cls, Window window):
-        cdef Renderer self = cls.__new__(cls)
-        self._win = window
-        if self._win._is_borrowed:
-            self._is_borrowed=1
-        else:
-            raise error()
-        if not self._win:
-            raise error()
-
-        self._renderer =  SDL_GetRenderer(self._win._win)
-        if not self._renderer:
-            raise error()
-
-        self._target = None
-        return self
-
     def __init__(self,Window window, int index=-1,
                  int accelerated=-1, bint vsync=False,
                  bint target_texture=False):
@@ -831,11 +813,8 @@ cdef class Renderer:
         cdef Uint8[4] defaultColor = [255, 255, 255, 255]
         self._target = None
         self._win = window
-        self._is_borrowed=0
 
     def __dealloc__(self):
-        if self._is_borrowed:
-            return
         if self._renderer:
             SDL_DestroyRenderer(self._renderer)
 
