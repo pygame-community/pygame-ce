@@ -163,66 +163,34 @@ mouse_get_pressed(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
-mouse_get_just_pressed(PyObject *self, PyObject *args, PyObject *kwargs)
+mouse_get_just_pressed(PyObject *self, PyObject *_null)
 {
     PyObject *tuple;
-    int num_buttons = 3;
-
-    static char *kwids[] = {"num_buttons", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|i", kwids, &num_buttons))
-        return NULL;
     VIDEO_INIT_CHECK();
 
-    if (num_buttons != 3 && num_buttons != 5)
-        return RAISE(PyExc_ValueError,
-                     "Number of buttons needs to be 3 or 5.");
-
     char *pressed_buttons = pgEvent_GetMouseButtonDownInfo();
-    if (!(tuple = PyTuple_New(num_buttons)))
+    if (!(tuple = PyTuple_New(5)))
         return NULL;
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 5; i++) {
         PyTuple_SET_ITEM(tuple, i, PyBool_FromLong(pressed_buttons[i]));
-    }
-
-    if (num_buttons == 5) {
-        for (int i = 3; i < 5; i++) {
-            PyTuple_SET_ITEM(tuple, i, PyBool_FromLong(pressed_buttons[i]));
-        }
     }
 
     return tuple;
 }
 
 static PyObject *
-mouse_get_just_released(PyObject *self, PyObject *args, PyObject *kwargs)
+mouse_get_just_released(PyObject *self, PyObject *_null)
 {
     PyObject *tuple;
-    int num_buttons = 3;
-
-    static char *kwids[] = {"num_buttons", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|i", kwids, &num_buttons))
-        return NULL;
     VIDEO_INIT_CHECK();
 
-    if (num_buttons != 3 && num_buttons != 5)
-        return RAISE(PyExc_ValueError,
-                     "Number of buttons needs to be 3 or 5.");
-
     char *released_buttons = pgEvent_GetMouseButtonUpInfo();
-    if (!(tuple = PyTuple_New(num_buttons)))
+    if (!(tuple = PyTuple_New(5)))
         return NULL;
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 5; i++) {
         PyTuple_SET_ITEM(tuple, i, PyBool_FromLong(released_buttons[i]));
-    }
-
-    if (num_buttons == 5) {
-        for (int i = 3; i < 5; i++) {
-            PyTuple_SET_ITEM(tuple, i, PyBool_FromLong(released_buttons[i]));
-        }
     }
 
     return tuple;

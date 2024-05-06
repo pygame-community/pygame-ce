@@ -79,8 +79,8 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 .. function:: get_pressed
 
    | :sl:`get the state of the mouse buttons`
-   | :sg:`get_pressed(num_buttons=3) -> (button1, button2, button3)`
-   | :sg:`get_pressed(num_buttons=5) -> (button1, button2, button3, button4, button5)`
+   | :sg:`get_pressed(num_buttons=3) -> (left_button, middle_button, right_button)`
+   | :sg:`get_pressed(num_buttons=5) -> (left_button, middle_button, right_button, x1_button, x2_button)`
 
    Returns a sequence of booleans representing the state of all the mouse
    buttons. A true value means the mouse is currently being pressed at the time
@@ -110,11 +110,10 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 .. function:: get_just_pressed
 
    | :sl:`get the most recently pressed buttons`
-   | :sg:`get_just_pressed(num_buttons=3) -> (button1, button2, button3)`
-   | :sg:`get_just_pressed(num_buttons=5) -> (button1, button2, button3, button4, button5)`
+   | :sg:`get_just_pressed() -> (left_button, middle_button, right_button, x1_button, x2_button)`
 
    Very similar to :func:`pygame.mouse.get_pressed()`, returing a tuple
-   of length 3 or 5 with the important difference that the buttons are 
+   of length 5 with the important difference that the buttons are 
    True only in the frame they start to get pressed. This can be convenient
    for checking the buttons pressed "this frame" but for more precise results
    and to have the correct order the pygame.MOUSEBUTTONDOWN event could be
@@ -137,11 +136,10 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 .. function:: get_just_released
 
    | :sl:`get the most recently released buttons`
-   | :sg:`get_just_released(num_buttons=3) -> (button1, button2, button3)`
-   | :sg:`get_just_released(num_buttons=5) -> (button1, button2, button3, button4, button5)`
+   | :sg:`get_just_released() -> (left_button, middle_button, right_button, x1_button, x2_button)`
 
    Similar to :func:`pygame.mouse.get_pressed()`, returing a tuple
-   of length 3 or 5 with the important difference that the buttons are 
+   of length 5 with the important difference that the buttons are 
    True only in the frame they stop to get pressed. This can be convenient
    for checking the buttons released "this frame" but for more precise results
    and to have the correct order the pygame.MOUSEBUTTONUP event could be
