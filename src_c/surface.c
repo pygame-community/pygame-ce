@@ -2277,39 +2277,7 @@ _surf_fblits_cached_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
         return FBLITS_ERR_INVALID_SEQUENCE_LENGTH;
     }
 
-    /* load destinations */
-    PyObject **list_items = PySequence_Fast_ITEMS(pos_list);
-    Py_ssize_t current_size = 0;
-    for (i = 0; i < destinations->size; i++) {
-        int x, y;
-        PyObject *tup = list_items[i];
-
-        if (!PyTuple_Check(tup) || PyTuple_GET_SIZE(tup) != 2) {
-            return FBLITS_ERR_TUPLE_REQUIRED;
-        }
-
-        if (!pg_IntFromObj(PyTuple_GET_ITEM(tup, 0), &x) ||
-            !pg_IntFromObj(PyTuple_GET_ITEM(tup, 1), &y)) {
-            return FBLITS_ERR_INVALID_DESTINATION;
-        }
-
-        SDL_Rect *clip_rect = &dst->clip_rect;
-        SDL_Rect clipped;
-        if (!SDL_IntersectRect(clip_rect, &(SDL_Rect){x, y, src->w, src->h},
-                               &clipped))
-            continue; /* Skip out of bounds destinations */
-
-        CachedBlitDest *blit_struct = &destinations->sequence[current_size++];
-
-        blit_struct->pixels =
-            (Uint32 *)dst->pixels + clipped.y * dst->pitch / 4 + clipped.x;
-        blit_struct->w = clipped.w;
-        blit_struct->h = clipped.h;
-        blit_struct->x = x < clip_rect->x ? clip_rect->x - x : 0;
-        blit_struct->y = y < clip_rect->y ? clip_rect->y - y : 0;
-    }
-
-    if (!(destinations->size = current_size))
+    if (destinations->size == 0)
         return 0;
 
     if (self->subsurface) {
@@ -2340,6 +2308,47 @@ _surf_fblits_cached_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
     else {
         pgSurface_Prep(self);
         subsurface = NULL;
+    }
+
+    /* load destinations */
+    PyObject **list_items = PySequence_Fast_ITEMS(pos_list);
+    Py_ssize_t current_size = 0;
+    SDL_Rect src_dest = {0, 0, src->w, src->h};
+    SDL_Rect temp, *argrect;
+    for (i = 0; i < destinations->size; i++) {
+        PyObject *item = list_items[i];
+
+        if (pg_TwoIntsFromObj(item, &src_dest.x, &src_dest.y)) {
+        }
+        else if ((argrect = pgRect_FromObject(item, &temp))) {
+            src_dest.x = argrect->x;
+            src_dest.y = argrect->y;
+        }
+        else {
+            return FBLITS_ERR_INVALID_DESTINATION;
+        }
+
+        SDL_Rect *clip_rect = &dst->clip_rect;
+        SDL_Rect clipped;
+        if (!SDL_IntersectRect(clip_rect, &src_dest, &clipped))
+            continue; /* Skip out of bounds destinations */
+
+        CachedBlitDest *d_item = &destinations->sequence[current_size++];
+
+        d_item->pixels = (Uint32 *)dst->pixels;
+        d_item->pixels += clipped.y * dst->pitch / 4 + clipped.x;
+        d_item->w = clipped.w;
+        d_item->h = clipped.h;
+        d_item->x = src_dest.x < clip_rect->x ? clip_rect->x - src_dest.x : 0;
+        d_item->y = src_dest.y < clip_rect->y ? clip_rect->y - src_dest.y : 0;
+    }
+
+    if (!(destinations->size = current_size)) {
+        if (subsurface)
+            SDL_SetClipRect(subsurface, &orig_clip);
+        else
+            pgSurface_Unprep(self);
+        return 0;
     }
 
     pgSurface_Prep((pgSurfaceObject *)src_surf);
