@@ -921,7 +921,7 @@ class FreeTypeFontTest(unittest.TestCase):
                 self.assertEqual(
                     surf.get_at(bottomleft),
                     fill_color,
-                    "Position: {}. Depth: {}." " fg_color: {}.".format(
+                    "Position: {}. Depth: {}. fg_color: {}.".format(
                         bottomleft, surf.get_bitsize(), fg_color
                     ),
                 )
@@ -929,7 +929,7 @@ class FreeTypeFontTest(unittest.TestCase):
                 self.assertEqual(
                     surf.get_at(bottomright),
                     r_fg_color,
-                    "Position: {}. Depth: {}." " fg_color: {}.".format(
+                    "Position: {}. Depth: {}. fg_color: {}.".format(
                         bottomright, surf.get_bitsize(), fg_color
                     ),
                 )
