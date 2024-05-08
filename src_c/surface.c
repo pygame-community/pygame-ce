@@ -1265,10 +1265,11 @@ surf_get_colorkey(pgSurfaceObject *self, PyObject *_null)
 
     SURF_INIT_CHECK(surf)
 
-    if (SDL_GetColorKey(surf, &mapped_color) != 0) {
-        SDL_ClearError();
+    if (!SDL_HasColorKey(surf)) {
         Py_RETURN_NONE;
     }
+
+    SDL_GetColorKey(surf, &mapped_color);
 
     if (SDL_ISPIXELFORMAT_ALPHA(surf->format->format))
         SDL_GetRGBA(mapped_color, surf->format, &r, &g, &b, &a);
@@ -1430,8 +1431,8 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
 
     pgSurface_Prep(self);
 
-    if (SDL_GetColorKey(surf, &colorkey) == 0) {
-        has_colorkey = SDL_TRUE;
+    if ((has_colorkey = SDL_HasColorKey(surf))) {
+        SDL_GetColorKey(surf, &colorkey);
         if (SDL_ISPIXELFORMAT_ALPHA(surf->format->format))
             SDL_GetRGBA(colorkey, surf->format, &key_r, &key_g, &key_b,
                         &key_a);
@@ -2434,7 +2435,7 @@ surf_get_flags(PyObject *self, PyObject *_null)
     if (is_alpha) {
         flags |= PGS_SRCALPHA;
     }
-    if (SDL_GetColorKey(surf, NULL) == 0)
+    if (SDL_HasColorKey(surf))
         flags |= PGS_SRCCOLORKEY;
     if (sdl_flags & SDL_PREALLOC)
         flags |= PGS_PREALLOC;
@@ -2615,7 +2616,6 @@ surf_subsurface(PyObject *self, PyObject *args)
     struct pgSubSurface_Data *data;
     Uint8 alpha;
     Uint32 colorkey;
-    int ecode;
 
     SURF_INIT_CHECK(surf)
 
@@ -2679,20 +2679,13 @@ surf_subsurface(PyObject *self, PyObject *args)
             return NULL;
         }
     }
-    ecode = SDL_GetColorKey(surf, &colorkey);
-    if (ecode == 0) {
+    if (SDL_HasColorKey(surf)) {
+        SDL_GetColorKey(surf, &colorkey);
         if (SDL_SetColorKey(sub, SDL_TRUE, colorkey) != 0) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(sub);
             return NULL;
         }
-    }
-    else if (ecode == -1)
-        SDL_ClearError();
-    else {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        SDL_FreeSurface(sub);
-        return NULL;
     }
 
     data = PyMem_New(struct pgSubSurface_Data, 1);
@@ -2839,8 +2832,8 @@ surf_get_bounding_rect(PyObject *self, PyObject *args, PyObject *kwargs)
 
     format = surf->format;
 
-    if (SDL_GetColorKey(surf, &colorkey) == 0) {
-        has_colorkey = 1;
+    if ((has_colorkey = SDL_HasColorKey(surf))) {
+        SDL_GetColorKey(surf, &colorkey);
         SDL_GetRGBA(colorkey, surf->format, &keyr, &keyg, &keyb, &a);
     }
 

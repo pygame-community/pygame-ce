@@ -178,7 +178,8 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
         }
     }
 
-    if (SDL_GetColorKey(surf, &colorkey) == 0) {
+    if (SDL_HasColorKey(surf)) {
+        SDL_GetColorKey(surf, &colorkey);
         if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
@@ -672,7 +673,7 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     /* get the background color */
-    if (SDL_GetColorKey(surf, &bgcolor) != 0) {
+    if (!SDL_HasColorKey(surf)) {
         SDL_LockSurface(surf);
         switch (PG_SURF_BytesPerPixel(surf)) {
             case 1:
@@ -697,6 +698,9 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
         }
         SDL_UnlockSurface(surf);
         bgcolor &= ~surf->format->Amask;
+    }
+    else {
+        SDL_GetColorKey(surf, &bgcolor);
     }
 
     SDL_LockSurface(newsurf);
