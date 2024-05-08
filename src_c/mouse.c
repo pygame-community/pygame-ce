@@ -345,6 +345,10 @@ static PyObject *
 _set_system_cursor(int constant)
 {
     SDL_Cursor *lastcursor, *cursor = NULL;
+    if (constant < 0 || constant >= SDL_NUM_SYSTEM_CURSORS) {
+        return RAISE(pgExc_SDLError,
+                     "System cursor constant value out of range");
+    }
 
     cursor = SDL_CreateSystemCursor(constant);
     if (!cursor) {
