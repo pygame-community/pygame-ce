@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.vgrade
+"""pygame.examples.vgrade
 
 This example demonstrates creating an image with numpy
 python, and displaying that through SDL. You can look at the
@@ -25,7 +25,6 @@ The window will have no border decorations.
 
 The code also demonstrates use of the timer events.
 """
-
 
 import os
 import pygame

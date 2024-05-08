@@ -1,5 +1,4 @@
-"""Debug functionality that allows for more useful issue reporting
-"""
+"""Debug functionality that allows for more useful issue reporting"""
 
 import platform
 import sys

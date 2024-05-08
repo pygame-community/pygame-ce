@@ -18,6 +18,7 @@
 # Pete Shinners
 # pete@shinners.org
 """sysfont, used in the font module to find system fonts"""
+
 import warnings
 import os
 import sys

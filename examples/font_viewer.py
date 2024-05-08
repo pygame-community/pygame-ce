@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.font_viewer
+"""pygame.examples.font_viewer
 Scroll through your system fonts from a list of surfaces or one huge buffer.
 
 This example exhibits:
@@ -22,6 +22,7 @@ Keyboard Controls:
 * Press up or down to scroll
 * Press escape to exit
 """
+
 import sys
 import os
 
