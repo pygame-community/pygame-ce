@@ -322,8 +322,8 @@ _copy_colorplane(Py_buffer *view_p, SDL_Surface *surf,
         dz_dst = -1;
     }
 #endif
-    if (view_kind == VIEWKIND_COLORKEY &&
-        SDL_GetColorKey(surf, &colorkey) == 0) {
+    if (view_kind == VIEWKIND_COLORKEY && SDL_HasColorKey(surf)) {
+        SDL_GetColorKey(surf, &colorkey);
         for (x = 0; x < w; ++x) {
             for (y = 0; y < h; ++y) {
                 for (z = 0; z < pixelsize; ++z) {

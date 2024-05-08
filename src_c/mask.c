@@ -831,7 +831,6 @@ mask_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
     pgMaskObject *maskobj = NULL;
     Uint32 colorkey;
     int threshold = 127; /* default value */
-    int use_thresh = 1;
     static char *keywords[] = {"surface", "threshold", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|i", keywords,
@@ -864,13 +863,12 @@ mask_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
     Py_BEGIN_ALLOW_THREADS; /* Release the GIL. */
 
-    use_thresh = (SDL_GetColorKey(surf, &colorkey) == -1);
-
-    if (use_thresh) {
-        set_from_threshold(surf, maskobj->mask, threshold);
-    }
-    else {
+    if (SDL_HasColorKey(surf)) {
+        SDL_GetColorKey(surf, &colorkey);
         set_from_colorkey(surf, maskobj->mask, colorkey);
+    }
+    else {  // use threshold
+        set_from_threshold(surf, maskobj->mask, threshold);
     }
 
     Py_END_ALLOW_THREADS; /* Obtain the GIL. */
