@@ -7,7 +7,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ `Français`_ **فارسی** `Español`_
+`English`_ `简体中文`_ `Français`_ **فارسی** `Español`_ `Português-br`_
 ---------------------------------------------------------------------------------------------------
 کتابخانه
 Pygame_
@@ -252,3 +252,4 @@ License
 .. _简体中文: README.zh-cn.rst
 .. _Français: README.fr.rst
 .. _Español: README.es.rst
+.. _Português-br: ./docs/readmes/README.pt-br.rst
