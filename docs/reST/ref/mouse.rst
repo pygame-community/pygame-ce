@@ -114,7 +114,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 
    Very similar to :func:`pygame.mouse.get_pressed()`, returing a tuple
    of length 5 with the important difference that the buttons are 
-   True only in the frame they start to get pressed. This can be convenient
+   True only in the frame they start being pressed. This can be convenient
    for checking the buttons pressed "this frame" but for more precise results
    and to have the correct order the pygame.MOUSEBUTTONDOWN event could be
    preferred.
@@ -140,7 +140,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 
    Similar to :func:`pygame.mouse.get_pressed()`, returing a tuple
    of length 5 with the important difference that the buttons are 
-   True only in the frame they stop to get pressed. This can be convenient
+   True only in the frame they stop being pressed. This can be convenient
    for checking the buttons released "this frame" but for more precise results
    and to have the correct order the pygame.MOUSEBUTTONUP event could be
    preferred.
