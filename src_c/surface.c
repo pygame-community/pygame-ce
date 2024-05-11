@@ -2328,6 +2328,9 @@ _surf_fblits_cached_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
             return FBLITS_ERR_INVALID_DESTINATION;
         }
 
+        src_dest.x += suboffsetx;
+        src_dest.y += suboffsety;
+
         SDL_Rect *clip_rect = &dst->clip_rect;
         SDL_Rect clipped;
         if (!SDL_IntersectRect(clip_rect, &src_dest, &clipped))
@@ -2335,10 +2338,12 @@ _surf_fblits_cached_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
 
         CachedBlitDest *d_item = &destinations->sequence[current_size++];
 
-        d_item->pixels = (Uint32 *)dst->pixels;
-        d_item->pixels += clipped.y * dst->pitch / 4 + clipped.x;
+        d_item->pixels =
+            (Uint32 *)dst->pixels + clipped.y * dst->pitch / 4 + clipped.x;
+
         d_item->w = clipped.w;
         d_item->h = clipped.h;
+
         d_item->x = src_dest.x < clip_rect->x ? clip_rect->x - src_dest.x : 0;
         d_item->y = src_dest.y < clip_rect->y ? clip_rect->y - src_dest.y : 0;
     }
