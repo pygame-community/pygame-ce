@@ -197,7 +197,8 @@
    .. method:: fblits
 
       | :sl:`draw many surfaces onto the calling surface at their corresponding location and the same special_flags`
-      | :sg:`fblits(blit_sequence=((source, dest), ...), special_flags=0, cache=False/) -> None`
+      | :sg:`fblits(blit_sequence=((source, dest), ...), special_flags=0/) -> None`
+      | :sg:`fblits(blit_sequence=((source, [dest1, dest2, ...]), ...), special_flags=0/) -> None`
 
       This method takes a sequence of tuples (source, dest) as input, where source is a Surface
       object and dest is its destination position on this Surface. It draws each source Surface
@@ -208,8 +209,6 @@
       :param blit_sequence: a sequence of (source, dest)
       :param special_flags: the flag(s) representing the blend mode used for each surface.
                             See :doc:`special_flags_list` for a list of possible values.
-      :param cache: a boolean value that determines whether the surface should be cached
-                    for better performance for repeated blitting.
 
       :returns: ``None``
 
