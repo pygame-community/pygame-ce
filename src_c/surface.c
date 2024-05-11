@@ -2176,13 +2176,13 @@ _surf_fblits_item_check_and_blit(PyObject *src_surf, SDL_Surface *src,
 }
 
 int
-_surf_fblits_cached_item_check_and_blit(pgSurfaceObject *self,
+_surf_fblits_cached_item_check_and_blit(PyObject *src_surf,
+                                        pgSurfaceObject *self,
                                         SDL_Surface *src, SDL_Surface *dst,
                                         PyObject *pos_sequence,
                                         int blend_flags,
                                         BlitSequence *destinations)
 {
-    PyObject *src_surf;
     SDL_Surface *subsurface;
     int suboffsetx = 0, suboffsety = 0;
     SDL_Rect orig_clip, sub_clip;
@@ -2378,7 +2378,7 @@ _surf_fblits_blit(pgSurfaceObject *self, PyObject *item, int blend_flags,
     }
 
     *error = _surf_fblits_cached_item_check_and_blit(
-        self, src, dst, pos_or_seq, blend_flags, destinations);
+        src_surf, self, src, dst, pos_or_seq, blend_flags, destinations);
 }
 
 static PyObject *
