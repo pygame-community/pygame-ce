@@ -191,13 +191,15 @@ if consume_arg('-enable-arm-neon'):
     cflags += '-mfpu=neon'
     os.environ['CFLAGS'] = cflags
 
-compile_cython = False
-cython_only = False
-if consume_arg('cython'):
-    compile_cython = True
+no_compilation = bool({'docs', 'sdist', 'stubcheck'}.intersection(sys.argv))
 
+compile_cython = not no_compilation
+
+# does nothing now, but consume the arg anyways for compatibilty
+consume_arg('cython')
+
+cython_only = False
 if consume_arg('cython_only'):
-    compile_cython = True
     cython_only = True
 
 if compile_cython:
@@ -243,22 +245,13 @@ if compile_cython:
 
         # update outdated .c files
         if os.path.isfile(c_file):
-            c_timestamp = os.path.getmtime(c_file)
-            if c_timestamp < deps.timestamp(pyx_file):
-                dep_timestamp, dep = deps.timestamp(pyx_file), pyx_file
-                priority = 0
-            else:
-                dep_timestamp, dep = deps.newest_dependency(pyx_file)
-                priority = 2 - (dep in deps.immediate_dependencies(pyx_file))
-            if dep_timestamp > c_timestamp:
-                outdated = True
-            else:
-                outdated = False
+            outdated = False
+            priority = 0
         else:
             outdated = True
             priority = 0
         if outdated:
-            print(f'Compiling {pyx_file} because it changed.')
+            print(f'Compiling {pyx_file} because the generated C file is missing.')
             queue.append((priority, {'pyx_file': pyx_file, 'c_file': c_file, 'fingerprint': None, 'quiet': False,
                                          'options': c_options, 'full_module_name': ext.name,
                                          'embedded_metadata': pyx_meta.get(ext.name)}))
@@ -275,7 +268,6 @@ if compile_cython:
     if cython_only:
         sys.exit(0)
 
-no_compilation = 'docs' in sys.argv
 AUTO_CONFIG = not os.path.isfile('Setup') and not no_compilation
 if consume_arg('-auto'):
     AUTO_CONFIG = True
