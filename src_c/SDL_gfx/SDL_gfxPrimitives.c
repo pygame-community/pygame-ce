@@ -2006,7 +2006,7 @@ int roundedBoxRGBA(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2,
 /*!
 \brief Internal clip-encoding routine.
 
-Calculates a segement-based clipping encoding for a point against a rectangle.
+Calculates a segment-based clipping encoding for a point against a rectangle.
 
 \param x X coordinate of point.
 \param y Y coordinate of point.
@@ -4196,7 +4196,7 @@ ellipseRGBA(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
 
 /* ----- AA Ellipse */
 
-/* Visual Studio 2015 and above define the lrint intristic function, but for
+/* Visual Studio 2015 and above define the lrint intrinsic function, but for
  * compatibility with older windows compilers, we need to define it ourselves
  */
 #if defined(_MSC_VER)
@@ -5818,11 +5818,11 @@ When set to NULL, uses global static temp array.
 \param vy array of x vector components
 \param n the amount of vectors in the vx and vy array
 \param texture the sdl surface to use to fill the polygon
-\param texture_dx the offset of the texture relative to the screeen. if you
+\param texture_dx the offset of the texture relative to the screen. if you
 move the polygon 10 pixels to the left and want the texture to appear the same
 you need to increase the texture_dx value \param texture_dy see texture_dx
 \param polyInts preallocated temp array storage for vertex sorting (used for
-multi-threaded operation) \param polyAllocated flag indicating oif the temp
+multi-threaded operation) \param polyAllocated flag indicating if the temp
 array was allocated (used for multi-threaded operation)
 
 \returns Returns 0 on success, -1 on failure.
@@ -6714,7 +6714,7 @@ int _bresenhamIterate(SDL_gfxBresenhamIterator *b)
 
 
 /*!
-\brief Internal function to to draw parallel lines with Murphy algorithm.
+\brief Internal function to draw parallel lines with Murphy algorithm.
 
 \param m Pointer to struct for murphy iterator.
 \param x X coordinate of point.
@@ -6769,7 +6769,7 @@ void _murphyParaline(SDL_gfxMurphyIterator *m, Sint16 x, Sint16 y, int d1)
 }
 
 /*!
-\brief Internal function to to draw one iteration of the Murphy algorithm.
+\brief Internal function to draw one iteration of the Murphy algorithm.
 
 \param m Pointer to struct for murphy iterator.
 \param miter Iteration count.
@@ -6902,7 +6902,7 @@ void _murphyIteration(SDL_gfxMurphyIterator *m, Uint8 miter,
 #define HYPOT(x, y) sqrt((double)(x) * (double)(x) + (double)(y) * (double)(y))
 
 /*!
-\brief Internal function to to draw wide lines with Murphy algorithm.
+\brief Internal function to draw wide lines with Murphy algorithm.
 
 Draws lines parallel to ideal line.
 

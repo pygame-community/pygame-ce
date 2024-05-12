@@ -280,7 +280,7 @@ typedef enum {
      *
      * At a first glance, these may look redundant, but they are really
      * important, especially with event blocking. If proxy events are
-     * not there, blocked events dont make it to our event filter, and
+     * not there, blocked events don't make it to our event filter, and
      * that can break a lot of stuff.
      *
      * IMPORTANT NOTE: Do not post events directly with these proxy types,
