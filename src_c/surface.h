@@ -364,12 +364,12 @@ pygame_Blit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
             SDL_Rect *dstrect, int blend_flags);
 
 int
-SoftCachedBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
-                     BlitSequence *destinations);
+SoftMultiBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
+                    BlitSequence *destinations);
 
 void
-pg_cached_blitcopy(SDL_Surface *src, SDL_Surface *dst,
-                   BlitSequence *destinations);
+pg_multi_blitcopy(SDL_Surface *src, SDL_Surface *dst,
+                  BlitSequence *destinations);
 
 int
 premul_surf_color_by_alpha(SDL_Surface *src, SDL_Surface *dst);

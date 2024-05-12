@@ -590,8 +590,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
 }
 
 void
-pg_cached_blitcopy(SDL_Surface *src, SDL_Surface *dst,
-                   BlitSequence *destinations)
+pg_multi_blitcopy(SDL_Surface *src, SDL_Surface *dst,
+                  BlitSequence *destinations)
 {
     Py_ssize_t i;
     for (i = 0; i < destinations->size; i++) {
@@ -613,8 +613,8 @@ pg_cached_blitcopy(SDL_Surface *src, SDL_Surface *dst,
 }
 
 int
-SoftCachedBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
-                     BlitSequence *destinations)
+SoftMultiBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
+                    BlitSequence *destinations)
 {
     int okay = 1;
     int src_locked = 0, dst_locked = 0;
@@ -645,7 +645,7 @@ SoftCachedBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
                 }
 
                 /* blitcopy */
-                pg_cached_blitcopy(src, dst, destinations);
+                pg_multi_blitcopy(src, dst, destinations);
                 break;
             default:
                 okay = 0;
