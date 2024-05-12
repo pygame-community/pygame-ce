@@ -1474,6 +1474,7 @@ pg_set_window_pos(PyObject *self, PyObject *arg)
     }
 
     if (win)
+        /* Will raise errors with SDL 3, deal with it during the porting */
         SDL_SetWindowPosition(win, x, y);
 
     Py_RETURN_NONE;
