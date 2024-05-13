@@ -1602,16 +1602,16 @@ class TransformDisplayModuleTest(unittest.TestCase):
 
     def test_blur_zero_size_surface(self):
         surface = pygame.Surface((0, 0))
-        self.assertEqual(pygame.transform.box_blur(surface).get_size(), (0, 0))
-        self.assertEqual(pygame.transform.gaussian_blur(surface).get_size(), (0, 0))
+        self.assertEqual(pygame.transform.box_blur(surface, 3).get_size(), (0, 0))
+        self.assertEqual(pygame.transform.gaussian_blur(surface, 3).get_size(), (0, 0))
 
         surface = pygame.Surface((20, 0))
-        self.assertEqual(pygame.transform.box_blur(surface).get_size(), (20, 0))
-        self.assertEqual(pygame.transform.gaussian_blur(surface).get_size(), (20, 0))
+        self.assertEqual(pygame.transform.box_blur(surface, 3).get_size(), (20, 0))
+        self.assertEqual(pygame.transform.gaussian_blur(surface, 3).get_size(), (20, 0))
 
         surface = pygame.Surface((0, 20))
-        self.assertEqual(pygame.transform.box_blur(surface).get_size(), (0, 20))
-        self.assertEqual(pygame.transform.gaussian_blur(surface).get_size(), (0, 20))
+        self.assertEqual(pygame.transform.box_blur(surface, 3).get_size(), (0, 20))
+        self.assertEqual(pygame.transform.gaussian_blur(surface, 3).get_size(), (0, 20))
 
     def test_flip(self):
         """honors the set_color key on the returned surface from flip."""
