@@ -3266,6 +3266,11 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
         retsurf = pgSurface_AsSurface(dstobj);
     }
 
+    if ((retsurf->w) != (src->w) || (retsurf->h) != (src->h)) {
+        return RAISE(PyExc_ValueError,
+                     "Destination surface not the same size.");
+    }
+    
     if (retsurf->w == 0 || retsurf->h == 0) {
         return retsurf;
     }
@@ -3281,11 +3286,6 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
             "Blur routines do not support dest_surfaces that share pixels "
             "with the source surface. Likely the surfaces are the same, one "
             "of them is a subsurface, or they are sharing the same buffer.");
-    }
-
-    if ((retsurf->w) != (src->w) || (retsurf->h) != (src->h)) {
-        return RAISE(PyExc_ValueError,
-                     "Destination surface not the same size.");
     }
 
     if (PG_SURF_BytesPerPixel(src) != PG_SURF_BytesPerPixel(retsurf)) {
