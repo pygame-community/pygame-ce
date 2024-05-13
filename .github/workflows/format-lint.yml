@@ -50,10 +50,10 @@ jobs:
 
       - name: Check docs changes are checked in
         run: |
-          python3 setup.py docs
+          python3 buildconfig/makeref.py
           if [[ `git status --porcelain` ]]; then
             echo "Generating docs caused changes. Please check them in."
-            echo "You may need to run: python3 setup.py docs --fullgeneration"
+            echo "You may need to run: python3 buildconfig/makeref.py fullgeneration"
             # Run git status again, so people can see what changed.
             git status --porcelain
             exit 1
