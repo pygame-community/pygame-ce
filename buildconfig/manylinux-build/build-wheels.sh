@@ -42,7 +42,7 @@ for PYVER in $SUPPORTED_PYTHONS; do
 
     ${PYTHON} -m pip install Sphinx
     cd io
-    ${PYTHON} buildconfig/makeref.py
+    ${PYTHON} setup.py docs
     cd ..
     ${PYTHON} -m pip wheel --global-option="build_ext" --global-option="-j4" -vvv /io/ -w wheelhouse/
 done
