@@ -3270,7 +3270,7 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
         return RAISE(PyExc_ValueError,
                      "Destination surface not the same size.");
     }
-    
+
     if (retsurf->w == 0 || retsurf->h == 0) {
         return retsurf;
     }
