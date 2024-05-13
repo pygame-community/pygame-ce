@@ -3266,6 +3266,10 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
         retsurf = pgSurface_AsSurface(dstobj);
     }
 
+    if (retsurf->w == 0 || retsurf->h == 0) {
+        return retsurf;
+    }
+
     Uint8 *ret_start = retsurf->pixels;
     Uint8 *ret_end = ret_start + retsurf->h * retsurf->pitch;
     Uint8 *src_start = src->pixels;
