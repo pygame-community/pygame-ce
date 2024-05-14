@@ -25,6 +25,7 @@
 #include "pygame.h"
 
 #include <signal.h>
+#include <limits.h>
 #include "doc/pygame_doc.h"
 #include "pgarrinter.h"
 #include "pgcompat.h"
@@ -527,6 +528,158 @@ pg_TwoIntsFromObj(PyObject *obj, int *val1, int *val2)
         !pg_IntFromObjIndex(obj, 1, val2)) {
         return 0;
     }
+    return 1;
+}
+
+static int
+pg_IntFromObjEx(PyObject *obj, int *val, const char *msg)
+{
+    int overflow = 0;
+    if (PyFloat_Check(obj)) {
+        double d = PyFloat_AS_DOUBLE(obj);
+        if (d >= INT_MIN && d <= INT_MAX) {
+            *val = (int)d;
+            return 1;
+        }
+        PyErr_SetString(PyExc_OverflowError, "float too large to convert");
+        return 0;
+    }
+    else if (PyLong_Check(obj)) {
+        *val = PyLong_AsLongAndOverflow(obj, &overflow);
+
+        if (overflow) {
+            PyErr_SetString(PyExc_OverflowError, "value too large to convert");
+            return 0;
+        }
+        else if (PyErr_Occurred()) {
+            if (msg && PyErr_ExceptionMatches(PyExc_TypeError)) {
+                PyErr_SetString(PyExc_TypeError, msg);
+            }
+            return 0;
+        }
+        return 1;
+    }
+    else if (PyNumber_Check(obj)) {
+        PyObject *longobj = PyNumber_Long(obj);
+        if (!longobj) {
+            return 0;
+        }
+
+        *val = PyLong_AsLongAndOverflow(longobj, &overflow);
+        Py_DECREF(longobj);
+
+        if (overflow) {
+            PyErr_SetString(PyExc_OverflowError, "value too large to convert");
+            return 0;
+        }
+        else if (PyErr_Occurred()) {
+            if (msg && PyErr_ExceptionMatches(PyExc_TypeError)) {
+                PyErr_SetString(PyExc_TypeError, msg);
+            }
+            return 0;
+        }
+        return 1;
+    }
+    PyErr_SetString(PyExc_TypeError, msg ? msg : "Function expects a number");
+    return 0;
+}
+
+/* internal API only, assumes obj is a Sequence*/
+static int
+_pg_IntFromSeqIndexEx(PyObject *obj, int index, int *val, const char *msg)
+
+{
+    int result = 0;
+
+    PyObject *item = PySequence_ITEM(obj, index);
+    if (!item) {
+        return 0;
+    }
+    result = pg_IntFromObjEx(item, val, msg);
+    Py_DECREF(item);
+
+    return result;
+}
+
+static int
+pg_IntFromSeqIndexEx(PyObject *obj, int index, int *val, const char *msg)
+
+{
+    int result = 0;
+
+    if (PySequence_Check(obj)) {
+        PyObject *item = PySequence_ITEM(obj, index);
+        if (!item) {
+            return 0;
+        }
+        result = pg_IntFromObjEx(item, val, msg);
+        Py_DECREF(item);
+    }
+
+    return result;
+}
+
+static int
+pg_TwoIntsFromObjEx(PyObject *obj, int *val1, int *val2, const char *msg)
+{
+    Py_ssize_t length;
+    /*Faster path for tuples and lists*/
+    if (PyTuple_Check(obj) || PyList_Check(obj)) {
+        length = PySequence_Fast_GET_SIZE(obj);
+        PyObject **f_arr = PySequence_Fast_ITEMS(obj);
+        if (length == 2) {
+            if (!pg_IntFromObjEx(f_arr[0], val1, msg) ||
+                !pg_IntFromObjEx(f_arr[1], val2, msg)) {
+                return 0;
+            }
+        }
+        else if (length == 1) {
+            /* Handle case of ((x, y), ) 'nested sequence' */
+            return pg_TwoIntsFromObjEx(f_arr[0], val1, val2, msg);
+        }
+        else {
+            PyErr_SetString(
+                PyExc_ValueError,
+                msg ? msg : "Invalid sequence size, must be either 1 or 2");
+            return 0;
+        }
+    }
+    /*This mainly accounts for vectors, as using PySequence_Fast on a vector is
+     * error-prone*/
+    else if (PySequence_Check(obj)) {
+        length = PySequence_Length(obj);
+        if (length == 2) {
+            if (!_pg_IntFromSeqIndexEx(obj, 0, val1, msg) ||
+                !_pg_IntFromSeqIndexEx(obj, 1, val2, msg)) {
+                return 0;
+            }
+        }
+        else if (length == 1) {
+            /* Handle case of ((x, y), ) 'nested sequence' */
+            PyObject *tmp = PySequence_ITEM(obj, 0);
+            int ret = pg_TwoIntsFromObjEx(tmp, val1, val2, msg);
+            Py_DECREF(tmp);
+            return ret;
+        }
+        else {
+            if (PyErr_Occurred()) {
+                if (msg && PyErr_ExceptionMatches(PyExc_TypeError)) {
+                    PyErr_SetString(PyExc_TypeError, msg);
+                }
+                return 0;
+            }
+            PyErr_SetString(
+                PyExc_ValueError,
+                msg ? msg : "Invalid sequence size, must be either 1 or 2");
+            return 0;
+        }
+    }
+    else {
+        PyErr_SetString(PyExc_TypeError,
+                        msg ? msg : "Function expects a sequence like object");
+        return 0;
+    }
+
     return 1;
 }
 
@@ -2296,8 +2449,11 @@ MODINIT_DEFINE(base)
     c_api[26] = pg_TwoDoublesFromFastcallArgs;
     c_api[27] = pg_GetDefaultConvertFormat;
     c_api[28] = pg_SetDefaultConvertFormat;
+    c_api[29] = pg_IntFromObjEx;
+    c_api[30] = pg_TwoIntsFromObjEx;
+    c_api[31] = pg_IntFromSeqIndexEx;
 
-#define FILLED_SLOTS 29
+#define FILLED_SLOTS 32
 
 #if PYGAMEAPI_BASE_NUMSLOTS != FILLED_SLOTS
 #error export slot count mismatch
