@@ -371,6 +371,18 @@ pg_circle_as_frect(pgCircleObject *self, PyObject *_null)
     return pgFRect_New4((float)x, (float)y, (float)diameter, (float)diameter);
 }
 
+
+#define RECT_CIRCLE_CONTAINS(rect, circle, result)                              \
+    if (pgCollision_CirclePoint(scirc, (double)rect->x, (double)rect->y) &&     \
+            pgCollision_CirclePoint(circle, (double)(rect->x + rect->w),        \
+                                    (double)rect->y) &&                         \
+            pgCollision_CirclePoint(circle, (double)rect->x,                    \
+                                    (double)(rect->y + rect->h)) &&             \
+            pgCollision_CirclePoint(circle, (double)(rect->x + rect->w),        \
+                                    (double)(rect->y + rect->h))) {             \
+            result = 1;                                                         \
+        }   
+
 static PyObject *
 pg_circle_contains(pgCircleObject *self, PyObject *arg)
 {
@@ -396,28 +408,12 @@ pg_circle_contains(pgCircleObject *self, PyObject *arg)
     else if (pgRect_Check(arg)) {
         SDL_Rect *temp = &pgRect_AsRect(arg);
 
-        if (pgCollision_CirclePoint(scirc, (double)temp->x, (double)temp->y) &&
-            pgCollision_CirclePoint(scirc, (double)(temp->x + temp->w),
-                                    (double)temp->y) &&
-            pgCollision_CirclePoint(scirc, (double)temp->x,
-                                    (double)(temp->y + temp->h)) &&
-            pgCollision_CirclePoint(scirc, (double)(temp->x + temp->w),
-                                    (double)(temp->y + temp->h))) {
-            result = 1;
-        }
+        RECT_CIRCLE_CONTAINS(temp, scirc, result);
     }
     else if (pgFRect_Check(arg)) {
         SDL_FRect *temp = &pgFRect_AsRect(arg);
 
-        if (pgCollision_CirclePoint(scirc, (double)temp->x, (double)temp->y) &&
-            pgCollision_CirclePoint(scirc, (double)(temp->x + temp->w),
-                                    (double)temp->y) &&
-            pgCollision_CirclePoint(scirc, (double)temp->x,
-                                    (double)(temp->y + temp->h)) &&
-            pgCollision_CirclePoint(scirc, (double)(temp->x + temp->w),
-                                    (double)(temp->y + temp->h))) {
-            result = 1;
-        }
+        RECT_CIRCLE_CONTAINS(temp, scirc, result);
     }
     else if (pg_TwoDoublesFromObj(arg, &x, &y)) {
         result = pgCollision_CirclePoint(scirc, x, y);
