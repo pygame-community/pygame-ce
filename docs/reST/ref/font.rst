@@ -306,23 +306,25 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.point_size ##
 
-   .. attribute:: outline_size
+   .. attribute:: outline_width
 
-      | :sl:`Gets or sets the font's outline size`
-      | :sg:`outline_size -> int`
+      | :sl:`Gets or sets the font's outline radius size`
+      | :sg:`outline_width -> int`
 
-      Returns the size of the outline.
+      Gets or sets the radius size of the outline in pixels defaulting to 0.
+
+      If the value is set to 0, it shows no outline.
 
       .. versionadded:: 2.5.0
 
-      .. ## Font.outline_size ##
+      .. ## Font.outline_width ##
 
    .. attribute:: outline_color
 
       | :sl:`Gets or sets the font's outline color`
-      | :sg:`outline_size -> RGB`
+      | :sg:`outline_width -> RGB`
 
-      Returns the color of the outline.
+      Gets or sets the color of the outline defaulting to (0, 0, 0, 255)
 
       .. versionadded:: 2.5.0
 

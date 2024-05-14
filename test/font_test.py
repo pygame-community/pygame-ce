@@ -981,7 +981,7 @@ class FontTypeTest(unittest.TestCase):
                 ("italic", True),
                 ("underline", True),
                 ("strikethrough", True),
-                ("outline_size", 5),
+                ("outline_width", 5),
                 (
                     "outline_color",
                     (
@@ -1066,7 +1066,7 @@ class VisualTests(unittest.TestCase):
         underline=False,
         strikethrough=False,
         antialiase=False,
-        outline_size=0,
+        outline_width=0,
         outline_color=(0, 0, 0),
     ):
         if self.aborted:
@@ -1079,7 +1079,7 @@ class VisualTests(unittest.TestCase):
         screen.fill((255, 255, 255))
         pygame.display.flip()
         if not (
-            bold or italic or underline or strikethrough or antialiase or outline_size
+            bold or italic or underline or strikethrough or antialiase or outline_width
         ):
             text = "normal"
         else:
@@ -1094,14 +1094,14 @@ class VisualTests(unittest.TestCase):
                 modes.append("strikethrough")
             if antialiase:
                 modes.append("antialiased")
-            if outline_size:
-                modes.append("outline_size")
+            if outline_width:
+                modes.append("outline_width")
             text = f"{'-'.join(modes)} (y/n):"
         f.set_bold(bold)
         f.set_italic(italic)
         f.set_underline(underline)
         f.set_strikethrough(strikethrough)
-        f.outline_size = outline_size
+        f.outline_width = outline_width
         f.outline_color = outline_color
         s = f.render(text, antialiase, (0, 0, 0))
         screen.blit(s, (offset, y))
@@ -1142,11 +1142,11 @@ class VisualTests(unittest.TestCase):
     def test_antialiase(self):
         self.assertTrue(self.query(antialiase=True))
 
-    def test_outline_size(self):
-        self.assertTrue(self.query(outline_size=1, outline_color=(255, 0, 255)))
+    def test_outline_width(self):
+        self.assertTrue(self.query(outline_width=1, outline_color=(255, 0, 255)))
 
-    def test_outline_size_huge(self):
-        self.assertTrue(self.query(outline_size=10, outline_color=(0, 0, 255)))
+    def test_outline_width_huge(self):
+        self.assertTrue(self.query(outline_width=10, outline_color=(0, 0, 255)))
 
     def test_bold_antialiase(self):
         self.assertTrue(self.query(bold=True, antialiase=True))

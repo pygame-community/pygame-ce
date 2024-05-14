@@ -29,10 +29,8 @@ typedef struct {
     PyObject_HEAD TTF_Font *font;
     PyObject *weakreflist;
     int ptsize;
-
     SDL_Color outline_color;
-    int outline_size;
-
+    int outline_width;
     unsigned int ttf_init_generation;
 } PyFontObject;
 #define PyFont_AsFont(x) (((PyFontObject *)x)->font)
