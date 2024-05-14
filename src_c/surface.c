@@ -2380,7 +2380,7 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
     pitch = surf->pitch;
     span = w * bpp;
     linesrc = (Uint8 *)surf->pixels + pitch * y + bpp * x;
-    startsrc = linesrc;
+    startsrc = endsrc = linesrc;
     xoffset = dx * bpp;
     if (dy > 0) {
         linesrc += pitch * (h - 1);
