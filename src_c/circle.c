@@ -371,17 +371,16 @@ pg_circle_as_frect(pgCircleObject *self, PyObject *_null)
     return pgFRect_New4((float)x, (float)y, (float)diameter, (float)diameter);
 }
 
-
-#define RECT_CIRCLE_CONTAINS(rect, circle, result)                              \
-    if (pgCollision_CirclePoint(scirc, (double)rect->x, (double)rect->y) &&     \
-            pgCollision_CirclePoint(circle, (double)(rect->x + rect->w),        \
-                                    (double)rect->y) &&                         \
-            pgCollision_CirclePoint(circle, (double)rect->x,                    \
-                                    (double)(rect->y + rect->h)) &&             \
-            pgCollision_CirclePoint(circle, (double)(rect->x + rect->w),        \
-                                    (double)(rect->y + rect->h))) {             \
-            result = 1;                                                         \
-        }   
+#define RECT_CIRCLE_CONTAINS(rect, circle, result)                          \
+    if (pgCollision_CirclePoint(scirc, (double)rect->x, (double)rect->y) && \
+        pgCollision_CirclePoint(circle, (double)(rect->x + rect->w),        \
+                                (double)rect->y) &&                         \
+        pgCollision_CirclePoint(circle, (double)rect->x,                    \
+                                (double)(rect->y + rect->h)) &&             \
+        pgCollision_CirclePoint(circle, (double)(rect->x + rect->w),        \
+                                (double)(rect->y + rect->h))) {             \
+        result = 1;                                                         \
+    }
 
 static PyObject *
 pg_circle_contains(pgCircleObject *self, PyObject *arg)
