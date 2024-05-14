@@ -3,13 +3,13 @@
   Copyright (C) 2000-2001  Pete Shinners
   Copyright (C) 2007 Marcus von Appen
 
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Library General Public
-  License as published by the Free Software Foundation; either
+  This library is free software; you can redistribute it and/or   
+  modify it under the terms of the GNU Library General Public     
+  License as published by the Free Software Foundation; either    
   version 2 of the License, or (at your option) any later version.
 
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  This library is distributed in the hope that it will be useful, 
+  but WITHOUT ANY WARRANTY; without even the implied warranty of  
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Library General Public License for more details.
 
@@ -117,9 +117,6 @@ static void
 surface_dealloc(PyObject *self);
 static void
 surface_cleanup(pgSurfaceObject *self);
-static void
-surface_move(Uint8 *src, Uint8 *dst, int h, int span, int srcpitch,
-             int dstpitch);
 
 static PyObject *
 surf_get_at(PyObject *self, PyObject *args);
@@ -2311,16 +2308,17 @@ on_error:
 static PyObject *
 surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
 {
-    int dx = 0, dy = 0;
+    int dx = 0, dy = 0, repeat = 0;
     SDL_Surface *surf;
-    int bpp;
-    int pitch;
     SDL_Rect *clip_rect;
-    int w, h;
-    Uint8 *src, *dst;
+    int w = 0, h = 0, x = 0, y = 0;
+    int bpp = 0, pitch = 0, span = 0;
+    int xoffset = 0;
+    Uint8 *linesrc, *startsrc, *endsrc;
 
-    static char *kwids[] = {"dx", "dy", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, keywds, "|ii", kwids, &dx, &dy)) {
+    static char *kwids[] = {"dx", "dy", "repeat", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "|iip", kwids, &dx, &dy,
+                                     &repeat)) {
         return NULL;
     }
 
@@ -2334,8 +2332,44 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
     clip_rect = &surf->clip_rect;
     w = clip_rect->w;
     h = clip_rect->h;
-    if (dx >= w || dx <= -w || dy >= h || dy <= -h) {
+    x = clip_rect->x;
+    y = clip_rect->y;
+    if (x > surf->w || x + w < 0 || y > surf->h || y + h < 0) {
         Py_RETURN_NONE;
+    }
+    /* Get the intersection between the clip rect and the
+       surface absolute rect to avoid segfaults */
+    if (x < 0) {
+        w += x;
+        x = 0;
+    }
+    if (y < 0) {
+        h += y;
+        y = 0;
+    }
+    if (x + w > surf->w) {
+        w -= (x + w) - surf->w;
+    }
+    if (y + h > surf->h) {
+        h -= (y + h) - surf->h;
+    }
+    /* If the clip rect is outside the surface fill and return
+      for scrolls without repeat */
+    if (!repeat) {
+        if (dx >= w || dx <= -w || dy >= h || dy <= -h) {
+            if (SDL_FillRect(surf, NULL, 0) == -1) {
+                PyErr_SetString(pgExc_SDLError, SDL_GetError());
+                return NULL;
+            }
+            Py_RETURN_NONE;
+        }
+    }
+    // Repeated scrolls are periodic so we can delete the exceeding value
+    if (dx >= w || dx <= -w) {
+        dx = dx % w;
+    }
+    if (dy >= h || dy <= -h) {
+        dy = dy % h;
     }
 
     if (!pgSurface_Lock((pgSurfaceObject *)self)) {
@@ -2344,33 +2378,149 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
 
     bpp = PG_SURF_BytesPerPixel(surf);
     pitch = surf->pitch;
-    src = dst =
-        (Uint8 *)surf->pixels + clip_rect->y * pitch + clip_rect->x * bpp;
-    if (dx >= 0) {
-        w -= dx;
-        if (dy > 0) {
-            h -= dy;
-            dst += dy * pitch + dx * bpp;
+    span = w * bpp;
+    linesrc = (Uint8 *)surf->pixels + pitch * y + bpp * x;
+    startsrc = linesrc;
+    xoffset = dx * bpp;
+    if (dy > 0) {
+        linesrc += pitch * (h - 1);
+        endsrc = linesrc + pitch * (h - 1);
+    }
+
+    if (repeat) {
+        if (dy != 0) {
+            int yincrease = dy > 0 ? -pitch : pitch;
+            int spanincrease = dy > 0 ? -span : span;
+            int templen = (dy > 0 ? dy * span : -dy * span);
+            int tempheight = (dy > 0 ? dy : -dy);
+            /* Create a temporary buffer to store the pixels that
+               are disappearing from the surface */
+            Uint8 *tempbuf = (Uint8 *)malloc(templen);
+            memset(tempbuf, 0, templen);
+            Uint8 *templine = tempbuf;
+            Uint8 *tempend =
+                templine + (dy > 0 ? (dy - 1) * span : -(dy + 1) * span);
+            if (dy > 0) {
+                templine = tempend;
+            }
+            int looph = h;
+            while (looph--) {
+                // If the current line should disappear copy it to the
+                // temporary buffer
+                if ((templine <= tempend && dy < 0) ||
+                    (templine >= tempbuf && dy > 0)) {
+                    if (dx > 0) {
+                        memcpy(templine, linesrc + span - xoffset, xoffset);
+                        memcpy(templine + xoffset, linesrc, span - xoffset);
+                    }
+                    else if (dx < 0) {
+                        memcpy(templine + span + xoffset, linesrc, -xoffset);
+                        memcpy(templine, linesrc - xoffset, span + xoffset);
+                    }
+                    else {
+                        memcpy(templine, linesrc, span);
+                    }
+                    memset(linesrc, 0, span);
+                    templine += spanincrease;
+                }
+                else {
+                    Uint8 *pastesrc = linesrc + pitch * dy;
+                    if ((dy < 0 && pastesrc >= startsrc) ||
+                        (dy > 0 && pastesrc <= endsrc)) {
+                        if (dx > 0) {
+                            memcpy(pastesrc, linesrc + span - xoffset,
+                                   xoffset);
+                            memcpy(pastesrc + xoffset, linesrc,
+                                   span - xoffset);
+                        }
+                        else if (dx < 0) {
+                            memcpy(pastesrc + span + xoffset, linesrc,
+                                   -xoffset);
+                            memcpy(pastesrc, linesrc - xoffset,
+                                   span + xoffset);
+                        }
+                        else {
+                            memcpy(pastesrc, linesrc, span);
+                        }
+                        memset(linesrc, 0, span);
+                    }
+                }
+                linesrc += yincrease;
+            }
+            // Copy the data of the buffer back to the original pixels to
+            // repeat
+            templine = tempbuf;
+            if (dy < 0) {
+                linesrc = startsrc + pitch * (h - tempheight);
+            }
+            else {
+                linesrc = startsrc;
+            }
+            while (tempheight--) {
+                memcpy(linesrc, templine, span);
+                linesrc += pitch;
+                templine += span;
+            }
+            free(tempbuf);
         }
         else {
-            h += dy;
-            src -= dy * pitch;
-            dst += dx * bpp;
+            // No y-shifting, the temporary buffer should only store the x loss
+            Uint8 *tempbuf = (Uint8 *)malloc((dx > 0 ? xoffset : -xoffset));
+            while (h--) {
+                if (dx > 0) {
+                    memcpy(tempbuf, linesrc + span - xoffset, xoffset);
+                    memcpy(linesrc + xoffset, linesrc, span - xoffset);
+                    memcpy(linesrc, tempbuf, xoffset);
+                }
+                else if (dx < 0) {
+                    memcpy(tempbuf, linesrc, -xoffset);
+                    memcpy(linesrc, linesrc - xoffset, span + xoffset);
+                    memcpy(linesrc + span + xoffset, tempbuf, -xoffset);
+                }
+                linesrc += pitch;
+            }
+            free(tempbuf);
         }
     }
     else {
-        w += dx;
-        if (dy > 0) {
-            h -= dy;
-            src -= dx * bpp;
-            dst += dy * pitch;
+        if (dy != 0) {
+            /* Copy the current line to a before or after position if it's
+               valid with consideration of x offset and memset to avoid
+               artifacts */
+            int yincrease = dy > 0 ? -pitch : pitch;
+            while (h--) {
+                Uint8 *pastesrc = linesrc + pitch * dy;
+                if ((dy < 0 && pastesrc >= startsrc) ||
+                    (dy > 0 && pastesrc <= endsrc)) {
+                    if (dx > 0) {
+                        memcpy(pastesrc + xoffset, linesrc, span - xoffset);
+                    }
+                    else if (dx < 0) {
+                        memcpy(pastesrc, linesrc - xoffset, span + xoffset);
+                    }
+                    else {
+                        memcpy(pastesrc, linesrc, span);
+                    }
+                    memset(linesrc, 0, span);
+                }
+                linesrc += yincrease;
+            }
         }
         else {
-            h += dy;
-            src -= dy * pitch + dx * bpp;
+            // No y-shifting, we only need to move pixels on the same line
+            while (h--) {
+                if (dx > 0) {
+                    memcpy(linesrc + xoffset, linesrc, span - xoffset);
+                    memset(linesrc, 0, xoffset);
+                }
+                else if (dx < 0) {
+                    memcpy(linesrc, linesrc - xoffset, span + xoffset);
+                    memset(linesrc + span + xoffset, 0, -xoffset);
+                }
+                linesrc += pitch;
+            }
         }
     }
-    surface_move(src, dst, h, w * bpp, pitch, pitch);
 
     if (!pgSurface_Unlock((pgSurfaceObject *)self)) {
         return NULL;
@@ -3711,23 +3861,6 @@ surf_get_pixels_address(PyObject *self, PyObject *closure)
 #else
     return PyLong_FromUnsignedLong((unsigned long)address);
 #endif
-}
-
-static void
-surface_move(Uint8 *src, Uint8 *dst, int h, int span, int srcpitch,
-             int dstpitch)
-{
-    if (src < dst) {
-        src += (h - 1) * srcpitch;
-        dst += (h - 1) * dstpitch;
-        srcpitch = -srcpitch;
-        dstpitch = -dstpitch;
-    }
-    while (h--) {
-        memmove(dst, src, span);
-        src += srcpitch;
-        dst += dstpitch;
-    }
 }
 
 static int
