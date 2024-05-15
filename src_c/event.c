@@ -1390,8 +1390,16 @@ PyObject *
 pg_event_str(PyObject *self)
 {
     pgEventObject *e = (pgEventObject *)self;
-    return PyUnicode_FromFormat("<Event(%d-%s %S)>", e->type,
-                                _pg_name_from_eventtype(e->type), e->dict);
+    char* event_name = _pg_name_from_eventtype(e->type);
+    if (strcmp(event_name, "UserEvent")==0)
+    {
+        if (PyObject_IsTrue(e->dict))
+            return PyUnicode_FromFormat("%s(type=%d, dict=%S)", event_name, e->type, e->dict);
+        return PyUnicode_FromFormat("%s(type=%d)", event_name, e->type);
+    }
+    if (PyObject_IsTrue(e->dict))
+        return PyUnicode_FromFormat("%sEvent(type=%d, dict=%S)", event_name, e->type, e->dict);
+    return PyUnicode_FromFormat("%sEvent(type=%d)", event_name, e->type);
 }
 
 static int
@@ -1498,9 +1506,25 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
     return 0;
 }
 
+static PyObject *
+pg_event_init_subclass(PyTypeObject *cls, PyObject *args, PyObject **kwargs)
+{
+    PyObject* repr = PyUnicode_FromFormat("%S %S %S", cls, args, kwargs);
+    printf("subclass: %s\n", PyUnicode_AsUTF8(repr));
+    Py_DECREF(repr);
+    Py_RETURN_NONE;
+}
+
+static PyMethodDef eventobj_methods[] = {
+    {"__init_subclass__", (PyCFunction)(void (*)(void))pg_event_init_subclass,
+    METH_VARARGS | METH_KEYWORDS | METH_CLASS},
+    {NULL, NULL, 0, NULL}
+};
+
 static PyTypeObject pgEvent_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.event.Event",
     .tp_basicsize = sizeof(pgEventObject),
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_dealloc = pg_event_dealloc,
     .tp_repr = pg_event_str,
     .tp_as_number = &pg_event_as_number,
@@ -1517,7 +1541,34 @@ static PyTypeObject pgEvent_Type = {
     .tp_dictoffset = offsetof(pgEventObject, dict),
     .tp_init = (initproc)pg_event_init,
     .tp_new = PyType_GenericNew,
+    .tp_methods = eventobj_methods,
 };
+
+static PyType_Slot pg_event_subclass_slots[] = {
+    {0}
+};
+
+static PyObject *
+_pgEvent_CreateSubclass(Uint32 ev_type)
+{
+    PyType_Spec type_spec = {.name=_pg_name_from_eventtype(ev_type), .basicsize = sizeof(pgEventObject), .slots=pg_event_subclass_slots};
+    PyObject* bases = PyTuple_Pack(1, (PyObject *)&pgEvent_Type);
+
+    if (bases == NULL)
+        return NULL;
+
+    PyObject* type = PyType_FromSpecWithBases(&type_spec, bases);
+    return type;
+}
+
+static PyObject *
+pg_event_class(PyObject *self, PyObject *args)
+{
+    Uint32 e_type;
+    if (!PyArg_ParseTuple(args, "I", &e_type))
+        return NULL;
+    return _pgEvent_CreateSubclass(e_type);
+}
 
 static PyObject *
 pgEvent_New(SDL_Event *event)
@@ -2247,6 +2298,7 @@ static PyMethodDef _event_methods[] = {
      DOC_EVENT_GETBLOCKED},
     {"custom_type", (PyCFunction)pg_event_custom_type, METH_NOARGS,
      DOC_EVENT_CUSTOMTYPE},
+     {"event_class", (PyCFunction)pg_event_class, METH_VARARGS},
 
     {NULL, NULL, 0, NULL}};
 
