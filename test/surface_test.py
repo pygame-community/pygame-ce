@@ -2668,7 +2668,7 @@ class GeneralSurfaceTests(unittest.TestCase):
                 for dx in range(-1, 1):
                     for dy in range(-1, 1):
                         surface = pygame.Surface((20, 20), 0, bits)
-                        surface.scroll(dx*2, dy*2, repeat)
+                        surface.scroll(dx * 2, dy * 2, repeat)
         # Check non repeating mode working
         surface = pygame.Surface((20, 20))
         surface.fill("green")
