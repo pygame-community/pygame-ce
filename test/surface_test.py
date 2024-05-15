@@ -2663,7 +2663,7 @@ class GeneralSurfaceTests(unittest.TestCase):
 
     def test_scroll(self):
         # Check segfaults for any direction or bits or mode
-        for bits in [8, 16, 32]:
+        for bits in [8, 16, 24, 32]:
             for repeat in [False, True]:
                 for dx in range(-1, 1):
                     for dy in range(-1, 1):
