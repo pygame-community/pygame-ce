@@ -2383,8 +2383,8 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
     startsrc = endsrc = linesrc;
     xoffset = dx * bpp;
     if (dy > 0) {
-        linesrc += pitch * (h - 1);
         endsrc = linesrc + pitch * (h - 1);
+        linesrc = endsrc;
     }
 
     if (repeat) {
@@ -2396,6 +2396,12 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
             /* Create a temporary buffer to store the pixels that
                are disappearing from the surface */
             Uint8 *tempbuf = (Uint8 *)malloc(templen);
+            if (tempbuf == NULL) {
+                if (!pgSurface_Unlock((pgSurfaceObject *)self)) {
+                    return NULL;
+                }
+                return PyErr_NoMemory();
+            }
             memset(tempbuf, 0, templen);
             Uint8 *templine = tempbuf;
             Uint8 *tempend =
@@ -2466,6 +2472,12 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
         else {
             // No y-shifting, the temporary buffer should only store the x loss
             Uint8 *tempbuf = (Uint8 *)malloc((dx > 0 ? xoffset : -xoffset));
+            if (tempbuf == NULL) {
+                if (!pgSurface_Unlock((pgSurfaceObject *)self)) {
+                    return NULL;
+                }
+                return PyErr_NoMemory();
+            }
             while (h--) {
                 if (dx > 0) {
                     memcpy(tempbuf, linesrc + span - xoffset, xoffset);
