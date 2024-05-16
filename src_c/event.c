@@ -95,6 +95,8 @@ static SDL_Event _pg_last_keydown_event = {0};
 /* Not used as text, acts as an array of bools */
 static char pressed_keys[SDL_NUM_SCANCODES] = {0};
 static char released_keys[SDL_NUM_SCANCODES] = {0};
+//!NEW
+static PyObject *pg_event_lookup;
 
 #ifdef __EMSCRIPTEN__
 /* these macros are no-op here */
@@ -1390,16 +1392,18 @@ PyObject *
 pg_event_str(PyObject *self)
 {
     pgEventObject *e = (pgEventObject *)self;
+    //!NEW>
     char* event_name = _pg_name_from_eventtype(e->type);
-    if (strcmp(event_name, "UserEvent")==0)
+    if (strcmp(event_name, "UserEvent")==0 || strcmp(event_name, "Unknown")==0)
     {
         if (PyObject_IsTrue(e->dict))
-            return PyUnicode_FromFormat("%s(type=%d, dict=%S)", event_name, e->type, e->dict);
-        return PyUnicode_FromFormat("%s(type=%d)", event_name, e->type);
+            return PyUnicode_FromFormat("Event(type=%d, dict=%S)", e->type, e->dict);
+        return PyUnicode_FromFormat("Event(type=%d)", e->type);
     }
     if (PyObject_IsTrue(e->dict))
         return PyUnicode_FromFormat("%sEvent(type=%d, dict=%S)", event_name, e->type, e->dict);
     return PyUnicode_FromFormat("%sEvent(type=%d)", event_name, e->type);
+    //!NEW<
 }
 
 static int
@@ -1505,7 +1509,7 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
     self->dict = dict;
     return 0;
 }
-
+//!NEW>
 static PyObject *
 pg_event_init_subclass(PyTypeObject *cls, PyObject *args, PyObject **kwargs)
 {
@@ -1520,10 +1524,12 @@ static PyMethodDef eventobj_methods[] = {
     METH_VARARGS | METH_KEYWORDS | METH_CLASS},
     {NULL, NULL, 0, NULL}
 };
+//!NEW<
 
 static PyTypeObject pgEvent_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.event.Event",
     .tp_basicsize = sizeof(pgEventObject),
+    //!NEW
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_dealloc = pg_event_dealloc,
     .tp_repr = pg_event_str,
@@ -1541,9 +1547,11 @@ static PyTypeObject pgEvent_Type = {
     .tp_dictoffset = offsetof(pgEventObject, dict),
     .tp_init = (initproc)pg_event_init,
     .tp_new = PyType_GenericNew,
+    //!NEW
     .tp_methods = eventobj_methods,
 };
 
+//!NEW>
 static PyType_Slot pg_event_subclass_slots[] = {
     {0}
 };
@@ -1551,7 +1559,14 @@ static PyType_Slot pg_event_subclass_slots[] = {
 static PyObject *
 _pgEvent_CreateSubclass(Uint32 ev_type)
 {
-    PyType_Spec type_spec = {.name=_pg_name_from_eventtype(ev_type), .basicsize = sizeof(pgEventObject), .slots=pg_event_subclass_slots};
+    char* name = _pg_name_from_eventtype(ev_type);
+    size_t name_s = sizeof name + 13; // 13 - len("pygame.event.")
+    char* joined = malloc(name_s);
+    if (!joined)
+        return PyErr_NoMemory();
+    PyOS_snprintf(joined, name_s, "pygame.event.%s", name);
+    PyType_Spec type_spec = {.name=joined, .basicsize = sizeof(pgEventObject), .slots=pg_event_subclass_slots};
+    // Note: for Python 3.10+ onwards, PyType_FromSpecWithBases doesn't require a tuple for single base.
     PyObject* bases = PyTuple_Pack(1, (PyObject *)&pgEvent_Type);
 
     if (bases == NULL)
@@ -1565,10 +1580,35 @@ static PyObject *
 pg_event_class(PyObject *self, PyObject *args)
 {
     Uint32 e_type;
+    PyObject *e_typeo;
+    PyObject *e_class;
+
     if (!PyArg_ParseTuple(args, "I", &e_type))
         return NULL;
-    return _pgEvent_CreateSubclass(e_type);
+
+    if (!(e_typeo=PyLong_FromLong(e_type)))
+        return NULL;
+
+    int e_exists = PyDict_Contains(pg_event_lookup, e_typeo);
+    if (e_exists == -1) {
+        Py_DECREF(e_typeo);
+        return NULL;
+    } else if (e_exists) {
+        e_class = PyDict_GetItem(pg_event_lookup, e_typeo);
+        Py_DECREF(e_typeo);
+    } else {
+        e_class = _pgEvent_CreateSubclass(e_type);
+        if (!e_class || PyDict_SetItem(pg_event_lookup, e_typeo, e_class) < 0)
+        {
+            Py_DECREF(e_typeo);
+            Py_XDECREF(e_class);
+            return NULL;
+        }
+    }
+
+    return e_class;
 }
+//!NEW<
 
 static PyObject *
 pgEvent_New(SDL_Event *event)
@@ -2298,6 +2338,7 @@ static PyMethodDef _event_methods[] = {
      DOC_EVENT_GETBLOCKED},
     {"custom_type", (PyCFunction)pg_event_custom_type, METH_NOARGS,
      DOC_EVENT_CUSTOMTYPE},
+      //!NEW
      {"event_class", (PyCFunction)pg_event_class, METH_VARARGS},
 
     {NULL, NULL, 0, NULL}};
@@ -2371,6 +2412,24 @@ MODINIT_DEFINE(event)
         Py_DECREF(module);
         return NULL;
     }
+
+    //!NEW>
+    if (!pg_event_lookup) {
+        pg_event_lookup = PyDict_New();
+        if (!pg_event_lookup)
+        {
+            Py_DECREF(module);
+            return NULL;
+        }
+    }
+
+    PyObject *proxy = PyDictProxy_New(pg_event_lookup);
+
+    if (PyModule_AddObject(module, "_event_classes", proxy)) {
+        Py_DECREF(proxy);
+        Py_DECREF(module);
+    }
+    //!NEW<
 
     SDL_RegisterEvents(PG_NUMEVENTS - SDL_USEREVENT);
     return module;
