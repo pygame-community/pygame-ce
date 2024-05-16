@@ -132,7 +132,7 @@ jobs:
       CIBW_BUILD: ${{ matrix.pyversions }}
       CIBW_ARCHS: ${{ matrix.winarch }}
 
-      CIBW_BEFORE_BUILD: pip install numpy
+      CIBW_BEFORE_TEST: pip install numpy --prefer-binary
 
       CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,timing --time_out 300
 
