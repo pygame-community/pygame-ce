@@ -39,10 +39,10 @@ Header file: src_c/include/pygame.h
    If *event* is ``NULL`` then create an empty event object.
    On failure raise a Python exception and return ``NULL``.
 
-.. c:function:: int pg_post_event(Uint32 type, PyObject *dict)
+.. c:function:: int pg_post_event(Uint32 type, PyObject *obj)
 
    Posts a pygame event that is an ``SDL_USEREVENT`` on the SDL side. This
-   function takes a python dict, which can be NULL too.
+   function takes a python dict/event object, which can be NULL too.
    This function does not need GIL to be held if dict is NULL, but needs GIL
    otherwise. Just like the SDL ``SDL_PushEvent`` function, returns 1 on
    success, 0 if the event was not posted due to it being blocked, and -1 on

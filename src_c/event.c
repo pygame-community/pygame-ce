@@ -309,6 +309,12 @@ _pg_get_event_unicode(SDL_Event *event)
     case PGPOST_##name:              \
         return proxify ? PGPOST_##name : PGE_##name
 
+static PyTypeObject pgEvent_Type;
+//!NEW
+#define pgEvent_CheckExact(x) ((x)->ob_type == &pgEvent_Type)
+#define pgEvent_Check(x) (PyObject_IsInstance(x, (PyObject *)&pgEvent_Type))
+#define OFF(x) offsetof(pgEventObject, x)
+
 /* The next three functions are used for proxying SDL events to and from
  * PGPOST_* events.
  *
@@ -690,13 +696,13 @@ pg_post_event_dictproxy(Uint32 type, pgEventDictProxy *dict_proxy)
 }
 
 /* This function posts an SDL "UserEvent" event, can also optionally take a
- * python dict. This function does not need GIL to be held if dict is NULL, but
+ * python dict/event object. This function does not need GIL to be held if dict is NULL, but
  * needs GIL otherwise  */
 static int
-pg_post_event(Uint32 type, PyObject *dict)
+pg_post_event(Uint32 type, PyObject *obj)
 {
     int ret;
-    if (!dict) {
+    if (!obj) {
         return pg_post_event_dictproxy(type, NULL);
     }
 
@@ -706,8 +712,8 @@ pg_post_event(Uint32 type, PyObject *dict)
         return SDL_SetError("insufficient memory (internal malloc failed)");
     }
 
-    Py_INCREF(dict);
-    dict_proxy->dict = dict;
+    Py_INCREF(obj);
+    dict_proxy->obj = obj;
     /* initially set to 0 - unlocked state */
     dict_proxy->lock = 0;
     dict_proxy->num_on_queue = 0;
@@ -716,7 +722,7 @@ pg_post_event(Uint32 type, PyObject *dict)
 
     ret = pg_post_event_dictproxy(type, dict_proxy);
     if (ret != 1) {
-        Py_DECREF(dict);
+        Py_DECREF(obj);
         free(dict_proxy);
     }
     return ret;
@@ -927,7 +933,7 @@ dict_from_event(SDL_Event *event)
 
         /* spinlocks must be held and released as quickly as possible */
         SDL_AtomicLock(&dict_proxy->lock);
-        dict = dict_proxy->dict;
+        dict = dict_proxy->obj;
         dict_proxy->num_on_queue--;
         to_free = dict_proxy->num_on_queue <= 0 && dict_proxy->do_free_at_end;
         SDL_AtomicUnlock(&dict_proxy->lock);
@@ -1340,6 +1346,21 @@ pg_event_dealloc(PyObject *self)
     Py_TYPE(self)->tp_free(self);
 }
 
+//!NEW>
+PyObject *
+_pg_EventGetAttr(PyObject *o, PyObject *attr_name)
+{
+    const char *attr = PyUnicode_AsUTF8(attr_name);
+    if (!attr)
+        return NULL;
+
+    if (strcmp(attr, "type")==0) {
+        return PyLong_FromLong(((pgEventObject *) o)->type);
+    }
+    return PyObject_GenericGetAttr(o, attr_name);
+}
+//!NEW<
+
 #ifdef PYPY_VERSION
 /* Because pypy does not work with the __dict__ tp_dictoffset. */
 PyObject *
@@ -1348,7 +1369,8 @@ pg_EventGetAttr(PyObject *o, PyObject *attr_name)
     /* Try e->dict first, if not try the generic attribute. */
     PyObject *result = PyDict_GetItem(((pgEventObject *)o)->dict, attr_name);
     if (!result) {
-        return PyObject_GenericGetAttr(o, attr_name);
+        //!NEW
+        return _pg_EventGetAttr(o, attr_name);
     }
     return result;
 }
@@ -1388,24 +1410,6 @@ pg_EventSetAttr(PyObject *o, PyObject *name, PyObject *value)
 }
 #endif
 
-PyObject *
-pg_event_str(PyObject *self)
-{
-    pgEventObject *e = (pgEventObject *)self;
-    //!NEW>
-    char* event_name = _pg_name_from_eventtype(e->type);
-    if (strcmp(event_name, "UserEvent")==0 || strcmp(event_name, "Unknown")==0)
-    {
-        if (PyObject_IsTrue(e->dict))
-            return PyUnicode_FromFormat("Event(type=%d, dict=%S)", e->type, e->dict);
-        return PyUnicode_FromFormat("Event(type=%d)", e->type);
-    }
-    if (PyObject_IsTrue(e->dict))
-        return PyUnicode_FromFormat("%sEvent(type=%d, dict=%S)", event_name, e->type, e->dict);
-    return PyUnicode_FromFormat("%sEvent(type=%d)", event_name, e->type);
-    //!NEW<
-}
-
 static int
 _pg_event_nonzero(pgEventObject *self)
 {
@@ -1416,13 +1420,38 @@ static PyNumberMethods pg_event_as_number = {
     .nb_bool = (inquiry)_pg_event_nonzero,
 };
 
-static PyTypeObject pgEvent_Type;
-#define pgEvent_Check(x) ((x)->ob_type == &pgEvent_Type)
-#define OFF(x) offsetof(pgEventObject, x)
+PyObject *
+pg_event_str(PyObject *self)
+{
+    pgEventObject *e = (pgEventObject *)self;
+    //!NEW>
+    if (!pgEvent_CheckExact(self)) {
+        PyObject *e_type = (PyObject *) Py_TYPE(self);
+        PyObject *e_name = PyObject_GetAttrString(e_type, "__name__");
+        PyObject *e_module = PyObject_GetAttrString(e_type, "__module__");
+
+        if (PyObject_IsTrue(e->dict))
+            return PyUnicode_FromFormat("%S.%S(%S)", e_module, e_name, e->dict);
+        return PyUnicode_FromFormat("%S.%S()", e_module, e_name);
+    }
+
+    char* event_name = _pg_name_from_eventtype(e->type);;
+
+    if (strcmp(event_name, "UserEvent")==0 || strcmp(event_name, "Unknown")==0) {
+        if (PyObject_IsTrue(e->dict))
+            return PyUnicode_FromFormat("Event(%d, %S)", e->type, e->dict);
+        return PyUnicode_FromFormat("Event(%d)", e->type);
+    }
+    if (PyObject_IsTrue(e->dict))
+        return PyUnicode_FromFormat("%sEvent(%d, %S)", event_name, e->type, e->dict);
+    return PyUnicode_FromFormat("%sEvent(%d)", event_name, e->type);
+    //!NEW<
+}
 
 static PyMemberDef pg_event_members[] = {
     {"__dict__", T_OBJECT, OFF(dict), READONLY},
-    {"type", T_INT, OFF(type), READONLY},
+    //!NEW - changed type->__type
+    {"__type", T_INT, OFF(type), READONLY},
     {"dict", T_OBJECT, OFF(dict), READONLY},
     {NULL} /* Sentinel */
 };
@@ -1465,10 +1494,21 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
 {
     int type;
     PyObject *dict = NULL;
+    //!NEW>
+    PyObject *self_t = (PyObject *)Py_TYPE(self);
+    if (PyObject_HasAttrString(self_t, "type")) {
+        PyObject *type_o = PyObject_GetAttrString(self_t, "type");
+        if (!type_o)
+            return -1;
+        type = PyLong_AsLong(type_o);
 
-    if (!PyArg_ParseTuple(args, "i|O!", &type, &PyDict_Type, &dict)) {
+        if (!PyArg_ParseTuple(args, "|O!", &PyDict_Type, &dict)) {
+            return -1;
+        }
+    } else if (!PyArg_ParseTuple(args, "i|O!", &type, &PyDict_Type, &dict)) {
         return -1;
     }
+    //!NEW<
 
     if (type < 0 || type >= PG_NUMEVENTS) {
         PyErr_SetString(PyExc_ValueError, "event type out of range");
@@ -1509,13 +1549,53 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
     self->dict = dict;
     return 0;
 }
+
 //!NEW>
+int
+_register_user_event_class(PyObject *e_class)
+{
+    int e_type = -1;
+    PyObject *e_typeo = NULL;
+
+    if (_custom_event < PG_NUMEVENTS) {
+        e_type = _custom_event;
+        e_typeo = PyLong_FromLong(_custom_event++);
+    }
+    else {
+        RAISE(pgExc_SDLError,
+                     "Exceeded maximimum number of allowed user-defined types.");
+        return -1;
+    }
+
+    if (!(e_typeo))
+        return -1;
+
+    if (PyDict_SetItem(pg_event_lookup, e_typeo, e_class) < 0)
+    {
+        Py_XDECREF(e_typeo);
+        return -1;
+    }
+
+    Py_DECREF(e_typeo);
+    return e_type;
+}
+
 static PyObject *
 pg_event_init_subclass(PyTypeObject *cls, PyObject *args, PyObject **kwargs)
 {
-    PyObject* repr = PyUnicode_FromFormat("%S %S %S", cls, args, kwargs);
-    printf("subclass: %s\n", PyUnicode_AsUTF8(repr));
-    Py_DECREF(repr);
+    int e_type = _register_user_event_class((PyObject *)cls);
+    if (e_type < 0)
+        return NULL;
+
+    PyObject *value = PyLong_FromLong(e_type);
+    if (!value)
+        return NULL;
+
+    if (PyObject_SetAttrString((PyObject *)cls, "type", value) < 0) {
+        Py_DECREF(value);
+        return NULL;
+    }
+
     Py_RETURN_NONE;
 }
 
@@ -1538,7 +1618,8 @@ static PyTypeObject pgEvent_Type = {
     .tp_getattro = pg_EventGetAttr,
     .tp_setattro = pg_EventSetAttr,
 #else
-    .tp_getattro = PyObject_GenericGetAttr,
+    //!NEW
+    .tp_getattro = _pg_EventGetAttr,
     .tp_setattro = PyObject_GenericSetAttr,
 #endif
     .tp_doc = DOC_EVENT_EVENT,
@@ -1546,21 +1627,22 @@ static PyTypeObject pgEvent_Type = {
     .tp_members = pg_event_members,
     .tp_dictoffset = offsetof(pgEventObject, dict),
     .tp_init = (initproc)pg_event_init,
-    .tp_new = PyType_GenericNew,
+    .tp_new = PyType_GenericNew, // TODO: hook up pg_event_class
     //!NEW
     .tp_methods = eventobj_methods,
 };
 
 //!NEW>
 static PyType_Slot pg_event_subclass_slots[] = {
-    {0}
+    {Py_tp_getattro, _pg_EventGetAttr},
+    {0, NULL}
 };
 
 static PyObject *
 _pgEvent_CreateSubclass(Uint32 ev_type)
 {
-    char* name = _pg_name_from_eventtype(ev_type);
-    size_t name_s = sizeof name + 13; // 13 - len("pygame.event.")
+    const char* name = _pg_name_from_eventtype(ev_type);
+    size_t name_s = sizeof name + 13; // 13 = len("pygame.event.")
     char* joined = malloc(name_s);
     if (!joined)
         return PyErr_NoMemory();
@@ -1569,11 +1651,25 @@ _pgEvent_CreateSubclass(Uint32 ev_type)
     // Note: for Python 3.10+ onwards, PyType_FromSpecWithBases doesn't require a tuple for single base.
     PyObject* bases = PyTuple_Pack(1, (PyObject *)&pgEvent_Type);
 
-    if (bases == NULL)
+    if (bases == NULL) {
+        free(joined);
+        return NULL;
+    }
+
+    PyObject* cls = PyType_FromSpecWithBases(&type_spec, bases);
+
+    PyObject *value = PyLong_FromLong(ev_type);
+    if (!value)
         return NULL;
 
-    PyObject* type = PyType_FromSpecWithBases(&type_spec, bases);
-    return type;
+    if (PyObject_SetAttrString((PyObject *)cls, "type", value) < 0) {
+        Py_DECREF(value);
+        return NULL;
+    }
+    free(joined);
+    // I'm convinced this is leaking, but for unknown reason to me,
+    // freeing "joined" it will corrupt the name of returned class.
+    return cls;
 }
 
 static PyObject *
@@ -1604,12 +1700,13 @@ pg_event_class(PyObject *self, PyObject *args)
             Py_XDECREF(e_class);
             return NULL;
         }
+        Py_DECREF(e_typeo);
     }
 
     return e_class;
 }
 //!NEW<
-
+// TODO
 static PyObject *
 pgEvent_New(SDL_Event *event)
 {
@@ -2188,7 +2285,7 @@ pg_event_post(PyObject *self, PyObject *obj)
         return RAISE(PyExc_TypeError, "argument must be an Event object");
 
     pgEventObject *e = (pgEventObject *)obj;
-    switch (pg_post_event(e->type, e->dict)) {
+    switch (pg_post_event(e->type, e->dict)) { // TODO: change "e->dict" to "obj".
         case 0:
             Py_RETURN_FALSE;
         case 1:
@@ -2343,6 +2440,12 @@ static PyMethodDef _event_methods[] = {
 
     {NULL, NULL, 0, NULL}};
 
+//!NEW>
+static void _event_free(PyObject* mod) {
+    Py_XDECREF(pg_event_lookup);
+}
+//!NEW<
+
 MODINIT_DEFINE(event)
 {
     PyObject *module, *apiobj;
@@ -2356,7 +2459,8 @@ MODINIT_DEFINE(event)
                                          NULL,
                                          NULL,
                                          NULL,
-                                         NULL};
+                                         //!NEW
+                                         (freefunc)_event_free};
 
     /* imported needed apis; Do this first so if there is an error
        the module is not loaded.
@@ -2414,7 +2518,9 @@ MODINIT_DEFINE(event)
     }
 
     //!NEW>
-    if (!pg_event_lookup) {
+    if (pg_event_lookup)
+        Py_INCREF(pg_event_lookup);
+    else {
         pg_event_lookup = PyDict_New();
         if (!pg_event_lookup)
         {
@@ -2428,6 +2534,7 @@ MODINIT_DEFINE(event)
     if (PyModule_AddObject(module, "_event_classes", proxy)) {
         Py_DECREF(proxy);
         Py_DECREF(module);
+        Py_DECREF(pg_event_lookup);
     }
     //!NEW<
 
