@@ -313,6 +313,8 @@ static PyTypeObject pgEvent_Type;
 //!NEW
 #define pgEvent_CheckExact(x) ((x)->ob_type == &pgEvent_Type)
 #define pgEvent_Check(x) (PyObject_IsInstance(x, (PyObject *)&pgEvent_Type))
+//!NEW
+#define pgEvent_IsSubclass(x) (PyObject_IsSubclass(x, (PyObject *)&pgEvent_Type) * (x != (PyObject *)&pgEvent_Type))
 #define OFF(x) offsetof(pgEventObject, x)
 
 /* The next three functions are used for proxying SDL events to and from
@@ -915,7 +917,7 @@ get_joy_device_index(int instance_id)
 }
 
 static PyObject *
-dict_from_event(SDL_Event *event)
+obj_from_event(SDL_Event *event)
 {
     PyObject *dict = NULL, *tuple, *obj;
     int hx, hy;
@@ -1500,7 +1502,12 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
         PyObject *type_o = PyObject_GetAttrString(self_t, "type");
         if (!type_o)
             return -1;
+
         type = PyLong_AsLong(type_o);
+        Py_DECREF(type_o);
+
+        if (PyErr_Occurred())
+            return -1;
 
         if (!PyArg_ParseTuple(args, "|O!", &PyDict_Type, &dict)) {
             return -1;
@@ -1551,7 +1558,80 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
 }
 
 //!NEW>
-int
+static PyType_Slot pg_event_subclass_slots[] = {
+    {Py_tp_getattro, _pg_EventGetAttr},
+    {0, NULL}
+};
+
+static PyObject *
+_pgEvent_CreateSubclass(Uint32 ev_type)
+{
+    const char* name = _pg_name_from_eventtype(ev_type);
+    if (strcmp(name, "Unknown") == 0 || strcmp(name, "UserEvent") == 0) {
+        return (PyObject *)&pgEvent_Type;
+    }
+    size_t name_s = strlen(name) + 14; // 14 = len("pygame.event.\x00")
+    char* joined = malloc(name_s);
+    if (!joined)
+        return PyErr_NoMemory();
+
+    PyOS_snprintf(joined, name_s, "pygame.event.%s", name);
+    PyType_Spec type_spec = {.name=joined, .basicsize = sizeof(pgEventObject), .slots=pg_event_subclass_slots};
+    // Note: for Python 3.10+ onwards, PyType_FromSpecWithBases doesn't require a tuple for single base.
+    PyObject* bases = PyTuple_Pack(1, (PyObject *)&pgEvent_Type);
+
+    if (bases == NULL) {
+        free(joined);
+        return NULL;
+    }
+
+    PyObject* cls = PyType_FromSpecWithBases(&type_spec, bases);
+
+    // I'm convinced this is leaking, but for unknown reason to me,
+    // freeing "joined" it will corrupt the name of returned class.
+    free(joined);
+
+    PyObject *value = PyLong_FromLong(ev_type);
+    if (!value) {
+        return NULL;
+    }
+
+    if (PyObject_SetAttrString((PyObject *)cls, "type", value) < 0) {
+        Py_DECREF(value);
+        return NULL;
+    }
+    return cls;
+}
+
+static PyObject *
+pgEvent_GetClass(Uint32 e_type)
+{
+    PyObject *e_typeo, *e_class;
+
+    if (!(e_typeo=PyLong_FromLong(e_type)))
+        return NULL;
+
+    int e_exists = PyDict_Contains(pg_event_lookup, e_typeo);
+    if (e_exists < 0) {
+        Py_DECREF(e_typeo);
+        return NULL;
+    } else if (e_exists) {
+        e_class = PyDict_GetItem(pg_event_lookup, e_typeo);
+        Py_DECREF(e_typeo);
+    } else {
+        e_class = _pgEvent_CreateSubclass(e_type);
+        if (!e_class || PyDict_SetItem(pg_event_lookup, e_typeo, e_class) < 0)
+        {
+            Py_DECREF(e_typeo);
+            Py_XDECREF(e_class);
+            return NULL;
+        }
+        Py_DECREF(e_typeo);
+    }
+    return e_class;
+}
+
+static int
 _register_user_event_class(PyObject *e_class)
 {
     int e_type = -1;
@@ -1633,102 +1713,66 @@ static PyTypeObject pgEvent_Type = {
 };
 
 //!NEW>
-static PyType_Slot pg_event_subclass_slots[] = {
-    {Py_tp_getattro, _pg_EventGetAttr},
-    {0, NULL}
-};
-
-static PyObject *
-_pgEvent_CreateSubclass(Uint32 ev_type)
-{
-    const char* name = _pg_name_from_eventtype(ev_type);
-    size_t name_s = sizeof name + 13; // 13 = len("pygame.event.")
-    char* joined = malloc(name_s);
-    if (!joined)
-        return PyErr_NoMemory();
-    PyOS_snprintf(joined, name_s, "pygame.event.%s", name);
-    PyType_Spec type_spec = {.name=joined, .basicsize = sizeof(pgEventObject), .slots=pg_event_subclass_slots};
-    // Note: for Python 3.10+ onwards, PyType_FromSpecWithBases doesn't require a tuple for single base.
-    PyObject* bases = PyTuple_Pack(1, (PyObject *)&pgEvent_Type);
-
-    if (bases == NULL) {
-        free(joined);
-        return NULL;
-    }
-
-    PyObject* cls = PyType_FromSpecWithBases(&type_spec, bases);
-
-    PyObject *value = PyLong_FromLong(ev_type);
-    if (!value)
-        return NULL;
-
-    if (PyObject_SetAttrString((PyObject *)cls, "type", value) < 0) {
-        Py_DECREF(value);
-        return NULL;
-    }
-    free(joined);
-    // I'm convinced this is leaking, but for unknown reason to me,
-    // freeing "joined" it will corrupt the name of returned class.
-    return cls;
-}
-
 static PyObject *
 pg_event_class(PyObject *self, PyObject *args)
 {
     Uint32 e_type;
-    PyObject *e_typeo;
-    PyObject *e_class;
 
     if (!PyArg_ParseTuple(args, "I", &e_type))
         return NULL;
 
-    if (!(e_typeo=PyLong_FromLong(e_type)))
-        return NULL;
-
-    int e_exists = PyDict_Contains(pg_event_lookup, e_typeo);
-    if (e_exists == -1) {
-        Py_DECREF(e_typeo);
-        return NULL;
-    } else if (e_exists) {
-        e_class = PyDict_GetItem(pg_event_lookup, e_typeo);
-        Py_DECREF(e_typeo);
-    } else {
-        e_class = _pgEvent_CreateSubclass(e_type);
-        if (!e_class || PyDict_SetItem(pg_event_lookup, e_typeo, e_class) < 0)
-        {
-            Py_DECREF(e_typeo);
-            Py_XDECREF(e_class);
-            return NULL;
-        }
-        Py_DECREF(e_typeo);
-    }
-
-    return e_class;
+    return pgEvent_GetClass(e_type);
 }
-//!NEW<
-// TODO
+
 static PyObject *
 pgEvent_New(SDL_Event *event)
 {
     pgEventObject *e;
-    e = PyObject_New(pgEventObject, &pgEvent_Type);
-    if (!e)
-        return PyErr_NoMemory();
+    PyObject *e_obj, *e_typeo, *obj;
+    Uint32 e_type;
 
     if (event) {
-        e->type = _pg_pgevent_deproxify(event->type);
-        e->dict = dict_from_event(event);
+        e_type = _pg_pgevent_deproxify(event->type);
+        obj = obj_from_event(event);
     }
     else {
-        e->type = SDL_NOEVENT;
-        e->dict = PyDict_New();
+        e_type = SDL_NOEVENT;
+        obj = PyDict_New();
     }
-    if (!e->dict) {
-        Py_TYPE(e)->tp_free(e);
+    if (!obj) {
+        Py_XDECREF(obj);
         return PyErr_NoMemory();
     }
-    return (PyObject *)e;
+    if (pgEvent_Check(obj))
+        return obj;
+
+    e_typeo = pgEvent_GetClass(e_type);
+
+    if (!e_typeo) {
+        Py_DECREF(obj);
+        return NULL;
+    }
+
+    if (PyObject_HasAttrString(e_typeo, "type")) {
+        // PyTuple_New(0) returns an immortal object and should always succeed.
+        e_obj = PyObject_Call(e_typeo, PyTuple_New(0), obj);
+        Py_DECREF(e_typeo);
+        Py_DECREF(obj);
+        if (!e_obj)
+            return NULL;
+        return e_obj;
+    } else {
+        // Plain event object - for unknown classes.
+        Py_DECREF(e_typeo);
+        e = PyObject_New(pgEventObject, &pgEvent_Type);
+        if (!e)
+            return PyErr_NoMemory();
+        e->type = e_type;
+        e->dict = obj;
+        return (PyObject *)e;
+    }
 }
+//!NEW<
 
 /* event module functions */
 
@@ -2277,15 +2321,11 @@ pg_event_peek(PyObject *self, PyObject *args, PyObject *kwargs)
  * through our event filter, to do emulation stuff correctly. Then the
  * event is filtered after that */
 
+//!NEW>
 static PyObject *
-pg_event_post(PyObject *self, PyObject *obj)
+_post_event(Uint32 e_type, PyObject *obj)
 {
-    VIDEO_INIT_CHECK();
-    if (!pgEvent_Check(obj))
-        return RAISE(PyExc_TypeError, "argument must be an Event object");
-
-    pgEventObject *e = (pgEventObject *)obj;
-    switch (pg_post_event(e->type, e->dict)) { // TODO: change "e->dict" to "obj".
+    switch (pg_post_event(e_type, obj)) {
         case 0:
             Py_RETURN_FALSE;
         case 1:
@@ -2293,6 +2333,46 @@ pg_event_post(PyObject *self, PyObject *obj)
         default:
             return RAISE(pgExc_SDLError, SDL_GetError());
     }
+}
+//!NEW<
+
+static PyObject *
+pg_event_post(PyObject *self, PyObject *obj)
+{
+    VIDEO_INIT_CHECK();
+    //!NEW>
+    switch (pgEvent_IsSubclass(obj)) {
+        case -1: PyErr_Clear(); break;
+        case 1: {
+            Uint32 e_type;
+            PyObject *e_typeo = PyObject_GetAttrString(obj, "type");
+            PyObject *e_dict, *ret;
+
+            if (!e_typeo)
+                return NULL;
+
+            e_type = PyLong_AsLong(e_typeo);
+            Py_DECREF(e_typeo);
+
+            if (PyErr_Occurred())
+                return NULL;
+
+            e_dict = PyDict_New();
+            if (!e_dict)
+                return NULL;
+
+            ret = _post_event(e_type, e_dict);
+            Py_DECREF(e_dict);
+            return ret;
+        }
+        default: break;
+    }
+    //!NEW<
+    if (!pgEvent_Check(obj))
+        return RAISE(PyExc_TypeError, "argument must be an Event object");
+
+    pgEventObject *e = (pgEventObject *)obj;
+    return _post_event(e->type, obj);
 }
 
 static PyObject *
