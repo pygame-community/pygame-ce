@@ -1284,7 +1284,8 @@ cc_label(bitmask_t *input, unsigned int *image, unsigned int *ufind,
             }
             buf++;
         }
-        /* last pixel of the row, if it's not also the first pixel of the row */
+        /* last pixel of the row, if it's not also the first pixel of the row
+         */
         if (w > 1) {
             if (bitmask_getbit(input, x, y)) {
                 if (*(buf - w)) { /* b label */
