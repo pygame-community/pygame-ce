@@ -2340,34 +2340,6 @@ static PyObject *
 pg_event_post(PyObject *self, PyObject *obj)
 {
     VIDEO_INIT_CHECK();
-    //!NEW>
-    switch (pgEvent_IsSubclass(obj)) {
-        case -1: PyErr_Clear(); break;
-        case 1: {
-            Uint32 e_type;
-            PyObject *e_typeo = PyObject_GetAttrString(obj, "type");
-            PyObject *e_dict, *ret;
-
-            if (!e_typeo)
-                return NULL;
-
-            e_type = PyLong_AsLong(e_typeo);
-            Py_DECREF(e_typeo);
-
-            if (PyErr_Occurred())
-                return NULL;
-
-            e_dict = PyDict_New();
-            if (!e_dict)
-                return NULL;
-
-            ret = _post_event(e_type, e_dict);
-            Py_DECREF(e_dict);
-            return ret;
-        }
-        default: break;
-    }
-    //!NEW<
     if (!pgEvent_Check(obj))
         return RAISE(PyExc_TypeError, "argument must be an Event object");
 
