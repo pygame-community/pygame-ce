@@ -1445,8 +1445,8 @@ pg_event_str(PyObject *self)
         return PyUnicode_FromFormat("Event(%d)", e->type);
     }
     if (PyObject_IsTrue(e->dict))
-        return PyUnicode_FromFormat("%sEvent(%d, %S)", event_name, e->type, e->dict);
-    return PyUnicode_FromFormat("%sEvent(%d)", event_name, e->type);
+        return PyUnicode_FromFormat("%s(%d, %S)", event_name, e->type, e->dict);
+    return PyUnicode_FromFormat("%s(%d)", event_name, e->type);
     //!NEW<
 }
 
@@ -1547,7 +1547,7 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
 
     if (PyDict_GetItemString(dict, "type")) {
         PyErr_SetString(PyExc_ValueError,
-                        "redundant type field in event dict");
+                        "'type' field in event dict is not allowed");
         Py_DECREF(dict);
         return -1;
     }
@@ -1568,6 +1568,7 @@ _pgEvent_CreateSubclass(Uint32 ev_type)
 {
     const char* name = _pg_name_from_eventtype(ev_type);
     if (strcmp(name, "Unknown") == 0 || strcmp(name, "UserEvent") == 0) {
+        Py_INCREF((PyObject *)&pgEvent_Type);
         return (PyObject *)&pgEvent_Type;
     }
     size_t name_s = strlen(name) + 14; // 14 = len("pygame.event.\x00")
@@ -1684,10 +1685,111 @@ static PyMethodDef eventobj_methods[] = {
     METH_VARARGS | METH_KEYWORDS | METH_CLASS},
     {NULL, NULL, 0, NULL}
 };
+
+/* event metaclass */
+
+static PyObject* pgEventMeta_Call(PyObject *type, PyObject *args, PyObject *kwds) {
+    if (type == (PyObject *)&pgEvent_Type) {
+        Uint32 e_type;
+        PyObject *e_dict;
+
+        PyObject *t_name = PyUnicode_FromString("type");
+        if (!t_name)
+            return NULL;
+
+        PyObject *dict_name = PyUnicode_FromString("dict");
+        if (!dict_name) {
+            Py_DECREF(t_name);
+            return NULL;
+        }
+
+        if (!PyArg_ParseTuple(args, "I|O!", &e_type, &PyDict_Type, &e_dict)) {
+            Py_DECREF(t_name);
+            Py_DECREF(dict_name);
+            return NULL;
+        }
+
+        if (e_dict && PyDict_Contains(e_dict, t_name)) {
+            Py_DECREF(t_name);
+            Py_DECREF(dict_name);
+            Py_DECREF(e_dict);
+            PyErr_SetString(PyExc_ValueError, "'type' field in event dict is not allowed");
+        }
+
+        if (!e_dict) {
+            e_dict = PyDict_New();
+            if (!e_dict) {
+                Py_DECREF(t_name);
+                Py_DECREF(dict_name);
+                return NULL;
+            }
+        }
+
+        if (kwds) {
+            if (PyDict_Update(e_dict, kwds) < 0) {
+                Py_DECREF(t_name);
+                Py_DECREF(dict_name);
+                Py_DECREF(e_dict);
+            }
+
+            if (PyDict_Contains(kwds, t_name)) {
+                PyErr_SetString(PyExc_TypeError, "pygame.event.Event() positional-only argument passed as keyword argument: 'type'");
+                Py_DECREF(t_name);
+                Py_DECREF(dict_name);
+                Py_DECREF(e_dict);
+                return NULL;
+            }
+
+            if (PyDict_Contains(kwds, dict_name)) {
+                PyErr_SetString(PyExc_TypeError, "pygame.event.Event() positional-only argument passed as keyword argument: 'dict'");
+                Py_DECREF(t_name);
+                Py_DECREF(dict_name);
+                Py_DECREF(e_dict);
+                return NULL;
+            }
+
+            if (PyErr_Occurred())
+                return NULL;
+        }
+
+        Py_DECREF(t_name);
+        Py_DECREF(dict_name);
+
+        PyObject *e_typeo = pgEvent_GetClass(e_type);
+        if (!e_typeo) {
+            Py_DECREF(e_dict);
+            return NULL;
+        }
+        else if (e_typeo == (PyObject *)&pgEvent_Type) {
+            Py_DECREF(e_typeo);
+            return PyType_Type.tp_call(type, args, e_dict); 
+        }
+        
+        PyObject *ret = PyType_Type.tp_call(e_typeo, PyTuple_New(0), e_dict);
+        Py_DECREF(e_typeo);
+        Py_DECREF(e_dict);
+        return ret;
+    }
+
+    return PyType_Type.tp_call(type, args, kwds);
+}
+
+static PyTypeObject pgEventMeta_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "pygame.event._EventMeta",
+    .tp_basicsize = sizeof(PyTypeObject),
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_base = &PyType_Type,
+    .tp_call = pgEventMeta_Call,
+};
 //!NEW<
 
+/* event type declaration */
+
 static PyTypeObject pgEvent_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.event.Event",
+    //!NEW
+    PyVarObject_HEAD_INIT(&pgEventMeta_Type, 0)
+    .tp_name = "pygame.event.Event",
     .tp_basicsize = sizeof(pgEventObject),
     //!NEW
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
@@ -1707,7 +1809,7 @@ static PyTypeObject pgEvent_Type = {
     .tp_members = pg_event_members,
     .tp_dictoffset = offsetof(pgEventObject, dict),
     .tp_init = (initproc)pg_event_init,
-    .tp_new = PyType_GenericNew, // TODO: hook up pg_event_class
+    .tp_new = PyType_GenericNew,
     //!NEW
     .tp_methods = eventobj_methods,
 };
@@ -2528,6 +2630,10 @@ MODINIT_DEFINE(event)
     }
 
     /* type preparation */
+    if (PyType_Ready(&pgEventMeta_Type) < 0) {
+        return NULL;
+    }
+
     if (PyType_Ready(&pgEvent_Type) < 0) {
         return NULL;
     }
