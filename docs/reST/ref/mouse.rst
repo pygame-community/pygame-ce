@@ -112,12 +112,11 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    | :sl:`get the most recently pressed buttons`
    | :sg:`get_just_pressed() -> (left_button, middle_button, right_button, x1_button, x2_button)`
 
-   Very similar to :func:`pygame.mouse.get_pressed()`, returing a tuple
+   Very similar to :func:`pygame.mouse.get_pressed()`, returning a tuple
    of length 5 with the important difference that the buttons are 
    True only in the frame they start being pressed. This can be convenient
-   for checking the buttons pressed "this frame" but for more precise results
-   and to have the correct order the pygame.MOUSEBUTTONDOWN event could be
-   preferred.
+   for checking the buttons pressed "this frame", but for more precise results
+   and correct ordering prefer using the pygame.MOUSEBUTTONDOWN event.
 
    The result of this function is updated when new events are processed,
    e.g. in :func:`pygame.event.get()` or :func:`pygame.event.pump()`.
@@ -138,12 +137,11 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    | :sl:`get the most recently released buttons`
    | :sg:`get_just_released() -> (left_button, middle_button, right_button, x1_button, x2_button)`
 
-   Similar to :func:`pygame.mouse.get_pressed()`, returing a tuple
+   Similar to :func:`pygame.mouse.get_pressed()`, returning a tuple
    of length 5 with the important difference that the buttons are 
    True only in the frame they stop being pressed. This can be convenient
-   for checking the buttons released "this frame" but for more precise results
-   and to have the correct order the pygame.MOUSEBUTTONUP event could be
-   preferred.
+   for checking the buttons released "this frame", but for more precise results
+   and correct ordering prefer using the pygame.MOUSEBUTTONUP event.
 
    The result of this function is updated when new events are processed,
    e.g. in :func:`pygame.event.get()` or :func:`pygame.event.pump()`.
