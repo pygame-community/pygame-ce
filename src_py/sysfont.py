@@ -29,11 +29,6 @@ from os.path import basename, dirname, exists, join, splitext
 from pygame.font import Font
 from pygame import __file__ as pygame_main_file
 
-if sys.platform != "emscripten":
-    if os.name == "nt":
-        import winreg as _winreg
-    import subprocess
-
 
 OpenType_extensions = frozenset((".ttf", ".ttc", ".otf"))
 Sysfonts = {}
@@ -57,6 +52,7 @@ def _addfont(name, bold, italic, font, fontdict):
 
 def initsysfonts_win32():
     """initialize fonts dictionary on Windows"""
+    import winreg as _winreg
 
     fontdir = join(os.environ.get("WINDIR", "C:\\Windows"), "Fonts")
     fonts = {}
@@ -211,6 +207,8 @@ def initsysfonts_unix(path="fc-list"):
 
     if sys.platform == "emscripten":
         return fonts
+
+    import subprocess
 
     try:
         proc = subprocess.run(
