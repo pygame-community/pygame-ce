@@ -2162,14 +2162,13 @@ bliterror:
 #define FBLITS_ERR_INVALID_SEQUENCE 21
 
 int
-_surf_fblits_item_check_and_blit(PyObject *src_surf, SDL_Surface *src,
+_surf_fblits_item_check_and_blit(pgSurfaceObject *src_surf, SDL_Surface *src,
                                  pgSurfaceObject *dest, int x, int y,
                                  int blend_flags)
 {
     SDL_Rect dest_rect = {x, y, src->w, src->h};
 
-    if (pgSurface_Blit(dest, (pgSurfaceObject *)src_surf, &dest_rect, NULL,
-                       blend_flags))
+    if (pgSurface_Blit(dest, src_surf, &dest_rect, NULL, blend_flags))
         return BLITS_ERR_BLIT_FAIL;
 
     return 0;
@@ -2257,6 +2256,7 @@ _surf_fblits_multiblit_item_check_and_blit(PyObject *src_surf,
     Py_ssize_t current_size = 0;
     SDL_Rect src_dest = {0, 0, src->w, src->h};
     SDL_Rect temp, *argrect;
+    const SDL_Rect *clip_rect = &dst->clip_rect;
     for (i = 0; i < destinations->size; i++) {
         PyObject *item = seq_items[i];
 
@@ -2273,7 +2273,6 @@ _surf_fblits_multiblit_item_check_and_blit(PyObject *src_surf,
         src_dest.x += suboffsetx;
         src_dest.y += suboffsety;
 
-        SDL_Rect *clip_rect = &dst->clip_rect;
         SDL_Rect clipped;
         if (!SDL_IntersectRect(clip_rect, &src_dest, &clipped))
             continue; /* Skip out of bounds destinations */
@@ -2282,12 +2281,12 @@ _surf_fblits_multiblit_item_check_and_blit(PyObject *src_surf,
 
         d_item->pixels =
             (Uint32 *)dst->pixels + clipped.y * dst->pitch / 4 + clipped.x;
-
-        d_item->w = clipped.w;
-        d_item->h = clipped.h;
-
-        d_item->x = src_dest.x < clip_rect->x ? clip_rect->x - src_dest.x : 0;
-        d_item->y = src_dest.y < clip_rect->y ? clip_rect->y - src_dest.y : 0;
+        d_item->copy_w = clipped.w * 4;
+        d_item->rows = clipped.h;
+        d_item->src_offset =
+            (src_dest.x < clip_rect->x ? clip_rect->x - src_dest.x : 0) +
+            (src_dest.y < clip_rect->y ? clip_rect->y - src_dest.y : 0) *
+                src->pitch / 4;
     }
 
     if (!(destinations->size = current_size)) {
@@ -2348,14 +2347,17 @@ _surf_fblits_blit(pgSurfaceObject *self, PyObject *item, int blend_flags,
         return;
     }
 
+    if (!src->w || !src->h)
+        return;
+
     if (pg_TwoIntsFromObj(pos_or_seq, &x, &y) ||
         (argrect = pgRect_FromObject(pos_or_seq, &temp))) {
         if (argrect) {
             x = argrect->x;
             y = argrect->y;
         }
-        *error = _surf_fblits_item_check_and_blit(src_surf, src, self, x, y,
-                                                  blend_flags);
+        *error = _surf_fblits_item_check_and_blit(
+            (pgSurfaceObject *)src_surf, src, self, x, y, blend_flags);
         return;
     }
 
@@ -2403,9 +2405,8 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
         Py_ssize_t i;
         PyObject **sequence_items = PySequence_Fast_ITEMS(blit_sequence);
         for (i = 0; i < PySequence_Fast_GET_SIZE(blit_sequence); i++) {
-            item = sequence_items[i];
-
-            _surf_fblits_blit(self, item, blend_flags, &destinations, &error);
+            _surf_fblits_blit(self, sequence_items[i], blend_flags,
+                              &destinations, &error);
 
             if (error)
                 goto on_error;

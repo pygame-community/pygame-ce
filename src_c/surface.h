@@ -339,7 +339,7 @@
 
 typedef struct {
     Uint32 *pixels;
-    int w, h, x, y;
+    int copy_w, rows, src_offset;
 } BlitDestination;
 
 typedef struct {
@@ -368,8 +368,8 @@ SoftMultiBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
                     BlitSequence *destinations);
 
 void
-pg_multi_blitcopy(SDL_Surface *src, SDL_Surface *dst,
-                  BlitSequence *destinations);
+pg_multi_blitcopy(SDL_Surface *restrict src, SDL_Surface *restrict dst,
+                  BlitSequence *restrict destinations);
 
 int
 premul_surf_color_by_alpha(SDL_Surface *src, SDL_Surface *dst);
