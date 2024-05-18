@@ -340,10 +340,10 @@
 typedef struct {
     Uint32 *pixels;
     int w, h, x, y;
-} CachedBlitDest;
+} BlitDestination;
 
 typedef struct {
-    CachedBlitDest *sequence;
+    BlitDestination *sequence;
     Py_ssize_t alloc_size;
     Py_ssize_t size;
 } BlitSequence;

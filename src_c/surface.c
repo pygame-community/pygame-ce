@@ -2205,8 +2205,8 @@ _surf_fblits_multiblit_item_check_and_blit(PyObject *src_surf,
     /* manage destinations memory */
     Py_ssize_t new_size = PySequence_Fast_GET_SIZE(pos_sequence);
     if (new_size > destinations->alloc_size) {
-        destinations->sequence = (CachedBlitDest *)realloc(
-            destinations->sequence, new_size * sizeof(CachedBlitDest));
+        destinations->sequence = (BlitDestination *)realloc(
+            destinations->sequence, new_size * sizeof(BlitDestination));
 
         if (!destinations->sequence)
             return FBLITS_ERR_NO_MEMORY;
@@ -2221,9 +2221,6 @@ _surf_fblits_multiblit_item_check_and_blit(PyObject *src_surf,
             return 0;
         return FBLITS_ERR_INVALID_SEQUENCE_LENGTH;
     }
-
-    if (destinations->size == 0)
-        return 0;
 
     if (self->subsurface) {
         PyObject *owner;
@@ -2281,7 +2278,7 @@ _surf_fblits_multiblit_item_check_and_blit(PyObject *src_surf,
         if (!SDL_IntersectRect(clip_rect, &src_dest, &clipped))
             continue; /* Skip out of bounds destinations */
 
-        CachedBlitDest *d_item = &destinations->sequence[current_size++];
+        BlitDestination *d_item = &destinations->sequence[current_size++];
 
         d_item->pixels =
             (Uint32 *)dst->pixels + clipped.y * dst->pitch / 4 + clipped.x;
@@ -2323,6 +2320,7 @@ _surf_fblits_blit(pgSurfaceObject *self, PyObject *item, int blend_flags,
 {
     PyObject *src_surf, *pos_or_seq;
     SDL_Surface *src, *dst = pgSurface_AsSurface(self);
+    SDL_Rect temp, *argrect = NULL;
     if (!dst) {
         *error = BLITS_ERR_DISPLAY_SURF_QUIT;
         return;
@@ -2350,23 +2348,12 @@ _surf_fblits_blit(pgSurfaceObject *self, PyObject *item, int blend_flags,
         return;
     }
 
-    if (pgRect_Check(pos_or_seq)) {
-        SDL_Rect *r = &pgRect_AsRect(pos_or_seq);
-        x = r->x;
-        y = r->y;
-        *error = _surf_fblits_item_check_and_blit(src_surf, src, self, x, y,
-                                                  blend_flags);
-        return;
-    }
-    else if (pgFRect_Check(pos_or_seq)) {
-        SDL_FRect *r = &pgFRect_AsRect(pos_or_seq);
-        x = (int)r->x;
-        y = (int)r->y;
-        *error = _surf_fblits_item_check_and_blit(src_surf, src, self, x, y,
-                                                  blend_flags);
-        return;
-    }
-    else if (pg_TwoIntsFromObj(pos_or_seq, &x, &y)) {
+    if (pg_TwoIntsFromObj(pos_or_seq, &x, &y) ||
+        (argrect = pgRect_FromObject(pos_or_seq, &temp))) {
+        if (argrect) {
+            x = argrect->x;
+            y = argrect->y;
+        }
         *error = _surf_fblits_item_check_and_blit(src_surf, src, self, x, y,
                                                   blend_flags);
         return;

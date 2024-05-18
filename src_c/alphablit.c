@@ -594,12 +594,13 @@ pg_multi_blitcopy(SDL_Surface *src, SDL_Surface *dst,
                   BlitSequence *destinations)
 {
     Py_ssize_t i;
+    const int src_skip = src->pitch / 4;
+    const int dst_skip = dst->pitch / 4;
+
     for (i = 0; i < destinations->size; i++) {
-        CachedBlitDest *item = &destinations->sequence[i];
+        BlitDestination *item = &destinations->sequence[i];
 
         const int src_pitch = item->w * sizeof(Uint32);
-        const int src_skip = src->pitch / 4;
-        const int dst_skip = dst->pitch / 4;
 
         Uint32 *srcp32 = (Uint32 *)src->pixels + item->x + item->y * src_skip;
         Uint32 *dstp32 = item->pixels;
