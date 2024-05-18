@@ -153,17 +153,20 @@ scale2x(SDL_Surface *src, SDL_Surface *dst)
         case 3: {
             int E0, E1, E2, E3, B, D, E, F, H;
             for (looph = 0; looph < height; ++looph) {
+                Uint8 *src_row = srcpix + looph * srcpitch;
+                Uint8 *dst_row0 = dstpix + looph * 2 * dstpitch;
+                Uint8 *dst_row1 = dstpix + (looph * 2 + 1) * dstpitch;
+
+                Uint8 *src_row_prev = srcpix + MAX(0, looph - 1) * srcpitch;
+                Uint8 *src_row_next =
+                    srcpix + MIN(height - 1, looph + 1) * srcpitch;
+
                 for (loopw = 0; loopw < width; ++loopw) {
-                    B = read_int24(srcpix + (MAX(0, looph - 1) * srcpitch) +
-                                   (3 * loopw));
-                    D = read_int24(srcpix + (looph * srcpitch) +
-                                   (3 * MAX(0, loopw - 1)));
-                    E = read_int24(srcpix + (looph * srcpitch) + (3 * loopw));
-                    F = read_int24(srcpix + (looph * srcpitch) +
-                                   (3 * MIN(width - 1, loopw + 1)));
-                    H = read_int24(srcpix +
-                                   (MIN(height - 1, looph + 1) * srcpitch) +
-                                   (3 * loopw));
+                    B = read_int24(src_row_prev + (3 * loopw));
+                    D = read_int24(src_row + (3 * MAX(0, loopw - 1)));
+                    E = read_int24(src_row + (3 * loopw));
+                    F = read_int24(src_row + (3 * MIN(width - 1, loopw + 1)));
+                    H = read_int24(src_row_next + (3 * loopw));
 
                     if (B != H && D != F) {
                         E0 = (D == B) ? D : E;
@@ -178,17 +181,10 @@ scale2x(SDL_Surface *src, SDL_Surface *dst)
                         E3 = E;
                     }
 
-                    store_int24(
-                        (dstpix + looph * 2 * dstpitch + loopw * 2 * 3), E0);
-                    store_int24(
-                        (dstpix + looph * 2 * dstpitch + (loopw * 2 + 1) * 3),
-                        E1);
-                    store_int24(
-                        (dstpix + (looph * 2 + 1) * dstpitch + loopw * 2 * 3),
-                        E2);
-                    store_int24((dstpix + (looph * 2 + 1) * dstpitch +
-                                 (loopw * 2 + 1) * 3),
-                                E3);
+                    store_int24(dst_row0 + loopw * 2 * 3, E0);
+                    store_int24(dst_row0 + (loopw * 2 + 1) * 3, E1);
+                    store_int24(dst_row1 + loopw * 2 * 3, E2);
+                    store_int24(dst_row1 + (loopw * 2 + 1) * 3, E3);
                 }
             }
             break;
