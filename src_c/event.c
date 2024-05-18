@@ -1249,7 +1249,7 @@ dict_from_event(SDL_Event *event)
             break;
 #endif /* (defined(unix) || ... */
     } /* switch (event->type) */
-    /* Events that dont have any attributes are not handled in switch
+    /* Events that don't have any attributes are not handled in switch
      * statement */
     SDL_Window *window;
     switch (event->type) {

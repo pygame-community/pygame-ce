@@ -1284,7 +1284,8 @@ cc_label(bitmask_t *input, unsigned int *image, unsigned int *ufind,
             }
             buf++;
         }
-        /* last pixel of the row, if its not also the first pixel of the row */
+        /* last pixel of the row, if it's not also the first pixel of the row
+         */
         if (w > 1) {
             if (bitmask_getbit(input, x, y)) {
                 if (*(buf - w)) { /* b label */
@@ -1382,7 +1383,7 @@ get_bounding_rects(bitmask_t *input, int *num_bounding_boxes,
         if (ufind[x_uf] < x_uf) {             /* is it a union find root? */
             ufind[x_uf] = ufind[ufind[x_uf]]; /* relabel it to its root */
         }
-        else { /* its a root */
+        else { /* it's a root */
             relabel++;
             ufind[x_uf] = relabel; /* assign the lowest label available */
         }
@@ -1409,7 +1410,7 @@ get_bounding_rects(bitmask_t *input, int *num_bounding_boxes,
     }
 
     for (temp = 0; temp <= relabel; temp++) {
-        rects[temp].h = 0; /* so we know if its a new rect or not */
+        rects[temp].h = 0; /* so we know if it's a new rect or not */
     }
 
     /* find the bounding rect of each connected component */
@@ -1586,7 +1587,7 @@ get_connected_components(bitmask_t *mask, bitmask_t ***components, int min)
         if (ufind[x_uf] < x_uf) {             /* is it a union find root? */
             ufind[x_uf] = ufind[ufind[x_uf]]; /* relabel it to its root */
         }
-        else { /* its a root */
+        else { /* it's a root */
             if (largest[x_uf] >= min_cc) {
                 relabel++;
                 ufind[x_uf] = relabel; /* assign the lowest label available */

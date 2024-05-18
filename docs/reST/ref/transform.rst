@@ -169,7 +169,7 @@ Instead, always begin with the original image and scale to the desired size.)
    | :sl:`return smoothscale filter version in use: 'GENERIC', 'MMX', 'SSE', 'SSE2', or 'NEON'`
    | :sg:`get_smoothscale_backend() -> string`
 
-   Shows whether or not smoothscale is using SIMD accleration.
+   Shows whether or not smoothscale is using SIMD acceleration.
    If no acceleration is available then "GENERIC" is returned. The level of
    acceleration possible is automatically determined at runtime.
 
