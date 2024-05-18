@@ -72,7 +72,6 @@ jobs:
 
       - name: Building pygame wheel
         run: |
-          python3 setup.py docs
           pip3 wheel . --wheel-dir /artifacts -vvv --no-build-isolation
 
       - name: Installing wheel

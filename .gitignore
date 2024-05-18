@@ -11,7 +11,7 @@
 # macOS generated files
 .DS_Store
 
-# Sphinx generated files: makeref.py
+# Sphinx generated files: make_docs.py
 /docs/generated
 
 # Emacs temporary files

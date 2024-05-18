@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_MOUSE "pygame module to work with the mouse"
 #define DOC_MOUSE_GETPRESSED "get_pressed(num_buttons=3) -> (left_button, middle_button, right_button)\nget_pressed(num_buttons=5) -> (left_button, middle_button, right_button, x1_button, x2_button)\nget the state of the mouse buttons"
 #define DOC_MOUSE_GETJUSTPRESSED "get_just_pressed() -> (left_button, middle_button, right_button, x1_button, x2_button)\nget the most recently pressed buttons"
