@@ -262,10 +262,11 @@ will be locked during the lifetime of the array.
 
    Create a new Surface that best resembles the data and format on the array.
    The array can be 2D or 3D with any sized integer values. Function
-   make_surface uses the array struct interface to acquire array properties,
+   make_surface uses the buffer protocol to acquire array properties,
    so is not limited to just NumPy arrays. See :mod:`pygame.pixelcopy`.
 
-   New in pygame 1.9.2: array struct interface support.
+   .. versionchanged:: 2.5.0 Removed array struct interface support.
+   .. versionaddedold:: 1.9.2 array struct interface support.
 
    .. ## pygame.surfarray.make_surface ##
 
