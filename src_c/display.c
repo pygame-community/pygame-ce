@@ -1448,7 +1448,7 @@ pg_window_size(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
-pg_get_window_pos(PyObject *self, PyObject *_null)
+pg_get_window_position(PyObject *self, PyObject *_null)
 {
     SDL_Window *win = pg_GetDefaultWindow();
     int x, y = 0;
@@ -1459,7 +1459,7 @@ pg_get_window_pos(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
-pg_set_window_pos(PyObject *self, PyObject *arg)
+pg_set_window_position(PyObject *self, PyObject *arg)
 {
     SDL_Window *win = pg_GetDefaultWindow();
     PyObject *pos = NULL;
@@ -2938,10 +2938,10 @@ static PyMethodDef _pg_display_methods[] = {
      DOC_DISPLAY_GETSURFACE},
     {"get_window_size", (PyCFunction)pg_window_size, METH_NOARGS,
      DOC_DISPLAY_GETWINDOWSIZE},
-    {"set_window_pos", pg_set_window_pos, METH_VARARGS,
-     DOC_DISPLAY_SETWINDOWPOS},
-    {"get_window_pos", (PyCFunction)pg_get_window_pos, METH_NOARGS,
-     DOC_DISPLAY_GETWINDOWPOS},
+    {"set_window_position", pg_set_window_position, METH_VARARGS,
+     DOC_DISPLAY_SETWINDOWPOSITION},
+    {"get_window_position", (PyCFunction)pg_get_window_position, METH_NOARGS,
+     DOC_DISPLAY_GETWINDOWPOSITION},
 
     {"set_mode", (PyCFunction)pg_set_mode, METH_VARARGS | METH_KEYWORDS,
      DOC_DISPLAY_SETMODE},
