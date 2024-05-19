@@ -1470,7 +1470,7 @@ pg_set_window_position(PyObject *self, PyObject *arg)
 
     if (pos != NULL) {
         if (!pg_TwoIntsFromObj(pos, &x, &y))
-            return RAISE(PyExc_TypeError, "pos must be two numbers");
+            return RAISE(PyExc_TypeError, "position must be two numbers");
     }
 
     if (win)
