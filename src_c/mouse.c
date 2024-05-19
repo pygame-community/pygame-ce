@@ -163,6 +163,40 @@ mouse_get_pressed(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
+mouse_get_just_pressed(PyObject *self, PyObject *_null)
+{
+    PyObject *tuple;
+    VIDEO_INIT_CHECK();
+
+    char *pressed_buttons = pgEvent_GetMouseButtonDownInfo();
+    if (!(tuple = PyTuple_New(5)))
+        return NULL;
+
+    for (int i = 0; i < 5; i++) {
+        PyTuple_SET_ITEM(tuple, i, PyBool_FromLong(pressed_buttons[i]));
+    }
+
+    return tuple;
+}
+
+static PyObject *
+mouse_get_just_released(PyObject *self, PyObject *_null)
+{
+    PyObject *tuple;
+    VIDEO_INIT_CHECK();
+
+    char *released_buttons = pgEvent_GetMouseButtonUpInfo();
+    if (!(tuple = PyTuple_New(5)))
+        return NULL;
+
+    for (int i = 0; i < 5; i++) {
+        PyTuple_SET_ITEM(tuple, i, PyBool_FromLong(released_buttons[i]));
+    }
+
+    return tuple;
+}
+
+static PyObject *
 mouse_set_visible(PyObject *self, PyObject *args)
 {
     int toggle, prevstate;
@@ -500,6 +534,10 @@ static PyMethodDef _mouse_methods[] = {
     {"get_rel", (PyCFunction)mouse_get_rel, METH_NOARGS, DOC_MOUSE_GETREL},
     {"get_pressed", (PyCFunction)mouse_get_pressed,
      METH_VARARGS | METH_KEYWORDS, DOC_MOUSE_GETPRESSED},
+    {"get_just_pressed", (PyCFunction)mouse_get_just_pressed, METH_NOARGS,
+     DOC_MOUSE_GETJUSTPRESSED},
+    {"get_just_released", (PyCFunction)mouse_get_just_released, METH_NOARGS,
+     DOC_MOUSE_GETJUSTRELEASED},
     {"set_visible", mouse_set_visible, METH_VARARGS, DOC_MOUSE_SETVISIBLE},
     {"get_visible", mouse_get_visible, METH_NOARGS, DOC_MOUSE_GETVISIBLE},
     {"get_focused", (PyCFunction)mouse_get_focused, METH_NOARGS,
@@ -537,6 +575,10 @@ MODINIT_DEFINE(mouse)
         return NULL;
     }
     import_pygame_surface();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    import_pygame_event();
     if (PyErr_Occurred()) {
         return NULL;
     }

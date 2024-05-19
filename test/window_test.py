@@ -232,7 +232,7 @@ class WindowTypeTest(unittest.TestCase):
             ValueError, lambda: setattr(self.win, "maximum_size", (50, 50))
         )
 
-        # minimum size should be able to equal to maxium size
+        # minimum size should be able to equal to maximum size
         # This test fails in SDL <= 2.0.12
         # have been fixed after SDL 2.0.18
         if SDL >= (2, 0, 18):

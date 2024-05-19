@@ -153,7 +153,7 @@ jobs:
 
       CIBW_BEFORE_BUILD: |
         pip install numpy Sphinx"<7.2.0"
-        python buildconfig/makeref.py
+        python setup.py docs
         cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
 
       # To remove any speculations about the wheel not being self-contained
