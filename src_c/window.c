@@ -7,6 +7,8 @@
 #include "doc/sdl2_video_doc.h"
 #include "doc/window_doc.h"
 
+static int is_window_mod_init = 0;
+
 #if !defined(__APPLE__)
 static char *icon_defaultname = "pygame_icon.bmp";
 static int icon_colorkey = 0;
@@ -759,6 +761,11 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     const char *_key_str;
     int _value_bool;
 
+    // ensure display is init at this point, diplay init automatically calls
+    // the window init in this module
+    if (!pg_mod_autoinit(IMPPREFIX "display"))
+        return -1;
+
     _kw = PyDict_New();
     if (!_kw)
         return -1;
@@ -954,6 +961,11 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
         return NULL;
     }
 
+    // ensure display is init at this point, diplay init automatically calls
+    // the window init in this module
+    if (!pg_mod_autoinit(IMPPREFIX "display"))
+        return NULL;
+
     SDL_Window *window = pg_GetDefaultWindow();
     if (!window) {
         return RAISE(pgExc_SDLError,
@@ -999,14 +1011,20 @@ window_repr(pgWindowObject *self)
 static PyObject *
 _window_internal_mod_init(PyObject *self, PyObject *_null)
 {
-    SDL_AddEventWatch(_resize_event_watch, NULL);
+    if (!is_window_mod_init) {
+        SDL_AddEventWatch(_resize_event_watch, NULL);
+        is_window_mod_init = 1;
+    }
     Py_RETURN_NONE;
 }
 
 static PyObject *
 _window_internal_mod_quit(PyObject *self, PyObject *_null)
 {
-    SDL_DelEventWatch(_resize_event_watch, NULL);
+    if (is_window_mod_init) {
+        SDL_DelEventWatch(_resize_event_watch, NULL);
+        is_window_mod_init = 0;
+    }
     Py_RETURN_NONE;
 }
 
@@ -1083,9 +1101,9 @@ static PyMethodDef _window_methods[] = {
     {"get_grabbed_window", (PyCFunction)get_grabbed_window, METH_NOARGS,
      DOC_SDL2_VIDEO_GETGRABBEDWINDOW},
     {"_internal_mod_init", (PyCFunction)_window_internal_mod_init, METH_NOARGS,
-     "auto initialize for _window module"},
+     "auto initialize for window module"},
     {"_internal_mod_quit", (PyCFunction)_window_internal_mod_quit, METH_NOARGS,
-     "auto quit for _window module"},
+     "auto quit for window module"},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(window)

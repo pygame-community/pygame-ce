@@ -196,7 +196,7 @@ pg_display_quit(PyObject *self, PyObject *_null)
 
     pg_mod_autoquit(IMPPREFIX "event");
     pg_mod_autoquit(IMPPREFIX "time");
-    pg_mod_autoquit(IMPPREFIX "_window");
+    pg_mod_autoquit(IMPPREFIX "window");
 
     if (SDL_WasInit(SDL_INIT_VIDEO)) {
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
