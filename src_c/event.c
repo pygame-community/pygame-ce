@@ -887,6 +887,392 @@ _pg_name_from_eventtype(int type)
         return "UserEvent";
     return "Unknown";
 }
+//!NEW>
+// Madeup function, but it works.
+static int
+_very_bad_hash(const char *str)
+{
+    // Rarely works, but for existing names no collisions!
+    unsigned int sum = 0;
+    int off = 1;
+
+    for (int i = 0; i < strlen(str); i++) {
+        sum += str[i];
+        sum = sum ^ (sum >> off);
+        off += 1;
+        if (off > 10) {
+            off = 1;
+        }
+    }
+    return sum;
+}
+
+static int
+_pg_eventtype_from_name_hash(const char *name)
+{
+    /*
+    This was generated with these helper files (rerun if events table modified):
+    parse.py:
+        import subprocess as sp
+
+        text = "[Content of the _pg_name_from_eventtype switch]"
+
+        def parse(text):
+            res = []
+            groups = []
+
+            ev_id = ""
+
+            for line in text.split("\n"):
+                if line.startswith("        case"):
+                    ev_id = line[len('        case '):-len(':')]
+                elif line.startswith("            "):
+                    name = line[len('            return "'):-len('";')]
+                    res.append((name, ev_id))
+                    groups.append((name, ev_id))
+                else:
+                    res.append(line)
+            return res, groups
+
+
+        def do_hash(groups):    
+            inp = "\n".join(map(lambda x: x[0], groups))
+            p = sp.run(["./a.out"], stdout=sp.PIPE, input=inp, encoding="ascii")
+            codes = list(map(int, p.stdout.split("\n")))
+            ret = []
+            for idx in range(len(groups)):
+                ret.append((*groups[idx], codes[idx]))
+            return ret
+
+
+        def collides(hashes):
+            hdb = {}
+            hashes_db = {}
+            for name, _, h in hashes:
+                if h in hdb:
+                    print(f"collision: {hdb[h]}, {name}")
+                    exit()
+                else:
+                    hdb[h] = name
+                hashes_db[name] = h
+            return hashes_db
+
+
+        def convert(lines, hashes_db):
+            text = ""
+            for line in lines:
+                if isinstance(line, str):
+                    text += line + "\n"
+                else:
+                    text += f"        case {hashes_db[line[0]]}: // {line[0]}\n" \
+                            f"            return {line[1]};\n"
+            return text
+
+
+        if __name__ == "__main__":
+            lines, groups = parse(text)
+            hashes = do_hash(groups)
+            hashes_db = collides(hashes)
+            print(convert(lines, hashes_db))
+
+    parse.c:
+        #include <stdio.h>
+        #include <string.h>
+
+        unsigned int _very_bad_hash(char *txt) {
+            unsigned int sum = 0;
+            int off = 1;
+
+            for (int i = 0; i < strlen(txt); i++) {
+                sum += txt[i];
+                sum = sum ^ (sum >> off);
+                off += 1;
+                if (off > 10) {
+                    off = 1;
+                }
+            }
+            return sum;
+        }
+
+        int main() {
+            char *line = NULL;
+            size_t s;
+            getline(&line, &s, stdin);
+            line[strcspn(line, "\n")] = 0;
+            printf("%u", _very_bad_hash(line));
+            while (1) {
+                if (getline(&line, &s, stdin) == -1) {
+                    return 0;
+                };
+                line[strcspn(line, "\n")] = 0;
+                printf("\n%u", _very_bad_hash(line));
+            }
+            return 0;
+        }
+    
+    And of course, run something like: "gcc parse.c", before running "python parse.py".
+
+    */
+    switch (_very_bad_hash(name)) {
+        case 1784: // ActiveEvent
+            return SDL_ACTIVEEVENT;
+        case 1791: // AppTerminating
+            return SDL_APP_TERMINATING;
+        case 1757: // AppLowMemory
+            return SDL_APP_LOWMEMORY;
+        case 3391: // AppWillEnterBackground
+            return SDL_APP_WILLENTERBACKGROUND;
+        case 3729: // AppDidEnterBackground
+            return SDL_APP_DIDENTERBACKGROUND;
+        case 2275: // AppWillEnterForeground
+            return SDL_APP_WILLENTERFOREGROUND;
+        case 3967: // AppDidEnterForeground
+            return SDL_APP_DIDENTERFOREGROUND;
+        case 2377: // ClipboardUpdate
+            return SDL_CLIPBOARDUPDATE;
+        case 720: // KeyDown
+            return SDL_KEYDOWN;
+        case 570: // KeyUp
+            return SDL_KEYUP;
+        case 1917: // KeyMapChanged
+            return SDL_KEYMAPCHANGED;
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+        case 1940: // LocaleChanged
+            return SDL_LOCALECHANGED;
+#endif
+        case 1726: // MouseMotion
+            return SDL_MOUSEMOTION;
+        case 2417: // MouseButtonDown
+            return SDL_MOUSEBUTTONDOWN;
+        case 1967: // MouseButtonUp
+            return SDL_MOUSEBUTTONUP;
+        case 1972: // JoyAxisMotion
+            return SDL_JOYAXISMOTION;
+        case 1844: // JoyBallMotion
+            return SDL_JOYBALLMOTION;
+        case 1765: // JoyHatMotion
+            return SDL_JOYHATMOTION;
+        case 1740: // JoyButtonUp
+            return SDL_JOYBUTTONUP;
+        case 1907: // JoyButtonDown
+            return SDL_JOYBUTTONDOWN;
+        case 405: // Quit
+            return SDL_QUIT;
+        case 1098: // SysWMEvent
+            return SDL_SYSWMEVENT;
+        case 1751: // VideoResize
+            return SDL_VIDEORESIZE;
+        case 1785: // VideoExpose
+            return SDL_VIDEOEXPOSE;
+        case 635: // MidiIn
+            return PGE_MIDIIN;
+        case 751: // MidiOut
+            return PGE_MIDIOUT;
+        case 741: // NoEvent
+            return SDL_NOEVENT;
+        case 1821: // FingerMotion
+            return SDL_FINGERMOTION;
+        case 1043: // FingerDown
+            return SDL_FINGERDOWN;
+        case 826: // FingerUp
+            return SDL_FINGERUP;
+        case 1758: // MultiGesture
+            return SDL_MULTIGESTURE;
+        case 1089: // MouseWheel
+            return SDL_MOUSEWHEEL;
+        case 1010: // TextInput
+            return SDL_TEXTINPUT;
+        case 1788: // TextEditing
+            return SDL_TEXTEDITING;
+        case 867: // DropFile
+            return SDL_DROPFILE;
+        case 953: // DropText
+            return SDL_DROPTEXT;
+        case 992: // DropBegin
+            return SDL_DROPBEGIN;
+        case 1691: // DropComplete
+            return SDL_DROPCOMPLETE;
+        case 2897: // ControllerAxisMotion
+            return SDL_CONTROLLERAXISMOTION;
+        case 2914: // ControllerButtonDown
+            return SDL_CONTROLLERBUTTONDOWN;
+        case 2734: // ControllerButtonUp
+            return SDL_CONTROLLERBUTTONUP;
+        case 3623: // ControllerDeviceAdded
+            return SDL_CONTROLLERDEVICEADDED;
+        case 3116: // ControllerDeviceRemoved
+            return SDL_CONTROLLERDEVICEREMOVED;
+        case 3380: // ControllerDeviceMapped
+            return SDL_CONTROLLERDEVICEREMAPPED;
+        case 2030: // JoyDeviceAdded
+            return SDL_JOYDEVICEADDED;
+        case 2302: // JoyDeviceRemoved
+            return SDL_JOYDEVICEREMOVED;
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+        case 5155: // ControllerTouchpadDown
+            return SDL_CONTROLLERTOUCHPADDOWN;
+        case 5915: // ControllerTouchpadMotion
+            return SDL_CONTROLLERTOUCHPADMOTION;
+        case 2665: // ControllerTouchpadUp
+            return SDL_CONTROLLERTOUCHPADUP;
+        case 3160: // ControllerSensorUpdate
+            return SDL_CONTROLLERSENSORUPDATE;
+#endif /*SDL_VERSION_ATLEAST(2, 0, 14)*/
+        case 2199: // AudioDeviceAdded
+            return SDL_AUDIODEVICEADDED;
+        case 2301: // AudioDeviceRemoved
+            return SDL_AUDIODEVICEREMOVED;
+        case 2048: // RenderTargetsReset
+            return SDL_RENDER_TARGETS_RESET;
+        case 2625: // RenderDeviceReset
+            return SDL_RENDER_DEVICE_RESET;
+        case 1706: // WindowShown
+            return PGE_WINDOWSHOWN;
+        case 1681: // WindowHidden
+            return PGE_WINDOWHIDDEN;
+        case 1963: // WindowExposed
+            return PGE_WINDOWEXPOSED;
+        case 1699: // WindowMoved
+            return PGE_WINDOWMOVED;
+        case 2003: // WindowResized
+            return PGE_WINDOWRESIZED;
+        case 2528: // WindowSizeChanged
+            return PGE_WINDOWSIZECHANGED;
+        case 2231: // WindowMinimized
+            return PGE_WINDOWMINIMIZED;
+        case 2221: // WindowMaximized
+            return PGE_WINDOWMAXIMIZED;
+        case 2188: // WindowRestored
+            return PGE_WINDOWRESTORED;
+        case 1710: // WindowEnter
+            return PGE_WINDOWENTER;
+        case 1774: // WindowLeave
+            return PGE_WINDOWLEAVE;
+        case 2233: // WindowFocusGained
+            return PGE_WINDOWFOCUSGAINED;
+        case 2174: // WindowFocusLost
+            return PGE_WINDOWFOCUSLOST;
+        case 1770: // WindowClose
+            return PGE_WINDOWCLOSE;
+        case 1886: // WindowTakeFocus
+            return PGE_WINDOWTAKEFOCUS;
+        case 2026: // WindowHitTest
+            return PGE_WINDOWHITTEST;
+        case 2548: // WindowICCProfChanged
+            return PGE_WINDOWICCPROFCHANGED;
+        case 2889: // WindowDisplayChanged
+            return PGE_WINDOWDISPLAYCHANGED;
+    }
+    return -1;
+}
+
+static int
+_pg_eventtype_from_name(const char *name)
+{
+    const int guessed_type = _pg_eventtype_from_name_hash(name);
+
+    if (guessed_type == -1)
+        return -1;
+
+    if (strcmp(name, _pg_name_from_eventtype(guessed_type)) != 0)
+        return -1;
+
+    return guessed_type;
+}
+
+/* 
+    To generate this, see the python code in _pg_eventtype_from_name_hash,
+    but replace its '__name__ == "__main__: [...]" with:
+        if __name__ == "__main__":
+            lines, groups = parse(text)
+            print("{")
+            for line in lines:
+                if isinstance(line, str):
+                    print(line)
+                else:
+                    print(f"    \"{line[0]}\",")
+            print("    NULL\n};")
+*/
+static const char *_event_names[] = {
+    "ActiveEvent",
+    "AppTerminating",
+    "AppLowMemory",
+    "AppWillEnterBackground",
+    "AppDidEnterBackground",
+    "AppWillEnterForeground",
+    "AppDidEnterForeground",
+    "ClipboardUpdate",
+    "KeyDown",
+    "KeyUp",
+    "KeyMapChanged",
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    "LocaleChanged",
+#endif
+    "MouseMotion",
+    "MouseButtonDown",
+    "MouseButtonUp",
+    "JoyAxisMotion",
+    "JoyBallMotion",
+    "JoyHatMotion",
+    "JoyButtonUp",
+    "JoyButtonDown",
+    "Quit",
+    "SysWMEvent",
+    "VideoResize",
+    "VideoExpose",
+    "MidiIn",
+    "MidiOut",
+    "NoEvent",
+    "FingerMotion",
+    "FingerDown",
+    "FingerUp",
+    "MultiGesture",
+    "MouseWheel",
+    "TextInput",
+    "TextEditing",
+    "DropFile",
+    "DropText",
+    "DropBegin",
+    "DropComplete",
+    "ControllerAxisMotion",
+    "ControllerButtonDown",
+    "ControllerButtonUp",
+    "ControllerDeviceAdded",
+    "ControllerDeviceRemoved",
+    "ControllerDeviceMapped",
+    "JoyDeviceAdded",
+    "JoyDeviceRemoved",
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    "ControllerTouchpadDown",
+    "ControllerTouchpadMotion",
+    "ControllerTouchpadUp",
+    "ControllerSensorUpdate",
+#endif /*SDL_VERSION_ATLEAST(2, 0, 14)*/
+    "AudioDeviceAdded",
+    "AudioDeviceRemoved",
+    "RenderTargetsReset",
+    "RenderDeviceReset",
+    "WindowShown",
+    "WindowHidden",
+    "WindowExposed",
+    "WindowMoved",
+    "WindowResized",
+    "WindowSizeChanged",
+    "WindowMinimized",
+    "WindowMaximized",
+    "WindowRestored",
+    "WindowEnter",
+    "WindowLeave",
+    "WindowFocusGained",
+    "WindowFocusLost",
+    "WindowClose",
+    "WindowTakeFocus",
+    "WindowHitTest",
+    "WindowICCProfChanged",
+    "WindowDisplayChanged",
+    NULL
+};
+//!NEW<
 
 /* Helper for adding objects to dictionaries. Check for errors with
    PyErr_Occurred() */
@@ -2558,6 +2944,95 @@ pg_event_custom_type(PyObject *self, PyObject *_null)
                      "pygame.event.custom_type made too many event types.");
 }
 
+//!NEW>
+static PyObject *
+pg_event_name_to_id(PyObject *self, PyObject *attr)
+{
+    if (!PyUnicode_Check(attr))
+        return NULL;
+
+    const char *attr_name = PyUnicode_AsUTF8(attr);
+
+    if (PyErr_Occurred())
+        return NULL;
+
+    int e_type = _pg_eventtype_from_name(attr_name);
+    return PyLong_FromLong(e_type);
+}
+
+static PyObject *
+pg_event__gettattr__(PyObject *self, PyObject *attr)
+{
+    if (!PyUnicode_Check(attr))
+        return NULL;
+
+    const char *attr_name = PyUnicode_AsUTF8(attr);
+
+    if (PyErr_Occurred())
+        return NULL;
+
+    int e_type = _pg_eventtype_from_name(attr_name);
+
+    if (e_type<0)
+        return PyErr_Format(PyExc_AttributeError, "module 'pygame.event' has no attribute '%s'", attr_name);
+    return pgEvent_GetClass(e_type);
+}
+/* To be done.
+static PyObject *
+pg_event__dir__(PyObject *self, PyObject *args)
+{
+    size_t length = 0;
+
+    while (_event_names[length] != NULL) {
+        length++;
+    }
+
+    PyObject *dict = PyObject_GetAttrString(self, "__dict__");
+    if (!dict) {
+        return NULL;
+    }
+
+    if (!PyDict_Check(dict)) {
+        Py_DECREF(dict);
+        PyErr_Format(PyExc_TypeError, "<module>.__dict__ is not a dictionary");
+        return NULL;
+    }
+
+    PyObject *result = PyDict_Keys(dict);
+    Py_DECREF(dict);
+
+    if (!result) {
+        return NULL;
+    }
+
+    PyObject *dir = PyList_New(PyList_Size(result) + length);
+
+    if (!dir) {
+        Py_DECREF(result);
+        return NULL;
+    }
+
+    for (Py_ssize_t idx = 0; idx < PyList_Size(result); idx++) {
+        PyObject *item = PyList_GetItem(result, idx);
+        Py_INCREF(item);
+        PyList_SetItem(dir, idx, item);
+    }
+    Py_DECREF(result);
+
+    for (Py_ssize_t idx = 0; idx < length; idx++) {
+        PyObject *item = PyUnicode_FromString(_event_names[idx]);
+        if (!item) {
+            Py_DECREF(dir);
+            return NULL;
+        }
+        PyList_SetItem(dir, idx + PyList_Size(result), item);
+    }
+
+    return dir;
+}
+*/
+//!NEW<
+
 static PyMethodDef _event_methods[] = {
     {"_internal_mod_init", (PyCFunction)pgEvent_AutoInit, METH_NOARGS,
      "auto initialize for event module"},
@@ -2591,6 +3066,12 @@ static PyMethodDef _event_methods[] = {
      DOC_EVENT_CUSTOMTYPE},
       //!NEW
      {"event_class", (PyCFunction)pg_event_class, METH_VARARGS},
+     //!NEW
+     {"_name_to_id", (PyCFunction)pg_event_name_to_id, METH_O},
+     //!NEW
+     {"__getattr__", (PyCFunction)pg_event__gettattr__, METH_O},
+     //!NEW
+     // {"__dir__", (PyCFunction)pg_event__dir__, METH_NOARGS} - To be done.
 
     {NULL, NULL, 0, NULL}};
 
@@ -2610,7 +3091,7 @@ MODINIT_DEFINE(event)
                                          DOC_EVENT,
                                          -1,
                                          _event_methods,
-                                         NULL,
+                                         NULL, // _event_slots,
                                          NULL,
                                          NULL,
                                          //!NEW
@@ -2688,11 +3169,17 @@ MODINIT_DEFINE(event)
     }
 
     PyObject *proxy = PyDictProxy_New(pg_event_lookup);
+    if (!proxy) {
+        Py_DECREF(module);
+        Py_DECREF(pg_event_lookup);
+        return NULL;
+    }
 
     if (PyModule_AddObject(module, "_event_classes", proxy)) {
         Py_DECREF(proxy);
         Py_DECREF(module);
         Py_DECREF(pg_event_lookup);
+        return NULL;
     }
     //!NEW<
 
