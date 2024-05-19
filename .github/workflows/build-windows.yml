@@ -132,7 +132,7 @@ jobs:
       CIBW_BUILD: ${{ matrix.pyversions }}
       CIBW_ARCHS: ${{ matrix.winarch }}
 
-      CIBW_BEFORE_BUILD: pip install numpy Sphinx"<7.2.0" && python buildconfig/makeref.py
+      CIBW_BEFORE_BUILD: pip install numpy Sphinx"<7.2.0" && python setup.py docs
 
       CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,timing --time_out 300
 

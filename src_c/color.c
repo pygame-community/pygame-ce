@@ -2348,7 +2348,7 @@ _pg_pylong_to_uint32(PyObject *val, Uint32 *color, int handle_negative)
     }
 
     if (longval == -1 && PyErr_Occurred()) {
-        /* Some other internal error occured */
+        /* Some other internal error occurred */
         return 0;
     }
 

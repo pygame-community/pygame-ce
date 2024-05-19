@@ -300,7 +300,7 @@ solves no longer exists, it will likely be removed in the future.
       | :sg:`point_size -> int`
 
       Returns the point size of the font. Will not be accurate upon initializing
-      the font object when the font name is initalized as ``None``.
+      the font object when the font name is initialized as ``None``.
 
       .. versionadded:: 2.3.1
 
@@ -527,7 +527,7 @@ solves no longer exists, it will likely be removed in the future.
       | :sg:`set_point_size(size, /) -> int`
 
       Sets the point size of the font, which is the value that was used to
-      initalize this font.
+      initialize this font.
 
       .. versionadded:: 2.3.1
 
@@ -539,7 +539,7 @@ solves no longer exists, it will likely be removed in the future.
       | :sg:`get_point_size() -> int`
 
       Returns the point size of the font. Will not be accurate upon
-      initializing the font object when the font name is initalized
+      initializing the font object when the font name is initialized
       as ``None``.
       
       .. versionadded:: 2.3.1

@@ -195,7 +195,7 @@ no_compilation = bool({'docs', 'sdist', 'stubcheck'}.intersection(sys.argv))
 
 compile_cython = not no_compilation
 
-# does nothing now, but consume the arg anyways for compatibilty
+# does nothing now, but consume the arg anyways for compatibility
 consume_arg('cython')
 
 cython_only = False

@@ -174,7 +174,7 @@ def quit():
 
 
 if __name__ == "__main__":
-    # try and use this camera stuff with the pygame camera example.
+    # try to use this camera stuff with the pygame camera example.
     import pygame.examples.camera
 
     # pygame.camera.Camera = Camera
