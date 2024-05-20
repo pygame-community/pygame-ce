@@ -1,4 +1,3 @@
-name: Windows
 
 # Run CI only when a release is created, on changes to main branch, or any PR
 # to main. Do not run CI on any other branch. Also, skip any non-source changes
@@ -27,7 +26,7 @@ on:
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
       - '!.github/workflows/build-windows.yml'
-  
+
   # the github release drafter can call this workflow
   workflow_call:
 
