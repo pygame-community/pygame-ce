@@ -1,4 +1,4 @@
-""" pygame.examples.window_opengl
+"""pygame.examples.window_opengl
 
 Slightly modified version of the example at https://github.com/szabolcsdombi/zengl/blob/main/examples/pygame/hello_world.py
 Modified to use Window API instead of the display module
