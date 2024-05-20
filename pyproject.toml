@@ -47,6 +47,9 @@ classifiers = [
 [project.entry-points.pyinstaller40]
 hook-dirs = 'pygame.__pyinstaller:get_hook_dirs'
 
+[project.entry-points."briefcase.bootstraps"]
+pygame_ce = 'pygame.__briefcase.pygame_ce:PygameCEGuiBootstrap'
+
 [build-system]
 requires = ["meson-python", "ninja", "cython"]
 build-backend = 'mesonpy'

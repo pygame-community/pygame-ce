@@ -19,6 +19,7 @@ pygame\.tests.*
 
 # don't look for stubs for pyinstaller hook
 pygame\.__pyinstaller.*
+pygame\.__briefcase.*
 
 # don't look for stubs for these private modules either
 pygame\.ftfont
