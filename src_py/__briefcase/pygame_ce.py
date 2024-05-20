@@ -15,7 +15,7 @@ import pygame
 
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
-WHITE = (255, 255, 255)
+BGCOLOR = (255, 255, 255)
 
 
 def main():
@@ -25,8 +25,8 @@ def main():
     # app's windows to its menu item.
     #
     # For association to work, any windows of the app must have WMCLASS property
-    # set to match the value set in app's desktop file. For PyGame, this is set
-    # using the SDL_VIDEO_X11_WMCLASS environment variable.
+    # set to match the value set in app's desktop file. For pygame_ce, this is 
+    # set using the SDL_VIDEO_X11_WMCLASS environment variable.
 
     # Find the name of the module that was used to start the app
     app_module = sys.modules["__main__"].__package__
@@ -46,7 +46,7 @@ def main():
                 running = False
                 break
 
-        screen.fill(WHITE)
+        screen.fill(BGCOLOR)
         pygame.display.flip()
 
     pygame.quit()
@@ -55,7 +55,7 @@ def main():
     def pyproject_table_briefcase_app_extra_content(self):
         return """
 requires = [
-    "pygame-ce~=2.4.0",
+    "pygame-ce",
 ]
 test_requires = [
 {% if cookiecutter.test_framework == "pytest" %}
