@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.cursors
+"""pygame.examples.cursors
 Click a button and the cursor will change.
 This example will show you:
 *The different types of cursors that exist

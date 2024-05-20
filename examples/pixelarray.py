@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.pixelarray
+"""pygame.examples.pixelarray
 
 PixelArray does array processing of pixels.
 Sort of like another array processor called 'numpy' - But for pixels.
@@ -13,6 +13,7 @@ Controls
 
 To see different effects - press a key or click a mouse.
 """
+
 import os
 import pygame
 

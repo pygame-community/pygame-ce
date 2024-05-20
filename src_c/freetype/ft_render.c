@@ -36,7 +36,7 @@ _validate_view_format(const char *format)
 {
     int i = 0;
 
-    /* Check if the format starts with a size/byte order code or a item count
+    /* Check if the format starts with a size/byte order code or an item count
      */
     switch (format[i]) {
         case '@':
@@ -695,7 +695,11 @@ _PGFT_Render_Array(FreeTypeInstance *ft, pgFontObject *fontobj,
     /*
      * Setup target surface struct
      */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    format.bytes_per_pixel = itemsize;
+#else
     format.BytesPerPixel = itemsize;
+#endif
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
     format.Ashift = _is_swapped(view_p) ? (itemsize - 1) * 8 : 0;
 #else

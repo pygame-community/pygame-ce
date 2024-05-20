@@ -21,7 +21,7 @@ import sys
 # 0.0.5: (June 1st, 2009)
 #   Output no longer calls abort when it deallocates.
 #   Added abort and close methods.
-#   Need to call Abort() explicityly if you want that to happen.
+#   Need to call Abort() explicitly if you want that to happen.
 
 
 #

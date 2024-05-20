@@ -44,3 +44,8 @@ dist
 *.so
 __pycache__
 _headers/*
+
+# cython generated files
+src_c/_sdl2/*.c
+!/src_c/_sdl2/touch.c
+src_c/pypm.c
