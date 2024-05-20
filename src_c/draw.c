@@ -2523,14 +2523,15 @@ draw_circle_xaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
                      int thickness, Uint32 color, int top_right, int top_left,
                      int bottom_left, int bottom_right, int *drawn_area)
 {
-    for (int radius_ = radius - thickness; radius_ <= radius; radius_++) {
+    for (int layer_radius = radius - thickness; layer_radius <= radius;
+         layer_radius++) {
         int x = 0;
-        int y = radius_;
+        int y = layer_radius;
         double prev_opacity = 0.0;
-        if (radius_ == radius - thickness) {
+        if (layer_radius == radius - thickness) {
             while (x < y) {
-                double height = sqrt(pow(radius_, 2) - pow(x, 2));
-                double opacity = 255.0f * (ceil(height) - height);
+                double height = sqrt(pow(layer_radius, 2) - pow(x, 2));
+                double opacity = 255.0 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
                     --y;
                 }
@@ -2544,10 +2545,10 @@ draw_circle_xaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
                 ++x;
             }
         }
-        else if (radius_ == radius) {
+        else if (layer_radius == radius) {
             while (x < y) {
-                double height = sqrt(pow(radius_, 2) - pow(x, 2));
-                double opacity = 255.0f * (ceil(height) - height);
+                double height = sqrt(pow(layer_radius, 2) - pow(x, 2));
+                double opacity = 255.0 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
                     --y;
                 }
@@ -2564,8 +2565,8 @@ draw_circle_xaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
         }
         else {
             while (x < y) {
-                double height = sqrt(pow(radius_, 2) - pow(x, 2));
-                double opacity = 255.0f * (ceil(height) - height);
+                double height = sqrt(pow(layer_radius, 2) - pow(x, 2));
+                double opacity = 255.0 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
                     --y;
                 }
@@ -2592,7 +2593,7 @@ draw_circle_xaolinwu_thin(SDL_Surface *surf, int x0, int y0, int radius,
     double prev_opacity = 0.0;
     while (x < y) {
         double height = sqrt(pow(radius, 2) - pow(x, 2));
-        double opacity = 255.0f * (ceil(height) - height);
+        double opacity = 255.0 * (ceil(height) - height);
         if (opacity < prev_opacity) {
             --y;
         }
