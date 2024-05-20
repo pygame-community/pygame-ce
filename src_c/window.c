@@ -591,7 +591,7 @@ window_get_size(pgWindowObject *self, void *v)
     int w, h;
     SDL_GetWindowSize(self->_win, &w, &h);
 
-    return Py_BuildValue("(ii)", w, h);
+    return pg_tuple_couple_from_values_int(w, h);
 }
 
 static int
@@ -631,7 +631,7 @@ window_get_minimum_size(pgWindowObject *self, void *v)
     int w, h;
     SDL_GetWindowMinimumSize(self->_win, &w, &h);
 
-    return Py_BuildValue("(ii)", w, h);
+    return pg_tuple_couple_from_values_int(w, h);
 }
 
 static int
@@ -671,7 +671,7 @@ window_get_maximum_size(pgWindowObject *self, void *v)
     int w, h;
     SDL_GetWindowMaximumSize(self->_win, &w, &h);
 
-    return Py_BuildValue("(ii)", w, h);
+    return pg_tuple_couple_from_values_int(w, h);
 }
 
 static int
@@ -702,7 +702,7 @@ window_get_position(pgWindowObject *self, void *v)
     int x, y;
     SDL_GetWindowPosition(self->_win, &x, &y);
 
-    return Py_BuildValue("(ii)", x, y);
+    return pg_tuple_couple_from_values_int(x, y);
 }
 
 static int

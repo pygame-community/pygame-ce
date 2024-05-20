@@ -355,7 +355,7 @@ filter_expand_Y_SSE2(Uint8 *srcpix, Uint8 *dstpix, int width, int srcpitch,
 {
     // This filter parallelizes math operations using SSE2, but it also runs
     // through each row 2 pixels at a time. The 2x pixels at a time strategy
-    // was a 23% performance improvment for Y-expand over 1x at a time.
+    // was a 23% performance improvement for Y-expand over 1x at a time.
 
     int x, y;
     __m128i src0, src1, dst, ymult0_mm, ymult1_mm;
@@ -433,7 +433,7 @@ grayscale_sse2(SDL_Surface *src, SDL_Surface *newsurf)
      * We also need to calculate a 'skip value' in case our surface's rows are
      * not contiguous in memory. For surfaces, a single row's worth of pixel
      * data is always contiguous (i.e. each pixel is next to each other).
-     * However, a surface's rows may be seperated from one another in memory,
+     * However, a surface's rows may be separated from one another in memory,
      * most commonly this happens with sub surfaces.
      * The vast majority of surfaces used in applications will probably also
      * have contiguous rows as that is what happens when you create a standard

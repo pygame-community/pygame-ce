@@ -178,7 +178,8 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
         }
     }
 
-    if (SDL_GetColorKey(surf, &colorkey) == 0) {
+    if (SDL_HasColorKey(surf)) {
+        SDL_GetColorKey(surf, &colorkey);
         if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
@@ -672,7 +673,7 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     /* get the background color */
-    if (SDL_GetColorKey(surf, &bgcolor) != 0) {
+    if (!SDL_HasColorKey(surf)) {
         SDL_LockSurface(surf);
         switch (PG_SURF_BytesPerPixel(surf)) {
             case 1:
@@ -697,6 +698,9 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
         }
         SDL_UnlockSurface(surf);
         bgcolor &= ~surf->format->Amask;
+    }
+    else {
+        SDL_GetColorKey(surf, &bgcolor);
     }
 
     SDL_LockSurface(newsurf);
@@ -2477,7 +2481,7 @@ average_surfaces(SDL_Surface **surfaces, size_t num_surfaces,
 
         palette_colors - if true we average the colors in palette, otherwise we
             average the pixel values.  This is useful if the surface is
-            actually greyscale colors, and not palette colors.
+            actually grayscale colors, and not palette colors.
 
     */
 
@@ -2553,7 +2557,7 @@ average_surfaces(SDL_Surface **surfaces, size_t num_surfaces,
              PG_FORMAT_BytesPerPixel(destformat) == 1) &&
             (format->palette) && (destformat->palette) && (!palette_colors)) {
             /*
-            This is useful if the surface is actually greyscale colors,
+            This is useful if the surface is actually grayscale colors,
             and not palette colors.
             */
             for (y = 0; y < height; y++) {
@@ -2645,7 +2649,7 @@ average_surfaces(SDL_Surface **surfaces, size_t num_surfaces,
 
     palette_colors - if true we average the colors in palette, otherwise we
         average the pixel values.  This is useful if the surface is
-        actually greyscale colors, and not palette colors.
+        actually grayscale colors, and not palette colors.
 
 */
 static PyObject *

@@ -12,7 +12,7 @@ jobs:
       # IMPORTANT: this permission is mandatory for trusted publishing
       id-token: write
     steps:
-      - uses: actions/checkout@v4.1.3
+      - uses: actions/checkout@v4.1.5
 
       - name: Pull all release assets
         uses: robinraju/release-downloader@v1.10

@@ -48,7 +48,7 @@ def threshold(
     diff_color=(0, 0, 0),
     change_return=True,
 ):
-    """given the color it makes return_surf only have areas with the given colour."""
+    """given the color it makes return_surf only have areas with the given color."""
 
     width, height = surf.get_width(), surf.get_height()
 
@@ -234,10 +234,10 @@ class TransformModuleTest(unittest.TestCase):
         super_surf.fill((255, 0, 0), pygame.Rect(0, 0, 32, 32))
         sub_surf = super_surf.subsurface(pygame.Rect(0, 0, 32, 32))
 
-        grey_sub_surf = pygame.transform.grayscale(sub_surf)
-        self.assertEqual(pygame.transform.average_color(grey_sub_surf)[0], 76)
-        self.assertEqual(pygame.transform.average_color(grey_sub_surf)[0], 76)
-        self.assertEqual(pygame.transform.average_color(grey_sub_surf)[0], 76)
+        gray_sub_surf = pygame.transform.grayscale(sub_surf)
+        self.assertEqual(pygame.transform.average_color(gray_sub_surf)[0], 76)
+        self.assertEqual(pygame.transform.average_color(gray_sub_surf)[0], 76)
+        self.assertEqual(pygame.transform.average_color(gray_sub_surf)[0], 76)
 
     def test_grayscale_simd_assumptions(self):
         # The grayscale SIMD algorithm relies on the destination surface pitch

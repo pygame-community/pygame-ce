@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.arraydemo
+"""pygame.examples.arraydemo
 
 Welcome to the arraydemo!
 

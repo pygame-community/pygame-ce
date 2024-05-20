@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.setmodescale
+"""pygame.examples.setmodescale
 
 On high resolution displays(4k, 1080p) and tiny graphics games (640x480)
 show up very small so that they are unplayable. SCALED scales up the window

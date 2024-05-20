@@ -100,7 +100,7 @@ static PyObject *
 mask_get_size(PyObject *self, PyObject *_null)
 {
     bitmask_t *mask = pgMask_AsBitmap(self);
-    return Py_BuildValue("(ii)", mask->w, mask->h);
+    return pg_tuple_couple_from_values_int(mask->w, mask->h);
 }
 
 /* Creates a Rect object based on the given mask's size. The rect's
@@ -224,7 +224,7 @@ mask_overlap(PyObject *self, PyObject *args, PyObject *kwargs)
 
     val = bitmask_overlap_pos(mask, othermask, x, y, &xp, &yp);
     if (val) {
-        return Py_BuildValue("(ii)", xp, yp);
+        return pg_tuple_couple_from_values_int(xp, yp);
     }
     else {
         Py_INCREF(Py_None);
@@ -521,7 +521,7 @@ mask_outline(PyObject *self, PyObject *args, PyObject *kwargs)
             if (bitmask_getbit(m, x, y)) {
                 firstx = x;
                 firsty = y;
-                value = Py_BuildValue("(ii)", x - 1, y - 1);
+                value = pg_tuple_couple_from_values_int(x - 1, y - 1);
 
                 if (NULL == value) {
                     Py_DECREF(plist);
@@ -562,7 +562,7 @@ mask_outline(PyObject *self, PyObject *args, PyObject *kwargs)
             e--;
             if (!e) {
                 e = every;
-                value = Py_BuildValue("(ii)", secx - 1, secy - 1);
+                value = pg_tuple_couple_from_values_int(secx - 1, secy - 1);
 
                 if (NULL == value) {
                     Py_DECREF(plist);
@@ -606,7 +606,8 @@ mask_outline(PyObject *self, PyObject *args, PyObject *kwargs)
                         break;
                     }
 
-                    value = Py_BuildValue("(ii)", nextx - 1, nexty - 1);
+                    value =
+                        pg_tuple_couple_from_values_int(nextx - 1, nexty - 1);
 
                     if (NULL == value) {
                         Py_DECREF(plist);
@@ -830,7 +831,6 @@ mask_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
     pgMaskObject *maskobj = NULL;
     Uint32 colorkey;
     int threshold = 127; /* default value */
-    int use_thresh = 1;
     static char *keywords[] = {"surface", "threshold", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|i", keywords,
@@ -863,13 +863,12 @@ mask_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
     Py_BEGIN_ALLOW_THREADS; /* Release the GIL. */
 
-    use_thresh = (SDL_GetColorKey(surf, &colorkey) == -1);
-
-    if (use_thresh) {
-        set_from_threshold(surf, maskobj->mask, threshold);
-    }
-    else {
+    if (SDL_HasColorKey(surf)) {
+        SDL_GetColorKey(surf, &colorkey);
         set_from_colorkey(surf, maskobj->mask, colorkey);
+    }
+    else {  // use threshold
+        set_from_threshold(surf, maskobj->mask, threshold);
     }
 
     Py_END_ALLOW_THREADS; /* Obtain the GIL. */
@@ -887,7 +886,7 @@ mask_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 palette_colors - this only affects surfaces with a palette
     if true we look at the colors from the palette,
     otherwise we threshold the pixel values.  This is useful if
-    the surface is actually greyscale colors, and not palette colors.
+    the surface is actually grayscale colors, and not palette colors.
 
 */
 
@@ -1285,7 +1284,8 @@ cc_label(bitmask_t *input, unsigned int *image, unsigned int *ufind,
             }
             buf++;
         }
-        /* last pixel of the row, if its not also the first pixel of the row */
+        /* last pixel of the row, if it's not also the first pixel of the row
+         */
         if (w > 1) {
             if (bitmask_getbit(input, x, y)) {
                 if (*(buf - w)) { /* b label */
@@ -1383,7 +1383,7 @@ get_bounding_rects(bitmask_t *input, int *num_bounding_boxes,
         if (ufind[x_uf] < x_uf) {             /* is it a union find root? */
             ufind[x_uf] = ufind[ufind[x_uf]]; /* relabel it to its root */
         }
-        else { /* its a root */
+        else { /* it's a root */
             relabel++;
             ufind[x_uf] = relabel; /* assign the lowest label available */
         }
@@ -1410,7 +1410,7 @@ get_bounding_rects(bitmask_t *input, int *num_bounding_boxes,
     }
 
     for (temp = 0; temp <= relabel; temp++) {
-        rects[temp].h = 0; /* so we know if its a new rect or not */
+        rects[temp].h = 0; /* so we know if it's a new rect or not */
     }
 
     /* find the bounding rect of each connected component */
@@ -1587,7 +1587,7 @@ get_connected_components(bitmask_t *mask, bitmask_t ***components, int min)
         if (ufind[x_uf] < x_uf) {             /* is it a union find root? */
             ufind[x_uf] = ufind[ufind[x_uf]]; /* relabel it to its root */
         }
-        else { /* its a root */
+        else { /* it's a root */
             if (largest[x_uf] >= min_cc) {
                 relabel++;
                 ufind[x_uf] = relabel; /* assign the lowest label available */
