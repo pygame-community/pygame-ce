@@ -1891,7 +1891,7 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
     int type;
     PyObject *dict = NULL;
     PyObject *self_t = (PyObject *)Py_TYPE(self);
-    if (PyObject_HasAttrString(self_t, "type")) {
+    if (self_t != (PyObject *)&pgEvent_Type) {
         PyObject *type_o = PyObject_GetAttrString(self_t, "type");
         if (!type_o)
             return -1;
