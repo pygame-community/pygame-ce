@@ -9,6 +9,8 @@
 import platform
 import sysconfig
 
+import buildconfig.get_version as pg_ver
+
 with open('README.rst', encoding='utf-8') as readme:
     LONG_DESCRIPTION = readme.read()
 
@@ -16,7 +18,7 @@ EXTRAS = {}
 
 METADATA = {
     "name": "pygame-ce",
-    "version": "2.5.0.dev1",
+    "version": pg_ver.version,
     "license": "LGPL",
     "url": "https://pyga.me",
     "author": "A community project.",
@@ -189,13 +191,15 @@ if consume_arg('-enable-arm-neon'):
     cflags += '-mfpu=neon'
     os.environ['CFLAGS'] = cflags
 
-compile_cython = False
-cython_only = False
-if consume_arg('cython'):
-    compile_cython = True
+no_compilation = bool({'docs', 'sdist', 'stubcheck'}.intersection(sys.argv))
 
+compile_cython = not no_compilation
+
+# does nothing now, but consume the arg anyways for compatibility
+consume_arg('cython')
+
+cython_only = False
 if consume_arg('cython_only'):
-    compile_cython = True
     cython_only = True
 
 if compile_cython:
@@ -241,25 +245,16 @@ if compile_cython:
 
         # update outdated .c files
         if os.path.isfile(c_file):
-            c_timestamp = os.path.getmtime(c_file)
-            if c_timestamp < deps.timestamp(pyx_file):
-                dep_timestamp, dep = deps.timestamp(pyx_file), pyx_file
-                priority = 0
-            else:
-                dep_timestamp, dep = deps.newest_dependency(pyx_file)
-                priority = 2 - (dep in deps.immediate_dependencies(pyx_file))
-            if dep_timestamp > c_timestamp:
-                outdated = True
-            else:
-                outdated = False
+            outdated = False
+            priority = 0
         else:
             outdated = True
             priority = 0
         if outdated:
-            print(f'Compiling {pyx_file} because it changed.')
-            queue.append((priority, dict(pyx_file=pyx_file, c_file=c_file, fingerprint=None, quiet=False,
-                                         options=c_options, full_module_name=ext.name,
-                                         embedded_metadata=pyx_meta.get(ext.name))))
+            print(f'Compiling {pyx_file} because the generated C file is missing.')
+            queue.append((priority, {'pyx_file': pyx_file, 'c_file': c_file, 'fingerprint': None, 'quiet': False,
+                                         'options': c_options, 'full_module_name': ext.name,
+                                         'embedded_metadata': pyx_meta.get(ext.name)}))
 
     # compile in right order
     queue.sort(key=lambda a: a[0])
@@ -273,7 +268,6 @@ if compile_cython:
     if cython_only:
         sys.exit(0)
 
-no_compilation = any(x in ['lint', 'format', 'docs'] for x in sys.argv)
 AUTO_CONFIG = not os.path.isfile('Setup') and not no_compilation
 if consume_arg('-auto'):
     AUTO_CONFIG = True
@@ -406,6 +400,9 @@ else:
         raise
 
 for e in extensions:
+    # define version macros
+    e.define_macros.extend(pg_ver.version_macros)
+
     # Only define the ARM_NEON defines if they have been enabled at build time.
     if enable_arm_neon:
         e.define_macros.append(('PG_ENABLE_ARM_NEON', '1'))
@@ -462,20 +459,16 @@ data_files = [('pygame', pygame_data_files)]
 stub_dir = os.path.join('buildconfig', 'stubs', 'pygame')
 pygame_data_files.append(os.path.join(stub_dir, 'py.typed'))
 type_files = glob.glob(os.path.join(stub_dir, '*.pyi'))
-for type_file in type_files:
-    pygame_data_files.append(type_file)
+pygame_data_files.extend(type_files)
 
-_sdl2 = glob.glob(os.path.join(stub_dir, '_sdl2', '*.pyi'))
-if _sdl2:
-    _sdl2_data_files = []
+if _sdl2_data_files := glob.glob(os.path.join(stub_dir, '_sdl2', '*.pyi')):
     data_files.append(('pygame/_sdl2', _sdl2_data_files))
-    for type_file in _sdl2:
-        _sdl2_data_files.append(type_file)
 
 # add non .py files in lib directory
-for f in glob.glob(os.path.join('src_py', '*')):
-    if not f[-3:] == '.py' and not f[-4:] == '.doc' and os.path.isfile(f):
-        pygame_data_files.append(f)
+pygame_data_files += [
+    file_path for file_path in glob.glob(os.path.join('src_py', '*'))
+    if not file_path.endswith(('.doc', '.py')) and os.path.isfile(file_path)
+]
 
 # We don't need to deploy tests, example code, or docs inside a game
 
@@ -783,98 +776,6 @@ class TestCommand(Command):
         return subprocess.call([sys.executable, os.path.join('test', '__main__.py')])
 
 
-class LintFormatCommand(Command):
-    """ Used for formatting or linting. See Lint and Format Sub classes.
-    """
-    user_options = []
-    lint = False
-    format = False
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        """Check the existence and launch linters."""
-        import subprocess
-        import sys
-        import warnings
-        import pathlib
-
-        def check_linter_exists(linter):
-            if shutil.which(linter) is None:
-                msg = "Please install '%s' in your environment. (hint: 'python3 -m pip install %s')"
-                warnings.warn(msg % (linter, linter))
-                sys.exit(1)
-
-        def filter_files(path_obj, all_files, allowed_files, disallowed_files):
-            files = []
-            for file in all_files:
-                for disallowed in disallowed_files:
-                    if file.match(str(path_obj / disallowed)):
-                        break
-                else:  # no-break
-                    files.append(str(file))
-                    continue
-
-                for allowed in allowed_files:
-                    if file.match(str(path_obj / allowed)):
-                        files.append(str(file))
-                        break
-
-            return files
-
-        path_obj = pathlib.Path(path, "src_c")
-        c_files_unfiltered = path_obj.glob("**/*.[ch]")
-        c_file_disallow = [
-            "_sdl2/**",
-            "pypm.c",
-            "**/sse2neon.h",
-            "doc/**",
-        ]
-        c_file_allow = ["_sdl2/touch.c"]
-        c_files = filter_files(path_obj, c_files_unfiltered, c_file_allow, c_file_disallow)
-
-
-        # Other files have too many issues for now. setup.py, buildconfig, etc
-        python_directories = ["src_py", "test", "examples", "docs", "--exclude", "docs/reST"]
-        if self.lint:
-            commands = {
-                "clang-format": ["--dry-run", "--Werror", "-i"] + c_files,
-                "black": ["--check", "--diff"] + python_directories,
-                # Test directory has too much pylint warning for now
-                "pylint": ["src_py", "docs"],
-            }
-        else:
-            commands = {
-                "clang-format": ["-i"] + c_files,
-                "black": python_directories,
-            }
-
-        formatters = ["black", "clang-format"]
-        for linter, option in commands.items():
-            print(" ".join([linter] + option))
-            check_linter_exists(linter)
-            result = subprocess.run([linter] + option)
-            if result.returncode:
-                msg = f"'{linter}' failed."
-                msg += " Please run: python setup.py format" if linter in formatters else ""
-                msg += f" Do you have the latest version of {linter}?"
-                raise SystemExit(msg)
-
-
-@add_command("lint")
-class LintCommand(LintFormatCommand):
-    lint = True
-
-
-@add_command("format")
-class FormatCommand(LintFormatCommand):
-    format = True
-
-
 @add_command('docs')
 class DocsCommand(Command):
     """ For building the pygame-ce documentation with `python setup.py docs`.
@@ -951,7 +852,6 @@ data_files = [(path, files) for path, files in data_files if files]
 PACKAGEDATA = {
     "cmdclass": cmdclass,
     "packages": ['pygame',
-                 'pygame.threads',
                  'pygame._sdl2',
                  'pygame.tests',
                  'pygame.tests.test_utils',
@@ -960,7 +860,6 @@ PACKAGEDATA = {
                  'pygame.__pyinstaller'],
     "package_dir": {'pygame': 'src_py',
                     'pygame._sdl2': 'src_py/_sdl2',
-                    'pygame.threads': 'src_py/threads',
                     'pygame.tests': 'test',
                     'pygame.docs': 'docs',
                     'pygame.examples': 'examples',
@@ -981,11 +880,9 @@ if STRIPPED:
     PACKAGEDATA = {
         "cmdclass": cmdclass,
         "packages": ['pygame',
-                     'pygame.threads',
                      'pygame._sdl2'],
         "package_dir": {'pygame': 'src_py',
-                        'pygame._sdl2': 'src_py/_sdl2',
-                        'pygame.threads': 'src_py/threads'},
+                        'pygame._sdl2': 'src_py/_sdl2'},
         "ext_modules": extensions,
         "zip_safe": False,
         "data_files": data_files

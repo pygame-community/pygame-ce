@@ -174,6 +174,7 @@
 
           ``(source, dest, area, special_flags)``
             - ``special_flags``: (optional) Controls the blending mode for drawing colors.
+              See :doc:`special_flags_list` for a list of possible values.
 
       **Notes**
 
@@ -205,7 +206,8 @@
       mode specified by special_flags. The sequence must have at least one (source, dest) pair.
 
       :param blit_sequence: a sequence of (source, dest)
-      :param special_flags: the flag(s) representing the blend mode used for each surface
+      :param special_flags: the flag(s) representing the blend mode used for each surface.
+                            See :doc:`special_flags_list` for a list of possible values.
 
       :returns: ``None``
 
@@ -297,15 +299,8 @@
       the Alpha (A part of ``RGBA``) is ignored unless the surface uses per pixel
       alpha (Surface has the ``SRCALPHA`` flag).
 
-      .. versionaddedold:: 1.8
-         Optional ``special_flags``: ``BLEND_ADD``, ``BLEND_SUB``,
-         ``BLEND_MULT``, ``BLEND_MIN``, ``BLEND_MAX``.
-
-      .. versionaddedold:: 1.8.1
-         Optional ``special_flags``: ``BLEND_RGBA_ADD``, ``BLEND_RGBA_SUB``,
-         ``BLEND_RGBA_MULT``, ``BLEND_RGBA_MIN``, ``BLEND_RGBA_MAX``
-         ``BLEND_RGB_ADD``, ``BLEND_RGB_SUB``, ``BLEND_RGB_MULT``,
-         ``BLEND_RGB_MIN``, ``BLEND_RGB_MAX``.
+      The special_flags argument controls how the colors are combined. See :doc:`special_flags_list`
+      for a list of possible values.
 
       This will return the affected Surface area.
 
@@ -1008,14 +1003,14 @@
       blend mode flag of the blit() method. Surfaces which have called this method will only look
       correct after blitting if the BLEND_PREMULTIPLED special flag is used.
 
-      It is worth noting that after calling this method, methods that return the colour of a pixel
-      such as get_at() will return the alpha multiplied colour values. It is not possible to fully
-      reverse an alpha multiplication of the colours in a surface as integer colour channel data
+      It is worth noting that after calling this method, methods that return the color of a pixel
+      such as get_at() will return the alpha multiplied color values. It is not possible to fully
+      reverse an alpha multiplication of the colors in a surface as integer color channel data
       is generally reduced by the operation (e.g. 255 x 0 = 0, from there it is not possible to reconstruct
-      the original 255 from just the two remaining zeros in the colour and alpha channels).
+      the original 255 from just the two remaining zeros in the color and alpha channels).
 
-      If you call this method, and then call it again, it will multiply the colour channels by the alpha channel
-      twice. There are many possible ways to obtain a surface with the colour channels pre-multiplied by the
+      If you call this method, and then call it again, it will multiply the color channels by the alpha channel
+      twice. There are many possible ways to obtain a surface with the color channels pre-multiplied by the
       alpha channel in pygame, and it is not possible to tell the difference just from the information in the pixels.
       It is completely possible to have two identical surfaces - one intended for pre-multiplied alpha blending and
       one intended for normal blending. For this reason we do not store state on surfaces intended for pre-multiplied
@@ -1027,7 +1022,7 @@
 
       In general pre-multiplied alpha blitting is faster then 'straight alpha' blitting and produces
       superior results when blitting an alpha surface onto another surface with alpha - assuming both
-      surfaces contain pre-multiplied alpha colours.
+      surfaces contain pre-multiplied alpha colors.
 
       There is a `tutorial on premultiplied alpha blending here. <tutorials/en/premultiplied-alpha>`
 

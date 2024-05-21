@@ -348,7 +348,7 @@
       | :sl:`returns a Color where the r,g,b components have been multiplied by the alpha.`
       | :sg:`premul_alpha() -> Color`
 
-      Returns a new Color where each of the red, green and blue colour
+      Returns a new Color where each of the red, green and blue color
       channels have been multiplied by the alpha channel of the original
       color. The alpha channel remains unchanged.
 

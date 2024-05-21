@@ -240,8 +240,7 @@ TEST_RESULTS_RE = re.compile(_test_re_str, re.DOTALL | re.M)
 
 
 def get_test_results(raw_return):
-    test_results = TEST_RESULTS_RE.search(raw_return)
-    if test_results:
+    if test_results := TEST_RESULTS_RE.search(raw_return):
         try:
             return eval(test_results.group(1))
         except:
@@ -285,11 +284,11 @@ def run_test(
         print(output.read())
         output.seek(0)
 
-    # change in way skipped tested counted from Python 3.12.1 onwards
+    # change in way skipped tested counted in Python 3.12.1 only (so far)
+    # This was changed and then reverted in 3.12.2
+    # https://github.com/python/cpython/pull/114994
     tests_run_and_skipped = results.testsRun
-    if sys.version_info.minor >= 13 or (
-        sys.version_info.minor == 12 and sys.version_info.micro >= 1
-    ):
+    if sys.version_info.minor == 12 and sys.version_info.micro == 1:
         tests_run_and_skipped += len(results.skipped)
 
     results = {

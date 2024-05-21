@@ -1419,7 +1419,7 @@ class LineMixin(BaseLineMixin):
             (2, 1, 0),  # Too many coords.
             (2, "1"),  # Wrong type.
             {2, 1},  # Wrong type.
-            dict(((2, 1),)),
+            {2: 1},
         )  # Wrong type.
 
         for start_pos in start_pos_fmts:
@@ -1443,7 +1443,7 @@ class LineMixin(BaseLineMixin):
             (2, 1, 0),  # Too many coords.
             (2, "1"),  # Wrong type.
             {2, 1},  # Wrong type.
-            dict(((2, 1),)),
+            {2: 1},
         )  # Wrong type.
 
         for end_pos in end_pos_fmts:
@@ -2137,9 +2137,9 @@ class LinesMixin(BaseLineMixin):
             ((1, 1), (2, 2, 2)),  # Too many coords.
             ((1, 1), (2, "2")),  # Wrong type.
             ((1, 1), {2, 3}),  # Wrong type.
-            ((1, 1), dict(((2, 2), (3, 3)))),  # Wrong type.
+            ((1, 1), {2: 2, 3: 3}),  # Wrong type.
             {(1, 1), (1, 2)},  # Wrong type.
-            dict(((1, 1), (4, 4))),
+            {1: 1, 4: 4},
         )  # Wrong type.
 
         for points in points_fmts:
@@ -2445,6 +2445,21 @@ class AALineMixin(BaseLineMixin):
 
         self.assertIsInstance(bounds_rect, pygame.Rect)
 
+    def test_aaline__blend_warning(self):
+        """Using the blend argument should raise a DeprecationWarning"""
+        faulty_blend_values = [0, 1, True, False, None, "", [], type]
+        with warnings.catch_warnings(record=True) as w:
+            for count, blend in enumerate(faulty_blend_values):
+                # Cause all warnings to always be triggered.
+                warnings.simplefilter("always")
+                # Trigger DeprecationWarning.
+                self.draw_aaline(
+                    pygame.Surface((2, 2)), (0, 0, 0, 50), (0, 0), (2, 2), blend
+                )
+                # Check if there is only one warning and is a DeprecationWarning.
+                self.assertEqual(len(w), count + 1)
+                self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
+
     def test_aaline__kwargs(self):
         """Ensures draw aaline accepts the correct kwargs"""
         surface = pygame.Surface((4, 4))
@@ -2699,7 +2714,7 @@ class AALineMixin(BaseLineMixin):
             (2, 1, 0),  # Too many coords.
             (2, "1"),  # Wrong type.
             {2, 1},  # Wrong type.
-            dict(((2, 1),)),
+            {2: 1},
         )  # Wrong type.
 
         for start_pos in start_pos_fmts:
@@ -2722,7 +2737,7 @@ class AALineMixin(BaseLineMixin):
             (2, 1, 0),  # Too many coords.
             (2, "1"),  # Wrong type.
             {2, 1},  # Wrong type.
-            dict(((2, 1),)),
+            {2: 1},
         )  # Wrong type.
 
         for end_pos in end_pos_fmts:
@@ -3169,6 +3184,25 @@ class AALinesMixin(BaseLineMixin):
 
         self.assertIsInstance(bounds_rect, pygame.Rect)
 
+    def test_aalines__blend_warning(self):
+        """Using the blend argument should raise a DeprecationWarning"""
+        faulty_blend_values = [0, 1, True, False, None, "", [], type]
+        with warnings.catch_warnings(record=True) as w:
+            for count, blend in enumerate(faulty_blend_values):
+                # Cause all warnings to always be triggered.
+                warnings.simplefilter("always")
+                # Trigger DeprecationWarning.
+                self.draw_aalines(
+                    pygame.Surface((2, 2)),
+                    (0, 0, 0, 50),
+                    False,
+                    ((0, 0), (1, 1)),
+                    blend,
+                )
+                # Check if there is only one warning and is a DeprecationWarning.
+                self.assertEqual(len(w), count + 1)
+                self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
+
     def test_aalines__kwargs(self):
         """Ensures draw aalines accepts the correct kwargs."""
         surface = pygame.Surface((4, 4))
@@ -3390,9 +3424,9 @@ class AALinesMixin(BaseLineMixin):
             ((1, 1), (2, 2, 2)),  # Too many coords.
             ((1, 1), (2, "2")),  # Wrong type.
             ((1, 1), {2, 3}),  # Wrong type.
-            ((1, 1), dict(((2, 2), (3, 3)))),  # Wrong type.
+            ((1, 1), {2: 2, 3: 3}),  # Wrong type.
             {(1, 1), (1, 2)},  # Wrong type.
-            dict(((1, 1), (4, 4))),
+            {1: 1, 4: 4},
         )  # Wrong type.
 
         for points in points_fmts:
@@ -3892,9 +3926,9 @@ class DrawPolygonMixin:
             ((1, 1), (2, 1), (2, 2, 2)),  # Too many coords.
             ((1, 1), (2, 1), (2, "2")),  # Wrong type.
             ((1, 1), (2, 1), {2, 3}),  # Wrong type.
-            ((1, 1), (2, 1), dict(((2, 2), (3, 3)))),  # Wrong type.
+            ((1, 1), (2, 1), {2: 2, 3: 3}),  # Wrong type.
             {(1, 1), (2, 1), (2, 2), (1, 2)},  # Wrong type.
-            dict(((1, 1), (2, 2), (3, 3), (4, 4))),
+            {1: 1, 2: 2, 3: 3, 4: 4},
         )  # Wrong type.
 
         for points in points_fmts:
@@ -3913,7 +3947,7 @@ class DrawPolygonMixin:
         }
 
         points_fmts = (
-            tuple(),  # Too few points.
+            (),  # Too few points.
             ((1, 1),),  # Too few points.
             ((1, 1), (2, 1)),
         )  # Too few points.

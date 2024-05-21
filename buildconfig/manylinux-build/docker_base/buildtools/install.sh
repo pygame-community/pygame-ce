@@ -10,11 +10,13 @@ cd $(dirname `readlink -f "$0"`)
 # separate build script for it
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    export PG_LINUX_EXTRA_FLAGS="--user"
+    export PG_PIP_EXTRA_FLAGS="--user"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    export PG_PIP_EXTRA_FLAGS="--break-system-packages"
 fi
 
 # pin versions for stability (remember to keep updated)
-python3 -m pip install $PG_LINUX_EXTRA_FLAGS \
+python3 -m pip install $PG_PIP_EXTRA_FLAGS \
     setuptools==68.2.2 cmake==3.27.6 meson==1.2.2 ninja==1.11.1
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
