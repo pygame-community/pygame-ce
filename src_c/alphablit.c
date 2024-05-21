@@ -384,8 +384,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                 case PYGAME_BLEND_OVERLAY: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -395,6 +395,19 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         blit_blend_rgb_overlay_avx2(&info);
                         break;
                     }
+#if PG_ENABLE_SSE_NEON
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
+                        src->format->Rmask == dst->format->Rmask &&
+                        src->format->Gmask == dst->format->Gmask &&
+                        src->format->Bmask == dst->format->Bmask &&
+                        !(src->format->Amask != 0 && dst->format->Amask != 0 &&
+                          src->format->Amask != dst->format->Amask) &&
+                        pg_HasSSE_NEON() && (src != dst)) {
+                        blit_blend_rgb_overlay_sse2(&info);
+                        break;
+                    }
+#endif /* PG_ENABLE_SSE_NEON */
 #endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
 #endif /* __EMSCRIPTEN__ */
                     blit_blend_overlay(&info);
@@ -2364,8 +2377,8 @@ blit_blend_overlay(SDL_BlitInfo *info)
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
     Uint32 pixel;
     int srcppa = info->src_blend != SDL_BLENDMODE_NONE && srcfmt->Amask;
