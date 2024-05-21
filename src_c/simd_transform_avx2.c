@@ -135,7 +135,7 @@ grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf)
         remaining_pixels_batch_counter = remaining_pixels;
         while (perfect_8_pixels_batch_counter--) {
             mm256_src = _mm256_loadu_si256(srcp256);
-            // strip out the the alpha and store it
+            // strip out the alpha and store it
             mm256_alpha = _mm256_and_si256(mm256_src, mm256_alpha_mask);
 
             // shuffle out the 8 pixels into two spaced out registers

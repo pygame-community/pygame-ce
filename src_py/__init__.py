@@ -262,7 +262,7 @@ try:
 except (ImportError, OSError):
     font = MissingModule("font", urgent=0)
 
-# try and load pygame.mixer_music before mixer, for py2app...
+# try to load pygame.mixer_music before mixer, for py2app...
 try:
     import pygame.mixer_music
 
