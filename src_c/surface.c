@@ -3878,7 +3878,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
               ((SDL_GetSurfaceAlphaMod(src, &alpha) == 0 && alpha != 255)))) {
         /* Py_BEGIN_ALLOW_THREADS */
         if (PG_SURF_BytesPerPixel(src) == 1) {
-            result = pygame_Blit(src, srcrect, dst, dstrect, 0);
+            result = pygame_Blit(src, srcrect, dst, dstrect, 0, 0);
         }
         else {
             SDL_PixelFormat *fmt = src->format;
@@ -3929,7 +3929,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
         result = pygame_Blit(src, srcrect, dst, dstrect, blend_flags, 0);
     }
     else {
-        if (SDL_GetColorKey(src, &key) == 0 && _PgSurface_SrcAlpha(src) == 0 &&
+        if (!SDL_HasColorkey(src) && _PgSurface_SrcAlpha(src) == 0 &&
             src->format->format == dst->format->format &&
             src->format->BytesPerPixel == dst->format->BytesPerPixel &&
             src->format->BytesPerPixel == 4 && !pg_HasSurfaceRLE(src) &&
