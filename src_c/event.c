@@ -1735,7 +1735,7 @@ pg_event_dealloc(PyObject *self)
 }
 
 //!NEW>
-PyObject *
+static PyObject *
 _pg_EventGetAttr(PyObject *o, PyObject *attr_name)
 {
     const char *attr = PyUnicode_AsUTF8(attr_name);
@@ -1838,8 +1838,7 @@ pg_event_str(PyObject *self)
 
 static PyMemberDef pg_event_members[] = {
     {"__dict__", T_OBJECT, OFF(dict), READONLY},
-    //!NEW - changed type->__type
-    {"__type", T_INT, OFF(type), READONLY},
+    {"type", T_INT, OFF(type), READONLY},
     {"dict", T_OBJECT, OFF(dict), READONLY},
     {NULL} /* Sentinel */
 };
@@ -1945,25 +1944,38 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
 
 //!NEW>
 static PyType_Slot pg_event_subclass_slots[] = {
+    {Py_tp_base, &pgEvent_Type},
     {Py_tp_getattro, _pg_EventGetAttr},
     {0, NULL}
 };
 
+/* Return a new reference. */
 static PyObject *
 _pgEvent_CreateSubclass(Uint32 ev_type)
 {
     const char* name = _pg_name_from_eventtype(ev_type);
+
     if (strcmp(name, "Unknown") == 0 || strcmp(name, "UserEvent") == 0) {
         Py_INCREF((PyObject *)&pgEvent_Type);
         return (PyObject *)&pgEvent_Type;
     }
+
     size_t name_s = strlen(name) + 14; // 14 = len("pygame.event.\x00")
     char* joined = malloc(name_s);
+
     if (!joined)
         return PyErr_NoMemory();
 
     PyOS_snprintf(joined, name_s, "pygame.event.%s", name);
-    PyType_Spec type_spec = {.name=joined, .basicsize = sizeof(pgEventObject), .slots=pg_event_subclass_slots};
+
+    PyType_Spec type_spec = {
+        joined,
+        0,
+        0,
+        Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HEAPTYPE,
+        pg_event_subclass_slots
+    };
+
     // Note: for Python 3.10+ onwards, PyType_FromSpecWithBases doesn't require a tuple for single base.
     PyObject* bases = PyTuple_Pack(1, (PyObject *)&pgEvent_Type);
 
@@ -1974,9 +1986,13 @@ _pgEvent_CreateSubclass(Uint32 ev_type)
 
     PyObject* cls = PyType_FromSpecWithBases(&type_spec, bases);
 
-    // I'm convinced this is leaking, but for unknown reason to me,
-    // freeing "joined" it will corrupt the name of returned class.
+    // Python <= 3.10 doesn't copy class name, but holds the reference,
+    // Therefore for these versions, we need to leak "joined".
+    // This is not an issue, as these classes in theory should be created only once per type.
+    // Other solution is to generate class names statically.
+#if PY_MINOR_VERSION > 10
     free(joined);
+#endif
 
     PyObject *value = PyLong_FromLong(ev_type);
     if (!value) {
@@ -1987,6 +2003,9 @@ _pgEvent_CreateSubclass(Uint32 ev_type)
         Py_DECREF(value);
         return NULL;
     }
+
+    Py_DECREF(value);
+
     return cls;
 }
 
@@ -1995,26 +2014,34 @@ pgEvent_GetClass(Uint32 e_type)
 {
     PyObject *e_typeo, *e_class;
 
-    if (!(e_typeo=PyLong_FromLong(e_type)))
+    e_typeo = PyLong_FromLong(e_type);
+
+    if (!e_typeo)
         return NULL;
 
-    int e_exists = PyDict_Contains(pg_event_lookup, e_typeo);
-    if (e_exists < 0) {
+    e_class = PyDict_GetItem(pg_event_lookup, e_typeo);
+    Py_XINCREF(e_class); // Claiming borrowed reference.
+
+    if (e_class) {
+        Py_DECREF(e_typeo);
+        return e_class;
+    }
+
+    e_class = _pgEvent_CreateSubclass(e_type);
+
+    if (!e_class) {
         Py_DECREF(e_typeo);
         return NULL;
-    } else if (e_exists) {
-        e_class = PyDict_GetItem(pg_event_lookup, e_typeo);
-        Py_DECREF(e_typeo);
-    } else {
-        e_class = _pgEvent_CreateSubclass(e_type);
-        if (!e_class || PyDict_SetItem(pg_event_lookup, e_typeo, e_class) < 0)
-        {
-            Py_DECREF(e_typeo);
-            Py_XDECREF(e_class);
-            return NULL;
-        }
-        Py_DECREF(e_typeo);
     }
+
+    if (PyDict_SetItem(pg_event_lookup, e_typeo, e_class) < 0)
+    {
+        Py_DECREF(e_typeo);
+        Py_DECREF(e_class);
+        return NULL;
+    }
+
+    Py_DECREF(e_typeo);
     return e_class;
 }
 
@@ -2034,12 +2061,12 @@ _register_user_event_class(PyObject *e_class)
         return -1;
     }
 
-    if (!(e_typeo))
+    if (!e_typeo)
         return -1;
 
     if (PyDict_SetItem(pg_event_lookup, e_typeo, e_class) < 0)
     {
-        Py_XDECREF(e_typeo);
+        Py_DECREF(e_typeo);
         return -1;
     }
 
@@ -2050,6 +2077,11 @@ _register_user_event_class(PyObject *e_class)
 static PyObject *
 pg_event_init_subclass(PyTypeObject *cls, PyObject *args, PyObject **kwargs)
 {
+    if (!(cls->tp_flags & Py_TPFLAGS_HEAPTYPE)) {
+        // Only heaptypes.
+        Py_RETURN_NONE;
+    }
+
     int e_type = _register_user_event_class((PyObject *)cls);
     if (e_type < 0)
         return NULL;
@@ -2063,6 +2095,8 @@ pg_event_init_subclass(PyTypeObject *cls, PyObject *args, PyObject **kwargs)
         return NULL;
     }
 
+    Py_DECREF(value);
+
     Py_RETURN_NONE;
 }
 
@@ -2073,97 +2107,59 @@ static PyMethodDef eventobj_methods[] = {
 };
 
 /* event metaclass */
+static PyObject* _pg_event_instantiate_class(Uint32 e_type, PyObject *e_dict)
+{
+    PyObject *e_typeo = pgEvent_GetClass(e_type);
+
+    if (!e_typeo) {
+        return NULL;
+    } else if (e_typeo == (PyObject *)&pgEvent_Type) {
+        Py_DECREF(e_typeo);
+        PyObject *ret = PyType_Type.tp_call((PyObject *)&pgEvent_Type, Py_BuildValue("(I)", e_type), e_dict);
+        return ret;
+    }
+
+    PyObject *ret = PyType_Type.tp_call(e_typeo, PyTuple_New(0), e_dict);
+    Py_DECREF(e_typeo);
+    return ret;
+}
 
 static PyObject* pgEventMeta_Call(PyObject *type, PyObject *args, PyObject *kwds) {
     if (type == (PyObject *)&pgEvent_Type) {
-        Uint32 e_type;
-        PyObject *e_dict;
-
-        PyObject *t_name = PyUnicode_FromString("type");
-        if (!t_name)
-            return NULL;
-
-        PyObject *dict_name = PyUnicode_FromString("dict");
-        if (!dict_name) {
-            Py_DECREF(t_name);
-            return NULL;
-        }
+        Uint32 e_type = 0;
+        PyObject *e_dict = NULL;
 
         if (!PyArg_ParseTuple(args, "I|O!", &e_type, &PyDict_Type, &e_dict)) {
-            Py_DECREF(t_name);
-            Py_DECREF(dict_name);
             return NULL;
         }
 
-        if (e_dict && PyDict_Contains(e_dict, t_name)) {
-            Py_DECREF(t_name);
-            Py_DECREF(dict_name);
-            Py_DECREF(e_dict);
-            PyErr_SetString(PyExc_ValueError, "'type' field in event dict is not allowed");
-        }
-
-        if (!e_dict) {
+        if (kwds && !e_dict) {
             e_dict = PyDict_New();
-            if (!e_dict) {
-                Py_DECREF(t_name);
-                Py_DECREF(dict_name);
-                return NULL;
-            }
-        }
-
-        if (kwds) {
-            if (PyDict_Update(e_dict, kwds) < 0) {
-                Py_DECREF(t_name);
-                Py_DECREF(dict_name);
-                Py_DECREF(e_dict);
-            }
-
-            if (PyDict_Contains(kwds, t_name)) {
-                PyErr_SetString(PyExc_TypeError, "pygame.event.Event() positional-only argument passed as keyword argument: 'type'");
-                Py_DECREF(t_name);
-                Py_DECREF(dict_name);
-                Py_DECREF(e_dict);
-                return NULL;
-            }
-
-            if (PyDict_Contains(kwds, dict_name)) {
-                PyErr_SetString(PyExc_TypeError, "pygame.event.Event() positional-only argument passed as keyword argument: 'dict'");
-                Py_DECREF(t_name);
-                Py_DECREF(dict_name);
-                Py_DECREF(e_dict);
-                return NULL;
-            }
-
-            if (PyErr_Occurred())
+            if (!e_dict)
                 return NULL;
         }
 
-        Py_DECREF(t_name);
-        Py_DECREF(dict_name);
-
-        PyObject *e_typeo = pgEvent_GetClass(e_type);
-        if (!e_typeo) {
+        if (e_dict && kwds && PyDict_Update(e_dict, kwds) < 0) {
             Py_DECREF(e_dict);
             return NULL;
         }
-        else if (e_typeo == (PyObject *)&pgEvent_Type) {
-            Py_DECREF(e_typeo);
-            return PyType_Type.tp_call(type, args, e_dict); 
-        }
-        
-        PyObject *ret = PyType_Type.tp_call(e_typeo, PyTuple_New(0), e_dict);
-        Py_DECREF(e_typeo);
-        Py_DECREF(e_dict);
+
+        PyObject *ret = _pg_event_instantiate_class(e_type, e_dict);
+        // By trial and error, I discovered that this shouldn't be here.
+        // But I would like to know why - by reading the code it seems that
+        // this should be here - does PyArg_ParseTuple increase the refcount?
+        // Py_XDECREF(e_dict);
         return ret;
     }
 
     return PyType_Type.tp_call(type, args, kwds);
 }
 
+// After dropping support for python 3.8, the whole scheme of creating metaclasses to override pygame.event.Event(...) can be dropped in favor of tp_vectorcall.
 static PyTypeObject pgEventMeta_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "pygame.event._EventMeta",
-    .tp_basicsize = sizeof(PyTypeObject),
+    .tp_basicsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_base = &PyType_Type,
     .tp_call = pgEventMeta_Call,
@@ -2977,7 +2973,7 @@ pg_event__gettattr__(PyObject *self, PyObject *attr)
         return PyErr_Format(PyExc_AttributeError, "module 'pygame.event' has no attribute '%s'", attr_name);
     return pgEvent_GetClass(e_type);
 }
-/* To be done.
+
 static PyObject *
 pg_event__dir__(PyObject *self, PyObject *args)
 {
@@ -3030,7 +3026,6 @@ pg_event__dir__(PyObject *self, PyObject *args)
 
     return dir;
 }
-*/
 //!NEW<
 
 static PyMethodDef _event_methods[] = {
@@ -3071,15 +3066,10 @@ static PyMethodDef _event_methods[] = {
      //!NEW
      {"__getattr__", (PyCFunction)pg_event__gettattr__, METH_O},
      //!NEW
-     // {"__dir__", (PyCFunction)pg_event__dir__, METH_NOARGS} - To be done.
+     {"__dir__", (PyCFunction)pg_event__dir__, METH_NOARGS},
 
     {NULL, NULL, 0, NULL}};
 
-//!NEW>
-static void _event_free(PyObject* mod) {
-    Py_XDECREF(pg_event_lookup);
-}
-//!NEW<
 
 MODINIT_DEFINE(event)
 {
@@ -3094,8 +3084,7 @@ MODINIT_DEFINE(event)
                                          NULL, // _event_slots,
                                          NULL,
                                          NULL,
-                                         //!NEW
-                                         (freefunc)_event_free};
+                                         NULL};
 
     /* imported needed apis; Do this first so if there is an error
        the module is not loaded.
@@ -3111,9 +3100,11 @@ MODINIT_DEFINE(event)
     }
 
     /* type preparation */
+    //!NEW>
     if (PyType_Ready(&pgEventMeta_Type) < 0) {
         return NULL;
     }
+    //!NEW<
 
     if (PyType_Ready(&pgEvent_Type) < 0) {
         return NULL;
@@ -3124,6 +3115,15 @@ MODINIT_DEFINE(event)
     if (!module) {
         return NULL;
     }
+
+    //!NEW>
+    Py_INCREF(&pgEventMeta_Type);
+    if (PyModule_AddObject(module, "_InternalEventMeta", (PyObject *)&pgEventMeta_Type)) {
+        Py_DECREF(&pgEventMeta_Type);
+        Py_DECREF(module);
+        return NULL;
+    }
+    //!NEW<
 
     Py_INCREF(&pgEvent_Type);
     if (PyModule_AddObject(module, "EventType", (PyObject *)&pgEvent_Type)) {
@@ -3157,28 +3157,25 @@ MODINIT_DEFINE(event)
     }
 
     //!NEW>
-    if (pg_event_lookup)
-        Py_INCREF(pg_event_lookup);
-    else {
+    if (!pg_event_lookup) {
         pg_event_lookup = PyDict_New();
-        if (!pg_event_lookup)
-        {
-            Py_DECREF(module);
-            return NULL;
-        }
+    }
+
+    if (!pg_event_lookup)
+    {
+        Py_DECREF(module);
+        return NULL;
     }
 
     PyObject *proxy = PyDictProxy_New(pg_event_lookup);
     if (!proxy) {
         Py_DECREF(module);
-        Py_DECREF(pg_event_lookup);
         return NULL;
     }
 
     if (PyModule_AddObject(module, "_event_classes", proxy)) {
         Py_DECREF(proxy);
         Py_DECREF(module);
-        Py_DECREF(pg_event_lookup);
         return NULL;
     }
     //!NEW<
