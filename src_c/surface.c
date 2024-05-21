@@ -3929,7 +3929,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
         result = pygame_Blit(src, srcrect, dst, dstrect, blend_flags, 0);
     }
     else {
-        if (!SDL_HasColorKey(src) && _PgSurface_SrcAlpha(src) == 0 &&
+        if (SDL_HasColorKey(src) && _PgSurface_SrcAlpha(src) == 0 &&
             src->format->format == dst->format->format &&
             src->format->BytesPerPixel == dst->format->BytesPerPixel &&
             src->format->BytesPerPixel == 4 && !pg_HasSurfaceRLE(src) &&
