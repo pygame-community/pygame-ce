@@ -1051,7 +1051,7 @@
     .. attribute:: height
 
         | :sl:`Surface height in pixels (read-only)`
-        | :sg:`height->int`
+        | :sg:`height -> int`
 
         Read-only attribute. Same as :meth:`get_height()`
 
@@ -1060,7 +1060,7 @@
     .. attribute:: size
 
         | :sl:`Surface size in pixels (read-only)`
-        | :sg:`height->tuple[int, int]`
+        | :sg:`height -> tuple[int, int]`
 
         Read-only attribute. Same as :meth:`get_size()`
 
