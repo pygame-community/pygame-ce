@@ -57,11 +57,6 @@ def main():
 requires = [
     "pygame-ce",
 ]
-test_requires = [
-{% if cookiecutter.test_framework == "pytest" %}
-    "pytest",
-{% endif %}
-]
 """
 
     def pyproject_table_macOS(self):
