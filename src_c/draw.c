@@ -1940,7 +1940,7 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
         frontier_size = next_frontier_size;
     }
 
- flood_fill_finished:
+flood_fill_finished:
     free(frontier);
     free(mask);
     free(frontier_next);
