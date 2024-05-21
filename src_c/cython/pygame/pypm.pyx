@@ -523,7 +523,7 @@ cdef class Output:
 # in commit 64314cc3d1a6fdddfc6ff5408a3f83af685b8cea
 # portmidi changed the signature of Pt_Time from `PMEXPORT PtTimestamp Pt_Time()` to `PMEXPORT PtTimestamp Pt_Time(void)`
 # this change is significant in that no args in a C function declaration is treated differently than void
-cdef PtTimestamp compatShimDueToMidiChange(void* arg) noexcept:
+cdef PtTimestamp pgCompat_Pt_Time(void* arg) noexcept:
     return Pt_Time()
 
 cdef class Input:
@@ -546,7 +546,7 @@ cdef class Input:
         self.debug = 0
 
         err = Pm_OpenInput(&(self.midi), input_device, NULL, buffersize,
-                           &compatShimDueToMidiChange, NULL)
+                           &pgCompat_Pt_Time, NULL)
         if err < 0:
             raise Exception(Pm_GetErrorText(err))
 
