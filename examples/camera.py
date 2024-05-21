@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.camera
+"""pygame.examples.camera
 
 Basic image capturing and display using pygame.camera
 
@@ -11,6 +11,7 @@ Keyboard controls
 - 9, start camera 9.
 - 10, start camera... wait a minute! There's not 10 key!
 """
+
 import pygame
 import pygame.camera
 

@@ -48,7 +48,7 @@ classifiers = [
 hook-dirs = 'pygame.__pyinstaller:get_hook_dirs'
 
 [build-system]
-requires = ["meson-python", "ninja"]  # add cython here when needed
+requires = ["meson-python", "ninja", "cython"]
 build-backend = 'mesonpy'
 
 [tool.meson-python.args]
@@ -62,3 +62,13 @@ setup-args = [
     "-Dvsenv=true",  # same effect as passing --vsenv
     "-Derror_docs_missing=true",
 ]
+
+[tool.ruff]
+exclude = [
+  "buildconfig/",
+  "docs/reST/",
+  "setup.py",
+]
+
+[tool.ruff.format]
+quote-style = "preserve"

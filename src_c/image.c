@@ -548,7 +548,9 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
         byte_width = surf->w * 3;
     }
     else if (!strcmp(format, "RGBA")) {
-        hascolorkey = (SDL_GetColorKey(surf, &colorkey) == 0);
+        if ((hascolorkey = SDL_HasColorKey(surf))) {
+            SDL_GetColorKey(surf, &colorkey);
+        }
         byte_width = surf->w * 4;
     }
     else if (!strcmp(format, "RGBX") || !strcmp(format, "ARGB") ||
@@ -1542,7 +1544,9 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     }
 
     SDL_GetSurfaceAlphaMod(surface, &surf_alpha);
-    have_surf_colorkey = (SDL_GetColorKey(surface, &surf_colorkey) == 0);
+    if ((have_surf_colorkey = SDL_HasColorKey(surface))) {
+        SDL_GetColorKey(surface, &surf_colorkey);
+    }
 
     if (srcbpp == 8) {
         h.has_cmap = 1;
@@ -1773,7 +1777,7 @@ MODINIT_DEFINE(image)
         Py_DECREF(extmodule);
     }
     else {
-        // if the module could not be loaded, dont treat it like an error
+        // if the module could not be loaded, don't treat it like an error
         PyErr_Clear();
     }
     return module;

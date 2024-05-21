@@ -757,10 +757,10 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
         goto end;
     }
 
-    if (source->size(source) <= 0) {
+    if (SDL_RWsize(source) <= 0) {
         PyErr_Format(PyExc_ValueError,
                      "Font file object has an invalid file size: %lld",
-                     source->size(source));
+                     SDL_RWsize(source));
         goto end;
     }
 

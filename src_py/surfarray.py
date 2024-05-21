@@ -37,7 +37,6 @@ to as 3D arrays, and the last index is 0 for red, 1 for green, and 2 for
 blue.
 """
 
-
 from pygame.pixelcopy import (
     array_to_surface,
     surface_to_array,

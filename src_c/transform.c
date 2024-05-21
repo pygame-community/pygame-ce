@@ -178,7 +178,8 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
         }
     }
 
-    if (SDL_GetColorKey(surf, &colorkey) == 0) {
+    if (SDL_HasColorKey(surf)) {
+        SDL_GetColorKey(surf, &colorkey);
         if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
@@ -672,7 +673,7 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     /* get the background color */
-    if (SDL_GetColorKey(surf, &bgcolor) != 0) {
+    if (!SDL_HasColorKey(surf)) {
         SDL_LockSurface(surf);
         switch (PG_SURF_BytesPerPixel(surf)) {
             case 1:
@@ -697,6 +698,9 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
         }
         SDL_UnlockSurface(surf);
         bgcolor &= ~surf->format->Amask;
+    }
+    else {
+        SDL_GetColorKey(surf, &bgcolor);
     }
 
     SDL_LockSurface(newsurf);
@@ -3262,6 +3266,15 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
         retsurf = pgSurface_AsSurface(dstobj);
     }
 
+    if ((retsurf->w) != (src->w) || (retsurf->h) != (src->h)) {
+        return RAISE(PyExc_ValueError,
+                     "Destination surface not the same size.");
+    }
+
+    if (retsurf->w == 0 || retsurf->h == 0) {
+        return retsurf;
+    }
+
     Uint8 *ret_start = retsurf->pixels;
     Uint8 *ret_end = ret_start + retsurf->h * retsurf->pitch;
     Uint8 *src_start = src->pixels;
@@ -3273,11 +3286,6 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
             "Blur routines do not support dest_surfaces that share pixels "
             "with the source surface. Likely the surfaces are the same, one "
             "of them is a subsurface, or they are sharing the same buffer.");
-    }
-
-    if ((retsurf->w) != (src->w) || (retsurf->h) != (src->h)) {
-        return RAISE(PyExc_ValueError,
-                     "Destination surface not the same size.");
     }
 
     if (PG_SURF_BytesPerPixel(src) != PG_SURF_BytesPerPixel(retsurf)) {

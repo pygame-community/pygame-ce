@@ -114,7 +114,9 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
         info.src = src->format;
         info.dst = dst->format;
         SDL_GetSurfaceAlphaMod(src, &info.src_blanket_alpha);
-        info.src_has_colorkey = SDL_GetColorKey(src, &info.src_colorkey) == 0;
+        if ((info.src_has_colorkey = SDL_HasColorKey(src))) {
+            SDL_GetColorKey(src, &info.src_colorkey);
+        }
         if (SDL_GetSurfaceBlendMode(src, &info.src_blend) ||
             SDL_GetSurfaceBlendMode(dst, &info.dst_blend)) {
             okay = 0;
