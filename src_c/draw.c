@@ -1059,7 +1059,7 @@ flood_fill(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (flood_fill_result == -1) {
-        return RAISE(PyExc_RuntimeError, "flood fill allocation fail");
+        return PyErr_NoMemory();
     }
 
     /* Compute return rect. */
@@ -1821,12 +1821,13 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
     }
 
     // 2D bitmask for queued nodes
+    // we could check drawn color, but that doesnt work for patterns
     size_t mask_size = cliprect.w * cliprect.h;
     unsigned int *mask = calloc((mask_size) / 8 + 1, sizeof(unsigned int));
+
     if (mask == NULL) {
         free(frontier);
         free(frontier_next);
-        free(mask);
         return -1;
     }
     Uint32 old_color = 0;
@@ -1838,9 +1839,8 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
 
     if (!(x1 >= cliprect.x && x1 < (cliprect.x + cliprect.w) &&
           y1 >= cliprect.y && y1 < (cliprect.y + cliprect.h))) {
-        free(frontier);
-        free(mask);
-        return 0;
+        // not an error, but nothing to do here
+        goto flood_fill_finished;
     }
 
     SURF_GET_AT(old_color, surf, x1, y1, (Uint8 *)surf->pixels, surf->format,
@@ -1848,10 +1848,7 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
 
     if (pattern == NULL && old_color == new_color) {
         // not an error, but nothing to do here
-        free(frontier);
-        free(mask);
-        free(frontier_next);
-        return 0;
+        goto flood_fill_finished;
     }
 
     frontier[0].x = x1;
@@ -1942,6 +1939,8 @@ flood_fill_inner(SDL_Surface *surf, int x1, int y1, Uint32 new_color,
 
         frontier_size = next_frontier_size;
     }
+
+ flood_fill_finished:
     free(frontier);
     free(mask);
     free(frontier_next);
