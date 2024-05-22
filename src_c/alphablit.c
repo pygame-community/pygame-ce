@@ -63,12 +63,12 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                SDL_Rect *dstrect, int blend_flags);
 
 int
-SoftCachedBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
-                     BlitSequence *destinations);
+SoftMultiBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
+                    BlitSequence *destinations);
 
 void
-pg_cached_blitcopy(SDL_Surface *src, SDL_Surface *dst,
-                   BlitSequence *destinations);
+pg_multi_blitcopy(SDL_Surface *src, SDL_Surface *dst,
+                  BlitSequence *destinations);
 
 extern int
 SDL_RLESurface(SDL_Surface *surface);
