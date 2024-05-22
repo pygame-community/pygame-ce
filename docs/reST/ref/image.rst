@@ -195,7 +195,7 @@ following formats.
 .. function:: tostring
 
    | :sl:`transfer image to byte buffer`
-   | :sg:`tostring(Surface, format, flipped=False) -> bytes`
+   | :sg:`tostring(Surface, format, flipped=False, pitch=-1) -> bytes`
 
    DEPRECATED: This function has the same functionality as :func:`tobytes()`, which is preferred and should be used.
 
@@ -206,7 +206,7 @@ following formats.
 .. function:: tobytes
 
    | :sl:`transfer image to byte buffer`
-   | :sg:`tobytes(Surface, format, flipped=False) -> bytes`
+   | :sg:`tobytes(Surface, format, flipped=False, pitch=-1) -> bytes`
 
    Creates a string of bytes that can be transferred with the ``fromstring``
    or ``frombytes`` methods in other Python imaging packages. Some Python
@@ -235,12 +235,19 @@ following formats.
 
       * ``ARGB_PREMULT``, 32-bit image with colors scaled by alpha channel, alpha channel first
    
+   The 'pitch' argument can be used to specify the pitch/stride per horizontal line
+   of the image in bytes. It must be equal to or greater than how many bytes
+   the pixel data of each horizontal line in the image bytes occupies without any
+   extra padding. By default, it is ``-1``, which means that the pitch/stride is
+   the same size as how many bytes the pure pixel data of each horizontal line takes.
+
    .. note:: The use of this function is recommended over :func:`tostring` as of pygame 2.1.3.
              This function was introduced so it matches nicely with other 
              libraries (PIL, numpy, etc), and with people's expectations.
 
    .. versionadded:: 2.1.3 
    .. versionchanged:: 2.2.0 Now supports keyword arguments.
+   .. versionchanged:: 2.5.0 Added a 'pitch' argument.
 
    .. ## pygame.image.tobytes ##
 

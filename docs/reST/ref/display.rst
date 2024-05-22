@@ -76,7 +76,12 @@ required).
    ::
 
       Windows : windib, directx
-      Unix    : x11, dga, fbcon, directfb, ggi, vgl, svgalib, aalib
+      Unix    : x11, dga, fbcon, directfb, ggi, vgl, svgalib, aalib, wayland
+
+   :note: On wayland desktops, pygame-ce may choose to use the X11 video driver to run on Xwayland.
+      This behaviour is determined by the SDL library and might change in the future, so it's suggested
+      to account for this and not rely on the default behavior. The Wayland video driver can be forced
+      by setting the ``SDL_VIDEODRIVER`` environment variable to ``"wayland"``
 
    On some platforms it is possible to embed the pygame display into an already
    existing window. To do this, the environment variable ``SDL_WINDOWID`` must
@@ -85,6 +90,8 @@ required).
    there can be many strange side effects when running in an embedded display.
 
    It is harmless to call this more than once, repeated calls have no effect.
+
+   .. versionchanged:: 2.5.0 the manylinux wheels distributed by us now support the ``wayland`` videodriver
 
    .. ## pygame.display.init ##
 
@@ -213,6 +220,8 @@ required).
    .. versionchanged:: 2.2.0 ``vsync=1`` does not require ``SCALED`` or ``OPENGL``
 
    .. deprecated:: 2.4.0 The depth argument is ignored, and will be set to the optimal value
+
+   .. versionchanged:: 2.5.0 No longer emits warning when running on xwayland, see :func:`pygame.display.init` for details on running on wayland directly
 
 
    Basic example:
@@ -673,7 +682,7 @@ required).
    | :sl:`Get the current window caption`
    | :sg:`get_caption() -> (title, icontitle)`
 
-   Returns the title and icontitle for the display window. In pygame 2.x
+   Returns the title and icontitle of the display window. In pygame 2.x
    these will always be the same value.
 
    .. ## pygame.display.get_caption ##
@@ -836,6 +845,6 @@ required).
    just like standard Python list indexing.
 
    .. versionadded:: 2.4.0
-   
+
 
 .. ## pygame.display ##
