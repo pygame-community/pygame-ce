@@ -903,9 +903,10 @@ _very_bad_hash(const char *str)
 {
     // Rarely works, but for existing names no collisions!
     unsigned int sum = 0;
+    int size = (int)strlen(str);
     int off = 1;
 
-    for (int i = 0; i < strlen(str); i++) {
+    for (int i = 0; i < size; i++) {
         sum += str[i];
         sum = sum ^ (sum >> off);
         off += 1;
@@ -978,7 +979,9 @@ _pg_eventtype_from_name_hash(const char *name)
                 else:
                     text += f"        case {hashes_db[line[0]]}" \
                             f":  //{line[0]}\n            " \
-                            f"return {line[1]};\n" return text
+                            f"return {line[1]};\n"
+
+            return text
 
 
         if __name__ == "__main__":
@@ -2058,8 +2061,9 @@ _register_user_event_class(PyObject *e_class)
         e_typeo = PyLong_FromLong(_custom_event++);
     }
     else {
-        RAISE(pgExc_SDLError,
-              "Exceeded maximimum number of allowed user-defined types.");
+        PyErr_SetString(
+            pgExc_SDLError,
+            "Exceeded maximimum number of allowed user-defined types.");
         return -1;
     }
 
@@ -2134,8 +2138,12 @@ pgEventMeta_Call(PyObject *type, PyObject *args, PyObject *kwds)
         Uint32 e_type = 0;
         PyObject *e_dict = NULL;
 
-        if (!PyArg_ParseTuple(args, "I|O!", &e_type, &PyDict_Type, &e_dict)) {
+        if (!PyArg_ParseTuple(args, "i|O!", &e_type, &PyDict_Type, &e_dict)) {
             return NULL;
+        }
+
+        if (e_type < 0 || e_type >= PG_NUMEVENTS) {
+            return RAISE(PyExc_ValueError, "event type out of range");
         }
 
         if (kwds && !e_dict) {
@@ -2167,7 +2175,6 @@ static PyTypeObject pgEventMeta_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.event._EventMeta",
     .tp_basicsize = 0,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_base = &PyType_Type,
     .tp_call = pgEventMeta_Call,
 };
 
@@ -3007,33 +3014,34 @@ pg_event__dir__(PyObject *self, PyObject *args)
     }
 
     PyObject *result = PyDict_Keys(dict);
+    Py_ssize_t res_size = PyList_Size(result);
     Py_DECREF(dict);
 
     if (!result) {
         return NULL;
     }
 
-    PyObject *dir = PyList_New(PyList_Size(result) + length);
+    PyObject *dir = PyList_New(res_size + length);
 
     if (!dir) {
         Py_DECREF(result);
         return NULL;
     }
 
-    for (Py_ssize_t idx = 0; idx < PyList_Size(result); idx++) {
+    for (Py_ssize_t idx = 0; idx < res_size; idx++) {
         PyObject *item = PyList_GetItem(result, idx);
         Py_INCREF(item);
         PyList_SetItem(dir, idx, item);
     }
     Py_DECREF(result);
 
-    for (Py_ssize_t idx = 0; idx < length; idx++) {
+    for (size_t idx = 0; idx < length; idx++) {
         PyObject *item = PyUnicode_FromString(_event_names[idx]);
         if (!item) {
             Py_DECREF(dir);
             return NULL;
         }
-        PyList_SetItem(dir, idx + PyList_Size(result), item);
+        PyList_SetItem(dir, idx + res_size, item);
     }
 
     return dir;
@@ -3106,6 +3114,8 @@ MODINIT_DEFINE(event)
     }
 
     /* type preparation */
+    pgEventMeta_Type.tp_base = &PyType_Type;
+    pgEventMeta_Type.ob_base = *(PyVarObject *)&PyType_Type;
     if (PyType_Ready(&pgEventMeta_Type) < 0) {
         return NULL;
     }
