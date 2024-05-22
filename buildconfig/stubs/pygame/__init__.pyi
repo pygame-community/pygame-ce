@@ -22,7 +22,6 @@ from pygame import (
     surfarray as surfarray,
     transform as transform,
     scrap as scrap,
-    threads as threads,
     version as version,
     base as base,
     bufferproxy as bufferproxy,
@@ -38,6 +37,7 @@ from pygame import (
     _debug as _debug,
     system as system,
     geometry as geometry,
+    window as window,
 )
 
 from .rect import Rect as Rect, FRect as FRect
@@ -54,6 +54,7 @@ from .font import Font as Font
 from .mixer import Channel as Channel
 from .time import Clock as Clock
 from .joystick import Joystick as Joystick
+from .window import Window as Window
 from .base import (
     __version__ as __version__,
     BufferError as BufferError,

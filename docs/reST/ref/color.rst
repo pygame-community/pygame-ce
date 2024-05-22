@@ -191,6 +191,24 @@
       expect.
 
       .. ## Color.i1i2i3 ##
+
+   .. attribute:: normalized
+
+      | :sl:`Gets or sets the normalized representation of the Color.`
+      | :sg:`normalized -> tuple`
+      
+      The ``Normalized``` representation of the Color. The components of the ``Normalized``
+      representation represent the basic ``RGBA`` values but normalized the
+      ranges of the values are ``r`` = [0, 1], ``g`` = [0, 1], ``b`` = [0, 1]
+      and ``a`` = [0, 1] respectively. Note that this will not return the absolutely exact
+      ``Normalized`` values for the set ``RGBA`` values in all cases.
+      Due to the ``RGB`` mapping from 0-255 and the ``Normalized`` mapping from 0-1
+      rounding errors may cause the ``Normalized`` values to differ
+      slightly from what you might expect.
+
+      .. versionadded:: 2.5.0
+
+      .. ## Color.normalized ##
    
    .. classmethod:: from_cmy
 
@@ -243,6 +261,19 @@
       .. versionadded:: 2.3.1
 
       .. ## Color.from_i1i2i3 ##
+
+   .. classmethod:: from_normalized
+
+      | :sl:`Returns a Color object from a Normalized representation`
+      | :sg:`from_normalized(object, /) -> Color`
+      | :sg:`from_normalized(r, g, b, a /) -> Color`
+
+      Creates a Color object from the given Normalized components. Refer to :attr:`Color.normalized`
+      for more information.
+
+      .. versionadded:: 2.5.0
+
+      .. ## Color.from_normalized ##
 
    .. method:: normalize
 
@@ -317,7 +348,7 @@
       | :sl:`returns a Color where the r,g,b components have been multiplied by the alpha.`
       | :sg:`premul_alpha() -> Color`
 
-      Returns a new Color where each of the red, green and blue colour
+      Returns a new Color where each of the red, green and blue color
       channels have been multiplied by the alpha channel of the original
       color. The alpha channel remains unchanged.
 

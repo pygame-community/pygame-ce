@@ -359,7 +359,10 @@ class DependencyGroup:
 def _add_sdl2_dll_deps(DEPS):
     # MIXER
     DEPS.add_dll(r'(libogg-0|ogg)\.dll$', 'ogg', ['libogg-[1-9].*'])
+    # modplug replaced with libxmp after SDL_mixer 2.6.3
     DEPS.add_dll(r'(lib)?modplug[-0-9]*\.dll$', 'modplug', ['*modplug-[0-9]*'])
+    DEPS.add_dll(r'libxmp.dll$', 'xmp', ['libxmp*'])
+    DEPS.add_dll(r'libwavpack[-0-9]*\.dll$', 'wavpack', ['libwavpack-[1-9].*'])
     DEPS.add_dll(r'(lib)?opus[-0-9]*\.dll$', 'opus', ['*opus-[0-9]*'])
     DEPS.add_dll(r'(lib)?opusfile[-0-9]*\.dll$', 'opusfile', ['*opusfile-[0-9]*'])
     # IMAGE
@@ -431,6 +434,8 @@ def setup_prebuilt_sdl2(prebuilt_dir):
 
         'ogg': mixerDep.path,
         'modplug': mixerDep.path,
+        'xmp': mixerDep.path,
+        'wavpack': mixerDep.path,
         'opus': mixerDep.path,
         'opusfile': mixerDep.path,
     }

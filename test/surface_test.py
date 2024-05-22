@@ -1245,8 +1245,8 @@ class GeneralSurfaceTests(unittest.TestCase):
                 except pygame.error:
                     self.fail("convert() should not raise an exception here.")
 
-            self.assertRaisesRegex(pygame.error, "No video mode", surf.convert)
-            self.assertRaisesRegex(pygame.error, "No video mode", surf8bit.convert)
+            self.assertRaisesRegex(pygame.error, "No convert format", surf.convert)
+            self.assertRaisesRegex(pygame.error, "No convert format", surf8bit.convert)
 
             pygame.display.set_mode((640, 480))
             try:
@@ -1266,7 +1266,9 @@ class GeneralSurfaceTests(unittest.TestCase):
 
         pygame.display.init()
         try:
-            self.assertRaisesRegex(pygame.error, "No video mode", surf.convert_alpha)
+            self.assertRaisesRegex(
+                pygame.error, "No convert format", surf.convert_alpha
+            )
 
             pygame.display.set_mode((640, 480))
             try:
@@ -2642,7 +2644,7 @@ class GeneralSurfaceTests(unittest.TestCase):
         # Confirm it is a Color instance
         self.assertIsInstance(unmapped_c, pygame.Color)
 
-        # Remaining, non-pallete, cases.
+        # Remaining, non-palette, cases.
         c = (128, 64, 12, 255)
         formats = [(0, 16), (0, 24), (0, 32), (SRCALPHA, 16), (SRCALPHA, 32)]
         for flags, bitsize in formats:
@@ -2999,7 +3001,6 @@ class SurfaceGetBufferTest(unittest.TestCase):
                 s = pygame.Surface((4, 2), 0, 32)
                 self._check_interface_rgba(s, plane)
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     def test_newbuf_PyBUF_flags_bytes(self):
         from pygame.tests.test_utils import buftools
 
@@ -3059,7 +3060,6 @@ class SurfaceGetBufferTest(unittest.TestCase):
         self.assertEqual(b.ndim, 1)
         self.assertEqual(b.strides, (1,))
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     def test_newbuf_PyBUF_flags_0D(self):
         # This is the same handler as used by get_buffer(), so just
         # confirm that it succeeds for one case.
@@ -3079,7 +3079,6 @@ class SurfaceGetBufferTest(unittest.TestCase):
         self.assertFalse(b.readonly)
         self.assertEqual(b.buf, s._pixels_address)
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     def test_newbuf_PyBUF_flags_1D(self):
         from pygame.tests.test_utils import buftools
 
@@ -3118,7 +3117,6 @@ class SurfaceGetBufferTest(unittest.TestCase):
         self.assertTrue(b.format is None)
         self.assertEqual(b.strides, (s.get_bytesize(),))
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     def test_newbuf_PyBUF_flags_2D(self):
         from pygame.tests.test_utils import buftools
 
@@ -3189,7 +3187,6 @@ class SurfaceGetBufferTest(unittest.TestCase):
         self.assertRaises(BufferError, Importer, a, buftools.PyBUF_F_CONTIGUOUS)
         self.assertRaises(BufferError, Importer, a, buftools.PyBUF_ANY_CONTIGUOUS)
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     def test_newbuf_PyBUF_flags_3D(self):
         from pygame.tests.test_utils import buftools
 
@@ -3240,7 +3237,6 @@ class SurfaceGetBufferTest(unittest.TestCase):
         self.assertRaises(BufferError, Importer, a, buftools.PyBUF_F_CONTIGUOUS)
         self.assertRaises(BufferError, Importer, a, buftools.PyBUF_ANY_CONTIGUOUS)
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     def test_newbuf_PyBUF_flags_rgba(self):
         # All color plane views are handled by the same routine,
         # so only one plane need be checked.
@@ -3596,7 +3592,7 @@ class SurfaceBlendTest(unittest.TestCase):
 
             return (expected_col, actual_col)
 
-        # # Colour Tests
+        # # Color Tests
         self.assertEqual(
             *test_premul_surf(pygame.Color(40, 20, 0, 51), pygame.Color(40, 20, 0, 51))
         )
@@ -3966,7 +3962,7 @@ class SurfaceBlendTest(unittest.TestCase):
         s1_alpha = s1.premul_alpha()
         self.assertEqual(s1_alpha.get_at((50, 50)), pygame.Color(100, 100, 100, 100))
 
-        # 16-bit colour has less precision
+        # 16-bit color has less precision
         s2 = pygame.Surface((100, 100), pygame.SRCALPHA, 16)
         s2.fill(
             pygame.Color(

@@ -1,10 +1,13 @@
-"""Debug functionality that allows for more useful issue reporting
-"""
+"""Debug functionality that allows for more useful issue reporting"""
 
+import platform
 import sys
 import traceback
 import importlib
 from typing import Tuple, Optional, Callable
+from os import environ
+
+from pygame.version import ver
 
 ImportResult = Tuple[str, bool, Optional[Callable]]
 
@@ -31,7 +34,7 @@ def attempt_import(module, function_name, output_str=""):
     Args:
         module: string representing module name
         function_name: string representing function name to be imported
-        output_str: optional string to prepend error messagess to if one occurs
+        output_str: optional string to prepend error messages to if one occurs
 
     Returns:
         tuple(str, bool, Any):
@@ -53,6 +56,24 @@ def attempt_import(module, function_name, output_str=""):
     return (output_str, success, i)
 
 
+def _get_platform_info():
+    """
+    Internal helper to get platform information
+    """
+    ret = f"Platform:\t\t{platform.platform()}\n"
+    ret += f"System:\t\t\t{platform.system()}\n"
+    ret += f"System Version:\t\t{platform.version()}\n"
+    ret += f"Processor:\t\t{platform.processor()}\n"
+    ret += (
+        f"Architecture:\t\tBits: {platform.architecture()[0]}\t"
+        f"Linkage: {platform.architecture()[1]}\n\n"
+    )
+
+    ret += f"Python:\t\t\t{platform.python_implementation()} {sys.version}\n"
+    ret += f"pygame version:\t\t{ver}\n"
+    return ret
+
+
 def print_debug_info(filename=None):
     """Gets debug information for reporting bugs. Prints to console
     if filename is not specified, otherwise writes to that file
@@ -69,7 +90,14 @@ def print_debug_info(filename=None):
         # pylint: disable=unused-argument
         return (-1, -1, -1)
 
-    from pygame.display import get_driver, get_init as display_init
+    from pygame.display import (
+        get_driver as get_display_driver,
+        get_init as display_init,
+    )
+    from pygame.mixer import (
+        get_driver as get_mixer_driver,
+        get_init as mixer_init,
+    )
     from pygame.base import get_sdl_version
 
     debug_str, *mixer = attempt_import(
@@ -100,33 +128,7 @@ def print_debug_info(filename=None):
     else:
         ft_version = freetype[1]
 
-    from pygame.version import ver
-
-    import platform
-
-    debug_str += f"Platform:\t\t{platform.platform()}\n"
-
-    debug_str += f"System:\t\t\t{platform.system()}\n"
-
-    debug_str += f"System Version:\t\t{platform.version()}\n"
-
-    debug_str += f"Processor:\t\t{platform.processor()}\n"
-
-    debug_str += (
-        f"Architecture:\t\tBits: {platform.architecture()[0]}\t"
-        f"Linkage: {platform.architecture()[1]}\n"
-    )
-
-    if display_init():
-        debug_str += f"Driver:\t\t\t{get_driver()}\n\n"
-    else:
-        debug_str += "Driver:\t\t\tDisplay Not Initialized\n\n"
-
-    debug_str += f"Python:\t\t\t{platform.python_implementation()}\n"
-
-    debug_str += f"pygame version:\t\t{ver}\n"
-
-    debug_str += f"python version:\t\t{str_from_tuple(sys.version_info[0:3])}\n\n"
+    debug_str += _get_platform_info()
 
     debug_str += (
         f"SDL versions:\t\tLinked: {str_from_tuple(get_sdl_version())}\t"
@@ -150,8 +152,25 @@ def print_debug_info(filename=None):
 
     debug_str += (
         f"Freetype versions:\tLinked: {str_from_tuple(ft_version())}\t"
-        f"Compiled: {str_from_tuple(ft_version(linked = False))}"
+        f"Compiled: {str_from_tuple(ft_version(linked = False))}\n\n"
     )
+
+    if display_init():
+        driver = get_display_driver()
+        if driver.upper() != "X11":
+            debug_str += f"Display Driver:\t\t{driver}\n"
+        else:
+            is_xwayland = (environ.get("XDG_SESSION_TYPE") == "wayland") or (
+                "WAYLAND_DISPLAY" in environ
+            )
+            debug_str += f"Display Driver:\t\t{driver} ( xwayland == {is_xwayland} )\n"
+    else:
+        debug_str += "Display Driver:\t\tDisplay Not Initialized\n"
+
+    if mixer_init():
+        debug_str += f"Mixer Driver:\t\t{get_mixer_driver()}"
+    else:
+        debug_str += "Mixer Driver:\t\tMixer Not Initialized"
 
     if filename is None:
         print(debug_str)

@@ -3,14 +3,14 @@
 Export the Exporter and Importer classes.
 
 Class Exporter has configurable shape and strides. Exporter objects
-provide a convient target for unit tests on Pygame objects and functions that
+provide a convenient target for unit tests on Pygame objects and functions that
 import a new buffer interface.
 
 Class Importer imports a buffer interface with the given PyBUF_* flags.
 It returns NULL Py_buffer fields as None. The shape, strides, and suboffsets
 arrays are returned as tuples of ints. All Py_buffer field properties are
 read-only. This class is useful in comparing exported buffer interfaces
-with the actual request. The simular Python builtin memoryview currently
+with the actual request. The similar Python builtin memoryview currently
 does not support configurable PyBUF_* flags.
 
 This module contains its own unit tests. When Pygame is installed, these tests
@@ -19,11 +19,9 @@ can be run with the following command line statement:
 python -m pygame.tests.test_utils.array
 
 """
+
 import pygame
 
-if not pygame.HAVE_NEWBUF:
-    emsg = "This Pygame build does not support the new buffer protocol"
-    raise ImportError(emsg)
 import pygame.newbuffer
 from pygame.newbuffer import (
     PyBUF_SIMPLE,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.glcube
+"""pygame.examples.glcube
 
 Draw a cube on the screen.
 
@@ -23,6 +23,7 @@ Keyboard Controls
 * f key to toggle fullscreen.
 
 """
+
 import math
 import ctypes
 
@@ -258,16 +259,16 @@ def init_gl_modern(display_size):
     uniform mat4   view;
     uniform mat4   projection;
 
-    uniform vec4   colour_mul;
-    uniform vec4   colour_add;
+    uniform vec4   color_mul;
+    uniform vec4   color_add;
 
-    in vec4 vertex_colour;         // vertex colour in
+    in vec4 vertex_color;         // vertex color in
     in vec3 vertex_position;
 
-    out vec4   vertex_color_out;            // vertex colour out
+    out vec4   vertex_color_out;            // vertex color out
     void main()
     {
-        vertex_color_out = (colour_mul * vertex_colour) + colour_add;
+        vertex_color_out = (color_mul * vertex_color) + color_add;
         gl_Position = projection * view * model * vec4(vertex_position, 1.0);
     }
 
@@ -275,7 +276,7 @@ def init_gl_modern(display_size):
 
     fragment_code = """
     #version 150
-    in vec4 vertex_color_out;  // vertex colour from vertex shader
+    in vec4 vertex_color_out;  // vertex color from vertex shader
     out vec4 fragColor;
     void main()
     {
@@ -319,9 +320,7 @@ def init_gl_modern(display_size):
     # ------------------------------------------
 
     # Cube Data
-    vertices = zeros(
-        8, [("vertex_position", float32, 3), ("vertex_colour", float32, 4)]
-    )
+    vertices = zeros(8, [("vertex_position", float32, 3), ("vertex_color", float32, 4)])
 
     vertices["vertex_position"] = [
         [1, 1, 1],
@@ -334,7 +333,7 @@ def init_gl_modern(display_size):
         [-1, -1, -1],
     ]
 
-    vertices["vertex_colour"] = [
+    vertices["vertex_color"] = [
         [0, 1, 1, 1],
         [0, 0, 1, 1],
         [0, 0, 0, 1],
@@ -409,7 +408,7 @@ def init_gl_modern(display_size):
 
     offset = ctypes.c_void_p(vertices.dtype["vertex_position"].itemsize)
 
-    loc = GL.glGetAttribLocation(program, "vertex_colour")
+    loc = GL.glGetAttribLocation(program, "vertex_color")
     GL.glEnableVertexAttribArray(loc)
     GL.glVertexAttribPointer(loc, 4, GL.GL_FLOAT, False, stride, offset)
 
@@ -443,19 +442,19 @@ def init_gl_modern(display_size):
     )
     GL.glUniformMatrix4fv(shader_data["constants"]["projection"], 1, False, eye(4))
 
-    # This colour is multiplied with the base vertex colour in producing
+    # This color is multiplied with the base vertex color in producing
     # the final output
-    shader_data["constants"]["colour_mul"] = GL.glGetUniformLocation(
-        program, "colour_mul"
+    shader_data["constants"]["color_mul"] = GL.glGetUniformLocation(
+        program, "color_mul"
     )
-    GL.glUniform4f(shader_data["constants"]["colour_mul"], 1, 1, 1, 1)
+    GL.glUniform4f(shader_data["constants"]["color_mul"], 1, 1, 1, 1)
 
-    # This colour is added on to the base vertex colour in producing
+    # This color is added on to the base vertex color in producing
     # the final output
-    shader_data["constants"]["colour_add"] = GL.glGetUniformLocation(
-        program, "colour_add"
+    shader_data["constants"]["color_add"] = GL.glGetUniformLocation(
+        program, "color_add"
     )
-    GL.glUniform4f(shader_data["constants"]["colour_add"], 0, 0, 0, 0)
+    GL.glUniform4f(shader_data["constants"]["color_add"], 0, 0, 0, 0)
 
     # Set GL drawing data
     # -------------------
@@ -490,8 +489,8 @@ def draw_cube_modern(shader_data, filled_cube_indices, outline_cube_indices, rot
     GL.glDisable(GL.GL_BLEND)
     GL.glEnable(GL.GL_DEPTH_TEST)
     GL.glEnable(GL.GL_POLYGON_OFFSET_FILL)
-    GL.glUniform4f(shader_data["constants"]["colour_mul"], 1, 1, 1, 1)
-    GL.glUniform4f(shader_data["constants"]["colour_add"], 0, 0, 0, 0.0)
+    GL.glUniform4f(shader_data["constants"]["color_mul"], 1, 1, 1, 1)
+    GL.glUniform4f(shader_data["constants"]["color_add"], 0, 0, 0, 0.0)
     GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, shader_data["buffer"]["filled"])
     GL.glDrawElements(
         GL.GL_TRIANGLES, len(filled_cube_indices), GL.GL_UNSIGNED_INT, None
@@ -500,8 +499,8 @@ def draw_cube_modern(shader_data, filled_cube_indices, outline_cube_indices, rot
     # Outlined cube
     GL.glDisable(GL.GL_POLYGON_OFFSET_FILL)
     GL.glEnable(GL.GL_BLEND)
-    GL.glUniform4f(shader_data["constants"]["colour_mul"], 0, 0, 0, 0.0)
-    GL.glUniform4f(shader_data["constants"]["colour_add"], 1, 1, 1, 1.0)
+    GL.glUniform4f(shader_data["constants"]["color_mul"], 0, 0, 0, 0.0)
+    GL.glUniform4f(shader_data["constants"]["color_add"], 1, 1, 1, 1.0)
     GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, shader_data["buffer"]["outline"])
     GL.glDrawElements(GL.GL_LINES, len(outline_cube_indices), GL.GL_UNSIGNED_INT, None)
 

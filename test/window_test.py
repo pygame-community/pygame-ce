@@ -1,8 +1,9 @@
 import unittest
 import pygame
 import os
+import time
 
-from pygame._sdl2.video import Window
+from pygame import Window
 from pygame.version import SDL
 
 pygame.init()
@@ -231,7 +232,7 @@ class WindowTypeTest(unittest.TestCase):
             ValueError, lambda: setattr(self.win, "maximum_size", (50, 50))
         )
 
-        # minimum size should be able to equal to maxium size
+        # minimum size should be able to equal to maximum size
         # This test fails in SDL <= 2.0.12
         # have been fixed after SDL 2.0.18
         if SDL >= (2, 0, 18):
@@ -320,16 +321,23 @@ class WindowTypeTest(unittest.TestCase):
         pygame.init()
 
     def test_window_surface(self):
+        # window's surface uses an event callback that may take some time to get
+        # processed by the system event queue - sleep for 1 second to give
+        # the window event queue chance to catch up
         win = Window(size=(640, 480))
+        time.sleep(1)
         surf = win.get_surface()
 
         self.assertIsInstance(surf, pygame.Surface)
 
         # test auto resize
         self.assertTupleEqual(win.size, surf.get_size())
+
         win.size = (100, 100)
+        time.sleep(1)
         self.assertTupleEqual(win.size, surf.get_size())
         win.size = (1280, 720)
+        time.sleep(1)
         self.assertTupleEqual(win.size, surf.get_size())
 
         # window surface should be invalid after the window is destroyed
@@ -358,6 +366,15 @@ class WindowTypeTest(unittest.TestCase):
 
         self.assertRaises(TypeError, lambda: win.flip("an argument"))
         self.assertIs(win.flip(), None)
+        win.destroy()
+
+        # creates a new window with no surface associated
+        win = Window(size=(640, 480))
+        self.assertRaisesRegex(
+            pygame.error,
+            "the Window has no surface associated with it, did you forget to call Window.get_surface()",
+            win.flip,
+        )
         win.destroy()
 
     def tearDown(self):

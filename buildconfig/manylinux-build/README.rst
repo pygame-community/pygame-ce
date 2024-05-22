@@ -172,8 +172,4 @@ TODO
 
 Maybe these need adding?
 
-- wayland, https://wayland.freedesktop.org/building.html http://www.linuxfromscratch.org/blfs/view/svn/general/wayland-protocols.html
 - vulkan, via mesa?
-- xinput,
-- xrandr,
-
