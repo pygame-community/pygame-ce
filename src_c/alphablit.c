@@ -66,10 +66,6 @@ int
 SoftMultiBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
                     BlitSequence *destinations);
 
-void
-pg_multi_blitcopy(SDL_Surface *src, SDL_Surface *dst,
-                  BlitSequence *destinations);
-
 extern int
 SDL_RLESurface(SDL_Surface *surface);
 extern void
