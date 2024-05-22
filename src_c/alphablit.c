@@ -599,7 +599,7 @@ pg_multi_blitcopy(SDL_Surface *restrict src, SDL_Surface *restrict dst,
         BlitDestination *item = &destinations->sequence[i];
         Uint32 *dstp32 = item->pixels;
         int h = item->rows;
-        const int copy_w = item->copy_w;
+        const int copy_w = item->width * 4;
         Uint32 *srcp32 = src_start + item->src_offset;
 
         while (h--) {

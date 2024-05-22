@@ -339,7 +339,7 @@
 
 typedef struct {
     Uint32 *pixels;
-    int copy_w, rows, src_offset;
+    int width, rows, src_offset;
 } BlitDestination;
 
 typedef struct {

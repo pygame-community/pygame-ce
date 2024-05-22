@@ -2281,7 +2281,7 @@ _surf_fblits_multiblit_item_check_and_blit(PyObject *src_surf,
 
         d_item->pixels =
             (Uint32 *)dst->pixels + clipped.y * dst->pitch / 4 + clipped.x;
-        d_item->copy_w = clipped.w * 4;
+        d_item->width = clipped.w;
         d_item->rows = clipped.h;
         d_item->src_offset =
             (src_dest.x < clip_rect->x ? clip_rect->x - src_dest.x : 0) +
