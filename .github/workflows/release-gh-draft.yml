@@ -33,7 +33,7 @@ jobs:
     needs: [manylinux-aarch64, manylinux, macos, windows, sdist]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.2
+      - uses: actions/checkout@v4.1.6
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4

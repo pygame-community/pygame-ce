@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.aliens
+"""pygame.examples.aliens
 
 Shows a mini game where you have to defend against aliens.
 
@@ -56,7 +56,7 @@ def load_image(file):
 
 
 def load_sound(file):
-    """because pygame can be be compiled without mixer."""
+    """because pygame can be compiled without mixer."""
     if not pygame.mixer:
         return None
     file = os.path.join(main_dir, "data", file)

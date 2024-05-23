@@ -420,7 +420,7 @@ endif
 if portmidi_dep.found()
     pypm = py.extension_module(
         'pypm',
-        'pypm.c',
+        fs.is_file('pypm.c') ? 'pypm.c' : 'cython/pygame/pypm.pyx',
         # c_args: warnings_error,
         dependencies: pg_base_deps + portmidi_deps,
         install: true,

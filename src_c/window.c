@@ -7,6 +7,8 @@
 #include "doc/sdl2_video_doc.h"
 #include "doc/window_doc.h"
 
+static int is_window_mod_init = 0;
+
 #if !defined(__APPLE__)
 static char *icon_defaultname = "pygame_icon.bmp";
 static int icon_colorkey = 0;
@@ -570,6 +572,11 @@ window_set_size(pgWindowObject *self, PyObject *arg, void *v)
     }
 
     SDL_SetWindowSize(self->_win, w, h);
+    if (self->surf) {
+        /* Ensure that the underlying surf is immediately updated, instead of
+         * relying on the event callback */
+        self->surf->surf = SDL_GetWindowSurface(self->_win);
+    }
 
     return 0;
 }
@@ -580,7 +587,7 @@ window_get_size(pgWindowObject *self, void *v)
     int w, h;
     SDL_GetWindowSize(self->_win, &w, &h);
 
-    return Py_BuildValue("(ii)", w, h);
+    return pg_tuple_couple_from_values_int(w, h);
 }
 
 static int
@@ -620,7 +627,7 @@ window_get_minimum_size(pgWindowObject *self, void *v)
     int w, h;
     SDL_GetWindowMinimumSize(self->_win, &w, &h);
 
-    return Py_BuildValue("(ii)", w, h);
+    return pg_tuple_couple_from_values_int(w, h);
 }
 
 static int
@@ -660,7 +667,7 @@ window_get_maximum_size(pgWindowObject *self, void *v)
     int w, h;
     SDL_GetWindowMaximumSize(self->_win, &w, &h);
 
-    return Py_BuildValue("(ii)", w, h);
+    return pg_tuple_couple_from_values_int(w, h);
 }
 
 static int
@@ -691,7 +698,7 @@ window_get_position(pgWindowObject *self, void *v)
     int x, y;
     SDL_GetWindowPosition(self->_win, &x, &y);
 
-    return Py_BuildValue("(ii)", x, y);
+    return pg_tuple_couple_from_values_int(x, y);
 }
 
 static int
@@ -758,6 +765,11 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     PyObject *_key, *_value, *_kw;
     const char *_key_str;
     int _value_bool;
+
+    // ensure display is init at this point, diplay init automatically calls
+    // the window init in this module
+    if (!pg_mod_autoinit(IMPPREFIX "display"))
+        return -1;
 
     _kw = PyDict_New();
     if (!_kw)
@@ -954,6 +966,11 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
         return NULL;
     }
 
+    // ensure display is init at this point, diplay init automatically calls
+    // the window init in this module
+    if (!pg_mod_autoinit(IMPPREFIX "display"))
+        return NULL;
+
     SDL_Window *window = pg_GetDefaultWindow();
     if (!window) {
         return RAISE(pgExc_SDLError,
@@ -999,14 +1016,20 @@ window_repr(pgWindowObject *self)
 static PyObject *
 _window_internal_mod_init(PyObject *self, PyObject *_null)
 {
-    SDL_AddEventWatch(_resize_event_watch, NULL);
+    if (!is_window_mod_init) {
+        SDL_AddEventWatch(_resize_event_watch, NULL);
+        is_window_mod_init = 1;
+    }
     Py_RETURN_NONE;
 }
 
 static PyObject *
 _window_internal_mod_quit(PyObject *self, PyObject *_null)
 {
-    SDL_DelEventWatch(_resize_event_watch, NULL);
+    if (is_window_mod_init) {
+        SDL_DelEventWatch(_resize_event_watch, NULL);
+        is_window_mod_init = 0;
+    }
     Py_RETURN_NONE;
 }
 
@@ -1083,9 +1106,9 @@ static PyMethodDef _window_methods[] = {
     {"get_grabbed_window", (PyCFunction)get_grabbed_window, METH_NOARGS,
      DOC_SDL2_VIDEO_GETGRABBEDWINDOW},
     {"_internal_mod_init", (PyCFunction)_window_internal_mod_init, METH_NOARGS,
-     "auto initialize for _window module"},
+     "auto initialize for window module"},
     {"_internal_mod_quit", (PyCFunction)_window_internal_mod_quit, METH_NOARGS,
-     "auto quit for _window module"},
+     "auto quit for window module"},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(window)

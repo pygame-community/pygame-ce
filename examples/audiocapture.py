@@ -1,11 +1,12 @@
 #!/usr/bin/env python
-""" pygame.examples.audiocapture
+"""pygame.examples.audiocapture
 
 A pygame 2 experiment.
 
 * record sound from a microphone
 * play back the recorded sound
 """
+
 import pygame
 import time
 

@@ -19,13 +19,13 @@ class RWopsEncodeStringTest(unittest.TestCase):
         self.assertIsInstance(encoded_string, bytes)
 
     def test_obj_bytes(self):
-        b = b"encyclop\xE6dia"
+        b = b"encyclop\xe6dia"
         encoded_string = encode_string(b, "ascii", "strict")
 
         self.assertIs(encoded_string, b)
 
     def test_encode_unicode(self):
-        u = "\u00DEe Olde Komp\u00FCter Shoppe"
+        u = "\u00dee Olde Komp\u00fcter Shoppe"
         b = u.encode("utf-8")
         self.assertEqual(encode_string(u, "utf-8"), b)
 
@@ -33,7 +33,7 @@ class RWopsEncodeStringTest(unittest.TestCase):
         self.assertRaises(SyntaxError, encode_string)
 
     def test_errors(self):
-        u = "abc\u0109defg\u011Dh\u0125ij\u0135klmnoprs\u015Dtu\u016Dvz"
+        u = "abc\u0109defg\u011dh\u0125ij\u0135klmnoprs\u015dtu\u016dvz"
         b = u.encode("ascii", "ignore")
         self.assertEqual(encode_string(u, "ascii", "ignore"), b)
 
@@ -44,7 +44,7 @@ class RWopsEncodeStringTest(unittest.TestCase):
         self.assertIsNone(encoded_string)
 
     def test_check_defaults(self):
-        u = "a\u01F7b"
+        u = "a\u01f7b"
         b = u.encode("unicode_escape", "backslashreplace")
         encoded_string = encode_string(u)
 
@@ -86,8 +86,8 @@ class RWopsEncodeStringTest(unittest.TestCase):
             self.assertEqual(getrefcount(bpath), before)
 
     def test_smp(self):
-        utf_8 = b"a\xF0\x93\x82\xA7b"
-        u = "a\U000130A7b"
+        utf_8 = b"a\xf0\x93\x82\xa7b"
+        u = "a\U000130a7b"
         b = encode_string(u, "utf-8", "strict", AssertionError)
         self.assertEqual(b, utf_8)
 

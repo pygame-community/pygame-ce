@@ -674,6 +674,18 @@ class SurfaceTypeTest(unittest.TestCase):
                 self.assertEqual(s.get_height(), h)
                 self.assertEqual(s.get_size(), (w, h))
 
+    def test_attributes(self):
+        """Test width, height, and size attributes of surface"""
+        s = pygame.Surface((100, 50))
+        self.assertEqual(s.width, 100)
+        self.assertEqual(s.height, 50)
+        self.assertEqual(s.size, (100, 50))
+
+        attrs = ["width", "height", "size"]
+        for attr in attrs:
+            with self.assertRaises(AttributeError):
+                setattr(s, attr, 200)
+
     def test_get_view(self):
         """Ensure a buffer view of the surface's pixels can be retrieved."""
         # Check that BufferProxys are returned when array depth is supported,
@@ -2644,7 +2656,7 @@ class GeneralSurfaceTests(unittest.TestCase):
         # Confirm it is a Color instance
         self.assertIsInstance(unmapped_c, pygame.Color)
 
-        # Remaining, non-pallete, cases.
+        # Remaining, non-palette, cases.
         c = (128, 64, 12, 255)
         formats = [(0, 16), (0, 24), (0, 32), (SRCALPHA, 16), (SRCALPHA, 32)]
         for flags, bitsize in formats:
@@ -3592,7 +3604,7 @@ class SurfaceBlendTest(unittest.TestCase):
 
             return (expected_col, actual_col)
 
-        # # Colour Tests
+        # # Color Tests
         self.assertEqual(
             *test_premul_surf(pygame.Color(40, 20, 0, 51), pygame.Color(40, 20, 0, 51))
         )
@@ -3962,7 +3974,7 @@ class SurfaceBlendTest(unittest.TestCase):
         s1_alpha = s1.premul_alpha()
         self.assertEqual(s1_alpha.get_at((50, 50)), pygame.Color(100, 100, 100, 100))
 
-        # 16-bit colour has less precision
+        # 16-bit color has less precision
         s2 = pygame.Surface((100, 100), pygame.SRCALPHA, 16)
         s2.fill(
             pygame.Color(
