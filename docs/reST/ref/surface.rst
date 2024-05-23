@@ -87,15 +87,6 @@
    entire Surface. If it is changed, all drawing operations will only effect
    the smaller area.
 
-   Surfaces contain the following read-only attributes:
-
-   ::
-      
-      width, height
-      size
-
-   .. versionadded:: 2.5.0
-
    .. method:: blit
 
       | :sl:`draw another surface onto this one`
