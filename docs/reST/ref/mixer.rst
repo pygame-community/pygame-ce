@@ -472,7 +472,7 @@ The following file formats are supported
    | :sg:`Channel(id) -> Channel`
 
    Return a Channel object for one of the current channels. The id must be a
-   value from 0 to the value of ``pygame.mixer.get_num_channels()`` (exclusive).
+   value from 0 up to, but not including, ``pygame.mixer.get_num_channels()``.
 
    The Channel object can be used to get fine control over the playback of
    Sounds. A channel can only playback a single Sound at time. Using channels
