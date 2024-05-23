@@ -154,6 +154,12 @@ surf_set_colorkey(pgSurfaceObject *self, PyObject *args);
 static PyObject *
 surf_get_colorkey(pgSurfaceObject *self, PyObject *args);
 static PyObject *
+surf_set_colorkey_raw(pgSurfaceObject *self, PyObject *args);
+static PyObject *
+surf_get_colorkey_raw(pgSurfaceObject *self, PyObject *args);
+static PyObject *
+surf_has_colorkey(pgSurfaceObject *self, PyObject *args);
+static PyObject *
 surf_set_alpha(pgSurfaceObject *self, PyObject *args);
 static PyObject *
 surf_get_alpha(pgSurfaceObject *self, PyObject *args);
@@ -1316,7 +1322,6 @@ surf_get_colorkey_raw(pgSurfaceObject *self, PyObject *_null)
 {
     SDL_Surface *surf = pgSurface_AsSurface(self);
     Uint32 mapped_color;
-    Uint8 r, g, b, a = 255;
 
     SURF_INIT_CHECK(surf)
 
@@ -1331,8 +1336,6 @@ static PyObject *
 surf_has_colorkey(pgSurfaceObject *self, PyObject *_null)
 {
     SDL_Surface *surf = pgSurface_AsSurface(self);
-    Uint32 mapped_color;
-    Uint8 r, g, b, a = 255;
 
     SURF_INIT_CHECK(surf)
 
