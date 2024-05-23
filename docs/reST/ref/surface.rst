@@ -719,7 +719,7 @@
       | :sl:`get the dimensions of the Surface`
       | :sg:`get_size() -> (width, height)`
 
-      Return the width and height of the Surface in pixels.
+      Return the width and height of the Surface in pixels. Can also be accessed with :attr:`size`
 
       .. ## Surface.get_size ##
 
@@ -728,7 +728,7 @@
       | :sl:`get the width of the Surface`
       | :sg:`get_width() -> width`
 
-      Return the width of the Surface in pixels.
+      Return the width of the Surface in pixels. Can also be accessed with :attr:`width`
 
       .. ## Surface.get_width ##
 
@@ -737,7 +737,7 @@
       | :sl:`get the height of the Surface`
       | :sg:`get_height() -> height`
 
-      Return the height of the Surface in pixels.
+      Return the height of the Surface in pixels. Can also be accessed with :attr:`height`
 
       .. ## Surface.get_height ##
 
@@ -1029,6 +1029,33 @@
       .. versionadded:: 2.1.4
 
       .. ## Surface.premul_alpha ##
+
+    .. attribute:: width
+
+        | :sl:`Surface width in pixels (read-only)`
+        | :sg:`width -> int`
+
+        Read-only attribute. Same as :meth:`get_width()`
+
+    .. versionadded:: 2.5.0
+
+    .. attribute:: height
+
+        | :sl:`Surface height in pixels (read-only)`
+        | :sg:`height -> int`
+
+        Read-only attribute. Same as :meth:`get_height()`
+
+    .. versionadded:: 2.5.0
+
+    .. attribute:: size
+
+        | :sl:`Surface size in pixels (read-only)`
+        | :sg:`height -> tuple[int, int]`
+
+        Read-only attribute. Same as :meth:`get_size()`
+
+    .. versionadded:: 2.5.0
 
    .. ## pygame.Surface ##
 

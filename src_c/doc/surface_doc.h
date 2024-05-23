@@ -52,3 +52,6 @@
 #define DOC_SURFACE_GETBUFFER "get_buffer() -> BufferProxy\nacquires a buffer object for the pixels of the Surface."
 #define DOC_SURFACE_PIXELSADDRESS "_pixels_address -> int\npixel buffer address"
 #define DOC_SURFACE_PREMULALPHA "premul_alpha() -> Surface\nreturns a copy of the surface with the RGB channels pre-multiplied by the alpha channel."
+#define DOC_SURFACE_WIDTH "width -> int\nSurface width in pixels (read-only)"
+#define DOC_SURFACE_HEIGHT "height -> int\nSurface height in pixels (read-only)"
+#define DOC_SURFACE_SIZE "height -> tuple[int, int]\nSurface size in pixels (read-only)"

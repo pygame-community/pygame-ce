@@ -674,6 +674,18 @@ class SurfaceTypeTest(unittest.TestCase):
                 self.assertEqual(s.get_height(), h)
                 self.assertEqual(s.get_size(), (w, h))
 
+    def test_attributes(self):
+        """Test width, height, and size attributes of surface"""
+        s = pygame.Surface((100, 50))
+        self.assertEqual(s.width, 100)
+        self.assertEqual(s.height, 50)
+        self.assertEqual(s.size, (100, 50))
+
+        attrs = ["width", "height", "size"]
+        for attr in attrs:
+            with self.assertRaises(AttributeError):
+                setattr(s, attr, 200)
+
     def test_get_view(self):
         """Ensure a buffer view of the surface's pixels can be retrieved."""
         # Check that BufferProxys are returned when array depth is supported,
