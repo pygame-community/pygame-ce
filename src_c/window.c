@@ -572,6 +572,11 @@ window_set_size(pgWindowObject *self, PyObject *arg, void *v)
     }
 
     SDL_SetWindowSize(self->_win, w, h);
+    if (self->surf) {
+        /* Ensure that the underlying surf is immediately updated, instead of
+         * relying on the event callback */
+        self->surf->surf = SDL_GetWindowSurface(self->_win);
+    }
 
     return 0;
 }
