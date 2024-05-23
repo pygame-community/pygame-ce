@@ -390,29 +390,27 @@ pg_circle_contains(pgCircleObject *self, PyObject *arg)
     double x, y;
 
     if (pgCircle_Check(arg)) {
-        pgCircleBase *temp = &pgCircle_AsCircle(arg);
+        pgCircleBase *circle = &pgCircle_AsCircle(arg);
         /*a circle is always contained within itself*/
-        if (temp == scirc)
+        if (circle == scirc)
             Py_RETURN_TRUE;
         /* a bigger circle can't be contained within a smaller circle */
-        if (temp->r > scirc->r)
+        if (circle->r > scirc->r)
             Py_RETURN_FALSE;
 
-        const double dx = temp->x - scirc->x;
-        const double dy = temp->y - scirc->y;
-        const double dr = temp->r - scirc->r;
+        const double dx = circle->x - scirc->x;
+        const double dy = circle->y - scirc->y;
+        const double dr = circle->r - scirc->r;
 
         result = (dx * dx + dy * dy) <= (dr * dr);
     }
     else if (pgRect_Check(arg)) {
-        SDL_Rect *temp = &pgRect_AsRect(arg);
-
-        RECT_CIRCLE_CONTAINS(temp, scirc, result);
+        SDL_Rect *rect = &pgRect_AsRect(arg);
+        RECT_CIRCLE_CONTAINS(rect, scirc, result);
     }
     else if (pgFRect_Check(arg)) {
-        SDL_FRect *temp = &pgFRect_AsRect(arg);
-
-        RECT_CIRCLE_CONTAINS(temp, scirc, result);
+        SDL_FRect *frect = &pgFRect_AsRect(arg);
+        RECT_CIRCLE_CONTAINS(frect, scirc, result);
     }
     else if (pg_TwoDoublesFromObj(arg, &x, &y)) {
         result = pgCollision_CirclePoint(scirc, x, y);
