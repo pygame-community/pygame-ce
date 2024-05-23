@@ -311,6 +311,7 @@ _pg_get_event_unicode(SDL_Event *event)
         return proxify ? PGPOST_##name : PGE_##name
 
 static PyTypeObject pgEvent_Type;
+static PyTypeObject pgEventMeta_Type;
 #define pgEvent_CheckExact(x) ((x)->ob_type == &pgEvent_Type)
 #define pgEvent_Check(x) (PyObject_IsInstance(x, (PyObject *)&pgEvent_Type))
 #define pgEvent_IsSubclass(x)                            \
@@ -1953,11 +1954,6 @@ pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
     return 0;
 }
 
-static PyType_Slot pg_event_subclass_slots[] = {
-    {Py_tp_base, &pgEvent_Type},
-    {Py_tp_getattro, _pg_EventGetAttr},
-    {0, NULL}};
-
 /* Return a new reference. */
 static PyObject *
 _pgEvent_CreateSubclass(Uint32 ev_type)
@@ -1969,48 +1965,46 @@ _pgEvent_CreateSubclass(Uint32 ev_type)
         return (PyObject *)&pgEvent_Type;
     }
 
-    size_t name_s = strlen(name) + 14;  // 14 = len("pygame.event.\x00")
-    char *joined = malloc(name_s);
+    PyObject *dict = PyDict_New();
+    if (!dict)
+        return NULL;
 
-    if (!joined)
-        return PyErr_NoMemory();
+    PyObject *args =
+        Py_BuildValue("s(O)N", name, (PyObject *)&pgEvent_Type, dict);
+    if (!args)
+        return NULL;
 
-    PyOS_snprintf(joined, name_s, "pygame.event.%s", name);
+    PyObject *cls =
+        PyType_Type.tp_call((PyObject *)&pgEventMeta_Type, args, NULL);
+    Py_DECREF(args);
 
-    PyType_Spec type_spec = {joined, 0, 0,
-                             Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HEAPTYPE,
-                             pg_event_subclass_slots};
-
-    // Note: for Python 3.10+ onwards, PyType_FromSpecWithBases doesn't require
-    // a tuple for single base.
-    PyObject *bases = PyTuple_Pack(1, (PyObject *)&pgEvent_Type);
-
-    if (bases == NULL) {
-        free(joined);
+    if (!cls) {
         return NULL;
     }
-
-    PyObject *cls = PyType_FromSpecWithBases(&type_spec, bases);
-
-    // Python <= 3.10 doesn't copy class name, but holds the reference,
-    // Therefore for these versions, we need to leak "joined".
-    // This is not an issue, as these classes in theory should be created only
-    // once per type. Other solution is to generate class names statically.
-#if PY_MINOR_VERSION > 10
-    free(joined);
-#endif
 
     PyObject *value = PyLong_FromLong(ev_type);
     if (!value) {
         return NULL;
     }
 
-    if (PyObject_SetAttrString((PyObject *)cls, "type", value) < 0) {
+    if (PyObject_SetAttrString(cls, "type", value) < 0) {
         Py_DECREF(value);
         return NULL;
     }
 
     Py_DECREF(value);
+
+    PyObject *mod_name = PyUnicode_FromString("pygame.event");
+    if (!mod_name) {
+        return NULL;
+    }
+
+    if (PyObject_SetAttrString(cls, "__module__", mod_name) < 0) {
+        Py_DECREF(mod_name);
+        return NULL;
+    }
+
+    Py_DECREF(mod_name);
 
     return cls;
 }
@@ -3115,7 +3109,6 @@ MODINIT_DEFINE(event)
 
     /* type preparation */
     pgEventMeta_Type.tp_base = &PyType_Type;
-    pgEventMeta_Type.ob_base = *(PyVarObject *)&PyType_Type;
     if (PyType_Ready(&pgEventMeta_Type) < 0) {
         return NULL;
     }
