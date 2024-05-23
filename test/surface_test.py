@@ -1215,8 +1215,6 @@ class GeneralSurfaceTests(unittest.TestCase):
 
         pygame.display.init()
         try:
-            pygame.display.set_mode((640, 480))
-
             im = pygame.image.load(example_path(os.path.join("data", "city.png")))
             im2 = pygame.image.load(example_path(os.path.join("data", "brick.png")))
 
@@ -1246,7 +1244,7 @@ class GeneralSurfaceTests(unittest.TestCase):
         filename = example_path(os.path.join("data", "alien3.png"))  # 8bit PNG
         surf8bit = pygame.image.load(filename)
 
-        self.assertRaisesRegex(pygame.error, "display initialized", surf.convert)
+        self.assertRaisesRegex(pygame.error, "display is not initialized", surf.convert)
 
         pygame.display.init()
         try:
@@ -1308,8 +1306,6 @@ class GeneralSurfaceTests(unittest.TestCase):
     def test_convert_palettize(self):
         pygame.display.init()
         try:
-            pygame.display.set_mode((640, 480))
-
             surf = pygame.Surface((150, 250))
             surf.fill((255, 50, 0))
             surf = surf.convert(8)

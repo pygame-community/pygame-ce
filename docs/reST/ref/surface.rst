@@ -247,6 +247,8 @@
       as Surface subclass inherit this method without the need to override,
       unless subclass specific instance attributes also need copying.
 
+      .. versionchanged:: 2.5.0 converting to a known format will succeed without a window/display surface.
+
       .. ## Surface.convert ##
 
    .. method:: convert_alpha
