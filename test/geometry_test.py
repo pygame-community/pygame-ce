@@ -307,7 +307,7 @@ class CircleTypeTest(unittest.TestCase):
         self.assertEqual(c.area, math.pi * 4)
 
         c.r_sqr = 100
-        self.assertEqual(c.area, math.pi * (10 ** 2))
+        self.assertEqual(c.area, math.pi * (10**2))
 
     def test_area_invalid_value(self):
         """Ensures the area handles invalid values correctly."""
@@ -1175,8 +1175,13 @@ class CircleTypeTest(unittest.TestCase):
     def test_contains_return_type(self):
         """Tests if the function returns the correct type"""
         c = Circle(10, 10, 4)
-        items = [Circle(3, 4, 15), (0, 0), Vector2(0, 0), Rect(0, 0, 10, 10),
-                 FRect(0, 0, 10, 10)]
+        items = [
+            Circle(3, 4, 15),
+            (0, 0),
+            Vector2(0, 0),
+            Rect(0, 0, 10, 10),
+            FRect(0, 0, 10, 10),
+        ]
 
         for item in items:
             self.assertIsInstance(c.contains(item), bool)
