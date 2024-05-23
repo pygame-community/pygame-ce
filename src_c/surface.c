@@ -1275,9 +1275,8 @@ static PyObject *
 surf_set_colorkey_raw(pgSurfaceObject *self, PyObject *args)
 {
     SDL_Surface *surf = pgSurface_AsSurface(self);
-    Uint32 flags = 0, color = 0;
+    Uint32 color = 0;
     int result;
-    int hascolor = SDL_FALSE;
 
     if (!PyArg_ParseTuple(args, "I", &color))
         return NULL;
