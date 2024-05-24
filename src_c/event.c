@@ -1771,6 +1771,9 @@ pg_EventGetAttr(PyObject *o, PyObject *attr_name)
     if (!result) {
         return _pg_EventGetAttr(o, attr_name);
     }
+    else {
+        Py_INCREF(result);
+    }
     return result;
 }
 
@@ -1892,7 +1895,7 @@ Unimplemented:
 static int
 pg_event_init(pgEventObject *self, PyObject *args, PyObject *kwargs)
 {
-    int type;
+    int type = 0;
     PyObject *dict = NULL;
     PyObject *self_t = (PyObject *)Py_TYPE(self);
     if (self_t != (PyObject *)&pgEvent_Type) {
@@ -2115,12 +2118,26 @@ _pg_event_instantiate_class(Uint32 e_type, PyObject *e_dict)
     }
     else if (e_typeo == (PyObject *)&pgEvent_Type) {
         Py_DECREF(e_typeo);
-        PyObject *ret = PyType_Type.tp_call(
-            (PyObject *)&pgEvent_Type, Py_BuildValue("(I)", e_type), e_dict);
+        PyObject *args = Py_BuildValue("(iO)", e_type, e_dict);
+
+        if (!args) {
+            Py_DECREF(e_typeo);
+            return NULL;
+        }
+
+        PyObject *ret =
+            PyType_Type.tp_call((PyObject *)&pgEvent_Type, args, NULL);
         return ret;
     }
 
-    PyObject *ret = PyType_Type.tp_call(e_typeo, PyTuple_New(0), e_dict);
+    PyObject *args = Py_BuildValue("(O)", e_dict);
+
+    if (!args) {
+        Py_DECREF(e_typeo);
+        return NULL;
+    }
+
+    PyObject *ret = PyType_Type.tp_call(e_typeo, args, NULL);
     Py_DECREF(e_typeo);
     return ret;
 }
@@ -2129,7 +2146,7 @@ static PyObject *
 pgEventMeta_Call(PyObject *type, PyObject *args, PyObject *kwds)
 {
     if (type == (PyObject *)&pgEvent_Type) {
-        Uint32 e_type = 0;
+        int e_type = 0;
         PyObject *e_dict = NULL;
 
         if (!PyArg_ParseTuple(args, "i|O!", &e_type, &PyDict_Type, &e_dict)) {
@@ -2140,31 +2157,29 @@ pgEventMeta_Call(PyObject *type, PyObject *args, PyObject *kwds)
             return RAISE(PyExc_ValueError, "event type out of range");
         }
 
-        if (kwds && !e_dict) {
+        if (e_dict)
+            Py_INCREF(e_dict);
+
+        if (!e_dict) {
             e_dict = PyDict_New();
             if (!e_dict)
                 return NULL;
         }
 
-        if (e_dict && kwds && PyDict_Update(e_dict, kwds) < 0) {
+        if (kwds && PyDict_Update(e_dict, kwds) < 0) {
             Py_DECREF(e_dict);
             return NULL;
         }
 
         PyObject *ret = _pg_event_instantiate_class(e_type, e_dict);
-        // By trial and error, I discovered that this shouldn't be here.
-        // But I would like to know why - by reading the code it seems that
-        // this should be here - does PyArg_ParseTuple increase the refcount?
-        // Py_XDECREF(e_dict);
+        Py_XDECREF(e_dict);
+
         return ret;
     }
 
     return PyType_Type.tp_call(type, args, kwds);
 }
 
-// After dropping support for python 3.8, the whole scheme of creating
-// metaclasses to override pygame.event.Event(...) can be dropped in favor of
-// tp_vectorcall.
 static PyTypeObject pgEventMeta_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.event._EventMeta",
     .tp_basicsize = 0,
@@ -2224,7 +2239,6 @@ pgEvent_New(SDL_Event *event)
         obj = PyDict_New();
     }
     if (!obj) {
-        Py_XDECREF(obj);
         return PyErr_NoMemory();
     }
     if (pgEvent_Check(obj))
@@ -2237,7 +2251,7 @@ pgEvent_New(SDL_Event *event)
         return NULL;
     }
 
-    if (PyObject_HasAttrString(e_typeo, "type")) {
+    if (e_typeo != (PyObject *)&pgEvent_Type) {
         // PyTuple_New(0) returns an immortal object and should always succeed.
         e_obj = PyObject_Call(e_typeo, PyTuple_New(0), obj);
         Py_DECREF(e_typeo);
@@ -2249,12 +2263,30 @@ pgEvent_New(SDL_Event *event)
     else {
         // Plain event object - for unknown classes.
         Py_DECREF(e_typeo);
-        e = PyObject_New(pgEventObject, &pgEvent_Type);
-        if (!e)
-            return PyErr_NoMemory();
+
+        PyObject *e_type_num = PyLong_FromLong(e_type);
+        if (!e_type_num)
+            return NULL;
+
+        PyObject *args = PyTuple_New(1);
+        if (!args) {
+            Py_DECREF(e_typeo);
+            Py_DECREF(e_type_num);
+            return NULL;
+        }
+
+        PyTuple_SET_ITEM(args, 0, e_type_num);
+        e_obj = PyObject_Call(e_typeo, args, obj);
+        Py_DECREF(args);
+
+        if (!e_obj) {
+            return NULL;
+        }
+
+        e = (pgEventObject *)e_obj;
         e->type = e_type;
         e->dict = obj;
-        return (PyObject *)e;
+        return e_obj;
     }
 }
 

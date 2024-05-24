@@ -293,6 +293,21 @@ class EventCustomTypeTest(unittest.TestCase):
         self.assertEqual(len(queue), 1)
         self.assertEqual(queue[0].type, atype)
 
+    def test_subclass(self):
+        class MyEvent(pygame.event.Event):
+            pass
+
+        self.assertIn("type", MyEvent.__dict__)
+        self.assertEqual(MyEvent.type, pygame.event.custom_type() - 1)
+
+        event = MyEvent()
+        self.assertEqual(event.type, MyEvent.type)
+        self.assertIs(MyEvent, pygame.event.event_class(MyEvent.type))
+
+        d = {"arg": "val"}
+        event = MyEvent(d)
+        self.assertIs(event.dict, d)
+
     def test_custom_type__end_boundary(self):
         """Ensure custom_type() raises error when no more custom types.
 
@@ -483,6 +498,17 @@ class EventModuleTest(unittest.TestCase):
             e = pygame.event.poll()
             self.assertEqual(e.type, event.type)
             self.assertIs(e.dict, event.dict)
+
+    def test_post_same_object(self):
+        pygame.event.clear()
+
+        for ev_type in EVENT_TYPES:
+            event = pygame.event.Event(ev_type, EVENT_TEST_PARAMS[ev_type])
+            pygame.event.post(event)
+
+            self.assertIs(
+                pygame.event.get(ev_type)[0], event, race_condition_notification
+            )
 
     def test_post_blocked(self):
         """
@@ -922,6 +948,23 @@ class EventModuleTest(unittest.TestCase):
         self.assertEqual(pygame.event.poll().type, e3.type)
         self.assertEqual(pygame.event.poll().type, pygame.NOEVENT)
 
+    def test_event_class(self):
+        for ev_type in EVENT_TYPES:
+            if ev_type == pygame.USEREVENT:
+                self.assertIs(pygame.event.event_class(ev_type), pygame.event.Event)
+            else:
+                self.assertEqual(pygame.event.event_class(ev_type).type, ev_type)
+
+        classes = [
+            (pygame.KEYDOWN, pygame.event.KeyDown),
+            (pygame.KEYUP, pygame.event.KeyUp),
+            (pygame.NOEVENT, pygame.event.NoEvent),
+        ]
+
+        for ev_id, ev_cls in classes:
+            self.assertIs(ev_cls, pygame.event.event_class(ev_id))
+            self.assertEqual(ev_cls.type, ev_id)
+
 
 class EventModuleTestsWithTiming(unittest.TestCase):
     __tags__ = ["timing"]
@@ -965,7 +1008,8 @@ class EventModuleTestsWithTiming(unittest.TestCase):
             (70, pygame.NOEVENT, 70),
         ):
             start_time = time.perf_counter()
-            self.assertEqual(pygame.event.wait(wait_time).type, expected_type)
+            ev = pygame.event.wait(wait_time)
+            self.assertEqual(ev.type, expected_type)
             self.assertAlmostEqual(
                 time.perf_counter() - start_time, expected_time / 1000, delta=0.01
             )
