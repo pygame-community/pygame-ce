@@ -36,7 +36,7 @@ _validate_view_format(const char *format)
 {
     int i = 0;
 
-    /* Check if the format starts with a size/byte order code or a item count
+    /* Check if the format starts with a size/byte order code or an item count
      */
     switch (format[i]) {
         case '@':

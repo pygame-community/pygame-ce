@@ -280,7 +280,7 @@ typedef enum {
      *
      * At a first glance, these may look redundant, but they are really
      * important, especially with event blocking. If proxy events are
-     * not there, blocked events dont make it to our event filter, and
+     * not there, blocked events don't make it to our event filter, and
      * that can break a lot of stuff.
      *
      * IMPORTANT NOTE: Do not post events directly with these proxy types,
@@ -533,7 +533,7 @@ typedef enum {
 #define PYGAMEAPI_COLOR_NUMSLOTS 5
 #define PYGAMEAPI_MATH_NUMSLOTS 2
 #define PYGAMEAPI_BASE_NUMSLOTS 29
-#define PYGAMEAPI_EVENT_NUMSLOTS 8
+#define PYGAMEAPI_EVENT_NUMSLOTS 10
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1
 #define PYGAMEAPI_GEOMETRY_NUMSLOTS 1
 

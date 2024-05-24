@@ -7,7 +7,7 @@ lots of sprites moving around.
 It is an abomination of ugly code, and mostly used for testing.
 
 
-See pygame.examples.aliens for some prettyier code.
+See pygame.examples.aliens for some prettier code.
 """
 
 import sys

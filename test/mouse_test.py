@@ -288,6 +288,22 @@ class MouseModuleTest(MouseTests):
         with self.assertRaises(ValueError):
             pygame.mouse.get_pressed(4)
 
+    def test_get_just_pressed(self):
+        mouse_buttons = pygame.mouse.get_just_pressed()
+        self.assertIsInstance(mouse_buttons, tuple)
+        self.assertEqual(len(mouse_buttons), 5)
+        for value in mouse_buttons:
+            self.assertIsInstance(value, bool)
+            self.assertEqual(value, False)
+
+    def test_get_just_released(self):
+        mouse_buttons = pygame.mouse.get_just_released()
+        self.assertIsInstance(mouse_buttons, tuple)
+        self.assertEqual(len(mouse_buttons), 5)
+        for value in mouse_buttons:
+            self.assertIsInstance(value, bool)
+            self.assertEqual(value, False)
+
     def test_get_pos(self):
         """Ensures get_pos returns the correct types."""
         expected_length = 2

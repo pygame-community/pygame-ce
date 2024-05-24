@@ -1,6 +1,6 @@
 project(
     'pygame_ce',
-    'c', # Project type. We only need a C compiler
+    ['c', 'cython'], # Project type. We need a C compiler and cython
     version: run_command(
         [find_program('python3', 'python'), 'buildconfig/get_version.py'],
         check: true,

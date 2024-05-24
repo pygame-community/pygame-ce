@@ -34,7 +34,7 @@ def attempt_import(module, function_name, output_str=""):
     Args:
         module: string representing module name
         function_name: string representing function name to be imported
-        output_str: optional string to prepend error messagess to if one occurs
+        output_str: optional string to prepend error messages to if one occurs
 
     Returns:
         tuple(str, bool, Any):
