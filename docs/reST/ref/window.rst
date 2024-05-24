@@ -275,12 +275,12 @@
       | :sl:`Update the display surface to the window.`
       | :sg:`flip() -> None`
 
-      Update content from the display surface to the window. This is the Window
+      Update pixel data from memory to be displayed in the window. This is the Window
       class equivalent of :func:`pygame.display.flip`.
 
-      This method allows software rendering (classic pygame rendering) on top
-      of the Window API. This method should not be called when using hardware
-      rendering (coming soon).
+      With ``get_surface()`` this method allows software rendering (classic pygame rendering) flipping pixel data 
+      from an associated surface in memory to be displayed in the window. Alternatively, when this window has an 
+      associated OpenGL context, this method will instead perform a GL buffer swap to the window.
 
       Here is a runnable example of using ``get_surface`` and ``flip``:
 
