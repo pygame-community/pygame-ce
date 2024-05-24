@@ -3563,7 +3563,6 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
     }
 
     int bpp = src->format->BytesPerPixel;
-    int retbpp = retsurf->format->BytesPerPixel;
     int pitchdiff = src->pitch - src->w * bpp;
 
     SDL_Surface *bpfsurf = newsurf_fromsurf(src, src->w, src->h);
