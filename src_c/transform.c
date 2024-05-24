@@ -3613,11 +3613,11 @@ surf_bloom(PyObject *self, PyObject *args, PyObject *kwargs)
     pgSurfaceObject *dst_surf_obj = NULL;
     pgSurfaceObject *src_surf_obj;
     SDL_Surface *new_surf = NULL;
-    const char *blur_type_str = "gaussian";
+    const char *blur_type_str = "box";
 
     float intensity = 1, threshold = 0.5;
     int blur_radius = 5, smooth_level = 1;
-    char blur_type = 'g';
+    char blur_type = 'b';
 
     static char *kwlist[] = {
         "surface",      "intensity", "luminance_threshold", "blur_radius",
