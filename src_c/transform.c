@@ -3619,7 +3619,7 @@ surf_bloom(PyObject *self, PyObject *args, PyObject *kwargs)
 
     float intensity = 1, threshold = 0.5;
     int blur_radius = 5, smooth_level = 1;
-    int blur_type = 'g';
+    char blur_type = 'g';
 
     static char *kwlist[] = {
         "surface",      "intensity", "luminance_threshold", "blur_radius",
