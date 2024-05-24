@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Literal
 
 from pygame.color import Color
 from pygame.surface import Surface
@@ -64,4 +64,13 @@ def gaussian_blur(
     radius: int,
     repeat_edge_pixels: bool = True,
     dest_surface: Optional[Surface] = None
+) -> Surface: ...
+def bloom(
+    surface: Surface,
+    intensity: float = 1.0,
+    luminance_threshold: float = 0.5,
+    blur_radius: int = 5,
+    smooth_level: int = 1,
+    blur_type: Literal["gaussian", "box"] = "gaussian",
+    dest_surface: Optional[Surface] = None 
 ) -> Surface: ...

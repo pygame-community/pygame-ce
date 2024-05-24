@@ -3382,6 +3382,290 @@ surf_gaussian_blur(PyObject *self, PyObject *args, PyObject *kwargs)
     return (PyObject *)pgSurface_New(new_surf);
 }
 
+static void
+bloom_gaussian(SDL_Surface *src, SDL_Surface *bpfsurf, SDL_Surface *retsurf,
+               int bpp, int smoothed_radius)
+{
+    int kernel_radius = smoothed_radius * 2;
+
+    Uint8 *srcpx = (Uint8 *)src->pixels;
+    Uint8 *bpfpx = (Uint8 *)bpfsurf->pixels;
+    Uint8 *retpx = (Uint8 *)retsurf->pixels;
+    int w = retsurf->w, h = retsurf->h;
+    int bpf_pitch = bpfsurf->pitch;
+    int src_pitch = src->pitch;
+    int ret_pitch = retsurf->pitch;
+    int i, j, x, y, color;
+    float *buf = malloc(bpf_pitch * sizeof(float));
+    float *buf2 = malloc(bpf_pitch * sizeof(float));
+    float *lut = malloc((kernel_radius + 1) * sizeof(float));
+    float lut_sum = 0.0;
+
+    for (i = 0; i <= kernel_radius; i++) {  // init gaussian lut
+        // Gaussian function
+        lut[i] = expf(-powf((float)i, 2.0f) /
+                      (2.0f * powf((float)smoothed_radius, 2.0f)));
+        lut_sum += lut[i] * 2;
+    }
+    lut_sum -= lut[0];
+    for (i = 0; i <= kernel_radius; i++) {
+        lut[i] /= lut_sum;
+    }
+
+    for (i = 0; i < bpf_pitch; i++) {
+        buf[i] = 0.0;
+        buf2[i] = 0.0;
+    }
+
+    for (y = 0; y < h; y++) {
+        for (j = -kernel_radius; j <= kernel_radius; j++) {
+            for (i = 0; i < bpf_pitch; i++) {
+                if (y + j >= 0 && y + j < h) {
+                    buf[i] +=
+                        (float)bpfpx[src_pitch * (y + j) + i] * lut[abs(j)];
+                }
+            }
+        }
+
+        for (x = 0; x < w; x++) {
+            for (j = -kernel_radius; j <= kernel_radius; j++) {
+                for (color = 0; color < bpp; color++) {
+                    if (x + j >= 0 && x + j < w) {
+                        buf2[bpp * x + color] +=
+                            buf[bpp * (x + j) + color] * lut[abs(j)];
+                    }
+                }
+            }
+        }
+        for (i = 0; i < bpf_pitch; i++) {
+            Uint8 blur_color = (Uint8)buf2[i];
+            bpfpx[bpf_pitch * y + i] = blur_color;
+            buf[i] = 0.0;
+            buf2[i] = 0.0;
+
+            // blit with additive blend
+            Uint8 src_color = srcpx[src_pitch * y + i];
+            int new_color = (src_color + blur_color);
+            retpx[ret_pitch * y + i] =
+                (Uint8)(new_color > 255 ? 255 : new_color);
+        }
+    }
+
+    free(buf);
+    free(buf2);
+    free(lut);
+}
+
+static void
+bloom_box(SDL_Surface *src, SDL_Surface *bpfsurf, SDL_Surface *retsurf,
+          int bpp, int radius)
+{
+    Uint8 *srcpx = (Uint8 *)src->pixels;
+    Uint8 *bpfpx = (Uint8 *)bpfsurf->pixels;
+    Uint8 *retpx = (Uint8 *)retsurf->pixels;
+    int w = src->w, h = src->h;
+    int bpf_pitch = bpfsurf->pitch;
+    int src_pitch = src->pitch;
+    int ret_pitch = retsurf->pitch;
+    int i, x, y, color;
+    Uint32 *buf = malloc(bpf_pitch * sizeof(Uint32));
+    Uint32 *sum_v = malloc(bpf_pitch * sizeof(Uint32));
+    Uint32 *sum_h = malloc(bpp * sizeof(Uint32));
+
+    memset(sum_v, 0, bpf_pitch * sizeof(Uint32));
+    for (y = 0; y <= radius; y++) {  // y-pre
+        for (i = 0; i < bpf_pitch; i++) {
+            sum_v[i] += bpfpx[src_pitch * y + i];
+        }
+    }
+    for (y = 0; y < h; y++) {  // y
+        for (i = 0; i < bpf_pitch; i++) {
+            buf[i] = sum_v[i] / (radius * 2 + 1);
+
+            // update vertical sum
+            if (y - radius >= 0) {
+                sum_v[i] -= bpfpx[src_pitch * (y - radius) + i];
+            }
+            if (y + radius + 1 < h) {
+                sum_v[i] += bpfpx[src_pitch * (y + radius + 1) + i];
+            }
+        }
+
+        memset(sum_h, 0, bpp * sizeof(Uint32));
+        for (x = 0; x <= radius; x++) {  // x-pre
+            for (color = 0; color < bpp; color++) {
+                sum_h[color] += buf[x * bpp + color];
+            }
+        }
+        for (x = 0; x < w; x++) {  // x
+            for (color = 0; color < bpp; color++) {
+                Uint8 blur_color = sum_h[color] / (radius * 2 + 1);
+
+                // blit with additive blend
+                Uint8 src_color = srcpx[src_pitch * y + bpp * x + color];
+                int new_color = (src_color + blur_color);
+                retpx[ret_pitch * y + bpp * x + color] =
+                    (Uint8)(new_color > 255 ? 255 : new_color);
+
+                // update horizontal sum
+                if (x - radius >= 0) {
+                    sum_h[color] -= buf[(x - radius) * bpp + color];
+                }
+                if (x + radius + 1 < w) {
+                    sum_h[color] += buf[(x + radius + 1) * bpp + color];
+                }
+            }
+        }
+    }
+
+    free(buf);
+    free(sum_v);
+    free(sum_h);
+}
+
+SDL_Surface *
+bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
+      float threshold, int blur_radius, int smooth_level, char blur_type)
+{
+    // Reference: https://github.com/yoyoberenguer/BloomEffect
+
+    SDL_Surface *src = NULL;
+    SDL_Surface *retsurf = NULL;
+
+    src = pgSurface_AsSurface(srcobj);
+
+    if (src->format->palette) {
+        return RAISE(PyExc_ValueError, "Indexed surfaces cannot be bloomed.");
+    }
+
+    if (!dstobj) {
+        retsurf = newsurf_fromsurf(src, src->w, src->h);
+        if (!retsurf)
+            return NULL;
+    }
+    else {
+        retsurf = pgSurface_AsSurface(dstobj);
+    }
+
+    if ((retsurf->w) != (src->w) || (retsurf->h) != (src->h)) {
+        return RAISE(PyExc_ValueError,
+                     "Destination surface not the same size.");
+    }
+
+    if (retsurf->w == 0 || retsurf->h == 0) {
+        return retsurf;
+    }
+
+    int smoothed_radius = blur_radius;
+    if (smooth_level > 1) {
+        smoothed_radius =
+            (int)sqrt(smooth_level * (blur_radius * blur_radius));
+    }
+
+    int bpp = src->format->BytesPerPixel;
+    int retbpp = retsurf->format->BytesPerPixel;
+    int pitchdiff = src->pitch - src->w * bpp;
+    int retpitchdiff = retsurf->pitch - retsurf->w * retbpp;
+
+    SDL_Surface *bpfsurf = newsurf_fromsurf(src, src->w, src->h);
+
+    Uint8 *srccurrent = (Uint8 *)src->pixels;
+    Uint8 *bpfcurrent = (Uint8 *)bpfsurf->pixels;
+
+    int x, y;
+    float c_mul = 255.0f * intensity;
+    for (y = 0; y < src->h; y++) {
+        for (x = 0; x < src->w; x++) {
+            Uint8 src_r = srccurrent[0], src_g = srccurrent[1],
+                  src_b = srccurrent[2];
+            float r = (float)src_r / 255.0f, g = (float)src_g / 255.0f,
+                  b = (float)src_b / 255.0f;
+            float luminance = r * 0.299f + g * 0.587f + b * 0.114f;
+
+            if (luminance > threshold && luminance != 0) {
+                float c = ((luminance - threshold) / luminance) * c_mul;
+                Uint8 new_r = (Uint8)(r * c);
+                Uint8 new_g = (Uint8)(g * c);
+                Uint8 new_b = (Uint8)(b * c);
+                bpfcurrent[0] = new_r > 255 ? 255 : new_r;
+                bpfcurrent[1] = new_g > 255 ? 255 : new_g;
+                bpfcurrent[2] = new_b > 255 ? 255 : new_b;
+            }
+
+            srccurrent += bpp;
+            bpfcurrent += bpp;
+        }
+        srccurrent += pitchdiff;
+        bpfcurrent += pitchdiff;
+    }
+
+    if (blur_type == 'g') {
+        bloom_gaussian(src, bpfsurf, retsurf, bpp, smoothed_radius);
+    }
+    else if (blur_type == 'b') {
+        bloom_box(src, bpfsurf, retsurf, bpp, smoothed_radius);
+    }
+
+    return retsurf;
+}
+
+static PyObject *
+surf_bloom(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *dst_surf_obj = NULL;
+    pgSurfaceObject *src_surf_obj;
+    SDL_Surface *new_surf = NULL;
+    const char *blur_type_str = "gaussian";
+
+    float intensity = 1, threshold = 0.5;
+    int blur_radius = 5, smooth_level = 1;
+    int blur_type = 'g';
+
+    static char *kwlist[] = {
+        "surface",      "intensity", "luminance_threshold", "blur_radius",
+        "smooth_level", "blur_type", "dest_surface",        0};
+
+    if (!PyArg_ParseTupleAndKeywords(
+            args, kwargs, "O!|ffiisO!", kwlist, &pgSurface_Type, &src_surf_obj,
+            &intensity, &threshold, &blur_radius, &smooth_level,
+            &blur_type_str, &pgSurface_Type, &dst_surf_obj)) {
+        return NULL;
+    }
+
+    if (strcmp(blur_type_str, "gaussian") == 0) {
+        blur_type = 'g';
+    }
+    else if (strcmp(blur_type_str, "box") == 0) {
+        blur_type = 'b';
+    }
+    else {
+        return RAISE(PyExc_ValueError,
+                     "Bloom blur type must be either 'box' or 'gaussian'");
+    }
+
+    if (blur_radius < 0) {
+        return RAISE(PyExc_ValueError,
+                     "The blur radius should not be less than zero.");
+    }
+    if (smooth_level < 0) {
+        return RAISE(PyExc_ValueError,
+                     "The smooth level should not be less than zero.");
+    }
+
+    new_surf = bloom(src_surf_obj, dst_surf_obj, intensity, threshold,
+                     blur_radius, smooth_level, blur_type);
+    if (!new_surf) {
+        return NULL;
+    }
+
+    if (dst_surf_obj) {
+        Py_INCREF(dst_surf_obj);
+        return (PyObject *)dst_surf_obj;
+    }
+
+    return (PyObject *)pgSurface_New(new_surf);
+}
+
 void
 invert_non_simd(SDL_Surface *src, SDL_Surface *newsurf)
 {
@@ -3523,6 +3807,8 @@ static PyMethodDef _transform_methods[] = {
      DOC_TRANSFORM_INVERT},
     {"grayscale", (PyCFunction)surf_grayscale, METH_VARARGS | METH_KEYWORDS,
      DOC_TRANSFORM_GRAYSCALE},
+    {"bloom", (PyCFunction)surf_bloom, METH_VARARGS | METH_KEYWORDS,
+     DOC_TRANSFORM_BLOOM},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(transform)

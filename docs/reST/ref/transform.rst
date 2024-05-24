@@ -279,6 +279,26 @@ Instead, always begin with the original image and scale to the desired size.)
 
    .. ## pygame.transform.gaussian_blur ##
 
+.. function:: bloom
+
+   | :sl:`apply the bloom effect to a surface`
+   | :sg:`bloom(surface, intensity=1, luminance_threshold=0.5, blur_radius=5, smooth_level=1, blur_type='gaussian', dest_surface=None) -> Surface`
+
+   Returns a surface where the bright pixels are blurred and added to the original surface
+   resulting in a bloom effect.
+
+   This function does not work for indexed surfaces.
+   An exception will be thrown if the input is an indexed surface.
+
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the same dimensions (width, height) and
+   depth and format as the source Surface.
+
+   Using box blur will be faster than gaussian blur. The blur radius and smooth level
+   increase calculation time.
+
+   .. versionadded:: 2.5.0
+
 .. function:: average_surfaces
 
    | :sl:`find the average surface from many surfaces.`
