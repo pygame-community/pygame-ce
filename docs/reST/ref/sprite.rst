@@ -244,7 +244,7 @@ Sprites are not thread safe. So lock them yourself if using threads.
       Add any number of Sprites to this Group. This will only add Sprites that
       are not already members of the Group.
 
-      Each sprite argument can also be a iterator containing Sprites.
+      Each sprite argument can also be an iterator containing Sprites.
 
       .. ## Group.add ##
 
@@ -256,7 +256,7 @@ Sprites are not thread safe. So lock them yourself if using threads.
       Remove any number of Sprites from the Group. This will only remove
       Sprites that are already members of the Group.
 
-      Each sprite argument can also be a iterator containing Sprites.
+      Each sprite argument can also be an iterator containing Sprites.
 
       .. ## Group.remove ##
 
@@ -269,7 +269,7 @@ Sprites are not thread safe. So lock them yourself if using threads.
       similar to using the "in" operator on the Group ("if sprite in group:
       ..."), which tests if a single Sprite belongs to a Group.
 
-      Each sprite argument can also be a iterator containing Sprites.
+      Each sprite argument can also be an iterator containing Sprites.
 
       .. ## Group.has ##
 
@@ -395,7 +395,7 @@ Sprites are not thread safe. So lock them yourself if using threads.
 
    .. method:: sprites
 
-      | :sl:`returns a ordered list of sprites (first back, last top).`
+      | :sl:`returns an ordered list of sprites (first back, last top).`
       | :sg:`sprites() -> sprites`
 
       .. ## LayeredUpdates.sprites ##

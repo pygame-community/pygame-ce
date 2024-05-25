@@ -165,6 +165,18 @@ The following file formats are supported
 
    .. ## pygame.mixer.get_init ##
 
+.. function:: get_driver
+
+   | :sl:`get the name of the current audio backend driver`
+   | :sg:`get_driver() -> str`
+
+   Pygame chooses one of many available audio backend drivers when it is
+   initialized. This returns the internal name used for the backend. This
+   function is intended to be used for getting diagnostic/debugging information.
+   This can be controlled with ``SDL_AUDIODRIVER`` environment variable.
+
+   .. versionadded:: 2.5.0
+
 .. function:: stop
 
    | :sl:`stop playback of all sound channels`

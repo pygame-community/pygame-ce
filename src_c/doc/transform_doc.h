@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_TRANSFORM "pygame module to transform surfaces"
 #define DOC_TRANSFORM_FLIP "flip(surface, flip_x, flip_y) -> Surface\nflip vertically and horizontally"
 #define DOC_TRANSFORM_SCALE "scale(surface, size, dest_surface=None) -> Surface\nresize to new resolution"

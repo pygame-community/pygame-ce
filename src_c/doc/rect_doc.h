@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_RECT "Rect(left, top, width, height) -> Rect\nRect((left, top), (width, height)) -> Rect\nRect(object) -> Rect\nRect() -> Rect\nFRect(left, top, width, height) -> FRect\nFRect((left, top), (width, height)) -> FRect\nFRect(object) -> FRect\nFRect() -> FRect\npygame object for storing rectangular coordinates"
 #define DOC_RECT_COPY "copy() -> Rect\ncopy the rectangle"
 #define DOC_RECT_MOVE "move(x, y, /) -> Rect\nmoves the rectangle"

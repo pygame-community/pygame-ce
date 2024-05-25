@@ -33,7 +33,7 @@ class VideoModuleTest(unittest.TestCase):
         surface = pygame.Surface(window.size)
 
         # directly getting a refcount returns the actual refcount
-        # as opposed to using an itermediate variable where it's 1 more than expected
+        # as opposed to using an intermediate variable where it's 1 more than expected
         self.assertEqual(sys.getrefcount(renderer.to_surface()), 1)
         self.assertEqual(sys.getrefcount(renderer.to_surface(surface=surface)), 2)
 

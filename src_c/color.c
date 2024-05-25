@@ -49,7 +49,7 @@
 
 #if (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L) && \
     !defined(round)
-#define pg_round(d) (((d < 0) ? (ceil((d)-0.5)) : (floor((d) + 0.5))))
+#define pg_round(d) (((d < 0) ? (ceil((d) - 0.5)) : (floor((d) + 0.5))))
 #else
 #define pg_round(d) round(d)
 #endif
@@ -1924,7 +1924,7 @@ _color_slice(register pgColorObject *a, register Py_ssize_t ilow,
         return Py_BuildValue("(iii)", c1, c2, c3);
     }
     else if (len == 2) {
-        return Py_BuildValue("(ii)", c1, c2);
+        return pg_tuple_couple_from_values_int((int)c1, (int)c2);
     }
     else if (len == 1) {
         return Py_BuildValue("(i)", c1);
@@ -2348,7 +2348,7 @@ _pg_pylong_to_uint32(PyObject *val, Uint32 *color, int handle_negative)
     }
 
     if (longval == -1 && PyErr_Occurred()) {
-        /* Some other internal error occured */
+        /* Some other internal error occurred */
         return 0;
     }
 
