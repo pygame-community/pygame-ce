@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_DISPLAY "pygame module to control the display window and screen"
 #define DOC_DISPLAY_INIT "init() -> None\nInitialize the display module"
 #define DOC_DISPLAY_QUIT "quit() -> None\nUninitialize the display module"

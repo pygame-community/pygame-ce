@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_SPRITE "pygame module with basic game object classes"
 #define DOC_SPRITE_SPRITE "Sprite(*groups) -> Sprite\nSimple base class for visible game objects."
 #define DOC_SPRITE_SPRITE_UPDATE "update(*args, **kwargs) -> None\nmethod to control sprite behavior"

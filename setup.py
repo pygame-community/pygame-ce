@@ -802,12 +802,14 @@ class DocsCommand(Command):
         runs Sphinx to build the docs.
         '''
         import subprocess
-        print("Using python:", sys.executable)
         command_line = [
-            sys.executable, os.path.join('buildconfig', 'makeref.py')
+            sys.executable, os.path.join('buildconfig', 'make_docs.py')
         ]
         if self.fullgeneration:
             command_line.append('full_generation')
+
+        print("WARNING: This command is deprecated and will be removed in the future.")
+        print(f"Please use the following replacement: `{' '.join(command_line)}`\n")  
         if subprocess.call(command_line) != 0:
             raise SystemExit("Failed to build documentation")
 

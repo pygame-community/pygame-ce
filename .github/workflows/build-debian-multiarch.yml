@@ -100,7 +100,6 @@ jobs:
         # (done for optimization reasons)
         run: |
           echo "\nBuilding pygame wheel\n"
-          python3 setup.py docs
           pip3 wheel . --no-build-isolation --wheel-dir /artifacts -vvv
           echo "\nInstalling wheel\n"
           pip3 install --no-index --pre --break-system-packages --find-links /artifacts pygame-ce

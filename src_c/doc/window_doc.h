@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_WINDOW "Window(title='pygame window', size=(640, 480), position=None, fullscreen=False, fullscreen_desktop=False, **kwargs) -> Window\npygame object that represents a window"
 #define DOC_WINDOW_GRABMOUSE "grab_mouse -> bool\nGet or set the window's mouse grab mode"
 #define DOC_WINDOW_GRABKEYBOARD "grab_keyboard -> bool\nGet or set the window's keyboard grab mode"
