@@ -3463,6 +3463,11 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
                      "Bloom is only allowed for 24 or 32 bit surfaces.");
     }
 
+    if (src->format->BytesPerPixel != retsurf->format->BytesPerPixel) {
+        return RAISE(PyExc_ValueError,
+                     "Destination surface has different depth");
+    }
+
     if (retsurf->w == 0 || retsurf->h == 0) {
         return retsurf;
     }
@@ -3471,28 +3476,44 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
     Uint8 *srcpx = (Uint8 *)src->pixels;
     Uint8 *bpfpx = (Uint8 *)bpfsurf->pixels;
 
+    SDL_PixelFormat *fmt = src->format;
+    SDL_PixelFormat *dfmt = bpfsurf->format;
+
+    Uint8 src_r, src_g, src_b, a;
+
     int x, y;
     float c_mul = 255.0f * intensity;
     for (y = 0; y < src->h; y++) {
         for (x = 0; x < src->w; x++) {
-            Uint32 src_pixel;
-            Uint8 *src_pix;
-            SURF_GET_AT(src_pixel, src, x, y, srcpx, src->format, src_pix);
-            Uint8 src_r, src_g, src_b, a;
-            SDL_GetRGBA(src_pixel, src->format, &src_r, &src_g, &src_b, &a);
+            Uint32 pxl = *(Uint32 *)(srcpx + y * src->pitch + x * 4);
+            src_r = (Uint8)(pxl >> fmt->Rshift) & 0xFF;
+            src_g = (Uint8)(pxl >> fmt->Gshift) & 0xFF;
+            src_b = (Uint8)(pxl >> fmt->Bshift) & 0xFF;
+            a = (Uint8)(pxl >> fmt->Ashift) & 0xFF;
             float r = (float)src_r / 255.0f, g = (float)src_g / 255.0f,
                   b = (float)src_b / 255.0f;
             float luminance = r * 0.299f + g * 0.587f + b * 0.114f;
 
             if (luminance > threshold && luminance != 0) {
                 float c = ((luminance - threshold) / luminance) * c_mul;
-                Uint8 new_r = (Uint8)(r * c);
-                Uint8 new_g = (Uint8)(g * c);
-                Uint8 new_b = (Uint8)(b * c);
-                Uint32 new_pixel =
-                    SDL_MapRGBA(bpfsurf->format, new_r, new_g, new_b, a);
-                SURF_SET_AT(new_pixel, bpfsurf, x, y, bpfpx, bpfsurf->format,
-                            src_pix);
+
+                float rc = r * c;
+                float gc = g * c;
+                float bc = b * c;
+
+                rc = MIN(255, MAX(0, rc));
+                gc = MIN(255, MAX(0, gc));
+                bc = MIN(255, MAX(0, bc));
+
+                Uint8 new_r = (Uint8)rc;
+                Uint8 new_g = (Uint8)gc;
+                Uint8 new_b = (Uint8)bc;
+
+                Uint32 new_pixel = (new_r >> dfmt->Rloss) << dfmt->Rshift |
+                                   (new_g >> dfmt->Gloss) << dfmt->Gshift |
+                                   (new_b >> dfmt->Bloss) << dfmt->Bshift |
+                                   (a >> dfmt->Aloss) << dfmt->Ashift;
+                *(Uint32 *)(bpfpx + y * bpfsurf->pitch + x * 4) = new_pixel;
             }
         }
     }
