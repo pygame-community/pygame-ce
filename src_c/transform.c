@@ -3473,23 +3473,30 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
     }
 
     SDL_Surface *bpfsurf = newsurf_fromsurf(src, src->w, src->h);
-    Uint8 *srcpx = (Uint8 *)src->pixels;
-    Uint8 *bpfpx = (Uint8 *)bpfsurf->pixels;
 
     SDL_PixelFormat *fmt = src->format;
     SDL_PixelFormat *dfmt = bpfsurf->format;
 
-    Uint8 src_r, src_g, src_b, a;
+    Uint8 src_r, src_g, src_b;  //, a;
+    const Uint32 amask = fmt->Amask;
+
+    Uint32 *srcp = (Uint32 *)src->pixels;
+    Uint32 *dstp = (Uint32 *)bpfsurf->pixels;
+
+    const int src_skip = src->pitch / 4 - src->w;
+    const int dst_skip = bpfsurf->pitch / 4 - bpfsurf->w;
 
     int x, y;
     float c_mul = 255.0f * intensity;
     for (y = 0; y < src->h; y++) {
         for (x = 0; x < src->w; x++) {
-            Uint32 pxl = *(Uint32 *)(srcpx + y * src->pitch + x * 4);
+            Uint32 pxl = *srcp;
+            Uint32 new_pixel = pxl & amask;
+
             src_r = (Uint8)(pxl >> fmt->Rshift) & 0xFF;
             src_g = (Uint8)(pxl >> fmt->Gshift) & 0xFF;
             src_b = (Uint8)(pxl >> fmt->Bshift) & 0xFF;
-            a = (Uint8)(pxl >> fmt->Ashift) & 0xFF;
+
             float r = (float)src_r / 255.0f, g = (float)src_g / 255.0f,
                   b = (float)src_b / 255.0f;
             float luminance = r * 0.299f + g * 0.587f + b * 0.114f;
@@ -3509,13 +3516,18 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
                 Uint8 new_g = (Uint8)gc;
                 Uint8 new_b = (Uint8)bc;
 
-                Uint32 new_pixel = (new_r >> dfmt->Rloss) << dfmt->Rshift |
-                                   (new_g >> dfmt->Gloss) << dfmt->Gshift |
-                                   (new_b >> dfmt->Bloss) << dfmt->Bshift |
-                                   (a >> dfmt->Aloss) << dfmt->Ashift;
-                *(Uint32 *)(bpfpx + y * bpfsurf->pitch + x * 4) = new_pixel;
+                new_pixel |= (new_r >> dfmt->Rloss) << dfmt->Rshift |
+                             (new_g >> dfmt->Gloss) << dfmt->Gshift |
+                             (new_b >> dfmt->Bloss) << dfmt->Bshift;
+
+                *dstp = new_pixel;
             }
+
+            srcp++;
+            dstp++;
         }
+        srcp += src_skip;
+        dstp += dst_skip;
     }
 
     if (blur_type == 'g') {
