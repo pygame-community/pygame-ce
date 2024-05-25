@@ -3554,6 +3554,11 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
                      "Destination surface not the same size.");
     }
 
+    if (src->format->BytesPerPixel < 3 || retsurf->format->BytesPerPixel < 3) {
+        return RAISE(PyExc_ValueError,
+                     "Bloom is only allowed for 24 or 32 bit surfaces.");
+    }
+
     if (retsurf->w == 0 || retsurf->h == 0) {
         return retsurf;
     }
@@ -3635,7 +3640,7 @@ surf_bloom(PyObject *self, PyObject *args, PyObject *kwargs)
     }
     else {
         return RAISE(PyExc_ValueError,
-                     "Bloom blur type must be either 'box' or 'gaussian'");
+                     "Bloom blur type must be either 'box' or 'gaussian'.");
     }
 
     if (blur_radius < 0) {
