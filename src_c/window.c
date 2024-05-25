@@ -125,6 +125,10 @@ window_destroy(pgWindowObject *self, PyObject *_null)
             pg_SetDefaultWindow(NULL);
         }
 
+        if (self->context != NULL) {
+            SDL_GL_DeleteContext(self->context);
+        }
+
         SDL_DestroyWindow(self->_win);
         self->_win = NULL;
     }
@@ -185,17 +189,24 @@ window_flip(pgWindowObject *self)
 {
     int result;
 
-    if (!self->surf) {
-        return RAISE(pgExc_SDLError,
-                     "the Window has no surface associated with it, did "
-                     "you forget to call Window.get_surface()");
-    }
+    if (self->context == NULL) {
+        if (!self->surf) {
+            return RAISE(pgExc_SDLError,
+                         "the Window has no surface associated with it, did "
+                         "you forget to call Window.get_surface()");
+        }
 
-    Py_BEGIN_ALLOW_THREADS;
-    result = SDL_UpdateWindowSurface(self->_win);
-    Py_END_ALLOW_THREADS;
-    if (result) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+        Py_BEGIN_ALLOW_THREADS;
+        result = SDL_UpdateWindowSurface(self->_win);
+        Py_END_ALLOW_THREADS;
+        if (result) {
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        }
+    }
+    else {
+        Py_BEGIN_ALLOW_THREADS;
+        SDL_GL_SwapWindow(self->_win);
+        Py_END_ALLOW_THREADS;
     }
     Py_RETURN_NONE;
 }
@@ -726,11 +737,28 @@ window_get_opacity(pgWindowObject *self, void *v)
     return PyFloat_FromDouble((double)opacity);
 }
 
+static PyObject *
+window_get_opengl(pgWindowObject *self, void *v)
+{
+    long hasGL;
+    if (!self->_is_borrowed) {
+        hasGL = self->context != NULL;
+    }
+    else {
+        int flags = SDL_GetWindowFlags(self->_win);
+        hasGL = (flags & SDL_WINDOW_OPENGL) > 0;
+    }
+    return PyBool_FromLong(hasGL);
+}
+
 static void
 window_dealloc(pgWindowObject *self, PyObject *_null)
 {
     if (self->_win) {
         if (!self->_is_borrowed) {
+            if (self->context != NULL) {
+                SDL_GL_DeleteContext(self->context);
+            }
             SDL_DestroyWindow(self->_win);
         }
         else if (SDL_GetWindowData(self->_win, "pg_window") != NULL) {
@@ -798,8 +826,13 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                     return -1;
 
                 if (!strcmp(_key_str, "opengl")) {
-                    if (_value_bool)
+                    if (_value_bool) {
+                        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
                         flags |= SDL_WINDOW_OPENGL;
+                    }
+                    else {
+                        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
+                    }
                 }
                 else if (!strcmp(_key_str, "fullscreen")) {
                     if (_value_bool)
@@ -936,6 +969,18 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     self->_win = _win;
     self->_is_borrowed = SDL_FALSE;
     self->surf = NULL;
+
+    if (SDL_GetWindowFlags(self->_win) & SDL_WINDOW_OPENGL) {
+        SDL_GLContext context = SDL_GL_CreateContext(self->_win);
+        if (context == NULL) {
+            PyErr_SetString(pgExc_SDLError, SDL_GetError());
+            return -1;
+        }
+        self->context = context;
+    }
+    else {
+        self->context = NULL;
+    }
 
     SDL_SetWindowData(_win, "pg_window", self);
 
@@ -1088,6 +1133,7 @@ static PyGetSetDef _window_getset[] = {
     {"opacity", (getter)window_get_opacity, (setter)window_set_opacity,
      DOC_WINDOW_OPACITY, NULL},
     {"id", (getter)window_get_window_id, NULL, DOC_WINDOW_ID, NULL},
+    {"opengl", (getter)window_get_opengl, NULL, DOC_WINDOW_OPENGL, NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
 
