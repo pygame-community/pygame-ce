@@ -282,7 +282,7 @@ Instead, always begin with the original image and scale to the desired size.)
 .. function:: bloom
 
    | :sl:`apply the bloom effect to a surface`
-   | :sg:`bloom(surface, intensity=1, luminance_threshold=0.5, blur_radius=5, smooth_level=1, blur_type='box', dest_surface=None) -> Surface`
+   | :sg:`bloom(surface, intensity=1, luminance_threshold=0.5, blur_radius=5, blur_type='box', dest_surface=None) -> Surface`
 
    Returns a surface where the bright pixels are blurred and added to the original surface
    resulting in a bloom effect.
@@ -294,8 +294,8 @@ Instead, always begin with the original image and scale to the desired size.)
    Surface. This destination surface must have the same dimensions (width, height) and
    depth and format as the source Surface.
 
-   Using box blur will be faster than gaussian blur. The blur radius and smooth level
-   increase calculation time.
+   Using box blur will be faster than gaussian blur. A higher blur radius will be
+   smoother but will be slower.
 
    .. versionadded:: 2.5.0
 

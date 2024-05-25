@@ -70,7 +70,6 @@ def bloom(
     intensity: float = 1.0,
     luminance_threshold: float = 0.5,
     blur_radius: int = 5,
-    smooth_level: int = 1,
     blur_type: Literal["gaussian", "box"] = "box",
     dest_surface: Optional[Surface] = None 
 ) -> Surface: ...

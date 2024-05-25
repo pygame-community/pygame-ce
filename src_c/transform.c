@@ -3384,14 +3384,15 @@ surf_gaussian_blur(PyObject *self, PyObject *args, PyObject *kwargs)
 
 static void
 bloom_gaussian(SDL_Surface *src, SDL_Surface *bpfsurf, SDL_Surface *retsurf,
-               int bpp, int smoothed_radius)
+               int sigma)
 {
-    int kernel_radius = smoothed_radius * 2;
+    int kernel_radius = sigma * 2;
 
     Uint8 *srcpx = (Uint8 *)src->pixels;
     Uint8 *bpfpx = (Uint8 *)bpfsurf->pixels;
     Uint8 *retpx = (Uint8 *)retsurf->pixels;
     int w = retsurf->w, h = retsurf->h;
+    int bpp = src->format->BytesPerPixel;
     int bpf_pitch = bpfsurf->pitch;
     int src_pitch = src->pitch;
     int ret_pitch = retsurf->pitch;
@@ -3404,7 +3405,7 @@ bloom_gaussian(SDL_Surface *src, SDL_Surface *bpfsurf, SDL_Surface *retsurf,
     for (i = 0; i <= kernel_radius; i++) {  // init gaussian lut
         // Gaussian function
         lut[i] = expf(-powf((float)i, 2.0f) /
-                      (2.0f * powf((float)smoothed_radius, 2.0f)));
+                      (2.0f * powf((float)sigma, 2.0f)));
         lut_sum += lut[i] * 2;
     }
     lut_sum -= lut[0];
@@ -3458,11 +3459,12 @@ bloom_gaussian(SDL_Surface *src, SDL_Surface *bpfsurf, SDL_Surface *retsurf,
 
 static void
 bloom_box(SDL_Surface *src, SDL_Surface *bpfsurf, SDL_Surface *retsurf,
-          int bpp, int radius)
+          int radius)
 {
     Uint8 *srcpx = (Uint8 *)src->pixels;
     Uint8 *bpfpx = (Uint8 *)bpfsurf->pixels;
     Uint8 *retpx = (Uint8 *)retsurf->pixels;
+    int bpp = src->format->BytesPerPixel;
     int w = src->w, h = src->h;
     int bpf_pitch = bpfsurf->pitch;
     int src_pitch = src->pitch;
@@ -3525,7 +3527,7 @@ bloom_box(SDL_Surface *src, SDL_Surface *bpfsurf, SDL_Surface *retsurf,
 
 SDL_Surface *
 bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
-      float threshold, int blur_radius, int smooth_level, char blur_type)
+      float threshold, int blur_radius, char blur_type)
 {
     // Reference: https://github.com/yoyoberenguer/BloomEffect
 
@@ -3556,26 +3558,20 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
         return retsurf;
     }
 
-    int smoothed_radius = blur_radius;
-    if (smooth_level > 1) {
-        smoothed_radius =
-            (int)sqrt(smooth_level * (blur_radius * blur_radius));
-    }
-
-    int bpp = src->format->BytesPerPixel;
-    int pitchdiff = src->pitch - src->w * bpp;
-
     SDL_Surface *bpfsurf = newsurf_fromsurf(src, src->w, src->h);
-
-    Uint8 *srccurrent = (Uint8 *)src->pixels;
-    Uint8 *bpfcurrent = (Uint8 *)bpfsurf->pixels;
+    Uint8 *srcpx = (Uint8 *)src->pixels;
+    Uint8 *bpfpx = (Uint8 *)bpfsurf->pixels;
 
     int x, y;
     float c_mul = 255.0f * intensity;
     for (y = 0; y < src->h; y++) {
         for (x = 0; x < src->w; x++) {
-            Uint8 src_r = srccurrent[0], src_g = srccurrent[1],
-                  src_b = srccurrent[2];
+            Uint32 src_pixel;
+            Uint8 *src_pix;
+            SURF_GET_AT(src_pixel, src, x, y, srcpx, src->format,
+                        src_pix);
+            Uint8 src_r, src_g, src_b, a;
+            SDL_GetRGBA(src_pixel, src->format, &src_r, &src_g, &src_b, &a);
             float r = (float)src_r / 255.0f, g = (float)src_g / 255.0f,
                   b = (float)src_b / 255.0f;
             float luminance = r * 0.299f + g * 0.587f + b * 0.114f;
@@ -3585,24 +3581,21 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
                 Uint8 new_r = (Uint8)(r * c);
                 Uint8 new_g = (Uint8)(g * c);
                 Uint8 new_b = (Uint8)(b * c);
-                bpfcurrent[0] = new_r > 255 ? 255 : new_r;
-                bpfcurrent[1] = new_g > 255 ? 255 : new_g;
-                bpfcurrent[2] = new_b > 255 ? 255 : new_b;
+                Uint32 new_pixel = SDL_MapRGBA(bpfsurf->format, (new_r > 255 ? 255 : new_r), (new_g > 255 ? 255 : new_g), (new_b > 255 ? 255 : new_b), a);
+                SURF_SET_AT(new_pixel, bpfsurf, x, y, bpfpx,
+                            bpfsurf->format, src_pix);
             }
-
-            srccurrent += bpp;
-            bpfcurrent += bpp;
         }
-        srccurrent += pitchdiff;
-        bpfcurrent += pitchdiff;
     }
 
     if (blur_type == 'g') {
-        bloom_gaussian(src, bpfsurf, retsurf, bpp, smoothed_radius);
+        bloom_gaussian(src, bpfsurf, retsurf, blur_radius);
     }
     else if (blur_type == 'b') {
-        bloom_box(src, bpfsurf, retsurf, bpp, smoothed_radius);
+        bloom_box(src, bpfsurf, retsurf, blur_radius);
     }
+
+    SDL_FreeSurface(bpfsurf);
 
     return retsurf;
 }
@@ -3616,17 +3609,17 @@ surf_bloom(PyObject *self, PyObject *args, PyObject *kwargs)
     const char *blur_type_str = "box";
 
     float intensity = 1, threshold = 0.5;
-    int blur_radius = 5, smooth_level = 1;
+    int blur_radius = 5;
     char blur_type = 'b';
 
     static char *kwlist[] = {
         "surface",      "intensity", "luminance_threshold", "blur_radius",
-        "smooth_level", "blur_type", "dest_surface",        0};
+        "blur_type", "dest_surface",        0};
 
     if (!PyArg_ParseTupleAndKeywords(
-            args, kwargs, "O!|ffiisO!", kwlist, &pgSurface_Type, &src_surf_obj,
-            &intensity, &threshold, &blur_radius, &smooth_level,
-            &blur_type_str, &pgSurface_Type, &dst_surf_obj)) {
+            args, kwargs, "O!|ffisO!", kwlist, &pgSurface_Type, &src_surf_obj,
+            &intensity, &threshold, &blur_radius, &blur_type_str,
+            &pgSurface_Type, &dst_surf_obj)) {
         return NULL;
     }
 
@@ -3645,13 +3638,9 @@ surf_bloom(PyObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(PyExc_ValueError,
                      "The blur radius should not be less than zero.");
     }
-    if (smooth_level < 0) {
-        return RAISE(PyExc_ValueError,
-                     "The smooth level should not be less than zero.");
-    }
 
     new_surf = bloom(src_surf_obj, dst_surf_obj, intensity, threshold,
-                     blur_radius, smooth_level, blur_type);
+                     blur_radius, blur_type);
     if (!new_surf) {
         return NULL;
     }
