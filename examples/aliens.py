@@ -320,7 +320,7 @@ def main():
                         print("Changing to FULLSCREEN")
                         screen_backup = screen.copy()
                         screen = pygame.display.set_mode(
-                            SCREENRECT.size, 
+                            SCREENRECT.size,
                             winstyle | pygame.FULLSCREEN | pygame.SCALED,
                         )
                         screen.blit(screen_backup, (0, 0))
