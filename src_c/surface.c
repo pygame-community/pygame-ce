@@ -2308,7 +2308,7 @@ on_error:
 static PyObject *
 surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
 {
-    int dx = 0, dy = 0, repeat = 0;
+    int dx = 0, dy = 0, erase = 0, repeat = 0;
     SDL_Surface *surf;
     SDL_Rect *clip_rect;
     int w = 0, h = 0, x = 0, y = 0;
@@ -2316,9 +2316,9 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
     int xoffset = 0;
     Uint8 *linesrc, *startsrc, *endsrc;
 
-    static char *kwids[] = {"dx", "dy", "repeat", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, keywds, "|iip", kwids, &dx, &dy,
-                                     &repeat)) {
+    static char *kwids[] = {"dx", "dy", "erase", "repeat", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "|iipp", kwids, &dx, &dy,
+                                     &erase, &repeat)) {
         return NULL;
     }
 
@@ -2513,7 +2513,9 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
                     else {
                         memcpy(pastesrc, linesrc, span);
                     }
-                    memset(linesrc, 0, span);
+                    if (erase) {
+                        memset(linesrc, 0, span);
+                    }
                 }
                 linesrc += yincrease;
             }
@@ -2523,11 +2525,15 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
             while (h--) {
                 if (dx > 0) {
                     memcpy(linesrc + xoffset, linesrc, span - xoffset);
-                    memset(linesrc, 0, xoffset);
+                    if (erase) {
+                        memset(linesrc, 0, xoffset);
+                    }
                 }
                 else if (dx < 0) {
                     memcpy(linesrc, linesrc - xoffset, span + xoffset);
-                    memset(linesrc + span + xoffset, 0, -xoffset);
+                    if (erase) {
+                        memset(linesrc + span + xoffset, 0, -xoffset);
+                    }
                 }
                 linesrc += pitch;
             }

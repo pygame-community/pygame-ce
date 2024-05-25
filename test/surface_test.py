@@ -2665,20 +2665,26 @@ class GeneralSurfaceTests(unittest.TestCase):
         # Check segfaults for any direction or bits or mode
         for bits in [8, 16, 24, 32]:
             for repeat in [False, True]:
-                for dx in range(-1, 1):
-                    for dy in range(-1, 1):
-                        surface = pygame.Surface((20, 20), 0, bits)
-                        surface.scroll(dx * 2, dy * 2, repeat)
+                for erase in [False, True]:
+                    for dx in range(-1, 1):
+                        for dy in range(-1, 1):
+                            surface = pygame.Surface((20, 20), 0, bits)
+                            surface.scroll(dx * 2, dy * 2, erase, repeat)
         # Check non repeating mode working
         surface = pygame.Surface((20, 20))
         surface.fill("green")
-        surface.scroll(2, 2)
+        surface.scroll(10, 0)
+        self.assertEqual(surface.get_at((0, 0)), pygame.Color("green"))
+        # Check non repeating, erasing mode working
+        surface = pygame.Surface((20, 20))
+        surface.fill("green")
+        surface.scroll(2, 2, erase=True)
         self.assertEqual(surface.get_at((0, 0)), pygame.Color("black"))
         # Check repeating mode working
         surface = pygame.Surface((20, 20))
         surface.fill("green")
         pygame.draw.rect(surface, "red", (0, 0, 10, 20))
-        surface.scroll(4, 0, True)
+        surface.scroll(4, 0, repeat=True)
         self.assertEqual(surface.get_at((0, 0)), pygame.Color("green"))
 
 

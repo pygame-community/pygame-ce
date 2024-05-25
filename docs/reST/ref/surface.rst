@@ -309,12 +309,16 @@
    .. method:: scroll
 
       | :sl:`Shift the surface image in place`
-      | :sg:`scroll(dx=0, dy=0, repeat=False, /) -> None`
+      | :sg:`scroll(dx=0, dy=0, erase=False, repeat=False, /) -> None`
 
       Move the image by dx pixels right and dy pixels down. dx and dy may be
-      negative for left and up scrolls respectively. The space created by the
-      shifting pixels is filled with black. Scrolling is contained by the Surface 
-      clip area. It is safe to have dx and dy values that exceed the surface size.
+      negative for left and up scrolls respectively.
+
+      If the erase argument is ``True`` the space created by the shifting pixels
+      is filled with black, otherwise it is left unchanged.
+
+      Scrolling is contained by the Surface clip area. It is safe to have dx
+      and dy values that exceed the surface size.
 
       If the repeat argument is ``True`` the pixels that disappear out of the surface
       or clip bounds are brought back on the opposite side resulting in an infinitely
@@ -323,7 +327,7 @@
       .. versionaddedold:: 1.9
 
       .. versionchanged:: 2.5.0
-         Add repeating scroll and remove artifacts with fast scrolling
+         Add repeating scroll and allow erasing pixels
 
       .. ## Surface.scroll ##
 
