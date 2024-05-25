@@ -284,11 +284,12 @@ Instead, always begin with the original image and scale to the desired size.)
    | :sl:`apply the bloom effect to a surface`
    | :sg:`bloom(surface, intensity=1, luminance_threshold=0.5, blur_radius=5, blur_type='box', dest_surface=None) -> Surface`
 
-   Returns a surface where the bright pixels are blurred and added to the original surface
-   resulting in a bloom effect.
+   Returns a surface where the bright pixels are blurred and added to the original
+   surface resulting in a bloom effect.
 
-   This function does not work for indexed surfaces.
-   An exception will be thrown if the input is an indexed surface.
+   This function does not work for indexed surfaces and for surfaces with less than
+   24 bits. An exception will be thrown if the input is an indexed surface or if it
+   has less than 24 bits.
 
    An optional destination surface can be passed which is faster than creating a new
    Surface. This destination surface must have the same dimensions (width, height) and
