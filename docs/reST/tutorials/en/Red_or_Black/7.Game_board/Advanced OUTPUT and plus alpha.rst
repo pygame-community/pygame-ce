@@ -12,7 +12,7 @@ and plus alpha
 
 Actually, everything doesn’t seem like a game. Now, we will insert a rule into this program. Then. It will become game. Rule is simple: counting red or black from 5x5 2D array and choose the color which has much more number! If correct, HP++, otherwise, HP--. Then new array will be set for next quiz! too simple but game which can be made in this tutorial. First, we need to generate 2D array and print it. How? We learned how to print integer data (which equals single data (0D array)) and two buttons (which equals single array (1D array). Case of 2D array just needs one-more step.
 
-.. image:: AdvancedOutputAlpha1.gif
+.. image:: ../../../assets/AdvancedOutputAlpha1.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -44,7 +44,7 @@ Actually, everything doesn’t seem like a game. Now, we will insert a rule into
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedOutputAlpha2.gif
+.. image:: ../../../assets/AdvancedOutputAlpha2.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -76,7 +76,7 @@ Actually, everything doesn’t seem like a game. Now, we will insert a rule into
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedOutputAlpha3.gif
+.. image:: ../../../assets/AdvancedOutputAlpha3.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -256,4 +256,3 @@ Actually, there are a lot of idea for improving this game. How about changing bu
     
     if __name__ == '__main__':
         main()
-    
