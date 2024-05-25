@@ -12,7 +12,7 @@ e mais alpha
 
 Na verdade, tudo isso não parece um jogo. Agora, vamos inserir uma regra neste programa. Então. Isso se tornará um jogo. A regra é simples: contar vermelho ou preto de uma matriz 2D de 5x5 e escolher a cor que tem mais números! Se estiver correto, HP++, caso contrário, HP--. Em seguida, uma nova matriz será definida para a próxima pergunta! Muito simples, mas um jogo que pode ser feito neste tutorial. Primeiro, precisamos gerar uma matriz 2D e imprimi-la. Como? Aprendemos como imprimir dados inteiros (que são iguais a dados únicos (array 0D)) e dois botões (que são iguais a um único array (array 1D). O caso de uma matriz 2D precisa apenas de um passo a mais.
 
-.. image:: AdvancedOutputAlpha1.gif
+.. image:: ../../../assets/AdvancedOutputAlpha1.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -44,7 +44,7 @@ Na verdade, tudo isso não parece um jogo. Agora, vamos inserir uma regra neste 
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedOutputAlpha2.gif
+.. image:: ../../../assets/AdvancedOutputAlpha2.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -76,7 +76,7 @@ Na verdade, tudo isso não parece um jogo. Agora, vamos inserir uma regra neste 
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedOutputAlpha3.gif
+.. image:: ../../../assets/AdvancedOutputAlpha3.gif
    :class: inlined-right
 
 .. code-block:: python

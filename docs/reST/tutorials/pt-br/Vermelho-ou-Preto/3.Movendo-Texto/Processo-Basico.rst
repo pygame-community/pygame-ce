@@ -15,7 +15,7 @@ Processo Básico
 ====================================
 O projeto anterior parece uma única imagem em vez de um jogo. Isso porque não há entrada nem processo para controlar a saída. Claro, clicar no botão de saída na janela não conta, pois é apenas desligar o programa inteiro. Primeiro, faremos com que o texto "Hello World!" se mova automaticamente (e agora o projeto parecerá uma animação em vez de uma única imagem), o que significa adicionar a primeira lógica de processamento neste projeto. Como mover o texto? Sabemos que a localização do texto é inicializada na Declaração Inicial. Portanto, a localização do texto deve ser atualizada na Declaração Sempre, adicionando algumas variáveis para processar algo.
 
-.. image:: Bagic-PROCESS-sourcecode.png
+.. image:: ../../../assets/Bagic-PROCESS-sourcecode.png
    :class: inlined-right
 
 .. code-block:: python
@@ -48,7 +48,7 @@ O projeto anterior parece uma única imagem em vez de um jogo. Isso porque não 
        pygame.display.flip()
 
 
-.. image:: Bagic-PROCESS-resultscreen.png
+.. image:: ../../../assets/Bagic-PROCESS-resultscreen.png
    :class: inlined-right
 
 .. code-block:: python

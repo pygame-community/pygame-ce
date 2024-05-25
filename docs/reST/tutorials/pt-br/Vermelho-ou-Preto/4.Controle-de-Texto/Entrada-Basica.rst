@@ -15,7 +15,7 @@ Entrada Básica
 ====================================
 Normalmente, aprendemos como produzir algo primeiro (pense em Hello World!), aprender como inserir algo é sempre a segunda etapa. Por quê? Porque a entrada não é um requisito para alguns programas, ao contrário da saída, que é um requisito para todos os programas. (Essa é a definição de programa. Mais do que ou igual a 0 de entrada, mais do que ou igual a 1 de saída.) No entanto, todo jogo precisa de entrada. É por isso que dizemos "Gosto de jogar jogos". Jogar significa mover uma parte do seu corpo (talvez seu dedo). De qualquer forma, vamos adicionar lógica de entrada para transformar este projeto em um jogo real.
 
-.. image:: Bagic-INPUT-sourcecode.png
+.. image:: ../../../assets/Bagic-INPUT-sourcecode.png
    :class: inlined-right
 
 .. code-block:: python
@@ -48,7 +48,7 @@ Normalmente, aprendemos como produzir algo primeiro (pense em Hello World!), apr
        pygame.display.flip()
 
 
-.. image:: Bagic-INPUT-resultscreen.png
+.. image:: ../../../assets/Bagic-INPUT-resultscreen.png
    :class: inlined-right
 
 .. code-block:: python

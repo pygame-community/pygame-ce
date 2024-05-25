@@ -12,7 +12,7 @@ com PROCESSO Avançado - Funcionalização
 
 Primeiro, vamos imprimir geometria visualizada, não texto. Que tal uma barra de HP? Se o HP máximo do jogo é fixo e o HP atual do jogo pode variar de 0 a HP máximo, qual será a maneira mais simples de imprimir ambos os dados?
 
-.. image:: AdvancedOutputProcess1.gif
+.. image:: ../../../assets/AdvancedOutputProcess1.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -44,7 +44,7 @@ Primeiro, vamos imprimir geometria visualizada, não texto. Que tal uma barra de
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedOutputProcess2.gif
+.. image:: ../../../assets/AdvancedOutputProcess2.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -76,7 +76,7 @@ Primeiro, vamos imprimir geometria visualizada, não texto. Que tal uma barra de
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedOutputProcess3.gif
+.. image:: ../../../assets/AdvancedOutputProcess3.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -110,7 +110,7 @@ Primeiro, vamos imprimir geometria visualizada, não texto. Que tal uma barra de
 
 Sim, apenas redesenhando texto quando uma determinada variável é alterada. Como mudar a variável? Essa lógica está dentro da instrução de evento. (Pressionando para cima ou para baixo para ajustar o HP.) Mesmo método que antes. Mas ainda são textos, o que significa que não são visualizados o suficiente. Como visualizar esses dois dados mais detalhadamente (HP máximo, HP atual)? Podemos usar a ideia de uma revista (carregador de uma arma). O HP é um valor inteiro, que é discreto. Então, pode ser impresso da seguinte forma:
 
-.. image:: AdvancedOutputProcess4.gif
+.. image:: ../../../assets/AdvancedOutputProcess4.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -142,7 +142,7 @@ Sim, apenas redesenhando texto quando uma determinada variável é alterada. Com
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedOutputProcess5.gif
+.. image:: ../../../assets/AdvancedOutputProcess5.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -174,7 +174,7 @@ Sim, apenas redesenhando texto quando uma determinada variável é alterada. Com
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedOutputProcess6.gif
+.. image:: ../../../assets/AdvancedOutputProcess6.gif
    :class: inlined-right
 
 .. code-block:: python

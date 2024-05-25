@@ -12,7 +12,7 @@ com SAÍDA Avançada - Botões
 
 Mesmo que o evento KEYDOWN seja usado, parece que isso não é inteiramente um jogo GUI porque a GUI deste jogo é usada apenas para saída (=impressão), não para entrada. Entrada para GUI significa cuidar do evento do mouse para uma localização específica. Que tal fazer dois botões para aumentar ou diminuir o HP?
 
-.. image:: AdvancedInputOutput1.gif
+.. image:: ../../../assets/AdvancedInputOutput1.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -44,7 +44,7 @@ Mesmo que o evento KEYDOWN seja usado, parece que isso não é inteiramente um j
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedInputOutput2.gif
+.. image:: ../../../assets/AdvancedInputOutput2.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -78,7 +78,7 @@ Mesmo que o evento KEYDOWN seja usado, parece que isso não é inteiramente um j
 
 Ok, fazer dois botões é simples. Olhe para o botão, eles têm uma forma visual única. Como pode ser? Simples como a ideia anterior: Primeiro, desenhe um **quadrado grande**. Segundo, desenhe um **quadrado menor** que tem largura pequena (esse quadrado não tem cor interna, para que a cor do quadrado grande possa ser exibida), então o quadrado interno e o quadrado externo parecem separados. Mas esses botões ainda são apenas para saída. Precisamos criar uma área de clique para isso.
 
-.. image:: AdvancedInputOutput3.gif
+.. image:: ../../../assets/AdvancedInputOutput3.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -110,7 +110,7 @@ Ok, fazer dois botões é simples. Olhe para o botão, eles têm uma forma visua
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedInputOutput4.gif
+.. image:: ../../../assets/AdvancedInputOutput4.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -142,7 +142,7 @@ Ok, fazer dois botões é simples. Olhe para o botão, eles têm uma forma visua
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedInputOutput5.gif
+.. image:: ../../../assets/AdvancedInputOutput5.gif
    :class: inlined-right
 
 .. code-block:: python

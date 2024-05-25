@@ -15,7 +15,7 @@ Entrando em Eventos e GUI
 ====================================
 Como mencionado, o Pygame é baseado em ambiente GUI. Além disso, o Pygame é bom para criar jogos 2D devido ao seu formato de entrada/saída. Portanto, você deve dizer adeus para as funções padrão de impressão ou entrada do Python (porque elas funcionam apenas em ambiente CUI). Então, quais funções no Pygame substituem essas funções? Primeiro, temos que voltar ao amigável projeto "Hello World!", que é sobre aprender o modelo básico e a saída. **(Requer qualquer arquivo de fonte (.ttf) no mesmo diretório do projeto)**
 
-.. image:: Basic-ouput-sourcecode.png
+.. image:: ../../../assets/Basic-ouput-sourcecode.png
    :class: inlined-right
 
 .. code-block:: python
@@ -48,7 +48,7 @@ Como mencionado, o Pygame é baseado em ambiente GUI. Além disso, o Pygame é b
        pygame.display.flip()
 
 
-.. image:: Bagic-ouput-result-screen.png
+.. image:: ../../../assets/Bagic-ouput-result-screen.png
    :class: inlined-right
 
 .. code-block:: python
