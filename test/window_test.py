@@ -1,7 +1,6 @@
 import unittest
 import pygame
 import os
-import time
 
 from pygame import Window
 from pygame.version import SDL
@@ -266,6 +265,11 @@ class WindowTypeTest(unittest.TestCase):
         self.assertRaises(TypeError, lambda: setattr(self.win, "opacity", "null str"))
 
     def test_init_flags(self):
+        # test no opengl by default
+        win = Window()
+        self.assertFalse(win.opengl)
+        win.destroy()
+
         # test borderless
         win = Window(borderless=True)
         self.assertTrue(win.borderless)
@@ -316,28 +320,22 @@ class WindowTypeTest(unittest.TestCase):
         win2 = Window.from_display_module()
 
         self.assertIs(win1, win2)
+        self.assertFalse(win1.opengl)
 
         pygame.display.quit()
         pygame.init()
 
     def test_window_surface(self):
-        # window's surface uses an event callback that may take some time to get
-        # processed by the system event queue - sleep for 1 second to give
-        # the window event queue chance to catch up
         win = Window(size=(640, 480))
-        time.sleep(1)
         surf = win.get_surface()
 
         self.assertIsInstance(surf, pygame.Surface)
 
         # test auto resize
         self.assertTupleEqual(win.size, surf.get_size())
-
         win.size = (100, 100)
-        time.sleep(1)
         self.assertTupleEqual(win.size, surf.get_size())
         win.size = (1280, 720)
-        time.sleep(1)
         self.assertTupleEqual(win.size, surf.get_size())
 
         # window surface should be invalid after the window is destroyed
@@ -376,6 +374,28 @@ class WindowTypeTest(unittest.TestCase):
             win.flip,
         )
         win.destroy()
+
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "OpenGL requires a non-null SDL_VIDEODRIVER",
+    )
+    def test_window_opengl(self):
+        win1 = Window(opengl=True)
+        self.assertTrue(win1.opengl)
+        win1.flip()
+        win1.destroy()
+
+        win2 = Window(opengl=False)
+        self.assertFalse(win2.opengl)
+        win2.get_surface()
+        win2.flip()
+        win2.destroy()
+
+        pygame.display.set_mode((640, 480), pygame.OPENGL)
+        win = Window.from_display_module()
+        self.assertTrue(win.opengl)
+        pygame.display.quit()
+        pygame.init()
 
     def tearDown(self):
         self.win.destroy()

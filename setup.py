@@ -802,12 +802,14 @@ class DocsCommand(Command):
         runs Sphinx to build the docs.
         '''
         import subprocess
-        print("Using python:", sys.executable)
         command_line = [
-            sys.executable, os.path.join('buildconfig', 'makeref.py')
+            sys.executable, os.path.join('buildconfig', 'make_docs.py')
         ]
         if self.fullgeneration:
             command_line.append('full_generation')
+
+        print("WARNING: This command is deprecated and will be removed in the future.")
+        print(f"Please use the following replacement: `{' '.join(command_line)}`\n")  
         if subprocess.call(command_line) != 0:
             raise SystemExit("Failed to build documentation")
 
@@ -827,20 +829,12 @@ class StubcheckCommand(Command):
         runs mypy to build the docs.
         '''
         import subprocess
-        import warnings
-
-        print("Using python:", sys.executable)
-
-        if shutil.which('mypy') is None:
-            warnings.warn("Please install 'mypy' in your environment. (hint: 'python3 -m pip install mypy')")
-            sys.exit(1)
-
-        os.chdir('buildconfig/stubs')
         command_line = [
-            sys.executable,'-m','mypy.stubtest',"pygame","--allowlist","mypy_allow_list.txt"
+            sys.executable, os.path.join("buildconfig", "stubs", "stubcheck.py")
         ]
+        print("WARNING: This command is deprecated and will be removed in the future.")
+        print(f"Please use the following replacement: `{' '.join(command_line)}`\n")  
         result = subprocess.run(command_line)
-        os.chdir('../../')
         if result.returncode != 0:
             raise SystemExit("Stubcheck failed.")
 

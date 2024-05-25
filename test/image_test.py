@@ -19,7 +19,7 @@ if _sdl_image_ver is not None:
     )
 
 
-def test_magic(f, magic_hexes):
+def check_magic(f, magic_hexes):
     """Tests a given file to see if the magic hex matches."""
     data = f.read(len(magic_hexes))
     if len(data) != len(magic_hexes):
@@ -326,7 +326,7 @@ class ImageModuleTest(unittest.TestCase):
                     # Test the magic numbers at the start of the file to ensure
                     # they are saved as the correct file type.
                     self.assertEqual(
-                        (1, fmt), (test_magic(handle, magic_hex[fmt.lower()]), fmt)
+                        (1, fmt), (check_magic(handle, magic_hex[fmt.lower()]), fmt)
                     )
 
                 # load the file to make sure it was saved correctly.
@@ -410,7 +410,7 @@ class ImageModuleTest(unittest.TestCase):
                         # ensure they are saved as the correct file type.
                         handle.seek(0)
                         self.assertEqual(
-                            (1, fmt), (test_magic(handle, magic_hex[fmt.lower()]), fmt)
+                            (1, fmt), (check_magic(handle, magic_hex[fmt.lower()]), fmt)
                         )
                     # load the file to make sure it was saved correctly.
                     handle.flush()
@@ -1344,7 +1344,7 @@ class ImageModuleTest(unittest.TestCase):
             with open(temp_file_name, "rb") as file:
                 # Test the magic numbers at the start of the file to ensure
                 # they are saved as the correct file type.
-                self.assertEqual(1, (test_magic(file, magic_hex[fmt.lower()])))
+                self.assertEqual(1, (check_magic(file, magic_hex[fmt.lower()])))
             # load the file to make sure it was saved correctly
             loaded_file = pygame.image.load(temp_file_name)
             self.assertEqual(loaded_file.get_at((0, 0)), surf.get_at((0, 0)))
