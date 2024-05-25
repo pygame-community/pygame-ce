@@ -109,25 +109,36 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *colorobj, *start, *end;
     SDL_Surface *surf = NULL;
     float startx, starty, endx, endy;
+    PyObject *blend = NULL;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     Uint32 color;
-    static char *keywords[] = {"surface", "color", "start_pos", "end_pos",
-                               NULL};
+    static char *keywords[] = {"surface", "color", "start_pos",
+                               "end_pos", "blend", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|i", keywords,
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|O", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
-                                     &start, &end)) {
+                                     &start, &end, &blend)) {
         return NULL; /* Exception already set. */
+    }
+
+    if (blend != NULL) {
+        if (PyErr_WarnEx(
+                PyExc_DeprecationWarning,
+                "blend argument is deprecated and has no functionality and "
+                "will be completely removed in a future version of pygame-ce",
+                1) == -1) {
+            return NULL;
+        }
     }
 
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -186,10 +197,10 @@ line(PyObject *self, PyObject *arg, PyObject *kwargs)
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -243,25 +254,37 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     float *xlist, *ylist;
     float x, y;
     int l, t;
+    PyObject *blend = NULL;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     int result, closed;
     Py_ssize_t loop, length;
-    static char *keywords[] = {"surface", "color", "closed", "points", NULL};
+    static char *keywords[] = {"surface", "color", "closed",
+                               "points",  "blend", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OpO|i", keywords,
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OpO|O", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
-                                     &closed, &points)) {
+                                     &closed, &points, &blend)) {
         return NULL; /* Exception already set. */
+    }
+
+    if (blend != NULL) {
+        if (PyErr_WarnEx(
+                PyExc_DeprecationWarning,
+                "blend argument is deprecated and has no functionality and "
+                "will be completely removed in a future version of pygame-ce",
+                1) == -1) {
+            return NULL;
+        }
     }
 
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -379,10 +402,10 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -500,10 +523,10 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -572,10 +595,10 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -656,10 +679,10 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -756,10 +779,10 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -888,10 +911,10 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -1085,7 +1108,7 @@ set_at(SDL_Surface *surf, int x, int y, Uint32 color)
         y < surf->clip_rect.y || y >= surf->clip_rect.y + surf->clip_rect.h)
         return 0;
 
-    switch (format->BytesPerPixel) {
+    switch (PG_FORMAT_BytesPerPixel(format)) {
         case 1:
             *((Uint8 *)pixels + y * surf->pitch + x) = (Uint8)color;
             break;
@@ -1326,9 +1349,9 @@ drawhorzline(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2)
     Uint8 *pixel, *end;
 
     pixel = ((Uint8 *)surf->pixels) + surf->pitch * y1;
-    end = pixel + x2 * surf->format->BytesPerPixel;
-    pixel += x1 * surf->format->BytesPerPixel;
-    switch (surf->format->BytesPerPixel) {
+    end = pixel + x2 * PG_SURF_BytesPerPixel(surf);
+    pixel += x1 * PG_SURF_BytesPerPixel(surf);
+    switch (PG_SURF_BytesPerPixel(surf)) {
         case 1:
             for (; pixel <= end; ++pixel) {
                 *pixel = (Uint8)color;
@@ -1362,9 +1385,9 @@ drawvertline(SDL_Surface *surf, Uint32 color, int y1, int x1, int y2)
 
     pixel = ((Uint8 *)surf->pixels) + surf->pitch * y1;
     end = ((Uint8 *)surf->pixels) + surf->pitch * y2 +
-          x1 * surf->format->BytesPerPixel;
-    pixel += x1 * surf->format->BytesPerPixel;
-    switch (surf->format->BytesPerPixel) {
+          x1 * PG_SURF_BytesPerPixel(surf);
+    pixel += x1 * PG_SURF_BytesPerPixel(surf);
+    switch (PG_SURF_BytesPerPixel(surf)) {
         case 1:
             for (; pixel <= end; pixel += surf->pitch) {
                 *pixel = (Uint8)color;
@@ -1673,7 +1696,7 @@ unsafe_set_at(SDL_Surface *surf, int x, int y, Uint32 color)
     Uint8 *pixels = (Uint8 *)surf->pixels;
     Uint8 *byte_buf, rgb[4];
 
-    switch (format->BytesPerPixel) {
+    switch (PG_FORMAT_BytesPerPixel(format)) {
         case 1:
             *((Uint8 *)pixels + y * surf->pitch + x) = (Uint8)color;
             break;

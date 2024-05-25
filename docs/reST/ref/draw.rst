@@ -62,10 +62,10 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
          | if ``width > 0``, used for line thickness
          | if ``width < 0``, nothing will be drawn
          |
-      
+
       .. versionchangedold:: 2.1.1
-          Drawing rects with width now draws the width correctly inside the 
-          rect's area, rather than using an internal call to draw.lines(), 
+          Drawing rects with width now draws the width correctly inside the
+          rect's area, rather than using an internal call to draw.lines(),
           which had half the width spill outside the rect area.
 
    :param int border_radius: (optional) used for drawing rectangle with rounded corners.
@@ -502,6 +502,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
    .. versionchanged:: 2.4.0 Removed deprecated 'blend' argument
+   .. versionchanged:: 2.5.0 ``blend`` argument readded for backcompat, but will always raise a deprecation exception when used
 
    .. ## pygame.draw.aaline ##
 
@@ -540,7 +541,8 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
       contain number pairs
 
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
-   .. versionchanged:: 2.4.0 Removed deprecated 'blend' argument
+   .. versionchanged:: 2.4.0 Removed deprecated ``blend`` argument
+   .. versionchanged:: 2.5.0 ``blend`` argument readded for backcompat, but will always raise a deprecation exception when used
 
    .. ## pygame.draw.aalines ##
 

@@ -196,7 +196,7 @@ pg_display_quit(PyObject *self, PyObject *_null)
 
     pg_mod_autoquit(IMPPREFIX "event");
     pg_mod_autoquit(IMPPREFIX "time");
-    pg_mod_autoquit(IMPPREFIX "_window");
+    pg_mod_autoquit(IMPPREFIX "window");
 
     if (SDL_WasInit(SDL_INIT_VIDEO)) {
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
@@ -317,9 +317,9 @@ pg_vidinfo_getattr(PyObject *self, char *name)
     else if (!strcmp(name, "video_mem"))
         return PyLong_FromLong(info->video_mem);
     else if (!strcmp(name, "bitsize"))
-        return PyLong_FromLong(info->vfmt->BitsPerPixel);
+        return PyLong_FromLong(PG_FORMAT_BitsPerPixel(info->vfmt));
     else if (!strcmp(name, "bytesize"))
-        return PyLong_FromLong(info->vfmt->BytesPerPixel);
+        return PyLong_FromLong(PG_FORMAT_BytesPerPixel(info->vfmt));
     else if (!strcmp(name, "masks"))
         return Py_BuildValue("(iiii)", info->vfmt->Rmask, info->vfmt->Gmask,
                              info->vfmt->Bmask, info->vfmt->Amask);
@@ -378,12 +378,13 @@ pg_vidinfo_str(PyObject *self)
         ">",
         info->hw_available, info->wm_available, info->video_mem, info->blit_hw,
         info->blit_hw_CC, info->blit_hw_A, info->blit_sw, info->blit_sw_CC,
-        info->blit_sw_A, info->vfmt->BitsPerPixel, info->vfmt->BytesPerPixel,
-        info->vfmt->Rmask, info->vfmt->Gmask, info->vfmt->Bmask,
-        info->vfmt->Amask, info->vfmt->Rshift, info->vfmt->Gshift,
-        info->vfmt->Bshift, info->vfmt->Ashift, info->vfmt->Rloss,
-        info->vfmt->Gloss, info->vfmt->Bloss, info->vfmt->Aloss, current_w,
-        current_h, pixel_format_name);
+        info->blit_sw_A, PG_FORMAT_BitsPerPixel(info->vfmt),
+        PG_FORMAT_BytesPerPixel(info->vfmt), info->vfmt->Rmask,
+        info->vfmt->Gmask, info->vfmt->Bmask, info->vfmt->Amask,
+        info->vfmt->Rshift, info->vfmt->Gshift, info->vfmt->Bshift,
+        info->vfmt->Ashift, info->vfmt->Rloss, info->vfmt->Gloss,
+        info->vfmt->Bloss, info->vfmt->Aloss, current_w, current_h,
+        pixel_format_name);
 }
 
 static PyTypeObject pgVidInfo_Type = {
@@ -1356,24 +1357,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     if (state->icon)
         SDL_SetWindowIcon(win, pgSurface_AsSurface(state->icon));
 
-    if (!SDL_GetWindowWMInfo(win, &wm_info)) {
-        // don't complain, might be null mode
-    }
-    else if (wm_info.subsystem == SDL_SYSWM_X11) {
-        char *xdg_session_type = SDL_getenv("XDG_SESSION_TYPE");
-        char *wayland_display = SDL_getenv("WAYLAND_DISPLAY");
-        if (NULL != wayland_display ||
-            (NULL != xdg_session_type &&
-             SDL_strcmp(xdg_session_type, "wayland") == 0)) {
-            if (PyErr_WarnEx(PyExc_Warning,
-                             "PyGame seems to be running through X11 "
-                             "on top of wayland, instead of wayland directly",
-                             1) != 0)
-                return NULL;
-        }
-    }
-
-    if (depth != 0 && surface->surf->format->BitsPerPixel != depth) {
+    if (depth != 0 && PG_SURF_BitsPerPixel(surface->surf) != depth) {
         if (PyErr_WarnEx(PyExc_DeprecationWarning,
                          "The depth argument is deprecated, and is ignored",
                          1)) {
@@ -1443,7 +1427,40 @@ pg_window_size(PyObject *self, PyObject *_null)
     if (!win)
         return RAISE(pgExc_SDLError, "No open window");
     SDL_GetWindowSize(win, &w, &h);
-    return Py_BuildValue("(ii)", w, h);
+    return pg_tuple_couple_from_values_int(w, h);
+}
+
+static PyObject *
+pg_get_window_position(PyObject *self, PyObject *_null)
+{
+    SDL_Window *win = pg_GetDefaultWindow();
+    int x, y = 0;
+    if (!win)
+        return RAISE(pgExc_SDLError, "No open window");
+    SDL_GetWindowPosition(win, &x, &y);
+    return pg_tuple_couple_from_values_int(x, y);
+}
+
+static PyObject *
+pg_set_window_position(PyObject *self, PyObject *arg)
+{
+    SDL_Window *win = pg_GetDefaultWindow();
+    PyObject *pos = NULL;
+    int x, y = 0;
+
+    if (!PyArg_ParseTuple(arg, "O", &pos))
+        return NULL;
+
+    if (pos != NULL) {
+        if (!pg_TwoIntsFromObj(pos, &x, &y))
+            return RAISE(PyExc_TypeError, "position must be two numbers");
+    }
+
+    if (win)
+        /* Will raise errors with SDL 3, deal with it during the porting */
+        SDL_SetWindowPosition(win, x, y);
+
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1556,7 +1573,7 @@ pg_list_modes(PyObject *self, PyObject *args, PyObject *kwds)
             last_width != -1) {
             continue;
         }
-        if (!(size = Py_BuildValue("(ii)", mode.w, mode.h))) {
+        if (!(size = pg_tuple_couple_from_values_int(mode.w, mode.h))) {
             Py_DECREF(list);
             return NULL;
         }
@@ -1780,7 +1797,7 @@ pg_set_palette(PyObject *self, PyObject *args)
     Py_INCREF(surface);
     surf = pgSurface_AsSurface(surface);
     pal = surf->format->palette;
-    if (surf->format->BytesPerPixel != 1 || !pal) {
+    if (PG_SURF_BytesPerPixel(surf) != 1 || !pal) {
         Py_DECREF(surface);
         return RAISE(pgExc_SDLError, "Display mode is not colormapped");
     }
@@ -2116,7 +2133,7 @@ pg_get_desktop_screen_sizes(PyObject *self, PyObject *_null)
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
 
-        size_tuple = Py_BuildValue("(ii)", dm.w, dm.h);
+        size_tuple = pg_tuple_couple_from_values_int(dm.w, dm.h);
         if (!size_tuple) {
             Py_DECREF(result);
             return NULL;
@@ -2904,6 +2921,10 @@ static PyMethodDef _pg_display_methods[] = {
      DOC_DISPLAY_GETSURFACE},
     {"get_window_size", (PyCFunction)pg_window_size, METH_NOARGS,
      DOC_DISPLAY_GETWINDOWSIZE},
+    {"set_window_position", pg_set_window_position, METH_VARARGS,
+     DOC_DISPLAY_SETWINDOWPOSITION},
+    {"get_window_position", (PyCFunction)pg_get_window_position, METH_NOARGS,
+     DOC_DISPLAY_GETWINDOWPOSITION},
 
     {"set_mode", (PyCFunction)pg_set_mode, METH_VARARGS | METH_KEYWORDS,
      DOC_DISPLAY_SETMODE},

@@ -20,6 +20,8 @@ changed in pygame ``v2.0.2`` which got improved MP3 support. Consider using
 ``OGG`` file format for music as that can give slightly better compression than
 MP3 in most cases.
 
+For a complete list of supported file formats, see the :mod:`pygame.mixer` doc page.
+
 .. function:: load
 
    | :sl:`Load a music file for playback`

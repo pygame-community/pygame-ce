@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_MATH "pygame module for vector classes"
 #define DOC_MATH_CLAMP "clamp(value, min, max, /) -> float\nreturns value clamped to min and max."
 #define DOC_MATH_LERP "lerp(a, b, value, do_clamp=True, /) -> float\nreturns value linearly interpolated between a and b"
