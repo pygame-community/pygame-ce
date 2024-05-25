@@ -11,6 +11,7 @@
 
 */
 
+#include "_pygame.h"
 #define NO_PYGAME_C_API
 #include "pygame.h"
 
@@ -29,6 +30,23 @@ typedef struct tColorRGBA {
 #endif
 #ifndef M_PI
 #define M_PI 3.141592654
+#endif
+
+#if !SDL_VERSION_ATLEAST(2, 0, 14)
+// Remove this when our minimum version is 2.0.14 or larger
+SDL_bool
+PG_SurfaceHasRLE(SDL_Surface *surface)
+{
+    if (surface == NULL) {
+        return SDL_FALSE;
+    }
+
+    if (!(surface->map->info.flags & SDL_COPY_RLE_DESIRED)) {
+        return SDL_FALSE;
+    }
+
+    return SDL_TRUE;
+}
 #endif
 
 /*
@@ -456,10 +474,10 @@ void
 rotozoomSurfaceSize(int width, int height, double angle, double zoom,
                     int *dstwidth, int *dstheight)
 {
-    double dummy_sanglezoom, dummy_canglezoom;
+    double null_sanglezoom, null_canglezoom;
 
     rotozoomSurfaceSizeTrig(width, height, angle, zoom, dstwidth, dstheight,
-                            &dummy_sanglezoom, &dummy_canglezoom);
+                            &null_sanglezoom, &null_canglezoom);
 }
 
 /*
@@ -511,6 +529,7 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
     int dstwidth, dstheight;
     int is32bit;
     int src_converted;
+    Uint32 colorkey;
 
     /*
      * Sanity check
@@ -521,8 +540,8 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
     /*
      * Determine if source surface is 32bit or 8bit
      */
-    is32bit = (src->format->BitsPerPixel == 32);
-    if ((is32bit) || (src->format->BitsPerPixel == 8)) {
+    is32bit = (PG_SURF_BitsPerPixel(src) == 32);
+    if ((is32bit) || (PG_SURF_BitsPerPixel(src) == 8)) {
         /*
          * Use source surface 'as is'
          */
@@ -533,9 +552,7 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * New source surface is 32bit with a defined RGBA ordering
          */
-        rz_src =
-            SDL_CreateRGBSurface(SDL_SWSURFACE, src->w, src->h, 32, 0x000000ff,
-                                 0x0000ff00, 0x00ff0000, 0xff000000);
+        rz_src = PG_CreateSurface(src->w, src->h, SDL_PIXELFORMAT_ABGR8888);
         SDL_BlitSurface(src, NULL, rz_src, NULL);
         src_converted = 1;
     }
@@ -584,10 +601,19 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * Target surface is 32bit with source RGBA/ABGR ordering
          */
-        rz_dst =
-            SDL_CreateRGBSurface(SDL_SWSURFACE, dstwidth, dstheight, 32,
-                                 rz_src->format->Rmask, rz_src->format->Gmask,
-                                 rz_src->format->Bmask, rz_src->format->Amask);
+        rz_dst = PG_CreateSurface(dstwidth, dstheight, rz_src->format->format);
+        if (SDL_HasColorKey(src)) {
+            SDL_GetColorKey(src, &colorkey);
+            if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0) {
+                SDL_FreeSurface(rz_dst);
+                return NULL;
+            }
+            if (PG_SurfaceHasRLE(src) &&
+                SDL_SetSurfaceRLE(rz_dst, SDL_TRUE) != 0) {
+                SDL_FreeSurface(rz_dst);
+                return NULL;
+            }
+        }
 
         /*
          * Lock source surface
@@ -633,10 +659,20 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * Target surface is 32bit with source RGBA/ABGR ordering
          */
-        rz_dst =
-            SDL_CreateRGBSurface(SDL_SWSURFACE, dstwidth, dstheight, 32,
-                                 rz_src->format->Rmask, rz_src->format->Gmask,
-                                 rz_src->format->Bmask, rz_src->format->Amask);
+
+        rz_dst = PG_CreateSurface(dstwidth, dstheight, rz_src->format->format);
+        if (SDL_HasColorKey(src)) {
+            SDL_GetColorKey(src, &colorkey);
+            if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0) {
+                SDL_FreeSurface(rz_dst);
+                return NULL;
+            }
+            if (PG_SurfaceHasRLE(src) &&
+                SDL_SetSurfaceRLE(rz_dst, SDL_TRUE) != 0) {
+                SDL_FreeSurface(rz_dst);
+                return NULL;
+            }
+        }
 
         /*
          * Lock source surface

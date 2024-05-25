@@ -20,7 +20,7 @@ are animating a bouncing spring which expands and contracts. If you applied the
 size changes incrementally to the previous images, you would lose detail.
 Instead, always begin with the original image and scale to the desired size.)
 
-.. versionchanged:: 2.0.2 transform functions now support keyword arguments.
+.. versionchangedold:: 2.0.2 transform functions now support keyword arguments.
 
 .. function:: flip
 
@@ -42,12 +42,11 @@ Instead, always begin with the original image and scale to the desired size.)
    Resizes the Surface to a new size, given as (width, height). 
    This is a fast scale operation that does not sample the results.
 
-   An optional destination surface can be used, rather than have it create a
-   new one. This is quicker if you want to repeatedly scale something. However
-   the destination must be the same size as the size (width, height) passed in. Also
-   the destination surface must be the same format.
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must be the same as the size (width, height) passed
+   in, and the same depth and format as the source Surface.
 
-   .. versionchanged:: 2.3.0 internal scaling algorithm was replaced with a nearly
+   .. versionchanged:: 2.2.1 internal scaling algorithm was replaced with a nearly
       equivalent one that is 40% faster. Scale results will be very slightly
       different.
 
@@ -64,6 +63,10 @@ Instead, always begin with the original image and scale to the desired size.)
    scale factor can be a sequence of two numbers, controlling x and y scaling
    separately. For example, :code:`transform.scale_by(surf, (2, 1))` doubles
    the image width but keeps the height the same.
+
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the scaled dimensions
+   (width * factor, height * factor) and same depth and format as the source Surface.
 
    .. versionadded:: 2.1.3
 
@@ -110,11 +113,10 @@ Instead, always begin with the original image and scale to the desired size.)
    This really only has an effect on simple images with solid colors. On
    photographic and antialiased images it will look like a regular unfiltered
    scale.
-
-   An optional destination surface can be used, rather than have it create a
-   new one. This is quicker if you want to repeatedly scale something. However
-   the destination must be twice the size of the source surface passed in. Also
-   the destination surface must be the same format.
+   
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have double the dimensions
+   (width * 2, height * 2) and same depth and format as the source Surface.
 
    .. ## pygame.transform.scale2x ##
 
@@ -125,14 +127,19 @@ Instead, always begin with the original image and scale to the desired size.)
 
    Uses one of two different algorithms for scaling each dimension of the input
    surface as required. For shrinkage, the output pixels are area averages of
-   the colors they cover. For expansion, a bilinear filter is used. For the
-   x86-64 and i686 architectures, optimized ``MMX`` routines are included and
-   will run much faster than other machine types. The size is a 2 number
-   sequence for (width, height). This function only works for 24-bit or 32-bit
-   surfaces. An exception will be thrown if the input surface bit depth is less
-   than 24.
+   the colors they cover. The size is a 2 number sequence for (width, height). 
+   This function only works for 24-bit or 32-bit surfaces. A ``ValueError`` will
+   be thrown if the input surface bit depth is less than 24.
 
-   .. versionadded:: 1.8
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must be the same as the size (width, height) passed
+   in, and the same depth and format as the source Surface.
+
+   .. versionaddedold:: 1.8
+
+   .. versionchanged:: 2.4.0 now uses SSE2/NEON SIMD for acceleration on x86
+      and ARM machines, a performance improvement over previous MMX/SSE only 
+      supported on x86.
 
    .. ## pygame.transform.smoothscale ##
 
@@ -149,36 +156,43 @@ Instead, always begin with the original image and scale to the desired size.)
    :code:`transform.smoothscale_by(surf, (2, 1))` doubles the image width but
    keeps the height the same.
 
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the scaled dimensions
+   (width * factor, height * factor) and same depth and format as the source Surface.
+
    .. versionadded:: 2.1.3
 
    .. ## pygame.transform.smoothscale_by ##
 
 .. function:: get_smoothscale_backend
 
-   | :sl:`return smoothscale filter version in use: 'GENERIC', 'MMX', or 'SSE'`
+   | :sl:`return smoothscale filter version in use: 'GENERIC', 'MMX', 'SSE', 'SSE2', or 'NEON'`
    | :sg:`get_smoothscale_backend() -> string`
 
-   Shows whether or not smoothscale is using ``MMX`` or ``SSE`` acceleration.
-   If no acceleration is available then "GENERIC" is returned. For a x86
-   processor the level of acceleration to use is determined at runtime.
+   Shows whether or not smoothscale is using SIMD acceleration.
+   If no acceleration is available then "GENERIC" is returned. The level of
+   acceleration possible is automatically determined at runtime.
 
    This function is provided for pygame testing and debugging.
+
+   .. versionchanged:: 2.4.0 Added SSE2 and NEON backends, MMX and SSE are deprecated.
 
    .. ## pygame.transform.get_smoothscale_backend ##
 
 .. function:: set_smoothscale_backend
 
-   | :sl:`set smoothscale filter version to one of: 'GENERIC', 'MMX', or 'SSE'`
+   | :sl:`set smoothscale filter version to one of: 'GENERIC', 'MMX', 'SSE', 'SSE2', or 'NEON'`
    | :sg:`set_smoothscale_backend(backend) -> None`
 
    Sets smoothscale acceleration. Takes a string argument. A value of 'GENERIC'
-   turns off acceleration. 'MMX' uses ``MMX`` instructions only. 'SSE' allows
-   ``SSE`` extensions as well. A value error is raised if type is not
+   turns off acceleration. A value error is raised if type is not
    recognized or not supported by the current processor.
 
    This function is provided for pygame testing and debugging. If smoothscale
    causes an invalid instruction error then it is a pygame/SDL bug that should
    be reported. Use this function as a temporary fix only.
+
+   .. versionchanged:: 2.4.0 Added SSE2 and NEON backends, MMX and SSE are deprecated.
 
    .. ## pygame.transform.set_smoothscale_backend ##
 
@@ -204,7 +218,11 @@ Instead, always begin with the original image and scale to the desired size.)
 
    Finds the edges in a surface using the laplacian algorithm.
 
-   .. versionadded:: 1.8
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the same dimensions (width, height) and
+   depth as the source Surface.
+
+   .. versionaddedold:: 1.8
 
    .. ## pygame.transform.laplacian ##
 
@@ -218,7 +236,17 @@ Instead, always begin with the original image and scale to the desired size.)
    This function does not work for indexed surfaces.
    An exception will be thrown if the input is an indexed surface.
 
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the same dimensions (width, height) and
+   depth and format as the source Surface.
+
    .. versionadded:: 2.2.0
+
+   .. versionchanged:: 2.3.0
+      Passing the calling surface as destination surface raises a ``ValueError``
+
+   .. versionchanged:: 2.5.0
+      A surface with either width or height equal to 0 won't raise a ``ValueError``
 
    .. ## pygame.transform.box_blur ##
 
@@ -233,7 +261,21 @@ Instead, always begin with the original image and scale to the desired size.)
    This function does not work for indexed surfaces.
    An exception will be thrown if the input is an indexed surface.
 
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the same dimensions (width, height) and
+   depth and format as the source Surface.
+
    .. versionadded:: 2.2.0
+
+   .. versionchanged:: 2.3.0
+      Passing the calling surface as destination surface raises a ``ValueError``
+   
+   .. versionchanged:: 2.3.1
+      Now the standard deviation of the Gaussian kernel is equal to the radius. 
+      Blur results will be slightly different.
+
+   .. versionchanged:: 2.5.0
+      A surface with either width or height equal to 0 won't raise a ``ValueError``
 
    .. ## pygame.transform.gaussian_blur ##
 
@@ -247,13 +289,17 @@ Instead, always begin with the original image and scale to the desired size.)
 
    palette_colors - if true we average the colors in palette, otherwise we
    average the pixel values. This is useful if the surface is actually
-   greyscale colors, and not palette colors.
+   grayscale colors, and not palette colors.
 
    Note, this function currently does not handle palette using surfaces
    correctly.
 
-   .. versionadded:: 1.8
-   .. versionadded:: 1.9 ``palette_colors`` argument
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the same dimensions (width, height) and 
+   depth as the first passed source Surface.
+
+   .. versionaddedold:: 1.8
+   .. versionaddedold:: 1.9 ``palette_colors`` argument
 
    .. ## pygame.transform.average_surfaces ##
 
@@ -266,16 +312,20 @@ Instead, always begin with the original image and scale to the desired size.)
    Rect, and returns it as a Color. If consider_alpha is set to True, then alpha is
    taken into account (removing the black artifacts).
 
-   .. versionadded:: 2.1.2 ``consider_alpha`` argument
+   .. versionaddedold:: 2.1.2 ``consider_alpha`` argument
 
    .. ## pygame.transform.average_color ##
 
 .. function:: invert
 
    | :sl:`inverts the RGB elements of a surface`
-   | :sg:`average_color(surface, dest_surface=None) -> Surface`
+   | :sg:`invert(surface, dest_surface=None) -> Surface`
 
-   Inverts each RGB pixel contained within the Surface, does not affect alpha channel. Can also be used with a destination Surface. 
+   Inverts each RGB pixel contained within the Surface, does not affect alpha channel.
+
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the same dimensions (width, height) and
+   depth as the source Surface.
 
    .. versionadded:: 2.2.0
 
@@ -288,10 +338,14 @@ Instead, always begin with the original image and scale to the desired size.)
 
    Returns a grayscaled version of the original surface using the luminosity formula which weights red, green and blue according to their wavelengths.
 
-   An optional destination surface can be passed which is faster than creating a new Surface.
-   This destination surface must have the same dimensions (width, height) and depth as the source Surface.
+   An optional destination surface can be passed which is faster than creating a new
+   Surface. This destination surface must have the same dimensions (width, height) and
+   depth as the source Surface.
    
    .. versionadded:: 2.1.4
+
+   .. versionchanged:: 2.4.0 Adjusted formula slightly to support performance optimisation. It may return very slightly
+                       different pixels than before, but should run seven to eleven times faster on most systems.
 
    .. ## pygame.transform.grayscale ##
 
@@ -356,8 +410,8 @@ Instead, always begin with the original image and scale to the desired size.)
       :pyobject: TransformModuleTest.test_threshold_dest_surf_not_change
 
 
-   .. versionadded:: 1.8
-   .. versionchanged:: 1.9.4
+   .. versionaddedold:: 1.8
+   .. versionchangedold:: 1.9.4
       Fixed a lot of bugs and added keyword arguments. Test your code.
 
    .. ## pygame.transform.threshold ##

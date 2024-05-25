@@ -8,10 +8,11 @@ but the documentation can also be launched with `python -m pygame.docs`
 ### Generating the Documentation
 
 Steps:
-- Have Python 3.7 or higher
-- install Sphinx (`pip install Sphinx==3.5.4`)
-- fork the pygame repository, download and navigate to it in the terminal
-- run `python setup.py docs`
+- Install Sphinx (`pip install Sphinx`)
+- Fork the pygame-ce repository, download and navigate to it in the terminal
+- Run `python buildconfig/make_docs.py`
+- If you are using the legacy `python setup.py docs` (which is now deprecated):
+     - (Run `python -m pip install -U pip setuptools` first if `ModuleNotFoundError: No module named setuptools` occurs)
 
 This will create a new folder under the `docs` folder. 
 In `docs/generated`, you will find a local copy of the pygame documentation.
@@ -67,11 +68,9 @@ in the future.
 
 ### Hidden modules
 
-Pygame still has documentation for the old cdrom and Overlay modules, which
-are discontinued in SDL2 based pygame (pygame 2). It just doesn't show them,
-because `docs/reST/themes/classic/elements.html` now has a list of
-"blacklisted" modules to not put into the top bar. It also uses this for the
-experimental sdl2_video docs.
+Pygame-ce has documentation for some experimental modules like sdl2_video. It just
+doesn't show them, because `docs/reST/themes/classic/elements.html` has a list of
+"blacklisted" modules to not put into the top bar.
 
 ### Styling / Themes
 

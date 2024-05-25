@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-""" pygame.examples.vgrade
+"""pygame.examples.vgrade
 
 This example demonstrates creating an image with numpy
 python, and displaying that through SDL. You can look at the
 method of importing numpy and pygame.surfarray. This method
 will fail 'gracefully' if it is not available.
 I've tried mixing in a lot of comments where the code might
-not be self explanatory, nonetheless it may still seem a bit
+not be self-explanatory, nonetheless it may still seem a bit
 strange. Learning to use numpy for images like this takes a
 bit of learning, but the payoff is extremely fast image
 manipulation in python.
@@ -26,7 +26,6 @@ The window will have no border decorations.
 The code also demonstrates use of the timer events.
 """
 
-
 import os
 import pygame
 
@@ -40,7 +39,7 @@ timer = 0
 
 
 def stopwatch(message=None):
-    "simple routine to time python code"
+    """simple routine to time python code"""
     global timer
     if not message:
         timer = pygame.time.get_ticks()
@@ -51,8 +50,8 @@ def stopwatch(message=None):
     timer = now
 
 
-def VertGradientColumn(surf, topcolor, bottomcolor):
-    "creates a new 3d vertical gradient array"
+def vert_gradient_column(surf, topcolor, bottomcolor):
+    """creates a new 3d vertical gradient array"""
     topcolor = np.array(topcolor, copy=False)
     bottomcolor = np.array(bottomcolor, copy=False)
     diff = bottomcolor - topcolor
@@ -68,11 +67,11 @@ def VertGradientColumn(surf, topcolor, bottomcolor):
     return pygame.surfarray.map_array(surf, column)
 
 
-def DisplayGradient(surf):
-    "choose random colors and show them"
+def display_gradient(surf):
+    """choose random colors and show them"""
     stopwatch()
     colors = np_random.randint(0, 255, (2, 3))
-    column = VertGradientColumn(surf, colors[0], colors[1])
+    column = vert_gradient_column(surf, colors[0], colors[1])
     pygame.surfarray.blit_array(surf, column)
     pygame.display.flip()
     stopwatch("Gradient:")
@@ -83,17 +82,19 @@ def main():
     pygame.mixer.quit()  # remove ALSA underflow messages for Debian squeeze
     size = 600, 400
     os.environ["SDL_VIDEO_CENTERED"] = "1"
-    screen = pygame.display.set_mode(size, pygame.NOFRAME, 0)
+    screen = pygame.display.set_mode(size, pygame.NOFRAME)
 
     pygame.event.set_blocked(pygame.MOUSEMOTION)  # keep our queue cleaner
-    pygame.time.set_timer(pygame.USEREVENT, 500)
+
+    TIMER_EVENT = pygame.event.custom_type()
+    pygame.time.set_timer(TIMER_EVENT, 500)
 
     while True:
         event = pygame.event.wait()
         if event.type in (pygame.QUIT, pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
             break
-        elif event.type == pygame.USEREVENT:
-            DisplayGradient(screen)
+        elif event.type == TIMER_EVENT:
+            display_gradient(screen)
 
     pygame.quit()
 

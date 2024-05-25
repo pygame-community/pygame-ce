@@ -11,7 +11,14 @@ from pygame import sprite
 
 
 class SpriteModuleTest(unittest.TestCase):
-    pass
+    def test_deprecation__sprite_submodule(self):
+        # Test that using the old cython sprite module raises
+        # a deprecation warning.
+        with self.assertWarns(DeprecationWarning):
+            import pygame._sprite
+
+            pygame.init()
+            test_group = pygame.sprite.Group()
 
 
 ######################### SPRITECOLLIDE FUNCTIONS TEST #########################
@@ -519,7 +526,7 @@ class AbstractGroupTypeTest(unittest.TestCase):
 
         self.bg = pygame.Surface((20, 20))
         self.scr = pygame.Surface((20, 20))
-        self.scr.fill(pygame.Color("grey"))
+        self.scr.fill(pygame.Color("gray"))
 
     def test_has(self):
         "See if AbstractGroup.has() works as expected."
@@ -1111,7 +1118,7 @@ class LayeredDirtyTypeTest__DirtySprite(LayeredGroupBase, unittest.TestCase):
         #     use_source_rect - allows non-dirty sprites to be tested
         #         with (True) and without (False) a source_rect
         #
-        # This test was written to reproduce the behavior seen in issue #898.
+        # This test was written to reproduce the behavior seen in pygame-ce issue # 605.
         # A non-dirty sprite (using source_rect) was being redrawn incorrectly
         # after a dirty sprite intersected with it.
         #
@@ -1207,7 +1214,7 @@ class LayeredDirtyTypeTest__DirtySprite(LayeredGroupBase, unittest.TestCase):
         """Ensure non-dirty sprites using source_rects are correctly redrawn
         when dirty sprites intersect with them.
 
-        Related to issue #898.
+        Related to pygame-ce issue #605.
         """
         self._nondirty_intersections_redrawn(True)
 
@@ -1333,7 +1340,6 @@ class SpriteTypeTest(SpriteBase, unittest.TestCase):
         sprite.Group,
         sprite.LayeredUpdates,
         sprite.RenderUpdates,
-        sprite.OrderedUpdates,
     ]
 
 
@@ -1344,7 +1350,6 @@ class DirtySpriteTypeTest(SpriteBase, unittest.TestCase):
         sprite.Group,
         sprite.LayeredUpdates,
         sprite.RenderUpdates,
-        sprite.OrderedUpdates,
         sprite.LayeredDirty,
     ]
 

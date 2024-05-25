@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.liquid
+"""pygame.examples.liquid
 
 This example demonstrates a simplish water effect of an
 image. It attempts to create a hardware display surface that
@@ -24,7 +24,7 @@ main_dir = os.path.split(os.path.abspath(__file__))[0]
 def main():
     # initialize and setup screen
     pygame.init()
-    screen = pygame.display.set_mode((640, 480), pygame.HWSURFACE | pygame.DOUBLEBUF)
+    screen = pygame.display.set_mode((640, 480), pygame.DOUBLEBUF)
 
     # load image and quadruple
     imagename = os.path.join(main_dir, "data", "liquid.bmp")

@@ -31,23 +31,12 @@
 
 #include "doc/pygame_doc.h"
 
-#if defined(_WIN32)
-#define PG_LSEEK _lseeki64
-#elif defined(__APPLE__)
-/* Mac does not implement lseek64 */
-#define PG_LSEEK lseek
-#else
-#define PG_LSEEK lseek64
-#endif
-
 typedef struct {
     PyObject *read;
     PyObject *write;
     PyObject *seek;
     PyObject *tell;
     PyObject *close;
-    PyObject *file;
-    int fileno;
 } pgRWHelper;
 
 /*static const char pg_default_encoding[] = "unicode_escape";*/
@@ -243,8 +232,39 @@ pg_EncodeString(PyObject *obj, const char *encoding, const char *errors,
 static PyObject *
 pg_EncodeFilePath(PyObject *obj, PyObject *eclass)
 {
-    PyObject *result = pg_EncodeString(obj, Py_FileSystemDefaultEncoding,
-                                       UNICODE_DEF_FS_ERROR, eclass);
+    /* All of this code is a replacement for Py_FileSystemDefaultEncoding,
+     * which is deprecated in Python 3.12
+     *
+     * But I'm not sure of the use of this function, so maybe it should be
+     * deprecated. */
+
+    PyObject *sys_module = PyImport_ImportModule("sys");
+    if (sys_module == NULL) {
+        return NULL;
+    }
+    PyObject *system_encoding_obj =
+        PyObject_CallMethod(sys_module, "getfilesystemencoding", NULL);
+    if (system_encoding_obj == NULL) {
+        Py_DECREF(sys_module);
+        return NULL;
+    }
+    Py_DECREF(sys_module);
+    const char *encoding = PyUnicode_AsUTF8(system_encoding_obj);
+    if (encoding == NULL) {
+        Py_DECREF(system_encoding_obj);
+        return NULL;
+    }
+
+    /* End code replacement section */
+
+    if (obj == NULL) {
+        PyErr_SetString(PyExc_SyntaxError, "Forwarded exception");
+    }
+
+    PyObject *result =
+        pg_EncodeString(obj, encoding, UNICODE_DEF_FS_ERROR, eclass);
+    Py_DECREF(system_encoding_obj);
+
     if (result == NULL || result == Py_None) {
         return result;
     }
@@ -282,15 +302,11 @@ _pg_rw_size(SDL_RWops *context)
     PyObject *tmp = NULL;
     Sint64 size;
     Sint64 retval = -1;
-#ifdef WITH_THREAD
-    PyGILState_STATE state;
-#endif /* WITH_THREAD */
 
     if (!helper->seek || !helper->tell)
         return retval;
-#ifdef WITH_THREAD
-    state = PyGILState_Ensure();
-#endif /* WITH_THREAD */
+
+    PyGILState_STATE state = PyGILState_Ensure();
 
     /* Current file position; need to restore it later.
      */
@@ -341,38 +357,21 @@ end:
      */
     Py_XDECREF(pos);
     Py_XDECREF(tmp);
-#ifdef WITH_THREAD
     PyGILState_Release(state);
-#endif
     return retval;
 }
 
 static size_t
 _pg_rw_write(SDL_RWops *context, const void *ptr, size_t size, size_t num)
 {
-#ifndef WITH_THREAD
-    pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
-    PyObject *result;
-
-    if (!helper->write)
-        return -1;
-
-    result = PyObject_CallFunction(helper->write, "y#", (const char *)ptr,
-                                   (Py_ssize_t)size * num);
-    if (!result)
-        return -1;
-
-    Py_DECREF(result);
-    return num;
-#else  /* WITH_THREAD */
     pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
     PyObject *result;
     size_t retval;
 
-    PyGILState_STATE state;
     if (!helper->write)
         return -1;
-    state = PyGILState_Ensure();
+
+    PyGILState_STATE state = PyGILState_Ensure();
 
     result = PyObject_CallFunction(helper->write, "y#", (const char *)ptr,
                                    (Py_ssize_t)size * num);
@@ -388,7 +387,6 @@ _pg_rw_write(SDL_RWops *context, const void *ptr, size_t size, size_t num)
 end:
     PyGILState_Release(state);
     return retval;
-#endif /* WITH_THREAD */
 }
 
 static int
@@ -397,10 +395,7 @@ _pg_rw_close(SDL_RWops *context)
     pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
     PyObject *result;
     int retval = 0;
-#ifdef WITH_THREAD
-    PyGILState_STATE state;
-    state = PyGILState_Ensure();
-#endif /* WITH_THREAD */
+    PyGILState_STATE state = PyGILState_Ensure();
 
     if (helper->close) {
         result = PyObject_CallFunction(helper->close, NULL);
@@ -416,12 +411,9 @@ _pg_rw_close(SDL_RWops *context)
     Py_XDECREF(helper->write);
     Py_XDECREF(helper->read);
     Py_XDECREF(helper->close);
-    Py_XDECREF(helper->file);
 
     PyMem_Free(helper);
-#ifdef WITH_THREAD
     PyGILState_Release(state);
-#endif /* WITH_THREAD */
     SDL_FreeRW(context);
     return retval;
 }
@@ -440,9 +432,6 @@ pgRWops_FromFileObject(PyObject *obj)
     if (helper == NULL) {
         return (SDL_RWops *)PyErr_NoMemory();
     }
-    helper->fileno = PyObject_AsFileDescriptor(obj);
-    if (helper->fileno == -1)
-        PyErr_Clear();
     if (fetch_object_methods(helper, obj)) {
         PyMem_Free(helper);
         return NULL;
@@ -453,9 +442,6 @@ pgRWops_FromFileObject(PyObject *obj)
         PyMem_Free(helper);
         return (SDL_RWops *)PyErr_NoMemory();
     }
-
-    helper->file = obj;
-    Py_INCREF(obj);
 
     /* Adding a helper to the hidden data to support file-like object RWops */
     rw->hidden.unknown.data1 = (void *)helper;
@@ -468,67 +454,17 @@ pgRWops_FromFileObject(PyObject *obj)
     return rw;
 }
 
-static int
-pgRWops_ReleaseObject(SDL_RWops *context)
-{
-    int ret = 0;
-    if (pgRWops_IsFileObject(context)) {
-#ifdef WITH_THREAD
-        PyGILState_STATE state = PyGILState_Ensure();
-#endif /* WITH_THREAD */
-
-        pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
-        PyObject *fileobj = helper->file;
-        /* 5 helper functions */
-        Py_ssize_t filerefcnt = Py_REFCNT(fileobj) - 1 - 5;
-
-        if (filerefcnt) {
-            Py_XDECREF(helper->seek);
-            Py_XDECREF(helper->tell);
-            Py_XDECREF(helper->write);
-            Py_XDECREF(helper->read);
-            Py_XDECREF(helper->close);
-            Py_DECREF(fileobj);
-            PyMem_Del(helper);
-            SDL_FreeRW(context);
-        }
-        else {
-            ret = SDL_RWclose(context);
-            if (ret < 0) {
-                PyErr_SetString(PyExc_IOError, SDL_GetError());
-                Py_DECREF(fileobj);
-            }
-        }
-
-#ifdef WITH_THREAD
-        PyGILState_Release(state);
-#endif /* WITH_THREAD */
-    }
-    else {
-        ret = SDL_RWclose(context);
-        if (ret < 0)
-            PyErr_SetString(PyExc_IOError, SDL_GetError());
-    }
-    return ret;
-}
-
 static Sint64
 _pg_rw_seek(SDL_RWops *context, Sint64 offset, int whence)
 {
     pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
     PyObject *result;
     Sint64 retval;
-#ifdef WITH_THREAD
-    PyGILState_STATE state;
-
-    if (helper->fileno != -1) {
-        return PG_LSEEK(helper->fileno, offset, whence);
-    }
 
     if (!helper->seek || !helper->tell)
         return -1;
 
-    state = PyGILState_Ensure();
+    PyGILState_STATE state = PyGILState_Ensure();
 
     if (!(offset == 0 &&
           whence == SEEK_CUR)) /* being seek'd, not just tell'd */
@@ -560,35 +496,6 @@ end:
     PyGILState_Release(state);
 
     return retval;
-#else  /* ~WITH_THREAD */
-    if (helper->fileno != -1) {
-        return PG_LSEEK(helper->fileno, offset, whence);
-    }
-
-    if (!helper->seek || !helper->tell)
-        return -1;
-
-    if (!(offset == 0 && whence == SEEK_CUR)) /*being called only for 'tell'*/
-    {
-        result = PyObject_CallFunction(helper->seek, "Li", (long long)offset,
-                                       whence);
-        if (!result)
-            return -1;
-        Py_DECREF(result);
-    }
-
-    result = PyObject_CallFunction(helper->tell, NULL);
-    if (!result)
-        return -1;
-
-    retval = PyLong_AsLongLong(result);
-    if (retval == -1 && PyErr_Occurred())
-        PyErr_Clear();
-
-    Py_DECREF(result);
-
-    return retval;
-#endif /* ~WITH_THREAD*/
 }
 
 static size_t
@@ -597,25 +504,11 @@ _pg_rw_read(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
     pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
     PyObject *result;
     Py_ssize_t retval;
-#ifdef WITH_THREAD
-    PyGILState_STATE state;
-#endif /* WITH_THREAD */
-
-    if (helper->fileno != -1) {
-        retval = read(helper->fileno, ptr, (unsigned int)(size * maxnum));
-        if (retval == -1) {
-            return -1;
-        }
-        retval /= size;
-        return retval;
-    }
 
     if (!helper->read)
         return -1;
 
-#ifdef WITH_THREAD
-    state = PyGILState_Ensure();
-#endif /* WITH_THREAD */
+    PyGILState_STATE state = PyGILState_Ensure();
     result = PyObject_CallFunction(helper->read, "K",
                                    (unsigned long long)size * maxnum);
     if (!result) {
@@ -640,9 +533,7 @@ _pg_rw_read(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
     Py_DECREF(result);
 
 end:
-#ifdef WITH_THREAD
     PyGILState_Release(state);
-#endif /* WITH_THREAD */
 
     return retval;
 }
@@ -817,9 +708,6 @@ pg_encode_file_path(PyObject *self, PyObject *args, PyObject *keywds)
         return NULL;
     }
 
-    if (obj == NULL) {
-        PyErr_SetString(PyExc_SyntaxError, "Forwarded exception");
-    }
     return pg_EncodeFilePath(obj, eclass);
 }
 
@@ -860,7 +748,6 @@ MODINIT_DEFINE(rwobject)
     c_api[2] = pg_EncodeFilePath;
     c_api[3] = pg_EncodeString;
     c_api[4] = pgRWops_FromFileObject;
-    c_api[5] = pgRWops_ReleaseObject;
     apiobj = encapsulate_api(c_api, "rwobject");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);

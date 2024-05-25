@@ -11,9 +11,11 @@
    | :sg:`Rect(left, top, width, height) -> Rect`
    | :sg:`Rect((left, top), (width, height)) -> Rect`
    | :sg:`Rect(object) -> Rect`
+   | :sg:`Rect() -> Rect`
    | :sg:`FRect(left, top, width, height) -> FRect`
    | :sg:`FRect((left, top), (width, height)) -> FRect`
    | :sg:`FRect(object) -> FRect`
+   | :sg:`FRect() -> FRect`
 
    .. versionchanged:: 2.2 Since version 2.2 there is another class called FRect that serves the same purpose as as `Rect` but it can hold floats instead of integers.
 
@@ -25,6 +27,10 @@
    Any pygame function that requires a Rect argument also accepts any of these
    values to construct a Rect. This makes it easier to create Rects on the fly
    as arguments to functions.
+
+   If no arguments are given, a zero Rect will be created (x=0, y=0, w=0, h=0).
+   This will only work when using the Rect/FRect class and not with functions
+   that require a Rect argument.
 
    The Rect functions that change the position or size of a Rect return a new
    copy of the Rect with the affected changes. The original Rect is not
@@ -80,7 +86,7 @@
       r = Rect(0, 1, 2, 3)
       x, y, w, h = r
 
-   .. versionadded:: 1.9.2
+   .. versionaddedold:: 1.9.2
       The Rect class can be subclassed. Methods such as ``copy()`` and ``move()``
       will recognize this and return instances of the subclass.
       However, the subclass's ``__init__()`` method is not called,
@@ -101,7 +107,7 @@
    .. method:: move
 
       | :sl:`moves the rectangle`
-      | :sg:`move(x, y) -> Rect`
+      | :sg:`move(x, y, /) -> Rect`
 
       Returns a new rectangle that is moved by the given offset. The x and y
       arguments can be any integer value, positive or negative.
@@ -111,16 +117,33 @@
    .. method:: move_ip
 
       | :sl:`moves the rectangle, in place`
-      | :sg:`move_ip(x, y) -> None`
+      | :sg:`move_ip(x, y, /) -> None`
 
       Same as the ``Rect.move()`` method, but operates in place.
 
       .. ## Rect.move_ip ##
+   
+   .. method:: move_to
+
+      | :sl:`moves the rectangle to the specified position`
+      | :sg:`move_to(**kwargs) -> Rect`
+      
+      Returns a new rectangle that is moved to the given position. You must provide keyword
+      arguments to the method such as ``center``, ``left``, ``midbottom`` that correspond
+      to the rectangle's attributes and the method will return a new rectangle whose specified
+      attributes are set to the given value. 
+      
+      It is similar to :meth:`Surface.get_rect` but instead of a calling it as a surface method
+      you call it as a rectangle method.
+
+      .. versionadded:: 2.4.0
+
+      .. ## Rect.move_to ##
 
    .. method:: inflate
 
       | :sl:`grow or shrink the rectangle size`
-      | :sg:`inflate(x, y) -> Rect`
+      | :sg:`inflate(x, y, /) -> Rect`
 
       Returns a new rectangle with the size changed by the given offset. The
       rectangle remains centered around its current center. Negative values
@@ -132,30 +155,58 @@
    .. method:: inflate_ip
 
       | :sl:`grow or shrink the rectangle size, in place`
-      | :sg:`inflate_ip(x, y) -> None`
+      | :sg:`inflate_ip(x, y, /) -> None`
 
       Same as the ``Rect.inflate()`` method, but operates in place.
 
       .. ## Rect.inflate_ip ##
 
+   .. method:: scale_by
+
+      | :sl:`scale the rectangle by given a multiplier`
+      | :sg:`scale_by(scale_by) -> Rect`
+      | :sg:`scale_by(x, y) -> Rect`
+
+      Returns a new rectangle with the size scaled by the given multipliers.
+      The rectangle remains centered around its current center. A single 
+      scalar or separate width and height scalars are allowed. Values above
+      one will increase the size of the rectangle, whereas values between
+      zero and one will decrease the size of the rectangle.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Rect.scale_by ##
+
+   .. method:: scale_by_ip
+
+      | :sl:`grow or shrink the rectangle size, in place`
+      | :sg:`scale_by_ip(scale_by) -> None`
+      | :sg:`scale_by_ip(x, y) -> None`
+
+      Same as the ``Rect.scale_by()`` method, but operates in place.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Rect.scale_by_ip ##
+
    .. method:: update
 
       | :sl:`sets the position and size of the rectangle`
-      | :sg:`update(left, top, width, height) -> None`
-      | :sg:`update((left, top), (width, height)) -> None`
-      | :sg:`update(object) -> None`
+      | :sg:`update(left, top, width, height, /) -> None`
+      | :sg:`update((left, top), (width, height), /) -> None`
+      | :sg:`update(object, /) -> None`
 
       Sets the position and size of the rectangle, in place. See
       parameters for :meth:`pygame.Rect` for the parameters of this function.
 
-      .. versionadded:: 2.0.1
+      .. versionaddedold:: 2.0.1
 
       .. ## Rect.update ##
 
    .. method:: clamp
 
       | :sl:`moves the rectangle inside another`
-      | :sg:`clamp(Rect) -> Rect`
+      | :sg:`clamp(rect, /) -> Rect`
 
       Returns a new rectangle that is moved to be completely inside the
       argument Rect. If the rectangle is too large to fit inside, it is
@@ -166,7 +217,7 @@
    .. method:: clamp_ip
 
       | :sl:`moves the rectangle inside another, in place`
-      | :sg:`clamp_ip(Rect) -> None`
+      | :sg:`clamp_ip(rect, /) -> None`
 
       Same as the ``Rect.clamp()`` method, but operates in place.
 
@@ -175,7 +226,7 @@
    .. method:: clip
 
       | :sl:`crops a rectangle inside another`
-      | :sg:`clip(Rect) -> Rect`
+      | :sg:`clip(rect, /) -> Rect`
 
       Returns a new rectangle that is cropped to be completely inside the
       argument Rect. If the two rectangles do not overlap to begin with, a Rect
@@ -186,14 +237,14 @@
    .. method:: clipline
 
       | :sl:`crops a line inside a rectangle`
-      | :sg:`clipline(x1, y1, x2, y2) -> ((cx1, cy1), (cx2, cy2))`
-      | :sg:`clipline(x1, y1, x2, y2) -> ()`
-      | :sg:`clipline((x1, y1), (x2, y2)) -> ((cx1, cy1), (cx2, cy2))`
-      | :sg:`clipline((x1, y1), (x2, y2)) -> ()`
-      | :sg:`clipline((x1, y1, x2, y2)) -> ((cx1, cy1), (cx2, cy2))`
-      | :sg:`clipline((x1, y1, x2, y2)) -> ()`
-      | :sg:`clipline(((x1, y1), (x2, y2))) -> ((cx1, cy1), (cx2, cy2))`
-      | :sg:`clipline(((x1, y1), (x2, y2))) -> ()`
+      | :sg:`clipline(x1, y1, x2, y2, /) -> ((cx1, cy1), (cx2, cy2))`
+      | :sg:`clipline(x1, y1, x2, y2, /) -> ()`
+      | :sg:`clipline((x1, y1), (x2, y2), /) -> ((cx1, cy1), (cx2, cy2))`
+      | :sg:`clipline((x1, y1), (x2, y2), /) -> ()`
+      | :sg:`clipline((x1, y1, x2, y2), /) -> ((cx1, cy1), (cx2, cy2))`
+      | :sg:`clipline((x1, y1, x2, y2), /) -> ()`
+      | :sg:`clipline(((x1, y1), (x2, y2)), /) -> ((cx1, cy1), (cx2, cy2))`
+      | :sg:`clipline(((x1, y1), (x2, y2)), /) -> ()`
 
       Returns the coordinates of a line that is cropped to be completely inside
       the rectangle. If the line does not overlap the rectangle, then an empty
@@ -238,14 +289,14 @@
          else:
              print("No clipping. The line is fully outside the rect.")
 
-      .. versionadded:: 2.0.0
+      .. versionaddedold:: 2.0.0
 
       .. ## Rect.clipline ##
 
    .. method:: union
 
       | :sl:`joins two rectangles into one`
-      | :sg:`union(Rect) -> Rect`
+      | :sg:`union(rect, /) -> Rect`
 
       Returns a new rectangle that completely covers the area of the two
       provided rectangles. There may be area inside the new Rect that is not
@@ -256,7 +307,7 @@
    .. method:: union_ip
 
       | :sl:`joins two rectangles into one, in place`
-      | :sg:`union_ip(Rect) -> None`
+      | :sg:`union_ip(rect, /) -> None`
 
       Same as the ``Rect.union()`` method, but operates in place.
 
@@ -265,7 +316,7 @@
    .. method:: unionall
 
       | :sl:`the union of many rectangles`
-      | :sg:`unionall(Rect_sequence) -> Rect`
+      | :sg:`unionall(rect_sequence, /) -> Rect`
 
       Returns the union of one rectangle with a sequence of many rectangles.
 
@@ -274,7 +325,7 @@
    .. method:: unionall_ip
 
       | :sl:`the union of many rectangles, in place`
-      | :sg:`unionall_ip(Rect_sequence) -> None`
+      | :sg:`unionall_ip(rect_sequence, /) -> None`
 
       The same as the ``Rect.unionall()`` method, but operates in place.
 
@@ -283,7 +334,7 @@
    .. method:: fit
 
       | :sl:`resize and move a rectangle with aspect ratio`
-      | :sg:`fit(Rect) -> Rect`
+      | :sg:`fit(rect, /) -> Rect`
 
       Returns a new rectangle that is moved and resized to fit another. The
       aspect ratio of the original Rect is preserved, so the new rectangle may
@@ -305,7 +356,7 @@
    .. method:: contains
 
       | :sl:`test if one rectangle is inside another`
-      | :sg:`contains(Rect) -> bool`
+      | :sg:`contains(rect, /) -> bool`
 
       Returns true when the argument is completely inside the Rect.
 
@@ -314,8 +365,8 @@
    .. method:: collidepoint
 
       | :sl:`test if a point is inside a rectangle`
-      | :sg:`collidepoint(x, y) -> bool`
-      | :sg:`collidepoint((x,y)) -> bool`
+      | :sg:`collidepoint(x, y, /) -> bool`
+      | :sg:`collidepoint((x, y), /) -> bool`
 
       Returns true if the given point is inside the rectangle. A point along
       the right or bottom edge is not considered to be inside the rectangle.
@@ -329,7 +380,7 @@
    .. method:: colliderect
 
       | :sl:`test if two rectangles overlap`
-      | :sg:`colliderect(Rect) -> bool`
+      | :sg:`colliderect(rect, /) -> bool`
 
       Returns true if any portion of either rectangle overlap (except the
       top+bottom or left+right edges).
@@ -343,7 +394,7 @@
    .. method:: collidelist
 
       | :sl:`test if one rectangle in a list intersects`
-      | :sg:`collidelist(list) -> index`
+      | :sg:`collidelist(list, /) -> index`
 
       Test whether the rectangle collides with any in a sequence of rectangles.
       The index of the first collision found is returned. If no collisions are
@@ -354,7 +405,7 @@
    .. method:: collidelistall
 
       | :sl:`test if all rectangles in a list intersect`
-      | :sg:`collidelistall(list) -> indices`
+      | :sg:`collidelistall(list, /) -> indices`
 
       Returns a list of all the indices that contain rectangles that collide
       with the Rect. If no intersecting rectangles are found, an empty list is
@@ -527,14 +578,14 @@
    .. method:: collidedict
 
       | :sl:`test if one rectangle in a dictionary intersects`
-      | :sg:`collidedict(dict) -> (key, value)`
-      | :sg:`collidedict(dict) -> None`
-      | :sg:`collidedict(dict, use_values=0) -> (key, value)`
-      | :sg:`collidedict(dict, use_values=0) -> None`
+      | :sg:`collidedict(rect_dict) -> (key, value)`
+      | :sg:`collidedict(rect_dict) -> None`
+      | :sg:`collidedict(rect_dict, values=False) -> (key, value)`
+      | :sg:`collidedict(rect_dict, values=False) -> None`
 
       Returns the first key and value pair that intersects with the calling
       Rect object. If no collisions are found, ``None`` is returned. If
-      ``use_values`` is 0 (default) then the dict's keys will be used in the
+      ``values`` is False (default) then the dict's keys will be used in the
       collision detection, otherwise the dict's values will be used.
 
       .. note ::
@@ -542,23 +593,33 @@
          hashable), so they must be converted to a tuple.
          e.g. ``rect.collidedict({tuple(key_rect) : value})``
 
+      .. versionchanged:: 2.4.0
+         ``values`` is now accepted as a keyword argument. Type Stub updated
+         to use boolean ``True`` or ``False``, but any truthy or falsy value 
+         will be valid.
+
       .. ## Rect.collidedict ##
 
    .. method:: collidedictall
 
       | :sl:`test if all rectangles in a dictionary intersect`
-      | :sg:`collidedictall(dict) -> [(key, value), ...]`
-      | :sg:`collidedictall(dict, use_values=0) -> [(key, value), ...]`
+      | :sg:`collidedictall(rect_dict) -> [(key, value), ...]`
+      | :sg:`collidedictall(rect_dict, values=False) -> [(key, value), ...]`
 
       Returns a list of all the key and value pairs that intersect with the
       calling Rect object. If no collisions are found an empty list is returned.
-      If ``use_values`` is 0 (default) then the dict's keys will be used in the
+      If ``values`` is False (default) then the dict's keys will be used in the
       collision detection, otherwise the dict's values will be used.
 
       .. note ::
          Rect objects cannot be used as keys in a dictionary (they are not
          hashable), so they must be converted to a tuple.
          e.g. ``rect.collidedictall({tuple(key_rect) : value})``
+
+      .. versionchanged:: 2.4.0
+         ``values`` is now accepted as a keyword argument. Type Stub updated
+         to use boolean ``True`` or ``False``, but any truthy or falsy value 
+         will be valid.
 
       .. ## Rect.collidedictall ##
 

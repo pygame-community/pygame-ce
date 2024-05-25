@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.testsprite
+"""pygame.examples.testsprite
 
 Like the testsprite.c that comes with libsdl, this pygame version shows
 lots of sprites moving around.
@@ -7,8 +7,9 @@ lots of sprites moving around.
 It is an abomination of ugly code, and mostly used for testing.
 
 
-See pygame.examples.aliens for some prettyier code.
+See pygame.examples.aliens for some prettier code.
 """
+
 import sys
 import os
 
@@ -17,14 +18,6 @@ from time import time
 
 import pygame
 
-
-if "-psyco" in sys.argv:
-    try:
-        import psyco
-
-        psyco.full()
-    except Exception:
-        print("No psyco for you!  psyco failed to import and run.")
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 data_dir = os.path.join(main_dir, "data")
@@ -61,10 +54,6 @@ if "-sw" in sys.argv:
 
 use_rle = True
 
-if "-hw" in sys.argv:
-    flags ^= pygame.HWSURFACE
-    use_rle = False
-
 if "-scaled" in sys.argv:
     flags ^= pygame.SCALED
 
@@ -84,26 +73,6 @@ else:
     use_alpha = False
 
 print(screen_dims)
-
-
-##class Thingy(pygame.sprite.Sprite):
-##    images = None
-##    def __init__(self):
-##        pygame.sprite.Sprite.__init__(self)
-##        self.image = Thingy.images[0]
-##        self.rect = self.image.get_rect()
-##        self.rect.x = randint(0, screen_dims[0])
-##        self.rect.y = randint(0, screen_dims[1])
-##        #self.vel = [randint(-10, 10), randint(-10, 10)]
-##        self.vel = [randint(-1, 1), randint(-1, 1)]
-##
-##    def move(self):
-##        for i in [0, 1]:
-##            nv = self.rect[i] + self.vel[i]
-##            if nv >= screen_dims[i] or nv < 0:
-##                self.vel[i] = -self.vel[i]
-##                nv = self.rect[i] + self.vel[i]
-##            self.rect[i] = nv
 
 
 class Thingy(pygame.sprite.DirtySprite):

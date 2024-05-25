@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.fonty
+"""pygame.examples.fonty
 
 Here we load a .TTF True Type font file, and display it in
 a basic pygame window.
@@ -8,6 +8,7 @@ Demonstrating several Font object attributes.
 
 - basic window, event, and font management.
 """
+
 import pygame
 
 
@@ -27,7 +28,7 @@ def main():
     screen.fill(wincolor)
 
     # load font, prepare values
-    font = pygame.font.Font(None, 80)
+    font = pygame.Font(None, 80)
     text = "Fonty"
     size = font.size(text)
 

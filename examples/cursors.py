@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.cursors
+"""pygame.examples.cursors
 Click a button and the cursor will change.
 This example will show you:
 *The different types of cursors that exist
@@ -88,8 +88,8 @@ def main():
     pygame.display.set_caption("Cursors Example")
 
     pygame.font.init()
-    font = pygame.font.Font(None, 30)
-    font1 = pygame.font.Font(None, 24)
+    font = pygame.Font(None, 30)
+    font1 = pygame.Font(None, 24)
 
     bg = pygame.display.set_mode((500, 400))
     bg.fill((183, 201, 226))
@@ -152,8 +152,8 @@ def main():
     index = 0
     pygame.mouse.set_cursor(cursors[index])
 
-    pressed = False
-    clock = pygame.time.Clock()
+    was_pressed = False
+    clock = pygame.Clock()
 
     while True:
         clock.tick(50)
@@ -224,7 +224,7 @@ def main():
             )
             bg.blit(button_text, button_text_rect)
 
-            if pygame.mouse.get_pressed()[0] == 1 and pressed == False:
+            if pygame.mouse.get_pressed()[0] and not was_pressed:
                 button = pygame.draw.rect(
                     bg,
                     (0, 0, 139),
@@ -242,10 +242,7 @@ def main():
                 pygame.display.update()
                 pygame.time.delay(40)
 
-        if pygame.mouse.get_pressed()[0] == 1:
-            pressed = True
-        elif pygame.mouse.get_pressed()[0] == 0:
-            pressed = False
+        was_pressed = pygame.mouse.get_pressed()[0]
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

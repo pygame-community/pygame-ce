@@ -3,10 +3,10 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-SDL2="SDL2-2.26.4"
-IMG2="SDL2_image-2.0.5"
-TTF2="SDL2_ttf-2.20.2"
-MIX2="SDL2_mixer-2.6.3"
+SDL2="SDL2-2.30.3"
+IMG2="SDL2_image-2.8.2"
+TTF2="SDL2_ttf-2.22.0"
+MIX2="SDL2_mixer-2.8.0"
 
 
 # Download
@@ -33,14 +33,9 @@ if [[ "$MAC_ARCH" == "arm64" ]]; then
 fi
 
 cd $SDL2
-./configure --disable-video-vulkan $ARCHS_CONFIG_FLAG $M1_MAC_EXTRA_FLAGS
+./configure --disable-video-vulkan $PG_BASE_CONFIGURE_FLAGS $M1_MAC_EXTRA_FLAGS
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi
 
 cd ..
 
@@ -61,16 +56,19 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
       export SDL_IMAGE_CONFIGURE=--disable-imageio
 fi
 
-./configure --enable-png --disable-png-shared --enable-jpg --disable-jpg-shared \
-        --enable-tif --disable-tif-shared --enable-webp --disable-webp-shared \
-        $SDL_IMAGE_CONFIGURE $ARCHS_CONFIG_FLAG
+# We prefer libpng and libjpeg-turbo over stb-image at the moment
+# We also don't compile avif and jxl support at the moment
+./configure $ARCHS_CONFIG_FLAG \
+      --disable-stb-image \
+      --disable-avif --disable-avif-shared \
+      --disable-jxl --disable-jxl-shared \
+      --enable-png --disable-png-shared \
+      --enable-jpg --disable-jpg-shared \
+      --enable-tif --disable-tif-shared \
+      --enable-webp --disable-webp-shared \
+      $SDL_IMAGE_CONFIGURE $PG_BASE_CONFIGURE_FLAGS
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi
 
 cd ..
 
@@ -80,14 +78,9 @@ cd $TTF2
 
 # We already build freetype+harfbuzz for pygame.freetype
 # So we make SDL_ttf use that instead of SDL_ttf vendored copies
-./configure $ARCHS_CONFIG_FLAG --disable-freetype-builtin --disable-harfbuzz-builtin
+./configure $PG_BASE_CONFIGURE_FLAGS --disable-freetype-builtin --disable-harfbuzz-builtin
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi
 
 cd ..
 
@@ -101,28 +94,23 @@ cd $MIX2
 # libraries into the wheel.
 # We prefer libflac, mpg123 and ogg-vorbis over SDL vendored implementations
 # at the moment. This can be changed later if need arises.
-# For now, libmodplug is preferred over libxmp (but this may need changing
-# in the future)
-./configure $ARCHS_CONFIG_FLAG \
+# We don't build with libgme for now
+./configure $PG_BASE_CONFIGURE_FLAGS \
       --disable-dependency-tracking \
       --disable-music-ogg-stb --enable-music-ogg-vorbis \
       --disable-music-flac-drflac --enable-music-flac-libflac \
-      --disable-music-mp3-drmp3 --enable-music-mp3-mpg123 \
-      --enable-music-mod-modplug --disable-music-mod-mikmod-shared \
-      --disable-music-mod-xmp --disable-music-mod-xmp-shared \
+      --disable-music-mp3-drmp3 --disable-music-mp3-minimp3 --enable-music-mp3-mpg123 \
+      --disable-music-mod-modplug \
+      --enable-music-mod-xmp --disable-music-mod-xmp-shared \
       --enable-music-midi-fluidsynth --disable-music-midi-fluidsynth-shared \
       --enable-music-opus --disable-music-opus-shared \
+      --enable-music-wavpack --disable-music-wavpack-shared \
       --disable-music-ogg-vorbis-shared \
-      --disable-music-ogg-tremor-shared \
+      --disable-music-ogg-tremor \
       --disable-music-flac-libflac-shared \
-      --disable-music-mp3-mpg123-shared
+      --disable-music-mp3-mpg123-shared \
+      --disable-music-gme
 
 make
 make install
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi
-
-cd ..

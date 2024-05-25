@@ -28,14 +28,11 @@
 #include "doc/joystick_doc.h"
 
 static pgJoystickObject *joylist_head = NULL;
-#ifndef BUILD_STATIC
-static PyObject *joy_instance_map = NULL;
-#endif  // BUILD_STATIC joy_instance_map already defined in src_c/event.c:57
 static PyTypeObject pgJoystick_Type;
 static PyObject *
 pgJoystick_New(int);
 static int
-_joy_map_insert(pgJoystickObject *jstick);
+pgJoystick_GetDeviceIndexByInstanceID(int);
 #define pgJoystick_Check(x) ((x)->ob_type == &pgJoystick_Type)
 
 static PyObject *
@@ -95,7 +92,7 @@ joy_dealloc(PyObject *self)
         jstick->next->prev = jstick->prev;
     }
 
-    PyObject_Free(self);
+    Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject *
@@ -121,6 +118,15 @@ get_count(PyObject *self, PyObject *_null)
 static PyObject *
 joy_init(PyObject *self, PyObject *_null)
 {
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "pygame.joystick.Joystick.init() is deprecated since 2.4.0. "
+            "Bear in mind in future it will not be possible to "
+            "reinitialise a closed Joystick object.",
+            1) == -1) {
+        return NULL;
+    }
+
     pgJoystickObject *jstick = (pgJoystickObject *)self;
 
     if (!jstick->joy) {
@@ -130,37 +136,7 @@ joy_init(PyObject *self, PyObject *_null)
         }
     }
 
-    if (-1 == _joy_map_insert(jstick)) {
-        return NULL;
-    }
-
     Py_RETURN_NONE;
-}
-
-static int
-_joy_map_insert(pgJoystickObject *jstick)
-{
-    SDL_JoystickID instance_id;
-    PyObject *k, *v;
-
-    if (!joy_instance_map) {
-        return -1;
-    }
-
-    instance_id = SDL_JoystickInstanceID(jstick->joy);
-    if (instance_id < 0) {
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return -1;
-    }
-    k = PyLong_FromLong(instance_id);
-    v = PyLong_FromLong(jstick->id);
-    if (k && v) {
-        PyDict_SetItem(joy_instance_map, k, v);
-    }
-    Py_XDECREF(k);
-    Py_XDECREF(v);
-
-    return 0;
 }
 
 static PyObject *
@@ -186,6 +162,15 @@ joy_get_init(PyObject *self, PyObject *_null)
 static PyObject *
 joy_get_id(PyObject *self, PyObject *_null)
 {
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "pygame.joystick.Joystick.get_id() is deprecated since 2.4.0. "
+            "The original device index is not useful in pygame 2. "
+            "Use get_instance_id() instead.",
+            1) == -1) {
+        return NULL;
+    }
+
     int joy_id = pgJoystick_AsID(self);
     return PyLong_FromLong(joy_id);
 }
@@ -265,8 +250,6 @@ joy_get_power_level(PyObject *self, PyObject *_null)
 static PyObject *
 joy_rumble(pgJoystickObject *self, PyObject *args, PyObject *kwargs)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 9)
-
     SDL_Joystick *joy = self->joy;
     double lowf, highf;
     uint32_t low, high, duration;
@@ -308,19 +291,13 @@ joy_rumble(pgJoystickObject *self, PyObject *args, PyObject *kwargs)
         Py_RETURN_FALSE;
     }
     Py_RETURN_TRUE;
-
-#else
-    Py_RETURN_FALSE;
-#endif
 }
 
 static PyObject *
 joy_stop_rumble(pgJoystickObject *self, PyObject *_null)
 {
-#if SDL_VERSION_ATLEAST(2, 0, 9)
     SDL_Joystick *joy = self->joy;
     SDL_JoystickRumble(joy, 0, 0, 1);
-#endif
     Py_RETURN_NONE;
 }
 
@@ -444,7 +421,7 @@ joy_get_ball(PyObject *self, PyObject *args)
     }
 
     SDL_JoystickGetBall(joy, _index, &dx, &dy);
-    return Py_BuildValue("(ii)", dx, dy);
+    return pg_tuple_couple_from_values_int(dx, dy);
 }
 
 static PyObject *
@@ -502,14 +479,13 @@ joy_get_hat(PyObject *self, PyObject *args)
         px = -1;
     }
 
-    return Py_BuildValue("(ii)", px, py);
+    return pg_tuple_couple_from_values_int(px, py);
 }
 
 static PyMethodDef joy_methods[] = {
     {"init", joy_init, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_INIT},
     {"quit", joy_quit, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_QUIT},
     {"get_init", joy_get_init, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_GETINIT},
-
     {"get_id", joy_get_id, METH_NOARGS, DOC_JOYSTICK_JOYSTICK_GETID},
     {"get_instance_id", joy_get_instance_id, METH_NOARGS,
      DOC_JOYSTICK_JOYSTICK_GETINSTANCEID},
@@ -545,6 +521,20 @@ static PyTypeObject pgJoystick_Type = {
     .tp_doc = DOC_JOYSTICK_JOYSTICK,
     .tp_methods = joy_methods,
 };
+
+static int
+pgJoystick_GetDeviceIndexByInstanceID(int instance_id)
+{
+    pgJoystickObject *cur;
+    cur = joylist_head;
+    while (cur) {
+        if (SDL_JoystickInstanceID(cur->joy) == instance_id) {
+            return cur->id;
+        }
+        cur = cur->next;
+    }
+    return -1;
+}
 
 static PyObject *
 pgJoystick_New(int id)
@@ -588,11 +578,6 @@ pgJoystick_New(int id)
     }
     joylist_head = jstick;
 
-    if (-1 == _joy_map_insert(jstick)) {
-        Py_DECREF(jstick);
-        return NULL;
-    }
-
     return (PyObject *)jstick;
 }
 
@@ -632,17 +617,6 @@ MODINIT_DEFINE(joystick)
         return NULL;
     }
 
-    /* Grab the instance -> device id mapping */
-    module = PyImport_ImportModule("pygame.event");
-    if (!module) {
-        return NULL;
-    }
-    joy_instance_map = PyObject_GetAttrString(module, "_joy_instance_map");
-    Py_DECREF(module);
-    if (!joy_instance_map) {
-        return NULL;
-    }
-
     /* create the module */
     module = PyModule_Create(&_module);
     if (module == NULL) {
@@ -660,6 +634,7 @@ MODINIT_DEFINE(joystick)
     /* export the c api */
     c_api[0] = &pgJoystick_Type;
     c_api[1] = pgJoystick_New;
+    c_api[2] = pgJoystick_GetDeviceIndexByInstanceID;
     apiobj = encapsulate_api(c_api, "joystick");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);

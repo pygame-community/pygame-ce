@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.eventlist
+"""pygame.examples.eventlist
 
 Learn about pygame events and input.
 
@@ -12,7 +12,7 @@ usage = """
 Mouse Controls
 ==============
 
-- 1st button on mouse (left click) to toggle events 'grabed'.
+- 1st button on mouse (left click) to toggle events 'grabbed'.
 - 3rd button on mouse (right click) to toggle mouse visible.
 - The window can be resized.
 - Mouse the mouse around to see mouse events.
@@ -98,22 +98,15 @@ def drawstatus(win):
 def drawhistory(win, history):
     img = font.render("Event History Area", 1, (155, 155, 155), (0, 0, 0))
     win.blit(img, (2, 132))
-    ypos = 450
-    h = list(history)
-    h.reverse()
-    for line in h:
-        r = win.blit(line, (10, ypos))
-        win.fill(0, (r.right, r.top, 620, r.height))
-        ypos -= font.get_height()
+
+    img = font.render("\n".join(history), 1, (50, 200, 50), (0, 0, 0), wraplength=640)
+    win.blit(img, (10, 250))
 
 
 def draw_usage_in_history(history, text):
-    lines = text.split("\n")
-    for line in lines:
-        if line == "" or "===" in line:
-            continue
-        img = font.render(line, 1, (50, 200, 50), (0, 0, 0))
-        history.append(img)
+    for line in text.split("\n"):
+        if "===" not in line and line != "":
+            history.append(line)
 
 
 def main():
@@ -124,29 +117,28 @@ def main():
     pygame.display.set_caption("Mouse Focus Workout. h key for help")
 
     global font
-    font = pygame.font.Font(None, 26)
+    font = pygame.Font(None, 26)
 
     global img_on_off
     img_on_off.append(font.render("Off", 1, (0, 0, 0), (255, 50, 50)))
     img_on_off.append(font.render("On", 1, (0, 0, 0), (50, 255, 50)))
 
-    # stores surfaces of text representing what has gone through the event queue
+    # stores lines of text representing what has gone through the event queue
     history = []
 
     # let's turn on the joysticks just so we can play with em
     for x in range(pygame.joystick.get_count()):
         if SDL2 and pygame._sdl2.controller.is_controller(x):
             c = pygame._sdl2.controller.Controller(x)
-            txt = "Enabled controller: " + c.name
+            txt = f"Enabled controller: {c.name}"
         else:
             j = pygame.joystick.Joystick(x)
-            txt = "Enabled joystick: " + j.get_name()
+            txt = f"Enabled joystick: {j.get_name()}"
 
-        img = font.render(txt, 1, (50, 200, 50), (0, 0, 0))
-        history.append(img)
+        history.append(txt)
+
     if not pygame.joystick.get_count():
-        img = font.render("No Joysticks to Initialize", 1, (50, 200, 50), (0, 0, 0))
-        history.append(img)
+        history.append("No Joysticks to Initialize")
 
     going = True
     while going:
@@ -168,8 +160,7 @@ def main():
 
             if e.type != pygame.MOUSEMOTION:
                 txt = f"{pygame.event.event_name(e.type)}: {e.dict}"
-                img = font.render(txt, 1, (50, 200, 50), (0, 0, 0))
-                history.append(img)
+                history.append(txt)
                 history = history[-13:]
 
             if e.type == pygame.VIDEORESIZE:

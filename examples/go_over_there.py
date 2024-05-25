@@ -1,4 +1,4 @@
-""" pygame.examples.go_over_there
+"""pygame.examples.go_over_there
 This simple tech demo is showcasing the use of Vector2.move_towards()
 using multiple circles to represent Vectors. Each circle will have a
 random position and speed once the demo starts.
@@ -9,6 +9,7 @@ Mouse Controls:
 Keyboard Controls:
 * Press R to restart the demo
 """
+
 import pygame
 import random
 
@@ -20,7 +21,7 @@ CIRCLE_RADIUS = 5
 
 pygame.init()
 screen = pygame.display.set_mode(SCREEN_SIZE)
-clock = pygame.time.Clock()
+clock = pygame.Clock()
 
 target_position = None
 balls = []
@@ -40,7 +41,7 @@ def reset():
     balls = []
     for x in range(MAX_BALLS):
         pos = pygame.Vector2(
-            random.randint(0, SCREEN_SIZE.x), random.randint(0, SCREEN_SIZE.y)
+            random.randint(0, int(SCREEN_SIZE.x)), random.randint(0, int(SCREEN_SIZE.y))
         )
         speed = random.uniform(MIN_SPEED, MAX_SPEED)
 

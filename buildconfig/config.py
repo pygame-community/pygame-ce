@@ -80,14 +80,12 @@ def prepdep(dep, basepath):
         if isinstance(dep.inc_dir, str):
             incs.append(IPREFIX+dep.inc_dir[startind:])
         else:
-            for dir in dep.inc_dir:
-                incs.append(IPREFIX+dir[startind:])
+            incs.extend(IPREFIX+dir[startind:] for dir in dep.inc_dir)
     if dep.lib_dir:
         if isinstance(dep.lib_dir, str):
             lids.append(LPREFIX+dep.lib_dir[startind:])
         else:
-            for dir in dep.lib_dir:
-                lids.append(LPREFIX+dir[startind:])
+            lids.extend(LPREFIX+dir[startind:] for dir in dep.lib_dir)
     libs = ''
     for lib in dep.libs:
         libs += ' -l' + lib
@@ -159,7 +157,6 @@ def writesetupfile(deps, basepath, additional_lines):
 
 def main(auto=False):
     additional_platform_setup = []
-    conan = "-conan" in sys.argv
 
     if '-sdl2' in sys.argv:
         sys.argv.remove('-sdl2')
@@ -168,14 +165,7 @@ def main(auto=False):
 Only SDL2 is supported now.""")
 
     kwds = {}
-    if conan:
-        print_('Using CONAN configuration...\n')
-        try:
-            import config_conan as CFG
-        except ImportError:
-            import buildconfig.config_conan as CFG
-
-    elif sys.platform == 'win32':
+    if sys.platform == 'win32':
         if sys.version_info >= (3, 8) and is_msys2():
             print_('Using WINDOWS MSYS2 configuration...\n')
             try:
@@ -229,8 +219,6 @@ Only SDL2 is supported now.""")
             shutil.copyfile(os.path.join(BASE_PATH, 'Setup'), os.path.join(BASE_PATH, 'Setup.bak'))
 
     deps = CFG.main(**kwds, auto_config=auto)
-    if '-conan' in sys.argv:
-        sys.argv.remove('-conan')
 
     if deps:
         basepath = None

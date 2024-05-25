@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.camera
+"""pygame.examples.camera
 
 Basic image capturing and display using pygame.camera
 
@@ -11,6 +11,7 @@ Keyboard controls
 - 9, start camera 9.
 - 10, start camera... wait a minute! There's not 10 key!
 """
+
 import pygame
 import pygame.camera
 
@@ -46,7 +47,7 @@ class VideoCapturePlayer:
         # starts the camera
         self.camera.start()
 
-        self.clock = pygame.time.Clock()
+        self.clock = pygame.Clock()
 
         # create a surface to capture to.  for performance purposes, you want the
         # bit depth to be the same as that of the display surface.

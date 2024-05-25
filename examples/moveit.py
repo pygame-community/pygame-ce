@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.moveit
+"""pygame.examples.moveit
 
 This is the full and final example from the Pygame Tutorial,
 "How Do I Make It Move". It creates 10 objects and animates
@@ -11,6 +11,7 @@ Note it's a bit scant on error checking, but it's easy to read. :]
 Fortunately, this is python, and we needn't wrestle with a pile of
 error codes.
 """
+
 import os
 import pygame
 
@@ -62,7 +63,7 @@ def load_image(name):
 # here's the full code
 def main():
     pygame.init()
-    clock = pygame.time.Clock()
+    clock = pygame.Clock()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
     player = load_image("player1.gif")
@@ -109,9 +110,8 @@ def main():
             o.move(right=True)
             screen.blit(o.image, o.pos)
         screen.blit(p.image, p.pos)
-        clock.tick(60)
         pygame.display.update()
-        pygame.time.delay(100)
+        clock.tick(60)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
-Pygame Front Page
-=================
+Pygame-ce Front Page
+====================
 
 .. toctree::
    :maxdepth: 2
@@ -18,9 +18,10 @@ Pygame Front Page
 Quick start
 -----------
 
-Welcome to pygame! Once you've got pygame installed (:code:`pip install pygame-ce` or
-:code:`pip3 install pygame-ce` for most people), the next question is how to get a game
-loop running. Pygame, unlike some other libraries, gives you full control of program
+Welcome to pygame-ce! Once you've got pygame-ce installed
+(:code:`pip install pygame-ce` or :code:`pip3 install pygame-ce` for most
+people), the next question is how to get a game loop running. Pygame-ce,
+unlike some other libraries, gives you full control of program
 execution. That freedom means it is easy to mess up in your initial steps.
 
 Here is a good example of a basic setup (opens the window, updates the screen, and handles events)--
@@ -42,10 +43,6 @@ Documents
 
 `Readme`_
   Basic information about pygame: what it is, who is involved, and where to find it.
-
-`Install`_
-  Steps needed to compile pygame on several platforms.
-  Also help on finding and installing prebuilt binaries for your system.
 
 :doc:`filepaths`
   How pygame handles file system paths.
@@ -114,6 +111,9 @@ Tutorials
   Los ejemplos de pygame incluyen un sencillo programa con un puño interactivo y un chimpancé.
   Está inspirado en el molesto banner de flash de principios de la década de 2000.
   Este tutorial examina cada línea de código utilizada en el ejemplo.
+
+:doc:`What is Premultiplied Alpha? <tutorials/en/premultiplied-alpha>`
+  An explanation of alpha compositing and the advantages of using premultipled alpha.
 
 
 Reference
@@ -212,8 +212,6 @@ Reference
 :ref:`search`
   Search pygame documents by keyword.
 
-.. _Readme: ../wiki/about
-
-.. _Install: ../wiki/GettingStarted#Pygame%20Installation
+.. _Readme: https://github.com/pygame-community/pygame-ce#readme
 
 .. _LGPL License: LGPL.txt

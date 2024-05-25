@@ -42,7 +42,7 @@
      if pxarray[0, 0] == surface.map_rgb((0, 0, 255)):
          ...
 
-   When assigning to a range of of pixels, a non tuple sequence of colors or
+   When assigning to a range of pixels, a non tuple sequence of colors or
    a PixelArray can be used as the value. For a sequence, the length must
    match the PixelArray width.
 
@@ -79,7 +79,7 @@
      pxarray[::2] = (0, 0, 0)                  # Same as [::2, :]
 
    During its lifetime, the PixelArray locks the surface, thus you explicitly
-   have to close() it once its not used any more and the surface should perform
+   have to close() it once it's not used any more and the surface should perform
    operations in the same scope. It is best to use it as a context manager
    using the with PixelArray(surf) as pixel_array: style. So it works on pypy too.
 
@@ -100,19 +100,19 @@
    copying is implemented it is suggested PixelArray to PixelArray copies be
    only between surfaces of identical format.
 
-   .. versionadded:: 1.9.4
+   .. versionaddedold:: 1.9.4
 
     - close() method was added. For explicitly cleaning up.
     - being able to use PixelArray as a context manager for cleanup.
     - both of these are useful for when working without reference counting (pypy).
 
-   .. versionadded:: 1.9.2
+   .. versionaddedold:: 1.9.2
 
     - array struct interface
     - transpose method
     - broadcasting for a length 1 dimension
 
-   .. versionchanged:: 1.9.2
+   .. versionchangedold:: 1.9.2
 
     - A 2D PixelArray can have a length 1 dimension.
       Only an integer index on a 2D PixelArray returns a 1D array.
@@ -120,21 +120,21 @@
       is a sequence of colors.
 
 
-   .. versionadded: 1.8.0
+   .. versionaddedold: 1.8.0
       Subscript support
 
-   .. versionadded: 1.8.1
+   .. versionaddedold: 1.8.1
       Methods :meth:`make_surface`, :meth:`replace`, :meth:`extract`, and
       :meth:`compare`
 
-   .. versionadded: 1.9.2
+   .. versionaddedold: 1.9.2
       Properties :attr:`itemsize`, :attr:`ndim`, :attr:`shape`,
       and :attr:`strides`
 
-   .. versionadded: 1.9.2
+   .. versionaddedold: 1.9.2
       Array struct interface
 
-   .. versionadded: 1.9.4
+   .. versionaddedold: 1.9.4
       Methods :meth:`close`
 
    .. attribute:: surface
@@ -154,7 +154,7 @@
       This is the same as :meth:`Surface.get_bytesize` for the
       pixel array's surface.
 
-      .. versionadded:: 1.9.2
+      .. versionaddedold:: 1.9.2
 
    .. attribute:: ndim
 
@@ -163,7 +163,7 @@
 
       A pixel array can be 1 or 2 dimensional.
 
-      .. versionadded:: 1.9.2
+      .. versionaddedold:: 1.9.2
 
    .. attribute:: shape
 
@@ -173,7 +173,7 @@
       A tuple or length :attr:`ndim` giving the length of each
       dimension. Analogous to :meth:`Surface.get_size`.
 
-      .. versionadded:: 1.9.2
+      .. versionaddedold:: 1.9.2
 
    .. attribute:: strides
 
@@ -185,7 +185,7 @@
       of that index from the start of the array. A stride is negative
       for an array that has is inverted (has a negative step).
 
-      .. versionadded:: 1.9.2
+      .. versionaddedold:: 1.9.2
 
    .. method:: make_surface
 
@@ -201,7 +201,7 @@
         # Create a new surface flipped around the vertical axis.
         sf = pxarray[:,::-1].make_surface ()
 
-      .. versionadded:: 1.8.1
+      .. versionaddedold:: 1.8.1
 
       .. ## PixelArray.make_surface ##
 
@@ -222,7 +222,7 @@
       This is an in place operation that directly affects the pixels of the
       PixelArray.
 
-      .. versionadded:: 1.8.1
+      .. versionaddedold:: 1.8.1
 
       .. ## PixelArray.replace ##
 
@@ -241,7 +241,7 @@
       extraction to take pixels with a similar, but not exactly identical
       color, into account as well.
 
-      .. versionadded:: 1.8.1
+      .. versionaddedold:: 1.8.1
 
       .. ## PixelArray.extract ##
 
@@ -261,7 +261,7 @@
       comparison to mark pixels with a similar, but not exactly identical
       color, as white.
 
-      .. versionadded:: 1.8.1
+      .. versionaddedold:: 1.8.1
 
       .. ## PixelArray.compare ##
 
@@ -275,7 +275,7 @@
       If an array is one dimensional, then a length 1 x dimension is added,
       resulting in a 2D pixel array.
 
-      .. versionadded:: 1.9.2
+      .. versionaddedold:: 1.9.2
 
       .. ## PixelArray.transpose ##
 
@@ -287,7 +287,7 @@
       This method is for explicitly closing the PixelArray, and releasing
       a lock on the Surface.
 
-      .. versionadded:: 1.9.4
+      .. versionaddedold:: 1.9.4
 
       .. ## PixelArray.close ##
 

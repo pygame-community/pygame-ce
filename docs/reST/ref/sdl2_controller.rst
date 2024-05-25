@@ -33,7 +33,7 @@ events related to controllers.
 .. note::
    See the :mod:`pygame.joystick` for a more versatile but more advanced api.
 
-.. versionadded:: 2 This module requires SDL2.
+.. versionaddedold:: 2 This module requires SDL2.
 
 .. function:: init
 
@@ -72,7 +72,7 @@ events related to controllers.
     .. note::
         Controllers can still generate joystick events, which will not be toggled by this function.
 
-    .. versionchanged:: 2.0.2: Changed return type from int to None
+    .. versionchangedold:: 2.0.2: Changed return type from int to None
 
     .. ## pygame._sdl2.controller.set_eventstate ##
 
@@ -84,7 +84,7 @@ events related to controllers.
     Returns the current state of events related to controllers, True meaning
     events will be posted.
 
-    .. versionadded:: 2.0.2
+    .. versionaddedold:: 2.0.2
 
     .. ## pygame._sdl2.controller.get_eventstate ##
 
@@ -228,9 +228,9 @@ events related to controllers.
       Returns a dict containing the mapping of the Controller. For more
       information see :meth:`Controller.set_mapping()`
 
-      .. versionchanged:: 2.0.2: Return type changed from ``str`` to ``dict``
+      .. versionchangedold:: 2.0.2: Return type changed from ``str`` to ``dict``
 
-      .. ## Contorller.get_mapping ##
+      .. ## Controller.get_mapping ##
 
    .. method:: set_mapping
 
@@ -257,10 +257,10 @@ events related to controllers.
 
       The function will return 1 if a new mapping is added or 0 if an existing one is updated.
 
-      .. versionchanged:: 2.0.2: Renamed from ``add_mapping`` to ``set_mapping``
-      .. versionchanged:: 2.0.2: Argument type changed from ``str`` to ``dict``
+      .. versionchangedold:: 2.0.2: Renamed from ``add_mapping`` to ``set_mapping``
+      .. versionchangedold:: 2.0.2: Argument type changed from ``str`` to ``dict``
 
-      .. ## Contorller.set_mapping ##
+      .. ## Controller.set_mapping ##
 
    .. method:: rumble
 
@@ -276,9 +276,9 @@ events related to controllers.
       Returns True if the rumble was played successfully or False if the
       controller does not support it or :meth:`pygame.version.SDL` is below 2.0.9.
 
-      .. versionadded:: 2.0.2
+      .. versionaddedold:: 2.0.2
 
-      .. ## Contorller.rumble ##
+      .. ## Controller.rumble ##
 
    .. method:: stop_rumble
 
@@ -288,8 +288,8 @@ events related to controllers.
       Stops any rumble effect playing on the controller. See
       :meth:`Controller.rumble` for more information.
 
-      .. versionadded:: 2.0.2
+      .. versionaddedold:: 2.0.2
 
-      .. ## Contorller.stop_rumble ##
+      .. ## Controller.stop_rumble ##
 
 .. ## pygame._sdl2.controller ##

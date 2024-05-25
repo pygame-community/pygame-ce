@@ -1,13 +1,14 @@
 import os
 import sys
 
-if os.environ.get("SDL_VIDEODRIVER") == "dummy":
-    __tags__ = ("ignore", "subprocess_ignore")
 import unittest
 from pygame.tests.test_utils import trunk_relative_path
 
 import pygame
 from pygame import scrap
+
+if os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER:
+    __tags__ = ("ignore", "subprocess_ignore")
 
 
 class ScrapModuleTest(unittest.TestCase):
@@ -99,10 +100,10 @@ class ScrapModuleTest(unittest.TestCase):
     def test_put__bmp_image(self):
         """Ensures put can place a BMP image into the clipboard."""
         sf = pygame.image.load(trunk_relative_path("examples/data/asprite.bmp"))
-        expected_string = pygame.image.tostring(sf, "RGBA")
-        scrap.put(pygame.SCRAP_BMP, expected_string)
+        expected_bytes = pygame.image.tobytes(sf, "RGBA")
+        scrap.put(pygame.SCRAP_BMP, expected_bytes)
 
-        self.assertEqual(scrap.get(pygame.SCRAP_BMP), expected_string)
+        self.assertEqual(scrap.get(pygame.SCRAP_BMP), expected_bytes)
 
     def test_put(self):
         """Ensures put can place data into the clipboard
@@ -216,7 +217,7 @@ class X11InteractiveTest(unittest.TestCase):
             __tags__ = ["interactive"]
         pygame.display.quit()
 
-    def test_issue_208(self):
+    def test_issue_223(self):
         """PATCH: pygame.scrap on X11, fix copying into PRIMARY selection
 
         Copying into theX11 PRIMARY selection (mouse copy/paste) would not

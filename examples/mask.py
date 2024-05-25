@@ -132,7 +132,7 @@ def main(*args):
 
     screen_size = (640, 480)
     screen = pygame.display.set_mode(screen_size)
-    clock = pygame.time.Clock()
+    clock = pygame.Clock()
 
     images = []
     masks = []

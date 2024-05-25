@@ -79,8 +79,8 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 .. function:: get_pressed
 
    | :sl:`get the state of the mouse buttons`
-   | :sg:`get_pressed(num_buttons=3) -> (button1, button2, button3)`
-   | :sg:`get_pressed(num_buttons=5) -> (button1, button2, button3, button4, button5)`
+   | :sg:`get_pressed(num_buttons=3) -> (left_button, middle_button, right_button)`
+   | :sg:`get_pressed(num_buttons=5) -> (left_button, middle_button, right_button, x1_button, x2_button)`
 
    Returns a sequence of booleans representing the state of all the mouse
    buttons. A true value means the mouse is currently being pressed at the time
@@ -103,9 +103,59 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    are added to the returned tuple. Only ``3`` and ``5`` are valid values 
    for this parameter.
    
-   .. versionchanged:: 2.0.0 ``num_buttons`` argument added
+   .. versionchangedold:: 2.0.0 ``num_buttons`` argument added
 
    .. ## pygame.mouse.get_pressed ##
+
+.. function:: get_just_pressed
+
+   | :sl:`get the most recently pressed buttons`
+   | :sg:`get_just_pressed() -> (left_button, middle_button, right_button, x1_button, x2_button)`
+
+   Very similar to :func:`pygame.mouse.get_pressed()`, returning a tuple
+   of length 5 with the important difference that the buttons are 
+   True only in the frame they start being pressed. This can be convenient
+   for checking the buttons pressed "this frame", but for more precise results
+   and correct ordering prefer using the pygame.MOUSEBUTTONDOWN event.
+
+   The result of this function is updated when new events are processed,
+   e.g. in :func:`pygame.event.get()` or :func:`pygame.event.pump()`.
+
+   .. seealso:: :func:`pygame.mouse.get_just_released()`
+
+   ::
+      
+      if pygame.mouse.get_just_pressed()[0]:
+         print("LMB just pressed")
+
+   .. versionadded:: 2.5.0
+
+   .. ## pygame.mouse.get_just_pressed ##
+
+.. function:: get_just_released
+
+   | :sl:`get the most recently released buttons`
+   | :sg:`get_just_released() -> (left_button, middle_button, right_button, x1_button, x2_button)`
+
+   Similar to :func:`pygame.mouse.get_pressed()`, returning a tuple
+   of length 5 with the important difference that the buttons are 
+   True only in the frame they stop being pressed. This can be convenient
+   for checking the buttons released "this frame", but for more precise results
+   and correct ordering prefer using the pygame.MOUSEBUTTONUP event.
+
+   The result of this function is updated when new events are processed,
+   e.g. in :func:`pygame.event.get()` or :func:`pygame.event.pump()`.
+
+   .. seealso:: :func:`pygame.mouse.get_just_pressed()`
+
+   ::
+      
+      if pygame.mouse.get_just_released()[0]:
+         print("LMB just released")
+
+   .. versionadded:: 2.5.0
+
+   .. ## pygame.mouse.get_just_released ##
 
 .. function:: get_pos
 
@@ -134,7 +184,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 .. function:: set_pos
 
    | :sl:`set the mouse cursor position`
-   | :sg:`set_pos([x, y]) -> None`
+   | :sg:`set_pos([x, y], /) -> None`
 
    Set the current mouse position to arguments given. If the mouse cursor is
    visible it will jump to the new coordinates. Moving the mouse will generate
@@ -145,7 +195,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 .. function:: set_visible
 
    | :sl:`hide or show the mouse cursor`
-   | :sg:`set_visible(bool) -> bool`
+   | :sg:`set_visible(bool, /) -> bool`
 
    If the bool argument is true, the mouse cursor will be visible. This will
    return the previous visible state of the cursor.
@@ -160,7 +210,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    Get the current visibility state of the mouse cursor. ``True`` if the mouse is
    visible, ``False`` otherwise.
 
-   .. versionadded:: 2.0.0
+   .. versionaddedold:: 2.0.0
 
    .. ## pygame.mouse.get_visible ##
 
@@ -195,7 +245,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 
    See :class:`pygame.cursors.Cursor` for help creating cursors and for examples.
 
-   .. versionchanged:: 2.0.1
+   .. versionchangedold:: 2.0.1
 
    .. ## pygame.mouse.set_cursor ##
 
@@ -212,8 +262,39 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
              ``size, hotspot, xormasks, andmasks`` will still work,
 	     assuming the call returns an old school type cursor.
 
-   .. versionchanged:: 2.0.1
+   .. versionchangedold:: 2.0.1
 
    .. ## pygame.mouse.get_cursor ##
+
+.. function:: get_relative_mode
+
+   | :sl:`query whether relative mouse mode is enabled`
+   | :sg:`get_relative_mode() -> bool`
+
+   Query whether relative mouse mode is enabled.
+
+   .. versionadded:: 2.4.0
+
+   .. ## pygame.mouse.get_relative_mode ##
+
+.. function:: set_relative_mode
+
+   | :sl:`set relative mouse mode`
+   | :sg:`set_relative_mode(enable, /) -> None`
+
+   Sets the relative mouse mode state.
+   While the mouse is in relative mode, the cursor is hidden,
+   the mouse position is constrained to the window, and pygame
+   will report continuous relative mouse motion even if the 
+   mouse is at the edge of the window.
+
+   *This function will flush any pending mouse motion."*
+
+   Calling :func:`pygame.mouse.set_visible` with argument
+   ``True`` will exit relative mouse mode.
+
+   .. versionadded:: 2.4.0
+
+   .. ## pygame.mouse.set_relative_mode ##
 
 .. ## pygame.mouse ##

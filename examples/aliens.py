@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.aliens
+"""pygame.examples.aliens
 
 Shows a mini game where you have to defend against aliens.
 
@@ -10,7 +10,7 @@ What does it show you about pygame?
 * music with pygame.mixer.music, including fadeout
 * sound effects with pygame.Sound
 * event processing, keyboard handling, QUIT handling.
-* a main loop frame limited with a game clock from pygame.time.Clock
+* a main loop frame limited with a game clock from the pygame.time module
 * fullscreen switching.
 
 
@@ -56,7 +56,7 @@ def load_image(file):
 
 
 def load_sound(file):
-    """because pygame can be be compiled without mixer."""
+    """because pygame can be compiled without mixer."""
     if not pygame.mixer:
         return None
     file = os.path.join(main_dir, "data", file)
@@ -88,7 +88,7 @@ class Player(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self, self.containers)
         self.image = self.images[0]
         self.rect = self.image.get_rect(midbottom=SCREENRECT.midbottom)
-        self.reloading = 0
+        self.reloading = False
         self.origtop = self.rect.top
         self.facing = -1
 
@@ -213,7 +213,7 @@ class Score(pygame.sprite.Sprite):
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.font = pygame.font.Font(None, 20)
+        self.font = pygame.Font(None, 20)
         self.font.set_italic(1)
         self.color = "white"
         self.lastscore = -1
@@ -230,8 +230,7 @@ class Score(pygame.sprite.Sprite):
 
 def main(winstyle=0):
     # Initialize pygame
-    if pygame.get_sdl_version()[0] == 2:
-        pygame.mixer.pre_init(44100, 32, 2, 1024)
+    pygame.mixer.pre_init(44100, 32, 2, 1024)
     pygame.init()
     if pygame.mixer and not pygame.mixer.get_init():
         print("Warning, no sound")
@@ -240,8 +239,7 @@ def main(winstyle=0):
     fullscreen = False
     # Set the display mode
     winstyle = 0  # |FULLSCREEN
-    bestdepth = pygame.display.mode_ok(SCREENRECT.size, winstyle, 32)
-    screen = pygame.display.set_mode(SCREENRECT.size, winstyle, bestdepth)
+    screen = pygame.display.set_mode(SCREENRECT.size, winstyle)
 
     # Load images, assign to sprite classes
     # (do this before the classes are used, after screen setup)
@@ -293,7 +291,7 @@ def main(winstyle=0):
     # Create Some Starting Values
     global score
     alienreload = ALIEN_RELOAD
-    clock = pygame.time.Clock()
+    clock = pygame.Clock()
 
     # initialize our starting sprites
     global SCORE
@@ -316,15 +314,13 @@ def main(winstyle=0):
                         print("Changing to FULLSCREEN")
                         screen_backup = screen.copy()
                         screen = pygame.display.set_mode(
-                            SCREENRECT.size, winstyle | pygame.FULLSCREEN, bestdepth
+                            SCREENRECT.size, winstyle | pygame.FULLSCREEN
                         )
                         screen.blit(screen_backup, (0, 0))
                     else:
                         print("Changing to windowed mode")
                         screen_backup = screen.copy()
-                        screen = pygame.display.set_mode(
-                            SCREENRECT.size, winstyle, bestdepth
-                        )
+                        screen = pygame.display.set_mode(SCREENRECT.size, winstyle)
                         screen.blit(screen_backup, (0, 0))
                     pygame.display.flip()
                     fullscreen = not fullscreen

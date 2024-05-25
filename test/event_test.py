@@ -30,9 +30,9 @@ EVENT_TEST_PARAMS.update(
     {
         pygame.KEYDOWN: {"key": pygame.K_SPACE},
         pygame.KEYUP: {"key": pygame.K_SPACE},
-        pygame.MOUSEMOTION: dict(),
-        pygame.MOUSEBUTTONDOWN: dict(button=1),
-        pygame.MOUSEBUTTONUP: dict(button=1),
+        pygame.MOUSEMOTION: {},
+        pygame.MOUSEBUTTONDOWN: {"button": 1},
+        pygame.MOUSEBUTTONUP: {"button": 1},
     }
 )
 
@@ -93,7 +93,7 @@ class EventTypeTest(unittest.TestCase):
         self.assertEqual(e.other_attr, "1")
 
         # Event now uses tp_dictoffset and tp_members:
-        # https://github.com/pygame/pygame/issues/62
+        # https://github.com/pygame-community/pygame-ce/issues/77
         self.assertEqual(e.type, pygame.USEREVENT)
         self.assertIs(e.dict, e.__dict__)
 
@@ -154,6 +154,52 @@ class EventTypeTest(unittest.TestCase):
         self.assertFalse(a == c)
         self.assertTrue(a != d)
         self.assertFalse(a == d)
+
+    def test_event_args(self):
+        """Test event creation with args"""
+        NESTED_DICT = {"haha": True, "no": 92138023, "test": ("y", "e", "s")}
+        EXPECTED_ATTRIBUTES = {
+            "foo": "bar",
+            "ratio": 100,
+            "favourite_numbers": [3, 26, 42],
+            "nested_dict": NESTED_DICT,
+            "complex": 3 + 4j,
+        }
+        for event in (
+            pygame.event.Event(1, EXPECTED_ATTRIBUTES),  # pass as dict
+            pygame.event.Event(1, **EXPECTED_ATTRIBUTES),  # pass as kwargs
+            pygame.event.Event(  # test passing both dict and kwargs
+                1,
+                {"nested_dict": NESTED_DICT, "complex": 3 + 4j},
+                foo="bar",
+                ratio=100,
+                favourite_numbers=[3, 26, 42],
+            ),
+        ):
+            self.assertDictEqual(event.dict, EXPECTED_ATTRIBUTES)
+
+        for out_of_range_val in (-1, -10, pygame.NUMEVENTS, pygame.NUMEVENTS + 1):
+            self.assertRaises(ValueError, pygame.event.Event, out_of_range_val)
+
+        for incorrect_type in ("string", 4 + 3j, [1, 2, 3], {"a": "b"}):
+            self.assertRaises(TypeError, pygame.event.Event, incorrect_type)
+
+    def test_event_common_dict_changes(self):
+        d = {}
+        events = [pygame.Event(pygame.event.custom_type(), d) for _ in range(2)]
+        self.assertNotEqual(events[0], events[1])
+
+        d["hi"] = "hello"
+        events[0].hello = "hi"
+        events[1].dict["amongus"] = "sus"
+
+        self.assertEqual(d, {"hi": "hello", "hello": "hi", "amongus": "sus"})
+        for ev in events:
+            self.assertIs(d, ev.dict)
+            self.assertEqual(ev.dict, {"hi": "hello", "hello": "hi", "amongus": "sus"})
+            self.assertEqual(ev.hi, "hello")
+            self.assertEqual(ev.hello, "hi")
+            self.assertEqual(ev.amongus, "sus")
 
 
 race_condition_notification = """
@@ -424,6 +470,19 @@ class EventModuleTest(unittest.TestCase):
         self.assertEqual(e.type, pygame.USEREVENT)
         self.assertEqual(e.a, "a" * 1024)
         self.assertEqual(e.test, list(range(100)))
+
+    def test_post_same_reference(self):
+        """
+        Test that event.post posts an event with a common reference to a dict.
+        """
+        for event in (
+            pygame.event.Event(pygame.event.custom_type(), attr=(1, 2, 3, 4)),
+            pygame.event.Event(pygame.event.custom_type()),
+        ):
+            pygame.event.post(event)
+            e = pygame.event.poll()
+            self.assertEqual(e.type, event.type)
+            self.assertIs(e.dict, event.dict)
 
     def test_post_blocked(self):
         """
@@ -760,8 +819,8 @@ class EventModuleTest(unittest.TestCase):
         pygame.event.pump()
 
     # @unittest.skipIf(
-    #     os.environ.get("SDL_VIDEODRIVER") == "dummy",
-    #     'requires the SDL_VIDEODRIVER to be a non "dummy" value',
+    #     os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+    #     'requires the SDL_VIDEODRIVER to be a non-null value',
     # )
     # Fails on SDL 2.0.18
     @unittest.skip("flaky test, and broken on 2.0.18 windows")
@@ -830,8 +889,8 @@ class EventModuleTest(unittest.TestCase):
         self.assertTrue(blocked)
 
     # @unittest.skipIf(
-    #     os.environ.get("SDL_VIDEODRIVER") == "dummy",
-    #     'requires the SDL_VIDEODRIVER to be a non "dummy" value',
+    #     os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+    #     'requires the SDL_VIDEODRIVER to be a non-null value',
     # )
     # Fails on SDL 2.0.18
     @unittest.skip("flaky test, and broken on 2.0.18 windows")

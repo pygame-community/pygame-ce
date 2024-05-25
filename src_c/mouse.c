@@ -163,10 +163,43 @@ mouse_get_pressed(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
+mouse_get_just_pressed(PyObject *self, PyObject *_null)
+{
+    PyObject *tuple;
+    VIDEO_INIT_CHECK();
+
+    char *pressed_buttons = pgEvent_GetMouseButtonDownInfo();
+    if (!(tuple = PyTuple_New(5)))
+        return NULL;
+
+    for (int i = 0; i < 5; i++) {
+        PyTuple_SET_ITEM(tuple, i, PyBool_FromLong(pressed_buttons[i]));
+    }
+
+    return tuple;
+}
+
+static PyObject *
+mouse_get_just_released(PyObject *self, PyObject *_null)
+{
+    PyObject *tuple;
+    VIDEO_INIT_CHECK();
+
+    char *released_buttons = pgEvent_GetMouseButtonUpInfo();
+    if (!(tuple = PyTuple_New(5)))
+        return NULL;
+
+    for (int i = 0; i < 5; i++) {
+        PyTuple_SET_ITEM(tuple, i, PyBool_FromLong(released_buttons[i]));
+    }
+
+    return tuple;
+}
+
+static PyObject *
 mouse_set_visible(PyObject *self, PyObject *args)
 {
-    int toggle;
-    int mode;
+    int toggle, prevstate;
     SDL_Window *win = NULL;
     Uint32 window_flags = 0;
 
@@ -176,7 +209,7 @@ mouse_set_visible(PyObject *self, PyObject *args)
 
     win = pg_GetDefaultWindow();
     if (win) {
-        mode = SDL_GetWindowGrab(win);
+        int mode = SDL_GetWindowGrab(win);
         if ((mode == SDL_ENABLE) & !toggle) {
             SDL_SetRelativeMouseMode(1);
         }
@@ -184,8 +217,7 @@ mouse_set_visible(PyObject *self, PyObject *args)
             SDL_SetRelativeMouseMode(0);
         }
         window_flags = SDL_GetWindowFlags(win);
-        if (!toggle && (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP ||
-                        window_flags & SDL_WINDOW_FULLSCREEN)) {
+        if (!toggle && (window_flags & PG_WINDOW_FULLSCREEN_INCLUSIVE)) {
             SDL_SetHint(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, "0");
         }
         else {
@@ -193,8 +225,20 @@ mouse_set_visible(PyObject *self, PyObject *args)
         }
     }
 
-    toggle = SDL_ShowCursor(toggle);
-    return PyBool_FromLong(toggle);
+    prevstate = PG_CursorVisible();
+
+    // Cursor visibility API **can** raise errors through SDL, but in
+    // practice it does not. (Ankith checked through the code)
+    // Historically we haven't error checked this, should that change in the
+    // future?
+    if (toggle) {
+        PG_ShowCursor();
+    }
+    else {
+        PG_HideCursor();
+    }
+
+    return PyBool_FromLong(prevstate);
 }
 
 static PyObject *
@@ -204,7 +248,7 @@ mouse_get_visible(PyObject *self, PyObject *_null)
 
     VIDEO_INIT_CHECK();
 
-    result = SDL_ShowCursor(SDL_QUERY);
+    result = (PG_CursorVisible() && !SDL_GetRelativeMouseMode());
 
     if (0 > result) {
         return RAISE(pgExc_SDLError, SDL_GetError());
@@ -335,6 +379,10 @@ static PyObject *
 _set_system_cursor(int constant)
 {
     SDL_Cursor *lastcursor, *cursor = NULL;
+    if (constant < 0 || constant >= SDL_NUM_SYSTEM_CURSORS) {
+        return RAISE(pgExc_SDLError,
+                     "System cursor constant value out of range");
+    }
 
     cursor = SDL_CreateSystemCursor(constant);
     if (!cursor) {
@@ -461,12 +509,35 @@ mouse_get_cursor(PyObject *self, PyObject *_null)
     return RAISE(pgExc_SDLError, "Cursor not found");
 }
 
+static PyObject *
+mouse_get_relative_mode(PyObject *self)
+{
+    return PyBool_FromLong(SDL_GetRelativeMouseMode());
+}
+
+static PyObject *
+mouse_set_relative_mode(PyObject *self, PyObject *arg)
+{
+    int mode = PyObject_IsTrue(arg);
+    if (mode == -1) {
+        return NULL;
+    }
+    if (SDL_SetRelativeMouseMode((SDL_bool)mode)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef _mouse_methods[] = {
     {"set_pos", mouse_set_pos, METH_VARARGS, DOC_MOUSE_SETPOS},
     {"get_pos", (PyCFunction)mouse_get_pos, METH_NOARGS, DOC_MOUSE_GETPOS},
     {"get_rel", (PyCFunction)mouse_get_rel, METH_NOARGS, DOC_MOUSE_GETREL},
     {"get_pressed", (PyCFunction)mouse_get_pressed,
      METH_VARARGS | METH_KEYWORDS, DOC_MOUSE_GETPRESSED},
+    {"get_just_pressed", (PyCFunction)mouse_get_just_pressed, METH_NOARGS,
+     DOC_MOUSE_GETJUSTPRESSED},
+    {"get_just_released", (PyCFunction)mouse_get_just_released, METH_NOARGS,
+     DOC_MOUSE_GETJUSTRELEASED},
     {"set_visible", mouse_set_visible, METH_VARARGS, DOC_MOUSE_SETVISIBLE},
     {"get_visible", mouse_get_visible, METH_NOARGS, DOC_MOUSE_GETVISIBLE},
     {"get_focused", (PyCFunction)mouse_get_focused, METH_NOARGS,
@@ -474,6 +545,10 @@ static PyMethodDef _mouse_methods[] = {
     {"set_system_cursor", mouse_set_system_cursor, METH_VARARGS,
      "set_system_cursor(constant) -> None\nset the mouse cursor to a system "
      "variant"},
+    {"get_relative_mode", (PyCFunction)mouse_get_relative_mode, METH_NOARGS,
+     DOC_MOUSE_GETRELATIVEMODE},
+    {"set_relative_mode", (PyCFunction)mouse_set_relative_mode, METH_O,
+     DOC_MOUSE_SETRELATIVEMODE},
     {"_set_cursor", (PyCFunction)mouse_set_cursor,
      METH_VARARGS | METH_KEYWORDS, "Internal API for mouse.set_cursor"},
     {"_get_cursor", (PyCFunction)mouse_get_cursor, METH_NOARGS,
@@ -500,6 +575,10 @@ MODINIT_DEFINE(mouse)
         return NULL;
     }
     import_pygame_surface();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    import_pygame_event();
     if (PyErr_Occurred()) {
         return NULL;
     }

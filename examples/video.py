@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.video
+"""pygame.examples.video
 
 Experimental!
 
@@ -9,14 +9,11 @@ Experimental!
 * Renderer, Texture, and Image classes
 * Drawing lines, rects, and such onto Renderers.
 """
+
 import os
 import pygame
 
-if pygame.get_sdl_version()[0] < 2:
-    raise SystemExit(
-        "This example requires pygame 2 and SDL2. _sdl2 is experimental and will change."
-    )
-from pygame._sdl2 import Window, Texture, Image, Renderer, get_drivers, messagebox
+from pygame._sdl2 import Window, Texture, Image, Renderer, get_drivers
 
 data_dir = os.path.join(os.path.split(os.path.abspath(__file__))[0], "data")
 
@@ -33,14 +30,15 @@ for driver in get_drivers():
 
 import random
 
-answer = messagebox(
+answer = pygame.display.message_box(
     "I will open two windows! Continue?",
     "Hello!",
-    info=True,
+    message_type="info",
     buttons=("Yes", "No", "Chance"),
     return_button=0,
     escape_button=1,
 )
+
 if answer == 1 or (answer == 2 and random.random() < 0.5):
     import sys
 
@@ -53,7 +51,7 @@ tex = Texture.from_surface(renderer, load_img("alien1.gif"))
 running = True
 
 x, y = 250, 50
-clock = pygame.time.Clock()
+clock = pygame.Clock()
 
 backgrounds = [(255, 0, 0, 255), (0, 255, 0, 255), (0, 0, 255, 255)]
 bg_index = 0
