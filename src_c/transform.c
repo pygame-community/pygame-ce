@@ -3581,7 +3581,7 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
                 Uint8 new_r = (Uint8)(r * c);
                 Uint8 new_g = (Uint8)(g * c);
                 Uint8 new_b = (Uint8)(b * c);
-                Uint32 new_pixel = SDL_MapRGBA(bpfsurf->format, (new_r > 255 ? 255 : new_r), (new_g > 255 ? 255 : new_g), (new_b > 255 ? 255 : new_b), a);
+                Uint32 new_pixel = SDL_MapRGBA(bpfsurf->format, new_r, new_g, new_b, a);
                 SURF_SET_AT(new_pixel, bpfsurf, x, y, bpfpx,
                             bpfsurf->format, src_pix);
             }
