@@ -4245,6 +4245,8 @@ math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     return value;
 }
 
+#define RAISE_ARG_TYPE_ERROR(py_num_obj, var) (!PyNumber_Check(py_num_obj))?RAISE(PyExc_TypeError, "The argument '"var"' must be a real number"):{}
+
 static PyObject *
 math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
@@ -4253,12 +4255,15 @@ math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
                      "invlerp requires exactly 3 numeric arguments");
 
     PyObject *min = args[0];
+    RAISE_ARG_TYPE_ERROR(min, "min")
     PyObject *max = args[1];
+    RAISE_ARG_TYPE_ERROR(max, "max")
     PyObject *value = args[2];
+    RAISE_ARG_TYPE_ERROR(value, "value")
 
-    if (!PyNumber_Check(min) || !PyNumber_Check(max) || !PyNumber_Check(value))
-        return RAISE(PyExc_TypeError,
-                     "invlerp requires all the arguments to be numbers");
+    // if (!PyNumber_Check(min) || !PyNumber_Check(max) || !PyNumber_Check(value))
+    //     return RAISE(PyExc_TypeError,
+    //                  "invlerp requires all the arguments to be numbers");
 
     double t = PyFloat_AsDouble(value);
     double a = PyFloat_AsDouble(min);
@@ -4275,6 +4280,8 @@ math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     return PyFloat_FromDouble(invlerp(a, b, t));
 }
+
+#
 
 static PyObject *
 math_remap(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
