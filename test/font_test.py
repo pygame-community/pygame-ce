@@ -398,7 +398,7 @@ class FontTypeTest(unittest.TestCase):
         self.assertIsNotNone(um[0])
         self.assertEqual(um, bm)
 
-        u = "\u212A"
+        u = "\u212a"
         b = u.encode("UTF-16")[2:]  # Keep byte order consistent. [2:] skips BOM
         bm = f.metrics(b)
 
@@ -465,7 +465,7 @@ class FontTypeTest(unittest.TestCase):
         su = f.render(".", False, [0, 0, 0], [255, 255, 255])
         sb = f.render(b".", False, [0, 0, 0], [255, 255, 255])
         self.assertTrue(equal_images(su, sb))
-        u = "\u212A"
+        u = "\u212a"
         b = u.encode("UTF-16")[2:]  # Keep byte order consistent. [2:] skips BOM
         sb = f.render(b, False, [0, 0, 0], [255, 255, 255])
         try:  # FIXME why do we do this try/except ?
@@ -485,7 +485,7 @@ class FontTypeTest(unittest.TestCase):
         # If the font module is SDL_ttf < 2.0.15 based, then it only supports UCS-2
         # it will raise an exception for an out-of-range UCS-4 code point.
         if hasattr(pygame_font, "UCS4"):
-            ucs_2 = "\uFFEE"
+            ucs_2 = "\uffee"
             s = f.render(ucs_2, False, [0, 0, 0], [255, 255, 255])
             ucs_4 = "\U00010000"
             s = f.render(ucs_4, False, [0, 0, 0], [255, 255, 255])
@@ -586,7 +586,7 @@ class FontTypeTest(unittest.TestCase):
         self.assertEqual(s.get_size(), size)
         self.assertEqual(f.size(btext), size)
 
-        text = "\u212A"
+        text = "\u212a"
         btext = text.encode("UTF-16")[2:]  # Keep the byte order consistent.
         bsize = f.size(btext)
         size = f.size(text)
@@ -839,12 +839,12 @@ class FontTypeTest(unittest.TestCase):
         if pygame_font.__name__ == "pygame.ftfont":
             surf = pygame.Surface((1, 1))
             methods = [
-                ("get_sized_height", tuple()),
-                ("get_sized_ascender", tuple()),
-                ("get_sized_glyph_height", tuple()),
+                ("get_sized_height", ()),
+                ("get_sized_ascender", ()),
+                ("get_sized_glyph_height", ()),
                 ("get_rect", ("any text",)),
                 ("get_metrics", ("any text",)),
-                ("get_sizes", tuple()),
+                ("get_sizes", ()),
                 ("render", ("any text", True, "white")),
                 (
                     "render_to",
@@ -862,34 +862,34 @@ class FontTypeTest(unittest.TestCase):
                         None,
                     ),
                 ),
-                ("get_ascent", tuple()),
-                ("get_bold", tuple()),
-                ("get_descent", tuple()),
-                ("get_height", tuple()),
-                ("get_italic", tuple()),
-                ("get_linesize", tuple()),
-                ("get_sized_descender", tuple()),
-                ("get_underline", tuple()),
+                ("get_ascent", ()),
+                ("get_bold", ()),
+                ("get_descent", ()),
+                ("get_height", ()),
+                ("get_italic", ()),
+                ("get_linesize", ()),
+                ("get_sized_descender", ()),
+                ("get_underline", ()),
                 ("metrics", ("any text",)),
                 ("set_bold", (True,)),
                 ("set_italic", (True,)),
                 ("set_underline", (True,)),
                 ("size", ("any Text",)),
             ]
-            version = pygame.freetype.get_version()
+            skip_methods = {"get_strikethrough", "set_strikethrough"}
         else:
             methods = [
-                ("get_height", tuple()),
-                ("get_descent", tuple()),
-                ("get_ascent", tuple()),
-                ("get_linesize", tuple()),
-                ("get_bold", tuple()),
+                ("get_height", ()),
+                ("get_descent", ()),
+                ("get_ascent", ()),
+                ("get_linesize", ()),
+                ("get_bold", ()),
                 ("set_bold", (True,)),
-                ("get_italic", tuple()),
+                ("get_italic", ()),
                 ("set_italic", (True,)),
-                ("get_underline", tuple()),
+                ("get_underline", ()),
                 ("set_underline", (True,)),
-                ("get_strikethrough", tuple()),
+                ("get_strikethrough", ()),
                 ("set_strikethrough", (True,)),
                 ("metrics", ("any text",)),
                 ("render", ("hello", True, "white")),
@@ -897,30 +897,23 @@ class FontTypeTest(unittest.TestCase):
                 ("set_script", ("is it other text",)),
                 ("set_direction", ("is it text",)),
             ]
+            skip_methods = set()
             version = pygame.font.get_sdl_ttf_version()
             if version >= (2, 0, 18):
-                methods.append(("get_point_size", tuple()))
+                methods.append(("get_point_size", ()))
                 methods.append(("set_point_size", (34,)))
+            else:
+                skip_methods.add("get_point_size")
+                skip_methods.add("set_point_size")
+                skip_methods.add("point_size")
+
+            if version < (2, 20, 0):
+                skip_methods.add("align")
 
         font = pygame_font.Font(None, 10)
         actual_names = []
         for n in sorted(dir(font)):
-            if n == "align" and version < (2, 20, 0):
-                print(f"align skipped for sld ttf version {version} < 2.20.0")
-                continue
-            if n == "point_size" and version < (2, 0, 18):
-                print(f"point_size skipped for sld ttf version {version} < 2.20.0")
-                continue
-            if n == "get_point_size" and version < (2, 0, 18):
-                print(f"get_point_size skipped for sld ttf version {version} < 2.20.0")
-                continue
-            if n == "set_point_size" and version < (2, 0, 18):
-                print(f"set_point_size skipped for sld ttf version {version} < 2.20.0")
-                continue
-            if (
-                n == "get_strikethrough" or n == "set_strikethrough"
-            ) and pygame_font.__name__ == "pygame.ftfont":
-                # this is only emulated in python
+            if n in skip_methods:
                 continue
             if n.startswith("_"):
                 continue
@@ -979,7 +972,7 @@ class FontTypeTest(unittest.TestCase):
                 ("italic", True),
                 ("resolution", None),
             ]
-            version = pygame.freetype.get_version()
+            skip_properties = {"strikethrough"}
         else:
             properties = [
                 ("name", None),
@@ -989,24 +982,22 @@ class FontTypeTest(unittest.TestCase):
                 ("underline", True),
                 ("strikethrough", True),
             ]
+            skip_properties = set()
             version = pygame.font.get_sdl_ttf_version()
             if version >= (2, 20, 0):
                 properties.append(("align", 1))
+            else:
+                skip_properties.add("align")
             if version >= (2, 0, 18):
                 properties.append(("point_size", 1))
+            else:
+                skip_properties.add("point_size")
 
         font = pygame_font.Font(None, 10)
         actual_names = []
 
         for n in sorted(dir(font)):
-            if n == "align" and version < (2, 20, 0):
-                print(f"align skipped for sld ttf version {version} < 2.20.0")
-                continue
-            if n == "point_size" and version < (2, 0, 18):
-                print(f"point_size skipped for sld ttf version {version} < 2.0.18")
-                continue
-            if n == "strikethrough" and pygame_font.__name__ == "pygame.ftfont":
-                # this is only emulated in python
+            if n in skip_properties:
                 continue
             if n.startswith("_"):
                 continue
@@ -1040,7 +1031,7 @@ class FontTypeTest(unittest.TestCase):
 
 
 @unittest.skipIf(IS_PYPY, "pypy skip known failure")  # TODO
-class VisualTests(unittest.TestCase):
+class VisualTestsInteractive(unittest.TestCase):
     __tags__ = ["interactive"]
 
     screen = None

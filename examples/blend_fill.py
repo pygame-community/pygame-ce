@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.blend_fill
+"""pygame.examples.blend_fill
 
 BLEND_ing colors in different ways with Surface.fill().
 
@@ -10,6 +10,7 @@ Keyboard Controls:
 * A - ADD, S- SUB, M- MULT, - MIN, + MAX to change the blend modes
 
 """
+
 import os
 import pygame
 from pygame import K_1, K_2, K_3, K_4, K_5, K_6, K_7, K_8, K_9

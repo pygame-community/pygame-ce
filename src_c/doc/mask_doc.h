@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_MASK "pygame module for image masks."
 #define DOC_MASK_FROMSURFACE "from_surface(surface) -> Mask\nfrom_surface(surface, threshold=127) -> Mask\nCreates a Mask from the given surface"
 #define DOC_MASK_FROMTHRESHOLD "from_threshold(surface, color) -> Mask\nfrom_threshold(surface, color, threshold=(0, 0, 0, 255), othersurface=None, palette_colors=1) -> Mask\nCreates a mask by thresholding Surfaces"

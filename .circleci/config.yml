@@ -28,13 +28,12 @@ jobs:
 
     environment:
       # these environment variables will be passed to the docker container
-      - CIBW_ENVIRONMENT: PIP_CONFIG_FILE=buildconfig/pip_config.ini PORTMIDI_INC_PORTTIME=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
+      - CIBW_ENVIRONMENT: SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
       - CIBW_BUILD: "cp3{8,9,10,11,12}-* pp3{8,9,10}-*"
       - CIBW_ARCHS: aarch64
       - CIBW_SKIP: '*-musllinux_*'
       - CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014_base_aarch64
       - CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: manylinux2014_base_aarch64
-      - CIBW_BEFORE_BUILD: pip install Sphinx"<7.2.0" && python setup.py docs
       - CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,music,timing --time_out 300
       - CIBW_BUILD_VERBOSITY: 2
 
@@ -48,7 +47,7 @@ jobs:
       - run:
           name: Build the Linux wheels.
           command: |
-            pip3 install --user cibuildwheel==2.16.4
+            pip3 install --user cibuildwheel==2.18.1
             PATH="$HOME/.local/bin:$PATH" cibuildwheel --output-dir wheelhouse
 
       - store_artifacts:

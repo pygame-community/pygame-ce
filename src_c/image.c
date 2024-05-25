@@ -538,7 +538,7 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
     Aloss = surf->format->Aloss;
 
     if (!strcmp(format, "P")) {
-        if (surf->format->BytesPerPixel != 1)
+        if (PG_SURF_BytesPerPixel(surf) != 1)
             return RAISE(
                 PyExc_ValueError,
                 "Can only create \"P\" format data with 8bit Surfaces");
@@ -548,7 +548,9 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
         byte_width = surf->w * 3;
     }
     else if (!strcmp(format, "RGBA")) {
-        hascolorkey = (SDL_GetColorKey(surf, &colorkey) == 0);
+        if ((hascolorkey = SDL_HasColorKey(surf))) {
+            SDL_GetColorKey(surf, &colorkey);
+        }
         byte_width = surf->w * 4;
     }
     else if (!strcmp(format, "RGBX") || !strcmp(format, "ARGB") ||
@@ -557,7 +559,7 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
     else if (!strcmp(format, "RGBA_PREMULT") ||
              !strcmp(format, "ARGB_PREMULT")) {
-        if (surf->format->BytesPerPixel == 1 || surf->format->Amask == 0)
+        if (PG_SURF_BytesPerPixel(surf) == 1 || surf->format->Amask == 0)
             return RAISE(PyExc_ValueError,
                          "Can only create pre-multiplied alpha bytes if "
                          "the surface has per-pixel alpha");
@@ -598,7 +600,7 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
     else if (!strcmp(format, "RGB")) {
         pgSurface_Lock(surfobj);
 
-        switch (surf->format->BytesPerPixel) {
+        switch (PG_SURF_BytesPerPixel(surf)) {
             case 1:
                 for (h = 0; h < surf->h; ++h) {
                     Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
@@ -666,7 +668,7 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
     else if (!strcmp(format, "RGBX") || !strcmp(format, "RGBA")) {
         pgSurface_Lock(surfobj);
-        switch (surf->format->BytesPerPixel) {
+        switch (PG_SURF_BytesPerPixel(surf)) {
             case 1:
                 for (h = 0; h < surf->h; ++h) {
                     Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
@@ -737,7 +739,7 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
     else if (!strcmp(format, "ARGB")) {
         pgSurface_Lock(surfobj);
-        switch (surf->format->BytesPerPixel) {
+        switch (PG_SURF_BytesPerPixel(surf)) {
             case 1:
                 for (h = 0; h < surf->h; ++h) {
                     Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
@@ -801,7 +803,7 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
     else if (!strcmp(format, "BGRA")) {
         pgSurface_Lock(surfobj);
-        switch (surf->format->BytesPerPixel) {
+        switch (PG_SURF_BytesPerPixel(surf)) {
             case 1:
                 for (h = 0; h < surf->h; ++h) {
                     Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
@@ -878,7 +880,7 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
     else if (!strcmp(format, "RGBA_PREMULT")) {
         pgSurface_Lock(surfobj);
-        switch (surf->format->BytesPerPixel) {
+        switch (PG_SURF_BytesPerPixel(surf)) {
             case 2:
                 for (h = 0; h < surf->h; ++h) {
                     Uint16 *ptr = (Uint16 *)DATAROW(
@@ -960,7 +962,7 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
     else if (!strcmp(format, "ARGB_PREMULT")) {
         pgSurface_Lock(surfobj);
-        switch (surf->format->BytesPerPixel) {
+        switch (PG_SURF_BytesPerPixel(surf)) {
             case 2:
                 for (h = 0; h < surf->h; ++h) {
                     Uint16 *ptr = (Uint16 *)DATAROW(
@@ -1509,7 +1511,7 @@ rle_line(Uint8 *src, Uint8 *dst, int w, int bpp)
 /*
  * Save a surface to an output stream in TGA format.
  * 8bpp surfaces are saved as indexed images with 24bpp palette, or with
- *     32bpp palette if colourkeying is used.
+ *     32bpp palette if colorkeying is used.
  * 15, 16, 24 and 32bpp surfaces are saved as 24bpp RGB images,
  * or as 32bpp RGBA images if alpha channel is used.
  *
@@ -1535,14 +1537,16 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     h.infolen = 0;
     SETLE16(h.cmap_start, 0);
 
-    srcbpp = surface->format->BitsPerPixel;
+    srcbpp = PG_SURF_BitsPerPixel(surface);
     if (srcbpp < 8) {
         SDL_SetError("cannot save <8bpp images as TGA");
         return -1;
     }
 
     SDL_GetSurfaceAlphaMod(surface, &surf_alpha);
-    have_surf_colorkey = (SDL_GetColorKey(surface, &surf_colorkey) == 0);
+    if ((have_surf_colorkey = SDL_HasColorKey(surface))) {
+        SDL_GetColorKey(surface, &surf_colorkey);
+    }
 
     if (srcbpp == 8) {
         h.has_cmap = 1;
@@ -1618,7 +1622,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
         }
     }
 
-    /* Temporarily remove colourkey and alpha from surface so copies are
+    /* Temporarily remove colorkey and alpha from surface so copies are
        opaque */
     SDL_SetSurfaceAlphaMod(surface, SDL_ALPHA_OPAQUE);
     if (have_surf_colorkey)
@@ -1773,7 +1777,7 @@ MODINIT_DEFINE(image)
         Py_DECREF(extmodule);
     }
     else {
-        // if the module could not be loaded, dont treat it like an error
+        // if the module could not be loaded, don't treat it like an error
         PyErr_Clear();
     }
     return module;

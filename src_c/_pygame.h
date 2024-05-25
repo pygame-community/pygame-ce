@@ -93,6 +93,14 @@ PG_UnlockMutex(SDL_mutex *mutex)
     return 0;
 }
 
+#define PG_SURF_BitsPerPixel(surf) surf->format->bits_per_pixel
+#define PG_SURF_BytesPerPixel(surf) surf->format->bytes_per_pixel
+#define PG_FORMAT_BitsPerPixel(format) format->bits_per_pixel
+#define PG_FORMAT_BytesPerPixel(format) format->bytes_per_pixel
+
+/* Mask to test if surface flags are in a fullscreen window. */
+#define PG_WINDOW_FULLSCREEN_INCLUSIVE SDL_WINDOW_FULLSCREEN
+
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
 #define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
@@ -136,6 +144,16 @@ PG_UnlockMutex(SDL_mutex *mutex)
 {
     return SDL_UnlockMutex(mutex);
 }
+
+#define PG_SURF_BitsPerPixel(surf) surf->format->BitsPerPixel
+#define PG_SURF_BytesPerPixel(surf) surf->format->BytesPerPixel
+#define PG_FORMAT_BitsPerPixel(format) format->BitsPerPixel
+#define PG_FORMAT_BytesPerPixel(format) format->BytesPerPixel
+
+/* Mask to test if surface flags are in a fullscreen window.
+ * SDL_WINDOW_FULLSCREEN_DESKTOP works here because it also contains
+ * SDL_WINDOW_FULLSCREEN. */
+#define PG_WINDOW_FULLSCREEN_INCLUSIVE SDL_WINDOW_FULLSCREEN_DESKTOP
 
 #if SDL_VERSION_ATLEAST(2, 0, 14)
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
@@ -262,7 +280,7 @@ typedef enum {
      *
      * At a first glance, these may look redundant, but they are really
      * important, especially with event blocking. If proxy events are
-     * not there, blocked events dont make it to our event filter, and
+     * not there, blocked events don't make it to our event filter, and
      * that can break a lot of stuff.
      *
      * IMPORTANT NOTE: Do not post events directly with these proxy types,
@@ -515,7 +533,7 @@ typedef enum {
 #define PYGAMEAPI_COLOR_NUMSLOTS 5
 #define PYGAMEAPI_MATH_NUMSLOTS 2
 #define PYGAMEAPI_BASE_NUMSLOTS 29
-#define PYGAMEAPI_EVENT_NUMSLOTS 8
+#define PYGAMEAPI_EVENT_NUMSLOTS 10
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1
 #define PYGAMEAPI_GEOMETRY_NUMSLOTS 1
 

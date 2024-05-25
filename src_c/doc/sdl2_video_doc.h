@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_SDL2VIDEO "Experimental pygame module for porting new SDL video systems"
 #define DOC_SDL2_VIDEO_MESSAGEBOX "messagebox(title, message, window=None, info=False, warn=False, buttons=('OK',), return_button=0, escape_button=0)\nCreate a native GUI message box"
 #define DOC_SDL2_VIDEO_RENDERERDRIVERINFO "pygame object encapsulating Renderer driver information"

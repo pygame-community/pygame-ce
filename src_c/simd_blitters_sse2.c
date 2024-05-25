@@ -154,8 +154,8 @@ alphablit_alpha_sse2_argb_surf_alpha(SDL_BlitInfo *info)
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
 
-    // int srcbpp = srcfmt->BytesPerPixel;
-    // int dstbpp = dstfmt->BytesPerPixel;
+    // int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    // int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
 
     Uint32 dst_amask = dstfmt->Amask;
     Uint32 src_amask = srcfmt->Amask;
