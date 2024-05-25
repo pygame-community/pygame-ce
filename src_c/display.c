@@ -1431,6 +1431,39 @@ pg_window_size(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
+pg_get_window_position(PyObject *self, PyObject *_null)
+{
+    SDL_Window *win = pg_GetDefaultWindow();
+    int x, y = 0;
+    if (!win)
+        return RAISE(pgExc_SDLError, "No open window");
+    SDL_GetWindowPosition(win, &x, &y);
+    return pg_tuple_couple_from_values_int(x, y);
+}
+
+static PyObject *
+pg_set_window_position(PyObject *self, PyObject *arg)
+{
+    SDL_Window *win = pg_GetDefaultWindow();
+    PyObject *pos = NULL;
+    int x, y = 0;
+
+    if (!PyArg_ParseTuple(arg, "O", &pos))
+        return NULL;
+
+    if (pos != NULL) {
+        if (!pg_TwoIntsFromObj(pos, &x, &y))
+            return RAISE(PyExc_TypeError, "position must be two numbers");
+    }
+
+    if (win)
+        /* Will raise errors with SDL 3, deal with it during the porting */
+        SDL_SetWindowPosition(win, x, y);
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
 pg_mode_ok(PyObject *self, PyObject *args, PyObject *kwds)
 {
     SDL_DisplayMode desired, closest;
@@ -2888,6 +2921,10 @@ static PyMethodDef _pg_display_methods[] = {
      DOC_DISPLAY_GETSURFACE},
     {"get_window_size", (PyCFunction)pg_window_size, METH_NOARGS,
      DOC_DISPLAY_GETWINDOWSIZE},
+    {"set_window_position", pg_set_window_position, METH_VARARGS,
+     DOC_DISPLAY_SETWINDOWPOSITION},
+    {"get_window_position", (PyCFunction)pg_get_window_position, METH_NOARGS,
+     DOC_DISPLAY_GETWINDOWPOSITION},
 
     {"set_mode", (PyCFunction)pg_set_mode, METH_VARARGS | METH_KEYWORDS,
      DOC_DISPLAY_SETMODE},

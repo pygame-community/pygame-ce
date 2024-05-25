@@ -679,6 +679,13 @@ class DisplayModuleTest(unittest.TestCase):
                     (test_surf.get_width(), test_surf.get_height()), width_height
                 )
 
+    def test_get_set_window_position(self):
+        pygame.display.set_mode((500, 500))
+        pygame.display.set_window_position((420, 360))
+        position = pygame.display.get_window_position()
+        self.assertEqual(position[0], 420)
+        self.assertEqual(position[1], 360)
+
 
 class DisplayUpdateTest(unittest.TestCase):
     def question(self, qstr):
