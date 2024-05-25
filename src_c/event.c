@@ -2013,11 +2013,11 @@ _pgEvent_CreateSubclass(Uint32 ev_type)
 }
 
 static PyObject *
-pgEvent_GetClass(Uint32 e_type)
+pgEvent_GetClass(Uint32 type)
 {
     PyObject *e_typeo, *e_class;
 
-    e_typeo = PyLong_FromLong(e_type);
+    e_typeo = PyLong_FromLong(type);
 
     if (!e_typeo)
         return NULL;
@@ -2030,7 +2030,7 @@ pgEvent_GetClass(Uint32 e_type)
         return e_class;
     }
 
-    e_class = _pgEvent_CreateSubclass(e_type);
+    e_class = _pgEvent_CreateSubclass(type);
 
     if (!e_class) {
         Py_DECREF(e_typeo);
@@ -3188,6 +3188,7 @@ MODINIT_DEFINE(event)
     c_api[7] = pgEvent_GetKeyUpInfo;
     c_api[8] = pgEvent_GetMouseButtonDownInfo;
     c_api[9] = pgEvent_GetMouseButtonUpInfo;
+    c_api[10] = pgEvent_GetClass;
 
     apiobj = encapsulate_api(c_api, "event");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {

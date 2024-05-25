@@ -105,6 +105,7 @@ class MouseButtonUp(Event):
     window: Optional[Window]
 
 class JoyAxisMotion(Event):
+    """Attribute "joy" is depracated, use "instance_id"."""
     type: Literal[1536] = 1536
     joy: int
     instance_id: int
@@ -112,6 +113,7 @@ class JoyAxisMotion(Event):
     value: float
 
 class JoyBallMotion(Event):
+    """Attribute "joy" is depracated, use "instance_id"."""
     type: Literal[1537] = 1537
     joy: int
     instance_id: int
@@ -119,6 +121,7 @@ class JoyBallMotion(Event):
     rel: Tuple[int, int]
 
 class JoyHatMotion(Event):
+    """Attribute "joy" is depracated, use "instance_id"."""
     type: Literal[1538] = 1538
     joy: int
     instance_id: int
@@ -126,12 +129,14 @@ class JoyHatMotion(Event):
     value: Tuple[int, int]
 
 class JoyButtonUp(Event):
+    """Attribute "joy" is depracated, use "instance_id"."""
     type: Literal[1540] = 1540
     joy: int
     instance_id: int
     button: int
 
 class JoyButtonDown(Event):
+    """Attribute "joy" is depracated, use "instance_id"."""
     type: Literal[1539] = 1539
     joy: int
     instance_id: int

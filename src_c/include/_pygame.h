@@ -415,6 +415,9 @@ typedef struct pgEventObject pgEventObject;
 #define pgEvent_GetMouseButtonUpInfo \
     (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 9))
 
+#define pgEvent_GetClass \
+    (*(PyObject * (*)(Uint32)) PYGAMEAPI_GET_SLOT(event, 10))
+
 #define import_pygame_event() IMPORT_PYGAME_MODULE(event)
 #endif
 

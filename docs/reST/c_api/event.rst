@@ -79,3 +79,9 @@ Header file: src_c/include/pygame.h
    creation of the dictproxy instance, and when it is freed.
    Just like the SDL ``SDL_PushEvent`` function, returns 1 on success, 0 if the
    event was not posted due to it being blocked, and -1 on failure.
+
+.. c:function:: PyObject* pgEvent_GetClass(Uint32 type)
+
+   Returns a python class object correlated with the given event type - object is returned
+   as a new reference. On error returns NULL and sets python exception.
+   Same as calling ``pygame.event.event_class(type)`` in python.
