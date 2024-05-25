@@ -3491,7 +3491,6 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
     for (y = 0; y < src->h; y++) {
         for (x = 0; x < src->w; x++) {
             Uint32 pxl = *srcp;
-            Uint32 new_pixel = pxl & amask;
 
             src_r = (Uint8)(pxl >> fmt->Rshift) & 0xFF;
             src_g = (Uint8)(pxl >> fmt->Gshift) & 0xFF;
@@ -3516,9 +3515,10 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
                 Uint8 new_g = (Uint8)gc;
                 Uint8 new_b = (Uint8)bc;
 
-                new_pixel |= (new_r >> dfmt->Rloss) << dfmt->Rshift |
-                             (new_g >> dfmt->Gloss) << dfmt->Gshift |
-                             (new_b >> dfmt->Bloss) << dfmt->Bshift;
+                Uint32 new_pixel = (new_r >> dfmt->Rloss) << dfmt->Rshift |
+                                   (new_g >> dfmt->Gloss) << dfmt->Gshift |
+                                   (new_b >> dfmt->Bloss) << dfmt->Bshift |
+                                   pxl & amask;
 
                 *dstp = new_pixel;
             }
