@@ -3073,170 +3073,184 @@ surf_average_color(PyObject *self, PyObject *args, PyObject *kwargs)
     return Py_BuildValue("(bbbb)", r, g, b, a);
 }
 
+#define GAUSSIAN_BLUR(src, dst, sigma, repeat, assign_code)                   \
+    Uint8 *srcpx = (Uint8 *)src->pixels;                                      \
+    Uint8 *dstpx = (Uint8 *)dst->pixels;                                      \
+    Uint8 nb = PG_SURF_BytesPerPixel(src);                                    \
+    int w = dst->w, h = dst->h;                                               \
+    int dst_pitch = dst->pitch;                                               \
+    int src_pitch = src->pitch;                                               \
+    int i, j, x, y, color;                                                    \
+    int kernel_radius = sigma * 2;                                            \
+    float *buf = malloc(dst_pitch * sizeof(float));                           \
+    float *buf2 = malloc(dst_pitch * sizeof(float));                          \
+    float *lut = malloc((kernel_radius + 1) * sizeof(float));                 \
+    float lut_sum = 0.0;                                                      \
+                                                                              \
+    for (i = 0; i <= kernel_radius; i++) { /* init gaussian lut*/             \
+        /* Gaussian function */                                               \
+        lut[i] =                                                              \
+            expf(-powf((float)i, 2.0f) / (2.0f * powf((float)sigma, 2.0f)));  \
+        lut_sum += lut[i] * 2;                                                \
+    }                                                                         \
+    lut_sum -= lut[0];                                                        \
+    for (i = 0; i <= kernel_radius; i++) {                                    \
+        lut[i] /= lut_sum;                                                    \
+    }                                                                         \
+                                                                              \
+    for (i = 0; i < dst_pitch; i++) {                                         \
+        buf[i] = 0.0;                                                         \
+        buf2[i] = 0.0;                                                        \
+    }                                                                         \
+                                                                              \
+    for (y = 0; y < h; y++) {                                                 \
+        for (j = -kernel_radius; j <= kernel_radius; j++) {                   \
+            for (i = 0; i < dst_pitch; i++) {                                 \
+                if (y + j >= 0 && y + j < h) {                                \
+                    buf[i] +=                                                 \
+                        (float)srcpx[src_pitch * (y + j) + i] * lut[abs(j)];  \
+                }                                                             \
+                else if (repeat) {                                            \
+                    if (y + j < 0) {                                          \
+                        buf[i] += (float)srcpx[i] * lut[abs(j)];              \
+                    }                                                         \
+                    else {                                                    \
+                        buf[i] += (float)srcpx[src_pitch * (h - 1) + i] *     \
+                                  lut[abs(j)];                                \
+                    }                                                         \
+                }                                                             \
+            }                                                                 \
+        }                                                                     \
+                                                                              \
+        for (x = 0; x < w; x++) {                                             \
+            for (j = -kernel_radius; j <= kernel_radius; j++) {               \
+                for (color = 0; color < nb; color++) {                        \
+                    if (x + j >= 0 && x + j < w) {                            \
+                        buf2[nb * x + color] +=                               \
+                            buf[nb * (x + j) + color] * lut[abs(j)];          \
+                    }                                                         \
+                    else if (repeat) {                                        \
+                        if (x + j < 0) {                                      \
+                            buf2[nb * x + color] += buf[color] * lut[abs(j)]; \
+                        }                                                     \
+                        else {                                                \
+                            buf2[nb * x + color] +=                           \
+                                buf[nb * (w - 1) + color] * lut[abs(j)];      \
+                        }                                                     \
+                    }                                                         \
+                }                                                             \
+            }                                                                 \
+        }                                                                     \
+        for (i = 0; i < dst_pitch; i++) {                                     \
+            Uint8 blur_color = (Uint8)buf2[i];                                \
+            dstpx[dst_pitch * y + i] = blur_color;                            \
+            assign_code buf[i] = 0.0;                                         \
+            buf2[i] = 0.0;                                                    \
+        }                                                                     \
+    }                                                                         \
+                                                                              \
+    free(buf);                                                                \
+    free(buf2);                                                               \
+    free(lut);
+
+#define BOX_BLUR(src, dst, radius, repeat, do_assign, assign_code)      \
+                                                                        \
+    /* Reference :                                                      \
+     * https://blog.csdn.net/blogshinelee/article/details/80997324 */   \
+                                                                        \
+    Uint8 *srcpx = (Uint8 *)src->pixels;                                \
+    Uint8 *dstpx = (Uint8 *)dst->pixels;                                \
+    Uint8 nb = PG_SURF_BytesPerPixel(src);                              \
+    int w = dst->w, h = dst->h;                                         \
+    int dst_pitch = dst->pitch;                                         \
+    int src_pitch = src->pitch;                                         \
+    int i, x, y, color;                                                 \
+    Uint32 *buf = malloc(dst_pitch * sizeof(Uint32));                   \
+    Uint32 *sum_v = malloc(dst_pitch * sizeof(Uint32));                 \
+    Uint32 *sum_h = malloc(nb * sizeof(Uint32));                        \
+                                                                        \
+    memset(sum_v, 0, dst_pitch * sizeof(Uint32));                       \
+    for (y = 0; y <= radius; y++) { /* y-pre */                         \
+        for (i = 0; i < dst_pitch; i++) {                               \
+            sum_v[i] += srcpx[src_pitch * y + i];                       \
+        }                                                               \
+    }                                                                   \
+    if (repeat) {                                                       \
+        for (i = 0; i < dst_pitch; i++) {                               \
+            sum_v[i] += srcpx[i] * radius;                              \
+        }                                                               \
+    }                                                                   \
+    for (y = 0; y < h; y++) { /* y */                                   \
+        for (i = 0; i < dst_pitch; i++) {                               \
+            buf[i] = sum_v[i] / (radius * 2 + 1);                       \
+                                                                        \
+            /* update vertical sum */                                   \
+            if (y - radius >= 0) {                                      \
+                sum_v[i] -= srcpx[src_pitch * (y - radius) + i];        \
+            }                                                           \
+            else if (repeat) {                                          \
+                sum_v[i] -= srcpx[i];                                   \
+            }                                                           \
+            if (y + radius + 1 < h) {                                   \
+                sum_v[i] += srcpx[src_pitch * (y + radius + 1) + i];    \
+            }                                                           \
+            else if (repeat) {                                          \
+                sum_v[i] += srcpx[src_pitch * (h - 1) + i];             \
+            }                                                           \
+        }                                                               \
+                                                                        \
+        memset(sum_h, 0, nb * sizeof(Uint32));                          \
+        for (x = 0; x <= radius; x++) { /* x-pre */                     \
+            for (color = 0; color < nb; color++) {                      \
+                sum_h[color] += buf[x * nb + color];                    \
+            }                                                           \
+        }                                                               \
+        if (repeat) {                                                   \
+            for (color = 0; color < nb; color++) {                      \
+                sum_h[color] += buf[color] * radius;                    \
+            }                                                           \
+        }                                                               \
+        for (x = 0; x < w; x++) { /* x */                               \
+            for (color = 0; color < nb; color++) {                      \
+                Uint8 blur_color = sum_h[color] / (radius * 2 + 1);     \
+                if (do_assign) {                                        \
+                    dstpx[dst_pitch * y + nb * x + color] = blur_color; \
+                }                                                       \
+                assign_code                                             \
+                                                                        \
+                    /* update horizontal sum */                         \
+                    if (x - radius >= 0)                                \
+                {                                                       \
+                    sum_h[color] -= buf[(x - radius) * nb + color];     \
+                }                                                       \
+                else if (repeat)                                        \
+                {                                                       \
+                    sum_h[color] -= buf[color];                         \
+                }                                                       \
+                if (x + radius + 1 < w) {                               \
+                    sum_h[color] += buf[(x + radius + 1) * nb + color]; \
+                }                                                       \
+                else if (repeat) {                                      \
+                    sum_h[color] += buf[(w - 1) * nb + color];          \
+                }                                                       \
+            }                                                           \
+        }                                                               \
+    }                                                                   \
+                                                                        \
+    free(buf);                                                          \
+    free(sum_v);                                                        \
+    free(sum_h);
+
 static void
 box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
 {
-    // Reference : https://blog.csdn.net/blogshinelee/article/details/80997324
-
-    Uint8 *srcpx = (Uint8 *)src->pixels;
-    Uint8 *dstpx = (Uint8 *)dst->pixels;
-    Uint8 nb = PG_SURF_BytesPerPixel(src);
-    int w = dst->w, h = dst->h;
-    int dst_pitch = dst->pitch;
-    int src_pitch = src->pitch;
-    int i, x, y, color;
-    Uint32 *buf = malloc(dst_pitch * sizeof(Uint32));
-    Uint32 *sum_v = malloc(dst_pitch * sizeof(Uint32));
-    Uint32 *sum_h = malloc(nb * sizeof(Uint32));
-
-    memset(sum_v, 0, dst_pitch * sizeof(Uint32));
-    for (y = 0; y <= radius; y++) {  // y-pre
-        for (i = 0; i < dst_pitch; i++) {
-            sum_v[i] += srcpx[src_pitch * y + i];
-        }
-    }
-    if (repeat) {
-        for (i = 0; i < dst_pitch; i++) {
-            sum_v[i] += srcpx[i] * radius;
-        }
-    }
-    for (y = 0; y < h; y++) {  // y
-        for (i = 0; i < dst_pitch; i++) {
-            buf[i] = sum_v[i] / (radius * 2 + 1);
-
-            // update vertical sum
-            if (y - radius >= 0) {
-                sum_v[i] -= srcpx[src_pitch * (y - radius) + i];
-            }
-            else if (repeat) {
-                sum_v[i] -= srcpx[i];
-            }
-            if (y + radius + 1 < h) {
-                sum_v[i] += srcpx[src_pitch * (y + radius + 1) + i];
-            }
-            else if (repeat) {
-                sum_v[i] += srcpx[src_pitch * (h - 1) + i];
-            }
-        }
-
-        memset(sum_h, 0, nb * sizeof(Uint32));
-        for (x = 0; x <= radius; x++) {  // x-pre
-            for (color = 0; color < nb; color++) {
-                sum_h[color] += buf[x * nb + color];
-            }
-        }
-        if (repeat) {
-            for (color = 0; color < nb; color++) {
-                sum_h[color] += buf[color] * radius;
-            }
-        }
-        for (x = 0; x < w; x++) {  // x
-            for (color = 0; color < nb; color++) {
-                dstpx[dst_pitch * y + nb * x + color] =
-                    sum_h[color] / (radius * 2 + 1);
-
-                // update horizontal sum
-                if (x - radius >= 0) {
-                    sum_h[color] -= buf[(x - radius) * nb + color];
-                }
-                else if (repeat) {
-                    sum_h[color] -= buf[color];
-                }
-                if (x + radius + 1 < w) {
-                    sum_h[color] += buf[(x + radius + 1) * nb + color];
-                }
-                else if (repeat) {
-                    sum_h[color] += buf[(w - 1) * nb + color];
-                }
-            }
-        }
-    }
-
-    free(buf);
-    free(sum_v);
-    free(sum_h);
+    BOX_BLUR(src, dst, radius, repeat, SDL_TRUE, );
 }
 
 static void
 gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int sigma, SDL_bool repeat)
 {
-    Uint8 *srcpx = (Uint8 *)src->pixels;
-    Uint8 *dstpx = (Uint8 *)dst->pixels;
-    Uint8 nb = PG_SURF_BytesPerPixel(src);
-    int w = dst->w, h = dst->h;
-    int dst_pitch = dst->pitch;
-    int src_pitch = src->pitch;
-    int i, j, x, y, color;
-    int kernel_radius = sigma * 2;
-    float *buf = malloc(dst_pitch * sizeof(float));
-    float *buf2 = malloc(dst_pitch * sizeof(float));
-    float *lut = malloc((kernel_radius + 1) * sizeof(float));
-    float lut_sum = 0.0;
-
-    for (i = 0; i <= kernel_radius; i++) {  // init gaussian lut
-        // Gaussian function
-        lut[i] =
-            expf(-powf((float)i, 2.0f) / (2.0f * powf((float)sigma, 2.0f)));
-        lut_sum += lut[i] * 2;
-    }
-    lut_sum -= lut[0];
-    for (i = 0; i <= kernel_radius; i++) {
-        lut[i] /= lut_sum;
-    }
-
-    for (i = 0; i < dst_pitch; i++) {
-        buf[i] = 0.0;
-        buf2[i] = 0.0;
-    }
-
-    for (y = 0; y < h; y++) {
-        for (j = -kernel_radius; j <= kernel_radius; j++) {
-            for (i = 0; i < dst_pitch; i++) {
-                if (y + j >= 0 && y + j < h) {
-                    buf[i] +=
-                        (float)srcpx[src_pitch * (y + j) + i] * lut[abs(j)];
-                }
-                else if (repeat) {
-                    if (y + j < 0) {
-                        buf[i] += (float)srcpx[i] * lut[abs(j)];
-                    }
-                    else {
-                        buf[i] += (float)srcpx[src_pitch * (h - 1) + i] *
-                                  lut[abs(j)];
-                    }
-                }
-            }
-        }
-
-        for (x = 0; x < w; x++) {
-            for (j = -kernel_radius; j <= kernel_radius; j++) {
-                for (color = 0; color < nb; color++) {
-                    if (x + j >= 0 && x + j < w) {
-                        buf2[nb * x + color] +=
-                            buf[nb * (x + j) + color] * lut[abs(j)];
-                    }
-                    else if (repeat) {
-                        if (x + j < 0) {
-                            buf2[nb * x + color] += buf[color] * lut[abs(j)];
-                        }
-                        else {
-                            buf2[nb * x + color] +=
-                                buf[nb * (w - 1) + color] * lut[abs(j)];
-                        }
-                    }
-                }
-            }
-        }
-        for (i = 0; i < dst_pitch; i++) {
-            dstpx[dst_pitch * y + i] = (Uint8)buf2[i];
-            buf[i] = 0.0;
-            buf2[i] = 0.0;
-        }
-    }
-
-    free(buf);
-    free(buf2);
-    free(lut);
+    GAUSSIAN_BLUR(src, dst, sigma, repeat, );
 }
 
 static SDL_Surface *
@@ -3383,146 +3397,36 @@ surf_gaussian_blur(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static void
-bloom_gaussian(SDL_Surface *src, SDL_Surface *bpfsurf, SDL_Surface *retsurf,
-               int sigma)
+bloom_gaussian(SDL_Surface *bloom_src, SDL_Surface *bpfsurf,
+               SDL_Surface *retsurf, int sigma)
 {
-    int kernel_radius = sigma * 2;
-
-    Uint8 *srcpx = (Uint8 *)src->pixels;
-    Uint8 *bpfpx = (Uint8 *)bpfsurf->pixels;
-    Uint8 *retpx = (Uint8 *)retsurf->pixels;
-    int w = retsurf->w, h = retsurf->h;
-    int bpp = src->format->BytesPerPixel;
-    int bpf_pitch = bpfsurf->pitch;
-    int src_pitch = src->pitch;
+    Uint8 *src_pixels = (Uint8 *)bloom_src->pixels;
+    Uint8 *ret_pixels = (Uint8 *)retsurf->pixels;
+    int bloom_src_pitch = bloom_src->pitch;
     int ret_pitch = retsurf->pitch;
-    int i, j, x, y, color;
-    float *buf = malloc(bpf_pitch * sizeof(float));
-    float *buf2 = malloc(bpf_pitch * sizeof(float));
-    float *lut = malloc((kernel_radius + 1) * sizeof(float));
-    float lut_sum = 0.0;
 
-    for (i = 0; i <= kernel_radius; i++) {  // init gaussian lut
-        // Gaussian function
-        lut[i] =
-            expf(-powf((float)i, 2.0f) / (2.0f * powf((float)sigma, 2.0f)));
-        lut_sum += lut[i] * 2;
-    }
-    lut_sum -= lut[0];
-    for (i = 0; i <= kernel_radius; i++) {
-        lut[i] /= lut_sum;
-    }
-
-    for (i = 0; i < bpf_pitch; i++) {
-        buf[i] = 0.0;
-        buf2[i] = 0.0;
-    }
-
-    for (y = 0; y < h; y++) {
-        for (j = -kernel_radius; j <= kernel_radius; j++) {
-            for (i = 0; i < bpf_pitch; i++) {
-                if (y + j >= 0 && y + j < h) {
-                    buf[i] +=
-                        (float)bpfpx[src_pitch * (y + j) + i] * lut[abs(j)];
-                }
-            }
-        }
-
-        for (x = 0; x < w; x++) {
-            for (j = -kernel_radius; j <= kernel_radius; j++) {
-                for (color = 0; color < bpp; color++) {
-                    if (x + j >= 0 && x + j < w) {
-                        buf2[bpp * x + color] +=
-                            buf[bpp * (x + j) + color] * lut[abs(j)];
-                    }
-                }
-            }
-        }
-        for (i = 0; i < bpf_pitch; i++) {
-            Uint8 blur_color = (Uint8)buf2[i];
-            bpfpx[bpf_pitch * y + i] = blur_color;
-            buf[i] = 0.0;
-            buf2[i] = 0.0;
-
-            // blit with additive blend
-            Uint8 src_color = srcpx[src_pitch * y + i];
-            int new_color = (src_color + blur_color);
-            retpx[ret_pitch * y + i] =
-                (Uint8)(new_color > 255 ? 255 : new_color);
-        }
-    }
-
-    free(buf);
-    free(buf2);
-    free(lut);
+    GAUSSIAN_BLUR(bpfsurf, bpfsurf, sigma, SDL_FALSE,
+                  Uint8 src_color = src_pixels[bloom_src_pitch * y + i];
+                  int new_color = (src_color + blur_color);
+                  ret_pixels[ret_pitch * y + i] =
+                      (Uint8)(new_color > 255 ? 255 : new_color);)
 }
 
 static void
-bloom_box(SDL_Surface *src, SDL_Surface *bpfsurf, SDL_Surface *retsurf,
+bloom_box(SDL_Surface *bloom_src, SDL_Surface *bpfsurf, SDL_Surface *retsurf,
           int radius)
 {
-    Uint8 *srcpx = (Uint8 *)src->pixels;
-    Uint8 *bpfpx = (Uint8 *)bpfsurf->pixels;
-    Uint8 *retpx = (Uint8 *)retsurf->pixels;
-    int bpp = src->format->BytesPerPixel;
-    int w = src->w, h = src->h;
-    int bpf_pitch = bpfsurf->pitch;
-    int src_pitch = src->pitch;
+    Uint8 *src_pixels = (Uint8 *)bloom_src->pixels;
+    Uint8 *ret_pixels = (Uint8 *)retsurf->pixels;
+    int bloom_src_pitch = bloom_src->pitch;
     int ret_pitch = retsurf->pitch;
-    int i, x, y, color;
-    Uint32 *buf = malloc(bpf_pitch * sizeof(Uint32));
-    Uint32 *sum_v = malloc(bpf_pitch * sizeof(Uint32));
-    Uint32 *sum_h = malloc(bpp * sizeof(Uint32));
 
-    memset(sum_v, 0, bpf_pitch * sizeof(Uint32));
-    for (y = 0; y <= radius; y++) {  // y-pre
-        for (i = 0; i < bpf_pitch; i++) {
-            sum_v[i] += bpfpx[src_pitch * y + i];
-        }
-    }
-    for (y = 0; y < h; y++) {  // y
-        for (i = 0; i < bpf_pitch; i++) {
-            buf[i] = sum_v[i] / (radius * 2 + 1);
-
-            // update vertical sum
-            if (y - radius >= 0) {
-                sum_v[i] -= bpfpx[src_pitch * (y - radius) + i];
-            }
-            if (y + radius + 1 < h) {
-                sum_v[i] += bpfpx[src_pitch * (y + radius + 1) + i];
-            }
-        }
-
-        memset(sum_h, 0, bpp * sizeof(Uint32));
-        for (x = 0; x <= radius; x++) {  // x-pre
-            for (color = 0; color < bpp; color++) {
-                sum_h[color] += buf[x * bpp + color];
-            }
-        }
-        for (x = 0; x < w; x++) {  // x
-            for (color = 0; color < bpp; color++) {
-                Uint8 blur_color = sum_h[color] / (radius * 2 + 1);
-
-                // blit with additive blend
-                Uint8 src_color = srcpx[src_pitch * y + bpp * x + color];
-                int new_color = (src_color + blur_color);
-                retpx[ret_pitch * y + bpp * x + color] =
-                    (Uint8)(new_color > 255 ? 255 : new_color);
-
-                // update horizontal sum
-                if (x - radius >= 0) {
-                    sum_h[color] -= buf[(x - radius) * bpp + color];
-                }
-                if (x + radius + 1 < w) {
-                    sum_h[color] += buf[(x + radius + 1) * bpp + color];
-                }
-            }
-        }
-    }
-
-    free(buf);
-    free(sum_v);
-    free(sum_h);
+    BOX_BLUR(
+        bpfsurf, bpfsurf, radius, SDL_FALSE, SDL_FALSE,
+        Uint8 src_color = src_pixels[bloom_src_pitch * y + nb * x + color];
+        int new_color = (src_color + blur_color);
+        ret_pixels[ret_pitch * y + nb * x + color] =
+            (Uint8)(new_color > 255 ? 255 : new_color);)
 }
 
 SDL_Surface *
