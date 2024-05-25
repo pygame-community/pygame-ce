@@ -3404,8 +3404,8 @@ bloom_gaussian(SDL_Surface *src, SDL_Surface *bpfsurf, SDL_Surface *retsurf,
 
     for (i = 0; i <= kernel_radius; i++) {  // init gaussian lut
         // Gaussian function
-        lut[i] = expf(-powf((float)i, 2.0f) /
-                      (2.0f * powf((float)sigma, 2.0f)));
+        lut[i] =
+            expf(-powf((float)i, 2.0f) / (2.0f * powf((float)sigma, 2.0f)));
         lut_sum += lut[i] * 2;
     }
     lut_sum -= lut[0];
@@ -3568,8 +3568,7 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
         for (x = 0; x < src->w; x++) {
             Uint32 src_pixel;
             Uint8 *src_pix;
-            SURF_GET_AT(src_pixel, src, x, y, srcpx, src->format,
-                        src_pix);
+            SURF_GET_AT(src_pixel, src, x, y, srcpx, src->format, src_pix);
             Uint8 src_r, src_g, src_b, a;
             SDL_GetRGBA(src_pixel, src->format, &src_r, &src_g, &src_b, &a);
             float r = (float)src_r / 255.0f, g = (float)src_g / 255.0f,
@@ -3581,9 +3580,10 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
                 Uint8 new_r = (Uint8)(r * c);
                 Uint8 new_g = (Uint8)(g * c);
                 Uint8 new_b = (Uint8)(b * c);
-                Uint32 new_pixel = SDL_MapRGBA(bpfsurf->format, new_r, new_g, new_b, a);
-                SURF_SET_AT(new_pixel, bpfsurf, x, y, bpfpx,
-                            bpfsurf->format, src_pix);
+                Uint32 new_pixel =
+                    SDL_MapRGBA(bpfsurf->format, new_r, new_g, new_b, a);
+                SURF_SET_AT(new_pixel, bpfsurf, x, y, bpfpx, bpfsurf->format,
+                            src_pix);
             }
         }
     }
@@ -3612,9 +3612,13 @@ surf_bloom(PyObject *self, PyObject *args, PyObject *kwargs)
     int blur_radius = 5;
     char blur_type = 'b';
 
-    static char *kwlist[] = {
-        "surface",      "intensity", "luminance_threshold", "blur_radius",
-        "blur_type", "dest_surface",        0};
+    static char *kwlist[] = {"surface",
+                             "intensity",
+                             "luminance_threshold",
+                             "blur_radius",
+                             "blur_type",
+                             "dest_surface",
+                             0};
 
     if (!PyArg_ParseTupleAndKeywords(
             args, kwargs, "O!|ffisO!", kwlist, &pgSurface_Type, &src_surf_obj,
