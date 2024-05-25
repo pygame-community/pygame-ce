@@ -3518,7 +3518,7 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
                 Uint32 new_pixel = (new_r >> dfmt->Rloss) << dfmt->Rshift |
                                    (new_g >> dfmt->Gloss) << dfmt->Gshift |
                                    (new_b >> dfmt->Bloss) << dfmt->Bshift |
-                                   pxl & amask;
+                                   (pxl & amask);
 
                 *dstp = new_pixel;
             }
