@@ -157,7 +157,7 @@ imageext_load_sized_svg(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     if (width <= 0 || height <= 0) {
         return RAISE(PyExc_ValueError,
-                     "both components of size must be be positive");
+                     "both components of size must be positive");
     }
 
     rw = pgRWops_FromObject(obj, NULL);

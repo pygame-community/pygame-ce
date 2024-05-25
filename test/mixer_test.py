@@ -48,6 +48,48 @@ class MixerModuleTest(unittest.TestCase):
         mixer.quit()
         mixer.pre_init(0, 0, 0, 0)
 
+    def test_get_driver(self):
+        mixer.init()
+        drivers = [
+            pygame.NULL_VIDEODRIVER,
+            "pipewire",
+            "pulseaudio",
+            "alsa",
+            "jack",
+            "sndio",
+            "netbsd",
+            "dsp",
+            "qsa",
+            "audio",
+            "arts",
+            "esd",
+            "nacl",
+            "nas",
+            "wasapi",
+            "directsound",
+            "winmm",
+            "paud",
+            "haiku",
+            "coreaudio",
+            "disk",
+            "fusionsound",
+            "AAudio",
+            "openslES",
+            "android",
+            "ps2",
+            "psp",
+            "vita",
+            "n3ds",
+            "emscripten",
+            "DART",
+        ]
+        driver = mixer.get_driver()
+        self.assertIn(driver, drivers)
+
+        mixer.quit()
+        with self.assertRaises(pygame.error):
+            mixer.get_driver()
+
     def test_init__keyword_args(self):
         # note: this test used to loop over all CONFIGS, but it's very slow..
         mixer.init(**CONFIG)
@@ -120,17 +162,22 @@ class MixerModuleTest(unittest.TestCase):
         """Ensure soundfonts can be set, cleared, and retrieved"""
         mixer.init()
 
+        # test that initially, get_soundfont returns only real files
+        if (initial_sf := mixer.get_soundfont()) is not None:
+            for i in initial_sf.split(";"):
+                os.path.exists(i)
+
         mixer.set_soundfont()
         self.assertEqual(mixer.get_soundfont(), None)
 
         mixer.set_soundfont(None)
         self.assertEqual(mixer.get_soundfont(), None)
 
-        mixer.set_soundfont("")
-        self.assertEqual(mixer.get_soundfont(), None)
-
         mixer.set_soundfont("test1.sf2;test2.sf2")
         self.assertEqual(mixer.get_soundfont(), "test1.sf2;test2.sf2")
+
+        mixer.set_soundfont("")
+        self.assertEqual(mixer.get_soundfont(), None)
 
         self.assertRaises(TypeError, mixer.set_soundfont, 0)
         self.assertRaises(TypeError, mixer.set_soundfont, ["one", "two"])
@@ -359,13 +406,11 @@ class MixerModuleTest(unittest.TestCase):
         self.assertEqual(d["strides"], (2,))
         self.assertEqual(d["data"], (snd._samples_address, False))
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     @unittest.skipIf(IS_PYPY, "pypy no likey")
     def test_newbuf__one_channel(self):
         mixer.init(22050, -16, 1)
         self._NEWBUF_export_check()
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     @unittest.skipIf(IS_PYPY, "pypy no likey")
     def test_newbuf__twho_channel(self):
         mixer.init(22050, -16, 2)
@@ -506,9 +551,7 @@ class MixerModuleTest(unittest.TestCase):
         filename = example_path(os.path.join("data", "house_lo.wav"))
         sound = mixer.Sound(file=filename)
 
-        num_channels = mixer.get_num_channels()
-
-        if num_channels > 0:
+        if (num_channels := mixer.get_num_channels()) > 0:
             found_channel = mixer.find_channel()
             self.assertIsNotNone(found_channel)
 

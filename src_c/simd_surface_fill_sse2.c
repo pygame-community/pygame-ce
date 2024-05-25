@@ -1,5 +1,10 @@
 #include "simd_fill.h"
 
+#if PG_ENABLE_ARM_NEON
+// sse2neon.h is from here: https://github.com/DLTcollab/sse2neon
+#include "include/sse2neon.h"
+#endif /* PG_ENABLE_ARM_NEON */
+
 #define BAD_SSE2_FUNCTION_CALL                                               \
     printf(                                                                  \
         "Fatal Error: Attempted calling an SSE2 function when both compile " \
@@ -72,26 +77,23 @@ _pg_HasSSE_NEON()
 
 /* Setup for RUN_16BIT_SHUFFLE_OUT */
 #define SETUP_SHUFFLE                                                   \
-    __m128i shuff_dst, _shuff16_temp, mm128_colorA, mm128_colorB;       \
-    mm128_colorA = _mm_unpacklo_epi8(mm128_color, _mm_setzero_si128()); \
-    mm128_colorB = _mm_unpackhi_epi8(mm128_color, _mm_setzero_si128());
+    __m128i shuff_dst, _shuff16_temp, mm128_zero = _mm_setzero_si128(); \
+    mm128_color = _mm_unpacklo_epi8(mm128_color, mm128_zero);
 
-#define RUN_16BIT_SHUFFLE_OUT(FILL_CODE)                           \
-    /* ==== shuffle pixels out into two registers each, src */     \
-    /* and dst set up for 16 bit math, like 0A0R0G0B ==== */       \
-    shuff_dst = _mm_unpacklo_epi8(mm128_dst, _mm_setzero_si128()); \
-    mm128_color = mm128_colorA;                                    \
-                                                                   \
-    {FILL_CODE}                                                    \
-                                                                   \
-    _shuff16_temp = shuff_dst;                                     \
-                                                                   \
-    shuff_dst = _mm_unpackhi_epi8(mm128_dst, _mm_setzero_si128()); \
-    mm128_color = mm128_colorB;                                    \
-                                                                   \
-    {FILL_CODE}                                                    \
-                                                                   \
-    /* ==== recombine A and B pixels ==== */                       \
+#define RUN_16BIT_SHUFFLE_OUT(FILL_CODE)                       \
+    /* ==== shuffle pixels out into two registers each, src */ \
+    /* and dst set up for 16 bit math, like 0A0R0G0B ==== */   \
+    shuff_dst = _mm_unpacklo_epi8(mm128_dst, mm128_zero);      \
+                                                               \
+    {FILL_CODE}                                                \
+                                                               \
+    _shuff16_temp = shuff_dst;                                 \
+                                                               \
+    shuff_dst = _mm_unpackhi_epi8(mm128_dst, mm128_zero);      \
+                                                               \
+    {FILL_CODE}                                                \
+                                                               \
+    /* ==== recombine A and B pixels ==== */                   \
     mm128_dst = _mm_packus_epi16(_shuff16_temp, shuff_dst);
 
 #define FILLERS(NAME, COLOR_PROCESS_CODE, FILL_CODE)                        \

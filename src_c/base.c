@@ -353,7 +353,7 @@ pg_init(PyObject *self, PyObject *_null)
     }
 
     pg_is_init = 1;
-    return Py_BuildValue("(ii)", success, fail);
+    return pg_tuple_couple_from_values_int(success, fail);
 }
 
 static void
@@ -1148,12 +1148,9 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
     flags |= PyBUF_PYGAME;
 #endif
 
-    if (PyObject_CheckBuffer(obj)) {
+    if (PyObject_GetBuffer(obj, view_p, flags) == 0) {
         char *fchar_p;
 
-        if (PyObject_GetBuffer(obj, view_p, flags)) {
-            return -1;
-        }
         pg_view_p->release_buffer = PyBuffer_Release;
 
         /* Check the format is a numeric type or pad bytes
@@ -1224,6 +1221,9 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
             return -1;
         }
         success = 1;
+    }
+    else {
+        PyErr_Clear();
     }
 
     if (!success && pgGetArrayStruct(obj, &cobj, &inter_p) == 0) {

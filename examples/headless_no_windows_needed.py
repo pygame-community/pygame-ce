@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.headless_no_windows_needed
+"""pygame.examples.headless_no_windows_needed
 
 How to use pygame-ce with no windowing system, like on headless servers.
 
@@ -7,6 +7,7 @@ Thumbnail generation with scaling is an example of what you can do with pygame.
 NOTE: the pygame scale function uses mmx/sse if available, and can be run
   in multiple threads.
 """
+
 usage = """-scale inputimage outputimage new_width new_height
 eg.  -scale in.png out.png 50 50
 

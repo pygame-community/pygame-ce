@@ -40,6 +40,26 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
 :func:`pygame.mixer.init` or :func:`pygame.init` is called. For example:
 ``pygame.mixer.pre_init(44100,-16,2, 1024)``
 
+The following file formats are supported
+
+   * ``WAV``
+
+   * ``MP3``
+
+   * ``OGG``
+
+   * ``FLAC``
+
+   * ``OPUS``
+
+   * ``WV`` (WavPack)
+
+   * ``MOD`` ("Module file" family of music file formats)
+
+   * ``MIDI`` (see the :func:`get_soundfont` and :func:`set_soundfont` methods)
+
+.. versionadded:: 2.5.0 Loading WV (Relies on SDL_mixer 2.8.0+)
+
 
 .. function:: init
 
@@ -144,6 +164,18 @@ change the default buffer by calling :func:`pygame.mixer.pre_init` before
    using. If the mixer has not been initialized this returns ``None``.
 
    .. ## pygame.mixer.get_init ##
+
+.. function:: get_driver
+
+   | :sl:`get the name of the current audio backend driver`
+   | :sg:`get_driver() -> str`
+
+   Pygame chooses one of many available audio backend drivers when it is
+   initialized. This returns the internal name used for the backend. This
+   function is intended to be used for getting diagnostic/debugging information.
+   This can be controlled with ``SDL_AUDIODRIVER`` environment variable.
+
+   .. versionadded:: 2.5.0
 
 .. function:: stop
 

@@ -18,7 +18,7 @@
 #    Pete Shinners
 #    pete@shinners.org
 
-""" A dictionary of RGBA tuples indexed by color names.
+"""A dictionary of RGBA tuples indexed by color names.
 
 See https://pyga.me/docs/ref/color_list.html for sample swatches.
 """

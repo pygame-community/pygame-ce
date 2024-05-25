@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_SCRAP "pygame module for clipboard support."
 #define DOC_SCRAP_PUTTEXT "put_text(text, /) -> None\nPlaces text into the clipboard."
 #define DOC_SCRAP_GETTEXT "get_text() -> str\nGets text from the clipboard."
