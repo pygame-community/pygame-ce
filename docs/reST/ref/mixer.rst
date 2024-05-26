@@ -443,7 +443,7 @@ The following file formats are supported
       | :sl:`get the playback volume`
       | :sg:`get_volume() -> value`
 
-      Return a value from 0.0 to 1.0 representing the volume for this Sound.
+      Return a value from 0.0 to 1.0 (inclusive) representing the volume for this Sound.
 
       .. ## Sound.get_volume ##
 
@@ -484,7 +484,7 @@ The following file formats are supported
    | :sg:`Channel(id) -> Channel`
 
    Return a Channel object for one of the current channels. The id must be a
-   value from 0 to the value of ``pygame.mixer.get_num_channels()``.
+   value from 0 up to, but not including, ``pygame.mixer.get_num_channels()``.
 
    The Channel object can be used to get fine control over the playback of
    Sounds. A channel can only playback a single Sound at time. Using channels
@@ -589,7 +589,7 @@ The following file formats are supported
 
       Set the volume (loudness) of a playing sound. When a channel starts to
       play its volume value is reset. This only affects the current sound. The
-      value argument is between 0.0 and 1.0.
+      value argument is in the range of 0.0 to 1.0 (inclusive).
 
       If one argument is passed, it will be the volume of both speakers. If two
       arguments are passed and the mixer is in stereo mode, the first argument
@@ -615,7 +615,8 @@ The following file formats are supported
       | :sl:`get the volume of the playing channel`
       | :sg:`get_volume() -> value`
 
-      Return the volume of the channel for the current playing sound. This does
+      Return the volume of the channel for the current playing sound 
+      in the range of 0.0 to 1.0 (inclusive). This does
       not take into account stereo separation used by
       :meth:`Channel.set_volume`. The Sound object also has its own volume
       which is mixed with the channel.
