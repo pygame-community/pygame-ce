@@ -9,7 +9,6 @@ class PygameCEGuiBootstrap(BaseGuiBootstrap):
 import importlib.metadata
 import os
 import sys
-from pathlib import Path
 
 import pygame
 
