@@ -1625,14 +1625,14 @@ class TransformDisplayModuleTest(unittest.TestCase):
             for intensity in [0.5, 1, 2, 4]:
                 for threshold in [-1, 0.1, 0.2, 0.5, 0.8, 2]:
                     for blur_type in ["gaussian", "box"]:
-                        for dest_surf in [None, dest_surface]:
+                        for kwargs in [{}, {"dest_surface": dest_surface}]:
                             pygame.transform.bloom(
                                 surface,
                                 blur_radius,
                                 intensity,
                                 threshold,
                                 blur_type,
-                                dest_surf,
+                                **kwargs,
                             )
 
     def test_flip(self):
