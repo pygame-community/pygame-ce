@@ -46,8 +46,12 @@ def main(imagefile, convert_alpha=False, run_speed_test=False):
     running = True
     cursize = [background.get_width(), background.get_height()]
 
+    clock = pygame.Clock()
+
     # main loop
     while running:
+        clock.tick(60)
+
         image = pygame.transform.smoothscale(background, cursize)
         imgpos = image.get_rect(centerx=512, centery=384)
         screen.fill((255, 255, 255))
@@ -62,7 +66,7 @@ def main(imagefile, convert_alpha=False, run_speed_test=False):
                 running = False
 
         pressed_keys = pygame.key.get_pressed()
-                
+
         if pressed_keys[pygame.K_UP]:
             cursize[1] -= 2
             if cursize[1] < 1:
