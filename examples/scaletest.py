@@ -43,10 +43,6 @@ def main(imagefile, convert_alpha=False, run_speed_test=False):
     pygame.mouse.set_visible(0)
 
     running = True
-    up = False
-    down = False
-    left = False
-    right = False
     cursize = [background.get_width(), background.get_height()]
 
     # main loop
@@ -63,35 +59,20 @@ def main(imagefile, convert_alpha=False, run_speed_test=False):
                 event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE
             ):
                 running = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    up = True
-                if event.key == pygame.K_DOWN:
-                    down = True
-                if event.key == pygame.K_LEFT:
-                    left = True
-                if event.key == pygame.K_RIGHT:
-                    right = True
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_UP:
-                    up = False
-                if event.key == pygame.K_DOWN:
-                    down = False
-                if event.key == pygame.K_LEFT:
-                    left = False
-                if event.key == pygame.K_RIGHT:
-                    right = False
-        if up:
+
+        pressed_keys = pygame.key.get_pressed()
+                
+        if pressed_keys[pygame.K_UP]:
             cursize[1] -= 2
             if cursize[1] < 1:
                 cursize[1] = 1
-        if down:
+        if pressed_keys[pygame.K_DOWN]:
             cursize[1] += 2
-        if left:
+        if pressed_keys[pygame.K_LEFT]:
             cursize[0] -= 2
             if cursize[0] < 1:
                 cursize[0] = 1
-        if right:
+        if pressed_keys[pygame.K_RIGHT]:
             cursize[0] += 2
     pygame.quit()
 
