@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_WINDOW "Window(title='pygame window', size=(640, 480), position=None, fullscreen=False, fullscreen_desktop=False, **kwargs) -> Window\npygame object that represents a window"
 #define DOC_WINDOW_GRABMOUSE "grab_mouse -> bool\nGet or set the window's mouse grab mode"
 #define DOC_WINDOW_GRABKEYBOARD "grab_keyboard -> bool\nGet or set the window's keyboard grab mode"
@@ -15,6 +15,7 @@
 #define DOC_WINDOW_MAXIMUMSIZE "maximum_size -> (int, int)\nGet or set the maximum size of the window's client area"
 #define DOC_WINDOW_POSITION "position -> (int, int) or WINDOWPOS_CENTERED or WINDOWPOS_UNDEFINED\nGet or set the window position in screen coordinates"
 #define DOC_WINDOW_OPACITY "opacity -> float\nGet or set the window opacity, between 0.0 (fully transparent) and 1.0 (fully opaque)"
+#define DOC_WINDOW_OPENGL "opengl -> bool\nGet if the window supports OpenGL"
 #define DOC_WINDOW_FROMDISPLAYMODULE "from_display_module() -> Window\nCreate a Window object using window data from display module"
 #define DOC_WINDOW_GETSURFACE "get_surface() -> Surface\nGet the window surface"
 #define DOC_WINDOW_FLIP "flip() -> None\nUpdate the display surface to the window."

@@ -19,7 +19,7 @@ if _sdl_image_ver is not None:
     )
 
 
-def test_magic(f, magic_hexes):
+def check_magic(f, magic_hexes):
     """Tests a given file to see if the magic hex matches."""
     data = f.read(len(magic_hexes))
     if len(data) != len(magic_hexes):
@@ -48,8 +48,8 @@ class ImageModuleTest(unittest.TestCase):
         reddish_pixel = (210, 0, 0, 255)
         greenish_pixel = (0, 220, 0, 255)
         bluish_pixel = (0, 0, 230, 255)
-        greyish_pixel = (110, 120, 130, 140)
-        pixel_array = [reddish_pixel + greenish_pixel, bluish_pixel + greyish_pixel]
+        grayish_pixel = (110, 120, 130, 140)
+        pixel_array = [reddish_pixel + greenish_pixel, bluish_pixel + grayish_pixel]
 
         f_descriptor, f_path = tempfile.mkstemp(suffix=".png")
 
@@ -63,7 +63,7 @@ class ImageModuleTest(unittest.TestCase):
         self.assertEqual(surf.get_at((0, 0)), reddish_pixel)
         self.assertEqual(surf.get_at((1, 0)), greenish_pixel)
         self.assertEqual(surf.get_at((0, 1)), bluish_pixel)
-        self.assertEqual(surf.get_at((1, 1)), greyish_pixel)
+        self.assertEqual(surf.get_at((1, 1)), grayish_pixel)
 
         # Read the PNG file obj. and verify that pygame interprets it correctly
         with open(f_path, "rb") as f:
@@ -72,7 +72,7 @@ class ImageModuleTest(unittest.TestCase):
         self.assertEqual(surf.get_at((0, 0)), reddish_pixel)
         self.assertEqual(surf.get_at((1, 0)), greenish_pixel)
         self.assertEqual(surf.get_at((0, 1)), bluish_pixel)
-        self.assertEqual(surf.get_at((1, 1)), greyish_pixel)
+        self.assertEqual(surf.get_at((1, 1)), grayish_pixel)
 
         os.remove(f_path)
 
@@ -168,13 +168,13 @@ class ImageModuleTest(unittest.TestCase):
         reddish_pixel = (215, 0, 0, 255)
         greenish_pixel = (0, 225, 0, 255)
         bluish_pixel = (0, 0, 235, 255)
-        greyish_pixel = (115, 125, 135, 145)
+        grayish_pixel = (115, 125, 135, 145)
 
         surf = pygame.Surface((1, 4), pygame.SRCALPHA, 32)
         surf.set_at((0, 0), reddish_pixel)
         surf.set_at((0, 1), greenish_pixel)
         surf.set_at((0, 2), bluish_pixel)
-        surf.set_at((0, 3), greyish_pixel)
+        surf.set_at((0, 3), grayish_pixel)
 
         f_path = tempfile.mktemp(suffix=".png")
         pygame.image.save(surf, f_path)
@@ -188,7 +188,7 @@ class ImageModuleTest(unittest.TestCase):
             self.assertEqual(tuple(next(pixels)), reddish_pixel)
             self.assertEqual(tuple(next(pixels)), greenish_pixel)
             self.assertEqual(tuple(next(pixels)), bluish_pixel)
-            self.assertEqual(tuple(next(pixels)), greyish_pixel)
+            self.assertEqual(tuple(next(pixels)), grayish_pixel)
 
         finally:
             # Ensures proper clean up.
@@ -207,13 +207,13 @@ class ImageModuleTest(unittest.TestCase):
         reddish_pixel = (215, 0, 0)
         greenish_pixel = (0, 225, 0)
         bluish_pixel = (0, 0, 235)
-        greyish_pixel = (115, 125, 135)
+        grayish_pixel = (115, 125, 135)
 
         surf = pygame.Surface((1, 4), 0, 24)
         surf.set_at((0, 0), reddish_pixel)
         surf.set_at((0, 1), greenish_pixel)
         surf.set_at((0, 2), bluish_pixel)
-        surf.set_at((0, 3), greyish_pixel)
+        surf.set_at((0, 3), grayish_pixel)
 
         f_path = tempfile.mktemp(suffix=".png")
         pygame.image.save(surf, f_path)
@@ -227,7 +227,7 @@ class ImageModuleTest(unittest.TestCase):
             self.assertEqual(tuple(next(pixels)), reddish_pixel)
             self.assertEqual(tuple(next(pixels)), greenish_pixel)
             self.assertEqual(tuple(next(pixels)), bluish_pixel)
-            self.assertEqual(tuple(next(pixels)), greyish_pixel)
+            self.assertEqual(tuple(next(pixels)), grayish_pixel)
 
         finally:
             # Ensures proper clean up.
@@ -274,13 +274,13 @@ class ImageModuleTest(unittest.TestCase):
         reddish_pixel = (215, 0, 0)
         greenish_pixel = (0, 225, 0)
         bluish_pixel = (0, 0, 235)
-        greyish_pixel = (115, 125, 135)
+        grayish_pixel = (115, 125, 135)
 
         surf = pygame.Surface((1, 4), 0, 8)
         surf.set_palette_at(0, reddish_pixel)
         surf.set_palette_at(1, greenish_pixel)
         surf.set_palette_at(2, bluish_pixel)
-        surf.set_palette_at(3, greyish_pixel)
+        surf.set_palette_at(3, grayish_pixel)
 
         f_path = tempfile.mktemp(suffix=".png")
         pygame.image.save(surf, f_path)
@@ -294,7 +294,7 @@ class ImageModuleTest(unittest.TestCase):
             self.assertEqual(tuple(next(palette)), reddish_pixel)
             self.assertEqual(tuple(next(palette)), greenish_pixel)
             self.assertEqual(tuple(next(palette)), bluish_pixel)
-            self.assertEqual(tuple(next(palette)), greyish_pixel)
+            self.assertEqual(tuple(next(palette)), grayish_pixel)
 
         finally:
             # Ensures proper clean up.
@@ -326,7 +326,7 @@ class ImageModuleTest(unittest.TestCase):
                     # Test the magic numbers at the start of the file to ensure
                     # they are saved as the correct file type.
                     self.assertEqual(
-                        (1, fmt), (test_magic(handle, magic_hex[fmt.lower()]), fmt)
+                        (1, fmt), (check_magic(handle, magic_hex[fmt.lower()]), fmt)
                     )
 
                 # load the file to make sure it was saved correctly.
@@ -410,7 +410,7 @@ class ImageModuleTest(unittest.TestCase):
                         # ensure they are saved as the correct file type.
                         handle.seek(0)
                         self.assertEqual(
-                            (1, fmt), (test_magic(handle, magic_hex[fmt.lower()]), fmt)
+                            (1, fmt), (check_magic(handle, magic_hex[fmt.lower()]), fmt)
                         )
                     # load the file to make sure it was saved correctly.
                     handle.flush()
@@ -1344,7 +1344,7 @@ class ImageModuleTest(unittest.TestCase):
             with open(temp_file_name, "rb") as file:
                 # Test the magic numbers at the start of the file to ensure
                 # they are saved as the correct file type.
-                self.assertEqual(1, (test_magic(file, magic_hex[fmt.lower()])))
+                self.assertEqual(1, (check_magic(file, magic_hex[fmt.lower()])))
             # load the file to make sure it was saved correctly
             loaded_file = pygame.image.load(temp_file_name)
             self.assertEqual(loaded_file.get_at((0, 0)), surf.get_at((0, 0)))

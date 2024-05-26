@@ -338,7 +338,7 @@ PyObject *
 camera_get_size(pgCameraObject *self, PyObject *_null)
 {
 #if defined(__unix__) || defined(PYGAME_WINDOWS_CAMERA)
-    return Py_BuildValue("(ii)", self->width, self->height);
+    return pg_tuple_couple_from_values_int(self->width, self->height);
 #endif
     Py_RETURN_NONE;
 }
@@ -665,7 +665,7 @@ rgb_to_hsv(const void *src, void *dst, int length, unsigned long source,
             min = MIN(MIN(r, g), b);
             delta = max - min;
             v = max;      /* value (similar to luminosity) */
-            if (!delta) { /* grey, zero hue and saturation */
+            if (!delta) { /* gray, zero hue and saturation */
                 s = 0;
                 h = 0;
             }
@@ -733,7 +733,7 @@ rgb_to_hsv(const void *src, void *dst, int length, unsigned long source,
             min = MIN(MIN(r, g), b);
             delta = max - min;
             v = max;      /* value (similar to luminosity) */
-            if (!delta) { /* grey, zero hue and saturation */
+            if (!delta) { /* gray, zero hue and saturation */
                 s = 0;
                 h = 0;
             }

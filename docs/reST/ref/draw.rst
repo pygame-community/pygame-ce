@@ -206,6 +206,62 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    .. ## pygame.draw.circle ##
 
+.. function:: aacircle
+
+   | :sl:`draw an antialiased circle`
+   | :sg:`aacircle(surface, color, center, radius) -> Rect`
+   | :sg:`aacircle(surface, color, center, radius, width=0, draw_top_right=None, draw_top_left=None, draw_bottom_left=None, draw_bottom_right=None) -> Rect`
+
+   Draws an antialiased circle on the given surface.
+   Uses Xaolin Wu Circle Algorithm.
+   adapted from: https://cgg.mff.cuni.cz/~pepca/ref/WU.pdf
+
+   :param Surface surface: surface to draw on
+   :param color: color to draw with, the alpha value is optional if using a
+      tuple ``(RGB[A])``
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+   :param center: center point of the circle as a sequence of 2 ints/floats,
+      e.g. ``(x, y)``
+   :type center: tuple(int or float, int or float) or
+      list(int or float, int or float) or Vector2(int or float, int or float)
+   :param radius: radius of the circle, measured from the ``center`` parameter,
+      nothing will be drawn if the ``radius`` is less than 1
+   :type radius: int or float
+   :param int width: (optional) used for line thickness or to indicate that
+      the circle is to be filled
+
+         | if ``width == 0``, (default) fill the circle
+         | if ``width > 0``, used for line thickness
+         | if ``width < 0``, nothing will be drawn
+         |
+
+         .. note::
+            When using ``width`` values ``> 1``, the edge lines will only grow
+            inward.
+   :param bool draw_top_right: (optional) if this is set to True then the top right corner
+      of the circle will be drawn
+   :param bool draw_top_left: (optional) if this is set to True then the top left corner
+      of the circle will be drawn
+   :param bool draw_bottom_left: (optional) if this is set to True then the bottom left corner
+      of the circle will be drawn
+   :param bool draw_bottom_right: (optional) if this is set to True then the bottom right corner
+      of the circle will be drawn
+
+         | if any of the draw_circle_part is True then it will draw all circle parts that have the True
+         | value, otherwise it will draw the entire circle.
+
+   :returns: a rect bounding the changed pixels, if nothing is drawn the
+      bounding rect's position will be the ``center`` parameter value (float
+      values will be truncated) and its width and height will be 0
+   :rtype: Rect
+
+   :raises TypeError: if ``center`` is not a sequence of two numbers
+   :raises TypeError: if ``radius`` is not a number
+
+   .. versionadded:: 2.5.0
+
+   .. ## pygame.draw.aacircle ##
+
 .. function:: ellipse
 
    | :sl:`draw an ellipse`

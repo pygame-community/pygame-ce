@@ -1,6 +1,6 @@
 project(
     'pygame_ce',
-    'c', # Project type. We only need a C compiler
+    ['c', 'cython'], # Project type. We need a C compiler and cython
     version: run_command(
         [find_program('python3', 'python'), 'buildconfig/get_version.py'],
         check: true,
@@ -10,6 +10,14 @@ project(
         'warning_level=0',
     ],
 )
+
+defines = run_command(
+    [find_program('python3', 'python'), 'buildconfig/get_version.py', '--macros'],
+    check: true,
+).stdout().strip().split()
+foreach define : defines
+    add_global_arguments(define, language: 'c')
+endforeach
 
 pg = 'pygame' # python base package name
 
@@ -61,7 +69,7 @@ pg_inc_dirs = []
 pg_lib_dirs = []
 if plat == 'win' and host_machine.cpu_family().startswith('x86')
     # yes, this is a bit ugly and hardcoded but it is what it is
-    # TODO (middle-term goal) - Should migrate away from this 
+    # TODO (middle-term goal) - Should migrate away from this
     # consider meson wraps? Hopefully can also get the same build path as below
     arch_suffix = 'x' + host_machine.cpu_family().substring(-2)
     base_dir = meson.current_source_dir()
@@ -78,7 +86,7 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
         )
     endif
 
-    sdl_ver = '2.30.2'
+    sdl_ver = '2.30.3'
     sdl_image_ver = '2.8.2'
     sdl_mixer_ver = '2.8.0'
     sdl_ttf_ver = '2.22.0'
@@ -356,6 +364,16 @@ subdir('src_c')
 subdir('src_py')
 
 if not get_option('stripped')
+    # run make_docs and make docs
+    if not fs.is_dir('generated')
+        make_docs = files('buildconfig/make_docs.py')
+        res = run_command(
+            [find_program('python3', 'python'), make_docs],
+            check: false,
+        )
+        message(res.stdout().strip())
+        message(res.stderr().strip())
+    endif
     subdir('docs')
     subdir('test')
     subdir('buildconfig/stubs')

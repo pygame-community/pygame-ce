@@ -231,7 +231,7 @@ class WindowTypeTest(unittest.TestCase):
             ValueError, lambda: setattr(self.win, "maximum_size", (50, 50))
         )
 
-        # minimum size should be able to equal to maxium size
+        # minimum size should be able to equal to maximum size
         # This test fails in SDL <= 2.0.12
         # have been fixed after SDL 2.0.18
         if SDL >= (2, 0, 18):
@@ -265,6 +265,11 @@ class WindowTypeTest(unittest.TestCase):
         self.assertRaises(TypeError, lambda: setattr(self.win, "opacity", "null str"))
 
     def test_init_flags(self):
+        # test no opengl by default
+        win = Window()
+        self.assertFalse(win.opengl)
+        win.destroy()
+
         # test borderless
         win = Window(borderless=True)
         self.assertTrue(win.borderless)
@@ -315,6 +320,7 @@ class WindowTypeTest(unittest.TestCase):
         win2 = Window.from_display_module()
 
         self.assertIs(win1, win2)
+        self.assertFalse(win1.opengl)
 
         pygame.display.quit()
         pygame.init()
@@ -368,6 +374,28 @@ class WindowTypeTest(unittest.TestCase):
             win.flip,
         )
         win.destroy()
+
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "OpenGL requires a non-null SDL_VIDEODRIVER",
+    )
+    def test_window_opengl(self):
+        win1 = Window(opengl=True)
+        self.assertTrue(win1.opengl)
+        win1.flip()
+        win1.destroy()
+
+        win2 = Window(opengl=False)
+        self.assertFalse(win2.opengl)
+        win2.get_surface()
+        win2.flip()
+        win2.destroy()
+
+        pygame.display.set_mode((640, 480), pygame.OPENGL)
+        win = Window.from_display_module()
+        self.assertTrue(win.opengl)
+        pygame.display.quit()
+        pygame.init()
 
     def tearDown(self):
         self.win.destroy()

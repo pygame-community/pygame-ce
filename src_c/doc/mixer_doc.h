@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_MIXER "pygame module for loading and playing sounds"
 #define DOC_MIXER_INIT "init(frequency=44100, size=-16, channels=2, buffer=512, devicename=None, allowedchanges=AUDIO_ALLOW_FREQUENCY_CHANGE | AUDIO_ALLOW_CHANNELS_CHANGE) -> None\ninitialize the mixer module"
 #define DOC_MIXER_PREINIT "pre_init(frequency=44100, size=-16, channels=2, buffer=512, devicename=None, allowedchanges=AUDIO_ALLOW_FREQUENCY_CHANGE | AUDIO_ALLOW_CHANNELS_CHANGE) -> None\npreset the mixer init arguments"

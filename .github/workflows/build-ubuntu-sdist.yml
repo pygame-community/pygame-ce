@@ -51,7 +51,7 @@ jobs:
         os: [ubuntu-20.04, ubuntu-22.04]
 
     steps:
-    - uses: actions/checkout@v4.1.2
+    - uses: actions/checkout@v4.1.6
 
     - name: Install deps
       # install numpy from pip and not apt because the one from pip is newer,
@@ -66,7 +66,7 @@ jobs:
 
     - name: Make sdist and install it
       run: |
-        python3 setup.py docs
+        python3 buildconfig/make_docs.py
         python3 setup.py sdist
         pip3 install dist/pygame-*.tar.gz -vv
 
@@ -80,7 +80,7 @@ jobs:
       if: matrix.os == 'ubuntu-22.04' # run stubtest only once
       run: |
         pip3 install mypy
-        python3 setup.py stubcheck
+        python3 buildconfig/stubs/stubcheck.py
 
     # We upload the generated files under github actions assets
     - name: Upload sdist
