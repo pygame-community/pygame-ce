@@ -2354,12 +2354,14 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
         h -= (y + h) - surf->h;
     }
     /* If the clip rect is outside the surface fill and return
-      for scrolls without repeat */
+      for scrolls without repeat. Only fill when erase is true */
     if (!repeat) {
         if (dx >= w || dx <= -w || dy >= h || dy <= -h) {
-            if (SDL_FillRect(surf, NULL, 0) == -1) {
-                PyErr_SetString(pgExc_SDLError, SDL_GetError());
-                return NULL;
+            if (erase) {
+                if (SDL_FillRect(surf, NULL, 0) == -1) {
+                    PyErr_SetString(pgExc_SDLError, SDL_GetError());
+                    return NULL;
+                }
             }
             Py_RETURN_NONE;
         }
