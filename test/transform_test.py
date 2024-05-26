@@ -1613,6 +1613,28 @@ class TransformDisplayModuleTest(unittest.TestCase):
         self.assertEqual(pygame.transform.box_blur(surface, 3).get_size(), (0, 20))
         self.assertEqual(pygame.transform.gaussian_blur(surface, 3).get_size(), (0, 20))
 
+    def test_bloom(self):
+        surface = pygame.Surface((20, 20), pygame.SRCALPHA)
+        surface.fill(0)
+        pygame.draw.circle(surface, "white", (10, 10), 5)
+        dest_surface = pygame.Surface((20, 20), pygame.SRCALPHA)
+        dest_surface.fill(0)
+
+        # Check the function runs for a variety of arguments
+        for blur_radius in range(5, 10, 15):
+            for intensity in [0.5, 1, 2, 4]:
+                for threshold in [-1, 0.1, 0.2, 0.5, 0.8, 2]:
+                    for blur_type in ["gaussian", "box"]:
+                        for dest_surf in [None, dest_surface]:
+                            pygame.transform.bloom(
+                                surface,
+                                blur_radius,
+                                intensity,
+                                threshold,
+                                blur_type,
+                                dest_surf,
+                            )
+
     def test_flip(self):
         """honors the set_color key on the returned surface from flip."""
         image_loaded = pygame.image.load(example_path("data/chimp.png"))

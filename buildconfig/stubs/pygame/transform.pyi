@@ -67,9 +67,9 @@ def gaussian_blur(
 ) -> Surface: ...
 def bloom(
     surface: Surface,
-    intensity: float = 1.0,
+    blur_radius: int,
+    intensity: float,
     luminance_threshold: float = 0.5,
-    blur_radius: int = 5,
-    blur_type: Literal["gaussian", "box"] = "box",
+    blur_type: Literal["gaussian", "box"] = "gaussian",
     dest_surface: Optional[Surface] = None 
 ) -> Surface: ...
