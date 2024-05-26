@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.playmus
+"""pygame.examples.playmus
 
 A simple music player.
 
@@ -17,6 +17,7 @@ f     - fade out
 q     - stop
 
 """
+
 import sys
 
 import pygame

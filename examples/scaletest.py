@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-""" pygame.examples.scaletest
+"""pygame.examples.scaletest
 
 Shows an interactive image scaler.
 
 """
+
 import sys
 import time
 import pygame
@@ -40,7 +41,7 @@ def main(imagefile, convert_alpha=False, run_speed_test=False):
         background = background.convert_alpha()
 
     # turn off the mouse pointer
-    pygame.mouse.set_visible(0)
+    pygame.mouse.set_visible(False)
 
     running = True
     cursize = [background.get_width(), background.get_height()]

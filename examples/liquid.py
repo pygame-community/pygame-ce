@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.liquid
+"""pygame.examples.liquid
 
 This example demonstrates a simplish water effect of an
 image. It attempts to create a hardware display surface that

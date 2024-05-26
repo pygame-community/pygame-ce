@@ -169,7 +169,7 @@ Instead, always begin with the original image and scale to the desired size.)
    | :sl:`return smoothscale filter version in use: 'GENERIC', 'MMX', 'SSE', 'SSE2', or 'NEON'`
    | :sg:`get_smoothscale_backend() -> string`
 
-   Shows whether or not smoothscale is using SIMD accleration.
+   Shows whether or not smoothscale is using SIMD acceleration.
    If no acceleration is available then "GENERIC" is returned. The level of
    acceleration possible is automatically determined at runtime.
 
@@ -245,6 +245,9 @@ Instead, always begin with the original image and scale to the desired size.)
    .. versionchanged:: 2.3.0
       Passing the calling surface as destination surface raises a ``ValueError``
 
+   .. versionchanged:: 2.5.0
+      A surface with either width or height equal to 0 won't raise a ``ValueError``
+
    .. ## pygame.transform.box_blur ##
 
 .. function:: gaussian_blur
@@ -271,6 +274,9 @@ Instead, always begin with the original image and scale to the desired size.)
       Now the standard deviation of the Gaussian kernel is equal to the radius. 
       Blur results will be slightly different.
 
+   .. versionchanged:: 2.5.0
+      A surface with either width or height equal to 0 won't raise a ``ValueError``
+
    .. ## pygame.transform.gaussian_blur ##
 
 .. function:: average_surfaces
@@ -283,7 +289,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
    palette_colors - if true we average the colors in palette, otherwise we
    average the pixel values. This is useful if the surface is actually
-   greyscale colors, and not palette colors.
+   grayscale colors, and not palette colors.
 
    Note, this function currently does not handle palette using surfaces
    correctly.

@@ -1,6 +1,8 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_MOUSE "pygame module to work with the mouse"
-#define DOC_MOUSE_GETPRESSED "get_pressed(num_buttons=3) -> (button1, button2, button3)\nget_pressed(num_buttons=5) -> (button1, button2, button3, button4, button5)\nget the state of the mouse buttons"
+#define DOC_MOUSE_GETPRESSED "get_pressed(num_buttons=3) -> (left_button, middle_button, right_button)\nget_pressed(num_buttons=5) -> (left_button, middle_button, right_button, x1_button, x2_button)\nget the state of the mouse buttons"
+#define DOC_MOUSE_GETJUSTPRESSED "get_just_pressed() -> (left_button, middle_button, right_button, x1_button, x2_button)\nget the most recently pressed buttons"
+#define DOC_MOUSE_GETJUSTRELEASED "get_just_released() -> (left_button, middle_button, right_button, x1_button, x2_button)\nget the most recently released buttons"
 #define DOC_MOUSE_GETPOS "get_pos() -> (x, y)\nget the mouse cursor position"
 #define DOC_MOUSE_GETREL "get_rel() -> (x, y)\nget the amount of mouse movement"
 #define DOC_MOUSE_SETPOS "set_pos([x, y], /) -> None\nset the mouse cursor position"
@@ -10,4 +12,4 @@
 #define DOC_MOUSE_SETCURSOR "set_cursor(pygame.cursors.Cursor) -> None\nset_cursor(size, hotspot, xormasks, andmasks) -> None\nset_cursor(hotspot, surface) -> None\nset_cursor(constant) -> None\nset the mouse cursor to a new cursor"
 #define DOC_MOUSE_GETCURSOR "get_cursor() -> pygame.cursors.Cursor\nget the current mouse cursor"
 #define DOC_MOUSE_GETRELATIVEMODE "get_relative_mode() -> bool\nquery whether relative mouse mode is enabled"
-#define DOC_MOUSE_SETRELATIVEMODE "set_relative_mode(enable) -> None\nset relative mouse mode"
+#define DOC_MOUSE_SETRELATIVEMODE "set_relative_mode(enable, /) -> None\nset relative mouse mode"
