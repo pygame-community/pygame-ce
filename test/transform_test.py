@@ -1613,7 +1613,7 @@ class TransformDisplayModuleTest(unittest.TestCase):
         self.assertEqual(pygame.transform.box_blur(surface, 3).get_size(), (0, 20))
         self.assertEqual(pygame.transform.gaussian_blur(surface, 3).get_size(), (0, 20))
 
-    def test_bloom(self):
+    def test_bloom_args(self):
         surface = pygame.Surface((20, 20), pygame.SRCALPHA)
         surface.fill(0)
         pygame.draw.circle(surface, "white", (10, 10), 5)
@@ -1634,6 +1634,33 @@ class TransformDisplayModuleTest(unittest.TestCase):
                                 blur_type,
                                 **kwargs,
                             )
+
+    def test_bloom_result(self):
+        surface = pygame.Surface((20, 20), pygame.SRCALPHA)
+        surface.fill(0)
+        pygame.draw.circle(surface, (200, 200, 200, 255), (10, 10), 5)
+        bloom_surf = pygame.transform.bloom(surface, 5, 2, 0.5, "box")
+
+        # Corners should not change
+        for pix_pos in [(0, 0), (19, 0), (0, 19), (19, 19)]:
+            self.assertEqual(bloom_surf.get_at(pix_pos), (0, 0, 0, 0))
+
+        # The circle should get brighter
+        for pix_pos in [(9, 9), (11, 9), (9, 11), (11, 11)]:
+            pixel = bloom_surf.get_at(pix_pos)
+            self.assertEqual(pixel.a, 255)
+            for i in range(3):
+                self.assertGreater(pixel[i], 200)
+
+        # Near the circle there should be blooming pixels
+        for pix_pos in [(6, 6), (13, 6), (6, 13), (13, 13)]:
+            pixel = bloom_surf.get_at(pix_pos)
+            value = pixel.r
+            self.assertGreater(value, 0)
+            for i in range(3):
+                self.assertEqual(pixel[i], value)
+            self.assertGreater(pixel.a, 0)
+            self.assertLess(pixel.a, 255)
 
     def test_flip(self):
         """honors the set_color key on the returned surface from flip."""

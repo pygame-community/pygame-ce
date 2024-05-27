@@ -3439,7 +3439,7 @@ luminance_filter(SDL_Surface *src, float intensity, float threshold)
     SDL_PixelFormat *fmt = src->format;
     SDL_PixelFormat *dfmt = bpfsurf->format;
 
-    Uint8 src_r, src_g, src_b;  //, a;
+    Uint8 src_r, src_g, src_b;
     const Uint32 amask = fmt->Amask;
 
     Uint32 *srcp = (Uint32 *)src->pixels;
