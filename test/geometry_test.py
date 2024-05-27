@@ -675,6 +675,98 @@ class CircleTypeTest(unittest.TestCase):
         self.assertTrue(c.collideswith(p))
         self.assertFalse(c.collideswith(p2))
 
+    def test_collidelist_argtype(self):
+        """Tests if the function correctly handles incorrect types as parameters"""
+
+        invalid_types = (None, "1", (1,), 1, (1, 2, 3), True, False)
+
+        c = Circle(10, 10, 4)
+
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                c.collidelist(value)
+
+    def test_collidelist_argnum(self):
+        """Tests if the function correctly handles incorrect number of parameters"""
+        c = Circle(10, 10, 4)
+
+        circles = [(Circle(10, 10, 4), Circle(10, 10, 4))]
+
+        with self.assertRaises(TypeError):
+            c.collidelist()
+
+        with self.assertRaises(TypeError):
+            c.collidelist(circles, 1)
+
+    def test_collidelist_return_type(self):
+        """Tests if the function returns the correct type"""
+        c = Circle(10, 10, 4)
+
+        objects = [
+            Circle(10, 10, 4),
+            Rect(10, 10, 4, 4),
+        ]
+
+        for object in objects:
+            self.assertIsInstance(c.collidelist([object]), int)
+
+    def test_collidelist(self):
+        """Ensures that the collidelist method works correctly"""
+        c = Circle(10, 10, 4)
+
+        circles = [Circle(1000, 1000, 2), Circle(5, 10, 5), Circle(16, 10, 7)]
+        rects = [Rect(1000, 1000, 4, 4), Rect(1000, 200, 5, 5), Rect(5, 10, 7, 3)]
+        expected = [1, 2]
+
+        for objects, expected in zip([circles, rects], expected):
+            self.assertEqual(c.collidelist(objects), expected)
+
+    def test_collidelistall_argtype(self):
+        """Tests if the function correctly handles incorrect types as parameters"""
+
+        invalid_types = (None, "1", (1,), 1, (1, 2, 3), True, False)
+
+        c = Circle(10, 10, 4)
+
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                c.collidelistall(value)
+
+    def test_collidelistall_argnum(self):
+        """Tests if the function correctly handles incorrect number of parameters"""
+        c = Circle(10, 10, 4)
+
+        circles = [(Circle(10, 10, 4), Circle(10, 10, 4))]
+
+        with self.assertRaises(TypeError):
+            c.collidelistall()
+
+        with self.assertRaises(TypeError):
+            c.collidelistall(circles, 1)
+
+    def test_collidelistall_return_type(self):
+        """Tests if the function returns the correct type"""
+        c = Circle(10, 10, 4)
+
+        objects = [
+            Circle(10, 10, 4),
+            Rect(10, 10, 4, 4),
+        ]
+
+        for object in objects:
+            self.assertIsInstance(c.collidelistall([object]), list)
+
+    def test_collidelistall(self):
+        """Ensures that the collidelistall method works correctly"""
+        c = Circle(10, 10, 4)
+
+        circles = [Circle(1000, 1000, 2), Circle(5, 10, 5), Circle(16, 10, 7)]
+        rects = [Rect(1000, 1000, 4, 4), Rect(1000, 200, 5, 5), Rect(5, 10, 7, 3)]
+        expected = [[1, 2], [2]]
+
+        for objects, expected in zip([circles, rects], expected):
+            self.assertEqual(c.collidelistall(objects), expected)
+
     def test_update(self):
         """Ensures that updating the circle position
         and dimension correctly updates position and dimension"""

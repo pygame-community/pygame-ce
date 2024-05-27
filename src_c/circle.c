@@ -311,11 +311,10 @@ pg_circle_rotate_ip(pgCircleObject *self, PyObject *const *args,
     Py_RETURN_NONE;
 }
 
-static PyObject *
-pg_circle_collideswith(pgCircleObject *self, PyObject *arg)
+static inline int
+_pg_circle_collideswith(pgCircleBase *scirc, PyObject *arg)
 {
     int result = 0;
-    pgCircleBase *scirc = &self->circle;
     if (pgCircle_Check(arg)) {
         result = pgCollision_CircleCircle(&pgCircle_AsCircle(arg), scirc);
     }
@@ -334,19 +333,165 @@ pg_circle_collideswith(pgCircleObject *self, PyObject *arg)
     else if (PySequence_Check(arg)) {
         double x, y;
         if (!pg_TwoDoublesFromObj(arg, &x, &y)) {
-            return RAISE(
+            PyErr_SetString(
                 PyExc_TypeError,
                 "Invalid point argument, must be a sequence of two numbers");
         }
         result = pgCollision_CirclePoint(scirc, x, y);
     }
     else {
-        return RAISE(PyExc_TypeError,
-                     "Invalid shape argument, must be a Circle, Rect / FRect, "
-                     "Line, Polygon or a sequence of two numbers");
+        PyErr_SetString(
+            PyExc_TypeError,
+            "Invalid point argument, must be a sequence of 2 numbers");
+        return -1;
+    }
+
+    return result;
+}
+
+static PyObject *
+pg_circle_collideswith(pgCircleObject *self, PyObject *arg)
+{
+    int result = _pg_circle_collideswith(&self->circle, arg);
+    if (result == -1) {
+        return NULL;
     }
 
     return PyBool_FromLong(result);
+}
+
+static PyObject *
+pg_circle_collidelist(pgCircleObject *self, PyObject *arg)
+{
+    Py_ssize_t i;
+    pgCircleBase *scirc = &self->circle;
+    int colliding;
+
+    if (!PySequence_Check(arg)) {
+        return RAISE(PyExc_TypeError, "Argument must be a sequence");
+    }
+
+    /* fast path */
+    if (pgSequenceFast_Check(arg)) {
+        PyObject **items = PySequence_Fast_ITEMS(arg);
+        for (i = 0; i < PySequence_Fast_GET_SIZE(arg); i++) {
+            if ((colliding = _pg_circle_collideswith(scirc, items[i])) == -1) {
+                /*invalid shape*/
+                return NULL;
+            }
+            if (colliding) {
+                return PyLong_FromSsize_t(i);
+            }
+        }
+        return PyLong_FromLong(-1);
+    }
+
+    /* general sequence path */
+    for (i = 0; i < PySequence_Length(arg); i++) {
+        PyObject *obj = PySequence_GetItem(arg, i);
+        if (!obj) {
+            return NULL;
+        }
+
+        if ((colliding = _pg_circle_collideswith(scirc, obj)) == -1) {
+            /*invalid shape*/
+            Py_DECREF(obj);
+            return NULL;
+        }
+        Py_DECREF(obj);
+
+        if (colliding) {
+            return PyLong_FromSsize_t(i);
+        }
+    }
+
+    return PyLong_FromLong(-1);
+}
+
+static PyObject *
+pg_circle_collidelistall(pgCircleObject *self, PyObject *arg)
+{
+    PyObject *ret;
+    Py_ssize_t i;
+    pgCircleBase *scirc = &self->circle;
+    int colliding;
+
+    if (!PySequence_Check(arg)) {
+        return RAISE(PyExc_TypeError, "Argument must be a sequence");
+    }
+
+    ret = PyList_New(0);
+    if (!ret) {
+        return NULL;
+    }
+
+    /* fast path */
+    if (pgSequenceFast_Check(arg)) {
+        PyObject **items = PySequence_Fast_ITEMS(arg);
+
+        for (i = 0; i < PySequence_Fast_GET_SIZE(arg); i++) {
+            if ((colliding = _pg_circle_collideswith(scirc, items[i])) == -1) {
+                /*invalid shape*/
+                Py_DECREF(ret);
+                return NULL;
+            }
+
+            if (!colliding) {
+                continue;
+            }
+
+            PyObject *num = PyLong_FromSsize_t(i);
+            if (!num) {
+                Py_DECREF(ret);
+                return NULL;
+            }
+
+            if (PyList_Append(ret, num)) {
+                Py_DECREF(num);
+                Py_DECREF(ret);
+                return NULL;
+            }
+            Py_DECREF(num);
+        }
+
+        return ret;
+    }
+
+    /* general sequence path */
+    for (i = 0; i < PySequence_Length(arg); i++) {
+        PyObject *obj = PySequence_GetItem(arg, i);
+        if (!obj) {
+            Py_DECREF(ret);
+            return NULL;
+        }
+
+        if ((colliding = _pg_circle_collideswith(scirc, obj)) == -1) {
+            /*invalid shape*/
+            Py_DECREF(ret);
+            Py_DECREF(obj);
+            return NULL;
+        }
+        Py_DECREF(obj);
+
+        if (!colliding) {
+            continue;
+        }
+
+        PyObject *num = PyLong_FromSsize_t(i);
+        if (!num) {
+            Py_DECREF(ret);
+            return NULL;
+        }
+
+        if (PyList_Append(ret, num)) {
+            Py_DECREF(num);
+            Py_DECREF(ret);
+            return NULL;
+        }
+        Py_DECREF(num);
+    }
+
+    return ret;
 }
 
 static PyObject *
@@ -438,6 +583,10 @@ static struct PyMethodDef pg_circle_methods[] = {
      DOC_CIRCLE_UPDATE},
     {"collideswith", (PyCFunction)pg_circle_collideswith, METH_O,
      DOC_CIRCLE_COLLIDESWITH},
+    {"collidelist", (PyCFunction)pg_circle_collidelist, METH_O,
+     DOC_CIRCLE_COLLIDELIST},
+    {"collidelistall", (PyCFunction)pg_circle_collidelistall, METH_O,
+     DOC_CIRCLE_COLLIDELISTALL},
     {"as_rect", (PyCFunction)pg_circle_as_rect, METH_NOARGS,
      DOC_CIRCLE_ASRECT},
     {"as_frect", (PyCFunction)pg_circle_as_frect, METH_NOARGS,
