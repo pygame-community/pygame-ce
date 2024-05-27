@@ -304,6 +304,8 @@
                 or a `Rect` object, and there is no way to determine which is which without
                 explicitly passing a `Line` or `Rect` object as an argument.
 
+            .. versionadded:: 2.5.0
+
         .. ## Circle.collidelist ##
 
     .. method:: collidelistall
@@ -326,6 +328,8 @@
                 For example, a tuple with the format (a, b, c, d) could represent either a `Line`
                 or a `Rect` object, and there is no way to determine which is which without
                 explicitly passing a `Line` or `Rect` object as an argument.
+
+            .. versionadded:: 2.5.0
 
         .. ## Circle.collidelistall ##
 
