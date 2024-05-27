@@ -3213,6 +3213,8 @@ surf_average_color(PyObject *self, PyObject *args, PyObject *kwargs)
         for (x = 0; x < w; x++) { /* x */                               \
             for (color = 0; color < nb; color++) {                      \
                 Uint8 blur_color = sum_h[color] / (radius * 2 + 1);     \
+                /* Will always be SDL_TRUE on regular blur */           \
+                /* Without it bloom will break */                       \
                 if (do_assign) {                                        \
                     dstpx[dst_pitch * y + nb * x + color] = blur_color; \
                 }                                                       \
