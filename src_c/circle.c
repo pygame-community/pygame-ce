@@ -311,7 +311,7 @@ pg_circle_rotate_ip(pgCircleObject *self, PyObject *const *args,
     Py_RETURN_NONE;
 }
 
-static inline int
+static PG_FORCEINLINE int
 _pg_circle_collideswith(pgCircleBase *scirc, PyObject *arg)
 {
     int result = 0;
@@ -336,6 +336,7 @@ _pg_circle_collideswith(pgCircleBase *scirc, PyObject *arg)
             PyErr_SetString(
                 PyExc_TypeError,
                 "Invalid point argument, must be a sequence of two numbers");
+            return -1;
         }
         result = pgCollision_CirclePoint(scirc, x, y);
     }
