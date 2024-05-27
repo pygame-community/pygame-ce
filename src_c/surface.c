@@ -2450,7 +2450,6 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
                         else {
                             memcpy(pastesrc, linesrc, span);
                         }
-                        memset(linesrc, 0, span);
                     }
                 }
                 linesrc += yincrease;
