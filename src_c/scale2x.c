@@ -35,13 +35,13 @@
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 static inline int
-read_int24(const Uint8 *restrict x)
+read_int24(const Uint8 *x)
 {
     return (x[0] << 16 | x[1] << 8 | x[2]);
 }
 
 static inline void
-store_int24(Uint8 *restrict x, int i)
+store_int24(Uint8 *x, int i)
 {
     x[0] = i >> 16;
     x[1] = (i >> 8) & 0xff;
@@ -59,8 +59,8 @@ scale2x(SDL_Surface *src, SDL_Surface *dst)
 {
     int looph, loopw;
 
-    Uint8 *restrict srcpix = (Uint8 *restrict)src->pixels;
-    Uint8 *restrict dstpix = (Uint8 *restrict)dst->pixels;
+    Uint8 *srcpix = (Uint8 *)src->pixels;
+    Uint8 *dstpix = (Uint8 *)dst->pixels;
 
     const int srcpitch = src->pitch;
     const int dstpitch = dst->pitch;
@@ -68,10 +68,12 @@ scale2x(SDL_Surface *src, SDL_Surface *dst)
     const int height = src->h;
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-    switch (src->format->bytes_per_pixel) {
+    const Uint8 Bpp = src->format->bytes_per_pixel;
 #else
-    switch (src->format->BytesPerPixel) {
+    const Uint8 Bpp = src->format->BytesPerPixel;
 #endif
+
+    switch (Bpp) {
         case 1: {
             Uint8 E0, E1, E2, E3, B, D, E, F, H;
             for (looph = 0; looph < height; ++looph) {
@@ -198,8 +200,7 @@ scale2x(SDL_Surface *src, SDL_Surface *dst)
                 Uint8 *dst_row1 = dstpix + (looph * 2 + 1) * dstpitch;
 
                 Uint8 *src_row_prev = srcpix + MAX(0, looph - 1) * srcpitch;
-                Uint8 *src_row_next =
-                    srcpix + MIN(height - 1, looph + 1) * srcpitch;
+                Uint8 *src_row_next = srcpix + MIN(height - 1, looph + 1) * srcpitch;
 
                 for (loopw = 0; loopw < width; ++loopw) {
                     B = *(Uint32 *)(src_row_prev + 4 * loopw);
