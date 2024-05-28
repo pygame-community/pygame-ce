@@ -290,19 +290,15 @@
 
             The `collidelist` method tests whether a given list of shapes or points collides
             (overlaps) with this `Circle` object. The function takes in a single argument, which
-            must be a list of `Line`, `Circle`, `Rect`, `Polygon`, tuple or list containing the
-            x and y coordinates of a point, or `Vector2` objects. The function returns the index
+            must be a list of `Circle`, `Rect`, `FRect`, or a point. The function returns the index
             of the first shape or point in the list that collides with the `Circle` object, or
             -1 if there is no collision.
 
             .. note::
-                It is important to note that the shapes must be actual shape objects, such as
-                `Line`, `Circle`, `Polygon`, or `Rect` instances. It is not possible to pass a tuple
-                or list of coordinates representing the shape as an argument(except for a point),
-                because the type of shape represented by the coordinates cannot be determined.
-                For example, a tuple with the format (a, b, c, d) could represent either a `Line`
-                or a `Rect` object, and there is no way to determine which is which without
-                explicitly passing a `Line` or `Rect` object as an argument.
+                The shapes must be actual shape objects, such as `Circle`, `Rect` or `FRect`
+                instances. It is not possible to pass a tuple or list of coordinates representing
+                the shape as an argument (except for a point), because the shape type can't be
+                determined from the coordinates alone.
 
             .. versionadded:: 2.5.0
 
@@ -315,19 +311,15 @@
 
             The `collidelistall` method tests whether a given list of shapes or points collides
             (overlaps) with this `Circle` object. The function takes in a single argument, which
-            must be a list of `Line`, `Circle`, `Rect`, `Polygon`, tuple or list containing the
-            x and y coordinates of a point, or `Vector2` objects. The function returns a list
+            must be a list of `Circle`, `Rect`, `FRect`, or a point. The function returns a list
             containing the indices of all the shapes or points in the list that collide with
             the `Circle` object, or an empty list if there is no collision.
 
             .. note::
-                It is important to note that the shapes must be actual shape objects, such as
-                `Line`, `Circle`, `Polygon`, or `Rect` instances. It is not possible to pass a tuple
-                or list of coordinates representing the shape as an argument(except for a point),
-                because the type of shape represented by the coordinates cannot be determined.
-                For example, a tuple with the format (a, b, c, d) could represent either a `Line`
-                or a `Rect` object, and there is no way to determine which is which without
-                explicitly passing a `Line` or `Rect` object as an argument.
+                The shapes must be actual shape objects, such as `Circle`, `Rect` or `FRect`
+                instances. It is not possible to pass a tuple or list of coordinates representing
+                the shape as an argument (except for a point), because the shape type can't be
+                determined from the coordinates alone.
 
             .. versionadded:: 2.5.0
 

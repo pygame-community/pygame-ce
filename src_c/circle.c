@@ -389,7 +389,7 @@ pg_circle_collidelist(pgCircleObject *self, PyObject *arg)
 
     /* general sequence path */
     for (i = 0; i < PySequence_Length(arg); i++) {
-        PyObject *obj = PySequence_GetItem(arg, i);
+        PyObject *obj = PySequence_ITEM(arg, i);
         if (!obj) {
             return NULL;
         }
@@ -460,7 +460,7 @@ pg_circle_collidelistall(pgCircleObject *self, PyObject *arg)
 
     /* general sequence path */
     for (i = 0; i < PySequence_Length(arg); i++) {
-        PyObject *obj = PySequence_GetItem(arg, i);
+        PyObject *obj = PySequence_ITEM(arg, i);
         if (!obj) {
             Py_DECREF(ret);
             return NULL;
