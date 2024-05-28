@@ -200,7 +200,8 @@ scale2x(SDL_Surface *src, SDL_Surface *dst)
                 Uint8 *dst_row1 = dstpix + (looph * 2 + 1) * dstpitch;
 
                 Uint8 *src_row_prev = srcpix + MAX(0, looph - 1) * srcpitch;
-                Uint8 *src_row_next = srcpix + MIN(height - 1, looph + 1) * srcpitch;
+                Uint8 *src_row_next =
+                    srcpix + MIN(height - 1, looph + 1) * srcpitch;
 
                 for (loopw = 0; loopw < width; ++loopw) {
                     B = *(Uint32 *)(src_row_prev + 4 * loopw);
