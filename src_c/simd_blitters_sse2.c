@@ -783,7 +783,9 @@ premul_surf_color_by_alpha_sse2(SDL_Surface *src, SDL_Surface *dst)
     int width = src->w;
     int height = src->h;
     Uint32 *srcp = (Uint32 *)src->pixels;
+    int srcskip = src->pitch - width * PG_SURF_BytesPerPixel(src);
     Uint32 *dstp = (Uint32 *)dst->pixels;
+    int dstskip = dst->pitch - width * PG_SURF_BytesPerPixel(dst);
 
     SDL_PixelFormat *srcfmt = src->format;
     Uint32 amask = srcfmt->Amask;
@@ -836,6 +838,8 @@ premul_surf_color_by_alpha_sse2(SDL_Surface *src, SDL_Surface *dst)
                 ++dstp;
             },
             n, width);
+        (Uint8 *)srcp += srcskip;
+        (Uint8 *)dstp += dstskip;
     }
 }
 

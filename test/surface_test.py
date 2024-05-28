@@ -4029,6 +4029,26 @@ class SurfaceBlendTest(unittest.TestCase):
                         ),
                     )
 
+        def create_surface_from_byte_width(byte_width):
+            surf_height = 5
+            byte_data = bytes(byte_width * surf_height)  # 50 bytes
+            surf_width = byte_width // 4  # width = 2
+
+            dest = pygame.image.frombuffer(
+                byte_data, (surf_width, surf_height), "RGBA", pitch=byte_width
+            )
+            dest.fill((120, 50, 70, 200))
+            return dest
+
+        test_surf = create_surface_from_byte_width(10)
+        test_surf = test_surf.premul_alpha()
+
+        for y in range(0, test_surf.get_height()):
+            for x in range(0, test_surf.get_width()):
+                self.assertEqual(
+                    test_surf.get_at((x, y)), pygame.Color(94, 39, 55, 200)
+                )
+
 
 class SurfaceSelfBlitTest(unittest.TestCase):
     """Blit to self tests.
