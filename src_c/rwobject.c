@@ -1015,6 +1015,7 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
     SDL_ClearError();
 
     PyObject *cwd = NULL, *path_submodule = NULL, *isabs = NULL;
+    PyObject *new_cwd = NULL;
     if (!os_module)
         goto simple_case_no_path;
 
@@ -1092,8 +1093,7 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
             PyObject *new_suggested_rel_path = PyObject_CallMethod(
                 suggested_rel_path, "replace", "ss", "\\", "/");
             Py_XDECREF(suggested_rel_path);
-            PyObject *new_cwd =
-                PyObject_CallMethod(cwd, "replace", "ss", "\\", "/");
+            new_cwd = PyObject_CallMethod(cwd, "replace", "ss", "\\", "/");
             Py_XDECREF(cwd);
             cwd = new_cwd;
             PyErr_Format(PyExc_FileNotFoundError,
@@ -1114,7 +1114,7 @@ simple_case:
     Py_XDECREF(path_submodule);
     goto simple_case_no_path;
 simple_relative_case_w_path:
-    PyObject *new_cwd = PyObject_CallMethod(cwd, "replace", "ss", "\\", "/");
+    new_cwd = PyObject_CallMethod(cwd, "replace", "ss", "\\", "/");
     Py_XDECREF(cwd);
     PyErr_Format(PyExc_FileNotFoundError,
                  "No file '%S' found in working directory '%S'.", obj,
