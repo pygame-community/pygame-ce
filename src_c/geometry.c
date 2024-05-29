@@ -1,3 +1,4 @@
+#include "pgcompat_rect.c"
 #include "rect.c"
 #include "circle.c"
 #include "geometry_common.c"

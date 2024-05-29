@@ -323,7 +323,6 @@ PyInit_pygame_static()
 #include "base.c"
 
 #include "geometry.c"
-#include "pgcompat_rect.c"
 
 #undef pgSurface_Lock
 #undef pgSurface_Unlock
