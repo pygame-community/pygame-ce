@@ -1653,4 +1653,4 @@ blit_blend_surfalpha_to_opaque_avx2(SDL_BlitInfo *info)
     BAD_AVX2_FUNCTION_CALL;
 }
 #endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
-        * !defined(SDL_DISABLE_IMMINTRIN_H) */
+!defined(SDL_DISABLE_IMMINTRIN_H) */

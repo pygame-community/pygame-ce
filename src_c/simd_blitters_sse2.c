@@ -705,13 +705,9 @@ blit_blend_surfalpha_to_opaque_sse2(SDL_BlitInfo *info)
     SETUP_SSE2_BLITTER;
     SETUP_SSE2_16BIT_SHUFFLE_OUT;
 
-    const int _a_off = info->src->Ashift >> 2;
-    const __m128i shuff_out_alpha = _mm_set_epi8(
-        -1, 4 + _a_off, -1, 4 + _a_off, -1, 4 + _a_off, -1, 4 + _a_off, -1,
-        0 + _a_off, -1, 0 + _a_off, -1, 0 + _a_off, -1, 0 + _a_off);
-
     __m128i src_alpha = _mm_set1_epi32(info->src_blanket_alpha);
-    src_alpha = _mm_shuffle_epi8(src_alpha, shuff_out_alpha);
+    src_alpha = _mm_unpacklo_epi16(src_alpha, src_alpha);
+    src_alpha = _mm_shuffle_epi32(src_alpha, _MM_SHUFFLE(2, 2, 0, 0));
     __m128i temp;
 
     RUN_SSE2_BLITTER(RUN_SSE2_16BIT_SHUFFLE_OUT({
