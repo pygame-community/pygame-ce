@@ -653,14 +653,14 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
                                                        "O", temp_path);
                 if (is_dir == Py_True) {
                     // path step is valid, continue the loop
-                    PyObject *new_longest_valid_path = NULL;
-                    new_longest_valid_path = PyObject_CallMethod(
+                    if (longest_valid_path) {
+                        Py_XDECREF(longest_valid_path);
+                    }
+                    longest_valid_path = PyObject_CallMethod(
                         path_submodule, "normpath", "O", temp_path);
-                    Py_XDECREF(longest_valid_path);
-                    longest_valid_path = new_longest_valid_path;
                 }
                 else {
-                    // path step is invalid, look for petential alternatives
+                    // path step is invalid, look for potential alternatives
                     PyObject *potential_dirs = get_contents_at_path(
                         os_module, path_submodule, longest_valid_path);
                     if (!potential_dirs) {
