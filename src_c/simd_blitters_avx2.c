@@ -54,35 +54,29 @@ pg_avx2_at_runtime_but_uncompiled()
 //}
 
 /* Setup for RUN_AVX2_BLITTER */
-#define SETUP_AVX2_BLITTER                                                \
-    int width = info->width;                                              \
-    int height = info->height;                                            \
-                                                                          \
-    Uint32 *srcp = (Uint32 *)info->s_pixels;                              \
-    int srcskip = info->s_skip >> 2;                                      \
-    int srcpxskip = info->s_pxskip >> 2;                                  \
-                                                                          \
-    Uint32 *dstp = (Uint32 *)info->d_pixels;                              \
-    int dstskip = info->d_skip >> 2;                                      \
-    int dstpxskip = info->d_pxskip >> 2;                                  \
-                                                                          \
-    int pre_8_width = width % 8;                                          \
-    int post_8_width = width / 8;                                         \
-                                                                          \
-    __m256i *srcp256 = (__m256i *)info->s_pixels;                         \
-    __m256i *dstp256 = (__m256i *)info->d_pixels;                         \
-                                                                          \
-    /* Since this operates on 8 pixels at a time, it needs to mask out */ \
-    /* 0-7 pixels for partial loads/stores at periphery of blit area */   \
-    __m256i _partial8_mask =                                              \
-        _mm256_set_epi32(0x00, (pre_8_width > 6) ? 0x80000000 : 0x00,     \
-                         (pre_8_width > 5) ? 0x80000000 : 0x00,           \
-                         (pre_8_width > 4) ? 0x80000000 : 0x00,           \
-                         (pre_8_width > 3) ? 0x80000000 : 0x00,           \
-                         (pre_8_width > 2) ? 0x80000000 : 0x00,           \
-                         (pre_8_width > 1) ? 0x80000000 : 0x00,           \
-                         (pre_8_width > 0) ? 0x80000000 : 0x00);          \
-                                                                          \
+#define SETUP_AVX2_BLITTER                                       \
+    const int width = info->width;                               \
+    int height = info->height;                                   \
+    int i;                                                       \
+                                                                 \
+    Uint32 *srcp = (Uint32 *)info->s_pixels;                     \
+    const int srcskip = info->s_skip >> 2;                       \
+                                                                 \
+    Uint32 *dstp = (Uint32 *)info->d_pixels;                     \
+    const int dstskip = info->d_skip >> 2;                       \
+                                                                 \
+    const int pxl_excess = width % 8;                            \
+    const int n_iters_8 = width / 8;                             \
+                                                                 \
+    __m256i *srcp256 = (__m256i *)info->s_pixels;                \
+    __m256i *dstp256 = (__m256i *)info->d_pixels;                \
+                                                                 \
+    __m256i _partial8_mask = _mm256_set_epi32(                   \
+        0, (pxl_excess > 6) ? -1 : 0, (pxl_excess > 5) ? -1 : 0, \
+        (pxl_excess > 4) ? -1 : 0, (pxl_excess > 3) ? -1 : 0,    \
+        (pxl_excess > 2) ? -1 : 0, (pxl_excess > 1) ? -1 : 0,    \
+        (pxl_excess > 0) ? -1 : 0);                              \
+                                                                 \
     __m256i pixels_src, pixels_dst;
 
 /* Interface definition
@@ -93,53 +87,42 @@ pg_avx2_at_runtime_but_uncompiled()
  * Operation: BLITTER_CODE takes pixels_src and pixels_dst and puts processed
  * results into pixels_dst
  */
-#define RUN_AVX2_BLITTER(BLITTER_CODE)                                       \
-    while (height--) {                                                       \
-        for (int i = post_8_width; i > 0; i--) {                             \
-            /* ==== load 8 pixels into AVX registers ==== */                 \
-            pixels_src = _mm256_loadu_si256(srcp256);                        \
-            pixels_dst = _mm256_loadu_si256(dstp256);                        \
-                                                                             \
-            {BLITTER_CODE}                                                   \
-                                                                             \
-            /* ==== store 8 pixels from AVX registers ==== */                \
-            _mm256_storeu_si256(dstp256, pixels_dst);                        \
-                                                                             \
-            srcp256++;                                                       \
-            dstp256++;                                                       \
-        }                                                                    \
-        srcp = (Uint32 *)srcp256;                                            \
-        dstp = (Uint32 *)dstp256;                                            \
-        if (pre_8_width > 0) {                                               \
-            pixels_src = _mm256_maskload_epi32((int *)srcp, _partial8_mask); \
-            pixels_dst = _mm256_maskload_epi32((int *)dstp, _partial8_mask); \
-                                                                             \
-            {BLITTER_CODE}                                                   \
-                                                                             \
-            /* ==== store 1-7 pixels from AVX registers ==== */              \
-            _mm256_maskstore_epi32((int *)dstp, _partial8_mask, pixels_dst); \
-                                                                             \
-            srcp += srcpxskip * pre_8_width;                                 \
-            dstp += dstpxskip * pre_8_width;                                 \
-        }                                                                    \
-                                                                             \
-        srcp256 = (__m256i *)(srcp + srcskip);                               \
-        dstp256 = (__m256i *)(dstp + dstskip);                               \
+#define RUN_AVX2_BLITTER(BLITTER_CODE)                                   \
+    while (height--) {                                                   \
+        for (i = 0; i < n_iters_8; i++) {                                \
+            /* ==== load 8 pixels into AVX registers ==== */             \
+            pixels_src = _mm256_loadu_si256(srcp256);                    \
+            pixels_dst = _mm256_loadu_si256(dstp256);                    \
+                                                                         \
+            {BLITTER_CODE}                                               \
+                                                                         \
+            /* ==== store 8 pixels from AVX registers ==== */            \
+            _mm256_storeu_si256(dstp256, pixels_dst);                    \
+                                                                         \
+            srcp256++;                                                   \
+            dstp256++;                                                   \
+        }                                                                \
+        if (pxl_excess) {                                                \
+            pixels_src =                                                 \
+                _mm256_maskload_epi32((int *)srcp256, _partial8_mask);   \
+            pixels_dst =                                                 \
+                _mm256_maskload_epi32((int *)dstp256, _partial8_mask);   \
+                                                                         \
+            {BLITTER_CODE}                                               \
+                                                                         \
+            /* ==== store 1-7 pixels from AVX registers ==== */          \
+            _mm256_maskstore_epi32((int *)dstp256, _partial8_mask,       \
+                                   pixels_dst);                          \
+        }                                                                \
+                                                                         \
+        srcp256 = (__m256i *)((Uint32 *)srcp256 + srcskip + pxl_excess); \
+        dstp256 = (__m256i *)((Uint32 *)dstp256 + dstskip + pxl_excess); \
     }
 
 /* Setup for RUN_16BIT_SHUFFLE_OUT */
-#define SETUP_16BIT_SHUFFLE_OUT                                               \
-    __m256i shuff_out_A =                                                     \
-        _mm256_set_epi8(0x80, 23, 0x80, 22, 0x80, 21, 0x80, 20, 0x80, 19,     \
-                        0x80, 18, 0x80, 17, 0x80, 16, 0x80, 7, 0x80, 6, 0x80, \
-                        5, 0x80, 4, 0x80, 3, 0x80, 2, 0x80, 1, 0x80, 0);      \
-                                                                              \
-    __m256i shuff_out_B = _mm256_set_epi8(                                    \
-        0x80, 31, 0x80, 30, 0x80, 29, 0x80, 28, 0x80, 27, 0x80, 26, 0x80, 25, \
-        0x80, 24, 0x80, 15, 0x80, 14, 0x80, 13, 0x80, 12, 0x80, 11, 0x80, 10, \
-        0x80, 9, 0x80, 8);                                                    \
-                                                                              \
-    __m256i shuff_src, shuff_dst, _shuff16_temp;
+#define SETUP_16BIT_SHUFFLE_OUT                  \
+    __m256i shuff_src, shuff_dst, _shuff16_temp; \
+    __m256i mm256_zero = _mm256_setzero_si256();
 
 /* Interface definition
  * Definitions needed: MACRO(SETUP_16BIT_SHUFFLE_OUT)
@@ -152,15 +135,15 @@ pg_avx2_at_runtime_but_uncompiled()
 #define RUN_16BIT_SHUFFLE_OUT(BLITTER_CODE)                    \
     /* ==== shuffle pixels out into two registers each, src */ \
     /* and dst set up for 16 bit math, like 0A0R0G0B ==== */   \
-    shuff_src = _mm256_shuffle_epi8(pixels_src, shuff_out_A);  \
-    shuff_dst = _mm256_shuffle_epi8(pixels_dst, shuff_out_A);  \
+    shuff_src = _mm256_unpacklo_epi8(pixels_src, mm256_zero);  \
+    shuff_dst = _mm256_unpacklo_epi8(pixels_dst, mm256_zero);  \
                                                                \
     {BLITTER_CODE}                                             \
                                                                \
     _shuff16_temp = shuff_dst;                                 \
                                                                \
-    shuff_src = _mm256_shuffle_epi8(pixels_src, shuff_out_B);  \
-    shuff_dst = _mm256_shuffle_epi8(pixels_dst, shuff_out_B);  \
+    shuff_src = _mm256_unpackhi_epi8(pixels_src, mm256_zero);  \
+    shuff_dst = _mm256_unpackhi_epi8(pixels_dst, mm256_zero);  \
                                                                \
     {BLITTER_CODE}                                             \
                                                                \
@@ -1643,3 +1626,34 @@ premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst)
 }
 #endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
 !defined(SDL_DISABLE_IMMINTRIN_H) */
+
+#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
+    !defined(SDL_DISABLE_IMMINTRIN_H)
+void
+blit_blend_surfalpha_to_opaque_avx2(SDL_BlitInfo *info)
+{
+    SETUP_AVX2_BLITTER;
+    SETUP_16BIT_SHUFFLE_OUT;
+    ADD_SHUFFLE_OUT_ALPHA_CONTROL;
+
+    __m256i src_alpha = _mm256_set1_epi32(info->src_blanket_alpha);
+    src_alpha = _mm256_shuffle_epi8(src_alpha, shuff_out_alpha);
+    __m256i temp;
+
+    RUN_AVX2_BLITTER(RUN_16BIT_SHUFFLE_OUT({
+        temp = _mm256_sub_epi16(shuff_src, shuff_dst);
+        temp = _mm256_mullo_epi16(temp, src_alpha);
+        temp = _mm256_add_epi16(temp, shuff_src);
+        shuff_dst = _mm256_slli_epi16(shuff_dst, 8);
+        shuff_dst = _mm256_add_epi16(shuff_dst, temp);
+        shuff_dst = _mm256_srli_epi16(shuff_dst, 8);
+    }));
+}
+#else
+void
+blit_blend_surfalpha_to_opaque_avx2(SDL_BlitInfo *info)
+{
+    BAD_AVX2_FUNCTION_CALL;
+}
+#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
+        * !defined(SDL_DISABLE_IMMINTRIN_H) */

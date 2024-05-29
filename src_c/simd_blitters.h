@@ -37,6 +37,8 @@ void
 blit_blend_rgb_min_sse2(SDL_BlitInfo *info);
 void
 blit_blend_premultiplied_sse2(SDL_BlitInfo *info);
+void
+blit_blend_surfalpha_to_opaque_sse2(SDL_BlitInfo *info);
 #endif /* (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)) */
 
 /* Deliberately putting these outside of the preprocessor guards as I want to
@@ -83,3 +85,5 @@ void
 blit_blend_premultiplied_avx2(SDL_BlitInfo *info);
 void
 premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst);
+void
+blit_blend_surfalpha_to_opaque_avx2(SDL_BlitInfo *info);

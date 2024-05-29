@@ -3827,6 +3827,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
     int result, suboffsetx = 0, suboffsety = 0;
     SDL_Rect orig_clip, sub_clip;
     Uint8 alpha;
+    SDL_BlendMode blend_mode;
 
     /* passthrough blits to the real surface */
     if (((pgSurfaceObject *)dstobj)->subsurface) {
@@ -3930,6 +3931,10 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
         /* If we have a 32bit source surface with per pixel alpha
            and no RLE we'll use pygame_Blit so we can mimic how SDL1
             behaved */
+        result = pygame_Blit(src, srcrect, dst, dstrect, blend_flags);
+    }
+    else if (!SDL_GetSurfaceBlendMode(src, &blend_mode) &&
+             blend_mode == SDL_BLENDMODE_BLEND) {
         result = pygame_Blit(src, srcrect, dst, dstrect, blend_flags);
     }
     else {

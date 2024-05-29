@@ -211,6 +211,30 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
 #endif /* __EMSCRIPTEN__ */
                         alphablit_alpha(&info);
                     }
+                    else if (info.src_blend != SDL_BLENDMODE_NONE &&
+                             !src->format->Amask && !dst->format->Amask) {
+#if !defined(__EMSCRIPTEN__)
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+                        if (PG_SURF_BytesPerPixel(src) == 4 &&
+                            PG_SURF_BytesPerPixel(dst) == 4 &&
+                            src->format->Rmask == dst->format->Rmask &&
+                            src->format->Gmask == dst->format->Gmask &&
+                            src->format->Bmask == dst->format->Bmask) {
+                            if (pg_has_avx2() && (src != dst)) {
+                                blit_blend_surfalpha_to_opaque_avx2(&info);
+                                break;
+                            }
+#if PG_ENABLE_SSE_NEON
+                            if (pg_HasSSE_NEON() && (src != dst)) {
+                                blit_blend_surfalpha_to_opaque_sse2(&info);
+                                break;
+                            }
+#endif /* PG_ENABLE_SSE_NEON */
+                        }
+#endif /* SDL_BYTEORDER == SDL_LIL_ENDIAN */
+#endif /* __EMSCRIPTEN__ */
+                        SDL_BlitSurface(src, srcrect, dst, dstrect);
+                    }
                     else if (info.src_has_colorkey) {
                         alphablit_colorkey(&info);
                     }

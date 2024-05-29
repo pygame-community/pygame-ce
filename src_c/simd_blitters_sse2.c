@@ -700,6 +700,31 @@ alphablit_alpha_sse2_argb_no_surf_alpha_opaque_dst(SDL_BlitInfo *info)
 }
 
 void
+blit_blend_surfalpha_to_opaque_sse2(SDL_BlitInfo *info)
+{
+    SETUP_SSE2_BLITTER;
+    SETUP_SSE2_16BIT_SHUFFLE_OUT;
+
+    const int _a_off = info->src->Ashift >> 2;
+    const __m128i shuff_out_alpha = _mm_set_epi8(
+        -1, 4 + _a_off, -1, 4 + _a_off, -1, 4 + _a_off, -1, 4 + _a_off, -1,
+        0 + _a_off, -1, 0 + _a_off, -1, 0 + _a_off, -1, 0 + _a_off);
+
+    __m128i src_alpha = _mm_set1_epi32(info->src_blanket_alpha);
+    src_alpha = _mm_shuffle_epi8(src_alpha, shuff_out_alpha);
+    __m128i temp;
+
+    RUN_SSE2_BLITTER(RUN_SSE2_16BIT_SHUFFLE_OUT({
+        temp = _mm_sub_epi16(shuff_src, shuff_dst);
+        temp = _mm_mullo_epi16(temp, src_alpha);
+        temp = _mm_add_epi16(temp, shuff_src);
+        shuff_dst = _mm_slli_epi16(shuff_dst, 8);
+        shuff_dst = _mm_add_epi16(shuff_dst, temp);
+        shuff_dst = _mm_srli_epi16(shuff_dst, 8);
+    }))
+}
+
+void
 blit_blend_premultiplied_sse2(SDL_BlitInfo *info)
 {
     int n;
