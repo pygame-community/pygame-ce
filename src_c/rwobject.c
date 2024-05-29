@@ -790,13 +790,13 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
             int path_comp_len = (int)PySequence_Length(path_comp);
             // Skip empty path components
             if (path_comp_len > 0) {
-                PyObject *new_temp_path = NULL;
-                new_temp_path =
+                if (temp_path) {
+                    Py_XDECREF(temp_path);
+                }
+                temp_path =
                     add_to_path(path_submodule, longest_valid_path, path_comp);
                 PyObject *is_dir = PyObject_CallMethod(path_submodule, "isdir",
                                                        "O", temp_path);
-                Py_XDECREF(temp_path);
-                temp_path = new_temp_path;
                 if (is_dir == Py_True) {
                     // path step is valid, continue the loop
                     PyObject *new_longest_valid_path = NULL;
