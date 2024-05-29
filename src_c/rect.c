@@ -36,6 +36,8 @@
 
 #include <limits.h>
 
+#include "geometry_common.h"
+
 static PyTypeObject pgRect_Type;
 static PyTypeObject pgFRect_Type;
 #define pgRect_Check(x) (PyObject_IsInstance(x, (PyObject *)&pgRect_Type))
@@ -69,6 +71,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_unionallIp pg_rect_unionall_ip
 #define RectExport_collidepoint pg_rect_collidepoint
 #define RectExport_colliderect pg_rect_colliderect
+#define RectExport_collidecircle pg_rect_collidecircle
 #define RectExport_collidelist pg_rect_collidelist
 #define RectExport_collidelistall pg_rect_collidelistall
 #define RectExport_RectFromObjectAndKeyFunc pgRect_FromObjectAndKeyFunc
@@ -184,6 +187,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_unionallIp pg_frect_unionall_ip
 #define RectExport_collidepoint pg_frect_collidepoint
 #define RectExport_colliderect pg_frect_colliderect
+#define RectExport_collidecircle pg_frect_collidecircle
 #define RectExport_collidelist pg_frect_collidelist
 #define RectExport_collidelistall pg_frect_collidelistall
 #define RectExport_RectFromObjectAndKeyFunc pgFRect_FromObjectAndKeyFunc
@@ -487,6 +491,8 @@ static struct PyMethodDef pg_rect_methods[] = {
      DOC_RECT_COLLIDEPOINT},
     {"colliderect", (PyCFunction)pg_rect_colliderect, METH_FASTCALL,
      DOC_RECT_COLLIDERECT},
+    {"collidecircle", (PyCFunction)pg_rect_collidecircle, METH_FASTCALL,
+     DOC_RECT_COLLIDERECT},
     {"collidelist", (PyCFunction)pg_rect_collidelist, METH_O,
      DOC_RECT_COLLIDELIST},
     {"collidelistall", (PyCFunction)pg_rect_collidelistall, METH_O,
@@ -537,6 +543,8 @@ static struct PyMethodDef pg_frect_methods[] = {
     {"collidepoint", (PyCFunction)pg_frect_collidepoint, METH_FASTCALL,
      DOC_RECT_COLLIDEPOINT},
     {"colliderect", (PyCFunction)pg_frect_colliderect, METH_FASTCALL,
+     DOC_RECT_COLLIDERECT},
+    {"collidecircle", (PyCFunction)pg_frect_collidecircle, METH_FASTCALL,
      DOC_RECT_COLLIDERECT},
     {"collidelist", (PyCFunction)pg_frect_collidelist, METH_O,
      DOC_RECT_COLLIDELIST},
@@ -760,7 +768,7 @@ static PyTypeObject pgFRect_Type = {
     .tp_getset = pg_frect_getsets, .tp_init = (initproc)pg_frect_init,
     .tp_new = pg_frect_new};
 
-static PyMethodDef _pg_module_methods[] = {{NULL, NULL, 0, NULL}};
+/*static PyMethodDef _pg_module_methods[] = {{NULL, NULL, 0, NULL}};
 
 static char _pg_module_doc[] = "Module for the rectangle object\n";
 
@@ -779,15 +787,15 @@ MODINIT_DEFINE(rect)
                                          NULL,
                                          NULL};
 
-    /* import needed apis; Do this first so if there is an error
+    / import needed apis; Do this first so if there is an error
        the module is not loaded.
-    */
+    /
     import_pygame_base();
     if (PyErr_Occurred()) {
         return NULL;
     }
 
-    /* Create the module and add the functions */
+    / Create the module and add the functions /
     if (PyType_Ready(&pgRect_Type) < 0 || PyType_Ready(&pgFRect_Type) < 0) {
         return NULL;
     }
@@ -822,7 +830,7 @@ MODINIT_DEFINE(rect)
         return NULL;
     }
 
-    /* export the c api */
+    /* export the c api/
     c_api[0] = &pgRect_Type;
     c_api[1] = pgRect_New;
     c_api[2] = pgRect_New4;
@@ -841,3 +849,4 @@ MODINIT_DEFINE(rect)
     }
     return module;
 }
+*/

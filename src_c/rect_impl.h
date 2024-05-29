@@ -34,6 +34,8 @@
 
 #include <limits.h>
 
+#include "geometry_common.h"
+
 // #region RectExport
 #ifndef RectExport_init
 #error RectExport_init needs to be defined
@@ -94,6 +96,9 @@
 #endif
 #ifndef RectExport_colliderect
 #error RectExport_colliderect needs to be defined
+#endif
+#ifndef RectExport_collidecircle
+#error RectExport_collidecircle needs to be defined
 #endif
 #ifndef RectExport_collidelist
 #error RectExport_collidelist needs to be defined
@@ -483,6 +488,9 @@ RectExport_RectFromObjectAndKeyFunc(PyObject *obj, PyObject *keyfunc,
                                     InnerRect *temp);
 static PyObject *
 RectExport_colliderect(RectObject *self, PyObject *const *args,
+                       Py_ssize_t nargs);
+static PyObject *
+RectExport_collidecircle(RectObject *self, PyObject *const *args,
                        Py_ssize_t nargs);
 static PyObject *
 RectExport_collidelist(RectObject *self, PyObject *args);
@@ -1335,6 +1343,20 @@ RectExport_colliderect(RectObject *self, PyObject *const *args,
     }
 
     return PyBool_FromLong(_pg_do_rects_intersect(&self->r, argrect));
+}
+
+static PyObject *
+RectExport_collidecircle(RectObject *self, PyObject *const *args,
+                       Py_ssize_t nargs) {
+    pgCircleBase circle;
+    InnerRect srect = self->r;
+
+    if (!pgCircle_FromObjectFastcall(args, nargs, &circle)) {
+        return RAISE(PyExc_TypeError, "A CircleType object was expected");
+    }
+
+    return PyBool_FromLong(
+        pgCollision_RectCircle(srect.x, srect.y, srect.w, srect.h, &circle));
 }
 
 #ifndef OPTIMIZED_COLLIDERECT_SETUP

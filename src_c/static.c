@@ -89,8 +89,6 @@ PyInit_constants(void);
 PyMODINIT_FUNC
 PyInit_version(void);
 PyMODINIT_FUNC
-PyInit_rect(void);
-PyMODINIT_FUNC
 PyInit_geometry(void);
 PyMODINIT_FUNC
 PyInit_surflock(void);
@@ -287,7 +285,6 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_system(), "system");
     load_submodule("pygame", PyInit_key(), "key");
 
-    load_submodule("pygame", PyInit_rect(), "rect");
     load_submodule("pygame", PyInit_geometry(), "geometry");
     load_submodule("pygame", PyInit_gfxdraw(), "gfxdraw");
     load_submodule("pygame", PyInit_pg_time(), "time");

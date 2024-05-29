@@ -202,37 +202,38 @@ typedef struct {
     PyObject *weakreflist;
 } pgFRectObject;
 
+
 #define pgRect_AsRect(x) (((pgRectObject *)x)->r)
 #define pgFRect_AsRect(x) (((pgFRectObject *)x)->r)
 #ifndef PYGAMEAPI_RECT_INTERNAL
-#define pgRect_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(rect, 0))
+#define pgRect_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(geometry, 0))
 
 #define pgRect_Check(x) ((x)->ob_type == &pgRect_Type)
-#define pgRect_New (*(PyObject * (*)(SDL_Rect *)) PYGAMEAPI_GET_SLOT(rect, 1))
+#define pgRect_New (*(PyObject * (*)(SDL_Rect *)) PYGAMEAPI_GET_SLOT(geometry, 1))
 
 #define pgRect_New4 \
-    (*(PyObject * (*)(int, int, int, int)) PYGAMEAPI_GET_SLOT(rect, 2))
+    (*(PyObject * (*)(int, int, int, int)) PYGAMEAPI_GET_SLOT(geometry, 2))
 
 #define pgRect_FromObject \
-    (*(SDL_Rect * (*)(PyObject *, SDL_Rect *)) PYGAMEAPI_GET_SLOT(rect, 3))
+    (*(SDL_Rect * (*)(PyObject *, SDL_Rect *)) PYGAMEAPI_GET_SLOT(geometry, 3))
 
-#define pgRect_Normalize (*(void (*)(SDL_Rect *))PYGAMEAPI_GET_SLOT(rect, 4))
+#define pgRect_Normalize (*(void (*)(SDL_Rect *))PYGAMEAPI_GET_SLOT(geometry, 4))
 
-#define pgFRect_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(rect, 5))
+#define pgFRect_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(geometry, 5))
 
 #define pgFRect_Check(x) ((x)->ob_type == &pgFRect_Type)
 #define pgFRect_New \
-    (*(PyObject * (*)(SDL_FRect *)) PYGAMEAPI_GET_SLOT(rect, 6))
+    (*(PyObject * (*)(SDL_FRect *)) PYGAMEAPI_GET_SLOT(geometry, 6))
 
 #define pgFRect_New4 \
-    (*(PyObject * (*)(float, float, float, float)) PYGAMEAPI_GET_SLOT(rect, 7))
+    (*(PyObject * (*)(float, float, float, float)) PYGAMEAPI_GET_SLOT(geometry, 7))
 
 #define pgFRect_FromObject \
-    (*(SDL_FRect * (*)(PyObject *, SDL_FRect *)) PYGAMEAPI_GET_SLOT(rect, 8))
+    (*(SDL_FRect * (*)(PyObject *, SDL_FRect *)) PYGAMEAPI_GET_SLOT(geometry, 8))
 
-#define pgFRect_Normalize (*(void (*)(SDL_FRect *))PYGAMEAPI_GET_SLOT(rect, 9))
+#define pgFRect_Normalize (*(void (*)(SDL_FRect *))PYGAMEAPI_GET_SLOT(geometry, 9))
 
-#define import_pygame_rect() IMPORT_PYGAME_MODULE(rect)
+#define import_pygame_rect() IMPORT_PYGAME_MODULE(geometry)
 #endif /* ~PYGAMEAPI_RECT_INTERNAL */
 
 /*
@@ -531,7 +532,7 @@ typedef struct {
  */
 #ifdef PYGAME_H
 PYGAMEAPI_DEFINE_SLOTS(base);
-PYGAMEAPI_DEFINE_SLOTS(rect);
+//PYGAMEAPI_DEFINE_SLOTS(rect);
 PYGAMEAPI_DEFINE_SLOTS(joystick);
 PYGAMEAPI_DEFINE_SLOTS(display);
 PYGAMEAPI_DEFINE_SLOTS(surface);
@@ -545,7 +546,7 @@ PYGAMEAPI_DEFINE_SLOTS(window);
 PYGAMEAPI_DEFINE_SLOTS(geometry);
 #else /* ~PYGAME_H */
 PYGAMEAPI_EXTERN_SLOTS(base);
-PYGAMEAPI_EXTERN_SLOTS(rect);
+//PYGAMEAPI_EXTERN_SLOTS(rect);
 PYGAMEAPI_EXTERN_SLOTS(joystick);
 PYGAMEAPI_EXTERN_SLOTS(display);
 PYGAMEAPI_EXTERN_SLOTS(surface);
