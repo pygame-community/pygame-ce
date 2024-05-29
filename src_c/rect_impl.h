@@ -491,7 +491,7 @@ RectExport_colliderect(RectObject *self, PyObject *const *args,
                        Py_ssize_t nargs);
 static PyObject *
 RectExport_collidecircle(RectObject *self, PyObject *const *args,
-                       Py_ssize_t nargs);
+                         Py_ssize_t nargs);
 static PyObject *
 RectExport_collidelist(RectObject *self, PyObject *args);
 static PyObject *
@@ -1347,7 +1347,8 @@ RectExport_colliderect(RectObject *self, PyObject *const *args,
 
 static PyObject *
 RectExport_collidecircle(RectObject *self, PyObject *const *args,
-                       Py_ssize_t nargs) {
+                         Py_ssize_t nargs)
+{
     pgCircleBase circle;
     InnerRect srect = self->r;
 

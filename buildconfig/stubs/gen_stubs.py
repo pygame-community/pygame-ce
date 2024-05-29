@@ -55,7 +55,6 @@ PG_AUTOIMPORT_SUBMODS = [
 
 # pygame classes that are autoimported into main namespace are kept in this dict
 PG_AUTOIMPORT_CLASSES = {
-    #"rect": ["Rect", "FRect"],
     "surface": ["Surface", "SurfaceType"],
     "color": ["Color"],
     "pixelarray": ["PixelArray"],
@@ -71,8 +70,8 @@ PG_AUTOIMPORT_CLASSES = {
     "joystick": ["Joystick"],
     "window": ["Window"],
     "base": ["__version__"],  # need an explicit import
-    # uncomment below line if Circle is added to the base namespace later
-    "geometry": ["Circle", "Rect", "FRect"], 
+    # Add "Circle" to the list if Circle is added to the base namespace later
+    "geometry": ["Rect", "FRect"], 
 }
 
 # pygame modules from which __init__.py does the equivalent of
