@@ -776,6 +776,9 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
         PyObject *file_comp =
             PySequence_GetItem(path_components, all_path_comp_len - 1);
         PyObject *longest_valid_path = starting_path;
+        // Add reference here so we can consistently
+        // de-reference longest_valid_path later
+        Py_INCREF(longest_valid_path);
         PyObject *temp_path = NULL;
         // loop through all the non-file path components rebuilding the path
         // component-by-component and checking at each addition if the formed
