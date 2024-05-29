@@ -2881,6 +2881,7 @@ RectExport_iterator(RectObject *self)
 #undef RectExport_unionallIp
 #undef RectExport_collidepoint
 #undef RectExport_colliderect
+#undef RectExport_collidecircle
 #undef RectExport_collidelist
 #undef RectExport_collidelistall
 #undef RectExport_collidedict
