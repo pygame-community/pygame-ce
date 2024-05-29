@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_ "the top level pygame package"
 #define DOC_ISCE "IS_CE = 1\nexists if current pygame is pygame-ce"
 #define DOC_INIT "init() -> (numpass, numfail)\ninitialize all imported pygame modules"
@@ -6,10 +6,10 @@
 #define DOC_GETINIT "get_init() -> bool\nreturns True if pygame is currently initialized"
 #define DOC_ERROR "raise pygame.error(message)\nstandard pygame exception"
 #define DOC_GETERROR "get_error() -> errorstr\nget the current error message"
-#define DOC_SETERROR "set_error(error_msg) -> None\nset the current error message"
+#define DOC_SETERROR "set_error(error_msg, /) -> None\nset the current error message"
 #define DOC_GETSDLVERSION "get_sdl_version(linked=True) -> major, minor, patch\nget the version number of SDL"
 #define DOC_GETSDLBYTEORDER "get_sdl_byteorder() -> int\nget the byte order of SDL"
-#define DOC_REGISTERQUIT "register_quit(callable) -> None\nregister a function to be called when pygame quits"
+#define DOC_REGISTERQUIT "register_quit(callable, /) -> None\nregister a function to be called when pygame quits"
 #define DOC_ENCODESTRING "encode_string([obj [, encoding [, errors [, etype]]]]) -> bytes or None\nEncode a Unicode or bytes object"
 #define DOC_ENCODEFILEPATH "encode_file_path([obj [, etype]]) -> bytes or None\nEncode a Unicode or bytes object as a file system path"
 #define DOC_PRINTDEBUGINFO "print_debug_info(filename=None) -> None\nretrieves useful information for debugging and issue-reporting purposes"

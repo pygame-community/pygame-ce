@@ -58,6 +58,14 @@ static void
 draw_circle_bresenham_thin(SDL_Surface *surf, int x0, int y0, int radius,
                            Uint32 color, int *drawn_area);
 static void
+draw_circle_xaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
+                     int thickness, Uint32 color, int top_right, int top_left,
+                     int bottom_left, int bottom_right, int *drawn_area);
+static void
+draw_circle_xaolinwu_thin(SDL_Surface *surf, int x0, int y0, int radius,
+                          Uint32 color, int top_right, int top_left,
+                          int bottom_left, int bottom_right, int *drawn_area);
+static void
 draw_circle_filled(SDL_Surface *surf, int x0, int y0, int radius, Uint32 color,
                    int *drawn_area);
 static void
@@ -105,25 +113,36 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *colorobj, *start, *end;
     SDL_Surface *surf = NULL;
     float startx, starty, endx, endy;
+    PyObject *blend = NULL;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     Uint32 color;
-    static char *keywords[] = {"surface", "color", "start_pos", "end_pos",
-                               NULL};
+    static char *keywords[] = {"surface", "color", "start_pos",
+                               "end_pos", "blend", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|i", keywords,
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|O", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
-                                     &start, &end)) {
+                                     &start, &end, &blend)) {
         return NULL; /* Exception already set. */
+    }
+
+    if (blend != NULL) {
+        if (PyErr_WarnEx(
+                PyExc_DeprecationWarning,
+                "blend argument is deprecated and has no functionality and "
+                "will be completely removed in a future version of pygame-ce",
+                1) == -1) {
+            return NULL;
+        }
     }
 
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -182,10 +201,10 @@ line(PyObject *self, PyObject *arg, PyObject *kwargs)
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -239,25 +258,37 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     float *xlist, *ylist;
     float x, y;
     int l, t;
+    PyObject *blend = NULL;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     int result, closed;
     Py_ssize_t loop, length;
-    static char *keywords[] = {"surface", "color", "closed", "points", NULL};
+    static char *keywords[] = {"surface", "color", "closed",
+                               "points",  "blend", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OpO|i", keywords,
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OpO|O", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
-                                     &closed, &points)) {
+                                     &closed, &points, &blend)) {
         return NULL; /* Exception already set. */
+    }
+
+    if (blend != NULL) {
+        if (PyErr_WarnEx(
+                PyExc_DeprecationWarning,
+                "blend argument is deprecated and has no functionality and "
+                "will be completely removed in a future version of pygame-ce",
+                1) == -1) {
+            return NULL;
+        }
     }
 
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -375,10 +406,10 @@ lines(PyObject *self, PyObject *arg, PyObject *kwargs)
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -496,10 +527,10 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -568,10 +599,10 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -652,10 +683,10 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -713,6 +744,125 @@ circle(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
+aacircle(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    PyObject *colorobj;
+    SDL_Surface *surf = NULL;
+    Uint32 color;
+    SDL_Rect cliprect;
+    PyObject *posobj, *radiusobj;
+    int posx, posy, radius;
+    int width = 0; /* Default values. */
+    int top_right = 0, top_left = 0, bottom_left = 0, bottom_right = 0;
+    int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
+                         INT_MIN}; /* Used to store bounding box values */
+    static char *keywords[] = {"surface",
+                               "color",
+                               "center",
+                               "radius",
+                               "width",
+                               "draw_top_right",
+                               "draw_top_left",
+                               "draw_bottom_left",
+                               "draw_bottom_right",
+                               NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!OOO|iiiii", keywords,
+                                     &pgSurface_Type, &surfobj, &colorobj,
+                                     &posobj, &radiusobj, &width, &top_right,
+                                     &top_left, &bottom_left, &bottom_right))
+        return NULL; /* Exception already set. */
+
+    if (!pg_TwoIntsFromObj(posobj, &posx, &posy)) {
+        return RAISE(PyExc_TypeError,
+                     "center argument must be a pair of numbers");
+    }
+
+    if (!pg_IntFromObj(radiusobj, &radius)) {
+        return RAISE(PyExc_TypeError, "radius argument must be a number");
+    }
+
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
+    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+        return PyErr_Format(PyExc_ValueError,
+                            "unsupported surface bit depth (%d) for drawing",
+                            surf->format->BytesPerPixel);
+    }
+
+    CHECK_LOAD_COLOR(colorobj)
+
+    if (radius < 1 || width < 0) {
+        return pgRect_New4(posx, posy, 0, 0);
+    }
+
+    if (width > radius) {
+        width = radius;
+    }
+
+    SDL_GetClipRect(surf, &cliprect);
+
+    if (posx > cliprect.x + cliprect.w + radius ||
+        posx < cliprect.x - radius ||
+        posy > cliprect.y + cliprect.h + radius ||
+        posy < cliprect.y - radius) {
+        return pgRect_New4(posx, posy, 0, 0);
+    }
+
+    if (!pgSurface_Lock(surfobj)) {
+        return RAISE(PyExc_RuntimeError, "error locking surface");
+    }
+
+    if ((top_right == 0 && top_left == 0 && bottom_left == 0 &&
+         bottom_right == 0)) {
+        if (!width || width == radius) {
+            draw_circle_filled(surf, posx, posy, radius - 1, color,
+                               drawn_area);
+            draw_circle_xaolinwu(surf, posx, posy, radius, 2, color, 1, 1, 1,
+                                 1, drawn_area);
+        }
+        else if (width == 1) {
+            draw_circle_xaolinwu_thin(surf, posx, posy, radius, color, 1, 1, 1,
+                                      1, drawn_area);
+        }
+        else {
+            draw_circle_xaolinwu(surf, posx, posy, radius, width, color, 1, 1,
+                                 1, 1, drawn_area);
+        }
+    }
+    else {
+        if (!width || width == radius) {
+            draw_circle_xaolinwu(surf, posx, posy, radius, radius, color,
+                                 top_right, top_left, bottom_left,
+                                 bottom_right, drawn_area);
+        }
+        else if (width == 1) {
+            draw_circle_xaolinwu_thin(surf, posx, posy, radius, color,
+                                      top_right, top_left, bottom_left,
+                                      bottom_right, drawn_area);
+        }
+        else {
+            draw_circle_xaolinwu(surf, posx, posy, radius, width, color,
+                                 top_right, top_left, bottom_left,
+                                 bottom_right, drawn_area);
+        }
+    }
+
+    if (!pgSurface_Unlock(surfobj)) {
+        return RAISE(PyExc_RuntimeError, "error unlocking surface");
+    }
+    if (drawn_area[0] != INT_MAX && drawn_area[1] != INT_MAX &&
+        drawn_area[2] != INT_MIN && drawn_area[3] != INT_MIN)
+        return pgRect_New4(drawn_area[0], drawn_area[1],
+                           drawn_area[2] - drawn_area[0] + 1,
+                           drawn_area[3] - drawn_area[1] + 1);
+    else
+        return pgRect_New4(posx, posy, 0, 0);
+}
+
+static PyObject *
 polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
 {
     pgSurfaceObject *surfobj;
@@ -750,10 +900,10 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -872,10 +1022,10 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)
@@ -973,36 +1123,26 @@ compare_int(const void *a, const void *b)
 
 static Uint32
 get_antialiased_color(SDL_Surface *surf, int x, int y, Uint32 original_color,
-                      float brightness, int blend)
+                      float brightness)
 {
     Uint8 color_part[4], background_color[4];
     Uint32 *pixels = (Uint32 *)surf->pixels;
     SDL_GetRGBA(original_color, surf->format, &color_part[0], &color_part[1],
                 &color_part[2], &color_part[3]);
-    if (blend) {
-        if (x < surf->clip_rect.x ||
-            x >= surf->clip_rect.x + surf->clip_rect.w ||
-            y < surf->clip_rect.y ||
-            y >= surf->clip_rect.y + surf->clip_rect.h)
-            return original_color;
-        SDL_GetRGBA(pixels[(y * surf->w) + x], surf->format,
-                    &background_color[0], &background_color[1],
-                    &background_color[2], &background_color[3]);
-        color_part[0] = (Uint8)(brightness * color_part[0] +
-                                (1 - brightness) * background_color[0]);
-        color_part[1] = (Uint8)(brightness * color_part[1] +
-                                (1 - brightness) * background_color[1]);
-        color_part[2] = (Uint8)(brightness * color_part[2] +
-                                (1 - brightness) * background_color[2]);
-        color_part[3] = (Uint8)(brightness * color_part[3] +
-                                (1 - brightness) * background_color[3]);
-    }
-    else {
-        color_part[0] = (Uint8)(brightness * color_part[0]);
-        color_part[1] = (Uint8)(brightness * color_part[1]);
-        color_part[2] = (Uint8)(brightness * color_part[2]);
-        color_part[3] = (Uint8)(brightness * color_part[3]);
-    }
+    if (x < surf->clip_rect.x || x >= surf->clip_rect.x + surf->clip_rect.w ||
+        y < surf->clip_rect.y || y >= surf->clip_rect.y + surf->clip_rect.h)
+        return original_color;
+    SDL_GetRGBA(pixels[(y * surf->w) + x], surf->format, &background_color[0],
+                &background_color[1], &background_color[2],
+                &background_color[3]);
+    color_part[0] = (Uint8)(brightness * color_part[0] +
+                            (1 - brightness) * background_color[0]);
+    color_part[1] = (Uint8)(brightness * color_part[1] +
+                            (1 - brightness) * background_color[1]);
+    color_part[2] = (Uint8)(brightness * color_part[2] +
+                            (1 - brightness) * background_color[2]);
+    color_part[3] = (Uint8)(brightness * color_part[3] +
+                            (1 - brightness) * background_color[3]);
     original_color = SDL_MapRGBA(surf->format, color_part[0], color_part[1],
                                  color_part[2], color_part[3]);
     return original_color;
@@ -1079,7 +1219,7 @@ set_at(SDL_Surface *surf, int x, int y, Uint32 color)
         y < surf->clip_rect.y || y >= surf->clip_rect.y + surf->clip_rect.h)
         return 0;
 
-    switch (format->BytesPerPixel) {
+    switch (PG_FORMAT_BytesPerPixel(format)) {
         case 1:
             *((Uint8 *)pixels + y * surf->pitch + x) = (Uint8)color;
             break;
@@ -1123,7 +1263,6 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
     Uint32 pixel_color;
     float x_gap, y_endpoint, clip_left, clip_right, clip_top, clip_bottom;
     int steep, y;
-    int blend = 1;
 
     dx = to_x - from_x;
     dy = to_y - from_y;
@@ -1133,7 +1272,7 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
     if (fabs(dx) < 0.0001 && fabs(dy) < 0.0001) {
         pixel_color =
             get_antialiased_color(surf, (int)floor(from_x + 0.5),
-                                  (int)floor(from_y + 0.5), color, 1, blend);
+                                  (int)floor(from_y + 0.5), color, 1);
         set_and_check_rect(surf, (int)floor(from_x + 0.5),
                            (int)floor(from_y + 0.5), pixel_color, drawn_area);
         return;
@@ -1236,8 +1375,8 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
             y = (int)y_endpoint;
         }
         if ((int)y_endpoint < y_endpoint) {
-            pixel_color = get_antialiased_color(surf, x, y, color,
-                                                brightness * x_gap, blend);
+            pixel_color =
+                get_antialiased_color(surf, x, y, color, brightness * x_gap);
             set_and_check_rect(surf, x, y, pixel_color, drawn_area);
         }
         if (steep) {
@@ -1247,8 +1386,8 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
             y--;
         }
         brightness = 1 - brightness;
-        pixel_color = get_antialiased_color(surf, x, y, color,
-                                            brightness * x_gap, blend);
+        pixel_color =
+            get_antialiased_color(surf, x, y, color, brightness * x_gap);
         set_and_check_rect(surf, x, y, pixel_color, drawn_area);
         intersect_y += gradient;
         x_pixel_start++;
@@ -1268,8 +1407,8 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
             y = (int)y_endpoint;
         }
         if ((int)y_endpoint < y_endpoint) {
-            pixel_color = get_antialiased_color(surf, x, y, color,
-                                                brightness * x_gap, blend);
+            pixel_color =
+                get_antialiased_color(surf, x, y, color, brightness * x_gap);
             set_and_check_rect(surf, x, y, pixel_color, drawn_area);
         }
         if (steep) {
@@ -1279,8 +1418,8 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
             y--;
         }
         brightness = 1 - brightness;
-        pixel_color = get_antialiased_color(surf, x, y, color,
-                                            brightness * x_gap, blend);
+        pixel_color =
+            get_antialiased_color(surf, x, y, color, brightness * x_gap);
         set_and_check_rect(surf, x, y, pixel_color, drawn_area);
     }
 
@@ -1289,25 +1428,25 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
         y = (int)intersect_y;
         if (steep) {
             brightness = 1 - intersect_y + y;
-            pixel_color = get_antialiased_color(surf, y - 1, x, color,
-                                                brightness, blend);
+            pixel_color =
+                get_antialiased_color(surf, y - 1, x, color, brightness);
             set_and_check_rect(surf, y - 1, x, pixel_color, drawn_area);
             if (y < intersect_y) {
                 brightness = 1 - brightness;
-                pixel_color = get_antialiased_color(surf, y, x, color,
-                                                    brightness, blend);
+                pixel_color =
+                    get_antialiased_color(surf, y, x, color, brightness);
                 set_and_check_rect(surf, y, x, pixel_color, drawn_area);
             }
         }
         else {
             brightness = 1 - intersect_y + y;
-            pixel_color = get_antialiased_color(surf, x, y - 1, color,
-                                                brightness, blend);
+            pixel_color =
+                get_antialiased_color(surf, x, y - 1, color, brightness);
             set_and_check_rect(surf, x, y - 1, pixel_color, drawn_area);
             if (y < intersect_y) {
                 brightness = 1 - brightness;
-                pixel_color = get_antialiased_color(surf, x, y, color,
-                                                    brightness, blend);
+                pixel_color =
+                    get_antialiased_color(surf, x, y, color, brightness);
                 set_and_check_rect(surf, x, y, pixel_color, drawn_area);
             }
         }
@@ -1321,9 +1460,9 @@ drawhorzline(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2)
     Uint8 *pixel, *end;
 
     pixel = ((Uint8 *)surf->pixels) + surf->pitch * y1;
-    end = pixel + x2 * surf->format->BytesPerPixel;
-    pixel += x1 * surf->format->BytesPerPixel;
-    switch (surf->format->BytesPerPixel) {
+    end = pixel + x2 * PG_SURF_BytesPerPixel(surf);
+    pixel += x1 * PG_SURF_BytesPerPixel(surf);
+    switch (PG_SURF_BytesPerPixel(surf)) {
         case 1:
             for (; pixel <= end; ++pixel) {
                 *pixel = (Uint8)color;
@@ -1357,9 +1496,9 @@ drawvertline(SDL_Surface *surf, Uint32 color, int y1, int x1, int y2)
 
     pixel = ((Uint8 *)surf->pixels) + surf->pitch * y1;
     end = ((Uint8 *)surf->pixels) + surf->pitch * y2 +
-          x1 * surf->format->BytesPerPixel;
-    pixel += x1 * surf->format->BytesPerPixel;
-    switch (surf->format->BytesPerPixel) {
+          x1 * PG_SURF_BytesPerPixel(surf);
+    pixel += x1 * PG_SURF_BytesPerPixel(surf);
+    switch (PG_SURF_BytesPerPixel(surf)) {
         case 1:
             for (; pixel <= end; pixel += surf->pitch) {
                 *pixel = (Uint8)color;
@@ -1668,7 +1807,7 @@ unsafe_set_at(SDL_Surface *surf, int x, int y, Uint32 color)
     Uint8 *pixels = (Uint8 *)surf->pixels;
     Uint8 *byte_buf, rgb[4];
 
-    switch (format->BytesPerPixel) {
+    switch (PG_FORMAT_BytesPerPixel(format)) {
         case 1:
             *((Uint8 *)pixels + y * surf->pitch + x) = (Uint8)color;
             break;
@@ -2334,6 +2473,142 @@ draw_circle_filled(SDL_Surface *surf, int x0, int y0, int radius, Uint32 color,
 }
 
 static void
+draw_eight_symetric_pixels(SDL_Surface *surf, int x0, int y0, Uint32 color,
+                           int x, int y, float opacity, int top_right,
+                           int top_left, int bottom_left, int bottom_right,
+                           int *drawn_area)
+{
+    opacity = opacity / 255.0f;
+    Uint32 pixel_color;
+    if (top_right == 1) {
+        pixel_color =
+            get_antialiased_color(surf, x0 + x, y0 - y, color, opacity);
+        set_and_check_rect(surf, x0 + x, y0 - y, pixel_color, drawn_area);
+        pixel_color =
+            get_antialiased_color(surf, x0 + y, y0 - x, color, opacity);
+        set_and_check_rect(surf, x0 + y, y0 - x, pixel_color, drawn_area);
+    }
+    if (top_left == 1) {
+        pixel_color =
+            get_antialiased_color(surf, x0 - x, y0 - y, color, opacity);
+        set_and_check_rect(surf, x0 - x, y0 - y, pixel_color, drawn_area);
+        pixel_color =
+            get_antialiased_color(surf, x0 - y, y0 - x, color, opacity);
+        set_and_check_rect(surf, x0 - y, y0 - x, pixel_color, drawn_area);
+    }
+    if (bottom_left == 1) {
+        pixel_color =
+            get_antialiased_color(surf, x0 - x, y0 + y, color, opacity);
+        set_and_check_rect(surf, x0 - x, y0 + y, pixel_color, drawn_area);
+        pixel_color =
+            get_antialiased_color(surf, x0 - y, y0 + x, color, opacity);
+        set_and_check_rect(surf, x0 - y, y0 + x, pixel_color, drawn_area);
+    }
+    if (bottom_right == 1) {
+        pixel_color =
+            get_antialiased_color(surf, x0 + x, y0 + y, color, opacity);
+        set_and_check_rect(surf, x0 + x, y0 + y, pixel_color, drawn_area);
+        pixel_color =
+            get_antialiased_color(surf, x0 + y, y0 + x, color, opacity);
+        set_and_check_rect(surf, x0 + y, y0 + x, pixel_color, drawn_area);
+    }
+}
+
+/* Xaolin Wu Circle Algorithm
+ * adapted from: https://cgg.mff.cuni.cz/~pepca/ref/WU.pdf
+ * with additional line width parameter and quadrants option
+ */
+static void
+draw_circle_xaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
+                     int thickness, Uint32 color, int top_right, int top_left,
+                     int bottom_left, int bottom_right, int *drawn_area)
+{
+    for (int layer_radius = radius - thickness; layer_radius <= radius;
+         layer_radius++) {
+        int x = 0;
+        int y = layer_radius;
+        double prev_opacity = 0.0;
+        if (layer_radius == radius - thickness) {
+            while (x < y) {
+                double height = sqrt(pow(layer_radius, 2) - pow(x, 2));
+                double opacity = 255.0 * (ceil(height) - height);
+                if (opacity < prev_opacity) {
+                    --y;
+                }
+                prev_opacity = opacity;
+                draw_eight_symetric_pixels(surf, x0, y0, color, x, y, 255.0f,
+                                           top_right, top_left, bottom_left,
+                                           bottom_right, drawn_area);
+                draw_eight_symetric_pixels(
+                    surf, x0, y0, color, x, y - 1, (float)opacity, top_right,
+                    top_left, bottom_left, bottom_right, drawn_area);
+                ++x;
+            }
+        }
+        else if (layer_radius == radius) {
+            while (x < y) {
+                double height = sqrt(pow(layer_radius, 2) - pow(x, 2));
+                double opacity = 255.0 * (ceil(height) - height);
+                if (opacity < prev_opacity) {
+                    --y;
+                }
+                prev_opacity = opacity;
+                draw_eight_symetric_pixels(surf, x0, y0, color, x, y,
+                                           255.0f - (float)opacity, top_right,
+                                           top_left, bottom_left, bottom_right,
+                                           drawn_area);
+                draw_eight_symetric_pixels(
+                    surf, x0, y0, color, x, y - 1, 255.0f, top_right, top_left,
+                    bottom_left, bottom_right, drawn_area);
+                ++x;
+            }
+        }
+        else {
+            while (x < y) {
+                double height = sqrt(pow(layer_radius, 2) - pow(x, 2));
+                double opacity = 255.0 * (ceil(height) - height);
+                if (opacity < prev_opacity) {
+                    --y;
+                }
+                prev_opacity = opacity;
+                draw_eight_symetric_pixels(surf, x0, y0, color, x, y, 255.0f,
+                                           top_right, top_left, bottom_left,
+                                           bottom_right, drawn_area);
+                draw_eight_symetric_pixels(
+                    surf, x0, y0, color, x, y - 1, 255.0f, top_right, top_left,
+                    bottom_left, bottom_right, drawn_area);
+                ++x;
+            }
+        }
+    }
+}
+
+static void
+draw_circle_xaolinwu_thin(SDL_Surface *surf, int x0, int y0, int radius,
+                          Uint32 color, int top_right, int top_left,
+                          int bottom_left, int bottom_right, int *drawn_area)
+{
+    int x = 0;
+    int y = radius;
+    double prev_opacity = 0.0;
+    while (x < y) {
+        double height = sqrt(pow(radius, 2) - pow(x, 2));
+        double opacity = 255.0 * (ceil(height) - height);
+        if (opacity < prev_opacity) {
+            --y;
+        }
+        prev_opacity = opacity;
+        draw_eight_symetric_pixels(
+            surf, x0, y0, color, x, y, 255.0f - (float)opacity, top_right,
+            top_left, bottom_left, bottom_right, drawn_area);
+        draw_eight_symetric_pixels(surf, x0, y0, color, x, y - 1,
+                                   (float)opacity, top_right, top_left,
+                                   bottom_left, bottom_right, drawn_area);
+        ++x;
+    }
+}
+
+static void
 draw_ellipse_filled(SDL_Surface *surf, int x0, int y0, int width, int height,
                     Uint32 color, int *drawn_area)
 {
@@ -2843,6 +3118,8 @@ static PyMethodDef _draw_methods[] = {
     {"arc", (PyCFunction)arc, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_ARC},
     {"circle", (PyCFunction)circle, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_CIRCLE},
+    {"aacircle", (PyCFunction)aacircle, METH_VARARGS | METH_KEYWORDS,
+     DOC_DRAW_AACIRCLE},
     {"polygon", (PyCFunction)polygon, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_POLYGON},
     {"rect", (PyCFunction)rect, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_RECT},

@@ -1,6 +1,5 @@
-#include "geometry.h"
-#include "collisions.c"
 #include "circle.c"
+#include "geometry_common.c"
 
 static PyMethodDef geometry_methods[] = {{NULL, NULL, 0, NULL}};
 
@@ -18,6 +17,11 @@ MODINIT_DEFINE(geometry)
     };
 
     import_pygame_base();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+
+    import_pygame_rect();
     if (PyErr_Occurred()) {
         return NULL;
     }

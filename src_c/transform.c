@@ -125,7 +125,7 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
     Uint8 alpha;
     int isalpha;
 
-    if (surf->format->BytesPerPixel == 0 || surf->format->BytesPerPixel > 4)
+    if (PG_SURF_BytesPerPixel(surf) == 0 || PG_SURF_BytesPerPixel(surf) > 4)
         return (SDL_Surface *)(RAISE(
             PyExc_ValueError, "unsupported Surface bit depth for transform"));
 
@@ -178,8 +178,14 @@ newsurf_fromsurf(SDL_Surface *surf, int width, int height)
         }
     }
 
-    if (SDL_GetColorKey(surf, &colorkey) == 0) {
-        if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0 ||
+    if (SDL_HasColorKey(surf)) {
+        SDL_GetColorKey(surf, &colorkey);
+        if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
+            PyErr_SetString(pgExc_SDLError, SDL_GetError());
+            SDL_FreeSurface(newsurf);
+            return NULL;
+        }
+        if (PG_SurfaceHasRLE(surf) &&
             SDL_SetSurfaceRLE(newsurf, SDL_TRUE) != 0) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
@@ -219,7 +225,7 @@ rotate90(SDL_Surface *src, int angle)
     SDL_LockSurface(dst);
     srcrow = (char *)src->pixels;
     dstrow = (char *)dst->pixels;
-    srcstepx = dststepx = src->format->BytesPerPixel;
+    srcstepx = dststepx = PG_SURF_BytesPerPixel(src);
     srcstepy = src->pitch;
     dststepy = dst->pitch;
 
@@ -238,11 +244,11 @@ rotate90(SDL_Surface *src, int angle)
         case 3:
             srcrow += ((src->h - 1) * srcstepy);
             srcstepx = -srcstepy;
-            srcstepy = src->format->BytesPerPixel;
+            srcstepy = PG_SURF_BytesPerPixel(src);
             break;
     }
 
-    switch (src->format->BytesPerPixel) {
+    switch (PG_SURF_BytesPerPixel(src)) {
         case 1:
             for (loopy = 0; loopy < dstheight; ++loopy) {
                 dstpix = dstrow;
@@ -327,7 +333,7 @@ rotate(SDL_Surface *src, SDL_Surface *dst, Uint32 bgcolor, double sangle,
     int xmaxval = ((src->w) << 16) - 1;
     int ymaxval = ((src->h) << 16) - 1;
 
-    switch (src->format->BytesPerPixel) {
+    switch (PG_SURF_BytesPerPixel(src)) {
         case 1:
             for (y = 0; y < dst->h; y++) {
                 Uint8 *dstpos = (Uint8 *)dstrow;
@@ -429,7 +435,7 @@ scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
     }
     else {
         modsurf = retsurf = pgSurface_AsSurface(dstobj);
-        if (retsurf->format->BytesPerPixel != src->format->BytesPerPixel ||
+        if (PG_SURF_BytesPerPixel(retsurf) != PG_SURF_BytesPerPixel(src) ||
             retsurf->format->Rmask != src->format->Rmask ||
             retsurf->format->Gmask != src->format->Gmask ||
             retsurf->format->Bmask != src->format->Bmask) {
@@ -463,7 +469,7 @@ scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
         pgSurface_Lock(srcobj);
         Py_BEGIN_ALLOW_THREADS;
 
-        stretch_result_num = SDL_SoftStretch(src, NULL, modsurf, NULL);
+        stretch_result_num = PG_SoftStretchNearest(src, NULL, modsurf, NULL);
 
         Py_END_ALLOW_THREADS;
         pgSurface_Unlock(srcobj);
@@ -585,7 +591,7 @@ surf_scale2x(PyObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(PyExc_ValueError, "Destination surface not 2x bigger.");
 
     /* check to see if the format of the surface is the same. */
-    if (surf->format->BytesPerPixel != newsurf->format->BytesPerPixel)
+    if (PG_SURF_BytesPerPixel(surf) != PG_SURF_BytesPerPixel(newsurf))
         return RAISE(PyExc_ValueError,
                      "Source and destination surfaces need the same format.");
 
@@ -631,7 +637,7 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
         return (PyObject *)surfobj;
     }
 
-    if (surf->format->BytesPerPixel == 0 || surf->format->BytesPerPixel > 4)
+    if (PG_SURF_BytesPerPixel(surf) == 0 || PG_SURF_BytesPerPixel(surf) > 4)
         return RAISE(PyExc_ValueError,
                      "unsupported Surface bit depth for transform");
 
@@ -667,9 +673,9 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     /* get the background color */
-    if (SDL_GetColorKey(surf, &bgcolor) != 0) {
+    if (!SDL_HasColorKey(surf)) {
         SDL_LockSurface(surf);
-        switch (surf->format->BytesPerPixel) {
+        switch (PG_SURF_BytesPerPixel(surf)) {
             case 1:
                 bgcolor = *(Uint8 *)surf->pixels;
                 break;
@@ -692,6 +698,9 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
         }
         SDL_UnlockSurface(surf);
         bgcolor &= ~surf->format->Amask;
+    }
+    else {
+        SDL_GetColorKey(surf, &bgcolor);
     }
 
     SDL_LockSurface(newsurf);
@@ -744,19 +753,19 @@ surf_flip(PyObject *self, PyObject *args, PyObject *kwargs)
         if (!yaxis) {
             for (loopy = 0; loopy < surf->h; ++loopy)
                 memcpy(dstpix + loopy * dstpitch, srcpix + loopy * srcpitch,
-                       surf->w * surf->format->BytesPerPixel);
+                       surf->w * PG_SURF_BytesPerPixel(surf));
         }
         else {
             for (loopy = 0; loopy < surf->h; ++loopy)
                 memcpy(dstpix + loopy * dstpitch,
                        srcpix + (surf->h - 1 - loopy) * srcpitch,
-                       surf->w * surf->format->BytesPerPixel);
+                       surf->w * PG_SURF_BytesPerPixel(surf));
         }
     }
     else /*if (xaxis)*/
     {
         if (yaxis) {
-            switch (surf->format->BytesPerPixel) {
+            switch (PG_SURF_BytesPerPixel(surf)) {
                 case 1:
                     for (loopy = 0; loopy < surf->h; ++loopy) {
                         Uint8 *dst = (Uint8 *)(dstpix + loopy * dstpitch);
@@ -807,7 +816,7 @@ surf_flip(PyObject *self, PyObject *args, PyObject *kwargs)
             }
         }
         else {
-            switch (surf->format->BytesPerPixel) {
+            switch (PG_SURF_BytesPerPixel(surf)) {
                 case 1:
                     for (loopy = 0; loopy < surf->h; ++loopy) {
                         Uint8 *dst = (Uint8 *)(dstpix + loopy * dstpitch);
@@ -877,7 +886,7 @@ surf_rotozoom(PyObject *self, PyObject *args, PyObject *kwargs)
         return (PyObject *)pgSurface_New(newsurf);
     }
 
-    if (surf->format->BitsPerPixel == 32) {
+    if (PG_SURF_BitsPerPixel(surf) == 32) {
         surf32 = surf;
         pgSurface_Lock(surfobj);
     }
@@ -936,7 +945,7 @@ chop(SDL_Surface *src, int x, int y, int width, int height)
     SDL_LockSurface(dst);
     srcrow = (char *)src->pixels;
     dstrow = (char *)dst->pixels;
-    srcstepx = dststepx = src->format->BytesPerPixel;
+    srcstepx = dststepx = PG_SURF_BytesPerPixel(src);
     srcstepy = src->pitch;
     dststepy = dst->pitch;
 
@@ -946,7 +955,7 @@ chop(SDL_Surface *src, int x, int y, int width, int height)
             srcpix = srcrow;
             for (loopx = 0; loopx < src->w; loopx++) {
                 if ((loopx < x) || (loopx >= (x + width))) {
-                    switch (src->format->BytesPerPixel) {
+                    switch (PG_SURF_BytesPerPixel(src)) {
                         case 1:
                             *dstpix = *srcpix;
                             break;
@@ -1221,42 +1230,51 @@ smoothscale_init(struct _module_state *st)
         return;
     }
 
-#ifdef SCALE_MMX_SUPPORT
+#if !defined(__EMSCRIPTEN__)
+#if PG_ENABLE_SSE_NEON
     if (SDL_HasSSE2()) {
         st->filter_type = "SSE2";
         st->filter_shrink_X = filter_shrink_X_SSE2;
         st->filter_shrink_Y = filter_shrink_Y_SSE2;
         st->filter_expand_X = filter_expand_X_SSE2;
         st->filter_expand_Y = filter_expand_Y_SSE2;
+        return;
     }
-    else if (SDL_HasSSE()) {
+    if (SDL_HasNEON()) {
+        st->filter_type = "NEON";
+        st->filter_shrink_X = filter_shrink_X_SSE2;
+        st->filter_shrink_Y = filter_shrink_Y_SSE2;
+        st->filter_expand_X = filter_expand_X_SSE2;
+        st->filter_expand_Y = filter_expand_Y_SSE2;
+        return;
+    }
+#endif /* PG_ENABLE_SSE_NEON */
+#endif /* !__EMSCRIPTEN__ */
+#ifdef SCALE_MMX_SUPPORT
+    if (SDL_HasSSE()) {
         st->filter_type = "SSE";
         st->filter_shrink_X = filter_shrink_X_SSE;
         st->filter_shrink_Y = filter_shrink_Y_SSE;
         st->filter_expand_X = filter_expand_X_SSE;
         st->filter_expand_Y = filter_expand_Y_SSE;
+        return;
     }
-    else if (SDL_HasMMX()) {
+    if (SDL_HasMMX()) {
         st->filter_type = "MMX";
         st->filter_shrink_X = filter_shrink_X_MMX;
         st->filter_shrink_Y = filter_shrink_Y_MMX;
         st->filter_expand_X = filter_expand_X_MMX;
         st->filter_expand_Y = filter_expand_Y_MMX;
+        return;
     }
-    else {
-        st->filter_type = "GENERIC";
-        st->filter_shrink_X = filter_shrink_X_ONLYC;
-        st->filter_shrink_Y = filter_shrink_Y_ONLYC;
-        st->filter_expand_X = filter_expand_X_ONLYC;
-        st->filter_expand_Y = filter_expand_Y_ONLYC;
-    }
-#else  /* ~SCALE_MMX_SUPPORT */
+#endif /* ~SCALE_MMX_SUPPORT */
+
+    /* If no accelerated options were selected, falls through to generic */
     st->filter_type = "GENERIC";
     st->filter_shrink_X = filter_shrink_X_ONLYC;
     st->filter_shrink_Y = filter_shrink_Y_ONLYC;
     st->filter_expand_X = filter_expand_X_ONLYC;
     st->filter_expand_Y = filter_expand_Y_ONLYC;
-#endif /* ~SCALE_MMX_SUPPORT */
 }
 
 static void
@@ -1313,7 +1331,7 @@ scalesmooth(SDL_Surface *src, SDL_Surface *dst, struct _module_state *st)
     int dstwidth = dst->w;
     int dstheight = dst->h;
 
-    int bpp = src->format->BytesPerPixel;
+    int bpp = PG_SURF_BytesPerPixel(src);
 
     Uint8 *temppix = NULL;
     int tempwidth = 0, temppitch = 0;
@@ -1418,7 +1436,7 @@ smoothscale_to(PyObject *self, pgSurfaceObject *srcobj,
 
     src = pgSurface_AsSurface(srcobj);
 
-    bpp = src->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(src);
     if (bpp < 3 || bpp > 4)
         return (SDL_Surface *)(RAISE(
             PyExc_ValueError,
@@ -1563,7 +1581,6 @@ surf_set_smoothscale_backend(PyObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", keywords, &type))
         return NULL;
 
-#if defined(SCALE_MMX_SUPPORT)
     if (strcmp(type, "GENERIC") == 0) {
         st->filter_type = "GENERIC";
         st->filter_shrink_X = filter_shrink_X_ONLYC;
@@ -1571,10 +1588,17 @@ surf_set_smoothscale_backend(PyObject *self, PyObject *args, PyObject *kwargs)
         st->filter_expand_X = filter_expand_X_ONLYC;
         st->filter_expand_Y = filter_expand_Y_ONLYC;
     }
+#if defined(SCALE_MMX_SUPPORT)
     else if (strcmp(type, "MMX") == 0) {
         if (!SDL_HasMMX()) {
             return RAISE(PyExc_ValueError,
                          "MMX not supported on this machine");
+        }
+        if (PyErr_WarnEx(
+                PyExc_DeprecationWarning,
+                "MMX backend is deprecated in favor of new SSE2 backend",
+                1) == -1) {
+            return NULL;
         }
         st->filter_type = "MMX";
         st->filter_shrink_X = filter_shrink_X_MMX;
@@ -1587,12 +1611,27 @@ surf_set_smoothscale_backend(PyObject *self, PyObject *args, PyObject *kwargs)
             return RAISE(PyExc_ValueError,
                          "SSE not supported on this machine");
         }
+        if (PyErr_WarnEx(
+                PyExc_DeprecationWarning,
+                "SSE backend is deprecated in favor of new SSE2 backend",
+                1) == -1) {
+            return NULL;
+        }
         st->filter_type = "SSE";
         st->filter_shrink_X = filter_shrink_X_SSE;
         st->filter_shrink_Y = filter_shrink_Y_SSE;
         st->filter_expand_X = filter_expand_X_SSE;
         st->filter_expand_Y = filter_expand_Y_SSE;
     }
+#else
+    else if (strcmp(st->filter_type, "MMX") == 0 ||
+             strcmp(st->filter_type, "SSE") == 0) {
+        return PyErr_Format(PyExc_ValueError,
+                            "%s not supported on this machine", type);
+    }
+#endif /* ~defined(SCALE_MMX_SUPPORT) */
+#if !defined(__EMSCRIPTEN__)
+#if PG_ENABLE_SSE_NEON
     else if (strcmp(type, "SSE2") == 0) {
         if (!SDL_HasSSE2()) {
             return RAISE(PyExc_ValueError,
@@ -1604,22 +1643,24 @@ surf_set_smoothscale_backend(PyObject *self, PyObject *args, PyObject *kwargs)
         st->filter_expand_X = filter_expand_X_SSE2;
         st->filter_expand_Y = filter_expand_Y_SSE2;
     }
+
+    else if (strcmp(type, "NEON") == 0) {
+        if (!SDL_HasNEON()) {
+            return RAISE(PyExc_ValueError,
+                         "NEON not supported on this machine");
+        }
+        st->filter_type = "NEON";
+        st->filter_shrink_X = filter_shrink_X_SSE2;
+        st->filter_shrink_Y = filter_shrink_Y_SSE2;
+        st->filter_expand_X = filter_expand_X_SSE2;
+        st->filter_expand_Y = filter_expand_Y_SSE2;
+    }
+#endif /* PG_ENABLE_SSE_NEON */
+#endif /* !__EMSCRIPTEN__ */
     else {
         return PyErr_Format(PyExc_ValueError, "Unknown backend type %s", type);
     }
     Py_RETURN_NONE;
-#else  /* Not an x86 processor */
-    if (strcmp(type, "GENERIC") != 0) {
-        if (strcmp(st->filter_type, "MMX") == 0 ||
-            strcmp(st->filter_type, "SSE") == 0 ||
-            strcmp(st->filter_type, "SSE2") == 0) {
-            return PyErr_Format(PyExc_ValueError,
-                                "%s not supported on this machine", type);
-        }
-        return PyErr_Format(PyExc_ValueError, "Unknown backend type %s", type);
-    }
-    Py_RETURN_NONE;
-#endif /* defined(SCALE_MMX_SUPPORT) */
 }
 
 /* _get_color_move_pixels is for iterating over pixels in a Surface.
@@ -1670,7 +1711,7 @@ _set_at_pixels(int x, int y, Uint8 *pixels, SDL_PixelFormat *format,
 {
     Uint8 *byte_buf;
 
-    switch (format->BytesPerPixel) {
+    switch (PG_FORMAT_BytesPerPixel(format)) {
         case 1:
             *((Uint8 *)pixels + y * surf_pitch + x) = (Uint8)the_color;
             break;
@@ -1733,14 +1774,14 @@ get_threshold(SDL_Surface *dest_surf, SDL_Surface *surf,
             pixels2 = (Uint8 *)search_surf->pixels + y * search_surf->pitch;
 
         for (x = 0; x < surf->w; x++) {
-            pixels = _get_color_move_pixels(surf->format->BytesPerPixel,
+            pixels = _get_color_move_pixels(PG_SURF_BytesPerPixel(surf),
                                             pixels, &the_color);
             SDL_GetRGB(the_color, surf->format, &surf_r, &surf_g, &surf_b);
 
             if (search_surf) {
                 /* Get search_surf.color */
                 pixels2 = _get_color_move_pixels(
-                    search_surf->format->BytesPerPixel, pixels2, &the_color2);
+                    PG_SURF_BytesPerPixel(search_surf), pixels2, &the_color2);
                 SDL_GetRGB(the_color2, search_surf->format, &search_surf_r,
                            &search_surf_g, &search_surf_b);
 
@@ -1976,7 +2017,7 @@ clamp_4
 */
 
 #define SURF_GET_AT(p_color, p_surf, p_x, p_y, p_pixels, p_format, p_pix)    \
-    switch (p_format->BytesPerPixel) {                                       \
+    switch (PG_FORMAT_BytesPerPixel(p_format)) {                             \
         case 1:                                                              \
             p_color = (Uint32) *                                             \
                       ((Uint8 *)(p_pixels) + (p_y) * p_surf->pitch + (p_x)); \
@@ -2003,7 +2044,7 @@ clamp_4
 
 #define SURF_SET_AT(p_color, p_surf, p_x, p_y, p_pixels, p_format,       \
                     p_byte_buf)                                          \
-    switch (p_format->BytesPerPixel) {                                   \
+    switch (PG_FORMAT_BytesPerPixel(p_format)) {                         \
         case 1:                                                          \
             *((Uint8 *)p_pixels + (p_y) * p_surf->pitch + (p_x)) =       \
                 (Uint8)p_color;                                          \
@@ -2032,7 +2073,7 @@ clamp_4
 
 #define SURF_SET_AT(p_color, p_surf, p_x, p_y, p_pixels, p_format,       \
                     p_byte_buf)                                          \
-    switch (p_format->BytesPerPixel) {                                   \
+    switch (PG_FORMAT_BytesPerPixel(p_format)) {                         \
         case 1:                                                          \
             *((Uint8 *)p_pixels + (p_y) * p_surf->pitch + (p_x)) =       \
                 (Uint8)p_color;                                          \
@@ -2059,6 +2100,36 @@ clamp_4
 
 #endif
 
+void
+grayscale_non_simd(SDL_Surface *src, SDL_Surface *newsurf)
+{
+    int x, y;
+    for (y = 0; y < src->h; y++) {
+        for (x = 0; x < src->w; x++) {
+            Uint32 pixel;
+            Uint8 *pix;
+            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format,
+                        pix);
+            Uint8 r, g, b, a;
+            SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
+
+            /* RGBA to GRAY formula used by OpenCV
+             * We are using a bitshift and integer addition to align the
+             * calculation with what is fastest for SIMD operations.
+             * Results are almost identical to floating point multiplication.
+             */
+            Uint8 grayscale_pixel =
+                (Uint8)((((76 * r) + 255) >> 8) + (((150 * g) + 255) >> 8) +
+                        (((29 * b) + 255) >> 8));
+            Uint32 new_pixel =
+                SDL_MapRGBA(newsurf->format, grayscale_pixel, grayscale_pixel,
+                            grayscale_pixel, a);
+            SURF_SET_AT(new_pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
+                        newsurf->format, pix);
+        }
+    }
+}
+
 SDL_Surface *
 grayscale(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
 {
@@ -2080,31 +2151,35 @@ grayscale(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
             "Destination surface must be the same size as source surface."));
     }
 
-    if (src->format->BytesPerPixel != newsurf->format->BytesPerPixel) {
+    if (PG_SURF_BytesPerPixel(src) != PG_SURF_BytesPerPixel(newsurf)) {
         return (SDL_Surface *)(RAISE(
             PyExc_ValueError,
             "Source and destination surfaces need the same format."));
     }
-
-    int x, y;
-    for (y = 0; y < src->h; y++) {
-        for (x = 0; x < src->w; x++) {
-            Uint32 pixel;
-            Uint8 *pix;
-            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format,
-                        pix);
-            Uint8 r, g, b, a;
-            SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
-
-            // RGBA to GRAY formula used by OpenCV
-            Uint8 grayscale_pixel = (Uint8)(0.299 * r + 0.587 * g + 0.114 * b);
-            Uint32 new_pixel =
-                SDL_MapRGBA(newsurf->format, grayscale_pixel, grayscale_pixel,
-                            grayscale_pixel, a);
-            SURF_SET_AT(new_pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
-                        newsurf->format, pix);
+#if defined(__EMSCRIPTEN__)
+    grayscale_non_simd(src, newsurf);
+#else  // !defined(__EMSCRIPTEN__)
+    if (PG_SURF_BytesPerPixel(src) == 4 &&
+        src->format->Rmask == newsurf->format->Rmask &&
+        src->format->Gmask == newsurf->format->Gmask &&
+        src->format->Bmask == newsurf->format->Bmask &&
+        (src->pitch % 4 == 0) && (newsurf->pitch == (newsurf->w * 4))) {
+        if (pg_has_avx2()) {
+            grayscale_avx2(src, newsurf);
+        }
+#if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
+        else if (pg_HasSSE_NEON()) {
+            grayscale_sse2(src, newsurf);
+        }
+#endif  // defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
+        else {
+            grayscale_non_simd(src, newsurf);
         }
     }
+    else {
+        grayscale_non_simd(src, newsurf);
+    }
+#endif  // !defined(__EMSCRIPTEN__)
 
     SDL_UnlockSurface(newsurf);
 
@@ -2300,7 +2375,7 @@ laplacian(SDL_Surface *surf, SDL_Surface *destsurf)
 
             // set_at(destsurf, color, x,y);
 
-            switch (destformat->BytesPerPixel) {
+            switch (PG_FORMAT_BytesPerPixel(destformat)) {
                 case 1:
                     *((Uint8 *)destpixels + y * destsurf->pitch + x) =
                         (Uint8)the_color;
@@ -2373,7 +2448,7 @@ surf_laplacian(PyObject *self, PyObject *args, PyObject *kwargs)
                      "Destination surface not the same size.");
 
     /* check to see if the format of the surface is the same. */
-    if (surf->format->BytesPerPixel != newsurf->format->BytesPerPixel)
+    if (PG_SURF_BytesPerPixel(surf) != PG_SURF_BytesPerPixel(newsurf))
         return RAISE(PyExc_ValueError,
                      "Source and destination surfaces need the same format.");
 
@@ -2406,7 +2481,7 @@ average_surfaces(SDL_Surface **surfaces, size_t num_surfaces,
 
         palette_colors - if true we average the colors in palette, otherwise we
             average the pixel values.  This is useful if the surface is
-            actually greyscale colors, and not palette colors.
+            actually grayscale colors, and not palette colors.
 
     */
 
@@ -2443,7 +2518,7 @@ average_surfaces(SDL_Surface **surfaces, size_t num_surfaces,
     If we're using 1 byte per pixel, then only need to average on that much.
     */
 
-    if ((destformat->BytesPerPixel == 1) && (destformat->palette) &&
+    if ((PG_FORMAT_BytesPerPixel(destformat) == 1) && (destformat->palette) &&
         (!palette_colors)) {
         num_elements = 1;
     }
@@ -2478,10 +2553,11 @@ average_surfaces(SDL_Surface **surfaces, size_t num_surfaces,
         the_idx = accumulate;
         /* If palette surface, we use a different code path... */
 
-        if ((format->BytesPerPixel == 1 && destformat->BytesPerPixel == 1) &&
+        if ((PG_FORMAT_BytesPerPixel(format) == 1 &&
+             PG_FORMAT_BytesPerPixel(destformat) == 1) &&
             (format->palette) && (destformat->palette) && (!palette_colors)) {
             /*
-            This is useful if the surface is actually greyscale colors,
+            This is useful if the surface is actually grayscale colors,
             and not palette colors.
             */
             for (y = 0; y < height; y++) {
@@ -2573,7 +2649,7 @@ average_surfaces(SDL_Surface **surfaces, size_t num_surfaces,
 
     palette_colors - if true we average the colors in palette, otherwise we
         average the pixel values.  This is useful if the surface is
-        actually greyscale colors, and not palette colors.
+        actually grayscale colors, and not palette colors.
 
 */
 static PyObject *
@@ -2675,8 +2751,8 @@ surf_average_surfaces(PyObject *self, PyObject *args, PyObject *kwargs)
             }
 
             /* check to see if the format of the surface is the same. */
-            if (surf->format->BytesPerPixel !=
-                newsurf->format->BytesPerPixel) {
+            if (PG_SURF_BytesPerPixel(surf) !=
+                PG_SURF_BytesPerPixel(newsurf)) {
                 Py_XDECREF(obj);
                 ret = RAISE(
                     PyExc_ValueError,
@@ -2792,7 +2868,7 @@ average_color(SDL_Surface *surf, int x, int y, int width, int height, Uint8 *r,
     height_and_y = height + y;
 
     if (consider_alpha) {
-        switch (format->BytesPerPixel) {
+        switch (PG_FORMAT_BytesPerPixel(format)) {
             case 1: {
                 Uint8 color8;
                 for (row = y; row < height_and_y; row++) {
@@ -2876,7 +2952,7 @@ average_color(SDL_Surface *surf, int x, int y, int width, int height, Uint8 *r,
         *b = btot / size;
     }
     else {
-        switch (format->BytesPerPixel) {
+        switch (PG_FORMAT_BytesPerPixel(format)) {
             case 1: {
                 Uint8 color8;
                 for (row = y; row < height_and_y; row++) {
@@ -3004,7 +3080,7 @@ box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
 
     Uint8 *srcpx = (Uint8 *)src->pixels;
     Uint8 *dstpx = (Uint8 *)dst->pixels;
-    Uint8 nb = src->format->BytesPerPixel;
+    Uint8 nb = PG_SURF_BytesPerPixel(src);
     int w = dst->w, h = dst->h;
     int dst_pitch = dst->pitch;
     int src_pitch = src->pitch;
@@ -3086,7 +3162,7 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int sigma, SDL_bool repeat)
 {
     Uint8 *srcpx = (Uint8 *)src->pixels;
     Uint8 *dstpx = (Uint8 *)dst->pixels;
-    Uint8 nb = src->format->BytesPerPixel;
+    Uint8 nb = PG_SURF_BytesPerPixel(src);
     int w = dst->w, h = dst->h;
     int dst_pitch = dst->pitch;
     int src_pitch = src->pitch;
@@ -3190,6 +3266,15 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
         retsurf = pgSurface_AsSurface(dstobj);
     }
 
+    if ((retsurf->w) != (src->w) || (retsurf->h) != (src->h)) {
+        return RAISE(PyExc_ValueError,
+                     "Destination surface not the same size.");
+    }
+
+    if (retsurf->w == 0 || retsurf->h == 0) {
+        return retsurf;
+    }
+
     Uint8 *ret_start = retsurf->pixels;
     Uint8 *ret_end = ret_start + retsurf->h * retsurf->pitch;
     Uint8 *src_start = src->pixels;
@@ -3203,12 +3288,7 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
             "of them is a subsurface, or they are sharing the same buffer.");
     }
 
-    if ((retsurf->w) != (src->w) || (retsurf->h) != (src->h)) {
-        return RAISE(PyExc_ValueError,
-                     "Destination surface not the same size.");
-    }
-
-    if (src->format->BytesPerPixel != retsurf->format->BytesPerPixel) {
+    if (PG_SURF_BytesPerPixel(src) != PG_SURF_BytesPerPixel(retsurf)) {
         return (SDL_Surface *)(RAISE(
             PyExc_ValueError,
             "Source and destination surfaces need the same format."));
@@ -3302,6 +3382,25 @@ surf_gaussian_blur(PyObject *self, PyObject *args, PyObject *kwargs)
     return (PyObject *)pgSurface_New(new_surf);
 }
 
+void
+invert_non_simd(SDL_Surface *src, SDL_Surface *newsurf)
+{
+    int x, y;
+    for (y = 0; y < src->h; y++) {
+        for (x = 0; x < src->w; x++) {
+            Uint32 pixel;
+            Uint8 *pix;
+            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format,
+                        pix);
+            unsigned char r, g, b, a;
+            SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
+            Uint32 new_pixel = SDL_MapRGBA(newsurf->format, ~r, ~g, ~b, a);
+            SURF_SET_AT(new_pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
+                        newsurf->format, pix);
+        }
+    }
+}
+
 SDL_Surface *
 invert(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
 {
@@ -3323,26 +3422,35 @@ invert(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj)
             "Destination surface must be the same size as source surface."));
     }
 
-    if (src->format->BytesPerPixel != newsurf->format->BytesPerPixel) {
+    if (PG_SURF_BytesPerPixel(src) != PG_SURF_BytesPerPixel(newsurf)) {
         return (SDL_Surface *)(RAISE(
             PyExc_ValueError,
             "Source and destination surfaces need the same format."));
     }
-
-    int x, y;
-    for (y = 0; y < src->h; y++) {
-        for (x = 0; x < src->w; x++) {
-            Uint32 pixel;
-            Uint8 *pix;
-            SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels, src->format,
-                        pix);
-            unsigned char r, g, b, a;
-            SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
-            Uint32 new_pixel = SDL_MapRGBA(newsurf->format, ~r, ~g, ~b, a);
-            SURF_SET_AT(new_pixel, newsurf, x, y, (Uint8 *)newsurf->pixels,
-                        newsurf->format, pix);
+#if defined(__EMSCRIPTEN__)
+    invert_non_simd(src, newsurf);
+#else  // !defined(__EMSCRIPTEN__)
+    if (PG_SURF_BytesPerPixel(src) == 4 &&
+        src->format->Rmask == newsurf->format->Rmask &&
+        src->format->Gmask == newsurf->format->Gmask &&
+        src->format->Bmask == newsurf->format->Bmask &&
+        (src->pitch % 4 == 0) && (newsurf->pitch == (newsurf->w * 4))) {
+        if (pg_has_avx2()) {
+            invert_avx2(src, newsurf);
+        }
+#if defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
+        else if (pg_HasSSE_NEON()) {
+            invert_sse2(src, newsurf);
+        }
+#endif  // defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)
+        else {
+            invert_non_simd(src, newsurf);
         }
     }
+    else {
+        invert_non_simd(src, newsurf);
+    }
+#endif  // !defined(__EMSCRIPTEN__)
 
     SDL_UnlockSurface(newsurf);
 

@@ -106,7 +106,7 @@ object instead of the module, which can be used to test for availability.
 .. function:: set_error
 
    | :sl:`set the current error message`
-   | :sg:`set_error(error_msg) -> None`
+   | :sg:`set_error(error_msg, /) -> None`
 
    SDL maintains an internal error message. This message will usually be
    given to you when :func:`pygame.error` is raised, so this function will
@@ -147,7 +147,7 @@ object instead of the module, which can be used to test for availability.
 .. function:: register_quit
 
    | :sl:`register a function to be called when pygame quits`
-   | :sg:`register_quit(callable) -> None`
+   | :sg:`register_quit(callable, /) -> None`
 
    When :func:`pygame.quit` is called, all registered quit functions are
    called. Pygame modules do this automatically when they are initializing, so
@@ -401,7 +401,7 @@ available. Must be set before calling :func:`pygame.display.set_mode()`.
 This makes pygame use the SDL2 blitter for all alpha
 blending. The SDL2 blitter is sometimes faster than
 the default blitter but uses a different formula so
-the final colours may differ. Must be set before
+the final colors may differ. Must be set before
 :func:`pygame.init()` is called.
 
 |

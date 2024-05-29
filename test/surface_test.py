@@ -554,8 +554,8 @@ class SurfaceTypeTest(unittest.TestCase):
         self.assertEqual(s1.get_flags(), pygame.SRCALPHA)
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        'requires a non-"dummy" SDL_VIDEODRIVER',
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires a non-null SDL_VIDEODRIVER",
     )
     def test_get_flags__display_surf(self):
         pygame.display.init()
@@ -673,6 +673,18 @@ class SurfaceTypeTest(unittest.TestCase):
                 self.assertEqual(s.get_width(), w)
                 self.assertEqual(s.get_height(), h)
                 self.assertEqual(s.get_size(), (w, h))
+
+    def test_attributes(self):
+        """Test width, height, and size attributes of surface"""
+        s = pygame.Surface((100, 50))
+        self.assertEqual(s.width, 100)
+        self.assertEqual(s.height, 50)
+        self.assertEqual(s.size, (100, 50))
+
+        attrs = ["width", "height", "size"]
+        for attr in attrs:
+            with self.assertRaises(AttributeError):
+                setattr(s, attr, 200)
 
     def test_get_view(self):
         """Ensure a buffer view of the surface's pixels can be retrieved."""
@@ -1194,8 +1206,8 @@ class TestSurfaceBlit(unittest.TestCase):
 
 class GeneralSurfaceTests(unittest.TestCase):
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        'requires a non-"dummy" SDL_VIDEODRIVER',
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires a non-null SDL_VIDEODRIVER",
     )
     def test_image_convert_bug_131(self):
         # bug #146: Unable to Surface.convert(32) some 1-bit images.
@@ -1203,8 +1215,6 @@ class GeneralSurfaceTests(unittest.TestCase):
 
         pygame.display.init()
         try:
-            pygame.display.set_mode((640, 480))
-
             im = pygame.image.load(example_path(os.path.join("data", "city.png")))
             im2 = pygame.image.load(example_path(os.path.join("data", "brick.png")))
 
@@ -1234,19 +1244,19 @@ class GeneralSurfaceTests(unittest.TestCase):
         filename = example_path(os.path.join("data", "alien3.png"))  # 8bit PNG
         surf8bit = pygame.image.load(filename)
 
-        self.assertRaisesRegex(pygame.error, "display initialized", surf.convert)
+        self.assertRaisesRegex(pygame.error, "display is not initialized", surf.convert)
 
         pygame.display.init()
         try:
-            if os.environ.get("SDL_VIDEODRIVER") != "dummy":
+            if os.environ.get("SDL_VIDEODRIVER") != pygame.NULL_VIDEODRIVER:
                 try:
                     surf.convert(32)
                     surf.convert(pygame.Surface((1, 1)))
                 except pygame.error:
                     self.fail("convert() should not raise an exception here.")
 
-            self.assertRaisesRegex(pygame.error, "No video mode", surf.convert)
-            self.assertRaisesRegex(pygame.error, "No video mode", surf8bit.convert)
+            self.assertRaisesRegex(pygame.error, "No convert format", surf.convert)
+            self.assertRaisesRegex(pygame.error, "No convert format", surf8bit.convert)
 
             pygame.display.set_mode((640, 480))
             try:
@@ -1266,7 +1276,9 @@ class GeneralSurfaceTests(unittest.TestCase):
 
         pygame.display.init()
         try:
-            self.assertRaisesRegex(pygame.error, "No video mode", surf.convert_alpha)
+            self.assertRaisesRegex(
+                pygame.error, "No convert format", surf.convert_alpha
+            )
 
             pygame.display.set_mode((640, 480))
             try:
@@ -1294,8 +1306,6 @@ class GeneralSurfaceTests(unittest.TestCase):
     def test_convert_palettize(self):
         pygame.display.init()
         try:
-            pygame.display.set_mode((640, 480))
-
             surf = pygame.Surface((150, 250))
             surf.fill((255, 50, 0))
             surf = surf.convert(8)
@@ -2642,7 +2652,7 @@ class GeneralSurfaceTests(unittest.TestCase):
         # Confirm it is a Color instance
         self.assertIsInstance(unmapped_c, pygame.Color)
 
-        # Remaining, non-pallete, cases.
+        # Remaining, non-palette, cases.
         c = (128, 64, 12, 255)
         formats = [(0, 16), (0, 24), (0, 32), (SRCALPHA, 16), (SRCALPHA, 32)]
         for flags, bitsize in formats:
@@ -2999,7 +3009,6 @@ class SurfaceGetBufferTest(unittest.TestCase):
                 s = pygame.Surface((4, 2), 0, 32)
                 self._check_interface_rgba(s, plane)
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     def test_newbuf_PyBUF_flags_bytes(self):
         from pygame.tests.test_utils import buftools
 
@@ -3059,7 +3068,6 @@ class SurfaceGetBufferTest(unittest.TestCase):
         self.assertEqual(b.ndim, 1)
         self.assertEqual(b.strides, (1,))
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     def test_newbuf_PyBUF_flags_0D(self):
         # This is the same handler as used by get_buffer(), so just
         # confirm that it succeeds for one case.
@@ -3079,7 +3087,6 @@ class SurfaceGetBufferTest(unittest.TestCase):
         self.assertFalse(b.readonly)
         self.assertEqual(b.buf, s._pixels_address)
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     def test_newbuf_PyBUF_flags_1D(self):
         from pygame.tests.test_utils import buftools
 
@@ -3118,7 +3125,6 @@ class SurfaceGetBufferTest(unittest.TestCase):
         self.assertTrue(b.format is None)
         self.assertEqual(b.strides, (s.get_bytesize(),))
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     def test_newbuf_PyBUF_flags_2D(self):
         from pygame.tests.test_utils import buftools
 
@@ -3189,7 +3195,6 @@ class SurfaceGetBufferTest(unittest.TestCase):
         self.assertRaises(BufferError, Importer, a, buftools.PyBUF_F_CONTIGUOUS)
         self.assertRaises(BufferError, Importer, a, buftools.PyBUF_ANY_CONTIGUOUS)
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     def test_newbuf_PyBUF_flags_3D(self):
         from pygame.tests.test_utils import buftools
 
@@ -3240,7 +3245,6 @@ class SurfaceGetBufferTest(unittest.TestCase):
         self.assertRaises(BufferError, Importer, a, buftools.PyBUF_F_CONTIGUOUS)
         self.assertRaises(BufferError, Importer, a, buftools.PyBUF_ANY_CONTIGUOUS)
 
-    @unittest.skipIf(not pygame.HAVE_NEWBUF, "newbuf not implemented")
     def test_newbuf_PyBUF_flags_rgba(self):
         # All color plane views are handled by the same routine,
         # so only one plane need be checked.
@@ -3596,7 +3600,7 @@ class SurfaceBlendTest(unittest.TestCase):
 
             return (expected_col, actual_col)
 
-        # # Colour Tests
+        # # Color Tests
         self.assertEqual(
             *test_premul_surf(pygame.Color(40, 20, 0, 51), pygame.Color(40, 20, 0, 51))
         )
@@ -3966,7 +3970,7 @@ class SurfaceBlendTest(unittest.TestCase):
         s1_alpha = s1.premul_alpha()
         self.assertEqual(s1_alpha.get_at((50, 50)), pygame.Color(100, 100, 100, 100))
 
-        # 16-bit colour has less precision
+        # 16-bit color has less precision
         s2 = pygame.Surface((100, 100), pygame.SRCALPHA, 16)
         s2.fill(
             pygame.Color(

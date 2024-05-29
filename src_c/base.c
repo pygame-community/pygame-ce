@@ -353,7 +353,7 @@ pg_init(PyObject *self, PyObject *_null)
     }
 
     pg_is_init = 1;
-    return Py_BuildValue("(ii)", success, fail);
+    return pg_tuple_couple_from_values_int(success, fail);
 }
 
 static void
@@ -1148,12 +1148,9 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
     flags |= PyBUF_PYGAME;
 #endif
 
-    if (PyObject_CheckBuffer(obj)) {
+    if (PyObject_GetBuffer(obj, view_p, flags) == 0) {
         char *fchar_p;
 
-        if (PyObject_GetBuffer(obj, view_p, flags)) {
-            return -1;
-        }
         pg_view_p->release_buffer = PyBuffer_Release;
 
         /* Check the format is a numeric type or pad bytes
@@ -1224,6 +1221,9 @@ pgObject_GetBuffer(PyObject *obj, pg_buffer *pg_view_p, int flags)
             return -1;
         }
         success = 1;
+    }
+    else {
+        PyErr_Clear();
     }
 
     if (!success && pgGetArrayStruct(obj, &cobj, &inter_p) == 0) {
@@ -2057,6 +2057,27 @@ pg_SetDefaultWindowSurface(pgSurfaceObject *screen)
     pg_default_screen = screen;
 }
 
+SDL_PixelFormat *pg_default_convert_format = NULL;
+
+static SDL_PixelFormat *
+pg_GetDefaultConvertFormat(void)
+{
+    if (pg_default_screen) {
+        return pg_default_screen->surf->format;
+    }
+    return pg_default_convert_format;
+}
+
+static SDL_PixelFormat *
+pg_SetDefaultConvertFormat(Uint32 format)
+{
+    if (pg_default_convert_format != NULL) {
+        SDL_FreeFormat(pg_default_convert_format);
+    }
+    pg_default_convert_format = SDL_AllocFormat(format);
+    return pg_default_convert_format;  // returns for NULL error checking
+}
+
 static char *
 pg_EnvShouldBlendAlphaSDL2(void)
 {
@@ -2273,8 +2294,10 @@ MODINIT_DEFINE(base)
     c_api[24] = pg_DoubleFromObj;
     c_api[25] = pg_TwoDoublesFromObj;
     c_api[26] = pg_TwoDoublesFromFastcallArgs;
+    c_api[27] = pg_GetDefaultConvertFormat;
+    c_api[28] = pg_SetDefaultConvertFormat;
 
-#define FILLED_SLOTS 27
+#define FILLED_SLOTS 29
 
 #if PYGAMEAPI_BASE_NUMSLOTS != FILLED_SLOTS
 #error export slot count mismatch

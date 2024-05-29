@@ -2,7 +2,7 @@ import unittest
 import pygame
 import os
 
-from pygame._sdl2.video import Window
+from pygame import Window
 from pygame.version import SDL
 
 pygame.init()
@@ -16,7 +16,7 @@ class WindowTypeTest(unittest.TestCase):
 
     # Used to check the presence and set-ability of boolean attributes without
     # testing the results of the actions, since the results are not propagated
-    # by the dummy videodriver on CI for some things.
+    # by the NULL videodriver on CI for some things.
     def bool_attr_test(self, attr):
         setattr(self.win, attr, True)
         setattr(self.win, attr, False)
@@ -61,8 +61,8 @@ class WindowTypeTest(unittest.TestCase):
         self.bool_attr_test("resizable")
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     def test_resizable_set(self):
         self.win.resizable = True
@@ -74,8 +74,8 @@ class WindowTypeTest(unittest.TestCase):
         self.bool_attr_test("borderless")
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     def test_borderless_set(self):
         self.win.borderless = True
@@ -91,8 +91,8 @@ class WindowTypeTest(unittest.TestCase):
         self.bool_attr_test("always_on_top")
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     @unittest.skipIf(
         SDL < (2, 0, 16),
@@ -103,6 +103,26 @@ class WindowTypeTest(unittest.TestCase):
         self.assertTrue(self.win.always_on_top)
         self.win.always_on_top = False
         self.assertFalse(self.win.always_on_top)
+
+    @unittest.skipIf(
+        SDL < (2, 0, 18),
+        "requires SDL 2.0.18+",
+    )
+    def test_mouse_rect(self):
+        self.win.mouse_rect = None
+        self.assertIsNone(self.win.mouse_rect)
+
+        TEST_MOUSE_RECT = (10, 10, 123, 456)
+        self.win.mouse_rect = TEST_MOUSE_RECT
+        self.assertIsInstance(self.win.mouse_rect, pygame.Rect)
+        self.assertTupleEqual(tuple(self.win.mouse_rect), TEST_MOUSE_RECT)
+
+        self.assertRaises(
+            TypeError, lambda: setattr(self.win, "mouse_rect", "Incorrect type")
+        )
+
+        # clean the status
+        self.win.mouse_rect = None
 
     def test_size(self):
         self.win.size = (1280, 720)
@@ -165,7 +185,7 @@ class WindowTypeTest(unittest.TestCase):
             ValueError, lambda: setattr(self.win, "maximum_size", (-1, -1))
         )
         self.assertRaises(
-            TypeError, lambda: setattr(self.win, "maximum_size", "dummy_str")
+            TypeError, lambda: setattr(self.win, "maximum_size", "placeholder_str")
         )
 
     def test_minimum_size(self):
@@ -192,7 +212,7 @@ class WindowTypeTest(unittest.TestCase):
             ValueError, lambda: setattr(self.win, "minimum_size", (-1, -1))
         )
         self.assertRaises(
-            TypeError, lambda: setattr(self.win, "minimum_size", "dummy_str")
+            TypeError, lambda: setattr(self.win, "minimum_size", "null_str")
         )
 
     def test_min_size_interact_with_max_size(self):
@@ -211,7 +231,7 @@ class WindowTypeTest(unittest.TestCase):
             ValueError, lambda: setattr(self.win, "maximum_size", (50, 50))
         )
 
-        # minimum size should be able to equal to maxium size
+        # minimum size should be able to equal to maximum size
         # This test fails in SDL <= 2.0.12
         # have been fixed after SDL 2.0.18
         if SDL >= (2, 0, 18):
@@ -221,14 +241,14 @@ class WindowTypeTest(unittest.TestCase):
             self.assertTupleEqual(self.win.minimum_size, (60, 60))
 
     def test_opacity(self):
-        # Setting is not supported at all with SDL_VIDEODRIVER = dummy,
+        # Setting is not supported at all with SDL_VIDEODRIVER = pygame.NULL_VIDEODRIVER,
         # all we can test here is that the attribute exists and is a
         # float
         self.assertIsInstance(self.win.opacity, float)
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER") == "dummy",
-        "requires the SDL_VIDEODRIVER to be a non dummy value",
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     def test_opacity_set(self):
         self.win.opacity = 0.5
@@ -242,9 +262,14 @@ class WindowTypeTest(unittest.TestCase):
         self.win.opacity = 1.1
         self.assertEqual(self.win.opacity, 1)
 
-        self.assertRaises(TypeError, lambda: setattr(self.win, "opacity", "dummy str"))
+        self.assertRaises(TypeError, lambda: setattr(self.win, "opacity", "null str"))
 
     def test_init_flags(self):
+        # test no opengl by default
+        win = Window()
+        self.assertFalse(win.opengl)
+        win.destroy()
+
         # test borderless
         win = Window(borderless=True)
         self.assertTrue(win.borderless)
@@ -295,7 +320,80 @@ class WindowTypeTest(unittest.TestCase):
         win2 = Window.from_display_module()
 
         self.assertIs(win1, win2)
+        self.assertFalse(win1.opengl)
 
+        pygame.display.quit()
+        pygame.init()
+
+    def test_window_surface(self):
+        win = Window(size=(640, 480))
+        surf = win.get_surface()
+
+        self.assertIsInstance(surf, pygame.Surface)
+
+        # test auto resize
+        self.assertTupleEqual(win.size, surf.get_size())
+        win.size = (100, 100)
+        self.assertTupleEqual(win.size, surf.get_size())
+        win.size = (1280, 720)
+        self.assertTupleEqual(win.size, surf.get_size())
+
+        # window surface should be invalid after the window is destroyed
+        win.destroy()
+        self.assertRaises(pygame.error, lambda: surf.fill((0, 0, 0)))
+
+    def test_window_surface_with_display_module(self):
+        # get_surface() should raise an error if the set_mode() is not called.
+        pygame.display.set_mode((640, 480))
+        win1 = Window.from_display_module()
+        pygame.display.quit()
+        pygame.init()
+        self.assertRaises(pygame.error, lambda: win1.get_surface())
+
+        # the surface returned by get_surface() should be
+        # the surface returned by set_mode()
+        surf1 = pygame.display.set_mode((640, 480))
+        win2 = Window.from_display_module()
+        surf2 = win2.get_surface()
+        self.assertIs(surf1, surf2)
+
+    def test_window_flip(self):
+        win = Window(size=(640, 480))
+        surf = win.get_surface()
+        surf.fill((255, 0, 0))
+
+        self.assertRaises(TypeError, lambda: win.flip("an argument"))
+        self.assertIs(win.flip(), None)
+        win.destroy()
+
+        # creates a new window with no surface associated
+        win = Window(size=(640, 480))
+        self.assertRaisesRegex(
+            pygame.error,
+            "the Window has no surface associated with it, did you forget to call Window.get_surface()",
+            win.flip,
+        )
+        win.destroy()
+
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
+        "OpenGL requires a non-null SDL_VIDEODRIVER",
+    )
+    def test_window_opengl(self):
+        win1 = Window(opengl=True)
+        self.assertTrue(win1.opengl)
+        win1.flip()
+        win1.destroy()
+
+        win2 = Window(opengl=False)
+        self.assertFalse(win2.opengl)
+        win2.get_surface()
+        win2.flip()
+        win2.destroy()
+
+        pygame.display.set_mode((640, 480), pygame.OPENGL)
+        win = Window.from_display_module()
+        self.assertTrue(win.opengl)
         pygame.display.quit()
         pygame.init()
 
