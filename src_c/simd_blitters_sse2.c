@@ -838,8 +838,8 @@ premul_surf_color_by_alpha_sse2(SDL_Surface *src, SDL_Surface *dst)
                 ++dstp;
             },
             n, width);
-        (Uint8 *)srcp += srcskip;
-        (Uint8 *)dstp += dstskip;
+        srcp = (Uint32 *)((Uint8 *)srcp + srcskip);
+        dstp = (Uint32 *)((Uint8 *)dstp + dstskip);
     }
 }
 
