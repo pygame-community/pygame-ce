@@ -469,7 +469,7 @@ On Android, the following events can be generated
    | :sg:`event_class(type: int, /) -> type[Event]`
 
    Returns an event class that is correlated with the given event type. If the class to a given event type is not found,
-   but the type is within the range of valid values for the event type, instead of ``pygame.event.Event`` sublclass returned,
+   but the type is within the range of valid values for the event type, instead of a ``pygame.event.Event`` subclass,
    ``pygame.event.Event`` itself will be returned, so don't rely on the retuned class having ``type`` attribute equal to a number.
    This happens for example, with user event types that weren't created by subclassing ``pygame.event.Event``.
 
