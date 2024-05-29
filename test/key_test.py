@@ -1,5 +1,6 @@
 import os
 import time
+import platform
 import unittest
 
 import pygame
@@ -186,6 +187,7 @@ class KeyModuleTest(unittest.TestCase):
         """does it import?"""
         import pygame.key
 
+    @unittest.skipIf(not ("Windows" in platform.platform() or "Darwin" in platform.platform()), "Not windows or macOS - we skip.")
     def test_get_focused(self):
         # This test fails in SDL2 in some linux
         # This test was skipped in SDL1.
