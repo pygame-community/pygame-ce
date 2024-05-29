@@ -1,0 +1,77 @@
+[project]
+name = "pygame-ce"
+version = "2.5.0.dev3"
+description = "Python Game Development"
+readme = "README.rst" # for long description
+requires-python = ">=3.8"
+license = {file = "docs/LGPL.txt"}  # path to LGPL license
+authors = [{name = "A community project"}]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)",
+    "Programming Language :: Assembly",
+    "Programming Language :: C",
+    "Programming Language :: Cython",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Topic :: Games/Entertainment",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Multimedia :: Sound/Audio :: MIDI",
+    "Topic :: Multimedia :: Sound/Audio :: Players",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Multimedia :: Graphics :: Capture :: Digital Camera",
+    "Topic :: Multimedia :: Graphics :: Capture :: Screen Capture",
+    "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+    "Topic :: Multimedia :: Graphics :: Viewers",
+    "Topic :: Software Development :: Libraries :: pygame",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Operating System :: MacOS",
+    "Typing :: Typed"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/pygame-community/pygame-ce"
+"Bug Reports" = "https://github.com/pygame-community/pygame-ce/issues"
+"Source" = "https://github.com/pygame-community/pygame-ce"
+"Documentation" = "https://pyga.me/docs"
+
+[project.entry-points.pyinstaller40]
+hook-dirs = 'pygame.__pyinstaller:get_hook_dirs'
+
+[project.entry-points."briefcase.bootstraps"]
+pygame_ce = 'pygame.__briefcase.pygame_ce:PygameCEGuiBootstrap'
+
+[build-system]
+requires = ["meson-python", "ninja", "cython", "sphinx<=7.2.6"]
+build-backend = 'mesonpy'
+
+[tool.meson-python.args]
+install = ['--tags=runtime,python-runtime,pg-tag']
+# uncomment to get werror locally
+# setup = ["-Derror_on_warns=true"]
+
+[tool.cibuildwheel.config-settings]
+setup-args = [
+    "-Derror_on_warns=true",
+    "-Dvsenv=true",  # same effect as passing --vsenv
+    "-Derror_docs_missing=true",
+]
+
+[tool.ruff]
+exclude = [
+  "buildconfig/",
+  "docs/reST/",
+  "setup.py",
+]
+
+[tool.ruff.format]
+quote-style = "preserve"

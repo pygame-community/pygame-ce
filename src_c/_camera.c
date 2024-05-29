@@ -124,7 +124,7 @@ surf_colorspace(PyObject *self, PyObject *arg)
                      "Surfaces not the same width and height.");
 
     /* check to see if the format of the surface is the same. */
-    if (surf->format->BitsPerPixel != newsurf->format->BitsPerPixel)
+    if (PG_SURF_BitsPerPixel(surf) != PG_SURF_BitsPerPixel(newsurf))
         return RAISE(PyExc_ValueError, "Surfaces not the same depth");
 
     SDL_LockSurface(newsurf);
@@ -338,7 +338,7 @@ PyObject *
 camera_get_size(pgCameraObject *self, PyObject *_null)
 {
 #if defined(__unix__) || defined(PYGAME_WINDOWS_CAMERA)
-    return Py_BuildValue("(ii)", self->width, self->height);
+    return pg_tuple_couple_from_values_int(self->width, self->height);
 #endif
     Py_RETURN_NONE;
 }
@@ -505,7 +505,7 @@ rgb24_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
     gloss = format->Gloss;
     bloss = format->Bloss;
 
-    switch (format->BytesPerPixel) {
+    switch (PG_FORMAT_BytesPerPixel(format)) {
         case 1:
             d8 = (Uint8 *)dst;
             while (length--) {
@@ -567,7 +567,7 @@ bgr32_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
     gloss = format->Gloss;
     bloss = format->Bloss;
 
-    switch (format->BytesPerPixel) {
+    switch (PG_FORMAT_BytesPerPixel(format)) {
         case 1:
             d8 = (Uint8 *)dst;
             while (length--) {
@@ -665,7 +665,7 @@ rgb_to_hsv(const void *src, void *dst, int length, unsigned long source,
             min = MIN(MIN(r, g), b);
             delta = max - min;
             v = max;      /* value (similar to luminosity) */
-            if (!delta) { /* grey, zero hue and saturation */
+            if (!delta) { /* gray, zero hue and saturation */
                 s = 0;
                 h = 0;
             }
@@ -681,7 +681,7 @@ rgb_to_hsv(const void *src, void *dst, int length, unsigned long source,
                     h = 170 + 43 * (r - g) / delta;
                 }
             }
-            switch (format->BytesPerPixel) {
+            switch (PG_FORMAT_BytesPerPixel(format)) {
                 case 1:
                     *d8++ = ((h >> rloss) << rshift) |
                             ((s >> gloss) << gshift) |
@@ -707,7 +707,7 @@ rgb_to_hsv(const void *src, void *dst, int length, unsigned long source,
     }
     else { /* for use as stage 2 in yuv or bayer to hsv, r and b switched */
         while (length--) {
-            switch (format->BytesPerPixel) {
+            switch (PG_FORMAT_BytesPerPixel(format)) {
                 case 1:
                     r = *s8 >> rshift << rloss;
                     g = *s8 >> gshift << gloss;
@@ -733,7 +733,7 @@ rgb_to_hsv(const void *src, void *dst, int length, unsigned long source,
             min = MIN(MIN(r, g), b);
             delta = max - min;
             v = max;      /* value (similar to luminosity) */
-            if (!delta) { /* grey, zero hue and saturation */
+            if (!delta) { /* gray, zero hue and saturation */
                 s = 0;
                 h = 0;
             }
@@ -749,7 +749,7 @@ rgb_to_hsv(const void *src, void *dst, int length, unsigned long source,
                     h = 170 + 43 * (r - g) / delta;
                 }
             }
-            switch (format->BytesPerPixel) {
+            switch (PG_FORMAT_BytesPerPixel(format)) {
                 case 1:
                     *d8++ = ((h >> rloss) << rshift) |
                             ((s >> gloss) << gshift) |
@@ -826,7 +826,7 @@ rgb_to_yuv(const void *src, void *dst, int length, unsigned long source,
             v = ((112 * r - 94 * g - 18 * b + 128) >> 8) + 128;  /* V */
             u = ((-38 * r - 74 * g + 112 * b + 128) >> 8) + 128; /* U */
             y = (77 * r + 150 * g + 29 * b + 128) >> 8;          /* Y */
-            switch (format->BytesPerPixel) {
+            switch (PG_FORMAT_BytesPerPixel(format)) {
                 case 1:
                     *d8++ = ((y >> rloss) << rshift) |
                             ((u >> gloss) << gshift) |
@@ -851,7 +851,7 @@ rgb_to_yuv(const void *src, void *dst, int length, unsigned long source,
         }
     }
     else { /* for use as stage 2 in bayer to yuv, r and b switched */
-        switch (format->BytesPerPixel) {
+        switch (PG_FORMAT_BytesPerPixel(format)) {
             case 1:
                 while (length--) {
                     r = *s8 >> rshift << rloss;
@@ -932,7 +932,7 @@ rgb444_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
     gloss = format->Gloss;
     bloss = format->Bloss;
 
-    switch (format->BytesPerPixel) {
+    switch (PG_FORMAT_BytesPerPixel(format)) {
         case 1:
             d8 = (Uint8 *)dst;
             while (length--) {
@@ -1026,7 +1026,7 @@ yuyv_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
         b2 = SAT2(y2 + u1);
 
         /* choose the right pixel packing for the destination surface depth */
-        switch (format->BytesPerPixel) {
+        switch (PG_FORMAT_BytesPerPixel(format)) {
             case 1:
                 *d8++ = ((r1 >> rloss) << rshift) | ((g1 >> gloss) << gshift) |
                         ((b1 >> bloss) << bshift);
@@ -1076,7 +1076,7 @@ yuyv_to_yuv(const void *src, void *dst, int length, SDL_PixelFormat *format)
     bloss = format->Bloss;
     s = (Uint8 *)src;
 
-    switch (format->BytesPerPixel) {
+    switch (PG_FORMAT_BytesPerPixel(format)) {
         case 1:
             d8 = (Uint8 *)dst;
             while (i--) {
@@ -1180,7 +1180,7 @@ uyvy_to_rgb(const void *src, void *dst, int length, SDL_PixelFormat *format)
         b2 = SAT2(y2 + u1);
 
         /* choose the right pixel packing for the destination surface depth */
-        switch (format->BytesPerPixel) {
+        switch (PG_FORMAT_BytesPerPixel(format)) {
             case 1:
                 *d8++ = ((r1 >> rloss) << rshift) | ((g1 >> gloss) << gshift) |
                         ((b1 >> bloss) << bshift);
@@ -1229,7 +1229,7 @@ uyvy_to_yuv(const void *src, void *dst, int length, SDL_PixelFormat *format)
     bloss = format->Bloss;
     s = (Uint8 *)src;
 
-    switch (format->BytesPerPixel) {
+    switch (PG_FORMAT_BytesPerPixel(format)) {
         case 1:
             d8 = (Uint8 *)dst;
             while (i--) {
@@ -1405,7 +1405,7 @@ sbggr8_to_rgb(const void *src, void *dst, int width, int height,
             }
         }
         rawpt++;
-        switch (format->BytesPerPixel) {
+        switch (PG_FORMAT_BytesPerPixel(format)) {
             case 1:
                 *d8++ = ((r >> rloss) << rshift) | ((g >> gloss) << gshift) |
                         ((b >> bloss) << bshift);
@@ -1456,7 +1456,7 @@ yuv420_to_rgb(const void *src, void *dst, int width, int height,
     /* prepare the destination pointers for different surface depths. */
     d8_1 = (Uint8 *)dst;
     /* the following is because d8 used for both 8 and 24 bit surfaces */
-    d8_2 = d8_1 + (format->BytesPerPixel == 3 ? width * 3 : 3);
+    d8_2 = d8_1 + (PG_FORMAT_BytesPerPixel(format) == 3 ? width * 3 : 3);
     d16_1 = (Uint16 *)dst;
     d16_2 = d16_1 + width;
     d32_1 = (Uint32 *)dst;
@@ -1464,7 +1464,7 @@ yuv420_to_rgb(const void *src, void *dst, int width, int height,
 
     /* for the sake of speed, the nested while loops are inside of the switch
       statement for the different surface bit depths */
-    switch (format->BytesPerPixel) {
+    switch (PG_FORMAT_BytesPerPixel(format)) {
         case 1:
             while (j--) {
                 i = width / 2;
@@ -1648,7 +1648,7 @@ yuv420_to_yuv(const void *src, void *dst, int width, int height,
     bloss = format->Bloss;
 
     d8_1 = (Uint8 *)dst;
-    d8_2 = d8_1 + (format->BytesPerPixel == 3 ? width * 3 : 3);
+    d8_2 = d8_1 + (PG_FORMAT_BytesPerPixel(format) == 3 ? width * 3 : 3);
     d16_1 = (Uint16 *)dst;
     d16_2 = d16_1 + width;
     d32_1 = (Uint32 *)dst;
@@ -1659,7 +1659,7 @@ yuv420_to_yuv(const void *src, void *dst, int width, int height,
     v = u + (width * height) / 4;
     j = height / 2;
 
-    switch (format->BytesPerPixel) {
+    switch (PG_FORMAT_BytesPerPixel(format)) {
         case 1:
             while (j--) {
                 i = width / 2;

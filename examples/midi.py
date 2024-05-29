@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.midi
+"""pygame.examples.midi
 
 midi input, and a separate example of midi output.
 
@@ -254,7 +254,7 @@ def make_key_mapping(keys, start_note):
 
 
 class NullKey:
-    """A dummy key that ignores events passed to it by other keys
+    """A null key that ignores events passed to it by other keys
 
     A NullKey instance is the left key instance used by default
     for the left most keyboard key.

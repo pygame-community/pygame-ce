@@ -191,12 +191,30 @@
       expect.
 
       .. ## Color.i1i2i3 ##
+
+   .. attribute:: normalized
+
+      | :sl:`Gets or sets the normalized representation of the Color.`
+      | :sg:`normalized -> tuple`
+      
+      The ``Normalized``` representation of the Color. The components of the ``Normalized``
+      representation represent the basic ``RGBA`` values but normalized the
+      ranges of the values are ``r`` = [0, 1], ``g`` = [0, 1], ``b`` = [0, 1]
+      and ``a`` = [0, 1] respectively. Note that this will not return the absolutely exact
+      ``Normalized`` values for the set ``RGBA`` values in all cases.
+      Due to the ``RGB`` mapping from 0-255 and the ``Normalized`` mapping from 0-1
+      rounding errors may cause the ``Normalized`` values to differ
+      slightly from what you might expect.
+
+      .. versionadded:: 2.5.0
+
+      .. ## Color.normalized ##
    
    .. classmethod:: from_cmy
 
       | :sl:`Returns a Color object from a CMY representation`
-      | :sg:`from_cmy(object) -> Color`
-      | :sg:`from_cmy(c, m, y) -> Color`
+      | :sg:`from_cmy(object, /) -> Color`
+      | :sg:`from_cmy(c, m, y, /) -> Color`
 
       Creates a Color object from the given CMY components. Refer to :attr:`Color.cmy`
       for more information.
@@ -208,8 +226,8 @@
    .. classmethod:: from_hsva
 
       | :sl:`Returns a Color object from an HSVA representation`
-      | :sg:`from_hsva(object) -> Color`
-      | :sg:`from_hsva(h, s, v, a) -> Color`
+      | :sg:`from_hsva(object, /) -> Color`
+      | :sg:`from_hsva(h, s, v, a, /) -> Color`
 
       Creates a Color object from the given HSVA components. Refer to :attr:`Color.hsva`
       for more information.
@@ -221,8 +239,8 @@
    .. classmethod:: from_hsla
 
       | :sl:`Returns a Color object from an HSLA representation`
-      | :sg:`from_hsla(object) -> Color`
-      | :sg:`from_hsla(h, s, l, a) -> Color`
+      | :sg:`from_hsla(object, /) -> Color`
+      | :sg:`from_hsla(h, s, l, a, /) -> Color`
 
       Creates a Color object from the given HSLA components. Refer to :attr:`Color.hsla`
       for more information.
@@ -234,8 +252,8 @@
    .. classmethod:: from_i1i2i3
 
       | :sl:`Returns a Color object from a I1I2I3 representation`
-      | :sg:`from_i1i2i3(object) -> Color`
-      | :sg:`from_i1i2i3(i1, i2, i3) -> Color`
+      | :sg:`from_i1i2i3(object, /) -> Color`
+      | :sg:`from_i1i2i3(i1, i2, i3, /) -> Color`
 
       Creates a Color object from the given I1I2I3 components. Refer to :attr:`Color.i1i2i3`
       for more information.
@@ -243,6 +261,19 @@
       .. versionadded:: 2.3.1
 
       .. ## Color.from_i1i2i3 ##
+
+   .. classmethod:: from_normalized
+
+      | :sl:`Returns a Color object from a Normalized representation`
+      | :sg:`from_normalized(object, /) -> Color`
+      | :sg:`from_normalized(r, g, b, a /) -> Color`
+
+      Creates a Color object from the given Normalized components. Refer to :attr:`Color.normalized`
+      for more information.
+
+      .. versionadded:: 2.5.0
+
+      .. ## Color.from_normalized ##
 
    .. method:: normalize
 
@@ -257,7 +288,7 @@
    .. method:: correct_gamma
 
       | :sl:`Applies a certain gamma value to the Color.`
-      | :sg:`correct_gamma(gamma) -> Color`
+      | :sg:`correct_gamma(gamma, /) -> Color`
 
       Applies a certain gamma value to the Color and returns a new Color with
       the adjusted ``RGBA`` values.
@@ -267,7 +298,7 @@
    .. method:: set_length
 
       | :sl:`Set the number of elements in the Color to 1,2,3, or 4.`
-      | :sg:`set_length(len) -> None`
+      | :sg:`set_length(len, /) -> None`
 
       DEPRECATED: You may unpack the values you need like so, 
       ``r, g, b, _ = pygame.Color(100, 100, 100)``
@@ -317,7 +348,7 @@
       | :sl:`returns a Color where the r,g,b components have been multiplied by the alpha.`
       | :sg:`premul_alpha() -> Color`
 
-      Returns a new Color where each of the red, green and blue colour
+      Returns a new Color where each of the red, green and blue color
       channels have been multiplied by the alpha channel of the original
       color. The alpha channel remains unchanged.
 
@@ -332,9 +363,9 @@
    .. method:: update
 
       | :sl:`Sets the elements of the color`
-      | :sg:`update(r, g, b) -> None`
-      | :sg:`update(r, g, b, a=255) -> None`
-      | :sg:`update(color_value) -> None`
+      | :sg:`update(r, g, b, /) -> None`
+      | :sg:`update(r, g, b, a=255, /) -> None`
+      | :sg:`update(color_value, /) -> None`
 
       Sets the elements of the color. See parameters for :meth:`pygame.Color` for the
       parameters of this function. If the alpha value was not set it will not change.

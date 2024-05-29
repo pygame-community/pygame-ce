@@ -55,12 +55,22 @@
 #include <Python.h>
 
 /* version macros (defined since version 1.9.5) */
-#define PG_MAJOR_VERSION 2
-#define PG_MINOR_VERSION 4
-#define PG_PATCH_VERSION 0
-/* The below is of the form ".devX" for dev releases, and "" (empty) for full
- * releases */
-#define PG_VERSION_TAG ".dev3"
+#ifndef PG_MAJOR_VERSION
+#error PG_MAJOR_VERSION must be defined
+#endif
+
+#ifndef PG_MINOR_VERSION
+#error PG_MINOR_VERSION must be defined
+#endif
+
+#ifndef PG_PATCH_VERSION
+#error PG_PATCH_VERSION must be defined
+#endif
+
+#ifndef PG_VERSION_TAG
+#error PG_VERSION_TAG must be defined
+#endif
+
 #define PG_VERSIONNUM(MAJOR, MINOR, PATCH) \
     (1000 * (MAJOR) + 100 * (MINOR) + (PATCH))
 #define PG_VERSION_ATLEAST(MAJOR, MINOR, PATCH)                             \
@@ -172,6 +182,12 @@ typedef struct pg_bufferinfo_s {
 
 #define pg_EnvShouldBlendAlphaSDL2 \
     (*(char *(*)(void))PYGAMEAPI_GET_SLOT(base, 23))
+
+#define pg_GetDefaultConvertFormat \
+    (*(SDL_PixelFormat * (*)(void)) PYGAMEAPI_GET_SLOT(base, 27))
+
+#define pg_SetDefaultConvertFormat \
+    (*(SDL_PixelFormat * (*)(Uint32)) PYGAMEAPI_GET_SLOT(base, 28))
 
 #define import_pygame_base() IMPORT_PYGAME_MODULE(base)
 #endif /* ~PYGAMEAPI_BASE_INTERNAL */
@@ -393,6 +409,12 @@ typedef struct pgEventObject pgEventObject;
 
 #define pgEvent_GetKeyUpInfo (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 7))
 
+#define pgEvent_GetMouseButtonDownInfo \
+    (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 8))
+
+#define pgEvent_GetMouseButtonUpInfo \
+    (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 9))
+
 #define import_pygame_event() IMPORT_PYGAME_MODULE(event)
 #endif
 
@@ -416,9 +438,6 @@ typedef struct pgEventObject pgEventObject;
 
 #define pgRWops_FromFileObject \
     (*(SDL_RWops * (*)(PyObject *)) PYGAMEAPI_GET_SLOT(rwobject, 4))
-
-#define pgRWops_ReleaseObject \
-    (*(int (*)(SDL_RWops *))PYGAMEAPI_GET_SLOT(rwobject, 5))
 
 #define import_pygame_rwobject() IMPORT_PYGAME_MODULE(rwobject)
 
@@ -493,13 +512,15 @@ typedef struct pgColorObject pgColorObject;
 typedef struct {
     PyObject_HEAD SDL_Window *_win;
     SDL_bool _is_borrowed;
+    pgSurfaceObject *surf;
+    SDL_GLContext context;
 } pgWindowObject;
 
 #ifndef PYGAMEAPI_WINDOW_INTERNAL
-#define pgWindow_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_window, 0))
+#define pgWindow_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(window, 0))
 #define pgWindow_Check(x) \
     (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
-#define import_pygame_window() IMPORT_PYGAME_MODULE(_window)
+#define import_pygame_window() IMPORT_PYGAME_MODULE(window)
 #endif
 
 #define IMPORT_PYGAME_MODULE _IMPORT_PYGAME_MODULE
@@ -520,7 +541,7 @@ PYGAMEAPI_DEFINE_SLOTS(rwobject);
 PYGAMEAPI_DEFINE_SLOTS(pixelarray);
 PYGAMEAPI_DEFINE_SLOTS(color);
 PYGAMEAPI_DEFINE_SLOTS(math);
-PYGAMEAPI_DEFINE_SLOTS(_window);
+PYGAMEAPI_DEFINE_SLOTS(window);
 PYGAMEAPI_DEFINE_SLOTS(geometry);
 #else /* ~PYGAME_H */
 PYGAMEAPI_EXTERN_SLOTS(base);
@@ -534,7 +555,7 @@ PYGAMEAPI_EXTERN_SLOTS(rwobject);
 PYGAMEAPI_EXTERN_SLOTS(pixelarray);
 PYGAMEAPI_EXTERN_SLOTS(color);
 PYGAMEAPI_EXTERN_SLOTS(math);
-PYGAMEAPI_EXTERN_SLOTS(_window);
+PYGAMEAPI_EXTERN_SLOTS(window);
 PYGAMEAPI_EXTERN_SLOTS(geometry);
 
 #endif /* ~PYGAME_H */

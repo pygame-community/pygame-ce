@@ -95,7 +95,7 @@ these module level tags.
 Class Level Tags
 ----------------
 
-If you want to override a specifig tag then you can use negation. ::
+If you want to override a specific tag then you can use negation. ::
 
     class SomeTest(unittest.TestCase):
         __tags__ = ['-interactive']

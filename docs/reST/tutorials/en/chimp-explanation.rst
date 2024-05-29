@@ -157,7 +157,7 @@ that color for the colorkey. ::
 
 Next is the function to load a sound file. The first thing this function
 does is check to see if the :mod:`pygame.mixer` module was imported correctly.
-If not, it returns a small class instance that has a dummy play method.
+If not, it returns a small class instance that has a placeholder play method.
 This will act enough like a normal Sound object for this game to run without
 any extra error checking.
 
@@ -389,7 +389,7 @@ also needs to know the size of font we want to create.
 We then render that font into a new surface. The `render` function creates
 a new surface that is the appropriate size for our text. In this case
 we are also telling render to create antialiased text (for a nice smooth
-look) and to use a dark grey color.
+look) and to use a dark gray color.
 
 Next we need to find the centered position of the text on our display.
 We create a "Rect" object from the text dimensions, which allows us to

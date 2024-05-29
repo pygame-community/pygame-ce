@@ -252,7 +252,8 @@ class DependencyDLL(Dependency):
                         return True
         return False
 
-class DependencyDummy:
+
+class DependencyPlaceholder:
     def __init__(self, name):
         self.name = name
         self.inc_dir = None
@@ -263,6 +264,7 @@ class DependencyDummy:
 
     def configure(self):
         pass
+
 
 class DependencyWin:
     def __init__(self, name, cflags):
@@ -312,8 +314,8 @@ class DependencyGroup:
         self.dlls.append(dep)
         return dep
 
-    def add_dummy(self, name):
-        self.dependencies.append(DependencyDummy(name))
+    def add_placeholder(self, name):
+        self.dependencies.append(DependencyPlaceholder(name))
 
     def find(self, name):
         for dep in self:
@@ -357,13 +359,20 @@ class DependencyGroup:
 def _add_sdl2_dll_deps(DEPS):
     # MIXER
     DEPS.add_dll(r'(libogg-0|ogg)\.dll$', 'ogg', ['libogg-[1-9].*'])
+    # modplug replaced with libxmp after SDL_mixer 2.6.3
     DEPS.add_dll(r'(lib)?modplug[-0-9]*\.dll$', 'modplug', ['*modplug-[0-9]*'])
+    DEPS.add_dll(r'libxmp.dll$', 'xmp', ['libxmp*'])
+    DEPS.add_dll(r'libwavpack[-0-9]*\.dll$', 'wavpack', ['libwavpack-[1-9].*'])
     DEPS.add_dll(r'(lib)?opus[-0-9]*\.dll$', 'opus', ['*opus-[0-9]*'])
     DEPS.add_dll(r'(lib)?opusfile[-0-9]*\.dll$', 'opusfile', ['*opusfile-[0-9]*'])
     # IMAGE
+    DEPS.add_dll(r'(lib)?jpeg[-0-9]*\.dll$', 'jpeg', ['*jpeg-[0-9]*'])
+    DEPS.add_dll(r'(png|libpng)[-0-9]*\.dll$', 'png', ['libpng-[1-9].*'], ['z'])
     DEPS.add_dll(r'(lib){0,1}tiff[-0-9]*\.dll$', 'tiff', ['tiff-[0-9]*'], ['jpeg', 'z'])
     DEPS.add_dll(r'(z|zlib1)\.dll$', 'z', ['zlib-[1-9].*'])
     DEPS.add_dll(r'(lib)?webp[-0-9]*\.dll$', 'webp', ['*webp-[0-9]*'])
+    DEPS.add_dll(r'(lib)?webpdemux[-0-9]*\.dll$', 'webpdemux', ['*webpdemux-[0-9]*'])
+    
 
 def setup():
     DEPS = DependencyGroup()
@@ -371,13 +380,9 @@ def setup():
     DEPS.add('SDL', 'SDL2', ['SDL2-[1-9].*'], r'(lib){0,1}SDL2\.dll$', required=1)
     DEPS.add('PORTMIDI', 'portmidi', ['portmidi'], r'portmidi\.dll$', find_header=r'portmidi\.h')
     #DEPS.add('PORTTIME', 'porttime', ['porttime'], r'porttime\.dll$')
-    DEPS.add_dummy('PORTTIME')
+    DEPS.add_placeholder('PORTTIME')
     DEPS.add('MIXER', 'SDL2_mixer', ['SDL2_mixer-[1-9].*'], r'(lib){0,1}SDL2_mixer\.dll$',
              ['SDL'])
-    DEPS.add('PNG', 'png', ['SDL2_image-[2-9].*', 'libpng-[1-9].*'], r'(png|libpng)[-0-9]*\.dll$', ['z'],
-             find_header=r'png\.h', find_lib=r'(lib)?png1[-0-9]*\.lib')
-    DEPS.add('JPEG', 'jpeg', ['SDL2_image-[2-9].*', 'jpeg-9*'], r'(lib){0,1}jpeg-9\.dll$',
-             find_header=r'jpeglib\.h', find_lib=r'(lib)?jpeg-9\.lib')
     DEPS.add('IMAGE', 'SDL2_image', ['SDL2_image-[1-9].*'], r'(lib){0,1}SDL2_image\.dll$',
              ['SDL', 'jpeg', 'png', 'tiff'], 0)
     DEPS.add('FONT', 'SDL2_ttf', ['SDL2_ttf-[2-9].*'], r'(lib){0,1}SDL2_ttf\.dll$', ['SDL', 'z', 'freetype'])
@@ -413,22 +418,11 @@ def setup_prebuilt_sdl2(prebuilt_dir):
                         ['SDL'])
     DEPS.add('PORTMIDI', 'portmidi', ['portmidi'], r'portmidi\.dll$', find_header=r'portmidi\.h')
     #DEPS.add('PORTTIME', 'porttime', ['porttime'], r'porttime\.dll$')
-    DEPS.add_dummy('PORTTIME')
+    DEPS.add_placeholder('PORTTIME')
     DEPS.configure()
 
     DEPS.add('FREETYPE', 'freetype', ['freetype'], r'freetype[-0-9]*\.dll$',
                      find_header=r'ft2build\.h', find_lib=r'freetype[-0-9]*\.lib')
-
-    png = DEPS.add('PNG', 'png', ['SDL2_image-[2-9].*', 'libpng-[1-9].*'], r'(png|libpng)[-0-9]*\.dll$', ['z'],
-                   find_header=r'png\.h', find_lib=r'(lib)?png1[-0-9]*\.lib')
-    png.path = imageDep.path
-    png.inc_dir = [os.path.join(prebuilt_dir, 'include').replace('\\', '/')]
-    png.found = True
-    jpeg = DEPS.add('JPEG', 'jpeg', ['SDL2_image-[2-9].*', 'jpeg-9*'], r'(lib){0,1}jpeg-9\.dll$',
-                   find_header=r'jpeglib\.h', find_lib=r'(lib)?jpeg-9\.lib')
-    jpeg.path = imageDep.path
-    jpeg.inc_dir = [os.path.join(prebuilt_dir, 'include').replace('\\', '/')]
-    jpeg.found = True
 
     dllPaths = {
         'png': imageDep.path,
@@ -436,9 +430,12 @@ def setup_prebuilt_sdl2(prebuilt_dir):
         'tiff': imageDep.path,
         'z': imageDep.path,
         'webp': imageDep.path,
+        'webpdemux': imageDep.path,
 
         'ogg': mixerDep.path,
         'modplug': mixerDep.path,
+        'xmp': mixerDep.path,
+        'wavpack': mixerDep.path,
         'opus': mixerDep.path,
         'opusfile': mixerDep.path,
     }
