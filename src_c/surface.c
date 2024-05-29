@@ -3934,7 +3934,9 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
         result = pygame_Blit(src, srcrect, dst, dstrect, blend_flags);
     }
     else if (!SDL_GetSurfaceBlendMode(src, &blend_mode) &&
-             blend_mode == SDL_BLENDMODE_BLEND) {
+             blend_mode == SDL_BLENDMODE_BLEND && !pg_HasSurfaceRLE(src) &&
+             !pg_HasSurfaceRLE(dst) && !(src->flags & SDL_RLEACCEL) &&
+             !(dst->flags & SDL_RLEACCEL)) {
         result = pygame_Blit(src, srcrect, dst, dstrect, blend_flags);
     }
     else {
