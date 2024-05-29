@@ -741,9 +741,12 @@ get_contents_at_path(PyObject *os_module, PyObject *path_submodule,
             PySequence_GetItem(path_to_check, path_length - 1);
         if (PyUnicode_Compare(last_char, PyUnicode_FromString(":")) == 0) {
             // handle Windows drive letters
-            path_to_check =
+            PyObject *drive_letter_path = NULL;
+            drive_letter_path =
                 PyObject_CallMethod(path_submodule, "join", "OO",
                                     path_to_check, PyUnicode_FromString("\\"));
+            Py_XDECREF(path_to_check);
+            path_to_check = drive_letter_path;
         }
         Py_XDECREF(last_char);
         directories_found =
@@ -784,14 +787,20 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
             int path_comp_len = (int)PySequence_Length(path_comp);
             // Skip empty path components
             if (path_comp_len > 0) {
-                temp_path =
+                PyObject *new_temp_path = NULL;
+                new_temp_path =
                     add_to_path(path_submodule, longest_valid_path, path_comp);
                 PyObject *is_dir = PyObject_CallMethod(path_submodule, "isdir",
                                                        "O", temp_path);
+                Py_XDECREF(temp_path);
+                temp_path = new_temp_path;
                 if (is_dir == Py_True) {
                     // path step is valid, continue the loop
-                    longest_valid_path = PyObject_CallMethod(
+                    PyObject *new_longest_valid_path = NULL;
+                    new_longest_valid_path = PyObject_CallMethod(
                         path_submodule, "normpath", "O", temp_path);
+                    Py_XDECREF(longest_valid_path);
+                    longest_valid_path = new_longest_valid_path;
                 }
                 else {
                     // path step is invalid, look for petential alternatives
@@ -807,7 +816,7 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
                         Py_XDECREF(file_comp);
                         Py_XDECREF(temp_path);
                         Py_XDECREF(is_dir);
-                        goto suggested_path_not_found;
+                        return NULL;  // Suggested path not found
                     }
 
                     PyObject *actual_dirs = PyList_New(0);
@@ -838,10 +847,13 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
                         if ((int)PySequence_Length(closest_matches) > 0) {
                             PyObject *closest_match =
                                 PySequence_GetItem(closest_matches, 0);
-                            longest_valid_path =
+                            PyObject *new_longest_valid_path = NULL;
+                            new_longest_valid_path =
                                 add_to_path(path_submodule, longest_valid_path,
                                             closest_match);
                             Py_XDECREF(closest_match);
+                            Py_XDECREF(longest_valid_path);
+                            longest_valid_path = new_longest_valid_path;
                         }
                         Py_XDECREF(closest_matches);
                     }
@@ -858,7 +870,7 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
                         Py_XDECREF(file_comp);
                         Py_XDECREF(temp_path);
                         Py_XDECREF(is_dir);
-                        goto suggested_path_not_found;
+                        return NULL;  // Suggested path not found
                     }
                     Py_XDECREF(actual_dirs);
                 }
@@ -876,7 +888,7 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
         if (!potential_files) {
             Py_XDECREF(longest_valid_path);
             Py_XDECREF(file_comp);
-            goto suggested_path_not_found;
+            return NULL;  // Suggested path not found
         }
         PyObject *actual_files = PyList_New(0);
         int num_files_and_folders = (int)PySequence_Length(potential_files);
@@ -901,9 +913,12 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
             if ((int)PySequence_Length(closest_matches) > 0) {
                 PyObject *closest_match =
                     PySequence_GetItem(closest_matches, 0);
-                longest_valid_path = add_to_path(
+                PyObject *new_longest_valid_path = NULL;
+                new_longest_valid_path = add_to_path(
                     path_submodule, longest_valid_path, closest_match);
                 Py_DECREF(closest_match);
+                Py_XDECREF(longest_valid_path);
+                longest_valid_path = new_longest_valid_path;
             }
             Py_XDECREF(closest_matches);
         }
@@ -915,23 +930,23 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
             Py_XDECREF(actual_files);
             Py_XDECREF(longest_valid_path);
             Py_XDECREF(file_comp);
-            goto suggested_path_not_found;
+            return NULL;  // Suggested path not found
         }
         Py_XDECREF(actual_files);
         Py_XDECREF(file_comp);
-        longest_valid_path = PyObject_CallMethod(path_submodule, "normpath",
-                                                 "O", longest_valid_path);
+        PyObject *new_longest_valid_path = NULL;
+        new_longest_valid_path = PyObject_CallMethod(
+            path_submodule, "normpath", "O", longest_valid_path);
+        Py_XDECREF(longest_valid_path);
+        longest_valid_path = new_longest_valid_path;
         return longest_valid_path;
     }
     else {
         PyErr_Format(PyExc_FileNotFoundError, "unable to split path: '%S'?",
-                     norm_orig_path);
+                     original_path);
         Py_XDECREF(path_components);
-        goto suggested_path_not_found;
+        return NULL;  // Suggested path not found
     }
-
-suggested_path_not_found:
-    return NULL;
 }
 
 static SDL_RWops *
@@ -1024,9 +1039,11 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
             PyObject *abs_path = PyObject_Str(
                 PyObject_CallMethod(path_submodule, "normpath", "O", obj));
 
-            PyObject *suggested_valid_path = suggest_valid_path(
-                path_submodule, abs_path, PyUnicode_FromString(""));
+            PyObject *empty_string = PyUnicode_FromString("");
+            PyObject *suggested_valid_path =
+                suggest_valid_path(path_submodule, abs_path, empty_string);
             Py_XDECREF(abs_path);
+            Py_XDECREF(empty_string);
 
             if (!suggested_valid_path)
                 goto simple_case;
@@ -1035,17 +1052,21 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
             // slashes as these will work in python/pygame-ce on all platforms
             // and are less fiddly than back slash paths with escaped back
             // slashes.
-            suggested_valid_path = PyObject_CallMethod(
+            PyObject *new_suggested_valid_path = NULL;
+            new_suggested_valid_path = PyObject_CallMethod(
                 suggested_valid_path, "replace", "ss", "\\", "/");
+            Py_XDECREF(suggested_valid_path);
             PyErr_Format(PyExc_FileNotFoundError,
                          "File not found at path: '%S', did you mean: '%S'?",
-                         obj, suggested_valid_path);
+                         obj, new_suggested_valid_path);
 
-            Py_XDECREF(suggested_valid_path);
+            Py_XDECREF(new_suggested_valid_path);
         }
         else {
-            PyObject *rel_path = PyObject_Str(PyObject_CallMethod(
-                path_submodule, "relpath", "OO", obj, cwd));
+            PyObject *rel_path_obj =
+                PyObject_CallMethod(path_submodule, "relpath", "OO", obj, cwd);
+            PyObject *rel_path = PyObject_Str(rel_path_obj);
+            Py_XDECREF(rel_path_obj);
 
             PyObject *suggested_valid_path =
                 suggest_valid_path(path_submodule, rel_path, cwd);
@@ -1054,21 +1075,28 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
             if (!suggested_valid_path)
                 goto simple_relative_case_w_path;
 
-            PyObject *suggested_rel_path = PyObject_Str(PyObject_CallMethod(
-                path_submodule, "relpath", "OO", suggested_valid_path, cwd));
+            PyObject *suggested_rel_path_obj = PyObject_CallMethod(
+                path_submodule, "relpath", "OO", suggested_valid_path, cwd);
+            PyObject *suggested_rel_path =
+                PyObject_Str(suggested_rel_path_obj);
             Py_XDECREF(suggested_valid_path);
+            Py_XDECREF(suggested_rel_path_obj);
 
             // we will elect to always provide suggested paths with forward
             // slashes as these will work in python/pygame-ce on all platforms
             // and are less fiddly than back slash paths with escaped back
             // slashes.
-            suggested_rel_path = PyObject_CallMethod(
+            PyObject *new_suggested_rel_path = PyObject_CallMethod(
                 suggested_rel_path, "replace", "ss", "\\", "/");
-            cwd = PyObject_CallMethod(cwd, "replace", "ss", "\\", "/");
+            Py_XDECREF(suggested_rel_path);
+            PyObject *new_cwd =
+                PyObject_CallMethod(cwd, "replace", "ss", "\\", "/");
+            Py_XDECREF(cwd);
+            cwd = new_cwd;
             PyErr_Format(PyExc_FileNotFoundError,
                          "No file '%S' found in working directory '%S', did "
                          "you mean: '%S'?",
-                         obj, cwd, suggested_rel_path);
+                         obj, cwd, new_suggested_rel_path);
 
             Py_XDECREF(suggested_rel_path);
         }
@@ -1083,11 +1111,13 @@ simple_case:
     Py_XDECREF(path_submodule);
     goto simple_case_no_path;
 simple_relative_case_w_path:
-    cwd = PyObject_CallMethod(cwd, "replace", "ss", "\\", "/");
-    PyErr_Format(PyExc_FileNotFoundError,
-                 "No file '%S' found in working directory '%S'.", obj, cwd);
-    Py_XDECREF(path_submodule);
+    PyObject *new_cwd = PyObject_CallMethod(cwd, "replace", "ss", "\\", "/");
     Py_XDECREF(cwd);
+    PyErr_Format(PyExc_FileNotFoundError,
+                 "No file '%S' found in working directory '%S'.", obj,
+                 new_cwd);
+    Py_XDECREF(path_submodule);
+    Py_XDECREF(new_cwd);
     Py_XDECREF(isabs);
     return NULL;
 simple_case_no_path:
