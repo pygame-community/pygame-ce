@@ -59,10 +59,7 @@ pg_avx2_at_runtime_but_uncompiled()
     int height = info->height;                                   \
     int i;                                                       \
                                                                  \
-    Uint32 *srcp = (Uint32 *)info->s_pixels;                     \
     const int srcskip = info->s_skip >> 2;                       \
-                                                                 \
-    Uint32 *dstp = (Uint32 *)info->d_pixels;                     \
     const int dstskip = info->d_skip >> 2;                       \
                                                                  \
     const int pxl_excess = width % 8;                            \
