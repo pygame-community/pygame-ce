@@ -22,6 +22,7 @@
 #define DOC_RECT_CONTAINS "contains(rect, /) -> bool\ntest if one rectangle is inside another"
 #define DOC_RECT_COLLIDEPOINT "collidepoint(x, y, /) -> bool\ncollidepoint((x, y), /) -> bool\ntest if a point is inside a rectangle"
 #define DOC_RECT_COLLIDERECT "colliderect(rect, /) -> bool\ntest if two rectangles overlap"
+#define DOC_RECT_COLLIDECIRCLE "collidecircle(Circle) -> bool\ncollidecircle((x, y), r) -> bool\ncollidecircle(x, y, r) -> bool\nchecks if a circle intersects the rectangle"
 #define DOC_RECT_COLLIDELIST "collidelist(list, /) -> index\ntest if one rectangle in a list intersects"
 #define DOC_RECT_COLLIDELISTALL "collidelistall(list, /) -> indices\ntest if all rectangles in a list intersect"
 #define DOC_RECT_COLLIDEOBJECTS "collideobjects(rect_list) -> object\ncollideobjects(obj_list, key=func) -> object\ntest if any object in a list intersects"
