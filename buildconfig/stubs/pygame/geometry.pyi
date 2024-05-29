@@ -9,7 +9,6 @@ from typing import (
     Protocol,
     Tuple,
     TypeVar,
-    Sequence,
 )
 
 from ._common import Coordinate, Literal, RectValue, SupportsIndex, Sequence
