@@ -628,7 +628,8 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
         // chunk so grab that seperately
         PyObject *file_comp =
             PySequence_GetItem(path_components, all_path_comp_len - 1);
-        PyObject *longest_valid_path = NULL;
+        PyObject *longest_valid_path = PyObject_CallMethod(
+            path_submodule, "normpath", "O", starting_path);
         PyObject *temp_path = NULL;
         // loop through all the non-file path components rebuilding the path
         // component-by-component and checking at each addition if the formed
@@ -643,14 +644,8 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
                 if (temp_path) {
                     Py_XDECREF(temp_path);
                 }
-                if (longest_valid_path) {
-                    temp_path = add_to_path(path_submodule, longest_valid_path,
-                                            path_comp);
-                }
-                else {
-                    temp_path =
-                        add_to_path(path_submodule, starting_path, path_comp);
-                }
+                temp_path =
+                    add_to_path(path_submodule, longest_valid_path, path_comp);
                 PyObject *is_dir = PyObject_CallMethod(path_submodule, "isdir",
                                                        "O", temp_path);
                 if (is_dir == Py_True) {
@@ -774,7 +769,7 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
                 PyObject *new_longest_valid_path = NULL;
                 new_longest_valid_path = add_to_path(
                     path_submodule, longest_valid_path, closest_match);
-                Py_DECREF(closest_match);
+                Py_XDECREF(closest_match);
                 Py_XDECREF(longest_valid_path);
                 longest_valid_path = new_longest_valid_path;
             }
