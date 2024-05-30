@@ -4260,8 +4260,9 @@ math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     double a = PyFloat_AsDouble(args[0]);
     RAISE_ARG_TYPE_ERROR("min")
-    double b = PyFloat_AsDouble(args[1]) RAISE_ARG_TYPE_ERROR("max") double t =
-        PyFloat_AsDouble(args[2]);
+    double b = PyFloat_AsDouble(args[1]);
+    RAISE_ARG_TYPE_ERROR("max")
+    double t = PyFloat_AsDouble(args[2]);
     RAISE_ARG_TYPE_ERROR("value")
 
     if (PyErr_Occurred())
