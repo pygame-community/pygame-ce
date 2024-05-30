@@ -149,6 +149,10 @@ Dependency versions:
 | SDL_ttf  | >= 2.0.15              |
 +----------+------------------------+
 
+How To Contribute
+-----------------
+
+If you want to contribute to pygame-ce, please read the `CONTRIBUTING.md`_ file and the code of conduct.
 
 
 License
@@ -181,7 +185,7 @@ See docs/licenses for licenses of dependencies.
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
-   
+
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
@@ -192,6 +196,7 @@ See docs/licenses for licenses of dependencies.
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
 .. _docs page: https://pyga.me/docs
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
+.. _CONTRIBUTING.md: https://github.com/pygame-community/pygame-ce/blob/main/CONTRIBUTING.md
 
 .. _简体中文: ./docs/readmes/README.zh-cn.rst
 .. _Français: ./docs/readmes/README.fr.rst
