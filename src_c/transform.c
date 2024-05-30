@@ -2289,6 +2289,8 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
     Uint8 r, g, b, a;
     float s_h = 0, s_s = 0, s_l = 0;
     SDL_PixelFormat *fmt = surf->format;
+    Uint8 *srcp8 = (Uint8 *)surf->pixels;
+    Uint8 *dstp8 = (Uint8 *)dst->pixels;
 
     int surf_locked = 0;
     if (SDL_MUSTLOCK(surf)) {
@@ -2304,9 +2306,6 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
     }
 
     if (fmt->BytesPerPixel == 4 || fmt->BytesPerPixel == 3) {
-        Uint8 *srcp8 = (Uint8 *)surf->pixels;
-        Uint8 *dstp8 = (Uint8 *)dst->pixels;
-
         const int src_skip = surf->pitch - surf->w * fmt->BytesPerPixel;
         const int dst_skip = dst->pitch - dst->w * fmt->BytesPerPixel;
 
@@ -2356,12 +2355,11 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
         }
     }
     else {
-        Uint32 *pix, pixel;
-        Uint32 *src_pixels = (Uint32 *)surf->pixels;
-        Uint32 *dst_pixels = (Uint32 *)dst->pixels;
+        Uint8 *pix;
+        Uint32 pixel;
         for (y = 0; y < surf->h; y++) {
             for (x = 0; x < surf->w; x++) {
-                SURF_GET_AT(pixel, surf, x, y, src_pixels, fmt, pix);
+                SURF_GET_AT(pixel, surf, x, y, srcp8, fmt, pix);
                 SDL_GetRGBA(pixel, fmt, &r, &g, &b, &a);
                 RGB_to_HSL(r, g, b, &s_h, &s_s, &s_l);
 
@@ -2383,7 +2381,7 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
 
                 HSL_to_RGB(s_h, s_s, s_l, &r, &g, &b);
                 pixel = SDL_MapRGBA(fmt, r, g, b, a);
-                SURF_SET_AT(pixel, dst, x, y, dst_pixels, fmt, pix);
+                SURF_SET_AT(pixel, dst, x, y, dstp8, fmt, pix);
             }
         }
     }
