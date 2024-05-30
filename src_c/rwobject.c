@@ -595,8 +595,7 @@ get_contents_at_path(PyObject *os_module, PyObject *path_submodule,
             PySequence_GetItem(path_to_check, path_length - 1);
         if (PyUnicode_Compare(last_char, PyUnicode_FromString(":")) == 0) {
             // handle Windows drive letters
-            PyObject *drive_letter_path = NULL;
-            drive_letter_path =
+            PyObject *drive_letter_path =
                 PyObject_CallMethod(path_submodule, "join", "OO",
                                     path_to_check, PyUnicode_FromString("\\"));
             Py_XDECREF(path_to_check);
@@ -629,10 +628,7 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
         // chunk so grab that seperately
         PyObject *file_comp =
             PySequence_GetItem(path_components, all_path_comp_len - 1);
-        PyObject *longest_valid_path = starting_path;
-        // Add reference here so we can consistently
-        // de-reference longest_valid_path later
-        Py_INCREF(longest_valid_path);
+        PyObject *longest_valid_path = NULL;
         PyObject *temp_path = NULL;
         // loop through all the non-file path components rebuilding the path
         // component-by-component and checking at each addition if the formed
@@ -647,8 +643,14 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
                 if (temp_path) {
                     Py_XDECREF(temp_path);
                 }
-                temp_path =
-                    add_to_path(path_submodule, longest_valid_path, path_comp);
+                if(longest_valid_path){
+                    temp_path =
+                        add_to_path(path_submodule, longest_valid_path, path_comp);
+                }
+                else{
+                    temp_path =
+                        add_to_path(path_submodule, starting_path, path_comp);
+                }
                 PyObject *is_dir = PyObject_CallMethod(path_submodule, "isdir",
                                                        "O", temp_path);
                 if (is_dir == Py_True) {
@@ -704,8 +706,7 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
                         if ((int)PySequence_Length(closest_matches) > 0) {
                             PyObject *closest_match =
                                 PySequence_GetItem(closest_matches, 0);
-                            PyObject *new_longest_valid_path = NULL;
-                            new_longest_valid_path =
+                            PyObject *new_longest_valid_path =
                                 add_to_path(path_submodule, longest_valid_path,
                                             closest_match);
                             Py_XDECREF(closest_match);
@@ -791,12 +792,10 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
         }
         Py_XDECREF(actual_files);
         Py_XDECREF(file_comp);
-        PyObject *new_longest_valid_path = NULL;
-        new_longest_valid_path = PyObject_CallMethod(
+        PyObject *new_longest_valid_path = PyObject_CallMethod(
             path_submodule, "normpath", "O", longest_valid_path);
         Py_XDECREF(longest_valid_path);
-        longest_valid_path = new_longest_valid_path;
-        return longest_valid_path;
+        return new_longest_valid_path;
     }
     else {
         PyErr_Format(PyExc_FileNotFoundError, "unable to split path: '%S'?",
@@ -910,8 +909,7 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
             // slashes as these will work in python/pygame-ce on all platforms
             // and are less fiddly than back slash paths with escaped back
             // slashes.
-            PyObject *new_suggested_valid_path = NULL;
-            new_suggested_valid_path = PyObject_CallMethod(
+            PyObject *new_suggested_valid_path = PyObject_CallMethod(
                 suggested_valid_path, "replace", "ss", "\\", "/");
             Py_XDECREF(suggested_valid_path);
             PyErr_Format(PyExc_FileNotFoundError,
@@ -955,7 +953,7 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
                          "you mean: '%S'?",
                          obj, cwd, new_suggested_rel_path);
 
-            Py_XDECREF(suggested_rel_path);
+            Py_XDECREF(new_suggested_rel_path);
         }
 
         Py_XDECREF(path_submodule);
