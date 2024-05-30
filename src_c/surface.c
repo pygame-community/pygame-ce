@@ -3833,8 +3833,9 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
         // destination position has values that are too large
         return 0;
     }
-    if ((srcrect->x < -INT_MAX) || (srcrect->x > INT_MAX) ||
-        (srcrect->y < -INT_MAX) || (srcrect->y > INT_MAX)) {
+    if (srcrect != NULL &&
+        ((srcrect->x < -INT_MAX) || (srcrect->x > INT_MAX) ||
+         (srcrect->y < -INT_MAX) || (srcrect->y > INT_MAX))) {
         // source position has values that are too large:
         return 0;
     }
