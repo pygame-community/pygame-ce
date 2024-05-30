@@ -1357,7 +1357,8 @@ RectExport_collidecircle(RectObject *self, PyObject *const *args,
     }
 
     return PyBool_FromLong(
-        pgCollision_RectCircle(srect.x, srect.y, srect.w, srect.h, &circle));
+        pgCollision_RectCircle((double)srect.x, (double)srect.y,
+                               (double)srect.w, (double)srect.h, &circle));
 }
 
 #ifndef OPTIMIZED_COLLIDERECT_SETUP
