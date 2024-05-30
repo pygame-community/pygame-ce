@@ -2219,77 +2219,67 @@ surf_grayscale(PyObject *self, PyObject *args, PyObject *kwargs)
  * and
  * http://en.wikipedia.org/wiki/HSL_color_space
  */
-static inline void
+static PG_FORCEINLINE void
 RGB_to_HSL(Uint8 r, Uint8 g, Uint8 b, float *h, float *s, float *l)
 {
-    float min, max;
-    float r_1, g_1, b_1;
-    float chr, val;
+    float r_1 = r / 255.0f;
+    float g_1 = g / 255.0f;
+    float b_1 = b / 255.0f;
 
-    r_1 = (float)(r / 255.0);
-    g_1 = (float)(g / 255.0);
-    b_1 = (float)(b / 255.0);
+    float min = MIN3(r_1, g_1, b_1);
+    float max = MAX3(r_1, g_1, b_1);
+    float delta = max - min;
 
-    min = MIN3(r_1, g_1, b_1);
-    max = MAX3(r_1, g_1, b_1);
+    *l = (max + min) / 2.0f;
 
-    chr = max - min;
-    val = max + min;
-
-    *l = (float)(val / 2.0);
-
-    if (chr == 0.0) {
-        *h = *s = 0.0;
-        return;
+    if (delta == 0) {
+        *h = *s = 0;  // achromatic
     }
+    else {
+        *s = *l > 0.5f ? delta / (2.0f - max - min) : delta / (max + min);
 
-    *s = (float)(*l > 0.5 ? chr / (2.0 - val) : chr / val);
-
-    if (chr == 0.0) {
-        *h = 0.0;
+        if (max == r_1) {
+            *h = (g_1 - b_1) / delta + (g_1 < b_1 ? 6 : 0);
+        }
+        else if (max == g_1) {
+            *h = (b_1 - r_1) / delta + 2;
+        }
+        else {
+            *h = (r_1 - g_1) / delta + 4;
+        }
+        *h /= 6;
     }
-    else if (max == r_1) {
-        *h = (float)((g_1 - b_1) / chr + (g_1 < b_1 ? 6.0 : 0.0));
-    }
-    else if (max == g_1) {
-        *h = (float)((b_1 - r_1) / chr + 2.0);
-    }
-    else if (max == b_1) {
-        *h = (float)((r_1 - g_1) / chr + 4.0);
-    }
-    *h /= 6.0;
 }
 
-static inline Uint8
-hue_to_rgb(float v1, float v2, float vH)
+static PG_FORCEINLINE float
+hue_to_rgb(float p, float q, float t)
 {
-    if (vH < 0)
-        vH += 1;
-    if (vH > 1)
-        vH -= 1;
-    if (vH < 1 / 6.0f)
-        return (Uint8)((v1 + (v2 - v1) * 6 * vH) * 255);
-    if (vH < 1 / 2.0f)
-        return (Uint8)(v2 * 255);
-    if (vH < 2 / 3.0f)
-        return (Uint8)((v1 + (v2 - v1) * (2.0f / 3.0f - vH) * 6) * 255);
-    return (Uint8)(v1 * 255);
+    if (t < 0)
+        t += 1;
+    if (t > 1)
+        t -= 1;
+    if (t < 1 / 6.0f)
+        return p + (q - p) * 6 * t;
+    if (t < 1 / 2.0f)
+        return q;
+    if (t < 2 / 3.0f)
+        return p + (q - p) * (2 / 3.0f - t) * 6;
+    return p;
 }
 
-static inline void
+static PG_FORCEINLINE void
 HSL_to_RGB(float h, float s, float l, Uint8 *r, Uint8 *g, Uint8 *b)
 {
     if (s == 0) {
         *r = *g = *b = (Uint8)(l * 255);
-        return;
     }
-
-    float v1, v2;
-    v2 = l < 0.5 ? l * (1 + s) : l + s - s * l;
-    v1 = 2 * l - v2;
-    *r = hue_to_rgb(v1, v2, h + 1.0f / 3.0f);
-    *g = hue_to_rgb(v1, v2, h);
-    *b = hue_to_rgb(v1, v2, h - 1.0f / 3.0f);
+    else {
+        float q = l < 0.5f ? l * (1 + s) : l + s - l * s;
+        float p = 2 * l - q;
+        *r = (Uint8)(hue_to_rgb(p, q, h + 1 / 3.0f) * 255);
+        *g = (Uint8)(hue_to_rgb(p, q, h) * 255);
+        *b = (Uint8)(hue_to_rgb(p, q, h - 1 / 3.0f) * 255);
+    }
 }
 
 static void
@@ -2354,7 +2344,7 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
 
         while (height--) {
             for (x = 0; x < surf->w; x++) {
-                pixel = *src_pixels32++;
+                pixel = *src_pixels32;
                 RGB_to_HSL((pixel >> fmt->Rshift) & RightMask,
                            (pixel >> fmt->Gshift) & RightMask,
                            (pixel >> fmt->Bshift) & RightMask, &s_h, &s_s,
@@ -2377,10 +2367,13 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
                 }
 
                 HSL_to_RGB(s_h, s_s, s_l, &r, &g, &b);
-                *dst_pixels32++ = ((r >> fmt->Rloss) << fmt->Rshift) |
-                                  ((g >> fmt->Gloss) << fmt->Gshift) |
-                                  ((b >> fmt->Bloss) << fmt->Bshift) |
-                                  (pixel & fmt->Amask);
+                *dst_pixels32 = ((r >> fmt->Rloss) << fmt->Rshift) |
+                                ((g >> fmt->Gloss) << fmt->Gshift) |
+                                ((b >> fmt->Bloss) << fmt->Bshift) |
+                                (pixel & fmt->Amask);
+
+                src_pixels32++;
+                dst_pixels32++;
             }
             src_pixels32 += src_skip;
             dst_pixels32 += dst_skip;
