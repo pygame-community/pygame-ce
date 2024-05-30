@@ -2285,6 +2285,13 @@ HSL_to_RGB(float h, float s, float l, Uint8 *r, Uint8 *g, Uint8 *b)
 static void
 modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
 {
+    int x, y;
+    Uint8 r, g, b, a;
+    Uint8 *src_pixels = (Uint8 *)surf->pixels;
+    Uint8 *dst_pixels = (Uint8 *)dst->pixels;
+    float s_h = 0, s_s = 0, s_l = 0;
+    SDL_PixelFormat *fmt = surf->format;
+
     int surf_locked = 0;
     if (SDL_MUSTLOCK(surf)) {
         if (SDL_LockSurface(surf) == 0) {
@@ -2297,15 +2304,55 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
             dst_locked = 1;
         }
     }
-    int x, y;
-    Uint8 r, g, b, a;
-    Uint8 *src_pixels = (Uint8 *)surf->pixels, *pix;
-    Uint8 *dst_pixels = (Uint8 *)dst->pixels;
-    float s_h = 0, s_s = 0, s_l = 0;
-    Uint32 pixel;
-    SDL_PixelFormat *fmt = surf->format;
 
-    if (surf->format->BytesPerPixel != 4) {
+    if (fmt->BytesPerPixel == 4 || fmt->BytesPerPixel == 3) {
+        Uint8 *src_pixels = (Uint8 *)surf->pixels;
+        Uint8 *dst_pixels = (Uint8 *)dst->pixels;
+
+        const int src_skip = surf->pitch - surf->w * fmt->BytesPerPixel;
+        const int dst_skip = dst->pitch - dst->w * fmt->BytesPerPixel;
+
+        const int Ridx = fmt->Rshift >> 3;
+        const int Gidx = fmt->Gshift >> 3;
+        const int Bidx = fmt->Bshift >> 3;
+
+        int height = surf->h;
+
+        while (height--) {
+            for (x = 0; x < surf->w; x++) {
+                RGB_to_HSL(src_pixels[Ridx], src_pixels[Gidx],
+                           src_pixels[Bidx], &s_h, &s_s, &s_l);
+
+                if (h) {
+                    s_h += h;
+                    if (s_h > 1)
+                        s_h -= 1;
+                    else if (s_h < 0)
+                        s_h += 1;
+                }
+                if (s) {
+                    s_s = s_s * (1 + s);
+                    s_s = s_s > 1 ? 1 : s_s < 0 ? 0 : s_s;
+                }
+                if (l) {
+                    s_l = l < 0 ? s_l * (1 + l) : s_l * (1 - l) + l;
+                    s_l = s_l > 1 ? 1 : s_l < 0 ? 0 : s_l;
+                }
+
+                HSL_to_RGB(s_h, s_s, s_l, &r, &g, &b);
+                dst_pixels[Ridx] = r;
+                dst_pixels[Gidx] = g;
+                dst_pixels[Bidx] = b;
+
+                src_pixels += fmt->BytesPerPixel;
+                dst_pixels += fmt->BytesPerPixel;
+            }
+            src_pixels += src_skip;
+            dst_pixels += dst_skip;
+        }
+    }
+    else {
+        Uint32 *pix, pixel;
         for (y = 0; y < surf->h; y++) {
             for (x = 0; x < surf->w; x++) {
                 SURF_GET_AT(pixel, surf, x, y, src_pixels, fmt, pix);
@@ -2332,51 +2379,6 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
                 pixel = SDL_MapRGBA(fmt, r, g, b, a);
                 SURF_SET_AT(pixel, dst, x, y, dst_pixels, fmt, pix);
             }
-        }
-    }
-    else {
-        Uint32 *src_pixels32 = (Uint32 *)surf->pixels;
-        Uint32 *dst_pixels32 = (Uint32 *)dst->pixels;
-        Uint32 src_skip = (surf->pitch >> 2) - surf->w;
-        Uint32 dst_skip = (dst->pitch >> 2) - dst->w;
-        int height = surf->h;
-        Uint32 RightMask = 0x000000FF;
-
-        while (height--) {
-            for (x = 0; x < surf->w; x++) {
-                pixel = *src_pixels32;
-                RGB_to_HSL((pixel >> fmt->Rshift) & RightMask,
-                           (pixel >> fmt->Gshift) & RightMask,
-                           (pixel >> fmt->Bshift) & RightMask, &s_h, &s_s,
-                           &s_l);
-
-                if (h) {
-                    s_h += h;
-                    if (s_h > 1)
-                        s_h -= 1;
-                    else if (s_h < 0)
-                        s_h += 1;
-                }
-                if (s) {
-                    s_s = s_s * (1 + s);
-                    s_s = s_s > 1 ? 1 : s_s < 0 ? 0 : s_s;
-                }
-                if (l) {
-                    s_l = l < 0 ? s_l * (1 + l) : s_l * (1 - l) + l;
-                    s_l = s_l > 1 ? 1 : s_l < 0 ? 0 : s_l;
-                }
-
-                HSL_to_RGB(s_h, s_s, s_l, &r, &g, &b);
-                *dst_pixels32 = ((r >> fmt->Rloss) << fmt->Rshift) |
-                                ((g >> fmt->Gloss) << fmt->Gshift) |
-                                ((b >> fmt->Bloss) << fmt->Bshift) |
-                                (pixel & fmt->Amask);
-
-                src_pixels32++;
-                dst_pixels32++;
-            }
-            src_pixels32 += src_skip;
-            dst_pixels32 += dst_skip;
         }
     }
 
@@ -2406,13 +2408,13 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (s < -1 || s > 1) {
         PyObject *value = PyFloat_FromDouble((double)s);
-        if (!value) {
+        if (!value)
             return NULL;
-        }
+
         PyErr_Format(PyExc_ValueError,
                      "saturation value must be between -1 and 1, got %R",
                      value);
-        Py_XDECREF(value);
+        Py_DECREF(value);
         return NULL;
     }
     if (l < -1 || l > 1) {
@@ -2423,7 +2425,7 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
         PyErr_Format(PyExc_ValueError,
                      "lightness value must be between -1 and 1, got %R",
                      value);
-        Py_XDECREF(value);
+        Py_DECREF(value);
         return NULL;
     }
 
