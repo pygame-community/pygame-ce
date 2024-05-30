@@ -3828,6 +3828,15 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
     SDL_Rect orig_clip, sub_clip;
     Uint8 alpha;
 
+    if ((dstrect->x < -INT_MAX) || (dstrect->x > INT_MAX) || (dstrect->y < -INT_MAX) || (dstrect->y > INT_MAX)){
+        // destination position has values that are too large
+        return 0;
+    }
+    if ((srcrect->x < -INT_MAX) || (srcrect->x > INT_MAX) || (srcrect->y < -INT_MAX) || (srcrect->y > INT_MAX)){
+        // source position has values that are too large:
+        return 0;
+    }
+
     /* passthrough blits to the real surface */
     if (((pgSurfaceObject *)dstobj)->subsurface) {
         PyObject *owner;
