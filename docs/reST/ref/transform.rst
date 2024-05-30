@@ -419,13 +419,13 @@ Instead, always begin with the original image and scale to the desired size.)
 
    :param pygame.Surface surface: The surface to transform.
 
-   :param float h: The amount to change the hue. Positive values rotate the hue clockwise,
+   :param float hue: The amount to change the hue. Positive values rotate the hue clockwise,
      while negative values rotate it counterclockwise. Value range: -360 to 360.
 
-   :param float s: The amount to change the saturation. Positive values increase saturation,
+   :param float saturation: The amount to change the saturation. Positive values increase saturation,
      while negative values decrease it. Value range: -1 to 1.
 
-   :param float l: The amount to change the lightness. Positive values increase lightness,
+   :param float lightness: The amount to change the lightness. Positive values increase lightness,
      while negative values decrease it. Value range: -1 to 1.
 
    :param pygame.Surface dest_surface: An optional destination surface to store the transformed image.
