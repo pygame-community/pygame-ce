@@ -4245,7 +4245,11 @@ math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     return value;
 }
 
-#define RAISE_ARG_TYPE_ERROR(py_num_obj, var) (!PyNumber_Check(py_num_obj))?RAISE(PyExc_TypeError, "The argument '"var"' must be a real number"):{}
+#define RAISE_ARG_TYPE_ERROR(py_num_obj, var)                         \
+    if (!PyNumber_Check(py_num_obj)) {                                \
+        return RAISE(PyExc_TypeError,                                 \
+                     "The argument '" var "' must be a real number"); \
+    }
 
 static PyObject *
 math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
@@ -4261,7 +4265,8 @@ math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     PyObject *value = args[2];
     RAISE_ARG_TYPE_ERROR(value, "value")
 
-    // if (!PyNumber_Check(min) || !PyNumber_Check(max) || !PyNumber_Check(value))
+    // if (!PyNumber_Check(min) || !PyNumber_Check(max) ||
+    // !PyNumber_Check(value))
     //     return RAISE(PyExc_TypeError,
     //                  "invlerp requires all the arguments to be numbers");
 
