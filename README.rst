@@ -153,6 +153,7 @@ Dependency versions:
 
 License
 -------
+**License Identifier:** LGPL-2.1-or-later
 
 This library is distributed under `GNU LGPL version 2.1`_, which can
 be found in the file ``docs/LGPL.txt``.  We reserve the right to place
