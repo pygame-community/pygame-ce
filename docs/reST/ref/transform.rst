@@ -441,7 +441,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
       new_surf = hsl(original_surf, 30, 0.2, -0.1)
 
-   .. versionadded:: 2.4.0
+   .. versionadded:: 2.5.0
 
    .. ## pygame.transform.hsl ##
 
