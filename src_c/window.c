@@ -145,7 +145,7 @@ window_destroy(pgWindowObject *self, PyObject *_null)
 }
 
 static PyObject *
-window_get_surface(pgWindowObject *self)
+window_get_surface(pgWindowObject *self, PyObject *_null)
 {
     PyObject *surf = NULL;
     SDL_Surface *_surf;
@@ -185,7 +185,7 @@ window_get_surface(pgWindowObject *self)
 }
 
 static PyObject *
-window_flip(pgWindowObject *self)
+window_flip(pgWindowObject *self, PyObject *_null)
 {
     int result;
 
