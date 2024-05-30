@@ -2287,8 +2287,6 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
 {
     int x, y;
     Uint8 r, g, b, a;
-    Uint8 *src_pixels = (Uint8 *)surf->pixels;
-    Uint8 *dst_pixels = (Uint8 *)dst->pixels;
     float s_h = 0, s_s = 0, s_l = 0;
     SDL_PixelFormat *fmt = surf->format;
 
@@ -2306,22 +2304,28 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
     }
 
     if (fmt->BytesPerPixel == 4 || fmt->BytesPerPixel == 3) {
-        Uint8 *src_pixels = (Uint8 *)surf->pixels;
-        Uint8 *dst_pixels = (Uint8 *)dst->pixels;
+        Uint8 *srcp8 = (Uint8 *)surf->pixels;
+        Uint8 *dstp8 = (Uint8 *)dst->pixels;
 
         const int src_skip = surf->pitch - surf->w * fmt->BytesPerPixel;
         const int dst_skip = dst->pitch - dst->w * fmt->BytesPerPixel;
 
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
         const int Ridx = fmt->Rshift >> 3;
         const int Gidx = fmt->Gshift >> 3;
         const int Bidx = fmt->Bshift >> 3;
+#else
+        const int Ridx = 3 - (fmt->Rshift >> 3);
+        const int Gidx = 3 - (fmt->Gshift >> 3);
+        const int Bidx = 3 - (fmt->Bshift >> 3);
+#endif
 
         int height = surf->h;
 
         while (height--) {
             for (x = 0; x < surf->w; x++) {
-                RGB_to_HSL(src_pixels[Ridx], src_pixels[Gidx],
-                           src_pixels[Bidx], &s_h, &s_s, &s_l);
+                RGB_to_HSL(srcp8[Ridx], srcp8[Gidx], srcp8[Bidx], &s_h, &s_s,
+                           &s_l);
 
                 if (h) {
                     s_h += h;
@@ -2340,19 +2344,21 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
                 }
 
                 HSL_to_RGB(s_h, s_s, s_l, &r, &g, &b);
-                dst_pixels[Ridx] = r;
-                dst_pixels[Gidx] = g;
-                dst_pixels[Bidx] = b;
+                dstp8[Ridx] = r;
+                dstp8[Gidx] = g;
+                dstp8[Bidx] = b;
 
-                src_pixels += fmt->BytesPerPixel;
-                dst_pixels += fmt->BytesPerPixel;
+                srcp8 += fmt->BytesPerPixel;
+                dstp8 += fmt->BytesPerPixel;
             }
-            src_pixels += src_skip;
-            dst_pixels += dst_skip;
+            srcp8 += src_skip;
+            dstp8 += dst_skip;
         }
     }
     else {
         Uint32 *pix, pixel;
+        Uint32 *src_pixels = (Uint32 *)surf->pixels;
+        Uint32 *dst_pixels = (Uint32 *)dst->pixels;
         for (y = 0; y < surf->h; y++) {
             for (x = 0; x < surf->w; x++) {
                 SURF_GET_AT(pixel, surf, x, y, src_pixels, fmt, pix);
