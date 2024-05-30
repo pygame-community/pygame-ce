@@ -643,11 +643,11 @@ suggest_valid_path(PyObject *path_submodule, PyObject *original_path,
                 if (temp_path) {
                     Py_XDECREF(temp_path);
                 }
-                if(longest_valid_path){
-                    temp_path =
-                        add_to_path(path_submodule, longest_valid_path, path_comp);
+                if (longest_valid_path) {
+                    temp_path = add_to_path(path_submodule, longest_valid_path,
+                                            path_comp);
                 }
-                else{
+                else {
                     temp_path =
                         add_to_path(path_submodule, starting_path, path_comp);
                 }
