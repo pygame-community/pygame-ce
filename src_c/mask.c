@@ -43,6 +43,24 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+/* Pretty good idea from Tom Duff :-). */
+#ifndef LOOP_UNROLLED4
+#define LOOP_UNROLLED4(code, n, width) \
+    n = (width + 3) / 4;               \
+    switch (width & 3) {               \
+        case 0:                        \
+            do {                       \
+                code;                  \
+                case 3:                \
+                    code;              \
+                case 2:                \
+                    code;              \
+                case 1:                \
+                    code;              \
+            } while (--n > 0);         \
+    }
+#endif
+
 /* Macro to create mask objects. This will call the type's tp_new and tp_init.
  * Params:
  *     w: width of mask
@@ -770,22 +788,41 @@ set_pixel_color(Uint8 *pixel, Uint8 bpp, Uint32 color)
 static void
 set_from_threshold(SDL_Surface *surf, bitmask_t *bitmask, int threshold)
 {
-    SDL_PixelFormat *format = surf->format;
-    Uint8 bpp = PG_FORMAT_BytesPerPixel(format);
-    Uint8 *pixel = NULL;
-    Uint8 rgba[4];
-    int x, y;
+    SDL_PixelFormat *fmt = surf->format;
+    const Uint8 bpp = PG_FORMAT_BytesPerPixel(fmt);
+    if (bpp < 4) { /* fast path for non-alpha surfaces */
+        bitmask_fill(bitmask);
+        return;
+    }
+
+    int x, y, n;
+    const int src_skip = surf->pitch - surf->w * bpp;
+    const Uint8 u_threshold = (Uint8)threshold;
+
+    /* With this strategy we avoid to get the rgb channels that we don't need
+     * and instead we just jump from alpha channel to alpha channel, comparing
+     * it with the threshold. */
+
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    const char _a_off = fmt->Ashift >> 3;
+#else
+    const char _a_off = 3 - (fmt->Ashift >> 3);
+#endif
+
+    Uint8 *srcp = (Uint8 *)surf->pixels + _a_off;
 
     for (y = 0; y < surf->h; ++y) {
-        pixel = (Uint8 *)surf->pixels + y * surf->pitch;
+        x = 0;
+        LOOP_UNROLLED4(
+            {
+                if ((*srcp) > u_threshold)
+                    bitmask_setbit(bitmask, x, y);
+                srcp += bpp;
+                x++;
+            },
+            n, surf->w);
 
-        for (x = 0; x < surf->w; ++x, pixel += bpp) {
-            SDL_GetRGBA(get_pixel_color(pixel, bpp), format, rgba, rgba + 1,
-                        rgba + 2, rgba + 3);
-            if (rgba[3] > threshold) {
-                bitmask_setbit(bitmask, x, y);
-            }
-        }
+        srcp += src_skip;
     }
 }
 
@@ -836,6 +873,10 @@ mask_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|i", keywords,
                                      &pgSurface_Type, &surfobj, &threshold)) {
         return NULL; /* Exception already set. */
+    }
+
+    if (threshold < 0 || threshold > 255) {
+        return RAISE(PyExc_ValueError, "threshold must be between 0 and 255");
     }
 
     surf = pgSurface_AsSurface(surfobj);
