@@ -1076,38 +1076,44 @@ class TestSurfaceBlit(unittest.TestCase):
         # thoroughly test the fix code
         # these parts could be removed or changed once FRect is able to
         # handle/reject large values like this
-        self.dst_surface.blit(self.src_surface,
-                              pygame.FRect(float("nan"), 0.0, 300, 300))
+        self.dst_surface.blit(
+            self.src_surface, pygame.FRect(float("nan"), 0.0, 300, 300)
+        )
 
         self.assertEqual(self.dst_surface.get_at((0, 0)), (0, 0, 0))
         self.assertEqual(self.dst_surface.get_at((63, 63)), (0, 0, 0))
 
-        self.dst_surface.blit(self.src_surface,
-                              pygame.FRect(0.0, float("nan"), 300, 300))
+        self.dst_surface.blit(
+            self.src_surface, pygame.FRect(0.0, float("nan"), 300, 300)
+        )
 
         c_max_int = 2147483647
         c_min_int = -2147483648
-        self.dst_surface.blit(self.src_surface,
-                              pygame.FRect(c_max_int, c_max_int, 300, 300))
+        self.dst_surface.blit(
+            self.src_surface, pygame.FRect(c_max_int, c_max_int, 300, 300)
+        )
 
         self.assertEqual(self.dst_surface.get_at((0, 0)), (0, 0, 0))
         self.assertEqual(self.dst_surface.get_at((63, 63)), (0, 0, 0))
 
-        self.dst_surface.blit(self.src_surface,
-                              pygame.FRect(c_min_int, c_min_int, 300, 300))
+        self.dst_surface.blit(
+            self.src_surface, pygame.FRect(c_min_int, c_min_int, 300, 300)
+        )
 
         self.assertEqual(self.dst_surface.get_at((0, 0)), (0, 0, 0))
         self.assertEqual(self.dst_surface.get_at((63, 63)), (0, 0, 0))
 
         # test area too
-        self.dst_surface.blit(self.src_surface, (0, 0),
-                              pygame.FRect(c_max_int, c_max_int, 300, 300))
+        self.dst_surface.blit(
+            self.src_surface, (0, 0), pygame.FRect(c_max_int, c_max_int, 300, 300)
+        )
 
         self.assertEqual(self.dst_surface.get_at((0, 0)), (0, 0, 0))
         self.assertEqual(self.dst_surface.get_at((63, 63)), (0, 0, 0))
 
-        self.dst_surface.blit(self.src_surface, (0, 0),
-                              pygame.FRect(c_min_int, c_min_int, 300, 300))
+        self.dst_surface.blit(
+            self.src_surface, (0, 0), pygame.FRect(c_min_int, c_min_int, 300, 300)
+        )
 
         self.assertEqual(self.dst_surface.get_at((0, 0)), (0, 0, 0))
         self.assertEqual(self.dst_surface.get_at((63, 63)), (0, 0, 0))
