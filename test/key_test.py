@@ -188,7 +188,7 @@ class KeyModuleTest(unittest.TestCase):
         import pygame.key
 
     @unittest.skipIf(
-        not ("Windows" in platform.platform() or "Darwin" in platform.platform()),
+        not ("Windows" in platform.system() or "Darwin" in platform.system()),
         "Not windows or macOS - we skip.",
     )
     def test_get_focused(self):
