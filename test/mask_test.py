@@ -6089,7 +6089,18 @@ class MaskModuleTest(unittest.TestCase):
 
                 # Test the mask created at threshold values low, high and
                 # around alpha.
-                threshold_test_values = {-1, 0, alpha - 1, alpha, alpha + 1, 255, 256}
+                threshold_test_values = {
+                    0,
+                    (alpha - 1) % 255,
+                    alpha,
+                    (alpha + 1) % 255,
+                    255,
+                }
+
+                invalid_thresholds = (-1, 256, 1000)
+                for threshold in invalid_thresholds:
+                    with self.assertRaises(ValueError):
+                        mask = pygame.mask.from_surface(surface, threshold)
 
                 for threshold in threshold_test_values:
                     msg = f"depth={depth}, alpha={alpha}, threshold={threshold}"

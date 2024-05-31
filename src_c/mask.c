@@ -790,13 +790,29 @@ set_from_threshold(SDL_Surface *surf, bitmask_t *bitmask, int threshold)
 {
     SDL_PixelFormat *fmt = surf->format;
     const Uint8 bpp = PG_FORMAT_BytesPerPixel(fmt);
-    if (bpp < 4) { /* fast path for non-alpha surfaces */
+    int x, y, n;
+    Uint8 *srcp;
+    const int src_skip = surf->pitch - surf->w * bpp;
+
+    if (bpp == 3) { /* fast path for non-alpha surfaces */
         bitmask_fill(bitmask);
         return;
     }
+    else if (bpp < 3) {
+        Uint8 r, g, b, a;
+        srcp = (Uint8 *)surf->pixels;
+        for (y = 0; y < surf->h; ++y) {
+            for (x = 0; x < surf->w; ++x, srcp += bpp) {
+                SDL_GetRGBA(bpp == 1 ? *srcp : *((Uint16 *)srcp), fmt, &r, &g,
+                            &b, &a);
+                if (a > threshold)
+                    bitmask_setbit(bitmask, x, y);
+            }
+            srcp += src_skip;
+        }
+        return;
+    }
 
-    int x, y, n;
-    const int src_skip = surf->pitch - surf->w * bpp;
     const Uint8 u_threshold = (Uint8)threshold;
 
     /* With this strategy we avoid to get the rgb channels that we don't need
@@ -809,7 +825,7 @@ set_from_threshold(SDL_Surface *surf, bitmask_t *bitmask, int threshold)
     const char _a_off = 3 - (fmt->Ashift >> 3);
 #endif
 
-    Uint8 *srcp = (Uint8 *)surf->pixels + _a_off;
+    srcp = (Uint8 *)surf->pixels + _a_off;
 
     for (y = 0; y < surf->h; ++y) {
         x = 0;
