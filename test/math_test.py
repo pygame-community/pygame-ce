@@ -122,7 +122,7 @@ class MathModuleTest(unittest.TestCase):
             b = 5
             pygame.math.invlerp(a, b, 5)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             a = 12**300
             b = 11**30
             pygame.math.invlerp(a, b, 1)
