@@ -4287,27 +4287,21 @@ math_remap(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
                      "remap requires exactly 5 numeric arguments");
 
     PyObject *i_min = args[0];
-    if (!PyNumber_Check(i_min)) {return RAISE_ARG_TYPE_ERROR("i_min");}
     PyObject *i_max = args[1];
-    if (!PyNumber_Check(i_max)) {return RAISE_ARG_TYPE_ERROR("i_max");}
     PyObject *o_min = args[2];
-    if (!PyNumber_Check(o_min)) {return RAISE_ARG_TYPE_ERROR("o_min");}
     PyObject *o_max = args[3];
-    if (!PyNumber_Check(o_max)) {return RAISE_ARG_TYPE_ERROR("o_max");}
     PyObject *value = args[4];
-    if (!PyNumber_Check(value)) {return RAISE_ARG_TYPE_ERROR("value");}
-
-    // if (!PyNumber_Check(value) || !PyNumber_Check(i_min) ||
-    //     !PyNumber_Check(i_max) || !PyNumber_Check(o_min) ||
-    //     !PyNumber_Check(o_max))
-    //     return RAISE(PyExc_TypeError,
-    //                  "remap requires all the arguments to be numbers");
 
     double v = PyFloat_AsDouble(value);
+    RAISE_ARG_TYPE_ERROR("value")
     double a = PyFloat_AsDouble(i_min);
+    RAISE_ARG_TYPE_ERROR("i_min")
     double b = PyFloat_AsDouble(i_max);
+    RAISE_ARG_TYPE_ERROR("i_max")
     double c = PyFloat_AsDouble(o_min);
+    RAISE_ARG_TYPE_ERROR("o_min")
     double d = PyFloat_AsDouble(o_max);
+    RAISE_ARG_TYPE_ERROR("o_max")
 
     if (PyErr_Occurred())
         return RAISE(PyExc_ValueError,

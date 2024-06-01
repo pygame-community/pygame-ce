@@ -85,13 +85,26 @@ Multiple coordinates can be set using slices or swizzling
    | :sg:`invlerp(a, b, value, /) -> float`
 
    Returns a number which is an inverse interpolation between ``a``
-   and ``b``. The third parameter determines how far between ``a`` and
-   ``b`` the result is going to be.
+   and ``b``. The third parameter ``value`` is the result of the linear interpolation
+   between a and b with a certain coefficient. In other words, this coefficient
+   will be the result of this function.
    If ``b - a`` is equal to 0, it raises a ``ZeroDivisionError``.
 
    The formula is:
 
    ``(v - a)/(b - a)``.
+
+   This is an example explaining what is above :
+
+   .. code-block:: python
+
+      > a = 10
+      > b = 20
+      > pygame.math.invlerp(10, 20, 11.5)
+      > 0.15
+      > pygame.math.lerp(10, 20, 0.15)
+      > 11.5
+
 
    .. versionadded:: 2.5.0
 
