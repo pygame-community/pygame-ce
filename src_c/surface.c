@@ -3828,15 +3828,18 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
     SDL_Rect orig_clip, sub_clip;
     Uint8 alpha;
 
-    if ((dstrect->x <= INT_MIN) || (dstrect->x >= INT_MAX) ||
-        (dstrect->y <= INT_MIN) || (dstrect->y >= INT_MAX)) {
-        // destination position has values that are too large
+    if ((dstrect->x <= INT_MIN + dstrect->w) ||
+        (dstrect->x >= INT_MAX - dstrect->w) ||
+        (dstrect->y <= INT_MIN + dstrect->h) ||
+        (dstrect->y >= INT_MAX - dstrect->h)) {
+        // destination rect has values that are too large
         return 0;
     }
-    if (srcrect != NULL &&
-        ((srcrect->x <= INT_MIN) || (srcrect->x >= INT_MAX) ||
-         (srcrect->y <= INT_MIN) || (srcrect->y >= INT_MAX))) {
-        // source position has values that are too large:
+    if (srcrect != NULL && ((srcrect->x <= INT_MIN + srcrect->w) ||
+                            (srcrect->x >= INT_MAX - dstrect->w) ||
+                            (srcrect->y <= INT_MIN + srcrect->h) ||
+                            (srcrect->y >= INT_MAX - dstrect->h))) {
+        // source rect has values that are too large:
         return 0;
     }
 

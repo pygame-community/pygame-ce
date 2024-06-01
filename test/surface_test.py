@@ -1064,27 +1064,36 @@ class TestSurfaceBlit(unittest.TestCase):
     def test_blit_bad_frect_position_values(self):
         """Previously segfaulted - these should now silently exit and blit nothing"""
 
-        # test the old segfault case - just to make sure it doesn't segfault
+        # test the old segfault case s- just to make sure it doesn't segfault
+        pygame.display.init()
         screen = pygame.display.set_mode((800, 600))
         screen.fill((0, 0, 0))
         test_surf = pygame.Surface((1057, 398), flags=pygame.SRCALPHA)
         pos_rect = pygame.FRect(float("nan"), 202.0, 100.0, 100.0)
         screen.blit(test_surf, pos_rect)
+        pygame.display.quit()
 
-        # thoroughly test the fix code
+        surf_width = 2048
+        c_max_int = 2147483647
+        pygame.display.init()
+        screen = pygame.display.set_mode((63, 600))
+        test_surf = pygame.Surface((surf_width, 400), flags=pygame.SRCALPHA)
+        screen.blit(test_surf, (c_max_int - surf_width - 64, 200.0))
+        pygame.display.quit()
+
+        # thoroughly test the fix code in FRect
         # these parts could be removed or changed once FRect is able to
         # handle/reject large values like this
-        c_max_int = 2147483647
         c_min_int = -2147483648
         self.dst_surface.blit(
-            self.src_surface, pygame.FRect(c_max_int, c_max_int, 300, 300)
+            self.src_surface, pygame.FRect(float("nan"), float("inf"), 300, 300)
         )
 
         self.assertEqual(self.dst_surface.get_at((0, 0)), (0, 0, 0))
         self.assertEqual(self.dst_surface.get_at((63, 63)), (0, 0, 0))
 
         self.dst_surface.blit(
-            self.src_surface, pygame.FRect(c_min_int, c_min_int, 300, 300)
+            self.src_surface, pygame.FRect(c_max_int, c_max_int, c_max_int, c_max_int)
         )
 
         self.assertEqual(self.dst_surface.get_at((0, 0)), (0, 0, 0))
