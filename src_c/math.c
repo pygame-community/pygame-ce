@@ -4303,11 +4303,6 @@ math_remap(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     double d = PyFloat_AsDouble(o_max);
     RAISE_ARG_TYPE_ERROR("o_max")
 
-    if (PyErr_Occurred())
-        return RAISE(PyExc_ValueError,
-                     "invalid argument values passed to remap, numbers might "
-                     "be too small or too big");
-
     if (b - a == 0)
         return RAISE(
             PyExc_ValueError,

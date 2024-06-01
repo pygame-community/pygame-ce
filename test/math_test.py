@@ -173,14 +173,14 @@ class MathModuleTest(unittest.TestCase):
             d = 100
             pygame.math.remap(a, b, c, d, 10)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             a = 12**300
             b = 11**30
             c = 20
             d = 30
             pygame.math.remap(a, b, c, d, 100 * 50)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             a = 12j
             b = 11j
             c = 10j
