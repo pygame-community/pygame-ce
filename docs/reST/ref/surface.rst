@@ -1026,7 +1026,7 @@
       superior results when blitting an alpha surface onto another surface with alpha - assuming both
       surfaces contain pre-multiplied alpha colors.
 
-      There is a `tutorial on premultiplied alpha blending here. <tutorials/en/premultiplied-alpha>`
+      There is a `tutorial on premultiplied alpha blending here. <tutorials/en/premultiplied-alpha>`_
 
       .. versionadded:: 2.1.4
 
