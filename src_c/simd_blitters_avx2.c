@@ -1450,13 +1450,13 @@ blit_blend_premultiplied_avx2(SDL_BlitInfo *info)
                      */
 
                     /* blend on A half, at 16bit size, starts here.
-                     * overall target blend (with colours and alpha represented
+                     * overall target blend (with colors and alpha represented
                      * as values between 0 and 1) is:
                      *
                      * result = source.RGB + (dest.RGB * (1 - source.A))
                      *
                      * Optimised and rearranged for values between 0 and 255
-                     * the blend formula for a single colour channel is:
+                     * the blend formula for a single color channel is:
                      *
                      * (sC + dC - ((dC + 1) * sA >> 8))
                      */
@@ -1480,7 +1480,7 @@ blit_blend_premultiplied_avx2(SDL_BlitInfo *info)
 
                     mm256_dstA = _mm256_sub_epi16(mm256_src_shuff, mm256_dstA);
                     /* this is the final subtraction completing the original
-                     * colour channel blend formula. We now have blended
+                     * color channel blend formula. We now have blended
                      * channel values sitting in the same 16 bit, 00 padded
                      * arrangement of pixels as we did prior to the blend.
                      */

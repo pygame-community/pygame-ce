@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_TIME "pygame module for monitoring time"
 #define DOC_TIME_GETTICKS "get_ticks() -> milliseconds\nget the time in milliseconds"
 #define DOC_TIME_WAIT "wait(milliseconds, /) -> time\npause the program for an amount of time"

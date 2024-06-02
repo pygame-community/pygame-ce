@@ -17,6 +17,8 @@ import sys, os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.append(os.path.abspath('.'))
 
+import buildconfig.get_version as pg_ver
+
 # -- General configuration -----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
@@ -46,10 +48,10 @@ copyright = '2000-2022, pygame developers, 2023 pygame-ce developers'
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
-# The short X.Y version.
-version = '2.5.0'
+# The short X.Y.Z version.
+version = pg_ver.version_short
 # The full version, including alpha/beta/rc tags.
-release = '2.5.0.dev1'
+release = pg_ver.version
 
 # Format strings for the version directives
 versionadded_format = 'New in pygame-ce %s'

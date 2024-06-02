@@ -1,11 +1,11 @@
-"""Debug functionality that allows for more useful issue reporting
-"""
+"""Debug functionality that allows for more useful issue reporting"""
 
 import platform
 import sys
 import traceback
 import importlib
 from typing import Tuple, Optional, Callable
+from os import environ
 
 from pygame.version import ver
 
@@ -34,7 +34,7 @@ def attempt_import(module, function_name, output_str=""):
     Args:
         module: string representing module name
         function_name: string representing function name to be imported
-        output_str: optional string to prepend error messagess to if one occurs
+        output_str: optional string to prepend error messages to if one occurs
 
     Returns:
         tuple(str, bool, Any):
@@ -156,7 +156,14 @@ def print_debug_info(filename=None):
     )
 
     if display_init():
-        debug_str += f"Display Driver:\t\t{get_display_driver()}\n"
+        driver = get_display_driver()
+        if driver.upper() != "X11":
+            debug_str += f"Display Driver:\t\t{driver}\n"
+        else:
+            is_xwayland = (environ.get("XDG_SESSION_TYPE") == "wayland") or (
+                "WAYLAND_DISPLAY" in environ
+            )
+            debug_str += f"Display Driver:\t\t{driver} ( xwayland == {is_xwayland} )\n"
     else:
         debug_str += "Display Driver:\t\tDisplay Not Initialized\n"
 

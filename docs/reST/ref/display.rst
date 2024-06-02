@@ -76,7 +76,12 @@ required).
    ::
 
       Windows : windib, directx
-      Unix    : x11, dga, fbcon, directfb, ggi, vgl, svgalib, aalib
+      Unix    : x11, dga, fbcon, directfb, ggi, vgl, svgalib, aalib, wayland
+
+   :note: On wayland desktops, pygame-ce may choose to use the X11 video driver to run on Xwayland.
+      This behaviour is determined by the SDL library and might change in the future, so it's suggested
+      to account for this and not rely on the default behavior. The Wayland video driver can be forced
+      by setting the ``SDL_VIDEODRIVER`` environment variable to ``"wayland"``
 
    On some platforms it is possible to embed the pygame display into an already
    existing window. To do this, the environment variable ``SDL_WINDOWID`` must
@@ -85,6 +90,8 @@ required).
    there can be many strange side effects when running in an embedded display.
 
    It is harmless to call this more than once, repeated calls have no effect.
+
+   .. versionchanged:: 2.5.0 the manylinux wheels distributed by us now support the ``wayland`` videodriver
 
    .. ## pygame.display.init ##
 
@@ -213,6 +220,8 @@ required).
    .. versionchanged:: 2.2.0 ``vsync=1`` does not require ``SCALED`` or ``OPENGL``
 
    .. deprecated:: 2.4.0 The depth argument is ignored, and will be set to the optimal value
+
+   .. versionchanged:: 2.5.0 No longer emits warning when running on xwayland, see :func:`pygame.display.init` for details on running on wayland directly
 
 
    Basic example:
@@ -715,6 +724,31 @@ required).
 
    .. ## pygame.display.get_window_size ##
 
+.. function:: get_window_position
+
+   | :sl:`Return the position of the window or screen`
+   | :sg:`get_window_position() -> tuple`
+
+   Returns the position of the window initialized with :func:`pygame.display.set_mode()`.
+   The position will change when the user moves the window or when the position is set manually with :func:`pygame.display.set_window_position()`.
+   Coordinates could be negative or outside the desktop size bounds.
+   The position is relative to the topleft of the primary monitor and the y coordinate ignores the window frame.
+
+   .. ## pygame.display.get_window_position ##
+
+.. function:: set_window_position
+
+   | :sl:`Set the current window position`
+   | :sg:`set_window_position((x, y)) -> None`
+
+   Sets the position of the window initialized with :func:`pygame.display.set_mode()`.
+   This differs from updating environment variables as this function can be called after the display has been initialised.
+   The position is expected to be relative to the topleft of the primary monitor.
+   The y coordinate will ignore the window frame (y = 0 means the frame is hidden).
+   The user will still be able to move the window after this call. See also :func:`pygame.display.get_window_position()`.
+
+   .. ## pygame.display.set_window_position ##
+
 .. function:: get_allow_screensaver
 
    | :sl:`Return whether the screensaver is allowed to run.`
@@ -836,6 +870,6 @@ required).
    just like standard Python list indexing.
 
    .. versionadded:: 2.4.0
-   
+
 
 .. ## pygame.display ##

@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_COLOR "Color(r, g, b) -> Color\nColor(r, g, b, a=255) -> Color\nColor(color_value) -> Color\npygame object for color representations"
 #define DOC_COLOR_R "r -> int\nGets or sets the red value of the Color."
 #define DOC_COLOR_G "g -> int\nGets or sets the green value of the Color."

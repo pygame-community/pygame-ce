@@ -79,7 +79,7 @@ fastPixelColorNolock(SDL_Surface *dst, Sint16 x, Sint16 y, Uint32 color)
         /*
          * Get destination format
          */
-        bpp = dst->format->BytesPerPixel;
+        bpp = GFX_SURF_BytesPerPixel(dst);
         p = (Uint8 *)dst->pixels + y * dst->pitch + x * bpp;
         switch (bpp) {
             case 1:
@@ -131,7 +131,7 @@ int fastPixelColorNolockNoclip(SDL_Surface * dst, Sint16 x, Sint16 y, Uint32 col
 	/*
 	* Get destination format
 	*/
-	bpp = dst->format->BytesPerPixel;
+	bpp = GFX_SURF_BytesPerPixel(dst);
 	p = (Uint8 *) dst->pixels + y * dst->pitch + x * bpp;
 	switch (bpp) {
 	case 1:
@@ -287,7 +287,7 @@ _putPixelAlpha(SDL_Surface *dst, Sint16 x, Sint16 y, Uint32 color, Uint8 alpha)
         y <= clip_ymax(dst)) {
         format = dst->format;
 
-        switch (format->BytesPerPixel) {
+        switch (GFX_FORMAT_BytesPerPixel(format)) {
             case 1: { /* Assuming 8-bpp */
                 if (alpha == 255) {
                     *((Uint8 *)dst->pixels + y * dst->pitch + x) = color;
@@ -602,7 +602,7 @@ _filledRectAlpha(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
     Sint16 x, y;
 
     format = dst->format;
-    switch (format->BytesPerPixel) {
+    switch (GFX_FORMAT_BytesPerPixel(format)) {
         case 1: { /* Assuming 8-bpp */
             Uint8 *row, *pixel;
             Uint8 dR, dG, dB;
@@ -1098,14 +1098,14 @@ hlineColorStore(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y, Uint32 color)
      * More variable setup
      */
     dx = w;
-    pixx = dst->format->BytesPerPixel;
+    pixx = GFX_SURF_BytesPerPixel(dst);
     pixy = dst->pitch;
     pixel = ((Uint8 *)dst->pixels) + pixx * (int)x1 + pixy * (int)y;
 
     /*
      * Draw
      */
-    switch (dst->format->BytesPerPixel) {
+    switch (GFX_SURF_BytesPerPixel(dst)) {
         case 1:
             memset(pixel, color, dx + 1);
             break;
@@ -1288,14 +1288,14 @@ hlineColor(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y, Uint32 color)
         /*
          * More variable setup
          */
-        pixx = dst->format->BytesPerPixel;
+        pixx = GFX_SURF_BytesPerPixel(dst);
         pixy = dst->pitch;
         pixel = ((Uint8 *)dst->pixels) + pixx * (int)x1 + pixy * (int)y;
 
         /*
          * Draw
          */
-        switch (dst->format->BytesPerPixel) {
+        switch (GFX_SURF_BytesPerPixel(dst)) {
             case 1:
                 memset(pixel, color, dx + 1);
                 break;
@@ -1484,7 +1484,7 @@ vlineColor(SDL_Surface *dst, Sint16 x, Sint16 y1, Sint16 y2, Uint32 color)
          * More variable setup
          */
         dy = h;
-        pixx = dst->format->BytesPerPixel;
+        pixx = GFX_SURF_BytesPerPixel(dst);
         pixy = dst->pitch;
         pixel = ((Uint8 *)dst->pixels) + pixx * (int)x + pixy * (int)y1;
         pixellast = pixel + pixy * dy;
@@ -1492,7 +1492,7 @@ vlineColor(SDL_Surface *dst, Sint16 x, Sint16 y1, Sint16 y2, Uint32 color)
         /*
          * Draw
          */
-        switch (dst->format->BytesPerPixel) {
+        switch (GFX_SURF_BytesPerPixel(dst)) {
             case 1:
                 for (; pixel <= pixellast; pixel += pixy) {
                     *(Uint8 *)pixel = color;
@@ -2006,7 +2006,7 @@ int roundedBoxRGBA(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2,
 /*!
 \brief Internal clip-encoding routine.
 
-Calculates a segement-based clipping encoding for a point against a rectangle.
+Calculates a segment-based clipping encoding for a point against a rectangle.
 
 \param x X coordinate of point.
 \param y Y coordinate of point.
@@ -2265,7 +2265,7 @@ boxColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
          */
         dx = w;
         dy = h;
-        pixx = dst->format->BytesPerPixel;
+        pixx = GFX_SURF_BytesPerPixel(dst);
         pixy = dst->pitch;
         pixel = ((Uint8 *)dst->pixels) + pixx * (int)x1 + pixy * (int)y1;
         pixellast = pixel + pixx * dx + pixy * dy;
@@ -2274,7 +2274,7 @@ boxColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
         /*
          * Draw
          */
-        switch (dst->format->BytesPerPixel) {
+        switch (GFX_SURF_BytesPerPixel(dst)) {
             case 1:
                 for (; pixel <= pixellast; pixel += pixy) {
                     memset(pixel, (Uint8)color, dx);
@@ -2463,7 +2463,7 @@ lineColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
          */
         dx = sx * dx + 1;
         dy = sy * dy + 1;
-        pixx = dst->format->BytesPerPixel;
+        pixx = GFX_SURF_BytesPerPixel(dst);
         pixy = dst->pitch;
         pixel = ((Uint8 *)dst->pixels) + pixx * (int)x1 + pixy * (int)y1;
         pixx *= sx;
@@ -2482,7 +2482,7 @@ lineColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
          */
         x = 0;
         y = 0;
-        switch (dst->format->BytesPerPixel) {
+        switch (GFX_SURF_BytesPerPixel(dst)) {
             case 1:
                 for (; x < dx; x++, pixel += pixx) {
                     *pixel = color;
@@ -4196,7 +4196,7 @@ ellipseRGBA(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
 
 /* ----- AA Ellipse */
 
-/* Visual Studio 2015 and above define the lrint intristic function, but for
+/* Visual Studio 2015 and above define the lrint intrinsic function, but for
  * compatibility with older windows compilers, we need to define it ourselves
  */
 #if defined(_MSC_VER)
@@ -5818,11 +5818,11 @@ When set to NULL, uses global static temp array.
 \param vy array of x vector components
 \param n the amount of vectors in the vx and vy array
 \param texture the sdl surface to use to fill the polygon
-\param texture_dx the offset of the texture relative to the screeen. if you
+\param texture_dx the offset of the texture relative to the screen. if you
 move the polygon 10 pixels to the left and want the texture to appear the same
 you need to increase the texture_dx value \param texture_dy see texture_dx
 \param polyInts preallocated temp array storage for vertex sorting (used for
-multi-threaded operation) \param polyAllocated flag indicating oif the temp
+multi-threaded operation) \param polyAllocated flag indicating if the temp
 array was allocated (used for multi-threaded operation)
 
 \returns Returns 0 on success, -1 on failure.
@@ -6714,7 +6714,7 @@ int _bresenhamIterate(SDL_gfxBresenhamIterator *b)
 
 
 /*!
-\brief Internal function to to draw parallel lines with Murphy algorithm.
+\brief Internal function to draw parallel lines with Murphy algorithm.
 
 \param m Pointer to struct for murphy iterator.
 \param x X coordinate of point.
@@ -6769,7 +6769,7 @@ void _murphyParaline(SDL_gfxMurphyIterator *m, Sint16 x, Sint16 y, int d1)
 }
 
 /*!
-\brief Internal function to to draw one iteration of the Murphy algorithm.
+\brief Internal function to draw one iteration of the Murphy algorithm.
 
 \param m Pointer to struct for murphy iterator.
 \param miter Iteration count.
@@ -6902,7 +6902,7 @@ void _murphyIteration(SDL_gfxMurphyIterator *m, Uint8 miter,
 #define HYPOT(x, y) sqrt((double)(x) * (double)(x) + (double)(y) * (double)(y))
 
 /*!
-\brief Internal function to to draw wide lines with Murphy algorithm.
+\brief Internal function to draw wide lines with Murphy algorithm.
 
 Draws lines parallel to ideal line.
 

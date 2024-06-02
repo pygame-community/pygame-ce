@@ -1,7 +1,8 @@
 import sys
 import os
 import unittest
-from pygame.tests import font_test
+
+from . import font_test
 
 import pygame.ftfont
 

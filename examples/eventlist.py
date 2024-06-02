@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.eventlist
+"""pygame.examples.eventlist
 
 Learn about pygame events and input.
 

@@ -103,25 +103,27 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
         info.height = srcrect->h;
         info.s_pixels = (Uint8 *)src->pixels +
                         (Uint16)srcrect->y * src->pitch +
-                        (Uint16)srcrect->x * src->format->BytesPerPixel;
-        info.s_pxskip = src->format->BytesPerPixel;
-        info.s_skip = src->pitch - info.width * src->format->BytesPerPixel;
+                        (Uint16)srcrect->x * PG_SURF_BytesPerPixel(src);
+        info.s_pxskip = PG_SURF_BytesPerPixel(src);
+        info.s_skip = src->pitch - info.width * PG_SURF_BytesPerPixel(src);
         info.d_pixels = (Uint8 *)dst->pixels +
                         (Uint16)dstrect->y * dst->pitch +
-                        (Uint16)dstrect->x * dst->format->BytesPerPixel;
-        info.d_pxskip = dst->format->BytesPerPixel;
-        info.d_skip = dst->pitch - info.width * dst->format->BytesPerPixel;
+                        (Uint16)dstrect->x * PG_SURF_BytesPerPixel(dst);
+        info.d_pxskip = PG_SURF_BytesPerPixel(dst);
+        info.d_skip = dst->pitch - info.width * PG_SURF_BytesPerPixel(dst);
         info.src = src->format;
         info.dst = dst->format;
         SDL_GetSurfaceAlphaMod(src, &info.src_blanket_alpha);
-        info.src_has_colorkey = SDL_GetColorKey(src, &info.src_colorkey) == 0;
+        if ((info.src_has_colorkey = SDL_HasColorKey(src))) {
+            SDL_GetColorKey(src, &info.src_colorkey);
+        }
         if (SDL_GetSurfaceBlendMode(src, &info.src_blend) ||
             SDL_GetSurfaceBlendMode(dst, &info.dst_blend)) {
             okay = 0;
         }
         if (okay) {
             if (info.d_pixels > info.s_pixels) {
-                int span = info.width * info.src->BytesPerPixel;
+                int span = info.width * PG_FORMAT_BytesPerPixel(info.src);
                 Uint8 *srcpixend =
                     info.s_pixels + (info.height - 1) * src->pitch + span;
 
@@ -158,8 +160,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         src->format->Amask) {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                        if (src->format->BytesPerPixel == 4 &&
-                            dst->format->BytesPerPixel == 4 &&
+                        if (PG_SURF_BytesPerPixel(src) == 4 &&
+                            PG_SURF_BytesPerPixel(dst) == 4 &&
                             src->format->Rmask == dst->format->Rmask &&
                             src->format->Gmask == dst->format->Gmask &&
                             src->format->Bmask == dst->format->Bmask) {
@@ -220,8 +222,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                 case PYGAME_BLEND_ADD: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -232,8 +234,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         break;
                     }
 #if PG_ENABLE_SSE_NEON
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -252,8 +254,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                 case PYGAME_BLEND_SUB: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -264,8 +266,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         break;
                     }
 #if PG_ENABLE_SSE_NEON
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -284,8 +286,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                 case PYGAME_BLEND_MULT: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -296,8 +298,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         break;
                     }
 #if PG_ENABLE_SSE_NEON
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -316,8 +318,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                 case PYGAME_BLEND_MIN: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -328,8 +330,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         break;
                     }
 #if PG_ENABLE_SSE_NEON
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -348,8 +350,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                 case PYGAME_BLEND_MAX: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -360,8 +362,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         break;
                     }
 #if PG_ENABLE_SSE_NEON
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -381,8 +383,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                 case PYGAME_BLEND_RGBA_ADD: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -392,8 +394,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         break;
                     }
 #if PG_ENABLE_SSE_NEON
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -411,8 +413,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                 case PYGAME_BLEND_RGBA_SUB: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -422,8 +424,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         break;
                     }
 #if PG_ENABLE_SSE_NEON
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -441,8 +443,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                 case PYGAME_BLEND_RGBA_MULT: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -452,8 +454,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         break;
                     }
 #if PG_ENABLE_SSE_NEON
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -471,8 +473,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                 case PYGAME_BLEND_RGBA_MIN: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -482,8 +484,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         break;
                     }
 #if PG_ENABLE_SSE_NEON
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -501,8 +503,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                 case PYGAME_BLEND_RGBA_MAX: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -512,8 +514,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         break;
                     }
 #if PG_ENABLE_SSE_NEON
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -531,8 +533,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                 case PYGAME_BLEND_PREMULTIPLIED: {
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -542,8 +544,8 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                         break;
                     }
 #if PG_ENABLE_SSE_NEON
-                    if (src->format->BytesPerPixel == 4 &&
-                        dst->format->BytesPerPixel == 4 &&
+                    if (PG_SURF_BytesPerPixel(src) == 4 &&
+                        PG_SURF_BytesPerPixel(dst) == 4 &&
                         src->format->Rmask == dst->format->Rmask &&
                         src->format->Gmask == dst->format->Gmask &&
                         src->format->Bmask == dst->format->Bmask &&
@@ -594,8 +596,8 @@ blit_blend_rgba_add(SDL_BlitInfo *info)
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
     Uint32 pixel;
     Uint32 tmp;
@@ -724,8 +726,8 @@ blit_blend_rgba_sub(SDL_BlitInfo *info)
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
     Uint32 pixel;
     Sint32 tmp2;
@@ -854,8 +856,8 @@ blit_blend_rgba_mul(SDL_BlitInfo *info)
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
     Uint32 pixel;
     Uint32 tmp;
@@ -986,8 +988,8 @@ blit_blend_rgba_min(SDL_BlitInfo *info)
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
     Uint32 pixel;
     int srcppa = info->src_blend != SDL_BLENDMODE_NONE && srcfmt->Amask;
@@ -1115,8 +1117,8 @@ blit_blend_rgba_max(SDL_BlitInfo *info)
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
     Uint32 pixel;
     int srcppa = info->src_blend != SDL_BLENDMODE_NONE && srcfmt->Amask;
@@ -1244,8 +1246,8 @@ blit_blend_premultiplied(SDL_BlitInfo *info)
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
     Uint32 pixel;
     int srcppa = info->src_blend != SDL_BLENDMODE_NONE && srcfmt->Amask;
@@ -1447,8 +1449,8 @@ blit_blend_add(SDL_BlitInfo *info)
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
     Uint32 pixel;
     Uint32 tmp;
@@ -1623,8 +1625,8 @@ blit_blend_sub(SDL_BlitInfo *info)
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
     Uint32 pixel;
     Sint32 tmp2;
@@ -1799,8 +1801,8 @@ blit_blend_mul(SDL_BlitInfo *info)
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
     Uint32 pixel;
     Uint32 tmp;
@@ -1985,8 +1987,8 @@ blit_blend_min(SDL_BlitInfo *info)
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
     Uint32 pixel;
     int srcppa = info->src_blend != SDL_BLENDMODE_NONE && srcfmt->Amask;
@@ -2163,8 +2165,8 @@ blit_blend_max(SDL_BlitInfo *info)
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
     Uint32 pixel;
     int srcppa = info->src_blend != SDL_BLENDMODE_NONE && srcfmt->Amask;
@@ -2343,8 +2345,8 @@ alphablit_alpha(SDL_BlitInfo *info)
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
     int dRi, dGi, dBi, dAi, sRi, sGi, sBi, sAi;
     Uint32 modulateA = info->src_blanket_alpha;
@@ -2456,8 +2458,8 @@ alphablit_colorkey(SDL_BlitInfo *info)
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
     int dRi, dGi, dBi, dAi, sRi, sGi, sBi, sAi;
     int alpha = info->src_blanket_alpha;
@@ -2602,8 +2604,8 @@ alphablit_solid(SDL_BlitInfo *info)
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 dR, dG, dB, dA, sR, sG, sB, sA;
     int dRi, dGi, dBi, dAi, sRi, sGi, sBi;
     int alpha = info->src_blanket_alpha;
@@ -2839,18 +2841,18 @@ premul_surf_color_by_alpha(SDL_Surface *src, SDL_Surface *dst)
         // since we know dst is a copy of src we can simplify the normal checks
 #if !defined(__EMSCRIPTEN__)
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-    if ((src->format->BytesPerPixel == 4) && pg_has_avx2()) {
+    if ((PG_SURF_BytesPerPixel(src) == 4) && pg_has_avx2()) {
         premul_surf_color_by_alpha_avx2(src, dst);
         return 0;
     }
 #if defined(__SSE2__)
-    if ((src->format->BytesPerPixel == 4) && SDL_HasSSE2()) {
+    if ((PG_SURF_BytesPerPixel(src) == 4) && SDL_HasSSE2()) {
         premul_surf_color_by_alpha_sse2(src, dst);
         return 0;
     }
 #endif /* __SSE2__*/
 #if PG_ENABLE_ARM_NEON
-    if ((src->format->BytesPerPixel == 4) && SDL_HasNEON()) {
+    if ((PG_SURF_BytesPerPixel(src) == 4) && SDL_HasNEON()) {
         premul_surf_color_by_alpha_sse2(src, dst);
         return 0;
     }
@@ -2868,13 +2870,13 @@ premul_surf_color_by_alpha_non_simd(SDL_Surface *src, SDL_Surface *dst)
     SDL_PixelFormat *dstfmt = dst->format;
     int width = src->w;
     int height = src->h;
-    int srcbpp = srcfmt->BytesPerPixel;
-    int dstbpp = dstfmt->BytesPerPixel;
+    int srcbpp = PG_FORMAT_BytesPerPixel(srcfmt);
+    int dstbpp = PG_FORMAT_BytesPerPixel(dstfmt);
     Uint8 *src_pixels = (Uint8 *)src->pixels;
     Uint8 *dst_pixels = (Uint8 *)dst->pixels;
 
-    int srcpxskip = src->format->BytesPerPixel;
-    int dstpxskip = dst->format->BytesPerPixel;
+    int srcpxskip = PG_SURF_BytesPerPixel(src);
+    int dstpxskip = PG_SURF_BytesPerPixel(dst);
 
     int srcppa = SDL_TRUE;
 

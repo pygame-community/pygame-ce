@@ -40,9 +40,13 @@ filter_expand_X_SSE2(Uint8 *srcpix, Uint8 *dstpix, int height, int srcpitch,
 void
 filter_expand_Y_SSE2(Uint8 *srcpix, Uint8 *dstpix, int width, int srcpitch,
                      int dstpitch, int srcheight, int dstheight);
+void
+invert_sse2(SDL_Surface *src, SDL_Surface *newsurf);
 
 #endif /* (defined(__SSE2__) || defined(PG_ENABLE_ARM_NEON)) */
 
 // AVX2 functions
 void
 grayscale_avx2(SDL_Surface *src, SDL_Surface *newsurf);
+void
+invert_avx2(SDL_Surface *src, SDL_Surface *newsurf);
