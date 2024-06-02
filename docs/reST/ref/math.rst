@@ -88,7 +88,7 @@ Multiple coordinates can be set using slices or swizzling
    and ``b``. The third parameter ``value`` is the result of the linear interpolation
    between a and b with a certain coefficient. In other words, this coefficient
    will be the result of this function.
-   If ``b - a`` is equal to 0, it raises a ``ZeroDivisionError``.
+   If ``b`` and ``a`` are equal, it raises a ``ValueError``.
 
    The formula is:
 
@@ -135,12 +135,12 @@ Multiple coordinates can be set using slices or swizzling
 
 .. function:: remap
 
-   | :sl:`remaps value from i_range to o_range`
+   | :sl:`remaps value from given input range to given output range`
    | :sg:`remap(i_min, i_max, o_min, o_max, value, /) -> float`
 
-   Returns a number which is the value remapped from ``i_range`` to
-   ``o_range``.
-   If ``i_max - i_min`` is equal to 0, it raises a ``ZeroDivisionError``.
+   Returns a number which is the value remapped from ``[i_min, i_max]`` range to
+   ``[o_min, o_max]`` range.
+   If ``i_min`` and ``i_max`` are equal, it raises a ``ValueError``.
 
    Example:
 
