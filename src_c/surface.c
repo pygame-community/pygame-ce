@@ -228,7 +228,8 @@ surf_get_bounding_rect(PyObject *self, PyObject *args, PyObject *kwargs);
 static PyObject *
 surf_get_pixels_address(PyObject *self, PyObject *closure);
 static PyObject *
-surf_premul_alpha(pgSurfaceObject *self, PyObject *args);
+surf_premul_alpha(pgSurfaceObject *self, PyObject *const *args,
+                  Py_ssize_t nargs);
 static int
 _view_kind(PyObject *obj, void *view_kind_vptr);
 static int
@@ -351,7 +352,7 @@ static struct PyMethodDef surface_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_SURFACE_GETBOUNDINGRECT},
     {"get_view", surf_get_view, METH_VARARGS, DOC_SURFACE_GETVIEW},
     {"get_buffer", surf_get_buffer, METH_NOARGS, DOC_SURFACE_GETBUFFER},
-    {"premul_alpha", (PyCFunction)surf_premul_alpha, METH_NOARGS,
+    {"premul_alpha", (PyCFunction)surf_premul_alpha, METH_FASTCALL,
      DOC_SURFACE_PREMULALPHA},
 
     {NULL, NULL, 0, NULL}};
@@ -3166,32 +3167,53 @@ surf_get_buffer(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
-surf_premul_alpha(pgSurfaceObject *self, PyObject *_null)
+surf_premul_alpha(pgSurfaceObject *self, PyObject *const *args,
+                  Py_ssize_t nargs)
 {
     SDL_Surface *surf = pgSurface_AsSurface(self);
-    PyObject *final;
-    SDL_Surface *newsurf;
-
     SURF_INIT_CHECK(surf)
+    PyObject *final;
+    int in_place = 0;
+
+    if (nargs == 1) {
+        in_place = PyObject_IsTrue(args[0]);
+        if (in_place == -1)
+            return NULL;
+    }
+    else if (nargs > 1) {
+        return RAISE(PyExc_TypeError,
+                     "premul_alpha() takes at most 1 argument");
+    }
+
+    if (PG_SURF_BytesPerPixel(surf) != 4) {
+        return RAISE(PyExc_ValueError, "source surface must have an alpha channel");
+    }
 
     pgSurface_Prep(self);
-    // Make a copy of the surface first
-    newsurf = PG_ConvertSurface(surf, surf->format);
+
+    SDL_Surface *newsurf =
+        in_place ? surf : PG_ConvertSurface(surf, surf->format);
 
     if ((surf->w > 0 && surf->h > 0)) {
-        // If the surface has no pixels we don't need to premul
-        // just return the copy.
         if (premul_surf_color_by_alpha(surf, newsurf) != 0) {
             return RAISE(PyExc_ValueError,
                          "source surface to be alpha pre-multiplied must have "
                          "alpha channel");
         }
     }
+
     pgSurface_Unprep(self);
 
-    final = surf_subtype_new(Py_TYPE(self), newsurf, 1);
-    if (!final)
-        SDL_FreeSurface(newsurf);
+    if (in_place) {
+        Py_INCREF(self);
+        final = (PyObject *)self;
+    }
+    else {
+        final = surf_subtype_new(Py_TYPE(self), newsurf, 1);
+        if (!final)
+            SDL_FreeSurface(newsurf);
+    }
+
     return final;
 }
 

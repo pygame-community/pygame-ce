@@ -998,12 +998,15 @@
    .. method:: premul_alpha
 
       | :sl:`returns a copy of the surface with the RGB channels pre-multiplied by the alpha channel.`
-      | :sg:`premul_alpha() -> Surface`
+      | :sg:`premul_alpha(in_place=False) -> Surface`
 
       Returns a copy of the initial surface with the red, green and blue color channels multiplied
       by the alpha channel. This is intended to make it easier to work with the BLEND_PREMULTIPLED
       blend mode flag of the blit() method. Surfaces which have called this method will only look
       correct after blitting if the BLEND_PREMULTIPLED special flag is used.
+
+      If in_place is True, the operation is done in place and the surface is returned. If in_place is False,
+      a new surface is returned and the original surface is left unchanged.
 
       It is worth noting that after calling this method, methods that return the color of a pixel
       such as get_at() will return the alpha multiplied color values. It is not possible to fully
