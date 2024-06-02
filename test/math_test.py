@@ -86,6 +86,107 @@ class MathModuleTest(unittest.TestCase):
             b = 2
             pygame.math.lerp(a, b, Vector2(0, 0))
 
+    def test_invlerp(self):
+        a = 0.0
+        b = 10.0
+        self.assertEqual(pygame.math.invlerp(a, b, 5.0), 0.5)
+
+        a = 0.0
+        b = 10.0
+        self.assertEqual(pygame.math.invlerp(a, b, 0.1), 0.01)
+
+        a = -10.0
+        b = 10.0
+        self.assertEqual(pygame.math.invlerp(a, b, 0.5), 0.525)
+
+        a = -10.0
+        b = 10.0
+        self.assertEqual(pygame.math.invlerp(a, b, 1.5), 0.575)
+
+        a = 0.0
+        b = 100.0
+        self.assertEqual(pygame.math.invlerp(a, b, 0.25), 0.0025)
+
+        with self.assertRaises(TypeError):
+            a = Vector2(0, 0)
+            b = Vector2(10.0, 10.0)
+            pygame.math.invlerp(a, b, 0.5)
+
+        with self.assertRaises(TypeError):
+            a = 1
+            b = 2
+            pygame.math.invlerp(a, b, Vector2(0, 0))
+
+        with self.assertRaises(ValueError):
+            a = 5
+            b = 5
+            pygame.math.invlerp(a, b, 5)
+
+        with self.assertRaises(TypeError):
+            a = 12**300
+            b = 11**30
+            pygame.math.invlerp(a, b, 1)
+
+    def test_remap(self):
+        a = 0.0
+        b = 10.0
+        c = 0.0
+        d = 100.0
+        self.assertEqual(pygame.math.remap(a, b, c, d, 1.0), 10.0)
+
+        a = 0.0
+        b = 10.0
+        c = 0.0
+        d = 100.0
+        self.assertEqual(pygame.math.remap(a, b, c, d, -1.0), -10.0)
+
+        a = -10.0
+        b = 10.0
+        c = -20.0
+        d = 20.0
+        self.assertEqual(pygame.math.remap(a, b, c, d, 0.0), 0.0)
+
+        a = -10.0
+        b = 10.0
+        c = 10.0
+        d = 110.0
+        self.assertEqual(pygame.math.remap(a, b, c, d, -8.0), 20.0)
+
+        with self.assertRaises(TypeError):
+            a = Vector2(0, 0)
+            b = "fish"
+            c = "durk"
+            d = Vector2(100, 100)
+            pygame.math.remap(a, b, c, d, 10)
+
+        with self.assertRaises(TypeError):
+            a = 1
+            b = 2
+            c = 10
+            d = 20
+            pygame.math.remap(a, b, c, d, Vector2(0, 0))
+
+        with self.assertRaises(ValueError):
+            a = 5
+            b = 5
+            c = 0
+            d = 100
+            pygame.math.remap(a, b, c, d, 10)
+
+        with self.assertRaises(TypeError):
+            a = 12**300
+            b = 11**30
+            c = 20
+            d = 30
+            pygame.math.remap(a, b, c, d, 100 * 50)
+
+        with self.assertRaises(TypeError):
+            a = 12j
+            b = 11j
+            c = 10j
+            d = 9j
+            pygame.math.remap(a, b, c, d, 50j)
+
     def test_smoothstep(self):
         a = 0.0
         b = 10.0
