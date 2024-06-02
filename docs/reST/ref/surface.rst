@@ -487,15 +487,15 @@
       methods - or by using :mod:`pygame.surfarray`/:mod:`pygame.PixelArray`.
 
       This function will temporarily lock and unlock the Surface as needed.
-      
+
       .. versionchanged:: 2.3.1 can now also accept both float coordinates and Vector2s for pixels.
-      
+
          Returning a Color instead of tuple. Use ``tuple(surf.get_at((x,y)))``
          if you want a tuple, and not a Color. This should only matter if
          you want to use the color as a key in a dict.
-      
+
       .. versionaddedold:: 1.9
-      
+
       .. ## Surface.get_at ##
 
    .. method:: set_at
@@ -576,7 +576,7 @@
       Set the full palette for an 8-bit Surface. This will replace the colors in
       the existing palette. A partial palette can be passed and only the first
       colors in the original palette will be changed.
-      
+
       This function has no effect on a Surface with more than 8-bits per pixel.
 
       .. ## Surface.set_palette ##
@@ -588,7 +588,7 @@
 
       Set the palette value for a single entry in a Surface palette. The index
       should be a value from 0 to 255.
-      
+
       This function has no effect on a Surface with more than 8-bits per pixel.
 
       .. ## Surface.set_palette_at ##
@@ -762,7 +762,7 @@
 
       | :sl:`get the rectangular area of the Surface`
       | :sg:`get_frect(\**kwargs) -> FRect`
-      
+
       This is the same as :meth:`Surface.get_rect` but returns an FRect. FRect is similar
       to Rect, except it stores float values instead.
 
@@ -1026,38 +1026,38 @@
       superior results when blitting an alpha surface onto another surface with alpha - assuming both
       surfaces contain pre-multiplied alpha colors.
 
-      There is a `tutorial on premultiplied alpha blending here. <tutorials/en/premultiplied-alpha>`
+      There is a `tutorial on premultiplied alpha blending here. <tutorials/en/premultiplied-alpha>`_
 
       .. versionadded:: 2.1.4
 
       .. ## Surface.premul_alpha ##
 
-    .. attribute:: width
+   .. attribute:: width
 
-        | :sl:`Surface width in pixels (read-only)`
-        | :sg:`width -> int`
+      | :sl:`Surface width in pixels (read-only)`
+      | :sg:`width -> int`
 
-        Read-only attribute. Same as :meth:`get_width()`
+      Read-only attribute. Same as :meth:`get_width()`
 
-    .. versionadded:: 2.5.0
+      .. versionadded:: 2.5.0
 
-    .. attribute:: height
+   .. attribute:: height
 
-        | :sl:`Surface height in pixels (read-only)`
-        | :sg:`height -> int`
+      | :sl:`Surface height in pixels (read-only)`
+      | :sg:`height -> int`
 
-        Read-only attribute. Same as :meth:`get_height()`
+      Read-only attribute. Same as :meth:`get_height()`
 
-    .. versionadded:: 2.5.0
+      .. versionadded:: 2.5.0
 
-    .. attribute:: size
+   .. attribute:: size
 
-        | :sl:`Surface size in pixels (read-only)`
-        | :sg:`height -> tuple[int, int]`
+      | :sl:`Surface size in pixels (read-only)`
+      | :sg:`height -> tuple[int, int]`
 
-        Read-only attribute. Same as :meth:`get_size()`
+      Read-only attribute. Same as :meth:`get_size()`
 
-    .. versionadded:: 2.5.0
+      .. versionadded:: 2.5.0
 
    .. ## pygame.Surface ##
 
