@@ -716,9 +716,10 @@ class CircleTypeTest(unittest.TestCase):
 
         circles = [Circle(1000, 1000, 2), Circle(5, 10, 5), Circle(16, 10, 7)]
         rects = [Rect(1000, 1000, 4, 4), Rect(1000, 200, 5, 5), Rect(5, 10, 7, 3)]
-        expected = [1, 2]
+        points = [(-10, -10), Vector2(1, 1), Vector2(10, -20), (10, 10)]
+        expected = [1, 2, 3]
 
-        for objects, expected in zip([circles, rects], expected):
+        for objects, expected in zip([circles, rects, points], expected):
             self.assertEqual(c.collidelist(objects), expected)
 
     def test_collidelistall_argtype(self):
@@ -751,6 +752,8 @@ class CircleTypeTest(unittest.TestCase):
         objects = [
             Circle(10, 10, 4),
             Rect(10, 10, 4, 4),
+            (10, 10),
+            Vector2(9, 9),
         ]
 
         for object in objects:
@@ -762,9 +765,10 @@ class CircleTypeTest(unittest.TestCase):
 
         circles = [Circle(1000, 1000, 2), Circle(5, 10, 5), Circle(16, 10, 7)]
         rects = [Rect(1000, 1000, 4, 4), Rect(1000, 200, 5, 5), Rect(5, 10, 7, 3)]
-        expected = [[1, 2], [2]]
+        points = [Vector2(-10, -10), (8, 8), (10, -20), Vector2(10, 10)]
+        expected = [[1, 2], [2], [1, 3]]
 
-        for objects, expected in zip([circles, rects], expected):
+        for objects, expected in zip([circles, rects, points], expected):
             self.assertEqual(c.collidelistall(objects), expected)
 
     def test_update(self):

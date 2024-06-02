@@ -369,7 +369,7 @@ pg_circle_collidelist(pgCircleObject *self, PyObject *arg)
     int colliding;
 
     if (!PySequence_Check(arg)) {
-        return RAISE(PyExc_TypeError, "Argument must be a sequence");
+        return RAISE(PyExc_TypeError, "colliders argument must be a sequence");
     }
 
     /* fast path */
