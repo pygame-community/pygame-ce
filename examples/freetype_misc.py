@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.freetype_misc
+"""pygame.examples.freetype_misc
 
 
 Miscellaneous (or misc) means:
@@ -29,6 +29,7 @@ Herein lies a *BOLD* demo consisting of a mixture of various things.
 
 Enjoy!
 """
+
 import os
 import pygame
 import pygame.freetype as freetype

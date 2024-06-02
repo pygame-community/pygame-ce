@@ -13,6 +13,7 @@ sha512sum -c libffi.sha512
 tar xzf ${LIBFFI}.tar.gz
 cd $LIBFFI
 
-./configure $PG_BASE_CONFIGURE_FLAGS
+# --disable-multi-os-directory is passed so that /usr/local/lib is used
+./configure $PG_BASE_CONFIGURE_FLAGS --disable-docs --disable-multi-os-directory
 make
 make install

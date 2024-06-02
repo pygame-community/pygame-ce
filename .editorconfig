@@ -1,0 +1,21 @@
+root=true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+[*.{c,h,py,pyx,pyi}]
+indent_style = space
+indent_size = 4
+tab_width = 4
+charset = utf-8
+trim_trailing_whitespace = true
+
+# The settings for C (*.c and *.h) files are mirrored in src_c/.clang-format.
+# Keep them in sync.
+[*.{c,h}]
+max_line_length = 79
+
+[*.{py,pyx,pyi}]
+file_type_emacs = python
+max_line_length = 88

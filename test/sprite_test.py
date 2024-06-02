@@ -526,7 +526,7 @@ class AbstractGroupTypeTest(unittest.TestCase):
 
         self.bg = pygame.Surface((20, 20))
         self.scr = pygame.Surface((20, 20))
-        self.scr.fill(pygame.Color("grey"))
+        self.scr.fill(pygame.Color("gray"))
 
     def test_has(self):
         "See if AbstractGroup.has() works as expected."
@@ -1340,7 +1340,6 @@ class SpriteTypeTest(SpriteBase, unittest.TestCase):
         sprite.Group,
         sprite.LayeredUpdates,
         sprite.RenderUpdates,
-        sprite.OrderedUpdates,
     ]
 
 
@@ -1351,7 +1350,6 @@ class DirtySpriteTypeTest(SpriteBase, unittest.TestCase):
         sprite.Group,
         sprite.LayeredUpdates,
         sprite.RenderUpdates,
-        sprite.OrderedUpdates,
         sprite.LayeredDirty,
     ]
 

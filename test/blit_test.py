@@ -163,6 +163,9 @@ class BlitTest(unittest.TestCase):
         self.assertEqual(dst.fblits(blit_list, 0), None)
         self.assertEqual(dst.fblits(blit_list, 1), dst.blits(blit_list, doreturn=0))
 
+        # make sure this doesn't segfault
+        dst.fblits((dst, dst.get_rect().topleft) for _ in range(1))
+
         t0 = time()
         results = blits(blit_list)
         t1 = time()
@@ -214,6 +217,16 @@ class BlitTest(unittest.TestCase):
         self.assertRaises(
             TypeError, dst.fblits, [(pygame.Surface((10, 10), SRCALPHA, 32), None)]
         )
+
+    def test_fblits_generator_exception(self):
+        dst = pygame.Surface((100, 10), SRCALPHA, 32)
+        exc_type = Exception
+
+        def generate_exception():
+            yield pygame.Surface((10, 10)), (0, 0)
+            raise exc_type
+
+        self.assertRaises(exc_type, dst.fblits, generate_exception())
 
     def test_blits_not_sequence(self):
         dst = pygame.Surface((100, 10), SRCALPHA, 32)

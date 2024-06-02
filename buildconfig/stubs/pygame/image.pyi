@@ -3,7 +3,7 @@ from typing import Optional, Tuple, Union
 from pygame.bufferproxy import BufferProxy
 from pygame.surface import Surface
 
-from ._common import FileArg, Literal, IntCoordinate
+from ._common import FileArg, Literal, IntCoordinate, Coordinate
 
 _BufferStyle = Union[BufferProxy, bytes, bytearray, memoryview]
 _to_string_format = Literal[
@@ -13,6 +13,7 @@ _from_buffer_format = Literal["P", "RGB", "BGR", "BGRA", "RGBX", "RGBA", "ARGB"]
 _from_string_format = Literal["P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA"]
 
 def load(file: FileArg, namehint: str = "") -> Surface: ...
+def load_sized_svg(file: FileArg, size: Coordinate) -> Surface: ...
 def save(surface: Surface, file: FileArg, namehint: str = "") -> None: ...
 def get_sdl_image_version(linked: bool = True) -> Optional[Tuple[int, int, int]]: ...
 def get_extended() -> bool: ...
@@ -20,6 +21,7 @@ def tostring(
     surface: Surface,
     format: _to_string_format,
     flipped: bool = False,
+    pitch: int = -1,
 ) -> bytes: ...
 def fromstring(
     bytes: bytes,
@@ -31,7 +33,10 @@ def fromstring(
 
 # the use of tobytes/frombytes is preferred over tostring/fromstring
 def tobytes(
-    surface: Surface, format: _to_string_format, flipped: bool = False
+    surface: Surface,
+    format: _to_string_format,
+    flipped: bool = False,
+    pitch: int = -1,
 ) -> bytes: ...
 def frombytes(
     bytes: bytes,

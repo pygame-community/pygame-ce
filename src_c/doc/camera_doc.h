@@ -1,8 +1,8 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_CAMERA "pygame module for camera use"
 #define DOC_CAMERA_INIT "init(backend = None) -> None\nModule init"
 #define DOC_CAMERA_GETBACKENDS "get_backends() -> [str]\nGet the backends supported on this system"
-#define DOC_CAMERA_COLORSPACE "colorspace(Surface, format, DestSurface = None, /) -> Surface\nSurface colorspace conversion"
+#define DOC_CAMERA_COLORSPACE "colorspace(surface, format, dest_surface = None, /) -> Surface\nSurface colorspace conversion"
 #define DOC_CAMERA_LISTCAMERAS "list_cameras() -> [cameras]\nreturns a list of available cameras"
 #define DOC_CAMERA_CAMERA "Camera(device, (width, height), format) -> Camera\nload a camera"
 #define DOC_CAMERA_CAMERA_START "start() -> None\nopens, initializes, and starts capturing"

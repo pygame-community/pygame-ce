@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.blend_fill
+"""pygame.examples.blend_fill
 
 BLEND_ing colors in different ways with Surface.fill().
 
@@ -10,6 +10,7 @@ Keyboard Controls:
 * A - ADD, S- SUB, M- MULT, - MIN, + MAX to change the blend modes
 
 """
+
 import os
 import pygame
 from pygame import K_1, K_2, K_3, K_4, K_5, K_6, K_7, K_8, K_9
@@ -33,7 +34,7 @@ def main():
     step = 5
 
     pygame.init()
-    screen = pygame.display.set_mode((640, 480), 0, 32)
+    screen = pygame.display.set_mode((640, 480))
     screen.fill((100, 100, 100))
 
     image = pygame.image.load(os.path.join(data_dir, "liquid.bmp")).convert()
@@ -98,7 +99,6 @@ def main():
                 screen.fill((100, 100, 100))
                 screen.blit(image, (10, 10))
                 blendimage.blit(image, (0, 0))
-                # blendimage.fill (color, (0, 0, 20, 20), blendtype)
                 blendimage.fill(color, None, blendtype)
                 screen.blit(blendimage, (200, 10))
                 print(

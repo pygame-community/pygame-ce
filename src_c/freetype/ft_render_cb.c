@@ -220,7 +220,7 @@ __render_glyph_INT(int x, int y, FontSurface *surface, const FT_Bitmap *bitmap,
 {
     FT_Byte *dst = ((FT_Byte *)surface->buffer + x * surface->item_stride +
                     y * surface->pitch);
-    int item_size = surface->format->BytesPerPixel;
+    int item_size = PG_SURF_BytesPerPixel(surface);
     int item_stride = surface->item_stride;
     FT_Byte *dst_cpy;
 
@@ -301,7 +301,7 @@ __render_glyph_MONO_as_INT(int x, int y, FontSurface *surface,
 
     int i, j, shift;
     int item_stride = surface->item_stride;
-    int item_size = surface->format->BytesPerPixel;
+    int item_size = PG_SURF_BytesPerPixel(surface);
     unsigned char *src;
     unsigned char *dst;
     unsigned char *src_cpy;
@@ -380,7 +380,7 @@ __fill_glyph_INT(FT_Fixed x, FT_Fixed y, FT_Fixed w, FT_Fixed h,
 {
     int i, j;
     FT_Byte *dst;
-    int itemsize = surface->format->BytesPerPixel;
+    int itemsize = PG_SURF_BytesPerPixel(surface);
     int item_stride = surface->item_stride;
     int byteoffset = surface->format->Ashift / 8;
     FT_Byte *dst_cpy;

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.dropfile
+"""pygame.examples.dropfile
 
 Drag and drop an image on here.
 
@@ -10,6 +10,7 @@ Uses these events:
 * DROPTEXT
 * DROPFILE
 """
+
 import pygame
 
 pygame.init()

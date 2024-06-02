@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_DISPLAY "pygame module to control the display window and screen"
 #define DOC_DISPLAY_INIT "init() -> None\nInitialize the display module"
 #define DOC_DISPLAY_QUIT "quit() -> None\nUninitialize the display module"
@@ -26,6 +26,8 @@
 #define DOC_DISPLAY_SETPALETTE "set_palette(palette=None, /) -> None\nSet the display color palette for indexed displays"
 #define DOC_DISPLAY_GETNUMDISPLAYS "get_num_displays() -> int\nReturn the number of displays"
 #define DOC_DISPLAY_GETWINDOWSIZE "get_window_size() -> tuple\nReturn the size of the window or screen"
+#define DOC_DISPLAY_GETWINDOWPOSITION "get_window_position() -> tuple\nReturn the position of the window or screen"
+#define DOC_DISPLAY_SETWINDOWPOSITION "set_window_position((x, y)) -> None\nSet the current window position"
 #define DOC_DISPLAY_GETALLOWSCREENSAVER "get_allow_screensaver() -> bool\nReturn whether the screensaver is allowed to run."
 #define DOC_DISPLAY_SETALLOWSCREENSAVER "set_allow_screensaver(bool) -> None\nSet whether the screensaver may run"
 #define DOC_DISPLAY_ISFULLSCREEN "is_fullscreen() -> bool\nReturns True if the pygame window created by pygame.display.set_mode() is in full-screen mode"

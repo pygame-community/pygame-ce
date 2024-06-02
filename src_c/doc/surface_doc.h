@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_SURFACE "Surface((width, height), flags=0, depth=0, masks=None) -> Surface\nSurface((width, height), flags=0, Surface) -> Surface\npygame object for representing images"
 #define DOC_SURFACE_BLIT "blit(source, dest, area=None, special_flags=0) -> Rect\ndraw another surface onto this one"
 #define DOC_SURFACE_BLITS "blits(blit_sequence=((source, dest), ...), doreturn=True) -> [Rect, ...] or None\nblits(((source, dest, area), ...)) -> [Rect, ...]\nblits(((source, dest, area, special_flags), ...)) -> [Rect, ...]\ndraw many images onto another"
@@ -52,3 +52,6 @@
 #define DOC_SURFACE_GETBUFFER "get_buffer() -> BufferProxy\nacquires a buffer object for the pixels of the Surface."
 #define DOC_SURFACE_PIXELSADDRESS "_pixels_address -> int\npixel buffer address"
 #define DOC_SURFACE_PREMULALPHA "premul_alpha() -> Surface\nreturns a copy of the surface with the RGB channels pre-multiplied by the alpha channel."
+#define DOC_SURFACE_WIDTH "width -> int\nSurface width in pixels (read-only)"
+#define DOC_SURFACE_HEIGHT "height -> int\nSurface height in pixels (read-only)"
+#define DOC_SURFACE_SIZE "height -> tuple[int, int]\nSurface size in pixels (read-only)"

@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_SNDARRAY "pygame module for accessing sound sample data"
 #define DOC_SNDARRAY_ARRAY "array(Sound) -> array\ncopy Sound samples into an array"
 #define DOC_SNDARRAY_SAMPLES "samples(Sound) -> array\nreference Sound samples into an array"

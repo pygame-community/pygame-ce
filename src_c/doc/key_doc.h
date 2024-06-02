@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_KEY "pygame module to work with the keyboard"
 #define DOC_KEY_GETFOCUSED "get_focused() -> bool\ntrue if the display is receiving keyboard input from the system"
 #define DOC_KEY_GETPRESSED "get_pressed() -> bools\nget the state of all keyboard buttons"

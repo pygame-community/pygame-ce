@@ -12,7 +12,7 @@ with Advanced OUTPUT – Buttons
 
 Even if KEYDOWN event is used, it seems like this is not entirely GUI game because GUI of this game is only used for output(=print), not input. Input for GUI means caring mouse event for specific location. How about making two buttons to increase or decrease HP?
 
-.. image:: AdvancedInputOutput1.gif
+.. image:: ../../../assets/AdvancedInputOutput1.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -44,7 +44,7 @@ Even if KEYDOWN event is used, it seems like this is not entirely GUI game becau
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedInputOutput2.gif
+.. image:: ../../../assets/AdvancedInputOutput2.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -78,7 +78,7 @@ Even if KEYDOWN event is used, it seems like this is not entirely GUI game becau
 
 Okay, making two buttons is simple. Look at the button, they have unique visual shape. How can it be? Simple as previous idea: First, draw **big square**. Second, draw **smaller square** which has small width (this square doesn’t have inner color so color of big square can be displayed) so inner square and outer square seems like separated. But these buttons are still for output only. We need to make click area for this.
 
-.. image:: AdvancedInputOutput3.gif
+.. image:: ../../../assets/AdvancedInputOutput3.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -110,7 +110,7 @@ Okay, making two buttons is simple. Look at the button, they have unique visual 
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedInputOutput4.gif
+.. image:: ../../../assets/AdvancedInputOutput4.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -142,7 +142,7 @@ Okay, making two buttons is simple. Look at the button, they have unique visual 
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedInputOutput5.gif
+.. image:: ../../../assets/AdvancedInputOutput5.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -266,4 +266,3 @@ In the case of button, input and output area for button must be **identical**. (
     
     if __name__ == '__main__':
         main()
-    

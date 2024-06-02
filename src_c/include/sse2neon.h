@@ -247,7 +247,7 @@ FORCE_INLINE void _sse2neon_smp_mb(void)
 #endif
 
 /* Apple Silicon cache lines are double of what is commonly used by Intel, AMD
- * and other Arm microarchtectures use.
+ * and other Arm microarchitectures use.
  * From sysctl -a on Apple M1:
  * hw.cachelinesize: 128
  */
@@ -658,7 +658,7 @@ FORCE_INLINE uint16_t _sse2neon_vaddvq_u16(uint16x8_t a)
  * This last part, <data_type>, is a little complicated. It identifies the
  * content of the input values, and can be set to any of the following values:
  * + ps - vectors contain floats (ps stands for packed single-precision)
- * + pd - vectors cantain doubles (pd stands for packed double-precision)
+ * + pd - vectors contain doubles (pd stands for packed double-precision)
  * + epi8/epi16/epi32/epi64 - vectors contain 8-bit/16-bit/32-bit/64-bit
  *                            signed integers
  * + epu8/epu16/epu32/epu64 - vectors contain 8-bit/16-bit/32-bit/64-bit
@@ -8628,9 +8628,9 @@ FORCE_INLINE __m128i _mm_aesenc_si128(__m128i a, __m128i RoundKey)
 #define SSE2NEON_AES_B2W(b0, b1, b2, b3)                 \
     (((uint32_t) (b3) << 24) | ((uint32_t) (b2) << 16) | \
      ((uint32_t) (b1) << 8) | (uint32_t) (b0))
-// muliplying 'x' by 2 in GF(2^8)
+// multiplying 'x' by 2 in GF(2^8)
 #define SSE2NEON_AES_F2(x) ((x << 1) ^ (((x >> 7) & 1) * 0x011b /* WPOLY */))
-// muliplying 'x' by 3 in GF(2^8)
+// multiplying 'x' by 3 in GF(2^8)
 #define SSE2NEON_AES_F3(x) (SSE2NEON_AES_F2(x) ^ x)
 #define SSE2NEON_AES_U0(p) \
     SSE2NEON_AES_B2W(SSE2NEON_AES_F2(p), p, p, SSE2NEON_AES_F3(p))
@@ -8708,14 +8708,14 @@ FORCE_INLINE __m128i _mm_aesdec_si128(__m128i a, __m128i RoundKey)
     v = vqtbx4q_u8(v, _sse2neon_vld1q_u8_x4(_sse2neon_rsbox + 0xc0), w - 0xc0);
 
     // inverse mix columns
-    // muliplying 'v' by 4 in GF(2^8)
+    // multiplying 'v' by 4 in GF(2^8)
     w = (v << 1) ^ (uint8x16_t) (((int8x16_t) v >> 7) & 0x1b);
     w = (w << 1) ^ (uint8x16_t) (((int8x16_t) w >> 7) & 0x1b);
     v ^= w;
     v ^= (uint8x16_t) vrev32q_u16((uint16x8_t) w);
 
     w = (v << 1) ^ (uint8x16_t) (((int8x16_t) v >> 7) &
-                                 0x1b);  // muliplying 'v' by 2 in GF(2^8)
+                                 0x1b);  // multiplying 'v' by 2 in GF(2^8)
     w ^= (uint8x16_t) vrev32q_u16((uint16x8_t) v);
     w ^= vqtbl1q_u8(v ^ w, vld1q_u8(ror32by8));
 

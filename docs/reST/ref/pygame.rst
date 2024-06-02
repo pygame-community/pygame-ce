@@ -401,7 +401,7 @@ available. Must be set before calling :func:`pygame.display.set_mode()`.
 This makes pygame use the SDL2 blitter for all alpha
 blending. The SDL2 blitter is sometimes faster than
 the default blitter but uses a different formula so
-the final colours may differ. Must be set before
+the final colors may differ. Must be set before
 :func:`pygame.init()` is called.
 
 |

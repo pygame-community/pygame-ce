@@ -17,8 +17,4 @@
 
 #define RELATIVE_MODULE(m) ("." m)
 
-#ifndef Py_TPFLAGS_HAVE_NEWBUFFER
-#define Py_TPFLAGS_HAVE_NEWBUFFER 0
-#endif
-
 #endif /* ~PGCOMPAT_INTERNAL_H */

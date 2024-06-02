@@ -12,7 +12,7 @@ with Advanced PROCESS - Functionalization
 
 First, Let’s print visualized geometry, not text. How about HP bar? If max HP of game is fixed and current HP of game can vary from 0 to max HP, what will be simplest way to print both two data?
 
-.. image:: AdvancedOutputProcess1.gif
+.. image:: ../../../assets/AdvancedOutputProcess1.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -44,7 +44,7 @@ First, Let’s print visualized geometry, not text. How about HP bar? If max HP 
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedOutputProcess2.gif
+.. image:: ../../../assets/AdvancedOutputProcess2.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -76,7 +76,7 @@ First, Let’s print visualized geometry, not text. How about HP bar? If max HP 
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedOutputProcess3.gif
+.. image:: ../../../assets/AdvancedOutputProcess3.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -110,7 +110,7 @@ First, Let’s print visualized geometry, not text. How about HP bar? If max HP 
 
 Yeah, just re-rendering text when certain variable is changed. How to change variable? That logic is inside of Event statement. (Pressing up or down to adjust HP.) Same method as before. But they are still text, which means they are not visualized enough. How to visualize these two data more detail (max HP, current HP)? We can use idea of magazine (gun’s magazine). HP is integer value, which is discrete. So, it can be printed as below:
 
-.. image:: AdvancedOutputProcess4.gif
+.. image:: ../../../assets/AdvancedOutputProcess4.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -142,7 +142,7 @@ Yeah, just re-rendering text when certain variable is changed. How to change var
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedOutputProcess5.gif
+.. image:: ../../../assets/AdvancedOutputProcess5.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -174,7 +174,7 @@ Yeah, just re-rendering text when certain variable is changed. How to change var
        screen.blit(ball, ballrect)
        pygame.display.flip()
 
-.. image:: AdvancedOutputProcess6.gif
+.. image:: ../../../assets/AdvancedOutputProcess6.gif
    :class: inlined-right
 
 .. code-block:: python
@@ -274,4 +274,3 @@ Furthermore, now it’s time to functionalize specifically. I push Always statem
     
     if __name__ == '__main__': #7
         main()
-    

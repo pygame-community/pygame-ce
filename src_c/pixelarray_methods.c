@@ -65,7 +65,7 @@ _get_single_pixel(pgPixelArrayObject *array, Py_ssize_t x, Py_ssize_t y)
     pixel_p = (array->pixels + x * array->strides[0] + y * array->strides[1]);
     surf = pgSurface_AsSurface(array->surface);
 
-    bpp = surf->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(surf);
 
     /* Find the start of the pixel */
     switch (bpp) {
@@ -124,7 +124,7 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
     }
 
     surf = pgSurface_AsSurface(array->surface);
-    bpp = surf->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(surf);
 
     /* Create the second surface. */
 
@@ -152,7 +152,7 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
     }
 
     new_pixels = (Uint8 *)new_surf->pixels;
-    new_stride0 = new_surf->format->BytesPerPixel;
+    new_stride0 = PG_SURF_BytesPerPixel(new_surf);
     new_stride1 = new_surf->pitch;
     pixelrow = pixels;
     new_pixelrow = new_pixels;
@@ -352,7 +352,7 @@ _replace_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     }
 
     format = surf->format;
-    bpp = surf->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(surf);
 
     if (!_get_color_from_object(delcolor, format, &dcolor) ||
         !_get_color_from_object(replcolor, format, &rcolor)) {
@@ -550,7 +550,7 @@ _extract_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
 
     surf = pgSurface_AsSurface(surface);
     format = surf->format;
-    bpp = surf->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(surf);
     dim0 = new_array->shape[0];
     dim1 = new_array->shape[1];
     stride0 = new_array->strides[0];
@@ -780,11 +780,11 @@ _compare(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     }
 
     format = surf->format;
-    bpp = surf->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(surf);
     other_surf = pgSurface_AsSurface(other_array->surface);
     other_format = other_surf->format;
 
-    if (other_format->BytesPerPixel != bpp) {
+    if (PG_FORMAT_BytesPerPixel(other_format) != bpp) {
         /* bpp do not match. We cannot guarantee that the padding and co
          * would be set correctly. */
         PyErr_SetString(PyExc_ValueError, "bit depths do not match");
@@ -1015,7 +1015,7 @@ _transpose(pgPixelArrayObject *array, PyObject *args)
     Py_ssize_t stride1 = array->strides[0];
 
     stride0 = array->shape[1] ? array->strides[1]
-                              : array->shape[0] * surf->format->BytesPerPixel;
+                              : array->shape[0] * PG_SURF_BytesPerPixel(surf);
 
     return (PyObject *)_pxarray_new_internal(&pgPixelArray_Type, 0, array,
                                              array->pixels, dim0, dim1,

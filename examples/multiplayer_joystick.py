@@ -73,7 +73,7 @@ while True:
             # disconnect controller
             if event.instance_id in active_players:
                 disconnect_joystick(event.instance_id)
-                # check if there is at leat one controller connected
+                # check if there is at least one controller connected
                 are_no_controllers_connected = True
                 for player in players:
                     if player:

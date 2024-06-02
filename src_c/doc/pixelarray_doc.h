@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_PIXELARRAY "PixelArray(Surface) -> PixelArray\npygame object for direct pixel access of surfaces"
 #define DOC_PIXELARRAY_SURFACE "surface -> Surface\nGets the Surface the PixelArray uses."
 #define DOC_PIXELARRAY_ITEMSIZE "itemsize -> int\nReturns the byte size of a pixel array item"

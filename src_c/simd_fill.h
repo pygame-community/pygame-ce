@@ -21,11 +21,6 @@
 #endif
 #endif
 
-#if PG_ENABLE_ARM_NEON
-// sse2neon.h is from here: https://github.com/DLTcollab/sse2neon
-#include "include/sse2neon.h"
-#endif /* PG_ENABLE_ARM_NEON */
-
 #if defined(__SSE2__)
 #define PG_ENABLE_SSE_NEON 1
 #elif PG_ENABLE_ARM_NEON

@@ -10,7 +10,9 @@ but the documentation can also be launched with `python -m pygame.docs`
 Steps:
 - Install Sphinx (`pip install Sphinx`)
 - Fork the pygame-ce repository, download and navigate to it in the terminal
-- Run `python setup.py docs`
+- Run `python buildconfig/make_docs.py`
+- If you are using the legacy `python setup.py docs` (which is now deprecated):
+     - (Run `python -m pip install -U pip setuptools` first if `ModuleNotFoundError: No module named setuptools` occurs)
 
 This will create a new folder under the `docs` folder. 
 In `docs/generated`, you will find a local copy of the pygame documentation.

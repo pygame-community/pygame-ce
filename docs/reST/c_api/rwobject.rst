@@ -41,12 +41,6 @@ Header file: src_c/include/pygame.h
    Return true if *rw* is a Python file-like object wrapper returned by :c:func:`pgRWops_FromObject`
    or :c:func:`pgRWops_FromFileObject`.
 
-.. c:function:: int pgRWops_ReleaseObject(SDL_RWops *context)
-
-   Free a SDL_RWops struct. If it is attached to a Python file-like object, decrement its
-   refcount. Otherwise, close the file handle.
-   Return 0 on success. On error, raise a Python exception and return a negative value.
-
 .. c:function:: PyObject* pg_EncodeFilePath(PyObject *obj, PyObject *eclass)
 
    Return the file path *obj* as a byte string properly encoded for the OS.

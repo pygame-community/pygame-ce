@@ -85,33 +85,20 @@ _pg_has_avx2()
     }
 
 /* Setup for RUN_16BIT_SHUFFLE_OUT */
-#define SETUP_SHUFFLE                                                         \
-    __m256i shuff_out_A =                                                     \
-        _mm256_set_epi8(0x80, 23, 0x80, 22, 0x80, 21, 0x80, 20, 0x80, 19,     \
-                        0x80, 18, 0x80, 17, 0x80, 16, 0x80, 7, 0x80, 6, 0x80, \
-                        5, 0x80, 4, 0x80, 3, 0x80, 2, 0x80, 1, 0x80, 0);      \
-                                                                              \
-    __m256i shuff_out_B = _mm256_set_epi8(                                    \
-        0x80, 31, 0x80, 30, 0x80, 29, 0x80, 28, 0x80, 27, 0x80, 26, 0x80, 25, \
-        0x80, 24, 0x80, 15, 0x80, 14, 0x80, 13, 0x80, 12, 0x80, 11, 0x80, 10, \
-        0x80, 9, 0x80, 8);                                                    \
-                                                                              \
-    __m256i shuff_dst, _shuff16_temp, mm256_colorA, mm256_colorB;             \
-    mm256_colorA = _mm256_shuffle_epi8(mm256_color, shuff_out_A);             \
-    mm256_colorB = _mm256_shuffle_epi8(mm256_color, shuff_out_B);
+#define SETUP_SHUFFLE                                                      \
+    __m256i shuff_dst, _shuff16_temp, mm256_zero = _mm256_setzero_si256(); \
+    mm256_color = _mm256_unpacklo_epi8(mm256_color, mm256_zero);
 
 #define RUN_16BIT_SHUFFLE_OUT(FILL_CODE)                       \
     /* ==== shuffle pixels out into two registers each, src */ \
     /* and dst set up for 16 bit math, like 0A0R0G0B ==== */   \
-    shuff_dst = _mm256_shuffle_epi8(mm256_dst, shuff_out_A);   \
-    mm256_color = mm256_colorA;                                \
+    shuff_dst = _mm256_unpacklo_epi8(mm256_dst, mm256_zero);   \
                                                                \
     {FILL_CODE}                                                \
                                                                \
     _shuff16_temp = shuff_dst;                                 \
                                                                \
-    shuff_dst = _mm256_shuffle_epi8(mm256_dst, shuff_out_B);   \
-    mm256_color = mm256_colorB;                                \
+    shuff_dst = _mm256_unpackhi_epi8(mm256_dst, mm256_zero);   \
                                                                \
     {FILL_CODE}                                                \
                                                                \

@@ -37,7 +37,6 @@ to as 3D arrays, and the last index is 0 for red, 1 for green, and 2 for
 blue.
 """
 
-
 from pygame.pixelcopy import (
     array_to_surface,
     surface_to_array,
@@ -56,10 +55,11 @@ import warnings  # will be removed in the future
 
 
 # float96 not available on all numpy versions.
-numpy_floats = []
-for type_name in "float32 float64 float96".split():
-    if hasattr(numpy, type_name):
-        numpy_floats.append(getattr(numpy, type_name))
+numpy_floats = [
+    getattr(numpy, type_name)
+    for type_name in "float32 float64 float96".split()
+    if hasattr(numpy, type_name)
+]
 # Added below due to deprecation of numpy.float. See pygame-ce issue #1440
 numpy_floats.append(float)
 
@@ -385,9 +385,9 @@ def map_array(surface, array):
     format to control the conversion.
 
     Note: arrays do not need to be 3D, as long as the minor axis has
-    three elements giving the component colours, any array shape can be
-    used (for example, a single colour can be mapped, or an array of
-    colours). The array shape is limited to eleven dimensions maximum,
+    three elements giving the component colors, any array shape can be
+    used (for example, a single color can be mapped, or an array of
+    colors). The array shape is limited to eleven dimensions maximum,
     including the three element minor axis.
     """
     if array.ndim == 0:

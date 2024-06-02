@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.sound
+"""pygame.examples.sound
 
 Playing a soundfile and waiting for it to finish. You'll need the
 pygame.mixer module for this to work. Note how in this simple example
@@ -8,6 +8,7 @@ Just pick the mixer for sound and time for the delay function.
 
 Optional command line argument: audio file name
 """
+
 import os
 import sys
 import pygame

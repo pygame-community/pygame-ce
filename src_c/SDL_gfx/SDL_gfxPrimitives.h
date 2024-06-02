@@ -27,6 +27,20 @@ extern "C" {
 #define SDL_GFXPRIMITIVES_MINOR 0
 #define SDL_GFXPRIMITIVES_MICRO 23
 
+/* ---- Compatibility */
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+#define GFX_SURF_BitsPerPixel(surf) surf->format->bits_per_pixel
+#define GFX_SURF_BytesPerPixel(surf) surf->format->bytes_per_pixel
+#define GFX_FORMAT_BitsPerPixel(format) format->bits_per_pixel
+#define GFX_FORMAT_BytesPerPixel(format) format->bytes_per_pixel
+#else
+#define GFX_SURF_BitsPerPixel(surf) surf->format->BitsPerPixel
+#define GFX_SURF_BytesPerPixel(surf) surf->format->BytesPerPixel
+#define GFX_FORMAT_BitsPerPixel(format) format->BitsPerPixel
+#define GFX_FORMAT_BytesPerPixel(format) format->BytesPerPixel
+#endif
+
 /* ---- Function Prototypes */
 
 #ifdef _MSC_VER

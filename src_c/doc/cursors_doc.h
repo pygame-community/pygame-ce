@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_CURSORS "pygame module for cursor resources"
 #define DOC_CURSORS_COMPILE "compile(strings, black='X', white='.', xor='o') -> data, mask\ncreate binary cursor data from simple strings"
 #define DOC_CURSORS_LOADXBM "load_xbm(cursorfile) -> cursor_args\nload_xbm(cursorfile, maskfile) -> cursor_args\nload cursor data from an XBM file"

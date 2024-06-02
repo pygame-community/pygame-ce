@@ -197,10 +197,6 @@ try:
 except (ImportError, OSError):
     sprite = MissingModule("sprite", urgent=1)
 
-try:
-    import pygame.threads
-except (ImportError, OSError):
-    threads = MissingModule("threads", urgent=1)
 
 try:
     import pygame.pixelcopy
@@ -266,7 +262,7 @@ try:
 except (ImportError, OSError):
     font = MissingModule("font", urgent=0)
 
-# try and load pygame.mixer_music before mixer, for py2app...
+# try to load pygame.mixer_music before mixer, for py2app...
 try:
     import pygame.mixer_music
 
@@ -315,9 +311,7 @@ try:
     from pygame.window import Window
 except (ImportError, OSError):
 
-    def Window(
-        title="pygame window", size=(640, 480), position=None, **kwargs
-    ):  # pylint: disable=unused-argument
+    def Window(title="pygame window", size=(640, 480), position=None, **kwargs):  # pylint: disable=unused-argument
         _attribute_undefined("pygame.Window")
 
 

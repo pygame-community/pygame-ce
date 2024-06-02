@@ -153,12 +153,12 @@
    .. code-block:: text
 
         battery_percent:
-            An integer, representing the seconds of battery life left.
-            Could be None if the value is unknown.
-
-        battery_seconds:
             An integer between 0 and 100, representing the percentage of
             battery life left.
+
+        battery_seconds:
+            An integer, representing the seconds of battery life left.
+            Could be None if the value is unknown.
     
         on_battery:
             True if the device is running on the battery (not plugged in).

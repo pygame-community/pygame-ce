@@ -484,14 +484,17 @@ font_setter_align(PyObject *self, PyObject *value, void *closure)
 
     long val = PyLong_AsLong(value);
     if (val == -1 && PyErr_Occurred()) {
-        PyErr_SetString(PyExc_TypeError, "font.align should be an integer");
+        PyErr_SetString(
+            PyExc_TypeError,
+            "font.align must be an integer. "
+            "Must correspond with FONT_LEFT, FONT_CENTER, or FONT_RIGHT.");
         return -1;
     }
 
     if (val < 0 || val > 2) {
-        PyErr_SetString(
-            pgExc_SDLError,
-            "font.align should be FONT_LEFT, FONT_CENTER, or FONT_RIGHT");
+        PyErr_SetString(pgExc_SDLError,
+                        "font.align must be FONT_LEFT, FONT_CENTER, or "
+                        "FONT_RIGHT.");
         return -1;
     }
 
@@ -701,7 +704,7 @@ font_size(PyObject *self, PyObject *text)
     else {
         return RAISE_TEXT_TYPE_ERROR();
     }
-    return Py_BuildValue("(ii)", w, h);
+    return pg_tuple_couple_from_values_int(w, h);
 }
 
 static PyObject *

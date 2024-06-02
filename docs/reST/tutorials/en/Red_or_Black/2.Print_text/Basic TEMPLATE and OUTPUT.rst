@@ -16,7 +16,7 @@ Basic TEMPLATE and OUTPUT
 As I said, Pygame is based on GUI environment. Furthermore, Pygame is good for making 2D game because of its input/output format. So, you have to say good-bye for print or input standard function of Python (Because they work only on CUI environment). Then, what functions in Pygame replace these functions? First, we have to go back to friendly “Hello World!” project, which is learning about basic template and output. **(Requiring any font file(.ttf) in the same project directory)**
 
 
-.. image:: Basic-ouput-sourcecode.png
+.. image:: ../../../assets/Basic-ouput-sourcecode.png
    :class: inlined-right
 
 .. code-block:: python
@@ -49,7 +49,7 @@ As I said, Pygame is based on GUI environment. Furthermore, Pygame is good for m
        pygame.display.flip()
 
 
-.. image:: Bagic-ouput-result-screen.png
+.. image:: ../../../assets/Bagic-ouput-result-screen.png
    :class: inlined-right
 
 .. code-block:: python

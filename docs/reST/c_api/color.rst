@@ -26,7 +26,7 @@ Header file: src_c/include/pygame.h
 
 .. c:function:: PyObject* pgColor_New(Uint8 rgba[])
 
-   Return a new :py:class:`pygame.Color` instance for the the four element array *rgba*.
+   Return a new :py:class:`pygame.Color` instance from the four element array *rgba*.
    On failure, raise a Python exception and return ``NULL``.
 
 .. c:function:: PyObject* pgColor_NewLength(Uint8 rgba[], Uint8 length)

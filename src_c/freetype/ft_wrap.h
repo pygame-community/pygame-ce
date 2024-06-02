@@ -432,6 +432,7 @@ _PGFT_GetFontSized(FreeTypeInstance *, pgFontObject *, Scale_t);
 void
 _PGFT_BuildScaler(pgFontObject *, FTC_Scaler, Scale_t);
 #define _PGFT_malloc PyMem_Malloc
+#define _PGFT_calloc PyMem_Calloc
 #define _PGFT_free PyMem_Free
 
 #endif

@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-""" pygame.examples.scaletest
+"""pygame.examples.scaletest
 
 Shows an interactive image scaler.
 
 """
+
 import sys
 import time
 import pygame as pygame

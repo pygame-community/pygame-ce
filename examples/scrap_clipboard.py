@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.scrap_clipboard
+"""pygame.examples.scrap_clipboard
 
 Demonstrates the clipboard capabilities of pygame.
 
@@ -12,7 +12,6 @@ Keyboard Controls
     c - Copy some text into the clipboard.
 
 """
-
 
 import pygame
 

@@ -1,9 +1,10 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_MIXER "pygame module for loading and playing sounds"
 #define DOC_MIXER_INIT "init(frequency=44100, size=-16, channels=2, buffer=512, devicename=None, allowedchanges=AUDIO_ALLOW_FREQUENCY_CHANGE | AUDIO_ALLOW_CHANNELS_CHANGE) -> None\ninitialize the mixer module"
 #define DOC_MIXER_PREINIT "pre_init(frequency=44100, size=-16, channels=2, buffer=512, devicename=None, allowedchanges=AUDIO_ALLOW_FREQUENCY_CHANGE | AUDIO_ALLOW_CHANNELS_CHANGE) -> None\npreset the mixer init arguments"
 #define DOC_MIXER_QUIT "quit() -> None\nuninitialize the mixer"
 #define DOC_MIXER_GETINIT "get_init() -> (frequency, format, channels)\ntest if the mixer is initialized"
+#define DOC_MIXER_GETDRIVER "get_driver() -> str\nget the name of the current audio backend driver"
 #define DOC_MIXER_STOP "stop() -> None\nstop playback of all sound channels"
 #define DOC_MIXER_PAUSE "pause() -> None\ntemporarily stop playback of all sound channels"
 #define DOC_MIXER_UNPAUSE "unpause() -> None\nresume paused playback of sound channels"

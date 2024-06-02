@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_FONT "pygame module for loading and rendering fonts"
 #define DOC_FONT_INIT "init() -> None\ninitialize the font module"
 #define DOC_FONT_QUIT "quit() -> None\nuninitialize the font module"

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.midi
+"""pygame.examples.midi
 
 midi input, and a separate example of midi output.
 

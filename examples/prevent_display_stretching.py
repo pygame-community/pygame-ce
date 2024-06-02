@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.prevent_display_stretching
+"""pygame.examples.prevent_display_stretching
 
 Prevent display stretching on Windows.
 

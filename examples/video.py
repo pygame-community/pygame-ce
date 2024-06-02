@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.video
+"""pygame.examples.video
 
 Experimental!
 
@@ -9,6 +9,7 @@ Experimental!
 * Renderer, Texture, and Image classes
 * Drawing lines, rects, and such onto Renderers.
 """
+
 import os
 import pygame
 

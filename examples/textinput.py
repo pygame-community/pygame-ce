@@ -1,10 +1,11 @@
 #!/usr/bin/env python
-""" pygame.examples.textinput
+"""pygame.examples.textinput
 
 A little "console" where you can write in text.
 
 Shows how to use the TEXTEDITING and TEXTINPUT events.
 """
+
 from typing import Tuple, List
 import sys
 import os

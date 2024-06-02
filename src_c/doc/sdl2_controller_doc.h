@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_SDL2_CONTROLLER "Pygame module to work with controllers."
 #define DOC_SDL2_CONTROLLER_INIT "init() -> None\ninitialize the controller module"
 #define DOC_SDL2_CONTROLLER_QUIT "quit() -> None\nUninitialize the controller module."
