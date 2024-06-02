@@ -754,7 +754,8 @@
       You can pass keyword argument values to this function. These named values
       will be applied to the attributes of the Rect before it is returned. An
       example would be ``mysurf.get_rect(center=(100, 100))`` to create a
-      rectangle for the Surface centered at a given position.
+      rectangle for the Surface centered at a given position. Size attributes
+      such as ``size`` or ``w`` can also be applied to resize the Rect.
 
       .. ## Surface.get_rect ##
 
@@ -762,14 +763,15 @@
 
       | :sl:`get the rectangular area of the Surface`
       | :sg:`get_frect(\**kwargs) -> FRect`
-      
+
       This is the same as :meth:`Surface.get_rect` but returns an FRect. FRect is similar
       to Rect, except it stores float values instead.
 
       You can pass keyword argument values to this function. These named values
       will be applied to the attributes of the FRect before it is returned. An
       example would be ``mysurf.get_frect(center=(100.5, 100.5))`` to create a
-      rectangle for the Surface centered at a given position.
+      rectangle for the Surface centered at a given position. Size attributes
+      such as ``size`` or ``w`` can also be applied to resize the FRect.
 
       .. ## Surface.get_frect ##
 
