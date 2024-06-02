@@ -2354,7 +2354,7 @@ surf_solid_overlay(PyObject *self, PyObject *args, PyObject *kwargs)
     if (!newsurf) {
         return NULL;
     }
-    
+
     if (surfobj2) {
         Py_INCREF(surfobj2);
         return (PyObject *)surfobj2;
@@ -2363,7 +2363,7 @@ surf_solid_overlay(PyObject *self, PyObject *args, PyObject *kwargs)
         return (PyObject *)pgSurface_New(newsurf);
     }
 }
-  
+
 #define MIN3(a, b, c) MIN(MIN(a, b), c)
 #define MAX3(a, b, c) MAX(MAX(a, b), c)
 
