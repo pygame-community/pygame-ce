@@ -4259,9 +4259,9 @@ math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
                      "invlerp requires exactly 3 numeric arguments");
 
     double a = PyFloat_AsDouble(args[0]);
-    RAISE_ARG_TYPE_ERROR("min")
+    RAISE_ARG_TYPE_ERROR("a")
     double b = PyFloat_AsDouble(args[1]);
-    RAISE_ARG_TYPE_ERROR("max")
+    RAISE_ARG_TYPE_ERROR("b")
     double t = PyFloat_AsDouble(args[2]);
     RAISE_ARG_TYPE_ERROR("value")
 
