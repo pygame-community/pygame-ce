@@ -3185,10 +3185,6 @@ surf_premul_alpha(pgSurfaceObject *self, PyObject *const *args,
                      "premul_alpha() takes at most 1 argument");
     }
 
-    if (PG_SURF_BytesPerPixel(surf) != 4) {
-        return RAISE(PyExc_ValueError, "source surface must have an alpha channel");
-    }
-
     pgSurface_Prep(self);
 
     SDL_Surface *newsurf =
