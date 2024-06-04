@@ -320,6 +320,9 @@
 #ifndef RectImport_RectCheckExact
 #error RectImport_RectCheckExact needs to be Defined
 #endif
+#ifndef RectImport_OtherRectCheckExact
+#error RectImport_OtherRectCheckExact needs to be Defined
+#endif
 #ifndef RectImport_primitiveType
 #error RectImport_primitiveType needs to be defined
 #endif
@@ -424,7 +427,7 @@ RectExport_do_rects_intresect(InnerRect *A, InnerRect *B)
 
 #define _pg_do_rects_intersect RectExport_do_rects_intresect
 
-static InnerRect *
+static PG_FORCEINLINE InnerRect *
 RectExport_RectFromObject(PyObject *obj, InnerRect *temp);
 static InnerRect *
 RectExport_RectFromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
@@ -611,16 +614,16 @@ static RectObject
 int RectOptional_Freelist_Num = -1;
 #endif
 
-static InnerRect *
+static PG_FORCEINLINE InnerRect *
 RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
 {
     Py_ssize_t length;
 
-    if (RectCheck(obj)) {
+    /* fast path for exact Rect / FRect class */
+    if (RectImport_RectCheckExact(obj)) {
         return &((RectObject *)obj)->r;
     }
-
-    if (OtherRectCheck(obj)) {
+    if (RectImport_OtherRectCheckExact(obj)) {
         OtherInnerRect rect = ((OtherRectObject *)obj)->r;
         temp->x = (PrimitiveType)rect.x;
         temp->y = (PrimitiveType)rect.y;
@@ -629,6 +632,7 @@ RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
         return temp;
     }
 
+    /* fast check for sequences */
     if (pgSequenceFast_Check(obj)) {
         length = PySequence_Fast_GET_SIZE(obj);
         PyObject **items = PySequence_Fast_ITEMS(obj);
@@ -721,7 +725,20 @@ RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
         }
     }
 
-    /* Try to get the rect attribute */
+    /* path for possible subclasses (these are very slow checks) */
+    if (RectImport_RectCheck(obj)) {
+        return &((RectObject *)obj)->r;
+    }
+    if (RectImport_OtherRectCheck(obj)) {
+        OtherInnerRect rect = ((OtherRectObject *)obj)->r;
+        temp->x = (PrimitiveType)rect.x;
+        temp->y = (PrimitiveType)rect.y;
+        temp->w = (PrimitiveType)rect.w;
+        temp->h = (PrimitiveType)rect.h;
+        return temp;
+    }
+
+    /* path to get the 'rect' attribute if present */
     PyObject *rectattr;
     if (!(rectattr = PyObject_GetAttrString(obj, "rect"))) {
         PyErr_Clear();
@@ -2933,6 +2950,7 @@ RectExport_iterator(RectObject *self)
 #undef RectImport_RectCheck
 #undef RectImport_OtherRectCheck
 #undef RectImport_RectCheckExact
+#undef RectImport_OtherRectCheckExact
 #undef RectImport_innerRectStruct
 #undef RectImport_otherInnerRectStruct
 #undef RectImport_innerPointStruct
