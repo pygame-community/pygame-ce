@@ -310,7 +310,7 @@
 
    .. method:: scroll
 
-      | :sl:`Shift the surface image in place`
+      | :sl:`shift the surface image in place`
       | :sg:`scroll(dx=0, dy=0, /) -> None`
 
       Move the image by dx pixels right and dy pixels down. dx and dy may be
@@ -325,7 +325,7 @@
 
    .. method:: set_colorkey
 
-      | :sl:`Set the transparent colorkey`
+      | :sl:`set the transparent colorkey`
       | :sg:`set_colorkey(color, flags=0, /) -> None`
       | :sg:`set_colorkey(None) -> None`
 
@@ -347,7 +347,7 @@
 
    .. method:: get_colorkey
 
-      | :sl:`Get the current transparent colorkey`
+      | :sl:`get the current transparent colorkey`
       | :sg:`get_colorkey() -> RGB or None`
 
       Return the current colorkey value for the Surface. If the colorkey is not
@@ -464,7 +464,7 @@
 
    .. method:: get_locks
 
-      | :sl:`Gets the locks for the Surface`
+      | :sl:`gets the locks for the Surface`
       | :sg:`get_locks() -> tuple`
 
       Returns the currently existing locks for the Surface.
