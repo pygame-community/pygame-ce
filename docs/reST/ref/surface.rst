@@ -141,7 +141,7 @@
 
    .. method:: blits
 
-      | :sl:`draw many images onto another`
+      | :sl:`draw many surfaces onto this surface at their corresponding location`
       | :sg:`blits(blit_sequence=((source, dest), ...), doreturn=True) -> [Rect, ...] or None`
       | :sg:`blits(((source, dest, area), ...)) -> [Rect, ...]`
       | :sg:`blits(((source, dest, area, special_flags), ...)) -> [Rect, ...]`
@@ -184,8 +184,8 @@
           - To draw a ``Surface`` with a special flag, you must specify an area as well, e.g.,
             ``(source, dest, None, special_flags)``.
 
-          - Prefer using :meth:`blits` over :meth:`blit` when drawing a multiple images
-            for better performance. Use :meth:`blit` if you need to draw a single image.
+          - Prefer using :meth:`blits` over :meth:`blit` when drawing multiple surfaces
+            for better performance. Use :meth:`blit` if you need to draw a single surface.
 
           - For drawing a sequence of (source, dest) pairs with whole source Surface
             and a singular special_flag, use the :meth:`fblits()` method.
@@ -196,7 +196,7 @@
 
    .. method:: fblits
 
-      | :sl:`draw many surfaces onto the calling surface at their corresponding location and the same special_flags`
+      | :sl:`draw many surfaces onto this surface at their corresponding location and with the same special_flags`
       | :sg:`fblits(blit_sequence=((source, dest), ...), special_flags=0, /) -> None`
 
       This method takes a sequence of tuples (source, dest) as input, where source is a Surface
@@ -223,7 +223,7 @@
 
    .. method:: convert
 
-      | :sl:`change the pixel format of an image`
+      | :sl:`change the pixel format of a surface`
       | :sg:`convert(surface, /) -> Surface`
       | :sg:`convert(depth, flags=0, /) -> Surface`
       | :sg:`convert(masks, flags=0, /) -> Surface`
@@ -253,7 +253,7 @@
 
    .. method:: convert_alpha
 
-      | :sl:`change the pixel format of an image including per pixel alphas`
+      | :sl:`change the pixel format of a surface including per pixel alphas`
       | :sg:`convert_alpha() -> Surface`
 
       Creates a new copy of the surface with the desired pixel format. The new
@@ -261,7 +261,7 @@
       with per pixel alpha.
 
       Unlike the :meth:`convert()` method, the pixel format for the new
-      image will not be exactly the same as the display surface, but it will
+      surface will not be exactly the same as the display surface, but it will
       be optimized for fast alpha blitting to it.
 
       As with :meth:`convert()` the returned surface has the same class as
@@ -357,7 +357,7 @@
 
    .. method:: set_alpha
 
-      | :sl:`set the alpha value for the full Surface image`
+      | :sl:`set the alpha value for the full Surface`
       | :sg:`set_alpha(value, flags=0, /) -> None`
       | :sg:`set_alpha(None) -> None`
 
@@ -646,7 +646,7 @@
 
       Return a rectangle of the current clipping area. The Surface will always
       return a valid rectangle that will never be outside the bounds of the
-      image. If the Surface has had ``None`` set for the clipping area, the
+      surface. If the Surface has had ``None`` set for the clipping area, the
       Surface will return a rectangle with the full area of the Surface.
 
       .. ## Surface.get_clip ##
@@ -749,7 +749,7 @@
       | :sg:`get_rect(\**kwargs) -> Rect`
 
       Returns a new rectangle covering the entire surface. This rectangle will
-      always start at (0, 0) with a width and height the same size as the image.
+      always start at (0, 0) with a width and height the same size as the surface.
 
       You can pass keyword argument values to this function. These named values
       will be applied to the attributes of the Rect before it is returned. An
@@ -1062,5 +1062,3 @@
       .. versionadded:: 2.5.0
 
    .. ## pygame.Surface ##
-
-
