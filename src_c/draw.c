@@ -387,7 +387,6 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         pts_prev[1] = pts[1];
         pts_prev[2] = pts[2];
         pts_prev[3] = pts[3];
-
         draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 1,
                     1, extra_px);
     }
@@ -1333,6 +1332,7 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
     Uint32 pixel_color;
     float x_gap, y_endpoint, clip_left, clip_right, clip_top, clip_bottom;
     int steep, y;
+    int line_inverted;
 
     dx = to_x - from_x;
     dy = to_y - from_y;
@@ -1365,6 +1365,7 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
         swap(&clip_right, &clip_bottom);
     }
     if (dx < 0) {
+        line_inverted = 1;
         swap(&from_x, &to_x);
         swap(&from_y, &to_y);
         dx = -dx;
@@ -1468,7 +1469,7 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
     else {
         /* Handle extra pixel for aalines.
          * It is drawn only when one line is steep and other is not.*/
-        if (extra_pixel_for_aalines) {
+        if (extra_pixel_for_aalines && !line_inverted) {
             x_pixel_start = (int)from_x;
             y_endpoint = intersect_y =
                 from_y + gradient * (x_pixel_start - from_x);
@@ -1524,6 +1525,29 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
             pixel_color =
                 get_antialiased_color(surf, x, y, color, brightness * x_gap);
             set_and_check_rect(surf, x, y, pixel_color, drawn_area);
+        }
+    }
+    else {
+        /* Handle extra pixel for aalines.
+         * It is drawn only when one line is steep and other is not.*/
+        if (extra_pixel_for_aalines && line_inverted) {
+            if (from_x < clip_right - 1.0f) {
+                y_endpoint = to_y + gradient * (x_pixel_end - to_x);
+                x_gap = 1 - x_pixel_end + to_x;
+                brightness = y_endpoint - (int)y_endpoint;
+                if (steep) {
+                    x = (int)y_endpoint - 1;
+                    y = x_pixel_end;
+                }
+                else {
+                    x = x_pixel_end;
+                    y = (int)y_endpoint - 1;
+                }
+                brightness = 1 - brightness;
+                pixel_color = get_antialiased_color(surf, x, y, color,
+                                                    brightness * x_gap);
+                set_and_check_rect(surf, x, y, pixel_color, drawn_area);
+            }
         }
     }
 
