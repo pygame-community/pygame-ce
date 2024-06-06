@@ -183,7 +183,7 @@ class CircleTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 c.radius = value
 
-        for value in (-10.3234, -1, 0, 0.0):
+        for value in (-10.3234, -1):
             with self.assertRaises(ValueError):
                 c.r = value
             with self.assertRaises(ValueError):
@@ -317,7 +317,7 @@ class CircleTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 c.area = value
 
-        for value in (-10.3234, -1, 0, 0.0):
+        for value in (-10.3234, -1):
             with self.assertRaises(ValueError):
                 c.area = value
 
@@ -352,7 +352,7 @@ class CircleTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 c.circumference = value
 
-        for value in (-10.3234, -1, 0, 0.0):
+        for value in (-10.3234, -1):
             with self.assertRaises(ValueError):
                 c.circumference = value
 
@@ -390,7 +390,7 @@ class CircleTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 c.diameter = value
 
-        for value in (-10.3234, -1, 0, 0.0):
+        for value in (-10.3234, -1):
             with self.assertRaises(ValueError):
                 c.diameter = value
             with self.assertRaises(ValueError):

@@ -39,11 +39,6 @@
       ((x, y), radius)
       (x, y, radius)
 
-   It is important to note that you cannot create degenerate circles, which are circles with
-   a radius of 0 or less. If you try to create such a circle, the `Circle` object will not be
-   created and an error will be raised. This is because a circle with a radius of 0 or
-   less is not a valid geometric object.
-
    The `Circle` class has both virtual and non-virtual attributes. Non-virtual attributes
    are attributes that are stored in the `Circle` object itself. Virtual attributes are the
    result of calculations that utilize the Circle's non-virtual attributes.
@@ -90,6 +85,9 @@
          The circle will not be moved from its original position.
 
          .. versionadded:: 2.4.0
+
+         .. versionchanged:: 2.5.1 It is allowed to create degenerate circles with radius
+            equal to ``0``. This also applies to virtual attributes.
 
          .. ## Circle.r ##
 
