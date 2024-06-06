@@ -95,6 +95,13 @@ class CircleTypeTest(unittest.TestCase):
         self.assertEqual(2.0, c.y)
         self.assertEqual(3.0, c.r)
 
+    def testConstruction_zero_radius(self):
+        c = Circle(1, 2, 0)
+
+        self.assertEqual(1.0, c.x)
+        self.assertEqual(2.0, c.y)
+        self.assertEqual(0, c.r)
+
     def test_x(self):
         """Ensures changing the x attribute moves the circle and does not change
         the circle's radius.
