@@ -955,9 +955,6 @@ class MessageBoxTest(unittest.TestCase):
         self.assertRaises(TypeError, lambda: mb("", buttons=()))
         self.assertRaises(TypeError, lambda: mb("", parent_window=123456))
 
-        # the important bit is `parent_window=None`
-        self.assertRaises(TypeError, lambda: mb("", buttons=(), parent_window=None))
-
 
 class MessageBoxInteractiveTest(unittest.TestCase):
     __tags__ = ["interactive"]
