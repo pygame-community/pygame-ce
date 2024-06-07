@@ -605,7 +605,7 @@ window_set_size(pgWindowObject *self, PyObject *arg, void *v)
         self->surf->surf = SDL_GetWindowSurface(self->_win);
     }
     if (self->context) {
-        /* Update the OpenGl viewport immediately instead of relying on the
+        /* Update the OpenGL viewport immediately instead of relying on the
          * event callback */
         _window_opengl_set_viewport(self->_win, self->context, w, h);
     }
