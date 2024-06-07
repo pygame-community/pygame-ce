@@ -19,6 +19,7 @@ pygame\.tests.*
 
 # don't look for stubs for pyinstaller hook
 pygame\.__pyinstaller.*
+pygame\.__briefcase.*
 
 # don't look for stubs for these private modules either
 pygame\.ftfont
@@ -29,6 +30,7 @@ pygame\.pkgdata
 pygame\.pypm
 pygame\._sdl2\.mixer
 pygame\.sysfont.*
+pygame\.docs.*
 
 # temporarily ignore the controller module while it is being converted
 # to C

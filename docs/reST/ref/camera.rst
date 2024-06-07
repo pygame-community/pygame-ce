@@ -89,8 +89,8 @@ The Bayer to ``RGB`` function is based on:
    The other big difference is "camera enumeration." Some backends don't have
    a way to list out camera names, or even the number of cameras on the
    system. In these cases, :func:`list_cameras()` will return
-   something like ``[0]``. If you know you have multiple cameras on the 
-   system, these backend ports will pass through a "camera index number" 
+   something like ``[0]``. If you know you have multiple cameras on the
+   system, these backend ports will pass through a "camera index number"
    through if you use that as the ``device`` parameter.
 
    .. versionaddedold:: 2.0.3
@@ -100,7 +100,7 @@ The Bayer to ``RGB`` function is based on:
 .. function:: colorspace
 
    | :sl:`Surface colorspace conversion`
-   | :sg:`colorspace(Surface, format, DestSurface = None, /) -> Surface`
+   | :sg:`colorspace(surface, format, dest_surface = None, /) -> Surface`
 
    Allows for conversion from "RGB" to a destination colorspace of "HSV" or
    "YUV". The source and destination surfaces must be the same size and pixel
@@ -132,7 +132,7 @@ The Bayer to ``RGB`` function is based on:
 
    Loads a camera. On Linux, the device is typically something like
    "/dev/video0". Default width and height are 640 by 480.
-   Format is the desired colorspace of the output. 
+   Format is the desired colorspace of the output.
    This is useful for computer vision purposes. The default is
    ``RGB``. The following are supported:
 
@@ -214,7 +214,7 @@ The Bayer to ``RGB`` function is based on:
       frame when called with a blocking function like :func:`get_image()`.
       On Windows (MSMF), and the  OpenCV backends, :func:`query_image()`
       should be reliable, though. This is useful to separate the framerate of
-      the game from that of the camera without having to use threading. 
+      the game from that of the camera without having to use threading.
 
       .. ## Camera.query_image ##
 

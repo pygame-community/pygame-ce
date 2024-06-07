@@ -247,6 +247,8 @@
       as Surface subclass inherit this method without the need to override,
       unless subclass specific instance attributes also need copying.
 
+      .. versionchanged:: 2.5.0 converting to a known format will succeed without a window/display surface.
+
       .. ## Surface.convert ##
 
    .. method:: convert_alpha
@@ -485,15 +487,15 @@
       methods - or by using :mod:`pygame.surfarray`/:mod:`pygame.PixelArray`.
 
       This function will temporarily lock and unlock the Surface as needed.
-      
+
       .. versionchanged:: 2.3.1 can now also accept both float coordinates and Vector2s for pixels.
-      
+
          Returning a Color instead of tuple. Use ``tuple(surf.get_at((x,y)))``
          if you want a tuple, and not a Color. This should only matter if
          you want to use the color as a key in a dict.
-      
+
       .. versionaddedold:: 1.9
-      
+
       .. ## Surface.get_at ##
 
    .. method:: set_at
@@ -574,7 +576,7 @@
       Set the full palette for an 8-bit Surface. This will replace the colors in
       the existing palette. A partial palette can be passed and only the first
       colors in the original palette will be changed.
-      
+
       This function has no effect on a Surface with more than 8-bits per pixel.
 
       .. ## Surface.set_palette ##
@@ -586,7 +588,7 @@
 
       Set the palette value for a single entry in a Surface palette. The index
       should be a value from 0 to 255.
-      
+
       This function has no effect on a Surface with more than 8-bits per pixel.
 
       .. ## Surface.set_palette_at ##
@@ -719,7 +721,7 @@
       | :sl:`get the dimensions of the Surface`
       | :sg:`get_size() -> (width, height)`
 
-      Return the width and height of the Surface in pixels.
+      Return the width and height of the Surface in pixels. Can also be accessed with :attr:`size`
 
       .. ## Surface.get_size ##
 
@@ -728,7 +730,7 @@
       | :sl:`get the width of the Surface`
       | :sg:`get_width() -> width`
 
-      Return the width of the Surface in pixels.
+      Return the width of the Surface in pixels. Can also be accessed with :attr:`width`
 
       .. ## Surface.get_width ##
 
@@ -737,7 +739,7 @@
       | :sl:`get the height of the Surface`
       | :sg:`get_height() -> height`
 
-      Return the height of the Surface in pixels.
+      Return the height of the Surface in pixels. Can also be accessed with :attr:`height`
 
       .. ## Surface.get_height ##
 
@@ -752,7 +754,8 @@
       You can pass keyword argument values to this function. These named values
       will be applied to the attributes of the Rect before it is returned. An
       example would be ``mysurf.get_rect(center=(100, 100))`` to create a
-      rectangle for the Surface centered at a given position.
+      rectangle for the Surface centered at a given position. Size attributes
+      such as ``size`` or ``w`` can also be applied to resize the Rect.
 
       .. ## Surface.get_rect ##
 
@@ -760,14 +763,15 @@
 
       | :sl:`get the rectangular area of the Surface`
       | :sg:`get_frect(\**kwargs) -> FRect`
-      
+
       This is the same as :meth:`Surface.get_rect` but returns an FRect. FRect is similar
       to Rect, except it stores float values instead.
 
       You can pass keyword argument values to this function. These named values
       will be applied to the attributes of the FRect before it is returned. An
       example would be ``mysurf.get_frect(center=(100.5, 100.5))`` to create a
-      rectangle for the Surface centered at a given position.
+      rectangle for the Surface centered at a given position. Size attributes
+      such as ``size`` or ``w`` can also be applied to resize the FRect.
 
       .. ## Surface.get_frect ##
 
@@ -1003,14 +1007,14 @@
       blend mode flag of the blit() method. Surfaces which have called this method will only look
       correct after blitting if the BLEND_PREMULTIPLED special flag is used.
 
-      It is worth noting that after calling this method, methods that return the colour of a pixel
-      such as get_at() will return the alpha multiplied colour values. It is not possible to fully
-      reverse an alpha multiplication of the colours in a surface as integer colour channel data
+      It is worth noting that after calling this method, methods that return the color of a pixel
+      such as get_at() will return the alpha multiplied color values. It is not possible to fully
+      reverse an alpha multiplication of the colors in a surface as integer color channel data
       is generally reduced by the operation (e.g. 255 x 0 = 0, from there it is not possible to reconstruct
-      the original 255 from just the two remaining zeros in the colour and alpha channels).
+      the original 255 from just the two remaining zeros in the color and alpha channels).
 
-      If you call this method, and then call it again, it will multiply the colour channels by the alpha channel
-      twice. There are many possible ways to obtain a surface with the colour channels pre-multiplied by the
+      If you call this method, and then call it again, it will multiply the color channels by the alpha channel
+      twice. There are many possible ways to obtain a surface with the color channels pre-multiplied by the
       alpha channel in pygame, and it is not possible to tell the difference just from the information in the pixels.
       It is completely possible to have two identical surfaces - one intended for pre-multiplied alpha blending and
       one intended for normal blending. For this reason we do not store state on surfaces intended for pre-multiplied
@@ -1022,13 +1026,40 @@
 
       In general pre-multiplied alpha blitting is faster then 'straight alpha' blitting and produces
       superior results when blitting an alpha surface onto another surface with alpha - assuming both
-      surfaces contain pre-multiplied alpha colours.
+      surfaces contain pre-multiplied alpha colors.
 
-      There is a `tutorial on premultiplied alpha blending here. <tutorials/en/premultiplied-alpha>`
+      There is a `tutorial on premultiplied alpha blending here. <tutorials/en/premultiplied-alpha>`_
 
       .. versionadded:: 2.1.4
 
       .. ## Surface.premul_alpha ##
+
+   .. attribute:: width
+
+      | :sl:`Surface width in pixels (read-only)`
+      | :sg:`width -> int`
+
+      Read-only attribute. Same as :meth:`get_width()`
+
+      .. versionadded:: 2.5.0
+
+   .. attribute:: height
+
+      | :sl:`Surface height in pixels (read-only)`
+      | :sg:`height -> int`
+
+      Read-only attribute. Same as :meth:`get_height()`
+
+      .. versionadded:: 2.5.0
+
+   .. attribute:: size
+
+      | :sl:`Surface size in pixels (read-only)`
+      | :sg:`height -> tuple[int, int]`
+
+      Read-only attribute. Same as :meth:`get_size()`
+
+      .. versionadded:: 2.5.0
 
    .. ## pygame.Surface ##
 

@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_TRANSFORM "pygame module to transform surfaces"
 #define DOC_TRANSFORM_FLIP "flip(surface, flip_x, flip_y) -> Surface\nflip vertically and horizontally"
 #define DOC_TRANSFORM_SCALE "scale(surface, size, dest_surface=None) -> Surface\nresize to new resolution"
@@ -19,3 +19,4 @@
 #define DOC_TRANSFORM_INVERT "invert(surface, dest_surface=None) -> Surface\ninverts the RGB elements of a surface"
 #define DOC_TRANSFORM_GRAYSCALE "grayscale(surface, dest_surface=None) -> Surface\ngrayscale a surface"
 #define DOC_TRANSFORM_THRESHOLD "threshold(dest_surface, surface, search_color, threshold=(0,0,0,0), set_color=(0,0,0,0), set_behavior=1, search_surf=None, inverse_set=False) -> num_threshold_pixels\nfinds which, and how many pixels in a surface are within a threshold of a 'search_color' or a 'search_surf'."
+#define DOC_TRANSFORM_HSL "hsl(surface, hue, saturation, lightness, dest_surface=None) -> Surface\nChange the hue, saturation, and lightness of a surface."

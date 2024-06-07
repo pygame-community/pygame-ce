@@ -52,18 +52,13 @@ jobs:
       # load pip config from this file. Define this in 'CIBW_ENVIRONMENT'
       # because this should not affect cibuildwheel machinery
       # also define environment variables needed for testing
-      CIBW_ENVIRONMENT: PIP_CONFIG_FILE=buildconfig/pip_config.ini PORTMIDI_INC_PORTTIME=1 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
+      CIBW_ENVIRONMENT: SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
 
       CIBW_BUILD: "cp3{8,9,10,11,12}-* pp3{8,9,10}-*"
       CIBW_ARCHS: ${{ matrix.arch }}
 
       # skip musllinux for now
       CIBW_SKIP: '*-musllinux_*'
-
-      # command that runs before every build
-      CIBW_BEFORE_BUILD: |
-        pip install Sphinx"<7.2.0"
-        python setup.py docs
 
       CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,music,timing --time_out 300
 
@@ -79,10 +74,10 @@ jobs:
       CIBW_BUILD_VERBOSITY: 2
 
     steps:
-    - uses: actions/checkout@v4.1.1
+    - uses: actions/checkout@v4.1.6
 
     - name: Log in to the Container registry
-      uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
+      uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -102,7 +97,7 @@ jobs:
 
     - name: Build and push Docker image
       if: steps.inspect.outcome == 'failure'
-      uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56
+      uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0
       with:
         context: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base
         file: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base/Dockerfile-${{ matrix.arch }}
@@ -118,7 +113,7 @@ jobs:
         CIBW_MANYLINUX_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
         CIBW_MANYLINUX_PYPY_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
 
-      uses: pypa/cibuildwheel@v2.16.4
+      uses: pypa/cibuildwheel@v2.18.1
 
     # We upload the generated files under github actions assets
     - name: Upload dist

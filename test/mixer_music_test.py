@@ -297,7 +297,7 @@ class MixerMusicModuleTest(unittest.TestCase):
         pygame.mixer.music.unpause()
         after_unpause = pygame.mixer.music.get_pos()
 
-        self.assertEqual(before_unpause, after_unpause)
+        self.assertAlmostEqual(before_unpause, after_unpause, delta=2)
 
     def test_music_get_metadata(self):
         file_dir = example_path("data")

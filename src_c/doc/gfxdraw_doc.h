@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_GFXDRAW "pygame module for drawing shapes"
 #define DOC_GFXDRAW_PIXEL "pixel(surface, x, y, color, /) -> None\ndraw a pixel"
 #define DOC_GFXDRAW_HLINE "hline(surface, x1, x2, y, color, /) -> None\ndraw a horizontal line"

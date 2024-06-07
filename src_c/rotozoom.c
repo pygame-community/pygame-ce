@@ -540,8 +540,8 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
     /*
      * Determine if source surface is 32bit or 8bit
      */
-    is32bit = (src->format->BitsPerPixel == 32);
-    if ((is32bit) || (src->format->BitsPerPixel == 8)) {
+    is32bit = (PG_SURF_BitsPerPixel(src) == 32);
+    if ((is32bit) || (PG_SURF_BitsPerPixel(src) == 8)) {
         /*
          * Use source surface 'as is'
          */
@@ -602,7 +602,8 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
          * Target surface is 32bit with source RGBA/ABGR ordering
          */
         rz_dst = PG_CreateSurface(dstwidth, dstheight, rz_src->format->format);
-        if (SDL_GetColorKey(src, &colorkey) == 0) {
+        if (SDL_HasColorKey(src)) {
+            SDL_GetColorKey(src, &colorkey);
             if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;
@@ -660,7 +661,8 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
          */
 
         rz_dst = PG_CreateSurface(dstwidth, dstheight, rz_src->format->format);
-        if (SDL_GetColorKey(src, &colorkey) == 0) {
+        if (SDL_HasColorKey(src)) {
+            SDL_GetColorKey(src, &colorkey);
             if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0) {
                 SDL_FreeSurface(rz_dst);
                 return NULL;

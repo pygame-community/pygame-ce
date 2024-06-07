@@ -21,13 +21,6 @@ typedef struct {
 #define pgCircle_Check(o) ((o)->ob_type == &pgCircle_Type)
 
 static PyTypeObject pgCircle_Type;
-
-static int
-pgCircle_FromObject(PyObject *obj, pgCircleBase *out);
-
-static int
-pgCircle_FromObjectFastcall(PyObject *const *args, Py_ssize_t nargs,
-                            pgCircleBase *out);
 /* Constants */
 
 /* PI */
@@ -39,5 +32,17 @@ pgCircle_FromObjectFastcall(PyObject *const *args, Py_ssize_t nargs,
 #ifndef M_TWOPI
 #define M_TWOPI 6.28318530717958647692
 #endif
+
+/* PI/180 */
+#ifndef M_PI_QUO_180
+#define M_PI_QUO_180 0.01745329251994329577
+#endif
+
+/* Converts degrees to radians */
+static inline double
+DEG_TO_RAD(double deg)
+{
+    return deg * M_PI_QUO_180;
+}
 
 #endif  // PYGAME_CE_GEOMETRY_H
