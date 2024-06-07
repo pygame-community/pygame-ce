@@ -3,6 +3,7 @@
 #include "pygame.h"
 
 #include "pgcompat.h"
+#include "pgopengl.h"
 
 #include "doc/sdl2_video_doc.h"
 #include "doc/window_doc.h"
@@ -211,7 +212,17 @@ window_flip(pgWindowObject *self, PyObject *_null)
     Py_RETURN_NONE;
 }
 
-// Callback function for surface auto resize
+static void
+_window_opengl_set_viewport(SDL_Window *window, SDL_GLContext context,
+                            int wnew, int hnew)
+{
+    GL_glViewport_Func p_glViewport =
+        (GL_glViewport_Func)SDL_GL_GetProcAddress("glViewport");
+    SDL_GL_MakeCurrent(window, context);
+    p_glViewport(0, 0, wnew, hnew);
+}
+
+// Callback function for surface auto resize or OpenGL viewport update
 static int SDLCALL
 _resize_event_watch(void *userdata, SDL_Event *event)
 {
@@ -230,6 +241,11 @@ _resize_event_watch(void *userdata, SDL_Event *event)
     if (event_window_pg->_is_borrowed) {
         // have been handled by event watch in display.c
         return 0;
+    }
+
+    if (event_window_pg->context != NULL) {
+        _window_opengl_set_viewport(event_window, event_window_pg->context,
+                                    event->window.data1, event->window.data2);
     }
 
     if (!event_window_pg->surf)
@@ -587,6 +603,11 @@ window_set_size(pgWindowObject *self, PyObject *arg, void *v)
         /* Ensure that the underlying surf is immediately updated, instead of
          * relying on the event callback */
         self->surf->surf = SDL_GetWindowSurface(self->_win);
+    }
+    if (self->context) {
+        /* Update the OpenGl viewport immediately instead of relying on the
+         * event callback */
+        _window_opengl_set_viewport(self->_win, self->context, w, h);
     }
 
     return 0;
