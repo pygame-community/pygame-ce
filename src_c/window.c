@@ -96,6 +96,7 @@ display_resource_end:
 }
 
 static PyTypeObject pgWindow_Type;
+static GL_glViewport_Func p_glViewport = NULL;
 
 #define pgWindow_Check(x) \
     (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
@@ -212,14 +213,21 @@ window_flip(pgWindowObject *self, PyObject *_null)
     Py_RETURN_NONE;
 }
 
-static void
+/* Exception already set */
+static int
 _window_opengl_set_viewport(SDL_Window *window, SDL_GLContext context,
                             int wnew, int hnew)
 {
-    GL_glViewport_Func p_glViewport =
-        (GL_glViewport_Func)SDL_GL_GetProcAddress("glViewport");
-    SDL_GL_MakeCurrent(window, context);
+    if (SDL_GL_MakeCurrent(window, context) < 0) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return -1;
+    }
+    if (p_glViewport == NULL) {
+        PyErr_SetString(pgExc_SDLError, "glViewport is unavailable");
+        return -1;
+    }
     p_glViewport(0, 0, wnew, hnew);
+    return 0;
 }
 
 // Callback function for surface auto resize or OpenGL viewport update
@@ -244,8 +252,11 @@ _resize_event_watch(void *userdata, SDL_Event *event)
     }
 
     if (event_window_pg->context != NULL) {
-        _window_opengl_set_viewport(event_window, event_window_pg->context,
-                                    event->window.data1, event->window.data2);
+        if (_window_opengl_set_viewport(event_window, event_window_pg->context,
+                                        event->window.data1,
+                                        event->window.data2) < 0) {
+            PyErr_Clear();
+        }
     }
 
     if (!event_window_pg->surf)
@@ -604,10 +615,12 @@ window_set_size(pgWindowObject *self, PyObject *arg, void *v)
          * relying on the event callback */
         self->surf->surf = SDL_GetWindowSurface(self->_win);
     }
-    if (self->context) {
+    if (self->context != NULL) {
         /* Update the OpenGL viewport immediately instead of relying on the
          * event callback */
-        _window_opengl_set_viewport(self->_win, self->context, w, h);
+        if (_window_opengl_set_viewport(self->_win, self->context, w, h) < 0) {
+            return -1;
+        }
     }
 
     return 0;
@@ -997,6 +1010,11 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             return -1;
         }
+        /* As stated in the 'Remarks' of the docs
+         * (https://wiki.libsdl.org/SDL2/SDL_GL_GetProcAddress) on Windows
+         * SDL_GL_GetProcAddress is only valid after an OpenGL context has been
+         * created */
+        p_glViewport = (GL_glViewport_Func)SDL_GL_GetProcAddress("glViewport");
         self->context = context;
     }
     else {
