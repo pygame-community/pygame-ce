@@ -48,7 +48,7 @@ pg_circle_init(pgCircleObject *self, PyObject *args, PyObject *kwds)
             PyExc_TypeError,
             "Arguments must be a Circle, a sequence of length 3 or 2, or an "
             "object with an attribute called 'circle' and the radius must be "
-            ">= 0");
+            "nonnegative");
         return -1;
     }
     return 0;
@@ -496,7 +496,7 @@ pg_circle_setr(pgCircleObject *self, PyObject *value, void *closure)
     }
 
     if (radius < 0) {
-        PyErr_SetString(PyExc_ValueError, "Radius must be >= 0");
+        PyErr_SetString(PyExc_ValueError, "Radius must be nonnegative");
         return -1;
     }
 
@@ -526,7 +526,7 @@ pg_circle_setr_sqr(pgCircleObject *self, PyObject *value, void *closure)
 
     if (radius_squared < 0) {
         PyErr_SetString(PyExc_ValueError,
-                        "Invalid radius squared value, must be >= 0");
+                        "Invalid radius squared value, must be nonnegative");
         return -1;
     }
 
@@ -572,7 +572,8 @@ pg_circle_setarea(pgCircleObject *self, PyObject *value, void *closure)
     }
 
     if (area < 0) {
-        PyErr_SetString(PyExc_ValueError, "Invalid area value, must be >= 0");
+        PyErr_SetString(PyExc_ValueError,
+                        "Invalid area value, must be nonnegative");
         return -1;
     }
 
@@ -603,7 +604,7 @@ pg_circle_setcircumference(pgCircleObject *self, PyObject *value,
 
     if (circumference < 0) {
         PyErr_SetString(PyExc_ValueError,
-                        "Invalid circumference value, must be >= 0");
+                        "Invalid circumference value, must be nonnegative");
         return -1;
     }
 
@@ -633,7 +634,7 @@ pg_circle_setdiameter(pgCircleObject *self, PyObject *value, void *closure)
 
     if (diameter < 0) {
         PyErr_SetString(PyExc_ValueError,
-                        "Invalid diameter value, must be >= 0");
+                        "Invalid diameter value, must be nonnegative");
         return -1;
     }
 
