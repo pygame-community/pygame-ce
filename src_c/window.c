@@ -223,7 +223,7 @@ _window_opengl_set_viewport(SDL_Window *window, SDL_GLContext context,
         return -1;
     }
     if (p_glViewport == NULL) {
-        PyErr_SetString(pgExc_SDLError, "glViewport is unavailable");
+        PyErr_SetString(pgExc_SDLError, "glViewport function is unavailable");
         return -1;
     }
     p_glViewport(0, 0, wnew, hnew);
@@ -255,7 +255,8 @@ _resize_event_watch(void *userdata, SDL_Event *event)
         if (_window_opengl_set_viewport(event_window, event_window_pg->context,
                                         event->window.data1,
                                         event->window.data2) < 0) {
-            PyErr_Clear();
+            return PyErr_WarnEx(PyExc_RuntimeWarning,
+                                "Failed to set OpenGL viewport", 0);
         }
     }
 
