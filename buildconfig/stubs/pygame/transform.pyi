@@ -71,7 +71,8 @@ def bloom(
     intensity: float,
     luminance_threshold: float = 0.5,
     blur_type: Literal["gaussian", "box"] = "gaussian",
-    dest_surface: Optional[Surface] = None 
+    dest_surface: Optional[Surface] = None
+) -> Surface: ...
 def hsl(
     surface: Surface,
     hue: float = 0,
