@@ -3,20 +3,21 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-SDL2="SDL2-2.30.3"
-IMG2="SDL2_image-2.8.2"
-TTF2="SDL2_ttf-2.22.0"
-MIX2="SDL2_mixer-2.8.0"
+SDL2_VER="2.30.3"
+SDL2="SDL2-$SDL2_VER"
+IMG2_VER="2.8.2"
+IMG2="SDL2_image-$IMG2_VER"
+TTF2_VER="2.22.0"
+TTF2="SDL2_ttf-$TTF2_VER"
+MIX2_VER="2.8.0"
+MIX2="SDL2_mixer-$MIX2_VER"
 
 
 # Download
-curl -sL --retry 10 https://www.libsdl.org/release/${SDL2}.tar.gz > ${SDL2}.tar.gz
-# curl -sL --retry 10 https://www.libsdl.org/tmp/release/SDL2-2.0.14.tar.gz > SDL2-2.0.14.tar.gz
-# curl -sL --retry 10 https://hg.libsdl.org/SDL/archive/tip.tar.gz > ${SDL2}.tar.gz
-
-curl -sL --retry 10 https://www.libsdl.org/projects/SDL_image/release/${IMG2}.tar.gz > ${IMG2}.tar.gz
-curl -sL --retry 10 https://www.libsdl.org/projects/SDL_ttf/release/${TTF2}.tar.gz > ${TTF2}.tar.gz
-curl -sL --retry 10 https://www.libsdl.org/projects/SDL_mixer/release/${MIX2}.tar.gz > ${MIX2}.tar.gz
+curl -sL --retry 10 https://github.com/libsdl-org/SDL/releases/download/release-$SDL2_VER/$SDL2.tar.gz > ${SDL2}.tar.gz
+curl -sL --retry 10 https://github.com/libsdl-org/SDL_image/releases/download/release-$IMG2_VER/$IMG2.tar.gz > ${IMG2}.tar.gz
+curl -sL --retry 10 https://github.com/libsdl-org/SDL_mixer/releases/download/release-$MIX2_VER/$MIX2.tar.gz > ${MIX2}.tar.gz
+curl -sL --retry 10 https://github.com/libsdl-org/SDL_ttf/releases/download/release-$TTF2_VER/$TTF2.tar.gz > ${TTF2}.tar.gz
 sha512sum -c sdl2.sha512
 
 
