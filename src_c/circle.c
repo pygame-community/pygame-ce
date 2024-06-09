@@ -47,8 +47,8 @@ pg_circle_init(pgCircleObject *self, PyObject *args, PyObject *kwds)
         PyErr_SetString(
             PyExc_TypeError,
             "Arguments must be a Circle, a sequence of length 3 or 2, or an "
-            "object with an attribute called 'circle' and the radius must be "
-            "nonnegative");
+            "object with an attribute called 'circle', all with corresponding "
+            "nonnegative radius argument");
         return -1;
     }
     return 0;
