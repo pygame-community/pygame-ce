@@ -65,3 +65,10 @@ def gaussian_blur(
     repeat_edge_pixels: bool = True,
     dest_surface: Optional[Surface] = None
 ) -> Surface: ...
+def hsl(
+    surface: Surface,
+    hue: float = 0,
+    saturation: float = 0,
+    lightness: float = 0,
+    dest_surface: Optional[Surface] = None,
+) -> Surface: ...

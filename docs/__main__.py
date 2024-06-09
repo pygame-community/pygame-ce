@@ -1,7 +1,9 @@
 import platform
 
-from pygame.docs.serve import main as serve
-from pygame.docs.static import main as static
+# use relative import here and not absolute, so that `python -m docs` works at
+# development time
+from .serve import main as serve
+from .static import main as static
 
 
 def main():

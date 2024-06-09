@@ -132,7 +132,7 @@ jobs:
       CIBW_BUILD: ${{ matrix.pyversions }}
       CIBW_ARCHS: ${{ matrix.winarch }}
 
-      CIBW_BEFORE_BUILD: pip install numpy Sphinx"<7.2.0" && python setup.py docs
+      CIBW_BEFORE_BUILD: pip install numpy
 
       CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,timing --time_out 300
 
@@ -140,14 +140,14 @@ jobs:
       CIBW_BUILD_VERBOSITY: 2
 
     steps:
-      - uses: actions/checkout@v4.1.5
+      - uses: actions/checkout@v4.1.6
 
       - uses: TheMrMilchmann/setup-msvc-dev@v3  # this lets us use the developer command prompt on windows
         with:
           arch: ${{ matrix.msvc-dev-arch }}
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.17.0
+        uses: pypa/cibuildwheel@v2.18.1
 
       - uses: actions/upload-artifact@v4
         with:

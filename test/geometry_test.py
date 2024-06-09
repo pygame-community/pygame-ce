@@ -1,9 +1,8 @@
-import unittest
 import math
-
+import unittest
 from math import sqrt
-from pygame import Vector2, Vector3, Rect, FRect
 
+from pygame import Vector2, Vector3, Rect, FRect
 from pygame.geometry import Circle
 
 
@@ -1148,6 +1147,146 @@ class CircleTypeTest(unittest.TestCase):
             for center in centers:
                 c.rotate_ip(angle, center)
                 assert_approx_equal(c, rotate_circle(c, angle, center))
+
+    def test_contains_argtype(self):
+        """Tests if the function correctly handles incorrect types as parameters"""
+
+        invalid_types = (None, [], "1", (1,), 1, (1, 2, 3))
+
+        c = Circle(10, 10, 4)
+
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                c.contains(value)
+
+    def test_contains_argnum(self):
+        """Tests if the function correctly handles incorrect number of parameters"""
+        c = Circle(10, 10, 4)
+
+        invalid_args = [(Circle(10, 10, 4), Circle(10, 10, 4))]
+
+        with self.assertRaises(TypeError):
+            c.contains()
+
+        for arg in invalid_args:
+            with self.assertRaises(TypeError):
+                c.contains(*arg)
+
+    def test_contains_return_type(self):
+        """Tests if the function returns the correct type"""
+        c = Circle(10, 10, 4)
+        items = [
+            Circle(3, 4, 15),
+            (0, 0),
+            Vector2(0, 0),
+            Rect(0, 0, 10, 10),
+            FRect(0, 0, 10, 10),
+        ]
+
+        for item in items:
+            self.assertIsInstance(c.contains(item), bool)
+
+    def test_contains_circle(self):
+        """Ensures that the contains method correctly determines if a circle is
+        contained within the circle"""
+        c = Circle(10, 10, 4)
+        c2 = Circle(10, 10, 2)
+        c3 = Circle(100, 100, 5)
+        c4 = Circle(16, 10, 7)
+
+        # self
+        self.assertTrue(c.contains(c))
+
+        # self-like
+        c_s = Circle(c)
+        self.assertTrue(c.contains(c_s))
+
+        # contained circle
+        self.assertTrue(c.contains(c2))
+
+        # not contained circle
+        self.assertFalse(c.contains(c3))
+
+        # intersecting circle
+        self.assertFalse(c.contains(c4))
+
+        # bigger circle not contained in smaller circle
+        self.assertFalse(c2.contains(c))
+        self.assertFalse(c3.contains(c4))
+
+    def test_contains_point(self):
+        """Ensures that the contains method correctly determines if a point is
+        contained within the circle"""
+        c = Circle(10, 10, 4)
+        p1 = (10, 10)
+        p2 = (10, 15)
+        p3 = (100, 100)
+        p4 = (c.x + math.sin(math.pi / 4) * c.r, c.y + math.cos(math.pi / 4) * c.r)
+
+        p1v = Vector2(p1)
+        p2v = Vector2(p2)
+        p3v = Vector2(p3)
+        p4v = Vector2(p4)
+
+        # contained point
+        self.assertTrue(c.contains(p1))
+
+        # not contained point
+        self.assertFalse(c.contains(p2))
+        self.assertFalse(c.contains(p3))
+
+        # on the edge
+        self.assertTrue(c.contains(p4))
+
+        # contained point
+        self.assertTrue(c.contains(p1v))
+
+        # not contained point
+        self.assertFalse(c.contains(p2v))
+        self.assertFalse(c.contains(p3v))
+
+        # on the edge
+        self.assertTrue(c.contains(p4v))
+
+    def test_contains_rect_frect(self):
+        """Ensures that the contains method correctly determines if a rect is
+        contained within the circle"""
+        c = Circle(0, 0, 10)
+        r1 = Rect(0, 0, 3, 3)
+        r2 = Rect(10, 10, 10, 10)
+        r3 = Rect(10, 10, 5, 5)
+
+        angle = math.pi / 4
+        x = c.x - math.sin(angle) * c.r
+        y = c.y - math.cos(angle) * c.r
+        rx = c.x + math.sin(angle) * c.r
+        ry = c.y + math.cos(angle) * c.r
+        r_edge = Rect(x, y, rx - x, ry - y)
+
+        fr1 = FRect(0, 0, 3, 3)
+        fr2 = FRect(10, 10, 10, 10)
+        fr3 = FRect(10, 10, 5, 5)
+        fr_edge = FRect(x, y, rx - x, ry - y)
+
+        # contained rect
+        self.assertTrue(c.contains(r1))
+
+        # not contained rect
+        self.assertFalse(c.contains(r2))
+        self.assertFalse(c.contains(r3))
+
+        # on the edge
+        self.assertTrue(c.contains(r_edge))
+
+        # contained rect
+        self.assertTrue(c.contains(fr1))
+
+        # not contained rect
+        self.assertFalse(c.contains(fr2))
+        self.assertFalse(c.contains(fr3))
+
+        # on the edge
+        self.assertTrue(c.contains(fr_edge))
 
 
 if __name__ == "__main__":

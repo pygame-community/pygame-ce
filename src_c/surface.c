@@ -263,6 +263,9 @@ _PgSurface_SrcAlpha(SDL_Surface *surf);
 static PyGetSetDef surface_getsets[] = {
     {"_pixels_address", (getter)surf_get_pixels_address, NULL,
      "pixel buffer address (readonly)", NULL},
+    {"width", (getter)surf_get_width, NULL, DOC_SURFACE_WIDTH, NULL},
+    {"height", (getter)surf_get_height, NULL, DOC_SURFACE_HEIGHT, NULL},
+    {"size", (getter)surf_get_size, NULL, DOC_SURFACE_SIZE, NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static struct PyMethodDef surface_methods[] = {
@@ -1417,12 +1420,13 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
     Uint8 key_r, key_g, key_b, key_a = 255;
     int has_colorkey = SDL_FALSE;
 
-    if (!SDL_WasInit(SDL_INIT_VIDEO))
-        return RAISE(pgExc_SDLError,
-                     "cannot convert without pygame.display initialized");
-
     if (!PyArg_ParseTuple(args, "|Oi", &argobject, &flags))
         return NULL;
+
+    if (!argobject && !SDL_WasInit(SDL_INIT_VIDEO))
+        return RAISE(pgExc_SDLError,
+                     "cannot convert without format "
+                     "when pygame.display is not initialized");
 
     SURF_INIT_CHECK(surf)
 

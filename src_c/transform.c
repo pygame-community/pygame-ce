@@ -2215,6 +2215,268 @@ surf_grayscale(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 }
 
+#define MIN3(a, b, c) MIN(MIN(a, b), c)
+#define MAX3(a, b, c) MAX(MAX(a, b), c)
+
+/* Following hsl code is based on code from
+ * https://gist.github.com/ciembor/1494530
+ * and
+ * http://en.wikipedia.org/wiki/HSL_color_space
+ */
+static PG_FORCEINLINE void
+RGB_to_HSL(Uint8 r, Uint8 g, Uint8 b, float *h, float *s, float *l)
+{
+    float r_1 = r / 255.0f;
+    float g_1 = g / 255.0f;
+    float b_1 = b / 255.0f;
+
+    float min = MIN3(r_1, g_1, b_1);
+    float max = MAX3(r_1, g_1, b_1);
+    float delta = max - min;
+
+    *l = (max + min) / 2.0f;
+
+    if (delta == 0) {
+        *h = *s = 0;  // achromatic
+    }
+    else {
+        *s = *l > 0.5f ? delta / (2.0f - max - min) : delta / (max + min);
+
+        if (max == r_1) {
+            *h = (g_1 - b_1) / delta + (g_1 < b_1 ? 6 : 0);
+        }
+        else if (max == g_1) {
+            *h = (b_1 - r_1) / delta + 2;
+        }
+        else {
+            *h = (r_1 - g_1) / delta + 4;
+        }
+        *h /= 6;
+    }
+}
+
+static PG_FORCEINLINE float
+hue_to_rgb(float p, float q, float t)
+{
+    if (t < 0)
+        t += 1;
+    if (t > 1)
+        t -= 1;
+    if (t < 1 / 6.0f)
+        return p + (q - p) * 6 * t;
+    if (t < 1 / 2.0f)
+        return q;
+    if (t < 2 / 3.0f)
+        return p + (q - p) * (2 / 3.0f - t) * 6;
+    return p;
+}
+
+static PG_FORCEINLINE void
+HSL_to_RGB(float h, float s, float l, Uint8 *r, Uint8 *g, Uint8 *b)
+{
+    if (s == 0) {
+        *r = *g = *b = (Uint8)(l * 255);
+    }
+    else {
+        float q = l < 0.5f ? l * (1 + s) : l + s - l * s;
+        float p = 2 * l - q;
+        *r = (Uint8)(hue_to_rgb(p, q, h + 1 / 3.0f) * 255);
+        *g = (Uint8)(hue_to_rgb(p, q, h) * 255);
+        *b = (Uint8)(hue_to_rgb(p, q, h - 1 / 3.0f) * 255);
+    }
+}
+
+static void
+modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
+{
+    int x, y;
+    Uint8 r, g, b, a;
+    float s_h = 0, s_s = 0, s_l = 0;
+    SDL_PixelFormat *fmt = surf->format;
+    Uint8 *srcp8 = (Uint8 *)surf->pixels;
+    Uint8 *dstp8 = (Uint8 *)dst->pixels;
+
+    int surf_locked = 0;
+    if (SDL_MUSTLOCK(surf)) {
+        if (SDL_LockSurface(surf) == 0) {
+            surf_locked = 1;
+        }
+    }
+    int dst_locked = 0;
+    if (SDL_MUSTLOCK(dst)) {
+        if (SDL_LockSurface(dst) == 0) {
+            dst_locked = 1;
+        }
+    }
+
+    if (fmt->BytesPerPixel == 4 || fmt->BytesPerPixel == 3) {
+        const int src_skip = surf->pitch - surf->w * fmt->BytesPerPixel;
+        const int dst_skip = dst->pitch - dst->w * fmt->BytesPerPixel;
+
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+        const int Ridx = fmt->Rshift >> 3;
+        const int Gidx = fmt->Gshift >> 3;
+        const int Bidx = fmt->Bshift >> 3;
+#else
+        const int Ridx = 3 - (fmt->Rshift >> 3);
+        const int Gidx = 3 - (fmt->Gshift >> 3);
+        const int Bidx = 3 - (fmt->Bshift >> 3);
+#endif
+
+        int height = surf->h;
+
+        while (height--) {
+            for (x = 0; x < surf->w; x++) {
+                RGB_to_HSL(srcp8[Ridx], srcp8[Gidx], srcp8[Bidx], &s_h, &s_s,
+                           &s_l);
+
+                if (h) {
+                    s_h += h;
+                    if (s_h > 1)
+                        s_h -= 1;
+                    else if (s_h < 0)
+                        s_h += 1;
+                }
+                if (s) {
+                    s_s = s_s * (1 + s);
+                    s_s = s_s > 1 ? 1 : s_s < 0 ? 0 : s_s;
+                }
+                if (l) {
+                    s_l = l < 0 ? s_l * (1 + l) : s_l * (1 - l) + l;
+                    s_l = s_l > 1 ? 1 : s_l < 0 ? 0 : s_l;
+                }
+
+                HSL_to_RGB(s_h, s_s, s_l, &r, &g, &b);
+                dstp8[Ridx] = r;
+                dstp8[Gidx] = g;
+                dstp8[Bidx] = b;
+
+                srcp8 += fmt->BytesPerPixel;
+                dstp8 += fmt->BytesPerPixel;
+            }
+            srcp8 += src_skip;
+            dstp8 += dst_skip;
+        }
+    }
+    else {
+        Uint8 *pix;
+        Uint32 pixel;
+        for (y = 0; y < surf->h; y++) {
+            for (x = 0; x < surf->w; x++) {
+                SURF_GET_AT(pixel, surf, x, y, srcp8, fmt, pix);
+                SDL_GetRGBA(pixel, fmt, &r, &g, &b, &a);
+                RGB_to_HSL(r, g, b, &s_h, &s_s, &s_l);
+
+                if (h) {
+                    s_h += h;
+                    if (s_h > 1)
+                        s_h -= 1;
+                    else if (s_h < 0)
+                        s_h += 1;
+                }
+                if (s) {
+                    s_s = s_s * (1 + s);
+                    s_s = s_s > 1 ? 1 : s_s < 0 ? 0 : s_s;
+                }
+                if (l) {
+                    s_l = l < 0 ? s_l * (1 + l) : s_l * (1 - l) + l;
+                    s_l = s_l > 1 ? 1 : s_l < 0 ? 0 : s_l;
+                }
+
+                HSL_to_RGB(s_h, s_s, s_l, &r, &g, &b);
+                pixel = SDL_MapRGBA(fmt, r, g, b, a);
+                SURF_SET_AT(pixel, dst, x, y, dstp8, fmt, pix);
+            }
+        }
+    }
+
+    if (surf_locked) {
+        SDL_UnlockSurface(surf);
+    }
+    if (dst_locked) {
+        SDL_UnlockSurface(dst);
+    }
+}
+
+static PyObject *
+surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    pgSurfaceObject *surfobj2 = NULL;
+    SDL_Surface *dst, *src;
+    float h = 0, s = 0, l = 0;
+
+    static char *keywords[] = {"surface",   "hue",          "saturation",
+                               "lightness", "dest_surface", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|fffO!", keywords,
+                                     &pgSurface_Type, &surfobj, &h, &s, &l,
+                                     &pgSurface_Type, &surfobj2)) {
+        return NULL;
+    }
+
+    if (s < -1 || s > 1) {
+        PyObject *value = PyFloat_FromDouble((double)s);
+        if (!value)
+            return NULL;
+
+        PyErr_Format(PyExc_ValueError,
+                     "saturation value must be between -1 and 1, got %R",
+                     value);
+        Py_DECREF(value);
+        return NULL;
+    }
+    if (l < -1 || l > 1) {
+        PyObject *value = PyFloat_FromDouble((double)l);
+        if (!value) {
+            return NULL;
+        }
+        PyErr_Format(PyExc_ValueError,
+                     "lightness value must be between -1 and 1, got %R",
+                     value);
+        Py_DECREF(value);
+        return NULL;
+    }
+
+    h = (float)(fmodf(h, 360.0) / 360.0);
+
+    src = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(src);
+
+    if (!surfobj2) {
+        dst = newsurf_fromsurf(src, src->w, src->h);
+        if (!dst)
+            return NULL;
+    }
+    else {
+        dst = pgSurface_AsSurface(surfobj2);
+    }
+
+    if (dst->w != src->w || dst->h != src->h) {
+        return RAISE(
+            PyExc_ValueError,
+            "Destination surface must be the same size as source surface.");
+    }
+    if (src->format->Rmask != dst->format->Rmask ||
+        src->format->Gmask != dst->format->Gmask ||
+        src->format->Bmask != dst->format->Bmask ||
+        src->format->BytesPerPixel != dst->format->BytesPerPixel) {
+        return RAISE(PyExc_ValueError,
+                     "Source and destination surfaces need the same format.");
+    }
+
+    Py_BEGIN_ALLOW_THREADS;
+    modify_hsl(src, dst, h, s, l);
+    Py_END_ALLOW_THREADS;
+
+    if (surfobj2) {
+        Py_INCREF(surfobj2);
+        return (PyObject *)surfobj2;
+    }
+    else {
+        return (PyObject *)pgSurface_New(dst);
+    }
+}
+
 /*
 number to use for missing samples
 */
@@ -3266,6 +3528,15 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
         retsurf = pgSurface_AsSurface(dstobj);
     }
 
+    if ((retsurf->w) != (src->w) || (retsurf->h) != (src->h)) {
+        return RAISE(PyExc_ValueError,
+                     "Destination surface not the same size.");
+    }
+
+    if (retsurf->w == 0 || retsurf->h == 0) {
+        return retsurf;
+    }
+
     Uint8 *ret_start = retsurf->pixels;
     Uint8 *ret_end = ret_start + retsurf->h * retsurf->pitch;
     Uint8 *src_start = src->pixels;
@@ -3277,11 +3548,6 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
             "Blur routines do not support dest_surfaces that share pixels "
             "with the source surface. Likely the surfaces are the same, one "
             "of them is a subsurface, or they are sharing the same buffer.");
-    }
-
-    if ((retsurf->w) != (src->w) || (retsurf->h) != (src->h)) {
-        return RAISE(PyExc_ValueError,
-                     "Destination surface not the same size.");
     }
 
     if (PG_SURF_BytesPerPixel(src) != PG_SURF_BytesPerPixel(retsurf)) {
@@ -3519,6 +3785,8 @@ static PyMethodDef _transform_methods[] = {
      DOC_TRANSFORM_INVERT},
     {"grayscale", (PyCFunction)surf_grayscale, METH_VARARGS | METH_KEYWORDS,
      DOC_TRANSFORM_GRAYSCALE},
+    {"hsl", (PyCFunction)surf_hsl, METH_VARARGS | METH_KEYWORDS,
+     DOC_TRANSFORM_HSL},
     {NULL, NULL, 0, NULL}};
 
 MODINIT_DEFINE(transform)

@@ -49,7 +49,7 @@ jobs:
           # - { sys: clangarm64, env: clang-aarch64 }
 
     steps:
-      - uses: actions/checkout@v4.1.5
+      - uses: actions/checkout@v4.1.6
       - uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.sys }}
@@ -72,7 +72,6 @@ jobs:
 
       - name: Building pygame wheel
         run: |
-          python3 setup.py docs
           pip3 wheel . --wheel-dir /artifacts -vvv --no-build-isolation
 
       - name: Installing wheel

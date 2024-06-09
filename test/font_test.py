@@ -1031,7 +1031,7 @@ class FontTypeTest(unittest.TestCase):
 
 
 @unittest.skipIf(IS_PYPY, "pypy skip known failure")  # TODO
-class VisualTests(unittest.TestCase):
+class VisualTestsInteractive(unittest.TestCase):
     __tags__ = ["interactive"]
 
     screen = None
