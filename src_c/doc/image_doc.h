@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_IMAGE "pygame module for image transfer"
 #define DOC_IMAGE_LOAD "load(file) -> Surface\nload(file, namehint="") -> Surface\nload new image from a file (or file-like object)"
 #define DOC_IMAGE_LOADSIZEDSVG "load_sized_svg(file, size) -> Surface\nload an SVG image from a file (or file-like object) with the given size"

@@ -717,6 +717,9 @@ class OurSdist(sdist):
         # we do not want MANIFEST.in to appear in the root cluttering up things.
         self.template = os.path.join('buildconfig', 'MANIFEST.in')
 
+        print("WARNING: This command is deprecated and will be removed in the future.")
+        print("Use the alternative: `python3 -m build --sdist --outdir dist .`")
+
 
 if "bdist_msi" in sys.argv:
     # if you are making an msi, we want it to overwrite files
@@ -802,12 +805,14 @@ class DocsCommand(Command):
         runs Sphinx to build the docs.
         '''
         import subprocess
-        print("Using python:", sys.executable)
         command_line = [
-            sys.executable, os.path.join('buildconfig', 'makeref.py')
+            sys.executable, os.path.join('buildconfig', 'make_docs.py')
         ]
         if self.fullgeneration:
             command_line.append('full_generation')
+
+        print("WARNING: This command is deprecated and will be removed in the future.")
+        print(f"Please use the following replacement: `{' '.join(command_line)}`\n")  
         if subprocess.call(command_line) != 0:
             raise SystemExit("Failed to build documentation")
 
@@ -849,13 +854,15 @@ PACKAGEDATA = {
                  'pygame.tests.test_utils',
                  'pygame.docs',
                  'pygame.examples',
-                 'pygame.__pyinstaller'],
+                 'pygame.__pyinstaller',
+                 'pygame.__briefcase'],
     "package_dir": {'pygame': 'src_py',
                     'pygame._sdl2': 'src_py/_sdl2',
                     'pygame.tests': 'test',
                     'pygame.docs': 'docs',
                     'pygame.examples': 'examples',
-                    'pygame.__pyinstaller': 'src_py/__pyinstaller'},
+                    'pygame.__pyinstaller': 'src_py/__pyinstaller',
+                    'pygame.__briefcase': 'src_py/__briefcase'},
     "headers": headers,
     "ext_modules": extensions,
     "data_files": data_files,

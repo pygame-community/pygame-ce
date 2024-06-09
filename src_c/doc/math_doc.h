@@ -1,8 +1,10 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_MATH "pygame module for vector classes"
 #define DOC_MATH_CLAMP "clamp(value, min, max, /) -> float\nreturns value clamped to min and max."
 #define DOC_MATH_LERP "lerp(a, b, value, do_clamp=True, /) -> float\nreturns value linearly interpolated between a and b"
+#define DOC_MATH_INVLERP "invlerp(a, b, value, /) -> float\nreturns value inverse interpolated between a and b"
 #define DOC_MATH_SMOOTHSTEP "smoothstep(a, b, value, /) -> float\nreturns value smoothly interpolated between a and b."
+#define DOC_MATH_REMAP "remap(i_min, i_max, o_min, o_max, value, /) -> float\nremaps value from given input range to given output range"
 #define DOC_MATH_VECTOR2 "Vector2() -> Vector2(0, 0)\nVector2(int) -> Vector2\nVector2(float) -> Vector2\nVector2(Vector2) -> Vector2\nVector2(x, y) -> Vector2\nVector2((x, y)) -> Vector2\na 2-Dimensional Vector"
 #define DOC_MATH_VECTOR2_DOT "dot(Vector2, /) -> float\ncalculates the dot- or scalar-product with the other vector"
 #define DOC_MATH_VECTOR2_CROSS "cross(Vector2, /) -> float\ncalculates the cross- or vector-product"
