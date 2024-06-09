@@ -127,12 +127,12 @@
 
       | :sl:`moves the rectangle to the specified position`
       | :sg:`move_to(**kwargs) -> Rect`
-      
-      Returns a new rectangle that is moved to the given position. You must provide keyword
-      arguments to the method such as ``center``, ``left``, ``midbottom`` that correspond
-      to the rectangle's attributes and the method will return a new rectangle whose specified
-      attributes are set to the given value. 
-      
+
+      Returns a new rectangle that is moved to the given position and optionally resized.
+      You must provide keyword arguments to the method such as ``center``, ``left``,
+      ``midbottom``, ``size`` that correspond to the rectangle's attributes and the
+      method will return a new rectangle whose specified attributes are set to the given value.
+
       It is similar to :meth:`Surface.get_rect` but instead of a calling it as a surface method
       you call it as a rectangle method.
 
