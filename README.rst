@@ -3,7 +3,7 @@
   :target: https://pyga.me/
 
 
-|DocsStatus| 
+|DocsStatus|
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
@@ -47,7 +47,7 @@ locally, it'll launch the online website instead.
 
 The online documentation stays up to date with the development version
 of pygame on github.  This may be a bit newer than the version of pygame
-you are using. To upgrade to the latest full release, run 
+you are using. To upgrade to the latest full release, run
 ``pip install pygame-ce --upgrade`` in your terminal.
 
 Best of all, the examples directory has many playable small programs
@@ -101,7 +101,7 @@ Tyler, Nathaniel Pryce, Dave Wallace, John Popplewell, Michael Urman,
 Andrew Straw, Michael Hudson, Ole Martin Bjoerndalen, Herve Cauwelier,
 James Mazer, Lalo Martins, Timothy Stranex, Chad Lester, Matthias
 Spiller, Bo Jangeborg, Dmitry Borisov, Campbell Barton, Diego Essaya,
-Eyal Lotem, Regis Desgroppes, Emmanuel Hainry, Randy Kaelber
+Eyal Lotem, Regis Desgroppes, Emmanuel Hainry, Randy Kaelber,
 Matthew L Daniel, Nirav Patel, Forrest Voight, Charlie Nolan,
 Frankie Robertson, John Krukoff, Lorenz Quack, Nick Irvine,
 Michael George, Saul Spatz, Thomas Ibbotson, Tom Rothamel, Evan Kroske,
@@ -132,7 +132,7 @@ Pygame is obviously strongly dependent on SDL and Python. It also
 links to and embeds several other smaller libraries. The font
 module relies on SDL_ttf, which is dependent on freetype. The mixer
 (and mixer.music) modules depend on SDL_mixer. The image module
-depends on SDL_image. Transform.rotozoom has an embedded version 
+depends on SDL_image. Transform.rotozoom has an embedded version
 of SDL_rotozoom, and gfxdraw has an embedded version of SDL_gfx.
 Dependency versions:
 
@@ -177,12 +177,12 @@ See docs/licenses for licenses of dependencies.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.3.0.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.3.0...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.4.1.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.4.1...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
-   
+
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
