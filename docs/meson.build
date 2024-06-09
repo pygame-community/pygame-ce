@@ -14,6 +14,8 @@ if fs.is_dir('generated')
     )
 elif get_option('error_docs_missing')
     error('The "generated" docs folder does not exist!')
+else
+    warning('The "generated" docs folder does not exist!')
 endif
 
 docs_files = files('__init__.py', '__main__.py', 'serve.py', 'static.py')

@@ -12,7 +12,7 @@
 
    The Window class (formerly known as _sdl2.video.Window), is an experimental
    feature of pygame-ce. This class allows for programs to drive multiple
-   Windows on-screen at once, something not possible with the 
+   Windows on-screen at once, something not possible with the
    :func:`pygame.display.set_mode` API. Not everything possible with
    :mod:`pygame.display` is possible yet in the Window API, but the new
    window class will continue to be developed, and we're excited to share
@@ -26,8 +26,7 @@
                            the resolution (videomode change).
    :param bool fullscreen_desktop: Create a fullscreen window using the current
                                    desktop resolution.
-   :param bool opengl: Create a window with support for an OpenGL context. You
-                       will still need to create an OpenGL context separately.
+   :param bool opengl: Create a window with support for an OpenGL context.
    :param bool vulkan: Create a window with support for a Vulkan instance.
    :param bool hidden: Create a hidden window.
    :param bool borderless: Create a window without borders.
@@ -46,6 +45,7 @@
                               others.
 
    .. versionadded:: 2.4.0
+   .. versionchanged:: 2.5.0 when ``opengl`` is ``True``, the ``Window`` has an OpenGL context created by pygame
 
 
    .. attribute:: grab_mouse
@@ -63,19 +63,19 @@
       .. seealso:: :attr:`mouse_grabbed`
 
       .. versionadded:: 2.4.0
-   
+
    .. attribute:: grab_keyboard
 
       | :sl:`Get or set the window's keyboard grab mode`
       | :sg:`grab_keyboard -> bool`
-      
-      When this attribute is set to ``True``, the window will try to capture system 
-      keyboard shortcuts like ``Alt+Tab`` or the ``Meta/Super`` key. 
+
+      When this attribute is set to ``True``, the window will try to capture system
+      keyboard shortcuts like ``Alt+Tab`` or the ``Meta/Super`` key.
 
       This attribute only set the "mode" of grab. The keyboard may be captured by
-      another window depending on the window focus. To get if keyboard is currently 
+      another window depending on the window focus. To get if keyboard is currently
       captured by this window, please use :attr:`keyboard_grabbed`.
-      
+
       Note that not all system keyboard shortcuts can be captured by applications
       (one example is ``Ctrl+Alt+Del`` on Windows).
 
@@ -90,7 +90,7 @@
       .. seealso:: :attr:`keyboard_grabbed`
 
       .. versionadded:: 2.4.0
-      
+
    .. attribute:: mouse_grabbed
 
       | :sl:`Get if the mouse cursor is confined to the window (**read-only**)`
@@ -99,15 +99,15 @@
       Get if the mouse cursor is currently grabbed and confined to the window.
 
       Roughly equivalent to this expression:
-         
+
       ::
 
          win.grab_mouse and (win is get_grabbed_window())
-      
+
       .. seealso:: :attr:`grab_mouse`
-      
+
       .. versionadded:: 2.4.0
-   
+
    .. attribute:: keyboard_grabbed
 
       | :sl:`Get if the keyboard shortcuts are captured by the window (**read-only**)`
@@ -116,15 +116,15 @@
       Get if the keyboard shortcuts are currently grabbed and captured by the window.
 
       Roughly equivalent to this expression:
-         
+
       ::
 
          win.grab_keyboard and (win is get_grabbed_window())
-      
+
       This attribute requires SDL 2.0.16+.
-      
+
       .. seealso:: :attr:`grab_keyboard`
-      
+
       .. versionadded:: 2.4.0
 
    .. attribute:: title
@@ -147,7 +147,7 @@
       Gets or sets whether the window is borderless.
 
       .. note:: You can't change the border state of a fullscreen window.
-   
+
    .. attribute:: always_on_top
 
       | :sl:`Get or set whether the window is always on top`
@@ -163,7 +163,7 @@
 
       | :sl:`Get the unique window ID (**read-only**)`
       | :sg:`id -> int`
-   
+
    .. attribute:: mouse_rect
 
       | :sl:`Get or set the mouse confinement rectangle of the window`
@@ -173,7 +173,7 @@
       cursor to the specified area of this window.
 
       This attribute can be None, meaning that there is no mouse rect.
-      
+
       Note that this does NOT grab the cursor, it only defines the area a
       cursor is restricted to when the window has mouse focus.
 
@@ -183,7 +183,7 @@
 
       | :sl:`Get or set the window size in pixels`
       | :sg:`size -> (int, int)`
-   
+
    .. attribute:: minimum_size
 
       | :sl:`Get or set the minimum size of the window's client area`
@@ -193,16 +193,16 @@
       was used to create the window and :func:`pygame.display.set_mode` was
       called with the ``SCALED`` flag, the initial value is the size used in
       that call.
-      
-      Raises a ``ValueError`` if negative values are provided or 
-      if the width or height provided are greater than set 
-      maximum width or height respectively. Unless maximum size 
+
+      Raises a ``ValueError`` if negative values are provided or
+      if the width or height provided are greater than set
+      maximum width or height respectively. Unless maximum size
       is ``(0, 0)`` (initial value).
 
       .. seealso:: :attr:`maximum_size`.
 
       .. versionadded:: 2.4.0
-   
+
    .. attribute:: maximum_size
 
       | :sl:`Get or set the maximum size of the window's client area`
@@ -210,8 +210,8 @@
 
       Initial value is ``(0, 0)``.
 
-      Raises a ``ValueError`` if negative values are provided or 
-      if the width or height provided are less than set minimum 
+      Raises a ``ValueError`` if negative values are provided or
+      if the width or height provided are less than set minimum
       width or height respectively.
 
       .. seealso:: :attr:`minimum_size`.
@@ -227,6 +227,15 @@
 
       | :sl:`Get or set the window opacity, between 0.0 (fully transparent) and 1.0 (fully opaque)`
       | :sg:`opacity -> float`
+
+   .. attribute:: opengl
+
+      | :sl:`Get if the window supports OpenGL`
+      | :sg:`opengl -> bool`
+
+      ``True`` if the ``Window`` has an OpenGL context associated with it, ``False`` otherwise
+
+      .. versionadded:: 2.5.0
 
    .. classmethod:: from_display_module
 
@@ -256,22 +265,22 @@
       Similarly to the "display surface" returned by :mod:`pygame.display`,
       this surface will change size with the Window, and will become invalid
       after the Window's destruction.
-      
+
       .. seealso:: :func:`flip`
 
       .. versionadded:: 2.4.0
-   
+
    .. method:: flip
 
       | :sl:`Update the display surface to the window.`
       | :sg:`flip() -> None`
 
-      Update content from the display surface to the window. This is the Window
+      Update pixel data from memory to be displayed in the window. This is the Window
       class equivalent of :func:`pygame.display.flip`.
 
-      This method allows software rendering (classic pygame rendering) on top
-      of the Window API. This method should not be called when using hardware
-      rendering (coming soon).
+      With ``get_surface()`` this method allows software rendering (classic pygame rendering) flipping pixel data 
+      from an associated surface in memory to be displayed in the window. Alternatively, when this window has an 
+      associated OpenGL context, this method will instead perform a GL buffer swap to the window.
 
       Here is a runnable example of using ``get_surface`` and ``flip``:
 
@@ -355,7 +364,7 @@
       | :sl:`Maximize the window`
       | :sg:`maximize() -> None`
 
-   .. method:: minimize 
+   .. method:: minimize
 
       | :sl:`Minimize the window`
       | :sg:`maximize() -> None`
@@ -375,7 +384,7 @@
       | :sg:`set_modal_for(parent, /) -> None`
 
       :param Window parent: The parent window.
-      
+
       .. note:: This function is only supported on X11.
 
    .. ## pygame.Window ##

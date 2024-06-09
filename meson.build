@@ -364,6 +364,16 @@ subdir('src_c')
 subdir('src_py')
 
 if not get_option('stripped')
+    # run make_docs and make docs
+    if not fs.is_dir('docs/generated')
+        make_docs = files('buildconfig/make_docs.py')
+        res = run_command(
+            [find_program('python3', 'python'), make_docs],
+            check: false,
+        )
+        message(res.stdout().strip())
+        message(res.stderr().strip())
+    endif
     subdir('docs')
     subdir('test')
     subdir('buildconfig/stubs')

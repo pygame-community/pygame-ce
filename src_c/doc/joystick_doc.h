@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_JOYSTICK "Pygame module for interacting with joysticks, gamepads, and trackballs."
 #define DOC_JOYSTICK_INIT "init() -> None\nInitialize the joystick module."
 #define DOC_JOYSTICK_QUIT "quit() -> None\nUninitialize the joystick module."
