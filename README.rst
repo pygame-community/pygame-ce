@@ -160,7 +160,7 @@ First of all, thank you for considering contributing to pygame-ce! It's people l
 
 There are many more resources throughout the `wiki pages`_ that can help you get started.
 
-If you have any questions, please feel free to ask in the `pygame Discord server`_ or open an issue.
+If you have any questions, please feel free to ask in the `Pygame Community Discord Server`_ or open an issue.
 
 License
 -------
@@ -209,7 +209,7 @@ See docs/licenses for licenses of dependencies.
 .. _Opening a Great Pull Request: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-great-pull-request
 .. _issue tracker: https://github.com/pygame-community/pygame-ce/issues
 .. _label and link reported issues: https://github.com/pygame-community/pygame-ce/wiki/Labelling-&-linking-reported-issues
-.. _pygame Discord server: https://discord.gg/pygame
+.. _Pygame Community Discord Server: https://discord.gg/pygame
 .. _wiki pages: https://github.com/pygame-community/pygame-ce/wiki
 
 .. _简体中文: ./docs/readmes/README.zh-cn.rst
