@@ -401,11 +401,7 @@
         Returns `True` if any portion of the `Circle` overlaps with the rectangle,
         `False` otherwise.
 
-        .. note ::
-         For collision detection between a rect and a line the :meth:`clipline`
-         method can be used.
-
-        .. versionadded:: 2.5.0
+        .. versionadded:: 2.5.1
 
       .. ## Rect.collidecircle ##
 
