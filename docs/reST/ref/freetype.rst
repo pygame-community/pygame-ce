@@ -54,7 +54,7 @@ The :any:`pygame.examples.freetype_misc <pygame.examples.freetype_misc.main>`
 example shows these features in use.
 
 The pygame package does not import ``freetype`` automatically when
-loaded. This module must be imported explicitly to be used.
+loaded. This module must be imported explicitly to be used. ::
 
    import pygame
    import pygame.freetype
@@ -459,7 +459,7 @@ loaded. This module must be imported explicitly to be used.
       passed to a previous :meth:`render_to`, :meth:`get_rect`, :meth:`render`,
       :meth:`render_raw`, or :meth:`render_raw_to` call. Primarily, this
       feature is an aid to using :meth:`render_to` in combination with
-      :meth:`get_rect`. An example:
+      :meth:`get_rect`. An example: ::
 
           def word_wrap(surf, text, font, color=(0, 0, 0)):
               font.origin = True
