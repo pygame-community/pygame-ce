@@ -717,6 +717,9 @@ class OurSdist(sdist):
         # we do not want MANIFEST.in to appear in the root cluttering up things.
         self.template = os.path.join('buildconfig', 'MANIFEST.in')
 
+        print("WARNING: This command is deprecated and will be removed in the future.")
+        print("Use the alternative: `python3 -m build --sdist --outdir dist .`")
+
 
 if "bdist_msi" in sys.argv:
     # if you are making an msi, we want it to overwrite files

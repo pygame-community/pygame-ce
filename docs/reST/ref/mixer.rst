@@ -576,6 +576,23 @@ The following file formats are supported
       `angle`: Angle is in degrees.
       
       `distance`: Range from 0 to 255.
+
+      .. warning:: This function currently fails and raises a
+         :exc:`pygame.error` when using 7.1 surround sound. 
+         By default, the mixer module will use what the hardware is best
+         suited for, so this leads to hardware specific exceptions when using
+         this function.
+
+         One way of avoiding this is only using :func:`set_source_location`
+         with forced stereo. For example:
+
+         ::
+
+            pygame.mixer.pre_init(
+               channels=2,
+               allowedchanges=pygame.AUDIO_ALLOW_FREQUENCY_CHANGE,
+            )
+            pygame.init()
       
       .. versionadded:: 2.3.0
       
