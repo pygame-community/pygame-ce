@@ -228,8 +228,9 @@ surf_get_bounding_rect(PyObject *self, PyObject *args, PyObject *kwargs);
 static PyObject *
 surf_get_pixels_address(PyObject *self, PyObject *closure);
 static PyObject *
-surf_premul_alpha(pgSurfaceObject *self, PyObject *const *args,
-                  Py_ssize_t nargs);
+surf_premul_alpha(pgSurfaceObject *self, PyObject *args);
+static PyObject *
+surf_premul_alpha_ip(pgSurfaceObject *self, PyObject *args);
 static int
 _view_kind(PyObject *obj, void *view_kind_vptr);
 static int
@@ -352,8 +353,10 @@ static struct PyMethodDef surface_methods[] = {
      METH_VARARGS | METH_KEYWORDS, DOC_SURFACE_GETBOUNDINGRECT},
     {"get_view", surf_get_view, METH_VARARGS, DOC_SURFACE_GETVIEW},
     {"get_buffer", surf_get_buffer, METH_NOARGS, DOC_SURFACE_GETBUFFER},
-    {"premul_alpha", (PyCFunction)surf_premul_alpha, METH_FASTCALL,
+    {"premul_alpha", (PyCFunction)surf_premul_alpha, METH_NOARGS,
      DOC_SURFACE_PREMULALPHA},
+    {"premul_alpha_ip", (PyCFunction)surf_premul_alpha_ip, METH_NOARGS,
+     DOC_SURFACE_PREMULALPHAIP},
 
     {NULL, NULL, 0, NULL}};
 
@@ -3167,50 +3170,55 @@ surf_get_buffer(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
-surf_premul_alpha(pgSurfaceObject *self, PyObject *const *args,
-                  Py_ssize_t nargs)
+surf_premul_alpha(pgSurfaceObject *self, PyObject *_null)
 {
     SDL_Surface *surf = pgSurface_AsSurface(self);
-    SURF_INIT_CHECK(surf)
     PyObject *final;
-    int in_place = 0;
+    SDL_Surface *newsurf;
 
-    if (nargs == 1) {
-        in_place = PyObject_IsTrue(args[0]);
-        if (in_place == -1)
-            return NULL;
-    }
-    else if (nargs > 1) {
-        return RAISE(PyExc_TypeError,
-                     "premul_alpha() takes at most 1 argument");
-    }
+    SURF_INIT_CHECK(surf)
 
     pgSurface_Prep(self);
-
-    SDL_Surface *newsurf =
-        in_place ? surf : PG_ConvertSurface(surf, surf->format);
+    // Make a copy of the surface first
+    newsurf = PG_ConvertSurface(surf, surf->format);
 
     if ((surf->w > 0 && surf->h > 0)) {
+        // If the surface has no pixels we don't need to premul
+        // just return the copy.
         if (premul_surf_color_by_alpha(surf, newsurf) != 0) {
             return RAISE(PyExc_ValueError,
                          "source surface to be alpha pre-multiplied must have "
                          "alpha channel");
         }
     }
+    pgSurface_Unprep(self);
+
+    final = surf_subtype_new(Py_TYPE(self), newsurf, 1);
+    if (!final)
+        SDL_FreeSurface(newsurf);
+    return final;
+}
+
+static PyObject *
+surf_premul_alpha_ip(pgSurfaceObject *self, PyObject *_null)
+{
+    SDL_Surface *surf = pgSurface_AsSurface(self);
+    SURF_INIT_CHECK(surf)
+
+    if (!surf->w || !surf->h)
+        Py_RETURN_NONE;
+
+    pgSurface_Prep(self);
+
+    if (premul_surf_color_by_alpha(surf, surf) != 0) {
+        return RAISE(PyExc_ValueError,
+                     "source surface to be alpha pre-multiplied must have "
+                     "alpha channel");
+    }
 
     pgSurface_Unprep(self);
 
-    if (in_place) {
-        Py_INCREF(self);
-        final = (PyObject *)self;
-    }
-    else {
-        final = surf_subtype_new(Py_TYPE(self), newsurf, 1);
-        if (!final)
-            SDL_FreeSurface(newsurf);
-    }
-
-    return final;
+    Py_RETURN_NONE;
 }
 
 static int
