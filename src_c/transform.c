@@ -2309,9 +2309,12 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
         }
     }
 
-    if (PG_FORMAT_BytesPerPixel(fmt) == 4 || PG_FORMAT_BytesPerPixel(fmt) == 3) {
-        const int src_skip = surf->pitch - surf->w * PG_FORMAT_BytesPerPixel(fmt);
-        const int dst_skip = dst->pitch - dst->w * PG_FORMAT_BytesPerPixel(fmt);
+    if (PG_FORMAT_BytesPerPixel(fmt) == 4 ||
+        PG_FORMAT_BytesPerPixel(fmt) == 3) {
+        const int src_skip =
+            surf->pitch - surf->w * PG_FORMAT_BytesPerPixel(fmt);
+        const int dst_skip =
+            dst->pitch - dst->w * PG_FORMAT_BytesPerPixel(fmt);
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
         const int Ridx = fmt->Rshift >> 3;
