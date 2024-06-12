@@ -3788,12 +3788,12 @@ bloom(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, float intensity,
                      "Destination surface not the same size.");
     }
 
-    if (src->format->BytesPerPixel < 3 || retsurf->format->BytesPerPixel < 3) {
+    if (PG_SURF_BytesPerPixel(src) < 3 || PG_SURF_BytesPerPixel(retsurf) < 3) {
         return RAISE(PyExc_ValueError,
                      "Bloom is only allowed for 24 or 32 bit surfaces.");
     }
 
-    if (src->format->BytesPerPixel != retsurf->format->BytesPerPixel ||
+    if (PG_SURF_BytesPerPixel(src) != PG_SURF_BytesPerPixel(retsurf) ||
         src->format->Rmask != retsurf->format->Rmask ||
         src->format->Gmask != retsurf->format->Gmask ||
         src->format->Bmask != retsurf->format->Bmask ||
