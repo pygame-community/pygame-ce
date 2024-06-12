@@ -1037,9 +1037,9 @@
     .. method:: premul_alpha_ip
 
       | :sl:`multiplies the RGB channels by the surface alpha channel.`
-      | :sg:`premul_alpha_ip() -> None`
+      | :sg:`premul_alpha_ip() -> Surface`
 
-      Multiplies the RGB channels of the surface by the alpha channel in place.
+      Multiplies the RGB channels of the surface by the alpha channel in place and returns the surface.
 
       Surfaces without an alpha channel cannot use this method and will return an error if you use
       it on them. It is best used on 32 bit surfaces (the default on most platforms) as the blitting

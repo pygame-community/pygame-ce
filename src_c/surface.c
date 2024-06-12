@@ -3218,7 +3218,8 @@ surf_premul_alpha_ip(pgSurfaceObject *self, PyObject *_null)
 
     pgSurface_Unprep(self);
 
-    Py_RETURN_NONE;
+    Py_INCREF(self);
+    return (PyObject *)self;
 }
 
 static int
