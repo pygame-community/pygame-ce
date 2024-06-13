@@ -191,7 +191,9 @@ struct SDL_BlitMap {
 #define SDL_COPY_RLE_DESIRED 0x00001000
 
 #define PG_SurfaceHasRLE(surface) \
-    ((surface == NULL) ? 0 : (surface->map->info.flags & SDL_COPY_RLE_DESIRED))
+    (((surface) == NULL)          \
+         ? 0                      \
+         : ((surface)->map->info.flags & SDL_COPY_RLE_DESIRED))
 
 #endif
 
