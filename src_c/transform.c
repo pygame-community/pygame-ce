@@ -2290,7 +2290,7 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
                 LOOP_UNROLLED4(
                     {
                         if (*srcp)
-                            *srcp32 = color_p;
+                            *dstp = color_p;
                         srcp += 4;
                         dstp++;
                     },
