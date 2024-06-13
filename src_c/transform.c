@@ -2283,19 +2283,38 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
         const int dst_skip = newsurf->pitch / 4 - newsurf->w;
         int n, height = src->h;
 
-        while (height--) {
-            LOOP_UNROLLED4(
-                {
-                    if ((a = *srcp)) {
-                        *dstp =
-                            keep_alpha ? color_p | (a << dst_ashift) : color_p;
-                    }
-                    srcp += 4;
-                    dstp++;
-                },
-                n, src->w);
-            srcp += src_skip;
-            dstp += dst_skip;
+        /* fast path for when the src and dst are the same and we don't need to
+         * keep the alpha */
+        if (!keep_alpha && srcobj == dstobj) {
+            while (height--) {
+                LOOP_UNROLLED4(
+                    {
+                        if (*srcp)
+                            *srcp32 = color_p;
+                        srcp += 4;
+                        dstp++;
+                    },
+                    n, src->w);
+                srcp += src_skip;
+                dstp += dst_skip;
+            }
+        }
+        /* slower but more general path */
+        else {
+            while (height--) {
+                LOOP_UNROLLED4(
+                    {
+                        if ((a = *srcp)) {
+                            *dstp = keep_alpha ? color_p | (a << dst_ashift)
+                                               : color_p;
+                        }
+                        srcp += 4;
+                        dstp++;
+                    },
+                    n, src->w);
+                srcp += src_skip;
+                dstp += dst_skip;
+            }
         }
     }
     else {
