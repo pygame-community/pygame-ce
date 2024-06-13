@@ -361,16 +361,16 @@ Instead, always begin with the original image and scale to the desired size.)
    This destination surface must have the same dimensions (width, height) and
    depth as the source Surface.
 
-   :param pygame.Surface surf: The target surface.
+   :param pygame.Surface surface: The target surface.
 
    :param pygame.Color color: Color which all non transparent within the target surface must be set to.
 
    :param dest_surface: Optional destination surface to which the changes will be applied.
-   :type dest_surf: pygame.Surface or None
+   :type dest_surface: pygame.Surface or None
 
    :param bool keep_alpha: Optional parameter that controls whether to keep the surface alpha when replacing with the color.
 
-   .. versionadded:: 2.5.0
+   .. versionadded:: 2.5.1
 
    .. ## pygame.transform.solid_overlay ##
 
