@@ -6,11 +6,8 @@ Pygame-ce Front Page
    :glob:
    :hidden:
 
-   ref/*
-   tutorials/en/*
-   tutorials/en/**/*
-   tutorials/ko/**/*
-   tutorials/es/*
+   modules
+   tutorials
    c_api
    filepaths
    logos
