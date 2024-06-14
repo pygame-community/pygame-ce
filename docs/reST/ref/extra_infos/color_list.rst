@@ -1,4 +1,4 @@
-.. include:: common.txt
+.. include:: ../../common.txt
 
 Named Colors
 ============

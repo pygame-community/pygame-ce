@@ -1,3 +1,5 @@
+.. include:: ../../common.txt
+
 Common joysticks
 ================
 

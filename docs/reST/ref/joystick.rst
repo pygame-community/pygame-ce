@@ -3,17 +3,17 @@
 :mod:`pygame.joystick`
 ======================
 
+.. module:: pygame.joystick
+   :synopsis: Pygame module for interacting with joysticks, gamepads, and trackballs.
+
+| :sl:`Pygame module for interacting with joysticks, gamepads, and trackballs.`
+
 .. toctree::
    :maxdepth: 2
    :glob:
    :hidden:
 
-   extra_infos/common_joysticks.rst
-
-.. module:: pygame.joystick
-   :synopsis: Pygame module for interacting with joysticks, gamepads, and trackballs.
-
-| :sl:`Pygame module for interacting with joysticks, gamepads, and trackballs.`
+   ./extra_infos/common_joysticks.rst
 
 The joystick module manages the joystick devices on a computer.
 Joystick devices include trackballs and video-game-style
