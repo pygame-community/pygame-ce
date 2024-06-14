@@ -786,10 +786,10 @@ aacircle(PyObject *self, PyObject *args, PyObject *kwargs)
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
 
-    if (surf->format->BytesPerPixel <= 0 || surf->format->BytesPerPixel > 4) {
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
         return PyErr_Format(PyExc_ValueError,
                             "unsupported surface bit depth (%d) for drawing",
-                            surf->format->BytesPerPixel);
+                            PG_SURF_BytesPerPixel(surf));
     }
 
     CHECK_LOAD_COLOR(colorobj)

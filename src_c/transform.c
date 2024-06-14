@@ -2309,9 +2309,12 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
         }
     }
 
-    if (fmt->BytesPerPixel == 4 || fmt->BytesPerPixel == 3) {
-        const int src_skip = surf->pitch - surf->w * fmt->BytesPerPixel;
-        const int dst_skip = dst->pitch - dst->w * fmt->BytesPerPixel;
+    if (PG_FORMAT_BytesPerPixel(fmt) == 4 ||
+        PG_FORMAT_BytesPerPixel(fmt) == 3) {
+        const int src_skip =
+            surf->pitch - surf->w * PG_FORMAT_BytesPerPixel(fmt);
+        const int dst_skip =
+            dst->pitch - dst->w * PG_FORMAT_BytesPerPixel(fmt);
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
         const int Ridx = fmt->Rshift >> 3;
@@ -2351,8 +2354,8 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
                 dstp8[Gidx] = g;
                 dstp8[Bidx] = b;
 
-                srcp8 += fmt->BytesPerPixel;
-                dstp8 += fmt->BytesPerPixel;
+                srcp8 += PG_FORMAT_BytesPerPixel(fmt);
+                dstp8 += PG_FORMAT_BytesPerPixel(fmt);
             }
             srcp8 += src_skip;
             dstp8 += dst_skip;
@@ -2459,7 +2462,7 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
     if (src->format->Rmask != dst->format->Rmask ||
         src->format->Gmask != dst->format->Gmask ||
         src->format->Bmask != dst->format->Bmask ||
-        src->format->BytesPerPixel != dst->format->BytesPerPixel) {
+        PG_SURF_BytesPerPixel(src) != PG_SURF_BytesPerPixel(dst)) {
         return RAISE(PyExc_ValueError,
                      "Source and destination surfaces need the same format.");
     }
