@@ -337,6 +337,17 @@
     } while (0)
 #endif
 
+typedef struct {
+    Uint32 *pixels;
+    int width, rows, src_offset;
+} BlitDestination;
+
+typedef struct {
+    BlitDestination *sequence;
+    Py_ssize_t alloc_size;
+    Py_ssize_t size;
+} BlitSequence;
+
 int
 surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
                    int blendargs);
@@ -351,6 +362,14 @@ pygame_AlphaBlit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
 int
 pygame_Blit(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
             SDL_Rect *dstrect, int blend_flags);
+
+int
+SoftMultiBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
+                    BlitSequence *destinations);
+
+void
+pg_multi_blitcopy(SDL_Surface *restrict src, SDL_Surface *restrict dst,
+                  BlitSequence *restrict destinations);
 
 int
 premul_surf_color_by_alpha(SDL_Surface *src, SDL_Surface *dst);

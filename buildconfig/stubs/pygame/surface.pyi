@@ -86,8 +86,14 @@ class Surface:
     ) -> Union[List[Rect], None]: ...
     def fblits(
         self,
-        blit_sequence: Iterable[Tuple[Surface, Union[Coordinate, RectValue]]],
-        special_flags: int = 0, /
+        blit_sequence: Iterable[
+            Union[
+                Tuple[Surface, Union[Coordinate, RectValue]],
+                Tuple[Surface, Sequence[Union[Coordinate, RectValue]]],
+            ]
+        ],
+        special_flags: int = 0,
+        /,
     ) -> None: ...
     @overload
     def convert(self, surface: Surface, /) -> Surface: ...

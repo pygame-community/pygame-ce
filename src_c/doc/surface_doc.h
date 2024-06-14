@@ -2,7 +2,7 @@
 #define DOC_SURFACE "Surface((width, height), flags=0, depth=0, masks=None) -> Surface\nSurface((width, height), flags=0, Surface) -> Surface\npygame object for representing images"
 #define DOC_SURFACE_BLIT "blit(source, dest, area=None, special_flags=0) -> Rect\ndraw another surface onto this one"
 #define DOC_SURFACE_BLITS "blits(blit_sequence=((source, dest), ...), doreturn=True) -> [Rect, ...] or None\nblits(((source, dest, area), ...)) -> [Rect, ...]\nblits(((source, dest, area, special_flags), ...)) -> [Rect, ...]\ndraw many images onto another"
-#define DOC_SURFACE_FBLITS "fblits(blit_sequence=((source, dest), ...), special_flags=0, /) -> None\ndraw many surfaces onto the calling surface at their corresponding location and the same special_flags"
+#define DOC_SURFACE_FBLITS "fblits(blit_sequence=((source, dest), ...), special_flags=0/) -> None\nfblits(blit_sequence=((source, [dest1, dest2, ...]), ...), special_flags=0/) -> None\ndraw many surfaces onto the calling surface at their corresponding location and the same special_flags"
 #define DOC_SURFACE_CONVERT "convert(surface, /) -> Surface\nconvert(depth, flags=0, /) -> Surface\nconvert(masks, flags=0, /) -> Surface\nconvert() -> Surface\nchange the pixel format of an image"
 #define DOC_SURFACE_CONVERTALPHA "convert_alpha() -> Surface\nchange the pixel format of an image including per pixel alphas"
 #define DOC_SURFACE_COPY "copy() -> Surface\ncreate a new copy of a Surface"

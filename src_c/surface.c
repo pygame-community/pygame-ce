@@ -262,6 +262,8 @@ static SDL_Surface *
 pg_DisplayFormat(SDL_Surface *surface);
 static int
 _PgSurface_SrcAlpha(SDL_Surface *surf);
+int
+pg_HasSurfaceRLE(SDL_Surface *surface);
 
 static PyGetSetDef surface_getsets[] = {
     {"_pixels_address", (getter)surf_get_pixels_address, NULL,
@@ -2154,54 +2156,222 @@ bliterror:
 #define FBLITS_ERR_TUPLE_REQUIRED 11
 #define FBLITS_ERR_INCORRECT_ARGS_NUM 12
 #define FBLITS_ERR_FLAG_NOT_NUMERIC 13
+#define FBLITS_ERR_CACHE_NOT_NUMERIC 14
+#define FBLITS_ERR_CACHE_NOT_SAMEFMT 15
+#define FBLITS_ERR_CACHE_RLE_NOT_SUPPORTED 16
+#define FBLITS_ERR_FLAG_NOT_SUPPORTED 17
+#define FBLITS_ERR_NO_MEMORY 18
+#define FBLITS_ERR_INVALID_SEQUENCE_LENGTH 19
+#define FBLITS_ERR_INVALID_DESTINATION 20
+#define FBLITS_ERR_INVALID_SEQUENCE 21
 
 int
-_surf_fblits_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
+_surf_fblits_item_check_and_blit(pgSurfaceObject *src_surf, SDL_Surface *src,
+                                 pgSurfaceObject *dest, int x, int y,
                                  int blend_flags)
 {
-    PyObject *src_surf, *blit_pos;
-    SDL_Surface *src;
-    SDL_Rect *src_rect, temp, dest_rect;
+    SDL_Rect dest_rect = {x, y, src->w, src->h};
 
-    /* Check that the item is a tuple of length 2 */
-    if (!PyTuple_Check(item) || PyTuple_GET_SIZE(item) != 2) {
-        return FBLITS_ERR_TUPLE_REQUIRED;
+    if (pgSurface_Blit(dest, src_surf, &dest_rect, NULL, blend_flags))
+        return BLITS_ERR_BLIT_FAIL;
+
+    return 0;
+}
+
+int
+_surf_fblits_multiblit_item_check_and_blit(PyObject *src_surf,
+                                           pgSurfaceObject *self,
+                                           SDL_Surface *src, SDL_Surface *dst,
+                                           PyObject *pos_sequence,
+                                           int blend_flags,
+                                           BlitSequence *destinations)
+{
+    SDL_Surface *subsurface;
+    int suboffsetx = 0, suboffsety = 0;
+    SDL_Rect orig_clip, sub_clip;
+    int error = 0;
+    Py_ssize_t i;
+
+    /* Check that the source and destination surfaces have the same format */
+    if (src->format->format != dst->format->format ||
+        src->format->BytesPerPixel != dst->format->BytesPerPixel ||
+        src->format->BytesPerPixel != 4) {
+        return FBLITS_ERR_CACHE_NOT_SAMEFMT;
     }
 
-    /* Extract the Surface and destination objects from the
-     * (Surface, dest) tuple */
-    src_surf = PyTuple_GET_ITEM(item, 0);
-    blit_pos = PyTuple_GET_ITEM(item, 1);
+    /* rule out RLE */
+    if (pg_HasSurfaceRLE(src) || pg_HasSurfaceRLE(dst) ||
+        (src->flags & SDL_RLEACCEL) || (dst->flags & SDL_RLEACCEL)) {
+        return FBLITS_ERR_CACHE_RLE_NOT_SUPPORTED;
+    }
+
+    /* manage destinations memory */
+    Py_ssize_t new_size = PySequence_Fast_GET_SIZE(pos_sequence);
+    if (new_size > destinations->alloc_size) {
+        destinations->sequence = (BlitDestination *)realloc(
+            destinations->sequence, new_size * sizeof(BlitDestination));
+
+        if (!destinations->sequence)
+            return FBLITS_ERR_NO_MEMORY;
+
+        destinations->size = destinations->alloc_size = new_size;
+    }
+    else if (new_size > 0 && new_size <= destinations->alloc_size) {
+        destinations->size = new_size;
+    }
+    else {
+        if (new_size == 0)
+            return 0;
+        return FBLITS_ERR_INVALID_SEQUENCE_LENGTH;
+    }
+
+    if (self->subsurface) {
+        PyObject *owner;
+        struct pgSubSurface_Data *subdata;
+
+        subdata = self->subsurface;
+        owner = subdata->owner;
+        subsurface = pgSurface_AsSurface(owner);
+        suboffsetx = subdata->offsetx;
+        suboffsety = subdata->offsety;
+
+        while (((pgSurfaceObject *)owner)->subsurface) {
+            subdata = ((pgSurfaceObject *)owner)->subsurface;
+            owner = subdata->owner;
+            subsurface = pgSurface_AsSurface(owner);
+            suboffsetx += subdata->offsetx;
+            suboffsety += subdata->offsety;
+        }
+
+        SDL_GetClipRect(subsurface, &orig_clip);
+        SDL_GetClipRect(dst, &sub_clip);
+        sub_clip.x += suboffsetx;
+        sub_clip.y += suboffsety;
+        SDL_SetClipRect(subsurface, &sub_clip);
+        dst = subsurface;
+    }
+    else {
+        pgSurface_Prep(self);
+        subsurface = NULL;
+    }
+
+    /* load destinations */
+    PyObject **seq_items = PySequence_Fast_ITEMS(pos_sequence);
+    Py_ssize_t current_size = 0;
+    SDL_Rect src_dest = {0, 0, src->w, src->h};
+    SDL_Rect temp, *argrect;
+    const SDL_Rect *clip_rect = &dst->clip_rect;
+    for (i = 0; i < destinations->size; i++) {
+        PyObject *item = seq_items[i];
+
+        if (pg_TwoIntsFromObj(item, &src_dest.x, &src_dest.y)) {
+        }
+        else if ((argrect = pgRect_FromObject(item, &temp))) {
+            src_dest.x = argrect->x;
+            src_dest.y = argrect->y;
+        }
+        else {
+            return FBLITS_ERR_INVALID_DESTINATION;
+        }
+
+        src_dest.x += suboffsetx;
+        src_dest.y += suboffsety;
+
+        SDL_Rect clipped;
+        if (!SDL_IntersectRect(clip_rect, &src_dest, &clipped))
+            continue; /* Skip out of bounds destinations */
+
+        BlitDestination *d_item = &destinations->sequence[current_size++];
+
+        d_item->pixels =
+            (Uint32 *)dst->pixels + clipped.y * dst->pitch / 4 + clipped.x;
+        d_item->width = clipped.w;
+        d_item->rows = clipped.h;
+        d_item->src_offset =
+            (src_dest.x < clip_rect->x ? clip_rect->x - src_dest.x : 0) +
+            (src_dest.y < clip_rect->y ? clip_rect->y - src_dest.y : 0) *
+                src->pitch / 4;
+    }
+
+    if (!(destinations->size = current_size)) {
+        if (subsurface)
+            SDL_SetClipRect(subsurface, &orig_clip);
+        else
+            pgSurface_Unprep(self);
+        return 0;
+    }
+
+    pgSurface_Prep((pgSurfaceObject *)src_surf);
+
+    error = SoftMultiBlitPyGame(src, dst, blend_flags, destinations);
+
+    if (subsurface)
+        SDL_SetClipRect(subsurface, &orig_clip);
+    else
+        pgSurface_Unprep(self);
+    pgSurface_Unprep((pgSurfaceObject *)src_surf);
+
+    if (error == -1)
+        error = BLITS_ERR_BLIT_FAIL;
+
+    return error;
+}
+
+static void
+_surf_fblits_blit(pgSurfaceObject *self, PyObject *item, int blend_flags,
+                  BlitSequence *destinations, int *error)
+{
+    PyObject *src_surf, *pos_or_seq;
+    SDL_Surface *src, *dst = pgSurface_AsSurface(self);
+    SDL_Rect temp, *argrect = NULL;
+    if (!dst) {
+        *error = BLITS_ERR_DISPLAY_SURF_QUIT;
+        return;
+    }
+
+    int x, y;
+
+    if (PyTuple_Check(item) && PyTuple_GET_SIZE(item) == 2) {
+        /* (Surface, dest) */
+        src_surf = PyTuple_GET_ITEM(item, 0);
+        pos_or_seq = PyTuple_GET_ITEM(item, 1);
+    }
+    else {
+        *error = FBLITS_ERR_TUPLE_REQUIRED;
+        return;
+    }
 
     /* Check that the source is a Surface */
     if (!pgSurface_Check(src_surf)) {
-        return BLITS_ERR_SOURCE_NOT_SURFACE;
+        *error = BLITS_ERR_SOURCE_NOT_SURFACE;
+        return;
     }
     if (!(src = pgSurface_AsSurface(src_surf))) {
-        return BLITS_ERR_SEQUENCE_SURF;
+        *error = BLITS_ERR_SEQUENCE_SURF;
+        return;
     }
 
-    /* Try to extract a valid blit position */
-    if (pg_TwoIntsFromObj(blit_pos, &dest_rect.x, &dest_rect.y)) {
-    }
-    else if ((src_rect = pgRect_FromObject(blit_pos, &temp))) {
-        dest_rect.x = src_rect->x;
-        dest_rect.y = src_rect->y;
-    }
-    else {
-        return BLITS_ERR_INVALID_DESTINATION;
+    if (!src->w || !src->h)
+        return;
+
+    if (pg_TwoIntsFromObj(pos_or_seq, &x, &y) ||
+        (argrect = pgRect_FromObject(pos_or_seq, &temp))) {
+        if (argrect) {
+            x = argrect->x;
+            y = argrect->y;
+        }
+        *error = _surf_fblits_item_check_and_blit(
+            (pgSurfaceObject *)src_surf, src, self, x, y, blend_flags);
+        return;
     }
 
-    dest_rect.w = src->w;
-    dest_rect.h = src->h;
-
-    /* Perform the blit */
-    if (pgSurface_Blit(self, (pgSurfaceObject *)src_surf, &dest_rect, NULL,
-                       blend_flags)) {
-        return BLITS_ERR_BLIT_FAIL;
+    if (!pgSequenceFast_Check(pos_or_seq)) {
+        *error = FBLITS_ERR_INVALID_SEQUENCE;
+        return;
     }
 
-    return 0;
+    *error = _surf_fblits_multiblit_item_check_and_blit(
+        src_surf, self, src, dst, pos_or_seq, blend_flags, destinations);
 }
 
 static PyObject *
@@ -2214,6 +2384,7 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
     int blend_flags = 0; /* Default flag is 0, opaque */
     int error = 0;
     int is_generator = 0;
+    BlitSequence destinations = {NULL, 0, 0};
 
     if (nargs == 0 || nargs > 2) {
         error = FBLITS_ERR_INCORRECT_ARGS_NUM;
@@ -2238,21 +2409,21 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
         Py_ssize_t i;
         PyObject **sequence_items = PySequence_Fast_ITEMS(blit_sequence);
         for (i = 0; i < PySequence_Fast_GET_SIZE(blit_sequence); i++) {
-            item = sequence_items[i];
-            error = _surf_fblits_item_check_and_blit(self, item, blend_flags);
-            if (error) {
+            _surf_fblits_blit(self, sequence_items[i], blend_flags,
+                              &destinations, &error);
+
+            if (error)
                 goto on_error;
-            }
         }
     }
-    /* Generator path */
     else if (PyIter_Check(blit_sequence)) {
         is_generator = 1;
         while ((item = PyIter_Next(blit_sequence))) {
-            error = _surf_fblits_item_check_and_blit(self, item, blend_flags);
-            if (error) {
+            _surf_fblits_blit(self, item, blend_flags, &destinations, &error);
+
+            if (error)
                 goto on_error;
-            }
+
             Py_DECREF(item);
         }
 
@@ -2266,12 +2437,15 @@ surf_fblits(pgSurfaceObject *self, PyObject *const *args, Py_ssize_t nargs)
         goto on_error;
     }
 
+    free(destinations.sequence);
+
     Py_RETURN_NONE;
 
 on_error:
     if (is_generator) {
         Py_XDECREF(item);
     }
+    free(destinations.sequence);
     switch (error) {
         case BLITS_ERR_SEQUENCE_REQUIRED:
             return RAISE(
@@ -2304,10 +2478,32 @@ on_error:
         case FBLITS_ERR_INCORRECT_ARGS_NUM:
             return RAISE(PyExc_ValueError,
                          "Incorrect number of parameters passed: need at "
-                         "least one, 2 at max");
+                         "least one, 3 at max");
         case FBLITS_ERR_FLAG_NOT_NUMERIC:
             return RAISE(PyExc_TypeError,
                          "The special_flags parameter must be an int");
+        case FBLITS_ERR_CACHE_NOT_NUMERIC:
+            return RAISE(PyExc_TypeError,
+                         "The cache parameter must be a bool");
+        case FBLITS_ERR_CACHE_NOT_SAMEFMT:
+            return RAISE(PyExc_TypeError,
+                         "The source surface has wrong format");
+        case FBLITS_ERR_CACHE_RLE_NOT_SUPPORTED:
+            return RAISE(PyExc_TypeError,
+                         "RLE acceleration while caching is not supported");
+        case FBLITS_ERR_FLAG_NOT_SUPPORTED:
+            return RAISE(PyExc_NotImplementedError,
+                         "The flag used or blit mode selected is not "
+                         "supported for this operation");
+        case FBLITS_ERR_NO_MEMORY:
+            return RAISE(PyExc_MemoryError, "No memory available");
+        case FBLITS_ERR_INVALID_SEQUENCE_LENGTH:
+            return RAISE(PyExc_ValueError, "Invalid sequence length for blit");
+        case FBLITS_ERR_INVALID_DESTINATION:
+            return RAISE(PyExc_TypeError,
+                         "Invalid destination position for blit");
+        case FBLITS_ERR_INVALID_SEQUENCE:
+            return RAISE(PyExc_TypeError, "Invalid sequence for multi-blit");
     }
     return RAISE(PyExc_TypeError, "Unknown error");
 }

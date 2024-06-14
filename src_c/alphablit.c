@@ -61,6 +61,11 @@ blit_blend_premultiplied(SDL_BlitInfo *info);
 static int
 SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
                SDL_Rect *dstrect, int blend_flags);
+
+int
+SoftMultiBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
+                    BlitSequence *destinations);
+
 extern int
 SDL_RLESurface(SDL_Surface *surface);
 extern void
@@ -578,6 +583,80 @@ SoftBlitPyGame(SDL_Surface *src, SDL_Rect *srcrect, SDL_Surface *dst,
         SDL_UnlockSurface(src);
     /* Blit is done! */
     return (okay ? 0 : -1);
+}
+
+void
+pg_multi_blitcopy(SDL_Surface *restrict src, SDL_Surface *restrict dst,
+                  BlitSequence *restrict destinations)
+{
+    Py_ssize_t i;
+    const int src_skip = src->pitch / 4;
+    const int dst_skip = dst->pitch / 4;
+
+    Uint32 *const src_start = (Uint32 *)src->pixels;
+
+    for (i = 0; i < destinations->size; i++) {
+        BlitDestination *item = &destinations->sequence[i];
+        Uint32 *dstp32 = item->pixels;
+        int h = item->rows;
+        const int copy_w = item->width * 4;
+        Uint32 *srcp32 = src_start + item->src_offset;
+
+        while (h--) {
+            memcpy(dstp32, srcp32, copy_w);
+            srcp32 += src_skip;
+            dstp32 += dst_skip;
+        }
+    }
+}
+
+int
+SoftMultiBlitPyGame(SDL_Surface *src, SDL_Surface *dst, int blend_flags,
+                    BlitSequence *destinations)
+{
+    int okay = 1;
+    int src_locked = 0, dst_locked = 0;
+
+    if (SDL_MUSTLOCK(dst)) {
+        if (SDL_LockSurface(dst) < 0)
+            okay = 0;
+        else
+            dst_locked = 1;
+    }
+    if (SDL_MUSTLOCK(src)) {
+        if (SDL_LockSurface(src) < 0)
+            okay = 0;
+        else
+            src_locked = 1;
+    }
+
+    if (okay) {
+        SDL_BlendMode src_blend;
+        switch (blend_flags) {
+            case 0:
+                /* unhandled cases */
+                if (SDL_GetSurfaceBlendMode(src, &src_blend) != 0 ||
+                    (src_blend == SDL_BLENDMODE_NONE && src->format->Amask) ||
+                    SDL_HasColorKey(src)) {
+                    okay = 0;
+                    break;
+                }
+
+                /* blitcopy */
+                pg_multi_blitcopy(src, dst, destinations);
+                break;
+            default:
+                okay = 0;
+                break;
+        }
+    }
+
+    if (dst_locked)
+        SDL_UnlockSurface(dst);
+    if (src_locked)
+        SDL_UnlockSurface(src);
+
+    return okay ? 0 : -1;
 }
 
 /* --------------------------------------------------------- */
