@@ -891,10 +891,6 @@ mask_from_surface(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL; /* Exception already set. */
     }
 
-    if (threshold < 0 || threshold > 255) {
-        return RAISE(PyExc_ValueError, "threshold must be between 0 and 255");
-    }
-
     surf = pgSurface_AsSurface(surfobj);
 
     if (surf->w < 0 || surf->h < 0) {
