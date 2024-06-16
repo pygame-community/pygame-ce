@@ -387,4 +387,4 @@ between pygame 1 and pygame 2. Below are a couple of mappings for three popular 
 Axis and hat mappings are listed from -1 to +1.
 
 
-See more about frequently used controllers and joysticks on `extra_infos/common_joysticks`
+See more about frequently used controllers and joysticks on :doc:`extra_infos/common_joysticks` .
