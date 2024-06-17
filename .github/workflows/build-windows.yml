@@ -147,7 +147,7 @@ jobs:
           arch: ${{ matrix.msvc-dev-arch }}
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.18.1
+        uses: pypa/cibuildwheel@v2.19.1
 
       - uses: actions/upload-artifact@v4
         with:
