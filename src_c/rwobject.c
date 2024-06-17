@@ -46,6 +46,18 @@ static const char pg_default_errors[] = "backslashreplace";
 
 static PyObject *os_module = NULL;
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static Sint64
+_pg_rw_size(void *);
+static Sint64
+_pg_rw_seek(void *, Sint64, SDL_IOWhence);
+static size_t
+_pg_rw_read(void *, void *, size_t, SDL_IOStatus *);
+static size_t
+_pg_rw_write(void *, const void *, size_t, SDL_IOStatus *);
+static int
+_pg_rw_close(void *);
+#else
 static Sint64
 _pg_rw_size(SDL_RWops *);
 static Sint64
@@ -56,6 +68,7 @@ static size_t
 _pg_rw_write(SDL_RWops *, const void *, size_t, size_t);
 static int
 _pg_rw_close(SDL_RWops *);
+#endif
 
 /* Converter function used by PyArg_ParseTupleAndKeywords with the "O&" format.
  *
@@ -291,13 +304,31 @@ pg_EncodeFilePath(PyObject *obj, PyObject *eclass)
 static int
 pgRWops_IsFileObject(SDL_RWops *rw)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_PropertiesID props = SDL_GetIOProperties(rw);
+    if (!props) {
+        // pgRWops_IsFileObject doesn't have any error checking facility
+        // so when in doubt let's say it isn't a file object.
+        return 0;
+    }
+    return SDL_GetBooleanProperty(props, "_pygame_is_file_object", 0);
+#else
     return rw->close == _pg_rw_close;
+#endif
 }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static Sint64
+_pg_rw_size(void *userdata)
+{
+    pgRWHelper *helper = (pgRWHelper *)userdata;
+#else
 static Sint64
 _pg_rw_size(SDL_RWops *context)
 {
     pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
+#endif
+
     PyObject *pos = NULL;
     PyObject *tmp = NULL;
     Sint64 size;
@@ -361,10 +392,19 @@ end:
     return retval;
 }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static size_t
+_pg_rw_write(void *userdata, const void *ptr, size_t size,
+             SDL_IOStatus *status)
+{
+    pgRWHelper *helper = (pgRWHelper *)userdata;
+    size_t num = 1;
+#else
 static size_t
 _pg_rw_write(SDL_RWops *context, const void *ptr, size_t size, size_t num)
 {
     pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
+#endif
     PyObject *result;
     size_t retval;
 
@@ -382,17 +422,28 @@ _pg_rw_write(SDL_RWops *context, const void *ptr, size_t size, size_t num)
     }
 
     Py_DECREF(result);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    retval = size;
+#else
     retval = num;
+#endif
 
 end:
     PyGILState_Release(state);
     return retval;
 }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static int
+_pg_rw_close(void *userdata)
+{
+    pgRWHelper *helper = (pgRWHelper *)userdata;
+#else
 static int
 _pg_rw_close(SDL_RWops *context)
 {
     pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
+#endif
     PyObject *result;
     int retval = 0;
     PyGILState_STATE state = PyGILState_Ensure();
@@ -414,7 +465,9 @@ _pg_rw_close(SDL_RWops *context)
 
     PyMem_Free(helper);
     PyGILState_Release(state);
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     SDL_FreeRW(context);
+#endif
     return retval;
 }
 
@@ -437,6 +490,37 @@ pgRWops_FromFileObject(PyObject *obj)
         return NULL;
     }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_IOStreamInterface iface;
+    iface.size = _pg_rw_size;
+    iface.seek = _pg_rw_seek;
+    iface.read = _pg_rw_read;
+    iface.write = _pg_rw_write;
+    iface.close = _pg_rw_close;
+
+    // TODO: These should raise SDLError probably?
+    // rwobject.c hasn't required pygame.base before (the source of SDLError)
+    // so omitting that for now.
+
+    rw = SDL_OpenIO(&iface, helper);
+    if (rw == NULL) {
+        iface.close(helper);
+        PyMem_Free(helper);
+        return (SDL_RWops *)RAISE(PyExc_IOError, SDL_GetError());
+    }
+
+    SDL_PropertiesID props = SDL_GetIOProperties(rw);
+    if (!props) {
+        PyMem_Free(helper);
+        return (SDL_RWops *)RAISE(PyExc_IOError, SDL_GetError());
+    }
+
+    if (SDL_SetBooleanProperty(props, "_pygame_is_file_object", 1) < 0) {
+        PyMem_Free(helper);
+        return (SDL_RWops *)RAISE(PyExc_IOError, SDL_GetError());
+    }
+
+#else
     rw = SDL_AllocRW();
     if (rw == NULL) {
         PyMem_Free(helper);
@@ -450,14 +534,22 @@ pgRWops_FromFileObject(PyObject *obj)
     rw->read = _pg_rw_read;
     rw->write = _pg_rw_write;
     rw->close = _pg_rw_close;
+#endif
 
     return rw;
 }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static Sint64
+_pg_rw_seek(void *userdata, Sint64 offset, SDL_IOWhence whence)
+{
+    pgRWHelper *helper = (pgRWHelper *)userdata;
+#else
 static Sint64
 _pg_rw_seek(SDL_RWops *context, Sint64 offset, int whence)
 {
     pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
+#endif
     PyObject *result;
     Sint64 retval;
 
@@ -498,10 +590,18 @@ end:
     return retval;
 }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+static size_t
+_pg_rw_read(void *userdata, void *ptr, size_t size, SDL_IOStatus *status)
+{
+    pgRWHelper *helper = (pgRWHelper *)userdata;
+    size_t maxnum = 1;
+#else
 static size_t
 _pg_rw_read(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
 {
     pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
+#endif
     PyObject *result;
     Py_ssize_t retval;
 
@@ -527,7 +627,9 @@ _pg_rw_read(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
     retval = PyBytes_GET_SIZE(result);
     if (retval) {
         memcpy(ptr, PyBytes_AsString(result), retval);
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
         retval /= size;
+#endif
     }
 
     Py_DECREF(result);

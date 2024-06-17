@@ -388,7 +388,11 @@ _load_music(PyObject *obj, char *namehint)
     }
 
     Py_BEGIN_ALLOW_THREADS;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    new_music = Mix_LoadMUSType_IO(rw, _get_type_from_hint(type), SDL_TRUE);
+#else
     new_music = Mix_LoadMUSType_RW(rw, _get_type_from_hint(type), SDL_TRUE);
+#endif
     Py_END_ALLOW_THREADS;
 
     if (ext) {
