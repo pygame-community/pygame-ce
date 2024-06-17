@@ -2240,9 +2240,9 @@ pg_event_custom_type(PyObject *self, PyObject *_null)
 }
 
 static PyMethodDef _event_methods[] = {
-    {"_internal_mod_init", (PyCFunction)pgEvent_AutoInit, METH_NOARGS,
+    {"init", (PyCFunction)pgEvent_AutoInit, METH_NOARGS,
      "auto initialize for event module"},
-    {"_internal_mod_quit", (PyCFunction)pgEvent_AutoQuit, METH_NOARGS,
+    {"quit", (PyCFunction)pgEvent_AutoQuit, METH_NOARGS,
      "auto quit for event module"},
 
     {"event_name", event_name, METH_VARARGS, DOC_EVENT_EVENTNAME},
@@ -2273,7 +2273,7 @@ static PyMethodDef _event_methods[] = {
 
     {NULL, NULL, 0, NULL}};
 
-MODINIT_DEFINE(event)
+MODINIT_DEFINE(_event)
 {
     PyObject *module, *apiobj;
     static void *c_api[PYGAMEAPI_EVENT_NUMSLOTS];
@@ -2338,7 +2338,7 @@ MODINIT_DEFINE(event)
     c_api[8] = pgEvent_GetMouseButtonDownInfo;
     c_api[9] = pgEvent_GetMouseButtonUpInfo;
 
-    apiobj = encapsulate_api(c_api, "event");
+    apiobj = encapsulate_api(c_api, "_event");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
         Py_XDECREF(apiobj);
         Py_DECREF(module);

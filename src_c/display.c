@@ -184,7 +184,7 @@ pg_display_quit(PyObject *self, PyObject *_null)
         pg_SetDefaultWindow(NULL);
     }
 
-    pg_mod_autoquit(IMPPREFIX "event");
+    pg_mod_autoquit(IMPPREFIX "_event");
     pg_mod_autoquit(IMPPREFIX "time");
     pg_mod_autoquit(IMPPREFIX "window");
 
@@ -240,7 +240,7 @@ pg_display_init(PyObject *self, PyObject *_null)
 
     if (!pg_mod_autoinit(IMPPREFIX "time"))
         return NULL;
-    if (!pg_mod_autoinit(IMPPREFIX "event"))
+    if (!pg_mod_autoinit(IMPPREFIX "_event"))
         return NULL;
     if (!pg_mod_autoinit(IMPPREFIX "window"))
         return NULL;
