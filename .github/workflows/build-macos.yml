@@ -47,7 +47,7 @@ jobs:
           - { macarch: x86_64, os: macos-13 }
 
     steps:
-      - uses: actions/checkout@v4.1.6
+      - uses: actions/checkout@v4.1.7
 
       - name: Test for Mac Deps cache hit
         id: macdep-cache
@@ -164,7 +164,7 @@ jobs:
       CIBW_BUILD_VERBOSITY: 2
 
     steps:
-      - uses: actions/checkout@v4.1.6
+      - uses: actions/checkout@v4.1.7
 
       - name: pip cache
         uses: actions/cache@v4.0.2
