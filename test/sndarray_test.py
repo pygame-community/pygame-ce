@@ -1,6 +1,6 @@
 import unittest
 
-from numpy import int8, int16, uint8, uint16, float32, array, alltrue
+from numpy import int8, int16, uint8, uint16, float32, array, all as np_all
 
 import pygame
 import pygame.sndarray
@@ -28,7 +28,7 @@ class SndarrayTest(unittest.TestCase):
                     arr = pygame.sndarray.array(snd)
                     self._assert_compatible(arr, size)
                     self.assertTrue(
-                        alltrue(arr == srcarr),
+                        np_all(arr == srcarr),
                         "size: %i\n%s\n%s" % (size, arr, test_data),
                     )
             finally:
@@ -71,7 +71,7 @@ class SndarrayTest(unittest.TestCase):
                     snd = pygame.sndarray.make_sound(srcarr)
                     arr = pygame.sndarray.samples(snd)
                     self.assertTrue(
-                        alltrue(arr == srcarr),
+                        np_all(arr == srcarr),
                         "size: %i\n%s\n%s" % (size, arr, test_data),
                     )
             finally:
@@ -110,7 +110,7 @@ class SndarrayTest(unittest.TestCase):
                     samples[...] = test_data
                     arr = pygame.sndarray.array(snd)
                     self.assertTrue(
-                        alltrue(samples == arr),
+                        np_all(samples == arr),
                         "size: %i\n%s\n%s" % (size, arr, test_data),
                     )
             finally:

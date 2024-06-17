@@ -9,7 +9,7 @@ from numpy import (
     zeros,
     float32,
     float64,
-    alltrue,
+    all as np_all,
     rint,
     arange,
 )
@@ -235,7 +235,7 @@ class SurfarrayModuleTest(unittest.TestCase):
                         ),
                     )
             else:
-                self.assertTrue(alltrue(arr == 255))
+                self.assertTrue(np_all(arr == 255))
 
         # No per-pixel alpha when blanket alpha is None.
         for surf in targets:
@@ -243,7 +243,7 @@ class SurfarrayModuleTest(unittest.TestCase):
             surf.set_alpha(None)
             arr = pygame.surfarray.array_alpha(surf)
             self.assertTrue(
-                alltrue(arr == 255),
+                np_all(arr == 255),
                 "All alpha values should be 255 when"
                 " surf.set_alpha(None) has been set."
                 " bitsize: %i, flags: %i" % (surf.get_bitsize(), surf.get_flags()),
@@ -257,12 +257,12 @@ class SurfarrayModuleTest(unittest.TestCase):
             arr = pygame.surfarray.array_alpha(surf)
             if surf.get_masks()[3]:
                 self.assertFalse(
-                    alltrue(arr == 255),
+                    np_all(arr == 255),
                     "bitsize: %i, flags: %i" % (surf.get_bitsize(), surf.get_flags()),
                 )
             else:
                 self.assertTrue(
-                    alltrue(arr == 255),
+                    np_all(arr == 255),
                     "bitsize: %i, flags: %i" % (surf.get_bitsize(), surf.get_flags()),
                 )
             surf.set_alpha(blanket_alpha)
@@ -290,7 +290,7 @@ class SurfarrayModuleTest(unittest.TestCase):
                 p = [surf.unmap_rgb(surf.map_rgb(c)) for c in p]
             surf.set_colorkey(None)
             arr = pygame.surfarray.array_colorkey(surf)
-            self.assertTrue(alltrue(arr == 255))
+            self.assertTrue(np_all(arr == 255))
 
             for i in range(1, len(palette)):
                 surf.set_colorkey(p[i])
