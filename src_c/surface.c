@@ -1772,9 +1772,15 @@ surf_fill(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
         }
 
         if (sdlrect.x < 0) {
+            if (abs(sdlrect.w) > abs(sdlrect.x)) {
+                sdlrect.w += sdlrect.x;
+            }
             sdlrect.x = 0;
         }
         if (sdlrect.y < 0) {
+            if (abs(sdlrect.h) > abs(sdlrect.y)) {
+                sdlrect.h += sdlrect.y;
+            }
             sdlrect.y = 0;
         }
 

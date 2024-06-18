@@ -4268,6 +4268,32 @@ class SurfaceFillTest(unittest.TestCase):
         for y in range(5, 480, 10):
             self.assertEqual(screen.get_at((10, y)), screen.get_at((330, 480 - y)))
 
+    def test_fill_negative_rectpos(self):
+        """Regression test for https://github.com/pygame-community/pygame-ce/issues/2938"""
+        screen = pygame.display.set_mode((640, 480))
+        other_surface = screen.copy()
+
+        negative_x_rect = pygame.Rect(-10, 10, 20, 20)
+        negative_x_rect_drawn = pygame.Rect(0, 10, 10, 20)
+        negative_y_rect = pygame.Rect(100, -10, 20, 20)
+        negative_y_rect_drawn = pygame.Rect(100, 0, 20, 10)
+        negative_both = pygame.Rect(-10, -10, 20, 20)
+        negative_both_drawn = pygame.Rect(0, 0, 10, 10)
+
+        screen.fill("red", negative_x_rect)
+        screen.fill("blue", negative_y_rect)
+        screen.fill("green", negative_both)
+
+        other_surface.fill("red", negative_x_rect_drawn)
+        other_surface.fill("blue", negative_y_rect_drawn)
+        other_surface.fill("green", negative_both_drawn)
+
+        # verify both have the same pixels
+        width, height = screen.get_size()
+        for row in range(height):
+            for col in range(width):
+                assert screen.get_at((col, row)) == other_surface.get_at((col, row))
+
 
 if __name__ == "__main__":
     unittest.main()
