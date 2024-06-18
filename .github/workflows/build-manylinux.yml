@@ -74,7 +74,7 @@ jobs:
       CIBW_BUILD_VERBOSITY: 2
 
     steps:
-    - uses: actions/checkout@v4.1.6
+    - uses: actions/checkout@v4.1.7
 
     - name: Log in to the Container registry
       uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446
