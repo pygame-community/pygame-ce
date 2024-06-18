@@ -69,7 +69,7 @@ class Surface:
     def blit(
         self,
         source: Surface,
-        dest: Union[Coordinate, RectValue],
+        dest: Optional[Union[Coordinate, RectValue]] = (0, 0),
         area: Optional[RectValue] = None,
         special_flags: int = 0,
     ) -> Rect: ...
