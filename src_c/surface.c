@@ -63,41 +63,6 @@ typedef struct pg_bufferinternal_s {
     Py_ssize_t mem[6];      /* Enough memory for dim 3 shape and strides  */
 } pg_bufferinternal;
 
-/* copy of SDL Blit mapping definitions to enable pointer casting hack
-   for checking state of the SDL_COPY_RLE_DESIRED flag */
-#define PGS_COPY_RLE_DESIRED 0x00001000
-
-typedef struct {
-    Uint8 *src;
-    int src_w, src_h;
-    int src_pitch;
-    int src_skip;
-    Uint8 *dst;
-    int dst_w, dst_h;
-    int dst_pitch;
-    int dst_skip;
-    SDL_PixelFormat *src_fmt;
-    SDL_PixelFormat *dst_fmt;
-    Uint8 *table;
-    int flags;
-    Uint32 colorkey;
-    Uint8 r, g, b, a;
-} pg_BlitInfo;
-
-typedef struct pg_BlitMap {
-    SDL_Surface *dst;
-    int identity;
-    SDL_blit blit;
-    void *data;
-    pg_BlitInfo info;
-
-    /* the version count matches the destination; mismatch indicates
-       an invalid mapping */
-    Uint32 dst_palette_version;
-    Uint32 src_palette_version;
-} pg_BlitMap;
-/* end PGS_COPY_RLE_DESIRED hack definitions */
-
 int
 pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
                SDL_Rect *dstrect, SDL_Rect *srcrect, int blend_flags);
@@ -2383,25 +2348,6 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
     Py_RETURN_NONE;
 }
 
-int
-pg_HasSurfaceRLE(SDL_Surface *surface)
-{
-    pg_BlitMap *blit_map;
-    /* this is part of a hack to allow us to access
-       the COPY_RLE_DESIRED flag from pygame */
-    if (!surface) {
-        return SDL_FALSE;
-    }
-
-    blit_map = (pg_BlitMap *)surface->map;
-
-    if (!(blit_map->info.flags & PGS_COPY_RLE_DESIRED)) {
-        return SDL_FALSE;
-    }
-
-    return SDL_TRUE;
-}
-
 static int
 _PgSurface_SrcAlpha(SDL_Surface *surf)
 {
@@ -2443,7 +2389,7 @@ surf_get_flags(PyObject *self, PyObject *_null)
         flags |= PGS_SRCCOLORKEY;
     if (sdl_flags & SDL_PREALLOC)
         flags |= PGS_PREALLOC;
-    if (pg_HasSurfaceRLE(surf))
+    if (PG_SurfaceHasRLE(surf))
         flags |= PGS_RLEACCELOK;
     if ((sdl_flags & SDL_RLEACCEL))
         flags |= PGS_RLEACCEL;
@@ -3925,7 +3871,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
               PG_SURF_BytesPerPixel(dst) == 2) &&
              _PgSurface_SrcAlpha(src) &&
              (SDL_ISPIXELFORMAT_ALPHA(src->format->format)) &&
-             !pg_HasSurfaceRLE(src) && !pg_HasSurfaceRLE(dst) &&
+             !PG_SurfaceHasRLE(src) && !PG_SurfaceHasRLE(dst) &&
              !(src->flags & SDL_RLEACCEL) && !(dst->flags & SDL_RLEACCEL)) {
         /* If we have a 32bit source surface with per pixel alpha
            and no RLE we'll use pygame_Blit so we can mimic how SDL1

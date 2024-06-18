@@ -43,16 +43,16 @@ Sphinx has a good ReStructed Text primer to learn the basics:
 https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
 
 Contributing steps:
-- Have an idea to improve the docs, perhaps create an issue on Github
-- Find the file you want to edit: it will most likely be in `docs/reST/ref`.
+- Have an idea to improve the docs, perhaps create an issue on Github.
+- Find the file you want to edit. It will most likely be in `docs/reST/ref`.
 OR
-- Pygame docs pages have an "Edit on Github" button, which will show you the file
+- Pygame docs pages have an "Edit on Github" button, which will show you the file.
 - Download the pygame source from Github locally.  
-     ^ One way to do this is to fork and use a Git client to make that a local repository
+     ^ One way to do this is to fork and use a Git client to make that a local repository.
 - Implement your idea.
-- Follow the steps in "Generating the Documentation"
-     ^ This is important to test your changes work well
-- Commit your changes, create a pull request
+- Follow the steps in "Generating the Documentation" above.
+     ^ This is important to test that your changes work well.
+- Commit your changes, create a pull request.
 
 ## Documentation Style
 
