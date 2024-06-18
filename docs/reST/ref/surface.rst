@@ -137,7 +137,7 @@
           - The blit is ignored if the ``source`` is positioned completely outside this ``Surface``'s
             clipping area. Otherwise only the overlapping area will be drawn.
 
-      .. versionchanged:: 2.5.1 The dest argument can be omitted and defaults to (0, 0)
+      .. versionchanged:: 2.5.1 The dest argument is optional and defaults to (0, 0)
 
       .. ## Surface.blit ##
 
