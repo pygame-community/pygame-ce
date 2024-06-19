@@ -37,10 +37,8 @@ Sounds with 16-bit data will be treated as unsigned integers,
 if the sound sample type requests this.
 """
 
-from pygame import mixer
+from pygame import mixer, warn
 import numpy
-
-import warnings
 
 
 __all__ = [
@@ -97,12 +95,13 @@ def use_arraytype(arraytype):
 
     DEPRECATED - only numpy arrays are now supported.
     """
-    warnings.warn(
-        DeprecationWarning(
-            "only numpy arrays are now supported, "
-            "this function will be removed in a "
-            "future version of the module"
-        )
+    warn(
+        "only numpy arrays are now supported, "
+        "this function will be removed in a "
+        "future version of the module",
+        DeprecationWarning,
+        2,
+        1,
     )
     arraytype = arraytype.lower()
     if arraytype != "numpy":
@@ -114,12 +113,13 @@ def get_arraytype():
 
     DEPRECATED - only numpy arrays are now supported.
     """
-    warnings.warn(
-        DeprecationWarning(
-            "only numpy arrays are now supported, "
-            "this function will be removed in a "
-            "future version of the module"
-        )
+    warn(
+        "only numpy arrays are now supported, "
+        "this function will be removed in a "
+        "future version of the module",
+        DeprecationWarning,
+        2,
+        0,
     )
     return "numpy"
 
@@ -129,11 +129,12 @@ def get_arraytypes():
 
     DEPRECATED - only numpy arrays are now supported.
     """
-    warnings.warn(
-        DeprecationWarning(
-            "only numpy arrays are now supported, "
-            "this function will be removed in a "
-            "future version of the module"
-        )
+    warn(
+        "only numpy arrays are now supported, "
+        "this function will be removed in a "
+        "future version of the module",
+        DeprecationWarning,
+        2,
+        1,
     )
     return ("numpy",)

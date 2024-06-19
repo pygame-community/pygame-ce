@@ -1233,9 +1233,8 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
 PyObject *
 image_tostring(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "pygame.image.tostring deprecated since 2.3.0",
-                     1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "pygame.image.tostring deprecated since 2.3.0", 1, 0) == -1) {
         return NULL;
     }
 
@@ -1245,9 +1244,8 @@ image_tostring(PyObject *self, PyObject *arg, PyObject *kwarg)
 PyObject *
 image_fromstring(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "pygame.image.fromstring deprecated since 2.3.0",
-                     1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "pygame.image.fromstring deprecated since 2.3.0", 1, 0) == -1) {
         return NULL;
     }
 

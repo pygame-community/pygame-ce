@@ -100,8 +100,8 @@ _scrap_init(PyObject *self, PyObject *args)
 {
     VIDEO_INIT_CHECK();
 
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "pygame.scrap.init deprecated since 2.2.0", 1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "pygame.scrap.init deprecated since 2.2.0", 1, 0) == -1) {
         return NULL;
     }
 
@@ -132,9 +132,8 @@ _scrap_init(PyObject *self, PyObject *args)
 static PyObject *
 _scrap_get_init(PyObject *self, PyObject *_null)
 {
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "pygame.scrap.get_init deprecated since 2.2.0",
-                     1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "pygame.scrap.get_init deprecated since 2.2.0", 1, 0) == -1) {
         return NULL;
     }
 
@@ -153,9 +152,8 @@ _scrap_get_types(PyObject *self, PyObject *_null)
     PyObject *list;
     PyObject *tmp;
 
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "pygame.scrap.get_types deprecated since 2.2.0",
-                     1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "pygame.scrap.get_types deprecated since 2.2.0", 1, 0) == -1) {
         return NULL;
     }
 
@@ -200,9 +198,8 @@ _scrap_contains(PyObject *self, PyObject *args)
 {
     char *type = NULL;
 
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "pygame.scrap.contains deprecated since 2.2.0",
-                     1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "pygame.scrap.contains deprecated since 2.2.0", 1, 0) == -1) {
         return NULL;
     }
 
@@ -224,10 +221,10 @@ _scrap_get_scrap(PyObject *self, PyObject *args)
     char *scrap_type;
     size_t count;
 
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "pygame.scrap.get deprecated since 2.2.0. Consider using"
-                     " pygame.scrap.get_text instead.",
-                     1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "pygame.scrap.get deprecated since 2.2.0. Consider using"
+               " pygame.scrap.get_text instead.",
+               1, 0) == -1) {
         return NULL;
     }
 
@@ -303,10 +300,10 @@ _scrap_put_scrap(PyObject *self, PyObject *args)
     PyObject *tmp;
     static const char argfmt[] = "sy#";
 
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "pygame.scrap.put deprecated since 2.2.0. Consider using"
-                     " pygame.scrap.put_text instead.",
-                     1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "pygame.scrap.put deprecated since 2.2.0. Consider using"
+               " pygame.scrap.put_text instead.",
+               1, 0) == -1) {
         return NULL;
     }
 
@@ -363,9 +360,8 @@ _scrap_set_mode(PyObject *self, PyObject *args)
 {
     PYGAME_SCRAP_INIT_CHECK();
 
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "pygame.scrap.set_mode deprecated since 2.2.0",
-                     1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "pygame.scrap.set_mode deprecated since 2.2.0", 1, 0) == -1) {
         return NULL;
     }
 

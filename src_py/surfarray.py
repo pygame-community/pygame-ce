@@ -51,8 +51,7 @@ from numpy import (
     ndarray as numpy_ndarray,
 )
 
-import warnings  # will be removed in the future
-
+from pygame.base import warn
 
 # float96 not available on all numpy versions.
 numpy_floats = [
@@ -405,12 +404,13 @@ def use_arraytype(arraytype):
 
     DEPRECATED - only numpy arrays are now supported.
     """
-    warnings.warn(
-        DeprecationWarning(
-            "only numpy arrays are now supported, "
-            "this function will be removed in a "
-            "future version of the module"
-        )
+    warn(
+        "only numpy arrays are now supported, "
+        "this function will be removed in a "
+        "future version of the module",
+        DeprecationWarning,
+        2,
+        1,
     )
     arraytype = arraytype.lower()
     if arraytype != "numpy":
@@ -422,12 +422,13 @@ def get_arraytype():
 
     DEPRECATED - only numpy arrays are now supported.
     """
-    warnings.warn(
-        DeprecationWarning(
-            "only numpy arrays are now supported, "
-            "this function will be removed in a "
-            "future version of the module"
-        )
+    warn(
+        "only numpy arrays are now supported, "
+        "this function will be removed in a "
+        "future version of the module",
+        DeprecationWarning,
+        2,
+        1,
     )
     return "numpy"
 
@@ -437,11 +438,12 @@ def get_arraytypes():
 
     DEPRECATED - only numpy arrays are now supported.
     """
-    warnings.warn(
-        DeprecationWarning(
-            "only numpy arrays are now supported, "
-            "this function will be removed in a "
-            "future version of the module"
-        )
+    warn(
+        "only numpy arrays are now supported, "
+        "this function will be removed in a "
+        "future version of the module",
+        DeprecationWarning,
+        2,
+        1,
     )
     return ("numpy",)
