@@ -362,13 +362,17 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     pts_prev[1] = pts[1];
     pts_prev[2] = pts[2];
     pts_prev[3] = pts[3];
+    steep_prev =
+        fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
+    steep_curr = fabs(xlist[2] - pts[2]) < fabs(ylist[2] - pts[1]);
+    extra_px = steep_prev > steep_curr;
     if (closed) {
         draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 1,
-                    1, 0);
+                    1, extra_px);
     }
     else {
         draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 0,
-                    1, 0);
+                    1, extra_px);
     }
 
     for (loop = 2; loop < length - 1; ++loop) {
