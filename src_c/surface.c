@@ -1755,59 +1755,32 @@ surf_fill(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
         rect = &temp;
     }
 
-    if (rect->w < 0 || rect->h < 0 || rect->x > surf->w || rect->y > surf->h) {
-        sdlrect.x = sdlrect.y = 0;
-        sdlrect.w = sdlrect.h = 0;
+    // In SDL3, SDL_IntersectRect is renamed to SDL_GetRectIntersection
+    SDL_Rect surfrect = {0, 0, surf->w, surf->h};
+    if (!SDL_IntersectRect(rect, &surfrect, &sdlrect)) {
+        sdlrect.x = 0;
+        sdlrect.y = 0;
+        sdlrect.w = 0;
+        sdlrect.h = 0;
+    }
+
+    if (sdlrect.w <= 0 || sdlrect.h <= 0) {
+        return pgRect_New(&sdlrect);
+    }
+
+    if (blendargs != 0) {
+        result = surface_fill_blend(surf, &sdlrect, color, blendargs);
     }
     else {
-        sdlrect.x = rect->x;
-        sdlrect.y = rect->y;
-        sdlrect.w = rect->w;
-        sdlrect.h = rect->h;
-
-        // clip the rect to be within the surface.
-        if (sdlrect.x + sdlrect.w <= 0 || sdlrect.y + sdlrect.h <= 0) {
-            sdlrect.w = 0;
-            sdlrect.h = 0;
-        }
-
-        if (sdlrect.x < 0) {
-            if (abs(sdlrect.w) > abs(sdlrect.x)) {
-                sdlrect.w += sdlrect.x;
-            }
-            sdlrect.x = 0;
-        }
-        if (sdlrect.y < 0) {
-            if (abs(sdlrect.h) > abs(sdlrect.y)) {
-                sdlrect.h += sdlrect.y;
-            }
-            sdlrect.y = 0;
-        }
-
-        if (sdlrect.x + sdlrect.w > surf->w) {
-            sdlrect.w = sdlrect.w + (surf->w - (sdlrect.x + sdlrect.w));
-        }
-        if (sdlrect.y + sdlrect.h > surf->h) {
-            sdlrect.h = sdlrect.h + (surf->h - (sdlrect.y + sdlrect.h));
-        }
-
-        if (sdlrect.w <= 0 || sdlrect.h <= 0) {
-            return pgRect_New(&sdlrect);
-        }
-
-        if (blendargs != 0) {
-            result = surface_fill_blend(surf, &sdlrect, color, blendargs);
-        }
-        else {
-            pgSurface_Prep(self);
-            pgSurface_Lock((pgSurfaceObject *)self);
-            result = SDL_FillRect(surf, &sdlrect, color);
-            pgSurface_Unlock((pgSurfaceObject *)self);
-            pgSurface_Unprep(self);
-        }
-        if (result == -1)
-            return RAISE(pgExc_SDLError, SDL_GetError());
+        pgSurface_Prep(self);
+        pgSurface_Lock((pgSurfaceObject *)self);
+        result = SDL_FillRect(surf, &sdlrect, color);
+        pgSurface_Unlock((pgSurfaceObject *)self);
+        pgSurface_Unprep(self);
     }
+    if (result == -1)
+        return RAISE(pgExc_SDLError, SDL_GetError());
+
     return pgRect_New(&sdlrect);
 }
 
