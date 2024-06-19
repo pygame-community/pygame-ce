@@ -4296,7 +4296,9 @@ class SurfaceFillTest(unittest.TestCase):
         width, height = screen.get_size()
         for row in range(height):
             for col in range(width):
-                assert screen.get_at((col, row)) == other_surface.get_at((col, row))
+                self.assertEqual(
+                    screen.get_at((col, row)), other_surface.get_at((col, row))
+                )
 
 
 if __name__ == "__main__":
