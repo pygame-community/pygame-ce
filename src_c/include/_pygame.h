@@ -413,6 +413,12 @@ typedef struct pgEventObject pgEventObject;
 
 #define pgEvent_GetKeyUpInfo (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 7))
 
+#define pgEvent_GetMouseButtonDownInfo \
+    (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 8))
+
+#define pgEvent_GetMouseButtonUpInfo \
+    (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 9))
+
 #define import_pygame_event() IMPORT_PYGAME_MODULE(event)
 #endif
 
@@ -511,6 +517,7 @@ typedef struct {
     PyObject_HEAD SDL_Window *_win;
     SDL_bool _is_borrowed;
     pgSurfaceObject *surf;
+    SDL_GLContext context;
 } pgWindowObject;
 
 #ifndef PYGAMEAPI_WINDOW_INTERNAL

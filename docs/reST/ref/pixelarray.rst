@@ -42,7 +42,7 @@
      if pxarray[0, 0] == surface.map_rgb((0, 0, 255)):
          ...
 
-   When assigning to a range of of pixels, a non tuple sequence of colors or
+   When assigning to a range of pixels, a non tuple sequence of colors or
    a PixelArray can be used as the value. For a sequence, the length must
    match the PixelArray width.
 
@@ -79,7 +79,7 @@
      pxarray[::2] = (0, 0, 0)                  # Same as [::2, :]
 
    During its lifetime, the PixelArray locks the surface, thus you explicitly
-   have to close() it once its not used any more and the surface should perform
+   have to close() it once it's not used any more and the surface should perform
    operations in the same scope. It is best to use it as a context manager
    using the with PixelArray(surf) as pixel_array: style. So it works on pypy too.
 

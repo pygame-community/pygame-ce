@@ -30,7 +30,7 @@ jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.5
+      - uses: actions/checkout@v4.1.7
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v4.1.5
+      - uses: actions/checkout@v4.1.7
 
       - name: Install deps
         run: python3 -m pip install pylint sphinx"<7.2.0"
@@ -50,10 +50,10 @@ jobs:
 
       - name: Check docs changes are checked in
         run: |
-          python3 setup.py docs
+          python3 buildconfig/make_docs.py
           if [[ `git status --porcelain` ]]; then
             echo "Generating docs caused changes. Please check them in."
-            echo "You may need to run: python3 setup.py docs --fullgeneration"
+            echo "You may need to run: python3 buildconfig/make_docs.py full_generation"
             # Run git status again, so people can see what changed.
             git status --porcelain
             exit 1

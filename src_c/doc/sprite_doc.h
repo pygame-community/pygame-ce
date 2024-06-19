@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_SPRITE "pygame module with basic game object classes"
 #define DOC_SPRITE_SPRITE "Sprite(*groups) -> Sprite\nSimple base class for visible game objects."
 #define DOC_SPRITE_SPRITE_UPDATE "update(*args, **kwargs) -> None\nmethod to control sprite behavior"
@@ -22,7 +22,7 @@
 #define DOC_SPRITE_RENDERUPDATES_DRAW "draw(surface) -> Rect_list\nblit the Sprite images and track changed areas"
 #define DOC_SPRITE_LAYEREDUPDATES "LayeredUpdates(*sprites, **kwargs) -> LayeredUpdates\nLayeredUpdates is a sprite group that handles layers and draws like RenderUpdates."
 #define DOC_SPRITE_LAYEREDUPDATES_ADD "add(*sprites, **kwargs) -> None\nadd a sprite or sequence of sprites to a group"
-#define DOC_SPRITE_LAYEREDUPDATES_SPRITES "sprites() -> sprites\nreturns a ordered list of sprites (first back, last top)."
+#define DOC_SPRITE_LAYEREDUPDATES_SPRITES "sprites() -> sprites\nreturns an ordered list of sprites (first back, last top)."
 #define DOC_SPRITE_LAYEREDUPDATES_DRAW "draw(surface) -> Rect_list\ndraw all sprites in the right order onto the passed surface."
 #define DOC_SPRITE_LAYEREDUPDATES_GETSPRITESAT "get_sprites_at(pos) -> colliding_sprites\nreturns a list with all sprites at that position."
 #define DOC_SPRITE_LAYEREDUPDATES_GETSPRITE "get_sprite(idx) -> sprite\nreturns the sprite at the index idx from the groups sprites"

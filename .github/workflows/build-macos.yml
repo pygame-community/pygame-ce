@@ -47,7 +47,7 @@ jobs:
           - { macarch: x86_64, os: macos-13 }
 
     steps:
-      - uses: actions/checkout@v4.1.5
+      - uses: actions/checkout@v4.1.7
 
       - name: Test for Mac Deps cache hit
         id: macdep-cache
@@ -152,8 +152,7 @@ jobs:
         bash ./install_mac_deps.sh
 
       CIBW_BEFORE_BUILD: |
-        pip install numpy Sphinx"<7.2.0"
-        python setup.py docs
+        pip install numpy
         cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
 
       # To remove any speculations about the wheel not being self-contained
@@ -165,7 +164,7 @@ jobs:
       CIBW_BUILD_VERBOSITY: 2
 
     steps:
-      - uses: actions/checkout@v4.1.5
+      - uses: actions/checkout@v4.1.7
 
       - name: pip cache
         uses: actions/cache@v4.0.2
@@ -182,7 +181,7 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.17.0
+        uses: pypa/cibuildwheel@v2.19.1
 
       - uses: actions/upload-artifact@v4
         with:

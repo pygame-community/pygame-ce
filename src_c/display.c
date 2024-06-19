@@ -196,7 +196,7 @@ pg_display_quit(PyObject *self, PyObject *_null)
 
     pg_mod_autoquit(IMPPREFIX "event");
     pg_mod_autoquit(IMPPREFIX "time");
-    pg_mod_autoquit(IMPPREFIX "_window");
+    pg_mod_autoquit(IMPPREFIX "window");
 
     if (SDL_WasInit(SDL_INIT_VIDEO)) {
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
@@ -284,18 +284,6 @@ pg_vidinfo_getattr(PyObject *self, char *name)
 {
     pg_VideoInfo *info = &((pgVidInfoObject *)self)->info;
 
-    int current_w = -1;
-    int current_h = -1;
-
-    SDL_version versioninfo;
-    SDL_VERSION(&versioninfo);
-
-    if (versioninfo.major > 1 ||
-        (versioninfo.minor >= 2 && versioninfo.patch >= 10)) {
-        current_w = info->current_w;
-        current_h = info->current_h;
-    }
-
     if (!strcmp(name, "hw"))
         return PyLong_FromLong(info->hw_available);
     else if (!strcmp(name, "wm"))
@@ -330,9 +318,9 @@ pg_vidinfo_getattr(PyObject *self, char *name)
         return Py_BuildValue("(iiii)", info->vfmt->Rloss, info->vfmt->Gloss,
                              info->vfmt->Bloss, info->vfmt->Aloss);
     else if (!strcmp(name, "current_h"))
-        return PyLong_FromLong(current_h);
+        return PyLong_FromLong(info->current_h);
     else if (!strcmp(name, "current_w"))
-        return PyLong_FromLong(current_w);
+        return PyLong_FromLong(info->current_w);
     else if (!strcmp(name, "pixel_format")) {
         const char *pixel_format_name =
             SDL_GetPixelFormatName(info->vfmt->format);
@@ -348,21 +336,10 @@ pg_vidinfo_getattr(PyObject *self, char *name)
 PyObject *
 pg_vidinfo_str(PyObject *self)
 {
-    int current_w = -1;
-    int current_h = -1;
     pg_VideoInfo *info = &((pgVidInfoObject *)self)->info;
     const char *pixel_format_name = SDL_GetPixelFormatName(info->vfmt->format);
     if (!strncmp(pixel_format_name, "SDL_", 4)) {
         pixel_format_name += 4;
-    }
-
-    SDL_version versioninfo;
-    SDL_VERSION(&versioninfo);
-
-    if (versioninfo.major > 1 ||
-        (versioninfo.minor >= 2 && versioninfo.patch >= 10)) {
-        current_w = info->current_w;
-        current_h = info->current_h;
     }
 
     return PyUnicode_FromFormat(
@@ -383,7 +360,7 @@ pg_vidinfo_str(PyObject *self)
         info->vfmt->Gmask, info->vfmt->Bmask, info->vfmt->Amask,
         info->vfmt->Rshift, info->vfmt->Gshift, info->vfmt->Bshift,
         info->vfmt->Ashift, info->vfmt->Rloss, info->vfmt->Gloss,
-        info->vfmt->Bloss, info->vfmt->Aloss, current_w, current_h,
+        info->vfmt->Bloss, info->vfmt->Aloss, info->current_w, info->current_h,
         pixel_format_name);
 }
 
@@ -1426,6 +1403,39 @@ pg_window_size(PyObject *self, PyObject *_null)
         return RAISE(pgExc_SDLError, "No open window");
     SDL_GetWindowSize(win, &w, &h);
     return pg_tuple_couple_from_values_int(w, h);
+}
+
+static PyObject *
+pg_get_window_position(PyObject *self, PyObject *_null)
+{
+    SDL_Window *win = pg_GetDefaultWindow();
+    int x, y = 0;
+    if (!win)
+        return RAISE(pgExc_SDLError, "No open window");
+    SDL_GetWindowPosition(win, &x, &y);
+    return pg_tuple_couple_from_values_int(x, y);
+}
+
+static PyObject *
+pg_set_window_position(PyObject *self, PyObject *arg)
+{
+    SDL_Window *win = pg_GetDefaultWindow();
+    PyObject *pos = NULL;
+    int x, y = 0;
+
+    if (!PyArg_ParseTuple(arg, "O", &pos))
+        return NULL;
+
+    if (pos != NULL) {
+        if (!pg_TwoIntsFromObj(pos, &x, &y))
+            return RAISE(PyExc_TypeError, "position must be two numbers");
+    }
+
+    if (win)
+        /* Will raise errors with SDL 3, deal with it during the porting */
+        SDL_SetWindowPosition(win, x, y);
+
+    Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -2689,10 +2699,10 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
                                "parent_window", "buttons", "return_button",
                                "escape_button", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(
-            arg, kwargs, "s|OsO!OiO", keywords, &title, &message, &msgbox_type,
-            &pgWindow_Type, &parent_window, &buttons, &return_button_index,
-            &escape_button_index_obj)) {
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "s|OsOOiO", keywords, &title,
+                                     &message, &msgbox_type, &parent_window,
+                                     &buttons, &return_button_index,
+                                     &escape_button_index_obj)) {
         return NULL;
     }
 
@@ -2729,10 +2739,15 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
     msgbox_data.flags |= SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT;
 #endif
 
-    if (parent_window == Py_None)
+    if (parent_window == Py_None) {
         msgbox_data.window = NULL;
-    else
+    }
+    else {
+        if (!pgWindow_Check(parent_window)) {
+            return RAISE(PyExc_TypeError, "'parent_window' must be a Window");
+        }
         msgbox_data.window = ((pgWindowObject *)parent_window)->_win;
+    }
 
     msgbox_data.colorScheme = NULL;  // use system color scheme settings
 
@@ -2883,6 +2898,10 @@ static PyMethodDef _pg_display_methods[] = {
      DOC_DISPLAY_GETSURFACE},
     {"get_window_size", (PyCFunction)pg_window_size, METH_NOARGS,
      DOC_DISPLAY_GETWINDOWSIZE},
+    {"set_window_position", pg_set_window_position, METH_VARARGS,
+     DOC_DISPLAY_SETWINDOWPOSITION},
+    {"get_window_position", (PyCFunction)pg_get_window_position, METH_NOARGS,
+     DOC_DISPLAY_GETWINDOWPOSITION},
 
     {"set_mode", (PyCFunction)pg_set_mode, METH_VARARGS | METH_KEYWORDS,
      DOC_DISPLAY_SETMODE},

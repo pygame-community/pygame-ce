@@ -95,6 +95,8 @@ static SDL_Event _pg_last_keydown_event = {0};
 /* Not used as text, acts as an array of bools */
 static char pressed_keys[SDL_NUM_SCANCODES] = {0};
 static char released_keys[SDL_NUM_SCANCODES] = {0};
+static char pressed_mouse_buttons[5] = {0};
+static char released_mouse_buttons[5] = {0};
 
 #ifdef __EMSCRIPTEN__
 /* these macros are no-op here */
@@ -424,7 +426,7 @@ _pg_translate_windowevent(void *_, SDL_Event *event)
 {
     if (event->type == SDL_WINDOWEVENT) {
         event->type = PGE_WINDOWSHOWN + event->window.event - 1;
-        return SDL_EventState(_pg_pgevent_proxify(event->type), SDL_QUERY);
+        return PG_EventEnabled(_pg_pgevent_proxify(event->type));
     }
     return 1;
 }
@@ -539,6 +541,14 @@ pg_event_filter(void *_, SDL_Event *event)
 
     else if (event->type == SDL_MOUSEBUTTONDOWN ||
              event->type == SDL_MOUSEBUTTONUP) {
+        if (event->type == SDL_MOUSEBUTTONDOWN &&
+            event->button.button - 1 < 5) {
+            pressed_mouse_buttons[event->button.button - 1] = 1;
+        }
+        else if (event->type == SDL_MOUSEBUTTONUP &&
+                 event->button.button - 1 < 5) {
+            released_mouse_buttons[event->button.button - 1] = 1;
+        }
         if (event->button.button & PGM_BUTTON_KEEP)
             event->button.button ^= PGM_BUTTON_KEEP;
         else if (event->button.button >= PGM_BUTTON_WHEELUP)
@@ -589,7 +599,7 @@ pg_event_filter(void *_, SDL_Event *event)
             return RAISE(pgExc_SDLError, SDL_GetError()), 0;
         */
     }
-    return SDL_EventState(_pg_pgevent_proxify(event->type), SDL_QUERY);
+    return PG_EventEnabled(_pg_pgevent_proxify(event->type));
 }
 
 /* The two keyrepeat functions below modify state accessed by the event filter,
@@ -1249,7 +1259,7 @@ dict_from_event(SDL_Event *event)
             break;
 #endif /* (defined(unix) || ... */
     } /* switch (event->type) */
-    /* Events that dont have any attributes are not handled in switch
+    /* Events that don't have any attributes are not handled in switch
      * statement */
     SDL_Window *window;
     switch (event->type) {
@@ -1602,6 +1612,8 @@ _pg_event_pump(int dopump)
          * pygame.event.get(), but not on pygame.event.get(pump=False). */
         memset(pressed_keys, 0, sizeof(pressed_keys));
         memset(released_keys, 0, sizeof(released_keys));
+        memset(pressed_mouse_buttons, 0, sizeof(pressed_mouse_buttons));
+        memset(released_mouse_buttons, 0, sizeof(released_mouse_buttons));
 
         SDL_PumpEvents();
     }
@@ -1795,6 +1807,18 @@ char *
 pgEvent_GetKeyUpInfo(void)
 {
     return released_keys;
+}
+
+char *
+pgEvent_GetMouseButtonDownInfo(void)
+{
+    return pressed_mouse_buttons;
+}
+
+char *
+pgEvent_GetMouseButtonUpInfo(void)
+{
+    return released_mouse_buttons;
 }
 
 static PyObject *
@@ -2118,7 +2142,7 @@ pg_event_set_allowed(PyObject *self, PyObject *obj)
     if (obj == Py_None) {
         int i;
         for (i = SDL_FIRSTEVENT; i < SDL_LASTEVENT; i++) {
-            SDL_EventState(i, SDL_ENABLE);
+            PG_SetEventEnabled(i, SDL_TRUE);
         }
     }
     else {
@@ -2132,7 +2156,7 @@ pg_event_set_allowed(PyObject *self, PyObject *obj)
                 Py_DECREF(seq);
                 return NULL;
             }
-            SDL_EventState(_pg_pgevent_proxify(type), SDL_ENABLE);
+            PG_SetEventEnabled(_pg_pgevent_proxify(type), SDL_TRUE);
         }
         Py_DECREF(seq);
     }
@@ -2151,7 +2175,7 @@ pg_event_set_blocked(PyObject *self, PyObject *obj)
         int i;
         /* Start at PGPOST_EVENTBEGIN */
         for (i = PGPOST_EVENTBEGIN; i < SDL_LASTEVENT; i++) {
-            SDL_EventState(i, SDL_IGNORE);
+            PG_SetEventEnabled(i, SDL_FALSE);
         }
     }
     else {
@@ -2165,14 +2189,14 @@ pg_event_set_blocked(PyObject *self, PyObject *obj)
                 Py_DECREF(seq);
                 return NULL;
             }
-            SDL_EventState(_pg_pgevent_proxify(type), SDL_IGNORE);
+            PG_SetEventEnabled(_pg_pgevent_proxify(type), SDL_FALSE);
         }
         Py_DECREF(seq);
     }
     /* Never block SDL_WINDOWEVENT, we need them for translation */
-    SDL_EventState(SDL_WINDOWEVENT, SDL_ENABLE);
+    PG_SetEventEnabled(SDL_WINDOWEVENT, SDL_TRUE);
     /* Never block PGE_KEYREPEAT too, its needed for pygame internal use */
-    SDL_EventState(PGE_KEYREPEAT, SDL_ENABLE);
+    PG_SetEventEnabled(PGE_KEYREPEAT, SDL_TRUE);
     Py_RETURN_NONE;
 }
 
@@ -2195,8 +2219,7 @@ pg_event_get_blocked(PyObject *self, PyObject *obj)
             Py_DECREF(seq);
             return NULL;
         }
-        if (SDL_EventState(_pg_pgevent_proxify(type), SDL_QUERY) ==
-            SDL_IGNORE) {
+        if (PG_EventEnabled(_pg_pgevent_proxify(type)) == SDL_FALSE) {
             isblocked = 1;
             break;
         }
@@ -2303,7 +2326,7 @@ MODINIT_DEFINE(event)
     }
 
     /* export the c api */
-    assert(PYGAMEAPI_EVENT_NUMSLOTS == 8);
+    assert(PYGAMEAPI_EVENT_NUMSLOTS == 10);
     c_api[0] = &pgEvent_Type;
     c_api[1] = pgEvent_New;
     c_api[2] = pg_post_event;
@@ -2312,6 +2335,8 @@ MODINIT_DEFINE(event)
     c_api[5] = pg_GetKeyRepeat;
     c_api[6] = pgEvent_GetKeyDownInfo;
     c_api[7] = pgEvent_GetKeyUpInfo;
+    c_api[8] = pgEvent_GetMouseButtonDownInfo;
+    c_api[9] = pgEvent_GetMouseButtonUpInfo;
 
     apiobj = encapsulate_api(c_api, "event");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {

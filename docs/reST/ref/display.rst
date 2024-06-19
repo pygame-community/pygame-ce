@@ -724,6 +724,31 @@ required).
 
    .. ## pygame.display.get_window_size ##
 
+.. function:: get_window_position
+
+   | :sl:`Return the position of the window or screen`
+   | :sg:`get_window_position() -> tuple`
+
+   Returns the position of the window initialized with :func:`pygame.display.set_mode()`.
+   The position will change when the user moves the window or when the position is set manually with :func:`pygame.display.set_window_position()`.
+   Coordinates could be negative or outside the desktop size bounds.
+   The position is relative to the topleft of the primary monitor and the y coordinate ignores the window frame.
+
+   .. ## pygame.display.get_window_position ##
+
+.. function:: set_window_position
+
+   | :sl:`Set the current window position`
+   | :sg:`set_window_position((x, y)) -> None`
+
+   Sets the position of the window initialized with :func:`pygame.display.set_mode()`.
+   This differs from updating environment variables as this function can be called after the display has been initialised.
+   The position is expected to be relative to the topleft of the primary monitor.
+   The y coordinate will ignore the window frame (y = 0 means the frame is hidden).
+   The user will still be able to move the window after this call. See also :func:`pygame.display.get_window_position()`.
+
+   .. ## pygame.display.set_window_position ##
+
 .. function:: get_allow_screensaver
 
    | :sl:`Return whether the screensaver is allowed to run.`
@@ -825,13 +850,10 @@ required).
    :param str title: A title string.
    :param str message: A message string. If this parameter is set to ``None``, the message will be the title.
    :param str message_type: Set the type of message_box, could be ``"info"``, ``"warn"`` or ``"error"``.
+   :param Window parent_window: The parent window of the message box.
    :param tuple buttons: An optional sequence of button name strings to show to the user.
    :param int return_button: Button index to use if the return key is hit, ``0`` by default.
    :param int escape_button: Button index to use if the escape key is hit, ``None`` for no button linked by default.
-..
-   (Uncomment this after the window API is published)
-   :param Window parent_window: The parent window of the message_box
-..
 
    :return: The index of the button that was pushed.
 

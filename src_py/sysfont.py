@@ -29,11 +29,6 @@ from pygame.base import warn
 from pygame.font import Font
 from pygame import __file__ as pygame_main_file
 
-if sys.platform != "emscripten":
-    if os.name == "nt":
-        import winreg as _winreg
-    import subprocess
-
 
 OpenType_extensions = frozenset((".ttf", ".ttc", ".otf"))
 Sysfonts = {}
@@ -57,6 +52,7 @@ def _addfont(name, bold, italic, font, fontdict):
 
 def initsysfonts_win32():
     """initialize fonts dictionary on Windows"""
+    import winreg as _winreg
 
     fontdir = join(os.environ.get("WINDIR", "C:\\Windows"), "Fonts")
     fonts = {}
@@ -189,7 +185,7 @@ def _font_finder_darwin():
 
 def initsysfonts_darwin():
     """Read the fonts on macOS, and OS X."""
-    # if the X11 binary exists... try and use that.
+    # if the X11 binary exists... try to use that.
     #  Not likely to be there on pre 10.4.x ... or macOS 10.10+
     if exists("/usr/X11/bin/fc-list"):
         fonts = initsysfonts_unix("/usr/X11/bin/fc-list")
@@ -211,6 +207,8 @@ def initsysfonts_unix(path="fc-list"):
 
     if sys.platform == "emscripten":
         return fonts
+
+    import subprocess
 
     try:
         proc = subprocess.run(

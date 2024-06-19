@@ -41,7 +41,7 @@ init(PyObject *self, PyObject *_null)
     if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
         if (SDL_InitSubSystem(SDL_INIT_JOYSTICK))
             return RAISE(pgExc_SDLError, SDL_GetError());
-        SDL_JoystickEventState(SDL_ENABLE);
+        PG_SetJoystickEventsEnabled(SDL_TRUE);
     }
     Py_RETURN_NONE;
 }
@@ -60,7 +60,7 @@ quit(PyObject *self, PyObject *_null)
     }
 
     if (SDL_WasInit(SDL_INIT_JOYSTICK)) {
-        SDL_JoystickEventState(SDL_ENABLE);
+        PG_SetJoystickEventsEnabled(SDL_TRUE);
         SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
     }
     Py_RETURN_NONE;

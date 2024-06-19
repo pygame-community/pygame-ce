@@ -101,6 +101,11 @@ PG_UnlockMutex(SDL_mutex *mutex)
 /* Mask to test if surface flags are in a fullscreen window. */
 #define PG_WINDOW_FULLSCREEN_INCLUSIVE SDL_WINDOW_FULLSCREEN
 
+#define PG_SetEventEnabled(type, enabled) SDL_SetEventEnabled(type, enabled)
+#define PG_EventEnabled(type) SDL_EventEnabled(type)
+#define PG_SetJoystickEventsEnabled(enabled) \
+    SDL_SetJoystickEventsEnabled(enabled)
+
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
 #define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
@@ -155,6 +160,13 @@ PG_UnlockMutex(SDL_mutex *mutex)
  * SDL_WINDOW_FULLSCREEN. */
 #define PG_WINDOW_FULLSCREEN_INCLUSIVE SDL_WINDOW_FULLSCREEN_DESKTOP
 
+/* SDL_EventState is meant to take SDL_IGNORE or SDL_ENABLE, but it also
+ * works identically with SDL_FALSE and SDL_TRUE, because they evaluate to
+ * the same values, respectively. */
+#define PG_SetEventEnabled(type, enabled) SDL_EventState(type, enabled)
+#define PG_EventEnabled(type) SDL_EventState(type, SDL_QUERY)
+#define PG_SetJoystickEventsEnabled(enabled) SDL_JoystickEventState(enabled)
+
 #if SDL_VERSION_ATLEAST(2, 0, 14)
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
 #else
@@ -190,8 +202,11 @@ struct SDL_BlitMap {
 };
 #define SDL_COPY_RLE_DESIRED 0x00001000
 
-SDL_bool
-PG_SurfaceHasRLE(SDL_Surface *surface);
+#define PG_SurfaceHasRLE(surface) \
+    (((surface) == NULL)          \
+         ? 0                      \
+         : ((surface)->map->info.flags & SDL_COPY_RLE_DESIRED))
+
 #endif
 
 #endif
@@ -280,7 +295,7 @@ typedef enum {
      *
      * At a first glance, these may look redundant, but they are really
      * important, especially with event blocking. If proxy events are
-     * not there, blocked events dont make it to our event filter, and
+     * not there, blocked events don't make it to our event filter, and
      * that can break a lot of stuff.
      *
      * IMPORTANT NOTE: Do not post events directly with these proxy types,
@@ -533,7 +548,7 @@ typedef enum {
 #define PYGAMEAPI_COLOR_NUMSLOTS 5
 #define PYGAMEAPI_MATH_NUMSLOTS 2
 #define PYGAMEAPI_BASE_NUMSLOTS 30
-#define PYGAMEAPI_EVENT_NUMSLOTS 8
+#define PYGAMEAPI_EVENT_NUMSLOTS 10
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1
 #define PYGAMEAPI_GEOMETRY_NUMSLOTS 1
 
