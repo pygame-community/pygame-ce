@@ -4280,13 +4280,17 @@ class SurfaceFillTest(unittest.TestCase):
         negative_both = pygame.Rect(-10, -10, 20, 20)
         negative_both_drawn = pygame.Rect(0, 0, 10, 10)
 
-        screen.fill("red", negative_x_rect)
-        screen.fill("blue", negative_y_rect)
-        screen.fill("green", negative_both)
+        red_rect_1 = screen.fill("red", negative_x_rect)
+        blue_rect_1 = screen.fill("blue", negative_y_rect)
+        green_rect_1 = screen.fill("green", negative_both)
 
-        other_surface.fill("red", negative_x_rect_drawn)
-        other_surface.fill("blue", negative_y_rect_drawn)
-        other_surface.fill("green", negative_both_drawn)
+        red_rect_2 = other_surface.fill("red", negative_x_rect_drawn)
+        blue_rect_2 = other_surface.fill("blue", negative_y_rect_drawn)
+        green_rect_2 = other_surface.fill("green", negative_both_drawn)
+
+        self.assertEqual(red_rect_1, red_rect_2)
+        self.assertEqual(blue_rect_1, blue_rect_2)
+        self.assertEqual(green_rect_1, green_rect_2)
 
         # verify both have the same pixels
         width, height = screen.get_size()
