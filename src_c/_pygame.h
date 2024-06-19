@@ -101,6 +101,11 @@ PG_UnlockMutex(SDL_mutex *mutex)
 /* Mask to test if surface flags are in a fullscreen window. */
 #define PG_WINDOW_FULLSCREEN_INCLUSIVE SDL_WINDOW_FULLSCREEN
 
+#define PG_SetEventEnabled(type, enabled) SDL_SetEventEnabled(type, enabled)
+#define PG_EventEnabled(type) SDL_EventEnabled(type)
+#define PG_SetJoystickEventsEnabled(enabled) \
+    SDL_SetJoystickEventsEnabled(enabled)
+
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
 #define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
@@ -154,6 +159,13 @@ PG_UnlockMutex(SDL_mutex *mutex)
  * SDL_WINDOW_FULLSCREEN_DESKTOP works here because it also contains
  * SDL_WINDOW_FULLSCREEN. */
 #define PG_WINDOW_FULLSCREEN_INCLUSIVE SDL_WINDOW_FULLSCREEN_DESKTOP
+
+/* SDL_EventState is meant to take SDL_IGNORE or SDL_ENABLE, but it also
+ * works identically with SDL_FALSE and SDL_TRUE, because they evaluate to
+ * the same values, respectively. */
+#define PG_SetEventEnabled(type, enabled) SDL_EventState(type, enabled)
+#define PG_EventEnabled(type) SDL_EventState(type, SDL_QUERY)
+#define PG_SetJoystickEventsEnabled(enabled) SDL_JoystickEventState(enabled)
 
 #if SDL_VERSION_ATLEAST(2, 0, 14)
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
