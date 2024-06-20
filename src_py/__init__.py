@@ -100,7 +100,19 @@ del warn
 
 def warn(message, urgency, level=2, category=RuntimeWarning):  # pylint: disable=function-redefined
     """Throws a warning with a given urgency"""
-    _warn(message, category, level + 1, urgency)
+    names = {0: "urgent", 1: "mild", 2: "note"}
+
+    if urgency in names:
+        note = f"{urgency}: {names[urgency]}"
+    else:
+        note = str(urgency)
+
+    _warn(
+        f"{message} ({note})",
+        category,
+        level + 1,
+        urgency,
+    )
 
 
 from pygame.rect import Rect, FRect
