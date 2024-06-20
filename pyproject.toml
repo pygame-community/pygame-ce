@@ -60,6 +60,14 @@ install = ['--tags=runtime,python-runtime,pg-tag']
 # uncomment to get werror locally
 # setup = ["-Derror_on_warns=true"]
 
+[tool.cibuildwheel]
+build = "cp3{8,9,10,11,12}-* pp3{8,9,10}-*"
+skip = "*-musllinux_*"
+build-verbosity = 3
+
+environment = { SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="disk" }
+test-command = "python -m pygame.tests -v --exclude opengl,music,timing --time_out 300"
+
 [tool.cibuildwheel.config-settings]
 setup-args = [
     "-Derror_on_warns=true",
