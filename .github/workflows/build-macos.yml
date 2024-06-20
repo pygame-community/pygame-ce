@@ -132,6 +132,9 @@ jobs:
           key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}
           fail-on-cache-miss: true
 
+      - name: Install uv for speed
+        uses: yezz123/setup-uv@v4
+
       - name: Build and test wheels
         uses: pypa/cibuildwheel@v2.19.2
 
