@@ -91,6 +91,8 @@ if sys.platform in ("wasi", "emscripten"):
 
 # first, the "required" modules
 from pygame.base import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
+from pygame.constants import *  # now has __all__ pylint: disable=wildcard-import; lgtm[py/polluting-import]
+from pygame.version import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
 
 _warn = warn
 del warn
@@ -101,10 +103,6 @@ def warn(message, urgency, level=2, category=RuntimeWarning):  # pylint: disable
     _warn(message, category, level + 1, urgency)
 
 
-warn = warn
-
-from pygame.constants import *  # now has __all__ pylint: disable=wildcard-import; lgtm[py/polluting-import]
-from pygame.version import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.rect import Rect, FRect
 from pygame.rwobject import encode_string, encode_file_path
 import pygame.surflock

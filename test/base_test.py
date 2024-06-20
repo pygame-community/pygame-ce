@@ -613,6 +613,42 @@ class BaseModuleTest(unittest.TestCase):
 
         self.assertFalse(pygame.get_init())
 
+    def test_get_set_warnings_filter(self):
+        filters = [-1, 0, 1, 2]
+        for num in filters:
+            pygame.set_warnings_filter(num)
+            self.assertEqual(num, pygame.get_warnings_filter())
+
+    def _warn(self, message, urgency):
+        pygame.warn(message, urgency)
+
+    def test_warn(self):
+        # For pygame.warn
+        pygame.set_warnings_filter(1)
+        with self.assertWarns(RuntimeWarning) as cx:
+            self._warn("message", 0)
+            self.assertEqual(len(cx.warnings), 1)
+            warning = cx.warnings[0]
+            self.assertEqual(str(warning.message), "message")
+            self.assertIn("base_test.py", warning.filename)
+
+        with self.assertWarns(RuntimeWarning) as cx:
+            pygame.warn("message", 0, level=1)
+            self.assertEqual(len(cx.warnings), 1)
+            self.assertIn("base_test.py", cx.warnings[0].filename)
+
+        with self.assertWarns(DeprecationWarning):
+            pygame.warn("message2", 1, category=DeprecationWarning)
+
+        with self.assertRaises(self.failureException):
+            with self.assertWarns(Warning):
+                pygame.warn("message3", 2)
+
+        with self.assertRaises(self.failureException):
+            pygame.set_warnings_filter(-1)
+            with self.assertWarns(RuntimeWarning):
+                pygame.warn("message4", 0)
+
 
 if __name__ == "__main__":
     unittest.main()
