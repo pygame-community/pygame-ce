@@ -7,6 +7,8 @@ from collections.abc import Collection, Sequence
 import pygame
 from pygame.colordict import THECOLORS
 
+pygame.set_warnings_filter(2)
+
 IS_PYPY = "PyPy" == platform.python_implementation()
 ################################### CONSTANTS ##################################
 

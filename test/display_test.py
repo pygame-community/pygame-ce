@@ -9,6 +9,8 @@ from pygame.tests.test_utils import question
 
 from pygame import display
 
+pygame.set_warnings_filter(2)
+
 
 class DisplayModuleTest(unittest.TestCase):
     default_caption = "pygame window"

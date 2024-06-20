@@ -18,6 +18,8 @@ if _sdl_image_ver is not None:
         _sdl_image_ver <= (2, 0, 5) and pygame.get_sdl_byteorder() == pygame.BIG_ENDIAN
     )
 
+pygame.set_warnings_filter(2)
+
 
 def check_magic(f, magic_hexes):
     """Tests a given file to see if the magic hex matches."""
