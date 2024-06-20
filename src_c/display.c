@@ -902,7 +902,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     if (state->scaled_gl) {
         if (pgWarn(PyExc_FutureWarning,
                    "SCALED|OPENGL is experimental and subject to change", 1,
-                   0) != 0)
+                   2) != 0)
             return NULL;
     }
 
@@ -1251,7 +1251,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                     }
                     if (!(info.flags & SDL_RENDERER_ACCELERATED)) {
                         if (pgWarn(PyExc_Warning, "no fast renderer available",
-                                   1, 0) != 0) {
+                                   1, 2) != 0) {
                             _display_state_cleanup(state);
                             goto DESTROY_WINDOW;
                         }
@@ -1851,7 +1851,7 @@ pg_set_gamma(PyObject *self, PyObject *arg)
 {
     if (pgWarn(PyExc_DeprecationWarning,
                "pygame.display.set_gamma deprecated since 2.1.4", 1,
-               0) == -1) {
+               1) == -1) {
         return NULL;
     }
 
@@ -1943,7 +1943,7 @@ pg_set_gamma_ramp(PyObject *self, PyObject *arg)
 {
     if (pgWarn(PyExc_DeprecationWarning,
                "pygame.display.set_gamma_ramp deprecated since 2.1.4", 1,
-               0) == -1) {
+               1) == -1) {
         return NULL;
     }
 
@@ -2422,7 +2422,7 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
             int wx = SDL_WINDOWPOS_UNDEFINED_DISPLAY(window_display);
             int wy = SDL_WINDOWPOS_UNDEFINED_DISPLAY(window_display);
             if (pgWarn(PyExc_Warning,
-                       "re-creating window in toggle_fullscreen", 1, 0) != 0) {
+                       "re-creating window in toggle_fullscreen", 1, 2) != 0) {
                 return NULL;
             }
             flags &= ~SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -2488,7 +2488,7 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
                 wm_info.subsystem == SDL_SYSWM_X11) {
                 if (pgWarn(PyExc_Warning,
                            "recreating software renderer in toggle_fullscreen",
-                           1, 0) != 0) {
+                           1, 2) != 0) {
                     return NULL;
                 }
                 /* display surface lost? only on x11? */
@@ -2570,7 +2570,7 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
                 pg_SetDefaultWindow(win);
                 if (pgWarn(PyExc_Warning,
                            "re-creating window in toggle_fullscreen", 1,
-                           0) != 0) {
+                           2) != 0) {
                     return NULL;
                 }
                 return PyLong_FromLong(-1);

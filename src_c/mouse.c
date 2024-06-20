@@ -437,7 +437,7 @@ mouse_set_system_cursor(PyObject *self, PyObject *args)
                "set_cursor() now has all the functionality of "
                "set_system_cursor(), so set_system_cursor() will be "
                "deprecated in pygame 2.2",
-               1, 0) == -1) {
+               1, 1) == -1) {
         return NULL;
     }
 

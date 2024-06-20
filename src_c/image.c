@@ -1234,7 +1234,7 @@ PyObject *
 image_tostring(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     if (pgWarn(PyExc_DeprecationWarning,
-               "pygame.image.tostring deprecated since 2.3.0", 1, 0) == -1) {
+               "pygame.image.tostring deprecated since 2.3.0", 1, 1) == -1) {
         return NULL;
     }
 
@@ -1245,7 +1245,7 @@ PyObject *
 image_fromstring(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
     if (pgWarn(PyExc_DeprecationWarning,
-               "pygame.image.fromstring deprecated since 2.3.0", 1, 0) == -1) {
+               "pygame.image.fromstring deprecated since 2.3.0", 1, 1) == -1) {
         return NULL;
     }
 

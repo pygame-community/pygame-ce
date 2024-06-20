@@ -1006,7 +1006,7 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
                "Please use Window.get_surface and Window.flip to use "
                "surface-rendering with Window. This method will be "
                "removed in a future version.",
-               1, 0) == -1) {
+               1, 1) == -1) {
         return NULL;
     }
 

@@ -131,7 +131,7 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
                 PyExc_DeprecationWarning,
                 "blend argument is deprecated and has no functionality and "
                 "will be completely removed in a future version of pygame-ce",
-                1, 0) == -1) {
+                1, 1) == -1) {
             return NULL;
         }
     }
@@ -277,7 +277,7 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
                 PyExc_DeprecationWarning,
                 "blend argument is deprecated and has no functionality and "
                 "will be completely removed in a future version of pygame-ce",
-                1, 0) == -1) {
+                1, 1) == -1) {
             return NULL;
         }
     }
