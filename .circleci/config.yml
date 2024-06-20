@@ -28,14 +28,9 @@ jobs:
 
     environment:
       # these environment variables will be passed to the docker container
-      - CIBW_ENVIRONMENT: SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
-      - CIBW_BUILD: "cp3{8,9,10,11,12}-* pp3{8,9,10}-*"
       - CIBW_ARCHS: aarch64
-      - CIBW_SKIP: '*-musllinux_*'
       - CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014_base_aarch64
       - CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: manylinux2014_base_aarch64
-      - CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,music,timing --time_out 300
-      - CIBW_BUILD_VERBOSITY: 2
 
     steps:
       - checkout
