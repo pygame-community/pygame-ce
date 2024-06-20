@@ -3652,7 +3652,7 @@ class DrawAALinesTest(AALinesMixin, DrawTestCase):
         Draws two lines, and checks if 2 pixels, at shared point between those
         two lines, are too bright.
 
-        See: #2912
+        See: https://github.com/pygame-community/pygame-ce/pull/2912
         """
         line_color = (150, 150, 150)
         max_expected_colors = ((70, 70, 70), (100, 100, 100))
@@ -3675,7 +3675,7 @@ class DrawAALinesTest(AALinesMixin, DrawTestCase):
         Draws two adjacent lines: first is not steep and second is, then
         checks if there is missing pixel at shared point between those two lines.
 
-        See: #2912
+        See: https://github.com/pygame-community/pygame-ce/pull/2912
         """
         line_color = (150, 150, 150)
         min_expected_color = (40, 40, 40)
