@@ -55,6 +55,14 @@ jobs:
         id: ver
         run: echo "VER=${GITHUB_REF_NAME#'release/'}" >> $GITHUB_OUTPUT
 
+      # First generate release.sha512sum which contains hashes of all release files, then
+      # encrypt these hashes so that the hash file itself cannot be tampered with.
+      - name: Generate release hashes (encrypted)
+        run: |
+          cd pygame-wheels
+          sha512sum * > release.sha512sum
+          gpg --batch --output release.sha512sum.gpg --passphrase ${{ secrets.GITHUB_TOKEN }} --symmetric release.sha512sum
+
       - name: Draft a release
         uses: softprops/action-gh-release@v2
         with:
