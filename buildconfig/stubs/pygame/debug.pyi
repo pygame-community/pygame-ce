@@ -74,7 +74,6 @@ from .base import (
     register_quit as register_quit,
     set_error as set_error,
     set_warnings_filter as set_warnings_filter,
-    warn as warn,
 )
 
 from .rwobject import (
