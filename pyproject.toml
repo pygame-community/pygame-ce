@@ -74,6 +74,7 @@ skip = "*-musllinux_*"
 
 environment = { SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="disk" }
 test-command = "python -m pygame.tests -v --exclude opengl,music,timing --time_out 300"
+test-requires = ["numpy"]
 
 [tool.cibuildwheel.config-settings]
 setup-args = [
@@ -91,3 +92,17 @@ exclude = [
 
 [tool.ruff.format]
 quote-style = "preserve"
+
+# numpy is a test dependency, but we build for systems that numpy doesn't have
+# binary wheels for. In such cases, we do not want to waste CI time building
+# numpy from source. So, we are gonna force numpy to be "only-binary" and skip
+# numpy on platforms that it doesn't have wheels for
+[tool.uv.pip]
+only-binary = ["numpy"]
+
+# 1. skip all 32-bit manylinux (i686) 
+# 2. skip all pypy+arm combinations
+# 3. skip all pypy 310 because it is so new numpy does not have wheels for it
+[[tool.cibuildwheel.overrides]]
+select = "{*-manylinux_i686,pp*-*{arm64,aarch64},pp310-*}"
+test-requires = []
