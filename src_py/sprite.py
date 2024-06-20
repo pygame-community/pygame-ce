@@ -657,9 +657,8 @@ class RenderPlain(Group):
         super().__init__(*sprites)
         pygame.warn(
             "This class is deprecated and will be removed in a future version.",
-            DeprecationWarning,
-            2,
-            1,
+            urgency=1,
+            category=DeprecationWarning,
         )
 
 
@@ -668,9 +667,8 @@ class RenderClear(Group):
         super().__init__(*sprites)
         pygame.warn(
             "This class is deprecated and will be removed in a future version.",
-            DeprecationWarning,
-            2,
-            1,
+            urgency=1,
+            categry=DeprecationWarning,
         )
 
 
@@ -711,9 +709,8 @@ class OrderedUpdates(RenderUpdates):
             "OrderedUpdates is now just an alias to RenderUpdates, order of "
             "sprites is now maintained in all sprite Group classes. This "
             "class is deprecated and will be removed in a future version.",
-            DeprecationWarning,
-            2,
-            1,
+            urgency=1,
+            category=DeprecationWarning,
         )
 
 
@@ -1349,9 +1346,8 @@ class LayeredDirty(LayeredUpdates):
         """
         pygame.warn(
             "This function will be removed, use set_timing_threshold function instead",
-            DeprecationWarning,
-            2,
-            1,
+            urgency=1,
+            category=DeprecationWarning,
         )
         self.set_timing_threshold(time_ms)
 

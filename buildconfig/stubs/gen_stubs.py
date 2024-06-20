@@ -1,6 +1,6 @@
 """
 buildconfig/stubs/gen_stubs.py
-A script to auto-generate locals.pyi, constants.pyi and __init__.pyi typestubs
+A script to auto-generate locals.pyi, constants.pyi, debug.pyi and __init__.pyi typestubs
 """
 
 import pathlib
@@ -105,7 +105,10 @@ for k in PG_STAR_IMPORTS:
         pygame_all_imports[f".{k}"] = val
 
 # misc stubs that must be added to __init__.pyi
-misc_stubs = """"""
+misc_stubs = """from typing import Type
+
+def warn(message: str, urgency: int, level: int = 2, category: Type[Warning] = RuntimeWarning): ...
+"""
 
 # write constants.pyi file
 constants_file = pathlib.Path(__file__).parent / "pygame" / "constants.pyi"
@@ -141,6 +144,11 @@ with open(init_file, "w") as f:
         for item in items:
             f.write(f"    {item} as {item},\n")
         f.write(")\n")
+
+# write debug.pyi file
+debug_file = pathlib.Path(__file__).parent / "pygame" / "debug.pyi"
+with open(init_file, "r") as i, open(debug_file, "w") as f:
+    f.write(i.read())
 
 # write locals.pyi file
 locals_file = pathlib.Path(__file__).parent / "pygame" / "locals.pyi"

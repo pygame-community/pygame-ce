@@ -99,9 +99,8 @@ def use_arraytype(arraytype):
         "only numpy arrays are now supported, "
         "this function will be removed in a "
         "future version of the module",
-        DeprecationWarning,
-        2,
-        1,
+        urgency=1,
+        category=DeprecationWarning,
     )
     arraytype = arraytype.lower()
     if arraytype != "numpy":
@@ -117,9 +116,8 @@ def get_arraytype():
         "only numpy arrays are now supported, "
         "this function will be removed in a "
         "future version of the module",
-        DeprecationWarning,
-        2,
-        0,
+        urgency=1,
+        category=DeprecationWarning,
     )
     return "numpy"
 
@@ -133,8 +131,7 @@ def get_arraytypes():
         "only numpy arrays are now supported, "
         "this function will be removed in a "
         "future version of the module",
-        DeprecationWarning,
-        2,
-        1,
+        urgency=1,
+        category=DeprecationWarning,
     )
     return ("numpy",)

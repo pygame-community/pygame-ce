@@ -37,12 +37,14 @@ to as 3D arrays, and the last index is 0 for red, 1 for green, and 2 for
 blue.
 """
 
+from pygame import warn
 from pygame.pixelcopy import (
     array_to_surface,
     surface_to_array,
     map_array as pix_map_array,
     make_surface as pix_make_surface,
 )
+
 import numpy
 from numpy import (
     array as numpy_array,
@@ -50,8 +52,6 @@ from numpy import (
     uint32 as numpy_uint32,
     ndarray as numpy_ndarray,
 )
-
-from pygame.base import warn
 
 # float96 not available on all numpy versions.
 numpy_floats = [
@@ -408,9 +408,8 @@ def use_arraytype(arraytype):
         "only numpy arrays are now supported, "
         "this function will be removed in a "
         "future version of the module",
-        DeprecationWarning,
-        2,
-        1,
+        urgency=1,
+        category=DeprecationWarning,
     )
     arraytype = arraytype.lower()
     if arraytype != "numpy":
@@ -426,9 +425,8 @@ def get_arraytype():
         "only numpy arrays are now supported, "
         "this function will be removed in a "
         "future version of the module",
-        DeprecationWarning,
-        2,
-        1,
+        urgency=1,
+        category=DeprecationWarning,
     )
     return "numpy"
 
@@ -442,8 +440,7 @@ def get_arraytypes():
         "only numpy arrays are now supported, "
         "this function will be removed in a "
         "future version of the module",
-        DeprecationWarning,
-        2,
-        1,
+        urgency=1,
+        category=DeprecationWarning,
     )
     return ("numpy",)

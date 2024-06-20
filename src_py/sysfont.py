@@ -25,7 +25,7 @@ import itertools
 import difflib
 from os.path import basename, dirname, exists, join, splitext
 
-from pygame.base import warn
+from pygame import warn
 from pygame.font import Font
 from pygame import __file__ as pygame_main_file
 
@@ -222,27 +222,21 @@ def initsysfonts_unix(path="fc-list"):
     except FileNotFoundError:
         warn(
             f"'{path}' is missing, system fonts cannot be loaded on your platform",
-            RuntimeWarning,
-            2,
-            0,
+            urgency=0,
         )
 
     except subprocess.TimeoutExpired:
         warn(
             f"Process running '{path}' timed-out! System fonts cannot be loaded on "
             "your platform",
-            RuntimeWarning,
-            2,
-            0,
+            urgency=0,
         )
 
     except subprocess.CalledProcessError as e:
         warn(
             f"'{path}' failed with error code {e.returncode}! System fonts cannot be "
             f"loaded on your platform. Error log is:\n{e.stderr}",
-            RuntimeWarning,
-            2,
-            0,
+            urgency=0,
         )
 
     else:
@@ -484,8 +478,7 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
                     "None of the specified system fonts "
                     f"('{names}') could be found. "
                     "Using the default font instead.",
-                    2,
-                    1,
+                    urgency=2,
                 )
             else:
                 # Identifies the closest matches to the font provided by
@@ -502,8 +495,7 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
                     f"The system font '{name[0]}' couldn't be "
                     f"found. {match_text}"
                     "Using the default font instead.",
-                    2,
-                    1,
+                    urgency=2,
                 )
     else:
         fontname = None

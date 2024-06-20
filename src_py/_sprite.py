@@ -1,10 +1,9 @@
-from pygame.base import warn
+from pygame import warn
 
 warn(
     "The ._sprite submodule is deprecated since 2.4.0. Please use pygame.sprite instead.",
-    DeprecationWarning,
-    2,
-    1,
+    urgency=1,
+    category=DeprecationWarning,
 )
 
 from pygame.sprite import (

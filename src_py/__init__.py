@@ -91,6 +91,18 @@ if sys.platform in ("wasi", "emscripten"):
 
 # first, the "required" modules
 from pygame.base import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
+
+_warn = warn
+del warn
+
+
+def warn(message, urgency, level=2, category=RuntimeWarning):  # pylint: disable=function-redefined
+    """Throws a warning with a given urgency"""
+    _warn(message, category, level + 1, urgency)
+
+
+warn = warn
+
 from pygame.constants import *  # now has __all__ pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.version import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.rect import Rect, FRect
@@ -140,7 +152,7 @@ class MissingModule:
         try:
             level = 4 if self.urgent else 3
             urgency = 0 if self.urgent else 1
-            warn(message, RuntimeWarning, level, urgency)
+            warn(message, urgency, level=level)
         except ImportError:
             print(message)
 
