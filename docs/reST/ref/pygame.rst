@@ -243,7 +243,7 @@ object instead of the module, which can be used to test for availability.
          ...     pygame.warn("Warning!", urgency=0)
          ... 
          >>> my_func()
-         <stdin>:1: RuntimeWarning: Warning!
+         <stdin>:1: UserWarning: Warning! (0: urgent)
 
    .. # pygame.warn ""
 
