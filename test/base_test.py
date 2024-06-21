@@ -625,14 +625,14 @@ class BaseModuleTest(unittest.TestCase):
     def test_warn(self):
         # For pygame.warn
         pygame.set_warnings_filter(1)
-        with self.assertWarns(RuntimeWarning) as cx:
+        with self.assertWarns(Warning) as cx:
             self._warn("message", 0)
             self.assertEqual(len(cx.warnings), 1)
             warning = cx.warnings[0]
             self.assertEqual(str(warning.message), "message (0: urgent)")
             self.assertIn("base_test.py", warning.filename)
 
-        with self.assertWarns(RuntimeWarning) as cx:
+        with self.assertWarns(UserWarning) as cx:
             pygame.warn("message", 0, level=1)
             self.assertEqual(len(cx.warnings), 1)
             self.assertIn("base_test.py", cx.warnings[0].filename)
@@ -646,7 +646,7 @@ class BaseModuleTest(unittest.TestCase):
 
         with self.assertRaises(self.failureException):
             pygame.set_warnings_filter(-1)
-            with self.assertWarns(RuntimeWarning):
+            with self.assertWarns(Warning):
                 pygame.warn("message4", 0)
 
 

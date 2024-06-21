@@ -13,7 +13,7 @@
 #define DOC_ENCODESTRING "encode_string([obj [, encoding [, errors [, etype]]]]) -> bytes or None\nEncode a Unicode or bytes object"
 #define DOC_ENCODEFILEPATH "encode_file_path([obj [, etype]]) -> bytes or None\nEncode a Unicode or bytes object as a file system path"
 #define DOC_PRINTDEBUGINFO "print_debug_info(filename=None) -> None\nretrieves useful information for debugging and issue-reporting purposes"
-#define DOC_WARN "warn(message, urgency, level=2, category=RuntimeWarning)\nthrows a warning"
+#define DOC_WARN "warn(message, urgency, level=2, category=UserWarning)\nthrows a warning"
 #define DOC_VERSION "small module containing version information"
 #define DOC_VERSION_VER "ver = '1.2'\nversion number as a string"
 #define DOC_VERSION_VERNUM "vernum = (1, 5, 3)\ntupled integers of the version"

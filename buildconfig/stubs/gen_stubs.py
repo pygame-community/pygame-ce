@@ -111,7 +111,7 @@ if ".base" in pygame_all_imports and "warn" in pygame_all_imports[".base"]:
 # misc stubs that must be added to __init__.pyi
 misc_stubs = """from typing import Type
 
-def warn(message: str, urgency: int, level: int = 2, category: Type[Warning] = RuntimeWarning): ...
+def warn(message: str, urgency: int, level: int = 2, category: Type[Warning] = UserWarning): ...
 """
 
 # write constants.pyi file

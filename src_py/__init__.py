@@ -98,7 +98,7 @@ _warn = warn
 del warn
 
 
-def warn(message, urgency, level=2, category=RuntimeWarning):  # pylint: disable=function-redefined
+def warn(message, urgency, level=2, category=UserWarning):  # pylint: disable=function-redefined
     """Throws a warning with a given urgency"""
     names = {0: "urgent", 1: "mild", 2: "note"}
 

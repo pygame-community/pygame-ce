@@ -227,9 +227,12 @@ object instead of the module, which can be used to test for availability.
 .. function:: warn
 
    | :sl:`throws a warning`
-   | :sg:`warn(message, urgency, level=2, category=RuntimeWarning)`
+   | :sg:`warn(message, urgency, level=2, category=UserWarning)`
 
    Throws a warning with a given urgency. See documentation for :c:func:`pgWarn` for more information on urgency system.
+   
+   Category accepts any subclass of a built-in class ``Warning`` and is a type of generated warning. 
+   Same as in `warnings.warn() <https://docs.python.org/3/library/warnings.html#warnings.warn>`_.
 
    .. note::
       This function is mostly used internally, but might be also useful for extensions.
