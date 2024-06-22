@@ -788,6 +788,7 @@ set_pixel_color(Uint8 *pixel, Uint8 bpp, Uint32 color)
 static void
 set_from_threshold(SDL_Surface *surf, bitmask_t *bitmask, int threshold)
 {
+    /* This function expects surf to be non-zero sized. */
     SDL_PixelFormat *fmt = surf->format;
     const Uint8 bpp = PG_FORMAT_BytesPerPixel(fmt);
     int x, y, n;
@@ -813,8 +814,6 @@ set_from_threshold(SDL_Surface *surf, bitmask_t *bitmask, int threshold)
         return;
     }
 
-    const Uint8 u_threshold = (Uint8)threshold;
-
     /* With this strategy we avoid to get the rgb channels that we don't need
      * and instead we just jump from alpha channel to alpha channel, comparing
      * it with the threshold. */
@@ -826,6 +825,7 @@ set_from_threshold(SDL_Surface *surf, bitmask_t *bitmask, int threshold)
 #endif
 
     srcp = (Uint8 *)surf->pixels + _a_off;
+    const Uint8 u_threshold = (Uint8)threshold;
 
     for (y = 0; y < surf->h; ++y) {
         x = 0;
