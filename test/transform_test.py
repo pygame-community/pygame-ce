@@ -412,7 +412,6 @@ class TransformModuleTest(unittest.TestCase):
     def test_hsl(self):
         """Ensures the hsl() function works correctly, meaning it correctly
         modifies the hue, saturation, and lightness of a surface."""
-        screen = pygame.display.set_mode((32, 32))
         surf = pygame.Surface((1, 1))
         dest = pygame.Surface((1, 1))
         colors = [
@@ -451,8 +450,8 @@ class TransformModuleTest(unittest.TestCase):
                         for v1, v2 in zip(expected_rgb, actual_rgb):
                             self.assertAlmostEqual(v1, v2, delta=1)
 
-        surf = pygame.Surface((1, 1), depth=32).convert_alpha()
-        dest = pygame.Surface((1, 1), depth=32).convert_alpha()
+        surf = pygame.Surface((1, 1), flags=pygame.SRCALPHA)
+        dest = pygame.Surface((1, 1), flags=pygame.SRCALPHA)
 
         alpha_colors = [
             (0, 0, 0, 0),
