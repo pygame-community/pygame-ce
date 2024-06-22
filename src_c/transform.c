@@ -2443,7 +2443,7 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
     SURF_INIT_CHECK(src);
 
     if (!surfobj2) {
-        dst = newsurf_fromsurf(src, src->w, src->h);
+        dst = SDL_ConvertSurface(src, src->format, 0);
         if (!dst)
             return NULL;
     }
@@ -2459,6 +2459,7 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
     if (src->format->Rmask != dst->format->Rmask ||
         src->format->Gmask != dst->format->Gmask ||
         src->format->Bmask != dst->format->Bmask ||
+        src->format->Amask != dst->format->Amask ||
         src->format->BytesPerPixel != dst->format->BytesPerPixel) {
         return RAISE(PyExc_ValueError,
                      "Source and destination surfaces need the same format.");
