@@ -2309,85 +2309,17 @@ on_error:
     return RAISE(PyExc_TypeError, "Unknown error");
 }
 
-static PyObject *
-surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
+static int
+scroll(SDL_Surface *surf, int dx, int dy, int x, int y, int w, int h,
+       int repeat, int erase)
 {
-    int dx = 0, dy = 0, erase = 0, repeat = 0;
-    SDL_Surface *surf;
-    SDL_Rect *clip_rect;
-    int w = 0, h = 0, x = 0, y = 0;
-    int bpp = 0, pitch = 0, span = 0;
-    int xoffset = 0;
-    Uint8 *linesrc, *startsrc, *endsrc;
-
-    static char *kwids[] = {"dx", "dy", "erase", "repeat", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, keywds, "|iipp", kwids, &dx, &dy,
-                                     &erase, &repeat)) {
-        return NULL;
-    }
-
-    surf = pgSurface_AsSurface(self);
-    SURF_INIT_CHECK(surf)
-
-    if (dx == 0 && dy == 0) {
-        Py_RETURN_NONE;
-    }
-
-    clip_rect = &surf->clip_rect;
-    w = clip_rect->w;
-    h = clip_rect->h;
-    x = clip_rect->x;
-    y = clip_rect->y;
-    if (x > surf->w || x + w < 0 || y > surf->h || y + h < 0) {
-        Py_RETURN_NONE;
-    }
-    /* Get the intersection between the clip rect and the
-       surface absolute rect to avoid segfaults */
-    if (x < 0) {
-        w += x;
-        x = 0;
-    }
-    if (y < 0) {
-        h += y;
-        y = 0;
-    }
-    if (x + w > surf->w) {
-        w -= (x + w) - surf->w;
-    }
-    if (y + h > surf->h) {
-        h -= (y + h) - surf->h;
-    }
-    /* If the clip rect is outside the surface fill and return
-      for scrolls without repeat. Only fill when erase is true */
-    if (!repeat) {
-        if (dx >= w || dx <= -w || dy >= h || dy <= -h) {
-            if (erase) {
-                if (SDL_FillRect(surf, NULL, 0) == -1) {
-                    PyErr_SetString(pgExc_SDLError, SDL_GetError());
-                    return NULL;
-                }
-            }
-            Py_RETURN_NONE;
-        }
-    }
-    // Repeated scrolls are periodic so we can delete the exceeding value
-    if (dx >= w || dx <= -w) {
-        dx = dx % w;
-    }
-    if (dy >= h || dy <= -h) {
-        dy = dy % h;
-    }
-
-    if (!pgSurface_Lock((pgSurfaceObject *)self)) {
-        return NULL;
-    }
-
-    bpp = PG_SURF_BytesPerPixel(surf);
-    pitch = surf->pitch;
-    span = w * bpp;
-    linesrc = (Uint8 *)surf->pixels + pitch * y + bpp * x;
-    startsrc = endsrc = linesrc;
-    xoffset = dx * bpp;
+    int bpp = PG_SURF_BytesPerPixel(surf);
+    int pitch = surf->pitch;
+    int span = w * bpp;
+    Uint8 *linesrc = (Uint8 *)surf->pixels + pitch * y + bpp * x;
+    Uint8 *startsrc = linesrc;
+    int xoffset = dx * bpp;
+    Uint8 *endsrc = linesrc;
     if (dy > 0) {
         endsrc = linesrc + pitch * (h - 1);
         linesrc = endsrc;
@@ -2403,10 +2335,8 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
                are disappearing from the surface */
             Uint8 *tempbuf = (Uint8 *)malloc(templen);
             if (tempbuf == NULL) {
-                if (!pgSurface_Unlock((pgSurfaceObject *)self)) {
-                    return NULL;
-                }
-                return PyErr_NoMemory();
+                PyErr_NoMemory();
+                return -1;
             }
             memset(tempbuf, 0, templen);
             Uint8 *templine = tempbuf;
@@ -2478,10 +2408,8 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
             // No y-shifting, the temporary buffer should only store the x loss
             Uint8 *tempbuf = (Uint8 *)malloc((dx > 0 ? xoffset : -xoffset));
             if (tempbuf == NULL) {
-                if (!pgSurface_Unlock((pgSurfaceObject *)self)) {
-                    return NULL;
-                }
-                return PyErr_NoMemory();
+                PyErr_NoMemory();
+                return -1;
             }
             while (h--) {
                 if (dx > 0) {
@@ -2543,6 +2471,82 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
                 linesrc += pitch;
             }
         }
+    }
+
+    return 0;
+}
+
+static PyObject *
+surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
+{
+    int dx = 0, dy = 0, erase = 0, repeat = 0;
+    SDL_Surface *surf;
+    SDL_Rect *clip_rect;
+    int w = 0, h = 0, x = 0, y = 0;
+
+    static char *kwids[] = {"dx", "dy", "erase", "repeat", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "|iipp", kwids, &dx, &dy,
+                                     &erase, &repeat)) {
+        return NULL;
+    }
+
+    surf = pgSurface_AsSurface(self);
+    SURF_INIT_CHECK(surf)
+
+    if (dx == 0 && dy == 0) {
+        Py_RETURN_NONE;
+    }
+
+    clip_rect = &surf->clip_rect;
+    w = clip_rect->w;
+    h = clip_rect->h;
+    x = clip_rect->x;
+    y = clip_rect->y;
+    if (x > surf->w || x + w < 0 || y > surf->h || y + h < 0) {
+        Py_RETURN_NONE;
+    }
+    /* Get the intersection between the clip rect and the
+       surface absolute rect to avoid segfaults */
+    if (x < 0) {
+        w += x;
+        x = 0;
+    }
+    if (y < 0) {
+        h += y;
+        y = 0;
+    }
+    if (x + w > surf->w) {
+        w -= (x + w) - surf->w;
+    }
+    if (y + h > surf->h) {
+        h -= (y + h) - surf->h;
+    }
+    /* If the clip rect is outside the surface fill and return
+      for scrolls without repeat. Only fill when erase is true */
+    if (!repeat) {
+        if (dx >= w || dx <= -w || dy >= h || dy <= -h) {
+            if (erase) {
+                if (SDL_FillRect(surf, NULL, 0) == -1) {
+                    PyErr_SetString(pgExc_SDLError, SDL_GetError());
+                    return NULL;
+                }
+            }
+            Py_RETURN_NONE;
+        }
+    }
+    // Repeated scrolls are periodic so we can delete the exceeding value
+    dx = dx % w;
+    dy = dy % h;
+
+    if (!pgSurface_Lock((pgSurfaceObject *)self)) {
+        return NULL;
+    }
+
+    if (scroll(surf, dx, dy, x, y, w, h, repeat, erase) < 0) {
+        if (!pgSurface_Unlock((pgSurfaceObject *)self)) {
+            return NULL;
+        }
+        return NULL;
     }
 
     if (!pgSurface_Unlock((pgSurfaceObject *)self)) {
