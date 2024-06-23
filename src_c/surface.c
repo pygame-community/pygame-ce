@@ -2481,7 +2481,7 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
 {
     int dx = 0, dy = 0, erase = 0, repeat = 0;
     SDL_Surface *surf;
-    SDL_Rect *clip_rect;
+    SDL_Rect *clip_rect, work_rect;
     int w = 0, h = 0, x = 0, y = 0;
 
     static char *kwids[] = {"dx", "dy", "erase", "repeat", NULL};
@@ -2498,29 +2498,18 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
     }
 
     clip_rect = &surf->clip_rect;
-    w = clip_rect->w;
-    h = clip_rect->h;
-    x = clip_rect->x;
-    y = clip_rect->y;
-    if (x > surf->w || x + w < 0 || y > surf->h || y + h < 0) {
+    SDL_Rect surf_rect = {0, 0, surf->w, surf->h};
+
+    // In SDL3, SDL_IntersectRect is renamed to SDL_GetRectIntersection
+    if (!SDL_IntersectRect(clip_rect, &surf_rect, &work_rect)) {
         Py_RETURN_NONE;
     }
-    /* Get the intersection between the clip rect and the
-       surface absolute rect to avoid segfaults */
-    if (x < 0) {
-        w += x;
-        x = 0;
-    }
-    if (y < 0) {
-        h += y;
-        y = 0;
-    }
-    if (x + w > surf->w) {
-        w -= (x + w) - surf->w;
-    }
-    if (y + h > surf->h) {
-        h -= (y + h) - surf->h;
-    }
+
+    w = work_rect.w;
+    h = work_rect.h;
+    x = work_rect.x;
+    y = work_rect.y;
+
     /* If the clip rect is outside the surface fill and return
       for scrolls without repeat. Only fill when erase is true */
     if (!repeat) {
