@@ -65,7 +65,7 @@ jobs:
           - { arch: armv7, base_image: 'balenalib/raspberrypi3-debian:bookworm' }
 
     steps:
-    - uses: actions/checkout@v4.1.6
+    - uses: actions/checkout@v4.1.7
 
     - name: Build sources and run tests
       uses: uraimo/run-on-arch-action@v2.7.2
