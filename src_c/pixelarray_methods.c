@@ -125,17 +125,23 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
 
     surf = pgSurface_AsSurface(array->surface);
     bpp = PG_SURF_BytesPerPixel(surf);
+    temp_surf = surf;
+    const int same_dims = (dim0 == surf->w && dim1 == surf->h);
 
     /* Create the second surface. */
-
-    temp_surf = PG_CreateSurface((int)dim0, (int)dim1, surf->format->format);
-    if (!temp_surf) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+    /* If the array dimensions are different from the surface dimensions,
+     * create a new surface with the array dimensions */
+    if (!same_dims) {
+        if (!(temp_surf = PG_CreateSurface((int)dim0, (int)dim1,
+                                           surf->format->format)))
+            return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
-    /* Guarantee an identical format. */
+    /* Ensure the nes tw surface have same format as the original */
     new_surf = PG_ConvertSurface(temp_surf, surf->format);
-    SDL_FreeSurface(temp_surf);
+    if (temp_surf != surf)
+        SDL_FreeSurface(temp_surf);
+
     if (!new_surf) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -145,6 +151,10 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
         SDL_FreeSurface(new_surf);
         return 0;
     }
+
+    /* if the surf and array dims match just return a copy */
+    if (same_dims)
+        return (PyObject *)new_surface;
 
     /* Acquire a temporary lock. */
     if (SDL_MUSTLOCK(new_surf) == 0) {
@@ -158,58 +168,71 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
     new_pixelrow = new_pixels;
 
     Py_BEGIN_ALLOW_THREADS;
-    switch (bpp) {
-        case 1:
-            for (y = 0; y < dim1; ++y) {
-                pixel_p = pixelrow;
-                new_pixel_p = new_pixelrow;
-                for (x = 0; x < dim0; ++x) {
-                    *new_pixel_p = *pixel_p;
-                    pixel_p += stride0;
-                    new_pixel_p += new_stride0;
+
+    if (stride0 == new_stride0) {
+        /* if src and dest have the same bpp, so we can copy the whole
+         * rows at once */
+        y = dim1;
+        while (y--) {
+            memcpy(new_pixelrow, pixelrow, stride0 * dim0);
+            pixelrow += stride1;
+            new_pixelrow += new_stride1;
+        }
+    }
+    else {
+        switch (bpp) {
+            case 1:
+                for (y = 0; y < dim1; ++y) {
+                    pixel_p = pixelrow;
+                    new_pixel_p = new_pixelrow;
+                    for (x = 0; x < dim0; ++x) {
+                        *new_pixel_p = *pixel_p;
+                        pixel_p += stride0;
+                        new_pixel_p += new_stride0;
+                    }
+                    pixelrow += stride1;
+                    new_pixelrow += new_stride1;
                 }
-                pixelrow += stride1;
-                new_pixelrow += new_stride1;
-            }
-            break;
-        case 2:
-            for (y = 0; y < dim1; ++y) {
-                pixel_p = pixelrow;
-                new_pixel_p = new_pixelrow;
-                for (x = 0; x < dim0; ++x) {
-                    *((Uint16 *)new_pixel_p) = *((Uint16 *)pixel_p);
-                    pixel_p += stride0;
-                    new_pixel_p += new_stride0;
+                break;
+            case 2:
+                for (y = 0; y < dim1; ++y) {
+                    pixel_p = pixelrow;
+                    new_pixel_p = new_pixelrow;
+                    for (x = 0; x < dim0; ++x) {
+                        *((Uint16 *)new_pixel_p) = *((Uint16 *)pixel_p);
+                        pixel_p += stride0;
+                        new_pixel_p += new_stride0;
+                    }
+                    pixelrow += stride1;
+                    new_pixelrow += new_stride1;
                 }
-                pixelrow += stride1;
-                new_pixelrow += new_stride1;
-            }
-            break;
-        case 3:
-            for (y = 0; y < dim1; ++y) {
-                pixel_p = pixelrow;
-                new_pixel_p = new_pixelrow;
-                for (x = 0; x < dim0; ++x) {
-                    memcpy(new_pixel_p, pixel_p, 3);
-                    pixel_p += stride0;
-                    new_pixel_p += new_stride0;
+                break;
+            case 3:
+                for (y = 0; y < dim1; ++y) {
+                    pixel_p = pixelrow;
+                    new_pixel_p = new_pixelrow;
+                    for (x = 0; x < dim0; ++x) {
+                        memcpy(new_pixel_p, pixel_p, 3);
+                        pixel_p += stride0;
+                        new_pixel_p += new_stride0;
+                    }
+                    pixelrow += stride1;
+                    new_pixelrow += new_stride1;
                 }
-                pixelrow += stride1;
-                new_pixelrow += new_stride1;
-            }
-            break;
-        default: /* case: 4 */
-            for (y = 0; y < dim1; ++y) {
-                pixel_p = pixelrow;
-                new_pixel_p = new_pixelrow;
-                for (x = 0; x < dim0; ++x) {
-                    *((Uint32 *)new_pixel_p) = *((Uint32 *)pixel_p);
-                    pixel_p += stride0;
-                    new_pixel_p += new_stride0;
+                break;
+            default: /* case: 4 */
+                for (y = 0; y < dim1; ++y) {
+                    pixel_p = pixelrow;
+                    new_pixel_p = new_pixelrow;
+                    for (x = 0; x < dim0; ++x) {
+                        *((Uint32 *)new_pixel_p) = *((Uint32 *)pixel_p);
+                        pixel_p += stride0;
+                        new_pixel_p += new_stride0;
+                    }
+                    pixelrow += stride1;
+                    new_pixelrow += new_stride1;
                 }
-                pixelrow += stride1;
-                new_pixelrow += new_stride1;
-            }
+        }
     }
     Py_END_ALLOW_THREADS;
 
