@@ -7,10 +7,10 @@ from ._common import FileArg, Literal, IntCoordinate, Coordinate
 
 _BufferStyle = Union[BufferProxy, bytes, bytearray, memoryview]
 _to_string_format = Literal[
-    "P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA", "RGBA_PREMULT", "ARGB_PREMULT"
+    "P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA", "ABGR", "RGBA_PREMULT", "ARGB_PREMULT"
 ]
 _from_buffer_format = Literal["P", "RGB", "BGR", "BGRA", "RGBX", "RGBA", "ARGB"]
-_from_string_format = Literal["P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA"]
+_from_string_format = Literal["P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA", "ABGR"]
 
 def load(file: FileArg, namehint: str = "") -> Surface: ...
 def load_sized_svg(file: FileArg, size: Coordinate) -> Surface: ...
