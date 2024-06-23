@@ -128,7 +128,6 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
     temp_surf = surf;
     const int same_dims = (dim0 == surf->w && dim1 == surf->h);
 
-    /* Create the second surface. */
     /* If the array dimensions are different from the surface dimensions,
      * create a new surface with the array dimensions */
     if (!same_dims) {
@@ -137,7 +136,7 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
             return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
-    /* Ensure the nes tw surface have same format as the original */
+    /* Ensure the new surface has the same format as the original */
     new_surf = PG_ConvertSurface(temp_surf, surf->format);
     if (temp_surf != surf)
         SDL_FreeSurface(temp_surf);
