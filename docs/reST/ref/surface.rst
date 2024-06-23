@@ -310,14 +310,14 @@
 
    .. method:: scroll
 
-      | :sl:`Shift the surface image in place`
+      | :sl:`Shift the Surface pixels in place`
       | :sg:`scroll(dx=0, dy=0, erase=False, repeat=False, /) -> None`
 
-      Move the image by dx pixels right and dy pixels down. dx and dy may be
+      Move the Surface by dx pixels right and dy pixels down. dx and dy may be
       negative for left and up scrolls respectively.
 
       If the erase argument is ``True`` the space created by the shifting pixels
-      is filled with black, otherwise it is left unchanged.
+      is filled with black or transparency, otherwise it is left unchanged.
 
       Scrolling is contained by the Surface clip area. It is safe to have dx
       and dy values that exceed the surface size.
@@ -328,8 +328,7 @@
 
       .. versionaddedold:: 1.9
 
-      .. versionchanged:: 2.5.0
-         Add repeating scroll and allow erasing pixels
+      .. versionchanged:: 2.5.0 Add repeating scroll and allow erasing pixels
 
       .. ## Surface.scroll ##
 
