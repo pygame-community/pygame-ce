@@ -316,28 +316,11 @@ if simd_sse2_neon
     add_global_arguments('-DPG_ENABLE_ARM_NEON=1', language: 'c')
 endif
 
-# SSE3 configuration
-simd_sse3 = false
-simd_sse3_flags = []
-if host_machine.cpu_family().startswith('x86')
-    flag = (cc.get_argument_syntax() == 'msvc') ? '/arch:SSE3' : '-msse3'
-    if cc.has_argument(flag)
-        simd_sse3_flags += flag
-        simd_sse3 = true
-    endif
-endif
-
-# Adding global arguments for SSE3
-if simd_sse3
-    add_global_arguments('-DPG_ENABLE_SSE3=1', language: 'c')
-endif
-
 # Summary of SIMD support
 summary(
     {
         'AVX2': simd_avx2,
         'NEON': simd_sse2_neon,
-        'SSE3': simd_sse3,
     },
     section: 'SIMD',
 )
