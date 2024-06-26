@@ -2704,10 +2704,10 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
                                "parent_window", "buttons", "return_button",
                                "escape_button", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(
-            arg, kwargs, "s|OsO!OiO", keywords, &title, &message, &msgbox_type,
-            &pgWindow_Type, &parent_window, &buttons, &return_button_index,
-            &escape_button_index_obj)) {
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "s|OsOOiO", keywords, &title,
+                                     &message, &msgbox_type, &parent_window,
+                                     &buttons, &return_button_index,
+                                     &escape_button_index_obj)) {
         return NULL;
     }
 
@@ -2744,10 +2744,15 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
     msgbox_data.flags |= SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT;
 #endif
 
-    if (parent_window == Py_None)
+    if (parent_window == Py_None) {
         msgbox_data.window = NULL;
-    else
+    }
+    else {
+        if (!pgWindow_Check(parent_window)) {
+            return RAISE(PyExc_TypeError, "'parent_window' must be a Window");
+        }
         msgbox_data.window = ((pgWindowObject *)parent_window)->_win;
+    }
 
     msgbox_data.colorScheme = NULL;  // use system color scheme settings
 

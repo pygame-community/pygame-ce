@@ -4,7 +4,7 @@ int
 _pg_circle_set_radius(PyObject *value, pgCircleBase *circle)
 {
     double radius = 0.0;
-    if (!pg_DoubleFromObj(value, &radius) || radius <= 0.0) {
+    if (!pg_DoubleFromObj(value, &radius) || radius < 0.0) {
         return 0;
     }
     circle->r = radius;
