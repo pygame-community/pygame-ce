@@ -298,7 +298,7 @@ compute_align_vector(SDL_PixelFormat *format, int color_offset,
 {
     int output_align[4];
     int i;
-    size_t limit = sizeof(output_align) / sizeof(int);
+    int limit = (int)(sizeof(output_align) / sizeof(int));
     int a_shift = alpha_offset * 8;
     int r_shift = (color_offset + 0) * 8;
     int g_shift = (color_offset + 1) * 8;
