@@ -30,10 +30,10 @@
 
 #include "doc/image_doc.h"
 
-#if PG_COMPILE_SSE4_2
-#include <emmintrin.h>
-/* SSSE 3 */
-#include <tmmintrin.h>
+#include "simd_shared.h"
+
+#if PG_ENABLE_SSE_NEON
+#include <immintrin.h>
 #endif
 
 static int
@@ -258,28 +258,9 @@ image_get_sdl_image_version(PyObject *self, PyObject *args, PyObject *kwargs)
         return PyObject_Call(extverobj, args, kwargs);
 }
 
-#if PG_COMPILE_SSE4_2
-#define SSE42_ALIGN_NEEDED 16
-#define SSE42_ALIGN __attribute__((aligned(SSE42_ALIGN_NEEDED)))
+#if PG_ENABLE_SSE_NEON
 
 #define _SHIFT_N_STEP2ALIGN(shift, step) (shift / 8 + step * 4)
-
-#if PYGAME_DEBUG_SSE
-/* Useful for debugging/comparing the SSE vectors */
-static void
-_debug_print128_num(__m128i var, const char *msg)
-{
-    uint32_t val[4];
-    memcpy(val, &var, sizeof(val));
-    fprintf(stderr, "%s: %04x%04x%04x%04x\n", msg, val[0], val[1], val[2],
-            val[3]);
-}
-#define DEBUG_PRINT128_NUM(var, msg) _debug_print128_num(var, msg)
-#else
-#define DEBUG_PRINT128_NUM(var, msg) \
-    do { /* do nothing */            \
-    } while (0)
-#endif
 
 /*
  * Generates an SSE vector useful for reordering a SSE vector
@@ -332,18 +313,15 @@ compute_align_vector(SDL_PixelFormat *format, int color_offset,
                          output_align[3]);
 }
 
-static PG_INLINE PG_FUNCTION_TARGET_SSE4_2 void
+static PG_INLINE void
 tobytes_pixels_32bit_sse4(const __m128i *row, __m128i *data, int loop_max,
                           __m128i mask_vector, __m128i align_vector)
 {
     int w;
     for (w = 0; w < loop_max; ++w) {
         __m128i pvector = _mm_loadu_si128(row + w);
-        DEBUG_PRINT128_NUM(pvector, "Load");
         pvector = _mm_and_si128(pvector, mask_vector);
-        DEBUG_PRINT128_NUM(pvector, "after _mm_and_si128 (and)");
         pvector = _mm_shuffle_epi8(pvector, align_vector);
-        DEBUG_PRINT128_NUM(pvector, "after _mm_shuffle_epi8 (reorder)");
         _mm_storeu_si128(data + w, pvector);
     }
 }
@@ -354,7 +332,7 @@ tobytes_pixels_32bit_sse4(const __m128i *row, __m128i *data, int loop_max,
  * It is a lot faster but only works on a subset of the surfaces
  * (plus requires SSE4.2 support from the CPU).
  */
-static PG_FUNCTION_TARGET_SSE4_2 void
+static void
 tobytes_surf_32bpp_sse42(SDL_Surface *surf, int flipped, char *data,
                          int color_offset, int alpha_offset)
 {
@@ -375,25 +353,6 @@ tobytes_surf_32bpp_sse42(SDL_Surface *surf, int flipped, char *data,
     if (rollback_count) {
         rollback_count = step_size - rollback_count;
     }
-
-    DEBUG_PRINT128_NUM(mask_vector, "mask-vector");
-    DEBUG_PRINT128_NUM(align_vector, "align-vector");
-
-    /* This code will be horribly wrong if these assumptions do not hold.
-     * They are intended as a debug/testing guard to ensure that nothing
-     * calls this function without ensuring the assumptions during
-     * development
-     */
-    assert(sizeof(int) == sizeof(Uint32));
-    assert(4 * sizeof(Uint32) == sizeof(__m128i));
-    /* If this assertion does not hold, the fallback code will overrun
-     * the buffers.
-     */
-    assert(surf->w >= step_size);
-    assert(format->Rloss % 8 == 0);
-    assert(format->Gloss % 8 == 0);
-    assert(format->Bloss % 8 == 0);
-    assert(format->Aloss % 8 == 0);
 
     for (h = 0; h < surf->h; ++h) {
         const char *row =
@@ -419,7 +378,7 @@ tobytes_surf_32bpp_sse42(SDL_Surface *surf, int flipped, char *data,
         }
     }
 }
-#endif /* PG_COMPILE_SSE4_2 */
+#endif /* PG_ENABLE_SSE_NEON */
 
 static void
 tobytes_surf_32bpp(SDL_Surface *surf, int flipped, int hascolorkey,
@@ -441,18 +400,17 @@ tobytes_surf_32bpp(SDL_Surface *surf, int flipped, int hascolorkey,
     Uint32 Bloss = surf->format->Bloss;
     Uint32 Aloss = surf->format->Aloss;
 
-#if PG_COMPILE_SSE4_2
+#if PG_ENABLE_SSE_NEON
     if (/* SDL uses Uint32, SSE uses int for building vectors.
          * Related, we assume that Uint32 is packed so 4 of
          * them perfectly matches an __m128i.
          * If these assumptions do not match up, we will
          * produce incorrect results.
          */
-        sizeof(int) == sizeof(Uint32) &&
+        pg_HasSSE_NEON() && sizeof(int) == sizeof(Uint32) &&
         4 * sizeof(Uint32) == sizeof(__m128i) &&
         !hascolorkey /* No color key */
-        && !padding &&
-        SDL_HasSSE42() == SDL_TRUE
+        && !padding
         /* The SSE code assumes it will always read at least 4 pixels */
         && surf->w >= 4
         /* Our SSE code assumes masks are at most 0xff */
@@ -471,7 +429,7 @@ tobytes_surf_32bpp(SDL_Surface *surf, int flipped, int hascolorkey,
                                  alpha_offset);
         return;
     }
-#endif /* PG_COMPILE_SSE4_2 */
+#endif /* PG_ENABLE_SSE_NEON */
 
     for (h = 0; h < surf->h; ++h) {
         Uint32 *pixel_row =
