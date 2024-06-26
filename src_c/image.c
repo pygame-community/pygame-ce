@@ -32,10 +32,6 @@
 
 #include "simd_shared.h"
 
-#if PG_ENABLE_SSE_NEON
-#include <immintrin.h>
-#endif
-
 #if PG_ENABLE_ARM_NEON
 // sse2neon.h is from here: https://github.com/DLTcollab/sse2neon
 #include "include/sse2neon.h"
