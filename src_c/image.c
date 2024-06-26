@@ -37,9 +37,7 @@
 #include "include/sse2neon.h"
 #endif /* PG_ENABLE_ARM_NEON */
 
-#if PG_COMPILE_SSE4_2
-#include <emmintrin.h>
-/* SSSE 3 */
+#if defined(__SSSE3__)
 #include <tmmintrin.h>
 #endif
 
