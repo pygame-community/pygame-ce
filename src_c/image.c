@@ -36,6 +36,11 @@
 #include <immintrin.h>
 #endif
 
+#if PG_ENABLE_ARM_NEON
+// sse2neon.h is from here: https://github.com/DLTcollab/sse2neon
+#include "include/sse2neon.h"
+#endif /* PG_ENABLE_ARM_NEON */
+
 static int
 SaveTGA(SDL_Surface *surface, const char *file, int rle);
 static int
@@ -258,7 +263,7 @@ image_get_sdl_image_version(PyObject *self, PyObject *args, PyObject *kwargs)
         return PyObject_Call(extverobj, args, kwargs);
 }
 
-#if PG_ENABLE_SSE_NEON
+#if defined(__SSE3__) || defined(PG_ENABLE_ARM_NEON)
 
 #define _SHIFT_N_STEP2ALIGN(shift, step) (shift / 8 + step * 4)
 
@@ -378,7 +383,7 @@ tobytes_surf_32bpp_sse42(SDL_Surface *surf, int flipped, char *data,
         }
     }
 }
-#endif /* PG_ENABLE_SSE_NEON */
+#endif /* defined(__SSE3__) || defined(PG_ENABLE_ARM_NEON) */
 
 static void
 tobytes_surf_32bpp(SDL_Surface *surf, int flipped, int hascolorkey,
@@ -400,7 +405,7 @@ tobytes_surf_32bpp(SDL_Surface *surf, int flipped, int hascolorkey,
     Uint32 Bloss = surf->format->Bloss;
     Uint32 Aloss = surf->format->Aloss;
 
-#if PG_ENABLE_SSE_NEON
+#if defined(__SSE3__) || defined(PG_ENABLE_ARM_NEON)
     if (/* SDL uses Uint32, SSE uses int for building vectors.
          * Related, we assume that Uint32 is packed so 4 of
          * them perfectly matches an __m128i.
@@ -429,7 +434,7 @@ tobytes_surf_32bpp(SDL_Surface *surf, int flipped, int hascolorkey,
                                  alpha_offset);
         return;
     }
-#endif /* PG_ENABLE_SSE_NEON */
+#endif /* defined(__SSE3__) || defined(PG_ENABLE_ARM_NEON) */
 
     for (h = 0; h < surf->h; ++h) {
         Uint32 *pixel_row =

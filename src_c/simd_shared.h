@@ -37,7 +37,7 @@ pg_has_avx2();
  * at compile time. Since we do compile time translation of SSE2->NEON, they
  * have the same code paths, so this reduces code duplication of those paths.
  */
-#if defined(__SSE2__) || defined(__SSE3__)
+#if defined(__SSE2__)
 #define PG_ENABLE_SSE_NEON 1
 #elif PG_ENABLE_ARM_NEON
 #define PG_ENABLE_SSE_NEON 1
