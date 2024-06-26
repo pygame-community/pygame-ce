@@ -2444,14 +2444,15 @@ scroll(SDL_Surface *surf, int dx, int dy, int x, int y, int w, int h,
 static PyObject *
 surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
 {
-    int dx = 0, dy = 0, erase = 0, repeat = 0;
+    int dx = 0, dy = 0, scroll_flag = PGS_SCROLL_DEFAULT;
+    int erase = 0, repeat = 0;
     SDL_Surface *surf;
     SDL_Rect *clip_rect, work_rect;
     int w = 0, h = 0, x = 0, y = 0;
 
-    static char *kwids[] = {"dx", "dy", "erase", "repeat", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, keywds, "|iipp", kwids, &dx, &dy,
-                                     &erase, &repeat)) {
+    static char *kwids[] = {"dx", "dy", "scroll_flag", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "|iii", kwids, &dx, &dy,
+                                     &scroll_flag)) {
         return NULL;
     }
 
@@ -2460,6 +2461,22 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
 
     if (dx == 0 && dy == 0) {
         Py_RETURN_NONE;
+    }
+
+    switch (scroll_flag) {
+        case PGS_SCROLL_REPEAT: {
+            repeat = 1;
+            break;
+        }
+        case PGS_SCROLL_ERASE: {
+            erase = 1;
+            break;
+        }
+        default: {
+            if (scroll_flag != PGS_SCROLL_DEFAULT) {
+                return RAISE(PyExc_ValueError, "Invalid scroll flag");
+            }
+        }
     }
 
     clip_rect = &surf->clip_rect;

@@ -2672,12 +2672,11 @@ class GeneralSurfaceTests(unittest.TestCase):
     def test_scroll(self):
         # Check segfaults for any direction or bits or mode
         for bits in [8, 16, 24, 32]:
-            for repeat in [False, True]:
-                for erase in [False, True]:
-                    for dx in range(-1, 1):
-                        for dy in range(-1, 1):
-                            surface = pygame.Surface((20, 20), 0, bits)
-                            surface.scroll(dx * 2, dy * 2, erase, repeat)
+            for flag in [0, pygame.SCROLL_ERASE, pygame.SCROLL_REPEAT]:
+                for dx in range(-1, 1):
+                    for dy in range(-1, 1):
+                        surface = pygame.Surface((20, 20), 0, bits)
+                        surface.scroll(dx * 2, dy * 2, flag)
         # Check non repeating mode working
         surface = pygame.Surface((20, 20))
         surface.fill("green")
@@ -2686,14 +2685,16 @@ class GeneralSurfaceTests(unittest.TestCase):
         # Check non repeating, erasing mode working
         surface = pygame.Surface((20, 20))
         surface.fill("green")
-        surface.scroll(2, 2, erase=True)
+        surface.scroll(2, 2, pygame.SCROLL_ERASE)
         self.assertEqual(surface.get_at((0, 0)), pygame.Color("black"))
         # Check repeating mode working
         surface = pygame.Surface((20, 20))
         surface.fill("green")
         pygame.draw.rect(surface, "red", (0, 0, 10, 20))
-        surface.scroll(4, 0, repeat=True)
+        surface.scroll(4, 0, pygame.SCROLL_REPEAT)
         self.assertEqual(surface.get_at((0, 0)), pygame.Color("green"))
+        # kwargs
+        surface.scroll(dx=1, dy=1, scroll_flag=0)
 
 
 class SurfaceSubtypeTest(unittest.TestCase):

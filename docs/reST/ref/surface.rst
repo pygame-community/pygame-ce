@@ -311,20 +311,23 @@
    .. method:: scroll
 
       | :sl:`shift the Surface pixels in place`
-      | :sg:`scroll(dx=0, dy=0, erase=False, repeat=False, /) -> None`
+      | :sg:`scroll(dx=0, dy=0, scroll_flag=0, /) -> None`
 
       Move the Surface by dx pixels right and dy pixels down. dx and dy may be
       negative for left and up scrolls respectively.
 
-      If the erase argument is ``True`` the space created by the shifting pixels
-      is filled with black or transparency, otherwise it is left unchanged.
-
       Scrolling is contained by the Surface clip area. It is safe to have dx
       and dy values that exceed the surface size.
 
-      If the repeat argument is ``True`` the pixels that disappear out of the surface
-      or clip bounds are brought back on the opposite side resulting in an infinitely
-      scrolling and repeating surface.
+      The scroll flag can be either 0 (normal behaviour), ``pygame.SCROLL_ERASE``,
+      or ``pygame.SCROLL_REPEAT``.
+
+      If the scroll flag is ``SCROLL_ERASE`` the space created by the shifting pixels
+      is filled with black or transparency, otherwise it is left unchanged.
+
+      If the scroll flag is ``SCROLL_REPEAT`` the pixels that disappear out of
+      the surface or clip bounds are brought back on the opposite side resulting
+      in an infinitely scrolling and repeating surface.
 
       .. versionaddedold:: 1.9
 
