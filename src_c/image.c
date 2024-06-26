@@ -37,6 +37,12 @@
 #include "include/sse2neon.h"
 #endif /* PG_ENABLE_ARM_NEON */
 
+#if PG_COMPILE_SSE4_2
+#include <emmintrin.h>
+/* SSSE 3 */
+#include <tmmintrin.h>
+#endif
+
 static int
 SaveTGA(SDL_Surface *surface, const char *file, int rle);
 static int
