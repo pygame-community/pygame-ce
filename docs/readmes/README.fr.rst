@@ -158,6 +158,7 @@ Versions des dépendances:
 
 Licence
 -------
+**Identifiant de licence:** LGPL-2.1-or-later
 
 La bibliothèque est distribuée sous la licence `GNU LGPL version 2.1`_, qui
 peut être retrouvée dans le fichier ``docs/LGPL.txt``. Nous nous réservons
