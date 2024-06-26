@@ -120,7 +120,7 @@ required).
 .. function:: set_mode
 
    | :sl:`Initialize a window or screen for display`
-   | :sg:`set_mode(size=(0, 0), flags=0, depth=0, display=0, vsync=0) -> Surface`
+   | :sg:`set_mode(size=(0, 0), flags=0, depth=0, display=0, vsync=0, hwnd=0) -> Surface`
 
    This will create a window or display output and return a display Surface.
    The arguments passed in are requests for a display type. The actual created
@@ -223,6 +223,13 @@ required).
 
    .. versionchanged:: 2.5.0 No longer emits warning when running on xwayland, see :func:`pygame.display.init` for details on running on wayland directly
 
+
+   The ``hwnd`` argument is an integer contains the window id (or handle) of
+   a foreign window. By setting this parameter, pygame display can be embedded
+   into the foreign window. Be aware that there can be many strange side effects
+   when running in an embedded display.
+
+   .. versionadded:: 2.1.4 ``hwnd``
 
    Basic example:
 
