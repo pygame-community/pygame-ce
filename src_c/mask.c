@@ -795,7 +795,7 @@ set_from_threshold(SDL_Surface *surf, bitmask_t *bitmask, int threshold)
     Uint8 *srcp;
     const int src_skip = surf->pitch - surf->w * bpp;
 
-    if (bpp == 3) { /* fast path for non-alpha surfaces */
+    if (bpp == 3 || threshold < 0) {
         bitmask_fill(bitmask);
         return;
     }
@@ -825,7 +825,7 @@ set_from_threshold(SDL_Surface *surf, bitmask_t *bitmask, int threshold)
 #endif
 
     srcp = (Uint8 *)surf->pixels + _a_off;
-    const Uint8 u_threshold = (Uint8)threshold;
+    const Uint8 u_threshold = (Uint8)(MIN(MAX(threshold, 0), 255));
 
     for (y = 0; y < surf->h; ++y) {
         x = 0;
