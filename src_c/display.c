@@ -1233,8 +1233,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                     }
 
                     if (pg_renderer == NULL) {
-                        return RAISE(pgExc_SDLError,
-                                     "failed to create renderer");
+                        return RAISE(pgExc_SDLError, SDL_GetError());
                     }
 
                     if (flags & PGS_SCALED) {
