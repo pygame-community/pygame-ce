@@ -228,13 +228,15 @@ following formats.
       * ``RGBA``, 32-bit image with an alpha channel
 
       * ``ARGB``, 32-bit image with alpha channel first
-      
-      * ``BGRA``, 32-bit image with alpha channel, red and blue channels swapped      
+
+      * ``BGRA``, 32-bit image with alpha channel, red and blue channels swapped
+
+      * ``ABGR``, 32-bit image with alpha channel, reverse order
 
       * ``RGBA_PREMULT``, 32-bit image with colors scaled by alpha channel
 
       * ``ARGB_PREMULT``, 32-bit image with colors scaled by alpha channel, alpha channel first
-   
+
    The 'pitch' argument can be used to specify the pitch/stride per horizontal line
    of the image in bytes. It must be equal to or greater than how many bytes
    the pixel data of each horizontal line in the image bytes occupies without any
@@ -248,6 +250,7 @@ following formats.
    .. versionadded:: 2.1.3 
    .. versionchanged:: 2.2.0 Now supports keyword arguments.
    .. versionchanged:: 2.5.0 Added a 'pitch' argument.
+   .. versionchanged:: 2.5.1 Added support for ABGR image format
 
    .. ## pygame.image.tobytes ##
 
