@@ -795,7 +795,7 @@ set_from_threshold(SDL_Surface *surf, bitmask_t *bitmask, int threshold)
     Uint8 *srcp;
     const int src_skip = surf->pitch - surf->w * bpp;
 
-    if (bpp == 3 || threshold < 0) {
+    if (threshold < 0 || !SDL_ISPIXELFORMAT_ALPHA(fmt->format)) {
         bitmask_fill(bitmask);
         return;
     }
