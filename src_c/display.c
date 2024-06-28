@@ -97,86 +97,21 @@ _display_state_cleanup(_DisplayState *state)
 // (this code block is copied by window.c)
 #ifndef BUILD_STATIC
 
-#if !defined(__APPLE__)
-static char *icon_defaultname = "pygame_icon.bmp";
-static int icon_colorkey = 0;
-#else
-static char *icon_defaultname = "pygame_icon_mac.bmp";
-static int icon_colorkey = -1;
-#endif
-
-static char *pkgdatamodule_name = "pygame.pkgdata";
-static char *imagemodule_name = "pygame.image";
-static char *resourcefunc_name = "getResource";
-static char *load_basicfunc_name = "load_basic";
-
-static void
-pg_close_file(PyObject *fileobj)
-{
-    PyObject *result = PyObject_CallMethod(fileobj, "close", NULL);
-    if (result) {
-        Py_DECREF(result);
-    }
-    else {
-        PyErr_Clear();
-    }
-}
-
 static PyObject *
-pg_display_resource(char *filename)
+pg_load_pygame_icon()
 {
-    PyObject *imagemodule = NULL;
-    PyObject *load_basicfunc = NULL;
-    PyObject *pkgdatamodule = NULL;
-    PyObject *resourcefunc = NULL;
-    PyObject *fresult = NULL;
-    PyObject *result = NULL;
-    PyObject *name = NULL;
-
-    pkgdatamodule = PyImport_ImportModule(pkgdatamodule_name);
-    if (!pkgdatamodule)
-        goto display_resource_end;
-
-    resourcefunc = PyObject_GetAttrString(pkgdatamodule, resourcefunc_name);
-    if (!resourcefunc)
-        goto display_resource_end;
-
-    imagemodule = PyImport_ImportModule(imagemodule_name);
-    if (!imagemodule)
-        goto display_resource_end;
-
-    load_basicfunc = PyObject_GetAttrString(imagemodule, load_basicfunc_name);
-    if (!load_basicfunc)
-        goto display_resource_end;
-
-    fresult = PyObject_CallFunction(resourcefunc, "s", filename);
-    if (!fresult)
-        goto display_resource_end;
-
-    name = PyObject_GetAttrString(fresult, "name");
-    if (name != NULL) {
-        if (PyUnicode_Check(name)) {
-            pg_close_file(fresult);
-            Py_DECREF(fresult);
-            fresult = name;
-            name = NULL;
-        }
+    PyObject *pkgdata_mod = PyImport_ImportModule("pygame.pkgdata");
+    if (!pkgdata_mod)
+        return NULL;
+    PyObject *loader_function =
+        PyObject_GetAttrString(pkgdata_mod, "load_pygame_icon");
+    if (!loader_function) {
+        Py_DECREF(pkgdata_mod);
+        return NULL;
     }
-    else {
-        PyErr_Clear();
-    }
-
-    result = PyObject_CallFunction(load_basicfunc, "O", fresult);
-    if (!result)
-        goto display_resource_end;
-
-display_resource_end:
-    Py_XDECREF(pkgdatamodule);
-    Py_XDECREF(resourcefunc);
-    Py_XDECREF(imagemodule);
-    Py_XDECREF(load_basicfunc);
-    Py_XDECREF(fresult);
-    Py_XDECREF(name);
+    PyObject *result = PyObject_CallFunction(loader_function, "");
+    Py_DECREF(pkgdata_mod);
+    Py_DECREF(loader_function);
     return result;
 }
 
@@ -1323,13 +1258,9 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
     /*set the window icon*/
     if (!state->icon) {
-        state->icon = pg_display_resource(icon_defaultname);
+        state->icon = pg_load_pygame_icon();
         if (!state->icon)
             PyErr_Clear();
-        else if (icon_colorkey != -1) {
-            SDL_SetColorKey(pgSurface_AsSurface(state->icon), SDL_TRUE,
-                            icon_colorkey);
-        }
     }
     if (state->icon)
         SDL_SetWindowIcon(win, pgSurface_AsSurface(state->icon));

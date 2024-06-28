@@ -71,69 +71,26 @@ static unsigned int current_ttf_generation = 0;
 static int font_initialized = 1;
 #else
 static int font_initialized = 0;
-static const char pkgdatamodule_name[] = "pygame.pkgdata";
-static const char resourcefunc_name[] = "getResource";
 #endif
 static const char font_defaultname[] = "freesansbold.ttf";
 static const int font_defaultsize = 20;
 
-/* Return an encoded file path, a file-like object or a NULL pointer.
- * May raise a Python error. Use PyErr_Occurred to check.
- */
 static PyObject *
-font_resource(const char *filename)
+font_get_default_font_path()
 {
-    PyObject *pkgdatamodule = NULL;
-    PyObject *resourcefunc = NULL;
-    PyObject *result = NULL;
-    PyObject *tmp;
-
-    pkgdatamodule = PyImport_ImportModule(pkgdatamodule_name);
-    if (pkgdatamodule == NULL) {
+    PyObject *pkgdata_mod = PyImport_ImportModule("pygame.pkgdata");
+    if (!pkgdata_mod)
+        return NULL;
+    PyObject *path_function =
+        PyObject_GetAttrString(pkgdata_mod, "get_resource_path");
+    if (!path_function) {
+        Py_DECREF(pkgdata_mod);
         return NULL;
     }
-
-    resourcefunc = PyObject_GetAttrString(pkgdatamodule, resourcefunc_name);
-    Py_DECREF(pkgdatamodule);
-    if (resourcefunc == NULL) {
-        return NULL;
-    }
-
-    result = PyObject_CallFunction(resourcefunc, "s", filename);
-    Py_DECREF(resourcefunc);
-    if (result == NULL) {
-        return NULL;
-    }
-
-    tmp = PyObject_GetAttrString(result, "name");
-    if (tmp != NULL) {
-        PyObject *closeret;
-        if (!(closeret = PyObject_CallMethod(result, "close", NULL))) {
-            Py_DECREF(result);
-            Py_DECREF(tmp);
-            return NULL;
-        }
-        Py_DECREF(closeret);
-        Py_DECREF(result);
-        result = tmp;
-    }
-    else if (!PyErr_ExceptionMatches(PyExc_MemoryError)) {
-        PyErr_Clear();
-    }
-
-    tmp = pg_EncodeString(result, "UTF-8", NULL, NULL);
-    if (tmp == NULL) {
-        Py_DECREF(result);
-        return NULL;
-    }
-    else if (tmp != Py_None) {
-        Py_DECREF(result);
-        result = tmp;
-    }
-    else {
-        Py_DECREF(tmp);
-    }
-
+    PyObject *result =
+        PyObject_CallFunction(path_function, "s", font_defaultname);
+    Py_DECREF(pkgdata_mod);
+    Py_DECREF(path_function);
     return result;
 }
 
@@ -1117,6 +1074,7 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     TTF_Font *font = NULL;
     PyObject *obj = Py_None;
     SDL_RWops *rw;
+    SDL_bool use_default_font = SDL_FALSE;
 
     static char *kwlist[] = {"filename", "size", NULL};
 
@@ -1139,45 +1097,35 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     }
 
     if (obj == Py_None) {
-        /* default font */
-        Py_DECREF(obj);
-        obj = font_resource(font_defaultname);
-        if (obj == NULL) {
-            if (PyErr_Occurred() == NULL) {
-                PyErr_Format(PyExc_RuntimeError,
-                             "default font '%.1024s' not found",
-                             font_defaultname);
-            }
-            goto error;
-        }
+        use_default_font = SDL_TRUE;
         fontsize = (int)(fontsize * .6875);
     }
-
-    rw = pgRWops_FromObject(obj, NULL);
-
-    if (rw == NULL && PyUnicode_Check(obj)) {
-        if (!PyUnicode_CompareWithASCIIString(obj, font_defaultname)) {
-            /* clear out existing file loading error before attempt to get
-             * default font */
+    else {
+        rw = pgRWops_FromObject(obj, NULL);
+        if (rw == NULL && PyUnicode_Check(obj) &&
+            !PyUnicode_CompareWithASCIIString(obj, font_defaultname)) {
+            // if font not found, but the font name is the default name,
+            // then load the default font.
             PyErr_Clear();
-            Py_DECREF(obj);
-            obj = font_resource(font_defaultname);
-            if (obj == NULL) {
-                if (PyErr_Occurred() == NULL) {
-                    PyErr_Format(PyExc_RuntimeError,
-                                 "default font '%.1024s' not found",
-                                 font_defaultname);
-                }
-                goto error;
-            }
+            use_default_font = SDL_TRUE;
             /* Unlike when the default font is loaded with None, the fontsize
              * is not scaled down here. This was probably unintended
              * implementation detail,
              * but this rewritten code aims to keep the exact behavior as the
              * old one */
-
-            rw = pgRWops_FromObject(obj, NULL);
         }
+    }
+
+    if (use_default_font) {
+        Py_DECREF(obj);
+        obj = font_get_default_font_path();
+        if (obj == NULL) {
+            PyErr_Format(PyExc_RuntimeError,
+                         "Unable to load default font '%.1024s'",
+                         font_defaultname);
+            goto error;
+        }
+        rw = pgRWops_FromObject(obj, NULL);
     }
 
     if (rw == NULL) {
