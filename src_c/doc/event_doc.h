@@ -14,6 +14,7 @@
 #define DOC_EVENT_GETGRAB "get_grab() -> bool\ntest if the program is sharing input devices"
 #define DOC_EVENT_POST "post(event, /) -> bool\nplace a new event on the queue"
 #define DOC_EVENT_CUSTOMTYPE "custom_type() -> int\nmake custom user event type"
+#define DOC_EVENT_EVENTCLASS "event_class(type: int, /) -> type[Event]\nreturns related event class to event type"
 #define DOC_EVENT_EVENT "Event(type, dict) -> Event\nEvent(type, **attributes) -> Event\npygame object for representing events"
 #define DOC_EVENT_EVENT_TYPE "type -> int\nevent type identifier."
 #define DOC_EVENT_EVENT_DICT "__dict__ -> dict\nevent attribute dictionary"

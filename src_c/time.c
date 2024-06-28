@@ -154,7 +154,7 @@ _pg_timer_free(pgEventTimer *timer)
 
         if (is_fully_freed) {
             PyGILState_STATE gstate = PyGILState_Ensure();
-            Py_DECREF(timer->dict_proxy->dict);
+            Py_DECREF(timer->dict_proxy->obj);
             PyGILState_Release(gstate);
             free(timer->dict_proxy);
         }
@@ -213,7 +213,7 @@ _pg_add_event_timer(int ev_type, PyObject *ev_dict, int repeat)
         PyGILState_STATE gstate = PyGILState_Ensure();
         Py_INCREF(ev_dict);
         PyGILState_Release(gstate);
-        new->dict_proxy->dict = ev_dict;
+        new->dict_proxy->obj = ev_dict;
         new->dict_proxy->lock = 0;
         new->dict_proxy->num_on_queue = 0;
         new->dict_proxy->do_free_at_end = 0;
