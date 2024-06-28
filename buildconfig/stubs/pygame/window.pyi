@@ -6,7 +6,7 @@ from pygame.rect import Rect
 from pygame.surface import Surface
 
 def get_grabbed_window() -> Optional[Window]: ...
-@final
+
 class Window:
     def __init__(
         self,
