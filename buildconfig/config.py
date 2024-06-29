@@ -167,7 +167,7 @@ Only SDL2 is supported now.""")
 
     kwds = {}
 
-    if "docs" in sys.argv:
+    if sys.argv[1] == "docs":
         sys.exit(docs_run())
 
     if sys.platform == 'win32':
