@@ -14,6 +14,10 @@ Steps:
 - If you are using the legacy `python setup.py docs` (which is now deprecated):
      - (Run `python -m pip install -U pip setuptools` first if `ModuleNotFoundError: No module named setuptools` occurs)
 
+You may want to test the new website style, you just have to edit
+``docs/reST/conf.py`` and change the value of ``html_theme`` to ``sphinx_book_theme``.
+(Make sure before to install the theme with ``python -m pip install sphinx_book_theme``)
+
 This will create a new folder under the `docs` folder. 
 In `docs/generated`, you will find a local copy of the pygame documentation.
 

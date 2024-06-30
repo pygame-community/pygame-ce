@@ -3,6 +3,13 @@
 :mod:`pygame.Color`
 ===================
 
+.. toctree::
+   :maxdepth: 2
+   :glob:
+   :hidden:
+
+   extra_infos/color_list.rst
+
 .. currentmodule:: pygame
 
 .. class:: Color
@@ -53,7 +60,7 @@
    It can be passed as a ``color_value`` argument to :class:`Color`
    (useful with sets).
 
-   See :doc:`color_list` for samples of the available named colors.
+   See :doc:`extra_infos/color_list` for samples of the available named colors.
 
    :param int r: red value in the range of 0 to 255 inclusive
    :param int g: green value in the range of 0 to 255 inclusive
@@ -67,7 +74,7 @@
             | - **Color object:** clones the given :class:`Color` object
             | - **Color name: str:** name of the color to use, e.g. ``'red'``
               (all the supported name strings can be found in the
-               :doc:`color_list`, with sample swatches)
+               :doc:`extra_infos/color_list`, with sample swatches)
             | - **HTML color format str:** ``'#rrggbbaa'`` or ``'#rrggbb'``,
               where rr, gg, bb, and aa are 2-digit hex numbers in the range
               of 0 to 0xFF inclusive, the aa (alpha) value defaults to 0xFF

@@ -297,7 +297,7 @@
       specific area. The fill will also be contained by the Surface clip area.
 
       The color argument can be an ``RGB`` sequence, an ``RGBA`` sequence,
-      a string (for :doc:`color_list`), or a mapped color index. If using ``RGBA``,
+      a string (for :doc:`extra_infos/color_list`), or a mapped color index. If using ``RGBA``,
       the Alpha (A part of ``RGBA``) is ignored unless the surface uses per pixel
       alpha (Surface has the ``SRCALPHA`` flag).
 
@@ -337,7 +337,7 @@
       Set the current color key for the Surface. When blitting this Surface
       onto a destination, any pixels that have the same color as the colorkey
       will be transparent. The color can be an ``RGB`` color, a string
-      (for :doc:`color_list`), or a mapped color integer. If ``None`` is passed,
+      (for :doc:`extra_infos/color_list`), or a mapped color integer. If ``None`` is passed,
       the colorkey will be unset.
 
       The colorkey will be ignored if the Surface is formatted to use per pixel
@@ -509,7 +509,7 @@
       | :sg:`set_at((x, y), color, /) -> None`
 
       Set the color of a single pixel at the specified coordinates to be an ``RGB``,
-      ``RGBA``, string (for :doc:`color_list`), or mapped integer color value. If the Surface
+      ``RGBA``, string (for :doc:`extra_infos/color_list`), or mapped integer color value. If the Surface
       does not have per pixel alphas, the alpha value is ignored. Setting pixels outside the
       Surface area or outside the Surface clipping will have no effect.
 

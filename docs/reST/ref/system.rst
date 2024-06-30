@@ -51,8 +51,7 @@
    
    .. versionadded:: 2.3.1
 
-    .. versionchanged:: 2.4.0 removed ``RDTSC`` key, 
-        as it has been removed in pre-release SDL3
+   .. versionchanged:: 2.4.0 removed ``RDTSC`` key, as it has been removed in pre-release SDL3
 
 .. function:: get_total_ram
 
