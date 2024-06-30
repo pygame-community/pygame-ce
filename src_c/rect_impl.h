@@ -427,7 +427,7 @@ RectExport_do_rects_intresect(InnerRect *A, InnerRect *B)
 
 #define _pg_do_rects_intersect RectExport_do_rects_intresect
 
-static PG_FORCEINLINE InnerRect *
+static PG_INLINE InnerRect *
 RectExport_RectFromObject(PyObject *obj, InnerRect *temp);
 static InnerRect *
 RectExport_RectFromFastcallArgs(PyObject *const *args, Py_ssize_t nargs,
@@ -614,7 +614,7 @@ static RectObject
 int RectOptional_Freelist_Num = -1;
 #endif
 
-static PG_FORCEINLINE InnerRect *
+static PG_INLINE InnerRect *
 RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
 {
     Py_ssize_t length;
