@@ -21,142 +21,105 @@ q     - stop
 import sys
 
 import pygame
-import pygame.freetype
+
+pygame.init()
 
 
-class Window:
-    """The application's Pygame window
+def write_lines(
+    dest: pygame.Surface,
+    text: str,
+    font=pygame.Font(None, 30),
+    color=(254, 231, 21, 255),
+    starting_line=0,
+):
+    text_surface = font.render(text, True, color)
 
-    A Window instance manages the creation of and drawing to a
-    window. It is a singleton class. Only one instance can exist.
+    y_offset = 0
+    if starting_line >= 0:
+        y_offset = font.get_height() * starting_line
+    else:
+        y_offset = dest.get_height() + starting_line * font.get_height()
 
-    """
-
-    instance = None
-
-    def __new__(cls, *args, **kwds):
-        """Return an open Pygame window"""
-
-        if Window.instance is not None:
-            return Window.instance
-        self = object.__new__(cls)
-        pygame.display.init()
-        self.screen = pygame.display.set_mode((600, 400))
-        Window.instance = self
-        return self
-
-    def __init__(self, title):
-        pygame.display.set_caption(title)
-        self.text_color = (254, 231, 21, 255)
-        self.background_color = (16, 24, 32, 255)
-        self.screen.fill(self.background_color)
-        pygame.display.flip()
-
-        pygame.freetype.init()
-        self.font = pygame.freetype.Font(None, 20)
-        self.font.origin = True
-        self.ascender = int(self.font.get_sized_ascender() * 1.5)
-        self.descender = int(self.font.get_sized_descender() * 1.5)
-        self.line_height = self.ascender - self.descender
-
-        self.write_lines(
-            "\nPress 'q' or 'ESCAPE' or close this window to quit\n"
-            "Press 'SPACE' to play / pause\n"
-            "Press 'r' to rewind to the beginning (restart)\n"
-            "Press 'f' to fade music out over 5 seconds\n\n"
-            "Window will quit automatically when music ends\n",
-            0,
-        )
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-        return False
-
-    def close(self):
-        pygame.display.quit()
-        Window.instance = None
-
-    def write_lines(self, text, line=0):
-        w, h = self.screen.get_size()
-        line_height = self.line_height
-        nlines = h // line_height
-        if line < 0:
-            line = nlines + line
-        for i, text_line in enumerate(text.split("\n"), line):
-            y = i * line_height + self.ascender
-            # Clear the line first.
-            self.screen.fill(
-                self.background_color, (0, i * line_height, w, line_height)
-            )
-            # Write new text.
-            self.font.render_to(self.screen, (15, y), text_line, self.text_color)
-        pygame.display.flip()
+    dest.fill(
+        (16, 24, 32, 255),
+        pygame.Rect((0, y_offset), (text_surface.get_width(), dest.get_width())),
+    )
+    dest.blit(text_surface, (16, y_offset))
 
 
 def show_usage_message():
-    print("Usage: python playmus.py <file>")
-    print("       python -m pygame.examples.playmus <file>")
+    print(
+        "Usage: python playmus.py <file>\n"
+        "       python -m pygame.examples.playmus <file>"
+    )
 
 
 def main(file_path):
     """Play an audio file with pygame.mixer.music"""
 
-    EVENT_LOOP_TICK = pygame.event.custom_type()
+    screen = pygame.display.set_mode((600, 400))
+    screen.fill((16, 24, 32, 255))
 
-    with Window(file_path) as win:
-        win.write_lines("Loading ...", -1)
-        pygame.mixer.init(frequency=44100)
-        try:
-            paused = False
-            pygame.mixer.music.load(file_path)
+    write_lines(screen, "Loading ...", starting_line=-1)
+    pygame.mixer.init(frequency=44100)
+    pygame.mixer.music.load(file_path)
 
-            # Make sure the event loop ticks over at least every 0.5 seconds.
-            pygame.time.set_timer(EVENT_LOOP_TICK, 500)
+    pygame.display.set_caption(f"File : {file_path}")
 
-            pygame.mixer.music.play()
-            win.write_lines("Playing ...\n", -1)
+    write_lines(
+        screen,
+        "Press 'q' or 'ESCAPE' or close this window to quit\n"
+        "Press 'SPACE' to play / pause\n"
+        "Press 'r' to rewind to the beginning (restart)\n"
+        "Press 'f' to fade music out over 5 seconds",
+        starting_line=1,
+    )
 
-            while pygame.mixer.music.get_busy() or paused:
-                e = pygame.event.wait()
-                if e.type == pygame.KEYDOWN:
-                    key = e.key
-                    if key == pygame.K_SPACE:
-                        if paused:
-                            pygame.mixer.music.unpause()
-                            paused = False
-                            win.write_lines("Playing ...\n", -1)
-                        else:
-                            pygame.mixer.music.pause()
-                            paused = True
-                            win.write_lines("Paused ...\n", -1)
-                    elif key == pygame.K_r:
-                        if file_path[-3:].lower() in ("ogg", "mp3", "mod"):
-                            status = "Rewound."
-                            pygame.mixer.music.rewind()
-                        else:
-                            status = "Restarted."
-                            pygame.mixer.music.play()
-                        if paused:
-                            pygame.mixer.music.pause()
-                            win.write_lines(status, -1)
-                    elif key == pygame.K_f:
-                        win.write_lines("Fading out ...\n", -1)
-                        pygame.mixer.music.fadeout(5000)
-                        # when finished get_busy() will return False.
-                    elif key in [pygame.K_q, pygame.K_ESCAPE]:
+    pygame.mixer.music.play()
+    write_lines(screen, "Playing ...\n", starting_line=-1)
+
+    running = True
+    paused = False
+
+    while running:
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                key = event.key
+                if key == pygame.K_SPACE:
+                    if paused:
+                        pygame.mixer.music.unpause()
                         paused = False
-                        pygame.mixer.music.stop()
-                        # get_busy() will now return False.
-                elif e.type == pygame.QUIT:
+                        write_lines(screen, "Playing ...", starting_line=-1)
+                    else:
+                        pygame.mixer.music.pause()
+                        paused = True
+                        write_lines(screen, "Paused ...", starting_line=-1)
+                elif key == pygame.K_r:
+                    if file_path[-3:].lower() in ("ogg", "mp3", "mod"):
+                        status = "Rewound."
+                        pygame.mixer.music.rewind()
+                    else:
+                        status = "Restarted."
+                        pygame.mixer.music.play()
+                    if paused:
+                        pygame.mixer.music.pause()
+                        write_lines(screen, status, starting_line=-1)
+                elif key == pygame.K_f:
+                    write_lines(screen, "Fading out ...", starting_line=-1)
+                    pygame.mixer.music.fadeout(5000)
+                    # when finished get_busy() will return False.
+                elif key in [pygame.K_q, pygame.K_ESCAPE]:
                     paused = False
                     pygame.mixer.music.stop()
                     # get_busy() will now return False.
-            pygame.time.set_timer(EVENT_LOOP_TICK, 0)
-        finally:
-            pygame.mixer.quit()
+            elif event.type == pygame.QUIT:
+                running = False
+
+        if not pygame.mixer.music.get_busy() and not paused:
+            running = False
+
     pygame.quit()
 
 
