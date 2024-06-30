@@ -306,6 +306,11 @@
 
       This will return the affected Surface area.
 
+      .. note:: As of pygame-ce version 2.5.1, a long-standing bug has been fixed!
+         Now when passing in a ``Rect`` with negative ``x`` or negative ``y`` (or both),
+         the ``Rect`` filled will no longer be shifted to ``(0, 0)``, but instead only the
+         part of the ``Rect`` overlapping the window's ``Rect`` will be filled.
+
       .. ## Surface.fill ##
 
    .. method:: scroll
