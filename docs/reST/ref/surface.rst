@@ -90,7 +90,7 @@
    .. method:: blit
 
       | :sl:`draw another surface onto this one`
-      | :sg:`blit(source, dest, area=None, special_flags=0) -> Rect`
+      | :sg:`blit(source, dest=(0, 0), area=None, special_flags=0) -> Rect`
 
       Draws another Surface onto this Surface.
 
@@ -98,8 +98,8 @@
           - ``source``
               The ``Surface`` object to draw onto this ``Surface``.
               If it has transparency, transparent pixels will be ignored when blittting to an 8-bit ``Surface``.
-          - ``dest``
-              The ``source`` draw position onto this ``Surface``.
+          - ``dest`` *(optional)*
+              The ``source`` draw position onto this ``Surface``, defaults to (0, 0).
               It can be a coordinate ``(x, y)`` or a ``Rect`` (using its top-left corner).
               If a ``Rect`` is passed, its size will not affect the blit.
           - ``area`` *(optional)*
@@ -136,6 +136,8 @@
 
           - The blit is ignored if the ``source`` is positioned completely outside this ``Surface``'s
             clipping area. Otherwise only the overlapping area will be drawn.
+
+      .. versionchanged:: 2.5.1 The dest argument is optional and defaults to (0, 0)
 
       .. ## Surface.blit ##
 

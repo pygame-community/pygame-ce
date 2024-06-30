@@ -1789,7 +1789,7 @@ surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
 {
     SDL_Surface *src, *dest = pgSurface_AsSurface(self);
     SDL_Rect *src_rect, temp;
-    PyObject *argpos, *argrect = NULL;
+    PyObject *argpos = NULL, *argrect = NULL;
     pgSurfaceObject *srcobject;
     int dx, dy, result;
     SDL_Rect dest_rect;
@@ -1797,7 +1797,7 @@ surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
     int blend_flags = 0;
 
     static char *kwids[] = {"source", "dest", "area", "special_flags", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, keywds, "O!O|Oi", kwids,
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "O!|OOi", kwids,
                                      &pgSurface_Type, &srcobject, &argpos,
                                      &argrect, &blend_flags))
         return NULL;
@@ -1806,7 +1806,11 @@ surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
     SURF_INIT_CHECK(src)
     SURF_INIT_CHECK(dest)
 
-    if ((src_rect = pgRect_FromObject(argpos, &temp))) {
+    if (argpos == NULL) { /* dest argument is absent  */
+        dx = 0;
+        dy = 0;
+    }
+    else if ((src_rect = pgRect_FromObject(argpos, &temp))) {
         dx = src_rect->x;
         dy = src_rect->y;
     }

@@ -1203,6 +1203,15 @@ class TestSurfaceBlit(unittest.TestCase):
             # +3 gets the "alpha channel" in this pixel format
             assert surf1_bytes[i * 4 + 3] == 0
 
+    def test_blit_default_dest(self):
+        surf1 = pygame.Surface((20, 20))
+        surf1.fill("black")
+        surf2 = pygame.Surface((10, 10))
+        surf2.fill("red")
+        surf1.blit(surf2)
+        self.assertEqual(surf1.get_at((0, 0)), pygame.Color("red"))
+        self.assertEqual(surf1.get_at((10, 10)), pygame.Color("black"))
+
 
 class GeneralSurfaceTests(unittest.TestCase):
     @unittest.skipIf(
