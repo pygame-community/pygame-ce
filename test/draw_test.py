@@ -1846,6 +1846,14 @@ class DrawLineTest(LineMixin, DrawTestCase):
                 "start={}, end={}".format(end_points[n], start_points[n]),
             )
 
+    def test_line_draw_large_surf_regression(self):
+        """Regression test for https://github.com/pygame-community/pygame-ce/issues/2961"""
+        surface = pygame.Surface((43371, 43371))
+
+        point1 = [30021, 37135]
+        point2 = [30022, 37136]
+        pygame.draw.line(surface, (255, 255, 255), point1, point2, 1)
+
 
 ### Lines Testing #############################################################
 
