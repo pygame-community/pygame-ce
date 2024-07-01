@@ -349,6 +349,21 @@ Instead, always begin with the original image and scale to the desired size.)
 
    .. ## pygame.transform.grayscale ##
 
+.. function:: pixelate
+   
+   | :sl:`pixelate a surface`
+   | :sg:`pixelate(surface, pixel_size, dest_surface=None) -> Surface`
+
+   Returns a pixelated version of the original surface.
+
+   ``pixel_size`` is an integer describing how large you want the pixels in the final pixelated image to be.
+   An optional destination surface can be passed which is faster than creating a new Surface. This destination
+   surface must have the same dimensions (width, height) and same format as the source surface.
+
+   .. versionadded:: 2.4.0
+
+   .. ## pygame.transform.pixelate ##
+
 .. function:: threshold
 
    | :sl:`finds which, and how many pixels in a surface are within a threshold of a 'search_color' or a 'search_surf'.`

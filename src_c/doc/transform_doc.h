@@ -18,5 +18,6 @@
 #define DOC_TRANSFORM_AVERAGECOLOR "average_color(surface, rect=None, consider_alpha=False) -> Color\nfinds the average color of a surface"
 #define DOC_TRANSFORM_INVERT "invert(surface, dest_surface=None) -> Surface\ninverts the RGB elements of a surface"
 #define DOC_TRANSFORM_GRAYSCALE "grayscale(surface, dest_surface=None) -> Surface\ngrayscale a surface"
+#define DOC_TRANSFORM_PIXELATE "pixelate(surface, pixel_size, dest_surface=None) -> Surface\npixelate a surface"
 #define DOC_TRANSFORM_THRESHOLD "threshold(dest_surface, surface, search_color, threshold=(0,0,0,0), set_color=(0,0,0,0), set_behavior=1, search_surf=None, inverse_set=False) -> num_threshold_pixels\nfinds which, and how many pixels in a surface are within a threshold of a 'search_color' or a 'search_surf'."
 #define DOC_TRANSFORM_HSL "hsl(surface, hue, saturation, lightness, dest_surface=None) -> Surface\nChange the hue, saturation, and lightness of a surface."
