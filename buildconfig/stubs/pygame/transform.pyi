@@ -65,6 +65,14 @@ def gaussian_blur(
     repeat_edge_pixels: bool = True,
     dest_surface: Optional[Surface] = None
 ) -> Surface: ...
+def bloom(
+    surface: Surface,
+    blur_radius: int,
+    intensity: float,
+    luminance_threshold: float = 0.5,
+    blur_type: Literal["gaussian", "box"] = "gaussian",
+    dest_surface: Optional[Surface] = None
+) -> Surface: ...
 def hsl(
     surface: Surface,
     hue: float = 0,
