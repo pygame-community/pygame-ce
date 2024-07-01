@@ -3,6 +3,7 @@ import unittest
 from collections.abc import Collection, Sequence
 
 from pygame import Vector2, FRect, Rect as IRect
+from pygame.geometry import Circle
 from pygame.tests import test_utils
 
 Rect = IRect
@@ -1681,6 +1682,71 @@ class RectTypeTest(unittest.TestCase):
         self.assertFalse(
             r1.colliderect(Rect(r1.right, r1.bottom, 1, 1)),
             "r1 collides with Rect(r1.right, r1.bottom, 1, 1)",
+        )
+
+    def test_collidecircle_argtype(self):
+        """tests if the function correctly handles incorrect types as parameters"""
+        invalid_types = (None, [], "1", (1,), Vector2(1, 1), 1)
+
+        r = Rect(6, 6, 8, 8)
+
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                r.collidecircle(value)
+
+    def test_collidecircle_argnum(self):
+        r = Rect(6, 6, 8, 8)
+        # no params
+        with self.assertRaises(TypeError):
+            r.collidecircle()
+
+        with self.assertRaises(TypeError):
+            r.collidecircle(Circle(10, 10, 4), Circle(10, 10, 4))
+
+    def test_collidecircle(self):
+        r = Rect(-5, -5, 10, 10)
+
+        c1 = Circle(10, 0, 5)
+        c2 = Circle(100, 100, 5)
+        c3 = Circle(10, 0, 4.999999999999)
+        c4 = Circle(0, 0, 2)
+        c5 = Circle(10, 0, 7)
+        c6 = Circle(0, 0, 5)
+        c7 = Circle(0, 0, 20)
+
+        # touching
+        self.assertTrue(
+            r.collidecircle(c1), "Expected True, circle should collide here"
+        )
+
+        # partly colliding
+        self.assertTrue(
+            r.collidecircle(c5), "Expected True, circle should collide here"
+        )
+
+        # completely colliding
+        self.assertTrue(
+            r.collidecircle(c6), "Expected True, circle should collide here"
+        )
+
+        # not touching
+        self.assertFalse(
+            r.collidecircle(c2), "Expected False, circle should not collide here"
+        )
+
+        # barely not touching
+        self.assertFalse(
+            r.collidecircle(c3), "Expected False, circle should not collide here"
+        )
+
+        # small circle inside bigger rect
+        self.assertTrue(
+            r.collidecircle(c4), "Expected True, circle should collide here"
+        )
+
+        # big circle inside smaller rect
+        self.assertTrue(
+            r.collidecircle(c7), "Expected True, circle should collide here"
         )
 
     def testEquals(self):

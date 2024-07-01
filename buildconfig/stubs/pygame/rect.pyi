@@ -11,6 +11,7 @@ from typing import (
 )
 
 from ._common import Coordinate, Literal, RectValue, SupportsIndex, Sequence
+from .geometry import _CircleValue
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -249,6 +250,12 @@ class _GenericRect(Collection[_N]):
     def colliderect(
         self, left: float, top: float, width: float, height: float, /
     ) -> bool: ...
+    @overload
+    def collidecircle(self, circle: _CircleValue, /) -> bool: ...
+    @overload
+    def collidecircle(self, pos: Coordinate, r: float, /) -> bool: ...
+    @overload
+    def collidecircle(self, x: float, y: float, r: float, /) -> bool: ...
     def collidelist(self, rect_list: Sequence[_RectTypeCompatible_co], /) -> int: ...
     def collidelistall(self, rect_list: Sequence[_RectTypeCompatible_co], /) -> List[int]: ...
     def collideobjectsall(
