@@ -463,10 +463,10 @@ key_code(PyObject *self, PyObject *args, PyObject *kwargs)
     /* in the future, this should be an error. For now it's a warning to not
      * break existing code */
     if (!SDL_WasInit(SDL_INIT_VIDEO)) {
-        if (PyErr_WarnEx(PyExc_Warning,
-                         "pygame.init() has not been called. This function "
-                         "may return incorrect results",
-                         1) != 0) {
+        if (pgWarn(PyExc_Warning,
+                   "pygame.init() has not been called. This function "
+                   "may return incorrect results",
+                   1, 0) != 0) {
             return NULL;
         }
     }

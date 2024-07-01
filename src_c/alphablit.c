@@ -22,7 +22,6 @@
   pete@shinners.org
 */
 
-#define NO_PYGAME_C_API
 #include "_surface.h"
 #include "simd_shared.h"
 #include "simd_blitters.h"
@@ -2901,16 +2900,15 @@ premul_surf_color_by_alpha_non_simd(SDL_Surface *src, SDL_Surface *dst)
     }
 }
 
-#define _PG_WARN_SIMD(s)                                              \
-    if (pg_##s##_at_runtime_but_uncompiled()) {                       \
-        if (PyErr_WarnEx(                                             \
-                PyExc_RuntimeWarning,                                 \
-                "Your system is " #s " capable but pygame was not "   \
-                "built with support for it. The performance of some " \
-                "of your blits could be adversely affected",          \
-                1) < 0) {                                             \
-            return -1;                                                \
-        }                                                             \
+#define _PG_WARN_SIMD(s)                                                 \
+    if (pg_##s##_at_runtime_but_uncompiled()) {                          \
+        if (pgWarn(PyExc_RuntimeWarning,                                 \
+                   "Your system is " #s " capable but pygame was not "   \
+                   "built with support for it. The performance of some " \
+                   "of your blits could be adversely affected",          \
+                   1, 0) < 0) {                                          \
+            return -1;                                                   \
+        }                                                                \
     }
 
 /* On error, returns -1 with python error set. */

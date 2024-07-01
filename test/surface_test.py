@@ -21,6 +21,7 @@ import ctypes
 import itertools
 
 IS_PYPY = "PyPy" == platform.python_implementation()
+pygame.set_warnings_filter(2)
 
 
 class SurfaceTypeTest(unittest.TestCase):

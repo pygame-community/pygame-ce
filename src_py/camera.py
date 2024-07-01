@@ -1,10 +1,9 @@
 import os
 import platform
 import sys
-import warnings
 from abc import ABC, abstractmethod
 
-from pygame import error
+from pygame import error, warn
 
 _is_init = False
 
@@ -142,11 +141,11 @@ def init(backend=None):
 
     backend = backends[0] if backend is None else backend.lower()
     if backend not in backends:
-        warnings.warn(
+        warn(
             "We don't think this is a supported backend on this system, "
             "but we'll try it...",
-            Warning,
-            stacklevel=2,
+            urgency=2,
+            category=Warning,
         )
 
     try:

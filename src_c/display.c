@@ -900,9 +900,9 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     state->unscaled_render = vsync && !(flags & (PGS_SCALED | PGS_OPENGL));
 
     if (state->scaled_gl) {
-        if (PyErr_WarnEx(PyExc_FutureWarning,
-                         "SCALED|OPENGL is experimental and subject to change",
-                         1) != 0)
+        if (pgWarn(PyExc_FutureWarning,
+                   "SCALED|OPENGL is experimental and subject to change", 1,
+                   2) != 0)
             return NULL;
     }
 
@@ -1250,9 +1250,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                         goto DESTROY_WINDOW;
                     }
                     if (!(info.flags & SDL_RENDERER_ACCELERATED)) {
-                        if (PyErr_WarnEx(PyExc_Warning,
-                                         "no fast renderer available",
-                                         1) != 0) {
+                        if (pgWarn(PyExc_Warning, "no fast renderer available",
+                                   1, 2) != 0) {
                             _display_state_cleanup(state);
                             goto DESTROY_WINDOW;
                         }
@@ -1335,9 +1334,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         SDL_SetWindowIcon(win, pgSurface_AsSurface(state->icon));
 
     if (depth != 0 && PG_SURF_BitsPerPixel(surface->surf) != depth) {
-        if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                         "The depth argument is deprecated, and is ignored",
-                         1)) {
+        if (pgWarn(PyExc_DeprecationWarning,
+                   "The depth argument is deprecated, and is ignored", 1, 0)) {
             return NULL;
         }
     }
@@ -1851,9 +1849,9 @@ pg_set_palette(PyObject *self, PyObject *args)
 static PyObject *
 pg_set_gamma(PyObject *self, PyObject *arg)
 {
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "pygame.display.set_gamma deprecated since 2.1.4",
-                     1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "pygame.display.set_gamma deprecated since 2.1.4", 1,
+               1) == -1) {
         return NULL;
     }
 
@@ -1943,9 +1941,9 @@ pg_convert_to_uint16(PyObject *python_array, Uint16 *c_uint16_array)
 static PyObject *
 pg_set_gamma_ramp(PyObject *self, PyObject *arg)
 {
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "pygame.display.set_gamma_ramp deprecated since 2.1.4",
-                     1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "pygame.display.set_gamma_ramp deprecated since 2.1.4", 1,
+               1) == -1) {
         return NULL;
     }
 
@@ -2288,9 +2286,9 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
 #if defined(SDL_SYSWM_KMSDRM)
         case SDL_SYSWM_KMSDRM:
 #endif
-            if (PyErr_WarnEx(PyExc_Warning,
-                             "cannot leave FULLSCREEN on this platform",
-                             1) != 0) {
+            if (pgWarn(PyExc_Warning,
+                       "cannot leave FULLSCREEN on this platform", 1,
+                       0) != 0) {
                 return NULL;
             }
             return PyLong_FromLong(-1);
@@ -2423,9 +2421,8 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
              * This is only relevant in the non-GL case. */
             int wx = SDL_WINDOWPOS_UNDEFINED_DISPLAY(window_display);
             int wy = SDL_WINDOWPOS_UNDEFINED_DISPLAY(window_display);
-            if (PyErr_WarnEx(PyExc_Warning,
-                             "re-creating window in toggle_fullscreen",
-                             1) != 0) {
+            if (pgWarn(PyExc_Warning,
+                       "re-creating window in toggle_fullscreen", 1, 2) != 0) {
                 return NULL;
             }
             flags &= ~SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -2489,10 +2486,9 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
             }
             if (r_info.flags & SDL_RENDERER_SOFTWARE &&
                 wm_info.subsystem == SDL_SYSWM_X11) {
-                if (PyErr_WarnEx(
-                        PyExc_Warning,
-                        "recreating software renderer in toggle_fullscreen",
-                        1) != 0) {
+                if (pgWarn(PyExc_Warning,
+                           "recreating software renderer in toggle_fullscreen",
+                           1, 2) != 0) {
                     return NULL;
                 }
                 /* display surface lost? only on x11? */
@@ -2547,9 +2543,8 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
             /* This only happens AFTER other options have been exhausted.
              * with GL, Renderer, or the correct window size, toggling works.
              * Only entering a hard fullscreen state is unsupported. */
-            if (PyErr_WarnEx(PyExc_Warning,
-                             "skipping toggle_fullscreen on wayland",
-                             1) != 0) {
+            if (pgWarn(PyExc_Warning, "skipping toggle_fullscreen on wayland",
+                       1, 0) != 0) {
                 return NULL;
             }
             return PyLong_FromLong(-1);
@@ -2573,9 +2568,9 @@ pg_toggle_fullscreen(PyObject *self, PyObject *_null)
                 }
                 display_surface->surf = SDL_GetWindowSurface(win);
                 pg_SetDefaultWindow(win);
-                if (PyErr_WarnEx(PyExc_Warning,
-                                 "re-creating window in toggle_fullscreen",
-                                 1) != 0) {
+                if (pgWarn(PyExc_Warning,
+                           "re-creating window in toggle_fullscreen", 1,
+                           2) != 0) {
                     return NULL;
                 }
                 return PyLong_FromLong(-1);

@@ -224,6 +224,29 @@ object instead of the module, which can be used to test for availability.
 
    .. ## pygame.print_debug_info ##
 
+.. function:: warn
+
+   | :sl:`throws a warning`
+   | :sg:`warn(message, urgency, level=2, category=UserWarning)`
+
+   Throws a warning with a given urgency. See documentation for :c:func:`pgWarn` for more information on urgency system.
+   
+   Category accepts any subclass of a built-in class ``Warning`` and is a type of generated warning. 
+   Same as in `warnings.warn() <https://docs.python.org/3/library/warnings.html#warnings.warn>`_.
+
+   .. note::
+      This function is mostly used internally, but might be also useful for extensions.
+      Arg ``level`` denotes how much to trace back in the call stack.
+      Beware, that the default value is 2, meaning the caller of a function with ``pygame.warn(...)`` will be blamed: ::
+         
+         >>> def my_func():
+         ...     pygame.warn("Warning!", urgency=0)
+         ... 
+         >>> my_func()
+         <stdin>:1: UserWarning: Warning! (0: urgent)
+
+   .. # pygame.warn ""
+
 
 :mod:`pygame.version`
 =====================
