@@ -40,18 +40,19 @@ The pygame-ce logo and its variants were created by Mega-JC and kadir014 on June
 Upstream & legacy logos
 -----------------------
 
-.. container:: fullwidth
-
-
 The pygame logo was originally created
 by TheCorruptor on July 29, 2001.
 
 It was upscaled alongside its "LoFi" and "Powered" variants by Mega-JC on 
 August 29, 2021.
 
+.. container:: fullwidth
+
   |  `upstream_logos.zip <_static/upstream_logos.zip>`_ - 699 KB
 
 There is a higher resolution layered photoshop image
 available `here <https://www.pygame.org/ftp/pygame_ce_logo.psd>`_. *(1.3 MB)*
+
+.. container:: fullwidth
 
   |  `legacy_logos.zip <_static/legacy_logos.zip>`_ - 50.1 KB
