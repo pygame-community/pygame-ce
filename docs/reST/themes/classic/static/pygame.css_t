@@ -120,15 +120,17 @@ div.header .logo {
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    min-width: 214px;
 }
 .dark-theme div.header .logo {
     background-color: {{ theme_dark_logobgcolor }};
     border: none;
+    min-width: 214px;
 }
 div.header .logo img {
-    min-width: 200px;
-    min-height: 60px;
     border-style: none;
+    height: 80px;
+    min-width: 156px;
 }
 
 div.header .pagelinks {
