@@ -2744,6 +2744,40 @@ class GeneralSurfaceTests(unittest.TestCase):
         surf.scroll(dx=-3, dy=-3)
         self.assertEqual(surf.get_at((0, 0)), spot_color)
 
+    def test_pixel_format(self):
+        formats = [
+            "RGB",
+            "BGR",
+            "ARGB",
+            "RGBA",
+            "ABGR",
+            "BGRA",
+            "RGBX",
+            "BGRX",
+            "P",
+            "1LSB",
+            "1MSB",
+            "4LSB",
+            "4MSB",
+            "YV12",
+            "IYUV",
+            "YUY2",
+            "UYVY",
+            "YVYU",
+            "NV12",
+            "NV21",
+            "UNKNOWN",
+        ]
+        depths = {0: [8, 16, 24, 32], pygame.SRCALPHA: [16, 32]}
+
+        surf = pygame.Surface((10, 10))
+        self.assertIsInstance(surf.pixel_format, str)
+
+        for flag in [0, pygame.SRCALPHA]:
+            for depth in depths[flag]:
+                surf = pygame.Surface((10, 10), flag, depth)
+                self.assertIn(surf.pixel_format, formats)
+
 
 class SurfaceSubtypeTest(unittest.TestCase):
     """pygame-ce issue #295: Methods that return a new Surface preserve subclasses"""

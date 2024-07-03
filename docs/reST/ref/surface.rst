@@ -1085,4 +1085,47 @@
 
       .. versionadded:: 2.5.0
 
+   .. attribute:: pixel_format
+
+      | :sl:`Surface pixel format (read-only)`
+      | :sg:`pixel_format -> str`
+
+      Read-only attribute, a string representing the pixel format. If the format is unknown, the string
+      ``UNKNOWN`` is returned. Some of the formats are compatible with :mod:`pygame.image.tobytes` and
+      :mod:`pygame.image.frombytes`.
+
+         * ``P``, 8-bit palettized Surfaces
+
+         * ``RGB``, 24-bit image
+
+         * ``BGR``, 24-bit image with red and blue channels swapped
+
+         * ``ARGB``, 32-bit image with alpha channel first
+
+         * ``RGBA``, 32-bit image with an alpha channel
+
+         * ``ABGR``, 32-bit image with red and blue channels swapped and alpha channel first
+
+         * ``BGRA``, 32-bit image with red and blue channels swapped and an alpha channel
+
+         * ``RGBX``, 32-bt image with unused space
+         
+         * ``BGRX``, 32-bit image with red and blue channels swapped and unused space
+
+      Less common formats:
+
+         * ``1LSB``
+         * ``1MSB``
+         * ``4LSB``
+         * ``4MSB``
+         * ``YV12``
+         * ``IYUV``
+         * ``YUY2``
+         * ``UYVY``
+         * ``YVYU``
+         * ``NV12``
+         * ``NV21``
+
+      .. versionadded:: 2.5.1
+
    .. ## pygame.Surface ##

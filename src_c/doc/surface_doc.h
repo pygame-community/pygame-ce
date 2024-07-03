@@ -56,3 +56,4 @@
 #define DOC_SURFACE_WIDTH "width -> int\nSurface width in pixels (read-only)"
 #define DOC_SURFACE_HEIGHT "height -> int\nSurface height in pixels (read-only)"
 #define DOC_SURFACE_SIZE "height -> tuple[int, int]\nSurface size in pixels (read-only)"
+#define DOC_SURFACE_PIXELFORMAT "pixel_format -> str\nSurface pixel format (read-only)"

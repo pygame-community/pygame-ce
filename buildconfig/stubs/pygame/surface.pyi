@@ -40,6 +40,30 @@ _ViewKind = Literal[
     b"A",
 ]
 
+_pixel_format = Literal[
+    "RGB",
+    "BGR",
+    "ARGB",
+    "RGBA",
+    "ABGR",
+    "BGRA",
+    "RGBX",
+    "BGRX",
+    "P",
+    "1LSB",
+    "1MSB",
+    "4LSB",
+    "4MSB",
+    "YV12",
+    "IYUV",
+    "YUY2",
+    "UYVY",
+    "YVYU",
+    "NV12",
+    "NV21",
+    "UNKNOWN",
+]
+
 class Surface:
     _pixels_address: int
     @property
@@ -48,6 +72,8 @@ class Surface:
     def height(self) -> int: ...
     @property
     def size(self) -> Tuple[int, int]: ...
+    @property
+    def pixel_format(self) -> _pixel_format: ...
     @overload
     def __init__(
         self,

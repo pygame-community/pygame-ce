@@ -196,6 +196,8 @@ static PyObject *
 surf_premul_alpha(pgSurfaceObject *self, PyObject *args);
 static PyObject *
 surf_premul_alpha_ip(pgSurfaceObject *self, PyObject *args);
+static PyObject *
+surf_get_pixel_format(pgSurfaceObject *self, PyObject *args);
 static int
 _view_kind(PyObject *obj, void *view_kind_vptr);
 static int
@@ -236,6 +238,8 @@ static PyGetSetDef surface_getsets[] = {
     {"width", (getter)surf_get_width, NULL, DOC_SURFACE_WIDTH, NULL},
     {"height", (getter)surf_get_height, NULL, DOC_SURFACE_HEIGHT, NULL},
     {"size", (getter)surf_get_size, NULL, DOC_SURFACE_SIZE, NULL},
+    {"pixel_format", (getter)surf_get_pixel_format, NULL,
+     DOC_SURFACE_PIXELFORMAT, NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static struct PyMethodDef surface_methods[] = {
@@ -3149,6 +3153,111 @@ surf_premul_alpha_ip(pgSurfaceObject *self, PyObject *_null)
 
     Py_INCREF(self);
     return (PyObject *)self;
+}
+
+static PyObject *
+surf_get_pixel_format(pgSurfaceObject *self, PyObject *_null)
+{
+    SDL_Surface *surf = pgSurface_AsSurface(self);
+    SURF_INIT_CHECK(surf)
+
+    const char *pixel_format = "UNKNOWN";
+
+    switch (surf->format->format) {
+        case SDL_PIXELFORMAT_RGB332:
+        case SDL_PIXELFORMAT_RGB444:
+        case SDL_PIXELFORMAT_RGB555:
+        case SDL_PIXELFORMAT_RGB565:
+        case SDL_PIXELFORMAT_RGB24:
+        case SDL_PIXELFORMAT_RGB888:
+            pixel_format = "RGB";
+            break;
+
+        case SDL_PIXELFORMAT_BGR444:
+        case SDL_PIXELFORMAT_BGR555:
+        case SDL_PIXELFORMAT_BGR565:
+        case SDL_PIXELFORMAT_BGR24:
+        case SDL_PIXELFORMAT_BGR888:
+            pixel_format = "BGR";
+            break;
+
+        case SDL_PIXELFORMAT_ARGB4444:
+        case SDL_PIXELFORMAT_ARGB1555:
+        case SDL_PIXELFORMAT_ARGB8888:
+        case SDL_PIXELFORMAT_ARGB2101010:
+            pixel_format = "ARGB";
+            break;
+
+        case SDL_PIXELFORMAT_RGBA4444:
+        case SDL_PIXELFORMAT_RGBA5551:
+        case SDL_PIXELFORMAT_RGBA8888:
+            pixel_format = "RGBA";
+            break;
+
+        case SDL_PIXELFORMAT_ABGR4444:
+        case SDL_PIXELFORMAT_ABGR1555:
+        case SDL_PIXELFORMAT_ABGR8888:
+            pixel_format = "ABGR";
+            break;
+
+        case SDL_PIXELFORMAT_BGRA4444:
+        case SDL_PIXELFORMAT_BGRA5551:
+        case SDL_PIXELFORMAT_BGRA8888:
+            pixel_format = "BGRA";
+            break;
+
+        case SDL_PIXELFORMAT_RGBX8888:
+            pixel_format = "RGBX";
+            break;
+        case SDL_PIXELFORMAT_BGRX8888:
+            pixel_format = "BGRX";
+            break;
+
+        case SDL_PIXELFORMAT_INDEX1LSB:
+            pixel_format = "1LSB";
+            break;
+        case SDL_PIXELFORMAT_INDEX1MSB:
+            pixel_format = "1MSB";
+            break;
+        case SDL_PIXELFORMAT_INDEX4LSB:
+            pixel_format = "4LSB";
+            break;
+        case SDL_PIXELFORMAT_INDEX4MSB:
+            pixel_format = "4MSB";
+            break;
+        case SDL_PIXELFORMAT_INDEX8:
+            /* match image.tobytes format */
+            pixel_format = "P";
+            break;
+
+        case SDL_PIXELFORMAT_YV12:
+            pixel_format = "YV12";
+            break;
+        case SDL_PIXELFORMAT_IYUV:
+            pixel_format = "IYUV";
+            break;
+        case SDL_PIXELFORMAT_YUY2:
+            pixel_format = "YUY2";
+            break;
+        case SDL_PIXELFORMAT_UYVY:
+            pixel_format = "UYVY";
+            break;
+        case SDL_PIXELFORMAT_YVYU:
+            pixel_format = "YVYU";
+            break;
+        case SDL_PIXELFORMAT_NV12:
+            pixel_format = "NV12";
+            break;
+        case SDL_PIXELFORMAT_NV21:
+            pixel_format = "NV21";
+            break;
+
+        default:
+            /* unknown format already set */
+            break;
+    }
+
+    return Py_BuildValue("s", pixel_format);
 }
 
 static int
