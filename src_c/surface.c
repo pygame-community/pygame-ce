@@ -3259,7 +3259,7 @@ surf_get_pixel_format(pgSurfaceObject *self, PyObject *_null)
             break;
     }
 
-    return Py_BuildValue("s", pixel_format);
+    return PyUnicode_FromString(pixel_format);
 }
 
 static int
