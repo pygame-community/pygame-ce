@@ -3164,48 +3164,53 @@ surf_get_pixel_format(pgSurfaceObject *self, PyObject *_null)
     const char *pixel_format = "UNKNOWN";
 
     switch (surf->format->format) {
-        case SDL_PIXELFORMAT_RGB332:
-        case SDL_PIXELFORMAT_RGB444:
-        case SDL_PIXELFORMAT_RGB555:
-        case SDL_PIXELFORMAT_RGB565:
-        case SDL_PIXELFORMAT_RGB24:
+        case SDL_PIXELFORMAT_INDEX8:
+            /* match image.tobytes format */
+            pixel_format = "P";
+            break;
+
         case SDL_PIXELFORMAT_RGB888:
+        case SDL_PIXELFORMAT_RGB565:
+        case SDL_PIXELFORMAT_RGB555:
+        case SDL_PIXELFORMAT_RGB444:
+        case SDL_PIXELFORMAT_RGB332:
+        case SDL_PIXELFORMAT_RGB24:
             pixel_format = "RGB";
             break;
 
+        case SDL_PIXELFORMAT_BGR888:
+        case SDL_PIXELFORMAT_BGR565:
+        case SDL_PIXELFORMAT_BGR555:
 #if SDL_VERSION_ATLEAST(2, 0, 12)
         case SDL_PIXELFORMAT_BGR444:
 #endif
-        case SDL_PIXELFORMAT_BGR555:
-        case SDL_PIXELFORMAT_BGR565:
         case SDL_PIXELFORMAT_BGR24:
-        case SDL_PIXELFORMAT_BGR888:
             pixel_format = "BGR";
             break;
 
-        case SDL_PIXELFORMAT_ARGB4444:
-        case SDL_PIXELFORMAT_ARGB1555:
-        case SDL_PIXELFORMAT_ARGB8888:
-        case SDL_PIXELFORMAT_ARGB2101010:
-            pixel_format = "ARGB";
-            break;
-
-        case SDL_PIXELFORMAT_RGBA4444:
-        case SDL_PIXELFORMAT_RGBA5551:
         case SDL_PIXELFORMAT_RGBA8888:
+        case SDL_PIXELFORMAT_RGBA5551:
+        case SDL_PIXELFORMAT_RGBA4444:
             pixel_format = "RGBA";
             break;
 
-        case SDL_PIXELFORMAT_ABGR4444:
-        case SDL_PIXELFORMAT_ABGR1555:
-        case SDL_PIXELFORMAT_ABGR8888:
-            pixel_format = "ABGR";
+        case SDL_PIXELFORMAT_ARGB2101010:
+        case SDL_PIXELFORMAT_ARGB8888:
+        case SDL_PIXELFORMAT_ARGB1555:
+        case SDL_PIXELFORMAT_ARGB4444:
+            pixel_format = "ARGB";
             break;
 
-        case SDL_PIXELFORMAT_BGRA4444:
-        case SDL_PIXELFORMAT_BGRA5551:
         case SDL_PIXELFORMAT_BGRA8888:
+        case SDL_PIXELFORMAT_BGRA5551:
+        case SDL_PIXELFORMAT_BGRA4444:
             pixel_format = "BGRA";
+            break;
+
+        case SDL_PIXELFORMAT_ABGR8888:
+        case SDL_PIXELFORMAT_ABGR1555:
+        case SDL_PIXELFORMAT_ABGR4444:
+            pixel_format = "ABGR";
             break;
 
         case SDL_PIXELFORMAT_RGBX8888:
@@ -3226,10 +3231,6 @@ surf_get_pixel_format(pgSurfaceObject *self, PyObject *_null)
             break;
         case SDL_PIXELFORMAT_INDEX4MSB:
             pixel_format = "4MSB";
-            break;
-        case SDL_PIXELFORMAT_INDEX8:
-            /* match image.tobytes format */
-            pixel_format = "P";
             break;
 
         case SDL_PIXELFORMAT_YV12:

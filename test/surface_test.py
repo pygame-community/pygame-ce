@@ -2746,15 +2746,15 @@ class GeneralSurfaceTests(unittest.TestCase):
 
     def test_pixel_format(self):
         formats = [
+            "P",
             "RGB",
             "BGR",
-            "ARGB",
             "RGBA",
-            "ABGR",
+            "ARGB",
             "BGRA",
+            "ABGR",
             "RGBX",
             "BGRX",
-            "P",
             "1LSB",
             "1MSB",
             "4LSB",

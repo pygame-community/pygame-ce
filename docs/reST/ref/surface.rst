@@ -1100,13 +1100,13 @@
 
          * ``BGR``, 24-bit image with red and blue channels swapped
 
-         * ``ARGB``, 32-bit image with alpha channel first
-
          * ``RGBA``, 32-bit image with an alpha channel
 
-         * ``ABGR``, 32-bit image with red and blue channels swapped and alpha channel first
+         * ``ARGB``, 32-bit image with alpha channel first
 
          * ``BGRA``, 32-bit image with red and blue channels swapped and an alpha channel
+
+         * ``ABGR``, 32-bit image with red and blue channels swapped and alpha channel first
 
          * ``RGBX``, 32-bt image with unused space
          

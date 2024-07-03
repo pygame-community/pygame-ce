@@ -41,15 +41,15 @@ _ViewKind = Literal[
 ]
 
 _pixel_format = Literal[
+    "P",
     "RGB",
     "BGR",
-    "ARGB",
     "RGBA",
-    "ABGR",
+    "ARGB",
     "BGRA",
+    "ABGR",
     "RGBX",
     "BGRX",
-    "P",
     "1LSB",
     "1MSB",
     "4LSB",
