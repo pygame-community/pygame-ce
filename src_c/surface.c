@@ -3173,7 +3173,7 @@ surf_get_pixel_format(pgSurfaceObject *self, PyObject *_null)
             pixel_format = "RGB";
             break;
 
-#if SDL_VERSION_ATLEAST(1, 0, 12)
+#if SDL_VERSION_ATLEAST(2, 0, 12)
         case SDL_PIXELFORMAT_BGR444:
 #endif
         case SDL_PIXELFORMAT_BGR555:
