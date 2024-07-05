@@ -1041,7 +1041,7 @@
 
       .. ## Surface.premul_alpha ##
 
-    .. method:: premul_alpha_ip
+   .. method:: premul_alpha_ip
 
       | :sl:`multiplies the RGB channels by the surface alpha channel.`
       | :sg:`premul_alpha_ip() -> Surface`
