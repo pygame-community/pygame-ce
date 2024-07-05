@@ -4,7 +4,7 @@ version = "2.5.1.dev1"
 description = "Python Game Development"
 readme = "README.rst" # for long description
 requires-python = ">=3.8"
-license = {file = "docs/LGPL.txt"}  # path to LGPL license
+license = {text = "LGPL"}
 authors = [{name = "A community project"}]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
