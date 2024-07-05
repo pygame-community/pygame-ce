@@ -19,7 +19,7 @@ EXTRAS = {}
 METADATA = {
     "name": "pygame-ce",
     "version": pg_ver.version,
-    "license": "LGPL",
+    "license": "LGPL v2.1",
     "url": "https://pyga.me",
     "author": "A community project.",
     "description": "Python Game Development",
