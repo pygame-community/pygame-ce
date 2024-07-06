@@ -486,15 +486,6 @@ struct pgEventObject {
 };
 
 /*
- * surflock module internals
- */
-typedef struct {
-    PyObject_HEAD PyObject *surface;
-    PyObject *lockobj;
-    PyObject *weakrefs;
-} pgLifetimeLockObject;
-
-/*
  * surface module internals
  */
 struct pgSubSurface_Data {
@@ -542,7 +533,7 @@ typedef enum {
 #define PYGAMEAPI_JOYSTICK_NUMSLOTS 3
 #define PYGAMEAPI_DISPLAY_NUMSLOTS 2
 #define PYGAMEAPI_SURFACE_NUMSLOTS 4
-#define PYGAMEAPI_SURFLOCK_NUMSLOTS 8
+#define PYGAMEAPI_SURFLOCK_NUMSLOTS 6
 #define PYGAMEAPI_RWOBJECT_NUMSLOTS 5
 #define PYGAMEAPI_PIXELARRAY_NUMSLOTS 2
 #define PYGAMEAPI_COLOR_NUMSLOTS 5
