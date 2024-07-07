@@ -3134,8 +3134,10 @@ surf_premul_alpha_ip(pgSurfaceObject *self, PyObject *_null)
     SDL_Surface *surf = pgSurface_AsSurface(self);
     SURF_INIT_CHECK(surf)
 
-    if (!surf->w || !surf->h)
-        Py_RETURN_NONE;
+    if (!surf->w || !surf->h) {
+        Py_INCREF(self);
+        return (PyObject *)self;
+    }
 
     pgSurface_Prep(self);
 
