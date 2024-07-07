@@ -84,7 +84,6 @@ static PyObject *
 font_resource(const char *filename)
 {
     PyObject *pkgdatamodule = NULL;
-    PyObject *resourcefunc = NULL;
     PyObject *result = NULL;
     PyObject *tmp;
 
@@ -93,14 +92,9 @@ font_resource(const char *filename)
         return NULL;
     }
 
-    resourcefunc = PyObject_GetAttrString(pkgdatamodule, resourcefunc_name);
+    result =
+        PyObject_CallMethod(pkgdatamodule, resourcefunc_name, "s", filename);
     Py_DECREF(pkgdatamodule);
-    if (resourcefunc == NULL) {
-        return NULL;
-    }
-
-    result = PyObject_CallFunction(resourcefunc, "s", filename);
-    Py_DECREF(resourcefunc);
     if (result == NULL) {
         return NULL;
     }
