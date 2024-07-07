@@ -354,32 +354,25 @@ typedef struct {
  * auto imported/initialized by surface
  */
 #ifndef PYGAMEAPI_SURFLOCK_INTERNAL
-#define pgLifetimeLock_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(surflock, 0))
-
-#define pgLifetimeLock_Check(x) ((x)->ob_type == &pgLifetimeLock_Type)
-
 #define pgSurface_Prep(x) \
     if ((x)->subsurface)  \
-    (*(*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 1)))(x)
+    (*(*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 0)))(x)
 
 #define pgSurface_Unprep(x) \
     if ((x)->subsurface)    \
-    (*(*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 2)))(x)
+    (*(*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 1)))(x)
 
 #define pgSurface_Lock \
-    (*(int (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 3))
+    (*(int (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 2))
 
 #define pgSurface_Unlock \
-    (*(int (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 4))
+    (*(int (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 3))
 
 #define pgSurface_LockBy \
-    (*(int (*)(pgSurfaceObject *, PyObject *))PYGAMEAPI_GET_SLOT(surflock, 5))
+    (*(int (*)(pgSurfaceObject *, PyObject *))PYGAMEAPI_GET_SLOT(surflock, 4))
 
 #define pgSurface_UnlockBy \
-    (*(int (*)(pgSurfaceObject *, PyObject *))PYGAMEAPI_GET_SLOT(surflock, 6))
-
-#define pgSurface_LockLifetime \
-    (*(PyObject * (*)(PyObject *, PyObject *)) PYGAMEAPI_GET_SLOT(surflock, 7))
+    (*(int (*)(pgSurfaceObject *, PyObject *))PYGAMEAPI_GET_SLOT(surflock, 5))
 #endif
 
 /*
