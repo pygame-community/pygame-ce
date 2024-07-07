@@ -4114,7 +4114,6 @@ class SurfaceBlendTest(unittest.TestCase):
             self.assertIs(surf, surf.premul_alpha_ip())
 
 
-
 class SurfaceSelfBlitTest(unittest.TestCase):
     """Blit to self tests.
 
