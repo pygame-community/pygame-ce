@@ -39,10 +39,11 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/pygame-community/pygame-ce"
+homepage = "https://pyga.me"
 "Bug Reports" = "https://github.com/pygame-community/pygame-ce/issues"
-"Source" = "https://github.com/pygame-community/pygame-ce"
 "Documentation" = "https://pyga.me/docs"
+"Release Notes" = "https://github.com/pygame-community/pygame-ce/releases"
+"Source" = "https://github.com/pygame-community/pygame-ce"
 
 [project.entry-points.pyinstaller40]
 hook-dirs = 'pygame.__pyinstaller:get_hook_dirs'
