@@ -29,6 +29,7 @@ METADATA = {
         "Documentation": "https://pyga.me/docs",
         "Bug Tracker": "https://github.com/pygame-community/pygame-ce/issues",
         "Source": "https://github.com/pygame-community/pygame-ce",
+        "Release Notes": "https://github.com/pygame-community/pygame-ce/releases",
     },
     "classifiers": [
         "Development Status :: 5 - Production/Stable",
