@@ -2107,7 +2107,7 @@ bliterror:
 #define FBLITS_ERR_INCORRECT_ARGS_NUM 12
 #define FBLITS_ERR_FLAG_NOT_NUMERIC 13
 
-int
+static int PG_FORCEINLINE
 _surf_fblits_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
                                  int blend_flags)
 {
