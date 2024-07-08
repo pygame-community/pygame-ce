@@ -1,9 +1,10 @@
-.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_logo.svg
+.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_ce_logo.svg
+  :width: 800
   :alt: pygame
   :target: https://pyga.me/
 
 
-|DocsStatus| 
+|DocsStatus|
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
@@ -47,7 +48,7 @@ locally, it'll launch the online website instead.
 
 The online documentation stays up to date with the development version
 of pygame on github.  This may be a bit newer than the version of pygame
-you are using. To upgrade to the latest full release, run 
+you are using. To upgrade to the latest full release, run
 ``pip install pygame-ce --upgrade`` in your terminal.
 
 Best of all, the examples directory has many playable small programs
@@ -101,7 +102,7 @@ Tyler, Nathaniel Pryce, Dave Wallace, John Popplewell, Michael Urman,
 Andrew Straw, Michael Hudson, Ole Martin Bjoerndalen, Herve Cauwelier,
 James Mazer, Lalo Martins, Timothy Stranex, Chad Lester, Matthias
 Spiller, Bo Jangeborg, Dmitry Borisov, Campbell Barton, Diego Essaya,
-Eyal Lotem, Regis Desgroppes, Emmanuel Hainry, Randy Kaelber
+Eyal Lotem, Regis Desgroppes, Emmanuel Hainry, Randy Kaelber,
 Matthew L Daniel, Nirav Patel, Forrest Voight, Charlie Nolan,
 Frankie Robertson, John Krukoff, Lorenz Quack, Nick Irvine,
 Michael George, Saul Spatz, Thomas Ibbotson, Tom Rothamel, Evan Kroske,
@@ -132,7 +133,7 @@ Pygame is obviously strongly dependent on SDL and Python. It also
 links to and embeds several other smaller libraries. The font
 module relies on SDL_ttf, which is dependent on freetype. The mixer
 (and mixer.music) modules depend on SDL_mixer. The image module
-depends on SDL_image. Transform.rotozoom has an embedded version 
+depends on SDL_image. Transform.rotozoom has an embedded version
 of SDL_rotozoom, and gfxdraw has an embedded version of SDL_gfx.
 Dependency versions:
 
@@ -149,7 +150,18 @@ Dependency versions:
 | SDL_ttf  | >= 2.0.15              |
 +----------+------------------------+
 
+How to Contribute
+-----------------
+First of all, thank you for considering contributing to pygame-ce! It's people like you that make pygame-ce a great library. Please follow these steps to get started:
 
+1. Read the `Contribution Guidelines`_ and the `Many Ways to Contribute`_ wiki pages.
+2. Read the documentataion on `Opening A Pull Request`_ and `Opening a Great Pull Request`_.
+3. Read how to `label and link reported issues`_.
+4. Check the `issue tracker`_ for open issues that interest you or open a new issue to start a discussion about your idea.
+
+There are many more resources throughout the `wiki pages`_ that can help you get started.
+
+If you have any questions, please feel free to ask in the `Pygame Community Discord Server`_ or open an issue.
 
 License
 -------
@@ -176,12 +188,12 @@ See docs/licenses for licenses of dependencies.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.3.0.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.3.0...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.4.1.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.4.1...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
-   
+
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
@@ -192,6 +204,14 @@ See docs/licenses for licenses of dependencies.
 .. _Compilation wiki page: https://github.com/pygame-community/pygame-ce/wiki#compiling
 .. _docs page: https://pyga.me/docs
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
+.. _Contribution Guidelines: https://github.com/pygame-community/pygame-ce/wiki/Contribution-guidelines
+.. _Many Ways to Contribute: https://github.com/pygame-community/pygame-ce/wiki/Many-ways-to-contribute
+.. _Opening A Pull Request: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-pull-request
+.. _Opening a Great Pull Request: https://github.com/pygame-community/pygame-ce/wiki/Opening-a-great-pull-request
+.. _issue tracker: https://github.com/pygame-community/pygame-ce/issues
+.. _label and link reported issues: https://github.com/pygame-community/pygame-ce/wiki/Labelling-&-linking-reported-issues
+.. _Pygame Community Discord Server: https://discord.gg/pygame
+.. _wiki pages: https://github.com/pygame-community/pygame-ce/wiki
 
 .. _简体中文: ./docs/readmes/README.zh-cn.rst
 .. _Français: ./docs/readmes/README.fr.rst

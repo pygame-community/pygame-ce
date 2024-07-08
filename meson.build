@@ -86,7 +86,7 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
         )
     endif
 
-    sdl_ver = '2.30.3'
+    sdl_ver = '2.30.5'
     sdl_image_ver = '2.8.2'
     sdl_mixer_ver = '2.8.0'
     sdl_ttf_ver = '2.22.0'
@@ -365,7 +365,7 @@ subdir('src_py')
 
 if not get_option('stripped')
     # run make_docs and make docs
-    if not fs.is_dir('generated')
+    if not fs.is_dir('docs/generated')
         make_docs = files('buildconfig/make_docs.py')
         res = run_command(
             [find_program('python3', 'python'), make_docs],

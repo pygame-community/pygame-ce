@@ -231,7 +231,6 @@ load_font_res(const char *filename)
 {
     PyObject *load_basicfunc = 0;
     PyObject *pkgdatamodule = 0;
-    PyObject *resourcefunc = 0;
     PyObject *result = 0;
     PyObject *tmp;
 
@@ -240,13 +239,9 @@ load_font_res(const char *filename)
         goto font_resource_end;
     }
 
-    resourcefunc = PyObject_GetAttrString(pkgdatamodule, RESOURCE_FUNC_NAME);
-    if (!resourcefunc) {
-        goto font_resource_end;
-    }
-
-    result = PyObject_CallFunction(resourcefunc, "s", filename);
-    if (!result) {
+    result =
+        PyObject_CallMethod(pkgdatamodule, RESOURCE_FUNC_NAME, "s", filename);
+    if (result == NULL) {
         goto font_resource_end;
     }
 
@@ -270,7 +265,6 @@ load_font_res(const char *filename)
 
 font_resource_end:
     Py_XDECREF(pkgdatamodule);
-    Py_XDECREF(resourcefunc);
     Py_XDECREF(load_basicfunc);
     return result;
 }

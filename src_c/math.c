@@ -4192,6 +4192,18 @@ vector_elementwise(pgVector *vec, PyObject *_null)
     return (PyObject *)proxy;
 }
 
+static inline double
+lerp(double a, double b, double v)
+{
+    return a + (b - a) * v;
+}
+
+static inline double
+invlerp(double a, double b, double v)
+{
+    return (v - a) / (b - a);
+}
+
 static PyObject *
 math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
@@ -4231,6 +4243,72 @@ math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 
     Py_INCREF(value);
     return value;
+}
+
+#define RAISE_ARG_TYPE_ERROR(var)                                     \
+    if (PyErr_Occurred()) {                                           \
+        return RAISE(PyExc_TypeError,                                 \
+                     "The argument '" var "' must be a real number"); \
+    }
+
+static PyObject *
+math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (nargs != 3)
+        return RAISE(PyExc_TypeError,
+                     "invlerp requires exactly 3 numeric arguments");
+
+    double a = PyFloat_AsDouble(args[0]);
+    RAISE_ARG_TYPE_ERROR("a")
+    double b = PyFloat_AsDouble(args[1]);
+    RAISE_ARG_TYPE_ERROR("b")
+    double t = PyFloat_AsDouble(args[2]);
+    RAISE_ARG_TYPE_ERROR("value")
+
+    if (PyErr_Occurred())
+        return RAISE(PyExc_ValueError,
+                     "invalid argument values passed to invlerp, numbers "
+                     "might be too small or too big");
+
+    if (b - a == 0)
+        return RAISE(PyExc_ValueError,
+                     "the result of b - a needs to be different from zero");
+
+    return PyFloat_FromDouble(invlerp(a, b, t));
+}
+
+#
+
+static PyObject *
+math_remap(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (nargs != 5)
+        return RAISE(PyExc_TypeError,
+                     "remap requires exactly 5 numeric arguments");
+
+    PyObject *i_min = args[0];
+    PyObject *i_max = args[1];
+    PyObject *o_min = args[2];
+    PyObject *o_max = args[3];
+    PyObject *value = args[4];
+
+    double v = PyFloat_AsDouble(value);
+    RAISE_ARG_TYPE_ERROR("value")
+    double a = PyFloat_AsDouble(i_min);
+    RAISE_ARG_TYPE_ERROR("i_min")
+    double b = PyFloat_AsDouble(i_max);
+    RAISE_ARG_TYPE_ERROR("i_max")
+    double c = PyFloat_AsDouble(o_min);
+    RAISE_ARG_TYPE_ERROR("o_min")
+    double d = PyFloat_AsDouble(o_max);
+    RAISE_ARG_TYPE_ERROR("o_max")
+
+    if (b - a == 0)
+        return RAISE(
+            PyExc_ValueError,
+            "the result of i_max - i_min needs to be different from zero");
+
+    return PyFloat_FromDouble(lerp(c, d, invlerp(a, b, v)));
 }
 
 static PyObject *
@@ -4343,6 +4421,8 @@ math_disable_swizzling(pgVector *self, PyObject *_null)
 static PyMethodDef _math_methods[] = {
     {"clamp", (PyCFunction)math_clamp, METH_FASTCALL, DOC_MATH_CLAMP},
     {"lerp", (PyCFunction)math_lerp, METH_FASTCALL, DOC_MATH_LERP},
+    {"invlerp", (PyCFunction)math_invlerp, METH_FASTCALL, DOC_MATH_INVLERP},
+    {"remap", (PyCFunction)math_remap, METH_FASTCALL, DOC_MATH_REMAP},
     {"smoothstep", (PyCFunction)math_smoothstep, METH_FASTCALL,
      DOC_MATH_SMOOTHSTEP},
     {"enable_swizzling", (PyCFunction)math_enable_swizzling, METH_NOARGS,

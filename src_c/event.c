@@ -426,7 +426,7 @@ _pg_translate_windowevent(void *_, SDL_Event *event)
 {
     if (event->type == SDL_WINDOWEVENT) {
         event->type = PGE_WINDOWSHOWN + event->window.event - 1;
-        return SDL_EventState(_pg_pgevent_proxify(event->type), SDL_QUERY);
+        return PG_EventEnabled(_pg_pgevent_proxify(event->type));
     }
     return 1;
 }
@@ -599,7 +599,7 @@ pg_event_filter(void *_, SDL_Event *event)
             return RAISE(pgExc_SDLError, SDL_GetError()), 0;
         */
     }
-    return SDL_EventState(_pg_pgevent_proxify(event->type), SDL_QUERY);
+    return PG_EventEnabled(_pg_pgevent_proxify(event->type));
 }
 
 /* The two keyrepeat functions below modify state accessed by the event filter,
@@ -2142,7 +2142,7 @@ pg_event_set_allowed(PyObject *self, PyObject *obj)
     if (obj == Py_None) {
         int i;
         for (i = SDL_FIRSTEVENT; i < SDL_LASTEVENT; i++) {
-            SDL_EventState(i, SDL_ENABLE);
+            PG_SetEventEnabled(i, SDL_TRUE);
         }
     }
     else {
@@ -2156,7 +2156,7 @@ pg_event_set_allowed(PyObject *self, PyObject *obj)
                 Py_DECREF(seq);
                 return NULL;
             }
-            SDL_EventState(_pg_pgevent_proxify(type), SDL_ENABLE);
+            PG_SetEventEnabled(_pg_pgevent_proxify(type), SDL_TRUE);
         }
         Py_DECREF(seq);
     }
@@ -2175,7 +2175,7 @@ pg_event_set_blocked(PyObject *self, PyObject *obj)
         int i;
         /* Start at PGPOST_EVENTBEGIN */
         for (i = PGPOST_EVENTBEGIN; i < SDL_LASTEVENT; i++) {
-            SDL_EventState(i, SDL_IGNORE);
+            PG_SetEventEnabled(i, SDL_FALSE);
         }
     }
     else {
@@ -2189,14 +2189,14 @@ pg_event_set_blocked(PyObject *self, PyObject *obj)
                 Py_DECREF(seq);
                 return NULL;
             }
-            SDL_EventState(_pg_pgevent_proxify(type), SDL_IGNORE);
+            PG_SetEventEnabled(_pg_pgevent_proxify(type), SDL_FALSE);
         }
         Py_DECREF(seq);
     }
     /* Never block SDL_WINDOWEVENT, we need them for translation */
-    SDL_EventState(SDL_WINDOWEVENT, SDL_ENABLE);
+    PG_SetEventEnabled(SDL_WINDOWEVENT, SDL_TRUE);
     /* Never block PGE_KEYREPEAT too, its needed for pygame internal use */
-    SDL_EventState(PGE_KEYREPEAT, SDL_ENABLE);
+    PG_SetEventEnabled(PGE_KEYREPEAT, SDL_TRUE);
     Py_RETURN_NONE;
 }
 
@@ -2219,8 +2219,7 @@ pg_event_get_blocked(PyObject *self, PyObject *obj)
             Py_DECREF(seq);
             return NULL;
         }
-        if (SDL_EventState(_pg_pgevent_proxify(type), SDL_QUERY) ==
-            SDL_IGNORE) {
+        if (PG_EventEnabled(_pg_pgevent_proxify(type)) == SDL_FALSE) {
             isblocked = 1;
             break;
         }
