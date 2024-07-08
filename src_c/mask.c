@@ -829,7 +829,7 @@ set_from_threshold(SDL_Surface *surf, bitmask_t *bitmask, int threshold)
 #endif
 
     srcp = (Uint8 *)surf->pixels + _a_off;
-    const Uint8 u_threshold = (Uint8)(MIN(MAX(threshold, 0), 255));
+    const Uint8 u_threshold = (Uint8)threshold;
 
     for (y = 0; y < surf->h; ++y) {
         x = 0;
