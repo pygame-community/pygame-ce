@@ -3841,9 +3841,7 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
             result = pygame_Blit(src, srcrect, dst, dstrect, 0);
         }
         else {
-            SDL_PixelFormat newfmt;
-
-            memcpy(&newfmt, src->format, sizeof(SDL_PixelFormat));
+            SDL_PixelFormat newfmt = *src->format;
 
             newfmt.palette = 0; /* Set NULL (or SDL gets confused) */
             newfmt.Amask = 0;
