@@ -4108,6 +4108,11 @@ class SurfaceBlendTest(unittest.TestCase):
                         ),
                     )
 
+        for size in [(0, 0), (1, 0), (0, 1), (10, 10)]:
+            surf = pygame.Surface(size, pygame.SRCALPHA, 32)
+            surf.fill((32, 44, 4, 123))
+            self.assertIs(surf, surf.premul_alpha_ip())
+
 
 class SurfaceSelfBlitTest(unittest.TestCase):
     """Blit to self tests.
