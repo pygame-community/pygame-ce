@@ -795,7 +795,7 @@ set_from_threshold(SDL_Surface *surf, bitmask_t *bitmask, int threshold)
     Uint8 *srcp;
     const int src_skip = surf->pitch - surf->w * bpp;
 
-    if (threshold > 255) {
+    if (threshold >= 255) {
         return;
     }
 
