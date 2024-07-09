@@ -1,6 +1,8 @@
 import webbrowser
 
-from pygame.docs import PKG_DIR
+# use relative import here and not absolute, so that `python -m docs` works at
+# development time
+from . import PKG_DIR
 
 
 def open_docs():

@@ -85,24 +85,20 @@ _pg_has_avx2()
     }
 
 /* Setup for RUN_16BIT_SHUFFLE_OUT */
-#define SETUP_SHUFFLE                                                         \
-    __m256i shuff_dst, _shuff16_temp, mm256_colorA, mm256_colorB, mm256_zero; \
-    mm256_zero = _mm256_setzero_si256();                                      \
-    mm256_colorA = _mm256_unpacklo_epi8(mm256_color, mm256_zero);             \
-    mm256_colorB = _mm256_unpackhi_epi8(mm256_color, mm256_zero);
+#define SETUP_SHUFFLE                                                      \
+    __m256i shuff_dst, _shuff16_temp, mm256_zero = _mm256_setzero_si256(); \
+    mm256_color = _mm256_unpacklo_epi8(mm256_color, mm256_zero);
 
 #define RUN_16BIT_SHUFFLE_OUT(FILL_CODE)                       \
     /* ==== shuffle pixels out into two registers each, src */ \
     /* and dst set up for 16 bit math, like 0A0R0G0B ==== */   \
     shuff_dst = _mm256_unpacklo_epi8(mm256_dst, mm256_zero);   \
-    mm256_color = mm256_colorA;                                \
                                                                \
     {FILL_CODE}                                                \
                                                                \
     _shuff16_temp = shuff_dst;                                 \
                                                                \
     shuff_dst = _mm256_unpackhi_epi8(mm256_dst, mm256_zero);   \
-    mm256_color = mm256_colorB;                                \
                                                                \
     {FILL_CODE}                                                \
                                                                \

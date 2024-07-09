@@ -48,7 +48,7 @@ def threshold(
     diff_color=(0, 0, 0),
     change_return=True,
 ):
-    """given the color it makes return_surf only have areas with the given colour."""
+    """given the color it makes return_surf only have areas with the given color."""
 
     width, height = surf.get_width(), surf.get_height()
 
@@ -79,6 +79,84 @@ def threshold(
             #    print(c1, c2)
 
     return similar
+
+
+def rgb_to_hsl(rgb):
+    r, g, b = rgb
+    r, g, b = r / 255.0, g / 255.0, b / 255.0
+    max_color = max(r, g, b)
+    min_color = min(r, g, b)
+    l = (max_color + min_color) / 2
+    if max_color == min_color:
+        s = h = 0
+    else:
+        if l < 0.5:
+            s = (max_color - min_color) / (max_color + min_color)
+        else:
+            s = (max_color - min_color) / (2.0 - max_color - min_color)
+        if r == max_color:
+            h = (g - b) / (max_color - min_color)
+        elif g == max_color:
+            h = 2.0 + (b - r) / (max_color - min_color)
+        else:
+            h = 4.0 + (r - g) / (max_color - min_color)
+    h /= 6.0
+    h %= 1
+    return h, s, l
+
+
+def hsl_to_rgb(hsl):
+    h, s, l = hsl
+    if s == 0:
+        r = g = b = l
+    else:
+
+        def hue_to_rgb(p, q, t):
+            if t < 0:
+                t += 1
+            if t > 1:
+                t -= 1
+            if t < 1 / 6:
+                return p + (q - p) * 6 * t
+            if t < 1 / 2:
+                return q
+            if t < 2 / 3:
+                return p + (q - p) * (2 / 3 - t) * 6
+            return p
+
+        q = l * (1 + s) if l < 0.5 else l + s - l * s
+        p = 2 * l - q
+        r = hue_to_rgb(p, q, h + 1 / 3)
+        g = hue_to_rgb(p, q, h)
+        b = hue_to_rgb(p, q, h - 1 / 3)
+
+    return int(r * 255), int(g * 255), int(b * 255)
+
+
+def modify_hsl(h, s, l, dh, ds, dl):
+    if dh:
+        h += dh
+        if h > 1:
+            h -= 1
+        elif h < 0:
+            h += 1
+    if ds:
+        s *= 1 + ds
+        if s > 1:
+            s = 1
+        elif s < 0:
+            s = 0
+    if dl:
+        if dl > 0:
+            l = l * (1 - dl) + dl
+        else:
+            l = l * (1 + dl)
+        if l > 1:
+            l = 1
+        elif l < 0:
+            l = 0
+
+    return h, s, l
 
 
 class TransformModuleTest(unittest.TestCase):
@@ -234,10 +312,187 @@ class TransformModuleTest(unittest.TestCase):
         super_surf.fill((255, 0, 0), pygame.Rect(0, 0, 32, 32))
         sub_surf = super_surf.subsurface(pygame.Rect(0, 0, 32, 32))
 
-        grey_sub_surf = pygame.transform.grayscale(sub_surf)
-        self.assertEqual(pygame.transform.average_color(grey_sub_surf)[0], 76)
-        self.assertEqual(pygame.transform.average_color(grey_sub_surf)[0], 76)
-        self.assertEqual(pygame.transform.average_color(grey_sub_surf)[0], 76)
+        gray_sub_surf = pygame.transform.grayscale(sub_surf)
+        self.assertEqual(pygame.transform.average_color(gray_sub_surf)[0], 76)
+        self.assertEqual(pygame.transform.average_color(gray_sub_surf)[0], 76)
+        self.assertEqual(pygame.transform.average_color(gray_sub_surf)[0], 76)
+
+    def test_hsl_args(self):
+        """Ensures transform.hsl() correctly handles incorrect arguments"""
+        s = pygame.Surface((32, 32))
+        invalid_surf_args = [
+            None,
+            1,
+            0,
+            1.0,
+            0.0,
+            "1",
+            [],
+            {},
+            set(),
+            True,
+            False,
+        ]
+        invalid_hsl_args = [
+            None,
+            "1",
+            [],
+            {},
+            set(),
+        ]
+        invalid_sl_argsv = [
+            -2,
+            -2.0,
+            2,
+            2.0,
+        ]
+
+        for arg in invalid_surf_args:
+            with self.assertRaises(TypeError):
+                pygame.transform.hsl(arg, 0)
+            with self.assertRaises(TypeError):
+                pygame.transform.hsl(s, 0, 0, 0, arg)
+        for arg in invalid_hsl_args:
+            with self.assertRaises(TypeError):
+                pygame.transform.hsl(s, arg)
+            with self.assertRaises(TypeError):
+                pygame.transform.hsl(s, 0, arg)
+            with self.assertRaises(TypeError):
+                pygame.transform.hsl(s, 0, 0, arg)
+        for arg in invalid_sl_argsv:
+            with self.assertRaises(ValueError):
+                pygame.transform.hsl(s, 0, arg)
+            with self.assertRaises(ValueError):
+                pygame.transform.hsl(s, 0, 0, arg)
+
+        # different sized surfaces
+        s2 = pygame.Surface((31, 32))
+        with self.assertRaises(ValueError):
+            pygame.transform.hsl(s, 0, dest_surface=s2)
+
+        # different depths
+        s2 = pygame.Surface((32, 32), depth=16)
+        s3 = pygame.Surface((32, 32), depth=24)
+
+        with self.assertRaises(ValueError):
+            pygame.transform.hsl(s, 0, dest_surface=s2)
+        with self.assertRaises(ValueError):
+            pygame.transform.hsl(s, 0, dest_surface=s3)
+
+    def test_hsl_return_value(self):
+        """Ensures transform.hsl() returns a Surface"""
+        sources = [pygame.Surface((32, 32), depth=d) for d in [16, 24, 32]]
+        destinations = [pygame.Surface((32, 32), depth=d) for d in [16, 24, 32]]
+
+        hsl = pygame.transform.hsl
+
+        for src, dst in zip(sources, destinations):
+            # test that the return value is a surface
+            self.assertIsInstance(hsl(src, 1), pygame.Surface)
+            self.assertIsInstance(hsl(src, 1, 0.2), pygame.Surface)
+            self.assertIsInstance(hsl(src, 1, 0.2, 0.2), pygame.Surface)
+
+            # test that the return value is a surface when a destination surface is given
+            self.assertIsInstance(hsl(src, 1, dest_surface=dst), pygame.Surface)
+            self.assertIsInstance(hsl(src, 1, 0.2, dest_surface=dst), pygame.Surface)
+            self.assertIsInstance(
+                hsl(src, 1, 0.2, 0.2, dest_surface=dst), pygame.Surface
+            )
+
+            # test that the destination surface is returned
+            self.assertIs(hsl(src, 1, dest_surface=dst), dst)
+            self.assertIs(hsl(src, 1, 0.2, dest_surface=dst), dst)
+            self.assertIs(hsl(src, 1, 0.2, 0.12, dest_surface=dst), dst)
+
+            # test that the returned surface isn't the source surface
+            self.assertIsNot(hsl(src, 1), src)
+            self.assertIsNot(hsl(src, 1, 0.2), src)
+            self.assertIsNot(hsl(src, 1, 0.2, 0.2), src)
+
+    def test_hsl(self):
+        """Ensures the hsl() function works correctly, meaning it correctly
+        modifies the hue, saturation, and lightness of a surface."""
+        surf = pygame.Surface((1, 1))
+        dest = pygame.Surface((1, 1))
+        colors = [
+            (0, 0, 0),
+            (255, 255, 255),
+            (255, 0, 0),
+            (0, 255, 0),
+            (0, 0, 255),
+            (127, 127, 127),
+            (11, 23, 34),
+            (1, 0, 1),
+        ]
+
+        for color in colors:
+            for h in range(0, 360, 10):
+                for s in range(0, 100, 10):
+                    for l in range(0, 100, 10):
+                        surf.fill(color)
+                        ns = s / 100.0
+                        nl = l / 100.0
+
+                        hsl_surf = pygame.transform.hsl(surf, h, ns, nl)
+                        pygame.transform.hsl(surf, h, ns, nl, dest_surface=dest)
+
+                        nh = h / 360.0
+                        modified_hsl = modify_hsl(*rgb_to_hsl(color), nh, ns, nl)
+                        expected_rgb = hsl_to_rgb(modified_hsl)
+
+                        # without destination
+                        actual_rgb = hsl_surf.get_at((0, 0)).rgb
+                        for v1, v2 in zip(expected_rgb, actual_rgb):
+                            self.assertAlmostEqual(v1, v2, delta=1)
+
+                        # with destination
+                        actual_rgb = dest.get_at((0, 0)).rgb
+                        for v1, v2 in zip(expected_rgb, actual_rgb):
+                            self.assertAlmostEqual(v1, v2, delta=1)
+
+        surf = pygame.Surface((1, 1), flags=pygame.SRCALPHA)
+        dest = pygame.Surface((1, 1), flags=pygame.SRCALPHA)
+
+        alpha_colors = [
+            (0, 0, 0, 0),
+            (255, 255, 255, 255),
+            (255, 0, 0, 255),
+            (0, 255, 0, 255),
+            (0, 0, 255, 255),
+            (127, 127, 127, 127),
+            (11, 23, 34, 255),
+            (1, 0, 1, 255),
+        ]
+
+        for color in alpha_colors:
+            c_a = color[3]
+            for h in range(0, 360, 10):
+                for s in range(0, 100, 10):
+                    for l in range(0, 100, 10):
+                        surf.fill(color)
+                        ns = s / 100.0
+                        nl = l / 100.0
+
+                        hsl_surf = pygame.transform.hsl(surf, h, ns, nl)
+                        pygame.transform.hsl(surf, h, ns, nl, dest_surface=dest)
+
+                        nh = h / 360.0
+                        modified_hsl = modify_hsl(*rgb_to_hsl(color[:3]), nh, ns, nl)
+                        expected_rgb = hsl_to_rgb(modified_hsl)
+
+                        # without destination
+                        actual_color = hsl_surf.get_at((0, 0))
+                        actual_rgb = actual_color.rgb
+                        for v1, v2 in zip(expected_rgb, actual_rgb):
+                            self.assertAlmostEqual(v1, v2, delta=1)
+                        self.assertEqual(c_a, actual_color.a)
+
+                        # with destination
+                        actual_color = dest.get_at((0, 0))
+                        actual_rgb = actual_color.rgb
+                        for v1, v2 in zip(expected_rgb, actual_rgb):
+                            self.assertAlmostEqual(v1, v2, delta=1)
+                        self.assertEqual(c_a, actual_color.a)
 
     def test_grayscale_simd_assumptions(self):
         # The grayscale SIMD algorithm relies on the destination surface pitch
@@ -1599,6 +1854,19 @@ class TransformDisplayModuleTest(unittest.TestCase):
         sf_b2 = pygame.transform.gaussian_blur(sf, 50, repeat_edge_pixels=False)
         for pos in data2:
             self.assertTrue(sf_b2.get_at(pos) == data2[pos])
+
+    def test_blur_zero_size_surface(self):
+        surface = pygame.Surface((0, 0))
+        self.assertEqual(pygame.transform.box_blur(surface, 3).get_size(), (0, 0))
+        self.assertEqual(pygame.transform.gaussian_blur(surface, 3).get_size(), (0, 0))
+
+        surface = pygame.Surface((20, 0))
+        self.assertEqual(pygame.transform.box_blur(surface, 3).get_size(), (20, 0))
+        self.assertEqual(pygame.transform.gaussian_blur(surface, 3).get_size(), (20, 0))
+
+        surface = pygame.Surface((0, 20))
+        self.assertEqual(pygame.transform.box_blur(surface, 3).get_size(), (0, 20))
+        self.assertEqual(pygame.transform.gaussian_blur(surface, 3).get_size(), (0, 20))
 
     def test_flip(self):
         """honors the set_color key on the returned surface from flip."""

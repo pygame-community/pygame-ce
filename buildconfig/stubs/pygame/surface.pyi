@@ -42,6 +42,12 @@ _ViewKind = Literal[
 
 class Surface:
     _pixels_address: int
+    @property
+    def width(self) -> int: ...
+    @property
+    def height(self) -> int: ...
+    @property
+    def size(self) -> Tuple[int, int]: ...
     @overload
     def __init__(
         self,
@@ -63,7 +69,7 @@ class Surface:
     def blit(
         self,
         source: Surface,
-        dest: Union[Coordinate, RectValue],
+        dest: Union[Coordinate, RectValue] = (0, 0),
         area: Optional[RectValue] = None,
         special_flags: int = 0,
     ) -> Rect: ...
@@ -156,5 +162,6 @@ class Surface:
     def get_buffer(self) -> BufferProxy: ...
     def get_blendmode(self) -> int: ...
     def premul_alpha(self) -> Surface: ...
+    def premul_alpha_ip(self) -> Surface: ...
 
 SurfaceType = Surface

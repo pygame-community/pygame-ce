@@ -14,6 +14,8 @@
 #include "pygame.h"
 #include "Python.h"
 
+#include <SDL_ttf.h>
+
 #if defined(__EMSCRIPTEN__)
 #undef WITH_THREAD
 #endif
@@ -269,6 +271,12 @@ static struct PyModuleDef mod_pygame_static = {PyModuleDef_HEAD_INIT,
 PyMODINIT_FUNC
 PyInit_pygame_static()
 {
+    // cannot fail here, and font_initialized is already set to 1 in font.c .
+    TTF_Init();
+
+    // for correct input in wasm worker
+    SDL_SetHint("SDL_EMSCRIPTEN_KEYBOARD_ELEMENT", "1");
+
     load_submodule("pygame", PyInit_base(), "base");
     load_submodule("pygame", PyInit_constants(), "constants");
     load_submodule("pygame", PyInit_surflock(), "surflock");
@@ -326,8 +334,6 @@ PyInit_pygame_static()
 #undef pgSurface_UnlockBy
 #undef pgSurface_Prep
 #undef pgSurface_Unprep
-#undef pgLifetimeLock_Type
-#undef pgSurface_LockLifetime
 
 #include "surflock.c"
 

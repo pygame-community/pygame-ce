@@ -39,11 +39,6 @@
       ((x, y), radius)
       (x, y, radius)
 
-   It is important to note that you cannot create degenerate circles, which are circles with
-   a radius of 0 or less. If you try to create such a circle, the `Circle` object will not be
-   created and an error will be raised. This is because a circle with a radius of 0 or
-   less is not a valid geometric object.
-
    The `Circle` class has both virtual and non-virtual attributes. Non-virtual attributes
    are attributes that are stored in the `Circle` object itself. Virtual attributes are the
    result of calculations that utilize the Circle's non-virtual attributes.
@@ -90,6 +85,9 @@
          The circle will not be moved from its original position.
 
          .. versionadded:: 2.4.0
+
+         .. versionchanged:: 2.5.1 It is allowed to create degenerate circles with radius
+            equal to ``0``. This also applies to virtual attributes.
 
          .. ## Circle.r ##
 
@@ -262,6 +260,48 @@
          
          .. ## Circle.colliderect ##
 
+   .. method:: collideswith
+
+         | :sl:`check if a shape or point collides with the circle`
+         | :sg:`collideswith(circle, /) -> bool`
+         | :sg:`collideswith(rect, /) -> bool`
+         | :sg:`collideswith((x, y), /) -> bool`
+         | :sg:`collideswith(vector2, /) -> bool`
+
+         The `collideswith` method checks if a shape or point overlaps with a `Circle` object.
+         It takes a single argument which can be a `Circle`, `Rect`, `FRect`, or a point.
+         It returns `True` if there's an overlap, and `False` otherwise.
+
+         .. note::
+             The shape argument must be an actual shape object (`Circle`, `Rect`, or `FRect`).
+             You can't pass a tuple or list of coordinates representing the shape (except for a point),
+             because the shape type can't be determined from the coordinates alone.
+
+         .. versionadded:: 2.5.0
+
+         .. ## Circle.collideswith ##
+
+   .. method:: contains
+
+         | :sl:`check if a shape or point is inside the circle`
+         | :sg:`contains(circle, /) -> bool`
+         | :sg:`contains(rect, /) -> bool`
+         | :sg:`contains((x, y), /) -> bool`
+         | :sg:`contains(vector2, /) -> bool`
+
+         Checks whether a given shape or point is completely contained within the `Circle`.
+         Takes a single argument which can be a `Circle`, `Rect`, `FRect`, or a point.
+         Returns `True` if the shape or point is completely contained, and `False` otherwise.
+
+         .. note::
+             The shape argument must be an actual shape object (`Circle`, `Rect`, or `FRect`).
+             You can't pass a tuple or list of coordinates representing the shape (except for a point),
+             because the shape type can't be determined from the coordinates alone.
+
+         .. versionadded:: 2.5.0
+
+         .. ## Circle.contains ##
+
    .. method:: update
 
          | :sl:`updates the circle position and radius`
@@ -284,6 +324,79 @@
          .. versionadded:: 2.4.0
 
          .. ## Circle.update ##
+
+   .. method:: rotate
+
+         | :sl:`rotates the circle`
+         | :sg:`rotate(angle, rotation_point=Circle.center, /) -> Circle`
+         | :sg:`rotate(angle, /) -> Circle`
+
+         Returns a new `Circle` that is rotated by the specified angle around a point.
+         A positive angle rotates the circle clockwise, while a negative angle rotates it counter-clockwise. Angles should be specified in degrees.
+         The rotation point can be a `tuple`, `list`, or `Vector2`.
+         If no rotation point is given, the circle will be rotated around its center.
+
+         .. versionadded:: 2.5.0
+
+         .. ## Circle.rotate ##
+
+   .. method:: rotate_ip
+
+         | :sl:`rotates the circle in place`
+         | :sg:`rotate_ip(angle, rotation_point=Circle.center, /) -> None`
+         | :sg:`rotate_ip(angle, /) -> None`
+
+
+         This method rotates the circle by a specified angle around a point.
+         A positive angle rotates the circle clockwise, while a negative angle rotates it counter-clockwise. Angles should be specified in degrees.
+         The rotation point can be a `tuple`, `list`, or `Vector2`.
+         If no rotation point is given, the circle will be rotated around its center.
+
+         .. versionadded:: 2.5.0
+
+         .. ## Circle.rotate_ip ##
+
+   .. method:: as_rect
+
+         | :sl:`returns the smallest pygame.Rect object that contains the circle`
+         | :sg:`as_rect() -> Rect`
+
+         The `as_rect` method returns a `pygame.Rect` object that represents the smallest
+         rectangle that completely contains the `Circle` object. This means that the `Rect`
+         object returned by as_rect will have dimensions such that it completely encloses
+         the `Circle`, with no part of the `Circle` extending outside of the `Rect`.
+
+         .. note::
+             This method is equivalent(behaviour wise) to the following code:
+
+             .. code-block:: python
+
+                 Rect(circle.x - circle.r, circle.y - circle.r, circle.r * 2, circle.r * 2)
+
+         .. versionadded:: 2.5.0
+
+         .. ## Circle.as_rect ##
+
+   .. method:: as_frect
+
+         | :sl:`returns the smallest pygame.FRect object that contains the circle`
+         | :sg:`as_frect() -> FRect`
+
+         The `as_frect` method returns a `pygame.FRect` object that represents the smallest
+         rectangle that completely contains the `Circle` object. This means that the `FRect`
+         object returned by as_rect will have dimensions such that it completely encloses
+         the `Circle`, with no part of the `Circle` extending outside of the `FRect`.
+
+         .. note::
+             This method is equivalent(behaviour wise) to the following code:
+
+             .. code-block:: python
+
+                 FRect(circle.x - circle.r, circle.y - circle.r, circle.r * 2, circle.r * 2)
+
+         .. versionadded:: 2.5.0
+
+         .. ## Circle.as_frect ##
 
    .. method:: copy
 

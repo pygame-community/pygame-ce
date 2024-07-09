@@ -410,8 +410,7 @@ class AbstractGroup:
 
         :param sprite: The sprite we are removing.
         """
-        lost_rect = self.spritedict[sprite]
-        if lost_rect:
+        if lost_rect := self.spritedict[sprite]:
             self.lostsprites.append(lost_rect)
         del self.spritedict[sprite]
 
@@ -1126,9 +1125,7 @@ class LayeredDirty(LayeredUpdates):
 
         LayeredUpdates.add_internal(self, sprite, layer)
 
-    def draw(
-        self, surface, bgd=None
-    ):  # noqa pylint: disable=arguments-differ; unable to change public interface
+    def draw(self, surface, bgd=None):  # noqa pylint: disable=arguments-differ; unable to change public interface
         """draw all sprites in the right order onto the given surface
 
         LayeredDirty.draw(surface, bgd=None): return Rect_list

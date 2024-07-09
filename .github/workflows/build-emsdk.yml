@@ -40,33 +40,12 @@ jobs:
       SDK_ARCHIVE: python3.11-wasm-sdk-Ubuntu-22.04.tar.lz4
       SDKROOT: /opt/python-wasm-sdk
 
-      # use the most recent cython from github, but pin on a commit for CI
-      # stability. This is also needed to benefit from caching cython installs
-      LATEST_CYTHON_COMMIT: 2f3a781dcca092ce95fbfef2736b12b0d1ab50dd # cython 3.0.0
-
-      WHEELHOUSE_CYTHON: /tmp/wheelhouse/cython
-
     steps:
-    - uses: actions/checkout@v4.1.1
+    - uses: actions/checkout@v4.1.7
 
-    - name: Cache Cython
-      id: cache-cython
-      uses: actions/cache@v4.0.0
-      with:
-        path: ${{ env.WHEELHOUSE_CYTHON }}
-        key: wasm-ubuntu-cython-${{ env.LATEST_CYTHON_COMMIT }}-path-${{ env.WHEELHOUSE_CYTHON }}
-
-    # This builds the cython wheel and stores it in cache too
-    - name: Download and build cython on cache miss
-      if: steps.cache-cython.outputs.cache-hit != 'true'
+    - name: Regen with latest cython (using system python3)
       run: |
-        mkdir -p $WHEELHOUSE_CYTHON
-        pip wheel --wheel-dir $WHEELHOUSE_CYTHON git+https://github.com/cython/cython.git@$LATEST_CYTHON_COMMIT
-
-    - name: Install latest cython and regen
-      run: |
-        pip install --no-index --find-links $WHEELHOUSE_CYTHON --pre cython
-        touch $(find | grep pxd$)
+        pip3 install cython==3.0.10
         python3 setup.py cython_only
 
     - name: Install python-wasm-sdk

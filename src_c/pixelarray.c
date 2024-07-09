@@ -143,7 +143,7 @@ static PyTypeObject pgPixelArray_Type;
 static int
 array_is_contiguous(pgPixelArrayObject *ap, char fortran)
 {
-    int itemsize = pgSurface_AsSurface(ap->surface)->format->BytesPerPixel;
+    int itemsize = PG_SURF_BytesPerPixel(pgSurface_AsSurface(ap->surface));
 
     if (ap->strides[0] == itemsize) {
         if (ap->shape[1] == 0) {
@@ -348,7 +348,7 @@ _pxarray_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     surf = pgSurface_AsSurface(surfobj);
     dim0 = (Py_ssize_t)surf->w;
     dim1 = (Py_ssize_t)surf->h;
-    stride0 = (Py_ssize_t)surf->format->BytesPerPixel;
+    stride0 = (Py_ssize_t)PG_SURF_BytesPerPixel(surf);
     stride1 = (Py_ssize_t)surf->pitch;
     pixels = surf->pixels;
     if (pixels == NULL) {
@@ -442,7 +442,7 @@ _pxarray_get_itemsize(pgPixelArrayObject *self, void *closure)
 
     SDL_Surface *surf = pgSurface_AsSurface(self->surface);
 
-    return PyLong_FromLong((long)surf->format->BytesPerPixel);
+    return PyLong_FromLong((long)PG_SURF_BytesPerPixel(surf));
 }
 
 /**
@@ -522,7 +522,7 @@ _pxarray_getbuffer(pgPixelArrayObject *self, Py_buffer *view_p, int flags)
         return -1;
     }
 
-    itemsize = pgSurface_AsSurface(self->surface)->format->BytesPerPixel;
+    itemsize = PG_SURF_BytesPerPixel(pgSurface_AsSurface(self->surface));
 
     len = self->shape[0] * (ndim == 2 ? self->shape[1] : 1) * itemsize;
     view_p->obj = 0;
@@ -640,7 +640,7 @@ _pxarray_repr(pgPixelArrayObject *array)
     }
 
     surf = pgSurface_AsSurface(array->surface);
-    bpp = surf->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(surf);
 
     string = PyUnicode_FromString("PixelArray(");
     if (!string) {
@@ -941,8 +941,8 @@ _array_assign_array(pgPixelArrayObject *array, Py_ssize_t low, Py_ssize_t high,
         return -1;
     }
 
-    bpp = surf->format->BytesPerPixel;
-    val_bpp = val_surf->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(surf);
+    val_bpp = PG_SURF_BytesPerPixel(val_surf);
     if (val_bpp != bpp) {
         /* bpp do not match. We cannot guarantee that the padding and columns
          * would be set correctly. */
@@ -1077,7 +1077,7 @@ _array_assign_sequence(pgPixelArrayObject *array, Py_ssize_t low,
     }
 
     format = surf->format;
-    bpp = format->BytesPerPixel;
+    bpp = PG_FORMAT_BytesPerPixel(format);
 
     if (!dim1) {
         dim1 = 1;
@@ -1185,7 +1185,7 @@ _array_assign_slice(pgPixelArrayObject *array, Py_ssize_t low, Py_ssize_t high,
     Py_ssize_t x;
     Py_ssize_t y;
 
-    bpp = surf->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(surf);
 
     if (!dim1) {
         dim1 = 1;
@@ -1276,7 +1276,7 @@ _pxarray_ass_item(pgPixelArrayObject *array, Py_ssize_t index, PyObject *value)
     Py_ssize_t stride0 = array->strides[0];
     Py_ssize_t stride1 = array->strides[1];
 
-    bpp = surf->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(surf);
 
     if (!_get_color_from_object(value, surf->format, &color)) {
         if (PyTuple_Check(value)) {
@@ -1295,6 +1295,12 @@ _pxarray_ass_item(pgPixelArrayObject *array, Py_ssize_t index, PyObject *value)
             tmparray = (pgPixelArrayObject *)_pxarray_subscript_internal(
                 array, index, 0, 0, 0, array->shape[1], 1);
             if (!tmparray) {
+                return -1;
+            }
+            if (!pgPixelArrayObject_Check(tmparray)) {
+                PyErr_SetString(
+                    PyExc_ValueError,
+                    "cannot assign a pixel sequence to a single pixel");
                 return -1;
             }
             retval =
@@ -1431,7 +1437,7 @@ _pxarray_contains(pgPixelArrayObject *array, PyObject *value)
     Py_ssize_t y;
     int found = 0;
 
-    bpp = surf->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(surf);
 
     if (!_get_color_from_object(value, surf->format, &color)) {
         return -1;
@@ -1839,7 +1845,7 @@ pgPixelArray_New(PyObject *surfobj)
     surf = pgSurface_AsSurface(surfobj);
     dim0 = (Py_ssize_t)surf->w;
     dim1 = (Py_ssize_t)surf->h;
-    stride0 = (Py_ssize_t)surf->format->BytesPerPixel;
+    stride0 = (Py_ssize_t)PG_SURF_BytesPerPixel(surf);
     stride1 = (Py_ssize_t)surf->pitch;
     pixels = surf->pixels;
     if (stride0 < 1 || stride0 > 4) {

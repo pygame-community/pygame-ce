@@ -1164,17 +1164,14 @@ RectExport_unionIp(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
 }
 
 static PyObject *
-RectExport_unionall(RectObject *self, PyObject *args)
+RectExport_unionall(RectObject *self, PyObject *arg)
 {
     InnerRect *argrect, temp;
     Py_ssize_t loop, size;
-    PyObject *list, *obj;
+    PyObject *obj;
     PrimitiveType t, l, b, r;
 
-    if (!PyArg_ParseTuple(args, "O", &list)) {
-        return NULL;
-    }
-    if (!PySequence_Check(list)) {
+    if (!PySequence_Check(arg)) {
         return RAISE(PyExc_TypeError,
                      "Argument must be a sequence of rectstyle objects.");
     }
@@ -1183,44 +1180,67 @@ RectExport_unionall(RectObject *self, PyObject *args)
     t = self->r.y;
     r = self->r.x + self->r.w;
     b = self->r.y + self->r.h;
-    size = PySequence_Length(list); /*warning, size could be -1 on error?*/
-    if (size < 1) {
-        if (size < 0) {
-            /*Error.*/
-            return NULL;
+
+    if (pgSequenceFast_Check(arg)) {
+        PyObject **items = PySequence_Fast_ITEMS(arg);
+        size = PySequence_Fast_GET_SIZE(arg);
+
+        if (size < 1) {
+            /*Empty arg: nothing to be done.*/
+            return RectExport_subtypeNew4(Py_TYPE(self), l, t, r - l, b - t);
         }
-        /*Empty list: nothing to be done.*/
-        return RectExport_subtypeNew4(Py_TYPE(self), l, t, r - l, b - t);
+
+        for (loop = 0; loop < size; ++loop) {
+            if (!(argrect = RectFromObject(items[loop], &temp))) {
+                return RAISE(
+                    PyExc_TypeError,
+                    "Argument must be a sequence of rectstyle objects.");
+            }
+            l = MIN(l, argrect->x);
+            t = MIN(t, argrect->y);
+            r = MAX(r, argrect->x + argrect->w);
+            b = MAX(b, argrect->y + argrect->h);
+        }
+    }
+    else {
+        size = PySequence_Length(arg); /*warning, size could be -1 on error?*/
+        if (size < 1) {
+            if (size < 0) {
+                /*Error.*/
+                return NULL;
+            }
+            /*Empty arg: nothing to be done.*/
+            return RectExport_subtypeNew4(Py_TYPE(self), l, t, r - l, b - t);
+        }
+
+        for (loop = 0; loop < size; ++loop) {
+            obj = PySequence_ITEM(arg, loop);
+            if (!obj || !(argrect = RectFromObject(obj, &temp))) {
+                Py_XDECREF(obj);
+                return RAISE(
+                    PyExc_TypeError,
+                    "Argument must be a sequence of rectstyle objects.");
+            }
+            l = MIN(l, argrect->x);
+            t = MIN(t, argrect->y);
+            r = MAX(r, argrect->x + argrect->w);
+            b = MAX(b, argrect->y + argrect->h);
+            Py_DECREF(obj);
+        }
     }
 
-    for (loop = 0; loop < size; ++loop) {
-        obj = PySequence_GetItem(list, loop);
-        if (!obj || !(argrect = RectFromObject(obj, &temp))) {
-            Py_XDECREF(obj);
-            return RAISE(PyExc_TypeError,
-                         "Argument must be a sequence of rectstyle objects.");
-        }
-        l = MIN(l, argrect->x);
-        t = MIN(t, argrect->y);
-        r = MAX(r, argrect->x + argrect->w);
-        b = MAX(b, argrect->y + argrect->h);
-        Py_DECREF(obj);
-    }
     return RectExport_subtypeNew4(Py_TYPE(self), l, t, r - l, b - t);
 }
 
 static PyObject *
-RectExport_unionallIp(RectObject *self, PyObject *args)
+RectExport_unionallIp(RectObject *self, PyObject *arg)
 {
     InnerRect *argrect, temp;
     Py_ssize_t loop, size;
-    PyObject *list, *obj;
+    PyObject *obj;
     PrimitiveType t, l, b, r;
 
-    if (!PyArg_ParseTuple(args, "O", &list)) {
-        return NULL;
-    }
-    if (!PySequence_Check(list)) {
+    if (!PySequence_Check(arg)) {
         return RAISE(PyExc_TypeError,
                      "Argument must be a sequence of rectstyle objects.");
     }
@@ -1230,34 +1250,59 @@ RectExport_unionallIp(RectObject *self, PyObject *args)
     r = self->r.x + self->r.w;
     b = self->r.y + self->r.h;
 
-    size = PySequence_Length(list); /*warning, size could be -1 on error?*/
-    if (size < 1) {
-        if (size < 0) {
-            /*Error.*/
-            return NULL;
-        }
-        /*Empty list: nothing to be done.*/
-        Py_RETURN_NONE;
-    }
+    if (pgSequenceFast_Check(arg)) {
+        PyObject **items = PySequence_Fast_ITEMS(arg);
+        size = PySequence_Fast_GET_SIZE(arg);
 
-    for (loop = 0; loop < size; ++loop) {
-        obj = PySequence_GetItem(list, loop);
-        if (!obj || !(argrect = RectFromObject(obj, &temp))) {
-            Py_XDECREF(obj);
-            return RAISE(PyExc_TypeError,
-                         "Argument must be a sequence of rectstyle objects.");
+        if (size < 1) {
+            /*Empty arg: nothing to be done.*/
+            Py_RETURN_NONE;
         }
-        l = MIN(l, argrect->x);
-        t = MIN(t, argrect->y);
-        r = MAX(r, argrect->x + argrect->w);
-        b = MAX(b, argrect->y + argrect->h);
-        Py_DECREF(obj);
+
+        for (loop = 0; loop < size; ++loop) {
+            if (!(argrect = RectFromObject(items[loop], &temp))) {
+                return RAISE(
+                    PyExc_TypeError,
+                    "Argument must be a sequence of rectstyle objects.");
+            }
+            l = MIN(l, argrect->x);
+            t = MIN(t, argrect->y);
+            r = MAX(r, argrect->x + argrect->w);
+            b = MAX(b, argrect->y + argrect->h);
+        }
+    }
+    else {
+        size = PySequence_Length(arg); /*warning, size could be -1 on error?*/
+        if (size < 1) {
+            if (size < 0) {
+                /*Error.*/
+                return NULL;
+            }
+            /*Empty arg: nothing to be done.*/
+            Py_RETURN_NONE;
+        }
+
+        for (loop = 0; loop < size; ++loop) {
+            obj = PySequence_ITEM(arg, loop);
+            if (!obj || !(argrect = RectFromObject(obj, &temp))) {
+                Py_XDECREF(obj);
+                return RAISE(
+                    PyExc_TypeError,
+                    "Argument must be a sequence of rectstyle objects.");
+            }
+            l = MIN(l, argrect->x);
+            t = MIN(t, argrect->y);
+            r = MAX(r, argrect->x + argrect->w);
+            b = MAX(b, argrect->y + argrect->h);
+            Py_DECREF(obj);
+        }
     }
 
     self->r.x = l;
     self->r.y = t;
     self->r.w = r - l;
     self->r.h = b - t;
+
     Py_RETURN_NONE;
 }
 
@@ -1292,16 +1337,46 @@ RectExport_colliderect(RectObject *self, PyObject *const *args,
     return PyBool_FromLong(_pg_do_rects_intersect(&self->r, argrect));
 }
 
+#ifndef OPTIMIZED_COLLIDERECT_SETUP
+/* This macro is used to optimize the colliderect function. It calculates
+ * the left, top, right and bottom values of the calling rect only once
+ * and uses them in the OPTIMIZED_COLLIDERECT macro. */
+#define OPTIMIZED_COLLIDERECT_SETUP                                 \
+    const PrimitiveType left = MIN(srect->x, srect->x + srect->w);  \
+    const PrimitiveType top = MIN(srect->y, srect->y + srect->h);   \
+    const PrimitiveType right = MAX(srect->x, srect->x + srect->w); \
+    const PrimitiveType bottom = MAX(srect->y, srect->y + srect->h);
+#endif
+
+#ifndef OPTIMIZED_COLLIDERECT
+/* This macro is used to optimize the colliderect function. Makes use of
+ * precalculated values to avoid unnecessary calculations. It also checks
+ * whether the other rect has 0 width or height, in which case we don't
+ * collide. */
+#define OPTIMIZED_COLLIDERECT(r)                                       \
+    (r->w && r->h && left < MAX(r->x, r->x + r->w) &&                  \
+     top < MAX(r->y, r->y + r->h) && right > MIN(r->x, r->x + r->w) && \
+     bottom > MIN(r->y, r->y + r->h))
+#endif
+
 static PyObject *
 RectExport_collidelist(RectObject *self, PyObject *arg)
 {
     InnerRect *argrect, *srect = &self->r, temp;
     int loop;
 
+    /* If the calling rect has 0 width or height, it cannot collide with
+     * anything, hence return -1 directly. */
+    if (srect->w == 0 || srect->h == 0) {
+        return PyLong_FromLong(-1);
+    }
+
     if (!PySequence_Check(arg)) {
         return RAISE(PyExc_TypeError,
                      "Argument must be a sequence of rectstyle objects.");
     }
+
+    OPTIMIZED_COLLIDERECT_SETUP;
 
     /* If the sequence is a fast sequence, we can use the faster
      * PySequence_Fast_ITEMS() function to get the items. */
@@ -1313,16 +1388,17 @@ RectExport_collidelist(RectObject *self, PyObject *arg)
                     PyExc_TypeError,
                     "Argument must be a sequence of rectstyle objects.");
             }
-            if (_pg_do_rects_intersect(srect, argrect)) {
+
+            if (OPTIMIZED_COLLIDERECT(argrect)) {
                 return PyLong_FromLong(loop);
             }
         }
     }
     /* If the sequence is not a fast sequence, we have to use the slower
-     * PySequence_GetItem() function to get the items. */
+     * PySequence_ITEM() function to get the items. */
     else {
         for (loop = 0; loop < PySequence_Length(arg); loop++) {
-            PyObject *obj = PySequence_GetItem(arg, loop);
+            PyObject *obj = PySequence_ITEM(arg, loop);
 
             if (!obj || !(argrect = RectFromObject(obj, &temp))) {
                 Py_XDECREF(obj);
@@ -1333,7 +1409,7 @@ RectExport_collidelist(RectObject *self, PyObject *arg)
 
             Py_DECREF(obj);
 
-            if (_pg_do_rects_intersect(srect, argrect)) {
+            if (OPTIMIZED_COLLIDERECT(argrect)) {
                 return PyLong_FromLong(loop);
             }
         }
@@ -1358,6 +1434,14 @@ RectExport_collidelistall(RectObject *self, PyObject *arg)
         return NULL;
     }
 
+    /* If the calling rect has 0 width or height, it cannot collide with
+     * anything, hence return an empty list directly. */
+    if (srect->w == 0 || srect->h == 0) {
+        return ret;
+    }
+
+    OPTIMIZED_COLLIDERECT_SETUP;
+
     /* If the sequence is a fast sequence, we can use the faster
      * PySequence_Fast_ITEMS() function to get the items. */
     if (pgSequenceFast_Check(arg)) {
@@ -1370,7 +1454,7 @@ RectExport_collidelistall(RectObject *self, PyObject *arg)
                     "Argument must be a sequence of rectstyle objects.");
             }
 
-            if (_pg_do_rects_intersect(srect, argrect)) {
+            if (OPTIMIZED_COLLIDERECT(argrect)) {
                 PyObject *num = PyLong_FromLong(loop);
                 if (!num) {
                     Py_DECREF(ret);
@@ -1400,7 +1484,7 @@ RectExport_collidelistall(RectObject *self, PyObject *arg)
 
             Py_DECREF(obj);
 
-            if (_pg_do_rects_intersect(srect, argrect)) {
+            if (OPTIMIZED_COLLIDERECT(argrect)) {
                 PyObject *num = PyLong_FromLong(loop);
                 if (!num) {
                     Py_DECREF(ret);
@@ -1452,7 +1536,7 @@ static PyObject *
 RectExport_collideobjectsall(RectObject *self, PyObject *args,
                              PyObject *kwargs)
 {
-    InnerRect *argrect;
+    InnerRect *argrect, *srect = &self->r;
     InnerRect temp;
     Py_ssize_t size;
     int loop;
@@ -1485,6 +1569,14 @@ RectExport_collideobjectsall(RectObject *self, PyObject *args,
         return NULL;
     }
 
+    /* If the calling rect has 0 width or height, it cannot collide with
+     * anything, hence return an empty list directly. */
+    if (srect->w == 0 || srect->h == 0) {
+        return ret;
+    }
+
+    OPTIMIZED_COLLIDERECT_SETUP;
+
     size = PySequence_Length(list);
     if (size == -1) {
         Py_DECREF(ret);
@@ -1492,7 +1584,7 @@ RectExport_collideobjectsall(RectObject *self, PyObject *args,
     }
 
     for (loop = 0; loop < size; ++loop) {
-        obj = PySequence_GetItem(list, loop);
+        obj = PySequence_ITEM(list, loop);
 
         if (!obj) {
             Py_DECREF(ret);
@@ -1506,7 +1598,7 @@ RectExport_collideobjectsall(RectObject *self, PyObject *args,
             return NULL;
         }
 
-        if (_pg_do_rects_intersect(&self->r, argrect)) {
+        if (OPTIMIZED_COLLIDERECT(argrect)) {
             if (0 != PyList_Append(ret, obj)) {
                 Py_DECREF(ret);
                 Py_DECREF(obj);
@@ -1522,7 +1614,7 @@ RectExport_collideobjectsall(RectObject *self, PyObject *args,
 static PyObject *
 RectExport_collideobjects(RectObject *self, PyObject *args, PyObject *kwargs)
 {
-    InnerRect *argrect;
+    InnerRect *argrect, *srect = &self->r;
     InnerRect temp;
     Py_ssize_t size;
     int loop;
@@ -1549,13 +1641,21 @@ RectExport_collideobjects(RectObject *self, PyObject *args, PyObject *kwargs)
                      "Key function must be callable with one argument.");
     }
 
+    /* If the calling rect has 0 width or height, it cannot collide with
+     * anything, hence return None directly. */
+    if (srect->w == 0 || srect->h == 0) {
+        Py_RETURN_NONE;
+    }
+
+    OPTIMIZED_COLLIDERECT_SETUP;
+
     size = PySequence_Length(list);
     if (size == -1) {
         return NULL;
     }
 
     for (loop = 0; loop < size; ++loop) {
-        obj = PySequence_GetItem(list, loop);
+        obj = PySequence_ITEM(list, loop);
 
         if (!obj) {
             return NULL;
@@ -1567,7 +1667,7 @@ RectExport_collideobjects(RectObject *self, PyObject *args, PyObject *kwargs)
             return NULL;
         }
 
-        if (_pg_do_rects_intersect(&self->r, argrect)) {
+        if (OPTIMIZED_COLLIDERECT(argrect)) {
             return obj;
         }
         Py_DECREF(obj);
@@ -1579,7 +1679,7 @@ RectExport_collideobjects(RectObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs)
 {
-    InnerRect *argrect, temp;
+    InnerRect *argrect, temp, *srect = &self->r;
     Py_ssize_t loop = 0;
     Py_ssize_t values = 0; /* Defaults to expecting keys as rects. */
     PyObject *dict, *key, *val;
@@ -1596,6 +1696,14 @@ RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(PyExc_TypeError, "first argument must be a dict");
     }
 
+    /* If the calling rect has 0 width or height, it cannot collide with
+     * anything, hence return None directly. */
+    if (srect->w == 0 || srect->h == 0) {
+        Py_RETURN_NONE;
+    }
+
+    OPTIMIZED_COLLIDERECT_SETUP;
+
     while (PyDict_Next(dict, &loop, &key, &val)) {
         if (values) {
             if (!(argrect = RectFromObject(val, &temp))) {
@@ -1609,8 +1717,8 @@ RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs)
             }
         }
 
-        if (_pg_do_rects_intersect(&self->r, argrect)) {
-            ret = Py_BuildValue("(OO)", key, val);
+        if (OPTIMIZED_COLLIDERECT(argrect)) {
+            ret = PyTuple_Pack(2, key, val);
             break;
         }
     }
@@ -1624,7 +1732,7 @@ RectExport_collidedict(RectObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs)
 {
-    InnerRect *argrect, temp;
+    InnerRect *argrect, temp, *srect = &self->r;
     Py_ssize_t loop = 0;
     Py_ssize_t values = 0; /* Defaults to expecting keys as rects. */
     PyObject *dict, *key, *val;
@@ -1645,6 +1753,14 @@ RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs)
     if (!ret)
         return NULL;
 
+    /* If the calling rect has 0 width or height, it cannot collide with
+     * anything, hence return an empty list directly. */
+    if (srect->w == 0 || srect->h == 0) {
+        return ret;
+    }
+
+    OPTIMIZED_COLLIDERECT_SETUP;
+
     while (PyDict_Next(dict, &loop, &key, &val)) {
         if (values) {
             if (!(argrect = RectFromObject(val, &temp))) {
@@ -1660,8 +1776,8 @@ RectExport_collidedictall(RectObject *self, PyObject *args, PyObject *kwargs)
             }
         }
 
-        if (_pg_do_rects_intersect(&self->r, argrect)) {
-            PyObject *num = Py_BuildValue("(OO)", key, val);
+        if (OPTIMIZED_COLLIDERECT(argrect)) {
+            PyObject *num = PyTuple_Pack(2, key, val);
             if (!num) {
                 Py_DECREF(ret);
                 return NULL;

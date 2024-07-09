@@ -78,8 +78,8 @@ def get_urls(x86=True, x64=True):
     url_sha1 = []
     url_sha1.extend([
         [
-        'https://github.com/libsdl-org/SDL/releases/download/release-2.30.0/SDL2-devel-2.30.0-VC.zip',
-        'cc0cc9ce3526bdec53cf314e499b4d822a9af5d4',
+        'https://github.com/libsdl-org/SDL/releases/download/release-2.30.5/SDL2-devel-2.30.5-VC.zip',
+        '035842a7061f3ab4f9d469bab9a3874587a07c74',
         ],
         [
         'https://github.com/pygame-community/SDL_image/releases/download/2.8.2-pgce/SDL2_image-devel-2.8.2-VCpgce.zip',
@@ -90,8 +90,8 @@ def get_urls(x86=True, x64=True):
         '2d4f131909af2985b5ebc5ed296d28628c87c243'
         ],
         [
-        'https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.2/SDL2_mixer-devel-2.6.2-VC.zip',
-        '000e3ea8a50261d46dbd200fb450b93c59ed4482',
+        'https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.8.0/SDL2_mixer-devel-2.8.0-VC.zip',
+        'a10411644e08cd94f29712f430c7b71c407ae76d',
         ],
     ])
     if x86:
@@ -212,12 +212,12 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2_mixer-devel-2.6.2-VC/SDL2_mixer-2.6.2'
+                'SDL2_mixer-devel-2.8.0-VC/SDL2_mixer-2.8.0'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2_mixer-2.6.2'
+                'SDL2_mixer-2.8.0'
             )
         )
         copy(
@@ -234,12 +234,12 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2-devel-2.30.0-VC/SDL2-2.30.0'
+                'SDL2-devel-2.30.5-VC/SDL2-2.30.5'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2-2.30.0'
+                'SDL2-2.30.5'
             )
         )
 

@@ -191,7 +191,7 @@ typedef union {
 static int
 _copy_mapped(Py_buffer *view_p, SDL_Surface *surf)
 {
-    Uint8 pixelsize = surf->format->BytesPerPixel;
+    Uint8 pixelsize = PG_SURF_BytesPerPixel(surf);
     Py_ssize_t intsize = view_p->itemsize;
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
     char *src = (char *)surf->pixels;
@@ -201,7 +201,7 @@ _copy_mapped(Py_buffer *view_p, SDL_Surface *surf)
     char *dst = (char *)view_p->buf;
     int w = surf->w;
     int h = surf->h;
-    Py_intptr_t dx_src = surf->format->BytesPerPixel;
+    Py_intptr_t dx_src = PG_SURF_BytesPerPixel(surf);
     Py_intptr_t dy_src = surf->pitch;
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
     Py_intptr_t dz_src = 1;
@@ -257,14 +257,14 @@ _copy_colorplane(Py_buffer *view_p, SDL_Surface *surf,
                  _pc_view_kind_t view_kind, Uint8 opaque, Uint8 clear)
 {
     SDL_PixelFormat *format = surf->format;
-    int pixelsize = surf->format->BytesPerPixel;
+    int pixelsize = PG_SURF_BytesPerPixel(surf);
     SDL_BlendMode mode;
     int intsize = (int)view_p->itemsize;
     char *src = (char *)surf->pixels;
     char *dst = (char *)view_p->buf;
     int w = surf->w;
     int h = surf->h;
-    Py_intptr_t dx_src = surf->format->BytesPerPixel;
+    Py_intptr_t dx_src = PG_SURF_BytesPerPixel(surf);
     Py_intptr_t dy_src = surf->pitch;
     Py_intptr_t dx_dst = view_p->strides[0];
     Py_intptr_t dy_dst = view_p->strides[1];
@@ -322,8 +322,8 @@ _copy_colorplane(Py_buffer *view_p, SDL_Surface *surf,
         dz_dst = -1;
     }
 #endif
-    if (view_kind == VIEWKIND_COLORKEY &&
-        SDL_GetColorKey(surf, &colorkey) == 0) {
+    if (view_kind == VIEWKIND_COLORKEY && SDL_HasColorKey(surf)) {
+        SDL_GetColorKey(surf, &colorkey);
         for (x = 0; x < w; ++x) {
             for (y = 0; y < h; ++y) {
                 for (z = 0; z < pixelsize; ++z) {
@@ -370,13 +370,13 @@ static int
 _copy_unmapped(Py_buffer *view_p, SDL_Surface *surf)
 {
     SDL_PixelFormat *format = surf->format;
-    int pixelsize = surf->format->BytesPerPixel;
+    int pixelsize = PG_SURF_BytesPerPixel(surf);
     int intsize = (int)view_p->itemsize;
     char *src = (char *)surf->pixels;
     char *dst = (char *)view_p->buf;
     int w = surf->w;
     int h = surf->h;
-    Py_intptr_t dx_src = surf->format->BytesPerPixel;
+    Py_intptr_t dx_src = PG_SURF_BytesPerPixel(surf);
     Py_intptr_t dy_src = surf->pitch;
     Py_intptr_t dx_dst = view_p->strides[0];
     Py_intptr_t dy_dst = view_p->strides[1];
@@ -492,7 +492,7 @@ array_to_surface(PyObject *self, PyObject *arg)
         return RAISE(PyExc_ValueError, "must be a valid 2d or 3d array\n");
     }
 
-    if (surf->format->BytesPerPixel == 0 || surf->format->BytesPerPixel > 4)
+    if (PG_SURF_BytesPerPixel(surf) == 0 || PG_SURF_BytesPerPixel(surf) > 4)
         return RAISE(PyExc_ValueError, "unsupported bit depth for surface");
 
     stridex = view_p->strides[0];
@@ -535,7 +535,7 @@ array_to_surface(PyObject *self, PyObject *arg)
 
     array_data = (char *)view_p->buf;
 
-    switch (surf->format->BytesPerPixel) {
+    switch (PG_SURF_BytesPerPixel(surf)) {
         case 1:
             if (view_p->ndim == 2) {
                 switch (view_p->itemsize) {
@@ -963,7 +963,7 @@ map_array(PyObject *self, PyObject *args)
     /* Determine source and destination pixel formats
      */
     format = pgSurface_AsSurface(format_surf)->format;
-    pix_bytesize = format->BytesPerPixel;
+    pix_bytesize = PG_FORMAT_BytesPerPixel(format);
     if (tar_itemsize < pix_bytesize) {
         PyErr_SetString(PyExc_ValueError,
                         "target array itemsize is too small for pixel format");
