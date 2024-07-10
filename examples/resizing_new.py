@@ -20,7 +20,9 @@ while not done:
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
             done = True
-        if event.type == pygame.QUIT:
+        elif event.type == pygame.VIDEORESIZE:
+            screen = pygame.display.get_surface()
+        elif event.type == pygame.QUIT:
             done = True
     i += 1
     i = i % screen.get_width()
