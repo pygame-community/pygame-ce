@@ -2459,13 +2459,6 @@ HSL_to_RGB(float h, float s, float l, Uint8 *r, Uint8 *g, Uint8 *b)
 static void
 modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
 {
-    int x, y;
-    Uint8 r, g, b, a;
-    float s_h = 0, s_s = 0, s_l = 0;
-    SDL_PixelFormat *fmt = surf->format;
-    Uint8 *srcp8 = (Uint8 *)surf->pixels;
-    Uint8 *dstp8 = (Uint8 *)dst->pixels;
-
     int surf_locked = 0;
     if (SDL_MUSTLOCK(surf)) {
         if (SDL_LockSurface(surf) == 0) {
@@ -2479,18 +2472,30 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
         }
     }
 
-    if (fmt->BytesPerPixel == 4 || fmt->BytesPerPixel == 3) {
-        const int src_skip = surf->pitch - surf->w * fmt->BytesPerPixel;
-        const int dst_skip = dst->pitch - dst->w * fmt->BytesPerPixel;
+    int x, y;
+    Uint8 r, g, b, a;
+    float s_h = 0, s_s = 0, s_l = 0;
+    SDL_PixelFormat *fmt = surf->format;
+    Uint8 *srcp8 = (Uint8 *)surf->pixels;
+    Uint8 *dstp8 = (Uint8 *)dst->pixels;
+
+    if (PG_FORMAT_BytesPerPixel(fmt) == 4 ||
+        PG_FORMAT_BytesPerPixel(fmt) == 3) {
+        const int src_skip =
+            surf->pitch - surf->w * PG_FORMAT_BytesPerPixel(fmt);
+        const int dst_skip =
+            dst->pitch - dst->w * PG_FORMAT_BytesPerPixel(fmt);
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
         const int Ridx = fmt->Rshift >> 3;
         const int Gidx = fmt->Gshift >> 3;
         const int Bidx = fmt->Bshift >> 3;
+        const int Aidx = fmt->Ashift >> 3;
 #else
         const int Ridx = 3 - (fmt->Rshift >> 3);
         const int Gidx = 3 - (fmt->Gshift >> 3);
         const int Bidx = 3 - (fmt->Bshift >> 3);
+        const int Aidx = 3 - (fmt->Ashift >> 3);
 #endif
 
         int height = surf->h;
@@ -2520,9 +2525,11 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
                 dstp8[Ridx] = r;
                 dstp8[Gidx] = g;
                 dstp8[Bidx] = b;
+                if (fmt->Amask)
+                    dstp8[Aidx] = srcp8[Aidx];
 
-                srcp8 += fmt->BytesPerPixel;
-                dstp8 += fmt->BytesPerPixel;
+                srcp8 += PG_FORMAT_BytesPerPixel(fmt);
+                dstp8 += PG_FORMAT_BytesPerPixel(fmt);
             }
             srcp8 += src_skip;
             dstp8 += dst_skip;
@@ -2629,7 +2636,8 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
     if (src->format->Rmask != dst->format->Rmask ||
         src->format->Gmask != dst->format->Gmask ||
         src->format->Bmask != dst->format->Bmask ||
-        src->format->BytesPerPixel != dst->format->BytesPerPixel) {
+        src->format->Amask != dst->format->Amask ||
+        PG_SURF_BytesPerPixel(src) != PG_SURF_BytesPerPixel(dst)) {
         return RAISE(PyExc_ValueError,
                      "Source and destination surfaces need the same format.");
     }

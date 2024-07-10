@@ -12,16 +12,27 @@ jobs:
       # IMPORTANT: this permission is mandatory for trusted publishing
       id-token: write
     steps:
-      - uses: actions/checkout@v4.1.6
+      - uses: actions/checkout@v4.1.7
 
       - name: Pull all release assets
-        uses: robinraju/release-downloader@v1.10
+        uses: robinraju/release-downloader@v1.11
         with:
           releaseId: ${{ github.event.release.id }}
           fileName: "*"
           tarBall: false
           zipBall: false
           out-file-path: "dist"
+
+      # Check that all the files that successfully uploaded from the release-gh-draft
+      # action have not been tampered with. This however ignores any extra files that
+      # were manually added.
+      - name: Verify release hashes
+        run: |
+          cd dist
+          gpg --batch --output release.decrypted.sha512sum --passphrase ${{ secrets.GITHUB_TOKEN }} --decrypt release.sha512sum.gpg
+          diff -s release.sha512sum release.decrypted.sha512sum
+          sha512sum -c release.decrypted.sha512sum
+          rm release.*
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

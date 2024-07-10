@@ -397,6 +397,24 @@ class WindowTypeTest(unittest.TestCase):
         pygame.display.quit()
         pygame.init()
 
+    def test_window_subclassable(self):
+        class WindowSubclass(Window):
+            def __init__(self, title="Different title", size=(640, 480), **flags):
+                super().__init__(title, size, pygame.WINDOWPOS_CENTERED, **flags)
+                self.attribute = 10
+
+        window = WindowSubclass()
+        self.assertTrue(issubclass(WindowSubclass, Window))
+        self.assertIsInstance(window, WindowSubclass)
+        self.assertEqual(window.title, "Different title")
+        self.assertEqual(window.attribute, 10)
+        window.destroy()
+
+        pygame.display.set_mode((200, 200))
+        window = WindowSubclass.from_display_module()
+        self.assertIsInstance(window, WindowSubclass)
+        self.assertEqual(window.size, (200, 200))
+
     def tearDown(self):
         self.win.destroy()
 

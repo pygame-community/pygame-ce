@@ -126,9 +126,7 @@ static PyObject *
 pg_display_resource(char *filename)
 {
     PyObject *imagemodule = NULL;
-    PyObject *load_basicfunc = NULL;
     PyObject *pkgdatamodule = NULL;
-    PyObject *resourcefunc = NULL;
     PyObject *fresult = NULL;
     PyObject *result = NULL;
     PyObject *name = NULL;
@@ -137,19 +135,12 @@ pg_display_resource(char *filename)
     if (!pkgdatamodule)
         goto display_resource_end;
 
-    resourcefunc = PyObject_GetAttrString(pkgdatamodule, resourcefunc_name);
-    if (!resourcefunc)
-        goto display_resource_end;
-
     imagemodule = PyImport_ImportModule(imagemodule_name);
     if (!imagemodule)
         goto display_resource_end;
 
-    load_basicfunc = PyObject_GetAttrString(imagemodule, load_basicfunc_name);
-    if (!load_basicfunc)
-        goto display_resource_end;
-
-    fresult = PyObject_CallFunction(resourcefunc, "s", filename);
+    fresult =
+        PyObject_CallMethod(pkgdatamodule, resourcefunc_name, "s", filename);
     if (!fresult)
         goto display_resource_end;
 
@@ -166,15 +157,14 @@ pg_display_resource(char *filename)
         PyErr_Clear();
     }
 
-    result = PyObject_CallFunction(load_basicfunc, "O", fresult);
+    result =
+        PyObject_CallMethod(imagemodule, load_basicfunc_name, "O", fresult);
     if (!result)
         goto display_resource_end;
 
 display_resource_end:
     Py_XDECREF(pkgdatamodule);
-    Py_XDECREF(resourcefunc);
     Py_XDECREF(imagemodule);
-    Py_XDECREF(load_basicfunc);
     Py_XDECREF(fresult);
     Py_XDECREF(name);
     return result;
@@ -284,18 +274,6 @@ pg_vidinfo_getattr(PyObject *self, char *name)
 {
     pg_VideoInfo *info = &((pgVidInfoObject *)self)->info;
 
-    int current_w = -1;
-    int current_h = -1;
-
-    SDL_version versioninfo;
-    SDL_VERSION(&versioninfo);
-
-    if (versioninfo.major > 1 ||
-        (versioninfo.minor >= 2 && versioninfo.patch >= 10)) {
-        current_w = info->current_w;
-        current_h = info->current_h;
-    }
-
     if (!strcmp(name, "hw"))
         return PyLong_FromLong(info->hw_available);
     else if (!strcmp(name, "wm"))
@@ -330,9 +308,9 @@ pg_vidinfo_getattr(PyObject *self, char *name)
         return Py_BuildValue("(iiii)", info->vfmt->Rloss, info->vfmt->Gloss,
                              info->vfmt->Bloss, info->vfmt->Aloss);
     else if (!strcmp(name, "current_h"))
-        return PyLong_FromLong(current_h);
+        return PyLong_FromLong(info->current_h);
     else if (!strcmp(name, "current_w"))
-        return PyLong_FromLong(current_w);
+        return PyLong_FromLong(info->current_w);
     else if (!strcmp(name, "pixel_format")) {
         const char *pixel_format_name =
             SDL_GetPixelFormatName(info->vfmt->format);
@@ -348,21 +326,10 @@ pg_vidinfo_getattr(PyObject *self, char *name)
 PyObject *
 pg_vidinfo_str(PyObject *self)
 {
-    int current_w = -1;
-    int current_h = -1;
     pg_VideoInfo *info = &((pgVidInfoObject *)self)->info;
     const char *pixel_format_name = SDL_GetPixelFormatName(info->vfmt->format);
     if (!strncmp(pixel_format_name, "SDL_", 4)) {
         pixel_format_name += 4;
-    }
-
-    SDL_version versioninfo;
-    SDL_VERSION(&versioninfo);
-
-    if (versioninfo.major > 1 ||
-        (versioninfo.minor >= 2 && versioninfo.patch >= 10)) {
-        current_w = info->current_w;
-        current_h = info->current_h;
     }
 
     return PyUnicode_FromFormat(
@@ -383,7 +350,7 @@ pg_vidinfo_str(PyObject *self)
         info->vfmt->Gmask, info->vfmt->Bmask, info->vfmt->Amask,
         info->vfmt->Rshift, info->vfmt->Gshift, info->vfmt->Bshift,
         info->vfmt->Ashift, info->vfmt->Rloss, info->vfmt->Gloss,
-        info->vfmt->Bloss, info->vfmt->Aloss, current_w, current_h,
+        info->vfmt->Bloss, info->vfmt->Aloss, info->current_w, info->current_h,
         pixel_format_name);
 }
 
@@ -1238,6 +1205,15 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                     SDL_SetHintWithPriority(SDL_HINT_RENDER_SCALE_QUALITY,
                                             "nearest", SDL_HINT_DEFAULT);
 
+#if SDL_VERSION_ATLEAST(2, 28, 0)
+                    /* If the window has a surface associated with it already,
+                     * we need to destroy it (if possible) because now we are
+                     * associating a renderer with it. */
+                    if (SDL_HasWindowSurface(win)) {
+                        SDL_DestroyWindowSurface(win);
+                    }
+#endif
+
                     if (vsync) {
                         pg_renderer = SDL_CreateRenderer(
                             win, -1, SDL_RENDERER_PRESENTVSYNC);
@@ -1247,8 +1223,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                     }
 
                     if (pg_renderer == NULL) {
-                        return RAISE(pgExc_SDLError,
-                                     "failed to create renderer");
+                        return RAISE(pgExc_SDLError, SDL_GetError());
                     }
 
                     if (flags & PGS_SCALED) {
@@ -2727,10 +2702,10 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
                                "parent_window", "buttons", "return_button",
                                "escape_button", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(
-            arg, kwargs, "s|OsO!OiO", keywords, &title, &message, &msgbox_type,
-            &pgWindow_Type, &parent_window, &buttons, &return_button_index,
-            &escape_button_index_obj)) {
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "s|OsOOiO", keywords, &title,
+                                     &message, &msgbox_type, &parent_window,
+                                     &buttons, &return_button_index,
+                                     &escape_button_index_obj)) {
         return NULL;
     }
 
@@ -2767,10 +2742,15 @@ pg_message_box(PyObject *self, PyObject *arg, PyObject *kwargs)
     msgbox_data.flags |= SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT;
 #endif
 
-    if (parent_window == Py_None)
+    if (parent_window == Py_None) {
         msgbox_data.window = NULL;
-    else
+    }
+    else {
+        if (!pgWindow_Check(parent_window)) {
+            return RAISE(PyExc_TypeError, "'parent_window' must be a Window");
+        }
         msgbox_data.window = ((pgWindowObject *)parent_window)->_win;
+    }
 
     msgbox_data.colorScheme = NULL;  // use system color scheme settings
 
