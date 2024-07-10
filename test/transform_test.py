@@ -449,7 +449,7 @@ class TransformModuleTest(unittest.TestCase):
                         actual_rgb = dest.get_at((0, 0)).rgb
                         for v1, v2 in zip(expected_rgb, actual_rgb):
                             self.assertAlmostEqual(v1, v2, delta=1)
-                            
+
         surf = pygame.Surface((1, 1), flags=pygame.SRCALPHA)
         dest = pygame.Surface((1, 1), flags=pygame.SRCALPHA)
 
@@ -492,7 +492,7 @@ class TransformModuleTest(unittest.TestCase):
                         actual_rgb = actual_color.rgb
                         for v1, v2 in zip(expected_rgb, actual_rgb):
                             self.assertAlmostEqual(v1, v2, delta=1)
-                        self.assertEqual(c_a, actual_color.a)  
+                        self.assertEqual(c_a, actual_color.a)
 
     def test_solid_overlay(self):
         test_surface = pygame.Surface((20, 20), pygame.SRCALPHA)
