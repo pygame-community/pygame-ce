@@ -2365,8 +2365,10 @@ surf_solid_overlay(PyObject *self, PyObject *args, PyObject *kwargs)
 
     surf = pgSurface_AsSurface(surfobj);
 
-    if (_color_from_obj(colorobj, surf->format, NULL, &color))
+    if (!pg_MappedColorFromObj(colorobj, surf->format, &color,
+                               PG_COLOR_HANDLE_ALL)) {
         return RAISE(PyExc_TypeError, "invalid search_color argument");
+    }
 
     newsurf = solid_overlay(surfobj, color, surfobj2, keep_alpha);
 
