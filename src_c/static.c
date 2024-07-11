@@ -89,8 +89,6 @@ PyInit_constants(void);
 PyMODINIT_FUNC
 PyInit_version(void);
 PyMODINIT_FUNC
-PyInit_rect(void);
-PyMODINIT_FUNC
 PyInit_geometry(void);
 PyMODINIT_FUNC
 PyInit_surflock(void);
@@ -278,6 +276,7 @@ PyInit_pygame_static()
     SDL_SetHint("SDL_EMSCRIPTEN_KEYBOARD_ELEMENT", "1");
 
     load_submodule("pygame", PyInit_base(), "base");
+    load_submodule("pygame", PyInit_geometry(), "geometry");
     load_submodule("pygame", PyInit_constants(), "constants");
     load_submodule("pygame", PyInit_surflock(), "surflock");
     load_submodule("pygame", PyInit_rwobject(), "rwobject");
@@ -287,8 +286,6 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_system(), "system");
     load_submodule("pygame", PyInit_key(), "key");
 
-    load_submodule("pygame", PyInit_rect(), "rect");
-    load_submodule("pygame", PyInit_geometry(), "geometry");
     load_submodule("pygame", PyInit_gfxdraw(), "gfxdraw");
     load_submodule("pygame", PyInit_pg_time(), "time");
     load_submodule("pygame", PyInit__freetype(), "_freetype");
@@ -325,8 +322,7 @@ PyInit_pygame_static()
 
 #include "base.c"
 
-#include "rect.c"
-#include "pgcompat_rect.c"
+#include "geometry.c"
 
 #undef pgSurface_Lock
 #undef pgSurface_Unlock
@@ -400,7 +396,6 @@ PyInit_pygame_static()
 #include "time.c"
 
 #include "system.c"
-#include "geometry.c"
 
 #include "_freetype.c"
 #include "freetype/ft_wrap.c"

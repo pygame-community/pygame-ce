@@ -36,6 +36,8 @@
 
 #include <limits.h>
 
+#include "geometry_common.h"
+
 static PyTypeObject pgRect_Type;
 static PyTypeObject pgFRect_Type;
 #define pgRect_Check(x) (PyObject_IsInstance(x, (PyObject *)&pgRect_Type))
@@ -69,6 +71,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_unionallIp pg_rect_unionall_ip
 #define RectExport_collidepoint pg_rect_collidepoint
 #define RectExport_colliderect pg_rect_colliderect
+#define RectExport_collidecircle pg_rect_collidecircle
 #define RectExport_collidelist pg_rect_collidelist
 #define RectExport_collidelistall pg_rect_collidelistall
 #define RectExport_RectFromObjectAndKeyFunc pgRect_FromObjectAndKeyFunc
@@ -185,6 +188,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectExport_unionallIp pg_frect_unionall_ip
 #define RectExport_collidepoint pg_frect_collidepoint
 #define RectExport_colliderect pg_frect_colliderect
+#define RectExport_collidecircle pg_frect_collidecircle
 #define RectExport_collidelist pg_frect_collidelist
 #define RectExport_collidelistall pg_frect_collidelistall
 #define RectExport_RectFromObjectAndKeyFunc pgFRect_FromObjectAndKeyFunc
@@ -489,6 +493,8 @@ static struct PyMethodDef pg_rect_methods[] = {
      DOC_RECT_COLLIDEPOINT},
     {"colliderect", (PyCFunction)pg_rect_colliderect, METH_FASTCALL,
      DOC_RECT_COLLIDERECT},
+    {"collidecircle", (PyCFunction)pg_rect_collidecircle, METH_FASTCALL,
+     DOC_RECT_COLLIDECIRCLE},
     {"collidelist", (PyCFunction)pg_rect_collidelist, METH_O,
      DOC_RECT_COLLIDELIST},
     {"collidelistall", (PyCFunction)pg_rect_collidelistall, METH_O,
@@ -540,6 +546,8 @@ static struct PyMethodDef pg_frect_methods[] = {
      DOC_RECT_COLLIDEPOINT},
     {"colliderect", (PyCFunction)pg_frect_colliderect, METH_FASTCALL,
      DOC_RECT_COLLIDERECT},
+    {"collidecircle", (PyCFunction)pg_frect_collidecircle, METH_FASTCALL,
+     DOC_RECT_COLLIDECIRCLE},
     {"collidelist", (PyCFunction)pg_frect_collidelist, METH_O,
      DOC_RECT_COLLIDELIST},
     {"collidelistall", (PyCFunction)pg_frect_collidelistall, METH_O,
@@ -761,85 +769,3 @@ static PyTypeObject pgFRect_Type = {
     .tp_iter = (getiterfunc)pg_frect_iterator, .tp_methods = pg_frect_methods,
     .tp_getset = pg_frect_getsets, .tp_init = (initproc)pg_frect_init,
     .tp_new = pg_frect_new};
-
-static PyMethodDef _pg_module_methods[] = {{NULL, NULL, 0, NULL}};
-
-static char _pg_module_doc[] = "Module for the rectangle object\n";
-
-MODINIT_DEFINE(rect)
-{
-    PyObject *module, *apiobj;
-    static void *c_api[PYGAMEAPI_RECT_NUMSLOTS];
-
-    static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
-                                         "rect",
-                                         _pg_module_doc,
-                                         -1,
-                                         _pg_module_methods,
-                                         NULL,
-                                         NULL,
-                                         NULL,
-                                         NULL};
-
-    /* import needed apis; Do this first so if there is an error
-       the module is not loaded.
-    */
-    import_pygame_base();
-    if (PyErr_Occurred()) {
-        return NULL;
-    }
-
-    /* Create the module and add the functions */
-    if (PyType_Ready(&pgRect_Type) < 0 || PyType_Ready(&pgFRect_Type) < 0) {
-        return NULL;
-    }
-
-    module = PyModule_Create(&_module);
-    if (module == NULL) {
-        return NULL;
-    }
-
-    Py_INCREF(&pgRect_Type);
-    if (PyModule_AddObject(module, "RectType", (PyObject *)&pgRect_Type)) {
-        Py_DECREF(&pgRect_Type);
-        Py_DECREF(module);
-        return NULL;
-    }
-    Py_INCREF(&pgRect_Type);
-    if (PyModule_AddObject(module, "Rect", (PyObject *)&pgRect_Type)) {
-        Py_DECREF(&pgRect_Type);
-        Py_DECREF(module);
-        return NULL;
-    }
-    Py_INCREF(&pgFRect_Type);
-    if (PyModule_AddObject(module, "FRectType", (PyObject *)&pgFRect_Type)) {
-        Py_DECREF(&pgFRect_Type);
-        Py_DECREF(module);
-        return NULL;
-    }
-    Py_INCREF(&pgFRect_Type);
-    if (PyModule_AddObject(module, "FRect", (PyObject *)&pgFRect_Type)) {
-        Py_DECREF(&pgFRect_Type);
-        Py_DECREF(module);
-        return NULL;
-    }
-
-    /* export the c api */
-    c_api[0] = &pgRect_Type;
-    c_api[1] = pgRect_New;
-    c_api[2] = pgRect_New4;
-    c_api[3] = pgRect_FromObject;
-    c_api[4] = pgRect_Normalize;
-    c_api[5] = &pgFRect_Type;
-    c_api[6] = pgFRect_New;
-    c_api[7] = pgFRect_New4;
-    c_api[8] = pgFRect_FromObject;
-    c_api[9] = pgFRect_Normalize;
-    apiobj = encapsulate_api(c_api, "rect");
-    if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {
-        Py_XDECREF(apiobj);
-        Py_DECREF(module);
-        return NULL;
-    }
-    return module;
-}

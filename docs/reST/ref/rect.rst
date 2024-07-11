@@ -391,6 +391,20 @@
 
       .. ## Rect.colliderect ##
 
+   .. method:: collidecircle
+
+        | :sl:`checks if a circle intersects the rectangle`
+        | :sg:`collidecircle(Circle) -> bool`
+        | :sg:`collidecircle((x, y), r) -> bool`
+        | :sg:`collidecircle(x, y, r) -> bool`
+
+        Returns `True` if any portion of the `Circle` overlaps with the rectangle,
+        `False` otherwise.
+
+        .. versionadded:: 2.5.1
+
+      .. ## Rect.collidecircle ##
+
    .. method:: collidelist
 
       | :sl:`test if one rectangle in a list intersects`

@@ -1,3 +1,4 @@
+
 from typing import (
     overload,
     Union,
@@ -7,10 +8,18 @@ from typing import (
     Sequence,
 )
 
-from pygame import Rect, FRect
 from ._common import Coordinate, RectValue
-from .rect import Rect, FRect
+from .rect import Rect as Rect_, FRect as FRect_
 from .math import Vector2
+
+class Rect(Rect_):
+    ...
+    
+class FRect(FRect_):
+    ...
+    
+RectType = Rect
+FRectType = FRect
 
 _CanBeCircle = Union[Circle, Tuple[Coordinate, float], Sequence[float]]
 
