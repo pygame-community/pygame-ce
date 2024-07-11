@@ -182,10 +182,9 @@ class Group(AbstractGroup[_TSprite]):
     def __init__(
         self, *sprites: Union[_TSprite, AbstractGroup[_TSprite], Iterable[_TSprite]]
     ) -> None: ...
-
-# these are aliased in the code too
-RenderPlain = Group
-RenderClear = Group
+    
+# RenderClear deprecated
+# RenderPlain deprecated
 
 class RenderUpdates(Group[_TSprite]): ...
 class OrderedUpdates(RenderUpdates[_TSprite]): ...
@@ -236,7 +235,7 @@ class LayeredDirty(LayeredUpdates[_TDirtySprite]):
     def set_timing_threshold(
         self, time_ms: SupportsFloat
     ) -> None: ...  # This actually accept any value
-    # set_timing_treshold deprecated
+    # set_timing_treshold deprecated since 2.1.1
 
 class GroupSingle(AbstractGroup[_TSprite]):
     sprite: _TSprite
