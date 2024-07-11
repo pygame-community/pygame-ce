@@ -54,12 +54,12 @@ pygame\.image\.tostring
 pygame\.image\.fromstring
 
 pygame\.Vector2\.rotate_ip_rad
-pygame\.Vector2\.rotate_ip_rad
+pygame\.Vector3\.rotate_ip_rad
 pygame\.Vector3\.rotate_x_ip_rad
 pygame\.Vector3\.rotate_y_ip_rad
 pygame\.Vector3\.rotate_z_ip_rad
 pygame\.math\.Vector2\.rotate_ip_rad
-pygame\.math\.Vector2\.rotate_ip_rad
+pygame\.math\.Vector3\.rotate_ip_rad
 pygame\.math\.Vector3\.rotate_x_ip_rad
 pygame\.math\.Vector3\.rotate_y_ip_rad
 pygame\.math\.Vector3\.rotate_z_ip_rad
@@ -82,6 +82,7 @@ pygame\.scrap\.init
 pygame\.scrap\.lost
 pygame\.scrap\.put
 pygame\.scrap\.set_mode
+pygame\.scrap\.contains
 
 pygame\.sndarray\.use_arraytype
 pygame\.sndarray\.get_arraytype
