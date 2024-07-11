@@ -236,8 +236,7 @@ class LayeredDirty(LayeredUpdates[_TDirtySprite]):
     def set_timing_threshold(
         self, time_ms: SupportsFloat
     ) -> None: ...  # This actually accept any value
-    # deprecated alias
-    set_timing_treshold = set_timing_threshold
+    # set_timing_treshold deprecated
 
 class GroupSingle(AbstractGroup[_TSprite]):
     sprite: _TSprite
