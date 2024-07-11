@@ -37,13 +37,10 @@ pygame\.docs.*
 pygame\._sdl2\.controller
 
 # ignore stubs for deprecated features
-pygame\.Color\.set_length
-pygame\.color\.Color\.set_length
+pygame\..*Color\.set_length
 
-pygame\.Surface\.set_masks
-pygame\.Surface\.set_shifts
-pygame\.surface\.Surface\.set_masks
-pygame\.surface\.Surface\.set_shifts
+pygame\..*Surface\.set_masks
+pygame\..*Surface\.set_shifts
 
 pygame\.display\.set_gamma
 pygame\.display\.set_gamma_ramp
@@ -53,24 +50,15 @@ pygame\.freetype\.was_init
 pygame\.image\.tostring
 pygame\.image\.fromstring
 
-pygame\.Vector2\.rotate_ip_rad
-pygame\.Vector3\.rotate_ip_rad
-pygame\.Vector3\.rotate_x_ip_rad
-pygame\.Vector3\.rotate_y_ip_rad
-pygame\.Vector3\.rotate_z_ip_rad
-pygame\.math\.Vector2\.rotate_ip_rad
-pygame\.math\.Vector3\.rotate_ip_rad
-pygame\.math\.Vector3\.rotate_x_ip_rad
-pygame\.math\.Vector3\.rotate_y_ip_rad
-pygame\.math\.Vector3\.rotate_z_ip_rad
+pygame\..*Vector2\.rotate_ip_rad
+pygame\..*Vector3\.rotate_ip_rad
+pygame\..*Vector3\.rotate_x_ip_rad
+pygame\..*Vector3\.rotate_y_ip_rad
+pygame\..*Vector3\.rotate_z_ip_rad
 pygame\.math\.disable_swizzling
 pygame\.math\.enable_swizzling
 
-pygame\.Window\.from_display_module
-pygame\._sdl2\.Window\.from_display_module
-pygame\._sdl2\.video\.Window\.from_display_module
-pygame\._sdl2\.window\.Window\.from_display_module
-pygame\.window\.Window\.from_display_module
+pygame\..*Window\.from_display_module
 
 pygame\.joystick\.JoystickType\.get_id
 pygame\.joystick\.JoystickType\.init
