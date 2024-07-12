@@ -2221,6 +2221,8 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
 {
     SDL_Surface *src = pgSurface_AsSurface(srcobj);
     SDL_Surface *newsurf;
+    SDL_PixelFormat *fmt = src->format;
+    Uint8 a;
 
     if (!dstobj) {
         newsurf = newsurf_fromsurf(src, srcobj->surf->w, srcobj->surf->h);
@@ -2237,42 +2239,48 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
             "Destination surface must be the same size as source surface."));
     }
 
-    if (src->format->BytesPerPixel != newsurf->format->BytesPerPixel ||
-        src->format->Rmask != newsurf->format->Rmask ||
-        src->format->Gmask != newsurf->format->Gmask ||
-        src->format->Bmask != newsurf->format->Bmask ||
-        src->format->Amask != newsurf->format->Amask) {
+    /* If the source surface has no alpha channel, we can't overlay with alpha
+     * blending. */
+    if (!SDL_ISPIXELFORMAT_ALPHA(fmt->format))
+        return newsurf;
+
+    if (fmt->BytesPerPixel != newsurf->format->BytesPerPixel ||
+        fmt->format != newsurf->format->format) {
         return (SDL_Surface *)(RAISE(
             PyExc_ValueError,
             "Source and destination surfaces need the same format."));
     }
 
-    Uint8 c_R, c_G, c_B, c_A;
-    Uint8 a;
-    SDL_GetRGBA(color, src->format, &c_R, &c_G, &c_B, &c_A);
-    Uint32 color_p = SDL_MapRGBA(newsurf->format, c_R, c_G, c_B, c_A);
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-    const int dst_ashift = newsurf->format->Ashift;
-#else
-    const int dst_ashift = 24 - newsurf->format->Ashift;
-#endif
-
     /* If we are keeping the src alpha, then we need to remove the alpha from
      * the color so it's easier to add the base pixel alpha back in */
     if (keep_alpha) {
-        color_p &= ~newsurf->format->Amask;
+        color &= ~fmt->Amask;
     }
 
-    /* optimized path for 32bit surfaces */
-    if (src->format->BytesPerPixel == 4) {
+    int src_lock = SDL_MUSTLOCK(src);
+    int dst_lock = src != newsurf && SDL_MUSTLOCK(newsurf);
+
+    if (src_lock && SDL_LockSurface(src) < 0) {
+        return NULL;
+    }
+    if (dst_lock && SDL_LockSurface(newsurf) < 0) {
+        if (src_lock) {
+            SDL_UnlockSurface(src);
+        }
+        return NULL;
+    }
+
+    /* optimized path for 32 bit surfaces */
+    if (fmt->BytesPerPixel == 4) {
         /* This algorithm iterates over each pixel's alpha channel. If it's not
          * zero, the pixel is set to the desired color. If the keep_alpha flag
          * is set, the original alpha value is retained, allowing the overlay
          * color to inherit the surface pixel's alpha value. */
-
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-        const char _a_off = newsurf->format->Ashift >> 3;
+        const int dst_ashift = fmt->Ashift;
+        const char _a_off = fmt->Ashift >> 3;
 #else
+        const int dst_ashift = 24 - newsurf->format->Ashift;
         const char _a_off = 3 - (newsurf->format->Ashift >> 3);
 #endif
 
@@ -2290,7 +2298,7 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
                 LOOP_UNROLLED4(
                     {
                         if (*srcp)
-                            *dstp = color_p;
+                            *dstp = color;
                         srcp += 4;
                         dstp++;
                     },
@@ -2305,8 +2313,8 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
                 LOOP_UNROLLED4(
                     {
                         if ((a = *srcp)) {
-                            *dstp = keep_alpha ? color_p | (a << dst_ashift)
-                                               : color_p;
+                            *dstp =
+                                keep_alpha ? color | (a << dst_ashift) : color;
                         }
                         srcp += 4;
                         dstp++;
@@ -2317,28 +2325,42 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
             }
         }
     }
-    else {
+    else /* path for 16 bit surfaces */
+    {
         int x, y;
-        Uint32 pixel;
         Uint8 r, g, b;
-        Uint8 *pix;
+        Uint16 *src_row = (Uint16 *)src->pixels;
+        Uint16 *dst_row = (Uint16 *)newsurf->pixels;
+        const int src_skip = src->pitch / 2 - src->w;
+        const int dst_skip = newsurf->pitch / 2 - newsurf->w;
+
+        Uint8 Cr, Cg, Cb, Ca;
+        SDL_GetRGBA(color, fmt, &Cr, &Cg, &Cb, &Ca);
+        const Uint16 color16 = (Uint16)SDL_MapRGBA(fmt, Cr, Cg, Cb, Ca);
+
         for (y = 0; y < src->h; y++) {
             for (x = 0; x < src->w; x++) {
-                SURF_GET_AT(pixel, src, x, y, (Uint8 *)src->pixels,
-                            src->format, pix);
-                SDL_GetRGBA(pixel, src->format, &r, &g, &b, &a);
+                SDL_GetRGBA((Uint32)*src_row, fmt, &r, &g, &b, &a);
 
                 if (a) {
-                    SURF_SET_AT(
-                        keep_alpha ? color_p | (a << dst_ashift) : color_p,
-                        newsurf, x, y, (Uint8 *)newsurf->pixels,
-                        newsurf->format, pix);
+                    if (keep_alpha)
+                        *dst_row = (Uint16)SDL_MapRGBA(fmt, Cr, Cg, Cb, a);
+                    else
+                        *dst_row = color16;
                 }
+
+                src_row++;
+                dst_row++;
             }
+            src_row += src_skip;
+            dst_row += dst_skip;
         }
     }
 
-    SDL_UnlockSurface(newsurf);
+    if (src_lock)
+        SDL_UnlockSurface(src);
+    if (dst_lock)
+        SDL_UnlockSurface(newsurf);
 
     return newsurf;
 }
@@ -2367,7 +2389,7 @@ surf_solid_overlay(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (!pg_MappedColorFromObj(colorobj, surf->format, &color,
                                PG_COLOR_HANDLE_ALL)) {
-        return RAISE(PyExc_TypeError, "invalid search_color argument");
+        return RAISE(PyExc_TypeError, "invalid color argument");
     }
 
     newsurf = solid_overlay(surfobj, color, surfobj2, keep_alpha);
