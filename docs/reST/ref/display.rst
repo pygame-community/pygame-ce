@@ -687,6 +687,30 @@ required).
 
    .. ## pygame.display.get_caption ##
 
+.. function:: set_always_on_top
+
+   | :sl:`Set the current window on top of other windows`
+   | :sg:`set_always_on_top(bool) -> None`
+
+    Set the window initialized to always be above the others. This will bring
+    the window to the front and keep the window above the rest.
+
+    This requires SDL 2.0.16+.
+
+   .. ## pygame.display.set_always_on_top ##
+
+.. function:: get_always_on_top
+
+   | :sl:`Return whether the window is on top of other windows`
+   | :sg:`get_always_on_top() -> bool`
+
+   Returns ``True`` if the window is set to always be above the others, and
+   ``False`` if it is not.
+
+   This requires SDL 2.0.16+.
+
+   .. ## pygame.display.get_always_on_top ##
+
 .. function:: set_palette
 
    | :sl:`Set the display color palette for indexed displays`
