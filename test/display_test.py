@@ -101,6 +101,17 @@ class DisplayModuleTest(unittest.TestCase):
         self.assertEqual(display.get_caption()[0], TEST_CAPTION)
         self.assertEqual(display.get_caption()[1], TEST_CAPTION)
 
+    def test_get_always_on_top(self):
+        screen = display.set_mode((100, 100))
+
+        self.assertEqual(display.get_always_on_top(), False)
+
+    def test_set_always_on_top(self):
+        screen = display.set_mode((100, 100))
+
+        self.assertIsNone(display.set_always_on_top(True))
+        self.assertEqual(display.get_always_on_top(), True)
+
     def test_caption_unicode(self):
         TEST_CAPTION = "台"
         display.set_caption(TEST_CAPTION)

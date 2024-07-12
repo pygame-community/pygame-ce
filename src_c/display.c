@@ -2029,6 +2029,39 @@ pg_get_caption(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
+pg_set_always_on_top(PyObject *self, PyObject *arg, PyObject *kwargs)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+    int val = 1;
+    static char *keywords[] = {"value", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "|p", keywords, &val)) {
+        return NULL;
+    }
+
+    SDL_Window *win = pg_GetDefaultWindow();
+    VIDEO_INIT_CHECK();
+
+    SDL_SetWindowAlwaysOnTop(win, val);
+#else
+    if (PyErr_WarnEx(PyExc_Warning, "'set_always_on_top' requires SDL 2.0.16+",
+                     1) == -1) {
+        return NULL;
+    }
+#endif
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+pg_get_always_on_top(PyObject *self, PyObject *_null)
+{
+    SDL_Window *win = pg_GetDefaultWindow();
+
+    return PyBool_FromLong(SDL_GetWindowFlags(win) & SDL_WINDOW_ALWAYS_ON_TOP);
+}
+
+static PyObject *
 pg_set_icon(PyObject *self, PyObject *surface)
 {
     _DisplayState *state = DISPLAY_MOD_STATE(self);
@@ -2926,6 +2959,10 @@ static PyMethodDef _pg_display_methods[] = {
     {"set_caption", pg_set_caption, METH_VARARGS, DOC_DISPLAY_SETCAPTION},
     {"get_caption", (PyCFunction)pg_get_caption, METH_NOARGS,
      DOC_DISPLAY_GETCAPTION},
+    {"set_always_on_top", (PyCFunction)pg_set_always_on_top,
+     METH_VARARGS | METH_KEYWORDS, DOC_DISPLAY_SETALWAYSONTOP},
+    {"get_always_on_top", (PyCFunction)pg_get_always_on_top, METH_NOARGS,
+     DOC_DISPLAY_GETALWAYSONTOP},
     {"set_icon", pg_set_icon, METH_O, DOC_DISPLAY_SETICON},
 
     {"iconify", (PyCFunction)pg_iconify, METH_NOARGS, DOC_DISPLAY_ICONIFY},

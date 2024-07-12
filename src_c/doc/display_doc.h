@@ -23,6 +23,8 @@
 #define DOC_DISPLAY_SETICON "set_icon(surface, /) -> None\nChange the system image for the display window"
 #define DOC_DISPLAY_SETCAPTION "set_caption(title, icontitle=None, /) -> None\nSet the current window caption"
 #define DOC_DISPLAY_GETCAPTION "get_caption() -> (title, icontitle)\nGet the current window caption"
+#define DOC_DISPLAY_SETALWAYSONTOP "set_always_on_top(bool) -> None\nSet the current window to always be on top of other windows"
+#define DOC_DISPLAY_GETALWAYSONTOP "get_always_on_top() -> bool\nReturn whether the current window is always on top of other windows"
 #define DOC_DISPLAY_SETPALETTE "set_palette(palette=None, /) -> None\nSet the display color palette for indexed displays"
 #define DOC_DISPLAY_GETNUMDISPLAYS "get_num_displays() -> int\nReturn the number of displays"
 #define DOC_DISPLAY_GETWINDOWSIZE "get_window_size() -> tuple\nReturn the size of the window or screen"
