@@ -17,6 +17,19 @@ def load_sized_svg(file: FileArg, size: Coordinate) -> Surface: ...
 def save(surface: Surface, file: FileArg, namehint: str = "") -> None: ...
 def get_sdl_image_version(linked: bool = True) -> Optional[Tuple[int, int, int]]: ...
 def get_extended() -> bool: ...
+def tostring(
+    surface: Surface,
+    format: _to_bytes_format,
+    flipped: bool = False,
+    pitch: int = -1,
+) -> bytes:"""Deprecated since 2.3.0. Use tobytes instead"""
+def fromstring(
+    bytes: bytes,
+    size: IntCoordinate,
+    format: _from_bytes_format,
+    flipped: bool = False,
+    pitch: int = -1,
+) -> Surface:"""Deprecated since 2.3.0. Use frombytes instead"""
 def tobytes(
     surface: Surface,
     format: _to_bytes_format,
@@ -39,5 +52,3 @@ def frombuffer(
 def load_basic(file: FileArg, /) -> Surface: ...
 def load_extended(file: FileArg, namehint: str = "") -> Surface: ...
 def save_extended(surface: Surface, file: FileArg, namehint: str = "") -> None: ...
-# tostring deprecated since 2.3.0
-# fromstring deprecated since 2.3.0

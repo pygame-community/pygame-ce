@@ -66,4 +66,5 @@ class Window:
     def position(self, value: Union[int, Coordinate]) -> None: ...
     @property
     def opengl(self) -> bool: ...
-    # from_display_module deprecated since 2.4.0
+    @classmethod
+    def from_display_module(cls) -> Window:"""Deprecated since 2.4.0. Use the display module or the Window class with get_surface and flip"""
