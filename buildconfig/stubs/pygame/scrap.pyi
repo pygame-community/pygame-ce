@@ -1,6 +1,5 @@
 from typing import List, Optional
 from collections.abc import ByteString
-from typing_extensions import deprecated
 
 def init() -> None:"""Deprecated since 2.2.0. Use the new API instead"""
 def get_init() -> bool:"""Deprecated since 2.2.0. Use the new API instead"""
