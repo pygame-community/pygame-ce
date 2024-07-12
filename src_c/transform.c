@@ -2239,17 +2239,17 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
             "Destination surface must be the same size as source surface."));
     }
 
-    /* If the source surface has no alpha channel, we can't overlay with alpha
-     * blending. */
-    if (!SDL_ISPIXELFORMAT_ALPHA(fmt->format))
-        return newsurf;
-
     if (fmt->BytesPerPixel != newsurf->format->BytesPerPixel ||
         fmt->format != newsurf->format->format) {
         return (SDL_Surface *)(RAISE(
             PyExc_ValueError,
             "Source and destination surfaces need the same format."));
     }
+
+    /* If the source surface has no alpha channel, we can't overlay with alpha
+     * blending. */
+    if (!SDL_ISPIXELFORMAT_ALPHA(fmt->format))
+        return newsurf;
 
     /* If we are keeping the src alpha, then we need to remove the alpha from
      * the color so it's easier to add the base pixel alpha back in */
@@ -2293,35 +2293,67 @@ solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
 
         /* fast path for when the src and dst are the same and we don't need to
          * keep the alpha */
-        if (!keep_alpha && srcobj == dstobj) {
-            while (height--) {
-                LOOP_UNROLLED4(
-                    {
-                        if (*srcp)
-                            *dstp = color;
-                        srcp += 4;
-                        dstp++;
-                    },
-                    n, src->w);
-                srcp += src_skip;
-                dstp += dst_skip;
+        if (srcobj == dstobj) {
+            if (!keep_alpha) {
+                while (height--) {
+                    LOOP_UNROLLED4(
+                        {
+                            if (*srcp)
+                                *dstp = color;
+                            srcp += 4;
+                            dstp++;
+                        },
+                        n, src->w);
+                    srcp += src_skip;
+                    dstp += dst_skip;
+                }
+            }
+            else {
+                while (height--) {
+                    LOOP_UNROLLED4(
+                        {
+                            if ((a = *srcp)) {
+                                *dstp = color | (a << dst_ashift);
+                            }
+                            srcp += 4;
+                            dstp++;
+                        },
+                        n, src->w);
+                    srcp += src_skip;
+                    dstp += dst_skip;
+                }
             }
         }
         /* slower but more general path */
         else {
-            while (height--) {
-                LOOP_UNROLLED4(
-                    {
-                        if ((a = *srcp)) {
-                            *dstp =
-                                keep_alpha ? color | (a << dst_ashift) : color;
-                        }
-                        srcp += 4;
-                        dstp++;
-                    },
-                    n, src->w);
-                srcp += src_skip;
-                dstp += dst_skip;
+            if (!keep_alpha) {
+                while (height--) {
+                    LOOP_UNROLLED4(
+                        {
+                            if (*srcp)
+                                *dstp = color;
+                            srcp += 4;
+                            dstp++;
+                        },
+                        n, src->w);
+                    srcp += src_skip;
+                    dstp += dst_skip;
+                }
+            }
+            else {
+                while (height--) {
+                    LOOP_UNROLLED4(
+                        {
+                            if ((a = *srcp)) {
+                                *dstp = color | (a << dst_ashift);
+                            }
+                            srcp += 4;
+                            dstp++;
+                        },
+                        n, src->w);
+                    srcp += src_skip;
+                    dstp += dst_skip;
+                }
             }
         }
     }
