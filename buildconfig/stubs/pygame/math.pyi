@@ -242,7 +242,6 @@ class Vector2(_GenericVector):
     ) -> None: ...
     @overload
     def update(self, x: float = 0, y: float = 0) -> None: ...
-    # rotate_ip_rad deprecated since 2.1.1
 
 class Vector3(_GenericVector):
     x: float
