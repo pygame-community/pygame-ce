@@ -13,8 +13,8 @@ from typing import (
     Union,
 )
 
-# Protocol added in python 3.8
-from typing_extensions import Protocol
+# Protocol added in python 3.8, deprecated added in 3.13
+from typing_extensions import Protocol, deprecated
 
 from pygame.rect import FRect, Rect
 from pygame.surface import Surface
@@ -184,10 +184,10 @@ class Group(AbstractGroup[_TSprite]):
     ) -> None: ...
     
 # these are aliased in the code too
-RenderPlain = Group
-"""Deprecated. Use Group instead"""
-RenderClear = Group
-"""Deprecated. Use Group instead"""
+@deprecated("Use Group instead")
+class RenderPlain(Group): ...
+@deprecated("Use Group instead")
+class RenderClear(Group): ...
 
 class RenderUpdates(Group[_TSprite]): ...
 class OrderedUpdates(RenderUpdates[_TSprite]): ...
@@ -238,8 +238,10 @@ class LayeredDirty(LayeredUpdates[_TDirtySprite]):
     def set_timing_threshold(
         self, time_ms: SupportsFloat
     ) -> None: ...  # This actually accept any value
-    set_timing_treshold = set_timing_threshold
-    """Deprecated since 2.1.1. Use set_timing_threshold instead"""
+    @deprecated("since 2.1.1. Use set_timing_threshold instead")
+    def set_timing_treshold(
+        self, time_ms: SupportsFloat
+    ) -> None: ...
 
 class GroupSingle(AbstractGroup[_TSprite]):
     sprite: _TSprite
