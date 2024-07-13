@@ -227,7 +227,7 @@ object instead of the module, which can be used to test for availability.
 .. function:: warn
 
    | :sl:`throws a warning`
-   | :sg:`warn(message, urgency, level=2, category=UserWarning)`
+   | :sg:`warn(message, urgency, level=1, category=UserWarning)`
 
    Throws a warning with a given urgency. See documentation for :c:func:`pgWarn` for more information on urgency system.
    
@@ -236,14 +236,17 @@ object instead of the module, which can be used to test for availability.
 
    .. note::
       This function is mostly used internally, but might be also useful for extensions.
-      Arg ``level`` denotes how much to trace back in the call stack.
-      Beware, that the default value is 2, meaning the caller of a function with ``pygame.warn(...)`` will be blamed: ::
+      Arg ``level`` denotes how much to trace back in the call stack. If it is equal to 0, that means that the caller wil be blamed.
+      Beware, that the default value is 1, meaning the caller of a function with ``pygame.warn(...)`` will be blamed: ::
          
          >>> def my_func():
          ...     pygame.warn("Warning!", urgency=0)
          ... 
          >>> my_func()
-         <stdin>:1: UserWarning: Warning! (0: urgent)
+         <stdin>:1: UserWarning: Warning! (urgent: 0)
+         >>> def my_func2():
+         ...     pygame.warn("Warning!", urgency=0, level=0)
+         <stdin>:2: UserWarning: Warning! (urgent: 0)
 
    .. # pygame.warn ""
 
@@ -584,4 +587,29 @@ This hint only affects the windows platform, other platforms can control DPI awa
 via a Window creation keyword parameter called "allow_high_dpi".
 
 
+:mod:`pygame.debug`
+=====================
+
+.. module:: pygame.debug
+   :synopsis: small plug-in for enabling debugging information
+
+| :sl:`small plug-in for enabling debugging information`
+
+This is a simple plug-in that can be used as a drop-in repleacement for ``import pygame`` and imports alike.
+Example usage: ::
+
+   import pygame.debug as pg  # works the same as "import pygame as pg"
+
+   window = pg.display.set_mode((100, 100))
+
+   while True:
+      for event in pg.event.get():
+         if event.type == pg.QUIT:
+            pg.quit()
+            quit()
+      
+      pg.display.flip()
+
+Doing this will enable more detailed warnings and will print additional debug information.
+(Side note: this will automatically call ``pygame.init()`` to make debug information more complete, but this shouldn't have any side effects.)
 

@@ -2088,28 +2088,85 @@ pg_EnvShouldBlendAlphaSDL2(void)
     return pg_env_blend_alpha_SDL2;
 }
 
+static inline int
+intSizeAsStr(int num)
+{
+    if (num == 0) {
+        // printf("i s=1, zero");
+        return 1;
+    }
+    else if (num < 0) {
+        // printf("i s=%i, neg", ceil(log10(-num + 1)) + 1);
+        return ceil(log10(-num + 1)) + 1;
+    }
+    return ceil(log10(num + 1));
+}
+
 static int
 pgWarn(PyObject *category, const char *message, Py_ssize_t stack_level,
        int urgency)
 {
     if (pg_warn_filter < urgency)
         return 0;
-    return PyErr_WarnEx(category, message, stack_level);
+
+    const char *extra;
+
+    switch (urgency) {
+        case 0:
+            extra = "urgent: ";
+            break;
+        case 1:
+            extra = "mild: ";
+            break;
+        case 2:
+            extra = "note: ";
+            break;
+        default:
+            extra = "";
+    }
+
+    //         12              3 4
+    // "message (extra{urgency})\0"
+    printf("%s (%s%i)\n", message, extra, urgency);
+    printf("%lu, %lu, %i\n", strlen(message), strlen(extra),
+           intSizeAsStr(urgency));
+    size_t str_size =
+        strlen(message) + strlen(extra) + intSizeAsStr(urgency) + 4;
+
+    char *formatted = malloc(str_size);
+    if (formatted == NULL) {
+        PyErr_SetString(PyExc_MemoryError,
+                        "cannot allocate memory to format warning message");
+        return -1;
+    }
+
+    PyOS_snprintf(formatted, str_size, "%s (%s%i)", message, extra, urgency);
+
+    int ret = PyErr_WarnEx(category, formatted, stack_level);
+    free(formatted);
+    return ret;
 }
 
 static PyObject *
-pg_warn(PyObject *self, PyObject *args)
+pg_warn(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    PyObject *category;
+    PyObject *category = NULL;
     const char *message;
-    Py_ssize_t stack_level;
+    Py_ssize_t stack_level = -1;
     int urgency;
+    char *kw_names[] = {"message", "urgency", "level", "category", NULL};
 
-    if (!PyArg_ParseTuple(args, "sOni", &message, &category, &stack_level,
-                          &urgency))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "si|nO", kw_names, &message,
+                                     &urgency, &stack_level, &category))
         return NULL;
 
-    if (pgWarn(category, message, stack_level, urgency) < 0)
+    if (category == NULL)
+        category = PyExc_UserWarning;
+
+    if (stack_level < 0)
+        stack_level = 1;
+
+    if (pgWarn(category, message, stack_level + 1, urgency) < 0)
         return NULL;
 
     Py_RETURN_NONE;
@@ -2246,7 +2303,7 @@ static PyMethodDef _base_methods[] = {
 
     {"get_array_interface", (PyCFunction)pg_get_array_interface, METH_O,
      "return an array struct interface as an interface dictionary"},
-    {"warn", (PyCFunction)pg_warn, METH_VARARGS,
+    {"warn", (PyCFunction)pg_warn, METH_VARARGS | METH_KEYWORDS,
      "throw a warning with a given severity which is only used for filtering"},
     {"get_warnings_filter", (PyCFunction)pg_get_warnings_filter, METH_NOARGS,
      "get value of a warning filter by severity (smaller number - more "

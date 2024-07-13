@@ -104,15 +104,9 @@ for k in PG_STAR_IMPORTS:
     except KeyError:
         pygame_all_imports[f".{k}"] = val
 
-# this is overriden by __init__.py
-if ".base" in pygame_all_imports and "warn" in pygame_all_imports[".base"]:
-    pygame_all_imports[".base"].remove("warn")
 
 # misc stubs that must be added to __init__.pyi
-misc_stubs = """from typing import Type
-
-def warn(message: str, urgency: int, level: int = 2, category: Type[Warning] = UserWarning): ...
-"""
+misc_stubs = """"""
 
 # write constants.pyi file
 constants_file = pathlib.Path(__file__).parent / "pygame" / "constants.pyi"

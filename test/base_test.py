@@ -629,7 +629,7 @@ class BaseModuleTest(unittest.TestCase):
             self._warn("message", 0)
             self.assertEqual(len(cx.warnings), 1)
             warning = cx.warnings[0]
-            self.assertEqual(str(warning.message), "message (0: urgent)")
+            self.assertEqual(str(warning.message), "message (urgent: 0)")
             self.assertIn("base_test.py", warning.filename)
 
         with self.assertWarns(UserWarning) as cx:

@@ -94,26 +94,6 @@ from pygame.base import *  # pylint: disable=wildcard-import; lgtm[py/polluting-
 from pygame.constants import *  # now has __all__ pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.version import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
 
-_warn = warn
-del warn
-
-
-def warn(message, urgency, level=2, category=UserWarning):  # pylint: disable=function-redefined
-    """Throws a warning with a given urgency"""
-    names = {0: "urgent", 1: "mild", 2: "note"}
-
-    if urgency in names:
-        note = f"{urgency}: {names[urgency]}"
-    else:
-        note = str(urgency)
-
-    _warn(
-        f"{message} ({note})",
-        category,
-        level + 1,
-        urgency,
-    )
-
 
 from pygame.rect import Rect, FRect
 from pygame.rwobject import encode_string, encode_file_path
