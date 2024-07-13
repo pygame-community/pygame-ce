@@ -633,7 +633,7 @@ class BaseModuleTest(unittest.TestCase):
             self.assertIn("base_test.py", warning.filename)
 
         with self.assertWarns(UserWarning) as cx:
-            pygame.warn("message", 0, level=1)
+            pygame.warn("message", 0, level=0)
             self.assertEqual(len(cx.warnings), 1)
             self.assertIn("base_test.py", cx.warnings[0].filename)
 

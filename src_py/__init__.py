@@ -140,7 +140,7 @@ class MissingModule:
         msg_type = "import" if self.urgent else "use"
         message = f"{msg_type} {self.name}: {self.info}\n({self.reason})"
         try:
-            level = 4 if self.urgent else 3
+            level = 3 if self.urgent else 2
             urgency = 0 if self.urgent else 1
             warn(message, urgency, level=level)
         except ImportError:

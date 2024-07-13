@@ -2097,9 +2097,9 @@ intSizeAsStr(int num)
     }
     else if (num < 0) {
         // printf("i s=%i, neg", ceil(log10(-num + 1)) + 1);
-        return ceil(log10(-num + 1)) + 1;
+        return (int)ceil(log10(-num + 1)) + 1;
     }
-    return ceil(log10(num + 1));
+    return (int)ceil(log10(num + 1));
 }
 
 static int
@@ -2127,9 +2127,6 @@ pgWarn(PyObject *category, const char *message, Py_ssize_t stack_level,
 
     //         12              3 4
     // "message (extra{urgency})\0"
-    printf("%s (%s%i)\n", message, extra, urgency);
-    printf("%lu, %lu, %i\n", strlen(message), strlen(extra),
-           intSizeAsStr(urgency));
     size_t str_size =
         strlen(message) + strlen(extra) + intSizeAsStr(urgency) + 4;
 
