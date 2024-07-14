@@ -874,6 +874,9 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         h = 0;
     }
 
+    h_actual = h;
+    w_actual = w;
+
     if (!SDL_WasInit(SDL_INIT_VIDEO)) {
         /* note SDL works special like this too */
         if (!pg_display_init(NULL, NULL))
