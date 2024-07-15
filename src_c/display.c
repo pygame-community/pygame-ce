@@ -588,7 +588,6 @@ pg_get_surface(PyObject *self, PyObject *_null)
             if (!new_surface)
                 return NULL;
             pg_SetDefaultWindowSurface(new_surface);
-            Py_INCREF((PyObject *)new_surface);
             return (PyObject *)new_surface;
         }
         Py_INCREF(old_surface);
@@ -1312,7 +1311,6 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         /*no errors; make the window available*/
         pg_SetDefaultWindow(win);
         pg_SetDefaultWindowSurface(surface);
-        Py_DECREF(surface);
 
         /* ensure window is always black after a set_mode call */
         SDL_FillRect(surf, NULL, SDL_MapRGB(surf->format, 0, 0, 0));
@@ -1344,7 +1342,6 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     SDL_PumpEvents();
 
     /*return the window's surface (screen)*/
-    Py_INCREF(surface);
     return (PyObject *)surface;
 
 DESTROY_WINDOW:
