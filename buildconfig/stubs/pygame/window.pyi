@@ -68,5 +68,5 @@ class Window:
     @property
     def opengl(self) -> bool: ...
     @classmethod
-    @deprecated("since 2.4.0. Use the display module or the Window class with get_surface and flip")
+    @deprecated("since 2.4.0. Use either the display module or the Window class with get_surface and flip. Try not to mix display and Window")
     def from_display_module(cls) -> Window: ...
