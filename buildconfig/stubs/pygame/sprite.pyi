@@ -184,9 +184,9 @@ class Group(AbstractGroup[_TSprite]):
     ) -> None: ...
     
 # these are aliased in the code too
-@deprecated("Use Group instead")
+@deprecated("Use `pygame.sprite.Group` instead")
 class RenderPlain(Group): ...
-@deprecated("Use Group instead")
+@deprecated("Use `pygame.sprite.Group` instead")
 class RenderClear(Group): ...
 
 class RenderUpdates(Group[_TSprite]): ...
@@ -238,7 +238,7 @@ class LayeredDirty(LayeredUpdates[_TDirtySprite]):
     def set_timing_threshold(
         self, time_ms: SupportsFloat
     ) -> None: ...  # This actually accept any value
-    @deprecated("since 2.1.1. Use set_timing_threshold instead")
+    @deprecated("since 2.1.1. Use `pygame.sprite.LayeredDirty.set_timing_threshold` instead")
     def set_timing_treshold(
         self, time_ms: SupportsFloat
     ) -> None: ...

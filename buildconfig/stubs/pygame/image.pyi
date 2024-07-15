@@ -18,21 +18,21 @@ def load_sized_svg(file: FileArg, size: Coordinate) -> Surface: ...
 def save(surface: Surface, file: FileArg, namehint: str = "") -> None: ...
 def get_sdl_image_version(linked: bool = True) -> Optional[Tuple[int, int, int]]: ...
 def get_extended() -> bool: ...
-@deprecated("since 2.3.0. Use tobytes instead")
+@deprecated("since 2.3.0. Use `pygame.image.tobytes` instead")
 def tostring(
     surface: Surface,
     format: _to_bytes_format,
     flipped: bool = False,
     pitch: int = -1,
 ) -> bytes: ...
-@deprecated("since 2.3.0. Use frombytes instead")
+@deprecated("since 2.3.0. Use `pygame.image.frombytes` instead")
 def fromstring(
     bytes: bytes,
     size: IntCoordinate,
     format: _from_bytes_format,
     flipped: bool = False,
     pitch: int = -1,
-) -> Surface:"""Deprecated since 2.3.0. Use frombytes instead"""
+) -> Surface: ...
 def tobytes(
     surface: Surface,
     format: _to_bytes_format,
