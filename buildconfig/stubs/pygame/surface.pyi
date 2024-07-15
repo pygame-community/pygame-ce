@@ -1,4 +1,4 @@
-from typing import Any, Iterable, List, Optional, Tuple, Union, overload
+from typing import Any, Iterable, List, Literal, Optional, Tuple, Union, overload
 
 from pygame.bufferproxy import BufferProxy
 from pygame.color import Color
@@ -7,7 +7,6 @@ from pygame.rect import FRect, Rect
 from ._common import (
     ColorValue,
     Coordinate,
-    Literal,
     RectValue,
     RGBAOutput,
     Sequence,
