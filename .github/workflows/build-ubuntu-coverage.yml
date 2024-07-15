@@ -45,13 +45,11 @@ concurrency:
 
 jobs:
   gen_coverage:
-    env:
-      CFLAGS: "-coverage"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
-        os: [ubuntu-20.04]
+        os: [ubuntu-22.04]
 
     steps:
     - uses: actions/checkout@v4.1.7
@@ -66,12 +64,12 @@ jobs:
         sudo apt-get install lcov -y
         sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libfreetype6-dev libportmidi-dev python3-dev -y
         pip3 install --upgrade pip
-        pip3 install build numpy>=1.21.0 cython
+        pip3 install meson-python ninja cython "sphinx<=7.2.6"  # because we are doing --no-build-isolation
+        pip3 install numpy>=1.21.0
 
     - name: Build with coverage hooks and install
       run: |
-        python3 setup.py build_ext --inplace
-        python3 setup.py install --user
+        pip3 install -e . --no-build-isolation -Cbuild-dir=.mesonpy-rel -Csetup-args=-Dcoverage=true
 
     - name: Run tests
       env:
@@ -92,5 +90,3 @@ jobs:
       with:
         name: pygame-wheels-coverage
         path: ${{ github.workspace }}/out
-        compression-level: 0  # already compressed, no need for more compression
-
