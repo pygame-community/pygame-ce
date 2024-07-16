@@ -49,11 +49,6 @@
 
 #define PG_GET_LIST_LEN 128
 
-/* _custom_event stores the next custom user event type that will be
- * returned by pygame.event.custom_type() */
-#define _PGE_CUSTOM_EVENT_INIT PGE_USEREVENT + 1
-
-static int _custom_event = _PGE_CUSTOM_EVENT_INIT;
 static int _pg_event_is_init = 0;
 
 /* Length of our unicode string in bytes. We need 1 to 3 bytes to store
@@ -638,11 +633,6 @@ pgEvent_AutoQuit(PyObject *self, PyObject *_null)
             _pg_repeat_timer = 0;
         }
         PG_UNLOCK_EVFILTER_MUTEX
-        /* The main reason for _custom_event to be reset here is so we
-         * can have a unit test that checks if pygame.event.custom_type()
-         * stops returning new types when they are finished, without that
-         * test preventing further tests from getting a custom event type.*/
-        _custom_event = _PGE_CUSTOM_EVENT_INIT;
     }
     _pg_event_is_init = 0;
     Py_RETURN_NONE;
@@ -2229,20 +2219,10 @@ pg_event_get_blocked(PyObject *self, PyObject *obj)
     return PyBool_FromLong(isblocked);
 }
 
-static PyObject *
-pg_event_custom_type(PyObject *self, PyObject *_null)
-{
-    if (_custom_event < PG_NUMEVENTS)
-        return PyLong_FromLong(_custom_event++);
-    else
-        return RAISE(pgExc_SDLError,
-                     "pygame.event.custom_type made too many event types.");
-}
-
 static PyMethodDef _event_methods[] = {
-    {"init", (PyCFunction)pgEvent_AutoInit, METH_NOARGS,
+    {"_internal_mod_init", (PyCFunction)pgEvent_AutoInit, METH_NOARGS,
      "auto initialize for event module"},
-    {"quit", (PyCFunction)pgEvent_AutoQuit, METH_NOARGS,
+    {"_internal_mod_quit", (PyCFunction)pgEvent_AutoQuit, METH_NOARGS,
      "auto quit for event module"},
 
     {"event_name", event_name, METH_VARARGS, DOC_EVENT_EVENTNAME},
@@ -2268,8 +2248,6 @@ static PyMethodDef _event_methods[] = {
      DOC_EVENT_SETBLOCKED},
     {"get_blocked", (PyCFunction)pg_event_get_blocked, METH_O,
      DOC_EVENT_GETBLOCKED},
-    {"custom_type", (PyCFunction)pg_event_custom_type, METH_NOARGS,
-     DOC_EVENT_CUSTOMTYPE},
 
     {NULL, NULL, 0, NULL}};
 
