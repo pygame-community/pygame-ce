@@ -1,4 +1,5 @@
 from pygame._event import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
+from pygame._event import _internal_mod_init as _init, _internal_mod_quit as _quit
 from pygame.constants import USEREVENT, NUMEVENTS
 from pygame.base import error
 
@@ -10,7 +11,7 @@ _custom_event = USEREVENT + 1
 def init():
     global _is_init
 
-    _internal_mod_init()
+    _init()
 
     _is_init = True
 
@@ -20,7 +21,7 @@ def quit():
 
     # The main reason for _custom_event to be reset here is so we can have a unit test that checks if pygame.event.custom_type() stops returning new types when they are finished, without that test preventing further tests from getting a custom event type.
     _custom_event = USEREVENT + 1
-    _internal_mod_quit()
+    _quit()
 
     _is_init = False
 
