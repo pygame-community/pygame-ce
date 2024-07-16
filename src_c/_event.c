@@ -1545,16 +1545,6 @@ pgEvent_New(SDL_Event *event)
 /* event module functions */
 
 static PyObject *
-event_name(PyObject *self, PyObject *arg)
-{
-    int type;
-    if (!PyArg_ParseTuple(arg, "i", &type))
-        return NULL;
-
-    return PyUnicode_FromString(_pg_name_from_eventtype(type));
-}
-
-static PyObject *
 set_grab(PyObject *self, PyObject *arg)
 {
     int doit = PyObject_IsTrue(arg);
@@ -2224,8 +2214,6 @@ static PyMethodDef _event_methods[] = {
      "auto initialize for event module"},
     {"_internal_mod_quit", (PyCFunction)pgEvent_AutoQuit, METH_NOARGS,
      "auto quit for event module"},
-
-    {"event_name", event_name, METH_VARARGS, DOC_EVENT_EVENTNAME},
 
     {"set_grab", set_grab, METH_O, DOC_EVENT_SETGRAB},
     {"get_grab", (PyCFunction)get_grab, METH_NOARGS, DOC_EVENT_GETGRAB},
