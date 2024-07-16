@@ -4,15 +4,15 @@ from typing import IO, Callable, Tuple, Union, TypeVar, Protocol, SupportsIndex
 PathLike = Union[str, bytes, PathProtocol[str], PathProtocol[bytes]]
 FileLike = Union[PathLike, IO[bytes], IO[str]]
 
-_T = TypeVar("_T", covariant=True)
+_T_co = TypeVar("_T_co", covariant=True)
 
 
-class SequenceLike(Protocol[_T]):
+class SequenceLike(Protocol[_T_co]):
     """
     Variant of the standard `Sequence` ABC that only requires `__getitem__` and `__len__`.
     """
 
-    def __getitem__(self, __i: SupportsIndex) -> _T: ...
+    def __getitem__(self, __i: SupportsIndex) -> _T_co: ...
     def __len__(self) -> int: ...
 
 
