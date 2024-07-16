@@ -1362,15 +1362,15 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
      */
     if (!state->using_gl && ((flags & (PGS_SCALED | PGS_FULLSCREEN)) == 0) &&
         !vsync) {
-        SDL_Surface *sdlSurf = SDL_GetWindowSurface(win);
-        if (((sdlSurf->w != w_actual) || (sdlSurf->h != h_actual)) &&
-            ((sdlSurf->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)) {
+        if (((surface->surf->w != w_actual) ||
+             (surface->surf->h != h_actual)) &&
+            ((surface->surf->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)) {
             char buffer[150];
-            char *formatString =
+            char *format_string =
                 "Requested window size was smaller than minimum supported "
                 "window size on platform. Using (%d, %d) instead.";
-            snprintf(buffer, sizeof(buffer), formatString, sdlSurf->w,
-                     sdlSurf->h);
+            snprintf(buffer, sizeof(buffer), format_string, surface->surf->w,
+                     surface->surf->h);
             if (PyErr_WarnEx(PyExc_RuntimeWarning, buffer, 1) != 0) {
                 return NULL;
             }
