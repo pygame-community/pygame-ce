@@ -7,14 +7,12 @@ from typing import (
     Iterator,
     List,
     Optional,
+    Protocol,
     SupportsFloat,
     Tuple,
     TypeVar,
     Union,
 )
-
-# Protocol added in python 3.8
-from typing_extensions import Protocol
 
 from pygame.rect import FRect, Rect
 from pygame.surface import Surface
