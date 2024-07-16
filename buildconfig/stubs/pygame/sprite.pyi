@@ -7,14 +7,13 @@ from typing import (
     Iterator,
     List,
     Optional,
+    Protocol,
     SupportsFloat,
     Tuple,
     TypeVar,
     Union,
 )
-
-# Protocol added in python 3.8, deprecated added in 3.13
-from typing_extensions import Protocol, deprecated
+from typing_extensions import deprecated # added in 3.13
 
 from pygame.rect import FRect, Rect
 from pygame.surface import Surface

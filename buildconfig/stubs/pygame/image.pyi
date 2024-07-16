@@ -1,10 +1,10 @@
-from typing import Optional, Tuple, Union
+from typing import Literal, Optional, Tuple, Union
 from typing_extensions import deprecated # added in 3.13
 
 from pygame.bufferproxy import BufferProxy
 from pygame.surface import Surface
 
-from ._common import FileArg, Literal, IntCoordinate, Coordinate
+from ._common import FileArg, IntCoordinate, Coordinate
 
 _BufferStyle = Union[BufferProxy, bytes, bytearray, memoryview]
 _to_bytes_format = Literal[
