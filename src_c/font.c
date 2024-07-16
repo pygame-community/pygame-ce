@@ -919,10 +919,7 @@ font_set_script(PyObject *self, PyObject *arg)
         return RAISE_FONT_QUIT_ERROR();
     }
 
-/*Sadly, SDL_TTF_VERSION_ATLEAST is new in SDL_ttf 2.0.15, still too
- * new to use */
-#if SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \
-                   SDL_TTF_PATCHLEVEL) >= SDL_VERSIONNUM(2, 20, 0)
+#if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
     TTF_Font *font = PyFont_AsFont(self);
     Py_ssize_t size;
     const char *script_code;
@@ -956,10 +953,7 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
         return RAISE_FONT_QUIT_ERROR();
     }
 
-/* Can't use SDL_TTF_VERSION_ATLEAST until SDL_ttf 2.0.15 is minimum supported
- */
-#if SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \
-                   SDL_TTF_PATCHLEVEL) >= SDL_VERSIONNUM(2, 20, 0)
+#if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
     TTF_Font *font = PyFont_AsFont(self);
     int direction;
     char *kwds[] = {"direction", NULL};
@@ -989,8 +983,7 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
    writing this) This bug flips the top-to-bottom and bottom-to-top rendering.
    So, this is a compat patch for that behavior
  */
-#if SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \
-                   SDL_TTF_PATCHLEVEL) < SDL_VERSIONNUM(2, 22, 0)
+#if !SDL_TTF_VERSION_ATLEAST(2, 22, 0)
         case 2: {
             dir = TTF_DIRECTION_BTT;
             break;
