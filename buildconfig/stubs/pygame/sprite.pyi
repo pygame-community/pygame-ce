@@ -13,6 +13,7 @@ from typing import (
     TypeVar,
     Union,
 )
+from typing_extensions import deprecated # added in 3.13
 
 from pygame.rect import FRect, Rect
 from pygame.surface import Surface
@@ -180,12 +181,15 @@ class Group(AbstractGroup[_TSprite]):
     def __init__(
         self, *sprites: Union[_TSprite, AbstractGroup[_TSprite], Iterable[_TSprite]]
     ) -> None: ...
-
+    
 # these are aliased in the code too
-RenderPlain = Group
-RenderClear = Group
+@deprecated("Use `pygame.sprite.Group` instead")
+class RenderPlain(Group): ...
+@deprecated("Use `pygame.sprite.Group` instead")
+class RenderClear(Group): ...
 
 class RenderUpdates(Group[_TSprite]): ...
+@deprecated("Use `pygame.sprite.RenderUpdates` instead")
 class OrderedUpdates(RenderUpdates[_TSprite]): ...
 
 class LayeredUpdates(AbstractGroup[_TSprite]):
@@ -234,8 +238,10 @@ class LayeredDirty(LayeredUpdates[_TDirtySprite]):
     def set_timing_threshold(
         self, time_ms: SupportsFloat
     ) -> None: ...  # This actually accept any value
-    # deprecated alias
-    set_timing_treshold = set_timing_threshold
+    @deprecated("since 2.1.1. Use `pygame.sprite.LayeredDirty.set_timing_threshold` instead")
+    def set_timing_treshold(
+        self, time_ms: SupportsFloat
+    ) -> None: ...
 
 class GroupSingle(AbstractGroup[_TSprite]):
     sprite: _TSprite
