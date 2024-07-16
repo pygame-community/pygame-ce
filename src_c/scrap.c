@@ -349,6 +349,11 @@ _scrap_lost_scrap(PyObject *self, PyObject *_null)
 {
     PYGAME_SCRAP_INIT_CHECK();
 
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "pygame.scrap.lost deprecated since 2.2.0", 1) == -1) {
+        return NULL;
+    }
+
     if (pygame_scrap_lost())
         Py_RETURN_TRUE;
     Py_RETURN_FALSE;
