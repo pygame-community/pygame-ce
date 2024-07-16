@@ -1321,7 +1321,6 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
         /* ensure window is always black after a set_mode call */
         SDL_FillRect(surf, NULL, SDL_MapRGB(surf->format, 0, 0, 0));
-        pg_flip_internal(state);
     }
 
     /*set the window icon*/
