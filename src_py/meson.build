@@ -18,6 +18,7 @@ python_sources = files(
     'sprite.py',
     'surfarray.py',
     'sysfont.py',
+    'typing.py',
     'version.py',
 )
 py.install_sources(python_sources, subdir: pg)

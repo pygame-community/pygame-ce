@@ -2,7 +2,7 @@ from typing import Any, Iterator, Literal, Tuple, Union, overload
 
 from pygame.surface import Surface
 
-from ._common import FileArg, IntCoordinate, Sequence
+from pygame.typing import FileLike, IntCoordinateLike, SequenceLike
 
 _Small_string = Tuple[
     str, str, str, str, str, str, str, str, str, str, str, str, str, str, str, str
@@ -47,13 +47,13 @@ sizer_xy_strings: _Small_string
 textmarker_strings: _Small_string
 
 def compile(
-    strings: Sequence[str],
+    strings: SequenceLike[str],
     black: str = "X",
     white: str = ".",
     xor: str = "o",
 ) -> Tuple[Tuple[int, ...], Tuple[int, ...]]: ...
 def load_xbm(
-    curs: FileArg, mask: FileArg
+    curs: FileLike, mask: FileLike
 ) -> Tuple[Tuple[int, int], Tuple[int, int], Tuple[int, ...], Tuple[int, ...]]: ...
 
 class Cursor:
@@ -64,15 +64,15 @@ class Cursor:
     @overload
     def __init__(
         self,
-        size: IntCoordinate,
-        hotspot: IntCoordinate,
-        xormasks: Sequence[int],
-        andmasks: Sequence[int],
+        size: IntCoordinateLike,
+        hotspot: IntCoordinateLike,
+        xormasks: SequenceLike[int],
+        andmasks: SequenceLike[int],
     ) -> None: ...
     @overload
     def __init__(
         self,
-        hotspot: IntCoordinate,
+        hotspot: IntCoordinateLike,
         surface: Surface,
     ) -> None: ...
     def __iter__(self) -> Iterator[Any]: ...
@@ -81,11 +81,11 @@ class Cursor:
     def __hash__(self) -> int: ...
     def __getitem__(
         self, index: int
-    ) -> Union[int, IntCoordinate, Surface]: ...
+    ) -> Union[int, IntCoordinateLike, Surface]: ...
     copy = __copy__
     type: Literal["system", "color", "bitmap"]
     data: Union[
         Tuple[int],
         Tuple[Tuple[int, int], Tuple[int, int], Tuple[int, ...], Tuple[int, ...]],
-        Tuple[IntCoordinate, Surface],
+        Tuple[IntCoordinateLike, Surface],
     ]
