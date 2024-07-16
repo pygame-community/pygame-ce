@@ -1,8 +1,8 @@
-from typing import Any, Iterator, Tuple, Union, overload
+from typing import Any, Iterator, Literal, Tuple, Union, overload
 
 from pygame.surface import Surface
 
-from ._common import FileArg, Literal, IntCoordinate, Sequence
+from ._common import FileArg, IntCoordinate, Sequence
 
 _Small_string = Tuple[
     str, str, str, str, str, str, str, str, str, str, str, str, str, str, str, str

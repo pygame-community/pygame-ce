@@ -1,8 +1,8 @@
 import sys
-from typing import Any, Dict, Iterator, Tuple, Union, overload
+from typing import Any, Dict, Iterator, SupportsIndex, Tuple, Union, overload
 from typing_extensions import deprecated # added in 3.13
 
-from ._common import ColorValue, SupportsIndex
+from ._common import ColorValue
 
 if sys.version_info >= (3, 9):
     from collections.abc import Collection

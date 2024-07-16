@@ -1,4 +1,4 @@
-from typing import Any, Iterable, List, Optional, Tuple, Union, overload
+from typing import Any, Iterable, List, Literal, Optional, Tuple, Union, overload
 from typing_extensions import deprecated # added in 3.13
 
 from pygame.bufferproxy import BufferProxy
@@ -8,7 +8,6 @@ from pygame.rect import FRect, Rect
 from ._common import (
     ColorValue,
     Coordinate,
-    Literal,
     RectValue,
     RGBAOutput,
     Sequence,

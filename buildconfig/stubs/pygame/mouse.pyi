@@ -1,5 +1,4 @@
-from typing import Tuple, overload
-from typing_extensions import Literal
+from typing import Literal, Tuple, overload
 from pygame.cursors import Cursor
 from pygame.surface import Surface
 

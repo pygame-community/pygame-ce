@@ -5,6 +5,7 @@ from typing import (
     Iterator,
     List,
     Literal,
+    SupportsIndex,
     Tuple,
     Type,
     TypeVar,
@@ -20,7 +21,7 @@ if sys.version_info >= (3, 9):
 else:
     from typing import Collection
 
-from ._common import SupportsIndex, Sequence
+from ._common import Sequence
 
 def clamp(value: float, min: float, max: float, /) -> float: ...
 

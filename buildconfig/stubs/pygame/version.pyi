@@ -1,6 +1,4 @@
-from typing import Tuple
-
-from ._common import Literal
+from typing import Literal, Tuple
 
 class SoftwareVersion(Tuple[int, int, int]):
     def __new__(cls, major: int, minor: int, patch: int) -> SoftwareVersion: ...
