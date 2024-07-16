@@ -155,4 +155,6 @@ with open(locals_file, "w") as f:
         f.write(f"{element}: {constant_type}\n")
         
 # copy typing.py to typing.pyi for type checkers
-shutil.copyfile("src_py/typing.py", "buildconfig/stubs/pygame/typing.pyi")
+typing_py_file = pathlib.Path(__file__).parent.parent.parent / "src_py" / "typing.py"
+typing_stub_file = pathlib.Path(__file__).parent / "pygame" / "typing.pyi"
+shutil.copyfile(typing_py_file, typing_stub_file)
