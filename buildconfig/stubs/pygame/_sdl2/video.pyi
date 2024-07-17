@@ -5,7 +5,7 @@ from pygame.rect import Rect
 from pygame.surface import Surface
 from pygame.window import Window as Window
 
-from pygame.typing import ColorLike, RectLike, CoordinateLike
+from pygame.typing import ColorLike, RectLike, Coordinate
 
 WINDOWPOS_UNDEFINED: int
 WINDOWPOS_CENTERED: int
@@ -74,26 +74,26 @@ class Texture:
     ) -> None: ...
     def draw_triangle(
         self,
-        p1_xy: CoordinateLike,
-        p2_xy: CoordinateLike,
-        p3_xy: CoordinateLike,
-        p1_uv: CoordinateLike = (0.0, 0.0),
-        p2_uv: CoordinateLike = (1.0, 1.0),
-        p3_uv: CoordinateLike = (0.0, 1.0),
+        p1_xy: Coordinate,
+        p2_xy: Coordinate,
+        p3_xy: Coordinate,
+        p1_uv: Coordinate = (0.0, 0.0),
+        p2_uv: Coordinate = (1.0, 1.0),
+        p3_uv: Coordinate = (0.0, 1.0),
         p1_mod: Iterable[int] = (255, 255, 255, 255),
         p2_mod: Iterable[int] = (255, 255, 255, 255),
         p3_mod: Iterable[int] = (255, 255, 255, 255),
     ) -> None: ...
     def draw_quad(
         self,
-        p1_xy: CoordinateLike,
-        p2_xy: CoordinateLike,
-        p3_xy: CoordinateLike,
-        p4_xy: CoordinateLike,
-        p1_uv: CoordinateLike = (0.0, 0.0),
-        p2_uv: CoordinateLike = (1.0, 0.0),
-        p3_uv: CoordinateLike = (1.0, 1.0),
-        p4_uv: CoordinateLike = (0.0, 1.0),
+        p1_xy: Coordinate,
+        p2_xy: Coordinate,
+        p3_xy: Coordinate,
+        p4_xy: Coordinate,
+        p1_uv: Coordinate = (0.0, 0.0),
+        p2_uv: Coordinate = (1.0, 0.0),
+        p3_uv: Coordinate = (1.0, 1.0),
+        p4_uv: Coordinate = (0.0, 1.0),
         p1_mod: Iterable[int] = (255, 255, 255, 255),
         p2_mod: Iterable[int] = (255, 255, 255, 255),
         p3_mod: Iterable[int] = (255, 255, 255, 255),
@@ -155,21 +155,21 @@ class Renderer:
         area: Optional[RectLike] = None,
         special_flags: int = 0,
     ) -> Rect: ...
-    def draw_line(self, p1: CoordinateLike, p2: CoordinateLike) -> None: ...
-    def draw_point(self, point: CoordinateLike) -> None: ...
+    def draw_line(self, p1: Coordinate, p2: Coordinate) -> None: ...
+    def draw_point(self, point: Coordinate) -> None: ...
     def draw_rect(self, rect: RectLike) -> None: ...
     def fill_rect(self, rect: RectLike) -> None: ...
     def draw_triangle(
-        self, p1: CoordinateLike, p2: CoordinateLike, p3: CoordinateLike
+        self, p1: Coordinate, p2: Coordinate, p3: Coordinate
     ) -> None: ...
     def fill_triangle(
-        self, p1: CoordinateLike, p2: CoordinateLike, p3: CoordinateLike
+        self, p1: Coordinate, p2: Coordinate, p3: Coordinate
     ) -> None: ...
     def draw_quad(
-        self, p1: CoordinateLike, p2: CoordinateLike, p3: CoordinateLike, p4: CoordinateLike
+        self, p1: Coordinate, p2: Coordinate, p3: Coordinate, p4: Coordinate
     ) -> None: ...
     def fill_quad(
-        self, p1: CoordinateLike, p2: CoordinateLike, p3: CoordinateLike, p4: CoordinateLike
+        self, p1: Coordinate, p2: Coordinate, p3: Coordinate, p4: Coordinate
     ) -> None: ...
     def to_surface(
         self, surface: Optional[Surface] = None, area: Optional[RectLike] = None

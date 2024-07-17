@@ -1,35 +1,45 @@
+import sys
 from typing import IO, Callable, Tuple, Union, TypeVar, Protocol, SupportsIndex
 
-_T1_co = TypeVar("_T1_co", covariant=True)
+if sys.version_info > (3, 8):
+    from os import PathLike as _PathProtocol
+else:
+    _T = TypeVar("_T", bound=Union[str, bytes])
+
+    class _PathProtocol(Protocol[_T]):
+        def __fspath__(self) -> _T: ...
 
 
-class _PathProtocol(Protocol[_T1_co]):
-    def __fspath__(self) -> _T1_co: ...
-
-
+# For functions that take a file name
 PathLike = Union[str, bytes, _PathProtocol[str], _PathProtocol[bytes]]
+# Most pygame functions that take a file argument should be able to handle a FileLike type
 FileLike = Union[PathLike, IO[bytes], IO[str]]
 
-_T2_co = TypeVar("_T2_co", covariant=True)
+_T_co = TypeVar("_T_co", covariant=True)
 
 
-class SequenceLike(Protocol[_T2_co]):
+class SequenceLike(Protocol[_T_co]):
     """
     Variant of the standard `Sequence` ABC that only requires `__getitem__` and `__len__`.
     """
 
-    def __getitem__(self, __i: SupportsIndex) -> _T2_co: ...
+    def __getitem__(self, __i: SupportsIndex) -> _T_co: ...
     def __len__(self) -> int: ...
 
 
 # Modify typehints when it is possible to annotate sizes
-CoordinateLike = SequenceLike[float]
-IntCoordinateLike = SequenceLike[int]
 
-RGBALike = Tuple[int, int, int, int]
+# Pygame handles float without errors in most cases where a coordinate is expected,
+# usually rounding to int. Also, 'Union[int, float] == float'
+Coordinate = SequenceLike[float]
+# This is used where ints are strictly required
+IntCoordinate = SequenceLike[int]
+
+# Used for functions that return an RGBA tuple
+RGBATuple = Tuple[int, int, int, int]
 ColorLike = Union[int, str, SequenceLike[int]]
 
-_CanBeRect = SequenceLike[Union[float, CoordinateLike]]
+_CanBeRect = SequenceLike[Union[float, Coordinate]]
 
 
 class _HasRectAttribute(Protocol):

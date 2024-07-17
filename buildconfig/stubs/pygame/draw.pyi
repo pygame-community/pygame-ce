@@ -2,7 +2,7 @@ from pygame.rect import Rect
 from pygame.surface import Surface
 from typing import overload
 
-from pygame.typing import ColorLike, CoordinateLike, RectLike, SequenceLike
+from pygame.typing import ColorLike, Coordinate, RectLike, SequenceLike
 
 def rect(
     surface: Surface,
@@ -18,13 +18,13 @@ def rect(
 def polygon(
     surface: Surface,
     color: ColorLike,
-    points: SequenceLike[CoordinateLike],
+    points: SequenceLike[Coordinate],
     width: int = 0,
 ) -> Rect: ...
 def circle(
     surface: Surface,
     color: ColorLike,
-    center: CoordinateLike,
+    center: Coordinate,
     radius: float,
     width: int = 0,
     draw_top_right: bool = False,
@@ -36,7 +36,7 @@ def circle(
 def aacircle(
     surface: Surface,
     color: ColorLike,
-    center: CoordinateLike,
+    center: Coordinate,
     radius: float,
     width: int = 0,
 ) -> Rect: ...
@@ -44,7 +44,7 @@ def aacircle(
 def aacircle(
     surface: Surface,
     color: ColorLike,
-    center: CoordinateLike,
+    center: Coordinate,
     radius: float,
     width: int = 0,
     draw_top_right: bool = False,
@@ -66,26 +66,26 @@ def arc(
 def line(
     surface: Surface,
     color: ColorLike,
-    start_pos: CoordinateLike,
-    end_pos: CoordinateLike,
+    start_pos: Coordinate,
+    end_pos: Coordinate,
     width: int = 1,
 ) -> Rect: ...
 def lines(
     surface: Surface,
     color: ColorLike,
     closed: bool,
-    points: SequenceLike[CoordinateLike],
+    points: SequenceLike[Coordinate],
     width: int = 1,
 ) -> Rect: ...
 def aaline(
     surface: Surface,
     color: ColorLike,
-    start_pos: CoordinateLike,
-    end_pos: CoordinateLike,
+    start_pos: Coordinate,
+    end_pos: Coordinate,
 ) -> Rect: ...
 def aalines(
     surface: Surface,
     color: ColorLike,
     closed: bool,
-    points: SequenceLike[CoordinateLike],
+    points: SequenceLike[Coordinate],
 ) -> Rect: ...

@@ -4,7 +4,7 @@ from typing_extensions import deprecated # added in 3.13
 from pygame.bufferproxy import BufferProxy
 from pygame.surface import Surface
 
-from pygame.typing import FileLike, IntCoordinateLike, CoordinateLike
+from pygame.typing import FileLike, IntCoordinate, Coordinate
 
 _BufferStyle = Union[BufferProxy, bytes, bytearray, memoryview]
 _to_bytes_format = Literal[
@@ -14,7 +14,7 @@ _from_buffer_format = Literal["P", "RGB", "BGR", "BGRA", "RGBX", "RGBA", "ARGB"]
 _from_bytes_format = Literal["P", "RGB", "RGBX", "RGBA", "ARGB", "BGRA", "ABGR"]
 
 def load(file: FileLike, namehint: str = "") -> Surface: ...
-def load_sized_svg(file: FileLike, size: CoordinateLike) -> Surface: ...
+def load_sized_svg(file: FileLike, size: Coordinate) -> Surface: ...
 def save(surface: Surface, file: FileLike, namehint: str = "") -> None: ...
 def get_sdl_image_version(linked: bool = True) -> Optional[Tuple[int, int, int]]: ...
 def get_extended() -> bool: ...
@@ -28,7 +28,7 @@ def tostring(
 @deprecated("since 2.3.0. Use `pygame.image.frombytes` instead")
 def fromstring(
     bytes: bytes,
-    size: IntCoordinateLike,
+    size: IntCoordinate,
     format: _from_bytes_format,
     flipped: bool = False,
     pitch: int = -1,
@@ -41,14 +41,14 @@ def tobytes(
 ) -> bytes: ...
 def frombytes(
     bytes: bytes,
-    size: IntCoordinateLike,
+    size: IntCoordinate,
     format: _from_bytes_format,
     flipped: bool = False,
     pitch: int = -1,
 ) -> Surface: ...
 def frombuffer(
     bytes: _BufferStyle,
-    size: IntCoordinateLike,
+    size: IntCoordinate,
     format: _from_buffer_format,
     pitch: int = -1,
 ) -> Surface: ...

@@ -2,7 +2,7 @@ from typing import Any, Iterator, Literal, Tuple, Union, overload
 
 from pygame.surface import Surface
 
-from pygame.typing import FileLike, IntCoordinateLike, SequenceLike
+from pygame.typing import FileLike, IntCoordinate, SequenceLike
 
 _Small_string = Tuple[
     str, str, str, str, str, str, str, str, str, str, str, str, str, str, str, str
@@ -64,15 +64,15 @@ class Cursor:
     @overload
     def __init__(
         self,
-        size: IntCoordinateLike,
-        hotspot: IntCoordinateLike,
+        size: IntCoordinate,
+        hotspot: IntCoordinate,
         xormasks: SequenceLike[int],
         andmasks: SequenceLike[int],
     ) -> None: ...
     @overload
     def __init__(
         self,
-        hotspot: IntCoordinateLike,
+        hotspot: IntCoordinate,
         surface: Surface,
     ) -> None: ...
     def __iter__(self) -> Iterator[Any]: ...
@@ -81,11 +81,11 @@ class Cursor:
     def __hash__(self) -> int: ...
     def __getitem__(
         self, index: int
-    ) -> Union[int, IntCoordinateLike, Surface]: ...
+    ) -> Union[int, IntCoordinate, Surface]: ...
     copy = __copy__
     type: Literal["system", "color", "bitmap"]
     data: Union[
         Tuple[int],
         Tuple[Tuple[int, int], Tuple[int, int], Tuple[int, ...], Tuple[int, ...]],
-        Tuple[IntCoordinateLike, Surface],
+        Tuple[IntCoordinate, Surface],
     ]

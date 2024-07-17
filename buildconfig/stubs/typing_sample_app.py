@@ -40,33 +40,33 @@ validator_PathLike("file.py")
 validator_PathLike(b"file.py")
 validator_PathLike(MyPath())
 
-# validate CoordinateLike, IntCoordinateLike
+# validate Coordinate, IntCoordinate
 
-def validator_CoordinateLike(coordinate: typing.CoordinateLike) -> int:
+def validator_Coordinate(coordinate: typing.Coordinate) -> int:
     return 0
 
-def validator_IntCoordinateLike(coordinate: typing.IntCoordinateLike) -> int:
+def validator_IntCoordinate(coordinate: typing.IntCoordinate) -> int:
     return 0
 
 # must pass
-validator_CoordinateLike((1, 2))
-validator_CoordinateLike([3, -4])
-validator_CoordinateLike((5, -6.5))
-validator_CoordinateLike((-6.7, 8.9))
-validator_CoordinateLike(pygame.Vector2())
+validator_Coordinate((1, 2))
+validator_Coordinate([3, -4])
+validator_Coordinate((5, -6.5))
+validator_Coordinate((-6.7, 8.9))
+validator_Coordinate(pygame.Vector2())
 
-validator_IntCoordinateLike((3, 4))
-validator_IntCoordinateLike([-4, -3])
+validator_IntCoordinate((3, 4))
+validator_IntCoordinate([-4, -3])
 
-# validate RGBALike, ColorLike
-def validator_RGBALike(rgba: typing.RGBALike) -> int:
+# validate RGBATuple, ColorLike
+def validator_RGBATuple(rgba: typing.RGBATuple) -> int:
     return 0
 
 def validator_ColorLike(color: typing.ColorLike) -> int:
     return 0
 
 # must pass
-validator_RGBALike((100, 200, 50, 20))
+validator_RGBATuple((100, 200, 50, 20))
 validator_ColorLike("green")
 validator_ColorLike(1)
 validator_ColorLike((255, 255, 255, 30))
