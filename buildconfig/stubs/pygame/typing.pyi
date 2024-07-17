@@ -4,7 +4,7 @@ from typing import IO, Callable, Tuple, Union, TypeVar, Protocol, SupportsIndex
 if sys.version_info > (3, 9):
     from os import PathLike as _PathProtocol
 else:
-    _T = TypeVar("_T", bound = Union[str, bytes])
+    _T = TypeVar("_T", bound=Union[str, bytes])
 
     class _PathProtocol(Protocol[_T]):
         def __fspath__(self) -> _T: ...
