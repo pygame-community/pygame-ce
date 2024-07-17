@@ -2,90 +2,91 @@ from pygame._event import *  # pylint: disable=wildcard-import; lgtm[py/pollutin
 from pygame._event import _internal_mod_init as _init, _internal_mod_quit as _quit
 from pygame.constants import USEREVENT, NUMEVENTS
 from pygame.base import error
+import pygame as pg
 
 
 _is_init = False
 _custom_event = USEREVENT + 1
 _NAMES_MAPPING = {
-    32768: "ActiveEvent",
-    257: "AppTerminating",
-    258: "AppLowMemory",
-    259: "AppWillEnterBackground",
-    260: "AppDidEnterBackground",
-    261: "AppWillEnterForeground",
-    262: "AppDidEnterForeground",
-    2304: "ClipboardUpdate",
-    768: "KeyDown",
-    769: "KeyUp",
-    772: "KeyMapChanged",
-    263: "LocaleChanged",
-    1024: "MouseMotion",
-    1025: "MouseButtonDown",
-    1026: "MouseButtonUp",
-    1536: "JoyAxisMotion",
-    1537: "JoyBallMotion",
-    1538: "JoyHatMotion",
-    1540: "JoyButtonUp",
-    1539: "JoyButtonDown",
-    256: "Quit",
-    513: "SysWMEvent",
-    32769: "VideoResize",
-    32770: "VideoExpose",
-    32771: "MidiIn",
-    32772: "MidiOut",
-    0: "NoEvent",
-    1794: "FingerMotion",
-    1792: "FingerDown",
-    1793: "FingerUp",
-    2050: "MultiGesture",
-    1027: "MouseWheel",
-    771: "TextInput",
-    770: "TextEditing",
-    4096: "DropFile",
-    4097: "DropText",
-    4098: "DropBegin",
-    4099: "DropComplete",
-    1616: "ControllerAxisMotion",
-    1617: "ControllerButtonDown",
-    1618: "ControllerButtonUp",
-    1619: "ControllerDeviceAdded",
-    1620: "ControllerDeviceRemoved",
-    1621: "ControllerDeviceMapped",
-    1541: "JoyDeviceAdded",
-    1542: "JoyDeviceRemoved",
-    1622: "ControllerTouchpadDown",
-    1623: "ControllerTouchpadMotion",
-    1624: "ControllerTouchpadUp",
-    1625: "ControllerSensorUpdate",
-    4352: "AudioDeviceAdded",
-    4353: "AudioDeviceRemoved",
-    8192: "RenderTargetsReset",
-    8193: "RenderDeviceReset",
-    32774: "WindowShown",
-    32775: "WindowHidden",
-    32776: "WindowExposed",
-    32777: "WindowMoved",
-    32778: "WindowResized",
-    32779: "WindowSizeChanged",
-    32780: "WindowMinimized",
-    32781: "WindowMaximized",
-    32782: "WindowRestored",
-    32783: "WindowEnter",
-    32784: "WindowLeave",
-    32785: "WindowFocusGained",
-    32786: "WindowFocusLost",
-    32787: "WindowClose",
-    32788: "WindowTakeFocus",
-    32789: "WindowHitTest",
-    32790: "WindowICCProfChanged",
-    32791: "WindowDisplayChanged",
+    pg.ACTIVEEVENT: "ActiveEvent",
+    pg.APP_TERMINATING: "AppTerminating",
+    pg.APP_LOWMEMORY: "AppLowMemory",
+    pg.APP_WILLENTERBACKGROUND: "AppWillEnterBackground",
+    pg.APP_DIDENTERBACKGROUND: "AppDidEnterBackground",
+    pg.APP_WILLENTERFOREGROUND: "AppWillEnterForeground",
+    pg.APP_DIDENTERFOREGROUND: "AppDidEnterForeground",
+    pg.CLIPBOARDUPDATE: "ClipboardUpdate",
+    pg.KEYDOWN: "KeyDown",
+    pg.KEYUP: "KeyUp",
+    pg.KEYMAPCHANGED: "KeyMapChanged",
+    pg.LOCALECHANGED: "LocaleChanged",
+    pg.MOUSEMOTION: "MouseMotion",
+    pg.MOUSEBUTTONDOWN: "MouseButtonDown",
+    pg.MOUSEBUTTONUP: "MouseButtonUp",
+    pg.JOYAXISMOTION: "JoyAxisMotion",
+    pg.JOYBALLMOTION: "JoyBallMotion",
+    pg.JOYHATMOTION: "JoyHatMotion",
+    pg.JOYBUTTONUP: "JoyButtonUp",
+    pg.JOYBUTTONDOWN: "JoyButtonDown",
+    pg.QUIT: "Quit",
+    pg.SYSWMEVENT: "SysWMEvent",
+    pg.VIDEORESIZE: "VideoResize",
+    pg.VIDEOEXPOSE: "VideoExpose",
+    pg.MIDIIN: "MidiIn",
+    pg.MIDIOUT: "MidiOut",
+    pg.NOEVENT: "NoEvent",
+    pg.FINGERMOTION: "FingerMotion",
+    pg.FINGERDOWN: "FingerDown",
+    pg.FINGERUP: "FingerUp",
+    pg.MULTIGESTURE: "MultiGesture",
+    pg.MOUSEWHEEL: "MouseWheel",
+    pg.TEXTINPUT: "TextInput",
+    pg.TEXTEDITING: "TextEditing",
+    pg.DROPFILE: "DropFile",
+    pg.DROPTEXT: "DropText",
+    pg.DROPBEGIN: "DropBegin",
+    pg.DROPCOMPLETE: "DropComplete",
+    pg.CONTROLLERAXISMOTION: "ControllerAxisMotion",
+    pg.CONTROLLERBUTTONDOWN: "ControllerButtonDown",
+    pg.CONTROLLERBUTTONUP: "ControllerButtonUp",
+    pg.CONTROLLERDEVICEADDED: "ControllerDeviceAdded",
+    pg.CONTROLLERDEVICEREMOVED: "ControllerDeviceRemoved",
+    pg.CONTROLLERDEVICEREMAPPED: "ControllerDeviceMapped",
+    pg.JOYDEVICEADDED: "JoyDeviceAdded",
+    pg.JOYDEVICEREMOVED: "JoyDeviceRemoved",
+    pg.CONTROLLERTOUCHPADDOWN: "ControllerTouchpadDown",
+    pg.CONTROLLERTOUCHPADMOTION: "ControllerTouchpadMotion",
+    pg.CONTROLLERTOUCHPADUP: "ControllerTouchpadUp",
+    pg.CONTROLLERSENSORUPDATE: "ControllerSensorUpdate",
+    pg.AUDIODEVICEADDED: "AudioDeviceAdded",
+    pg.AUDIODEVICEREMOVED: "AudioDeviceRemoved",
+    pg.RENDER_TARGETS_RESET: "RenderTargetsReset",
+    pg.RENDER_DEVICE_RESET: "RenderDeviceReset",
+    pg.WINDOWSHOWN: "WindowShown",
+    pg.WINDOWHIDDEN: "WindowHidden",
+    pg.WINDOWEXPOSED: "WindowExposed",
+    pg.WINDOWMOVED: "WindowMoved",
+    pg.WINDOWRESIZED: "WindowResized",
+    pg.WINDOWSIZECHANGED: "WindowSizeChanged",
+    pg.WINDOWMINIMIZED: "WindowMinimized",
+    pg.WINDOWMAXIMIZED: "WindowMaximized",
+    pg.WINDOWRESTORED: "WindowRestored",
+    pg.WINDOWENTER: "WindowEnter",
+    pg.WINDOWLEAVE: "WindowLeave",
+    pg.WINDOWFOCUSGAINED: "WindowFocusGained",
+    pg.WINDOWFOCUSLOST: "WindowFocusLost",
+    pg.WINDOWCLOSE: "WindowClose",
+    pg.WINDOWTAKEFOCUS: "WindowTakeFocus",
+    pg.WINDOWHITTEST: "WindowHitTest",
+    pg.WINDOWICCPROFCHANGED: "WindowICCProfChanged",
+    pg.WINDOWDISPLAYCHANGED: "WindowDisplayChanged",
 }
 
 
-def event_name(type: int):
+def event_name(type: int) -> str:
     if type in _NAMES_MAPPING:
         return _NAMES_MAPPING[type]
-    elif type >= USEREVENT and type < NUMEVENTS:
+    elif USEREVENT <= type < NUMEVENTS:
         return "UserEvent"
     return "Unknown"
 
@@ -120,8 +121,8 @@ def custom_type():
     """custom_type() -> int\nmake custom user event type"""
     global _custom_event
 
-    if _custom_event < NUMEVENTS:
-        _custom_event += 1
-        return _custom_event - 1
-    else:
+    if _custom_event >= NUMEVENTS:
         raise error("pygame.event.custom_type made too many event types.")
+
+    _custom_event += 1
+    return _custom_event - 1
