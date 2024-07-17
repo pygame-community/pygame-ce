@@ -1,18 +1,24 @@
-from os import PathLike as PathProtocol
 from typing import IO, Callable, Tuple, Union, TypeVar, Protocol, SupportsIndex
 
-PathLike = Union[str, bytes, PathProtocol[str], PathProtocol[bytes]]
+_T1_co = TypeVar("_T1_co", covariant=True)
+
+
+class _PathProtocol(Protocol[_T1_co]):
+    def __fspath__(self) -> _T1_co: ...
+
+
+PathLike = Union[str, bytes, _PathProtocol[str], _PathProtocol[bytes]]
 FileLike = Union[PathLike, IO[bytes], IO[str]]
 
-_T_co = TypeVar("_T_co", covariant=True)
+_T2_co = TypeVar("_T2_co", covariant=True)
 
 
-class SequenceLike(Protocol[_T_co]):
+class SequenceLike(Protocol[_T2_co]):
     """
     Variant of the standard `Sequence` ABC that only requires `__getitem__` and `__len__`.
     """
 
-    def __getitem__(self, __i: SupportsIndex) -> _T_co: ...
+    def __getitem__(self, __i: SupportsIndex) -> _T2_co: ...
     def __len__(self) -> int: ...
 
 
