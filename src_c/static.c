@@ -416,7 +416,7 @@ PyInit_pygame_static()
 
 #include "music.c"
 
-#include "gfxdraw.c"
+#include "_gfxdraw.c"
 
 #include "alphablit.c"
 
