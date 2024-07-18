@@ -1,27 +1,11 @@
 from typing import (
     Any,
-    Dict,
     List,
     Optional,
     Union,
-    final,
 )
 
 from ._common import Sequence
-
-@final
-class Event:
-    type: int
-    dict: Dict[str, Any]
-    __dict__: Dict[str, Any]
-    __hash__: None  # type: ignore
-    def __init__(
-        self, type: int, dict: Dict[str, Any] = ..., **kwargs: Any
-    ) -> None: ...
-    def __getattribute__(self, name: str) -> Any: ...
-    def __setattr__(self, name: str, value: Any) -> None: ...
-    def __delattr__(self, name: str) -> None: ...
-    def __bool__(self) -> bool: ...
 
 _EventTypes = Union[int, Sequence[int]]
 
@@ -41,5 +25,4 @@ def get_blocked(type: _EventTypes, /) -> bool: ...
 def set_grab(grab: bool, /) -> None: ...
 def get_grab() -> bool: ...
 def post(event: Event, /) -> bool: ...
-
-EventType = Event
+def register_event_class(cls: type): ...

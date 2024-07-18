@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pygame._event import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame._event import _internal_mod_init as _init, _internal_mod_quit as _quit
 from pygame.constants import USEREVENT, NUMEVENTS
@@ -86,14 +88,48 @@ _NAMES_MAPPING = {
 def event_name(type: int) -> str:
     if type in _NAMES_MAPPING:
         return _NAMES_MAPPING[type]
-    elif USEREVENT <= type < NUMEVENTS:
+    if USEREVENT <= type < NUMEVENTS:
         return "UserEvent"
     return "Unknown"
 
 
-# class Event:
-#     def __init__(self, type: int):
-#         self.type = type
+class Event:
+    """
+    Event(type, dict) -> Event
+    Event(type, **attributes) -> Event
+    pygame object for representing events
+    """
+
+    type: int
+    dict: dict[str, ...]
+
+    def __init__(self, type: int, dict_: dict[str, ...] | None = None, **kwargs):
+        if not 0 <= type < NUMEVENTS:
+            raise error("event type out of range")
+        dict_ = dict_ if dict_ is not None else {}
+        dict_.update(kwargs)
+
+        if "type" in dict_:
+            raise error("redundant type field in event dict")
+
+        dict_["type"] = type
+
+        self.__dict__ = dict_
+
+    def __int__(self):
+        return self.type
+
+    def __bool__(self):
+        return self.type != pg.NOEVENT
+
+    def __eq__(self, other: Event):
+        return self.type == other.type and self.dict == other.dict
+
+    def __repr__(self):
+        return f"<Event({self.type}-{event_name(self.type)} {self.dict})"
+
+
+EventType = Event
 
 
 def init():

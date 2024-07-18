@@ -395,7 +395,7 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
     int ticks, loops = 0;
     PyObject *obj, *ev_dict = NULL;
     int ev_type;
-    pgEventObject *e;
+    pgEventData e;
     pgSetTimerErr ecode = PG_TIMER_NO_ERROR;
 
     static char *kwids[] = {"event", "millis", "loops", NULL};
@@ -421,14 +421,24 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
             return RAISE(PyExc_ValueError, "event type out of range");
         }
     }
-    else if (pgEvent_Check(obj)) {
-        e = (pgEventObject *)obj;
-        ev_type = e->type;
-        ev_dict = e->dict;
-    }
     else {
-        return RAISE(PyExc_TypeError,
-                     "first argument must be an event type or event object");
+        int is_event = pgEvent_Check(obj);
+        if (is_event) {
+            e = pgEvent_GetEventData(obj);
+
+            if (PyErr_Occurred())
+                return NULL;
+
+            ev_type = e.type;
+            ev_dict = e.dict;
+
+            pgEvent_FreeEventData(e);
+        }
+        else {
+            return RAISE(
+                PyExc_TypeError,
+                "first argument must be an event type or event object");
+        }
     }
 
 #ifndef __EMSCRIPTEN__

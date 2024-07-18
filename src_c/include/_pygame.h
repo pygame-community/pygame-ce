@@ -378,12 +378,10 @@ typedef struct {
 /*
  * EVENT module
  */
-typedef struct pgEventObject pgEventObject;
+typedef struct pgEventData pgEventData;
 
 #ifndef PYGAMEAPI_EVENT_INTERNAL
-#define pgEvent_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_event, 0))
-
-#define pgEvent_Check(x) ((x)->ob_type == &pgEvent_Type)
+#define pgEvent_GetType (*(PyObject * (*)(void)) PYGAMEAPI_GET_SLOT(_event, 0))
 
 #define pgEvent_New \
     (*(PyObject * (*)(SDL_Event *)) PYGAMEAPI_GET_SLOT(_event, 1))
@@ -409,6 +407,17 @@ typedef struct pgEventObject pgEventObject;
 
 #define pgEvent_GetMouseButtonUpInfo \
     (*(char *(*)(void))PYGAMEAPI_GET_SLOT(_event, 9))
+
+#define pgEvent_Check (*(int (*)(PyObject *))PYGAMEAPI_GET_SLOT(_event, 10))
+
+#define pgEvent_FromEventData \
+    (*(PyObject * (*)(pgEventData)) PYGAMEAPI_GET_SLOT(_event, 11))
+
+#define pgEvent_GetEventData \
+    (*(pgEventData(*)(PyObject *))PYGAMEAPI_GET_SLOT(_event, 12))
+
+#define pgEvent_FreeEventData \
+    (*(void (*)(pgEventData))PYGAMEAPI_GET_SLOT(_event, 13))
 
 #define import_pygame_event() IMPORT_PYGAME_MODULE(_event)
 #endif
