@@ -49,3 +49,6 @@ class _HasRectAttribute(Protocol):
 
 
 RectLike = Union[_CanBeRect, _HasRectAttribute]
+
+# cleanup namespace
+del sys, IO, Callable, Tuple, Union, TypeVar, Protocol, SupportsIndex
