@@ -128,6 +128,14 @@ class Event:
     def __repr__(self):
         return f"<Event({self.type}-{event_name(self.type)} {self.dict})"
 
+    @property
+    def dict(self):
+        return self.__dict__
+
+    @dict.setter
+    def dict(self, value: dict[str, ...]):
+        self.__dict__ = value
+
 
 EventType = Event
 
