@@ -295,9 +295,9 @@ window = py.extension_module(
     subdir: pg,
 )
 
-gfxdraw = py.extension_module(
-    'gfxdraw',
-    ['gfxdraw.c', 'SDL_gfx/SDL_gfxPrimitives.c'],
+_gfxdraw = py.extension_module(
+    '_gfxdraw',
+    ['_gfxdraw.c', 'SDL_gfx/SDL_gfxPrimitives.c'],
     # c_args: warnings_error,
     dependencies: pg_base_deps,
     install: true,

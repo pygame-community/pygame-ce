@@ -60,127 +60,21 @@ extern "C" {
 
 /* Pixel */
 
-SDL_GFXPRIMITIVES_SCOPE int
-pixelColor(SDL_Surface *dst, Sint16 x, Sint16 y, Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-pixelRGBA(SDL_Surface *dst, Sint16 x, Sint16 y, Uint8 r, Uint8 g, Uint8 b,
-          Uint8 a);
-
 /* Horizontal line */
 
 SDL_GFXPRIMITIVES_SCOPE int
 hlineColor(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y, Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-hlineRGBA(SDL_Surface *dst, Sint16 x1, Sint16 x2, Sint16 y, Uint8 r, Uint8 g,
-          Uint8 b, Uint8 a);
 
 /* Vertical line */
 
 SDL_GFXPRIMITIVES_SCOPE int
 vlineColor(SDL_Surface *dst, Sint16 x, Sint16 y1, Sint16 y2, Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-vlineRGBA(SDL_Surface *dst, Sint16 x, Sint16 y1, Sint16 y2, Uint8 r, Uint8 g,
-          Uint8 b, Uint8 a);
-
-/* Rectangle */
-
-SDL_GFXPRIMITIVES_SCOPE int
-rectangleColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
-               Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-rectangleRGBA(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
-              Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-
-#if 0  /********** CURRENTLY NOT USED BY pygame.gfxdraw **********/
-	/* Rounded-Corner Rectangle */
-
-	SDL_GFXPRIMITIVES_SCOPE int roundedRectangleColor(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 rad, Uint32 color);
-	SDL_GFXPRIMITIVES_SCOPE int roundedRectangleRGBA(SDL_Surface * dst, Sint16 x1, Sint16 y1,
-		Sint16 x2, Sint16 y2, Sint16 rad, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-#endif /********** CURRENTLY NOT USED BY pygame.gfxdraw **********/
-
-/* Filled rectangle (Box) */
-
-SDL_GFXPRIMITIVES_SCOPE int
-boxColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
-         Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-boxRGBA(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 r,
-        Uint8 g, Uint8 b, Uint8 a);
-
-#if 0  /********** CURRENTLY NOT USED BY pygame.gfxdraw **********/
-	/* Rounded-Corner Filled rectangle (Box) */
-
-	SDL_GFXPRIMITIVES_SCOPE int roundedBoxColor(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 rad, Uint32 color);
-	SDL_GFXPRIMITIVES_SCOPE int roundedBoxRGBA(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2,
-		Sint16 y2, Sint16 rad, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-#endif /********** CURRENTLY NOT USED BY pygame.gfxdraw **********/
 
 /* Line */
 
 SDL_GFXPRIMITIVES_SCOPE int
 lineColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
           Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-lineRGBA(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 r,
-         Uint8 g, Uint8 b, Uint8 a);
-
-#if 0  /********** CURRENTLY NOT USED BY pygame.gfxdraw **********/
-	/* AA Line */
-
-	SDL_GFXPRIMITIVES_SCOPE int aalineColor(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint32 color);
-	SDL_GFXPRIMITIVES_SCOPE int aalineRGBA(SDL_Surface * dst, Sint16 x1, Sint16 y1,
-		Sint16 x2, Sint16 y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-
-	/* Thick Line */
-	SDL_GFXPRIMITIVES_SCOPE int thickLineColor(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, 
-		Uint8 width, Uint32 color);
-	SDL_GFXPRIMITIVES_SCOPE int thickLineRGBA(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, 
-		Uint8 width, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-#endif /********** CURRENTLY NOT USED BY pygame.gfxdraw **********/
-
-/* Circle */
-
-SDL_GFXPRIMITIVES_SCOPE int
-circleColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-circleRGBA(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Uint8 r, Uint8 g,
-           Uint8 b, Uint8 a);
-
-/* Arc */
-
-SDL_GFXPRIMITIVES_SCOPE int
-arcColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
-         Sint16 end, Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-arcRGBA(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
-        Sint16 end, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-
-/* AA Circle */
-
-SDL_GFXPRIMITIVES_SCOPE int
-aacircleColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-aacircleRGBA(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Uint8 r,
-             Uint8 g, Uint8 b, Uint8 a);
-
-/* Filled Circle */
-
-SDL_GFXPRIMITIVES_SCOPE int
-filledCircleColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 r,
-                  Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-filledCircleRGBA(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Uint8 r,
-                 Uint8 g, Uint8 b, Uint8 a);
-
-/* Ellipse */
-
-SDL_GFXPRIMITIVES_SCOPE int
-ellipseColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
-             Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-ellipseRGBA(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
-            Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
 /* AA Ellipse */
 
@@ -191,15 +85,6 @@ SDL_GFXPRIMITIVES_SCOPE int
 aaellipseRGBA(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
               Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
-/* Filled Ellipse */
-
-SDL_GFXPRIMITIVES_SCOPE int
-filledEllipseColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
-                   Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-filledEllipseRGBA(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
-                  Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-
 /* Pie */
 
 SDL_GFXPRIMITIVES_SCOPE int
@@ -208,24 +93,6 @@ pieColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
 SDL_GFXPRIMITIVES_SCOPE int
 pieRGBA(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
         Sint16 end, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-
-#if 0  /********** CURRENTLY NOT USED BY pygame.gfxdraw **********/
-	/* Filled Pie */
-
-	SDL_GFXPRIMITIVES_SCOPE int filledPieColor(SDL_Surface * dst, Sint16 x, Sint16 y, Sint16 rad,
-		Sint16 start, Sint16 end, Uint32 color);
-	SDL_GFXPRIMITIVES_SCOPE int filledPieRGBA(SDL_Surface * dst, Sint16 x, Sint16 y, Sint16 rad,
-		Sint16 start, Sint16 end, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-#endif /********** CURRENTLY NOT USED BY pygame.gfxdraw **********/
-
-/* Trigon */
-
-SDL_GFXPRIMITIVES_SCOPE int
-trigonColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
-            Sint16 x3, Sint16 y3, Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-trigonRGBA(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
-           Sint16 x3, Sint16 y3, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
 /* AA-Trigon */
 
@@ -250,9 +117,6 @@ filledTrigonRGBA(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
 SDL_GFXPRIMITIVES_SCOPE int
 polygonColor(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n,
              Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-polygonRGBA(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n,
-            Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
 /* AA-Polygon */
 
@@ -269,9 +133,6 @@ SDL_GFXPRIMITIVES_SCOPE int
 filledPolygonColor(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n,
                    Uint32 color);
 SDL_GFXPRIMITIVES_SCOPE int
-filledPolygonRGBA(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n,
-                  Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-SDL_GFXPRIMITIVES_SCOPE int
 texturedPolygon(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n,
                 SDL_Surface *texture, int texture_dx, int texture_dy);
 
@@ -280,10 +141,6 @@ texturedPolygon(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n,
 SDL_GFXPRIMITIVES_SCOPE int
 filledPolygonColorMT(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy,
                      int n, Uint32 color, int **polyInts, int *polyAllocated);
-SDL_GFXPRIMITIVES_SCOPE int
-filledPolygonRGBAMT(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy,
-                    int n, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int **polyInts,
-                    int *polyAllocated);
 SDL_GFXPRIMITIVES_SCOPE int
 texturedPolygonMT(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n,
                   SDL_Surface *texture, int texture_dx, int texture_dy,
@@ -297,17 +154,6 @@ bezierColor(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n, int s,
 SDL_GFXPRIMITIVES_SCOPE int
 bezierRGBA(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n, int s,
            Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-
-#if 0  /********** CURRENTLY NOT USED BY pygame.gfxdraw **********/
-	/* Characters/Strings */
-
-	SDL_GFXPRIMITIVES_SCOPE void gfxPrimitivesSetFont(const void *fontdata, Uint32 cw, Uint32 ch);
-	SDL_GFXPRIMITIVES_SCOPE void gfxPrimitivesSetFontRotation(Uint32 rotation);
-	SDL_GFXPRIMITIVES_SCOPE int characterColor(SDL_Surface * dst, Sint16 x, Sint16 y, char c, Uint32 color);
-	SDL_GFXPRIMITIVES_SCOPE int characterRGBA(SDL_Surface * dst, Sint16 x, Sint16 y, char c, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-	SDL_GFXPRIMITIVES_SCOPE int stringColor(SDL_Surface * dst, Sint16 x, Sint16 y, const char *s, Uint32 color);
-	SDL_GFXPRIMITIVES_SCOPE int stringRGBA(SDL_Surface * dst, Sint16 x, Sint16 y, const char *s, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-#endif /********** CURRENTLY NOT USED BY pygame.gfxdraw **********/
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

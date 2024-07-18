@@ -29,7 +29,7 @@ _sdl2.controller_old src_c/_sdl2/controller_old.c $(SDL) $(DEBUG) -Isrc_c
 
 GFX = src_c/SDL_gfx/SDL_gfxPrimitives.c
 #GFX = src_c/SDL_gfx/SDL_gfxBlitFunc.c src_c/SDL_gfx/SDL_gfxPrimitives.c
-gfxdraw src_c/gfxdraw.c $(SDL) $(GFX) $(DEBUG)
+_gfxdraw src_c/_gfxdraw.c $(SDL) $(GFX) $(DEBUG)
 
 #optional freetype module (do not break in multiple lines
 #or the configuration script will choke!)

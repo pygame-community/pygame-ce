@@ -10,6 +10,7 @@ python_sources = files(
     'cursors.py',
     'freetype.py',
     'ftfont.py',
+    'gfxdraw.py',
     'locals.py',
     'macosx.py',
     'midi.py',

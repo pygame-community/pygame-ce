@@ -48,7 +48,7 @@ display src_c/void.c
 draw src_c/void.c
 event src_c/void.c
 font src_c/void.c
-gfxdraw  src_c/void.c
+_gfxdraw  src_c/void.c
 joystick src_c/void.c
 key src_c/void.c
 newbuffer  src_c/void.c

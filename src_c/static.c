@@ -169,7 +169,7 @@ PyMODINIT_FUNC
 PyInit_newbuffer(void);
 
 PyMODINIT_FUNC
-PyInit_gfxdraw(void);
+PyInit__gfxdraw(void);
 
 PyMODINIT_FUNC
 PyInit_audio(void);
@@ -289,7 +289,7 @@ PyInit_pygame_static()
 
     load_submodule("pygame", PyInit_rect(), "rect");
     load_submodule("pygame", PyInit_geometry(), "geometry");
-    load_submodule("pygame", PyInit_gfxdraw(), "gfxdraw");
+    load_submodule("pygame", PyInit__gfxdraw(), "_gfxdraw");
     load_submodule("pygame", PyInit_pg_time(), "time");
     load_submodule("pygame", PyInit__freetype(), "_freetype");
 
