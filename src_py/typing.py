@@ -1,7 +1,7 @@
 import sys
 from typing import IO, Callable, Tuple, Union, TypeVar, Protocol, SupportsIndex
 
-if sys.version_info > (3, 9):
+if sys.version_info >= (3, 9):
     from os import PathLike as _PathProtocol
 else:
     _T = TypeVar("_T", bound=Union[str, bytes])
