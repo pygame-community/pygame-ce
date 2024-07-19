@@ -456,6 +456,58 @@ class FontTypeTest(unittest.TestCase):
         self.assertRaises(ValueError, f.render, b"ab\x00cd", 0, [0, 0, 0])
         self.assertRaises(ValueError, f.render, "ab\x00cd", 0, [0, 0, 0])
 
+    def test_render_to(self):
+        f = pygame_font.Font(None, 20)
+        s: pygame.Surface = f.render("foo", False, "white")  # to make surface of same size as text
+        s = pygame.Surface(s.get_size())
+
+        f.render_to(s, (0, 0), "foo", True, [0, 0, 0], [255, 255, 255])
+        f.render_to(s, (0, 0), "xxx", True, [0, 0, 0], [255, 255, 255])
+        f.render_to(s, (0, 0), "", True, [0, 0, 0], [255, 255, 255])
+        f.render_to(s, (0, 0), "foo", False, [0, 0, 0], [255, 255, 255])
+        f.render_to(s, (0, 0), "xxx", False, [0, 0, 0], [255, 255, 255])
+        f.render_to(s, (0, 0), "xxx", False, [0, 0, 0])
+        f.render_to(s, (0, 0), "   ", False, [0, 0, 0])
+        f.render_to(s, (0, 0), "   ", False, [0, 0, 0], [255, 255, 255])
+        # null text should not draw anything
+        s = pygame.Surface(s.get_size())
+        f.render_to(s, (0, 0), "", False, [255,255,255], [0,0,0])
+        self.assertEqual(s.get_at((0, 0)), (0, 0, 0))
+        # Non-text should raise a TypeError.
+        self.assertRaises(TypeError, f.render_to, s, 123, False, False, [0, 0, 0], [255, 255, 255])
+        self.assertRaises(TypeError, f.render_to, "surface", (0,0), "asdsa", False, [0, 0, 0], [255, 255, 255])
+        # is background transparent for antialiasing?
+        s = pygame.Surface(s.get_size(), flags=pygame.SRCALPHA)
+        f.render_to(s, (0,0), ".", True, [255, 255, 255])
+        print(s.get_at((0,0)))
+        self.assertEqual(s.get_at((0, 0))[3], 0)  # check if transparent 
+        # is Unicode and bytes encoding correct?
+        # Cannot really test if the correct characters are rendered, but
+        # at least can assert the encodings differ.
+        s1 = pygame.Surface(s.get_size())
+        s2 = pygame.Surface(s.get_size())
+        f.render_to(s1, (0,0), ".", False, [0, 0, 0], [255, 255, 255])
+        f.render_to(s2, (0,0), b".", False, [0, 0, 0], [255, 255, 255])
+        self.assertTrue(equal_images(s1, s2))
+        s1 = pygame.Surface(s.get_size())
+        s2 = pygame.Surface(s.get_size())
+        u = "\u212A"
+        b = u.encode("UTF-16")[2:]  # Keep byte order consistent. [2:] skips BOM
+        sb = f.render_to(s1, (0,0), b, False, [0, 0, 0], [255, 255, 255])
+        try:  # FIXME why do we do this try/except ?
+            su = f.render_to(s2, (0,0), u, False, [0, 0, 0], [255, 255, 255])
+        except pygame.error:
+            pass
+        else:
+            self.assertFalse(equal_images(s1, s2))
+
+        # test for internal null bytes
+        # self.assertRaises(ValueError, f.render, b"ab\x00cd", 0, [0, 0, 0])
+        s = pygame.Surface(s.get_size())
+        # this results in segfault unfortunately
+        # and IDK what im even supposed to do
+        # self.assertRaises(ValueError, f.render_to, s, (0,0), "ab\x00cd", 0, [0, 0, 0])
+
     def test_render_ucs2_ucs4(self):
         """that it renders without raising if there is a new enough SDL_ttf."""
         f = pygame_font.Font(None, 20)
