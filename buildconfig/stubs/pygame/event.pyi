@@ -4,24 +4,12 @@ from typing import (
     List,
     Optional,
     Union,
-    final,
 )
 
-from ._common import Sequence
+from ._common import Sequence, EventLike
 
-@final
-class Event:
-    type: int
-    dict: Dict[str, Any]
-    __dict__: Dict[str, Any]
-    __hash__: None  # type: ignore
-    def __init__(
-        self, type: int, dict: Dict[str, Any] = ..., **kwargs: Any
-    ) -> None: ...
-    def __getattribute__(self, name: str) -> Any: ...
-    def __setattr__(self, name: str, value: Any) -> None: ...
-    def __delattr__(self, name: str) -> None: ...
-    def __bool__(self) -> bool: ...
+class Event(EventLike):
+    ...
 
 _EventTypes = Union[int, Sequence[int]]
 

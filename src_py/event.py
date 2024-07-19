@@ -131,6 +131,8 @@ class Event:
         return self.type != pg.NOEVENT
 
     def __eq__(self, other: Event):
+        if not isinstance(other, Event):
+            return NotImplemented
         return self.type == other.type and self.dict == other.dict
 
     def __repr__(self):
