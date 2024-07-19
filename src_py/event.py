@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pygame._event import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
+from pygame._event import *  # pylint: disable=wildcard-import,unused-wildcard-import; lgtm[py/polluting-import]
 from pygame._event import _internal_mod_init as _init, _internal_mod_quit as _quit
 from pygame.constants import USEREVENT, NUMEVENTS
 from pygame.base import error
@@ -156,8 +156,9 @@ class Event:
 
     def __setattr__(self, name, value):
         if name in ("_type", "_dict", "type", "dict"):
-            return super().__setattr__(name, value)
-        self._dict[name] = value
+            super().__setattr__(name, value)
+        else:
+            self._dict[name] = value
 
 
 EventType = Event
