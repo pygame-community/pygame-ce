@@ -44,7 +44,7 @@ def arc(
     y: int,
     r: int,
     start_angle: int,
-    atp_angle: int,
+    stop_angle: int,
     color: ColorValue, /
 ) -> None: ...
 @deprecated("since GFX_DEPRECATED_VERSION. Use `pygame.draw.arc` and `pygame.draw.line` instead")
@@ -54,7 +54,7 @@ def pie(
     y: int,
     r: int,
     start_angle: int,
-    atp_angle: int,
+    stop_angle: int,
     color: ColorValue, /
 ) -> None: ...
 @deprecated("since GFX_DEPRECATED_VERSION. Use `pygame.draw.polygon` instead")

@@ -53,20 +53,20 @@ def filled_ellipse(surface, x, y, rx, ry, color, /):
     pygame.draw.ellipse(surface, color, (x - rx, y - ry, rx * 2, ry * 2))
 
 
-def arc(surface, x, y, r, start_angle, atp_angle, color):
+def arc(surface, x, y, r, start_angle, stop_angle, color):
     pygame.draw.arc(
         surface,
         color,
         (x - r, y - r, r * 2, r * 2),
-        -atp_angle * _pi_quo_180,
+        -stop_angle * _pi_quo_180,
         -start_angle * _pi_quo_180,
         1,
     )
 
 
-def pie(surface, x, y, r, start_angle, atp_angle, color):
+def pie(surface, x, y, r, start_angle, stop_angle, color):
     start = start_angle * _pi_quo_180
-    end = atp_angle * _pi_quo_180
+    end = stop_angle * _pi_quo_180
     pygame.draw.arc(
         surface,
         color,
