@@ -606,7 +606,6 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 font_render_to(PyObject *self, PyObject *args)
 {
-    printf("font_render_to\n");
     int antialias;
     PyObject *text;
     PyObject *fg_rgba_obj, *bg_rgba_obj = Py_None, *renderargs, *render_result;
@@ -624,7 +623,6 @@ font_render_to(PyObject *self, PyObject *args)
                           &bg_rgba_obj, &wraplength, &blend_flags)) {
         return NULL;
     }
-
     SURF_INIT_CHECK(surf_to_render);
 
     renderargs = Py_BuildValue("(OiOOi)", text, antialias, fg_rgba_obj,
@@ -650,7 +648,7 @@ font_render_to(PyObject *self, PyObject *args)
     if (result != 0)
         return NULL;
 
-    return pgRect_New4(dest_rect.x, dest_rect.x, dest_rect.w, dest_rect.h);
+    return pgRect_New4(dest_rect.x, dest_rect.y, dest_rect.w, dest_rect.h);
 }
 
 static PyObject *
