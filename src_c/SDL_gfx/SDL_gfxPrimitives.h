@@ -58,8 +58,6 @@ extern "C" {
 
 /* Note: all ___Color routines expect the color to be in format 0xRRGGBBAA */
 
-/* Pixel */
-
 /* Horizontal line */
 
 SDL_GFXPRIMITIVES_SCOPE int
@@ -85,62 +83,11 @@ SDL_GFXPRIMITIVES_SCOPE int
 aaellipseRGBA(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry,
               Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
-/* Pie */
-
-SDL_GFXPRIMITIVES_SCOPE int
-pieColor(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
-         Sint16 end, Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-pieRGBA(SDL_Surface *dst, Sint16 x, Sint16 y, Sint16 rad, Sint16 start,
-        Sint16 end, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-
-/* AA-Trigon */
-
-SDL_GFXPRIMITIVES_SCOPE int
-aatrigonColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
-              Sint16 x3, Sint16 y3, Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-aatrigonRGBA(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
-             Sint16 x3, Sint16 y3, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-
-/* Filled Trigon */
-
-SDL_GFXPRIMITIVES_SCOPE int
-filledTrigonColor(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
-                  Sint16 x3, Sint16 y3, Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-filledTrigonRGBA(SDL_Surface *dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2,
-                 Sint16 x3, Sint16 y3, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-
-/* Polygon */
-
-SDL_GFXPRIMITIVES_SCOPE int
-polygonColor(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n,
-             Uint32 color);
-
-/* AA-Polygon */
-
-SDL_GFXPRIMITIVES_SCOPE int
-aapolygonColor(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n,
-               Uint32 color);
-SDL_GFXPRIMITIVES_SCOPE int
-aapolygonRGBA(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n,
-              Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-
 /* Filled Polygon */
-
-SDL_GFXPRIMITIVES_SCOPE int
-filledPolygonColor(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n,
-                   Uint32 color);
 SDL_GFXPRIMITIVES_SCOPE int
 texturedPolygon(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n,
                 SDL_Surface *texture, int texture_dx, int texture_dy);
 
-/* (Note: These MT versions are required for multi-threaded operation.) */
-
-SDL_GFXPRIMITIVES_SCOPE int
-filledPolygonColorMT(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy,
-                     int n, Uint32 color, int **polyInts, int *polyAllocated);
 SDL_GFXPRIMITIVES_SCOPE int
 texturedPolygonMT(SDL_Surface *dst, const Sint16 *vx, const Sint16 *vy, int n,
                   SDL_Surface *texture, int texture_dx, int texture_dy,
