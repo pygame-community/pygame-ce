@@ -1844,8 +1844,10 @@ pg_event_post(PyObject *self, PyObject *obj)
     if (PyErr_Occurred())
         return NULL;
 
-    switch (pg_post_event(e.type, e.dict)) {
-        pgEvent_FreeEventData(e);
+    int res = pg_post_event(e.type, e.dict);
+    pgEvent_FreeEventData(e);
+
+    switch (res) {
         case 0:
             Py_RETURN_FALSE;
         case 1:
