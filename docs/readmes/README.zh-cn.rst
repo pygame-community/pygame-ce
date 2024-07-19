@@ -122,6 +122,7 @@ pygame显然依赖于SDL和Python。此外pygame还嵌入了几个较小的库�
 
 许可证
 -------
+**许可证标识符:** LGPL-2.1-or-later
 
 本库在 `GNU LGPL version 2.1`_ 下发布，许可文件： ``docs/LGPL.txt`` 。我们保留将此库的未来版本置于其他许可证下的权利。
 
