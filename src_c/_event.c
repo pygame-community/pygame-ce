@@ -1196,14 +1196,23 @@ pgEvent_FromEventData(pgEventData e_data)
     if (!num)
         goto finalize;
 
-    args = PyTuple_New(1);
+    if (e_data.dict)
+        args = PyTuple_New(2);
+    else
+        args = PyTuple_New(1);
+
     if (!args) {
         Py_DECREF(num);
         goto finalize;
     }
 
     PyTuple_SetItem(args, 0, num);
-    ret = PyObject_Call(e_type, args, e_data.dict);
+    if (e_data.dict) {
+        Py_INCREF(e_data.dict);
+        PyTuple_SetItem(args, 1, e_data.dict);
+    }
+
+    ret = PyObject_Call(e_type, args, NULL);
 
 finalize:
     Py_DECREF(e_type);

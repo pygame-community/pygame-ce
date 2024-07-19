@@ -103,18 +103,26 @@ class Event:
     type: int
     dict: dict[str, ...]
 
-    def __init__(self, type: int, dict_: dict[str, ...] | None = None, **kwargs):
+    def __init__(self, type: int, dict: dict[str, ...] | None = None, **kwargs):
+        if not isinstance(type, int):
+            raise TypeError("event type must be an integer")
+
         if not 0 <= type < NUMEVENTS:
-            raise error("event type out of range")
-        dict_ = dict_ if dict_ is not None else {}
-        dict_.update(kwargs)
+            raise ValueError("event type out of range")
 
-        if "type" in dict_:
-            raise error("redundant type field in event dict")
+        dict = dict if dict is not None else {}
+        dict.update(kwargs)
 
-        dict_["type"] = type
+        if "type" in dict:
+            raise ValueError("redundant type field in event dict")
 
-        self.__dict__ = dict_
+        self._type = type
+        self._dict = dict
+
+    def __new__(cls, *args, **kwargs):
+        if "type" in kwargs:
+            raise ValueError("redundant type field in event dict")
+        return super().__new__(cls)
 
     def __int__(self):
         return self.type
@@ -130,14 +138,28 @@ class Event:
 
     @property
     def dict(self):
-        return self.__dict__
+        return self._dict
 
-    @dict.setter
-    def dict(self, value: dict[str, ...]):
-        self.__dict__ = value
+    @property
+    def type(self):
+        return self._type
+
+    def __getattr__(self, name):
+        return self._dict[name]
+
+    def __getattribute__(self, name):
+        if name == "__dict__":
+            return super().__getattribute__("_dict")
+        return super().__getattribute__(name)
+
+    def __setattr__(self, name, value):
+        if name in ("_type", "_dict", "type", "dict"):
+            return super().__setattr__(name, value)
+        self._dict[name] = value
 
 
 EventType = Event
+register_event_class(Event)
 
 
 def init():
