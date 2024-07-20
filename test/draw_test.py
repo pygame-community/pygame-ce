@@ -7176,6 +7176,20 @@ class DrawModuleTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 draw.polygon(surf, col, points, 0)
 
+    def test_aafunctions_masks_and_depth_segfault(self):
+        """Ensure future commits don't break the segfault fixed by pull request
+        https://github.com/pygame-community/pygame-ce/pull/3008
+        """
+        for depth in (8, 16, 24, 32):
+            # all values must stay so to reproduce the segfault
+            surf = pygame.Surface(
+                size=(512, 512), flags=0, depth=depth, masks=(0xE0, 0x1C, 0x3, 0x0)
+            )
+
+            draw.aacircle(surf, pygame.Color("red"), (256, 256), 64)
+            draw.aaline(surf, pygame.Color("red"), (256, 256), (512, 512))
+            draw.aalines(surf, pygame.Color("green"), False, [(256, 256), (512, 512), (400, 400)])
+
 
 ###############################################################################
 
