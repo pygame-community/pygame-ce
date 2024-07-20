@@ -7188,7 +7188,9 @@ class DrawModuleTest(unittest.TestCase):
 
             draw.aacircle(surf, pygame.Color("red"), (256, 256), 64)
             draw.aaline(surf, pygame.Color("red"), (256, 256), (512, 512))
-            draw.aalines(surf, pygame.Color("green"), False, [(256, 256), (512, 512), (400, 400)])
+            draw.aalines(
+                surf, pygame.Color("green"), False, [(256, 256), (512, 512), (400, 400)]
+            )
 
 
 ###############################################################################
