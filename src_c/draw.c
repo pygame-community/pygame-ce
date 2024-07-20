@@ -1174,7 +1174,6 @@ get_antialiased_color(SDL_Surface *surf, int x, int y, Uint32 original_color,
     original_color = SDL_MapRGBA(surf->format, color_part[0], color_part[1],
                                  color_part[2], color_part[3]);
     return original_color;
-    
 }
 
 static void
