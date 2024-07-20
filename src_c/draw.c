@@ -1145,15 +1145,15 @@ get_antialiased_color(SDL_Surface *surf, int x, int y, Uint32 original_color,
                         &background_color[1], &background_color[2],
                         &background_color[3]);
             break;
-        case 3:
-            {
-                Uint32 pixel = ((Uint8 *)surf->pixels)[(y * surf->w * 3) + x * 3 + 2] << 16;
-                pixel += ((Uint8 *)surf->pixels)[(y * surf->w * 3) + x * 3 + 1] << 8;
-                pixel += ((Uint8 *)surf->pixels)[(y * surf->w * 3) + x * 3];
-                SDL_GetRGB(pixel, surf->format, &background_color[0], 
-                        &background_color[1], &background_color[2]);
-            }
-            break;
+        case 3: {
+            Uint32 pixel =
+                ((Uint8 *)surf->pixels)[(y * surf->w * 3) + x * 3 + 2] << 16;
+            pixel += ((Uint8 *)surf->pixels)[(y * surf->w * 3) + x * 3 + 1]
+                     << 8;
+            pixel += ((Uint8 *)surf->pixels)[(y * surf->w * 3) + x * 3];
+            SDL_GetRGB(pixel, surf->format, &background_color[0],
+                       &background_color[1], &background_color[2]);
+        } break;
 
         default:
             SDL_GetRGBA(((Uint32 *)surf->pixels)[(y * surf->w) + x],
@@ -1172,7 +1172,7 @@ get_antialiased_color(SDL_Surface *surf, int x, int y, Uint32 original_color,
     color_part[3] = (Uint8)(brightness * color_part[3] +
                             (1 - brightness) * background_color[3]);
     original_color = SDL_MapRGBA(surf->format, color_part[0], color_part[1],
-                                color_part[2], color_part[3]);
+                                 color_part[2], color_part[3]);
     return original_color;
     
 }
