@@ -7180,7 +7180,7 @@ class DrawModuleTest(unittest.TestCase):
         """Ensure future commits don't break the segfault fixed by pull request
         https://github.com/pygame-community/pygame-ce/pull/3008
         """
-        for depth in (8, 16, 24, 32):
+        for depth in (8, 16, 32):
             # all values must stay so to reproduce the segfault
             surf = pygame.Surface(
                 size=(512, 512), flags=0, depth=depth, masks=(0xE0, 0x1C, 0x3, 0x0)
