@@ -1134,19 +1134,19 @@ get_antialiased_color(SDL_Surface *surf, int x, int y, Uint32 original_color,
 
     switch (PG_FORMAT_BytesPerPixel(surf->format)) {
         case 1:
-            SDL_GetRGBA(((Uint8 *)surf->pixels)[(y * surf->w) + x], 
+            SDL_GetRGBA(((Uint8 *)surf->pixels)[(y * surf->w) + x],
                         surf->format, &background_color[0],
                         &background_color[1], &background_color[2],
                         &background_color[3]);
             break;
         case 2:
-            SDL_GetRGBA(((Uint16 *)surf->pixels)[(y * surf->w) + x], 
+            SDL_GetRGBA(((Uint16 *)surf->pixels)[(y * surf->w) + x],
                         surf->format, &background_color[0],
                         &background_color[1], &background_color[2],
                         &background_color[3]);
             break;
         default:
-            SDL_GetRGBA(((Uint32 *)surf->pixels)[(y * surf->w) + x], 
+            SDL_GetRGBA(((Uint32 *)surf->pixels)[(y * surf->w) + x],
                         surf->format, &background_color[0],
                         &background_color[1], &background_color[2],
                         &background_color[3]);
