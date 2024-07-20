@@ -7182,9 +7182,7 @@ class DrawModuleTest(unittest.TestCase):
         """
         for depth in (8, 16, 24, 32):
             # all values must stay so to reproduce the segfault
-            surf = pygame.Surface(
-                size=(512, 512), flags=0, depth=depth
-            )
+            surf = pygame.Surface(size=(512, 512), flags=0, depth=depth)
 
             draw.aacircle(surf, pygame.Color("red"), (256, 256), 64)
             draw.aaline(surf, pygame.Color("red"), (256, 256), (512, 512))
