@@ -26,7 +26,6 @@ following formats:
    - a :mod:`pygame.Color` object
    - an ``(RGB)`` triplet (tuple/list)
    - an ``(RGBA)`` quadruplet (tuple/list)
-   - a ``"color"`` string
 
 The functions :meth:`rectangle` and :meth:`box` will accept any ``(x, y, w, h)``
 sequence for their ``rect`` argument, though :mod:`pygame.Rect` instances are
