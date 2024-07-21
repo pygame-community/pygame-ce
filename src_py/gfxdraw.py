@@ -9,7 +9,8 @@ _pi_quo_180 = 0.01745329251994329577
 
 
 @deprecated(
-    "The function `pixel` is deprecated since GFX_DEPRECATED_VERSION. Use `pygame.Surface.set_at` instead"
+    "The function `pixel` is deprecated since GFX_DEPRECATED_VERSION."
+    "Use `pygame.Surface.set_at` instead"
 )
 def pixel(surface, x, y, color, /):
     """pixel(surface, x, y, color, /) -> None
@@ -19,7 +20,8 @@ def pixel(surface, x, y, color, /):
 
 
 @deprecated(
-    "The function `hline` is deprecated since GFX_DEPRECATED_VERSION. Use `pygame.draw.line` instead"
+    "The function `hline` is deprecated since GFX_DEPRECATED_VERSION."
+    "Use `pygame.draw.line` instead"
 )
 def hline(surface, x1, x2, y, color, /):
     """hline(surface, x1, x2, y, color, /) -> None
@@ -29,7 +31,8 @@ def hline(surface, x1, x2, y, color, /):
 
 
 @deprecated(
-    "The function `vline` is deprecated since GFX_DEPRECATED_VERSION. Use `pygame.draw.line` instead"
+    "The function `vline` is deprecated since GFX_DEPRECATED_VERSION. "
+    "Use `pygame.draw.line` instead"
 )
 def vline(surface, x, y1, y2, color, /):
     """vline(surface, x, y1, y2, color, /) -> None
@@ -39,7 +42,8 @@ def vline(surface, x, y1, y2, color, /):
 
 
 @deprecated(
-    "The function `line` is deprecated since GFX_DEPRECATED_VERSION. Use `pygame.draw.line` instead"
+    "The function `line` is deprecated since GFX_DEPRECATED_VERSION. "
+    "Use `pygame.draw.line` instead"
 )
 def line(surface, x1, y1, x2, y2, color, /):
     """line(surface, x1, y1, x2, y2, color, /) -> None
@@ -49,7 +53,8 @@ def line(surface, x1, y1, x2, y2, color, /):
 
 
 @deprecated(
-    "The function `rectangle` is deprecated since GFX_DEPRECATED_VERSION. Use `pygame.draw.rect` instead"
+    "The function `rectangle` is deprecated since GFX_DEPRECATED_VERSION. "
+    "Use `pygame.draw.rect` instead"
 )
 def rectangle(surface, rect, color, /):
     """rectangle(surface, rect, color, /) -> None
@@ -59,7 +64,8 @@ def rectangle(surface, rect, color, /):
 
 
 @deprecated(
-    "The function `box` is deprecated since GFX_DEPRECATED_VERSION. Use `pygame.draw.rect` instead"
+    "The function `box` is deprecated since GFX_DEPRECATED_VERSION. "
+    "Use `pygame.draw.rect` instead"
 )
 def box(surface, rect, color, /):
     """box(surface, rect, color, /) -> None
@@ -69,7 +75,8 @@ def box(surface, rect, color, /):
 
 
 @deprecated(
-    "The function `circle` is deprecated since GFX_DEPRECATED_VERSION. Use `pygame.draw.circle` instead"
+    "The function `circle` is deprecated since GFX_DEPRECATED_VERSION. "
+    "Use `pygame.draw.circle` instead"
 )
 def circle(surface, x, y, r, color, /):
     """circle(surface, x, y, r, color, /) -> None
@@ -79,7 +86,8 @@ def circle(surface, x, y, r, color, /):
 
 
 @deprecated(
-    "The function `aacircle` is deprecated since GFX_DEPRECATED_VERSION. Use `pygame.draw.aacircle` instead"
+    "The function `aacircle` is deprecated since GFX_DEPRECATED_VERSION. "
+    "Use `pygame.draw.aacircle` instead"
 )
 def aacircle(surface, x, y, r, color, /):
     """aacircle(surface, x, y, r, color, /) -> None
@@ -89,7 +97,8 @@ def aacircle(surface, x, y, r, color, /):
 
 
 @deprecated(
-    "The function `filled_circle` is deprecated since GFX_DEPRECATED_VERSION. Use `pygame.draw.circle` instead"
+    "The function `filled_circle` is deprecated since GFX_DEPRECATED_VERSION. "
+    "Use `pygame.draw.circle` instead"
 )
 def filled_circle(surface, x, y, r, color, /):
     """filled_circle(surface, x, y, r, color, /) -> None
@@ -99,7 +108,8 @@ def filled_circle(surface, x, y, r, color, /):
 
 
 @deprecated(
-    "The function `ellipse` is deprecated since GFX_DEPRECATED_VERSION. Use `pygame.draw.ellipse` instead"
+    "The function `ellipse` is deprecated since GFX_DEPRECATED_VERSION. "
+    "Use `pygame.draw.ellipse` instead"
 )
 def ellipse(surface, x, y, rx, ry, color, /):
     """ellipse(surface, x, y, rx, ry, color, /) -> None
@@ -110,9 +120,9 @@ def ellipse(surface, x, y, rx, ry, color, /):
 
 # missing feature for aaellipse: pygame.draw.aaellipse
 # @deprecated("The function `aaellipse` is deprecated since GFX_DEPRECATED_VERSION. Use `pygame.draw.aaellipse` instead") # not implemented yet
-"""aaellipse(surface, x, y, rx, ry, color, /) -> None
-draw an antialiased ellipse
-"""
+# """aaellipse(surface, x, y, rx, ry, color, /) -> None
+# draw an antialiased ellipse
+# """
 
 
 @deprecated(
@@ -231,14 +241,14 @@ def filled_polygon(surface, points, color, /):
 
 # don't know how to shim: textured_polygon
 # @deprecated("The function `textured_polygon` is deprecated since GFX_DEPRECATED_VERSION.")
-"""textured_polygon(surface, points, texture, tx, ty, /) -> None
-draw a textured polygon
-"""
+# """textured_polygon(surface, points, texture, tx, ty, /) -> None
+# draw a textured polygon
+# """
 
 # missing feature for bezier: pygame.draw.bezier
 # @deprecated("The function `bezier` is deprecated since GFX_DEPRECATED_VERSION. Use `pygame.draw.bezier` instead") # not implemented yet
-"""bezier(surface, points, steps, color, /) -> None
-draw a Bezier curve
-"""
+# """bezier(surface, points, steps, color, /) -> None
+# draw a Bezier curve
+# """
 
 del deprecated
