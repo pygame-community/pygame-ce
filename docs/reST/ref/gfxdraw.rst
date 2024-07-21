@@ -8,11 +8,8 @@
 
 | :sl:`pygame module for drawing shapes`
 
-**EXPERIMENTAL!**: This API may change or disappear in later pygame releases. If
-you use this, your code may break with the next pygame release.
-
-The gfxdraw module is now deprecated in favor of the draw module and all its
-functions are deprecated.
+**DEPRECATED!**: The gfxdraw module is now deprecated in favor of the draw module
+and all its functions are also deprecated.
 
 The pygame package does not import gfxdraw automatically when loaded, so it
 must imported explicitly to be used.
