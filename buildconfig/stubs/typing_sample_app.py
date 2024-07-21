@@ -3,6 +3,7 @@ Sample app run by mypy to ensure typing.py aliases work as expected
 """
 from pygame import typing
 import pygame
+import pathlib
 
 # validate SequenceLike
 class MySequence:
@@ -19,6 +20,14 @@ class MySequence:
 def validator_SequenceLike(sequence: typing.SequenceLike) -> int:
     return 0
 
+def validator_SequenceLikeTypes(
+    sequence_float: typing.SequenceLike[float],
+    sequence_int: typing.SequenceLike[int],
+    sequence_str: typing.SequenceLike[str],
+    sequence_sequence: typing.SequenceLike[typing.SequenceLike],
+) -> int:
+    return 0
+
 # must pass
 validator_SequenceLike(MySequence())
 validator_SequenceLike([0, 1, 2, 3])
@@ -26,6 +35,13 @@ validator_SequenceLike((0, 1, 2, 3))
 validator_SequenceLike(pygame.Rect(-10, 10, 40, 40))
 validator_SequenceLike(pygame.Vector2())
 validator_SequenceLike("1234567890")
+
+validator_SequenceLikeTypes(
+    (-1.5, -0.5, 0, 0.5, 2.5, 10),
+    (-2, -1, 0, 1, 2, 3),
+    "abcdefghijklmnopqrstuvwxyz",
+    [(0.5, 1.5), (-1, 1), "123", [(), (), ()]]
+)
 
 # validate PathLike
 class MyPath:
@@ -38,6 +54,7 @@ def validator_PathLike(path: typing.PathLike) -> int:
 # must pass
 validator_PathLike("file.py")
 validator_PathLike(b"file.py")
+validator_PathLike(pathlib.Path("file.py"))
 validator_PathLike(MyPath())
 
 # validate Coordinate, IntCoordinate

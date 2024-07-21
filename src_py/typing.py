@@ -1,3 +1,8 @@
+"""Set of common pygame type aliases for correct type annotations"""
+
+# NOTE: `src_py/typing.py` and `buildconfig/stubs/pygame/typing.pyi` must be duplicates.
+# Use the command `python buildconfig/stubs/gen_stubs.py` to copy typing.py to typing.pyi
+
 import sys
 from typing import IO, Callable, Tuple, Union, TypeVar, Protocol, SupportsIndex
 

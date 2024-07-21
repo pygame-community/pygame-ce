@@ -31,7 +31,8 @@ def typing_check():
     try:
         os.chdir(STUBS_BASE_DIR)
         returncode = subprocess.run([*mypy_args]).returncode
-        print(f"mypy process finished with return code {returncode}")
+        if returncode != 0:
+            raise RuntimeError(f"mypy process finished with unsuccessful return code {returncode}")
     finally:
         os.chdir(prev_dir)
         
