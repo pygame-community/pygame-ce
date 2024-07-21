@@ -36,5 +36,4 @@ type aliases for proper typehint annotations.
      or a method returning a rect. This types are supported by every function accepting
      a rect as argument.
 
-
 .. ## pygame.typing ##
