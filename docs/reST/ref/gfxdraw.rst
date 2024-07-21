@@ -602,8 +602,6 @@ For example:
    | :sl:`draw a Bezier curve`
    | :sg:`bezier(surface, points, steps, color, /) -> None`
 
-   DEPRECATED : use :func:`pygame.draw.bezier` instead.
-
    Draws a Bézier curve on the given surface.
 
    :param Surface surface: surface to draw on
@@ -628,7 +626,7 @@ For example:
    .. note:: This function supports up to around 150-200 points before the algorithm
              breaks down.
    
-   .. deprecated:: 2.5.1
+   .. deprecated:: 2.5.1 Use :func:`pygame.draw.bezier` instead.
 
    .. ## pygame.gfxdraw.bezier ##
 
