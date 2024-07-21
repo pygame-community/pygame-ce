@@ -598,6 +598,37 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    .. ## pygame.draw.aalines ##
 
+.. function:: bezier
+
+   | :sl:`draw a Bezier curve`
+   | :sg:`bezier(surface, points, steps, color) -> None`
+
+   Draws a Bézier curve on the given surface.
+
+   :param Surface surface: surface to draw on
+   :param points: a sequence of 3 or more (x, y) coordinates used to form a
+      curve, where each *coordinate* in the sequence must be a
+      tuple/list/:class:`pygame.math.Vector2` of 2 ints/floats (float values
+      will be truncated)
+   :type points: tuple(coordinate) or list(coordinate)
+   :param int steps: number of steps for the interpolation, the minimum is 2
+   :param color: color to draw with, the alpha value is optional if using a
+      tuple ``(RGB[A])``
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+
+   :returns: ``None``
+   :rtype: NoneType
+
+   :raises ValueError: if ``steps < 2``
+   :raises ValueError: if ``len(points) < 3`` (must have at least 3 points)
+   :raises IndexError: if ``len(coordinate) < 2`` (each coordinate must have
+      at least 2 items)
+
+   .. note:: This function supports up to around 150-200 points before the algorithm
+             breaks down.
+
+   .. ## pygame.draw.bezier ##
+
 .. ## pygame.draw ##
 
 .. figure:: code_examples/draw_module_example.png

@@ -92,6 +92,9 @@ static void
 draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
                 int width, Uint32 color, int top_left, int top_right,
                 int bottom_left, int bottom_right, int *drawn_area);
+static int
+draw_bezier_color(SDL_Surface *dst, const int *vx, const int *vy, int n, 
+                  int s, Uint32 color);
 
 // validation of a draw color
 #define CHECK_LOAD_COLOR(colorobj)                               \
@@ -1103,6 +1106,92 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
                            drawn_area[3] - drawn_area[1] + 1);
     else
         return pgRect_New4(rect->x, rect->y, 0, 0);
+}
+
+static PyObject *
+bezier(PyObject *self, PyObject *args, PyObject * kwargs)
+{
+    pgSurfaceObject * surface;
+    PyObject *colorobj, *points, *item;
+    int *vx, *vy, x, y;
+    Py_ssize_t count, i;
+    SDL_Surface * surf = NULL;
+    int ret, steps;
+    int result;
+    Uint32 color;
+
+    static char * keywords[] = {"surface", "points", "steps", "color", NULL};
+
+    // ASSERT_VIDEO_INIT(NULL); To be kept ?
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!OiO", keywords, &pgSurface_Type, &surface, &points, &steps, &colorobj))
+        return NULL;
+
+    surf = pgSurface_AsSurface(surface);
+    SURF_INIT_CHECK(surf)
+
+    CHECK_LOAD_COLOR(colorobj)
+
+    if (!PySequence_Check(points)) {
+        return RAISE(PyExc_TypeError, "points must be a sequence");
+    }
+
+    count = PySequence_Size(points);
+    if (count < 3) {
+        return RAISE(PyExc_ValueError,
+                     "points must contain more than 2 points");
+    }
+
+    if (steps < 2) {
+        return RAISE(PyExc_ValueError,
+                     "steps parameter must be greater than 1");
+    }
+
+    vx = PyMem_New(int, (size_t)count);
+    vy = PyMem_New(int, (size_t)count);
+    if (!vx || !vy) {
+        if (vx)
+            PyMem_Free(vx);
+        if (vy)
+            PyMem_Free(vy);
+        return RAISE(PyExc_MemoryError, "memory allocation failed");
+    }
+
+    for (i = 0; i < count; i++) {
+        item = PySequence_ITEM(points, i);
+        result = pg_TwoIntsFromObj(item, &x, &y);
+
+        if (!result) {
+            PyMem_Free(vx);
+            PyMem_Free(vy);
+            return RAISE(PyExc_TypeError, "points must be number pairs");
+        }
+
+        Py_DECREF(item);
+
+        vx[i] = x;
+        vy[i] = y;
+    }
+
+    if (!pgSurface_Lock(surface)) {
+        return RAISE(PyExc_RuntimeError, "error locking surface");
+    }
+
+    Py_BEGIN_ALLOW_THREADS;
+    ret = draw_bezier_color(surf, vx, vy, (int)count, steps, color);
+    Py_END_ALLOW_THREADS;
+
+    if (!pgSurface_Unlock(surface)) {
+        return RAISE(PyExc_RuntimeError, "error unlocking surface");
+    }
+
+    PyMem_Free(vx);
+    PyMem_Free(vy);
+
+    if (ret == -1) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    Py_RETURN_NONE;
 }
 
 /* Functions used in drawing algorithms */
@@ -3104,6 +3193,136 @@ draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
     }
 }
 
+/* ---- Port of Bezier algorithms from SDL_gfxPrimitives.c */
+
+/*!
+\brief Internal function to calculate bezier interpolator of data array with
+ndata values at position 't'.
+
+\param data Array of values.
+\param ndata Size of array.
+\param t Position for which to calculate interpolated value. t should be
+between [0, nstepdata]. \param nstepdata Number of steps for the interpolation
+multiplied by the number of points. \returns Interpolated value at position t,
+value[0] when t<0, value[n-1] when t>=n.
+*/
+static double
+_evaluateBezier(double *data, int ndata, int t, int nstepdata)
+{
+    double mu, result;
+    int n, k, kn, nn, nkn;
+    double blend, muk, munk;
+
+    /* Sanity check bounds */
+    if (t < 0) {
+        return (data[0]);
+    }
+    if (t >= nstepdata) {
+        return (data[ndata - 1]);
+    }
+
+    /* Adjust t to the range 0.0 to 1.0 */
+    mu = t / (double)nstepdata;
+
+    /* Calculate interpolate */
+    n = ndata - 1;
+    result = 0.0;
+    muk = 1;
+    munk = pow(1 - mu, (double)n);
+
+    /* Ensure munk is not 0 which would cause coordinates to be (0, 0) */
+    if (munk <= 0) {
+        return (data[ndata - 1]);
+    }
+
+    for (k = 0; k <= n; k++) {
+        nn = n;
+        kn = k;
+        nkn = n - k;
+        blend = muk * munk;
+        muk *= mu;
+        munk /= (1 - mu);
+        while (nn >= 1) {
+            blend *= nn;
+            nn--;
+            if (kn > 1) {
+                blend /= (double)kn;
+                kn--;
+            }
+            if (nkn > 1) {
+                blend /= (double)nkn;
+                nkn--;
+            }
+        }
+        result += data[k] * blend;
+    }
+
+    return (result);
+}
+
+/*!
+\brief Draw a bezier curve with alpha blending.
+
+\param dst The surface to draw on.
+\param vx Vertex array containing X coordinates of the points of the bezier
+curve. \param vy Vertex array containing Y coordinates of the points of the
+bezier curve. \param n Number of points in the vertex array. Minimum number
+is 3. \param s Number of steps for the interpolation. Minimum number is 2.
+\param color The color value of the bezier curve to draw (0xRRGGBBAA).
+
+\returns Returns 0 on success, -1 on failure.
+*/
+static int
+draw_bezier_color(SDL_Surface *dst, const int *vx, const int *vy, int n, 
+                  int s, Uint32 color)
+{
+    int i, steppoints;
+    double *x, *y;
+    int x1, y1, x2, y2;
+    int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
+                        INT_MIN}; /* Used to store bounding box values */
+
+    /*
+     * Variable setup
+     */
+    steppoints = s * n;
+
+    /* Transfer vertices into float arrays */
+    if ((x = (double *)malloc(sizeof(double) * (n + 1))) == NULL) {
+        return (-1);
+    }
+    if ((y = (double *)malloc(sizeof(double) * (n + 1))) == NULL) {
+        free(x);
+        return (-1);
+    }
+    for (i = 0; i < n; i++) {
+        x[i] = (double)vx[i];
+        y[i] = (double)vy[i];
+    }
+    x[n] = (double)vx[0];
+    y[n] = (double)vy[0];
+
+    /*
+     * Draw
+     */
+    x1 = (int)lrint(_evaluateBezier(x, n + 1, 0, steppoints));
+    y1 = (int)lrint(_evaluateBezier(y, n + 1, 0, steppoints));
+    for (i = 1; i <= steppoints; i++) {
+        x2 = (int)_evaluateBezier(x, n, i, steppoints);
+        y2 = (int)_evaluateBezier(y, n, i, steppoints);
+        draw_line(dst, x1, y1, x2, y2, color, drawn_area);
+        x1 = x2;
+        y1 = y2;
+    }
+
+    /* Clean up temporary array */
+    free(x);
+    free(y);
+
+    return 0;
+}
+
+
 /* List of python functions */
 static PyMethodDef _draw_methods[] = {
     {"aaline", (PyCFunction)aaline, METH_VARARGS | METH_KEYWORDS,
@@ -3123,6 +3342,7 @@ static PyMethodDef _draw_methods[] = {
     {"polygon", (PyCFunction)polygon, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_POLYGON},
     {"rect", (PyCFunction)rect, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_RECT},
+    {"bezier", (PyCFunction)bezier, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_BEZIER},
 
     {NULL, NULL, 0, NULL}};
 
