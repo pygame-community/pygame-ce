@@ -7074,10 +7074,11 @@ class DrawArcTest(DrawArcMixin, DrawTestCase):
     class to add any draw.arc specific tests to.
     """
 
+
 ### Draw Bezier Testing #######################################################
 
-class DrawBezierTest(unittest.TestCase):
 
+class DrawBezierTest(unittest.TestCase):
     is_started = False
 
     foreground_color = (128, 64, 8)
@@ -7096,11 +7097,13 @@ class DrawBezierTest(unittest.TestCase):
                 palette.append(((r * i) // 127, (g * i) // 127, (b * i) // 127))
             else:
                 # Lighten
-                palette.append((
-                    r + ((255 - r) * (255 - i)) // 127,
-                    g + ((255 - g) * (255 - i)) // 127,
-                    b + ((255 - b) * (255 - i)) // 127,
-                ))
+                palette.append(
+                    (
+                        r + ((255 - r) * (255 - i)) // 127,
+                        g + ((255 - g) * (255 - i)) // 127,
+                        b + ((255 - b) * (255 - i)) // 127,
+                    )
+                )
         return palette
 
     default_palette = make_palette(foreground_color)
@@ -7183,6 +7186,7 @@ class DrawBezierTest(unittest.TestCase):
                 self.check_at(surf, posn, fg_adjusted)
             for posn in bg_test_points:
                 self.check_at(surf, posn, bg_adjusted)
+
 
 ### Draw Module Testing #######################################################
 
