@@ -626,6 +626,8 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    .. note:: This function supports up to around 150-200 points before the algorithm
              breaks down.
+   
+   .. versionadded:: 2.5.1
 
    .. ## pygame.draw.bezier ##
 
