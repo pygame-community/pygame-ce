@@ -1174,15 +1174,19 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     if (fontsize <= 1)
         fontsize = 1;
 
-    if (rw->size(rw) <= 0) {
+    if (SDL_RWsize(rw) <= 0) {
         PyErr_Format(PyExc_ValueError,
                      "Font file object has an invalid file size: %lld",
-                     rw->size(rw));
+                     SDL_RWsize(rw));
         goto error;
     }
 
     Py_BEGIN_ALLOW_THREADS;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    font = TTF_OpenFontIO(rw, 1, fontsize);
+#else
     font = TTF_OpenFontRW(rw, 1, fontsize);
+#endif
     Py_END_ALLOW_THREADS;
 
     Py_DECREF(obj);
