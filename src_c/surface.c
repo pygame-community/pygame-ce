@@ -2557,8 +2557,6 @@ surf_subsurface(PyObject *self, PyObject *args)
     SDL_Rect *rect, temp;
     SDL_Surface *sub;
     PyObject *subobj;
-    int pixeloffset;
-    char *startpixel;
     struct pgSubSurface_Data *data;
     Uint8 alpha;
     Uint32 colorkey;
@@ -2575,9 +2573,9 @@ surf_subsurface(PyObject *self, PyObject *args)
 
     pgSurface_Lock((pgSurfaceObject *)self);
 
-    pixeloffset =
-        rect->x * PG_FORMAT_BytesPerPixel(format) + rect->y * surf->pitch;
-    startpixel = ((char *)surf->pixels) + pixeloffset;
+    char *startpixel = ((char *)surf->pixels) +
+                       rect->x * PG_FORMAT_BytesPerPixel(format) +
+                       rect->y * surf->pitch;
 
     sub = PG_CreateSurfaceFrom(startpixel, rect->w, rect->h, surf->pitch,
                                format->format);
@@ -2645,7 +2643,6 @@ surf_subsurface(PyObject *self, PyObject *args)
     }
     Py_INCREF(self);
     data->owner = self;
-    data->pixeloffset = pixeloffset;
     data->offsetx = rect->x;
     data->offsety = rect->y;
     ((pgSurfaceObject *)subobj)->subsurface = data;

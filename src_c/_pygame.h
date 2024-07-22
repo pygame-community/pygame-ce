@@ -478,7 +478,6 @@ struct pgEventObject {
  */
 struct pgSubSurface_Data {
     PyObject *owner;
-    int pixeloffset;
     int offsetx, offsety;
 };
 
