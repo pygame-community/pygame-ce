@@ -2527,7 +2527,7 @@ draw_circle_xiaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
          layer_radius++) {
         int x = 0;
         int y = layer_radius;
-        float pow_layer_r = pow(layer_radius, 2);
+        double pow_layer_r = pow(layer_radius, 2);
         double prev_opacity = 0.0;
         if (layer_radius == radius - thickness) {
             while (x < y) {
