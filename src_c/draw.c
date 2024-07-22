@@ -2979,7 +2979,6 @@ draw_ellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int width,
     y0 = y0 + b;
     int x = 0;
     int y = b;
-    double prev_opacity = 0.0;
     int layer_b = (b - thickness);
     for (int layer_a = a - thickness; layer_a <= a; layer_a++) {
         float pow_layer_a = pow(layer_a, 2);
