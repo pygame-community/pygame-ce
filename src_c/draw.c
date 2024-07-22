@@ -2983,13 +2983,13 @@ draw_ellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int width,
     for (int layer_a = a - thickness; layer_a <= a; layer_a++) {
         double pow_layer_a = pow(layer_a, 2);
         double pow_layer_b = pow(layer_b, 2);
+        double layers_sum_root = sqrt(pow_layer_a + pow_layer_b);
         double prev_opacity = 0.0;
         x = 0;
         y = layer_b;
-        int ffd =
-            (int)round(pow_layer_a / sqrt(pow_layer_a + pow_layer_b)) + 1;
+        int deg45 = (int)round(pow_layer_a / layers_sum_root) + 1;
         if (layer_a == a - thickness) {
-            while (x < ffd) {
+            while (x < deg45) {
                 double height = layer_b * sqrt(1 - pow(x, 2) / pow_layer_a);
                 double opacity = 255.0 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
@@ -3004,9 +3004,8 @@ draw_ellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int width,
             }
             x = layer_a + 1;
             y = 0;
-            ffd =
-                (int)round(pow_layer_b / sqrt(pow_layer_a + pow_layer_b)) + 1;
-            while (y < ffd) {
+            deg45 = (int)round(pow_layer_b / layers_sum_root) + 1;
+            while (y < deg45) {
                 double width = layer_a * sqrt(1 - pow(y, 2) / pow_layer_b);
                 double opacity = 255.0 * (ceil(width) - width);
                 if (opacity < prev_opacity) {
@@ -3021,7 +3020,7 @@ draw_ellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int width,
             }
         }
         else if (layer_a == a) {
-            while (x < ffd) {
+            while (x < deg45) {
                 double height = layer_b * sqrt(1 - pow(x, 2) / pow_layer_a);
                 double opacity = 255.0 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
@@ -3036,9 +3035,8 @@ draw_ellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int width,
             }
             x = layer_a + 1;
             y = 0;
-            ffd =
-                (int)round(pow_layer_b / sqrt(pow_layer_a + pow_layer_b)) + 1;
-            while (y < ffd) {
+            deg45 = (int)round(pow_layer_b / layers_sum_root) + 1;
+            while (y < deg45) {
                 double width = layer_a * sqrt(1 - pow(y, 2) / pow_layer_b);
                 double opacity = 255.0 * (ceil(width) - width);
                 if (opacity < prev_opacity) {
@@ -3053,7 +3051,7 @@ draw_ellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int width,
             }
         }
         else {
-            while (x < ffd) {
+            while (x < deg45) {
                 double height = layer_b * sqrt(1 - pow(x, 2) / pow_layer_a);
                 double opacity = 255.0 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
@@ -3068,9 +3066,9 @@ draw_ellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int width,
             }
             x = layer_a + 1;
             y = 0;
-            ffd =
+            deg45 =
                 (int)round(pow_layer_b / sqrt(pow_layer_a + pow_layer_b)) + 1;
-            while (y < ffd) {
+            while (y < deg45) {
                 double width = layer_a * sqrt(1 - pow(y, 2) / pow_layer_b);
                 double opacity = 255.0 * (ceil(width) - width);
                 if (opacity < prev_opacity) {
@@ -3104,8 +3102,8 @@ draw_ellipse_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int width,
     int y = b;
     // 45 degree coordinate, at that point switch from horizontal to vertical
     // drawing
-    int ffd = (int)round(pow_a / sqrt(pow_a + pow_b)) + 1;
-    while (x < ffd) {
+    int deg45 = (int)round(pow_a / sqrt(pow_a + pow_b)) + 1;
+    while (x < deg45) {
         double height = b * sqrt(1 - pow(x, 2) / pow_a);
         double opacity = 255.0 * (ceil(height) - height);
         if (opacity < prev_opacity) {
@@ -3121,8 +3119,8 @@ draw_ellipse_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int width,
     // vertical drawing
     x = a + 1;
     y = 0;
-    ffd = (int)round(pow_b / sqrt(pow_a + pow_b)) + 1;
-    while (y < ffd) {
+    deg45 = (int)round(pow_b / sqrt(pow_a + pow_b)) + 1;
+    while (y < deg45) {
         double width = a * sqrt(1 - pow(y, 2) / pow_b);
         double opacity = 255.0 * (ceil(width) - width);
         if (opacity < prev_opacity) {
