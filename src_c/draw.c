@@ -66,11 +66,12 @@ draw_circle_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int radius,
                            Uint32 color, int top_right, int top_left,
                            int bottom_left, int bottom_right, int *drawn_area);
 static void
-draw_ellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int width, int height,
-                      int thickness, Uint32 color, int *drawn_area);
+draw_ellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int width,
+                       int height, int thickness, Uint32 color,
+                       int *drawn_area);
 static void
-draw_ellipse_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int width, int height,
-                           Uint32 color, int *drawn_area);
+draw_ellipse_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int width,
+                            int height, Uint32 color, int *drawn_area);
 static void
 draw_circle_filled(SDL_Surface *surf, int x0, int y0, int radius, Uint32 color,
                    int *drawn_area);
@@ -688,15 +689,32 @@ aaellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
-    if (!width) {
-        draw_ellipse_filled(surf, rect->x+1, rect->y+1, rect->w-2, rect->h-2, color, drawn_area);
-        draw_ellipse_xiaolinwu(surf, rect->x, rect->y, rect->w, rect->h, 2, color, drawn_area);
+    if (rect->w == 1 && rect->h == 1) {
+        draw_line(surf, rect->x, rect->y, rect->x, rect->y, color, drawn_area);
     }
-    else if (width == 1) {
-        draw_ellipse_xiaolinwu_thin(surf, rect->x, rect->y, rect->w, rect->h, color, drawn_area);
+    else if (rect->w == 1) {
+        draw_line(surf, rect->x, rect->y, rect->x, rect->y + rect->h - 1,
+                  color, drawn_area);
+    }
+    else if (rect->h == 1) {
+        draw_line(surf, rect->x, rect->y, rect->x + rect->w - 1, rect->y,
+                  color, drawn_area);
     }
     else {
-        draw_ellipse_xiaolinwu(surf, rect->x, rect->y, rect->w, rect->h, width, color, drawn_area);
+        if (!width) {
+            draw_ellipse_filled(surf, rect->x + 1, rect->y + 1, rect->w - 2,
+                                rect->h - 2, color, drawn_area);
+            draw_ellipse_xiaolinwu(surf, rect->x, rect->y, rect->w, rect->h, 2,
+                                   color, drawn_area);
+        }
+        else if (width == 1) {
+            draw_ellipse_xiaolinwu_thin(surf, rect->x, rect->y, rect->w,
+                                        rect->h, color, drawn_area);
+        }
+        else {
+            draw_ellipse_xiaolinwu(surf, rect->x, rect->y, rect->w, rect->h,
+                                   width, color, drawn_area);
+        }
     }
 
     if (!pgSurface_Unlock(surfobj)) {
@@ -2548,7 +2566,7 @@ draw_circle_filled(SDL_Surface *surf, int x0, int y0, int radius, Uint32 color,
 
 static void
 draw_four_symetric_pixels(SDL_Surface *surf, int x0, int y0, Uint32 color,
-                           int x, int y, float opacity, int *drawn_area)
+                          int x, int y, float opacity, int *drawn_area)
 {
     opacity = opacity / 255.0f;
     Uint32 pixel_color;
@@ -2950,8 +2968,10 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
  * adapted from: https://cgg.mff.cuni.cz/~pepca/ref/WU.pdf
  * with additional line width parameter
  */
- static void
- draw_ellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int width, int height, int thickness, Uint32 color, int *drawn_area)
+static void
+draw_ellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int width,
+                       int height, int thickness, Uint32 color,
+                       int *drawn_area)
 {
     int a = width / 2;
     int b = height / 2;
@@ -2976,8 +2996,10 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
                     --y;
                 }
                 prev_opacity = opacity;
-                draw_four_symetric_pixels(surf, x0, y0, color, x, y, 255.0f, drawn_area);
-                draw_four_symetric_pixels(surf, x0, y0, color, x, y - 1, (float)opacity, drawn_area);
+                draw_four_symetric_pixels(surf, x0, y0, color, x, y, 255.0f,
+                                          drawn_area);
+                draw_four_symetric_pixels(surf, x0, y0, color, x, y - 1,
+                                          (float)opacity, drawn_area);
                 ++x;
             }
             x = layer_a + 1;
@@ -2990,8 +3012,10 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
                     --x;
                 }
                 prev_opacity = opacity;
-                draw_four_symetric_pixels(surf, x0, y0, color, x, y, 255.0f, drawn_area);
-                draw_four_symetric_pixels(surf, x0, y0, color, x - 1, y, (float)opacity, drawn_area);
+                draw_four_symetric_pixels(surf, x0, y0, color, x, y, 255.0f,
+                                          drawn_area);
+                draw_four_symetric_pixels(surf, x0, y0, color, x - 1, y,
+                                          (float)opacity, drawn_area);
                 ++y;
             }
         }
@@ -3003,8 +3027,10 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
                     --y;
                 }
                 prev_opacity = opacity;
-                draw_four_symetric_pixels(surf, x0, y0, color, x, y, 255.0f - (float)opacity, drawn_area);
-                draw_four_symetric_pixels(surf, x0, y0, color, x, y - 1, 255.0f, drawn_area);
+                draw_four_symetric_pixels(surf, x0, y0, color, x, y,
+                                          255.0f - (float)opacity, drawn_area);
+                draw_four_symetric_pixels(surf, x0, y0, color, x, y - 1,
+                                          255.0f, drawn_area);
                 ++x;
             }
             x = layer_a + 1;
@@ -3017,8 +3043,10 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
                     --x;
                 }
                 prev_opacity = opacity;
-                draw_four_symetric_pixels(surf, x0, y0, color, x, y, 255.0f - (float)opacity, drawn_area);
-                draw_four_symetric_pixels(surf, x0, y0, color, x - 1, y, 255.0f, drawn_area);
+                draw_four_symetric_pixels(surf, x0, y0, color, x, y,
+                                          255.0f - (float)opacity, drawn_area);
+                draw_four_symetric_pixels(surf, x0, y0, color, x - 1, y,
+                                          255.0f, drawn_area);
                 ++y;
             }
         }
@@ -3030,8 +3058,10 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
                     --y;
                 }
                 prev_opacity = opacity;
-                draw_four_symetric_pixels(surf, x0, y0, color, x, y, 255.0f, drawn_area);
-                draw_four_symetric_pixels(surf, x0, y0, color, x, y - 1, 255.0f, drawn_area);
+                draw_four_symetric_pixels(surf, x0, y0, color, x, y, 255.0f,
+                                          drawn_area);
+                draw_four_symetric_pixels(surf, x0, y0, color, x, y - 1,
+                                          255.0f, drawn_area);
                 ++x;
             }
             x = layer_a + 1;
@@ -3044,8 +3074,10 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
                     --x;
                 }
                 prev_opacity = opacity;
-                draw_four_symetric_pixels(surf, x0, y0, color, x, y, 255.0f, drawn_area);
-                draw_four_symetric_pixels(surf, x0, y0, color, x - 1, y, 255.0f, drawn_area);
+                draw_four_symetric_pixels(surf, x0, y0, color, x, y, 255.0f,
+                                          drawn_area);
+                draw_four_symetric_pixels(surf, x0, y0, color, x - 1, y,
+                                          255.0f, drawn_area);
                 ++y;
             }
         }
@@ -3053,9 +3085,10 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
     }
 }
 
- static void
- draw_ellipse_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int width, int height, Uint32 color, int *drawn_area)
- {
+static void
+draw_ellipse_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int width,
+                            int height, Uint32 color, int *drawn_area)
+{
     int a = width / 2;
     int b = height / 2;
     x0 = x0 + a;
@@ -3066,7 +3099,8 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
     // horizontal drawing
     int x = 0;
     int y = b;
-    // 45 degree coordinate, at that point switch from horizontal to vertical drawing
+    // 45 degree coordinate, at that point switch from horizontal to vertical
+    // drawing
     int ffd = round(pow_a / sqrt(pow_a + pow_b)) + 1;
     while (x < ffd) {
         double height = b * sqrt(1 - pow(x, 2) / pow_a);
@@ -3075,8 +3109,10 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
             --y;
         }
         prev_opacity = opacity;
-        draw_four_symetric_pixels(surf, x0, y0, color, x, y, 255.0f - (float)opacity, drawn_area);
-        draw_four_symetric_pixels(surf, x0, y0, color, x, y - 1, (float)opacity, drawn_area);
+        draw_four_symetric_pixels(surf, x0, y0, color, x, y,
+                                  255.0f - (float)opacity, drawn_area);
+        draw_four_symetric_pixels(surf, x0, y0, color, x, y - 1,
+                                  (float)opacity, drawn_area);
         ++x;
     }
     // vertical drawing
@@ -3090,11 +3126,12 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
             --x;
         }
         prev_opacity = opacity;
-        draw_four_symetric_pixels(surf, x0, y0, color, x, y, 255.0f - (float)opacity, drawn_area);
-        draw_four_symetric_pixels(surf, x0, y0, color, x - 1, y, (float)opacity, drawn_area);
+        draw_four_symetric_pixels(surf, x0, y0, color, x, y,
+                                  255.0f - (float)opacity, drawn_area);
+        draw_four_symetric_pixels(surf, x0, y0, color, x - 1, y,
+                                  (float)opacity, drawn_area);
         ++y;
     }
-
 }
 
 static void
