@@ -55,6 +55,9 @@ def aacircle(
 def ellipse(
     surface: Surface, color: ColorValue, rect: RectValue, width: int = 0
 ) -> Rect: ...
+def aaellipse(
+    surface: Surface, color: ColorValue, rect: RectValue, width: int = 0
+) -> Rect: ...
 def arc(
     surface: Surface,
     color: ColorValue,

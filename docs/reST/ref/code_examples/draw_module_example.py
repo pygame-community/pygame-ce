@@ -65,6 +65,11 @@ while not done:
     # Draw an solid ellipse, using a rectangle as the outside boundaries
     pygame.draw.ellipse(screen, "red", [300, 10, 50, 20])
 
+    # Draw an antialiased ellipse, using a rectangle as the outside boundaries
+    pygame.draw.ellipse(screen, "green", [230, 95, 110, 85], 3)
+    # Draw an antialiased filled ellipse, using a rectangle as the outside boundaries
+    pygame.draw.ellipse(screen, "red", [250, 115, 70, 45], 3)
+
     # This draws a triangle using the polygon command
     pygame.draw.polygon(screen, "black", [[100, 100], [0, 200], [200, 200]], 5)
 
@@ -77,13 +82,13 @@ while not done:
 
     # Draw a circle
     pygame.draw.circle(screen, "blue", [60, 250], 40)
-    
+
     # Draw an antialiased circle with 3 pixels wide line
     pygame.draw.aacircle(screen, "green", [340, 250], 40, 3)
-    
+
     # Draw an antialiased top right circle quadrant with 4 pixels wide line
     pygame.draw.aacircle(screen, "red", [340, 250], 20, 4, draw_top_right=True)
-    
+
     # Draw an antialiased bottom left filled circle quadrant
     pygame.draw.aacircle(screen, "blue", [340, 250], 20, draw_bottom_left=True)
 
