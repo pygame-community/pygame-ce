@@ -49,7 +49,7 @@ _CanBeRect = SequenceLike[Union[float, Coordinate]]
 
 class _HasRectAttribute(Protocol):
     # An object that has a rect attribute that is either a rect, or a function
-    # that returns a rect confirms to the rect protocol
+    # that returns a rect conforms to the rect protocol
     rect: Union["RectLike", Callable[[], "RectLike"]]
 
 
