@@ -66,10 +66,10 @@ draw_circle_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int radius,
                            Uint32 color, int top_right, int top_left,
                            int bottom_left, int bottom_right, int *drawn_area);
 static void
-draw_ellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int a, int b,
+draw_ellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int width, int height,
                       int thickness, Uint32 color, int *drawn_area);
 static void
-draw_ellipse_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int a, int b,
+draw_ellipse_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int width, int height,
                            Uint32 color, int *drawn_area);
 static void
 draw_circle_filled(SDL_Surface *surf, int x0, int y0, int radius, Uint32 color,
@@ -690,13 +690,13 @@ aaellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     if (!width) {
         draw_ellipse_filled(surf, rect->x+1, rect->y+1, rect->w-2, rect->h-2, color, drawn_area);
-        draw_ellipse_xiaolinwu(surf, rect->x, rect->y, rect->w, rect->h, color, 2, drawn_area);
+        draw_ellipse_xiaolinwu(surf, rect->x, rect->y, rect->w, rect->h, 2, color, drawn_area);
     }
     else if (width == 1) {
         draw_ellipse_xiaolinwu_thin(surf, rect->x, rect->y, rect->w, rect->h, color, drawn_area);
     }
     else {
-        draw_ellipse_xiaolinwu(surf, rect->x, rect->y, rect->w, rect->h, color, width, drawn_area);
+        draw_ellipse_xiaolinwu(surf, rect->x, rect->y, rect->w, rect->h, width, color, drawn_area);
     }
 
     if (!pgSurface_Unlock(surfobj)) {
@@ -2966,12 +2966,11 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
         float pow_layer_b = pow(layer_b, 2);
         double prev_opacity = 0.0;
         x = 0;
-        y = b;
+        y = layer_b;
         int ffd = round(pow_layer_a / sqrt(pow_layer_a + pow_layer_b)) + 1;
-
         if (layer_a == a - thickness) {
             while (x < ffd) {
-                double height = b * sqrt(1 - pow(x, 2) / pow_layer_a);
+                double height = layer_b * sqrt(1 - pow(x, 2) / pow_layer_a);
                 double opacity = 255.0 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
                     --y;
@@ -2981,11 +2980,11 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
                 draw_four_symetric_pixels(surf, x0, y0, color, x, y - 1, (float)opacity, drawn_area);
                 ++x;
             }
-            x = a + 1;
+            x = layer_a + 1;
             y = 0;
             ffd = round(pow_layer_b / sqrt(pow_layer_a + pow_layer_b)) + 1;
             while (y < ffd) {
-                double width = a * sqrt(1 - pow(y, 2) / pow_layer_b);
+                double width = layer_a * sqrt(1 - pow(y, 2) / pow_layer_b);
                 double opacity = 255.0 * (ceil(width) - width);
                 if (opacity < prev_opacity) {
                     --x;
@@ -2996,10 +2995,9 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
                 ++y;
             }
         }
-
         else if (layer_a == a) {
             while (x < ffd) {
-                double height = b * sqrt(1 - pow(x, 2) / pow_layer_a);
+                double height = layer_b * sqrt(1 - pow(x, 2) / pow_layer_a);
                 double opacity = 255.0 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
                     --y;
@@ -3009,11 +3007,11 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
                 draw_four_symetric_pixels(surf, x0, y0, color, x, y - 1, 255.0f, drawn_area);
                 ++x;
             }
-            x = a + 1;
+            x = layer_a + 1;
             y = 0;
             ffd = round(pow_layer_b / sqrt(pow_layer_a + pow_layer_b)) + 1;
             while (y < ffd) {
-                double width = a * sqrt(1 - pow(y, 2) / pow_layer_b);
+                double width = layer_a * sqrt(1 - pow(y, 2) / pow_layer_b);
                 double opacity = 255.0 * (ceil(width) - width);
                 if (opacity < prev_opacity) {
                     --x;
@@ -3024,10 +3022,9 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
                 ++y;
             }
         }
-
         else {
             while (x < ffd) {
-                double height = b * sqrt(1 - pow(x, 2) / pow_layer_a);
+                double height = layer_b * sqrt(1 - pow(x, 2) / pow_layer_a);
                 double opacity = 255.0 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
                     --y;
@@ -3037,11 +3034,11 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
                 draw_four_symetric_pixels(surf, x0, y0, color, x, y - 1, 255.0f, drawn_area);
                 ++x;
             }
-            x = a + 1;
+            x = layer_a + 1;
             y = 0;
             ffd = round(pow_layer_b / sqrt(pow_layer_a + pow_layer_b)) + 1;
             while (y < ffd) {
-                double width = a * sqrt(1 - pow(y, 2) / pow_layer_b);
+                double width = layer_a * sqrt(1 - pow(y, 2) / pow_layer_b);
                 double opacity = 255.0 * (ceil(width) - width);
                 if (opacity < prev_opacity) {
                     --x;
