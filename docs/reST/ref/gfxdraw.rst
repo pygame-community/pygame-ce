@@ -625,8 +625,6 @@ For example:
 
    .. note:: This function supports up to around 150-200 points before the algorithm
              breaks down.
-   
-   .. deprecated:: 2.5.1 Use :func:`pygame.draw.bezier` instead.
 
    .. ## pygame.gfxdraw.bezier ##
 

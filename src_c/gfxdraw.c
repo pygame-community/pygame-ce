@@ -939,14 +939,6 @@ _gfx_beziercolor(PyObject *self, PyObject *args)
     int ret, steps;
     Uint8 rgba[4];
 
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "As part of the plan of the deprecation of gfxdraw, "
-                     "pygame.gfxdraw.bezier is deprecated, you should use now "
-                     "pygame.draw.bezier .",
-                     1) == -1) {
-        return NULL;
-    }
-
     ASSERT_VIDEO_INIT(NULL);
 
     if (!PyArg_ParseTuple(args, "OOiO:bezier", &surface, &points, &steps,
