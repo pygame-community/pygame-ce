@@ -1132,36 +1132,31 @@ get_antialiased_color(SDL_Surface *surf, int x, int y, Uint32 original_color,
         y < surf->clip_rect.y || y >= surf->clip_rect.y + surf->clip_rect.h)
         return original_color;
 
+    Uint32 pixel;
+
     switch (PG_FORMAT_BytesPerPixel(surf->format)) {
         case 1:
-            SDL_GetRGBA(((Uint8 *)surf->pixels)[(y * surf->w) + x],
-                        surf->format, &background_color[0],
-                        &background_color[1], &background_color[2],
-                        &background_color[3]);
+            pixel = ((Uint8 *) surf->pixels)[(y * surf->w) + x];
             break;
         case 2:
-            SDL_GetRGBA(((Uint16 *)surf->pixels)[(y * surf->w) + x],
-                        surf->format, &background_color[0],
-                        &background_color[1], &background_color[2],
-                        &background_color[3]);
+            pixel = ((Uint16 *) surf->pixels)[(y * surf->w) + x];
             break;
-        case 3: {
-            Uint32 pixel =
-                ((Uint8 *)surf->pixels)[(y * surf->w * 3) + x * 3 + 2] << 16;
+        case 3:
+            pixel = ((Uint8 *)surf->pixels)[(y * surf->w * 3) + x * 3 + 2] << 16;
             pixel += ((Uint8 *)surf->pixels)[(y * surf->w * 3) + x * 3 + 1]
                      << 8;
             pixel += ((Uint8 *)surf->pixels)[(y * surf->w * 3) + x * 3];
-            SDL_GetRGB(pixel, surf->format, &background_color[0],
-                       &background_color[1], &background_color[2]);
-        } break;
+            break;
 
         default:
-            SDL_GetRGBA(((Uint32 *)surf->pixels)[(y * surf->w) + x],
-                        surf->format, &background_color[0],
-                        &background_color[1], &background_color[2],
-                        &background_color[3]);
+            pixel = ((Uint32 *)surf->pixels)[(y * surf->w) + x];
             break;
     }
+
+    SDL_GetRGBA(pixel, surf->format, &background_color[0],
+                &background_color[1], &background_color[2],
+                &background_color[3]);
+
 
     color_part[0] = (Uint8)(brightness * color_part[0] +
                             (1 - brightness) * background_color[0]);
