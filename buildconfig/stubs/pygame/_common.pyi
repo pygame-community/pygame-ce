@@ -1,8 +1,5 @@
 from os import PathLike
-from typing import IO, Callable, Tuple, Union, TypeVar
-
-from typing_extensions import Literal as Literal, SupportsIndex as SupportsIndex
-from typing_extensions import Protocol
+from typing import IO, Callable, Tuple, Union, TypeVar, Protocol, SupportsIndex
 
 # For functions that take a file name
 AnyPath = Union[str, bytes, PathLike[str], PathLike[bytes]]

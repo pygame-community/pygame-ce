@@ -1,4 +1,4 @@
-.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_logo.svg
+.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_ce_logo.svg
   :alt: pygame
   :target: https://pyga.me/
 
@@ -129,6 +129,7 @@ Versiones de dependencia:
 
 Licencia
 --------
+**Identificador de licencia:** LGPL-2.1-or-later
 
 La biblioteca se distribuye bajo la licencia `GNU LGPL version 2.1`_, que se puede encontrar en el archivo ``docs/LGPL.txt``. Nos reservamos el derecho de licenciar versiones futuras de esta biblioteca bajo una licencia diferente.
 

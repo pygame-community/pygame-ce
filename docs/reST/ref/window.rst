@@ -46,6 +46,7 @@
 
    .. versionadded:: 2.4.0
    .. versionchanged:: 2.5.0 when ``opengl`` is ``True``, the ``Window`` has an OpenGL context created by pygame
+   .. versionchanged:: 2.5.1 Window is now a base class, allowing subclassing
 
 
    .. attribute:: grab_mouse

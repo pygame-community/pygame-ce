@@ -2,6 +2,8 @@ import sys
 from typing import (
     Dict,
     List,
+    Literal,
+    SupportsIndex,
     Tuple,
     TypeVar,
     Union,
@@ -10,7 +12,7 @@ from typing import (
     Optional,
 )
 
-from ._common import Coordinate, Literal, RectValue, SupportsIndex, Sequence
+from ._common import Coordinate, RectValue, Sequence
 
 if sys.version_info >= (3, 11):
     from typing import Self

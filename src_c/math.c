@@ -4192,13 +4192,13 @@ vector_elementwise(pgVector *vec, PyObject *_null)
     return (PyObject *)proxy;
 }
 
-inline double
+static inline double
 lerp(double a, double b, double v)
 {
     return a + (b - a) * v;
 }
 
-inline double
+static inline double
 invlerp(double a, double b, double v)
 {
     return (v - a) / (b - a);
