@@ -570,7 +570,7 @@ class ImageModuleTest(unittest.TestCase):
 
         import itertools
 
-        fmts = ("RGBA", "ARGB", "BGRA")
+        fmts = ("RGBA", "ARGB", "BGRA", "ABGR")
         fmt_permutations = itertools.permutations(fmts, 2)
         fmt_combinations = itertools.combinations(fmts, 2)
 
