@@ -4038,7 +4038,6 @@ class SurfaceBlendTest(unittest.TestCase):
                         ),
                     )
 
-
         def create_surface_from_byte_width(byte_width):
             surf_height = 5
             byte_data = bytes(byte_width * surf_height)  # 50 bytes
