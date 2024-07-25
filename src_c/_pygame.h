@@ -33,6 +33,7 @@
 */
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#include "include/pythoncapi_compat.h"
 
 /* Ensure PyPy-specific code is not in use when running on GraalPython (PR
  * #2580) */
@@ -101,6 +102,11 @@ PG_UnlockMutex(SDL_mutex *mutex)
 /* Mask to test if surface flags are in a fullscreen window. */
 #define PG_WINDOW_FULLSCREEN_INCLUSIVE SDL_WINDOW_FULLSCREEN
 
+#define PG_SetEventEnabled(type, enabled) SDL_SetEventEnabled(type, enabled)
+#define PG_EventEnabled(type) SDL_EventEnabled(type)
+#define PG_SetJoystickEventsEnabled(enabled) \
+    SDL_SetJoystickEventsEnabled(enabled)
+
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
 #define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
@@ -155,6 +161,13 @@ PG_UnlockMutex(SDL_mutex *mutex)
  * SDL_WINDOW_FULLSCREEN. */
 #define PG_WINDOW_FULLSCREEN_INCLUSIVE SDL_WINDOW_FULLSCREEN_DESKTOP
 
+/* SDL_EventState is meant to take SDL_IGNORE or SDL_ENABLE, but it also
+ * works identically with SDL_FALSE and SDL_TRUE, because they evaluate to
+ * the same values, respectively. */
+#define PG_SetEventEnabled(type, enabled) SDL_EventState(type, enabled)
+#define PG_EventEnabled(type) SDL_EventState(type, SDL_QUERY)
+#define PG_SetJoystickEventsEnabled(enabled) SDL_JoystickEventState(enabled)
+
 #if SDL_VERSION_ATLEAST(2, 0, 14)
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
 #else
@@ -190,8 +203,11 @@ struct SDL_BlitMap {
 };
 #define SDL_COPY_RLE_DESIRED 0x00001000
 
-SDL_bool
-PG_SurfaceHasRLE(SDL_Surface *surface);
+#define PG_SurfaceHasRLE(surface) \
+    (((surface) == NULL)          \
+         ? 0                      \
+         : ((surface)->map->info.flags & SDL_COPY_RLE_DESIRED))
+
 #endif
 
 #endif
@@ -443,19 +459,6 @@ typedef enum {
     (RAISE(PyExc_NotImplementedError, "Python built without thread support"))
 #endif /* ~WITH_THREAD */
 
-#define PyType_Init(x) (((x).ob_type) = &PyType_Type)
-
-/* Python macro for comparing to Py_None
- * Py_IsNone is naturally supported by
- * Python 3.10 or higher
- * so this macro can be removed after the minimum
- * supported
- * Python version reaches 3.10
- */
-#ifndef Py_IsNone
-#define Py_IsNone(x) (x == Py_None)
-#endif
-
 /* Update this function if new sequences are added to the fast sequence
  * type. */
 #ifndef pgSequenceFast_Check
@@ -469,15 +472,6 @@ struct pgEventObject {
     PyObject_HEAD int type;
     PyObject *dict;
 };
-
-/*
- * surflock module internals
- */
-typedef struct {
-    PyObject_HEAD PyObject *surface;
-    PyObject *lockobj;
-    PyObject *weakrefs;
-} pgLifetimeLockObject;
 
 /*
  * surface module internals
@@ -527,7 +521,7 @@ typedef enum {
 #define PYGAMEAPI_JOYSTICK_NUMSLOTS 3
 #define PYGAMEAPI_DISPLAY_NUMSLOTS 2
 #define PYGAMEAPI_SURFACE_NUMSLOTS 4
-#define PYGAMEAPI_SURFLOCK_NUMSLOTS 8
+#define PYGAMEAPI_SURFLOCK_NUMSLOTS 6
 #define PYGAMEAPI_RWOBJECT_NUMSLOTS 5
 #define PYGAMEAPI_PIXELARRAY_NUMSLOTS 2
 #define PYGAMEAPI_COLOR_NUMSLOTS 5
