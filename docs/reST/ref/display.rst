@@ -273,7 +273,7 @@ required).
 
    | :sl:`Update all, or a portion, of the display. For non-OpenGL displays.`
    | :sg:`update(rectangle=None, /) -> None`
-   | :sg:`update(rectangle_list, /) -> None`
+   | :sg:`update(rectangle_iterable, /) -> None`
 
    For non OpenGL display Surfaces, this function is very similar to
    ``pygame.display.flip()`` with an optional parameter that allows only
@@ -285,8 +285,8 @@ required).
              updated. Whereas ``display.update()`` means the whole window is
              updated.
 
-   You can pass the function a single rectangle, or a sequence of rectangles.
-   Generally you do not want to pass a sequence of rectangles as there is a
+   You can pass the function a single rectangle, or an iterable of rectangles.
+   Generally you do not want to pass an iterable of rectangles as there is a
    performance cost per rectangle passed to the function. On modern hardware,
    after a very small number of rectangles passed in, the per-rectangle cost
    will exceed the saving of updating less pixels. In most applications it is
@@ -294,11 +294,13 @@ required).
    means  you do not need to keep track of a list of rectangles for each call
    to update.
 
-   If passing a sequence of rectangles it is safe to include None
+   If passing an iterable of rectangles it is safe to include None
    values in the list, which will be skipped.
 
    This call cannot be used on ``pygame.OPENGL`` displays and will generate an
    exception.
+
+   .. versionchanged:: 2.5.1 Added support for passing an iterable, previously only sequence was allowed
 
    .. ## pygame.display.update ##
 
@@ -850,13 +852,10 @@ required).
    :param str title: A title string.
    :param str message: A message string. If this parameter is set to ``None``, the message will be the title.
    :param str message_type: Set the type of message_box, could be ``"info"``, ``"warn"`` or ``"error"``.
+   :param Window parent_window: The parent window of the message box.
    :param tuple buttons: An optional sequence of button name strings to show to the user.
    :param int return_button: Button index to use if the return key is hit, ``0`` by default.
    :param int escape_button: Button index to use if the escape key is hit, ``None`` for no button linked by default.
-..
-   (Uncomment this after the window API is published)
-   :param Window parent_window: The parent window of the message_box
-..
 
    :return: The index of the button that was pushed.
 

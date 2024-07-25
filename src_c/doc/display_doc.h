@@ -6,7 +6,7 @@
 #define DOC_DISPLAY_SETMODE "set_mode(size=(0, 0), flags=0, depth=0, display=0, vsync=0) -> Surface\nInitialize a window or screen for display"
 #define DOC_DISPLAY_GETSURFACE "get_surface() -> Surface\nGet a reference to the currently set display surface"
 #define DOC_DISPLAY_FLIP "flip() -> None\nUpdate the full display Surface to the screen"
-#define DOC_DISPLAY_UPDATE "update(rectangle=None, /) -> None\nupdate(rectangle_list, /) -> None\nUpdate all, or a portion, of the display. For non-OpenGL displays."
+#define DOC_DISPLAY_UPDATE "update(rectangle=None, /) -> None\nupdate(rectangle_iterable, /) -> None\nUpdate all, or a portion, of the display. For non-OpenGL displays."
 #define DOC_DISPLAY_GETDRIVER "get_driver() -> name\nGet the name of the pygame display backend"
 #define DOC_DISPLAY_INFO "Info() -> VideoInfo\nCreate a video display information object"
 #define DOC_DISPLAY_GETWMINFO "get_wm_info() -> dict\nGet information about the current windowing system"

@@ -40,9 +40,7 @@ static PyObject *
 pg_display_resource(char *filename)
 {
     PyObject *imagemodule = NULL;
-    PyObject *load_basicfunc = NULL;
     PyObject *pkgdatamodule = NULL;
-    PyObject *resourcefunc = NULL;
     PyObject *fresult = NULL;
     PyObject *result = NULL;
     PyObject *name = NULL;
@@ -51,19 +49,12 @@ pg_display_resource(char *filename)
     if (!pkgdatamodule)
         goto display_resource_end;
 
-    resourcefunc = PyObject_GetAttrString(pkgdatamodule, resourcefunc_name);
-    if (!resourcefunc)
-        goto display_resource_end;
-
     imagemodule = PyImport_ImportModule(imagemodule_name);
     if (!imagemodule)
         goto display_resource_end;
 
-    load_basicfunc = PyObject_GetAttrString(imagemodule, load_basicfunc_name);
-    if (!load_basicfunc)
-        goto display_resource_end;
-
-    fresult = PyObject_CallFunction(resourcefunc, "s", filename);
+    fresult =
+        PyObject_CallMethod(pkgdatamodule, resourcefunc_name, "s", filename);
     if (!fresult)
         goto display_resource_end;
 
@@ -80,15 +71,14 @@ pg_display_resource(char *filename)
         PyErr_Clear();
     }
 
-    result = PyObject_CallFunction(load_basicfunc, "O", fresult);
+    result =
+        PyObject_CallMethod(imagemodule, load_basicfunc_name, "O", fresult);
     if (!result)
         goto display_resource_end;
 
 display_resource_end:
     Py_XDECREF(pkgdatamodule);
-    Py_XDECREF(resourcefunc);
     Py_XDECREF(imagemodule);
-    Py_XDECREF(load_basicfunc);
     Py_XDECREF(fresult);
     Py_XDECREF(name);
     return result;
@@ -1141,6 +1131,7 @@ static PyTypeObject pgWindow_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.window.Window",
     .tp_basicsize = sizeof(pgWindowObject),
     .tp_dealloc = (destructor)window_dealloc,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_doc = DOC_WINDOW,
     .tp_methods = window_methods,
     .tp_init = (initproc)window_init,
