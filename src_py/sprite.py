@@ -85,7 +85,7 @@ Sprites are not thread safe, so lock them yourself if using threads.
 # specialized cases.
 
 from warnings import warn
-from typing import List, Union, Tuple, Optional
+from typing import List, Union, Tuple, Optional, Dict
 
 import pygame
 
@@ -641,9 +641,9 @@ class AbstractGroup:
     @property
     def spritedict(self):
         warn(
-            "Direct access to undocumented spritedict attribute will "
-            "be removed from Group in 2.6.0. Use .sprites() instead to get "
-            "access to sprites.",
+            "Direct access to undocumented spritedict attribute may be removed "
+            "in the future. Use documented .sprites() method instead to get access to "
+            "individual sprites.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -652,12 +652,15 @@ class AbstractGroup:
         return {sprite: None for sprite in self._spritelist}
 
     @spritedict.setter
-    def spritedict(self, _):
-        raise AttributeError(
-            "Ability to set undocumented spritedict attribute has been removed."
-            "The attribute will be removed entirely from Group in 2.6.0. "
-            "Use .sprites() instead to get access to sprites."
+    def spritedict(self, _: Dict[Union[Sprite, DirtySprite], Rect]):
+        warn(
+            "Direct access to undocumented spritedict attribute may be removed "
+            "in the future. Use documented .sprites() method instead to get access to "
+            "individual sprites.",
+            DeprecationWarning,
+            stacklevel=2,
         )
+        self._spritelist = _.keys()
 
 
 class Group(AbstractGroup):
