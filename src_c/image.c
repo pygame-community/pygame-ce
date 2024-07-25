@@ -419,7 +419,6 @@ tobytes_surf_32bpp_sse42(SDL_Surface *surf, int flipped, char *data,
         }
     }
 }
-#endif /* PG_COMPILE_SSE4_2 */
 
 static void
 #if SDL_VERSION_ATLEAST(3, 0, 0)
@@ -508,6 +507,76 @@ tobytes_surf_32bpp(SDL_Surface *surf, SDL_PixelFormat *format_details,
         pad(&serialized_image, padding);
     }
 }
+#endif /* PG_COMPILE_SSE4_2 */
+
+int
+PG_ConvertSurfaceToPixels(SDL_Surface *src, char *dst, Uint32 dst_format,
+                          int dst_pitch, int dst_flipped)
+{
+    if (src->w == 0 || src->h == 0) {
+        /* zero area surface, nothing to do */
+        return 0;
+    }
+
+    SDL_PixelFormatEnum src_format = src->format->format;
+    int has_colorkey = SDL_HasColorKey(src);
+    if (SDL_ISPIXELFORMAT_INDEXED(src_format) || has_colorkey) {
+        /* Only have to convert if format is mismatching or colorkey needs
+         * handling */
+        int do_convert = src_format != dst_format || has_colorkey;
+
+        if (do_convert) {
+            src = PG_ConvertSurfaceFormat(src, dst_format);
+            if (!src) {
+                return -1;
+            }
+        }
+
+        if (dst_flipped) {
+            /* Constructing bottum-up data, dst should be last row of data and
+             * pitch is flipped */
+            dst = (void *)(dst + (src->h - 1) * dst_pitch);
+            dst_pitch = -dst_pitch;
+        }
+
+        char *src_pixels = (char *)src->pixels;
+        int width = PG_SURF_BytesPerPixel(src) * src->w;
+        int height = src->h;
+        while (height--) {
+            memcpy(dst, src_pixels, width);
+            src_pixels += src->pitch;
+            dst += dst_pitch;
+        }
+
+        if (do_convert) {
+            SDL_FreeSurface(src);
+        }
+    }
+    else {
+        /* This is more efficient than above path because it avoids extra
+         * dst surface setup work on the SDL side */
+        int ret = SDL_ConvertPixels(src->w, src->h, src_format, src->pixels,
+                                    src->pitch, dst_format, dst, dst_pitch);
+        if (ret < 0) {
+            return ret;
+        }
+
+        if (dst_flipped) {
+            /* swap row by row */
+            char temp[dst_pitch];
+            char *row1 = dst;
+            char *row2 = row1 + (src->h - 1) * dst_pitch;
+            while (row1 < row2) {
+                memcpy(temp, row1, dst_pitch);
+                memcpy(row1, row2, dst_pitch);
+                memcpy(row2, temp, dst_pitch);
+                row1 += dst_pitch;
+                row2 -= dst_pitch;
+            }
+        }
+    }
+    return 0;
+}
 
 #define PREMUL_PIXEL_ALPHA(pixel, alpha) (char)((((pixel) + 1) * (alpha)) >> 8)
 
@@ -518,14 +587,10 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
     PyObject *bytes = NULL;
     char *format, *data;
     SDL_Surface *surf;
-    int w, h, flipped = 0, pitch = -1;
-    int byte_width, padding;
-    Py_ssize_t len;
-    Uint32 Rmask, Gmask, Bmask, Amask, Rshift, Gshift, Bshift, Ashift, Rloss,
-        Gloss, Bloss, Aloss;
-    int hascolorkey = 0;
-    Uint32 color, colorkey;
-    Uint32 alpha;
+    int flipped = 0, pitch = -1;
+    int byte_width;
+    int doing_premul = 0;
+    SDL_PixelFormatEnum pixfmt;
     static char *kwds[] = {"surface", "format", "flipped", "pitch", NULL};
 
 #ifdef _MSC_VER
@@ -538,601 +603,85 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                                      &pgSurface_Type, &surfobj, &format,
                                      &flipped, &pitch))
         return NULL;
-    surf = pgSurface_AsSurface(surfobj);
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    const SDL_PixelFormatDetails *format_details =
-        SDL_GetPixelFormatDetails(surf->format);
-    if (!format_details) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+    if (!strcmp(format, "RGBA_PREMULT")) {
+        format = "RGBA";
+        doing_premul = 1;
     }
-    SDL_Palette *surf_palette = SDL_GetSurfacePalette(surf);
-    Rloss = format_details->Rbits;
-    Gloss = format_details->Gbits;
-    Bloss = format_details->Bbits;
-    Aloss = format_details->Abits;
-#else
-    SDL_PixelFormat *format_details = surf->format;
-    SDL_Palette *surf_palette = surf->format->palette;
-    Rloss = format_details->Rloss;
-    Gloss = format_details->Gloss;
-    Bloss = format_details->Bloss;
-    Aloss = format_details->Aloss;
-#endif
-    Rmask = format_details->Rmask;
-    Gmask = format_details->Gmask;
-    Bmask = format_details->Bmask;
-    Amask = format_details->Amask;
-    Rshift = format_details->Rshift;
-    Gshift = format_details->Gshift;
-    Bshift = format_details->Bshift;
-    Ashift = format_details->Ashift;
+    else if (!strcmp(format, "ARGB_PREMULT")) {
+        format = "ARGB";
+        doing_premul = 1;
+    }
 
+    if (doing_premul) {
+        surfobj = (pgSurfaceObject *)PyObject_CallMethod((PyObject *)surfobj,
+                                                         "premul_alpha", NULL);
+        if (!surfobj) {
+            return NULL;
+        }
+    }
+
+    surf = pgSurface_AsSurface(surfobj);
     if (!strcmp(format, "P")) {
-        if (PG_SURF_BytesPerPixel(surf) != 1)
-            return RAISE(
+        if (PG_SURF_BytesPerPixel(surf) != 1) {
+            PyErr_SetString(
                 PyExc_ValueError,
                 "Can only create \"P\" format data with 8bit Surfaces");
-        byte_width = surf->w;
+            goto end;
+        }
+        pixfmt = SDL_PIXELFORMAT_INDEX8;
     }
     else if (!strcmp(format, "RGB")) {
-        byte_width = surf->w * 3;
+        pixfmt = SDL_PIXELFORMAT_RGB24;
     }
     else if (!strcmp(format, "RGBA")) {
-        if ((hascolorkey = SDL_HasColorKey(surf))) {
-            SDL_GetColorKey(surf, &colorkey);
-        }
-        byte_width = surf->w * 4;
+        pixfmt = SDL_PIXELFORMAT_RGBA32;
     }
-    else if (!strcmp(format, "RGBX") || !strcmp(format, "ARGB") ||
-             !strcmp(format, "BGRA") || !strcmp(format, "ABGR")) {
-        byte_width = surf->w * 4;
+    else if (!strcmp(format, "RGBX")) {
+        pixfmt = SDL_PIXELFORMAT_RGBX32;
     }
-    else if (!strcmp(format, "RGBA_PREMULT") ||
-             !strcmp(format, "ARGB_PREMULT")) {
-        if (PG_SURF_BytesPerPixel(surf) == 1 || Amask == 0)
-            return RAISE(PyExc_ValueError,
-                         "Can only create pre-multiplied alpha bytes if "
-                         "the surface has per-pixel alpha");
-        byte_width = surf->w * 4;
+    else if (!strcmp(format, "BGRA")) {
+        pixfmt = SDL_PIXELFORMAT_BGRA32;
+    }
+    else if (!strcmp(format, "ARGB")) {
+        pixfmt = SDL_PIXELFORMAT_ARGB32;
+    }
+    else if (!strcmp(format, "ABGR")) {
+        pixfmt = SDL_PIXELFORMAT_ABGR32;
     }
     else {
-        return RAISE(PyExc_ValueError, "Unrecognized type of format");
+        PyErr_SetString(PyExc_ValueError, "Unrecognized type of format");
+        goto end;
     }
 
+    byte_width = SDL_BYTESPERPIXEL(pixfmt) * surf->w;
     if (pitch == -1) {
         pitch = byte_width;
-        padding = 0;
     }
     else if (pitch < byte_width) {
-        return RAISE(PyExc_ValueError,
-                     "Pitch must be greater than or equal to the width "
-                     "as per the format");
-    }
-    else {
-        padding = pitch - byte_width;
+        PyErr_SetString(PyExc_ValueError,
+                        "Pitch must be greater than or equal to the width "
+                        "as per the format");
+        goto end;
     }
 
     bytes = PyBytes_FromStringAndSize(NULL, (Py_ssize_t)pitch * surf->h);
     if (!bytes)
-        return NULL;
-    PyBytes_AsStringAndSize(bytes, &data, &len);
+        goto end;
 
-    if (!strcmp(format, "P")) {
-        pgSurface_Lock(surfobj);
-        for (h = 0; h < surf->h; ++h) {
-            Uint8 *ptr = (Uint8 *)DATAROW(data, h, pitch, surf->h, flipped);
-            memcpy(ptr, (char *)surf->pixels + (h * surf->pitch), surf->w);
-            if (padding)
-                memset(ptr + byte_width, 0, padding);
-        }
-        pgSurface_Unlock(surfobj);
+    data = PyBytes_AS_STRING(bytes);
+    pgSurface_Lock(surfobj);
+    if (PG_ConvertSurfaceToPixels(surf, data, pixfmt, pitch, flipped) < 0) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        Py_DECREF(bytes);
+        bytes = NULL;
     }
-    else if (!strcmp(format, "RGB")) {
-        pgSurface_Lock(surfobj);
+    pgSurface_Unlock(surfobj);
 
-        switch (PG_SURF_BytesPerPixel(surf)) {
-            case 1:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
-                                                  surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-                        color = *ptr++;
-                        data[0] = (char)surf_palette->colors[color].r;
-                        data[1] = (char)surf_palette->colors[color].g;
-                        data[2] = (char)surf_palette->colors[color].b;
-                        data += 3;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 2:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint16 *ptr = (Uint16 *)DATAROW(
-                        surf->pixels, h, surf->pitch, surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-                        color = *ptr++;
-                        data[0] = (char)(((color & Rmask) >> Rshift) << Rloss);
-                        data[1] = (char)(((color & Gmask) >> Gshift) << Gloss);
-                        data[2] = (char)(((color & Bmask) >> Bshift) << Bloss);
-                        data += 3;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 3:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
-                                                  surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                        color = ptr[0] + (ptr[1] << 8) + (ptr[2] << 16);
-#else
-                        color = ptr[2] + (ptr[1] << 8) + (ptr[0] << 16);
-#endif
-                        ptr += 3;
-                        data[0] = (char)(((color & Rmask) >> Rshift) << Rloss);
-                        data[1] = (char)(((color & Gmask) >> Gshift) << Gloss);
-                        data[2] = (char)(((color & Bmask) >> Bshift) << Bloss);
-                        data += 3;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 4:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint32 *ptr = (Uint32 *)DATAROW(
-                        surf->pixels, h, surf->pitch, surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-                        color = *ptr++;
-                        data[0] = (char)(((color & Rmask) >> Rshift) << Rloss);
-                        data[1] = (char)(((color & Gmask) >> Gshift) << Rloss);
-                        data[2] = (char)(((color & Bmask) >> Bshift) << Rloss);
-                        data += 3;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-        }
-
-        pgSurface_Unlock(surfobj);
+end:
+    if (doing_premul) {
+        Py_DECREF(surfobj);
     }
-    else if (!strcmp(format, "RGBX") || !strcmp(format, "RGBA")) {
-        pgSurface_Lock(surfobj);
-        switch (PG_SURF_BytesPerPixel(surf)) {
-            case 1:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
-                                                  surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-                        color = *ptr++;
-                        data[0] = (char)surf_palette->colors[color].r;
-                        data[1] = (char)surf_palette->colors[color].g;
-                        data[2] = (char)surf_palette->colors[color].b;
-                        data[3] = hascolorkey ? (char)(color != colorkey) * 255
-                                              : (char)255;
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 2:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint16 *ptr = (Uint16 *)DATAROW(
-                        surf->pixels, h, surf->pitch, surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-                        color = *ptr++;
-                        data[0] = (char)(((color & Rmask) >> Rshift) << Rloss);
-                        data[1] = (char)(((color & Gmask) >> Gshift) << Gloss);
-                        data[2] = (char)(((color & Bmask) >> Bshift) << Bloss);
-                        data[3] =
-                            hascolorkey
-                                ? (char)(color != colorkey) * 255
-                                : (char)(Amask ? (((color & Amask) >> Ashift)
-                                                  << Aloss)
-                                               : 255);
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 3:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
-                                                  surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                        color = ptr[0] + (ptr[1] << 8) + (ptr[2] << 16);
-#else
-                        color = ptr[2] + (ptr[1] << 8) + (ptr[0] << 16);
-#endif
-                        ptr += 3;
-                        data[0] = (char)(((color & Rmask) >> Rshift) << Rloss);
-                        data[1] = (char)(((color & Gmask) >> Gshift) << Gloss);
-                        data[2] = (char)(((color & Bmask) >> Bshift) << Bloss);
-                        data[3] =
-                            hascolorkey
-                                ? (char)(color != colorkey) * 255
-                                : (char)(Amask ? (((color & Amask) >> Ashift)
-                                                  << Aloss)
-                                               : 255);
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 4:
-                tobytes_surf_32bpp(surf, format_details, flipped, hascolorkey,
-                                   colorkey, data, 0, 3, padding);
-                break;
-        }
-        pgSurface_Unlock(surfobj);
-    }
-    else if (!strcmp(format, "ARGB")) {
-        pgSurface_Lock(surfobj);
-        switch (PG_SURF_BytesPerPixel(surf)) {
-            case 1:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
-                                                  surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-                        color = *ptr++;
-                        data[1] = (char)surf_palette->colors[color].r;
-                        data[2] = (char)surf_palette->colors[color].g;
-                        data[3] = (char)surf_palette->colors[color].b;
-                        data[0] = (char)255;
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 2:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint16 *ptr = (Uint16 *)DATAROW(
-                        surf->pixels, h, surf->pitch, surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-                        color = *ptr++;
-                        data[1] = (char)(((color & Rmask) >> Rshift) << Rloss);
-                        data[2] = (char)(((color & Gmask) >> Gshift) << Gloss);
-                        data[3] = (char)(((color & Bmask) >> Bshift) << Bloss);
-                        data[0] = (char)(Amask ? (((color & Amask) >> Ashift)
-                                                  << Aloss)
-                                               : 255);
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 3:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
-                                                  surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                        color = ptr[0] + (ptr[1] << 8) + (ptr[2] << 16);
-#else
-                        color = ptr[2] + (ptr[1] << 8) + (ptr[0] << 16);
-#endif
-                        ptr += 3;
-                        data[1] = (char)(((color & Rmask) >> Rshift) << Rloss);
-                        data[2] = (char)(((color & Gmask) >> Gshift) << Gloss);
-                        data[3] = (char)(((color & Bmask) >> Bshift) << Bloss);
-                        data[0] = (char)(Amask ? (((color & Amask) >> Ashift)
-                                                  << Aloss)
-                                               : 255);
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 4:
-                tobytes_surf_32bpp(surf, format_details, flipped, hascolorkey,
-                                   colorkey, data, 1, 0, padding);
-                break;
-        }
-        pgSurface_Unlock(surfobj);
-    }
-    else if (!strcmp(format, "BGRA")) {
-        pgSurface_Lock(surfobj);
-        switch (PG_SURF_BytesPerPixel(surf)) {
-            case 1:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
-                                                  surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-                        color = *ptr++;
-                        data[2] = (char)surf_palette->colors[color].r;
-                        data[1] = (char)surf_palette->colors[color].g;
-                        data[0] = (char)surf_palette->colors[color].b;
-                        data[3] = (char)255;
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 2:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint16 *ptr = (Uint16 *)DATAROW(
-                        surf->pixels, h, surf->pitch, surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-                        color = *ptr++;
-                        data[2] = (char)(((color & Rmask) >> Rshift) << Rloss);
-                        data[1] = (char)(((color & Gmask) >> Gshift) << Gloss);
-                        data[0] = (char)(((color & Bmask) >> Bshift) << Bloss);
-                        data[3] = (char)(Amask ? (((color & Amask) >> Ashift)
-                                                  << Aloss)
-                                               : 255);
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 3:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
-                                                  surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                        color = ptr[0] + (ptr[1] << 8) + (ptr[2] << 16);
-#else
-                        color = ptr[2] + (ptr[1] << 8) + (ptr[0] << 16);
-#endif
-                        ptr += 3;
-                        data[2] = (char)(((color & Rmask) >> Rshift) << Rloss);
-                        data[1] = (char)(((color & Gmask) >> Gshift) << Gloss);
-                        data[0] = (char)(((color & Bmask) >> Bshift) << Bloss);
-                        data[3] = (char)(Amask ? (((color & Amask) >> Ashift)
-                                                  << Aloss)
-                                               : 255);
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 4:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint32 *ptr = (Uint32 *)DATAROW(
-                        surf->pixels, h, surf->pitch, surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-                        color = *ptr++;
-                        data[2] = (char)(((color & Rmask) >> Rshift) << Rloss);
-                        data[1] = (char)(((color & Gmask) >> Gshift) << Gloss);
-                        data[0] = (char)(((color & Bmask) >> Bshift) << Bloss);
-                        data[3] = (char)(Amask ? (((color & Amask) >> Ashift)
-                                                  << Aloss)
-                                               : 255);
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-        }
-        pgSurface_Unlock(surfobj);
-    }
-    else if (!strcmp(format, "ABGR")) {
-        pgSurface_Lock(surfobj);
-        switch (PG_SURF_BytesPerPixel(surf)) {
-            case 1:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
-                                                  surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-                        color = *ptr++;
-                        data[3] = (char)surf_palette->colors[color].r;
-                        data[2] = (char)surf_palette->colors[color].g;
-                        data[1] = (char)surf_palette->colors[color].b;
-                        data[0] = (char)255;
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 2:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint16 *ptr = (Uint16 *)DATAROW(
-                        surf->pixels, h, surf->pitch, surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-                        color = *ptr++;
-                        data[3] = (char)(((color & Rmask) >> Rshift) << Rloss);
-                        data[2] = (char)(((color & Gmask) >> Gshift) << Gloss);
-                        data[1] = (char)(((color & Bmask) >> Bshift) << Bloss);
-                        data[0] = (char)(Amask ? (((color & Amask) >> Ashift)
-                                                  << Aloss)
-                                               : 255);
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 3:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
-                                                  surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                        color = ptr[0] + (ptr[1] << 8) + (ptr[2] << 16);
-#else
-                        color = ptr[2] + (ptr[1] << 8) + (ptr[0] << 16);
-#endif
-                        ptr += 3;
-                        data[3] = (char)(((color & Rmask) >> Rshift) << Rloss);
-                        data[2] = (char)(((color & Gmask) >> Gshift) << Gloss);
-                        data[1] = (char)(((color & Bmask) >> Bshift) << Bloss);
-                        data[0] = (char)(Amask ? (((color & Amask) >> Ashift)
-                                                  << Aloss)
-                                               : 255);
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 4:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint32 *ptr = (Uint32 *)DATAROW(
-                        surf->pixels, h, surf->pitch, surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-                        color = *ptr++;
-                        data[3] = (char)(((color & Rmask) >> Rshift) << Rloss);
-                        data[2] = (char)(((color & Gmask) >> Gshift) << Gloss);
-                        data[1] = (char)(((color & Bmask) >> Bshift) << Bloss);
-                        data[0] = (char)(Amask ? (((color & Amask) >> Ashift)
-                                                  << Aloss)
-                                               : 255);
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-        }
-        pgSurface_Unlock(surfobj);
-    }
-    else if (!strcmp(format, "RGBA_PREMULT")) {
-        pgSurface_Lock(surfobj);
-        switch (PG_SURF_BytesPerPixel(surf)) {
-            case 2:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint16 *ptr = (Uint16 *)DATAROW(
-                        surf->pixels, h, surf->pitch, surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-                        color = *ptr++;
-                        alpha = ((color & Amask) >> Ashift) << Aloss;
-                        data[0] = PREMUL_PIXEL_ALPHA(
-                            ((color & Rmask) >> Rshift) << Rloss, alpha);
-                        data[1] = PREMUL_PIXEL_ALPHA(
-                            ((color & Gmask) >> Gshift) << Gloss, alpha);
-                        data[2] = PREMUL_PIXEL_ALPHA(
-                            ((color & Bmask) >> Bshift) << Bloss, alpha);
-                        data[3] = (char)alpha;
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 3:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
-                                                  surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                        color = ptr[0] + (ptr[1] << 8) + (ptr[2] << 16);
-#else
-                        color = ptr[2] + (ptr[1] << 8) + (ptr[0] << 16);
-#endif
-                        ptr += 3;
-                        alpha = ((color & Amask) >> Ashift) << Aloss;
-                        data[0] = PREMUL_PIXEL_ALPHA(
-                            ((color & Rmask) >> Rshift) << Rloss, alpha);
-                        data[1] = PREMUL_PIXEL_ALPHA(
-                            ((color & Gmask) >> Gshift) << Gloss, alpha);
-                        data[2] = PREMUL_PIXEL_ALPHA(
-                            ((color & Bmask) >> Bshift) << Bloss, alpha);
-                        data[3] = (char)alpha;
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 4:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint32 *ptr = (Uint32 *)DATAROW(
-                        surf->pixels, h, surf->pitch, surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-                        color = *ptr++;
-                        alpha = ((color & Amask) >> Ashift) << Aloss;
-                        if (alpha == 0) {
-                            data[0] = data[1] = data[2] = 0;
-                        }
-                        else {
-                            data[0] = PREMUL_PIXEL_ALPHA(
-                                ((color & Rmask) >> Rshift) << Rloss, alpha);
-                            data[1] = PREMUL_PIXEL_ALPHA(
-                                ((color & Gmask) >> Gshift) << Gloss, alpha);
-                            data[2] = PREMUL_PIXEL_ALPHA(
-                                ((color & Bmask) >> Bshift) << Bloss, alpha);
-                        }
-                        data[3] = (char)alpha;
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-        }
-        pgSurface_Unlock(surfobj);
-    }
-    else if (!strcmp(format, "ARGB_PREMULT")) {
-        pgSurface_Lock(surfobj);
-        switch (PG_SURF_BytesPerPixel(surf)) {
-            case 2:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint16 *ptr = (Uint16 *)DATAROW(
-                        surf->pixels, h, surf->pitch, surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-                        color = *ptr++;
-                        alpha = ((color & Amask) >> Ashift) << Aloss;
-                        data[1] = PREMUL_PIXEL_ALPHA(
-                            ((color & Rmask) >> Rshift) << Rloss, alpha);
-                        data[2] = PREMUL_PIXEL_ALPHA(
-                            ((color & Gmask) >> Gshift) << Gloss, alpha);
-                        data[3] = PREMUL_PIXEL_ALPHA(
-                            ((color & Bmask) >> Bshift) << Bloss, alpha);
-                        data[0] = (char)alpha;
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 3:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
-                                                  surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                        color = ptr[0] + (ptr[1] << 8) + (ptr[2] << 16);
-#else
-                        color = ptr[2] + (ptr[1] << 8) + (ptr[0] << 16);
-#endif
-                        ptr += 3;
-                        alpha = ((color & Amask) >> Ashift) << Aloss;
-                        data[1] = PREMUL_PIXEL_ALPHA(
-                            ((color & Rmask) >> Rshift) << Rloss, alpha);
-                        data[2] = PREMUL_PIXEL_ALPHA(
-                            ((color & Gmask) >> Gshift) << Gloss, alpha);
-                        data[3] = PREMUL_PIXEL_ALPHA(
-                            ((color & Bmask) >> Bshift) << Bloss, alpha);
-                        data[0] = (char)alpha;
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-            case 4:
-                for (h = 0; h < surf->h; ++h) {
-                    Uint32 *ptr = (Uint32 *)DATAROW(
-                        surf->pixels, h, surf->pitch, surf->h, flipped);
-                    for (w = 0; w < surf->w; ++w) {
-                        color = *ptr++;
-                        alpha = ((color & Amask) >> Ashift) << Aloss;
-                        if (alpha == 0) {
-                            data[1] = data[2] = data[3] = 0;
-                        }
-                        else {
-                            data[1] = PREMUL_PIXEL_ALPHA(
-                                ((color & Rmask) >> Rshift) << Rloss, alpha);
-                            data[2] = PREMUL_PIXEL_ALPHA(
-                                ((color & Gmask) >> Gshift) << Gloss, alpha);
-                            data[3] = PREMUL_PIXEL_ALPHA(
-                                ((color & Bmask) >> Bshift) << Bloss, alpha);
-                        }
-                        data[0] = (char)alpha;
-                        data += 4;
-                    }
-                    pad(&data, padding);
-                }
-                break;
-        }
-        pgSurface_Unlock(surfobj);
-    }
-
     return bytes;
 }
 
