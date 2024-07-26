@@ -31,6 +31,8 @@
 
 #include <math.h>
 
+#include <string.h>
+
 #include <float.h>
 
 #ifndef M_PI
@@ -1133,26 +1135,14 @@ get_antialiased_color(SDL_Surface *surf, int x, int y, Uint32 original_color,
         return original_color;
 
     Uint32 pixel;
+    size_t bpp = surf->format->BytesPerPixel;
+    Uint8 * pixels = (Uint8 *) surf->pixels + y * surf->pitch + x * bpp;
 
-    switch (PG_FORMAT_BytesPerPixel(surf->format)) {
-        case 1:
-            pixel = ((Uint8 *)surf->pixels)[(y * surf->w) + x];
-            break;
-        case 2:
-            pixel = ((Uint16 *)surf->pixels)[(y * surf->w) + x];
-            break;
-        case 3:
-            pixel = ((Uint8 *)surf->pixels)[(y * surf->w * 3) + x * 3 + 2]
-                    << 16;
-            pixel += ((Uint8 *)surf->pixels)[(y * surf->w * 3) + x * 3 + 1]
-                     << 8;
-            pixel += ((Uint8 *)surf->pixels)[(y * surf->w * 3) + x * 3];
-            break;
-
-        default:
-            pixel = ((Uint32 *)surf->pixels)[(y * surf->w) + x];
-            break;
-    }
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    SDL_memcpy(((Uint8 *) &pixel) + (sizeof(pixel) - bytes_per_pixel), pixels, bpp);
+#else
+    SDL_memcpy(&pixel, pixels, bpp);
+#endif
 
     SDL_GetRGBA(pixel, surf->format, &background_color[0],
                 &background_color[1], &background_color[2],
