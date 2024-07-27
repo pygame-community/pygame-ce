@@ -1138,8 +1138,7 @@ get_antialiased_color(SDL_Surface *surf, int x, int y, Uint32 original_color,
     size_t bpp = surf->format->BytesPerPixel;
     Uint8 *pixels = (Uint8 *)surf->pixels + y * surf->pitch + x * bpp;
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    SDL_memcpy(((Uint8 *)&pixel) + (sizeof(pixel) - bytes_per_pixel), pixels,
-               bpp);
+    SDL_memcpy(((Uint8 *)&pixel) + (sizeof(pixel) - bpp), pixels, bpp);
 #else
     SDL_memcpy(&pixel, pixels, bpp);
 #endif
