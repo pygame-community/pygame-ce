@@ -748,7 +748,7 @@ RectExport_RectFromObject(PyObject *obj, InnerRect *temp)
     InnerRect *returnrect;
     /*call if it's a method*/
     if (PyCallable_Check(rectattr)) {
-        PyObject *rectresult = PyObject_CallObject(rectattr, NULL);
+        PyObject *rectresult = PyObject_CallNoArgs(rectattr);
         Py_DECREF(rectattr);
         if (rectresult == NULL) {
             PyErr_Clear();
