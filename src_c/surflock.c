@@ -44,10 +44,7 @@ pgSurface_Prep(pgSurfaceObject *surfobj)
 {
     struct pgSubSurface_Data *data = ((pgSurfaceObject *)surfobj)->subsurface;
     if (data != NULL) {
-        SDL_Surface *surf = pgSurface_AsSurface(surfobj);
-        SDL_Surface *owner = pgSurface_AsSurface(data->owner);
         pgSurface_LockBy((pgSurfaceObject *)data->owner, (PyObject *)surfobj);
-        surf->pixels = ((char *)owner->pixels) + data->pixeloffset;
     }
 }
 
