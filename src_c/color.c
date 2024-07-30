@@ -1014,11 +1014,11 @@ _color_set_hsva(pgColorObject *color, PyObject *value, void *closure)
     }
 
     if (PySequence_Size(value) > 4) {
-        if (PyErr_WarnEx(
+        if (pgWarn(
                 PyExc_DeprecationWarning,
                 "Passing sequences of size larger than 4 is deprecated, doing "
                 "this will error in a future version",
-                1) == -1) {
+                1, 1) == -1) {
             return -1;
         }
     }
@@ -1189,11 +1189,11 @@ _color_set_hsla(pgColorObject *color, PyObject *value, void *closure)
     }
 
     if (PySequence_Size(value) > 4) {
-        if (PyErr_WarnEx(
+        if (pgWarn(
                 PyExc_DeprecationWarning,
                 "Passing sequences of size larger than 4 is deprecated, doing "
                 "this will error in a future version",
-                1) == -1) {
+                1, 1) == -1) {
             return -1;
         }
     }
@@ -1364,11 +1364,11 @@ _color_set_i1i2i3(pgColorObject *color, PyObject *value, void *closure)
     }
 
     if (PySequence_Size(value) > 3) {
-        if (PyErr_WarnEx(
+        if (pgWarn(
                 PyExc_DeprecationWarning,
                 "Passing sequences of size larger than 3 is deprecated, doing "
                 "this will error in a future version",
-                1) == -1) {
+                1, 1) == -1) {
             return -1;
         }
     }
@@ -1446,11 +1446,11 @@ _color_set_cmy(pgColorObject *color, PyObject *value, void *closure)
     }
 
     if (PySequence_Size(value) > 3) {
-        if (PyErr_WarnEx(
+        if (pgWarn(
                 PyExc_DeprecationWarning,
                 "Passing sequences of size larger than 3 is deprecated, doing "
                 "this will error in a future version",
-                1) == -1) {
+                1, 1) == -1) {
             return -1;
         }
     }
@@ -1516,11 +1516,11 @@ _color_set_normalized(pgColorObject *color, PyObject *value, void *closure)
     }
 
     if (PySequence_Size(value) > 4) {
-        if (PyErr_WarnEx(
+        if (pgWarn(
                 PyExc_DeprecationWarning,
                 "Passing sequences of size larger than 4 is deprecated, doing "
                 "this will error in a future version",
-                1) == -1) {
+                1, 1) == -1) {
             return -1;
         }
     }
@@ -1759,9 +1759,8 @@ _color_set_length(pgColorObject *color, PyObject *args)
 {
     int clength;
 
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "pygame.Color.set_length deprecated since 2.1.3",
-                     1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "pygame.Color.set_length deprecated since 2.1.3", 1, 1) == -1) {
         return NULL;
     }
 

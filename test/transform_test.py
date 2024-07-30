@@ -10,6 +10,9 @@ import pygame.transform
 from pygame.locals import *
 
 
+pygame.set_warnings_filter(2)
+
+
 def show_image(s, images=[]):
     # pygame.display.init()
     size = s.get_rect()[2:]

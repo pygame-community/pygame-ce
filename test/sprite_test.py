@@ -7,6 +7,8 @@ import pygame
 from pygame import sprite
 
 
+pygame.set_warnings_filter(2)
+
 ################################# MODULE LEVEL #################################
 
 

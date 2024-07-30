@@ -51,40 +51,6 @@ def _attribute_undefined(name):
     raise RuntimeError(f"{name} is not available")
 
 
-class MissingModule:
-    _NOT_IMPLEMENTED_ = True
-
-    def __init__(self, name, urgent=0):
-        self.name = name
-        exc_type, exc_msg = sys.exc_info()[:2]
-        self.info = str(exc_msg)
-        self.reason = f"{exc_type.__name__}: {self.info}"
-        self.urgent = urgent
-        if urgent:
-            self.warn()
-
-    def __getattr__(self, var):
-        if not self.urgent:
-            self.warn()
-            self.urgent = 1
-        missing_msg = f"{self.name} module not available ({self.reason})"
-        raise NotImplementedError(missing_msg)
-
-    def __bool__(self):
-        return False
-
-    def warn(self):
-        msg_type = "import" if self.urgent else "use"
-        message = f"{msg_type} {self.name}: {self.info}\n({self.reason})"
-        try:
-            import warnings
-
-            level = 4 if self.urgent else 3
-            warnings.warn(message, RuntimeWarning, level)
-        except ImportError:
-            print(message)
-
-
 # This is a special loader for WebAssembly platform
 # where pygame is in fact statically linked
 # mixing single phase (C) and multiphase modules (cython)
@@ -127,6 +93,8 @@ if sys.platform in ("wasi", "emscripten"):
 from pygame.base import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.constants import *  # now has __all__ pylint: disable=wildcard-import; lgtm[py/polluting-import]
 from pygame.version import *  # pylint: disable=wildcard-import; lgtm[py/polluting-import]
+
+
 from pygame.rect import Rect, FRect
 from pygame.rwobject import encode_string, encode_file_path
 import pygame.surflock
@@ -142,6 +110,42 @@ Vector2 = pygame.math.Vector2
 Vector3 = pygame.math.Vector3
 
 from pygame.base import __version__
+
+pygame.base.set_warnings_filter(1)
+
+
+class MissingModule:
+    _NOT_IMPLEMENTED_ = True
+
+    def __init__(self, name, urgent=0):
+        self.name = name
+        exc_type, exc_msg = sys.exc_info()[:2]
+        self.info = str(exc_msg)
+        self.reason = f"{exc_type.__name__}: {self.info}"
+        self.urgent = urgent
+        if urgent:
+            self.warn()
+
+    def __getattr__(self, var):
+        if not self.urgent:
+            self.warn()
+            self.urgent = 1
+        missing_msg = f"{self.name} module not available ({self.reason})"
+        raise NotImplementedError(missing_msg)
+
+    def __bool__(self):
+        return False
+
+    def warn(self):
+        msg_type = "import" if self.urgent else "use"
+        message = f"{msg_type} {self.name}: {self.info}\n({self.reason})"
+        try:
+            level = 3 if self.urgent else 2
+            urgency = 0 if self.urgent else 1
+            warn(message, urgency, level=level)
+        except ImportError:
+            print(message)
+
 
 # next, the "standard" modules
 # we still allow them to be missing for stripped down pygame distributions
