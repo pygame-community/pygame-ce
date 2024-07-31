@@ -334,6 +334,19 @@ The following file formats are supported
 
    .. ## pygame.mixer.get_sdl_mixer_version ##
 
+.. function:: get_audio_devices
+
+   | :sl:`get the list of available audio devices for playblack`
+   | :sg:`get_audio_devices() -> list`
+
+   :returns: The list of available audio devices for playblack in your
+      computer.
+   :rtype: list[str]
+
+   .. versionaddedold:: 2.6.0
+
+   .. ## pygame.mixer.get_sdl_mixer_version ##
+
 .. class:: Sound
 
    | :sl:`Create a new Sound object from a file or buffer object`

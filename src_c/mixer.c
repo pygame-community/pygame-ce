@@ -1605,6 +1605,46 @@ mixer_get_sdl_mixer_version(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 }
 
+static PyObject *
+mixer_get_audio_devices(PyObject *self, PyObject *_null)
+{
+    PyObject * device_list = NULL;
+    PyObject * device_name = NULL;
+    int num_devices;
+
+    if (!SDL_WasInit(SDL_INIT_AUDIO))
+        return RAISE(pgExc_SDLError, "mixer not initialised");
+
+    num_devices = SDL_GetNumAudioDevices(0);
+
+    if(num_devices == -1){
+        return RAISE(PyExc_ValueError, "Cannot extract list of audio devices");
+    }
+
+    device_list = PyList_New(num_devices);
+    if(!device_list){
+        Py_XDECREF(device_list);
+        return NULL;
+    }
+
+    int i = 0;
+
+    while(i < num_devices)
+    {   
+        const char * name = SDL_GetAudioDeviceName(i, 0);
+        device_name = PyUnicode_FromString(name);
+        if(!device_name){
+            Py_XDECREF(device_list);
+            return NULL;
+        }
+
+        PyList_SET_ITEM(device_list, i, device_name);
+        i++;
+    }
+
+    return device_list;
+}
+
 static int
 _chunk_from_buf(const void *buf, Py_ssize_t len, Mix_Chunk **chunk,
                 Uint8 **mem)
@@ -1976,6 +2016,8 @@ static PyMethodDef _mixer_methods[] = {
     {"unpause", (PyCFunction)mixer_unpause, METH_NOARGS, DOC_MIXER_UNPAUSE},
     {"get_sdl_mixer_version", (PyCFunction)mixer_get_sdl_mixer_version,
      METH_VARARGS | METH_KEYWORDS, DOC_MIXER_GETSDLMIXERVERSION},
+    {"get_audio_devices", (PyCFunction)mixer_get_audio_devices, METH_NOARGS,
+     DOC_MIXER_GETAUDIODEVICES},
     /*  { "lookup_frequency", lookup_frequency, 1, doc_lookup_frequency
        },*/
 
