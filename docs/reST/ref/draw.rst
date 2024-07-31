@@ -299,6 +299,45 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    .. ## pygame.draw.ellipse ##
 
+   .. function:: aaellipse
+
+         | :sl:`draw an antialiased ellipse`
+         | :sg:`aaellipse(surface, color, rect) -> Rect`
+         | :sg:`aaellipse(surface, color, rect, width=0) -> Rect`
+
+         Draws an antialiased ellipse on the given surface.
+         Uses Xiaolin Wu Circle Algorithm.
+         adapted from: https://cgg.mff.cuni.cz/~pepca/ref/WU.pdf
+         
+         :param Surface surface: surface to draw on
+         :param color: color to draw with, the alpha value is optional if using a
+            tuple ``(RGB[A])``
+         :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+         :param Rect rect: rectangle to indicate the position and dimensions of the
+            ellipse, the ellipse will be centered inside the rectangle and bounded
+            by it
+         :param int width: (optional) used for line thickness or to indicate that
+            the ellipse is to be filled (not to be confused with the width value
+            of the ``rect`` parameter)
+
+               | if ``width == 0``, (default) fill the ellipse
+               | if ``width > 0``, used for line thickness
+               | if ``width < 0``, nothing will be drawn
+               |
+
+               .. note::
+                  When using ``width`` values ``> 1``, the edge lines will only grow
+                  inward from the original boundary of the ``rect`` parameter.
+
+         :returns: a rect bounding the changed pixels, if nothing is drawn the
+            bounding rect's position will be the position of the given ``rect``
+            parameter and its width and height will be 0
+         :rtype: Rect
+
+         .. versionadded:: 2.6.0
+
+         .. ## pygame.draw.aaellipse ##
+
 .. function:: arc
 
    | :sl:`draw an elliptical arc`
@@ -606,4 +645,3 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    Example code for draw module.
 
 .. literalinclude:: code_examples/draw_module_example.py
-
