@@ -58,20 +58,22 @@ static void
 draw_circle_bresenham_thin(SDL_Surface *surf, int x0, int y0, int radius,
                            Uint32 color, int *drawn_area);
 static void
-draw_circle_xiaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
-                      int thickness, Uint32 color, int top_right, int top_left,
-                      int bottom_left, int bottom_right, int *drawn_area);
+draw_aacircle_xiaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
+                        int thickness, Uint32 color, int top_right,
+                        int top_left, int bottom_left, int bottom_right,
+                        int *drawn_area);
 static void
-draw_circle_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int radius,
-                           Uint32 color, int top_right, int top_left,
-                           int bottom_left, int bottom_right, int *drawn_area);
+draw_aacircle_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int radius,
+                             Uint32 color, int top_right, int top_left,
+                             int bottom_left, int bottom_right,
+                             int *drawn_area);
 static void
-draw_ellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int width,
-                       int height, int thickness, Uint32 color,
-                       int *drawn_area);
+draw_aaellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int width,
+                         int height, int thickness, Uint32 color,
+                         int *drawn_area);
 static void
-draw_ellipse_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int width,
-                            int height, Uint32 color, int *drawn_area);
+draw_aaellipse_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int width,
+                              int height, Uint32 color, int *drawn_area);
 static void
 draw_circle_filled(SDL_Surface *surf, int x0, int y0, int radius, Uint32 color,
                    int *drawn_area);
@@ -704,16 +706,16 @@ aaellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
         if (!width) {
             draw_ellipse_filled(surf, rect->x + 1, rect->y + 1, rect->w - 2,
                                 rect->h - 2, color, drawn_area);
-            draw_ellipse_xiaolinwu(surf, rect->x, rect->y, rect->w, rect->h, 2,
-                                   color, drawn_area);
+            draw_aaellipse_xiaolinwu(surf, rect->x, rect->y, rect->w, rect->h,
+                                     2, color, drawn_area);
         }
         else if (width == 1) {
-            draw_ellipse_xiaolinwu_thin(surf, rect->x, rect->y, rect->w,
-                                        rect->h, color, drawn_area);
+            draw_aaellipse_xiaolinwu_thin(surf, rect->x, rect->y, rect->w,
+                                          rect->h, color, drawn_area);
         }
         else {
-            draw_ellipse_xiaolinwu(surf, rect->x, rect->y, rect->w, rect->h,
-                                   width, color, drawn_area);
+            draw_aaellipse_xiaolinwu(surf, rect->x, rect->y, rect->w, rect->h,
+                                     width, color, drawn_area);
         }
     }
 
@@ -912,33 +914,33 @@ aacircle(PyObject *self, PyObject *args, PyObject *kwargs)
         if (!width || width == radius) {
             draw_circle_filled(surf, posx, posy, radius - 1, color,
                                drawn_area);
-            draw_circle_xiaolinwu(surf, posx, posy, radius, 2, color, 1, 1, 1,
-                                  1, drawn_area);
+            draw_aacircle_xiaolinwu(surf, posx, posy, radius, 2, color, 1, 1,
+                                    1, 1, drawn_area);
         }
         else if (width == 1) {
-            draw_circle_xiaolinwu_thin(surf, posx, posy, radius, color, 1, 1,
-                                       1, 1, drawn_area);
+            draw_aacircle_xiaolinwu_thin(surf, posx, posy, radius, color, 1, 1,
+                                         1, 1, drawn_area);
         }
         else {
-            draw_circle_xiaolinwu(surf, posx, posy, radius, width, color, 1, 1,
-                                  1, 1, drawn_area);
+            draw_aacircle_xiaolinwu(surf, posx, posy, radius, width, color, 1,
+                                    1, 1, 1, drawn_area);
         }
     }
     else {
         if (!width || width == radius) {
-            draw_circle_xiaolinwu(surf, posx, posy, radius, radius, color,
-                                  top_right, top_left, bottom_left,
-                                  bottom_right, drawn_area);
+            draw_aacircle_xiaolinwu(surf, posx, posy, radius, radius, color,
+                                    top_right, top_left, bottom_left,
+                                    bottom_right, drawn_area);
         }
         else if (width == 1) {
-            draw_circle_xiaolinwu_thin(surf, posx, posy, radius, color,
-                                       top_right, top_left, bottom_left,
-                                       bottom_right, drawn_area);
+            draw_aacircle_xiaolinwu_thin(surf, posx, posy, radius, color,
+                                         top_right, top_left, bottom_left,
+                                         bottom_right, drawn_area);
         }
         else {
-            draw_circle_xiaolinwu(surf, posx, posy, radius, width, color,
-                                  top_right, top_left, bottom_left,
-                                  bottom_right, drawn_area);
+            draw_aacircle_xiaolinwu(surf, posx, posy, radius, width, color,
+                                    top_right, top_left, bottom_left,
+                                    bottom_right, drawn_area);
         }
     }
 
@@ -2627,9 +2629,10 @@ draw_eight_symetric_pixels(SDL_Surface *surf, int x0, int y0, Uint32 color,
  * with additional line width parameter and quadrants option
  */
 static void
-draw_circle_xiaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
-                      int thickness, Uint32 color, int top_right, int top_left,
-                      int bottom_left, int bottom_right, int *drawn_area)
+draw_aacircle_xiaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
+                        int thickness, Uint32 color, int top_right,
+                        int top_left, int bottom_left, int bottom_right,
+                        int *drawn_area)
 {
     for (int layer_radius = radius - thickness; layer_radius <= radius;
          layer_radius++) {
@@ -2693,9 +2696,10 @@ draw_circle_xiaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
 }
 
 static void
-draw_circle_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int radius,
-                           Uint32 color, int top_right, int top_left,
-                           int bottom_left, int bottom_right, int *drawn_area)
+draw_aacircle_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int radius,
+                             Uint32 color, int top_right, int top_left,
+                             int bottom_left, int bottom_right,
+                             int *drawn_area)
 {
     int x = 0;
     int y = radius;
@@ -2969,9 +2973,9 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
  * with additional line width parameter
  */
 static void
-draw_ellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int width,
-                       int height, int thickness, Uint32 color,
-                       int *drawn_area)
+draw_aaellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int width,
+                         int height, int thickness, Uint32 color,
+                         int *drawn_area)
 {
     int a = width / 2;
     int b = height / 2;
@@ -3087,8 +3091,8 @@ draw_ellipse_xiaolinwu(SDL_Surface *surf, int x0, int y0, int width,
 }
 
 static void
-draw_ellipse_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int width,
-                            int height, Uint32 color, int *drawn_area)
+draw_aaellipse_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int width,
+                              int height, Uint32 color, int *drawn_area)
 {
     int a = width / 2;
     int b = height / 2;
