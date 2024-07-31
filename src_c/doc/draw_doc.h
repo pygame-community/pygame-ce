@@ -10,3 +10,4 @@
 #define DOC_DRAW_LINES "lines(surface, color, closed, points) -> Rect\nlines(surface, color, closed, points, width=1) -> Rect\ndraw multiple contiguous straight line segments"
 #define DOC_DRAW_AALINE "aaline(surface, color, start_pos, end_pos) -> Rect\ndraw a straight antialiased line"
 #define DOC_DRAW_AALINES "aalines(surface, color, closed, points) -> Rect\ndraw multiple contiguous straight antialiased line segments"
+#define DOC_DRAW_BEZIER "bezier(surface, points, steps, color) -> None\ndraw a Bezier curve"

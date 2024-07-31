@@ -89,3 +89,9 @@ def aalines(
     closed: bool,
     points: Sequence[Coordinate],
 ) -> Rect: ...
+def bezier(
+    surface: Surface,
+    points: Sequence[Coordinate],
+    steps: int,
+    color: ColorValue,
+) -> None: ...
