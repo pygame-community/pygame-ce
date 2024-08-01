@@ -1,4 +1,4 @@
-"""Set of common pygame type aliases for correct type annotations"""
+"""Set of common pygame type aliases for proper typehint annotations"""
 
 # NOTE: `src_py/typing.py` and `buildconfig/stubs/pygame/typing.pyi` must be duplicates.
 # Use the command `python buildconfig/stubs/gen_stubs.py` to copy typing.py to typing.pyi
