@@ -58,13 +58,13 @@ static void
 draw_circle_bresenham_thin(SDL_Surface *surf, int x0, int y0, int radius,
                            Uint32 color, int *drawn_area);
 static void
-draw_circle_xaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
-                     int thickness, Uint32 color, int top_right, int top_left,
-                     int bottom_left, int bottom_right, int *drawn_area);
+draw_circle_xiaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
+                      int thickness, Uint32 color, int top_right, int top_left,
+                      int bottom_left, int bottom_right, int *drawn_area);
 static void
-draw_circle_xaolinwu_thin(SDL_Surface *surf, int x0, int y0, int radius,
-                          Uint32 color, int top_right, int top_left,
-                          int bottom_left, int bottom_right, int *drawn_area);
+draw_circle_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int radius,
+                           Uint32 color, int top_right, int top_left,
+                           int bottom_left, int bottom_right, int *drawn_area);
 static void
 draw_circle_filled(SDL_Surface *surf, int x0, int y0, int radius, Uint32 color,
                    int *drawn_area);
@@ -820,33 +820,33 @@ aacircle(PyObject *self, PyObject *args, PyObject *kwargs)
         if (!width || width == radius) {
             draw_circle_filled(surf, posx, posy, radius - 1, color,
                                drawn_area);
-            draw_circle_xaolinwu(surf, posx, posy, radius, 2, color, 1, 1, 1,
-                                 1, drawn_area);
+            draw_circle_xiaolinwu(surf, posx, posy, radius, 2, color, 1, 1, 1,
+                                  1, drawn_area);
         }
         else if (width == 1) {
-            draw_circle_xaolinwu_thin(surf, posx, posy, radius, color, 1, 1, 1,
-                                      1, drawn_area);
+            draw_circle_xiaolinwu_thin(surf, posx, posy, radius, color, 1, 1,
+                                       1, 1, drawn_area);
         }
         else {
-            draw_circle_xaolinwu(surf, posx, posy, radius, width, color, 1, 1,
-                                 1, 1, drawn_area);
+            draw_circle_xiaolinwu(surf, posx, posy, radius, width, color, 1, 1,
+                                  1, 1, drawn_area);
         }
     }
     else {
         if (!width || width == radius) {
-            draw_circle_xaolinwu(surf, posx, posy, radius, radius, color,
-                                 top_right, top_left, bottom_left,
-                                 bottom_right, drawn_area);
+            draw_circle_xiaolinwu(surf, posx, posy, radius, radius, color,
+                                  top_right, top_left, bottom_left,
+                                  bottom_right, drawn_area);
         }
         else if (width == 1) {
-            draw_circle_xaolinwu_thin(surf, posx, posy, radius, color,
-                                      top_right, top_left, bottom_left,
-                                      bottom_right, drawn_area);
+            draw_circle_xiaolinwu_thin(surf, posx, posy, radius, color,
+                                       top_right, top_left, bottom_left,
+                                       bottom_right, drawn_area);
         }
         else {
-            draw_circle_xaolinwu(surf, posx, posy, radius, width, color,
-                                 top_right, top_left, bottom_left,
-                                 bottom_right, drawn_area);
+            draw_circle_xiaolinwu(surf, posx, posy, radius, width, color,
+                                  top_right, top_left, bottom_left,
+                                  bottom_right, drawn_area);
         }
     }
 
@@ -2514,23 +2514,24 @@ draw_eight_symetric_pixels(SDL_Surface *surf, int x0, int y0, Uint32 color,
     }
 }
 
-/* Xaolin Wu Circle Algorithm
+/* Xiaolin Wu Circle Algorithm
  * adapted from: https://cgg.mff.cuni.cz/~pepca/ref/WU.pdf
  * with additional line width parameter and quadrants option
  */
 static void
-draw_circle_xaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
-                     int thickness, Uint32 color, int top_right, int top_left,
-                     int bottom_left, int bottom_right, int *drawn_area)
+draw_circle_xiaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
+                      int thickness, Uint32 color, int top_right, int top_left,
+                      int bottom_left, int bottom_right, int *drawn_area)
 {
     for (int layer_radius = radius - thickness; layer_radius <= radius;
          layer_radius++) {
         int x = 0;
         int y = layer_radius;
+        double pow_layer_r = pow(layer_radius, 2);
         double prev_opacity = 0.0;
         if (layer_radius == radius - thickness) {
             while (x < y) {
-                double height = sqrt(pow(layer_radius, 2) - pow(x, 2));
+                double height = sqrt(pow_layer_r - pow(x, 2));
                 double opacity = 255.0 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
                     --y;
@@ -2547,7 +2548,7 @@ draw_circle_xaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
         }
         else if (layer_radius == radius) {
             while (x < y) {
-                double height = sqrt(pow(layer_radius, 2) - pow(x, 2));
+                double height = sqrt(pow_layer_r - pow(x, 2));
                 double opacity = 255.0 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
                     --y;
@@ -2565,7 +2566,7 @@ draw_circle_xaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
         }
         else {
             while (x < y) {
-                double height = sqrt(pow(layer_radius, 2) - pow(x, 2));
+                double height = sqrt(pow_layer_r - pow(x, 2));
                 double opacity = 255.0 * (ceil(height) - height);
                 if (opacity < prev_opacity) {
                     --y;
@@ -2584,15 +2585,16 @@ draw_circle_xaolinwu(SDL_Surface *surf, int x0, int y0, int radius,
 }
 
 static void
-draw_circle_xaolinwu_thin(SDL_Surface *surf, int x0, int y0, int radius,
-                          Uint32 color, int top_right, int top_left,
-                          int bottom_left, int bottom_right, int *drawn_area)
+draw_circle_xiaolinwu_thin(SDL_Surface *surf, int x0, int y0, int radius,
+                           Uint32 color, int top_right, int top_left,
+                           int bottom_left, int bottom_right, int *drawn_area)
 {
     int x = 0;
     int y = radius;
+    double pow_r = pow(radius, 2);
     double prev_opacity = 0.0;
     while (x < y) {
-        double height = sqrt(pow(radius, 2) - pow(x, 2));
+        double height = sqrt(pow_r - pow(x, 2));
         double opacity = 255.0 * (ceil(height) - height);
         if (opacity < prev_opacity) {
             --y;
