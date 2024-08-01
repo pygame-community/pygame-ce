@@ -26,7 +26,7 @@ type aliases for proper typehint annotations.
    .. data:: FileLike
 
       An object representing a file. Same as :mod:`pygame.typing.PathLike` with
-      the addition of file buffers (``IO`` of strings and bytes) such as the
+      the addition of file buffers (``IO`` of strings or bytes) such as the
       return value of ``open()``.
 
    .. data:: SequenceLike
