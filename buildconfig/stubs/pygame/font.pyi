@@ -1,8 +1,8 @@
-from typing import Callable, Hashable, Iterable, List, Optional, Tuple, Union
+from typing import Callable, Hashable, Iterable, List, Literal, Optional, Tuple, Union
 
 from pygame.surface import Surface
 
-from ._common import ColorValue, FileArg, Literal
+from ._common import ColorValue, FileArg
 
 # TODO: Figure out a way to type this attribute such that mypy knows it's not
 # always defined at runtime

@@ -46,15 +46,15 @@ Special Flags List
 
        - ``BLEND_ADD`` / ``BLEND_RGB_ADD``
            Adds the source color channels to the destination color channels, clamped to a maximum of 255.
-           The result color is always a lighter color.
+           The result color is always a lighter color or the same color.
 
        - ``BLEND_SUB`` / ``BLEND_RGB_SUB``
            Subtracts the source color channels from the destination color channels, clamped to a minimum of 0.
-           The result color is always a darker color.
+           The result color is always a darker color or the same color.
 
        - ``BLEND_MULT`` / ``BLEND_RGB_MULT``
            Multiplies the destination color channels by the source color channels, divided by 256 (or >> 8).
-           The result color is always a darker color.
+           The result color is always a darker color or the same color.
 
        - ``BLEND_MIN`` / ``BLEND_RGB_MIN``
            Takes the minimum value between the source and destination color channels.

@@ -334,8 +334,6 @@ PyInit_pygame_static()
 #undef pgSurface_UnlockBy
 #undef pgSurface_Prep
 #undef pgSurface_Unprep
-#undef pgLifetimeLock_Type
-#undef pgSurface_LockLifetime
 
 #include "surflock.c"
 

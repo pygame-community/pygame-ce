@@ -1,6 +1,4 @@
-from typing import List, Optional, final
-
-from typing_extensions import TypedDict
+from typing import List, Optional, TypedDict
 
 from pygame._data_classes import PowerState
 

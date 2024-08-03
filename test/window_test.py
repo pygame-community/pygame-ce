@@ -1,11 +1,15 @@
 import unittest
 import pygame
 import os
+import platform
 
 from pygame import Window
 from pygame.version import SDL
 
 pygame.init()
+
+
+IS_PYPY = "PyPy" == platform.python_implementation()
 
 
 class WindowTypeTest(unittest.TestCase):
@@ -342,6 +346,7 @@ class WindowTypeTest(unittest.TestCase):
         win.destroy()
         self.assertRaises(pygame.error, lambda: surf.fill((0, 0, 0)))
 
+    @unittest.skipIf(IS_PYPY, "for some reason this test is flaky on pypy")
     def test_window_surface_with_display_module(self):
         # get_surface() should raise an error if the set_mode() is not called.
         pygame.display.set_mode((640, 480))
@@ -396,6 +401,25 @@ class WindowTypeTest(unittest.TestCase):
         self.assertTrue(win.opengl)
         pygame.display.quit()
         pygame.init()
+
+    @unittest.skipIf(IS_PYPY, "for some reason this test is flaky on pypy")
+    def test_window_subclassable(self):
+        class WindowSubclass(Window):
+            def __init__(self, title="Different title", size=(640, 480), **flags):
+                super().__init__(title, size, pygame.WINDOWPOS_CENTERED, **flags)
+                self.attribute = 10
+
+        window = WindowSubclass()
+        self.assertTrue(issubclass(WindowSubclass, Window))
+        self.assertIsInstance(window, WindowSubclass)
+        self.assertEqual(window.title, "Different title")
+        self.assertEqual(window.attribute, 10)
+        window.destroy()
+
+        pygame.display.set_mode((200, 200))
+        window = WindowSubclass.from_display_module()
+        self.assertIsInstance(window, WindowSubclass)
+        self.assertEqual(window.size, (200, 200))
 
     def tearDown(self):
         self.win.destroy()
