@@ -162,6 +162,14 @@ _gfx_pixelcolor(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "OhhO:pixel", &surface, &x, &y, &color))
         return NULL;
 
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.pixel` is deprecated since "
+                     "GFX_DEPRECATED_VERSION."
+                     "Use `pygame.Surface.set_at` instead.",
+                     1) == -1) {
+        return NULL;
+    }
+
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
     }
@@ -187,6 +195,14 @@ _gfx_hlinecolor(PyObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "OhhhO:hline", &surface, &x1, &x2, &y, &color))
         return NULL;
+
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.hline` is deprecated since "
+                     "GFX_DEPRECATED_VERSION."
+                     "Use `pygame.draw.line` instead.",
+                     1) == -1) {
+        return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -215,6 +231,14 @@ _gfx_vlinecolor(PyObject *self, PyObject *args)
                           &color))
         return NULL;
 
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.vline` is deprecated since "
+                     "GFX_DEPRECATED_VERSION."
+                     "Use `pygame.draw.line` instead.",
+                     1) == -1) {
+        return NULL;
+    }
+
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
     }
@@ -241,6 +265,14 @@ _gfx_rectanglecolor(PyObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "OOO:rectangle", &surface, &rect, &color)) {
         /* Exception already set */
+        return NULL;
+    }
+
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.rectangle` is deprecated since "
+                     "GFX_DEPRECATED_VERSION."
+                     "Use `pygame.draw.rect` instead.",
+                     1) == -1) {
         return NULL;
     }
 
@@ -283,6 +315,14 @@ _gfx_boxcolor(PyObject *self, PyObject *args)
         return NULL;
     }
 
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "`pygame.gfxdraw.box` is deprecated since GFX_DEPRECATED_VERSION."
+            "Use `pygame.draw.rect` instead.",
+            1) == -1) {
+        return NULL;
+    }
+
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
     }
@@ -319,6 +359,14 @@ _gfx_linecolor(PyObject *self, PyObject *args)
                           &color))
         return NULL;
 
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "`pygame.gfxdraw.line` is deprecated since GFX_DEPRECATED_VERSION."
+            "Use `pygame.draw.line` instead.",
+            1) == -1) {
+        return NULL;
+    }
+
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
     }
@@ -344,6 +392,14 @@ _gfx_circlecolor(PyObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "OhhhO:circle", &surface, &x, &y, &r, &color))
         return NULL;
+
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.circle` is deprecated since "
+                     "GFX_DEPRECATED_VERSION."
+                     "Use `pygame.draw.circle` instead.",
+                     1) == -1) {
+        return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -372,6 +428,14 @@ _gfx_arccolor(PyObject *self, PyObject *args)
                           &end, &color))
         return NULL;
 
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "`pygame.gfxdraw.arc` is deprecated since GFX_DEPRECATED_VERSION."
+            "Use `pygame.draw.arc` instead.",
+            1) == -1) {
+        return NULL;
+    }
+
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
     }
@@ -398,6 +462,14 @@ _gfx_aacirclecolor(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "OhhhO:aacircle", &surface, &x, &y, &r,
                           &color))
         return NULL;
+
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.aacircle` is deprecated since "
+                     "GFX_DEPRECATED_VERSION."
+                     "Use `pygame.draw.aacircle` instead.",
+                     1) == -1) {
+        return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -426,6 +498,14 @@ _gfx_filledcirclecolor(PyObject *self, PyObject *args)
                           &color))
         return NULL;
 
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.filled_circle` is deprecated since "
+                     "GFX_DEPRECATED_VERSION."
+                     "Use `pygame.draw.circle` instead.",
+                     1) == -1) {
+        return NULL;
+    }
+
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
     }
@@ -452,6 +532,14 @@ _gfx_ellipsecolor(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "OhhhhO:ellipse", &surface, &x, &y, &rx, &ry,
                           &color))
         return NULL;
+
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.ellipse` is deprecated since "
+                     "GFX_DEPRECATED_VERSION."
+                     "Use `pygame.draw.ellipse` instead.",
+                     1) == -1) {
+        return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -480,6 +568,14 @@ _gfx_aaellipsecolor(PyObject *self, PyObject *args)
                           &color))
         return NULL;
 
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.aaellipse` is deprecated since "
+                     "GFX_DEPRECATED_VERSION."
+                     "Use `pygame.draw.aaellipse` instead.",
+                     1) == -1) {
+        return NULL;
+    }
+
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
     }
@@ -506,6 +602,14 @@ _gfx_filledellipsecolor(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "OhhhhO:filled_ellipse", &surface, &x, &y, &rx,
                           &ry, &color))
         return NULL;
+
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.filled_ellipse` is deprecated since "
+                     "GFX_DEPRECATED_VERSION."
+                     "Use `pygame.draw.ellipse` instead.",
+                     1) == -1) {
+        return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -534,6 +638,14 @@ _gfx_piecolor(PyObject *self, PyObject *args)
                           &end, &color))
         return NULL;
 
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "`pygame.gfxdraw.pie` is deprecated since GFX_DEPRECATED_VERSION."
+            "Use `pygame.draw.arc` and `pygame.draw.line` instead.",
+            1) == -1) {
+        return NULL;
+    }
+
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
     }
@@ -560,6 +672,14 @@ _gfx_trigoncolor(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "OhhhhhhO:trigon", &surface, &x1, &_y1, &x2,
                           &y2, &x3, &y3, &color))
         return NULL;
+
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.trigon` is deprecated since "
+                     "GFX_DEPRECATED_VERSION."
+                     "Use `pygame.draw.polygon` instead.",
+                     1) == -1) {
+        return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -588,6 +708,14 @@ _gfx_aatrigoncolor(PyObject *self, PyObject *args)
                           &y2, &x3, &y3, &color))
         return NULL;
 
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.aatrigon` is deprecated since "
+                     "GFX_DEPRECATED_VERSION."
+                     "Use `pygame.draw.aapolygon` instead.",
+                     1) == -1) {
+        return NULL;
+    }
+
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
     }
@@ -614,6 +742,14 @@ _gfx_filledtrigoncolor(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "OhhhhhhO:filled_trigon", &surface, &x1, &_y1,
                           &x2, &y2, &x3, &y3, &color))
         return NULL;
+
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.filled_trigon` is deprecated since "
+                     "GFX_DEPRECATED_VERSION."
+                     "Use `pygame.draw.polygon` instead.",
+                     1) == -1) {
+        return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -642,6 +778,14 @@ _gfx_polygoncolor(PyObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "OOO:polygon", &surface, &points, &color))
         return NULL;
+
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.polygon` is deprecated since "
+                     "GFX_DEPRECATED_VERSION."
+                     "Use `pygame.draw.polygon` instead.",
+                     1) == -1) {
+        return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -715,6 +859,14 @@ _gfx_aapolygoncolor(PyObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "OOO:aapolygon", &surface, &points, &color))
         return NULL;
+
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.aapolygon` is deprecated since "
+                     "GFX_DEPRECATED_VERSION."
+                     "Use `pygame.draw.aapolygon` instead.",
+                     1) == -1) {
+        return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -790,6 +942,14 @@ _gfx_filledpolygoncolor(PyObject *self, PyObject *args)
                           &color))
         return NULL;
 
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.filled_polygon` is deprecated since "
+                     "GFX_DEPRECATED_VERSION."
+                     "Use `pygame.draw.polygon` instead.",
+                     1) == -1) {
+        return NULL;
+    }
+
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
     }
@@ -863,6 +1023,13 @@ _gfx_texturedpolygon(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "OOOhh:textured_polygon", &surface, &points,
                           &texture, &tdx, &tdy))
         return NULL;
+
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.textured_polygon` is deprecated since "
+                     "GFX_DEPRECATED_VERSION.",
+                     1) == -1) {
+        return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");
@@ -944,6 +1111,14 @@ _gfx_beziercolor(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "OOiO:bezier", &surface, &points, &steps,
                           &color))
         return NULL;
+
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "`pygame.gfxdraw.bezier` is deprecated since "
+                     "GFX_DEPRECATED_VERSION."
+                     "Use `pygame.draw.bezier` instead.",
+                     1) == -1) {
+        return NULL;
+    }
 
     if (!pgSurface_Check(surface)) {
         return RAISE(PyExc_TypeError, "surface must be a Surface");

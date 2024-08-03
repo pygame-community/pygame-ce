@@ -8,8 +8,8 @@
 
 | :sl:`pygame module for drawing shapes`
 
-**EXPERIMENTAL!**: This API may change or disappear in later pygame releases. If
-you use this, your code may break with the next pygame release.
+**DEPRECATED!**: The gfxdraw module is now deprecated in favor of the draw module
+and all its functions are also deprecated.
 
 The pygame package does not import gfxdraw automatically when loaded, so it
 must imported explicitly to be used.
@@ -43,17 +43,6 @@ For example:
    pygame.gfxdraw.filled_circle(surf, x, y, 30, col)
 
 
-.. note::
-   For threading, each of the functions releases the GIL during the C part of
-   the call.
-
-.. note::
-   See the :mod:`pygame.draw` module for alternative draw methods.
-   The ``pygame.gfxdraw`` module differs from the :mod:`pygame.draw` module in
-   the API it uses and the different draw functions available.
-   ``pygame.gfxdraw`` wraps the primitives from the library called SDL_gfx,
-   rather than using modified versions.
-
 .. versionaddedold:: 1.9.0
 
 
@@ -73,6 +62,8 @@ For example:
 
    :returns: ``None``
    :rtype: NoneType
+
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.Surface.set_at` instead.
 
    .. ## pygame.gfxdraw.pixel ##
 
@@ -95,6 +86,8 @@ For example:
    :returns: ``None``
    :rtype: NoneType
 
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.line` instead.
+
    .. ## pygame.gfxdraw.hline ##
 
 .. function:: vline
@@ -115,6 +108,8 @@ For example:
 
    :returns: ``None``
    :rtype: NoneType
+
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.line` instead.
 
    .. ## pygame.gfxdraw.vline ##
 
@@ -137,6 +132,8 @@ For example:
 
    :returns: ``None``
    :rtype: NoneType
+
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.line` instead.
 
    .. ## pygame.gfxdraw.line ##
 
@@ -161,6 +158,8 @@ For example:
       The ``rect.bottom`` and ``rect.right`` attributes of a :mod:`pygame.Rect`
       always lie one pixel outside of its actual border. Therefore, these
       values will not be included as part of the drawing.
+
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.rect` instead.
 
    .. ## pygame.gfxdraw.rectangle ##
 
@@ -192,6 +191,8 @@ For example:
       accelerated on some platforms with both software and hardware display
       modes.
 
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.rect` instead.
+
    .. ## pygame.gfxdraw.box ##
 
 .. function:: circle
@@ -213,6 +214,8 @@ For example:
    :returns: ``None``
    :rtype: NoneType
 
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.circle` instead.
+
    .. ## pygame.gfxdraw.circle ##
 
 .. function:: aacircle
@@ -232,6 +235,8 @@ For example:
 
    :returns: ``None``
    :rtype: NoneType
+
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.aacircle` instead.
 
    .. ## pygame.gfxdraw.aacircle ##
 
@@ -253,6 +258,8 @@ For example:
 
    :returns: ``None``
    :rtype: NoneType
+
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.circle` instead.
 
    .. ## pygame.gfxdraw.filled_circle ##
 
@@ -276,6 +283,8 @@ For example:
    :returns: ``None``
    :rtype: NoneType
 
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.ellipse` instead.
+
    .. ## pygame.gfxdraw.ellipse ##
 
 .. function:: aaellipse
@@ -296,6 +305,8 @@ For example:
 
    :returns: ``None``
    :rtype: NoneType
+
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.aaellipse` instead.
 
    .. ## pygame.gfxdraw.aaellipse ##
 
@@ -318,6 +329,8 @@ For example:
 
    :returns: ``None``
    :rtype: NoneType
+
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.ellipse` instead.
 
    .. ## pygame.gfxdraw.filled_ellipse ##
 
@@ -346,6 +359,8 @@ For example:
 
    :returns: ``None``
    :rtype: NoneType
+
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.arc` instead.
 
    .. note::
       This function uses *degrees* while the :func:`pygame.draw.arc` function
@@ -380,6 +395,8 @@ For example:
    :returns: ``None``
    :rtype: NoneType
 
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.arc` and `pygame.draw.line` instead.
+
    .. ## pygame.gfxdraw.pie ##
 
 .. function:: trigon
@@ -407,6 +424,8 @@ For example:
    :returns: ``None``
    :rtype: NoneType
 
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.polygon` instead.
+
    .. ## pygame.gfxdraw.trigon ##
 
 .. function:: aatrigon
@@ -432,6 +451,8 @@ For example:
 
    :returns: ``None``
    :rtype: NoneType
+
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.aapolygon` instead.
 
    .. ## pygame.gfxdraw.aatrigon ##
 
@@ -459,6 +480,8 @@ For example:
 
    :returns: ``None``
    :rtype: NoneType
+
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.polygon` instead.
 
    .. ## pygame.gfxdraw.filled_trigon ##
 
@@ -493,6 +516,8 @@ For example:
    :raises IndexError: if ``len(coordinate) < 2`` (each coordinate must have
       at least 2 items)
 
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.polygon` instead.
+
    .. ## pygame.gfxdraw.polygon ##
 
 .. function:: aapolygon
@@ -524,6 +549,8 @@ For example:
    :raises ValueError: if ``len(points) < 3`` (must have at least 3 points)
    :raises IndexError: if ``len(coordinate) < 2`` (each coordinate must have
       at least 2 items)
+
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.aapolygon` instead.
 
    .. ## pygame.gfxdraw.aapolygon ##
 
@@ -557,6 +584,8 @@ For example:
    :raises ValueError: if ``len(points) < 3`` (must have at least 3 points)
    :raises IndexError: if ``len(coordinate) < 2`` (each coordinate must have
       at least 2 items)
+
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.polygon` instead.
 
    .. ## pygame.gfxdraw.filled_polygon ##
 
@@ -595,6 +624,8 @@ For example:
    :raises IndexError: if ``len(coordinate) < 2`` (each coordinate must have
       at least 2 items)
 
+   .. deprecated:: GFX_DEPRECATED_VERSION
+
    .. ## pygame.gfxdraw.textured_polygon ##
 
 .. function:: bezier
@@ -625,6 +656,8 @@ For example:
 
    .. note:: This function supports up to around 150-200 points before the algorithm
              breaks down.
+
+   .. deprecated:: GFX_DEPRECATED_VERSION Use :mod:`pygame.draw.bezier` instead.
 
    .. ## pygame.gfxdraw.bezier ##
 
