@@ -324,19 +324,17 @@
       Scrolling is contained by the Surface clip area. It is safe to have dx
       and dy values that exceed the surface size.
 
-      The scroll flag can be either 0 (normal behaviour), ``pygame.SCROLL_ERASE``,
-      or ``pygame.SCROLL_REPEAT``.
+      The scroll flag can be ``0`` (normal behavior) or:
+         * ``pygame.SCROLL_ERASE``: the space created by the shifting pixels
+           is filled with black or transparency.
 
-      If the scroll flag is ``SCROLL_ERASE`` the space created by the shifting pixels
-      is filled with black or transparency, otherwise it is left unchanged.
-
-      If the scroll flag is ``SCROLL_REPEAT`` the pixels that disappear out of
-      the surface or clip bounds are brought back on the opposite side resulting
-      in an infinitely scrolling and repeating surface.
+         * ``pygame.SCROLL_REPEAT``: the pixels that disappear out of the
+           surface or clip bounds are brought back on the opposite side
+           resulting in an infinitely scrolling and repeating surface.
 
       .. versionaddedold:: 1.9
 
-      .. versionchanged:: 2.5.0 Add repeating scroll and allow erasing pixels
+      .. versionchanged:: 2.5.1 Add repeating scroll and allow erasing pixels
 
       .. ## Surface.scroll ##
 
