@@ -191,6 +191,8 @@ static PyObject *
 surf_get_pixels_address(PyObject *self, PyObject *closure);
 static PyObject *
 surf_premul_alpha(pgSurfaceObject *self, PyObject *args);
+static PyObject *
+surf_premul_alpha_ip(pgSurfaceObject *self, PyObject *args);
 static int
 _view_kind(PyObject *obj, void *view_kind_vptr);
 static int
@@ -315,6 +317,8 @@ static struct PyMethodDef surface_methods[] = {
     {"get_buffer", surf_get_buffer, METH_NOARGS, DOC_SURFACE_GETBUFFER},
     {"premul_alpha", (PyCFunction)surf_premul_alpha, METH_NOARGS,
      DOC_SURFACE_PREMULALPHA},
+    {"premul_alpha_ip", (PyCFunction)surf_premul_alpha_ip, METH_NOARGS,
+     DOC_SURFACE_PREMULALPHAIP},
 
     {NULL, NULL, 0, NULL}};
 
@@ -986,6 +990,7 @@ surf_get_locks(PyObject *self, PyObject *_null)
 {
     pgSurfaceObject *surf = (pgSurfaceObject *)self;
     Py_ssize_t len, i = 0;
+    int weakref_getref_result;
     PyObject *tuple, *tmp;
     SURF_INIT_CHECK(pgSurface_AsSurface(self))
     if (!surf->locklist)
@@ -997,8 +1002,16 @@ surf_get_locks(PyObject *self, PyObject *_null)
         return NULL;
 
     for (i = 0; i < len; i++) {
-        tmp = PyWeakref_GetObject(PyList_GetItem(surf->locklist, i));
-        Py_INCREF(tmp);
+        weakref_getref_result =
+            PyWeakref_GetRef(PyList_GetItem(surf->locklist, i), &tmp);
+        if (weakref_getref_result == -1) {  // exception already set
+            Py_DECREF(tuple);
+            return NULL;
+        }
+        if (weakref_getref_result == 0) {
+            tmp = Py_None;
+            Py_INCREF(tmp);
+        }
         PyTuple_SetItem(tuple, i, tmp);
     }
     return tuple;
@@ -1786,7 +1799,7 @@ surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
 {
     SDL_Surface *src, *dest = pgSurface_AsSurface(self);
     SDL_Rect *src_rect, temp;
-    PyObject *argpos, *argrect = NULL;
+    PyObject *argpos = NULL, *argrect = NULL;
     pgSurfaceObject *srcobject;
     int dx, dy, result;
     SDL_Rect dest_rect;
@@ -1794,7 +1807,7 @@ surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
     int blend_flags = 0;
 
     static char *kwids[] = {"source", "dest", "area", "special_flags", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, keywds, "O!O|Oi", kwids,
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "O!|OOi", kwids,
                                      &pgSurface_Type, &srcobject, &argpos,
                                      &argrect, &blend_flags))
         return NULL;
@@ -1803,7 +1816,11 @@ surf_blit(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
     SURF_INIT_CHECK(src)
     SURF_INIT_CHECK(dest)
 
-    if ((src_rect = pgRect_FromObject(argpos, &temp))) {
+    if (argpos == NULL) { /* dest argument is absent  */
+        dx = 0;
+        dy = 0;
+    }
+    else if ((src_rect = pgRect_FromObject(argpos, &temp))) {
         dx = src_rect->x;
         dy = src_rect->y;
     }
@@ -2096,7 +2113,7 @@ bliterror:
 #define FBLITS_ERR_INCORRECT_ARGS_NUM 12
 #define FBLITS_ERR_FLAG_NOT_NUMERIC 13
 
-int
+static int PG_FORCEINLINE
 _surf_fblits_item_check_and_blit(pgSurfaceObject *self, PyObject *item,
                                  int blend_flags)
 {
@@ -2719,8 +2736,6 @@ surf_subsurface(PyObject *self, PyObject *args)
     SDL_Rect *rect, temp;
     SDL_Surface *sub;
     PyObject *subobj;
-    int pixeloffset;
-    char *startpixel;
     struct pgSubSurface_Data *data;
     Uint8 alpha;
     Uint32 colorkey;
@@ -2737,9 +2752,9 @@ surf_subsurface(PyObject *self, PyObject *args)
 
     pgSurface_Lock((pgSurfaceObject *)self);
 
-    pixeloffset =
-        rect->x * PG_FORMAT_BytesPerPixel(format) + rect->y * surf->pitch;
-    startpixel = ((char *)surf->pixels) + pixeloffset;
+    char *startpixel = ((char *)surf->pixels) +
+                       rect->x * PG_FORMAT_BytesPerPixel(format) +
+                       rect->y * surf->pitch;
 
     sub = PG_CreateSurfaceFrom(startpixel, rect->w, rect->h, surf->pitch,
                                format->format);
@@ -2807,7 +2822,6 @@ surf_subsurface(PyObject *self, PyObject *args)
     }
     Py_INCREF(self);
     data->owner = self;
-    data->pixeloffset = pixeloffset;
     data->offsetx = rect->x;
     data->offsety = rect->y;
     ((pgSurfaceObject *)subobj)->subsurface = data;
@@ -3299,6 +3313,31 @@ surf_premul_alpha(pgSurfaceObject *self, PyObject *_null)
     return final;
 }
 
+static PyObject *
+surf_premul_alpha_ip(pgSurfaceObject *self, PyObject *_null)
+{
+    SDL_Surface *surf = pgSurface_AsSurface(self);
+    SURF_INIT_CHECK(surf)
+
+    if (!surf->w || !surf->h) {
+        Py_INCREF(self);
+        return (PyObject *)self;
+    }
+
+    pgSurface_Prep(self);
+
+    if (premul_surf_color_by_alpha(surf, surf) != 0) {
+        return RAISE(PyExc_ValueError,
+                     "source surface to be alpha pre-multiplied must have "
+                     "alpha channel");
+    }
+
+    pgSurface_Unprep(self);
+
+    Py_INCREF(self);
+    return (PyObject *)self;
+}
+
 static int
 _get_buffer_0D(PyObject *obj, Py_buffer *view_p, int flags)
 {
@@ -3717,18 +3756,22 @@ _release_buffer(Py_buffer *view_p)
 {
     pg_bufferinternal *internal;
     PyObject *consumer_ref;
-    PyObject *consumer;
+    PyObject *consumer = NULL;
 
     assert(view_p && view_p->obj && view_p->internal);
     internal = (pg_bufferinternal *)view_p->internal;
     consumer_ref = internal->consumer_ref;
     assert(consumer_ref && PyWeakref_CheckRef(consumer_ref));
-    consumer = PyWeakref_GetObject(consumer_ref);
-    if (consumer) {
-        if (!pgSurface_UnlockBy((pgSurfaceObject *)view_p->obj, consumer)) {
-            PyErr_Clear();
-        }
+
+    if (PyWeakref_GetRef(consumer_ref, &consumer) != 1) {
+        PyErr_Clear();  // ignore any errors here
     }
+
+    if (!pgSurface_UnlockBy((pgSurfaceObject *)view_p->obj, consumer)) {
+        PyErr_Clear();
+    }
+    Py_XDECREF(consumer);
+
     Py_DECREF(consumer_ref);
     PyMem_Free(internal);
     Py_DECREF(view_p->obj);

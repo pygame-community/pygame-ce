@@ -90,7 +90,7 @@
    .. method:: blit
 
       | :sl:`draw another surface onto this one`
-      | :sg:`blit(source, dest, area=None, special_flags=0) -> Rect`
+      | :sg:`blit(source, dest=(0, 0), area=None, special_flags=0) -> Rect`
 
       Draws another Surface onto this Surface.
 
@@ -98,8 +98,8 @@
           - ``source``
               The ``Surface`` object to draw onto this ``Surface``.
               If it has transparency, transparent pixels will be ignored when blittting to an 8-bit ``Surface``.
-          - ``dest``
-              The ``source`` draw position onto this ``Surface``.
+          - ``dest`` *(optional)*
+              The ``source`` draw position onto this ``Surface``, defaults to (0, 0).
               It can be a coordinate ``(x, y)`` or a ``Rect`` (using its top-left corner).
               If a ``Rect`` is passed, its size will not affect the blit.
           - ``area`` *(optional)*
@@ -136,6 +136,8 @@
 
           - The blit is ignored if the ``source`` is positioned completely outside this ``Surface``'s
             clipping area. Otherwise only the overlapping area will be drawn.
+
+      .. versionchanged:: 2.5.1 The dest argument is optional and defaults to (0, 0)
 
       .. ## Surface.blit ##
 
@@ -1048,6 +1050,23 @@
       .. versionadded:: 2.1.4
 
       .. ## Surface.premul_alpha ##
+
+   .. method:: premul_alpha_ip
+
+      | :sl:`multiplies the RGB channels by the surface alpha channel.`
+      | :sg:`premul_alpha_ip() -> Surface`
+
+      Multiplies the RGB channels of the surface by the alpha channel in place and returns the surface.
+
+      Surfaces without an alpha channel cannot use this method and will return an error if you use
+      it on them. It is best used on 32 bit surfaces (the default on most platforms) as the blitting
+      on these surfaces can be accelerated by SIMD versions of the pre-multiplied blitter.
+
+      Refer to the :meth:`premul_alpha` method for more information.
+
+      .. versionadded:: 2.5.1
+
+      .. ## Surface.premul_alpha_ip ##
 
    .. attribute:: width
 

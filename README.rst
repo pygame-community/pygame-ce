@@ -1,4 +1,5 @@
-.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_logo.svg
+.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_ce_logo.svg
+  :width: 800
   :alt: pygame
   :target: https://pyga.me/
 
@@ -164,6 +165,7 @@ If you have any questions, please feel free to ask in the `Pygame Community Disc
 
 License
 -------
+**License Identifier:** LGPL-2.1-or-later
 
 This library is distributed under `GNU LGPL version 2.1`_, which can
 be found in the file ``docs/LGPL.txt``.  We reserve the right to place

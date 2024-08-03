@@ -126,9 +126,7 @@ static PyObject *
 pg_display_resource(char *filename)
 {
     PyObject *imagemodule = NULL;
-    PyObject *load_basicfunc = NULL;
     PyObject *pkgdatamodule = NULL;
-    PyObject *resourcefunc = NULL;
     PyObject *fresult = NULL;
     PyObject *result = NULL;
     PyObject *name = NULL;
@@ -137,19 +135,12 @@ pg_display_resource(char *filename)
     if (!pkgdatamodule)
         goto display_resource_end;
 
-    resourcefunc = PyObject_GetAttrString(pkgdatamodule, resourcefunc_name);
-    if (!resourcefunc)
-        goto display_resource_end;
-
     imagemodule = PyImport_ImportModule(imagemodule_name);
     if (!imagemodule)
         goto display_resource_end;
 
-    load_basicfunc = PyObject_GetAttrString(imagemodule, load_basicfunc_name);
-    if (!load_basicfunc)
-        goto display_resource_end;
-
-    fresult = PyObject_CallFunction(resourcefunc, "s", filename);
+    fresult =
+        PyObject_CallMethod(pkgdatamodule, resourcefunc_name, "s", filename);
     if (!fresult)
         goto display_resource_end;
 
@@ -166,15 +157,14 @@ pg_display_resource(char *filename)
         PyErr_Clear();
     }
 
-    result = PyObject_CallFunction(load_basicfunc, "O", fresult);
+    result =
+        PyObject_CallMethod(imagemodule, load_basicfunc_name, "O", fresult);
     if (!result)
         goto display_resource_end;
 
 display_resource_end:
     Py_XDECREF(pkgdatamodule);
-    Py_XDECREF(resourcefunc);
     Py_XDECREF(imagemodule);
-    Py_XDECREF(load_basicfunc);
     Py_XDECREF(fresult);
     Py_XDECREF(name);
     return result;
@@ -1215,6 +1205,15 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                     SDL_SetHintWithPriority(SDL_HINT_RENDER_SCALE_QUALITY,
                                             "nearest", SDL_HINT_DEFAULT);
 
+#if SDL_VERSION_ATLEAST(2, 28, 0)
+                    /* If the window has a surface associated with it already,
+                     * we need to destroy it (if possible) because now we are
+                     * associating a renderer with it. */
+                    if (SDL_HasWindowSurface(win)) {
+                        SDL_DestroyWindowSurface(win);
+                    }
+#endif
+
                     if (vsync) {
                         pg_renderer = SDL_CreateRenderer(
                             win, -1, SDL_RENDERER_PRESENTVSYNC);
@@ -1224,8 +1223,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                     }
 
                     if (pg_renderer == NULL) {
-                        return RAISE(pgExc_SDLError,
-                                     "failed to create renderer");
+                        return RAISE(pgExc_SDLError, SDL_GetError());
                     }
 
                     if (flags & PGS_SCALED) {
@@ -1696,31 +1694,48 @@ pg_update(PyObject *self, PyObject *arg)
             SDL_UpdateWindowSurfaceRects(win, &sdlr, 1);
     }
     else {
-        PyObject *seq;
-        PyObject *r;
-        Py_ssize_t loop, num;
+        PyObject *iterable, *single_arg, *r;
+        Py_ssize_t num;
         int count;
         SDL_Rect *rects;
         if (PyTuple_Size(arg) != 1)
             return RAISE(
                 PyExc_ValueError,
-                "update requires a rectstyle or sequence of rectstyles");
-        seq = PyTuple_GET_ITEM(arg, 0);
-        if (!seq || !PySequence_Check(seq))
+                "update requires a rectstyle or an iterable of rectstyles");
+
+        single_arg = PyTuple_GET_ITEM(arg, 0);
+        num = PyObject_Size(single_arg);
+        if (num == -1) {
+            /* Either __len__ errored, or object doesn't have __len__.
+             * In this case we can assume a length arbitrarily, and keep
+             * scaling it as needed. */
+            PyErr_Clear();
+            num = 8;
+        }
+        iterable = PyObject_GetIter(single_arg);
+        if (!iterable)
             return RAISE(
                 PyExc_ValueError,
-                "update requires a rectstyle or sequence of rectstyles");
+                "update requires a rectstyle or an iterable of rectstyles");
 
-        num = PySequence_Length(seq);
         rects = PyMem_New(SDL_Rect, num);
-        if (!rects)
+        if (!rects) {
+            Py_DECREF(iterable);
             return NULL;
+        }
         count = 0;
-        for (loop = 0; loop < num; ++loop) {
-            SDL_Rect *cur_rect = (rects + count);
-
-            /*get rect from the sequence*/
-            r = PySequence_GetItem(seq, loop);
+        while (1) {
+            r = PyIter_Next(iterable);
+            if (!r) {
+                if (PyErr_Occurred()) {
+                    /* forward error */
+                    Py_DECREF(iterable);
+                    PyMem_Free((void *)rects);
+                    return NULL;
+                }
+                /* End of sequence, break loop */
+                break;
+            }
             if (r == Py_None) {
                 Py_DECREF(r);
                 continue;
@@ -1728,7 +1743,8 @@ pg_update(PyObject *self, PyObject *arg)
             gr = pgRect_FromObject(r, &temp);
             Py_XDECREF(r);
             if (!gr) {
-                PyMem_Free((char *)rects);
+                Py_DECREF(iterable);
+                PyMem_Free((void *)rects);
                 return RAISE(PyExc_ValueError,
                              "update_rects requires a single list of rects");
             }
@@ -1736,8 +1752,20 @@ pg_update(PyObject *self, PyObject *arg)
             if (gr->w < 1 && gr->h < 1)
                 continue;
 
-            /*bail out if rect not onscreen*/
-            if (!pg_screencroprect(gr, wide, high, cur_rect))
+            if (count >= num) {
+                /* About to overstep boundary, need reallocing */
+                num *= 2;
+                SDL_Rect *new_rects = PyMem_Resize(rects, SDL_Rect, num);
+                if (!new_rects) {
+                    Py_DECREF(iterable);
+                    PyMem_Free((void *)rects);
+                    return NULL;
+                }
+                rects = new_rects;
+            }
+
+            /* bail out if rect not onscreen */
+            if (!pg_screencroprect(gr, wide, high, &rects[count]))
                 continue;
 
             ++count;
@@ -1749,7 +1777,8 @@ pg_update(PyObject *self, PyObject *arg)
             Py_END_ALLOW_THREADS;
         }
 
-        PyMem_Free((char *)rects);
+        Py_DECREF(iterable);
+        PyMem_Free((void *)rects);
     }
     Py_RETURN_NONE;
 }
