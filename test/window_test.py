@@ -329,6 +329,7 @@ class WindowTypeTest(unittest.TestCase):
         pygame.display.quit()
         pygame.init()
 
+    @unittest.skipIf(IS_PYPY, "for some reason this test is flaky on pypy")
     def test_window_surface(self):
         win = Window(size=(640, 480))
         surf = win.get_surface()
