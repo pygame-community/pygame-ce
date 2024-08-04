@@ -584,6 +584,18 @@ class AbstractGroupTypeTest(unittest.TestCase):
         self.assertEqual(self.ag.spritedict[self.s1], pygame.Rect(0, 0, 10, 10))
         self.assertEqual(self.ag.spritedict[self.s2], pygame.Rect(10, 0, 10, 10))
 
+        test_sprite = sprite.Sprite()
+        test_sprite.image = pygame.Surface((10, 10))
+
+        # test_sprite.rect should be None here
+        self.assertRaises(TypeError, lambda: sprite.Group(test_sprite).draw(self.scr))
+
+        # this should be fine
+        group = sprite.Group(test_sprite)
+        test_sprite.frect = test_sprite.image.get_frect()
+        group.draw(self.scr)
+        self.assertEqual(group.spritedict[test_sprite], pygame.FRect(0, 0, 10, 10))
+
     def test_empty(self):
         self.ag.empty()
         self.assertFalse(self.s1 in self.ag)
@@ -1341,6 +1353,21 @@ class SpriteTypeTest(SpriteBase, unittest.TestCase):
         sprite.LayeredUpdates,
         sprite.RenderUpdates,
     ]
+
+    def test_rect(self):
+        """Tests the setter and getter for Sprite.(f)rect"""
+        spr = sprite.Sprite()
+        self.assertIsNone(spr.rect)
+
+        spr.rect = pygame.Rect(1, 2, 3, 4)
+        self.assertEqual(spr.rect, pygame.Rect(1, 2, 3, 4))
+        self.assertIsInstance(spr.rect, pygame.Rect)
+
+        spr.frect = pygame.FRect(2, 3, 4, 5)
+        self.assertEqual(spr.rect, pygame.FRect(2, 3, 4, 5))
+        self.assertIsInstance(spr.rect, pygame.FRect)
+
+        self.assertIs(spr.frect, spr.rect)
 
 
 class DirtySpriteTypeTest(SpriteBase, unittest.TestCase):
