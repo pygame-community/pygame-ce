@@ -618,19 +618,46 @@ font_render_to(PyObject *self, PyObject *args)
     int wraplength = 0;
     int blend_flags = 0;
     int result;
+    const char *astring = "";  // init string
+
     if (!PyArg_ParseTuple(args, "O!OOpO|Oii", &pgSurface_Type, &surf_to_render,
                           &dest_pos, &text, &antialias, &fg_rgba_obj,
                           &bg_rgba_obj, &wraplength, &blend_flags)) {
         return NULL;
     }
     SURF_INIT_CHECK(surf_to_render);
-
+    
     renderargs = Py_BuildValue("(OiOOi)", text, antialias, fg_rgba_obj,
                                bg_rgba_obj, wraplength);
     render_result = font_render(self, renderargs, NULL);
+    
     if (!pg_TwoIntsFromObj(dest_pos, &dx, &dy)) {
         return RAISE(PyExc_TypeError, "invalid destination position for blit");
     }
+    if (!PyUnicode_Check(text) && !PyBytes_Check(text) && text != Py_None) {
+        return RAISE_TEXT_TYPE_ERROR();
+    }
+
+    if (PyUnicode_Check(text)) {
+        Py_ssize_t _size = -1;
+        astring = PyUnicode_AsUTF8AndSize(text, &_size);
+        if (astring == NULL) { /* exception already set */
+            return NULL;
+        }
+        if (strlen(astring) != (size_t)_size) {
+            return RAISE(PyExc_ValueError,
+                         "A null character was found in the text");
+        }
+    }
+
+    else if (PyBytes_Check(text)) {
+        /* Bytes_AsStringAndSize with NULL arg for length emits
+           ValueError if internal NULL bytes are present */
+        if (PyBytes_AsStringAndSize(text, (char **)&astring, NULL) == -1) {
+            return NULL; /* exception already set */
+        }
+    }
+
 
     SDL_Surface *_render_result = pgSurface_AsSurface(&render_result);
 

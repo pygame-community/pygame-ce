@@ -502,12 +502,10 @@ class FontTypeTest(unittest.TestCase):
             self.assertFalse(equal_images(s1, s2))
 
         # test for internal null bytes
-        # self.assertRaises(ValueError, f.render, b"ab\x00cd", 0, [0, 0, 0])
         s = pygame.Surface(s.get_size())
-        # this results in segfault unfortunately
-        # and IDK what im even supposed to do
-        # self.assertRaises(ValueError, f.render_to, s, (0,0), "ab\x00cd", 0, [0, 0, 0])
-
+        self.assertRaises(ValueError, f.render, b"ab\x00cd", 0, [0, 0, 0])
+        self.assertRaises(ValueError, f.render_to, s, (0,0), b"ab\x00cd", 0, [0, 0, 0])
+    
     def test_render_ucs2_ucs4(self):
         """that it renders without raising if there is a new enough SDL_ttf."""
         f = pygame_font.Font(None, 20)
