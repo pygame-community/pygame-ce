@@ -1,4 +1,6 @@
 from cpython cimport PyObject
+from cpython.ref cimport Py_DECREF
+cimport cython
 from pygame._sdl2.sdl2 import error
 from pygame._sdl2.sdl2 import error as errorfnc
 from libc.stdlib cimport free, malloc
@@ -19,6 +21,7 @@ import_pygame_base()
 import_pygame_color()
 import_pygame_surface()
 import_pygame_rect()
+import_pygame_window()
 
 class RendererDriverInfo:
     def __repr__(self):
@@ -120,7 +123,7 @@ def messagebox(title, message,
         data.numbuttons = 1
     else:
         buttons_utf8 = [s.encode('utf8') for s in buttons]
-        data.numbuttons = len(buttons)
+        data.numbuttons = <int>len(buttons)
         c_buttons =\
             <SDL_MessageBoxButtonData*>malloc(data.numbuttons * sizeof(SDL_MessageBoxButtonData))
         if not c_buttons:
@@ -143,379 +146,8 @@ def messagebox(title, message,
     free(c_buttons)
     return buttonid
 
-
-cdef class Window:
-    DEFAULT_SIZE = 640, 480
-
-    _kwarg_to_flag = {
-        'opengl': _SDL_WINDOW_OPENGL,
-        'vulkan': _SDL_WINDOW_VULKAN,
-        'hidden': _SDL_WINDOW_HIDDEN,
-        'borderless': _SDL_WINDOW_BORDERLESS,
-        'resizable': _SDL_WINDOW_RESIZABLE,
-        'minimized': _SDL_WINDOW_MINIMIZED,
-        'maximized': _SDL_WINDOW_MAXIMIZED,
-        'input_grabbed': _SDL_WINDOW_INPUT_GRABBED,
-        'input_focus': _SDL_WINDOW_INPUT_FOCUS,
-        'mouse_focus': _SDL_WINDOW_MOUSE_FOCUS,
-        'allow_highdpi': _SDL_WINDOW_ALLOW_HIGHDPI,
-        'foreign': _SDL_WINDOW_FOREIGN,
-        'mouse_capture': _SDL_WINDOW_MOUSE_CAPTURE,
-        'always_on_top': _SDL_WINDOW_ALWAYS_ON_TOP,
-        'skip_taskbar': _SDL_WINDOW_SKIP_TASKBAR,
-        'utility': _SDL_WINDOW_UTILITY,
-        'tooltip': _SDL_WINDOW_TOOLTIP,
-        'popup_menu': _SDL_WINDOW_POPUP_MENU,
-    }
-
-    @classmethod
-    def from_display_module(cls):
-        """Create a Window object using window data from display module
-
-        Creates a Window object that uses the same window data from the :mod:`pygame.display` module, created upon calling
-        :func:`pygame.display.set_mode`.
-        """
-        cdef Window self = cls.__new__(cls)
-        cdef SDL_Window* window = pg_GetDefaultWindow()
-        if not window:
-            raise error()
-        self._win=window
-        self._is_borrowed=1
-        SDL_SetWindowData(window, "pg_window", <PyObject*>self)
-        return self
-
-    def __init__(self, title='pygame window',
-                 size=DEFAULT_SIZE,
-                 position=WINDOWPOS_UNDEFINED,
-                 bint fullscreen=False,
-                 bint fullscreen_desktop=False, **kwargs):
-        """pygame object that represents a window
-
-        Creates a window.
-
-        :param str title: The title of the window.
-        :param (int, int) size: The size of the window, in screen coordinates.
-        :param (int, int) or int position: A tuple specifying the window position, or
-                                           ``WINDOWPOS_CENTERED``, or ``WINDOWPOS_UNDEFINED``.
-        :param bool fullscreen: Create a fullscreen window using the window size as
-                                the resolution (videomode change).
-        :param bool fullscreen_desktop: Create a fullscreen window using the current
-                                        desktop resolution.
-        :param bool opengl: Create a window with support for an OpenGL context. You
-                            will still need to create an OpenGL context separately.
-        :param bool vulkan: Create a window with support for a Vulkan instance.
-        :param bool hidden: Create a hidden window.
-        :param bool borderless: Create a window without borders.
-        :param bool resizable: Create a resizable window.
-        :param bool minimized: Create a mimized window.
-        :param bool maximized: Create a maximized window.
-        :param bool input_grabbed: Create a window with a grabbed input focus.
-        :param bool input_focus: Create a window with input focus.
-        :param bool mouse_focus: Create a window with mouse focus.
-        :param bool foreign: Marks a window not created by SDL.
-        :param bool allow_highdpi: Create a window in high-DPI mode if supported
-                                   (>= SDL 2.0.1).
-        :param bool mouse_capture: Create a window that has the mouse captured
-                                   (unrelated to INPUT_GRABBED, >= SDL 2.0.4).
-        :param bool always_on_top: Create a window that is always on top
-                                   (X11 only, >= SDL 2.0.5).
-        :param bool skip_taskbar: Create a window that should not be added to the
-                                  taskbar (X11 only, >= SDL 2.0.5).
-        :param bool utility: Create a window that should be treated as a utility
-                             window (X11 only, >= SDL 2.0.5).
-        :param bool tooltip: Create a window that should be treated as a tooltip
-                             (X11 only, >= SDL 2.0.5).
-        :param bool popup_menu: Create a window that should be treated as a popup menu 
-                                (X11 only, >= SDL 2.0.5).
-        """
-        # https://wiki.libsdl.org/SDL_CreateWindow
-        # https://wiki.libsdl.org/SDL_WindowFlags
-        if position == WINDOWPOS_UNDEFINED:
-            x, y = WINDOWPOS_UNDEFINED, WINDOWPOS_UNDEFINED
-        elif position == WINDOWPOS_CENTERED:
-            x, y = WINDOWPOS_CENTERED, WINDOWPOS_CENTERED
-        else:
-            x, y = position
-
-        flags = 0
-        if fullscreen and fullscreen_desktop:
-            raise ValueError("fullscreen and fullscreen_desktop cannot be used at the same time.")
-        if fullscreen:
-            flags |= _SDL_WINDOW_FULLSCREEN
-        elif fullscreen_desktop:
-            flags |= _SDL_WINDOW_FULLSCREEN_DESKTOP
-
-        _kwarg_to_flag = self._kwarg_to_flag
-        for k, v in kwargs.items():
-            try:
-                flag = _kwarg_to_flag[k]
-                if v:
-                    flags |= flag
-            except KeyError:
-                raise TypeError("unknown parameter: %s" % k)
-
-        self._win = SDL_CreateWindow(title.encode('utf8'), x, y,
-                                     size[0], size[1], flags)
-        self._is_borrowed=0
-        if not self._win:
-            raise error()
-        SDL_SetWindowData(self._win, "pg_window", <PyObject*>self)
-
-        import pygame.pkgdata
-        surf = pygame.image.load(pygame.pkgdata.getResource(
-                                 'pygame_icon.bmp'))
-        surf.set_colorkey(0)
-        self.set_icon(surf)
-
-    @property
-    def grab(self):
-        """Get or set the window's input grab state
-
-        Gets or sets the window's input grab state.
-        When input is grabbed, the mouse is confined to the window.
-        If the caller enables a grab while another window is currently grabbed,
-        the other window loses its grab in favor of the caller's window.
-        """
-        return SDL_GetWindowGrab(self._win) != 0
-
-    @grab.setter
-    def grab(self, bint grabbed):
-        # https://wiki.libsdl.org/SDL_SetWindowGrab
-        SDL_SetWindowGrab(self._win, 1 if grabbed else 0)
-
-    @property
-    def relative_mouse(self):
-        """Get or set the window's relative mouse mode state
-
-        Gets or sets the window's relative mouse mode state.
-        SDL2 docs: *"While the mouse is in relative mode, the cursor is hidden,
-        the mouse position is constrained to the window, and SDL will report
-        continuous relative mouse motion even if the mouse is at the edge of the
-        window.*
-
-        *This function will flush any pending mouse motion."*
-
-        Calling :func:`pygame.mouse.set_visible` with argument
-        ``True`` will exit relative mouse mode.
-        """
-        return SDL_GetRelativeMouseMode()
-
-
-    @relative_mouse.setter
-    def relative_mouse(self, bint enable):
-        # https://wiki.libsdl.org/SDL_SetRelativeMouseMode
-        #SDL_SetWindowGrab(self._win, 1 if enable else 0)
-        SDL_SetRelativeMouseMode(1 if enable else 0)
-
-    def set_windowed(self):
-        """Enable windowed mode (exit fullscreen)
-
-        .. seealso:: :func:`set_fullscreen`
-        """
-        # https://wiki.libsdl.org/SDL_SetWindowFullscreen
-        if SDL_SetWindowFullscreen(self._win, 0):
-            raise error()
-
-    #TODO: not sure about this...
-    # Perhaps this is more readable:
-    #     window.fullscreen = True
-    #     window.fullscreen_desktop = True
-    #     window.windowed = True
-    def set_fullscreen(self, bint desktop=False):
-        """Enter fullscreen
-
-        :param bool desktop: If ``True``, use the current desktop resolution.
-         If ``False``, change the fullscreen resolution to the window size.
-
-        .. seealso:: :meth:`set_windowed`.
-        """
-        cdef int flags = 0
-        if desktop:
-            flags = _SDL_WINDOW_FULLSCREEN_DESKTOP
-        else:
-            flags = _SDL_WINDOW_FULLSCREEN
-        if SDL_SetWindowFullscreen(self._win, flags):
-            raise error()
-
-    @property
-    def title(self):
-        """Get or set the window title
-
-        Gets or sets the window title. An empty string means that no title is set.An empty string means that no title is set.
-        """
-        # https://wiki.libsdl.org/SDL_GetWindowTitle
-        return SDL_GetWindowTitle(self._win).decode('utf8')
-
-    @title.setter
-    def title(self, title):
-        # https://wiki.libsdl.org/SDL_SetWindowTitle
-        SDL_SetWindowTitle(self._win, title.encode('utf8'))
-
-    def destroy(self):
-        """Destroy the window
-
-        Destroys the internal window data of this Window object. This method is
-        called automatically when this Window object is garbage collected, so
-        there usually aren't any reasons to call it manually.
-
-        Other methods that try to manipulate that window data will raise an error.
-        """
-        # https://wiki.libsdl.org/SDL_DestroyWindow
-        if self._win:
-            SDL_DestroyWindow(self._win)
-            self._win = NULL
-
-    def hide(self):
-        """Hide the window
-        """
-        # https://wiki.libsdl.org/SDL_HideWindow
-        SDL_HideWindow(self._win)
-
-    def show(self):
-        """Show the window
-        """
-        # https://wiki.libsdl.org/SDL_ShowWindow
-        SDL_ShowWindow(self._win)
-
-    def focus(self, input_only=False):
-        """Set the window to be focused
-
-        Raises the window above other windows and sets the input focus.
-
-        :param bool input_only: if ``True``, the window will be given input focus
-                                but may be completely obscured by other windows.
-                                Only supported on X11.
-        """
-        # https://wiki.libsdl.org/SDL_RaiseWindow
-        if input_only:
-            if SDL_SetWindowInputFocus(self._win):
-                raise error()
-        else:
-            SDL_RaiseWindow(self._win)
-
-    def restore(self):
-        """Restore the size and position of a minimized or maximized window
-        """
-        SDL_RestoreWindow(self._win)
-
-    def maximize(self):
-        """Maximize the window
-        """
-        SDL_MaximizeWindow(self._win)
-
-    def minimize(self):
-        """Minimize the window
-        """
-        SDL_MinimizeWindow(self._win)
-
-    @property
-    def resizable(self):
-        """Get or set whether the window is resizable
-        """
-        return SDL_GetWindowFlags(self._win) & _SDL_WINDOW_RESIZABLE != 0
-
-    @resizable.setter
-    def resizable(self, enabled):
-        SDL_SetWindowResizable(self._win, 1 if enabled else 0)
-
-    @property
-    def borderless(self):
-        """Get or set whether the window is borderless
-
-        Gets or sets whether the window is borderless.
-
-        .. note:: You can't change the border state of a fullscreen window.
-        """
-        return SDL_GetWindowFlags(self._win) & _SDL_WINDOW_BORDERLESS != 0
-
-    @borderless.setter
-    def borderless(self, enabled):
-        SDL_SetWindowBordered(self._win, 0 if enabled else 1)
-
-    def set_icon(self, surface):
-        """Set the window icon
-
-        Sets the window icon.
-
-        :param pygame.Surface surface: A Surface to use as the icon.
-        """
-        if not pgSurface_Check(surface):
-            raise TypeError('surface must be a Surface object')
-        SDL_SetWindowIcon(self._win, pgSurface_AsSurface(surface))
-
-    @property
-    def id(self):
-        """Get the unique window ID (**read-only**)
-        """
-        return SDL_GetWindowID(self._win)
-
-    @property
-    def size(self):
-        """Get or set the window size in pixels"""
-        cdef int w, h
-        SDL_GetWindowSize(self._win, &w, &h)
-        return (w, h)
-
-    @size.setter
-    def size(self, size):
-        SDL_SetWindowSize(self._win, size[0], size[1])
-
-    @property
-    def position(self):
-        """Get or set the window position in screen coordinates
-        """
-        cdef int x, y
-        SDL_GetWindowPosition(self._win, &x, &y)
-        return (x, y)
-
-    @position.setter
-    def position(self, position):
-        cdef int x, y
-        if position == WINDOWPOS_UNDEFINED:
-            x, y = WINDOWPOS_UNDEFINED, WINDOWPOS_UNDEFINED
-        elif position == WINDOWPOS_CENTERED:
-            x, y = WINDOWPOS_CENTERED, WINDOWPOS_CENTERED
-        else:
-            x, y = position
-        SDL_SetWindowPosition(self._win, x, y)
-
-    @property
-    def opacity(self):
-        """Get or set the window opacity, a value between 0.0 (fully transparent) and 1.0 (fully opaque)
-        """
-        cdef float opacity
-        if SDL_GetWindowOpacity(self._win, &opacity):
-            raise error()
-        return opacity
-
-    @opacity.setter
-    def opacity(self, opacity):
-        if SDL_SetWindowOpacity(self._win, opacity):
-            raise error()
-
-    @property
-    def display_index(self):
-        """Get the index of the display that owns the window
-        """
-        cdef int index = SDL_GetWindowDisplayIndex(self._win)
-        if index < 0:
-            raise error()
-        return index
-
-    def set_modal_for(self, Window parent):
-        """Set the window as a modal for a parent window
-
-        :param Window parent: The parent window.
-
-        .. note:: This function is only supported on X11.
-        """
-        if SDL_SetWindowModalFor(self._win, parent._win):
-            raise error()
-
-    def __dealloc__(self):
-        if self._is_borrowed:
-            return
-        self.destroy()
+globals()["Window"] = Window
+_Window = Window
 
 cdef Uint32 format_from_depth(int depth):
     cdef Uint32 Rmask, Gmask, Bmask, Amask
@@ -535,10 +167,9 @@ cdef Uint32 format_from_depth(int depth):
                                       Rmask, Gmask, Bmask, Amask)
 
 
+# disable auto_pickle since it causes stubcheck error 
+@cython.auto_pickle(False)
 cdef class Texture:
-    def __cinit__(self):
-        cdef Uint8[4] defaultColor = [255, 255, 255, 255]
-        self._color = pgColor_NewLength(defaultColor, 3)
 
     def __init__(self,
                  Renderer renderer,
@@ -710,23 +341,31 @@ cdef class Texture:
     def color(self):
         """Get or set the additional color value multiplied into texture drawing operations
         """
+        cdef Uint8[4] rgba
+        
         # https://wiki.libsdl.org/SDL_GetTextureColorMod
         cdef int res = SDL_GetTextureColorMod(self._tex,
-                                              &self._color.data[0],
-                                              &self._color.data[1],
-                                              &self._color.data[2])
+                                              &(rgba[0]),
+                                              &(rgba[1]),
+                                              &(rgba[2]))
+        rgba[3] = 255    
+
         if res < 0:
             raise error()
 
-        return self._color
+        return pgColor_NewLength(rgba, 4)
 
     @color.setter
     def color(self, new_value):
+        cdef Uint8[4] rgba
+        pg_RGBAFromObjEx(new_value, rgba, PG_COLOR_HANDLE_ALL)
+
         # https://wiki.libsdl.org/SDL_SetTextureColorMod
         cdef int res = SDL_SetTextureColorMod(self._tex,
-                                              new_value[0],
-                                              new_value[1],
-                                              new_value[2])
+                                              rgba[0],
+                                              rgba[1],
+                                              rgba[2])
+
         if res < 0:
             raise error()
 
@@ -743,19 +382,6 @@ cdef class Texture:
             setattr(rect, key, kwargs[key])
 
         return rect
-
-    cdef draw_internal(self, SDL_Rect *csrcrect, SDL_Rect *cdstrect, float angle=0, SDL_Point *originptr=NULL,
-                       bint flip_x=False, bint flip_y=False):
-        cdef int flip = SDL_FLIP_NONE
-        if flip_x:
-            flip |= SDL_FLIP_HORIZONTAL
-        if flip_y:
-            flip |= SDL_FLIP_VERTICAL
-
-        cdef int res = SDL_RenderCopyEx(self.renderer._renderer, self._tex, csrcrect, cdstrect,
-                                        angle, originptr, <SDL_RendererFlip>flip)
-        if res < 0:
-            raise error()
 
     cpdef void draw(self, srcrect=None, dstrect=None, float angle=0, origin=None,
                     bint flip_x=False, bint flip_y=False):
@@ -774,11 +400,12 @@ cdef class Texture:
         :param bool flip_x: Flip the drawn texture portion horizontally (x - axis).
         :param bool flip_y: Flip the drawn texture portion vertically (y - axis).
         """
-        cdef SDL_Rect src, dst
+        cdef SDL_Rect src
         cdef SDL_Rect *csrcrect = NULL
-        cdef SDL_Rect *cdstrect = NULL
-        cdef SDL_Point corigin
-        cdef SDL_Point *originptr
+        cdef SDL_FRect dst
+        cdef SDL_FRect *cdstrect = NULL
+        cdef SDL_FPoint corigin
+        cdef SDL_FPoint *originptr
 
         if srcrect is not None:
             csrcrect = pgRect_FromObject(srcrect, &src)
@@ -786,13 +413,13 @@ cdef class Texture:
                 raise TypeError("the argument is not a rectangle or None")
 
         if dstrect is not None:
-            cdstrect = pgRect_FromObject(dstrect, &dst)
+            cdstrect = pgFRect_FromObject(dstrect, &dst)
             if cdstrect == NULL:
                 if len(dstrect) == 2:
                     dst.x = dstrect[0]
                     dst.y = dstrect[1]
-                    dst.w = self.width
-                    dst.h = self.height
+                    dst.w = <float> self.width
+                    dst.h = <float> self.height
                     cdstrect = &dst
                 else:
                     raise TypeError('dstrect must be a position, rect, or None')
@@ -804,8 +431,16 @@ cdef class Texture:
         else:
             originptr = NULL
 
-        self.draw_internal(csrcrect, cdstrect, angle, originptr,
-                           flip_x, flip_y)
+        cdef int flip = SDL_FLIP_NONE
+        if flip_x:
+            flip |= SDL_FLIP_HORIZONTAL
+        if flip_y:
+            flip |= SDL_FLIP_VERTICAL
+
+        cdef int res = SDL_RenderCopyExF(self.renderer._renderer, self._tex, csrcrect, cdstrect,
+                                        angle, originptr, <SDL_RendererFlip>flip)
+        if res < 0:
+            raise error()
 
     def draw_triangle(self, p1_xy, p2_xy, p3_xy,
                       p1_uv=(0.0, 0.0), p2_uv=(1.0, 1.0), p3_uv=(0.0, 1.0),
@@ -829,10 +464,10 @@ cdef class Texture:
         SDL_GetTextureColorMod(self._tex, &_r_mod, &_g_mod, &_b_mod)
         SDL_GetTextureAlphaMod(self._tex, &_a_mod)
 
-        cdef float r_mod = float(_r_mod) / 255.0
-        cdef float g_mod = float(_g_mod) / 255.0
-        cdef float b_mod = float(_b_mod) / 255.0
-        cdef float a_mod = float(_a_mod) / 255.0
+        cdef float r_mod = <float>_r_mod / <float>255.0
+        cdef float g_mod = <float>_g_mod / <float>255.0
+        cdef float b_mod = <float>_b_mod / <float>255.0
+        cdef float a_mod = <float>_a_mod / <float>255.0
 
         cdef SDL_Vertex vertices[3]
         for i, vert in enumerate(((p1_xy, p1_mod, p1_uv),
@@ -853,7 +488,8 @@ cdef class Texture:
             raise error()
 
     def draw_quad(self, p1_xy, p2_xy, p3_xy, p4_xy,
-                  p1_uv=(0.0, 0.0), p2_uv=(1.0, 0.0), p3_uv=(1.0, 1.0), p4_uv=(0.0, 1.0),
+                  p1_uv=(0.0, 0.0), p2_uv=(1.0, 0.0),
+                  p3_uv=(1.0, 1.0), p4_uv=(0.0, 1.0),
                   p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255),
                   p3_mod=(255, 255, 255, 255), p4_mod=(255, 255, 255, 255)):
         """Copy a quad portion of the texture to the rendering target using the given coordinates
@@ -878,10 +514,10 @@ cdef class Texture:
         SDL_GetTextureColorMod(self._tex, &_r_mod, &_g_mod, &_b_mod)
         SDL_GetTextureAlphaMod(self._tex, &_a_mod)
 
-        cdef float r_mod = float(_r_mod) / 255.0
-        cdef float g_mod = float(_g_mod) / 255.0
-        cdef float b_mod = float(_b_mod) / 255.0
-        cdef float a_mod = float(_a_mod) / 255.0
+        cdef float r_mod = <float>_r_mod / <float>255.0
+        cdef float g_mod = <float>_g_mod / <float>255.0
+        cdef float b_mod = <float>_b_mod / <float>255.0
+        cdef float a_mod = <float>_a_mod / <float>255.0
 
         cdef SDL_Vertex vertices[6]
         for i, vert in enumerate(((p1_xy, p1_mod, p1_uv),
@@ -927,16 +563,33 @@ cdef class Texture:
             raise TypeError("update source should be a Surface.")
 
         cdef SDL_Rect rect
+        rect.x = 0
+        rect.y = 0
         cdef SDL_Rect *rectptr = pgRect_FromObject(area, &rect)
         cdef SDL_Surface *surf = pgSurface_AsSurface(surface)
+
+        if rectptr == NULL and area is not None:
+            raise TypeError('area must be a rectangle or None')
+        
+        cdef int dst_width, dst_height
+        if rectptr == NULL:
+            dst_width = self.width
+            dst_height = self.height
+        else:
+            dst_width = rect.w
+            dst_height = rect.h
+        
+        if dst_height > surf.h or dst_width > surf.w:
+            # if the surface is smaller than the destination rect,
+            # clip the rect to prevent segfault
+            rectptr = &rect # make sure rectptr is not NULL
+            rect.h = surf.h
+            rect.w = surf.w
 
         # For converting the surface, if needed
         cdef SDL_Surface *converted_surf = NULL
         cdef SDL_PixelFormat *pixel_format = NULL
         cdef SDL_BlendMode blend
-
-        if rectptr == NULL and area is not None:
-            raise TypeError('area must be a rectangle or None')
 
         cdef Uint32 format_
         if (SDL_QueryTexture(self._tex, &format_, NULL, NULL, NULL) != 0):
@@ -966,6 +619,8 @@ cdef class Texture:
         if res < 0:
             raise error()
 
+# disable auto_pickle since it causes stubcheck error 
+@cython.auto_pickle(False) 
 cdef class Image:
 
     def __cinit__(self):
@@ -977,7 +632,7 @@ cdef class Image:
         self.flip_y = False
 
         cdef Uint8[4] defaultColor = [255, 255, 255, 255]
-        self._color = pgColor_NewLength(defaultColor, 3)
+        self._color = pgColor_NewLength(defaultColor, 4)
         self.alpha = 255
 
     def __init__(self, texture_or_image, srcrect=None):
@@ -1031,7 +686,10 @@ cdef class Image:
 
     @color.setter
     def color(self, new_color):
-        self._color[:3] = new_color[:3]
+        cdef Uint8[4] rgba
+        pg_RGBAFromObjEx(new_color, rgba, PG_COLOR_HANDLE_ALL)
+
+        self._color[:3] = rgba[:3]
 
     @property
     def origin(self):
@@ -1075,58 +733,27 @@ cdef class Image:
                         or ``None`` for entire target. The Image is stretched to
                         fill dstrect.
         """
-        cdef SDL_Rect src
-        cdef SDL_Rect dst
-        cdef SDL_Rect *csrcrect = NULL
-        cdef SDL_Rect *cdstrect = NULL
-        cdef SDL_Rect *rectptr
-
-        if srcrect is None:
-            csrcrect = &self.srcrect.r
-        else:
-            if pgRect_Check(srcrect):
-                src = (<Rect>srcrect).r
-            else:
-
-                rectptr = pgRect_FromObject(srcrect, &src)
-                if rectptr == NULL:
-                    raise TypeError('srcrect must be a rect or None')
-                src.x = rectptr.x
-                src.y = rectptr.y
-                src.w = rectptr.w
-                src.h = rectptr.h
-
-            src.x += self.srcrect.x
-            src.y += self.srcrect.y
-            csrcrect = &src
-
-        if dstrect is not None:
-            cdstrect = pgRect_FromObject(dstrect, &dst)
-            if cdstrect == NULL:
-                if len(dstrect) == 2:
-                    dst.x = dstrect[0]
-                    dst.y = dstrect[1]
-                    dst.w = self.srcrect.w
-                    dst.h = self.srcrect.h
-                    cdstrect = &dst
-                else:
-                    raise TypeError('dstrect must be a position, rect, or None')
 
         self.texture.color = self._color
         self.texture.alpha = self.alpha
         self.texture.blend_mode = self.blend_mode
+        self.texture.draw(
+            (srcrect if not srcrect is None else self.srcrect),
+            dstrect,
+            self.angle,
+            self.origin,
+            self.flip_x,
+            self.flip_y)
 
-        self.texture.draw_internal(csrcrect, cdstrect, self.angle,
-                                   self._originptr, self.flip_x, self.flip_y)
-
-
+# disable auto_pickle since it causes stubcheck error 
+@cython.auto_pickle(False) 
 cdef class Renderer:
 
     @classmethod
     def from_window(cls, Window window):
         cdef Renderer self = cls.__new__(cls)
         self._win = window
-        if window._is_borrowed:
+        if self._win._is_borrowed:
             self._is_borrowed=1
         else:
             raise error()
@@ -1137,12 +764,10 @@ cdef class Renderer:
         if not self._renderer:
             raise error()
 
-        cdef Uint8[4] defaultColor = [255, 255, 255, 255]
-        self._draw_color = pgColor_NewLength(defaultColor, 4)
         self._target = None
         return self
 
-    def __init__(self, Window window, int index=-1,
+    def __init__(self,Window window, int index=-1,
                  int accelerated=-1, bint vsync=False,
                  bint target_texture=False):
         """pygame object wrapping a 2D rendering context for a window
@@ -1165,8 +790,8 @@ cdef class Renderer:
 
 
         :class:`Renderer` objects provide a cross-platform API for rendering 2D
-        graphics onto a :class:`Window`, by using either Metal (MacOS), OpenGL
-        (MacOS, Windows, Linux) or Direct3D (Windows) rendering drivers, depending
+        graphics onto a :class:`Window`, by using either Metal (macOS), OpenGL
+        (macOS, Windows, Linux) or Direct3D (Windows) rendering drivers, depending
         on what is set or is available on a system during their creation.
 
         They can be used to draw both :class:`Texture` objects and simple points,
@@ -1188,6 +813,7 @@ cdef class Renderer:
         immediately, but lends well to the behavior of GPUs, as draw calls can be
         expensive on lower-end models.
         """
+
         # https://wiki.libsdl.org/SDL_CreateRenderer
         # https://wiki.libsdl.org/SDL_RendererFlags
         flags = 0
@@ -1203,7 +829,6 @@ cdef class Renderer:
             raise error()
 
         cdef Uint8[4] defaultColor = [255, 255, 255, 255]
-        self._draw_color = pgColor_NewLength(defaultColor, 4)
         self._target = None
         self._win = window
         self._is_borrowed=0
@@ -1237,17 +862,31 @@ cdef class Renderer:
     def draw_color(self):
         """Get or set the color used for primitive drawing operations
         """
-        return self._draw_color
+        cdef Uint8[4] rgba
+
+        cdef int res = SDL_GetRenderDrawColor(self._renderer,
+                                              &(rgba[0]),
+                                              &(rgba[1]),
+                                              &(rgba[2]),
+                                              &(rgba[3]))
+
+        if res < 0:
+            raise error()
+
+        return pgColor_NewLength(rgba, 4)
 
     @draw_color.setter
     def draw_color(self, new_value):
+        cdef Uint8[4] rgba
+        pg_RGBAFromObjEx(new_value, rgba, PG_COLOR_HANDLE_ALL)
+
         # https://wiki.libsdl.org/SDL_SetRenderDrawColor
-        self._draw_color[:] = new_value
         cdef int res = SDL_SetRenderDrawColor(self._renderer,
-                                              new_value[0],
-                                              new_value[1],
-                                              new_value[2],
-                                              new_value[3])
+                                              rgba[0],
+                                              rgba[1],
+                                              rgba[2],
+                                              rgba[3])
+
         if res < 0:
             raise error()
 
@@ -1391,10 +1030,10 @@ cdef class Renderer:
         :param p1: The line start point.
         :param p2: The line end point.
         """
-        # https://wiki.libsdl.org/SDL_RenderDrawLine
-        cdef int res = SDL_RenderDrawLine(self._renderer,
-                                          p1[0], p1[1],
-                                          p2[0], p2[1])
+        cdef int res
+        res = SDL_RenderDrawLineF(self._renderer,
+                                 p1[0], p1[1],
+                                 p2[0], p2[1])
         if res < 0:
             raise error()
 
@@ -1403,9 +1042,10 @@ cdef class Renderer:
 
         :param point: The point's coordinate.
         """
-        # https://wiki.libsdl.org/SDL_RenderDrawPoint
-        cdef int res = SDL_RenderDrawPoint(self._renderer,
-                                           point[0], point[1])
+        # https://wiki.libsdl.org/SDL_RenderDrawPointF
+        cdef int res
+        res = SDL_RenderDrawPointF(self._renderer,
+                                point[0], point[1])
         if res < 0:
             raise error()
 
@@ -1414,14 +1054,17 @@ cdef class Renderer:
 
         :param rect: The :class:`Rect`-like rectangle to draw.
         """
-        # https://wiki.libsdl.org/SDL_RenderDrawRect
-        cdef SDL_Rect _rect
-        cdef SDL_Rect *rectptr = pgRect_FromObject(rect, &_rect)
+        # https://wiki.libsdl.org/SDL_RenderDrawRectF
+        cdef SDL_FRect _frect
+        cdef SDL_FRect *frectptr
+        cdef int res
 
-        if rectptr == NULL:
+        frectptr = pgFRect_FromObject(rect, &_frect)
+        if frectptr == NULL:
             raise TypeError('expected a rectangle')
 
-        cdef int res = SDL_RenderDrawRect(self._renderer, rectptr)
+        res = SDL_RenderDrawRectF(self._renderer, frectptr)
+
         if res < 0:
             raise error()
 
@@ -1430,25 +1073,31 @@ cdef class Renderer:
 
         :param rect: The :class:`Rect`-like rectangle to draw.
         """
-        # https://wiki.libsdl.org/SDL_RenderFillRect
-        cdef SDL_Rect _rect
-        cdef SDL_Rect *rectptr = pgRect_FromObject(rect, &_rect)
+        # https://wiki.libsdl.org/SDL_RenderFillRectF
+        cdef SDL_FRect _frect
+        cdef SDL_FRect *frectptr
+        cdef int res
 
-        if rectptr == NULL:
+        
+        frectptr = pgFRect_FromObject(rect, &_frect)
+        if frectptr == NULL:
             raise TypeError('expected a rectangle')
 
-        cdef int res = SDL_RenderFillRect(self._renderer, rectptr)
+        res = SDL_RenderFillRectF(self._renderer, frectptr)
+
         if res < 0:
             raise error()
 
     def draw_triangle(self, p1, p2, p3):
-        # https://wiki.libsdl.org/SDL_RenderDrawLines
-        cdef SDL_Point points[4]
-        for i, pos in enumerate((p1, p2, p3, p1)):
-            points[i].x = pos[0]
-            points[i].y = pos[1]
+        # https://wiki.libsdl.org/SDL_RenderDrawLinesF
+        cdef SDL_FPoint fpoints[4]
 
-        res = SDL_RenderDrawLines(self._renderer, points, 4)
+        for i, pos in enumerate((p1, p2, p3, p1)):
+            fpoints[i].x = pos[0]
+            fpoints[i].y = pos[1]
+
+        res = SDL_RenderDrawLinesF(self._renderer, fpoints, 4)
+
         if res < 0:
             raise error()
 
@@ -1456,28 +1105,40 @@ cdef class Renderer:
         # https://wiki.libsdl.org/SDL_RenderGeometry
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("fill_triangle requires SDL 2.0.18 or newer")
+        
+        cdef Uint8[4] rgba
+
+        cdef int res = SDL_GetRenderDrawColor(self._renderer,
+                                              &(rgba[0]),
+                                              &(rgba[1]),
+                                              &(rgba[2]),
+                                              &(rgba[3]))
+
+        if res < 0:
+            raise error()
 
         cdef SDL_Vertex vertices[3]
         for i, pos in enumerate((p1, p2, p3)):
             vertices[i].position.x = pos[0]
             vertices[i].position.y = pos[1]
-            vertices[i].color.r = self._draw_color[0]
-            vertices[i].color.g = self._draw_color[1]
-            vertices[i].color.b = self._draw_color[2]
-            vertices[i].color.a = self._draw_color[3]
+            vertices[i].color.r = rgba[0]
+            vertices[i].color.g = rgba[1]
+            vertices[i].color.b = rgba[2]
+            vertices[i].color.a = rgba[3]
 
-        cdef int res = SDL_RenderGeometry(self._renderer, NULL, vertices, 3, NULL, 0)
+        res = SDL_RenderGeometry(self._renderer, NULL, vertices, 3, NULL, 0)
         if res < 0:
             raise error()
 
     def draw_quad(self, p1, p2, p3, p4):
-        # https://wiki.libsdl.org/SDL_RenderDrawLines
-        cdef SDL_Point points[5]
+        # https://wiki.libsdl.org/SDL_RenderDrawLinesF
+        cdef SDL_FPoint fpoints[5]
         for i, pos in enumerate((p1, p2, p3, p4, p1)):
-            points[i].x = pos[0]
-            points[i].y = pos[1]
+            fpoints[i].x = pos[0]
+            fpoints[i].y = pos[1]
 
-        res = SDL_RenderDrawLines(self._renderer, points, 5)
+        res = SDL_RenderDrawLinesF(self._renderer, fpoints, 5)
+
         if res < 0:
             raise error()
 
@@ -1485,17 +1146,28 @@ cdef class Renderer:
         # https://wiki.libsdl.org/SDL_RenderGeometry
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("fill_quad requires SDL 2.0.18 or newer")
+        
+        cdef Uint8[4] rgba
+
+        cdef int res = SDL_GetRenderDrawColor(self._renderer,
+                                              &(rgba[0]),
+                                              &(rgba[1]),
+                                              &(rgba[2]),
+                                              &(rgba[3]))
+
+        if res < 0:
+            raise error()
 
         cdef SDL_Vertex vertices[6]
         for i, pos in enumerate((p1, p2, p3, p3, p4, p1)):
             vertices[i].position.x = pos[0]
             vertices[i].position.y = pos[1]
-            vertices[i].color.r = self._draw_color[0]
-            vertices[i].color.g = self._draw_color[1]
-            vertices[i].color.b = self._draw_color[2]
-            vertices[i].color.a = self._draw_color[3]
+            vertices[i].color.r = rgba[0]
+            vertices[i].color.g = rgba[1]
+            vertices[i].color.b = rgba[2]
+            vertices[i].color.a = rgba[3]
 
-        cdef int res = SDL_RenderGeometry(self._renderer, NULL, vertices, 6, NULL, 0)
+        res = SDL_RenderGeometry(self._renderer, NULL, vertices, 6, NULL, 0)
         if res < 0:
             raise error()
 
@@ -1562,6 +1234,11 @@ cdef class Renderer:
                 raise MemoryError("not enough memory for the surface")
 
             surface = <object>pgSurface_New2(surf, 1)
+            # casting to <object> makes cython assume reference counting of the object and it increments
+            # it by one, however, pgSurface_New2 already returns a new reference to an object, so
+            # we need to decrement that reference cython has added on top
+            # see https://github.com/cython/cython/issues/2589#issuecomment-417604249 for additional context
+            Py_DECREF(surface)
         elif pgSurface_Check(surface):
             surf = pgSurface_AsSurface(surface)
             if surf.w < rarea.w or surf.h < rarea.h:

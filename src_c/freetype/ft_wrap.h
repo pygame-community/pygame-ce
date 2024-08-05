@@ -43,10 +43,10 @@
 #define FX16_ROUND_TO_INT(x) (((x) + 32768L) >> 16)
 #define INT_TO_FX6(i) ((FT_Fixed)((i) << 6))
 #define INT_TO_FX16(i) ((FT_Fixed)((i) << 16))
-#define FX16_TO_DBL(x) ((x)*1.52587890625e-5 /* 2.0^-16 */)
-#define DBL_TO_FX16(d) ((FT_Fixed)((d)*65536.0))
-#define FX6_TO_DBL(x) ((x)*1.5625e-2 /* 2.0^-6 */)
-#define DBL_TO_FX6(d) ((FT_Fixed)((d)*64.0))
+#define FX16_TO_DBL(x) ((x) * 1.52587890625e-5 /* 2.0^-16 */)
+#define DBL_TO_FX16(d) ((FT_Fixed)((d) * 65536.0))
+#define FX6_TO_DBL(x) ((x) * 1.5625e-2 /* 2.0^-6 */)
+#define DBL_TO_FX6(d) ((FT_Fixed)((d) * 64.0))
 
 /* Internal configuration variables */
 #define PGFT_DEFAULT_CACHE_SIZE 64
@@ -283,6 +283,8 @@ _PGFT_Font_GetAvailableSize(FreeTypeInstance *, pgFontObject *, long, long *,
                             long *, long *, double *, double *);
 const char *
 _PGFT_Font_GetName(FreeTypeInstance *, pgFontObject *);
+const char *
+_PGFT_Font_GetStyleName(FreeTypeInstance *, pgFontObject *);
 int
 _PGFT_TryLoadFont_Filename(FreeTypeInstance *, pgFontObject *, const char *,
                            long);
@@ -430,6 +432,7 @@ _PGFT_GetFontSized(FreeTypeInstance *, pgFontObject *, Scale_t);
 void
 _PGFT_BuildScaler(pgFontObject *, FTC_Scaler, Scale_t);
 #define _PGFT_malloc PyMem_Malloc
+#define _PGFT_calloc PyMem_Calloc
 #define _PGFT_free PyMem_Free
 
 #endif

@@ -32,59 +32,19 @@
 #define WG_NTSC 0.587
 #define WB_NTSC 0.114
 
-/* Modified pg_RGBAFromColorObj that only accepts pygame.Color or tuple
- * objects.
- */
-static int
-_RGBAFromColorObj(PyObject *obj, Uint8 rgba[4])
-{
-    if (PyObject_IsInstance(obj, (PyObject *)&pgColor_Type) ||
-        PyTuple_Check(obj)) {
-        return pg_RGBAFromColorObj(obj, rgba);
-    }
-    PyErr_SetString(PyExc_ValueError, "invalid color argument");
-    return 0;
-}
-
 /**
  * Tries to retrieve a valid color for a Surface.
  */
 static int
 _get_color_from_object(PyObject *val, SDL_PixelFormat *format, Uint32 *color)
 {
-    Uint8 rgba[] = {0, 0, 0, 0};
-
     if (!val) {
         return 0;
     }
 
-    if (PyLong_Check(val)) {
-        long intval = PyLong_AsLong(val);
-        if (intval == -1 && PyErr_Occurred()) {
-            PyErr_SetString(PyExc_ValueError, "invalid color argument");
-            return 0;
-        }
-        *color = (Uint32)intval;
-        return 1;
-    }
-    else if (PyLong_Check(val)) {
-        unsigned long longval = PyLong_AsUnsignedLong(val);
-        if (PyErr_Occurred()) {
-            PyErr_SetString(PyExc_ValueError, "invalid color argument");
-            return 0;
-        }
-        *color = (Uint32)longval;
-        return 1;
-    }
-    else if (_RGBAFromColorObj(val, rgba)) {
-        *color =
-            (Uint32)SDL_MapRGBA(format, rgba[0], rgba[1], rgba[2], rgba[3]);
-        return 1;
-    }
-    else {
-        PyErr_SetString(PyExc_ValueError, "invalid color argument");
-    }
-    return 0;
+    return pg_MappedColorFromObj(
+        val, format, color,
+        PG_COLOR_HANDLE_INT | PG_COLOR_HANDLE_RESTRICT_SEQ);
 }
 
 /**
@@ -102,11 +62,10 @@ _get_single_pixel(pgPixelArrayObject *array, Py_ssize_t x, Py_ssize_t y)
     if (array->surface == NULL) {
         return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
     }
-
     pixel_p = (array->pixels + x * array->strides[0] + y * array->strides[1]);
     surf = pgSurface_AsSurface(array->surface);
 
-    bpp = surf->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(surf);
 
     /* Find the start of the pixel */
     switch (bpp) {
@@ -165,20 +124,23 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
     }
 
     surf = pgSurface_AsSurface(array->surface);
-    bpp = surf->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(surf);
+    temp_surf = surf;
+    const int same_dims = (dim0 == surf->w && dim1 == surf->h);
 
-    /* Create the second surface. */
-
-    temp_surf = SDL_CreateRGBSurfaceWithFormat(0, (int)dim0, (int)dim1,
-                                               surf->format->BitsPerPixel,
-                                               surf->format->format);
-    if (!temp_surf) {
-        return RAISE(pgExc_SDLError, SDL_GetError());
+    /* If the array dimensions are different from the surface dimensions,
+     * create a new surface with the array dimensions */
+    if (!same_dims) {
+        if (!(temp_surf = PG_CreateSurface((int)dim0, (int)dim1,
+                                           surf->format->format)))
+            return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
-    /* Guarantee an identical format. */
-    new_surf = SDL_ConvertSurface(temp_surf, surf->format, 0);
-    SDL_FreeSurface(temp_surf);
+    /* Ensure the new surface has the same format as the original */
+    new_surf = PG_ConvertSurface(temp_surf, surf->format);
+    if (temp_surf != surf)
+        SDL_FreeSurface(temp_surf);
+
     if (!new_surf) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
@@ -189,70 +151,87 @@ _make_surface(pgPixelArrayObject *array, PyObject *args)
         return 0;
     }
 
+    /* if the surf and array dims match just return a copy */
+    if (same_dims)
+        return (PyObject *)new_surface;
+
     /* Acquire a temporary lock. */
     if (SDL_MUSTLOCK(new_surf) == 0) {
         SDL_LockSurface(new_surf);
     }
 
     new_pixels = (Uint8 *)new_surf->pixels;
-    new_stride0 = new_surf->format->BytesPerPixel;
+    new_stride0 = PG_SURF_BytesPerPixel(new_surf);
     new_stride1 = new_surf->pitch;
     pixelrow = pixels;
     new_pixelrow = new_pixels;
 
     Py_BEGIN_ALLOW_THREADS;
-    switch (bpp) {
-        case 1:
-            for (y = 0; y < dim1; ++y) {
-                pixel_p = pixelrow;
-                new_pixel_p = new_pixelrow;
-                for (x = 0; x < dim0; ++x) {
-                    *new_pixel_p = *pixel_p;
-                    pixel_p += stride0;
-                    new_pixel_p += new_stride0;
+
+    if (stride0 == new_stride0) {
+        /* if src and dest have the same bpp, so we can copy the whole
+         * rows at once */
+        y = dim1;
+        while (y--) {
+            memcpy(new_pixelrow, pixelrow, stride0 * dim0);
+            pixelrow += stride1;
+            new_pixelrow += new_stride1;
+        }
+    }
+    else {
+        switch (bpp) {
+            case 1:
+                for (y = 0; y < dim1; ++y) {
+                    pixel_p = pixelrow;
+                    new_pixel_p = new_pixelrow;
+                    for (x = 0; x < dim0; ++x) {
+                        *new_pixel_p = *pixel_p;
+                        pixel_p += stride0;
+                        new_pixel_p += new_stride0;
+                    }
+                    pixelrow += stride1;
+                    new_pixelrow += new_stride1;
                 }
-                pixelrow += stride1;
-                new_pixelrow += new_stride1;
-            }
-            break;
-        case 2:
-            for (y = 0; y < dim1; ++y) {
-                pixel_p = pixelrow;
-                new_pixel_p = new_pixelrow;
-                for (x = 0; x < dim0; ++x) {
-                    *((Uint16 *)new_pixel_p) = *((Uint16 *)pixel_p);
-                    pixel_p += stride0;
-                    new_pixel_p += new_stride0;
+                break;
+            case 2:
+                for (y = 0; y < dim1; ++y) {
+                    pixel_p = pixelrow;
+                    new_pixel_p = new_pixelrow;
+                    for (x = 0; x < dim0; ++x) {
+                        *((Uint16 *)new_pixel_p) = *((Uint16 *)pixel_p);
+                        pixel_p += stride0;
+                        new_pixel_p += new_stride0;
+                    }
+                    pixelrow += stride1;
+                    new_pixelrow += new_stride1;
                 }
-                pixelrow += stride1;
-                new_pixelrow += new_stride1;
-            }
-            break;
-        case 3:
-            for (y = 0; y < dim1; ++y) {
-                pixel_p = pixelrow;
-                new_pixel_p = new_pixelrow;
-                for (x = 0; x < dim0; ++x) {
-                    memcpy(new_pixel_p, pixel_p, 3);
-                    pixel_p += stride0;
-                    new_pixel_p += new_stride0;
+                break;
+            case 3:
+                for (y = 0; y < dim1; ++y) {
+                    pixel_p = pixelrow;
+                    new_pixel_p = new_pixelrow;
+                    for (x = 0; x < dim0; ++x) {
+                        memcpy(new_pixel_p, pixel_p, 3);
+                        pixel_p += stride0;
+                        new_pixel_p += new_stride0;
+                    }
+                    pixelrow += stride1;
+                    new_pixelrow += new_stride1;
                 }
-                pixelrow += stride1;
-                new_pixelrow += new_stride1;
-            }
-            break;
-        default: /* case: 4 */
-            for (y = 0; y < dim1; ++y) {
-                pixel_p = pixelrow;
-                new_pixel_p = new_pixelrow;
-                for (x = 0; x < dim0; ++x) {
-                    *((Uint32 *)new_pixel_p) = *((Uint32 *)pixel_p);
-                    pixel_p += stride0;
-                    new_pixel_p += new_stride0;
+                break;
+            default: /* case: 4 */
+                for (y = 0; y < dim1; ++y) {
+                    pixel_p = pixelrow;
+                    new_pixel_p = new_pixelrow;
+                    for (x = 0; x < dim0; ++x) {
+                        *((Uint32 *)new_pixel_p) = *((Uint32 *)pixel_p);
+                        pixel_p += stride0;
+                        new_pixel_p += new_stride0;
+                    }
+                    pixelrow += stride1;
+                    new_pixelrow += new_stride1;
                 }
-                pixelrow += stride1;
-                new_pixelrow += new_stride1;
-            }
+        }
     }
     Py_END_ALLOW_THREADS;
 
@@ -395,7 +374,7 @@ _replace_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     }
 
     format = surf->format;
-    bpp = surf->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(surf);
 
     if (!_get_color_from_object(delcolor, format, &dcolor) ||
         !_get_color_from_object(replcolor, format, &rcolor)) {
@@ -593,7 +572,7 @@ _extract_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
 
     surf = pgSurface_AsSurface(surface);
     format = surf->format;
-    bpp = surf->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(surf);
     dim0 = new_array->shape[0];
     dim1 = new_array->shape[1];
     stride0 = new_array->strides[0];
@@ -823,11 +802,11 @@ _compare(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     }
 
     format = surf->format;
-    bpp = surf->format->BytesPerPixel;
+    bpp = PG_SURF_BytesPerPixel(surf);
     other_surf = pgSurface_AsSurface(other_array->surface);
     other_format = other_surf->format;
 
-    if (other_format->BytesPerPixel != bpp) {
+    if (PG_FORMAT_BytesPerPixel(other_format) != bpp) {
         /* bpp do not match. We cannot guarantee that the padding and co
          * would be set correctly. */
         PyErr_SetString(PyExc_ValueError, "bit depths do not match");
@@ -1048,8 +1027,7 @@ static PyObject *
 _transpose(pgPixelArrayObject *array, PyObject *args)
 {
     if (array->surface == NULL) {
-        PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
-        return NULL;
+        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
     }
 
     SDL_Surface *surf = pgSurface_AsSurface(array->surface);
@@ -1059,7 +1037,7 @@ _transpose(pgPixelArrayObject *array, PyObject *args)
     Py_ssize_t stride1 = array->strides[0];
 
     stride0 = array->shape[1] ? array->strides[1]
-                              : array->shape[0] * surf->format->BytesPerPixel;
+                              : array->shape[0] * PG_SURF_BytesPerPixel(surf);
 
     return (PyObject *)_pxarray_new_internal(&pgPixelArray_Type, 0, array,
                                              array->pixels, dim0, dim1,
@@ -1074,8 +1052,7 @@ static PyObject *
 _close_array(pgPixelArrayObject *array, PyObject *args)
 {
     if (array->surface == NULL) {
-        PyErr_SetString(PyExc_ValueError, "Operation on closed PixelArray.");
-        return NULL;
+        return RAISE(PyExc_ValueError, "Operation on closed PixelArray.");
     }
     _cleanup_array(array);
     Py_RETURN_NONE;

@@ -282,7 +282,6 @@ Pygame Modules Overview
    :class: more-to-explore
    :widths: 20, 50
 
-   :mod:`cdrom <pygame.cdrom>`, "playback"
    :mod:`cursors <pygame.cursors>`, "load cursor images, includes standard cursors"
    :mod:`display <pygame.display>`, "control the display window or screen"
    :mod:`draw <pygame.draw>`, "draw simple shapes onto a Surface"

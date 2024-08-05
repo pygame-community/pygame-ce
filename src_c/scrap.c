@@ -349,6 +349,11 @@ _scrap_lost_scrap(PyObject *self, PyObject *_null)
 {
     PYGAME_SCRAP_INIT_CHECK();
 
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "pygame.scrap.lost deprecated since 2.2.0", 1) == -1) {
+        return NULL;
+    }
+
     if (pygame_scrap_lost())
         Py_RETURN_TRUE;
     Py_RETURN_FALSE;
@@ -398,8 +403,7 @@ _scrap_get_text(PyObject *self, PyObject *args)
     // vs just an empty string in the clipboard
     if (*text == '\0' && hasText == SDL_TRUE) {
         SDL_free(text);
-        PyErr_SetString(pgExc_SDLError, SDL_GetError());
-        return NULL;
+        return RAISE(pgExc_SDLError, SDL_GetError());
     }
 
     PyObject *returnValue = PyUnicode_FromString(text);

@@ -25,7 +25,7 @@ resolution, in milliseconds, is given in the ``TIMER_RESOLUTION`` constant.
 .. function:: wait
 
    | :sl:`pause the program for an amount of time`
-   | :sg:`wait(milliseconds) -> time`
+   | :sg:`wait(milliseconds, /) -> time`
 
    Will pause for a given number of milliseconds. This function sleeps the
    process to share the processor with other programs. A program that waits for
@@ -39,7 +39,7 @@ resolution, in milliseconds, is given in the ``TIMER_RESOLUTION`` constant.
 .. function:: delay
 
    | :sl:`pause the program for an amount of time`
-   | :sg:`delay(milliseconds) -> time`
+   | :sg:`delay(milliseconds, /) -> time`
 
    Will pause for a given number of milliseconds. This function will use the
    processor (rather than sleeping) in order to make the delay more accurate
@@ -72,8 +72,17 @@ resolution, in milliseconds, is given in the ``TIMER_RESOLUTION`` constant.
    Setting an event timer for a particular event discards the old one for that
    event type.
 
+   When this function is called with an ``Event`` object, the event(s) received
+   on the event queue will be a shallow copy; the dict attribute of the event
+   object passed as an argument and the dict attributes of the event objects
+   received on timer will be references to the same dict object in memory.
+   Modifications on one dict can affect another, use deepcopy operations on the
+   dict object if you don't want this behaviour.
+   However, calling this function with an integer event type would place event objects
+   on the queue that don't have a common dict reference.
+
    ``loops`` replaces the ``once`` argument, and this does not break backward
-   compatibility
+   compatibility.
 
    .. versionaddedold:: 2.0.0.dev3 once argument added.
    .. versionchangedold:: 2.0.1 event argument supports ``pygame.event.Event`` object
@@ -95,7 +104,7 @@ resolution, in milliseconds, is given in the ``TIMER_RESOLUTION`` constant.
    .. method:: tick
 
       | :sl:`update the clock`
-      | :sg:`tick(framerate=0) -> milliseconds`
+      | :sg:`tick(framerate=0, /) -> milliseconds`
 
       This method should be called once per frame. It will compute how many
       milliseconds have passed since the previous call.
@@ -115,7 +124,7 @@ resolution, in milliseconds, is given in the ``TIMER_RESOLUTION`` constant.
    .. method:: tick_busy_loop
 
       | :sl:`update the clock`
-      | :sg:`tick_busy_loop(framerate=0) -> milliseconds`
+      | :sg:`tick_busy_loop(framerate=0, /) -> milliseconds`
 
       This method should be called once per frame. It will compute how many
       milliseconds have passed since the previous call.

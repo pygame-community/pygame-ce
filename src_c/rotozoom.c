@@ -11,6 +11,7 @@
 
 */
 
+#include "_pygame.h"
 #define NO_PYGAME_C_API
 #include "pygame.h"
 
@@ -456,10 +457,10 @@ void
 rotozoomSurfaceSize(int width, int height, double angle, double zoom,
                     int *dstwidth, int *dstheight)
 {
-    double dummy_sanglezoom, dummy_canglezoom;
+    double null_sanglezoom, null_canglezoom;
 
     rotozoomSurfaceSizeTrig(width, height, angle, zoom, dstwidth, dstheight,
-                            &dummy_sanglezoom, &dummy_canglezoom);
+                            &null_sanglezoom, &null_canglezoom);
 }
 
 /*
@@ -511,6 +512,7 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
     int dstwidth, dstheight;
     int is32bit;
     int src_converted;
+    Uint32 colorkey;
 
     /*
      * Sanity check
@@ -521,8 +523,8 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
     /*
      * Determine if source surface is 32bit or 8bit
      */
-    is32bit = (src->format->BitsPerPixel == 32);
-    if ((is32bit) || (src->format->BitsPerPixel == 8)) {
+    is32bit = (PG_SURF_BitsPerPixel(src) == 32);
+    if ((is32bit) || (PG_SURF_BitsPerPixel(src) == 8)) {
         /*
          * Use source surface 'as is'
          */
@@ -533,8 +535,7 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * New source surface is 32bit with a defined RGBA ordering
          */
-        rz_src = SDL_CreateRGBSurfaceWithFormat(0, src->w, src->h, 32,
-                                                SDL_PIXELFORMAT_ABGR8888);
+        rz_src = PG_CreateSurface(src->w, src->h, SDL_PIXELFORMAT_ABGR8888);
         SDL_BlitSurface(src, NULL, rz_src, NULL);
         src_converted = 1;
     }
@@ -583,8 +584,19 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * Target surface is 32bit with source RGBA/ABGR ordering
          */
-        rz_dst = SDL_CreateRGBSurfaceWithFormat(0, dstwidth, dstheight, 32,
-                                                rz_src->format->format);
+        rz_dst = PG_CreateSurface(dstwidth, dstheight, rz_src->format->format);
+        if (SDL_HasColorKey(src)) {
+            SDL_GetColorKey(src, &colorkey);
+            if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0) {
+                SDL_FreeSurface(rz_dst);
+                return NULL;
+            }
+            if (PG_SurfaceHasRLE(src) &&
+                SDL_SetSurfaceRLE(rz_dst, SDL_TRUE) != 0) {
+                SDL_FreeSurface(rz_dst);
+                return NULL;
+            }
+        }
 
         /*
          * Lock source surface
@@ -630,8 +642,20 @@ rotozoomSurface(SDL_Surface *src, double angle, double zoom, int smooth)
         /*
          * Target surface is 32bit with source RGBA/ABGR ordering
          */
-        rz_dst = SDL_CreateRGBSurfaceWithFormat(0, dstwidth, dstheight, 32,
-                                                rz_src->format->format);
+
+        rz_dst = PG_CreateSurface(dstwidth, dstheight, rz_src->format->format);
+        if (SDL_HasColorKey(src)) {
+            SDL_GetColorKey(src, &colorkey);
+            if (SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey) != 0) {
+                SDL_FreeSurface(rz_dst);
+                return NULL;
+            }
+            if (PG_SurfaceHasRLE(src) &&
+                SDL_SetSurfaceRLE(rz_dst, SDL_TRUE) != 0) {
+                SDL_FreeSurface(rz_dst);
+                return NULL;
+            }
+        }
 
         /*
          * Lock source surface

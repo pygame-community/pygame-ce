@@ -56,7 +56,7 @@ key_get_repeat(PyObject *self, PyObject *_null)
 
     VIDEO_INIT_CHECK();
     pg_GetKeyRepeat(&delay, &interval);
-    return Py_BuildValue("(ii)", delay, interval);
+    return pg_tuple_couple_from_values_int(delay, interval);
 }
 
 /*
@@ -188,6 +188,62 @@ key_get_pressed(PyObject *self, PyObject *_null)
         PyTuple_SET_ITEM(key_tuple, i, key_elem);
     }
 
+    ret_obj = PyObject_CallFunctionObjArgs((PyObject *)&pgScancodeWrapper_Type,
+                                           key_tuple, NULL);
+    Py_DECREF(key_tuple);
+    return ret_obj;
+}
+
+static PyObject *
+get_just_pressed(PyObject *self, PyObject *_null)
+{
+    VIDEO_INIT_CHECK();
+
+    char *pressed_keys = pgEvent_GetKeyDownInfo();
+    PyObject *key_tuple = NULL;
+    PyObject *ret_obj = NULL;
+
+    if (!(key_tuple = PyTuple_New(SDL_NUM_SCANCODES)))
+        return NULL;
+
+    int i;
+    for (i = 0; i < SDL_NUM_SCANCODES; i++) {
+        PyObject *key_elem;
+        key_elem = PyBool_FromLong(pressed_keys[i]);
+        if (!key_elem) {
+            Py_DECREF(key_tuple);
+            return NULL;
+        }
+        PyTuple_SET_ITEM(key_tuple, i, key_elem);
+    }
+    ret_obj = PyObject_CallFunctionObjArgs((PyObject *)&pgScancodeWrapper_Type,
+                                           key_tuple, NULL);
+    Py_DECREF(key_tuple);
+    return ret_obj;
+}
+
+static PyObject *
+get_just_released(PyObject *self, PyObject *_null)
+{
+    VIDEO_INIT_CHECK();
+
+    char *released_keys = pgEvent_GetKeyUpInfo();
+    PyObject *key_tuple = NULL;
+    PyObject *ret_obj = NULL;
+
+    if (!(key_tuple = PyTuple_New(SDL_NUM_SCANCODES)))
+        return NULL;
+
+    int i;
+    for (i = 0; i < SDL_NUM_SCANCODES; i++) {
+        PyObject *key_elem;
+        key_elem = PyBool_FromLong(released_keys[i]);
+        if (!key_elem) {
+            Py_DECREF(key_tuple);
+            return NULL;
+        }
+        PyTuple_SET_ITEM(key_tuple, i, key_elem);
+    }
     ret_obj = PyObject_CallFunctionObjArgs((PyObject *)&pgScancodeWrapper_Type,
                                            key_tuple, NULL);
     Py_DECREF(key_tuple);
@@ -522,6 +578,10 @@ static PyMethodDef _key_methods[] = {
      DOC_KEY_STOPTEXTINPUT},
     {"set_text_input_rect", key_set_text_input_rect, METH_O,
      DOC_KEY_SETTEXTINPUTRECT},
+    {"get_just_pressed", (PyCFunction)get_just_pressed, METH_NOARGS,
+     DOC_KEY_GETJUSTPRESSED},
+    {"get_just_released", (PyCFunction)get_just_released, METH_NOARGS,
+     DOC_KEY_GETJUSTRELEASED},
 
     {NULL, NULL, 0, NULL}};
 

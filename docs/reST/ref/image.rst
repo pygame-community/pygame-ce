@@ -27,13 +27,15 @@ formats.
 
    * ``JPEG``
 
-   * ``LBM`` (and ``PBM``, ``PGM``, ``PPM``)
+   * ``LBM``
 
    * ``PCX``
 
    * ``PNG``
-   
-   * ``PNM``
+
+   * ``PNM`` (``PBM``, ``PGM``, ``PPM``)
+
+   * ``QOI``
 
    * ``SVG`` (limited support, using Nano SVG)
 
@@ -44,9 +46,12 @@ formats.
    * ``WEBP``
 
    * ``XPM``
-   
-   
+
+   * ``XCF``
+
 .. versionaddedold:: 2.0 Loading SVG, WebP, PNM
+
+.. versionadded:: 2.4.0 Loading QOI (Relies on SDL_Image 2.6.0+)
 
 Saving images only supports a limited set of formats. You can save to the
 following formats.
@@ -103,6 +108,32 @@ following formats.
    .. versionchanged:: 2.2.0 Now supports keyword arguments.
 
    .. ## pygame.image.load ##
+
+.. function:: load_sized_svg
+
+   | :sl:`load an SVG image from a file (or file-like object) with the given size`
+   | :sg:`load_sized_svg(file, size) -> Surface`
+
+   This function rasterizes the input SVG at the size specified by the ``size``
+   argument. The ``file`` argument can be either a filename, a Python file-like
+   object, or a pathlib.Path.
+
+   The usage of this function for handling SVGs is recommended, as calling the
+   regular ``load`` function and then scaling the returned surface would not
+   preserve the quality that an SVG can provide.
+
+   It is to be noted that this function does not return a surface whose
+   dimensions exactly match the ``size`` argument. This function preserves
+   aspect ratio, so the returned surface could be smaller along at most one
+   dimension.
+
+   This function requires SDL_image 2.6.0 or above. If pygame was compiled with
+   an older version, ``pygame.error`` will be raised when this function is
+   called.
+
+   .. versionadded:: 2.4.0
+
+   .. ## pygame.image.load_sized_svg ##
 
 .. function:: save
 
@@ -164,7 +195,7 @@ following formats.
 .. function:: tostring
 
    | :sl:`transfer image to byte buffer`
-   | :sg:`tostring(Surface, format, flipped=False) -> bytes`
+   | :sg:`tostring(Surface, format, flipped=False, pitch=-1) -> bytes`
 
    DEPRECATED: This function has the same functionality as :func:`tobytes()`, which is preferred and should be used.
 
@@ -175,7 +206,7 @@ following formats.
 .. function:: tobytes
 
    | :sl:`transfer image to byte buffer`
-   | :sg:`tobytes(Surface, format, flipped=False) -> bytes`
+   | :sg:`tobytes(Surface, format, flipped=False, pitch=-1) -> bytes`
 
    Creates a string of bytes that can be transferred with the ``fromstring``
    or ``frombytes`` methods in other Python imaging packages. Some Python
@@ -197,19 +228,29 @@ following formats.
       * ``RGBA``, 32-bit image with an alpha channel
 
       * ``ARGB``, 32-bit image with alpha channel first
-      
-      * ``BGRA``, 32-bit image with alpha channel, red and blue channels swapped      
+
+      * ``BGRA``, 32-bit image with alpha channel, red and blue channels swapped
+
+      * ``ABGR``, 32-bit image with alpha channel, reverse order
 
       * ``RGBA_PREMULT``, 32-bit image with colors scaled by alpha channel
 
       * ``ARGB_PREMULT``, 32-bit image with colors scaled by alpha channel, alpha channel first
-   
+
+   The 'pitch' argument can be used to specify the pitch/stride per horizontal line
+   of the image in bytes. It must be equal to or greater than how many bytes
+   the pixel data of each horizontal line in the image bytes occupies without any
+   extra padding. By default, it is ``-1``, which means that the pitch/stride is
+   the same size as how many bytes the pure pixel data of each horizontal line takes.
+
    .. note:: The use of this function is recommended over :func:`tostring` as of pygame 2.1.3.
              This function was introduced so it matches nicely with other 
              libraries (PIL, numpy, etc), and with people's expectations.
 
    .. versionadded:: 2.1.3 
    .. versionchanged:: 2.2.0 Now supports keyword arguments.
+   .. versionchanged:: 2.5.0 Added a 'pitch' argument.
+   .. versionchanged:: 2.5.1 Added support for ABGR image format
 
    .. ## pygame.image.tobytes ##
 
@@ -300,7 +341,7 @@ following formats.
 .. function:: load_basic
 
    | :sl:`load new BMP image from a file (or file-like object)`
-   | :sg:`load_basic(file) -> Surface`
+   | :sg:`load_basic(file, /) -> Surface`
 
    Load an image from a file source. You can pass either a filename or a Python
    file-like object, or a pathlib.Path.

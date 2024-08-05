@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.blit_blends
+"""pygame.examples.blit_blends
 
 Blending colors in different ways with different blend modes.
 
@@ -19,6 +19,7 @@ Keyboard Controls
 * 1, 2, 3, 4 - use different images.
 
 """
+
 import os
 import pygame
 import time

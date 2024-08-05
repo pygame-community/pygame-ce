@@ -1,14 +1,13 @@
 # Mac dependencies using manylinux build scripts
 
-This uses manylinux build scripts to build dependencies on MacOS.
+This uses manylinux build scripts to build dependencies on macOS.
 
 Designed to be run on a Virtual Machine that can be destroyed.
 It deletes some homebrew files, and messes with /usr/local/.
 
 Warning: *do not run on your own machine*.
 
-It tries to work as far back as Mac OSX 10.9, for x64 and arm64 (cross compiled) 
-architectures.
+It tries to work as far back as Mac OSX 10.11, for x64 and arm64 architectures.
 
 If there needs to be separate configure options between linux and mac
 then something like the following can be used.
@@ -28,7 +27,7 @@ fi
 
 ## Future work
 
-### MacOS doesn't come with gnu compatible readlink
+### macOS doesn't come with gnu compatible readlink
 
 It currently relies on GNU `readlink` to build, which is provided
 by the coreutils homebrew package. However, this could be fixed to be

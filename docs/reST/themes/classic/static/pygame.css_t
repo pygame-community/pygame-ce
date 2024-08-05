@@ -76,12 +76,20 @@ body {
     color: {{ theme_textcolor }};
     font-style: normal;
     font-family: {{ theme_bodyfont }};
+    background-color: {{ theme_dark_bgcolor2 }};
     text-decoration: none;
     text-align: left;
     border-style: none;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 html {
     background-color: {{ theme_bgcolor }};
+    height: 100vh;
+}
+html.dark-theme {
+    background-color: {{ theme_dark_bgcolor }};
 }
 html.dark-theme body {
     color: {{ theme_dark_textcolor }};
@@ -112,15 +120,17 @@ div.header .logo {
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    min-width: 214px;
 }
 .dark-theme div.header .logo {
     background-color: {{ theme_dark_logobgcolor }};
     border: none;
+    min-width: 214px;
 }
 div.header .logo img {
-    min-width: 200px;
-    min-height: 60px;
     border-style: none;
+    height: 80px;
+    min-width: 156px;
 }
 
 div.header .pagelinks {
@@ -249,6 +259,7 @@ input[type="submit"]{
 div.document {
     background-color: {{ theme_bgcolor }};
     overflow: hidden;
+    flex-grow: 1
 }
 .dark-theme div.document {
     background-color: {{ theme_dark_bgcolor }};
@@ -580,6 +591,9 @@ dt code {
 .dark-theme .highlight .n{
     color: {{ theme_dark_codetextcolor }};
 }
+.dark-theme .highlight .hll{
+    background-color: {{ theme_dark_codelinehighlightcolor }};
+}
 
 /* Doc strings */
 .highlight .sd{
@@ -587,6 +601,15 @@ dt code {
 }
 .dark-theme .highlight .sd{
     color: {{ theme_dark_codecomment }};
+}
+
+.dark-theme .highlight .nf,
+.dark-theme .highlight .fm {
+    color: {{ theme_dark_functiondefinecolor }};
+}
+
+.dark-theme .highlight .nc {
+    color: {{ theme_dark_classdefinecolor }}; font-weight: bold
 }
 
 code.download span.pre {
@@ -625,17 +648,17 @@ div.body h6 {
     line-height: 130%;
 }
 
-div.body h1 { 
+div.body h1 {
     font-size: 1.5em; color: {{ theme_h1color }};
 }
-.dark-theme div.body h1 { 
+.dark-theme div.body h1 {
     color: {{ theme_dark_h1color }};
 }
-div.body h2 { 
+div.body h2 {
     font-size: 1.4em;
     color: {{ theme_h2color }};
 }
-.dark-theme div.body h2 { 
+.dark-theme div.body h2 {
     color: {{ theme_dark_h2color }};
 }
 div.body h3 { font-size: 1.3em; }
@@ -685,7 +708,7 @@ p.admonition-title:after {
     content: ":";
 }
 
-dl.definition div.note, dl.definition div.seealso {
+dl.definition div.seealso {
     background: none;
     border: none;
 }
@@ -700,11 +723,16 @@ dl.definition .admonition-title {
 
 div.note {
     background-color: {{ theme_notebgcolor }};
-    border: 1px solid #ccc;
+    border: 1px solid {{ theme_notebordercolor }};
 }
 
 .note tt {
     background: #d6d6d6;
+}
+
+.dark-theme div.note {
+    background-color: {{ theme_dark_notebgcolor }};
+    border: 1px solid {{ theme_dark_notebordercolor }};
 }
 
 div.seealso {
@@ -721,9 +749,16 @@ div.caution {
     border: 1px solid #aabb88;
 }
 
+.dark-theme div.caution {
+    background-color: {{ theme_dark_cautionbgcolor }};
+    border: 1px solid;
+    border-color: {{ theme_dark_cautionbordercolor }};
+}
+
 div.warning {
-    background-color: #ffe4e4;
+    background-color: #ffaec4;
     border: 1px solid #f66;
+    color: #000;
 }
 
 .warning tt {
@@ -985,10 +1020,6 @@ pre.commentContent {
 /* -- responsive design --------------------------------------------------------- */
 
 @media only screen and (max-width: 680px) {
-    /* Make tables be responsive-ish. */
-    table, thead, tbody, th, td, tr {
-        display: block;
-    }
 
     div.body img.inlined-right {
         float: none;

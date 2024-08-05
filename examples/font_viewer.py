@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.font_viewer
+"""pygame.examples.font_viewer
 Scroll through your system fonts from a list of surfaces or one huge buffer.
 
 This example exhibits:
@@ -22,6 +22,7 @@ Keyboard Controls:
 * Press up or down to scroll
 * Press escape to exit
 """
+
 import sys
 import os
 
@@ -45,10 +46,9 @@ class FontViewer:
 
         # create a window that uses 80 percent of the screen
         info = pygame.display.Info()
-        w = info.current_w
-        h = info.current_h
-        pygame.display.set_mode((int(w * 0.8), int(h * 0.8)))
-        self.font_size = h // 20
+        self.screen_size = (int(info.current_w * 0.8), int(info.current_h * 0.8))
+        pygame.display.set_mode(self.screen_size)
+        self.font_size = self.screen_size[1] // 16
 
         self.clock = pygame.Clock()
         self.y_offset = 0
@@ -72,11 +72,7 @@ class FontViewer:
             path = os.path.join(sys.argv[1], "")
         fonts = []
         if os.path.exists(path):
-            # this list comprehension could replace the following loop
-            # fonts = [f in os.listdir(path) if f.endswith('.ttf')]
-            for font in os.listdir(path):
-                if font.endswith(".ttf"):
-                    fonts.append(font)
+            fonts = [font for font in os.listdir(path) if font.endswith(".ttf")]
         return fonts or pygame.font.get_fonts(), path
 
     def render_fonts(self, text="A display of font &N"):
@@ -99,19 +95,23 @@ class FontViewer:
 
         # display instructions at the top of the display
         font = pygame.font.SysFont(pygame.font.get_default_font(), font_size)
-        lines = (
-            "Use the scroll wheel or click and drag",
-            "to scroll up and down.",
-            "Fonts that don't use the Latin Alphabet",
-            "might render incorrectly.",
-            f"Here are your {len(fonts)} fonts",
-            "",
+        font.align = pygame.FONT_CENTER
+        instructions = (
+            "Use the scroll wheel or click and drag to scroll up "
+            "and down.  Fonts that don't use the Latin Alphabet "
+            "might render incorrectly.  Here are your "
+            f"{len(fonts)} fonts"
         )
-        for line in lines:
-            surf = font.render(line, 1, instruction_color, self.back_color)
-            font_surfaces.append((surf, total_height))
-            total_height += surf.get_height()
-            max_width = max(max_width, surf.get_width())
+        surf = font.render(
+            instructions,
+            True,
+            instruction_color,
+            self.back_color,
+            self.screen_size[0] - 20,
+        )
+        font_surfaces.append((surf, total_height))
+        total_height += surf.get_height()
+        max_width = max(max_width, surf.get_width())
 
         # render all the fonts and store them with the total height
         for name in sorted(fonts):
@@ -121,7 +121,9 @@ class FontViewer:
                 continue
             line = text.replace("&N", name)
             try:
-                surf = font.render(line, 1, color, self.back_color)
+                surf = font.render(
+                    line, 1, color, self.back_color, self.screen_size[0] - 20
+                )
             except pygame.error as e:
                 print(e)
                 break
@@ -155,7 +157,7 @@ class FontViewer:
                     bottom >= self.y_offset
                     and top <= self.y_offset + display.get_height()
                 ):
-                    x = center - surface.get_width() // 2
+                    x = center - surface.get_width() / 2
                     display.blit(surface, (x, top - self.y_offset))
             # get input and update the screen
             if not self.handle_events():

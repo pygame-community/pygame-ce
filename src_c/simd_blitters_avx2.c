@@ -453,12 +453,8 @@ blit_blend_rgba_mul_avx2(SDL_BlitInfo *info)
                         0x80, 12, 0x80, 11, 0x80, 10, 0x80, 9, 0x80, 8);
 
     mm_zero = _mm_setzero_si128();
-    mm_two_five_fives = _mm_set_epi64x(0x00FF00FF00FF00FF, 0x00FF00FF00FF00FF);
-
-    mm256_two_five_fives = _mm256_set_epi8(
-        0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
-        0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
-        0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF);
+    mm_two_five_fives = _mm_set1_epi64x(0x00FF00FF00FF00FF);
+    mm256_two_five_fives = _mm256_set1_epi16(0x00FF);
 
     while (height--) {
         if (pre_8_width > 0) {
@@ -578,16 +574,12 @@ blit_blend_rgb_mul_avx2(SDL_BlitInfo *info)
                         0x80, 12, 0x80, 11, 0x80, 10, 0x80, 9, 0x80, 8);
 
     mm_zero = _mm_setzero_si128();
-    mm_two_five_fives = _mm_set_epi64x(0x00FF00FF00FF00FF, 0x00FF00FF00FF00FF);
+
+    mm_two_five_fives = _mm_set1_epi64x(0x00FF00FF00FF00FF);
+    mm256_two_five_fives = _mm256_set1_epi16(0x00FF);
+
     mm_alpha_mask = _mm_cvtsi32_si128(amask);
-
-    mm256_two_five_fives = _mm256_set_epi8(
-        0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
-        0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
-        0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF);
-
-    mm256_alpha_mask = _mm256_set_epi32(amask, amask, amask, amask, amask,
-                                        amask, amask, amask);
+    mm256_alpha_mask = _mm256_set1_epi32(amask);
 
     while (height--) {
         if (pre_8_width > 0) {
@@ -772,8 +764,7 @@ blit_blend_rgb_add_avx2(SDL_BlitInfo *info)
     __m256i mm256_src, mm256_dst, mm256_alpha_mask;
 
     mm_alpha_mask = _mm_cvtsi32_si128(amask);
-    mm256_alpha_mask = _mm256_set_epi32(amask, amask, amask, amask, amask,
-                                        amask, amask, amask);
+    mm256_alpha_mask = _mm256_set1_epi32(amask);
 
     while (height--) {
         if (pre_8_width > 0) {
@@ -925,8 +916,7 @@ blit_blend_rgb_sub_avx2(SDL_BlitInfo *info)
     __m256i mm256_src, mm256_dst, mm256_alpha_mask;
 
     mm_alpha_mask = _mm_cvtsi32_si128(amask);
-    mm256_alpha_mask = _mm256_set_epi32(amask, amask, amask, amask, amask,
-                                        amask, amask, amask);
+    mm256_alpha_mask = _mm256_set1_epi32(amask);
 
     while (height--) {
         if (pre_8_width > 0) {
@@ -1078,8 +1068,7 @@ blit_blend_rgb_max_avx2(SDL_BlitInfo *info)
     __m256i mm256_src, mm256_dst, mm256_alpha_mask;
 
     mm_alpha_mask = _mm_cvtsi32_si128(amask);
-    mm256_alpha_mask = _mm256_set_epi32(amask, amask, amask, amask, amask,
-                                        amask, amask, amask);
+    mm256_alpha_mask = _mm256_set1_epi32(amask);
 
     while (height--) {
         if (pre_8_width > 0) {
@@ -1231,8 +1220,7 @@ blit_blend_rgb_min_avx2(SDL_BlitInfo *info)
     __m256i mm256_src, mm256_dst, mm256_alpha_mask;
 
     mm_alpha_mask = _mm_cvtsi32_si128(amask);
-    mm256_alpha_mask = _mm256_set_epi32(amask, amask, amask, amask, amask,
-                                        amask, amask, amask);
+    mm256_alpha_mask = _mm256_set1_epi32(amask);
 
     while (height--) {
         if (pre_8_width > 0) {
@@ -1351,10 +1339,7 @@ blit_blend_premultiplied_avx2(SDL_BlitInfo *info)
         12 + a_index, 0x80, 12 + a_index, 0x80, 12 + a_index, 0x80,
         8 + a_index, 0x80, 8 + a_index, 0x80, 8 + a_index, 0x80, 8 + a_index);
 
-    mm256_ones = _mm256_set_epi8(
-        0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01,
-        0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01,
-        0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01);
+    mm256_ones = _mm256_set1_epi16(0x0001);
 
     while (height--) {
         if (pre_8_width > 0) {
@@ -1465,13 +1450,13 @@ blit_blend_premultiplied_avx2(SDL_BlitInfo *info)
                      */
 
                     /* blend on A half, at 16bit size, starts here.
-                     * overall target blend (with colours and alpha represented
+                     * overall target blend (with colors and alpha represented
                      * as values between 0 and 1) is:
                      *
                      * result = source.RGB + (dest.RGB * (1 - source.A))
                      *
                      * Optimised and rearranged for values between 0 and 255
-                     * the blend formula for a single colour channel is:
+                     * the blend formula for a single color channel is:
                      *
                      * (sC + dC - ((dC + 1) * sA >> 8))
                      */
@@ -1495,7 +1480,7 @@ blit_blend_premultiplied_avx2(SDL_BlitInfo *info)
 
                     mm256_dstA = _mm256_sub_epi16(mm256_src_shuff, mm256_dstA);
                     /* this is the final subtraction completing the original
-                     * colour channel blend formula. We now have blended
+                     * color channel blend formula. We now have blended
                      * channel values sitting in the same 16 bit, 00 padded
                      * arrangement of pixels as we did prior to the blend.
                      */
@@ -1544,3 +1529,117 @@ blit_blend_premultiplied_avx2(SDL_BlitInfo *info)
 }
 #endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
           !defined(SDL_DISABLE_IMMINTRIN_H) */
+
+#define PREMUL_ALPHA_CODE                                   \
+    /* extract the alpha */                                 \
+    mm_alpha_in = _mm256_and_si256(mm_src, mm256_amask);    \
+                                                            \
+    /*redistribute the alphas across the R, G, B channels*/ \
+    alphaA = _mm256_shuffle_epi8(mm_src, shuffle_maskA);    \
+    alphaB = _mm256_shuffle_epi8(mm_src, shuffle_maskB);    \
+                                                            \
+    /*prep the pixels for 16-bit math*/                     \
+    mm_srcA = _mm256_unpacklo_epi8(mm_src, mm_zero);        \
+    mm_srcB = _mm256_unpackhi_epi8(mm_src, mm_zero);        \
+                                                            \
+    mm_srcA = _mm256_add_epi16(mm_srcA, mm256_ones);        \
+    mm_srcB = _mm256_add_epi16(mm_srcB, mm256_ones);        \
+                                                            \
+    /*multiply the pixels by the alphas*/                   \
+    mm_srcA = _mm256_mullo_epi16(mm_srcA, alphaA);          \
+    mm_srcB = _mm256_mullo_epi16(mm_srcB, alphaB);          \
+                                                            \
+    /*shift the pixels back down to 8-bit*/                 \
+    mm_srcA = _mm256_srli_epi16(mm_srcA, 8);                \
+    mm_srcB = _mm256_srli_epi16(mm_srcB, 8);                \
+                                                            \
+    /*pack the pixels back together*/                       \
+    mm_dst = _mm256_packus_epi16(mm_srcA, mm_srcB);         \
+    /*add the original alpha back in*/                      \
+    mm_dst = _mm256_or_si256(mm_dst, mm_alpha_in);
+
+#if defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
+    !defined(SDL_DISABLE_IMMINTRIN_H)
+void
+premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst)
+{
+    int i, height = src->h;
+    const int width = src->w;
+    const int n_iters_8 = width / 8;
+    const int pxl_excess = width % 8;
+    const int src_skip = src->pitch / 4 - width;
+    const int dst_skip = dst->pitch / 4 - width;
+    const int src_exc_skip = pxl_excess + src_skip;
+    const int dst_exc_skip = pxl_excess + dst_skip;
+
+    Uint32 *srcp = (Uint32 *)src->pixels;
+    Uint32 *dstp = (Uint32 *)dst->pixels;
+
+    __m256i mm_src, mm_dst, alphaA, alphaB, mm_alpha_in;
+    __m256i mm_srcA, mm_srcB;
+
+    const __m256i mm256_amask = _mm256_set1_epi32(src->format->Amask);
+    const __m256i mm_zero = _mm256_setzero_si256();
+    const __m256i partial_mask =
+        _mm256_set_epi32(0, pxl_excess > 6 ? -1 : 0, pxl_excess > 5 ? -1 : 0,
+                         pxl_excess > 4 ? -1 : 0, pxl_excess > 3 ? -1 : 0,
+                         pxl_excess > 2 ? -1 : 0, pxl_excess > 1 ? -1 : 0,
+                         pxl_excess > 0 ? -1 : 0);
+    const __m256i mm256_ones = _mm256_set1_epi16(0x0001);
+
+    char _a_off = ((src->format->Amask >> 8) == 0)    ? 0
+                  : ((src->format->Amask >> 16) == 0) ? 1
+                  : ((src->format->Amask >> 24) == 0) ? 2
+                                                      : 3;
+
+    /* masks for shuffling the alpha to the RGB channels for multiplication */
+    const __m256i shuffle_maskA = _mm256_set_epi8(
+        -1, -1, -1, 20 + _a_off, -1, 20 + _a_off, -1, 20 + _a_off, -1, -1, -1,
+        16 + _a_off, -1, 16 + _a_off, -1, 16 + _a_off, -1, -1, -1, 4 + _a_off,
+        -1, 4 + _a_off, -1, 4 + _a_off, -1, -1, -1, _a_off, -1, _a_off, -1,
+        _a_off);
+
+    const __m256i shuffle_maskB = _mm256_set_epi8(
+        -1, -1, -1, 28 + _a_off, -1, 28 + _a_off, -1, 28 + _a_off, -1, -1, -1,
+        24 + _a_off, -1, 24 + _a_off, -1, 24 + _a_off, -1, -1, -1, 12 + _a_off,
+        -1, 12 + _a_off, -1, 12 + _a_off, -1, -1, -1, 8 + _a_off, -1,
+        8 + _a_off, -1, 8 + _a_off);
+
+    while (height--) {
+        /* 8 pixels at a time */
+        for (i = 0; i < n_iters_8; i++) {
+            mm_src = _mm256_loadu_si256((__m256i *)srcp);
+
+            PREMUL_ALPHA_CODE;
+
+            _mm256_storeu_si256((__m256i *)dstp, mm_dst);
+
+            dstp += 8;
+            srcp += 8;
+        }
+
+        /* up to 7 pixels at a time */
+        if (pxl_excess) {
+            mm_src = _mm256_maskload_epi32((int *)srcp, partial_mask);
+
+            PREMUL_ALPHA_CODE
+
+            _mm256_maskstore_epi32((int *)dstp, partial_mask, mm_dst);
+
+            srcp += src_exc_skip;
+            dstp += dst_exc_skip;
+            continue;
+        }
+
+        srcp += src_skip;
+        dstp += dst_skip;
+    }
+}
+#else
+void
+premul_surf_color_by_alpha_avx2(SDL_Surface *src, SDL_Surface *dst)
+{
+    BAD_AVX2_FUNCTION_CALL;
+}
+#endif /* defined(__AVX2__) && defined(HAVE_IMMINTRIN_H) && \
+!defined(SDL_DISABLE_IMMINTRIN_H) */

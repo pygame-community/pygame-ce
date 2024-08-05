@@ -1,9 +1,8 @@
-from typing import Optional, Sequence
-
 from pygame.rect import Rect
 from pygame.surface import Surface
+from typing import overload
 
-from ._common import ColorValue, Coordinate, RectValue
+from ._common import ColorValue, Coordinate, RectValue, Sequence
 
 def rect(
     surface: Surface,
@@ -23,6 +22,26 @@ def polygon(
     width: int = 0,
 ) -> Rect: ...
 def circle(
+    surface: Surface,
+    color: ColorValue,
+    center: Coordinate,
+    radius: float,
+    width: int = 0,
+    draw_top_right: bool = False,
+    draw_top_left: bool = False,
+    draw_bottom_left: bool = False,
+    draw_bottom_right: bool = False,
+) -> Rect: ...
+@overload
+def aacircle(
+    surface: Surface,
+    color: ColorValue,
+    center: Coordinate,
+    radius: float,
+    width: int = 0,
+) -> Rect: ...
+@overload
+def aacircle(
     surface: Surface,
     color: ColorValue,
     center: Coordinate,
@@ -63,12 +82,10 @@ def aaline(
     color: ColorValue,
     start_pos: Coordinate,
     end_pos: Coordinate,
-    blend: int = 1,
 ) -> Rect: ...
 def aalines(
     surface: Surface,
     color: ColorValue,
     closed: bool,
     points: Sequence[Coordinate],
-    blend: int = 1,
 ) -> Rect: ...

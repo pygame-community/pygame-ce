@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import List, Optional, Tuple, Union, Literal
+
+from ._common import IntCoordinate
 
 from pygame.surface import Surface
 
@@ -7,6 +9,9 @@ def get_backends() -> List[str]: ...
 def init(backend: Optional[str] = None) -> None: ...
 def quit() -> None: ...
 def list_cameras() -> List[str]: ...
+def colorspace(
+    surface: Surface, color: Literal["YUV", "HSV"], dest_surface: Surface = ..., /
+) -> Surface: ...
 
 class AbstractCamera(ABC):
     @abstractmethod
@@ -31,7 +36,7 @@ class Camera(AbstractCamera):
     def __init__(
         self,
         device: Union[str, int] = 0,
-        size: Union[Tuple[int, int], Sequence[int]] = (640, 480),
+        size: IntCoordinate = (640, 480),
         format: str = "RGB",
     ) -> None: ...
     def start(self) -> None: ...

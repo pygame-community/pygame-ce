@@ -55,6 +55,151 @@ class MathModuleTest(unittest.TestCase):
         # Non-numeric args
         self.assertRaises(TypeError, pygame.math.clamp, "hello", "py", "thon")
 
+    def test_lerp(self):
+        a = 0.0
+        b = 10.0
+        self.assertEqual(pygame.math.lerp(a, b, 0.5), 5.0)
+
+        a = 0.0
+        b = 10.0
+        self.assertEqual(pygame.math.lerp(a, b, 0.1), 1.0)
+
+        a = -10.0
+        b = 10.0
+        self.assertEqual(pygame.math.lerp(a, b, 0.5), 0.0)
+
+        a = -10.0
+        b = 10.0
+        self.assertEqual(pygame.math.lerp(a, b, 1.5), 10.0)
+
+        a = -10.0
+        b = 10.0
+        self.assertEqual(pygame.math.lerp(a, b, 1.5, False), 20.0)
+
+        with self.assertRaises(TypeError):
+            a = Vector2(0, 0)
+            b = Vector2(10.0, 10.0)
+            pygame.math.lerp(a, b, 0.5)
+
+        with self.assertRaises(TypeError):
+            a = 1
+            b = 2
+            pygame.math.lerp(a, b, Vector2(0, 0))
+
+    def test_invlerp(self):
+        a = 0.0
+        b = 10.0
+        self.assertEqual(pygame.math.invlerp(a, b, 5.0), 0.5)
+
+        a = 0.0
+        b = 10.0
+        self.assertEqual(pygame.math.invlerp(a, b, 0.1), 0.01)
+
+        a = -10.0
+        b = 10.0
+        self.assertEqual(pygame.math.invlerp(a, b, 0.5), 0.525)
+
+        a = -10.0
+        b = 10.0
+        self.assertEqual(pygame.math.invlerp(a, b, 1.5), 0.575)
+
+        a = 0.0
+        b = 100.0
+        self.assertEqual(pygame.math.invlerp(a, b, 0.25), 0.0025)
+
+        with self.assertRaises(TypeError):
+            a = Vector2(0, 0)
+            b = Vector2(10.0, 10.0)
+            pygame.math.invlerp(a, b, 0.5)
+
+        with self.assertRaises(TypeError):
+            a = 1
+            b = 2
+            pygame.math.invlerp(a, b, Vector2(0, 0))
+
+        with self.assertRaises(ValueError):
+            a = 5
+            b = 5
+            pygame.math.invlerp(a, b, 5)
+
+        with self.assertRaises(TypeError):
+            a = 12**300
+            b = 11**30
+            pygame.math.invlerp(a, b, 1)
+
+    def test_remap(self):
+        a = 0.0
+        b = 10.0
+        c = 0.0
+        d = 100.0
+        self.assertEqual(pygame.math.remap(a, b, c, d, 1.0), 10.0)
+
+        a = 0.0
+        b = 10.0
+        c = 0.0
+        d = 100.0
+        self.assertEqual(pygame.math.remap(a, b, c, d, -1.0), -10.0)
+
+        a = -10.0
+        b = 10.0
+        c = -20.0
+        d = 20.0
+        self.assertEqual(pygame.math.remap(a, b, c, d, 0.0), 0.0)
+
+        a = -10.0
+        b = 10.0
+        c = 10.0
+        d = 110.0
+        self.assertEqual(pygame.math.remap(a, b, c, d, -8.0), 20.0)
+
+        with self.assertRaises(TypeError):
+            a = Vector2(0, 0)
+            b = "fish"
+            c = "durk"
+            d = Vector2(100, 100)
+            pygame.math.remap(a, b, c, d, 10)
+
+        with self.assertRaises(TypeError):
+            a = 1
+            b = 2
+            c = 10
+            d = 20
+            pygame.math.remap(a, b, c, d, Vector2(0, 0))
+
+        with self.assertRaises(ValueError):
+            a = 5
+            b = 5
+            c = 0
+            d = 100
+            pygame.math.remap(a, b, c, d, 10)
+
+        with self.assertRaises(TypeError):
+            a = 12**300
+            b = 11**30
+            c = 20
+            d = 30
+            pygame.math.remap(a, b, c, d, 100 * 50)
+
+        with self.assertRaises(TypeError):
+            a = 12j
+            b = 11j
+            c = 10j
+            d = 9j
+            pygame.math.remap(a, b, c, d, 50j)
+
+    def test_smoothstep(self):
+        a = 0.0
+        b = 10.0
+        self.assertEqual(pygame.math.smoothstep(a, b, 0.5), 5.0)
+
+        a = 0.0
+        b = 10.0
+        self.assertEqual(pygame.math.smoothstep(a, b, 0.1), 0.28)
+
+        a = -10.0
+        b = 10.0
+        self.assertEqual(pygame.math.smoothstep(a, b, 0.5), 0.0)
+
 
 class Vector2TypeTest(unittest.TestCase):
     def setUp(self):
@@ -867,9 +1012,7 @@ class Vector2TypeTest(unittest.TestCase):
         self.assertEqual(
             v2.elementwise() // v1.elementwise(), (v2.x // v1.x, v2.y // v1.y)
         )
-        self.assertEqual(
-            v2.elementwise() ** v1.elementwise(), (v2.x**v1.x, v2.y**v1.y)
-        )
+        self.assertEqual(v2.elementwise() ** v1.elementwise(), (v2.x**v1.x, v2.y**v1.y))
         self.assertEqual(
             v2.elementwise() % v1.elementwise(), (v2.x % v1.x, v2.y % v1.y)
         )
@@ -950,9 +1093,26 @@ class Vector2TypeTest(unittest.TestCase):
         self.assertEqual(v1.lerp(v2, 0.5), (5, 5))
         self.assertRaises(ValueError, lambda: v1.lerp(v2, 2.5))
 
+        v1 = Vector2(0, 0)
+        v2 = Vector2(10, 10)
+        self.assertEqual(v1.lerp(v2, 0.1), (1, 1))
+
         v1 = Vector2(-10, -5)
         v2 = Vector2(10, 10)
         self.assertEqual(v1.lerp(v2, 0.5), (0, 2.5))
+
+    def test_smoothstep(self):
+        v1 = Vector2(0, 0)
+        v2 = Vector2(10, 10)
+        self.assertEqual(v1.smoothstep(v2, 0.5), (5, 5))
+
+        v1 = Vector2(0, 0)
+        v2 = Vector2(10, 10)
+        self.assertEqual(v1.smoothstep(v2, 0.1), (0.28, 0.28))
+
+        v1 = Vector2(-10, -5)
+        v2 = Vector2(10, 10)
+        self.assertEqual(v1.smoothstep(v2, 0.5), (0, 2.5))
 
     def test_polar(self):
         v = Vector2()
@@ -1112,6 +1272,11 @@ class Vector2TypeTest(unittest.TestCase):
                 self.assertEqual(v1, v2)
                 self.assertEqual(v1, Vector2(1, 2))
 
+        v2 = Vector2()
+        self.assertEqual(v2.clamp_magnitude(1), Vector2())
+        v2.clamp_magnitude_ip(2)
+        self.assertEqual(v2.magnitude(), 0)
+
     def test_clamp_mag_v2_edge_cases(self):
         v1 = Vector2(1, 2)
         v2 = v1.clamp_magnitude(6, 6)
@@ -1145,10 +1310,10 @@ class Vector2TypeTest(unittest.TestCase):
                 self.assertRaises(ValueError, v1.clamp_magnitude, *invalid_args)
                 self.assertRaises(ValueError, v1.clamp_magnitude_ip, *invalid_args)
 
-        # 0 vector
+        # 0 vector with a min_length > 0
         v2 = Vector2()
-        self.assertRaises(ValueError, v2.clamp_magnitude, 3)
-        self.assertRaises(ValueError, v2.clamp_magnitude_ip, 4)
+        self.assertRaises(ValueError, v2.clamp_magnitude, 1, 2)
+        self.assertRaises(ValueError, v2.clamp_magnitude_ip, 2, 3)
 
     def test_subclassing_v2(self):
         """Check if Vector2 is subclassable"""
@@ -2520,9 +2685,26 @@ class Vector3TypeTest(unittest.TestCase):
         self.assertEqual(v1.lerp(v2, 0.5), (5, 5, 5))
         self.assertRaises(ValueError, lambda: v1.lerp(v2, 2.5))
 
+        v1 = Vector3(0, 0, 0)
+        v2 = Vector3(10, 10, 10)
+        self.assertEqual(v1.lerp(v2, 0.1), (1, 1, 1))
+
         v1 = Vector3(-10, -5, -20)
         v2 = Vector3(10, 10, -20)
         self.assertEqual(v1.lerp(v2, 0.5), (0, 2.5, -20))
+
+    def test_smoothstep(self):
+        v1 = Vector3(0, 0, 0)
+        v2 = Vector3(10, 10, 10)
+        self.assertEqual(v1.smoothstep(v2, 0.5), (5, 5, 5))
+
+        v1 = Vector3(0, 0, 0)
+        v2 = Vector3(10, 10, 10)
+        self.assertEqual(v1.smoothstep(v2, 0.1), (0.28, 0.28, 0.28))
+
+        v1 = Vector3(-10, -5, -20)
+        v2 = Vector3(10, 10, -20)
+        self.assertEqual(v1.smoothstep(v2, 0.5), (0, 2.5, -20))
 
     def test_spherical(self):
         v = Vector3()
@@ -2750,6 +2932,11 @@ class Vector3TypeTest(unittest.TestCase):
                 self.assertEqual(v1, v2)
                 self.assertEqual(v1, Vector3(1, 2, 3))
 
+            v2 = Vector3()
+            self.assertEqual(v2.clamp_magnitude(1), Vector3())
+            v2.clamp_magnitude_ip(2)
+            self.assertEqual(v2.magnitude(), 0)
+
     def test_clamp_mag_v3_edge_cases(self):
         v1 = Vector3(1, 2, 1)
         v2 = v1.clamp_magnitude(6, 6)
@@ -2785,8 +2972,8 @@ class Vector3TypeTest(unittest.TestCase):
 
         # 0 vector
         v2 = Vector3()
-        self.assertRaises(ValueError, v2.clamp_magnitude, 3)
-        self.assertRaises(ValueError, v2.clamp_magnitude_ip, 4)
+        self.assertRaises(ValueError, v2.clamp_magnitude, 1, 2)
+        self.assertRaises(ValueError, v2.clamp_magnitude_ip, 2, 3)
 
     def test_subclassing_v3(self):
         """Check if Vector3 is subclassable"""

@@ -20,6 +20,8 @@ changed in pygame ``v2.0.2`` which got improved MP3 support. Consider using
 ``OGG`` file format for music as that can give slightly better compression than
 MP3 in most cases.
 
+For a complete list of supported file formats, see the :mod:`pygame.mixer` doc page.
+
 .. function:: load
 
    | :sl:`Load a music file for playback`
@@ -129,7 +131,7 @@ MP3 in most cases.
 .. function:: fadeout
 
    | :sl:`stop music playback after fading out`
-   | :sg:`fadeout(time) -> None`
+   | :sg:`fadeout(time, /) -> None`
 
    Fade out and stop the currently playing music.
 
@@ -146,7 +148,7 @@ MP3 in most cases.
 .. function:: set_volume
 
    | :sl:`set the music volume`
-   | :sg:`set_volume(volume) -> None`
+   | :sg:`set_volume(volume, /) -> None`
 
    Set the volume of the music playback.
    
@@ -185,7 +187,7 @@ MP3 in most cases.
 .. function:: set_pos
 
    | :sl:`set position to play from`
-   | :sg:`set_pos(pos) -> None`
+   | :sg:`set_pos(pos, /) -> None`
 
    This sets the position in the music file where playback will start.
    The meaning of "pos", a float (or a number that can be converted to a float),
@@ -216,6 +218,8 @@ MP3 in most cases.
    This gets the number of milliseconds that the music has been playing for.
    The returned time only represents how long the music has been playing; it
    does not take into account any starting position offsets.
+
+   Returns -1 if ``get_pos`` failed due to music not playing.
 
    .. ## pygame.mixer.music.get_pos ##
 
@@ -252,7 +256,7 @@ MP3 in most cases.
 
    | :sl:`have the music send an event when playback stops`
    | :sg:`set_endevent() -> None`
-   | :sg:`set_endevent(type) -> None`
+   | :sg:`set_endevent(type, /) -> None`
 
    This causes pygame to signal (by means of the event queue) when the music is
    done playing. The argument determines the type of event that will be queued.

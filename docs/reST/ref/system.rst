@@ -8,13 +8,60 @@
 
 | :sl:`pygame module to provide additional context about the system`
 
-**EXPERIMENTAL!** This API may change or disappear in later pygame releases. 
-If you use this, your code may break with the next pygame release.
-This is a new module, so we are marking it experimental for now.
-We probably won't have to change API, but we're keeping the possibility
-open just in case something obvious comes up.
-
 .. versionadded:: 2.2.0
+
+.. function:: get_cpu_instruction_sets
+
+   | :sl:`get the information of CPU instruction sets`
+   | :sg:`get_cpu_instruction_sets() -> instruction_sets`
+
+   Returns a dict of the information of CPU instruction sets. The keys of
+   the dict are the names of instruction sets and the values determine 
+   whether the instruction set is available.
+
+   Some of functions like ``Surface.blit`` can be accelerated by SIMD 
+   instruction sets like SSE2 or AVX2. By checking the availability of 
+   instruction sets, you can check if these accelerations are available.
+
+   Here is an example of the returned dict
+   ::
+
+     {
+          'ALTIVEC': False,
+          'MMX': True,
+          'SSE': True,
+          'SSE2': True,
+          'SSE3': True,
+          'SSE41': True,
+          'SSE42': True,
+          'AVX': True,
+          'AVX2': True, 
+          'AVX512F': False,
+          'NEON': False, 
+          'ARMSIMD': False,
+          'LSX': False, 
+          'LASX': False
+     }
+
+   .. Note:: The value of ``ARMSIMD`` will be always False if
+      SDL version < 2.0.12.
+      
+      The values of ``LSX`` and ``LASX`` will be always False if
+      SDL version < 2.24.0.
+   
+   .. versionadded:: 2.3.1
+
+    .. versionchanged:: 2.4.0 removed ``RDTSC`` key, 
+        as it has been removed in pre-release SDL3
+
+.. function:: get_total_ram
+
+   | :sl:`get the amount of RAM configured in the system`
+   | :sg:`get_total_ram() -> ram_size`
+
+   Returns the amount of RAM configured in the system in MiB.
+
+   .. versionadded:: 2.3.1
 
 .. function:: get_pref_path
 
@@ -41,10 +88,10 @@ open just in case something obvious comes up.
         C:\\Users\\bob\\AppData\\Roaming\\My Company\\My Program Name\\
 
         On macOS, it would resemble
-        /Users/bob/Library/Application Support/My Program Name/
+        /Users/bob/Library/Application Support/My Company/My Program Name/
 
         And on Linux it would resemble
-        /home/bob/.local/share/My Program Name/
+        /home/bob/.local/share/My Company/My Program Name/
 
    .. note::
         Since the organization and app names can potentially be used as
@@ -86,3 +133,65 @@ open just in case something obvious comes up.
    function again to get an updated copy of preferred locales.
 
    .. versionadded:: 2.2.0
+
+.. function:: get_power_state
+
+   | :sl:`get the current power supply state`
+   | :sg:`get_pref_power_state() -> PowerState`
+
+   **Experimental:** feature available for testing and feedback.
+   We don't anticipate it changing, but it might if something important
+   is brought up. `Please leave get_power_state feedback with 
+   authors <https://github.com/pygame-community/pygame-ce/pull/2257>`_
+
+   Returns a ``PowerState`` object representing the power supply state.
+   
+   Returns ``None`` if the power state is unknown.
+
+   The PowerState object has several attributes:
+
+   .. code-block:: text
+
+        battery_percent:
+            An integer between 0 and 100, representing the percentage of
+            battery life left.
+
+        battery_seconds:
+            An integer, representing the seconds of battery life left.
+            Could be None if the value is unknown.
+    
+        on_battery:
+            True if the device is running on the battery (not plugged in).
+
+        no_battery:
+            True if the device has no battery available (plugged in).
+
+        charging:
+            True if the device is charging battery (plugged in).
+
+        charged:
+            True if the battery of the device is fully charged (plugged in).
+
+        plugged_in:
+            True if the device is plugged in.
+            Equivalent to `not on_battery`.
+
+        has_battery:
+            True if the device has battery.
+            Equivalent to `on_battery or not no_battery`.
+
+
+   You should never take a battery status as absolute truth. Batteries
+   (especially failing batteries) are delicate hardware, and the values
+   reported here are best estimates based on what that hardware reports. It's
+   not uncommon for older batteries to lose stored power much faster than it
+   reports, or completely drain when reporting it has 20 percent left, etc.
+
+   Battery status can change at any time; if you are concerned with power
+   state, you should call this function frequently, and perhaps ignore changes
+   until they seem to be stable for a few seconds.
+
+   It's possible a platform can only report battery percentage or time left
+   but not both.
+
+   .. versionadded:: 2.4.0

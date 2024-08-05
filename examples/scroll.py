@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.scroll
+"""pygame.examples.scroll
 
 An zoomed image viewer that demonstrates Surface.scroll
 
@@ -14,6 +14,7 @@ When running click on a black triangle to move one pixel in the direction
 the triangle points. Or use the arrow keys. Close the window or press ESC
 to quit.
 """
+
 import sys
 import os
 

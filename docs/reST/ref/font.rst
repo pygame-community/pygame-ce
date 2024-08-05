@@ -57,6 +57,8 @@ solves no longer exists, it will likely be removed in the future.
 
    It is safe to call this function even if font is currently not initialized.
 
+   Previously created font objects will be invalid after the font module is quit.
+
    .. ## pygame.font.quit ##
 
 .. function:: get_init
@@ -209,6 +211,23 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.name ##
 
+   .. attribute:: style_name
+
+      | :sl:`Gets the font's style_name.`
+      | :sg:`style_name -> str`
+
+      Read only. Returns the font's style name. Style names are arbitrary, can be an empty string. 
+      Here are some examples:
+
+        'Black', 'Bold', 'Bold Italic', 'BoldOblique', 'Book', 'BookOblique', 'Condensed', 'Condensed Oblique',
+        'ExtraLight', 'Italic', 'Light', 'LightOblique', 'Medium', 'MediumOblique', 'Oblique', 'Regular',
+        'Semibold', 'Semilight', 'Slanted'
+
+
+      .. versionadded:: 2.3.1
+
+      .. ## Font.style_name ##
+
    .. attribute:: italic
 
       | :sl:`Gets or sets whether the font should be rendered in (faked) italics.`
@@ -261,7 +280,7 @@ solves no longer exists, it will likely be removed in the future.
 
    .. attribute:: align
 
-      | :sl:`Set how rendered text is aligned when given a wrap length`
+      | :sl:`Set how rendered text is aligned when given a wrap length.`
       | :sg:`align -> int`
 
       Can be set to `pygame.FONT_LEFT`, `pygame.FONT_RIGHT`, or
@@ -274,6 +293,18 @@ solves no longer exists, it will likely be removed in the future.
       .. versionadded:: 2.1.4
 
       .. ## Font.align ##
+
+   .. attribute:: point_size
+
+      | :sl:`Gets or sets the font's point size`
+      | :sg:`point_size -> int`
+
+      Returns the point size of the font. Will not be accurate upon initializing
+      the font object when the font name is initialized as ``None``.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Font.point_size ##
 
    .. method:: render
 
@@ -348,7 +379,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: size
 
       | :sl:`determine the amount of space needed to render text`
-      | :sg:`size(text) -> (width, height)`
+      | :sg:`size(text, /) -> (width, height)`
 
       Returns the dimensions needed to render the text. This can be used to
       help determine the positioning needed for text before it is rendered. It
@@ -363,7 +394,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: set_underline
 
       | :sl:`control if text is rendered with an underline`
-      | :sg:`set_underline(bool) -> None`
+      | :sg:`set_underline(bool, /) -> None`
 
       When enabled, all rendered fonts will include an underline. The underline
       is always one pixel thick, regardless of font size. This can be mixed
@@ -387,7 +418,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: set_strikethrough
 
       | :sl:`control if text is rendered with a strikethrough`
-      | :sg:`set_strikethrough(bool) -> None`
+      | :sg:`set_strikethrough(bool, /) -> None`
 
       When enabled, all rendered fonts will include a strikethrough. The
       strikethrough is always one pixel thick, regardless of font size.
@@ -415,7 +446,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: set_bold
 
       | :sl:`enable fake rendering of bold text`
-      | :sg:`set_bold(bool) -> None`
+      | :sg:`set_bold(bool, /) -> None`
 
       Enables the bold rendering of text. This is a fake stretching of the font
       that doesn't look good on many font types. If possible load the font from
@@ -441,7 +472,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: set_italic
 
       | :sl:`enable fake rendering of italic text`
-      | :sg:`set_italic(bool) -> None`
+      | :sg:`set_italic(bool, /) -> None`
 
       Enables fake rendering of italic text. This is a fake skewing of the font
       that doesn't look good on many font types. If possible load the font from
@@ -456,7 +487,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: metrics
 
       | :sl:`gets the metrics for each character in the passed string`
-      | :sg:`metrics(text) -> list`
+      | :sg:`metrics(text, /) -> list`
 
       The list contains tuples for each character, which contain the minimum
       ``X`` offset, the maximum ``X`` offset, the minimum ``Y`` offset, the
@@ -499,6 +530,31 @@ solves no longer exists, it will likely be removed in the future.
 
       .. ## Font.get_height ##
 
+   .. method:: set_point_size
+
+      | :sl:`set the point size of the font`
+      | :sg:`set_point_size(size, /) -> int`
+
+      Sets the point size of the font, which is the value that was used to
+      initialize this font.
+
+      .. versionadded:: 2.3.1
+
+      .. ## Font.set_point_size ##
+
+   .. method:: get_point_size
+
+      | :sl:`get the point size of the font`
+      | :sg:`get_point_size() -> int`
+
+      Returns the point size of the font. Will not be accurate upon
+      initializing the font object when the font name is initialized
+      as ``None``.
+      
+      .. versionadded:: 2.3.1
+
+      .. ## Font.get_point_size ##
+
    .. method:: get_ascent
 
       | :sl:`get the ascent of the font`
@@ -522,7 +578,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: set_script
 
       | :sl:`set the script code for text shaping`
-      | :sg:`set_script(str) -> None`
+      | :sg:`set_script(str, /) -> None`
 
       Sets the script used by harfbuzz text shaping, taking a 4 character
       script code as input. For example, Hindi is written in the Devanagari

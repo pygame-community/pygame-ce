@@ -23,10 +23,9 @@ bounding box that encloses the affected area.
 All the drawing functions accept a color argument that can be one of the
 following formats:
 
-   - a :mod:`pygame.Color` object
-   - an ``(RGB)`` triplet (tuple/list)
-   - an ``(RGBA)`` quadruplet (tuple/list)
-   - an integer value that has been mapped to the surface's pixel format
+   - a :mod:`pygame.Color` object, or a type (apart from ``int``) that can be passed to
+     its constructor
+   - an ``int`` value which must be mapped to the pixel format of the surface
      (see :func:`pygame.Surface.map_rgb` and :func:`pygame.Surface.unmap_rgb`)
 
 A color's alpha value will be written directly into the surface (if the
@@ -53,7 +52,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param Rect rect: rectangle to draw, position and dimensions
    :param int width: (optional) used for line thickness or to indicate that
       the rectangle is to be filled (not to be confused with the width value
@@ -63,10 +62,10 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
          | if ``width > 0``, used for line thickness
          | if ``width < 0``, nothing will be drawn
          |
-      
+
       .. versionchangedold:: 2.1.1
-          Drawing rects with width now draws the width correctly inside the 
-          rect's area, rather than using an internal call to draw.lines(), 
+          Drawing rects with width now draws the width correctly inside the
+          rect's area, rather than using an internal call to draw.lines(),
           which had half the width spill outside the rect area.
 
    :param int border_radius: (optional) used for drawing rectangle with rounded corners.
@@ -111,7 +110,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param points: a sequence of 3 or more (x, y) coordinates that make up the
       vertices of the polygon, each *coordinate* in the sequence must be a
       tuple/list/:class:`pygame.math.Vector2` of 2 ints/floats,
@@ -159,7 +158,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param center: center point of the circle as a sequence of 2 ints/floats,
       e.g. ``(x, y)``
    :type center: tuple(int or float, int or float) or
@@ -207,6 +206,62 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    .. ## pygame.draw.circle ##
 
+.. function:: aacircle
+
+   | :sl:`draw an antialiased circle`
+   | :sg:`aacircle(surface, color, center, radius) -> Rect`
+   | :sg:`aacircle(surface, color, center, radius, width=0, draw_top_right=None, draw_top_left=None, draw_bottom_left=None, draw_bottom_right=None) -> Rect`
+
+   Draws an antialiased circle on the given surface.
+   Uses Xiaolin Wu Circle Algorithm.
+   adapted from: https://cgg.mff.cuni.cz/~pepca/ref/WU.pdf
+
+   :param Surface surface: surface to draw on
+   :param color: color to draw with, the alpha value is optional if using a
+      tuple ``(RGB[A])``
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+   :param center: center point of the circle as a sequence of 2 ints/floats,
+      e.g. ``(x, y)``
+   :type center: tuple(int or float, int or float) or
+      list(int or float, int or float) or Vector2(int or float, int or float)
+   :param radius: radius of the circle, measured from the ``center`` parameter,
+      nothing will be drawn if the ``radius`` is less than 1
+   :type radius: int or float
+   :param int width: (optional) used for line thickness or to indicate that
+      the circle is to be filled
+
+         | if ``width == 0``, (default) fill the circle
+         | if ``width > 0``, used for line thickness
+         | if ``width < 0``, nothing will be drawn
+         |
+
+         .. note::
+            When using ``width`` values ``> 1``, the edge lines will only grow
+            inward.
+   :param bool draw_top_right: (optional) if this is set to True then the top right corner
+      of the circle will be drawn
+   :param bool draw_top_left: (optional) if this is set to True then the top left corner
+      of the circle will be drawn
+   :param bool draw_bottom_left: (optional) if this is set to True then the bottom left corner
+      of the circle will be drawn
+   :param bool draw_bottom_right: (optional) if this is set to True then the bottom right corner
+      of the circle will be drawn
+
+         | if any of the draw_circle_part is True then it will draw all circle parts that have the True
+         | value, otherwise it will draw the entire circle.
+
+   :returns: a rect bounding the changed pixels, if nothing is drawn the
+      bounding rect's position will be the ``center`` parameter value (float
+      values will be truncated) and its width and height will be 0
+   :rtype: Rect
+
+   :raises TypeError: if ``center`` is not a sequence of two numbers
+   :raises TypeError: if ``radius`` is not a number
+
+   .. versionadded:: 2.5.0
+
+   .. ## pygame.draw.aacircle ##
+
 .. function:: ellipse
 
    | :sl:`draw an ellipse`
@@ -218,7 +273,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param Rect rect: rectangle to indicate the position and dimensions of the
       ellipse, the ellipse will be centered inside the rectangle and bounded
       by it
@@ -259,7 +314,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param Rect rect: rectangle to indicate the position and dimensions of the
       ellipse which the arc will be based on, the ellipse will be centered
       inside the rectangle
@@ -309,7 +364,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param start_pos: start position of the line, (x, y)
    :type start_pos: tuple(int or float, int or float) or
       list(int or float, int or float) or Vector2(int or float, int or float)
@@ -361,7 +416,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param bool closed: if ``True`` an additional line segment is drawn between
       the first and last points in the ``points`` sequence
    :param points: a sequence of 2 or more (x, y) coordinates, where each
@@ -401,7 +456,6 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    | :sl:`draw a straight antialiased line`
    | :sg:`aaline(surface, color, start_pos, end_pos) -> Rect`
-   | :sg:`aaline(surface, color, start_pos, end_pos, blend=1) -> Rect`
 
    Draws a straight antialiased line on the given surface.
 
@@ -482,15 +536,13 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param start_pos: start position of the line, (x, y)
    :type start_pos: tuple(int or float, int or float) or
       list(int or float, int or float) or Vector2(int or float, int or float)
    :param end_pos: end position of the line, (x, y)
    :type end_pos: tuple(int or float, int or float) or
       list(int or float, int or float) or Vector2(int or float, int or float)
-   :param int blend: (optional) (deprecated) if non-zero (default) the line will be blended
-      with the surface's existing pixel shades, otherwise it will overwrite them
 
    :returns: a rect bounding the changed pixels, if nothing is drawn the
       bounding rect's position will be the ``start_pos`` parameter value (float
@@ -501,6 +553,8 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
       two numbers
 
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
+   .. versionchanged:: 2.4.0 Removed deprecated 'blend' argument
+   .. versionchanged:: 2.5.0 ``blend`` argument readded for backcompat, but will always raise a deprecation exception when used
 
    .. ## pygame.draw.aaline ##
 
@@ -508,7 +562,6 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    | :sl:`draw multiple contiguous straight antialiased line segments`
    | :sg:`aalines(surface, color, closed, points) -> Rect`
-   | :sg:`aalines(surface, color, closed, points, blend=1) -> Rect`
 
    Draws a sequence of contiguous straight antialiased lines on the given
    surface.
@@ -516,7 +569,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or int or tuple(int, int, int, [int])
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param bool closed: if ``True`` an additional line segment is drawn between
       the first and last points in the ``points`` sequence
    :param points: a sequence of 2 or more (x, y) coordinates, where each
@@ -528,9 +581,6 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
       additionally if the ``closed`` parameter is ``True`` another line segment
       will be drawn from ``(x3, y3)`` to ``(x1, y1)``
    :type points: tuple(coordinate) or list(coordinate)
-   :param int blend: (optional) (deprecated) if non-zero (default) each line will be blended
-      with the surface's existing pixel shades, otherwise the pixels will be
-      overwritten
 
    :returns: a rect bounding the changed pixels, if nothing is drawn the
       bounding rect's position will be the position of the first point in the
@@ -543,6 +593,8 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
       contain number pairs
 
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
+   .. versionchanged:: 2.4.0 Removed deprecated ``blend`` argument
+   .. versionchanged:: 2.5.0 ``blend`` argument readded for backcompat, but will always raise a deprecation exception when used
 
    .. ## pygame.draw.aalines ##
 

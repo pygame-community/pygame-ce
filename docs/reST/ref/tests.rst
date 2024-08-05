@@ -20,7 +20,7 @@ correspond to the :func:`pygame.tests.run` arguments.
 
 The xxxx_test submodules of the tests package are unit test suites for
 individual parts of pygame. Each can also be run as a main program. This is
-useful if the test, such as cdrom_test, is interactive.
+useful if the test is interactive.
 
 For pygame development the test suite can be run from a pygame distribution
 root directory. Program ``run_tests.py`` is provided for convenience, though
@@ -29,8 +29,8 @@ test/go.py can be run directly.
 Module level tags control which modules are included in a unit test run. Tags
 are assigned to a unit test module with a corresponding <name>_tags.py module.
 The tags module has the global __tags__, a list of tag names. For example,
-``cdrom_test.py`` has a tag file ``cdrom_tags.py`` containing a tags list that
-has the 'interactive' string. The 'interactive' tag indicates ``cdrom_test.py``
+``controller_test.py`` has a tag variable containing a tags list that
+has the 'interactive' string. The 'interactive' tag indicates ``controller_test.py``
 expects user input. It is excluded from a ``run_tests.py`` or
 ``pygame.tests.go`` run. Two other tags that are excluded are 'ignore' and
 'subprocess_ignore'. These two tags indicate unit tests that will not run on a
@@ -97,7 +97,7 @@ The test runner will list each excluded module along with the tag responsible.
 
    Individual test modules may have a __tags__ attribute, a list of tag strings
    used to selectively omit modules from a run. By default only 'interactive'
-   modules such as cdrom_test are ignored. An interactive module must be run
+   modules such as controller_test are ignored. An interactive module must be run
    from the console as a Python program.
 
    This function can only be called once per Python session. It is not

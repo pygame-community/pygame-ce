@@ -19,16 +19,15 @@ of objects in the game. There is also a base Group class that simply stores
 sprites. A game could create new types of Group classes that operate on
 specially customized Sprite instances they contain.
 
-The basic Sprite class can draw the Sprites it contains to a Surface. The
-``Group.draw()`` method requires that each Sprite have a ``Surface.image``
-attribute and a ``Surface.rect``. The ``Group.clear()`` method requires these
+The basic Group class can draw the Sprites it contains to a Surface. The
+``Group.draw()`` method requires that each Sprite have a ``Sprite.image``
+attribute and a ``Sprite.rect``. The ``Group.clear()`` method requires these
 same attributes, and can be used to erase all the Sprites with background.
-There are also more advanced Groups: ``pygame.sprite.RenderUpdates()`` and
-``pygame.sprite.OrderedUpdates()``.
+There are also more advanced Groups: ``pygame.sprite.RenderUpdates()``.
 
 Lastly, this module contains several collision functions. These help find
 sprites inside multiple groups that have intersecting bounding rectangles. To
-find the collisions, the Sprites are required to have a ``Surface.rect``
+find the collisions, the Sprites are required to have a ``Sprite.rect``
 attribute assigned.
 
 The groups are designed for high efficiency in removing and adding Sprites to
@@ -245,7 +244,7 @@ Sprites are not thread safe. So lock them yourself if using threads.
       Add any number of Sprites to this Group. This will only add Sprites that
       are not already members of the Group.
 
-      Each sprite argument can also be a iterator containing Sprites.
+      Each sprite argument can also be an iterator containing Sprites.
 
       .. ## Group.add ##
 
@@ -257,7 +256,7 @@ Sprites are not thread safe. So lock them yourself if using threads.
       Remove any number of Sprites from the Group. This will only remove
       Sprites that are already members of the Group.
 
-      Each sprite argument can also be a iterator containing Sprites.
+      Each sprite argument can also be an iterator containing Sprites.
 
       .. ## Group.remove ##
 
@@ -270,7 +269,7 @@ Sprites are not thread safe. So lock them yourself if using threads.
       similar to using the "in" operator on the Group ("if sprite in group:
       ..."), which tests if a single Sprite belongs to a Group.
 
-      Each sprite argument can also be a iterator containing Sprites.
+      Each sprite argument can also be an iterator containing Sprites.
 
       .. ## Group.has ##
 
@@ -366,7 +365,7 @@ Sprites are not thread safe. So lock them yourself if using threads.
 
 .. class:: LayeredUpdates
 
-   | :sl:`LayeredUpdates is a sprite group that handles layers and draws like OrderedUpdates.`
+   | :sl:`LayeredUpdates is a sprite group that handles layers and draws like RenderUpdates.`
    | :sg:`LayeredUpdates(*sprites, **kwargs) -> LayeredUpdates`
 
    This group is fully compatible with :class:`pygame.sprite.Sprite`.
@@ -396,7 +395,7 @@ Sprites are not thread safe. So lock them yourself if using threads.
 
    .. method:: sprites
 
-      | :sl:`returns a ordered list of sprites (first back, last top).`
+      | :sl:`returns an ordered list of sprites (first back, last top).`
       | :sg:`sprites() -> sprites`
 
       .. ## LayeredUpdates.sprites ##

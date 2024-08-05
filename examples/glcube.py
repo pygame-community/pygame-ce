@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" pygame.examples.glcube
+"""pygame.examples.glcube
 
 Draw a cube on the screen.
 
@@ -23,6 +23,7 @@ Keyboard Controls
 * f key to toggle fullscreen.
 
 """
+
 import math
 import ctypes
 
@@ -40,7 +41,6 @@ try:
 except ImportError:
     print("numpy missing. The GLCUBE example requires: pyopengl numpy")
     raise SystemExit
-
 
 # do we want to use the 'modern' OpenGL API or the old one?
 # This example shows you how to do both.
@@ -259,16 +259,16 @@ def init_gl_modern(display_size):
     uniform mat4   view;
     uniform mat4   projection;
 
-    uniform vec4   colour_mul;
-    uniform vec4   colour_add;
+    uniform vec4   color_mul;
+    uniform vec4   color_add;
 
-    in vec4 vertex_colour;         // vertex colour in
+    in vec4 vertex_color;         // vertex color in
     in vec3 vertex_position;
 
-    out vec4   vertex_color_out;            // vertex colour out
+    out vec4   vertex_color_out;            // vertex color out
     void main()
     {
-        vertex_color_out = (colour_mul * vertex_colour) + colour_add;
+        vertex_color_out = (color_mul * vertex_color) + color_add;
         gl_Position = projection * view * model * vec4(vertex_position, 1.0);
     }
 
@@ -276,7 +276,7 @@ def init_gl_modern(display_size):
 
     fragment_code = """
     #version 150
-    in vec4 vertex_color_out;  // vertex colour from vertex shader
+    in vec4 vertex_color_out;  // vertex color from vertex shader
     out vec4 fragColor;
     void main()
     {
@@ -320,9 +320,7 @@ def init_gl_modern(display_size):
     # ------------------------------------------
 
     # Cube Data
-    vertices = zeros(
-        8, [("vertex_position", float32, 3), ("vertex_colour", float32, 4)]
-    )
+    vertices = zeros(8, [("vertex_position", float32, 3), ("vertex_color", float32, 4)])
 
     vertices["vertex_position"] = [
         [1, 1, 1],
@@ -335,7 +333,7 @@ def init_gl_modern(display_size):
         [-1, -1, -1],
     ]
 
-    vertices["vertex_colour"] = [
+    vertices["vertex_color"] = [
         [0, 1, 1, 1],
         [0, 0, 1, 1],
         [0, 0, 0, 1],
@@ -410,7 +408,7 @@ def init_gl_modern(display_size):
 
     offset = ctypes.c_void_p(vertices.dtype["vertex_position"].itemsize)
 
-    loc = GL.glGetAttribLocation(program, "vertex_colour")
+    loc = GL.glGetAttribLocation(program, "vertex_color")
     GL.glEnableVertexAttribArray(loc)
     GL.glVertexAttribPointer(loc, 4, GL.GL_FLOAT, False, stride, offset)
 
@@ -444,19 +442,19 @@ def init_gl_modern(display_size):
     )
     GL.glUniformMatrix4fv(shader_data["constants"]["projection"], 1, False, eye(4))
 
-    # This colour is multiplied with the base vertex colour in producing
+    # This color is multiplied with the base vertex color in producing
     # the final output
-    shader_data["constants"]["colour_mul"] = GL.glGetUniformLocation(
-        program, "colour_mul"
+    shader_data["constants"]["color_mul"] = GL.glGetUniformLocation(
+        program, "color_mul"
     )
-    GL.glUniform4f(shader_data["constants"]["colour_mul"], 1, 1, 1, 1)
+    GL.glUniform4f(shader_data["constants"]["color_mul"], 1, 1, 1, 1)
 
-    # This colour is added on to the base vertex colour in producing
+    # This color is added on to the base vertex color in producing
     # the final output
-    shader_data["constants"]["colour_add"] = GL.glGetUniformLocation(
-        program, "colour_add"
+    shader_data["constants"]["color_add"] = GL.glGetUniformLocation(
+        program, "color_add"
     )
-    GL.glUniform4f(shader_data["constants"]["colour_add"], 0, 0, 0, 0)
+    GL.glUniform4f(shader_data["constants"]["color_add"], 0, 0, 0, 0)
 
     # Set GL drawing data
     # -------------------
@@ -491,8 +489,8 @@ def draw_cube_modern(shader_data, filled_cube_indices, outline_cube_indices, rot
     GL.glDisable(GL.GL_BLEND)
     GL.glEnable(GL.GL_DEPTH_TEST)
     GL.glEnable(GL.GL_POLYGON_OFFSET_FILL)
-    GL.glUniform4f(shader_data["constants"]["colour_mul"], 1, 1, 1, 1)
-    GL.glUniform4f(shader_data["constants"]["colour_add"], 0, 0, 0, 0.0)
+    GL.glUniform4f(shader_data["constants"]["color_mul"], 1, 1, 1, 1)
+    GL.glUniform4f(shader_data["constants"]["color_add"], 0, 0, 0, 0.0)
     GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, shader_data["buffer"]["filled"])
     GL.glDrawElements(
         GL.GL_TRIANGLES, len(filled_cube_indices), GL.GL_UNSIGNED_INT, None
@@ -501,14 +499,14 @@ def draw_cube_modern(shader_data, filled_cube_indices, outline_cube_indices, rot
     # Outlined cube
     GL.glDisable(GL.GL_POLYGON_OFFSET_FILL)
     GL.glEnable(GL.GL_BLEND)
-    GL.glUniform4f(shader_data["constants"]["colour_mul"], 0, 0, 0, 0.0)
-    GL.glUniform4f(shader_data["constants"]["colour_add"], 1, 1, 1, 1.0)
+    GL.glUniform4f(shader_data["constants"]["color_mul"], 0, 0, 0, 0.0)
+    GL.glUniform4f(shader_data["constants"]["color_add"], 1, 1, 1, 1.0)
     GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, shader_data["buffer"]["outline"])
     GL.glDrawElements(GL.GL_LINES, len(outline_cube_indices), GL.GL_UNSIGNED_INT, None)
 
     # Rotate cube
     # rotation.theta += 1.0  # degrees
-    rotation.phi += 1.0  # degrees
+    # rotation.phi += 1.0  # degrees
     # rotation.psi += 1.0  # degrees
     model = eye(4, dtype=float32)
     # rotate(model, rotation.theta, 0, 0, 1)
@@ -521,7 +519,9 @@ def main():
     """run the demo"""
 
     # initialize pygame-ce and setup an opengl display
+
     pygame.init()
+    clock = pygame.time.Clock()
 
     gl_version = (3, 0)  # GL Version number (Major, Minor)
     if USE_MODERN_GL:
@@ -535,12 +535,16 @@ def main():
             pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_CORE
         )
 
-    fullscreen = False  # start in windowed mode
-
+    # start in windowed mode
     display_size = (640, 480)
-    pygame.display.set_mode(
-        display_size, pygame.OPENGL | pygame.DOUBLEBUF | pygame.RESIZABLE
-    )
+    try:
+        pygame.display.set_mode(
+            display_size, pygame.OPENGL | pygame.DOUBLEBUF | pygame.RESIZABLE, vsync=1
+        )
+    except:
+        pygame.display.set_mode(
+            display_size, pygame.OPENGL | pygame.DOUBLEBUF | pygame.RESIZABLE
+        )
 
     if USE_MODERN_GL:
         gpu, f_indices, o_indices = init_gl_modern(display_size)
@@ -548,6 +552,7 @@ def main():
     else:
         init_gl_stuff_old()
 
+    delta_time = 0
     going = True
     while going:
         # check for quit'n events
@@ -559,34 +564,41 @@ def main():
                 going = False
 
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_f:
-                if not fullscreen:
+                if not pygame.display.is_fullscreen():
                     print("Changing to FULLSCREEN")
                     pygame.display.set_mode(
-                        (640, 480), pygame.OPENGL | pygame.DOUBLEBUF | pygame.FULLSCREEN
+                        display_size,
+                        pygame.OPENGL | pygame.DOUBLEBUF | pygame.FULLSCREEN,
                     )
                 else:
                     print("Changing to windowed mode")
                     pygame.display.set_mode(
-                        (640, 480), pygame.OPENGL | pygame.DOUBLEBUF
+                        display_size, pygame.OPENGL | pygame.DOUBLEBUF
                     )
-                fullscreen = not fullscreen
+
                 if gl_version[0] >= 4 or (gl_version[0] == 3 and gl_version[1] >= 2):
                     gpu, f_indices, o_indices = init_gl_modern(display_size)
                     rotation = Rotation()
                 else:
                     init_gl_stuff_old()
 
+        # orbit camera around by 60 degrees per second
+        angle = (delta_time / 1000) * 60
         if USE_MODERN_GL:
+            rotation.phi += angle
             draw_cube_modern(gpu, f_indices, o_indices, rotation)
         else:
             # clear screen and move camera
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
-            # orbit camera around by 1 degree
-            GL.glRotatef(1, 0, 1, 0)
+            # rotate camera to angle
+            GL.glRotatef(angle, 0, 1, 0)
             drawcube_old()
 
         pygame.display.flip()
-        pygame.time.wait(10)
+        if pygame.display.is_vsync():
+            delta_time = clock.tick()
+        else:
+            delta_time = clock.tick(60)
 
     pygame.quit()
 

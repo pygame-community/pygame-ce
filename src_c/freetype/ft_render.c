@@ -36,7 +36,7 @@ _validate_view_format(const char *format)
 {
     int i = 0;
 
-    /* Check if the format starts with a size/byte order code or a item count
+    /* Check if the format starts with a size/byte order code or an item count
      */
     switch (format[i]) {
         case '@':
@@ -335,7 +335,7 @@ _PGFT_Render_ExistingSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
         surf_offset.y += offset.y;
     }
 
-    if (!surface->format->BytesPerPixel) {
+    if (!PG_SURF_BytesPerPixel(surface)) {
         // This should never happen, error to make static analyzer happy
         PyErr_SetString(pgExc_SDLError, "Got surface of invalid format");
         return -1;
@@ -349,9 +349,9 @@ _PGFT_Render_ExistingSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
     font_surf.height = surface->h;
     font_surf.pitch = surface->pitch;
     font_surf.format = surface->format;
-    font_surf.render_gray = __SDLrenderFuncs[surface->format->BytesPerPixel];
-    font_surf.render_mono = __MONOrenderFuncs[surface->format->BytesPerPixel];
-    font_surf.fill = __RGBfillFuncs[surface->format->BytesPerPixel];
+    font_surf.render_gray = __SDLrenderFuncs[PG_SURF_BytesPerPixel(surface)];
+    font_surf.render_mono = __MONOrenderFuncs[PG_SURF_BytesPerPixel(surface)];
+    font_surf.fill = __RGBfillFuncs[PG_SURF_BytesPerPixel(surface)];
 
     /*
      * if bg color exists, paint background
@@ -400,14 +400,11 @@ _PGFT_Render_NewSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
                         const FontRenderMode *mode, PGFT_String *text,
                         FontColor *fgcolor, FontColor *bgcolor, SDL_Rect *r)
 {
-    FT_UInt32 rmask = 0;
-    FT_UInt32 gmask = 0;
-    FT_UInt32 bmask = 0;
-    FT_UInt32 amask = 0;
     int locked = 0;
     SDL_Surface *surface = 0;
     int bits_per_pixel =
         (bgcolor || mode->render_flags & FT_RFLAG_ANTIALIAS) ? 32 : 8;
+    Uint32 pixelformat;
 
     FontSurface font_surf;
     Layout *font_text;
@@ -435,21 +432,13 @@ _PGFT_Render_NewSurface(FreeTypeInstance *ft, pgFontObject *fontobj,
         offset.y = -font_text->min_y;
     }
 
-    if (bits_per_pixel == 32) {
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-        rmask = 0xff000000;
-        gmask = 0x00ff0000;
-        bmask = 0x0000ff00;
-        amask = 0x000000ff;
-#else
-        rmask = 0x000000ff;
-        gmask = 0x0000ff00;
-        bmask = 0x00ff0000;
-        amask = 0xff000000;
-#endif
+    if (bits_per_pixel == 8) {
+        pixelformat = SDL_PIXELFORMAT_INDEX8;
     }
-    surface = SDL_CreateRGBSurface(0, width, height, bits_per_pixel, rmask,
-                                   gmask, bmask, amask);
+    else {
+        pixelformat = SDL_PIXELFORMAT_RGBA32;
+    }
+    surface = PG_CreateSurface(width, height, pixelformat);
     if (!surface) {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return 0;
@@ -706,7 +695,11 @@ _PGFT_Render_Array(FreeTypeInstance *ft, pgFontObject *fontobj,
     /*
      * Setup target surface struct
      */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    format.bytes_per_pixel = itemsize;
+#else
     format.BytesPerPixel = itemsize;
+#endif
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
     format.Ashift = _is_swapped(view_p) ? (itemsize - 1) * 8 : 0;
 #else
