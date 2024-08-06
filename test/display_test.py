@@ -151,7 +151,11 @@ class DisplayModuleTest(unittest.TestCase):
         self.assertTrue(display.get_init())
 
     def test_get_surface(self):
-        """Ensures get_surface gets the current display surface."""
+        """Ensures get_surface gets the current display surface.
+        We can't guarantee small screen sizes get respected, so the
+        sizes of the surfaces returned from set_mode must be compared
+        to the size of the surface from get_surface.
+        """
         lengths = (1, 5, 100)
         correct_depth = pygame.display.Info().bitsize
 
@@ -169,7 +173,7 @@ class DisplayModuleTest(unittest.TestCase):
 
                 self.assertEqual(surface, expected_surface)
                 self.assertIsInstance(surface, pygame.Surface)
-                self.assertEqual(surface.get_size(), expected_size)
+                self.assertEqual(surface.get_size(), expected_surface.get_size())
                 self.assertEqual(surface.get_bitsize(), correct_depth)
 
     def test_get_surface__mode_not_set(self):
