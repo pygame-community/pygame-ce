@@ -980,6 +980,15 @@ class FontTypeTest(unittest.TestCase):
                 ("italic", True),
                 ("underline", True),
                 ("strikethrough", True),
+                ("outline_width", 5),
+                (
+                    "outline_color",
+                    (
+                        255,
+                        0,
+                        255,
+                    ),
+                ),
             ]
             skip_properties = set()
             version = pygame.font.get_sdl_ttf_version()
@@ -1042,7 +1051,7 @@ class VisualTestsInteractive(unittest.TestCase):
             self.screen = pygame.display.set_mode((600, 200))
             self.screen.fill((255, 255, 255))
             pygame.display.flip()
-            self.f = pygame_font.Font(None, 32)
+            self.f = pygame_font.Font(None, 96)
 
     def abort(self):
         if self.screen is not None:
@@ -1056,6 +1065,8 @@ class VisualTestsInteractive(unittest.TestCase):
         underline=False,
         strikethrough=False,
         antialiase=False,
+        outline_width=0,
+        outline_color=(0, 0, 0),
     ):
         if self.aborted:
             return False
@@ -1066,7 +1077,9 @@ class VisualTestsInteractive(unittest.TestCase):
         screen = self.screen
         screen.fill((255, 255, 255))
         pygame.display.flip()
-        if not (bold or italic or underline or strikethrough or antialiase):
+        if not (
+            bold or italic or underline or strikethrough or antialiase or outline_width
+        ):
             text = "normal"
         else:
             modes = []
@@ -1080,11 +1093,15 @@ class VisualTestsInteractive(unittest.TestCase):
                 modes.append("strikethrough")
             if antialiase:
                 modes.append("antialiased")
+            if outline_width:
+                modes.append("outline_width")
             text = f"{'-'.join(modes)} (y/n):"
         f.set_bold(bold)
         f.set_italic(italic)
         f.set_underline(underline)
         f.set_strikethrough(strikethrough)
+        f.outline_width = outline_width
+        f.outline_color = outline_color
         s = f.render(text, antialiase, (0, 0, 0))
         screen.blit(s, (offset, y))
         y += s.get_size()[1] + spacing
@@ -1123,6 +1140,12 @@ class VisualTestsInteractive(unittest.TestCase):
 
     def test_antialiase(self):
         self.assertTrue(self.query(antialiase=True))
+
+    def test_outline_width(self):
+        self.assertTrue(self.query(outline_width=1, outline_color=(255, 0, 255)))
+
+    def test_outline_width_huge(self):
+        self.assertTrue(self.query(outline_width=10, outline_color=(0, 0, 255)))
 
     def test_bold_antialiase(self):
         self.assertTrue(self.query(bold=True, antialiase=True))
