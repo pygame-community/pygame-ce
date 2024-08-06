@@ -3853,29 +3853,13 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
             result = pygame_Blit(src, srcrect, dst, dstrect, 0);
         }
         else {
-            SDL_PixelFormat *fmt = src->format;
-            SDL_PixelFormat newfmt;
+            SDL_PixelFormat newfmt = *src->format;
 
             newfmt.palette = 0; /* Set NULL (or SDL gets confused) */
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-            newfmt.bits_per_pixel = fmt->bits_per_pixel;
-            newfmt.bytes_per_pixel = fmt->bytes_per_pixel;
-#else
-            newfmt.BitsPerPixel = fmt->BitsPerPixel;
-            newfmt.BytesPerPixel = fmt->BytesPerPixel;
-#endif
             newfmt.Amask = 0;
-            newfmt.Rmask = fmt->Rmask;
-            newfmt.Gmask = fmt->Gmask;
-            newfmt.Bmask = fmt->Bmask;
             newfmt.Ashift = 0;
-            newfmt.Rshift = fmt->Rshift;
-            newfmt.Gshift = fmt->Gshift;
-            newfmt.Bshift = fmt->Bshift;
             newfmt.Aloss = 0;
-            newfmt.Rloss = fmt->Rloss;
-            newfmt.Gloss = fmt->Gloss;
-            newfmt.Bloss = fmt->Bloss;
+
             src = PG_ConvertSurface(src, &newfmt);
             if (src) {
                 result = SDL_BlitSurface(src, srcrect, dst, dstrect);
