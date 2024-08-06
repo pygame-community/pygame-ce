@@ -200,16 +200,40 @@ def initsysfonts_darwin():
     return fonts
 
 
-# read the fonts on unix
+# read the fonts on posix/unix
 def initsysfonts_unix(path="fc-list"):
-    """use the fc-list from fontconfig to get a list of fonts"""
+    """if not embedded, use the fc-list from fontconfig to get a list of fonts"""
     fonts = {}
 
-    if sys.platform == "emscripten":
+    # these are embedded and cannot get os to list fonts a simple way.
+    if hasattr(sys, "getandroidapilevel") or sys.platform == "emscripten":
+        from pathlib import Path
+
+        # default font
+        import importlib.resources
+        import pygame
+
+        entry = importlib.resources.files(pygame) / "freesansbold.ttf"
+        _parse_font_entry_unix(f"{entry}: FreeSans:style=Bold", fonts)
+
+        # cache in search order  main script folder, then /tmp
+        main = __import__("__main__")
+        if hasattr(main, "__file__"):
+            fc_cache = Path(main.__file__).parent / "fc_cache"
+        else:
+            fc_cache = Path(__import__("tempfile").gettempdir()) / "fc_cache"
+
+        if fc_cache.is_file():
+            with open(fc_cache, "rb") as file:
+                for entry in file.read().decode("utf-8").splitlines():
+                    _parse_font_entry_unix(entry, fonts)
+        else:
+            warnings.warn(f"no fc_cache font cache file at {fc_cache}")
+
         return fonts
 
     import subprocess
-
+    
     try:
         proc = subprocess.run(
             [path, ":", "file", "family", "style"],
