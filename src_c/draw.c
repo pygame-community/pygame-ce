@@ -1209,8 +1209,11 @@ clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2, int width,
 }
 
 static int
-set_at(SDL_Surface *surf, int x, int y, Uint32 color)
+set_at(SDL_Surface *surf, int x, long long y, Uint32 color)
 {
+    // y should be long long so that y * surf->pitch doesn't overflow the int
+    // bounds in the case of very large surfaces and drawing on the edge of
+    // them
     SDL_PixelFormat *format = surf->format;
     Uint8 *pixels = (Uint8 *)surf->pixels;
 
@@ -1243,7 +1246,7 @@ static void
 set_and_check_rect(SDL_Surface *surf, int x, int y, Uint32 color,
                    int *drawn_area)
 {
-    if (set_at(surf, x, y, color))
+    if (set_at(surf, x, (long long)y, color))
         add_pixel_to_drawn_list(x, y, drawn_area);
 }
 
@@ -1537,7 +1540,7 @@ drawhorzlineclip(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2)
         return;
 
     if (x1 == x2) {
-        set_at(surf, x1, y1, color);
+        set_at(surf, x1, (long long)y1, color);
         return;
     }
     drawhorzline(surf, color, x1, y1, x2);
