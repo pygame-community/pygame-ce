@@ -63,6 +63,19 @@ if not cc.has_header('Python.h', dependencies: py_dep)
     )
 endif
 
+if get_option('coverage')
+    if cc.has_argument('--coverage')
+        add_global_arguments('--coverage', language: 'c')
+    else
+        error('Requested coverage but compiler doesn\'t seem to support it')
+    endif
+    if cc.has_link_argument('--coverage')
+        add_global_link_arguments('--coverage', language: 'c')
+    else
+        error('Requested coverage but compiler doesn\'t seem to support it')
+    endif
+endif
+
 pg_dir = py.get_install_dir() / pg
 
 pg_inc_dirs = []
