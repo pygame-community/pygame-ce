@@ -998,7 +998,7 @@ cdef class Renderer:
         else:
             raise TypeError('target must be a Texture or None')
 
-    cpdef object blit(self, object source, object dest=None, object area=None, int special_flags=0):
+    cpdef object blit(self, object source, RectLike dest=None, RectLike area=None, int special_flags=0):
         """Draw textures using a Surface-like API
 
         For compatibility purposes. Draws :class:`Texture` objects onto the
@@ -1011,10 +1011,6 @@ cdef class Renderer:
 
         .. note:: Textures created by different Renderers cannot shared with each other!
         """
-        if not isinstance(dest, (Rect, FRect)):
-            raise TypeError('dest must be a Rect or FRect')
-        if area is not None and not isinstance(area, (Rect, FRect)):
-            raise TypeError('area must be None or a Rect or FRect')
         if isinstance(source, Texture):
             (<Texture>source).draw(area, dest)
         elif isinstance(source, Image):
