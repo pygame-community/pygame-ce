@@ -50,6 +50,17 @@ extend those when you add a Sprite or Group class.
 
 Sprites are not thread safe. So lock them yourself if using threads.
 
+.. note:: As of version 2.5.1, you can use ``Sprite`` and ``Group`` with ``Renderer``
+            and ``Texture`` from ``_sdl2.video``, at least partially. Instead of ``Sprite.image``
+            needing to be a ``Surface``, it needs to be a ``Texture`` to do this. This behavior
+            is still very experimental, so please report any weirdness to the developers as an
+            issue on the ``pygame-ce`` github repository. Also note that ``LayeredDirty.draw``
+            does not currently work in this manner. Other group types might work, but have not
+            been thorougly tested.
+
+.. versionchanged:: 2.5.1 ``Sprite`` and ``Group``
+                     have some compatibility with ``_sdl2.video``
+
 .. class:: Sprite
 
    | :sl:`Simple base class for visible game objects.`
@@ -64,24 +75,24 @@ Sprites are not thread safe. So lock them yourself if using threads.
    adding the Sprite to Groups. For example:
 
    .. code-block:: python
-   
+
        class Block(pygame.sprite.Sprite):
-            
-           # Constructor. Pass in the color of the block, 
+
+           # Constructor. Pass in the color of the block,
            # and its x and y position
            def __init__(self, color, width, height):
               # Call the parent class (Sprite) constructor
-              pygame.sprite.Sprite.__init__(self) 
-        
+              pygame.sprite.Sprite.__init__(self)
+
               # Create an image of the block, and fill it with a color.
               # This could also be an image loaded from the disk.
               self.image = pygame.Surface([width, height])
               self.image.fill(color)
-        
+
               # Fetch the rectangle object that has the dimensions of the image
               # Update the position of this object by setting the values of rect.x and rect.y
-              self.rect = self.image.get_rect()   
-      
+              self.rect = self.image.get_rect()
+
    .. method:: update
 
       | :sl:`method to control sprite behavior`
@@ -291,13 +302,24 @@ Sprites are not thread safe. So lock them yourself if using threads.
    .. method:: draw
 
       | :sl:`blit the Sprite images`
-      | :sg:`draw(Surface) -> List[Rect]`
+      | :sg:`draw(Surface) -> List[Union[Rect, FRect]]`
+      | :sg:`draw(Renderer) -> List[Union[Rect, FRect]]`
 
-      Draws the contained Sprites to the Surface argument. This uses the
-      ``Sprite.image`` attribute for the source surface, and ``Sprite.rect``
+      Draws the contained Sprites to the Surface or _sdl2.video.Renderer argument.
+
+      Surface
+      -------
+      This uses the ``Sprite.image`` attribute for the source surface, and ``Sprite.rect``
+      for the position.
+
+      Renderer
+      --------
+      This uses the ``Sprite.image`` attribute for the source Texture, and ``Sprite.rect``
       for the position.
 
       The Group keeps sprites in the order they were added, they will be drawn in this order.
+
+      .. versionchanged:: 2.5.1 Now accepts a renderer for use with ``_sdl2.video``
 
       .. ## Group.draw ##
 
@@ -667,17 +689,17 @@ Sprites are not thread safe. So lock them yourself if using threads.
        collide_circle_ratio, collide_mask
 
    Example:
-   
+
    .. code-block:: python
 
     # See if the Sprite block has collided with anything in the Group block_list
     # The True flag will remove the sprite in block_list
-    blocks_hit_list = pygame.sprite.spritecollide(player, block_list, True)  
-     
+    blocks_hit_list = pygame.sprite.spritecollide(player, block_list, True)
+
     # Check the list of colliding sprites, and add one to the score for each one
     for block in blocks_hit_list:
         score +=1
-       
+
    .. ## pygame.sprite.spritecollide ##
 
 .. function:: collide_rect
