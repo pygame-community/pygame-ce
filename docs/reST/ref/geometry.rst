@@ -73,12 +73,11 @@
          | :sl:`radius of the circle`
          | :sg:`r -> float`
 
-         Represents how big the circle is. It can't be negative. Reassigning it scales the circle.
+         Represents the size of the circle. It can't be negative. Reassigning it scales the circle.
 
          .. versionadded:: 2.4.0
 
-         .. versionchanged:: 2.5.1 It is allowed to create degenerate circles with radius
-            equal to ``0``. This also applies to virtual attributes.
+         .. versionchanged:: 2.5.1 It is now allowed to create degenerate circles with :math:`r = 0`.
 
          .. ## Circle.r ##
 
@@ -87,7 +86,7 @@
          | :sl:`radius of the circle squared`
          | :sg:`r_sqr -> float`
 
-         It's equivalent to :math:`r^2`. Reassigning it changes the radius to :math:`r = \sqrt{r_{sqr}}`.
+         It's equivalent to :math:`r^2`. It can't be negative. Reassigning it changes the radius to :math:`r = \sqrt{r_{sqr}}`.
 
          .. versionadded:: 2.4.0
 
