@@ -24,7 +24,7 @@
    | :sg:`Circle((x, y), radius) -> Circle`
    | :sg:`Circle(x, y, radius) -> Circle`
 
-   The `Circle` class provides many useful methods for collision / transform and intersection.
+   The `Circle` class provides many useful methods for collision, transformation, and intersection.
    A `Circle` can be created from a combination of a pair of coordinates that represent
    the center of the circle and a radius. Circles can also be created from python objects that
    are already a `Circle` or have an attribute named "circle".
@@ -55,8 +55,6 @@
          | :sg:`x -> float`
 
          The `x` coordinate of the center of the circle. It can be reassigned to move the circle.
-         Reassigning the `x` attribute will move the circle to the new `x` coordinate.
-         The `y` and `r` attributes will not be affected.
 
          .. versionadded:: 2.4.0
 
@@ -68,8 +66,6 @@
          | :sg:`y -> float`
 
          The `y` coordinate of the center of the circle. It can be reassigned to move the circle.
-         Reassigning the `y` attribute will move the circle to the new `y` coordinate.
-         The `x` and `r` attributes will not be affected.
 
          .. versionadded:: 2.4.0
 
@@ -80,9 +76,8 @@
          | :sl:`radius of the circle`
          | :sg:`r -> float`
 
+         Represents how big the circle is.
          It is not possible to set the radius to a negative value. It can be reassigned.
-         If reassigned it will only change the radius of the circle.
-         The circle will not be moved from its original position.
 
          .. versionadded:: 2.4.0
 
@@ -96,9 +91,8 @@
          | :sl:`radius of the circle squared`
          | :sg:`r_sqr -> float`
 
-         It's equivalent to `r*r`. It can be reassigned. If reassigned, the radius
-         of the circle will be changed to the square root of the new value.
-         The circle will not be moved from its original position.
+         It's equivalent to `r*r`. If reassigned, the radius of the circle will be changed
+         to the square root of the new value.
 
          .. versionadded:: 2.4.0
 
@@ -109,9 +103,8 @@
          | :sl:`x and y coordinates of the center of the circle`
          | :sg:`center -> (float, float)`
 
-         It's a tuple containing the `x` and `y` coordinates that represent the center
-         of the circle. It can be reassigned. If reassigned, the circle will be moved
-         to the new position. The radius will not be affected.
+         It's a tuple containing the circle's `x` and `y` coordinates representing its center.
+         If reassigned, the circle will be moved to the new position.
 
          .. versionadded:: 2.4.0
 
@@ -122,9 +115,8 @@
          | :sl:`diameter of the circle`
          | :sg:`diameter -> float`
 
-         It's calculated using the `d=2*r` formula. It can be reassigned. If reassigned
-         the radius will be changed to half the diameter.
-         The circle will not be moved from its original position.
+         It's calculated using the `d=2*r` formula. If reassigned the radius will be changed
+         to half the diameter.
 
          .. versionadded:: 2.4.0
 
@@ -135,9 +127,8 @@
          | :sl:`area of the circle`
          | :sg:`area -> float`
 
-         It's calculated using the `area=pi*r*r` formula. It can be reassigned.
-         If reassigned the circle radius will be changed to produce a circle with matching
-         area. The circle will not be moved from its original position.
+         It's calculated using the `area=pi*r*r` formula. If reassigned the circle radius
+         will be changed to produce a circle with matching area.
 
          .. versionadded:: 2.4.0
 
@@ -148,9 +139,8 @@
          | :sl:`circumference of the circle`
          | :sg:`circumference -> float`
 
-         It's calculated using the `circumference=2*pi*r` formula. It can be reassigned.
-         If reassigned the circle radius will be changed to produce a circle with matching
-         circumference. The circle will not be moved from its original position.
+         It's calculated using the `circumference=2*pi*r` formula. If reassigned the circle
+         radius will be changed to produce a circle with matching circumference.
 
          .. versionadded:: 2.4.0
 
@@ -167,10 +157,9 @@
          | :sg:`collidepoint(x, y, /) -> bool`
          | :sg:`collidepoint(vector2, /) -> bool`
 
-         The `collidepoint` method tests whether a given point is inside the `Circle`
-         (including the edge of the `Circle`). It takes a tuple of (x, y) coordinates, two
-         separate x and y coordinates, or a `Vector2` object as its argument, and returns
-         `True` if the point is inside the `Circle`, `False` otherwise.
+         Returns `True` if the given point is inside this `Circle` (edge included), `False` otherwise.
+         It takes a tuple of (x, y) coordinates, two separate x and y coordinates, or a `Vector2`
+         object as its argument.
 
          .. versionadded:: 2.4.0
 
@@ -178,83 +167,33 @@
 
    .. method:: collidecircle
 
-         | :sl:`test if two circles collide`
+         | :sl:`test if a circle collides with this circle`
          | :sg:`collidecircle(circle, /) -> bool`
          | :sg:`collidecircle(x, y, radius, /) -> bool`
          | :sg:`collidecircle((x, y), radius, /) -> bool`
 
-         The `collidecircle` method tests whether two `Circle` objects overlap. It takes either
-         a `Circle` object, a tuple of (x, y) coordinates and a radius, or separate x and y
-         coordinates and a radius as its argument, and returns `True` if any portion of the two
-         `Circle` objects overlap, `False` otherwise.
+         Returns `True` if the given circle intersects with this `Circle`, `False` otherwise.
+         It takes either a `Circle` object, a tuple of (x, y) coordinates and a radius, or separate x and y
+         coordinates and a radius as its argument.
 
          .. note::
-             If this method is called with a `Circle` object that is the same as the `Circle`
-             it is called on, it will always return `True`.
+             Calling this method with this circle as the argument will always return `True`.
 
          .. versionadded:: 2.4.0
 
          .. ## Circle.collidecircle ##
 
-   .. method:: move
-
-         | :sl:`moves the circle by a given amount`
-         | :sg:`move((x, y), /) -> Circle`
-         | :sg:`move(x, y, /) -> Circle`
-         | :sg:`move(vector2, /) -> Circle`
-
-         The `move` method allows you to create a new `Circle` object that is moved by a given
-         offset from the original `Circle`. This is useful if you want to move a `Circle` without
-         modifying the original. The move method takes either a tuple of (x, y) coordinates,
-         two separate x and y coordinates, or a `Vector2` object as its argument, and returns
-         a new `Circle` object with the updated position.
-
-         .. note::
-             This method is equivalent(behaviour wise) to the following code:
-
-             .. code-block:: python
-
-                 Circle((circle.x + x, circle.y + y), circle.r)
-
-         .. versionadded:: 2.5.0
-
-         .. ## Circle.move ##
-
-   .. method:: move_ip
-
-         | :sl:`moves the circle by a given amount, in place`
-         | :sg:`move_ip((x, y), /) -> None`
-         | :sg:`move_ip(x, y, /) -> None`
-         | :sg:`move_ip(vector2, /) -> None`
-
-         The `move_ip` method is similar to the move method, but it moves the `Circle` in place,
-         modifying the original `Circle` object. This method takes the same types of arguments
-         as move, and it always returns None.
-
-         .. note::
-             This method is equivalent(behaviour wise) to the following code:
-
-             .. code-block:: python
-
-                 circle.x += x
-                 circle.y += y
-
-         .. versionadded:: 2.5.0
-
-         .. ## Circle.move_ip ##
-
    .. method:: colliderect
 
-         | :sl:`checks if a rectangle intersects the circle`
+         | :sl:`test if a rectangle collides with this circle`
          | :sg:`colliderect(rect, /) -> bool`
          | :sg:`colliderect((x, y, width, height), /) -> bool`
          | :sg:`colliderect(x, y, width, height, /) -> bool`
          | :sg:`colliderect((x, y), (width, height), /) -> bool`
 
-         The `colliderect` method tests whether a given rectangle intersects the `Circle`. It
-         takes either a `Rect` object, a tuple of (x, y, width, height) coordinates, or separate
-         x, y coordinates and width, height as its argument. Returns `True` if any portion
-         of the rectangle overlaps with the `Circle`, `False` otherwise.
+         Returns `True` if the given rectangle intersects with this `Circle`, `False` otherwise.
+         Takes either a `Rect` object, a tuple of (x, y, width, height) coordinates, or separate
+         x, y coordinates and width, height as its argument.
 
          .. versionadded:: 2.4.0
          
@@ -262,7 +201,7 @@
 
    .. method:: collideswith
 
-         | :sl:`check if a shape or point collides with the circle`
+         | :sl:`tests if a shape or point collides with this circle`
          | :sg:`collideswith(circle, /) -> bool`
          | :sg:`collideswith(rect, /) -> bool`
          | :sg:`collideswith((x, y), /) -> bool`
@@ -283,15 +222,14 @@
 
    .. method:: contains
 
-         | :sl:`check if a shape or point is inside the circle`
+         | :sl:`tests if a shape or point is inside the circle`
          | :sg:`contains(circle, /) -> bool`
          | :sg:`contains(rect, /) -> bool`
          | :sg:`contains((x, y), /) -> bool`
          | :sg:`contains(vector2, /) -> bool`
 
-         Checks whether a given shape or point is completely contained within the `Circle`.
-         Takes a single argument which can be a `Circle`, `Rect`, `FRect`, or a point.
          Returns `True` if the shape or point is completely contained, and `False` otherwise.
+         Takes a single argument which can be a `Circle`, `Rect`, `FRect`, or a point.
 
          .. note::
              The shape argument must be an actual shape object (`Circle`, `Rect`, or `FRect`).
@@ -301,6 +239,50 @@
          .. versionadded:: 2.5.0
 
          .. ## Circle.contains ##
+
+   .. method:: move
+
+         | :sl:`moves the circle by a given amount`
+         | :sg:`move((x, y), /) -> Circle`
+         | :sg:`move(x, y, /) -> Circle`
+         | :sg:`move(vector2, /) -> Circle`
+
+         Returns a copy of this `Circle` that is moved by the given amount.
+         Takes either a tuple of (x, y) coordinates, two separate x and y coordinates,
+         or a `Vector2` object as its argument.
+
+         .. note::
+             This method is equivalent (behaviour wise) to the following code:
+
+             .. code-block:: python
+
+                 Circle((circle.x + x, circle.y + y), circle.r)
+
+         .. versionadded:: 2.5.0
+
+         .. ## Circle.move ##
+
+   .. method:: move_ip
+
+         | :sl:`moves the circle by a given amount, in place`
+         | :sg:`move_ip((x, y), /) -> None`
+         | :sg:`move_ip(x, y, /) -> None`
+         | :sg:`move_ip(vector2, /) -> None`
+
+         Moves this `Circle` in place by the given amount
+         Takes the same types of arguments as move, and it always returns `None`.
+
+         .. note::
+             This method is equivalent (behaviour wise) to the following code:
+
+             .. code-block:: python
+
+                 circle.x += x
+                 circle.y += y
+
+         .. versionadded:: 2.5.0
+
+         .. ## Circle.move_ip ##
 
    .. method:: update
 
@@ -313,7 +295,7 @@
          y coordinates, and a radius as its arguments, and it always returns `None`.
 
          .. note::
-             This method is equivalent(behaviour wise) to the following code:
+             This method is equivalent (behaviour wise) to the following code:
 
              .. code-block:: python
 
@@ -331,10 +313,10 @@
          | :sg:`rotate(angle, rotation_point=Circle.center, /) -> Circle`
          | :sg:`rotate(angle, /) -> Circle`
 
-         Returns a new `Circle` that is rotated by the specified angle around a point.
-         A positive angle rotates the circle clockwise, while a negative angle rotates it counter-clockwise. Angles should be specified in degrees.
-         The rotation point can be a `tuple`, `list`, or `Vector2`.
-         If no rotation point is given, the circle will be rotated around its center.
+         Returns a copy of this `Circle` rotated by the specified angle (in degrees) around a point.
+         Positive angles mean clockwise rotation, while negative angles mean counter-clockwise rotation.
+         The rotation point is optional and must be a valid 2D coordinate. If not provided,
+         the circle will be rotated around its center.
 
          .. versionadded:: 2.5.0
 
@@ -347,10 +329,10 @@
          | :sg:`rotate_ip(angle, /) -> None`
 
 
-         This method rotates the circle by a specified angle around a point.
-         A positive angle rotates the circle clockwise, while a negative angle rotates it counter-clockwise. Angles should be specified in degrees.
-         The rotation point can be a `tuple`, `list`, or `Vector2`.
-         If no rotation point is given, the circle will be rotated around its center.
+         Rotates the circle by a specified angle (in degrees) around a point.
+         Positive angles mean clockwise rotation, while negative angles mean counter-clockwise rotation.
+         The rotation point is optional and must be a valid 2D coordinate. If not provided,
+         the circle will be rotated around its center.
 
          .. versionadded:: 2.5.0
 
@@ -358,16 +340,13 @@
 
    .. method:: as_rect
 
-         | :sl:`returns the smallest pygame.Rect object that contains the circle`
+         | :sl:`returns a Rect that contains the circle`
          | :sg:`as_rect() -> Rect`
 
-         The `as_rect` method returns a `pygame.Rect` object that represents the smallest
-         rectangle that completely contains the `Circle` object. This means that the `Rect`
-         object returned by as_rect will have dimensions such that it completely encloses
-         the `Circle`, with no part of the `Circle` extending outside of the `Rect`.
+         Returns the smallest `pygame.Rect` object containing this `Circle`.
 
          .. note::
-             This method is equivalent(behaviour wise) to the following code:
+             This method is equivalent (behaviour wise) to the following code:
 
              .. code-block:: python
 
@@ -379,16 +358,13 @@
 
    .. method:: as_frect
 
-         | :sl:`returns the smallest pygame.FRect object that contains the circle`
+         | :sl:`returns an FRect that contains the circle`
          | :sg:`as_frect() -> FRect`
 
-         The `as_frect` method returns a `pygame.FRect` object that represents the smallest
-         rectangle that completely contains the `Circle` object. This means that the `FRect`
-         object returned by as_rect will have dimensions such that it completely encloses
-         the `Circle`, with no part of the `Circle` extending outside of the `FRect`.
+         Returns the smallest `pygame.FRect` object that contains this `Circle`.
 
          .. note::
-             This method is equivalent(behaviour wise) to the following code:
+             This method is equivalent (behaviour wise) to the following code:
 
              .. code-block:: python
 
@@ -400,12 +376,10 @@
 
    .. method:: copy
 
-         | :sl:`returns a copy of the circle`
+         | :sl:`copies the circle`
          | :sg:`copy() -> Circle`
 
-         The `copy` method returns a new `Circle` object having the same position and radius
-         as the original `Circle` object. The function takes no arguments and returns the
-         new `Circle` object.
+         Returns a copy of this `Circle`.
 
          .. versionadded:: 2.4.0
 
