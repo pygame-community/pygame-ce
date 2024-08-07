@@ -38,6 +38,7 @@
 
       ((x, y), radius)
       (x, y, radius)
+      (vector2, radius)
 
    The `Circle` class only stores the x, y and r attributes, everything else is calculated
    on the fly based on them.
@@ -248,7 +249,7 @@
          or a `Vector2` object as its argument.
 
          .. note::
-             This method is equivalent (behaviour wise) to the following code:
+             This method is equivalent to the following code:
 
              .. code-block:: python
 
@@ -266,10 +267,10 @@
          | :sg:`move_ip(vector2, /) -> None`
 
          Moves this `Circle` in place by the given amount.
-         Takes the same types of arguments as move, and it always returns `None`.
+         Takes the same types of arguments as :meth:`move` and it always returns `None`.
 
          .. note::
-             This method is equivalent (behaviour wise) to the following code:
+             This method is equivalent to the following code:
 
              .. code-block:: python
 
@@ -291,7 +292,7 @@
          It always returns `None`.
 
          .. note::
-             This method is equivalent (behaviour wise) to the following code:
+             This method is equivalent to the following code:
 
              .. code-block:: python
 
@@ -311,8 +312,7 @@
 
          Returns a copy of this `Circle` rotated by the specified angle (in degrees) around a point.
          Positive angles rotate the circle clockwise, counter-clockwise otherwise.
-         The rotation point is optional and must be a valid 2D coordinate. If not provided,
-         the circle will be rotated around its center.
+         The rotation point is optional and defaults to the circle's center.
 
          .. versionadded:: 2.5.0
 
@@ -324,11 +324,9 @@
          | :sg:`rotate_ip(angle, rotation_point=Circle.center, /) -> None`
          | :sg:`rotate_ip(angle, /) -> None`
 
-
          Rotates the circle by a specified angle (in degrees) around a point.
          Positive angles rotate the circle clockwise, counter-clockwise otherwise.
-         The rotation point is optional and must be a valid 2D coordinate. If not provided,
-         the circle will be rotated around its center.
+         The rotation point is optional and defaults to the circle's center.
 
          .. versionadded:: 2.5.0
 
@@ -342,7 +340,7 @@
          Returns the smallest `pygame.Rect` object containing this `Circle`.
 
          .. note::
-             This method is equivalent (behaviour wise) to the following code:
+             This method is equivalent to the following code:
 
              .. code-block:: python
 
@@ -360,7 +358,7 @@
          Returns the smallest `pygame.FRect` object containing this `Circle`.
 
          .. note::
-             This method is equivalent (behaviour wise) to the following code:
+             This method is equivalent to the following code:
 
              .. code-block:: python
 
