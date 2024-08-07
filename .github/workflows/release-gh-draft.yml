@@ -32,6 +32,11 @@ jobs:
   draft-release:
     needs: [manylinux-aarch64, manylinux, macos, windows, sdist]
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      attestations: write
+      contents: write
+
     steps:
       - uses: actions/checkout@v4.1.7
 
@@ -55,13 +60,10 @@ jobs:
         id: ver
         run: echo "VER=${GITHUB_REF_NAME#'release/'}" >> $GITHUB_OUTPUT
 
-      # First generate release.sha512sum which contains hashes of all release files, then
-      # encrypt these hashes so that the hash file itself cannot be tampered with.
-      - name: Generate release hashes (encrypted)
-        run: |
-          cd pygame-wheels
-          sha512sum * > release.sha512sum
-          gpg --batch --output release.sha512sum.gpg --passphrase ${{ secrets.GITHUB_TOKEN }} --symmetric release.sha512sum
+      - name: Generate release attestation
+        uses: actions/attest-build-provenance@v1.4.0
+        with:
+          subject-path: "pygame-wheels/*"
 
       - name: Draft a release
         uses: softprops/action-gh-release@v2
