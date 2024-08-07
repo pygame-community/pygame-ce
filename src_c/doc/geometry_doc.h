@@ -19,6 +19,6 @@
 #define DOC_CIRCLE_UPDATE "update((x, y), radius, /) -> None\nupdate(x, y, radius, /) -> None\nupdates the circle position and radius"
 #define DOC_CIRCLE_ROTATE "rotate(angle, rotation_point=Circle.center, /) -> Circle\nrotate(angle, /) -> Circle\nrotates the circle"
 #define DOC_CIRCLE_ROTATEIP "rotate_ip(angle, rotation_point=Circle.center, /) -> None\nrotate_ip(angle, /) -> None\nrotates the circle in place"
-#define DOC_CIRCLE_ASRECT "as_rect() -> Rect\nreturns a Rect that contains the circle"
-#define DOC_CIRCLE_ASFRECT "as_frect() -> FRect\nreturns an FRect that contains the circle"
+#define DOC_CIRCLE_ASRECT "as_rect() -> Rect\nreturns the smallest Rect containing the circle"
+#define DOC_CIRCLE_ASFRECT "as_frect() -> FRect\nreturns the smallest FRect containing the circle"
 #define DOC_CIRCLE_COPY "copy() -> Circle\ncopies the circle"
