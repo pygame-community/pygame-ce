@@ -127,6 +127,14 @@ events related to controllers.
     ``pygame._sdl2.controller.from_joystick``. Controllers are
     initialized on creation.
 
+   .. method:: init
+
+      | :sl:`Initialize the Controller`
+      | :sg:`init() -> None`
+
+      Initialize a controller object. This should not be used much, since
+      Controllers are initialised on creation.
+
    .. method:: quit
 
       | :sl:`uninitialize the Controller`
