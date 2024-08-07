@@ -7176,6 +7176,51 @@ class DrawModuleTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 draw.polygon(surf, col, points, 0)
 
+    def test_aafunctions_depth_segfault(self):
+        """Ensure future commits don't break the segfault fixed by pull request
+        https://github.com/pygame-community/pygame-ce/pull/3008
+        """
+
+        pixels_to_check = [(160, 102), (499, 300), (320, 258), (192, 252)]
+        pixel_colors_8 = [
+            pygame.Color(0, 182, 0, 255),
+            pygame.Color(0, 0, 170, 255),
+            pygame.Color(255, 0, 0, 255),
+            pygame.Color(255, 0, 0, 255),
+        ]
+
+        pixel_colors_16 = [
+            pygame.Color(0, 178, 0, 255),
+            pygame.Color(0, 0, 213, 255),
+            pygame.Color(246, 0, 0, 255),
+            pygame.Color(222, 0, 0, 255),
+        ]
+
+        pixel_colors_24_32 = [
+            pygame.Color(0, 178, 0, 255),
+            pygame.Color(0, 0, 209, 255),
+            pygame.Color(247, 0, 0, 255),
+            pygame.Color(223, 0, 0, 255),
+        ]
+
+        for depth in (8, 16, 24, 32):
+            # all values must stay so to reproduce the segfault
+            surf = pygame.Surface(size=(512, 512), flags=0, depth=depth)
+
+            draw.aacircle(surf, pygame.Color("red"), (256, 256), 64)
+            draw.aaline(surf, pygame.Color("blue"), (256, 256), (500, 300))
+            draw.aalines(
+                surf, pygame.Color("green"), False, [(100, 100), (100, 500), (160, 100)]
+            )
+
+            for i, pixel in enumerate(pixels_to_check):
+                if depth == 8:
+                    self.assertEqual(surf.get_at(pixel), pixel_colors_8[i])
+                elif depth == 16:
+                    self.assertEqual(surf.get_at(pixel), pixel_colors_16[i])
+                else:
+                    self.assertEqual(surf.get_at(pixel), pixel_colors_24_32[i])
+
 
 ###############################################################################
 
