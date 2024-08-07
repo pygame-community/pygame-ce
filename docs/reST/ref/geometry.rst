@@ -24,7 +24,7 @@
    | :sg:`Circle((x, y), radius) -> Circle`
    | :sg:`Circle(x, y, radius) -> Circle`
 
-   The `Circle` class provides many useful methods for collision, transformation, and intersection.
+   The `Circle` class provides many useful methods for collision testing, transformation and intersection.
    A `Circle` can be created from a combination of a pair of coordinates that represent
    the center of the circle and a radius. Circles can also be created from python objects that
    are already a `Circle` (effectively copying the circle) or have an attribute named "circle".
@@ -148,7 +148,7 @@
 
    .. method:: collidepoint
 
-         | :sl:`test if a point is inside the circle`
+         | :sl:`tests if a point is inside the circle`
          | :sg:`collidepoint((x, y), /) -> bool`
          | :sg:`collidepoint(x, y, /) -> bool`
          | :sg:`collidepoint(vector2, /) -> bool`
@@ -163,7 +163,7 @@
 
    .. method:: collidecircle
 
-         | :sl:`test if a circle collides with this circle`
+         | :sl:`tests if a circle collides with this circle`
          | :sg:`collidecircle(circle, /) -> bool`
          | :sg:`collidecircle(x, y, radius, /) -> bool`
          | :sg:`collidecircle((x, y), radius, /) -> bool`
@@ -182,7 +182,7 @@
 
    .. method:: colliderect
 
-         | :sl:`test if a rectangle collides with this circle`
+         | :sl:`tests if a rectangle collides with this circle`
          | :sg:`colliderect(rect, /) -> bool`
          | :sg:`colliderect((x, y, width, height), /) -> bool`
          | :sg:`colliderect(x, y, width, height, /) -> bool`
