@@ -244,16 +244,15 @@
          | :sg:`move(x, y, /) -> Circle`
          | :sg:`move(vector2, /) -> Circle`
 
-         Returns a copy of this `Circle` that is moved by the given amount.
+         Returns a copy of this `Circle` moved by the given amounts.
          Takes either a tuple of (x, y) coordinates, two separate x and y coordinates,
          or a `Vector2` object as its argument.
 
-         .. note::
-             This method is equivalent to the following code:
+         This method is equivalent to the following code:
 
-             .. code-block:: python
+         .. code-block:: python
 
-                 Circle((circle.x + x, circle.y + y), circle.r)
+             Circle((circle.x + x, circle.y + y), circle.r)
 
          .. versionadded:: 2.5.0
 
@@ -266,16 +265,15 @@
          | :sg:`move_ip(x, y, /) -> None`
          | :sg:`move_ip(vector2, /) -> None`
 
-         Moves this `Circle` in place by the given amount.
+         Moves this `Circle` in place by the given amounts.
          Takes the same types of arguments as :meth:`move` and it always returns `None`.
 
-         .. note::
-             This method is equivalent to the following code:
+         This method is equivalent to the following code:
 
-             .. code-block:: python
+         .. code-block:: python
 
-                 circle.x += x
-                 circle.y += y
+             circle.x += x
+             circle.y += y
 
          .. versionadded:: 2.5.0
 
@@ -291,14 +289,13 @@
          Sets the position and radius of this `Circle` to the provided values.
          It always returns `None`.
 
-         .. note::
-             This method is equivalent to the following code:
+         This method is equivalent to the following code:
 
-             .. code-block:: python
+         .. code-block:: python
 
-                 circle.x = x
-                 circle.y = y
-                 circle.r = radius
+             circle.x = x
+             circle.y = y
+             circle.r = radius
 
          .. versionadded:: 2.4.0
 
@@ -339,12 +336,11 @@
 
          Returns the smallest `pygame.Rect` object containing this `Circle`.
 
-         .. note::
-             This method is equivalent to the following code:
+         This method is equivalent to the following code:
 
-             .. code-block:: python
+         .. code-block:: python
 
-                 Rect(circle.x - circle.r, circle.y - circle.r, circle.r * 2, circle.r * 2)
+             Rect(circle.x - circle.r, circle.y - circle.r, circle.r * 2, circle.r * 2)
 
          .. versionadded:: 2.5.0
 
@@ -357,12 +353,11 @@
 
          Returns the smallest `pygame.FRect` object containing this `Circle`.
 
-         .. note::
-             This method is equivalent to the following code:
+         This method is equivalent to the following code:
 
-             .. code-block:: python
+         .. code-block:: python
 
-                 FRect(circle.x - circle.r, circle.y - circle.r, circle.r * 2, circle.r * 2)
+             FRect(circle.x - circle.r, circle.y - circle.r, circle.r * 2, circle.r * 2)
 
          .. versionadded:: 2.5.0
 
