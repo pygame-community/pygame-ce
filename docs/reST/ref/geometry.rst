@@ -340,7 +340,7 @@
 
    .. method:: as_rect
 
-         | :sl:`returns a Rect that contains the circle`
+         | :sl:`returns the smallest Rect containing the circle`
          | :sg:`as_rect() -> Rect`
 
          Returns the smallest `pygame.Rect` object containing this `Circle`.
@@ -358,10 +358,10 @@
 
    .. method:: as_frect
 
-         | :sl:`returns an FRect that contains the circle`
+         | :sl:`returns the smallest FRect containing the circle`
          | :sg:`as_frect() -> FRect`
 
-         Returns the smallest `pygame.FRect` object that contains this `Circle`.
+         Returns the smallest `pygame.FRect` object containing this `Circle`.
 
          .. note::
              This method is equivalent (behaviour wise) to the following code:
