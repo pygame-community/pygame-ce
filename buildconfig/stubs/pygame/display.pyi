@@ -6,13 +6,13 @@ from pygame.surface import Surface
 
 from pygame._sdl2 import Window
 
-from ._common import (
-    ColorValue,
+from pygame.typing import (
+    ColorLike,
     Coordinate,
     IntCoordinate,
-    RectValue,
-    RGBAOutput,
-    Sequence,
+    RectLike,
+    RGBATuple,
+    SequenceLike,
 )
 
 class _VidInfo:
@@ -21,9 +21,9 @@ class _VidInfo:
     video_mem: int
     bitsize: int
     bytesize: int
-    masks: RGBAOutput
-    shifts: RGBAOutput
-    losses: RGBAOutput
+    masks: RGBATuple
+    shifts: RGBATuple
+    losses: RGBATuple
     blit_hw: int
     blit_hw_CC: int
     blit_hw_A: int
@@ -48,7 +48,7 @@ def get_surface() -> Surface: ...
 def flip() -> None: ...
 @overload
 def update(
-    rectangle: Optional[Union[RectValue, Iterable[Optional[RectValue]]]] = None, /
+    rectangle: Optional[Union[RectLike, Iterable[Optional[RectLike]]]] = None, /
 ) -> None: ...
 @overload
 def update(x: int, y: int, w: int, h: int, /) -> None: ...
@@ -77,12 +77,12 @@ def toggle_fullscreen() -> int: ...
 def set_gamma(red: float, green: float = ..., blue: float = ..., /) -> int: ...
 @deprecated("since 2.1.4. Removed in SDL3")
 def set_gamma_ramp(
-    red: Sequence[int], green: Sequence[int], blue: Sequence[int], /
+    red: SequenceLike[int], green: SequenceLike[int], blue: SequenceLike[int], /
 ) -> int: ...
 def set_icon(surface: Surface, /) -> None: ...
 def set_caption(title: str, icontitle: Optional[str] = None, /) -> None: ...
 def get_caption() -> Tuple[str, str]: ...
-def set_palette(palette: Sequence[ColorValue], /) -> None: ...
+def set_palette(palette: SequenceLike[ColorLike], /) -> None: ...
 def get_num_displays() -> int: ...
 def get_window_size() -> Tuple[int, int]: ...
 def get_window_position() -> Tuple[int, int]:...
@@ -99,7 +99,7 @@ def message_box(
     message: Optional[str] = None,
     message_type: Literal["info", "warn", "error"] = "info",
     parent_window: Optional[Window] = None,
-    buttons: Sequence[str] = ("OK",),
+    buttons: SequenceLike[str] = ("OK",),
     return_button: int = 0,
     escape_button: Optional[int] = None,
 ) -> int: ...

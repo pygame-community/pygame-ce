@@ -3,7 +3,7 @@ from typing import Optional, Union, Literal
 from pygame.color import Color
 from pygame.surface import Surface
 
-from ._common import ColorValue, Coordinate, RectValue, Sequence
+from pygame.typing import ColorLike, Coordinate, RectLike, SequenceLike
 
 def flip(surface: Surface, flip_x: bool, flip_y: bool) -> Surface: ...
 def scale(
@@ -13,7 +13,7 @@ def scale(
 ) -> Surface: ...
 def scale_by(
     surface: Surface,
-    factor: Union[float, Sequence[float]],
+    factor: Union[float, SequenceLike[float]],
     dest_surface: Optional[Surface] = None,
 ) -> Surface: ...
 def rotate(surface: Surface, angle: float) -> Surface: ...
@@ -27,28 +27,28 @@ def smoothscale(
 ) -> Surface: ...
 def smoothscale_by(
     surface: Surface,
-    factor: Union[float, Sequence[float]],
+    factor: Union[float, SequenceLike[float]],
     dest_surface: Optional[Surface] = None,
 ) -> Surface: ...
 def get_smoothscale_backend() -> Literal["GENERIC", "SSE2", "NEON"]: ...
 def set_smoothscale_backend(backend: Literal["GENERIC", "SSE2", "NEON"]) -> None: ...
-def chop(surface: Surface, rect: RectValue) -> Surface: ...
+def chop(surface: Surface, rect: RectLike) -> Surface: ...
 def laplacian(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface: ...
 def invert(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface: ...
 def average_surfaces(
-    surfaces: Sequence[Surface],
+    surfaces: SequenceLike[Surface],
     dest_surface: Optional[Surface] = None,
     palette_colors: Union[bool, int] = 1,
 ) -> Surface: ...
 def average_color(
-    surface: Surface, rect: Optional[RectValue] = None, consider_alpha: bool = False
+    surface: Surface, rect: Optional[RectLike] = None, consider_alpha: bool = False
 ) -> Color: ...
 def threshold(
     dest_surface: Optional[Surface],
     surface: Surface,
-    search_color: Optional[ColorValue],
-    threshold: ColorValue = (0, 0, 0, 0),
-    set_color: Optional[ColorValue] = (0, 0, 0, 0),
+    search_color: Optional[ColorLike],
+    threshold: ColorLike = (0, 0, 0, 0),
+    set_color: Optional[ColorLike] = (0, 0, 0, 0),
     set_behavior: int = 1,
     search_surf: Optional[Surface] = None,
     inverse_set: bool = False,

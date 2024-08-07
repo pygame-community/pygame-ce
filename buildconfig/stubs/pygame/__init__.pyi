@@ -38,6 +38,7 @@ from pygame import (
     system as system,
     geometry as geometry,
     window as window,
+    typing as typing,
 )
 
 from .rect import Rect as Rect, FRect as FRect

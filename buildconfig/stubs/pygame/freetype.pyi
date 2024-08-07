@@ -5,7 +5,7 @@ from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from ._common import ColorValue, FileArg, RectValue
+from pygame.typing import ColorLike, FileLike, RectLike
 
 def get_error() -> str: ...
 def get_version(linked: bool = True) -> Tuple[int, int, int]: ...
@@ -123,18 +123,18 @@ class Font:
     @property
     def fgcolor(self) -> Color: ...
     @fgcolor.setter
-    def fgcolor(self, value: ColorValue) -> None: ...
+    def fgcolor(self, value: ColorLike) -> None: ...
     @property
     def bgcolor(self) -> Color: ...
     @bgcolor.setter
-    def bgcolor(self, value: ColorValue) -> None: ...
+    def bgcolor(self, value: ColorLike) -> None: ...
     @property
     def origin(self) -> bool: ...
     @origin.setter
     def origin(self, value: bool) -> None: ...
     def __init__(
         self,
-        file: Optional[FileArg],
+        file: Optional[FileLike],
         size: float = 0,
         font_index: int = 0,
         resolution: int = 0,
@@ -158,8 +158,8 @@ class Font:
     def render(
         self,
         text: str,
-        fgcolor: Optional[ColorValue] = None,
-        bgcolor: Optional[ColorValue] = None,
+        fgcolor: Optional[ColorLike] = None,
+        bgcolor: Optional[ColorLike] = None,
         style: int = STYLE_DEFAULT,
         rotation: int = 0,
         size: float = 0,
@@ -167,10 +167,10 @@ class Font:
     def render_to(
         self,
         surf: Surface,
-        dest: RectValue,
+        dest: RectLike,
         text: str,
-        fgcolor: Optional[ColorValue] = None,
-        bgcolor: Optional[ColorValue] = None,
+        fgcolor: Optional[ColorLike] = None,
+        bgcolor: Optional[ColorLike] = None,
         style: int = STYLE_DEFAULT,
         rotation: int = 0,
         size: float = 0,
@@ -187,7 +187,7 @@ class Font:
         self,
         array: Any,
         text: str,
-        dest: Optional[RectValue] = None,
+        dest: Optional[RectLike] = None,
         style: int = STYLE_DEFAULT,
         rotation: int = 0,
         size: float = 0,
