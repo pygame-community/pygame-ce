@@ -88,10 +88,25 @@ static SDL_Event _pg_repeat_event;
 static SDL_Event _pg_last_keydown_event = {0};
 
 /* Not used as text, acts as an array of bools */
+/*
 static char pressed_keys[SDL_NUM_SCANCODES] = {0};
 static char released_keys[SDL_NUM_SCANCODES] = {0};
 static char pressed_mouse_buttons[5] = {0};
 static char released_mouse_buttons[5] = {0};
+*/
+
+#define INPUT_BUFFER_SIZE SDL_NUM_SCANCODES + SDL_NUM_SCANCODES + 5 + 5
+#define INPUT_BUFFER_PRESSED_OFFSET 0
+#define INPUT_BUFFER_RELEASED_OFFSET \
+    INPUT_BUFFER_PRESSED_OFFSET + SDL_NUM_SCANCODES
+#define INPUT_BUFFER_MOUSE_PRESSED_OFFSET \
+    INPUT_BUFFER_RELEASED_OFFSET + SDL_NUM_SCANCODES
+#define INPUT_BUFFER_MOUSE_RELEASED_OFFSET \
+    INPUT_BUFFER_MOUSE_PRESSED_OFFSET + 5
+static_assert(INPUT_BUFFER_MOUSE_RELEASED_OFFSET + 5 == INPUT_BUFFER_SIZE,
+              "mismatched buffer ranges definition");
+
+static char input_buffer[INPUT_BUFFER_SIZE] = {0};
 
 static PyObject *_event_class = NULL;
 
@@ -497,7 +512,8 @@ pg_event_filter(void *_, SDL_Event *event)
             return 0;
 
         PG_LOCK_EVFILTER_MUTEX
-        pressed_keys[event->key.keysym.scancode] = 1;
+        input_buffer[INPUT_BUFFER_PRESSED_OFFSET +
+                     event->key.keysym.scancode] = 1;
         if (pg_key_repeat_delay > 0) {
             if (_pg_repeat_timer)
                 SDL_RemoveTimer(_pg_repeat_timer);
@@ -527,7 +543,8 @@ pg_event_filter(void *_, SDL_Event *event)
 
     else if (event->type == SDL_KEYUP) {
         PG_LOCK_EVFILTER_MUTEX
-        released_keys[event->key.keysym.scancode] = 1;
+        input_buffer[INPUT_BUFFER_RELEASED_OFFSET +
+                     event->key.keysym.scancode] = 1;
         if (_pg_repeat_timer && _pg_repeat_event.key.keysym.scancode ==
                                     event->key.keysym.scancode) {
             SDL_RemoveTimer(_pg_repeat_timer);
@@ -540,11 +557,13 @@ pg_event_filter(void *_, SDL_Event *event)
              event->type == SDL_MOUSEBUTTONUP) {
         if (event->type == SDL_MOUSEBUTTONDOWN &&
             event->button.button - 1 < 5) {
-            pressed_mouse_buttons[event->button.button - 1] = 1;
+            input_buffer[INPUT_BUFFER_MOUSE_PRESSED_OFFSET +
+                         event->button.button - 1] = 1;
         }
         else if (event->type == SDL_MOUSEBUTTONUP &&
                  event->button.button - 1 < 5) {
-            released_mouse_buttons[event->button.button - 1] = 1;
+            input_buffer[INPUT_BUFFER_MOUSE_RELEASED_OFFSET +
+                         event->button.button - 1] = 1;
         }
         if (event->button.button & PGM_BUTTON_KEEP)
             event->button.button ^= PGM_BUTTON_KEEP;
@@ -1326,10 +1345,7 @@ _pg_event_pump(int dopump)
     if (dopump) {
         /* This needs to be reset just before calling pump, e.g. on calls to
          * pygame.event.get(), but not on pygame.event.get(pump=False). */
-        memset(pressed_keys, 0, sizeof(pressed_keys));
-        memset(released_keys, 0, sizeof(released_keys));
-        memset(pressed_mouse_buttons, 0, sizeof(pressed_mouse_buttons));
-        memset(released_mouse_buttons, 0, sizeof(released_mouse_buttons));
+        memset(input_buffer, 0, sizeof(input_buffer));
 
         SDL_PumpEvents();
     }
@@ -1516,25 +1532,25 @@ _pg_event_append_to_list(PyObject *list, SDL_Event *event)
 char *
 pgEvent_GetKeyDownInfo(void)
 {
-    return pressed_keys;
+    return input_buffer + INPUT_BUFFER_PRESSED_OFFSET;
 }
 
 char *
 pgEvent_GetKeyUpInfo(void)
 {
-    return released_keys;
+    return input_buffer + INPUT_BUFFER_RELEASED_OFFSET;
 }
 
 char *
 pgEvent_GetMouseButtonDownInfo(void)
 {
-    return pressed_mouse_buttons;
+    return input_buffer + INPUT_BUFFER_MOUSE_PRESSED_OFFSET;
 }
 
 char *
 pgEvent_GetMouseButtonUpInfo(void)
 {
-    return released_mouse_buttons;
+    return input_buffer + INPUT_BUFFER_MOUSE_RELEASED_OFFSET;
 }
 
 static PyObject *
