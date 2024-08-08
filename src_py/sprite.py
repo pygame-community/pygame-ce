@@ -85,7 +85,7 @@ Sprites are not thread safe, so lock them yourself if using threads.
 # specialized cases.
 
 from warnings import warn
-from typing import Optional
+from typing import Optional, Union
 
 import pygame
 
@@ -101,8 +101,9 @@ class Sprite:
 
     The base class for visible game objects. Derived classes will want to
     override the Sprite.update() method and assign Sprite.image and Sprite.rect
-    attributes.  The initializer can accept any number of Group instances that
-    the Sprite will become a member of.
+    or Sprite.frect attributes. Sprite.frect is just an alias for Sprite.rect.
+    The initializer can accept any number of
+    Group instances that the Sprite will become a member of.
 
     When subclassing the Sprite class, be sure to call the base initializer
     before adding the Sprite to Groups.
@@ -112,7 +113,7 @@ class Sprite:
     def __init__(self, *groups):
         self.__g = {}  # The groups the sprite is in
         self.__image: Optional[pygame.surface.Surface] = None
-        self.__rect: Optional[pygame.rect.Rect] = None
+        self.__rect: Optional[Union[pygame.rect.Rect, pygame.rect.FRect]] = None
         if groups:
             self.add(*groups)
 
@@ -129,7 +130,15 @@ class Sprite:
         return self.__rect
 
     @rect.setter
-    def rect(self, value: Optional[pygame.rect.Rect]):
+    def rect(self, value: Optional[Union[pygame.rect.Rect, pygame.rect.FRect]]):
+        self.__rect = value
+
+    @property
+    def frect(self):
+        return self.__rect
+
+    @frect.setter
+    def frect(self, value: Optional[Union[pygame.rect.Rect, pygame.rect.FRect]]):
         self.__rect = value
 
     def add(self, *groups):
@@ -562,6 +571,14 @@ class AbstractGroup:
 
         """
         sprites = self.sprites()
+        for spr in sprites:
+            if not hasattr(spr, "rect"):
+                raise AttributeError(
+                    "Sprite must have a rect attribute of type Rect or FRect"
+                )
+            if not isinstance(spr.rect, (pygame.rect.FRect, pygame.rect.Rect)):
+                raise TypeError("Sprite.rect must be either Rect or FRect")
+
         if hasattr(surface, "blits"):
             self.spritedict.update(
                 zip(sprites, surface.blits((spr.image, spr.rect) for spr in sprites))
