@@ -270,7 +270,7 @@ pg_mod_autoinit(const char *modname)
     }
 
     if (funcobj) {
-        temp = PyObject_CallObject(funcobj, NULL);
+        temp = PyObject_CallNoArgs(funcobj);
         if (temp) {
             Py_DECREF(temp);
             ret = 1;
@@ -309,7 +309,7 @@ pg_mod_autoquit(const char *modname)
         PyErr_Clear();
 
     if (funcobj) {
-        temp = PyObject_CallObject(funcobj, NULL);
+        temp = PyObject_CallNoArgs(funcobj);
         Py_XDECREF(temp);
     }
 
@@ -433,7 +433,7 @@ _pg_quit(void)
             }
 
             if (PyCallable_Check(quit)) {
-                temp = PyObject_CallObject(quit, NULL);
+                temp = PyObject_CallNoArgs(quit);
                 if (temp)
                     Py_DECREF(temp);
                 else

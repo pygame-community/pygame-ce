@@ -49,35 +49,13 @@ jobs:
         arch: [x86_64, i686]
     
     env:
-      # load pip config from this file. Define this in 'CIBW_ENVIRONMENT'
-      # because this should not affect cibuildwheel machinery
-      # also define environment variables needed for testing
-      CIBW_ENVIRONMENT: SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
-
-      CIBW_BUILD: "cp3{8,9,10,11,12}-* pp3{8,9,10}-*"
       CIBW_ARCHS: ${{ matrix.arch }}
-
-      # skip musllinux for now
-      CIBW_SKIP: '*-musllinux_*'
-
-      CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,music,timing --time_out 300
-
-      # To 'solve' this issue:
-      #   >>> process 338: D-Bus library appears to be incorrectly set up; failed to read
-      #   machine uuid: Failed to open "/var/lib/dbus/machine-id": No such file or directory
-      CIBW_BEFORE_TEST: |
-        if [ ! -f /var/lib/dbus/machine-id ]; then
-            dbus-uuidgen > /var/lib/dbus/machine-id
-        fi
-
-      # Increase pip debugging output
-      CIBW_BUILD_VERBOSITY: 2
 
     steps:
     - uses: actions/checkout@v4.1.7
 
     - name: Log in to the Container registry
-      uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446
+      uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -97,7 +75,7 @@ jobs:
 
     - name: Build and push Docker image
       if: steps.inspect.outcome == 'failure'
-      uses: docker/build-push-action@1a162644f9a7e87d8f4b053101d1d9a712edc18c
+      uses: docker/build-push-action@5176d81f87c23d6fc96624dfdbcd9f3830bbe445
       with:
         context: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base
         file: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base/Dockerfile-${{ matrix.arch }}
@@ -113,7 +91,7 @@ jobs:
         CIBW_MANYLINUX_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
         CIBW_MANYLINUX_PYPY_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
 
-      uses: pypa/cibuildwheel@v2.19.2
+      uses: pypa/cibuildwheel@v2.20.0
 
     # We upload the generated files under github actions assets
     - name: Upload dist

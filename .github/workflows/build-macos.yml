@@ -76,58 +76,18 @@ jobs:
       #     path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
 
   build:
-    name: ${{ matrix.name }}
+    name: ${{ matrix.macarch }}
     needs: deps
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
-        # Split job into 5 matrix builds, because GH actions provides 5 concurrent
-        # builds on macOS. This needs to be manually kept updated so that each
-        # of these builds take roughly the same time
         include:
-          - { 
-            name: "x86_64 (CPython 3.9 - 3.12)",
-            macarch: x86_64,
-            os: macos-13,
-            pyversions: "cp3{9,10,11,12}-*",
-          }
-
-          - { 
-            name: "x86_64 (Python 3.8)",
-            macarch: x86_64,
-            os: macos-13,
-            # CPython/PyPy 3.8
-            pyversions: "?p38-*",
-          }
-
-          - { 
-            name: "x86_64 (PyPy 3.9 and 3.10)",
-            macarch: x86_64,
-            os: macos-13,
-            pyversions: "pp39-* pp310-*",
-          }
-
-          - { 
-            name: "arm64 (CPython 3.8 - 3.10)",
-            macarch: arm64,
-            os: macos-14,
-            pyversions: "cp3{8,9,10}-*",
-          }
-
-          - { 
-            name: "arm64 (CPython 3.11 - 3.12)",
-            macarch: arm64,
-            os: macos-14,
-            pyversions: "cp3{11,12}-*",
-          }
+          - { macarch: arm64, os: macos-14 }
+          - { macarch: x86_64, os: macos-13 }
 
     env:
       MAC_ARCH: ${{ matrix.macarch }}
-      # load pip config from this file. Define this in 'CIBW_ENVIRONMENT'
-      # because this should not affect cibuildwheel machinery
-      # also define environment variables needed for testing
-      CIBW_ENVIRONMENT: SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
 
       # Explicitly tell CIBW what the wheel arch deployment target should be
       # There seems to be no better way to set this than this env
@@ -140,8 +100,6 @@ jobs:
       # should be for 10.11 on x86
       MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macarch == 'x86_64' && '10.11' || '11.0' }}
 
-      CIBW_BUILD: ${{ matrix.pyversions }}
-
       CIBW_ARCHS: ${{ matrix.macarch }}
 
       # Setup macOS dependencies
@@ -152,16 +110,10 @@ jobs:
         bash ./install_mac_deps.sh
 
       CIBW_BEFORE_BUILD: |
-        pip install numpy
         cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
 
       # To remove any speculations about the wheel not being self-contained
       CIBW_BEFORE_TEST: rm -rf ${{ github.workspace }}/pygame_mac_deps
-
-      CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,timing --time_out 300
-
-      # Increase pip debugging output
-      CIBW_BUILD_VERBOSITY: 2
 
     steps:
       - uses: actions/checkout@v4.1.7
@@ -170,7 +122,7 @@ jobs:
         uses: actions/cache@v4.0.2
         with:
           path: ~/Library/Caches/pip  # This cache path is only right on mac
-          key: pip-cache-${{ matrix.name }}
+          key: pip-cache-${{ matrix.macarch }}-${{ matrix.os }}
 
       - name: Fetch Mac deps
         id: macdep-cache
@@ -180,12 +132,17 @@ jobs:
           key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}
           fail-on-cache-miss: true
 
+      - name: Install uv for speed
+        uses: yezz123/setup-uv@v4
+        with:
+          uv-version: "0.2.22"
+
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.19.2
+        uses: pypa/cibuildwheel@v2.20.0
 
       - uses: actions/upload-artifact@v4
         with:
-          name: pygame-wheels-macos-${{ matrix.name }}
+          name: pygame-wheels-macos-${{ matrix.macarch }}
           path: ./wheelhouse/*.whl
           compression-level: 0  # wheels are already zip files, no need for more compression
 

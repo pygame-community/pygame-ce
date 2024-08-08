@@ -28,14 +28,9 @@ jobs:
 
     environment:
       # these environment variables will be passed to the docker container
-      - CIBW_ENVIRONMENT: SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
-      - CIBW_BUILD: "cp3{8,9,10,11,12}-* pp3{8,9,10}-*"
       - CIBW_ARCHS: aarch64
-      - CIBW_SKIP: '*-musllinux_*'
       - CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014_base_aarch64
       - CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: manylinux2014_base_aarch64
-      - CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,music,timing --time_out 300
-      - CIBW_BUILD_VERBOSITY: 2
 
     steps:
       - checkout
@@ -47,7 +42,7 @@ jobs:
       - run:
           name: Build the Linux wheels.
           command: |
-            pip3 install --user cibuildwheel==2.19.2
+            pip3 install --user cibuildwheel==2.20.0
             PATH="$HOME/.local/bin:$PATH" cibuildwheel --output-dir wheelhouse
 
       - store_artifacts:
@@ -57,5 +52,15 @@ jobs:
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
   build-arm:
+    when:
+      equal: [ "", << pipeline.parameters.GHA_Actor >> ]
+    jobs:
+      - linux-arm-wheels
+
+  # run a separate, identical release job only if triggered
+  build-arm-release:
+    when:
+      not:
+        equal: [ "", << pipeline.parameters.GHA_Actor >> ]
     jobs:
       - linux-arm-wheels

@@ -37,107 +37,17 @@ concurrency:
 
 jobs:
   build:
-    name: ${{ matrix.name }}
+    name: ${{ matrix.winarch }}
     runs-on: windows-latest
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
         include:
-          - {
-            name: "CPython 3.12 (64 bit)",
-            winarch: AMD64,
-            msvc-dev-arch: x86_amd64,
-            pyversions: "cp312-*"
-          }
-          - {
-            name: "CPython 3.11 (64 bit)",
-            winarch: AMD64,
-            msvc-dev-arch: x86_amd64,
-            pyversions: "cp311-*"
-          }
-          - {
-            name: "CPython 3.10 (64 bit)",
-            winarch: AMD64,
-            msvc-dev-arch: x86_amd64,
-            pyversions: "cp310-*"
-          }
-          - {
-            name: "CPython 3.9 (64 bit)",
-            winarch: AMD64,
-            msvc-dev-arch: x86_amd64,
-            pyversions: "cp39-*"
-          }
-          - {
-            name: "CPython 3.8 (64 bit)",
-            winarch: AMD64,
-            msvc-dev-arch: x86_amd64,
-            pyversions: "cp38-*"
-          }
-          - {
-            name: "CPython 3.12 (32 bit)",
-            winarch: x86,
-            msvc-dev-arch: x86,
-            pyversions: "cp312-win32*"
-          }
-          - {
-            name: "CPython 3.11 (32 bit)",
-            winarch: x86,
-            msvc-dev-arch: x86,
-            pyversions: "cp311-win32"
-          }
-          - {
-            name: "CPython 3.10 (32 bit)",
-            winarch: x86,
-            msvc-dev-arch: x86,
-            pyversions: "cp310-win32"
-          }
-          - {
-            name: "CPython 3.9 (32 bit)",
-            winarch: x86,
-            msvc-dev-arch: x86,
-            pyversions: "cp39-win32"
-          }
-          - {
-            name: "CPython 3.8 (32 bit)",
-            winarch: x86,
-            msvc-dev-arch: x86,
-            pyversions: "cp38-win32"
-          }
-          - {
-            name: "Pypy 3.8",
-            winarch: AMD64,
-            msvc-dev-arch: x86_amd64,
-            pyversions: "pp38-*"
-          }
-          - {
-            name: "Pypy 3.9",
-            winarch: AMD64,
-            msvc-dev-arch: x86_amd64,
-            pyversions: "pp39-*"
-          }
-          - {
-            name: "Pypy 3.10",
-            winarch: AMD64,
-            msvc-dev-arch: x86_amd64,
-            pyversions: "pp310-*"
-          }
-
+          - { winarch: AMD64, msvc-dev-arch: x86_amd64 }
+          - { winarch: x86, msvc-dev-arch: x86 }
 
     env:
-      # load pip config from this file. Define this in 'CIBW_ENVIRONMENT'
-      # because this should not affect cibuildwheel machinery
-      # also define environment variables needed for testing
-      CIBW_ENVIRONMENT: SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=disk
-
-      CIBW_BUILD: ${{ matrix.pyversions }}
       CIBW_ARCHS: ${{ matrix.winarch }}
-
-      CIBW_BEFORE_BUILD: pip install numpy
-
-      CIBW_TEST_COMMAND: python -m pygame.tests -v --exclude opengl,timing --time_out 300
-
-      # Increase pip debugging output
-      CIBW_BUILD_VERBOSITY: 2
 
     steps:
       - uses: actions/checkout@v4.1.7
@@ -146,11 +56,16 @@ jobs:
         with:
           arch: ${{ matrix.msvc-dev-arch }}
 
+      - name: Install uv for speed
+        uses: yezz123/setup-uv@v4
+        with:
+          uv-version: "0.2.22"
+
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.19.2
+        uses: pypa/cibuildwheel@v2.20.0
 
       - uses: actions/upload-artifact@v4
         with:
-          name: pygame-wheels-windows-${{ matrix.name }}
+          name: pygame-wheels-windows-${{ matrix.winarch }}
           path: ./wheelhouse/*.whl
           compression-level: 0  # wheels are already zip files, no need for more compression
