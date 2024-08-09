@@ -175,9 +175,9 @@ required).
       pygame.HIDDEN        window is opened in hidden mode
 
 
-   .. versionadded:: 2.0.0 ``SCALED``, ``SHOWN`` and ``HIDDEN``
+   .. versionaddedold:: 2.0.0 ``SCALED``, ``SHOWN`` and ``HIDDEN``
 
-   .. versionadded:: 2.0.0 ``vsync`` parameter
+   .. versionaddedold:: 2.0.0 ``vsync`` parameter
 
    By setting the ``vsync`` parameter to ``1``, it is possible to get a display
    with vertical sync at a constant frame rate determined by the monitor and
