@@ -31,8 +31,6 @@
 
 #include "doc/event_doc.h"
 
-#include "structmember.h"
-
 // The system message code is only tested on windows, so only
 //   include it there for now.
 #include <SDL_syswm.h>
@@ -87,14 +85,6 @@ static SDL_TimerID _pg_repeat_timer = 0;
 static SDL_Event _pg_repeat_event;
 static SDL_Event _pg_last_keydown_event = {0};
 
-/* Not used as text, acts as an array of bools */
-/*
-static char pressed_keys[SDL_NUM_SCANCODES] = {0};
-static char released_keys[SDL_NUM_SCANCODES] = {0};
-static char pressed_mouse_buttons[5] = {0};
-static char released_mouse_buttons[5] = {0};
-*/
-
 #define INPUT_BUFFER_SIZE SDL_NUM_SCANCODES + SDL_NUM_SCANCODES + 5 + 5
 #define INPUT_BUFFER_PRESSED_OFFSET 0
 #define INPUT_BUFFER_RELEASED_OFFSET \
@@ -103,9 +93,11 @@ static char released_mouse_buttons[5] = {0};
     INPUT_BUFFER_RELEASED_OFFSET + SDL_NUM_SCANCODES
 #define INPUT_BUFFER_MOUSE_RELEASED_OFFSET \
     INPUT_BUFFER_MOUSE_PRESSED_OFFSET + 5
+
 static_assert(INPUT_BUFFER_MOUSE_RELEASED_OFFSET + 5 == INPUT_BUFFER_SIZE,
               "mismatched buffer ranges definition");
 
+/* Not used as text, acts as an array of bools */
 static char input_buffer[INPUT_BUFFER_SIZE] = {0};
 
 static PyObject *_event_class = NULL;
@@ -1430,7 +1422,7 @@ pg_event_wait(PyObject *self, PyObject *args, PyObject *kwargs)
         return pgEvent_New(NULL);
     return pgEvent_New(&event);
 }
-
+// TODO
 static int
 _pg_eventtype_from_seq(PyObject *seq, int ind)
 {
@@ -1447,6 +1439,7 @@ _pg_eventtype_from_seq(PyObject *seq, int ind)
     return val;
 }
 
+// TODO
 static PyObject *
 _pg_eventtype_as_seq(PyObject *obj, Py_ssize_t *len)
 {
@@ -1475,6 +1468,7 @@ _pg_flush_events(Uint32 type)
     }
 }
 
+// TODO
 static PyObject *
 pg_event_clear(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -1513,6 +1507,7 @@ pg_event_clear(PyObject *self, PyObject *args, PyObject *kwargs)
     Py_RETURN_NONE;
 }
 
+// TODO
 static int
 _pg_event_append_to_list(PyObject *list, SDL_Event *event)
 {
@@ -1553,6 +1548,7 @@ pgEvent_GetMouseButtonUpInfo(void)
     return input_buffer + INPUT_BUFFER_MOUSE_RELEASED_OFFSET;
 }
 
+// TODO
 static PyObject *
 _pg_get_all_events_except(PyObject *obj)
 {
@@ -1663,6 +1659,7 @@ error:
     return NULL;
 }
 
+// TODO
 static PyObject *
 _pg_get_all_events(void)
 {
@@ -1693,6 +1690,7 @@ error:
     return NULL;
 }
 
+// TODO
 static PyObject *
 _pg_get_seq_events(PyObject *obj)
 {
@@ -1748,6 +1746,7 @@ error:
     return NULL;
 }
 
+// TODO
 static PyObject *
 pg_event_get(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -1781,6 +1780,7 @@ pg_event_get(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 }
 
+// TODO
 static PyObject *
 pg_event_peek(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -1873,6 +1873,7 @@ pg_event_post(PyObject *self, PyObject *obj)
     }
 }
 
+// TODO
 static PyObject *
 pg_event_set_allowed(PyObject *self, PyObject *obj)
 {
@@ -1905,6 +1906,7 @@ pg_event_set_allowed(PyObject *self, PyObject *obj)
     Py_RETURN_NONE;
 }
 
+// TODO
 static PyObject *
 pg_event_set_blocked(PyObject *self, PyObject *obj)
 {
@@ -1942,6 +1944,7 @@ pg_event_set_blocked(PyObject *self, PyObject *obj)
     Py_RETURN_NONE;
 }
 
+// TODO
 static PyObject *
 pg_event_get_blocked(PyObject *self, PyObject *obj)
 {
