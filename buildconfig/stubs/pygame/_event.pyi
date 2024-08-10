@@ -10,7 +10,7 @@ from ._common import Sequence, EventLike
 
 _EventTypes = Union[int, Sequence[int]]
 
-def pump() -> None: ...
+def pump(dopump: bool) -> None: ...
 def get(
     eventtype: Optional[_EventTypes] = None,
     pump: Any = True,

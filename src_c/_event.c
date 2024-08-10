@@ -1379,10 +1379,15 @@ _pg_event_wait(SDL_Event *event, int timeout)
 }
 
 static PyObject *
-pg_event_pump(PyObject *self, PyObject *_null)
+pg_event_pump(PyObject *self, PyObject *obj)
 {
     VIDEO_INIT_CHECK();
-    _pg_event_pump(1);
+    int dopump = PyObject_IsTrue(obj);
+
+    if (dopump < 0)
+        return NULL;
+
+    _pg_event_pump(dopump);
     Py_RETURN_NONE;
 }
 

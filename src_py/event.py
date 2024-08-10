@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 from pygame._event import *  # pylint: disable=wildcard-import,unused-wildcard-import; lgtm[py/polluting-import]
-from pygame._event import _internal_mod_init as _init, _internal_mod_quit as _quit
+from pygame._event import (
+    _internal_mod_init as _init,
+    _internal_mod_quit as _quit,
+    pump as _pump,
+)
 from pygame.constants import USEREVENT, NUMEVENTS
 from pygame.base import error
 import pygame as pg
@@ -195,3 +199,7 @@ def custom_type():
 
     _custom_event += 1
     return _custom_event - 1
+
+
+def pump():
+    return _pump(True)
