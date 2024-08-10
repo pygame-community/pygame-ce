@@ -1451,7 +1451,7 @@ _pg_eventtype_as_seq(PyObject *obj, Py_ssize_t *len)
     *len = 1;
     if (PySequence_Check(obj)) {
         *len = PySequence_Size(obj);
-        /* The returned object gets decref'd later, so incref now */
+        // The returned object gets decref'd later, so incref now
         Py_INCREF(obj);
         return obj;
     }
@@ -1911,6 +1911,56 @@ pg_event_set_allowed(PyObject *self, PyObject *obj)
     Py_RETURN_NONE;
 }
 
+static PyObject *
+pg_event_allowed_set(PyObject *self, PyObject *args)
+{
+    int e_type, e_flag;
+    PyObject *e_flago;
+
+    if (!PyArg_ParseTuple(args, "iO", &e_type, &e_flago))
+        return NULL;
+
+    if (e_type < 0 || e_type >= PG_NUMEVENTS) {
+        PyErr_SetString(PyExc_ValueError, "event type out of range");
+        return NULL;
+    }
+
+    e_flag = PyObject_IsTrue(e_flago);
+    Py_DECREF(e_flago);
+
+    if (e_flag < 0)
+        return NULL;
+
+    PG_SetEventEnabled(_pg_pgevent_proxify(e_type),
+                       e_flag ? SDL_TRUE : SDL_FALSE);
+
+    // Never block events that are needed for proecesing.
+    if (e_type == SDL_WINDOWEVENT || e_type == PGE_KEYREPEAT)
+        PG_SetEventEnabled(e_type, SDL_TRUE);
+    else
+        PG_SetEventEnabled(e_type, e_flag ? SDL_TRUE : SDL_FALSE);
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+pg_event_allowed_get(PyObject *self, PyObject *obj)
+{
+    int e_type = PyLong_AsLong(obj);
+
+    if (PyErr_Occurred())
+        return NULL;
+
+    else if (e_type < 0 || e_type >= PG_NUMEVENTS) {
+        PyErr_SetString(PyExc_ValueError, "event type out of range");
+        return NULL;
+    }
+
+    if (PG_EventEnabled(e_type) == SDL_TRUE)
+        Py_RETURN_TRUE;
+    Py_RETURN_FALSE;
+}
+
 // TODO
 static PyObject *
 pg_event_set_blocked(PyObject *self, PyObject *obj)
@@ -2007,7 +2057,7 @@ static PyMethodDef _event_methods[] = {
     {"set_grab", set_grab, METH_O, DOC_EVENT_SETGRAB},
     {"get_grab", (PyCFunction)get_grab, METH_NOARGS, DOC_EVENT_GETGRAB},
 
-    {"pump", (PyCFunction)pg_event_pump, METH_NOARGS, DOC_EVENT_PUMP},
+    {"pump", (PyCFunction)pg_event_pump, METH_O, DOC_EVENT_PUMP},
     {"wait", (PyCFunction)pg_event_wait, METH_VARARGS | METH_KEYWORDS,
      DOC_EVENT_WAIT},
     {"poll", (PyCFunction)pg_event_poll, METH_NOARGS, DOC_EVENT_POLL},
@@ -2025,6 +2075,8 @@ static PyMethodDef _event_methods[] = {
      DOC_EVENT_SETBLOCKED},
     {"get_blocked", (PyCFunction)pg_event_get_blocked, METH_O,
      DOC_EVENT_GETBLOCKED},
+    {"allowed_get", (PyCFunction)pg_event_allowed_get, METH_O},
+    {"allowed_set", (PyCFunction)pg_event_allowed_set, METH_VARARGS},
     {"register_event_class", (PyCFunction)pg_event_register_event_class,
      METH_O},
 
