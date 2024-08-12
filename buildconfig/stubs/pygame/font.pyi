@@ -74,7 +74,8 @@ class Font:
         antialias: bool,
         color: ColorValue,
         background: Optional[ColorValue] = None,
-        wraplength: int = 0
+        wraplength: int = 0,
+        blend_flags: int = 0,
     ) -> Rect: ...
     def size(self, text: Union[str, bytes]) -> Tuple[int, int]: ...
     def set_underline(self, value: bool) -> None: ...

@@ -479,6 +479,7 @@ class FontTypeTest(unittest.TestCase):
         self.assertRaises(ValueError, f.render, "ab\x00cd", 0, [0, 0, 0])
 
     def test_render_to(self):
+        print("Starting Render_to Test")
         f = pygame_font.Font(None, 20)
         s: pygame.Surface = f.render(
             "foo", False, "white"
@@ -486,6 +487,7 @@ class FontTypeTest(unittest.TestCase):
         s = pygame.Surface(s.get_size())
 
         f.render_to(s, (0, 0), "foo", True, [0, 0, 0], [255, 255, 255])
+        print("First render_to worked successfully")
         f.render_to(s, (0, 0), "xxx", True, [0, 0, 0], [255, 255, 255])
         f.render_to(s, (0, 0), "", True, [0, 0, 0], [255, 255, 255])
         f.render_to(s, (0, 0), "foo", False, [0, 0, 0], [255, 255, 255])
@@ -497,6 +499,7 @@ class FontTypeTest(unittest.TestCase):
         # null text should not draw anything
         s = pygame.Surface(s.get_size())
         f.render_to(s, (0, 0), "", False, [255, 255, 255], [0, 0, 0])
+        print("Render_to 1")
         self.assertEqual(s.get_at((0, 0)), (0, 0, 0))
         # Non-text should raise a TypeError.
         self.assertRaises(
@@ -517,6 +520,7 @@ class FontTypeTest(unittest.TestCase):
         f.render_to(s, (0, 0), ".", True, [255, 255, 255])
         print(s.get_at((0, 0)))
         self.assertEqual(s.get_at((0, 0))[3], 0)  # check if transparent
+        print("Render_to 2")
         # is Unicode and bytes encoding correct?
         # Cannot really test if the correct characters are rendered, but
         # at least can assert the encodings differ.
@@ -536,11 +540,12 @@ class FontTypeTest(unittest.TestCase):
             pass
         else:
             self.assertFalse(equal_images(s1, s2))
-
+        print("Render_to 3")
         # test for internal null bytes
         s = pygame.Surface(s.get_size())
         self.assertRaises(ValueError, f.render, b"ab\x00cd", 0, [0, 0, 0])
         self.assertRaises(ValueError, f.render_to, s, (0, 0), b"ab\x00cd", 0, [0, 0, 0])
+        print("Render_to Done.")
 
     def test_render_ucs2_ucs4(self):
         """that it renders without raising if there is a new enough SDL_ttf."""
