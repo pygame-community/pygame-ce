@@ -715,8 +715,7 @@ font_render_to(PyObject *self, PyObject *args)
         }
     }
 
-
-    SDL_Surface *_render_result = pgSurface_AsSurface(&render_result);
+    SDL_Surface *_render_result = pgSurface_AsSurface((pgSurfaceObject *) render_result);
 
     dest_rect.x = dx;
     dest_rect.y = dy;
