@@ -663,6 +663,10 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 font_render_to(PyObject *self, PyObject *args)
 {
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
     int antialias;
     PyObject *text;
     PyObject *fg_rgba_obj, *bg_rgba_obj = Py_None, *renderargs, *render_result;
