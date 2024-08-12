@@ -370,7 +370,7 @@ solves no longer exists, it will likely be removed in the future.
    .. method:: render_to
       
       | :sl:`draw text on a given Surface`
-      | :sg:`render_to(surf_to_render, dest_pos, text, antialias, color, background=None, wraplength=0) -> Surface`
+      | :sg:`render_to(surf_to_render, dest_pos, text, antialias, color, background=None, wraplength=0) -> Rect`
 
       This blits text directly to a target Surface.
 
