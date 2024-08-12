@@ -486,8 +486,8 @@ class FontTypeTest(unittest.TestCase):
         )  # to make surface of same size as text
         s = pygame.Surface(s.get_size())
 
-        f.render_to(s, (0, 0), "foo", True, [0, 0, 0], [255, 255, 255])
-        print("First render_to worked successfully")
+        f.render_to(s, (0, 0), "foo", True, "black", "white")
+        print("First render_to worked succesfully")
         f.render_to(s, (0, 0), "xxx", True, [0, 0, 0], [255, 255, 255])
         f.render_to(s, (0, 0), "", True, [0, 0, 0], [255, 255, 255])
         f.render_to(s, (0, 0), "foo", False, [0, 0, 0], [255, 255, 255])
