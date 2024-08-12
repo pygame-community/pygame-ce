@@ -371,6 +371,12 @@ class AbstractGroup:
 
     """
 
+    def __class_getitem__(cls, generic):
+        # switch to `types.GenericAlias` once Python 3.8 support is dropped
+        import typing
+
+        return typing._GenericAlias(cls, generic)  # type: ignore[attr-defined]
+
     # protected identifier value to identify sprite groups, and avoid infinite recursion
     _spritegroup = True
 
