@@ -683,11 +683,11 @@ font_render_to(PyObject *self, PyObject *args)
         return NULL;
     }
     SURF_INIT_CHECK(surf_to_render);
-    
+
     renderargs = Py_BuildValue("(OiOOi)", text, antialias, fg_rgba_obj,
                                bg_rgba_obj, wraplength);
     render_result = font_render(self, renderargs, NULL);
-    
+
     if (!pg_TwoIntsFromObj(dest_pos, &dx, &dy)) {
         return RAISE(PyExc_TypeError, "invalid destination position for blit");
     }
@@ -715,7 +715,8 @@ font_render_to(PyObject *self, PyObject *args)
         }
     }
 
-    SDL_Surface *_render_result = pgSurface_AsSurface((pgSurfaceObject *) render_result);
+    SDL_Surface *_render_result =
+        pgSurface_AsSurface((pgSurfaceObject *)render_result);
 
     dest_rect.x = dx;
     dest_rect.y = dy;
