@@ -491,6 +491,7 @@ class FontTypeTest(unittest.TestCase):
         f.render_to(s, (0, 0), "xxx", False, [0, 0, 0])
         f.render_to(s, (0, 0), "   ", False, [0, 0, 0])
         f.render_to(s, (0, 0), "   ", False, [0, 0, 0], [255, 255, 255])
+        
         # null text should not draw anything
         s = pygame.Surface(s.get_size())
         f.render_to(s, (0, 0), "", False, [255,255,255], [0,0,0])
@@ -942,6 +943,7 @@ class FontTypeTest(unittest.TestCase):
                 ("set_strikethrough", (True,)),
                 ("metrics", ("any text",)),
                 ("render", ("hello", True, "white")),
+                ("render_to", (pygame.Surface(1,1), (0, 0), "hello", True, "white")),
                 ("size", ("any text",)),
                 ("set_script", ("is it other text",)),
                 ("set_direction", ("is it text",)),
