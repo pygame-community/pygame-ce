@@ -669,7 +669,7 @@ class AbstractGroupTypeTest(unittest.TestCase):
         # switch to `types.GenericAlias` once Python 3.8 support is dropped
         import typing
 
-        self.assertIsInstance(group_generic_alias, typing._GenericAlias)  # type: ignore[attr-defined]
+        self.assertIsInstance(group_generic_alias, typing._GenericAlias)  # type: ignore[name-defined]
         self.assertIs(typing.get_origin(group_generic_alias), sprite.Group)
         self.assertEqual(typing.get_args(group_generic_alias), (sprite.Sprite,))
 
