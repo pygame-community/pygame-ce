@@ -1066,6 +1066,28 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
     return (PyObject *)self;
 }
 
+static PyObject *
+window_flash(pgWindowObject *self, PyObject *arg)
+{
+    long operation = PyLong_AsLong(arg);
+    if (operation == -1 && PyErr_Occurred()) {
+        return RAISE(PyExc_TypeError,
+                     "'operation' must be an integer. "
+                     "Must correspond with FLASH_CANCEL, FLASH_BRIEFLY, or "
+                     "FLASH_UNTIL_FOCUSED.");
+    }
+
+    if (operation != SDL_FLASH_CANCEL && operation != SDL_FLASH_BRIEFLY &&
+        operation != SDL_FLASH_UNTIL_FOCUSED) {
+        return RAISE(PyExc_ValueError, "Unsupported window flash operation.");
+    }
+
+    if (SDL_FlashWindow(self->_win, operation) < 0) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    Py_RETURN_NONE;
+}
+
 PyObject *
 window_repr(pgWindowObject *self)
 {
@@ -1131,6 +1153,7 @@ static PyMethodDef window_methods[] = {
      DOC_WINDOW_GETSURFACE},
     {"from_display_module", (PyCFunction)window_from_display_module,
      METH_CLASS | METH_NOARGS, DOC_WINDOW_FROMDISPLAYMODULE},
+    {"flash", (PyCFunction)window_flash, METH_O, DOC_WINDOW_FLASH},
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef _window_getset[] = {

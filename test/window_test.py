@@ -422,6 +422,26 @@ class WindowTypeTest(unittest.TestCase):
         self.assertIsInstance(window, WindowSubclass)
         self.assertEqual(window.size, (200, 200))
 
+    def test_window_flash(self):
+        window = pygame.Window()
+
+        with self.assertRaises(TypeError):
+            window.flash("string")
+            window.flash(2.2)
+            window.flash([0])
+
+        with self.assertRaises(ValueError):
+            window.flash(-1)
+            window.flash(3)
+
+        for operation in [
+            pygame.FLASH_CANCEL,
+            pygame.FLASH_BRIEFLY,
+            pygame.FLASH_UNTIL_FOCUSED,
+        ]:
+            result = window.flash(operation)
+            self.assertIsNone(result)
+
     def tearDown(self):
         self.win.destroy()
 

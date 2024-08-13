@@ -388,4 +388,18 @@
 
       .. note:: This function is only supported on X11.
 
+   .. method:: flash
+
+      | :sl:`Flash a window to demand attention from the user`
+      | :sg:`flash(operation, /) -> None`
+
+      :param int operation: The flash operation.
+      
+      Supported flash operations are:
+         * ``pygame.FLASH_CANCEL``: Cancel the current flash state if present
+         * ``pygame.FLASH_BRIEFLY``: Flash for a short amount of time to get attention
+         * ``pygame.FLASH_UNTIL_FOCUSED``: Keep flashing until the window is focused
+
+      .. versionadded:: 2.5.2
+
    .. ## pygame.Window ##
