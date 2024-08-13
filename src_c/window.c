@@ -1069,12 +1069,7 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
 static PyObject *
 window_flash(pgWindowObject *self, PyObject *arg)
 {
-#if !SDL_VERSION_ATLEAST(2, 0, 16)
-    if (PyErr_WarnEx(PyExc_Warning, "'Window.flash' requires SDL 2.0.16+",
-                     1) == -1) {
-        return NULL;
-    }
-#else
+#if SDL_VERSION_ATLEAST(2, 0, 16)
     long operation = PyLong_AsLong(arg);
     if (operation == -1 && PyErr_Occurred()) {
         return RAISE(PyExc_TypeError,
@@ -1091,7 +1086,12 @@ window_flash(pgWindowObject *self, PyObject *arg)
     if (SDL_FlashWindow(self->_win, operation) < 0) {
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
-#endif /* !SDL_VERSION_ATLEAST(2, 0, 16) */
+#else
+    if (PyErr_WarnEx(PyExc_Warning, "'Window.flash' requires SDL 2.0.16+",
+                     1) == -1) {
+        return NULL;
+    }
+#endif /* SDL_VERSION_ATLEAST(2, 0, 16) */
     Py_RETURN_NONE;
 }
 
