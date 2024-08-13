@@ -8,7 +8,7 @@
 
 | :sl:`pygame module providing common typehints`
 
-.. versionadded:: 2.5.1
+.. versionadded:: 2.5.2
 
 A lot of pygame functions and methods allow the user to provide different types
 for the same value like colors or coordinates. This module exports the most common
@@ -73,7 +73,7 @@ type aliases for proper typehint annotations.
    .. data:: RectLike
       
       An object representing a rect such as a sequence of numbers or coordinates
-      or an object with a rect attribute or a method returning a rect. This types
+      or an object with a rect attribute or a method returning a rect. These types
       are supported by every function accepting a rect as argument. i.e.:
 
         * ``(x, y, w, h)``
