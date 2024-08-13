@@ -422,6 +422,10 @@ class WindowTypeTest(unittest.TestCase):
         self.assertIsInstance(window, WindowSubclass)
         self.assertEqual(window.size, (200, 200))
 
+    @unittest.skipIf(
+        SDL < (2, 0, 16),
+        "requires SDL 2.0.16+",
+    )
     def test_window_flash(self):
         window = pygame.Window()
 
