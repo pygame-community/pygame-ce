@@ -1,18 +1,31 @@
 from __future__ import annotations
 
-from pygame._event import *  # pylint: disable=wildcard-import,unused-wildcard-import; lgtm[py/polluting-import]
+from collections.abc import Iterable
+from typing import Any
+
 from pygame._event import (
     _internal_mod_init as _init,
     _internal_mod_quit as _quit,
     pump as _pump,
+    register_event_class as _register_event_class,
+    allowed_get as _allowed_get,
+    allowed_set as _allowed_set,
+    post,
+    get_grab,
+    set_grab,
+    clear,
+    peek,
+    wait,
+    poll,
+    get,
 )
-from pygame.constants import USEREVENT, NUMEVENTS
+
 from pygame.base import error
 import pygame as pg
 
 
 _is_init = False
-_custom_event = USEREVENT + 1
+_custom_event = pg.USEREVENT + 1
 _NAMES_MAPPING = {
     pg.ACTIVEEVENT: "ActiveEvent",
     pg.APP_TERMINATING: "AppTerminating",
@@ -92,7 +105,7 @@ _NAMES_MAPPING = {
 def event_name(type: int) -> str:
     if type in _NAMES_MAPPING:
         return _NAMES_MAPPING[type]
-    if USEREVENT <= type < NUMEVENTS:
+    if pg.USEREVENT <= type < pg.NUMEVENTS:
         return "UserEvent"
     return "Unknown"
 
@@ -104,14 +117,11 @@ class Event:
     pygame object for representing events
     """
 
-    type: int
-    dict: dict[str, ...]
-
-    def __init__(self, type: int, dict: dict[str, ...] | None = None, **kwargs):
+    def __init__(self, type: int, dict: dict[str, Any] | None = None, **kwargs: Any):
         if not isinstance(type, int):
             raise TypeError("event type must be an integer")
 
-        if not 0 <= type < NUMEVENTS:
+        if not 0 <= type < pg.NUMEVENTS:
             raise ValueError("event type out of range")
 
         dict = dict if dict is not None else {}
@@ -123,7 +133,7 @@ class Event:
         self._type = type
         self._dict = dict
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: Any, **kwargs: Any):
         if "type" in kwargs:
             raise ValueError("redundant type field in event dict")
         return super().__new__(cls)
@@ -134,7 +144,7 @@ class Event:
     def __bool__(self):
         return self.type != pg.NOEVENT
 
-    def __eq__(self, other: Event):
+    def __eq__(self, other: Any):
         if not isinstance(other, Event):
             return NotImplemented
         return self.type == other.type and self.dict == other.dict
@@ -150,23 +160,26 @@ class Event:
     def type(self):
         return self._type
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         return self._dict[name]
 
-    def __getattribute__(self, name):
+    def __getattribute__(self, name: str):
         if name == "__dict__":
             return super().__getattribute__("_dict")
         return super().__getattribute__(name)
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: Any):
         if name in ("_type", "_dict", "type", "dict"):
             super().__setattr__(name, value)
         else:
             self._dict[name] = value
 
+    def __delattr__(self, name: str) -> None:
+        del self._dict[name]
+
 
 EventType = Event
-register_event_class(Event)
+_register_event_class(Event)
 
 
 def init():
@@ -184,7 +197,7 @@ def quit():
     # so we can have a unit test that checks if pygame.event.custom_type() stops
     # returning new types when they are finished,
     # without that test preventing further tests from getting a custom event type.
-    _custom_event = USEREVENT + 1
+    _custom_event = pg.USEREVENT + 1
     _quit()
 
     _is_init = False
@@ -194,7 +207,7 @@ def custom_type():
     """custom_type() -> int\nmake custom user event type"""
     global _custom_event
 
-    if _custom_event >= NUMEVENTS:
+    if _custom_event >= pg.NUMEVENTS:
         raise error("pygame.event.custom_type made too many event types.")
 
     _custom_event += 1
@@ -203,3 +216,72 @@ def custom_type():
 
 def pump():
     return _pump(True)
+
+
+def _setter(val: bool, type: int | Iterable[int] | None, *args: int):
+    if type is None:
+        if args:
+            raise ValueError("Args aren't supported for type==None.")
+        for ev in range(pg.NUMEVENTS):
+            _allowed_set(ev, val)
+        return
+
+    types: list[int] = []
+
+    if isinstance(type, Iterable):
+        types.extend(type)
+    else:
+        types.append(type)
+
+    if args:
+        types.extend(args)
+
+    for t in types:
+        _allowed_set(t, val)
+
+
+def set_blocked(type: int | Iterable[int] | None, *args: int):
+    _setter(False, type, *args)
+
+
+def set_allowed(type: int | Iterable[int] | None, *args: int):
+    _setter(True, type, *args)
+
+
+def get_blocked(type: int | Iterable[int], *args: int):
+    types: list[int] = []
+
+    if isinstance(type, Iterable):
+        types.extend(type)
+    else:
+        types.append(type)
+
+    if args:
+        types.extend(args)
+
+    for t in types:
+        if not _allowed_get(t):
+            return True
+    return False
+
+
+__all__ = [
+    "Event",
+    "EventType",
+    "pump",
+    "get",
+    "poll",
+    "wait",
+    "peek",
+    "clear",
+    "event_name",
+    "set_blocked",
+    "set_allowed",
+    "get_blocked",
+    "set_grab",
+    "get_grab",
+    "post",
+    "custom_type",
+    "init",
+    "quit",
+]

@@ -1878,42 +1878,11 @@ pg_event_post(PyObject *self, PyObject *obj)
     }
 }
 
-// TODO
-static PyObject *
-pg_event_set_allowed(PyObject *self, PyObject *obj)
-{
-    Py_ssize_t len;
-    int loop, type;
-    PyObject *seq;
-    VIDEO_INIT_CHECK();
-
-    if (obj == Py_None) {
-        int i;
-        for (i = SDL_FIRSTEVENT; i < SDL_LASTEVENT; i++) {
-            PG_SetEventEnabled(i, SDL_TRUE);
-        }
-    }
-    else {
-        seq = _pg_eventtype_as_seq(obj, &len);
-        if (!seq)
-            return NULL;
-
-        for (loop = 0; loop < len; loop++) {
-            type = _pg_eventtype_from_seq(seq, loop);
-            if (type == -1) {
-                Py_DECREF(seq);
-                return NULL;
-            }
-            PG_SetEventEnabled(_pg_pgevent_proxify(type), SDL_TRUE);
-        }
-        Py_DECREF(seq);
-    }
-    Py_RETURN_NONE;
-}
-
 static PyObject *
 pg_event_allowed_set(PyObject *self, PyObject *args)
 {
+    VIDEO_INIT_CHECK();
+
     int e_type, e_flag;
     PyObject *e_flago;
 
@@ -1946,6 +1915,8 @@ pg_event_allowed_set(PyObject *self, PyObject *args)
 static PyObject *
 pg_event_allowed_get(PyObject *self, PyObject *obj)
 {
+    VIDEO_INIT_CHECK();
+
     int e_type = PyLong_AsLong(obj);
 
     if (PyErr_Occurred())
@@ -1959,74 +1930,6 @@ pg_event_allowed_get(PyObject *self, PyObject *obj)
     if (PG_EventEnabled(e_type) == SDL_TRUE)
         Py_RETURN_TRUE;
     Py_RETURN_FALSE;
-}
-
-// TODO
-static PyObject *
-pg_event_set_blocked(PyObject *self, PyObject *obj)
-{
-    Py_ssize_t len;
-    int loop, type;
-    PyObject *seq;
-    VIDEO_INIT_CHECK();
-
-    if (obj == Py_None) {
-        int i;
-        /* Start at PGPOST_EVENTBEGIN */
-        for (i = PGPOST_EVENTBEGIN; i < SDL_LASTEVENT; i++) {
-            PG_SetEventEnabled(i, SDL_FALSE);
-        }
-    }
-    else {
-        seq = _pg_eventtype_as_seq(obj, &len);
-        if (!seq)
-            return NULL;
-
-        for (loop = 0; loop < len; loop++) {
-            type = _pg_eventtype_from_seq(seq, loop);
-            if (type == -1) {
-                Py_DECREF(seq);
-                return NULL;
-            }
-            PG_SetEventEnabled(_pg_pgevent_proxify(type), SDL_FALSE);
-        }
-        Py_DECREF(seq);
-    }
-    /* Never block SDL_WINDOWEVENT, we need them for translation */
-    PG_SetEventEnabled(SDL_WINDOWEVENT, SDL_TRUE);
-    /* Never block PGE_KEYREPEAT too, its needed for pygame internal use */
-    PG_SetEventEnabled(PGE_KEYREPEAT, SDL_TRUE);
-    Py_RETURN_NONE;
-}
-
-// TODO
-static PyObject *
-pg_event_get_blocked(PyObject *self, PyObject *obj)
-{
-    Py_ssize_t len;
-    int loop, type, isblocked = 0;
-    PyObject *seq;
-
-    VIDEO_INIT_CHECK();
-
-    seq = _pg_eventtype_as_seq(obj, &len);
-    if (!seq)
-        return NULL;
-
-    for (loop = 0; loop < len; loop++) {
-        type = _pg_eventtype_from_seq(seq, loop);
-        if (type == -1) {
-            Py_DECREF(seq);
-            return NULL;
-        }
-        if (PG_EventEnabled(_pg_pgevent_proxify(type)) == SDL_FALSE) {
-            isblocked = 1;
-            break;
-        }
-    }
-
-    Py_DECREF(seq);
-    return PyBool_FromLong(isblocked);
 }
 
 static PyObject *
@@ -2069,12 +1972,6 @@ static PyMethodDef _event_methods[] = {
      DOC_EVENT_PEEK},
     {"post", (PyCFunction)pg_event_post, METH_O, DOC_EVENT_POST},
 
-    {"set_allowed", (PyCFunction)pg_event_set_allowed, METH_O,
-     DOC_EVENT_SETALLOWED},
-    {"set_blocked", (PyCFunction)pg_event_set_blocked, METH_O,
-     DOC_EVENT_SETBLOCKED},
-    {"get_blocked", (PyCFunction)pg_event_get_blocked, METH_O,
-     DOC_EVENT_GETBLOCKED},
     {"allowed_get", (PyCFunction)pg_event_allowed_get, METH_O},
     {"allowed_set", (PyCFunction)pg_event_allowed_set, METH_VARARGS},
     {"register_event_class", (PyCFunction)pg_event_register_event_class,
