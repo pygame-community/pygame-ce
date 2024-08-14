@@ -402,7 +402,7 @@
 
       .. note:: This function is only supported on Windows, X11, Wayland and Cocoa (MacOS).
          A :mod:`pygame.error` exception will be raised if it's not supported therefore it's
-         adviced to wrap it in a try block.
+         advised to wrap it in a try block.
 
          .. code-block:: python
             
