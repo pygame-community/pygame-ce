@@ -1087,10 +1087,7 @@ window_flash(pgWindowObject *self, PyObject *arg)
         return RAISE(pgExc_SDLError, SDL_GetError());
     }
 #else
-    if (PyErr_WarnEx(PyExc_Warning, "'Window.flash' requires SDL 2.0.16+",
-                     1) == -1) {
-        return NULL;
-    }
+    return RAISE(pgExc_SDLError, "'Window.flash' requires SDL 2.0.16+");
 #endif /* SDL_VERSION_ATLEAST(2, 0, 16) */
     Py_RETURN_NONE;
 }
