@@ -400,7 +400,9 @@
          * ``pygame.FLASH_BRIEFLY``: Flash for a short amount of time to get attention
          * ``pygame.FLASH_UNTIL_FOCUSED``: Keep flashing until the window is focused
 
-      .. note:: This function is not supported on all platforms
+      .. note:: This function is only supported on Windows, X11, Wayland and Cocoa (MacOS).
+         A :mod:`pygame.error` exception will be raised if it's not supported therefore it's
+         adviced to wrap it in a try block.
 
       .. versionadded:: 2.5.2
 
