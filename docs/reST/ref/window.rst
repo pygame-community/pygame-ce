@@ -400,6 +400,9 @@
          * ``pygame.FLASH_BRIEFLY``: Flash for a short amount of time to get attention
          * ``pygame.FLASH_UNTIL_FOCUSED``: Keep flashing until the window is focused
 
+      Window flashing requires SDL 2.0.16+. A :mod:`pygame.error` exception will be raised
+      otherwise.
+
       .. note:: This function is only supported on Windows, X11, Wayland and Cocoa (MacOS).
          A :mod:`pygame.error` exception will be raised if it's not supported therefore it's
          advised to wrap it in a try block.
