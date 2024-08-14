@@ -404,6 +404,16 @@
          A :mod:`pygame.error` exception will be raised if it's not supported therefore it's
          adviced to wrap it in a try block.
 
+         .. code-block:: python
+            
+            import pygame
+            window = pygame.Window()
+
+            try:
+               window.flash(pygame.FLASH_BRIEFLY)
+            except pygame.error:
+               print("Window flashing not supported")
+
       .. versionadded:: 2.5.2
 
    .. ## pygame.Window ##
