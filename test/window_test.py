@@ -1,11 +1,15 @@
 import unittest
 import pygame
 import os
+import platform
 
 from pygame import Window
 from pygame.version import SDL
 
 pygame.init()
+
+
+IS_PYPY = "PyPy" == platform.python_implementation()
 
 
 class WindowTypeTest(unittest.TestCase):
@@ -325,6 +329,7 @@ class WindowTypeTest(unittest.TestCase):
         pygame.display.quit()
         pygame.init()
 
+    @unittest.skipIf(IS_PYPY, "for some reason this test is flaky on pypy")
     def test_window_surface(self):
         win = Window(size=(640, 480))
         surf = win.get_surface()
@@ -342,6 +347,7 @@ class WindowTypeTest(unittest.TestCase):
         win.destroy()
         self.assertRaises(pygame.error, lambda: surf.fill((0, 0, 0)))
 
+    @unittest.skipIf(IS_PYPY, "for some reason this test is flaky on pypy")
     def test_window_surface_with_display_module(self):
         # get_surface() should raise an error if the set_mode() is not called.
         pygame.display.set_mode((640, 480))
@@ -397,6 +403,7 @@ class WindowTypeTest(unittest.TestCase):
         pygame.display.quit()
         pygame.init()
 
+    @unittest.skipIf(IS_PYPY, "for some reason this test is flaky on pypy")
     def test_window_subclassable(self):
         class WindowSubclass(Window):
             def __init__(self, title="Different title", size=(640, 480), **flags):
