@@ -38,9 +38,6 @@ on:
       # re-include current file to not be excluded
       - '!.github/workflows/build-ubuntu-coverage.yml'
 
-  # the github release drafter can call this workflow
-  workflow_call:
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-ubuntu-coverage
   cancel-in-progress: true
@@ -72,7 +69,7 @@ jobs:
     - name: Build with coverage hooks and install
       id: build
       run: |
-        pip3 install -e ${{ github.workspace }} --no-build-isolation -Cbuild-dir=${{ github.workspace }}/.mesonpy-rel -Csetup-args=-Dcoverage=true
+        pip3 install -e . --no-build-isolation -Cbuild-dir=./.mesonpy-rel -Csetup-args=-Dcoverage=true
 
     - name: Run tests
       env:
@@ -85,8 +82,8 @@ jobs:
       # want to continue regardless of whether a test failed or not as long as the job wasn't cancelled
       if: ${{ steps.build.conclusion == 'success' && !cancelled() }}
       run: |
-        lcov --capture --directory ${{ github.workspace }}/ --output-file ${{ github.workspace }}/coverage.info
-        genhtml ${{ github.workspace }}/coverage.info --output-directory ${{ github.workspace }}/out
+        lcov --capture --directory . --output-file ./coverage.info
+        genhtml ./coverage.info --output-directory ./out
 
     # We upload the generated files under github actions assets
     - name: Upload coverage html
@@ -95,4 +92,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: pygame-wheels-coverage
-        path: ${{ github.workspace }}/out
+        path: ./out
