@@ -41,6 +41,7 @@ static Uint64 music_pos_time = -1;
 static int music_frequency = 0;
 static Uint16 music_format = 0;
 static int music_channels = 0;
+static PyObject *endevent_callback = NULL;
 
 static void
 mixmusic_callback(void *udata, Uint8 *stream, int len)
@@ -56,6 +57,15 @@ endmusic_callback(void)
 {
     if (endmusic_event && SDL_WasInit(SDL_INIT_VIDEO)) {
         pg_post_event(endmusic_event, NULL);
+
+        if (endevent_callback != NULL) {
+            printf("calling %d\n", endmusic_event);
+            PyErr_Print();
+            if (PyObject_CallOneArg(endevent_callback, PyLong_FromLong((long)endmusic_event)) == NULL) {
+                PyErr_Print();
+            }
+            PyErr_Print();
+        }
     }
 
     if (queue_music) {
@@ -72,6 +82,15 @@ endmusic_callback(void)
         music_pos_time = -1;
         Mix_SetPostMix(NULL, NULL);
     }
+}
+
+static PyObject *
+music_register_endevent_callback(PyObject *self, PyObject *arg)
+{
+    Py_INCREF(arg);
+    endevent_callback = arg;
+    printf("%d\n", endevent_callback);
+    Py_RETURN_NONE;
 }
 
 /*music module methods*/
@@ -570,15 +589,17 @@ static PyMethodDef _music_methods[] = {
     {"queue", (PyCFunction)music_queue, METH_VARARGS | METH_KEYWORDS,
      DOC_MIXER_MUSIC_QUEUE},
 
+    {"_register_endevent_callback", (PyCFunction)music_register_endevent_callback, METH_O, "test"},
+
     {NULL, NULL, 0, NULL}};
 
-MODINIT_DEFINE(mixer_music)
+MODINIT_DEFINE(_mixer_music)
 {
     PyObject *module;
     PyObject *cobj;
 
     static struct PyModuleDef _module = {PyModuleDef_HEAD_INIT,
-                                         "mixer_music",
+                                         "_mixer_music",
                                          DOC_MIXER_MUSIC,
                                          -1,
                                          _music_methods,

@@ -13,6 +13,7 @@ python_sources = files(
     'locals.py',
     'macosx.py',
     'midi.py',
+    'mixer_music.py',
     'pkgdata.py',
     'sndarray.py',
     'sprite.py',

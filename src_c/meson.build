@@ -388,8 +388,8 @@ if sdl_mixer_dep.found()
         subdir: pg,
     )
 
-    mixer_music = py.extension_module(
-        'mixer_music',
+    _mixer_music = py.extension_module(
+        '_mixer_music',
         'music.c',
         c_args: warnings_error,
         dependencies: pg_base_deps + sdl_mixer_dep,

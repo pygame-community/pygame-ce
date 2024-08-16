@@ -52,7 +52,7 @@ gfxdraw  src_c/void.c
 joystick src_c/void.c
 key src_c/void.c
 newbuffer  src_c/void.c
-mixer_music src_c/void.c
+_mixer_music src_c/void.c
 mixer src_c/void.c
 mouse src_c/void.c
 pixelcopy src_c/void.c
