@@ -1884,7 +1884,7 @@ pg_event_allowed_set(PyObject *self, PyObject *args)
     VIDEO_INIT_CHECK();
 
     int e_type, e_flag;
-    PyObject *e_flago;
+    PyObject *e_flago = NULL;
 
     if (!PyArg_ParseTuple(args, "iO", &e_type, &e_flago))
         return NULL;
@@ -1895,7 +1895,6 @@ pg_event_allowed_set(PyObject *self, PyObject *args)
     }
 
     e_flag = PyObject_IsTrue(e_flago);
-    Py_DECREF(e_flago);
 
     if (e_flag < 0)
         return NULL;
