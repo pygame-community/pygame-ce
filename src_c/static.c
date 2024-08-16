@@ -130,7 +130,7 @@ PyMODINIT_FUNC
 PyInit_mask(void);
 
 PyMODINIT_FUNC
-PyInit_mixer_music(void);
+PyInit__mixer_music(void);
 
 PyMODINIT_FUNC
 PyInit_pg_mixer(void);
@@ -312,7 +312,7 @@ PyInit_pygame_static()
     load_submodule("pygame", PyInit_joystick(), "joystick");
 
     load_submodule("pygame", PyInit_pg_mixer(), "mixer");
-    load_submodule("pygame.mixer", PyInit_mixer_music(), "music");
+    load_submodule("pygame.mixer", PyInit__mixer_music(), "music");
 
     load_submodule("pygame", PyInit_window(), "window");
 

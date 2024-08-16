@@ -162,7 +162,7 @@ class Queue:
             Queue.__playing_instance.stop()
         Queue.__playing_instance = self
 
-    def __endevent(self): # pylint: unused-private-member
+    def __endevent(self):  # pylint: disable=private-member,unused-private-member
         self.__last_played = -1
         self.__index += 1
         if self.__index >= len(self.__filenames):
