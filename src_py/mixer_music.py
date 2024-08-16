@@ -110,6 +110,7 @@ class Queue:
                 self.__index = 0
             else:
                 self.__index = len(self.__filenames) - 1
+                return
         self.__play_current()
 
     def play_previous(self, loop: bool = True):
@@ -120,6 +121,7 @@ class Queue:
                 self.__index = max(0, len(self.__filenames) - 1)
             else:
                 self.__index = 0
+                return
         self.__play_current()
 
     def play_at(self, index: int):

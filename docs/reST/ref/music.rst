@@ -306,3 +306,212 @@ For a complete list of supported file formats, see the :mod:`pygame.mixer` doc p
    .. versionadded:: 2.1.4
    
    .. ## pygame.mixer.music.get_metadata ##
+
+.. class:: Queue
+
+   | :sl:`object to manage a music queue`
+   | :sg:`Queue(filenames=[]) -> Queue`
+
+   Differs from the :func:`pygame.mixer.music.queue` function as this object can queue
+   multiple musics similar to a playlist. It is advised not to mix them.
+
+   The Queue will not modify the status of the playing music. Stopping or resuming the queue
+   won't effect the music already playing, only the ability of the queue to automatically
+   change music. The rest of the :mod:`pygame.mixer.music` functions can achieve the desired
+   result and are used internally by the Queue.
+
+   Resuming a Queue after the current music finished will play the next music.
+   While creating multiple Queue instances is allowed, only one instance can change music
+   automatically at the same time.
+
+   Create a Queue optionally providing a list of filenames. The Queue is allowed to be empty.
+   See :mod:`pygame.mixer.music.Queue.filenames` for more details.
+
+   .. versionadded:: 2.5.2
+
+   .. attribute:: filenames
+
+      | :sl:`list of musics in the queue`
+      | :sg:`filenames -> list[str]`
+
+      Get or set the musics in the queue. The index will be set to ``0``.
+
+      While getting the filenames only returns a list of strings, when setting it a tuple
+      containing the filename and the loops can be passed instead of just the filename.
+
+      The loops value is bound to the filename, not the whole queue.
+
+      .. ## Queue.filenames
+
+   .. attribute:: index
+
+      | :sl:`the queue music index`
+      | :sg:`index -> int`
+
+      Get or set the music index. The index is independent from the currently playing music.
+
+      An index ouside of the music range will raise an ``IndexError`` exception. Changing
+      the index won't play music but will change what music is played next.
+
+      The index is always guaranteed to be >= ``0`` regardless of the mixer activity.
+
+      .. ## Queue.index
+
+   .. method:: add
+
+      | :sl:`add a music to the queue`
+      | :sg:`add(filename, loops=0) -> None`
+
+      Add a music to the end of the queue. The loops specify how many times the filename will be
+      repeated before changing to the next music. A value of ``1`` will play the music 2 times.
+
+      .. ## Queue.add
+
+   .. method:: remove
+
+      | :sl:`remove a music from the queue`
+      | :sg:`remove(filename) -> None`
+
+      Remove a music from the queue. If the music is not in the queue a ``KeyError`` exception
+      is raised.
+
+      .. ## Queue.remove
+
+   .. method:: pop
+
+      | :sl:`pop a music index from the queue`
+      | :sg:`pop(index) -> filename`
+
+      Remove the music at the specified index from the queue and return the filename. An index
+      ouside of the music range will raise an ``IndexError`` exception.
+
+      .. ## Queue.pop
+
+   .. method:: get_busy
+
+      | :sl:`check if the queue will play the next music automatically`
+      | :sg:`get_busy() -> bool`
+
+      Check wether the queue will play the next music automatically when the current ends. It is
+      not related to the activity of the music mixer.
+
+      After the queue starts, it will become false when the queue is manually stopped or when
+      all loop iterations are perfomed and the last music is reached.
+
+      .. ## Queue.get_busy
+
+   .. method:: get_current
+
+      | :sl:`retrieve the index of the currently playing music`
+      | :sg:`get_current() -> int`
+
+      Return the index of the currently playing music. It is not related to the queue index
+      (but will often be the same).
+      
+      If no music is playing the sentinel ``-1`` is returned.
+
+      .. ## Queue.get_current
+
+   .. method:: get_next
+
+      | :sl:`retrieve the index of the music that will play next`
+      | :sg:`get_next() -> int`
+
+      Return the index of the music that would be played after the current finishes. The loops
+      loop count set by :meth:`Queue.play` is taken into account when calculating the index
+      (if current index is at the end and the queue should loop, 0 will be returned).
+
+      If the queue is at the end and it will not loop or if the queue is empty, the sentile ``-1``
+      is returned.
+
+      .. ## Queue.get_next
+
+   .. method:: play
+
+      | :sl:`start the queue playback`
+      | :sg:`play(loops=0, fade_ms=0, index=0) -> None`
+
+      Play the music at the specified index (defaults to the first one) and set the queue loops.
+      The fading amount will be applied to every music and works the same as in :func:`pygame.mixer.music.play`.
+      
+      The loops are not related to the musics rather to the whole queue. It specifies how many
+      times the queue will repeat reaching the last music before stopping. A value of ``1`` means the
+      queue will play 2 times. A value of ``-1`` will play the queue indefinitely.
+
+      Each music in the queue will be played automatically after this call. An index ouside of
+      the music range will raise an ``IndexError`` exception.
+
+      .. ## Queue.play
+
+   .. method:: play_next
+
+      | :sl:`start playing the next music`
+      | :sg:`play_next(loop=False) -> None`
+
+      Immediately play the next music in the queue. If the loop flag is true calling this method
+      at the end of the queue will play the first music in the queue.
+
+      Unlike :meth:`Queue.play`, the next music will only be played if the queue was playing already.
+      If the next music can't be played no exception is raised.
+
+      .. ## Queue.play_next
+
+   .. method:: play_previous
+
+      | :sl:`start playing the previous music`
+      | :sg:`play_previous(loop=False) -> None`
+
+      Immediately play the previous music in the queue. If the loop flag is true calling this method
+      at the start of the queue will play the last music in the queue.
+
+      Unlike :meth:`Queue.play`, the next music will only be played if the queue was playing already.
+      If the previous music can't be played no exception is raised.
+
+      .. ## Queue.play_previous
+
+   .. method:: play_at
+
+      | :sl:`start playing the music at an index`
+      | :sg:`play_at(index) -> None`
+
+      Immediately play the music at the specified index. An index ouside of the music range will raise
+      an ``IndexError`` exception.
+
+      Unlike :meth:`Queue.play`, the next music will only be played if the queue was playing already.
+
+      .. ## Queue.play_at
+
+   .. method:: stop
+
+      | :sl:`stop the queue from playing the next music automatically`
+      | :sg:`stop() -> None`
+
+      Stop the queue from playing the next music automatically. This won't stop the currently playing music.
+      Resume the queue with the :meth:`Queue.resume` method.
+
+      .. ## Queue.stop
+
+   .. method:: resume
+
+      | :sl:`allow the queue to play the next music automatically`
+      | :sg:`resume() -> None`
+
+      Allow the queue to play the next music automatically. Will only take effect after calling :meth:`Queue.stop`.
+      This won't resume the currently playing music.
+
+      If the previous music already finished when the queue is resumed, the next one will play immediately.
+
+      .. ## Queue.resume
+
+   .. method:: restart
+
+      | :sl:`reset the queue playback`
+      | :sg:`restart() -> None`
+
+      Start playing the queue from the first music. The loops and fading set by :meth:`Queue.play`
+      will be kept. The loop count is reset. Just like :meth:`Queue.play`, the next music will
+      play automatically after the current finishes.
+
+      .. ## Queue.restart
+
+   .. ## pygame.mixer.music.Queue ##
