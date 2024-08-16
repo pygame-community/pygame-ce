@@ -320,7 +320,7 @@ For a complete list of supported file formats, see the :mod:`pygame.mixer` doc p
    change music. The rest of the :mod:`pygame.mixer.music` functions can achieve the desired
    result and are used internally by the Queue.
 
-   Resuming a Queue after the current music finished will play the next music.
+   Resuming a Queue after the current music finishes will play the next music.
    While creating multiple Queue instances is allowed, only one instance can change music
    automatically at the same time.
 
@@ -418,10 +418,10 @@ For a complete list of supported file formats, see the :mod:`pygame.mixer` doc p
       | :sg:`get_next() -> int`
 
       Return the index of the music that would be played after the current finishes. The loops
-      loop count set by :meth:`Queue.play` is taken into account when calculating the index
+      set by :meth:`Queue.play` and the loop count is taken into account when calculating the index
       (if current index is at the end and the queue should loop, 0 will be returned).
 
-      If the queue is at the end and it will not loop or if the queue is empty, the sentile ``-1``
+      If the queue is at the end and it will not loop or if the queue is empty, the sentinel ``-1``
       is returned.
 
       .. ## Queue.get_next
