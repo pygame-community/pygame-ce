@@ -17,7 +17,6 @@
 #define DOC_MIXER_MUSIC_SETENDEVENT "set_endevent() -> None\nset_endevent(type, /) -> None\nhave the music send an event when playback stops"
 #define DOC_MIXER_MUSIC_GETENDEVENT "get_endevent() -> type\nget the event a channel sends when playback stops"
 #define DOC_MIXER_MUSIC_GETMETADATA "get_metadata() -> dict\nget_metadata(filename) -> dict\nget_metadata(fileobj, namehint="") -> dict\nget metadata of the specified or currently loaded music stream"
-#define DOC_MIXER_MUSIC_QUEUE "Queue(filenames=[]) -> Queue\nobject to manage a music queue"
 #define DOC_MIXER_MUSIC_QUEUE_FILENAMES "filenames -> list[str]\nlist of musics in the queue"
 #define DOC_MIXER_MUSIC_QUEUE_INDEX "index -> int\nthe queue music index"
 #define DOC_MIXER_MUSIC_QUEUE_ADD "add(filename, loops=0) -> None\nadd a music to the queue"
