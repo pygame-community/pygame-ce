@@ -59,12 +59,42 @@ endmusic_callback(void)
         pg_post_event(endmusic_event, NULL);
 
         if (endevent_callback != NULL) {
-            printf("calling %d\n", endmusic_event);
-            PyErr_Print();
-            if (PyObject_CallOneArg(endevent_callback, PyLong_FromLong((long)endmusic_event)) == NULL) {
-                PyErr_Print();
+            /* call the (python defined) endevent callback function
+               holding the GIL as required by python */
+
+            int gil_was_active = PyGILState_Check();
+            PyGILState_STATE gstate;
+            gstate = PyGILState_Ensure();
+
+            int callback_error = 0;
+            PyObject *event_arg = PyLong_FromLong((long)endmusic_event);
+            if (event_arg == NULL) {
+                callback_error = 1;
             }
-            PyErr_Print();
+            else {
+                PyObject *result =
+                    PyObject_CallOneArg(endevent_callback, event_arg);
+
+                if (result == NULL) {
+                    callback_error = 1;
+                }
+                else {
+                    Py_DECREF(result);
+                }
+                Py_DECREF(event_arg);
+            }
+            if (callback_error == 1) {
+#if 1  // DEBUG ONLY
+                if (PyErr_Occurred()) {
+                    PyErr_Print();
+                }
+#endif
+                PyErr_Clear();
+            }
+
+            if (!gil_was_active) {
+                PyGILState_Release(gstate);
+            }
         }
     }
 
@@ -84,16 +114,20 @@ endmusic_callback(void)
     }
 }
 
+/*music module methods*/
 static PyObject *
-music_register_endevent_callback(PyObject *self, PyObject *arg)
+music__register_endevent_callback(PyObject *self, PyObject *arg)
 {
+    if (!PyCallable_Check(arg)) {
+        return RAISE(PyExc_TypeError, "endevent callback must be callable");
+    }
+
     Py_INCREF(arg);
+    Py_XDECREF(endevent_callback);
     endevent_callback = arg;
-    printf("%d\n", endevent_callback);
     Py_RETURN_NONE;
 }
 
-/*music module methods*/
 static PyObject *
 music_play(PyObject *self, PyObject *args, PyObject *keywds)
 {
@@ -562,6 +596,13 @@ music_get_metadata(PyObject *self, PyObject *args, PyObject *keywds)
     return meta_dict;
 }
 
+void
+music_free(PyObject *self)
+{
+    Py_XDECREF(endevent_callback);
+    endevent_callback = NULL;
+}
+
 static PyMethodDef _music_methods[] = {
     {"set_endevent", music_set_endevent, METH_VARARGS,
      DOC_MIXER_MUSIC_SETENDEVENT},
@@ -589,7 +630,9 @@ static PyMethodDef _music_methods[] = {
     {"queue", (PyCFunction)music_queue, METH_VARARGS | METH_KEYWORDS,
      DOC_MIXER_MUSIC_QUEUE},
 
-    {"_register_endevent_callback", (PyCFunction)music_register_endevent_callback, METH_O, "test"},
+    {"_register_endevent_callback",
+     (PyCFunction)music__register_endevent_callback, METH_O,
+     "register a python-defined music endevent callback for internal usage"},
 
     {NULL, NULL, 0, NULL}};
 
@@ -606,7 +649,7 @@ MODINIT_DEFINE(_mixer_music)
                                          NULL,
                                          NULL,
                                          NULL,
-                                         NULL};
+                                         (freefunc)music_free};
 
     /* imported needed apis; Do this first so if there is an error
        the module is not loaded.
