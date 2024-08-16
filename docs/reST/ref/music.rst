@@ -307,7 +307,8 @@ For a complete list of supported file formats, see the :mod:`pygame.mixer` doc p
    
    .. ## pygame.mixer.music.get_metadata ##
 
-.. class:: Queue
+.. class:: Queuee
+   .. # TEMPORARY NAME
 
    | :sl:`object to manage a music queue`
    | :sg:`Queue(filenames=[]) -> Queue`
