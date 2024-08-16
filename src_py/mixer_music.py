@@ -97,37 +97,37 @@ class Queue:
         self.__index = index
         self.__fade_ms = fade_ms
         self.__ended_paused = False
+        self.__playing = True
         if self.__index < 0 or self.__index >= len(self.__filenames):
             raise IndexError("Music index out of range")
         self.__play_current()
-        self.__playing = True
 
     def play_next(self, loop: bool = True):
         self.__index += 1
+        self.__ended_paused = False
         if self.__index >= len(self.__filenames):
             if loop:
                 self.__index = 0
             else:
                 self.__index = len(self.__filenames) - 1
         self.__play_current()
-        self.__ended_paused = False
 
     def play_previous(self, loop: bool = True):
         self.__index -= 1
+        self.__ended_paused = False
         if self.__index < 0:
             if loop:
                 self.__index = max(0, len(self.__filenames) - 1)
             else:
                 self.__index = 0
         self.__play_current()
-        self.__ended_paused = False
 
     def play_at(self, index: int):
         self.__index = index
+        self.__ended_paused = False
         if self.__index < 0 or self.__index >= len(self.__filenames):
             raise IndexError("Music index out of range")
         self.__play_current()
-        self.__ended_paused = False
 
     def stop(self):
         self.__playing = False
