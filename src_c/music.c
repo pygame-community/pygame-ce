@@ -222,7 +222,7 @@ music_get_volume(PyObject *self, PyObject *_null)
     volume = Mix_VolumeMusic(-1);
     return PyFloat_FromDouble(volume / 128.0);
 }
-#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+
 static PyObject *
 music_set_pos(PyObject *self, PyObject *arg)
 {
@@ -244,7 +244,7 @@ music_set_pos(PyObject *self, PyObject *arg)
 
     Py_RETURN_NONE;
 }
-#endif
+
 static PyObject *
 old_music_get_pos()
 {
@@ -259,10 +259,11 @@ old_music_get_pos()
     ticks = (long)(1000 * music_pos / denominator);
     if (!Mix_PausedMusic())
         ticks += PG_GetTicks() - music_pos_time;
-        
+    
     return PyLong_FromUnsignedLongLong(ticks);
 }
 
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
 static PyObject *
 new_music_get_pos()
 {
@@ -277,6 +278,7 @@ new_music_get_pos()
 
     return PyLong_FromLongLong(ticks);
 }
+#endif
 
 static PyObject *
 music_get_pos(PyObject *self, PyObject *_null)
