@@ -995,7 +995,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     self->_is_borrowed = SDL_FALSE;
     self->surf = NULL;
 
-    if (SDL_GetWindowFlags(self->_win) & SDL_WINDOW_OPENGL) {
+    if (flags & SDL_WINDOW_OPENGL) {
         SDL_GLContext context = SDL_GL_CreateContext(self->_win);
         if (context == NULL) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
