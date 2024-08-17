@@ -245,8 +245,24 @@ music_set_pos(PyObject *self, PyObject *arg)
     Py_RETURN_NONE;
 }
 
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
 static PyObject *
-old_music_get_pos()
+get_music_pos()
+{
+    long long ticks;
+    double actual_pos = -1.0;
+
+    actual_pos = Mix_GetMusicPosition(current_music);
+    if (actual_pos == -1.0)
+        return PyLong_FromLongLong(-1);
+
+    ticks = (long long)(actual_pos * 1000);
+
+    return PyLong_FromLongLong(ticks);
+}
+#else
+static PyObject *
+get_music_pos()
 {
     Uint64 ticks = 0;
 
@@ -262,32 +278,12 @@ old_music_get_pos()
     
     return PyLong_FromUnsignedLongLong(ticks);
 }
-
-#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
-static PyObject *
-new_music_get_pos()
-{
-    long long ticks;
-    double actual_pos = -1.0;
-
-    actual_pos = Mix_GetMusicPosition(current_music);
-    if (actual_pos == -1.0)
-        return PyLong_FromLongLong(-1);
-
-    ticks = (long long)(actual_pos * 1000);
-
-    return PyLong_FromLongLong(ticks);
-}
 #endif
 
 static PyObject *
 music_get_pos(PyObject *self, PyObject *_null)
 {
-#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
-    return new_music_get_pos();
-#else
-    return old_music_get_pos();
-#endif
+    return get_music_pos();
 }
 
 static PyObject *
