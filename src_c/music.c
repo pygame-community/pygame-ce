@@ -275,7 +275,7 @@ get_music_pos()
     ticks = (long)(1000 * music_pos / denominator);
     if (!Mix_PausedMusic())
         ticks += PG_GetTicks() - music_pos_time;
-    
+
     return PyLong_FromUnsignedLongLong(ticks);
 }
 #endif
