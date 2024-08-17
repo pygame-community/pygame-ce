@@ -259,8 +259,7 @@ old_music_get_pos()
     ticks = (long)(1000 * music_pos / denominator);
     if (!Mix_PausedMusic())
         ticks += PG_GetTicks() - music_pos_time;
-    
-    
+        
     return PyLong_FromUnsignedLongLong(ticks);
 }
 
@@ -282,13 +281,11 @@ new_music_get_pos()
 static PyObject *
 music_get_pos(PyObject *self, PyObject *_null)
 {
-
 #if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
     return new_music_get_pos();
 #else
     return old_music_get_pos();
 #endif
-
 }
 
 static PyObject *
