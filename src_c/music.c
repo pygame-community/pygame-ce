@@ -248,21 +248,18 @@ music_set_pos(PyObject *self, PyObject *arg)
 static PyObject *
 music_get_pos(PyObject *self, PyObject *_null)
 {
-    Uint64 ticks;
+    long long ticks;
+    double actual_pos = -1.0;
 
     MIXER_INIT_CHECK();
 
-    Uint16 intermediate_step = (music_format & 0xff) >> 3;
-    long denominator = music_channels * music_frequency * intermediate_step;
-    if (music_pos_time < 0 || denominator == 0) {
-        return PyLong_FromLong(-1);
-    }
+    actual_pos = Mix_GetMusicPosition(current_music);
+    if(actual_pos == -1.0)
+        return PyLong_FromLongLong(-1);
 
-    ticks = (long)(1000 * music_pos / denominator);
-    if (!Mix_PausedMusic())
-        ticks += PG_GetTicks() - music_pos_time;
+    ticks = (long long) (actual_pos * 1000);
 
-    return PyLong_FromUnsignedLongLong(ticks);
+    return PyLong_FromLongLong(ticks);
 }
 
 static PyObject *
