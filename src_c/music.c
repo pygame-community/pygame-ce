@@ -246,20 +246,49 @@ music_set_pos(PyObject *self, PyObject *arg)
 }
 
 static PyObject *
-music_get_pos(PyObject *self, PyObject *_null)
+old_music_get_pos()
+{
+    Uint64 ticks = 0;
+
+    Uint16 intermediate_step = (music_format & 0xff) >> 3;
+    long denominator = music_channels * music_frequency * intermediate_step;
+    if (music_pos_time < 0 || denominator == 0) {
+        return PyLong_FromLong(-1);
+    }
+
+    ticks = (long)(1000 * music_pos / denominator);
+    if (!Mix_PausedMusic())
+        ticks += PG_GetTicks() - music_pos_time;
+    
+    
+    return PyLong_FromUnsignedLongLong(ticks);
+}
+
+static PyObject *
+new_music_get_pos()
 {
     long long ticks;
     double actual_pos = -1.0;
 
-    MIXER_INIT_CHECK();
-
     actual_pos = Mix_GetMusicPosition(current_music);
-    if(actual_pos == -1.0)
+    if (actual_pos == -1.0)
         return PyLong_FromLongLong(-1);
 
-    ticks = (long long) (actual_pos * 1000);
+    ticks = (long long)(actual_pos * 1000);
 
     return PyLong_FromLongLong(ticks);
+}
+
+static PyObject *
+music_get_pos(PyObject *self, PyObject *_null)
+{
+
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+    return new_music_get_pos();
+#else
+    return old_music_get_pos();
+#endif
+
 }
 
 static PyObject *
