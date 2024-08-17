@@ -532,6 +532,67 @@ font_set_strikethrough(PyObject *self, PyObject *arg)
     Py_RETURN_NONE;
 }
 
+static int
+_create_font_surface(TTF_Font *font, const char *text, int antialias,
+                     SDL_Color foreg, SDL_Color backg, int draw_backg,
+                     int wraplength, SDL_Surface **dst_surf)
+{
+    if (wraplength < 0) {
+        PyErr_Format(PyExc_ValueError,
+                     "The wraplength parameter must be positive.");
+        return 0;
+    }
+
+    /* if text is Py_None, leave text as a null byte to represent 0
+       length string */
+
+    if (strlen(text) == 0) { /* special 0 string case */
+        int height = TTF_FontHeight(font);
+        *dst_surf = PG_CreateSurface(0, height, PG_PIXELFORMAT_XRGB8888);
+    }
+    else { /* normal case */
+        if (antialias && !draw_backg) {
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+            *dst_surf =
+                TTF_RenderUTF8_Blended_Wrapped(font, text, foreg, wraplength);
+#else
+            *dst_surf = TTF_RenderUTF8_Blended(font, text, foreg);
+#endif
+        }
+        else if (antialias) {
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+            *dst_surf = TTF_RenderUTF8_Shaded_Wrapped(font, text, foreg, backg,
+                                                      wraplength);
+#else
+            *dst_surf = TTF_RenderUTF8_Shaded(font, text, foreg, backg);
+#endif
+        }
+        else {
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
+            *dst_surf =
+                TTF_RenderUTF8_Solid_Wrapped(font, text, foreg, wraplength);
+#else
+            *dst_surf = TTF_RenderUTF8_Solid(font, text, foreg);
+#endif
+            /* If an explicit background was provided and the rendering options
+            resolve to Render_Solid, that needs to be explicitly handled. */
+            if (*dst_surf != NULL && draw_backg) {
+                SDL_SetColorKey(*dst_surf, 0, 0);
+                (*dst_surf)->format->palette->colors[0].r = backg.r;
+                (*dst_surf)->format->palette->colors[0].g = backg.g;
+                (*dst_surf)->format->palette->colors[0].b = backg.b;
+            }
+        }
+    }
+
+    if (*dst_surf == NULL) {
+        PyErr_Format(pgExc_SDLError, TTF_GetError());
+        return 0;
+    }
+
+    return 1;
+}
+
 static PyObject *
 font_render(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -539,14 +600,16 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
         return RAISE_FONT_QUIT_ERROR();
     }
 
-    TTF_Font *font = PyFont_AsFont(self);
     int antialias;
     PyObject *text, *final;
     PyObject *fg_rgba_obj, *bg_rgba_obj = Py_None;
-    Uint8 rgba[] = {0, 0, 0, 0};
-    SDL_Surface *surf;
-    const char *astring = "";
+    SDL_Surface *surf = NULL;
+    SDL_Surface *outline_surf = NULL;
     int wraplength = 0;
+    TTF_Font *font = PyFont_AsFont(self);
+    int outline_width = ((PyFontObject *)self)->outline_width;
+    SDL_Color outline_color = ((PyFontObject *)self)->outline_color;
+    Uint8 rgba[] = {0, 0, 0, 0};
 
     if (!PgFont_GenerationCheck(self)) {
         return RAISE_FONT_QUIT_ERROR()
@@ -562,40 +625,41 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
     }
 
     if (!pg_RGBAFromObjEx(fg_rgba_obj, rgba, PG_COLOR_HANDLE_ALL)) {
-        /* Exception already set for us */
-        return NULL;
+        return 0;  // exception already set
     }
 
     SDL_Color foreg = {rgba[0], rgba[1], rgba[2], SDL_ALPHA_OPAQUE};
-    /* might be overridden right below, with an explicit background color */
     SDL_Color backg = {0, 0, 0, SDL_ALPHA_OPAQUE};
+    int draw_backg = 1;
+    /* might be overridden right below, with an explicit background color */
 
     if (bg_rgba_obj != Py_None) {
         if (!pg_RGBAFromObjEx(bg_rgba_obj, rgba, PG_COLOR_HANDLE_ALL)) {
-            /* Exception already set for us */
-            return NULL;
+            return 0;  // exception already set.
         }
         backg = (SDL_Color){rgba[0], rgba[1], rgba[2], SDL_ALPHA_OPAQUE};
     }
-
-    if (!PyUnicode_Check(text) && !PyBytes_Check(text) && text != Py_None) {
-        return RAISE_TEXT_TYPE_ERROR();
+    else {
+        draw_backg = 0;
     }
 
-    if (wraplength < 0) {
-        return RAISE(PyExc_ValueError,
-                     "wraplength parameter must be positive");
+    const char *astring = "";
+
+    if (!PyUnicode_Check(text) && !PyBytes_Check(text) && text != Py_None) {
+        PyErr_Format(PyExc_TypeError, "text must be a unicode or bytes");
+        return 0;
     }
 
     if (PyUnicode_Check(text)) {
         Py_ssize_t _size = -1;
         astring = PyUnicode_AsUTF8AndSize(text, &_size);
-        if (astring == NULL) { /* exception already set */
-            return NULL;
+        if (astring == NULL) {
+            return 0;  // exception already set.
         }
         if (strlen(astring) != (size_t)_size) {
-            return RAISE(PyExc_ValueError,
-                         "A null character was found in the text");
+            PyErr_Format(PyExc_ValueError,
+                         "A null character was found in the text.");
+            return 0;
         }
     }
 
@@ -603,59 +667,62 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
         /* Bytes_AsStringAndSize with NULL arg for length emits
            ValueError if internal NULL bytes are present */
         if (PyBytes_AsStringAndSize(text, (char **)&astring, NULL) == -1) {
-            return NULL; /* exception already set */
+            return 0;  // exception already set.
         }
     }
 
-    /* if text is Py_None, leave astring as a null byte to represent 0
-       length string */
-
-    if (strlen(astring) == 0) { /* special 0 string case */
-        int height = TTF_FontHeight(font);
-        surf = PG_CreateSurface(0, height, PG_PIXELFORMAT_XRGB8888);
-    }
-    else { /* normal case */
-        if (antialias && bg_rgba_obj == Py_None) {
-#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
-            surf = TTF_RenderUTF8_Blended_Wrapped(font, astring, foreg,
-                                                  wraplength);
-#else
-            surf = TTF_RenderUTF8_Blended(font, astring, foreg);
-#endif
-        }
-        else if (antialias) {
-#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
-            surf = TTF_RenderUTF8_Shaded_Wrapped(font, astring, foreg, backg,
-                                                 wraplength);
-#else
-            surf = TTF_RenderUTF8_Shaded(font, astring, foreg, backg);
-#endif
-        }
-        else {
-#if SDL_TTF_VERSION_ATLEAST(2, 0, 18)
-            surf =
-                TTF_RenderUTF8_Solid_Wrapped(font, astring, foreg, wraplength);
-#else
-            surf = TTF_RenderUTF8_Solid(font, astring, foreg);
-#endif
-            /* If an explicit background was provided and the rendering options
-            resolve to Render_Solid, that needs to be explicitly handled. */
-            if (surf != NULL && bg_rgba_obj != Py_None) {
-                SDL_SetColorKey(surf, 0, 0);
-                surf->format->palette->colors[0].r = backg.r;
-                surf->format->palette->colors[0].g = backg.g;
-                surf->format->palette->colors[0].b = backg.b;
-            }
-        }
+    if (!_create_font_surface(font, astring, antialias, foreg, backg,
+                              draw_backg, wraplength, &surf)) {
+        return NULL;
     }
 
-    if (surf == NULL) {
-        return RAISE(pgExc_SDLError, TTF_GetError());
+    SDL_Surface *filled_with_outline_surf = NULL;
+
+    if (outline_width > 0) {
+        TTF_SetFontOutline(font, outline_width);
+
+        if (!_create_font_surface(font, astring, antialias, outline_color,
+                                  backg, draw_backg, wraplength,
+                                  &outline_surf)) {
+            return NULL;
+        }
+
+        TTF_SetFontOutline(font, 0);
+
+        // Order for rendering the outline and the actual font matters.
+        // Blitting foreground over outline results in smaller outline than
+        // otherwise.
+        filled_with_outline_surf = PG_CreateSurface(
+            outline_surf->w, outline_surf->h, SDL_PIXELFORMAT_RGBA32);
+
+        // `surf` and `outline_surf` are **NOT** the same size.
+        SDL_Rect outlinerect;
+        outlinerect.x = filled_with_outline_surf->w / 2 - outline_surf->w / 2;
+        outlinerect.y = filled_with_outline_surf->h / 2 - outline_surf->h / 2;
+        outlinerect.w = outline_surf->w;
+        outlinerect.h = outline_surf->h;
+        SDL_Rect fillrect;
+        fillrect.x = filled_with_outline_surf->w / 2 - surf->w / 2;
+        fillrect.y = filled_with_outline_surf->h / 2 - surf->h / 2;
+        fillrect.w = surf->w;
+        fillrect.h = surf->h;
+        SDL_BlitSurface(surf, NULL, filled_with_outline_surf, &fillrect);
+        SDL_BlitSurface(outline_surf, NULL, filled_with_outline_surf,
+                        &outlinerect);
+
+        final = (PyObject *)pgSurface_New(filled_with_outline_surf);
+    }
+    else {
+        final = (PyObject *)pgSurface_New(surf);
     }
 
-    final = (PyObject *)pgSurface_New(surf);
     if (final == NULL) {
         SDL_FreeSurface(surf);
+        if (outline_surf != NULL)
+            SDL_FreeSurface(outline_surf);
+
+        if (filled_with_outline_surf != NULL)
+            SDL_FreeSurface(filled_with_outline_surf);
     }
     return final;
 }
@@ -821,6 +888,98 @@ font_getter_style_name(PyObject *self, void *closure)
     TTF_Font *font = PyFont_AsFont(self);
     const char *font_style_name = TTF_FontFaceStyleName(font);
     return PyUnicode_FromString(font_style_name ? font_style_name : "");
+}
+
+static PyObject *
+font_getter_outline_width(PyFontObject *self, void *closure)
+{
+    if (!PgFont_GenerationCheck(self))
+        return RAISE_FONT_QUIT_ERROR();
+
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 12)
+    return PyLong_FromLong(self->outline_width);
+#else
+    return RAISE(pgExc_SDLError,
+                 "Incorrect SDL_TTF version (requires 2.0.12)");
+#endif
+}
+
+static int
+font_setter_outline_width(PyFontObject *self, PyObject *value, void *closure)
+{
+    if (!PgFont_GenerationCheck(self)) {
+        RAISE_FONT_QUIT_ERROR_RETURN(-1);
+    }
+
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 12)
+    int val = PyLong_AsLong(value);
+
+    if (PyErr_Occurred() && val == -1)
+        return -1;
+
+    if (!PyLong_Check(value)) {
+        PyErr_SetString(PyExc_TypeError, "outline_width cannot be a float");
+        return -1;
+    }
+
+    if (val < 0) {
+        PyErr_SetString(PyExc_ValueError,
+                        "outline_width cannot be less than 0");
+        return -1;
+    }
+
+    self->outline_width = val;
+
+    return 0;
+#else
+    PyErr_SetString(pgExc_SDLError,
+                    "Incorrect SDL_TTF version (requires 2.0.12)");
+    return -1;
+#endif
+}
+
+static PyObject *
+font_getter_outline_color(PyFontObject *self, void *closure)
+{
+    if (!PgFont_GenerationCheck(self))
+        return RAISE_FONT_QUIT_ERROR();
+
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 12)
+    return Py_BuildValue("(bbbb)", self->outline_color.r,
+                         self->outline_color.g, self->outline_color.b,
+                         self->outline_color.a);
+#else
+    return RAISE(pgExc_SDLError,
+                 "Incorrect SDL_TTF version (requires 2.0.12)");
+#endif
+}
+
+static int
+font_setter_outline_color(PyFontObject *self, PyObject *value, void *closure)
+{
+    Uint8 rgba[] = {0, 0, 0, 0};
+
+    if (!PgFont_GenerationCheck(self)) {
+        RAISE_FONT_QUIT_ERROR_RETURN(-1);
+    }
+
+#if SDL_TTF_VERSION_ATLEAST(2, 0, 12)
+    if (!pg_RGBAFromObjEx(value, rgba, PG_COLOR_HANDLE_ALL)) {
+        return -1;
+    }
+
+    if (PyErr_Occurred())
+        return -1;
+
+    SDL_Color val = {rgba[0], rgba[1], rgba[2], SDL_ALPHA_OPAQUE};
+    self->outline_color = val;
+
+    return 0;
+#else
+    PyErr_SetString(pgExc_SDLError,
+                    "Incorrect SDL_TTF version (requires 2.0.12)");
+    return -1;
+#endif
 }
 
 static PyObject *
@@ -1045,6 +1204,10 @@ static PyGetSetDef font_getsets[] = {
      DOC_FONT_FONT_ALIGN, NULL},
     {"point_size", (getter)font_getter_point_size,
      (setter)font_setter_point_size, DOC_FONT_FONT_POINTSIZE, NULL},
+    {"outline_color", (getter)font_getter_outline_color,
+     (setter)font_setter_outline_color, DOC_FONT_FONT_OUTLINECOLOR, NULL},
+    {"outline_width", (getter)font_getter_outline_width,
+     (setter)font_setter_outline_width, DOC_FONT_FONT_OUTLINEWIDTH, NULL},
     {NULL, NULL, NULL, NULL, NULL}};
 
 static PyMethodDef font_methods[] = {
@@ -1188,6 +1351,9 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     Py_DECREF(obj);
     self->font = font;
     self->ptsize = fontsize;
+    self->outline_width = 0;
+    SDL_Color init_color = {0, 0, 0, SDL_ALPHA_OPAQUE};
+    self->outline_color = init_color;
     self->ttf_init_generation = current_ttf_generation;
 
     return 0;
