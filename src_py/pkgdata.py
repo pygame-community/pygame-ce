@@ -22,7 +22,14 @@ import sys
 import os
 
 try:
-    from pkg_resources import resource_stream, resource_exists
+    from importlib import resources
+
+    def resource_exists(_package_or_requirement, _resource_name):
+        return resources.is_resource(_package_or_requirement, _resource_name)
+
+    def resource_stream(_package_of_requirement, _resource_name):
+        return resources.read_binary(_package_of_requirement, _resource_name)
+
 except ImportError:
 
     def resource_exists(_package_or_requirement, _resource_name):
