@@ -38,7 +38,7 @@ try:
             return resources.is_resource(_package_or_requirement, _resource_name)
 
         def resource_stream(_package_of_requirement, _resource_name):
-            return resources.read_binary(_package_of_requirement, _resource_name)
+            return resources.open_binary(_package_of_requirement, _resource_name)
 
 except ImportError:
 
