@@ -26,19 +26,23 @@ try:
         from importlib.resources import files
 
         def resource_exists(_package_or_requirement, _resource_name):
+            _package_or_requirement = _package_or_requirement.split(".")[0]
             return files(_package_or_requirement).joinpath(_resource_name).is_file()
 
         def resource_stream(_package_or_requirement, _resource_name):
+            _package_or_requirement = _package_or_requirement.split(".")[0]
             ref = files(_package_or_requirement).joinpath(_resource_name)
             return ref.open('rb')
     else:
         from importlib import resources
 
         def resource_exists(_package_or_requirement, _resource_name):
+            _package_or_requirement = _package_or_requirement.split(".")[0]
             return resources.is_resource(_package_or_requirement, _resource_name)
 
-        def resource_stream(_package_of_requirement, _resource_name):
-            return resources.open_binary(_package_of_requirement, _resource_name)
+        def resource_stream(_package_or_requirement, _resource_name):
+            _package_or_requirement = _package_or_requirement.split(".")[0]
+            return resources.open_binary(_package_or_requirement, _resource_name)
 
 except ImportError:
 
@@ -50,7 +54,7 @@ except ImportError:
         """
         return False
 
-    def resource_stream(_package_of_requirement, _resource_name):
+    def resource_stream(_package_or_requirement, _resource_name):
         """
         A stub for when we fail to import this function.
 
