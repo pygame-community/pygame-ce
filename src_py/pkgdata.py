@@ -22,13 +22,23 @@ import sys
 import os
 
 try:
-    from importlib import resources
+    import importlib_resources
 
     def resource_exists(_package_or_requirement, _resource_name):
-        return resources.is_resource(_package_or_requirement, _resource_name)
+        return (
+            importlib_resources.files(_package_or_requirement)
+            .joinpath(_resource_name)
+            .is_file()
+        )
 
-    def resource_stream(_package_of_requirement, _resource_name):
-        return resources.read_binary(_package_of_requirement, _resource_name)
+    def resource_stream(_package_or_requirement, _resource_name):
+        ref = (
+            importlib_resources.files(_package_or_requirement)
+            .joinpath(_resource_name)
+            .is_file()
+        )
+        return ref.open('rb')
+
 
 except ImportError:
 
