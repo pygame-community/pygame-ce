@@ -22,23 +22,29 @@ import sys
 import os
 
 try:
-    import importlib_resources
+    if sys.version_info[:2] > (3, 8):
+        import importlib_resources
 
-    def resource_exists(_package_or_requirement, _resource_name):
-        return (
-            importlib_resources.files(_package_or_requirement)
-            .joinpath(_resource_name)
-            .is_file()
-        )
+        def resource_exists(_package_or_requirement, _resource_name):
+            return (
+                importlib_resources.files(_package_or_requirement)
+                .joinpath(_resource_name)
+                .is_file()
+            )
 
-    def resource_stream(_package_or_requirement, _resource_name):
-        ref = (
-            importlib_resources.files(_package_or_requirement)
-            .joinpath(_resource_name)
-            .is_file()
-        )
-        return ref.open('rb')
+        def resource_stream(_package_or_requirement, _resource_name):
+            ref = importlib_resources.files(_package_or_requirement).joinpath(
+                _resource_name
+            )
+            return ref.open('rb')
+    else:
+        from importlib import resources
 
+        def resource_exists(_package_or_requirement, _resource_name):
+            return resources.is_resource(_package_or_requirement, _resource_name)
+
+        def resource_stream(_package_of_requirement, _resource_name):
+            return resources.read_binary(_package_of_requirement, _resource_name)
 
 except ImportError:
 
