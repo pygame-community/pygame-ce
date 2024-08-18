@@ -1,7 +1,7 @@
 from typing import Optional, Tuple, Union
 from typing_extensions import deprecated # added in 3.13
 
-from pygame._common import Coordinate, RectValue
+from pygame.typing import Coordinate, RectLike
 from pygame.locals import WINDOWPOS_UNDEFINED
 from pygame.rect import Rect
 from pygame.surface import Surface
@@ -49,7 +49,7 @@ class Window:
     @property
     def mouse_rect(self) -> Optional[Rect]: ...
     @mouse_rect.setter
-    def mouse_rect(self, value: Optional[RectValue]) -> None: ...
+    def mouse_rect(self, value: Optional[RectLike]) -> None: ...
     @property
     def size(self) -> Tuple[int, int]: ...
     @size.setter
