@@ -1525,8 +1525,8 @@ RectExport_RectFromObjectAndKeyFunc(PyObject *obj, PyObject *keyfunc,
                                     InnerRect *temp)
 {
     if (keyfunc) {
-        PyObject *obj_with_rect =
-            PyObject_CallFunctionObjArgs(keyfunc, obj, NULL);
+        PyObject *obj_with_rect = PyObject_Vectorcall(keyfunc, &obj, 1, NULL);
+
         if (!obj_with_rect) {
             return NULL;
         }
