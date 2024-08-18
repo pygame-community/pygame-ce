@@ -933,7 +933,7 @@ class ChannelTypeTest(unittest.TestCase):
         # If the channel is playing a Sound on which set_volume() has also
         # been called, both calls are taken into account. For example:
         #
-        #     sound = pygame.mixer.Sound("s.wav")
+        #     sound = pygame.Sound("s.wav")
         #     channel = s.play()      # Sound plays at full volume by default
         #     sound.set_volume(0.9)   # Now plays at 90% of full volume.
         #     sound.set_volume(0.6)   # Now plays at 60% (previous value replaced).

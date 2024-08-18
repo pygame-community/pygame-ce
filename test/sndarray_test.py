@@ -102,7 +102,7 @@ class SndarrayTest(unittest.TestCase):
                 __, sz, __ = pygame.mixer.get_init()
                 if sz == size:
                     zeroed = null_byte * ((abs(size) // 8) * len(test_data) * channels)
-                    snd = pygame.mixer.Sound(buffer=zeroed)
+                    snd = pygame.Sound(buffer=zeroed)
                     samples = pygame.sndarray.samples(snd)
                     self._assert_compatible(samples, size)
                     ##print('X %s' % (samples.shape,))
@@ -146,7 +146,7 @@ class SndarrayTest(unittest.TestCase):
             self.skipTest("unsupported mixer configuration")
 
         arr = array([[0.0, -1.0], [-1.0, 0], [1.0, 0], [0, 1.0]], float32)
-        newsound = pygame.mixer.Sound(array=arr)
+        newsound = pygame.Sound(array=arr)
         pygame.mixer.quit()
 
 

@@ -141,7 +141,7 @@ def main():
 
     print(("-" * 30) + "\n")
     print("loading sound")
-    sound = pygame.mixer.Sound(os.path.join(main_dir, "data", "car_door.wav"))
+    sound = pygame.Sound(os.path.join(main_dir, "data", "car_door.wav"))
 
     print("-" * 30)
     print("start positions")
@@ -195,7 +195,7 @@ def main():
     while pygame.mixer.get_busy():
         pygame.time.wait(200)
 
-    sound = pygame.mixer.Sound(os.path.join(main_dir, "data", "secosmic_lo.wav"))
+    sound = pygame.Sound(os.path.join(main_dir, "data", "secosmic_lo.wav"))
 
     t1 = time.time()
     sound3 = make_echo(sound, samples_per_second)

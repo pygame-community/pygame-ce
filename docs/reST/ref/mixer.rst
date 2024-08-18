@@ -375,6 +375,9 @@ The following file formats are supported
       :class:`pygame.mixer.Sound` keyword arguments and array interface support
    .. versionaddedold:: 2.0.1 pathlib.Path support on Python 3.
 
+   .. versionchanged:: 2.5.2 This class is also available through the ``pygame.Sound``
+      alias.
+
    .. method:: play
 
       | :sl:`begin sound playback`
@@ -619,7 +622,7 @@ The following file formats are supported
 
       ::
 
-          sound = pygame.mixer.Sound("s.wav")
+          sound = pygame.Sound("s.wav")
           channel = s.play()      # Sound plays at full volume by default
           sound.set_volume(0.9)   # Now plays at 90% of full volume.
           sound.set_volume(0.6)   # Now plays at 60% (previous value replaced).
