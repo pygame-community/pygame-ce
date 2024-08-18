@@ -47,7 +47,8 @@ pg_circle_init(pgCircleObject *self, PyObject *args, PyObject *kwds)
         PyErr_SetString(
             PyExc_TypeError,
             "Arguments must be a Circle, a sequence of length 3 or 2, or an "
-            "object with an attribute called 'circle'");
+            "object with an attribute called 'circle', all with corresponding "
+            "nonnegative radius argument");
         return -1;
     }
     return 0;
@@ -644,8 +645,8 @@ pg_circle_setr(pgCircleObject *self, PyObject *value, void *closure)
         return -1;
     }
 
-    if (radius <= 0) {
-        PyErr_SetString(PyExc_ValueError, "Radius must be positive");
+    if (radius < 0) {
+        PyErr_SetString(PyExc_ValueError, "Radius must be nonnegative");
         return -1;
     }
 
@@ -673,9 +674,9 @@ pg_circle_setr_sqr(pgCircleObject *self, PyObject *value, void *closure)
         return -1;
     }
 
-    if (radius_squared <= 0) {
+    if (radius_squared < 0) {
         PyErr_SetString(PyExc_ValueError,
-                        "Invalid radius squared value, must be > 0");
+                        "Invalid radius squared value, must be nonnegative");
         return -1;
     }
 
@@ -720,8 +721,9 @@ pg_circle_setarea(pgCircleObject *self, PyObject *value, void *closure)
         return -1;
     }
 
-    if (area <= 0) {
-        PyErr_SetString(PyExc_ValueError, "Invalid area value, must be > 0");
+    if (area < 0) {
+        PyErr_SetString(PyExc_ValueError,
+                        "Invalid area value, must be nonnegative");
         return -1;
     }
 
@@ -750,9 +752,9 @@ pg_circle_setcircumference(pgCircleObject *self, PyObject *value,
         return -1;
     }
 
-    if (circumference <= 0) {
+    if (circumference < 0) {
         PyErr_SetString(PyExc_ValueError,
-                        "Invalid circumference value, must be > 0");
+                        "Invalid circumference value, must be nonnegative");
         return -1;
     }
 
@@ -780,9 +782,9 @@ pg_circle_setdiameter(pgCircleObject *self, PyObject *value, void *closure)
         return -1;
     }
 
-    if (diameter <= 0) {
+    if (diameter < 0) {
         PyErr_SetString(PyExc_ValueError,
-                        "Invalid diameter value, must be > 0");
+                        "Invalid diameter value, must be nonnegative");
         return -1;
     }
 

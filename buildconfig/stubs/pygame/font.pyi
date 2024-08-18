@@ -1,8 +1,8 @@
-from typing import Callable, Hashable, Iterable, List, Optional, Tuple, Union
+from typing import Callable, Hashable, Iterable, List, Literal, Optional, Tuple, Union
 
 from pygame.surface import Surface
 
-from ._common import ColorValue, FileArg, Literal
+from pygame.typing import ColorLike, FileLike
 
 # TODO: Figure out a way to type this attribute such that mypy knows it's not
 # always defined at runtime
@@ -56,13 +56,13 @@ class Font:
     def point_size(self) -> int: ...
     @point_size.setter
     def point_size(self, value: int) -> None: ...
-    def __init__(self, filename: Optional[FileArg] = None, size: int = 20) -> None: ...
+    def __init__(self, filename: Optional[FileLike] = None, size: int = 20) -> None: ...
     def render(
         self,
         text: Union[str, bytes, None],
         antialias: bool,
-        color: ColorValue,
-        bgcolor: Optional[ColorValue] = None,
+        color: ColorLike,
+        bgcolor: Optional[ColorLike] = None,
         wraplength: int = 0,
     ) -> Surface: ...
     def size(self, text: Union[str, bytes], /) -> Tuple[int, int]: ...

@@ -46,6 +46,7 @@
 
    .. versionadded:: 2.4.0
    .. versionchanged:: 2.5.0 when ``opengl`` is ``True``, the ``Window`` has an OpenGL context created by pygame
+   .. versionchanged:: 2.5.1 Window is now a base class, allowing subclassing
 
 
    .. attribute:: grab_mouse
@@ -386,5 +387,36 @@
       :param Window parent: The parent window.
 
       .. note:: This function is only supported on X11.
+
+   .. method:: flash
+
+      | :sl:`Flash a window to demand attention from the user`
+      | :sg:`flash(operation, /) -> None`
+
+      :param int operation: The flash operation.
+      
+      Supported flash operations are:
+         * ``pygame.FLASH_CANCEL``: Cancel the current flash state if present
+         * ``pygame.FLASH_BRIEFLY``: Flash for a short amount of time to get attention
+         * ``pygame.FLASH_UNTIL_FOCUSED``: Keep flashing until the window is focused
+
+      Window flashing requires SDL 2.0.16+. A :mod:`pygame.error` exception will be raised
+      otherwise.
+
+      .. note:: This function is only supported on Windows, X11, Wayland and Cocoa (MacOS).
+         A :mod:`pygame.error` exception will be raised if it's not supported therefore it's
+         advised to wrap it in a try block.
+
+         .. code-block:: python
+            
+            import pygame
+            window = pygame.Window()
+
+            try:
+               window.flash(pygame.FLASH_BRIEFLY)
+            except pygame.error:
+               print("Window flashing not supported")
+
+      .. versionadded:: 2.5.2
 
    .. ## pygame.Window ##

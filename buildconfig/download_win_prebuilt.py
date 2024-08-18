@@ -78,8 +78,8 @@ def get_urls(x86=True, x64=True):
     url_sha1 = []
     url_sha1.extend([
         [
-        'https://github.com/libsdl-org/SDL/releases/download/release-2.30.3/SDL2-devel-2.30.3-VC.zip',
-        '2878b4b1fbe9e4b22a317ad52c9d751c70e8df62',
+        'https://github.com/libsdl-org/SDL/releases/download/release-2.30.6/SDL2-devel-2.30.6-VC.zip',
+        '038ffed56e04fbc4c6236187472c671596963fdb',
         ],
         [
         'https://github.com/pygame-community/SDL_image/releases/download/2.8.2-pgce/SDL2_image-devel-2.8.2-VCpgce.zip',
@@ -234,12 +234,12 @@ def place_downloaded_prebuilts(temp_dir, move_to_dir, x86=True, x64=True):
         copy(
             os.path.join(
                 temp_dir,
-                'SDL2-devel-2.30.3-VC/SDL2-2.30.3'
+                'SDL2-devel-2.30.6-VC/SDL2-2.30.6'
             ),
             os.path.join(
                 move_to_dir,
                 prebuilt_dir,
-                'SDL2-2.30.3'
+                'SDL2-2.30.6'
             )
         )
 

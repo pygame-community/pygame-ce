@@ -9,11 +9,11 @@ from typing import (
 )
 
 from pygame import Rect, FRect
-from ._common import Coordinate, RectValue
+from pygame.typing import Coordinate, RectLike, SequenceLike
 from .rect import Rect, FRect
 from .math import Vector2
 
-_CanBeCircle = Union[Circle, Tuple[Coordinate, float], Sequence[float]]
+_CanBeCircle = Union[Circle, Tuple[Coordinate, float], SequenceLike[float]]
 
 class _HasCirclettribute(Protocol):
     # An object that has a circle attribute that is either a circle, or a function
@@ -89,7 +89,7 @@ class Circle:
     @overload
     def collidecircle(self, center: Coordinate, r: float, /) -> bool: ...
     @overload
-    def colliderect(self, rect: RectValue, /) -> bool: ...
+    def colliderect(self, rect: RectLike, /) -> bool: ...
     @overload
     def colliderect(self, x: float, y: float, w: float, h: float, /) -> bool: ...
     @overload

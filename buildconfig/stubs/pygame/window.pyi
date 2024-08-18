@@ -1,12 +1,13 @@
-from typing import Optional, Tuple, Union, final
+from typing import Optional, Tuple, Union
+from typing_extensions import deprecated # added in 3.13
 
-from pygame._common import Coordinate, RectValue
+from pygame.typing import Coordinate, RectLike
 from pygame.locals import WINDOWPOS_UNDEFINED
 from pygame.rect import Rect
 from pygame.surface import Surface
 
 def get_grabbed_window() -> Optional[Window]: ...
-@final
+
 class Window:
     def __init__(
         self,
@@ -28,6 +29,7 @@ class Window:
     def set_icon(self, icon: Surface, /) -> None: ...
     def get_surface(self) -> Surface: ...
     def flip(self) -> None: ...
+    def flash(self, operation: int, /) -> None: ...
 
     grab_mouse: bool
     grab_keyboard: bool
@@ -47,7 +49,7 @@ class Window:
     @property
     def mouse_rect(self) -> Optional[Rect]: ...
     @mouse_rect.setter
-    def mouse_rect(self, value: Optional[RectValue]) -> None: ...
+    def mouse_rect(self, value: Optional[RectLike]) -> None: ...
     @property
     def size(self) -> Tuple[int, int]: ...
     @size.setter
@@ -67,4 +69,5 @@ class Window:
     @property
     def opengl(self) -> bool: ...
     @classmethod
+    @deprecated("since 2.4.0. Use either the display module or the Window class with get_surface and flip. Try not to mix display and Window")
     def from_display_module(cls) -> Window: ...

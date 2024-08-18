@@ -95,6 +95,13 @@ class CircleTypeTest(unittest.TestCase):
         self.assertEqual(2.0, c.y)
         self.assertEqual(3.0, c.r)
 
+    def testConstruction_zero_radius(self):
+        c = Circle(1, 2, 0)
+
+        self.assertEqual(1.0, c.x)
+        self.assertEqual(2.0, c.y)
+        self.assertEqual(0, c.r)
+
     def test_x(self):
         """Ensures changing the x attribute moves the circle and does not change
         the circle's radius.
@@ -183,7 +190,7 @@ class CircleTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 c.radius = value
 
-        for value in (-10.3234, -1, 0, 0.0):
+        for value in (-10.3234, -1):
             with self.assertRaises(ValueError):
                 c.r = value
             with self.assertRaises(ValueError):
@@ -317,7 +324,7 @@ class CircleTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 c.area = value
 
-        for value in (-10.3234, -1, 0, 0.0):
+        for value in (-10.3234, -1):
             with self.assertRaises(ValueError):
                 c.area = value
 
@@ -352,7 +359,7 @@ class CircleTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 c.circumference = value
 
-        for value in (-10.3234, -1, 0, 0.0):
+        for value in (-10.3234, -1):
             with self.assertRaises(ValueError):
                 c.circumference = value
 
@@ -390,7 +397,7 @@ class CircleTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 c.diameter = value
 
-        for value in (-10.3234, -1, 0, 0.0):
+        for value in (-10.3234, -1):
             with self.assertRaises(ValueError):
                 c.diameter = value
             with self.assertRaises(ValueError):
