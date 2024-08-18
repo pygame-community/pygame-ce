@@ -23,19 +23,13 @@ import os
 
 try:
     if sys.version_info[:2] > (3, 8):
-        import importlib_resources
+        from importlib.resources import files
 
         def resource_exists(_package_or_requirement, _resource_name):
-            return (
-                importlib_resources.files(_package_or_requirement)
-                .joinpath(_resource_name)
-                .is_file()
-            )
+            return files(_package_or_requirement).joinpath(_resource_name).is_file()
 
         def resource_stream(_package_or_requirement, _resource_name):
-            ref = importlib_resources.files(_package_or_requirement).joinpath(
-                _resource_name
-            )
+            ref = files(_package_or_requirement).joinpath(_resource_name)
             return ref.open('rb')
     else:
         from importlib import resources
