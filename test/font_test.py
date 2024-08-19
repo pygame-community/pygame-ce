@@ -743,6 +743,14 @@ class FontTypeTest(unittest.TestCase):
         # identical to the default font file name.
         f = pygame_font.Font(pygame_font.get_default_font())
 
+    def test_load_file_valid_but_fails(self):
+        # .fnt files don't load (for example), but they're valid fonts
+        # this tests that a sample one throws a pygame.error on load
+        font_path = os.path.join(
+            os.path.split(pygame.__file__)[0], "examples", "data", "MODERN.fnt"
+        )
+        self.assertRaises(pygame.error, lambda: pygame_font.Font(font_path))
+
     def _load_unicode(self, path):
         import shutil
 

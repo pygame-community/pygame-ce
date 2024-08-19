@@ -1185,6 +1185,11 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     font = TTF_OpenFontRW(rw, 1, fontsize);
     Py_END_ALLOW_THREADS;
 
+    if (font == NULL) {
+        PyErr_SetString(pgExc_SDLError, TTF_GetError());
+        goto error;
+    }
+
     Py_DECREF(obj);
     self->font = font;
     self->ptsize = fontsize;
