@@ -359,6 +359,9 @@
 #ifndef RectImport_PyBuildValueFormat
 #error RectImport_PyBuildValueFormat needs to be defined
 #endif
+#ifndef RectImport_TupleFromTwoPrimitives
+#error RectImport_TupleFromTwoPrimitives needs to be defined
+#endif
 // #endregion
 
 // #region RectOptional
@@ -399,6 +402,7 @@
 #define fourPrimivitesFromObj RectImport_fourPrimiviteFromObj
 #define PrimitiveFromObj RectImport_PrimitiveFromObj
 #define TypeFMT RectImport_PyBuildValueFormat
+#define TupleFromTwoPrimitives RectImport_TupleFromTwoPrimitives
 #define ObjectName RectImport_ObjectName
 #define PythonNumberCheck RectImport_PythonNumberCheck
 #define PythonNumberAsPrimitiveType RectImport_PythonNumberAsPrimitiveType
@@ -1915,8 +1919,29 @@ RectExport_clipline(RectObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
 
     Py_XDECREF(rect_copy);
-    return Py_BuildValue("((" TypeFMT "" TypeFMT ")(" TypeFMT "" TypeFMT "))",
-                         x1, y1, x2, y2);
+
+    PyObject *subtup1, *subtup2;
+    subtup1 = TupleFromTwoPrimitives(x1, y1);
+    if (!subtup1)
+        return NULL;
+
+    subtup2 = TupleFromTwoPrimitives(x2, y2);
+    if (!subtup2) {
+        Py_DECREF(subtup1);
+        return NULL;
+    }
+
+    PyObject *tup = PyTuple_New(2);
+    if (!tup) {
+        Py_DECREF(subtup1);
+        Py_DECREF(subtup2);
+        return NULL;
+    }
+
+    PyTuple_SET_ITEM(tup, 0, subtup1);
+    PyTuple_SET_ITEM(tup, 1, subtup2);
+
+    return tup;
 }
 
 static int
@@ -2964,6 +2989,7 @@ RectExport_iterator(RectObject *self)
 #undef RectImport_TypeObject
 #undef RectImport_PrimitiveFromObj
 #undef RectImport_PyBuildValueFormat
+#undef TupleFromTwoPrimitives
 #undef RectImport_ObjectName
 
 #undef PrimitiveType
