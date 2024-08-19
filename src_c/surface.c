@@ -476,7 +476,7 @@ surface_str(PyObject *self)
 }
 
 static intptr_t
-surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds) c
+surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
 {
     Uint32 flags = 0;
     int width, height;
