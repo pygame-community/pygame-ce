@@ -746,8 +746,12 @@ class FontTypeTest(unittest.TestCase):
     def test_load_file_valid_but_fails(self):
         # .fnt files don't load (for example), but they're valid fonts
         # this tests that a sample one throws a pygame.error on load
+        # (if not a FileNotFoundError due to the font format not being gucci
+        # for that version of SDL_ttf)
         font_path = os.path.join("examples", "data", "MODERN.fnt")
-        self.assertRaises(pygame.error, lambda: pygame_font.Font(font_path))
+        self.assertRaises(
+            (pygame.error, FileNotFoundError), lambda: pygame_font.Font(font_path)
+        )
 
     def _load_unicode(self, path):
         import shutil
