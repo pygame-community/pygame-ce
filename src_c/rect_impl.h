@@ -2989,7 +2989,7 @@ RectExport_iterator(RectObject *self)
 #undef RectImport_TypeObject
 #undef RectImport_PrimitiveFromObj
 #undef RectImport_PyBuildValueFormat
-#undef TupleFromTwoPrimitives
+#undef RectImport_TupleFromTwoPrimitives
 #undef RectImport_ObjectName
 
 #undef PrimitiveType
