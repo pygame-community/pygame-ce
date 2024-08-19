@@ -146,7 +146,7 @@ class SndarrayTest(unittest.TestCase):
             self.skipTest("unsupported mixer configuration")
 
         arr = array([[0.0, -1.0], [-1.0, 0], [1.0, 0], [0, 1.0]], float32)
-        newsound = pygame.Sound(array=arr)
+        newsound = pygame.mixer.Sound(array=arr)
         pygame.mixer.quit()
 
 
