@@ -70,8 +70,8 @@ print(f"recording with '{names[0]}'")
 time.sleep(5)
 
 
-print("Turning data into a pygame.Sound")
-sound = pygame.Sound(buffer=b"".join(sound_chunks))
+print("Turning data into a pygame.mixer.Sound")
+sound = pygame.mixer.Sound(buffer=b"".join(sound_chunks))
 
 print("playing back recorded sound")
 sound.play()

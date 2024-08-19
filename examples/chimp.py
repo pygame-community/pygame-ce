@@ -44,7 +44,7 @@ def load_sound(name):
         return NoneSound()
 
     fullname = os.path.join(data_dir, name)
-    sound = pygame.Sound(fullname)
+    sound = pygame.mixer.Sound(fullname)
 
     return sound
 

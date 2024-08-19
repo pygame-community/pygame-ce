@@ -102,7 +102,7 @@ class SndarrayTest(unittest.TestCase):
                 __, sz, __ = pygame.mixer.get_init()
                 if sz == size:
                     zeroed = null_byte * ((abs(size) // 8) * len(test_data) * channels)
-                    snd = pygame.Sound(buffer=zeroed)
+                    snd = pygame.mixer.Sound(buffer=zeroed)
                     samples = pygame.sndarray.samples(snd)
                     self._assert_compatible(samples, size)
                     ##print('X %s' % (samples.shape,))

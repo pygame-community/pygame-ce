@@ -25,7 +25,7 @@ def main(file_path=None):
     pygame.mixer.init(11025)  # raises exception on fail
 
     # load the sound
-    sound = pygame.Sound(file_path)
+    sound = pygame.mixer.Sound(file_path)
 
     # start playing
     print("Playing Sound...")

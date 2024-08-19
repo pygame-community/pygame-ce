@@ -141,7 +141,7 @@ def main():
 
     print(("-" * 30) + "\n")
     print("loading sound")
-    sound = pygame.Sound(os.path.join(main_dir, "data", "car_door.wav"))
+    sound = pygame.mixer.Sound(os.path.join(main_dir, "data", "car_door.wav"))
 
     print("-" * 30)
     print("start positions")
