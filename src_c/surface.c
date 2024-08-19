@@ -476,7 +476,7 @@ surface_str(PyObject *self)
 }
 
 static intptr_t
-surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
+surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds) c
 {
     Uint32 flags = 0;
     int width, height;
@@ -3843,7 +3843,8 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
         else {
             SDL_PixelFormat newfmt = *src->format;
 
-            newfmt.palette = 0; /* Set NULL (or SDL gets confused) */
+            newfmt.palette = NULL; /* Set NULL (or SDL gets confused) */
+            newfmt.next = NULL;
             newfmt.Amask = 0;
             newfmt.Ashift = 0;
             newfmt.Aloss = 0;
