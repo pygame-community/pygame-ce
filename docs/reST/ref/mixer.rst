@@ -622,7 +622,7 @@ The following file formats are supported
 
       ::
 
-          sound = pygame.Sound("s.wav")
+          sound = pygame.mixer.Sound("s.wav")
           channel = s.play()      # Sound plays at full volume by default
           sound.set_volume(0.9)   # Now plays at 90% of full volume.
           sound.set_volume(0.6)   # Now plays at 60% (previous value replaced).
