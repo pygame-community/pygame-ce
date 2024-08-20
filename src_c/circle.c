@@ -1,14 +1,6 @@
 #include "doc/geometry_doc.h"
 #include "geometry_common.h"
 
-static inline int
-double_compare(double a, double b)
-{
-    /* Uses both a fixed epsilon and an adaptive epsilon */
-    const double e = 1e-6;
-    return fabs(a - b) < e || fabs(a - b) <= e * MAX(fabs(a), fabs(b));
-}
-
 static PyObject *
 _pg_circle_subtype_new(PyTypeObject *type, pgCircleBase *circle)
 {

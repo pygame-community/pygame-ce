@@ -13,6 +13,9 @@ int
 pgCircle_FromObjectFastcall(PyObject *const *args, Py_ssize_t nargs,
                             pgCircleBase *out);
 
+static inline int
+double_compare(double a, double b);
+
 /* === Collision Functions === */
 
 static inline int

@@ -146,3 +146,11 @@ pgCircle_FromObjectFastcall(PyObject *const *args, Py_ssize_t nargs,
             return 0;
     }
 }
+
+static inline int
+double_compare(double a, double b)
+{
+    /* Uses both a fixed epsilon and an adaptive epsilon */
+    const double e = 1e-6;
+    return fabs(a - b) < e || fabs(a - b) <= e * MAX(fabs(a), fabs(b));
+}
