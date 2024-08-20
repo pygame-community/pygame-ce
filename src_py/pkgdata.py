@@ -38,11 +38,11 @@ try:
 
         def resource_exists(_package_or_requirement, _resource_name):
             _package_or_requirement = _package_or_requirement.split(".")[0]
-            return resources.is_resource(_package_or_requirement, _resource_name)
+            return resources.is_resource(_package_or_requirement, _resource_name)  # pylint: disable=deprecated-method
 
         def resource_stream(_package_or_requirement, _resource_name):
             _package_or_requirement = _package_or_requirement.split(".")[0]
-            return resources.open_binary(_package_or_requirement, _resource_name)
+            return resources.open_binary(_package_or_requirement, _resource_name)  # pylint: disable=deprecated-method
 
 except ImportError:
 
