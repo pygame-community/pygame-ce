@@ -16,6 +16,7 @@
 #define DOC_CIRCLE_CONTAINS "contains(circle, /) -> bool\ncontains(rect, /) -> bool\ncontains((x, y), /) -> bool\ncontains(vector2, /) -> bool\ntests if a shape or point is inside the circle"
 #define DOC_CIRCLE_MOVE "move((x, y), /) -> Circle\nmove(x, y, /) -> Circle\nmove(vector2, /) -> Circle\nmoves the circle by a given amount"
 #define DOC_CIRCLE_MOVEIP "move_ip((x, y), /) -> None\nmove_ip(x, y, /) -> None\nmove_ip(vector2, /) -> None\nmoves the circle by a given amount, in place"
+#define DOC_CIRCLE_INTERSECT "intersect(circle, /) -> list\nfinds intersections between the circle and a shape"
 #define DOC_CIRCLE_UPDATE "update((x, y), radius, /) -> None\nupdate(x, y, radius, /) -> None\nupdate(vector2, radius, /) -> None\nupdates the circle position and radius"
 #define DOC_CIRCLE_ROTATE "rotate(angle, rotation_point=Circle.center, /) -> Circle\nrotate(angle, /) -> Circle\nrotates the circle"
 #define DOC_CIRCLE_ROTATEIP "rotate_ip(angle, rotation_point=Circle.center, /) -> None\nrotate_ip(angle, /) -> None\nrotates the circle in place"
