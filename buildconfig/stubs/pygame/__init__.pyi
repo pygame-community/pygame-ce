@@ -38,6 +38,7 @@ from pygame import (
     system as system,
     geometry as geometry,
     window as window,
+    typing as typing,
 )
 
 from .rect import Rect as Rect, FRect as FRect
@@ -183,6 +184,9 @@ from .constants import (
     FINGERDOWN as FINGERDOWN,
     FINGERMOTION as FINGERMOTION,
     FINGERUP as FINGERUP,
+    FLASH_BRIEFLY as FLASH_BRIEFLY,
+    FLASH_CANCEL as FLASH_CANCEL,
+    FLASH_UNTIL_FOCUSED as FLASH_UNTIL_FOCUSED,
     FONT_CENTER as FONT_CENTER,
     FONT_LEFT as FONT_LEFT,
     FONT_RIGHT as FONT_RIGHT,
