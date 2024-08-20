@@ -661,7 +661,7 @@ pg_tuple_couple_from_values_double(double val1, double val2)
 }
 
 static PG_INLINE PyObject *
-pg_PointList_FromArrayDouble(double *array, int arr_length)
+pg_PointList_FromArrayDouble(double const *array, int arr_length)
 {
     if (arr_length % 2) {
         return RAISE(PyExc_ValueError, "array length must be even");
