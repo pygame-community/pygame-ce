@@ -101,6 +101,17 @@ mouse_get_pos(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
+mouse_get_desktop_pos(PyObject *self, PyObject *_null)
+{
+    int x, y;
+
+    VIDEO_INIT_CHECK();
+    SDL_GetGlobalMouseState(&x, &y);
+
+    return pg_tuple_couple_from_values_int(x, y);
+}
+
+static PyObject *
 mouse_get_rel(PyObject *self, PyObject *_null)
 {
     int x, y;
@@ -531,6 +542,7 @@ mouse_set_relative_mode(PyObject *self, PyObject *arg)
 static PyMethodDef _mouse_methods[] = {
     {"set_pos", mouse_set_pos, METH_VARARGS, DOC_MOUSE_SETPOS},
     {"get_pos", (PyCFunction)mouse_get_pos, METH_NOARGS, DOC_MOUSE_GETPOS},
+    {"get_desktop_pos", (PyCFunction)mouse_get_desktop_pos, METH_NOARGS, DOC_MOUSE_GETDESKTOPPOS},
     {"get_rel", (PyCFunction)mouse_get_rel, METH_NOARGS, DOC_MOUSE_GETREL},
     {"get_pressed", (PyCFunction)mouse_get_pressed,
      METH_VARARGS | METH_KEYWORDS, DOC_MOUSE_GETPRESSED},

@@ -315,6 +315,17 @@ class MouseModuleTest(MouseTests):
         for value in pos:
             self.assertIsInstance(value, int)
 
+    def test_get_desktop_pos(self):
+        """Ensures get_desktop_pos returns the correct types."""
+        expected_length = 2
+
+        pos = pygame.mouse.get_desktop_pos()
+
+        self.assertIsInstance(pos, tuple)
+        self.assertEqual(len(pos), expected_length)
+        for value in pos:
+            self.assertIsInstance(value, int)
+
     def test_set_pos__invalid_pos(self):
         """Ensures set_pos handles invalid positions correctly."""
         for invalid_pos in ((1,), [1, 2, 3], 1, "1", (1, "1"), []):
