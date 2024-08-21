@@ -51,7 +51,8 @@ them, this is how you can do it:
   from pygame import experimental_module
   # Or for specific modules like _sdl2.controller
   from pygame._sdl2 import controller
-
+  # Or
+  import pygame.experimental_module
 
 Don't forget to report us any problem with the experimental features on `github`_ so we can easily 
 turn them to stable API in the future ^^.
