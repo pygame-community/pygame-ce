@@ -1,3 +1,5 @@
+"pygame module for interacting with events and queues"
+
 from __future__ import annotations
 
 from collections.abc import Iterable
@@ -103,6 +105,8 @@ _NAMES_MAPPING = {
 
 
 def event_name(type: int) -> str:
+    "event_name(type, /) -> string\nget the string name from an event id"
+
     if type in _NAMES_MAPPING:
         return _NAMES_MAPPING[type]
     if pg.USEREVENT <= type < pg.NUMEVENTS:
@@ -215,7 +219,24 @@ def custom_type():
 
 
 def pump():
+    "pump() -> None\ninternally process pygame event handlers"
     return _pump(True)
+
+
+def _parse(type: int | Iterable[int], args: tuple[int, ...]) -> list[int]:
+    types = []
+
+    types: list[int] = []
+
+    if isinstance(type, Iterable):
+        types.extend(type)
+    else:
+        types.append(type)
+
+    if args:
+        types.extend(args)
+
+    return types
 
 
 def _setter(val: bool, type: int | Iterable[int] | None, *args: int):
@@ -226,40 +247,26 @@ def _setter(val: bool, type: int | Iterable[int] | None, *args: int):
             _allowed_set(ev, val)
         return
 
-    types: list[int] = []
-
-    if isinstance(type, Iterable):
-        types.extend(type)
-    else:
-        types.append(type)
-
-    if args:
-        types.extend(args)
-
-    for t in types:
+    for t in _parse(type, args):
         _allowed_set(t, val)
 
 
 def set_blocked(type: int | Iterable[int] | None, *args: int):
+    "set_blocked(type, /) -> None\nset_blocked(typelist, /) -> None\nset_blocked(None) -> None\ncontrol which events are blocked on the queue"
+
     _setter(False, type, *args)
 
 
 def set_allowed(type: int | Iterable[int] | None, *args: int):
+    "set_allowed(type, /) -> None\nset_allowed(typelist, /) -> None\nset_allowed(None) -> None\ncontrol which events are allowed on the queue"
+
     _setter(True, type, *args)
 
 
 def get_blocked(type: int | Iterable[int], *args: int):
-    types: list[int] = []
+    "get_blocked(type, /) -> bool\nget_blocked(typelist, /) -> bool\ntest if a type of event is blocked from the queue"
 
-    if isinstance(type, Iterable):
-        types.extend(type)
-    else:
-        types.append(type)
-
-    if args:
-        types.extend(args)
-
-    for t in types:
+    for t in _parse(type, args):
         if not _allowed_get(t):
             return True
     return False
