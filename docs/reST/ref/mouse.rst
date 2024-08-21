@@ -174,9 +174,9 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    | :sl:`get the mouse cursor position relative to the desktop`
    | :sg:`get_desktop_pos() -> (x, y)`
 
-   Returns the ``x`` and ``y`` position of the mouse cursor relative to the
-   top-left corner of the desktop. The position is always constrained to the
-   screen.
+   Returns the ``x`` and ``y`` float position of the mouse cursor relative to the
+   top-left corner of the primary monitor. The position might be negative or exceed
+   the desktop bounds if multiple monitors are present.
 
    .. note:: While :func:`pygame.mouse.get_pos` retrieves the position from the
       last event pump, :func:`pygame.mouse.get_desktop_pos` queries the OS, which is

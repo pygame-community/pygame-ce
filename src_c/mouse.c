@@ -108,7 +108,7 @@ mouse_get_desktop_pos(PyObject *self, PyObject *_null)
     VIDEO_INIT_CHECK();
     SDL_GetGlobalMouseState(&x, &y);
 
-    return pg_tuple_couple_from_values_int(x, y);
+    return pg_tuple_couple_from_values_double((double)x, (double)y);
 }
 
 static PyObject *
