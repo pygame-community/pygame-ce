@@ -152,6 +152,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectImport_TypeObject pgRect_Type
 #define RectImport_IntersectRectAndLine SDL_IntersectRectAndLine
 #define RectImport_PyBuildValueFormat "i"
+#define RectImport_TupleFromTwoPrimitives pg_tuple_couple_from_values_int
 #define RectImport_ObjectName "pygame.rect.Rect"
 #define RectImport_PythonNumberCheck PyLong_Check
 #define RectImport_PythonNumberAsPrimitiveType PyLong_AsLong
@@ -268,6 +269,7 @@ four_floats_from_obj(PyObject *obj, float *val1, float *val2, float *val3,
 #define RectImport_IntersectRectAndLine PG_IntersectFRectAndLine
 #define RectImport_TypeObject pgFRect_Type
 #define RectImport_PyBuildValueFormat "f"
+#define RectImport_TupleFromTwoPrimitives pg_tuple_couple_from_values_double
 #define RectImport_ObjectName "pygame.rect.FRect"
 #define RectImport_PythonNumberCheck PyFloat_Check
 #define RectImport_PythonNumberAsPrimitiveType PyFloat_AsDouble

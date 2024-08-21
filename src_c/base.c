@@ -177,36 +177,45 @@ pg_EnvShouldBlendAlphaSDL2(void);
 static int
 pg_CheckSDLVersions(void)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int compiled = SDL_VERSION;
+    int linked = SDL_GetVersion();
+#else
     SDL_version compiled;
     SDL_version linked;
-
     SDL_VERSION(&compiled);
     SDL_GetVersion(&linked);
+#endif
 
     /* only check the major version, in general major version is bumped for ABI
      * incompatible changes */
-    if (compiled.major != linked.major) {
+    if (PG_FIND_VNUM_MAJOR(compiled) != PG_FIND_VNUM_MAJOR(linked)) {
         PyErr_Format(PyExc_RuntimeError,
                      "ABI incompatibility detected! SDL compiled with "
                      "%d.%d.%d, linked to %d.%d.%d (major versions should "
                      "have matched)",
-                     compiled.major, compiled.minor, compiled.patch,
-                     linked.major, linked.minor, linked.patch);
+                     PG_FIND_VNUM_MAJOR(compiled),
+                     PG_FIND_VNUM_MINOR(compiled),
+                     PG_FIND_VNUM_MICRO(compiled), PG_FIND_VNUM_MAJOR(linked),
+                     PG_FIND_VNUM_MINOR(linked), PG_FIND_VNUM_MICRO(linked));
         return 0;
     }
 
     /* Basically, this is compiled_version > linked_version case, which we
      * don't allow */
-    if ((linked.minor == compiled.minor && linked.patch < compiled.patch) ||
-        linked.minor < compiled.minor) {
+    if ((PG_FIND_VNUM_MINOR(linked) == PG_FIND_VNUM_MINOR(compiled) &&
+         PG_FIND_VNUM_MICRO(linked) < PG_FIND_VNUM_MICRO(compiled)) ||
+        PG_FIND_VNUM_MINOR(linked) < PG_FIND_VNUM_MINOR(compiled)) {
         /* We do some ifdefs to support different SDL versions at compile time.
            We use newer API only when available.
            Downgrading via dynamic API probably breaks this.*/
         PyErr_Format(PyExc_RuntimeError,
                      "Dynamic linking causes SDL downgrade! (compiled with "
                      "version %d.%d.%d, linked to %d.%d.%d)",
-                     compiled.major, compiled.minor, compiled.patch,
-                     linked.major, linked.minor, linked.patch);
+                     PG_FIND_VNUM_MAJOR(compiled),
+                     PG_FIND_VNUM_MINOR(compiled),
+                     PG_FIND_VNUM_MICRO(compiled), PG_FIND_VNUM_MAJOR(linked),
+                     PG_FIND_VNUM_MINOR(linked), PG_FIND_VNUM_MICRO(linked));
         return 0;
     }
 
@@ -373,7 +382,12 @@ static PyObject *
 pg_get_sdl_version(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int linked = 1; /* Default is linked version. */
-    SDL_version v;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int version = SDL_VERSION;
+#else
+    SDL_version version;
+    SDL_VERSION(&version);
+#endif
 
     static char *keywords[] = {"linked", NULL};
 
@@ -382,12 +396,16 @@ pg_get_sdl_version(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (linked) {
-        SDL_GetVersion(&v);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        version = SDL_GetVersion();
+#else
+        SDL_GetVersion(&version);
+#endif
     }
-    else {
-        SDL_VERSION(&v);
-    }
-    return Py_BuildValue("iii", v.major, v.minor, v.patch);
+
+    return Py_BuildValue("iii", PG_FIND_VNUM_MAJOR(version),
+                         PG_FIND_VNUM_MINOR(version),
+                         PG_FIND_VNUM_MICRO(version));
 }
 
 static PyObject *

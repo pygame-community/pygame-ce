@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple, Union, Literal
 
-from ._common import IntCoordinate
+from pygame.typing import IntCoordinate
 
 from pygame.surface import Surface
 

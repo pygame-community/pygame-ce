@@ -30,3 +30,4 @@
 #define DOC_WINDOW_MINIMIZE "maximize() -> None\nMinimize the window"
 #define DOC_WINDOW_SETICON "set_icon(surface, /) -> None\nSet the window icon"
 #define DOC_WINDOW_SETMODALFOR "set_modal_for(parent, /) -> None\nSet the window as a modal for a parent window"
+#define DOC_WINDOW_FLASH "flash(operation, /) -> None\nFlash a window to demand attention from the user"
