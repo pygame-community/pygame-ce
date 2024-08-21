@@ -1212,11 +1212,9 @@ vector_set_component(pgVector *self, PyObject *value, int component)
                 break;
             }
             case 2: {
-                if (self->dim >= 3) {
-                    PyErr_SetString(PyExc_TypeError,
-                                    "Cannot delete the z attribute");
-                    break;
-                }
+                PyErr_SetString(PyExc_TypeError,
+                                "Cannot delete the z attribute");
+                break;
             }
             default: {
                 PyErr_BadInternalCall();
