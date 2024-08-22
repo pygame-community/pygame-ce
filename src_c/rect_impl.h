@@ -1084,31 +1084,40 @@ static PyObject *
 RectExport_scalebyIp(RectObject *self, PyObject *args, PyObject *kwargs)
 {
     float factor_x, factor_y = 0;
-
-    static char *keywords[] = {"x", "y", NULL};
-
-    if (kwargs) {
-        PyObject *scale_by = PyDict_GetItemString(kwargs, "scale_by");
-        float temp_x, temp_y = 0;
-
-        if (scale_by) {
-            if (PyDict_Size(kwargs) > 1) {
-                return RAISE(PyExc_TypeError,
-                             "The 'scale_by' keyword cannot be combined with "
-                             "other arguments.");
-            }
-            if (!pg_TwoFloatsFromObj(scale_by, &temp_x, &temp_y)) {
-                return RAISE(PyExc_TypeError, "number pair expected");
-            }
-            PyDict_SetItemString(kwargs, "x", PyFloat_FromDouble(temp_x));
-            PyDict_SetItemString(kwargs, "y", PyFloat_FromDouble(temp_y));
-            PyDict_DelItemString(kwargs, "scale_by");
+    PyObject *scale_by =
+        kwargs ? PyDict_GetItemString(kwargs, "scale_by") : NULL;
+    if (scale_by) {
+        if (PyDict_Size(kwargs) > 1) {
+            return RAISE(PyExc_TypeError,
+                         "The 'scale_by' keyword cannot be combined with "
+                         "other arguments.");
+        }
+        if (!pg_TwoFloatsFromObj(scale_by, &factor_x, &factor_y)) {
+            return RAISE(PyExc_TypeError,
+                         "The 'scale_by' argument must be a number pair");
         }
     }
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "f|f", keywords, &factor_x,
-                                     &factor_y)) {
-        return RAISE(PyExc_TypeError, "Float values expected.");
+    else {
+        static char *keywords[] = {"x", "y", NULL};
+        PyObject *arg_x, *arg_y = NULL;
+        if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", keywords, &arg_x,
+                                         &arg_y)) {
+            return NULL;
+        }
+        if (!pg_TwoFloatsFromObj(arg_x, &factor_x, &factor_y)) {
+            /* Not a sequence, so try handling int separately */
+            if (!pg_FloatFromObj(arg_x, &factor_x)) {
+                return RAISE(PyExc_TypeError, "Argument 'x' must be a number");
+            }
+            if (arg_y && !pg_FloatFromObj(arg_y, &factor_y)) {
+                return RAISE(PyExc_TypeError, "Argument 'y' must be a number");
+            }
+        }
+        else if (arg_y) {
+            return RAISE(
+                PyExc_TypeError,
+                "Cannot pass argument 'y' after passing a sequence scale");
+        }
     }
 
     factor_x = factor_x < 0 ? -factor_x : factor_x;
@@ -1130,7 +1139,11 @@ RectExport_scaleby(RectObject *self, PyObject *args, PyObject *kwargs)
 {
     RectObject *returnRect = (RectObject *)RectExport_subtypeNew4(
         Py_TYPE(self), self->r.x, self->r.y, self->r.w, self->r.h);
-    RectExport_scalebyIp(returnRect, args, kwargs);
+    PyObject *tmp = RectExport_scalebyIp(returnRect, args, kwargs);
+    if (!tmp) {
+        return NULL;
+    }
+    Py_DECREF(tmp);
     return (PyObject *)returnRect;
 }
 
