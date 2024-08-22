@@ -1,8 +1,8 @@
-from typing import Optional, Union, Literal, Tuple
+from typing import Optional, Union, Literal
 
 from pygame.surface import Surface
 
-from pygame.typing import ColorLike, Coordinate, RectLike, SequenceLike
+from pygame.typing import ColorLike, Coordinate, RectLike, SequenceLike, RGBATuple
 
 def flip(surface: Surface, flip_x: bool, flip_y: bool) -> Surface: ...
 def scale(
@@ -41,7 +41,7 @@ def average_surfaces(
 ) -> Surface: ...
 def average_color(
     surface: Surface, rect: Optional[RectLike] = None, consider_alpha: bool = False
-) -> Tuple[int, int, int, int]: ...
+) -> RGBATuple: ...
 def threshold(
     dest_surface: Optional[Surface],
     surface: Surface,
