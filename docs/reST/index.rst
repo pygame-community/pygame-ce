@@ -57,6 +57,20 @@ them, this is how you can do it:
 Don't forget to report us any problem with the experimental features on `github`_ so we can easily 
 turn them to stable API in the future ^^.
 
+**Below is currently the list of experimental modules :**
+
+:doc:`ref/geometry`
+  Pygame module for the Circle, Line, and Polygon objects.
+
+:doc:`ref/window`
+  Pygame object that handles a window.
+
+:doc:`ref/sdl2_controller`
+  Pygame module to work with controllers.
+
+:doc:`ref/sdl2_video`
+  Pygame module for porting new SDL video systems.
+
 .. _github: https://github.com/pygame-community/pygame-ce
 
 Documents
