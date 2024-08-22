@@ -449,6 +449,12 @@ class WindowTypeTest(unittest.TestCase):
             except pygame.error:
                 pass
 
+    def test_window_focused(self):
+        window = pygame.Window()
+        window.focus()
+        self.assertTrue(window.focused)
+        self.assertIsInstance(window.focused, bool)
+
     def tearDown(self):
         self.win.destroy()
 
