@@ -4,6 +4,7 @@
 # Use the command `python buildconfig/stubs/gen_stubs.py` to copy typing.py to typing.pyi
 
 import sys
+from abc import abstractmethod
 from typing import IO, Callable, Tuple, Union, TypeVar, Protocol, SupportsIndex
 
 if sys.version_info >= (3, 9):
@@ -28,7 +29,9 @@ class SequenceLike(Protocol[_T_co]):
     Variant of the standard `Sequence` ABC that only requires `__getitem__` and `__len__`.
     """
 
+    @abstractmethod
     def __getitem__(self, index: int, /) -> _T_co: ...
+    @abstractmethod
     def __len__(self) -> int: ...
 
 
@@ -51,6 +54,7 @@ class _HasRectAttribute(Protocol):
     # An object that has a rect attribute that is either a rect, or a function
     # that returns a rect conforms to the rect protocol
     @property
+    @abstractmethod
     def rect(self) -> Union["RectLike", Callable[[], "RectLike"]]: ...
 
 
