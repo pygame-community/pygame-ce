@@ -7,14 +7,14 @@ import pathlib
 
 # validate SequenceLike
 class MySequence:
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> str:
         if index > 20:
             raise IndexError()
         if index % 2 == 0:
-            return 1
-        return 0
+            return "a"
+        return "bc"
 
-    def __len__(self):
+    def __len__(self) -> int:
         return 20
 
 def validator_SequenceLike(sequence: typing.SequenceLike) -> int:
