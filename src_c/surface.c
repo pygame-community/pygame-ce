@@ -993,6 +993,7 @@ surf_get_locks(PyObject *self, PyObject *_null)
 {
     pgSurfaceObject *surf = (pgSurfaceObject *)self;
     Py_ssize_t len, i = 0;
+    int weakref_getref_result;
     PyObject *tuple, *tmp;
     SURF_INIT_CHECK(pgSurface_AsSurface(self))
     if (!surf->locklist)
@@ -1004,8 +1005,16 @@ surf_get_locks(PyObject *self, PyObject *_null)
         return NULL;
 
     for (i = 0; i < len; i++) {
-        tmp = PyWeakref_GetObject(PyList_GetItem(surf->locklist, i));
-        Py_INCREF(tmp);
+        weakref_getref_result =
+            PyWeakref_GetRef(PyList_GetItem(surf->locklist, i), &tmp);
+        if (weakref_getref_result == -1) {  // exception already set
+            Py_DECREF(tuple);
+            return NULL;
+        }
+        if (weakref_getref_result == 0) {
+            tmp = Py_None;
+            Py_INCREF(tmp);
+        }
         PyTuple_SetItem(tuple, i, tmp);
     }
     return tuple;
@@ -2548,8 +2557,6 @@ surf_subsurface(PyObject *self, PyObject *args)
     SDL_Rect *rect, temp;
     SDL_Surface *sub;
     PyObject *subobj;
-    int pixeloffset;
-    char *startpixel;
     struct pgSubSurface_Data *data;
     Uint8 alpha;
     Uint32 colorkey;
@@ -2566,9 +2573,9 @@ surf_subsurface(PyObject *self, PyObject *args)
 
     pgSurface_Lock((pgSurfaceObject *)self);
 
-    pixeloffset =
-        rect->x * PG_FORMAT_BytesPerPixel(format) + rect->y * surf->pitch;
-    startpixel = ((char *)surf->pixels) + pixeloffset;
+    char *startpixel = ((char *)surf->pixels) +
+                       rect->x * PG_FORMAT_BytesPerPixel(format) +
+                       rect->y * surf->pitch;
 
     sub = PG_CreateSurfaceFrom(startpixel, rect->w, rect->h, surf->pitch,
                                format->format);
@@ -2636,7 +2643,6 @@ surf_subsurface(PyObject *self, PyObject *args)
     }
     Py_INCREF(self);
     data->owner = self;
-    data->pixeloffset = pixeloffset;
     data->offsetx = rect->x;
     data->offsety = rect->y;
     ((pgSurfaceObject *)subobj)->subsurface = data;
@@ -3571,18 +3577,22 @@ _release_buffer(Py_buffer *view_p)
 {
     pg_bufferinternal *internal;
     PyObject *consumer_ref;
-    PyObject *consumer;
+    PyObject *consumer = NULL;
 
     assert(view_p && view_p->obj && view_p->internal);
     internal = (pg_bufferinternal *)view_p->internal;
     consumer_ref = internal->consumer_ref;
     assert(consumer_ref && PyWeakref_CheckRef(consumer_ref));
-    consumer = PyWeakref_GetObject(consumer_ref);
-    if (consumer) {
-        if (!pgSurface_UnlockBy((pgSurfaceObject *)view_p->obj, consumer)) {
-            PyErr_Clear();
-        }
+
+    if (PyWeakref_GetRef(consumer_ref, &consumer) != 1) {
+        PyErr_Clear();  // ignore any errors here
     }
+
+    if (!pgSurface_UnlockBy((pgSurfaceObject *)view_p->obj, consumer)) {
+        PyErr_Clear();
+    }
+    Py_XDECREF(consumer);
+
     Py_DECREF(consumer_ref);
     PyMem_Free(internal);
     Py_DECREF(view_p->obj);

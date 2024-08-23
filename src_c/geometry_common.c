@@ -108,7 +108,7 @@ pgCircle_FromObject(PyObject *obj, pgCircleBase *out)
 
     if (PyCallable_Check(circleattr)) /*call if it's a method*/
     {
-        PyObject *circleresult = PyObject_CallObject(circleattr, NULL);
+        PyObject *circleresult = PyObject_CallNoArgs(circleattr);
         Py_DECREF(circleattr);
         if (!circleresult) {
             PyErr_Clear();

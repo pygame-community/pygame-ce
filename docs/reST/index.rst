@@ -206,6 +206,9 @@ Reference
 :doc:`ref/transform`
   Resize and move images.
 
+:doc:`ref/typing`
+  Provide common typehints
+
 :doc:`pygame C API <c_api>`
   The C api shared amongst pygame extension modules.
 
