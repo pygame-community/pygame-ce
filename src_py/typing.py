@@ -9,10 +9,10 @@ from typing import IO, Callable, Tuple, Union, TypeVar, Protocol, SupportsIndex
 if sys.version_info >= (3, 9):
     from os import PathLike as _PathProtocol
 else:
-    _T = TypeVar("_T", bound=Union[str, bytes])
+    _AnyStr_co = TypeVar("_AnyStr_co", str, bytes, covariant=True)
 
-    class _PathProtocol(Protocol[_T]):
-        def __fspath__(self) -> _T: ...
+    class _PathProtocol(Protocol[_AnyStr_co]):
+        def __fspath__(self) -> _AnyStr_co: ...
 
 
 # For functions that take a file name
