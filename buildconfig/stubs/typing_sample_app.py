@@ -97,13 +97,19 @@ class MyObject1:
 class MyObject2:
     def __init__(self):
         self.rect = lambda: pygame.Rect(5, 5, 10, 10)
-    
+
+class MyObject3:
+    def rect(self) -> pygame.Rect:
+        return pygame.Rect(15, 15, 30, 30)
+
 def validator_RectLike(rect: typing.RectLike) -> int:
     return 0
 
 # must pass
 validator_RectLike((10, 10, 10, 10))
 validator_RectLike(((5, 5), (30, 30)))
+validator_RectLike([(3, 3.2), pygame.Vector2()])
 validator_RectLike(pygame.Rect(1, 2, 3, 4))
 validator_RectLike(MyObject1())
 validator_RectLike(MyObject2())
+validator_RectLike(MyObject3())
