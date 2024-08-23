@@ -44,7 +44,7 @@ IntCoordinate = SequenceLike[int]
 RGBATuple = Tuple[int, int, int, int]
 ColorLike = Union[int, str, SequenceLike[int]]
 
-_CanBeRect = SequenceLike[Union[float, Coordinate]]
+_CanBeRect = Union[SequenceLike[float], SequenceLike[Coordinate]]
 
 
 class _HasRectAttribute(Protocol):
