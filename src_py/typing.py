@@ -3,6 +3,17 @@
 # NOTE: `src_py/typing.py` and `buildconfig/stubs/pygame/typing.pyi` must be duplicates.
 # Use the command `python buildconfig/stubs/gen_stubs.py` to copy typing.py to typing.pyi
 
+__all__ = [
+    "RectLike",
+    "SequenceLike",
+    "FileLike",
+    "PathLike",
+    "ColorLike",
+    "RGBATuple",
+    "Coordinate",
+    "IntCoordinate",
+]
+
 import sys
 from abc import abstractmethod
 from typing import IO, Callable, Tuple, Union, TypeVar, Protocol, SupportsIndex
