@@ -16,7 +16,7 @@ __all__ = [
 
 import sys
 from abc import abstractmethod
-from typing import IO, Callable, Tuple, Union, TypeVar, Protocol, SupportsIndex
+from typing import IO, Callable, Tuple, Union, TypeVar, Protocol
 
 if sys.version_info >= (3, 9):
     from os import PathLike as _PathProtocol
@@ -24,6 +24,7 @@ else:
     _AnyStr_co = TypeVar("_AnyStr_co", str, bytes, covariant=True)
 
     class _PathProtocol(Protocol[_AnyStr_co]):
+        @abstractmethod
         def __fspath__(self) -> _AnyStr_co: ...
 
 
@@ -72,4 +73,4 @@ class _HasRectAttribute(Protocol):
 RectLike = Union[_CanBeRect, _HasRectAttribute]
 
 # cleanup namespace
-del sys, IO, Callable, Tuple, Union, TypeVar, Protocol, SupportsIndex
+del sys, IO, Callable, Tuple, Union, TypeVar, Protocol
