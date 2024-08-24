@@ -1137,11 +1137,24 @@ get_antialiased_color(SDL_Surface *surf, int x, int y, Uint32 original_color,
     Uint32 pixel = 0;
     size_t bpp = surf->format->BytesPerPixel;
     Uint8 *pixels = (Uint8 *)surf->pixels + y * surf->pitch + x * bpp;
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    SDL_memcpy(((Uint8 *)&pixel) + (sizeof(pixel) - bpp), pixels, bpp);
-#else
-    SDL_memcpy(&pixel, pixels, bpp);
-#endif
+
+    switch (bpp) {
+        case 1:
+            pixel = *((Uint8 *)pixels);
+
+        case 2:
+            pixel = *((Uint16 *)pixels);
+
+        case 3:
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+            pixel = (pixels[0]) + (pixels[1] << 8) + (pixels[2] << 16);
+#else  /* SDL_BIG_ENDIAN */
+            pixel = (pixels[2]) + (pixels[1] << 8) + (pixels[0] << 16);
+#endif /* SDL_BIG_ENDIAN */
+
+        default: /* case 4: */
+            pixel = *((Uint32 *)pixels);
+    }
 
     SDL_GetRGBA(pixel, surf->format, &background_color[0],
                 &background_color[1], &background_color[2],
