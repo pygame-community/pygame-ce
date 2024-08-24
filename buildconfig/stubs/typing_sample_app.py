@@ -111,7 +111,7 @@ def validator_RectLike(rect: typing.RectLike) -> int:
 # must pass
 validator_RectLike((10, 10, 10, 10))
 validator_RectLike(((5, 5), (30, 30)))
-validator_RectLike([(3, 3.2), pygame.Vector2()])
+validator_RectLike(([3, 3.2], pygame.Vector2()))
 validator_RectLike(pygame.Rect(1, 2, 3, 4))
 validator_RectLike(MyObject1())
 validator_RectLike(MyObject2())
