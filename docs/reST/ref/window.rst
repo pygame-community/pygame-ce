@@ -134,7 +134,7 @@
       | :sg:`focused -> bool`
 
       Get if the window is currently focused. The same result can be achieved using
-      the ``WINDOWFOCUSGAINED`` and ``WINDOWFOCUSGLOST`` events.
+      the ``WINDOWFOCUSGAINED`` and ``WINDOWFOCUSLOST`` events.
 
       Use :meth:`focus` to focus and raise the window.
 
