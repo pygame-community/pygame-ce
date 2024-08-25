@@ -64,11 +64,12 @@ class _HasRectAttribute(Protocol):
     # An object that has a rect attribute that is either a rect, or a function
     # that returns a rect conforms to the rect protocol
     @property
-    @abstractmethod
-    def rect(self) -> Union["RectLike", Callable[[], "RectLike"]]: ...
+    def rect(self) -> Union["RectLike", Callable[[], "RectLike"]]:
+        raise NotImplementedError
 
 
 RectLike = Union[SequenceLike[float], SequenceLike[Coordinate], _HasRectAttribute]
+
 
 # cleanup namespace
 del sys, IO, Callable, Tuple, Union, TypeVar, Protocol
