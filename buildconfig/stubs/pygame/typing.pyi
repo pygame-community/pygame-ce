@@ -72,4 +72,4 @@ RectLike = Union[SequenceLike[float], SequenceLike[Coordinate], _HasRectAttribut
 
 
 # cleanup namespace
-del sys, IO, Callable, Tuple, Union, TypeVar, Protocol
+del sys, abstractmethod, IO, Callable, Tuple, Union, TypeVar, Protocol
