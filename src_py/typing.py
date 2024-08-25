@@ -59,8 +59,6 @@ IntCoordinate = SequenceLike[int]
 RGBATuple = Tuple[int, int, int, int]
 ColorLike = Union[int, str, SequenceLike[int]]
 
-_CanBeRect = Union[SequenceLike[float], SequenceLike[Coordinate]]
-
 
 class _HasRectAttribute(Protocol):
     # An object that has a rect attribute that is either a rect, or a function
@@ -70,7 +68,7 @@ class _HasRectAttribute(Protocol):
     def rect(self) -> Union["RectLike", Callable[[], "RectLike"]]: ...
 
 
-RectLike = Union[_CanBeRect, _HasRectAttribute]
+RectLike = Union[SequenceLike[float], SequenceLike[Coordinate], _HasRectAttribute]
 
 # cleanup namespace
 del sys, IO, Callable, Tuple, Union, TypeVar, Protocol
