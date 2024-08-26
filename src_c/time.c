@@ -264,7 +264,7 @@ timer_callback(Uint32 interval, void *param)
     }
     else {
         if (SDL_WasInit(SDL_INIT_VIDEO)) {
-            PyGILState_STATE gstate;
+            PyGILState_STATE gstate = 0;
 
             if (evtimer->obj)
                 gstate = PyGILState_Ensure();

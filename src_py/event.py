@@ -105,7 +105,11 @@ _NAMES_MAPPING = {
 
 
 def event_name(type: int) -> str:
-    "event_name(type, /) -> string\nget the string name from an event id"
+    """
+    event_name(type, /) -> string
+
+    get the string name from an event id
+    """
 
     if type in _NAMES_MAPPING:
         return _NAMES_MAPPING[type]
@@ -118,6 +122,7 @@ class Event:
     """
     Event(type, dict) -> Event
     Event(type, **attributes) -> Event
+
     pygame object for representing events
     """
 
@@ -208,7 +213,11 @@ def quit():
 
 
 def custom_type():
-    """custom_type() -> int\nmake custom user event type"""
+    """
+    custom_type() -> int
+
+    make custom user event type
+    """
     global _custom_event
 
     if _custom_event >= pg.NUMEVENTS:
@@ -219,7 +228,11 @@ def custom_type():
 
 
 def pump():
-    "pump() -> None\ninternally process pygame event handlers"
+    """
+    pump() -> None
+
+    internally process pygame event handlers
+    """
     return _pump(True)
 
 
@@ -252,19 +265,36 @@ def _setter(val: bool, type: int | Iterable[int] | None, *args: int):
 
 
 def set_blocked(type: int | Iterable[int] | None, *args: int):
-    "set_blocked(type, /) -> None\nset_blocked(typelist, /) -> None\nset_blocked(None) -> None\ncontrol which events are blocked on the queue"
+    """
+    set_blocked(type, /) -> None
+    set_blocked(typelist, /) -> None
+    set_blocked(None) -> None
+
+    control which events are blocked on the queue
+    """
 
     _setter(False, type, *args)
 
 
 def set_allowed(type: int | Iterable[int] | None, *args: int):
-    "set_allowed(type, /) -> None\nset_allowed(typelist, /) -> None\nset_allowed(None) -> None\ncontrol which events are allowed on the queue"
+    """
+    set_allowed(type, /) -> None
+    set_allowed(typelist, /) -> None
+    set_allowed(None) -> None
+
+    control which events are allowed on the queue
+    """
 
     _setter(True, type, *args)
 
 
 def get_blocked(type: int | Iterable[int], *args: int):
-    "get_blocked(type, /) -> bool\nget_blocked(typelist, /) -> bool\ntest if a type of event is blocked from the queue"
+    """
+    get_blocked(type, /) -> bool
+    get_blocked(typelist, /) -> bool
+
+    test if a type of event is blocked from the queue
+    """
 
     for t in _parse(type, args):
         if not _allowed_get(t):

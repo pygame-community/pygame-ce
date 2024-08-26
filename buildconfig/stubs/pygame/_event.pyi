@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from ._common import Sequence, EventLike
+from .typing import SequenceLike, EventLike
 
-_EventTypes = int | Sequence[int]
+_EventTypes = int | SequenceLike[int]
 
 def pump(dopump: bool, /) -> None: ...
 def get(

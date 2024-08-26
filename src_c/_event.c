@@ -678,12 +678,12 @@ pgEvent_AutoInit(PyObject *self, PyObject *_null)
 static int
 pg_post_event(int type, PyObject *obj)
 {
+    if (type == -1)
+        return -1;
+
     SDL_Event event = {0};
 
     event.type = _pg_pgevent_proxify(type);
-
-    if (event.type == -1)
-        return -1;
 
     if (obj)
         Py_INCREF(obj);
