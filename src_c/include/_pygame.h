@@ -378,8 +378,6 @@ typedef struct {
 /*
  * EVENT module
  */
-typedef struct pgEventData pgEventData;
-
 #ifndef PYGAMEAPI_EVENT_INTERNAL
 #define pgEvent_GetType (*(PyObject * (*)(void)) PYGAMEAPI_GET_SLOT(_event, 0))
 
@@ -387,10 +385,10 @@ typedef struct pgEventData pgEventData;
     (*(PyObject * (*)(SDL_Event *)) PYGAMEAPI_GET_SLOT(_event, 1))
 
 #define pg_post_event \
-    (*(int (*)(Uint32, PyObject *))PYGAMEAPI_GET_SLOT(_event, 2))
-
-#define pg_post_event_dictproxy \
-    (*(int (*)(Uint32, pgEventDictProxy *))PYGAMEAPI_GET_SLOT(_event, 3))
+    (*(int (*)(int, PyObject *))PYGAMEAPI_GET_SLOT(_event, 2))
+// TODO
+#define pg_post_event_steal \
+    (*(int (*)(int, PyObject *))PYGAMEAPI_GET_SLOT(_event, 3))
 
 #define pg_EnableKeyRepeat (*(int (*)(int, int))PYGAMEAPI_GET_SLOT(_event, 4))
 
@@ -410,14 +408,11 @@ typedef struct pgEventData pgEventData;
 
 #define pgEvent_Check (*(int (*)(PyObject *))PYGAMEAPI_GET_SLOT(_event, 10))
 
-#define pgEvent_FromEventData \
-    (*(PyObject * (*)(pgEventData)) PYGAMEAPI_GET_SLOT(_event, 11))
+#define pgEvent_FromTypeAndDict \
+    (*(PyObject * (*)(int, PyObject *)) PYGAMEAPI_GET_SLOT(_event, 11))
 
-#define pgEvent_GetEventData \
-    (*(pgEventData(*)(PyObject *))PYGAMEAPI_GET_SLOT(_event, 12))
-
-#define pgEvent_FreeEventData \
-    (*(void (*)(pgEventData))PYGAMEAPI_GET_SLOT(_event, 13))
+#define pgEvent_GetEventType \
+    (*(int (*)(PyObject *))PYGAMEAPI_GET_SLOT(_event, 12))
 
 #define import_pygame_event() IMPORT_PYGAME_MODULE(_event)
 #endif

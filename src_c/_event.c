@@ -671,65 +671,28 @@ pgEvent_AutoInit(PyObject *self, PyObject *_null)
     Py_RETURN_NONE;
 }
 
-/* Posts a pygame event that is an ``SDL_USEREVENT`` on the SDL side, can also
- * optionally take a dictproxy instance. Using this dictproxy API is especially
- * useful when multiple events that need to be posted share the same dict
- * attribute, like in the case of event timers. This way, the number of python
- * increfs and decrefs are reduced, and callers of this function don't need to
- * hold GIL for every event posted, the GIL only needs to be held during the
- * creation of the dictproxy instance, and when it is freed.
- * Just like the SDL ``SDL_PushEvent`` function, returns 1 on success, 0 if the
- * event was not posted due to it being blocked, and -1 on failure. */
+/* This function posts an SDL "UserEvent" event, can also optionally take a
+ * dict or an Event instance. This function does not need GIL to be held if obj
+ * is NULL, but needs GIL otherwise
+ */
 static int
-pg_post_event_dictproxy(Uint32 type, pgEventDictProxy *dict_proxy)
+pg_post_event(int type, PyObject *obj)
 {
-    int ret;
     SDL_Event event = {0};
 
     event.type = _pg_pgevent_proxify(type);
-    event.user.data1 = (void *)dict_proxy;
 
-    ret = SDL_PushEvent(&event);
-    if (ret == 1 && dict_proxy) {
-        /* successfully posted event with dictproxy */
-        SDL_AtomicLock(&dict_proxy->lock);
-        dict_proxy->num_on_queue++;
-        SDL_AtomicUnlock(&dict_proxy->lock);
-    }
+    if (event.type == -1)
+        return -1;
 
-    return ret;
-}
+    if (obj)
+        Py_INCREF(obj);
 
-/* This function posts an SDL "UserEvent" event, can also optionally take a
- * python dict. This function does not need GIL to be held if dict is NULL, but
- * needs GIL otherwise  */
-static int
-pg_post_event(Uint32 type, PyObject *dict)
-{
-    int ret;
-    if (!dict) {
-        return pg_post_event_dictproxy(type, NULL);
-    }
+    event.user.data1 = (void *)obj;
+    int ret = SDL_PushEvent(&event);
 
-    pgEventDictProxy *dict_proxy =
-        (pgEventDictProxy *)malloc(sizeof(pgEventDictProxy));
-    if (!dict_proxy) {
-        return SDL_SetError("insufficient memory (internal malloc failed)");
-    }
-
-    Py_INCREF(dict);
-    dict_proxy->dict = dict;
-    /* initially set to 0 - unlocked state */
-    dict_proxy->lock = 0;
-    dict_proxy->num_on_queue = 0;
-    /* So that event function handling this frees it */
-    dict_proxy->do_free_at_end = 1;
-
-    ret = pg_post_event_dictproxy(type, dict_proxy);
-    if (ret != 1) {
-        Py_DECREF(dict);
-        free(dict_proxy);
-    }
+    if (ret != 1 && obj)
+        Py_DECREF(obj);
     return ret;
 }
 
@@ -762,7 +725,7 @@ get_joy_device_index(int instance_id)
 }
 
 static PyObject *
-dict_from_event(SDL_Event *event)
+dict_or_obj_from_event(SDL_Event *event)
 {
     PyObject *dict = NULL, *tuple, *obj;
     int hx, hy;
@@ -771,27 +734,8 @@ dict_from_event(SDL_Event *event)
 
     /* check if a proxy event or userevent was posted */
     if (event->type >= PGPOST_EVENTBEGIN) {
-        int to_free;
-        pgEventDictProxy *dict_proxy = (pgEventDictProxy *)event->user.data1;
-        if (!dict_proxy) {
-            /* the field being NULL implies empty dict */
-            return PyDict_New();
-        }
-
-        /* spinlocks must be held and released as quickly as possible */
-        SDL_AtomicLock(&dict_proxy->lock);
-        dict = dict_proxy->dict;
-        dict_proxy->num_on_queue--;
-        to_free = dict_proxy->num_on_queue <= 0 && dict_proxy->do_free_at_end;
-        SDL_AtomicUnlock(&dict_proxy->lock);
-
-        if (to_free) {
-            free(dict_proxy);
-        }
-        else {
-            Py_INCREF(dict);
-        }
-        return dict;
+        // This steals reference to obj from SDL_Event.
+        return (PyObject *)event->user.data1;
     }
 
     dict = PyDict_New();
@@ -1194,20 +1138,20 @@ pgEvent_GetType(void)
 }
 
 static PyObject *
-pgEvent_FromEventData(pgEventData e_data)
+pgEvent_FromTypeAndDict(int e_type, PyObject *dict)
 {
     PyObject *ret = NULL;
     PyObject *args = NULL;
 
-    PyObject *e_type = pgEvent_GetType();
-    if (!e_type)
+    PyObject *e_typeo = pgEvent_GetType();
+    if (!e_typeo)
         return NULL;
 
-    PyObject *num = PyLong_FromLong(e_data.type);
+    PyObject *num = PyLong_FromLong(e_type);
     if (!num)
         goto finalize;
 
-    if (e_data.dict)
+    if (dict)
         args = PyTuple_New(2);
     else
         args = PyTuple_New(1);
@@ -1218,64 +1162,67 @@ pgEvent_FromEventData(pgEventData e_data)
     }
 
     PyTuple_SetItem(args, 0, num);
-    if (e_data.dict) {
-        Py_INCREF(e_data.dict);
-        PyTuple_SetItem(args, 1, e_data.dict);
+    if (dict) {
+        Py_INCREF(dict);
+        PyTuple_SetItem(args, 1, dict);
     }
 
-    ret = PyObject_Call(e_type, args, NULL);
+    ret = PyObject_Call(e_typeo, args, NULL);
 
 finalize:
-    Py_DECREF(e_type);
+    Py_DECREF(e_typeo);
     Py_XDECREF(args);
     return ret;
 }
 
-static pgEventData
-pgEvent_GetEventData(PyObject *event)
+static int
+pgEvent_GetEventType(PyObject *event)
 {
-    pgEventData data = {0};
-    data.dict = PyObject_GetAttrString(event, "dict");
-
-    if (PyErr_Occurred())
-        PyErr_Clear();
-
     PyObject *e_typeo = PyObject_GetAttrString(event, "type");
+
     if (!e_typeo) {
-        Py_XDECREF(data.dict);
-        data.dict = NULL;
-        goto finalize;
+        return -1;
     }
 
-    data.type = PyLong_AsLong(e_typeo);
+    long e_type = PyLong_AsLong(e_typeo);
+    Py_DECREF(e_typeo);
 
-finalize:
-    return data;
-}
+    if (PyErr_Occurred()) {
+        return -1;
+    }
 
-static void
-pgEvent_FreeEventData(pgEventData e_data)
-{
-    Py_XDECREF(e_data.dict);
-    e_data.dict = NULL;
+    if (e_type < 0 || e_type >= PG_NUMEVENTS) {
+        RAISERETURN(PyExc_ValueError, "event type out of range", -1)
+    }
+
+    return e_type;
 }
 
 static PyObject *
 pgEvent_New(SDL_Event *event)
 {
-    pgEventData e = {0};
+    Uint32 e_type;
+    PyObject *obj_or_dict = NULL;
 
     if (event) {
-        e.type = _pg_pgevent_deproxify(event->type);
-        e.dict = dict_from_event(event);
+        e_type = _pg_pgevent_deproxify(event->type);
+        obj_or_dict = dict_or_obj_from_event(event);
     }
     else {
-        e.type = SDL_NOEVENT;
+        e_type = SDL_NOEVENT;
     }
 
-    PyObject *ret = pgEvent_FromEventData(e);
-    pgEvent_FreeEventData(e);
-    return ret;
+    if (!obj_or_dict ||
+        PyObject_IsInstance(obj_or_dict, (PyObject *)&PyDict_Type)) {
+        if (PyErr_Occurred())
+            return NULL;
+
+        PyObject *ret = pgEvent_FromTypeAndDict(e_type, obj_or_dict);
+        Py_XDECREF(obj_or_dict);
+        return ret;
+    }
+
+    return obj_or_dict;
 }
 
 static int
@@ -1860,13 +1807,12 @@ pg_event_post(PyObject *self, PyObject *obj)
     else if (!is_event)
         return RAISE(PyExc_TypeError, "argument must be an Event object");
 
-    pgEventData e = pgEvent_GetEventData(obj);
+    int e_type = pgEvent_GetEventType(obj);
 
     if (PyErr_Occurred())
         return NULL;
 
-    int res = pg_post_event(e.type, e.dict);
-    pgEvent_FreeEventData(e);
+    int res = pg_post_event(e_type, obj);
 
     switch (res) {
         case 0:
@@ -2008,11 +1954,11 @@ MODINIT_DEFINE(_event)
     }
 
     /* export the c api */
-    assert(PYGAMEAPI_EVENT_NUMSLOTS == 14);
+    assert(PYGAMEAPI_EVENT_NUMSLOTS == 13);
     c_api[0] = pgEvent_GetType;
     c_api[1] = pgEvent_New;
     c_api[2] = pg_post_event;
-    c_api[3] = pg_post_event_dictproxy;
+    // c_api[3] = pg_post_event_steal;
     c_api[4] = pg_EnableKeyRepeat;
     c_api[5] = pg_GetKeyRepeat;
     c_api[6] = pgEvent_GetKeyDownInfo;
@@ -2020,9 +1966,8 @@ MODINIT_DEFINE(_event)
     c_api[8] = pgEvent_GetMouseButtonDownInfo;
     c_api[9] = pgEvent_GetMouseButtonUpInfo;
     c_api[10] = pgEvent_Check;
-    c_api[11] = pgEvent_FromEventData;
-    c_api[12] = pgEvent_GetEventData;
-    c_api[13] = pgEvent_FreeEventData;
+    c_api[11] = pgEvent_FromTypeAndDict;
+    c_api[12] = pgEvent_GetEventType;
 
     apiobj = encapsulate_api(c_api, "_event");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {

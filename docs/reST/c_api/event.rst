@@ -13,18 +13,6 @@ The extension module :py:mod:`pygame.event`.
 
 Header file: src_c/include/pygame.h
 
-.. c:type:: pgEventData
-
-   Struct holding information about the event object.
-
-   .. c:member:: int type
-
-      The event type code.
-   
-   .. c:member:: PyObject* dict
-
-      Dict object of the event, might be NULL.
-
 .. c:function:: PyObject* pgEvent_GetType(void)
 
    Return a python class that is currently set to be the event class
@@ -46,24 +34,20 @@ Header file: src_c/include/pygame.h
    If *event* is ``NULL`` then create an empty event object.
    On failure raise a Python exception and return ``NULL``.
 
-.. c:function:: PyObject* pgEvent_FromEventData(pgEventData)
+   .. note::
+      This is a destructive operation, so don't use passed SDL_Event afterwards.
 
-   Return an event object constructed from pgEventData struct.
+.. c:function:: PyObject* pgEvent_FromTypeAndDict(int e_type, PyObject *dict)
+
+   Instantiates a new Event object created from the given event type and a dict.
    
    On error returns NULL and sets python exception.
 
-.. c:function:: pgEventData pgEvent_GetEventData(PyObject *)
+.. c:function:: int pgEvent_GetEventType(PyObject *)
 
-   Return a pgEventData struct containing information about event extracted from the python object.
+   Returns an event type extracted from the python object.
 
-   Beware: on error this doesn't retun any special sentiel value if error ocurred, only sets python exception, so use ``PyErr_Ocurred()`` for error checking.
-   Remember to call :c:func:`pgEvent_FreeEventData` after usage to avoid memory leaks.
-
-.. c:function:: void pgEvent_FreeEventData(pgEventData)
-
-   Free resources held by pgEventData (decrefs dict).
-
-   .. ## pgEvent_FreeEventData ##
+   On error this retuns -1.
 
 .. c:function:: char* pgEvent_GetKeyDownInfo(void)
    
@@ -85,23 +69,11 @@ Header file: src_c/include/pygame.h
    Return an array of bools (using char) of length 5
    with the most recent button releases.
 
-.. c:function:: int pg_post_event(Uint32 type, PyObject *dict)
+.. c:function:: int pg_post_event(Uint32 type, PyObject *obj)
 
    Posts a pygame event that is an ``SDL_USEREVENT`` on the SDL side. This
-   function takes a python dict, which can be NULL too.
-   This function does not need GIL to be held if dict is NULL, but needs GIL
+   function takes a python dict or Event instance, which can be NULL too.
+   This function does not need GIL to be held if obj is NULL, but needs GIL
    otherwise. Just like the SDL ``SDL_PushEvent`` function, returns 1 on
    success, 0 if the event was not posted due to it being blocked, and -1 on
    failure.
-
-.. c:function:: int pg_post_event_dictproxy(Uint32 type, pgEventDictProxy *dict_proxy)
-
-   Posts a pygame event that is an ``SDL_USEREVENT`` on the SDL side, can also
-   optionally take a dictproxy instance. Using this dictproxy API is especially
-   useful when multiple events that need to be posted share the same dict
-   attribute, like in the case of event timers. This way, the number of python
-   increfs and decrefs are reduced, and callers of this function don't need to
-   hold GIL for every event posted, the GIL only needs to be held during the
-   creation of the dictproxy instance, and when it is freed.
-   Just like the SDL ``SDL_PushEvent`` function, returns 1 on success, 0 if the
-   event was not posted due to it being blocked, and -1 on failure.

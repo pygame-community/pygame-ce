@@ -52,7 +52,7 @@ typedef struct pgEventTimer {
     intptr_t timer_id;
 
     /* A dictproxy instance */
-    pgEventDictProxy *dict_proxy;
+    PyObject *obj;
 
     /* event type of the associated event */
     int event_type;
@@ -137,27 +137,10 @@ _pg_timer_free(pgEventTimer *timer)
         }
     }
 
-    if (timer->dict_proxy) {
-        int is_fully_freed = 0;
-
-        SDL_AtomicLock(&timer->dict_proxy->lock);
-        /* Fully free dict and dict_proxy only if there are no references to it
-         * on the event queue. If there are any references, event functions
-         * will handle cleanups */
-        if (timer->dict_proxy->num_on_queue <= 0) {
-            is_fully_freed = 1;
-        }
-        else {
-            timer->dict_proxy->do_free_at_end = 1;
-        }
-        SDL_AtomicUnlock(&timer->dict_proxy->lock);
-
-        if (is_fully_freed) {
-            PyGILState_STATE gstate = PyGILState_Ensure();
-            Py_DECREF(timer->dict_proxy->dict);
-            PyGILState_Release(gstate);
-            free(timer->dict_proxy);
-        }
+    if (timer->obj) {
+        PyGILState_STATE gstate = PyGILState_Ensure();
+        Py_DECREF(timer->obj);
+        PyGILState_Release(gstate);
     }
     free(timer);
 }
@@ -197,29 +180,23 @@ pg_time_autoinit(PyObject *self, PyObject *_null)
  * but this function can internally hold GIL if needed.
  * Returns pgSetTimerErr error codes */
 static pgSetTimerErr
-_pg_add_event_timer(int ev_type, PyObject *ev_dict, int repeat)
+_pg_add_event_timer(int ev_type, PyObject *ev_obj, int repeat)
 {
     pgEventTimer *new = (pgEventTimer *)malloc(sizeof(pgEventTimer));
     if (!new) {
         return PG_TIMER_MEMORY_ERROR;
     }
 
-    if (ev_dict) {
-        new->dict_proxy = (pgEventDictProxy *)malloc(sizeof(pgEventDictProxy));
-        if (!new->dict_proxy) {
-            free(new);
-            return PG_TIMER_MEMORY_ERROR;
-        }
+    new->obj = ev_obj;
+
+    if (ev_obj) {
         PyGILState_STATE gstate = PyGILState_Ensure();
-        Py_INCREF(ev_dict);
+        Py_INCREF(ev_obj);
         PyGILState_Release(gstate);
-        new->dict_proxy->dict = ev_dict;
-        new->dict_proxy->lock = 0;
-        new->dict_proxy->num_on_queue = 0;
-        new->dict_proxy->do_free_at_end = 0;
-    }
-    else {
-        new->dict_proxy = NULL;
+        // new->dict_proxy->dict = ev_dict;
+        // new->dict_proxy->lock = 0;
+        // new->dict_proxy->num_on_queue = 0;
+        // new->dict_proxy->do_free_at_end = 0;
     }
 
     /* insert the timer into the doubly linked list at the first index */
@@ -287,8 +264,15 @@ timer_callback(Uint32 interval, void *param)
     }
     else {
         if (SDL_WasInit(SDL_INIT_VIDEO)) {
-            pg_post_event_dictproxy((Uint32)evtimer->event_type,
-                                    evtimer->dict_proxy);
+            PyGILState_STATE gstate;
+
+            if (evtimer->obj)
+                gstate = PyGILState_Ensure();
+
+            pg_post_event((Uint32)evtimer->event_type, evtimer->obj);
+
+            if (evtimer->obj)
+                PyGILState_Release(gstate);
         }
         else {
             evtimer->repeat = 0;
@@ -393,9 +377,8 @@ static PyObject *
 time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int ticks, loops = 0;
-    PyObject *obj, *ev_dict = NULL;
+    PyObject *obj, *ev_obj = NULL;
     int ev_type;
-    pgEventData e;
     pgSetTimerErr ecode = PG_TIMER_NO_ERROR;
 
     static char *kwids[] = {"event", "millis", "loops", NULL};
@@ -424,15 +407,12 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
     else {
         int is_event = pgEvent_Check(obj);
         if (is_event) {
-            e = pgEvent_GetEventData(obj);
+            ev_type = pgEvent_GetEventType(obj);
 
             if (PyErr_Occurred())
                 return NULL;
 
-            ev_type = e.type;
-            ev_dict = e.dict;
-
-            pgEvent_FreeEventData(e);
+            ev_obj = obj;
         }
         else {
             return RAISE(
@@ -473,7 +453,7 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
         }
     }
 
-    ecode = _pg_add_event_timer(ev_type, ev_dict, loops);
+    ecode = _pg_add_event_timer(ev_type, ev_obj, loops);
     if (ecode != PG_TIMER_NO_ERROR) {
         goto end;
     }
