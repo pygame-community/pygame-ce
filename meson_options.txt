@@ -33,3 +33,7 @@ option('error_on_warns', type: 'boolean', value: 'false')
 # Controls whether to error on build if generated docs are missing. Defaults to
 # false.
 option('error_docs_missing', type: 'boolean', value: 'false')
+
+# Controls whether to do a coverage build.
+# This argument must be used together with the editable install.
+option('coverage', type: 'boolean', value: false)

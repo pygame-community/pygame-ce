@@ -1,13 +1,32 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Protocol
 
-from ._common import Sequence, EventLike
+from pygame.typing import SequenceLike
 
-class Event(EventLike):
+# TODO: Should this be moved to "pygame.typing"?
+
+class _EventLike(Protocol):
+    def __init__(
+        self, type: int, dict: dict[str, Any] | None = None, **kwargs: Any
+    ) -> None: ...
+    def __getattribute__(self, name: str) -> Any: ...
+    def __setattr__(self, name: str, value: Any) -> None: ...
+    def __delattr__(self, name: str) -> None: ...
+    def __int__(self) -> int: ...
+    def __bool__(self) -> bool: ...
+    def __eq__(self, other: Any) -> bool: ...
+
+    @property
+    def type(self) -> int: ...
+    @property
+    def dict(self) -> dict[str, Any]: ...
+
+
+class Event(_EventLike):
     ...
 
-_EventTypes = int | Sequence[int]
+_EventTypes = int | SequenceLike[int]
 
 def pump() -> None: ...
 def get(

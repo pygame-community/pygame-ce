@@ -315,6 +315,12 @@ except (ImportError, OSError):
         _attribute_undefined("pygame.Window")
 
 
+try:
+    import pygame.typing
+except (ImportError, OSError):
+    typing = MissingModule("typing", urgent=0)
+
+
 # there's also a couple "internal" modules not needed
 # by users, but putting them here helps "dependency finder"
 # programs get everything they need (like py2exe)
