@@ -77,3 +77,12 @@ Header file: src_c/include/pygame.h
    otherwise. Just like the SDL ``SDL_PushEvent`` function, returns 1 on
    success, 0 if the event was not posted due to it being blocked, and -1 on
    failure.
+
+   .. ## pg_post_event ##
+
+.. c:function:: int pg_post_event_steal(Uint32 type, PyObject *obj)
+
+   Nearly the same as :c:func:`pg_post_event`, but with two differences.
+   1) This doesn't need GIL held at all when called.
+   2) This steals the reference to obj, instead of borrowing it.
+

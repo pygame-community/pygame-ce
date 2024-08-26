@@ -386,7 +386,7 @@ typedef struct {
 
 #define pg_post_event \
     (*(int (*)(int, PyObject *))PYGAMEAPI_GET_SLOT(_event, 2))
-// TODO
+
 #define pg_post_event_steal \
     (*(int (*)(int, PyObject *))PYGAMEAPI_GET_SLOT(_event, 3))
 

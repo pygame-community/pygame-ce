@@ -27,6 +27,9 @@
 #include "doc/time_doc.h"
 
 #define WORST_CLOCK_ACCURACY 12
+#define TIMER_REF_STEP 1000
+
+#define PG_CHANGE_REFCNT(obj, by) Py_SET_REFCNT(obj, Py_REFCNT(obj) + by)
 
 /* Enum containing some error codes used by timer related functions */
 typedef enum {
@@ -51,8 +54,9 @@ typedef struct pgEventTimer {
      * instance from the linked list */
     intptr_t timer_id;
 
-    /* A dictproxy instance */
+    /* A python object reference */
     PyObject *obj;
+    int owned_refs;
 
     /* event type of the associated event */
     int event_type;
@@ -140,6 +144,9 @@ _pg_timer_free(pgEventTimer *timer)
     if (timer->obj) {
         PyGILState_STATE gstate = PyGILState_Ensure();
         Py_DECREF(timer->obj);
+        if (timer->owned_refs > 0) {
+            PG_CHANGE_REFCNT(timer->obj, -timer->owned_refs);
+        }
         PyGILState_Release(gstate);
     }
     free(timer);
@@ -189,14 +196,17 @@ _pg_add_event_timer(int ev_type, PyObject *ev_obj, int repeat)
 
     new->obj = ev_obj;
 
+    if (repeat >= 0) {
+        new->owned_refs = repeat + 1;
+    }
+    else {
+        new->owned_refs = TIMER_REF_STEP;
+    }
+
     if (ev_obj) {
         PyGILState_STATE gstate = PyGILState_Ensure();
-        Py_INCREF(ev_obj);
+        PG_CHANGE_REFCNT(ev_obj, new->owned_refs);
         PyGILState_Release(gstate);
-        // new->dict_proxy->dict = ev_dict;
-        // new->dict_proxy->lock = 0;
-        // new->dict_proxy->num_on_queue = 0;
-        // new->dict_proxy->do_free_at_end = 0;
     }
 
     /* insert the timer into the doubly linked list at the first index */
@@ -264,15 +274,18 @@ timer_callback(Uint32 interval, void *param)
     }
     else {
         if (SDL_WasInit(SDL_INIT_VIDEO)) {
-            PyGILState_STATE gstate = 0;
+            if (evtimer->owned_refs == 0) {
+                evtimer->owned_refs = TIMER_REF_STEP;
 
-            if (evtimer->obj)
-                gstate = PyGILState_Ensure();
+                if (evtimer->obj) {
+                    PyGILState_STATE gstate = PyGILState_Ensure();
+                    PG_CHANGE_REFCNT(evtimer->obj, evtimer->owned_refs);
+                    PyGILState_Release(gstate);
+                }
+            }
 
-            pg_post_event((Uint32)evtimer->event_type, evtimer->obj);
-
-            if (evtimer->obj)
-                PyGILState_Release(gstate);
+            pg_post_event_steal((Uint32)evtimer->event_type, evtimer->obj);
+            evtimer->owned_refs -= 1;
         }
         else {
             evtimer->repeat = 0;

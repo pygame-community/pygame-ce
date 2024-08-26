@@ -671,6 +671,17 @@ pgEvent_AutoInit(PyObject *self, PyObject *_null)
     Py_RETURN_NONE;
 }
 
+/* Similar to pg_post_event, but it steals the reference to obj and doesn't
+ * need GLI held at all.*/
+static int
+pg_post_event_steal(int type, PyObject *obj)
+{
+    SDL_Event event = {0};
+    event.type = _pg_pgevent_proxify(type);
+    event.user.data1 = (void *)obj;
+    return SDL_PushEvent(&event);
+}
+
 /* This function posts an SDL "UserEvent" event, can also optionally take a
  * dict or an Event instance. This function does not need GIL to be held if obj
  * is NULL, but needs GIL otherwise
@@ -678,21 +689,14 @@ pgEvent_AutoInit(PyObject *self, PyObject *_null)
 static int
 pg_post_event(int type, PyObject *obj)
 {
-    if (type == -1)
-        return -1;
-
-    SDL_Event event = {0};
-
-    event.type = _pg_pgevent_proxify(type);
-
     if (obj)
         Py_INCREF(obj);
 
-    event.user.data1 = (void *)obj;
-    int ret = SDL_PushEvent(&event);
+    int ret = pg_post_event_steal(type, obj);
 
     if (ret != 1 && obj)
         Py_DECREF(obj);
+
     return ret;
 }
 
@@ -1958,7 +1962,7 @@ MODINIT_DEFINE(_event)
     c_api[0] = pgEvent_GetType;
     c_api[1] = pgEvent_New;
     c_api[2] = pg_post_event;
-    // c_api[3] = pg_post_event_steal;
+    c_api[3] = pg_post_event_steal;
     c_api[4] = pg_EnableKeyRepeat;
     c_api[5] = pg_GetKeyRepeat;
     c_api[6] = pgEvent_GetKeyDownInfo;

@@ -86,4 +86,16 @@ class EventLike(Protocol):
 
 
 # cleanup namespace
-del sys, IO, Callable, Tuple, Dict, Union, TypeVar, Protocol, SupportsIndex
+del (
+    sys,
+    IO,
+    Callable,
+    Tuple,
+    Dict,
+    Union,
+    Optional,
+    TypeVar,
+    Protocol,
+    SupportsIndex,
+    Any,
+)

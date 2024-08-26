@@ -4,7 +4,18 @@
 # Use the command `python buildconfig/stubs/gen_stubs.py` to copy typing.py to typing.pyi
 
 import sys
-from typing import IO, Callable, Tuple, Dict, Union, Optional, TypeVar, Protocol, SupportsIndex, Any
+from typing import (
+    IO,
+    Callable,
+    Tuple,
+    Dict,
+    Union,
+    Optional,
+    TypeVar,
+    Protocol,
+    SupportsIndex,
+    Any,
+)
 
 if sys.version_info >= (3, 9):
     from os import PathLike as _PathProtocol
@@ -75,4 +86,4 @@ class EventLike(Protocol):
 
 
 # cleanup namespace
-del sys, IO, Callable, Tuple, Dict, Union, TypeVar, Protocol, SupportsIndex
+del sys, IO, Callable, Tuple, Dict, Union, Optional, TypeVar, Protocol, SupportsIndex, Any
