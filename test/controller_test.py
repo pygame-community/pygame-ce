@@ -43,7 +43,7 @@ class ControllerModuleTest(unittest.TestCase):
                 self.assertIsInstance(c, controller.Controller)
                 c.quit()
             else:
-                with self.assertRaises(pygame._sdl2.sdl2.error):
+                with self.assertRaises(pygame.error):
                     c = controller.Controller(i)
 
         with self.assertRaises(TypeError):

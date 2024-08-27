@@ -247,7 +247,7 @@ controller_get_mapping(pgControllerObject *self, PyObject *_null)
     while (token != NULL) {
         key = strtok_r(token, ":", &value);
 
-        if (value[0] != '\0') {
+        if (value != NULL && value[0] != '\0') {
             value_obj = PyUnicode_FromString(value);
             if (!value_obj) {
                 goto err;
