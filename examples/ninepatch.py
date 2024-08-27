@@ -15,13 +15,15 @@ In this example a green fill is used which can be done faster and easier with py
 but usually you'd have a custom surface that needs intact corners.
 """
 
+import os
 import pygame
-import sys
 import typing
 
-SCREEN_SIZE = (600, 500)
-SCALE_SIZE = (500, 150)
+SCREEN_SIZE = pygame.Vector2(600, 500)
+SCALE_SIZE = pygame.Vector2(500, 150)
+INNER_SCALE_SIZE = pygame.Vector2(400, 115)
 CORNER_SIZE = 20
+INNER_CORNER_SIZE = 7
 
 
 def ninepatch_scale(
@@ -108,41 +110,54 @@ def main():
     clock = pygame.Clock()
     font = pygame.Font(None, 30)
 
+    main_dir = os.path.split(os.path.abspath(__file__))[0]
+    example_image = pygame.image.load(os.path.join(main_dir, "data", "frame.png"))
+
     original_surface = pygame.Surface((100, 100), pygame.SRCALPHA)
     pygame.draw.rect(
         original_surface, "green", original_surface.get_rect(), 0, CORNER_SIZE
     )
 
     normal_scale = pygame.transform.scale(original_surface, SCALE_SIZE)
-    normal_center = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 4)
+    normal_center = SCREEN_SIZE.elementwise() / (2, 4)
     normal_rect = normal_scale.get_rect(center=normal_center)
+    example_normal_scale = pygame.transform.scale(example_image, INNER_SCALE_SIZE)
+    example_normal_rect = example_normal_scale.get_rect(center=normal_center)
 
     ninepatch = ninepatch_scale(
         original_surface, SCALE_SIZE, CORNER_SIZE, True, False, None
     )
-    ninepatch_center = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] * (3 / 4))
+    ninepatch_center = SCREEN_SIZE.elementwise() / (2, (4 / 3))
     ninepatch_rect = ninepatch.get_rect(center=ninepatch_center)
+    example_ninepatch = ninepatch_scale(
+        example_image, INNER_SCALE_SIZE, INNER_CORNER_SIZE, True, False, None
+    )
+    example_ninepatch_rect = example_ninepatch.get_rect(center=ninepatch_center)
 
     text_normal = font.render("Normal Scale", True, "black")
     text_normal_rect = text_normal.get_rect(center=normal_center)
     text_9patch = font.render("9-Patch Scale", True, "black")
     text_9patch_rect = text_9patch.get_rect(center=ninepatch_center)
 
-    while True:
+    running = True
+    while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+                running = False
 
         screen.fill(0)
 
         screen.blit(normal_scale, normal_rect)
+        screen.blit(example_normal_scale, example_normal_rect)
         screen.blit(ninepatch, ninepatch_rect)
+        screen.blit(example_ninepatch, example_ninepatch_rect)
         screen.blit(text_normal, text_normal_rect)
         screen.blit(text_9patch, text_9patch_rect)
 
         pygame.display.flip()
         clock.tick(60)
+
+    pygame.quit()
 
 
 if __name__ == "__main__":
