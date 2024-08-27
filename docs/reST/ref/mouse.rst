@@ -15,13 +15,13 @@ When the display mode is set, the event queue will start receiving mouse
 events. The mouse buttons generate ``pygame.MOUSEBUTTONDOWN`` and
 ``pygame.MOUSEBUTTONUP`` events when they are pressed and released. These
 events contain a button attribute representing which button was pressed. The
-mouse wheel will generate ``pygame.MOUSEBUTTONDOWN`` and 
-``pygame.MOUSEBUTTONUP`` events when rolled. The button will be set to 4 
-when the wheel is rolled up, and to button 5 when the wheel is rolled down. 
-Whenever the mouse is moved it generates a ``pygame.MOUSEMOTION`` event. The 
-mouse movement is broken into small and accurate motion events. As the mouse 
-is moving many motion events will be placed on the queue. Mouse motion events 
-that are not properly cleaned from the event queue are the primary reason the 
+mouse wheel will generate ``pygame.MOUSEBUTTONDOWN`` and
+``pygame.MOUSEBUTTONUP`` events when rolled. The button will be set to 4
+when the wheel is rolled up, and to button 5 when the wheel is rolled down.
+Whenever the mouse is moved it generates a ``pygame.MOUSEMOTION`` event. The
+mouse movement is broken into small and accurate motion events. As the mouse
+is moving many motion events will be placed on the queue. Mouse motion events
+that are not properly cleaned from the event queue are the primary reason the
 event queue fills up.
 
 If the mouse cursor is hidden, and input is grabbed to the current display the
@@ -34,17 +34,17 @@ configured.
 **Mouse Wheel Behavior in pygame 2**
 
 There is proper functionality for mouse wheel behaviour with pygame 2 supporting
-``pygame.MOUSEWHEEL`` events.  The new events support horizontal and vertical 
-scroll movements, with signed integer values representing the amount scrolled 
-(``x`` and ``y``), as well as ``flipped`` direction (the set positive and 
-negative values for each axis is flipped). Read more about SDL2 
+``pygame.MOUSEWHEEL`` events.  The new events support horizontal and vertical
+scroll movements, with signed integer values representing the amount scrolled
+(``x`` and ``y``), as well as ``flipped`` direction (the set positive and
+negative values for each axis is flipped). Read more about SDL2
 input-related changes here `<https://wiki.libsdl.org/MigrationGuide#input>`_
 
-In pygame 2, the mouse wheel functionality can be used by listening for the 
-``pygame.MOUSEWHEEL`` type of an event (Bear in mind they still emit 
+In pygame 2, the mouse wheel functionality can be used by listening for the
+``pygame.MOUSEWHEEL`` type of an event (Bear in mind they still emit
 ``pygame.MOUSEBUTTONDOWN`` events like in pygame 1.x, as well).
-When this event is triggered, a developer can access the appropriate ``Event`` object 
-with ``pygame.event.get()``. The object can be used to access data about the mouse 
+When this event is triggered, a developer can access the appropriate ``Event`` object
+with ``pygame.event.get()``. The object can be used to access data about the mouse
 scroll, such as ``which`` (it will tell you what exact mouse device trigger the event).
 
 .. code-block:: python
@@ -57,7 +57,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    pygame.init()
    screen = pygame.display.set_mode((640, 480))
    clock = pygame.time.Clock()
-   
+
    def main():
       while True:
          for event in pygame.event.get():
@@ -65,11 +65,11 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
                   pygame.quit()
                   return
                elif event.type == MOUSEWHEEL:
-                  print(event) 
+                  print(event)
                   print(event.x, event.y)
                   print(event.flipped)
                   print(event.which)
-                  # can access properties with 
+                  # can access properties with
                   # proper notation(ex: event.y)
          clock.tick(60)
 
@@ -86,23 +86,30 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    buttons. A true value means the mouse is currently being pressed at the time
    of the call.
 
-   Note, to get all of the mouse events it is better to use either 
-   ``pygame.event.wait()`` or ``pygame.event.get()`` and check all of those 
+   To get all of the mouse events it is better to use either
+   ``pygame.event.wait()`` or ``pygame.event.get()`` and check all of those
    events to see if they are ``MOUSEBUTTONDOWN``, ``MOUSEBUTTONUP``, or
-   ``MOUSEMOTION``.
+   ``MOUSEMOTION``. Remember to call ``pygame.event.get()`` before this function,
+   otherwise it will not work as expected.
 
-   Note, that on ``X11`` some X servers use middle button emulation. When you
-   click both buttons ``1`` and ``3`` at the same time a ``2`` button event 
-   can be emitted.
-
-   Note, remember to call ``pygame.event.get()`` before this function.
-   Otherwise it will not work as expected.
-
-   To support five button mice, an optional parameter ``num_buttons`` has been 
-   added in pygame 2. When this is set to ``5``, ``button4`` and ``button5`` 
-   are added to the returned tuple. Only ``3`` and ``5`` are valid values 
+   To support five button mice, an optional parameter ``num_buttons`` has been
+   added in pygame 2. When this is set to ``5``, ``button4`` and ``button5``
+   are added to the returned tuple. Only ``3`` and ``5`` are valid values
    for this parameter.
-   
+
+   .. note:: To use the pygame button constants such as ``pygame.BUTTON_LEFT``
+      with this function, 1 must be subtracted from the constant to obtain the
+      correct index of the tuple.
+
+      ::
+
+         if pygame.mouse.get_pressed()[pygame.BUTTON_LEFT-1]:
+            print("LMB pressed")
+
+   .. note:: On ``X11`` some X servers use middle button emulation. When you
+      click both buttons ``1`` and ``3`` at the same time a ``2`` button event
+      can be emitted.
+
    .. versionchangedold:: 2.0.0 ``num_buttons`` argument added
 
    .. ## pygame.mouse.get_pressed ##
@@ -113,10 +120,10 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    | :sg:`get_just_pressed() -> (left_button, middle_button, right_button, x1_button, x2_button)`
 
    Very similar to :func:`pygame.mouse.get_pressed()`, returning a tuple
-   of length 5 with the important difference that the buttons are 
+   of length 5 with the important difference that the buttons are
    True only in the frame they start being pressed. This can be convenient
    for checking the buttons pressed "this frame", but for more precise results
-   and correct ordering prefer using the pygame.MOUSEBUTTONDOWN event.
+   and correct ordering prefer using the ``pygame.MOUSEBUTTONDOWN`` event.
 
    The result of this function is updated when new events are processed,
    e.g. in :func:`pygame.event.get()` or :func:`pygame.event.pump()`.
@@ -124,7 +131,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    .. seealso:: :func:`pygame.mouse.get_just_released()`
 
    ::
-      
+
       if pygame.mouse.get_just_pressed()[0]:
          print("LMB just pressed")
 
@@ -138,10 +145,10 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    | :sg:`get_just_released() -> (left_button, middle_button, right_button, x1_button, x2_button)`
 
    Similar to :func:`pygame.mouse.get_pressed()`, returning a tuple
-   of length 5 with the important difference that the buttons are 
+   of length 5 with the important difference that the buttons are
    True only in the frame they stop being pressed. This can be convenient
    for checking the buttons released "this frame", but for more precise results
-   and correct ordering prefer using the pygame.MOUSEBUTTONUP event.
+   and correct ordering prefer using the ``pygame.MOUSEBUTTONUP`` event.
 
    The result of this function is updated when new events are processed,
    e.g. in :func:`pygame.event.get()` or :func:`pygame.event.pump()`.
@@ -149,7 +156,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    .. seealso:: :func:`pygame.mouse.get_just_pressed()`
 
    ::
-      
+
       if pygame.mouse.get_just_released()[0]:
          print("LMB just released")
 
@@ -258,7 +265,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    Get the information about the mouse system cursor. The return value contains
    the same data as the arguments passed into :func:`pygame.mouse.set_cursor()`.
 
-   .. note:: Code that unpacked a get_cursor() call into 
+   .. note:: Code that unpacked a get_cursor() call into
              ``size, hotspot, xormasks, andmasks`` will still work,
 	     assuming the call returns an old school type cursor.
 
@@ -285,7 +292,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    Sets the relative mouse mode state.
    While the mouse is in relative mode, the cursor is hidden,
    the mouse position is constrained to the window, and pygame
-   will report continuous relative mouse motion even if the 
+   will report continuous relative mouse motion even if the
    mouse is at the edge of the window.
 
    *This function will flush any pending mouse motion."*
