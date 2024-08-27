@@ -375,6 +375,9 @@ The following file formats are supported
       :class:`pygame.mixer.Sound` keyword arguments and array interface support
    .. versionaddedold:: 2.0.1 pathlib.Path support on Python 3.
 
+   .. versionchanged:: 2.5.2 This class is also available through the ``pygame.Sound``
+      alias.
+
    .. method:: play
 
       | :sl:`begin sound playback`
