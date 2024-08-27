@@ -195,9 +195,7 @@ controller_get_axis(pgControllerObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(pgExc_SDLError, "Invalid axis");
     }
 
-    // GetAxis returns values from -32768 to 32767
-    return PyFloat_FromDouble(
-        SDL_GameControllerGetAxis(self->controller, axis) / 32767.0);
+    return PyLong_FromLong(SDL_GameControllerGetAxis(self->controller, axis));
 }
 
 static PyObject *

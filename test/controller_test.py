@@ -236,7 +236,7 @@ class ControllerInteractiveTest(unittest.TestCase):
         )
 
         label3 = font.render(
-            'be in the range of 0-1. Press "y" or "n" to confirm.', True, (0, 0, 0)
+            'be in the range of 0-32767. Press "y" or "n" to confirm.', True, (0, 0, 0)
         )
 
         while running:
