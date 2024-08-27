@@ -77,6 +77,15 @@ while not done:
 
     # Draw a circle
     pygame.draw.circle(screen, "blue", [60, 250], 40)
+    
+    # Draw an antialiased circle with 3 pixels wide line
+    pygame.draw.aacircle(screen, "green", [340, 250], 40, 3)
+    
+    # Draw an antialiased top right circle quadrant with 4 pixels wide line
+    pygame.draw.aacircle(screen, "red", [340, 250], 20, 4, draw_top_right=True)
+    
+    # Draw an antialiased bottom left filled circle quadrant
+    pygame.draw.aacircle(screen, "blue", [340, 250], 20, draw_bottom_left=True)
 
     # Draw only one circle quadrant
     pygame.draw.circle(screen, "blue", [250, 250], 40, 0, draw_top_right=True)

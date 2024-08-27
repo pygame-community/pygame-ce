@@ -17,49 +17,49 @@ pygame.init()
 
 
 def main():
-    Running = True
+    running = True
     screen_size = (640, 480)
     surf = pygame.display.set_mode(screen_size)
     font = pygame.font.SysFont("Arial", 24)
     font.align = pygame.FONT_CENTER
     clock = pygame.Clock()
 
-    spr_file_text = font.render("Feed me some file or image!", 1, (255, 255, 255))
+    spr_file_text = font.render("Feed me some file or image!", True, (255, 255, 255))
     spr_file_text_rect = spr_file_text.get_rect()
     spr_file_text_rect.center = surf.get_rect().center
 
     spr_file_image = None
     spr_file_image_rect = None
 
-    while Running:
-        for ev in pygame.event.get():
-            if ev.type == pygame.QUIT:
-                Running = False
-            elif ev.type == pygame.DROPBEGIN:
-                print(ev)
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.DROPBEGIN:
+                print(event)
                 print("File drop begin!")
-            elif ev.type == pygame.DROPCOMPLETE:
-                print(ev)
+            elif event.type == pygame.DROPCOMPLETE:
+                print(event)
                 print("File drop complete!")
-            elif ev.type == pygame.DROPTEXT:
-                print(ev)
+            elif event.type == pygame.DROPTEXT:
+                print(event)
                 spr_file_text = font.render(
-                    ev.text, 1, (255, 255, 255), wraplength=screen_size[0] - 10
+                    event.text, True, (255, 255, 255), wraplength=screen_size[0] - 10
                 )
                 spr_file_text_rect = spr_file_text.get_rect()
                 spr_file_text_rect.center = surf.get_rect().center
-            elif ev.type == pygame.DROPFILE:
-                print(ev)
+            elif event.type == pygame.DROPFILE:
+                print(event)
                 spr_file_text = font.render(
-                    ev.file, 1, (255, 255, 255), None, screen_size[0] - 10
+                    event.file, True, (255, 255, 255), None, screen_size[0] - 10
                 )
                 spr_file_text_rect = spr_file_text.get_rect()
                 spr_file_text_rect.center = surf.get_rect().center
 
                 # Try to open the file if it's an image
-                filetype = ev.file[-3:]
+                filetype = event.file[-3:]
                 if filetype in ["png", "bmp", "jpg"]:
-                    spr_file_image = pygame.image.load(ev.file).convert()
+                    spr_file_image = pygame.image.load(event.file).convert()
                     spr_file_image.set_alpha(127)
                     spr_file_image_rect = spr_file_image.get_rect()
                     spr_file_image_rect.center = surf.get_rect().center

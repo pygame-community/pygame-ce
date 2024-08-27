@@ -1,4 +1,4 @@
-.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_logo.svg
+.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_ce_logo.svg
   :alt: pygame
   :target: https://pyga.me/
 
@@ -26,13 +26,13 @@ pygame به عنوان زیرساخت های اصلی خود از کتابخان
 با استفاده از کتابخانه pygame خلاقانه تر و آسان تر می شود.
 
 
-این توزیع با نام 
+این توزیع با نام
 **'pygame - Community Edition'** ('pygame-ce' برای اختصار)
 شناخته می شود.
 
 این توزیع یک فورک از نسخه آپ استریم (نسخه اصلی) کتابخانه pygame می باشد
 که توسط مشارکت کنندگان (contributor) های سابق نسخه
-آپ استریم در حال توسعه و نگهداری هست, 
+آپ استریم در حال توسعه و نگهداری هست,
 و بعد از رخ دادن چالش هایی حل نشدنی که همکاری در نسخه اصلی کتابخانه
 را غیر ممکن می کرد, برای اولین بار ساخته شد.
 
@@ -65,7 +65,7 @@ Help (کمک و راهنمایی)
 
 همچنین اگر کتابخانه pygame را نصب کرده اید می توانید با وارد کردن دستور
 
-``python -m pygame.docs`` 
+``python -m pygame.docs``
 
 در فضای ترمینال یا کامند لاین سیستم عامل خود, به اسناد ارجاعی دسترسی داشته باشید.
 
@@ -138,7 +138,7 @@ Tyler, Nathaniel Pryce, Dave Wallace, John Popplewell, Michael Urman,
 Andrew Straw, Michael Hudson, Ole Martin Bjoerndalen, Herve Cauwelier,
 James Mazer, Lalo Martins, Timothy Stranex, Chad Lester, Matthias
 Spiller, Bo Jangeborg, Dmitry Borisov, Campbell Barton, Diego Essaya,
-Eyal Lotem, Regis Desgroppes, Emmanuel Hainry, Randy Kaelber
+Eyal Lotem, Regis Desgroppes, Emmanuel Hainry, Randy Kaelber,
 Matthew L Daniel, Nirav Patel, Forrest Voight, Charlie Nolan,
 Frankie Robertson, John Krukoff, Lorenz Quack, Nick Irvine,
 Michael George, Saul Spatz, Thomas Ibbotson, Tom Rothamel, Evan Kroske,
@@ -203,6 +203,8 @@ Dependencies (وابستگی ها)
 
 License
 -------
+LGPL-2.1-or-later **شناسه مجوز:**
+
 این کتابخانه با استفاده از
 `GNU LGPL version 2.1`_
 لایسنس شده است که در فایل
