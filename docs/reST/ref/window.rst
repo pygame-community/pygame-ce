@@ -128,6 +128,18 @@
 
       .. versionadded:: 2.4.0
 
+   .. attribute:: focused
+
+      | :sl:`Get if the window is focused (**read-only**)`
+      | :sg:`focused -> bool`
+
+      Get if the window is currently focused. The same result can be achieved using
+      the ``WINDOWFOCUSGAINED`` and ``WINDOWFOCUSLOST`` events.
+
+      Use :meth:`focus` to focus and raise the window.
+
+      .. versionadded:: 2.5.2
+
    .. attribute:: title
 
       | :sl:`Get or set the window title`
