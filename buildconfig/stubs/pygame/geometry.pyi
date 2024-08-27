@@ -4,7 +4,6 @@ from typing import (
     Callable,
     Protocol,
     Tuple,
-    Sequence,
     List,
 )
 
