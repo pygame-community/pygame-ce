@@ -64,8 +64,7 @@ class _HasRectAttribute(Protocol):
     # An object that has a rect attribute that is either a rect, or a function
     # that returns a rect conforms to the rect protocol
     @property
-    def rect(self) -> Union["RectLike", Callable[[], "RectLike"]]:
-        raise NotImplementedError
+    def rect(self) -> Union["RectLike", Callable[[], "RectLike"]]: ...
 
 
 RectLike = Union[SequenceLike[float], SequenceLike[Coordinate], _HasRectAttribute]
