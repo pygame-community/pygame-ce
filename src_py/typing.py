@@ -15,6 +15,7 @@ from typing import (
     Protocol,
     SupportsIndex,
     Any,
+    Iterable,
 )
 
 if sys.version_info >= (3, 9):
@@ -36,11 +37,13 @@ _T_co = TypeVar("_T_co", covariant=True)
 
 class SequenceLike(Protocol[_T_co]):
     """
-    Variant of the standard `Sequence` ABC that only requires `__getitem__` and `__len__`.
+    Variant of the standard `Sequence` ABC that only requires `__getitem__`.
     """
 
     def __getitem__(self, __i: SupportsIndex) -> _T_co: ...
-    def __len__(self) -> int: ...
+
+
+IterableLike = Union[SequenceLike[_T_co], Iterable[_T_co]]
 
 
 # Modify typehints when it is possible to annotate sizes

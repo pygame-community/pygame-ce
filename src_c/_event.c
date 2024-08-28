@@ -1425,45 +1425,6 @@ _pg_flush_events(Uint32 type)
 }
 
 // TODO
-static PyObject *
-pg_event_clear(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-    Py_ssize_t len;
-    int loop, type;
-    PyObject *seq, *obj = NULL;
-    int dopump = 1;
-
-    static char *kwids[] = {"eventtype", "pump", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Op", kwids, &obj,
-                                     &dopump))
-        return NULL;
-
-    VIDEO_INIT_CHECK();
-    _pg_event_pump(dopump);
-
-    if (obj == NULL || obj == Py_None) {
-        _pg_flush_events(MAX_UINT32);
-    }
-    else {
-        seq = _pg_eventtype_as_seq(obj, &len);
-        if (!seq) /* error aldready set */
-            return NULL;
-
-        for (loop = 0; loop < len; loop++) {
-            type = _pg_eventtype_from_seq(seq, loop);
-            if (type == -1) {
-                Py_DECREF(seq);
-                return NULL; /* PyErr aldready set */
-            }
-            _pg_flush_events(type);
-        }
-        Py_DECREF(seq);
-    }
-    Py_RETURN_NONE;
-}
-
-// TODO
 static int
 _pg_event_append_to_list(PyObject *list, SDL_Event *event)
 {
@@ -1913,8 +1874,6 @@ static PyMethodDef _event_methods[] = {
     {"wait", (PyCFunction)pg_event_wait, METH_VARARGS | METH_KEYWORDS,
      DOC_EVENT_WAIT},
     {"poll", (PyCFunction)pg_event_poll, METH_NOARGS, DOC_EVENT_POLL},
-    {"clear", (PyCFunction)pg_event_clear, METH_VARARGS | METH_KEYWORDS,
-     DOC_EVENT_CLEAR},
     {"get", (PyCFunction)pg_event_get, METH_VARARGS | METH_KEYWORDS,
      DOC_EVENT_GET},
     {"peek", (PyCFunction)pg_event_peek, METH_VARARGS | METH_KEYWORDS,

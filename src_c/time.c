@@ -27,7 +27,7 @@
 #include "doc/time_doc.h"
 
 #define WORST_CLOCK_ACCURACY 12
-#define TIMER_REF_STEP 1000
+#define TIMER_REF_STEP 1
 
 #define PG_CHANGE_REFCNT(obj, by) Py_SET_REFCNT(obj, Py_REFCNT(obj) + by)
 
@@ -196,8 +196,8 @@ _pg_add_event_timer(int ev_type, PyObject *ev_obj, int repeat)
 
     new->obj = ev_obj;
 
-    if (repeat >= 0) {
-        new->owned_refs = repeat + 1;
+    if (repeat > 0) {
+        new->owned_refs = repeat;
     }
     else {
         new->owned_refs = TIMER_REF_STEP;
@@ -205,6 +205,7 @@ _pg_add_event_timer(int ev_type, PyObject *ev_obj, int repeat)
 
     if (ev_obj) {
         PyGILState_STATE gstate = PyGILState_Ensure();
+        Py_INCREF(ev_obj);  // Own reference.
         PG_CHANGE_REFCNT(ev_obj, new->owned_refs);
         PyGILState_Release(gstate);
     }
@@ -284,8 +285,12 @@ timer_callback(Uint32 interval, void *param)
                 }
             }
 
-            pg_post_event_steal((Uint32)evtimer->event_type, evtimer->obj);
-            evtimer->owned_refs -= 1;
+            /* TODO: When error handling is created for SDL callbacks,
+             * update this to support the case of -1. */
+            if (pg_post_event_steal((Uint32)evtimer->event_type,
+                                    evtimer->obj) == 1) {
+                evtimer->owned_refs -= 1;
+            }
         }
         else {
             evtimer->repeat = 0;

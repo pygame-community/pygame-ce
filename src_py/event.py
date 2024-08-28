@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+import gc
+
 from typing import Any
+from .typing import IterableLike
 
 from pygame._event import (
     _internal_mod_init as _init,
@@ -15,7 +17,6 @@ from pygame._event import (
     post,
     get_grab,
     set_grab,
-    clear,
     peek,
     wait,
     poll,
@@ -202,6 +203,10 @@ def init():
 def quit():
     global _is_init, _custom_event
 
+    # Clear event queue to avoid memory leak when SDL tries to clear it
+    # without freeing our resources.
+    clear(pump=False)
+
     # The main reason for _custom_event to be reset here is
     # so we can have a unit test that checks if pygame.event.custom_type() stops
     # returning new types when they are finished,
@@ -236,15 +241,15 @@ def pump():
     return _pump(True)
 
 
-def _parse(type: int | Iterable[int], args: tuple[int, ...]) -> list[int]:
+def _parse(type: int | IterableLike[int], args: tuple[int, ...]) -> list[int]:
     types = []
 
     types: list[int] = []
 
-    if isinstance(type, Iterable):
-        types.extend(type)
-    else:
+    if isinstance(type, int):
         types.append(type)
+    else:
+        types.extend(iter(type))
 
     if args:
         types.extend(args)
@@ -252,7 +257,7 @@ def _parse(type: int | Iterable[int], args: tuple[int, ...]) -> list[int]:
     return types
 
 
-def _setter(val: bool, type: int | Iterable[int] | None, *args: int):
+def _setter(val: bool, type: int | IterableLike[int] | None, *args: int):
     if type is None:
         if args:
             raise ValueError("Args aren't supported for type==None.")
@@ -264,7 +269,7 @@ def _setter(val: bool, type: int | Iterable[int] | None, *args: int):
         _allowed_set(t, val)
 
 
-def set_blocked(type: int | Iterable[int] | None, *args: int):
+def set_blocked(type: int | IterableLike[int] | None, *args: int):
     """
     set_blocked(type, /) -> None
     set_blocked(typelist, /) -> None
@@ -276,7 +281,7 @@ def set_blocked(type: int | Iterable[int] | None, *args: int):
     _setter(False, type, *args)
 
 
-def set_allowed(type: int | Iterable[int] | None, *args: int):
+def set_allowed(type: int | IterableLike[int] | None, *args: int):
     """
     set_allowed(type, /) -> None
     set_allowed(typelist, /) -> None
@@ -288,7 +293,7 @@ def set_allowed(type: int | Iterable[int] | None, *args: int):
     _setter(True, type, *args)
 
 
-def get_blocked(type: int | Iterable[int], *args: int):
+def get_blocked(type: int | IterableLike[int], *args: int):
     """
     get_blocked(type, /) -> bool
     get_blocked(typelist, /) -> bool
@@ -300,6 +305,15 @@ def get_blocked(type: int | Iterable[int], *args: int):
         if not _allowed_get(t):
             return True
     return False
+
+
+def clear(eventtype: int | IterableLike[int] | None = None, pump: bool = True):
+    if eventtype is None or isinstance(eventtype, int):
+        get(eventtype, pump)
+    else:
+        get(list(iter(eventtype)), pump)
+
+    gc.collect()
 
 
 __all__ = [
