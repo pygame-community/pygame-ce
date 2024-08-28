@@ -1413,17 +1413,6 @@ _pg_eventtype_as_seq(PyObject *obj, Py_ssize_t *len)
                      "event type must be numeric or a sequence");
 }
 
-static void
-_pg_flush_events(Uint32 type)
-{
-    if (type == MAX_UINT32)
-        SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
-    else {
-        SDL_FlushEvent(type);
-        SDL_FlushEvent(_pg_pgevent_proxify(type));
-    }
-}
-
 // TODO
 static int
 _pg_event_append_to_list(PyObject *list, SDL_Event *event)

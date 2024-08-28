@@ -3,7 +3,19 @@
 # NOTE: `src_py/typing.py` and `buildconfig/stubs/pygame/typing.pyi` must be duplicates.
 # Use the command `python buildconfig/stubs/gen_stubs.py` to copy typing.py to typing.pyi
 
+__all__ = [
+    "RectLike",
+    "SequenceLike",
+    "FileLike",
+    "PathLike",
+    "ColorLike",
+    "RGBATuple",
+    "Coordinate",
+    "IntCoordinate",
+]
+
 import sys
+from abc import abstractmethod
 from typing import (
     IO,
     Callable,
@@ -13,7 +25,6 @@ from typing import (
     Optional,
     TypeVar,
     Protocol,
-    SupportsIndex,
     Any,
     Iterable,
 )
@@ -21,10 +32,11 @@ from typing import (
 if sys.version_info >= (3, 9):
     from os import PathLike as _PathProtocol
 else:
-    _T = TypeVar("_T", bound=Union[str, bytes])
+    _AnyStr_co = TypeVar("_AnyStr_co", str, bytes, covariant=True)
 
-    class _PathProtocol(Protocol[_T]):
-        def __fspath__(self) -> _T: ...
+    class _PathProtocol(Protocol[_AnyStr_co]):
+        @abstractmethod
+        def __fspath__(self) -> _AnyStr_co: ...
 
 
 # For functions that take a file name
@@ -40,7 +52,8 @@ class SequenceLike(Protocol[_T_co]):
     Variant of the standard `Sequence` ABC that only requires `__getitem__`.
     """
 
-    def __getitem__(self, __i: SupportsIndex) -> _T_co: ...
+    @abstractmethod
+    def __getitem__(self, index: int, /) -> _T_co: ...
 
 
 IterableLike = Union[SequenceLike[_T_co], Iterable[_T_co]]
@@ -58,16 +71,15 @@ IntCoordinate = SequenceLike[int]
 RGBATuple = Tuple[int, int, int, int]
 ColorLike = Union[int, str, SequenceLike[int]]
 
-_CanBeRect = SequenceLike[Union[float, Coordinate]]
-
 
 class _HasRectAttribute(Protocol):
     # An object that has a rect attribute that is either a rect, or a function
     # that returns a rect conforms to the rect protocol
-    rect: Union["RectLike", Callable[[], "RectLike"]]
+    @property
+    def rect(self) -> Union["RectLike", Callable[[], "RectLike"]]: ...
 
 
-RectLike = Union[_CanBeRect, _HasRectAttribute]
+RectLike = Union[SequenceLike[float], SequenceLike[Coordinate], _HasRectAttribute]
 
 
 class EventLike(Protocol):
@@ -91,6 +103,7 @@ class EventLike(Protocol):
 # cleanup namespace
 del (
     sys,
+    abstractmethod,
     IO,
     Callable,
     Tuple,
@@ -99,6 +112,5 @@ del (
     Optional,
     TypeVar,
     Protocol,
-    SupportsIndex,
     Any,
 )
