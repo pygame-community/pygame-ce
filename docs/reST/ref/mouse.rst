@@ -89,8 +89,8 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    To get all of the mouse events it is better to use either
    ``pygame.event.wait()`` or ``pygame.event.get()`` and check all of those
    events to see if they are ``MOUSEBUTTONDOWN``, ``MOUSEBUTTONUP``, or
-   ``MOUSEMOTION``. Remember to call ``pygame.event.get()`` before this function,
-   otherwise it will not work as expected.
+   ``MOUSEMOTION``. Remember to call ``pygame.event.get()`` or ``pygame.event.pump()``
+   before this function, otherwise it will not work as expected.
 
    To support five button mice, an optional parameter ``num_buttons`` has been
    added in pygame 2. When this is set to ``5``, ``button4`` and ``button5``
