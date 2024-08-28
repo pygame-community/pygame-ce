@@ -1155,10 +1155,7 @@ pgEvent_FromTypeAndDict(int e_type, PyObject *dict)
     if (!num)
         goto finalize;
 
-    if (dict)
-        args = PyTuple_New(2);
-    else
-        args = PyTuple_New(1);
+    args = PyTuple_New(1);
 
     if (!args) {
         Py_DECREF(num);
@@ -1166,12 +1163,8 @@ pgEvent_FromTypeAndDict(int e_type, PyObject *dict)
     }
 
     PyTuple_SetItem(args, 0, num);
-    if (dict) {
-        Py_INCREF(dict);
-        PyTuple_SetItem(args, 1, dict);
-    }
 
-    ret = PyObject_Call(e_typeo, args, NULL);
+    ret = PyObject_Call(e_typeo, args, dict);
 
 finalize:
     Py_DECREF(e_typeo);

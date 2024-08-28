@@ -81,5 +81,19 @@ type aliases for proper typehint annotations.
         * ``pygame.Rect(RectLike)``
         * Any object with a ``.rect`` attribute which is a ``RectLike`` or a function
           returning a ``RectLike``
+   
+   .. data:: EventLike
+
+      A protocol representing an event that is undestood by pygame-ce.
+
+         * ``pygame.Event(type, dict, arg=val)``
+         * A python class that implements EventLike protocol:
+
+         ::
+
+            class MyEvent:
+               def __init__(self, type: int, **kwargs):
+                  self.type = type
+                  self.dict = kwargs
 
 .. ## pygame.typing ##

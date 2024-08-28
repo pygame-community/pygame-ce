@@ -134,8 +134,10 @@ class Event:
         if not 0 <= type < pg.NUMEVENTS:
             raise ValueError("event type out of range")
 
-        dict = dict if dict is not None else {}
-        dict.update(kwargs)
+        if dict is None:
+            dict = kwargs
+        else:
+            dict.update(kwargs)
 
         if "type" in dict:
             raise ValueError("redundant type field in event dict")
