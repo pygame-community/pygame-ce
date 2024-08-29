@@ -58,8 +58,8 @@ def ninepatch_scale(
     if corner_size == 0:  # default to normal scaling
         return scale_func(surface, size)
 
-    src_x_side, ret_x_side = src_w - c * 2, ret_w - c * 2
-    src_y_side, ret_y_side = src_h - c * 2, ret_h - c * 2
+    src_x_side, src_y_side = surface.size - pygame.Vector2(c) * 2
+    ret_x_side, ret_y_side = size - pygame.Vector2(c) * 2
 
     ret_surface.blit(  # topleft corner
         subsurface(0, 0, c, c), (0, 0)
@@ -119,7 +119,7 @@ def main():
     )
 
     normal_scale = pygame.transform.scale(original_surface, SCALE_SIZE)
-    normal_center = SCREEN_SIZE.elementwise() / (2, 4)
+    normal_center = SCREEN_SIZE.elementwise() / pygame.Vector2(2, 4)
     normal_rect = normal_scale.get_rect(center=normal_center)
     example_normal_scale = pygame.transform.scale(example_image, INNER_SCALE_SIZE)
     example_normal_rect = example_normal_scale.get_rect(center=normal_center)
@@ -127,7 +127,7 @@ def main():
     ninepatch = ninepatch_scale(
         original_surface, SCALE_SIZE, CORNER_SIZE, True, False, None
     )
-    ninepatch_center = SCREEN_SIZE.elementwise() / (2, (4 / 3))
+    ninepatch_center = SCREEN_SIZE.elementwise() / pygame.Vector2(2, 4 / 3)
     ninepatch_rect = ninepatch.get_rect(center=ninepatch_center)
     example_ninepatch = ninepatch_scale(
         example_image, INNER_SCALE_SIZE, INNER_CORNER_SIZE, True, False, None
