@@ -178,8 +178,8 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    top-left corner of the primary monitor. The position might be negative or exceed
    the desktop bounds if multiple monitors are present.
 
-   .. warning:: Due to OS limitations it is impossible to retrieve the global mouse
-      state on Wayland. The relative mouse position is returned instead.
+   .. warning:: Due to design constraints it is impossible to retrieve the global
+      mouse state on Wayland. The relative mouse position is returned instead.
 
    .. versionadded:: 2.5.2
 
