@@ -14,20 +14,11 @@ A lot of pygame functions and methods allow the user to provide different types
 for the same value like colors or coordinates. This module exports the most common
 type aliases for proper typehint annotations.
 
-   .. data:: PathLike
-
-      An object representing a file path, i.e.:
-
-        * ``"my/string/path.txt"``
-        * ``pathlib.Path("my/pathlib/path.txt")``
-        * ``b"my/bytes/path.txt"``
-        * Any object implementing the path protocol (with a ``__fspath__`` magic method)
-
    .. data:: FileLike
 
-      An object representing a file. Same as :mod:`pygame.typing.PathLike` with
-      the addition of file buffers (``IO`` of strings or bytes) such as the
-      return value of ``open()``.
+      An object representing a file. This includes any path-like objects such as
+      ``str`` or ``pathlib.Path()`` and file buffers (``IO`` of strings or bytes)
+      such as the return value of ``open()``.
 
    .. data:: SequenceLike
 
