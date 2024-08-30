@@ -1199,6 +1199,10 @@ static PyMappingMethods vector_as_mapping = {
 static int
 vector_set_component(pgVector *self, PyObject *value, int component)
 {
+    if (component >= self->dim) {
+        PyErr_BadInternalCall();
+        return -1;
+    }
     if (value == NULL) {
         switch (component) {
             case 0: {
