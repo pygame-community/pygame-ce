@@ -94,7 +94,7 @@
       overridden if any extra attributes need to be copied.
    
    .. versionadded:: 2.5.2
-      ``rel_center`` added to Rect / FRect. This will return you ``Coordinate`` of
+      ``rel_center`` added to Rect / FRect. This will return you a ``Coordinate`` of
       the center relative to the topleft of the Rect. Setting a ``Coordinate`` to it will 
       modify the size of the rect to 2 times the ``Coordinate`` used. Below you can find a 
       code example of how it should work :
