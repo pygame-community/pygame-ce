@@ -47,7 +47,7 @@
        top, left, bottom, right
        topleft, bottomleft, topright, bottomright
        midtop, midleft, midbottom, midright
-       center, centerx, centery
+       center, rel_center, centerx, centery
        size, width, height
        w,h
 
@@ -92,6 +92,25 @@
       However, the subclass's ``__init__()`` method is not called,
       and ``__new__()`` is assumed to take no arguments. So these methods should be
       overridden if any extra attributes need to be copied.
+   
+   .. versionadded:: 2.5.2
+      ``rel_center`` added to Rect / FRect. This will return you ``Coordinate`` of
+      the center relative to the topleft of the Rect. Setting a ``Coordinate`` to it will 
+      modify the size of the rect to 2 times the ``Coordinate`` used. Below you can find a 
+      code example of how it should work :
+
+      .. code-block:: python
+
+         > my_rect = pygame.Rect(0, 0, 2, 2)
+         > my_rect.rel_center
+         > (1, 1)
+         > my_rect.rel_center = (128, 128)
+         > my_rect.rel_center, my_rect.size
+         > ((128, 128), (256, 256))
+      
+      Beware of non integer relative centers ! Using a Rect instead of FRect will round down
+      the values of the returned ``Coordinate``.
+
 
    .. method:: copy
 
