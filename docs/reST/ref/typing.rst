@@ -16,9 +16,15 @@ type aliases for proper typehint annotations.
 
    .. data:: FileLike
 
-      An object representing a file. This includes any path-like objects such as
-      ``str`` or ``pathlib.Path()`` and file buffers (``IO`` of strings or bytes)
-      such as the return value of ``open()``.
+      An object representing a file. This includes both path-like
+      objects and file-like objects, i.e.:
+
+        * ``"my/string/path.txt"``
+        * ``open("my/file/path.txt")``
+        * ``pathlib.Path("my/pathlib/path.txt")``
+        * ``io.BytesIO(b"my data: \x00\x01")``
+        * ``b"my/bytes/path.txt"``
+        * Any object implementing the path protocol or file protocol.
 
    .. data:: SequenceLike
 
