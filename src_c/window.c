@@ -304,6 +304,13 @@ window_focus(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
+window_get_focused(pgWindowObject *self, void *v)
+{
+    uint32_t flags = SDL_GetWindowFlags(self->_win);
+    return PyBool_FromLong((flags & SDL_WINDOW_INPUT_FOCUS) != 0);
+}
+
+static PyObject *
 window_hide(pgWindowObject *self, PyObject *_null)
 {
     SDL_HideWindow(self->_win);
@@ -995,7 +1002,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     self->_is_borrowed = SDL_FALSE;
     self->surf = NULL;
 
-    if (SDL_GetWindowFlags(self->_win) & SDL_WINDOW_OPENGL) {
+    if (flags & SDL_WINDOW_OPENGL) {
         SDL_GLContext context = SDL_GL_CreateContext(self->_win);
         if (context == NULL) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
@@ -1066,6 +1073,32 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
     return (PyObject *)self;
 }
 
+static PyObject *
+window_flash(pgWindowObject *self, PyObject *arg)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+    long operation = PyLong_AsLong(arg);
+    if (operation == -1 && PyErr_Occurred()) {
+        return RAISE(PyExc_TypeError,
+                     "'operation' must be an integer. "
+                     "Must correspond with FLASH_CANCEL, FLASH_BRIEFLY, or "
+                     "FLASH_UNTIL_FOCUSED.");
+    }
+
+    if (operation != SDL_FLASH_CANCEL && operation != SDL_FLASH_BRIEFLY &&
+        operation != SDL_FLASH_UNTIL_FOCUSED) {
+        return RAISE(PyExc_ValueError, "Unsupported window flash operation.");
+    }
+
+    if (SDL_FlashWindow(self->_win, operation) < 0) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    Py_RETURN_NONE;
+#else
+    return RAISE(pgExc_SDLError, "'Window.flash' requires SDL 2.0.16+");
+#endif /* SDL_VERSION_ATLEAST(2, 0, 16) */
+}
+
 PyObject *
 window_repr(pgWindowObject *self)
 {
@@ -1131,6 +1164,7 @@ static PyMethodDef window_methods[] = {
      DOC_WINDOW_GETSURFACE},
     {"from_display_module", (PyCFunction)window_from_display_module,
      METH_CLASS | METH_NOARGS, DOC_WINDOW_FROMDISPLAYMODULE},
+    {"flash", (PyCFunction)window_flash, METH_O, DOC_WINDOW_FLASH},
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef _window_getset[] = {
@@ -1142,6 +1176,7 @@ static PyGetSetDef _window_getset[] = {
      DOC_WINDOW_MOUSEGRABBED, NULL},
     {"keyboard_grabbed", (getter)window_get_keyboard_grabbed, NULL,
      DOC_WINDOW_KEYBOARDGRABBED, NULL},
+    {"focused", (getter)window_get_focused, NULL, DOC_WINDOW_FOCUSED, NULL},
     {"title", (getter)window_get_title, (setter)window_set_title,
      DOC_WINDOW_TITLE, NULL},
     {"resizable", (getter)window_get_resizable, (setter)window_set_resizable,

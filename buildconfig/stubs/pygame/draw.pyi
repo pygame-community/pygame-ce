@@ -2,12 +2,12 @@ from pygame.rect import Rect
 from pygame.surface import Surface
 from typing import overload
 
-from ._common import ColorValue, Coordinate, RectValue, Sequence
+from pygame.typing import ColorLike, Coordinate, RectLike, SequenceLike
 
 def rect(
     surface: Surface,
-    color: ColorValue,
-    rect: RectValue,
+    color: ColorLike,
+    rect: RectLike,
     width: int = 0,
     border_radius: int = -1,
     border_top_left_radius: int = -1,
@@ -17,13 +17,13 @@ def rect(
 ) -> Rect: ...
 def polygon(
     surface: Surface,
-    color: ColorValue,
-    points: Sequence[Coordinate],
+    color: ColorLike,
+    points: SequenceLike[Coordinate],
     width: int = 0,
 ) -> Rect: ...
 def circle(
     surface: Surface,
-    color: ColorValue,
+    color: ColorLike,
     center: Coordinate,
     radius: float,
     width: int = 0,
@@ -35,7 +35,7 @@ def circle(
 @overload
 def aacircle(
     surface: Surface,
-    color: ColorValue,
+    color: ColorLike,
     center: Coordinate,
     radius: float,
     width: int = 0,
@@ -43,7 +43,7 @@ def aacircle(
 @overload
 def aacircle(
     surface: Surface,
-    color: ColorValue,
+    color: ColorLike,
     center: Coordinate,
     radius: float,
     width: int = 0,
@@ -53,41 +53,41 @@ def aacircle(
     draw_bottom_right: bool = False,
 ) -> Rect: ...
 def ellipse(
-    surface: Surface, color: ColorValue, rect: RectValue, width: int = 0
+    surface: Surface, color: ColorLike, rect: RectLike, width: int = 0
 ) -> Rect: ...
 def arc(
     surface: Surface,
-    color: ColorValue,
-    rect: RectValue,
+    color: ColorLike,
+    rect: RectLike,
     start_angle: float,
     stop_angle: float,
     width: int = 1,
 ) -> Rect: ...
 def line(
     surface: Surface,
-    color: ColorValue,
+    color: ColorLike,
     start_pos: Coordinate,
     end_pos: Coordinate,
     width: int = 1,
 ) -> Rect: ...
 def lines(
     surface: Surface,
-    color: ColorValue,
+    color: ColorLike,
     closed: bool,
-    points: Sequence[Coordinate],
+    points: SequenceLike[Coordinate],
     width: int = 1,
 ) -> Rect: ...
 def aaline(
     surface: Surface,
-    color: ColorValue,
+    color: ColorLike,
     start_pos: Coordinate,
     end_pos: Coordinate,
 ) -> Rect: ...
 def aalines(
     surface: Surface,
-    color: ColorValue,
+    color: ColorLike,
     closed: bool,
-    points: Sequence[Coordinate],
+    points: SequenceLike[Coordinate],
 ) -> Rect: ...
 def bezier(
     surface: Surface,
