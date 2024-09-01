@@ -31,8 +31,6 @@
 
 #include <math.h>
 
-#include <string.h>
-
 #include <float.h>
 
 #ifndef M_PI
