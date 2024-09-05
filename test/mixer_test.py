@@ -927,16 +927,20 @@ class ChannelTypeTest(unittest.TestCase):
             ch.set_volume(set_volume)
             true_volume = ch.get_volume()
 
-            with self.subTest("Loose delta", set_volume=set_volume, true_volume=true_volume):
+            with self.subTest(
+                "Loose delta", set_volume=set_volume, true_volume=true_volume
+            ):
                 self.assertAlmostEqual(set_volume, true_volume, delta=float_delta)
-        
+
         for volume_1000x in range(0, 1_000 + 1):
             set_volume = volume_1000x / 1_000
 
             ch.set_volume(set_volume)
             true_volume = ch.get_volume()
 
-            with self.subTest("Strict delta", set_volume=set_volume, true_volume=true_volume):
+            with self.subTest(
+                "Strict delta", set_volume=set_volume, true_volume=true_volume
+            ):
                 self.assertAlmostEqual(set_volume, true_volume)
 
     def todo_test_stop(self):
@@ -1257,7 +1261,7 @@ class SoundTypeTest(unittest.TestCase):
             pygame.mixer.quit()
             with self.assertRaisesRegex(pygame.error, "mixer not initialized"):
                 sound.set_volume(1)
-    
+
     def test_set_volume_exact(self):
         float_delta = 1.0 / 128  # SDL volume range is 0 to 128
         filename = example_path(os.path.join("data", "house_lo.wav"))
@@ -1273,16 +1277,20 @@ class SoundTypeTest(unittest.TestCase):
             snd.set_volume(set_volume)
             true_volume = snd.get_volume()
 
-            with self.subTest("Loose delta", set_volume=set_volume, true_volume=true_volume):
+            with self.subTest(
+                "Loose delta", set_volume=set_volume, true_volume=true_volume
+            ):
                 self.assertAlmostEqual(set_volume, true_volume, delta=float_delta)
-        
+
         for volume_1000x in range(0, 1_000 + 1):
             set_volume = volume_1000x / 1_000
 
             snd.set_volume(set_volume)
             true_volume = snd.get_volume()
 
-            with self.subTest("Strict delta", set_volume=set_volume, true_volume=true_volume):
+            with self.subTest(
+                "Strict delta", set_volume=set_volume, true_volume=true_volume
+            ):
                 self.assertAlmostEqual(set_volume, true_volume)
 
     def todo_test_set_volume__while_playing(self):
