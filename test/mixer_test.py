@@ -913,33 +913,31 @@ class ChannelTypeTest(unittest.TestCase):
 
         self.fail()
 
-    def todo_test_set_volume(self):
-        # __doc__ (as of 2008-08-02) for pygame.mixer.Channel.set_volume:
+    def test_set_volume(self):
+        float_delta = 1.0 / 128  # SDL volume range is 0 to 128
+        ch = mixer.Channel(0)
+        self.assertAlmostEqual(ch.get_volume(), 1.0)
 
-        # Channel.set_volume(value): return None
-        # Channel.set_volume(left, right): return None
-        # set the volume of a playing channel
-        #
-        # Set the volume (loudness) of a playing sound. When a channel starts
-        # to play its volume value is reset. This only affects the current
-        # sound. The value argument is between 0.0 and 1.0.
-        #
-        # If one argument is passed, it will be the volume of both speakers.
-        # If two arguments are passed and the mixer is in stereo mode, the
-        # first argument will be the volume of the left speaker and the second
-        # will be the volume of the right speaker. (If the second argument is
-        # None, the first argument will be the volume of both speakers.)
-        #
-        # If the channel is playing a Sound on which set_volume() has also
-        # been called, both calls are taken into account. For example:
-        #
-        #     sound = pygame.mixer.Sound("s.wav")
-        #     channel = s.play()      # Sound plays at full volume by default
-        #     sound.set_volume(0.9)   # Now plays at 90% of full volume.
-        #     sound.set_volume(0.6)   # Now plays at 60% (previous value replaced).
-        #     channel.set_volume(0.5) # Now plays at 30% (0.6 * 0.5).
+        ch.set_volume(0.0)
+        self.assertAlmostEqual(ch.get_volume(), 0.0)
 
-        self.fail()
+        for volume_1000x in range(0, 1_000 + 1):
+            set_volume = volume_1000x / 1_000
+
+            ch.set_volume(set_volume)
+            true_volume = ch.get_volume()
+
+            with self.subTest("Loose delta", set_volume=set_volume, true_volume=true_volume):
+                self.assertAlmostEqual(set_volume, true_volume, delta=float_delta)
+        
+        for volume_1000x in range(0, 1_000 + 1):
+            set_volume = volume_1000x / 1_000
+
+            ch.set_volume(set_volume)
+            true_volume = ch.get_volume()
+
+            with self.subTest("Strict delta", set_volume=set_volume, true_volume=true_volume):
+                self.assertAlmostEqual(set_volume, true_volume)
 
     def todo_test_stop(self):
         # __doc__ (as of 2008-08-02) for pygame.mixer.Channel.stop:
@@ -1259,6 +1257,33 @@ class SoundTypeTest(unittest.TestCase):
             pygame.mixer.quit()
             with self.assertRaisesRegex(pygame.error, "mixer not initialized"):
                 sound.set_volume(1)
+    
+    def test_set_volume_exact(self):
+        float_delta = 1.0 / 128  # SDL volume range is 0 to 128
+        filename = example_path(os.path.join("data", "house_lo.wav"))
+        snd = mixer.Sound(file=filename)
+        self.assertAlmostEqual(snd.get_volume(), 1.0)
+
+        snd.set_volume(0.0)
+        self.assertAlmostEqual(snd.get_volume(), 0.0)
+
+        for volume_1000x in range(0, 1_000 + 1):
+            set_volume = volume_1000x / 1_000
+
+            snd.set_volume(set_volume)
+            true_volume = snd.get_volume()
+
+            with self.subTest("Loose delta", set_volume=set_volume, true_volume=true_volume):
+                self.assertAlmostEqual(set_volume, true_volume, delta=float_delta)
+        
+        for volume_1000x in range(0, 1_000 + 1):
+            set_volume = volume_1000x / 1_000
+
+            snd.set_volume(set_volume)
+            true_volume = snd.get_volume()
+
+            with self.subTest("Strict delta", set_volume=set_volume, true_volume=true_volume):
+                self.assertAlmostEqual(set_volume, true_volume)
 
     def todo_test_set_volume__while_playing(self):
         """Ensure a sound's volume can be set while playing."""
