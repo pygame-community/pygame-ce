@@ -124,7 +124,7 @@ Mix_Music **mx_queue_music;
         if (delta > MIXER_VOLUME_DELTA) {                                    \
             PyObject *diff_threshold_obj =                                   \
                          PyFloat_FromDouble(MIXER_VOLUME_DELTA),             \
-                     *abs_diff_obj = PyFloat_FromDouble(abs_diff);           \
+                     *abs_diff_obj = PyFloat_FromDouble(delta);              \
             PyErr_Format(PyExc_RuntimeError,                                 \
                          "The absolute difference between SDL's returned "   \
                          "channel volume and the internally tracked one is " \
@@ -766,7 +766,7 @@ static PyObject *
 snd_get_volume(PyObject *self, PyObject *_null)
 {
     Mix_Chunk *chunk = pgSound_AsChunk(self);
-    float mix_volume, volume, abs_diff;
+    float mix_volume, volume;
 
     CHECK_CHUNK_VALID(chunk, NULL);
     MIXER_INIT_CHECK();
@@ -1288,7 +1288,7 @@ static PyObject *
 chan_get_volume(PyObject *self, PyObject *_null)
 {
     int channelnum = pgChannel_AsInt(self);
-    float mix_volume, volume, abs_diff;
+    float mix_volume, volume;
 
     MIXER_INIT_CHECK();
 
