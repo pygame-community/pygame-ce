@@ -105,12 +105,36 @@ struct ChannelData {
     PyObject *sound;
     PyObject *queue;
     int endevent;
+    float volume;
 };
 static struct ChannelData *channeldata = NULL;
 static int numchanneldata = 0;
 
 Mix_Music **mx_current_music;
 Mix_Music **mx_queue_music;
+
+// SDL volume range is 0 to 128
+// 1.0 / 128 = 0.0078125 which is roughly 0.008
+#define MIXER_VOLUME_DELTA 0.008f
+// it's a RuntimeError because it's not a misuse of the API
+// something has gone terribly wrong because this should
+// never be raised, it is here simply as a precaution
+#define MIXER_VOLUME_DELTA_CHECK(delta)                                      \
+    do {                                                                     \
+        if (delta > MIXER_VOLUME_DELTA) {                                    \
+            PyObject *diff_threshold_obj =                                   \
+                         PyFloat_FromDouble(MIXER_VOLUME_DELTA),             \
+                     *abs_diff_obj = PyFloat_FromDouble(abs_diff);           \
+            PyErr_Format(PyExc_RuntimeError,                                 \
+                         "The absolute difference between SDL's returned "   \
+                         "channel volume and the internally tracked one is " \
+                         "greater than the set threshold (%S): %S",          \
+                         diff_threshold_obj, abs_diff_obj);                  \
+            Py_DECREF(diff_threshold_obj);                                   \
+            Py_DECREF(abs_diff_obj);                                         \
+            return NULL;                                                     \
+        }                                                                    \
+    } while (0)
 
 static int
 _format_itemsize(Uint16 format)
@@ -421,6 +445,7 @@ _init(int freq, int size, int channels, int chunk, char *devicename,
                 channeldata[i].sound = NULL;
                 channeldata[i].queue = NULL;
                 channeldata[i].endevent = 0;
+                channeldata[i].volume = 1.0f;
             }
         }
 
@@ -731,6 +756,8 @@ snd_set_volume(PyObject *self, PyObject *args)
 
     MIXER_INIT_CHECK();
 
+    ((pgSoundObject *)self)->volume = volume;
+
     Mix_VolumeChunk(chunk, (int)(volume * 128));
     Py_RETURN_NONE;
 }
@@ -739,14 +766,17 @@ static PyObject *
 snd_get_volume(PyObject *self, PyObject *_null)
 {
     Mix_Chunk *chunk = pgSound_AsChunk(self);
+    float mix_volume, volume, abs_diff;
 
     CHECK_CHUNK_VALID(chunk, NULL);
-
-    int volume;
     MIXER_INIT_CHECK();
 
-    volume = Mix_VolumeChunk(chunk, -1);
-    return PyFloat_FromDouble(volume / 128.0);
+    mix_volume = Mix_VolumeChunk(chunk, -1) / 128.0f;
+    volume = ((pgSoundObject *)self)->volume;
+
+    MIXER_VOLUME_DELTA_CHECK(fabsf(mix_volume - volume));
+
+    return PyFloat_FromDouble(volume);
 }
 
 static PyObject *
@@ -1245,6 +1275,8 @@ chan_set_volume(PyObject *self, PyObject *args)
         volume = 1.0f;
     }
 
+    channeldata[channelnum].volume = volume;
+
 #ifdef Py_DEBUG
     result =
 #endif
@@ -1256,13 +1288,16 @@ static PyObject *
 chan_get_volume(PyObject *self, PyObject *_null)
 {
     int channelnum = pgChannel_AsInt(self);
-    int volume;
+    float mix_volume, volume, abs_diff;
 
     MIXER_INIT_CHECK();
 
-    volume = Mix_Volume(channelnum, -1);
+    mix_volume = Mix_Volume(channelnum, -1) / 128.0f;
+    volume = channeldata[channelnum].volume;
 
-    return PyFloat_FromDouble(volume / 128.0);
+    MIXER_VOLUME_DELTA_CHECK(fabsf(mix_volume - volume));
+
+    return PyFloat_FromDouble(volume);
 }
 
 static PyObject *
@@ -1423,6 +1458,7 @@ set_num_channels(PyObject *self, PyObject *args)
             channeldata[i].sound = NULL;
             channeldata[i].queue = NULL;
             channeldata[i].endevent = 0;
+            channeldata[i].volume = 1.0f;
         }
         numchanneldata = numchans;
     }
@@ -1800,6 +1836,7 @@ sound_init(PyObject *self, PyObject *arg, PyObject *kwarg)
 
     ((pgSoundObject *)self)->chunk = NULL;
     ((pgSoundObject *)self)->mem = NULL;
+    ((pgSoundObject *)self)->volume = 1.0f;
 
     /* Similar to MIXER_INIT_CHECK(), but different return value. */
     if (!SDL_WasInit(SDL_INIT_AUDIO)) {
