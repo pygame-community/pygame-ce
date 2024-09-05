@@ -756,7 +756,9 @@ snd_set_volume(PyObject *self, PyObject *args)
 
     MIXER_INIT_CHECK();
 
-    ((pgSoundObject *)self)->volume = volume;
+    if (volume >= 0.0f) {
+        ((pgSoundObject *)self)->volume = MIN(volume, 1.0f);
+    }
 
     Mix_VolumeChunk(chunk, (int)(volume * 128));
     Py_RETURN_NONE;
@@ -1275,7 +1277,9 @@ chan_set_volume(PyObject *self, PyObject *args)
         volume = 1.0f;
     }
 
-    channeldata[channelnum].volume = volume;
+    if (volume >= 0.0f) {
+        channeldata[channelnum].volume = MIN(volume, 1.0f);
+    }
 
 #ifdef Py_DEBUG
     result =

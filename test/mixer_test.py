@@ -921,6 +921,25 @@ class ChannelTypeTest(unittest.TestCase):
         ch.set_volume(0.0)
         self.assertAlmostEqual(ch.get_volume(), 0.0)
 
+        ch.set_volume(0.5)
+        self.assertAlmostEqual(ch.get_volume(), 0.5)
+        ch.set_volume(-0.1)
+        self.assertAlmostEqual(ch.get_volume(), 0.5)
+        ch.set_volume(-5)
+        self.assertAlmostEqual(ch.get_volume(), 0.5)
+
+        ch.set_volume(0.99)
+        self.assertAlmostEqual(ch.get_volume(), 0.99)
+        ch.set_volume(1.0)
+        self.assertAlmostEqual(ch.get_volume(), 1.0)
+        ch.set_volume(1.1)
+        self.assertAlmostEqual(ch.get_volume(), 1.0)
+        ch.set_volume(3)
+        self.assertAlmostEqual(ch.get_volume(), 1.0)
+
+        ch.set_volume(-0.5)
+        self.assertAlmostEqual(ch.get_volume(), 1.0)
+
         for volume_1000x in range(0, 1_000 + 1):
             set_volume = volume_1000x / 1_000
 
@@ -1270,6 +1289,25 @@ class SoundTypeTest(unittest.TestCase):
 
         snd.set_volume(0.0)
         self.assertAlmostEqual(snd.get_volume(), 0.0)
+
+        snd.set_volume(0.5)
+        self.assertAlmostEqual(snd.get_volume(), 0.5)
+        snd.set_volume(-0.1)
+        self.assertAlmostEqual(snd.get_volume(), 0.5)
+        snd.set_volume(-5)
+        self.assertAlmostEqual(snd.get_volume(), 0.5)
+
+        snd.set_volume(0.99)
+        self.assertAlmostEqual(snd.get_volume(), 0.99)
+        snd.set_volume(1.0)
+        self.assertAlmostEqual(snd.get_volume(), 1.0)
+        snd.set_volume(1.1)
+        self.assertAlmostEqual(snd.get_volume(), 1.0)
+        snd.set_volume(3)
+        self.assertAlmostEqual(snd.get_volume(), 1.0)
+
+        snd.set_volume(-0.5)
+        self.assertAlmostEqual(snd.get_volume(), 1.0)
 
         for volume_1000x in range(0, 1_000 + 1):
             set_volume = volume_1000x / 1_000
