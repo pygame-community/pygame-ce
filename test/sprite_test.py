@@ -1,11 +1,16 @@
 #################################### IMPORTS ###################################
 
-
+import sys
+import typing
 import unittest
+
+if sys.version_info[:3] >= (3, 9, 0):
+    from types import GenericAlias
+else:
+    from typing import _GenericAlias as GenericAlias  # type: ignore[name-defined]
 
 import pygame
 from pygame import sprite
-
 
 ################################# MODULE LEVEL #################################
 
@@ -666,10 +671,7 @@ class AbstractGroupTypeTest(unittest.TestCase):
         except TypeError as e:
             self.fail(e)
 
-        # switch to `types.GenericAlias` once Python 3.8 support is dropped
-        import typing
-
-        self.assertIsInstance(group_generic_alias, typing._GenericAlias)  # type: ignore[name-defined]
+        self.assertIsInstance(group_generic_alias, GenericAlias)
         self.assertIs(typing.get_origin(group_generic_alias), sprite.Group)
         self.assertEqual(typing.get_args(group_generic_alias), (sprite.Sprite,))
 
@@ -1375,8 +1377,8 @@ class SingleGroupBugsTest(unittest.TestCase):
         # For memory leak bug posted to mailing list by Tobias Steinrücken on 16/11/10.
         # Fixed in revision 2953.
 
-        import weakref
         import gc
+        import weakref
 
         class MySprite(sprite.Sprite):
             def __init__(self, *args, **kwargs):
