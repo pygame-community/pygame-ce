@@ -1,4 +1,4 @@
-.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_logo.svg
+.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_ce_logo.svg
   :alt: pygame
   :target: https://pyga.me/
 
@@ -203,6 +203,8 @@ Dependencies (وابستگی ها)
 
 License
 -------
+LGPL-2.1-or-later **شناسه مجوز:**
+
 این کتابخانه با استفاده از
 `GNU LGPL version 2.1`_
 لایسنس شده است که در فایل

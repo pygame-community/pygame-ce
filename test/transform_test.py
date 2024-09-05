@@ -450,6 +450,50 @@ class TransformModuleTest(unittest.TestCase):
                         for v1, v2 in zip(expected_rgb, actual_rgb):
                             self.assertAlmostEqual(v1, v2, delta=1)
 
+        surf = pygame.Surface((1, 1), flags=pygame.SRCALPHA)
+        dest = pygame.Surface((1, 1), flags=pygame.SRCALPHA)
+
+        alpha_colors = [
+            (0, 0, 0, 0),
+            (255, 255, 255, 255),
+            (255, 0, 0, 255),
+            (0, 255, 0, 255),
+            (0, 0, 255, 255),
+            (127, 127, 127, 127),
+            (11, 23, 34, 255),
+            (1, 0, 1, 255),
+        ]
+
+        for color in alpha_colors:
+            c_a = color[3]
+            for h in range(0, 360, 10):
+                for s in range(0, 100, 10):
+                    for l in range(0, 100, 10):
+                        surf.fill(color)
+                        ns = s / 100.0
+                        nl = l / 100.0
+
+                        hsl_surf = pygame.transform.hsl(surf, h, ns, nl)
+                        pygame.transform.hsl(surf, h, ns, nl, dest_surface=dest)
+
+                        nh = h / 360.0
+                        modified_hsl = modify_hsl(*rgb_to_hsl(color[:3]), nh, ns, nl)
+                        expected_rgb = hsl_to_rgb(modified_hsl)
+
+                        # without destination
+                        actual_color = hsl_surf.get_at((0, 0))
+                        actual_rgb = actual_color.rgb
+                        for v1, v2 in zip(expected_rgb, actual_rgb):
+                            self.assertAlmostEqual(v1, v2, delta=1)
+                        self.assertEqual(c_a, actual_color.a)
+
+                        # with destination
+                        actual_color = dest.get_at((0, 0))
+                        actual_rgb = actual_color.rgb
+                        for v1, v2 in zip(expected_rgb, actual_rgb):
+                            self.assertAlmostEqual(v1, v2, delta=1)
+                        self.assertEqual(c_a, actual_color.a)
+
     def test_grayscale_simd_assumptions(self):
         # The grayscale SIMD algorithm relies on the destination surface pitch
         # being exactly width * 4 (4 bytes per pixel), for maximum speed.
