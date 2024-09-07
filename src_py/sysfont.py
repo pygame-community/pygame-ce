@@ -106,7 +106,7 @@ def _parse_font_entry_win(name, font, fonts):
     true_type_suffix = "(TrueType)"
     name = name.rstrip(";")
     if name.endswith(true_type_suffix):
-        name = name[:-len(true_type_suffix)].rstrip()
+        name = name[: -len(true_type_suffix)].rstrip()
 
     # Some fonts are named A & B, both names should be processed separately
     # Ex: the main Cambria file is marked as "Cambria & Cambria Math"
