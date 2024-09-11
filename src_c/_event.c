@@ -671,8 +671,8 @@ pgEvent_AutoInit(PyObject *self, PyObject *_null)
     Py_RETURN_NONE;
 }
 
-/* Similar to pg_post_event, but it steals the reference to obj and doesn't
- * need GLI held at all.*/
+/* Similar to pg_post_event, but it steals the reference to obj and does not
+ * need GIL to be held at all.*/
 static int
 pg_post_event_steal(int type, PyObject *obj)
 {
@@ -1406,23 +1406,6 @@ _pg_eventtype_as_seq(PyObject *obj, Py_ssize_t *len)
                      "event type must be numeric or a sequence");
 }
 
-// TODO
-static int
-_pg_event_append_to_list(PyObject *list, SDL_Event *event)
-{
-    /* The caller of this function must handle decref of list on error */
-    PyObject *e = pgEvent_New(event);
-    if (!e) /* Exception already set. */
-        return 0;
-
-    if (PyList_Append(list, e)) {
-        Py_DECREF(e);
-        return 0; /* Exception already set. */
-    }
-    Py_DECREF(e);
-    return 1;
-}
-
 char *
 pgEvent_GetKeyDownInfo(void)
 {
@@ -1447,236 +1430,43 @@ pgEvent_GetMouseButtonUpInfo(void)
     return input_buffer + INPUT_BUFFER_MOUSE_RELEASED_OFFSET;
 }
 
-// TODO
 static PyObject *
-_pg_get_all_events_except(PyObject *obj)
+_pg_get_event(PyObject *self, PyObject *obj)
 {
-    SDL_Event event;
-    Py_ssize_t len;
-    int loop, type, ret;
-    PyObject *seq, *list;
+    SDL_Event ev;
+    int e_type = PyLong_AsLong(obj);
 
-    SDL_Event *filtered_events;
-    int filtered_index = 0;
-    int filtered_events_len = 16;
-
-    SDL_Event eventbuf[PG_GET_LIST_LEN];
-
-    filtered_events = malloc(sizeof(SDL_Event) * filtered_events_len);
-    if (!filtered_events)
-        return PyErr_NoMemory();
-
-    list = PyList_New(0);
-    if (!list) {
-        free(filtered_events);
-        return PyErr_NoMemory();
-    }
-
-    seq = _pg_eventtype_as_seq(obj, &len);
-    if (!seq)
-        goto error;
-
-    for (loop = 0; loop < len; loop++) {
-        type = _pg_eventtype_from_seq(seq, loop);
-        if (type == -1)
-            goto error;
-
-        do {
-            ret = PG_PEEP_EVENT(&event, 1, SDL_GETEVENT, type);
-            if (ret < 0) {
-                PyErr_SetString(pgExc_SDLError, SDL_GetError());
-                goto error;
-            }
-            else if (ret > 0) {
-                if (filtered_index == filtered_events_len) {
-                    SDL_Event *new_filtered_events =
-                        malloc(sizeof(SDL_Event) * filtered_events_len * 4);
-                    if (new_filtered_events == NULL) {
-                        goto error;
-                    }
-                    memcpy(new_filtered_events, filtered_events,
-                           sizeof(SDL_Event) * filtered_events_len);
-                    filtered_events_len *= 4;
-                    free(filtered_events);
-                    filtered_events = new_filtered_events;
-                }
-                filtered_events[filtered_index] = event;
-                filtered_index++;
-            }
-        } while (ret);
-        do {
-            ret = PG_PEEP_EVENT(&event, 1, SDL_GETEVENT,
-                                _pg_pgevent_proxify(type));
-            if (ret < 0) {
-                PyErr_SetString(pgExc_SDLError, SDL_GetError());
-                goto error;
-            }
-            else if (ret > 0) {
-                if (filtered_index == filtered_events_len) {
-                    SDL_Event *new_filtered_events =
-                        malloc(sizeof(SDL_Event) * filtered_events_len * 4);
-                    if (new_filtered_events == NULL) {
-                        free(filtered_events);
-                        goto error;
-                    }
-                    memcpy(new_filtered_events, filtered_events,
-                           sizeof(SDL_Event) * filtered_events_len);
-                    filtered_events_len *= 4;
-                    free(filtered_events);
-                    filtered_events = new_filtered_events;
-                }
-                filtered_events[filtered_index] = event;
-                filtered_index++;
-            }
-        } while (ret);
-    }
-
-    do {
-        len = PG_PEEP_EVENT_ALL(eventbuf, PG_GET_LIST_LEN, SDL_GETEVENT);
-        if (len == -1) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
-            goto error;
-        }
-
-        for (loop = 0; loop < len; loop++) {
-            if (!_pg_event_append_to_list(list, &eventbuf[loop]))
-                goto error;
-        }
-    } while (len == PG_GET_LIST_LEN);
-
-    PG_PEEP_EVENT_ALL(filtered_events, filtered_index, SDL_ADDEVENT);
-
-    free(filtered_events);
-    Py_DECREF(seq);
-    return list;
-
-error:
-    /* While doing a goto here, PyErr must be set */
-    free(filtered_events);
-    Py_DECREF(list);
-    Py_XDECREF(seq);
-    return NULL;
-}
-
-// TODO
-static PyObject *
-_pg_get_all_events(void)
-{
-    SDL_Event eventbuf[PG_GET_LIST_LEN];
-    PyObject *list;
-    int loop, len = PG_GET_LIST_LEN;
-
-    list = PyList_New(0);
-    if (!list)
-        return PyErr_NoMemory();
-
-    while (len == PG_GET_LIST_LEN) {
-        len = PG_PEEP_EVENT_ALL(eventbuf, PG_GET_LIST_LEN, SDL_GETEVENT);
-        if (len == -1) {
-            PyErr_SetString(pgExc_SDLError, SDL_GetError());
-            goto error;
-        }
-
-        for (loop = 0; loop < len; loop++) {
-            if (!_pg_event_append_to_list(list, &eventbuf[loop]))
-                goto error;
-        }
-    }
-    return list;
-
-error:
-    Py_DECREF(list);
-    return NULL;
-}
-
-// TODO
-static PyObject *
-_pg_get_seq_events(PyObject *obj)
-{
-    Py_ssize_t len;
-    SDL_Event event;
-    int loop, type, ret;
-    PyObject *seq, *list;
-
-    list = PyList_New(0);
-    if (!list)
-        return PyErr_NoMemory();
-
-    seq = _pg_eventtype_as_seq(obj, &len);
-    if (!seq)
-        goto error;
-
-    for (loop = 0; loop < len; loop++) {
-        type = _pg_eventtype_from_seq(seq, loop);
-        if (type == -1)
-            goto error;
-
-        do {
-            ret = PG_PEEP_EVENT(&event, 1, SDL_GETEVENT, type);
-            if (ret < 0) {
-                PyErr_SetString(pgExc_SDLError, SDL_GetError());
-                goto error;
-            }
-            else if (ret > 0) {
-                if (!_pg_event_append_to_list(list, &event))
-                    goto error;
-            }
-        } while (ret);
-        do {
-            ret = PG_PEEP_EVENT(&event, 1, SDL_GETEVENT,
-                                _pg_pgevent_proxify(type));
-            if (ret < 0) {
-                PyErr_SetString(pgExc_SDLError, SDL_GetError());
-                goto error;
-            }
-            else if (ret > 0) {
-                if (!_pg_event_append_to_list(list, &event))
-                    goto error;
-            }
-        } while (ret);
-    }
-    Py_DECREF(seq);
-    return list;
-
-error:
-    /* While doing a goto here, PyErr must be set */
-    Py_DECREF(list);
-    Py_XDECREF(seq);
-    return NULL;
-}
-
-// TODO
-static PyObject *
-pg_event_get(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-    PyObject *obj_evtype = NULL;
-    PyObject *obj_exclude = NULL;
-    int dopump = 1;
-
-    static char *kwids[] = {"eventtype", "pump", "exclude", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OpO", kwids, &obj_evtype,
-                                     &dopump, &obj_exclude))
+    if (e_type == -1 && PyErr_Occurred())
         return NULL;
 
+    int ret;
+    if (e_type == -1)
+        ret = PG_PEEP_EVENT_ALL(&ev, 1, SDL_GETEVENT);
+    else
+        ret = PG_PEEP_EVENT(&ev, 1, SDL_GETEVENT, e_type);
+    if (ret == -1)
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    else if (ret == 0)
+        Py_RETURN_NONE;
+    return pgEvent_New(&ev);
+}
+
+static PyObject *
+_pg_video_check(PyObject *self, PyObject *_null)
+{
     VIDEO_INIT_CHECK();
+    Py_RETURN_NONE;
+}
 
-    _pg_event_pump(dopump);
+static PyObject *
+_pg_proxify_event_type(PyObject *self, PyObject *obj)
+{
+    int e_type = PyLong_AsLong(obj);
 
-    if (obj_evtype == NULL || obj_evtype == Py_None) {
-        if (obj_exclude != NULL && obj_exclude != Py_None) {
-            return _pg_get_all_events_except(obj_exclude);
-        }
-        return _pg_get_all_events();
-    }
-    else {
-        if (obj_exclude != NULL && obj_exclude != Py_None) {
-            return RAISE(
-                pgExc_SDLError,
-                "Invalid combination of excluded and included event type");
-        }
-        return _pg_get_seq_events(obj_evtype);
-    }
+    if (e_type == -1 && PyErr_Occurred())
+        return NULL;
+
+    return PyLong_FromLong(_pg_pgevent_proxify((Uint32)e_type));
 }
 
 // TODO
@@ -1856,8 +1646,8 @@ static PyMethodDef _event_methods[] = {
     {"wait", (PyCFunction)pg_event_wait, METH_VARARGS | METH_KEYWORDS,
      DOC_EVENT_WAIT},
     {"poll", (PyCFunction)pg_event_poll, METH_NOARGS, DOC_EVENT_POLL},
-    {"get", (PyCFunction)pg_event_get, METH_VARARGS | METH_KEYWORDS,
-     DOC_EVENT_GET},
+    // {"get", (PyCFunction)pg_event_get, METH_VARARGS | METH_KEYWORDS,
+    // DOC_EVENT_GET},
     {"peek", (PyCFunction)pg_event_peek, METH_VARARGS | METH_KEYWORDS,
      DOC_EVENT_PEEK},
     {"post", (PyCFunction)pg_event_post, METH_O, DOC_EVENT_POST},
@@ -1866,6 +1656,9 @@ static PyMethodDef _event_methods[] = {
     {"allowed_set", (PyCFunction)pg_event_allowed_set, METH_VARARGS},
     {"register_event_class", (PyCFunction)pg_event_register_event_class,
      METH_O},
+    {"video_check", (PyCFunction)_pg_video_check, METH_NOARGS},
+    {"_get", (PyCFunction)_pg_get_event, METH_O},
+    {"_proxify_event_type", (PyCFunction)_pg_proxify_event_type, METH_O},
 
     {NULL, NULL, 0, NULL}};
 

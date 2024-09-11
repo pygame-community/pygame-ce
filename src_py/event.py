@@ -14,13 +14,15 @@ from pygame._event import (
     register_event_class as _register_event_class,
     allowed_get as _allowed_get,
     allowed_set as _allowed_set,
+    video_check as _video_check,
     post,
     get_grab,
     set_grab,
     peek,
     wait,
     poll,
-    get,
+    _get,
+    _proxify_event_type,
 )
 
 from pygame.base import error
@@ -107,7 +109,7 @@ _NAMES_MAPPING = {
 
 def event_name(type: int) -> str:
     """
-    event_name(type, /) -> string
+    event_name(type) -> string
 
     get the string name from an event id
     """
@@ -119,6 +121,14 @@ def event_name(type: int) -> str:
     return "Unknown"
 
 
+def _check_ev_type(ev_type):
+    if not isinstance(ev_type, int):
+        raise TypeError("event type must be an integer")
+
+    if not 0 <= ev_type < pg.NUMEVENTS:
+        raise ValueError("event type out of range")
+
+
 class Event:
     """
     Event(type, dict) -> Event
@@ -128,11 +138,7 @@ class Event:
     """
 
     def __init__(self, type: int, dict: dict[str, Any] | None = None, **kwargs: Any):
-        if not isinstance(type, int):
-            raise TypeError("event type must be an integer")
-
-        if not 0 <= type < pg.NUMEVENTS:
-            raise ValueError("event type out of range")
+        _check_ev_type(type)
 
         if dict is None:
             dict = kwargs
@@ -268,13 +274,14 @@ def _setter(val: bool, type: int | IterableLike[int] | None, *args: int):
         return
 
     for t in _parse(type, args):
+        _check_ev_type(t)
         _allowed_set(t, val)
 
 
 def set_blocked(type: int | IterableLike[int] | None, *args: int):
     """
-    set_blocked(type, /) -> None
-    set_blocked(typelist, /) -> None
+    set_blocked(type: int, *args) -> None
+    set_blocked(type: list) -> None
     set_blocked(None) -> None
 
     control which events are blocked on the queue
@@ -285,8 +292,8 @@ def set_blocked(type: int | IterableLike[int] | None, *args: int):
 
 def set_allowed(type: int | IterableLike[int] | None, *args: int):
     """
-    set_allowed(type, /) -> None
-    set_allowed(typelist, /) -> None
+    set_allowed(type: int, *args) -> None
+    set_allowed(type: list) -> None
     set_allowed(None) -> None
 
     control which events are allowed on the queue
@@ -297,25 +304,102 @@ def set_allowed(type: int | IterableLike[int] | None, *args: int):
 
 def get_blocked(type: int | IterableLike[int], *args: int):
     """
-    get_blocked(type, /) -> bool
-    get_blocked(typelist, /) -> bool
+    get_blocked(type: int, *args) -> bool
+    get_blocked(type: list) -> bool
 
     test if a type of event is blocked from the queue
     """
 
     for t in _parse(type, args):
+        _check_ev_type(t)
         if not _allowed_get(t):
             return True
     return False
 
 
 def clear(eventtype: int | IterableLike[int] | None = None, pump: bool = True):
+    """
+    clear(eventtype=None) -> None
+    clear(eventtype=None, pump=True) -> None
+
+    remove all events from the queue
+    """
     if eventtype is None or isinstance(eventtype, int):
         get(eventtype, pump)
     else:
         get(list(iter(eventtype)), pump)
 
     gc.collect()
+
+
+def _get_many(ev_type: int, to: list | None = None, proxify: bool = True):
+    if to is None:
+        to = []
+
+    ev = _get(ev_type)
+
+    while ev:
+        to.append(ev)
+        ev = _get(ev_type)
+
+    if proxify:
+        to = _get_many(_proxify_event_type(ev_type), to, False)
+
+    return to
+
+
+def get(
+    eventtype: int | IterableLike[int] | None = None,
+    pump: bool = True,
+    exclude: int | IterableLike[int] | None = None,
+):
+    """
+    get(eventtype=None) -> Eventlist
+    get(eventtype=None, pump=True) -> Eventlist
+    get(eventtype=None, pump=True, exclude=None) -> Eventlist
+
+    get events from the queue
+    """
+    _video_check()
+    _pump(pump)
+
+    if isinstance(eventtype, int):
+        eventtype = [eventtype]
+
+    if isinstance(exclude, int):
+        exclude = [exclude]
+
+    if eventtype is None:
+        if exclude is None:
+            # Get all events
+            return _get_many(-1, proxify=False)
+
+        # Get all events except
+        excluded = []
+
+        for ev_type in exclude:
+            _check_ev_type(ev_type)
+            _get_many(ev_type, excluded)
+
+        ret = _get_many(-1, proxify=False)
+
+        for ev in excluded:
+            post(ev)
+
+        del excluded
+        return ret
+
+    if exclude is not None:
+        raise pg.error("Invalid combination of excluded and included event type")
+
+    # Get all events of type
+    ret = []
+
+    for ev_type in eventtype:
+        _check_ev_type(ev_type)
+        _get_many(ev_type, ret)
+
+    return ret
 
 
 __all__ = [
