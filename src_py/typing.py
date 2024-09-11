@@ -7,7 +7,6 @@ __all__ = [
     "RectLike",
     "SequenceLike",
     "FileLike",
-    "PathLike",
     "ColorLike",
     "RGBATuple",
     "Coordinate",
@@ -40,9 +39,9 @@ else:
 
 
 # For functions that take a file name
-PathLike = Union[str, bytes, _PathProtocol[str], _PathProtocol[bytes]]
+_PathLike = Union[str, bytes, _PathProtocol[str], _PathProtocol[bytes]]
 # Most pygame functions that take a file argument should be able to handle a FileLike type
-FileLike = Union[PathLike, IO[bytes], IO[str]]
+FileLike = Union[_PathLike, IO[bytes], IO[str]]
 
 _T_co = TypeVar("_T_co", covariant=True)
 

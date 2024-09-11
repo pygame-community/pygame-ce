@@ -44,12 +44,12 @@ validator_SequenceLikeTypes(
 )
 
 
-# validate PathLike
+# validate _PathLike
 class MyPath:
     def __fspath__(self) -> str:
         return "file.py"
 
-def validator_PathLike(path: typing.PathLike) -> int:
+def validator_PathLike(path: typing._PathLike) -> int:
     return 0
 
 # must pass
