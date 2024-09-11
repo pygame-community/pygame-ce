@@ -358,6 +358,41 @@ class DirtySprite(Sprite):
             f"<{self.__class__.__name__} DirtySprite(in {len(self.groups())} groups)>"
         )
 
+class SingleSpriteObject(Sprite):
+    def __init__(self, position, hitbox_dimensions, color=None, image_path=None):
+        super().__init__()
+        self.pos = pygame.math.Vector2(position)
+        self.dimensions = hitbox_dimensions
+        
+        if isinstance(image_path, str) and image_path:
+            self.image = pyg.image.load(image_path).convert()
+            self.image = pyg.transform.scale(self.image, self.dimensions)
+        elif color:
+            self.image = pyg.Surface(self.dimensions)
+            self.image.fill(self.color)
+            self.color = color
+
+        self.rect = self.image.get_frect(topleft=self.pos)
+        self.group_single = GroupSingle()
+        self.group_single.add(self)
+
+    def update(self):
+        if self in self.spr_group:
+            self.spr_group.remove(self)
+            self.spr_group.update()
+            self.spr_group.add(self)
+        else:
+            self.spr_group.update()
+            
+        self.spr_group.draw(pygame.display.get_surface())
+
+class SpriteGroupObject(SingleSpriteObject):
+    def __init__(self, position, hitbox_dimensions, *sprites, color=None, image_path=None):
+        super().__init__(position, hitbox_dimensions, color, image_path)
+        del self.group_single
+        self.group = Group(*sprites)
+        
+        
 
 class AbstractGroup:
     """base class for containers of sprites
