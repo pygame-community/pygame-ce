@@ -772,7 +772,8 @@ class RectTypeTest(unittest.TestCase):
         )
 
     def test_inflate__larger(self):
-        """The inflate method inflates around the center of the rectangle"""
+        """Ensures inflating a rect keeps its center the same
+        and grows dimensions by correct values."""
         r = Rect(2, 4, 6, 8)
         r2 = r.inflate(4, 6)
 
@@ -785,7 +786,8 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual(r.height + 6, r2.height)
 
     def test_inflate__smaller(self):
-        """The inflate method inflates around the center of the rectangle"""
+        """Ensures deflating a rect keeps its center the same
+        and shrinks dimensions by correct values."""
         r = Rect(2, 4, 6, 8)
         r2 = r.inflate(-4, -6)
 
@@ -798,7 +800,8 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual(r.height - 6, r2.height)
 
     def test_inflate_ip__larger(self):
-        """The inflate_ip method inflates around the center of the rectangle"""
+        """Ensures inflating a rect in place keeps its center the same
+        and grows dimensions by correct values."""
         r = Rect(2, 4, 6, 8)
         r2 = Rect(r)
         r2.inflate_ip(4, 6)
@@ -812,7 +815,8 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual(r.height + 6, r2.height)
 
     def test_inflate_ip__smaller(self):
-        """The inflate_ip method inflates around the center of the rectangle"""
+        """Ensures deflating a rect in place keeps its center the same
+        and shrinks dimensions by correct values."""
         r = Rect(2, 4, 6, 8)
         r2 = Rect(r)
         r2.inflate_ip(-4, -6)
