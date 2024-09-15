@@ -183,7 +183,7 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 
    .. versionadded:: 2.5.2
 
-   .. # pygame.mouse.get_desktop_pos
+   .. ## pygame.mouse.get_desktop_pos ##
 
 .. function:: get_rel
 
