@@ -68,7 +68,7 @@ PG_AUTOIMPORT_CLASSES = {
     "_debug": ["print_debug_info"],
     "event": ["Event"],
     "font": ["Font"],
-    "mixer": ["Channel"],
+    "mixer": ["Sound", "Channel"],
     "time": ["Clock"],
     "joystick": ["Joystick"],
     "window": ["Window"],

@@ -304,6 +304,13 @@ window_focus(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
+window_get_focused(pgWindowObject *self, void *v)
+{
+    uint32_t flags = SDL_GetWindowFlags(self->_win);
+    return PyBool_FromLong((flags & SDL_WINDOW_INPUT_FOCUS) != 0);
+}
+
+static PyObject *
 window_hide(pgWindowObject *self, PyObject *_null)
 {
     SDL_HideWindow(self->_win);
@@ -1169,6 +1176,7 @@ static PyGetSetDef _window_getset[] = {
      DOC_WINDOW_MOUSEGRABBED, NULL},
     {"keyboard_grabbed", (getter)window_get_keyboard_grabbed, NULL,
      DOC_WINDOW_KEYBOARDGRABBED, NULL},
+    {"focused", (getter)window_get_focused, NULL, DOC_WINDOW_FOCUSED, NULL},
     {"title", (getter)window_get_title, (setter)window_set_title,
      DOC_WINDOW_TITLE, NULL},
     {"resizable", (getter)window_get_resizable, (setter)window_set_resizable,

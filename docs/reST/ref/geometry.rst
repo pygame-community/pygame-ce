@@ -321,6 +321,24 @@
 
          .. ## Circle.move_ip ##
 
+   .. method:: intersect
+
+         | :sl:`finds intersections between the circle and a shape`
+         | :sg:`intersect(circle, /) -> list`
+
+        Finds and returns a list of intersection points between the circle and another shape.
+        The other shape must be a `Circle` object.
+        If the circle does not intersect or has infinite intersections, an empty list is returned.
+
+        .. note::
+            The shape argument must be an instance of the `Circle` class.
+            Passing a tuple or list of coordinates representing the shape is not supported,
+            as the type of shape cannot be determined from coordinates alone.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Circle.intersect ##
+
    .. method:: update
 
          | :sl:`updates the circle position and radius`

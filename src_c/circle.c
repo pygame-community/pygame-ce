@@ -571,6 +571,28 @@ pg_circle_contains(pgCircleObject *self, PyObject *arg)
     return PyBool_FromLong(result);
 }
 
+static PyObject *
+pg_circle_intersect(pgCircleObject *self, PyObject *arg)
+{
+    pgCircleBase *scirc = &self->circle;
+
+    /* max number of intersections when supporting: Circle (2), */
+    double intersections[4];
+    int num = 0;
+
+    if (pgCircle_Check(arg)) {
+        pgCircleBase *other = &pgCircle_AsCircle(arg);
+        num = pgIntersection_CircleCircle(scirc, other, intersections);
+    }
+    else {
+        PyErr_Format(PyExc_TypeError, "Argument must be a CircleType, got %s",
+                     Py_TYPE(arg)->tp_name);
+        return NULL;
+    }
+
+    return pg_PointList_FromArrayDouble(intersections, num * 2);
+}
+
 static struct PyMethodDef pg_circle_methods[] = {
     {"collidepoint", (PyCFunction)pg_circle_collidepoint, METH_FASTCALL,
      DOC_CIRCLE_COLLIDEPOINT},
@@ -600,6 +622,8 @@ static struct PyMethodDef pg_circle_methods[] = {
     {"rotate_ip", (PyCFunction)pg_circle_rotate_ip, METH_FASTCALL,
      DOC_CIRCLE_ROTATEIP},
     {"contains", (PyCFunction)pg_circle_contains, METH_O, DOC_CIRCLE_CONTAINS},
+    {"intersect", (PyCFunction)pg_circle_intersect, METH_O,
+     DOC_CIRCLE_INTERSECT},
     {NULL, NULL, 0, NULL}};
 
 #define GETTER_SETTER(name)                                                   \
@@ -791,14 +815,6 @@ pg_circle_setdiameter(pgCircleObject *self, PyObject *value, void *closure)
     self->circle.r = diameter / 2;
 
     return 0;
-}
-
-static int
-double_compare(double a, double b)
-{
-    /* Uses both a fixed epsilon and an adaptive epsilon */
-    const double e = 1e-6;
-    return fabs(a - b) < e || fabs(a - b) <= e * MAX(fabs(a), fabs(b));
 }
 
 static PyObject *
