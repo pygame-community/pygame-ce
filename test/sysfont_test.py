@@ -60,16 +60,16 @@ class SysfontModuleTest(unittest.TestCase):
 
         pygame.font.init()
 
-        # This tests that font variants like Arial and Arial Narrow are treated as
+        # This tests that font variants like Calibri and Calibri Light are treated as
         # distinct fonts. See https://github.com/pygame-community/pygame-ce/issues/3092
 
-        arial = pygame.font.SysFont("Arial", 40)
-        arial_narrow = pygame.font.SysFont("Arial Narrow", 40)
+        calibri = pygame.font.SysFont("Calibri", 40)
+        calibri_light = pygame.font.SysFont("Calibri Light", 40)
 
-        self.assertEqual(arial.name, "Arial")
-        self.assertEqual(arial.style_name, "Regular")
-        self.assertEqual(arial_narrow.name, "Arial")
-        self.assertEqual(arial_narrow.style_name, "Narrow")
+        self.assertEqual(calibri.name, "Calibri")
+        self.assertEqual(calibri.style_name, "Regular")
+        self.assertEqual(calibri_light.name, "Calibri")
+        self.assertEqual(calibri_light.style_name, "Light")
 
     @unittest.skipIf(
         ("Darwin" in platform.platform() or "Windows" in platform.platform()),
