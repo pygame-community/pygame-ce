@@ -163,6 +163,31 @@ mouse_get_pressed(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
+mouse_get_desktop_pressed(PyObject *self, PyObject *_null)
+{
+    PyObject *tuple;
+    int state;
+    VIDEO_INIT_CHECK();
+
+    state = SDL_GetGlobalMouseState(NULL, NULL);
+    if (!(tuple = PyTuple_New(5)))
+        return NULL;
+
+    PyTuple_SET_ITEM(tuple, 0,
+                     PyBool_FromLong((state & SDL_BUTTON_LMASK) != 0));
+    PyTuple_SET_ITEM(tuple, 1,
+                     PyBool_FromLong((state & SDL_BUTTON_MMASK) != 0));
+    PyTuple_SET_ITEM(tuple, 2,
+                     PyBool_FromLong((state & SDL_BUTTON_RMASK) != 0));
+    PyTuple_SET_ITEM(tuple, 3,
+                     PyBool_FromLong((state & SDL_BUTTON_X1MASK) != 0));
+    PyTuple_SET_ITEM(tuple, 4,
+                     PyBool_FromLong((state & SDL_BUTTON_X2MASK) != 0));
+
+    return tuple;
+}
+
+static PyObject *
 mouse_get_just_pressed(PyObject *self, PyObject *_null)
 {
     PyObject *tuple;
@@ -538,6 +563,8 @@ static PyMethodDef _mouse_methods[] = {
      DOC_MOUSE_GETJUSTPRESSED},
     {"get_just_released", (PyCFunction)mouse_get_just_released, METH_NOARGS,
      DOC_MOUSE_GETJUSTRELEASED},
+    {"get_desktop_pressed", (PyCFunction)mouse_get_desktop_pressed,
+     METH_NOARGS, DOC_MOUSE_GETDESKTOPPRESSED},
     {"set_visible", mouse_set_visible, METH_VARARGS, DOC_MOUSE_SETVISIBLE},
     {"get_visible", mouse_get_visible, METH_NOARGS, DOC_MOUSE_GETVISIBLE},
     {"get_focused", (PyCFunction)mouse_get_focused, METH_NOARGS,

@@ -157,6 +157,23 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 
    .. ## pygame.mouse.get_just_released ##
 
+.. function:: get_desktop_pressed
+
+   | :sl:`get the desktop state of the mouse buttons`
+   | :sg:`get_desktop_pressed() -> (left_button, middle_button, right_button, x1_button, x2_button)`
+
+   Similar to :func:`pygame.mouse.get_pressed()`, returning a tuple of length
+   5 with the only difference that the states will be correct also while the window
+   has no focus. In addition since this function queries the OS it does not depend
+   on the last event pump while being slightly slower.
+
+   .. warning:: Due to design constraints it is impossible to retrieve the global
+      mouse state on Wayland. The normal mouse state is returned instead.
+
+   .. versionadded:: 2.5.2
+
+   .. ## pygame.mouse.get_desktop_pressed ##
+
 .. function:: get_pos
 
    | :sl:`get the mouse cursor position`
