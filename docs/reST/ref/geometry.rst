@@ -234,7 +234,7 @@
                 the shape as an argument (except for a point), because the shape type can't be
                 determined from the coordinates alone.
 
-            .. versionadded:: 2.5.0
+            .. versionadded:: 2.5.2
 
         .. ## Circle.collidelist ##
 
@@ -255,7 +255,7 @@
                 the shape as an argument (except for a point), because the shape type can't be
                 determined from the coordinates alone.
 
-            .. versionadded:: 2.5.0
+            .. versionadded:: 2.5.2
 
         .. ## Circle.collidelistall ##
 
