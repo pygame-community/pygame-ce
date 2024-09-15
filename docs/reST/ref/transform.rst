@@ -370,7 +370,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
    :param bool keep_alpha: Optional parameter that controls whether to keep the surface alpha when replacing with the color.
 
-   .. versionadded:: 2.5.1
+   .. versionadded:: 2.5.2
 
    .. ## pygame.transform.solid_overlay ##
 
