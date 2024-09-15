@@ -97,15 +97,6 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    are added to the returned tuple. Only ``3`` and ``5`` are valid values
    for this parameter.
 
-   .. note:: To use the pygame button constants such as ``pygame.BUTTON_LEFT``
-      with this function, 1 must be subtracted from the constant to obtain the
-      correct index of the tuple.
-
-      ::
-
-         if pygame.mouse.get_pressed()[pygame.BUTTON_LEFT-1]:
-            print("LMB pressed")
-
    .. note:: On ``X11`` some X servers use middle button emulation. When you
       click both buttons ``1`` and ``3`` at the same time a ``2`` button event
       can be emitted.
