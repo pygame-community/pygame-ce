@@ -8,7 +8,6 @@ __all__ = [
     "SequenceLike",
     "FileLike",
     "ColorLike",
-    "RGBATuple",
     "Coordinate",
     "IntCoordinate",
 ]
@@ -54,8 +53,6 @@ Coordinate = SequenceLike[float]
 # This is used where ints are strictly required
 IntCoordinate = SequenceLike[int]
 
-# Used for functions that return an RGBA tuple
-RGBATuple = Tuple[int, int, int, int]
 ColorLike = Union[int, str, SequenceLike[int]]
 
 
