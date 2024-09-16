@@ -280,7 +280,7 @@ class _GenericRect(Collection[_N]):
 # Sized, Iterable and Container ABCs
 class Rect(_GenericRect[int]):
     ...
-    
+
 class FRect(_GenericRect[float]):
     ...
 

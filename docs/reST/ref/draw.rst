@@ -606,4 +606,3 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    Example code for draw module.
 
 .. literalinclude:: code_examples/draw_module_example.py
-

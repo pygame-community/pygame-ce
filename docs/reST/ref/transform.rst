@@ -39,7 +39,7 @@ Instead, always begin with the original image and scale to the desired size.)
    | :sl:`resize to new resolution`
    | :sg:`scale(surface, size, dest_surface=None) -> Surface`
 
-   Resizes the Surface to a new size, given as (width, height). 
+   Resizes the Surface to a new size, given as (width, height).
    This is a fast scale operation that does not sample the results.
 
    An optional destination surface can be passed which is faster than creating a new
@@ -113,7 +113,7 @@ Instead, always begin with the original image and scale to the desired size.)
    This really only has an effect on simple images with solid colors. On
    photographic and antialiased images it will look like a regular unfiltered
    scale.
-   
+
    An optional destination surface can be passed which is faster than creating a new
    Surface. This destination surface must have double the dimensions
    (width * 2, height * 2) and same depth and format as the source Surface.
@@ -127,7 +127,7 @@ Instead, always begin with the original image and scale to the desired size.)
 
    Uses one of two different algorithms for scaling each dimension of the input
    surface as required. For shrinkage, the output pixels are area averages of
-   the colors they cover. The size is a 2 number sequence for (width, height). 
+   the colors they cover. The size is a 2 number sequence for (width, height).
    This function only works for 24-bit or 32-bit surfaces. A ``ValueError`` will
    be thrown if the input surface bit depth is less than 24.
 
@@ -138,7 +138,7 @@ Instead, always begin with the original image and scale to the desired size.)
    .. versionaddedold:: 1.8
 
    .. versionchanged:: 2.4.0 now uses SSE2/NEON SIMD for acceleration on x86
-      and ARM machines, a performance improvement over previous MMX/SSE only 
+      and ARM machines, a performance improvement over previous MMX/SSE only
       supported on x86.
 
    .. ## pygame.transform.smoothscale ##
@@ -269,9 +269,9 @@ Instead, always begin with the original image and scale to the desired size.)
 
    .. versionchanged:: 2.3.0
       Passing the calling surface as destination surface raises a ``ValueError``
-   
+
    .. versionchanged:: 2.3.1
-      Now the standard deviation of the Gaussian kernel is equal to the radius. 
+      Now the standard deviation of the Gaussian kernel is equal to the radius.
       Blur results will be slightly different.
 
    .. versionchanged:: 2.5.0
@@ -295,7 +295,7 @@ Instead, always begin with the original image and scale to the desired size.)
    correctly.
 
    An optional destination surface can be passed which is faster than creating a new
-   Surface. This destination surface must have the same dimensions (width, height) and 
+   Surface. This destination surface must have the same dimensions (width, height) and
    depth as the first passed source Surface.
 
    .. versionaddedold:: 1.8
@@ -342,7 +342,7 @@ Instead, always begin with the original image and scale to the desired size.)
    An optional destination surface can be passed which is faster than creating a new
    Surface. This destination surface must have the same dimensions (width, height) and
    depth as the source Surface.
-   
+
    .. versionadded:: 2.1.4
 
    .. versionchanged:: 2.4.0 Adjusted formula slightly to support performance optimisation. It may return very slightly

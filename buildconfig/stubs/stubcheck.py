@@ -23,7 +23,7 @@ def typing_check():
     except subprocess.CalledProcessError:
         print("ERROR: could not validate typing.py, make sure you have mypy installed")
         return
-    
+
     mypy_args = [*mypy_version_args, "typing_sample_app.py"]
     cmd = " ".join(mypy_args)
     print(f"Using mypy invocation: `{cmd}` (version: {version})")
@@ -35,7 +35,7 @@ def typing_check():
             raise RuntimeError(f"mypy process finished with unsuccessful return code {returncode}")
     finally:
         os.chdir(prev_dir)
-        
+
 def stubs_check():
     """
     Validate the stubs files

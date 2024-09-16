@@ -383,8 +383,8 @@ user asks us to stop. ::
 
 
 What this code simply does is, first loop forever, then check if there are
-any events from the user. We exit the program if the user presses the close 
-button on the window. After we've checked all the events we move and draw 
+any events from the user. We exit the program if the user presses the close
+button on the window. After we've checked all the events we move and draw
 our game objects. (We'll also erase them before they move, too)
 
 
@@ -471,7 +471,7 @@ our move function under our GameObject class. ::
   ...   if down:
   ...       self.pos.top += self.speed
   ...   if up:
-  ...       self.pos.top -= self.speed   
+  ...       self.pos.top -= self.speed
   ...   if self.pos.right > WIDTH:
   ...       self.pos.left = 0
   ...   if self.pos.top > HEIGHT-SPRITE_HEIGHT:
@@ -483,7 +483,7 @@ our move function under our GameObject class. ::
 
 There's certainly a lot more going on here, so let's take it one step at a time.
 First, we've added some default values into the move function, declared as up,
-down, left, and right. These booleans will allow us to specifically select a 
+down, left, and right. These booleans will allow us to specifically select a
 direction that the object is moving in. The first part, where we go through and
 check True for each variable, is where we will add to the position of the object,
 much like before. Right controls horizontal, and top controls vertical positions.
@@ -505,7 +505,7 @@ We've already seen that pygame has event handling, and we know that KEYDOWN is
 an event in this loop. We could, under KEYDOWN, assert the key press matches an
 arrow key, where we would then call move. However, this movement will only occur
 once every time a key is pressed, and it therefore will be extremely choppy and
-unpleasant. 
+unpleasant.
 
 For this, we can use pygame.key.get_pressed(), which returns a list of all keys,
 and whether or not they are currently pressed. Since we want these key presses
@@ -571,7 +571,7 @@ sure we understand everything. ::
 
 A few things not mentioned earlier: we load in a second image and call it entity,
 and we use that for all objects that aren't the player, which uses the player
-image defined earlier. 
+image defined earlier.
 
 And that's all there is to it! Now we have a fully functional player object that
 is controlled using the arrow keys!

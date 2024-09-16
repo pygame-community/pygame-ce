@@ -163,4 +163,3 @@ RUN ["bash", "/portmidi_build/build-portmidi.sh"]
 # run strip on built libraries
 COPY strip-lib-so-files.sh /tmp/
 RUN source /tmp/strip-lib-so-files.sh
-

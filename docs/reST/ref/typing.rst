@@ -37,12 +37,12 @@ type aliases for proper typehint annotations.
 
       Being a generic, subscribing it will signal further precision such as
       ``SequenceLike[str]`` or ``SequenceLike[float]``.
-      
+
    .. data:: Coordinate
 
       A sequence of two numbers (floats or ints), i.e:
 
-        * ``pygame.Vector2(a, b)`` 
+        * ``pygame.Vector2(a, b)``
         * ``[a, b]``
         * ``(a, b)``
 
@@ -64,7 +64,7 @@ type aliases for proper typehint annotations.
         * ``0`` (mapped color)
 
    .. data:: RectLike
-      
+
       An object representing a rect such as a sequence of numbers or coordinates
       or an object with a rect attribute or a method returning a rect. These types
       are supported by every function accepting a rect as argument. i.e.:

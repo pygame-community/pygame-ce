@@ -237,7 +237,7 @@ events related to controllers.
       | :sl:`Assign a mapping to the controller`
       | :sg:`set_mapping(mapping) -> int`
 
-      Rebind buttons, axes, triggers and dpads. The mapping should be a 
+      Rebind buttons, axes, triggers and dpads. The mapping should be a
       dict containing all buttons, hats and axes. The easiest way to get this
       is to use the dict returned by :meth:`Controller.get_mapping`. To edit
       this mapping assign a value to the original button. The value of the

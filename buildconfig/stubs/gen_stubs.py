@@ -74,7 +74,7 @@ PG_AUTOIMPORT_CLASSES = {
     "window": ["Window"],
     "base": ["__version__"],  # need an explicit import
     # uncomment below line if Circle is added to the base namespace later
-    # "geometry": ["Circle"], 
+    # "geometry": ["Circle"],
 }
 
 # pygame modules from which __init__.py does the equivalent of
@@ -153,7 +153,7 @@ with open(locals_file, "w") as f:
     for element in get_all(pygame.locals):
         constant_type = getattr(pygame.locals, element).__class__.__name__
         f.write(f"{element}: {constant_type}\n")
-        
+
 # copy typing.py to typing.pyi for type checkers
 typing_py_file = pathlib.Path(__file__).parent.parent.parent / "src_py" / "typing.py"
 typing_stub_file = pathlib.Path(__file__).parent / "pygame" / "typing.pyi"
