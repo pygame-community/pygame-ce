@@ -112,3 +112,22 @@ only-binary = ["numpy"]
 [[tool.cibuildwheel.overrides]]
 select = "{*-manylinux_i686,pp*-*{arm64,aarch64}}"
 test-requires = []
+
+# Three cases for MACOSX_DEPLOYMENT_TARGET:
+# 1. ARM mac: 11.0
+# 2. intel mac, python >= 3.12: 10.13
+# 3. intel mac, python < 3.12: 10.11
+[[tool.cibuildwheel.overrides]]
+select = "*-macosx_arm64"
+inherit.environment = "append"
+environment.MACOSX_DEPLOYMENT_TARGET = "11.0"
+
+[[tool.cibuildwheel.overrides]]
+select = "*-macosx_x86_64"
+inherit.environment = "append"
+environment.MACOSX_DEPLOYMENT_TARGET = "10.13"
+
+[[tool.cibuildwheel.overrides]]
+select = "*p3{7,8,9,10,11}-macosx_x86_64"
+inherit.environment = "append"
+environment.MACOSX_DEPLOYMENT_TARGET = "10.11"

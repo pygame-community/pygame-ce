@@ -89,17 +89,6 @@ jobs:
     env:
       MAC_ARCH: ${{ matrix.macarch }}
 
-      # Explicitly tell CIBW what the wheel arch deployment target should be
-      # There seems to be no better way to set this than this env
-      # We need this because our minimum is 10.11, different from default
-      # of 10.9 on x86s
-      # Related issue: https://github.com/pypa/cibuildwheel/issues/952
-      _PYTHON_HOST_PLATFORM: ${{ matrix.macarch == 'x86_64' && 'macosx-10.11-x86_64' || 'macosx-11.0-arm64'}}
-
-      # Similarly, we need to tell CIBW that the wheel's linking steps
-      # should be for 10.11 on x86
-      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macarch == 'x86_64' && '10.11' || '11.0' }}
-
       CIBW_ARCHS: ${{ matrix.macarch }}
 
       # Setup macOS dependencies
