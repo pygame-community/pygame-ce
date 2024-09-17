@@ -50,10 +50,6 @@ type aliases for proper typehint annotations.
 
       A sequence of strictly two integers such as ``[a, b]`` or ``(a, b)``.
 
-   .. data:: RGBATuple
-
-      A tuple of four integers ``(r, g, b, a)`` in range 0-255 such as ``(20, 255, 0, 100)``.
-
    .. data:: ColorLike
 
       An object representing a color such as a mapped integer, a string or

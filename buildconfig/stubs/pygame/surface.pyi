@@ -9,7 +9,6 @@ from pygame.typing import (
     ColorLike,
     Coordinate,
     RectLike,
-    RGBATuple,
     SequenceLike,
 )
 
@@ -109,7 +108,7 @@ class Surface:
     def set_colorkey(self, color: ColorLike, flags: int = 0, /) -> None: ...
     @overload
     def set_colorkey(self, color: None, /) -> None: ...
-    def get_colorkey(self) -> Optional[RGBATuple]: ...
+    def get_colorkey(self) -> Optional[Tuple[int, int, int, int]]: ...
     @overload
     def set_alpha(self, value: int, flags: int = 0, /) -> None: ...
     @overload
