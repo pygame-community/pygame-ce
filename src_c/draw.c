@@ -1133,7 +1133,7 @@ get_antialiased_color(SDL_Surface *surf, int x, int y, Uint32 original_color,
         return original_color;
 
     Uint32 pixel = 0;
-    size_t bpp = surf->format->BytesPerPixel;
+    size_t bpp = PG_SURF_BytesPerPixel(surf);
     Uint8 *pixels = (Uint8 *)surf->pixels + y * surf->pitch + x * bpp;
 
     switch (bpp) {
