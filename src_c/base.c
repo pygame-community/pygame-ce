@@ -2349,7 +2349,7 @@ MODINIT_DEFINE(base)
     if (!quit) { /* assertion */
         goto error;
     }
-    rval = PyObject_CallFunctionObjArgs(atexit_register, quit, NULL);
+    rval = PyObject_CallOneArg(atexit_register, quit);
     Py_DECREF(atexit_register);
     Py_DECREF(quit);
     atexit_register = NULL;

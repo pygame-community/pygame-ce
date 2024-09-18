@@ -1,6 +1,5 @@
-from typing import Optional, Union, Literal
+from typing import Optional, Union, Literal, Tuple
 
-from pygame.color import Color
 from pygame.surface import Surface
 
 from pygame.typing import ColorLike, Coordinate, RectLike, SequenceLike
@@ -42,7 +41,7 @@ def average_surfaces(
 ) -> Surface: ...
 def average_color(
     surface: Surface, rect: Optional[RectLike] = None, consider_alpha: bool = False
-) -> Color: ...
+) -> Tuple[int, int, int, int]: ...
 def threshold(
     dest_surface: Optional[Surface],
     surface: Surface,

@@ -827,7 +827,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
     SDL_Surface *newownedsurf = NULL;
     int depth = 0;
     int flags = 0;
-    int w, h;
+    int w, h, w_actual, h_actual;
     PyObject *size = NULL;
     int vsync = SDL_FALSE;
     intptr_t hwnd = 0;
@@ -873,6 +873,9 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         w = 0;
         h = 0;
     }
+
+    h_actual = h;
+    w_actual = w;
 
     if (!SDL_WasInit(SDL_INIT_VIDEO)) {
         /* note SDL works special like this too */
@@ -1096,6 +1099,8 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 }
                 else {
                     win = SDL_CreateWindow(title, x, y, w_1, h_1, sdl_flags);
+                    w_actual = w_1;
+                    h_actual = h_1;
                 }
                 if (!win)
                     return RAISE(pgExc_SDLError, SDL_GetError());
@@ -1316,7 +1321,6 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
 
         /* ensure window is always black after a set_mode call */
         SDL_FillRect(surf, NULL, SDL_MapRGB(surf->format, 0, 0, 0));
-        pg_flip_internal(state);
     }
 
     /*set the window icon*/
@@ -1340,8 +1344,38 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
         }
     }
 
-    /*probably won't do much, but can't hurt, and might help*/
+    /*
+     * Can potentially yield a window resize event that forcibly changes
+     * the window size. This would invalidate the current surface we store,
+     * which can cause us to segfault in the event that we reference that
+     * surface later. So we need to flip, which forces us to update that
+     * surface as needed.
+     */
     SDL_PumpEvents();
+    pg_flip_internal(state);
+
+    /*
+     * Tell user if their requested screen size is ignored
+     * OpenGL, SCALED, and FULLSCREEN mess with the screensize in
+     * such a way that it can, at least our internal stuff, can
+     * be respected enough that we don't need to issue a warning
+     */
+    if (!state->using_gl && ((flags & (PGS_SCALED | PGS_FULLSCREEN)) == 0) &&
+        !vsync) {
+        if (((surface->surf->w != w_actual) ||
+             (surface->surf->h != h_actual)) &&
+            ((surface->surf->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)) {
+            char buffer[150];
+            char *format_string =
+                "Requested window size was smaller than minimum supported "
+                "window size on platform. Using (%d, %d) instead.";
+            snprintf(buffer, sizeof(buffer), format_string, surface->surf->w,
+                     surface->surf->h);
+            if (PyErr_WarnEx(PyExc_RuntimeWarning, buffer, 1) != 0) {
+                return NULL;
+            }
+        }
+    }
 
     /*return the window's surface (screen)*/
     Py_INCREF(surface);

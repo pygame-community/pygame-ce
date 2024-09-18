@@ -4,6 +4,7 @@ from typing import (
     Callable,
     Protocol,
     Tuple,
+    List,
 )
 
 from pygame import Rect, FRect
@@ -20,6 +21,7 @@ class _HasCirclettribute(Protocol):
 
 _CircleValue = Union[_CanBeCircle, _HasCirclettribute]
 _CanBeCollided = Union[Circle, Rect, FRect, Coordinate, Vector2]
+_CanBeIntersected = Union[Circle]
 
 class Circle:
     @property
@@ -93,6 +95,7 @@ class Circle:
     @overload
     def colliderect(self, topleft: Coordinate, size: Coordinate, /) -> bool: ...
     def collideswith(self, other: _CanBeCollided, /) -> bool: ...
+    def intersect(self, other: _CanBeIntersected, /) -> List[Tuple[float, float]]: ...
     def contains(self, shape: _CanBeCollided) -> bool: ...
     @overload
     def update(self, circle: _CircleValue, /) -> None: ...

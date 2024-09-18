@@ -615,11 +615,11 @@ pg_rect_repr(pgRectObject *self)
 static PyObject *
 pg_frect_repr(pgFRectObject *self)
 {
-    char str[64];
+    char str[256];
 
-    int ret = PyOS_snprintf(str, 64, "FRect(%f, %f, %f, %f)", self->r.x,
+    int ret = PyOS_snprintf(str, 256, "FRect(%f, %f, %f, %f)", self->r.x,
                             self->r.y, self->r.w, self->r.h);
-    if (ret < 0 || ret >= 64) {
+    if (ret < 0 || ret >= 256) {
         return RAISE(PyExc_RuntimeError,
                      "Internal PyOS_snprintf call failed!");
     }

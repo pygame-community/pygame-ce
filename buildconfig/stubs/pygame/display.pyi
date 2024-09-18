@@ -11,7 +11,6 @@ from pygame.typing import (
     Coordinate,
     IntCoordinate,
     RectLike,
-    RGBATuple,
     SequenceLike,
 )
 
@@ -21,9 +20,9 @@ class _VidInfo:
     video_mem: int
     bitsize: int
     bytesize: int
-    masks: RGBATuple
-    shifts: RGBATuple
-    losses: RGBATuple
+    masks: Tuple[int, int, int, int]
+    shifts: Tuple[int, int, int, int]
+    losses: Tuple[int, int, int, int]
     blit_hw: int
     blit_hw_CC: int
     blit_hw_A: int

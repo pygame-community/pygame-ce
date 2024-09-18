@@ -659,3 +659,32 @@ pg_tuple_couple_from_values_double(double val1, double val2)
 
     return tuple;
 }
+
+static PG_INLINE PyObject *
+pg_PointList_FromArrayDouble(double const *array, int arr_length)
+{
+    if (arr_length % 2) {
+        return RAISE(PyExc_ValueError, "array length must be even");
+    }
+
+    int num_points = arr_length / 2;
+    PyObject *sequence = PyList_New(num_points);
+    if (!sequence) {
+        return NULL;
+    }
+
+    int i;
+    PyObject *point = NULL;
+    for (i = 0; i < num_points; i++) {
+        point =
+            pg_tuple_couple_from_values_double(array[i * 2], array[i * 2 + 1]);
+        if (!point) {
+            Py_DECREF(sequence);
+            return NULL;
+        }
+        PyList_SET_ITEM(sequence, i, point);
+        point = NULL;
+    }
+
+    return sequence;
+}

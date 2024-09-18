@@ -1,22 +1,22 @@
-"""
-Sample app run by mypy to ensure typing.py aliases work as expected
-"""
+"""Sample app run by mypy to ensure typing.py aliases work as expected"""
+
 from pygame import typing
 import pygame
 import pathlib
 
+
 # validate SequenceLike
 class MySequence:
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> str:
         if index > 20:
             raise IndexError()
         if index % 2 == 0:
-            return 1
-        return 0
-    
-    def __len__(self):
+            return "a"
+        return "bc"
+
+    def __len__(self) -> int:
         return 20
-    
+
 def validator_SequenceLike(sequence: typing.SequenceLike) -> int:
     return 0
 
@@ -40,15 +40,16 @@ validator_SequenceLikeTypes(
     (-1.5, -0.5, 0, 0.5, 2.5, 10),
     (-2, -1, 0, 1, 2, 3),
     "abcdefghijklmnopqrstuvwxyz",
-    [(0.5, 1.5), (-1, 1), "123", [(), (), ()]]
+    [(0.5, 1.5), (-1, 1), "123", [(), (), ()]],
 )
 
-# validate PathLike
+
+# validate _PathLike
 class MyPath:
     def __fspath__(self) -> str:
         return "file.py"
-    
-def validator_PathLike(path: typing.PathLike) -> int:
+
+def validator_PathLike(path: typing._PathLike) -> int:
     return 0
 
 # must pass
@@ -57,8 +58,8 @@ validator_PathLike(b"file.py")
 validator_PathLike(pathlib.Path("file.py"))
 validator_PathLike(MyPath())
 
-# validate Coordinate, IntCoordinate
 
+# validate Coordinate, IntCoordinate
 def validator_Coordinate(coordinate: typing.Coordinate) -> int:
     return 0
 
@@ -75,35 +76,38 @@ validator_Coordinate(pygame.Vector2())
 validator_IntCoordinate((3, 4))
 validator_IntCoordinate([-4, -3])
 
-# validate RGBATuple, ColorLike
-def validator_RGBATuple(rgba: typing.RGBATuple) -> int:
-    return 0
 
 def validator_ColorLike(color: typing.ColorLike) -> int:
     return 0
 
 # must pass
-validator_RGBATuple((100, 200, 50, 20))
 validator_ColorLike("green")
 validator_ColorLike(1)
 validator_ColorLike((255, 255, 255, 30))
 validator_ColorLike(pygame.Color(100, 100, 100, 100))
 
+
 # validate RectLike
 class MyObject1:
     def __init__(self):
         self.rect = pygame.Rect(10, 10, 20, 20)
-    
+
 class MyObject2:
     def __init__(self):
         self.rect = lambda: pygame.Rect(5, 5, 10, 10)
-    
+
+class MyObject3:
+    def rect(self) -> pygame.Rect:
+        return pygame.Rect(15, 15, 30, 30)
+
 def validator_RectLike(rect: typing.RectLike) -> int:
     return 0
 
 # must pass
 validator_RectLike((10, 10, 10, 10))
 validator_RectLike(((5, 5), (30, 30)))
+validator_RectLike(([3, 3.2], pygame.Vector2()))
 validator_RectLike(pygame.Rect(1, 2, 3, 4))
 validator_RectLike(MyObject1())
 validator_RectLike(MyObject2())
+validator_RectLike(MyObject3())
