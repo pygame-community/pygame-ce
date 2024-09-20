@@ -12,12 +12,14 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
+    overload,
 )
 from typing_extensions import deprecated # added in 3.13
 
 from pygame.rect import FRect, Rect
 from pygame.surface import Surface
 from pygame.mask import Mask
+from pygame._sdl2.video import Renderer, Texture
 
 from pygame.typing import RectLike, Coordinate
 
@@ -27,9 +29,9 @@ _Group = AbstractGroup[_SpriteSupportsGroup]
 # protocol helps with structural subtyping for typevars in sprite group generics
 class _SupportsSprite(Protocol):
     @property
-    def image(self) -> Optional[Surface]: ...
+    def image(self) -> Optional[Union[Surface, Texture]]: ...
     @image.setter
-    def image(self, value: Optional[Surface]) -> None: ...
+    def image(self, value: Optional[Union[Surface, Texture]]) -> None: ...
     @property
     def rect(self) -> Optional[Union[FRect, Rect]]: ...
     @rect.setter
@@ -61,9 +63,9 @@ class _SupportsDirtySprite(_SupportsSprite, Protocol):
 # concrete sprite implementation class
 class Sprite(_SupportsSprite):
     @property
-    def image(self) -> Optional[Surface]: ...
+    def image(self) -> Optional[Union[Surface, Texture]]: ...
     @image.setter
-    def image(self, value: Optional[Surface]) -> None: ...
+    def image(self, value: Optional[Union[Surface, Texture]]) -> None: ...
     @property
     def rect(self) -> Optional[Union[FRect, Rect]]: ...
     @rect.setter
@@ -105,7 +107,7 @@ class _HasRect(Protocol):
 # image in addition to rect
 class _HasImageAndRect(_HasRect, Protocol):
     @property
-    def image(self) -> Optional[Surface]: ...
+    def image(self) -> Optional[Union[Surface, Texture]]: ...
 
 # mask in addition to rect
 class _HasMaskAndRect(_HasRect, Protocol):
@@ -169,7 +171,10 @@ class AbstractGroup(Generic[_TSprite]):
         self, *sprites: Union[_TSprite, AbstractGroup[_TSprite], Iterable[_TSprite]]
     ) -> bool: ...
     def update(self, *args: Any, **kwargs: Any) -> None: ...
+    @overload
     def draw(self, surface: Surface) -> List[Union[FRect, Rect]]: ...
+    @overload
+    def draw(self, renderer: Renderer) -> List[Union[FRect, Rect]]: ...
     def clear(
         self,
         surface: Surface,
@@ -181,7 +186,7 @@ class Group(AbstractGroup[_TSprite]):
     def __init__(
         self, *sprites: Union[_TSprite, AbstractGroup[_TSprite], Iterable[_TSprite]]
     ) -> None: ...
-    
+
 # these are aliased in the code too
 @deprecated("Use `pygame.sprite.Group` instead")
 class RenderPlain(Group): ...
@@ -227,7 +232,7 @@ class LayeredUpdates(AbstractGroup[_TSprite]):
 
 class LayeredDirty(LayeredUpdates[_TDirtySprite]):
     def __init__(self, *sprites: _TDirtySprite, **kwargs: Any) -> None: ...
-    def draw(
+    def draw(                                        # type: ignore[override]
         self, surface: Surface, bgd: Optional[Surface] = None
     ) -> List[Union[FRect, Rect]]: ...
     # clear breaks Liskov substitution principle in code
