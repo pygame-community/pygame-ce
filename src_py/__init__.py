@@ -266,6 +266,7 @@ except (ImportError, OSError):
 try:
     import pygame.mixer_music
 
+    from pygame.mixer_music import Music
     # del pygame.mixer_music
     # print("NOTE2: failed importing pygame.mixer_music in lib/__init__.py")
 except (ImportError, OSError):

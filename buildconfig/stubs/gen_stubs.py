@@ -69,6 +69,7 @@ PG_AUTOIMPORT_CLASSES = {
     "event": ["Event"],
     "font": ["Font"],
     "mixer": ["Sound", "Channel"],
+    "mixer_music": ["Music"],
     "time": ["Clock"],
     "joystick": ["Joystick"],
     "window": ["Window"],

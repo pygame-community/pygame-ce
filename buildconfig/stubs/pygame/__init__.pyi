@@ -53,6 +53,7 @@ from ._debug import print_debug_info as print_debug_info
 from .event import Event as Event
 from .font import Font as Font
 from .mixer import Sound as Sound, Channel as Channel
+from .mixer_music import Music as Music
 from .time import Clock as Clock
 from .joystick import Joystick as Joystick
 from .window import Window as Window
