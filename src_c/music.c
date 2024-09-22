@@ -32,9 +32,8 @@
 
 #include "mixer.h"
 
-typedef struct{
-    PyObject_HEAD
-    Mix_Music *music;
+typedef struct {
+    PyObject_HEAD Mix_Music *music;
 
     float volume;
     float position;
@@ -589,11 +588,11 @@ static PyMethodDef _music_methods[] = {
 static void
 pgmusic_dealloc(pgMusicObject *self, PyObject *_null)
 {
-    Py_BEGIN_ALLOW_THREADS
-    Mix_FreeMusic(self->music);
+    Py_BEGIN_ALLOW_THREADS Mix_FreeMusic(self->music);
     Py_END_ALLOW_THREADS
 
-    Py_TYPE(self)->tp_free(self);
+        Py_TYPE(self)
+            ->tp_free(self);
 }
 
 static PyObject *
@@ -613,11 +612,11 @@ pgmusic_set_position(pgMusicObject *self, PyObject *arg, void *v)
 {
     double music_position = PyFloat_AsDouble(arg);
 
-    if(music_position < 0.0)
+    if (music_position < 0.0)
         music_position = 0.0;
 
-    if (self == current_music_obj){
-        if(Mix_SetMusicPosition(music_position) != -1){
+    if (self == current_music_obj) {
+        if (Mix_SetMusicPosition(music_position) != -1) {
             self->position = music_position;
         }
     }
@@ -659,10 +658,10 @@ pgmusic_set_paused(pgMusicObject *self, PyObject *arg, void *v)
 
     self->paused = paused;
 
-    if (self == current_music_obj){
-        if (paused){
+    if (self == current_music_obj) {
+        if (paused) {
             Mix_PauseMusic();
-            self->position = Mix_GetMusicPosition(self->music);    
+            self->position = Mix_GetMusicPosition(self->music);
         }
         else
             Mix_ResumeMusic();
@@ -674,7 +673,7 @@ pgmusic_set_paused(pgMusicObject *self, PyObject *arg, void *v)
 static int
 pgmusic_set_volume(pgMusicObject *self, PyObject *arg, void *v)
 {
-    if(!PyFloat_Check(arg)){
+    if (!PyFloat_Check(arg)) {
         PyErr_SetString(PyExc_TypeError, "the value must be a real number");
         return -1;
     }
@@ -685,7 +684,7 @@ pgmusic_set_volume(pgMusicObject *self, PyObject *arg, void *v)
     else if (self->volume > 1.0)
         self->volume = 1.0;
 
-    if (self == current_music_obj){
+    if (self == current_music_obj) {
         Mix_VolumeMusic((int)(self->volume * 128));
     }
 
@@ -693,7 +692,7 @@ pgmusic_set_volume(pgMusicObject *self, PyObject *arg, void *v)
 }
 
 static PyObject *
-pgmusic_get_volume(pgMusicObject *self, void* closure)
+pgmusic_get_volume(pgMusicObject *self, void *closure)
 {
     return PyFloat_FromDouble(self->volume);
 }
@@ -753,7 +752,7 @@ pgmusic_init(pgMusicObject *self, PyObject *args, PyObject *kwargs)
     new_music = _load_music(obj, namehint);
     if (new_music == NULL)  // meaning it has an error to return
         return -1;
-    
+
     self->music = new_music;
     self->volume = 1.0;
     self->paused = 0;
@@ -790,7 +789,7 @@ pgmusic_play(pgMusicObject *self, PyObject *args, PyObject *kwargs)
     Py_BEGIN_ALLOW_THREADS;
 
     /* Check if any music is currently playing */
-    if (current_music_obj != NULL || current_music != NULL){
+    if (current_music_obj != NULL || current_music != NULL) {
         /* Stolen code from music_stop */
         /* To prevent the queue_music from playing, free it before stopping. */
         if (current_music && queue_music) {
@@ -800,22 +799,24 @@ pgmusic_play(pgMusicObject *self, PyObject *args, PyObject *kwargs)
             Mix_HaltMusic();
         }
 
-        if (current_music_obj != self){
+        if (current_music_obj != self) {
             Mix_HaltMusic();
 
             current_music_obj->paused = 1;
-            current_music_obj->position = Mix_GetMusicPosition(current_music_obj->music);
+            current_music_obj->position =
+                Mix_GetMusicPosition(current_music_obj->music);
 
             current_music_obj = self;
         }
-    /* If it's not the case, track the new music */
-    } else if (current_music_obj == NULL){
+        /* If it's not the case, track the new music */
+    }
+    else if (current_music_obj == NULL) {
         current_music_obj = self;
     }
 
     Mix_QuerySpec(&music_frequency, &music_format, &music_channels);
 
-    if(self->paused){
+    if (self->paused) {
         self->paused = 0;
         if (startpos == 0.0)
             startpos = self->position;
@@ -823,7 +824,8 @@ pgmusic_play(pgMusicObject *self, PyObject *args, PyObject *kwargs)
 
     self->ended = 0;
     Mix_HookMusicFinished(pgmusic_endmusic_callback);
-    val = Mix_FadeInMusicPos(self->music, loops, (int)(fade_in * 1000), startpos);
+    val = Mix_FadeInMusicPos(self->music, loops, (int)(fade_in * 1000),
+                             startpos);
     Mix_VolumeMusic((int)(self->volume * 128));
 
     Py_END_ALLOW_THREADS;
@@ -868,20 +870,23 @@ static PyMethodDef _musicobj_methods[] = {
     {"play", pgmusic_play, METH_VARARGS | METH_KEYWORDS, ""},
     {"stop", pgmusic_stop, METH_NOARGS, ""},
     {"rewind", pgmusic_rewind, METH_NOARGS, ""},
-    {NULL, NULL, 0, NULL} // Sentinel
+    {NULL, NULL, 0, NULL}  // Sentinel
 };
 
 static PyGetSetDef _musicobj_getset[] = {
-    {"position", (getter)pgmusic_get_position, (setter)pgmusic_set_position, "", NULL},
+    {"position", (getter)pgmusic_get_position, (setter)pgmusic_set_position,
+     "", NULL},
     {"duration", (getter)pgmusic_get_duration, NULL, "", NULL},
-    {"paused", (getter)pgmusic_get_paused, (setter)pgmusic_set_paused, "", NULL},
-    {"volume", (getter)pgmusic_get_volume, (setter)pgmusic_set_volume, "", NULL},
+    {"paused", (getter)pgmusic_get_paused, (setter)pgmusic_set_paused, "",
+     NULL},
+    {"volume", (getter)pgmusic_get_volume, (setter)pgmusic_set_volume, "",
+     NULL},
     {"title", (getter)pgmusic_get_title, NULL, "", NULL},
     {"artist", (getter)pgmusic_get_artist, NULL, "", NULL},
     {"album", (getter)pgmusic_get_album, NULL, "", NULL},
     {"copyright", (getter)pgmusic_get_copyright, NULL, "", NULL},
     {"ended", (getter)pgmusic_get_ended, NULL, "", NULL},
-    {NULL, 0, NULL, NULL, NULL} // Sentinel
+    {NULL, 0, NULL, NULL, NULL}  // Sentinel
 };
 
 static PyTypeObject pgMusic_Type = {
@@ -893,10 +898,7 @@ static PyTypeObject pgMusic_Type = {
     .tp_getset = _musicobj_getset,
     .tp_methods = _musicobj_methods,
     .tp_flags = Py_TPFLAGS_DEFAULT,
-    .tp_doc = "music object"
-};
-
-
+    .tp_doc = "music object"};
 
 MODINIT_DEFINE(mixer_music)
 {
