@@ -82,9 +82,7 @@ RectLike = Union[SequenceLike[float], SequenceLike[Coordinate], _HasRectAttribut
 
 
 class EventLike(Protocol):
-    def __init__(
-        self, type: int, /, **kwargs: Any
-    ) -> None: ...
+    def __init__(self, type: int, /, **kwargs: Any) -> None: ...
     def __new__(cls, *args: Any, **kwargs: Any) -> "EventLike": ...
 
     @property
