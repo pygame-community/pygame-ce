@@ -44,7 +44,8 @@
    :param bool always_on_top: Create a window that is always presented above
                               others.
 
-   Event behavior if one Window is created: When the close button is pressed, the ``QUIT`` event will be sent to the event queue.
+   Event behavior if one Window is created: When the close button is pressed,
+   the ``QUIT`` event will be sent to the event queue.
      .. code-block:: python
         
         import pygame
@@ -57,7 +58,10 @@
                  pygame.quit()
                  raise SystemExit
 
-   Event behavior if multiple Windows are created: When the close button is pressed, a ``WINDOWCLOSE`` event is sent. You need to explicitly destroy the window. Note that the event ``QUIT`` will only be sent if all Window has been destroyed.
+   Event behavior if multiple Windows are created: When the close button is
+   pressed, a ``WINDOWCLOSE`` event is sent. You need to explicitly destroy
+   the window. Note that the event ``QUIT`` will only be sent if all Window
+   has been destroyed.
          .. code-block:: python
             
             import pygame
@@ -68,7 +72,8 @@
             while True:
                for event in pygame.event.get():
                   if event.type == pygame.WINDOWCLOSE:
-                     print(f"WINDOWCLOSE event sent to Window #{event.window.id}.")
+                     id = event.window.id
+                     print(f"WINDOWCLOSE event sent to Window #{id}.")
                      event.window.destroy()
 
                   if event.type == pygame.QUIT:
