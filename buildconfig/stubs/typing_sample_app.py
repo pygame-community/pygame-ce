@@ -77,15 +77,10 @@ validator_IntCoordinate((3, 4))
 validator_IntCoordinate([-4, -3])
 
 
-# validate RGBATuple, ColorLike
-def validator_RGBATuple(rgba: typing.RGBATuple) -> int:
-    return 0
-
 def validator_ColorLike(color: typing.ColorLike) -> int:
     return 0
 
 # must pass
-validator_RGBATuple((100, 200, 50, 20))
 validator_ColorLike("green")
 validator_ColorLike(1)
 validator_ColorLike((255, 255, 255, 30))
