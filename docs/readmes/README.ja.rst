@@ -79,7 +79,7 @@ pygame-ce をビルドする必要があります。
 謝辞
 ----
 
-このライブラリの開発に貢献してくれたすべての人に感謝します。
+このライブラリの開発に貢献して下さったすべての人に感謝します。
 
 Special thanks:
 
@@ -103,7 +103,7 @@ Special thanks:
 * Nicholas Dudfield: many test improvements
 * Alex Folkner for pygame-ctypes
 
-パッチやフィックスを送ってくれた皆様: Niki Spahiev, Gordon
+パッチやフィックスを送って下さった皆様: Niki Spahiev, Gordon
 Tyler, Nathaniel Pryce, Dave Wallace, John Popplewell, Michael Urman,
 Andrew Straw, Michael Hudson, Ole Martin Bjoerndalen, Herve Cauwelier,
 James Mazer, Lalo Martins, Timothy Stranex, Chad Lester, Matthias
@@ -119,11 +119,11 @@ Raiser, Austin Henry, Kaweh Kazemi, Arturo Aldama, Mike Mulcheck,
 Michael Benfield, David Lau
 
 他にも、多くのアイデアを提案したり、プロジェクトの進行を支えたり、
-我々の生活をより楽にしてくださった方々がいます。ありがとう！
+我々の生活をより楽にして下さった方々がいます。ありがとう！
 
 
-ドキュメントにコメントを寄せてくれた、 `pygame documentation`_ と
-`pygame-ce documentation`_ に追記してくださった方々にも感謝します。
+ドキュメントにコメントを寄せて下さったり、 `pygame documentation`_ と
+`pygame-ce documentation`_ に追記して下さった方々にも感謝します。
 
 また、ゲームを作成して、他の人が学んだり楽しんだりできるように
 pygame.org ウェブサイトに投稿して下さった方々にもとても感謝します。
@@ -133,7 +133,7 @@ James Paige には、pygame の bugzilla をホスティングして下さった
 感謝します。
 
 Roger Dingledine と SEUL.ORG のクルーにも、優れたホスティングを
-提供してくれたことを感謝します。
+提供して下さったことを感謝します。
 
 
 依存関係
