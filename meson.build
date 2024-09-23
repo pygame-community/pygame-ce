@@ -167,6 +167,15 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
         )
     endif
 
+    run_command(
+        [
+            find_program('python3', 'python'),
+            base_dir / 'buildconfig' / '_meson_win_dll.py',
+            dlls,
+        ],
+        check: true,
+    )
+
     # put dlls in root of install
     install_data(dlls, install_dir: pg_dir, install_tag: 'pg-tag')
 else
