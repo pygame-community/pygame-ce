@@ -194,7 +194,7 @@
          x, y coordinates and width, height as its argument.
 
          .. versionadded:: 2.4.0
-         
+
          .. ## Circle.colliderect ##
 
    .. method:: collideswith

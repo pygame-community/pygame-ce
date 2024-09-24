@@ -17,7 +17,7 @@ option('font', type: 'feature', value: 'enabled')
 option('freetype', type: 'feature', value: 'enabled')
 
 # Controls whether pygame.midi is built.
-# Enabled by default, disable explicitly if you don't want to compile with 
+# Enabled by default, disable explicitly if you don't want to compile with
 # portmidi/porttime.
 option('midi', type: 'feature', value: 'enabled')
 
