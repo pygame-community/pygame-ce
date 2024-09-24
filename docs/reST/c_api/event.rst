@@ -40,7 +40,7 @@ Header file: src_c/include/pygame.h
 .. c:function:: PyObject* pgEvent_FromTypeAndDict(int e_type, PyObject *dict)
 
    Instantiates a new Event object created from the given event type and a dict.
-   
+
    On error returns NULL and sets python exception.
 
 .. c:function:: int pgEvent_GetEventType(PyObject *)
@@ -85,4 +85,3 @@ Header file: src_c/include/pygame.h
    Nearly the same as :c:func:`pg_post_event`, but with two differences.
    1) This doesn't need GIL held at all when called.
    2) This steals the reference to obj, instead of borrowing it.
-
