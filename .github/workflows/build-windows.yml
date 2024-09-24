@@ -27,7 +27,7 @@ on:
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
       - '!.github/workflows/build-windows.yml'
-  
+
   # the github release drafter can call this workflow
   workflow_call:
 

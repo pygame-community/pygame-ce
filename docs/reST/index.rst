@@ -41,9 +41,9 @@ documentation by module.
 Experimental modules
 --------------------
 
-Experimental modules are work in progress, this is why you should refrain from relying on any features 
-provided by these modules, as they are subject to change or removal without prior notice. 
-If you want to test these experimental modules, you might want to understand how you import 
+Experimental modules are work in progress, this is why you should refrain from relying on any features
+provided by these modules, as they are subject to change or removal without prior notice.
+If you want to test these experimental modules, you might want to understand how you import
 them, this is how you can do it:
 
 .. code-block:: python
@@ -54,7 +54,7 @@ them, this is how you can do it:
   # Or
   import pygame.experimental_module
 
-Don't forget to report us any problem with the experimental features on `github`_ so we can easily 
+Don't forget to report us any problem with the experimental features on `github`_ so we can easily
 turn them to stable API in the future ^^.
 
 **Below is currently the list of experimental modules :**

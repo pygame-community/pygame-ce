@@ -43,7 +43,7 @@ Upstream & legacy logos
 The pygame logo was originally created
 by TheCorruptor on July 29, 2001.
 
-It was upscaled alongside its "LoFi" and "Powered" variants by Mega-JC on 
+It was upscaled alongside its "LoFi" and "Powered" variants by Mega-JC on
 August 29, 2021.
 
 .. container:: fullwidth

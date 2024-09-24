@@ -291,8 +291,8 @@
       Update pixel data from memory to be displayed in the window. This is the Window
       class equivalent of :func:`pygame.display.flip`.
 
-      With ``get_surface()`` this method allows software rendering (classic pygame rendering) flipping pixel data 
-      from an associated surface in memory to be displayed in the window. Alternatively, when this window has an 
+      With ``get_surface()`` this method allows software rendering (classic pygame rendering) flipping pixel data
+      from an associated surface in memory to be displayed in the window. Alternatively, when this window has an
       associated OpenGL context, this method will instead perform a GL buffer swap to the window.
 
       Here is a runnable example of using ``get_surface`` and ``flip``:
@@ -406,7 +406,7 @@
       | :sg:`flash(operation, /) -> None`
 
       :param int operation: The flash operation.
-      
+
       Supported flash operations are:
          * ``pygame.FLASH_CANCEL``: Cancel the current flash state if present
          * ``pygame.FLASH_BRIEFLY``: Flash for a short amount of time to get attention
@@ -420,7 +420,7 @@
          advised to wrap it in a try block.
 
          .. code-block:: python
-            
+
             import pygame
             window = pygame.Window()
 

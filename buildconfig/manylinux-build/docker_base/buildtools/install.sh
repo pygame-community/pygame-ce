@@ -4,7 +4,7 @@ set -e -x
 cd $(dirname `readlink -f "$0"`)
 
 # This file installs tools (cmake and meson+ninja) needed to build dependencies
-# Also installs setuptools to make sure distutils is available (on newer python 
+# Also installs setuptools to make sure distutils is available (on newer python
 # versions) because some builds may need it.
 # cmake is also installed via pip because it is easier than maintaining a
 # separate build script for it

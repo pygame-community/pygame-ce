@@ -181,7 +181,7 @@ class Group(AbstractGroup[_TSprite]):
     def __init__(
         self, *sprites: Union[_TSprite, AbstractGroup[_TSprite], Iterable[_TSprite]]
     ) -> None: ...
-    
+
 # these are aliased in the code too
 @deprecated("Use `pygame.sprite.Group` instead")
 class RenderPlain(Group): ...
