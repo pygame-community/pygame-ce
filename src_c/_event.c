@@ -1372,40 +1372,6 @@ pg_event_wait(PyObject *self, PyObject *args, PyObject *kwargs)
         return pgEvent_New(NULL);
     return pgEvent_New(&event);
 }
-// TODO
-static int
-_pg_eventtype_from_seq(PyObject *seq, int ind)
-{
-    int val = 0;
-    if (!pg_IntFromObjIndex(seq, ind, &val)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "type sequence must contain valid event types");
-        return -1;
-    }
-    if (val < 0 || val >= PG_NUMEVENTS) {
-        PyErr_SetString(PyExc_ValueError, "event type out of range");
-        return -1;
-    }
-    return val;
-}
-
-// TODO
-static PyObject *
-_pg_eventtype_as_seq(PyObject *obj, Py_ssize_t *len)
-{
-    *len = 1;
-    if (PySequence_Check(obj)) {
-        *len = PySequence_Size(obj);
-        // The returned object gets decref'd later, so incref now
-        Py_INCREF(obj);
-        return obj;
-    }
-    else if (PyLong_Check(obj))
-        return Py_BuildValue("(O)", obj);
-    else
-        return RAISE(PyExc_TypeError,
-                     "event type must be numeric or a sequence");
-}
 
 char *
 pgEvent_GetKeyDownInfo(void)
@@ -1453,6 +1419,25 @@ _pg_get_event(PyObject *self, PyObject *obj)
 }
 
 static PyObject *
+_pg_peek_event(PyObject *self, PyObject *obj)
+{
+    SDL_Event ev;
+    int e_type = PyLong_AsLong(obj);
+
+    if (e_type == -1 && PyErr_Occurred())
+        return NULL;
+
+    int ret;
+    if (e_type == -1)
+        ret = PG_PEEP_EVENT_ALL(&ev, 1, SDL_PEEKEVENT);
+    else
+        ret = PG_PEEP_EVENT(&ev, 1, SDL_PEEKEVENT, e_type);
+    if (ret == -1)
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    return PyBool_FromLong(ret);
+}
+
+static PyObject *
 _pg_video_check(PyObject *self, PyObject *_null)
 {
     VIDEO_INIT_CHECK();
@@ -1468,66 +1453,6 @@ _pg_proxify_event_type(PyObject *self, PyObject *obj)
         return NULL;
 
     return PyLong_FromLong(_pg_pgevent_proxify((Uint32)e_type));
-}
-
-// TODO
-static PyObject *
-pg_event_peek(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-    SDL_Event event;
-    Py_ssize_t len;
-    int type, loop, res;
-    PyObject *seq, *obj = NULL;
-    int dopump = 1;
-
-    static char *kwids[] = {"eventtype", "pump", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Op", kwids, &obj,
-                                     &dopump))
-        return NULL;
-
-    VIDEO_INIT_CHECK();
-
-    _pg_event_pump(dopump);
-
-    if (obj == NULL || obj == Py_None) {
-        res = PG_PEEP_EVENT_ALL(&event, 1, SDL_PEEKEVENT);
-        if (res < 0)
-            return RAISE(pgExc_SDLError, SDL_GetError());
-        return pgEvent_New(res ? &event : NULL);
-    }
-    else {
-        seq = _pg_eventtype_as_seq(obj, &len);
-        if (!seq)
-            return NULL;
-
-        for (loop = 0; loop < len; loop++) {
-            type = _pg_eventtype_from_seq(seq, loop);
-            if (type == -1) {
-                Py_DECREF(seq);
-                return NULL;
-            }
-            res = PG_PEEP_EVENT(&event, 1, SDL_PEEKEVENT, type);
-            if (res) {
-                Py_DECREF(seq);
-
-                if (res < 0)
-                    return RAISE(pgExc_SDLError, SDL_GetError());
-                Py_RETURN_TRUE;
-            }
-            res = PG_PEEP_EVENT(&event, 1, SDL_PEEKEVENT,
-                                _pg_pgevent_proxify(type));
-            if (res) {
-                Py_DECREF(seq);
-
-                if (res < 0)
-                    return RAISE(pgExc_SDLError, SDL_GetError());
-                Py_RETURN_TRUE;
-            }
-        }
-        Py_DECREF(seq);
-        Py_RETURN_FALSE; /* No event type match. */
-    }
 }
 
 /* You might notice how we do event blocking stuff on proxy events and
@@ -1647,10 +1572,6 @@ static PyMethodDef _event_methods[] = {
     {"wait", (PyCFunction)pg_event_wait, METH_VARARGS | METH_KEYWORDS,
      DOC_EVENT_WAIT},
     {"poll", (PyCFunction)pg_event_poll, METH_NOARGS, DOC_EVENT_POLL},
-    // {"get", (PyCFunction)pg_event_get, METH_VARARGS | METH_KEYWORDS,
-    // DOC_EVENT_GET},
-    {"peek", (PyCFunction)pg_event_peek, METH_VARARGS | METH_KEYWORDS,
-     DOC_EVENT_PEEK},
     {"post", (PyCFunction)pg_event_post, METH_O, DOC_EVENT_POST},
 
     {"allowed_get", (PyCFunction)pg_event_allowed_get, METH_O},
@@ -1659,6 +1580,7 @@ static PyMethodDef _event_methods[] = {
      METH_O},
     {"video_check", (PyCFunction)_pg_video_check, METH_NOARGS},
     {"_get", (PyCFunction)_pg_get_event, METH_O},
+    {"_peek", (PyCFunction)_pg_peek_event, METH_O},
     {"_proxify_event_type", (PyCFunction)_pg_proxify_event_type, METH_O},
 
     {NULL, NULL, 0, NULL}};

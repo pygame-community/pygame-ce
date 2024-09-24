@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import gc
 
-from typing import Any
-from .typing import IterableLike
+from typing import Any, Union
+from .typing import EventLike, IterableLike
 
 from pygame._event import (
     _internal_mod_init as _init,
@@ -18,10 +18,10 @@ from pygame._event import (
     post,
     get_grab,
     set_grab,
-    peek,
     wait,
     poll,
     _get,
+    _peek,
     _proxify_event_type,
 )
 
@@ -332,7 +332,9 @@ def clear(eventtype: int | IterableLike[int] | None = None, pump: bool = True):
     gc.collect()
 
 
-def _get_many(ev_type: int, to: list | None = None, proxify: bool = True):
+def _get_many(
+    ev_type: int, to: list | None = None, proxify: bool = True
+) -> list[EventLike]:
     if to is None:
         to = []
 
@@ -352,7 +354,7 @@ def get(
     eventtype: int | IterableLike[int] | None = None,
     pump: bool = True,
     exclude: int | IterableLike[int] | None = None,
-):
+) -> list[EventLike]:
     """
     get(eventtype=None) -> Eventlist
     get(eventtype=None, pump=True) -> Eventlist
@@ -400,6 +402,42 @@ def get(
         _get_many(ev_type, ret)
 
     return ret
+
+
+def peek(
+    eventtype: int | IterableLike[int] | None = None,
+    pump: bool = True,
+) -> Union[EventLike, bool]:
+    """
+    peek() -> Event instance
+    peek(eventtype) -> bool
+    peek(eventtype, pump=True) -> bool
+
+    test if event types are waiting on the queue
+    """
+    _video_check()
+    _pump(pump)
+
+    if isinstance(eventtype, int):
+        eventtype = [eventtype]
+
+    if eventtype is None:
+        # Can't seek without mutating event queue here,
+        # Due to PgEvent_New being a destructive operation.
+        ret = _get(-1)
+
+        if ret is None:
+            return Event(0)
+
+        post(ret)
+        return ret
+
+    for ev_type in eventtype:
+        _check_ev_type(ev_type)
+
+        if _peek(ev_type) or _peek(_proxify_event_type(ev_type)):
+            return True
+    return False
 
 
 __all__ = [
