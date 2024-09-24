@@ -7,7 +7,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ **Français**  `فارسی`_ `Español`_
+`English`_ `简体中文`_ `繁體中文`_ **Français**  `فارسی`_ `Español`_
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 `Pygame`_ est une bibliothèque multi-plateforme, libre et open-source
@@ -203,6 +203,7 @@ Voir les docs/licences pour les licences des dépendances.
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
 
 .. _简体中文: README.zh-cn.rst
+.. _繁體中文: README.zh-tw.rst
 .. _English: ./../../README.rst
 .. _فارسی: README.fa.rst
 .. _Español: README.es.rst
