@@ -4,7 +4,7 @@
 #define DOC_EVENT_GET "get(eventtype=None) -> Eventlist\nget(eventtype=None, pump=True) -> Eventlist\nget(eventtype=None, pump=True, exclude=None) -> Eventlist\nget events from the queue"
 #define DOC_EVENT_POLL "poll() -> Event instance\nget a single event from the queue"
 #define DOC_EVENT_WAIT "wait() -> Event instance\nwait(timeout) -> Event instance\nwait for a single event from the queue"
-#define DOC_EVENT_PEEK "peek(eventtype=None) -> bool\npeek(eventtype=None, pump=True) -> bool\ntest if event types are waiting on the queue"
+#define DOC_EVENT_PEEK "peek() -> Event\npeek(eventtype=None) -> bool\npeek(eventtype=None, pump=True) -> bool\ntest if event types are waiting on the queue"
 #define DOC_EVENT_CLEAR "clear(eventtype=None) -> None\nclear(eventtype=None, pump=True) -> None\nremove all events from the queue"
 #define DOC_EVENT_EVENTNAME "event_name(type, /) -> string\nget the string name from an event id"
 #define DOC_EVENT_SETBLOCKED "set_blocked(type, /) -> None\nset_blocked(typelist, /) -> None\nset_blocked(None) -> None\ncontrol which events are blocked on the queue"

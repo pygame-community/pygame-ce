@@ -1420,9 +1420,9 @@ static PyTypeObject pgEvent_Type;
 #define OFF(x) offsetof(pgEventObject, x)
 
 static PyMemberDef pg_event_members[] = {
-    {"__dict__", T_OBJECT, OFF(dict), READONLY},
-    {"type", T_INT, OFF(type), READONLY},
-    {"dict", T_OBJECT, OFF(dict), READONLY},
+    {"__dict__", T_OBJECT, OFF(dict), READONLY, DOC_EVENT_EVENT_DICT},
+    {"type", T_INT, OFF(type), READONLY, DOC_EVENT_EVENT_TYPE},
+    {"dict", T_OBJECT, OFF(dict), READONLY, DOC_EVENT_EVENT_DICT},
     {NULL} /* Sentinel */
 };
 
