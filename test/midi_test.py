@@ -398,10 +398,7 @@ class MidiModuleNonInteractiveTest(unittest.TestCase):
                 midi_event = midi_events[i]
                 midi_event_data = midi_event[MIDI_DATA]
 
-                # Can't directly check event instance as pygame.event.Event is
-                # a function.
-                # self.assertIsInstance(pg_event, pygame.event.Event)
-                self.assertEqual(pg_event.__class__.__name__, "Event")
+                self.assertIsInstance(pg_event, pygame.event.Event)
                 self.assertEqual(pg_event.type, pygame.MIDIIN)
                 self.assertEqual(pg_event.status, midi_event_data[MD_STATUS])
                 self.assertEqual(pg_event.data1, midi_event_data[MD_DATA1])
