@@ -20,7 +20,7 @@ Header file: src_c/include/pygame.h
    .. c:member:: int type
 
       The event type code.
-   
+
    .. c:member:: PyObject* dict
 
       Dict object of the event, might be NULL.
@@ -49,7 +49,7 @@ Header file: src_c/include/pygame.h
 .. c:function:: PyObject* pgEvent_FromEventData(pgEventData)
 
    Return an event object constructed from pgEventData struct.
-   
+
    On error returns NULL and sets python exception.
 
 .. c:function:: pgEventData pgEvent_GetEventData(PyObject *)
@@ -66,7 +66,7 @@ Header file: src_c/include/pygame.h
    .. ## pgEvent_FreeEventData ##
 
 .. c:function:: char* pgEvent_GetKeyDownInfo(void)
-   
+
    Return an array of bools (using char) of length SDL_NUM_SCANCODES
    with the most recent key presses.
 

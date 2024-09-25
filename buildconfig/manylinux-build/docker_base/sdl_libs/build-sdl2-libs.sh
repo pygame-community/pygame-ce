@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-SDL2_VER="2.30.6"
+SDL2_VER="2.30.7"
 SDL2="SDL2-$SDL2_VER"
 IMG2_VER="2.8.2"
 IMG2="SDL2_image-$IMG2_VER"
@@ -114,4 +114,3 @@ cd $MIX2
 
 make
 make install
-

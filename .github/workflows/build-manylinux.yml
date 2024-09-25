@@ -1,7 +1,7 @@
 name: ManyLinux
 
-# Run CI only when a release is created, on changes to main branch, or any PR 
-# to main. Do not run CI on any other branch. Also, skip any non-source changes 
+# Run CI only when a release is created, on changes to main branch, or any PR
+# to main. Do not run CI on any other branch. Also, skip any non-source changes
 # from running on CI
 on:
   push:
@@ -27,7 +27,7 @@ on:
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
       - '!.github/workflows/build-manylinux.yml'
-  
+
   # the github release drafter can call this workflow
   workflow_call:
 
@@ -42,12 +42,12 @@ jobs:
     permissions:
       contents: read
       packages: write
-    
+
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
         arch: [x86_64, i686]
-    
+
     env:
       CIBW_ARCHS: ${{ matrix.arch }}
 
@@ -60,7 +60,7 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-    
+
     - name: Inspect image, skip build if image exists
       id: inspect
       continue-on-error: true
@@ -75,7 +75,7 @@ jobs:
 
     - name: Build and push Docker image
       if: steps.inspect.outcome == 'failure'
-      uses: docker/build-push-action@5176d81f87c23d6fc96624dfdbcd9f3830bbe445
+      uses: docker/build-push-action@5cd11c3a4ced054e52742c5fd54dca954e0edd85
       with:
         context: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base
         file: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base/Dockerfile-${{ matrix.arch }}
@@ -91,7 +91,7 @@ jobs:
         CIBW_MANYLINUX_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
         CIBW_MANYLINUX_PYPY_I686_IMAGE: ghcr.io/${{ github.repository }}_i686:${{ steps.meta.outputs.version }}
 
-      uses: pypa/cibuildwheel@v2.20.0
+      uses: pypa/cibuildwheel@v2.21.1
 
     # We upload the generated files under github actions assets
     - name: Upload dist
@@ -100,4 +100,3 @@ jobs:
         name: pygame-wheels-manylinux-${{ matrix.arch }}
         path: ./wheelhouse/*.whl
         compression-level: 0  # wheels are already zip files, no need for more compression
-

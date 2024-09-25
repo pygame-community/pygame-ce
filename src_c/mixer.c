@@ -1583,6 +1583,12 @@ static PyObject *
 mixer_get_sdl_mixer_version(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int linked = 1; /* Default is linked version. */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int version = SDL_MIXER_VERSION;
+#else
+    SDL_version version;
+    SDL_MIXER_VERSION(&version);
+#endif
 
     static char *keywords[] = {"linked", NULL};
 
@@ -1593,16 +1599,16 @@ mixer_get_sdl_mixer_version(PyObject *self, PyObject *args, PyObject *kwargs)
     /* MIXER_INIT_CHECK() is not required for these methods. */
 
     if (linked) {
-        /* linked version */
-        const SDL_version *v = Mix_Linked_Version();
-        return Py_BuildValue("iii", v->major, v->minor, v->patch);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        version = Mix_Version();
+#else
+        version = *Mix_Linked_Version();
+#endif
     }
-    else {
-        /* compiled version */
-        SDL_version v;
-        SDL_MIXER_VERSION(&v);
-        return Py_BuildValue("iii", v.major, v.minor, v.patch);
-    }
+
+    return Py_BuildValue("iii", PG_FIND_VNUM_MAJOR(version),
+                         PG_FIND_VNUM_MINOR(version),
+                         PG_FIND_VNUM_MICRO(version));
 }
 
 static int

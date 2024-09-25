@@ -55,9 +55,9 @@ pygame_ce = 'pygame.__briefcase.pygame_ce:PygameCEGuiBootstrap'
 [build-system]
 requires = [
   "meson-python<=0.16.0",
-  "meson<=1.5.0",
+  "meson<=1.5.1",
   "ninja<=1.11.1.1",
-  "cython<=3.0.10",
+  "cython<=3.0.11",
   "sphinx<=7.2.6",
 ]
 build-backend = 'mesonpy'
@@ -107,10 +107,8 @@ quote-style = "preserve"
 [tool.uv.pip]
 only-binary = ["numpy"]
 
-# 1. skip all 32-bit manylinux (i686) 
+# 1. skip all 32-bit manylinux (i686)
 # 2. skip all pypy+arm combinations
-# 3. skip all pypy 310 because it is so new numpy does not have wheels for it
-# 4. skip all python 313 because numpy doesn't have wheels for it yet
 [[tool.cibuildwheel.overrides]]
-select = "{*-manylinux_i686,pp*-*{arm64,aarch64},pp310-*,*p313-*}"
+select = "{*-manylinux_i686,pp*-*{arm64,aarch64}}"
 test-requires = []

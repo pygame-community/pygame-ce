@@ -4,7 +4,7 @@ from typing_extensions import deprecated # added in 3.13
 from pygame.cursors import Cursor
 from pygame.surface import Surface
 
-from ._common import Coordinate, Sequence, IntCoordinate
+from pygame.typing import Coordinate, SequenceLike, IntCoordinate
 
 @overload
 def get_pressed(num_buttons: Literal[3] = 3) -> Tuple[bool, bool, bool]: ...
@@ -29,8 +29,8 @@ def set_cursor(constant: int) -> None: ...
 def set_cursor(
     size: IntCoordinate,
     hotspot: IntCoordinate,
-    xormasks: Sequence[int],
-    andmasks: Sequence[int],
+    xormasks: SequenceLike[int],
+    andmasks: SequenceLike[int],
 ) -> None: ...
 @overload
 def set_cursor(hotspot: IntCoordinate, surface: Surface) -> None: ...

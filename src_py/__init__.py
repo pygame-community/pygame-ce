@@ -273,6 +273,7 @@ except (ImportError, OSError):
 
 try:
     import pygame.mixer
+    from pygame.mixer import Sound
     from pygame.mixer import Channel
 except (ImportError, OSError):
     mixer = MissingModule("mixer", urgent=0)
@@ -313,6 +314,12 @@ except (ImportError, OSError):
 
     def Window(title="pygame window", size=(640, 480), position=None, **kwargs):  # pylint: disable=unused-argument
         _attribute_undefined("pygame.Window")
+
+
+try:
+    import pygame.typing
+except (ImportError, OSError):
+    typing = MissingModule("typing", urgent=0)
 
 
 # there's also a couple "internal" modules not needed

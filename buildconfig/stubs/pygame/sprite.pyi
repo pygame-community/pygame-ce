@@ -19,7 +19,7 @@ from pygame.rect import FRect, Rect
 from pygame.surface import Surface
 from pygame.mask import Mask
 
-from ._common import RectValue, Coordinate
+from pygame.typing import RectLike, Coordinate
 
 # non-generic Group, used in Sprite
 _Group = AbstractGroup[_SpriteSupportsGroup]
@@ -181,7 +181,7 @@ class Group(AbstractGroup[_TSprite]):
     def __init__(
         self, *sprites: Union[_TSprite, AbstractGroup[_TSprite], Iterable[_TSprite]]
     ) -> None: ...
-    
+
 # these are aliased in the code too
 @deprecated("Use `pygame.sprite.Group` instead")
 class RenderPlain(Group): ...
@@ -232,8 +232,8 @@ class LayeredDirty(LayeredUpdates[_TDirtySprite]):
     ) -> List[Union[FRect, Rect]]: ...
     # clear breaks Liskov substitution principle in code
     def clear(self, surface: Surface, bgd: Surface) -> None: ...  # type: ignore[override]
-    def repaint_rect(self, screen_rect: RectValue) -> None: ...
-    def set_clip(self, screen_rect: Optional[RectValue] = None) -> None: ...
+    def repaint_rect(self, screen_rect: RectLike) -> None: ...
+    def set_clip(self, screen_rect: Optional[RectLike] = None) -> None: ...
     def get_clip(self) -> Union[FRect, Rect]: ...
     def set_timing_threshold(
         self, time_ms: SupportsFloat

@@ -1,7 +1,7 @@
 name: macOS
 
-# Run CI only when a release is created, on changes to main branch, or any PR 
-# to main. Do not run CI on any other branch. Also, skip any non-source changes 
+# Run CI only when a release is created, on changes to main branch, or any PR
+# to main. Do not run CI on any other branch. Also, skip any non-source changes
 # from running on CI
 on:
   push:
@@ -27,7 +27,7 @@ on:
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
       - '!.github/workflows/build-macos.yml'
-  
+
   # the github release drafter can call this workflow
   workflow_call:
 
@@ -54,7 +54,7 @@ jobs:
         uses: actions/cache@v4.0.2
         with:
           path: ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }}
-          # The hash of all files in buildconfig manylinux-build and macdependencies is 
+          # The hash of all files in buildconfig manylinux-build and macdependencies is
           # the key to the cache. If anything changes here, the deps are built again
           key: macdep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/macdependencies/*.sh') }}-${{ matrix.macarch }}-${{ matrix.os }}
           lookup-only: true
@@ -135,14 +135,13 @@ jobs:
       - name: Install uv for speed
         uses: yezz123/setup-uv@v4
         with:
-          uv-version: "0.2.22"
+          uv-version: "0.4.10"
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.20.0
+        uses: pypa/cibuildwheel@v2.21.1
 
       - uses: actions/upload-artifact@v4
         with:
           name: pygame-wheels-macos-${{ matrix.macarch }}
           path: ./wheelhouse/*.whl
           compression-level: 0  # wheels are already zip files, no need for more compression
-

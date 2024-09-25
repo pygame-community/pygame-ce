@@ -6,12 +6,12 @@ from typing import (
     Union,
 )
 
-from ._common import Sequence, EventLike
+from pygame.typing import SequenceLike, EventLike
 
 class Event(EventLike):
     ...
 
-_EventTypes = Union[int, Sequence[int]]
+_EventTypes = Union[int, SequenceLike[int]]
 
 def pump() -> None: ...
 def get(

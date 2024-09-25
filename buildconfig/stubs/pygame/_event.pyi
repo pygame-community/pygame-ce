@@ -6,9 +6,9 @@ from typing import (
     Type,
 )
 
-from ._common import Sequence, EventLike
+from .typing import SequenceLike, EventLike
 
-_EventTypes = Union[int, Sequence[int]]
+_EventTypes = Union[int, SequenceLike[int]]
 
 def pump() -> None: ...
 def get(
