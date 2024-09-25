@@ -219,6 +219,7 @@ Controlla docs/licenses per le licenze dei requisiti.
 .. _简体中文: README.zh-cn.rst
 .. _繁體中文: README.zh-tw.rst
 .. _فارسی: README.fa.rst
+.. _Français: README.fr.rst
 .. _Español: README.es.rst
 .. _日本語: README.ja.rst
 .. _Italiano: README.it.rst
