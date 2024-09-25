@@ -98,10 +98,7 @@ Michael Benfield, David Lau
 
 依赖
 ------------
-
-**note:** This section translation is out of date (September 2023)
-
-pygame显然依赖于SDL和Python。此外pygame还嵌入了几个较小的库：font模块依赖于SDL_ttf（SDL_ttf依赖于freetype）；mixer模块（以及mixer.music模块）依赖于SDL_mixer；image模块依赖于SDL_image（SDL_image使用到libjpeg与libpng）；transform模块内嵌了一个SDL_rotozoom来实现它的rotozoom函数；surfarray模块用到了Numpy中的多维数组。
+pygame显然依赖于SDL和Python。此外pygame还嵌入了几个较小的库：font模块依赖于SDL_ttf（SDL_ttf依赖于freetype）；mixer模块（以及mixer.music模块）依赖于SDL_mixer；image模块依赖于SDL_image；transform模块内嵌了一个SDL_rotozoom来实现rotozoom函数；gfxdraw模块内嵌了一个SDL_gfx。
 
 依赖的版本要求如下：
 
