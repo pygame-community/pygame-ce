@@ -3,8 +3,8 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-FREETYPE="freetype-2.13.2"
-HARFBUZZ_VER=8.2.1
+FREETYPE="freetype-2.13.3"
+HARFBUZZ_VER=10.0.1
 HARFBUZZ_NAME="harfbuzz-$HARFBUZZ_VER"
 
 curl -sL --retry 10 https://savannah.nongnu.org/download/freetype/${FREETYPE}.tar.gz > ${FREETYPE}.tar.gz
