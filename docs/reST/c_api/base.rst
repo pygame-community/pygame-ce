@@ -181,9 +181,9 @@ C header: src_c/include/pygame.h
 .. c:function:: int pgWarn(PyObject *category, const char *message, Py_ssize_t stack_level, int urgency)
 
    Create a warning with a given urgency, besides that it is used the same as ``PyErr_WarnEx``.
-   
+
    Urgency:
-   
+
    * **0**: Something rather unwanted happened, immediate attention is needed, as the code might not work properly.
    * **1**: Mostly for deprecations, used if something might need attention of the user in the future.
    * **2**: Nothing very important, can be ignored, but probably holds useful information if user does something wrong / something unexpected might happen.

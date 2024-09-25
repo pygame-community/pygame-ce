@@ -230,18 +230,18 @@ object instead of the module, which can be used to test for availability.
    | :sg:`warn(message, urgency, level=1, category=UserWarning)`
 
    Throws a warning with a given urgency. See documentation for :c:func:`pgWarn` for more information on urgency system.
-   
-   Category accepts any subclass of a built-in class ``Warning`` and is a type of generated warning. 
+
+   Category accepts any subclass of a built-in class ``Warning`` and is a type of generated warning.
    Same as in `warnings.warn() <https://docs.python.org/3/library/warnings.html#warnings.warn>`_.
 
    .. note::
       This function is mostly used internally, but might be also useful for extensions.
       Arg ``level`` denotes how much to trace back in the call stack. If it is equal to 0, that means that the caller wil be blamed.
       Beware, that the default value is 1, meaning the caller of a function with ``pygame.warn(...)`` will be blamed: ::
-         
+
          >>> def my_func():
          ...     pygame.warn("Warning!", urgency=0)
-         ... 
+         ...
          >>> my_func()
          <stdin>:1: UserWarning: Warning! (urgent: 0)
          >>> def my_func2():
@@ -607,7 +607,7 @@ Example usage: ::
          if event.type == pg.QUIT:
             pg.quit()
             quit()
-      
+
       pg.display.flip()
 
 Doing this will enable more detailed warnings and will print additional debug information.
