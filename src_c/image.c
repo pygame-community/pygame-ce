@@ -495,6 +495,8 @@ tobytes_surf_32bpp(SDL_Surface *surf, int flipped, int hascolorkey,
     }
 }
 
+#define PREMUL_PIXEL_ALPHA(pixel, alpha) (char)((((pixel) + 1) * (alpha)) >> 8)
+
 PyObject *
 image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
@@ -554,7 +556,7 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
         byte_width = surf->w * 4;
     }
     else if (!strcmp(format, "RGBX") || !strcmp(format, "ARGB") ||
-             !strcmp(format, "BGRA")) {
+             !strcmp(format, "BGRA") || !strcmp(format, "ABGR")) {
         byte_width = surf->w * 4;
     }
     else if (!strcmp(format, "RGBA_PREMULT") ||
@@ -878,6 +880,83 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
         }
         pgSurface_Unlock(surfobj);
     }
+    else if (!strcmp(format, "ABGR")) {
+        pgSurface_Lock(surfobj);
+        switch (PG_SURF_BytesPerPixel(surf)) {
+            case 1:
+                for (h = 0; h < surf->h; ++h) {
+                    Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
+                                                  surf->h, flipped);
+                    for (w = 0; w < surf->w; ++w) {
+                        color = *ptr++;
+                        data[3] = (char)surf->format->palette->colors[color].r;
+                        data[2] = (char)surf->format->palette->colors[color].g;
+                        data[1] = (char)surf->format->palette->colors[color].b;
+                        data[0] = (char)255;
+                        data += 4;
+                    }
+                    pad(&data, padding);
+                }
+                break;
+            case 2:
+                for (h = 0; h < surf->h; ++h) {
+                    Uint16 *ptr = (Uint16 *)DATAROW(
+                        surf->pixels, h, surf->pitch, surf->h, flipped);
+                    for (w = 0; w < surf->w; ++w) {
+                        color = *ptr++;
+                        data[3] = (char)(((color & Rmask) >> Rshift) << Rloss);
+                        data[2] = (char)(((color & Gmask) >> Gshift) << Gloss);
+                        data[1] = (char)(((color & Bmask) >> Bshift) << Bloss);
+                        data[0] = (char)(Amask ? (((color & Amask) >> Ashift)
+                                                  << Aloss)
+                                               : 255);
+                        data += 4;
+                    }
+                    pad(&data, padding);
+                }
+                break;
+            case 3:
+                for (h = 0; h < surf->h; ++h) {
+                    Uint8 *ptr = (Uint8 *)DATAROW(surf->pixels, h, surf->pitch,
+                                                  surf->h, flipped);
+                    for (w = 0; w < surf->w; ++w) {
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+                        color = ptr[0] + (ptr[1] << 8) + (ptr[2] << 16);
+#else
+                        color = ptr[2] + (ptr[1] << 8) + (ptr[0] << 16);
+#endif
+                        ptr += 3;
+                        data[3] = (char)(((color & Rmask) >> Rshift) << Rloss);
+                        data[2] = (char)(((color & Gmask) >> Gshift) << Gloss);
+                        data[1] = (char)(((color & Bmask) >> Bshift) << Bloss);
+                        data[0] = (char)(Amask ? (((color & Amask) >> Ashift)
+                                                  << Aloss)
+                                               : 255);
+                        data += 4;
+                    }
+                    pad(&data, padding);
+                }
+                break;
+            case 4:
+                for (h = 0; h < surf->h; ++h) {
+                    Uint32 *ptr = (Uint32 *)DATAROW(
+                        surf->pixels, h, surf->pitch, surf->h, flipped);
+                    for (w = 0; w < surf->w; ++w) {
+                        color = *ptr++;
+                        data[3] = (char)(((color & Rmask) >> Rshift) << Rloss);
+                        data[2] = (char)(((color & Gmask) >> Gshift) << Gloss);
+                        data[1] = (char)(((color & Bmask) >> Bshift) << Bloss);
+                        data[0] = (char)(Amask ? (((color & Amask) >> Ashift)
+                                                  << Aloss)
+                                               : 255);
+                        data += 4;
+                    }
+                    pad(&data, padding);
+                }
+                break;
+        }
+        pgSurface_Unlock(surfobj);
+    }
     else if (!strcmp(format, "RGBA_PREMULT")) {
         pgSurface_Lock(surfobj);
         switch (PG_SURF_BytesPerPixel(surf)) {
@@ -888,15 +967,12 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                     for (w = 0; w < surf->w; ++w) {
                         color = *ptr++;
                         alpha = ((color & Amask) >> Ashift) << Aloss;
-                        data[0] =
-                            (char)((((color & Rmask) >> Rshift) << Rloss) *
-                                   alpha / 255);
-                        data[1] =
-                            (char)((((color & Gmask) >> Gshift) << Gloss) *
-                                   alpha / 255);
-                        data[2] =
-                            (char)((((color & Bmask) >> Bshift) << Bloss) *
-                                   alpha / 255);
+                        data[0] = PREMUL_PIXEL_ALPHA(
+                            ((color & Rmask) >> Rshift) << Rloss, alpha);
+                        data[1] = PREMUL_PIXEL_ALPHA(
+                            ((color & Gmask) >> Gshift) << Gloss, alpha);
+                        data[2] = PREMUL_PIXEL_ALPHA(
+                            ((color & Bmask) >> Bshift) << Bloss, alpha);
                         data[3] = (char)alpha;
                         data += 4;
                     }
@@ -915,15 +991,12 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
 #endif
                         ptr += 3;
                         alpha = ((color & Amask) >> Ashift) << Aloss;
-                        data[0] =
-                            (char)((((color & Rmask) >> Rshift) << Rloss) *
-                                   alpha / 255);
-                        data[1] =
-                            (char)((((color & Gmask) >> Gshift) << Gloss) *
-                                   alpha / 255);
-                        data[2] =
-                            (char)((((color & Bmask) >> Bshift) << Bloss) *
-                                   alpha / 255);
+                        data[0] = PREMUL_PIXEL_ALPHA(
+                            ((color & Rmask) >> Rshift) << Rloss, alpha);
+                        data[1] = PREMUL_PIXEL_ALPHA(
+                            ((color & Gmask) >> Gshift) << Gloss, alpha);
+                        data[2] = PREMUL_PIXEL_ALPHA(
+                            ((color & Bmask) >> Bshift) << Bloss, alpha);
                         data[3] = (char)alpha;
                         data += 4;
                     }
@@ -941,15 +1014,12 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                             data[0] = data[1] = data[2] = 0;
                         }
                         else {
-                            data[0] =
-                                (char)((((color & Rmask) >> Rshift) << Rloss) *
-                                       alpha / 255);
-                            data[1] =
-                                (char)((((color & Gmask) >> Gshift) << Gloss) *
-                                       alpha / 255);
-                            data[2] =
-                                (char)((((color & Bmask) >> Bshift) << Bloss) *
-                                       alpha / 255);
+                            data[0] = PREMUL_PIXEL_ALPHA(
+                                ((color & Rmask) >> Rshift) << Rloss, alpha);
+                            data[1] = PREMUL_PIXEL_ALPHA(
+                                ((color & Gmask) >> Gshift) << Gloss, alpha);
+                            data[2] = PREMUL_PIXEL_ALPHA(
+                                ((color & Bmask) >> Bshift) << Bloss, alpha);
                         }
                         data[3] = (char)alpha;
                         data += 4;
@@ -970,15 +1040,12 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                     for (w = 0; w < surf->w; ++w) {
                         color = *ptr++;
                         alpha = ((color & Amask) >> Ashift) << Aloss;
-                        data[1] =
-                            (char)((((color & Rmask) >> Rshift) << Rloss) *
-                                   alpha / 255);
-                        data[2] =
-                            (char)((((color & Gmask) >> Gshift) << Gloss) *
-                                   alpha / 255);
-                        data[3] =
-                            (char)((((color & Bmask) >> Bshift) << Bloss) *
-                                   alpha / 255);
+                        data[1] = PREMUL_PIXEL_ALPHA(
+                            ((color & Rmask) >> Rshift) << Rloss, alpha);
+                        data[2] = PREMUL_PIXEL_ALPHA(
+                            ((color & Gmask) >> Gshift) << Gloss, alpha);
+                        data[3] = PREMUL_PIXEL_ALPHA(
+                            ((color & Bmask) >> Bshift) << Bloss, alpha);
                         data[0] = (char)alpha;
                         data += 4;
                     }
@@ -997,15 +1064,12 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
 #endif
                         ptr += 3;
                         alpha = ((color & Amask) >> Ashift) << Aloss;
-                        data[1] =
-                            (char)((((color & Rmask) >> Rshift) << Rloss) *
-                                   alpha / 255);
-                        data[2] =
-                            (char)((((color & Gmask) >> Gshift) << Gloss) *
-                                   alpha / 255);
-                        data[3] =
-                            (char)((((color & Bmask) >> Bshift) << Bloss) *
-                                   alpha / 255);
+                        data[1] = PREMUL_PIXEL_ALPHA(
+                            ((color & Rmask) >> Rshift) << Rloss, alpha);
+                        data[2] = PREMUL_PIXEL_ALPHA(
+                            ((color & Gmask) >> Gshift) << Gloss, alpha);
+                        data[3] = PREMUL_PIXEL_ALPHA(
+                            ((color & Bmask) >> Bshift) << Bloss, alpha);
                         data[0] = (char)alpha;
                         data += 4;
                     }
@@ -1023,15 +1087,12 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                             data[1] = data[2] = data[3] = 0;
                         }
                         else {
-                            data[1] =
-                                (char)((((color & Rmask) >> Rshift) << Rloss) *
-                                       alpha / 255);
-                            data[2] =
-                                (char)((((color & Gmask) >> Gshift) << Gloss) *
-                                       alpha / 255);
-                            data[3] =
-                                (char)((((color & Bmask) >> Bshift) << Bloss) *
-                                       alpha / 255);
+                            data[1] = PREMUL_PIXEL_ALPHA(
+                                ((color & Rmask) >> Rshift) << Rloss, alpha);
+                            data[2] = PREMUL_PIXEL_ALPHA(
+                                ((color & Gmask) >> Gshift) << Gloss, alpha);
+                            data[3] = PREMUL_PIXEL_ALPHA(
+                                ((color & Bmask) >> Bshift) << Bloss, alpha);
                         }
                         data[0] = (char)alpha;
                         data += 4;
@@ -1213,6 +1274,32 @@ image_frombytes(PyObject *self, PyObject *arg, PyObject *kwds)
                 PyExc_ValueError,
                 "Bytes length does not equal format and resolution size");
         surf = PG_CreateSurface(w, h, SDL_PIXELFORMAT_ARGB32);
+        if (!surf)
+            return RAISE(pgExc_SDLError, SDL_GetError());
+        SDL_LockSurface(surf);
+        for (looph = 0; looph < h; ++looph) {
+            Uint32 *pix = (Uint32 *)DATAROW(surf->pixels, looph, surf->pitch,
+                                            h, flipped);
+            memcpy(pix, data, w * sizeof(Uint32));
+            data += pitch;
+        }
+        SDL_UnlockSurface(surf);
+    }
+    else if (!strcmp(format, "ABGR")) {
+        if (pitch == -1) {
+            pitch = w * 4;
+        }
+        else if (pitch < w * 4) {
+            return RAISE(PyExc_ValueError,
+                         "Pitch must be greater than or equal to the width * "
+                         "4 as per the format");
+        }
+
+        if (len != (Py_ssize_t)pitch * h)
+            return RAISE(
+                PyExc_ValueError,
+                "Bytes length does not equal format and resolution size");
+        surf = PG_CreateSurface(w, h, SDL_PIXELFORMAT_ABGR32);
         if (!surf)
             return RAISE(pgExc_SDLError, SDL_GetError());
         SDL_LockSurface(surf);

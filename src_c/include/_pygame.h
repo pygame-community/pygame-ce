@@ -358,32 +358,25 @@ typedef struct {
  * auto imported/initialized by surface
  */
 #ifndef PYGAMEAPI_SURFLOCK_INTERNAL
-#define pgLifetimeLock_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(surflock, 0))
-
-#define pgLifetimeLock_Check(x) ((x)->ob_type == &pgLifetimeLock_Type)
-
 #define pgSurface_Prep(x) \
     if ((x)->subsurface)  \
-    (*(*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 1)))(x)
+    (*(*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 0)))(x)
 
 #define pgSurface_Unprep(x) \
     if ((x)->subsurface)    \
-    (*(*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 2)))(x)
+    (*(*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 1)))(x)
 
 #define pgSurface_Lock \
-    (*(int (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 3))
+    (*(int (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 2))
 
 #define pgSurface_Unlock \
-    (*(int (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 4))
+    (*(int (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 3))
 
 #define pgSurface_LockBy \
-    (*(int (*)(pgSurfaceObject *, PyObject *))PYGAMEAPI_GET_SLOT(surflock, 5))
+    (*(int (*)(pgSurfaceObject *, PyObject *))PYGAMEAPI_GET_SLOT(surflock, 4))
 
 #define pgSurface_UnlockBy \
-    (*(int (*)(pgSurfaceObject *, PyObject *))PYGAMEAPI_GET_SLOT(surflock, 6))
-
-#define pgSurface_LockLifetime \
-    (*(PyObject * (*)(PyObject *, PyObject *)) PYGAMEAPI_GET_SLOT(surflock, 7))
+    (*(int (*)(pgSurfaceObject *, PyObject *))PYGAMEAPI_GET_SLOT(surflock, 5))
 #endif
 
 /*
@@ -669,4 +662,33 @@ pg_tuple_couple_from_values_double(double val1, double val2)
     PyTuple_SET_ITEM(tuple, 1, tmp);
 
     return tuple;
+}
+
+static PG_INLINE PyObject *
+pg_PointList_FromArrayDouble(double const *array, int arr_length)
+{
+    if (arr_length % 2) {
+        return RAISE(PyExc_ValueError, "array length must be even");
+    }
+
+    int num_points = arr_length / 2;
+    PyObject *sequence = PyList_New(num_points);
+    if (!sequence) {
+        return NULL;
+    }
+
+    int i;
+    PyObject *point = NULL;
+    for (i = 0; i < num_points; i++) {
+        point =
+            pg_tuple_couple_from_values_double(array[i * 2], array[i * 2 + 1]);
+        if (!point) {
+            Py_DECREF(sequence);
+            return NULL;
+        }
+        PyList_SET_ITEM(sequence, i, point);
+        point = NULL;
+    }
+
+    return sequence;
 }

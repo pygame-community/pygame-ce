@@ -213,7 +213,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    | :sg:`aacircle(surface, color, center, radius, width=0, draw_top_right=None, draw_top_left=None, draw_bottom_left=None, draw_bottom_right=None) -> Rect`
 
    Draws an antialiased circle on the given surface.
-   Uses Xaolin Wu Circle Algorithm.
+   Uses Xiaolin Wu Circle Algorithm.
    adapted from: https://cgg.mff.cuni.cz/~pepca/ref/WU.pdf
 
    :param Surface surface: surface to draw on
@@ -606,4 +606,3 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    Example code for draw module.
 
 .. literalinclude:: code_examples/draw_module_example.py
-

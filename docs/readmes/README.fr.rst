@@ -1,4 +1,4 @@
-.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_logo.svg
+.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_ce_logo.svg
   :alt: pygame
   :target: https://pyga.me/
 
@@ -7,7 +7,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ **Français**  `فارسی`_ `Español`_
+`English`_ `简体中文`_ `繁體中文`_ **Français**  `فارسی`_ `Español`_ `日本語`_
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 `Pygame`_ est une bibliothèque multi-plateforme, libre et open-source
@@ -158,6 +158,7 @@ Versions des dépendances:
 
 Licence
 -------
+**Identifiant de licence:** LGPL-2.1-or-later
 
 La bibliothèque est distribuée sous la licence `GNU LGPL version 2.1`_, qui
 peut être retrouvée dans le fichier ``docs/LGPL.txt``. Nous nous réservons
@@ -202,6 +203,8 @@ Voir les docs/licences pour les licences des dépendances.
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
 
 .. _简体中文: README.zh-cn.rst
+.. _繁體中文: README.zh-tw.rst
 .. _English: ./../../README.rst
 .. _فارسی: README.fa.rst
 .. _Español: README.es.rst
+.. _日本語: README.ja.rst

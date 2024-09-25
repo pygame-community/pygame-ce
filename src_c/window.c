@@ -3,6 +3,7 @@
 #include "pygame.h"
 
 #include "pgcompat.h"
+#include "pgopengl.h"
 
 #include "doc/sdl2_video_doc.h"
 #include "doc/window_doc.h"
@@ -40,9 +41,7 @@ static PyObject *
 pg_display_resource(char *filename)
 {
     PyObject *imagemodule = NULL;
-    PyObject *load_basicfunc = NULL;
     PyObject *pkgdatamodule = NULL;
-    PyObject *resourcefunc = NULL;
     PyObject *fresult = NULL;
     PyObject *result = NULL;
     PyObject *name = NULL;
@@ -51,19 +50,12 @@ pg_display_resource(char *filename)
     if (!pkgdatamodule)
         goto display_resource_end;
 
-    resourcefunc = PyObject_GetAttrString(pkgdatamodule, resourcefunc_name);
-    if (!resourcefunc)
-        goto display_resource_end;
-
     imagemodule = PyImport_ImportModule(imagemodule_name);
     if (!imagemodule)
         goto display_resource_end;
 
-    load_basicfunc = PyObject_GetAttrString(imagemodule, load_basicfunc_name);
-    if (!load_basicfunc)
-        goto display_resource_end;
-
-    fresult = PyObject_CallFunction(resourcefunc, "s", filename);
+    fresult =
+        PyObject_CallMethod(pkgdatamodule, resourcefunc_name, "s", filename);
     if (!fresult)
         goto display_resource_end;
 
@@ -80,21 +72,21 @@ pg_display_resource(char *filename)
         PyErr_Clear();
     }
 
-    result = PyObject_CallFunction(load_basicfunc, "O", fresult);
+    result =
+        PyObject_CallMethod(imagemodule, load_basicfunc_name, "O", fresult);
     if (!result)
         goto display_resource_end;
 
 display_resource_end:
     Py_XDECREF(pkgdatamodule);
-    Py_XDECREF(resourcefunc);
     Py_XDECREF(imagemodule);
-    Py_XDECREF(load_basicfunc);
     Py_XDECREF(fresult);
     Py_XDECREF(name);
     return result;
 }
 
 static PyTypeObject pgWindow_Type;
+static GL_glViewport_Func p_glViewport = NULL;
 
 #define pgWindow_Check(x) \
     (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
@@ -211,7 +203,24 @@ window_flip(pgWindowObject *self, PyObject *_null)
     Py_RETURN_NONE;
 }
 
-// Callback function for surface auto resize
+/* Exception already set */
+static int
+_window_opengl_set_viewport(SDL_Window *window, SDL_GLContext context,
+                            int wnew, int hnew)
+{
+    if (SDL_GL_MakeCurrent(window, context) < 0) {
+        PyErr_SetString(pgExc_SDLError, SDL_GetError());
+        return -1;
+    }
+    if (p_glViewport == NULL) {
+        PyErr_SetString(pgExc_SDLError, "glViewport function is unavailable");
+        return -1;
+    }
+    p_glViewport(0, 0, wnew, hnew);
+    return 0;
+}
+
+// Callback function for surface auto resize or OpenGL viewport update
 static int SDLCALL
 _resize_event_watch(void *userdata, SDL_Event *event)
 {
@@ -230,6 +239,15 @@ _resize_event_watch(void *userdata, SDL_Event *event)
     if (event_window_pg->_is_borrowed) {
         // have been handled by event watch in display.c
         return 0;
+    }
+
+    if (event_window_pg->context != NULL) {
+        if (_window_opengl_set_viewport(event_window, event_window_pg->context,
+                                        event->window.data1,
+                                        event->window.data2) < 0) {
+            return PyErr_WarnEx(PyExc_RuntimeWarning,
+                                "Failed to set OpenGL viewport", 0);
+        }
     }
 
     if (!event_window_pg->surf)
@@ -283,6 +301,13 @@ window_focus(pgWindowObject *self, PyObject *args, PyObject *kwargs)
         SDL_RaiseWindow(self->_win);
     }
     Py_RETURN_NONE;
+}
+
+static PyObject *
+window_get_focused(pgWindowObject *self, void *v)
+{
+    uint32_t flags = SDL_GetWindowFlags(self->_win);
+    return PyBool_FromLong((flags & SDL_WINDOW_INPUT_FOCUS) != 0);
 }
 
 static PyObject *
@@ -586,6 +611,13 @@ window_set_size(pgWindowObject *self, PyObject *arg, void *v)
         /* Ensure that the underlying surf is immediately updated, instead of
          * relying on the event callback */
         self->surf->surf = SDL_GetWindowSurface(self->_win);
+    }
+    if (self->context != NULL) {
+        /* Update the OpenGL viewport immediately instead of relying on the
+         * event callback */
+        if (_window_opengl_set_viewport(self->_win, self->context, w, h) < 0) {
+            return -1;
+        }
     }
 
     return 0;
@@ -969,12 +1001,17 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     self->_is_borrowed = SDL_FALSE;
     self->surf = NULL;
 
-    if (SDL_GetWindowFlags(self->_win) & SDL_WINDOW_OPENGL) {
+    if (flags & SDL_WINDOW_OPENGL) {
         SDL_GLContext context = SDL_GL_CreateContext(self->_win);
         if (context == NULL) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             return -1;
         }
+        /* As stated in the 'Remarks' of the docs
+         * (https://wiki.libsdl.org/SDL2/SDL_GL_GetProcAddress) on Windows
+         * SDL_GL_GetProcAddress is only valid after an OpenGL context has been
+         * created */
+        p_glViewport = (GL_glViewport_Func)SDL_GL_GetProcAddress("glViewport");
         self->context = context;
     }
     else {
@@ -1033,6 +1070,32 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
     self->_is_borrowed = SDL_TRUE;
     SDL_SetWindowData(window, "pg_window", self);
     return (PyObject *)self;
+}
+
+static PyObject *
+window_flash(pgWindowObject *self, PyObject *arg)
+{
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+    long operation = PyLong_AsLong(arg);
+    if (operation == -1 && PyErr_Occurred()) {
+        return RAISE(PyExc_TypeError,
+                     "'operation' must be an integer. "
+                     "Must correspond with FLASH_CANCEL, FLASH_BRIEFLY, or "
+                     "FLASH_UNTIL_FOCUSED.");
+    }
+
+    if (operation != SDL_FLASH_CANCEL && operation != SDL_FLASH_BRIEFLY &&
+        operation != SDL_FLASH_UNTIL_FOCUSED) {
+        return RAISE(PyExc_ValueError, "Unsupported window flash operation.");
+    }
+
+    if (SDL_FlashWindow(self->_win, operation) < 0) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    Py_RETURN_NONE;
+#else
+    return RAISE(pgExc_SDLError, "'Window.flash' requires SDL 2.0.16+");
+#endif /* SDL_VERSION_ATLEAST(2, 0, 16) */
 }
 
 PyObject *
@@ -1100,6 +1163,7 @@ static PyMethodDef window_methods[] = {
      DOC_WINDOW_GETSURFACE},
     {"from_display_module", (PyCFunction)window_from_display_module,
      METH_CLASS | METH_NOARGS, DOC_WINDOW_FROMDISPLAYMODULE},
+    {"flash", (PyCFunction)window_flash, METH_O, DOC_WINDOW_FLASH},
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef _window_getset[] = {
@@ -1111,6 +1175,7 @@ static PyGetSetDef _window_getset[] = {
      DOC_WINDOW_MOUSEGRABBED, NULL},
     {"keyboard_grabbed", (getter)window_get_keyboard_grabbed, NULL,
      DOC_WINDOW_KEYBOARDGRABBED, NULL},
+    {"focused", (getter)window_get_focused, NULL, DOC_WINDOW_FOCUSED, NULL},
     {"title", (getter)window_get_title, (setter)window_set_title,
      DOC_WINDOW_TITLE, NULL},
     {"resizable", (getter)window_get_resizable, (setter)window_set_resizable,
@@ -1140,6 +1205,7 @@ static PyTypeObject pgWindow_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.window.Window",
     .tp_basicsize = sizeof(pgWindowObject),
     .tp_dealloc = (destructor)window_dealloc,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_doc = DOC_WINDOW,
     .tp_methods = window_methods,
     .tp_init = (initproc)window_init,

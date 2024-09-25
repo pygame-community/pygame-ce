@@ -188,8 +188,8 @@ key_get_pressed(PyObject *self, PyObject *_null)
         PyTuple_SET_ITEM(key_tuple, i, key_elem);
     }
 
-    ret_obj = PyObject_CallFunctionObjArgs((PyObject *)&pgScancodeWrapper_Type,
-                                           key_tuple, NULL);
+    ret_obj =
+        PyObject_CallOneArg((PyObject *)&pgScancodeWrapper_Type, key_tuple);
     Py_DECREF(key_tuple);
     return ret_obj;
 }
@@ -216,8 +216,8 @@ get_just_pressed(PyObject *self, PyObject *_null)
         }
         PyTuple_SET_ITEM(key_tuple, i, key_elem);
     }
-    ret_obj = PyObject_CallFunctionObjArgs((PyObject *)&pgScancodeWrapper_Type,
-                                           key_tuple, NULL);
+    ret_obj =
+        PyObject_CallOneArg((PyObject *)&pgScancodeWrapper_Type, key_tuple);
     Py_DECREF(key_tuple);
     return ret_obj;
 }
@@ -244,8 +244,8 @@ get_just_released(PyObject *self, PyObject *_null)
         }
         PyTuple_SET_ITEM(key_tuple, i, key_elem);
     }
-    ret_obj = PyObject_CallFunctionObjArgs((PyObject *)&pgScancodeWrapper_Type,
-                                           key_tuple, NULL);
+    ret_obj =
+        PyObject_CallOneArg((PyObject *)&pgScancodeWrapper_Type, key_tuple);
     Py_DECREF(key_tuple);
     return ret_obj;
 }

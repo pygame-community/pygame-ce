@@ -194,20 +194,12 @@ static PyObject *
 vector_gety(pgVector *self, void *closure);
 static PyObject *
 vector_getz(pgVector *self, void *closure);
-#ifdef PYGAME_MATH_VECTOR_HAVE_W
-static PyObject *
-vector_getw(pgVector *self, void *closure);
-#endif
 static int
 vector_setx(pgVector *self, PyObject *value, void *closure);
 static int
 vector_sety(pgVector *self, PyObject *value, void *closure);
 static int
 vector_setz(pgVector *self, PyObject *value, void *closure);
-#ifdef PYGAME_MATH_VECTOR_HAVE_W
-static int
-vector_setw(pgVector *self, PyObject *value, void *closure);
-#endif
 static PyObject *
 vector_richcompare(PyObject *o1, PyObject *o2, int op);
 static PyObject *
@@ -434,13 +426,6 @@ pgVectorCompatible_Check(PyObject *obj, Py_ssize_t dim)
                 return 1;
             }
             break;
-            /*
-                case 4:
-                    if (pgVector4_Check(obj)) {
-                        return 1;
-                    }
-                    break;
-            */
         default:
             PyErr_SetString(
                 PyExc_SystemError,
@@ -633,10 +618,6 @@ pgVector_NEW(Py_ssize_t dim)
             return vector2_new(&pgVector2_Type, NULL, NULL);
         case 3:
             return vector3_new(&pgVector3_Type, NULL, NULL);
-            /*
-                case 4:
-                    return vector4_new(&pgVector4_Type, NULL, NULL);
-            */
         default:
             return RAISE(PyExc_SystemError,
                          "Wrong internal call to pgVector_NEW.\n");
@@ -1217,12 +1198,31 @@ static PyMappingMethods vector_as_mapping = {
 static int
 vector_set_component(pgVector *self, PyObject *value, int component)
 {
-    if (value == NULL) {
-        PyErr_SetString(PyExc_TypeError, "Cannot delete the x attribute");
-        return -1;
-    }
     if (component >= self->dim) {
         PyErr_BadInternalCall();
+        return -1;
+    }
+    if (value == NULL) {
+        switch (component) {
+            case 0: {
+                PyErr_SetString(PyExc_TypeError,
+                                "Cannot delete the x attribute");
+                break;
+            }
+            case 1: {
+                PyErr_SetString(PyExc_TypeError,
+                                "Cannot delete the y attribute");
+                break;
+            }
+            case 2: {
+                PyErr_SetString(PyExc_TypeError,
+                                "Cannot delete the z attribute");
+                break;
+            }
+            default: {
+                PyErr_BadInternalCall();
+            }
+        }
         return -1;
     }
 
@@ -1267,20 +1267,6 @@ vector_setz(pgVector *self, PyObject *value, void *closure)
 {
     return vector_set_component(self, value, 2);
 }
-
-#ifdef PYGAME_MATH_VECTOR_HAVE_W
-static PyObject *
-vector_getw(pgVector *self, void *closure)
-{
-    return PyFloat_FromDouble(self->coords[3]);
-}
-
-static int
-vector_setw(pgVector *self, PyObject *value, void *closure)
-{
-    return vector_set_component(self, value, 3);
-}
-#endif
 
 static PyObject *
 vector_richcompare(PyObject *o1, PyObject *o2, int op)
@@ -1943,8 +1929,7 @@ vector_getAttr_swizzle(pgVector *self, PyObject *attr_name)
     if (attr == NULL)
         goto internal_error;
     /* If we are not a swizzle, go straight to GenericGetAttr. */
-    if ((attr[0] != 'x') && (attr[0] != 'y') && (attr[0] != 'z') &&
-        (attr[0] != 'w')) {
+    if ((attr[0] != 'x') && (attr[0] != 'y') && (attr[0] != 'z')) {
         goto swizzle_failed;
     }
 
@@ -1964,8 +1949,6 @@ vector_getAttr_swizzle(pgVector *self, PyObject *attr_name)
             case 'z':
                 idx = attr[i] - 'x';
                 goto swizzle_idx;
-            case 'w':
-                idx = 3;
 
             swizzle_idx:
                 if (idx >= self->dim) {
@@ -2043,9 +2026,6 @@ vector_setAttr_swizzle(pgVector *self, PyObject *attr_name, PyObject *val)
             case 'y':
             case 'z':
                 idx = attr[i] - 'x';
-                break;
-            case 'w':
-                idx = 3;
                 break;
             default:
                 /* swizzle failed. attempt generic attribute setting */
@@ -4188,13 +4168,13 @@ vector_elementwise(pgVector *vec, PyObject *_null)
     return (PyObject *)proxy;
 }
 
-inline double
+static inline double
 lerp(double a, double b, double v)
 {
     return a + (b - a) * v;
 }
 
-inline double
+static inline double
 invlerp(double a, double b, double v)
 {
     return (v - a) / (b - a);
@@ -4455,8 +4435,7 @@ MODINIT_DEFINE(math)
     if ((PyType_Ready(&pgVector2_Type) < 0) ||
         (PyType_Ready(&pgVector3_Type) < 0) ||
         (PyType_Ready(&pgVectorIter_Type) < 0) ||
-        (PyType_Ready(&pgVectorElementwiseProxy_Type) < 0) /*||
-        (PyType_Ready(&pgVector4_Type) < 0)*/) {
+        (PyType_Ready(&pgVectorElementwiseProxy_Type) < 0)) {
         return NULL;
     }
 
@@ -4472,9 +4451,6 @@ MODINIT_DEFINE(math)
     Py_INCREF(&pgVector3_Type);
     Py_INCREF(&pgVectorIter_Type);
     Py_INCREF(&pgVectorElementwiseProxy_Type);
-    /*
-    Py_INCREF(&pgVector4_Type);
-    */
     if ((PyModule_AddObject(module, "Vector2", (PyObject *)&pgVector2_Type) !=
          0) ||
         (PyModule_AddObject(module, "Vector3", (PyObject *)&pgVector3_Type) !=
@@ -4483,9 +4459,7 @@ MODINIT_DEFINE(math)
                             (PyObject *)&pgVectorElementwiseProxy_Type) !=
          0) ||
         (PyModule_AddObject(module, "VectorIterator",
-                            (PyObject *)&pgVectorIter_Type) != 0) /*||
-(PyModule_AddObject(module, "Vector4", (PyObject *)&pgVector4_Type) !=
-0)*/) {
+                            (PyObject *)&pgVectorIter_Type) != 0)) {
         if (!PyObject_HasAttrString(module, "Vector2"))
             Py_DECREF(&pgVector2_Type);
         if (!PyObject_HasAttrString(module, "Vector3"))
@@ -4494,10 +4468,6 @@ MODINIT_DEFINE(math)
             Py_DECREF(&pgVectorElementwiseProxy_Type);
         if (!PyObject_HasAttrString(module, "VectorIterator"))
             Py_DECREF(&pgVectorIter_Type);
-        /*
-        if (!PyObject_HasAttrString(module, "Vector4"))
-            Py_DECREF(&pgVector4_Type);
-        */
         Py_DECREF(module);
         return NULL;
     }
@@ -4506,9 +4476,8 @@ MODINIT_DEFINE(math)
     c_api[0] = &pgVector2_Type;
     c_api[1] = &pgVector3_Type;
     /*
-    c_api[2] = &pgVector4_Type;
-    c_api[3] = pgVector_NEW;
-    c_api[4] = pgVectorCompatible_Check;
+    c_api[2] = pgVector_NEW;
+    c_api[3] = pgVectorCompatible_Check;
     */
     apiobj = encapsulate_api(c_api, "math");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {

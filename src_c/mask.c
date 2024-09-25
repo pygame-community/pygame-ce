@@ -43,6 +43,24 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+/* Pretty good idea from Tom Duff :-). */
+#ifndef LOOP_UNROLLED4
+#define LOOP_UNROLLED4(code, n, width) \
+    n = (width + 3) / 4;               \
+    switch (width & 3) {               \
+        case 0:                        \
+            do {                       \
+                code;                  \
+                case 3:                \
+                    code;              \
+                case 2:                \
+                    code;              \
+                case 1:                \
+                    code;              \
+            } while (--n > 0);         \
+    }
+#endif
+
 /* Macro to create mask objects. This will call the type's tp_new and tp_init.
  * Params:
  *     w: width of mask
@@ -770,22 +788,61 @@ set_pixel_color(Uint8 *pixel, Uint8 bpp, Uint32 color)
 static void
 set_from_threshold(SDL_Surface *surf, bitmask_t *bitmask, int threshold)
 {
-    SDL_PixelFormat *format = surf->format;
-    Uint8 bpp = PG_FORMAT_BytesPerPixel(format);
-    Uint8 *pixel = NULL;
-    Uint8 rgba[4];
-    int x, y;
+    /* This function expects surf to be non-zero sized. */
+    SDL_PixelFormat *fmt = surf->format;
+    const Uint8 bpp = PG_FORMAT_BytesPerPixel(fmt);
+    int x, y, n;
+    Uint8 *srcp;
+    const int src_skip = surf->pitch - surf->w * bpp;
+
+    if (threshold >= 255) {
+        return;
+    }
+
+    if (threshold < 0 || !SDL_ISPIXELFORMAT_ALPHA(fmt->format)) {
+        bitmask_fill(bitmask);
+        return;
+    }
+    else if (bpp < 3) {
+        Uint8 r, g, b, a;
+        srcp = (Uint8 *)surf->pixels;
+        for (y = 0; y < surf->h; ++y) {
+            for (x = 0; x < surf->w; ++x, srcp += bpp) {
+                SDL_GetRGBA(bpp == 1 ? *srcp : *((Uint16 *)srcp), fmt, &r, &g,
+                            &b, &a);
+                if (a > threshold)
+                    bitmask_setbit(bitmask, x, y);
+            }
+            srcp += src_skip;
+        }
+        return;
+    }
+
+    /* With this strategy we avoid to get the rgb channels that we don't need
+     * and instead we just jump from alpha channel to alpha channel, comparing
+     * it with the threshold. */
+
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    const char _a_off = fmt->Ashift >> 3;
+#else
+    const char _a_off = 3 - (fmt->Ashift >> 3);
+#endif
+
+    srcp = (Uint8 *)surf->pixels + _a_off;
+    const Uint8 u_threshold = (Uint8)threshold;
 
     for (y = 0; y < surf->h; ++y) {
-        pixel = (Uint8 *)surf->pixels + y * surf->pitch;
+        x = 0;
+        LOOP_UNROLLED4(
+            {
+                if ((*srcp) > u_threshold)
+                    bitmask_setbit(bitmask, x, y);
+                srcp += bpp;
+                x++;
+            },
+            n, surf->w);
 
-        for (x = 0; x < surf->w; ++x, pixel += bpp) {
-            SDL_GetRGBA(get_pixel_color(pixel, bpp), format, rgba, rgba + 1,
-                        rgba + 2, rgba + 3);
-            if (rgba[3] > threshold) {
-                bitmask_setbit(bitmask, x, y);
-            }
-        }
+        srcp += src_skip;
     }
 }
 

@@ -1,4 +1,4 @@
-.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_logo.svg
+.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_ce_logo.svg
   :alt: pygame
   :target: https://pyga.me/
 
@@ -7,7 +7,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ **简体中文** `Français`_ `فارسی`_ `Español`_
+`English`_ **简体中文** `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_
 ----
 
 Pygame_ 是一款自由且开源的跨平台库，用于开发电子游戏等多媒体应用。Pygame基于 `Simple DirectMedia Layer library`_ 以及其他几个广受欢迎的库，汲取其中最常见的函数，让编写游戏成为更加符合直觉的事情。
@@ -122,6 +122,7 @@ pygame显然依赖于SDL和Python。此外pygame还嵌入了几个较小的库�
 
 许可证
 -------
+**许可证标识符:** LGPL-2.1-or-later
 
 本库在 `GNU LGPL version 2.1`_ 下发布，许可文件： ``docs/LGPL.txt`` 。我们保留将此库的未来版本置于其他许可证下的权利。
 
@@ -157,6 +158,8 @@ pygame显然依赖于SDL和Python。此外pygame还嵌入了几个较小的库�
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
 
 .. _English: ./../../README.rst
+.. _繁體中文: README.zh-tw.rst
 .. _Français: README.fr.rst
 .. _فارسی: README.fa.rst
 .. _Español: README.es.rst
+.. _日本語: README.ja.rst
