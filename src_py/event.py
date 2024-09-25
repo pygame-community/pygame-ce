@@ -25,7 +25,6 @@ from pygame._event import (
     _proxify_event_type,
 )
 
-from pygame.base import error
 import pygame as pg
 
 
@@ -74,22 +73,22 @@ def _unknown_event_factory(ev_type: int) -> Type[Event]:
     return UnknownEvent
 
 
-def event_class(ev_type: int) -> type[EventLike]:
-    _check_ev_type(ev_type)
+def event_class(type: int) -> type[EventLike]:
+    _check_ev_type(type)
 
-    if ev_type not in _events_map:
-        _events_map[ev_type] = _unknown_event_factory(ev_type)
-    return _events_map[ev_type]
+    if type not in _events_map:
+        _events_map[type] = _unknown_event_factory(type)
+    return _events_map[type]
 
 
 class _EventMeta(type):
-    def _create_of_type(self, type: int, *args, **kwds):
+    def _create_of_type(cls, type: int, *args, **kwds):
         return event_class(type)(*args, **kwds)
 
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
-        if self is Event:
-            return self._create_of_type(*args, **kwds)
-        return super(_EventMeta, self).__call__(*args, **kwds)
+    def __call__(cls, *args: Any, **kwds: Any) -> Any:
+        if cls is Event:
+            return cls._create_of_type(*args, **kwds)
+        return super(_EventMeta, cls).__call__(*args, **kwds)
 
 
 class Event(metaclass=_EventMeta):
@@ -141,7 +140,11 @@ class Event(metaclass=_EventMeta):
 
     def __repr__(self):
         if getattr(self, "_unknown", False):
-            return f"<{type(self).__module__}.<dynamic>.{type(self).__name__}({self.type} {self.dict})>"
+            return (
+                f"<{type(self).__module__}.<dynamic>."
+                f"{type(self).__name__}({self.type} {self.dict})>"
+            )
+
         return f"<{type(self).__module__}.{type(self).__qualname__}({self.dict})>"
 
     @property
@@ -163,9 +166,10 @@ class Event(metaclass=_EventMeta):
     def __setattr__(self, name: str, value: Any):
         if name == "type":
             raise AttributeError(
-                f"attribute 'type' of 'Event' or its subclass object is protected"
+                "attribute 'type' of 'Event' or its subclass object is protected"
             )
-        elif name in ("_dict", "dict"):
+
+        if name in ("_dict", "dict"):
             super().__setattr__(name, value)
         else:
             self._dict[name] = value
@@ -214,7 +218,7 @@ def custom_type():
     global _custom_event
 
     if _custom_event >= pg.NUMEVENTS:
-        raise error("pygame.event.custom_type made too many event types.")
+        raise pg.error("pygame.event.custom_type made too many event types.")
 
     _custom_event += 1
     return _custom_event - 1
@@ -446,136 +450,141 @@ def _create_class(type: int, name: str, note: str | None):
 
 # for cls in _events_map.values():
 #     if cls.__name__ == "UserEvent": continue
-#     print(f"{cls.__name__} = _create_class(pg.{const_find(cls.type, cls.__name__)}, {cls.__qualname__!r}, {cls.__doc__!r})")
+#     print(
+#         f"{cls.__name__} = _create_class(pg.{const_find(cls.type, cls.__name__)}, " \
+#         f"{cls.__qualname__!r}, {cls.__doc__!r})"
+#     )
 
 
-ActiveEvent = _create_class(pg.ACTIVEEVENT, 'ActiveEvent', None)
-AppTerminating = _create_class(pg.APP_TERMINATING, 'AppTerminating', None)
-AppLowMemory = _create_class(pg.APP_LOWMEMORY, 'AppLowMemory', None)
+ActiveEvent = _create_class(pg.ACTIVEEVENT, "ActiveEvent", None)
+AppTerminating = _create_class(pg.APP_TERMINATING, "AppTerminating", None)
+AppLowMemory = _create_class(pg.APP_LOWMEMORY, "AppLowMemory", None)
 AppWillEnterBackground = _create_class(
-    pg.APP_WILLENTERBACKGROUND, 'AppWillEnterBackground', None
+    pg.APP_WILLENTERBACKGROUND, "AppWillEnterBackground", None
 )
 AppDidEnterBackground = _create_class(
-    pg.APP_DIDENTERBACKGROUND, 'AppDidEnterBackground', None
+    pg.APP_DIDENTERBACKGROUND, "AppDidEnterBackground", None
 )
 AppWillEnterForeground = _create_class(
-    pg.APP_WILLENTERFOREGROUND, 'AppWillEnterForeground', None
+    pg.APP_WILLENTERFOREGROUND, "AppWillEnterForeground", None
 )
 AppDidEnterForeground = _create_class(
-    pg.APP_DIDENTERFOREGROUND, 'AppDidEnterForeground', None
+    pg.APP_DIDENTERFOREGROUND, "AppDidEnterForeground", None
 )
-ClipboardUpdate = _create_class(pg.CLIPBOARDUPDATE, 'ClipboardUpdate', None)
-KeyDown = _create_class(pg.KEYDOWN, 'KeyDown', None)
-KeyUp = _create_class(pg.KEYUP, 'KeyUp', None)
-KeyMapChanged = _create_class(pg.KEYMAPCHANGED, 'KeyMapChanged', None)
-LocaleChanged = _create_class(pg.LOCALECHANGED, 'LocaleChanged', 'Only for SDL 2.0.14+')
-MouseMotion = _create_class(pg.MOUSEMOTION, 'MouseMotion', None)
-MouseButtonDown = _create_class(pg.MOUSEBUTTONDOWN, 'MouseButtonDown', None)
-MouseButtonUp = _create_class(pg.MOUSEBUTTONUP, 'MouseButtonUp', None)
+ClipboardUpdate = _create_class(pg.CLIPBOARDUPDATE, "ClipboardUpdate", None)
+KeyDown = _create_class(pg.KEYDOWN, "KeyDown", None)
+KeyUp = _create_class(pg.KEYUP, "KeyUp", None)
+KeyMapChanged = _create_class(pg.KEYMAPCHANGED, "KeyMapChanged", None)
+LocaleChanged = _create_class(pg.LOCALECHANGED, "LocaleChanged", "Only for SDL 2.0.14+")
+MouseMotion = _create_class(pg.MOUSEMOTION, "MouseMotion", None)
+MouseButtonDown = _create_class(pg.MOUSEBUTTONDOWN, "MouseButtonDown", None)
+MouseButtonUp = _create_class(pg.MOUSEBUTTONUP, "MouseButtonUp", None)
 JoyAxisMotion = _create_class(
     pg.JOYAXISMOTION,
-    'JoyAxisMotion',
+    "JoyAxisMotion",
     'Attribute "joy" is depracated, use "instance_id".',
 )
 JoyBallMotion = _create_class(
     pg.JOYBALLMOTION,
-    'JoyBallMotion',
+    "JoyBallMotion",
     'Attribute "joy" is depracated, use "instance_id".',
 )
 JoyHatMotion = _create_class(
-    pg.JOYHATMOTION, 'JoyHatMotion', 'Attribute "joy" is depracated, use "instance_id".'
+    pg.JOYHATMOTION, "JoyHatMotion", 'Attribute "joy" is depracated, use "instance_id".'
 )
 JoyButtonUp = _create_class(
-    pg.JOYBUTTONUP, 'JoyButtonUp', 'Attribute "joy" is depracated, use "instance_id".'
+    pg.JOYBUTTONUP, "JoyButtonUp", 'Attribute "joy" is depracated, use "instance_id".'
 )
 JoyButtonDown = _create_class(
     pg.JOYBUTTONDOWN,
-    'JoyButtonDown',
+    "JoyButtonDown",
     'Attribute "joy" is depracated, use "instance_id".',
 )
-Quit = _create_class(pg.QUIT, 'Quit', None)
+Quit = _create_class(pg.QUIT, "Quit", None)
 SysWMEvent = _create_class(
     pg.SYSWMEVENT,
-    'SysWMEvent',
-    "\n    Attributes are OS-depended:\n    hwnd, msg, wparam, lparam - Windows.\n    event - Unix / OpenBSD\n    For other OSes and in some cases for Unix / OpenBSD\n    this event won't have any attributes.\n    ",
+    "SysWMEvent",
+    "\n    Attributes are OS-depended:\n    hwnd, msg, wparam, lparam - Windows.\n"
+    "    event - Unix / OpenBSD\n    For other OSes and in some cases for Unix / OpenBSD\n"
+    "    this event won't have any attributes.\n    ",
 )
-VideoResize = _create_class(pg.VIDEORESIZE, 'VideoResize', None)
-VideoExpose = _create_class(pg.VIDEOEXPOSE, 'VideoExpose', None)
-MidiIn = _create_class(pg.MIDIIN, 'MidiIn', None)
-MidiOut = _create_class(pg.MIDIOUT, 'MidiOut', None)
-NoEvent = _create_class(pg.NOEVENT, 'NoEvent', None)
+VideoResize = _create_class(pg.VIDEORESIZE, "VideoResize", None)
+VideoExpose = _create_class(pg.VIDEOEXPOSE, "VideoExpose", None)
+MidiIn = _create_class(pg.MIDIIN, "MidiIn", None)
+MidiOut = _create_class(pg.MIDIOUT, "MidiOut", None)
+NoEvent = _create_class(pg.NOEVENT, "NoEvent", None)
 FingerMotion = _create_class(
-    pg.FINGERMOTION, 'FingerMotion', 'Attribute "window" avalible only for SDL 2.0.14+'
+    pg.FINGERMOTION, "FingerMotion", 'Attribute "window" avalible only for SDL 2.0.14+'
 )
 FingerDown = _create_class(
-    pg.FINGERDOWN, 'FingerDown', 'Attribute "window" avalible only for SDL 2.0.14+'
+    pg.FINGERDOWN, "FingerDown", 'Attribute "window" avalible only for SDL 2.0.14+'
 )
 FingerUp = _create_class(
-    pg.FINGERUP, 'FingerUp', 'Attribute "window" avalible only for SDL 2.0.14+'
+    pg.FINGERUP, "FingerUp", 'Attribute "window" avalible only for SDL 2.0.14+'
 )
-MultiGesture = _create_class(pg.MULTIGESTURE, 'MultiGesture', None)
-MouseWheel = _create_class(pg.MOUSEWHEEL, 'MouseWheel', None)
-TextInput = _create_class(pg.TEXTINPUT, 'TextInput', None)
-TextEditing = _create_class(pg.TEXTEDITING, 'TextEditing', None)
-DropFile = _create_class(pg.DROPFILE, 'DropFile', None)
-DropText = _create_class(pg.DROPTEXT, 'DropText', None)
-DropBegin = _create_class(pg.DROPBEGIN, 'DropBegin', None)
-DropComplete = _create_class(pg.DROPCOMPLETE, 'DropComplete', None)
+MultiGesture = _create_class(pg.MULTIGESTURE, "MultiGesture", None)
+MouseWheel = _create_class(pg.MOUSEWHEEL, "MouseWheel", None)
+TextInput = _create_class(pg.TEXTINPUT, "TextInput", None)
+TextEditing = _create_class(pg.TEXTEDITING, "TextEditing", None)
+DropFile = _create_class(pg.DROPFILE, "DropFile", None)
+DropText = _create_class(pg.DROPTEXT, "DropText", None)
+DropBegin = _create_class(pg.DROPBEGIN, "DropBegin", None)
+DropComplete = _create_class(pg.DROPCOMPLETE, "DropComplete", None)
 ControllerAxisMotion = _create_class(
-    pg.CONTROLLERAXISMOTION, 'ControllerAxisMotion', None
+    pg.CONTROLLERAXISMOTION, "ControllerAxisMotion", None
 )
 ControllerButtonDown = _create_class(
-    pg.CONTROLLERBUTTONDOWN, 'ControllerButtonDown', None
+    pg.CONTROLLERBUTTONDOWN, "ControllerButtonDown", None
 )
-ControllerButtonUp = _create_class(pg.CONTROLLERBUTTONUP, 'ControllerButtonUp', None)
+ControllerButtonUp = _create_class(pg.CONTROLLERBUTTONUP, "ControllerButtonUp", None)
 ControllerDeviceAdded = _create_class(
-    pg.CONTROLLERDEVICEADDED, 'ControllerDeviceAdded', None
+    pg.CONTROLLERDEVICEADDED, "ControllerDeviceAdded", None
 )
 ControllerDeviceRemoved = _create_class(
-    pg.CONTROLLERDEVICEREMOVED, 'ControllerDeviceRemoved', None
+    pg.CONTROLLERDEVICEREMOVED, "ControllerDeviceRemoved", None
 )
 ControllerDeviceMapped = _create_class(
-    pg.CONTROLLERDEVICEREMAPPED, 'ControllerDeviceMapped', None
+    pg.CONTROLLERDEVICEREMAPPED, "ControllerDeviceMapped", None
 )
-JoyDeviceAdded = _create_class(pg.JOYDEVICEADDED, 'JoyDeviceAdded', None)
-JoyDeviceRemoved = _create_class(pg.JOYDEVICEREMOVED, 'JoyDeviceRemoved', None)
+JoyDeviceAdded = _create_class(pg.JOYDEVICEADDED, "JoyDeviceAdded", None)
+JoyDeviceRemoved = _create_class(pg.JOYDEVICEREMOVED, "JoyDeviceRemoved", None)
 ControllerTouchpadDown = _create_class(
-    pg.CONTROLLERTOUCHPADDOWN, 'ControllerTouchpadDown', 'Only for SDL 2.0.14+'
+    pg.CONTROLLERTOUCHPADDOWN, "ControllerTouchpadDown", "Only for SDL 2.0.14+"
 )
 ControllerTouchpadMotion = _create_class(
-    pg.CONTROLLERTOUCHPADMOTION, 'ControllerTouchpadMotion', 'Only for SDL 2.0.14+'
+    pg.CONTROLLERTOUCHPADMOTION, "ControllerTouchpadMotion", "Only for SDL 2.0.14+"
 )
 ControllerTouchpadUp = _create_class(
-    pg.CONTROLLERTOUCHPADUP, 'ControllerTouchpadUp', 'Only for SDL 2.0.14+'
+    pg.CONTROLLERTOUCHPADUP, "ControllerTouchpadUp", "Only for SDL 2.0.14+"
 )
 ControllerSensorUpdate = _create_class(
-    pg.CONTROLLERSENSORUPDATE, 'ControllerSensorUpdate', 'Only for SDL 2.0.14+'
+    pg.CONTROLLERSENSORUPDATE, "ControllerSensorUpdate", "Only for SDL 2.0.14+"
 )
-AudioDeviceAdded = _create_class(pg.AUDIODEVICEADDED, 'AudioDeviceAdded', None)
-AudioDeviceRemoved = _create_class(pg.AUDIODEVICEREMOVED, 'AudioDeviceRemoved', None)
-RenderTargetsReset = _create_class(pg.RENDER_TARGETS_RESET, 'RenderTargetsReset', None)
-RenderDeviceReset = _create_class(pg.RENDER_DEVICE_RESET, 'RenderDeviceReset', None)
-WindowShown = _create_class(pg.WINDOWSHOWN, 'WindowShown', None)
-WindowHidden = _create_class(pg.WINDOWHIDDEN, 'WindowHidden', None)
-WindowExposed = _create_class(pg.WINDOWEXPOSED, 'WindowExposed', None)
-WindowMoved = _create_class(pg.WINDOWMOVED, 'WindowMoved', None)
-WindowResized = _create_class(pg.WINDOWRESIZED, 'WindowResized', None)
-WindowSizeChanged = _create_class(pg.WINDOWSIZECHANGED, 'WindowSizeChanged', None)
-WindowMinimized = _create_class(pg.WINDOWMINIMIZED, 'WindowMinimized', None)
-WindowMaximized = _create_class(pg.WINDOWMAXIMIZED, 'WindowMaximized', None)
-WindowRestored = _create_class(pg.WINDOWRESTORED, 'WindowRestored', None)
-WindowEnter = _create_class(pg.WINDOWENTER, 'WindowEnter', None)
-WindowLeave = _create_class(pg.WINDOWLEAVE, 'WindowLeave', None)
-WindowFocusGained = _create_class(pg.WINDOWFOCUSGAINED, 'WindowFocusGained', None)
-WindowFocusLost = _create_class(pg.WINDOWFOCUSLOST, 'WindowFocusLost', None)
-WindowClose = _create_class(pg.WINDOWCLOSE, 'WindowClose', None)
-WindowTakeFocus = _create_class(pg.WINDOWTAKEFOCUS, 'WindowTakeFocus', None)
-WindowHitTest = _create_class(pg.WINDOWHITTEST, 'WindowHitTest', None)
+AudioDeviceAdded = _create_class(pg.AUDIODEVICEADDED, "AudioDeviceAdded", None)
+AudioDeviceRemoved = _create_class(pg.AUDIODEVICEREMOVED, "AudioDeviceRemoved", None)
+RenderTargetsReset = _create_class(pg.RENDER_TARGETS_RESET, "RenderTargetsReset", None)
+RenderDeviceReset = _create_class(pg.RENDER_DEVICE_RESET, "RenderDeviceReset", None)
+WindowShown = _create_class(pg.WINDOWSHOWN, "WindowShown", None)
+WindowHidden = _create_class(pg.WINDOWHIDDEN, "WindowHidden", None)
+WindowExposed = _create_class(pg.WINDOWEXPOSED, "WindowExposed", None)
+WindowMoved = _create_class(pg.WINDOWMOVED, "WindowMoved", None)
+WindowResized = _create_class(pg.WINDOWRESIZED, "WindowResized", None)
+WindowSizeChanged = _create_class(pg.WINDOWSIZECHANGED, "WindowSizeChanged", None)
+WindowMinimized = _create_class(pg.WINDOWMINIMIZED, "WindowMinimized", None)
+WindowMaximized = _create_class(pg.WINDOWMAXIMIZED, "WindowMaximized", None)
+WindowRestored = _create_class(pg.WINDOWRESTORED, "WindowRestored", None)
+WindowEnter = _create_class(pg.WINDOWENTER, "WindowEnter", None)
+WindowLeave = _create_class(pg.WINDOWLEAVE, "WindowLeave", None)
+WindowFocusGained = _create_class(pg.WINDOWFOCUSGAINED, "WindowFocusGained", None)
+WindowFocusLost = _create_class(pg.WINDOWFOCUSLOST, "WindowFocusLost", None)
+WindowClose = _create_class(pg.WINDOWCLOSE, "WindowClose", None)
+WindowTakeFocus = _create_class(pg.WINDOWTAKEFOCUS, "WindowTakeFocus", None)
+WindowHitTest = _create_class(pg.WINDOWHITTEST, "WindowHitTest", None)
 WindowICCProfChanged = _create_class(
-    pg.WINDOWICCPROFCHANGED, 'WindowICCProfChanged', None
+    pg.WINDOWICCPROFCHANGED, "WindowICCProfChanged", None
 )
 WindowDisplayChanged = _create_class(
-    pg.WINDOWDISPLAYCHANGED, 'WindowDisplayChanged', None
+    pg.WINDOWDISPLAYCHANGED, "WindowDisplayChanged", None
 )
 
 
@@ -592,6 +601,9 @@ class UserEvent(Event):
         return (
             isinstance(instance, Event) and pg.USEREVENT <= instance.type < pg.NUMEVENTS
         )
+
+
+_extra_cache[pg.USEREVENT] = UserEvent
 
 
 __all__ = [
