@@ -8,7 +8,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English` `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ **Italiano**
+`English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ **Italiano**
 ---------------------------------------------------------------------------------------------------
 
 Pygame_ è una libreria gratuita a codice aperto e multipiattaforma
