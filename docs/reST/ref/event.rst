@@ -317,14 +317,20 @@ On Android, the following events can be generated
 .. function:: peek
 
    | :sl:`test if event types are waiting on the queue`
-   | :sg:`peek(eventtype=None) -> bool`
-   | :sg:`peek(eventtype=None, pump=True) -> bool`
+   | :sg:`peek() -> Event instance`
+   | :sg:`peek(eventtype) -> bool`
+   | :sg:`peek(eventtype, pump=True) -> bool`
 
    Returns ``True`` if there are any events of the given type waiting on the
    queue. If a sequence of event types is passed, this will return ``True`` if
    any of those events are on the queue.
 
    If ``pump`` is ``True`` (the default), then :func:`pygame.event.pump()` will be called.
+
+   If ``eventtype`` is unspecified, or ``None``, then this function will return the top-most event instead.
+
+   .. note::
+      There is no guarantee that the event got with :func:`pygame.event.get()` immediately after calling this function will be the same.
 
    .. versionchangedold:: 1.9.5 Added ``pump`` argument
 
