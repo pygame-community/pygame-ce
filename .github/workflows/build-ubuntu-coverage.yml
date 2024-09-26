@@ -48,7 +48,12 @@ jobs:
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
-        os: [ubuntu-22.04]
+        os: [ubuntu-24.04]
+
+    env:
+      # Pip now forces us to either make a venv or set this flag, so we will do
+      # this
+      PIP_BREAK_SYSTEM_PACKAGES: 1
 
     steps:
     - uses: actions/checkout@v4.1.7

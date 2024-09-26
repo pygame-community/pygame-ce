@@ -49,7 +49,7 @@ env:
 jobs:
   build-multiarch:
     name: Debian (Bookworm - 12) [${{ matrix.arch }}]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
@@ -120,7 +120,7 @@ jobs:
   test-armv7-on-armv6:
     needs: build-multiarch
     name: Debian (Bookworm - 12) [build - armv7, test - armv6]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
     - name: Download all multiarch artifacts
       uses: actions/download-artifact@v4
