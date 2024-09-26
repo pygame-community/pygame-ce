@@ -476,8 +476,8 @@ typedef enum {
 /*
  * event module internals
  */
-struct pgEventObject {
-    PyObject_HEAD int type;
+struct pgEventData {
+    int type;
     PyObject *dict;
 };
 
@@ -534,7 +534,7 @@ typedef enum {
 #define PYGAMEAPI_COLOR_NUMSLOTS 5
 #define PYGAMEAPI_MATH_NUMSLOTS 2
 #define PYGAMEAPI_BASE_NUMSLOTS 29
-#define PYGAMEAPI_EVENT_NUMSLOTS 10
+#define PYGAMEAPI_EVENT_NUMSLOTS 14
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1
 #define PYGAMEAPI_GEOMETRY_NUMSLOTS 1
 
