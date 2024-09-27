@@ -824,7 +824,7 @@ static PyObject *
 pgmusic_play(pgMusicObject *self, PyObject *args, PyObject *kwargs)
 {
     int loops = 0;
-    float startpos = 0.0;
+    double startpos = 0.0;
     float fade_in = 0.0;
     int val;
 
