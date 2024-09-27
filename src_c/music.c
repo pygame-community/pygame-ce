@@ -722,7 +722,7 @@ pgmusic_get_volume(pgMusicObject *self, void *closure)
 static PyObject *
 pgmusic_get_title(pgMusicObject *self, void *closure)
 {
-#ifdef SDL_VERSION_ATLEAST(2, 6, 0)
+#if SDL_VERSION_ATLEAST(2, 6, 0)
     // This returns the filename if no music title was found
     const char *title = Mix_GetMusicTitle(self->music);
 #else
