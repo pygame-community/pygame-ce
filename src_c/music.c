@@ -598,6 +598,9 @@ pgmusic_dealloc(pgMusicObject *self, PyObject *_null)
 static PyObject *
 pgmusic_get_position(pgMusicObject *self, void *v)
 {
+    MIXER_INIT_CHECK();
+
+#ifdef SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
     double music_position = 0.0;
 
     music_position = Mix_GetMusicPosition(self->music);
@@ -605,11 +608,17 @@ pgmusic_get_position(pgMusicObject *self, void *v)
     // If the music_position is -1.0, we still return this value.
     // It's to the user to handle it.
     return PyFloat_FromDouble(music_position);
+#else
+    return RAISE(PyExc_NotImplementedError,
+                 "SDL_Mixer 2.6.0 is needed to get the position of a music");
+#endif
 }
 
 static int
 pgmusic_set_position(pgMusicObject *self, PyObject *arg, void *v)
 {
+    MIXER_INIT_CHECK();
+
     double music_position = PyFloat_AsDouble(arg);
 
     if (music_position < 0.0)
@@ -630,10 +639,17 @@ pgmusic_set_position(pgMusicObject *self, PyObject *arg, void *v)
 static PyObject *
 pgmusic_get_duration(pgMusicObject *self, void *v)
 {
+    MIXER_INIT_CHECK();
+
+#ifdef SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
     double music_duration = 0.0;
     music_duration = Mix_MusicDuration(self->music);
     // music_duration = Mix_GetMusicLoopLengthTime(self->music);
     return PyFloat_FromDouble(music_duration);
+#else
+    return RAISE(PyExc_NotImplementedError,
+                 "SDL_Mixer 2.6.0 is needed to get the duration of a music");
+#endif
 }
 
 static PyObject *
@@ -654,6 +670,8 @@ pgmusic_set_paused(pgMusicObject *self, PyObject *arg, void *v)
 {
     MIXER_INIT_CHECK();
 
+#ifdef SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+
     int paused = PyObject_IsTrue(arg);
 
     self->paused = paused;
@@ -666,8 +684,12 @@ pgmusic_set_paused(pgMusicObject *self, PyObject *arg, void *v)
         else
             Mix_ResumeMusic();
     }
-
     return 0;
+#else
+    PyErr_SetString(PyExc_NotImplementedError,
+                    "SDL_Mixer 2.6.0 is needed for using paused setter");
+    return -1;
+#endif
 }
 
 static int
@@ -802,10 +824,17 @@ pgmusic_play(pgMusicObject *self, PyObject *args, PyObject *kwargs)
         if (current_music_obj != self) {
             Mix_HaltMusic();
 
+            /*
+            Here we can't support this process for SDL_Mixer version lower
+            than 2.6.0. So if a new music is played, the music will be stopped
+            and declared as ended.
+            */
+#ifdef SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+            current_music_obj->ended = 0;
             current_music_obj->paused = 1;
             current_music_obj->position =
                 Mix_GetMusicPosition(current_music_obj->music);
-
+#endif
             current_music_obj = self;
         }
         /* If it's not the case, track the new music */
@@ -816,7 +845,9 @@ pgmusic_play(pgMusicObject *self, PyObject *args, PyObject *kwargs)
 
     Mix_QuerySpec(&music_frequency, &music_format, &music_channels);
 
-    if (self->paused) {
+    // Resume from where the music paused before switching to the new music
+    // playback
+    if (self->paused && !self->ended) {
         self->paused = 0;
         if (startpos == 0.0)
             startpos = self->position;
