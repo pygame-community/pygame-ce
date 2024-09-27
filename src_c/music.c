@@ -35,8 +35,8 @@
 typedef struct {
     PyObject_HEAD Mix_Music *music;
 
-    float volume;
-    float position;
+    double volume;
+    double position;
     int paused;
     int ended;
 
