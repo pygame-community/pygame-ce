@@ -46,40 +46,42 @@
 
    Event behavior if one Window is created: When the close button is pressed,
    the ``QUIT`` event will be sent to the event queue.
-     .. code-block:: python
-        
-        import pygame
 
-        window = pygame.Window()
+   .. code-block:: python
 
-        while True:
-           for event in pygame.event.get():
-              if event.type == pygame.QUIT:
-                 pygame.quit()
-                 raise SystemExit
+     import pygame
+
+     window = pygame.Window()
+
+     while True:
+       for event in pygame.event.get():
+          if event.type == pygame.QUIT:
+             pygame.quit()
+             raise SystemExit
 
    Event behavior if multiple Windows are created: When the close button is
    pressed, a ``WINDOWCLOSE`` event is sent. You need to explicitly destroy
    the window. Note that the event ``QUIT`` will only be sent if all Window
    has been destroyed.
-         .. code-block:: python
-            
-            import pygame
 
-            window1 = pygame.Window(position=(0,100))
-            window2 = pygame.Window(position=(700,100))
+   .. code-block:: python
 
-            while True:
-               for event in pygame.event.get():
-                  if event.type == pygame.WINDOWCLOSE:
-                     id = event.window.id
-                     print(f"WINDOWCLOSE event sent to Window #{id}.")
-                     event.window.destroy()
+     import pygame
 
-                  if event.type == pygame.QUIT:
-                     print(f"Last window is destroyed. QUIT event was sent.")
-                     pygame.quit()
-                     raise SystemExit
+     window1 = pygame.Window(position=(0,100))
+     window2 = pygame.Window(position=(700,100))
+
+     while True:
+       for event in pygame.event.get():
+         if event.type == pygame.WINDOWCLOSE:
+           id = event.window.id
+           print(f"WINDOWCLOSE event sent to Window #{id}.")
+           event.window.destroy()
+
+         if event.type == pygame.QUIT:
+           print(f"Last window is destroyed. QUIT event was sent.")
+           pygame.quit()
+           raise SystemExit
 
    .. versionadded:: 2.4.0
    .. versionchanged:: 2.5.0 when ``opengl`` is ``True``, the ``Window`` has an OpenGL context created by pygame
