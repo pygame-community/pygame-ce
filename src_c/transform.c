@@ -1594,10 +1594,9 @@ surf_set_smoothscale_backend(PyObject *self, PyObject *args, PyObject *kwargs)
             return RAISE(PyExc_ValueError,
                          "MMX not supported on this machine");
         }
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "MMX backend is deprecated in favor of new SSE2 backend",
-                1) == -1) {
+        if (pgWarn(PyExc_DeprecationWarning,
+                   "MMX backend is deprecated in favor of new SSE2 backend", 1,
+                   1) == -1) {
             return NULL;
         }
         st->filter_type = "MMX";
@@ -1611,10 +1610,9 @@ surf_set_smoothscale_backend(PyObject *self, PyObject *args, PyObject *kwargs)
             return RAISE(PyExc_ValueError,
                          "SSE not supported on this machine");
         }
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "SSE backend is deprecated in favor of new SSE2 backend",
-                1) == -1) {
+        if (pgWarn(PyExc_DeprecationWarning,
+                   "SSE backend is deprecated in favor of new SSE2 backend", 1,
+                   1) == -1) {
             return NULL;
         }
         st->filter_type = "SSE";

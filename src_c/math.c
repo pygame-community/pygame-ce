@@ -30,7 +30,6 @@
 #endif
 
 #define PYGAMEAPI_MATH_INTERNAL
-#define NO_PYGAME_C_API
 #include "doc/math_doc.h"
 
 #include "pygame.h"
@@ -2382,11 +2381,11 @@ vector2_rotate_rad_ip(pgVector *self, PyObject *angleObject)
 static PyObject *
 vector2_rotate_ip_rad(pgVector *self, PyObject *angleObject)
 {
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "vector2_rotate_rad_ip() now has all the functionality "
-                     "of vector2_rotate_ip_rad(), so vector2_rotate_ip_rad() "
-                     "will be deprecated in pygame 2.1.1",
-                     1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "vector2_rotate_rad_ip() now has all the functionality "
+               "of vector2_rotate_ip_rad(), so vector2_rotate_ip_rad() "
+               "will be deprecated in pygame 2.1.1",
+               1, 1) == -1) {
         return NULL;
     }
     return vector2_rotate_rad_ip(self, angleObject);
@@ -2893,11 +2892,11 @@ vector3_rotate_rad_ip(pgVector *self, PyObject *args)
 static PyObject *
 vector3_rotate_ip_rad(pgVector *self, PyObject *angleObject)
 {
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "vector3_rotate_rad_ip() now has all the functionality "
-                     "of vector3_rotate_ip_rad(), so vector3_rotate_ip_rad() "
-                     "will be deprecated in pygame 2.1.1",
-                     1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "vector3_rotate_rad_ip() now has all the functionality "
+               "of vector3_rotate_ip_rad(), so vector3_rotate_ip_rad() "
+               "will be deprecated in pygame 2.1.1",
+               1, 1) == -1) {
         return NULL;
     }
     return vector3_rotate_rad_ip(self, angleObject);
@@ -3004,12 +3003,11 @@ vector3_rotate_x_rad_ip(pgVector *self, PyObject *angleObject)
 static PyObject *
 vector3_rotate_x_ip_rad(pgVector *self, PyObject *angleObject)
 {
-    if (PyErr_WarnEx(
-            PyExc_DeprecationWarning,
-            "vector3_rotate_x_rad_ip() now has all the functionality of "
-            "vector3_rotate_x_ip_rad(), so vector3_rotate_x_ip_rad() will "
-            "be deprecated in pygame 2.1.1",
-            1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "vector3_rotate_x_rad_ip() now has all the functionality of "
+               "vector3_rotate_x_ip_rad(), so vector3_rotate_x_ip_rad() will "
+               "be deprecated in pygame 2.1.1",
+               1, 1) == -1) {
         return NULL;
     }
     return vector3_rotate_x_rad_ip(self, angleObject);
@@ -3109,12 +3107,11 @@ vector3_rotate_y_rad_ip(pgVector *self, PyObject *angleObject)
 static PyObject *
 vector3_rotate_y_ip_rad(pgVector *self, PyObject *angleObject)
 {
-    if (PyErr_WarnEx(
-            PyExc_DeprecationWarning,
-            "vector3_rotate_y_rad_ip() now has all the functionality of "
-            "vector3_rotate_y_ip_rad(), so vector3_rotate_y_ip_rad() will "
-            "be deprecated in pygame 2.1.1",
-            1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "vector3_rotate_y_rad_ip() now has all the functionality of "
+               "vector3_rotate_y_ip_rad(), so vector3_rotate_y_ip_rad() will "
+               "be deprecated in pygame 2.1.1",
+               1, 1) == -1) {
         return NULL;
     }
     return vector3_rotate_x_rad_ip(self, angleObject);
@@ -3215,12 +3212,11 @@ vector3_rotate_z_rad_ip(pgVector *self, PyObject *angleObject)
 static PyObject *
 vector3_rotate_z_ip_rad(pgVector *self, PyObject *angleObject)
 {
-    if (PyErr_WarnEx(
-            PyExc_DeprecationWarning,
-            "vector3_rotate_z_rad_ip() now has all the functionality of "
-            "vector3_rotate_z_ip_rad(), so vector3_rotate_z_ip_rad() will "
-            "be deprecated in pygame 2.1.1",
-            1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "vector3_rotate_z_rad_ip() now has all the functionality of "
+               "vector3_rotate_z_ip_rad(), so vector3_rotate_z_ip_rad() will "
+               "be deprecated in pygame 2.1.1",
+               1, 1) == -1) {
         return NULL;
     }
     return vector3_rotate_x_rad_ip(self, angleObject);
@@ -4375,11 +4371,11 @@ math_smoothstep(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 static PyObject *
 math_enable_swizzling(pgVector *self, PyObject *_null)
 {
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "pygame.math.enable_swizzling() is deprecated, "
-                     "and its functionality is removed. This function will be "
-                     "removed in a later version.",
-                     1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "pygame.math.enable_swizzling() is deprecated, "
+               "and its functionality is removed. This function will be "
+               "removed in a later version.",
+               1, 1) == -1) {
         return NULL;
     }
     Py_RETURN_NONE;
@@ -4388,11 +4384,11 @@ math_enable_swizzling(pgVector *self, PyObject *_null)
 static PyObject *
 math_disable_swizzling(pgVector *self, PyObject *_null)
 {
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "pygame.math.disable_swizzling() is deprecated, "
-                     "and its functionality is removed. This function will be "
-                     "removed in a later version.",
-                     1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "pygame.math.disable_swizzling() is deprecated, "
+               "and its functionality is removed. This function will be "
+               "removed in a later version.",
+               1, 1) == -1) {
         return NULL;
     }
     Py_RETURN_NONE;

@@ -19,13 +19,13 @@
 # pete@shinners.org
 """sysfont, used in the font module to find system fonts"""
 
-import warnings
 import os
 import sys
 import itertools
 import difflib
 from os.path import basename, dirname, exists, join, splitext
 
+from pygame import warn
 from pygame.font import Font
 from pygame import __file__ as pygame_main_file
 
@@ -220,20 +220,23 @@ def initsysfonts_unix(path="fc-list"):
         )
 
     except FileNotFoundError:
-        warnings.warn(
-            f"'{path}' is missing, system fonts cannot be loaded on your platform"
+        warn(
+            f"'{path}' is missing, system fonts cannot be loaded on your platform",
+            urgency=0,
         )
 
     except subprocess.TimeoutExpired:
-        warnings.warn(
+        warn(
             f"Process running '{path}' timed-out! System fonts cannot be loaded on "
-            "your platform"
+            "your platform",
+            urgency=0,
         )
 
     except subprocess.CalledProcessError as e:
-        warnings.warn(
+        warn(
             f"'{path}' failed with error code {e.returncode}! System fonts cannot be "
-            f"loaded on your platform. Error log is:\n{e.stderr}"
+            f"loaded on your platform. Error log is:\n{e.stderr}",
+            urgency=0,
         )
 
     else:
@@ -471,10 +474,11 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
         else:
             if len(name) > 1:
                 names = "', '".join(name)
-                warnings.warn(
+                warn(
                     "None of the specified system fonts "
                     f"('{names}') could be found. "
-                    "Using the default font instead."
+                    "Using the default font instead.",
+                    urgency=2,
                 )
             else:
                 # Identifies the closest matches to the font provided by
@@ -487,10 +491,11 @@ def SysFont(name, size, bold=False, italic=False, constructor=None):
                 else:
                     match_text = ""
 
-                warnings.warn(
+                warn(
                     f"The system font '{name[0]}' couldn't be "
                     f"found. {match_text}"
-                    "Using the default font instead."
+                    "Using the default font instead.",
+                    urgency=2,
                 )
     else:
         fontname = None

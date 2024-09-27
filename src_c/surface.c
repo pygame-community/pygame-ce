@@ -1667,9 +1667,9 @@ surf_convert_alpha(pgSurfaceObject *self, PyObject *args)
         return NULL;
 
     if (srcsurf != NULL) {
-        if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                         "depth argument deprecated since version 2.4.0",
-                         1) == -1) {
+        if (pgWarn(PyExc_DeprecationWarning,
+                   "depth argument deprecated since version 2.4.0", 1,
+                   1) == -1) {
             return NULL;
         }
     }

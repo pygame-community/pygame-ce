@@ -82,6 +82,7 @@ static int pg_sdl_was_init = 0;
 SDL_Window *pg_default_window = NULL;
 pgSurfaceObject *pg_default_screen = NULL;
 static char *pg_env_blend_alpha_SDL2 = NULL;
+static int pg_warn_filter = 0;
 
 static void
 pg_install_parachute(void);
@@ -172,6 +173,9 @@ static void
 pg_SetDefaultWindowSurface(pgSurfaceObject *);
 static char *
 pg_EnvShouldBlendAlphaSDL2(void);
+static int
+pgWarn(PyObject *category, const char *message, Py_ssize_t stack_level,
+       int urgency);
 
 /* compare compiled to linked, raise python error on incompatibility */
 static int
@@ -2102,6 +2106,102 @@ pg_EnvShouldBlendAlphaSDL2(void)
     return pg_env_blend_alpha_SDL2;
 }
 
+static inline int
+intSizeAsStr(int num)
+{
+    if (num == 0) {
+        // printf("i s=1, zero");
+        return 1;
+    }
+    else if (num < 0) {
+        // printf("i s=%i, neg", ceil(log10(-num + 1)) + 1);
+        return (int)ceil(log10(-num + 1)) + 1;
+    }
+    return (int)ceil(log10(num + 1));
+}
+
+static int
+pgWarn(PyObject *category, const char *message, Py_ssize_t stack_level,
+       int urgency)
+{
+    if (pg_warn_filter < urgency)
+        return 0;
+
+    const char *extra;
+
+    switch (urgency) {
+        case 0:
+            extra = "urgent: ";
+            break;
+        case 1:
+            extra = "mild: ";
+            break;
+        case 2:
+            extra = "note: ";
+            break;
+        default:
+            extra = "";
+    }
+
+    //         12              3 4
+    // "message (extra{urgency})\0"
+    size_t str_size =
+        strlen(message) + strlen(extra) + intSizeAsStr(urgency) + 4;
+
+    char *formatted = malloc(str_size);
+    if (formatted == NULL) {
+        PyErr_SetString(PyExc_MemoryError,
+                        "cannot allocate memory to format warning message");
+        return -1;
+    }
+
+    PyOS_snprintf(formatted, str_size, "%s (%s%i)", message, extra, urgency);
+
+    int ret = PyErr_WarnEx(category, formatted, stack_level);
+    free(formatted);
+    return ret;
+}
+
+static PyObject *
+pg_warn(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    PyObject *category = NULL;
+    const char *message;
+    Py_ssize_t stack_level = -1;
+    int urgency;
+    char *kw_names[] = {"message", "urgency", "level", "category", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "si|nO", kw_names, &message,
+                                     &urgency, &stack_level, &category))
+        return NULL;
+
+    if (category == NULL)
+        category = PyExc_UserWarning;
+
+    if (stack_level < 0)
+        stack_level = 1;
+
+    if (pgWarn(category, message, stack_level + 1, urgency) < 0)
+        return NULL;
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+pg_get_warnings_filter(PyObject *self)
+{
+    return PyLong_FromLong(pg_warn_filter);
+}
+
+static PyObject *
+pg_set_warnings_filter(PyObject *self, PyObject *args)
+{
+    if (!PyArg_ParseTuple(args, "i", &pg_warn_filter))
+        return NULL;
+
+    Py_RETURN_NONE;
+}
+
 /*error signal handlers(replacing SDL parachute)*/
 static void
 pygame_parachute(int sig)
@@ -2218,6 +2318,14 @@ static PyMethodDef _base_methods[] = {
 
     {"get_array_interface", (PyCFunction)pg_get_array_interface, METH_O,
      "return an array struct interface as an interface dictionary"},
+    {"warn", (PyCFunction)pg_warn, METH_VARARGS | METH_KEYWORDS,
+     "throw a warning with a given severity which is only used for filtering"},
+    {"get_warnings_filter", (PyCFunction)pg_get_warnings_filter, METH_NOARGS,
+     "get value of a warning filter by severity (smaller number - more "
+     "important)"},
+    {"set_warnings_filter", (PyCFunction)pg_set_warnings_filter, METH_VARARGS,
+     "set value of a warning filter by severity (smaller number - more "
+     "important)"},
     {NULL, NULL, 0, NULL}};
 
 #if defined(BUILD_STATIC) && defined(NO_PYGAME_C_API)
@@ -2314,8 +2422,9 @@ MODINIT_DEFINE(base)
     c_api[26] = pg_TwoDoublesFromFastcallArgs;
     c_api[27] = pg_GetDefaultConvertFormat;
     c_api[28] = pg_SetDefaultConvertFormat;
+    c_api[29] = pgWarn;
 
-#define FILLED_SLOTS 29
+#define FILLED_SLOTS 30
 
 #if PYGAMEAPI_BASE_NUMSLOTS != FILLED_SLOTS
 #error export slot count mismatch

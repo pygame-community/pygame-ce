@@ -245,8 +245,8 @@ _resize_event_watch(void *userdata, SDL_Event *event)
         if (_window_opengl_set_viewport(event_window, event_window_pg->context,
                                         event->window.data1,
                                         event->window.data2) < 0) {
-            return PyErr_WarnEx(PyExc_RuntimeWarning,
-                                "Failed to set OpenGL viewport", 0);
+            return pgWarn(PyExc_RuntimeWarning,
+                          "Failed to set OpenGL viewport", 0, 0);
         }
     }
 
@@ -417,8 +417,8 @@ window_set_grab_keyboard(pgWindowObject *self, PyObject *arg, void *v)
 
     SDL_SetWindowKeyboardGrab(self->_win, enable);
 #else
-    if (PyErr_WarnEx(PyExc_Warning, "'grab_keyboard' requires SDL 2.0.16+",
-                     1) == -1) {
+    if (pgWarn(PyExc_Warning, "'grab_keyboard' requires SDL 2.0.16+", 1, 0) ==
+        -1) {
         return -1;
     }
 #endif
@@ -432,8 +432,8 @@ window_get_grab_keyboard(pgWindowObject *self, void *v)
     return PyBool_FromLong(SDL_GetWindowFlags(self->_win) &
                            SDL_WINDOW_KEYBOARD_GRABBED);
 #else
-    if (PyErr_WarnEx(PyExc_Warning, "'grab_keyboard' requires SDL 2.0.16+",
-                     1) == -1) {
+    if (pgWarn(PyExc_Warning, "'grab_keyboard' requires SDL 2.0.16+", 1, 0) ==
+        -1) {
         return NULL;
     }
     return PyBool_FromLong(SDL_FALSE);
@@ -446,8 +446,8 @@ window_get_keyboard_grabbed(pgWindowObject *self, void *v)
 #if SDL_VERSION_ATLEAST(2, 0, 16)
     return PyBool_FromLong(SDL_GetWindowKeyboardGrab(self->_win));
 #else
-    if (PyErr_WarnEx(PyExc_Warning, "'keyboard_captured' requires SDL 2.0.16+",
-                     1) == -1) {
+    if (pgWarn(PyExc_Warning, "'keyboard_captured' requires SDL 2.0.16+", 1,
+               0) == -1) {
         return NULL;
     }
     return PyBool_FromLong(SDL_FALSE);
@@ -523,9 +523,8 @@ window_set_always_on_top(pgWindowObject *self, PyObject *arg, void *v)
 
     SDL_SetWindowAlwaysOnTop(self->_win, enable);
 #else
-    if (PyErr_WarnEx(PyExc_Warning,
-                     "Setting 'always_on_top' requires SDL 2.0.16+",
-                     1) == -1) {
+    if (pgWarn(PyExc_Warning, "Setting 'always_on_top' requires SDL 2.0.16+",
+               1, 0) == -1) {
         return -1;
     }
 #endif  // SDL_VERSION_ATLEAST(2, 0, 16)
@@ -565,8 +564,8 @@ window_set_mouse_rect(pgWindowObject *self, PyObject *arg, void *v)
         return -1;
     }
 #else
-    if (PyErr_WarnEx(PyExc_Warning,
-                     "Setting 'mouse_rect' requires SDL 2.0.18+", 1) == -1) {
+    if (pgWarn(PyExc_Warning, "Setting 'mouse_rect' requires SDL 2.0.18+", 1,
+               0) == -1) {
         return -1;
     }
 #endif  // SDL_VERSION_ATLEAST(2, 0, 18)
@@ -582,8 +581,8 @@ window_get_mouse_rect(pgWindowObject *self, void *v)
         Py_RETURN_NONE;
     return pgRect_New((SDL_Rect *)mouse_rect_p);
 #else
-    if (PyErr_WarnEx(PyExc_Warning,
-                     "Getting 'mouse_rect' requires SDL 2.0.18+", 1) == -1) {
+    if (pgWarn(PyExc_Warning, "Getting 'mouse_rect' requires SDL 2.0.18+", 1,
+               0) == -1) {
         return NULL;
     }
     Py_RETURN_NONE;
@@ -907,10 +906,10 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 #if SDL_VERSION_ATLEAST(2, 0, 16)
                         flags |= SDL_WINDOW_KEYBOARD_GRABBED;
 #else
-                        if (PyErr_WarnEx(PyExc_Warning,
-                                         "Keyword 'keyboard_grabbed' requires "
-                                         "SDL 2.0.16+",
-                                         1) == -1) {
+                        if (pgWarn(PyExc_Warning,
+                                   "Keyword 'keyboard_grabbed' requires "
+                                   "SDL 2.0.16+",
+                                   1, 0) == -1) {
                             return -1;
                         }
 #endif
@@ -1040,11 +1039,11 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
 static PyObject *
 window_from_display_module(PyTypeObject *cls, PyObject *_null)
 {
-    if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                     "Please use Window.get_surface and Window.flip to use "
-                     "surface-rendering with Window. This method will be "
-                     "removed in a future version.",
-                     1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "Please use Window.get_surface and Window.flip to use "
+               "surface-rendering with Window. This method will be "
+               "removed in a future version.",
+               1, 1) == -1) {
         return NULL;
     }
 

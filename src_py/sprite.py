@@ -84,7 +84,6 @@ Sprites are not thread safe, so lock them yourself if using threads.
 # specific ones that aren't quite so general but fit into common
 # specialized cases.
 
-from warnings import warn
 from typing import Optional
 
 import pygame
@@ -656,20 +655,20 @@ class Group(AbstractGroup):
 class RenderPlain(Group):
     def __init__(self, *sprites):
         super().__init__(*sprites)
-        warn(
+        pygame.warn(
             "This class is deprecated and will be removed in a future version.",
-            DeprecationWarning,
-            stacklevel=2,
+            urgency=1,
+            category=DeprecationWarning,
         )
 
 
 class RenderClear(Group):
     def __init__(self, *sprites):
         super().__init__(*sprites)
-        warn(
+        pygame.warn(
             "This class is deprecated and will be removed in a future version.",
-            DeprecationWarning,
-            stacklevel=2,
+            urgency=1,
+            categry=DeprecationWarning,
         )
 
 
@@ -706,12 +705,12 @@ class RenderUpdates(Group):
 class OrderedUpdates(RenderUpdates):
     def __init__(self, *sprites):
         super().__init__(*sprites)
-        warn(
+        pygame.warn(
             "OrderedUpdates is now just an alias to RenderUpdates, order of "
             "sprites is now maintained in all sprite Group classes. This "
             "class is deprecated and will be removed in a future version.",
-            DeprecationWarning,
-            stacklevel=2,
+            urgency=1,
+            category=DeprecationWarning,
         )
 
 
@@ -1345,9 +1344,10 @@ class LayeredDirty(LayeredUpdates):
         Raises TypeError if time_ms is not int or float.
 
         """
-        warn(
+        pygame.warn(
             "This function will be removed, use set_timing_threshold function instead",
-            DeprecationWarning,
+            urgency=1,
+            category=DeprecationWarning,
         )
         self.set_timing_threshold(time_ms)
 
