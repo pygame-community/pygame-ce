@@ -1,4 +1,4 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, final
 
 from pygame.typing import FileLike
 
@@ -22,6 +22,7 @@ def get_metadata(
     filename: Optional[FileLike] = None, namehint: str = ""
 ) -> Dict[str, str]: ...
 
+@final
 class Music:
     def __init__(self, filename: FileLike, namehint: str = "") -> None: ...
     def play(
