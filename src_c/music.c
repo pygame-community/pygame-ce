@@ -600,7 +600,7 @@ pgmusic_get_position(pgMusicObject *self, void *v)
 {
     MIXER_INIT_CHECK();
 
-#ifdef SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
     double music_position = 0.0;
 
     music_position = Mix_GetMusicPosition(self->music);
@@ -641,7 +641,7 @@ pgmusic_get_duration(pgMusicObject *self, void *v)
 {
     MIXER_INIT_CHECK();
 
-#ifdef SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
     double music_duration = 0.0;
     music_duration = Mix_MusicDuration(self->music);
     // music_duration = Mix_GetMusicLoopLengthTime(self->music);
@@ -670,7 +670,7 @@ pgmusic_set_paused(pgMusicObject *self, PyObject *arg, void *v)
 {
     MIXER_INIT_CHECK();
 
-#ifdef SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
 
     int paused = PyObject_IsTrue(arg);
 
@@ -829,7 +829,7 @@ pgmusic_play(pgMusicObject *self, PyObject *args, PyObject *kwargs)
             than 2.6.0. So if a new music is played, the music will be stopped
             and declared as ended.
             */
-#ifdef SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
             current_music_obj->ended = 0;
             current_music_obj->paused = 1;
             current_music_obj->position =
