@@ -617,7 +617,10 @@ pgmusic_get_position(pgMusicObject *self, void *v)
 static int
 pgmusic_set_position(pgMusicObject *self, PyObject *arg, void *v)
 {
-    MIXER_INIT_CHECK();
+    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+        PyErr_SetString(pgExc_SDLError, "mixer not initialized");
+        return -1;
+    }
 
     double music_position = PyFloat_AsDouble(arg);
 
@@ -668,7 +671,10 @@ pgmusic_get_paused(pgMusicObject *self, void *v)
 static int
 pgmusic_set_paused(pgMusicObject *self, PyObject *arg, void *v)
 {
-    MIXER_INIT_CHECK();
+    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+        PyErr_SetString(pgExc_SDLError, "mixer not initialized");
+        return -1;
+    }
 
 #if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
 
@@ -695,6 +701,11 @@ pgmusic_set_paused(pgMusicObject *self, PyObject *arg, void *v)
 static int
 pgmusic_set_volume(pgMusicObject *self, PyObject *arg, void *v)
 {
+    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+        PyErr_SetString(pgExc_SDLError, "mixer not initialized");
+        return -1;
+    }
+
     if (!PyFloat_Check(arg)) {
         PyErr_SetString(PyExc_TypeError, "the value must be a real number");
         return -1;
@@ -784,8 +795,10 @@ pgmusic_init(pgMusicObject *self, PyObject *args, PyObject *kwargs)
                                      &namehint))
         return -1;
 
-    if (!SDL_WasInit(SDL_INIT_AUDIO))
+    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+        PyErr_SetString(pgExc_SDLError, "mixer not initialized");
         return -1;
+    }
 
     new_music = _load_music(obj, namehint);
     if (new_music == NULL)  // meaning it has an error to return
@@ -821,6 +834,7 @@ pgmusic_play(pgMusicObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
 
     MIXER_INIT_CHECK();
+
     if (!self->music)
         return RAISE(pgExc_SDLError, "music not loaded");
 
