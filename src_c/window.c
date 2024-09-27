@@ -245,8 +245,8 @@ _resize_event_watch(void *userdata, SDL_Event *event)
         if (_window_opengl_set_viewport(event_window, event_window_pg->context,
                                         event->window.data1,
                                         event->window.data2) < 0) {
-            return PyErr_WarnEx(PyExc_RuntimeWarning,
-                                "Failed to set OpenGL viewport", 0);
+            return pgWarn(PyExc_RuntimeWarning,
+                          "Failed to set OpenGL viewport", 0, 0);
         }
     }
 

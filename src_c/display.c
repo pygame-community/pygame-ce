@@ -1369,7 +1369,7 @@ pg_set_mode(PyObject *self, PyObject *arg, PyObject *kwds)
                 "window size on platform. Using (%d, %d) instead.";
             snprintf(buffer, sizeof(buffer), format_string, surface->surf->w,
                      surface->surf->h);
-            if (PyErr_WarnEx(PyExc_RuntimeWarning, buffer, 1) != 0) {
+            if (pgWarn(PyExc_RuntimeWarning, buffer, 1, 1) != 0) {
                 return NULL;
             }
         }

@@ -2235,11 +2235,10 @@ _ft_get_init(PyObject *self, PyObject *_null)
 static PyObject *
 _ft_was_init(PyObject *self, PyObject *_null)
 {
-    if (PyErr_WarnEx(
-            PyExc_DeprecationWarning,
-            "was_init has been deprecated and may be removed in a future "
-            "version. Use the equivalent get_init function instead",
-            1) == -1) {
+    if (pgWarn(PyExc_DeprecationWarning,
+               "was_init has been deprecated and may be removed in a future "
+               "version. Use the equivalent get_init function instead",
+               1, 1) == -1) {
         return NULL;
     }
     return _ft_get_init(self, _null);
