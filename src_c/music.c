@@ -719,14 +719,18 @@ pgmusic_get_volume(pgMusicObject *self, void *closure)
     return PyFloat_FromDouble(self->volume);
 }
 
+/*
+This part below might need a macro to reduce the number of lines
+*/
+
 static PyObject *
 pgmusic_get_title(pgMusicObject *self, void *closure)
 {
-#if SDL_VERSION_ATLEAST(2, 6, 0)
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
     // This returns the filename if no music title was found
     const char *title = Mix_GetMusicTitle(self->music);
 #else
-    const char *title = Mix_GetMusicTitleTag(self->music);
+    const char *title = "";
 #endif
 
     return PyUnicode_FromString(title);
@@ -735,19 +739,31 @@ pgmusic_get_title(pgMusicObject *self, void *closure)
 static PyObject *
 pgmusic_get_album(pgMusicObject *self, void *closure)
 {
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
     return PyUnicode_FromString(Mix_GetMusicAlbumTag(self->music));
+#else
+    return PyUnicode_FromString("");
+#endif
 }
 
 static PyObject *
 pgmusic_get_artist(pgMusicObject *self, void *closure)
 {
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
     return PyUnicode_FromString(Mix_GetMusicArtistTag(self->music));
+#else
+    return PyUnicode_FromString("");
+#endif
 }
 
 static PyObject *
 pgmusic_get_copyright(pgMusicObject *self, void *closure)
 {
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
     return PyUnicode_FromString(Mix_GetMusicCopyrightTag(self->music));
+#else
+    return PyUnicode_FromString("");
+#endif
 }
 
 static PyObject *
@@ -797,7 +813,7 @@ pgmusic_play(pgMusicObject *self, PyObject *args, PyObject *kwargs)
     int loops = 0;
     float startpos = 0.0;
     float fade_in = 0.0;
-    int val, volume = 0;
+    int val;
 
     static char *kwids[] = {"loops", "startpos", "fade_in", NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|iff", kwids, &loops,
@@ -898,9 +914,9 @@ pgmusic_rewind(pgMusicObject *self, PyObject *_null)
 }
 
 static PyMethodDef _musicobj_methods[] = {
-    {"play", pgmusic_play, METH_VARARGS | METH_KEYWORDS, ""},
-    {"stop", pgmusic_stop, METH_NOARGS, ""},
-    {"rewind", pgmusic_rewind, METH_NOARGS, ""},
+    {"play", (PyCFunction)pgmusic_play, METH_VARARGS | METH_KEYWORDS, ""},
+    {"stop", (PyCFunction)pgmusic_stop, METH_NOARGS, ""},
+    {"rewind", (PyCFunction)pgmusic_rewind, METH_NOARGS, ""},
     {NULL, NULL, 0, NULL}  // Sentinel
 };
 
@@ -925,7 +941,7 @@ static PyTypeObject pgMusic_Type = {
     .tp_basicsize = sizeof(pgMusicObject),
     .tp_dealloc = (destructor)pgmusic_dealloc,
     .tp_new = PyType_GenericNew,
-    .tp_init = pgmusic_init,
+    .tp_init = (initproc)pgmusic_init,
     .tp_getset = _musicobj_getset,
     .tp_methods = _musicobj_methods,
     .tp_flags = Py_TPFLAGS_DEFAULT,
