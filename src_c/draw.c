@@ -993,7 +993,7 @@ aapolygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     Uint32 color;
     int *xlist = NULL, *ylist = NULL;
     int filled = 1; /* filled by default */
-    int x, y, result, l, t;
+    int x, y, result;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     Py_ssize_t loop, length;
@@ -1059,10 +1059,6 @@ aapolygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     for (loop = 0; loop < length; ++loop) {
         item = PySequence_GetItem(points, loop);
         result = pg_TwoIntsFromObj(item, &x, &y);
-        if (loop == 0) {
-            l = x;
-            t = y;
-        }
         Py_DECREF(item);
 
         if (!result) {
