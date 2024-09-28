@@ -82,6 +82,9 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
 static void
 draw_fillpoly(SDL_Surface *surf, int *vx, int *vy, Py_ssize_t n, Uint32 color,
               int *drawn_area);
+static void
+draw_fillpoly_for_aapolygon(SDL_Surface *surf, int *vx, int *vy, Py_ssize_t n,
+                            Uint32 color, int *drawn_area);
 static int
 draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
              int *drawn_area);
@@ -979,6 +982,127 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
                            drawn_area[3] - drawn_area[1] + 1);
     else
         return pgRect_New4(l, t, 0, 0);
+}
+
+static PyObject *
+aapolygon(PyObject *self, PyObject *arg, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    PyObject *colorobj, *points, *item = NULL;
+    SDL_Surface *surf = NULL;
+    Uint32 color;
+    int *xlist = NULL, *ylist = NULL;
+    int filled = 1; /* filled by default */
+    int x, y, result, l, t;
+    int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
+                         INT_MIN}; /* Used to store bounding box values */
+    Py_ssize_t loop, length;
+    static char *keywords[] = {"surface", "color", "points", "filled", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OO|p", keywords,
+                                     &pgSurface_Type, &surfobj, &colorobj,
+                                     &points, &filled)) {
+        return NULL; /* Exception already set. */
+    }
+
+    if (filled == 0) {
+        PyObject *ret = NULL;
+        PyObject *args = Py_BuildValue("(OOiO)", surfobj, colorobj, 1, points);
+
+        if (!args) {
+            return NULL; /* Exception already set. */
+        }
+
+        ret = aalines(NULL, args, NULL);
+        Py_DECREF(args);
+        return ret;
+    }
+
+    surf = pgSurface_AsSurface(surfobj);
+    SURF_INIT_CHECK(surf)
+
+    if (PG_SURF_BytesPerPixel(surf) <= 0 || PG_SURF_BytesPerPixel(surf) > 4) {
+        return PyErr_Format(PyExc_ValueError,
+                            "unsupported surface bit depth (%d) for drawing",
+                            PG_SURF_BytesPerPixel(surf));
+    }
+
+    CHECK_LOAD_COLOR(colorobj)
+
+    if (!PySequence_Check(points)) {
+        return RAISE(PyExc_TypeError,
+                     "points argument must be a sequence of number pairs");
+    }
+
+    length = PySequence_Length(points);
+
+    if (length < 3) {
+        return RAISE(PyExc_ValueError,
+                     "points argument must contain more than 2 points");
+    }
+
+    xlist = PyMem_New(int, length);
+    ylist = PyMem_New(int, length);
+
+    if (NULL == xlist || NULL == ylist) {
+        if (xlist) {
+            PyMem_Free(xlist);
+        }
+        if (ylist) {
+            PyMem_Free(ylist);
+        }
+        return RAISE(PyExc_MemoryError,
+                     "cannot allocate memory to draw polygon");
+    }
+
+    for (loop = 0; loop < length; ++loop) {
+        item = PySequence_GetItem(points, loop);
+        result = pg_TwoIntsFromObj(item, &x, &y);
+        if (loop == 0) {
+            l = x;
+            t = y;
+        }
+        Py_DECREF(item);
+
+        if (!result) {
+            PyMem_Free(xlist);
+            PyMem_Free(ylist);
+            return RAISE(PyExc_TypeError, "points must be number pairs");
+        }
+
+        xlist[loop] = x;
+        ylist[loop] = y;
+    }
+
+    if (!pgSurface_Lock(surfobj)) {
+        PyMem_Free(xlist);
+        PyMem_Free(ylist);
+        return RAISE(PyExc_RuntimeError, "error locking surface");
+    }
+
+    if (length != 3) {
+        draw_fillpoly_for_aapolygon(surf, xlist, ylist, length, color,
+                                    drawn_area);
+    }
+    else {
+        draw_filltri(surf, xlist, ylist, color, drawn_area);
+    }
+    PyMem_Free(xlist);
+    PyMem_Free(ylist);
+
+    // aalines for antialiasing
+    PyObject *ret = NULL;
+    PyObject *args = Py_BuildValue("(OOiO)", surfobj, colorobj, 1, points);
+    if (!args) {
+        return NULL; /* Exception already set. */
+    }
+    ret = aalines(NULL, args, NULL);
+    Py_DECREF(args);
+
+    if (!pgSurface_Unlock(surfobj)) {
+        return RAISE(PyExc_RuntimeError, "error unlocking surface");
+    }
+    return ret;  // already calculated return rect in aalines
 }
 
 static PyObject *
@@ -2873,24 +2997,20 @@ static void
 draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
               Py_ssize_t num_points, Uint32 color, int *drawn_area)
 {
-    /* point_x : x coordinates of the points
-     * point-y : the y coordinates of the points
-     * num_points : the number of points
-     */
-    Py_ssize_t i, i_previous;  // i_previous is the index of the point before i
+    Py_ssize_t i, i_previous;  // index of the point before i
     int y, miny, maxy;
     int x1, y1;
     int x2, y2;
     float intersect;
-    /* x_intersect are the x-coordinates of intersections of the polygon
-     * with some horizontal line */
+    /* x-coordinate of intersections of the polygon with some
+       horizontal line */
     int *x_intersect = PyMem_New(int, num_points);
     if (x_intersect == NULL) {
         PyErr_NoMemory();
         return;
     }
 
-    /* Determine Y maxima */
+    /* Determine Y bounds */
     miny = point_y[0];
     maxy = point_y[0];
     for (i = 1; (i < num_points); i++) {
@@ -2898,9 +3018,8 @@ draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
         maxy = MAX(maxy, point_y[i]);
     }
 
+    /* Special case: polygon only 1 pixel high. */
     if (miny == maxy) {
-        /* Special case: polygon only 1 pixel high. */
-
         /* Determine X bounds */
         int minx = point_x[0];
         int maxx = point_x[0];
@@ -2972,6 +3091,100 @@ draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
      * bigger y),
      * So we loop for border lines that are horizontal.
      */
+    for (i = 0; (i < num_points); i++) {
+        i_previous = ((i) ? (i - 1) : (num_points - 1));
+        y = point_y[i];
+
+        if ((miny < y) && (point_y[i_previous] == y) && (y < maxy)) {
+            drawhorzlineclipbounding(surf, color, point_x[i], y,
+                                     point_x[i_previous], drawn_area);
+        }
+    }
+    PyMem_Free(x_intersect);
+}
+
+/* This is same algorythm as draw_fillpoly but modified for filled
+ * draw.aapolygon so borders of fillpoly are not covering outer
+ * antialiased pixels from draw.aalines
+ */
+static void
+draw_fillpoly_for_aapolygon(SDL_Surface *surf, int *point_x, int *point_y,
+                            Py_ssize_t num_points, Uint32 color,
+                            int *drawn_area)
+{
+    Py_ssize_t i, i_previous;
+    int y, miny, maxy;
+    int x1, y1;
+    int x2, y2;
+    float intersect;
+    int *x_intersect = PyMem_New(int, num_points);
+    if (x_intersect == NULL) {
+        PyErr_NoMemory();
+        return;
+    }
+
+    /* Determine Y bounds */
+    miny = point_y[0];
+    maxy = point_y[0];
+    for (i = 1; (i < num_points); i++) {
+        miny = MIN(miny, point_y[i]);
+        maxy = MAX(maxy, point_y[i]);
+    }
+
+    /* Special case: polygon only 1 pixel high. */
+    if (miny == maxy) {
+        /* Determine X bounds */
+        int minx = point_x[0];
+        int maxx = point_x[0];
+        for (i = 1; (i < num_points); i++) {
+            minx = MIN(minx, point_x[i]);
+            maxx = MAX(maxx, point_x[i]);
+        }
+        drawhorzlineclipbounding(surf, color, minx, miny, maxx, drawn_area);
+        PyMem_Free(x_intersect);
+        return;
+    }
+
+    for (y = miny; (y <= maxy); y++) {
+        int n_intersections = 0;
+        for (i = 0; (i < num_points); i++) {
+            i_previous = ((i) ? (i - 1) : (num_points - 1));
+
+            y1 = point_y[i_previous];
+            y2 = point_y[i];
+            if (y1 < y2) {
+                x1 = point_x[i_previous];
+                x2 = point_x[i];
+            }
+            else if (y1 > y2) {
+                y2 = point_y[i_previous];
+                y1 = point_y[i];
+                x2 = point_x[i_previous];
+                x1 = point_x[i];
+            }
+            else {  // y1 == y2 : has to be handled as special case (below)
+                continue;
+            }
+            if (((y >= y1) && (y < y2)) || ((y == maxy) && (y2 == maxy))) {
+                intersect = (y - y1) * (x2 - x1) / (float)(y2 - y1);
+                if (n_intersections % 2 == 0) {
+                    // here, 1 is added so lower half is moved right
+                    intersect = (float)floor(intersect) + 1;
+                }
+                else
+                    intersect = (float)ceil(intersect);
+                x_intersect[n_intersections++] = (int)intersect + x1;
+            }
+        }
+        qsort(x_intersect, n_intersections, sizeof(int), compare_int);
+        for (i = 0; (i < n_intersections); i += 2) {
+            // here, 1 is subtracted, so right X coordinate is moved left
+            drawhorzlineclipbounding(surf, color, x_intersect[i], y,
+                                     x_intersect[i + 1] - 1, drawn_area);
+        }
+    }
+
+    // special case
     for (i = 0; (i < num_points); i++) {
         i_previous = ((i) ? (i - 1) : (num_points - 1));
         y = point_y[i];
@@ -3137,6 +3350,8 @@ static PyMethodDef _draw_methods[] = {
      DOC_DRAW_AACIRCLE},
     {"polygon", (PyCFunction)polygon, METH_VARARGS | METH_KEYWORDS,
      DOC_DRAW_POLYGON},
+    {"aapolygon", (PyCFunction)aapolygon, METH_VARARGS | METH_KEYWORDS,
+     DOC_DRAW_AAPOLYGON},
     {"rect", (PyCFunction)rect, METH_VARARGS | METH_KEYWORDS, DOC_DRAW_RECT},
 
     {NULL, NULL, 0, NULL}};

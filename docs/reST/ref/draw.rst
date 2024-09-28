@@ -147,6 +147,46 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    .. ## pygame.draw.polygon ##
 
+.. function:: aapolygon
+
+   | :sl:`draw an antialiased polygon`
+   | :sg:`aapolygon(surface, color, points) -> Rect`
+   | :sg:`aapolygon(surface, color, points, filled=True) -> Rect`
+
+   Draws an antialiased polygon on the given surface.
+
+   :param Surface surface: surface to draw on
+   :param color: color to draw with, the alpha value is optional if using a
+      tuple ``(RGB[A])``
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+   :param points: a sequence of 3 or more (x, y) coordinates that make up the
+      vertices of the polygon, each *coordinate* in the sequence must be a
+      tuple/list/:class:`pygame.math.Vector2` of 2 ints/floats,
+      e.g. ``[(x1, y1), (x2, y2), (x3, y3)]``
+   :type points: tuple(coordinate) or list(coordinate)
+   :param int filled: (optional) used to indicate that the polygon is to be filled
+
+         | if filled == True, (default) fill the polygon
+         | if filled == False, don't fill the polygon
+         |
+
+   :returns: a rect bounding the changed pixels, if nothing is drawn the
+      bounding rect's position will be the position of the first point in the
+      ``points`` parameter (float values will be truncated) and its width and
+      height will be 0
+   :rtype: Rect
+
+   :raises ValueError: if ``len(points) < 3`` (must have at least 3 points)
+   :raises TypeError: if ``points`` is not a sequence or ``points`` does not
+      contain number pairs
+
+   .. note::
+       For an aapolygon, use :func:`aalines()` with ``closed=True``.
+
+   .. versionadded:: 2.6.0
+
+   .. ## pygame.draw.aapolygon ##
+
 .. function:: circle
 
    | :sl:`draw a circle`
