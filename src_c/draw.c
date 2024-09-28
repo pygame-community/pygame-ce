@@ -88,6 +88,9 @@ draw_fillpoly_for_aapolygon(SDL_Surface *surf, int *vx, int *vy, Py_ssize_t n,
 static int
 draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
              int *drawn_area);
+static int
+draw_filltri_for_aapolygon(SDL_Surface *surf, int *xlist, int *ylist,
+                           Uint32 color, int *drawn_area);
 static void
 draw_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int width,
           Uint32 color);
@@ -1082,7 +1085,7 @@ aapolygon(PyObject *self, PyObject *arg, PyObject *kwargs)
                                     drawn_area);
     }
     else {
-        draw_filltri(surf, xlist, ylist, color, drawn_area);
+        draw_filltri_for_aapolygon(surf, xlist, ylist, color, drawn_area);
     }
     PyMem_Free(xlist);
     PyMem_Free(ylist);
@@ -1775,6 +1778,64 @@ draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
             x2 = p1x + (int)((y - p1y) * d3);
 
         drawhorzlineclipbounding(surf, color, x1, y, x2, draw_area);
+    }
+
+    return 0;
+}
+
+/* This is same algorythm as draw_filltri but modified for filled
+ * draw.aapolygon so borders of fillpoly are not covering outer
+ * antialiased pixels from draw.aalines
+ */
+static int
+draw_filltri_for_aapolygon(SDL_Surface *surf, int *xlist, int *ylist,
+                           Uint32 color, int *draw_area)
+{
+    int p0x, p0y, p1x, p1y, p2x, p2y;
+
+    p0x = xlist[0];
+    p1x = xlist[1];
+    p2x = xlist[2];
+    p0y = ylist[0];
+    p1y = ylist[1];
+    p2y = ylist[2];
+
+    if (p1y < p0y) {
+        swap_coordinates(&p1x, &p1y, &p0x, &p0y);
+    }
+
+    if (p2y < p1y) {
+        swap_coordinates(&p1x, &p1y, &p2x, &p2y);
+
+        if (p1y < p0y) {
+            swap_coordinates(&p1x, &p1y, &p0x, &p0y);
+        }
+    }
+
+    if ((p0y == p1y) && (p1y == p2y) && (p0x == p1x) && (p1x != p2x)) {
+        swap_coordinates(&p1x, &p1y, &p2x, &p2y);
+    }
+
+    float d1 = (float)((p2x - p0x) / ((p2y - p0y) + 1e-17));
+    float d2 = (float)((p1x - p0x) / ((p1y - p0y) + 1e-17));
+    float d3 = (float)((p2x - p1x) / ((p2y - p1y) + 1e-17));
+    int y;
+    for (y = p0y; y <= p2y; y++) {
+        int x1 = p0x + (int)((y - p0y) * d1) + 1;
+
+        int x2;
+        if (y < p1y)
+            x2 = p0x + (int)((y - p0y) * d2);
+        else
+            x2 = p1x + (int)((y - p1y) * d3) - 1;
+        if (x1 > x2) {
+            if (x1 - x2 != 1) {
+                set_and_check_rect(surf, x1 - 1, y, color, draw_area);
+            }
+        }
+        else {
+            drawhorzlineclipbounding(surf, color, x1, y, x2, draw_area);
+        }
     }
 
     return 0;
