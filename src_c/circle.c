@@ -670,7 +670,7 @@ pg_circle_setdiameter(pgCircleObject *self, PyObject *value, void *closure)
 static PyObject *
 pg_circle_gettop(pgCircleObject *self, void *closure)
 {
-    return pg_TupleFromDoublePair(self->circle.x,
+    return pg_tuple_couple_from_values_double(self->circle.x,
                                   self->circle.y - self->circle.r);
 }
 
@@ -695,7 +695,7 @@ pg_circle_settop(pgCircleObject *self, PyObject *value, void *closure)
 static PyObject *
 pg_circle_getleft(pgCircleObject *self, void *closure)
 {
-    return pg_TupleFromDoublePair(self->circle.x - self->circle.r,
+    return pg_tuple_couple_from_values_double(self->circle.x - self->circle.r,
                                   self->circle.y);
 }
 
@@ -720,7 +720,7 @@ pg_circle_setleft(pgCircleObject *self, PyObject *value, void *closure)
 static PyObject *
 pg_circle_getbottom(pgCircleObject *self, void *closure)
 {
-    return pg_TupleFromDoublePair(self->circle.x,
+    return pg_tuple_couple_from_values_double(self->circle.x,
                                   self->circle.y + self->circle.r);
 }
 
@@ -745,7 +745,7 @@ pg_circle_setbottom(pgCircleObject *self, PyObject *value, void *closure)
 static PyObject *
 pg_circle_getright(pgCircleObject *self, void *closure)
 {
-    return pg_TupleFromDoublePair(self->circle.x + self->circle.r,
+    return pg_tuple_couple_from_values_double(self->circle.x + self->circle.r,
                                   self->circle.y);
 }
 
