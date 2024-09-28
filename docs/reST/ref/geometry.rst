@@ -142,6 +142,50 @@
 
          .. ## Circle.circumference ##
 
+   .. attribute:: top
+         | :sl:`top coordinate of the circle`
+         | :sg:`top -> (float, float)`
+         It's a tuple containing the `x` and `y` coordinates that represent the top
+         of the circle.
+         Reassigning it moves the circle to the new position. The radius will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Circle.top ##
+
+   .. attribute:: bottom
+         | :sl:`bottom coordinate of the circle`
+         | :sg:`bottom -> (float, float)`
+         It's a tuple containing the `x` and `y` coordinates that represent the bottom
+         of the circle.
+         Reassigning it moves the circle to the new position. The radius will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Circle.bottom ##
+
+   .. attribute:: left
+         | :sl:`left coordinate of the circle`
+         | :sg:`left -> (float, float)`
+         It's a tuple containing the `x` and `y` coordinates that represent the left
+         of the circle.
+         Reassigning it moves the circle to the new position. The radius will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Circle.left ##
+
+   .. attribute:: right
+         | :sl:`right coordinate of the circle`
+         | :sg:`right -> (float, float)`
+         It's a tuple containing the `x` and `y` coordinates that represent the right
+         of the circle.
+         Reassigning it moves the circle to the new position. The radius will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Circle.right ##
+
    **Circle Methods**
 
    ----

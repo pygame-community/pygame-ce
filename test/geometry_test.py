@@ -300,6 +300,210 @@ class CircleTypeTest(unittest.TestCase):
         with self.assertRaises(AttributeError):
             del c.center
 
+    def test_top(self):
+        """Ensures changing the top attribute moves the circle and does not change the circle's radius."""
+        expected_radius = 5.0
+
+        for pos in [
+            (1, 0),
+            (0, 0),
+            (-1, 0),
+            (0, -1),
+            (1, 1),
+            (-1, -1),
+            (-1, 1),
+            (1, -1),
+        ]:
+            c = Circle((0, 0), expected_radius)
+
+            c.top = pos
+
+            self.assertEqual(pos[0], c.x)
+            self.assertEqual(pos[1], c.y - expected_radius)
+
+            self.assertEqual(expected_radius, c.r)
+
+    def test_top_update(self):
+        """Ensures changing the x or y value of the circle correctly updates the top."""
+        expected_x = 10.3
+        expected_y = 2.12
+        expected_radius = 5.0
+        c = Circle(1, 1, expected_radius)
+
+        c.x = expected_x
+        self.assertEqual(c.top, (expected_x, c.y - expected_radius))
+
+        c.y = expected_y
+        self.assertEqual(c.top, (c.x, expected_y - expected_radius))
+
+    def test_top_invalid_value(self):
+        """Ensures the top attribute handles invalid values correctly."""
+        c = Circle(0, 0, 1)
+
+        for value in (None, [], "1", (1,), [1, 2, 3], True, False):
+            with self.assertRaises(TypeError):
+                c.top = value
+
+    def test_top_del(self):
+        """Ensures the top attribute can't be deleted."""
+        c = Circle(0, 0, 1)
+
+        with self.assertRaises(AttributeError):
+            del c.top
+
+    def test_left(self):
+        """Ensures changing the left attribute moves the circle and does not change the circle's radius."""
+        expected_radius = 5.0
+
+        for pos in [
+            (1, 0),
+            (0, 0),
+            (-1, 0),
+            (0, -1),
+            (1, 1),
+            (-1, -1),
+            (-1, 1),
+            (1, -1),
+        ]:
+            c = Circle((0, 0), expected_radius)
+
+            c.left = pos
+
+            self.assertEqual(pos[0], c.x - expected_radius)
+            self.assertEqual(pos[1], c.y)
+
+            self.assertEqual(expected_radius, c.r)
+
+    def test_left_update(self):
+        """Ensures changing the x or y value of the circle correctly updates the left."""
+        expected_x = 10.3
+        expected_y = 2.12
+        expected_radius = 5.0
+        c = Circle(1, 1, expected_radius)
+
+        c.x = expected_x
+        self.assertEqual(c.left, (expected_x - expected_radius, c.y))
+
+        c.y = expected_y
+        self.assertEqual(c.left, (c.x - expected_radius, expected_y))
+
+    def test_left_invalid_value(self):
+        """Ensures the left attribute handles invalid values correctly."""
+        c = Circle(0, 0, 1)
+
+        for value in (None, [], "1", (1,), [1, 2, 3], True, False):
+            with self.assertRaises(TypeError):
+                c.left = value
+
+    def test_left_del(self):
+        """Ensures the left attribute can't be deleted."""
+        c = Circle(0, 0, 1)
+
+        with self.assertRaises(AttributeError):
+            del c.left
+
+    def test_right(self):
+        """Ensures changing the right attribute moves the circle and does not change the circle's radius."""
+        expected_radius = 5.0
+
+        for pos in [
+            (1, 0),
+            (0, 0),
+            (-1, 0),
+            (0, -1),
+            (1, 1),
+            (-1, -1),
+            (-1, 1),
+            (1, -1),
+        ]:
+            c = Circle((0, 0), expected_radius)
+
+            c.right = pos
+
+            self.assertEqual(pos[0], c.x + expected_radius)
+            self.assertEqual(pos[1], c.y)
+
+            self.assertEqual(expected_radius, c.r)
+
+    def test_right_update(self):
+        """Ensures changing the x or y value of the circle correctly updates the right."""
+        expected_x = 10.3
+        expected_y = 2.12
+        expected_radius = 5.0
+        c = Circle(1, 1, expected_radius)
+
+        c.x = expected_x
+        self.assertEqual(c.right, (expected_x + expected_radius, c.y))
+
+        c.y = expected_y
+        self.assertEqual(c.right, (c.x + expected_radius, expected_y))
+
+    def test_right_invalid_value(self):
+        """Ensures the right attribute handles invalid values correctly."""
+        c = Circle(0, 0, 1)
+
+        for value in (None, [], "1", (1,), [1, 2, 3], True, False):
+            with self.assertRaises(TypeError):
+                c.right = value
+
+    def test_right_del(self):
+        """Ensures the right attribute can't be deleted."""
+        c = Circle(0, 0, 1)
+
+        with self.assertRaises(AttributeError):
+            del c.right
+
+    def test_bottom(self):
+        """Ensures changing the bottom attribute moves the circle and does not change the circle's radius."""
+        expected_radius = 5.0
+
+        for pos in [
+            (1, 0),
+            (0, 0),
+            (-1, 0),
+            (0, -1),
+            (1, 1),
+            (-1, -1),
+            (-1, 1),
+            (1, -1),
+        ]:
+            c = Circle((0, 0), expected_radius)
+
+            c.bottom = pos
+
+            self.assertEqual(pos[0], c.x)
+            self.assertEqual(pos[1], c.y + expected_radius)
+
+            self.assertEqual(expected_radius, c.r)
+
+    def test_bottom_update(self):
+        """Ensures changing the x or y value of the circle correctly updates the bottom."""
+        expected_x = 10.3
+        expected_y = 2.12
+        expected_radius = 5.0
+        c = Circle(1, 1, expected_radius)
+
+        c.x = expected_x
+        self.assertEqual(c.bottom, (expected_x, c.y + expected_radius))
+
+        c.y = expected_y
+        self.assertEqual(c.bottom, (c.x, expected_y + expected_radius))
+
+    def test_bottom_invalid_value(self):
+        """Ensures the bottom attribute handles invalid values correctly."""
+        c = Circle(0, 0, 1)
+
+        for value in (None, [], "1", (1,), [1, 2, 3], True, False):
+            with self.assertRaises(TypeError):
+                c.bottom = value
+
+    def test_bottom_del(self):
+        """Ensures the bottom attribute can't be deleted."""
+        c = Circle(0, 0, 1)
+
+        with self.assertRaises(AttributeError):
+            del c.bottom
+
     def test_area(self):
         """Ensures the area is calculated correctly."""
         c = Circle(0, 0, 1)
