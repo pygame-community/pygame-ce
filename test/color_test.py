@@ -782,9 +782,12 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(expected_cmy, cmy)
         self.assertEqual(expected_cmy, cmy_tuple)
 
-        with self.assertRaises(ValueError):
-            pygame.Color.from_cmy(0.5, 0.5, 0.5, "lel", "foo")
-            pygame.Color.from_cmy((0.5, 0.5, 0.5, 0.5))
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_cmy(0.5, 0.5, 0.5, "lel", "foo")
+        )
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_cmy((0.5, 0.5, 0.5, 0.5))
+        )
 
     def test_from_hsva(self):
         hsva = pygame.Color.from_hsva(0, 100, 100, 100)
@@ -795,9 +798,12 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(expected_hsva, hsva)
         self.assertEqual(expected_hsva, hsva_tuple)
 
-        with self.assertRaises(ValueError):
-            pygame.Color.from_hsva(0, 100, 100, 100, "lel", "foo")
-            pygame.Color.from_hsva((0, 100, 100, 100, "lel"))
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_hsva(0, 100, 100, 100, "lel", "foo")
+        )
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_hsva((0, 100, 100, 100, "lel"))
+        )
 
     def test_from_hsla(self):
         hsla = pygame.Color.from_hsla(0, 100, 100, 100)
@@ -808,9 +814,12 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(expected_hsla, hsla)
         self.assertEqual(expected_hsla, hsla_tuple)
 
-        with self.assertRaises(ValueError):
-            pygame.Color.from_hsla(0, 100, 100, 100, "lel")
-            pygame.Color.from_hsla((0, 100, 100, 100, "lel", "foo"))
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_hsla(0, 100, 100, 100, "lel")
+        )
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_hsla((0, 100, 100, 100, "lel", "foo"))
+        )
 
     def test_from_i1i2i3(self):
         i1i2i3 = pygame.Color.from_i1i2i3(0, 0, 0)
