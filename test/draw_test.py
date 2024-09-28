@@ -166,6 +166,7 @@ class DrawTestCase(unittest.TestCase):
 
     draw_rect = staticmethod(draw.rect)
     draw_polygon = staticmethod(draw.polygon)
+    draw_aapolygon = staticmethod(draw.aapolygon)
     draw_circle = staticmethod(draw.circle)
     draw_aacircle = staticmethod(draw.aacircle)
     draw_ellipse = staticmethod(draw.ellipse)
@@ -4274,6 +4275,647 @@ class DrawPolygonTest(DrawPolygonMixin, DrawTestCase):
     """
 
 
+### AAPolygon Testing ###########################################################
+
+SQUARE = ([0, 0], [3, 0], [3, 3], [0, 3])
+DIAMOND = [(1, 3), (3, 5), (5, 3), (3, 1)]
+RHOMBUS = [(1, 3), (4, 5), (7, 3), (4, 1)]
+CROSS = (
+    [2, 0],
+    [4, 0],
+    [4, 2],
+    [6, 2],
+    [6, 4],
+    [4, 4],
+    [4, 6],
+    [2, 6],
+    [2, 4],
+    [0, 4],
+    [0, 2],
+    [2, 2],
+)
+
+
+class DrawAAPolygonMixin:
+    """Mixin tests for drawing aapolygons.
+
+    This class contains all the general aapolygon drawing tests.
+    """
+
+    def setUp(self):
+        self.surface = pygame.Surface((20, 20))
+
+    def test_aapolygon__args(self):
+        """Ensures draw aapolygon accepts the correct args."""
+        bounds_rect = self.draw_aapolygon(
+            pygame.Surface((3, 3)), (0, 10, 0, 50), ((0, 0), (1, 1), (2, 2)), False
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aapolygon__args_without_filled(self):
+        """Ensures draw aapolygon accepts the args without filled arg."""
+        bounds_rect = self.draw_aapolygon(
+            pygame.Surface((2, 2)), (0, 0, 0, 50), ((0, 0), (1, 1), (2, 2))
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aapolygon__kwargs(self):
+        """Ensures draw aapolygon accepts the correct kwargs
+        with and without a filled arg.
+        """
+        surface = pygame.Surface((4, 4))
+        color = pygame.Color("yellow")
+        points = ((0, 0), (1, 1), (2, 2))
+        kwargs_list = [
+            {"surface": surface, "color": color, "points": points, "filled": False},
+            {"surface": surface, "color": color, "points": points},
+        ]
+
+        for kwargs in kwargs_list:
+            bounds_rect = self.draw_aapolygon(**kwargs)
+
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aapolygon__kwargs_order_independent(self):
+        """Ensures draw aapolygon's kwargs are not order dependent."""
+        bounds_rect = self.draw_aapolygon(
+            color=(10, 20, 30),
+            surface=pygame.Surface((3, 2)),
+            filled=False,
+            points=((0, 1), (1, 2), (2, 3)),
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aapolygon__args_missing(self):
+        """Ensures draw aapolygon detects any missing required args."""
+        surface = pygame.Surface((1, 1))
+        color = pygame.Color("blue")
+
+        with self.assertRaises(TypeError):
+            bounds_rect = self.draw_aapolygon(surface, color)
+
+        with self.assertRaises(TypeError):
+            bounds_rect = self.draw_aapolygon(surface)
+
+        with self.assertRaises(TypeError):
+            bounds_rect = self.draw_aapolygon()
+
+    def test_aapolygon__kwargs_missing(self):
+        """Ensures draw aapolygon detects any missing required kwargs."""
+        kwargs = {
+            "surface": pygame.Surface((1, 2)),
+            "color": pygame.Color("red"),
+            "points": ((2, 1), (2, 2), (2, 3)),
+            "filled": False,
+        }
+
+        for name in ("points", "color", "surface"):
+            invalid_kwargs = dict(kwargs)
+            invalid_kwargs.pop(name)  # Pop from a copy.
+
+            with self.assertRaises(TypeError):
+                bounds_rect = self.draw_aapolygon(**invalid_kwargs)
+
+    def test_aapolygon__arg_invalid_types(self):
+        """Ensures draw aapolygon detects invalid arg types."""
+        surface = pygame.Surface((2, 2))
+        color = pygame.Color("blue")
+        points = ((0, 1), (1, 2), (1, 3))
+
+        with self.assertRaises(TypeError):
+            # Invalid filled.
+            bounds_rect = self.draw_aapolygon(surface, color, points, InvalidBool())
+
+        with self.assertRaises(TypeError):
+            # Invalid points.
+            bounds_rect = self.draw_aapolygon(surface, color, (1, 2, 3))
+
+        with self.assertRaises(TypeError):
+            # Invalid color.
+            bounds_rect = self.draw_aapolygon(surface, 2.3, points)
+
+        with self.assertRaises(TypeError):
+            # Invalid surface.
+            bounds_rect = self.draw_aapolygon((1, 2, 3, 4), color, points)
+
+    def test_aapolygon__kwarg_invalid_types(self):
+        """Ensures draw aapolygon detects invalid kwarg types."""
+        surface = pygame.Surface((3, 3))
+        color = pygame.Color("green")
+        points = ((0, 0), (1, 0), (2, 0))
+        filled = False
+        kwargs_list = [
+            {
+                "surface": pygame.Surface,  # Invalid surface.
+                "color": color,
+                "points": points,
+                "filled": filled,
+            },
+            {
+                "surface": surface,
+                "color": 2.3,  # Invalid color.
+                "points": points,
+                "filled": filled,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "points": ((1,), (1,), (1,)),  # Invalid points.
+                "filled": filled,
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "points": points,
+                "filled": InvalidBool(),
+            },
+        ]  # Invalid filled.
+
+        for kwargs in kwargs_list:
+            with self.assertRaises(TypeError):
+                bounds_rect = self.draw_aapolygon(**kwargs)
+
+    def test_aapolygon__kwarg_invalid_name(self):
+        """Ensures draw aapolygon detects invalid kwarg names."""
+        surface = pygame.Surface((2, 3))
+        color = pygame.Color("cyan")
+        points = ((1, 1), (1, 2), (1, 3))
+        kwargs_list = [
+            {
+                "surface": surface,
+                "color": color,
+                "points": points,
+                "filed": False,
+                "invalid": 1,
+            },
+            {"surface": surface, "color": color, "points": points, "invalid": 1},
+        ]
+
+        for kwargs in kwargs_list:
+            with self.assertRaises(TypeError):
+                bounds_rect = self.draw_aapolygon(**kwargs)
+
+    def test_aapolygon__args_and_kwargs(self):
+        """Ensures draw aapolygon accepts a combination of args/kwargs"""
+        surface = pygame.Surface((3, 1))
+        color = (255, 255, 0, 0)
+        points = ((0, 1), (1, 2), (2, 3))
+        filled = False
+        kwargs = {
+            "surface": surface,
+            "color": color,
+            "points": points,
+            "filled": filled,
+        }
+
+        for name in ("surface", "color", "points", "filled"):
+            kwargs.pop(name)
+
+            if "surface" == name:
+                bounds_rect = self.draw_aapolygon(surface, **kwargs)
+            elif "color" == name:
+                bounds_rect = self.draw_aapolygon(surface, color, **kwargs)
+            elif "points" == name:
+                bounds_rect = self.draw_aapolygon(surface, color, points, **kwargs)
+            else:
+                bounds_rect = self.draw_aapolygon(
+                    surface, color, points, filled, **kwargs
+                )
+
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aapolygon__valid_filled_values(self):
+        """Ensures draw aapolygon accepts different filled values."""
+        surface_color = pygame.Color("white")
+        surface = pygame.Surface((3, 4))
+        color = (10, 20, 30, 255)
+        pos = (2, 2)
+        kwargs = {
+            "surface": surface,
+            "color": color,
+            "points": ((1, 1), (3, 1), (3, 3), (1, 3)),
+            "filled": None,
+        }
+
+        true_values = (-7, 1, 10, "2", 3.1, (4,), [5], True)
+        false_values = (None, "", 0, (), [], False)
+
+        for filled in true_values + false_values:
+            surface.fill(surface_color)  # Clear for each test.
+            kwargs["filled"] = filled
+            expected_color = color if filled else surface_color
+
+            bounds_rect = self.draw_aapolygon(**kwargs)
+
+            self.assertEqual(surface.get_at(pos), expected_color)
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aapolygon__valid_points_format(self):
+        """Ensures draw aapolygon accepts different points formats."""
+        expected_color = (10, 20, 30, 255)
+        surface_color = pygame.Color("white")
+        surface = pygame.Surface((3, 4))
+        kwargs = {
+            "surface": surface,
+            "color": expected_color,
+            "points": None,
+            "filled": False,
+        }
+
+        # The point type can be a tuple/list/Vector2.
+        point_types = (
+            (tuple, tuple, tuple, tuple),  # all tuples
+            (list, list, list, list),  # all lists
+            (Vector2, Vector2, Vector2, Vector2),  # all Vector2s
+            (list, Vector2, tuple, Vector2),
+        )  # mix
+
+        # The point values can be ints or floats.
+        point_values = (
+            ((1, 1), (2, 1), (2, 2), (1, 2)),
+            ((1, 1), (2.2, 1), (2.1, 2.2), (1, 2.1)),
+        )
+
+        # Each sequence of points can be a tuple or a list.
+        seq_types = (tuple, list)
+
+        for point_type in point_types:
+            for values in point_values:
+                check_pos = values[0]
+                points = [point_type[i](pt) for i, pt in enumerate(values)]
+
+                for seq_type in seq_types:
+                    surface.fill(surface_color)  # Clear for each test.
+                    kwargs["points"] = seq_type(points)
+
+                    bounds_rect = self.draw_aapolygon(**kwargs)
+
+                    self.assertEqual(surface.get_at(check_pos), expected_color)
+                    self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aapolygon__invalid_points_formats(self):
+        """Ensures draw aapolygon handles invalid points formats correctly."""
+        kwargs = {
+            "surface": pygame.Surface((4, 4)),
+            "color": pygame.Color("red"),
+            "points": None,
+            "filled": False,
+        }
+
+        points_fmts = (
+            ((1, 1), (2, 1), (2,)),  # Too few coords.
+            ((1, 1), (2, 1), (2, 2, 2)),  # Too many coords.
+            ((1, 1), (2, 1), (2, "2")),  # Wrong type.
+            ((1, 1), (2, 1), {2, 3}),  # Wrong type.
+            ((1, 1), (2, 1), {2: 2, 3: 3}),  # Wrong type.
+            {(1, 1), (2, 1), (2, 2), (1, 2)},  # Wrong type.
+            {1: 1, 2: 2, 3: 3, 4: 4},
+        )  # Wrong type.
+
+        for points in points_fmts:
+            kwargs["points"] = points
+
+            with self.assertRaises(TypeError):
+                bounds_rect = self.draw_aapolygon(**kwargs)
+
+    def test_aapolygon__invalid_points_values(self):
+        """Ensures draw aapolygon handles invalid points values correctly."""
+        kwargs = {
+            "surface": pygame.Surface((4, 4)),
+            "color": pygame.Color("red"),
+            "points": None,
+            "filled": False,
+        }
+
+        points_fmts = (
+            (),  # Too few points.
+            ((1, 1),),  # Too few points.
+            ((1, 1), (2, 1)),
+        )  # Too few points.
+
+        for points in points_fmts:
+            for seq_type in (tuple, list):  # Test as tuples and lists.
+                kwargs["points"] = seq_type(points)
+
+                with self.assertRaises(ValueError):
+                    bounds_rect = self.draw_aapolygon(**kwargs)
+
+    def test_aapolygon__valid_color_formats(self):
+        """Ensures draw aapolygon accepts different color formats."""
+        green_color = pygame.Color("green")
+        surface_color = pygame.Color("black")
+        surface = pygame.Surface((3, 4))
+        kwargs = {
+            "surface": surface,
+            "color": None,
+            "points": ((1, 1), (2, 1), (2, 2), (1, 2)),
+            "filled": False,
+        }
+        pos = kwargs["points"][0]
+        greens = (
+            (0, 255, 0),
+            (0, 255, 0, 255),
+            surface.map_rgb(green_color),
+            green_color,
+        )
+
+        for color in greens:
+            surface.fill(surface_color)  # Clear for each test.
+            kwargs["color"] = color
+
+            if isinstance(color, int):
+                expected_color = surface.unmap_rgb(color)
+            else:
+                expected_color = green_color
+
+            bounds_rect = self.draw_aapolygon(**kwargs)
+
+            self.assertEqual(surface.get_at(pos), expected_color)
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_aapolygon__invalid_color_formats(self):
+        """Ensures draw aapolygon handles invalid color formats correctly."""
+        kwargs = {
+            "surface": pygame.Surface((4, 3)),
+            "color": None,
+            "points": ((1, 1), (2, 1), (2, 2), (1, 2)),
+            "filled": False,
+        }
+
+        for expected_color in (2.3, self):
+            kwargs["color"] = expected_color
+
+            with self.assertRaises(TypeError):
+                bounds_rect = self.draw_aapolygon(**kwargs)
+
+    def test_draw_square(self):
+        self.draw_aapolygon(self.surface, RED, SQUARE)
+        # note : there is a discussion (#234) if draw.aapolygon should include or
+        # not the right or lower border; here we stick with current behavior,
+        # e.g. include those borders ...
+        for x in range(4):
+            for y in range(4):
+                self.assertEqual(self.surface.get_at((x, y)), RED)
+
+    def test_draw_diamond(self):
+        pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
+        self.draw_aapolygon(self.surface, GREEN, DIAMOND)
+        # this diamond shape is equivalent to its four corners, plus inner square
+        for x, y in DIAMOND:
+            self.assertEqual(self.surface.get_at((x, y)), GREEN, msg=str((x, y)))
+        for x in range(2, 5):
+            for y in range(2, 5):
+                self.assertEqual(self.surface.get_at((x, y)), GREEN)
+
+    def test_1_pixel_high_or_wide_shapes(self):
+        # 1. one-pixel-high, filled
+        pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
+        self.draw_aapolygon(self.surface, GREEN, [(x, 2) for x, _y in CROSS], True)
+        cross_size = 6  # the maximum x or y coordinate of the cross
+        for x in range(cross_size + 1):
+            self.assertEqual(self.surface.get_at((x, 1)), RED)
+            self.assertEqual(self.surface.get_at((x, 2)), GREEN)
+            self.assertEqual(self.surface.get_at((x, 3)), RED)
+        pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
+        # 2. one-pixel-high, not filled
+        self.draw_aapolygon(self.surface, GREEN, [(x, 5) for x, _y in CROSS], False)
+        for x in range(cross_size + 1):
+            self.assertEqual(self.surface.get_at((x, 4)), RED)
+            self.assertEqual(self.surface.get_at((x, 5)), GREEN)
+            self.assertEqual(self.surface.get_at((x, 6)), RED)
+        pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
+        # 3. one-pixel-wide, filled
+        self.draw_aapolygon(self.surface, GREEN, [(3, y) for _x, y in CROSS], True)
+        for y in range(cross_size + 1):
+            self.assertEqual(self.surface.get_at((2, y)), RED)
+            self.assertEqual(self.surface.get_at((3, y)), GREEN)
+            self.assertEqual(self.surface.get_at((4, y)), RED)
+        pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
+        # 4. one-pixel-wide, not filled
+        self.draw_aapolygon(self.surface, GREEN, [(4, y) for _x, y in CROSS], False)
+        for y in range(cross_size + 1):
+            self.assertEqual(self.surface.get_at((3, y)), RED)
+            self.assertEqual(self.surface.get_at((4, y)), GREEN)
+            self.assertEqual(self.surface.get_at((5, y)), RED)
+
+    def test_draw_symetric_cross(self):
+        """non-regression on pygame-ce issue #249 : x and y where handled inconsistently.
+
+        Also, the result is/was different whether we fill or not the polygon.
+        """
+        # 1. case (not filled: `aapolygon` calls internally the `aalines` function)
+        pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
+        self.draw_aapolygon(self.surface, GREEN, CROSS, False)
+        inside = [(x, 3) for x in range(1, 6)] + [(3, y) for y in range(1, 6)]
+        for x in range(10):
+            for y in range(10):
+                if (x, y) in inside:
+                    self.assertEqual(self.surface.get_at((x, y)), RED)
+                elif (x in range(2, 5) and y < 7) or (y in range(2, 5) and x < 7):
+                    # we are on the border of the cross:
+                    self.assertEqual(self.surface.get_at((x, y)), GREEN)
+                else:
+                    # we are outside
+                    self.assertEqual(self.surface.get_at((x, y)), RED)
+
+        # 2. case (filled; this is the example from #234)
+        pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 1)
+        self.draw_aapolygon(self.surface, GREEN, CROSS, True)
+        inside = [(x, 3) for x in range(1, 6)] + [(3, y) for y in range(1, 6)]
+        for x in range(10):
+            for y in range(10):
+                if (x in range(2, 5) and y < 7) or (y in range(2, 5) and x < 7):
+                    # we are on the border of the cross:
+                    self.assertEqual(
+                        self.surface.get_at((x, y)), GREEN, msg=str((x, y))
+                    )
+                else:
+                    # we are outside
+                    self.assertEqual(self.surface.get_at((x, y)), RED)
+
+    def test_illumine_shape(self):
+        """non-regression on pygame-ce issue #328"""
+        rect = pygame.Rect((0, 0, 20, 20))
+        path_data = [
+            (0, 0),
+            (rect.width - 1, 0),  # upper border
+            (rect.width - 5, 5 - 1),
+            (5 - 1, 5 - 1),  # upper inner
+            (5 - 1, rect.height - 5),
+            (0, rect.height - 1),
+        ]  # lower diagonal
+        # The shape looks like this (the numbers are the indices of path_data)
+
+        # 0**********************1              <-- upper border
+        # ***********************
+        # **********************
+        # *********************
+        # ****3**************2                  <-- upper inner border
+        # *****
+        # *****                   (more lines here)
+        # *****
+        # ****4
+        # ****
+        # ***
+        # **
+        # 5
+        #
+
+        # the current bug is that the "upper inner" line is not drawn, but only
+        # if 4 or some lower corner exists
+        pygame.draw.rect(self.surface, RED, (0, 0, 20, 20), 0)
+
+        # 1. First without the corners 4 & 5
+        self.draw_aapolygon(self.surface, GREEN, path_data[:4])
+        for x in range(20):
+            self.assertEqual(self.surface.get_at((x, 0)), GREEN)  # upper border
+        for x in range(4, rect.width - 5 + 1):
+            self.assertEqual(self.surface.get_at((x, 4)), GREEN)  # upper inner
+
+        # 2. with the corners 4 & 5
+        pygame.draw.rect(self.surface, RED, (0, 0, 20, 20), 0)
+        self.draw_aapolygon(self.surface, GREEN, path_data)
+        for x in range(4, rect.width - 5 + 1):
+            self.assertEqual(self.surface.get_at((x, 4)), GREEN)  # upper inner
+
+    def test_invalid_points(self):
+        self.assertRaises(
+            TypeError,
+            lambda: self.draw_aapolygon(
+                self.surface, RED, ((0, 0), (0, 20), (20, 20), 20)
+            ),
+        )
+
+    def test_aapolygon__bounding_rect(self):
+        """Ensures draw aapolygon returns the correct bounding rect.
+
+        Tests polygons on and off the surface, filled and not filled.
+        """
+        polygon_color = pygame.Color("red")
+        surf_color = pygame.Color("black")
+        min_width = min_height = 5
+        max_width = max_height = 7
+        sizes = ((min_width, min_height), (max_width, max_height))
+        surface = pygame.Surface((20, 20), 0, 32)
+        surf_rect = surface.get_rect()
+        # Make a rect that is bigger than the surface to help test drawing
+        # polygons off and partially off the surface.
+        big_rect = surf_rect.inflate(min_width * 2 + 1, min_height * 2 + 1)
+
+        for pos in rect_corners_mids_and_center(
+            surf_rect
+        ) + rect_corners_mids_and_center(big_rect):
+            # A rect (pos_rect) is used to help create and position the
+            # polygon. Each of this rect's position attributes will be set to
+            # the pos value.
+            for attr in RECT_POSITION_ATTRIBUTES:
+                # Test using different rect sizes and filled.
+                for width, height in sizes:
+                    pos_rect = pygame.Rect((0, 0), (width, height))
+                    setattr(pos_rect, attr, pos)
+                    # Points form a triangle with no fully
+                    # horizontal/vertical lines.
+                    vertices = (
+                        pos_rect.midleft,
+                        pos_rect.midtop,
+                        pos_rect.bottomright,
+                    )
+
+                    for filled in (True, False):
+                        surface.fill(surf_color)  # Clear for each test.
+
+                        bounding_rect = self.draw_aapolygon(
+                            surface, polygon_color, vertices, filled
+                        )
+
+                        # Calculating the expected_rect after the polygon
+                        # is drawn (it uses what is actually drawn).
+                        expected_rect = create_bounding_rect(
+                            surface, surf_color, vertices[0]
+                        )
+
+                        self.assertEqual(
+                            bounding_rect,
+                            expected_rect,
+                            f"filled={filled}",
+                        )
+
+    def test_aapolygon__surface_clip(self):
+        """Ensures draw aapolygon respects a surface's clip area.
+
+        Tests drawing the polygon filled and unfilled.
+        """
+        surfw = surfh = 30
+        polygon_color = pygame.Color("red")
+        surface_color = pygame.Color("green")
+        surface = pygame.Surface((surfw, surfh))
+        surface.fill(surface_color)
+
+        clip_rect = pygame.Rect((0, 0), (8, 10))
+        clip_rect.center = surface.get_rect().center
+        pos_rect = clip_rect.copy()  # Manages the polygon's pos.
+
+        for filled in (True, False):  # Filled and unfilled.
+            # Test centering the polygon along the clip rect's edge.
+            for center in rect_corners_mids_and_center(clip_rect):
+                # Get the expected points by drawing the polygon without the
+                # clip area set.
+                pos_rect.center = center
+                vertices = (
+                    pos_rect.topleft,
+                    pos_rect.topright,
+                    pos_rect.bottomright,
+                    pos_rect.bottomleft,
+                )
+                surface.set_clip(None)
+                surface.fill(surface_color)
+                self.draw_aapolygon(surface, polygon_color, vertices, filled)
+                expected_pts = get_color_points(surface, polygon_color, clip_rect)
+
+                # Clear the surface and set the clip area. Redraw the polygon
+                # and check that only the clip area is modified.
+                surface.fill(surface_color)
+                surface.set_clip(clip_rect)
+
+                self.draw_aapolygon(surface, polygon_color, vertices, filled)
+
+                surface.lock()  # For possible speed up.
+
+                # Check all the surface points to ensure only the expected_pts
+                # are the polygon_color.
+                for pt in ((x, y) for x in range(surfw) for y in range(surfh)):
+                    if pt in expected_pts:
+                        expected_color = polygon_color
+                    else:
+                        expected_color = surface_color
+
+                    self.assertEqual(surface.get_at(pt), expected_color, pt)
+
+                surface.unlock()
+
+    def test_aapolygon_filled_shape(self):
+        """
+        Modified test from draw.polygon to ensure antialiased pixels are
+        visible on all sides of polygon
+        """
+        key_polygon_points = [(2, 2), (6, 2), (2, 4), (6, 4)]
+        pygame.draw.rect(self.surface, RED, (0, 0, 10, 10), 0)
+        pygame.draw.aapolygon(self.surface, GREEN, RHOMBUS)
+        for x, y in key_polygon_points:
+            self.assertNotEqual(self.surface.get_at((x, y)), GREEN, msg=str((x, y)))
+
+
+class DrawAAPolygonTest(DrawAAPolygonMixin, DrawTestCase):
+    """Test draw module function aapolygon.
+
+    This class inherits the general tests from DrawAAPolygonMixin. It is also
+    the class to add any draw.aapolygon specific tests to.
+    """
+
+
 ### Rect Testing ##############################################################
 
 
@@ -7146,6 +7788,7 @@ class DrawModuleTest(unittest.TestCase):
             draw.circle(surf, col, (7, 3), 2)
             draw.aacircle(surf, col, (7, 3), 2)
             draw.polygon(surf, col, points, 0)
+            draw.aapolygon(surf, col, points, 0)
 
         # 2. invalid colors
         for col in (1.256, object(), None):
@@ -7175,6 +7818,9 @@ class DrawModuleTest(unittest.TestCase):
 
             with self.assertRaises(TypeError):
                 draw.polygon(surf, col, points, 0)
+
+            with self.assertRaises(TypeError):
+                draw.aapolygon(surf, col, points, 0)
 
     def test_aafunctions_depth_segfault(self):
         """Ensure future commits don't break the segfault fixed by pull request

@@ -1005,6 +1005,19 @@ aapolygon(PyObject *self, PyObject *arg, PyObject *kwargs)
         return NULL; /* Exception already set. */
     }
 
+    length = PySequence_Length(points);
+
+    if (!PySequence_Check(points)) {
+        return RAISE(PyExc_TypeError,
+                     "points argument must be a sequence of number pairs");
+    }
+
+    // always check this because aalines accepts 2 points
+    if (length < 3) {
+        return RAISE(PyExc_ValueError,
+                     "points argument must contain more than 2 points");
+    }
+
     if (filled == 0) {
         PyObject *ret = NULL;
         PyObject *args = Py_BuildValue("(OOiO)", surfobj, colorobj, 1, points);
@@ -1028,18 +1041,6 @@ aapolygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     CHECK_LOAD_COLOR(colorobj)
-
-    if (!PySequence_Check(points)) {
-        return RAISE(PyExc_TypeError,
-                     "points argument must be a sequence of number pairs");
-    }
-
-    length = PySequence_Length(points);
-
-    if (length < 3) {
-        return RAISE(PyExc_ValueError,
-                     "points argument must contain more than 2 points");
-    }
 
     xlist = PyMem_New(int, length);
     ylist = PyMem_New(int, length);
