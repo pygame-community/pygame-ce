@@ -830,9 +830,10 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(expected_i1i2i3, i1i2i3)
         self.assertEqual(expected_i1i2i3, i1i2i3_tuple)
 
-        with self.assertRaises(ValueError):
-            pygame.Color.from_i1i2i3(0, 0, 0, "lel", "foo")
-            pygame.Color.from_i1i2i3((0, 0, 0, 0))
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_i1i2i3(0, 0, 0, "lel", "foo")
+        )
+        self.assertRaises(ValueError, lambda: pygame.Color.from_i1i2i3((0, 0, 0, 0)))
 
     def test_from_normalized(self):
         normal = pygame.Color.from_normalized(1, 1, 1, 1)
