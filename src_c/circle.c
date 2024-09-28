@@ -671,7 +671,7 @@ static PyObject *
 pg_circle_gettop(pgCircleObject *self, void *closure)
 {
     return pg_tuple_couple_from_values_double(self->circle.x,
-                                  self->circle.y - self->circle.r);
+                                              self->circle.y - self->circle.r);
 }
 
 static int
@@ -696,7 +696,7 @@ static PyObject *
 pg_circle_getleft(pgCircleObject *self, void *closure)
 {
     return pg_tuple_couple_from_values_double(self->circle.x - self->circle.r,
-                                  self->circle.y);
+                                              self->circle.y);
 }
 
 static int
@@ -721,7 +721,7 @@ static PyObject *
 pg_circle_getbottom(pgCircleObject *self, void *closure)
 {
     return pg_tuple_couple_from_values_double(self->circle.x,
-                                  self->circle.y + self->circle.r);
+                                              self->circle.y + self->circle.r);
 }
 
 static int
@@ -746,7 +746,7 @@ static PyObject *
 pg_circle_getright(pgCircleObject *self, void *closure)
 {
     return pg_tuple_couple_from_values_double(self->circle.x + self->circle.r,
-                                  self->circle.y);
+                                              self->circle.y);
 }
 
 static int
@@ -809,13 +809,13 @@ static PyGetSetDef pg_circle_getsets[] = {
      DOC_CIRCLE_AREA, NULL},
     {"circumference", (getter)pg_circle_getcircumference,
      (setter)pg_circle_setcircumference, DOC_CIRCLE_CIRCUMFERENCE, NULL},
-    {NULL, 0, NULL, NULL, NULL},
     {"top", (getter)pg_circle_gettop, (setter)pg_circle_settop, NULL, NULL},
     {"left", (getter)pg_circle_getleft, (setter)pg_circle_setleft, NULL, NULL},
     {"bottom", (getter)pg_circle_getbottom, (setter)pg_circle_setbottom, NULL,
      NULL},
     {"right", (getter)pg_circle_getright, (setter)pg_circle_setright, NULL,
-     NULL}};
+     NULL},
+    {NULL, 0, NULL, NULL, NULL}};
 
 static PyTypeObject pgCircle_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.geometry.Circle",
