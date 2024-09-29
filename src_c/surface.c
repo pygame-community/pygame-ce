@@ -3495,8 +3495,8 @@ _get_buffer_colorplane(PyObject *obj, Py_buffer *view_p, int flags, char *name,
             /* Should not be here */
             PyErr_Format(PyExc_SystemError,
                          "Pygame bug caught at line %i in file %s: "
-                         "unknown mask value %p. Please report",
-                         (int)__LINE__, __FILE__, (void *)mask);
+                         "unknown mask value %X. Please report",
+                         (int)__LINE__, __FILE__, mask);
             return -1;
 #endif
     }
