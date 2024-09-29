@@ -1008,19 +1008,10 @@ _color_set_hsva(pgColorObject *color, PyObject *value, void *closure)
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("hsva", value);
 
-    if (!PySequence_Check(value) || PySequence_Size(value) < 3) {
+    if (!PySequence_Check(value) || PySequence_Size(value) < 3 ||
+        PySequence_Size(value) > 4) {
         PyErr_SetString(PyExc_ValueError, "invalid HSVA value");
         return -1;
-    }
-
-    if (PySequence_Size(value) > 4) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "Passing sequences of size larger than 4 is deprecated, doing "
-                "this will error in a future version",
-                1) == -1) {
-            return -1;
-        }
     }
 
     /* H */
@@ -1183,19 +1174,10 @@ _color_set_hsla(pgColorObject *color, PyObject *value, void *closure)
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("hsla", value);
 
-    if (!PySequence_Check(value) || PySequence_Size(value) < 3) {
+    if (!PySequence_Check(value) || PySequence_Size(value) < 3 ||
+        PySequence_Size(value) > 4) {
         PyErr_SetString(PyExc_ValueError, "invalid HSLA value");
         return -1;
-    }
-
-    if (PySequence_Size(value) > 4) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "Passing sequences of size larger than 4 is deprecated, doing "
-                "this will error in a future version",
-                1) == -1) {
-            return -1;
-        }
     }
 
     /* H */
@@ -1358,19 +1340,9 @@ _color_set_i1i2i3(pgColorObject *color, PyObject *value, void *closure)
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("i1i2i3", value);
 
-    if (!PySequence_Check(value) || PySequence_Size(value) < 3) {
+    if (!PySequence_Check(value) || PySequence_Size(value) != 3) {
         PyErr_SetString(PyExc_ValueError, "invalid I1I2I3 value");
         return -1;
-    }
-
-    if (PySequence_Size(value) > 3) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "Passing sequences of size larger than 3 is deprecated, doing "
-                "this will error in a future version",
-                1) == -1) {
-            return -1;
-        }
     }
 
     /* I1 */
@@ -1440,19 +1412,9 @@ _color_set_cmy(pgColorObject *color, PyObject *value, void *closure)
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("cmy", value);
 
-    if (!PySequence_Check(value) || PySequence_Size(value) < 3) {
+    if (!PySequence_Check(value) || PySequence_Size(value) != 3) {
         PyErr_SetString(PyExc_ValueError, "invalid CMY value");
         return -1;
-    }
-
-    if (PySequence_Size(value) > 3) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "Passing sequences of size larger than 3 is deprecated, doing "
-                "this will error in a future version",
-                1) == -1) {
-            return -1;
-        }
     }
 
     /* I1 */
@@ -1510,19 +1472,10 @@ _color_set_normalized(pgColorObject *color, PyObject *value, void *closure)
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("normalized", value);
 
-    if (!PySequence_Check(value) || PySequence_Size(value) < 3) {
+    if (!PySequence_Check(value) || PySequence_Size(value) < 3 ||
+        PySequence_Size(value) > 4) {
         PyErr_SetString(PyExc_ValueError, "invalid normalized value");
         return -1;
-    }
-
-    if (PySequence_Size(value) > 4) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "Passing sequences of size larger than 4 is deprecated, doing "
-                "this will error in a future version",
-                1) == -1) {
-            return -1;
-        }
     }
 
     item = PySequence_GetItem(value, 0);
