@@ -81,16 +81,10 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
                        int *drawn_area);
 static void
 draw_fillpoly(SDL_Surface *surf, int *vx, int *vy, Py_ssize_t n, Uint32 color,
-              int *drawn_area);
-static void
-draw_fillpoly_for_aapolygon(SDL_Surface *surf, int *vx, int *vy, Py_ssize_t n,
-                            Uint32 color, int *drawn_area);
+              int *drawn_area, int aapolygon_fix);
 static int
 draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
-             int *drawn_area);
-static int
-draw_filltri_for_aapolygon(SDL_Surface *surf, int *xlist, int *ylist,
-                           Uint32 color, int *drawn_area);
+             int *drawn_area, int aapolygon_fix);
 static void
 draw_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int width,
           Uint32 color);
@@ -966,10 +960,10 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (length != 3) {
-        draw_fillpoly(surf, xlist, ylist, length, color, drawn_area);
+        draw_fillpoly(surf, xlist, ylist, length, color, drawn_area, 0);
     }
     else {
-        draw_filltri(surf, xlist, ylist, color, drawn_area);
+        draw_filltri(surf, xlist, ylist, color, drawn_area, 0);
     }
     PyMem_Free(xlist);
     PyMem_Free(ylist);
@@ -1081,11 +1075,10 @@ aapolygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (length != 3) {
-        draw_fillpoly_for_aapolygon(surf, xlist, ylist, length, color,
-                                    drawn_area);
+        draw_fillpoly(surf, xlist, ylist, length, color, drawn_area, 1);
     }
     else {
-        draw_filltri_for_aapolygon(surf, xlist, ylist, color, drawn_area);
+        draw_filltri(surf, xlist, ylist, color, drawn_area, 1);
     }
     PyMem_Free(xlist);
     PyMem_Free(ylist);
@@ -1737,7 +1730,7 @@ swap_coordinates(int *x1, int *y1, int *x2, int *y2)
 
 static int
 draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
-             int *draw_area)
+             int *drawn_area, int aapolygon_fix)
 {
     int p0x, p0y, p1x, p1y, p2x, p2y;
 
@@ -1768,73 +1761,36 @@ draw_filltri(SDL_Surface *surf, int *xlist, int *ylist, Uint32 color,
     float d2 = (float)((p1x - p0x) / ((p1y - p0y) + 1e-17));
     float d3 = (float)((p2x - p1x) / ((p2y - p1y) + 1e-17));
     int y;
-    for (y = p0y; y <= p2y; y++) {
-        int x1 = p0x + (int)((y - p0y) * d1);
+    if (aapolygon_fix) {
+        for (y = p0y; y <= p2y; y++) {
+            int x1 = p0x + (int)((y - p0y) * d1) + 1;
 
-        int x2;
-        if (y < p1y)
-            x2 = p0x + (int)((y - p0y) * d2);
-        else
-            x2 = p1x + (int)((y - p1y) * d3);
-
-        drawhorzlineclipbounding(surf, color, x1, y, x2, draw_area);
-    }
-
-    return 0;
-}
-
-/* This is same algorythm as draw_filltri but modified for filled
- * draw.aapolygon so borders of fillpoly are not covering outer
- * antialiased pixels from draw.aalines
- */
-static int
-draw_filltri_for_aapolygon(SDL_Surface *surf, int *xlist, int *ylist,
-                           Uint32 color, int *draw_area)
-{
-    int p0x, p0y, p1x, p1y, p2x, p2y;
-
-    p0x = xlist[0];
-    p1x = xlist[1];
-    p2x = xlist[2];
-    p0y = ylist[0];
-    p1y = ylist[1];
-    p2y = ylist[2];
-
-    if (p1y < p0y) {
-        swap_coordinates(&p1x, &p1y, &p0x, &p0y);
-    }
-
-    if (p2y < p1y) {
-        swap_coordinates(&p1x, &p1y, &p2x, &p2y);
-
-        if (p1y < p0y) {
-            swap_coordinates(&p1x, &p1y, &p0x, &p0y);
-        }
-    }
-
-    if ((p0y == p1y) && (p1y == p2y) && (p0x == p1x) && (p1x != p2x)) {
-        swap_coordinates(&p1x, &p1y, &p2x, &p2y);
-    }
-
-    float d1 = (float)((p2x - p0x) / ((p2y - p0y) + 1e-17));
-    float d2 = (float)((p1x - p0x) / ((p1y - p0y) + 1e-17));
-    float d3 = (float)((p2x - p1x) / ((p2y - p1y) + 1e-17));
-    int y;
-    for (y = p0y; y <= p2y; y++) {
-        int x1 = p0x + (int)((y - p0y) * d1) + 1;
-
-        int x2;
-        if (y < p1y)
-            x2 = p0x + (int)((y - p0y) * d2);
-        else
-            x2 = p1x + (int)((y - p1y) * d3) - 1;
-        if (x1 > x2) {
-            if (x1 - x2 != 1) {
-                set_and_check_rect(surf, x1 - 1, y, color, draw_area);
+            int x2;
+            if (y < p1y)
+                x2 = p0x + (int)((y - p0y) * d2);
+            else
+                x2 = p1x + (int)((y - p1y) * d3) - 1;
+            if (x1 > x2) {
+                if (x1 - x2 != 1) {
+                    set_and_check_rect(surf, x1 - 1, y, color, drawn_area);
+                }
+            }
+            else {
+                drawhorzlineclipbounding(surf, color, x1, y, x2, drawn_area);
             }
         }
-        else {
-            drawhorzlineclipbounding(surf, color, x1, y, x2, draw_area);
+    }
+    else {
+        for (y = p0y; y <= p2y; y++) {
+            int x1 = p0x + (int)((y - p0y) * d1);
+
+            int x2;
+            if (y < p1y)
+                x2 = p0x + (int)((y - p0y) * d2);
+            else
+                x2 = p1x + (int)((y - p1y) * d3);
+
+            drawhorzlineclipbounding(surf, color, x1, y, x2, drawn_area);
         }
     }
 
@@ -3053,7 +3009,7 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
 
 static void
 draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
-              Py_ssize_t num_points, Uint32 color, int *drawn_area)
+              Py_ssize_t num_points, Uint32 color, int *drawn_area, int aapolygon_fix)
 {
     Py_ssize_t i, i_previous;  // index of the point before i
     int y, miny, maxy;
@@ -3126,7 +3082,8 @@ draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
                 // end), or when we are on the lowest line (maxy)
                 intersect = (y - y1) * (x2 - x1) / (float)(y2 - y1);
                 if (n_intersections % 2 == 0) {
-                    intersect = (float)floor(intersect);
+                    // for aapolygon, 1 is added so lower half is moved right
+                    intersect = (float)floor(intersect) + aapolygon_fix;
                 }
                 else
                     intersect = (float)ceil(intersect);
@@ -3135,8 +3092,9 @@ draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
         }
         qsort(x_intersect, n_intersections, sizeof(int), compare_int);
         for (i = 0; (i < n_intersections); i += 2) {
+            // for aapolygon, 1 is subtracted, so right x coordinate is moved left
             drawhorzlineclipbounding(surf, color, x_intersect[i], y,
-                                     x_intersect[i + 1], drawn_area);
+                                     x_intersect[i + 1] - aapolygon_fix, drawn_area);
         }
     }
 
@@ -3149,100 +3107,6 @@ draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
      * bigger y),
      * So we loop for border lines that are horizontal.
      */
-    for (i = 0; (i < num_points); i++) {
-        i_previous = ((i) ? (i - 1) : (num_points - 1));
-        y = point_y[i];
-
-        if ((miny < y) && (point_y[i_previous] == y) && (y < maxy)) {
-            drawhorzlineclipbounding(surf, color, point_x[i], y,
-                                     point_x[i_previous], drawn_area);
-        }
-    }
-    PyMem_Free(x_intersect);
-}
-
-/* This is same algorythm as draw_fillpoly but modified for filled
- * draw.aapolygon so borders of fillpoly are not covering outer
- * antialiased pixels from draw.aalines
- */
-static void
-draw_fillpoly_for_aapolygon(SDL_Surface *surf, int *point_x, int *point_y,
-                            Py_ssize_t num_points, Uint32 color,
-                            int *drawn_area)
-{
-    Py_ssize_t i, i_previous;
-    int y, miny, maxy;
-    int x1, y1;
-    int x2, y2;
-    float intersect;
-    int *x_intersect = PyMem_New(int, num_points);
-    if (x_intersect == NULL) {
-        PyErr_NoMemory();
-        return;
-    }
-
-    /* Determine Y bounds */
-    miny = point_y[0];
-    maxy = point_y[0];
-    for (i = 1; (i < num_points); i++) {
-        miny = MIN(miny, point_y[i]);
-        maxy = MAX(maxy, point_y[i]);
-    }
-
-    /* Special case: polygon only 1 pixel high. */
-    if (miny == maxy) {
-        /* Determine X bounds */
-        int minx = point_x[0];
-        int maxx = point_x[0];
-        for (i = 1; (i < num_points); i++) {
-            minx = MIN(minx, point_x[i]);
-            maxx = MAX(maxx, point_x[i]);
-        }
-        drawhorzlineclipbounding(surf, color, minx, miny, maxx, drawn_area);
-        PyMem_Free(x_intersect);
-        return;
-    }
-
-    for (y = miny; (y <= maxy); y++) {
-        int n_intersections = 0;
-        for (i = 0; (i < num_points); i++) {
-            i_previous = ((i) ? (i - 1) : (num_points - 1));
-
-            y1 = point_y[i_previous];
-            y2 = point_y[i];
-            if (y1 < y2) {
-                x1 = point_x[i_previous];
-                x2 = point_x[i];
-            }
-            else if (y1 > y2) {
-                y2 = point_y[i_previous];
-                y1 = point_y[i];
-                x2 = point_x[i_previous];
-                x1 = point_x[i];
-            }
-            else {  // y1 == y2 : has to be handled as special case (below)
-                continue;
-            }
-            if (((y >= y1) && (y < y2)) || ((y == maxy) && (y2 == maxy))) {
-                intersect = (y - y1) * (x2 - x1) / (float)(y2 - y1);
-                if (n_intersections % 2 == 0) {
-                    // here, 1 is added so lower half is moved right
-                    intersect = (float)floor(intersect) + 1;
-                }
-                else
-                    intersect = (float)ceil(intersect);
-                x_intersect[n_intersections++] = (int)intersect + x1;
-            }
-        }
-        qsort(x_intersect, n_intersections, sizeof(int), compare_int);
-        for (i = 0; (i < n_intersections); i += 2) {
-            // here, 1 is subtracted, so right X coordinate is moved left
-            drawhorzlineclipbounding(surf, color, x_intersect[i], y,
-                                     x_intersect[i + 1] - 1, drawn_area);
-        }
-    }
-
-    // special case
     for (i = 0; (i < num_points); i++) {
         i_previous = ((i) ? (i - 1) : (num_points - 1));
         y = point_y[i];
@@ -3316,7 +3180,7 @@ draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
         pts[13] = y2;
         pts[14] = y2;
         pts[15] = y2 - bottom_left;
-        draw_fillpoly(surf, pts, pts + 8, 8, color, drawn_area);
+        draw_fillpoly(surf, pts, pts + 8, 8, color, drawn_area, 0);
         draw_circle_quadrant(surf, x2 - top_right + 1, y1 + top_right,
                              top_right, 0, color, 1, 0, 0, 0, drawn_area);
         draw_circle_quadrant(surf, x1 + top_left, y1 + top_left, top_left, 0,
