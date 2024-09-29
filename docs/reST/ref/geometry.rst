@@ -393,3 +393,123 @@
          .. ## Circle.copy ##
 
    .. ## pygame.Circle ##
+
+
+.. class:: Line
+
+   | :sl:`pygame object for representing a line`
+   | :sg:`Line((xa, ya), (xb, yb)) -> Line`
+   | :sg:`Line(xa, ya, xb, yb) -> Line`
+
+   .. versionadded:: 2.5.2
+
+   The `Line` class provides many useful methods for collision testing, transformation and intersection.
+   A `Line` can be created from a combination of two pairs of coordinates that represent the start and end points.
+   Lines can also be created from python objects that are already a `Line` (effectively copying the line) or have an attribute named "line".
+
+   Specifically, to construct a line you can pass the xa, ya, xb, and yb values as separate arguments or inside a sequence(list or tuple).
+
+   Functions that require a `Line` argument may also accept these values as Lines:
+
+   ::
+
+      ((xa, ya), (xb, yb))
+      (xa, ya, xb, yb)
+      (vector2, vector2)
+
+   The `Line` class only stores the xa, ya, xb, and yb attributes, everything else is calculated
+   on the fly based on them.
+
+   **You cannot create degenerate Lines(lines with the same start and end point). If you
+       try, the `Line` will not be created and an error will be raised.**
+
+   **Line Attributes**
+
+   ----
+
+   .. attribute:: xa
+
+         | :sl:`x coordinate of the start point of the line`
+         | :sg:`xa -> float`
+
+         The horizontal coordinate of the start point of the line. Reassigning it moves the line.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.xa ##
+
+   .. attribute:: ya
+
+         | :sl:`y coordinate of the start point of the line`
+         | :sg:`ya -> float`
+
+         The vertical coordinate of the start point of the line. Reassigning it moves the line.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.ya ##
+
+   .. attribute:: xb
+
+         | :sl:`x coordinate of the end point of the line`
+         | :sg:`xb -> float`
+
+         The horizontal coordinate of the end point of the line. Reassigning it moves the line.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.xb ##
+
+   .. attribute:: yb
+
+         | :sl:`y coordinate of the end point of the line`
+         | :sg:`yb -> float`
+
+         The vertical coordinate of the end point of the line. Reassigning it moves the line.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.yb ##
+
+   .. attribute:: a
+
+         | :sl:`the first point of the line`
+         | :sg:`a -> (float, float)`
+
+         It's a tuple containing the `xa` and `ya` attributes representing the line's first point.
+         It can be reassigned to move the `Line`. If reassigned the `xa` and `ya` attributes
+         will be changed to produce a `Line` with matching first point position.
+         The `xb` and `yb` attributes will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.a ##
+
+   .. attribute:: b
+
+         | :sl:`the second point of the line`
+         | :sg:`b -> (float, float)`
+
+         It's a tuple containing `xb` and `yb` attributes representing the line's second point.
+         It can be reassigned to move the `Line`. If reassigned the `xb` and `yb` attributes
+         will be changed to produce a `Line` with matching second point position.
+         The `xa` and `ya` attributes will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.b ##
+
+   **Line Methods**
+
+   ----
+
+   .. method:: copy
+
+         | :sl:`copies the line`
+         | :sg:`copy() -> Line`
+
+         Returns a copy of this `Line`.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.copy ##

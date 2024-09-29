@@ -20,7 +20,29 @@ typedef struct {
 #define pgCircle_GETR(self) (pgCircle_CAST(self)->circle.r)
 #define pgCircle_Check(o) ((o)->ob_type == &pgCircle_Type)
 
+typedef struct {
+    double xa, ya;
+    double xb, yb;
+} pgLineBase;
+
+typedef struct {
+    PyObject_HEAD pgLineBase line;
+    PyObject *weakreflist;
+} pgLineObject;
+
+#define pgLine_CAST(o) ((pgLineObject *)(o))
+
+#define pgLine_GETLINE(o) (pgLine_CAST(o)->line)
+#define pgLine_AsLine(o) (pgLine_CAST(o)->line)
+#define pgLine_GETX1(self) (pgLine_CAST(self)->line.xa)
+#define pgLine_GETY1(self) (pgLine_CAST(self)->line.ya)
+#define pgLine_GETX2(self) (pgLine_CAST(self)->line.xb)
+#define pgLine_GETY2(self) (pgLine_CAST(self)->line.yb)
+#define pgLine_Check(o) ((o)->ob_type == &pgLine_Type)
+
 static PyTypeObject pgCircle_Type;
+static PyTypeObject pgLine_Type;
+
 /* Constants */
 
 /* PI */

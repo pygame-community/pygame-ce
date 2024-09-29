@@ -4,7 +4,7 @@ from typing import (
     Callable,
     Protocol,
     Tuple,
-    List,
+    List, Sequence,
 )
 
 from pygame import Rect, FRect
@@ -13,13 +13,30 @@ from .rect import Rect, FRect
 from .math import Vector2
 
 _CanBeCircle = Union[Circle, Tuple[Coordinate, float], SequenceLike[float]]
+_CanBeLine = Union[
+    Rect,
+    Line,
+    Tuple[float, float, float, float],
+    Tuple[Coordinate, Coordinate],
+    Coordinate,
+    Sequence[Coordinate],
+]
+
 
 class _HasCirclettribute(Protocol):
     # An object that has a circle attribute that is either a circle, or a function
     # that returns a circle
     circle: Union[_CanBeCircle, Callable[[], _CanBeCircle]]
 
+class _HasLineAttribute(Protocol):
+    # An object that has a line attribute that is either a line, or a function
+    # that returns a line
+    line: Union[_CanBeLine, Callable[[], _CanBeLine]]
+
+
 _CircleValue = Union[_CanBeCircle, _HasCirclettribute]
+_LineValue = Union[_CanBeLine, _HasLineAttribute]
+
 _CanBeCollided = Union[Circle, Rect, FRect, Coordinate, Vector2]
 _CanBeIntersected = Union[Circle]
 
@@ -114,4 +131,40 @@ class Circle:
     def as_rect(self) -> Rect: ...
     def as_frect(self) -> FRect: ...
     def __copy__(self) -> Circle: ...
+    copy = __copy__
+
+class Line:
+    @property
+    def xa(self) -> float: ...
+    @xa.setter
+    def xa(self, value: float) -> None: ...
+    @property
+    def ya(self) -> float: ...
+    @ya.setter
+    def ya(self, value: float) -> None: ...
+    @property
+    def xb(self) -> float: ...
+    @xb.setter
+    def xb(self, value: float) -> None: ...
+    @property
+    def yb(self) -> float: ...
+    @yb.setter
+    def yb(self, value: float) -> None: ...
+    @property
+    def a(self) -> Tuple[float, float]: ...
+    @a.setter
+    def a(self, value: Coordinate) -> None: ...
+    @property
+    def b(self) -> Tuple[float, float]: ...
+    @b.setter
+    def b(self, value: Coordinate) -> None: ...
+    @overload
+    def __init__(self, line: Line) -> None: ...
+    @overload
+    def __init__(self, xa: float, ya: float, xb: float, yb: float) -> None: ...
+    @overload
+    def __init__(self, first: Coordinate, second: Coordinate) -> None: ...
+    @overload
+    def __init__(self, single_arg: _LineValue) -> None: ...
+    def __copy__(self) -> Line: ...
     copy = __copy__

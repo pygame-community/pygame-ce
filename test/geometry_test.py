@@ -3,7 +3,7 @@ import unittest
 from math import sqrt
 
 from pygame import Vector2, Vector3, Rect, FRect
-from pygame.geometry import Circle
+from pygame.geometry import Circle, Line
 
 
 def float_range(a, b, step):
@@ -1348,6 +1348,373 @@ class CircleTypeTest(unittest.TestCase):
 
         # touching
         self.assertEqual([(14.0, 10.0)], c.intersect(c5))
+
+
+class LineTypeTest(unittest.TestCase):
+    class ClassWithLineAttrib:
+        def __init__(self, line):
+            self.line = line
+
+    class ClassWithLineProperty:
+        def __init__(self, line):
+            self._line = line
+
+        @property
+        def line(self):
+            return self._line
+
+    class ClassWithLineFunction:
+        def __init__(self, line):
+            self._line = line
+
+        def line(self):
+            return self._line
+
+    def testConstruction_invalid_type(self):
+        """Checks whether passing wrong types to the constructor
+        raises the appropriate errors
+        """
+        invalid_types = (None, [], "1", (1,), [1, 2, 3], Vector2(1, 1))
+
+        # Test xa
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line(value, 0, 1, 2)
+        # Test ya
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line(0, value, 1, 2)
+        # Test xb
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line(0, 0, value, 2)
+        # Test yb
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line(0, 1, 2, value)
+
+    def testConstruction_invalid_arguments_number(self):
+        """Checks whether passing the wrong number of arguments to the constructor
+        raises the appropriate errors
+        """
+        arguments = (
+            (1,),  # one non vec3 non circle arg
+            (1, 1),  # two args
+            (1, 1, 1),  # three args
+            (1, 1, 1, 1, 1),  # five args
+        )
+
+        for arg_seq in arguments:
+            with self.assertRaises(TypeError):
+                Line(*arg_seq)
+
+    def testConstructionXAYAXBYB_float(self):
+        """Tests the construction of a line with 4 float arguments"""
+        line = Line(1.0, 2.0, 3.0, 4.0)
+
+        self.assertEqual(line.xa, 1.0)
+        self.assertEqual(line.ya, 2.0)
+        self.assertEqual(line.xb, 3.0)
+        self.assertEqual(line.yb, 4.0)
+
+    def testConstructionTUP_XAYAXBYB_float(self):
+        """Tests the construction of a line with a tuple of 4 float arguments"""
+        line = Line((1.0, 2.0, 3.0, 4.0))
+
+        self.assertEqual(line.xa, 1.0)
+        self.assertEqual(line.ya, 2.0)
+        self.assertEqual(line.xb, 3.0)
+        self.assertEqual(line.yb, 4.0)
+
+    def testConstructionXAYAXBYB_int(self):
+        """Tests the construction of a line with 4 int arguments"""
+        line = Line(1, 2, 3, 4)
+
+        self.assertEqual(line.xa, 1.0)
+        self.assertEqual(line.ya, 2.0)
+        self.assertEqual(line.xb, 3.0)
+        self.assertEqual(line.yb, 4.0)
+
+    def testConstructionTUP_XAYAXBYB_int(self):
+        """Tests the construction of a line with a tuple of 4 int arguments"""
+        line = Line((1, 2, 3, 4))
+
+        self.assertEqual(line.xa, 1.0)
+        self.assertEqual(line.ya, 2.0)
+        self.assertEqual(line.xb, 3.0)
+        self.assertEqual(line.yb, 4.0)
+
+    def testConstruction_class_with_line_attrib(self):
+        """Tests the construction of a line with a class that has a line attribute"""
+        class_ = self.ClassWithLineAttrib(Line(1.1, 2.2, 3.3, 4.4))
+
+        line = Line(class_)
+
+        self.assertEqual(line.xa, 1.1)
+        self.assertEqual(line.ya, 2.2)
+        self.assertEqual(line.xb, 3.3)
+        self.assertEqual(line.yb, 4.4)
+
+    def testConstruction_class_with_line_property(self):
+        """Tests the construction of a line with a class that has a line property"""
+        class_ = self.ClassWithLineProperty(Line(1.1, 2.2, 3.3, 4.4))
+
+        line = Line(class_)
+
+        self.assertEqual(line.xa, 1.1)
+        self.assertEqual(line.ya, 2.2)
+        self.assertEqual(line.xb, 3.3)
+        self.assertEqual(line.yb, 4.4)
+
+    def testConstruction_class_with_line_function(self):
+        """Tests the construction of a line with a class that has a line function"""
+        class_ = self.ClassWithLineFunction(Line(1.1, 2.2, 3.3, 4.4))
+
+        line = Line(class_)
+
+        self.assertEqual(line.xa, 1.1)
+        self.assertEqual(line.ya, 2.2)
+        self.assertEqual(line.xb, 3.3)
+        self.assertEqual(line.yb, 4.4)
+
+    def testConstruction_degenerate(self):
+        """Ensures that you can't create degenerate lines (lines with zero length)"""
+
+        # 4 args
+        with self.assertRaises(TypeError):
+            Line(1.0, 2.0, 1.0, 2.0)
+        with self.assertRaises(TypeError):
+            Line(1, 2, 1, 2)
+
+        # 1 list arg 4
+        with self.assertRaises(TypeError):
+            Line([1, 2, 1, 2])
+        with self.assertRaises(TypeError):
+            Line([1.0, 2.0, 1.0, 2.0])
+
+        # 1 tuple arg 4
+        with self.assertRaises(TypeError):
+            Line((1, 2, 1, 2))
+        with self.assertRaises(TypeError):
+            Line((1.0, 2.0, 1.0, 2.0))
+
+        # two tuple args
+        with self.assertRaises(TypeError):
+            Line((1, 2), (1, 2))
+        with self.assertRaises(TypeError):
+            Line((1.0, 2.0), (1.0, 2.0))
+
+        # two list args
+        with self.assertRaises(TypeError):
+            Line([1, 2], [1, 2])
+        with self.assertRaises(TypeError):
+            Line([1.0, 2.0], [1.0, 2.0])
+
+        # one list two tuple args
+        with self.assertRaises(TypeError):
+            Line([1, 2], (1, 2))
+        with self.assertRaises(TypeError):
+            Line((1, 2), [1, 2])
+        with self.assertRaises(TypeError):
+            Line([1.0, 2.0], (1.0, 2.0))
+        with self.assertRaises(TypeError):
+            Line((1.0, 2.0), [1.0, 2.0])
+
+        # one list two sub-tuples arg
+        with self.assertRaises(TypeError):
+            Line([(1, 2), (1, 2)])
+        with self.assertRaises(TypeError):
+            Line([(1.0, 2.0), (1.0, 2.0)])
+
+        # one tuple two sub-lists arg
+        with self.assertRaises(TypeError):
+            Line(([1, 2], [1, 2]))
+        with self.assertRaises(TypeError):
+            Line(([1.0, 2.0], [1.0, 2.0]))
+
+    def test_attrib_x1(self):
+        """a full test for the xa attribute"""
+        expected_x1 = 10.0
+        expected_y1 = 2.0
+        expected_x2 = 5.0
+        expected_y2 = 6.0
+        line = Line(1, expected_y1, expected_x2, expected_y2)
+
+        line.xa = expected_x1
+
+        self.assertEqual(line.xa, expected_x1)
+        self.assertEqual(line.ya, expected_y1)
+        self.assertEqual(line.xb, expected_x2)
+        self.assertEqual(line.yb, expected_y2)
+
+        line = Line(0, 0, 1, 0)
+
+        for value in (None, [], "1", (1,), [1, 2, 3]):
+            with self.assertRaises(TypeError):
+                line.xa = value
+
+        line = Line(0, 0, 1, 0)
+
+        with self.assertRaises(AttributeError):
+            del line.xa
+
+    def test_attrib_y1(self):
+        """a full test for the ya attribute"""
+        expected_x1 = 10.0
+        expected_y1 = 2.0
+        expected_x2 = 5.0
+        expected_y2 = 6.0
+        line = Line(expected_x1, 1, expected_x2, expected_y2)
+
+        line.ya = expected_y1
+
+        self.assertEqual(line.xa, expected_x1)
+        self.assertEqual(line.ya, expected_y1)
+        self.assertEqual(line.xb, expected_x2)
+        self.assertEqual(line.yb, expected_y2)
+
+        line = Line(0, 0, 1, 0)
+
+        for value in (None, [], "1", (1,), [1, 2, 3]):
+            with self.assertRaises(TypeError):
+                line.ya = value
+
+        line = Line(0, 0, 1, 0)
+
+        with self.assertRaises(AttributeError):
+            del line.ya
+
+    def test_attrib_x2(self):
+        """a full test for the ya attribute"""
+        expected_x1 = 10.0
+        expected_y1 = 2.0
+        expected_x2 = 5.0
+        expected_y2 = 6.0
+        line = Line(expected_x1, expected_y1, 1, expected_y2)
+
+        line.xb = expected_x2
+
+        self.assertEqual(line.xa, expected_x1)
+        self.assertEqual(line.ya, expected_y1)
+        self.assertEqual(line.xb, expected_x2)
+        self.assertEqual(line.yb, expected_y2)
+
+        line = Line(0, 0, 1, 0)
+
+        for value in (None, [], "1", (1,), [1, 2, 3]):
+            with self.assertRaises(TypeError):
+                line.xb = value
+
+        line = Line(0, 0, 1, 0)
+
+        with self.assertRaises(AttributeError):
+            del line.xb
+
+    def test_attrib_y2(self):
+        """a full test for the ya attribute"""
+        expected_x1 = 10.0
+        expected_y1 = 2.0
+        expected_x2 = 5.0
+        expected_y2 = 6.0
+        line = Line(expected_x1, expected_y1, expected_x2, 1)
+
+        line.yb = expected_y2
+
+        self.assertEqual(line.xa, expected_x1)
+        self.assertEqual(line.ya, expected_y1)
+        self.assertEqual(line.xb, expected_x2)
+        self.assertEqual(line.yb, expected_y2)
+
+        line = Line(0, 0, 1, 0)
+
+        for value in (None, [], "1", (1,), [1, 2, 3]):
+            with self.assertRaises(TypeError):
+                line.yb = value
+
+        line = Line(0, 0, 1, 0)
+
+        with self.assertRaises(AttributeError):
+            del line.yb
+
+    def test_attrib_a(self):
+        """a full test for the ya attribute"""
+        expected_x1 = 10.0
+        expected_y1 = 2.0
+        expected_x2 = 5.0
+        expected_y2 = 6.0
+        expected_a = expected_x1, expected_y1
+        expected_b = expected_x2, expected_y2
+        line = Line((0, 1), expected_b)
+
+        line.a = expected_a
+
+        self.assertEqual(line.a, expected_a)
+        self.assertEqual(line.b, expected_b)
+
+        line = Line(0, 0, 1, 0)
+
+        for value in (None, [], "1", (1,), [1, 2, 3], 1):
+            with self.assertRaises(TypeError):
+                line.a = value
+
+        line = Line(0, 0, 1, 0)
+
+        with self.assertRaises(AttributeError):
+            del line.a
+
+    def test_attrib_b(self):
+        """a full test for the ya attribute"""
+        expected_x1 = 10.0
+        expected_y1 = 2.0
+        expected_x2 = 5.0
+        expected_y2 = 6.0
+        expected_a = expected_x1, expected_y1
+        expected_b = expected_x2, expected_y2
+        line = Line(expected_a, (0, 1))
+
+        line.b = expected_b
+
+        self.assertEqual(line.a, expected_a)
+        self.assertEqual(line.b, expected_b)
+
+        line = Line(0, 0, 1, 0)
+
+        for value in (None, [], "1", (1,), [1, 2, 3], 1):
+            with self.assertRaises(TypeError):
+                line.b = value
+
+        line = Line(0, 0, 1, 0)
+
+        with self.assertRaises(AttributeError):
+            del line.b
+
+    def test_meth_copy(self):
+        line = Line(1, 2, 3, 4)
+        # check 1 arg passed
+        with self.assertRaises(TypeError):
+            line.copy(10)
+
+        line_2 = line.copy()
+        self.assertEqual(line.xa, line_2.xa)
+        self.assertEqual(line.yb, line_2.yb)
+        self.assertEqual(line.xb, line_2.xb)
+        self.assertEqual(line.yb, line_2.yb)
+
+        self.assertIsNot(line, line_2)
+
+    def test__str__(self):
+        """Checks whether the __str__ method works correctly."""
+        l_str = "<Line((10.1, 10.2), (4.3, 56.4))>"
+        line = Line(10.1, 10.2, 4.3, 56.4)
+        self.assertEqual(str(line), l_str)
+        self.assertEqual(line.__str__(), l_str)
+
+    def test__repr__(self):
+        """Checks whether the __repr__ method works correctly."""
+        l_repr = "<Line((10.1, 10.2), (4.3, 56.4))>"
+        line = Line(10.1, 10.2, 4.3, 56.4)
+        self.assertEqual(repr(line), l_repr)
+        self.assertEqual(line.__repr__(), l_repr)
 
 
 if __name__ == "__main__":
