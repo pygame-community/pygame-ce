@@ -1,5 +1,4 @@
 import unittest
-import sys
 
 
 import pygame
@@ -320,14 +319,8 @@ class MidiModuleTest(unittest.TestCase):
     def test_time(self):
         mtime = pygame.midi.time()
         self.assertIsInstance(mtime, int)
-        if "pytest" in sys.modules:
-            # under pytest the midi module takes a couple of seconds to init
-            # instead of milliseconds
-            self.assertGreaterEqual(mtime, 0)
-            self.assertLess(mtime, 3000)
-        else:
-            self.assertGreaterEqual(mtime, 0)
-            self.assertLess(mtime, 100)
+        # should be close to 2-3... since the timer is just init'd.
+        self.assertTrue(0 <= mtime < 100)
 
 
 class MidiModuleNonInteractiveTest(unittest.TestCase):
