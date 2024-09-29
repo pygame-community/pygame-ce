@@ -206,7 +206,11 @@ def initsysfonts_unix(path="fc-list"):
     fonts = {}
 
     # these are embedded and cannot get os to list fonts a simple way.
-    if hasattr(sys, "getandroidapilevel") or sys.platform in ("emscripten","wasi","android"):
+    if hasattr(sys, "getandroidapilevel") or sys.platform in (
+        "emscripten",
+        "wasi",
+        "android",
+    ):
         from pathlib import Path
 
         # default font
@@ -219,7 +223,7 @@ def initsysfonts_unix(path="fc-list"):
         # cache in search order  main script folder, then /tmp
         main = __import__("__main__")
 
-        if os.environ.get("FC_CACHE",""):
+        if os.environ.get("FC_CACHE", ""):
             fc_cache = Path(os.environ.get("FC_CACHE"))
         elif hasattr(main, "__file__"):
             fc_cache = Path(main.__file__).parent / path

@@ -234,7 +234,8 @@ typedef struct {
 #if !defined(PYPY_VERSION)
 extern struct PyModuleDef _freetypemoduledef;
 #define FREETYPE_MOD_STATE(mod) ((_FreeTypeState *)PyModule_GetState(mod))
-#define FREETYPE_STATE FREETYPE_MOD_STATE(PyState_FindModule(&_freetypemoduledef))
+#define FREETYPE_STATE \
+    FREETYPE_MOD_STATE(PyState_FindModule(&_freetypemoduledef))
 #else /* defined(PYPY_VERSION) */
 extern _FreeTypeState _modstate;
 #define FREETYPE_MOD_STATE(mod) (&_modstate)
