@@ -809,12 +809,14 @@ static PyGetSetDef pg_circle_getsets[] = {
      DOC_CIRCLE_AREA, NULL},
     {"circumference", (getter)pg_circle_getcircumference,
      (setter)pg_circle_setcircumference, DOC_CIRCLE_CIRCUMFERENCE, NULL},
-    {"top", (getter)pg_circle_gettop, (setter)pg_circle_settop, NULL, NULL},
-    {"left", (getter)pg_circle_getleft, (setter)pg_circle_setleft, NULL, NULL},
-    {"bottom", (getter)pg_circle_getbottom, (setter)pg_circle_setbottom, NULL,
+    {"top", (getter)pg_circle_gettop, (setter)pg_circle_settop, DOC_CIRCLE_TOP,
      NULL},
-    {"right", (getter)pg_circle_getright, (setter)pg_circle_setright, NULL,
-     NULL},
+    {"left", (getter)pg_circle_getleft, (setter)pg_circle_setleft,
+     DOC_CIRCLE_LEFT, NULL},
+    {"bottom", (getter)pg_circle_getbottom, (setter)pg_circle_setbottom,
+     DOC_CIRCLE_BOTTOM, NULL},
+    {"right", (getter)pg_circle_getright, (setter)pg_circle_setright,
+     DOC_CIRCLE_RIGHT, NULL},
     {NULL, 0, NULL, NULL, NULL}};
 
 static PyTypeObject pgCircle_Type = {

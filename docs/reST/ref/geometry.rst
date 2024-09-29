@@ -143,6 +143,7 @@
          .. ## Circle.circumference ##
 
    .. attribute:: top
+
          | :sl:`top coordinate of the circle`
          | :sg:`top -> (float, float)`
 
@@ -155,6 +156,7 @@
          .. ## Circle.top ##
 
    .. attribute:: bottom
+
          | :sl:`bottom coordinate of the circle`
          | :sg:`bottom -> (float, float)`
 
@@ -167,6 +169,7 @@
          .. ## Circle.bottom ##
 
    .. attribute:: left
+
          | :sl:`left coordinate of the circle`
          | :sg:`left -> (float, float)`
 
@@ -179,9 +182,10 @@
          .. ## Circle.left ##
 
    .. attribute:: right
+
          | :sl:`right coordinate of the circle`
          | :sg:`right -> (float, float)`
-         
+
          It's a tuple containing the `x` and `y` coordinates that represent the right
          of the circle.
          Reassigning it moves the circle to the new position. The radius will not be affected.
