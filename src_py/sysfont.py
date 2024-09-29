@@ -206,34 +206,37 @@ def initsysfonts_unix(path="fc-list"):
     fonts = {}
 
     # these are embedded and cannot get os to list fonts a simple way.
-    if hasattr(sys, "getandroidapilevel") or sys.platform == "emscripten":
+    if hasattr(sys, "getandroidapilevel") or sys.platform in ("emscripten","wasi","android"):
         from pathlib import Path
 
         # default font
         import importlib.resources
         import pygame
 
-        entry = importlib.resources.files(pygame) / "freesansbold.ttf"
+        entry = importlib.resources.files(pygame) / pygame._freetype.get_default_font()
         _parse_font_entry_unix(f"{entry}: FreeSans:style=Bold", fonts)
 
         # cache in search order  main script folder, then /tmp
         main = __import__("__main__")
-        if hasattr(main, "__file__"):
-            fc_cache = Path(main.__file__).parent / "fc_cache"
+
+        if os.environ.get("FC_CACHE",""):
+            fc_cache = Path(os.environ.get("FC_CACHE"))
+        elif hasattr(main, "__file__"):
+            fc_cache = Path(main.__file__).parent / path
         else:
-            fc_cache = Path(__import__("tempfile").gettempdir()) / "fc_cache"
+            fc_cache = Path(__import__("tempfile").gettempdir()) / path
 
         if fc_cache.is_file():
             with open(fc_cache, "rb") as file:
                 for entry in file.read().decode("utf-8").splitlines():
                     _parse_font_entry_unix(entry, fonts)
         else:
-            warnings.warn(f"no fc_cache font cache file at {fc_cache}")
+            warnings.warn(f"no font cache (fc-list format) file found at {fc_cache}")
 
         return fonts
 
     import subprocess
-    
+
     try:
         proc = subprocess.run(
             [path, ":", "file", "family", "style"],
