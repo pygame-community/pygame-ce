@@ -7,14 +7,14 @@ from typing import (
     List,
 )
 
-from pygame import Rect, FRect
-from pygame.typing import Coordinate, RectLike, SequenceLike
+from .typing import Coordinate, RectLike, SequenceLike
 from .rect import Rect, FRect
 from .math import Vector2
 
 _CanBeCircle = Union[Circle, Tuple[Coordinate, float], SequenceLike[float]]
 _CanBeLine = Union[
     Rect,
+    FRect,
     Line,
     Coordinate,
     SequenceLike[Coordinate],
