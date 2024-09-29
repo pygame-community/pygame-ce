@@ -4,7 +4,7 @@ from typing import (
     Callable,
     Protocol,
     Tuple,
-    List, Sequence,
+    List,
 )
 
 from pygame import Rect, FRect
@@ -16,10 +16,8 @@ _CanBeCircle = Union[Circle, Tuple[Coordinate, float], SequenceLike[float]]
 _CanBeLine = Union[
     Rect,
     Line,
-    Tuple[float, float, float, float],
-    Tuple[Coordinate, Coordinate],
     Coordinate,
-    Sequence[Coordinate],
+    SequenceLike[Coordinate],
 ]
 
 
