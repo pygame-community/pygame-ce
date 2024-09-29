@@ -3009,7 +3009,8 @@ draw_ellipse_thickness(SDL_Surface *surf, int x0, int y0, int width,
 
 static void
 draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
-              Py_ssize_t num_points, Uint32 color, int *drawn_area, int aapolygon_fix)
+              Py_ssize_t num_points, Uint32 color, int *drawn_area,
+              int aapolygon_fix)
 {
     Py_ssize_t i, i_previous;  // index of the point before i
     int y, miny, maxy;
@@ -3092,9 +3093,11 @@ draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
         }
         qsort(x_intersect, n_intersections, sizeof(int), compare_int);
         for (i = 0; (i < n_intersections); i += 2) {
-            // for aapolygon, 1 is subtracted, so right x coordinate is moved left
+            // for aapolygon, 1 is subtracted, so right x coordinate is moved
+            // left
             drawhorzlineclipbounding(surf, color, x_intersect[i], y,
-                                     x_intersect[i + 1] - aapolygon_fix, drawn_area);
+                                     x_intersect[i + 1] - aapolygon_fix,
+                                     drawn_area);
         }
     }
 
