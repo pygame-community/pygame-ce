@@ -24,15 +24,6 @@ _CanBeCollided = Union[Circle, Rect, FRect, Coordinate, Vector2]
 _CanBeIntersected = Union[Circle]
 
 class Circle:
-    x: float
-    y: float
-    r: float
-    r_sqr: float
-    d: float
-    diameter: float
-    area: float
-    circumference: float
-    center: Tuple[float, float]
     top: Tuple[float, float]
     left: Tuple[float, float]
     right: Tuple[float, float]
