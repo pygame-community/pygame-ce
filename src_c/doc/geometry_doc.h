@@ -13,6 +13,8 @@
 #define DOC_CIRCLE_COLLIDECIRCLE "collidecircle(circle, /) -> bool\ncollidecircle(x, y, radius, /) -> bool\ncollidecircle((x, y), radius, /) -> bool\ncollidecircle(vector2, radius, /) -> bool\ntests if a circle collides with this circle"
 #define DOC_CIRCLE_COLLIDERECT "colliderect(rect, /) -> bool\ncolliderect((x, y, width, height), /) -> bool\ncolliderect(x, y, width, height, /) -> bool\ncolliderect((x, y), (width, height), /) -> bool\ncolliderect(vector2, (width, height), /) -> bool\ntests if a rectangle collides with this circle"
 #define DOC_CIRCLE_COLLIDESWITH "collideswith(circle, /) -> bool\ncollideswith(rect, /) -> bool\ncollideswith((x, y), /) -> bool\ncollideswith(vector2, /) -> bool\ntests if a shape or point collides with this circle"
+#define DOC_CIRCLE_COLLIDELIST "collidelist(colliders) -> int\ntest if a list of objects collide with the circle"
+#define DOC_CIRCLE_COLLIDELISTALL "collidelistall(colliders) -> list\ntest if all objects in a list collide with the circle"
 #define DOC_CIRCLE_CONTAINS "contains(circle, /) -> bool\ncontains(rect, /) -> bool\ncontains((x, y), /) -> bool\ncontains(vector2, /) -> bool\ntests if a shape or point is inside the circle"
 #define DOC_CIRCLE_MOVE "move((x, y), /) -> Circle\nmove(x, y, /) -> Circle\nmove(vector2, /) -> Circle\nmoves the circle by a given amount"
 #define DOC_CIRCLE_MOVEIP "move_ip((x, y), /) -> None\nmove_ip(x, y, /) -> None\nmove_ip(vector2, /) -> None\nmoves the circle by a given amount, in place"
