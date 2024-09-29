@@ -2322,10 +2322,10 @@ MODINIT_DEFINE(_freetype)
         Py_DECREF(_freetypemodule);
         return NULL;
     }
-#if defined(__EMSCRIPTEN__) || defined(__wasi__)
+//#if defined(__EMSCRIPTEN__) || defined(__wasi__)
     _ft_autoinit(_freetypemodule, NULL);
     _freetypestate = FREETYPE_MOD_STATE(_freetypemodule);
     _freetypeinstance = FREETYPE_MOD_STATE(_freetypemodule)->freetype;
-#endif
+//#endif
     return _freetypemodule;
 }
