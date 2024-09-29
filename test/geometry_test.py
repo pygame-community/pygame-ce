@@ -95,6 +95,13 @@ class CircleTypeTest(unittest.TestCase):
         self.assertEqual(2.0, c.y)
         self.assertEqual(3.0, c.r)
 
+    def testConstruction_zero_radius(self):
+        c = Circle(1, 2, 0)
+
+        self.assertEqual(1.0, c.x)
+        self.assertEqual(2.0, c.y)
+        self.assertEqual(0, c.r)
+
     def test_x(self):
         """Ensures changing the x attribute moves the circle and does not change
         the circle's radius.
@@ -183,7 +190,7 @@ class CircleTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 c.radius = value
 
-        for value in (-10.3234, -1, 0, 0.0):
+        for value in (-10.3234, -1):
             with self.assertRaises(ValueError):
                 c.r = value
             with self.assertRaises(ValueError):
@@ -317,7 +324,7 @@ class CircleTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 c.area = value
 
-        for value in (-10.3234, -1, 0, 0.0):
+        for value in (-10.3234, -1):
             with self.assertRaises(ValueError):
                 c.area = value
 
@@ -352,7 +359,7 @@ class CircleTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 c.circumference = value
 
-        for value in (-10.3234, -1, 0, 0.0):
+        for value in (-10.3234, -1):
             with self.assertRaises(ValueError):
                 c.circumference = value
 
@@ -390,7 +397,7 @@ class CircleTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 c.diameter = value
 
-        for value in (-10.3234, -1, 0, 0.0):
+        for value in (-10.3234, -1):
             with self.assertRaises(ValueError):
                 c.diameter = value
             with self.assertRaises(ValueError):
@@ -1287,6 +1294,60 @@ class CircleTypeTest(unittest.TestCase):
 
         # on the edge
         self.assertTrue(c.contains(fr_edge))
+
+    def test_intersect_argtype(self):
+        """Tests if the function correctly handles incorrect types as parameters"""
+
+        invalid_types = (None, "1", (1,), 1, (1, 2, 3), True, False)
+
+        c = Circle(10, 10, 4)
+
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                c.intersect(value)
+
+    def test_intersect_argnum(self):
+        """Tests if the function correctly handles incorrect number of parameters"""
+        c = Circle(10, 10, 4)
+
+        circles = [(Circle(10, 10, 4) for _ in range(100))]
+        for size in range(len(circles)):
+            with self.assertRaises(TypeError):
+                c.intersect(*circles[:size])
+
+    def test_intersect_return_type(self):
+        """Tests if the function returns the correct type"""
+        c = Circle(10, 10, 4)
+
+        objects = [
+            Circle(10, 10, 4),
+            Circle(10, 10, 400),
+            Circle(10, 10, 1),
+            Circle(15, 10, 10),
+        ]
+
+        for object in objects:
+            self.assertIsInstance(c.intersect(object), list)
+
+    def test_intersect(self):
+        # Circle
+        c = Circle(10, 10, 4)
+        c2 = Circle(10, 10, 2)
+        c3 = Circle(100, 100, 1)
+        c3_1 = Circle(10, 10, 400)
+        c4 = Circle(16, 10, 7)
+        c5 = Circle(18, 10, 4)
+
+        for circle in [c, c2, c3, c3_1]:
+            self.assertEqual(c.intersect(circle), [])
+
+        # intersecting circle
+        self.assertEqual(
+            [(10.25, 6.007820144332172), (10.25, 13.992179855667828)], c.intersect(c4)
+        )
+
+        # touching
+        self.assertEqual([(14.0, 10.0)], c.intersect(c5))
 
 
 if __name__ == "__main__":

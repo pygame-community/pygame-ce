@@ -41,6 +41,7 @@
 
 PyObject *_freetypemodule = NULL;
 
+
 static const Scale_t FACE_SIZE_NONE = {0, 0};
 
 static int _ft_traverse(PyObject *, visitproc, void *);

@@ -506,9 +506,9 @@ class ImageModuleTest(unittest.TestCase):
                 for y in range(surface_to_modify.get_height()):
                     color = surface_to_modify.get_at((x, y))
                     premult_color = (
-                        color[0] * color[3] / 255,
-                        color[1] * color[3] / 255,
-                        color[2] * color[3] / 255,
+                        ((color[0] + 1) * color[3]) >> 8,
+                        ((color[1] + 1) * color[3]) >> 8,
+                        ((color[2] + 1) * color[3]) >> 8,
                         color[3],
                     )
                     surface_to_modify.set_at((x, y), premult_color)
@@ -570,7 +570,7 @@ class ImageModuleTest(unittest.TestCase):
 
         import itertools
 
-        fmts = ("RGBA", "ARGB", "BGRA")
+        fmts = ("RGBA", "ARGB", "BGRA", "ABGR")
         fmt_permutations = itertools.permutations(fmts, 2)
         fmt_combinations = itertools.combinations(fmts, 2)
 

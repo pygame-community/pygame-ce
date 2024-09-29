@@ -3,13 +3,13 @@ from typing import Any, List, Optional, Tuple, Union
 from pygame.rect import Rect
 from pygame.surface import Surface
 
-from ._common import ColorValue, Coordinate, RectValue
+from pygame.typing import ColorLike, Coordinate, RectLike
 
 def from_surface(surface: Surface, threshold: int = 127) -> Mask: ...
 def from_threshold(
     surface: Surface,
-    color: ColorValue,
-    threshold: ColorValue = (0, 0, 0, 255),
+    color: ColorLike,
+    threshold: ColorLike = (0, 0, 0, 255),
     othersurface: Optional[Surface] = None,
     palette_colors: int = 1,
 ) -> Mask: ...
@@ -43,15 +43,15 @@ class Mask:
     ) -> Mask: ...
     def connected_component(self, pos: Coordinate = ...) -> Mask: ...
     def connected_components(self, minimum: int = 0) -> List[Mask]: ...
-    def get_bounding_rects(self) -> Rect: ...
+    def get_bounding_rects(self) -> List[Rect]: ...
     def to_surface(
         self,
         surface: Optional[Surface] = None,
         setsurface: Optional[Surface] = None,
         unsetsurface: Optional[Surface] = None,
-        setcolor: Optional[ColorValue] = (255, 255, 255, 255),
-        unsetcolor: Optional[ColorValue] = (0, 0, 0, 255),
-        dest: Union[RectValue, Coordinate] = (0, 0),
+        setcolor: Optional[ColorLike] = (255, 255, 255, 255),
+        unsetcolor: Optional[ColorLike] = (0, 0, 0, 255),
+        dest: Union[RectLike, Coordinate] = (0, 0),
     ) -> Surface: ...
 
 MaskType = Mask

@@ -4,15 +4,15 @@ from typing import (
     Callable,
     Protocol,
     Tuple,
-    Sequence,
+    List,
 )
 
 from pygame import Rect, FRect
-from ._common import Coordinate, RectValue
+from pygame.typing import Coordinate, RectLike, SequenceLike
 from .rect import Rect, FRect
 from .math import Vector2
 
-_CanBeCircle = Union[Circle, Tuple[Coordinate, float], Sequence[float]]
+_CanBeCircle = Union[Circle, Tuple[Coordinate, float], SequenceLike[float]]
 
 class _HasCirclettribute(Protocol):
     # An object that has a circle attribute that is either a circle, or a function
@@ -21,6 +21,7 @@ class _HasCirclettribute(Protocol):
 
 _CircleValue = Union[_CanBeCircle, _HasCirclettribute]
 _CanBeCollided = Union[Circle, Rect, FRect, Coordinate, Vector2]
+_CanBeIntersected = Union[Circle]
 
 class Circle:
     @property
@@ -88,12 +89,13 @@ class Circle:
     @overload
     def collidecircle(self, center: Coordinate, r: float, /) -> bool: ...
     @overload
-    def colliderect(self, rect: RectValue, /) -> bool: ...
+    def colliderect(self, rect: RectLike, /) -> bool: ...
     @overload
     def colliderect(self, x: float, y: float, w: float, h: float, /) -> bool: ...
     @overload
     def colliderect(self, topleft: Coordinate, size: Coordinate, /) -> bool: ...
     def collideswith(self, other: _CanBeCollided, /) -> bool: ...
+    def intersect(self, other: _CanBeIntersected, /) -> List[Tuple[float, float]]: ...
     def contains(self, shape: _CanBeCollided) -> bool: ...
     @overload
     def update(self, circle: _CircleValue, /) -> None: ...

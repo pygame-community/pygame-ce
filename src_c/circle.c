@@ -47,7 +47,8 @@ pg_circle_init(pgCircleObject *self, PyObject *args, PyObject *kwds)
         PyErr_SetString(
             PyExc_TypeError,
             "Arguments must be a Circle, a sequence of length 3 or 2, or an "
-            "object with an attribute called 'circle'");
+            "object with an attribute called 'circle', all with corresponding "
+            "nonnegative radius argument");
         return -1;
     }
     return 0;
@@ -424,6 +425,28 @@ pg_circle_contains(pgCircleObject *self, PyObject *arg)
     return PyBool_FromLong(result);
 }
 
+static PyObject *
+pg_circle_intersect(pgCircleObject *self, PyObject *arg)
+{
+    pgCircleBase *scirc = &self->circle;
+
+    /* max number of intersections when supporting: Circle (2), */
+    double intersections[4];
+    int num = 0;
+
+    if (pgCircle_Check(arg)) {
+        pgCircleBase *other = &pgCircle_AsCircle(arg);
+        num = pgIntersection_CircleCircle(scirc, other, intersections);
+    }
+    else {
+        PyErr_Format(PyExc_TypeError, "Argument must be a CircleType, got %s",
+                     Py_TYPE(arg)->tp_name);
+        return NULL;
+    }
+
+    return pg_PointList_FromArrayDouble(intersections, num * 2);
+}
+
 static struct PyMethodDef pg_circle_methods[] = {
     {"collidepoint", (PyCFunction)pg_circle_collidepoint, METH_FASTCALL,
      DOC_CIRCLE_COLLIDEPOINT},
@@ -449,6 +472,8 @@ static struct PyMethodDef pg_circle_methods[] = {
     {"rotate_ip", (PyCFunction)pg_circle_rotate_ip, METH_FASTCALL,
      DOC_CIRCLE_ROTATEIP},
     {"contains", (PyCFunction)pg_circle_contains, METH_O, DOC_CIRCLE_CONTAINS},
+    {"intersect", (PyCFunction)pg_circle_intersect, METH_O,
+     DOC_CIRCLE_INTERSECT},
     {NULL, NULL, 0, NULL}};
 
 #define GETTER_SETTER(name)                                                   \
@@ -494,8 +519,8 @@ pg_circle_setr(pgCircleObject *self, PyObject *value, void *closure)
         return -1;
     }
 
-    if (radius <= 0) {
-        PyErr_SetString(PyExc_ValueError, "Radius must be positive");
+    if (radius < 0) {
+        PyErr_SetString(PyExc_ValueError, "Radius must be nonnegative");
         return -1;
     }
 
@@ -523,9 +548,9 @@ pg_circle_setr_sqr(pgCircleObject *self, PyObject *value, void *closure)
         return -1;
     }
 
-    if (radius_squared <= 0) {
+    if (radius_squared < 0) {
         PyErr_SetString(PyExc_ValueError,
-                        "Invalid radius squared value, must be > 0");
+                        "Invalid radius squared value, must be nonnegative");
         return -1;
     }
 
@@ -570,8 +595,9 @@ pg_circle_setarea(pgCircleObject *self, PyObject *value, void *closure)
         return -1;
     }
 
-    if (area <= 0) {
-        PyErr_SetString(PyExc_ValueError, "Invalid area value, must be > 0");
+    if (area < 0) {
+        PyErr_SetString(PyExc_ValueError,
+                        "Invalid area value, must be nonnegative");
         return -1;
     }
 
@@ -600,9 +626,9 @@ pg_circle_setcircumference(pgCircleObject *self, PyObject *value,
         return -1;
     }
 
-    if (circumference <= 0) {
+    if (circumference < 0) {
         PyErr_SetString(PyExc_ValueError,
-                        "Invalid circumference value, must be > 0");
+                        "Invalid circumference value, must be nonnegative");
         return -1;
     }
 
@@ -630,23 +656,15 @@ pg_circle_setdiameter(pgCircleObject *self, PyObject *value, void *closure)
         return -1;
     }
 
-    if (diameter <= 0) {
+    if (diameter < 0) {
         PyErr_SetString(PyExc_ValueError,
-                        "Invalid diameter value, must be > 0");
+                        "Invalid diameter value, must be nonnegative");
         return -1;
     }
 
     self->circle.r = diameter / 2;
 
     return 0;
-}
-
-static int
-double_compare(double a, double b)
-{
-    /* Uses both a fixed epsilon and an adaptive epsilon */
-    const double e = 1e-6;
-    return fabs(a - b) < e || fabs(a - b) <= e * MAX(fabs(a), fabs(b));
 }
 
 static PyObject *

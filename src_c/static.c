@@ -151,6 +151,9 @@ PyMODINIT_FUNC
 PyInit_system(void);
 
 PyMODINIT_FUNC
+PyInit_controller(void);
+
+PyMODINIT_FUNC
 PyInit_controller_old(void);
 
 PyMODINIT_FUNC
@@ -253,6 +256,8 @@ mod_pygame_import_cython(PyObject *self, PyObject *spec)
     load_submodule_mphase("pygame._sdl2", PyInit_mixer(), spec, "mixer");
     load_submodule_mphase("pygame._sdl2", PyInit_controller_old(), spec,
                           "controller_old");
+    load_submodule_mphase("pygame._sdl2", PyInit_controller(), spec,
+                          "controller");
     load_submodule_mphase("pygame._sdl2", PyInit_audio(), spec, "audio");
     load_submodule_mphase("pygame._sdl2", PyInit_video(), spec, "video");
 
@@ -334,8 +339,6 @@ PyInit_pygame_static()
 #undef pgSurface_UnlockBy
 #undef pgSurface_Prep
 #undef pgSurface_Unprep
-#undef pgLifetimeLock_Type
-#undef pgSurface_LockLifetime
 
 #include "surflock.c"
 
@@ -427,6 +430,7 @@ PyInit_pygame_static()
 #include "pixelcopy.c"
 #include "newbuffer.c"
 
+#include "_sdl2/controller.c"
 #include "_sdl2/controller_old.c"
 #include "_sdl2/touch.c"
 #include "transform.c"

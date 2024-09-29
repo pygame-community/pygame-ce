@@ -68,7 +68,7 @@ The following file formats are supported
 
    Initialize the mixer module for Sound loading and playback. The default
    arguments can be overridden to provide specific audio mixing. Keyword
-   arguments are accepted. For backwards compatibility, argument values of 
+   arguments are accepted. For backwards compatibility, argument values of
    0 are replaced with the startup defaults, except for ``allowedchanges``,
    where -1 is used. (startup defaults may be changed by a :func:`pre_init` call).
 
@@ -241,7 +241,7 @@ The following file formats are supported
    | :sg:`set_reserved(count, /) -> count`
 
    The mixer can reserve any number of channels that will not be automatically
-   selected for playback by Sounds. This means that whenever you play a Sound 
+   selected for playback by Sounds. This means that whenever you play a Sound
    without specifying a channel, a reserved channel will never be used. If sounds
    are currently playing on the reserved channels they will not be stopped.
 
@@ -292,7 +292,7 @@ The following file formats are supported
    | :sl:`get the soundfont for playing midi music`
    | :sg:`get_soundfont() -> paths`
 
-   This gets the soundfont filepaths as a string (each path is separated by a semi-colon) 
+   This gets the soundfont filepaths as a string (each path is separated by a semi-colon)
    to be used in the playback of ``MID``, ``MIDI``, and ``KAR`` music file formats. If no
    soundfont is specified, the return type is ``None``.
 
@@ -351,7 +351,7 @@ The following file formats are supported
    the initialize arguments for the mixer. A Unicode string can only be a file
    pathname. A bytes object can be either a pathname or a buffer object.
    Use the 'file' or 'buffer' keywords to avoid ambiguity; otherwise Sound may
-   guess wrong. If the array keyword is used, the object is expected to export 
+   guess wrong. If the array keyword is used, the object is expected to export
    a new buffer interface (The object is checked for a buffer interface first.)
 
    The Sound object represents actual sound sample data. Methods that change
@@ -374,6 +374,9 @@ The following file formats are supported
    .. versionaddedold:: 1.9.2
       :class:`pygame.mixer.Sound` keyword arguments and array interface support
    .. versionaddedold:: 2.0.1 pathlib.Path support on Python 3.
+
+   .. versionchanged:: 2.5.2 This class is also available through the ``pygame.Sound``
+      alias.
 
    .. method:: play
 
@@ -574,11 +577,28 @@ The following file formats are supported
       Set the position (angle, distance) of a playing channel.
 
       `angle`: Angle is in degrees.
-      
+
       `distance`: Range from 0 to 255.
-      
+
+      .. warning:: This function currently fails and raises a
+         :exc:`pygame.error` when using 7.1 surround sound.
+         By default, the mixer module will use what the hardware is best
+         suited for, so this leads to hardware specific exceptions when using
+         this function.
+
+         One way of avoiding this is only using :func:`set_source_location`
+         with forced stereo. For example:
+
+         ::
+
+            pygame.mixer.pre_init(
+               channels=2,
+               allowedchanges=pygame.AUDIO_ALLOW_FREQUENCY_CHANGE,
+            )
+            pygame.init()
+
       .. versionadded:: 2.3.0
-      
+
       .. ## Channel.set_source_location ##
 
    .. method:: set_volume
@@ -615,7 +635,7 @@ The following file formats are supported
       | :sl:`get the volume of the playing channel`
       | :sg:`get_volume() -> value`
 
-      Return the volume of the channel for the current playing sound 
+      Return the volume of the channel for the current playing sound
       in the range of 0.0 to 1.0 (inclusive). This does
       not take into account stereo separation used by
       :meth:`Channel.set_volume`. The Sound object also has its own volume

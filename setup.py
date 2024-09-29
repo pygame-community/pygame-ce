@@ -19,7 +19,7 @@ EXTRAS = {}
 METADATA = {
     "name": "pygame-ce",
     "version": pg_ver.version,
-    "license": "LGPL",
+    "license": "LGPL v2.1",
     "url": "https://pyga.me",
     "author": "A community project.",
     "description": "Python Game Development",
@@ -29,6 +29,7 @@ METADATA = {
         "Documentation": "https://pyga.me/docs",
         "Bug Tracker": "https://github.com/pygame-community/pygame-ce/issues",
         "Source": "https://github.com/pygame-community/pygame-ce",
+        "Release Notes": "https://github.com/pygame-community/pygame-ce/releases",
     },
     "classifiers": [
         "Development Status :: 5 - Production/Stable",
@@ -43,6 +44,7 @@ METADATA = {
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Games/Entertainment",
@@ -124,7 +126,7 @@ distutils.ccompiler.CCompiler.__spawn = distutils.ccompiler.CCompiler.spawn
 distutils.ccompiler.CCompiler.spawn = spawn
 
 # A (bit hacky) fix for https://github.com/pygame-community/pygame-ce/issues/1346
-# This is due to the fact that distutils uses command line args to 
+# This is due to the fact that distutils uses command line args to
 # export PyInit_* functions on windows, but those functions are already exported
 # and that is why compiler gives warnings
 from distutils.command.build_ext import build_ext
@@ -264,7 +266,7 @@ if compile_cython:
     for i, kwargs in enumerate(queue):
         kwargs['progress'] = f'[{i + 1}/{count}] '
         cythonize_one(**kwargs)
-    
+
     if cython_only:
         sys.exit(0)
 
@@ -420,7 +422,7 @@ for e in extensions:
 
     if "freetype" in e.name and sys.platform not in ("darwin", "win32"):
         # TODO: fix freetype issues here
-        if sysconfig.get_config_var("MAINCC") != "clang":        
+        if sysconfig.get_config_var("MAINCC") != "clang":
             e.extra_compile_args.append("-Wno-error=unused-but-set-variable")
 
     if "mask" in e.name and sys.platform == "win32":
@@ -717,6 +719,9 @@ class OurSdist(sdist):
         # we do not want MANIFEST.in to appear in the root cluttering up things.
         self.template = os.path.join('buildconfig', 'MANIFEST.in')
 
+        print("WARNING: This command is deprecated and will be removed in the future.")
+        print("Use the alternative: `python3 -m build --sdist --outdir dist .`")
+
 
 if "bdist_msi" in sys.argv:
     # if you are making an msi, we want it to overwrite files
@@ -803,13 +808,13 @@ class DocsCommand(Command):
         '''
         import subprocess
         command_line = [
-            sys.executable, os.path.join('buildconfig', 'make_docs.py')
+            sys.executable, "-m", "buildconfig", "docs"
         ]
         if self.fullgeneration:
             command_line.append('full_generation')
 
         print("WARNING: This command is deprecated and will be removed in the future.")
-        print(f"Please use the following replacement: `{' '.join(command_line)}`\n")  
+        print(f"Please use the following replacement: `{' '.join(command_line)}`\n")
         if subprocess.call(command_line) != 0:
             raise SystemExit("Failed to build documentation")
 
@@ -820,7 +825,7 @@ class StubcheckCommand(Command):
     user_options = []
     def initialize_options(self):
         pass
-        
+
     def finalize_options(self):
         pass
 
@@ -833,7 +838,7 @@ class StubcheckCommand(Command):
             sys.executable, os.path.join("buildconfig", "stubs", "stubcheck.py")
         ]
         print("WARNING: This command is deprecated and will be removed in the future.")
-        print(f"Please use the following replacement: `{' '.join(command_line)}`\n")  
+        print(f"Please use the following replacement: `{' '.join(command_line)}`\n")
         result = subprocess.run(command_line)
         if result.returncode != 0:
             raise SystemExit("Stubcheck failed.")

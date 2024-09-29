@@ -207,9 +207,9 @@ pg_system_get_power_state(PyObject *self, PyObject *_null)
         "battery_seconds", sec_py,
         "on_battery", PyBool_FromLong(on_battery),
         "no_battery", PyBool_FromLong(no_battery),
-        "charging", PyBool_FromLong(charging), 
+        "charging", PyBool_FromLong(charging),
         "charged", PyBool_FromLong(charged),
-        "plugged_in", PyBool_FromLong(!on_battery), 
+        "plugged_in", PyBool_FromLong(!on_battery),
         "has_battery", PyBool_FromLong(on_battery || !no_battery)
     );
     // clang-format on

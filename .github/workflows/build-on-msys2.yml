@@ -44,12 +44,11 @@ jobs:
           - { sys: mingw64, env: x86_64 }
           - { sys: mingw32, env: i686 }
           - { sys: ucrt64,  env: ucrt-x86_64 }
-          - { sys: clang32, env: clang-i686 }
           - { sys: clang64, env: clang-x86_64 }
           # - { sys: clangarm64, env: clang-aarch64 }
 
     steps:
-      - uses: actions/checkout@v4.1.6
+      - uses: actions/checkout@v4.1.7
       - uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.sys }}

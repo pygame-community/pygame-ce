@@ -2,12 +2,11 @@
 import pygame
 
 pygame.init()
-
-RES = (160, 120)
+RESOLUTION = (160, 120)
 FPS = 30
 clock = pygame.Clock()
 
-screen = pygame.display.set_mode(RES, pygame.RESIZABLE)
+screen = pygame.display.set_mode(RESOLUTION, pygame.RESIZABLE)
 pygame.display._set_autoresize(False)
 
 # MAIN LOOP
@@ -21,12 +20,10 @@ while not done:
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
             done = True
-        if event.type == pygame.QUIT:
-            done = True
-        # if event.type==pygame.WINDOWRESIZED:
-        #    screen=pygame.display.get_surface()
-        if event.type == pygame.VIDEORESIZE:
+        elif event.type == pygame.VIDEORESIZE:
             screen = pygame.display.get_surface()
+        elif event.type == pygame.QUIT:
+            done = True
     i += 1
     i = i % screen.get_width()
     j += i % 2
