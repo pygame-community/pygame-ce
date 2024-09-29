@@ -41,7 +41,6 @@
 
 PyObject *_freetypemodule = NULL;
 
-
 static const Scale_t FACE_SIZE_NONE = {0, 0};
 
 static int
@@ -2390,6 +2389,7 @@ MODINIT_DEFINE(_freetype)
         Py_DECREF(_freetypemodule);
         return NULL;
     }
+
     _ft_autoinit(_freetypemodule, NULL);
     _freetypestate = FREETYPE_MOD_STATE(_freetypemodule);
     _freetypeinstance = FREETYPE_MOD_STATE(_freetypemodule)->freetype;
