@@ -24,11 +24,6 @@ _CanBeCollided = Union[Circle, Rect, FRect, Coordinate, Vector2]
 _CanBeIntersected = Union[Circle]
 
 class Circle:
-    top: Tuple[float, float]
-    left: Tuple[float, float]
-    right: Tuple[float, float]
-    bottom: Tuple[float, float]
-
     @property
     def x(self) -> float: ...
     @x.setter
