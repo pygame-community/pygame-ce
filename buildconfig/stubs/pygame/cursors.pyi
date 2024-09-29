@@ -82,7 +82,7 @@ class Cursor:
     def __getitem__(
         self, index: int
     ) -> Union[int, IntCoordinate, Surface]: ...
-    copy = __copy__
+    def copy(self) -> Cursor: ...
     type: Literal["system", "color", "bitmap"]
     data: Union[
         Tuple[int],
