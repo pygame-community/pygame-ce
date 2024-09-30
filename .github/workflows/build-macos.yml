@@ -47,7 +47,7 @@ jobs:
           - { macarch: x86_64, os: macos-13 }
 
     steps:
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v4.2.0
 
       - name: Test for Mac Deps cache hit
         id: macdep-cache
@@ -116,7 +116,7 @@ jobs:
       CIBW_BEFORE_TEST: rm -rf ${{ github.workspace }}/pygame_mac_deps
 
     steps:
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v4.2.0
 
       - name: pip cache
         uses: actions/cache@v4.0.2
