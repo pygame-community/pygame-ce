@@ -52,7 +52,7 @@ jobs:
       CIBW_ARCHS: ${{ matrix.arch }}
 
     steps:
-    - uses: actions/checkout@v4.1.7
+    - uses: actions/checkout@v4.2.0
 
     - name: Log in to the Container registry
       uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567
