@@ -818,6 +818,106 @@ pg_circle_setdiameter(pgCircleObject *self, PyObject *value, void *closure)
 }
 
 static PyObject *
+pg_circle_gettop(pgCircleObject *self, void *closure)
+{
+    return pg_tuple_couple_from_values_double(self->circle.x,
+                                              self->circle.y - self->circle.r);
+}
+
+static int
+pg_circle_settop(pgCircleObject *self, PyObject *value, void *closure)
+{
+    double x, y;
+
+    DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
+
+    if (!pg_TwoDoublesFromObj(value, &x, &y)) {
+        PyErr_SetString(PyExc_TypeError, "Expected a sequence of 2 numbers");
+        return -1;
+    }
+
+    self->circle.y = y + self->circle.r;
+    self->circle.x = x;
+
+    return 0;
+}
+
+static PyObject *
+pg_circle_getleft(pgCircleObject *self, void *closure)
+{
+    return pg_tuple_couple_from_values_double(self->circle.x - self->circle.r,
+                                              self->circle.y);
+}
+
+static int
+pg_circle_setleft(pgCircleObject *self, PyObject *value, void *closure)
+{
+    double x, y;
+
+    DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
+
+    if (!pg_TwoDoublesFromObj(value, &x, &y)) {
+        PyErr_SetString(PyExc_TypeError, "Expected a sequence of 2 numbers");
+        return -1;
+    }
+
+    self->circle.x = x + self->circle.r;
+    self->circle.y = y;
+
+    return 0;
+}
+
+static PyObject *
+pg_circle_getbottom(pgCircleObject *self, void *closure)
+{
+    return pg_tuple_couple_from_values_double(self->circle.x,
+                                              self->circle.y + self->circle.r);
+}
+
+static int
+pg_circle_setbottom(pgCircleObject *self, PyObject *value, void *closure)
+{
+    double x, y;
+
+    DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
+
+    if (!pg_TwoDoublesFromObj(value, &x, &y)) {
+        PyErr_SetString(PyExc_TypeError, "Expected a sequence of 2 numbers");
+        return -1;
+    }
+
+    self->circle.y = y - self->circle.r;
+    self->circle.x = x;
+
+    return 0;
+}
+
+static PyObject *
+pg_circle_getright(pgCircleObject *self, void *closure)
+{
+    return pg_tuple_couple_from_values_double(self->circle.x + self->circle.r,
+                                              self->circle.y);
+}
+
+static int
+pg_circle_setright(pgCircleObject *self, PyObject *value, void *closure)
+{
+    double x, y;
+
+    DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
+
+    if (!pg_TwoDoublesFromObj(value, &x, &y)) {
+        PyErr_SetString(PyExc_TypeError, "Expected a sequence of 2 numbers");
+        return -1;
+    }
+
+    self->circle.x = x - self->circle.r;
+    self->circle.y = y;
+
+    return 0;
+}
+
+static PyObject *
 pg_circle_richcompare(PyObject *self, PyObject *other, int op)
 {
     pgCircleBase c1, c2;
@@ -859,6 +959,14 @@ static PyGetSetDef pg_circle_getsets[] = {
      DOC_CIRCLE_AREA, NULL},
     {"circumference", (getter)pg_circle_getcircumference,
      (setter)pg_circle_setcircumference, DOC_CIRCLE_CIRCUMFERENCE, NULL},
+    {"top", (getter)pg_circle_gettop, (setter)pg_circle_settop, DOC_CIRCLE_TOP,
+     NULL},
+    {"left", (getter)pg_circle_getleft, (setter)pg_circle_setleft,
+     DOC_CIRCLE_LEFT, NULL},
+    {"bottom", (getter)pg_circle_getbottom, (setter)pg_circle_setbottom,
+     DOC_CIRCLE_BOTTOM, NULL},
+    {"right", (getter)pg_circle_getright, (setter)pg_circle_setright,
+     DOC_CIRCLE_RIGHT, NULL},
     {NULL, 0, NULL, NULL, NULL}};
 
 static PyTypeObject pgCircle_Type = {
