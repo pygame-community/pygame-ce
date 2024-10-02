@@ -37,6 +37,8 @@ typedef struct {
 
     double volume;
     double position;
+    double fadein;
+    double fadeout;
     int paused;
     int ended;
 
@@ -639,16 +641,35 @@ pgmusic_set_position(pgMusicObject *self, PyObject *arg, void *v)
     return 0;
 }
 
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+static double
+_get_music_duration(pgMusicObject *obj)
+{
+    double music_duration = 0.0;
+
+    Mix_MusicType music_type = Mix_GetMusicType(obj->music);
+    switch (music_type) {
+        case MUS_OGG:
+        case MUS_MP3:
+            music_duration = Mix_MusicDuration(obj->music);
+            return music_duration;
+
+        default:
+            return -1.0;
+    }
+}
+#endif
+
 static PyObject *
 pgmusic_get_duration(pgMusicObject *self, void *v)
 {
     MIXER_INIT_CHECK();
 
 #if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
-    double music_duration = 0.0;
-    music_duration = Mix_MusicDuration(self->music);
-    // music_duration = Mix_GetMusicLoopLengthTime(self->music);
+
+    double music_duration = _get_music_duration(self);
     return PyFloat_FromDouble(music_duration);
+
 #else
     return RAISE(PyExc_NotImplementedError,
                  "SDL_Mixer 2.6.0 is needed to get the duration of a music");
@@ -783,6 +804,58 @@ pgmusic_get_ended(pgMusicObject *self, void *closure)
     return PyBool_FromLong(self->ended);
 }
 
+static PyObject *
+pgmusic_get_fadein(pgMusicObject *self, void *closure)
+{
+    return PyFloat_FromDouble(self->fadein);
+}
+
+static int
+pgmusic_set_fadein(pgMusicObject *self, PyObject *value, void *closure)
+{
+    DEL_ATTR_NOT_SUPPORTED_CHECK("fadein", value);
+
+    self->fadein = PyFloat_AsDouble(value);
+
+    return 0;
+}
+
+static PyObject *
+pgmusic_get_fadeout(pgMusicObject *self, void *closure)
+{
+    return PyFloat_FromDouble(self->fadeout);
+}
+
+static int
+pgmusic_set_fadeout(pgMusicObject *self, PyObject *value, void *closure)
+{
+    DEL_ATTR_NOT_SUPPORTED_CHECK("fadeout", value);
+
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+
+    double music_duration = _get_music_duration(self);
+
+    // It means the filetype doesn't support this feature
+    // So we don't edit the fadeout
+    if (music_duration < 0.0)
+        return 0;
+
+    self->fadeout = PyFloat_AsDouble(value);
+    double time_remaining = music_duration - Mix_GetMusicPosition(self->music);
+
+    if (self->fadeout > time_remaining) {
+        self->fadeout = time_remaining;
+    }
+
+    return 0;
+#else
+
+    PyErr_SetString(PyExc_NotImplementedError,
+                    "SDL_Mixer 2.6.0 is needed for using fadeout setter");
+    return -1;
+#endif
+}
+
 static int
 pgmusic_init(pgMusicObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -809,6 +882,8 @@ pgmusic_init(pgMusicObject *self, PyObject *args, PyObject *kwargs)
     self->paused = 0;
     self->ended = 0;
     self->position = 0.0;
+    self->fadein = 0.0;
+    self->fadeout = 0.0;
 
     return 0;
 }
@@ -818,6 +893,24 @@ pgmusic_endmusic_callback(void)
 {
     // current_music_obj shouldn't be NULL in theory ?
     current_music_obj->ended = 1;
+}
+
+static void
+mixmusic_callback(void *udata, Uint8 *stream, int len)
+{
+    if (!current_music_obj)
+        return;
+
+    double current_pos = Mix_GetMusicPosition(current_music_obj->music);
+    double music_duration = _get_music_duration(current_music_obj);
+
+    if (music_duration < 0.0f)
+        return;
+
+    double dt_before_fadeout =
+        music_duration - current_pos - current_music_obj->fadeout;
+    if (dt_before_fadeout < 0.0)
+        Mix_FadeOutMusic((int)(current_music_obj->fadeout * 1000));
 }
 
 static PyObject *
@@ -883,6 +976,9 @@ pgmusic_play(pgMusicObject *self, PyObject *args, PyObject *kwargs)
             startpos = self->position;
     }
 
+    if (fade_in != 0.0)
+        self->fadein = fade_in;
+
     self->ended = 0;
     Mix_HookMusicFinished(pgmusic_endmusic_callback);
     val = Mix_FadeInMusicPos(self->music, loops, (int)(fade_in * 1000),
@@ -898,15 +994,23 @@ pgmusic_play(pgMusicObject *self, PyObject *args, PyObject *kwargs)
 }
 
 static PyObject *
-pgmusic_stop(pgMusicObject *self, PyObject *_null)
+pgmusic_stop(pgMusicObject *self, PyObject *args, PyObject *kwargs)
 {
+    double fade_out = 0.0;
+
+    static char *kwids[] = {"fade_out", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|f", kwids, &fade_out))
+        return NULL;
+
     MIXER_INIT_CHECK();
 
     Py_BEGIN_ALLOW_THREADS;
 
     // Only stop music if it's the one set to playback
-    if (self == current_music_obj)
-        Mix_HaltMusic();
+    if (self == current_music_obj) {
+        self->fadeout = fade_out;
+        Mix_FadeOutMusic((int)(self->fadeout * 1000));
+    }
 
     Py_END_ALLOW_THREADS;
     Py_RETURN_NONE;
@@ -947,6 +1051,10 @@ static PyGetSetDef _musicobj_getset[] = {
     {"album", (getter)pgmusic_get_album, NULL, "", NULL},
     {"copyright", (getter)pgmusic_get_copyright, NULL, "", NULL},
     {"ended", (getter)pgmusic_get_ended, NULL, "", NULL},
+    {"fadein", (getter)pgmusic_get_fadein, (setter)pgmusic_set_fadein, "",
+     NULL},
+    {"fadeout", (getter)pgmusic_get_fadeout, (setter)pgmusic_set_fadeout, "",
+     NULL},
     {NULL, 0, NULL, NULL, NULL}  // Sentinel
 };
 
