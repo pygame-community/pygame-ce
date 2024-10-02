@@ -140,9 +140,6 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :raises TypeError: if ``points`` is not a sequence or ``points`` does not
       contain number pairs
 
-   .. note::
-       For an aapolygon, use :func:`aalines()` with ``closed=True``.
-
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
 
    .. ## pygame.draw.polygon ##
@@ -179,9 +176,6 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :raises ValueError: if ``len(points) < 3`` (must have at least 3 points)
    :raises TypeError: if ``points`` is not a sequence or ``points`` does not
       contain number pairs
-
-   .. note::
-       For an aapolygon, use :func:`aalines()` with ``closed=True``.
 
    .. versionadded:: 2.6.0
 
