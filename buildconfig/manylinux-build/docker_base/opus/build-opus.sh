@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-OPUS=opus-1.4
+OPUS=opus-1.5.2
 OPUS_FILE=opusfile-0.12
 
 curl -sL --retry 10 http://downloads.xiph.org/releases/opus/${OPUS}.tar.gz > ${OPUS}.tar.gz

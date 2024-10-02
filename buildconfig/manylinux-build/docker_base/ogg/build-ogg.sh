@@ -13,13 +13,7 @@ sha512sum -c ogg.sha512
 tar xzf ${OGG}.tar.gz
 cd $OGG
 
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    ./configure $PG_BASE_CONFIGURE_FLAGS
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-    # Use CMake on macOS because ./configure doesn't generate dylib
-    cmake . $PG_BASE_CMAKE_FLAGS
-fi
-
+cmake . $PG_BASE_CMAKE_FLAGS
 make
 make install
 
@@ -28,11 +22,13 @@ cd ..
 tar xzf ${VORBIS}.tar.gz
 cd $VORBIS
 
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    ./configure $PG_BASE_CONFIGURE_FLAGS
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-    # Use CMake on macOS because ./configure doesn't generate dylib
-    cmake . $PG_BASE_CMAKE_FLAGS
-fi
+# some hackery needed to make libvorbis build under mingw
+# case "$OSTYPE" in
+#   msys|mingw32|mingw64)
+#     sed -i '/LIBRARY/d' win32/*.def
+#     ;;
+# esac
+
+cmake . $PG_BASE_CMAKE_FLAGS
 make
 make install

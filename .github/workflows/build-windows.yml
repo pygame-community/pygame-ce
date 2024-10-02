@@ -36,8 +36,69 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  deps:
+    name: ${{ matrix.name }} deps
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        # make i686 deps and x86_64 deps
+        include:
+          - {
+            name: "64-bit",
+            winarch: x86_64,
+            msystem: MINGW64
+          }
+          - {
+            name: "32-bit",
+            winarch: i686,
+            msystem: MINGW32
+          }
+
+    steps:
+      - run: git config --global core.autocrlf input  # do not introduce carriage returns
+      - uses: actions/checkout@v4.1.0
+
+      - name: Test for Win Deps cache hit
+        id: windep-cache
+        uses: actions/cache@v3.3.2
+        with:
+          path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
+          # The hash of all files in buildconfig manylinux-build and windependencies is
+          # the key to the cache. If anything changes here, the deps are built again
+          key: windep-${{ hashFiles('buildconfig/manylinux-build/**') }}-${{ hashFiles('buildconfig/windependencies/*.sh') }}-${{ matrix.winarch }}
+          lookup-only: true
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          install: >-
+            mingw-w64-${{ matrix.winarch }}-gcc
+            mingw-w64-${{ matrix.winarch }}-cmake
+            mingw-w64-${{ matrix.winarch }}-meson
+            mingw-w64-${{ matrix.winarch }}-autotools
+            mingw-w64-${{ matrix.winarch }}-nasm
+            mingw-w64-${{ matrix.winarch }}-python
+            mingw-w64-${{ matrix.winarch }}-python-setuptools
+
+      # build win deps on cache miss
+      - name: Build Win Deps
+        if: steps.windep-cache.outputs.cache-hit != 'true'
+        shell: msys2 {0}
+        run: |
+          export WIN_ARCH="${{ matrix.winarch }}"
+          cd buildconfig/windependencies
+          bash ./build_win_deps.sh
+
+      # Uncomment when you want to manually verify the deps by downloading them
+      - name: Upload win deps
+        uses: actions/upload-artifact@v3
+        with:
+          name: pygame-win-deps-${{ matrix.winarch }}
+          path: ${{ github.workspace }}/pygame_win_deps_${{ matrix.winarch }}
+
   build:
     name: ${{ matrix.winarch }}
+    needs: deps
     runs-on: windows-latest
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
