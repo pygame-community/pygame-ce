@@ -8,7 +8,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-**English** `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Русский`_
+`English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ **Русский**
 ---------------------------------------------------------------------------------------------------
 
 Pygame_  - бесплатная кроссплатформенная библиотека с открытым исходным кодом 
@@ -216,6 +216,7 @@ back to the pygame-ce project).  Игры с закрытым исходным �
 .. _Pygame Community Discord Server: https://discord.gg/pygame
 .. _wiki pages: https://github.com/pygame-community/pygame-ce/wiki
 
+.. _English: ./../../README.rst
 .. _简体中文: ./docs/readmes/README.zh-cn.rst
 .. _繁體中文: ./docs/readmes/README.zh-tw.rst
 .. _Français: ./docs/readmes/README.fr.rst
