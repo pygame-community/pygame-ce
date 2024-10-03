@@ -190,7 +190,7 @@ The following strings can be converted into cursor bitmaps with
    **Creating a color cursor**
 
    To create a color cursor, create a ``Cursor`` from a ``hotspot`` and a ``surface``.
-   ``hotspot`` is an (x,y) coordinate that determines where in the cursor the exact point is.
+   ``hotspot`` are (x,y) coordinates that determine where in the cursor the exact point is.
    The hotspot position must be within the bounds of the ``surface``.
 
    **Creating a bitmap cursor**
