@@ -217,10 +217,9 @@ back to the pygame-ce project).  Игры с закрытым исходным �
 .. _wiki pages: https://github.com/pygame-community/pygame-ce/wiki
 
 .. _English: ./../../README.rst
-.. _简体中文: ./docs/readmes/README.zh-cn.rst
-.. _繁體中文: ./docs/readmes/README.zh-tw.rst
-.. _Français: ./docs/readmes/README.fr.rst
-.. _فارسی: ./docs/readmes/README.fa.rst
-.. _Español: ./docs/readmes/README.es.rst
-.. _日本語: ./docs/readmes/README.ja.rst
-.. _Русский: ./docs/readmes/README.ru.rst
+.. _简体中文: README.zh-cn.rst
+.. _繁體中文: README.zh-tw.rst
+.. _Français: README.fr.rst
+.. _فارسی: README.fa.rst
+.. _Español: README.es.rst
+.. _日本語: README.ja.rst
