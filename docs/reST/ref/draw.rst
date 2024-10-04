@@ -112,10 +112,10 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
       tuple ``(RGB[A])``
    :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param points: a sequence of 3 or more (x, y) coordinates that make up the
-      vertices of the polygon, each *coordinate* in the sequence must be a
+      vertices of the polygon, each point in the sequence must be a
       tuple/list/:class:`pygame.math.Vector2` of 2 ints/floats,
       e.g. ``[(x1, y1), (x2, y2), (x3, y3)]``
-   :type points: tuple(coordinate) or list(coordinate)
+   :type points: tuple(point) or list(point)
    :param int width: (optional) used for line thickness or to indicate that
       the polygon is to be filled
 
@@ -420,14 +420,14 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param bool closed: if ``True`` an additional line segment is drawn between
       the first and last points in the ``points`` sequence
    :param points: a sequence of 2 or more (x, y) coordinates, where each
-      *coordinate* in the sequence must be a
+      point in the sequence must be a
       tuple/list/:class:`pygame.math.Vector2` of 2 ints/floats and adjacent
-      coordinates will be connected by a line segment, e.g. for the
+      points will be connected by a line segment, e.g. for the
       points ``[(x1, y1), (x2, y2), (x3, y3)]`` a line segment will be drawn
       from ``(x1, y1)`` to ``(x2, y2)`` and from ``(x2, y2)`` to ``(x3, y3)``,
       additionally if the ``closed`` parameter is ``True`` another line segment
       will be drawn from ``(x3, y3)`` to ``(x1, y1)``
-   :type points: tuple(coordinate) or list(coordinate)
+   :type points: tuple(point) or list(point)
    :param int width: (optional) used for line thickness
 
          | if width >= 1, used for line thickness (default is 1)
@@ -517,14 +517,14 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param bool closed: if ``True`` an additional line segment is drawn between
       the first and last points in the ``points`` sequence
    :param points: a sequence of 2 or more (x, y) coordinates, where each
-      *coordinate* in the sequence must be a
+      point in the sequence must be a
       tuple/list/:class:`pygame.math.Vector2` of 2 ints/floats and adjacent
-      coordinates will be connected by a line segment, e.g. for the
+      points will be connected by a line segment, e.g. for the
       points ``[(x1, y1), (x2, y2), (x3, y3)]`` a line segment will be drawn
       from ``(x1, y1)`` to ``(x2, y2)`` and from ``(x2, y2)`` to ``(x3, y3)``,
       additionally if the ``closed`` parameter is ``True`` another line segment
       will be drawn from ``(x3, y3)`` to ``(x1, y1)``
-   :type points: tuple(coordinate) or list(coordinate)
+   :type points: tuple(point) or list(point)
 
    :returns: a rect bounding the changed pixels, if nothing is drawn the
       bounding rect's position will be the position of the first point in the
