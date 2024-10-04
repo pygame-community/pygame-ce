@@ -82,6 +82,7 @@ def aaline(
     color: ColorLike,
     start_pos: Coordinate,
     end_pos: Coordinate,
+    width: int = 1,
 ) -> Rect: ...
 def aalines(
     surface: Surface,
