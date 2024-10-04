@@ -256,4 +256,4 @@ LGPL-2.1-or-later **شناسه مجوز:**
 .. _Français: README.fr.rst
 .. _Español: README.es.rst
 .. _日本語: README.ja.rst
-.. _Русский: ./docs/readmes/README.ru.rst
+.. _Русский: README.ru.rst
