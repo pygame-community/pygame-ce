@@ -289,8 +289,8 @@
       | :sl:`Get or set the Image's origin of rotation`
       | :sg:`origin -> (float, float) or None`
 
-      Gets or sets the Image's origin of rotation, a 2D coordinate relative to
-      the topleft coordinate of the Image's rectangular area.
+      Gets or sets the Image's origin of rotation, a 2D point relative to
+      the topleft coordinates of the Image's rectangular area.
 
       An origin of ``None`` means no origin was set and the Image will be
       rotated around its center.
@@ -452,7 +452,7 @@
       | :sl:`Draw a point`
       | :sg:`draw_point(point) -> None`
 
-      :param point: The point's coordinate.
+      :param point: The point's coordinates.
 
    .. method:: draw_rect
 
