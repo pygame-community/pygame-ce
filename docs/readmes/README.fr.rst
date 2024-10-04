@@ -208,4 +208,4 @@ Voir les docs/licences pour les licences des dépendances.
 .. _فارسی: README.fa.rst
 .. _Español: README.es.rst
 .. _日本語: README.ja.rst
-.. _Русский: ./docs/readmes/README.ru.rst
+.. _Русский: README.ru.rst
