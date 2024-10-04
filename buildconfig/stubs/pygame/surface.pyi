@@ -7,7 +7,7 @@ from pygame.rect import FRect, Rect
 
 from pygame.typing import (
     ColorLike,
-    Coordinate,
+    Point,
     RectLike,
     SequenceLike,
 )
@@ -50,7 +50,7 @@ class Surface:
     @overload
     def __init__(
         self,
-        size: Coordinate,
+        size: Point,
         flags: int = 0,
         depth: int = 0,
         masks: Optional[ColorLike] = None,
@@ -58,7 +58,7 @@ class Surface:
     @overload
     def __init__(
         self,
-        size: Coordinate,
+        size: Point,
         flags: int = 0,
         surface: Surface = ...,
     ) -> None: ...
@@ -68,7 +68,7 @@ class Surface:
     def blit(
         self,
         source: Surface,
-        dest: Union[Coordinate, RectLike] = (0, 0),
+        dest: Union[Point, RectLike] = (0, 0),
         area: Optional[RectLike] = None,
         special_flags: int = 0,
     ) -> Rect: ...
@@ -76,16 +76,16 @@ class Surface:
         self,
         blit_SequenceLike: Iterable[
             Union[
-                Tuple[Surface, Union[Coordinate, RectLike]],
-                Tuple[Surface, Union[Coordinate, RectLike], Union[RectLike, int]],
-                Tuple[Surface, Union[Coordinate, RectLike], RectLike, int],
+                Tuple[Surface, Union[Point, RectLike]],
+                Tuple[Surface, Union[Point, RectLike], Union[RectLike, int]],
+                Tuple[Surface, Union[Point, RectLike], RectLike, int],
             ]
         ],
         doreturn: Union[int, bool] = 1,
     ) -> Union[List[Rect], None]: ...
     def fblits(
         self,
-        blit_SequenceLike: Iterable[Tuple[Surface, Union[Coordinate, RectLike]]],
+        blit_SequenceLike: Iterable[Tuple[Surface, Union[Point, RectLike]]],
         special_flags: int = 0, /
     ) -> None: ...
     @overload
@@ -119,9 +119,9 @@ class Surface:
     def mustlock(self) -> bool: ...
     def get_locked(self) -> bool: ...
     def get_locks(self) -> Tuple[Any, ...]: ...
-    def get_at(self, x_y: Coordinate, /) -> Color: ...
-    def set_at(self, x_y: Coordinate, color: ColorLike, /) -> None: ...
-    def get_at_mapped(self, x_y: Coordinate, /) -> int: ...
+    def get_at(self, x_y: Point, /) -> Color: ...
+    def set_at(self, x_y: Point, color: ColorLike, /) -> None: ...
+    def get_at_mapped(self, x_y: Point, /) -> int: ...
     def get_palette(self) -> List[Color]: ...
     def get_palette_at(self, index: int, /) -> Color: ...
     def set_palette(self, palette: SequenceLike[ColorLike], /) -> None: ...
@@ -133,7 +133,7 @@ class Surface:
     @overload
     def subsurface(self, rect: RectLike, /) -> Surface: ...
     @overload
-    def subsurface(self, left_top: Coordinate, width_height: Coordinate, /) -> Surface: ...
+    def subsurface(self, left_top: Point, width_height: Point, /) -> Surface: ...
     @overload
     def subsurface(
         self, left: float, top: float, width: float, height: float, /
