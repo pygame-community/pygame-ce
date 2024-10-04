@@ -163,7 +163,7 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (width < 1) {
-        return pgRect_New4(startx, starty, 0, 0);
+        return pgRect_New4((int)startx, (int)starty, 0, 0);
     }
 
     if (!pgSurface_Lock(surfobj)) {
@@ -174,8 +174,8 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
         float x1, y1, x2, y2, x3, y3, x4, y4;
         line_width_corners(startx, starty, endx, endy, width, &x1, &y1, &x2,
                            &y2, &x3, &y3, &x4, &y4);
-        draw_line_width(surf, color, startx, starty, endx, endy, width,
-                        drawn_area);
+        draw_line_width(surf, color, (int)startx, (int)starty, (int)endx,
+                        (int)endy, width, drawn_area);
         draw_aaline(surf, color, x1, y1, x2, y2, drawn_area, 0, 0, 0);
         draw_aaline(surf, color, x3, y3, x4, y4, drawn_area, 0, 0, 0);
     }
@@ -1865,7 +1865,7 @@ line_width_corners(float from_x, float from_y, float to_x, float to_y,
                    float *x3, float *y3, float *x4, float *y4)
 {
     float aa_width = (float)width / 2;
-    float extra_width = (1.0 - (width % 2)) / 2;
+    float extra_width = (1.0f - (width % 2)) / 2;
     int steep = fabs(to_x - from_x) <= fabs(to_y - from_y);
 
     if (steep) {
