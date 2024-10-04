@@ -535,7 +535,7 @@ For example:
    Draws a filled polygon on the given surface. For an unfilled polygon use
    :meth:`polygon`.
 
-   The adjacent pooints in the ``points`` argument, as well as the first
+   The adjacent points in the ``points`` argument, as well as the first
    and last points, will be connected by line segments.
    e.g. For the points ``[(x1, y1), (x2, y2), (x3, y3)]`` a line segment will
    be drawn from ``(x1, y1)`` to ``(x2, y2)``, from ``(x2, y2)`` to
