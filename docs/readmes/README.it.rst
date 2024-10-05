@@ -11,17 +11,17 @@
 `English`_ `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ **Italiano**
 ---------------------------------------------------------------------------------------------------
 
-Pygame_ è una libreria gratuita a codice aperto e multipiattaforma
+Pygame_ è una libreria open source gratuita e multipiattaforma
 adibita allo sviluppo di applicazioni multimediali come videogiochi utilizzando Python.
 Utilizza la `Simple DirectMedia Layer library`_ e altre librerie
 popolari per astrarre le operazioni più comuni, rendendo la scrittura
 di questi programmi un compito più intuitivo.
 
-Questa distribuzione è chiamata **`pygame - Community Edition`** ('pygame-ce' per abbreviare).
+Questa distribuzione si chiama **`pygame - Community Edition`** ('pygame-ce' per abbreviare).
 
 È una fork (divisione) del progetto pygame originale fondata dai suoi precedenti sviluppatori principali,
 ed è stata creata dopo che ostacoli insuperabili gli hanno impedito di continuare a sviluppare l'originale.
-La nuova distribuzione ha l'obbiettivo di offrire nuove versioni frequentemente, continue migliorie
+La nuova distribuzione ha l'obbiettivo di offrire nuove versioni più di frequente, continue migliorie
 e bugfixes e un modello governativo più democratico.
 
 Nuovi contributori sono i benvenuti!
@@ -40,14 +40,14 @@ Aiuto
 Se sei alle prime armi con pygame, dovresti riuscire a iniziare
 abbastanza velocemente. Pygame ha a disposizione numerosi tutorial
 e introduzioni. Esiste anche una documentazione di riferimento completa
-per l'intera libreria. Puoi navigare la documentazione sulla `docs page`_.
-Puoi anche navigare la documentazione localmente eseguento il comando
+per l'intera libreria. Puoi trovare la documentazione sulla `docs page`_.
+Puoi anche visualizzare la documentazione localmente eseguento il comando
 ``python -m pygame.docs`` nel tuo terminale. Se la documentazione è
 inaccessibile localmente, il sito web online verrà aperto al suo posto.
 
-La documentazione online è aggiornata con la versione di sviluppo di pygame
+La documentazione online è aggiornata con la versione di sviluppo di pygame-ce
 su github. Essa potrebbe essere leggermente più recente rispetto alla versione
-di pygame che stai usando. Per aggiornare alla versione più recente, esegui
+di pygame-ce che stai usando. Per aggiornare alla versione più recente, esegui
 il comando ``pip install pygame-ce --upgrade`` nel tuo terminale.
 
 La cosa migliore è che la cartella degli esempi contiene numerosi piccoli
@@ -58,13 +58,13 @@ Compilare dal Codice Locale
 ---------------------------
 
 Se vuoi usare funzionalità che sono ancora in sviluppo o se vuoi
-contributire per pygame avrai bisogno di compilare pygame-ce localmente
+contribuire per pygame-ce avrai bisogno di compilare pygame-ce localmente
 a partire dal suo codice sorgente piuttosto che installarlo con pip.
 
 L'installazione dal codice sorgente è abbastanza automatizzata. La maggior
-parte del lavoro riguarda compilare e installare le librerie richieste da pygame.
-Una volta che ciò è fatto, esegui lo script ``setup.py`` che tenterà di
-configurare automaticamente, compilare e installare pygame.
+parte del lavoro riguarda compilare e installare le librerie richieste da pygame-ce.
+Fatto ciò, esegui lo script ``setup.py`` che tenterà di
+configurare automaticamente, compilare e installare pygame-ce.
 
 Più informazioni riguardo all'installazione e alla compilazione sono
 disponibili sulla `Compilation wiki page`_.
@@ -172,8 +172,8 @@ Questa libreria è distribuita con la licenza `GNU LGPL version 2.1`_ che può
 essere trovata nel file ``docs/LGPL.txt``. Ci riserviamo il diritto di
 distribuire future versioni di questa libreria con una licenza differente.
 
-Questo significa essenzialmente che puoi usare pygame in qualsiasi progetto
-che tu voglia, ma se fai alcun cambiamento o aggiunte a pygame stesso,
+Questo significa essenzialmente che puoi usare pygame-ce in qualsiasi progetto
+che tu voglia, ma se fai alcun cambiamento o aggiunte a pygame-ce stesso,
 tali modifiche devono essere distribuite con una licenza compatibile (preferibilmente
 presentate al progetto pygame-ce). Giochi commerciali o a codice chiuso sono consentiti.
 
@@ -183,7 +183,7 @@ Controlla docs/licenses per le licenze dei requisiti.
 
 ****
 
-Ultima revisione del README: 05/10/2024
+**Last reviewed**: 05 October 2024 - **Ultima revisione**: 05 Ottobre 2024
 
 .. |PyPiVersion| image:: https://img.shields.io/pypi/v/pygame-ce.svg?v=1
    :target: https://pypi.python.org/pypi/pygame-ce
