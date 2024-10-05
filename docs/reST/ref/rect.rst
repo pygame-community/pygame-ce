@@ -94,9 +94,9 @@
       overridden if any extra attributes need to be copied.
    
    .. versionadded:: 2.5.2
-      ``rel_center`` added to Rect / FRect. This will return you a ``Coordinate`` of
-      the center relative to the topleft of the Rect. Setting a ``Coordinate`` to it will 
-      modify the size of the rect to 2 times the ``Coordinate`` used. Below you can find a 
+      ``rel_center`` added to Rect / FRect. This will return you a ``Point`` of
+      the center relative to the topleft of the Rect. Setting a ``Point`` to it will 
+      modify the size of the rect to 2 times the ``Point`` used. Below you can find a 
       code example of how it should work :
 
       .. code-block:: python
@@ -109,7 +109,7 @@
          > ((128, 128), (256, 256))
       
       Beware of non integer relative centers ! Using a Rect instead of FRect will round down
-      the values of the returned ``Coordinate``.
+      the values of the returned ``Point``.
 
 
    .. method:: copy
