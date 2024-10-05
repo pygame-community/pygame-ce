@@ -351,7 +351,7 @@ Instead, always begin with the original image and scale to the desired size.)
    .. ## pygame.transform.grayscale ##
 
 .. function:: pixelate
-   
+
    | :sl:`pixelate a surface`
    | :sg:`pixelate(surface, pixel_size, dest_surface=None) -> Surface`
 
