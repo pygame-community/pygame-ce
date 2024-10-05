@@ -284,9 +284,9 @@ use it to control an on screen object.
       # make sure the blob is big enough that it isn't just noise
       if mask.count() > 100:
           # find the center of the blob
-          coord = mask.centroid()
+          coords = mask.centroid()
           # draw a circle with size variable on the size of the blob
-          pygame.draw.circle(self.display, (0,255,0), coord, max(min(50,mask.count()/400),5))
+          pygame.draw.circle(self.display, (0,255,0), coords, max(min(50,mask.count()/400),5))
       pygame.display.flip()
 
 .. image:: ../assets/camera_mask.jpg

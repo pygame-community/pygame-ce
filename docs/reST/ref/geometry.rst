@@ -142,6 +142,58 @@
 
          .. ## Circle.circumference ##
 
+   .. attribute:: top
+
+         | :sl:`top coordinate of the circle`
+         | :sg:`top -> (float, float)`
+
+         It's a tuple containing the `x` and `y` coordinates that represent the top
+         of the circle.
+         Reassigning it moves the circle to the new position. The radius will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Circle.top ##
+
+   .. attribute:: bottom
+
+         | :sl:`bottom coordinate of the circle`
+         | :sg:`bottom -> (float, float)`
+
+         It's a tuple containing the `x` and `y` coordinates that represent the bottom
+         of the circle.
+         Reassigning it moves the circle to the new position. The radius will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Circle.bottom ##
+
+   .. attribute:: left
+
+         | :sl:`left coordinate of the circle`
+         | :sg:`left -> (float, float)`
+
+         It's a tuple containing the `x` and `y` coordinates that represent the left
+         of the circle.
+         Reassigning it moves the circle to the new position. The radius will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Circle.left ##
+
+   .. attribute:: right
+
+         | :sl:`right coordinate of the circle`
+         | :sg:`right -> (float, float)`
+
+         It's a tuple containing the `x` and `y` coordinates that represent the right
+         of the circle.
+         Reassigning it moves the circle to the new position. The radius will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Circle.right ##
+
    **Circle Methods**
 
    ----
@@ -216,6 +268,48 @@
          .. versionadded:: 2.5.0
 
          .. ## Circle.collideswith ##
+
+   .. method:: collidelist
+
+         | :sl:`test if a list of objects collide with the circle`
+         | :sg:`collidelist(colliders) -> int`
+
+         The `collidelist` method tests whether a given list of shapes or points collides
+         (overlaps) with this `Circle` object. The function takes in a single argument, which
+         must be a list of `Circle`, `Rect`, `FRect`, or a point. The function returns the index
+         of the first shape or point in the list that collides with the `Circle` object, or
+         -1 if there is no collision.
+
+         .. note::
+             The shapes must be actual shape objects, such as `Circle`, `Rect` or `FRect`
+             instances. It is not possible to pass a tuple or list of coordinates representing
+             the shape as an argument (except for a point), because the shape type can't be
+             determined from the coordinates alone.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Circle.collidelist ##
+
+   .. method:: collidelistall
+
+         | :sl:`test if all objects in a list collide with the circle`
+         | :sg:`collidelistall(colliders) -> list`
+
+         The `collidelistall` method tests whether a given list of shapes or points collides
+         (overlaps) with this `Circle` object. The function takes in a single argument, which
+         must be a list of `Circle`, `Rect`, `FRect`, or a point. The function returns a list
+         containing the indices of all the shapes or points in the list that collide with
+         the `Circle` object, or an empty list if there is no collision.
+
+         .. note::
+             The shapes must be actual shape objects, such as `Circle`, `Rect` or `FRect`
+             instances. It is not possible to pass a tuple or list of coordinates representing
+             the shape as an argument (except for a point), because the shape type can't be
+             determined from the coordinates alone.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Circle.collidelistall ##
 
    .. method:: contains
 

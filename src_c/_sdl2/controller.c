@@ -544,6 +544,15 @@ static PyTypeObject pgController_Type = {
     .tp_members = controller_members,
 };
 
+/* TODO: multiphase init
+#if PY_VERSION_HEX >= 0x030D0000
+static struct PyModuleDef_Slot mod_controller_slots[] = {
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+    {0, NULL}
+};
+#endif
+*/
+
 MODINIT_DEFINE(controller)
 {
     PyObject *module;
@@ -553,7 +562,13 @@ MODINIT_DEFINE(controller)
         .m_name = "controller",
         .m_doc = DOC_SDL2_CONTROLLER,
         .m_size = -1,
-        .m_methods = _controller_module_methods};
+        .m_methods = _controller_module_methods,
+/*
+#if PY_VERSION_HEX >= 0x030D0000
+        .m_slots = mod_controller_slots,
+#endif
+*/
+    };
 
     import_pygame_base();
     if (PyErr_Occurred()) {
@@ -566,7 +581,11 @@ MODINIT_DEFINE(controller)
     }
 
     module = PyModule_Create(&_module);
-
+#if Py_GIL_DISABLED
+#if (defined(__EMSCRIPTEN__) || defined(__wasi__))
+    PyUnstable_Module_SetGIL(module, Py_MOD_GIL_NOT_USED);
+#endif
+#endif
     if (!module) {
         return NULL;
     }

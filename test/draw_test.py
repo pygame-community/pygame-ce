@@ -3647,6 +3647,60 @@ class DrawAALinesTest(AALinesMixin, DrawTestCase):
     class to add any draw.aalines specific tests to.
     """
 
+    def test_aalines__overlap(self):
+        """Ensures that two adjacent antialiased lines are not overlapping.
+
+        Draws two lines, and checks if 2 pixels, at shared point between those
+        two lines, are too bright.
+
+        See: https://github.com/pygame-community/pygame-ce/pull/2912
+        """
+        line_color = (150, 150, 150)
+        max_expected_colors = ((70, 70, 70), (100, 100, 100))
+        test_points = [[20.1, 25.4], [25.1, 25.6], [30.1, 25.8]]
+
+        surface = pygame.display.set_mode((50, 50))
+        self.draw_aalines(surface, line_color, False, test_points)
+
+        for i, y in enumerate((25, 26)):
+            check_color = tuple(surface.get_at((25, y)))
+            self.assertLess(
+                check_color,
+                max_expected_colors[i],
+                f"aalines are overlapping, pos={(25, y)}",
+            )
+
+    def test_aalines__steep_missing_pixel(self):
+        """Ensures there are no missing pixels between steep and non-steep lines.
+
+        Draws two adjacent lines: first is not steep and second is, then
+        checks if there is missing pixel at shared point between those two lines.
+
+        See: https://github.com/pygame-community/pygame-ce/pull/2912
+        """
+        line_color = (150, 150, 150)
+        min_expected_color = (40, 40, 40)
+        test_points = [[11.2, 8.5], [17.1, 25.7], [35.8, 25.5], [47.6, 41.8]]
+
+        surface = pygame.display.set_mode((50, 50))
+        self.draw_aalines(surface, line_color, False, test_points)
+
+        # First line is steep, and other line is not steep
+        check_color = tuple(surface.get_at((17, 26)))
+        self.assertGreater(
+            check_color,
+            min_expected_color,
+            "Pixel is missing between steep and non-steep line, pos=(17, 26)",
+        )
+
+        # First line is not steep, and other line is steep
+        check_color = tuple(surface.get_at((36, 25)))
+        self.assertGreater(
+            check_color,
+            min_expected_color,
+            "Pixel is missing between non-steep and steep line, pos=(26, 25)",
+        )
+
 
 ### Polygon Testing ###########################################################
 

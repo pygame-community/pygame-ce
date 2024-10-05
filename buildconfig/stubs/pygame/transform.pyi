@@ -2,12 +2,12 @@ from typing import Optional, Union, Literal, Tuple
 
 from pygame.surface import Surface
 
-from pygame.typing import ColorLike, Coordinate, RectLike, SequenceLike
+from pygame.typing import ColorLike, Point, RectLike, SequenceLike
 
 def flip(surface: Surface, flip_x: bool, flip_y: bool) -> Surface: ...
 def scale(
     surface: Surface,
-    size: Coordinate,
+    size: Point,
     dest_surface: Optional[Surface] = None,
 ) -> Surface: ...
 def scale_by(
@@ -21,7 +21,7 @@ def scale2x(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface
 def grayscale(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface: ...
 def smoothscale(
     surface: Surface,
-    size: Coordinate,
+    size: Point,
     dest_surface: Optional[Surface] = None,
 ) -> Surface: ...
 def smoothscale_by(
