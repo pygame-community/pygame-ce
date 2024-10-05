@@ -21,7 +21,7 @@ def scale2x(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface
 def grayscale(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface: ...
 def solid_overlay(
     surface: Surface,
-    color: ColorValue,
+    color: ColorLike,
     dest_surface: Optional[Surface] = None,
     keep_alpha: bool = False,
 ) -> Surface: ...
