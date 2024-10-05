@@ -2,6 +2,7 @@
 #define DOC_DRAW "pygame module for drawing shapes"
 #define DOC_DRAW_RECT "rect(surface, color, rect) -> Rect\nrect(surface, color, rect, width=0, border_radius=0, border_top_left_radius=-1, border_top_right_radius=-1, border_bottom_left_radius=-1, border_bottom_right_radius=-1) -> Rect\ndraw a rectangle"
 #define DOC_DRAW_POLYGON "polygon(surface, color, points) -> Rect\npolygon(surface, color, points, width=0) -> Rect\ndraw a polygon"
+#define DOC_DRAW_AAPOLYGON "aapolygon(surface, color, points) -> Rect\naapolygon(surface, color, points, filled=True) -> Rect\ndraw an antialiased polygon"
 #define DOC_DRAW_CIRCLE "circle(surface, color, center, radius) -> Rect\ncircle(surface, color, center, radius, width=0, draw_top_right=None, draw_top_left=None, draw_bottom_left=None, draw_bottom_right=None) -> Rect\ndraw a circle"
 #define DOC_DRAW_AACIRCLE "aacircle(surface, color, center, radius) -> Rect\naacircle(surface, color, center, radius, width=0, draw_top_right=None, draw_top_left=None, draw_bottom_left=None, draw_bottom_right=None) -> Rect\ndraw an antialiased circle"
 #define DOC_DRAW_ELLIPSE "ellipse(surface, color, rect) -> Rect\nellipse(surface, color, rect, width=0) -> Rect\ndraw an ellipse"

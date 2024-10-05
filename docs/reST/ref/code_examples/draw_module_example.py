@@ -65,8 +65,15 @@ while not done:
     # Draw an solid ellipse, using a rectangle as the outside boundaries
     pygame.draw.ellipse(screen, "red", [300, 10, 50, 20])
 
-    # This draws a triangle using the polygon command
+    # Draw a triangle using the polygon command
     pygame.draw.polygon(screen, "black", [[100, 100], [0, 200], [200, 200]], 5)
+
+    # Draw an antialiased polygon
+    pygame.draw.aapolygon(
+        screen,
+        "black",
+        [[100, 40], [150, 75], [110, 60], [70, 70]]
+    )
 
     # Draw an arc as part of an ellipse.
     # Use radians to determine what angle to draw.
