@@ -300,7 +300,7 @@ Instead, always begin with the original image and scale to the desired size.)
       is preferred for real-time effects. Using real-time bloom on very big surfaces
       is generally not advised, caching is preferred.
 
-   .. versionadded:: 2.5.1
+   .. versionadded:: 2.5.2
 
 .. function:: average_surfaces
 
