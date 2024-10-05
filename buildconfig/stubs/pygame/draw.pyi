@@ -24,7 +24,7 @@ def polygon(
 def aapolygon(
     surface: Surface,
     color: ColorLike,
-    points: SequenceLike[Coordinate],
+    points: SequenceLike[Point],
     filled: bool = True,
 ) -> Rect: ...
 def circle(
