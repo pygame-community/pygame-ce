@@ -831,6 +831,31 @@ snd_get_samples_address(PyObject *self, PyObject *closure)
 #endif
 }
 
+static PyObject *
+snd_copy(pgSoundObject *self, PyObject *_null)
+{
+    Mix_Chunk *chunk = pgSound_AsChunk(self);
+    pgSoundObject *new_sound;
+    Mix_Chunk *new_chunk;
+
+    CHECK_CHUNK_VALID(chunk, -1);
+
+    new_sound =
+        (pgSoundObject *)pgSound_Type.tp_new(Py_TYPE(self), NULL, NULL);
+
+    if (chunk->allocated) {
+        new_chunk = Mix_QuickLoad_RAW(chunk->abuf, chunk->alen);
+        if (!new_chunk)
+            RAISE(pgExc_BufferError,
+                  "there is a problem I couldn't describe ;-;");
+
+        new_chunk->volume = chunk->volume;
+        new_sound->chunk = new_chunk;
+    }
+
+    return (PyObject *)new_sound;
+}
+
 PyMethodDef sound_methods[] = {
     {"play", (PyCFunction)pgSound_Play, METH_VARARGS | METH_KEYWORDS,
      DOC_MIXER_SOUND_PLAY},
@@ -842,6 +867,7 @@ PyMethodDef sound_methods[] = {
     {"get_volume", snd_get_volume, METH_NOARGS, DOC_MIXER_SOUND_GETVOLUME},
     {"get_length", snd_get_length, METH_NOARGS, DOC_MIXER_SOUND_GETLENGTH},
     {"get_raw", snd_get_raw, METH_NOARGS, DOC_MIXER_SOUND_GETRAW},
+    {"copy", snd_copy, METH_NOARGS, ""},
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef sound_getset[] = {
