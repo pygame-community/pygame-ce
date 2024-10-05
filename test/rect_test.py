@@ -772,7 +772,8 @@ class RectTypeTest(unittest.TestCase):
         )
 
     def test_inflate__larger(self):
-        """The inflate method inflates around the center of the rectangle"""
+        """Ensures inflating a rect keeps its center the same
+        and grows dimensions by correct values."""
         r = Rect(2, 4, 6, 8)
         r2 = r.inflate(4, 6)
 
@@ -785,7 +786,8 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual(r.height + 6, r2.height)
 
     def test_inflate__smaller(self):
-        """The inflate method inflates around the center of the rectangle"""
+        """Ensures deflating a rect keeps its center the same
+        and shrinks dimensions by correct values."""
         r = Rect(2, 4, 6, 8)
         r2 = r.inflate(-4, -6)
 
@@ -798,21 +800,23 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual(r.height - 6, r2.height)
 
     def test_inflate_ip__larger(self):
-        """The inflate_ip method inflates around the center of the rectangle"""
+        """Ensures inflating a rect in place keeps its center the same
+        and grows dimensions by correct values."""
         r = Rect(2, 4, 6, 8)
         r2 = Rect(r)
-        r2.inflate_ip(-4, -6)
+        r2.inflate_ip(4, 6)
 
         self.assertEqual(r.center, r2.center)
-        self.assertEqual(r.left + 2, r2.left)
-        self.assertEqual(r.top + 3, r2.top)
-        self.assertEqual(r.right - 2, r2.right)
-        self.assertEqual(r.bottom - 3, r2.bottom)
-        self.assertEqual(r.width - 4, r2.width)
-        self.assertEqual(r.height - 6, r2.height)
+        self.assertEqual(r.left - 2, r2.left)
+        self.assertEqual(r.top - 3, r2.top)
+        self.assertEqual(r.right + 2, r2.right)
+        self.assertEqual(r.bottom + 3, r2.bottom)
+        self.assertEqual(r.width + 4, r2.width)
+        self.assertEqual(r.height + 6, r2.height)
 
     def test_inflate_ip__smaller(self):
-        """The inflate method inflates around the center of the rectangle"""
+        """Ensures deflating a rect in place keeps its center the same
+        and shrinks dimensions by correct values."""
         r = Rect(2, 4, 6, 8)
         r2 = Rect(r)
         r2.inflate_ip(-4, -6)
@@ -889,6 +893,8 @@ class RectTypeTest(unittest.TestCase):
         r = Rect(2, 4, 6, 8)
         # act
         r2 = r.scale_by(scale_by=(2, 4))
+        r3 = r.scale_by((2, 4))
+        self.assertEqual(r2, r3)
         # assert
         self.assertEqual(r.center, r2.center)
         self.assertEqual(r.left - 3, r2.left)
@@ -1538,6 +1544,29 @@ class RectTypeTest(unittest.TestCase):
         r2.move_ip(move_x, move_y)
         expected_r2 = Rect(r.left + move_x, r.top + move_y, r.width, r.height)
         self.assertEqual(expected_r2, r2)
+
+    def test_move_to(self):
+        r = Rect(1, 2, 3, 4)
+        topleft = (10, 20)
+        center = (10, 20)
+
+        r2 = r.move_to(topleft=topleft)
+        r3 = r.move_to(center=center)
+
+        expected_r2 = Rect(r.x, r.y, r.width, r.height)
+        expected_r2.topleft = topleft
+
+        expected_r3 = Rect(r.x, r.y, r.width, r.height)
+        expected_r3.center = center
+
+        self.assertEqual(expected_r2, r2)
+        self.assertEqual(expected_r3, r3)
+
+        self.assertIsInstance(r2, Rect)
+
+        self.assertRaises(TypeError, r.move_to, 1, 2, 3)
+        with self.assertRaises(TypeError):
+            r.move_to()
 
     def test_update_XYWidthHeight(self):
         """Test update with 4 int values(x, y, w, h)"""
@@ -2824,6 +2853,13 @@ class RectTypeTest(unittest.TestCase):
         self.assertTrue(isinstance(r, Collection))
         self.assertFalse(isinstance(r, Sequence))
 
+    def test_construction_no_args(self):
+        r = Rect()
+        self.assertEqual(r.x, 0)
+        self.assertEqual(r.y, 0)
+        self.assertEqual(r.w, 0)
+        self.assertEqual(r.h, 0)
+
 
 class FRectTypeTest(RectTypeTest):
     def setUp(self):
@@ -2846,6 +2882,9 @@ class FRectTypeTest(RectTypeTest):
         self.assertEqual(
             repr(rect), "FRect(12.345679, 34.000000, 56.000000, 78.000000)"
         )
+
+        # test that a large rect repr doesn't error
+        self.assertIsInstance(repr(Rect(-2e38, -2e38, -2e38, -2e38)), str)
 
     def test_clipline__equal_endpoints_no_overlap(self):
         """Ensures clipline handles lines with both endpoints the same.
@@ -3054,6 +3093,8 @@ class FRectTypeTest(RectTypeTest):
         r = FRect(2.1, 4, 6, 8.9)
         # act
         r2 = r.scale_by(scale_by=(2, 4))
+        r3 = r.scale_by((2, 4))
+        self.assertEqual(r2, r3)
         # assert
         self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left - 3, r2.left)
@@ -3268,6 +3309,13 @@ class FRectTypeTest(RectTypeTest):
         self.assertSeqAlmostEqual5(r[3::-1], [4.8, 3.6, 2.4, 1.2])
         self.assertRaises(TypeError, r.__getitem__, None)
 
+    def test_construction_no_args(self):
+        r = FRect()
+        self.assertEqual(r.x, 0.0)
+        self.assertEqual(r.y, 0.0)
+        self.assertEqual(r.w, 0.0)
+        self.assertEqual(r.h, 0.0)
+
 
 class SubclassTest(unittest.TestCase):
     class MyRect(Rect):
@@ -3286,6 +3334,13 @@ class SubclassTest(unittest.TestCase):
         mr1 = self.MyRect(1, 2, 10, 20)
         self.assertTrue(mr1.an_attribute)
         mr2 = mr1.move(1, 2)
+        self.assertTrue(isinstance(mr2, self.MyRect))
+        self.assertRaises(AttributeError, getattr, mr2, "an_attribute")
+
+    def test_move_to(self):
+        mr1 = self.MyRect(1, 2, 10, 20)
+        self.assertTrue(mr1.an_attribute)
+        mr2 = mr1.move_to(topleft=(10, 10))
         self.assertTrue(isinstance(mr2, self.MyRect))
         self.assertRaises(AttributeError, getattr, mr2, "an_attribute")
 
@@ -3335,6 +3390,13 @@ class SubclassTest(unittest.TestCase):
         mr1 = self.MyRect(64, 70, 75, 30)
         self.assertTrue(isinstance(mr1, Collection))
         self.assertFalse(isinstance(mr1, Sequence))
+
+    def test_construction_no_args(self):
+        mr = self.MyRect()
+        self.assertEqual(mr.x, 0)
+        self.assertEqual(mr.y, 0)
+        self.assertEqual(mr.w, 0)
+        self.assertEqual(mr.h, 0)
 
 
 if __name__ == "__main__":

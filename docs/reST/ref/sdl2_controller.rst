@@ -127,6 +127,14 @@ events related to controllers.
     ``pygame._sdl2.controller.from_joystick``. Controllers are
     initialized on creation.
 
+   .. method:: init
+
+      | :sl:`Initialize the Controller`
+      | :sg:`init() -> None`
+
+      Initialize a controller object. This should not be used much, since
+      Controllers are initialised on creation.
+
    .. method:: quit
 
       | :sl:`uninitialize the Controller`
@@ -222,14 +230,14 @@ events related to controllers.
 
       .. versionchangedold:: 2.0.2: Return type changed from ``str`` to ``dict``
 
-      .. ## Contorller.get_mapping ##
+      .. ## Controller.get_mapping ##
 
    .. method:: set_mapping
 
       | :sl:`Assign a mapping to the controller`
       | :sg:`set_mapping(mapping) -> int`
 
-      Rebind buttons, axes, triggers and dpads. The mapping should be a 
+      Rebind buttons, axes, triggers and dpads. The mapping should be a
       dict containing all buttons, hats and axes. The easiest way to get this
       is to use the dict returned by :meth:`Controller.get_mapping`. To edit
       this mapping assign a value to the original button. The value of the
@@ -252,7 +260,7 @@ events related to controllers.
       .. versionchangedold:: 2.0.2: Renamed from ``add_mapping`` to ``set_mapping``
       .. versionchangedold:: 2.0.2: Argument type changed from ``str`` to ``dict``
 
-      .. ## Contorller.set_mapping ##
+      .. ## Controller.set_mapping ##
 
    .. method:: rumble
 
@@ -270,7 +278,7 @@ events related to controllers.
 
       .. versionaddedold:: 2.0.2
 
-      .. ## Contorller.rumble ##
+      .. ## Controller.rumble ##
 
    .. method:: stop_rumble
 
@@ -282,6 +290,6 @@ events related to controllers.
 
       .. versionaddedold:: 2.0.2
 
-      .. ## Contorller.stop_rumble ##
+      .. ## Controller.stop_rumble ##
 
 .. ## pygame._sdl2.controller ##

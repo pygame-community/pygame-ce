@@ -1,5 +1,6 @@
 import os
 import time
+import platform
 import unittest
 
 import pygame
@@ -186,9 +187,10 @@ class KeyModuleTest(unittest.TestCase):
         """does it import?"""
         import pygame.key
 
-    # fixme: test_get_focused failing systematically in some linux
-    # fixme: test_get_focused failing on SDL 2.0.18 on Windows
-    @unittest.skip("flaky test, and broken on 2.0.18 windows")
+    @unittest.skipIf(
+        not ("Windows" in platform.system() or "Darwin" in platform.system()),
+        "Not windows or macOS - we skip.",
+    )
     def test_get_focused(self):
         # This test fails in SDL2 in some linux
         # This test was skipped in SDL1.
@@ -196,7 +198,7 @@ class KeyModuleTest(unittest.TestCase):
         self.assertFalse(focused)  # No window to focus
         self.assertIsInstance(focused, int)
         # Dummy video driver never gets keyboard focus.
-        if os.environ.get("SDL_VIDEODRIVER") != "dummy":
+        if os.environ.get("SDL_VIDEODRIVER") != pygame.NULL_VIDEODRIVER:
             # Positive test, fullscreen with events grabbed
             display_sizes = pygame.display.list_modes()
             if display_sizes == -1:

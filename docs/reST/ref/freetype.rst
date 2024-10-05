@@ -151,7 +151,7 @@ loaded. This module must be imported explicitly to be used. ::
 .. function:: set_default_resolution
 
    | :sl:`Set the default pixel size in dots per inch for the module`
-   | :sg:`set_default_resolution([resolution])`
+   | :sg:`set_default_resolution(resolution, /)`
 
    Set the default pixel size, in dots per inch, for the module. If the
    optional argument is omitted or zero the resolution is reset to 72 DPI.
@@ -229,7 +229,7 @@ loaded. This module must be imported explicitly to be used. ::
       | :sl:`Gets the font's style_name.`
       | :sg:`style_name -> str`
 
-      Read only. Returns the font's style name. Style names are arbitrary, can be an empty string. 
+      Read only. Returns the font's style name. Style names are arbitrary, can be an empty string.
       Here are some examples:
 
         'Black', 'Bold', 'Bold Italic', 'BoldOblique', 'Book', 'BookOblique', 'Condensed', 'Condensed Oblique',
@@ -354,7 +354,7 @@ loaded. This module must be imported explicitly to be used. ::
    .. method:: get_sized_ascender
 
       | :sl:`The scaled ascent of the font in pixels`
-      | :sg:`get_sized_ascender(<size>=0) -> int`
+      | :sg:`get_sized_ascender(size=0, /) -> int`
 
       Return the number of units from the font's baseline to the top of the
       bounding box. It is not adjusted for strong or rotation.
@@ -362,7 +362,7 @@ loaded. This module must be imported explicitly to be used. ::
    .. method:: get_sized_descender
 
       | :sl:`The scaled descent of the font in pixels`
-      | :sg:`get_sized_descender(<size>=0) -> int`
+      | :sg:`get_sized_descender(size=0, /) -> int`
 
       Return the number of pixels from the font's baseline to the top of the
       bounding box. It is not adjusted for strong or rotation.
@@ -370,7 +370,7 @@ loaded. This module must be imported explicitly to be used. ::
    .. method:: get_sized_height
 
       | :sl:`The scaled height of the font in pixels`
-      | :sg:`get_sized_height(<size>=0) -> int`
+      | :sg:`get_sized_height(size=0, /) -> int`
 
       Returns the height of the font. This is the average value of all
       glyphs in the font. It is not adjusted for strong or rotation.
@@ -378,7 +378,7 @@ loaded. This module must be imported explicitly to be used. ::
    .. method:: get_sized_glyph_height
 
       | :sl:`The scaled bounding box height of the font in pixels`
-      | :sg:`get_sized_glyph_height(<size>=0) -> int`
+      | :sg:`get_sized_glyph_height(size=0, /) -> int`
 
       Return the glyph bounding box height of the font in pixels.
       This is the average value of all glyphs in the font.

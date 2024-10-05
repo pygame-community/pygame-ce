@@ -141,7 +141,7 @@ def main(auto_config=False):
     origincdirs = ['/include', '/include/SDL2']
     origlibdirs = ['/lib', '/lib64', '/X11R6/lib']
 
-    # If we are on a debian based system, we also need to handle 
+    # If we are on a debian based system, we also need to handle
     # /lib/<multiarch-tuple>
     # We have a few commands to get the correct <multiarch-tuple>, we try those
     # one by one till we get something that works
@@ -222,8 +222,6 @@ def main(auto_config=False):
         #Dependency('GFX', 'SDL_gfxPrimitives.h', 'libSDL2_gfx.so', ['SDL2_gfx']),
     ]
     DEPS.extend([
-        Dependency('PNG', 'png.h', 'libpng', ['png']),
-        Dependency('JPEG', 'jpeglib.h', 'libjpeg', ['jpeg']),
         Dependency('SCRAP', '', 'libX11', ['X11']),
         #Dependency('GFX', 'SDL_gfxPrimitives.h', 'libSDL_gfx.so', ['SDL_gfx']),
     ])

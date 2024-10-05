@@ -14,9 +14,3 @@ cd ${ZLIB_NG_NAME}
 cmake . $PG_BASE_CMAKE_FLAGS -DZLIB_COMPAT=1
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi
-

@@ -1,4 +1,4 @@
-/* Auto generated file: with makeref.py .  Docs go in docs/reST/ref/ . */
+/* Auto generated file: with make_docs.py .  Docs go in docs/reST/ref/ . */
 #define DOC_EXAMPLES "module of example programs"
 #define DOC_EXAMPLES_ALIENS_MAIN "aliens.main() -> None\nplay the full aliens example"
 #define DOC_EXAMPLES_STARS_MAIN "stars.main() -> None\nrun a simple starfield example"

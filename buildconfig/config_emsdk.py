@@ -33,7 +33,7 @@ EMCC_CFLAGS = os.environ.get("EMCC_CFLAGS", "")
 
 # user build, make sure ports are pulled in.
 if os.environ.get("SDK_VERSION", None) is None:
-    EMCC_CFLAGS += " -sUSE_SDL=2 -sUSE_LIBPNG -sUSE_LIBJPEG"
+    EMCC_CFLAGS += " -sUSE_SDL=2"
 else:
     # make sure CI only pick SDK components.
     SDKROOT = os.environ.get("SDKROOT", "/opt/python-wasm-sdk")
@@ -151,7 +151,7 @@ class Dependency:
             self.found = 1
         else:
 
-            if self.name in ["FONT", "IMAGE", "MIXER", "PNG", "JPEG", "FREETYPE"]:
+            if self.name in ["FONT", "IMAGE", "MIXER", "FREETYPE"]:
                 self.found = 1
                 print(
                     self.name
@@ -216,8 +216,6 @@ def main(auto_config=False):
     ]
     DEPS.extend(
         [
-            Dependency("PNG", "png.h", "libpng", ["png"]),
-            Dependency("JPEG", "jpeglib.h", "libjpeg", ["jpeg"]),
             # Dependency('SCRAP', '', 'libX11', ['X11']),
             # Dependency('GFX', 'SDL_gfxPrimitives.h', 'libSDL_gfx.a', ['SDL_gfx']),
         ]
@@ -269,4 +267,3 @@ def main(auto_config=False):
 if __name__ == "__main__":
     print("This is the configuration subscript for Emscripten.")
     print('Please run "config.py" for full configuration.')
-

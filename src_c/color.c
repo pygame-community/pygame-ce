@@ -47,12 +47,16 @@
 
 #include <ctype.h>
 
+static inline double
+pg_round(double d)
+{
 #if (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L) && \
     !defined(round)
-#define pg_round(d) (((d < 0) ? (ceil((d)-0.5)) : (floor((d) + 0.5))))
+    return (((d < 0) ? (ceil((d)-0.5)) : (floor((d) + 0.5))));
 #else
-#define pg_round(d) round(d)
+    return round(d);
 #endif
+}
 
 typedef enum { TRISTATE_SUCCESS, TRISTATE_FAIL, TRISTATE_ERROR } tristate;
 
@@ -111,6 +115,7 @@ COLOR_FROM_SPACE(hsva);
 COLOR_FROM_SPACE(hsla);
 COLOR_FROM_SPACE(cmy);
 COLOR_FROM_SPACE(i1i2i3);
+COLOR_FROM_SPACE(normalized);
 #undef COLOR_FROM_SPACE
 
 /* Getters/setters */
@@ -146,6 +151,10 @@ static PyObject *
 _color_get_cmy(pgColorObject *, void *);
 static int
 _color_set_cmy(pgColorObject *, PyObject *, void *);
+static PyObject *
+_color_get_normalized(pgColorObject *, void *);
+static int
+_color_set_normalized(pgColorObject *, PyObject *, void *);
 static PyObject *
 _color_get_arraystruct(pgColorObject *, void *);
 
@@ -225,6 +234,8 @@ static PyMethodDef _color_methods[] = {
      DOC_COLOR_FROMCMY},
     {"from_i1i2i3", (PyCFunction)_color_from_i1i2i3, METH_CLASS | METH_VARARGS,
      DOC_COLOR_FROMI1I2I3},
+    {"from_normalized", (PyCFunction)_color_from_normalized,
+     METH_CLASS | METH_VARARGS, DOC_COLOR_FROMNORMALIZED},
     {"normalize", (PyCFunction)_color_normalize, METH_NOARGS,
      DOC_COLOR_NORMALIZE},
     {"correct_gamma", (PyCFunction)_color_correct_gamma, METH_VARARGS,
@@ -256,6 +267,8 @@ static PyGetSetDef _color_getsets[] = {
      DOC_COLOR_I1I2I3, NULL},
     {"cmy", (getter)_color_get_cmy, (setter)_color_set_cmy, DOC_COLOR_CMY,
      NULL},
+    {"normalized", (getter)_color_get_normalized,
+     (setter)_color_set_normalized, DOC_COLOR_NORMALIZED, NULL},
     {"__array_struct__", (getter)_color_get_arraystruct, NULL,
      "array structure interface, read only", NULL},
     {NULL, NULL, NULL, NULL, NULL}};
@@ -698,6 +711,9 @@ _color_from_space(char *space, PyObject *args)
     else if (strcmp(space, "i1i2i3") == 0) {
         set_success = _color_set_i1i2i3(color, args, NULL);
     }
+    else if (strcmp(space, "normalized") == 0) {
+        set_success = _color_set_normalized(color, args, NULL);
+    }
 
     if (set_success != 0) {
         return NULL;
@@ -801,10 +817,10 @@ _color_lerp(pgColorObject *self, PyObject *args, PyObject *kw)
         return RAISE(PyExc_ValueError, "Argument 2 must be in range [0, 1]");
     }
 
-    new_rgba[0] = (Uint8)pg_round(self->data[0] * (1 - amt) + rgba[0] * amt);
-    new_rgba[1] = (Uint8)pg_round(self->data[1] * (1 - amt) + rgba[1] * amt);
-    new_rgba[2] = (Uint8)pg_round(self->data[2] * (1 - amt) + rgba[2] * amt);
-    new_rgba[3] = (Uint8)pg_round(self->data[3] * (1 - amt) + rgba[3] * amt);
+    for (int i = 0; i < 4; i++) {
+        new_rgba[i] =
+            (Uint8)pg_round(self->data[i] * (1 - amt) + rgba[i] * amt);
+    }
 
     return (PyObject *)_color_new_internal(Py_TYPE(self), new_rgba);
 }
@@ -996,19 +1012,10 @@ _color_set_hsva(pgColorObject *color, PyObject *value, void *closure)
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("hsva", value);
 
-    if (!PySequence_Check(value) || PySequence_Size(value) < 3) {
+    if (!PySequence_Check(value) || PySequence_Size(value) < 3 ||
+        PySequence_Size(value) > 4) {
         PyErr_SetString(PyExc_ValueError, "invalid HSVA value");
         return -1;
-    }
-
-    if (PySequence_Size(value) > 4) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "Passing sequences of size larger than 4 is deprecated, doing "
-                "this will error in a future version",
-                1) == -1) {
-            return -1;
-        }
     }
 
     /* H */
@@ -1171,19 +1178,10 @@ _color_set_hsla(pgColorObject *color, PyObject *value, void *closure)
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("hsla", value);
 
-    if (!PySequence_Check(value) || PySequence_Size(value) < 3) {
+    if (!PySequence_Check(value) || PySequence_Size(value) < 3 ||
+        PySequence_Size(value) > 4) {
         PyErr_SetString(PyExc_ValueError, "invalid HSLA value");
         return -1;
-    }
-
-    if (PySequence_Size(value) > 4) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "Passing sequences of size larger than 4 is deprecated, doing "
-                "this will error in a future version",
-                1) == -1) {
-            return -1;
-        }
     }
 
     /* H */
@@ -1346,19 +1344,9 @@ _color_set_i1i2i3(pgColorObject *color, PyObject *value, void *closure)
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("i1i2i3", value);
 
-    if (!PySequence_Check(value) || PySequence_Size(value) < 3) {
+    if (!PySequence_Check(value) || PySequence_Size(value) != 3) {
         PyErr_SetString(PyExc_ValueError, "invalid I1I2I3 value");
         return -1;
-    }
-
-    if (PySequence_Size(value) > 3) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "Passing sequences of size larger than 3 is deprecated, doing "
-                "this will error in a future version",
-                1) == -1) {
-            return -1;
-        }
     }
 
     /* I1 */
@@ -1428,19 +1416,9 @@ _color_set_cmy(pgColorObject *color, PyObject *value, void *closure)
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("cmy", value);
 
-    if (!PySequence_Check(value) || PySequence_Size(value) < 3) {
+    if (!PySequence_Check(value) || PySequence_Size(value) != 3) {
         PyErr_SetString(PyExc_ValueError, "invalid CMY value");
         return -1;
-    }
-
-    if (PySequence_Size(value) > 3) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "Passing sequences of size larger than 3 is deprecated, doing "
-                "this will error in a future version",
-                1) == -1) {
-            return -1;
-        }
     }
 
     /* I1 */
@@ -1473,6 +1451,79 @@ _color_set_cmy(pgColorObject *color, PyObject *value, void *closure)
     color->data[0] = (Uint8)((1.0 - cmy[0]) * 255);
     color->data[1] = (Uint8)((1.0 - cmy[1]) * 255);
     color->data[2] = (Uint8)((1.0 - cmy[2]) * 255);
+
+    return 0;
+}
+
+static PyObject *
+_color_get_normalized(pgColorObject *color, void *closure)
+{
+    double frgba[4];
+
+    frgba[0] = color->data[0] / 255.0;
+    frgba[1] = color->data[1] / 255.0;
+    frgba[2] = color->data[2] / 255.0;
+    frgba[3] = color->data[3] / 255.0;
+
+    return Py_BuildValue("(ffff)", frgba[0], frgba[1], frgba[2], frgba[3]);
+}
+
+static int
+_color_set_normalized(pgColorObject *color, PyObject *value, void *closure)
+{
+    PyObject *item;
+    double frgba[4] = {0.0, 0.0, 0.0, 1.0};
+
+    DEL_ATTR_NOT_SUPPORTED_CHECK("normalized", value);
+
+    if (!PySequence_Check(value) || PySequence_Size(value) < 3 ||
+        PySequence_Size(value) > 4) {
+        PyErr_SetString(PyExc_ValueError, "invalid normalized value");
+        return -1;
+    }
+
+    item = PySequence_GetItem(value, 0);
+    if (!item || !_get_double(item, &(frgba[0])) || frgba[0] < 0.0 ||
+        frgba[0] > 1.0) {
+        Py_XDECREF(item);
+        PyErr_SetString(PyExc_ValueError, "invalid normalized value");
+        return -1;
+    }
+    Py_DECREF(item);
+
+    item = PySequence_GetItem(value, 1);
+    if (!item || !_get_double(item, &(frgba[1])) || frgba[1] < 0.0 ||
+        frgba[1] > 1.0) {
+        Py_XDECREF(item);
+        PyErr_SetString(PyExc_ValueError, "invalid normalized value");
+        return -1;
+    }
+    Py_DECREF(item);
+
+    item = PySequence_GetItem(value, 2);
+    if (!item || !_get_double(item, &(frgba[2])) || frgba[2] < 0.0 ||
+        frgba[2] > 1.0) {
+        Py_XDECREF(item);
+        PyErr_SetString(PyExc_ValueError, "invalid normalized value");
+        return -1;
+    }
+    Py_DECREF(item);
+
+    if (PySequence_Size(value) > 3) {
+        item = PySequence_GetItem(value, 3);
+        if (!item || !_get_double(item, &(frgba[3])) || frgba[3] < 0.0 ||
+            frgba[3] > 1.0) {
+            Py_XDECREF(item);
+            PyErr_SetString(PyExc_ValueError, "invalid normalized value");
+            return -1;
+        }
+        Py_DECREF(item);
+    }
+
+    color->data[0] = (Uint8)round(frgba[0] * 255.0);
+    color->data[1] = (Uint8)round(frgba[1] * 255.0);
+    color->data[2] = (Uint8)round(frgba[2] * 255.0);
+    color->data[3] = (Uint8)round(frgba[3] * 255.0);
 
     return 0;
 }
@@ -1830,7 +1881,7 @@ _color_slice(register pgColorObject *a, register Py_ssize_t ilow,
         return Py_BuildValue("(iii)", c1, c2, c3);
     }
     else if (len == 2) {
-        return Py_BuildValue("(ii)", c1, c2);
+        return pg_tuple_couple_from_values_int((int)c1, (int)c2);
     }
     else if (len == 1) {
         return Py_BuildValue("(i)", c1);
@@ -2254,7 +2305,7 @@ _pg_pylong_to_uint32(PyObject *val, Uint32 *color, int handle_negative)
     }
 
     if (longval == -1 && PyErr_Occurred()) {
-        /* Some other internal error occured */
+        /* Some other internal error occurred */
         return 0;
     }
 

@@ -11,9 +11,11 @@
    | :sg:`Rect(left, top, width, height) -> Rect`
    | :sg:`Rect((left, top), (width, height)) -> Rect`
    | :sg:`Rect(object) -> Rect`
+   | :sg:`Rect() -> Rect`
    | :sg:`FRect(left, top, width, height) -> FRect`
    | :sg:`FRect((left, top), (width, height)) -> FRect`
    | :sg:`FRect(object) -> FRect`
+   | :sg:`FRect() -> FRect`
 
    .. versionchanged:: 2.2 Since version 2.2 there is another class called FRect that serves the same purpose as as `Rect` but it can hold floats instead of integers.
 
@@ -25,6 +27,10 @@
    Any pygame function that requires a Rect argument also accepts any of these
    values to construct a Rect. This makes it easier to create Rects on the fly
    as arguments to functions.
+
+   If no arguments are given, a zero Rect will be created (x=0, y=0, w=0, h=0).
+   This will only work when using the Rect/FRect class and not with functions
+   that require a Rect argument.
 
    The Rect functions that change the position or size of a Rect return a new
    copy of the Rect with the affected changes. The original Rect is not
@@ -101,7 +107,7 @@
    .. method:: move
 
       | :sl:`moves the rectangle`
-      | :sg:`move(x, y) -> Rect`
+      | :sg:`move(x, y, /) -> Rect`
 
       Returns a new rectangle that is moved by the given offset. The x and y
       arguments can be any integer value, positive or negative.
@@ -111,16 +117,33 @@
    .. method:: move_ip
 
       | :sl:`moves the rectangle, in place`
-      | :sg:`move_ip(x, y) -> None`
+      | :sg:`move_ip(x, y, /) -> None`
 
       Same as the ``Rect.move()`` method, but operates in place.
 
       .. ## Rect.move_ip ##
 
+   .. method:: move_to
+
+      | :sl:`moves the rectangle to the specified position`
+      | :sg:`move_to(**kwargs) -> Rect`
+
+      Returns a new rectangle that is moved to the given position and optionally resized.
+      You must provide keyword arguments to the method such as ``center``, ``left``,
+      ``midbottom``, ``size`` that correspond to the rectangle's attributes and the
+      method will return a new rectangle whose specified attributes are set to the given value.
+
+      It is similar to :meth:`Surface.get_rect` but instead of a calling it as a surface method
+      you call it as a rectangle method.
+
+      .. versionadded:: 2.4.0
+
+      .. ## Rect.move_to ##
+
    .. method:: inflate
 
       | :sl:`grow or shrink the rectangle size`
-      | :sg:`inflate(x, y) -> Rect`
+      | :sg:`inflate(x, y, /) -> Rect`
 
       Returns a new rectangle with the size changed by the given offset. The
       rectangle remains centered around its current center. Negative values
@@ -132,7 +155,7 @@
    .. method:: inflate_ip
 
       | :sl:`grow or shrink the rectangle size, in place`
-      | :sg:`inflate_ip(x, y) -> None`
+      | :sg:`inflate_ip(x, y, /) -> None`
 
       Same as the ``Rect.inflate()`` method, but operates in place.
 
@@ -145,12 +168,14 @@
       | :sg:`scale_by(x, y) -> Rect`
 
       Returns a new rectangle with the size scaled by the given multipliers.
-      The rectangle remains centered around its current center. A single 
+      The rectangle remains centered around its current center. A single
       scalar or separate width and height scalars are allowed. Values above
       one will increase the size of the rectangle, whereas values between
       zero and one will decrease the size of the rectangle.
 
       .. versionadded:: 2.3.1
+
+      .. versionchanged:: 2.5.2 the argument ``scale_by`` can now be passed as a positional argument
 
       .. ## Rect.scale_by ##
 
@@ -164,14 +189,16 @@
 
       .. versionadded:: 2.3.1
 
+      .. versionchanged:: 2.5.2 the argument ``scale_by`` can now be passed as a positional argument
+
       .. ## Rect.scale_by_ip ##
 
    .. method:: update
 
       | :sl:`sets the position and size of the rectangle`
-      | :sg:`update(left, top, width, height) -> None`
-      | :sg:`update((left, top), (width, height)) -> None`
-      | :sg:`update(object) -> None`
+      | :sg:`update(left, top, width, height, /) -> None`
+      | :sg:`update((left, top), (width, height), /) -> None`
+      | :sg:`update(object, /) -> None`
 
       Sets the position and size of the rectangle, in place. See
       parameters for :meth:`pygame.Rect` for the parameters of this function.
@@ -183,7 +210,7 @@
    .. method:: clamp
 
       | :sl:`moves the rectangle inside another`
-      | :sg:`clamp(Rect) -> Rect`
+      | :sg:`clamp(rect, /) -> Rect`
 
       Returns a new rectangle that is moved to be completely inside the
       argument Rect. If the rectangle is too large to fit inside, it is
@@ -194,7 +221,7 @@
    .. method:: clamp_ip
 
       | :sl:`moves the rectangle inside another, in place`
-      | :sg:`clamp_ip(Rect) -> None`
+      | :sg:`clamp_ip(rect, /) -> None`
 
       Same as the ``Rect.clamp()`` method, but operates in place.
 
@@ -203,7 +230,7 @@
    .. method:: clip
 
       | :sl:`crops a rectangle inside another`
-      | :sg:`clip(Rect) -> Rect`
+      | :sg:`clip(rect, /) -> Rect`
 
       Returns a new rectangle that is cropped to be completely inside the
       argument Rect. If the two rectangles do not overlap to begin with, a Rect
@@ -214,14 +241,14 @@
    .. method:: clipline
 
       | :sl:`crops a line inside a rectangle`
-      | :sg:`clipline(x1, y1, x2, y2) -> ((cx1, cy1), (cx2, cy2))`
-      | :sg:`clipline(x1, y1, x2, y2) -> ()`
-      | :sg:`clipline((x1, y1), (x2, y2)) -> ((cx1, cy1), (cx2, cy2))`
-      | :sg:`clipline((x1, y1), (x2, y2)) -> ()`
-      | :sg:`clipline((x1, y1, x2, y2)) -> ((cx1, cy1), (cx2, cy2))`
-      | :sg:`clipline((x1, y1, x2, y2)) -> ()`
-      | :sg:`clipline(((x1, y1), (x2, y2))) -> ((cx1, cy1), (cx2, cy2))`
-      | :sg:`clipline(((x1, y1), (x2, y2))) -> ()`
+      | :sg:`clipline(x1, y1, x2, y2, /) -> ((cx1, cy1), (cx2, cy2))`
+      | :sg:`clipline(x1, y1, x2, y2, /) -> ()`
+      | :sg:`clipline((x1, y1), (x2, y2), /) -> ((cx1, cy1), (cx2, cy2))`
+      | :sg:`clipline((x1, y1), (x2, y2), /) -> ()`
+      | :sg:`clipline((x1, y1, x2, y2), /) -> ((cx1, cy1), (cx2, cy2))`
+      | :sg:`clipline((x1, y1, x2, y2), /) -> ()`
+      | :sg:`clipline(((x1, y1), (x2, y2)), /) -> ((cx1, cy1), (cx2, cy2))`
+      | :sg:`clipline(((x1, y1), (x2, y2)), /) -> ()`
 
       Returns the coordinates of a line that is cropped to be completely inside
       the rectangle. If the line does not overlap the rectangle, then an empty
@@ -273,7 +300,7 @@
    .. method:: union
 
       | :sl:`joins two rectangles into one`
-      | :sg:`union(Rect) -> Rect`
+      | :sg:`union(rect, /) -> Rect`
 
       Returns a new rectangle that completely covers the area of the two
       provided rectangles. There may be area inside the new Rect that is not
@@ -284,7 +311,7 @@
    .. method:: union_ip
 
       | :sl:`joins two rectangles into one, in place`
-      | :sg:`union_ip(Rect) -> None`
+      | :sg:`union_ip(rect, /) -> None`
 
       Same as the ``Rect.union()`` method, but operates in place.
 
@@ -293,7 +320,7 @@
    .. method:: unionall
 
       | :sl:`the union of many rectangles`
-      | :sg:`unionall(Rect_sequence) -> Rect`
+      | :sg:`unionall(rect_sequence, /) -> Rect`
 
       Returns the union of one rectangle with a sequence of many rectangles.
 
@@ -302,7 +329,7 @@
    .. method:: unionall_ip
 
       | :sl:`the union of many rectangles, in place`
-      | :sg:`unionall_ip(Rect_sequence) -> None`
+      | :sg:`unionall_ip(rect_sequence, /) -> None`
 
       The same as the ``Rect.unionall()`` method, but operates in place.
 
@@ -311,7 +338,7 @@
    .. method:: fit
 
       | :sl:`resize and move a rectangle with aspect ratio`
-      | :sg:`fit(Rect) -> Rect`
+      | :sg:`fit(rect, /) -> Rect`
 
       Returns a new rectangle that is moved and resized to fit another. The
       aspect ratio of the original Rect is preserved, so the new rectangle may
@@ -333,7 +360,7 @@
    .. method:: contains
 
       | :sl:`test if one rectangle is inside another`
-      | :sg:`contains(Rect) -> bool`
+      | :sg:`contains(rect, /) -> bool`
 
       Returns true when the argument is completely inside the Rect.
 
@@ -342,8 +369,8 @@
    .. method:: collidepoint
 
       | :sl:`test if a point is inside a rectangle`
-      | :sg:`collidepoint(x, y) -> bool`
-      | :sg:`collidepoint((x,y)) -> bool`
+      | :sg:`collidepoint(x, y, /) -> bool`
+      | :sg:`collidepoint((x, y), /) -> bool`
 
       Returns true if the given point is inside the rectangle. A point along
       the right or bottom edge is not considered to be inside the rectangle.
@@ -357,7 +384,7 @@
    .. method:: colliderect
 
       | :sl:`test if two rectangles overlap`
-      | :sg:`colliderect(Rect) -> bool`
+      | :sg:`colliderect(rect, /) -> bool`
 
       Returns true if any portion of either rectangle overlap (except the
       top+bottom or left+right edges).
@@ -371,7 +398,7 @@
    .. method:: collidelist
 
       | :sl:`test if one rectangle in a list intersects`
-      | :sg:`collidelist(list) -> index`
+      | :sg:`collidelist(list, /) -> index`
 
       Test whether the rectangle collides with any in a sequence of rectangles.
       The index of the first collision found is returned. If no collisions are
@@ -382,7 +409,7 @@
    .. method:: collidelistall
 
       | :sl:`test if all rectangles in a list intersect`
-      | :sg:`collidelistall(list) -> indices`
+      | :sg:`collidelistall(list, /) -> indices`
 
       Returns a list of all the indices that contain rectangles that collide
       with the Rect. If no intersecting rectangles are found, an empty list is
@@ -392,39 +419,39 @@
 
       .. code-block:: python
           :linenos:
-    
+
           Rect = pygame.Rect
           r = Rect(0, 0, 10, 10)
-          
+
           list_of_rects = [Rect(1, 1, 1, 1), Rect(2, 2, 2, 2)]
           indices0 = r.collidelistall(list_of_rects)
-          
+
           list_of_lists = [[1, 1, 1, 1], [2, 2, 2, 2]]
           indices1 = r.collidelistall(list_of_lists)
-          
+
           list_of_tuples = [(1, 1, 1, 1), (2, 2, 2, 2)]
           indices2 = r.collidelistall(list_of_tuples)
-          
+
           list_of_double_tuples = [((1, 1), (1, 1)), ((2, 2), (2, 2))]
           indices3 = r.collidelistall(list_of_double_tuples)
-          
+
           class ObjectWithRectAttribute(object):
               def __init__(self, r):
                   self.rect = r
-          
+
           list_of_object_with_rect_attribute = [
               ObjectWithRectAttribute(Rect(1, 1, 1, 1)),
               ObjectWithRectAttribute(Rect(2, 2, 2, 2)),
           ]
           indices4 = r.collidelistall(list_of_object_with_rect_attribute)
-          
+
           class ObjectWithCallableRectAttribute(object):
               def __init__(self, r):
                   self._rect = r
-          
+
               def rect(self):
                   return self._rect
-          
+
           list_of_object_with_callable_rect = [
               ObjectWithCallableRectAttribute(Rect(1, 1, 1, 1)),
               ObjectWithCallableRectAttribute(Rect(2, 2, 2, 2)),
@@ -572,7 +599,7 @@
 
       .. versionchanged:: 2.4.0
          ``values`` is now accepted as a keyword argument. Type Stub updated
-         to use boolean ``True`` or ``False``, but any truthy or falsy value 
+         to use boolean ``True`` or ``False``, but any truthy or falsy value
          will be valid.
 
       .. ## Rect.collidedict ##
@@ -595,7 +622,7 @@
 
       .. versionchanged:: 2.4.0
          ``values`` is now accepted as a keyword argument. Type Stub updated
-         to use boolean ``True`` or ``False``, but any truthy or falsy value 
+         to use boolean ``True`` or ``False``, but any truthy or falsy value
          will be valid.
 
       .. ## Rect.collidedictall ##

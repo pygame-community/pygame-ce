@@ -7,7 +7,7 @@ FREETYPE="freetype-2.13.2"
 HARFBUZZ_VER=8.2.1
 HARFBUZZ_NAME="harfbuzz-$HARFBUZZ_VER"
 
-curl -sL --retry 10 http://download.savannah.gnu.org/releases/freetype/${FREETYPE}.tar.gz > ${FREETYPE}.tar.gz
+curl -sL --retry 10 https://savannah.nongnu.org/download/freetype/${FREETYPE}.tar.gz > ${FREETYPE}.tar.gz
 curl -sL --retry 10 https://github.com/harfbuzz/harfbuzz/releases/download/${HARFBUZZ_VER}/${HARFBUZZ_NAME}.tar.xz > ${HARFBUZZ_NAME}.tar.xz
 sha512sum -c freetype.sha512
 
@@ -22,7 +22,7 @@ tar xf ${HARFBUZZ_NAME}.tar
 # 1. First compile freetype without harfbuzz support
 cd $FREETYPE
 
-./configure $ARCHS_CONFIG_FLAG --with-harfbuzz=no
+./configure $PG_BASE_CONFIGURE_FLAGS --with-harfbuzz=no
 make
 make install  # this freetype is not installed to mac cache dir
 
@@ -36,18 +36,13 @@ cd ${HARFBUZZ_NAME}
 # Cairo and chafa are only needed for harfbuzz commandline utilities so we
 # don't use it. glib available is a bit old so we don't prefer it as of now.
 # we also don't compile-in icu so that harfbuzz uses built-in unicode handling
-# LDFLAGS are passed explicitly so that harfbuzz picks the freetype we
-# installed first
-./configure $ARCHS_CONFIG_FLAG --with-freetype=yes \
+./configure $PG_BASE_CONFIGURE_FLAGS --with-freetype=yes \
     --with-cairo=no --with-chafa=no --with-glib=no --with-icu=no \
-    --disable-static LDFLAGS="-L/usr/local/lib"
+    --disable-static
 make
 make install
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-
     # We do a little hack...
     # When freetype finds harfbuzz with pkg-config, we tell freetype a little
     # lie that harfbuzz doesn't depend on freetype (even though it does).
@@ -55,8 +50,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     # This is a bit of a brittle hack: This command removes the entire line that
     # contains "freetype". This is fine for now when the harfbuzz we are
     # building has no other dependencies
-    sed -i '' '/freetype/d' /usr/local/lib/pkgconfig/harfbuzz.pc
-    sed -i '' 's/ \/usr\/local\/lib\/libfreetype.la//g' /usr/local/lib/libharfbuzz.la
+    sed -i '' '/freetype/d' $PG_DEP_PREFIX/lib/pkgconfig/harfbuzz.pc
+    sed -i '' 's/ [^ ]*libfreetype.la//g' $PG_DEP_PREFIX/lib/libharfbuzz.la
 fi
 
 cd ..
@@ -70,11 +65,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     make uninstall
 fi
 
-./configure $ARCHS_CONFIG_FLAG --with-harfbuzz=yes
+./configure $PG_BASE_CONFIGURE_FLAGS --with-harfbuzz=yes
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi

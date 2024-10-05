@@ -1,4 +1,5 @@
 from cpython cimport PyObject
+from cpython.ref cimport Py_DECREF
 cimport cython
 from pygame._sdl2.sdl2 import error
 from pygame._sdl2.sdl2 import error as errorfnc
@@ -166,7 +167,7 @@ cdef Uint32 format_from_depth(int depth):
                                       Rmask, Gmask, Bmask, Amask)
 
 
-# disable auto_pickle since it causes stubcheck error 
+# disable auto_pickle since it causes stubcheck error
 @cython.auto_pickle(False)
 cdef class Texture:
 
@@ -319,7 +320,7 @@ cdef class Texture:
         """Get or set the blend mode for texture drawing operations
 
         Gets or sets the blend mode for the texture's drawing operations.
-        Valid blend modes are any of the ``BLENDMODE_*`` constants or a custom one. 
+        Valid blend modes are any of the ``BLENDMODE_*`` constants or a custom one.
         """
         # https://wiki.libsdl.org/SDL_GetTextureBlendMode
         cdef SDL_BlendMode blendMode
@@ -341,13 +342,13 @@ cdef class Texture:
         """Get or set the additional color value multiplied into texture drawing operations
         """
         cdef Uint8[4] rgba
-        
+
         # https://wiki.libsdl.org/SDL_GetTextureColorMod
         cdef int res = SDL_GetTextureColorMod(self._tex,
                                               &(rgba[0]),
                                               &(rgba[1]),
                                               &(rgba[2]))
-        rgba[3] = 255    
+        rgba[3] = 255
 
         if res < 0:
             raise error()
@@ -382,19 +383,6 @@ cdef class Texture:
 
         return rect
 
-    cdef draw_internal(self, SDL_Rect *csrcrect, SDL_Rect *cdstrect, float angle=0, SDL_Point *originptr=NULL,
-                       bint flip_x=False, bint flip_y=False):
-        cdef int flip = SDL_FLIP_NONE
-        if flip_x:
-            flip |= SDL_FLIP_HORIZONTAL
-        if flip_y:
-            flip |= SDL_FLIP_VERTICAL
-
-        cdef int res = SDL_RenderCopyEx(self.renderer._renderer, self._tex, csrcrect, cdstrect,
-                                        angle, originptr, <SDL_RendererFlip>flip)
-        if res < 0:
-            raise error()
-
     cpdef void draw(self, srcrect=None, dstrect=None, float angle=0, origin=None,
                     bint flip_x=False, bint flip_y=False):
         """Copy a portion of the texture to the rendering target
@@ -412,11 +400,12 @@ cdef class Texture:
         :param bool flip_x: Flip the drawn texture portion horizontally (x - axis).
         :param bool flip_y: Flip the drawn texture portion vertically (y - axis).
         """
-        cdef SDL_Rect src, dst
+        cdef SDL_Rect src
         cdef SDL_Rect *csrcrect = NULL
-        cdef SDL_Rect *cdstrect = NULL
-        cdef SDL_Point corigin
-        cdef SDL_Point *originptr
+        cdef SDL_FRect dst
+        cdef SDL_FRect *cdstrect = NULL
+        cdef SDL_FPoint corigin
+        cdef SDL_FPoint *originptr
 
         if srcrect is not None:
             csrcrect = pgRect_FromObject(srcrect, &src)
@@ -424,13 +413,13 @@ cdef class Texture:
                 raise TypeError("the argument is not a rectangle or None")
 
         if dstrect is not None:
-            cdstrect = pgRect_FromObject(dstrect, &dst)
+            cdstrect = pgFRect_FromObject(dstrect, &dst)
             if cdstrect == NULL:
                 if len(dstrect) == 2:
                     dst.x = dstrect[0]
                     dst.y = dstrect[1]
-                    dst.w = self.width
-                    dst.h = self.height
+                    dst.w = <float> self.width
+                    dst.h = <float> self.height
                     cdstrect = &dst
                 else:
                     raise TypeError('dstrect must be a position, rect, or None')
@@ -442,8 +431,16 @@ cdef class Texture:
         else:
             originptr = NULL
 
-        self.draw_internal(csrcrect, cdstrect, angle, originptr,
-                           flip_x, flip_y)
+        cdef int flip = SDL_FLIP_NONE
+        if flip_x:
+            flip |= SDL_FLIP_HORIZONTAL
+        if flip_y:
+            flip |= SDL_FLIP_VERTICAL
+
+        cdef int res = SDL_RenderCopyExF(self.renderer._renderer, self._tex, csrcrect, cdstrect,
+                                        angle, originptr, <SDL_RendererFlip>flip)
+        if res < 0:
+            raise error()
 
     def draw_triangle(self, p1_xy, p2_xy, p3_xy,
                       p1_uv=(0.0, 0.0), p2_uv=(1.0, 1.0), p3_uv=(0.0, 1.0),
@@ -491,7 +488,8 @@ cdef class Texture:
             raise error()
 
     def draw_quad(self, p1_xy, p2_xy, p3_xy, p4_xy,
-                  p1_uv=(0.0, 0.0), p2_uv=(1.0, 0.0), p3_uv=(1.0, 1.0), p4_uv=(0.0, 1.0),
+                  p1_uv=(0.0, 0.0), p2_uv=(1.0, 0.0),
+                  p3_uv=(1.0, 1.0), p4_uv=(0.0, 1.0),
                   p1_mod=(255, 255, 255, 255), p2_mod=(255, 255, 255, 255),
                   p3_mod=(255, 255, 255, 255), p4_mod=(255, 255, 255, 255)):
         """Copy a quad portion of the texture to the rendering target using the given coordinates
@@ -565,16 +563,33 @@ cdef class Texture:
             raise TypeError("update source should be a Surface.")
 
         cdef SDL_Rect rect
+        rect.x = 0
+        rect.y = 0
         cdef SDL_Rect *rectptr = pgRect_FromObject(area, &rect)
         cdef SDL_Surface *surf = pgSurface_AsSurface(surface)
+
+        if rectptr == NULL and area is not None:
+            raise TypeError('area must be a rectangle or None')
+
+        cdef int dst_width, dst_height
+        if rectptr == NULL:
+            dst_width = self.width
+            dst_height = self.height
+        else:
+            dst_width = rect.w
+            dst_height = rect.h
+
+        if dst_height > surf.h or dst_width > surf.w:
+            # if the surface is smaller than the destination rect,
+            # clip the rect to prevent segfault
+            rectptr = &rect # make sure rectptr is not NULL
+            rect.h = surf.h
+            rect.w = surf.w
 
         # For converting the surface, if needed
         cdef SDL_Surface *converted_surf = NULL
         cdef SDL_PixelFormat *pixel_format = NULL
         cdef SDL_BlendMode blend
-
-        if rectptr == NULL and area is not None:
-            raise TypeError('area must be a rectangle or None')
 
         cdef Uint32 format_
         if (SDL_QueryTexture(self._tex, &format_, NULL, NULL, NULL) != 0):
@@ -604,8 +619,8 @@ cdef class Texture:
         if res < 0:
             raise error()
 
-# disable auto_pickle since it causes stubcheck error 
-@cython.auto_pickle(False) 
+# disable auto_pickle since it causes stubcheck error
+@cython.auto_pickle(False)
 cdef class Image:
 
     def __cinit__(self):
@@ -718,53 +733,20 @@ cdef class Image:
                         or ``None`` for entire target. The Image is stretched to
                         fill dstrect.
         """
-        cdef SDL_Rect src
-        cdef SDL_Rect dst
-        cdef SDL_Rect *csrcrect = NULL
-        cdef SDL_Rect *cdstrect = NULL
-        cdef SDL_Rect *rectptr
-
-        if srcrect is None:
-            csrcrect = &self.srcrect.r
-        else:
-            if pgRect_Check(srcrect):
-                src = (<Rect>srcrect).r
-            else:
-
-                rectptr = pgRect_FromObject(srcrect, &src)
-                if rectptr == NULL:
-                    raise TypeError('srcrect must be a rect or None')
-                src.x = rectptr.x
-                src.y = rectptr.y
-                src.w = rectptr.w
-                src.h = rectptr.h
-
-            src.x += self.srcrect.x
-            src.y += self.srcrect.y
-            csrcrect = &src
-
-        if dstrect is not None:
-            cdstrect = pgRect_FromObject(dstrect, &dst)
-            if cdstrect == NULL:
-                if len(dstrect) == 2:
-                    dst.x = dstrect[0]
-                    dst.y = dstrect[1]
-                    dst.w = self.srcrect.w
-                    dst.h = self.srcrect.h
-                    cdstrect = &dst
-                else:
-                    raise TypeError('dstrect must be a position, rect, or None')
 
         self.texture.color = self._color
         self.texture.alpha = self.alpha
         self.texture.blend_mode = self.blend_mode
+        self.texture.draw(
+            (srcrect if not srcrect is None else self.srcrect),
+            dstrect,
+            self.angle,
+            self.origin,
+            self.flip_x,
+            self.flip_y)
 
-        self.texture.draw_internal(csrcrect, cdstrect, self.angle,
-                                   self._originptr, self.flip_x, self.flip_y)
-
-
-# disable auto_pickle since it causes stubcheck error 
-@cython.auto_pickle(False) 
+# disable auto_pickle since it causes stubcheck error
+@cython.auto_pickle(False)
 cdef class Renderer:
 
     @classmethod
@@ -804,12 +786,12 @@ cdef class Renderer:
                            the refresh rate.
         :param bool target_texture: Whether the renderer should support setting
                                    :class:`Texture` objects as target textures, to
-                                   enable drawing onto them. 
+                                   enable drawing onto them.
 
 
         :class:`Renderer` objects provide a cross-platform API for rendering 2D
-        graphics onto a :class:`Window`, by using either Metal (MacOS), OpenGL
-        (MacOS, Windows, Linux) or Direct3D (Windows) rendering drivers, depending
+        graphics onto a :class:`Window`, by using either Metal (macOS), OpenGL
+        (macOS, Windows, Linux) or Direct3D (Windows) rendering drivers, depending
         on what is set or is available on a system during their creation.
 
         They can be used to draw both :class:`Texture` objects and simple points,
@@ -818,7 +800,7 @@ cdef class Renderer:
         If configured correctly and supported by an underlying rendering driver, Renderer
         objects can have a :class:`Texture` object temporarily set as a target texture
         (the Texture object must have been created with target texture usage support),
-        which allows those textures to be drawn onto. 
+        which allows those textures to be drawn onto.
 
         To present drawn content onto the window, :meth:`Renderer.present` should be
         called. :meth:`Renderer.clear` should be called to clear any drawn content
@@ -938,7 +920,7 @@ cdef class Renderer:
 
         :param area: A :class:`pygame.Rect` or tuple representing the
                      drawing area on the target, or ``None`` to use the
-                     entire area of the current rendering target. 
+                     entire area of the current rendering target.
         """
         # https://wiki.libsdl.org/SDL_RenderSetViewport
         if area is None:
@@ -1048,10 +1030,10 @@ cdef class Renderer:
         :param p1: The line start point.
         :param p2: The line end point.
         """
-        # https://wiki.libsdl.org/SDL_RenderDrawLine
-        cdef int res = SDL_RenderDrawLine(self._renderer,
-                                          p1[0], p1[1],
-                                          p2[0], p2[1])
+        cdef int res
+        res = SDL_RenderDrawLineF(self._renderer,
+                                 p1[0], p1[1],
+                                 p2[0], p2[1])
         if res < 0:
             raise error()
 
@@ -1060,9 +1042,10 @@ cdef class Renderer:
 
         :param point: The point's coordinate.
         """
-        # https://wiki.libsdl.org/SDL_RenderDrawPoint
-        cdef int res = SDL_RenderDrawPoint(self._renderer,
-                                           point[0], point[1])
+        # https://wiki.libsdl.org/SDL_RenderDrawPointF
+        cdef int res
+        res = SDL_RenderDrawPointF(self._renderer,
+                                point[0], point[1])
         if res < 0:
             raise error()
 
@@ -1071,14 +1054,17 @@ cdef class Renderer:
 
         :param rect: The :class:`Rect`-like rectangle to draw.
         """
-        # https://wiki.libsdl.org/SDL_RenderDrawRect
-        cdef SDL_Rect _rect
-        cdef SDL_Rect *rectptr = pgRect_FromObject(rect, &_rect)
+        # https://wiki.libsdl.org/SDL_RenderDrawRectF
+        cdef SDL_FRect _frect
+        cdef SDL_FRect *frectptr
+        cdef int res
 
-        if rectptr == NULL:
+        frectptr = pgFRect_FromObject(rect, &_frect)
+        if frectptr == NULL:
             raise TypeError('expected a rectangle')
 
-        cdef int res = SDL_RenderDrawRect(self._renderer, rectptr)
+        res = SDL_RenderDrawRectF(self._renderer, frectptr)
+
         if res < 0:
             raise error()
 
@@ -1087,25 +1073,31 @@ cdef class Renderer:
 
         :param rect: The :class:`Rect`-like rectangle to draw.
         """
-        # https://wiki.libsdl.org/SDL_RenderFillRect
-        cdef SDL_Rect _rect
-        cdef SDL_Rect *rectptr = pgRect_FromObject(rect, &_rect)
+        # https://wiki.libsdl.org/SDL_RenderFillRectF
+        cdef SDL_FRect _frect
+        cdef SDL_FRect *frectptr
+        cdef int res
 
-        if rectptr == NULL:
+
+        frectptr = pgFRect_FromObject(rect, &_frect)
+        if frectptr == NULL:
             raise TypeError('expected a rectangle')
 
-        cdef int res = SDL_RenderFillRect(self._renderer, rectptr)
+        res = SDL_RenderFillRectF(self._renderer, frectptr)
+
         if res < 0:
             raise error()
 
     def draw_triangle(self, p1, p2, p3):
-        # https://wiki.libsdl.org/SDL_RenderDrawLines
-        cdef SDL_Point points[4]
-        for i, pos in enumerate((p1, p2, p3, p1)):
-            points[i].x = pos[0]
-            points[i].y = pos[1]
+        # https://wiki.libsdl.org/SDL_RenderDrawLinesF
+        cdef SDL_FPoint fpoints[4]
 
-        res = SDL_RenderDrawLines(self._renderer, points, 4)
+        for i, pos in enumerate((p1, p2, p3, p1)):
+            fpoints[i].x = pos[0]
+            fpoints[i].y = pos[1]
+
+        res = SDL_RenderDrawLinesF(self._renderer, fpoints, 4)
+
         if res < 0:
             raise error()
 
@@ -1113,7 +1105,7 @@ cdef class Renderer:
         # https://wiki.libsdl.org/SDL_RenderGeometry
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("fill_triangle requires SDL 2.0.18 or newer")
-        
+
         cdef Uint8[4] rgba
 
         cdef int res = SDL_GetRenderDrawColor(self._renderer,
@@ -1139,13 +1131,14 @@ cdef class Renderer:
             raise error()
 
     def draw_quad(self, p1, p2, p3, p4):
-        # https://wiki.libsdl.org/SDL_RenderDrawLines
-        cdef SDL_Point points[5]
+        # https://wiki.libsdl.org/SDL_RenderDrawLinesF
+        cdef SDL_FPoint fpoints[5]
         for i, pos in enumerate((p1, p2, p3, p4, p1)):
-            points[i].x = pos[0]
-            points[i].y = pos[1]
+            fpoints[i].x = pos[0]
+            fpoints[i].y = pos[1]
 
-        res = SDL_RenderDrawLines(self._renderer, points, 5)
+        res = SDL_RenderDrawLinesF(self._renderer, fpoints, 5)
+
         if res < 0:
             raise error()
 
@@ -1153,7 +1146,7 @@ cdef class Renderer:
         # https://wiki.libsdl.org/SDL_RenderGeometry
         if not SDL_VERSION_ATLEAST(2, 0, 18):
             raise error("fill_quad requires SDL 2.0.18 or newer")
-        
+
         cdef Uint8[4] rgba
 
         cdef int res = SDL_GetRenderDrawColor(self._renderer,
@@ -1241,6 +1234,11 @@ cdef class Renderer:
                 raise MemoryError("not enough memory for the surface")
 
             surface = <object>pgSurface_New2(surf, 1)
+            # casting to <object> makes cython assume reference counting of the object and it increments
+            # it by one, however, pgSurface_New2 already returns a new reference to an object, so
+            # we need to decrement that reference cython has added on top
+            # see https://github.com/cython/cython/issues/2589#issuecomment-417604249 for additional context
+            Py_DECREF(surface)
         elif pgSurface_Check(surface):
             surf = pgSurface_AsSurface(surface)
             if surf.w < rarea.w or surf.h < rarea.h:

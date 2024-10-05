@@ -51,6 +51,8 @@ _ft_get_error(PyObject *, PyObject *);
 static PyObject *
 _ft_get_init(PyObject *, PyObject *);
 static PyObject *
+_ft_was_init(PyObject *, PyObject *);
+static PyObject *
 _ft_autoinit(PyObject *, PyObject *);
 static PyObject *
 _ft_get_cache_size(PyObject *, PyObject *);
@@ -231,7 +233,6 @@ load_font_res(const char *filename)
 {
     PyObject *load_basicfunc = 0;
     PyObject *pkgdatamodule = 0;
-    PyObject *resourcefunc = 0;
     PyObject *result = 0;
     PyObject *tmp;
 
@@ -240,13 +241,9 @@ load_font_res(const char *filename)
         goto font_resource_end;
     }
 
-    resourcefunc = PyObject_GetAttrString(pkgdatamodule, RESOURCE_FUNC_NAME);
-    if (!resourcefunc) {
-        goto font_resource_end;
-    }
-
-    result = PyObject_CallFunction(resourcefunc, "s", filename);
-    if (!result) {
+    result =
+        PyObject_CallMethod(pkgdatamodule, RESOURCE_FUNC_NAME, "s", filename);
+    if (result == NULL) {
         goto font_resource_end;
     }
 
@@ -270,7 +267,6 @@ load_font_res(const char *filename)
 
 font_resource_end:
     Py_XDECREF(pkgdatamodule);
-    Py_XDECREF(resourcefunc);
     Py_XDECREF(load_basicfunc);
     return result;
 }
@@ -501,7 +497,7 @@ static PyMethodDef _ft_methods[] = {
      DOC_FREETYPE_INIT},
     {"quit", (PyCFunction)_ft_quit, METH_NOARGS, DOC_FREETYPE_QUIT},
     {"get_init", _ft_get_init, METH_NOARGS, DOC_FREETYPE_GETINIT},
-    {"was_init", _ft_get_init, METH_NOARGS,
+    {"was_init", _ft_was_init, METH_NOARGS,
      DOC_FREETYPE_WASINIT},  // DEPRECATED
     {"get_error", _ft_get_error, METH_NOARGS, DOC_FREETYPE_GETERROR},
     {"get_version", (PyCFunction)_ft_get_version, METH_VARARGS | METH_KEYWORDS,
@@ -667,6 +663,7 @@ _ftfont_new(PyTypeObject *subtype, PyObject *args, PyObject *kwds)
         obj->bgcolor[1] = 0;
         obj->bgcolor[2] = 0;
         obj->bgcolor[3] = 0;
+        obj->init_generation = current_freetype_generation;
     }
     return (PyObject *)obj;
 }
@@ -677,7 +674,7 @@ _ftfont_dealloc(pgFontObject *self)
     SDL_RWops *src = _PGFT_GetRWops(self);
     _PGFT_UnloadFont(self->freetype, self);
     if (src) {
-        pgRWops_ReleaseObject(src);
+        SDL_RWclose(src);
     }
     _PGFT_Quit(self->freetype);
 
@@ -747,83 +744,19 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
         }
     }
 
-#if !defined(WIN32)
-    file = pg_EncodeString(file, "UTF-8", NULL, NULL);
-    if (!file) {
-        goto end;
-    }
-    if (PyBytes_Check(file)) {
-        if (PyUnicode_Check(original_file)) {
-            /* Make sure to save a pure Unicode object to prevent possible
-             * cycles from a derived class. This means no tp_traverse or
-             * tp_clear for the PyFreetypeFont type.
-             */
-            self->path = PyObject_Str(original_file);
-        }
-        else {
-            self->path = PyUnicode_FromEncodedObject(file, "UTF-8", NULL);
-        }
-        if (!self->path) {
-            goto end;
-        }
-
-        if (_PGFT_TryLoadFont_Filename(ft, self, PyBytes_AS_STRING(file),
-                                       font_index)) {
-            goto end;
-        }
-    }
-    else {
-        PyObject *str = 0;
-        PyObject *path = 0;
-#ifndef WITH_THREAD
-        goto end;
-#endif
-        source = pgRWops_FromFileObject(original_file);
-        if (!source) {
-            goto end;
-        }
-
-        path = PyObject_GetAttrString(original_file, "name");
-        if (!path) {
-            PyErr_Clear();
-            str = PyBytes_FromFormat("<%s instance at %p>",
-                                     Py_TYPE(file)->tp_name, (void *)file);
-            if (str) {
-                self->path =
-                    PyUnicode_FromEncodedObject(str, "ascii", "strict");
-                Py_DECREF(str);
-            }
-        }
-        else if (PyUnicode_Check(path)) {
-            /* Make sure to save a pure Unicode object to prevent possible
-             * cycles from a derived class. This means no tp_traverse or
-             * tp_clear for the PyFreetypeFont type.
-             */
-            self->path = PyObject_Str(path);
-        }
-        else if (PyBytes_Check(path)) {
-            self->path = PyUnicode_FromEncodedObject(path, "UTF-8", NULL);
-        }
-        else {
-            self->path = PyObject_Str(path);
-        }
-        Py_XDECREF(path);
-        if (!self->path) {
-            goto end;
-        }
-
-        if (_PGFT_TryLoadFont_RWops(ft, self, source, font_index)) {
-            goto end;
-        }
-    }
-#else  /* WIN32 */
-    /* FT uses fopen(); as a workaround, always use RWops */
     if (file == original_file)
         Py_INCREF(file);
     if (!PG_CHECK_THREADS())
         goto end;
     source = pgRWops_FromObject(file, NULL);
     if (!source) {
+        goto end;
+    }
+
+    if (SDL_RWsize(source) <= 0) {
+        PyErr_Format(PyExc_ValueError,
+                     "Font file object has an invalid file size: %lld",
+                     SDL_RWsize(source));
         goto end;
     }
 
@@ -871,7 +804,6 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
     if (_PGFT_TryLoadFont_RWops(ft, self, source, font_index)) {
         goto end;
     }
-#endif /* WIN32 */
 
     if (!self->is_scalable && self->face_size.x == 0) {
         if (_PGFT_Font_GetAvailableSize(ft, self, 0, &size, &height, &width,
@@ -890,7 +822,6 @@ _ftfont_init(pgFontObject *self, PyObject *args, PyObject *kwds)
     */
     self->freetype = ft;
     ++ft->ref_count;
-    self->init_generation = current_freetype_generation;
 
     rval = 0;
 
@@ -2299,6 +2230,19 @@ static PyObject *
 _ft_get_init(PyObject *self, PyObject *_null)
 {
     return PyBool_FromLong(FREETYPE_MOD_STATE(self)->freetype ? 1 : 0);
+}
+
+static PyObject *
+_ft_was_init(PyObject *self, PyObject *_null)
+{
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "was_init has been deprecated and may be removed in a future "
+            "version. Use the equivalent get_init function instead",
+            1) == -1) {
+        return NULL;
+    }
+    return _ft_get_init(self, _null);
 }
 
 static PyObject *

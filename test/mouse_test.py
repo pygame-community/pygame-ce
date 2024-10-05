@@ -56,7 +56,7 @@ class MouseModuleInteractiveTest(MouseTests):
 
 class MouseModuleTest(MouseTests):
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER", "") == "dummy",
+        os.environ.get("SDL_VIDEODRIVER", "") == pygame.NULL_VIDEODRIVER,
         "Cursors not supported on headless test machines",
     )
     def test_get_cursor(self):
@@ -96,7 +96,7 @@ class MouseModuleTest(MouseTests):
                 pygame.mouse.get_cursor()
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER", "") == "dummy",
+        os.environ.get("SDL_VIDEODRIVER", "") == pygame.NULL_VIDEODRIVER,
         "mouse.set_system_cursor only available in SDL2",
     )
     def test_set_system_cursor(self):
@@ -134,11 +134,11 @@ class MouseModuleTest(MouseTests):
             # Making sure the warnings are working properly
             self.assertEqual(len(w), 6)
             self.assertTrue(
-                all([issubclass(warn.category, DeprecationWarning) for warn in w])
+                all(issubclass(warn.category, DeprecationWarning) for warn in w)
             )
 
     @unittest.skipIf(
-        os.environ.get("SDL_VIDEODRIVER", "") == "dummy",
+        os.environ.get("SDL_VIDEODRIVER", "") == pygame.NULL_VIDEODRIVER,
         "Cursors not supported on headless test machines",
     )
     def test_set_cursor(self):
@@ -285,8 +285,35 @@ class MouseModuleTest(MouseTests):
         for value in buttons_pressed:
             self.assertIsInstance(value, bool)
 
+        desktop_pressed1 = pygame.mouse.get_pressed(desktop=True)
+        desktop_pressed2 = pygame.mouse.get_pressed(5, desktop=True)
+        desktop_pressed3 = pygame.mouse.get_pressed(3, True)
+        self.assertEqual(len(desktop_pressed1), 3)
+        self.assertEqual(len(desktop_pressed2), 5)
+        self.assertEqual(len(desktop_pressed3), 3)
+        for desktop_pressed in [desktop_pressed1, desktop_pressed2, desktop_pressed3]:
+            self.assertIsInstance(desktop_pressed, tuple)
+            for value in desktop_pressed:
+                self.assertIsInstance(value, bool)
+
         with self.assertRaises(ValueError):
             pygame.mouse.get_pressed(4)
+
+    def test_get_just_pressed(self):
+        mouse_buttons = pygame.mouse.get_just_pressed()
+        self.assertIsInstance(mouse_buttons, tuple)
+        self.assertEqual(len(mouse_buttons), 5)
+        for value in mouse_buttons:
+            self.assertIsInstance(value, bool)
+            self.assertEqual(value, False)
+
+    def test_get_just_released(self):
+        mouse_buttons = pygame.mouse.get_just_released()
+        self.assertIsInstance(mouse_buttons, tuple)
+        self.assertEqual(len(mouse_buttons), 5)
+        for value in mouse_buttons:
+            self.assertIsInstance(value, bool)
+            self.assertEqual(value, False)
 
     def test_get_pos(self):
         """Ensures get_pos returns the correct types."""
@@ -298,6 +325,16 @@ class MouseModuleTest(MouseTests):
         self.assertEqual(len(pos), expected_length)
         for value in pos:
             self.assertIsInstance(value, int)
+
+        desktop_pos1 = pygame.mouse.get_pos(True)
+        desktop_pos2 = pygame.mouse.get_pos(desktop=True)
+        self.assertEqual(desktop_pos1, desktop_pos2)
+
+        for desktop_pos in [desktop_pos1, desktop_pos2]:
+            self.assertIsInstance(desktop_pos, tuple)
+            self.assertEqual(len(desktop_pos), expected_length)
+            for value in desktop_pos:
+                self.assertIsInstance(value, int)
 
     def test_set_pos__invalid_pos(self):
         """Ensures set_pos handles invalid positions correctly."""
@@ -340,6 +377,31 @@ class MouseModuleTest(MouseTests):
         for invalid_value in ((1,), [1, 2, 3], 1.1, "1", (1, "1"), []):
             with self.assertRaises(TypeError):
                 prev_visible = pygame.mouse.set_visible(invalid_value)
+
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER", "") == pygame.NULL_VIDEODRIVER,
+        "mouse.set_relative_mode requires non-null video driver",
+    )
+    def test_set_relative_mode(self):
+        """Tests that set_relative_mode hides the cursor."""
+        pygame.mouse.set_visible(True)
+        pygame.mouse.set_relative_mode(True)  # sets the mouse invisible
+        visible = pygame.mouse.get_visible()
+        self.assertEqual(visible, False)
+        pygame.mouse.set_relative_mode(False)  # sets the mouse visible
+        visible = pygame.mouse.get_visible()
+        self.assertEqual(visible, True)
+
+    @unittest.skipIf(
+        os.environ.get("SDL_VIDEODRIVER", "") == pygame.NULL_VIDEODRIVER,
+        "mouse.set_relative_mode requires non-null video driver",
+    )
+    def test_get_relative_mode(self):
+        """Tests that get_relative_mode correctly reports the relative mode"""
+        pygame.mouse.set_relative_mode(True)
+        self.assertEqual(pygame.mouse.get_relative_mode(), True)
+        pygame.mouse.set_relative_mode(False)
+        self.assertEqual(pygame.mouse.get_relative_mode(), False)
 
 
 ################################################################################

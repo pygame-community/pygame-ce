@@ -55,9 +55,22 @@
 #include <Python.h>
 
 /* version macros (defined since version 1.9.5) */
-#define PG_MAJOR_VERSION 2
-#define PG_MINOR_VERSION 4
-#define PG_PATCH_VERSION 0
+#ifndef PG_MAJOR_VERSION
+#error PG_MAJOR_VERSION must be defined
+#endif
+
+#ifndef PG_MINOR_VERSION
+#error PG_MINOR_VERSION must be defined
+#endif
+
+#ifndef PG_PATCH_VERSION
+#error PG_PATCH_VERSION must be defined
+#endif
+
+#ifndef PG_VERSION_TAG
+#error PG_VERSION_TAG must be defined
+#endif
+
 #define PG_VERSIONNUM(MAJOR, MINOR, PATCH) \
     (1000 * (MAJOR) + 100 * (MINOR) + (PATCH))
 #define PG_VERSION_ATLEAST(MAJOR, MINOR, PATCH)                             \
@@ -116,6 +129,16 @@ typedef struct pg_bufferinfo_s {
 #define pg_TwoFloatsFromObj \
     (*(int (*)(PyObject *, float *, float *))PYGAMEAPI_GET_SLOT(base, 7))
 
+#define pg_DoubleFromObj \
+    (*(int (*)(PyObject *, double *))PYGAMEAPI_GET_SLOT(base, 24))
+
+#define pg_TwoDoublesFromObj \
+    (*(int (*)(PyObject *, double *, double *))PYGAMEAPI_GET_SLOT(base, 25))
+
+#define pg_TwoDoublesFromFastcallArgs                   \
+    (*(int (*)(PyObject *const *, Py_ssize_t, double *, \
+               double *))PYGAMEAPI_GET_SLOT(base, 26))
+
 #define pg_UintFromObj \
     (*(int (*)(PyObject *, Uint32 *))PYGAMEAPI_GET_SLOT(base, 8))
 
@@ -159,6 +182,12 @@ typedef struct pg_bufferinfo_s {
 
 #define pg_EnvShouldBlendAlphaSDL2 \
     (*(char *(*)(void))PYGAMEAPI_GET_SLOT(base, 23))
+
+#define pg_GetDefaultConvertFormat \
+    (*(SDL_PixelFormat * (*)(void)) PYGAMEAPI_GET_SLOT(base, 27))
+
+#define pg_SetDefaultConvertFormat \
+    (*(SDL_PixelFormat * (*)(Uint32)) PYGAMEAPI_GET_SLOT(base, 28))
 
 #define import_pygame_base() IMPORT_PYGAME_MODULE(base)
 #endif /* ~PYGAMEAPI_BASE_INTERNAL */
@@ -325,32 +354,25 @@ typedef struct {
  * auto imported/initialized by surface
  */
 #ifndef PYGAMEAPI_SURFLOCK_INTERNAL
-#define pgLifetimeLock_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(surflock, 0))
-
-#define pgLifetimeLock_Check(x) ((x)->ob_type == &pgLifetimeLock_Type)
-
 #define pgSurface_Prep(x) \
     if ((x)->subsurface)  \
-    (*(*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 1)))(x)
+    (*(*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 0)))(x)
 
 #define pgSurface_Unprep(x) \
     if ((x)->subsurface)    \
-    (*(*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 2)))(x)
+    (*(*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 1)))(x)
 
 #define pgSurface_Lock \
-    (*(int (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 3))
+    (*(int (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 2))
 
 #define pgSurface_Unlock \
-    (*(int (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 4))
+    (*(int (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(surflock, 3))
 
 #define pgSurface_LockBy \
-    (*(int (*)(pgSurfaceObject *, PyObject *))PYGAMEAPI_GET_SLOT(surflock, 5))
+    (*(int (*)(pgSurfaceObject *, PyObject *))PYGAMEAPI_GET_SLOT(surflock, 4))
 
 #define pgSurface_UnlockBy \
-    (*(int (*)(pgSurfaceObject *, PyObject *))PYGAMEAPI_GET_SLOT(surflock, 6))
-
-#define pgSurface_LockLifetime \
-    (*(PyObject * (*)(PyObject *, PyObject *)) PYGAMEAPI_GET_SLOT(surflock, 7))
+    (*(int (*)(pgSurfaceObject *, PyObject *))PYGAMEAPI_GET_SLOT(surflock, 5))
 #endif
 
 /*
@@ -380,6 +402,12 @@ typedef struct pgEventObject pgEventObject;
 
 #define pgEvent_GetKeyUpInfo (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 7))
 
+#define pgEvent_GetMouseButtonDownInfo \
+    (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 8))
+
+#define pgEvent_GetMouseButtonUpInfo \
+    (*(char *(*)(void))PYGAMEAPI_GET_SLOT(event, 9))
+
 #define import_pygame_event() IMPORT_PYGAME_MODULE(event)
 #endif
 
@@ -403,9 +431,6 @@ typedef struct pgEventObject pgEventObject;
 
 #define pgRWops_FromFileObject \
     (*(SDL_RWops * (*)(PyObject *)) PYGAMEAPI_GET_SLOT(rwobject, 4))
-
-#define pgRWops_ReleaseObject \
-    (*(int (*)(SDL_RWops *))PYGAMEAPI_GET_SLOT(rwobject, 5))
 
 #define import_pygame_rwobject() IMPORT_PYGAME_MODULE(rwobject)
 
@@ -468,19 +493,27 @@ typedef struct pgColorObject pgColorObject;
 #define import_pygame_math() IMPORT_PYGAME_MODULE(math)
 #endif /* PYGAMEAPI_MATH_INTERNAL */
 
+#ifndef PYGAMEAPI_GEOMETRY_INTERNAL
+
+#define import_pygame_geometry() IMPORT_PYGAME_MODULE(geometry)
+
+#endif /* ~PYGAMEAPI_GEOMETRY_INTERNAL */
+
 /*
  * Window module
  */
 typedef struct {
     PyObject_HEAD SDL_Window *_win;
     SDL_bool _is_borrowed;
+    pgSurfaceObject *surf;
+    SDL_GLContext context;
 } pgWindowObject;
 
 #ifndef PYGAMEAPI_WINDOW_INTERNAL
-#define pgWindow_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(_window, 0))
+#define pgWindow_Type (*(PyTypeObject *)PYGAMEAPI_GET_SLOT(window, 0))
 #define pgWindow_Check(x) \
     (PyObject_IsInstance((x), (PyObject *)&pgWindow_Type))
-#define import_pygame_window() IMPORT_PYGAME_MODULE(_window)
+#define import_pygame_window() IMPORT_PYGAME_MODULE(window)
 #endif
 
 #define IMPORT_PYGAME_MODULE _IMPORT_PYGAME_MODULE
@@ -501,7 +534,8 @@ PYGAMEAPI_DEFINE_SLOTS(rwobject);
 PYGAMEAPI_DEFINE_SLOTS(pixelarray);
 PYGAMEAPI_DEFINE_SLOTS(color);
 PYGAMEAPI_DEFINE_SLOTS(math);
-PYGAMEAPI_DEFINE_SLOTS(_window);
+PYGAMEAPI_DEFINE_SLOTS(window);
+PYGAMEAPI_DEFINE_SLOTS(geometry);
 #else /* ~PYGAME_H */
 PYGAMEAPI_EXTERN_SLOTS(base);
 PYGAMEAPI_EXTERN_SLOTS(rect);
@@ -514,7 +548,8 @@ PYGAMEAPI_EXTERN_SLOTS(rwobject);
 PYGAMEAPI_EXTERN_SLOTS(pixelarray);
 PYGAMEAPI_EXTERN_SLOTS(color);
 PYGAMEAPI_EXTERN_SLOTS(math);
-PYGAMEAPI_EXTERN_SLOTS(_window);
+PYGAMEAPI_EXTERN_SLOTS(window);
+PYGAMEAPI_EXTERN_SLOTS(geometry);
 
 #endif /* ~PYGAME_H */
 
@@ -595,4 +630,61 @@ pg_tuple_triple_from_values_int(int val1, int val2, int val3)
     PyTuple_SET_ITEM(tup, 2, tmp);
 
     return tup;
+}
+
+static PG_INLINE PyObject *
+pg_tuple_couple_from_values_double(double val1, double val2)
+{
+    /* This function turns two input doubles into a python tuple object.
+     * Currently, 5th November 2022, this is faster than using Py_BuildValue
+     * to do the same thing.
+     */
+    PyObject *tuple = PyTuple_New(2);
+    if (!tuple)
+        return NULL;
+
+    PyObject *tmp = PyFloat_FromDouble(val1);
+    if (!tmp) {
+        Py_DECREF(tuple);
+        return NULL;
+    }
+    PyTuple_SET_ITEM(tuple, 0, tmp);
+
+    tmp = PyFloat_FromDouble(val2);
+    if (!tmp) {
+        Py_DECREF(tuple);
+        return NULL;
+    }
+    PyTuple_SET_ITEM(tuple, 1, tmp);
+
+    return tuple;
+}
+
+static PG_INLINE PyObject *
+pg_PointList_FromArrayDouble(double const *array, int arr_length)
+{
+    if (arr_length % 2) {
+        return RAISE(PyExc_ValueError, "array length must be even");
+    }
+
+    int num_points = arr_length / 2;
+    PyObject *sequence = PyList_New(num_points);
+    if (!sequence) {
+        return NULL;
+    }
+
+    int i;
+    PyObject *point = NULL;
+    for (i = 0; i < num_points; i++) {
+        point =
+            pg_tuple_couple_from_values_double(array[i * 2], array[i * 2 + 1]);
+        if (!point) {
+            Py_DECREF(sequence);
+            return NULL;
+        }
+        PyList_SET_ITEM(sequence, i, point);
+        point = NULL;
+    }
+
+    return sequence;
 }

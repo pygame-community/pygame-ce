@@ -85,8 +85,9 @@ static PyObject *
 pgSound_New(Mix_Chunk *);
 static PyObject *
 pgChannel_New(int);
-#define pgSound_Check(x) (Py_TYPE(x) == &pgSound_Type)
-#define pgChannel_Check(x) (Py_TYPE(x) == &pgChannel_Type)
+#define pgSound_Check(x) (PyObject_IsInstance(x, (PyObject *)&pgSound_Type))
+#define pgChannel_Check(x) \
+    (PyObject_IsInstance(x, (PyObject *)&pgChannel_Type))
 
 static int
 snd_getbuffer(PyObject *, Py_buffer *, int);
@@ -582,6 +583,18 @@ pg_mixer_get_init(PyObject *self, PyObject *_null)
 }
 
 static PyObject *
+pg_mixer_get_driver(PyObject *self, PyObject *_null)
+{
+    const char *name = NULL;
+    MIXER_INIT_CHECK();
+    name = SDL_GetCurrentAudioDriver();
+    if (!name) {
+        name = "unknown";
+    }
+    return PyUnicode_FromString(name);
+}
+
+static PyObject *
 pre_init(PyObject *self, PyObject *args, PyObject *keywds)
 {
     static char *kwids[] = {"frequency", "size",       "channels",
@@ -1004,8 +1017,7 @@ static PyTypeObject pgSound_Type = {
     .tp_basicsize = sizeof(pgSoundObject),
     .tp_dealloc = (destructor)sound_dealloc,
     .tp_as_buffer = sound_as_buffer,
-    .tp_flags =
-        (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_NEWBUFFER),
+    .tp_flags = (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE),
     .tp_doc = DOC_MIXER_SOUND,
     .tp_weaklistoffset = offsetof(pgSoundObject, weakreflist),
     .tp_methods = sound_methods,
@@ -1373,6 +1385,7 @@ static PyTypeObject pgChannel_Type = {
     PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.mixer.Channel",
     .tp_basicsize = sizeof(pgChannelObject),
     .tp_dealloc = channel_dealloc,
+    .tp_flags = (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE),
     .tp_doc = DOC_MIXER_CHANNEL,
     .tp_methods = channel_methods,
     .tp_init = (initproc)channel_init,
@@ -1570,6 +1583,12 @@ static PyObject *
 mixer_get_sdl_mixer_version(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int linked = 1; /* Default is linked version. */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int version = SDL_MIXER_VERSION;
+#else
+    SDL_version version;
+    SDL_MIXER_VERSION(&version);
+#endif
 
     static char *keywords[] = {"linked", NULL};
 
@@ -1580,16 +1599,16 @@ mixer_get_sdl_mixer_version(PyObject *self, PyObject *args, PyObject *kwargs)
     /* MIXER_INIT_CHECK() is not required for these methods. */
 
     if (linked) {
-        /* linked version */
-        const SDL_version *v = Mix_Linked_Version();
-        return Py_BuildValue("iii", v->major, v->minor, v->patch);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        version = Mix_Version();
+#else
+        version = *Mix_Linked_Version();
+#endif
     }
-    else {
-        /* compiled version */
-        SDL_version v;
-        SDL_MIXER_VERSION(&v);
-        return Py_BuildValue("iii", v.major, v.minor, v.patch);
-    }
+
+    return Py_BuildValue("iii", PG_FIND_VNUM_MAJOR(version),
+                         PG_FIND_VNUM_MINOR(version),
+                         PG_FIND_VNUM_MICRO(version));
 }
 
 static int
@@ -1940,6 +1959,8 @@ static PyMethodDef _mixer_methods[] = {
     {"quit", (PyCFunction)mixer_quit, METH_NOARGS, DOC_MIXER_QUIT},
     {"get_init", (PyCFunction)pg_mixer_get_init, METH_NOARGS,
      DOC_MIXER_GETINIT},
+    {"get_driver", (PyCFunction)pg_mixer_get_driver, METH_NOARGS,
+     DOC_MIXER_GETDRIVER},
     {"pre_init", (PyCFunction)pre_init, METH_VARARGS | METH_KEYWORDS,
      DOC_MIXER_PREINIT},
     {"get_num_channels", (PyCFunction)get_num_channels, METH_NOARGS,

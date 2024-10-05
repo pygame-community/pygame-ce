@@ -106,12 +106,12 @@ class Cursor:
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    def __copy__(self):
+    def copy(self):
         """Clone the current Cursor object.
         You can do the same thing by doing Cursor(Cursor)."""
         return self.__class__(self)
 
-    copy = __copy__
+    __copy__ = copy
 
     def __hash__(self):
         return hash(tuple([self.type] + list(self.data)))
@@ -828,17 +828,10 @@ def load_xbm(curs, mask):
         if line.startswith(possible_starts):
             break
     data = " ".join(curs[i + 1 :]).replace("};", "").replace(",", " ")
-    cursdata = []
-    for x in data.split():
-        cursdata.append(bitswap(int(x, 16)))
-    cursdata = tuple(cursdata)
+    cursdata = tuple(bitswap(int(x, 16)) for x in data.split())
     for i, line in enumerate(mask):
         if line.startswith(possible_starts):
             break
     data = " ".join(mask[i + 1 :]).replace("};", "").replace(",", " ")
-    maskdata = []
-    for x in data.split():
-        maskdata.append(bitswap(int(x, 16)))
-
-    maskdata = tuple(maskdata)
+    maskdata = tuple(bitswap(int(x, 16)) for x in data.split())
     return info[:2], info[2:], cursdata, maskdata

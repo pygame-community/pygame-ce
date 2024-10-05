@@ -13,11 +13,7 @@ sha512sum -c libffi.sha512
 tar xzf ${LIBFFI}.tar.gz
 cd $LIBFFI
 
-./configure $ARCHS_CONFIG_FLAG
+# --disable-multi-os-directory is passed so that /usr/local/lib is used
+./configure $PG_BASE_CONFIGURE_FLAGS --disable-docs --disable-multi-os-directory
 make
 make install
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # Install to mac deps cache dir as well
-    make install DESTDIR=${MACDEP_CACHE_PREFIX_PATH}
-fi

@@ -51,7 +51,7 @@ their own new events with the :func:`pygame.event.Event()` function.
 The event type identifier is in between the values of ``NOEVENT`` and
 ``NUMEVENTS``. User defined events should have a value in the inclusive range
 of ``USEREVENT`` to ``NUMEVENTS - 1``. User defined events can get a custom
-event number with :func:`pygame.event.custom_type()`. 
+event number with :func:`pygame.event.custom_type()`.
 It is recommended all user events follow this system.
 
 Events support equality and inequality comparisons. Two events are equal if
@@ -159,7 +159,7 @@ pygame 2 also supports controller hot-plugging
 Also in this version, ``instance_id`` attributes were added to joystick events,
 and the ``joy`` attribute was deprecated.
 
-``KEYMAPCHANGED`` is a type of an event sent when keymap changes due to a 
+``KEYMAPCHANGED`` is a type of an event sent when keymap changes due to a
 system event such as an input language or keyboard layout change.
 
 ``CLIPBOARDUPDATE`` is an event sent when clipboard changes. This can still
@@ -170,7 +170,7 @@ not trigger this event.
 
 .. versionaddedold:: 2.0.0
 
-.. versionadded:: 2.1.3 ``KEYMAPCHANGED``, ``CLIPBOARDUPDATE``, 
+.. versionadded:: 2.1.3 ``KEYMAPCHANGED``, ``CLIPBOARDUPDATE``,
    ``RENDER_TARGETS_RESET``, ``RENDER_DEVICE_RESET`` and ``LOCALECHANGED``
 
 |
@@ -301,7 +301,7 @@ On Android, the following events can be generated
 
    Returns a single event from the queue. If the queue is empty this function
    will wait until one is created. From pygame 2.0.0, if a ``timeout`` argument
-   is given, the function will return an event of type ``pygame.NOEVENT`` 
+   is given, the function will return an event of type ``pygame.NOEVENT``
    if no events enter the queue in ``timeout`` milliseconds. The event is removed
    from the queue once it has been returned. While the program is waiting it will
    sleep in an idle state. This is important for programs that want to share the
@@ -349,7 +349,7 @@ On Android, the following events can be generated
 .. function:: event_name
 
    | :sl:`get the string name from an event id`
-   | :sg:`event_name(type) -> string`
+   | :sg:`event_name(type, /) -> string`
 
    Returns a string representing the name (in CapWords style) of the given
    event type.
@@ -362,8 +362,8 @@ On Android, the following events can be generated
 .. function:: set_blocked
 
    | :sl:`control which events are blocked on the queue`
-   | :sg:`set_blocked(type) -> None`
-   | :sg:`set_blocked(typelist) -> None`
+   | :sg:`set_blocked(type, /) -> None`
+   | :sg:`set_blocked(typelist, /) -> None`
    | :sg:`set_blocked(None) -> None`
 
    The given event types are not allowed to appear on the event queue. By
@@ -378,8 +378,8 @@ On Android, the following events can be generated
 .. function:: set_allowed
 
    | :sl:`control which events are allowed on the queue`
-   | :sg:`set_allowed(type) -> None`
-   | :sg:`set_allowed(typelist) -> None`
+   | :sg:`set_allowed(type, /) -> None`
+   | :sg:`set_allowed(typelist, /) -> None`
    | :sg:`set_allowed(None) -> None`
 
    The given event types are allowed to appear on the event queue. By default,
@@ -394,8 +394,8 @@ On Android, the following events can be generated
 .. function:: get_blocked
 
    | :sl:`test if a type of event is blocked from the queue`
-   | :sg:`get_blocked(type) -> bool`
-   | :sg:`get_blocked(typelist) -> bool`
+   | :sg:`get_blocked(type, /) -> bool`
+   | :sg:`get_blocked(typelist, /) -> bool`
 
    Returns ``True`` if the given event type is blocked from the queue. If a
    sequence of event types is passed, this will return ``True`` if any of those
@@ -406,7 +406,7 @@ On Android, the following events can be generated
 .. function:: set_grab
 
    | :sl:`control the sharing of input devices with other applications`
-   | :sg:`set_grab(bool) -> None`
+   | :sg:`set_grab(bool, /) -> None`
 
    When your program runs in a windowed environment, it will share the mouse
    and keyboard devices with other applications that have focus. If your
@@ -430,7 +430,7 @@ On Android, the following events can be generated
 .. function:: post
 
    | :sl:`place a new event on the queue`
-   | :sg:`post(Event) -> bool`
+   | :sg:`post(event, /) -> bool`
 
    Places the given event at the end of the event queue.
 
@@ -455,7 +455,7 @@ On Android, the following events can be generated
    | :sl:`make custom user event type`
    | :sg:`custom_type() -> int`
 
-   Reserves a ``pygame.USEREVENT`` for a custom use.
+   Reserves an event slot for use in a custom event ``userevent`` and returns the integer that the event slot is reserved to.
 
    If too many events are made a :exc:`pygame.error` is raised.
 

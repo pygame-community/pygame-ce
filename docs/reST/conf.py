@@ -17,6 +17,8 @@ import sys, os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.append(os.path.abspath('.'))
 
+import buildconfig.get_version as pg_ver
+
 # -- General configuration -----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
@@ -46,10 +48,10 @@ copyright = '2000-2022, pygame developers, 2023 pygame-ce developers'
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
-# The short X.Y version.
-version = '2.4.0'
+# The short X.Y.Z version.
+version = pg_ver.version_short
 # The full version, including alpha/beta/rc tags.
-release = '2.4.0.dev3'
+release = pg_ver.version
 
 # Format strings for the version directives
 versionadded_format = 'New in pygame-ce %s'
@@ -120,7 +122,7 @@ html_title = f"{project} v{version} documentation"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = '_static/pygame_tiny.png'
+html_logo = '_static/pygame_ce_tiny.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32

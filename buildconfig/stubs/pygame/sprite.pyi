@@ -7,20 +7,19 @@ from typing import (
     Iterator,
     List,
     Optional,
+    Protocol,
     SupportsFloat,
     Tuple,
     TypeVar,
     Union,
 )
-
-# Protocol added in python 3.8
-from typing_extensions import Protocol
+from typing_extensions import deprecated # added in 3.13
 
 from pygame.rect import FRect, Rect
 from pygame.surface import Surface
 from pygame.mask import Mask
 
-from ._common import RectValue, Coordinate
+from pygame.typing import RectLike, Point
 
 # non-generic Group, used in Sprite
 _Group = AbstractGroup[_SpriteSupportsGroup]
@@ -184,10 +183,13 @@ class Group(AbstractGroup[_TSprite]):
     ) -> None: ...
 
 # these are aliased in the code too
-RenderPlain = Group
-RenderClear = Group
+@deprecated("Use `pygame.sprite.Group` instead")
+class RenderPlain(Group): ...
+@deprecated("Use `pygame.sprite.Group` instead")
+class RenderClear(Group): ...
 
 class RenderUpdates(Group[_TSprite]): ...
+@deprecated("Use `pygame.sprite.RenderUpdates` instead")
 class OrderedUpdates(RenderUpdates[_TSprite]): ...
 
 class LayeredUpdates(AbstractGroup[_TSprite]):
@@ -209,7 +211,7 @@ class LayeredUpdates(AbstractGroup[_TSprite]):
         ],
         **kwargs: Any
     ) -> None: ...
-    def get_sprites_at(self, pos: Coordinate) -> List[_TSprite]: ...
+    def get_sprites_at(self, pos: Point) -> List[_TSprite]: ...
     def get_sprite(self, idx: int) -> _TSprite: ...
     def remove_sprites_of_layer(self, layer_nr: int) -> List[_TSprite]: ...
     def layers(self) -> List[int]: ...
@@ -230,14 +232,16 @@ class LayeredDirty(LayeredUpdates[_TDirtySprite]):
     ) -> List[Union[FRect, Rect]]: ...
     # clear breaks Liskov substitution principle in code
     def clear(self, surface: Surface, bgd: Surface) -> None: ...  # type: ignore[override]
-    def repaint_rect(self, screen_rect: RectValue) -> None: ...
-    def set_clip(self, screen_rect: Optional[RectValue] = None) -> None: ...
+    def repaint_rect(self, screen_rect: RectLike) -> None: ...
+    def set_clip(self, screen_rect: Optional[RectLike] = None) -> None: ...
     def get_clip(self) -> Union[FRect, Rect]: ...
     def set_timing_threshold(
         self, time_ms: SupportsFloat
     ) -> None: ...  # This actually accept any value
-    # deprecated alias
-    set_timing_treshold = set_timing_threshold
+    @deprecated("since 2.1.1. Use `pygame.sprite.LayeredDirty.set_timing_threshold` instead")
+    def set_timing_treshold(
+        self, time_ms: SupportsFloat
+    ) -> None: ...
 
 class GroupSingle(AbstractGroup[_TSprite]):
     sprite: _TSprite
@@ -276,17 +280,17 @@ def spritecollide(
     sprite: _HasRect,
     group: AbstractGroup[_TSprite],
     dokill: bool,
-    collided: Optional[Callable[[_HasRect, _TSprite], bool]] = None,
+    collided: Optional[Callable[[_TSprite, _TSprite2], Any]] = None,
 ) -> List[_TSprite]: ...
 def groupcollide(
     groupa: AbstractGroup[_TSprite],
     groupb: AbstractGroup[_TSprite2],
     dokilla: bool,
     dokillb: bool,
-    collided: Optional[Callable[[_TSprite, _TSprite2], bool]] = None,
+    collided: Optional[Callable[[_TSprite, _TSprite2], Any]] = None,
 ) -> Dict[_TSprite, List[_TSprite2]]: ...
 def spritecollideany(
     sprite: _HasRect,
     group: AbstractGroup[_TSprite],
-    collided: Optional[Callable[[_HasRect, _TSprite], bool]] = None,
+    collided: Optional[Callable[[_TSprite, _TSprite2], Any]] = None,
 ) -> Optional[_TSprite]: ...

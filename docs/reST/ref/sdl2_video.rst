@@ -34,9 +34,9 @@
    | :sl:`pygame object encapsulating Renderer driver information`
 
    Attributes:
-   
+
    ::
-      
+
       name
       flags
       num_texture_formats
@@ -60,254 +60,10 @@
 .. class:: Window
 
    | :sl:`pygame object that represents a window`
-   | :sg:`Window(title='pygame window', size=(640, 480), position=None, fullscreen=False, fullscreen_desktop=False, **kwargs) -> Window`
 
-   Creates a window.
+   See :class:`pygame.Window`
 
-   :param str title: The title of the window.
-   :param (int, int) size: The size of the window, in screen coordinates.
-   :param (int, int) or int position: A tuple specifying the window position, or
-                                      ``WINDOWPOS_CENTERED``, or ``WINDOWPOS_UNDEFINED``.
-   :param bool fullscreen: Create a fullscreen window using the window size as
-                           the resolution (videomode change).
-   :param bool fullscreen_desktop: Create a fullscreen window using the current
-                                   desktop resolution.
-   :param bool opengl: Create a window with support for an OpenGL context. You
-                       will still need to create an OpenGL context separately.
-   :param bool vulkan: Create a window with support for a Vulkan instance.
-   :param bool hidden: Create a hidden window.
-   :param bool borderless: Create a window without borders.
-   :param bool resizable: Create a resizable window.
-   :param bool minimized: Create a mimized window.
-   :param bool maximized: Create a maximized window.
-   :param bool input_grabbed: Create a window with a grabbed input focus.
-   :param bool input_focus: Create a window with input focus.
-   :param bool mouse_focus: Create a window with mouse focus.
-   :param bool foreign: Marks a window not created by SDL.
-   :param bool allow_highdpi: Create a window in high-DPI mode if supported.
-   :param bool mouse_capture: Create a window that has the mouse captured
-                              (unrelated to INPUT_GRABBED).
-   :param bool always_on_top: Create a window that is always on top
-                              (X11 only).
-   :param bool skip_taskbar: Create a window that should not be added to the
-                             taskbar (X11 only).
-   :param bool utility: Create a window that should be treated as a utility
-                        window (X11 only).
-   :param bool tooltip: Create a window that should be treated as a tooltip
-                        (X11 only).
-   :param bool popup_menu: Create a window that should be treated as a popup menu 
-                           (X11 only).
-
-
-   .. attribute:: grab
-
-      | :sl:`Get or set the window's input grab state`
-      | :sg:`grab -> bool`
-
-      Gets or sets the window's input grab state.
-      When input is grabbed, the mouse is confined to the window.
-      If the caller enables a grab while another window is currently grabbed,
-      the other window loses its grab in favor of the caller's window.
-
-   .. attribute:: relative_mouse
-
-      | :sl:`Get or set the window's relative mouse mode state`
-      | :sg:`relative_mouse -> bool`
-
-      Gets or sets the window's relative mouse mode state.
-      SDL2 docs: *"While the mouse is in relative mode, the cursor is hidden,
-      the mouse position is constrained to the window, and SDL will report
-      continuous relative mouse motion even if the mouse is at the edge of the
-      window.*
-
-      *This function will flush any pending mouse motion."*
-
-      Calling :func:`pygame.mouse.set_visible` with argument
-      ``True`` will exit relative mouse mode.
-
-   .. attribute:: title
-
-      | :sl:`Get or set the window title`
-      | :sg:`title -> str`
-
-      Gets or sets the window title. An empty string means that no title is set.
-
-   .. attribute:: resizable
-
-      | :sl:`Get or set whether the window is resizable`
-      | :sg:`resizable -> bool`
-
-   .. attribute:: borderless
-
-      | :sl:`Get or set whether the window is borderless`
-      | :sg:`borderless -> bool`
-
-      Gets or sets whether the window is borderless.
-
-      .. note:: You can't change the border state of a fullscreen window.
-   
-   .. attribute:: always_on_top
-
-      | :sl:`Get or set whether the window is always on top`
-      | :sg:`always_on_top -> bool`
-
-      Get or set whether the window is always on top.
-
-      Setting the always-on-top mode requires SDL 2.0.16+.
-
-      .. versionadded:: 2.3.1
-
-   .. attribute:: id
-
-      | :sl:`Get the unique window ID (**read-only**)`
-      | :sg:`id -> int`
-
-   .. attribute:: size
-
-      | :sl:`Get or set the window size in pixels`
-      | :sg:`size -> (int, int)`
-   
-   .. attribute:: minimum_size
-
-      | :sl:`Get or set the minimum size of the window's client area`
-      | :sg:`minimum_size -> (int, int)`
-
-      Initial value in most cases is ``(0, 0)``. If :func:`from_display_module`
-      was used to create the window and :func:`pygame.display.set_mode` was
-      called with the ``SCALED`` flag, the initial value is the size used in
-      that call.
-      
-      Raises a ``ValueError`` if negative values are provided or 
-      if the width or height provided are greater than set 
-      maximum width or height respectively. Unless maximum size 
-      is ``(0, 0)`` (initial value).
-
-      .. seealso:: :attr:`maximum_size`.
-
-      .. versionadded:: 2.4.0
-   
-   .. attribute:: maximum_size
-
-      | :sl:`Get or set the maximum size of the window's client area`
-      | :sg:`maximum_size -> (int, int)`
-
-      Initial value is ``(0, 0)``.
-
-      Raises a ``ValueError`` if negative values are provided or 
-      if the width or height provided are less than set minimum 
-      width or height respectively.
-
-      .. seealso:: :attr:`minimum_size`.
-
-      .. versionadded:: 2.4.0
-
-   .. attribute:: position
-
-      | :sl:`Get or set the window position in screen coordinates`
-      | :sg:`position -> (int, int) or WINDOWPOS_CENTERED or WINDOWPOS_UNDEFINED`
-
-   .. attribute:: opacity
-
-      | :sl:`Get or set the window opacity, between 0.0 (fully transparent) and 1.0 (fully opaque)`
-      | :sg:`opacity -> float`
-
-   .. attribute:: display_index
-
-      | :sl:`Get the index of the display that owns the window (**read-only**)`
-      | :sg:`get_display_index -> int`
-
-   .. classmethod:: from_display_module
-
-      | :sl:`Create a Window object using window data from display module`
-      | :sg:`from_display_module() -> Window`
-
-      Create a Window object that uses the same window data from the :mod:`pygame.display` module, created upon calling
-      :func:`pygame.display.set_mode`.
-
-   .. method:: set_windowed
-
-      | :sl:`Enable windowed mode (exit fullscreen)`
-      | :sg:`set_windowed() -> None`
-
-      .. seealso:: :func:`set_fullscreen`
-
-   .. method:: set_fullscreen
-
-      | :sl:`Enter fullscreen`
-      | :sg:`set_fullscreen(desktop=False) -> None`
-
-      :param bool desktop: If ``True``, use the current desktop resolution.
-         If ``False``, change the fullscreen resolution to the window size.
-
-      .. seealso:: :meth:`set_windowed`.
-
-   .. method:: destroy
-
-      | :sl:`Destroy the window`
-      | :sg:`destroy() -> None`
-
-      Destroys the internal window data of this Window object. This method is
-      called automatically when this Window object is garbage collected, so
-      there usually aren't any reasons to call it manually.
-
-      Other methods that try to manipulate that window data will raise an error.
-
-   .. method:: hide
-
-      | :sl:`Hide the window`
-      | :sg:`hide() -> None`
-
-   .. method:: show
-
-      | :sl:`Show the window`
-      | :sg:`show() -> None`
-
-   .. method:: focus
-
-      | :sl:`Set the window to be focused`
-      | :sg:`focus(input_only=False) -> None`
-
-      Raises the window above other windows and sets the input focus.
-
-      :param bool input_only: if ``True``, the window will be given input focus
-                              but may be completely obscured by other windows.
-                              Only supported on X11.
-
-   .. method:: restore
-
-      | :sl:`Restore the size and position of a minimized or maximized window`
-      | :sg:`restore() -> None`
-
-   .. method:: maximize
-
-      | :sl:`Maximize the window`
-      | :sg:`maximize() -> None`
-
-   .. method:: minimize 
-
-      | :sl:`Minimize the window`
-      | :sg:`maximize() -> None`
-
-   .. method:: set_icon
-
-      | :sl:`Set the window icon`
-      | :sg:`set_icon(surface) -> None`
-
-      Sets the window icon.
-
-      :param Surface surface: A Surface to use as the icon.
-
-   .. method:: set_modal_for
-
-      | :sl:`Set the window as a modal for a parent window`
-      | :sg:`set_modal_for(parent) -> None`
-
-      :param Window parent: The parent window.
-      
-      .. note:: This function is only supported on X11.
-
-
-.. class:: Texture	
+.. class:: Texture
 
    | :sl:`pygame object that represents a texture`
    | :sg:`Texture(renderer, size, depth=0, static=False, streaming=False, target=False, scale_quality=None) -> Texture`
@@ -339,18 +95,18 @@
 
    Since textures are stored in GPU video memory, they aren't as easy to modify
    as the image data of :class:`pygame.Surface` objects, which reside in RAM.
-   
+
    Textures can be modified in 2 ways:
-        
+
       * By drawing other textures onto them, achieved by marking them as "target" textures and setting them as the rendering target of their Renderer object (if properly configured and supported).
-         
+
       * By updating them with a Surface.
 
       .. note::
          A :class:`pygame.Surface`-to-:class:`Texture` update is generally
          considered a slow operation, as it requires image data to be uploaded from
          RAM to VRAM, which can have a notable overhead cost.
-   
+
    .. attribute:: renderer
 
       | :sl:`Get the renderer associated with the texture (**read-only**)`
@@ -377,7 +133,7 @@
       | :sg:`blend_mode -> int`
 
       Gets or sets the blend mode for the texture's drawing operations.
-      Valid blend modes are any of the ``BLENDMODE_*`` constants or a custom one. 
+      Valid blend modes are any of the ``BLENDMODE_*`` constants or a custom one.
 
    .. attribute:: color
 
@@ -533,12 +289,12 @@
       | :sl:`Get or set the Image's origin of rotation`
       | :sg:`origin -> (float, float) or None`
 
-      Gets or sets the Image's origin of rotation, a 2D coordinate relative to
-      the topleft coordinate of the Image's rectangular area.
+      Gets or sets the Image's origin of rotation, a 2D point relative to
+      the topleft coordinates of the Image's rectangular area.
 
       An origin of ``None`` means no origin was set and the Image will be
       rotated around its center.
-   
+
    .. method:: get_rect
 
       | :sl:`Get the rectangular area of the Image`
@@ -580,12 +336,12 @@
                       the refresh rate.
    :param bool target_texture: Whether the renderer should support setting
                               :class:`Texture` objects as target textures, to
-                              enable drawing onto them. 
+                              enable drawing onto them.
 
 
    :class:`Renderer` objects provide a cross-platform API for rendering 2D
-   graphics onto a :class:`Window`, by using either Metal (MacOS), OpenGL
-   (MacOS, Windows, Linux) or Direct3D (Windows) rendering drivers, depending
+   graphics onto a :class:`Window`, by using either Metal (macOS), OpenGL
+   (macOS, Windows, Linux) or Direct3D (Windows) rendering drivers, depending
    on what is set or is available on a system during their creation.
 
    They can be used to draw both :class:`Texture` objects and simple points,
@@ -594,7 +350,7 @@
    If configured correctly and supported by an underlying rendering driver, Renderer
    objects can have a :class:`Texture` object temporarily set as a target texture
    (the Texture object must have been created with target texture usage support),
-   which allows those textures to be drawn onto. 
+   which allows those textures to be drawn onto.
 
    To present drawn content onto the window, :meth:`Renderer.present` should be
    called. :meth:`Renderer.clear` should be called to clear any drawn content
@@ -610,7 +366,7 @@
    .. attribute:: draw_blend_mode
 
       | :sl:`Get or set the blend mode used for primitive drawing operations`
-      | :sg:`draw_blend_mode -> int`   
+      | :sg:`draw_blend_mode -> int`
 
    .. attribute:: draw_color
 
@@ -666,7 +422,7 @@
 
       :param area: A :class:`pygame.Rect` or tuple representing the
                    drawing area on the target, or ``None`` to use the
-                   entire area of the current rendering target. 
+                   entire area of the current rendering target.
 
    .. method:: blit
 
@@ -696,7 +452,7 @@
       | :sl:`Draw a point`
       | :sg:`draw_point(point) -> None`
 
-      :param point: The point's coordinate.
+      :param point: The point's coordinates.
 
    .. method:: draw_rect
 
@@ -716,7 +472,7 @@
 
       | :sl:`Draw a triangle outline`
       | :sg:`draw_triangle(p1, p2, p3) -> None`
-      
+
       :param p1: The first triangle point.
       :param p2: The second triangle point.
       :param p2: The third triangle point.
@@ -772,7 +528,7 @@
          :class:`pygame.Surface`. It should not be used frequently.
 
    .. method:: compose_custom_blend_mode
-   
+
       | :sl:`Compose a custom blend mode`
       | :sg:`compose_custom_blend_mode(color_mode, alpha_mode) -> int`
 
@@ -781,5 +537,5 @@
 
       :param color_mode: A tuple ``(srcColorFactor, dstColorFactor, colorOperation)``
       :param alpha_mode: A tuple ``(srcAlphaFactor, dstAlphaFactor, alphaOperation)``
-      
+
       :return: A blend mode to be used with :meth:`Renderer.set_draw_blend_mode` and :meth:`Texture.set_blend_mode`.

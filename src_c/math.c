@@ -195,20 +195,12 @@ static PyObject *
 vector_gety(pgVector *self, void *closure);
 static PyObject *
 vector_getz(pgVector *self, void *closure);
-#ifdef PYGAME_MATH_VECTOR_HAVE_W
-static PyObject *
-vector_getw(pgVector *self, void *closure);
-#endif
 static int
 vector_setx(pgVector *self, PyObject *value, void *closure);
 static int
 vector_sety(pgVector *self, PyObject *value, void *closure);
 static int
 vector_setz(pgVector *self, PyObject *value, void *closure);
-#ifdef PYGAME_MATH_VECTOR_HAVE_W
-static int
-vector_setw(pgVector *self, PyObject *value, void *closure);
-#endif
 static PyObject *
 vector_richcompare(PyObject *o1, PyObject *o2, int op);
 static PyObject *
@@ -231,6 +223,8 @@ static PyObject *
 vector_slerp(pgVector *self, PyObject *args);
 static PyObject *
 vector_lerp(pgVector *self, PyObject *args);
+static PyObject *
+vector_smoothstep(pgVector *self, PyObject *args);
 static int
 _vector_reflect_helper(double *dst_coords, const double *src_coords,
                        PyObject *normal, Py_ssize_t dim, double epsilon);
@@ -433,13 +427,6 @@ pgVectorCompatible_Check(PyObject *obj, Py_ssize_t dim)
                 return 1;
             }
             break;
-            /*
-                case 4:
-                    if (pgVector4_Check(obj)) {
-                        return 1;
-                    }
-                    break;
-            */
         default:
             PyErr_SetString(
                 PyExc_SystemError,
@@ -632,10 +619,6 @@ pgVector_NEW(Py_ssize_t dim)
             return vector2_new(&pgVector2_Type, NULL, NULL);
         case 3:
             return vector3_new(&pgVector3_Type, NULL, NULL);
-            /*
-                case 4:
-                    return vector4_new(&pgVector4_Type, NULL, NULL);
-            */
         default:
             return RAISE(PyExc_SystemError,
                          "Wrong internal call to pgVector_NEW.\n");
@@ -926,9 +909,10 @@ vector_clamp_magnitude_ip(pgVector *self, PyObject *const *args,
 
     /* Get magnitude of Vector */
     old_length_sq = _scalar_product(self->coords, self->coords, self->dim);
-    if (old_length_sq == 0) {
+    if (old_length_sq == 0 && min_length > 0) {
         return RAISE(PyExc_ValueError,
-                     "Cannot clamp a vector with zero length");
+                     "Cannot clamp a vector with zero length with a "
+                     "min_length greater than 0");
     }
 
     /* Notes for other contributors reading this code:
@@ -1215,12 +1199,31 @@ static PyMappingMethods vector_as_mapping = {
 static int
 vector_set_component(pgVector *self, PyObject *value, int component)
 {
-    if (value == NULL) {
-        PyErr_SetString(PyExc_TypeError, "Cannot delete the x attribute");
-        return -1;
-    }
     if (component >= self->dim) {
         PyErr_BadInternalCall();
+        return -1;
+    }
+    if (value == NULL) {
+        switch (component) {
+            case 0: {
+                PyErr_SetString(PyExc_TypeError,
+                                "Cannot delete the x attribute");
+                break;
+            }
+            case 1: {
+                PyErr_SetString(PyExc_TypeError,
+                                "Cannot delete the y attribute");
+                break;
+            }
+            case 2: {
+                PyErr_SetString(PyExc_TypeError,
+                                "Cannot delete the z attribute");
+                break;
+            }
+            default: {
+                PyErr_BadInternalCall();
+            }
+        }
         return -1;
     }
 
@@ -1265,20 +1268,6 @@ vector_setz(pgVector *self, PyObject *value, void *closure)
 {
     return vector_set_component(self, value, 2);
 }
-
-#ifdef PYGAME_MATH_VECTOR_HAVE_W
-static PyObject *
-vector_getw(pgVector *self, void *closure)
-{
-    return PyFloat_FromDouble(self->coords[3]);
-}
-
-static int
-vector_setw(pgVector *self, PyObject *value, void *closure)
-{
-    return vector_set_component(self, value, 3);
-}
-#endif
 
 static PyObject *
 vector_richcompare(PyObject *o1, PyObject *o2, int op)
@@ -1549,7 +1538,7 @@ vector_slerp(pgVector *self, PyObject *args)
     tmp = (tmp < -1 ? -1 : (tmp > 1 ? 1 : tmp));
     angle = acos(tmp);
 
-    /* if t < 0 we take the long arch of the greate circle to the destiny */
+    /* if t < 0 we take the long arch of the great circle to the destiny */
     if (t < 0) {
         angle -= 2 * M_PI;
         t = -t;
@@ -1604,6 +1593,43 @@ vector_lerp(pgVector *self, PyObject *args)
     }
     if (t < 0 || t > 1) {
         return RAISE(PyExc_ValueError, "Argument 2 must be in range [0, 1]");
+    }
+
+    ret = _vector_subtype_new(self);
+    if (ret == NULL) {
+        return NULL;
+    }
+    for (i = 0; i < self->dim; ++i)
+        ret->coords[i] = self->coords[i] * (1 - t) + other_coords[i] * t;
+    return (PyObject *)ret;
+}
+
+static PyObject *
+vector_smoothstep(pgVector *self, PyObject *args)
+{
+    Py_ssize_t i;
+    PyObject *other;
+    pgVector *ret;
+    double t;
+    double other_coords[VECTOR_MAX_SIZE];
+
+    if (!PyArg_ParseTuple(args, "Od:Vector.smoothstep", &other, &t)) {
+        return NULL;
+    }
+    if (!PySequence_AsVectorCoords(other, other_coords, self->dim)) {
+        return RAISE(PyExc_TypeError, "Expected Vector as argument 1");
+    }
+
+    if (t <= 0.0) {
+        t = 0;
+    }
+    else if (t >= 1.0) {
+        t = 1;
+    }
+    else {
+        // See: https://en.wikipedia.org/wiki/Smoothstep for further
+        // explanation
+        t = t * t * (3.0f - 2.0f * t);
     }
 
     ret = _vector_subtype_new(self);
@@ -1904,8 +1930,7 @@ vector_getAttr_swizzle(pgVector *self, PyObject *attr_name)
     if (attr == NULL)
         goto internal_error;
     /* If we are not a swizzle, go straight to GenericGetAttr. */
-    if ((attr[0] != 'x') && (attr[0] != 'y') && (attr[0] != 'z') &&
-        (attr[0] != 'w')) {
+    if ((attr[0] != 'x') && (attr[0] != 'y') && (attr[0] != 'z')) {
         goto swizzle_failed;
     }
 
@@ -1925,8 +1950,6 @@ vector_getAttr_swizzle(pgVector *self, PyObject *attr_name)
             case 'z':
                 idx = attr[i] - 'x';
                 goto swizzle_idx;
-            case 'w':
-                idx = 3;
 
             swizzle_idx:
                 if (idx >= self->dim) {
@@ -2004,9 +2027,6 @@ vector_setAttr_swizzle(pgVector *self, PyObject *attr_name, PyObject *val)
             case 'y':
             case 'z':
                 idx = attr[i] - 'x';
-                break;
-            case 'w':
-                idx = 3;
                 break;
             default:
                 /* swizzle failed. attempt generic attribute setting */
@@ -2517,6 +2537,8 @@ static PyMethodDef vector2_methods[] = {
      DOC_MATH_VECTOR2_MOVETOWARDSIP},
     {"slerp", (PyCFunction)vector_slerp, METH_VARARGS, DOC_MATH_VECTOR2_SLERP},
     {"lerp", (PyCFunction)vector_lerp, METH_VARARGS, DOC_MATH_VECTOR2_LERP},
+    {"smoothstep", (PyCFunction)vector_smoothstep, METH_VARARGS,
+     DOC_MATH_VECTOR2_SMOOTHSTEP},
     {"normalize", (PyCFunction)vector_normalize, METH_NOARGS,
      DOC_MATH_VECTOR2_NORMALIZE},
     {"normalize_ip", (PyCFunction)vector_normalize_ip, METH_NOARGS,
@@ -3407,6 +3429,8 @@ static PyMethodDef vector3_methods[] = {
      DOC_MATH_VECTOR3_MOVETOWARDSIP},
     {"slerp", (PyCFunction)vector_slerp, METH_VARARGS, DOC_MATH_VECTOR3_SLERP},
     {"lerp", (PyCFunction)vector_lerp, METH_VARARGS, DOC_MATH_VECTOR3_LERP},
+    {"smoothstep", (PyCFunction)vector_smoothstep, METH_VARARGS,
+     DOC_MATH_VECTOR3_SMOOTHSTEP},
     {"normalize", (PyCFunction)vector_normalize, METH_NOARGS,
      DOC_MATH_VECTOR3_NORMALIZE},
     {"normalize_ip", (PyCFunction)vector_normalize_ip, METH_NOARGS,
@@ -4148,6 +4172,18 @@ vector_elementwise(pgVector *vec, PyObject *_null)
     return (PyObject *)proxy;
 }
 
+static inline double
+lerp(double a, double b, double v)
+{
+    return a + (b - a) * v;
+}
+
+static inline double
+invlerp(double a, double b, double v)
+{
+    return (v - a) / (b - a);
+}
+
 static PyObject *
 math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
@@ -4189,6 +4225,153 @@ math_clamp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
     return value;
 }
 
+#define RAISE_ARG_TYPE_ERROR(var)                                     \
+    if (PyErr_Occurred()) {                                           \
+        return RAISE(PyExc_TypeError,                                 \
+                     "The argument '" var "' must be a real number"); \
+    }
+
+static PyObject *
+math_invlerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (nargs != 3)
+        return RAISE(PyExc_TypeError,
+                     "invlerp requires exactly 3 numeric arguments");
+
+    double a = PyFloat_AsDouble(args[0]);
+    RAISE_ARG_TYPE_ERROR("a")
+    double b = PyFloat_AsDouble(args[1]);
+    RAISE_ARG_TYPE_ERROR("b")
+    double t = PyFloat_AsDouble(args[2]);
+    RAISE_ARG_TYPE_ERROR("value")
+
+    if (PyErr_Occurred())
+        return RAISE(PyExc_ValueError,
+                     "invalid argument values passed to invlerp, numbers "
+                     "might be too small or too big");
+
+    if (b - a == 0)
+        return RAISE(PyExc_ValueError,
+                     "the result of b - a needs to be different from zero");
+
+    return PyFloat_FromDouble(invlerp(a, b, t));
+}
+
+#
+
+static PyObject *
+math_remap(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (nargs != 5)
+        return RAISE(PyExc_TypeError,
+                     "remap requires exactly 5 numeric arguments");
+
+    PyObject *i_min = args[0];
+    PyObject *i_max = args[1];
+    PyObject *o_min = args[2];
+    PyObject *o_max = args[3];
+    PyObject *value = args[4];
+
+    double v = PyFloat_AsDouble(value);
+    RAISE_ARG_TYPE_ERROR("value")
+    double a = PyFloat_AsDouble(i_min);
+    RAISE_ARG_TYPE_ERROR("i_min")
+    double b = PyFloat_AsDouble(i_max);
+    RAISE_ARG_TYPE_ERROR("i_max")
+    double c = PyFloat_AsDouble(o_min);
+    RAISE_ARG_TYPE_ERROR("o_min")
+    double d = PyFloat_AsDouble(o_max);
+    RAISE_ARG_TYPE_ERROR("o_max")
+
+    if (b - a == 0)
+        return RAISE(
+            PyExc_ValueError,
+            "the result of i_max - i_min needs to be different from zero");
+
+    return PyFloat_FromDouble(lerp(c, d, invlerp(a, b, v)));
+}
+
+static PyObject *
+math_lerp(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (nargs != 3 && nargs != 4)
+        return RAISE(PyExc_TypeError, "lerp requires 3 or 4 arguments");
+
+    PyObject *min = args[0];
+    PyObject *max = args[1];
+    PyObject *value = args[2];
+
+    if (PyNumber_Check(args[2]) != 1) {
+        return RAISE(PyExc_TypeError,
+                     "lerp requires the interpolation amount to be number");
+    }
+
+    double t = PyFloat_AsDouble(value);
+
+    if (nargs == 4 && !PyObject_IsTrue(args[3])) {
+        ;  // pass if do_clamp is false
+    }
+    else {
+        if (t < 0)
+            t = 0.0;
+        else if (t > 1)
+            t = 1.0;
+    }
+
+    if (PyNumber_Check(min) && PyNumber_Check(max)) {
+        return PyFloat_FromDouble(PyFloat_AsDouble(min) * (1 - t) +
+                                  PyFloat_AsDouble(max) * t);
+    }
+    else {
+        return RAISE(
+            PyExc_TypeError,
+            "math.lerp requires all the arguments to be numbers. To lerp "
+            "between two vectors, please use the Vector class methods.");
+    }
+}
+
+static PyObject *
+math_smoothstep(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (nargs != 3)
+        return RAISE(PyExc_TypeError, "smoothstep requires 3 arguments");
+
+    PyObject *min = args[0];
+    PyObject *max = args[1];
+    PyObject *value = args[2];
+
+    if (PyNumber_Check(args[2]) != 1) {
+        return RAISE(
+            PyExc_TypeError,
+            "smoothstep requires the interpolation amount to be number");
+    }
+
+    double t = PyFloat_AsDouble(value);
+    if (t <= 0.0) {
+        t = 0;
+    }
+    else if (t >= 1.0) {
+        t = 1;
+    }
+    else {
+        // See: https://en.wikipedia.org/wiki/Smoothstep for further
+        // explanation
+        t = t * t * (3.0f - (2.0f * t));
+    }
+
+    if (PyNumber_Check(min) && PyNumber_Check(max)) {
+        return PyFloat_FromDouble(PyFloat_AsDouble(min) * (1 - t) +
+                                  PyFloat_AsDouble(max) * t);
+    }
+    else {
+        return RAISE(
+            PyExc_TypeError,
+            "smoothstep requires all the arguments to be numbers. To "
+            "smoothstep "
+            "between two vectors, please use the Vector class methods.");
+    }
+}
+
 static PyObject *
 math_enable_swizzling(pgVector *self, PyObject *_null)
 {
@@ -4217,6 +4400,11 @@ math_disable_swizzling(pgVector *self, PyObject *_null)
 
 static PyMethodDef _math_methods[] = {
     {"clamp", (PyCFunction)math_clamp, METH_FASTCALL, DOC_MATH_CLAMP},
+    {"lerp", (PyCFunction)math_lerp, METH_FASTCALL, DOC_MATH_LERP},
+    {"invlerp", (PyCFunction)math_invlerp, METH_FASTCALL, DOC_MATH_INVLERP},
+    {"remap", (PyCFunction)math_remap, METH_FASTCALL, DOC_MATH_REMAP},
+    {"smoothstep", (PyCFunction)math_smoothstep, METH_FASTCALL,
+     DOC_MATH_SMOOTHSTEP},
     {"enable_swizzling", (PyCFunction)math_enable_swizzling, METH_NOARGS,
      "Deprecated, will be removed in a future version"},
     {"disable_swizzling", (PyCFunction)math_disable_swizzling, METH_NOARGS,
@@ -4251,8 +4439,7 @@ MODINIT_DEFINE(math)
     if ((PyType_Ready(&pgVector2_Type) < 0) ||
         (PyType_Ready(&pgVector3_Type) < 0) ||
         (PyType_Ready(&pgVectorIter_Type) < 0) ||
-        (PyType_Ready(&pgVectorElementwiseProxy_Type) < 0) /*||
-        (PyType_Ready(&pgVector4_Type) < 0)*/) {
+        (PyType_Ready(&pgVectorElementwiseProxy_Type) < 0)) {
         return NULL;
     }
 
@@ -4268,9 +4455,6 @@ MODINIT_DEFINE(math)
     Py_INCREF(&pgVector3_Type);
     Py_INCREF(&pgVectorIter_Type);
     Py_INCREF(&pgVectorElementwiseProxy_Type);
-    /*
-    Py_INCREF(&pgVector4_Type);
-    */
     if ((PyModule_AddObject(module, "Vector2", (PyObject *)&pgVector2_Type) !=
          0) ||
         (PyModule_AddObject(module, "Vector3", (PyObject *)&pgVector3_Type) !=
@@ -4279,9 +4463,7 @@ MODINIT_DEFINE(math)
                             (PyObject *)&pgVectorElementwiseProxy_Type) !=
          0) ||
         (PyModule_AddObject(module, "VectorIterator",
-                            (PyObject *)&pgVectorIter_Type) != 0) /*||
-(PyModule_AddObject(module, "Vector4", (PyObject *)&pgVector4_Type) !=
-0)*/) {
+                            (PyObject *)&pgVectorIter_Type) != 0)) {
         if (!PyObject_HasAttrString(module, "Vector2"))
             Py_DECREF(&pgVector2_Type);
         if (!PyObject_HasAttrString(module, "Vector3"))
@@ -4290,10 +4472,6 @@ MODINIT_DEFINE(math)
             Py_DECREF(&pgVectorElementwiseProxy_Type);
         if (!PyObject_HasAttrString(module, "VectorIterator"))
             Py_DECREF(&pgVectorIter_Type);
-        /*
-        if (!PyObject_HasAttrString(module, "Vector4"))
-            Py_DECREF(&pgVector4_Type);
-        */
         Py_DECREF(module);
         return NULL;
     }
@@ -4302,9 +4480,8 @@ MODINIT_DEFINE(math)
     c_api[0] = &pgVector2_Type;
     c_api[1] = &pgVector3_Type;
     /*
-    c_api[2] = &pgVector4_Type;
-    c_api[3] = pgVector_NEW;
-    c_api[4] = pgVectorCompatible_Check;
+    c_api[2] = pgVector_NEW;
+    c_api[3] = pgVectorCompatible_Check;
     */
     apiobj = encapsulate_api(c_api, "math");
     if (PyModule_AddObject(module, PYGAMEAPI_LOCAL_ENTRY, apiobj)) {

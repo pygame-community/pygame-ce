@@ -41,7 +41,7 @@ init(PyObject *self, PyObject *_null)
     if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
         if (SDL_InitSubSystem(SDL_INIT_JOYSTICK))
             return RAISE(pgExc_SDLError, SDL_GetError());
-        SDL_JoystickEventState(SDL_ENABLE);
+        PG_SetJoystickEventsEnabled(SDL_TRUE);
     }
     Py_RETURN_NONE;
 }
@@ -60,7 +60,7 @@ quit(PyObject *self, PyObject *_null)
     }
 
     if (SDL_WasInit(SDL_INIT_JOYSTICK)) {
-        SDL_JoystickEventState(SDL_ENABLE);
+        PG_SetJoystickEventsEnabled(SDL_TRUE);
         SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
     }
     Py_RETURN_NONE;
@@ -421,7 +421,7 @@ joy_get_ball(PyObject *self, PyObject *args)
     }
 
     SDL_JoystickGetBall(joy, _index, &dx, &dy);
-    return Py_BuildValue("(ii)", dx, dy);
+    return pg_tuple_couple_from_values_int(dx, dy);
 }
 
 static PyObject *
@@ -479,7 +479,7 @@ joy_get_hat(PyObject *self, PyObject *args)
         px = -1;
     }
 
-    return Py_BuildValue("(ii)", px, py);
+    return pg_tuple_couple_from_values_int(px, py);
 }
 
 static PyMethodDef joy_methods[] = {

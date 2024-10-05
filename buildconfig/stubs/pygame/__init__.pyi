@@ -22,7 +22,6 @@ from pygame import (
     surfarray as surfarray,
     transform as transform,
     scrap as scrap,
-    threads as threads,
     version as version,
     base as base,
     bufferproxy as bufferproxy,
@@ -37,6 +36,9 @@ from pygame import (
     sysfont as sysfont,
     _debug as _debug,
     system as system,
+    geometry as geometry,
+    window as window,
+    typing as typing,
 )
 
 from .rect import Rect as Rect, FRect as FRect
@@ -50,10 +52,12 @@ from .mask import Mask as Mask
 from ._debug import print_debug_info as print_debug_info
 from .event import Event as Event
 from .font import Font as Font
-from .mixer import Channel as Channel
+from .mixer import Sound as Sound, Channel as Channel
 from .time import Clock as Clock
 from .joystick import Joystick as Joystick
+from .window import Window as Window
 from .base import (
+    __version__ as __version__,
     BufferError as BufferError,
     HAVE_NEWBUF as HAVE_NEWBUF,
     error as error,
@@ -180,6 +184,9 @@ from .constants import (
     FINGERDOWN as FINGERDOWN,
     FINGERMOTION as FINGERMOTION,
     FINGERUP as FINGERUP,
+    FLASH_BRIEFLY as FLASH_BRIEFLY,
+    FLASH_CANCEL as FLASH_CANCEL,
+    FLASH_UNTIL_FOCUSED as FLASH_UNTIL_FOCUSED,
     FONT_CENTER as FONT_CENTER,
     FONT_LEFT as FONT_LEFT,
     FONT_RIGHT as FONT_RIGHT,
@@ -580,6 +587,7 @@ from .constants import (
     MULTIGESTURE as MULTIGESTURE,
     NOEVENT as NOEVENT,
     NOFRAME as NOFRAME,
+    NULL_VIDEODRIVER as NULL_VIDEODRIVER,
     NUMEVENTS as NUMEVENTS,
     OPENGL as OPENGL,
     OPENGLBLIT as OPENGLBLIT,

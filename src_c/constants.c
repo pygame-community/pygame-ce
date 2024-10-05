@@ -58,6 +58,9 @@
 #define ADD_STRING_CONST(x)                        \
     if (PyModule_AddStringConstant(module, #x, x)) \
     ADD_ERROR(#x)
+#define ADD_NAMED_STRING_CONST(x, y)               \
+    if (PyModule_AddStringConstant(module, #x, y)) \
+    ADD_ERROR(#x)
 
 static PyMethodDef _constant_methods[] = {{NULL}};
 
@@ -632,10 +635,22 @@ MODINIT_DEFINE(constants)
     DEC_CONSTS(FONT_RIGHT, 2);
 
     // https://github.com/pygame-community/pygame-ce/issues/1845
-    DEC_CONSTS(IS_CE, 1)
+    DEC_CONSTS(IS_CE, 1);
+
+    ADD_NAMED_STRING_CONST(NULL_VIDEODRIVER, "dummy");
 
     DEC_CONSTS(WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED);
     DEC_CONSTS(WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+
+#if SDL_VERSION_ATLEAST(2, 0, 16)
+    DEC_CONSTS(FLASH_CANCEL, SDL_FLASH_CANCEL);
+    DEC_CONSTS(FLASH_BRIEFLY, SDL_FLASH_BRIEFLY);
+    DEC_CONSTS(FLASH_UNTIL_FOCUSED, SDL_FLASH_UNTIL_FOCUSED);
+#else
+    DEC_CONSTS(FLASH_CANCEL, -1);
+    DEC_CONSTS(FLASH_BRIEFLY, -1);
+    DEC_CONSTS(FLASH_UNTIL_FOCUSED, -1);
+#endif
 
     if (PyModule_AddObject(module, "__all__", all_list)) {
         Py_DECREF(all_list);

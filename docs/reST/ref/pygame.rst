@@ -106,7 +106,7 @@ object instead of the module, which can be used to test for availability.
 .. function:: set_error
 
    | :sl:`set the current error message`
-   | :sg:`set_error(error_msg) -> None`
+   | :sg:`set_error(error_msg, /) -> None`
 
    SDL maintains an internal error message. This message will usually be
    given to you when :func:`pygame.error` is raised, so this function will
@@ -147,7 +147,7 @@ object instead of the module, which can be used to test for availability.
 .. function:: register_quit
 
    | :sl:`register a function to be called when pygame quits`
-   | :sg:`register_quit(callable) -> None`
+   | :sg:`register_quit(callable, /) -> None`
 
    When :func:`pygame.quit` is called, all registered quit functions are
    called. Pygame modules do this automatically when they are initializing, so
@@ -206,7 +206,7 @@ object instead of the module, which can be used to test for availability.
    .. ## pygame.encode_file_path ##
 
 .. function:: print_debug_info
-   
+
    | :sl:`retrieves useful information for debugging and issue-reporting purposes`
    | :sg:`print_debug_info(filename=None) -> None`
 
@@ -218,7 +218,7 @@ object instead of the module, which can be used to test for availability.
    .. note::
       If ``pygame.freetype`` has not been initialized with :func:`pygame.init` or :func:`pygame.freetype.init`,
       then the linked and compiled versions of FreeType will be "Unk" since this information is not
-      available before initialization. 
+      available before initialization.
 
    .. versionadded:: 2.1.4
 
@@ -288,12 +288,12 @@ check which version of pygame has been imported.
    package was built. If the identifier ends with a plus sign '+' then the
    package contains uncommitted changes. Please include this revision number
    in bug reports, especially for non-release pygame builds.
-   
-   Important note: pygame development has moved to github, this variable is 
+
+   Important note: pygame development has moved to github, this variable is
    obsolete now. As soon as development shifted to github, this variable started
-   returning an empty string ``""``. 
+   returning an empty string ``""``.
    It has always been returning an empty string since ``v1.9.5``.
-   
+
    .. versionchangedold:: 1.9.5
       Always returns an empty string ``""``.
 
@@ -401,7 +401,7 @@ available. Must be set before calling :func:`pygame.display.set_mode()`.
 This makes pygame use the SDL2 blitter for all alpha
 blending. The SDL2 blitter is sometimes faster than
 the default blitter but uses a different formula so
-the final colours may differ. Must be set before
+the final colors may differ. Must be set before
 :func:`pygame.init()` is called.
 
 |
@@ -546,4 +546,16 @@ before calling :func:`pygame.init()` or :func:`pygame.joystick.init()`.
 Useful for testing touch events on desktop platforms (e.g. with a trackpad)
 where this is set to 0 by default.
 
+|
 
+::
+
+ "SDL_WINDOWS_DPI_AWARENESS"
+ Set to "permonitorv2" on windows 10 (and later) to declare the pygame
+ window DPI aware and ignore the desktop scaling, "permonitor" for
+ windows 8.1 and later DPI awareness and "system" for windows Vista
+ and later DPI awareness (not per monitor). Finally set it to "unaware",
+ to have the pygame window scale with the desktop scaling.
+
+This hint only affects the windows platform, other platforms can control DPI awareness
+via a Window creation keyword parameter called "allow_high_dpi".

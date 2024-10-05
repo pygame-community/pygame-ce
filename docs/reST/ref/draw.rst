@@ -62,10 +62,10 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
          | if ``width > 0``, used for line thickness
          | if ``width < 0``, nothing will be drawn
          |
-      
+
       .. versionchangedold:: 2.1.1
-          Drawing rects with width now draws the width correctly inside the 
-          rect's area, rather than using an internal call to draw.lines(), 
+          Drawing rects with width now draws the width correctly inside the
+          rect's area, rather than using an internal call to draw.lines(),
           which had half the width spill outside the rect area.
 
    :param int border_radius: (optional) used for drawing rectangle with rounded corners.
@@ -112,10 +112,10 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
       tuple ``(RGB[A])``
    :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param points: a sequence of 3 or more (x, y) coordinates that make up the
-      vertices of the polygon, each *coordinate* in the sequence must be a
+      vertices of the polygon, each point in the sequence must be a
       tuple/list/:class:`pygame.math.Vector2` of 2 ints/floats,
       e.g. ``[(x1, y1), (x2, y2), (x3, y3)]``
-   :type points: tuple(coordinate) or list(coordinate)
+   :type points: tuple(point) or list(point)
    :param int width: (optional) used for line thickness or to indicate that
       the polygon is to be filled
 
@@ -205,6 +205,62 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    .. versionchangedold:: 2.0.0.dev8 Added support for drawing circle quadrants.
 
    .. ## pygame.draw.circle ##
+
+.. function:: aacircle
+
+   | :sl:`draw an antialiased circle`
+   | :sg:`aacircle(surface, color, center, radius) -> Rect`
+   | :sg:`aacircle(surface, color, center, radius, width=0, draw_top_right=None, draw_top_left=None, draw_bottom_left=None, draw_bottom_right=None) -> Rect`
+
+   Draws an antialiased circle on the given surface.
+   Uses Xiaolin Wu Circle Algorithm.
+   adapted from: https://cgg.mff.cuni.cz/~pepca/ref/WU.pdf
+
+   :param Surface surface: surface to draw on
+   :param color: color to draw with, the alpha value is optional if using a
+      tuple ``(RGB[A])``
+   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+   :param center: center point of the circle as a sequence of 2 ints/floats,
+      e.g. ``(x, y)``
+   :type center: tuple(int or float, int or float) or
+      list(int or float, int or float) or Vector2(int or float, int or float)
+   :param radius: radius of the circle, measured from the ``center`` parameter,
+      nothing will be drawn if the ``radius`` is less than 1
+   :type radius: int or float
+   :param int width: (optional) used for line thickness or to indicate that
+      the circle is to be filled
+
+         | if ``width == 0``, (default) fill the circle
+         | if ``width > 0``, used for line thickness
+         | if ``width < 0``, nothing will be drawn
+         |
+
+         .. note::
+            When using ``width`` values ``> 1``, the edge lines will only grow
+            inward.
+   :param bool draw_top_right: (optional) if this is set to True then the top right corner
+      of the circle will be drawn
+   :param bool draw_top_left: (optional) if this is set to True then the top left corner
+      of the circle will be drawn
+   :param bool draw_bottom_left: (optional) if this is set to True then the bottom left corner
+      of the circle will be drawn
+   :param bool draw_bottom_right: (optional) if this is set to True then the bottom right corner
+      of the circle will be drawn
+
+         | if any of the draw_circle_part is True then it will draw all circle parts that have the True
+         | value, otherwise it will draw the entire circle.
+
+   :returns: a rect bounding the changed pixels, if nothing is drawn the
+      bounding rect's position will be the ``center`` parameter value (float
+      values will be truncated) and its width and height will be 0
+   :rtype: Rect
+
+   :raises TypeError: if ``center`` is not a sequence of two numbers
+   :raises TypeError: if ``radius`` is not a number
+
+   .. versionadded:: 2.5.0
+
+   .. ## pygame.draw.aacircle ##
 
 .. function:: ellipse
 
@@ -364,14 +420,14 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param bool closed: if ``True`` an additional line segment is drawn between
       the first and last points in the ``points`` sequence
    :param points: a sequence of 2 or more (x, y) coordinates, where each
-      *coordinate* in the sequence must be a
+      point in the sequence must be a
       tuple/list/:class:`pygame.math.Vector2` of 2 ints/floats and adjacent
-      coordinates will be connected by a line segment, e.g. for the
+      points will be connected by a line segment, e.g. for the
       points ``[(x1, y1), (x2, y2), (x3, y3)]`` a line segment will be drawn
       from ``(x1, y1)`` to ``(x2, y2)`` and from ``(x2, y2)`` to ``(x3, y3)``,
       additionally if the ``closed`` parameter is ``True`` another line segment
       will be drawn from ``(x3, y3)`` to ``(x1, y1)``
-   :type points: tuple(coordinate) or list(coordinate)
+   :type points: tuple(point) or list(point)
    :param int width: (optional) used for line thickness
 
          | if width >= 1, used for line thickness (default is 1)
@@ -400,73 +456,10 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    | :sl:`draw a straight antialiased line`
    | :sg:`aaline(surface, color, start_pos, end_pos) -> Rect`
-   | :sg:`aaline(surface, color, start_pos, end_pos, blend=1) -> Rect`
+     :sg:`aaline(surface, color, start_pos, end_pos, width=1) -> Rect`
 
-   Draws a straight antialiased line on the given surface.
-
-   The line has a thickness of one pixel and the endpoints have a height and
-   width of one pixel each.
-
-   The way a line and its endpoints are drawn:
-      If both endpoints are equal, only a single pixel is drawn (after
-      rounding floats to nearest integer).
-
-      Otherwise if the line is not steep (i.e. if the length along the x-axis
-      is greater than the height along the y-axis):
-
-         For each endpoint:
-
-            If ``x``, the endpoint's x-coordinate, is a whole number find
-            which pixels would be covered by it and draw them.
-
-            Otherwise:
-
-               Calculate the position of the nearest point with a whole number
-               for its x-coordinate, when extending the line past the
-               endpoint.
-
-               Find which pixels would be covered and how much by that point.
-
-               If the endpoint is the left one, multiply the coverage by (1 -
-               the decimal part of ``x``).
-
-               Otherwise multiply the coverage by the decimal part of ``x``.
-
-               Then draw those pixels.
-
-               *e.g.:*
-                  | The left endpoint of the line ``((1, 1.3), (5, 3))`` would
-                    cover 70% of the pixel ``(1, 1)`` and 30% of the pixel
-                    ``(1, 2)`` while the right one would cover 100% of the
-                    pixel ``(5, 3)``.
-                  | The left endpoint of the line ``((1.2, 1.4), (4.6, 3.1))``
-                    would cover 56% *(i.e. 0.8 * 70%)* of the pixel ``(1, 1)``
-                    and 24% *(i.e. 0.8 * 30%)* of the pixel ``(1, 2)`` while
-                    the right one would cover 42% *(i.e. 0.6 * 70%)* of the
-                    pixel ``(5, 3)`` and 18% *(i.e. 0.6 * 30%)* of the pixel
-                    ``(5, 4)`` while the right
-
-         Then for each point between the endpoints, along the line, whose
-         x-coordinate is a whole number:
-
-            Find which pixels would be covered and how much by that point and
-            draw them.
-
-            *e.g.:*
-               | The points along the line ``((1, 1), (4, 2.5))`` would be
-                 ``(2, 1.5)`` and ``(3, 2)`` and would cover 50% of the pixel
-                 ``(2, 1)``, 50% of the pixel ``(2, 2)`` and 100% of the pixel
-                 ``(3, 2)``.
-               | The points along the line ``((1.2, 1.4), (4.6, 3.1))`` would
-                 be ``(2, 1.8)`` (covering 20% of the pixel ``(2, 1)`` and 80%
-                 of the pixel ``(2, 2)``), ``(3, 2.3)`` (covering 70% of the
-                 pixel ``(3, 2)`` and 30% of the pixel ``(3, 3)``) and ``(4,
-                 2.8)`` (covering 20% of the pixel ``(2, 1)`` and 80% of the
-                 pixel ``(2, 2)``)
-
-      Otherwise do the same for steep lines as for non-steep lines except
-      along the y-axis instead of the x-axis (using ``y`` instead of ``x``,
-      top instead of left and bottom instead of right).
+   Draws a straight antialiased line on the given surface. There are no endcaps.
+   For thick lines the ends are squared off.
 
    .. note::
       Regarding float values for coordinates, a point with coordinate
@@ -488,8 +481,11 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param end_pos: end position of the line, (x, y)
    :type end_pos: tuple(int or float, int or float) or
       list(int or float, int or float) or Vector2(int or float, int or float)
-   :param int blend: (optional) (deprecated) if non-zero (default) the line will be blended
-      with the surface's existing pixel shades, otherwise it will overwrite them
+   :param int width: (optional) used for line thickness
+
+         | if width >= 1, used for line thickness (default is 1)
+         | if width < 1, nothing will be drawn
+         |
 
    :returns: a rect bounding the changed pixels, if nothing is drawn the
       bounding rect's position will be the ``start_pos`` parameter value (float
@@ -500,6 +496,9 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
       two numbers
 
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
+   .. versionchanged:: 2.4.0 Removed deprecated 'blend' argument
+   .. versionchanged:: 2.5.0 ``blend`` argument readded for backcompat, but will always raise a deprecation exception when used
+   .. versionchanged:: 2.5.2 Added line width
 
    .. ## pygame.draw.aaline ##
 
@@ -507,7 +506,6 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    | :sl:`draw multiple contiguous straight antialiased line segments`
    | :sg:`aalines(surface, color, closed, points) -> Rect`
-   | :sg:`aalines(surface, color, closed, points, blend=1) -> Rect`
 
    Draws a sequence of contiguous straight antialiased lines on the given
    surface.
@@ -519,17 +517,14 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param bool closed: if ``True`` an additional line segment is drawn between
       the first and last points in the ``points`` sequence
    :param points: a sequence of 2 or more (x, y) coordinates, where each
-      *coordinate* in the sequence must be a
+      point in the sequence must be a
       tuple/list/:class:`pygame.math.Vector2` of 2 ints/floats and adjacent
-      coordinates will be connected by a line segment, e.g. for the
+      points will be connected by a line segment, e.g. for the
       points ``[(x1, y1), (x2, y2), (x3, y3)]`` a line segment will be drawn
       from ``(x1, y1)`` to ``(x2, y2)`` and from ``(x2, y2)`` to ``(x3, y3)``,
       additionally if the ``closed`` parameter is ``True`` another line segment
       will be drawn from ``(x3, y3)`` to ``(x1, y1)``
-   :type points: tuple(coordinate) or list(coordinate)
-   :param int blend: (optional) (deprecated) if non-zero (default) each line will be blended
-      with the surface's existing pixel shades, otherwise the pixels will be
-      overwritten
+   :type points: tuple(point) or list(point)
 
    :returns: a rect bounding the changed pixels, if nothing is drawn the
       bounding rect's position will be the position of the first point in the
@@ -542,6 +537,8 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
       contain number pairs
 
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
+   .. versionchanged:: 2.4.0 Removed deprecated ``blend`` argument
+   .. versionchanged:: 2.5.0 ``blend`` argument readded for backcompat, but will always raise a deprecation exception when used
 
    .. ## pygame.draw.aalines ##
 
@@ -553,4 +550,3 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    Example code for draw module.
 
 .. literalinclude:: code_examples/draw_module_example.py
-
