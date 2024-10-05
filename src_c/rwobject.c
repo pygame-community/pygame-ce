@@ -342,7 +342,7 @@ _pg_rw_size(SDL_RWops *context)
 
     /* Return to original position.
      */
-    tmp = PyObject_CallFunctionObjArgs(helper->seek, pos, NULL);
+    tmp = PyObject_CallOneArg(helper->seek, pos);
     if (!tmp) {
         PyErr_Print();
         goto end;

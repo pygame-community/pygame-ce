@@ -11,6 +11,6 @@ tar xjf ${ALSA}.tar.bz2
 cd ${ALSA}
 
 # alsa prefers /usr prefix as a default, so we explicitly override it
-./configure $PG_BASE_CONFIGURE_FLAGS --with-configdir=$PG_DEP_PREFIX/share/alsa 
+./configure $PG_BASE_CONFIGURE_FLAGS --with-configdir=$PG_DEP_PREFIX/share/alsa
 make
 make install
