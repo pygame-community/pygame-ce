@@ -15,7 +15,7 @@
 #define DOC_TRANSFORM_BOXBLUR "box_blur(surface, radius, repeat_edge_pixels=True, dest_surface=None) -> Surface\nblur a surface using box blur"
 #define DOC_TRANSFORM_GAUSSIANBLUR "gaussian_blur(surface, radius, repeat_edge_pixels=True, dest_surface=None) -> Surface\nblur a surface using gaussian blur"
 #define DOC_TRANSFORM_AVERAGESURFACES "average_surfaces(surfaces, dest_surface=None, palette_colors=1) -> Surface\nfind the average surface from many surfaces."
-#define DOC_TRANSFORM_AVERAGECOLOR "average_color(surface, rect=None, consider_alpha=False) -> Color\nfinds the average color of a surface"
+#define DOC_TRANSFORM_AVERAGECOLOR "average_color(surface, rect=None, consider_alpha=False) -> tuple\nfinds the average color of a surface"
 #define DOC_TRANSFORM_INVERT "invert(surface, dest_surface=None) -> Surface\ninverts the RGB elements of a surface"
 #define DOC_TRANSFORM_GRAYSCALE "grayscale(surface, dest_surface=None) -> Surface\ngrayscale a surface"
 #define DOC_TRANSFORM_SOLIDOVERLAY "solid_overlay(surface, color, dest_surface=None, keep_alpha=False) -> Surface\nreplaces non transparent pixels with the provided color"

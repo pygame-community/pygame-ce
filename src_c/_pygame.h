@@ -33,6 +33,7 @@
 */
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#include "include/pythoncapi_compat.h"
 
 /* Ensure PyPy-specific code is not in use when running on GraalPython (PR
  * #2580) */
@@ -106,6 +107,10 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_SetJoystickEventsEnabled(enabled) \
     SDL_SetJoystickEventsEnabled(enabled)
 
+#define PG_FIND_VNUM_MAJOR(ver) SDL_VERSIONNUM_MAJOR(ver)
+#define PG_FIND_VNUM_MINOR(ver) SDL_VERSIONNUM_MINOR(ver)
+#define PG_FIND_VNUM_MICRO(ver) SDL_VERSIONNUM_MICRO(ver)
+
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
 #define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
@@ -166,6 +171,10 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_SetEventEnabled(type, enabled) SDL_EventState(type, enabled)
 #define PG_EventEnabled(type) SDL_EventState(type, SDL_QUERY)
 #define PG_SetJoystickEventsEnabled(enabled) SDL_JoystickEventState(enabled)
+
+#define PG_FIND_VNUM_MAJOR(ver) ver.major
+#define PG_FIND_VNUM_MINOR(ver) ver.minor
+#define PG_FIND_VNUM_MICRO(ver) ver.patch
 
 #if SDL_VERSION_ATLEAST(2, 0, 14)
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
@@ -458,19 +467,6 @@ typedef enum {
     (RAISE(PyExc_NotImplementedError, "Python built without thread support"))
 #endif /* ~WITH_THREAD */
 
-#define PyType_Init(x) (((x).ob_type) = &PyType_Type)
-
-/* Python macro for comparing to Py_None
- * Py_IsNone is naturally supported by
- * Python 3.10 or higher
- * so this macro can be removed after the minimum
- * supported
- * Python version reaches 3.10
- */
-#ifndef Py_IsNone
-#define Py_IsNone(x) (x == Py_None)
-#endif
-
 /* Update this function if new sequences are added to the fast sequence
  * type. */
 #ifndef pgSequenceFast_Check
@@ -490,7 +486,6 @@ struct pgEventObject {
  */
 struct pgSubSurface_Data {
     PyObject *owner;
-    int pixeloffset;
     int offsetx, offsety;
 };
 

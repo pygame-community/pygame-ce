@@ -44,10 +44,7 @@ pgSurface_Prep(pgSurfaceObject *surfobj)
 {
     struct pgSubSurface_Data *data = ((pgSurfaceObject *)surfobj)->subsurface;
     if (data != NULL) {
-        SDL_Surface *surf = pgSurface_AsSurface(surfobj);
-        SDL_Surface *owner = pgSurface_AsSurface(data->owner);
         pgSurface_LockBy((pgSurfaceObject *)data->owner, (PyObject *)surfobj);
-        surf->pixels = ((char *)owner->pixels) + data->pixeloffset;
     }
 }
 
@@ -115,20 +112,29 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
     pgSurfaceObject *surf = (pgSurfaceObject *)surfobj;
     int found = 0;
     int noerror = 1;
+    int weakref_getref_result;
 
     if (surf->locklist != NULL) {
         PyObject *item, *ref;
         Py_ssize_t len = PyList_Size(surf->locklist);
         while (--len >= 0 && !found) {
             item = PyList_GetItem(surf->locklist, len);
-            ref = PyWeakref_GetObject(item);
-            if (ref == lockobj) {
-                if (PySequence_DelItem(surf->locklist, len) == -1) {
-                    return 0;
+
+            weakref_getref_result = PyWeakref_GetRef(item, &ref);
+            if (weakref_getref_result == -1) {
+                noerror = 0;
+            }
+            if (weakref_getref_result == 1) {
+                if (ref == lockobj) {
+                    if (PySequence_DelItem(surf->locklist, len) == -1) {
+                        Py_DECREF(ref);
+                        return 0;
+                    }
+                    else {
+                        found = 1;
+                    }
                 }
-                else {
-                    found = 1;
-                }
+                Py_DECREF(ref);
             }
         }
 
@@ -136,14 +142,21 @@ pgSurface_UnlockBy(pgSurfaceObject *surfobj, PyObject *lockobj)
         len = PyList_Size(surf->locklist);
         while (--len >= 0) {
             item = PyList_GetItem(surf->locklist, len);
-            ref = PyWeakref_GetObject(item);
-            if (ref == Py_None) {
+
+            weakref_getref_result = PyWeakref_GetRef(item, &ref);
+            if (weakref_getref_result == -1) {
+                noerror = 0;
+            }
+            else if (weakref_getref_result == 0) {
                 if (PySequence_DelItem(surf->locklist, len) == -1) {
                     noerror = 0;
                 }
                 else {
                     found++;
                 }
+            }
+            else if (weakref_getref_result == 1) {
+                Py_DECREF(ref);
             }
         }
     }

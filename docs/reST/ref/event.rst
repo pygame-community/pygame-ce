@@ -51,7 +51,7 @@ their own new events with the :func:`pygame.event.Event()` function.
 The event type identifier is in between the values of ``NOEVENT`` and
 ``NUMEVENTS``. User defined events should have a value in the inclusive range
 of ``USEREVENT`` to ``NUMEVENTS - 1``. User defined events can get a custom
-event number with :func:`pygame.event.custom_type()`. 
+event number with :func:`pygame.event.custom_type()`.
 It is recommended all user events follow this system.
 
 Events support equality and inequality comparisons. Two events are equal if
@@ -159,7 +159,7 @@ pygame 2 also supports controller hot-plugging
 Also in this version, ``instance_id`` attributes were added to joystick events,
 and the ``joy`` attribute was deprecated.
 
-``KEYMAPCHANGED`` is a type of an event sent when keymap changes due to a 
+``KEYMAPCHANGED`` is a type of an event sent when keymap changes due to a
 system event such as an input language or keyboard layout change.
 
 ``CLIPBOARDUPDATE`` is an event sent when clipboard changes. This can still
@@ -170,7 +170,7 @@ not trigger this event.
 
 .. versionaddedold:: 2.0.0
 
-.. versionadded:: 2.1.3 ``KEYMAPCHANGED``, ``CLIPBOARDUPDATE``, 
+.. versionadded:: 2.1.3 ``KEYMAPCHANGED``, ``CLIPBOARDUPDATE``,
    ``RENDER_TARGETS_RESET``, ``RENDER_DEVICE_RESET`` and ``LOCALECHANGED``
 
 |
@@ -301,7 +301,7 @@ On Android, the following events can be generated
 
    Returns a single event from the queue. If the queue is empty this function
    will wait until one is created. From pygame 2.0.0, if a ``timeout`` argument
-   is given, the function will return an event of type ``pygame.NOEVENT`` 
+   is given, the function will return an event of type ``pygame.NOEVENT``
    if no events enter the queue in ``timeout`` milliseconds. The event is removed
    from the queue once it has been returned. While the program is waiting it will
    sleep in an idle state. This is important for programs that want to share the

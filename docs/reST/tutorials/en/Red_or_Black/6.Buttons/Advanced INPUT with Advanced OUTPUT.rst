@@ -185,8 +185,8 @@ In the case of button, input and output area for button must be **identical**. (
 
     import pygame, sys
     from pygame.locals import*
-    
-    maxHP = 10 
+
+    maxHP = 10
     white = (255,255,255)
     gray = (127,127,127)
     black = (0,0,0)
@@ -195,7 +195,7 @@ In the case of button, input and output area for button must be **identical**. (
     blue = (0,0,255)
     pygame.init()
     pygame.display.set_caption("Array buttons Project")
-    width = 640 
+    width = 640
     height = 480
     myScreen = pygame.display.set_mode((width, height))
     myTextFont = pygame.font.Font("HoonWhitecatR.ttf", 32)
@@ -203,19 +203,19 @@ In the case of button, input and output area for button must be **identical**. (
     myTextArea = myText.get_rect()
     myTextArea.center = (width/2, height/2)
     fpsClock = pygame.time.Clock()
-    
+
     def main():
         HP = 5
-        
+
         while True:
             myText = myTextFont.render((str(HP) + "/" + str(maxHP)), True, red, gray)
-        
+
             myScreen.fill(gray)
-    
+
             myScreen.blit(myText, myTextArea)
             drawHP(HP)
             drawButtons()
-    
+
             for event in pygame.event.get():
                 if event.type == QUIT:
                     pygame.quit()
@@ -234,28 +234,28 @@ In the case of button, input and output area for button must be **identical**. (
                             HP = HP + 1
                     elif pygame.Rect(325, 425, 45, 45).collidepoint(x, y):
                         if HP != 0:
-                            HP = HP - 1      
-        
+                            HP = HP - 1
+
             pygame.display.update()
             fpsClock.tick(60)
-    
+
     def drawHP(HP):
         r = int((height - 40) / maxHP)
-    
+
         pygame.draw.rect(myScreen, black, (20, 20, 20, 20 + ((maxHP - 0.5) * r)))
-    
+
         for i in range(maxHP):
             if HP >= (maxHP - i):
                 pygame.draw.rect(myScreen, red, (20, 20 + (i * r), 20, r))
             pygame.draw.rect(myScreen, white, (20, 20 + (i * r), 20, r), 1)
-    
+
         return
-    
+
     def drawButtons():
         r = 45
         r_margin = 10
         colors = [red, black]
-        
+
         num = 2
         margin = int((width - ((r * num) + (r_margin * (num - 1)))) / 2)
         for i in range(0, num):
@@ -263,6 +263,6 @@ In the case of button, input and output area for button must be **identical**. (
             up = height - r - 10
             pygame.draw.rect(myScreen, colors[i], (left, up, r, r))
             pygame.draw.rect(myScreen, gray, (left + 2, up + 2, r - 4, r - 4), 2)
-    
+
     if __name__ == '__main__':
         main()

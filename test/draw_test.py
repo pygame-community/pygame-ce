@@ -3646,6 +3646,60 @@ class DrawAALinesTest(AALinesMixin, DrawTestCase):
     class to add any draw.aalines specific tests to.
     """
 
+    def test_aalines__overlap(self):
+        """Ensures that two adjacent antialiased lines are not overlapping.
+
+        Draws two lines, and checks if 2 pixels, at shared point between those
+        two lines, are too bright.
+
+        See: https://github.com/pygame-community/pygame-ce/pull/2912
+        """
+        line_color = (150, 150, 150)
+        max_expected_colors = ((70, 70, 70), (100, 100, 100))
+        test_points = [[20.1, 25.4], [25.1, 25.6], [30.1, 25.8]]
+
+        surface = pygame.display.set_mode((50, 50))
+        self.draw_aalines(surface, line_color, False, test_points)
+
+        for i, y in enumerate((25, 26)):
+            check_color = tuple(surface.get_at((25, y)))
+            self.assertLess(
+                check_color,
+                max_expected_colors[i],
+                f"aalines are overlapping, pos={(25, y)}",
+            )
+
+    def test_aalines__steep_missing_pixel(self):
+        """Ensures there are no missing pixels between steep and non-steep lines.
+
+        Draws two adjacent lines: first is not steep and second is, then
+        checks if there is missing pixel at shared point between those two lines.
+
+        See: https://github.com/pygame-community/pygame-ce/pull/2912
+        """
+        line_color = (150, 150, 150)
+        min_expected_color = (40, 40, 40)
+        test_points = [[11.2, 8.5], [17.1, 25.7], [35.8, 25.5], [47.6, 41.8]]
+
+        surface = pygame.display.set_mode((50, 50))
+        self.draw_aalines(surface, line_color, False, test_points)
+
+        # First line is steep, and other line is not steep
+        check_color = tuple(surface.get_at((17, 26)))
+        self.assertGreater(
+            check_color,
+            min_expected_color,
+            "Pixel is missing between steep and non-steep line, pos=(17, 26)",
+        )
+
+        # First line is not steep, and other line is steep
+        check_color = tuple(surface.get_at((36, 25)))
+        self.assertGreater(
+            check_color,
+            min_expected_color,
+            "Pixel is missing between non-steep and steep line, pos=(26, 25)",
+        )
+
 
 ### Polygon Testing ###########################################################
 
@@ -7175,6 +7229,51 @@ class DrawModuleTest(unittest.TestCase):
 
             with self.assertRaises(TypeError):
                 draw.polygon(surf, col, points, 0)
+
+    def test_aafunctions_depth_segfault(self):
+        """Ensure future commits don't break the segfault fixed by pull request
+        https://github.com/pygame-community/pygame-ce/pull/3008
+        """
+
+        pixels_to_check = [(160, 102), (499, 300), (320, 258), (192, 252)]
+        pixel_colors_8 = [
+            pygame.Color(0, 182, 0, 255),
+            pygame.Color(0, 0, 170, 255),
+            pygame.Color(255, 0, 0, 255),
+            pygame.Color(255, 0, 0, 255),
+        ]
+
+        pixel_colors_16 = [
+            pygame.Color(0, 178, 0, 255),
+            pygame.Color(0, 0, 213, 255),
+            pygame.Color(246, 0, 0, 255),
+            pygame.Color(222, 0, 0, 255),
+        ]
+
+        pixel_colors_24_32 = [
+            pygame.Color(0, 178, 0, 255),
+            pygame.Color(0, 0, 209, 255),
+            pygame.Color(247, 0, 0, 255),
+            pygame.Color(223, 0, 0, 255),
+        ]
+
+        for depth in (8, 16, 24, 32):
+            # all values must stay so to reproduce the segfault
+            surf = pygame.Surface(size=(512, 512), flags=0, depth=depth)
+
+            draw.aacircle(surf, pygame.Color("red"), (256, 256), 64)
+            draw.aaline(surf, pygame.Color("blue"), (256, 256), (500, 300))
+            draw.aalines(
+                surf, pygame.Color("green"), False, [(100, 100), (100, 500), (160, 100)]
+            )
+
+            for i, pixel in enumerate(pixels_to_check):
+                if depth == 8:
+                    self.assertEqual(surf.get_at(pixel), pixel_colors_8[i])
+                elif depth == 16:
+                    self.assertEqual(surf.get_at(pixel), pixel_colors_16[i])
+                else:
+                    self.assertEqual(surf.get_at(pixel), pixel_colors_24_32[i])
 
 
 ###############################################################################

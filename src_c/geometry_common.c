@@ -108,7 +108,7 @@ pgCircle_FromObject(PyObject *obj, pgCircleBase *out)
 
     if (PyCallable_Check(circleattr)) /*call if it's a method*/
     {
-        PyObject *circleresult = PyObject_CallObject(circleattr, NULL);
+        PyObject *circleresult = PyObject_CallNoArgs(circleattr);
         Py_DECREF(circleattr);
         if (!circleresult) {
             PyErr_Clear();
@@ -145,4 +145,12 @@ pgCircle_FromObjectFastcall(PyObject *const *args, Py_ssize_t nargs,
         default:
             return 0;
     }
+}
+
+static inline int
+double_compare(double a, double b)
+{
+    /* Uses both a fixed epsilon and an adaptive epsilon */
+    const double e = 1e-6;
+    return fabs(a - b) < e || fabs(a - b) <= e * MAX(fabs(a), fabs(b));
 }

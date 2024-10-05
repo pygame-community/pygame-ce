@@ -51,6 +51,8 @@ _ft_get_error(PyObject *, PyObject *);
 static PyObject *
 _ft_get_init(PyObject *, PyObject *);
 static PyObject *
+_ft_was_init(PyObject *, PyObject *);
+static PyObject *
 _ft_autoinit(PyObject *, PyObject *);
 static PyObject *
 _ft_get_cache_size(PyObject *, PyObject *);
@@ -495,7 +497,7 @@ static PyMethodDef _ft_methods[] = {
      DOC_FREETYPE_INIT},
     {"quit", (PyCFunction)_ft_quit, METH_NOARGS, DOC_FREETYPE_QUIT},
     {"get_init", _ft_get_init, METH_NOARGS, DOC_FREETYPE_GETINIT},
-    {"was_init", _ft_get_init, METH_NOARGS,
+    {"was_init", _ft_was_init, METH_NOARGS,
      DOC_FREETYPE_WASINIT},  // DEPRECATED
     {"get_error", _ft_get_error, METH_NOARGS, DOC_FREETYPE_GETERROR},
     {"get_version", (PyCFunction)_ft_get_version, METH_VARARGS | METH_KEYWORDS,
@@ -2228,6 +2230,19 @@ static PyObject *
 _ft_get_init(PyObject *self, PyObject *_null)
 {
     return PyBool_FromLong(FREETYPE_MOD_STATE(self)->freetype ? 1 : 0);
+}
+
+static PyObject *
+_ft_was_init(PyObject *self, PyObject *_null)
+{
+    if (PyErr_WarnEx(
+            PyExc_DeprecationWarning,
+            "was_init has been deprecated and may be removed in a future "
+            "version. Use the equivalent get_init function instead",
+            1) == -1) {
+        return NULL;
+    }
+    return _ft_get_init(self, _null);
 }
 
 static PyObject *

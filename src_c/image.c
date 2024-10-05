@@ -495,6 +495,8 @@ tobytes_surf_32bpp(SDL_Surface *surf, int flipped, int hascolorkey,
     }
 }
 
+#define PREMUL_PIXEL_ALPHA(pixel, alpha) (char)((((pixel) + 1) * (alpha)) >> 8)
+
 PyObject *
 image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
 {
@@ -965,15 +967,12 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                     for (w = 0; w < surf->w; ++w) {
                         color = *ptr++;
                         alpha = ((color & Amask) >> Ashift) << Aloss;
-                        data[0] =
-                            (char)((((color & Rmask) >> Rshift) << Rloss) *
-                                   alpha / 255);
-                        data[1] =
-                            (char)((((color & Gmask) >> Gshift) << Gloss) *
-                                   alpha / 255);
-                        data[2] =
-                            (char)((((color & Bmask) >> Bshift) << Bloss) *
-                                   alpha / 255);
+                        data[0] = PREMUL_PIXEL_ALPHA(
+                            ((color & Rmask) >> Rshift) << Rloss, alpha);
+                        data[1] = PREMUL_PIXEL_ALPHA(
+                            ((color & Gmask) >> Gshift) << Gloss, alpha);
+                        data[2] = PREMUL_PIXEL_ALPHA(
+                            ((color & Bmask) >> Bshift) << Bloss, alpha);
                         data[3] = (char)alpha;
                         data += 4;
                     }
@@ -992,15 +991,12 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
 #endif
                         ptr += 3;
                         alpha = ((color & Amask) >> Ashift) << Aloss;
-                        data[0] =
-                            (char)((((color & Rmask) >> Rshift) << Rloss) *
-                                   alpha / 255);
-                        data[1] =
-                            (char)((((color & Gmask) >> Gshift) << Gloss) *
-                                   alpha / 255);
-                        data[2] =
-                            (char)((((color & Bmask) >> Bshift) << Bloss) *
-                                   alpha / 255);
+                        data[0] = PREMUL_PIXEL_ALPHA(
+                            ((color & Rmask) >> Rshift) << Rloss, alpha);
+                        data[1] = PREMUL_PIXEL_ALPHA(
+                            ((color & Gmask) >> Gshift) << Gloss, alpha);
+                        data[2] = PREMUL_PIXEL_ALPHA(
+                            ((color & Bmask) >> Bshift) << Bloss, alpha);
                         data[3] = (char)alpha;
                         data += 4;
                     }
@@ -1018,15 +1014,12 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                             data[0] = data[1] = data[2] = 0;
                         }
                         else {
-                            data[0] =
-                                (char)((((color & Rmask) >> Rshift) << Rloss) *
-                                       alpha / 255);
-                            data[1] =
-                                (char)((((color & Gmask) >> Gshift) << Gloss) *
-                                       alpha / 255);
-                            data[2] =
-                                (char)((((color & Bmask) >> Bshift) << Bloss) *
-                                       alpha / 255);
+                            data[0] = PREMUL_PIXEL_ALPHA(
+                                ((color & Rmask) >> Rshift) << Rloss, alpha);
+                            data[1] = PREMUL_PIXEL_ALPHA(
+                                ((color & Gmask) >> Gshift) << Gloss, alpha);
+                            data[2] = PREMUL_PIXEL_ALPHA(
+                                ((color & Bmask) >> Bshift) << Bloss, alpha);
                         }
                         data[3] = (char)alpha;
                         data += 4;
@@ -1047,15 +1040,12 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                     for (w = 0; w < surf->w; ++w) {
                         color = *ptr++;
                         alpha = ((color & Amask) >> Ashift) << Aloss;
-                        data[1] =
-                            (char)((((color & Rmask) >> Rshift) << Rloss) *
-                                   alpha / 255);
-                        data[2] =
-                            (char)((((color & Gmask) >> Gshift) << Gloss) *
-                                   alpha / 255);
-                        data[3] =
-                            (char)((((color & Bmask) >> Bshift) << Bloss) *
-                                   alpha / 255);
+                        data[1] = PREMUL_PIXEL_ALPHA(
+                            ((color & Rmask) >> Rshift) << Rloss, alpha);
+                        data[2] = PREMUL_PIXEL_ALPHA(
+                            ((color & Gmask) >> Gshift) << Gloss, alpha);
+                        data[3] = PREMUL_PIXEL_ALPHA(
+                            ((color & Bmask) >> Bshift) << Bloss, alpha);
                         data[0] = (char)alpha;
                         data += 4;
                     }
@@ -1074,15 +1064,12 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
 #endif
                         ptr += 3;
                         alpha = ((color & Amask) >> Ashift) << Aloss;
-                        data[1] =
-                            (char)((((color & Rmask) >> Rshift) << Rloss) *
-                                   alpha / 255);
-                        data[2] =
-                            (char)((((color & Gmask) >> Gshift) << Gloss) *
-                                   alpha / 255);
-                        data[3] =
-                            (char)((((color & Bmask) >> Bshift) << Bloss) *
-                                   alpha / 255);
+                        data[1] = PREMUL_PIXEL_ALPHA(
+                            ((color & Rmask) >> Rshift) << Rloss, alpha);
+                        data[2] = PREMUL_PIXEL_ALPHA(
+                            ((color & Gmask) >> Gshift) << Gloss, alpha);
+                        data[3] = PREMUL_PIXEL_ALPHA(
+                            ((color & Bmask) >> Bshift) << Bloss, alpha);
                         data[0] = (char)alpha;
                         data += 4;
                     }
@@ -1100,15 +1087,12 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                             data[1] = data[2] = data[3] = 0;
                         }
                         else {
-                            data[1] =
-                                (char)((((color & Rmask) >> Rshift) << Rloss) *
-                                       alpha / 255);
-                            data[2] =
-                                (char)((((color & Gmask) >> Gshift) << Gloss) *
-                                       alpha / 255);
-                            data[3] =
-                                (char)((((color & Bmask) >> Bshift) << Bloss) *
-                                       alpha / 255);
+                            data[1] = PREMUL_PIXEL_ALPHA(
+                                ((color & Rmask) >> Rshift) << Rloss, alpha);
+                            data[2] = PREMUL_PIXEL_ALPHA(
+                                ((color & Gmask) >> Gshift) << Gloss, alpha);
+                            data[3] = PREMUL_PIXEL_ALPHA(
+                                ((color & Bmask) >> Bshift) << Bloss, alpha);
                         }
                         data[0] = (char)alpha;
                         data += 4;
