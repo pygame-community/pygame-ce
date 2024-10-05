@@ -63,37 +63,48 @@ mouse_set_pos(PyObject *self, PyObject *args)
 }
 
 static PyObject *
-mouse_get_pos(PyObject *self, PyObject *_null)
+mouse_get_pos(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int x, y;
+    int desktop = 0;
 
+    static char *kwids[] = {"desktop", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", kwids, &desktop))
+        return NULL;
     VIDEO_INIT_CHECK();
-    SDL_GetMouseState(&x, &y);
 
-    {
-        SDL_Window *sdlWindow = pg_GetDefaultWindow();
-        SDL_Renderer *sdlRenderer = SDL_GetRenderer(sdlWindow);
-        if (sdlRenderer != NULL) {
-            SDL_Rect vprect;
-            float scalex, scaley;
+    if (desktop == 1) {
+        SDL_GetGlobalMouseState(&x, &y);
+    }
+    else {
+        SDL_GetMouseState(&x, &y);
 
-            SDL_RenderGetScale(sdlRenderer, &scalex, &scaley);
-            SDL_RenderGetViewport(sdlRenderer, &vprect);
+        {
+            SDL_Window *sdlWindow = pg_GetDefaultWindow();
+            SDL_Renderer *sdlRenderer = SDL_GetRenderer(sdlWindow);
+            if (sdlRenderer != NULL) {
+                SDL_Rect vprect;
+                float scalex, scaley;
 
-            x = (int)(x / scalex);
-            y = (int)(y / scaley);
+                SDL_RenderGetScale(sdlRenderer, &scalex, &scaley);
+                SDL_RenderGetViewport(sdlRenderer, &vprect);
 
-            x -= vprect.x;
-            y -= vprect.y;
+                x = (int)(x / scalex);
+                y = (int)(y / scaley);
 
-            if (x < 0)
-                x = 0;
-            if (x >= vprect.w)
-                x = vprect.w - 1;
-            if (y < 0)
-                y = 0;
-            if (y >= vprect.h)
-                y = vprect.h - 1;
+                x -= vprect.x;
+                y -= vprect.y;
+
+                if (x < 0)
+                    x = 0;
+                if (x >= vprect.w)
+                    x = vprect.w - 1;
+                if (y < 0)
+                    y = 0;
+                if (y >= vprect.h)
+                    y = vprect.h - 1;
+            }
         }
     }
 
@@ -130,10 +141,12 @@ mouse_get_pressed(PyObject *self, PyObject *args, PyObject *kwargs)
     PyObject *tuple;
     int state;
     int num_buttons = 3;
+    int desktop = 0;
 
-    static char *kwids[] = {"num_buttons", NULL};
+    static char *kwids[] = {"num_buttons", "desktop", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|i", kwids, &num_buttons))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ip", kwids, &num_buttons,
+                                     &desktop))
         return NULL;
     VIDEO_INIT_CHECK();
 
@@ -141,7 +154,9 @@ mouse_get_pressed(PyObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(PyExc_ValueError,
                      "Number of buttons needs to be 3 or 5.");
 
-    state = SDL_GetMouseState(NULL, NULL);
+    state = desktop ? SDL_GetGlobalMouseState(NULL, NULL)
+                    : SDL_GetMouseState(NULL, NULL);
+
     if (!(tuple = PyTuple_New(num_buttons)))
         return NULL;
 
@@ -530,7 +545,8 @@ mouse_set_relative_mode(PyObject *self, PyObject *arg)
 
 static PyMethodDef _mouse_methods[] = {
     {"set_pos", mouse_set_pos, METH_VARARGS, DOC_MOUSE_SETPOS},
-    {"get_pos", (PyCFunction)mouse_get_pos, METH_NOARGS, DOC_MOUSE_GETPOS},
+    {"get_pos", (PyCFunction)mouse_get_pos, METH_VARARGS | METH_KEYWORDS,
+     DOC_MOUSE_GETPOS},
     {"get_rel", (PyCFunction)mouse_get_rel, METH_NOARGS, DOC_MOUSE_GETREL},
     {"get_pressed", (PyCFunction)mouse_get_pressed,
      METH_VARARGS | METH_KEYWORDS, DOC_MOUSE_GETPRESSED},

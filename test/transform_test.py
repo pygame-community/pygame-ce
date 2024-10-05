@@ -494,6 +494,38 @@ class TransformModuleTest(unittest.TestCase):
                             self.assertAlmostEqual(v1, v2, delta=1)
                         self.assertEqual(c_a, actual_color.a)
 
+    def test_solid_overlay(self):
+        test_surface = pygame.Surface((20, 20), pygame.SRCALPHA)
+        test_surface.fill((0, 0, 0, 0))
+        pygame.draw.rect(test_surface, (0, 0, 0), (10, 10, 10, 10))
+
+        surface = pygame.Surface((20, 20), pygame.SRCALPHA)
+        surface.fill((0, 0, 0, 0))
+        pygame.draw.rect(surface, (255, 0, 0), (10, 10, 10, 10))
+
+        surface = pygame.transform.solid_overlay(surface, (0, 0, 0))
+
+        for x in range(20):
+            for y in range(20):
+                self.assertEqual(surface.get_at((x, y)), test_surface.get_at((x, y)))
+
+        pygame.transform.solid_overlay(surface, (0, 0, 0), surface)
+
+        for x in range(20):
+            for y in range(20):
+                self.assertEqual(surface.get_at((x, y)), test_surface.get_at((x, y)))
+
+        test_surface.fill((0, 0, 0, 0))
+        pygame.draw.polygon(test_surface, (200, 100, 50), [(0, 0), (4, 4), (4, 2)])
+
+        surface.fill((0, 0, 0, 0))
+        pygame.draw.polygon(surface, (255, 0, 0), [(0, 0), (4, 4), (4, 2)])
+        surface = pygame.transform.solid_overlay(surface, (200, 100, 50))
+
+        for x in range(20):
+            for y in range(20):
+                self.assertEqual(surface.get_at((x, y)), test_surface.get_at((x, y)))
+
     def test_grayscale_simd_assumptions(self):
         # The grayscale SIMD algorithm relies on the destination surface pitch
         # being exactly width * 4 (4 bytes per pixel), for maximum speed.
