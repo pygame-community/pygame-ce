@@ -14,7 +14,18 @@ __all__ = [
 
 import sys
 from abc import abstractmethod
-from typing import IO, Callable, Tuple, Union, TypeVar, Protocol
+from typing import (
+    IO,
+    Callable,
+    Tuple,
+    Dict,
+    Union,
+    Optional,
+    TypeVar,
+    Protocol,
+    Any,
+    Iterable,
+)
 
 if sys.version_info >= (3, 9):
     from os import PathLike as _PathProtocol
@@ -36,13 +47,14 @@ _T_co = TypeVar("_T_co", covariant=True)
 
 class SequenceLike(Protocol[_T_co]):
     """
-    Variant of the standard `Sequence` ABC that only requires `__getitem__` and `__len__`.
+    Variant of the standard `Sequence` ABC that only requires `__getitem__`.
     """
 
     @abstractmethod
     def __getitem__(self, index: int, /) -> _T_co: ...
-    @abstractmethod
-    def __len__(self) -> int: ...
+
+
+IterableLike = Union[SequenceLike[_T_co], Iterable[_T_co]]
 
 
 # Modify typehints when it is possible to annotate sizes
@@ -66,5 +78,26 @@ class _HasRectAttribute(Protocol):
 RectLike = Union[SequenceLike[float], SequenceLike[Point], _HasRectAttribute]
 
 
+class EventLike(Protocol):
+    type: int
+
+    def __init__(self, dict: dict[str, Any] | None, **kwargs: Any) -> None: ...
+
+    @property
+    def dict(self) -> Dict[str, Any]: ...
+
+
 # cleanup namespace
-del sys, abstractmethod, IO, Callable, Tuple, Union, TypeVar, Protocol
+del (
+    sys,
+    abstractmethod,
+    IO,
+    Callable,
+    Tuple,
+    Dict,
+    Union,
+    Optional,
+    TypeVar,
+    Protocol,
+    Any,
+)
