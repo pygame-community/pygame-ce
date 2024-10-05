@@ -295,7 +295,7 @@ Instead, always begin with the original image and scale to the desired size.)
    Surface. This destination surface must have the same dimensions (width, height) and
    depth and format as the source Surface.
 
-   .. note:: A higher blur radius will be smoother but will be slower. The default 
+   .. note:: A higher blur radius will be smoother but will be slower. The default
       gaussian blur will be more precise but box blur is many times faster, which
       is preferred for real-time effects. Using real-time bloom on very big surfaces
       is generally not advised, caching is preferred.
