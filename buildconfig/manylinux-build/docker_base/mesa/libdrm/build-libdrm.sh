@@ -6,7 +6,7 @@ cd $(dirname `readlink -f "$0"`)
 # The drm already available on manylinux docker images is too old for mesa, so
 # we need to compile the latest from source
 
-DRM_VER="libdrm-2.4.120"
+DRM_VER="libdrm-2.4.123"
 DRM="drm-$DRM_VER"
 
 curl -sL --retry 10 https://gitlab.freedesktop.org/mesa/drm/-/archive/$DRM_VER/$DRM.tar.gz > $DRM.tar.gz
