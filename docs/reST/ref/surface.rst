@@ -336,7 +336,7 @@
 
       .. versionaddedold:: 1.9
 
-      .. versionchanged:: 2.5.1 Add repeating scroll and allow erasing pixels
+      .. versionchanged:: 2.5.2 Add repeating scroll and allow erasing pixels
 
       .. ## Surface.scroll ##
 
