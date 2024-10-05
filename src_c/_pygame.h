@@ -107,6 +107,10 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_SetJoystickEventsEnabled(enabled) \
     SDL_SetJoystickEventsEnabled(enabled)
 
+#define PG_FIND_VNUM_MAJOR(ver) SDL_VERSIONNUM_MAJOR(ver)
+#define PG_FIND_VNUM_MINOR(ver) SDL_VERSIONNUM_MINOR(ver)
+#define PG_FIND_VNUM_MICRO(ver) SDL_VERSIONNUM_MICRO(ver)
+
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
 #define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
@@ -167,6 +171,10 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_SetEventEnabled(type, enabled) SDL_EventState(type, enabled)
 #define PG_EventEnabled(type) SDL_EventState(type, SDL_QUERY)
 #define PG_SetJoystickEventsEnabled(enabled) SDL_JoystickEventState(enabled)
+
+#define PG_FIND_VNUM_MAJOR(ver) ver.major
+#define PG_FIND_VNUM_MINOR(ver) ver.minor
+#define PG_FIND_VNUM_MICRO(ver) ver.patch
 
 #if SDL_VERSION_ATLEAST(2, 0, 14)
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
@@ -478,7 +486,6 @@ struct pgEventObject {
  */
 struct pgSubSurface_Data {
     PyObject *owner;
-    int pixeloffset;
     int offsetx, offsety;
 };
 

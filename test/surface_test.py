@@ -998,8 +998,8 @@ class TestSurfaceBlit(unittest.TestCase):
         self.dst_surface = pygame.Surface((64, 64), 32)
         self.dst_surface.fill(pygame.Color(0, 0, 0))
 
-    def test_blit_overflow_coord(self):
-        """Full coverage w/ overflow, specified with Coordinate"""
+    def test_blit_overflow_point(self):
+        """Full coverage w/ overflow, specified with Point"""
         result = self.dst_surface.blit(self.src_surface, (0, 0))
         self.assertIsInstance(result, pygame.Rect)
         self.assertEqual(result.size, (64, 64))

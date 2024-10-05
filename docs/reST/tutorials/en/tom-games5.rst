@@ -85,7 +85,7 @@ will be set back to "still", and the ``movepos`` attribute will be set back to [
 
 5.1.1. Diversion 3: Pygame events
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
+
 So how do we know when the player is pushing keys down, and then releasing them? With the Pygame event queue system of course! It's a
 really easy system to use and understand, so this shouldn't take long :) You've already seen the event queue in action in the basic
 Pygame program, where it was used to check if the user was quitting the application. The code for moving the bat is about as simple

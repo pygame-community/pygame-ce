@@ -107,7 +107,7 @@ _get_buffer_from_dict(PyObject *dict, Py_buffer *view_p, int flags)
         PyObject *py_rval;
 
         Py_INCREF(py_callback);
-        py_rval = PyObject_CallFunctionObjArgs(py_callback, obj, NULL);
+        py_rval = PyObject_CallOneArg(py_callback, obj);
         Py_DECREF(py_callback);
         if (!py_rval) {
             pgBuffer_Release(pg_dict_view_p);
@@ -153,7 +153,7 @@ _release_buffer_from_dict(Py_buffer *view_p)
         PyObject *py_rval;
 
         Py_INCREF(py_callback);
-        py_rval = PyObject_CallFunctionObjArgs(py_callback, obj, NULL);
+        py_rval = PyObject_CallOneArg(py_callback, obj);
         if (py_rval) {
             Py_DECREF(py_rval);
         }

@@ -374,4 +374,3 @@ both look similar, this is the most flexible way to "see" the difference.)
 You should go through the code for the sprite module. While the code is a bit
 "tuned", it's got enough comments to help you follow along.  There's even a
 TODO section in the source if you feel like contributing.
-

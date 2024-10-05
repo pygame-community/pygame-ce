@@ -5,6 +5,26 @@
 # Then in the project root directory run `pre-commit install`
 
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+    - id: end-of-file-fixer
+      exclude: |
+          (?x)^(
+              ^docs/licenses/.*$
+              | ^.*\.svg$
+              | ^.*\.sfd$
+              | docs/LGPL.txt
+          )$
+    - id: trailing-whitespace
+      exclude: |
+          (?x)^(
+              ^docs/licenses/.*$
+              | ^.*\.svg$
+              | ^.*\.sfd$
+              | docs/LGPL.txt
+          )$
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.4.2
     hooks:  # See pyproject.toml for configuration options.

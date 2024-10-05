@@ -114,7 +114,7 @@ That was the explanation of the entire source code, which has 20 lines. It seems
     pygame.display.set_caption("Hello World Project") #7
     myScreen = pygame.display.set_mode((640, 480)) #8
     myTextFont = pygame.font.Font("HoonWhitecatR.ttf", 32) #9
-    myText = myTextFont.render("Hello World!", True, red, green) #10 
+    myText = myTextFont.render("Hello World!", True, red, green) #10
     myTextArea = myText.get_rect() #11
     myTextArea.center = (320, 240) #12
 
@@ -128,4 +128,3 @@ That was the explanation of the entire source code, which has 20 lines. It seems
                 sys.exit() #19
 
         pygame.display.update() #20
-

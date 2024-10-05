@@ -527,7 +527,7 @@ There is one very useful function though.
 
 .. function:: surfarray.blit_array(surface, array)
    :noindex:
-   
+
    This will transfer any type of 2D or 3D surface array onto a Surface
    of the same dimensions.
    This surfarray blit will generally be faster than assigning an array to a
