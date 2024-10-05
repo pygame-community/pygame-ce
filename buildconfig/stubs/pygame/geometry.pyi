@@ -8,7 +8,6 @@ from typing import (
     List,
 )
 
-
 from pygame import Rect, FRect
 from pygame.typing import Point, RectLike, SequenceLike
 from .rect import Rect, FRect
@@ -27,6 +26,8 @@ class _HasCirclettribute(Protocol):
     # An object that has a circle attribute that is either a circle, or a function
     # that returns a circle
     circle: Union[_CanBeCircle, Callable[[], _CanBeCircle]]
+
+_CircleValue = Union[_CanBeCircle, _HasCirclettribute]
 
 class _HasLineAttribute(Protocol):
     # An object that has a line attribute that is either a line, or a function
@@ -149,7 +150,6 @@ class Circle:
     def as_frect(self) -> FRect: ...
     def copy(self) -> Circle: ...
     def __copy__(self) -> Circle: ...
-    copy = __copy__
 
 class Line:
     @property
