@@ -176,8 +176,7 @@ au domaine public.
 
 Voir les docs/licences pour les licences des dépendances.
 
-**Last reviewed** : 05 October 2024
-**Dernière vérification** : 05 Octobre 2024
+**Last reviewed** : 05 October 2024 - **Dernière vérification** : 05 Octobre 2024
 
 
 .. |PyPiVersion| image:: https://img.shields.io/pypi/v/pygame-ce.svg?v=1
