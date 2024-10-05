@@ -84,6 +84,10 @@ sdl_mixer = '@0@_mixer'.format(sdl)
 sdl_ttf = '@0@_ttf'.format(sdl)
 sdl_image = '@0@_image'.format(sdl)
 
+if sdl_api == 3
+    add_global_arguments('-DPG_SDL3=1', language: 'c')
+endif
+
 pg_inc_dirs = []
 pg_lib_dirs = []
 if plat == 'win' and host_machine.cpu_family().startswith('x86')
