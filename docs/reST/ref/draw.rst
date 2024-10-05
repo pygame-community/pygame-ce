@@ -308,7 +308,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
          Draws an antialiased ellipse on the given surface.
          Uses Xiaolin Wu Circle Algorithm.
          adapted from: https://cgg.mff.cuni.cz/~pepca/ref/WU.pdf
-         
+
          :param Surface surface: surface to draw on
          :param color: color to draw with, the alpha value is optional if using a
             tuple ``(RGB[A])``
