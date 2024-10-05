@@ -8,8 +8,8 @@ __all__ = [
     "SequenceLike",
     "FileLike",
     "ColorLike",
-    "Coordinate",
-    "IntCoordinate",
+    "Point",
+    "IntPoint",
 ]
 
 import sys
@@ -47,11 +47,11 @@ class SequenceLike(Protocol[_T_co]):
 
 # Modify typehints when it is possible to annotate sizes
 
-# Pygame handles float without errors in most cases where a coordinate is expected,
+# Pygame handles float without errors in most cases where a point is expected,
 # usually rounding to int. Also, 'Union[int, float] == float'
-Coordinate = SequenceLike[float]
+Point = SequenceLike[float]
 # This is used where ints are strictly required
-IntCoordinate = SequenceLike[int]
+IntPoint = SequenceLike[int]
 
 ColorLike = Union[int, str, SequenceLike[int]]
 
@@ -63,7 +63,7 @@ class _HasRectAttribute(Protocol):
     def rect(self) -> Union["RectLike", Callable[[], "RectLike"]]: ...
 
 
-RectLike = Union[SequenceLike[float], SequenceLike[Coordinate], _HasRectAttribute]
+RectLike = Union[SequenceLike[float], SequenceLike[Point], _HasRectAttribute]
 
 
 # cleanup namespace

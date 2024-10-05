@@ -48,10 +48,17 @@ jobs:
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
-        os: [ubuntu-22.04]
+        os: [ubuntu-24.04]
+
+    env:
+      # Pip now forces us to either make a venv or set this flag, so we will do
+      # this
+      PIP_BREAK_SYSTEM_PACKAGES: 1
+      # We are using dependencies installed from apt
+      PG_DEPS_FROM_SYSTEM: 1
 
     steps:
-    - uses: actions/checkout@v4.1.7
+    - uses: actions/checkout@v4.2.0
 
     - name: Install deps
       # install numpy from pip and not apt because the one from pip is newer,
