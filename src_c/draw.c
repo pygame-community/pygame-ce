@@ -283,6 +283,7 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     float x, y;
     int l, t;
     int extra_px;
+    int disable_endpoints;
     int steep_prev;
     int steep_curr;
     PyObject *blend = NULL;
@@ -387,13 +388,15 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
     steep_curr = fabs(xlist[2] - pts[2]) < fabs(ylist[2] - pts[1]);
     extra_px = steep_prev > steep_curr;
+    disable_endpoints =
+        !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
     if (closed) {
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 1,
-                    1, extra_px);
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, disable_endpoints, extra_px);
     }
     else {
         draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 0,
-                    1, extra_px);
+                    disable_endpoints, extra_px);
     }
 
     for (loop = 2; loop < length - 1; ++loop) {
@@ -408,12 +411,14 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
             fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
         steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
         extra_px = steep_prev != steep_curr;
+        disable_endpoints =
+            !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
         pts_prev[0] = pts[0];
         pts_prev[1] = pts[1];
         pts_prev[2] = pts[2];
         pts_prev[3] = pts[3];
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 1,
-                    1, extra_px);
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, disable_endpoints, extra_px);
     }
 
     /* Last line - if open, add endpoint pixels. */
@@ -425,17 +430,19 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
     steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
     extra_px = steep_prev != steep_curr;
+    disable_endpoints =
+        !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
     pts_prev[0] = pts[0];
     pts_prev[1] = pts[1];
     pts_prev[2] = pts[2];
     pts_prev[3] = pts[3];
     if (closed) {
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 1,
-                    1, extra_px);
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, disable_endpoints, extra_px);
     }
     else {
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 1,
-                    0, extra_px);
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, 0, extra_px);
     }
 
     if (closed && length > 2) {
@@ -447,8 +454,10 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
             fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
         steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
         extra_px = steep_prev != steep_curr;
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 1,
-                    1, extra_px);
+        disable_endpoints =
+            !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, disable_endpoints, extra_px);
     }
 
     PyMem_Free(xlist);
