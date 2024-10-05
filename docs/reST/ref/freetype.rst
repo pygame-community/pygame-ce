@@ -229,7 +229,7 @@ loaded. This module must be imported explicitly to be used. ::
       | :sl:`Gets the font's style_name.`
       | :sg:`style_name -> str`
 
-      Read only. Returns the font's style name. Style names are arbitrary, can be an empty string. 
+      Read only. Returns the font's style name. Style names are arbitrary, can be an empty string.
       Here are some examples:
 
         'Black', 'Bold', 'Bold Italic', 'BoldOblique', 'Book', 'BookOblique', 'Condensed', 'Condensed Oblique',

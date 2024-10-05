@@ -2216,6 +2216,227 @@ surf_grayscale(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 }
 
+SDL_Surface *
+solid_overlay(pgSurfaceObject *srcobj, Uint32 color, pgSurfaceObject *dstobj,
+              const int keep_alpha)
+{
+    SDL_Surface *src = pgSurface_AsSurface(srcobj);
+    SDL_Surface *newsurf;
+    SDL_PixelFormat *fmt = src->format;
+    Uint8 a;
+
+    if (!dstobj) {
+        newsurf = newsurf_fromsurf(src, srcobj->surf->w, srcobj->surf->h);
+        if (!newsurf)
+            return NULL;
+    }
+    else {
+        newsurf = pgSurface_AsSurface(dstobj);
+    }
+
+    if (newsurf->w != src->w || newsurf->h != src->h) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Destination surface must be the same size as source surface."));
+    }
+
+    if (fmt->BytesPerPixel != newsurf->format->BytesPerPixel ||
+        fmt->format != newsurf->format->format) {
+        return (SDL_Surface *)(RAISE(
+            PyExc_ValueError,
+            "Source and destination surfaces need the same format."));
+    }
+
+    /* If the source surface has no alpha channel, we can't overlay with alpha
+     * blending. */
+    if (!SDL_ISPIXELFORMAT_ALPHA(fmt->format))
+        return newsurf;
+
+    /* If we are keeping the src alpha, then we need to remove the alpha from
+     * the color so it's easier to add the base pixel alpha back in */
+    if (keep_alpha) {
+        color &= ~fmt->Amask;
+    }
+
+    int src_lock = SDL_MUSTLOCK(src);
+    int dst_lock = src != newsurf && SDL_MUSTLOCK(newsurf);
+
+    if (src_lock && SDL_LockSurface(src) < 0) {
+        return NULL;
+    }
+    if (dst_lock && SDL_LockSurface(newsurf) < 0) {
+        if (src_lock) {
+            SDL_UnlockSurface(src);
+        }
+        return NULL;
+    }
+
+    /* optimized path for 32 bit surfaces */
+    if (fmt->BytesPerPixel == 4) {
+        /* This algorithm iterates over each pixel's alpha channel. If it's not
+         * zero, the pixel is set to the desired color. If the keep_alpha flag
+         * is set, the original alpha value is retained, allowing the overlay
+         * color to inherit the surface pixel's alpha value. */
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+        const int dst_ashift = fmt->Ashift;
+        const char _a_off = fmt->Ashift >> 3;
+#else
+        const int dst_ashift = 24 - newsurf->format->Ashift;
+        const char _a_off = 3 - (newsurf->format->Ashift >> 3);
+#endif
+
+        Uint8 *srcp = (Uint8 *)src->pixels + _a_off;
+        Uint32 *dstp = (Uint32 *)newsurf->pixels;
+
+        const int src_skip = src->pitch - src->w * 4;
+        const int dst_skip = newsurf->pitch / 4 - newsurf->w;
+        int n, height = src->h;
+
+        if (srcobj == dstobj) {
+            if (!keep_alpha) {
+                while (height--) {
+                    LOOP_UNROLLED4(
+                        {
+                            if (*srcp)
+                                *dstp = color;
+                            srcp += 4;
+                            dstp++;
+                        },
+                        n, src->w);
+                    srcp += src_skip;
+                    dstp += dst_skip;
+                }
+            }
+            else {
+                while (height--) {
+                    LOOP_UNROLLED4(
+                        {
+                            if ((a = *srcp)) {
+                                *dstp = color | (a << dst_ashift);
+                            }
+                            srcp += 4;
+                            dstp++;
+                        },
+                        n, src->w);
+                    srcp += src_skip;
+                    dstp += dst_skip;
+                }
+            }
+        }
+        else {
+            if (!keep_alpha) {
+                while (height--) {
+                    LOOP_UNROLLED4(
+                        {
+                            if (*srcp)
+                                *dstp = color;
+                            srcp += 4;
+                            dstp++;
+                        },
+                        n, src->w);
+                    srcp += src_skip;
+                    dstp += dst_skip;
+                }
+            }
+            else {
+                while (height--) {
+                    LOOP_UNROLLED4(
+                        {
+                            if ((a = *srcp)) {
+                                *dstp = color | (a << dst_ashift);
+                            }
+                            srcp += 4;
+                            dstp++;
+                        },
+                        n, src->w);
+                    srcp += src_skip;
+                    dstp += dst_skip;
+                }
+            }
+        }
+    }
+    else /* path for 16 bit surfaces */
+    {
+        int x, y;
+        Uint8 r, g, b;
+        Uint16 *src_row = (Uint16 *)src->pixels;
+        Uint16 *dst_row = (Uint16 *)newsurf->pixels;
+        const int src_skip = src->pitch / 2 - src->w;
+        const int dst_skip = newsurf->pitch / 2 - newsurf->w;
+
+        Uint8 Cr, Cg, Cb, Ca;
+        SDL_GetRGBA(color, fmt, &Cr, &Cg, &Cb, &Ca);
+        const Uint16 color16 = (Uint16)SDL_MapRGBA(fmt, Cr, Cg, Cb, Ca);
+
+        for (y = 0; y < src->h; y++) {
+            for (x = 0; x < src->w; x++) {
+                SDL_GetRGBA((Uint32)*src_row, fmt, &r, &g, &b, &a);
+
+                if (a) {
+                    if (keep_alpha)
+                        *dst_row = (Uint16)SDL_MapRGBA(fmt, Cr, Cg, Cb, a);
+                    else
+                        *dst_row = color16;
+                }
+
+                src_row++;
+                dst_row++;
+            }
+            src_row += src_skip;
+            dst_row += dst_skip;
+        }
+    }
+
+    if (src_lock)
+        SDL_UnlockSurface(src);
+    if (dst_lock)
+        SDL_UnlockSurface(newsurf);
+
+    return newsurf;
+}
+
+static PyObject *
+surf_solid_overlay(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    pgSurfaceObject *surfobj;
+    PyObject *colorobj;
+    Uint32 color;
+
+    pgSurfaceObject *surfobj2 = NULL;
+    SDL_Surface *newsurf;
+    SDL_Surface *surf;
+    int keep_alpha = 0;
+
+    static char *keywords[] = {"surface", "color", "dest_surface",
+                               "keep_alpha", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O|O!i", keywords,
+                                     &pgSurface_Type, &surfobj, &colorobj,
+                                     &pgSurface_Type, &surfobj2, &keep_alpha))
+        return NULL;
+
+    surf = pgSurface_AsSurface(surfobj);
+
+    if (!pg_MappedColorFromObj(colorobj, surf->format, &color,
+                               PG_COLOR_HANDLE_ALL)) {
+        return RAISE(PyExc_TypeError, "invalid color argument");
+    }
+
+    newsurf = solid_overlay(surfobj, color, surfobj2, keep_alpha);
+
+    if (!newsurf) {
+        return NULL;
+    }
+
+    if (surfobj2) {
+        Py_INCREF(surfobj2);
+        return (PyObject *)surfobj2;
+    }
+    else {
+        return (PyObject *)pgSurface_New(newsurf);
+    }
+}
+
 #define MIN3(a, b, c) MIN(MIN(a, b), c)
 #define MAX3(a, b, c) MAX(MAX(a, b), c)
 
@@ -2290,13 +2511,6 @@ HSL_to_RGB(float h, float s, float l, Uint8 *r, Uint8 *g, Uint8 *b)
 static void
 modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
 {
-    int x, y;
-    Uint8 r, g, b, a;
-    float s_h = 0, s_s = 0, s_l = 0;
-    SDL_PixelFormat *fmt = surf->format;
-    Uint8 *srcp8 = (Uint8 *)surf->pixels;
-    Uint8 *dstp8 = (Uint8 *)dst->pixels;
-
     int surf_locked = 0;
     if (SDL_MUSTLOCK(surf)) {
         if (SDL_LockSurface(surf) == 0) {
@@ -2310,18 +2524,30 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
         }
     }
 
-    if (fmt->BytesPerPixel == 4 || fmt->BytesPerPixel == 3) {
-        const int src_skip = surf->pitch - surf->w * fmt->BytesPerPixel;
-        const int dst_skip = dst->pitch - dst->w * fmt->BytesPerPixel;
+    int x, y;
+    Uint8 r, g, b, a;
+    float s_h = 0, s_s = 0, s_l = 0;
+    SDL_PixelFormat *fmt = surf->format;
+    Uint8 *srcp8 = (Uint8 *)surf->pixels;
+    Uint8 *dstp8 = (Uint8 *)dst->pixels;
+
+    if (PG_FORMAT_BytesPerPixel(fmt) == 4 ||
+        PG_FORMAT_BytesPerPixel(fmt) == 3) {
+        const int src_skip =
+            surf->pitch - surf->w * PG_FORMAT_BytesPerPixel(fmt);
+        const int dst_skip =
+            dst->pitch - dst->w * PG_FORMAT_BytesPerPixel(fmt);
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
         const int Ridx = fmt->Rshift >> 3;
         const int Gidx = fmt->Gshift >> 3;
         const int Bidx = fmt->Bshift >> 3;
+        const int Aidx = fmt->Ashift >> 3;
 #else
         const int Ridx = 3 - (fmt->Rshift >> 3);
         const int Gidx = 3 - (fmt->Gshift >> 3);
         const int Bidx = 3 - (fmt->Bshift >> 3);
+        const int Aidx = 3 - (fmt->Ashift >> 3);
 #endif
 
         int height = surf->h;
@@ -2351,9 +2577,11 @@ modify_hsl(SDL_Surface *surf, SDL_Surface *dst, float h, float s, float l)
                 dstp8[Ridx] = r;
                 dstp8[Gidx] = g;
                 dstp8[Bidx] = b;
+                if (fmt->Amask)
+                    dstp8[Aidx] = srcp8[Aidx];
 
-                srcp8 += fmt->BytesPerPixel;
-                dstp8 += fmt->BytesPerPixel;
+                srcp8 += PG_FORMAT_BytesPerPixel(fmt);
+                dstp8 += PG_FORMAT_BytesPerPixel(fmt);
             }
             srcp8 += src_skip;
             dstp8 += dst_skip;
@@ -2460,7 +2688,8 @@ surf_hsl(PyObject *self, PyObject *args, PyObject *kwargs)
     if (src->format->Rmask != dst->format->Rmask ||
         src->format->Gmask != dst->format->Gmask ||
         src->format->Bmask != dst->format->Bmask ||
-        src->format->BytesPerPixel != dst->format->BytesPerPixel) {
+        src->format->Amask != dst->format->Amask ||
+        PG_SURF_BytesPerPixel(src) != PG_SURF_BytesPerPixel(dst)) {
         return RAISE(PyExc_ValueError,
                      "Source and destination surfaces need the same format.");
     }
@@ -3838,6 +4067,8 @@ static PyMethodDef _transform_methods[] = {
      DOC_TRANSFORM_INVERT},
     {"grayscale", (PyCFunction)surf_grayscale, METH_VARARGS | METH_KEYWORDS,
      DOC_TRANSFORM_GRAYSCALE},
+    {"solid_overlay", (PyCFunction)surf_solid_overlay,
+     METH_VARARGS | METH_KEYWORDS, DOC_TRANSFORM_SOLIDOVERLAY},
     {"hsl", (PyCFunction)surf_hsl, METH_VARARGS | METH_KEYWORDS,
      DOC_TRANSFORM_HSL},
     {"pixelate", (PyCFunction)surf_pixelate, METH_VARARGS | METH_KEYWORDS,

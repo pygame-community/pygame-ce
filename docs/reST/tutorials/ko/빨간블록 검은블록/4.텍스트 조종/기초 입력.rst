@@ -102,10 +102,10 @@ KEYDOWN은 “이 키는 이전에는 눌리지 않았지만, 지금은 눌렸�
     red = (255,0,0)
     green = (0,255,0)
     pygame.init()
-    pygame.display.set_caption("Controlling World Project") 
+    pygame.display.set_caption("Controlling World Project")
     myScreen = pygame.display.set_mode((640, 480))
     myTextFont = pygame.font.Font("HoonWhitecatR.ttf", 32)
-    myText = myTextFont.render("Controlling World!", True, red, green) 
+    myText = myTextFont.render("Controlling World!", True, red, green)
     myTextArea = myText.get_rect()
     myTextArea.center = (320, 240)
     fpsClock = pygame.time.Clock()
@@ -138,7 +138,7 @@ KEYDOWN은 “이 키는 이전에는 눌리지 않았지만, 지금은 눌렸�
                 elif event.key == K_RIGHT:
                     moveDown = 0
                     moveRight = 1
-                
+
         if(moveRight == 1): #6
             x = x + 10
         elif(moveRight == -1): #7
@@ -149,4 +149,3 @@ KEYDOWN은 “이 키는 이전에는 눌리지 않았지만, 지금은 눌렸�
             y = y - 10
 
         pygame.display.update()
-

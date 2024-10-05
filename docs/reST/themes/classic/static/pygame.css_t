@@ -120,15 +120,17 @@ div.header .logo {
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    min-width: 214px;
 }
 .dark-theme div.header .logo {
     background-color: {{ theme_dark_logobgcolor }};
     border: none;
+    min-width: 214px;
 }
 div.header .logo img {
-    min-width: 200px;
-    min-height: 60px;
     border-style: none;
+    height: 80px;
+    min-width: 156px;
 }
 
 div.header .pagelinks {
@@ -601,6 +603,15 @@ dt code {
     color: {{ theme_dark_codecomment }};
 }
 
+.dark-theme .highlight .nf,
+.dark-theme .highlight .fm {
+    color: {{ theme_dark_functiondefinecolor }};
+}
+
+.dark-theme .highlight .nc {
+    color: {{ theme_dark_classdefinecolor }}; font-weight: bold
+}
+
 code.download span.pre {
     font-family: inherit;
     font-weight: normal;
@@ -637,17 +648,17 @@ div.body h6 {
     line-height: 130%;
 }
 
-div.body h1 { 
+div.body h1 {
     font-size: 1.5em; color: {{ theme_h1color }};
 }
-.dark-theme div.body h1 { 
+.dark-theme div.body h1 {
     color: {{ theme_dark_h1color }};
 }
-div.body h2 { 
+div.body h2 {
     font-size: 1.4em;
     color: {{ theme_h2color }};
 }
-.dark-theme div.body h2 { 
+.dark-theme div.body h2 {
     color: {{ theme_dark_h2color }};
 }
 div.body h3 { font-size: 1.3em; }

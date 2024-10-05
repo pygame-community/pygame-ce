@@ -782,13 +782,12 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(expected_cmy, cmy)
         self.assertEqual(expected_cmy, cmy_tuple)
 
-        with self.assertWarns(DeprecationWarning):
-            self.assertEqual(
-                expected_cmy, pygame.Color.from_cmy(0.5, 0.5, 0.5, "lel", "foo")
-            )
-
-        with self.assertWarns(DeprecationWarning):
-            self.assertEqual(expected_cmy, pygame.Color.from_cmy((0.5, 0.5, 0.5, 0.5)))
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_cmy(0.5, 0.5, 0.5, "lel", "foo")
+        )
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_cmy((0.5, 0.5, 0.5, 0.5))
+        )
 
     def test_from_hsva(self):
         hsva = pygame.Color.from_hsva(0, 100, 100, 100)
@@ -799,15 +798,12 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(expected_hsva, hsva)
         self.assertEqual(expected_hsva, hsva_tuple)
 
-        with self.assertWarns(DeprecationWarning):
-            self.assertEqual(
-                expected_hsva, pygame.Color.from_hsva(0, 100, 100, 100, "lel", "foo")
-            )
-
-        with self.assertWarns(DeprecationWarning):
-            self.assertEqual(
-                expected_hsva, pygame.Color.from_hsva((0, 100, 100, 100, "lel"))
-            )
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_hsva(0, 100, 100, 100, "lel", "foo")
+        )
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_hsva((0, 100, 100, 100, "lel"))
+        )
 
     def test_from_hsla(self):
         hsla = pygame.Color.from_hsla(0, 100, 100, 100)
@@ -818,15 +814,12 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(expected_hsla, hsla)
         self.assertEqual(expected_hsla, hsla_tuple)
 
-        with self.assertWarns(DeprecationWarning):
-            self.assertEqual(
-                expected_hsla, pygame.Color.from_hsla(0, 100, 100, 100, "lel")
-            )
-
-        with self.assertWarns(DeprecationWarning):
-            self.assertEqual(
-                expected_hsla, pygame.Color.from_hsla((0, 100, 100, 100, "lel", "foo"))
-            )
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_hsla(0, 100, 100, 100, "lel")
+        )
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_hsla((0, 100, 100, 100, "lel", "foo"))
+        )
 
     def test_from_i1i2i3(self):
         i1i2i3 = pygame.Color.from_i1i2i3(0, 0, 0)
@@ -837,13 +830,10 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(expected_i1i2i3, i1i2i3)
         self.assertEqual(expected_i1i2i3, i1i2i3_tuple)
 
-        with self.assertWarns(DeprecationWarning):
-            self.assertEqual(
-                expected_i1i2i3, pygame.Color.from_i1i2i3(0, 0, 0, "lel", "foo")
-            )
-
-        with self.assertWarns(DeprecationWarning):
-            self.assertEqual(expected_i1i2i3, pygame.Color.from_i1i2i3((0, 0, 0, 0)))
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_i1i2i3(0, 0, 0, "lel", "foo")
+        )
+        self.assertRaises(ValueError, lambda: pygame.Color.from_i1i2i3((0, 0, 0, 0)))
 
     def test_from_normalized(self):
         normal = pygame.Color.from_normalized(1, 1, 1, 1)
@@ -854,16 +844,9 @@ class ColorTypeTest(unittest.TestCase):
         self.assertEqual(expected_normal, normal)
         self.assertEqual(expected_normal, normal_tuple)
 
-        with self.assertWarns(DeprecationWarning):
-            self.assertEqual(
-                expected_normal, pygame.Color.from_normalized(1, 1, 1, 1, "lel")
-            )
-
-        with self.assertWarns(DeprecationWarning):
-            self.assertEqual(
-                expected_normal,
-                pygame.Color.from_normalized((1, 1, 1, 1, "lel", "foo")),
-            )
+        self.assertRaises(
+            ValueError, lambda: pygame.Color.from_normalized(1, 1, 1, 1, "lel")
+        )
 
     def test_normalize(self):
         c = pygame.Color(204, 38, 194, 55)
@@ -1062,8 +1045,10 @@ class ColorTypeTest(unittest.TestCase):
     def test_colorspaces_deprecated_large_sequence(self):
         c = pygame.Color("black")
         for space in ("hsla", "hsva", "i1i2i3", "cmy", "normalized"):
-            with self.assertWarns(DeprecationWarning):
-                setattr(c, space, (0, 0, 0, 0, "hehe 5th ignored member"))
+            with self.assertRaises(ValueError):
+                setattr(
+                    c, space, (0, 0, 0, 0, "HAHAHAHAHAHA, don't ignore 5th member :)")
+                )
 
     ################################################################################
 

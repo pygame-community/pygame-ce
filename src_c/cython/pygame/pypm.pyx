@@ -146,6 +146,7 @@ cdef extern from "porttime.h":
     ctypedef long PtTimestamp
     ctypedef void (* PtCallback)(PtTimestamp timestamp, void *userData)
     PtError Pt_Start(int resolution, PtCallback *callback, void *userData)
+    PtError Pt_Stop()
     PtTimestamp Pt_Time()
 
 cdef long _pypm_initialized
@@ -171,6 +172,7 @@ def Terminate():
     your system may crash.
 
     """
+    Pt_Stop()
     Pm_Terminate()
     _pypm_initialized = 0
 

@@ -65,7 +65,7 @@
          The callback is passed on argument, the ``"parent"`` object if given,
          otherwise None. The callback is useful for releasing a lock on the
          parent.
-      
+
    The BufferProxy class supports subclassing, instance variables, and weak
    references.
 

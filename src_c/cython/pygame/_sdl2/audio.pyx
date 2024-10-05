@@ -57,7 +57,7 @@ def get_audio_device_names(iscapture = False):
     cdef int count = SDL_GetNumAudioDevices(iscapture)
     if count == -1:
         raise error('Audio system not initialised')
-    
+
     names = []
     for i in range(count):
         name = SDL_GetAudioDeviceName(i, iscapture)
@@ -84,8 +84,8 @@ cdef void recording_cb(void* userdata, Uint8* stream, int len) nogil:
             raise
 
 
-# disable auto_pickle since it causes stubcheck error 
-@cython.auto_pickle(False) 
+# disable auto_pickle since it causes stubcheck error
+@cython.auto_pickle(False)
 cdef class AudioDevice:
     def __cinit__(self):
         self._deviceid = 0

@@ -196,7 +196,7 @@
 
       | :sl:`Gets or sets the normalized representation of the Color.`
       | :sg:`normalized -> tuple`
-      
+
       The ``Normalized``` representation of the Color. The components of the ``Normalized``
       representation represent the basic ``RGBA`` values but normalized the
       ranges of the values are ``r`` = [0, 1], ``g`` = [0, 1], ``b`` = [0, 1]
@@ -209,7 +209,7 @@
       .. versionadded:: 2.5.0
 
       .. ## Color.normalized ##
-   
+
    .. classmethod:: from_cmy
 
       | :sl:`Returns a Color object from a CMY representation`
@@ -222,7 +222,7 @@
       .. versionadded:: 2.3.1
 
       .. ## Color.from_cmy ##
-   
+
    .. classmethod:: from_hsva
 
       | :sl:`Returns a Color object from an HSVA representation`
@@ -235,7 +235,7 @@
       .. versionadded:: 2.3.1
 
       .. ## Color.from_hsva ##
-   
+
    .. classmethod:: from_hsla
 
       | :sl:`Returns a Color object from an HSLA representation`
@@ -300,11 +300,11 @@
       | :sl:`Set the number of elements in the Color to 1,2,3, or 4.`
       | :sg:`set_length(len, /) -> None`
 
-      DEPRECATED: You may unpack the values you need like so, 
+      DEPRECATED: You may unpack the values you need like so,
       ``r, g, b, _ = pygame.Color(100, 100, 100)``
       If you only want r, g and b
-      Or 
-      ``r, g, *_ = pygame.Color(100, 100, 100)`` 
+      Or
+      ``r, g, *_ = pygame.Color(100, 100, 100)``
       if you only want r and g
 
       The default Color length is 4. Colors can have lengths 1,2,3 or 4. This
@@ -320,8 +320,8 @@
 
       | :sl:`returns the grayscale of a Color`
       | :sg:`grayscale() -> Color`
-      
-      Returns a new Color object which represents the grayscaled version of self, using the luminosity formula, 
+
+      Returns a new Color object which represents the grayscaled version of self, using the luminosity formula,
       which weights red, green, and blue according to their relative contribution to perceived brightness.
 
       .. versionadded:: 2.1.4

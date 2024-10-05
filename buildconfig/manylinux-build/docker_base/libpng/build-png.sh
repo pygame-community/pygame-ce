@@ -14,4 +14,3 @@ cd $PNG
 ./configure --with-zlib-prefix=$PG_DEP_PREFIX $PG_BASE_CONFIGURE_FLAGS
 make
 make install
-

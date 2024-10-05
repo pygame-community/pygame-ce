@@ -44,6 +44,7 @@ dist
 *.so
 __pycache__
 _headers/*
+buildconfig/win_dll_dirs.json
 
 # cython generated files
 src_c/_sdl2/*.c

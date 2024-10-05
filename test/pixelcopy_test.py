@@ -534,7 +534,7 @@ class PixelCopyTestWithArrayNumpy(unittest.TestCase):
 
     def test_map_array(self):
         try:
-            from numpy import array, zeros, uint8, int32, alltrue
+            from numpy import array, zeros, uint8, int32, all as np_all
         except ImportError:
             return
 
@@ -545,7 +545,7 @@ class PixelCopyTestWithArrayNumpy(unittest.TestCase):
         target = zeros((5, 7), int32)
         map_array(target, color, surf)
 
-        self.assertTrue(alltrue(target == surf.map_rgb(color)))
+        self.assertTrue(np_all(target == surf.map_rgb(color)))
 
         # array column stripes
         stripe = array([[2, 5, 7], [11, 19, 23], [37, 53, 101]], uint8)
@@ -553,7 +553,7 @@ class PixelCopyTestWithArrayNumpy(unittest.TestCase):
         map_array(target, stripe, surf)
         target_stripe = array([surf.map_rgb(c) for c in stripe], int32)
 
-        self.assertTrue(alltrue(target == target_stripe))
+        self.assertTrue(np_all(target == target_stripe))
 
         # array row stripes
         stripe = array(
@@ -563,7 +563,7 @@ class PixelCopyTestWithArrayNumpy(unittest.TestCase):
         map_array(target, stripe, surf)
         target_stripe = array([[surf.map_rgb(c)] for c in stripe[:, 0]], int32)
 
-        self.assertTrue(alltrue(target == target_stripe))
+        self.assertTrue(np_all(target == target_stripe))
 
         # mismatched shape
         w = 4

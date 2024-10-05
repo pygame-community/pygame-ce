@@ -1,13 +1,13 @@
-.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_logo.svg
+.. image:: https://raw.githubusercontent.com/pygame-community/pygame-ce/main/docs/reST/_static/pygame_ce_logo.svg
   :alt: pygame
   :target: https://pyga.me/
 
 
-|DocsStatus| 
+|DocsStatus|
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ **Français**  `فارسی`_ `Español`_
+`English`_ `简体中文`_ `繁體中文`_ **Français**  `فارسی`_ `Español`_ `日本語`_
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 `Pygame`_ est une bibliothèque multi-plateforme, libre et open-source
@@ -22,9 +22,9 @@ Ceci est un fork du projet initial par ses principaux anciens développeurs,
 il a été créé suite à de nombreux obstacles impossibles à franchir, les empêchant de continuer
 le développement du projet initial. Cette nouvelle distribution a pour but d’offrir des mises à jour
 plus régulières, des améliorations et des correctifs, mais aussi un modèle de gouvernance plus
-démocratique. 
+démocratique.
 
-Tout nouveau contributeur est le bienvenu ! 
+Tout nouveau contributeur est le bienvenu !
 
 Installation
 ------------
@@ -49,7 +49,7 @@ développement sur GitHub. Cela peut être un peu plus récent que la version de
 pygame-ce que vous utilisez. Pour passer à la version sortie la plus récente, lancez
 ``pip install pygame-ce --upgrade`` dans votre terminal.
 
-Un point particulièrement intéressant : vous avez à votre disposition un dossier 
+Un point particulièrement intéressant : vous avez à votre disposition un dossier
 d’exemples contenant de nombreux petits programmes jouables, vous permettant
 de commencer à jouer avec le code tout de suite.
 
@@ -62,8 +62,8 @@ build pygame-ce localement depuis le code source, plutôt que de l’installer a
 pip.
 
 Installer pygame-ce depuis le code source est assez automatisé. La majeure
-partie du travail sera de compiler et d’installer toutes les dépendances de 
-pygame. Une fois ceci fait, lancez le script ``setup.py`` qui va essayer 
+partie du travail sera de compiler et d’installer toutes les dépendances de
+pygame. Une fois ceci fait, lancez le script ``setup.py`` qui va essayer
 de l’auto-configurer, le build, et l’installer.
 
 Plus d’informations à propos de l’installation et de la compilation sont disponibles
@@ -101,7 +101,7 @@ Tyler, Nathaniel Pryce, Dave Wallace, John Popplewell, Michael Urman,
 Andrew Straw, Michael Hudson, Ole Martin Bjoerndalen, Herve Cauwelier,
 James Mazer, Lalo Martins, Timothy Stranex, Chad Lester, Matthias
 Spiller, Bo Jangeborg, Dmitry Borisov, Campbell Barton, Diego Essaya,
-Eyal Lotem, Regis Desgroppes, Emmanuel Hainry, Randy Kaelber
+Eyal Lotem, Regis Desgroppes, Emmanuel Hainry, Randy Kaelber,
 Matthew L Daniel, Nirav Patel, Forrest Voight, Charlie Nolan,
 Frankie Robertson, John Krukoff, Lorenz Quack, Nick Irvine,
 Michael George, Saul Spatz, Thomas Ibbotson, Tom Rothamel, Evan Kroske,
@@ -116,9 +116,9 @@ qui ont permis à ce projet de continuer à vivre, et qui ont pratiquement rendu
 travail facile. Merci !
 
 Très grands remerciements à toutes les personnes commentant la documentation,
-et ajoutant du nouveau contenu dans la `documentation de pygame`_ et dans la `documentation de pygame-ce`_.  
+et ajoutant du nouveau contenu dans la `documentation de pygame`_ et dans la `documentation de pygame-ce`_.
 
-Aussi de très grands remerciements à toutes les personnes créant des jeux et les 
+Aussi de très grands remerciements à toutes les personnes créant des jeux et les
 partageant sur le site pygame.org pour permettre aux autres d'apprendre et de
 s’amuser.
 
@@ -158,6 +158,7 @@ Versions des dépendances:
 
 Licence
 -------
+**Identifiant de licence:** LGPL-2.1-or-later
 
 La bibliothèque est distribuée sous la licence `GNU LGPL version 2.1`_, qui
 peut être retrouvée dans le fichier ``docs/LGPL.txt``. Nous nous réservons
@@ -165,12 +166,12 @@ le droit de placer les futures versions de cette bibliothèque sous une licence
 différente.
 
 Ceci veut en quelque sorte dire que vous êtes habilité à utiliser pygame-ce
-dans n’importe quel projet que souhaitez, mais que si vous voulez effectuer des 
+dans n’importe quel projet que souhaitez, mais que si vous voulez effectuer des
 changements ou des ajouts à pygame lui-même, alors vous serez dans l’obligation
 de les publier avec une licence compatible (de préférence en les soumettant au projet
 pygame-ce). Les codes propriétaires et les jeux commerciaux sont autorisés.
 
-Les programmes présents dans le sous-répertoire ``examples`` appartiennent 
+Les programmes présents dans le sous-répertoire ``examples`` appartiennent
 au domaine public.
 
 Voir les docs/licences pour les licences des dépendances.
@@ -189,7 +190,7 @@ Voir les docs/licences pour les licences des dépendances.
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
-   
+
 .. |BlackFormatBadge| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
@@ -202,6 +203,8 @@ Voir les docs/licences pour les licences des dépendances.
 .. _GNU LGPL version 2.1: https://www.gnu.org/copyleft/lesser.html
 
 .. _简体中文: README.zh-cn.rst
+.. _繁體中文: README.zh-tw.rst
 .. _English: ./../../README.rst
 .. _فارسی: README.fa.rst
 .. _Español: README.es.rst
+.. _日本語: README.ja.rst

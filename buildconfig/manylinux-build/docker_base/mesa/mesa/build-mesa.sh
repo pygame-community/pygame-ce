@@ -3,7 +3,7 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-# We need mesa for opengl, gbm (SDL kmsdrm driver needs it), egl (SDL 
+# We need mesa for opengl, gbm (SDL kmsdrm driver needs it), egl (SDL
 # wayland driver needs this) and glx (SDL needs it)
 # we don't support vulkan yet
 
@@ -21,7 +21,7 @@ cd $MESA
 if [ `uname -m` == "aarch64" ]; then
     # On aarch64 we allow mesa to use all drivers it wants to pick by default
     # (because radeonsi is not used on arm platforms)
-    GALLIUM_DRIVERS="auto"  
+    GALLIUM_DRIVERS="auto"
 else
     # all default except radeonsi
     GALLIUM_DRIVERS="r300,r600,nouveau,virgl,svga,swrast,iris,crocus,i915"

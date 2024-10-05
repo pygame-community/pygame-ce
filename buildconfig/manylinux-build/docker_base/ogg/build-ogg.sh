@@ -36,4 +36,3 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 make
 make install
-

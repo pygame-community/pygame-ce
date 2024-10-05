@@ -16,7 +16,8 @@ Keyboard Controls:
 """
 
 import pygame
-import os, sys
+import os
+import sys
 
 VOLUME_CHANGE_AMOUNT = 0.02  # how fast should up and down arrows change the volume?
 SCREEN_SIZE = (640, 480)

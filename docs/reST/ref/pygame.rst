@@ -206,7 +206,7 @@ object instead of the module, which can be used to test for availability.
    .. ## pygame.encode_file_path ##
 
 .. function:: print_debug_info
-   
+
    | :sl:`retrieves useful information for debugging and issue-reporting purposes`
    | :sg:`print_debug_info(filename=None) -> None`
 
@@ -218,7 +218,7 @@ object instead of the module, which can be used to test for availability.
    .. note::
       If ``pygame.freetype`` has not been initialized with :func:`pygame.init` or :func:`pygame.freetype.init`,
       then the linked and compiled versions of FreeType will be "Unk" since this information is not
-      available before initialization. 
+      available before initialization.
 
    .. versionadded:: 2.1.4
 
@@ -288,12 +288,12 @@ check which version of pygame has been imported.
    package was built. If the identifier ends with a plus sign '+' then the
    package contains uncommitted changes. Please include this revision number
    in bug reports, especially for non-release pygame builds.
-   
-   Important note: pygame development has moved to github, this variable is 
+
+   Important note: pygame development has moved to github, this variable is
    obsolete now. As soon as development shifted to github, this variable started
-   returning an empty string ``""``. 
+   returning an empty string ``""``.
    It has always been returning an empty string since ``v1.9.5``.
-   
+
    .. versionchangedold:: 1.9.5
       Always returns an empty string ``""``.
 
@@ -559,6 +559,3 @@ where this is set to 0 by default.
 
 This hint only affects the windows platform, other platforms can control DPI awareness
 via a Window creation keyword parameter called "allow_high_dpi".
-
-
-

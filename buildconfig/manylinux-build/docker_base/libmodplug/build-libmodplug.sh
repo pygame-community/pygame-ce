@@ -15,4 +15,3 @@ cd ${MODPLUG_NAME}
 ./configure $PG_BASE_CONFIGURE_FLAGS
 make
 make install
-

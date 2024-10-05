@@ -105,10 +105,10 @@ Okay, we learn that “Fixing time” is needed when screen is updated. Every sc
     red = (255,0,0)
     green = (0,255,0)
     pygame.init()
-    pygame.display.set_caption("Moving World Project") 
+    pygame.display.set_caption("Moving World Project")
     myScreen = pygame.display.set_mode((640, 480))
     myTextFont = pygame.font.Font("HoonWhitecatR.ttf", 32)
-    myText = myTextFont.render("Moving World!", True, red, green) 
+    myText = myTextFont.render("Moving World!", True, red, green)
     myTextArea = myText.get_rect()
     myTextArea.center = (320, 240)
     fpsClock = pygame.time.Clock() #1
@@ -139,7 +139,7 @@ Okay, we learn that “Fixing time” is needed when screen is updated. Every sc
 
 
     myTextArea.center = (320 + x, 240 + y) #10
-    
+
     myScreen.fill(white)
     myScreen.blit(myText, myTextArea)
 
@@ -150,4 +150,3 @@ Okay, we learn that “Fixing time” is needed when screen is updated. Every sc
 
     pygame.display.update()
     fpsClock.tick(60) #11
-

@@ -1951,7 +1951,6 @@ MODINIT_DEFINE(_camera)
     }
 
     /* type preparation */
-    // PyType_Init(pgCamera_Type);
     pgCamera_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&pgCamera_Type) < 0) {
         return NULL;

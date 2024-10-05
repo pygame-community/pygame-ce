@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This file exists because pkg-config is too old on manylinux docker centos 
+# This file exists because pkg-config is too old on manylinux docker centos
 # images (the older version segfaults if it gets a cyclic dependency, like
 # freetype2+harfbuzz)
 

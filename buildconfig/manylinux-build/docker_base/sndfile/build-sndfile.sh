@@ -17,4 +17,3 @@ cd $SNDNAME
 ./configure $PG_BASE_CONFIGURE_FLAGS --disable-mpeg --disable-alsa
 make
 make install
-

@@ -2,7 +2,7 @@ Pygame Unit Tests
 *****************
 
 The test runner for pygame was developed for these purposes:
-    
+
     * Per process isolation of test modules
     * Ability to tag tests for exclusion (interactive tests etc)
     * Record timings of tests
@@ -139,15 +139,14 @@ some convenience functions ::
 
     trunk_relative_path(pth)
         Will return a normalized relative path, relative to the test_module
-        
+
         eg trunk_relative_path('examples\\data\\alien.jpg') will work on linux
-        
+
         This is so the test module can be run from anywhere with working paths
-            eg ../test/color_test.py 
-            
+            eg ../test/color_test.py
+
     fixture_path(pth)
         Likewise but paths are relative to trunk\test\fixtures
 
     example_path(pth)
         Likewise but paths are relative to trunk\examples
-

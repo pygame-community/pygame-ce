@@ -32,23 +32,6 @@ typedef struct tColorRGBA {
 #define M_PI 3.141592654
 #endif
 
-#if !SDL_VERSION_ATLEAST(2, 0, 14)
-// Remove this when our minimum version is 2.0.14 or larger
-SDL_bool
-PG_SurfaceHasRLE(SDL_Surface *surface)
-{
-    if (surface == NULL) {
-        return SDL_FALSE;
-    }
-
-    if (!(surface->map->info.flags & SDL_COPY_RLE_DESIRED)) {
-        return SDL_FALSE;
-    }
-
-    return SDL_TRUE;
-}
-#endif
-
 /*
 
  32bit Zoomer with optional anti-aliasing by bilinear interpolation.

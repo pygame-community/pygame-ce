@@ -28,7 +28,7 @@ for the full API.
   that use v4l2 on Linux.  There is support for other platforms via OpenCV,
   but this guide will focus on the native module. Most of the code will be
   valid for other platforms, but certain things like controls will not work.
-  The module is also marked as **EXPERIMENTAL**, meaning the API could 
+  The module is also marked as **EXPERIMENTAL**, meaning the API could
   change in subsequent versions.
 
 
@@ -99,29 +99,29 @@ we will be supplying the camera with the same surface to use each time. ::
           self.size = (640,480)
           # create a display surface. standard pygame stuff
           self.display = pygame.display.set_mode(self.size, 0)
-  
+
           # this is the same as what we saw before
           self.clist = pygame.camera.list_cameras()
           if not self.clist:
               raise ValueError("Sorry, no cameras detected.")
           self.cam = pygame.camera.Camera(self.clist[0], self.size)
           self.cam.start()
-  
+
           # create a surface to capture to.  for performance purposes
           # bit depth is the same as that of the display surface.
           self.snapshot = pygame.surface.Surface(self.size, 0, self.display)
-  
+
       def get_and_flip(self):
           # if you don't want to tie the framerate to the camera, you can check
           # if the camera has an image ready.  note that while this works
           # on most cameras, some will never return true.
           if self.cam.query_image():
               self.snapshot = self.cam.get_image(self.snapshot)
-  
+
           # blit it to the display surface.  simple!
           self.display.blit(self.snapshot, (0,0))
           pygame.display.flip()
-  
+
       def main(self):
           going = True
           while going:
@@ -131,7 +131,7 @@ we will be supplying the camera with the same surface to use each time. ::
                       # close the camera safely
                       self.cam.stop()
                       going = False
-  
+
               self.get_and_flip()
 
 
@@ -284,9 +284,9 @@ use it to control an on screen object.
       # make sure the blob is big enough that it isn't just noise
       if mask.count() > 100:
           # find the center of the blob
-          coord = mask.centroid()
+          coords = mask.centroid()
           # draw a circle with size variable on the size of the blob
-          pygame.draw.circle(self.display, (0,255,0), coord, max(min(50,mask.count()/400),5))
+          pygame.draw.circle(self.display, (0,255,0), coords, max(min(50,mask.count()/400),5))
       pygame.display.flip()
 
 .. image:: ../assets/camera_mask.jpg

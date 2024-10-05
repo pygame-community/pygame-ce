@@ -24,7 +24,7 @@ def main():
     # app's windows to its menu item.
     #
     # For association to work, any windows of the app must have WMCLASS property
-    # set to match the value set in app's desktop file. For pygame_ce, this is 
+    # set to match the value set in app's desktop file. For pygame_ce, this is
     # set using the SDL_VIDEO_X11_WMCLASS environment variable.
 
     # Find the name of the module that was used to start the app

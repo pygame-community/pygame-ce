@@ -90,7 +90,7 @@ cdef extern from "SDL.h" nogil:
         SDL_FPoint position
         SDL_Color color
         SDL_FPoint tex_coord
-    
+
     ctypedef enum SDL_ScaleMode "_pgsdlScaleMode":
         SDL_ScaleModeNearest,
         SDL_ScaleModeLinear,
@@ -151,8 +151,8 @@ cdef extern from "SDL.h" nogil:
     # https://wiki.libsdl.org/SDL_RenderCopyExF
     # https://wiki.libsdl.org/SDL_RenderPresent
     int SDL_GetRenderDrawColor(SDL_Renderer* renderer,
-                               Uint8*        r, 
-                               Uint8*        g, 
+                               Uint8*        r,
+                               Uint8*        g,
                                Uint8*        b,
                                Uint8*        a)
     int SDL_SetRenderDrawColor(SDL_Renderer* renderer,
@@ -227,7 +227,7 @@ cdef extern from "SDL.h" nogil:
                                              SDL_BlendFactor    srcAlphaFactor,
                                              SDL_BlendFactor    dstAlphaFactor,
                                              SDL_BlendOperation alphaOperation)
- 
+
     ctypedef enum SDL_BlendOperation:
         SDL_BLENDOPERATION_ADD = 0x00000001,
         SDL_BLENDOPERATION_SUBTRACT = 0x00000002,
@@ -370,7 +370,7 @@ cdef extern from "SDL.h" nogil:
     # https://wiki.libsdl.org/SDL_RenderGetIntegerScale
     int SDL_RenderSetScale(SDL_Renderer* renderer,
                            float         scaleX,
-                           float         scaleY) 
+                           float         scaleY)
     void SDL_RenderGetScale(SDL_Renderer* renderer,
                             float*        scaleX,
                             float*        scaleY)
@@ -382,7 +382,7 @@ cdef extern from "SDL.h" nogil:
                                   int*          h)
     int SDL_RenderGetIntegerScale(SDL_Renderer* renderer)
 
-    int SDL_VERSION_ATLEAST(int major, int minor, int patch) 
+    int SDL_VERSION_ATLEAST(int major, int minor, int patch)
 
     # https://wiki.libsdl.org/SDL_GetWindowPixelFormat
     # https://wiki.libsdl.org/SDL_IntersectRect
@@ -414,7 +414,7 @@ cdef extern from "pygame.h" nogil:
     ctypedef class pygame.color.Color [object pgColorObject]:
         cdef Uint8 data[4]
         cdef Uint8 len
-    
+
     ctypedef enum pgColorHandleFlags:
         PG_COLOR_HANDLE_SIMPLE
         PG_COLOR_HANDLE_STR
@@ -425,7 +425,7 @@ cdef extern from "pygame.h" nogil:
     ctypedef class pygame.rect.Rect [object pgRectObject]:
         cdef SDL_Rect r
         cdef object weakreflist
-    
+
     ctypedef class pygame.window.Window [object pgWindowObject]:
         cdef SDL_Window *_win
         cdef SDL_bool _is_borrowed

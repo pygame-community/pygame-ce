@@ -470,7 +470,7 @@ For example:
    Draws an unfilled polygon on the given surface. For a filled polygon use
    :meth:`filled_polygon`.
 
-   The adjacent coordinates in the ``points`` argument, as well as the first
+   The adjacent points in the ``points`` argument, as well as the first
    and last points, will be connected by line segments.
    e.g. For the points ``[(x1, y1), (x2, y2), (x3, y3)]`` a line segment will
    be drawn from ``(x1, y1)`` to ``(x2, y2)``, from ``(x2, y2)`` to
@@ -478,10 +478,10 @@ For example:
 
    :param Surface surface: surface to draw on
    :param points: a sequence of 3 or more (x, y) coordinates, where each
-      *coordinate* in the sequence must be a
+      point in the sequence must be a
       tuple/list/:class:`pygame.math.Vector2` of 2 ints/floats (float values
       will be truncated)
-   :type points: tuple(coordinate) or list(coordinate)
+   :type points: tuple(point) or list(point)
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
    :type color: Color or tuple(int, int, int, [int])
@@ -490,7 +490,7 @@ For example:
    :rtype: NoneType
 
    :raises ValueError: if ``len(points) < 3`` (must have at least 3 points)
-   :raises IndexError: if ``len(coordinate) < 2`` (each coordinate must have
+   :raises IndexError: if ``len(point) < 2`` (each point must have
       at least 2 items)
 
    .. ## pygame.gfxdraw.polygon ##
@@ -502,7 +502,7 @@ For example:
 
    Draws an unfilled antialiased polygon on the given surface.
 
-   The adjacent coordinates in the ``points`` argument, as well as the first
+   The adjacent points in the ``points`` argument, as well as the first
    and last points, will be connected by line segments.
    e.g. For the points ``[(x1, y1), (x2, y2), (x3, y3)]`` a line segment will
    be drawn from ``(x1, y1)`` to ``(x2, y2)``, from ``(x2, y2)`` to
@@ -510,10 +510,10 @@ For example:
 
    :param Surface surface: surface to draw on
    :param points: a sequence of 3 or more (x, y) coordinates, where each
-      *coordinate* in the sequence must be a
+      point in the sequence must be a
       tuple/list/:class:`pygame.math.Vector2` of 2 ints/floats (float values
       will be truncated)
-   :type points: tuple(coordinate) or list(coordinate)
+   :type points: tuple(point) or list(point)
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
    :type color: Color or tuple(int, int, int, [int])
@@ -522,7 +522,7 @@ For example:
    :rtype: NoneType
 
    :raises ValueError: if ``len(points) < 3`` (must have at least 3 points)
-   :raises IndexError: if ``len(coordinate) < 2`` (each coordinate must have
+   :raises IndexError: if ``len(point) < 2`` (each point must have
       at least 2 items)
 
    .. ## pygame.gfxdraw.aapolygon ##
@@ -535,7 +535,7 @@ For example:
    Draws a filled polygon on the given surface. For an unfilled polygon use
    :meth:`polygon`.
 
-   The adjacent coordinates in the ``points`` argument, as well as the first
+   The adjacent points in the ``points`` argument, as well as the first
    and last points, will be connected by line segments.
    e.g. For the points ``[(x1, y1), (x2, y2), (x3, y3)]`` a line segment will
    be drawn from ``(x1, y1)`` to ``(x2, y2)``, from ``(x2, y2)`` to
@@ -543,10 +543,10 @@ For example:
 
    :param Surface surface: surface to draw on
    :param points: a sequence of 3 or more (x, y) coordinates, where each
-      *coordinate* in the sequence must be a
+      point in the sequence must be a
       tuple/list/:class:`pygame.math.Vector2` of 2 ints/floats (float values
       will be truncated)`
-   :type points: tuple(coordinate) or list(coordinate)
+   :type points: tuple(point) or list(point)
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
    :type color: Color or tuple(int, int, int, [int])
@@ -555,7 +555,7 @@ For example:
    :rtype: NoneType
 
    :raises ValueError: if ``len(points) < 3`` (must have at least 3 points)
-   :raises IndexError: if ``len(coordinate) < 2`` (each coordinate must have
+   :raises IndexError: if ``len(point) < 2`` (each point must have
       at least 2 items)
 
    .. ## pygame.gfxdraw.filled_polygon ##
@@ -572,7 +572,7 @@ For example:
    a :func:`pygame.Surface.blit` blit. Also, a per-pixel alpha texture cannot be
    used with an 8-bit per pixel destination.
 
-   The adjacent coordinates in the ``points`` argument, as well as the first
+   The adjacent points in the ``points`` argument, as well as the first
    and last points, will be connected by line segments.
    e.g. For the points ``[(x1, y1), (x2, y2), (x3, y3)]`` a line segment will
    be drawn from ``(x1, y1)`` to ``(x2, y2)``, from ``(x2, y2)`` to
@@ -580,10 +580,10 @@ For example:
 
    :param Surface surface: surface to draw on
    :param points: a sequence of 3 or more (x, y) coordinates, where each
-      *coordinate* in the sequence must be a
+      point in the sequence must be a
       tuple/list/:class:`pygame.math.Vector2` of 2 ints/floats (float values
       will be truncated)
-   :type points: tuple(coordinate) or list(coordinate)
+   :type points: tuple(point) or list(point)
    :param Surface texture: texture to draw on the polygon
    :param int tx: x offset of the texture
    :param int ty: y offset of the texture
@@ -592,7 +592,7 @@ For example:
    :rtype: NoneType
 
    :raises ValueError: if ``len(points) < 3`` (must have at least 3 points)
-   :raises IndexError: if ``len(coordinate) < 2`` (each coordinate must have
+   :raises IndexError: if ``len(point) < 2`` (each point must have
       at least 2 items)
 
    .. ## pygame.gfxdraw.textured_polygon ##
@@ -606,10 +606,10 @@ For example:
 
    :param Surface surface: surface to draw on
    :param points: a sequence of 3 or more (x, y) coordinates used to form a
-      curve, where each *coordinate* in the sequence must be a
+      curve, where each point in the sequence must be a
       tuple/list/:class:`pygame.math.Vector2` of 2 ints/floats (float values
       will be truncated)
-   :type points: tuple(coordinate) or list(coordinate)
+   :type points: tuple(point) or list(point)
    :param int steps: number of steps for the interpolation, the minimum is 2
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
@@ -620,7 +620,7 @@ For example:
 
    :raises ValueError: if ``steps < 2``
    :raises ValueError: if ``len(points) < 3`` (must have at least 3 points)
-   :raises IndexError: if ``len(coordinate) < 2`` (each coordinate must have
+   :raises IndexError: if ``len(point) < 2`` (each point must have
       at least 2 items)
 
    .. note:: This function supports up to around 150-200 points before the algorithm

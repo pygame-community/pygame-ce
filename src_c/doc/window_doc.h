@@ -4,6 +4,7 @@
 #define DOC_WINDOW_GRABKEYBOARD "grab_keyboard -> bool\nGet or set the window's keyboard grab mode"
 #define DOC_WINDOW_MOUSEGRABBED "mouse_grabbed -> bool\nGet if the mouse cursor is confined to the window (**read-only**)"
 #define DOC_WINDOW_KEYBOARDGRABBED "keyboard_grabbed -> bool\nGet if the keyboard shortcuts are captured by the window (**read-only**)"
+#define DOC_WINDOW_FOCUSED "focused -> bool\nGet if the window is focused (**read-only**)"
 #define DOC_WINDOW_TITLE "title -> str\nGet or set the window title"
 #define DOC_WINDOW_RESIZABLE "resizable -> bool\nGet or set whether the window is resizable"
 #define DOC_WINDOW_BORDERLESS "borderless -> bool\nGet or set whether the window is borderless"
@@ -30,3 +31,4 @@
 #define DOC_WINDOW_MINIMIZE "maximize() -> None\nMinimize the window"
 #define DOC_WINDOW_SETICON "set_icon(surface, /) -> None\nSet the window icon"
 #define DOC_WINDOW_SETMODALFOR "set_modal_for(parent, /) -> None\nSet the window as a modal for a parent window"
+#define DOC_WINDOW_FLASH "flash(operation, /) -> None\nFlash a window to demand attention from the user"

@@ -30,6 +30,10 @@ while not done:
     # 5 pixels wide. Uses (r, g, b) color - medium sea green.
     pygame.draw.line(screen, (60, 179, 113), [0, 0], [50, 30], 5)
 
+    # Draw on the screen a green antialiased line from (0, 25) to (50, 55)
+    # 5 pixels wide. Uses (r, g, b) color - medium sea green.
+    pygame.draw.aaline(screen, (60, 179, 113), [0, 25], [50, 55], 5)
+
     # Draw on the screen a green line from (0, 50) to (50, 80)
     # Because it is an antialiased line, it is 1 pixel wide.
     # Uses (r, g, b) color - medium sea green.
@@ -77,13 +81,13 @@ while not done:
 
     # Draw a circle
     pygame.draw.circle(screen, "blue", [60, 250], 40)
-    
+
     # Draw an antialiased circle with 3 pixels wide line
     pygame.draw.aacircle(screen, "green", [340, 250], 40, 3)
-    
+
     # Draw an antialiased top right circle quadrant with 4 pixels wide line
     pygame.draw.aacircle(screen, "red", [340, 250], 20, 4, draw_top_right=True)
-    
+
     # Draw an antialiased bottom left filled circle quadrant
     pygame.draw.aacircle(screen, "blue", [340, 250], 20, draw_bottom_left=True)
 

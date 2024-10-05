@@ -14,4 +14,3 @@ cd ${ZLIB_NG_NAME}
 cmake . $PG_BASE_CMAKE_FLAGS -DZLIB_COMPAT=1
 make
 make install
-
