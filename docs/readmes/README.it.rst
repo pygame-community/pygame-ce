@@ -181,6 +181,7 @@ I programmi nella sottocartella ``examples`` appartengono al dominio pubblico.
 
 Controlla docs/licenses per le licenze dei requisiti.
 
+.. note:: Ultima revisione del README: 05/10/2024
 
 .. |PyPiVersion| image:: https://img.shields.io/pypi/v/pygame-ce.svg?v=1
    :target: https://pypi.python.org/pypi/pygame-ce
