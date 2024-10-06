@@ -440,7 +440,46 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
             orig_irfy = irfy;
 
             // Find and change corners
-            // TODO
+            if (loop != 1 || (loop == 1 && closed)) {
+                // Left
+                if (lfx != prev_ltx && lfy != prev_lty) {
+                    intersect_point(rfx, rfy, rtx, rty, prev_rfx, prev_rfy,
+                                    prev_rtx, prev_rty, &rfx, &rfy);
+                    intersect_point(irfx, irfy, irtx, irty, prev_irfx,
+                                    prev_irfy, prev_irtx, prev_irty, &irfx,
+                                    &irfy);
+                }
+                else {
+                    if (is_intersect(lfx, lfy, ltx, lty, prev_rfx, prev_rfy,
+                                     prev_rtx, prev_rty)) {
+                        // special case where both points are mismatched
+                        intersect_point(rfx, rfy, rtx, rty, prev_lfx, prev_lfy,
+                                        prev_ltx, prev_lty, &rfx, &rfy);
+                        intersect_point(irfx, irfy, irtx, irty, prev_ilfx,
+                                        prev_ilfy, prev_iltx, prev_ilty, &irfx,
+                                        &irfy);
+                    }
+                }
+                // Right
+                if (rfx != prev_rtx && rfy != prev_rty) {
+                    intersect_point(lfx, lfy, ltx, lty, prev_rfx, prev_rfy,
+                                    prev_ltx, prev_lty, &lfx, &lfy);
+                    intersect_point(ilfx, ilfy, iltx, ilty, prev_irfx,
+                                    prev_irfy, prev_iltx, prev_ilty, &ilfx,
+                                    &ilfy);
+                }
+                else {
+                    if (is_intersect(rfx, rfy, rtx, rty, prev_lfx, prev_lfy,
+                                     prev_ltx, prev_lty)) {
+                        // special case where both points are mismatched
+                        intersect_point(lfx, lfy, ltx, lty, prev_rfx, prev_rfy,
+                                        prev_rtx, prev_rty, &lfx, &lfy);
+                        intersect_point(ilfx, ilfy, iltx, ilty, prev_irfx,
+                                        prev_irfy, prev_irtx, prev_irty, &ilfx,
+                                        &ilfy);
+                    }
+                }
+            }
 
             // For aalines
             left_xlist[loop - 1] = lfx;
@@ -449,7 +488,7 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
             right_ylist[loop - 1] = rfy;
 
             // Fill gaps in corners
-            if (closed || (!closed && (loop != 1))) {
+            if (closed || (!closed && loop != 1)) {
                 // This line
                 // TODO
                 // if (TODO) {
