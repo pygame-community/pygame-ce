@@ -55,7 +55,7 @@ static size_t
 _pg_rw_read(void *, void *, size_t, SDL_IOStatus *);
 static size_t
 _pg_rw_write(void *, const void *, size_t, SDL_IOStatus *);
-static int
+static bool
 _pg_rw_close(void *);
 #else
 static Sint64
@@ -434,25 +434,30 @@ end:
 }
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-static int
+static bool
 _pg_rw_close(void *userdata)
 {
     pgRWHelper *helper = (pgRWHelper *)userdata;
+    bool retval = true;
 #else
 static int
 _pg_rw_close(SDL_RWops *context)
 {
     pgRWHelper *helper = (pgRWHelper *)context->hidden.unknown.data1;
+    int retval = 0;
 #endif
     PyObject *result;
-    int retval = 0;
     PyGILState_STATE state = PyGILState_Ensure();
 
     if (helper->close) {
         result = PyObject_CallNoArgs(helper->close);
         if (!result) {
             PyErr_Print();
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            retval = false;
+#else
             retval = -1;
+#endif
         }
         Py_XDECREF(result);
     }
@@ -515,7 +520,7 @@ pgRWops_FromFileObject(PyObject *obj)
         return (SDL_RWops *)RAISE(PyExc_IOError, SDL_GetError());
     }
 
-    if (SDL_SetBooleanProperty(props, "_pygame_is_file_object", 1) < 0) {
+    if (!SDL_SetBooleanProperty(props, "_pygame_is_file_object", 1)) {
         PyMem_Free(helper);
         return (SDL_RWops *)RAISE(PyExc_IOError, SDL_GetError());
     }
@@ -683,7 +688,11 @@ _rwops_from_pystr(PyObject *obj, char **extptr)
                     /* If out of memory, decref oencoded to be safe, and try
                      * to close out `rw` as well. */
                     Py_DECREF(oencoded);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                    if (!SDL_RWclose(rw)) {
+#else
                     if (SDL_RWclose(rw) < 0) {
+#endif
                         PyErr_SetString(PyExc_IOError, SDL_GetError());
                     }
                     return (SDL_RWops *)PyErr_NoMemory();
