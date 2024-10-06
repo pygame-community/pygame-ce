@@ -386,7 +386,97 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         draw_aalines(surf, color, xlist, ylist, closed, length, drawn_area);
     }
     else {
-        // TODO
+        /* Variables naming:
+         * prev_- - Variable is for previous point
+         * orig_- - Original value, not changed by intersecting
+         * -i- - This is "inner" point, from lines with slightly lower width
+         * -l/r/- - This coordinate is on left or right side of draw.lines
+         * -f/t- - from/to, this is either startig or ending point
+         * -x/y - X and Y coordinates of one same point
+         */
+        float *left_xlist, *left_ylist, *right_xlist, *right_ylist;
+        float point_x, point_y, prev_x, prev_y, last_x, last_y;
+        float prev_lfx, prev_lfy, prev_ltx, prev_lty, prev_rfx, prev_rfy,
+            prev_rtx, prev_rty;
+        float prev_ilfx, prev_ilfy, prev_iltx, prev_ilty, prev_irfx, prev_irfy,
+            prev_irtx, prev_irty;
+        float lfx, lfy, ltx, lty, rfx, rfy, rtx, rty;
+        float ilfx, ilfy, iltx, ilty, irfx, irfy, irtx, irty;
+        float orig_ilfx, orig_ilfy, orig_irfx, orig_irfy;
+        left_xlist = PyMem_New(float, length);
+        left_ylist = PyMem_New(float, length);
+        right_xlist = PyMem_New(float, length);
+        right_ylist = PyMem_New(float, length);
+
+        // Data for initial points
+        prev_x = xlist[0];
+        prev_y = ylist[0];
+        last_x = xlist[length - 1];
+        last_y = ylist[length - 1];
+        line_width_corners(last_x, last_y, prev_x, prev_x, width, &prev_lfx,
+                           &prev_lfy, &prev_ltx, &prev_lty, &prev_rfx,
+                           &prev_rfy, &prev_rtx, &prev_rty);
+        line_width_corners(last_x, last_y, prev_x, prev_x, width - 1.5,
+                           &prev_ilfx, &prev_ilfy, &prev_iltx, &prev_ilty,
+                           &prev_irfx, &prev_irfy, &prev_irtx, &prev_irty);
+        if (closed) {
+            // move first point to end of xlist and ylist  // PROBLEM
+        }
+
+        // Loop over all points, skipping first one
+        for (loop = 1; loop < length; ++loop) {
+            point_x = xlist[loop];
+            point_y = ylist[loop];
+            prev_x = xlist[loop - 1];
+            prev_y = ylist[loop - 1];
+            line_width_corners(prev_x, prev_x, point_x, point_y, width, &lfx,
+                               &lfy, &ltx, &lty, &rfx, &rfy, &rtx, &rty);
+            line_width_corners(prev_x, prev_x, point_x, point_y, width, &ilfx,
+                               &ilfy, &iltx, &ilty, &irfx, &irfy, &irtx,
+                               &irty);
+            orig_ilfx = ilfx;
+            orig_ilfy = ilfy;
+            orig_irfx = irfx;
+            orig_irfy = irfy;
+
+            // Find and change corners
+            // TODO
+
+            // For aalines
+            left_xlist[loop - 1] = lfx;
+            left_ylist[loop - 1] = lfy;
+            right_xlist[loop - 1] = rfx;
+            right_ylist[loop - 1] = rfy;
+
+            // Fill gaps in corners
+            if (closed || (!closed && (loop != 1))) {
+                // This line
+                // TODO
+                // if (TODO) {
+                //     // Previous line
+                //     TODO
+                // }
+            }
+
+            // Data for the next iteration
+            // prev_x = point_x;
+            // prev_y = point_y;
+            // TODO
+        }
+
+        // Last point for aalines
+        // left_points.append(draw_to_1)
+        // right_points.append(draw_to_2)
+
+        // Drawing
+        // lines
+        // aalines
+        // aalines
+
+        PyMem_Free(left_xlist);
+        PyMem_Free(left_ylist);
+        PyMem_Free(right_xlist);
+        PyMem_Free(right_ylist);
     }
 
     PyMem_Free(xlist);
