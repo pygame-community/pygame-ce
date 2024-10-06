@@ -84,8 +84,6 @@ mouse = py.extension_module(
 )
 endif
 
-# TODO: support SDL3
-if sdl_api != 3
 rect = py.extension_module(
     'rect',
     ['rect.c', 'pgcompat_rect.c'],
@@ -94,7 +92,6 @@ rect = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # TODO: support SDL3
 if sdl_api != 3
@@ -275,8 +272,6 @@ mask = py.extension_module(
 )
 endif
 
-# TODO: support SDL3
-if sdl_api != 3
 bufferproxy = py.extension_module(
     'bufferproxy',
     'bufferproxy.c',
@@ -285,7 +280,6 @@ bufferproxy = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # TODO: support SDL3
 if sdl_api != 3
@@ -299,8 +293,6 @@ pixelarray = py.extension_module(
 )
 endif
 
-# TODO: support SDL3
-if sdl_api != 3
 math = py.extension_module(
     'math',
     'math.c',
@@ -309,7 +301,6 @@ math = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # TODO: support SDL3
 if sdl_api != 3
@@ -323,8 +314,6 @@ pixelcopy = py.extension_module(
 )
 endif
 
-# TODO: support SDL3
-if sdl_api != 3
 newbuffer = py.extension_module(
     'newbuffer',
     'newbuffer.c',
@@ -333,7 +322,6 @@ newbuffer = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # new/experimental/uncommon stuff, but built by default
 # TODO: support SDL3
@@ -348,8 +336,6 @@ system = py.extension_module(
 )
 endif
 
-# TODO: support SDL3
-if sdl_api != 3
 geometry = py.extension_module(
     'geometry',
     'geometry.c',
@@ -358,7 +344,6 @@ geometry = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # TODO: support SDL3
 if sdl_api != 3

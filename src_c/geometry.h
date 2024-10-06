@@ -3,6 +3,7 @@
 
 #include "pygame.h"
 #include "pgcompat.h"
+#include <stddef.h>
 
 typedef struct {
     double x, y, r;

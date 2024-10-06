@@ -86,6 +86,7 @@ sdl_image = '@0@_image'.format(sdl)
 
 if sdl_api == 3
     add_global_arguments('-DPG_SDL3=1', language: 'c')
+    add_global_arguments('-DSDL_ENABLE_OLD_NAMES=1', language: 'c')
 endif
 
 pg_inc_dirs = []
