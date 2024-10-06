@@ -26,7 +26,6 @@ Windows, macOS, OS X, BeOS, FreeBSD, IRIX, and Linux."""
 import os
 import sys
 import platform
-import warnings
 
 # Choose Windows display driver
 if os.name == "nt":
@@ -94,6 +93,8 @@ class MissingModule:
         msg_type = "import" if self.urgent else "use"
         message = f"{msg_type} {self.name}: {self.info}\n({self.reason})"
         try:
+            import warnings
+
             level = 4 if self.urgent else 3
             warnings.warn(message, RuntimeWarning, level)
         except ImportError:
@@ -395,4 +396,4 @@ def __color_reduce(c):
 copyreg.pickle(Color, __color_reduce, __color_constructor)
 
 # cleanup namespace
-del pygame, os, sys, platform, warnings, MissingModule, copyreg, packager_imports
+del pygame, os, sys, platform, MissingModule, copyreg, packager_imports
