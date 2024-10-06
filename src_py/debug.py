@@ -11,6 +11,6 @@ if "PYGAME_HIDE_SUPPORT_PROMPT" not in os.environ:
 
     pygame.print_debug_info()
 
-warnings.filterwarnings("default")
+warnings.filterwarnings("default", category=pygame.PygameDebugWarning)
 
 del os, platform, warnings

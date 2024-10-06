@@ -70,6 +70,7 @@ from .base import (
     quit as quit,
     register_quit as register_quit,
     set_error as set_error,
+    PygameDebugWarning as PygameDebugWarning,
 )
 
 from .rwobject import (
