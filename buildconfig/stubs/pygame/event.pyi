@@ -1,22 +1,17 @@
-from typing import (
-    Any,
-    Dict,
-    List,
-    Optional,
-    Union,
-    final,
-)
+from typing import Any, Optional, Union, final
 
 from pygame.typing import SequenceLike
+
+_AttrDict = dict[str, Any]
 
 @final
 class Event:
     type: int
-    dict: Dict[str, Any]
-    __dict__: Dict[str, Any]
+    dict: _AttrDict
+    __dict__: _AttrDict
     __hash__: None  # type: ignore
     def __init__(
-        self, type: int, dict: Dict[str, Any] = ..., **kwargs: Any
+        self, type: int, dict: _AttrDict = ..., **kwargs: Any
     ) -> None: ...
     def __getattribute__(self, name: str) -> Any: ...
     def __setattr__(self, name: str, value: Any) -> None: ...
@@ -30,7 +25,7 @@ def get(
     eventtype: Optional[_EventTypes] = None,
     pump: Any = True,
     exclude: Optional[_EventTypes] = None,
-) -> List[Event]: ...
+) -> list[Event]: ...
 def poll() -> Event: ...
 def wait(timeout: int = 0) -> Event: ...
 def peek(eventtype: Optional[_EventTypes] = None, pump: Any = True) -> bool: ...
