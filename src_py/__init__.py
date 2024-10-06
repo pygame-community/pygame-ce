@@ -26,6 +26,7 @@ Windows, macOS, OS X, BeOS, FreeBSD, IRIX, and Linux."""
 import os
 import sys
 import platform
+import warnings
 
 # Choose Windows display driver
 if os.name == "nt":
@@ -395,11 +396,7 @@ def __color_reduce(c):
 
 copyreg.pickle(Color, __color_reduce, __color_constructor)
 
-if "PYGAME_HIDE_SUPPORT_PROMPT" not in os.environ:
-    print(
-        f"pygame-ce {ver} (SDL {'.'.join(map(str, get_sdl_version()))}, "
-        f"Python {platform.python_version()})"
-    )
+warnings.filterwarnings("ignore")
 
 # cleanup namespace
-del pygame, os, sys, platform, MissingModule, copyreg, packager_imports
+del pygame, os, sys, platform, warnings, MissingModule, copyreg, packager_imports
