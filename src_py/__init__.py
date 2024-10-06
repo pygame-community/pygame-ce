@@ -394,7 +394,5 @@ def __color_reduce(c):
 
 copyreg.pickle(Color, __color_reduce, __color_constructor)
 
-warnings.filterwarnings("ignore")
-
 # cleanup namespace
 del pygame, os, sys, platform, warnings, MissingModule, copyreg, packager_imports
