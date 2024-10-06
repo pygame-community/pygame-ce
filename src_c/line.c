@@ -1,8 +1,6 @@
 #include "doc/geometry_doc.h"
 #include "geometry_common.h"
 
-#define IS_LINE_VALID(line) (line->xa != line->xb || line->ya != line->yb)
-
 static PyObject *
 _pg_line_subtype_new4(PyTypeObject *type, double xa, double ya, double xb,
                       double yb)
@@ -53,28 +51,28 @@ pgLine_FromObject(PyObject *obj, pgLineBase *out)
         PyObject **farray = PySequence_Fast_ITEMS(obj);
 
         if (length == 4) {
-            if (!pg_DoubleFromObj(farray[0], &(out->xa)) ||
-                !pg_DoubleFromObj(farray[1], &(out->ya)) ||
-                !pg_DoubleFromObj(farray[2], &(out->xb)) ||
-                !pg_DoubleFromObj(farray[3], &(out->yb))) {
+            if (!pg_DoubleFromObj(farray[0], &out->xa) ||
+                !pg_DoubleFromObj(farray[1], &out->ya) ||
+                !pg_DoubleFromObj(farray[2], &out->xb) ||
+                !pg_DoubleFromObj(farray[3], &out->yb)) {
                 return 0;
             }
-            return IS_LINE_VALID(out);
+            return 1;
         }
         else if (length == 2) {
-            if (!pg_TwoDoublesFromObj(farray[0], &(out->xa), &(out->ya)) ||
-                !pg_TwoDoublesFromObj(farray[1], &(out->xb), &(out->yb))) {
+            if (!pg_TwoDoublesFromObj(farray[0], &out->xa, &out->ya) ||
+                !pg_TwoDoublesFromObj(farray[1], &out->xb, &out->yb)) {
                 PyErr_Clear();
                 return 0;
             }
-            return IS_LINE_VALID(out);
+            return 1;
         }
         else if (length == 1) /*looks like an arg?*/ {
             if (PyUnicode_Check(farray[0]) ||
                 !pgLine_FromObject(farray[0], out)) {
                 return 0;
             }
-            return IS_LINE_VALID(out);
+            return 1;
         }
     }
     if (PySequence_Check(obj)) {
@@ -82,46 +80,46 @@ pgLine_FromObject(PyObject *obj, pgLineBase *out)
         if (length == 4) {
             PyObject *tmp;
             tmp = PySequence_GetItem(obj, 0);
-            if (!pg_DoubleFromObj(tmp, &(out->xa))) {
+            if (!pg_DoubleFromObj(tmp, &out->xa)) {
                 Py_DECREF(tmp);
                 return 0;
             }
             Py_DECREF(tmp);
             tmp = PySequence_GetItem(obj, 1);
-            if (!pg_DoubleFromObj(tmp, &(out->ya))) {
+            if (!pg_DoubleFromObj(tmp, &out->ya)) {
                 Py_DECREF(tmp);
                 return 0;
             }
             Py_DECREF(tmp);
             tmp = PySequence_GetItem(obj, 2);
-            if (!pg_DoubleFromObj(tmp, &(out->xb))) {
+            if (!pg_DoubleFromObj(tmp, &out->xb)) {
                 Py_DECREF(tmp);
                 return 0;
             }
             Py_DECREF(tmp);
             tmp = PySequence_GetItem(obj, 3);
-            if (!pg_DoubleFromObj(tmp, &(out->yb))) {
+            if (!pg_DoubleFromObj(tmp, &out->yb)) {
                 Py_DECREF(tmp);
                 return 0;
             }
             Py_DECREF(tmp);
-            return IS_LINE_VALID(out);
+            return 1;
         }
         else if (length == 2) {
             PyObject *tmp;
             tmp = PySequence_GetItem(obj, 0);
-            if (!pg_TwoDoublesFromObj(tmp, &(out->xa), &(out->ya))) {
+            if (!pg_TwoDoublesFromObj(tmp, &out->xa, &out->ya)) {
                 Py_DECREF(tmp);
                 return 0;
             }
             Py_DECREF(tmp);
             tmp = PySequence_GetItem(obj, 1);
-            if (!pg_TwoDoublesFromObj(tmp, &(out->xb), &(out->yb))) {
+            if (!pg_TwoDoublesFromObj(tmp, &out->xb, &out->yb)) {
                 Py_DECREF(tmp);
                 return 0;
             }
             Py_DECREF(tmp);
-            return IS_LINE_VALID(out);
+            return 1;
         }
         else if (PyTuple_Check(obj) && length == 1) /*looks like an arg?*/ {
             PyObject *sub = PySequence_GetItem(obj, 0);
@@ -130,7 +128,7 @@ pgLine_FromObject(PyObject *obj, pgLineBase *out)
                 return 0;
             }
             Py_DECREF(sub);
-            return IS_LINE_VALID(out);
+            return 1;
         }
         else {
             return 0;

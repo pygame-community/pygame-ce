@@ -1693,6 +1693,40 @@ class LineTypeTest(unittest.TestCase):
             with self.assertRaises(TypeError):
                 Line(0, 1, 2, value)
 
+        # Test xa
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line((value, 0), (1, 2))
+        # Test ya
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line((0, value), (1, 2))
+        # Test xb
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line((0, 0), (value, 2))
+        # Test yb
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line((0, 1), (2, value))
+
+        # Test xa
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line(((value, 0), (1, 2)))
+        # Test ya
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line(((0, value), (1, 2)))
+        # Test xb
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line(((0, 0), (value, 2)))
+        # Test yb
+        for value in invalid_types:
+            with self.assertRaises(TypeError):
+                Line(((0, 1), (2, value)))
+
     def testConstruction_invalid_arguments_number(self):
         """Checks whether passing the wrong number of arguments to the constructor
         raises the appropriate errors
@@ -1776,61 +1810,6 @@ class LineTypeTest(unittest.TestCase):
         self.assertEqual(line.ya, 2.2)
         self.assertEqual(line.xb, 3.3)
         self.assertEqual(line.yb, 4.4)
-
-    def testConstruction_degenerate(self):
-        """Ensures that you can't create degenerate lines (lines with zero length)"""
-
-        # 4 args
-        with self.assertRaises(TypeError):
-            Line(1.0, 2.0, 1.0, 2.0)
-        with self.assertRaises(TypeError):
-            Line(1, 2, 1, 2)
-
-        # 1 list arg 4
-        with self.assertRaises(TypeError):
-            Line([1, 2, 1, 2])
-        with self.assertRaises(TypeError):
-            Line([1.0, 2.0, 1.0, 2.0])
-
-        # 1 tuple arg 4
-        with self.assertRaises(TypeError):
-            Line((1, 2, 1, 2))
-        with self.assertRaises(TypeError):
-            Line((1.0, 2.0, 1.0, 2.0))
-
-        # two tuple args
-        with self.assertRaises(TypeError):
-            Line((1, 2), (1, 2))
-        with self.assertRaises(TypeError):
-            Line((1.0, 2.0), (1.0, 2.0))
-
-        # two list args
-        with self.assertRaises(TypeError):
-            Line([1, 2], [1, 2])
-        with self.assertRaises(TypeError):
-            Line([1.0, 2.0], [1.0, 2.0])
-
-        # one list two tuple args
-        with self.assertRaises(TypeError):
-            Line([1, 2], (1, 2))
-        with self.assertRaises(TypeError):
-            Line((1, 2), [1, 2])
-        with self.assertRaises(TypeError):
-            Line([1.0, 2.0], (1.0, 2.0))
-        with self.assertRaises(TypeError):
-            Line((1.0, 2.0), [1.0, 2.0])
-
-        # one list two sub-tuples arg
-        with self.assertRaises(TypeError):
-            Line([(1, 2), (1, 2)])
-        with self.assertRaises(TypeError):
-            Line([(1.0, 2.0), (1.0, 2.0)])
-
-        # one tuple two sub-lists arg
-        with self.assertRaises(TypeError):
-            Line(([1, 2], [1, 2]))
-        with self.assertRaises(TypeError):
-            Line(([1.0, 2.0], [1.0, 2.0]))
 
     def test_attrib_x1(self):
         """a full test for the xa attribute"""
