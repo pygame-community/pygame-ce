@@ -94,8 +94,6 @@ class MissingModule:
         msg_type = "import" if self.urgent else "use"
         message = f"{msg_type} {self.name}: {self.info}\n({self.reason})"
         try:
-            import warnings
-
             level = 4 if self.urgent else 3
             warnings.warn(message, RuntimeWarning, level)
         except ImportError:
