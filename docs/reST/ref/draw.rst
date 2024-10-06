@@ -506,9 +506,10 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    | :sl:`draw multiple contiguous straight antialiased line segments`
    | :sg:`aalines(surface, color, closed, points) -> Rect`
+   | :sg:`lines(surface, color, closed, points, width=1) -> Rect`
 
-   Draws a sequence of contiguous straight antialiased lines on the given
-   surface.
+   Draws a sequence of contiguous straight lines on the given surface.
+   For thick lines, the edges have miter joints and the ends are squared off.
 
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
@@ -525,6 +526,15 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
       additionally if the ``closed`` parameter is ``True`` another line segment
       will be drawn from ``(x3, y3)`` to ``(x1, y1)``
    :type points: tuple(point) or list(point)
+   :param int width: (optional) used for line thickness
+
+         | if width >= 1, used for line thickness (default is 1)
+         | if width < 1, nothing will be drawn
+         |
+
+         .. note::
+            When using ``width`` values ``> 1`` refer to the ``width`` notes
+            of :func:`line` for details on how thick lines grow.
 
    :returns: a rect bounding the changed pixels, if nothing is drawn the
       bounding rect's position will be the position of the first point in the
@@ -539,6 +549,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
    .. versionchanged:: 2.4.0 Removed deprecated ``blend`` argument
    .. versionchanged:: 2.5.0 ``blend`` argument readded for backcompat, but will always raise a deprecation exception when used
+   .. versionchanged:: 2.5.2 Added line width
 
    .. ## pygame.draw.aalines ##
 

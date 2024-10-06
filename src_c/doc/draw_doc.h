@@ -9,4 +9,4 @@
 #define DOC_DRAW_LINE "line(surface, color, start_pos, end_pos) -> Rect\nline(surface, color, start_pos, end_pos, width=1) -> Rect\ndraw a straight line"
 #define DOC_DRAW_LINES "lines(surface, color, closed, points) -> Rect\nlines(surface, color, closed, points, width=1) -> Rect\ndraw multiple contiguous straight line segments"
 #define DOC_DRAW_AALINE "aaline(surface, color, start_pos, end_pos) -> Rect\naaline(surface, color, start_pos, end_pos, width=1) -> Rect\ndraw a straight antialiased line"
-#define DOC_DRAW_AALINES "aalines(surface, color, closed, points) -> Rect\ndraw multiple contiguous straight antialiased line segments"
+#define DOC_DRAW_AALINES "aalines(surface, color, closed, points) -> Rect\nlines(surface, color, closed, points, width=1) -> Rect\ndraw multiple contiguous straight antialiased line segments"
