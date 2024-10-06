@@ -289,16 +289,16 @@ Instead, always begin with the original image and scale to the desired size.)
 
    The bloom parameters should be used as follows:
       * ``blur_radius``: The radius (in pixels) that the selected blur will use.
-         Cannot be less than ``0`` and a value of ``0`` won't modify the surface.
+        Cannot be less than ``0`` and a value of ``0`` won't modify the surface.
 
       * ``intensity``: Acts as a brightness multiplier for the luminance filter.
-         Values less or equal to zero won't modify the surface. Values greater or equal
-         to ``255`` will produce the same result, making the bright parts completely white.
+        Values less or equal to zero won't modify the surface. Values greater or equal
+        to ``255`` will produce the same result, making the bright parts completely white.
 
       * ``luminance_threshold``: Luminance is a property of each pixel in the range 0-1
-         (regardless of alpha). The luminance threshold selects the minimum luminance
-         required for a pixel to be considered bright. A value of ``0`` will allow every
-         pixel while a value of ``1`` will discard every pixel and won't modify the surface.
+        (regardless of alpha). The luminance threshold selects the minimum luminance
+        required for a pixel to be considered bright. A value of ``0`` will allow every
+        pixel while a value of ``1`` will discard every pixel and won't modify the surface.
 
       * ``blur_type``: Specifies the blur to use. Allowed values are ``"box"`` and ``"gaussian"``.
 
