@@ -1,7 +1,6 @@
 # pure python sources
 test_files = files(
     '__init__.py',
-    'arrinter.py',
     'async_sub.py',
     'buftools.py',
     'png.py',
