@@ -44,6 +44,12 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
 static void
 draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
           int *drawn_area);
+static int
+is_intersect(float x1, float y1, float x2, float y2, float x3, float y3,
+             float x4, float y4);
+static void
+intersect_point(float x1, float y1, float x2, float y2, float x3, float y3,
+                float x4, float y4, float *x, float *y);
 static void
 line_width_corners(float from_x, float from_y, float to_x, float to_y,
                    int width, float *x1, float *y1, float *x2, float *y2,
@@ -376,7 +382,12 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
-    draw_aalines(surf, color, xlist, ylist, closed, length, drawn_area);
+    if (width == 1) {
+        draw_aalines(surf, color, xlist, ylist, closed, length, drawn_area);
+    }
+    else {
+        // TODO
+    }
 
     PyMem_Free(xlist);
     PyMem_Free(ylist);
@@ -1138,6 +1149,47 @@ static int
 compare_int(const void *a, const void *b)
 {
     return (*(const int *)a) - (*(const int *)b);
+}
+
+static int
+ccw(float x1, float y1, float x2, float y2, float x3, float y3)
+{
+    return (y3 - y1) * (x2 - x1) > (y2 - y1) * (x3 - x1);
+}
+
+/* Returns True if 2 line segments are intersecting.
+ * (x1, y1) and (x2, y2) are points of first line,
+ * (x3, y3) and (x4, y4) are points of second line.
+ */
+static int
+is_intersect(float x1, float y1, float x2, float y2, float x3, float y3,
+             float x4, float y4)
+{
+    return ccw(x1, y1, x3, y3, x4, y4) != ccw(x2, y2, x3, y3, x4, y4) &&
+           ccw(x1, y1, x2, y2, x3, y3) != ccw(x1, y1, x2, y2, x4, y4);
+}
+
+/* Finds intersection coordinates of 2 lines.
+ * (x1, y1) and (x2, y2) are points of first line,
+ * (x3, y3) and (x4, y4) are points of second line.
+ */
+static void
+intersect_point(float x1, float y1, float x2, float y2, float x3, float y3,
+                float x4, float y4, float *x, float *y)
+{
+    float d = (y2 - y1) * (x3 - x4) - (y4 - y3) * (x1 - x2);  // determinant
+
+    if (d == 0) {
+        *x = x1;
+        *y = y1;
+        return;
+    }
+
+    // Cramer's rule
+    *x = ((x1 * y2 - x2 * y1) * (x3 - x4) - (x3 * y4 - x4 * y3) * (x1 - x2)) /
+         d;
+    *y = ((y2 - y1) * (x3 * y4 - x4 * y3) - (y4 - y3) * (x1 * y2 - x2 * y1)) /
+         d;
 }
 
 static Uint32
