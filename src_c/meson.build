@@ -321,8 +321,6 @@ newbuffer = py.extension_module(
 )
 
 # new/experimental/uncommon stuff, but built by default
-# TODO: support SDL3
-if sdl_api != 3
 system = py.extension_module(
     'system',
     'system.c',
@@ -331,7 +329,6 @@ system = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 geometry = py.extension_module(
     'geometry',
