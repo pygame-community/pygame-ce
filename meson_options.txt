@@ -37,3 +37,6 @@ option('error_docs_missing', type: 'boolean', value: 'false')
 # Controls whether to do a coverage build.
 # This argument must be used together with the editable install.
 option('coverage', type: 'boolean', value: false)
+
+# Controls whether to use SDL3 instead of SDL2. The default is to use SDL2
+option('sdl_api', type: 'integer', min: 2, max: 3, value: 2)

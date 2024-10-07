@@ -44,6 +44,10 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
 static void
 draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
           int *drawn_area);
+void
+line_width_corners(float from_x, float from_y, float to_x, float to_y,
+                   int width, float *x1, float *y1, float *x2, float *y2,
+                   float *x3, float *y3, float *x4, float *y4);
 static void
 draw_aaline(SDL_Surface *surf, Uint32 color, float startx, float starty,
             float endx, float endy, int *drawn_area,
@@ -115,16 +119,17 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *colorobj, *start, *end;
     SDL_Surface *surf = NULL;
     float startx, starty, endx, endy;
+    int width = 1; /* Default width. */
     PyObject *blend = NULL;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     Uint32 color;
-    static char *keywords[] = {"surface", "color", "start_pos",
-                               "end_pos", "blend", NULL};
+    static char *keywords[] = {"surface", "color", "start_pos", "end_pos",
+                               "width",   "blend", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|O", keywords,
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|iO", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
-                                     &start, &end, &blend)) {
+                                     &start, &end, &width, &blend)) {
         return NULL; /* Exception already set. */
     }
 
@@ -157,11 +162,27 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_TypeError, "invalid end_pos argument");
     }
 
+    if (width < 1) {
+        return pgRect_New4((int)startx, (int)starty, 0, 0);
+    }
+
     if (!pgSurface_Lock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
-    draw_aaline(surf, color, startx, starty, endx, endy, drawn_area, 0, 0, 0);
+    if (width > 1) {
+        float x1, y1, x2, y2, x3, y3, x4, y4;
+        line_width_corners(startx, starty, endx, endy, width, &x1, &y1, &x2,
+                           &y2, &x3, &y3, &x4, &y4);
+        draw_line_width(surf, color, (int)startx, (int)starty, (int)endx,
+                        (int)endy, width, drawn_area);
+        draw_aaline(surf, color, x1, y1, x2, y2, drawn_area, 0, 0, 0);
+        draw_aaline(surf, color, x3, y3, x4, y4, drawn_area, 0, 0, 0);
+    }
+    else {
+        draw_aaline(surf, color, startx, starty, endx, endy, drawn_area, 0, 0,
+                    0);
+    }
 
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");
@@ -262,6 +283,7 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     float x, y;
     int l, t;
     int extra_px;
+    int disable_endpoints;
     int steep_prev;
     int steep_curr;
     PyObject *blend = NULL;
@@ -366,13 +388,15 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
     steep_curr = fabs(xlist[2] - pts[2]) < fabs(ylist[2] - pts[1]);
     extra_px = steep_prev > steep_curr;
+    disable_endpoints =
+        !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
     if (closed) {
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 1,
-                    1, extra_px);
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, disable_endpoints, extra_px);
     }
     else {
         draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 0,
-                    1, extra_px);
+                    disable_endpoints, extra_px);
     }
 
     for (loop = 2; loop < length - 1; ++loop) {
@@ -387,12 +411,14 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
             fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
         steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
         extra_px = steep_prev != steep_curr;
+        disable_endpoints =
+            !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
         pts_prev[0] = pts[0];
         pts_prev[1] = pts[1];
         pts_prev[2] = pts[2];
         pts_prev[3] = pts[3];
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 1,
-                    1, extra_px);
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, disable_endpoints, extra_px);
     }
 
     /* Last line - if open, add endpoint pixels. */
@@ -404,17 +430,19 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
     steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
     extra_px = steep_prev != steep_curr;
+    disable_endpoints =
+        !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
     pts_prev[0] = pts[0];
     pts_prev[1] = pts[1];
     pts_prev[2] = pts[2];
     pts_prev[3] = pts[3];
     if (closed) {
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 1,
-                    1, extra_px);
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, disable_endpoints, extra_px);
     }
     else {
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 1,
-                    0, extra_px);
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, 0, extra_px);
     }
 
     if (closed && length > 2) {
@@ -426,8 +454,10 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
             fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
         steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
         extra_px = steep_prev != steep_curr;
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 1,
-                    1, extra_px);
+        disable_endpoints =
+            !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, disable_endpoints, extra_px);
     }
 
     PyMem_Free(xlist);
@@ -1833,6 +1863,39 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
                 y1 += sy;
             }
         }
+    }
+}
+
+// Calculates 4 points, representing corners of draw_line_width()
+// first two points assemble left line and second two - right line
+void
+line_width_corners(float from_x, float from_y, float to_x, float to_y,
+                   int width, float *x1, float *y1, float *x2, float *y2,
+                   float *x3, float *y3, float *x4, float *y4)
+{
+    float aa_width = (float)width / 2;
+    float extra_width = (1.0f - (width % 2)) / 2;
+    int steep = fabs(to_x - from_x) <= fabs(to_y - from_y);
+
+    if (steep) {
+        *x1 = from_x + extra_width + aa_width;
+        *y1 = from_y;
+        *x2 = to_x + extra_width + aa_width;
+        *y2 = to_y;
+        *x3 = from_x + extra_width - aa_width;
+        *y3 = from_y;
+        *x4 = to_x + extra_width - aa_width;
+        *y4 = to_y;
+    }
+    else {
+        *x1 = from_x;
+        *y1 = from_y + extra_width + aa_width;
+        *x2 = to_x;
+        *y2 = to_y + extra_width + aa_width;
+        *x3 = from_x;
+        *y3 = from_y + extra_width - aa_width;
+        *x4 = to_x;
+        *y4 = to_y + extra_width - aa_width;
     }
 }
 
