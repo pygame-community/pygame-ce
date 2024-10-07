@@ -52,7 +52,7 @@ intersect_point(float x1, float y1, float x2, float y2, float x3, float y3,
                 float x4, float y4, float *x, float *y);
 static void
 line_width_corners(float from_x, float from_y, float to_x, float to_y,
-                   int width, float *x1, float *y1, float *x2, float *y2,
+                   float width, float *x1, float *y1, float *x2, float *y2,
                    float *x3, float *y3, float *x4, float *y4);
 static void
 draw_aaline(SDL_Surface *surf, Uint32 color, float startx, float starty,
@@ -426,9 +426,6 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         line_width_corners(last_x, last_y, prev_x, prev_y, width - 1.5,
                            &prev_ilfx, &prev_ilfy, &prev_iltx, &prev_ilty,
                            &prev_irfx, &prev_irfy, &prev_irtx, &prev_irty);
-        if (closed) {
-            // copy/move first point to end of xlist and ylist  // PROBLEM
-        }
 
         // Loop over all points, skipping first one
         for (loop = 1; loop < length; ++loop) {
@@ -439,6 +436,7 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
             line_width_corners(prev_x, prev_y, point_x, point_y, width - 1.5,
                                &ilfx, &ilfy, &iltx, &ilty, &irfx, &irfy, &irtx,
                                &irty);
+
             orig_ilfx = ilfx;
             orig_ilfy = ilfy;
             orig_irfx = irfx;
@@ -450,9 +448,9 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
                 if (lfx != prev_ltx || lfy != prev_lty) {
                     intersect_point(rfx, rfy, rtx, rty, prev_rfx, prev_rfy,
                                     prev_rtx, prev_rty, &rfx, &rfy);
-                    // intersect_point(irfx, irfy, irtx, irty, prev_irfx,
-                    //                 prev_irfy, prev_irtx, prev_irty, &irfx,
-                    //                 &irfy);
+                    intersect_point(irfx, irfy, irtx, irty, prev_irfx,
+                                    prev_irfy, prev_irtx, prev_irty, &irfx,
+                                    &irfy);
                 }
                 else {
                     if (is_intersect(lfx, lfy, ltx, lty, prev_rfx, prev_rfy,
@@ -460,18 +458,18 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
                         // special case where both points are mismatched
                         intersect_point(rfx, rfy, rtx, rty, prev_lfx, prev_lfy,
                                         prev_ltx, prev_lty, &rfx, &rfy);
-                        // intersect_point(irfx, irfy, irtx, irty, prev_ilfx,
-                        //                 prev_ilfy, prev_iltx, prev_ilty,
-                        //                 &irfx, &irfy);
+                        intersect_point(irfx, irfy, irtx, irty, prev_ilfx,
+                                        prev_ilfy, prev_iltx, prev_ilty, &irfx,
+                                        &irfy);
                     }
                 }
                 // Right
                 if (rfx != prev_rtx || rfy != prev_rty) {
                     intersect_point(lfx, lfy, ltx, lty, prev_lfx, prev_lfy,
                                     prev_ltx, prev_lty, &lfx, &lfy);
-                    // intersect_point(ilfx, ilfy, iltx, ilty, prev_ilfx,
-                    //                 prev_ilfy, prev_iltx, prev_ilty, &ilfx,
-                    //                 &ilfy);
+                    intersect_point(ilfx, ilfy, iltx, ilty, prev_ilfx,
+                                    prev_ilfy, prev_iltx, prev_ilty, &ilfx,
+                                    &ilfy);
                 }
                 else {
                     if (is_intersect(rfx, rfy, rtx, rty, prev_lfx, prev_lfy,
@@ -479,9 +477,9 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
                         // special case where both points are mismatched
                         intersect_point(lfx, lfy, ltx, lty, prev_rfx, prev_rfy,
                                         prev_rtx, prev_rty, &lfx, &lfy);
-                        // intersect_point(ilfx, ilfy, iltx, ilty, prev_irfx,
-                        //                 prev_irfy, prev_irtx, prev_irty,
-                        //                 &ilfx, &ilfy);
+                        intersect_point(ilfx, ilfy, iltx, ilty, prev_irfx,
+                                        prev_irfy, prev_irtx, prev_irty, &ilfx,
+                                        &ilfy);
                     }
                 }
             }
@@ -493,7 +491,7 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
             right_ylist[loop - 1] = rfy;
 
             // Fill gaps in corners
-            if (closed || (!closed && loop != 1)) {
+            if (closed || loop != 1) {
                 // This line
                 corner_xlist[0] = ilfx;
                 corner_xlist[1] = orig_ilfx;
@@ -503,15 +501,16 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
                 corner_ylist[1] = orig_ilfy;
                 corner_ylist[2] = irfy;
                 corner_ylist[3] = orig_irfy;
-                for (corner_loop = 0; corner_loop < length; ++corner_loop) {
+                for (corner_loop = 0; corner_loop < 4; ++corner_loop) {
                     int_corner_xlist[corner_loop] =
                         roundf(corner_xlist[corner_loop]);
                     int_corner_ylist[corner_loop] =
                         roundf(corner_ylist[corner_loop]);
                 }
-                // polygon(int_corner_xlist, int_corner_ylist)
-                // draw_aalines(surf, color, corner_xlist, corner_ylist,
-                // closed, length, drawn_area);
+                draw_fillpoly(surf, int_corner_xlist, int_corner_ylist, 4,
+                              color, drawn_area);
+                draw_aalines(surf, color, corner_xlist, corner_ylist, 1, 4,
+                             drawn_area);
                 if (orig_ilfx != prev_iltx && orig_ilfy != prev_ilty &&
                     orig_irfx != prev_irtx && orig_irfy != prev_irty) {
                     // Previous line
@@ -519,16 +518,16 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
                     corner_xlist[3] = prev_irtx;
                     corner_ylist[1] = prev_ilty;
                     corner_ylist[3] = prev_irty;
-                    for (corner_loop = 0; corner_loop < length;
-                         ++corner_loop) {
+                    for (corner_loop = 0; corner_loop < 4; ++corner_loop) {
                         int_corner_xlist[corner_loop] =
                             roundf(corner_xlist[corner_loop]);
                         int_corner_ylist[corner_loop] =
                             roundf(corner_ylist[corner_loop]);
                     }
-                    // polygon(int_corner_xlist, int_corner_ylist)
-                    // draw_aalines(surf, color, corner_xlist, corner_ylist,
-                    // closed, length, drawn_area);
+                    draw_fillpoly(surf, int_corner_xlist, int_corner_ylist, 4,
+                                  color, drawn_area);
+                    draw_aalines(surf, color, corner_xlist, corner_ylist, 1, 4,
+                                 drawn_area);
                 }
             }
 
@@ -2136,11 +2135,11 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
 // first two points assemble left line and second two - right line
 static void
 line_width_corners(float from_x, float from_y, float to_x, float to_y,
-                   int width, float *x1, float *y1, float *x2, float *y2,
+                   float width, float *x1, float *y1, float *x2, float *y2,
                    float *x3, float *y3, float *x4, float *y4)
 {
-    float aa_width = (float)width / 2;
-    float extra_width = (1.0f - (width % 2)) / 2;
+    float aa_width = width / 2;
+    float extra_width = (1.0f - ((int)width % 2)) / 2;
     int steep = fabs(to_x - from_x) <= fabs(to_y - from_y);
 
     if (steep) {
