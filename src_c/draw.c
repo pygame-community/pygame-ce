@@ -62,6 +62,9 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float startx, float starty,
 static void
 draw_aalines(SDL_Surface *surf, Uint32 color, float *xlist, float *ylist,
              int closed, Py_ssize_t length, int *drawn_area);
+static PG_FORCEINLINE void
+draw_aalines_width(SDL_Surface *surf, Uint32 color, float *xlist, float *ylist,
+                   int closed, Py_ssize_t length, int width, int *drawn_area);
 static void
 draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
          int radius2, int width, double angle_start, double angle_stop,
@@ -386,212 +389,8 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         draw_aalines(surf, color, xlist, ylist, closed, length, drawn_area);
     }
     else {
-        /* Variables naming:
-         * prev_- - Variable is for previous point
-         * orig_- - Original value, not changed by intersecting
-         * -i- - This is "inner" point, from lines with slightly lower width
-         * -l/r/- - This coordinate is on left or right side of draw.lines
-         * -f/t- - from/to, this is either startig or ending point
-         * -x/y - X and Y coordinates of one same point
-         */
-        float *left_xlist, *left_ylist, *right_xlist, *right_ylist,
-            *corner_xlist, *corner_ylist;
-        int *int_corner_xlist, *int_corner_ylist;
-        float point_x, point_y, prev_x, prev_y, last_x, last_y;
-        float prev_lfx, prev_lfy, prev_ltx, prev_lty, prev_rfx, prev_rfy,
-            prev_rtx, prev_rty;
-        float prev_ilfx, prev_ilfy, prev_iltx, prev_ilty, prev_irfx, prev_irfy,
-            prev_irtx, prev_irty;
-        float lfx, lfy, ltx, lty, rfx, rfy, rtx, rty;
-        float ilfx, ilfy, iltx, ilty, irfx, irfy, irtx, irty;
-        float orig_ilfx, orig_ilfy, orig_irfx, orig_irfy;
-        left_xlist = PyMem_New(float, length);
-        left_ylist = PyMem_New(float, length);
-        right_xlist = PyMem_New(float, length);
-        right_ylist = PyMem_New(float, length);
-        corner_xlist = PyMem_New(float, 4);
-        corner_ylist = PyMem_New(float, 4);
-        int_corner_xlist = PyMem_New(int, 4);
-        int_corner_ylist = PyMem_New(int, 4);
-        Py_ssize_t corner_loop;
-
-        // Data for initial points
-        prev_x = xlist[0];
-        prev_y = ylist[0];
-        last_x = xlist[length - 1];
-        last_y = ylist[length - 1];
-        line_width_corners(last_x, last_y, prev_x, prev_y, width, &prev_lfx,
-                           &prev_lfy, &prev_ltx, &prev_lty, &prev_rfx,
-                           &prev_rfy, &prev_rtx, &prev_rty);
-        line_width_corners(last_x, last_y, prev_x, prev_y, width - 1.5,
-                           &prev_ilfx, &prev_ilfy, &prev_iltx, &prev_ilty,
-                           &prev_irfx, &prev_irfy, &prev_irtx, &prev_irty);
-
-        // Loop over all points, skipping first one
-        for (loop = 1; loop < length + closed; ++loop) {
-            if (closed && (loop == length)) {
-                // extra iteration to allow filling gaps on closed aaline
-                point_x = xlist[0];
-                point_y = ylist[0];
-            }
-            else {
-                point_x = xlist[loop];
-                point_y = ylist[loop];
-            }
-
-            line_width_corners(prev_x, prev_y, point_x, point_y, width, &lfx,
-                               &lfy, &ltx, &lty, &rfx, &rfy, &rtx, &rty);
-            line_width_corners(prev_x, prev_y, point_x, point_y, width - 1.5,
-                               &ilfx, &ilfy, &iltx, &ilty, &irfx, &irfy, &irtx,
-                               &irty);
-
-            orig_ilfx = ilfx;
-            orig_ilfy = ilfy;
-            orig_irfx = irfx;
-            orig_irfy = irfy;
-
-            // Find and change corners
-            if (loop != 1 || (loop == 1 && closed)) {
-                // Left
-                if (lfx != prev_ltx || lfy != prev_lty) {
-                    intersect_point(rfx, rfy, rtx, rty, prev_rfx, prev_rfy,
-                                    prev_rtx, prev_rty, &rfx, &rfy);
-                    intersect_point(irfx, irfy, irtx, irty, prev_irfx,
-                                    prev_irfy, prev_irtx, prev_irty, &irfx,
-                                    &irfy);
-                }
-                else {
-                    if (is_intersect(lfx, lfy, ltx, lty, prev_rfx, prev_rfy,
-                                     prev_rtx, prev_rty)) {
-                        // special case where both points are mismatched
-                        intersect_point(rfx, rfy, rtx, rty, prev_lfx, prev_lfy,
-                                        prev_ltx, prev_lty, &rfx, &rfy);
-                        intersect_point(irfx, irfy, irtx, irty, prev_ilfx,
-                                        prev_ilfy, prev_iltx, prev_ilty, &irfx,
-                                        &irfy);
-                    }
-                }
-                // Right
-                if (rfx != prev_rtx || rfy != prev_rty) {
-                    intersect_point(lfx, lfy, ltx, lty, prev_lfx, prev_lfy,
-                                    prev_ltx, prev_lty, &lfx, &lfy);
-                    intersect_point(ilfx, ilfy, iltx, ilty, prev_ilfx,
-                                    prev_ilfy, prev_iltx, prev_ilty, &ilfx,
-                                    &ilfy);
-                }
-                else {
-                    if (is_intersect(rfx, rfy, rtx, rty, prev_lfx, prev_lfy,
-                                     prev_ltx, prev_lty)) {
-                        // special case where both points are mismatched
-                        intersect_point(lfx, lfy, ltx, lty, prev_rfx, prev_rfy,
-                                        prev_rtx, prev_rty, &lfx, &lfy);
-                        intersect_point(ilfx, ilfy, iltx, ilty, prev_irfx,
-                                        prev_irfy, prev_irtx, prev_irty, &ilfx,
-                                        &ilfy);
-                    }
-                }
-            }
-
-            // For aalines
-            left_xlist[loop - 1] = lfx;
-            left_ylist[loop - 1] = lfy;
-            right_xlist[loop - 1] = rfx;
-            right_ylist[loop - 1] = rfy;
-
-            // Fill gaps in corners
-            if (closed || loop != 1) {
-                // This line
-                corner_xlist[0] = ilfx;
-                corner_xlist[1] = orig_ilfx;
-                corner_xlist[2] = irfx;
-                corner_xlist[3] = orig_irfx;
-                corner_ylist[0] = ilfy;
-                corner_ylist[1] = orig_ilfy;
-                corner_ylist[2] = irfy;
-                corner_ylist[3] = orig_irfy;
-                for (corner_loop = 0; corner_loop < 4; ++corner_loop) {
-                    int_corner_xlist[corner_loop] =
-                        roundf(corner_xlist[corner_loop]);
-                    int_corner_ylist[corner_loop] =
-                        roundf(corner_ylist[corner_loop]);
-                }
-                draw_fillpoly(surf, int_corner_xlist, int_corner_ylist, 4,
-                              color, drawn_area);
-                draw_aalines(surf, color, corner_xlist, corner_ylist, 1, 4,
-                             drawn_area);
-                if (orig_ilfx != prev_iltx && orig_ilfy != prev_ilty &&
-                    orig_irfx != prev_irtx && orig_irfy != prev_irty) {
-                    // Previous line
-                    corner_xlist[1] = prev_iltx;
-                    corner_xlist[3] = prev_irtx;
-                    corner_ylist[1] = prev_ilty;
-                    corner_ylist[3] = prev_irty;
-                    for (corner_loop = 0; corner_loop < 4; ++corner_loop) {
-                        int_corner_xlist[corner_loop] =
-                            roundf(corner_xlist[corner_loop]);
-                        int_corner_ylist[corner_loop] =
-                            roundf(corner_ylist[corner_loop]);
-                    }
-                    draw_fillpoly(surf, int_corner_xlist, int_corner_ylist, 4,
-                                  color, drawn_area);
-                    draw_aalines(surf, color, corner_xlist, corner_ylist, 1, 4,
-                                 drawn_area);
-                }
-            }
-
-            // Data for the next iteration
-            prev_x = point_x;
-            prev_y = point_y;
-            prev_lfx = lfx;
-            prev_lfy = lfy;
-            prev_ltx = ltx;
-            prev_lty = lty;
-            prev_rfx = rfx;
-            prev_rfy = rfy;
-            prev_rtx = rtx;
-            prev_rty = rty;
-            prev_ilfx = ilfx;
-            prev_ilfy = ilfy;
-            prev_iltx = iltx;
-            prev_ilty = ilty;
-            prev_irfx = irfx;
-            prev_irfy = irfy;
-            prev_irtx = irtx;
-            prev_irty = irty;
-        }
-
-        // Last point for open aalines
-        if (!closed) {
-            left_xlist[length - 1] = ltx;
-            left_ylist[length - 1] = lty;
-            right_xlist[length - 1] = rtx;
-            right_ylist[length - 1] = rty;
-        }
-
-        // Drawing lines
-        for (loop = 1; loop < length; ++loop) {
-            draw_line_width(surf, color, xlist[loop - 1], ylist[loop - 1],
-                            xlist[loop], ylist[loop], width, drawn_area);
-        }
-        if (closed && length > 2) {
-            draw_line_width(surf, color, xlist[length - 1], ylist[length - 1],
-                            xlist[0], ylist[0], width, drawn_area);
-        }
-
-        // Drawing aalines
-        draw_aalines(surf, color, left_xlist, left_ylist, closed, length,
-                     drawn_area);
-        draw_aalines(surf, color, right_xlist, right_ylist, closed, length,
-                     drawn_area);
-
-        PyMem_Free(left_xlist);
-        PyMem_Free(left_ylist);
-        PyMem_Free(right_xlist);
-        PyMem_Free(right_ylist);
-        PyMem_Free(corner_xlist);
-        PyMem_Free(corner_ylist);
-        PyMem_Free(int_corner_xlist);
-        PyMem_Free(int_corner_ylist);
+        draw_aalines_width(surf, color, xlist, ylist, closed, length, width,
+                           drawn_area);
     }
 
     PyMem_Free(xlist);
@@ -1356,7 +1155,7 @@ compare_int(const void *a, const void *b)
     return (*(const int *)a) - (*(const int *)b);
 }
 
-static int
+static PG_FORCEINLINE int
 ccw(float x1, float y1, float x2, float y2, float x3, float y3)
 {
     return (y3 - y1) * (x2 - x1) > (y2 - y1) * (x3 - x1);
@@ -1862,6 +1661,216 @@ draw_aalines(SDL_Surface *surf, Uint32 color, float *xlist, float *ylist,
         draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
                     disable_endpoints, disable_endpoints, extra_px);
     }
+}
+
+static PG_FORCEINLINE void
+draw_aalines_width(SDL_Surface *surf, Uint32 color, float *xlist, float *ylist,
+                   int closed, Py_ssize_t length, int width, int *drawn_area)
+{
+    /* Variables naming:
+     * prev_- - Variable is for previous point
+     * orig_- - Original value, not changed by intersecting
+     * -i- - This is "inner" point, from lines with slightly lower width
+     * -l/r/- - This coordinate is on left or right side of draw.lines
+     * -f/t- - from/to, this is either startig or ending point
+     * -x/y - X and Y coordinates of one same point
+     */
+    float *left_xlist, *left_ylist, *right_xlist, *right_ylist, *corner_xlist,
+        *corner_ylist;
+    int *int_corner_xlist, *int_corner_ylist;
+    float point_x, point_y, prev_x, prev_y, last_x, last_y;
+    float prev_lfx, prev_lfy, prev_ltx, prev_lty, prev_rfx, prev_rfy, prev_rtx,
+        prev_rty;
+    float prev_ilfx, prev_ilfy, prev_iltx, prev_ilty, prev_irfx, prev_irfy,
+        prev_irtx, prev_irty;
+    float lfx, lfy, ltx, lty, rfx, rfy, rtx, rty;
+    float ilfx, ilfy, iltx, ilty, irfx, irfy, irtx, irty;
+    float orig_ilfx, orig_ilfy, orig_irfx, orig_irfy;
+    left_xlist = PyMem_New(float, length);
+    left_ylist = PyMem_New(float, length);
+    right_xlist = PyMem_New(float, length);
+    right_ylist = PyMem_New(float, length);
+    corner_xlist = PyMem_New(float, 4);
+    corner_ylist = PyMem_New(float, 4);
+    int_corner_xlist = PyMem_New(int, 4);
+    int_corner_ylist = PyMem_New(int, 4);
+    Py_ssize_t loop, corner_loop;
+
+    // Data for initial points
+    prev_x = xlist[0];
+    prev_y = ylist[0];
+    last_x = xlist[length - 1];
+    last_y = ylist[length - 1];
+    line_width_corners(last_x, last_y, prev_x, prev_y, width, &prev_lfx,
+                       &prev_lfy, &prev_ltx, &prev_lty, &prev_rfx, &prev_rfy,
+                       &prev_rtx, &prev_rty);
+    line_width_corners(last_x, last_y, prev_x, prev_y, width - 1.5, &prev_ilfx,
+                       &prev_ilfy, &prev_iltx, &prev_ilty, &prev_irfx,
+                       &prev_irfy, &prev_irtx, &prev_irty);
+
+    // Loop over all points, skipping first one
+    for (loop = 1; loop < length + closed; ++loop) {
+        if (closed && (loop == length)) {
+            // extra iteration to allow filling gaps on closed aaline
+            point_x = xlist[0];
+            point_y = ylist[0];
+        }
+        else {
+            point_x = xlist[loop];
+            point_y = ylist[loop];
+        }
+
+        line_width_corners(prev_x, prev_y, point_x, point_y, width, &lfx, &lfy,
+                           &ltx, &lty, &rfx, &rfy, &rtx, &rty);
+        line_width_corners(prev_x, prev_y, point_x, point_y, width - 1.5,
+                           &ilfx, &ilfy, &iltx, &ilty, &irfx, &irfy, &irtx,
+                           &irty);
+
+        orig_ilfx = ilfx;
+        orig_ilfy = ilfy;
+        orig_irfx = irfx;
+        orig_irfy = irfy;
+
+        // Find and change corners
+        if (loop != 1 || (loop == 1 && closed)) {
+            // Left
+            if (lfx != prev_ltx || lfy != prev_lty) {
+                intersect_point(rfx, rfy, rtx, rty, prev_rfx, prev_rfy,
+                                prev_rtx, prev_rty, &rfx, &rfy);
+                intersect_point(irfx, irfy, irtx, irty, prev_irfx, prev_irfy,
+                                prev_irtx, prev_irty, &irfx, &irfy);
+            }
+            else {
+                if (is_intersect(lfx, lfy, ltx, lty, prev_rfx, prev_rfy,
+                                 prev_rtx, prev_rty)) {
+                    // special case where both points are mismatched
+                    intersect_point(rfx, rfy, rtx, rty, prev_lfx, prev_lfy,
+                                    prev_ltx, prev_lty, &rfx, &rfy);
+                    intersect_point(irfx, irfy, irtx, irty, prev_ilfx,
+                                    prev_ilfy, prev_iltx, prev_ilty, &irfx,
+                                    &irfy);
+                }
+            }
+            // Right
+            if (rfx != prev_rtx || rfy != prev_rty) {
+                intersect_point(lfx, lfy, ltx, lty, prev_lfx, prev_lfy,
+                                prev_ltx, prev_lty, &lfx, &lfy);
+                intersect_point(ilfx, ilfy, iltx, ilty, prev_ilfx, prev_ilfy,
+                                prev_iltx, prev_ilty, &ilfx, &ilfy);
+            }
+            else {
+                if (is_intersect(rfx, rfy, rtx, rty, prev_lfx, prev_lfy,
+                                 prev_ltx, prev_lty)) {
+                    // special case where both points are mismatched
+                    intersect_point(lfx, lfy, ltx, lty, prev_rfx, prev_rfy,
+                                    prev_rtx, prev_rty, &lfx, &lfy);
+                    intersect_point(ilfx, ilfy, iltx, ilty, prev_irfx,
+                                    prev_irfy, prev_irtx, prev_irty, &ilfx,
+                                    &ilfy);
+                }
+            }
+        }
+
+        // For aalines
+        left_xlist[loop - 1] = lfx;
+        left_ylist[loop - 1] = lfy;
+        right_xlist[loop - 1] = rfx;
+        right_ylist[loop - 1] = rfy;
+
+        // Fill gaps in corners
+        if (closed || loop != 1) {
+            // This line
+            corner_xlist[0] = ilfx;
+            corner_xlist[1] = orig_ilfx;
+            corner_xlist[2] = irfx;
+            corner_xlist[3] = orig_irfx;
+            corner_ylist[0] = ilfy;
+            corner_ylist[1] = orig_ilfy;
+            corner_ylist[2] = irfy;
+            corner_ylist[3] = orig_irfy;
+            for (corner_loop = 0; corner_loop < 4; ++corner_loop) {
+                int_corner_xlist[corner_loop] =
+                    roundf(corner_xlist[corner_loop]);
+                int_corner_ylist[corner_loop] =
+                    roundf(corner_ylist[corner_loop]);
+            }
+            draw_fillpoly(surf, int_corner_xlist, int_corner_ylist, 4, color,
+                          drawn_area);
+            draw_aalines(surf, color, corner_xlist, corner_ylist, 1, 4,
+                         drawn_area);
+            if (orig_ilfx != prev_iltx && orig_ilfy != prev_ilty &&
+                orig_irfx != prev_irtx && orig_irfy != prev_irty) {
+                // Previous line
+                corner_xlist[1] = prev_iltx;
+                corner_xlist[3] = prev_irtx;
+                corner_ylist[1] = prev_ilty;
+                corner_ylist[3] = prev_irty;
+                for (corner_loop = 0; corner_loop < 4; ++corner_loop) {
+                    int_corner_xlist[corner_loop] =
+                        roundf(corner_xlist[corner_loop]);
+                    int_corner_ylist[corner_loop] =
+                        roundf(corner_ylist[corner_loop]);
+                }
+                draw_fillpoly(surf, int_corner_xlist, int_corner_ylist, 4,
+                              color, drawn_area);
+                draw_aalines(surf, color, corner_xlist, corner_ylist, 1, 4,
+                             drawn_area);
+            }
+        }
+
+        // Data for the next iteration
+        prev_x = point_x;
+        prev_y = point_y;
+        prev_lfx = lfx;
+        prev_lfy = lfy;
+        prev_ltx = ltx;
+        prev_lty = lty;
+        prev_rfx = rfx;
+        prev_rfy = rfy;
+        prev_rtx = rtx;
+        prev_rty = rty;
+        prev_ilfx = ilfx;
+        prev_ilfy = ilfy;
+        prev_iltx = iltx;
+        prev_ilty = ilty;
+        prev_irfx = irfx;
+        prev_irfy = irfy;
+        prev_irtx = irtx;
+        prev_irty = irty;
+    }
+
+    // Last point for open aalines
+    if (!closed) {
+        left_xlist[length - 1] = ltx;
+        left_ylist[length - 1] = lty;
+        right_xlist[length - 1] = rtx;
+        right_ylist[length - 1] = rty;
+    }
+
+    // Drawing lines
+    for (loop = 1; loop < length; ++loop) {
+        draw_line_width(surf, color, xlist[loop - 1], ylist[loop - 1],
+                        xlist[loop], ylist[loop], width, drawn_area);
+    }
+    if (closed && length > 2) {
+        draw_line_width(surf, color, xlist[length - 1], ylist[length - 1],
+                        xlist[0], ylist[0], width, drawn_area);
+    }
+
+    // Drawing aalines
+    draw_aalines(surf, color, left_xlist, left_ylist, closed, length,
+                 drawn_area);
+    draw_aalines(surf, color, right_xlist, right_ylist, closed, length,
+                 drawn_area);
+
+    PyMem_Free(left_xlist);
+    PyMem_Free(left_ylist);
+    PyMem_Free(right_xlist);
+    PyMem_Free(right_ylist);
+    PyMem_Free(corner_xlist);
+    PyMem_Free(corner_ylist);
+    PyMem_Free(int_corner_xlist);
+    PyMem_Free(int_corner_ylist);
 }
 
 static void
