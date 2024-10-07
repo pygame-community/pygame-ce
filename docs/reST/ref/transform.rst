@@ -279,6 +279,42 @@ Instead, always begin with the original image and scale to the desired size.)
 
    .. ## pygame.transform.gaussian_blur ##
 
+.. function:: bloom
+
+   | :sl:`apply the bloom effect to a surface`
+   | :sg:`bloom(surface, blur_radius, intensity, luminance_threshold=0.5, blur_type='gaussian', dest_surface=None) -> Surface`
+
+   Returns a surface where the bright pixels are blurred and added to the original
+   surface resulting in a bloom effect. The alpha of the pixels is preserved.
+
+   :param Surface surface: The input surface. Does not work for indexed surfaces
+      and for surfaces with less than 24 bits. A ``ValueError`` will be throw in that case.
+
+   :param int blur_radius: The radius (in pixels) that the selected blur will use.
+      Cannot be less than ``0`` and a value of ``0`` won't modify the surface.
+
+   :param float intensity: Acts as a brightness multiplier for the luminance filter.
+      Values less or equal to zero won't modify the surface. Values greater or equal
+      to ``255`` will produce the same result, making the bright parts completely white.
+
+   :param float luminance_threshold: Luminance is a property of each pixel in the range 0-1
+      (regardless of alpha). The luminance threshold selects the minimum luminance
+      required for a pixel to be considered bright. A value of ``0`` will allow every
+      pixel while a value of ``1`` will discard every pixel and won't modify the surface.
+
+   :param str blur_type: Specifies the blur to use. Allowed values are ``"box"`` and ``"gaussian"``.
+
+   :param Surface dest_surface: An optional destination surface which is faster than creating
+      a new Surface. This destination surface must have the same dimensions (width, height) and
+      depth and format as the source Surface.
+
+   .. note:: A higher blur radius will be smoother but will be slower. The default
+      gaussian blur will be more precise but box blur is many times faster, which
+      is preferred for real-time effects. Using real-time bloom on very big surfaces
+      is generally not advised, caching is preferred.
+
+   .. versionadded:: 2.5.2
+
 .. function:: average_surfaces
 
    | :sl:`find the average surface from many surfaces.`
