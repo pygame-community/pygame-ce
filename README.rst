@@ -8,7 +8,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-**English** `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_
+**English** `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Русский`_
 ---------------------------------------------------------------------------------------------------
 
 Pygame_ is a free and open-source cross-platform library
@@ -220,3 +220,4 @@ See docs/licenses for licenses of dependencies.
 .. _فارسی: ./docs/readmes/README.fa.rst
 .. _Español: ./docs/readmes/README.es.rst
 .. _日本語: ./docs/readmes/README.ja.rst
+.. _Русский: ./docs/readmes/README.ru.rst
