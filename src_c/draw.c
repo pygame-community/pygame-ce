@@ -428,9 +428,17 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
                            &prev_irfx, &prev_irfy, &prev_irtx, &prev_irty);
 
         // Loop over all points, skipping first one
-        for (loop = 1; loop < length; ++loop) {
-            point_x = xlist[loop];
-            point_y = ylist[loop];
+        for (loop = 1; loop < length + closed; ++loop) {
+            if (closed && (loop == length)) {
+                // extra iteration to allow filling gaps on closed aaline
+                point_x = xlist[0];
+                point_y = ylist[0];
+            }
+            else {
+                point_x = xlist[loop];
+                point_y = ylist[loop];
+            }
+
             line_width_corners(prev_x, prev_y, point_x, point_y, width, &lfx,
                                &lfy, &ltx, &lty, &rfx, &rfy, &rtx, &rty);
             line_width_corners(prev_x, prev_y, point_x, point_y, width - 1.5,
@@ -552,11 +560,13 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
             prev_irty = irty;
         }
 
-        // Last point for aalines
-        left_xlist[length - 1] = ltx;
-        left_ylist[length - 1] = lty;
-        right_xlist[length - 1] = rtx;
-        right_ylist[length - 1] = rty;
+        // Last point for open aalines
+        if (!closed) {
+            left_xlist[length - 1] = ltx;
+            left_ylist[length - 1] = lty;
+            right_xlist[length - 1] = rtx;
+            right_ylist[length - 1] = rty;
+        }
 
         // Drawing lines
         for (loop = 1; loop < length; ++loop) {
