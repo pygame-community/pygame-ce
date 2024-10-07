@@ -373,6 +373,9 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         ylist[loop] = y;
     }
 
+    x = xlist[0];
+    y = ylist[0];
+
     if (width < 1) {
         PyMem_Free(xlist);
         PyMem_Free(ylist);
