@@ -20,6 +20,7 @@ def polygon(
     color: ColorLike,
     points: SequenceLike[Point],
     width: int = 0,
+    border_radius: int = 0,
 ) -> Rect: ...
 def circle(
     surface: Surface,
