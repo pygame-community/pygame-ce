@@ -2409,7 +2409,6 @@ scroll(SDL_Surface *surf, int dx, int dy, int x, int y, int w, int h,
                     }
                     if (erase) {
                         memset(linesrc, 0, span);
-
                         // Fix the missing pixel bug
                         if (dx < 0) {
                             memset(pastesrc + span + xoffset, 0, -xoffset);
