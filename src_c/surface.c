@@ -2388,7 +2388,7 @@ scroll(SDL_Surface *surf, int dx, int dy, int x, int y, int w, int h,
             free(tempbuf);
         }
     }
-    else {
+    else /* don't repeat */ {
         if (dy != 0) {
             /* Copy the current line to a before or after position if it's
                valid with consideration of x offset and memset to avoid
@@ -2409,6 +2409,14 @@ scroll(SDL_Surface *surf, int dx, int dy, int x, int y, int w, int h,
                     }
                     if (erase) {
                         memset(linesrc, 0, span);
+
+                        // Fix the missing pixel bug
+                        if ((dy > 0 && dx < 0) || (dy < 0 && dx < 0)) {
+                            memset(pastesrc + span + xoffset, 0, -xoffset);
+                        }
+                        else if ((dy < 0 && dx > 0) || (dy > 0 && dx > 0)) {
+                            memset(pastesrc, 0, xoffset);
+                        }
                     }
                 }
                 linesrc += yincrease;
