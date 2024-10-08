@@ -88,6 +88,6 @@ def aalines(
     surface: Surface,
     color: ColorLike,
     closed: bool,
-    width: int = 1,
     points: SequenceLike[Point],
+    width: int = 1,
 ) -> Rect: ...
