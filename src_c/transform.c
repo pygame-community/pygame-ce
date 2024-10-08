@@ -1090,7 +1090,7 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
-    if (dest_surface == NULL || dest_surface == Py_None) {
+    if (!dest_surface) {
         if (adjust_size) {
             start = MIN(MIN(x1, x2), MIN(x3, x4));
             width = MAX(MAX(x1, x2), MAX(x3, x4)) - start + 1;
