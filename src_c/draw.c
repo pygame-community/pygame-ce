@@ -184,8 +184,8 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     if (width > 1) {
         float x1, y1, x2, y2, x3, y3, x4, y4;
-        line_width_corners(startx, starty, endx, endy, width, &x1, &y1, &x2,
-                           &y2, &x3, &y3, &x4, &y4);
+        line_width_corners(startx, starty, endx, endy, (float)width, &x1, &y1,
+                           &x2, &y2, &x3, &y3, &x4, &y4);
         draw_line_width(surf, color, (int)startx, (int)starty, (int)endx,
                         (int)endy, width, drawn_area);
         draw_aaline(surf, color, x1, y1, x2, y2, drawn_area, 0, 0, 0);
@@ -379,7 +379,7 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     if (width < 1) {
         PyMem_Free(xlist);
         PyMem_Free(ylist);
-        return pgRect_New4(x, y, 0, 0);
+        return pgRect_New4((int)x, (int)y, 0, 0);
     }
 
     if (!pgSurface_Lock(surfobj)) {
@@ -1704,12 +1704,12 @@ draw_aalines_width(SDL_Surface *surf, Uint32 color, float *xlist, float *ylist,
     prev_y = ylist[0];
     last_x = xlist[length - 1];
     last_y = ylist[length - 1];
-    line_width_corners(last_x, last_y, prev_x, prev_y, width, &prev_lfx,
+    line_width_corners(last_x, last_y, prev_x, prev_y, (float)width, &prev_lfx,
                        &prev_lfy, &prev_ltx, &prev_lty, &prev_rfx, &prev_rfy,
                        &prev_rtx, &prev_rty);
-    line_width_corners(last_x, last_y, prev_x, prev_y, width - 1.5, &prev_ilfx,
-                       &prev_ilfy, &prev_iltx, &prev_ilty, &prev_irfx,
-                       &prev_irfy, &prev_irtx, &prev_irty);
+    line_width_corners(last_x, last_y, prev_x, prev_y, (float)width - 1.5f,
+                       &prev_ilfx, &prev_ilfy, &prev_iltx, &prev_ilty,
+                       &prev_irfx, &prev_irfy, &prev_irtx, &prev_irty);
 
     // Loop over all points, skipping first one
     for (loop = 1; loop < length + closed; ++loop) {
@@ -1723,11 +1723,11 @@ draw_aalines_width(SDL_Surface *surf, Uint32 color, float *xlist, float *ylist,
             point_y = ylist[loop];
         }
 
-        line_width_corners(prev_x, prev_y, point_x, point_y, width, &lfx, &lfy,
-                           &ltx, &lty, &rfx, &rfy, &rtx, &rty);
-        line_width_corners(prev_x, prev_y, point_x, point_y, width - 1.5,
-                           &ilfx, &ilfy, &iltx, &ilty, &irfx, &irfy, &irtx,
-                           &irty);
+        line_width_corners(prev_x, prev_y, point_x, point_y, (float)width,
+                           &lfx, &lfy, &ltx, &lty, &rfx, &rfy, &rtx, &rty);
+        line_width_corners(prev_x, prev_y, point_x, point_y,
+                           (float)width - 1.5f, &ilfx, &ilfy, &iltx, &ilty,
+                           &irfx, &irfy, &irtx, &irty);
 
         orig_ilfx = ilfx;
         orig_ilfy = ilfy;
@@ -1793,9 +1793,9 @@ draw_aalines_width(SDL_Surface *surf, Uint32 color, float *xlist, float *ylist,
             corner_ylist[3] = orig_irfy;
             for (corner_loop = 0; corner_loop < 4; ++corner_loop) {
                 int_corner_xlist[corner_loop] =
-                    roundf(corner_xlist[corner_loop]);
+                    (int)roundf(corner_xlist[corner_loop]);
                 int_corner_ylist[corner_loop] =
-                    roundf(corner_ylist[corner_loop]);
+                    (int)roundf(corner_ylist[corner_loop]);
             }
             draw_fillpoly(surf, int_corner_xlist, int_corner_ylist, 4, color,
                           drawn_area);
@@ -1810,9 +1810,9 @@ draw_aalines_width(SDL_Surface *surf, Uint32 color, float *xlist, float *ylist,
                 corner_ylist[3] = prev_irty;
                 for (corner_loop = 0; corner_loop < 4; ++corner_loop) {
                     int_corner_xlist[corner_loop] =
-                        roundf(corner_xlist[corner_loop]);
+                        (int)roundf(corner_xlist[corner_loop]);
                     int_corner_ylist[corner_loop] =
-                        roundf(corner_ylist[corner_loop]);
+                        (int)roundf(corner_ylist[corner_loop]);
                 }
                 draw_fillpoly(surf, int_corner_xlist, int_corner_ylist, 4,
                               color, drawn_area);
@@ -1852,12 +1852,14 @@ draw_aalines_width(SDL_Surface *surf, Uint32 color, float *xlist, float *ylist,
 
     // Drawing lines
     for (loop = 1; loop < length; ++loop) {
-        draw_line_width(surf, color, xlist[loop - 1], ylist[loop - 1],
-                        xlist[loop], ylist[loop], width, drawn_area);
+        draw_line_width(surf, color, (int)xlist[loop - 1],
+                        (int)ylist[loop - 1], (int)xlist[loop],
+                        (int)ylist[loop], width, drawn_area);
     }
     if (closed && length > 2) {
-        draw_line_width(surf, color, xlist[length - 1], ylist[length - 1],
-                        xlist[0], ylist[0], width, drawn_area);
+        draw_line_width(surf, color, (int)xlist[length - 1],
+                        (int)ylist[length - 1], (int)xlist[0], (int)ylist[0],
+                        width, drawn_area);
     }
 
     // Drawing aalines
