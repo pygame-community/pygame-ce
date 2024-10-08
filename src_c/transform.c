@@ -1166,7 +1166,8 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
         }
     }
     else {
-        if (_color_from_obj(colorobj, surf->format, NULL, &bgcolor))
+        if (!pg_MappedColorFromObj(colorobj, surf->format, &bgcolor,
+                                   PG_COLOR_HANDLE_ALL))
             return RAISE(PyExc_TypeError, "invalid bg_color argument");
     }
 
