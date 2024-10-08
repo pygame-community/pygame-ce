@@ -1152,7 +1152,7 @@ class TransformModuleTest(unittest.TestCase):
         s2 = pygame.Surface((32, 32), SRCALPHA, 32)
 
         for color in [(0, 255, 0), (255, 0, 0, 0), 0, "blue", pygame.Color("#FFFFFF")]:
-            pygame.transform.threshold(s1, s2, color, set_behavior=1)
+            pygame.transform.threshold(s1, s2, color, color, color)
 
     def test_laplacian(self):
         """ """
