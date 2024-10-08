@@ -5,6 +5,7 @@
 #define DOC_DRAW_CIRCLE "circle(surface, color, center, radius) -> Rect\ncircle(surface, color, center, radius, width=0, draw_top_right=None, draw_top_left=None, draw_bottom_left=None, draw_bottom_right=None) -> Rect\ndraw a circle"
 #define DOC_DRAW_AACIRCLE "aacircle(surface, color, center, radius) -> Rect\naacircle(surface, color, center, radius, width=0, draw_top_right=None, draw_top_left=None, draw_bottom_left=None, draw_bottom_right=None) -> Rect\ndraw an antialiased circle"
 #define DOC_DRAW_ELLIPSE "ellipse(surface, color, rect) -> Rect\nellipse(surface, color, rect, width=0) -> Rect\ndraw an ellipse"
+#define DOC_DRAW_AAELLIPSE "aaellipse(surface, color, rect) -> Rect\naaellipse(surface, color, rect, width=0) -> Rect\ndraw an antialiased ellipse"
 #define DOC_DRAW_ARC "arc(surface, color, rect, start_angle, stop_angle) -> Rect\narc(surface, color, rect, start_angle, stop_angle, width=1) -> Rect\ndraw an elliptical arc"
 #define DOC_DRAW_LINE "line(surface, color, start_pos, end_pos) -> Rect\nline(surface, color, start_pos, end_pos, width=1) -> Rect\ndraw a straight line"
 #define DOC_DRAW_LINES "lines(surface, color, closed, points) -> Rect\nlines(surface, color, closed, points, width=1) -> Rect\ndraw multiple contiguous straight line segments"
