@@ -104,18 +104,25 @@ Instead, always begin with the original image and scale to the desired size.)
 .. function:: skew
 
    | :sl:`skew an image to specified points`
-   | :sg:`skew(surface, points, bg_color=None, adjust_size=False, dest_surface=None)`
+   | :sg:`skew(surface, points, bg_color=None, adjust_size=True, dest_surface=None)`
 
    This maps an image to a new surface warping the image so that its corners
-   match the provided points. When no destination surface is provided, the
-   adjust_size option will change the size of the resulting surface to be the
-   smallest surface the points are capable of fitting in, otherwhise it will
-   use the original size of the provided surface. If a color for the background
-   is not provided then it will behave the same as the rotate function. If the
-   image has pixel alphas, the padded area will be transparent. Otherwise pygame
-   will pick a color that matches the Surface colorkey or the topleft pixel value.
+   match the provided points in a clockwise order: top left, top right, bottom
+   right, bottom left. Provided points represent the pixel coordinates of the
+   new corners of the image and can be positive or negative provided they fit
+   in the new surface.
 
-   .. versionadded:: 2.4.0
+   When no 'dest_surface' is provided, the 'adjust_size' option will set the
+   size of the resulting surface to be the smallest surface the points are
+   capable of fitting in, if false it will use the original size of the
+   provided surface.
+
+   If 'bg_color' is not provided then it will select a color to use based on
+   the surface. If the image has pixel alphas, the padded area will be
+   transparent. Otherwise pygame will pick a color that matches the Surface
+   colorkey or the top left pixel value.
+
+   .. versionadded:: 2.5.2
 
    .. ## pygame.transform.skew ##
 

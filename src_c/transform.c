@@ -1059,8 +1059,8 @@ _color_from_obj(PyObject *color_obj, SDL_PixelFormat *format,
     return 0;
 }
 
-static int
-check_inside(SDL_Surface *surf, SDL_Point p)
+static PG_INLINE int
+_check_inside(SDL_Surface *surf, SDL_Point p)
 {
     if (p.x >= 0 && p.x <= surf->w && p.y >= 0 && p.y <= surf->h)
         return 1;
@@ -1072,37 +1072,39 @@ static PyObject *
 surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     pgSurfaceObject *surfobj;
-    pgSurfaceObject *dest_surf = NULL;
-    PyObject *colorobj;
+    pgSurfaceObject *dest_surface = NULL;
+    PyObject *colorobj = NULL;
     SDL_Surface *surf, *newsurf;
-    int adjust_size = 0;
+    int adjust_size = 1;
     int x1, y1, x2, y2, x3, y3, x4, y4;
     int start = 0, width, top = 0, height;
+    int bounds_check = 1;
     Uint32 bgcolor;
-    static char *keywords[] = {"surface",     "points",    "bgcolor",
-                               "adjust_size", "dest_surf", NULL};
+    static char *keywords[] = {"surface",     "points",       "bg_color",
+                               "adjust_size", "dest_surface", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(
             args, kwargs, "O!((ii)(ii)(ii)(ii))|OpO!", keywords,
             &pgSurface_Type, &surfobj, &x1, &y1, &x2, &y2, &x3, &y3, &x4, &y4,
-            &colorobj, &adjust_size, &pgSurface_Type, &dest_surf))
+            &colorobj, &adjust_size, &pgSurface_Type, &dest_surface))
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
-    if (!dest_surf) {
+    if (dest_surface == NULL || dest_surface == Py_None) {
         if (adjust_size) {
             start = MIN(MIN(x1, x2), MIN(x3, x4));
             width = MAX(MAX(x1, x2), MAX(x3, x4)) - start + 1;
             top = MIN(MIN(y1, y2), MIN(y3, y4));
             height = MAX(MAX(y1, y2), MAX(y3, y4)) - top + 1;
             newsurf = newsurf_fromsurf(surf, width, height);
+            bounds_check = 0;
         }
         else {
             newsurf = newsurf_fromsurf(surf, surf->w, surf->h);
         }
     }
     else {
-        newsurf = pgSurface_AsSurface(dest_surf);
+        newsurf = pgSurface_AsSurface(dest_surface);
     }
     if (!newsurf)
         return NULL;
@@ -1111,11 +1113,13 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
         Py_INCREF(surfobj);
         return (PyObject *)surfobj;
     }
-    if (surf->format->format != newsurf->format->format) {
-        return RAISE(PyExc_ValueError, "surface formats do not match");
+
+    if (PG_SURF_BytesPerPixel(surf) != PG_SURF_BytesPerPixel(newsurf)) {
+        return RAISE(PyExc_ValueError,
+                     "source and destination formats need to be the same");
     }
 
-    if (surf->format->BytesPerPixel == 0 || surf->format->BytesPerPixel > 4)
+    if (PG_SURF_BytesPerPixel(surf) == 0 || PG_SURF_BytesPerPixel(surf) > 4)
         return RAISE(PyExc_ValueError,
                      "unsupported Surface bit depth for transform");
 
@@ -1123,10 +1127,10 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
                            {x2 - start, y2 - top},
                            {x3 - start, y3 - top},
                            {x4 - start, y4 - top}};
-    if (!(check_inside(newsurf, points[0]) &&
-          check_inside(newsurf, points[1]) &&
-          check_inside(newsurf, points[2]) &&
-          check_inside(newsurf, points[3]))) {
+    if (bounds_check && !(_check_inside(newsurf, points[0]) &&
+                          _check_inside(newsurf, points[1]) &&
+                          _check_inside(newsurf, points[2]) &&
+                          _check_inside(newsurf, points[3]))) {
         return RAISE(PyExc_ValueError,
                      "points are not within destination surface");
     }
@@ -1134,14 +1138,10 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
     SDL_LockSurface(newsurf);
     SDL_LockSurface(surf);
     pgSurface_Lock(surfobj);
-    if (colorobj != Py_None) {
-        if (_color_from_obj(colorobj, surf->format, NULL, &bgcolor))
-            return RAISE(PyExc_TypeError, "invalid bg_color argument");
-    }
-    else {
+    if (colorobj == NULL || colorobj == Py_None) {
         /* get the background color */
         if (SDL_GetColorKey(surf, &bgcolor) != 0) {
-            switch (surf->format->BytesPerPixel) {
+            switch (PG_SURF_BytesPerPixel(surf)) {
                 case 1:
                     bgcolor = *(Uint8 *)surf->pixels;
                     break;
@@ -1165,6 +1165,10 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
             bgcolor &= ~surf->format->Amask;
         }
     }
+    else {
+        if (_color_from_obj(colorobj, surf->format, NULL, &bgcolor))
+            return RAISE(PyExc_TypeError, "invalid bg_color argument");
+    }
 
     SDL_FillRect(newsurf, NULL, bgcolor);
 
@@ -1174,9 +1178,9 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
     pgSurface_Unlock(surfobj);
     SDL_UnlockSurface(newsurf);
     SDL_UnlockSurface(surf);
-    if (dest_surf) {
-        Py_INCREF(dest_surf);
-        return (PyObject *)dest_surf;
+    if (dest_surface) {
+        Py_INCREF(dest_surface);
+        return (PyObject *)dest_surface;
     }
     else
         return (PyObject *)pgSurface_New(newsurf);

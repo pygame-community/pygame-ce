@@ -5,7 +5,7 @@
 #define DOC_TRANSFORM_SCALEBY "scale_by(surface, factor, dest_surface=None) -> Surface\nresize to new resolution, using scalar(s)"
 #define DOC_TRANSFORM_ROTATE "rotate(surface, angle) -> Surface\nrotate an image"
 #define DOC_TRANSFORM_ROTOZOOM "rotozoom(surface, angle, scale) -> Surface\nfiltered scale and rotation"
-#define DOC_TRANSFORM_SKEW "skew(surface, points, bg_color=None, adjust_size=False, dest_surface=None)\nskew an image to specified points"
+#define DOC_TRANSFORM_SKEW "skew(surface, points, bg_color=None, adjust_size=True, dest_surface=None)\nskew an image to specified points"
 #define DOC_TRANSFORM_SCALE2X "scale2x(surface, dest_surface=None) -> Surface\nspecialized image doubler"
 #define DOC_TRANSFORM_SMOOTHSCALE "smoothscale(surface, size, dest_surface=None) -> Surface\nscale a surface to an arbitrary size smoothly"
 #define DOC_TRANSFORM_SMOOTHSCALEBY "smoothscale_by(surface, factor, dest_surface=None) -> Surface\nresize to new resolution, using scalar(s)"
