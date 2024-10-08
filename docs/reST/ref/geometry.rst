@@ -514,9 +514,6 @@
    The `Line` class only stores the xa, ya, xb, and yb attributes, everything else is calculated
    on the fly based on them.
 
-   **You cannot create degenerate Lines(lines with the same start and end point). If you
-       try, the `Line` will not be created and an error will be raised.**
-
    **Line Attributes**
 
    ----
