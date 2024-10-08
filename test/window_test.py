@@ -329,6 +329,7 @@ class WindowTypeTest(unittest.TestCase):
         pygame.display.quit()
         pygame.init()
 
+    @unittest.skipIf(IS_PYPY, "for some reason this test is flaky on pypy")
     def test_window_surface(self):
         win = Window(size=(640, 480))
         surf = win.get_surface()
@@ -420,6 +421,37 @@ class WindowTypeTest(unittest.TestCase):
         window = WindowSubclass.from_display_module()
         self.assertIsInstance(window, WindowSubclass)
         self.assertEqual(window.size, (200, 200))
+
+    @unittest.skipIf(
+        SDL < (2, 0, 16),
+        "requires SDL 2.0.16+",
+    )
+    def test_window_flash(self):
+        window = pygame.Window()
+
+        with self.assertRaises(TypeError):
+            window.flash("string")
+            window.flash(2.2)
+            window.flash([0])
+
+        with self.assertRaises(ValueError):
+            window.flash(-1)
+            window.flash(3)
+
+        for operation in [
+            pygame.FLASH_CANCEL,
+            pygame.FLASH_BRIEFLY,
+            pygame.FLASH_UNTIL_FOCUSED,
+        ]:
+            try:
+                result = window.flash(operation)
+                self.assertIsNone(result)
+            except pygame.error:
+                pass
+
+    def test_window_focused(self):
+        window = pygame.Window()
+        self.assertIsInstance(window.focused, bool)
 
     def tearDown(self):
         self.win.destroy()

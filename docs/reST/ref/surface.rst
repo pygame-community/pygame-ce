@@ -100,7 +100,7 @@
               If it has transparency, transparent pixels will be ignored when blittting to an 8-bit ``Surface``.
           - ``dest`` *(optional)*
               The ``source`` draw position onto this ``Surface``, defaults to (0, 0).
-              It can be a coordinate ``(x, y)`` or a ``Rect`` (using its top-left corner).
+              It can be a coordinate pair ``(x, y)`` or a ``Rect`` (using its top-left corner).
               If a ``Rect`` is passed, its size will not affect the blit.
           - ``area`` *(optional)*
               The rectangular portion of the ``source`` to draw.
@@ -336,7 +336,7 @@
 
       .. versionaddedold:: 1.9
 
-      .. versionchanged:: 2.5.1 Add repeating scroll and allow erasing pixels
+      .. versionchanged:: 2.5.2 Add repeating scroll and allow erasing pixels
 
       .. ## Surface.scroll ##
 

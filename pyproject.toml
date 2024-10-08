@@ -1,6 +1,6 @@
 [project]
 name = "pygame-ce"
-version = "2.5.1.dev1"
+version = "2.5.2.dev1"
 description = "Python Game Development"
 readme = "README.rst" # for long description
 requires-python = ">=3.8"
@@ -19,6 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Topic :: Games/Entertainment",
@@ -54,9 +55,9 @@ pygame_ce = 'pygame.__briefcase.pygame_ce:PygameCEGuiBootstrap'
 [build-system]
 requires = [
   "meson-python<=0.16.0",
-  "meson<=1.5.0",
+  "meson<=1.5.1",
   "ninja<=1.11.1.1",
-  "cython<=3.0.10",
+  "cython<=3.0.11",
   "sphinx<=7.2.6",
 ]
 build-backend = 'mesonpy'
@@ -73,7 +74,7 @@ install = ['--tags=runtime,python-runtime,pg-tag']
 # dependencies. Here is where uv comes into the picture. It is an "installer" like pip,
 # but faster. It has been observed to save a couple of minutes of CI time.
 build-frontend = "build[uv]"
-build = "cp3{8,9,10,11,12}-* pp3{8,9,10}-*"
+build = "cp3{8,9,10,11,12,13}-* pp3{8,9,10}-*"
 skip = "*-musllinux_*"
 # build[uv] is verbose by default, so below flag is not needed here
 # build-verbosity = 3
@@ -106,9 +107,8 @@ quote-style = "preserve"
 [tool.uv.pip]
 only-binary = ["numpy"]
 
-# 1. skip all 32-bit manylinux (i686) 
+# 1. skip all 32-bit manylinux (i686)
 # 2. skip all pypy+arm combinations
-# 3. skip all pypy 310 because it is so new numpy does not have wheels for it
 [[tool.cibuildwheel.overrides]]
-select = "{*-manylinux_i686,pp*-*{arm64,aarch64},pp310-*}"
+select = "{*-manylinux_i686,pp*-*{arm64,aarch64}}"
 test-requires = []
