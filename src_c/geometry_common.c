@@ -153,7 +153,7 @@ pgLine_FromObject(PyObject *obj, pgLineBase *out)
     Py_ssize_t length;
 
     if (pgLine_Check(obj)) {
-        *out = ((pgLineObject *)obj)->line;
+        *out = pgLine_AsLine(obj);
         return 1;
     }
 
@@ -191,25 +191,25 @@ pgLine_FromObject(PyObject *obj, pgLineBase *out)
         length = PySequence_Length(obj);
         if (length == 4) {
             PyObject *tmp;
-            tmp = PySequence_GetItem(obj, 0);
+            tmp = PySequence_ITEM(obj, 0);
             if (!pg_DoubleFromObj(tmp, &out->xa)) {
                 Py_DECREF(tmp);
                 return 0;
             }
             Py_DECREF(tmp);
-            tmp = PySequence_GetItem(obj, 1);
+            tmp = PySequence_ITEM(obj, 1);
             if (!pg_DoubleFromObj(tmp, &out->ya)) {
                 Py_DECREF(tmp);
                 return 0;
             }
             Py_DECREF(tmp);
-            tmp = PySequence_GetItem(obj, 2);
+            tmp = PySequence_ITEM(obj, 2);
             if (!pg_DoubleFromObj(tmp, &out->xb)) {
                 Py_DECREF(tmp);
                 return 0;
             }
             Py_DECREF(tmp);
-            tmp = PySequence_GetItem(obj, 3);
+            tmp = PySequence_ITEM(obj, 3);
             if (!pg_DoubleFromObj(tmp, &out->yb)) {
                 Py_DECREF(tmp);
                 return 0;
@@ -219,13 +219,13 @@ pgLine_FromObject(PyObject *obj, pgLineBase *out)
         }
         else if (length == 2) {
             PyObject *tmp;
-            tmp = PySequence_GetItem(obj, 0);
+            tmp = PySequence_ITEM(obj, 0);
             if (!pg_TwoDoublesFromObj(tmp, &out->xa, &out->ya)) {
                 Py_DECREF(tmp);
                 return 0;
             }
             Py_DECREF(tmp);
-            tmp = PySequence_GetItem(obj, 1);
+            tmp = PySequence_ITEM(obj, 1);
             if (!pg_TwoDoublesFromObj(tmp, &out->xb, &out->yb)) {
                 Py_DECREF(tmp);
                 return 0;
@@ -234,7 +234,7 @@ pgLine_FromObject(PyObject *obj, pgLineBase *out)
             return 1;
         }
         else if (PyTuple_Check(obj) && length == 1) /*looks like an arg?*/ {
-            PyObject *sub = PySequence_GetItem(obj, 0);
+            PyObject *sub = PySequence_ITEM(obj, 0);
             if (PyUnicode_Check(sub) || !pgLine_FromObject(sub, out)) {
                 Py_DECREF(sub);
                 return 0;
