@@ -1875,7 +1875,8 @@ line_width_corners(float from_x, float from_y, float to_x, float to_y,
 {
     float aa_width = (float)width / 2;
     float extra_width = (1.0f - (width % 2)) / 2;
-    int steep = fabs(to_x - from_x) <= fabs(to_y - from_y);
+    // "steep" is same as "xinc" in draw_line_width
+    int steep = abs((int)to_x - (int)from_x) <= abs((int)to_y - (int)from_y);
 
     if (steep) {
         *x1 = from_x + extra_width + aa_width;
