@@ -706,6 +706,17 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
                             PG_SURF_BytesPerPixel(surf));
     }
 
+    if (drawn_area[0] - drawn_area[2] < 0 || drawn_area[2] < 0 ||
+        drawn_area[1] - drawn_area[3] < 0 || drawn_area[3] < 0) {
+        if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                         "Negative values in position and dimension rect are "
+                         "deprecated and have no functionality. This will "
+                         "cause an error in a future version of pygame-ce.",
+                         1) == -1) {
+            return pgRect_New4(0, 0, 0, 0);
+        }
+    }
+
     CHECK_LOAD_COLOR(colorobj)
 
     if (width < 0) {

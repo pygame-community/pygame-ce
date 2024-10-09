@@ -408,6 +408,26 @@ class DrawEllipseMixin:
             self.assertEqual(surface.get_at(pos), expected_color)
             self.assertIsInstance(bounds_rect, pygame.Rect)
 
+    def test_ellipse__negative_rect_warning(self):
+        """Ensures draw ellipse shows DeprecationWarning for rect with negative values"""
+        # Generate few faulty rects.
+        faulty_rects = []
+        for i in range(4):
+            faulty_rect = [0, 0, 0, 0]
+            faulty_rect[i] = -15
+            if i < 2:
+                faulty_rect[i + 2] = -5
+            faulty_rects.append(faulty_rect)
+        with warnings.catch_warnings(record=True) as w:
+            for count, rect in enumerate(faulty_rects):
+                # Cause all warnings to always be triggered.
+                warnings.simplefilter("always")
+                # Trigger DeprecationWarning.
+                self.draw_ellipse(pygame.Surface((6, 6)), (255, 255, 255), rect)
+                # Check if there is only one warning and is a DeprecationWarning.
+                self.assertEqual(len(w), count + 1)
+                self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
+
     def test_ellipse__valid_rect_formats(self):
         """Ensures draw ellipse accepts different rect formats."""
         pos = (1, 1)
