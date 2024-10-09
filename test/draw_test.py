@@ -411,13 +411,7 @@ class DrawEllipseMixin:
     def test_ellipse__negative_rect_warning(self):
         """Ensures draw ellipse shows DeprecationWarning for rect with negative values"""
         # Generate few faulty rects.
-        faulty_rects = []
-        for i in range(4):
-            faulty_rect = [0, 0, 0, 0]
-            faulty_rect[i] = -15
-            if i < 2:
-                faulty_rect[i + 2] = -5
-            faulty_rects.append(faulty_rect)
+        faulty_rects = ((10, 10, -5, 3), (10, 10, 5, -3))
         with warnings.catch_warnings(record=True) as w:
             for count, rect in enumerate(faulty_rects):
                 # Cause all warnings to always be triggered.

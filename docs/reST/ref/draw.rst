@@ -276,8 +276,8 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
    :param Rect rect: rectangle to indicate the position and dimensions of the
       ellipse, the ellipse will be centered inside the rectangle and bounded
-      by it. Negative dimension and position values smaller than negated dimension are deprecated,
-      and will raise an exception in future versions on pygame-ce.
+      by it. Negative rect dimension values are deprecated, and will raise an exception
+      in a future versions on pygame-ce.
    :param int width: (optional) used for line thickness or to indicate that
       the ellipse is to be filled (not to be confused with the width value
       of the ``rect`` parameter)
@@ -297,7 +297,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :rtype: Rect
 
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
-   .. versionchanged:: 2.5.2 Negative values in rect will raise a deprecation warning
+   .. versionchanged:: 2.5.2 Negative rect dimension values will raise a deprecation warning
 
    .. ## pygame.draw.ellipse ##
 
