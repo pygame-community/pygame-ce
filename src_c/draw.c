@@ -1880,22 +1880,22 @@ line_width_corners(int from_x, int from_y, int to_x, int to_y, int width,
 
     if (steep) {
         *x1 = from_x + extra_width + aa_width;
-        *y1 = from_y;
+        *y1 = (float)from_y;
         *x2 = to_x + extra_width + aa_width;
-        *y2 = to_y;
+        *y2 = (float)to_y;
         *x3 = from_x + extra_width - aa_width;
-        *y3 = from_y;
+        *y3 = (float)from_y;
         *x4 = to_x + extra_width - aa_width;
-        *y4 = to_y;
+        *y4 = (float)to_y;
     }
     else {
-        *x1 = from_x;
+        *x1 = (float)from_x;
         *y1 = from_y + extra_width + aa_width;
-        *x2 = to_x;
+        *x2 = (float)to_x;
         *y2 = to_y + extra_width + aa_width;
-        *x3 = from_x;
+        *x3 = (float)from_x;
         *y3 = from_y + extra_width - aa_width;
-        *x4 = to_x;
+        *x4 = (float)to_x;
         *y4 = to_y + extra_width - aa_width;
     }
 }
