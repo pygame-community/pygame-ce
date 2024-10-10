@@ -722,7 +722,7 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
                          "have no functionality. This will cause an error in "
                          "a future version of pygame-ce.",
                          1) == -1) {
-            return pgRect_New4(0, 0, 0, 0);
+            return NULL;
         }
     }
     else {
