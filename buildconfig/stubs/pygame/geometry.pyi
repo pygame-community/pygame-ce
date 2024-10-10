@@ -13,6 +13,13 @@ from pygame.typing import Point, RectLike, SequenceLike
 from .math import Vector2
 
 _CanBeCircle = Union[Circle, Tuple[Point, float], SequenceLike[float]]
+_CanBeLine = Union[
+    Rect,
+    FRect,
+    Line,
+    Point,
+    SequenceLike[Point],
+]
 
 class _HasCirclettribute(Protocol):
     # An object that has a circle attribute that is either a circle, or a function
@@ -20,6 +27,15 @@ class _HasCirclettribute(Protocol):
     circle: Union[_CanBeCircle, Callable[[], _CanBeCircle]]
 
 _CircleValue = Union[_CanBeCircle, _HasCirclettribute]
+
+class _HasLineAttribute(Protocol):
+    # An object that has a line attribute that is either a line, or a function
+    # that returns a line
+    line: Union[_CanBeLine, Callable[[], _CanBeLine]]
+
+
+_LineValue = Union[_CanBeLine, _HasLineAttribute]
+
 _CanBeCollided = Union[Circle, Rect, FRect, Point, Vector2]
 _CanBeIntersected = Union[Circle]
 
@@ -133,3 +149,37 @@ class Circle:
     def as_frect(self) -> FRect: ...
     def copy(self) -> Circle: ...
     def __copy__(self) -> Circle: ...
+
+class Line:
+    @property
+    def xa(self) -> float: ...
+    @xa.setter
+    def xa(self, value: float) -> None: ...
+    @property
+    def ya(self) -> float: ...
+    @ya.setter
+    def ya(self, value: float) -> None: ...
+    @property
+    def xb(self) -> float: ...
+    @xb.setter
+    def xb(self, value: float) -> None: ...
+    @property
+    def yb(self) -> float: ...
+    @yb.setter
+    def yb(self, value: float) -> None: ...
+    @property
+    def a(self) -> Tuple[float, float]: ...
+    @a.setter
+    def a(self, value: Point) -> None: ...
+    @property
+    def b(self) -> Tuple[float, float]: ...
+    @b.setter
+    def b(self, value: Point) -> None: ...
+    @overload
+    def __init__(self, xa: float, ya: float, xb: float, yb: float) -> None: ...
+    @overload
+    def __init__(self, a: Point, b: Point) -> None: ...
+    @overload
+    def __init__(self, line: _LineValue) -> None: ...
+    def __copy__(self) -> Line: ...
+    copy = __copy__
