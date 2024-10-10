@@ -466,8 +466,8 @@ typedef struct pgColorObject pgColorObject;
     (*(int (*)(PyObject *, Uint8 *, pgColorHandleFlags))PYGAMEAPI_GET_SLOT( \
         color, 2))
 
-#define pg_MappedColorFromObj                           \
-    (*(int (*)(PyObject *, SDL_PixelFormat *, Uint32 *, \
+#define pg_MappedColorFromObj                       \
+    (*(int (*)(PyObject *, SDL_Surface *, Uint32 *, \
                pgColorHandleFlags))PYGAMEAPI_GET_SLOT(color, 4))
 
 #define pgColor_AsArray(x) (((pgColorObject *)x)->data)
