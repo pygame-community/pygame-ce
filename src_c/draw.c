@@ -716,14 +716,25 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
-    if (!width ||
-        width >= MIN(rect->w / 2 + rect->w % 2, rect->h / 2 + rect->h % 2)) {
-        draw_ellipse_filled(surf, rect->x, rect->y, rect->w, rect->h, color,
-                            drawn_area);
+    if (rect->w < 0 || rect->h < 0) {
+        if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                         "Negative rect dimension values are deprecated and "
+                         "have no functionality. This will cause an error in "
+                         "a future version of pygame-ce.",
+                         1) == -1) {
+            return NULL;
+        }
     }
     else {
-        draw_ellipse_thickness(surf, rect->x, rect->y, rect->w, rect->h,
-                               width - 1, color, drawn_area);
+        if (!width || width >= MIN(rect->w / 2 + rect->w % 2,
+                                   rect->h / 2 + rect->h % 2)) {
+            draw_ellipse_filled(surf, rect->x, rect->y, rect->w, rect->h,
+                                color, drawn_area);
+        }
+        else {
+            draw_ellipse_thickness(surf, rect->x, rect->y, rect->w, rect->h,
+                                   width - 1, color, drawn_area);
+        }
     }
 
     if (!pgSurface_Unlock(surfobj)) {
