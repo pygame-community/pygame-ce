@@ -45,9 +45,9 @@ static void
 draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
           int *drawn_area);
 void
-line_width_corners(float from_x, float from_y, float to_x, float to_y,
-                   int width, float *x1, float *y1, float *x2, float *y2,
-                   float *x3, float *y3, float *x4, float *y4);
+line_width_corners(int from_x, int from_y, int to_x, int to_y, int width,
+                   float *x1, float *y1, float *x2, float *y2, float *x3,
+                   float *y3, float *x4, float *y4);
 static void
 draw_aaline(SDL_Surface *surf, Uint32 color, float startx, float starty,
             float endx, float endy, int *drawn_area,
@@ -172,8 +172,8 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     if (width > 1) {
         float x1, y1, x2, y2, x3, y3, x4, y4;
-        line_width_corners(startx, starty, endx, endy, width, &x1, &y1, &x2,
-                           &y2, &x3, &y3, &x4, &y4);
+        line_width_corners((int)startx, (int)starty, (int)endx, (int)endy,
+                           width, &x1, &y1, &x2, &y2, &x3, &y3, &x4, &y4);
         draw_line_width(surf, color, (int)startx, (int)starty, (int)endx,
                         (int)endy, width, drawn_area);
         draw_aaline(surf, color, x1, y1, x2, y2, drawn_area, 0, 0, 0);
@@ -1869,32 +1869,33 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
 // Calculates 4 points, representing corners of draw_line_width()
 // first two points assemble left line and second two - right line
 void
-line_width_corners(float from_x, float from_y, float to_x, float to_y,
-                   int width, float *x1, float *y1, float *x2, float *y2,
-                   float *x3, float *y3, float *x4, float *y4)
+line_width_corners(int from_x, int from_y, int to_x, int to_y, int width,
+                   float *x1, float *y1, float *x2, float *y2, float *x3,
+                   float *y3, float *x4, float *y4)
 {
     float aa_width = (float)width / 2;
     float extra_width = (1.0f - (width % 2)) / 2;
-    int steep = fabs(to_x - from_x) <= fabs(to_y - from_y);
+    // "steep" is same as "xinc" in draw_line_width
+    int steep = abs(to_x - from_x) <= abs(to_y - from_y);
 
     if (steep) {
         *x1 = from_x + extra_width + aa_width;
-        *y1 = from_y;
+        *y1 = (float)from_y;
         *x2 = to_x + extra_width + aa_width;
-        *y2 = to_y;
+        *y2 = (float)to_y;
         *x3 = from_x + extra_width - aa_width;
-        *y3 = from_y;
+        *y3 = (float)from_y;
         *x4 = to_x + extra_width - aa_width;
-        *y4 = to_y;
+        *y4 = (float)to_y;
     }
     else {
-        *x1 = from_x;
+        *x1 = (float)from_x;
         *y1 = from_y + extra_width + aa_width;
-        *x2 = to_x;
+        *x2 = (float)to_x;
         *y2 = to_y + extra_width + aa_width;
-        *x3 = from_x;
+        *x3 = (float)from_x;
         *y3 = from_y + extra_width - aa_width;
-        *x4 = to_x;
+        *x4 = (float)to_x;
         *y4 = to_y + extra_width - aa_width;
     }
 }
