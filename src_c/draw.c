@@ -100,10 +100,10 @@ draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
                 int bottom_left, int bottom_right, int *drawn_area);
 
 // validation of a draw color
-#define CHECK_LOAD_COLOR(colorobj)                               \
-    if (!pg_MappedColorFromObj((colorobj), surf->format, &color, \
-                               PG_COLOR_HANDLE_ALL)) {           \
-        return NULL;                                             \
+#define CHECK_LOAD_COLOR(colorobj)                       \
+    if (!pg_MappedColorFromObj((colorobj), surf, &color, \
+                               PG_COLOR_HANDLE_ALL)) {   \
+        return NULL;                                     \
     }
 
 /* Definition of functions that get called in Python */

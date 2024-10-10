@@ -12,8 +12,6 @@ base = py.extension_module(
 )
 endif
 
-# TODO: support SDL3
-if sdl_api != 3
 color = py.extension_module(
     'color',
     'color.c',
@@ -22,7 +20,6 @@ color = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # TODO: support SDL3
 if sdl_api != 3

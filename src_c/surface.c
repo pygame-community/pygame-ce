@@ -809,8 +809,7 @@ surf_set_at(PyObject *self, PyObject *const *args, Py_ssize_t nargs)
         Py_RETURN_NONE;
     }
 
-    if (!pg_MappedColorFromObj(rgba_obj, surf->format, &color,
-                               PG_COLOR_HANDLE_ALL)) {
+    if (!pg_MappedColorFromObj(rgba_obj, surf, &color, PG_COLOR_HANDLE_ALL)) {
         return NULL;
     }
 
@@ -1207,7 +1206,7 @@ surf_set_colorkey(pgSurfaceObject *self, PyObject *args)
     SURF_INIT_CHECK(surf)
 
     if (rgba_obj && rgba_obj != Py_None) {
-        if (!pg_MappedColorFromObj(rgba_obj, surf->format, &color,
+        if (!pg_MappedColorFromObj(rgba_obj, surf, &color,
                                    PG_COLOR_HANDLE_ALL)) {
             return NULL;
         }
@@ -1748,8 +1747,7 @@ surf_fill(pgSurfaceObject *self, PyObject *args, PyObject *keywds)
         return NULL;
     SURF_INIT_CHECK(surf)
 
-    if (!pg_MappedColorFromObj(rgba_obj, surf->format, &color,
-                               PG_COLOR_HANDLE_ALL)) {
+    if (!pg_MappedColorFromObj(rgba_obj, surf, &color, PG_COLOR_HANDLE_ALL)) {
         return NULL;
     }
 
