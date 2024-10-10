@@ -1147,6 +1147,13 @@ class TransformModuleTest(unittest.TestCase):
         self.assertEqual(dest_surface.get_size(), expected_size)
         self.assertEqual(dest_surface.get_flags(), expected_flags)
 
+    def test_threshold_all_color_types(self):
+        s1 = pygame.Surface((32, 32), SRCALPHA, 32)
+        s2 = pygame.Surface((32, 32), SRCALPHA, 32)
+
+        for color in [(0, 255, 0), (255, 0, 0, 0), 0, "blue", pygame.Color("#FFFFFF")]:
+            pygame.transform.threshold(s1, s2, color, color, color)
+
     def test_laplacian(self):
         """ """
 

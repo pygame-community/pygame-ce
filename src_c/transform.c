@@ -1830,7 +1830,7 @@ _color_from_obj(PyObject *color_obj, SDL_Surface *surf, Uint8 rgba_default[4],
 {
     if (color_obj) {
         if (!pg_MappedColorFromObj(color_obj, surf, color,
-                                   PG_COLOR_HANDLE_INT)) {
+                                   PG_COLOR_HANDLE_ALL)) {
             return -1;
         }
     }
