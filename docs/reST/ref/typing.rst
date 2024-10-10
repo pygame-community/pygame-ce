@@ -60,7 +60,8 @@ type aliases for proper typehint annotations.
         * ``(r, g, b)``
         * ``(r, g, b, a)``
         * ``[r, g, b, a]``
-        * ``"green"``
+        * ``"green"`` (:doc:`color_list`)
+        * ``"#rrggbbaa"``
         * ``0`` (mapped color)
 
    .. data:: RectLike

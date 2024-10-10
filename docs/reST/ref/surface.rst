@@ -298,10 +298,9 @@
       entire Surface will be filled. The rect argument will limit the fill to a
       specific area. The fill will also be contained by the Surface clip area.
 
-      The color argument can be an ``RGB`` sequence, an ``RGBA`` sequence,
-      a string (for :doc:`color_list`), or a mapped color index. If using ``RGBA``,
-      the Alpha (A part of ``RGBA``) is ignored unless the surface uses per pixel
-      alpha (Surface has the ``SRCALPHA`` flag).
+      The color argument should be compatible with :data:`pygame.typing.ColorLike`.
+      If using ``RGBA``, the Alpha (A part of ``RGBA``) is ignored unless the surface
+      uses per pixel alpha (Surface has the ``SRCALPHA`` flag).
 
       The special_flags argument controls how the colors are combined. See :doc:`special_flags_list`
       for a list of possible values.
@@ -338,9 +337,8 @@
 
       Set the current color key for the Surface. When blitting this Surface
       onto a destination, any pixels that have the same color as the colorkey
-      will be transparent. The color can be an ``RGB`` color, a string
-      (for :doc:`color_list`), or a mapped color integer. If ``None`` is passed,
-      the colorkey will be unset.
+      will be transparent. The color should be compatible with :data:`pygame.typing.ColorLike`.
+      If ``None`` is passed, the colorkey will be unset.
 
       The colorkey will be ignored if the Surface is formatted to use per pixel
       alpha values. The colorkey can be mixed with the full Surface alpha
@@ -355,7 +353,7 @@
    .. method:: get_colorkey
 
       | :sl:`get the current transparent colorkey`
-      | :sg:`get_colorkey() -> RGB or None`
+      | :sg:`get_colorkey() -> RGBA or None`
 
       Return the current colorkey value for the Surface. If the colorkey is not
       set then ``None`` is returned.
@@ -510,10 +508,10 @@
       | :sl:`set the color value for a single pixel`
       | :sg:`set_at((x, y), color, /) -> None`
 
-      Set the color of a single pixel at the specified coordinates to be an ``RGB``,
-      ``RGBA``, string (for :doc:`color_list`), or mapped integer color value. If the Surface
-      does not have per pixel alphas, the alpha value is ignored. Setting pixels outside the
-      Surface area or outside the Surface clipping will have no effect.
+      Set the color of a single pixel at the specified coordinates to be a
+      :data:`pygame.typing.ColorLike` value. If the Surface does not have per pixel alphas,
+      the alpha value is ignored. Setting pixels outside the Surface area or outside
+      the Surface clipping will have no effect.
 
       Getting and setting pixels one at a time is generally too slow to be used
       in a game or realtime situation.
@@ -550,7 +548,7 @@
    .. method:: get_palette
 
       | :sl:`get the color index palette for an 8-bit Surface`
-      | :sg:`get_palette() -> [RGB, RGB, RGB, ...]`
+      | :sg:`get_palette() -> [Color, Color, Color, ...]`
 
       Return a list of up to 256 color elements that represent the indexed
       colors used in an 8-bit Surface. The returned list is a copy of the
@@ -565,7 +563,7 @@
    .. method:: get_palette_at
 
       | :sl:`get the color for a single entry in a palette`
-      | :sg:`get_palette_at(index, /) -> RGB`
+      | :sg:`get_palette_at(index, /) -> Color`
 
       Returns the red, green, and blue color values for a single index in a
       Surface palette. The index should be a value from 0 to 255.
@@ -578,7 +576,7 @@
    .. method:: set_palette
 
       | :sl:`set the color palette for an 8-bit Surface`
-      | :sg:`set_palette([RGB, RGB, RGB, ...], /) -> None`
+      | :sg:`set_palette([color, color, color, ...], /) -> None`
 
       Set the full palette for an 8-bit Surface. This will replace the colors in
       the existing palette. A partial palette can be passed and only the first
@@ -591,7 +589,7 @@
    .. method:: set_palette_at
 
       | :sl:`set the color for a single index in an 8-bit Surface palette`
-      | :sg:`set_palette_at(index, RGB, /) -> None`
+      | :sg:`set_palette_at(index, color, /) -> None`
 
       Set the palette value for a single entry in a Surface palette. The index
       should be a value from 0 to 255.
@@ -605,10 +603,10 @@
       | :sl:`convert a color into a mapped color value`
       | :sg:`map_rgb(color, /) -> mapped_int`
 
-      Convert an ``RGBA`` color into the mapped integer value for this Surface.
-      The returned integer will contain no more bits than the bit depth of the
-      Surface. Mapped color values are not often used inside pygame, but can be
-      passed to most functions that require a Surface and a color.
+      Convert a :data:`pygame.typing.ColorLike` into the mapped integer value
+      for this Surface. The returned integer will contain no more bits than the
+      bit depth of the Surface. Mapped color values are not often used inside pygame,
+      but can be passed to most functions that require a Surface and a color.
 
       See the Surface object documentation for more information about colors
       and pixel formats.
