@@ -1121,7 +1121,7 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (PG_SURF_BytesPerPixel(surf) == 0 || PG_SURF_BytesPerPixel(surf) > 4)
         return RAISE(PyExc_ValueError,
-                     "unsupported Surface bit depth for transform");
+                     "unsupported surface bit depth for transform");
 
     SDL_Point points[4] = {{x1 - start, y1 - top},
                            {x2 - start, y2 - top},
@@ -1132,7 +1132,7 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
                           _check_inside(newsurf, points[2]) &&
                           _check_inside(newsurf, points[3]))) {
         return RAISE(PyExc_ValueError,
-                     "points are not within destination surface");
+                     "points are not within specified surface");
     }
 
     SDL_LockSurface(newsurf);
@@ -1167,7 +1167,7 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
     }
     else {
         if (!pg_MappedColorFromObj(colorobj, surf->format, &bgcolor,
-                                   PG_COLOR_HANDLE_ALL))
+                               PG_COLOR_HANDLE_ALL))
             return RAISE(PyExc_TypeError, "invalid bg_color argument");
     }
 
