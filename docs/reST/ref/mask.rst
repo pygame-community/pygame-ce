@@ -71,10 +71,10 @@ to store which parts collide.
    :param color: color used to check if the surface's pixels are within the
       given ``threshold`` range, this parameter is ignored if the optional
       ``othersurface`` parameter is supplied
-   :type color: Color or int or tuple(int, int, int, [int]) or list[int, int, int, [int]]
+   :type color: :data:`pygame.typing.ColorLike`
    :param threshold: (optional) the threshold range used to check the difference
       between two colors (default is ``(0, 0, 0, 255)``)
-   :type threshold: Color or int or tuple(int, int, int, [int]) or list[int, int, int, [int]]
+   :type threshold: :data:`pygame.typing.ColorLike`
    :param Surface othersurface: (optional) used to check whether the pixels of
       the first surface are within the given ``threshold`` range of the pixels
       from this surface (default is ``None``)
