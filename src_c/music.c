@@ -32,6 +32,20 @@
 
 #include "mixer.h"
 
+typedef struct {
+    PyObject_HEAD Mix_Music *music;
+
+    double volume;
+    double position;
+    double fadein;
+    double fadeout;
+    int paused;
+    int ended;
+
+} pgMusicObject;
+
+static pgMusicObject *current_music_obj = NULL;
+
 static Mix_Music *current_music = NULL;
 static Mix_Music *queue_music = NULL;
 static int queue_music_loops = 0;
@@ -218,7 +232,6 @@ music_get_volume(PyObject *self, PyObject *_null)
 {
     int volume;
     MIXER_INIT_CHECK();
-
     volume = Mix_VolumeMusic(-1);
     return PyFloat_FromDouble(volume / 128.0);
 }
@@ -576,6 +589,490 @@ static PyMethodDef _music_methods[] = {
 
     {NULL, NULL, 0, NULL}};
 
+//////////////// Music Object //////////////////
+
+static void
+pgmusic_dealloc(pgMusicObject *self, PyObject *_null)
+{
+    Py_BEGIN_ALLOW_THREADS Mix_FreeMusic(self->music);
+    Py_END_ALLOW_THREADS
+
+        Py_TYPE(self)
+            ->tp_free(self);
+}
+
+static PyObject *
+pgmusic_get_position(pgMusicObject *self, void *v)
+{
+    MIXER_INIT_CHECK();
+
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+    double music_position = 0.0;
+
+    music_position = Mix_GetMusicPosition(self->music);
+
+    // If the music_position is -1.0, we still return this value.
+    // It's to the user to handle it.
+    return PyFloat_FromDouble(music_position);
+#else
+    return RAISE(PyExc_NotImplementedError,
+                 "SDL_Mixer 2.6.0 is needed to get the position of a music");
+#endif
+}
+
+static int
+pgmusic_set_position(pgMusicObject *self, PyObject *arg, void *v)
+{
+    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+        PyErr_SetString(pgExc_SDLError, "mixer not initialized");
+        return -1;
+    }
+
+    double music_position = PyFloat_AsDouble(arg);
+
+    if (music_position < 0.0)
+        music_position = 0.0;
+
+    if (self == current_music_obj) {
+        if (Mix_SetMusicPosition(music_position) != -1) {
+            self->position = music_position;
+        }
+    }
+    else {
+        self->position = music_position;
+    }
+
+    return 0;
+}
+
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+static double
+_get_music_duration(pgMusicObject *obj)
+{
+    double music_duration = 0.0;
+
+    Mix_MusicType music_type = Mix_GetMusicType(obj->music);
+    switch (music_type) {
+        case MUS_OGG:
+        case MUS_MP3:
+            music_duration = Mix_MusicDuration(obj->music);
+            return music_duration;
+
+        default:
+            return -1.0;
+    }
+}
+#endif
+
+static PyObject *
+pgmusic_get_duration(pgMusicObject *self, void *v)
+{
+    MIXER_INIT_CHECK();
+
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+
+    double music_duration = _get_music_duration(self);
+    return PyFloat_FromDouble(music_duration);
+
+#else
+    return RAISE(PyExc_NotImplementedError,
+                 "SDL_Mixer 2.6.0 is needed to get the duration of a music");
+#endif
+}
+
+static PyObject *
+pgmusic_get_paused(pgMusicObject *self, void *v)
+{
+    MIXER_INIT_CHECK();
+
+    int paused = self->paused;
+
+    if (self == current_music_obj)
+        paused = Mix_PausedMusic();
+
+    return PyBool_FromLong(paused);
+}
+
+static int
+pgmusic_set_paused(pgMusicObject *self, PyObject *arg, void *v)
+{
+    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+        PyErr_SetString(pgExc_SDLError, "mixer not initialized");
+        return -1;
+    }
+
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+
+    int paused = PyObject_IsTrue(arg);
+
+    self->paused = paused;
+
+    if (self == current_music_obj) {
+        if (paused) {
+            Mix_PauseMusic();
+            self->position = Mix_GetMusicPosition(self->music);
+        }
+        else
+            Mix_ResumeMusic();
+    }
+    return 0;
+#else
+    PyErr_SetString(PyExc_NotImplementedError,
+                    "SDL_Mixer 2.6.0 is needed for using paused setter");
+    return -1;
+#endif
+}
+
+static int
+pgmusic_set_volume(pgMusicObject *self, PyObject *arg, void *v)
+{
+    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+        PyErr_SetString(pgExc_SDLError, "mixer not initialized");
+        return -1;
+    }
+
+    if (!PyFloat_Check(arg)) {
+        PyErr_SetString(PyExc_TypeError, "the value must be a real number");
+        return -1;
+    }
+
+    self->volume = PyFloat_AsDouble(arg);
+    if (self->volume < 0.0)
+        self->volume = 0.0;
+    else if (self->volume > 1.0)
+        self->volume = 1.0;
+
+    if (self == current_music_obj) {
+        Mix_VolumeMusic((int)(self->volume * 128));
+    }
+
+    return 0;
+}
+
+static PyObject *
+pgmusic_get_volume(pgMusicObject *self, void *closure)
+{
+    return PyFloat_FromDouble(self->volume);
+}
+
+/*
+This part below might need a macro to reduce the number of lines
+*/
+
+static PyObject *
+pgmusic_get_title(pgMusicObject *self, void *closure)
+{
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+    // This returns the filename if no music title was found
+    const char *title = Mix_GetMusicTitle(self->music);
+#else
+    const char *title = "";
+#endif
+
+    return PyUnicode_FromString(title);
+}
+
+static PyObject *
+pgmusic_get_album(pgMusicObject *self, void *closure)
+{
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+    return PyUnicode_FromString(Mix_GetMusicAlbumTag(self->music));
+#else
+    return PyUnicode_FromString("");
+#endif
+}
+
+static PyObject *
+pgmusic_get_artist(pgMusicObject *self, void *closure)
+{
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+    return PyUnicode_FromString(Mix_GetMusicArtistTag(self->music));
+#else
+    return PyUnicode_FromString("");
+#endif
+}
+
+static PyObject *
+pgmusic_get_copyright(pgMusicObject *self, void *closure)
+{
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+    return PyUnicode_FromString(Mix_GetMusicCopyrightTag(self->music));
+#else
+    return PyUnicode_FromString("");
+#endif
+}
+
+static PyObject *
+pgmusic_get_ended(pgMusicObject *self, void *closure)
+{
+    return PyBool_FromLong(self->ended);
+}
+
+static PyObject *
+pgmusic_get_fadein(pgMusicObject *self, void *closure)
+{
+    return PyFloat_FromDouble(self->fadein);
+}
+
+static int
+pgmusic_set_fadein(pgMusicObject *self, PyObject *value, void *closure)
+{
+    DEL_ATTR_NOT_SUPPORTED_CHECK("fadein", value);
+
+    self->fadein = PyFloat_AsDouble(value);
+
+    return 0;
+}
+
+static PyObject *
+pgmusic_get_fadeout(pgMusicObject *self, void *closure)
+{
+    return PyFloat_FromDouble(self->fadeout);
+}
+
+static int
+pgmusic_set_fadeout(pgMusicObject *self, PyObject *value, void *closure)
+{
+    DEL_ATTR_NOT_SUPPORTED_CHECK("fadeout", value);
+
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+
+    double music_duration = _get_music_duration(self);
+
+    // It means the filetype doesn't support this feature
+    // So we don't edit the fadeout
+    if (music_duration < 0.0)
+        return 0;
+
+    self->fadeout = PyFloat_AsDouble(value);
+    double time_remaining = music_duration - Mix_GetMusicPosition(self->music);
+
+    if (self->fadeout > time_remaining) {
+        self->fadeout = time_remaining;
+    }
+
+    return 0;
+#else
+
+    PyErr_SetString(PyExc_NotImplementedError,
+                    "SDL_Mixer 2.6.0 is needed for using fadeout setter");
+    return -1;
+#endif
+}
+
+static int
+pgmusic_init(pgMusicObject *self, PyObject *args, PyObject *kwargs)
+{
+    Mix_Music *new_music = NULL;
+    PyObject *obj;
+    char *namehint = NULL;
+    static char *kwids[] = {"filename", "namehint", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|s", kwids, &obj,
+                                     &namehint))
+        return -1;
+
+    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+        PyErr_SetString(pgExc_SDLError, "mixer not initialized");
+        return -1;
+    }
+
+    new_music = _load_music(obj, namehint);
+    if (new_music == NULL)  // meaning it has an error to return
+        return -1;
+
+    self->music = new_music;
+    self->volume = 1.0;
+    self->paused = 0;
+    self->ended = 0;
+    self->position = 0.0;
+    self->fadein = 0.0;
+    self->fadeout = 0.0;
+
+    return 0;
+}
+
+static void
+pgmusic_endmusic_callback(void)
+{
+    // current_music_obj shouldn't be NULL in theory ?
+    current_music_obj->ended = 1;
+}
+
+static void
+mixmusic_callback(void *udata, Uint8 *stream, int len)
+{
+    if (!current_music_obj)
+        return;
+
+    double current_pos = Mix_GetMusicPosition(current_music_obj->music);
+    double music_duration = _get_music_duration(current_music_obj);
+
+    if (music_duration < 0.0f)
+        return;
+
+    double dt_before_fadeout =
+        music_duration - current_pos - current_music_obj->fadeout;
+    if (dt_before_fadeout < 0.0)
+        Mix_FadeOutMusic((int)(current_music_obj->fadeout * 1000));
+}
+
+static PyObject *
+pgmusic_play(pgMusicObject *self, PyObject *args, PyObject *kwargs)
+{
+    int loops = 0;
+    double startpos = 0.0;
+    float fade_in = 0.0;
+    int val;
+
+    static char *kwids[] = {"loops", "startpos", "fade_in", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|iff", kwids, &loops,
+                                     &startpos, &fade_in))
+        return NULL;
+
+    MIXER_INIT_CHECK();
+
+    if (!self->music)
+        return RAISE(pgExc_SDLError, "music not loaded");
+
+    Py_BEGIN_ALLOW_THREADS;
+
+    /* Check if any music is currently playing */
+    if (current_music_obj != NULL || current_music != NULL) {
+        /* Stolen code from music_stop */
+        /* To prevent the queue_music from playing, free it before stopping. */
+        if (current_music && queue_music) {
+            Mix_FreeMusic(queue_music);
+            queue_music = NULL;
+            queue_music_loops = 0;
+            Mix_HaltMusic();
+        }
+
+        if (current_music_obj != self) {
+            Mix_HaltMusic();
+
+            /*
+            Here we can't support this process for SDL_Mixer version lower
+            than 2.6.0. So if a new music is played, the music will be stopped
+            and declared as ended.
+            */
+#if SDL_MIXER_VERSION_ATLEAST(2, 6, 0)
+            current_music_obj->ended = 0;
+            current_music_obj->paused = 1;
+            current_music_obj->position =
+                Mix_GetMusicPosition(current_music_obj->music);
+#endif
+            current_music_obj = self;
+        }
+        /* If it's not the case, track the new music */
+    }
+    else if (current_music_obj == NULL) {
+        current_music_obj = self;
+    }
+
+    Mix_QuerySpec(&music_frequency, &music_format, &music_channels);
+
+    // Resume from where the music paused before switching to the new music
+    // playback
+    if (self->paused && !self->ended) {
+        self->paused = 0;
+        if (startpos == 0.0)
+            startpos = self->position;
+    }
+
+    if (fade_in != 0.0)
+        self->fadein = fade_in;
+
+    self->ended = 0;
+    Mix_HookMusicFinished(pgmusic_endmusic_callback);
+    val = Mix_FadeInMusicPos(self->music, loops, (int)(fade_in * 1000),
+                             startpos);
+    Mix_VolumeMusic((int)(self->volume * 128));
+
+    Py_END_ALLOW_THREADS;
+
+    if (val == -1)
+        return RAISE(pgExc_SDLError, SDL_GetError());
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+pgmusic_stop(pgMusicObject *self, PyObject *args, PyObject *kwargs)
+{
+    double fade_out = 0.0;
+
+    static char *kwids[] = {"fade_out", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|f", kwids, &fade_out))
+        return NULL;
+
+    MIXER_INIT_CHECK();
+
+    Py_BEGIN_ALLOW_THREADS;
+
+    // Only stop music if it's the one set to playback
+    if (self == current_music_obj) {
+        self->fadeout = fade_out;
+        Mix_FadeOutMusic((int)(self->fadeout * 1000));
+    }
+
+    Py_END_ALLOW_THREADS;
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+pgmusic_rewind(pgMusicObject *self, PyObject *_null)
+{
+    MIXER_INIT_CHECK();
+
+    Py_BEGIN_ALLOW_THREADS;
+
+    // Only rewind the music if it's the one set to playback
+    if (self == current_music_obj)
+        Mix_RewindMusic();
+
+    Py_END_ALLOW_THREADS;
+    Py_RETURN_NONE;
+}
+
+static PyMethodDef _musicobj_methods[] = {
+    {"play", (PyCFunction)pgmusic_play, METH_VARARGS | METH_KEYWORDS, ""},
+    {"stop", (PyCFunction)pgmusic_stop, METH_NOARGS, ""},
+    {"rewind", (PyCFunction)pgmusic_rewind, METH_NOARGS, ""},
+    {NULL, NULL, 0, NULL}  // Sentinel
+};
+
+static PyGetSetDef _musicobj_getset[] = {
+    {"position", (getter)pgmusic_get_position, (setter)pgmusic_set_position,
+     "", NULL},
+    {"duration", (getter)pgmusic_get_duration, NULL, "", NULL},
+    {"paused", (getter)pgmusic_get_paused, (setter)pgmusic_set_paused, "",
+     NULL},
+    {"volume", (getter)pgmusic_get_volume, (setter)pgmusic_set_volume, "",
+     NULL},
+    {"title", (getter)pgmusic_get_title, NULL, "", NULL},
+    {"artist", (getter)pgmusic_get_artist, NULL, "", NULL},
+    {"album", (getter)pgmusic_get_album, NULL, "", NULL},
+    {"copyright", (getter)pgmusic_get_copyright, NULL, "", NULL},
+    {"ended", (getter)pgmusic_get_ended, NULL, "", NULL},
+    {"fadein", (getter)pgmusic_get_fadein, (setter)pgmusic_set_fadein, "",
+     NULL},
+    {"fadeout", (getter)pgmusic_get_fadeout, (setter)pgmusic_set_fadeout, "",
+     NULL},
+    {NULL, 0, NULL, NULL, NULL}  // Sentinel
+};
+
+static PyTypeObject pgMusic_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0).tp_name = "pygame.mixer_music.Music",
+    .tp_basicsize = sizeof(pgMusicObject),
+    .tp_dealloc = (destructor)pgmusic_dealloc,
+    .tp_new = PyType_GenericNew,
+    .tp_init = (initproc)pgmusic_init,
+    .tp_getset = _musicobj_getset,
+    .tp_methods = _musicobj_methods,
+    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_doc = "music object"};
+
 MODINIT_DEFINE(mixer_music)
 {
     PyObject *module;
@@ -626,5 +1123,17 @@ MODINIT_DEFINE(mixer_music)
         Py_DECREF(module);
         return NULL;
     }
+
+    if (PyType_Ready(&pgMusic_Type) < 0) {
+        return NULL;
+    }
+
+    Py_INCREF(&pgMusic_Type);
+    if (PyModule_AddObject(module, "Music", (PyObject *)&pgMusic_Type)) {
+        Py_DECREF(&pgMusic_Type);
+        Py_DECREF(module);
+        return NULL;
+    }
+
     return module;
 }
