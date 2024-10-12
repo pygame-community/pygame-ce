@@ -1674,7 +1674,7 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
 #else
     SDL_PixelFormat *surf_format = surface->format;
     SDL_Palette *surf_palette = surface->format->palette;
-    Uint32 output_format;
+    SDL_PixelFormatEnum output_format;
 #endif
 
     SDL_GetSurfaceAlphaMod(surface, &surf_alpha);
