@@ -14,7 +14,7 @@ __all__ = [
 
 import sys
 from abc import abstractmethod
-from typing import IO, Callable, Tuple, Union, TypeVar, Protocol
+from typing import IO, Callable, Tuple, Union, TypeVar, Protocol, TypeAlias
 
 if sys.version_info >= (3, 9):
     from os import PathLike as _PathProtocol
@@ -27,9 +27,9 @@ else:
 
 
 # For functions that take a file name
-_PathLike = Union[str, bytes, _PathProtocol[str], _PathProtocol[bytes]]
+_PathLike: TypeAlias = Union[str, bytes, _PathProtocol[str], _PathProtocol[bytes]]
 # Most pygame functions that take a file argument should be able to handle a FileLike type
-FileLike = Union[_PathLike, IO[bytes], IO[str]]
+FileLike: TypeAlias = Union[_PathLike, IO[bytes], IO[str]]
 
 _T_co = TypeVar("_T_co", covariant=True)
 
@@ -49,11 +49,11 @@ class SequenceLike(Protocol[_T_co]):
 
 # Pygame handles float without errors in most cases where a point is expected,
 # usually rounding to int. Also, 'Union[int, float] == float'
-Point = SequenceLike[float]
+Point: TypeAlias = SequenceLike[float]
 # This is used where ints are strictly required
-IntPoint = SequenceLike[int]
+IntPoint: TypeAlias = SequenceLike[int]
 
-ColorLike = Union[int, str, SequenceLike[int]]
+ColorLike: TypeAlias = Union[int, str, SequenceLike[int]]
 
 
 class _HasRectAttribute(Protocol):
@@ -63,8 +63,8 @@ class _HasRectAttribute(Protocol):
     def rect(self) -> Union["RectLike", Callable[[], "RectLike"]]: ...
 
 
-RectLike = Union[SequenceLike[float], SequenceLike[Point], _HasRectAttribute]
+RectLike: TypeAlias = Union[SequenceLike[float], SequenceLike[Point], _HasRectAttribute]
 
 
 # cleanup namespace
-del sys, abstractmethod, IO, Callable, Tuple, Union, TypeVar, Protocol
+del sys, abstractmethod, IO, Callable, Tuple, Union, TypeVar, Protocol, TypeAlias

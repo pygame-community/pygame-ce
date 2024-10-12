@@ -1,0 +1,88 @@
+# SDL3 porting is WIP
+name: SDL3 build
+
+# Run CI only when a release is created, on changes to main branch, or any PR
+# to main. Do not run CI on any other branch. Also, skip any non-source changes
+# from running on CI
+on:
+  push:
+    branches: main
+    paths-ignore:
+      - 'docs/**'
+      - 'examples/**'
+      - '.gitignore'
+      - '*.rst'
+      - '*.md'
+      - '.github/workflows/*.yml'
+      # re-include current file to not be excluded
+      - '!.github/workflows/build-sdl3.yml'
+
+  pull_request:
+    branches: main
+    paths-ignore:
+      - 'docs/**'
+      - 'examples/**'
+      - '.gitignore'
+      - '*.rst'
+      - '*.md'
+      - '.github/workflows/*.yml'
+      # re-include current file to not be excluded
+      - '!.github/workflows/build-sdl3.yml'
+
+  # the github release drafter can call this workflow
+  workflow_call:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-ubuntu-sdist
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false  # if a particular matrix build fails, don't skip the rest
+      matrix:
+        os: [ubuntu-24.04, windows-latest, macos-14]
+
+    env:
+      # Pip now forces us to either make a venv or set this flag, so we will do
+      # this
+      PIP_BREAK_SYSTEM_PACKAGES: 1
+      # We are using dependencies installed from apt
+      PG_DEPS_FROM_SYSTEM: 1
+
+    steps:
+    - uses: actions/checkout@v4.2.0
+
+    - name: Install deps (linux)
+      if: matrix.os == 'ubuntu-24.04'
+      run: sudo apt-get install libfreetype6-dev libportmidi-dev python3-dev
+
+    - name: Install deps (mac)
+      if: matrix.os == 'macos-14'
+      run: brew install freetype portmidi
+
+    # taken from https://wiki.libsdl.org/SDL3/Installation
+    - name: Install SDL3
+      if: matrix.os != 'windows-latest'
+      run: |
+        git clone https://github.com/libsdl-org/SDL
+        cd SDL
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        cmake --build . --config Release --parallel
+        sudo cmake --install . --config Release
+
+    - name: Make sdist and install it
+      run: >
+        python3 -m pip install . -v -Csetup-args=-Dsdl_api=3
+        -Csetup-args=-Dimage=disabled
+        -Csetup-args=-Dmixer=disabled
+        -Csetup-args=-Dfont=disabled
+
+    # - name: Run tests
+    #   env:
+    #     SDL_VIDEODRIVER: "dummy"
+    #     SDL_AUDIODRIVER: "disk"
+    #   run: python3 -m pygame.tests -v --exclude opengl,music,timing --time_out 300

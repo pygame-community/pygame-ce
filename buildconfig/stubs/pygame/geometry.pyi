@@ -10,7 +10,6 @@ from typing import (
 
 from pygame import Rect, FRect
 from pygame.typing import Point, RectLike, SequenceLike
-from .rect import Rect, FRect
 from .math import Vector2
 
 _CanBeCircle = Union[Circle, Tuple[Point, float], SequenceLike[float]]
