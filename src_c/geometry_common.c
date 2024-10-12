@@ -163,17 +163,17 @@ pgLine_FromObject(PyObject *obj, pgLineBase *out)
         PyObject **farray = PySequence_Fast_ITEMS(obj);
 
         if (length == 4) {
-            if (!pg_DoubleFromObj(farray[0], &out->xa) ||
-                !pg_DoubleFromObj(farray[1], &out->ya) ||
-                !pg_DoubleFromObj(farray[2], &out->xb) ||
-                !pg_DoubleFromObj(farray[3], &out->yb)) {
+            if (!pg_DoubleFromObj(farray[0], &out->ax) ||
+                !pg_DoubleFromObj(farray[1], &out->ay) ||
+                !pg_DoubleFromObj(farray[2], &out->bx) ||
+                !pg_DoubleFromObj(farray[3], &out->by)) {
                 return 0;
             }
             return 1;
         }
         else if (length == 2) {
-            if (!pg_TwoDoublesFromObj(farray[0], &out->xa, &out->ya) ||
-                !pg_TwoDoublesFromObj(farray[1], &out->xb, &out->yb)) {
+            if (!pg_TwoDoublesFromObj(farray[0], &out->ax, &out->ay) ||
+                !pg_TwoDoublesFromObj(farray[1], &out->bx, &out->by)) {
                 PyErr_Clear();
                 return 0;
             }
@@ -192,25 +192,25 @@ pgLine_FromObject(PyObject *obj, pgLineBase *out)
         if (length == 4) {
             PyObject *tmp;
             tmp = PySequence_ITEM(obj, 0);
-            if (!pg_DoubleFromObj(tmp, &out->xa)) {
+            if (!pg_DoubleFromObj(tmp, &out->ax)) {
                 Py_DECREF(tmp);
                 return 0;
             }
             Py_DECREF(tmp);
             tmp = PySequence_ITEM(obj, 1);
-            if (!pg_DoubleFromObj(tmp, &out->ya)) {
+            if (!pg_DoubleFromObj(tmp, &out->ay)) {
                 Py_DECREF(tmp);
                 return 0;
             }
             Py_DECREF(tmp);
             tmp = PySequence_ITEM(obj, 2);
-            if (!pg_DoubleFromObj(tmp, &out->xb)) {
+            if (!pg_DoubleFromObj(tmp, &out->bx)) {
                 Py_DECREF(tmp);
                 return 0;
             }
             Py_DECREF(tmp);
             tmp = PySequence_ITEM(obj, 3);
-            if (!pg_DoubleFromObj(tmp, &out->yb)) {
+            if (!pg_DoubleFromObj(tmp, &out->by)) {
                 Py_DECREF(tmp);
                 return 0;
             }
@@ -220,13 +220,13 @@ pgLine_FromObject(PyObject *obj, pgLineBase *out)
         else if (length == 2) {
             PyObject *tmp;
             tmp = PySequence_ITEM(obj, 0);
-            if (!pg_TwoDoublesFromObj(tmp, &out->xa, &out->ya)) {
+            if (!pg_TwoDoublesFromObj(tmp, &out->ax, &out->ay)) {
                 Py_DECREF(tmp);
                 return 0;
             }
             Py_DECREF(tmp);
             tmp = PySequence_ITEM(obj, 1);
-            if (!pg_TwoDoublesFromObj(tmp, &out->xb, &out->yb)) {
+            if (!pg_TwoDoublesFromObj(tmp, &out->bx, &out->by)) {
                 Py_DECREF(tmp);
                 return 0;
             }

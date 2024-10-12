@@ -18,8 +18,8 @@ typedef struct {
 #define pgCircle_Check(o) ((o)->ob_type == &pgCircle_Type)
 
 typedef struct {
-    double xa, ya;
-    double xb, yb;
+    double ax, ay;
+    double bx, by;
 } pgLineBase;
 
 typedef struct {

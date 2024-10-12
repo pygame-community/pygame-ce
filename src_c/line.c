@@ -2,16 +2,16 @@
 #include "geometry_common.h"
 
 static PyObject *
-_pg_line_subtype_new4(PyTypeObject *type, double xa, double ya, double xb,
-                      double yb)
+_pg_line_subtype_new4(PyTypeObject *type, double ax, double ay, double bx,
+                      double by)
 {
     pgLineObject *line = (pgLineObject *)pgLine_Type.tp_new(type, NULL, NULL);
 
     if (line) {
-        line->line.xa = xa;
-        line->line.ya = ya;
-        line->line.xb = xb;
-        line->line.yb = yb;
+        line->line.ax = ax;
+        line->line.ay = ay;
+        line->line.bx = bx;
+        line->line.by = by;
     }
     return (PyObject *)line;
 }
@@ -52,8 +52,8 @@ pg_line_init(pgLineObject *self, PyObject *args, PyObject *kwds)
 static PyObject *
 pg_line_copy(pgLineObject *self, PyObject *_null)
 {
-    return _pg_line_subtype_new4(Py_TYPE(self), self->line.xa, self->line.ya,
-                                 self->line.xb, self->line.yb);
+    return _pg_line_subtype_new4(Py_TYPE(self), self->line.ax, self->line.ay,
+                                 self->line.bx, self->line.by);
 }
 
 static struct PyMethodDef pg_line_methods[] = {
@@ -64,38 +64,38 @@ static struct PyMethodDef pg_line_methods[] = {
 static PyObject *
 pg_line_repr(pgLineObject *self)
 {
-    PyObject *result, *xa, *ya, *xb, *yb;
+    PyObject *result, *ax, *ay, *bx, *by;
 
-    xa = PyFloat_FromDouble(self->line.xa);
-    if (!xa) {
+    ax = PyFloat_FromDouble(self->line.ax);
+    if (!ax) {
         return NULL;
     }
-    ya = PyFloat_FromDouble(self->line.ya);
-    if (!ya) {
-        Py_DECREF(xa);
+    ay = PyFloat_FromDouble(self->line.ay);
+    if (!ay) {
+        Py_DECREF(ax);
         return NULL;
     }
-    xb = PyFloat_FromDouble(self->line.xb);
-    if (!xb) {
-        Py_DECREF(xa);
-        Py_DECREF(ya);
+    bx = PyFloat_FromDouble(self->line.bx);
+    if (!bx) {
+        Py_DECREF(ax);
+        Py_DECREF(ay);
         return NULL;
     }
-    yb = PyFloat_FromDouble(self->line.yb);
-    if (!yb) {
-        Py_DECREF(xa);
-        Py_DECREF(ya);
-        Py_DECREF(xb);
+    by = PyFloat_FromDouble(self->line.by);
+    if (!by) {
+        Py_DECREF(ax);
+        Py_DECREF(ay);
+        Py_DECREF(bx);
         return NULL;
     }
 
     result =
-        PyUnicode_FromFormat("<Line((%R, %R), (%R, %R))>", xa, ya, xb, yb);
+        PyUnicode_FromFormat("<Line((%R, %R), (%R, %R))>", ax, ay, bx, by);
 
-    Py_DECREF(xa);
-    Py_DECREF(ya);
-    Py_DECREF(xb);
-    Py_DECREF(yb);
+    Py_DECREF(ax);
+    Py_DECREF(ay);
+    Py_DECREF(bx);
+    Py_DECREF(by);
 
     return result;
 }
@@ -124,16 +124,16 @@ pg_line_str(pgLineObject *self)
         return -1;                                                        \
     }
 
-__LINE_GETSET_NAME(xa)
-__LINE_GETSET_NAME(ya)
-__LINE_GETSET_NAME(xb)
-__LINE_GETSET_NAME(yb)
+__LINE_GETSET_NAME(ax)
+__LINE_GETSET_NAME(ay)
+__LINE_GETSET_NAME(bx)
+__LINE_GETSET_NAME(by)
 #undef __LINE_GETSET_NAME
 
 static PyObject *
 pg_line_geta(pgLineObject *self, void *closure)
 {
-    return pg_tuple_couple_from_values_double(self->line.xa, self->line.ya);
+    return pg_tuple_couple_from_values_double(self->line.ax, self->line.ay);
 }
 
 static int
@@ -142,8 +142,8 @@ pg_line_seta(pgLineObject *self, PyObject *value, void *closure)
     double x, y;
     DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
     if (pg_TwoDoublesFromObj(value, &x, &y)) {
-        self->line.xa = x;
-        self->line.ya = y;
+        self->line.ax = x;
+        self->line.ay = y;
         return 0;
     }
     PyErr_SetString(PyExc_TypeError, "Expected a sequence of 2 numbers");
@@ -153,7 +153,7 @@ pg_line_seta(pgLineObject *self, PyObject *value, void *closure)
 static PyObject *
 pg_line_getb(pgLineObject *self, void *closure)
 {
-    return pg_tuple_couple_from_values_double(self->line.xb, self->line.yb);
+    return pg_tuple_couple_from_values_double(self->line.bx, self->line.by);
 }
 
 static int
@@ -162,8 +162,8 @@ pg_line_setb(pgLineObject *self, PyObject *value, void *closure)
     double x, y;
     DEL_ATTR_NOT_SUPPORTED_CHECK_NO_NAME(value);
     if (pg_TwoDoublesFromObj(value, &x, &y)) {
-        self->line.xb = x;
-        self->line.yb = y;
+        self->line.bx = x;
+        self->line.by = y;
         return 0;
     }
     PyErr_SetString(PyExc_TypeError, "Expected a sequence of 2 numbers");
@@ -171,10 +171,10 @@ pg_line_setb(pgLineObject *self, PyObject *value, void *closure)
 }
 
 static PyGetSetDef pg_line_getsets[] = {
-    {"xa", (getter)pg_line_getxa, (setter)pg_line_setxa, DOC_LINE_XA, NULL},
-    {"ya", (getter)pg_line_getya, (setter)pg_line_setya, DOC_LINE_YA, NULL},
-    {"xb", (getter)pg_line_getxb, (setter)pg_line_setxb, DOC_LINE_XB, NULL},
-    {"yb", (getter)pg_line_getyb, (setter)pg_line_setyb, DOC_LINE_YB, NULL},
+    {"ax", (getter)pg_line_getax, (setter)pg_line_setax, DOC_LINE_AX, NULL},
+    {"ay", (getter)pg_line_getay, (setter)pg_line_setay, DOC_LINE_AY, NULL},
+    {"bx", (getter)pg_line_getbx, (setter)pg_line_setbx, DOC_LINE_BX, NULL},
+    {"by", (getter)pg_line_getby, (setter)pg_line_setby, DOC_LINE_BY, NULL},
     {"a", (getter)pg_line_geta, (setter)pg_line_seta, DOC_LINE_A, NULL},
     {"b", (getter)pg_line_getb, (setter)pg_line_setb, DOC_LINE_B, NULL},
     {NULL, 0, NULL, NULL, NULL}};

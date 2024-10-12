@@ -492,8 +492,8 @@
 .. class:: Line
 
    | :sl:`pygame object for representing a line`
-   | :sg:`Line((xa, ya), (xb, yb)) -> Line`
-   | :sg:`Line(xa, ya, xb, yb) -> Line`
+   | :sg:`Line((ax, ay), (bx, by)) -> Line`
+   | :sg:`Line(ax, ay, bx, by) -> Line`
 
    .. versionadded:: 2.5.2
 
@@ -501,76 +501,83 @@
    A `Line` can be created from a combination of two pairs of coordinates that represent the start and end points.
    Lines can also be created from python objects that are already a `Line` (effectively copying the line) or have an attribute named "line".
 
-   Specifically, to construct a line you can pass the xa, ya, xb, and yb values as separate arguments or inside a sequence(list or tuple).
+   Specifically, to construct a `Line` you can pass the ax, ay, bx, and by values as separate
+   arguments or inside a sequence(list or tuple).
+
+   As a special case you can also pass in `pygame.Rect` / `pygame.FRect`, in which case the
+   line will be created with (x, y, width, height) as the start and end points.
+
+   You can create lines with the same start and end points, but beware that some methods may
+   not work as expected or error out.
 
    Functions that require a `Line` argument may also accept these values as Lines:
 
    ::
 
-      ((xa, ya), (xb, yb))
-      (xa, ya, xb, yb)
+      ((ax, ay), (bx, by))
+      (ax, ay, bx, by)
       (vector2, vector2)
 
-   The `Line` class only stores the xa, ya, xb, and yb attributes, everything else is calculated
+   The `Line` class only stores the ax, ay, bx, and by attributes, everything else is calculated
    on the fly based on them.
 
    **Line Attributes**
 
    ----
 
-   .. attribute:: xa
+   .. attribute:: ax
 
          | :sl:`x coordinate of the start point of the line`
-         | :sg:`xa -> float`
+         | :sg:`ax -> float`
 
          The horizontal coordinate of the start point of the line. Reassigning it moves the line.
 
          .. versionadded:: 2.5.2
 
-         .. ## Line.xa ##
+         .. ## Line.ax ##
 
-   .. attribute:: ya
+   .. attribute:: ay
 
          | :sl:`y coordinate of the start point of the line`
-         | :sg:`ya -> float`
+         | :sg:`ay -> float`
 
          The vertical coordinate of the start point of the line. Reassigning it moves the line.
 
          .. versionadded:: 2.5.2
 
-         .. ## Line.ya ##
+         .. ## Line.ay ##
 
-   .. attribute:: xb
+   .. attribute:: bx
 
          | :sl:`x coordinate of the end point of the line`
-         | :sg:`xb -> float`
+         | :sg:`bx -> float`
 
          The horizontal coordinate of the end point of the line. Reassigning it moves the line.
 
          .. versionadded:: 2.5.2
 
-         .. ## Line.xb ##
+         .. ## Line.bx ##
 
-   .. attribute:: yb
+   .. attribute:: by
 
          | :sl:`y coordinate of the end point of the line`
-         | :sg:`yb -> float`
+         | :sg:`by -> float`
 
          The vertical coordinate of the end point of the line. Reassigning it moves the line.
 
          .. versionadded:: 2.5.2
 
-         .. ## Line.yb ##
+         .. ## Line.by ##
 
    .. attribute:: a
 
          | :sl:`the first point of the line`
          | :sg:`a -> (float, float)`
 
-         It's a tuple containing the `xa` and `ya` attributes representing the line's first point.
-         It can be reassigned to move the `Line`. If reassigned the `xa` and `ya` attributes
+         It's a tuple containing the `ax` and `ay` attributes representing the line's first point.
+         It can be reassigned to move the `Line`. If reassigned the `ax` and `ay` attributes
          will be changed to produce a `Line` with matching first point position.
-         The `xb` and `yb` attributes will not be affected.
+         The `bx` and `by` attributes will not be affected.
 
          .. versionadded:: 2.5.2
 
@@ -581,10 +588,10 @@
          | :sl:`the second point of the line`
          | :sg:`b -> (float, float)`
 
-         It's a tuple containing `xb` and `yb` attributes representing the line's second point.
-         It can be reassigned to move the `Line`. If reassigned the `xb` and `yb` attributes
+         It's a tuple containing `bx` and `by` attributes representing the line's second point.
+         It can be reassigned to move the `Line`. If reassigned the `bx` and `by` attributes
          will be changed to produce a `Line` with matching second point position.
-         The `xa` and `ya` attributes will not be affected.
+         The `ax` and `ay` attributes will not be affected.
 
          .. versionadded:: 2.5.2
 
