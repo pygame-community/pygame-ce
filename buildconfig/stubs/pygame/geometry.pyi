@@ -10,7 +10,6 @@ from typing import (
 
 from pygame import Rect, FRect
 from pygame.typing import Point, RectLike, SequenceLike
-from .math import Vector2
 
 _CanBeCircle = Union[Circle, Tuple[Point, float], SequenceLike[float]]
 _CanBeLine = Union[
@@ -36,7 +35,7 @@ class _HasLineAttribute(Protocol):
 
 _LineValue = Union[_CanBeLine, _HasLineAttribute]
 
-_CanBeCollided = Union[Circle, Rect, FRect, Point, Vector2]
+_CanBeCollided = Union[Circle, Rect, FRect, Point]
 _CanBeIntersected = Union[Circle]
 
 class Circle:
