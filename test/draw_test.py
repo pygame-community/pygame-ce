@@ -174,6 +174,7 @@ class DrawTestCase(unittest.TestCase):
     draw_lines = staticmethod(draw.lines)
     draw_aaline = staticmethod(draw.aaline)
     draw_aalines = staticmethod(draw.aalines)
+    draw_dashed_line = staticmethod(draw.dashed_line)
 
 
 ### Ellipse Testing ###########################################################
@@ -3807,6 +3808,63 @@ class DrawAALinesTest(AALinesMixin, DrawTestCase):
             check_color,
             min_expected_color,
             "Pixel is missing between non-steep and steep line, pos=(26, 25)",
+        )
+
+
+class DrawDashedLineTest(DrawTestCase):
+    """Test draw module function dashed_line"""
+
+    def test_dashed_line__args(self):
+        """Tests all the possible iterations of argument"""
+        surf = pygame.Surface((100, 100))
+
+        # all required args
+        self.draw_dashed_line(surf, "blue", (0, 0), (100, 100))
+        self.draw_dashed_line(
+            surf, (255, 0, 0), pygame.Vector2(), pygame.Vector2(100, 100)
+        )
+        self.draw_dashed_line(
+            surf, (255, 0, 0, 128), pygame.Vector2(), pygame.Vector2(100, 100)
+        )
+
+        # width argument
+        self.draw_dashed_line(surf, "blue", (0, 0), (100, 100), 1)
+        self.draw_dashed_line(surf, "blue", (0, 0), (100, 100), 5)
+        self.assertRaises(
+            TypeError,
+            lambda: self.draw_dashed_line(surf, "blue", (0, 0), (100, 100), "1"),
+        )
+
+        # length argument
+        self.draw_dashed_line(surf, "blue", (0, 0), (100, 100), 1, 10)
+        self.draw_dashed_line(surf, "blue", (0, 0), (100, 100), 1, [10, 20])
+        self.assertRaises(
+            TypeError,
+            lambda: self.draw_dashed_line(surf, "blue", (0, 0), (100, 100), 1, "1"),
+        )
+        self.assertRaises(
+            TypeError,
+            lambda: self.draw_dashed_line(surf, "blue", (0, 0), (100, 100), 1, (1,)),
+        )
+        self.assertRaises(
+            TypeError,
+            lambda: self.draw_dashed_line(
+                surf, "blue", (0, 0), (100, 100), 1, (1, 2, 3)
+            ),
+        )
+
+        # delay argument
+        self.draw_dashed_line(surf, "blue", (0, 0), (100, 100), 1, 10, 0)
+        self.draw_dashed_line(surf, "blue", (0, 0), (100, 100), 1, 10, 10)
+        self.assertRaises(
+            TypeError,
+            lambda: self.draw_dashed_line(
+                surf, "blue", (100, 100), (0, 0), 10, 100, "10"
+            ),
+        )
+        self.assertRaises(
+            ValueError,
+            lambda: self.draw_dashed_line(surf, "blue", (0, 0), (100, 100), 1, 1, -1),
         )
 
 
