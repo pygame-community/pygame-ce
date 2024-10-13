@@ -81,7 +81,7 @@ static int pg_is_init = 0;
 static int pg_sdl_was_init = 0;
 SDL_Window *pg_default_window = NULL;
 pgSurfaceObject *pg_default_screen = NULL;
-static char *pg_env_blend_alpha_SDL2 = NULL;
+static int pg_env_blend_alpha_SDL2 = 0;
 
 static void
 pg_install_parachute(void);
@@ -170,7 +170,7 @@ static pgSurfaceObject *
 pg_GetDefaultWindowSurface(void);
 static void
 pg_SetDefaultWindowSurface(pgSurfaceObject *);
-static char *
+static int
 pg_EnvShouldBlendAlphaSDL2(void);
 
 /* compare compiled to linked, raise python error on incompatibility */
@@ -347,7 +347,7 @@ pg_init(PyObject *self, PyObject *_null)
     pg_sdl_was_init = SDL_Init(PG_INIT_TIMER | PG_INIT_NOPARACHUTE) == 0;
 #endif
 
-    pg_env_blend_alpha_SDL2 = SDL_getenv("PYGAME_BLEND_ALPHA_SDL2");
+    pg_env_blend_alpha_SDL2 = SDL_getenv("PYGAME_BLEND_ALPHA_SDL2") != NULL;
 
     /* initialize all pygame modules */
     for (i = 0; modnames[i]; i++) {
@@ -2096,7 +2096,7 @@ pg_SetDefaultConvertFormat(Uint32 format)
     return pg_default_convert_format;  // returns for NULL error checking
 }
 
-static char *
+static int
 pg_EnvShouldBlendAlphaSDL2(void)
 {
     return pg_env_blend_alpha_SDL2;
