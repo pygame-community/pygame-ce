@@ -11,24 +11,23 @@ from typing import (
 from pygame import Rect, FRect
 from pygame.typing import Point, RectLike, SequenceLike
 
-_CanBeCircle = Union[Circle, Tuple[Point, float], SequenceLike[float]]
-_CanBeLine = Union[Line, SequenceLike[float], SequenceLike[Point]]
-
 class _HasCircleAttribute(Protocol):
     # An object that has a circle attribute that is either a circle, or a function
     # that returns a circle
     @property
-    def circle(self) -> Union[_CanBeCircle, Callable[[], _CanBeCircle]]: ...
+    def circle(self) -> Union[_CircleValue, Callable[[], _CircleValue]]: ...
 
-_CircleValue = Union[_CanBeCircle, _HasCircleAttribute]
+_CircleValue = Union[
+    Circle, Tuple[Point, float], SequenceLike[float], _HasCircleAttribute
+]
 
 class _HasLineAttribute(Protocol):
     # An object that has a line attribute that is either a line, or a function
     # that returns a line
     @property
-    def line(self) -> Union[_CanBeLine, Callable[[], _CanBeLine]]: ...
+    def line(self) -> Union[_LineValue, Callable[[], _LineValue]]: ...
 
-_LineValue = Union[_CanBeLine, _HasLineAttribute]
+_LineValue = Union[Line, SequenceLike[float], SequenceLike[Point], _HasLineAttribute]
 
 _CanBeCollided = Union[Circle, Rect, FRect, Point]
 _CanBeIntersected = Union[Circle]
