@@ -94,6 +94,9 @@ mkdir builddir && cd builddir
 # We prefer libflac, mpg123 and ogg-vorbis over SDL vendored implementations
 # at the moment. This can be changed later if need arises.
 # We don't build with libgme for now
+# With CMake, libxmp is handled differently compared to the other dependencies.
+# The library gets statically linked instead of using standard dynamic linking.
+# A fix has been proposed: https://github.com/libsdl-org/SDL_mixer/pull/642
 cmake -S .. -B . $PG_BASE_CMAKE_FLAGS \
       -DSDL2MIXER_DEPS_SHARED=$PG_DEPS_SHARED -DSDL2MIXER_VENDORED=0 \
       -DSDL2MIXER_FLAC_LIBFLAC=1 -DSDL2MIXER_FLAC_DRFLAC=0 \
