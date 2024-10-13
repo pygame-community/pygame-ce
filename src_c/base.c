@@ -341,10 +341,10 @@ pg_init(PyObject *self, PyObject *_null)
 
     /*nice to initialize timer, so startup time will reflec pg_init() time*/
 #if defined(WITH_THREAD) && !defined(MS_WIN32) && defined(SDL_INIT_EVENTTHREAD)
-    pg_sdl_was_init = SDL_Init(SDL_INIT_EVENTTHREAD | SDL_INIT_TIMER |
+    pg_sdl_was_init = SDL_Init(SDL_INIT_EVENTTHREAD | PG_INIT_TIMER |
                                PG_INIT_NOPARACHUTE) == 0;
 #else
-    pg_sdl_was_init = SDL_Init(SDL_INIT_TIMER | PG_INIT_NOPARACHUTE) == 0;
+    pg_sdl_was_init = SDL_Init(PG_INIT_TIMER | PG_INIT_NOPARACHUTE) == 0;
 #endif
 
     pg_env_blend_alpha_SDL2 = SDL_getenv("PYGAME_BLEND_ALPHA_SDL2");
