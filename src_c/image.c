@@ -1575,6 +1575,10 @@ rle_line(Uint8 *src, Uint8 *dst, int w, int bpp)
            two bytes or more */
         if ((x - x0 - 1) * bpp >= 2 || x == w) {
             /* output previous raw chunks */
+            if (x - x0 == 1) {
+                /* No need for repeat chunk, do a raw chunk */
+                x0++;
+            }
             while (raw < x0) {
                 int n = MIN(TGA_RLE_MAX, x0 - raw);
                 dst[out++] = n - 1;
