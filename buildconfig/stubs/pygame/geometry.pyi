@@ -12,11 +12,7 @@ from pygame import Rect, FRect
 from pygame.typing import Point, RectLike, SequenceLike
 
 _CanBeCircle = Union[Circle, Tuple[Point, float], SequenceLike[float]]
-_CanBeLine = Union[
-    Line,
-    SequenceLike[float],
-    SequenceLike[Point],
-]
+_CanBeLine = Union[Line, SequenceLike[float], SequenceLike[Point]]
 
 class _HasCircleAttribute(Protocol):
     # An object that has a circle attribute that is either a circle, or a function
@@ -31,7 +27,6 @@ class _HasLineAttribute(Protocol):
     # that returns a line
     @property
     def line(self) -> Union[_CanBeLine, Callable[[], _CanBeLine]]: ...
-
 
 _LineValue = Union[_CanBeLine, _HasLineAttribute]
 
