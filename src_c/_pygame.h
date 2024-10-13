@@ -115,6 +115,8 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_FIND_VNUM_MINOR(ver) SDL_VERSIONNUM_MINOR(ver)
 #define PG_FIND_VNUM_MICRO(ver) SDL_VERSIONNUM_MICRO(ver)
 
+#define PG_INIT_TIMER 0
+
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
 #define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
@@ -179,6 +181,8 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_FIND_VNUM_MAJOR(ver) ver.major
 #define PG_FIND_VNUM_MINOR(ver) ver.minor
 #define PG_FIND_VNUM_MICRO(ver) ver.patch
+
+#define PG_INIT_TIMER SDL_INIT_TIMER
 
 #if SDL_VERSION_ATLEAST(2, 0, 14)
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
