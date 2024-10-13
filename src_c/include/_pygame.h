@@ -181,7 +181,7 @@ typedef struct pg_bufferinfo_s {
     (*(void (*)(pgSurfaceObject *))PYGAMEAPI_GET_SLOT(base, 22))
 
 #define pg_EnvShouldBlendAlphaSDL2 \
-    (*(char *(*)(void))PYGAMEAPI_GET_SLOT(base, 23))
+    (*(int (*)(void))PYGAMEAPI_GET_SLOT(base, 23))
 
 #define pg_GetDefaultConvertFormat \
     (*(SDL_PixelFormat * (*)(void)) PYGAMEAPI_GET_SLOT(base, 27))
