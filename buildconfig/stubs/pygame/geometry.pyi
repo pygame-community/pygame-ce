@@ -19,17 +19,19 @@ _CanBeLine = Union[
     SequenceLike[Point],
 ]
 
-class _HasCirclettribute(Protocol):
+class _HasCircleAttribute(Protocol):
     # An object that has a circle attribute that is either a circle, or a function
     # that returns a circle
-    circle: Union[_CanBeCircle, Callable[[], _CanBeCircle]]
+    @property
+    def circle(self) -> Union[_CanBeCircle, Callable[[], _CanBeCircle]]: ...
 
-_CircleValue = Union[_CanBeCircle, _HasCirclettribute]
+_CircleValue = Union[_CanBeCircle, _HasCircleAttribute]
 
 class _HasLineAttribute(Protocol):
     # An object that has a line attribute that is either a line, or a function
     # that returns a line
-    line: Union[_CanBeLine, Callable[[], _CanBeLine]]
+    @property
+    def line(self) -> Union[_CanBeLine, Callable[[], _CanBeLine]]: ...
 
 
 _LineValue = Union[_CanBeLine, _HasLineAttribute]
