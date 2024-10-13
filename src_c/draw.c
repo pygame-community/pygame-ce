@@ -184,8 +184,9 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     if (width > 1) {
         float x1, y1, x2, y2, x3, y3, x4, y4;
-        line_width_corners(startx, starty, endx, endy, (float)width, &x1, &y1,
-                           &x2, &y2, &x3, &y3, &x4, &y4);
+        line_width_corners((int)startx, (int)starty, (int)endx, (int)endy,
+                           (float)width, &x1, &y1, &x2, &y2, &x3, &y3, &x4,
+                           &y4);
         draw_line_width(surf, color, (int)startx, (int)starty, (int)endx,
                         (int)endy, width, drawn_area);
         draw_aaline(surf, color, x1, y1, x2, y2, drawn_area, 0, 0, 0);
