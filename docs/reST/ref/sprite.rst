@@ -21,14 +21,15 @@ specially customized Sprite instances they contain.
 
 The basic Group class can draw the Sprites it contains to a Surface. The
 ``Group.draw()`` method requires that each Sprite have a ``Sprite.image``
-attribute and a ``Sprite.rect``. The ``Group.clear()`` method requires these
+attribute and a ``Sprite.rect`` or ``Sprite.frect``. Note that ``Sprite.frect``
+is just an alias for ``Sprite.rect``. The ``Group.clear()`` method requires these
 same attributes, and can be used to erase all the Sprites with background.
 There are also more advanced Groups: ``pygame.sprite.RenderUpdates()``.
 
 Lastly, this module contains several collision functions. These help find
 sprites inside multiple groups that have intersecting bounding rectangles. To
-find the collisions, the Sprites are required to have a ``Sprite.rect``
-attribute assigned.
+find the collisions, the Sprites are required to have a ``Sprite.rect`` or
+``Sprite.frect`` attribute assigned.
 
 The groups are designed for high efficiency in removing and adding Sprites to
 them. They also allow cheap testing to see if a Sprite already exists in a
