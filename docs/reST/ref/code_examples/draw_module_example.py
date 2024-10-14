@@ -64,10 +64,15 @@ while not done:
     )
 
     # Draw an ellipse outline, using a rectangle as the outside boundaries
-    pygame.draw.ellipse(screen, "red", [225, 10, 50, 20], 2)
+    pygame.draw.ellipse(screen, "red", [235, 10, 50, 20], 2)
 
     # Draw an solid ellipse, using a rectangle as the outside boundaries
-    pygame.draw.ellipse(screen, "red", [300, 10, 50, 20])
+    pygame.draw.ellipse(screen, "red", [310, 10, 50, 20])
+
+    # Draw an antialiased ellipse, using a rectangle as the outside boundaries
+    pygame.draw.aaellipse(screen, "red", [235, 40, 50, 20], 3)
+    # Draw an antialiased filled ellipse, using a rectangle as the outside boundaries
+    pygame.draw.aaellipse(screen, "red", [310, 40, 50, 20])
 
     # This draws a triangle using the polygon command
     pygame.draw.polygon(screen, "black", [[100, 100], [0, 200], [200, 200]], 5)
