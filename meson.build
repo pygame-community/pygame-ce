@@ -195,7 +195,11 @@ if plat == 'win' and host_machine.cpu_family().startswith('x86')
     )
 
     # put dlls in root of install
-    install_data(dlls, install_dir: pg_dir, install_tag: 'pg-tag')
+    try
+        install_data(dlls, install_dir: pg_dir, install_tag: 'pg-tag')
+    catch(e)
+        error(e.message + '\n' + 'Please try to delete "prebuilt_downloads/", "prebuilt-x64/" and "prebuilt-x86/" directories and retry the installation.')
+    endtry
 else
     bases = ['/usr/local', '/usr', '/opt/homebrew', '/opt/local']
     foreach inc_dir : bases
