@@ -487,3 +487,127 @@
          .. ## Circle.copy ##
 
    .. ## pygame.Circle ##
+
+
+.. class:: Line
+
+   | :sl:`pygame object for representing a line`
+   | :sg:`Line((ax, ay), (bx, by)) -> Line`
+   | :sg:`Line(ax, ay, bx, by) -> Line`
+
+   .. versionadded:: 2.5.2
+
+   The `Line` class provides many useful methods for collision testing, transformation and intersection.
+   A `Line` can be created from a combination of two pairs of coordinates that represent the start and end points.
+   Lines can also be created from python objects that are already a `Line` (effectively copying the line) or have an attribute named "line".
+
+   Specifically, to construct a `Line` you can pass the ax, ay, bx, and by values as separate
+   arguments or inside a sequence(list or tuple).
+
+   As a special case you can also pass in `pygame.Rect` / `pygame.FRect`, in which case the
+   line will be created with (x, y, width, height) as the start and end points.
+
+   You can create lines with the same start and end points, but beware that some methods may
+   not work as expected or error out.
+
+   Functions that require a `Line` argument may also accept these values as Lines:
+
+   ::
+
+      ((ax, ay), (bx, by))
+      (ax, ay, bx, by)
+      (vector2, vector2)
+
+   The `Line` class only stores the ax, ay, bx, and by attributes, everything else is calculated
+   on the fly based on them.
+
+   **Line Attributes**
+
+   ----
+
+   .. attribute:: ax
+
+         | :sl:`x coordinate of the start point of the line`
+         | :sg:`ax -> float`
+
+         The horizontal coordinate of the start point of the line. Reassigning it moves the line.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.ax ##
+
+   .. attribute:: ay
+
+         | :sl:`y coordinate of the start point of the line`
+         | :sg:`ay -> float`
+
+         The vertical coordinate of the start point of the line. Reassigning it moves the line.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.ay ##
+
+   .. attribute:: bx
+
+         | :sl:`x coordinate of the end point of the line`
+         | :sg:`bx -> float`
+
+         The horizontal coordinate of the end point of the line. Reassigning it moves the line.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.bx ##
+
+   .. attribute:: by
+
+         | :sl:`y coordinate of the end point of the line`
+         | :sg:`by -> float`
+
+         The vertical coordinate of the end point of the line. Reassigning it moves the line.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.by ##
+
+   .. attribute:: a
+
+         | :sl:`the first point of the line`
+         | :sg:`a -> (float, float)`
+
+         It's a tuple containing the `ax` and `ay` attributes representing the line's first point.
+         It can be reassigned to move the `Line`. If reassigned the `ax` and `ay` attributes
+         will be changed to produce a `Line` with matching first point position.
+         The `bx` and `by` attributes will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.a ##
+
+   .. attribute:: b
+
+         | :sl:`the second point of the line`
+         | :sg:`b -> (float, float)`
+
+         It's a tuple containing `bx` and `by` attributes representing the line's second point.
+         It can be reassigned to move the `Line`. If reassigned the `bx` and `by` attributes
+         will be changed to produce a `Line` with matching second point position.
+         The `ax` and `ay` attributes will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.b ##
+
+   **Line Methods**
+
+   ----
+
+   .. method:: copy
+
+         | :sl:`copies the line`
+         | :sg:`copy() -> Line`
+
+         Returns a copy of this `Line`.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.copy ##

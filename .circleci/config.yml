@@ -42,7 +42,7 @@ jobs:
       - run:
           name: Build the Linux wheels.
           command: |
-            pip3 install --user cibuildwheel==2.21.1
+            pip3 install --user cibuildwheel==2.21.3
             PATH="$HOME/.local/bin:$PATH" cibuildwheel --output-dir wheelhouse
 
       - store_artifacts:
