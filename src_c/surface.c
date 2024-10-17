@@ -2575,8 +2575,8 @@ surf_subsurface(PyObject *self, PyObject *args)
                        rect->x * PG_FORMAT_BytesPerPixel(format) +
                        rect->y * surf->pitch;
 
-    sub = PG_CreateSurfaceFrom(startpixel, rect->w, rect->h, surf->pitch,
-                               format->format);
+    sub = PG_CreateSurfaceFrom(rect->w, rect->h, format->format, startpixel,
+                               surf->pitch);
 
     pgSurface_Unlock((pgSurfaceObject *)self);
 

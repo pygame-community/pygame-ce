@@ -422,24 +422,39 @@ tobytes_surf_32bpp_sse42(SDL_Surface *surf, int flipped, char *data,
 #endif /* PG_COMPILE_SSE4_2 */
 
 static void
-tobytes_surf_32bpp(SDL_Surface *surf, int flipped, int hascolorkey,
-                   Uint32 colorkey, char *serialized_image, int color_offset,
-                   int alpha_offset, int padding)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+tobytes_surf_32bpp(SDL_Surface *surf,
+                   const SDL_PixelFormatDetails *format_details, int flipped,
+                   int hascolorkey, Uint32 colorkey, char *serialized_image,
+                   int color_offset, int alpha_offset, int padding)
+#else
+tobytes_surf_32bpp(SDL_Surface *surf, SDL_PixelFormat *format_details,
+                   int flipped, int hascolorkey, Uint32 colorkey,
+                   char *serialized_image, int color_offset, int alpha_offset,
+                   int padding)
+#endif
 {
     int w, h;
 
-    Uint32 Rmask = surf->format->Rmask;
-    Uint32 Gmask = surf->format->Gmask;
-    Uint32 Bmask = surf->format->Bmask;
-    Uint32 Amask = surf->format->Amask;
-    Uint32 Rshift = surf->format->Rshift;
-    Uint32 Gshift = surf->format->Gshift;
-    Uint32 Bshift = surf->format->Bshift;
-    Uint32 Ashift = surf->format->Ashift;
-    Uint32 Rloss = surf->format->Rloss;
-    Uint32 Gloss = surf->format->Gloss;
-    Uint32 Bloss = surf->format->Bloss;
-    Uint32 Aloss = surf->format->Aloss;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    Uint32 Rloss = format_details->Rbits;
+    Uint32 Gloss = format_details->Gbits;
+    Uint32 Bloss = format_details->Bbits;
+    Uint32 Aloss = format_details->Abits;
+#else
+    Uint32 Rloss = format_details->Rloss;
+    Uint32 Gloss = format_details->Gloss;
+    Uint32 Bloss = format_details->Bloss;
+    Uint32 Aloss = format_details->Aloss;
+#endif
+    Uint32 Rmask = format_details->Rmask;
+    Uint32 Gmask = format_details->Gmask;
+    Uint32 Bmask = format_details->Bmask;
+    Uint32 Amask = format_details->Amask;
+    Uint32 Rshift = format_details->Rshift;
+    Uint32 Gshift = format_details->Gshift;
+    Uint32 Bshift = format_details->Bshift;
+    Uint32 Ashift = format_details->Ashift;
 
 #if PG_COMPILE_SSE4_2
     if (/* SDL uses Uint32, SSE uses int for building vectors.
@@ -456,17 +471,16 @@ tobytes_surf_32bpp(SDL_Surface *surf, int flipped, int hascolorkey,
         /* The SSE code assumes it will always read at least 4 pixels */
         && surf->w >= 4
         /* Our SSE code assumes masks are at most 0xff */
-        && (surf->format->Rmask >> surf->format->Rshift) <= 0x0ff &&
-        (surf->format->Gmask >> surf->format->Gshift) <= 0x0ff &&
-        (surf->format->Bmask >> surf->format->Bshift) <= 0x0ff &&
+        && (Rmask >> Rshift) <= 0x0ff && (Gmask >> Gshift) <= 0x0ff &&
+        (Bmask >> Bshift) <= 0x0ff &&
         (Amask >> Ashift) <= 0x0ff
         /* Our SSE code cannot handle losses other than 0 or 8
          * Note the mask check above ensures that losses can be
          * at most be 8 (assuming the pixel format makes sense
          * at all).
          */
-        && (surf->format->Rloss % 8) == 0 && (surf->format->Bloss % 8) == 0 &&
-        (surf->format->Gloss % 8) == 0 && (Aloss % 8) == 0) {
+        && (Rloss % 8) == 0 && (Bloss % 8) == 0 && (Gloss % 8) == 0 &&
+        (Aloss % 8) == 0) {
         tobytes_surf_32bpp_sse42(surf, flipped, serialized_image, color_offset,
                                  alpha_offset);
         return;
@@ -526,18 +540,33 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
 
-    Rmask = surf->format->Rmask;
-    Gmask = surf->format->Gmask;
-    Bmask = surf->format->Bmask;
-    Amask = surf->format->Amask;
-    Rshift = surf->format->Rshift;
-    Gshift = surf->format->Gshift;
-    Bshift = surf->format->Bshift;
-    Ashift = surf->format->Ashift;
-    Rloss = surf->format->Rloss;
-    Gloss = surf->format->Gloss;
-    Bloss = surf->format->Bloss;
-    Aloss = surf->format->Aloss;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    const SDL_PixelFormatDetails *format_details =
+        SDL_GetPixelFormatDetails(surf->format);
+    if (!format_details) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+    SDL_Palette *surf_palette = SDL_GetSurfacePalette(surf);
+    Rloss = format_details->Rbits;
+    Gloss = format_details->Gbits;
+    Bloss = format_details->Bbits;
+    Aloss = format_details->Abits;
+#else
+    SDL_PixelFormat *format_details = surf->format;
+    SDL_Palette *surf_palette = surf->format->palette;
+    Rloss = format_details->Rloss;
+    Gloss = format_details->Gloss;
+    Bloss = format_details->Bloss;
+    Aloss = format_details->Aloss;
+#endif
+    Rmask = format_details->Rmask;
+    Gmask = format_details->Gmask;
+    Bmask = format_details->Bmask;
+    Amask = format_details->Amask;
+    Rshift = format_details->Rshift;
+    Gshift = format_details->Gshift;
+    Bshift = format_details->Bshift;
+    Ashift = format_details->Ashift;
 
     if (!strcmp(format, "P")) {
         if (PG_SURF_BytesPerPixel(surf) != 1)
@@ -561,7 +590,7 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
     }
     else if (!strcmp(format, "RGBA_PREMULT") ||
              !strcmp(format, "ARGB_PREMULT")) {
-        if (PG_SURF_BytesPerPixel(surf) == 1 || surf->format->Amask == 0)
+        if (PG_SURF_BytesPerPixel(surf) == 1 || Amask == 0)
             return RAISE(PyExc_ValueError,
                          "Can only create pre-multiplied alpha bytes if "
                          "the surface has per-pixel alpha");
@@ -609,9 +638,9 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                                                   surf->h, flipped);
                     for (w = 0; w < surf->w; ++w) {
                         color = *ptr++;
-                        data[0] = (char)surf->format->palette->colors[color].r;
-                        data[1] = (char)surf->format->palette->colors[color].g;
-                        data[2] = (char)surf->format->palette->colors[color].b;
+                        data[0] = (char)surf_palette->colors[color].r;
+                        data[1] = (char)surf_palette->colors[color].g;
+                        data[2] = (char)surf_palette->colors[color].b;
                         data += 3;
                     }
                     pad(&data, padding);
@@ -677,9 +706,9 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                                                   surf->h, flipped);
                     for (w = 0; w < surf->w; ++w) {
                         color = *ptr++;
-                        data[0] = (char)surf->format->palette->colors[color].r;
-                        data[1] = (char)surf->format->palette->colors[color].g;
-                        data[2] = (char)surf->format->palette->colors[color].b;
+                        data[0] = (char)surf_palette->colors[color].r;
+                        data[1] = (char)surf_palette->colors[color].g;
+                        data[2] = (char)surf_palette->colors[color].b;
                         data[3] = hascolorkey ? (char)(color != colorkey) * 255
                                               : (char)255;
                         data += 4;
@@ -733,8 +762,8 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                 }
                 break;
             case 4:
-                tobytes_surf_32bpp(surf, flipped, hascolorkey, colorkey, data,
-                                   0, 3, padding);
+                tobytes_surf_32bpp(surf, format_details, flipped, hascolorkey,
+                                   colorkey, data, 0, 3, padding);
                 break;
         }
         pgSurface_Unlock(surfobj);
@@ -748,9 +777,9 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                                                   surf->h, flipped);
                     for (w = 0; w < surf->w; ++w) {
                         color = *ptr++;
-                        data[1] = (char)surf->format->palette->colors[color].r;
-                        data[2] = (char)surf->format->palette->colors[color].g;
-                        data[3] = (char)surf->format->palette->colors[color].b;
+                        data[1] = (char)surf_palette->colors[color].r;
+                        data[2] = (char)surf_palette->colors[color].g;
+                        data[3] = (char)surf_palette->colors[color].b;
                         data[0] = (char)255;
                         data += 4;
                     }
@@ -797,8 +826,8 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                 }
                 break;
             case 4:
-                tobytes_surf_32bpp(surf, flipped, hascolorkey, colorkey, data,
-                                   1, 0, padding);
+                tobytes_surf_32bpp(surf, format_details, flipped, hascolorkey,
+                                   colorkey, data, 1, 0, padding);
                 break;
         }
         pgSurface_Unlock(surfobj);
@@ -812,9 +841,9 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                                                   surf->h, flipped);
                     for (w = 0; w < surf->w; ++w) {
                         color = *ptr++;
-                        data[2] = (char)surf->format->palette->colors[color].r;
-                        data[1] = (char)surf->format->palette->colors[color].g;
-                        data[0] = (char)surf->format->palette->colors[color].b;
+                        data[2] = (char)surf_palette->colors[color].r;
+                        data[1] = (char)surf_palette->colors[color].g;
+                        data[0] = (char)surf_palette->colors[color].b;
                         data[3] = (char)255;
                         data += 4;
                     }
@@ -889,9 +918,9 @@ image_tobytes(PyObject *self, PyObject *arg, PyObject *kwarg)
                                                   surf->h, flipped);
                     for (w = 0; w < surf->w; ++w) {
                         color = *ptr++;
-                        data[3] = (char)surf->format->palette->colors[color].r;
-                        data[2] = (char)surf->format->palette->colors[color].g;
-                        data[1] = (char)surf->format->palette->colors[color].b;
+                        data[3] = (char)surf_palette->colors[color].r;
+                        data[2] = (char)surf_palette->colors[color].g;
+                        data[1] = (char)surf_palette->colors[color].b;
                         data[0] = (char)255;
                         data += 4;
                     }
@@ -1412,7 +1441,7 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
 
-        surf = PG_CreateSurfaceFrom(data, w, h, pitch, SDL_PIXELFORMAT_INDEX8);
+        surf = PG_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_INDEX8, data, pitch);
     }
     else if (!strcmp(format, "RGB")) {
         if (pitch == -1) {
@@ -1428,7 +1457,7 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
             return RAISE(
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
-        surf = PG_CreateSurfaceFrom(data, w, h, pitch, SDL_PIXELFORMAT_RGB24);
+        surf = PG_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGB24, data, pitch);
     }
     else if (!strcmp(format, "BGR")) {
         if (pitch == -1) {
@@ -1444,7 +1473,7 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
             return RAISE(
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
-        surf = PG_CreateSurfaceFrom(data, w, h, pitch, SDL_PIXELFORMAT_BGR24);
+        surf = PG_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_BGR24, data, pitch);
     }
     else if (!strcmp(format, "BGRA")) {
         if (pitch == -1) {
@@ -1460,7 +1489,7 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
             return RAISE(
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
-        surf = PG_CreateSurfaceFrom(data, w, h, pitch, SDL_PIXELFORMAT_BGRA32);
+        surf = PG_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_BGRA32, data, pitch);
     }
     else if (!strcmp(format, "RGBA") || !strcmp(format, "RGBX")) {
         if (pitch == -1) {
@@ -1478,8 +1507,8 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
         surf = PG_CreateSurfaceFrom(
-            data, w, h, pitch,
-            (alphamult ? SDL_PIXELFORMAT_RGBA32 : PG_PIXELFORMAT_RGBX32));
+            w, h, (alphamult ? SDL_PIXELFORMAT_RGBA32 : PG_PIXELFORMAT_RGBX32),
+            data, pitch);
     }
     else if (!strcmp(format, "ARGB")) {
         if (pitch == -1) {
@@ -1495,7 +1524,7 @@ image_frombuffer(PyObject *self, PyObject *arg, PyObject *kwds)
             return RAISE(
                 PyExc_ValueError,
                 "Buffer length does not equal format and resolution size");
-        surf = PG_CreateSurfaceFrom(data, w, h, pitch, SDL_PIXELFORMAT_ARGB32);
+        surf = PG_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_ARGB32, data, pitch);
     }
     else
         return RAISE(PyExc_ValueError, "Unrecognized type of format");
@@ -1620,7 +1649,6 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     Uint8 surf_alpha;
     int have_surf_colorkey = 0;
     Uint32 surf_colorkey;
-    Uint32 format;
     SDL_Rect r;
     int bpp;
     Uint8 *rlebuf = NULL;
@@ -1634,6 +1662,21 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
         return -1;
     }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    const SDL_PixelFormatDetails *surf_format =
+        SDL_GetPixelFormatDetails(surface->format);
+    if (!surf_format) {
+        return -1;
+    }
+    SDL_PixelFormat output_format;
+
+    SDL_Palette *surf_palette = SDL_GetSurfacePalette(surface);
+#else
+    SDL_PixelFormat *surf_format = surface->format;
+    SDL_Palette *surf_palette = surface->format->palette;
+    SDL_PixelFormatEnum output_format;
+#endif
+
     SDL_GetSurfaceAlphaMod(surface, &surf_alpha);
     if ((have_surf_colorkey = SDL_HasColorKey(surface))) {
         SDL_GetColorKey(surface, &surf_colorkey);
@@ -1646,23 +1689,23 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
             h.cmap_bits = 32;
         else
             h.cmap_bits = 24;
-        SETLE16(h.cmap_len, surface->format->palette->ncolors);
+        SETLE16(h.cmap_len, surf_palette->ncolors);
         h.pixel_bits = 8;
-        format = SDL_PIXELFORMAT_INDEX8;
+        output_format = SDL_PIXELFORMAT_INDEX8;
     }
     else {
         h.has_cmap = 0;
         h.type = TGA_TYPE_RGB;
         h.cmap_bits = 0;
         SETLE16(h.cmap_len, 0);
-        if (surface->format->Amask) {
+        if (surf_format->Amask) {
             alpha = 1;
             h.pixel_bits = 32;
-            format = SDL_PIXELFORMAT_BGRA32;
+            output_format = SDL_PIXELFORMAT_BGRA32;
         }
         else {
             h.pixel_bits = 24;
-            format = SDL_PIXELFORMAT_BGR24;
+            output_format = SDL_PIXELFORMAT_BGR24;
         }
     }
     bpp = h.pixel_bits >> 3;
@@ -1675,34 +1718,41 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     SETLE16(h.height, surface->h);
     h.flags = TGA_ORIGIN_UPPER | (alpha ? 8 : 0);
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (!SDL_WriteIO(out, &h, sizeof(h)))
+#else
     if (!SDL_RWwrite(out, &h, sizeof(h), 1))
+#endif
         return -1;
 
     if (h.has_cmap) {
         int i;
-        SDL_Palette *pal = surface->format->palette;
         Uint8 entry[4];
-        for (i = 0; i < pal->ncolors; i++) {
-            entry[0] = pal->colors[i].b;
-            entry[1] = pal->colors[i].g;
-            entry[2] = pal->colors[i].r;
+        for (i = 0; i < surf_palette->ncolors; i++) {
+            entry[0] = surf_palette->colors[i].b;
+            entry[1] = surf_palette->colors[i].g;
+            entry[2] = surf_palette->colors[i].r;
             entry[3] = ((unsigned)i == surf_colorkey) ? 0 : 0xff;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            if (!SDL_WriteIO(out, entry, h.cmap_bits >> 3))
+#else
             if (!SDL_RWwrite(out, entry, h.cmap_bits >> 3, 1))
+#endif
                 return -1;
         }
     }
 
-    linebuf = PG_CreateSurface(surface->w, 1, format);
+    linebuf = PG_CreateSurface(surface->w, 1, output_format);
     if (!linebuf)
         return -1;
 
     if (h.has_cmap) {
-        if (0 != SDL_SetPaletteColors(linebuf->format->palette,
-                                      surface->format->palette->colors, 0,
-                                      surface->format->palette->ncolors)) {
-            /* SDL error already set. */
-            goto error;
-        }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (!SDL_SetSurfacePalette(linebuf, surf_palette))
+#else
+        if (SDL_SetSurfacePalette(linebuf, surf_palette) < 0)
+#endif
+            goto error; /* SDL error already set. */
     }
 
     if (rle) {
@@ -1725,7 +1775,11 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
     for (r.y = 0; r.y < surface->h; r.y++) {
         int n;
         void *buf;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (!SDL_BlitSurface(surface, &r, linebuf, NULL))
+#else
         if (SDL_BlitSurface(surface, &r, linebuf, NULL) < 0)
+#endif
             break;
         if (rle) {
             buf = rlebuf;
@@ -1735,7 +1789,11 @@ SaveTGA_RW(SDL_Surface *surface, SDL_RWops *out, int rle)
             buf = linebuf->pixels;
             n = surface->w * bpp;
         }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        if (!SDL_WriteIO(out, buf, n))
+#else
         if (!SDL_RWwrite(out, buf, n, 1))
+#endif
             break;
     }
 
