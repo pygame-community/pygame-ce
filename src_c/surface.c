@@ -2529,9 +2529,7 @@ surf_scroll(PyObject *self, PyObject *args, PyObject *keywds)
     }
 
     if (scroll(surf, dx, dy, x, y, w, h, repeat, erase) < 0) {
-        if (!pgSurface_Unlock((pgSurfaceObject *)self)) {
-            return NULL;
-        }
+        pgSurface_Unlock((pgSurfaceObject *)self);
         return NULL;
     }
 

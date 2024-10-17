@@ -326,7 +326,10 @@
       Scrolling is contained by the Surface clip area. It is safe to have dx
       and dy values that exceed the surface size.
 
-      The scroll flag can be ``0`` (normal behavior) or:
+      The scroll flag can be:
+         * ``0`` (default): the pixels are shifted but previous pixels are
+           not modified.
+
          * ``pygame.SCROLL_ERASE``: the space created by the shifting pixels
            is filled with black or transparency.
 
