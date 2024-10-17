@@ -78,6 +78,9 @@ music_drop_fade.py
    several events.  Uses fade_ms added in pygame2, as well as set_endevent,
    set_volume, drag and drop events, and the scrap module.
 
+ninepatch.py
+   Demonstrate the purpose of the 9-patch scale method and a way to implement it.
+
 pixelarray.py
    Process whole arrays of pixels at a time.
    Like numpy, but for pixels, and also built into pygame.
