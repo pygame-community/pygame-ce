@@ -14,7 +14,9 @@ __all__ = [
 
 import sys
 from abc import abstractmethod
-from typing import IO, Callable, Tuple, Union, TypeVar, Protocol
+from dataclasses import dataclass
+from typing import IO, Callable, Tuple, Union, TypeVar, Protocol, Optional
+
 
 if sys.version_info >= (3, 9):
     from os import PathLike as _PathProtocol
@@ -66,5 +68,28 @@ class _HasRectAttribute(Protocol):
 RectLike = Union[SequenceLike[float], SequenceLike[Point], _HasRectAttribute]
 
 
+@dataclass(frozen=True)
+class PowerState:
+    battery_percent: Optional[int]
+    battery_seconds: Optional[int]
+    on_battery: bool
+    no_battery: bool
+    charging: bool
+    charged: bool
+    plugged_in: bool
+    has_battery: bool
+
+
 # cleanup namespace
-del sys, abstractmethod, IO, Callable, Tuple, Union, TypeVar, Protocol
+del (
+    sys,
+    abstractmethod,
+    IO,
+    Callable,
+    Tuple,
+    Union,
+    TypeVar,
+    Protocol,
+    Optional,
+    dataclass,
+)

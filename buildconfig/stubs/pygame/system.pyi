@@ -1,6 +1,6 @@
 from typing import List, Optional, TypedDict
 
-from pygame._data_classes import PowerState
+from pygame.typing import PowerState
 
 class _InstructionSets(TypedDict):
     ALTIVEC: bool

@@ -1,15 +1,14 @@
 import sys
-from typing import Any, Dict, Iterator, SupportsIndex, Tuple, Union, overload
+from typing import Any, Iterator, SupportsIndex, Tuple, Union, overload
 from typing_extensions import deprecated # added in 3.13
 
+from pygame.colordict import THECOLORS as THECOLORS
 from pygame.typing import ColorLike
 
 if sys.version_info >= (3, 9):
     from collections.abc import Collection
 else:
     from typing import Collection
-
-THECOLORS: Dict[str, Tuple[int, int, int, int]]
 
 # Color confirms to the Collection ABC, since it also confirms to
 # Sized, Iterable and Container ABCs
