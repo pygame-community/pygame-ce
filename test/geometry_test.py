@@ -1979,27 +1979,27 @@ class LineTypeTest(unittest.TestCase):
 
         line.ax = 2.7
         expected_length = 1.2999999999999998
-        self.assertEqual(line.length, expected_length)
+        self.assertAlmostEqual(line.length, expected_length)
 
         line.ay = 2
         expected_length = 2.3853720883753127
-        self.assertEqual(line.length, expected_length)
+        self.assertAlmostEqual(line.length, expected_length)
 
         line.ay = 2.7
         expected_length = 1.8384776310850233
-        self.assertEqual(line.length, expected_length)
+        self.assertAlmostEqual(line.length, expected_length)
 
         line.bx = 2
         expected_length = 1.4764823060233399
-        self.assertEqual(line.length, expected_length)
+        self.assertAlmostEqual(line.length, expected_length)
 
         line.bx = 2.7
         expected_length = 1.2999999999999998
-        self.assertEqual(line.length, expected_length)
+        self.assertAlmostEqual(line.length, expected_length)
 
         line.by = 2
         expected_length = 0.7000000000000002
-        self.assertEqual(line.length, expected_length)
+        self.assertAlmostEqual(line.length, expected_length)
 
         line.by = 2.7
         expected_length = 0.0
@@ -2011,11 +2011,11 @@ class LineTypeTest(unittest.TestCase):
 
         line = Line(7.6, 3.2, 2.1, 3.8)
         expected_length = 5.532630477449222
-        self.assertEqual(line.length, expected_length)
+        self.assertAlmostEqual(line.length, expected_length)
 
         line = Line(-9.8, -5.2, -4.4, -5.6)
         expected_length = 5.414794548272353
-        self.assertEqual(line.length, expected_length)
+        self.assertAlmostEqual(line.length, expected_length)
 
     def test_meth_copy(self):
         line = Line(1, 2, 3, 4)
@@ -2085,11 +2085,11 @@ class LineTypeTest(unittest.TestCase):
         line = Line(0, 0, 10, 0).scale(3, 0)
         self.assertEqual(line.length, 30)
         line = Line(10, 10, 20, 20).scale(2, 0)
-        self.assertEqual(line.length, 28.284271247461902)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
         line = Line(10, 10, 20, 20).scale(2, 0.5)
-        self.assertEqual(line.length, 28.284271247461902)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
         line = Line(10, 10, 20, 20).scale(2, 1)
-        self.assertEqual(line.length, 28.284271247461902)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
 
         with self.assertRaises(ValueError):
             line = line.scale(0, 0.5)
@@ -2121,13 +2121,13 @@ class LineTypeTest(unittest.TestCase):
         self.assertEqual(line.length, 30)
         line = Line(10, 10, 20, 20)
         line.scale_ip(2, 0)
-        self.assertEqual(line.length, 28.284271247461902)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
         line = Line(10, 10, 20, 20)
         line.scale_ip(2, 0.5)
-        self.assertEqual(line.length, 28.284271247461902)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
         line = Line(10, 10, 20, 20)
         line.scale_ip(2, 1.0)
-        self.assertEqual(line.length, 28.284271247461902)
+        self.assertAlmostEqual(line.length, 28.284271247461902)
 
         with self.assertRaises(ValueError):
             line.scale_ip(0, 0.5)

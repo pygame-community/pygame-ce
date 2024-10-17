@@ -598,6 +598,7 @@
          .. ## Line.b ##
 
    .. attribute:: length
+
          | :sl:`the length of the line`
          | :sg:`length -> float`
 
