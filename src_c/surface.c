@@ -2271,6 +2271,166 @@ on_error:
 }
 
 static int
+scroll_repeat(int h, int dx, int dy, int pitch, int span, int xoffset,
+              Uint8 *startsrc, Uint8 *endsrc, Uint8 *linesrc)
+{
+    if (dy != 0) {
+        int yincrease = dy > 0 ? -pitch : pitch;
+        int spanincrease = dy > 0 ? -span : span;
+        int templen = (dy > 0 ? dy * span : -dy * span);
+        int tempheight = (dy > 0 ? dy : -dy);
+        /* Create a temporary buffer to store the pixels that
+           are disappearing from the surface */
+        Uint8 *tempbuf = (Uint8 *)malloc(templen);
+        if (tempbuf == NULL) {
+            PyErr_NoMemory();
+            return -1;
+        }
+        memset(tempbuf, 0, templen);
+        Uint8 *templine = tempbuf;
+        Uint8 *tempend =
+            templine + (dy > 0 ? (dy - 1) * span : -(dy + 1) * span);
+        if (dy > 0) {
+            templine = tempend;
+        }
+        int looph = h;
+        while (looph--) {
+            // If the current line should disappear copy it to the
+            // temporary buffer
+            if ((templine <= tempend && dy < 0) ||
+                (templine >= tempbuf && dy > 0)) {
+                if (dx > 0) {
+                    memcpy(templine, linesrc + span - xoffset, xoffset);
+                    memcpy(templine + xoffset, linesrc, span - xoffset);
+                }
+                else if (dx < 0) {
+                    memcpy(templine + span + xoffset, linesrc, -xoffset);
+                    memcpy(templine, linesrc - xoffset, span + xoffset);
+                }
+                else {
+                    memcpy(templine, linesrc, span);
+                }
+                memset(linesrc, 0, span);
+                templine += spanincrease;
+            }
+            else {
+                Uint8 *pastesrc = linesrc + pitch * dy;
+                if ((dy < 0 && pastesrc >= startsrc) ||
+                    (dy > 0 && pastesrc <= endsrc)) {
+                    if (dx > 0) {
+                        memcpy(pastesrc, linesrc + span - xoffset, xoffset);
+                        memcpy(pastesrc + xoffset, linesrc, span - xoffset);
+                    }
+                    else if (dx < 0) {
+                        memcpy(pastesrc + span + xoffset, linesrc, -xoffset);
+                        memcpy(pastesrc, linesrc - xoffset, span + xoffset);
+                    }
+                    else {
+                        memcpy(pastesrc, linesrc, span);
+                    }
+                }
+            }
+            linesrc += yincrease;
+        }
+        // Copy the data of the buffer back to the original pixels to
+        // repeat
+        templine = tempbuf;
+        if (dy < 0) {
+            linesrc = startsrc + pitch * (h - tempheight);
+        }
+        else {
+            linesrc = startsrc;
+        }
+        while (tempheight--) {
+            memcpy(linesrc, templine, span);
+            linesrc += pitch;
+            templine += span;
+        }
+        free(tempbuf);
+    }
+    else {
+        // No y-shifting, the temporary buffer should only store the x loss
+        Uint8 *tempbuf = (Uint8 *)malloc((dx > 0 ? xoffset : -xoffset));
+        if (tempbuf == NULL) {
+            PyErr_NoMemory();
+            return -1;
+        }
+        while (h--) {
+            if (dx > 0) {
+                memcpy(tempbuf, linesrc + span - xoffset, xoffset);
+                memcpy(linesrc + xoffset, linesrc, span - xoffset);
+                memcpy(linesrc, tempbuf, xoffset);
+            }
+            else if (dx < 0) {
+                memcpy(tempbuf, linesrc, -xoffset);
+                memcpy(linesrc, linesrc - xoffset, span + xoffset);
+                memcpy(linesrc + span + xoffset, tempbuf, -xoffset);
+            }
+            linesrc += pitch;
+        }
+        free(tempbuf);
+    }
+    return 0;
+}
+
+static int
+scroll_default(int h, int dx, int dy, int pitch, int span, int xoffset,
+               Uint8 *startsrc, Uint8 *endsrc, Uint8 *linesrc, int erase)
+{
+    if (dy != 0) {
+        /* Copy the current line to a before or after position if it's
+           valid with consideration of x offset and memset to avoid
+           artifacts */
+        int yincrease = dy > 0 ? -pitch : pitch;
+        while (h--) {
+            Uint8 *pastesrc = linesrc + pitch * dy;
+            if ((dy < 0 && pastesrc >= startsrc) ||
+                (dy > 0 && pastesrc <= endsrc)) {
+                if (dx > 0) {
+                    memcpy(pastesrc + xoffset, linesrc, span - xoffset);
+                }
+                else if (dx < 0) {
+                    memcpy(pastesrc, linesrc - xoffset, span + xoffset);
+                }
+                else {
+                    memcpy(pastesrc, linesrc, span);
+                }
+                if (erase) {
+                    memset(linesrc, 0, span);
+                    // Fix the missing pixel bug
+                    if (dx < 0) {
+                        memset(pastesrc + span + xoffset, 0, -xoffset);
+                    }
+                    else if (dx > 0) {
+                        memset(pastesrc, 0, xoffset);
+                    }
+                }
+            }
+            linesrc += yincrease;
+        }
+    }
+    else {
+        // No y-shifting, we only need to move pixels on the same line
+        while (h--) {
+            if (dx > 0) {
+                memcpy(linesrc + xoffset, linesrc, span - xoffset);
+                if (erase) {
+                    memset(linesrc, 0, xoffset);
+                }
+            }
+            else if (dx < 0) {
+                memcpy(linesrc, linesrc - xoffset, span + xoffset);
+                if (erase) {
+                    memset(linesrc + span + xoffset, 0, -xoffset);
+                }
+            }
+            linesrc += pitch;
+        }
+    }
+    return 0;
+}
+
+static int
 scroll(SDL_Surface *surf, int dx, int dy, int x, int y, int w, int h,
        int repeat, int erase)
 {
@@ -2287,161 +2447,13 @@ scroll(SDL_Surface *surf, int dx, int dy, int x, int y, int w, int h,
     }
 
     if (repeat) {
-        if (dy != 0) {
-            int yincrease = dy > 0 ? -pitch : pitch;
-            int spanincrease = dy > 0 ? -span : span;
-            int templen = (dy > 0 ? dy * span : -dy * span);
-            int tempheight = (dy > 0 ? dy : -dy);
-            /* Create a temporary buffer to store the pixels that
-               are disappearing from the surface */
-            Uint8 *tempbuf = (Uint8 *)malloc(templen);
-            if (tempbuf == NULL) {
-                PyErr_NoMemory();
-                return -1;
-            }
-            memset(tempbuf, 0, templen);
-            Uint8 *templine = tempbuf;
-            Uint8 *tempend =
-                templine + (dy > 0 ? (dy - 1) * span : -(dy + 1) * span);
-            if (dy > 0) {
-                templine = tempend;
-            }
-            int looph = h;
-            while (looph--) {
-                // If the current line should disappear copy it to the
-                // temporary buffer
-                if ((templine <= tempend && dy < 0) ||
-                    (templine >= tempbuf && dy > 0)) {
-                    if (dx > 0) {
-                        memcpy(templine, linesrc + span - xoffset, xoffset);
-                        memcpy(templine + xoffset, linesrc, span - xoffset);
-                    }
-                    else if (dx < 0) {
-                        memcpy(templine + span + xoffset, linesrc, -xoffset);
-                        memcpy(templine, linesrc - xoffset, span + xoffset);
-                    }
-                    else {
-                        memcpy(templine, linesrc, span);
-                    }
-                    memset(linesrc, 0, span);
-                    templine += spanincrease;
-                }
-                else {
-                    Uint8 *pastesrc = linesrc + pitch * dy;
-                    if ((dy < 0 && pastesrc >= startsrc) ||
-                        (dy > 0 && pastesrc <= endsrc)) {
-                        if (dx > 0) {
-                            memcpy(pastesrc, linesrc + span - xoffset,
-                                   xoffset);
-                            memcpy(pastesrc + xoffset, linesrc,
-                                   span - xoffset);
-                        }
-                        else if (dx < 0) {
-                            memcpy(pastesrc + span + xoffset, linesrc,
-                                   -xoffset);
-                            memcpy(pastesrc, linesrc - xoffset,
-                                   span + xoffset);
-                        }
-                        else {
-                            memcpy(pastesrc, linesrc, span);
-                        }
-                    }
-                }
-                linesrc += yincrease;
-            }
-            // Copy the data of the buffer back to the original pixels to
-            // repeat
-            templine = tempbuf;
-            if (dy < 0) {
-                linesrc = startsrc + pitch * (h - tempheight);
-            }
-            else {
-                linesrc = startsrc;
-            }
-            while (tempheight--) {
-                memcpy(linesrc, templine, span);
-                linesrc += pitch;
-                templine += span;
-            }
-            free(tempbuf);
-        }
-        else {
-            // No y-shifting, the temporary buffer should only store the x loss
-            Uint8 *tempbuf = (Uint8 *)malloc((dx > 0 ? xoffset : -xoffset));
-            if (tempbuf == NULL) {
-                PyErr_NoMemory();
-                return -1;
-            }
-            while (h--) {
-                if (dx > 0) {
-                    memcpy(tempbuf, linesrc + span - xoffset, xoffset);
-                    memcpy(linesrc + xoffset, linesrc, span - xoffset);
-                    memcpy(linesrc, tempbuf, xoffset);
-                }
-                else if (dx < 0) {
-                    memcpy(tempbuf, linesrc, -xoffset);
-                    memcpy(linesrc, linesrc - xoffset, span + xoffset);
-                    memcpy(linesrc + span + xoffset, tempbuf, -xoffset);
-                }
-                linesrc += pitch;
-            }
-            free(tempbuf);
-        }
+        return scroll_repeat(h, dx, dy, pitch, span, xoffset, startsrc, endsrc,
+                             linesrc);
     }
-    else /* don't repeat */ {
-        if (dy != 0) {
-            /* Copy the current line to a before or after position if it's
-               valid with consideration of x offset and memset to avoid
-               artifacts */
-            int yincrease = dy > 0 ? -pitch : pitch;
-            while (h--) {
-                Uint8 *pastesrc = linesrc + pitch * dy;
-                if ((dy < 0 && pastesrc >= startsrc) ||
-                    (dy > 0 && pastesrc <= endsrc)) {
-                    if (dx > 0) {
-                        memcpy(pastesrc + xoffset, linesrc, span - xoffset);
-                    }
-                    else if (dx < 0) {
-                        memcpy(pastesrc, linesrc - xoffset, span + xoffset);
-                    }
-                    else {
-                        memcpy(pastesrc, linesrc, span);
-                    }
-                    if (erase) {
-                        memset(linesrc, 0, span);
-                        // Fix the missing pixel bug
-                        if (dx < 0) {
-                            memset(pastesrc + span + xoffset, 0, -xoffset);
-                        }
-                        else if (dx > 0) {
-                            memset(pastesrc, 0, xoffset);
-                        }
-                    }
-                }
-                linesrc += yincrease;
-            }
-        }
-        else {
-            // No y-shifting, we only need to move pixels on the same line
-            while (h--) {
-                if (dx > 0) {
-                    memcpy(linesrc + xoffset, linesrc, span - xoffset);
-                    if (erase) {
-                        memset(linesrc, 0, xoffset);
-                    }
-                }
-                else if (dx < 0) {
-                    memcpy(linesrc, linesrc - xoffset, span + xoffset);
-                    if (erase) {
-                        memset(linesrc + span + xoffset, 0, -xoffset);
-                    }
-                }
-                linesrc += pitch;
-            }
-        }
+    else {
+        return scroll_default(h, dx, dy, pitch, span, xoffset, startsrc,
+                              endsrc, linesrc, erase);
     }
-
-    return 0;
 }
 
 static PyObject *
