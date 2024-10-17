@@ -1130,13 +1130,13 @@ mask_from_threshold(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (!pg_MappedColorFromObj(rgba_obj_color, surf, &color,
-                               PG_COLOR_HANDLE_INT)) {
+                               PG_COLOR_HANDLE_ALL)) {
         return NULL;
     }
 
     if (rgba_obj_threshold) {
         if (!pg_MappedColorFromObj(rgba_obj_threshold, surf, &color_threshold,
-                                   PG_COLOR_HANDLE_INT)) {
+                                   PG_COLOR_HANDLE_ALL)) {
             return NULL;
         }
     }

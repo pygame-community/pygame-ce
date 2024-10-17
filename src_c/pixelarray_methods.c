@@ -46,6 +46,16 @@ _get_color_from_object(PyObject *val, SDL_Surface *surf, Uint32 *color)
         val, surf, color, PG_COLOR_HANDLE_INT | PG_COLOR_HANDLE_RESTRICT_SEQ);
 }
 
+static int
+_get_color_from_object_all(PyObject *val, SDL_Surface *surf, Uint32 *color)
+{
+    if (!val) {
+        return 0;
+    }
+
+    return pg_MappedColorFromObj(val, surf, color, PG_COLOR_HANDLE_ALL);
+}
+
 /**
  * Retrieves a single pixel located at index from the surface pixel
  * array.
@@ -375,8 +385,8 @@ _replace_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     format = surf->format;
     bpp = PG_SURF_BytesPerPixel(surf);
 
-    if (!_get_color_from_object(delcolor, surf, &dcolor) ||
-        !_get_color_from_object(replcolor, surf, &rcolor)) {
+    if (!_get_color_from_object_all(delcolor, surf, &dcolor) ||
+        !_get_color_from_object_all(replcolor, surf, &rcolor)) {
         return 0;
     }
 
@@ -581,7 +591,7 @@ _extract_color(pgPixelArrayObject *array, PyObject *args, PyObject *kwds)
     black = SDL_MapRGBA(format, 0, 0, 0, 255);
     white = SDL_MapRGBA(format, 255, 255, 255, 255);
 
-    if (!_get_color_from_object(excolor, surf, &color)) {
+    if (!_get_color_from_object_all(excolor, surf, &color)) {
         Py_DECREF(new_array);
         return 0;
     }
