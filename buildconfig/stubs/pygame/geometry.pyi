@@ -35,7 +35,8 @@ _CanBeLine = Union[
     Sequence[float],
     Sequence[Point],
 ]
-LineValue = Union[_CanBeLine, _HasLineAttribute]
+
+_LineValue = Union[_CanBeLine, _HasLineAttribute]
 
 _LineLike = Union[Line, SequenceLike[float], SequenceLike[Point], _HasLineAttribute]
 
@@ -193,7 +194,7 @@ class Line:
     @overload
     def update(self, a: Point, b: Point) -> None: ...
     @overload
-    def update(self, single_arg: LineValue) -> None: ...
+    def update(self, single_arg: _LineValue) -> None: ...
     @overload
     def move(self, x: float, y: float) -> Line: ...
     @overload
