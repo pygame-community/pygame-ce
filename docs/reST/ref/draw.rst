@@ -451,10 +451,8 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    | :sl:`draw a straight antialiased line`
    | :sg:`aaline(surface, color, start_pos, end_pos) -> Rect`
-     :sg:`aaline(surface, color, start_pos, end_pos, width=1) -> Rect`
 
    Draws a straight antialiased line on the given surface. There are no endcaps.
-   For thick lines the ends are squared off.
 
    .. note::
       Regarding float values for coordinates, a point with coordinate
@@ -476,11 +474,6 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param end_pos: end position of the line, (x, y)
    :type end_pos: tuple(int or float, int or float) or
       list(int or float, int or float) or Vector2(int or float, int or float)
-   :param int width: (optional) used for line thickness
-
-         | if width >= 1, used for line thickness (default is 1)
-         | if width < 1, nothing will be drawn
-         |
 
    :returns: a rect bounding the changed pixels, if nothing is drawn the
       bounding rect's position will be the ``start_pos`` parameter value (float
@@ -493,7 +486,6 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
    .. versionchanged:: 2.4.0 Removed deprecated 'blend' argument
    .. versionchanged:: 2.5.0 ``blend`` argument readded for backcompat, but will always raise a deprecation exception when used
-   .. versionchanged:: 2.5.2 Added line width
 
    .. ## pygame.draw.aaline ##
 

@@ -124,12 +124,12 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     Uint32 color;
-    static char *keywords[] = {"surface", "color", "start_pos", "end_pos",
-                               "width",   "blend", NULL};
+    static char *keywords[] = {"surface", "color", "start_pos",
+                               "end_pos", "blend", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|iO", keywords,
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|O", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
-                                     &start, &end, &width, &blend)) {
+                                     &start, &end, &blend)) {
         return NULL; /* Exception already set. */
     }
 
