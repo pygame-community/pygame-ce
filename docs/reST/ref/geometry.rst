@@ -597,6 +597,18 @@
 
          .. ## Line.b ##
 
+   .. attribute:: length
+         | :sl:`the length of the line`
+         | :sg:`length -> float`
+
+         The length of the line. Calculated using the `sqrt((xb-xa)**2 + (yb-ya)**2)` formula.
+         This attribute is read-only, it cannot be reassigned. To change the line's length
+         use the `scale` method or change its `a` or `b` attributes.
+
+         .. versionadded:: 2.5.3
+
+         .. ## Line.length ##
+
    **Line Methods**
 
    ----
@@ -611,3 +623,122 @@
          .. versionadded:: 2.5.2
 
          .. ## Line.copy ##
+
+   .. method:: move
+
+         | :sl:`moves the line by a given amount`
+         | :sg:`move((x, y)) -> Line`
+         | :sg:`move(x, y) -> Line`
+
+         Returns a new `Line` that is moved by the given offset. The original `Line` is
+         not modified.
+
+         .. note::
+            This method is equivalent(behaviour wise) to the following code:
+
+         .. code-block:: python
+
+             Line(line.ax + x, line.ay + y, line.bx + x, line.by + y)
+
+         .. versionadded:: 2.5.3
+
+      .. ## Line.move ##
+
+   .. method:: move_ip
+
+         | :sl:`moves the line by a given amount`
+         | :sg:`move_ip((x, y)) -> None`
+         | :sg:`move_ip(x, y) -> None`
+
+         Moves the `Line` by the given offset. The original `Line` is modified. Always returns
+         `None`.
+
+         .. note::
+            This method is equivalent(behaviour wise) to the following code:
+
+         .. code-block:: python
+
+             line.ax += x
+             line.ay += y
+             line.bx += x
+             line.by += y
+
+         .. versionadded:: 2.5.3
+
+      .. ## Line.move_ip ##
+
+   .. method:: update
+
+         | :sl:`updates the line's attributes`
+         | :sg:`update((xa, ya), (xb, yb)) -> None`
+         | :sg:`update(xa, ya, xb, yb) -> None`
+         | :sg:`update(Line) -> None`
+
+         Updates the `Line`'s attributes. The original `Line` is modified. Always returns `None`.
+
+         .. note::
+            This method is equivalent(behaviour wise) to the following code:
+
+         .. code-block:: python
+
+             line.ax = ax
+             line.ay = ay
+             line.bx = bx
+             line.by = by
+
+         .. versionadded:: 2.5.3
+
+      .. ## Line.update ##
+
+   .. method:: scale
+
+         | :sl:`scales the line by the given factor from the given origin`
+         | :sg:`scale(factor, origin) -> Line`
+         | :sg:`scale(factor_and_origin) -> Line`
+
+         Returns a new `Line` which is scaled by the given factor from the specified origin with 0.0 being
+         the startpoint, 0.5 being the center and 1.0 being the end point.
+         The original `Line` is not modified.
+
+         .. versionadded:: 2.5.3
+
+      .. ## Line.scale ##
+
+   .. method:: scale_ip
+
+         | :sl:`scales the line by the given factor from the given origin in place`
+         | :sg:`scale_ip(factor, origin) -> None`
+         | :sg:`scale_ip(factor_and_origin) -> None`
+
+         Scales the `Line` by the given factor from the specified origin with 0.0 being
+         the startpoint, 0.5 being the center and 1.0 being the end point.
+         The original `Line` is modified.
+         Always returns `None`.
+
+         .. versionadded:: 2.5.3
+
+      .. ## Line.scale_ip ##
+
+   .. method:: flip_ab
+
+         | :sl:`flips the line a and b points`
+         | :sg:`flip_ab() -> Line`
+
+         Returns a new `Line` that has the `a` and `b` points flipped.
+         The original `Line` is not modified.
+
+         .. versionadded:: 2.5.3
+
+      .. ## Line.flip_ab ##
+
+   .. method:: flip_ab_ip
+
+         | :sl:`flips the line a and b points, in place`
+         | :sg:`flip_ab_ip() -> None`
+
+         Flips the `Line`'s `b` and `b` points. The original `Line` is modified.
+         Always returns `None`.
+
+         .. versionadded:: 2.5.3
+
+      .. ## Line.flip_ab_ip ##
