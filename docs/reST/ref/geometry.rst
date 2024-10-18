@@ -98,7 +98,7 @@
          | :sl:`x and y coordinates of the center of the circle`
          | :sg:`center -> (float, float)`
 
-         It's a tuple containing the circle's `x` and `y` coordinates representing its center.
+         A tuple containing the circle's `x` and `y` coordinates representing its center.
          Reassigning it moves the circle to the new position.
 
          .. versionadded:: 2.4.0
@@ -147,7 +147,7 @@
          | :sl:`top coordinate of the circle`
          | :sg:`top -> (float, float)`
 
-         It's a tuple containing the `x` and `y` coordinates that represent the top
+         A tuple containing the `x` and `y` coordinates that represent the top
          of the circle.
          Reassigning it moves the circle to the new position. The radius will not be affected.
 
@@ -160,7 +160,7 @@
          | :sl:`bottom coordinate of the circle`
          | :sg:`bottom -> (float, float)`
 
-         It's a tuple containing the `x` and `y` coordinates that represent the bottom
+         A tuple containing the `x` and `y` coordinates that represent the bottom
          of the circle.
          Reassigning it moves the circle to the new position. The radius will not be affected.
 
@@ -173,7 +173,7 @@
          | :sl:`left coordinate of the circle`
          | :sg:`left -> (float, float)`
 
-         It's a tuple containing the `x` and `y` coordinates that represent the left
+         A tuple containing the `x` and `y` coordinates that represent the left
          of the circle.
          Reassigning it moves the circle to the new position. The radius will not be affected.
 
@@ -186,7 +186,7 @@
          | :sl:`right coordinate of the circle`
          | :sg:`right -> (float, float)`
 
-         It's a tuple containing the `x` and `y` coordinates that represent the right
+         A tuple containing the `x` and `y` coordinates that represent the right
          of the circle.
          Reassigning it moves the circle to the new position. The radius will not be affected.
 
@@ -574,7 +574,7 @@
          | :sl:`the first point of the line`
          | :sg:`a -> (float, float)`
 
-         It's a tuple containing the `ax` and `ay` attributes representing the line's first point.
+         A tuple containing the `ax` and `ay` attributes representing the line's first point.
          It can be reassigned to move the `Line`. If reassigned the `ax` and `ay` attributes
          will be changed to produce a `Line` with matching first point position.
          The `bx` and `by` attributes will not be affected.
@@ -588,7 +588,7 @@
          | :sl:`the second point of the line`
          | :sg:`b -> (float, float)`
 
-         It's a tuple containing `bx` and `by` attributes representing the line's second point.
+         A tuple containing `bx` and `by` attributes representing the line's second point.
          It can be reassigned to move the `Line`. If reassigned the `bx` and `by` attributes
          will be changed to produce a `Line` with matching second point position.
          The `ax` and `ay` attributes will not be affected.
@@ -634,8 +634,7 @@
          Returns a new `Line` that is moved by the given offset. The original `Line` is
          not modified.
 
-         .. note::
-            This method is equivalent(behaviour wise) to the following code:
+         This method is equivalent to the following code:
 
          .. code-block:: python
 
@@ -654,8 +653,7 @@
          Moves the `Line` by the given offset. The original `Line` is modified. Always returns
          `None`.
 
-         .. note::
-            This method is equivalent(behaviour wise) to the following code:
+         This method is equivalent to the following code:
 
          .. code-block:: python
 
@@ -673,12 +671,11 @@
          | :sl:`updates the line's attributes`
          | :sg:`update((ax, ay), (bx, by)) -> None`
          | :sg:`update(ax, ay, bx, by) -> None`
-         | :sg:`update(Line) -> None`
+         | :sg:`update(line) -> None`
 
          Updates the `Line`'s attributes. The original `Line` is modified. Always returns `None`.
 
-         .. note::
-            This method is equivalent(behaviour wise) to the following code:
+         This method is equivalent to the following code:
 
          .. code-block:: python
 
