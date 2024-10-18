@@ -16,6 +16,10 @@ import sys
 from abc import abstractmethod
 from typing import IO, Callable, Tuple, Union, TypeVar, Protocol
 
+from pygame.color import Color
+from pygame.rect import Rect, FRect
+
+
 if sys.version_info >= (3, 9):
     from os import PathLike as _PathProtocol
 else:
@@ -53,7 +57,7 @@ Point = SequenceLike[float]
 # This is used where ints are strictly required
 IntPoint = SequenceLike[int]
 
-ColorLike = Union[int, str, SequenceLike[int]]
+ColorLike = Union[Color, int, str, SequenceLike[int]]
 
 
 class _HasRectAttribute(Protocol):
@@ -63,8 +67,22 @@ class _HasRectAttribute(Protocol):
     def rect(self) -> Union["RectLike", Callable[[], "RectLike"]]: ...
 
 
-RectLike = Union[SequenceLike[float], SequenceLike[Point], _HasRectAttribute]
+RectLike = Union[
+    Rect, FRect, SequenceLike[float], SequenceLike[Point], _HasRectAttribute
+]
 
 
 # cleanup namespace
-del sys, abstractmethod, IO, Callable, Tuple, Union, TypeVar, Protocol
+del (
+    sys,
+    abstractmethod,
+    Color,
+    Rect,
+    FRect,
+    IO,
+    Callable,
+    Tuple,
+    Union,
+    TypeVar,
+    Protocol,
+)
