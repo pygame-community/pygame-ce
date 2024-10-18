@@ -430,6 +430,12 @@ typedef enum {
     PGS_PREALLOC = 0x01000000
 } PygameSurfaceFlags;
 
+typedef enum {
+    PGS_SCROLL_DEFAULT = 0x00000000,
+    PGS_SCROLL_REPEAT = 0x00000001,
+    PGS_SCROLL_ERASE = 0x00000004
+} PygameScrollSurfaceFlags;
+
 #define RAISE(x, y) (PyErr_SetString((x), (y)), NULL)
 #define RAISERETURN(x, y, r)   \
     PyErr_SetString((x), (y)); \
