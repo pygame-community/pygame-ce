@@ -1,8 +1,6 @@
 #include "doc/geometry_doc.h"
 #include "geometry_common.h"
 
-#define IS_LINE_VALID(line) (line->ax != line->bx || line->ay != line->by)
-
 static double
 pgLine_Length(pgLineBase *line)
 {
@@ -55,32 +53,6 @@ pg_line_init(pgLineObject *self, PyObject *args, PyObject *kwds)
                         "Invalid line end points, expected 4 "
                         "numbers or 2 sequences of 2 numbers");
         return -1;
-    }
-    return 0;
-}
-
-static int
-pgLine_FromObjectFastcall(PyObject *const *args, Py_ssize_t nargs,
-                          pgLineBase *out)
-{
-    if (nargs == 1) {
-        return pgLine_FromObject(args[0], out);
-    }
-    else if (nargs == 2) {
-        if (!pg_TwoDoublesFromObj(args[0], &(out->ax), &(out->ay)) ||
-            !pg_TwoDoublesFromObj(args[1], &(out->bx), &(out->by))) {
-            return 0;
-        }
-        return IS_LINE_VALID(out);
-    }
-    else if (nargs == 4) {
-        if (!pg_DoubleFromObj(args[0], &(out->ax)) ||
-            !pg_DoubleFromObj(args[1], &(out->ay)) ||
-            !pg_DoubleFromObj(args[2], &(out->bx)) ||
-            !pg_DoubleFromObj(args[3], &(out->by))) {
-            return 0;
-        }
-        return IS_LINE_VALID(out);
     }
     return 0;
 }

@@ -276,6 +276,32 @@ pgLine_FromObject(PyObject *obj, pgLineBase *out)
     return 1;
 }
 
+int
+pgLine_FromObjectFastcall(PyObject *const *args, Py_ssize_t nargs,
+                          pgLineBase *out)
+{
+    if (nargs == 1) {
+        return pgLine_FromObject(args[0], out);
+    }
+    else if (nargs == 2) {
+        if (!pg_TwoDoublesFromObj(args[0], &(out->ax), &(out->ay)) ||
+            !pg_TwoDoublesFromObj(args[1], &(out->bx), &(out->by))) {
+            return 0;
+        }
+        return 1;
+    }
+    else if (nargs == 4) {
+        if (!pg_DoubleFromObj(args[0], &(out->ax)) ||
+            !pg_DoubleFromObj(args[1], &(out->ay)) ||
+            !pg_DoubleFromObj(args[2], &(out->bx)) ||
+            !pg_DoubleFromObj(args[3], &(out->by))) {
+            return 0;
+        }
+        return 1;
+    }
+    return 0;
+}
+
 static inline int
 double_compare(double a, double b)
 {

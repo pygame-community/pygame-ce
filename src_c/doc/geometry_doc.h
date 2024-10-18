@@ -40,7 +40,7 @@
 #define DOC_LINE_COPY "copy() -> Line\ncopies the line"
 #define DOC_LINE_MOVE "move((x, y)) -> Line\nmove(x, y) -> Line\nmoves the line by a given amount"
 #define DOC_LINE_MOVEIP "move_ip((x, y)) -> None\nmove_ip(x, y) -> None\nmoves the line by a given amount"
-#define DOC_LINE_UPDATE "update((xa, ya), (xb, yb)) -> None\nupdate(xa, ya, xb, yb) -> None\nupdate(Line) -> None\nupdates the line's attributes"
+#define DOC_LINE_UPDATE "update((ax, ay), (bx, by)) -> None\nupdate(ax, ay, bx, by) -> None\nupdate(Line) -> None\nupdates the line's attributes"
 #define DOC_LINE_SCALE "scale(factor, origin) -> Line\nscale(factor_and_origin) -> Line\nscales the line by the given factor from the given origin"
 #define DOC_LINE_SCALEIP "scale_ip(factor, origin) -> None\nscale_ip(factor_and_origin) -> None\nscales the line by the given factor from the given origin in place"
 #define DOC_LINE_FLIPAB "flip_ab() -> Line\nflips the line a and b points"

@@ -602,7 +602,7 @@
          | :sl:`the length of the line`
          | :sg:`length -> float`
 
-         The length of the line. Calculated using the `sqrt((xb-xa)**2 + (yb-ya)**2)` formula.
+         The length of the line. Calculated using the `sqrt((bx-ax)**2 + (by-ay)**2)` formula.
          This attribute is read-only, it cannot be reassigned. To change the line's length
          use the `scale` method or change its `a` or `b` attributes.
 
@@ -671,8 +671,8 @@
    .. method:: update
 
          | :sl:`updates the line's attributes`
-         | :sg:`update((xa, ya), (xb, yb)) -> None`
-         | :sg:`update(xa, ya, xb, yb) -> None`
+         | :sg:`update((ax, ay), (bx, by)) -> None`
+         | :sg:`update(ax, ay, bx, by) -> None`
          | :sg:`update(Line) -> None`
 
          Updates the `Line`'s attributes. The original `Line` is modified. Always returns `None`.
