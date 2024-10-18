@@ -34,6 +34,7 @@ typedef struct {
     PyObject_HEAD Mix_Chunk *chunk;
     Uint8 *mem;
     PyObject *weakreflist;
+    float volume;
 } pgSoundObject;
 
 typedef struct {
