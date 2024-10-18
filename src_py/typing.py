@@ -57,7 +57,7 @@ Point = SequenceLike[float]
 # This is used where ints are strictly required
 IntPoint = SequenceLike[int]
 
-ColorLike = Union[Color, int, str, SequenceLike[int]]
+ColorLike = Union[Color, SequenceLike[int], str, int]
 
 
 class _HasRectAttribute(Protocol):
