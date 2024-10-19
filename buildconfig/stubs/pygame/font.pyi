@@ -1,6 +1,12 @@
-from typing import Callable, Hashable, Iterable, List, Literal, Optional, Tuple, Union
+from typing import List, Literal, Optional, Tuple, Union
 
 from pygame.surface import Surface
+
+from pygame.sysfont import (
+    get_fonts as get_fonts,
+    match_font as match_font,
+    SysFont as SysFont,
+)
 
 from pygame.typing import ColorLike, FileLike
 
@@ -13,19 +19,6 @@ def quit() -> None: ...
 def get_init() -> bool: ...
 def get_sdl_ttf_version(linked: bool = True) -> Tuple[int, int, int]: ...
 def get_default_font() -> str: ...
-def get_fonts() -> List[str]: ...
-def match_font(
-    name: Union[str, bytes, Iterable[Union[str, bytes]]],
-    bold: Hashable = False,
-    italic: Hashable = False,
-) -> str: ...
-def SysFont(
-    name: Union[str, bytes, Iterable[Union[str, bytes]], None],
-    size: int,
-    bold: Hashable = False,
-    italic: Hashable = False,
-    constructor: Optional[Callable[[Optional[str], int, bool, bool], Font]] = None,
-) -> Font: ...
 
 class Font:
     @property
