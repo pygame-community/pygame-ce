@@ -28,6 +28,9 @@ SDL3_ARGS = [
     "-Csetup-args=-Dfont=disabled",
 ]
 
+# We assume this script works with any pip version above this.
+PIP_MIN_VERSION = "23.1"
+
 
 class Colors(Enum):
     RESET = "\033[0m"
@@ -160,6 +163,16 @@ def show_diff_and_suggest_fix(parent: str):
                 "Alternatively, you may run `python3 dev.py all` to catch more issues"
             )
         raise
+
+
+def check_version_atleast(version: str, min_version: str):
+    try:
+        version_tup = tuple(int(i.strip()) for i in version.split("."))
+        min_version_tup = tuple(int(i.strip()) for i in min_version.split("."))
+    except (AttributeError, TypeError, ValueError):
+        return False
+
+    return version_tup >= min_version_tup
 
 
 class Dev:
@@ -358,8 +371,17 @@ class Dev:
         else:
             pprint(f"Using python '{self.py}'")
 
-        pprint("Upgrading pip")
-        pip_install(self.py, ["-U", "pip"])
+        pprint("Checking pip version")
+        pip_v = cmd_run([self.py, "-m", "pip", "-V"], capture_output=True)
+        try:
+            pip_version = pip_v.split()[1]
+        except (AttributeError, IndexError):
+            pip_version = "UNKNOWN"
+
+        pprint(f"Determined pip version: {pip_version}")
+        if not check_version_atleast(pip_version, PIP_MIN_VERSION):
+            pprint("pip version is too old or unknown, attempting pip upgrade")
+            pip_install(self.py, ["-U", "pip"])
 
         deps = self.deps.get(self.args["command"])
         if deps:
