@@ -695,7 +695,7 @@
          | :sg:`scale(factor_and_origin) -> Line`
 
          Returns a new `Line` which is scaled by the given factor from the specified origin with 0.0 being
-         the startpoint, 0.5 being the center and 1.0 being the end point.
+         the starting point, 0.5 being the center and 1.0 being the end point.
          The original `Line` is not modified.
 
          .. versionadded:: 2.5.3
@@ -709,7 +709,7 @@
          | :sg:`scale_ip(factor_and_origin) -> None`
 
          Scales the `Line` by the given factor from the specified origin with 0.0 being
-         the startpoint, 0.5 being the center and 1.0 being the end point.
+         the starting point, 0.5 being the center and 1.0 being the end point.
          The original `Line` is modified.
          Always returns `None`.
 
@@ -734,7 +734,7 @@
          | :sl:`flips the line a and b points, in place`
          | :sg:`flip_ab_ip() -> None`
 
-         Flips the `Line`'s `b` and `b` points. The original `Line` is modified.
+         Flips the `Line`'s `a` and `b` points. The original `Line` is modified.
          Always returns `None`.
 
          .. versionadded:: 2.5.3

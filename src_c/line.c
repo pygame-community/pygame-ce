@@ -48,7 +48,7 @@ pg_line_dealloc(pgLineObject *self)
 static int
 pg_line_init(pgLineObject *self, PyObject *args, PyObject *kwds)
 {
-    if (!pgLine_FromObject(args, &(self->line))) {
+    if (!pgLine_FromObject(args, &self->line)) {
         PyErr_SetString(PyExc_TypeError,
                         "Invalid line end points, expected 4 "
                         "numbers or 2 sequences of 2 numbers");
@@ -73,7 +73,7 @@ pg_line_copy(pgLineObject *self, PyObject *_null)
 static PyObject *
 pg_line_update(pgLineObject *self, PyObject *const *args, Py_ssize_t nargs)
 {
-    if (!pgLine_FromObjectFastcall(args, nargs, &(self->line))) {
+    if (!pgLine_FromObjectFastcall(args, nargs, &self->line)) {
         return RAISE(PyExc_TypeError,
                      "Line.update requires a line or LineLike object");
     }
