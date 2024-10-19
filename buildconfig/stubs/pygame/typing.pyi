@@ -12,18 +12,10 @@ __all__ = [
     "IntPoint",
 ]
 
-import sys
 from abc import abstractmethod
-from typing import IO, Callable, Tuple, Union, TypeVar, Protocol
-
-if sys.version_info >= (3, 9):
-    from os import PathLike as _PathProtocol
-else:
-    _AnyStr_co = TypeVar("_AnyStr_co", str, bytes, covariant=True)
-
-    class _PathProtocol(Protocol[_AnyStr_co]):
-        @abstractmethod
-        def __fspath__(self) -> _AnyStr_co: ...
+from collections.abc import Callable
+from os import PathLike as _PathProtocol
+from typing import IO, Union, TypeVar, Protocol
 
 
 # For functions that take a file name
@@ -67,4 +59,4 @@ RectLike = Union[SequenceLike[float], SequenceLike[Point], _HasRectAttribute]
 
 
 # cleanup namespace
-del sys, abstractmethod, IO, Callable, Tuple, Union, TypeVar, Protocol
+del abstractmethod, IO, Callable, Union, TypeVar, Protocol
