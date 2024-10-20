@@ -2200,6 +2200,19 @@ vector2_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     return (PyObject *)vec;
 }
 
+static PyObject *
+vector2_complex(pgVector *self, PyObject *_null)
+{
+    PyObject *complex =
+        PyComplex_FromDoubles(self->coords[0], self->coords[1]);
+
+    if (complex == NULL) {
+        RAISE(PyExc_ValueError, "Couldn't build complex number from Vector2");
+    }
+
+    return complex;
+}
+
 static int
 _vector2_set(pgVector *self, PyObject *xOrSequence, PyObject *y)
 {
@@ -2578,6 +2591,7 @@ static PyMethodDef vector2_methods[] = {
      NULL},
     {"__reduce__", (PyCFunction)vector2_reduce, METH_NOARGS, NULL},
     {"__round__", (PyCFunction)vector___round__, METH_VARARGS, NULL},
+    {"__complex__", (PyCFunction)vector2_complex, METH_NOARGS, NULL},
 
     {NULL} /* Sentinel */
 };

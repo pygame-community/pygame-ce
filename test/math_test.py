@@ -273,6 +273,22 @@ class Vector2TypeTest(unittest.TestCase):
 
         self.assertRaises(TypeError, assign_nonfloat)
 
+    def test__complex__(self):
+        vec1 = pygame.Vector2(23, 45)
+        vec2 = pygame.Vector2(-123, 4859358338)
+        vec3 = pygame.Vector3(-25720.733232, -9404993.45)
+
+        complex1 = complex(vec1)
+        complex2 = complex(vec2)
+        complex3 = complex(vec3)
+
+        self.assertEqual(vec1.x, complex1.real)
+        self.assertEqual(vec1.y, complex1.imag)
+        self.assertEqual(vec2.x, complex2.real)
+        self.assertEqual(vec2.y, complex2.imag)
+        self.assertAlmostEqual(vec3.x, complex3.real)
+        self.assertAlmostEqual(vec3.y, complex3.imag)
+
     def test___round___basic(self):
         self.assertEqual(round(pygame.Vector2(0.0, 0.0)), pygame.Vector2(0.0, 0.0))
         self.assertEqual(type(round(pygame.Vector2(0.0, 0.0))), pygame.Vector2)

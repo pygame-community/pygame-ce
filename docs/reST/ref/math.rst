@@ -171,6 +171,9 @@ Multiple coordinates can be set using slices or swizzling
       Inherited methods of vector subclasses now correctly return an instance of the
       subclass instead of the superclass
 
+   .. versionchanged:: 2.5.3
+      It is now possible to convert a ``Vector2`` to a complex number using ``complex()``.
+
    .. method:: dot
 
       | :sl:`calculates the dot- or scalar-product with the other vector`
