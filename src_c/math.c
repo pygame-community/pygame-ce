@@ -2203,14 +2203,7 @@ vector2_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 static PyObject *
 vector2_complex(pgVector *self, PyObject *_null)
 {
-    PyObject *complex =
-        PyComplex_FromDoubles(self->coords[0], self->coords[1]);
-
-    if (complex == NULL) {
-        RAISE(PyExc_ValueError, "Couldn't build complex number from Vector2");
-    }
-
-    return complex;
+    return PyComplex_FromDoubles(self->coords[0], self->coords[1]);
 }
 
 static int
