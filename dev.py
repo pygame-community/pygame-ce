@@ -371,6 +371,10 @@ class Dev:
         else:
             pprint(f"Using python '{self.py}'")
 
+        # set PATH to give high priority to executables in the python bin folder
+        # this is where the binaries for meson/ninja/cython/sphinx/etc are installed
+        os.environ["PATH"] = f"{self.py.parent}{os.pathsep}{os.environ.get('PATH', '')}"
+
         pprint("Checking pip version")
         pip_v = cmd_run([self.py, "-m", "pip", "-V"], capture_output=True)
         try:
