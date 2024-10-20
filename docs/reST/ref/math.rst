@@ -173,6 +173,7 @@ Multiple coordinates can be set using slices or swizzling
 
    .. versionchanged:: 2.5.3
       It is now possible to convert a ``Vector2`` to a complex number using ``complex()``.
+      The complex's real and imaginary components will be respectively the vector's x and y components.
 
    .. method:: dot
 
