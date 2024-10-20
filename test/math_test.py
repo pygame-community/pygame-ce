@@ -276,7 +276,7 @@ class Vector2TypeTest(unittest.TestCase):
     def test__complex__(self):
         vec1 = pygame.Vector2(23, 45)
         vec2 = pygame.Vector2(-123, 4859358338)
-        vec3 = pygame.Vector3(-25720.733232, -9404993.45)
+        vec3 = pygame.Vector2(-25720.733232, -9404993.45)
 
         complex1 = complex(vec1)
         complex2 = complex(vec2)
