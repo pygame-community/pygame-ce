@@ -48,7 +48,7 @@ jobs:
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
-        os: [ubuntu-24.04, ubuntu-22.04]
+        os: [ubuntu-22.04]
 
     env:
       # Pip now forces us to either make a venv or set this flag, so we will do
@@ -89,7 +89,6 @@ jobs:
 
     # We upload the generated files under github actions assets
     - name: Upload sdist
-      if: matrix.os == 'ubuntu-24.04' # upload sdist only once
       uses: actions/upload-artifact@v4
       with:
         name: pygame-wheels-sdist

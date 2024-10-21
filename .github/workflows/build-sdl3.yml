@@ -74,12 +74,8 @@ jobs:
         cmake --build . --config Release --parallel
         sudo cmake --install . --config Release
 
-    - name: Make sdist and install it
-      run: >
-        python3 -m pip install . -v -Csetup-args=-Dsdl_api=3
-        -Csetup-args=-Dimage=disabled
-        -Csetup-args=-Dmixer=disabled
-        -Csetup-args=-Dfont=disabled
+    - name: Build with SDL3
+      run: python3 dev.py build --sdl3
 
     # - name: Run tests
     #   env:

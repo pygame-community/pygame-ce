@@ -9,9 +9,8 @@ but the documentation can also be launched with `python -m pygame.docs`
 
 Steps:
 
-- Install Sphinx (`pip install Sphinx`)
 - Fork the pygame-ce repository, download and navigate to it in the terminal
-- Run `python -m buildconfig docs`
+- Run `python dev.py docs`
 - If you are using the legacy `python setup.py docs` (which is now deprecated):
   - (Run `python -m pip install -U pip setuptools` first if `ModuleNotFoundError: No module named setuptools` occurs)
 
@@ -30,7 +29,7 @@ is useful when editing the theme CSS.
 
 
 --- **INSTEAD USE** ---
-There is also `python -m buildconfig docs full_generation` for regenerating
+There is also `python dev.py docs --full` for regenerating
 everything regardless of whether Sphinx thinks it should be regenerated. This
 is useful when editing the theme CSS.
 
