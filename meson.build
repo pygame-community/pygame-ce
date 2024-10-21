@@ -399,6 +399,7 @@ else
             '-Wno-error=unused-but-set-variable',
             '-Wno-error=array-bounds',
         ]
+        warnings_temp_mask += '-Wno-error=array-bounds'
     endif
 
     if cc.sizeof('long') != 8
