@@ -20,7 +20,7 @@ def build_signatures(object):
                     object = child
                     break
 
-    if object is None:
+    if object is None or object.obj.get("args", None) is None:
         return
 
     sigs = [(object.obj["args"], object.obj["return_annotation"])]
