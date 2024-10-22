@@ -8,13 +8,17 @@ __all__ = [
     "SequenceLike",
     "FileLike",
     "ColorLike",
-    "Coordinate",
-    "IntCoordinate",
+    "Point",
+    "IntPoint",
 ]
 
 import sys
 from abc import abstractmethod
 from typing import IO, Any, Callable, Dict, Optional, Tuple, Union, TypeVar, Protocol
+
+from pygame.color import Color
+from pygame.rect import Rect, FRect
+
 
 if sys.version_info >= (3, 9):
     from os import PathLike as _PathProtocol
@@ -47,13 +51,13 @@ class SequenceLike(Protocol[_T_co]):
 
 # Modify typehints when it is possible to annotate sizes
 
-# Pygame handles float without errors in most cases where a coordinate is expected,
+# Pygame handles float without errors in most cases where a point is expected,
 # usually rounding to int. Also, 'Union[int, float] == float'
-Coordinate = SequenceLike[float]
+Point = SequenceLike[float]
 # This is used where ints are strictly required
-IntCoordinate = SequenceLike[int]
+IntPoint = SequenceLike[int]
 
-ColorLike = Union[int, str, SequenceLike[int]]
+ColorLike = Union[Color, SequenceLike[int], str, int]
 
 
 class _HasRectAttribute(Protocol):
@@ -63,7 +67,9 @@ class _HasRectAttribute(Protocol):
     def rect(self) -> Union["RectLike", Callable[[], "RectLike"]]: ...
 
 
-RectLike = Union[SequenceLike[float], SequenceLike[Coordinate], _HasRectAttribute]
+RectLike = Union[
+    Rect, FRect, SequenceLike[float], SequenceLike[Point], _HasRectAttribute
+]
 
 
 class EventLike(Protocol):
@@ -86,4 +92,16 @@ class EventLike(Protocol):
 
 
 # cleanup namespace
-del sys, abstractmethod, IO, Callable, Tuple, Union, TypeVar, Protocol
+del (
+    sys,
+    abstractmethod,
+    Color,
+    Rect,
+    FRect,
+    IO,
+    Callable,
+    Tuple,
+    Union,
+    TypeVar,
+    Protocol,
+)

@@ -96,8 +96,24 @@ pg_system_get_pref_locales(PyObject *self, PyObject *_null)
         return NULL;
     }
 
-#if SDL_VERSION_ATLEAST(2, 0, 14)
+    // Sorry about the SDL3 gnarliness here, this was the best way I could
+    // think of to support SDL2/SDL3 at once. The approach is that each
+    // version is responsible for coming up with a list and a count,
+    // then the iteration over the list is shared (except for the indexing
+    // strategy, where SDL2/3 are different)
+
     PyObject *dict, *val = NULL;
+    int num_locales;
+    SDL_Locale *current_locale;
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    SDL_Locale **locales = SDL_GetPreferredLocales(&num_locales);
+    if (!locales) {
+        /* Return an empty list if SDL function does not return any useful
+         * information */
+        return ret_list;
+    }
+#elif SDL_VERSION_ATLEAST(2, 0, 14)
     SDL_Locale *locales = SDL_GetPreferredLocales();
     if (!locales) {
         /* Return an empty list if SDL function does not return any useful
@@ -105,16 +121,28 @@ pg_system_get_pref_locales(PyObject *self, PyObject *_null)
         return ret_list;
     }
 
-    SDL_Locale *current_locale = locales;
-
+    num_locales = 0;
+    current_locale = locales;
     /* The array is terminated when the language attribute of the last struct
      * in the array is NULL */
     while (current_locale->language) {
+        num_locales++;
+        current_locale++;
+    }
+#endif
+
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    for (int i = 0; i < num_locales; i++) {
         dict = PyDict_New();
         if (!dict) {
             goto error;
         }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        current_locale = locales[i];
+#else
+        current_locale = locales + i;
+#endif
         val = PyUnicode_FromString(current_locale->language);
         if (!val) {
             goto error;
@@ -145,7 +173,6 @@ pg_system_get_pref_locales(PyObject *self, PyObject *_null)
             goto error;
         }
         Py_DECREF(dict);
-        current_locale++;
     }
 
     SDL_free(locales);

@@ -79,8 +79,8 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 .. function:: get_pressed
 
    | :sl:`get the state of the mouse buttons`
-   | :sg:`get_pressed(num_buttons=3) -> (left_button, middle_button, right_button)`
-   | :sg:`get_pressed(num_buttons=5) -> (left_button, middle_button, right_button, x1_button, x2_button)`
+   | :sg:`get_pressed(num_buttons=3, desktop=False) -> (left_button, middle_button, right_button)`
+   | :sg:`get_pressed(num_buttons=5, desktop=False) -> (left_button, middle_button, right_button, x1_button, x2_button)`
 
    Returns a sequence of booleans representing the state of all the mouse
    buttons. A true value means the mouse is currently being pressed at the time
@@ -97,11 +97,20 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
    are added to the returned tuple. Only ``3`` and ``5`` are valid values
    for this parameter.
 
+   If the ``desktop`` argument is ``True`` the mouse state will be correct even
+   if the window has no focus. In addition since it queries the OS it does not depend
+   on the last event pump while being slightly slower.
+
    .. note:: On ``X11`` some X servers use middle button emulation. When you
       click both buttons ``1`` and ``3`` at the same time a ``2`` button event
       can be emitted.
 
+   .. warning:: Due to design constraints it is impossible to retrieve the desktop
+      mouse state on Wayland. The normal mouse state is returned instead.
+
    .. versionchangedold:: 2.0.0 ``num_buttons`` argument added
+
+   .. versionchanged:: 2.5.2 Added the ``desktop`` argument
 
    .. ## pygame.mouse.get_pressed ##
 
@@ -158,12 +167,20 @@ scroll, such as ``which`` (it will tell you what exact mouse device trigger the 
 .. function:: get_pos
 
    | :sl:`get the mouse cursor position`
-   | :sg:`get_pos() -> (x, y)`
+   | :sg:`get_pos(desktop=False) -> (x, y)`
 
-   Returns the ``x`` and ``y`` position of the mouse cursor. The position is
-   relative to the top-left corner of the display. The cursor position can be
-   located outside of the display window, but is always constrained to the
-   screen.
+   By default returns the ``x`` and ``y`` position of the mouse cursor. The position
+   is relative to the top-left corner of the display. The cursor position can be
+   located outside of the display window, but is always constrained to the screen.
+
+   If the ``desktop`` argument is ``True``, the position will be instead relative to the
+   top-left corner of the primary monitor. The position might be negative or exceed
+   the desktop bounds if multiple monitors are present.
+
+   .. warning:: Due to design constraints it is impossible to retrieve the desktop
+      mouse state on Wayland. The relative mouse position is returned instead.
+
+   .. versionchanged:: 2.5.2 Added the ``desktop`` argument
 
    .. ## pygame.mouse.get_pos ##
 
