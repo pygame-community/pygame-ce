@@ -1,6 +1,14 @@
 #include "doc/geometry_doc.h"
 #include "geometry_common.h"
 
+static double
+pgLine_Length(pgLineBase *line)
+{
+    double dx = line->bx - line->ax;
+    double dy = line->by - line->ay;
+    return sqrt(dx * dx + dy * dy);
+}
+
 static PyObject *
 _pg_line_subtype_new4(PyTypeObject *type, double ax, double ay, double bx,
                       double by)
@@ -40,7 +48,7 @@ pg_line_dealloc(pgLineObject *self)
 static int
 pg_line_init(pgLineObject *self, PyObject *args, PyObject *kwds)
 {
-    if (!pgLine_FromObject(args, &(self->line))) {
+    if (!pgLine_FromObject(args, &self->line)) {
         PyErr_SetString(PyExc_TypeError,
                         "Invalid line end points, expected 4 "
                         "numbers or 2 sequences of 2 numbers");
@@ -50,15 +58,178 @@ pg_line_init(pgLineObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
+pgLine_New(pgLineBase *l)
+{
+    return _pg_line_subtype_new4(&pgLine_Type, l->ax, l->ay, l->bx, l->by);
+}
+
+static PyObject *
 pg_line_copy(pgLineObject *self, PyObject *_null)
 {
     return _pg_line_subtype_new4(Py_TYPE(self), self->line.ax, self->line.ay,
                                  self->line.bx, self->line.by);
 }
 
+static PyObject *
+pg_line_update(pgLineObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    if (!pgLine_FromObjectFastcall(args, nargs, &self->line)) {
+        return RAISE(PyExc_TypeError,
+                     "Line.update requires a line or LineLike object");
+    }
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+pg_line_move(pgLineObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    double Dx, Dy;
+
+    if (!pg_TwoDoublesFromFastcallArgs(args, nargs, &Dx, &Dy)) {
+        return RAISE(PyExc_TypeError, "move requires a pair of numbers");
+    }
+
+    return _pg_line_subtype_new4(Py_TYPE(self), self->line.ax + Dx,
+                                 self->line.ay + Dy, self->line.bx + Dx,
+                                 self->line.by + Dy);
+}
+
+static PyObject *
+pg_line_move_ip(pgLineObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    double Dx, Dy;
+
+    if (!pg_TwoDoublesFromFastcallArgs(args, nargs, &Dx, &Dy)) {
+        return RAISE(PyExc_TypeError, "move_ip requires a pair of numbers");
+    }
+
+    self->line.ax += Dx;
+    self->line.ay += Dy;
+    self->line.bx += Dx;
+    self->line.by += Dy;
+
+    Py_RETURN_NONE;
+}
+
+static PyObject *
+pg_line_flip(pgLineObject *self, PyObject *_null)
+{
+    return _pg_line_subtype_new4(Py_TYPE(self), self->line.bx, self->line.by,
+                                 self->line.ax, self->line.ay);
+}
+
+static PyObject *
+pg_line_flip_ab_ip(pgLineObject *self, PyObject *_null)
+{
+    double tx = self->line.bx;
+    double ty = self->line.by;
+
+    self->line.bx = self->line.ax;
+    self->line.by = self->line.ay;
+
+    self->line.ax = tx;
+    self->line.ay = ty;
+
+    Py_RETURN_NONE;
+}
+
+static PG_FORCEINLINE double
+_lerp_helper(double start, double end, double amount)
+{
+    return start + (end - start) * amount;
+}
+
+static int
+_line_scale_helper(pgLineBase *line, double factor, double origin)
+{
+    if (factor == 1.0) {
+        return 1;
+    }
+    else if (factor <= 0.0) {
+        PyErr_SetString(PyExc_ValueError,
+                        "Can only scale by a positive non zero number");
+        return 0;
+    }
+
+    if (origin < 0.0 || origin > 1.0) {
+        PyErr_SetString(PyExc_ValueError, "Origin must be between 0 and 1");
+        return 0;
+    }
+
+    double ax = line->ax;
+    double ay = line->ay;
+    double bx = line->bx;
+    double by = line->by;
+
+    double x1_factor = ax * factor;
+    double y1_factor = ay * factor;
+    double x2_factor = bx * factor;
+    double y2_factor = by * factor;
+
+    double fac_m_one = factor - 1;
+    double dx = _lerp_helper(fac_m_one * ax, fac_m_one * bx, origin);
+    double dy = _lerp_helper(fac_m_one * ay, fac_m_one * by, origin);
+
+    line->ax = x1_factor - dx;
+    line->ay = y1_factor - dy;
+    line->bx = x2_factor - dx;
+    line->by = y2_factor - dy;
+
+    return 1;
+}
+
+static PyObject *
+pg_line_scale(pgLineObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    double factor, origin;
+
+    if (!pg_TwoDoublesFromFastcallArgs(args, nargs, &factor, &origin)) {
+        return RAISE(PyExc_TypeError,
+                     "scale requires a sequence of two numbers");
+    }
+
+    PyObject *line;
+    if (!(line = pgLine_New(&self->line))) {
+        return NULL;
+    }
+
+    if (!_line_scale_helper(&pgLine_AsLine(line), factor, origin)) {
+        Py_DECREF(line);
+        return NULL;
+    }
+
+    return line;
+}
+
+static PyObject *
+pg_line_scale_ip(pgLineObject *self, PyObject *const *args, Py_ssize_t nargs)
+{
+    double factor, origin;
+
+    if (!pg_TwoDoublesFromFastcallArgs(args, nargs, &factor, &origin)) {
+        return RAISE(PyExc_TypeError,
+                     "scale_ip requires a sequence of two numbers");
+    }
+
+    if (!_line_scale_helper(&pgLine_AsLine(self), factor, origin)) {
+        return NULL;
+    }
+
+    Py_RETURN_NONE;
+}
+
 static struct PyMethodDef pg_line_methods[] = {
     {"__copy__", (PyCFunction)pg_line_copy, METH_NOARGS, DOC_LINE_COPY},
     {"copy", (PyCFunction)pg_line_copy, METH_NOARGS, DOC_LINE_COPY},
+    {"update", (PyCFunction)pg_line_update, METH_FASTCALL, DOC_LINE_UPDATE},
+    {"move", (PyCFunction)pg_line_move, METH_FASTCALL, DOC_LINE_MOVE},
+    {"move_ip", (PyCFunction)pg_line_move_ip, METH_FASTCALL, DOC_LINE_MOVEIP},
+    {"flip_ab", (PyCFunction)pg_line_flip, METH_NOARGS, DOC_LINE_FLIPAB},
+    {"flip_ab_ip", (PyCFunction)pg_line_flip_ab_ip, METH_NOARGS,
+     DOC_LINE_FLIPABIP},
+    {"scale", (PyCFunction)pg_line_scale, METH_FASTCALL, DOC_LINE_SCALE},
+    {"scale_ip", (PyCFunction)pg_line_scale_ip, METH_FASTCALL,
+     DOC_LINE_SCALEIP},
     {NULL, NULL, 0, NULL}};
 
 static PyObject *
@@ -170,6 +341,12 @@ pg_line_setb(pgLineObject *self, PyObject *value, void *closure)
     return -1;
 }
 
+static PyObject *
+pg_line_getlength(pgLineObject *self, void *closure)
+{
+    return PyFloat_FromDouble(pgLine_Length(&self->line));
+}
+
 static PyGetSetDef pg_line_getsets[] = {
     {"ax", (getter)pg_line_getax, (setter)pg_line_setax, DOC_LINE_AX, NULL},
     {"ay", (getter)pg_line_getay, (setter)pg_line_setay, DOC_LINE_AY, NULL},
@@ -177,6 +354,7 @@ static PyGetSetDef pg_line_getsets[] = {
     {"by", (getter)pg_line_getby, (setter)pg_line_setby, DOC_LINE_BY, NULL},
     {"a", (getter)pg_line_geta, (setter)pg_line_seta, DOC_LINE_A, NULL},
     {"b", (getter)pg_line_getb, (setter)pg_line_setb, DOC_LINE_B, NULL},
+    {"length", (getter)pg_line_getlength, NULL, DOC_LINE_LENGTH, NULL},
     {NULL, 0, NULL, NULL, NULL}};
 
 static PyTypeObject pgLine_Type = {
