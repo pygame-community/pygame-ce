@@ -8,4 +8,3 @@
 
 .. autopgclass:: Clock
    :members: tick, tick_busy_loop, get_time, get_rawtime, get_fps
-

@@ -133,10 +133,11 @@ class Cursor:
 
     **Creating a cursor without passing arguments**
 
-    In addition to the cursor constants available and described above,
-    you can also call ``pygame.cursors.Cursor()``, and your cursor is ready (doing that is the same as
-    calling ``pygame.cursors.Cursor(pygame.SYSTEM_CURSOR_ARROW)``.
-    Doing one of those calls actually creates a system cursor using the default native image.
+    In addition to the cursor constants available and described above, you can
+    also call ``pygame.cursors.Cursor()``, and your cursor is ready (doing that
+    is the same as calling ``pygame.cursors.Cursor(pygame.SYSTEM_CURSOR_ARROW)``.
+    Doing one of those calls actually creates a system cursor using the default
+    native image.
 
     **Creating a color cursor**
 

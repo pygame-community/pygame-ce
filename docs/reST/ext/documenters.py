@@ -64,7 +64,7 @@ class AutopgDocumenter(autoapi.documenters.AutoapiDocumenter):
 
         return [""]
 
-    def process_doc(self, docstrings: list[str]):
+    def process_doc(self, docstrings):
         for docstring in docstrings:
             if not docstring:
                 continue
