@@ -164,13 +164,10 @@ pgLine_FromObject(PyObject *obj, pgLineBase *out)
 
         switch (length) {
             case 4:
-                if (!pg_DoubleFromObj(farray[0], &out->ax) ||
-                    !pg_DoubleFromObj(farray[1], &out->ay) ||
-                    !pg_DoubleFromObj(farray[2], &out->bx) ||
-                    !pg_DoubleFromObj(farray[3], &out->by)) {
-                    return 0;
-                }
-                return 1;
+                return pg_DoubleFromObj(farray[0], &out->ax) &&
+                       pg_DoubleFromObj(farray[1], &out->ay) &&
+                       pg_DoubleFromObj(farray[2], &out->bx) &&
+                       pg_DoubleFromObj(farray[3], &out->by);
             case 2:
                 if (!pg_TwoDoublesFromObj(farray[0], &out->ax, &out->ay) ||
                     !pg_TwoDoublesFromObj(farray[1], &out->bx, &out->by)) {
@@ -285,19 +282,13 @@ pgLine_FromObjectFastcall(PyObject *const *args, Py_ssize_t nargs,
         case 1:
             return pgLine_FromObject(args[0], out);
         case 2:
-            if (!pg_TwoDoublesFromObj(args[0], &out->ax, &out->ay) ||
-                !pg_TwoDoublesFromObj(args[1], &out->bx, &out->by)) {
-                return 0;
-            }
-            return 1;
+            return pg_TwoDoublesFromObj(args[0], &out->ax, &out->ay) &&
+                   pg_TwoDoublesFromObj(args[1], &out->bx, &out->by);
         case 4:
-            if (!pg_DoubleFromObj(args[0], &out->ax) ||
-                !pg_DoubleFromObj(args[1], &out->ay) ||
-                !pg_DoubleFromObj(args[2], &out->bx) ||
-                !pg_DoubleFromObj(args[3], &out->by)) {
-                return 0;
-            }
-            return 1;
+            return pg_DoubleFromObj(args[0], &out->ax) &&
+                   pg_DoubleFromObj(args[1], &out->ay) &&
+                   pg_DoubleFromObj(args[2], &out->bx) &&
+                   pg_DoubleFromObj(args[3], &out->by);
         default:
             return 0;
     }
