@@ -389,7 +389,7 @@ def get(
 
 
 def peek(
-    eventtype: int | IterableLike[int] | None = None,
+    eventtype: int | IterableLike[int],
     pump: bool = True,
 ) -> Union[EventLike, bool]:
     """
@@ -404,17 +404,6 @@ def peek(
 
     if isinstance(eventtype, int):
         eventtype = [eventtype]
-
-    if eventtype is None:
-        # Can't seek without mutating event queue here,
-        # Due to PgEvent_New being a destructive operation.
-        ret = _get(-1)
-
-        if ret is None:
-            return Event(0)
-
-        post(ret)
-        return ret
 
     for ev_type in eventtype:
         _check_ev_type(ev_type)

@@ -317,7 +317,6 @@ On Android, the following events can be generated
 .. function:: peek
 
    | :sl:`test if event types are waiting on the queue`
-   | :sg:`peek() -> Event instance`
    | :sg:`peek(eventtype) -> bool`
    | :sg:`peek(eventtype, pump=True) -> bool`
 
@@ -326,11 +325,6 @@ On Android, the following events can be generated
    any of those events are on the queue.
 
    If ``pump`` is ``True`` (the default), then :func:`pygame.event.pump()` will be called.
-
-   If ``eventtype`` is unspecified, or ``None``, then this function will return the top-most event instead.
-
-   .. note::
-      There is no guarantee that the event got with :func:`pygame.event.get()` immediately after calling this function will be the same.
 
    .. versionchangedold:: 1.9.5 Added ``pump`` argument
 
@@ -475,9 +469,7 @@ On Android, the following events can be generated
    | :sg:`event_class(type: int, /) -> type[Event]`
 
    Returns an event class that is correlated with the given event type. If the class to a given event type is not found,
-   but the type is within the range of valid values for the event type, instead of a ``pygame.event.Event`` subclass,
-   ``pygame.event.Event`` itself will be returned, so don't rely on the retuned class having ``type`` attribute equal to a number.
-   This happens for example, with user event types that weren't created by subclassing ``pygame.event.Event``.
+   but the type is within the range of valid values for the event type, a new subclass will be created.
 
    .. versionadded:: 2.5.2
    .. ## pygame.event.event_class ##
@@ -497,7 +489,7 @@ On Android, the following events can be generated
    .. versionchanged:: 2.1.4 This class is also available through the ``pygame.Event``
       alias.
 
-   .. versionchanged:: 2.5.0 This class can be subclassed to create user-defined event types.
+   .. versionchanged:: 2.5.2 This class can be subclassed to create user-defined event types.
 
    .. note::
       From version 2.1.3 ``EventType`` is an alias for ``Event``. Beforehand,
