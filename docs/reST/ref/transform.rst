@@ -350,6 +350,32 @@ Instead, always begin with the original image and scale to the desired size.)
 
    .. ## pygame.transform.grayscale ##
 
+.. function:: solid_overlay
+
+   | :sl:`replaces non transparent pixels with the provided color`
+   | :sg:`solid_overlay(surface, color, dest_surface=None, keep_alpha=False) -> Surface`
+
+   Returns a new version of the original surface with all non transparent pixels set to the color provided.
+
+   An optional destination surface can be passed which is faster than creating a new
+   Surface.
+   This destination surface must have the same dimensions (width, height) and
+   depth as the source Surface.
+
+   :param pygame.Surface surface: The target surface.
+
+   :param color: Color which all non transparent within the target surface must be set to.
+   :type color: :data:`pygame.typing.ColorLike`
+
+   :param dest_surface: Optional destination surface to which the changes will be applied.
+   :type dest_surface: pygame.Surface or None
+
+   :param bool keep_alpha: Optional parameter that controls whether to keep the surface alpha when replacing with the color.
+
+   .. versionadded:: 2.5.2
+
+   .. ## pygame.transform.solid_overlay ##
+
 .. function:: threshold
 
    | :sl:`finds which, and how many pixels in a surface are within a threshold of a 'search_color' or a 'search_surf'.`
@@ -375,15 +401,17 @@ Instead, always begin with the original image and scale to the desired size.)
 
    :param pygame.Surface surf: Surface we are looking at.
 
-   :param pygame.Color search_color: Color we are searching for.
+   :param search_color: Color we are searching for.
+   :type color: :data:`pygame.typing.ColorLike`
 
-   :param pygame.Color threshold: Within this distance from search_color (or search_surf).
+   :param threshold: Within this distance from search_color (or search_surf).
      You can use a threshold of (r,g,b,a) where the r,g,b can have different
      thresholds. So you could use an r threshold of 40 and a blue threshold of 2
      if you like.
+   :type color: :data:`pygame.typing.ColorLike`
 
    :param set_color: Color we set in dest_surf.
-   :type set_color: pygame.Color or None
+   :type color: :data:`pygame.typing.ColorLike` or ``None``
 
    :param int set_behavior:
     - set_behavior=1 (default). Pixels in dest_surface will be changed to 'set_color'.

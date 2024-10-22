@@ -893,6 +893,8 @@ class RectTypeTest(unittest.TestCase):
         r = Rect(2, 4, 6, 8)
         # act
         r2 = r.scale_by(scale_by=(2, 4))
+        r3 = r.scale_by((2, 4))
+        self.assertEqual(r2, r3)
         # assert
         self.assertEqual(r.center, r2.center)
         self.assertEqual(r.left - 3, r2.left)
@@ -3091,6 +3093,8 @@ class FRectTypeTest(RectTypeTest):
         r = FRect(2.1, 4, 6, 8.9)
         # act
         r2 = r.scale_by(scale_by=(2, 4))
+        r3 = r.scale_by((2, 4))
+        self.assertEqual(r2, r3)
         # assert
         self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left - 3, r2.left)

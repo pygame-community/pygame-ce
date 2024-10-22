@@ -47,12 +47,16 @@
 
 #include <ctype.h>
 
+static inline double
+pg_round(double d)
+{
 #if (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L) && \
     !defined(round)
-#define pg_round(d) (((d < 0) ? (ceil((d) - 0.5)) : (floor((d) + 0.5))))
+    return (((d < 0) ? (ceil((d)-0.5)) : (floor((d) + 0.5))));
 #else
-#define pg_round(d) round(d)
+    return round(d);
 #endif
+}
 
 typedef enum { TRISTATE_SUCCESS, TRISTATE_FAIL, TRISTATE_ERROR } tristate;
 
@@ -215,7 +219,7 @@ static int
 pg_RGBAFromObjEx(PyObject *color, Uint8 rgba[],
                  pgColorHandleFlags handle_flags);
 static int
-pg_MappedColorFromObj(PyObject *val, SDL_PixelFormat *format, Uint32 *color,
+pg_MappedColorFromObj(PyObject *val, SDL_Surface *surf, Uint32 *color,
                       pgColorHandleFlags handle_flags);
 
 /**
@@ -813,10 +817,10 @@ _color_lerp(pgColorObject *self, PyObject *args, PyObject *kw)
         return RAISE(PyExc_ValueError, "Argument 2 must be in range [0, 1]");
     }
 
-    new_rgba[0] = (Uint8)pg_round(self->data[0] * (1 - amt) + rgba[0] * amt);
-    new_rgba[1] = (Uint8)pg_round(self->data[1] * (1 - amt) + rgba[1] * amt);
-    new_rgba[2] = (Uint8)pg_round(self->data[2] * (1 - amt) + rgba[2] * amt);
-    new_rgba[3] = (Uint8)pg_round(self->data[3] * (1 - amt) + rgba[3] * amt);
+    for (int i = 0; i < 4; i++) {
+        new_rgba[i] =
+            (Uint8)pg_round(self->data[i] * (1 - amt) + rgba[i] * amt);
+    }
 
     return (PyObject *)_color_new_internal(Py_TYPE(self), new_rgba);
 }
@@ -1008,19 +1012,10 @@ _color_set_hsva(pgColorObject *color, PyObject *value, void *closure)
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("hsva", value);
 
-    if (!PySequence_Check(value) || PySequence_Size(value) < 3) {
+    if (!PySequence_Check(value) || PySequence_Size(value) < 3 ||
+        PySequence_Size(value) > 4) {
         PyErr_SetString(PyExc_ValueError, "invalid HSVA value");
         return -1;
-    }
-
-    if (PySequence_Size(value) > 4) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "Passing sequences of size larger than 4 is deprecated, doing "
-                "this will error in a future version",
-                1) == -1) {
-            return -1;
-        }
     }
 
     /* H */
@@ -1183,19 +1178,10 @@ _color_set_hsla(pgColorObject *color, PyObject *value, void *closure)
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("hsla", value);
 
-    if (!PySequence_Check(value) || PySequence_Size(value) < 3) {
+    if (!PySequence_Check(value) || PySequence_Size(value) < 3 ||
+        PySequence_Size(value) > 4) {
         PyErr_SetString(PyExc_ValueError, "invalid HSLA value");
         return -1;
-    }
-
-    if (PySequence_Size(value) > 4) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "Passing sequences of size larger than 4 is deprecated, doing "
-                "this will error in a future version",
-                1) == -1) {
-            return -1;
-        }
     }
 
     /* H */
@@ -1358,19 +1344,9 @@ _color_set_i1i2i3(pgColorObject *color, PyObject *value, void *closure)
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("i1i2i3", value);
 
-    if (!PySequence_Check(value) || PySequence_Size(value) < 3) {
+    if (!PySequence_Check(value) || PySequence_Size(value) != 3) {
         PyErr_SetString(PyExc_ValueError, "invalid I1I2I3 value");
         return -1;
-    }
-
-    if (PySequence_Size(value) > 3) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "Passing sequences of size larger than 3 is deprecated, doing "
-                "this will error in a future version",
-                1) == -1) {
-            return -1;
-        }
     }
 
     /* I1 */
@@ -1440,19 +1416,9 @@ _color_set_cmy(pgColorObject *color, PyObject *value, void *closure)
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("cmy", value);
 
-    if (!PySequence_Check(value) || PySequence_Size(value) < 3) {
+    if (!PySequence_Check(value) || PySequence_Size(value) != 3) {
         PyErr_SetString(PyExc_ValueError, "invalid CMY value");
         return -1;
-    }
-
-    if (PySequence_Size(value) > 3) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "Passing sequences of size larger than 3 is deprecated, doing "
-                "this will error in a future version",
-                1) == -1) {
-            return -1;
-        }
     }
 
     /* I1 */
@@ -1510,19 +1476,10 @@ _color_set_normalized(pgColorObject *color, PyObject *value, void *closure)
 
     DEL_ATTR_NOT_SUPPORTED_CHECK("normalized", value);
 
-    if (!PySequence_Check(value) || PySequence_Size(value) < 3) {
+    if (!PySequence_Check(value) || PySequence_Size(value) < 3 ||
+        PySequence_Size(value) > 4) {
         PyErr_SetString(PyExc_ValueError, "invalid normalized value");
         return -1;
-    }
-
-    if (PySequence_Size(value) > 4) {
-        if (PyErr_WarnEx(
-                PyExc_DeprecationWarning,
-                "Passing sequences of size larger than 4 is deprecated, doing "
-                "this will error in a future version",
-                1) == -1) {
-            return -1;
-        }
     }
 
     item = PySequence_GetItem(value, 0);
@@ -2429,7 +2386,7 @@ pg_RGBAFromObjEx(PyObject *obj, Uint8 *rgba, pgColorHandleFlags handle_flags)
 }
 
 static int
-pg_MappedColorFromObj(PyObject *val, SDL_PixelFormat *format, Uint32 *color,
+pg_MappedColorFromObj(PyObject *val, SDL_Surface *surf, Uint32 *color,
                       pgColorHandleFlags handle_flags)
 {
     Uint8 rgba[] = {0, 0, 0, 0};
@@ -2444,8 +2401,11 @@ pg_MappedColorFromObj(PyObject *val, SDL_PixelFormat *format, Uint32 *color,
     /* int is already handled, unset it */
     handle_flags &= ~PG_COLOR_HANDLE_INT;
     if (pg_RGBAFromObjEx(val, rgba, handle_flags)) {
-        *color =
-            (Uint32)SDL_MapRGBA(format, rgba[0], rgba[1], rgba[2], rgba[3]);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        *color = SDL_MapSurfaceRGBA(surf, rgba[0], rgba[1], rgba[2], rgba[3]);
+#else
+        *color = SDL_MapRGBA(surf->format, rgba[0], rgba[1], rgba[2], rgba[3]);
+#endif
         return 1;
     }
     return 0;

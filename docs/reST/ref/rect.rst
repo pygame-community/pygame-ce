@@ -175,6 +175,8 @@
 
       .. versionadded:: 2.3.1
 
+      .. versionchanged:: 2.5.2 the argument ``scale_by`` can now be passed as a positional argument
+
       .. ## Rect.scale_by ##
 
    .. method:: scale_by_ip
@@ -186,6 +188,8 @@
       Same as the ``Rect.scale_by()`` method, but operates in place.
 
       .. versionadded:: 2.3.1
+
+      .. versionchanged:: 2.5.2 the argument ``scale_by`` can now be passed as a positional argument
 
       .. ## Rect.scale_by_ip ##
 

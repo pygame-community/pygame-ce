@@ -403,7 +403,7 @@ time_set_timer(PyObject *self, PyObject *args, PyObject *kwargs)
 
     /* do not allow set_timer to work on WASM for now... this needs some more
      * testing and fixes that are WIP on other PRs */
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__) || defined(__wasi__)
     return RAISE(PyExc_NotImplementedError,
                  "set_timer is not implemented on WASM yet");
 #endif

@@ -142,6 +142,58 @@
 
          .. ## Circle.circumference ##
 
+   .. attribute:: top
+
+         | :sl:`top coordinate of the circle`
+         | :sg:`top -> (float, float)`
+
+         It's a tuple containing the `x` and `y` coordinates that represent the top
+         of the circle.
+         Reassigning it moves the circle to the new position. The radius will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Circle.top ##
+
+   .. attribute:: bottom
+
+         | :sl:`bottom coordinate of the circle`
+         | :sg:`bottom -> (float, float)`
+
+         It's a tuple containing the `x` and `y` coordinates that represent the bottom
+         of the circle.
+         Reassigning it moves the circle to the new position. The radius will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Circle.bottom ##
+
+   .. attribute:: left
+
+         | :sl:`left coordinate of the circle`
+         | :sg:`left -> (float, float)`
+
+         It's a tuple containing the `x` and `y` coordinates that represent the left
+         of the circle.
+         Reassigning it moves the circle to the new position. The radius will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Circle.left ##
+
+   .. attribute:: right
+
+         | :sl:`right coordinate of the circle`
+         | :sg:`right -> (float, float)`
+
+         It's a tuple containing the `x` and `y` coordinates that represent the right
+         of the circle.
+         Reassigning it moves the circle to the new position. The radius will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Circle.right ##
+
    **Circle Methods**
 
    ----
@@ -216,6 +268,48 @@
          .. versionadded:: 2.5.0
 
          .. ## Circle.collideswith ##
+
+   .. method:: collidelist
+
+         | :sl:`test if a list of objects collide with the circle`
+         | :sg:`collidelist(colliders) -> int`
+
+         The `collidelist` method tests whether a given list of shapes or points collides
+         (overlaps) with this `Circle` object. The function takes in a single argument, which
+         must be a list of `Circle`, `Rect`, `FRect`, or a point. The function returns the index
+         of the first shape or point in the list that collides with the `Circle` object, or
+         -1 if there is no collision.
+
+         .. note::
+             The shapes must be actual shape objects, such as `Circle`, `Rect` or `FRect`
+             instances. It is not possible to pass a tuple or list of coordinates representing
+             the shape as an argument (except for a point), because the shape type can't be
+             determined from the coordinates alone.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Circle.collidelist ##
+
+   .. method:: collidelistall
+
+         | :sl:`test if all objects in a list collide with the circle`
+         | :sg:`collidelistall(colliders) -> list`
+
+         The `collidelistall` method tests whether a given list of shapes or points collides
+         (overlaps) with this `Circle` object. The function takes in a single argument, which
+         must be a list of `Circle`, `Rect`, `FRect`, or a point. The function returns a list
+         containing the indices of all the shapes or points in the list that collide with
+         the `Circle` object, or an empty list if there is no collision.
+
+         .. note::
+             The shapes must be actual shape objects, such as `Circle`, `Rect` or `FRect`
+             instances. It is not possible to pass a tuple or list of coordinates representing
+             the shape as an argument (except for a point), because the shape type can't be
+             determined from the coordinates alone.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Circle.collidelistall ##
 
    .. method:: contains
 
@@ -393,3 +487,127 @@
          .. ## Circle.copy ##
 
    .. ## pygame.Circle ##
+
+
+.. class:: Line
+
+   | :sl:`pygame object for representing a line`
+   | :sg:`Line((ax, ay), (bx, by)) -> Line`
+   | :sg:`Line(ax, ay, bx, by) -> Line`
+
+   .. versionadded:: 2.5.2
+
+   The `Line` class provides many useful methods for collision testing, transformation and intersection.
+   A `Line` can be created from a combination of two pairs of coordinates that represent the start and end points.
+   Lines can also be created from python objects that are already a `Line` (effectively copying the line) or have an attribute named "line".
+
+   Specifically, to construct a `Line` you can pass the ax, ay, bx, and by values as separate
+   arguments or inside a sequence(list or tuple).
+
+   As a special case you can also pass in `pygame.Rect` / `pygame.FRect`, in which case the
+   line will be created with (x, y, width, height) as the start and end points.
+
+   You can create lines with the same start and end points, but beware that some methods may
+   not work as expected or error out.
+
+   Functions that require a `Line` argument may also accept these values as Lines:
+
+   ::
+
+      ((ax, ay), (bx, by))
+      (ax, ay, bx, by)
+      (vector2, vector2)
+
+   The `Line` class only stores the ax, ay, bx, and by attributes, everything else is calculated
+   on the fly based on them.
+
+   **Line Attributes**
+
+   ----
+
+   .. attribute:: ax
+
+         | :sl:`x coordinate of the start point of the line`
+         | :sg:`ax -> float`
+
+         The horizontal coordinate of the start point of the line. Reassigning it moves the line.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.ax ##
+
+   .. attribute:: ay
+
+         | :sl:`y coordinate of the start point of the line`
+         | :sg:`ay -> float`
+
+         The vertical coordinate of the start point of the line. Reassigning it moves the line.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.ay ##
+
+   .. attribute:: bx
+
+         | :sl:`x coordinate of the end point of the line`
+         | :sg:`bx -> float`
+
+         The horizontal coordinate of the end point of the line. Reassigning it moves the line.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.bx ##
+
+   .. attribute:: by
+
+         | :sl:`y coordinate of the end point of the line`
+         | :sg:`by -> float`
+
+         The vertical coordinate of the end point of the line. Reassigning it moves the line.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.by ##
+
+   .. attribute:: a
+
+         | :sl:`the first point of the line`
+         | :sg:`a -> (float, float)`
+
+         It's a tuple containing the `ax` and `ay` attributes representing the line's first point.
+         It can be reassigned to move the `Line`. If reassigned the `ax` and `ay` attributes
+         will be changed to produce a `Line` with matching first point position.
+         The `bx` and `by` attributes will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.a ##
+
+   .. attribute:: b
+
+         | :sl:`the second point of the line`
+         | :sg:`b -> (float, float)`
+
+         It's a tuple containing `bx` and `by` attributes representing the line's second point.
+         It can be reassigned to move the `Line`. If reassigned the `bx` and `by` attributes
+         will be changed to produce a `Line` with matching second point position.
+         The `ax` and `ay` attributes will not be affected.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.b ##
+
+   **Line Methods**
+
+   ----
+
+   .. method:: copy
+
+         | :sl:`copies the line`
+         | :sg:`copy() -> Line`
+
+         Returns a copy of this `Line`.
+
+         .. versionadded:: 2.5.2
+
+         .. ## Line.copy ##
