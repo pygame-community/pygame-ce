@@ -44,9 +44,15 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
 static void
 draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
           int *drawn_area);
+void
+line_width_corners(float from_x, float from_y, float to_x, float to_y,
+                   int width, float *x1, float *y1, float *x2, float *y2,
+                   float *x3, float *y3, float *x4, float *y4);
 static void
 draw_aaline(SDL_Surface *surf, Uint32 color, float startx, float starty,
-            float endx, float endy, int *drawn_area);
+            float endx, float endy, int *drawn_area,
+            int disable_first_endpoint, int disable_second_endpoint,
+            int extra_pixel_for_aalines);
 static void
 draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
          int radius2, int width, double angle_start, double angle_stop,
@@ -94,10 +100,10 @@ draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
                 int bottom_left, int bottom_right, int *drawn_area);
 
 // validation of a draw color
-#define CHECK_LOAD_COLOR(colorobj)                               \
-    if (!pg_MappedColorFromObj((colorobj), surf->format, &color, \
-                               PG_COLOR_HANDLE_ALL)) {           \
-        return NULL;                                             \
+#define CHECK_LOAD_COLOR(colorobj)                       \
+    if (!pg_MappedColorFromObj((colorobj), surf, &color, \
+                               PG_COLOR_HANDLE_ALL)) {   \
+        return NULL;                                     \
     }
 
 /* Definition of functions that get called in Python */
@@ -113,16 +119,17 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *colorobj, *start, *end;
     SDL_Surface *surf = NULL;
     float startx, starty, endx, endy;
+    int width = 1; /* Default width. */
     PyObject *blend = NULL;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     Uint32 color;
-    static char *keywords[] = {"surface", "color", "start_pos",
-                               "end_pos", "blend", NULL};
+    static char *keywords[] = {"surface", "color", "start_pos", "end_pos",
+                               "width",   "blend", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|O", keywords,
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OOO|iO", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
-                                     &start, &end, &blend)) {
+                                     &start, &end, &width, &blend)) {
         return NULL; /* Exception already set. */
     }
 
@@ -155,11 +162,27 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_TypeError, "invalid end_pos argument");
     }
 
+    if (width < 1) {
+        return pgRect_New4((int)startx, (int)starty, 0, 0);
+    }
+
     if (!pgSurface_Lock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
-    draw_aaline(surf, color, startx, starty, endx, endy, drawn_area);
+    if (width > 1) {
+        float x1, y1, x2, y2, x3, y3, x4, y4;
+        line_width_corners(startx, starty, endx, endy, width, &x1, &y1, &x2,
+                           &y2, &x3, &y3, &x4, &y4);
+        draw_line_width(surf, color, (int)startx, (int)starty, (int)endx,
+                        (int)endy, width, drawn_area);
+        draw_aaline(surf, color, x1, y1, x2, y2, drawn_area, 0, 0, 0);
+        draw_aaline(surf, color, x3, y3, x4, y4, drawn_area, 0, 0, 0);
+    }
+    else {
+        draw_aaline(surf, color, startx, starty, endx, endy, drawn_area, 0, 0,
+                    0);
+    }
 
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");
@@ -255,9 +278,14 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     SDL_Surface *surf = NULL;
     Uint32 color;
     float pts[4];
+    float pts_prev[4];
     float *xlist, *ylist;
     float x, y;
     int l, t;
+    int extra_px;
+    int disable_endpoints;
+    int steep_prev;
+    int steep_curr;
     PyObject *blend = NULL;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
@@ -344,19 +372,92 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
-    for (loop = 1; loop < length; ++loop) {
+    /* first line - if open, add endpoint pixels.*/
+    pts[0] = xlist[0];
+    pts[1] = ylist[0];
+    pts[2] = xlist[1];
+    pts[3] = ylist[1];
+
+    /* Previous points.
+     * Used to compare previous and current line.*/
+    pts_prev[0] = pts[0];
+    pts_prev[1] = pts[1];
+    pts_prev[2] = pts[2];
+    pts_prev[3] = pts[3];
+    steep_prev =
+        fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
+    steep_curr = fabs(xlist[2] - pts[2]) < fabs(ylist[2] - pts[1]);
+    extra_px = steep_prev > steep_curr;
+    disable_endpoints =
+        !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
+    if (closed) {
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, disable_endpoints, extra_px);
+    }
+    else {
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 0,
+                    disable_endpoints, extra_px);
+    }
+
+    for (loop = 2; loop < length - 1; ++loop) {
         pts[0] = xlist[loop - 1];
         pts[1] = ylist[loop - 1];
         pts[2] = xlist[loop];
         pts[3] = ylist[loop];
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area);
+
+        /* Comparing previous and current line.
+         * If one is steep and other is not, extra pixel must be drawn.*/
+        steep_prev =
+            fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
+        steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
+        extra_px = steep_prev != steep_curr;
+        disable_endpoints =
+            !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
+        pts_prev[0] = pts[0];
+        pts_prev[1] = pts[1];
+        pts_prev[2] = pts[2];
+        pts_prev[3] = pts[3];
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, disable_endpoints, extra_px);
     }
+
+    /* Last line - if open, add endpoint pixels. */
+    pts[0] = xlist[length - 2];
+    pts[1] = ylist[length - 2];
+    pts[2] = xlist[length - 1];
+    pts[3] = ylist[length - 1];
+    steep_prev =
+        fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
+    steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
+    extra_px = steep_prev != steep_curr;
+    disable_endpoints =
+        !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
+    pts_prev[0] = pts[0];
+    pts_prev[1] = pts[1];
+    pts_prev[2] = pts[2];
+    pts_prev[3] = pts[3];
+    if (closed) {
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, disable_endpoints, extra_px);
+    }
+    else {
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, 0, extra_px);
+    }
+
     if (closed && length > 2) {
         pts[0] = xlist[length - 1];
         pts[1] = ylist[length - 1];
         pts[2] = xlist[0];
         pts[3] = ylist[0];
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area);
+        steep_prev =
+            fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
+        steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
+        extra_px = steep_prev != steep_curr;
+        disable_endpoints =
+            !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, disable_endpoints, extra_px);
     }
 
     PyMem_Free(xlist);
@@ -1276,7 +1377,9 @@ set_and_check_rect(SDL_Surface *surf, int x, int y, Uint32 color,
 
 static void
 draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
-            float to_x, float to_y, int *drawn_area)
+            float to_x, float to_y, int *drawn_area,
+            int disable_first_endpoint, int disable_second_endpoint,
+            int extra_pixel_for_aalines)
 {
     float gradient, dx, dy, intersect_y, brightness;
     int x, x_pixel_start, x_pixel_end;
@@ -1379,68 +1482,80 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
 
     /* Handle endpoints separately.
      * The line is not a mathematical line of thickness zero. The same
-     * goes for the endpoints. The have a height and width of one pixel. */
+     * goes for the endpoints. The have a height and width of one pixel.
+     * Extra pixel drawing is requested externally from aalines.
+     * It is drawn only when one line is steep and other is not.*/
     /* First endpoint */
-    x_pixel_start = (int)from_x;
-    y_endpoint = intersect_y = from_y + gradient * (x_pixel_start - from_x);
-    if (to_x > clip_left + 1.0f) {
-        x_gap = 1 + x_pixel_start - from_x;
-        brightness = y_endpoint - (int)y_endpoint;
-        if (steep) {
-            x = (int)y_endpoint;
-            y = x_pixel_start;
-        }
-        else {
-            x = x_pixel_start;
-            y = (int)y_endpoint;
-        }
-        if ((int)y_endpoint < y_endpoint) {
+    if (!disable_first_endpoint || extra_pixel_for_aalines) {
+        x_pixel_start = (int)from_x;
+        y_endpoint = intersect_y =
+            from_y + gradient * (x_pixel_start - from_x);
+        if (to_x > clip_left + 1.0f) {
+            x_gap = 1 + x_pixel_start - from_x;
+            brightness = y_endpoint - (int)y_endpoint;
+            if (steep) {
+                x = (int)y_endpoint;
+                y = x_pixel_start;
+            }
+            else {
+                x = x_pixel_start;
+                y = (int)y_endpoint;
+            }
+            if ((int)y_endpoint < y_endpoint) {
+                pixel_color = get_antialiased_color(surf, x, y, color,
+                                                    brightness * x_gap);
+                set_and_check_rect(surf, x, y, pixel_color, drawn_area);
+            }
+            if (steep) {
+                x--;
+            }
+            else {
+                y--;
+            }
+            brightness = 1 - brightness;
             pixel_color =
                 get_antialiased_color(surf, x, y, color, brightness * x_gap);
             set_and_check_rect(surf, x, y, pixel_color, drawn_area);
+            intersect_y += gradient;
+            x_pixel_start++;
         }
-        if (steep) {
-            x--;
-        }
-        else {
-            y--;
-        }
-        brightness = 1 - brightness;
-        pixel_color =
-            get_antialiased_color(surf, x, y, color, brightness * x_gap);
-        set_and_check_rect(surf, x, y, pixel_color, drawn_area);
-        intersect_y += gradient;
-        x_pixel_start++;
+    }
+    /* To be sure main loop skips first endpoint.*/
+    if (disable_first_endpoint) {
+        x_pixel_start = (int)ceil(from_x);
+        intersect_y = from_y + gradient * (x_pixel_start - from_x);
     }
     /* Second endpoint */
     x_pixel_end = (int)ceil(to_x);
-    if (from_x < clip_right - 1.0f) {
-        y_endpoint = to_y + gradient * (x_pixel_end - to_x);
-        x_gap = 1 - x_pixel_end + to_x;
-        brightness = y_endpoint - (int)y_endpoint;
-        if (steep) {
-            x = (int)y_endpoint;
-            y = x_pixel_end;
-        }
-        else {
-            x = x_pixel_end;
-            y = (int)y_endpoint;
-        }
-        if ((int)y_endpoint < y_endpoint) {
+    if (!disable_second_endpoint || extra_pixel_for_aalines) {
+        if (from_x < clip_right - 1.0f) {
+            y_endpoint = to_y + gradient * (x_pixel_end - to_x);
+            x_gap = 1 - x_pixel_end + to_x;
+            brightness = y_endpoint - (int)y_endpoint;
+            if (steep) {
+                x = (int)y_endpoint;
+                y = x_pixel_end;
+            }
+            else {
+                x = x_pixel_end;
+                y = (int)y_endpoint;
+            }
+            if ((int)y_endpoint < y_endpoint) {
+                pixel_color = get_antialiased_color(surf, x, y, color,
+                                                    brightness * x_gap);
+                set_and_check_rect(surf, x, y, pixel_color, drawn_area);
+            }
+            if (steep) {
+                x--;
+            }
+            else {
+                y--;
+            }
+            brightness = 1 - brightness;
             pixel_color =
                 get_antialiased_color(surf, x, y, color, brightness * x_gap);
             set_and_check_rect(surf, x, y, pixel_color, drawn_area);
         }
-        if (steep) {
-            x--;
-        }
-        else {
-            y--;
-        }
-        brightness = 1 - brightness;
-        pixel_color =
-            get_antialiased_color(surf, x, y, color, brightness * x_gap);
-        set_and_check_rect(surf, x, y, pixel_color, drawn_area);
     }
 
     /* main line drawing loop */
@@ -1748,6 +1863,39 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
                 y1 += sy;
             }
         }
+    }
+}
+
+// Calculates 4 points, representing corners of draw_line_width()
+// first two points assemble left line and second two - right line
+void
+line_width_corners(float from_x, float from_y, float to_x, float to_y,
+                   int width, float *x1, float *y1, float *x2, float *y2,
+                   float *x3, float *y3, float *x4, float *y4)
+{
+    float aa_width = (float)width / 2;
+    float extra_width = (1.0f - (width % 2)) / 2;
+    int steep = fabs(to_x - from_x) <= fabs(to_y - from_y);
+
+    if (steep) {
+        *x1 = from_x + extra_width + aa_width;
+        *y1 = from_y;
+        *x2 = to_x + extra_width + aa_width;
+        *y2 = to_y;
+        *x3 = from_x + extra_width - aa_width;
+        *y3 = from_y;
+        *x4 = to_x + extra_width - aa_width;
+        *y4 = to_y;
+    }
+    else {
+        *x1 = from_x;
+        *y1 = from_y + extra_width + aa_width;
+        *x2 = to_x;
+        *y2 = to_y + extra_width + aa_width;
+        *x3 = from_x;
+        *y3 = from_y + extra_width - aa_width;
+        *x4 = to_x;
+        *y4 = to_y + extra_width - aa_width;
     }
 }
 

@@ -14,7 +14,11 @@ LGPL (c) A. Schiffler
 #define M_PI 3.1415926535897932384626433832795
 #endif
 
-#include "SDL.h"
+#ifdef PG_SDL3
+#include <SDL3/SDL.h>
+#else
+#include <SDL.h>
+#endif
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
