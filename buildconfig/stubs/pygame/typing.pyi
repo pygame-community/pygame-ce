@@ -14,7 +14,18 @@ __all__ = [
 
 import sys
 from abc import abstractmethod
-from typing import IO, Callable, Tuple, Union, TypeVar, Protocol
+from typing import (
+    IO,
+    Callable,
+    Tuple,
+    Dict,
+    Union,
+    Optional,
+    TypeVar,
+    Protocol,
+    Any,
+    Iterable,
+)
 
 from pygame.color import Color
 from pygame.rect import Rect, FRect
@@ -40,13 +51,14 @@ _T_co = TypeVar("_T_co", covariant=True)
 
 class SequenceLike(Protocol[_T_co]):
     """
-    Variant of the standard `Sequence` ABC that only requires `__getitem__` and `__len__`.
+    Variant of the standard `Sequence` ABC that only requires `__getitem__`.
     """
 
     @abstractmethod
     def __getitem__(self, index: int, /) -> _T_co: ...
-    @abstractmethod
-    def __len__(self) -> int: ...
+
+
+IterableLike = Union[SequenceLike[_T_co], Iterable[_T_co]]
 
 
 # Modify typehints when it is possible to annotate sizes
@@ -72,6 +84,16 @@ RectLike = Union[
 ]
 
 
+class EventLike(Protocol):
+    def __init__(self, type: int, /, **kwargs: Any) -> None: ...
+    def __new__(cls, *args: Any, **kwargs: Any) -> "EventLike": ...
+
+    @property
+    def type(self) -> int: ...
+    @property
+    def dict(self) -> Dict[str, Any]: ...
+
+
 # cleanup namespace
 del (
     sys,
@@ -82,7 +104,10 @@ del (
     IO,
     Callable,
     Tuple,
+    Dict,
     Union,
+    Optional,
     TypeVar,
     Protocol,
+    Any,
 )
