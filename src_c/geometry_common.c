@@ -169,12 +169,8 @@ pgLine_FromObject(PyObject *obj, pgLineBase *out)
                        pg_DoubleFromObj(farray[2], &out->bx) &&
                        pg_DoubleFromObj(farray[3], &out->by);
             case 2:
-                if (!pg_TwoDoublesFromObj(farray[0], &out->ax, &out->ay) ||
-                    !pg_TwoDoublesFromObj(farray[1], &out->bx, &out->by)) {
-                    PyErr_Clear();
-                    return 0;
-                }
-                return 1;
+                return pg_TwoDoublesFromObj(farray[0], &out->ax, &out->ay) &&
+                       pg_TwoDoublesFromObj(farray[1], &out->bx, &out->by);
             case 1: /*looks like an arg?*/
                 if (PyUnicode_Check(farray[0]) ||
                     !pgLine_FromObject(farray[0], out)) {
