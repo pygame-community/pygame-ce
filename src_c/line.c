@@ -194,6 +194,7 @@ pg_line_scale(pgLineObject *self, PyObject *const *args, Py_ssize_t nargs)
     }
 
     if (!_line_scale_helper(&pgLine_AsLine(line), factor, origin)) {
+        Py_DECREF(line);
         return NULL;
     }
 
