@@ -1917,12 +1917,14 @@ draw_aaline_width(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
             if (steep) {
                 start_draw = (int)(x - width + extra_width);
                 end_draw = (int)(x + width) - 1;
-                drawhorzlineclipbounding(surf, color, start_draw, y, end_draw);
+                drawhorzlineclipbounding(surf, color, start_draw, y, end_draw,
+                                         drawn_area);
             }
             else {
                 start_draw = (int)(y - width + extra_width);
                 end_draw = (int)(y + width) - 1;
-                drawvertlineclipbounding(surf, color, start_draw, x, end_draw);
+                drawvertlineclipbounding(surf, color, start_draw, x, end_draw,
+                                         drawn_area);
             }
         }
         return;
