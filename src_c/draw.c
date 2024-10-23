@@ -170,7 +170,6 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (width > 1) {
-        float x1, y1, x2, y2, x3, y3, x4, y4;
         draw_aaline_width(surf, color, startx, starty, endx, endy, width,
                           drawn_area);
     }
@@ -1916,18 +1915,14 @@ draw_aaline_width(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
         set_and_check_rect(surf, x, y, pixel_color, drawn_area);
         if (dx != 0 && dy != 0) {
             if (steep) {
-                end_draw = MIN(clip_right, (int)(x + width) - 1);
-                drawhorzline(surf, color, x - width + extra_width, y,
-                             end_draw);
-                add_line_to_drawn_list(x - width + extra_width, y, end_draw, y,
-                                       drawn_area);
+                start_draw = (int)(x - width + extra_width);
+                end_draw = (int)(x + width) - 1;
+                drawhorzlineclipbounding(surf, color, start_draw, y, end_draw);
             }
             else {
-                end_draw = MIN(clip_bottom, (int)(y + width) - 1);
-                drawvertline(surf, color, y - width + extra_width, x,
-                             end_draw);
-                add_line_to_drawn_list(x, y - width + extra_width, x, end_draw,
-                                       drawn_area);
+                start_draw = (int)(y - width + extra_width);
+                end_draw = (int)(y + width) - 1;
+                drawvertlineclipbounding(surf, color, start_draw, x, end_draw);
             }
         }
         return;
@@ -2016,7 +2011,7 @@ draw_aaline_width(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
     from_y += 1.0f;
     to_y += 1.0f;
 
-    /* Handle endpoints separately.
+    /* Handle endpoints separately */
     /* First endpoint */
     x_pixel_start = (int)from_x;
     y_endpoint = intersect_y = from_y + gradient * (x_pixel_start - from_x);
