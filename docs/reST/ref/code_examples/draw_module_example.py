@@ -30,10 +30,6 @@ while not done:
     # 5 pixels wide. Uses (r, g, b) color - medium sea green.
     pygame.draw.line(screen, (60, 179, 113), [0, 0], [50, 30], 5)
 
-    # Draw on the screen a green antialiased line from (0, 25) to (50, 55)
-    # 5 pixels wide. Uses (r, g, b) color - medium sea green.
-    pygame.draw.aaline(screen, (60, 179, 113), [0, 25], [50, 55], 5)
-
     # Draw on the screen a green line from (0, 50) to (50, 80)
     # Because it is an antialiased line, it is 1 pixel wide.
     # Uses (r, g, b) color - medium sea green.
