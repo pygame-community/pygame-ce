@@ -145,7 +145,7 @@ multidimensionnels.
 Versions des dépendances:
 
 +----------+-----------------------------+
-| CPython  | >= 3.8 (Ou utiliser PyPy3)  |
+| CPython  | >= 3.9 (Ou utiliser PyPy3)  |
 +----------+-----------------------------+
 | SDL      | >= 2.0.10                   |
 +----------+-----------------------------+

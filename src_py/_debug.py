@@ -4,13 +4,13 @@ import platform
 import sys
 import traceback
 import importlib
-from typing import Tuple, Optional, Callable
+from typing import Optional, Callable
 from os import environ
 
 from pygame.version import ver
 from pygame.system import get_cpu_instruction_sets
 
-ImportResult = Tuple[str, bool, Optional[Callable]]
+ImportResult = tuple[str, bool, Optional[Callable]]
 
 
 def str_from_tuple(version_tuple):
