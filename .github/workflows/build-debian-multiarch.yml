@@ -40,11 +40,10 @@ env:
   INSTALL_CMD: |
     apt-get update --fix-missing
     apt-get upgrade -y
-    apt-get install build-essential meson cython3 -y
+    apt-get install build-essential -y
     apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev -y
     apt-get install libfreetype6-dev libportmidi-dev fontconfig -y
-    apt-get install python3-dev python3-pip python3-wheel python3-sphinx -y
-    pip3 install meson-python --break-system-packages
+    apt-get install python3-dev python3-pip python3-wheel -y
 
 jobs:
   build-multiarch:
@@ -96,11 +95,9 @@ jobs:
         install: ${{ env.INSTALL_CMD }}
 
         # Build a wheel, install it for running unit tests.
-        # --no-build-isolation is passed so that preinstalled meson-python can be used
-        # (done for optimization reasons)
         run: |
           echo "\nBuilding pygame wheel\n"
-          pip3 wheel . --no-build-isolation --wheel-dir /artifacts -vvv
+          pip3 wheel . --wheel-dir /artifacts -vvv
           echo "\nInstalling wheel\n"
           pip3 install --no-index --pre --break-system-packages --find-links /artifacts pygame-ce
           echo "\nRunning tests\n"

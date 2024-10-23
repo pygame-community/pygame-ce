@@ -58,9 +58,6 @@ jobs:
             mingw-w64-${{ matrix.env }}-pkg-config
             mingw-w64-${{ matrix.env }}-python
             mingw-w64-${{ matrix.env }}-python-pip
-            mingw-w64-${{ matrix.env }}-python-sphinx
-            mingw-w64-${{ matrix.env }}-meson-python
-            mingw-w64-${{ matrix.env }}-cython
 
           # mingw-w64-${{ matrix.env }}-SDL2
           # mingw-w64-${{ matrix.env }}-SDL2_image
@@ -71,7 +68,7 @@ jobs:
 
       - name: Building pygame wheel
         run: |
-          pip3 wheel . --wheel-dir /artifacts -vvv --no-build-isolation
+          pip3 wheel . --wheel-dir /artifacts -vvv
 
       - name: Installing wheel
         run: pip3 install --no-index --pre --find-links /artifacts pygame-ce
