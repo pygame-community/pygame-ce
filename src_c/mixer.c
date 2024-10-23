@@ -846,8 +846,7 @@ snd_copy(pgSoundObject *self, PyObject *_null)
     if (chunk->allocated) {
         new_chunk = Mix_QuickLoad_RAW(chunk->abuf, chunk->alen);
         if (!new_chunk)
-            RAISE(pgExc_BufferError,
-                  "there is a problem I couldn't describe ;-;");
+            RAISE(pgExc_BufferError, "there is a problem I can't describe :)");
 
         new_chunk->volume = chunk->volume;
         new_sound->chunk = new_chunk;
