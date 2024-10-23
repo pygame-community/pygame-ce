@@ -777,13 +777,13 @@ class RectTypeTest(unittest.TestCase):
         r = Rect(2, 4, 6, 8)
         r2 = r.inflate(4, 6)
 
-        self.assertEqual(r.center, r2.center)
-        self.assertEqual(r.left - 2, r2.left)
-        self.assertEqual(r.top - 3, r2.top)
-        self.assertEqual(r.right + 2, r2.right)
-        self.assertEqual(r.bottom + 3, r2.bottom)
-        self.assertEqual(r.width + 4, r2.width)
-        self.assertEqual(r.height + 6, r2.height)
+        self.assertEqual(r2.center, (5, 8))
+        self.assertEqual(r2.left, 0)
+        self.assertEqual(r2.top, 1)
+        self.assertEqual(r2.right, 10)
+        self.assertEqual(r2.bottom, 15)
+        self.assertEqual(r2.width, 10)
+        self.assertEqual(r2.height, 14)
 
     def test_inflate__smaller(self):
         """Ensures deflating a rect keeps its center the same
@@ -791,13 +791,13 @@ class RectTypeTest(unittest.TestCase):
         r = Rect(2, 4, 6, 8)
         r2 = r.inflate(-4, -6)
 
-        self.assertEqual(r.center, r2.center)
-        self.assertEqual(r.left + 2, r2.left)
-        self.assertEqual(r.top + 3, r2.top)
-        self.assertEqual(r.right - 2, r2.right)
-        self.assertEqual(r.bottom - 3, r2.bottom)
-        self.assertEqual(r.width - 4, r2.width)
-        self.assertEqual(r.height - 6, r2.height)
+        self.assertEqual((5, 8), r2.center)  
+        self.assertEqual(4, r2.left)        
+        self.assertEqual(7, r2.top)          
+        self.assertEqual(6, r2.right)        
+        self.assertEqual(9, r2.bottom)      
+        self.assertEqual(2, r2.width)        
+        self.assertEqual(2, r2.height) 
 
     def test_inflate_ip__larger(self):
         """Ensures inflating a rect in place keeps its center the same
@@ -806,13 +806,13 @@ class RectTypeTest(unittest.TestCase):
         r2 = Rect(r)
         r2.inflate_ip(4, 6)
 
-        self.assertEqual(r.center, r2.center)
-        self.assertEqual(r.left - 2, r2.left)
-        self.assertEqual(r.top - 3, r2.top)
-        self.assertEqual(r.right + 2, r2.right)
-        self.assertEqual(r.bottom + 3, r2.bottom)
-        self.assertEqual(r.width + 4, r2.width)
-        self.assertEqual(r.height + 6, r2.height)
+        self.assertEqual(r2.center, (5, 8))
+        self.assertEqual(r2.left, 0)        
+        self.assertEqual(r2.top, 1)      
+        self.assertEqual(r2.right, 10) 
+        self.assertEqual(r2.bottom, 15)      
+        self.assertEqual(r2.width, 10)       
+        self.assertEqual(r2.height, 14) 
 
     def test_inflate_ip__smaller(self):
         """Ensures deflating a rect in place keeps its center the same
@@ -821,13 +821,13 @@ class RectTypeTest(unittest.TestCase):
         r2 = Rect(r)
         r2.inflate_ip(-4, -6)
 
-        self.assertEqual(r.center, r2.center)
-        self.assertEqual(r.left + 2, r2.left)
-        self.assertEqual(r.top + 3, r2.top)
-        self.assertEqual(r.right - 2, r2.right)
-        self.assertEqual(r.bottom - 3, r2.bottom)
-        self.assertEqual(r.width - 4, r2.width)
-        self.assertEqual(r.height - 6, r2.height)
+        self.assertEqual(r2.center, (5, 8))
+        self.assertEqual(r2.left, 4)
+        self.assertEqual(r2.top, 7)
+        self.assertEqual(r2.right, 6)
+        self.assertEqual(r2.bottom, 9)
+        self.assertEqual(r2.width, 2)
+        self.assertEqual(r2.height, 2)
 
     def test_scale_by__larger_single_argument(self):
         """The scale method scales around the center of the rectangle"""
