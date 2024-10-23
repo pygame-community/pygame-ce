@@ -44,15 +44,27 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
 static void
 draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
           int *drawn_area);
-void
-line_width_corners(float from_x, float from_y, float to_x, float to_y,
-                   int width, float *x1, float *y1, float *x2, float *y2,
-                   float *x3, float *y3, float *x4, float *y4);
+static int
+is_intersect(float x1, float y1, float x2, float y2, float x3, float y3,
+             float x4, float y4);
+static PG_FORCEINLINE void
+intersect_point(float x1, float y1, float x2, float y2, float x3, float y3,
+                float x4, float y4, float *x, float *y);
+static void
+line_width_corners(int from_x, int from_y, int to_x, int to_y, float width,
+                   float *x1, float *y1, float *x2, float *y2, float *x3,
+                   float *y3, float *x4, float *y4);
 static void
 draw_aaline(SDL_Surface *surf, Uint32 color, float startx, float starty,
             float endx, float endy, int *drawn_area,
             int disable_first_endpoint, int disable_second_endpoint,
             int extra_pixel_for_aalines);
+static PG_INLINE void
+draw_aalines(SDL_Surface *surf, Uint32 color, float *xlist, float *ylist,
+             int closed, Py_ssize_t length, int *drawn_area);
+static PG_FORCEINLINE void
+draw_aalines_width(SDL_Surface *surf, Uint32 color, float *xlist, float *ylist,
+                   int closed, Py_ssize_t length, int width, int *drawn_area);
 static void
 draw_arc(SDL_Surface *surf, int x_center, int y_center, int radius1,
          int radius2, int width, double angle_start, double angle_stop,
@@ -172,8 +184,9 @@ aaline(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     if (width > 1) {
         float x1, y1, x2, y2, x3, y3, x4, y4;
-        line_width_corners(startx, starty, endx, endy, width, &x1, &y1, &x2,
-                           &y2, &x3, &y3, &x4, &y4);
+        line_width_corners((int)startx, (int)starty, (int)endx, (int)endy,
+                           (float)width, &x1, &y1, &x2, &y2, &x3, &y3, &x4,
+                           &y4);
         draw_line_width(surf, color, (int)startx, (int)starty, (int)endx,
                         (int)endy, width, drawn_area);
         draw_aaline(surf, color, x1, y1, x2, y2, drawn_area, 0, 0, 0);
@@ -277,26 +290,21 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     PyObject *points, *item = NULL;
     SDL_Surface *surf = NULL;
     Uint32 color;
-    float pts[4];
-    float pts_prev[4];
     float *xlist, *ylist;
     float x, y;
     int l, t;
-    int extra_px;
-    int disable_endpoints;
-    int steep_prev;
-    int steep_curr;
+    int width = 1; /* Default width. */
     PyObject *blend = NULL;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     int result, closed;
     Py_ssize_t loop, length;
-    static char *keywords[] = {"surface", "color", "closed",
-                               "points",  "blend", NULL};
+    static char *keywords[] = {"surface", "color", "closed", "points",
+                               "width",   "blend", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OpO|O", keywords,
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OpO|iO", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
-                                     &closed, &points, &blend)) {
+                                     &closed, &points, &width, &blend)) {
         return NULL; /* Exception already set. */
     }
 
@@ -366,98 +374,27 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
         ylist[loop] = y;
     }
 
+    x = xlist[0];
+    y = ylist[0];
+
+    if (width < 1) {
+        PyMem_Free(xlist);
+        PyMem_Free(ylist);
+        return pgRect_New4((int)x, (int)y, 0, 0);
+    }
+
     if (!pgSurface_Lock(surfobj)) {
         PyMem_Free(xlist);
         PyMem_Free(ylist);
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
-    /* first line - if open, add endpoint pixels.*/
-    pts[0] = xlist[0];
-    pts[1] = ylist[0];
-    pts[2] = xlist[1];
-    pts[3] = ylist[1];
-
-    /* Previous points.
-     * Used to compare previous and current line.*/
-    pts_prev[0] = pts[0];
-    pts_prev[1] = pts[1];
-    pts_prev[2] = pts[2];
-    pts_prev[3] = pts[3];
-    steep_prev =
-        fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
-    steep_curr = fabs(xlist[2] - pts[2]) < fabs(ylist[2] - pts[1]);
-    extra_px = steep_prev > steep_curr;
-    disable_endpoints =
-        !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
-    if (closed) {
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
-                    disable_endpoints, disable_endpoints, extra_px);
+    if (width == 1) {
+        draw_aalines(surf, color, xlist, ylist, closed, length, drawn_area);
     }
     else {
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 0,
-                    disable_endpoints, extra_px);
-    }
-
-    for (loop = 2; loop < length - 1; ++loop) {
-        pts[0] = xlist[loop - 1];
-        pts[1] = ylist[loop - 1];
-        pts[2] = xlist[loop];
-        pts[3] = ylist[loop];
-
-        /* Comparing previous and current line.
-         * If one is steep and other is not, extra pixel must be drawn.*/
-        steep_prev =
-            fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
-        steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
-        extra_px = steep_prev != steep_curr;
-        disable_endpoints =
-            !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
-        pts_prev[0] = pts[0];
-        pts_prev[1] = pts[1];
-        pts_prev[2] = pts[2];
-        pts_prev[3] = pts[3];
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
-                    disable_endpoints, disable_endpoints, extra_px);
-    }
-
-    /* Last line - if open, add endpoint pixels. */
-    pts[0] = xlist[length - 2];
-    pts[1] = ylist[length - 2];
-    pts[2] = xlist[length - 1];
-    pts[3] = ylist[length - 1];
-    steep_prev =
-        fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
-    steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
-    extra_px = steep_prev != steep_curr;
-    disable_endpoints =
-        !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
-    pts_prev[0] = pts[0];
-    pts_prev[1] = pts[1];
-    pts_prev[2] = pts[2];
-    pts_prev[3] = pts[3];
-    if (closed) {
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
-                    disable_endpoints, disable_endpoints, extra_px);
-    }
-    else {
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
-                    disable_endpoints, 0, extra_px);
-    }
-
-    if (closed && length > 2) {
-        pts[0] = xlist[length - 1];
-        pts[1] = ylist[length - 1];
-        pts[2] = xlist[0];
-        pts[3] = ylist[0];
-        steep_prev =
-            fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
-        steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
-        extra_px = steep_prev != steep_curr;
-        disable_endpoints =
-            !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
-        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
-                    disable_endpoints, disable_endpoints, extra_px);
+        draw_aalines_width(surf, color, xlist, ylist, closed, length, width,
+                           drawn_area);
     }
 
     PyMem_Free(xlist);
@@ -1222,6 +1159,46 @@ compare_int(const void *a, const void *b)
     return (*(const int *)a) - (*(const int *)b);
 }
 
+static PG_FORCEINLINE int
+ccw(float x1, float y1, float x2, float y2, float x3, float y3)
+{
+    return (y3 - y1) * (x2 - x1) > (y2 - y1) * (x3 - x1);
+}
+
+/* Returns True if 2 line segments are intersecting.
+ * (x1, y1) and (x2, y2) are points of first line,
+ * (x3, y3) and (x4, y4) are points of second line.
+ */
+static int
+is_intersect(float x1, float y1, float x2, float y2, float x3, float y3,
+             float x4, float y4)
+{
+    return ccw(x1, y1, x3, y3, x4, y4) != ccw(x2, y2, x3, y3, x4, y4) &&
+           ccw(x1, y1, x2, y2, x3, y3) != ccw(x1, y1, x2, y2, x4, y4);
+}
+
+/* Finds intersection coordinates of 2 lines.
+ * (x1, y1) and (x2, y2) are points of first line,
+ * (x3, y3) and (x4, y4) are points of second line.
+ */
+static PG_FORCEINLINE void
+intersect_point(float x1, float y1, float x2, float y2, float x3, float y3,
+                float x4, float y4, float *x, float *y)
+{
+    float det = (y2 - y1) * (x3 - x4) - (y4 - y3) * (x1 - x2);  // determinant
+    if (det == 0) {
+        *x = x1;
+        *y = y1;
+        return;
+    }
+
+    // Cramer's rule
+    *x = ((x1 * y2 - x2 * y1) * (x3 - x4) - (x3 * y4 - x4 * y3) * (x1 - x2)) /
+         det;
+    *y = ((y2 - y1) * (x3 * y4 - x4 * y3) - (y4 - y3) * (x1 * y2 - x2 * y1)) /
+         det;
+}
+
 static Uint32
 get_antialiased_color(SDL_Surface *surf, int x, int y, Uint32 original_color,
                       float brightness)
@@ -1589,6 +1566,319 @@ draw_aaline(SDL_Surface *surf, Uint32 color, float from_x, float from_y,
     }
 }
 
+static PG_INLINE void
+draw_aalines(SDL_Surface *surf, Uint32 color, float *xlist, float *ylist,
+             int closed, Py_ssize_t length, int *drawn_area)
+{
+    float pts[4];
+    float pts_prev[4];
+    int extra_px;
+    int disable_endpoints;
+    int steep_prev;
+    int steep_curr;
+    Py_ssize_t loop;
+
+    /* first line - if open, add endpoint pixels.*/
+    pts[0] = xlist[0];
+    pts[1] = ylist[0];
+    pts[2] = xlist[1];
+    pts[3] = ylist[1];
+
+    /* Previous points.
+     * Used to compare previous and current line.*/
+    pts_prev[0] = pts[0];
+    pts_prev[1] = pts[1];
+    pts_prev[2] = pts[2];
+    pts_prev[3] = pts[3];
+    steep_prev =
+        fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
+    steep_curr = fabs(xlist[2] - pts[2]) < fabs(ylist[2] - pts[1]);
+    extra_px = steep_prev > steep_curr;
+    disable_endpoints =
+        !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
+    if (closed) {
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, disable_endpoints, extra_px);
+    }
+    else {
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area, 0,
+                    disable_endpoints, extra_px);
+    }
+
+    for (loop = 2; loop < length - 1; ++loop) {
+        pts[0] = xlist[loop - 1];
+        pts[1] = ylist[loop - 1];
+        pts[2] = xlist[loop];
+        pts[3] = ylist[loop];
+
+        /* Comparing previous and current line.
+         * If one is steep and other is not, extra pixel must be drawn.*/
+        steep_prev =
+            fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
+        steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
+        extra_px = steep_prev != steep_curr;
+        disable_endpoints =
+            !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
+        pts_prev[0] = pts[0];
+        pts_prev[1] = pts[1];
+        pts_prev[2] = pts[2];
+        pts_prev[3] = pts[3];
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, disable_endpoints, extra_px);
+    }
+
+    /* Last line - if open, add endpoint pixels. */
+    pts[0] = xlist[length - 2];
+    pts[1] = ylist[length - 2];
+    pts[2] = xlist[length - 1];
+    pts[3] = ylist[length - 1];
+    steep_prev =
+        fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
+    steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
+    extra_px = steep_prev != steep_curr;
+    disable_endpoints =
+        !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
+    pts_prev[0] = pts[0];
+    pts_prev[1] = pts[1];
+    pts_prev[2] = pts[2];
+    pts_prev[3] = pts[3];
+    if (closed) {
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, disable_endpoints, extra_px);
+    }
+    else {
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, 0, extra_px);
+    }
+
+    if (closed && length > 2) {
+        pts[0] = xlist[length - 1];
+        pts[1] = ylist[length - 1];
+        pts[2] = xlist[0];
+        pts[3] = ylist[0];
+        steep_prev =
+            fabs(pts_prev[2] - pts_prev[0]) < fabs(pts_prev[3] - pts_prev[1]);
+        steep_curr = fabs(pts[2] - pts[0]) < fabs(pts[3] - pts[1]);
+        extra_px = steep_prev != steep_curr;
+        disable_endpoints =
+            !((roundf(pts[2]) == pts[2]) && (roundf(pts[3]) == pts[3]));
+        draw_aaline(surf, color, pts[0], pts[1], pts[2], pts[3], drawn_area,
+                    disable_endpoints, disable_endpoints, extra_px);
+    }
+}
+
+static PG_FORCEINLINE void
+draw_aalines_width(SDL_Surface *surf, Uint32 color, float *xlist, float *ylist,
+                   int closed, Py_ssize_t length, int width, int *drawn_area)
+{
+    /* Variables naming:
+     * prev_- - Variable is for previous point
+     * orig_- - Original value, not changed by intersecting
+     * -i- - This is "inner" point, from lines with slightly lower width
+     * -l/r/- - This coordinate is on left or right side of draw.lines
+     * -f/t- - from/to, this is either startig or ending point
+     * -x/y - X and Y coordinates of one same point
+     */
+    float *left_xlist, *left_ylist, *right_xlist, *right_ylist, *corner_xlist,
+        *corner_ylist;
+    int *int_corner_xlist, *int_corner_ylist;
+    int point_x, point_y, prev_x, prev_y, last_x, last_y;
+    float prev_lfx, prev_lfy, prev_ltx, prev_lty, prev_rfx, prev_rfy, prev_rtx,
+        prev_rty;
+    float prev_ilfx, prev_ilfy, prev_iltx, prev_ilty, prev_irfx, prev_irfy,
+        prev_irtx, prev_irty;
+    float lfx, lfy, ltx, lty, rfx, rfy, rtx, rty;
+    float ilfx, ilfy, iltx, ilty, irfx, irfy, irtx, irty;
+    float orig_ilfx, orig_ilfy, orig_irfx, orig_irfy;
+    left_xlist = PyMem_New(float, length);
+    left_ylist = PyMem_New(float, length);
+    right_xlist = PyMem_New(float, length);
+    right_ylist = PyMem_New(float, length);
+    corner_xlist = PyMem_New(float, 4);
+    corner_ylist = PyMem_New(float, 4);
+    int_corner_xlist = PyMem_New(int, 4);
+    int_corner_ylist = PyMem_New(int, 4);
+    Py_ssize_t loop, corner_loop;
+
+    // Data for initial points
+    prev_x = (int)xlist[0];
+    prev_y = (int)ylist[0];
+    last_x = (int)xlist[length - 1];
+    last_y = (int)ylist[length - 1];
+    line_width_corners(last_x, last_y, prev_x, prev_y, (float)width, &prev_lfx,
+                       &prev_lfy, &prev_ltx, &prev_lty, &prev_rfx, &prev_rfy,
+                       &prev_rtx, &prev_rty);
+    line_width_corners(last_x, last_y, prev_x, prev_y, (float)width - 1.5f,
+                       &prev_ilfx, &prev_ilfy, &prev_iltx, &prev_ilty,
+                       &prev_irfx, &prev_irfy, &prev_irtx, &prev_irty);
+
+    // Loop over all points, skipping first one
+    for (loop = 1; loop < length + closed; ++loop) {
+        if (closed && (loop == length)) {
+            // extra iteration to allow filling gaps on closed aaline
+            point_x = (int)xlist[0];
+            point_y = (int)ylist[0];
+        }
+        else {
+            point_x = (int)xlist[loop];
+            point_y = (int)ylist[loop];
+        }
+
+        line_width_corners(prev_x, prev_y, point_x, point_y, (float)width,
+                           &lfx, &lfy, &ltx, &lty, &rfx, &rfy, &rtx, &rty);
+        line_width_corners(prev_x, prev_y, point_x, point_y,
+                           (float)width - 1.5f, &ilfx, &ilfy, &iltx, &ilty,
+                           &irfx, &irfy, &irtx, &irty);
+
+        orig_ilfx = ilfx;
+        orig_ilfy = ilfy;
+        orig_irfx = irfx;
+        orig_irfy = irfy;
+
+        // Find and change corners
+        if (loop != 1 || (loop == 1 && closed)) {
+            // Left
+            if (lfx != prev_ltx || lfy != prev_lty) {
+                intersect_point(rfx, rfy, rtx, rty, prev_rfx, prev_rfy,
+                                prev_rtx, prev_rty, &rfx, &rfy);
+                intersect_point(irfx, irfy, irtx, irty, prev_irfx, prev_irfy,
+                                prev_irtx, prev_irty, &irfx, &irfy);
+            }
+            else {
+                if (is_intersect(lfx, lfy, ltx, lty, prev_rfx, prev_rfy,
+                                 prev_rtx, prev_rty)) {
+                    // special case where both points are mismatched
+                    intersect_point(rfx, rfy, rtx, rty, prev_lfx, prev_lfy,
+                                    prev_ltx, prev_lty, &rfx, &rfy);
+                    intersect_point(irfx, irfy, irtx, irty, prev_ilfx,
+                                    prev_ilfy, prev_iltx, prev_ilty, &irfx,
+                                    &irfy);
+                }
+            }
+            // Right
+            if (rfx != prev_rtx || rfy != prev_rty) {
+                intersect_point(lfx, lfy, ltx, lty, prev_lfx, prev_lfy,
+                                prev_ltx, prev_lty, &lfx, &lfy);
+                intersect_point(ilfx, ilfy, iltx, ilty, prev_ilfx, prev_ilfy,
+                                prev_iltx, prev_ilty, &ilfx, &ilfy);
+            }
+            else {
+                if (is_intersect(rfx, rfy, rtx, rty, prev_lfx, prev_lfy,
+                                 prev_ltx, prev_lty)) {
+                    // special case where both points are mismatched
+                    intersect_point(lfx, lfy, ltx, lty, prev_rfx, prev_rfy,
+                                    prev_rtx, prev_rty, &lfx, &lfy);
+                    intersect_point(ilfx, ilfy, iltx, ilty, prev_irfx,
+                                    prev_irfy, prev_irtx, prev_irty, &ilfx,
+                                    &ilfy);
+                }
+            }
+        }
+
+        // For aalines
+        left_xlist[loop - 1] = lfx;
+        left_ylist[loop - 1] = lfy;
+        right_xlist[loop - 1] = rfx;
+        right_ylist[loop - 1] = rfy;
+
+        // Fill gaps in corners
+        if (closed || loop != 1) {
+            // This line
+            corner_xlist[0] = ilfx;
+            corner_xlist[1] = orig_ilfx;
+            corner_xlist[2] = irfx;
+            corner_xlist[3] = orig_irfx;
+            corner_ylist[0] = ilfy;
+            corner_ylist[1] = orig_ilfy;
+            corner_ylist[2] = irfy;
+            corner_ylist[3] = orig_irfy;
+            for (corner_loop = 0; corner_loop < 4; ++corner_loop) {
+                int_corner_xlist[corner_loop] =
+                    (int)roundf(corner_xlist[corner_loop]);
+                int_corner_ylist[corner_loop] =
+                    (int)roundf(corner_ylist[corner_loop]);
+            }
+            draw_fillpoly(surf, int_corner_xlist, int_corner_ylist, 4, color,
+                          drawn_area);
+            draw_aalines(surf, color, corner_xlist, corner_ylist, 1, 4,
+                         drawn_area);
+            if (orig_ilfx != prev_iltx && orig_ilfy != prev_ilty &&
+                orig_irfx != prev_irtx && orig_irfy != prev_irty) {
+                // Previous line
+                corner_xlist[1] = prev_iltx;
+                corner_xlist[3] = prev_irtx;
+                corner_ylist[1] = prev_ilty;
+                corner_ylist[3] = prev_irty;
+                for (corner_loop = 0; corner_loop < 4; ++corner_loop) {
+                    int_corner_xlist[corner_loop] =
+                        (int)roundf(corner_xlist[corner_loop]);
+                    int_corner_ylist[corner_loop] =
+                        (int)roundf(corner_ylist[corner_loop]);
+                }
+                draw_fillpoly(surf, int_corner_xlist, int_corner_ylist, 4,
+                              color, drawn_area);
+                draw_aalines(surf, color, corner_xlist, corner_ylist, 1, 4,
+                             drawn_area);
+            }
+        }
+
+        // Data for the next iteration
+        prev_x = point_x;
+        prev_y = point_y;
+        prev_lfx = lfx;
+        prev_lfy = lfy;
+        prev_ltx = ltx;
+        prev_lty = lty;
+        prev_rfx = rfx;
+        prev_rfy = rfy;
+        prev_rtx = rtx;
+        prev_rty = rty;
+        prev_ilfx = ilfx;
+        prev_ilfy = ilfy;
+        prev_iltx = iltx;
+        prev_ilty = ilty;
+        prev_irfx = irfx;
+        prev_irfy = irfy;
+        prev_irtx = irtx;
+        prev_irty = irty;
+    }
+
+    // Last point for open aalines
+    if (!closed) {
+        left_xlist[length - 1] = ltx;
+        left_ylist[length - 1] = lty;
+        right_xlist[length - 1] = rtx;
+        right_ylist[length - 1] = rty;
+    }
+
+    // Drawing lines
+    for (loop = 1; loop < length; ++loop) {
+        draw_line_width(surf, color, (int)xlist[loop - 1],
+                        (int)ylist[loop - 1], (int)xlist[loop],
+                        (int)ylist[loop], width, drawn_area);
+    }
+    if (closed && length > 2) {
+        draw_line_width(surf, color, (int)xlist[length - 1],
+                        (int)ylist[length - 1], (int)xlist[0], (int)ylist[0],
+                        width, drawn_area);
+    }
+
+    // Drawing aalines
+    draw_aalines(surf, color, left_xlist, left_ylist, closed, length,
+                 drawn_area);
+    draw_aalines(surf, color, right_xlist, right_ylist, closed, length,
+                 drawn_area);
+
+    PyMem_Free(left_xlist);
+    PyMem_Free(left_ylist);
+    PyMem_Free(right_xlist);
+    PyMem_Free(right_ylist);
+    PyMem_Free(corner_xlist);
+    PyMem_Free(corner_ylist);
+    PyMem_Free(int_corner_xlist);
+    PyMem_Free(int_corner_ylist);
+}
+
 static void
 drawhorzline(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2)
 {
@@ -1868,34 +2158,53 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
 
 // Calculates 4 points, representing corners of draw_line_width()
 // first two points assemble left line and second two - right line
-void
-line_width_corners(float from_x, float from_y, float to_x, float to_y,
-                   int width, float *x1, float *y1, float *x2, float *y2,
-                   float *x3, float *y3, float *x4, float *y4)
+static void
+line_width_corners(int from_x, int from_y, int to_x, int to_y, float width,
+                   float *x1, float *y1, float *x2, float *y2, float *x3,
+                   float *y3, float *x4, float *y4)
 {
-    float aa_width = (float)width / 2;
-    float extra_width = (1.0f - (width % 2)) / 2;
-    int steep = fabs(to_x - from_x) <= fabs(to_y - from_y);
+    float aa_width = width / 2;
+    float extra_width = (1.0f - ((int)width % 2)) / 2;
+    // "steep" is same as "xinc" in draw_line_width
+    int steep = abs(to_x - from_x) <= abs(to_y - from_y);
 
     if (steep) {
         *x1 = from_x + extra_width + aa_width;
-        *y1 = from_y;
+        *y1 = (float)from_y;
         *x2 = to_x + extra_width + aa_width;
-        *y2 = to_y;
+        *y2 = (float)to_y;
         *x3 = from_x + extra_width - aa_width;
-        *y3 = from_y;
+        *y3 = (float)from_y;
         *x4 = to_x + extra_width - aa_width;
-        *y4 = to_y;
+        *y4 = (float)to_y;
     }
     else {
-        *x1 = from_x;
+        *x1 = (float)from_x;
         *y1 = from_y + extra_width + aa_width;
-        *x2 = to_x;
+        *x2 = (float)to_x;
         *y2 = to_y + extra_width + aa_width;
-        *x3 = from_x;
+        *x3 = (float)from_x;
         *y3 = from_y + extra_width - aa_width;
-        *x4 = to_x;
+        *x4 = (float)to_x;
         *y4 = to_y + extra_width - aa_width;
+    }
+
+    // sort and right points, so (x1, y1), (x2, y2) are always left
+    if ((to_x - from_x) * (*y3 - from_y) - (to_y - from_y) * (*x3 - from_x) >
+        0) {
+        float temp;
+        temp = *x3;
+        *x3 = *x1;
+        *x1 = temp;
+        temp = *y3;
+        *y3 = *y1;
+        *y1 = temp;
+        temp = *x4;
+        *x4 = *x2;
+        *x2 = temp;
+        temp = *y4;
+        *y4 = *y2;
+        *y2 = temp;
     }
 }
 
