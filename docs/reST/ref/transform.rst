@@ -389,7 +389,8 @@ Instead, always begin with the original image and scale to the desired size.)
 
    :param pygame.Surface surface: The target surface.
 
-   :param pygame.Color color: Color which all non transparent within the target surface must be set to.
+   :param color: Color which all non transparent within the target surface must be set to.
+   :type color: :data:`pygame.typing.ColorLike`
 
    :param dest_surface: Optional destination surface to which the changes will be applied.
    :type dest_surface: pygame.Surface or None
@@ -425,15 +426,17 @@ Instead, always begin with the original image and scale to the desired size.)
 
    :param pygame.Surface surf: Surface we are looking at.
 
-   :param pygame.Color search_color: Color we are searching for.
+   :param search_color: Color we are searching for.
+   :type color: :data:`pygame.typing.ColorLike`
 
-   :param pygame.Color threshold: Within this distance from search_color (or search_surf).
+   :param threshold: Within this distance from search_color (or search_surf).
      You can use a threshold of (r,g,b,a) where the r,g,b can have different
      thresholds. So you could use an r threshold of 40 and a blue threshold of 2
      if you like.
+   :type color: :data:`pygame.typing.ColorLike`
 
    :param set_color: Color we set in dest_surf.
-   :type set_color: pygame.Color or None
+   :type color: :data:`pygame.typing.ColorLike` or ``None``
 
    :param int set_behavior:
     - set_behavior=1 (default). Pixels in dest_surface will be changed to 'set_color'.

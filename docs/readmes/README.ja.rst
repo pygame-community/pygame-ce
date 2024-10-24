@@ -8,7 +8,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English` `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ **日本語**
+`English` `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ **日本語** `Italiano`_
 ---------------------------------------------------------------------------------------------------
 
 Pygame_ は、Pythonを使ってビデオゲームのようなマルチメディアアプリケーションを
@@ -237,3 +237,4 @@ gfxdraw には SDL_gfx の埋め込みバージョンが含まれています。
 .. _Français: ./docs/readmes/README.fr.rst
 .. _فارسی: ./docs/readmes/README.fa.rst
 .. _Español: ./docs/readmes/README.es.rst
+.. _Italiano: README.it.rst

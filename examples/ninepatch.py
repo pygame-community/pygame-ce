@@ -17,7 +17,6 @@ but usually you'd have a custom surface that needs intact corners.
 
 import os
 import pygame
-import typing
 
 SCREEN_SIZE = pygame.Vector2(600, 500)
 SCALE_SIZE = pygame.Vector2(500, 150)
@@ -28,7 +27,7 @@ INNER_CORNER_SIZE = 7
 
 def ninepatch_scale(
     surface: pygame.Surface,
-    size: typing.Sequence[int],
+    size: pygame.typing.Point,
     corner_size: int,
     alpha: bool = True,
     smooth: bool = False,
