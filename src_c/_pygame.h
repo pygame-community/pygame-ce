@@ -41,7 +41,11 @@
 #undef PYPY_VERSION
 #endif
 
+#ifdef PG_SDL3
+#include <SDL3/SDL.h>
+#else
 #include <SDL.h>
+#endif
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 #define PG_ShowCursor SDL_ShowCursor
@@ -94,8 +98,8 @@ PG_UnlockMutex(SDL_mutex *mutex)
     return 0;
 }
 
-#define PG_SURF_BitsPerPixel(surf) surf->format->bits_per_pixel
-#define PG_SURF_BytesPerPixel(surf) surf->format->bytes_per_pixel
+#define PG_SURF_BitsPerPixel(surf) SDL_BITSPERPIXEL(surf->format)
+#define PG_SURF_BytesPerPixel(surf) SDL_BYTESPERPIXEL(surf->format)
 #define PG_FORMAT_BitsPerPixel(format) format->bits_per_pixel
 #define PG_FORMAT_BytesPerPixel(format) format->bytes_per_pixel
 
@@ -134,7 +138,7 @@ PG_UnlockMutex(SDL_mutex *mutex)
 
 #define PG_CreateSurface(width, height, format) \
     SDL_CreateRGBSurfaceWithFormat(0, width, height, 0, format)
-#define PG_CreateSurfaceFrom(pixels, width, height, pitch, format) \
+#define PG_CreateSurfaceFrom(width, height, format, pixels, pitch) \
     SDL_CreateRGBSurfaceWithFormatFrom(pixels, width, height, 0, pitch, format)
 #define PG_ConvertSurface(src, fmt) SDL_ConvertSurface(src, fmt, 0)
 #define PG_ConvertSurfaceFormat(src, pixel_format) \
@@ -426,6 +430,12 @@ typedef enum {
     PGS_PREALLOC = 0x01000000
 } PygameSurfaceFlags;
 
+typedef enum {
+    PGS_SCROLL_DEFAULT = 0x00000000,
+    PGS_SCROLL_REPEAT = 0x00000001,
+    PGS_SCROLL_ERASE = 0x00000004
+} PygameScrollSurfaceFlags;
+
 #define RAISE(x, y) (PyErr_SetString((x), (y)), NULL)
 #define RAISERETURN(x, y, r)   \
     PyErr_SetString((x), (y)); \
@@ -536,6 +546,6 @@ typedef enum {
 #define PYGAMEAPI_BASE_NUMSLOTS 29
 #define PYGAMEAPI_EVENT_NUMSLOTS 10
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1
-#define PYGAMEAPI_GEOMETRY_NUMSLOTS 1
+#define PYGAMEAPI_GEOMETRY_NUMSLOTS 2
 
 #endif /* _PYGAME_INTERNAL_H */

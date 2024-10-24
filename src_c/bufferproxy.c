@@ -34,6 +34,7 @@
 #include "pgcompat.h"
 #include "pgbufferproxy.h"
 #include "doc/bufferproxy_doc.h"
+#include <stddef.h>
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define BUFPROXY_MY_ENDIAN '<'

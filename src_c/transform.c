@@ -768,9 +768,9 @@ scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
          * rejects the input.
          * For example, RGBA and RGBX surfaces are compatible in this way. */
         if (retsurf->format->Amask != src->format->Amask) {
-            modsurf =
-                PG_CreateSurfaceFrom(retsurf->pixels, retsurf->w, retsurf->h,
-                                     retsurf->pitch, src->format->format);
+            modsurf = PG_CreateSurfaceFrom(retsurf->w, retsurf->h,
+                                           src->format->format,
+                                           retsurf->pixels, retsurf->pitch);
         }
     }
 
@@ -1032,31 +1032,6 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
     SDL_UnlockSurface(newsurf);
 
     return (PyObject *)pgSurface_New(newsurf);
-}
-
-/* _color_from_obj gets a color from a python object.
-Returns 0 if ok, and sets color to the color.
-   -1 means error.
-   If color_obj is NULL, use rgba_default.
-   If rgba_default is NULL, do not use a default color, return -1.
-*/
-int
-_color_from_obj(PyObject *color_obj, SDL_PixelFormat *format,
-                Uint8 rgba_default[4], Uint32 *color)
-{
-    if (color_obj) {
-        if (!pg_MappedColorFromObj(color_obj, format, color,
-                                   PG_COLOR_HANDLE_INT)) {
-            return -1;
-        }
-    }
-    else {
-        if (!rgba_default)
-            return -1;
-        *color = SDL_MapRGBA(format, rgba_default[0], rgba_default[1],
-                             rgba_default[2], rgba_default[3]);
-    }
-    return 0;
 }
 
 static PG_INLINE int
@@ -2288,6 +2263,32 @@ get_threshold(SDL_Surface *dest_surf, SDL_Surface *surf,
     return similar;
 }
 
+/* _color_from_obj gets a color from a python object.
+
+Returns 0 if ok, and sets color to the color.
+   -1 means error.
+   If color_obj is NULL, use rgba_default.
+   If rgba_default is NULL, do not use a default color, return -1.
+*/
+int
+_color_from_obj(PyObject *color_obj, SDL_Surface *surf, Uint8 rgba_default[4],
+                Uint32 *color)
+{
+    if (color_obj) {
+        if (!pg_MappedColorFromObj(color_obj, surf, color,
+                                   PG_COLOR_HANDLE_ALL)) {
+            return -1;
+        }
+    }
+    else {
+        if (!rgba_default)
+            return -1;
+        *color = SDL_MapRGBA(surf->format, rgba_default[0], rgba_default[1],
+                             rgba_default[2], rgba_default[3]);
+    }
+    return 0;
+}
+
 static PyObject *
 surf_threshold(PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -2406,17 +2407,16 @@ surf_threshold(PyObject *self, PyObject *args, PyObject *kwds)
     }
 
     if (search_color_obj != Py_None) {
-        if (_color_from_obj(search_color_obj, surf->format, NULL,
-                            &color_search_color))
+        if (_color_from_obj(search_color_obj, surf, NULL, &color_search_color))
             return RAISE(PyExc_TypeError, "invalid search_color argument");
     }
-    if (_color_from_obj(threshold_obj, surf->format, rgba_threshold_default,
+    if (_color_from_obj(threshold_obj, surf, rgba_threshold_default,
                         &color_threshold))
         return RAISE(PyExc_TypeError, "invalid threshold argument");
 
     if (set_color_obj != Py_None) {
-        if (_color_from_obj(set_color_obj, surf->format,
-                            rgba_set_color_default, &color_set_color))
+        if (_color_from_obj(set_color_obj, surf, rgba_set_color_default,
+                            &color_set_color))
             return RAISE(PyExc_TypeError, "invalid set_color argument");
     }
 
@@ -2861,8 +2861,7 @@ surf_solid_overlay(PyObject *self, PyObject *args, PyObject *kwargs)
 
     surf = pgSurface_AsSurface(surfobj);
 
-    if (!pg_MappedColorFromObj(colorobj, surf->format, &color,
-                               PG_COLOR_HANDLE_ALL)) {
+    if (!pg_MappedColorFromObj(colorobj, surf, &color, PG_COLOR_HANDLE_ALL)) {
         return RAISE(PyExc_TypeError, "invalid color argument");
     }
 

@@ -3,8 +3,8 @@ set -e -x
 
 cd $(dirname `readlink -f "$0"`)
 
-WAYLAND_VER=1.21.0
-WAYLAND_PROT_VER=1.31
+WAYLAND_VER=1.23.1
+WAYLAND_PROT_VER=1.37
 
 WAYLAND="wayland-$WAYLAND_VER"
 WAYLAND_PROT="wayland-protocols-$WAYLAND_PROT_VER"

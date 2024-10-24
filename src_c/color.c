@@ -219,7 +219,7 @@ static int
 pg_RGBAFromObjEx(PyObject *color, Uint8 rgba[],
                  pgColorHandleFlags handle_flags);
 static int
-pg_MappedColorFromObj(PyObject *val, SDL_PixelFormat *format, Uint32 *color,
+pg_MappedColorFromObj(PyObject *val, SDL_Surface *surf, Uint32 *color,
                       pgColorHandleFlags handle_flags);
 
 /**
@@ -2386,7 +2386,7 @@ pg_RGBAFromObjEx(PyObject *obj, Uint8 *rgba, pgColorHandleFlags handle_flags)
 }
 
 static int
-pg_MappedColorFromObj(PyObject *val, SDL_PixelFormat *format, Uint32 *color,
+pg_MappedColorFromObj(PyObject *val, SDL_Surface *surf, Uint32 *color,
                       pgColorHandleFlags handle_flags)
 {
     Uint8 rgba[] = {0, 0, 0, 0};
@@ -2401,8 +2401,11 @@ pg_MappedColorFromObj(PyObject *val, SDL_PixelFormat *format, Uint32 *color,
     /* int is already handled, unset it */
     handle_flags &= ~PG_COLOR_HANDLE_INT;
     if (pg_RGBAFromObjEx(val, rgba, handle_flags)) {
-        *color =
-            (Uint32)SDL_MapRGBA(format, rgba[0], rgba[1], rgba[2], rgba[3]);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        *color = SDL_MapSurfaceRGBA(surf, rgba[0], rgba[1], rgba[2], rgba[3]);
+#else
+        *color = SDL_MapRGBA(surf->format, rgba[0], rgba[1], rgba[2], rgba[3]);
+#endif
         return 1;
     }
     return 0;
