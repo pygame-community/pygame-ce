@@ -16,6 +16,13 @@ def scale_by(
     dest_surface: Optional[Surface] = None,
 ) -> Surface: ...
 def rotate(surface: Surface, angle: float) -> Surface: ...
+def skew(
+    surface: Surface,
+    points: SequenceLike[Point],
+    bg_color: Optional[ColorLike] = None,
+    adjust_size: bool = True,
+    dest_surface: Optional[Surface] = None,
+) -> Surface: ...
 def rotozoom(surface: Surface, angle: float, scale: float) -> Surface: ...
 def scale2x(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface: ...
 def grayscale(surface: Surface, dest_surface: Optional[Surface] = None) -> Surface: ...
@@ -62,13 +69,13 @@ def box_blur(
     surface: Surface,
     radius: int,
     repeat_edge_pixels: bool = True,
-    dest_surface: Optional[Surface] = None
+    dest_surface: Optional[Surface] = None,
 ) -> Surface: ...
 def gaussian_blur(
     surface: Surface,
     radius: int,
     repeat_edge_pixels: bool = True,
-    dest_surface: Optional[Surface] = None
+    dest_surface: Optional[Surface] = None,
 ) -> Surface: ...
 def hsl(
     surface: Surface,
