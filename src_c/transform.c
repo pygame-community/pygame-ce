@@ -1065,6 +1065,13 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     surf = pgSurface_AsSurface(surfobj);
     SURF_INIT_CHECK(surf)
+
+    if ((x1 == x2 && y1 == y2) || (x1 == x3 && y1 == y3) ||
+        (x1 == x4 && y1 == y4) || (x2 == x3 && y2 == y3) ||
+        (x2 == x4 && y2 == y4) || (x3 == x4 && y3 == y4)) {
+        return RAISE(PyExc_ValueError, "all four points must be unique");
+    }
+
     if (!dest_surface) {
         if (adjust_size) {
             start = MIN(MIN(x1, x2), MIN(x3, x4));
@@ -1096,7 +1103,7 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
 
     if (PG_SURF_BytesPerPixel(surf) == 0 || PG_SURF_BytesPerPixel(surf) > 4)
         return RAISE(PyExc_ValueError,
-                     "unsupported surface bit depth for transform");
+                     "unsupported Surface bit depth for transform");
 
     SDL_Point points[4] = {{x1 - start, y1 - top},
                            {x2 - start, y2 - top},
@@ -1107,7 +1114,7 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
                           _check_inside(newsurf, points[2]) &&
                           _check_inside(newsurf, points[3]))) {
         return RAISE(PyExc_ValueError,
-                     "points are not within specified surface");
+                     "points are not within specified Surface");
     }
 
     SDL_LockSurface(newsurf);
@@ -1141,8 +1148,7 @@ surf_skew(PyObject *self, PyObject *args, PyObject *kwargs)
         }
     }
     else {
-        if (!pg_MappedColorFromObj(colorobj, surf->format, &bgcolor,
-                               PG_COLOR_HANDLE_ALL))
+        if (_color_from_obj(colorobj, surf, NULL, &bgcolor))
             return RAISE(PyExc_TypeError, "invalid bg_color argument");
     }
 

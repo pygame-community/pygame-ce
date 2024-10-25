@@ -109,8 +109,8 @@ Instead, always begin with the original image and scale to the desired size.)
    This maps an image to a new surface warping the image so that its corners
    match the provided points in a clockwise order: top left, top right, bottom
    right, bottom left. Provided points represent the pixel coordinates of the
-   new corners of the image and can be positive or negative provided they fit
-   in the new surface.
+   new corners of the image, they must be unique and can be positive or negative
+   provided they fit in the new surface.
 
    When no 'dest_surface' is provided, the 'adjust_size' option will set the
    size of the resulting surface to be the smallest surface the points are
