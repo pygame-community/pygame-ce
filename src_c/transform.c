@@ -1034,6 +1034,32 @@ surf_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
     return (PyObject *)pgSurface_New(newsurf);
 }
 
+/* _color_from_obj gets a color from a python object.
+
+Returns 0 if ok, and sets color to the color.
+   -1 means error.
+   If color_obj is NULL, use rgba_default.
+   If rgba_default is NULL, do not use a default color, return -1.
+*/
+int
+_color_from_obj(PyObject *color_obj, SDL_Surface *surf, Uint8 rgba_default[4],
+                Uint32 *color)
+{
+    if (color_obj) {
+        if (!pg_MappedColorFromObj(color_obj, surf, color,
+                                   PG_COLOR_HANDLE_ALL)) {
+            return -1;
+        }
+    }
+    else {
+        if (!rgba_default)
+            return -1;
+        *color = SDL_MapRGBA(surf->format, rgba_default[0], rgba_default[1],
+                             rgba_default[2], rgba_default[3]);
+    }
+    return 0;
+}
+
 static PG_INLINE int
 _check_inside(SDL_Surface *surf, SDL_Point p)
 {
@@ -2267,32 +2293,6 @@ get_threshold(SDL_Surface *dest_surf, SDL_Surface *surf,
         }
     }
     return similar;
-}
-
-/* _color_from_obj gets a color from a python object.
-
-Returns 0 if ok, and sets color to the color.
-   -1 means error.
-   If color_obj is NULL, use rgba_default.
-   If rgba_default is NULL, do not use a default color, return -1.
-*/
-int
-_color_from_obj(PyObject *color_obj, SDL_Surface *surf, Uint8 rgba_default[4],
-                Uint32 *color)
-{
-    if (color_obj) {
-        if (!pg_MappedColorFromObj(color_obj, surf, color,
-                                   PG_COLOR_HANDLE_ALL)) {
-            return -1;
-        }
-    }
-    else {
-        if (!rgba_default)
-            return -1;
-        *color = SDL_MapRGBA(surf->format, rgba_default[0], rgba_default[1],
-                             rgba_default[2], rgba_default[3]);
-    }
-    return 0;
 }
 
 static PyObject *
