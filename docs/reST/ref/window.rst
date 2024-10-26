@@ -61,8 +61,8 @@
 
    Event behavior if multiple Windows are created: When the close button is
    pressed, a ``WINDOWCLOSE`` event is sent. You need to explicitly destroy
-   the window. Note that the event ``QUIT`` will only be sent if all Window
-   has been destroyed.
+   the window. Note that the event ``QUIT`` will only be sent if all Windows
+   have been destroyed.
 
    .. code-block:: python
 
