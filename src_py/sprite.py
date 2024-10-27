@@ -1683,6 +1683,9 @@ def spritecollide(sprite, group, dokill, collided=None, ignore_self=False):
     sprites must have a "rect" value, which is a rectangle of the sprite area,
     which will be used to calculate the collision.
 
+    The ignore_self argument is a bool. If set to True, the sprite will not register
+    a collision with itself, even if it is contained within the group being tested.
+
     """
     # pull the default collision function in as a local variable outside
     # the loop as this makes the loop run faster
@@ -1784,8 +1787,8 @@ def spritecollideany(sprite, group, collided=None, ignore_self=False):
     sprites must have a "rect" value, which is a rectangle of the sprite area,
     which will be used to calculate the collision.
 
-    ignore_self is used to avoid a sprite colliding with itself if it exists
-    in the group being checked against.
+    The ignore_self argument is a bool. If set to True, the sprite will not register
+    a collision with itself, even if it is contained within the group being tested.
 
     """
     # pull the default collision function in as a local variable outside
