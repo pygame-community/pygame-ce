@@ -1664,10 +1664,10 @@ def collide_mask(left, right):
     return leftmask.overlap(rightmask, (xoffset, yoffset))
 
 
-def spritecollide(sprite, group, dokill, collided=None):
+def spritecollide(sprite, group, dokill, collided=None, ignore_self=False):
     """find Sprites in a Group that intersect another Sprite
 
-    pygame.sprite.spritecollide(sprite, group, dokill, collided=None):
+    pygame.sprite.spritecollide(sprite, group, dokill, collided=None, ignore_self=False):
         return Sprite_list
 
     Return a list containing all Sprites in a Group that intersect with another
@@ -1695,25 +1695,39 @@ def spritecollide(sprite, group, dokill, collided=None):
         for group_sprite in group.sprites():
             if collided is not None:
                 if collided(sprite, group_sprite):
-                    group_sprite.kill()
-                    append(group_sprite)
+                    if not ignore_self or sprite != group_sprite:
+                        group_sprite.kill()
+                        append(group_sprite)
             else:
                 if default_sprite_collide_func(group_sprite.rect):
-                    group_sprite.kill()
-                    append(group_sprite)
+                    if not ignore_self or sprite != group_sprite:
+                        group_sprite.kill()
+                        append(group_sprite)
 
         return crashed
 
     if collided is not None:
-        return [
-            group_sprite for group_sprite in group if collided(sprite, group_sprite)
-        ]
+        if ignore_self:
+            return [
+                group_sprite for group_sprite in group if collided(sprite, group_sprite) and sprite != group_sprite
+            ]
+        else:
+            return [
+                group_sprite for group_sprite in group if collided(sprite, group_sprite)
+            ]
 
-    return [
-        group_sprite
-        for group_sprite in group
-        if default_sprite_collide_func(group_sprite.rect)
-    ]
+    if ignore_self:
+        return [
+            group_sprite
+            for group_sprite in group
+            if default_sprite_collide_func(group_sprite.rect) and sprite != group_sprite
+        ]
+    else:
+        return [
+            group_sprite
+            for group_sprite in group
+            if default_sprite_collide_func(group_sprite.rect)
+        ]
 
 
 def groupcollide(groupa, groupb, dokilla, dokillb, collided=None):
@@ -1752,7 +1766,7 @@ def groupcollide(groupa, groupb, dokilla, dokillb, collided=None):
     return crashed
 
 
-def spritecollideany(sprite, group, collided=None):
+def spritecollideany(sprite, group, collided=None, ignore_self=False):
     """finds any sprites in a group that collide with the given sprite
 
     pygame.sprite.spritecollideany(sprite, group): return sprite
@@ -1770,6 +1784,8 @@ def spritecollideany(sprite, group, collided=None):
     sprites must have a "rect" value, which is a rectangle of the sprite area,
     which will be used to calculate the collision.
 
+    ignore_self is used to avoid a sprite colliding with itself if it exists
+    in the group being checked against.
 
     """
     # pull the default collision function in as a local variable outside
@@ -1779,10 +1795,12 @@ def spritecollideany(sprite, group, collided=None):
     if collided is not None:
         for group_sprite in group:
             if collided(sprite, group_sprite):
-                return group_sprite
+                if not ignore_self or sprite != group_sprite:
+                    return group_sprite
     else:
         # Special case old behaviour for speed.
         for group_sprite in group:
             if default_sprite_collide_func(group_sprite.rect):
-                return group_sprite
+                if not ignore_self or sprite != group_sprite:
+                    return group_sprite
     return None

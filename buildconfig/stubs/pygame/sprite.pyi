@@ -281,6 +281,7 @@ def spritecollide(
     group: AbstractGroup[_TSprite],
     dokill: bool,
     collided: Optional[Callable[[_TSprite, _TSprite2], Any]] = None,
+    ignore_self: bool,
 ) -> List[_TSprite]: ...
 def groupcollide(
     groupa: AbstractGroup[_TSprite],
@@ -293,4 +294,5 @@ def spritecollideany(
     sprite: _HasRect,
     group: AbstractGroup[_TSprite],
     collided: Optional[Callable[[_TSprite, _TSprite2], Any]] = None,
+    ignore_self: bool,
 ) -> Optional[_TSprite]: ...

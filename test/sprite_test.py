@@ -491,6 +491,28 @@ class SpriteCollideTest(unittest.TestCase):
         self.assertFalse(pygame.sprite.collide_rect(self.s1, self.s3))
         self.assertFalse(pygame.sprite.collide_rect(self.s3, self.s1))
 
+    def test_sprites_ignoring_themselves_for_collisions(self):
+        # spritecollide(): Test that sprite collides with itself in the same group by default.
+        self.assertEqual(
+            sprite.spritecollide(self.s1, self.ag, dokill=False, collided=None),
+            [self.s1],
+        )
+        # spritecollide(): Test that sprite does not collide with itself in the same group when ignore_self is passed.
+        self.assertEqual(
+            sprite.spritecollide(
+                self.s1, self.ag, dokill=False, collided=None, ignore_self=True
+            ),
+            [],
+        )
+        # spritecollideany(): Test that sprite collides with itself in the same group by default.
+        self.assertEqual(
+            sprite.spritecollideany(self.s1, self.ag, collided=None), self.s1
+        )
+        # spritecollideany(): Test that sprite does not collide with itself in the same group when ignore_self is passed.
+        self.assertIsNone(
+            sprite.spritecollideany(self.s1, self.ag, collided=None, ignore_self=True)
+        )
+
 
 ################################################################################
 
