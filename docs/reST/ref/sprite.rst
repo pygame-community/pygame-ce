@@ -644,7 +644,7 @@ Sprites are not thread safe. So lock them yourself if using threads.
 .. function:: spritecollide
 
    | :sl:`Find sprites in a group that intersect another sprite.`
-   | :sg:`spritecollide(sprite, group, dokill, collided = None) -> Sprite_list`
+   | :sg:`spritecollide(sprite, group, dokill, collided = None, ignore_self = False) -> Sprite_list`
 
    Return a list containing all Sprites in a Group that intersect with another
    Sprite. Intersection is determined by comparing the ``Sprite.rect``
@@ -658,6 +658,10 @@ Sprites are not thread safe. So lock them yourself if using threads.
    bool value indicating if they are colliding. If collided is not passed, all
    sprites must have a "rect" value, which is a rectangle of the sprite area,
    which will be used to calculate the collision.
+
+   The ignore_self argument is a bool. If set to True, the sprite will not
+   register a collision with itself, even if it is contained within the group
+   being tested.
 
    collided callables:
 
@@ -825,20 +829,24 @@ Sprites are not thread safe. So lock them yourself if using threads.
 .. function:: spritecollideany
 
    | :sl:`Simple test if a sprite intersects anything in a group.`
-   | :sg:`spritecollideany(sprite, group, collided = None) -> Sprite` Collision with the returned sprite.
-   | :sg:`spritecollideany(sprite, group, collided = None) -> None` No collision
+   | :sg:`spritecollideany(sprite, group, collided = None, ignore_self = False) -> Sprite` Collision with the returned sprite.
+   | :sg:`spritecollideany(sprite, group, collided = None, ignore_self = False) -> None` No collision
 
    If the sprite collides with any single sprite in the group, a single
    sprite from the group is returned.  On no collision None is returned.
 
    If you don't need all the features of the ``pygame.sprite.spritecollide()`` function, this
-   function will be a bit quicker.
+   function will be a bit quicker..
 
    The collided argument is a callback function used to calculate if two sprites are
    colliding. It should take two sprites as values and return a bool value
    indicating if they are colliding. If collided is not passed, then all
    sprites must have a "rect" value, which is a rectangle of the sprite area,
    which will be used to calculate the collision.
+
+   The ignore_self argument is a bool. If set to True, the sprite will not
+   register a collision with itself, even if it is contained within the group
+   being tested.
 
    .. ## pygame.sprite.spritecollideany ##
 
