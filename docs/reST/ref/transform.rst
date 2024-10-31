@@ -122,7 +122,7 @@ Instead, always begin with the original image and scale to the desired size.)
    transparent. Otherwise pygame will pick a color that matches the Surface
    colorkey or the top left pixel value.
 
-   .. versionadded:: 2.5.2
+   .. versionadded:: 2.5.3
 
    .. ## pygame.transform.skew ##
 
