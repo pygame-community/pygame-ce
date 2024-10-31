@@ -2075,25 +2075,25 @@ pg_SetDefaultWindowSurface(pgSurfaceObject *screen)
     pg_default_screen = screen;
 }
 
-SDL_PixelFormat *pg_default_convert_format = NULL;
+PG_PixelFormatEnum pg_default_convert_format = 0;
 
-static SDL_PixelFormat *
+static PG_PixelFormatEnum
 pg_GetDefaultConvertFormat(void)
 {
     if (pg_default_screen) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
         return pg_default_screen->surf->format;
+#else
+        return pg_default_screen->surf->format->format;
+#endif
     }
     return pg_default_convert_format;
 }
 
-static SDL_PixelFormat *
-pg_SetDefaultConvertFormat(Uint32 format)
+static void
+pg_SetDefaultConvertFormat(PG_PixelFormatEnum format)
 {
-    if (pg_default_convert_format != NULL) {
-        SDL_FreeFormat(pg_default_convert_format);
-    }
-    pg_default_convert_format = SDL_AllocFormat(format);
-    return pg_default_convert_format;  // returns for NULL error checking
+    pg_default_convert_format = format;
 }
 
 static int

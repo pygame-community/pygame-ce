@@ -75,7 +75,9 @@
 #define PG_CreateSurface SDL_CreateSurface
 #define PG_CreateSurfaceFrom SDL_CreateSurfaceFrom
 #define PG_ConvertSurface SDL_ConvertSurface
-#define PG_ConvertSurfaceFormat SDL_ConvertSurfaceFormat
+#define PG_ConvertSurfaceFormat SDL_ConvertSurface
+
+#define PG_PixelFormatEnum SDL_PixelFormat
 
 #define PG_SurfaceHasRLE SDL_SurfaceHasRLE
 
@@ -145,6 +147,8 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_ConvertSurface(src, fmt) SDL_ConvertSurface(src, fmt, 0)
 #define PG_ConvertSurfaceFormat(src, pixel_format) \
     SDL_ConvertSurfaceFormat(src, pixel_format, 0)
+
+#define PG_PixelFormatEnum SDL_PixelFormatEnum
 
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
     SDL_SoftStretch(src, srcrect, dst, dstrect)

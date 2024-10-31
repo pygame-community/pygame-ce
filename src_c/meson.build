@@ -1,7 +1,5 @@
 # first the "required" modules
 
-# TODO: support SDL3
-if sdl_api != 3
 base = py.extension_module(
     'base',
     'base.c',
@@ -10,7 +8,6 @@ base = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 color = py.extension_module(
     'color',
