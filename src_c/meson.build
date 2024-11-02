@@ -18,8 +18,6 @@ color = py.extension_module(
     subdir: pg,
 )
 
-# TODO: support SDL3
-if sdl_api != 3
 constants = py.extension_module(
     'constants',
     'constants.c',
@@ -28,7 +26,6 @@ constants = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # TODO: support SDL3
 if sdl_api != 3
