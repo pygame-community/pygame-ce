@@ -27,9 +27,8 @@
 #include <SDL3/SDL.h>
 #else
 #include <SDL.h>
-#endif
-
 #include "SDL_syswm.h"
+#endif
 
 #include "pygame.h"
 
