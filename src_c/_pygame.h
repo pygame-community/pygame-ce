@@ -232,19 +232,6 @@ struct SDL_BlitMap {
 
 #endif
 
-/* DictProxy is useful for event posting with an arbitrary dict. Maintains
- * state of number of events on queue and whether the owner of this struct
- * wants this dict freed. This DictProxy is only to be freed when there are no
- * more instances of this DictProxy on the event queue. Access to this is
- * safeguarded with a per-proxy spinlock, which is more optimal than having
- * to hold GIL in case of event timers */
-typedef struct _pgEventDictProxy {
-    PyObject *dict;
-    SDL_SpinLock lock;
-    int num_on_queue;
-    Uint8 do_free_at_end;
-} pgEventDictProxy;
-
 /* SDL 1.2 constants removed from SDL 2 */
 typedef enum {
     SDL_HWSURFACE = 0,
@@ -494,10 +481,6 @@ typedef enum {
 /*
  * event module internals
  */
-struct pgEventObject {
-    PyObject_HEAD int type;
-    PyObject *dict;
-};
 
 /*
  * surface module internals
@@ -552,7 +535,7 @@ typedef enum {
 #define PYGAMEAPI_COLOR_NUMSLOTS 5
 #define PYGAMEAPI_MATH_NUMSLOTS 2
 #define PYGAMEAPI_BASE_NUMSLOTS 29
-#define PYGAMEAPI_EVENT_NUMSLOTS 10
+#define PYGAMEAPI_EVENT_NUMSLOTS 13
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1
 #define PYGAMEAPI_GEOMETRY_NUMSLOTS 2
 
