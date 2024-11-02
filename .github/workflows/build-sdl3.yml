@@ -91,6 +91,11 @@ jobs:
         -Csetup-args=-Dmixer=disabled
         -Csetup-args=-Dfont=disabled
 
+    # eventually we need to run all tests, but for now test that importing pygame
+    # works
+    - name: Test import works
+      run: python3 -c 'import pygame'
+
     # - name: Run tests
     #   env:
     #     SDL_VIDEODRIVER: "dummy"
