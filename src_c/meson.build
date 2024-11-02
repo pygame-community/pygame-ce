@@ -57,8 +57,6 @@ key = py.extension_module(
     subdir: pg,
 )
 
-# TODO: support SDL3
-if sdl_api != 3
 mouse = py.extension_module(
     'mouse',
     'mouse.c',
@@ -67,7 +65,6 @@ mouse = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 rect = py.extension_module(
     'rect',
