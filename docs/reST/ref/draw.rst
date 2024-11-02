@@ -92,7 +92,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
 
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
    .. versionchangedold:: 2.0.0.dev8 Added support for border radius.
-   .. versionchanged:: 2.5.2 Negative rect dimension values will raise a deprecation warning
+   .. versionchanged:: 2.5.3 Negative rect dimension values will raise a deprecation warning
 
    .. ## pygame.draw.rect ##
 
@@ -294,7 +294,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :rtype: Rect
 
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
-   .. versionchanged:: 2.5.2 Negative rect dimension values will raise a deprecation warning
+   .. versionchanged:: 2.5.3 Negative rect dimension values will raise a deprecation warning
 
    .. ## pygame.draw.ellipse ##
 
@@ -349,7 +349,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :rtype: Rect
 
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
-   .. versionchanged:: 2.5.2 Negative rect dimension values will raise a deprecation warning
+   .. versionchanged:: 2.5.3 Negative rect dimension values will raise a deprecation warning
 
    .. ## pygame.draw.arc ##
 
