@@ -80,7 +80,11 @@ pg_scancodewrapper_subscript(pgScancodeWrapper *self, PyObject *item)
     PyObject *adjustedvalue, *ret;
     if ((index = PyLong_AsLong(item)) == -1 && PyErr_Occurred())
         return NULL;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    index = SDL_GetScancodeFromKey(index, NULL);
+#else
     index = SDL_GetScancodeFromKey(index);
+#endif
     adjustedvalue = PyLong_FromLong(index);
     ret = PyTuple_Type.tp_as_mapping->mp_subscript((PyObject *)self,
                                                    adjustedvalue);
@@ -163,7 +167,11 @@ static PyObject *
 key_get_pressed(PyObject *self, PyObject *_null)
 {
     int num_keys;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    const bool *key_state;
+#else
     const Uint8 *key_state;
+#endif
     PyObject *ret_obj = NULL;
     PyObject *key_tuple;
     int i;
@@ -511,16 +519,42 @@ key_get_focused(PyObject *self, PyObject *_null)
 static PyObject *
 key_start_text_input(PyObject *self, PyObject *_null)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* Can consider making this a method of the Window class, this function
+     * just does backcompat */
+    SDL_Window *win = pg_GetDefaultWindow();
+    if (!win) {
+        return RAISE(pgExc_SDLError,
+                     "display.set_mode has not been called yet.");
+    }
+    if (!SDL_StartTextInput(win)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+#else
     /* https://wiki.libsdl.org/SDL_StartTextInput */
     SDL_StartTextInput();
+#endif
     Py_RETURN_NONE;
 }
 
 static PyObject *
 key_stop_text_input(PyObject *self, PyObject *_null)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* Can consider making this a method of the Window class, this function
+     * just does backcompat */
+    SDL_Window *win = pg_GetDefaultWindow();
+    if (!win) {
+        return RAISE(pgExc_SDLError,
+                     "display.set_mode has not been called yet.");
+    }
+    if (!SDL_StopTextInput(win)) {
+        return RAISE(pgExc_SDLError, SDL_GetError());
+    }
+#else
     /* https://wiki.libsdl.org/SDL_StopTextInput */
     SDL_StopTextInput();
+#endif
     Py_RETURN_NONE;
 }
 
@@ -552,11 +586,23 @@ key_set_text_input_rect(PyObject *self, PyObject *obj)
         rect2.w = (int)(rect->w * scalex);
         rect2.h = (int)(rect->h * scaley);
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        /* Should consider how to expose the cursor argument to the user, maybe
+         * this should be new API in Window? */
+        SDL_SetTextInputArea(sdlWindow, &rect2, 0);
+#else
         SDL_SetTextInputRect(&rect2);
+#endif
         Py_RETURN_NONE;
     }
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* Should consider how to expose the cursor argument to the user, maybe
+     * this should be new API in Window? */
+    SDL_SetTextInputArea(sdlWindow, rect, 0);
+#else
     SDL_SetTextInputRect(rect);
+#endif
 
     Py_RETURN_NONE;
 }
