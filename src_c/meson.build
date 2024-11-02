@@ -153,8 +153,6 @@ surflock = py.extension_module(
     subdir: pg,
 )
 
-# TODO: support SDL3
-if sdl_api != 3
 time = py.extension_module(
     'time',
     'time.c',
@@ -163,7 +161,6 @@ time = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # TODO: support SDL3
 if sdl_api != 3
