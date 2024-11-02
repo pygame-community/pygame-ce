@@ -48,8 +48,6 @@ event = py.extension_module(
     subdir: pg,
 )
 
-# TODO: support SDL3
-if sdl_api != 3
 key = py.extension_module(
     'key',
     'key.c',
@@ -58,7 +56,6 @@ key = py.extension_module(
     install: true,
     subdir: pg,
 )
-endif
 
 # TODO: support SDL3
 if sdl_api != 3
