@@ -367,7 +367,6 @@ controller_rumble(pgControllerObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(pgExc_SDLError, "Controller is not initalized");
     }
 
-#if SDL_VERSION_ATLEAST(2, 0, 9)
     // rumble takes values in range 0 to 0xFFFF (65535)
     low_freq = MAX(MIN(low_freq, 1.0f), 0.0f) * 65535;
     high_freq = MAX(MIN(high_freq, 1.0f), 0.0f) * 65535;
@@ -376,9 +375,6 @@ controller_rumble(pgControllerObject *self, PyObject *args, PyObject *kwargs)
                                            (Uint16)high_freq, duration);
 
     return PyBool_FromLong(success == 0);
-#else
-    Py_RETURN_FALSE;
-#endif
 }
 
 static PyObject *
@@ -388,9 +384,7 @@ controller_stop_rumble(pgControllerObject *self, PyObject *_null)
     if (!self->controller) {
         return RAISE(pgExc_SDLError, "Controller is not initalized");
     }
-#if SDL_VERSION_ATLEAST(2, 0, 9)
     SDL_GameControllerRumble(self->controller, 0, 0, 1);
-#endif
     Py_RETURN_NONE;
 }
 
