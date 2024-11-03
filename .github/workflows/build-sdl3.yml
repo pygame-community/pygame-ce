@@ -85,11 +85,7 @@ jobs:
         sudo cmake --install . --config Release
 
     - name: Build with SDL3
-      run: >
-        python3 -m pip install . -v -Csetup-args=-Dsdl_api=3
-        -Csetup-args=-Dimage=disabled
-        -Csetup-args=-Dmixer=disabled
-        -Csetup-args=-Dfont=disabled
+      run: python3 dev.py build --sdl3
 
     # - name: Run tests
     #   env:
