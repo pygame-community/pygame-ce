@@ -1751,19 +1751,16 @@ def spritecollideany(sprite, group, collided=None):
     sprites must have a "rect" value, which is a rectangle of the sprite area,
     which will be used to calculate the collision.
 
-
     """
-    # pull the default collision function in as a local variable outside
-    # the loop as this makes the loop run faster
-    default_sprite_collide_func = sprite.rect.colliderect
-
     if collided is not None:
         for group_sprite in group:
             if collided(sprite, group_sprite):
                 return group_sprite
     else:
-        # Special case old behaviour for speed.
+        # pull the default collision function in as a local variable outside
+        # the loop as this makes the loop run faster
+        sprite_rect_collide = sprite.rect.colliderect
         for group_sprite in group:
-            if default_sprite_collide_func(group_sprite.rect):
+            if sprite_rect_collide(group_sprite.rect):
                 return group_sprite
     return None
