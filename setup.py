@@ -807,11 +807,9 @@ class DocsCommand(Command):
         runs Sphinx to build the docs.
         '''
         import subprocess
-        command_line = [
-            sys.executable, "-m", "buildconfig", "docs"
-        ]
+        command_line = [sys.executable, "dev.py", "docs"]
         if self.fullgeneration:
-            command_line.append('full_generation')
+            command_line.append('--full')
 
         print("WARNING: This command is deprecated and will be removed in the future.")
         print(f"Please use the following replacement: `{' '.join(command_line)}`\n")
@@ -834,9 +832,7 @@ class StubcheckCommand(Command):
         runs mypy to build the docs.
         '''
         import subprocess
-        command_line = [
-            sys.executable, os.path.join("buildconfig", "stubs", "stubcheck.py")
-        ]
+        command_line = [sys.executable, "dev.py", "stubs"]
         print("WARNING: This command is deprecated and will be removed in the future.")
         print(f"Please use the following replacement: `{' '.join(command_line)}`\n")
         result = subprocess.run(command_line)
