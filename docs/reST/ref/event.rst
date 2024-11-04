@@ -471,7 +471,7 @@ On Android, the following events can be generated
    Returns an event class that is correlated with the given event type. If the class to a given event type is not found,
    but the type is within the range of valid values for the event type, a new subclass will be created.
 
-   .. versionadded:: 2.5.2
+   .. versionadded:: 2.6.0
    .. ## pygame.event.event_class ##
 
 .. class:: Event
@@ -489,7 +489,7 @@ On Android, the following events can be generated
    .. versionchanged:: 2.1.4 This class is also available through the ``pygame.Event``
       alias.
 
-   .. versionchanged:: 2.5.2 This class can be subclassed to create user-defined event types.
+   .. versionchanged:: 2.6.0 This class can be subclassed to create user-defined event types.
 
    .. note::
       From version 2.1.3 ``EventType`` is an alias for ``Event``. Beforehand,
