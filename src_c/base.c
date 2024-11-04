@@ -541,10 +541,25 @@ pg_TwoIntsFromObj(PyObject *obj, int *val1, int *val2)
     if (!PySequence_Check(obj) || PySequence_Length(obj) != 2) {
         return 0;
     }
-    if (!pg_IntFromObjIndex(obj, 0, val1) ||
-        !pg_IntFromObjIndex(obj, 1, val2)) {
+
+    PyObject *item1 = PySequence_ITEM(obj, 0);
+    PyObject *item2 = PySequence_ITEM(obj, 1);
+
+    if (item1 == NULL || item2 == NULL) {
+        Py_XDECREF(item1);
+        Py_XDECREF(item2);
+        PyErr_Clear();
         return 0;
     }
+
+    if (!pg_IntFromObj(item1, val1) || !pg_IntFromObj(item2, val2)) {
+        Py_DECREF(item1);
+        Py_DECREF(item2);
+        return 0;
+    }
+
+    Py_DECREF(item1);
+    Py_DECREF(item2);
     return 1;
 }
 
@@ -586,10 +601,25 @@ pg_TwoFloatsFromObj(PyObject *obj, float *val1, float *val2)
     if (!PySequence_Check(obj) || PySequence_Length(obj) != 2) {
         return 0;
     }
-    if (!pg_FloatFromObjIndex(obj, 0, val1) ||
-        !pg_FloatFromObjIndex(obj, 1, val2)) {
+
+    PyObject *item1 = PySequence_ITEM(obj, 0);
+    PyObject *item2 = PySequence_ITEM(obj, 1);
+
+    if (item1 == NULL || item2 == NULL) {
+        Py_XDECREF(item1);
+        Py_XDECREF(item2);
+        PyErr_Clear();
         return 0;
     }
+
+    if (!pg_FloatFromObj(item1, val1) || !pg_FloatFromObj(item2, val2)) {
+        Py_DECREF(item1);
+        Py_DECREF(item2);
+        return 0;
+    }
+
+    Py_DECREF(item1);
+    Py_DECREF(item2);
     return 1;
 }
 
