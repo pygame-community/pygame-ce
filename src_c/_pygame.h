@@ -75,7 +75,9 @@
 #define PG_CreateSurface SDL_CreateSurface
 #define PG_CreateSurfaceFrom SDL_CreateSurfaceFrom
 #define PG_ConvertSurface SDL_ConvertSurface
-#define PG_ConvertSurfaceFormat SDL_ConvertSurfaceFormat
+#define PG_ConvertSurfaceFormat SDL_ConvertSurface
+
+#define PG_PixelFormatEnum SDL_PixelFormat
 
 #define PG_SurfaceHasRLE SDL_SurfaceHasRLE
 
@@ -115,6 +117,8 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_FIND_VNUM_MINOR(ver) SDL_VERSIONNUM_MINOR(ver)
 #define PG_FIND_VNUM_MICRO(ver) SDL_VERSIONNUM_MICRO(ver)
 
+#define PG_INIT_TIMER 0
+
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
 #define PG_HideCursor() SDL_ShowCursor(SDL_DISABLE)
@@ -143,6 +147,8 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_ConvertSurface(src, fmt) SDL_ConvertSurface(src, fmt, 0)
 #define PG_ConvertSurfaceFormat(src, pixel_format) \
     SDL_ConvertSurfaceFormat(src, pixel_format, 0)
+
+#define PG_PixelFormatEnum SDL_PixelFormatEnum
 
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
     SDL_SoftStretch(src, srcrect, dst, dstrect)
@@ -179,6 +185,8 @@ PG_UnlockMutex(SDL_mutex *mutex)
 #define PG_FIND_VNUM_MAJOR(ver) ver.major
 #define PG_FIND_VNUM_MINOR(ver) ver.minor
 #define PG_FIND_VNUM_MICRO(ver) ver.patch
+
+#define PG_INIT_TIMER SDL_INIT_TIMER
 
 #if SDL_VERSION_ATLEAST(2, 0, 14)
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
