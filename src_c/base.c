@@ -542,6 +542,7 @@ pg_TwoIntsFromObj(PyObject *obj, int *val1, int *val2)
         return 0;
     }
 
+    // Can use PySequence_ITEM because of the PySequence_Check above.
     PyObject *item1 = PySequence_ITEM(obj, 0);
     PyObject *item2 = PySequence_ITEM(obj, 1);
 
@@ -602,6 +603,7 @@ pg_TwoFloatsFromObj(PyObject *obj, float *val1, float *val2)
         return 0;
     }
 
+    // Can use PySequence_ITEM because of the PySequence_Check above.
     PyObject *item1 = PySequence_ITEM(obj, 0);
     PyObject *item2 = PySequence_ITEM(obj, 1);
 
