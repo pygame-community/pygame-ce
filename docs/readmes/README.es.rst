@@ -173,4 +173,3 @@ Consulta docs/licenses para ver las licencias de dependencia.
 .. _日本語: README.ja.rst
 .. _Italiano: README.it.rst
 .. _Русский: README.ru.rst
-

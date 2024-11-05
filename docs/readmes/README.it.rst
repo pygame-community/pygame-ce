@@ -227,4 +227,3 @@ Controlla docs/licenses per le licenze dei requisiti.
 .. _日本語: README.ja.rst
 .. _Italiano: README.it.rst
 .. _Русский: README.ru.rst
-
