@@ -284,6 +284,10 @@ typedef enum {
     SDL_ACTIVEEVENT = SDL_USEREVENT,
     SDL_VIDEORESIZE,
     SDL_VIDEOEXPOSE,
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* SDL_SYSWMEVENT removed in SDL3, define it here for compat */
+    SDL_SYSWMEVENT,
+#endif
 
     PGE_MIDIIN,
     PGE_MIDIOUT,

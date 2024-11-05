@@ -87,6 +87,11 @@ jobs:
     - name: Build with SDL3
       run: python3 dev.py build --sdl3
 
+    # eventually we need to run all tests, but for now test that importing pygame
+    # works
+    - name: Test import works
+      run: python3 -c 'import pygame'
+
     # - name: Run tests
     #   env:
     #     SDL_VIDEODRIVER: "dummy"
