@@ -7,7 +7,8 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ `繁體中文`_ **Français**  `فارسی`_ `Español`_ `日本語`_ `Italiano`_
+`English`_ `简体中文`_ `繁體中文`_ **Français**  `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_
+
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 
 `Pygame`_ est une bibliothèque multi-plateforme, libre et open-source
@@ -211,3 +212,4 @@ Voir les docs/licences pour les licences des dépendances.
 .. _Español: README.es.rst
 .. _日本語: README.ja.rst
 .. _Italiano: README.it.rst
+.. _Русский: README.ru.rst
