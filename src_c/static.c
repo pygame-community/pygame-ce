@@ -117,7 +117,7 @@ PyInit_mouse(void);
 PyMODINIT_FUNC
 PyInit_key(void);
 PyMODINIT_FUNC
-PyInit_event(void);
+PyInit__event(void);
 
 PyMODINIT_FUNC
 PyInit_joystick(void);
@@ -313,7 +313,7 @@ PyInit_pygame_static()
 
     load_submodule("pygame", PyInit_mask(), "mask");
     load_submodule("pygame", PyInit_mouse(), "mouse");
-    load_submodule("pygame", PyInit_event(), "event");
+    load_submodule("pygame", PyInit__event(), "_event");
     load_submodule("pygame", PyInit_joystick(), "joystick");
 
     load_submodule("pygame", PyInit_pg_mixer(), "mixer");
@@ -396,7 +396,7 @@ PyInit_pygame_static()
 
 #include "joystick.c"
 
-#include "event.c"
+#include "_event.c"
 
 #include "mouse.c"
 

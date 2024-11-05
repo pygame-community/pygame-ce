@@ -13,31 +13,57 @@ The extension module :py:mod:`pygame.event`.
 
 Header file: src_c/include/pygame.h
 
+.. c:type:: pgEventData
 
-.. c:type:: pgEventObject
-
-   The :py:class:`pygame.event.EventType` object C struct.
+   Struct holding information about the event object.
 
    .. c:member:: int type
 
       The event type code.
 
-.. c:type:: pgEvent_Type
+   .. c:member:: PyObject* dict
 
-   The pygame event object type :py:class:`pygame.event.EventType`.
+      Dict object of the event, might be NULL.
+
+.. c:function:: PyObject* pgEvent_GetType(void)
+
+   Return a python class that is currently set to be the event class
+
+   If the class is not known at the time (called before ``pygame._event.register_event_class``)
+   this function will return NULL and set the error.
 
 .. c:function:: int pgEvent_Check(PyObject *x)
 
    Return true if *x* is a pygame event instance
 
    Will return false if *x* is a subclass of event.
-   This is a macro. No check is made that *x* is not ``NULL``.
+   Will return -1 if python error is set while checking.
+   No check is made that *x* is not ``NULL``.
 
 .. c:function:: PyObject* pgEvent_New(SDL_Event *event)
 
    Return a new pygame event instance for the SDL *event*.
    If *event* is ``NULL`` then create an empty event object.
    On failure raise a Python exception and return ``NULL``.
+
+.. c:function:: PyObject* pgEvent_FromEventData(pgEventData)
+
+   Return an event object constructed from pgEventData struct.
+
+   On error returns NULL and sets python exception.
+
+.. c:function:: pgEventData pgEvent_GetEventData(PyObject *)
+
+   Return a pgEventData struct containing information about event extracted from the python object.
+
+   Beware: on error this doesn't retun any special sentiel value if error ocurred, only sets python exception, so use ``PyErr_Ocurred()`` for error checking.
+   Remember to call :c:func:`pgEvent_FreeEventData` after usage to avoid memory leaks.
+
+.. c:function:: void pgEvent_FreeEventData(pgEventData)
+
+   Free resources held by pgEventData (decrefs dict).
+
+   .. ## pgEvent_FreeEventData ##
 
 .. c:function:: char* pgEvent_GetKeyDownInfo(void)
 

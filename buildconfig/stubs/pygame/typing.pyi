@@ -14,7 +14,7 @@ __all__ = [
 
 import sys
 from abc import abstractmethod
-from typing import IO, Callable, Tuple, Union, TypeVar, Protocol
+from typing import IO, Any, Callable, Dict, Optional, Tuple, Union, TypeVar, Protocol
 
 from pygame.color import Color
 from pygame.rect import Rect, FRect
@@ -70,6 +70,25 @@ class _HasRectAttribute(Protocol):
 RectLike = Union[
     Rect, FRect, SequenceLike[float], SequenceLike[Point], _HasRectAttribute
 ]
+
+
+class EventLike(Protocol):
+    # __dict__: Dict[str, Any]
+    def __init__(
+        self, type: int, dict: Optional[Dict[str, Any]] = None, **kwargs: Any
+    ) -> None: ...
+    def __new__(cls, *args, **kwargs) -> "EventLike": ...
+    def __getattribute__(self, name: str) -> Any: ...
+    def __setattr__(self, name: str, value: Any) -> None: ...
+    def __delattr__(self, name: str) -> None: ...
+    def __int__(self) -> int: ...
+    def __bool__(self) -> bool: ...
+    def __eq__(self, other) -> bool: ...
+
+    @property
+    def type(self) -> int: ...
+    @property
+    def dict(self) -> Dict[str, Any]: ...
 
 
 # cleanup namespace
