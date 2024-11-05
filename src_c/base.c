@@ -496,24 +496,19 @@ pg_base_get_init(PyObject *self, PyObject *_null)
 static int
 pg_IntFromObj(PyObject *obj, int *val)
 {
-    int tmp_val;
-
     if (PyFloat_Check(obj)) {
         /* Python3.8 complains with deprecation warnings if we pass
          * floats to PyLong_AsLong.
          */
-        double dv = PyFloat_AsDouble(obj);
-        tmp_val = (int)dv;
+        *val = (int)PyFloat_AS_DOUBLE(obj);
     }
     else {
-        tmp_val = PyLong_AsLong(obj);
+        *val = PyLong_AsLong(obj);
+        if (*val == -1 && PyErr_Occurred()) {
+            PyErr_Clear();
+            return 0;
+        }
     }
-
-    if (tmp_val == -1 && PyErr_Occurred()) {
-        PyErr_Clear();
-        return 0;
-    }
-    *val = tmp_val;
     return 1;
 }
 
@@ -535,17 +530,29 @@ pg_IntFromObjIndex(PyObject *obj, int _index, int *val)
 static int
 pg_TwoIntsFromObj(PyObject *obj, int *val1, int *val2)
 {
-    if (PyTuple_Check(obj) && PyTuple_Size(obj) == 1) {
+    // First, lets check the size. This returns -1 if invalid and may set an
+    // error.
+    Py_ssize_t obj_size = PySequence_Size(obj);
+
+    // If the object is a tuple of one element, try that one element.
+    if (obj_size == 1 && PyTuple_Check(obj)) {
         return pg_TwoIntsFromObj(PyTuple_GET_ITEM(obj, 0), val1, val2);
     }
-    if (!PySequence_Check(obj) || PySequence_Length(obj) != 2) {
+
+    // Otherwise lets make sure this is a legit sequence and has two elements.
+    // Some objects can passing PySequence_Size but fail PySequence_Check
+    // (like sets)
+    if (obj_size != 2 || !PySequence_Check(obj)) {
+        PyErr_Clear();  // Clear the potential error from PySequence_Size
         return 0;
     }
 
-    // Can use PySequence_ITEM because of the PySequence_Check above.
+    // Now we can extract the items, using this macro because we know
+    // obj is a PySequence.
     PyObject *item1 = PySequence_ITEM(obj, 0);
     PyObject *item2 = PySequence_ITEM(obj, 1);
 
+    // If either item is NULL lets get out of here
     if (item1 == NULL || item2 == NULL) {
         Py_XDECREF(item1);
         Py_XDECREF(item2);
@@ -553,7 +560,26 @@ pg_TwoIntsFromObj(PyObject *obj, int *val1, int *val2)
         return 0;
     }
 
-    if (!pg_IntFromObj(item1, val1) || !pg_IntFromObj(item2, val2)) {
+    // Fastest way to extract numbers I tested (in Python 3.13) is to extract
+    // Python floats as doubles with the below macro, and get everything else
+    // through PyLong_AsLong, using C casting to turn into the final type.
+    if (PyFloat_Check(item1)) {
+        *val1 = (int)PyFloat_AS_DOUBLE(item1);
+    }
+    else {
+        *val1 = PyLong_AsLong(item1);
+    }
+
+    if (PyFloat_Check(item2)) {
+        *val2 = (int)PyFloat_AS_DOUBLE(item2);
+    }
+    else {
+        *val2 = PyLong_AsLong(item2);
+    }
+
+    // This catches the case where either of the PyLong_AsLong's failed
+    if ((*val1 == -1 || *val2 == -1) && PyErr_Occurred()) {
+        PyErr_Clear();
         Py_DECREF(item1);
         Py_DECREF(item2);
         return 0;
@@ -567,14 +593,16 @@ pg_TwoIntsFromObj(PyObject *obj, int *val1, int *val2)
 static int
 pg_FloatFromObj(PyObject *obj, float *val)
 {
-    float f = (float)PyFloat_AsDouble(obj);
-
-    if (f == -1 && PyErr_Occurred()) {
-        PyErr_Clear();
-        return 0;
+    if (PyFloat_Check(obj)) {
+        *val = (float)PyFloat_AS_DOUBLE(obj);
     }
-
-    *val = f;
+    else {
+        *val = (float)PyLong_AsLong(obj);
+        if (*val == -1.0f && PyErr_Occurred()) {
+            PyErr_Clear();
+            return 0;
+        }
+    }
     return 1;
 }
 
@@ -596,17 +624,29 @@ pg_FloatFromObjIndex(PyObject *obj, int _index, float *val)
 static int
 pg_TwoFloatsFromObj(PyObject *obj, float *val1, float *val2)
 {
-    if (PyTuple_Check(obj) && PyTuple_Size(obj) == 1) {
+    // First, lets check the size. This returns -1 if invalid and may set an
+    // error.
+    Py_ssize_t obj_size = PySequence_Size(obj);
+
+    // If the object is a tuple of one element, try that one element.
+    if (obj_size == 1 && PyTuple_Check(obj)) {
         return pg_TwoFloatsFromObj(PyTuple_GET_ITEM(obj, 0), val1, val2);
     }
-    if (!PySequence_Check(obj) || PySequence_Length(obj) != 2) {
+
+    // Otherwise lets make sure this is a legit sequence and has two elements.
+    // Some objects can passing PySequence_Size but fail PySequence_Check
+    // (like sets)
+    if (obj_size != 2 || !PySequence_Check(obj)) {
+        PyErr_Clear();  // Clear the potential error from PySequence_Size
         return 0;
     }
 
-    // Can use PySequence_ITEM because of the PySequence_Check above.
+    // Now we can extract the items, using this macro because we know
+    // obj is a PySequence.
     PyObject *item1 = PySequence_ITEM(obj, 0);
     PyObject *item2 = PySequence_ITEM(obj, 1);
 
+    // If either item is NULL lets get out of here
     if (item1 == NULL || item2 == NULL) {
         Py_XDECREF(item1);
         Py_XDECREF(item2);
@@ -614,7 +654,26 @@ pg_TwoFloatsFromObj(PyObject *obj, float *val1, float *val2)
         return 0;
     }
 
-    if (!pg_FloatFromObj(item1, val1) || !pg_FloatFromObj(item2, val2)) {
+    // Fastest way to extract numbers I tested (in Python 3.13) is to extract
+    // Python floats as doubles with the below macro, and get everything else
+    // through PyLong_AsLong, using C casting to turn into the final type.
+    if (PyFloat_Check(item1)) {
+        *val1 = (float)PyFloat_AS_DOUBLE(item1);
+    }
+    else {
+        *val1 = (float)PyLong_AsLong(item1);
+    }
+
+    if (PyFloat_Check(item2)) {
+        *val2 = (float)PyFloat_AS_DOUBLE(item2);
+    }
+    else {
+        *val2 = (float)PyLong_AsLong(item2);
+    }
+
+    // This catches the case where either of the PyLong_AsLong's failed
+    if ((*val1 == -1.0f || *val2 == -1.0f) && PyErr_Occurred()) {
+        PyErr_Clear();
         Py_DECREF(item1);
         Py_DECREF(item2);
         return 0;
