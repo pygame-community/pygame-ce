@@ -78,6 +78,14 @@
 #define PG_ConvertSurfaceFormat SDL_ConvertSurface
 
 #define PG_PixelFormatEnum SDL_PixelFormat
+#define PG_PixelFormat SDL_PixelFormatDetails
+#define PG_SurfaceFormatEnum(surf) (surf)->format
+#define PG_GetSurfaceFormat(surf) \
+    SDL_GetPixelFormatDetails(PG_SurfaceFormatEnum(surf))
+#define PG_GetSurfacePalette SDL_GetSurfacePalette
+#define PG_SurfaceMapRGBA(surf, r, g, b, a) \
+    SDL_MapSurfaceRGBA(surface, r, g, b, a)
+#define PG_GetSurfaceClipRect(surf, rect) SDL_GetSurfaceClipRect(surf, &rect)
 
 #define PG_SurfaceHasRLE SDL_SurfaceHasRLE
 
@@ -149,6 +157,16 @@ PG_UnlockMutex(SDL_mutex *mutex)
     SDL_ConvertSurfaceFormat(src, pixel_format, 0)
 
 #define PG_PixelFormatEnum SDL_PixelFormatEnum
+#define PG_PixelFormat SDL_PixelFormat
+#define PG_SurfaceFormatEnum(surf) (surf)->format->format
+#define PG_GetSurfaceFormat(surf) (surf)->format
+#define PG_GetSurfacePalette(surf) (surf)->format->palette
+#define PG_SurfaceMapRGBA(surf, r, g, b, a) \
+    SDL_MapRGBA(PG_GetSurfaceFormat(surface), r, g, b, a)
+#define PG_GetSurfaceClipRect(surf, rect) \
+    {                                     \
+        rect = surf->clip_rect;           \
+    }
 
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
     SDL_SoftStretch(src, srcrect, dst, dstrect)
