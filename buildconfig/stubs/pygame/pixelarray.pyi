@@ -1,4 +1,4 @@
-from typing import Any, Dict, Tuple, Union, overload
+from typing import Any, Union, overload
 
 from pygame.surface import Surface
 
@@ -8,11 +8,11 @@ class PixelArray:
     surface: Surface
     itemsize: int
     ndim: int
-    shape: Tuple[int, ...]
-    strides: Tuple[int, ...]
+    shape: tuple[int, ...]
+    strides: tuple[int, ...]
     # possibly going to be deprecated/removed soon, in which case these
     # typestubs must be removed too
-    __array_interface__: Dict[str, Any]
+    __array_interface__: dict[str, Any]
     __array_struct__: Any
     def __init__(self, surface: Surface) -> None: ...
     def __enter__(self) -> PixelArray: ...
@@ -27,7 +27,7 @@ class PixelArray:
     def __getitem__(self, index_range: slice) -> Union[PixelArray, None]: ...
     # only valid for a 2D PixelArray
     @overload
-    def __getitem__(self, indices: Tuple[int, int]) -> int: ...
+    def __getitem__(self, indices: tuple[int, int]) -> int: ...
     # returns self
     @overload
     def __getitem__(self, ell: ellipsis) -> PixelArray: ...
