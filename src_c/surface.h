@@ -342,6 +342,21 @@
     } while (0)
 #endif
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+
+#define PG_SurfaceGetRGBA(colorkey, surf, r, g, b, a) \
+    SDL_GetRGBA(colorkey, PG_GetSurfaceFormat(surf),  \
+                PG_GetSurfacePalette(surf), r, g, b, a)
+#define PG_SurfaceGetRGB(colorkey, surf, r, g, b)   \
+    SDL_GetRGB(colorkey, PG_GetSurfaceFormat(surf), \
+               PG_GetSurfacePalette(surf), r, g, b)
+#else
+#define PG_SurfaceGetRGBA(colorkey, surf, r, g, b, a) \
+    SDL_GetRGBA(colorkey, PG_GetSurfaceFormat(surf), r, g, b, a)
+#define PG_SurfaceGetRGB(colorkey, surf, r, g, b) \
+    SDL_GetRGB(colorkey, PG_GetSurfaceFormat(surf), r, g, b)
+#endif
+
 int
 surface_fill_blend(SDL_Surface *surface, SDL_Rect *rect, Uint32 color,
                    int blendargs);
