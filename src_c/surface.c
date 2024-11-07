@@ -507,8 +507,6 @@ surface_init(pgSurfaceObject *self, PyObject *args, PyObject *kwds)
         return -1;
     }
 
-    default_format.palette = NULL;
-
     surface_cleanup(self);
 
     if (depth && masks) { /* all info supplied, most errorchecking
@@ -923,11 +921,7 @@ surf_map_rgb(PyObject *self, PyObject *args)
 
     SURF_INIT_CHECK(surf)
 
-#if SDL_VERSION_ATLEAST(3, 0, 0)
-    color = SDL_MapSurfaceRGBA(surf, rgba[0], rgba[1], rgba[2], rgba[3]);
-#else
-    color = SDL_MapRGBA(surf->format, rgba[0], rgba[1], rgba[2], rgba[3]);
-#endif
+    color = PG_SurfaceMapRGBA(surf, rgba[0], rgba[1], rgba[2], rgba[3]);
     return PyLong_FromLong(color);
 }
 
@@ -1314,6 +1308,9 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
     pgSurface_Prep(self);
     result =
         SDL_SetSurfaceRLE(surf, (flags & PGS_RLEACCEL) ? SDL_TRUE : SDL_FALSE);
+
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+    // TODO: is it fine to ignore this part for SDL3?
     /* HACK HACK HACK */
     if ((surf->flags & SDL_RLEACCEL) && (!(flags & PGS_RLEACCEL))) {
         /* hack to strip SDL_RLEACCEL flag off surface immediately when
@@ -1328,6 +1325,7 @@ surf_set_alpha(pgSurfaceObject *self, PyObject *args)
         SDL_LowerBlit(surf, &sdlrect, surface, &sdlrect);
         SDL_FreeSurface(surface);
     }
+#endif
     /* HACK HACK HACK */
     if (result == 0)
         result = SDL_SetSurfaceAlphaMod(surf, alpha);
@@ -1533,18 +1531,30 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
             format.BytesPerPixel = (bpp + 7) / 8;
 #endif
             if (PG_FORMAT_BitsPerPixel((&format)) > 8)
-                /* Allow a 8 bit source surface with an empty palette to be
-                 * converted to a format without a palette (pygame-ce issue
-                 * #146). If the target format has a non-NULL palette pointer
-                 * then SDL_ConvertSurface checks that the palette is not
-                 * empty-- that at least one entry is not black.
-                 */
+            /* Allow an 8 bit source surface with an empty palette to be
+             * converted to a format without a palette (pygame-ce issue
+             * #146). If the target format has a non-NULL palette pointer
+             * then SDL_ConvertSurface checks that the palette is not
+             * empty-- that at least one entry is not black.
+             */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                SDL_FreePalette(palette);
+            palette = NULL;
+#else
                 format.palette = NULL;
+#endif
             if (SDL_ISPIXELFORMAT_INDEXED(SDL_MasksToPixelFormatEnum(
                     PG_FORMAT_BitsPerPixel((&format)), format.Rmask,
                     format.Gmask, format.Bmask, format.Amask))) {
-                if (SDL_ISPIXELFORMAT_INDEXED(surf->format->format)) {
-                    SDL_SetPixelFormatPalette(&format, surf->format->palette);
+                if (SDL_ISPIXELFORMAT_INDEXED(PG_SurfaceFormatEnum(surf))) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                    if (palette)
+                        SDL_FreePalette(palette);
+                    palette = PG_GetSurfacePalette(surf);
+#else
+                    SDL_SetPixelFormatPalette(&format,
+                                              PG_GetSurfacePalette(surf));
+#endif
                 }
                 else {
                     /* Give the surface something other than an all white
@@ -1552,10 +1562,21 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
                      */
                     SDL_SetPaletteColors(palette, default_palette_colors, 0,
                                          default_palette_size);
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
                     SDL_SetPixelFormatPalette(&format, palette);
+#endif
                 }
             }
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            PG_PixelFormatEnum format_enum = SDL_GetPixelFormatForMasks(
+                format.bits_per_pixel, format.Rmask, format.Gmask,
+                format.Bmask, format.Amask);
+            newsurf = SDL_ConvertSurfaceAndColorspace(
+                surf, format_enum, palette, SDL_GetSurfaceColorspace(surf),
+                SDL_GetSurfaceProperties(surf));
+#else
             newsurf = PG_ConvertSurface(surf, &format);
+#endif
             SDL_SetSurfaceBlendMode(newsurf, SDL_BLENDMODE_NONE);
             SDL_FreePalette(palette);
         }
@@ -1571,7 +1592,7 @@ surf_convert(pgSurfaceObject *self, PyObject *args)
     }
 
     if (has_colorkey) {
-        colorkey = SDL_MapRGBA(newsurf->format, key_r, key_g, key_b, key_a);
+        colorkey = PG_SurfaceMapRGBA(newsurf, key_r, key_g, key_b, key_a);
         if (SDL_SetColorKey(newsurf, SDL_TRUE, colorkey) != 0) {
             PyErr_SetString(pgExc_SDLError, SDL_GetError());
             SDL_FreeSurface(newsurf);
@@ -2540,7 +2561,12 @@ static int
 _PgSurface_SrcAlpha(SDL_Surface *surf)
 {
     SDL_BlendMode mode;
-    if (SDL_GetSurfaceBlendMode(surf, &mode) < 0) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    if (!SDL_GetSurfaceBlendMode(surf, &mode))
+#else
+    if (SDL_GetSurfaceBlendMode(surf, &mode) < 0)
+#endif
+    {
         PyErr_SetString(pgExc_SDLError, SDL_GetError());
         return -1;
     }
@@ -2579,7 +2605,11 @@ surf_get_flags(PyObject *self, PyObject *_null)
         flags |= PGS_PREALLOC;
     if (PG_SurfaceHasRLE(surf))
         flags |= PGS_RLEACCELOK;
+#if SDL_VERSION_ATLEAST(3, 0, 0)  // TODO: is there a better solution?
+    if (PG_SurfaceHasRLE(surf))
+#else
     if ((sdl_flags & SDL_RLEACCEL))
+#endif
         flags |= PGS_RLEACCEL;
     if (is_window_surf) {
         if (window_flags & PG_WINDOW_FULLSCREEN_INCLUSIVE)
@@ -2790,10 +2820,11 @@ surf_subsurface(PyObject *self, PyObject *args)
         return RAISE(pgExc_SDLError, SDL_GetError());
 
     /* copy the colormap if we need it */
-    if (SDL_ISPIXELFORMAT_INDEXED(surf->format->format) &&
-        surf->format->palette) {
-        SDL_Color *colors = surf->format->palette->colors;
-        int ncolors = surf->format->palette->ncolors;
+    if (SDL_ISPIXELFORMAT_INDEXED(PG_SurfaceFormatEnum(surf)) &&
+        PG_GetSurfacePalette(surf)) {
+        SDL_Palette *surf_pallete = PG_GetSurfacePalette(surf);
+        SDL_Color *colors = surf_pallete->colors;
+        int ncolors = surf_pallete->ncolors;
         SDL_Palette *pal = SDL_AllocPalette(ncolors);
 
         if (!pal) {
@@ -4049,11 +4080,11 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
             PG_PixelFormat *fmt = PG_GetSurfaceFormat(src);
             PG_PixelFormatMut newfmt;
 
-            newfmt.palette = 0; /* Set NULL (or SDL gets confused) */
 #if SDL_VERSION_ATLEAST(3, 0, 0)
             newfmt.bits_per_pixel = fmt->bits_per_pixel;
             newfmt.bytes_per_pixel = fmt->bytes_per_pixel;
 #else
+            newfmt.palette = 0; /* Set NULL (or SDL gets confused) */
             newfmt.BitsPerPixel = fmt->BitsPerPixel;
             newfmt.BytesPerPixel = fmt->BytesPerPixel;
 #endif
@@ -4076,7 +4107,14 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
             newfmt.Gloss = fmt->Gloss;
             newfmt.Bloss = fmt->Bloss;
 #endif
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+            PG_PixelFormatEnum format_enum = SDL_GetPixelFormatForMasks(
+                newfmt.bits_per_pixel, newfmt.Rmask, newfmt.Gmask,
+                newfmt.Bmask, newfmt.Amask);
+            src = SDL_ConvertSurface(src, format_enum);
+#else
             src = PG_ConvertSurface(src, &newfmt);
+#endif
             if (src) {
                 result = SDL_BlitSurface(src, srcrect, dst, dstrect);
                 SDL_FreeSurface(src);
@@ -4093,8 +4131,11 @@ pgSurface_Blit(pgSurfaceObject *dstobj, pgSurfaceObject *srcobj,
               PG_SURF_BytesPerPixel(dst) == 2) &&
              _PgSurface_SrcAlpha(src) &&
              (SDL_ISPIXELFORMAT_ALPHA(PG_SurfaceFormatEnum(src))) &&
-             !PG_SurfaceHasRLE(src) && !PG_SurfaceHasRLE(dst) &&
-             !(src->flags & SDL_RLEACCEL) && !(dst->flags & SDL_RLEACCEL)) {
+             !PG_SurfaceHasRLE(src) && !PG_SurfaceHasRLE(dst)
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
+             && !(src->flags & SDL_RLEACCEL) && !(dst->flags & SDL_RLEACCEL)
+#endif
+    ) {
         /* If we have a 32bit source surface with per pixel alpha
            and no RLE we'll use pygame_Blit so we can mimic how SDL1
             behaved */

@@ -85,7 +85,7 @@
     SDL_GetPixelFormatDetails(PG_SurfaceFormatEnum(surf))
 #define PG_GetSurfacePalette SDL_GetSurfacePalette
 #define PG_SurfaceMapRGBA(surf, r, g, b, a) \
-    SDL_MapSurfaceRGBA(surface, r, g, b, a)
+    SDL_MapSurfaceRGBA(surf, r, g, b, a)
 #define PG_GetSurfaceClipRect(surf, rect) SDL_GetSurfaceClipRect(surf, rect)
 
 #define PG_SurfaceHasRLE SDL_SurfaceHasRLE
@@ -171,7 +171,7 @@ PG_FillRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
 #define PG_GetSurfaceFormat(surf) (surf)->format
 #define PG_GetSurfacePalette(surf) (surf)->format->palette
 #define PG_SurfaceMapRGBA(surf, r, g, b, a) \
-    SDL_MapRGBA(PG_GetSurfaceFormat(surface), r, g, b, a)
+    SDL_MapRGBA(PG_GetSurfaceFormat(surf), r, g, b, a)
 #define PG_GetSurfaceClipRect(surf, rect) \
     {                                     \
         rect = &surf->clip_rect;          \
