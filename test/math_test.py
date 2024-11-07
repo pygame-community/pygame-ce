@@ -1132,6 +1132,77 @@ class Vector2TypeTest(unittest.TestCase):
         v.from_polar((1, 0))
         self.assertEqual(v, self.e1)
 
+    def test_angle_rad(self):
+        v1 = Vector2(1, 0)
+        self.assertEqual(v1.angle_rad(), 0)
+
+        v2 = Vector2(0, 1)
+        self.assertEqual(v2.angle_rad(), math.pi / 2)
+
+        v3 = Vector2(-1, 0)
+        self.assertEqual(v3.angle_rad(), math.pi)
+
+        v4 = Vector2(1, 1)
+        self.assertEqual(v4.angle_rad(), math.pi / 4)
+
+        v5 = pygame.math.Vector2(0, 0)
+        self.assertEqual(v5.angle_rad(), 0)
+
+        v6 = pygame.math.Vector2(1, 1e-6)
+        self.assertAlmostEqual(v6.angle_rad(), 0, places=5)
+
+        v7 = pygame.math.Vector2(1e6, 1e6)
+        self.assertAlmostEqual(v7.angle_rad(), math.pi / 4, places=5)
+
+        v8 = pygame.math.Vector2(1, -1)
+        self.assertEqual(v8.angle_rad(), -math.pi / 4)
+
+        v9 = pygame.math.Vector2(-1, 1)
+        self.assertEqual(v9.angle_rad(), 3 * math.pi / 4)
+
+        v10 = pygame.math.Vector2(-1, -1)
+        self.assertEqual(v10.angle_rad(), -3 * math.pi / 4)
+
+        v11 = pygame.math.Vector2(1, 1)
+        self.assertEqual(v11.angle_rad(), math.pi / 4)
+
+        v12 = pygame.math.Vector2(1e-6, 1)
+        self.assertAlmostEqual(v12.angle_rad(), math.pi / 2, places=5)
+
+    def test_angle(self):
+        v1 = Vector2(0, 0)
+        self.assertTrue(v1.angle() == 0)
+
+        v2 = Vector2(1, 0)
+        self.assertTrue(v2.angle() == 0)
+
+        v3 = Vector2(1, 1)
+        self.assertTrue(v3.angle() == 45)
+
+        v4 = Vector2(0, 1)
+        self.assertTrue(v4.angle() == 90)
+
+        v5 = Vector2(-1, 1)
+        self.assertTrue(v5.angle() == 135)
+
+        v6 = Vector2(-1, 0)
+        self.assertTrue(v6.angle() == 180)
+
+        v7 = Vector2(-1, -1)
+        self.assertTrue(v7.angle() == -135)
+
+        v8 = Vector2(0, -1)
+        self.assertTrue(v8.angle() == -90)
+
+        v9 = Vector2(1, -1)
+        self.assertTrue(v9.angle() == -45)
+
+        v10 = Vector2(-0.005235964, 0.9999863)
+        self.assertAlmostEqual(v10.angle(), 90.3, places=5)
+
+        v11 = Vector2(math.cos(math.radians(-20)), math.sin(math.radians(-20)))
+        self.assertAlmostEqual(v11.angle(), -20, places=5)
+
     def test_subclass_operation(self):
         class Vector(pygame.math.Vector2):
             pass

@@ -2499,6 +2499,30 @@ vector2_from_polar(pgVector *self, PyObject *args)
 
     Py_RETURN_NONE;
 }
+
+static PyObject *
+vector2_angle_rad(pgVector *self, PyObject *_null)
+{
+    double angle_rad;
+    angle_rad = atan2(self->coords[1], self->coords[0]);
+    return PyFloat_FromDouble(angle_rad);
+}
+
+static PyObject *
+vector2_angle(pgVector *self, PyObject *_null)
+{
+    double angle_rad = atan2(self->coords[1], self->coords[0]);
+    double angle_deg = RAD2DEG(angle_rad);
+
+    if (angle_deg > 180) {
+        angle_deg -= 360;
+    }
+    else if (angle_deg <= -180) {
+        angle_deg += 360;
+    }
+    return Py_BuildValue("d", angle_deg);
+}
+
 static PyObject *
 vector_getsafepickle(pgRectObject *self, void *_null)
 {
@@ -2566,6 +2590,9 @@ static PyMethodDef vector2_methods[] = {
      DOC_MATH_VECTOR2_ASPOLAR},
     {"from_polar", (PyCFunction)vector2_from_polar, METH_VARARGS,
      DOC_MATH_VECTOR2_FROMPOLAR},
+    {"angle_rad", (PyCFunction)vector2_angle_rad, METH_NOARGS,
+     DOC_MATH_VECTOR2_ANGLERAD},
+    {"angle", (PyCFunction)vector2_angle, METH_NOARGS, DOC_MATH_VECTOR2_ANGLE},
     {"project", (PyCFunction)vector2_project, METH_O,
      DOC_MATH_VECTOR2_PROJECT},
     {"copy", (PyCFunction)vector_copy, METH_NOARGS, DOC_MATH_VECTOR2_COPY},

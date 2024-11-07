@@ -34,6 +34,8 @@
 #define DOC_MATH_VECTOR2_ANGLETO "angle_to(Vector2, /) -> float\ncalculates the angle to a given vector in degrees."
 #define DOC_MATH_VECTOR2_ASPOLAR "as_polar() -> (r, phi)\nreturns a tuple with radial distance and azimuthal angle."
 #define DOC_MATH_VECTOR2_FROMPOLAR "from_polar((r, phi), /) -> None\nSets x and y from a polar coordinates tuple."
+#define DOC_MATH_VECTOR2_ANGLERAD "angle_rad() -> float\nreturns the angle of the vector in radians relative to the positive X-axis."
+#define DOC_MAT_VECTOR2_ANGLE "angle_rad() -> float\nreturns the angle of the vector in degrees relative to the positive X-axis, within interval (-180, 180]."
 #define DOC_MATH_VECTOR2_PROJECT "project(Vector2, /) -> Vector2\nprojects a vector onto another."
 #define DOC_MATH_VECTOR2_COPY "copy() -> Vector2\nReturns a copy of itself."
 #define DOC_MATH_VECTOR2_CLAMPMAGNITUDE "clamp_magnitude(max_length, /) -> Vector2\nclamp_magnitude(min_length, max_length, /) -> Vector2\nReturns a copy of a vector with the magnitude clamped between max_length and min_length."
