@@ -87,7 +87,9 @@ RectLike = Union[
 class EventLike(Protocol):
     type: int
 
-    def __init__(self, dict: dict[str, Any] | None, **kwargs: Any) -> None: ...
+    def __init__(
+        self, dict: Optional[Dict[str, Any]] = None, **kwargs: Any
+    ) -> None: ...
 
     @property
     def dict(self) -> Dict[str, Any]: ...
