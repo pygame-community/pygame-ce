@@ -45,6 +45,12 @@ while not done:
         screen, "black", False, [[0, 80], [50, 90], [200, 80], [220, 30]], 5
     )
 
+    # Draw on the screen 3 black antialiased lines, each 5 pixels wide.
+    # The 'False' means the first and last points are not connected.
+    pygame.draw.aalines(
+        screen, "black", False, [[70, 40], [160, 50], [130, 65], [70, 55]], 5
+    )
+
     # Draw a rectangle outline
     pygame.draw.rect(screen, "black", [75, 10, 50, 20], 2)
 

@@ -3289,7 +3289,7 @@ class AALinesMixin(BaseLineMixin):
     def test_aalines__args(self):
         """Ensures draw aalines accepts the correct args."""
         bounds_rect = self.draw_aalines(
-            pygame.Surface((3, 3)), (0, 10, 0, 50), False, ((0, 0), (1, 1))
+            pygame.Surface((3, 3)), (0, 10, 0, 50), False, ((0, 0), (1, 1)), 1
         )
 
         self.assertIsInstance(bounds_rect, pygame.Rect)
@@ -3307,6 +3307,7 @@ class AALinesMixin(BaseLineMixin):
                     (0, 0, 0, 50),
                     False,
                     ((0, 0), (1, 1)),
+                    1,
                     blend,
                 )
                 # Check if there is only one warning and is a DeprecationWarning.
@@ -3318,8 +3319,15 @@ class AALinesMixin(BaseLineMixin):
         surface = pygame.Surface((4, 4))
         color = pygame.Color("yellow")
         points = ((0, 0), (1, 1), (2, 2))
+        width = 2
         kwargs_list = [
-            {"surface": surface, "color": color, "closed": False, "points": points},
+            {
+                "surface": surface,
+                "color": color,
+                "closed": False,
+                "points": points,
+                "width": width,
+            },
         ]
 
         for kwargs in kwargs_list:
@@ -3332,6 +3340,7 @@ class AALinesMixin(BaseLineMixin):
         bounds_rect = self.draw_aalines(
             closed=1,
             points=((0, 0), (1, 1), (2, 2)),
+            width=2,
             color=(10, 20, 30),
             surface=pygame.Surface((3, 2)),
         )
@@ -3362,6 +3371,7 @@ class AALinesMixin(BaseLineMixin):
             "color": pygame.Color("red"),
             "closed": 1,
             "points": ((2, 2), (1, 1)),
+            "width": 2,
         }
 
         for name in ("points", "closed", "color", "surface"):
@@ -3401,6 +3411,7 @@ class AALinesMixin(BaseLineMixin):
             "color": pygame.Color("green"),
             "closed": False,
             "points": ((1, 2), (2, 1)),
+            "width": 1,
         }
 
         invalid_kwargs = {
@@ -3450,11 +3461,13 @@ class AALinesMixin(BaseLineMixin):
         color = (255, 255, 0, 0)
         closed = 0
         points = ((1, 2), (2, 1))
+        width = 1
         kwargs = {
             "surface": surface,
             "color": color,
             "closed": closed,
             "points": points,
+            "width": width,
         }
 
         for name in ("surface", "color", "closed", "points"):
@@ -3487,6 +3500,7 @@ class AALinesMixin(BaseLineMixin):
             "color": expected_color,
             "closed": False,
             "points": None,
+            "width": 1,
         }
 
         # The point type can be a tuple/list/Vector2.
@@ -3527,6 +3541,7 @@ class AALinesMixin(BaseLineMixin):
             "color": pygame.Color("red"),
             "closed": False,
             "points": None,
+            "width": 1,
         }
 
         points_fmts = (
@@ -3572,6 +3587,7 @@ class AALinesMixin(BaseLineMixin):
             "color": line_color,
             "closed": None,
             "points": ((1, 1), (4, 1), (4, 4), (1, 4)),
+            "width": 1,
         }
 
         true_values = (-7, 1, 10, "2", 3.1, (4,), [5], True)
@@ -3598,6 +3614,7 @@ class AALinesMixin(BaseLineMixin):
             "color": None,
             "closed": False,
             "points": (pos, (2, 1)),
+            "width": 1,
         }
         greens = (
             (0, 255, 0),
@@ -3627,6 +3644,7 @@ class AALinesMixin(BaseLineMixin):
             "color": None,
             "closed": False,
             "points": ((1, 1), (1, 2)),
+            "width": 1,
         }
 
         for expected_color in (2.3, self):
@@ -3648,6 +3666,39 @@ class AALinesMixin(BaseLineMixin):
                 for pos, color in border_pos_and_color(surface):
                     self.assertEqual(color, expected_color, f"pos={pos}")
 
+    def test_aalines__color_with_thickness(self):
+        """Ensures thick aalines are drawn using the correct color."""
+        x_left = y_top = 5
+        for surface in self._create_surfaces():
+            x_right = surface.get_width() - 5
+            y_bottom = surface.get_height() - 5
+            endpoints = (
+                (x_left, y_top),
+                (x_right, y_top),
+                (x_right, y_bottom),
+                (x_left, y_bottom),
+            )
+            for expected_color in self.COLORS:
+                self.draw_aalines(surface, expected_color, True, endpoints, 4)
+
+                for t in (-1, 0, 1):
+                    for x in range(x_left, x_right + 1):
+                        for y in (y_top, y_bottom):
+                            pos = (x, y + t)
+                            self.assertEqual(
+                                surface.get_at(pos),
+                                expected_color,
+                                f"pos={pos}",
+                            )
+                    for y in range(y_top, y_bottom + 1):
+                        for x in (x_left, x_right):
+                            pos = (x + t, y)
+                            self.assertEqual(
+                                surface.get_at(pos),
+                                expected_color,
+                                f"pos={pos}",
+                            )
+
     def test_aalines__gaps(self):
         """Tests if the aalines drawn contain any gaps.
 
@@ -3663,11 +3714,34 @@ class AALinesMixin(BaseLineMixin):
             for pos, color in border_pos_and_color(surface):
                 self.assertEqual(color, expected_color, f"pos={pos}")
 
+    def test_aalines__gaps_with_thickness(self):
+        """Ensures thick aalines are drawn without any gaps."""
+        expected_color = (255, 255, 255)
+        x_left = y_top = 5
+        for surface in self._create_surfaces():
+            h = (surface.get_width() - 11) // 5
+            w = h * 5
+            x_right = x_left + w
+            y_bottom = y_top + h
+            endpoints = ((x_left, y_top), (x_right, y_top), (x_right, y_bottom))
+            self.draw_aalines(surface, expected_color, True, endpoints, 4)
+
+            for x in range(x_left, x_right + 1):
+                for t in (-1, 0, 1):
+                    pos = (x, y_top + t)
+                    self.assertEqual(surface.get_at(pos), expected_color, f"pos={pos}")
+                    pos = (x, y_top + t + ((x - 3) // 5))
+                    self.assertEqual(surface.get_at(pos), expected_color, f"pos={pos}")
+            for y in range(y_top, y_bottom + 1):
+                for t in (-1, 0, 1):
+                    pos = (x_right + t, y)
+                    self.assertEqual(surface.get_at(pos), expected_color, f"pos={pos}")
+
     def test_aalines__bounding_rect(self):
         """Ensures draw aalines returns the correct bounding rect.
 
-        Test lines with endpoints on and off the surface and blending
-        enabled and disabled.
+        Test lines with endpoints on and off the surface and a range of
+        width/thickness values.
         """
         line_color = pygame.Color("red")
         surf_color = pygame.Color("blue")
@@ -3685,20 +3759,31 @@ class AALinesMixin(BaseLineMixin):
             # and off the surface.
             for pos in rect_corners_mids_and_center(surf_rect):
                 pos_rect.center = pos
-                # Shape: Triangle (if closed), ^ caret (if not closed).
-                pts = (pos_rect.midleft, pos_rect.midtop, pos_rect.midright)
-                pos = pts[0]  # Rect position if nothing drawn.
 
-                for closed in (True, False):
-                    surface.fill(surf_color)  # Clear for each test.
+                # Draw using different thicknesses.
+                for thickness in range(-1, 5):
+                    # Shape: Triangle (if closed), ^ caret (if not closed).
+                    pts = (pos_rect.midleft, pos_rect.midtop, pos_rect.midright)
+                    pos = pts[0]  # Rect position if nothing drawn.
 
-                    bounding_rect = self.draw_aalines(surface, line_color, closed, pts)
+                    for closed in (True, False):
+                        surface.fill(surf_color)  # Clear for each test.
 
-                    # Calculating the expected_rect after the lines are
-                    # drawn (it uses what is actually drawn).
-                    expected_rect = create_bounding_rect(surface, surf_color, pos)
+                        bounding_rect = self.draw_aalines(
+                            surface, line_color, closed, pts, thickness
+                        )
 
-                    self.assertEqual(bounding_rect, expected_rect)
+                        if 0 < thickness:
+                            # Calculating the expected_rect after the lines are
+                            # drawn (it uses what is actually drawn).
+                            expected_rect = create_bounding_rect(
+                                surface, surf_color, pos
+                            )
+                        else:
+                            # Nothing drawn.
+                            expected_rect = pygame.Rect(pos, (0, 0))
+
+                        self.assertEqual(bounding_rect, expected_rect)
 
     def test_aalines__surface_clip(self):
         """Ensures draw aalines respects a surface's clip area."""
@@ -3718,34 +3803,35 @@ class AALinesMixin(BaseLineMixin):
             pos_rect.center = center
             pts = (pos_rect.midtop, pos_rect.center, pos_rect.midbottom)
             for closed in (True, False):  # Test closed and not closed.
-                # Get the expected points by drawing the aalines without
-                # the clip area set.
-                surface.set_clip(None)
-                surface.fill(surface_color)
-                self.draw_aalines(surface, aaline_color, closed, pts)
+                for thickness in (1, 3):  # Test different line widths.
+                    # Get the expected points by drawing the aalines without
+                    # the clip area set.
+                    surface.set_clip(None)
+                    surface.fill(surface_color)
+                    self.draw_aalines(surface, aaline_color, closed, pts, thickness)
 
-                expected_pts = get_color_points(
-                    surface, surface_color, clip_rect, False
-                )
+                    expected_pts = get_color_points(
+                        surface, surface_color, clip_rect, False
+                    )
 
-                # Clear the surface and set the clip area. Redraw the
-                # aalines and check that only the clip area is modified.
-                surface.fill(surface_color)
-                surface.set_clip(clip_rect)
+                    # Clear the surface and set the clip area. Redraw the
+                    # aalines and check that only the clip area is modified.
+                    surface.fill(surface_color)
+                    surface.set_clip(clip_rect)
 
-                self.draw_aalines(surface, aaline_color, closed, pts)
+                    self.draw_aalines(surface, aaline_color, closed, pts, thickness)
 
-                surface.lock()  # For possible speed up.
+                    surface.lock()  # For possible speed up.
 
-                # Check all the surface points to ensure the expected_pts
-                # are not surface_color.
-                for pt in ((x, y) for x in range(surfw) for y in range(surfh)):
-                    if pt in expected_pts:
-                        self.assertNotEqual(surface.get_at(pt), surface_color, pt)
-                    else:
-                        self.assertEqual(surface.get_at(pt), surface_color, pt)
+                    # Check all the surface points to ensure the expected_pts
+                    # are not surface_color.
+                    for pt in ((x, y) for x in range(surfw) for y in range(surfh)):
+                        if pt in expected_pts:
+                            self.assertNotEqual(surface.get_at(pt), surface_color, pt)
+                        else:
+                            self.assertEqual(surface.get_at(pt), surface_color, pt)
 
-                surface.unlock()
+                    surface.unlock()
 
 
 class DrawAALinesTest(AALinesMixin, DrawTestCase):
