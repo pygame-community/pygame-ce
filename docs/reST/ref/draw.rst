@@ -334,7 +334,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
             parameter and its width and height will be 0
          :rtype: Rect
 
-         .. versionadded:: 2.6.0
+         .. versionadded:: 2.5.3
 
          .. ## pygame.draw.aaellipse ##
 
