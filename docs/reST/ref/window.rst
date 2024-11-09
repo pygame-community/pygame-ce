@@ -10,10 +10,10 @@
    | :sl:`pygame object that represents a window`
    | :sg:`Window(title='pygame window', size=(640, 480), position=None, fullscreen=False, fullscreen_desktop=False, **kwargs) -> Window`
 
-   The Window class (formerly known as _sdl2.video.Window), is an experimental
-   feature of pygame-ce. This class allows for programs to drive multiple
-   Windows on-screen at once, something not possible with the
-   :func:`pygame.display.set_mode` API. Not everything possible with
+   The Window class (formerly known as _sdl2.video.Window), is a newly
+   published feature of pygame-ce 2.5.2. This class allows for programs
+   to drive multiple windows on-screen at once, something not possible with
+   the :func:`pygame.display.set_mode` API. Not everything possible with
    :mod:`pygame.display` is possible yet in the Window API, but the new
    window class will continue to be developed, and we're excited to share
    the new functionality this class offers.
@@ -59,10 +59,10 @@
              pygame.quit()
              raise SystemExit
 
-   Event behavior if multiple Windows are created: When the close button is
+   Event behavior if multiple ``Window``\ s are created: When the close button is
    pressed, a ``WINDOWCLOSE`` event is sent. You need to explicitly destroy
-   the window. Note that the event ``QUIT`` will only be sent if all Window
-   has been destroyed.
+   the window. Note that the event ``QUIT`` will only be sent if all
+   ``Window``\ s have been destroyed.
 
    .. code-block:: python
 
