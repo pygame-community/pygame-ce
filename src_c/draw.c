@@ -1037,17 +1037,20 @@ aaellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
     else if (rect->h == rect->w) {
         int radius = (int)(rect->w / 2);
+        SDL_Rect *ret_rect = NULL;
         PyObject *ret = NULL;
         PyObject *center = pg_tuple_couple_from_values_int(rect->x + radius,
                                                            rect->y + radius);
         PyObject *args =
             Py_BuildValue("(OOOii)", surfobj, colorobj, center, radius, width);
-
         if (!args) {
             return NULL; /* Exception already set. */
         }
-
         ret = aacircle(NULL, args, NULL);
+        ret_rect = pgRect_FromObject(ret, &temp);
+        if (ret_rect->w == 0 && ret_rect->h == 0) {
+            ret = pgRect_New4(rect->x, rect->y, 0, 0);
+        }
         Py_DECREF(args);
         return ret;
     }
