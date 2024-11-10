@@ -460,24 +460,15 @@ class WindowTypeTest(unittest.TestCase):
 
         wm_info_potential_keys = {
             "colorbuffer",
-            "connection",
-            "data",
-            "dfb",
             "display",
             "framebuffer",
-            "fswindow",
             "hdc",
-            "hglrc",
             "hinstance",
-            "lock_func",
             "resolveFramebuffer",
-            "shell_surface",
             "surface",
-            "taskHandle",
-            "unlock_func",
-            "wimpVersion",
             "window",
-            "wmwindow",
+            "viewport",
+            "screen",
         }
 
         # If any unexpected dict keys are present, they
