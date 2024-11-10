@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Dict, Union
 from typing_extensions import deprecated # added in 3.13
 
 from pygame.typing import Point, RectLike
@@ -70,6 +70,8 @@ class Window:
     def position(self, value: Union[int, Point]) -> None: ...
     @property
     def opengl(self) -> bool: ...
+    @property
+    def wm_info(self) -> Dict[str, int]: ...
     @classmethod
     @deprecated("since 2.4.0. Use either the display module or the Window class with get_surface and flip. Try not to mix display and Window")
     def from_display_module(cls) -> Window: ...

@@ -289,6 +289,18 @@
 
       .. versionadded:: 2.5.0
 
+   .. attribute:: wm_info
+
+      | :sl:`Get information about the current windowing system`
+      | :sg:`wm_info -> dict`
+
+      Creates a dictionary filled with string keys. The strings and values are
+      arbitrarily created by the system. Some systems may have no information and
+      an empty dictionary will be returned. Most platforms will return a "window"
+      key with the value set to the system id for the window.
+
+      .. versionaddedold:: 2.5.3
+
    .. classmethod:: from_display_module
 
       | :sl:`Create a Window object using window data from display module`
