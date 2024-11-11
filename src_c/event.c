@@ -342,12 +342,10 @@ _pg_pgevent_proxify_helper(Uint32 type, Uint8 proxify)
         _PG_HANDLE_PROXIFY(CONTROLLERDEVICEADDED);
         _PG_HANDLE_PROXIFY(CONTROLLERDEVICEREMOVED);
         _PG_HANDLE_PROXIFY(CONTROLLERDEVICEREMAPPED);
-#if SDL_VERSION_ATLEAST(2, 0, 14)
         _PG_HANDLE_PROXIFY(CONTROLLERTOUCHPADDOWN);
         _PG_HANDLE_PROXIFY(CONTROLLERTOUCHPADMOTION);
         _PG_HANDLE_PROXIFY(CONTROLLERTOUCHPADUP);
         _PG_HANDLE_PROXIFY(CONTROLLERSENSORUPDATE);
-#endif
         _PG_HANDLE_PROXIFY(DOLLARGESTURE);
         _PG_HANDLE_PROXIFY(DOLLARRECORD);
         _PG_HANDLE_PROXIFY(DROPFILE);
@@ -367,9 +365,7 @@ _pg_pgevent_proxify_helper(Uint32 type, Uint8 proxify)
         _PG_HANDLE_PROXIFY(JOYBUTTONUP);
         _PG_HANDLE_PROXIFY(JOYDEVICEADDED);
         _PG_HANDLE_PROXIFY(JOYDEVICEREMOVED);
-#if SDL_VERSION_ATLEAST(2, 0, 14)
         _PG_HANDLE_PROXIFY(LOCALECHANGED);
-#endif
         _PG_HANDLE_PROXIFY(MOUSEMOTION);
         _PG_HANDLE_PROXIFY(MOUSEBUTTONDOWN);
         _PG_HANDLE_PROXIFY(MOUSEBUTTONUP);
@@ -756,10 +752,8 @@ _pg_name_from_eventtype(int type)
             return "KeyUp";
         case SDL_KEYMAPCHANGED:
             return "KeyMapChanged";
-#if SDL_VERSION_ATLEAST(2, 0, 14)
         case SDL_LOCALECHANGED:
             return "LocaleChanged";
-#endif
         case SDL_MOUSEMOTION:
             return "MouseMotion";
         case SDL_MOUSEBUTTONDOWN:
@@ -828,7 +822,6 @@ _pg_name_from_eventtype(int type)
             return "JoyDeviceAdded";
         case SDL_JOYDEVICEREMOVED:
             return "JoyDeviceRemoved";
-#if SDL_VERSION_ATLEAST(2, 0, 14)
         case SDL_CONTROLLERTOUCHPADDOWN:
             return "ControllerTouchpadDown";
         case SDL_CONTROLLERTOUCHPADMOTION:
@@ -837,7 +830,6 @@ _pg_name_from_eventtype(int type)
             return "ControllerTouchpadUp";
         case SDL_CONTROLLERSENSORUPDATE:
             return "ControllerSensorUpdate";
-#endif /*SDL_VERSION_ATLEAST(2, 0, 14)*/
         case SDL_AUDIODEVICEADDED:
             return "AudioDeviceAdded";
         case SDL_AUDIODEVICEREMOVED:
@@ -1215,7 +1207,6 @@ dict_from_event(SDL_Event *event)
             _pg_insobj(dict, "instance_id",
                        PyLong_FromLong(event->jdevice.which));
             break;
-#if SDL_VERSION_ATLEAST(2, 0, 14)
         case SDL_CONTROLLERTOUCHPADDOWN:
         case SDL_CONTROLLERTOUCHPADMOTION:
         case SDL_CONTROLLERTOUCHPADUP:
@@ -1230,7 +1221,6 @@ dict_from_event(SDL_Event *event)
             _pg_insobj(dict, "pressure",
                        PyFloat_FromDouble(event->ctouchpad.pressure));
             break;
-#endif /*SDL_VERSION_ATLEAST(2, 0, 14)*/
 
 #ifdef WIN32
         case SDL_SYSWMEVENT:
@@ -1318,14 +1308,12 @@ dict_from_event(SDL_Event *event)
             window = SDL_GetWindowFromID(event->button.windowID);
             break;
         }
-#if SDL_VERSION_ATLEAST(2, 0, 14)
         case SDL_FINGERMOTION:
         case SDL_FINGERDOWN:
         case SDL_FINGERUP: {
             window = SDL_GetWindowFromID(event->tfinger.windowID);
             break;
         }
-#endif
         default: {
             return dict;
         }

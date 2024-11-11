@@ -50,7 +50,7 @@ jobs:
       CIBW_ARCHS: ${{ matrix.winarch }}
 
     steps:
-      - uses: actions/checkout@v4.2.1
+      - uses: actions/checkout@v4.2.2
 
       - uses: TheMrMilchmann/setup-msvc-dev@v3  # this lets us use the developer command prompt on windows
         with:
