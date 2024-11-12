@@ -43,10 +43,7 @@
           'LASX': False
      }
 
-   .. Note:: The value of ``ARMSIMD`` will be always False if
-      SDL version < 2.0.12.
-
-      The values of ``LSX`` and ``LASX`` will be always False if
+   .. Note:: The values of ``LSX`` and ``LASX`` will be always False if
       SDL version < 2.24.0.
 
    .. versionadded:: 2.3.1

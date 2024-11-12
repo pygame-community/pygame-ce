@@ -27,29 +27,13 @@ typedef uint8_t Uint8;
  * warning without this check here, which is very weird. */
 #ifdef SDL_VERSION_ATLEAST
 
-// SDL_PIXELFORMAT_XRGB8888 and SDL_PIXELFORMAT_XBGR8888 are new names
-// in SDL 2.0.14, the macros below let us use the new (less confusing)
-// naming while still building on old versions.
-
-#if SDL_VERSION_ATLEAST(2, 0, 14)
-#define PG_PIXELFORMAT_XRGB8888 SDL_PIXELFORMAT_XRGB8888
-#else
-#define PG_PIXELFORMAT_XRGB8888 SDL_PIXELFORMAT_RGB888
-#endif
-
-#if SDL_VERSION_ATLEAST(2, 0, 14)
-#define PG_PIXELFORMAT_XBGR8888 SDL_PIXELFORMAT_XBGR8888
-#else
-#define PG_PIXELFORMAT_XBGR8888 SDL_PIXELFORMAT_BGR888
-#endif
-
 // SDL does not provide endian independent names for 32 bit formats without
 // alpha channels the way they do for ones with alpha channels.
 // E.g. SDL_PIXELFORMAT_RGBA32. This macro allows us the convenience of the
 // endian independent name.
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-#define PG_PIXELFORMAT_RGBX32 PG_PIXELFORMAT_XBGR8888
+#define PG_PIXELFORMAT_RGBX32 SDL_PIXELFORMAT_XBGR8888
 #else
 #define PG_PIXELFORMAT_RGBX32 SDL_PIXELFORMAT_RGBX8888
 #endif
