@@ -1363,6 +1363,66 @@ class Vector2TypeTest(unittest.TestCase):
         exception = ctx.exception
         self.assertEqual(str(exception), "Cannot delete the y attribute")
 
+    def test_vector_get_angle_zero_vector(self):
+        vec = Vector2(0, 0)
+        self.assertEqual(vec.angle, 0.0)
+
+    def test_vector_get_angle_rad_zero_vector(self):
+        vec = Vector2(0, 0)
+        self.assertEqual(vec.angle_rad, 0.0)
+
+    def test_vector_get_angle_on_axes(self):
+        vec1 = Vector2(1, 0)
+        self.assertEqual(vec1.angle, 0.0)
+
+        vec2 = Vector2(0, 1)
+        self.assertEqual(vec2.angle, 90.0)
+
+        vec3 = Vector2(-1, 0)
+        self.assertEqual(vec3.angle, 180.0)
+
+        vec4 = Vector2(0, -1)
+        self.assertEqual(vec4.angle, -90.0)
+
+    def test_vector_get_angle_rad_on_axes(self):
+        vec1 = Vector2(1, 0)
+        self.assertEqual(vec1.angle_rad, 0.0)
+
+        vec2 = Vector2(0, 1)
+        self.assertEqual(vec2.angle_rad, math.pi / 2)
+
+        vec3 = Vector2(-1, 0)
+        self.assertEqual(vec3.angle_rad, math.pi)
+
+        vec4 = Vector2(0, -1)
+        self.assertEqual(vec4.angle_rad, -math.pi / 2)
+
+    def test_vector_get_angle_in_quadrants(self):
+        vec1 = Vector2(1, 1)
+        self.assertEqual(vec1.angle, 45.0)
+
+        vec2 = Vector2(-1, 1)
+        self.assertEqual(vec2.angle, 135.0)
+
+        vec3 = Vector2(-1, -1)
+        self.assertEqual(vec3.angle, -135.0)
+
+        vec4 = Vector2(1, -1)
+        self.assertEqual(vec4.angle, -45.0)
+
+    def test_vector_get_angle_rad_in_quadrants(self):
+        vec1 = Vector2(1, 1)
+        self.assertEqual(vec1.angle_rad, math.pi / 4)
+
+        vec2 = Vector2(-1, 1)
+        self.assertEqual(vec2.angle_rad, 3 * math.pi / 4)
+
+        vec3 = Vector2(-1, -1)
+        self.assertEqual(vec3.angle_rad, -3 * math.pi / 4)
+
+        vec4 = Vector2(1, -1)
+        self.assertEqual(vec4.angle_rad, -math.pi / 4)
+
 
 class Vector3TypeTest(unittest.TestCase):
     def setUp(self):

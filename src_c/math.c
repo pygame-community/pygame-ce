@@ -201,7 +201,10 @@ static int
 vector_sety(pgVector *self, PyObject *value, void *closure);
 static int
 vector_setz(pgVector *self, PyObject *value, void *closure);
+static PyObject *static PyObject *
+vector_get_angle(pgVector *self, void *closure);
 static PyObject *
+vector_get_angle_rad(pgVector *self, void *closure);
 vector_richcompare(PyObject *o1, PyObject *o2, int op);
 static PyObject *
 vector_length(pgVector *self, PyObject *args);
@@ -1267,6 +1270,48 @@ static int
 vector_setz(pgVector *self, PyObject *value, void *closure)
 {
     return vector_set_component(self, value, 2);
+}
+
+static PyObject *
+vector_get_angle(pgVector *self, void *closure)
+{
+    pgVector *vec = (pgVector *)self;
+
+    if (vec->coords[0] == 0.0 && vec->coords[1] == 0.0) {
+        return PyFloat_FromDouble(0.0);
+    }
+
+    double angle = atan2(vec->coords[1], vec->coords[0]) * 180.0 / M_PI;
+
+    if (angle > 180.0) {
+        angle -= 360.0;
+    }
+    else if (angle <= -180.0) {
+        angle += 360.0;
+    }
+
+    return PyFloat_FromDouble(angle);
+}
+
+static PyObject *
+vector_get_angle_rad(pgVector *self, void *closure)
+{
+    pgVector *vec = (pgVector *)self;
+
+    if (vec->coords[0] == 0.0 && vec->coords[1] == 0.0) {
+        return PyFloat_FromDouble(0.0);
+    }
+
+    double angle_rad = atan2(vec->coords[1], vec->coords[0]);
+
+    if (angle_rad > M_PI) {
+        angle_rad -= 2 * M_PI;
+    }
+    else if (angle_rad <= -M_PI) {
+        angle_rad += 2 * M_PI;
+    }
+
+    return PyFloat_FromDouble(angle_rad);
 }
 
 static PyObject *
@@ -2585,6 +2630,8 @@ static PyMethodDef vector2_methods[] = {
 static PyGetSetDef vector2_getsets[] = {
     {"x", (getter)vector_getx, (setter)vector_setx, NULL, NULL},
     {"y", (getter)vector_gety, (setter)vector_sety, NULL, NULL},
+    {"angle", (getter)vector_get_angle, NULL, NULL, NULL},
+    {"angle_rad", (getter)vector_get_angle_rad, NULL, NULL, NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
 
