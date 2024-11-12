@@ -201,10 +201,11 @@ static int
 vector_sety(pgVector *self, PyObject *value, void *closure);
 static int
 vector_setz(pgVector *self, PyObject *value, void *closure);
-static PyObject *static PyObject *
+static PyObject *
 vector_get_angle(pgVector *self, void *closure);
 static PyObject *
 vector_get_angle_rad(pgVector *self, void *closure);
+static PyObject *
 vector_richcompare(PyObject *o1, PyObject *o2, int op);
 static PyObject *
 vector_length(pgVector *self, PyObject *args);
