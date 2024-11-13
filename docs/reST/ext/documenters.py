@@ -46,23 +46,39 @@ def build_signatures(object):
         yield f"| :sg:`{name}({arg_string}) -> {ret}`"
 
 
+def get_doc(env, obj):
+    if obj.docstring:
+        return obj.docstring
+
+    # If we don't already have docs, check if a python implementation exists of this
+    # module and return its docstring if it does
+    python_object = env.autoapi_all_objects.get(
+        obj.id.replace("pygame", "src_py"), None
+    )
+    if python_object is not None:
+        return python_object.docstring
+
+    return ""
+
+
 class AutopgDocumenter(autoapi.documenters.AutoapiDocumenter):
     def format_signature(self, **kwargs):
         return ""
 
     def get_doc(self, encoding=None, ignore=1):
-        if self.object.docstring:
-            return super().get_doc(encoding, ignore)
+        return [get_doc(self.env, self.object).splitlines()]
 
-        # If we don't already have docs, check if a python implementation exists of this
-        # module and return its docstring if it does
-        python_object = self.env.autoapi_all_objects.get(
-            self.object.id.replace("pygame", "src_py"), None
+    def get_object_members(self, want_all):
+        members_check_module, members = super().get_object_members(want_all)
+        members = (
+            member
+            for member in members
+            if not member.object.obj.get("hide", False)
+            and not member.object.imported
+            and get_doc(self.env, member.object) != ""
         )
-        if python_object is not None:
-            return [python_object.docstring.splitlines()]
 
-        return [""]
+        return members_check_module, members
 
     def process_doc(self, docstrings):
         for docstring in docstrings:

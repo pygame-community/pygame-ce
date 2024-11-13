@@ -4,11 +4,7 @@
 =====================
 
 .. autopgmodule:: pygame.cursors
-   :members: compile, load_xbm
-
-
-.. autopgclass:: Cursor
-   :members: copy, type, data
+   :members:
 
 Example code for creating and settings cursors. (Click the mouse to switch cursor)
 
