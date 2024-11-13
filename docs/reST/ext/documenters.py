@@ -68,6 +68,12 @@ class AutopgDocumenter(autoapi.documenters.AutoapiDocumenter):
     def get_doc(self, encoding=None, ignore=1):
         return [get_doc(self.env, self.object).splitlines()]
 
+    def add_directive_header(self, sig: str) -> None:
+        super().add_directive_header(sig)
+        if "module" in self.objtype:
+            sourcename = self.get_sourcename()
+            self.add_line(f"   :synopsis: {self.get_doc()[0][0]}", sourcename)
+
     def get_object_members(self, want_all):
         members_check_module, members = super().get_object_members(want_all)
         members = (
