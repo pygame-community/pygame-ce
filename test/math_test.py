@@ -1365,11 +1365,23 @@ class Vector2TypeTest(unittest.TestCase):
 
     def test_vector_get_angle_zero_vector(self):
         vec = Vector2(0, 0)
-        self.assertEqual(vec.angle, 0.0)
+        with self.assertRaises(ValueError) as e:
+            vec.angle
+
+        exception = e.exception
+        self.assertEqual(
+            str(exception), "Angle is undefined for the zero vector (0, 0)"
+        )
 
     def test_vector_get_angle_rad_zero_vector(self):
         vec = Vector2(0, 0)
-        self.assertEqual(vec.angle_rad, 0.0)
+        with self.assertRaises(ValueError) as e:
+            vec.angle_rad
+
+        exception = e.exception
+        self.assertEqual(
+            str(exception), "Angle is undefined for the zero vector (0, 0)"
+        )
 
     def test_vector_get_angle_on_axes(self):
         vec1 = Vector2(1, 0)

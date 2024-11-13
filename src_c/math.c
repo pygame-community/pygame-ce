@@ -51,6 +51,9 @@
 
 #define TWO_PI (2. * M_PI)
 
+#define RAD_TO_DEG (180.0 / M_PI)
+#define DEG_TO_RAD (M_PI / 180.0)
+
 #ifndef M_PI_2
 #define M_PI_2 (M_PI / 2.0)
 #endif /* M_PI_2 */
@@ -1276,13 +1279,15 @@ vector_setz(pgVector *self, PyObject *value, void *closure)
 static PyObject *
 vector_get_angle(pgVector *self, void *closure)
 {
-    pgVector *vec = (pgVector *)self;
+    pgVector *vec = self;
 
     if (vec->coords[0] == 0.0 && vec->coords[1] == 0.0) {
-        return PyFloat_FromDouble(0.0);
+        PyErr_SetString(PyExc_ValueError,
+                        "Angle is undefined for the zero vector (0, 0)");
+        return NULL;
     }
 
-    double angle = atan2(vec->coords[1], vec->coords[0]) * 180.0 / M_PI;
+    double angle = atan2(vec->coords[1], vec->coords[0]) * RAD_TO_DEG;
 
     if (angle > 180.0) {
         angle -= 360.0;
@@ -1297,20 +1302,20 @@ vector_get_angle(pgVector *self, void *closure)
 static PyObject *
 vector_get_angle_rad(pgVector *self, void *closure)
 {
-    pgVector *vec = (pgVector *)self;
+    pgVector *vec = self;
 
     if (vec->coords[0] == 0.0 && vec->coords[1] == 0.0) {
-        return PyFloat_FromDouble(0.0);
+        PyErr_SetString(PyExc_ValueError,
+                        "Angle is undefined for the zero vector (0, 0)");
+        return NULL;
     }
 
-    double angle_rad = atan2(vec->coords[1], vec->coords[0]);
+    PyObject *angle_obj = vector_get_angle(self, closure);
+    double angle_deg = PyFloat_AsDouble(angle_obj);
 
-    if (angle_rad > M_PI) {
-        angle_rad -= 2 * M_PI;
-    }
-    else if (angle_rad <= -M_PI) {
-        angle_rad += 2 * M_PI;
-    }
+    double angle_rad = angle_deg * DEG_TO_RAD;
+
+    Py_XDECREF(angle_obj);
 
     return PyFloat_FromDouble(angle_rad);
 }
@@ -2631,8 +2636,9 @@ static PyMethodDef vector2_methods[] = {
 static PyGetSetDef vector2_getsets[] = {
     {"x", (getter)vector_getx, (setter)vector_setx, NULL, NULL},
     {"y", (getter)vector_gety, (setter)vector_sety, NULL, NULL},
-    {"angle", (getter)vector_get_angle, NULL, NULL, NULL},
-    {"angle_rad", (getter)vector_get_angle_rad, NULL, NULL, NULL},
+    {"angle", (getter)vector_get_angle, NULL, DOC_MATH_VECTOR2_ANGLE, NULL},
+    {"angle_rad", (getter)vector_get_angle_rad, NULL,
+     DOC_MATH_VECTOR2_ANGLERAD, NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
 
