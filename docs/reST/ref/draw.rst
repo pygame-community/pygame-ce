@@ -20,13 +20,8 @@ constrained to that area. The functions return a rectangle representing the
 bounding area of changed pixels. This bounding rectangle is the 'minimum'
 bounding box that encloses the affected area.
 
-All the drawing functions accept a color argument that can be one of the
-following formats:
-
-   - a :mod:`pygame.Color` object, or a type (apart from ``int``) that can be passed to
-     its constructor
-   - an ``int`` value which must be mapped to the pixel format of the surface
-     (see :func:`pygame.Surface.map_rgb` and :func:`pygame.Surface.unmap_rgb`)
+All the drawing functions accept a color argument that is compatible with
+:data:`pygame.typing.ColorLike`.
 
 A color's alpha value will be written directly into the surface (if the
 surface contains pixel alphas), but the draw function will not draw
@@ -52,7 +47,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+   :type color: :data:`pygame.typing.ColorLike`
    :param Rect rect: rectangle to draw, position and dimensions
    :param int width: (optional) used for line thickness or to indicate that
       the rectangle is to be filled (not to be confused with the width value
@@ -110,7 +105,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+   :type color: :data:`pygame.typing.ColorLike`
    :param points: a sequence of 3 or more (x, y) coordinates that make up the
       vertices of the polygon, each point in the sequence must be a
       tuple/list/:class:`pygame.math.Vector2` of 2 ints/floats,
@@ -158,7 +153,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+   :type color: :data:`pygame.typing.ColorLike`
    :param center: center point of the circle as a sequence of 2 ints/floats,
       e.g. ``(x, y)``
    :type center: tuple(int or float, int or float) or
@@ -219,7 +214,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+   :type color: :data:`pygame.typing.ColorLike`
    :param center: center point of the circle as a sequence of 2 ints/floats,
       e.g. ``(x, y)``
    :type center: tuple(int or float, int or float) or
@@ -273,7 +268,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+   :type color: :data:`pygame.typing.ColorLike`
    :param Rect rect: rectangle to indicate the position and dimensions of the
       ellipse, the ellipse will be centered inside the rectangle and bounded
       by it
@@ -314,7 +309,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+   :type color: :data:`pygame.typing.ColorLike`
    :param Rect rect: rectangle to indicate the position and dimensions of the
       ellipse which the arc will be based on, the ellipse will be centered
       inside the rectangle
@@ -364,7 +359,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+   :type color: :data:`pygame.typing.ColorLike`
    :param start_pos: start position of the line, (x, y)
    :type start_pos: tuple(int or float, int or float) or
       list(int or float, int or float) or Vector2(int or float, int or float)
@@ -416,7 +411,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+   :type color: :data:`pygame.typing.ColorLike`
    :param bool closed: if ``True`` an additional line segment is drawn between
       the first and last points in the ``points`` sequence
    :param points: a sequence of 2 or more (x, y) coordinates, where each
@@ -474,7 +469,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+   :type color: :data:`pygame.typing.ColorLike`
    :param start_pos: start position of the line, (x, y)
    :type start_pos: tuple(int or float, int or float) or
       list(int or float, int or float) or Vector2(int or float, int or float)
@@ -498,7 +493,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    .. versionchangedold:: 2.0.0 Added support for keyword arguments.
    .. versionchanged:: 2.4.0 Removed deprecated 'blend' argument
    .. versionchanged:: 2.5.0 ``blend`` argument readded for backcompat, but will always raise a deprecation exception when used
-   .. versionchanged:: 2.5.2 Added line width
+   .. versionchanged:: 2.5.3 Added line width
 
    .. ## pygame.draw.aaline ##
 
@@ -513,7 +508,7 @@ object around the draw calls (see :func:`pygame.Surface.lock` and
    :param Surface surface: surface to draw on
    :param color: color to draw with, the alpha value is optional if using a
       tuple ``(RGB[A])``
-   :type color: Color or string (for :doc:`color_list`) or int or tuple(int, int, int, [int])
+   :type color: :data:`pygame.typing.ColorLike`
    :param bool closed: if ``True`` an additional line segment is drawn between
       the first and last points in the ``points`` sequence
    :param points: a sequence of 2 or more (x, y) coordinates, where each

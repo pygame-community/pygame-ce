@@ -1160,7 +1160,7 @@ make_surface(PyObject *self, PyObject *arg)
         pixelformat = SDL_PIXELFORMAT_INDEX8;
     }
     else {
-        pixelformat = PG_PIXELFORMAT_XRGB8888;
+        pixelformat = SDL_PIXELFORMAT_XRGB8888;
     }
     sizex = (int)view_p->shape[0];
     sizey = (int)view_p->shape[1];

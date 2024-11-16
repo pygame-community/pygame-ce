@@ -450,9 +450,9 @@ scale_to(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int width,
          * rejects the input.
          * For example, RGBA and RGBX surfaces are compatible in this way. */
         if (retsurf->format->Amask != src->format->Amask) {
-            modsurf =
-                PG_CreateSurfaceFrom(retsurf->pixels, retsurf->w, retsurf->h,
-                                     retsurf->pitch, src->format->format);
+            modsurf = PG_CreateSurfaceFrom(retsurf->w, retsurf->h,
+                                           src->format->format,
+                                           retsurf->pixels, retsurf->pitch);
         }
     }
 
@@ -1830,7 +1830,7 @@ _color_from_obj(PyObject *color_obj, SDL_Surface *surf, Uint8 rgba_default[4],
 {
     if (color_obj) {
         if (!pg_MappedColorFromObj(color_obj, surf, color,
-                                   PG_COLOR_HANDLE_INT)) {
+                                   PG_COLOR_HANDLE_ALL)) {
             return -1;
         }
     }
