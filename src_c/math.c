@@ -99,6 +99,8 @@ static PyTypeObject pgVectorIter_Type;
 #define DEG2RAD(angle) ((angle) * M_PI / 180.)
 #define RAD2DEG(angle) ((angle) * 180. / M_PI)
 
+static double vector2_default_angle = NAN;
+
 typedef struct {
     PyObject_HEAD double coords[VECTOR_MAX_SIZE]; /* Coordinates */
     Py_ssize_t dim;                               /* Dimension of the vector */
@@ -145,6 +147,10 @@ _vector_coords_from_string(PyObject *str, char **delimiter, double *coords,
 static void
 _vector_move_towards_helper(Py_ssize_t dim, double *origin_coords,
                             double *target_coords, double max_distance);
+static PyObject *
+math_get_vector2_default_angle(PyObject *self, void *closure);
+static int
+math_set_vector2_default_angle(PyObject *self, PyObject *arg, void *closure);
 
 /* generic vector functions */
 static PyObject *
@@ -1282,9 +1288,7 @@ vector_get_angle(pgVector *self, void *closure)
     pgVector *vec = self;
 
     if (vec->coords[0] == 0.0 && vec->coords[1] == 0.0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Angle is undefined for the zero vector (0, 0)");
-        return NULL;
+        return PyFloat_FromDouble(vector2_default_angle);
     }
 
     double angle = atan2(vec->coords[1], vec->coords[0]) * RAD_TO_DEG;
@@ -1305,9 +1309,7 @@ vector_get_angle_rad(pgVector *self, void *closure)
     pgVector *vec = self;
 
     if (vec->coords[0] == 0.0 && vec->coords[1] == 0.0) {
-        PyErr_SetString(PyExc_ValueError,
-                        "Angle is undefined for the zero vector (0, 0)");
-        return NULL;
+        return PyFloat_FromDouble(vector2_default_angle);
     }
 
     PyObject *angle_obj = vector_get_angle(self, closure);
@@ -2639,6 +2641,8 @@ static PyGetSetDef vector2_getsets[] = {
     {"angle", (getter)vector_get_angle, NULL, DOC_MATH_VECTOR2_ANGLE, NULL},
     {"angle_rad", (getter)vector_get_angle_rad, NULL,
      DOC_MATH_VECTOR2_ANGLERAD, NULL},
+    {"vector2_default_angle", (getter)math_get_vector2_default_angle,
+     (setter)math_set_vector2_default_angle, DOC_MATH_VECTOR2_ANGLE, NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
 
@@ -4450,6 +4454,32 @@ math_disable_swizzling(pgVector *self, PyObject *_null)
         return NULL;
     }
     Py_RETURN_NONE;
+}
+
+static PyObject *
+math_get_vector2_default_angle(PyObject *self, void *closure)
+{
+    return PyFloat_FromDouble(vector2_default_angle);
+}
+
+static int
+math_set_vector2_default_angle(PyObject *self, PyObject *arg, void *closure)
+{
+    if (arg == NULL) {
+        PyErr_SetString(PyExc_TypeError,
+                        "math.Vector2.default_angle cannot be deleted");
+        return -1;
+    }
+
+    if (!PyFloat_Check(arg)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "math.Vector2.default_angle must be a float");
+        return -1;
+    }
+
+    vector2_default_angle = PyFloat_AsDouble(arg);
+
+    return 0;
 }
 
 static PyMethodDef _math_methods[] = {
