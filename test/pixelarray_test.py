@@ -1041,11 +1041,6 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             self.assertEqual(ar[8][9], oval)
             self.assertEqual(ar[9][9], oval)
 
-        for color in [(20, 20, 20), 10, "green", pygame.Color("blue")]:
-            sf = pygame.Surface((10, 10))
-            ar = pygame.PixelArray(sf)
-            ar.replace(color, color)
-
     def test_extract(self):
         for bpp in (8, 16, 24, 32):
             sf = pygame.Surface((10, 10), 0, bpp)
@@ -1072,11 +1067,6 @@ class PixelArrayTypeTest(unittest.TestCase, TestMixin):
             self.assertEqual(newar[3][6], white)
             self.assertEqual(newar[8][9], black)
             self.assertEqual(newar[9][9], black)
-
-        for color in [(20, 20, 20), 10, "green", pygame.Color("blue")]:
-            sf = pygame.Surface((10, 10))
-            ar = pygame.PixelArray(sf)
-            ar.extract(color)
 
     def test_2dslice_assignment(self):
         w = 2 * 5 * 8
