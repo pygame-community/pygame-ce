@@ -98,6 +98,10 @@ static void
 draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
                 int width, Uint32 color, int top_left, int top_right,
                 int bottom_left, int bottom_right, int *drawn_area);
+static int
+draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
+                   int border_radius, int num_points, Uint32 color,
+                   int *drawn_area);
 
 // validation of a draw color
 #define CHECK_LOAD_COLOR(colorobj)                       \
@@ -971,20 +975,22 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     SDL_Surface *surf = NULL;
     Uint32 color;
     int *xlist = NULL, *ylist = NULL;
-    int width = 0; /* Default width. */
+    int width = 0;         /* Default width. */
+    int border_radius = 0; /* Default border_radius. */
     int x, y, result, l, t;
     int drawn_area[4] = {INT_MAX, INT_MAX, INT_MIN,
                          INT_MIN}; /* Used to store bounding box values */
     Py_ssize_t loop, length;
-    static char *keywords[] = {"surface", "color", "points", "width", NULL};
+    static char *keywords[] = {"surface", "color",         "points",
+                               "width",   "border_radius", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OO|i", keywords,
+    if (!PyArg_ParseTupleAndKeywords(arg, kwargs, "O!OO|ii", keywords,
                                      &pgSurface_Type, &surfobj, &colorobj,
-                                     &points, &width)) {
+                                     &points, &width, &border_radius)) {
         return NULL; /* Exception already set. */
     }
 
-    if (width) {
+    if (width && (border_radius <= 0)) {
         PyObject *ret = NULL;
         PyObject *args =
             Py_BuildValue("(OOiOi)", surfobj, colorobj, 1, points, width);
@@ -1061,7 +1067,17 @@ polygon(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     if (length != 3) {
-        draw_fillpoly(surf, xlist, ylist, length, color, drawn_area);
+        if ((border_radius > 0) && (width > 0)) {
+            int err;
+            err = draw_round_polygon(surf, xlist, ylist, width, border_radius,
+                                     (int)length, color, drawn_area);
+            if (err == -1) {
+                return NULL;
+            }
+        }
+        else {
+            draw_fillpoly(surf, xlist, ylist, length, color, drawn_area);
+        }
     }
     else {
         draw_filltri(surf, xlist, ylist, color, drawn_area);
@@ -3265,6 +3281,351 @@ draw_round_rect(SDL_Surface *surf, int x1, int y1, int x2, int y2, int radius,
                              y2 - bottom_right + 1, bottom_right, width, color,
                              0, 0, 0, 1, drawn_area);
     }
+}
+
+typedef struct {
+    double x;
+    double y;
+} Point;
+
+typedef struct {
+    Point center;
+    int radius;
+} Circle;
+
+typedef struct {
+    Point start;
+    Point end;
+} Line;
+
+// Function to determine the side of point 'c' relative to the line formed by
+// points 'a' and 'b' Returns 1 if on the left side, -1 if on the right side,
+// and 0 if collinear
+int
+side(Point a, Point b, Point c)
+{
+    double det = (a.x * b.y + b.x * c.y + c.x * a.y) -
+                 (a.y * b.x + b.y * c.x + c.y * a.x);
+    if (det > 0) {
+        return 1;
+        // If the determinant is positive, point 'c' is on the left side of the
+        // line
+    }
+    else if (det < 0) {
+        // If the determinant is negative, point 'c' is on the right side of
+        // the line
+        return -1;
+    }
+    else {
+        // If the determinant is zero, points 'a', 'b', and 'c' are collinear
+        return 0;
+    }
+}
+
+// Function to find a parallel line to the line formed by 'pt1' and 'pt2' at a
+// given distance. 'pt3' is used to determine in which side of the line, the
+// parallel line should be drawn.
+// Returns a Line struct representing the parallel line
+int
+find_parallel_line(Point pt1, Point pt2, Point pt3, int distance,
+                   Line *line_result)
+{
+    // Calculate direction vector, normalize it, and find the perpendicular
+    // vector
+
+    // Calculate direction vector from 'pt1' to 'pt2'
+    Point direction_vector = {pt2.x - pt1.x, pt2.y - pt1.y};
+
+    // Calculate the magnitude of the direction vector
+    double magnitude = sqrt(direction_vector.x * direction_vector.x +
+                            direction_vector.y * direction_vector.y);
+
+    if (magnitude == 0) {
+        return 0;
+    }
+
+    // Normalize the direction vector to get a unit vector
+    Point normalized_direction = {direction_vector.x / magnitude,
+                                  direction_vector.y / magnitude};
+
+    // Calculate the perpendicular vector by swapping x and y components and
+    // negating one of them
+    Point perpendicular_vector = {-normalized_direction.y,
+                                  normalized_direction.x};
+
+    // Adjust the perpendicular vector based on the side of 'pt3' relative to
+    // 'pt1' and 'pt2'
+    if (side(pt1, pt2, pt3) == -1) {
+        perpendicular_vector.x *= -1;
+        perpendicular_vector.y *= -1;
+    }
+    // Create an offset vector and generate the parallel line.
+    Point offset_vector = {perpendicular_vector.x * distance,
+                           perpendicular_vector.y * distance};
+
+    // Generate the points for the parallel line based on the offset
+    line_result->start =
+        (Point){pt1.x + offset_vector.x, pt1.y + offset_vector.y};
+    line_result->end =
+        (Point){pt2.x + offset_vector.x, pt2.y + offset_vector.y};
+
+    // Return the Line struct representing the parallel line
+    return 1;
+}
+
+// Function to project a point onto a line segment defined by 'segment_start'
+// and 'segment_end'
+Point
+project_point_onto_segment(Point point, Point segment_start, Point segment_end)
+{
+    // t is a parameter that represents the position of the projected point
+    // along the line segment defined by segment_start and segment_end.
+    // Calculate vectors, find the parameter 't' for projection, and calculate
+    // the projection.
+    Point segment_vector;
+    segment_vector.x = segment_end.x - segment_start.x;
+    segment_vector.y = segment_end.y - segment_start.y;
+
+    Point point_vector;
+    point_vector.x = point.x - segment_start.x;
+    point_vector.y = point.y - segment_start.y;
+
+    // Calculate the parameter 't' for the projection using the dot product
+    double t = (point_vector.x * segment_vector.x +
+                point_vector.y * segment_vector.y) /
+               (segment_vector.x * segment_vector.x +
+                segment_vector.y * segment_vector.y);
+
+    // Ensure 't' is within the valid range [0, 1] to make sure that the
+    // projection of the point onto the line segment lies specifically within
+    // the boundaries of the segment. (See line 2906)
+    t = fmax(0, fmin(1, t));
+
+    // Calculate the coordinates of the projected point using the parameter 't'
+    Point projection;
+    projection.x = segment_start.x + t * segment_vector.x;
+    projection.y = segment_start.y + t * segment_vector.y;
+
+    // Return the projected point on the line segment
+    return projection;
+}
+
+// Function to find the intersection point of two line segments.
+// Returns the intersection point as a Point struct.
+int
+calculate_intersection(Point line1_start, Point line1_end, Point line2_start,
+                       Point line2_end, Point *intersection_result)
+{
+    // Calculate line equation coefficients where the form of the equation is :
+    // AX + BY = C
+
+    // Coefficients for the equation of the first line (A1*X + B1*Y = C1)
+    double A1 = line1_end.y - line1_start.y;
+    double B1 = line1_start.x - line1_end.x;
+    double C1 = A1 * line1_start.x + B1 * line1_start.y;
+
+    // Coefficients for the equation of the second line (A2*X + B2*Y = C2)
+    double A2 = line2_end.y - line2_start.y;
+    double B2 = line2_start.x - line2_end.x;
+    double C2 = A2 * line2_start.x + B2 * line2_start.y;
+
+    // Check if the lines are parallel (det == 0) and handle the case
+    double det = A1 * B2 - A2 * B1;
+    // If the lines are parallel (det == 0), they do not intersect, return a
+    // default Point
+    if (det == 0) {
+        return 0;
+    }
+    else {
+        // Calculate the intersection point using Cramer's rule.
+        // The lines never intersect out of the range given because of the
+        // condition limiting the value of boarder radius.
+        double x = (B2 * C1 - B1 * C2) / det;
+        double y = (A1 * C2 - A2 * C1) / det;
+
+        intersection_result->x = x;
+        intersection_result->y = y;
+        return 1;
+    }
+}
+
+// Function to calculate the angle (in radians) between a center point and
+// another point.
+double
+computeVectorAngle(Point center, Point point)
+{
+    // Calculate the differences in x and y coordinates between the two points
+    double x = point.x - center.x;
+    double y = point.y - center.y;
+    // Use atan2 to calculate the angle formed by the vector from the center to
+    // the point. The angle is measured counterclockwise from the positive
+    // x-axis. Note: The negative sign is used to ensure the angle is measured
+    // clockwise, which is more common in Cartesian coordinates.
+    return -atan2(y, x);
+}
+
+// Define a function to draw a rounded polygon on an SDL surface
+static int
+draw_round_polygon(SDL_Surface *surf, int *pts_x, int *pts_y, int width,
+                   int border_radius, int num_points, Uint32 color,
+                   int *drawn_area)
+{
+    Point intersection;
+    Line line1;
+    Line line2;
+
+    // Define arrays to store path points and circle information
+    Point *path;
+    Circle *circles;
+    Point *points;
+
+    path = (Point *)malloc(2 * num_points * sizeof(Point));
+    circles = (Circle *)malloc(num_points * sizeof(Circle));
+    points = (Point *)malloc(num_points * sizeof(Point));
+
+    if (points == NULL || circles == NULL || path == NULL) {
+        if (points) {
+            free(points);
+        }
+        if (circles) {
+            free(circles);
+        }
+        if (path) {
+            free(path);
+        }
+        PyErr_SetString(PyExc_MemoryError,
+                        "cannot allocate memory to draw polygon");
+        return -1;
+    }
+
+    // Convert input coordinates to Point structures
+    for (int i = 0; i < num_points; i++) {
+        points[i].x = pts_x[i];
+        points[i].y = pts_y[i];
+    }
+
+    for (int i = 0; i < num_points; i++) {
+        int a = (i - 1 + num_points) %
+                (num_points);            // index of the point before index i
+        int b = (i + 1) % (num_points);  // index of the point after index i
+
+        // Check if the border-radius can be applied to the current angle
+        // it can not be applied to a flat angle (if the three points are
+        // aligned)
+        if (side(points[a], points[i], points[b]) == 0) {
+            PyErr_SetString(
+                PyExc_ValueError,
+                "Border-radius cannot be applied to a flat angle.\nPlease "
+                "ensure that the specified angle or curvature is within a "
+                "valid range for border-radius drawing.");
+            free(path);
+            free(circles);
+            free(points);
+            return -1;
+        }
+
+        // Find parallel lines to the polygon sides at the current point
+        if (!find_parallel_line(points[a], points[i], points[b], border_radius,
+                                &line1) ||
+            !find_parallel_line(points[i], points[b], points[a], border_radius,
+                                &line2)) {
+            PyErr_SetString(
+                PyExc_ValueError,
+                "Points parameter must consist of sequentially points, and no "
+                "three consecutive points should align.");
+            free(path);
+            free(circles);
+            free(points);
+            return -1;
+        }
+
+        if (!calculate_intersection(line1.start, line1.end, line2.start,
+                                    line2.end, &intersection)) {
+            PyErr_SetString(
+                PyExc_ValueError,
+                "Points parameter must consist of sequentially points, and no "
+                "three consecutive points should align.");
+            free(path);
+            free(circles);
+            free(points);
+            return -1;
+        }
+
+        circles[i].center = intersection;
+
+        Point proj1 = project_point_onto_segment(circles[i].center, points[a],
+                                                 points[i]);
+        Point proj2 = project_point_onto_segment(circles[i].center, points[i],
+                                                 points[b]);
+
+        // distance from the vertex to the projetion of the circle center on
+        // the first edge
+        double distanceProj1 = sqrt(pow(proj1.x - points[i].x, 2) +
+                                    pow(proj1.y - points[i].y, 2));
+        // distance from the vertex to the projetion of the circle center on
+        // the second edge
+        double distanceProj2 = sqrt(pow(proj2.x - points[i].x, 2) +
+                                    pow(proj2.y - points[i].y, 2));
+
+        // lenghts of both edges
+        double baseLength1 = sqrt(pow(points[a].x - points[i].x, 2) +
+                                  pow(points[a].y - points[i].y, 2));
+        double baseLength2 = sqrt(pow(points[b].x - points[i].x, 2) +
+                                  pow(points[b].y - points[i].y, 2));
+
+        // Check if the border-radius size is valid
+        if ((distanceProj1 >= baseLength1 / 2) ||
+            (distanceProj2 >= baseLength2 / 2)) {
+            PyErr_SetString(PyExc_ValueError,
+                            "Border-radius size must be smaller");
+            free(path);
+            free(circles);
+            free(points);
+            return -1;
+        }
+
+        // Store projected points and circle radius in arrays
+        path[2 * i] = proj1;
+        path[2 * i + 1] = proj2;
+
+        circles[i].radius = border_radius;
+    }
+
+    // Iterate through the projected points to draw arcs and connecting lines
+    for (int i = 0; i < 2 * num_points; i += 2) {
+        Point pt1 = path[i % (2 * num_points)];
+        Point pt2 = path[(i + 1) % (2 * num_points)];
+        Point pt3 = path[(i + 2) % (2 * num_points)];
+        Circle circle = circles[i / 2];
+
+        double start_angle = computeVectorAngle(circle.center, pt1);
+        double end_angle = computeVectorAngle(circle.center, pt2);
+
+        // Adjust angles based on the side of the polygon
+        if (side(pt1, pt2, pt3) == 1) {
+            double temp = start_angle;
+            start_angle = end_angle;
+            end_angle = temp;
+        }
+
+        int circle_center_x = (int)round(circle.center.x);
+        int circle_center_y = (int)round(circle.center.y);
+        int pt2_x = (int)round(pt2.x);
+        int pt2_y = (int)round(pt2.y);
+        int pt3_x = (int)round(pt3.x);
+        int pt3_y = (int)round(pt3.y);
+
+        draw_arc(surf, circle_center_x, circle_center_y, circle.radius,
+                 circle.radius, width, start_angle, end_angle, color,
+                 drawn_area);
+
+        draw_line_width(surf, color, pt2_x, pt2_y, pt3_x, pt3_y, width,
+                        drawn_area);
+    }
+    free(path);
+    free(circles);
+    free(points);
+    return 0;
 }
 
 /* List of python functions */

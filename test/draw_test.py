@@ -3830,6 +3830,25 @@ CROSS = (
     [2, 2],
 )
 
+# Enlarged versions of the same shapes are utilized for testing purposes. This is because rounded polygons should possess sufficient size to visually demonstrate the curvature during the drawing process.
+LARGE_SQUARE = ([0, 0], [300, 0], [300, 300], [0, 300])
+LARGE_DIAMOND = [(100, 300), (300, 500), (500, 300), (300, 100)]
+LARGE_RHOMBUS = [(100, 300), (400, 500), (700, 300), (400, 100)]
+LARGE_CROSS = (
+    [200, 0],
+    [400, 0],
+    [400, 200],
+    [600, 200],
+    [600, 400],
+    [400, 400],
+    [400, 600],
+    [200, 600],
+    [200, 400],
+    [0, 400],
+    [0, 200],
+    [200, 200],
+)
+
 
 class DrawPolygonMixin:
     """Mixin tests for drawing polygons.
@@ -4427,6 +4446,251 @@ class DrawPolygonMixin:
         pygame.draw.polygon(self.surface, GREEN, RHOMBUS, 0)
         for x, y in key_polygon_points:
             self.assertEqual(self.surface.get_at((x, y)), GREEN, msg=str((x, y)))
+
+    def test_polygon__border_radius_args(self):
+        """Ensures draw polygon accepts border_radius args."""
+        bounds_rect = self.draw_polygon(
+            pygame.Surface((400, 400)),
+            (0, 10, 0, 50),
+            [[100, 100], [300, 100], [300, 300], [100, 300]],
+            1,
+            1,
+        )
+
+        self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_polygon__border_radius_kwarg(self):
+        """Ensures draw polygon accepts border_radius kwarg
+        with and without a width arg and with different orders.
+        """
+        surface = pygame.Surface((400, 400))
+        color = pygame.Color("yellow")
+        points = [[100, 100], [300, 100], [300, 300], [100, 300]]
+        kwargs_list = [
+            {
+                "surface": surface,
+                "color": color,
+                "points": points,
+                "width": 1,
+                "border_radius": 1,
+            },
+            {"surface": surface, "color": color, "points": points, "border_radius": 1},
+            {
+                "points": points,
+                "surface": surface,
+                "border_radius": 1,
+                "color": color,
+                "width": 1,
+            },
+            {"surface": surface, "color": color, "border_radius": 1, "points": points},
+            {"border_radius": 1, "surface": surface, "color": color, "points": points},
+        ]
+
+        for kwargs in kwargs_list:
+            bounds_rect = self.draw_polygon(**kwargs)
+
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_polygon__arg_border_radius_invalid_type(self):
+        """Ensures draw polygon detects invalid border_radius arg type."""
+        surface = pygame.Surface((400, 400))
+        color = pygame.Color("blue")
+        points = [[100, 100], [300, 100], [300, 300], [100, 300]]
+
+        with self.assertRaises(TypeError):
+            # Invalid radius.
+            bounds_rect = self.draw_polygon(surface, color, points, 1, "1")
+
+    def test_polygon__kwarg_border_radius_invalid_type_name(self):
+        """Ensures draw polygon detects invalid kwarg border_radius type and name."""
+        surface = pygame.Surface((400, 400))
+        color = pygame.Color("green")
+        points = [[100, 100], [300, 100], [300, 300], [100, 300]]
+        width = 1
+        kwargs_list = [
+            {
+                "surface": surface,
+                "color": color,
+                "points": points,
+                "width": width,
+                "border_radius": "1",  # Invalid border_radius type
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "points": points,
+                "width": width,
+                "border_radius": 2.3,  # Invalid border_radius type
+            },
+            {
+                "surface": surface,
+                "color": color,
+                "points": points,
+                "width": width,
+                "Invalid": 1,  # Invalid border_radius name
+            },
+        ]
+
+        for kwargs in kwargs_list:
+            with self.assertRaises(TypeError):
+                bounds_rect = self.draw_polygon(**kwargs)
+
+    def test_polygon__args_and_kwargs_border_radius(self):
+        """Ensures draw polygon accepts a combination of args/kwargs with border_radius"""
+        surface = pygame.Surface((400, 400))
+        color = (255, 255, 0, 0)
+        points = [[100, 100], [300, 100], [300, 300], [100, 300]]
+        width = 1
+        border_radius = 1
+        kwargs = {
+            "surface": surface,
+            "color": color,
+            "points": points,
+            "width": width,
+            "border_radius": border_radius,
+        }
+
+        for name in ("surface", "color", "points", "width", "border_radius"):
+            kwargs.pop(name)
+
+            if "surface" == name:
+                bounds_rect = self.draw_polygon(surface, **kwargs)
+            elif "color" == name:
+                bounds_rect = self.draw_polygon(surface, color, **kwargs)
+            elif "points" == name:
+                bounds_rect = self.draw_polygon(surface, color, points, **kwargs)
+            elif "width" == name:
+                bounds_rect = self.draw_polygon(surface, color, points, width, **kwargs)
+            else:
+                bounds_rect = self.draw_polygon(
+                    surface, color, points, width, border_radius, **kwargs
+                )
+
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_polygon__valid_border_radius_values(self):
+        """Ensures draw polygon accepts different border_radius values."""
+        surface_color = pygame.Color("white")
+        surface = pygame.Surface((400, 400))
+        color = (10, 20, 30, 255)
+        kwargs = {
+            "surface": surface,
+            "color": color,
+            "points": [[100, 100], [300, 100], [300, 300], [100, 300]],
+            "width": 1,
+            "border_radius": None,
+        }
+
+        pos1 = kwargs["points"][0]
+        pos2 = kwargs["points"][1]
+        pos = ((pos1[0] + pos2[0]) / 2, (pos1[1] + pos2[1]) / 2)
+
+        for border_radius in (0, 1, 10, 50):
+            surface.fill(surface_color)
+            kwargs["border_radius"] = border_radius
+            expected_color = color
+
+            bounds_rect = self.draw_polygon(**kwargs)
+
+            self.assertEqual(surface.get_at(pos), expected_color)
+            self.assertIsInstance(bounds_rect, pygame.Rect)
+
+    def test_draw_round_square(self):
+        """Ensure square is drawn with rounded corner"""
+        surfw = surfh = 1000
+        polygon_color = pygame.Color("red")
+        surface_color = pygame.Color("black")
+        surface = pygame.Surface((surfw, surfh))
+        surface.fill(surface_color)
+
+        self.draw_polygon(surface, polygon_color, LARGE_SQUARE, 1, 5)
+
+        num_points = len(LARGE_SQUARE)
+
+        for i in range(num_points):
+            pos = x, y = LARGE_SQUARE[i]
+            x_next, y_next = LARGE_SQUARE[(i + 1) % num_points]
+            # Calculate the midpoint between the current point
+            # and the next point in the polygon.
+            mid = (x + x_next) / 2, (y + y_next) / 2
+            # The color at the current vertex should be equal
+            # to surface_color since the corner is rounded,
+            # while the color at the mid point of two consecutive
+            # vertices should always be equal to polygon_color
+            self.assertEqual(surface.get_at(pos), surface_color)
+            self.assertEqual(surface.get_at(mid), polygon_color)
+
+    def test_draw_round_diamond(self):
+        """Ensure diamond is drawn with rounded corner"""
+        surfw = surfh = 1000
+        polygon_color = pygame.Color("red")
+        surface_color = pygame.Color("black")
+        surface = pygame.Surface((surfw, surfh))
+        surface.fill(surface_color)
+
+        self.draw_polygon(surface, polygon_color, LARGE_DIAMOND, 1, 5)
+
+        num_points = len(LARGE_DIAMOND)
+        for i in range(num_points):
+            pos = x, y = LARGE_DIAMOND[i]
+            x_next, y_next = LARGE_DIAMOND[(i + 1) % num_points]
+            # Calculate the midpoint between the current point
+            # and the next point in the polygon.
+            mid = (x + x_next) / 2, (y + y_next) / 2
+            # The color at the current vertex should be equal
+            # to surface_color since the corner is rounded,
+            # while the color at the mid point of two consecutive
+            # vertices should always be equal to polygon_color
+            self.assertEqual(surface.get_at(pos), surface_color)
+            self.assertEqual(surface.get_at(mid), polygon_color)
+
+    def test_draw_round_rhombus(self):
+        """Ensure rhombus is drawn with rounded corner"""
+        surfw = surfh = 1000
+        polygon_color = pygame.Color("red")
+        surface_color = pygame.Color("black")
+        surface = pygame.Surface((surfw, surfh))
+        surface.fill(surface_color)
+
+        self.draw_polygon(surface, polygon_color, LARGE_RHOMBUS, 1, 5)
+
+        num_points = len(LARGE_RHOMBUS)
+        for i in range(num_points):
+            pos = x, y = LARGE_RHOMBUS[i]
+            x_next, y_next = LARGE_RHOMBUS[(i + 1) % num_points]
+            # Calculate the midpoint between the current point
+            # and the next point in the polygon.
+            mid = (x + x_next) / 2, (y + y_next) / 2
+            # The color at the current vertex should be equal
+            # to surface_color since the corner is rounded,
+            # while the color at the mid point of two consecutive
+            # vertices should always be equal to polygon_color
+            self.assertEqual(surface.get_at(pos), surface_color)
+            self.assertEqual(surface.get_at(mid), polygon_color)
+
+    def test_draw_round_cross(self):
+        """Ensure cross is drawn with rounded corner"""
+        surfw = surfh = 1000
+        polygon_color = pygame.Color("red")
+        surface_color = pygame.Color("black")
+        surface = pygame.Surface((surfw, surfh))
+        surface.fill(surface_color)
+
+        self.draw_polygon(surface, polygon_color, LARGE_CROSS, 1, 5)
+
+        num_points = len(LARGE_CROSS)
+        for i in range(num_points):
+            pos = x, y = LARGE_CROSS[i]
+            x_next, y_next = LARGE_CROSS[(i + 1) % num_points]
+            # Calculate the midpoint between the current point
+            # and the next point in the polygon.
+            mid = (x + x_next) / 2, (y + y_next) / 2
+            # The color at the current vertex should be equal
+            # to surface_color since the corner is rounded,
+            # while the color at the mid point of two consecutive
+            # vertices should always be equal to polygon_color
+            self.assertEqual(surface.get_at(pos), surface_color)
+            self.assertEqual(surface.get_at(mid), polygon_color)
 
 
 class DrawPolygonTest(DrawPolygonMixin, DrawTestCase):
