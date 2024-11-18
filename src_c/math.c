@@ -99,8 +99,6 @@ static PyTypeObject pgVectorIter_Type;
 #define DEG2RAD(angle) ((angle) * M_PI / 180.)
 #define RAD2DEG(angle) ((angle) * 180. / M_PI)
 
-static double vector2_default_angle = NAN;
-
 typedef struct {
     PyObject_HEAD double coords[VECTOR_MAX_SIZE]; /* Coordinates */
     Py_ssize_t dim;                               /* Dimension of the vector */
@@ -147,11 +145,6 @@ _vector_coords_from_string(PyObject *str, char **delimiter, double *coords,
 static void
 _vector_move_towards_helper(Py_ssize_t dim, double *origin_coords,
                             double *target_coords, double max_distance);
-static PyObject *
-math_get_vector2_default_angle(PyObject *self, void *closure);
-static int
-math_set_vector2_default_angle(PyObject *self, PyObject *arg, void *closure);
-
 /* generic vector functions */
 static PyObject *
 pgVector_NEW(Py_ssize_t dim);
@@ -1285,41 +1278,49 @@ vector_setz(pgVector *self, PyObject *value, void *closure)
 static PyObject *
 vector_get_angle(pgVector *self, void *closure)
 {
-    pgVector *vec = self;
+    PyObject *angle_obj = vector_get_angle_rad(self, closure);
+    double angle_rad = PyFloat_AsDouble(angle_obj);
+    double angle_deg = angle_rad * RAD_TO_DEG;
 
-    if (vec->coords[0] == 0.0 && vec->coords[1] == 0.0) {
-        return PyFloat_FromDouble(vector2_default_angle);
+    if (angle_deg > 180.0) {
+        angle_deg -= 360.0;
+    }
+    else if (angle_deg <= -180.0) {
+        angle_deg += 360.0;
     }
 
-    double angle = atan2(vec->coords[1], vec->coords[0]) * RAD_TO_DEG;
-
-    if (angle > 180.0) {
-        angle -= 360.0;
-    }
-    else if (angle <= -180.0) {
-        angle += 360.0;
-    }
-
-    return PyFloat_FromDouble(angle);
+    return PyFloat_FromDouble(angle_deg);
 }
 
 static PyObject *
 vector_get_angle_rad(pgVector *self, void *closure)
 {
     pgVector *vec = self;
+    double x = vec->coords[0];
+    double y = vec->coords[1];
 
-    if (vec->coords[0] == 0.0 && vec->coords[1] == 0.0) {
-        return PyFloat_FromDouble(vector2_default_angle);
+    if (Py_IS_NAN(x) || Py_IS_NAN(y)) {
+        return PyFloat_FromDouble(Py_NAN);
     }
 
-    PyObject *angle_obj = vector_get_angle(self, closure);
-    double angle_deg = PyFloat_AsDouble(angle_obj);
+    if (Py_IS_INFINITY(y)) {
+        if (Py_IS_INFINITY(x)) {
+            if (copysign(1., x) == 1.)
+                return PyFloat_FromDouble(copysign(0.25 * Py_MATH_PI, y));
+            else
+                return PyFloat_FromDouble(copysign(0.75 * Py_MATH_PI, y));
+        }
+        return PyFloat_FromDouble(copysign(0.5 * Py_MATH_PI, y));
+    }
 
-    double angle_rad = angle_deg * DEG_TO_RAD;
+    if (Py_IS_INFINITY(x) || y == 0.) {
+        if (copysign(1., x) == 1.)
+            return PyFloat_FromDouble(copysign(0., y));
+        else
+            return PyFloat_FromDouble(copysign(Py_MATH_PI, y));
+    }
 
-    Py_XDECREF(angle_obj);
-
-    return PyFloat_FromDouble(angle_rad);
+    return PyFloat_FromDouble(atan2(y, x));
 }
 
 static PyObject *
@@ -2641,8 +2642,6 @@ static PyGetSetDef vector2_getsets[] = {
     {"angle", (getter)vector_get_angle, NULL, DOC_MATH_VECTOR2_ANGLE, NULL},
     {"angle_rad", (getter)vector_get_angle_rad, NULL,
      DOC_MATH_VECTOR2_ANGLERAD, NULL},
-    {"vector2_default_angle", (getter)math_get_vector2_default_angle,
-     (setter)math_set_vector2_default_angle, DOC_MATH_VECTOR2_ANGLE, NULL},
     {NULL, 0, NULL, NULL, NULL} /* Sentinel */
 };
 
@@ -4454,32 +4453,6 @@ math_disable_swizzling(pgVector *self, PyObject *_null)
         return NULL;
     }
     Py_RETURN_NONE;
-}
-
-static PyObject *
-math_get_vector2_default_angle(PyObject *self, void *closure)
-{
-    return PyFloat_FromDouble(vector2_default_angle);
-}
-
-static int
-math_set_vector2_default_angle(PyObject *self, PyObject *arg, void *closure)
-{
-    if (arg == NULL) {
-        PyErr_SetString(PyExc_TypeError,
-                        "math.Vector2.default_angle cannot be deleted");
-        return -1;
-    }
-
-    if (!PyFloat_Check(arg)) {
-        PyErr_SetString(PyExc_TypeError,
-                        "math.Vector2.default_angle must be a float");
-        return -1;
-    }
-
-    vector2_default_angle = PyFloat_AsDouble(arg);
-
-    return 0;
 }
 
 static PyMethodDef _math_methods[] = {
