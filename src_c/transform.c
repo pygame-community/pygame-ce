@@ -3582,8 +3582,7 @@ box_blur(SDL_Surface *src, SDL_Surface *dst, int radius, SDL_bool repeat)
     Uint32 *sum_h = overall_buf + dst_pitch * 2;
 
     if (overall_buf == NULL) {
-        PyErr_NoMemory();
-        return 1;
+        return -1;
     }
 
     memset(sum_v, 0, dst_pitch * sizeof(Uint32));
@@ -3674,8 +3673,7 @@ gaussian_blur(SDL_Surface *src, SDL_Surface *dst, int sigma, SDL_bool repeat)
     float *lut = overall_buf + dst_pitch * 2;
 
     if (overall_buf == NULL) {
-        PyErr_NoMemory();
-        return 1;
+        return -1;
     }
 
     for (i = 0; i <= kernel_radius; i++) {  // init gaussian lut
@@ -3820,7 +3818,10 @@ blur(pgSurfaceObject *srcobj, pgSurfaceObject *dstobj, int radius,
     pgSurface_Unlock(srcobj);
     SDL_UnlockSurface(retsurf);
 
-    if (result) {  // Error already set
+    // Routines only set error flag if memory allocation failed
+    // Setting Python exception here outside of Py_ THREADS block to be safe
+    if (result) {
+        PyErr_NoMemory();
         return NULL;
     }
 
