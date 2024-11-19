@@ -43,6 +43,7 @@
                               (unrelated to INPUT_GRABBED).
    :param bool always_on_top: Create a window that is always presented above
                               others.
+   :param bool utility: Create a window that doesn't appear in the task-bar .
 
    Event behavior if one Window is created: When the close button is pressed,
    the ``QUIT`` event will be sent to the event queue.
@@ -288,6 +289,15 @@
       ``True`` if the ``Window`` has an OpenGL context associated with it, ``False`` otherwise
 
       .. versionadded:: 2.5.0
+
+   .. attribute:: utility
+
+      | :sl:`Get if the windos is an utility window`
+      | :sg:`utility -> bool`
+
+      ``True`` if the window doesn't appear in the task bar, ``False`` otherwise
+
+      .. versionadded:: TBD
 
    .. classmethod:: from_display_module
 
