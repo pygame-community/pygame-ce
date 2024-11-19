@@ -338,7 +338,6 @@ aalines(PyObject *self, PyObject *arg, PyObject *kwargs)
     float *ylist = points_buf + length;
 
     if (points_buf == NULL) {
-        PyMem_Free(points_buf);
         return RAISE(PyExc_MemoryError,
                      "cannot allocate memory to draw aalines");
     }
