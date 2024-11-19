@@ -43,7 +43,7 @@
                               (unrelated to INPUT_GRABBED).
    :param bool always_on_top: Create a window that is always presented above
                               others.
-   :param bool utility: Create a window that doesn't appear in the task-bar .
+   :param bool utility: Create a window that doesn't appear in the task-bar.
 
    Event behavior if one Window is created: When the close button is pressed,
    the ``QUIT`` event will be sent to the event queue.
@@ -295,7 +295,8 @@
       | :sl:`Get if the windos is an utility window`
       | :sg:`utility -> bool`
 
-      ``True`` if the window doesn't appear in the task bar, ``False`` otherwise
+      ``True`` if the window doesn't appear in the task bar, ``False`` otherwise.
+      This only works for X11 and Windows, for other platforms, creating ``Window(utility=True)`` won't do anything.
 
       .. versionadded:: TBD
 
