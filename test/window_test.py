@@ -1,5 +1,3 @@
-from math import trunc
-from re import S
 import unittest
 import pygame
 import os
