@@ -441,7 +441,7 @@ The following file formats are supported
 
          | If value < 0.0, the volume will not be changed
          | If value > 1.0, the volume will be set to 1.0
-      
+
       .. note::
          The values are internally converted and kept as integer values in range [0, 128], which means
          that ``get_volume()`` may return a different volume than it was set to. For example,
@@ -449,12 +449,12 @@ The following file formats are supported
             >>> sound.set_volume(0.1)
             >>> sound.get_volume()
             0.09375
-         
+
          This is because when you ``set_volume(0.1)``, the volume is internally calculated like so
 
             >>> int(0.1 * 128)
             12
-         
+
          This means that some of the precision is lost, so when you retrieve it again using ``get_volume()``,
          it is converted back to a ``float`` using that integer
 
@@ -652,7 +652,7 @@ The following file formats are supported
           sound.set_volume(0.9)   # Now plays at 90% of full volume.
           sound.set_volume(0.6)   # Now plays at 60% (previous value replaced).
           channel.set_volume(0.5) # Now plays at 30% (0.6 * 0.5).
-      
+
       .. note::
          See :func:`Sound.set_volume` for more information regarding how the value is stored internally
 
