@@ -425,7 +425,7 @@ camera_get_image(pgCameraObject *self, PyObject *arg)
         return NULL;
 
     if (!surfobj) {
-        surf = PG_CreateSurface(width, height, PG_PIXELFORMAT_XRGB8888);
+        surf = PG_CreateSurface(width, height, SDL_PIXELFORMAT_XRGB8888);
     }
     else {
         surf = pgSurface_AsSurface(surfobj);
@@ -1951,7 +1951,6 @@ MODINIT_DEFINE(_camera)
     }
 
     /* type preparation */
-    // PyType_Init(pgCamera_Type);
     pgCamera_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&pgCamera_Type) < 0) {
         return NULL;

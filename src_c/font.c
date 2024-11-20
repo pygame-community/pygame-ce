@@ -612,7 +612,7 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
 
     if (strlen(astring) == 0) { /* special 0 string case */
         int height = TTF_FontHeight(font);
-        surf = PG_CreateSurface(0, height, PG_PIXELFORMAT_XRGB8888);
+        surf = PG_CreateSurface(0, height, SDL_PIXELFORMAT_XRGB8888);
     }
     else { /* normal case */
         if (antialias && bg_rgba_obj == Py_None) {
@@ -919,10 +919,7 @@ font_set_script(PyObject *self, PyObject *arg)
         return RAISE_FONT_QUIT_ERROR();
     }
 
-/*Sadly, SDL_TTF_VERSION_ATLEAST is new in SDL_ttf 2.0.15, still too
- * new to use */
-#if SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \
-                   SDL_TTF_PATCHLEVEL) >= SDL_VERSIONNUM(2, 20, 0)
+#if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
     TTF_Font *font = PyFont_AsFont(self);
     Py_ssize_t size;
     const char *script_code;
@@ -956,10 +953,7 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
         return RAISE_FONT_QUIT_ERROR();
     }
 
-/* Can't use SDL_TTF_VERSION_ATLEAST until SDL_ttf 2.0.15 is minimum supported
- */
-#if SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \
-                   SDL_TTF_PATCHLEVEL) >= SDL_VERSIONNUM(2, 20, 0)
+#if SDL_TTF_VERSION_ATLEAST(2, 20, 0)
     TTF_Font *font = PyFont_AsFont(self);
     int direction;
     char *kwds[] = {"direction", NULL};
@@ -989,8 +983,7 @@ font_set_direction(PyObject *self, PyObject *arg, PyObject *kwarg)
    writing this) This bug flips the top-to-bottom and bottom-to-top rendering.
    So, this is a compat patch for that behavior
  */
-#if SDL_VERSIONNUM(SDL_TTF_MAJOR_VERSION, SDL_TTF_MINOR_VERSION, \
-                   SDL_TTF_PATCHLEVEL) < SDL_VERSIONNUM(2, 22, 0)
+#if !SDL_TTF_VERSION_ATLEAST(2, 22, 0)
         case 2: {
             dir = TTF_DIRECTION_BTT;
             break;
@@ -1181,15 +1174,19 @@ font_init(PyFontObject *self, PyObject *args, PyObject *kwds)
     if (fontsize <= 1)
         fontsize = 1;
 
-    if (rw->size(rw) <= 0) {
+    if (SDL_RWsize(rw) <= 0) {
         PyErr_Format(PyExc_ValueError,
                      "Font file object has an invalid file size: %lld",
-                     rw->size(rw));
+                     SDL_RWsize(rw));
         goto error;
     }
 
     Py_BEGIN_ALLOW_THREADS;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    font = TTF_OpenFontIO(rw, 1, fontsize);
+#else
     font = TTF_OpenFontRW(rw, 1, fontsize);
+#endif
     Py_END_ALLOW_THREADS;
 
     Py_DECREF(obj);
@@ -1227,6 +1224,12 @@ static PyObject *
 get_ttf_version(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int linked = 1; /* Default is linked version. */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int version = SDL_TTF_VERSION;
+#else
+    SDL_version version;
+    TTF_VERSION(&version);
+#endif
 
     static char *keywords[] = {"linked", NULL};
 
@@ -1235,15 +1238,16 @@ get_ttf_version(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (linked) {
-        const SDL_version *v = TTF_Linked_Version();
-        return Py_BuildValue("iii", v->major, v->minor, v->patch);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        version = TTF_Version();
+#else
+        version = *TTF_Linked_Version();
+#endif
     }
-    else {
-        /* compiled version */
-        SDL_version v;
-        TTF_VERSION(&v);
-        return Py_BuildValue("iii", v.major, v.minor, v.patch);
-    }
+
+    return Py_BuildValue("iii", PG_FIND_VNUM_MAJOR(version),
+                         PG_FIND_VNUM_MINOR(version),
+                         PG_FIND_VNUM_MICRO(version));
 }
 
 static PyMethodDef _font_methods[] = {

@@ -1767,6 +1767,10 @@ class FreeTypeTest(unittest.TestCase):
         # Test if get_init() gets the init state.
         self.assertTrue(ft.get_init())
 
+    def test_was_init_deprecated(self):
+        with self.assertWarns(DeprecationWarning):
+            self.assertTrue(ft.was_init())
+
     def test_cache_size(self):
         DEFAULT_CACHE_SIZE = 64
         self.assertEqual(ft.get_cache_size(), DEFAULT_CACHE_SIZE)

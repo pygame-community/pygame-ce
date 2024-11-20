@@ -117,10 +117,18 @@ image_load_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
     SDL_UnlockMutex(_pg_img_mutex);
     */
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    surf = IMG_LoadTyped_IO(rw, 1, type);
+#else
     surf = IMG_LoadTyped_RW(rw, 1, type);
+#endif
     Py_END_ALLOW_THREADS;
-#else  /* ~WITH_THREAD */
+#else /* ~WITH_THREAD */
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    surf = IMG_LoadTyped_IO(rw, 1, type);
+#else
     surf = IMG_LoadTyped_RW(rw, 1, type);
+#endif
 #endif /* ~WITH_THREAD */
 
     if (ext) {
@@ -166,7 +174,11 @@ imageext_load_sized_svg(PyObject *self, PyObject *arg, PyObject *kwargs)
     }
 
     Py_BEGIN_ALLOW_THREADS;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    surf = IMG_LoadSizedSVG_IO(rw, width, height);
+#else
     surf = IMG_LoadSizedSVG_RW(rw, width, height);
+#endif
     SDL_RWclose(rw);
     Py_END_ALLOW_THREADS;
     if (surf == NULL) {
@@ -231,7 +243,11 @@ image_save_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
         char *ext = iext_find_extension(name);
         if (!strcasecmp(ext, "jpeg") || !strcasecmp(ext, "jpg")) {
             if (rw != NULL) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                result = IMG_SaveJPG_IO(surf, rw, 0, JPEG_QUALITY);
+#else
                 result = IMG_SaveJPG_RW(surf, rw, 0, JPEG_QUALITY);
+#endif
             }
             else {
                 result = IMG_SaveJPG(surf, name, JPEG_QUALITY);
@@ -240,7 +256,11 @@ image_save_ext(PyObject *self, PyObject *arg, PyObject *kwarg)
         else if (!strcasecmp(ext, "png")) {
             /*Py_BEGIN_ALLOW_THREADS; */
             if (rw != NULL) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+                result = IMG_SavePNG_IO(surf, rw, 0);
+#else
                 result = IMG_SavePNG_RW(surf, rw, 0);
+#endif
             }
             else {
                 result = IMG_SavePNG(surf, name);
@@ -272,6 +292,12 @@ imageext_get_sdl_image_version(PyObject *self, PyObject *args,
                                PyObject *kwargs)
 {
     int linked = 1;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int version = SDL_IMAGE_VERSION;
+#else
+    SDL_version version;
+    SDL_IMAGE_VERSION(&version);
+#endif
 
     static char *keywords[] = {"linked", NULL};
 
@@ -280,14 +306,16 @@ imageext_get_sdl_image_version(PyObject *self, PyObject *args,
     }
 
     if (linked) {
-        const SDL_version *v = IMG_Linked_Version();
-        return Py_BuildValue("iii", v->major, v->minor, v->patch);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        version = IMG_Version();
+#else
+        version = *IMG_Linked_Version();
+#endif
     }
-    else {
-        SDL_version v;
-        SDL_IMAGE_VERSION(&v);
-        return Py_BuildValue("iii", v.major, v.minor, v.patch);
-    }
+
+    return Py_BuildValue("iii", PG_FIND_VNUM_MAJOR(version),
+                         PG_FIND_VNUM_MINOR(version),
+                         PG_FIND_VNUM_MICRO(version));
 }
 
 /*

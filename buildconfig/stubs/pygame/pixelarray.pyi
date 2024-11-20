@@ -1,8 +1,10 @@
 from typing import Any, Dict, Tuple, Union, overload
 
 from pygame.surface import Surface
+from pygame.color import Color
+from pygame.typing import SequenceLike
 
-from ._common import ColorValue, Sequence
+_ColorLike = int | Color | tuple[int, int, int] | tuple[int, int, int, int]
 
 class PixelArray:
     surface: Surface
@@ -34,22 +36,22 @@ class PixelArray:
     def make_surface(self) -> Surface: ...
     def replace(
         self,
-        color: ColorValue,
-        repcolor: ColorValue,
+        color: _ColorLike,
+        repcolor: _ColorLike,
         distance: float = 0,
-        weights: Sequence[float] = (0.299, 0.587, 0.114),
+        weights: SequenceLike[float] = (0.299, 0.587, 0.114),
     ) -> None: ...
     def extract(
         self,
-        color: ColorValue,
+        color: _ColorLike,
         distance: float = 0,
-        weights: Sequence[float] = (0.299, 0.587, 0.114),
+        weights: SequenceLike[float] = (0.299, 0.587, 0.114),
     ) -> PixelArray: ...
     def compare(
         self,
         array: PixelArray,
         distance: float = 0,
-        weights: Sequence[float] = (0.299, 0.587, 0.114),
+        weights: SequenceLike[float] = (0.299, 0.587, 0.114),
     ) -> PixelArray: ...
     def transpose(self) -> PixelArray: ...
     def close(self) -> PixelArray: ...

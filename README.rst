@@ -8,7 +8,7 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-**English** `简体中文`_ `Français`_ `فارسی`_ `Español`_
+**English** `简体中文`_ `繁體中文`_ `Français`_ `فارسی`_ `Español`_ `日本語`_ `Italiano`_ `Русский`_
 ---------------------------------------------------------------------------------------------------
 
 Pygame_ is a free and open-source cross-platform library
@@ -141,7 +141,7 @@ Dependency versions:
 +----------+------------------------+
 | CPython  | >= 3.8 (Or use PyPy3)  |
 +----------+------------------------+
-| SDL      | >= 2.0.10              |
+| SDL      | >= 2.0.14              |
 +----------+------------------------+
 | SDL_mixer| >= 2.0.4               |
 +----------+------------------------+
@@ -165,6 +165,7 @@ If you have any questions, please feel free to ask in the `Pygame Community Disc
 
 License
 -------
+**License Identifier:** LGPL-2.1-or-later
 
 This library is distributed under `GNU LGPL version 2.1`_, which can
 be found in the file ``docs/LGPL.txt``.  We reserve the right to place
@@ -188,8 +189,8 @@ See docs/licenses for licenses of dependencies.
 
 .. |Python3| image:: https://img.shields.io/badge/python-3-blue.svg?v=1
 
-.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.4.1.svg
-   :target: https://github.com/pygame-community/pygame-ce/compare/2.4.1...main
+.. |GithubCommits| image:: https://img.shields.io/github/commits-since/pygame-community/pygame-ce/2.5.1.svg
+   :target: https://github.com/pygame-community/pygame-ce/compare/2.5.1...main
 
 .. |DocsStatus| image:: https://img.shields.io/website?down_message=offline&label=docs&up_message=online&url=https%3A%2F%2Fpyga.me%2Fdocs%2F
    :target: https://pyga.me/docs/
@@ -214,6 +215,10 @@ See docs/licenses for licenses of dependencies.
 .. _wiki pages: https://github.com/pygame-community/pygame-ce/wiki
 
 .. _简体中文: ./docs/readmes/README.zh-cn.rst
+.. _繁體中文: ./docs/readmes/README.zh-tw.rst
 .. _Français: ./docs/readmes/README.fr.rst
 .. _فارسی: ./docs/readmes/README.fa.rst
 .. _Español: ./docs/readmes/README.es.rst
+.. _日本語: ./docs/readmes/README.ja.rst
+.. _Italiano: ./docs/readmes/README.it.rst
+.. _Русский: ./docs/readmes/README.ru.rst

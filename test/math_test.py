@@ -1347,6 +1347,22 @@ class Vector2TypeTest(unittest.TestCase):
         self.assertEqual(type(other / 3), TestVector)
         self.assertEqual(type(other.elementwise() ** 3), TestVector)
 
+    def test_del_x(self):
+        """Verify that the correct error message gets spit out when trying to delete x"""
+        with self.assertRaises(TypeError) as ctx:
+            del Vector2().x
+
+        exception = ctx.exception
+        self.assertEqual(str(exception), "Cannot delete the x attribute")
+
+    def test_del_y(self):
+        """Verify that the correct error message gets spit out when trying to delete y"""
+        with self.assertRaises(TypeError) as ctx:
+            del Vector2().y
+
+        exception = ctx.exception
+        self.assertEqual(str(exception), "Cannot delete the y attribute")
+
 
 class Vector3TypeTest(unittest.TestCase):
     def setUp(self):
@@ -3071,6 +3087,30 @@ class Vector3TypeTest(unittest.TestCase):
         self.assertRaises(TypeError, origin.move_towards_ip, target, "b")
         self.assertRaises(TypeError, origin.move_towards, "c", 3)
         self.assertRaises(TypeError, origin.move_towards_ip, "d", 3)
+
+    def test_del_x(self):
+        """Verify that the correct error message gets spit out when trying to delete x"""
+        with self.assertRaises(TypeError) as ctx:
+            del Vector3().x
+
+        exception = ctx.exception
+        self.assertEqual(str(exception), "Cannot delete the x attribute")
+
+    def test_del_y(self):
+        """Verify that the correct error message gets spit out when trying to delete y"""
+        with self.assertRaises(TypeError) as ctx:
+            del Vector3().y
+
+        exception = ctx.exception
+        self.assertEqual(str(exception), "Cannot delete the y attribute")
+
+    def test_del_z(self):
+        """Verify that the correct error message gets spit out when trying to delete z"""
+        with self.assertRaises(TypeError) as ctx:
+            del Vector3().z
+
+        exception = ctx.exception
+        self.assertEqual(str(exception), "Cannot delete the z attribute")
 
 
 if __name__ == "__main__":

@@ -175,9 +175,9 @@ required).
       pygame.HIDDEN        window is opened in hidden mode
 
 
-   .. versionadded:: 2.0.0 ``SCALED``, ``SHOWN`` and ``HIDDEN``
+   .. versionaddedold:: 2.0.0 ``SCALED``, ``SHOWN`` and ``HIDDEN``
 
-   .. versionadded:: 2.0.0 ``vsync`` parameter
+   .. versionaddedold:: 2.0.0 ``vsync`` parameter
 
    By setting the ``vsync`` parameter to ``1``, it is possible to get a display
    with vertical sync at a constant frame rate determined by the monitor and
@@ -273,7 +273,7 @@ required).
 
    | :sl:`Update all, or a portion, of the display. For non-OpenGL displays.`
    | :sg:`update(rectangle=None, /) -> None`
-   | :sg:`update(rectangle_list, /) -> None`
+   | :sg:`update(rectangle_iterable, /) -> None`
 
    For non OpenGL display Surfaces, this function is very similar to
    ``pygame.display.flip()`` with an optional parameter that allows only
@@ -285,8 +285,8 @@ required).
              updated. Whereas ``display.update()`` means the whole window is
              updated.
 
-   You can pass the function a single rectangle, or a sequence of rectangles.
-   Generally you do not want to pass a sequence of rectangles as there is a
+   You can pass the function a single rectangle, or an iterable of rectangles.
+   Generally you do not want to pass an iterable of rectangles as there is a
    performance cost per rectangle passed to the function. On modern hardware,
    after a very small number of rectangles passed in, the per-rectangle cost
    will exceed the saving of updating less pixels. In most applications it is
@@ -294,11 +294,13 @@ required).
    means  you do not need to keep track of a list of rectangles for each call
    to update.
 
-   If passing a sequence of rectangles it is safe to include None
+   If passing an iterable of rectangles it is safe to include None
    values in the list, which will be skipped.
 
    This call cannot be used on ``pygame.OPENGL`` displays and will generate an
    exception.
+
+   .. versionchanged:: 2.5.1 Added support for passing an iterable, previously only sequence was allowed
 
    .. ## pygame.display.update ##
 
