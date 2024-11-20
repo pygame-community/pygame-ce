@@ -19,7 +19,7 @@ from pygame.rect import FRect, Rect
 from pygame.surface import Surface
 from pygame.mask import Mask
 
-from pygame.typing import RectLike, Coordinate
+from pygame.typing import RectLike, Point
 
 # non-generic Group, used in Sprite
 _Group = AbstractGroup[_SpriteSupportsGroup]
@@ -181,7 +181,7 @@ class Group(AbstractGroup[_TSprite]):
     def __init__(
         self, *sprites: Union[_TSprite, AbstractGroup[_TSprite], Iterable[_TSprite]]
     ) -> None: ...
-    
+
 # these are aliased in the code too
 @deprecated("Use `pygame.sprite.Group` instead")
 class RenderPlain(Group): ...
@@ -211,7 +211,7 @@ class LayeredUpdates(AbstractGroup[_TSprite]):
         ],
         **kwargs: Any
     ) -> None: ...
-    def get_sprites_at(self, pos: Coordinate) -> List[_TSprite]: ...
+    def get_sprites_at(self, pos: Point) -> List[_TSprite]: ...
     def get_sprite(self, idx: int) -> _TSprite: ...
     def remove_sprites_of_layer(self, layer_nr: int) -> List[_TSprite]: ...
     def layers(self) -> List[int]: ...

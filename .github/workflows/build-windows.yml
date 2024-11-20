@@ -27,7 +27,7 @@ on:
       - '.github/workflows/*.yml'
       # re-include current file to not be excluded
       - '!.github/workflows/build-windows.yml'
-  
+
   # the github release drafter can call this workflow
   workflow_call:
 
@@ -50,7 +50,7 @@ jobs:
       CIBW_ARCHS: ${{ matrix.winarch }}
 
     steps:
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v4.2.2
 
       - uses: TheMrMilchmann/setup-msvc-dev@v3  # this lets us use the developer command prompt on windows
         with:
@@ -59,10 +59,10 @@ jobs:
       - name: Install uv for speed
         uses: yezz123/setup-uv@v4
         with:
-          uv-version: "0.2.22"
+          uv-version: "0.4.10"
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.20.0
+        uses: pypa/cibuildwheel@v2.21.3
 
       - uses: actions/upload-artifact@v4
         with:

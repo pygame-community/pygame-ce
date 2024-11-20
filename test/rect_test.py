@@ -772,7 +772,8 @@ class RectTypeTest(unittest.TestCase):
         )
 
     def test_inflate__larger(self):
-        """The inflate method inflates around the center of the rectangle"""
+        """Ensures inflating a rect keeps its center the same
+        and grows dimensions by correct values."""
         r = Rect(2, 4, 6, 8)
         r2 = r.inflate(4, 6)
 
@@ -785,7 +786,8 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual(r.height + 6, r2.height)
 
     def test_inflate__smaller(self):
-        """The inflate method inflates around the center of the rectangle"""
+        """Ensures deflating a rect keeps its center the same
+        and shrinks dimensions by correct values."""
         r = Rect(2, 4, 6, 8)
         r2 = r.inflate(-4, -6)
 
@@ -798,21 +800,23 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual(r.height - 6, r2.height)
 
     def test_inflate_ip__larger(self):
-        """The inflate_ip method inflates around the center of the rectangle"""
+        """Ensures inflating a rect in place keeps its center the same
+        and grows dimensions by correct values."""
         r = Rect(2, 4, 6, 8)
         r2 = Rect(r)
-        r2.inflate_ip(-4, -6)
+        r2.inflate_ip(4, 6)
 
         self.assertEqual(r.center, r2.center)
-        self.assertEqual(r.left + 2, r2.left)
-        self.assertEqual(r.top + 3, r2.top)
-        self.assertEqual(r.right - 2, r2.right)
-        self.assertEqual(r.bottom - 3, r2.bottom)
-        self.assertEqual(r.width - 4, r2.width)
-        self.assertEqual(r.height - 6, r2.height)
+        self.assertEqual(r.left - 2, r2.left)
+        self.assertEqual(r.top - 3, r2.top)
+        self.assertEqual(r.right + 2, r2.right)
+        self.assertEqual(r.bottom + 3, r2.bottom)
+        self.assertEqual(r.width + 4, r2.width)
+        self.assertEqual(r.height + 6, r2.height)
 
     def test_inflate_ip__smaller(self):
-        """The inflate method inflates around the center of the rectangle"""
+        """Ensures deflating a rect in place keeps its center the same
+        and shrinks dimensions by correct values."""
         r = Rect(2, 4, 6, 8)
         r2 = Rect(r)
         r2.inflate_ip(-4, -6)
@@ -889,6 +893,8 @@ class RectTypeTest(unittest.TestCase):
         r = Rect(2, 4, 6, 8)
         # act
         r2 = r.scale_by(scale_by=(2, 4))
+        r3 = r.scale_by((2, 4))
+        self.assertEqual(r2, r3)
         # assert
         self.assertEqual(r.center, r2.center)
         self.assertEqual(r.left - 3, r2.left)
@@ -3087,6 +3093,8 @@ class FRectTypeTest(RectTypeTest):
         r = FRect(2.1, 4, 6, 8.9)
         # act
         r2 = r.scale_by(scale_by=(2, 4))
+        r3 = r.scale_by((2, 4))
+        self.assertEqual(r2, r3)
         # assert
         self.assertSeqAlmostEqual5(r.center, r2.center)
         self.assertAlmostEqual5(r.left - 3, r2.left)

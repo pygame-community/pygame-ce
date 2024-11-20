@@ -30,7 +30,12 @@
    surprised with this code!
 */
 
+#ifdef PG_SDL3
+#include <SDL3/SDL.h>
+#else
 #include <SDL.h>
+#endif
+
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
