@@ -64,4 +64,3 @@ Header file: src_c/include/pygame_mixer.h
 
    Return the SDL mixer music channel number associated with :c:type:`pgChannel_Type` instance *x*.
    A macro that does no ``NULL`` or Python type check on *x*.
-

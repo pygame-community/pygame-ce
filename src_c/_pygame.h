@@ -33,6 +33,7 @@
 */
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#include "include/pythoncapi_compat.h"
 
 /* Ensure PyPy-specific code is not in use when running on GraalPython (PR
  * #2580) */
@@ -40,7 +41,11 @@
 #undef PYPY_VERSION
 #endif
 
+#ifdef PG_SDL3
+#include <SDL3/SDL.h>
+#else
 #include <SDL.h>
+#endif
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 #define PG_ShowCursor SDL_ShowCursor
@@ -70,7 +75,9 @@
 #define PG_CreateSurface SDL_CreateSurface
 #define PG_CreateSurfaceFrom SDL_CreateSurfaceFrom
 #define PG_ConvertSurface SDL_ConvertSurface
-#define PG_ConvertSurfaceFormat SDL_ConvertSurfaceFormat
+#define PG_ConvertSurfaceFormat SDL_ConvertSurface
+
+#define PG_PixelFormatEnum SDL_PixelFormat
 
 #define PG_SurfaceHasRLE SDL_SurfaceHasRLE
 
@@ -93,13 +100,24 @@ PG_UnlockMutex(SDL_mutex *mutex)
     return 0;
 }
 
-#define PG_SURF_BitsPerPixel(surf) surf->format->bits_per_pixel
-#define PG_SURF_BytesPerPixel(surf) surf->format->bytes_per_pixel
+#define PG_SURF_BitsPerPixel(surf) SDL_BITSPERPIXEL(surf->format)
+#define PG_SURF_BytesPerPixel(surf) SDL_BYTESPERPIXEL(surf->format)
 #define PG_FORMAT_BitsPerPixel(format) format->bits_per_pixel
 #define PG_FORMAT_BytesPerPixel(format) format->bytes_per_pixel
 
 /* Mask to test if surface flags are in a fullscreen window. */
 #define PG_WINDOW_FULLSCREEN_INCLUSIVE SDL_WINDOW_FULLSCREEN
+
+#define PG_SetEventEnabled(type, enabled) SDL_SetEventEnabled(type, enabled)
+#define PG_EventEnabled(type) SDL_EventEnabled(type)
+#define PG_SetJoystickEventsEnabled(enabled) \
+    SDL_SetJoystickEventsEnabled(enabled)
+
+#define PG_FIND_VNUM_MAJOR(ver) SDL_VERSIONNUM_MAJOR(ver)
+#define PG_FIND_VNUM_MINOR(ver) SDL_VERSIONNUM_MINOR(ver)
+#define PG_FIND_VNUM_MICRO(ver) SDL_VERSIONNUM_MICRO(ver)
+
+#define PG_INIT_TIMER 0
 
 #else /* ~SDL_VERSION_ATLEAST(3, 0, 0)*/
 #define PG_ShowCursor() SDL_ShowCursor(SDL_ENABLE)
@@ -124,11 +142,13 @@ PG_UnlockMutex(SDL_mutex *mutex)
 
 #define PG_CreateSurface(width, height, format) \
     SDL_CreateRGBSurfaceWithFormat(0, width, height, 0, format)
-#define PG_CreateSurfaceFrom(pixels, width, height, pitch, format) \
+#define PG_CreateSurfaceFrom(width, height, format, pixels, pitch) \
     SDL_CreateRGBSurfaceWithFormatFrom(pixels, width, height, 0, pitch, format)
 #define PG_ConvertSurface(src, fmt) SDL_ConvertSurface(src, fmt, 0)
 #define PG_ConvertSurfaceFormat(src, pixel_format) \
     SDL_ConvertSurfaceFormat(src, pixel_format, 0)
+
+#define PG_PixelFormatEnum SDL_PixelFormatEnum
 
 #define PG_SoftStretchNearest(src, srcrect, dst, dstrect) \
     SDL_SoftStretch(src, srcrect, dst, dstrect)
@@ -155,44 +175,20 @@ PG_UnlockMutex(SDL_mutex *mutex)
  * SDL_WINDOW_FULLSCREEN. */
 #define PG_WINDOW_FULLSCREEN_INCLUSIVE SDL_WINDOW_FULLSCREEN_DESKTOP
 
-#if SDL_VERSION_ATLEAST(2, 0, 14)
+/* SDL_EventState is meant to take SDL_IGNORE or SDL_ENABLE, but it also
+ * works identically with SDL_FALSE and SDL_TRUE, because they evaluate to
+ * the same values, respectively. */
+#define PG_SetEventEnabled(type, enabled) SDL_EventState(type, enabled)
+#define PG_EventEnabled(type) SDL_EventState(type, SDL_QUERY)
+#define PG_SetJoystickEventsEnabled(enabled) SDL_JoystickEventState(enabled)
+
+#define PG_FIND_VNUM_MAJOR(ver) ver.major
+#define PG_FIND_VNUM_MINOR(ver) ver.minor
+#define PG_FIND_VNUM_MICRO(ver) ver.patch
+
+#define PG_INIT_TIMER SDL_INIT_TIMER
+
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
-#else
-// vendored in until our lowest SDL version is 2.0.14
-typedef struct {
-    Uint8 *src;
-    int src_w, src_h;
-    int src_pitch;
-    int src_skip;
-    Uint8 *dst;
-    int dst_w, dst_h;
-    int dst_pitch;
-    int dst_skip;
-    SDL_PixelFormat *src_fmt;
-    SDL_PixelFormat *dst_fmt;
-    Uint8 *table;
-    int flags;
-    Uint32 colorkey;
-    Uint8 r, g, b, a;
-} SDL_InternalBlitInfo;
-
-struct SDL_BlitMap {
-    SDL_Surface *dst;
-    int identity;
-    SDL_blit blit;
-    void *data;
-    SDL_InternalBlitInfo info;
-
-    /* the version count matches the destination; mismatch indicates
-       an invalid mapping */
-    Uint32 dst_palette_version;
-    Uint32 src_palette_version;
-};
-#define SDL_COPY_RLE_DESIRED 0x00001000
-
-SDL_bool
-PG_SurfaceHasRLE(SDL_Surface *surface);
-#endif
 
 #endif
 
@@ -248,6 +244,10 @@ typedef enum {
     SDL_ACTIVEEVENT = SDL_USEREVENT,
     SDL_VIDEORESIZE,
     SDL_VIDEOEXPOSE,
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* SDL_SYSWMEVENT removed in SDL3, define it here for compat */
+    SDL_SYSWMEVENT,
+#endif
 
     PGE_MIDIIN,
     PGE_MIDIOUT,
@@ -308,8 +308,10 @@ typedef enum {
     PGPOST_CONTROLLERTOUCHPADMOTION,
     PGPOST_CONTROLLERTOUCHPADUP,
     PGPOST_CONTROLLERSENSORUPDATE,
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     PGPOST_DOLLARGESTURE,
     PGPOST_DOLLARRECORD,
+#endif
     PGPOST_DROPFILE,
     PGPOST_DROPTEXT,
     PGPOST_DROPBEGIN,
@@ -334,7 +336,9 @@ typedef enum {
     PGPOST_MOUSEBUTTONDOWN,
     PGPOST_MOUSEBUTTONUP,
     PGPOST_MOUSEWHEEL,
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     PGPOST_MULTIGESTURE,
+#endif
     PGPOST_NOEVENT,
     PGPOST_QUIT,
     PGPOST_RENDER_TARGETS_RESET,
@@ -402,6 +406,12 @@ typedef enum {
     PGS_PREALLOC = 0x01000000
 } PygameSurfaceFlags;
 
+typedef enum {
+    PGS_SCROLL_DEFAULT = 0x00000000,
+    PGS_SCROLL_REPEAT = 0x00000001,
+    PGS_SCROLL_ERASE = 0x00000004
+} PygameScrollSurfaceFlags;
+
 #define RAISE(x, y) (PyErr_SetString((x), (y)), NULL)
 #define RAISERETURN(x, y, r)   \
     PyErr_SetString((x), (y)); \
@@ -443,19 +453,6 @@ typedef enum {
     (RAISE(PyExc_NotImplementedError, "Python built without thread support"))
 #endif /* ~WITH_THREAD */
 
-#define PyType_Init(x) (((x).ob_type) = &PyType_Type)
-
-/* Python macro for comparing to Py_None
- * Py_IsNone is naturally supported by
- * Python 3.10 or higher
- * so this macro can be removed after the minimum
- * supported
- * Python version reaches 3.10
- */
-#ifndef Py_IsNone
-#define Py_IsNone(x) (x == Py_None)
-#endif
-
 /* Update this function if new sequences are added to the fast sequence
  * type. */
 #ifndef pgSequenceFast_Check
@@ -471,20 +468,10 @@ struct pgEventObject {
 };
 
 /*
- * surflock module internals
- */
-typedef struct {
-    PyObject_HEAD PyObject *surface;
-    PyObject *lockobj;
-    PyObject *weakrefs;
-} pgLifetimeLockObject;
-
-/*
  * surface module internals
  */
 struct pgSubSurface_Data {
     PyObject *owner;
-    int pixeloffset;
     int offsetx, offsety;
 };
 
@@ -527,7 +514,7 @@ typedef enum {
 #define PYGAMEAPI_JOYSTICK_NUMSLOTS 3
 #define PYGAMEAPI_DISPLAY_NUMSLOTS 2
 #define PYGAMEAPI_SURFACE_NUMSLOTS 4
-#define PYGAMEAPI_SURFLOCK_NUMSLOTS 8
+#define PYGAMEAPI_SURFLOCK_NUMSLOTS 6
 #define PYGAMEAPI_RWOBJECT_NUMSLOTS 5
 #define PYGAMEAPI_PIXELARRAY_NUMSLOTS 2
 #define PYGAMEAPI_COLOR_NUMSLOTS 5
@@ -535,6 +522,6 @@ typedef enum {
 #define PYGAMEAPI_BASE_NUMSLOTS 29
 #define PYGAMEAPI_EVENT_NUMSLOTS 10
 #define PYGAMEAPI_WINDOW_NUMSLOTS 1
-#define PYGAMEAPI_GEOMETRY_NUMSLOTS 1
+#define PYGAMEAPI_GEOMETRY_NUMSLOTS 2
 
 #endif /* _PYGAME_INTERNAL_H */

@@ -122,17 +122,17 @@
       Same as the ``Rect.move()`` method, but operates in place.
 
       .. ## Rect.move_ip ##
-   
+
    .. method:: move_to
 
       | :sl:`moves the rectangle to the specified position`
       | :sg:`move_to(**kwargs) -> Rect`
-      
-      Returns a new rectangle that is moved to the given position. You must provide keyword
-      arguments to the method such as ``center``, ``left``, ``midbottom`` that correspond
-      to the rectangle's attributes and the method will return a new rectangle whose specified
-      attributes are set to the given value. 
-      
+
+      Returns a new rectangle that is moved to the given position and optionally resized.
+      You must provide keyword arguments to the method such as ``center``, ``left``,
+      ``midbottom``, ``size`` that correspond to the rectangle's attributes and the
+      method will return a new rectangle whose specified attributes are set to the given value.
+
       It is similar to :meth:`Surface.get_rect` but instead of a calling it as a surface method
       you call it as a rectangle method.
 
@@ -168,12 +168,14 @@
       | :sg:`scale_by(x, y) -> Rect`
 
       Returns a new rectangle with the size scaled by the given multipliers.
-      The rectangle remains centered around its current center. A single 
+      The rectangle remains centered around its current center. A single
       scalar or separate width and height scalars are allowed. Values above
       one will increase the size of the rectangle, whereas values between
       zero and one will decrease the size of the rectangle.
 
       .. versionadded:: 2.3.1
+
+      .. versionchanged:: 2.5.2 the argument ``scale_by`` can now be passed as a positional argument
 
       .. ## Rect.scale_by ##
 
@@ -186,6 +188,8 @@
       Same as the ``Rect.scale_by()`` method, but operates in place.
 
       .. versionadded:: 2.3.1
+
+      .. versionchanged:: 2.5.2 the argument ``scale_by`` can now be passed as a positional argument
 
       .. ## Rect.scale_by_ip ##
 
@@ -415,39 +419,39 @@
 
       .. code-block:: python
           :linenos:
-    
+
           Rect = pygame.Rect
           r = Rect(0, 0, 10, 10)
-          
+
           list_of_rects = [Rect(1, 1, 1, 1), Rect(2, 2, 2, 2)]
           indices0 = r.collidelistall(list_of_rects)
-          
+
           list_of_lists = [[1, 1, 1, 1], [2, 2, 2, 2]]
           indices1 = r.collidelistall(list_of_lists)
-          
+
           list_of_tuples = [(1, 1, 1, 1), (2, 2, 2, 2)]
           indices2 = r.collidelistall(list_of_tuples)
-          
+
           list_of_double_tuples = [((1, 1), (1, 1)), ((2, 2), (2, 2))]
           indices3 = r.collidelistall(list_of_double_tuples)
-          
+
           class ObjectWithRectAttribute(object):
               def __init__(self, r):
                   self.rect = r
-          
+
           list_of_object_with_rect_attribute = [
               ObjectWithRectAttribute(Rect(1, 1, 1, 1)),
               ObjectWithRectAttribute(Rect(2, 2, 2, 2)),
           ]
           indices4 = r.collidelistall(list_of_object_with_rect_attribute)
-          
+
           class ObjectWithCallableRectAttribute(object):
               def __init__(self, r):
                   self._rect = r
-          
+
               def rect(self):
                   return self._rect
-          
+
           list_of_object_with_callable_rect = [
               ObjectWithCallableRectAttribute(Rect(1, 1, 1, 1)),
               ObjectWithCallableRectAttribute(Rect(2, 2, 2, 2)),
@@ -595,7 +599,7 @@
 
       .. versionchanged:: 2.4.0
          ``values`` is now accepted as a keyword argument. Type Stub updated
-         to use boolean ``True`` or ``False``, but any truthy or falsy value 
+         to use boolean ``True`` or ``False``, but any truthy or falsy value
          will be valid.
 
       .. ## Rect.collidedict ##
@@ -618,7 +622,7 @@
 
       .. versionchanged:: 2.4.0
          ``values`` is now accepted as a keyword argument. Type Stub updated
-         to use boolean ``True`` or ``False``, but any truthy or falsy value 
+         to use boolean ``True`` or ``False``, but any truthy or falsy value
          will be valid.
 
       .. ## Rect.collidedictall ##

@@ -11,12 +11,32 @@ assignees: ''
 
 **Environment:**
 
-You can get some of this info from the text that pops up in the console when you run a pygame program.
+If possible, please include the output of `pygame.print_debug_info()` from your program in your bug report. It looks something
+like this:
 
-- **Operating system** (e.g. Windows, Linux(Debian), Linux(Ubuntu), Mac):
-- **Python version** (e.g. 3.11.1, 3.8.5) :
-- **SDL version** (e.g. SDL 2.0.12):
-- **pygame-ce version** (e.g. 2.4.0.dev4, 2.1.3):
+```
+pygame-ce 6.6.6 (SDL 2.30.3, Python 3.11.1)
+Platform:		Windows-10-10.0.22631-SP0
+System:			Windows
+System Version:	10.0.22631
+Processor:		AMD64 Family 23 Model 113 Stepping 0, AuthenticAMD
+Architecture:	Bits: 64bit	Linkage: WindowsPE
+
+Python:			    CPython 3.11.1 (tags/v3.11.1:a7a450f, Dec  6 2022, 19:58:39) [MSC v.1934 64 bit (AMD64)]
+pygame version:		2.5.0.dev3
+SDL versions:		Linked: 2.30.3	Compiled: 2.30.3
+SDL Mixer versions:	Linked: 2.8.0	Compiled: 2.8.0
+SDL Font versions:	Linked: 2.22.0	Compiled: 2.22.0
+SDL Image versions:	Linked: 2.8.2	Compiled: 2.8.2
+Freetype versions:	Linked: 2.11.1	Compiled: 2.11.1
+
+Display Driver:		windows
+Mixer Driver:		wasapi
+```
+If you can't get the debug output, any of the environment details included in it that you do know would be useful
+in diagnosing the issue & helping you.
+
+Other environment details, not included in `print_debug_info()`, that might help:
 - **Relevant hardware** (e.g. if reporting a bug about a controller, tell us the brand & name of it):
 
 **Current behavior:**

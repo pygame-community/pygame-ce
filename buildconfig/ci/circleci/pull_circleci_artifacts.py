@@ -2,7 +2,7 @@
 A script to automate downloading CircleCI artifacts.
 
 Usage: python3 pull_circleci_artifacts.py <TOKEN> <PIPELINE_ID> <SAVE_DIR>
-    TOKEN: 
+    TOKEN:
         CircleCI "personal access token" of a github (preferably machine) user.
         This is secret!
 

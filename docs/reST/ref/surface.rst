@@ -90,7 +90,7 @@
    .. method:: blit
 
       | :sl:`draw another surface onto this one`
-      | :sg:`blit(source, dest, area=None, special_flags=0) -> Rect`
+      | :sg:`blit(source, dest=(0, 0), area=None, special_flags=0) -> Rect`
 
       Draws another Surface onto this Surface.
 
@@ -98,9 +98,9 @@
           - ``source``
               The ``Surface`` object to draw onto this ``Surface``.
               If it has transparency, transparent pixels will be ignored when blittting to an 8-bit ``Surface``.
-          - ``dest``
-              The ``source`` draw position onto this ``Surface``.
-              It can be a coordinate ``(x, y)`` or a ``Rect`` (using its top-left corner).
+          - ``dest`` *(optional)*
+              The ``source`` draw position onto this ``Surface``, defaults to (0, 0).
+              It can be a coordinate pair ``(x, y)`` or a ``Rect`` (using its top-left corner).
               If a ``Rect`` is passed, its size will not affect the blit.
           - ``area`` *(optional)*
               The rectangular portion of the ``source`` to draw.
@@ -137,11 +137,13 @@
           - The blit is ignored if the ``source`` is positioned completely outside this ``Surface``'s
             clipping area. Otherwise only the overlapping area will be drawn.
 
+      .. versionchanged:: 2.5.1 The dest argument is optional and defaults to (0, 0)
+
       .. ## Surface.blit ##
 
    .. method:: blits
 
-      | :sl:`draw many images onto another`
+      | :sl:`draw many surfaces onto this surface at their corresponding location`
       | :sg:`blits(blit_sequence=((source, dest), ...), doreturn=True) -> [Rect, ...] or None`
       | :sg:`blits(((source, dest, area), ...)) -> [Rect, ...]`
       | :sg:`blits(((source, dest, area, special_flags), ...)) -> [Rect, ...]`
@@ -184,8 +186,8 @@
           - To draw a ``Surface`` with a special flag, you must specify an area as well, e.g.,
             ``(source, dest, None, special_flags)``.
 
-          - Prefer using :meth:`blits` over :meth:`blit` when drawing a multiple images
-            for better performance. Use :meth:`blit` if you need to draw a single image.
+          - Prefer using :meth:`blits` over :meth:`blit` when drawing multiple surfaces
+            for better performance. Use :meth:`blit` if you need to draw a single surface.
 
           - For drawing a sequence of (source, dest) pairs with whole source Surface
             and a singular special_flag, use the :meth:`fblits()` method.
@@ -196,7 +198,7 @@
 
    .. method:: fblits
 
-      | :sl:`draw many surfaces onto the calling surface at their corresponding location and the same special_flags`
+      | :sl:`draw many surfaces onto this surface at their corresponding location and with the same special_flags`
       | :sg:`fblits(blit_sequence=((source, dest), ...), special_flags=0, /) -> None`
 
       This method takes a sequence of tuples (source, dest) as input, where source is a Surface
@@ -223,7 +225,7 @@
 
    .. method:: convert
 
-      | :sl:`change the pixel format of an image`
+      | :sl:`change the pixel format of a surface`
       | :sg:`convert(surface, /) -> Surface`
       | :sg:`convert(depth, flags=0, /) -> Surface`
       | :sg:`convert(masks, flags=0, /) -> Surface`
@@ -244,7 +246,7 @@
       creating per-pixel alphas.
 
       The new copy will have the same class as the copied surface. This lets
-      as Surface subclass inherit this method without the need to override,
+      a Surface subclass inherit this method without the need to override,
       unless subclass specific instance attributes also need copying.
 
       .. versionchanged:: 2.5.0 converting to a known format will succeed without a window/display surface.
@@ -253,7 +255,7 @@
 
    .. method:: convert_alpha
 
-      | :sl:`change the pixel format of an image including per pixel alphas`
+      | :sl:`change the pixel format of a surface including per pixel alphas`
       | :sg:`convert_alpha() -> Surface`
 
       Creates a new copy of the surface with the desired pixel format. The new
@@ -261,7 +263,7 @@
       with per pixel alpha.
 
       Unlike the :meth:`convert()` method, the pixel format for the new
-      image will not be exactly the same as the display surface, but it will
+      surface will not be exactly the same as the display surface, but it will
       be optimized for fast alpha blitting to it.
 
       As with :meth:`convert()` the returned surface has the same class as
@@ -296,44 +298,60 @@
       entire Surface will be filled. The rect argument will limit the fill to a
       specific area. The fill will also be contained by the Surface clip area.
 
-      The color argument can be an ``RGB`` sequence, an ``RGBA`` sequence,
-      a string (for :doc:`color_list`), or a mapped color index. If using ``RGBA``,
-      the Alpha (A part of ``RGBA``) is ignored unless the surface uses per pixel
-      alpha (Surface has the ``SRCALPHA`` flag).
+      The color argument should be compatible with :data:`pygame.typing.ColorLike`.
+      If using ``RGBA``, the Alpha (A part of ``RGBA``) is ignored unless the surface
+      uses per pixel alpha (Surface has the ``SRCALPHA`` flag).
 
       The special_flags argument controls how the colors are combined. See :doc:`special_flags_list`
       for a list of possible values.
 
       This will return the affected Surface area.
 
+      .. note:: As of pygame-ce version 2.5.1, a long-standing bug has been fixed!
+         Now when passing in a ``Rect`` with negative ``x`` or negative ``y`` (or both),
+         the ``Rect`` filled will no longer be shifted to ``(0, 0)``, but instead only the
+         part of the ``Rect`` overlapping the window's ``Rect`` will be filled.
+
       .. ## Surface.fill ##
 
    .. method:: scroll
 
-      | :sl:`Shift the surface image in place`
-      | :sg:`scroll(dx=0, dy=0, /) -> None`
+      | :sl:`shift the Surface pixels in place`
+      | :sg:`scroll(dx=0, dy=0, scroll_flag=0, /) -> None`
 
-      Move the image by dx pixels right and dy pixels down. dx and dy may be
-      negative for left and up scrolls respectively. Areas of the surface that
-      are not overwritten retain their original pixel values. Scrolling is
-      contained by the Surface clip area. It is safe to have dx and dy values
-      that exceed the surface size.
+      Move the Surface by dx pixels right and dy pixels down. dx and dy may be
+      negative for left and up scrolls respectively.
+
+      Scrolling is contained by the Surface clip area. It is safe to have dx
+      and dy values that exceed the surface size.
+
+      The scroll flag can be:
+         * ``0`` (default): the pixels are shifted but previous pixels are
+           not modified.
+
+         * ``pygame.SCROLL_ERASE``: the space created by the shifting pixels
+           is filled with black or transparency.
+
+         * ``pygame.SCROLL_REPEAT``: the pixels that disappear out of the
+           surface or clip bounds are brought back on the opposite side
+           resulting in an infinitely scrolling and repeating surface.
 
       .. versionaddedold:: 1.9
+
+      .. versionchanged:: 2.5.3 Add repeating scroll and allow erasing pixels
 
       .. ## Surface.scroll ##
 
    .. method:: set_colorkey
 
-      | :sl:`Set the transparent colorkey`
+      | :sl:`set the transparent colorkey`
       | :sg:`set_colorkey(color, flags=0, /) -> None`
       | :sg:`set_colorkey(None) -> None`
 
       Set the current color key for the Surface. When blitting this Surface
       onto a destination, any pixels that have the same color as the colorkey
-      will be transparent. The color can be an ``RGB`` color, a string
-      (for :doc:`color_list`), or a mapped color integer. If ``None`` is passed,
-      the colorkey will be unset.
+      will be transparent. The color should be compatible with :data:`pygame.typing.ColorLike`.
+      If ``None`` is passed, the colorkey will be unset.
 
       The colorkey will be ignored if the Surface is formatted to use per pixel
       alpha values. The colorkey can be mixed with the full Surface alpha
@@ -347,8 +365,8 @@
 
    .. method:: get_colorkey
 
-      | :sl:`Get the current transparent colorkey`
-      | :sg:`get_colorkey() -> RGB or None`
+      | :sl:`get the current transparent colorkey`
+      | :sg:`get_colorkey() -> RGBA or None`
 
       Return the current colorkey value for the Surface. If the colorkey is not
       set then ``None`` is returned.
@@ -357,7 +375,7 @@
 
    .. method:: set_alpha
 
-      | :sl:`set the alpha value for the full Surface image`
+      | :sl:`set the alpha value for the full Surface`
       | :sg:`set_alpha(value, flags=0, /) -> None`
       | :sg:`set_alpha(None) -> None`
 
@@ -464,7 +482,7 @@
 
    .. method:: get_locks
 
-      | :sl:`Gets the locks for the Surface`
+      | :sl:`gets the locks for the Surface`
       | :sg:`get_locks() -> tuple`
 
       Returns the currently existing locks for the Surface.
@@ -487,15 +505,15 @@
       methods - or by using :mod:`pygame.surfarray`/:mod:`pygame.PixelArray`.
 
       This function will temporarily lock and unlock the Surface as needed.
-      
+
       .. versionchanged:: 2.3.1 can now also accept both float coordinates and Vector2s for pixels.
-      
+
          Returning a Color instead of tuple. Use ``tuple(surf.get_at((x,y)))``
          if you want a tuple, and not a Color. This should only matter if
          you want to use the color as a key in a dict.
-      
+
       .. versionaddedold:: 1.9
-      
+
       .. ## Surface.get_at ##
 
    .. method:: set_at
@@ -503,10 +521,10 @@
       | :sl:`set the color value for a single pixel`
       | :sg:`set_at((x, y), color, /) -> None`
 
-      Set the color of a single pixel at the specified coordinates to be an ``RGB``,
-      ``RGBA``, string (for :doc:`color_list`), or mapped integer color value. If the Surface
-      does not have per pixel alphas, the alpha value is ignored. Setting pixels outside the
-      Surface area or outside the Surface clipping will have no effect.
+      Set the color of a single pixel at the specified coordinates to be a
+      :data:`pygame.typing.ColorLike` value. If the Surface does not have per pixel alphas,
+      the alpha value is ignored. Setting pixels outside the Surface area or outside
+      the Surface clipping will have no effect.
 
       Getting and setting pixels one at a time is generally too slow to be used
       in a game or realtime situation.
@@ -543,7 +561,7 @@
    .. method:: get_palette
 
       | :sl:`get the color index palette for an 8-bit Surface`
-      | :sg:`get_palette() -> [RGB, RGB, RGB, ...]`
+      | :sg:`get_palette() -> [Color, Color, Color, ...]`
 
       Return a list of up to 256 color elements that represent the indexed
       colors used in an 8-bit Surface. The returned list is a copy of the
@@ -558,7 +576,7 @@
    .. method:: get_palette_at
 
       | :sl:`get the color for a single entry in a palette`
-      | :sg:`get_palette_at(index, /) -> RGB`
+      | :sg:`get_palette_at(index, /) -> Color`
 
       Returns the red, green, and blue color values for a single index in a
       Surface palette. The index should be a value from 0 to 255.
@@ -571,12 +589,12 @@
    .. method:: set_palette
 
       | :sl:`set the color palette for an 8-bit Surface`
-      | :sg:`set_palette([RGB, RGB, RGB, ...], /) -> None`
+      | :sg:`set_palette([color, color, color, ...], /) -> None`
 
       Set the full palette for an 8-bit Surface. This will replace the colors in
       the existing palette. A partial palette can be passed and only the first
       colors in the original palette will be changed.
-      
+
       This function has no effect on a Surface with more than 8-bits per pixel.
 
       .. ## Surface.set_palette ##
@@ -584,11 +602,11 @@
    .. method:: set_palette_at
 
       | :sl:`set the color for a single index in an 8-bit Surface palette`
-      | :sg:`set_palette_at(index, RGB, /) -> None`
+      | :sg:`set_palette_at(index, color, /) -> None`
 
       Set the palette value for a single entry in a Surface palette. The index
       should be a value from 0 to 255.
-      
+
       This function has no effect on a Surface with more than 8-bits per pixel.
 
       .. ## Surface.set_palette_at ##
@@ -598,10 +616,10 @@
       | :sl:`convert a color into a mapped color value`
       | :sg:`map_rgb(color, /) -> mapped_int`
 
-      Convert an ``RGBA`` color into the mapped integer value for this Surface.
-      The returned integer will contain no more bits than the bit depth of the
-      Surface. Mapped color values are not often used inside pygame, but can be
-      passed to most functions that require a Surface and a color.
+      Convert a :data:`pygame.typing.ColorLike` into the mapped integer value
+      for this Surface. The returned integer will contain no more bits than the
+      bit depth of the Surface. Mapped color values are not often used inside pygame,
+      but can be passed to most functions that require a Surface and a color.
 
       See the Surface object documentation for more information about colors
       and pixel formats.
@@ -646,7 +664,7 @@
 
       Return a rectangle of the current clipping area. The Surface will always
       return a valid rectangle that will never be outside the bounds of the
-      image. If the Surface has had ``None`` set for the clipping area, the
+      surface. If the Surface has had ``None`` set for the clipping area, the
       Surface will return a rectangle with the full area of the Surface.
 
       .. ## Surface.get_clip ##
@@ -749,12 +767,13 @@
       | :sg:`get_rect(\**kwargs) -> Rect`
 
       Returns a new rectangle covering the entire surface. This rectangle will
-      always start at (0, 0) with a width and height the same size as the image.
+      always start at (0, 0) with a width and height the same size as the surface.
 
       You can pass keyword argument values to this function. These named values
       will be applied to the attributes of the Rect before it is returned. An
       example would be ``mysurf.get_rect(center=(100, 100))`` to create a
-      rectangle for the Surface centered at a given position.
+      rectangle for the Surface centered at a given position. Size attributes
+      such as ``size`` or ``w`` can also be applied to resize the Rect.
 
       .. ## Surface.get_rect ##
 
@@ -762,14 +781,15 @@
 
       | :sl:`get the rectangular area of the Surface`
       | :sg:`get_frect(\**kwargs) -> FRect`
-      
+
       This is the same as :meth:`Surface.get_rect` but returns an FRect. FRect is similar
       to Rect, except it stores float values instead.
 
       You can pass keyword argument values to this function. These named values
       will be applied to the attributes of the FRect before it is returned. An
       example would be ``mysurf.get_frect(center=(100.5, 100.5))`` to create a
-      rectangle for the Surface centered at a given position.
+      rectangle for the Surface centered at a given position. Size attributes
+      such as ``size`` or ``w`` can also be applied to resize the FRect.
 
       .. ## Surface.get_frect ##
 
@@ -1026,39 +1046,54 @@
       superior results when blitting an alpha surface onto another surface with alpha - assuming both
       surfaces contain pre-multiplied alpha colors.
 
-      There is a `tutorial on premultiplied alpha blending here. <tutorials/en/premultiplied-alpha>`
+      There is a `tutorial on premultiplied alpha blending here. <tutorials/en/premultiplied-alpha>`_
 
       .. versionadded:: 2.1.4
 
       .. ## Surface.premul_alpha ##
 
-    .. attribute:: width
+   .. method:: premul_alpha_ip
 
-        | :sl:`Surface width in pixels (read-only)`
-        | :sg:`width -> int`
+      | :sl:`multiplies the RGB channels by the surface alpha channel.`
+      | :sg:`premul_alpha_ip() -> Surface`
 
-        Read-only attribute. Same as :meth:`get_width()`
+      Multiplies the RGB channels of the surface by the alpha channel in place and returns the surface.
 
-    .. versionadded:: 2.5.0
+      Surfaces without an alpha channel cannot use this method and will return an error if you use
+      it on them. It is best used on 32 bit surfaces (the default on most platforms) as the blitting
+      on these surfaces can be accelerated by SIMD versions of the pre-multiplied blitter.
 
-    .. attribute:: height
+      Refer to the :meth:`premul_alpha` method for more information.
 
-        | :sl:`Surface height in pixels (read-only)`
-        | :sg:`height -> int`
+      .. versionadded:: 2.5.1
 
-        Read-only attribute. Same as :meth:`get_height()`
+      .. ## Surface.premul_alpha_ip ##
 
-    .. versionadded:: 2.5.0
+   .. attribute:: width
 
-    .. attribute:: size
+      | :sl:`Surface width in pixels (read-only)`
+      | :sg:`width -> int`
 
-        | :sl:`Surface size in pixels (read-only)`
-        | :sg:`height -> tuple[int, int]`
+      Read-only attribute. Same as :meth:`get_width()`
 
-        Read-only attribute. Same as :meth:`get_size()`
+      .. versionadded:: 2.5.0
 
-    .. versionadded:: 2.5.0
+   .. attribute:: height
+
+      | :sl:`Surface height in pixels (read-only)`
+      | :sg:`height -> int`
+
+      Read-only attribute. Same as :meth:`get_height()`
+
+      .. versionadded:: 2.5.0
+
+   .. attribute:: size
+
+      | :sl:`Surface size in pixels (read-only)`
+      | :sg:`height -> tuple[int, int]`
+
+      Read-only attribute. Same as :meth:`get_size()`
+
+      .. versionadded:: 2.5.0
 
    .. ## pygame.Surface ##
-
-

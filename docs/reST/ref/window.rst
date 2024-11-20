@@ -10,10 +10,10 @@
    | :sl:`pygame object that represents a window`
    | :sg:`Window(title='pygame window', size=(640, 480), position=None, fullscreen=False, fullscreen_desktop=False, **kwargs) -> Window`
 
-   The Window class (formerly known as _sdl2.video.Window), is an experimental
-   feature of pygame-ce. This class allows for programs to drive multiple
-   Windows on-screen at once, something not possible with the
-   :func:`pygame.display.set_mode` API. Not everything possible with
+   The Window class (formerly known as _sdl2.video.Window), is a newly
+   published feature of pygame-ce 2.5.2. This class allows for programs
+   to drive multiple windows on-screen at once, something not possible with
+   the :func:`pygame.display.set_mode` API. Not everything possible with
    :mod:`pygame.display` is possible yet in the Window API, but the new
    window class will continue to be developed, and we're excited to share
    the new functionality this class offers.
@@ -44,8 +44,48 @@
    :param bool always_on_top: Create a window that is always presented above
                               others.
 
+   Event behavior if one Window is created: When the close button is pressed,
+   the ``QUIT`` event will be sent to the event queue.
+
+   .. code-block:: python
+
+     import pygame
+
+     window = pygame.Window()
+
+     while True:
+       for event in pygame.event.get():
+          if event.type == pygame.QUIT:
+             pygame.quit()
+             raise SystemExit
+
+   Event behavior if multiple ``Window``\ s are created: When the close button is
+   pressed, a ``WINDOWCLOSE`` event is sent. You need to explicitly destroy
+   the window. Note that the event ``QUIT`` will only be sent if all
+   ``Window``\ s have been destroyed.
+
+   .. code-block:: python
+
+     import pygame
+
+     window1 = pygame.Window(position=(0,100))
+     window2 = pygame.Window(position=(700,100))
+
+     while True:
+       for event in pygame.event.get():
+         if event.type == pygame.WINDOWCLOSE:
+           id = event.window.id
+           print(f"WINDOWCLOSE event sent to Window #{id}.")
+           event.window.destroy()
+
+         if event.type == pygame.QUIT:
+           print(f"Last window is destroyed. QUIT event was sent.")
+           pygame.quit()
+           raise SystemExit
+
    .. versionadded:: 2.4.0
    .. versionchanged:: 2.5.0 when ``opengl`` is ``True``, the ``Window`` has an OpenGL context created by pygame
+   .. versionchanged:: 2.5.1 Window is now a base class, allowing subclassing
 
 
    .. attribute:: grab_mouse
@@ -126,6 +166,18 @@
       .. seealso:: :attr:`grab_keyboard`
 
       .. versionadded:: 2.4.0
+
+   .. attribute:: focused
+
+      | :sl:`Get if the window is focused (**read-only**)`
+      | :sg:`focused -> bool`
+
+      Get if the window is currently focused. The same result can be achieved using
+      the ``WINDOWFOCUSGAINED`` and ``WINDOWFOCUSLOST`` events.
+
+      Use :meth:`focus` to focus and raise the window.
+
+      .. versionadded:: 2.5.2
 
    .. attribute:: title
 
@@ -278,8 +330,8 @@
       Update pixel data from memory to be displayed in the window. This is the Window
       class equivalent of :func:`pygame.display.flip`.
 
-      With ``get_surface()`` this method allows software rendering (classic pygame rendering) flipping pixel data 
-      from an associated surface in memory to be displayed in the window. Alternatively, when this window has an 
+      With ``get_surface()`` this method allows software rendering (classic pygame rendering) flipping pixel data
+      from an associated surface in memory to be displayed in the window. Alternatively, when this window has an
       associated OpenGL context, this method will instead perform a GL buffer swap to the window.
 
       Here is a runnable example of using ``get_surface`` and ``flip``:
@@ -386,5 +438,36 @@
       :param Window parent: The parent window.
 
       .. note:: This function is only supported on X11.
+
+   .. method:: flash
+
+      | :sl:`Flash a window to demand attention from the user`
+      | :sg:`flash(operation, /) -> None`
+
+      :param int operation: The flash operation.
+
+      Supported flash operations are:
+         * ``pygame.FLASH_CANCEL``: Cancel the current flash state if present
+         * ``pygame.FLASH_BRIEFLY``: Flash for a short amount of time to get attention
+         * ``pygame.FLASH_UNTIL_FOCUSED``: Keep flashing until the window is focused
+
+      Window flashing requires SDL 2.0.16+. A :mod:`pygame.error` exception will be raised
+      otherwise.
+
+      .. note:: This function is only supported on Windows, X11, Wayland and Cocoa (MacOS).
+         A :mod:`pygame.error` exception will be raised if it's not supported therefore it's
+         advised to wrap it in a try block.
+
+         .. code-block:: python
+
+            import pygame
+            window = pygame.Window()
+
+            try:
+               window.flash(pygame.FLASH_BRIEFLY)
+            except pygame.error:
+               print("Window flashing not supported")
+
+      .. versionadded:: 2.5.2
 
    .. ## pygame.Window ##

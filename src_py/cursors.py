@@ -106,12 +106,12 @@ class Cursor:
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    def __copy__(self):
+    def copy(self):
         """Clone the current Cursor object.
         You can do the same thing by doing Cursor(Cursor)."""
         return self.__class__(self)
 
-    copy = __copy__
+    __copy__ = copy
 
     def __hash__(self):
         return hash(tuple([self.type] + list(self.data)))

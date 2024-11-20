@@ -81,7 +81,7 @@ static int pg_is_init = 0;
 static int pg_sdl_was_init = 0;
 SDL_Window *pg_default_window = NULL;
 pgSurfaceObject *pg_default_screen = NULL;
-static char *pg_env_blend_alpha_SDL2 = NULL;
+static int pg_env_blend_alpha_SDL2 = 0;
 
 static void
 pg_install_parachute(void);
@@ -170,43 +170,52 @@ static pgSurfaceObject *
 pg_GetDefaultWindowSurface(void);
 static void
 pg_SetDefaultWindowSurface(pgSurfaceObject *);
-static char *
+static int
 pg_EnvShouldBlendAlphaSDL2(void);
 
 /* compare compiled to linked, raise python error on incompatibility */
 static int
 pg_CheckSDLVersions(void)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int compiled = SDL_VERSION;
+    int linked = SDL_GetVersion();
+#else
     SDL_version compiled;
     SDL_version linked;
-
     SDL_VERSION(&compiled);
     SDL_GetVersion(&linked);
+#endif
 
     /* only check the major version, in general major version is bumped for ABI
      * incompatible changes */
-    if (compiled.major != linked.major) {
+    if (PG_FIND_VNUM_MAJOR(compiled) != PG_FIND_VNUM_MAJOR(linked)) {
         PyErr_Format(PyExc_RuntimeError,
                      "ABI incompatibility detected! SDL compiled with "
                      "%d.%d.%d, linked to %d.%d.%d (major versions should "
                      "have matched)",
-                     compiled.major, compiled.minor, compiled.patch,
-                     linked.major, linked.minor, linked.patch);
+                     PG_FIND_VNUM_MAJOR(compiled),
+                     PG_FIND_VNUM_MINOR(compiled),
+                     PG_FIND_VNUM_MICRO(compiled), PG_FIND_VNUM_MAJOR(linked),
+                     PG_FIND_VNUM_MINOR(linked), PG_FIND_VNUM_MICRO(linked));
         return 0;
     }
 
     /* Basically, this is compiled_version > linked_version case, which we
      * don't allow */
-    if ((linked.minor == compiled.minor && linked.patch < compiled.patch) ||
-        linked.minor < compiled.minor) {
+    if ((PG_FIND_VNUM_MINOR(linked) == PG_FIND_VNUM_MINOR(compiled) &&
+         PG_FIND_VNUM_MICRO(linked) < PG_FIND_VNUM_MICRO(compiled)) ||
+        PG_FIND_VNUM_MINOR(linked) < PG_FIND_VNUM_MINOR(compiled)) {
         /* We do some ifdefs to support different SDL versions at compile time.
            We use newer API only when available.
            Downgrading via dynamic API probably breaks this.*/
         PyErr_Format(PyExc_RuntimeError,
                      "Dynamic linking causes SDL downgrade! (compiled with "
                      "version %d.%d.%d, linked to %d.%d.%d)",
-                     compiled.major, compiled.minor, compiled.patch,
-                     linked.major, linked.minor, linked.patch);
+                     PG_FIND_VNUM_MAJOR(compiled),
+                     PG_FIND_VNUM_MINOR(compiled),
+                     PG_FIND_VNUM_MICRO(compiled), PG_FIND_VNUM_MAJOR(linked),
+                     PG_FIND_VNUM_MINOR(linked), PG_FIND_VNUM_MICRO(linked));
         return 0;
     }
 
@@ -270,7 +279,7 @@ pg_mod_autoinit(const char *modname)
     }
 
     if (funcobj) {
-        temp = PyObject_CallObject(funcobj, NULL);
+        temp = PyObject_CallNoArgs(funcobj);
         if (temp) {
             Py_DECREF(temp);
             ret = 1;
@@ -305,7 +314,7 @@ pg_mod_autoquit(const char *modname)
         PyErr_Clear();
 
     if (funcobj) {
-        temp = PyObject_CallObject(funcobj, NULL);
+        temp = PyObject_CallNoArgs(funcobj);
         Py_XDECREF(temp);
     }
 
@@ -332,13 +341,13 @@ pg_init(PyObject *self, PyObject *_null)
 
     /*nice to initialize timer, so startup time will reflec pg_init() time*/
 #if defined(WITH_THREAD) && !defined(MS_WIN32) && defined(SDL_INIT_EVENTTHREAD)
-    pg_sdl_was_init = SDL_Init(SDL_INIT_EVENTTHREAD | SDL_INIT_TIMER |
+    pg_sdl_was_init = SDL_Init(SDL_INIT_EVENTTHREAD | PG_INIT_TIMER |
                                PG_INIT_NOPARACHUTE) == 0;
 #else
-    pg_sdl_was_init = SDL_Init(SDL_INIT_TIMER | PG_INIT_NOPARACHUTE) == 0;
+    pg_sdl_was_init = SDL_Init(PG_INIT_TIMER | PG_INIT_NOPARACHUTE) == 0;
 #endif
 
-    pg_env_blend_alpha_SDL2 = SDL_getenv("PYGAME_BLEND_ALPHA_SDL2");
+    pg_env_blend_alpha_SDL2 = SDL_getenv("PYGAME_BLEND_ALPHA_SDL2") != NULL;
 
     /* initialize all pygame modules */
     for (i = 0; modnames[i]; i++) {
@@ -373,7 +382,12 @@ static PyObject *
 pg_get_sdl_version(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int linked = 1; /* Default is linked version. */
-    SDL_version v;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int version = SDL_VERSION;
+#else
+    SDL_version version;
+    SDL_VERSION(&version);
+#endif
 
     static char *keywords[] = {"linked", NULL};
 
@@ -382,12 +396,16 @@ pg_get_sdl_version(PyObject *self, PyObject *args, PyObject *kwargs)
     }
 
     if (linked) {
-        SDL_GetVersion(&v);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+        version = SDL_GetVersion();
+#else
+        SDL_GetVersion(&version);
+#endif
     }
-    else {
-        SDL_VERSION(&v);
-    }
-    return Py_BuildValue("iii", v.major, v.minor, v.patch);
+
+    return Py_BuildValue("iii", PG_FIND_VNUM_MAJOR(version),
+                         PG_FIND_VNUM_MINOR(version),
+                         PG_FIND_VNUM_MICRO(version));
 }
 
 static PyObject *
@@ -429,7 +447,7 @@ _pg_quit(void)
             }
 
             if (PyCallable_Check(quit)) {
-                temp = PyObject_CallObject(quit, NULL);
+                temp = PyObject_CallNoArgs(quit);
                 if (temp)
                     Py_DECREF(temp);
                 else
@@ -2057,28 +2075,28 @@ pg_SetDefaultWindowSurface(pgSurfaceObject *screen)
     pg_default_screen = screen;
 }
 
-SDL_PixelFormat *pg_default_convert_format = NULL;
+PG_PixelFormatEnum pg_default_convert_format = 0;
 
-static SDL_PixelFormat *
+static PG_PixelFormatEnum
 pg_GetDefaultConvertFormat(void)
 {
     if (pg_default_screen) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
         return pg_default_screen->surf->format;
+#else
+        return pg_default_screen->surf->format->format;
+#endif
     }
     return pg_default_convert_format;
 }
 
-static SDL_PixelFormat *
-pg_SetDefaultConvertFormat(Uint32 format)
+static void
+pg_SetDefaultConvertFormat(PG_PixelFormatEnum format)
 {
-    if (pg_default_convert_format != NULL) {
-        SDL_FreeFormat(pg_default_convert_format);
-    }
-    pg_default_convert_format = SDL_AllocFormat(format);
-    return pg_default_convert_format;  // returns for NULL error checking
+    pg_default_convert_format = format;
 }
 
-static char *
+static int
 pg_EnvShouldBlendAlphaSDL2(void)
 {
     return pg_env_blend_alpha_SDL2;
@@ -2331,7 +2349,7 @@ MODINIT_DEFINE(base)
     if (!quit) { /* assertion */
         goto error;
     }
-    rval = PyObject_CallFunctionObjArgs(atexit_register, quit, NULL);
+    rval = PyObject_CallOneArg(atexit_register, quit);
     Py_DECREF(atexit_register);
     Py_DECREF(quit);
     atexit_register = NULL;

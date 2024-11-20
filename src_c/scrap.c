@@ -23,7 +23,11 @@
 #include <limits.h>
 #include <stdio.h>
 
-#include "SDL.h"
+#ifdef PG_SDL3
+#include <SDL3/SDL.h>
+#else
+#include <SDL.h>
+#endif
 
 #include "SDL_syswm.h"
 
@@ -348,6 +352,11 @@ static PyObject *
 _scrap_lost_scrap(PyObject *self, PyObject *_null)
 {
     PYGAME_SCRAP_INIT_CHECK();
+
+    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                     "pygame.scrap.lost deprecated since 2.2.0", 1) == -1) {
+        return NULL;
+    }
 
     if (pygame_scrap_lost())
         Py_RETURN_TRUE;

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional, Tuple, Union, Literal
 
-from ._common import IntCoordinate
+from pygame.typing import IntPoint
 
 from pygame.surface import Surface
 
@@ -36,7 +36,7 @@ class Camera(AbstractCamera):
     def __init__(
         self,
         device: Union[str, int] = 0,
-        size: IntCoordinate = (640, 480),
+        size: IntPoint = (640, 480),
         format: str = "RGB",
     ) -> None: ...
     def start(self) -> None: ...
