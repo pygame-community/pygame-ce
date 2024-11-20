@@ -14,7 +14,7 @@ import pygame
 import random
 
 MIN_SPEED = 0.25
-MAX_SPEED = 5
+MAX_SPEED = 1
 MAX_BALLS = 1600
 SCREEN_SIZE = pygame.Vector2(1000, 600)
 CIRCLE_RADIUS = 5
