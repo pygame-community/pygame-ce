@@ -79,8 +79,8 @@ The following file formats are supported
 
    The channels argument is used to specify whether to use mono or stereo. 1
    for mono and 2 for stereo.
-   ``NOTE``: The channels argument is not related to the number 
-   of channels for playback of sounds, that you can get with the function 
+   ``NOTE``: The channels argument is not related to the number
+   of channels for playback of sounds, that you can get with the function
    "get_num_channels" or set with the function "set_num_channels" (see below).
 
    The buffer argument controls the number of internal samples used in the
