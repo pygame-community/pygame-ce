@@ -35,12 +35,7 @@ pg_system_get_cpu_instruction_sets(PyObject *self, PyObject *_null)
     INSERT_INSTRUCTIONSET_INFO("AVX2", SDL_HasAVX2);
     INSERT_INSTRUCTIONSET_INFO("AVX512F", SDL_HasAVX512F);
     INSERT_INSTRUCTIONSET_INFO("NEON", SDL_HasNEON);
-#if SDL_VERSION_ATLEAST(2, 0, 12)
     INSERT_INSTRUCTIONSET_INFO("ARMSIMD", SDL_HasARMSIMD);
-#else
-    if (PyDict_SetItemString(instruction_sets, "ARMSIMD", Py_False))
-        goto error;
-#endif
 #if SDL_VERSION_ATLEAST(2, 24, 0)
     INSERT_INSTRUCTIONSET_INFO("LSX", SDL_HasLSX);
     INSERT_INSTRUCTIONSET_INFO("LASX", SDL_HasLASX);
@@ -113,7 +108,7 @@ pg_system_get_pref_locales(PyObject *self, PyObject *_null)
          * information */
         return ret_list;
     }
-#elif SDL_VERSION_ATLEAST(2, 0, 14)
+#else
     SDL_Locale *locales = SDL_GetPreferredLocales();
     if (!locales) {
         /* Return an empty list if SDL function does not return any useful
@@ -131,7 +126,6 @@ pg_system_get_pref_locales(PyObject *self, PyObject *_null)
     }
 #endif
 
-#if SDL_VERSION_ATLEAST(2, 0, 14)
     for (int i = 0; i < num_locales; i++) {
         dict = PyDict_New();
         if (!dict) {
@@ -183,9 +177,6 @@ error:
     SDL_free(locales);
     Py_DECREF(ret_list);
     return NULL;
-#else
-    return ret_list;
-#endif
 }
 
 static PyObject *PowerState_class = NULL;

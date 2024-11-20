@@ -188,47 +188,7 @@ PG_UnlockMutex(SDL_mutex *mutex)
 
 #define PG_INIT_TIMER SDL_INIT_TIMER
 
-#if SDL_VERSION_ATLEAST(2, 0, 14)
 #define PG_SurfaceHasRLE SDL_HasSurfaceRLE
-#else
-// vendored in until our lowest SDL version is 2.0.14
-typedef struct {
-    Uint8 *src;
-    int src_w, src_h;
-    int src_pitch;
-    int src_skip;
-    Uint8 *dst;
-    int dst_w, dst_h;
-    int dst_pitch;
-    int dst_skip;
-    SDL_PixelFormat *src_fmt;
-    SDL_PixelFormat *dst_fmt;
-    Uint8 *table;
-    int flags;
-    Uint32 colorkey;
-    Uint8 r, g, b, a;
-} SDL_InternalBlitInfo;
-
-struct SDL_BlitMap {
-    SDL_Surface *dst;
-    int identity;
-    SDL_blit blit;
-    void *data;
-    SDL_InternalBlitInfo info;
-
-    /* the version count matches the destination; mismatch indicates
-       an invalid mapping */
-    Uint32 dst_palette_version;
-    Uint32 src_palette_version;
-};
-#define SDL_COPY_RLE_DESIRED 0x00001000
-
-#define PG_SurfaceHasRLE(surface) \
-    (((surface) == NULL)          \
-         ? 0                      \
-         : ((surface)->map->info.flags & SDL_COPY_RLE_DESIRED))
-
-#endif
 
 #endif
 
@@ -284,6 +244,10 @@ typedef enum {
     SDL_ACTIVEEVENT = SDL_USEREVENT,
     SDL_VIDEORESIZE,
     SDL_VIDEOEXPOSE,
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    /* SDL_SYSWMEVENT removed in SDL3, define it here for compat */
+    SDL_SYSWMEVENT,
+#endif
 
     PGE_MIDIIN,
     PGE_MIDIOUT,
@@ -344,8 +308,10 @@ typedef enum {
     PGPOST_CONTROLLERTOUCHPADMOTION,
     PGPOST_CONTROLLERTOUCHPADUP,
     PGPOST_CONTROLLERSENSORUPDATE,
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     PGPOST_DOLLARGESTURE,
     PGPOST_DOLLARRECORD,
+#endif
     PGPOST_DROPFILE,
     PGPOST_DROPTEXT,
     PGPOST_DROPBEGIN,
@@ -370,7 +336,9 @@ typedef enum {
     PGPOST_MOUSEBUTTONDOWN,
     PGPOST_MOUSEBUTTONUP,
     PGPOST_MOUSEWHEEL,
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
     PGPOST_MULTIGESTURE,
+#endif
     PGPOST_NOEVENT,
     PGPOST_QUIT,
     PGPOST_RENDER_TARGETS_RESET,

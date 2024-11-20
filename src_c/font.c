@@ -612,7 +612,7 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
 
     if (strlen(astring) == 0) { /* special 0 string case */
         int height = TTF_FontHeight(font);
-        surf = PG_CreateSurface(0, height, PG_PIXELFORMAT_XRGB8888);
+        surf = PG_CreateSurface(0, height, SDL_PIXELFORMAT_XRGB8888);
     }
     else { /* normal case */
         if (antialias && bg_rgba_obj == Py_None) {
