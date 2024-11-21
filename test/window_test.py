@@ -453,6 +453,32 @@ class WindowTypeTest(unittest.TestCase):
         window = pygame.Window()
         self.assertIsInstance(window.focused, bool)
 
+    def test_wm_info(self):
+        window = pygame.Window()
+        wm_info = window.wm_info
+        self.assertIsInstance(wm_info, dict)
+
+        wm_info_potential_keys = {
+            "colorbuffer",
+            "display",
+            "framebuffer",
+            "hdc",
+            "hinstance",
+            "resolveFramebuffer",
+            "surface",
+            "window",
+            "viewport",
+            "screen",
+        }
+
+        # If any unexpected dict keys are present, they
+        # will be stored in set wm_info_remaining_keys
+        wm_info_remaining_keys = set(wm_info.keys()).difference(wm_info_potential_keys)
+
+        # Assert set is empty (& therefore does not
+        # contain unexpected dict keys)
+        self.assertFalse(wm_info_remaining_keys)
+
     def tearDown(self):
         self.win.destroy()
 
