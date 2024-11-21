@@ -72,7 +72,7 @@ class MissingModule:
     _NOT_IMPLEMENTED_ = True
 
     def __init__(self, name, urgent=0):
-        import sys
+        import sys  # pylint: disable=reimported
 
         self.name = name
         exc_type, exc_msg = sys.exc_info()[:2]
