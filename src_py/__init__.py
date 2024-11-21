@@ -259,7 +259,26 @@ try:
 except (ImportError, OSError):
     transform = MissingModule("transform", urgent=1)
 
+
 # lastly, the "optional" pygame modules
+
+_MissingModule = MissingModule
+
+
+def __getattr__(name):
+    from importlib import import_module
+
+    LAZY_MODULES = "surfarray", "sndarray"
+    if name not in LAZY_MODULES:
+        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+    try:
+        module = import_module(f"{__name__}.{name}")
+    except (ImportError, OSError):
+        module = _MissingModule(name, urgent=0)
+        globals()[name] = module
+    return module
+
+
 if "PYGAME_FREETYPE" in os.environ:
     try:
         import pygame.ftfont as font
@@ -299,16 +318,6 @@ try:
     import pygame.scrap
 except (ImportError, OSError):
     scrap = MissingModule("scrap", urgent=0)
-
-try:
-    import pygame.surfarray
-except (ImportError, OSError):
-    surfarray = MissingModule("surfarray", urgent=0)
-
-try:
-    import pygame.sndarray
-except (ImportError, OSError):
-    sndarray = MissingModule("sndarray", urgent=0)
 
 try:
     import pygame._debug
