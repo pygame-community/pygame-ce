@@ -298,7 +298,7 @@
       ``True`` if the window doesn't appear in the task bar, ``False`` otherwise.
       This only works for X11 and Windows, for other platforms, creating ``Window(utility=True)`` won't change anything.
 
-      .. versionadded:: TBD
+      .. versionadded:: 2.5.3
 
    .. classmethod:: from_display_module
 
