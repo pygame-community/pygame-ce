@@ -72,6 +72,8 @@ class MissingModule:
     _NOT_IMPLEMENTED_ = True
 
     def __init__(self, name, urgent=0):
+        import sys
+
         self.name = name
         exc_type, exc_msg = sys.exc_info()[:2]
         self.info = str(exc_msg)
