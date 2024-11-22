@@ -661,6 +661,85 @@ font_render(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyObject *
+font_render_to(PyObject *self, PyObject *args)
+{
+    if (!PgFont_GenerationCheck(self)) {
+        return RAISE_FONT_QUIT_ERROR();
+    }
+
+    int antialias;
+    PyObject *text;
+    PyObject *fg_rgba_obj, *bg_rgba_obj = Py_None, *renderargs, *render_result;
+    pgSurfaceObject *surf_to_render;
+
+    PyObject *dest_pos;
+    int dx, dy;
+    SDL_Rect dest_rect;
+
+    int wraplength = 0;
+    int blend_flags = 0;
+    int result;
+    const char *astring = "";  // init string
+
+    if (!PyArg_ParseTuple(args, "O!OOpO|Oii", &pgSurface_Type, &surf_to_render,
+                          &dest_pos, &text, &antialias, &fg_rgba_obj,
+                          &bg_rgba_obj, &wraplength, &blend_flags)) {
+        return NULL;
+    }
+    SURF_INIT_CHECK(surf_to_render);
+
+    renderargs = Py_BuildValue("(OiOOi)", text, antialias, fg_rgba_obj,
+                               bg_rgba_obj, wraplength);
+    render_result = font_render(self, renderargs, NULL);
+
+    if (!pg_TwoIntsFromObj(dest_pos, &dx, &dy)) {
+        return RAISE(PyExc_TypeError, "invalid destination position for blit");
+    }
+    if (!PyUnicode_Check(text) && !PyBytes_Check(text) && text != Py_None) {
+        return RAISE_TEXT_TYPE_ERROR();
+    }
+
+    if (PyUnicode_Check(text)) {
+        Py_ssize_t _size = -1;
+        astring = PyUnicode_AsUTF8AndSize(text, &_size);
+        if (astring == NULL) { /* exception already set */
+            return NULL;
+        }
+        if (strlen(astring) != (size_t)_size) {
+            return RAISE(PyExc_ValueError,
+                         "A null character was found in the text");
+        }
+    }
+
+    else if (PyBytes_Check(text)) {
+        /* Bytes_AsStringAndSize with NULL arg for length emits
+           ValueError if internal NULL bytes are present */
+        if (PyBytes_AsStringAndSize(text, (char **)&astring, NULL) == -1) {
+            return NULL; /* exception already set */
+        }
+    }
+
+    SDL_Surface *_render_result =
+        pgSurface_AsSurface((pgSurfaceObject *)render_result);
+
+    dest_rect.x = dx;
+    dest_rect.y = dy;
+    dest_rect.w = _render_result->w;
+    dest_rect.h = _render_result->h;
+
+    if (!blend_flags)
+        blend_flags = 0;
+
+    result = pgSurface_Blit(surf_to_render, (pgSurfaceObject *)render_result,
+                            &dest_rect, NULL, blend_flags);
+
+    if (result != 0)
+        return NULL;
+
+    return pgRect_New4(dest_rect.x, dest_rect.y, dest_rect.w, dest_rect.h);
+}
+
+static PyObject *
 font_size(PyObject *self, PyObject *text)
 {
     if (!PgFont_GenerationCheck(self)) {
@@ -1070,6 +1149,7 @@ static PyMethodDef font_methods[] = {
     {"metrics", font_metrics, METH_O, DOC_FONT_FONT_METRICS},
     {"render", (PyCFunction)font_render, METH_VARARGS | METH_KEYWORDS,
      DOC_FONT_FONT_RENDER},
+    {"render_to", font_render_to, METH_VARARGS, DOC_FONT_FONT_RENDERTO},
     {"size", font_size, METH_O, DOC_FONT_FONT_SIZE},
     {"set_script", font_set_script, METH_O, DOC_FONT_FONT_SETSCRIPT},
     {"set_direction", (PyCFunction)font_set_direction,
@@ -1295,6 +1375,10 @@ MODINIT_DEFINE(font)
        the module is not loaded.
     */
     import_pygame_base();
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    import_pygame_rect();
     if (PyErr_Occurred()) {
         return NULL;
     }
