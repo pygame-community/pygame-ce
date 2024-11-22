@@ -403,7 +403,10 @@
 
       :param bool input_only: if ``True``, the window will be given input focus
                               but may be completely obscured by other windows.
-                              Only supported on X11.
+                              Only supported on X11. This has been deprecated and
+                              may be removed in a future version.
+
+      .. deprecated:: 2.5.3 ``input_only`` argument
 
    .. method:: restore
 
