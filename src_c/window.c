@@ -923,6 +923,12 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                     }
                 }
                 else if (!strcmp(_key_str, "foreign")) {
+                    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                                     "The foreign kwarg has been deprecated "
+                                     "and may be removed in a future version",
+                                     1) == -1) {
+                        return -1;
+                    }
                     if (_value_bool) {
                         flags |= SDL_WINDOW_FOREIGN;
                     }
