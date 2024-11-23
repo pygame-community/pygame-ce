@@ -221,8 +221,10 @@ class Vector2(_GenericVector):
     xy: Vector2
     yx: Vector2
     yy: Vector2
-    angle: float
-    angle_rad: float
+    @property
+    def angle(self) -> float: ...
+    @property
+    def angle_rad(self) -> float: ...
     @overload
     def __init__(
         self: _TVec,

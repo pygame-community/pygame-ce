@@ -618,21 +618,21 @@ Multiple coordinates can be set using slices or swizzling
 
    .. attribute:: angle
 
-      | :sl:`Gives the angle of the vector in degrees, relative to the X-axis, normalized to the interval (-180, 180].`
+      | :sl:`Gives the angle of the vector in degrees, relative to the X-axis, normalized to the interval [-180, 180].`
 
       Read-only attribute representing the angle of the vector in degrees relative to the X-axis. This angle is normalized to
-      the interval (-180, 180].
+      the interval [-180, 180].
 
-      Usage: Accessing `angle` provides the current angle of the vector in degrees within the specified range.
+      Usage: Accessing `angle` provides the current angle of the vector in degrees within the predefined range of [-180, 180].
 
    .. attribute:: angle_rad
 
-      | :sl:`Gives the angle of the vector in radians, relative to the X-axis, normalized to the interval (-π, π].`
+      | :sl:`Gives the angle of the vector in radians, relative to the X-axis, normalized to the interval [-π, π].`
 
       Read-only attribute representing the angle of the vector in radians relative to the X-axis. This value is equivalent
-      to the `angle` attribute converted to radians and is normalized to the interval (-π, π].
+      to the `angle` attribute converted to radians and is normalized to the interval [-π, π].
 
-      Usage: Accessing `angle_rad` provides the current angle of the vector in radians within the specified range.
+      Usage: Accessing `angle_rad` provides the current angle of the vector in radians within the predefined range of [-π, π].
 
    .. ## pygame.math.Vector2 ##
 

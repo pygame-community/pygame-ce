@@ -145,6 +145,9 @@ _vector_coords_from_string(PyObject *str, char **delimiter, double *coords,
 static void
 _vector_move_towards_helper(Py_ssize_t dim, double *origin_coords,
                             double *target_coords, double max_distance);
+static double
+_pg_atan2(double y, double x);
+
 /* generic vector functions */
 static PyObject *
 pgVector_NEW(Py_ssize_t dim);
@@ -635,6 +638,40 @@ static void
 vector_dealloc(pgVector *self)
 {
     Py_TYPE(self)->tp_free((PyObject *)self);
+}
+
+/*
+ *Returns rhe arctangent of the quotient y / x, in radians, considering the
+ *following special cases: atan2((anything), NaN ) is NaN; atan2(NAN ,
+ *(anything) ) is NaN; atan2(+-0, +(anything but NaN)) is +-0  ; atan2(+-0,
+ *-(anything but NaN)) is +-pi ; atan2(+-(anything but 0 and NaN), 0) is
+ *+-pi/2; atan2(+-(anything but INF and NaN), +INF) is +-0 ; atan2(+-(anything
+ *but INF and NaN), -INF) is +-pi; atan2(+-INF,+INF ) is +-pi/4 ;
+ *      atan2(+-INF,-INF ) is +-3pi/4;
+ *      atan2(+-INF, (anything but,0,NaN, and INF)) is +-pi/2;
+ *
+ */
+static double
+_pg_atan2(double y, double x)
+{
+    if (Py_IS_NAN(x) || Py_IS_NAN(y)) {
+        return Py_NAN;
+    }
+
+    if (Py_IS_INFINITY(y)) {
+        if (Py_IS_INFINITY(x)) {
+            return copysign((copysign(1., x) == 1.) ? 0.25 * Py_MATH_PI
+                                                    : 0.75 * Py_MATH_PI,
+                            y);
+        }
+        return copysign(0.5 * Py_MATH_PI, y);
+    }
+
+    if (Py_IS_INFINITY(x) || y == 0.) {
+        return copysign((copysign(1., x) == 1.) ? 0. : Py_MATH_PI, y);
+    }
+
+    return atan2(y, x);
 }
 
 /**********************************************
@@ -1276,51 +1313,20 @@ vector_setz(pgVector *self, PyObject *value, void *closure)
 }
 
 static PyObject *
-vector_get_angle(pgVector *self, void *closure)
+vector_get_angle_rad(pgVector *self, void *closure)
 {
-    PyObject *angle_obj = vector_get_angle_rad(self, closure);
-    double angle_rad = PyFloat_AsDouble(angle_obj);
-    double angle_deg = angle_rad * RAD_TO_DEG;
+    double angle_rad = _pg_atan2(self->coords[1], self->coords[0]);
 
-    if (angle_deg > 180.0) {
-        angle_deg -= 360.0;
-    }
-    else if (angle_deg <= -180.0) {
-        angle_deg += 360.0;
-    }
-
-    return PyFloat_FromDouble(angle_deg);
+    return PyFloat_FromDouble(angle_rad);
 }
 
 static PyObject *
-vector_get_angle_rad(pgVector *self, void *closure)
+vector_get_angle(pgVector *self, void *closure)
 {
-    pgVector *vec = self;
-    double x = vec->coords[0];
-    double y = vec->coords[1];
+    double angle_rad = _pg_atan2(self->coords[1], self->coords[0]);
+    double angle_deg = angle_rad * RAD_TO_DEG;
 
-    if (Py_IS_NAN(x) || Py_IS_NAN(y)) {
-        return PyFloat_FromDouble(Py_NAN);
-    }
-
-    if (Py_IS_INFINITY(y)) {
-        if (Py_IS_INFINITY(x)) {
-            if (copysign(1., x) == 1.)
-                return PyFloat_FromDouble(copysign(0.25 * Py_MATH_PI, y));
-            else
-                return PyFloat_FromDouble(copysign(0.75 * Py_MATH_PI, y));
-        }
-        return PyFloat_FromDouble(copysign(0.5 * Py_MATH_PI, y));
-    }
-
-    if (Py_IS_INFINITY(x) || y == 0.) {
-        if (copysign(1., x) == 1.)
-            return PyFloat_FromDouble(copysign(0., y));
-        else
-            return PyFloat_FromDouble(copysign(Py_MATH_PI, y));
-    }
-
-    return PyFloat_FromDouble(atan2(y, x));
+    return PyFloat_FromDouble(angle_deg);
 }
 
 static PyObject *
