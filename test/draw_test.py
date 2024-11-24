@@ -1,14 +1,13 @@
 import math
-import unittest
 import sys
+import unittest
 import warnings
 
 import pygame
 from pygame import draw
 from pygame.locals import SRCALPHA
-from pygame.tests import test_utils
 from pygame.math import Vector2
-
+from pygame.tests import test_utils
 
 RED = BG_RED = pygame.Color("red")
 GREEN = FG_GREEN = pygame.Color("green")

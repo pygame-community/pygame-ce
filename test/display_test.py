@@ -1,13 +1,12 @@
-import unittest
 import os
 import sys
 import time
+import unittest
 
-import pygame, pygame.transform
-
-from pygame.tests.test_utils import question
-
+import pygame
+import pygame.transform
 from pygame import display
+from pygame.tests.test_utils import question
 
 
 class DisplayModuleTest(unittest.TestCase):

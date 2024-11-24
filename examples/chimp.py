@@ -9,6 +9,7 @@ follow along in the tutorial.
 
 # Import Modules
 import os
+
 import pygame
 
 if not pygame.font:

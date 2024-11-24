@@ -1,25 +1,26 @@
-import unittest
 import platform
+import unittest
 
+import pygame
+import pygame.surfarray
 from numpy import (
+    __version__ as np_version,
+)
+from numpy import (
+    all as np_all,
+)
+from numpy import (
+    arange,
+    float32,
+    float64,
+    rint,
     uint8,
     uint16,
     uint32,
     uint64,
     zeros,
-    float32,
-    float64,
-    all as np_all,
-    rint,
-    arange,
-    __version__ as np_version,
 )
-
-import pygame
 from pygame.locals import *
-
-import pygame.surfarray
-
 
 IS_PYPY = "PyPy" == platform.python_implementation()
 

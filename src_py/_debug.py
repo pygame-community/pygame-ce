@@ -1,15 +1,15 @@
 """Debug functionality that allows for more useful issue reporting"""
 
+import importlib
 import platform
 import sys
 import traceback
-import importlib
 from collections.abc import Callable
-from typing import Optional
 from os import environ
+from typing import Optional
 
-from pygame.version import ver
 from pygame.system import get_cpu_instruction_sets
+from pygame.version import ver
 
 ImportResult = tuple[str, bool, Optional[Callable]]
 
@@ -96,15 +96,19 @@ def print_debug_info(filename=None):
         # pylint: disable=unused-argument
         return (-1, -1, -1)
 
+    from pygame.base import get_sdl_version
     from pygame.display import (
         get_driver as get_display_driver,
+    )
+    from pygame.display import (
         get_init as display_init,
     )
     from pygame.mixer import (
         get_driver as get_mixer_driver,
+    )
+    from pygame.mixer import (
         get_init as mixer_init,
     )
-    from pygame.base import get_sdl_version
 
     debug_str, *mixer = attempt_import(
         "pygame.mixer", "get_sdl_mixer_version", debug_str

@@ -1,9 +1,9 @@
 import unittest
 
-from numpy import int8, int16, uint8, uint16, float32, array, all as np_all
-
 import pygame
 import pygame.sndarray
+from numpy import all as np_all
+from numpy import array, float32, int8, int16, uint8, uint16
 
 
 class SndarrayTest(unittest.TestCase):

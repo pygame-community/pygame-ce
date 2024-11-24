@@ -167,8 +167,8 @@ import math
 import operator
 import struct
 import sys
-import zlib
 import warnings
+import zlib
 from array import array
 from functools import reduce
 
@@ -2812,8 +2812,8 @@ class Test(unittest.TestCase):
 
 def _dehex(s):
     """Liberally convert from hex string to binary string."""
-    import re
     import binascii
+    import re
 
     # Remove all non-hexadecimal digits
     s = re.sub(r"[^a-fA-F\d]", "", s)
@@ -3781,8 +3781,8 @@ def _main(argv):
     """
 
     # Parse command line arguments
-    from optparse import OptionParser
     import re
+    from optparse import OptionParser
 
     version = "%prog " + re.sub(r"( ?\$|URL: |Rev:)", "", __version__)
     parser = OptionParser(version=version)

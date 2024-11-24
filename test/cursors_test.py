@@ -1,6 +1,7 @@
 import unittest
-from pygame.tests.test_utils import fixture_path
+
 import pygame
+from pygame.tests.test_utils import fixture_path
 
 
 class CursorsModuleTest(unittest.TestCase):

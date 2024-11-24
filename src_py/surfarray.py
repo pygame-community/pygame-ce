@@ -37,22 +37,31 @@ to as 3D arrays, and the last index is 0 for red, 1 for green, and 2 for
 blue.
 """
 
-from pygame.pixelcopy import (
-    array_to_surface,
-    surface_to_array,
-    map_array as pix_map_array,
-    make_surface as pix_make_surface,
-)
+import warnings  # will be removed in the future
+
 import numpy
 from numpy import (
     array as numpy_array,
+)
+from numpy import (
     empty as numpy_empty,
-    uint32 as numpy_uint32,
+)
+from numpy import (
     ndarray as numpy_ndarray,
 )
-
-import warnings  # will be removed in the future
-
+from numpy import (
+    uint32 as numpy_uint32,
+)
+from pygame.pixelcopy import (
+    array_to_surface,
+    surface_to_array,
+)
+from pygame.pixelcopy import (
+    make_surface as pix_make_surface,
+)
+from pygame.pixelcopy import (
+    map_array as pix_map_array,
+)
 
 # float96 not available on all numpy versions.
 numpy_floats = [
