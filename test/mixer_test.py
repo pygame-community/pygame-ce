@@ -710,6 +710,28 @@ class MixerModuleTest(unittest.TestCase):
         compiled_version = pygame.mixer.get_sdl_mixer_version(linked=False)
 
         self.assertTupleEqual(linked_version, compiled_version)
+    
+        def test_snd_copy(self):
+            mixer.init()
+            filename = example_path(os.path.join("data", "house_lo.wav"))
+            sound = mixer.Sound(file=filename)
+            sound_copy = sound.copy()
+            self.assertEqual(sound.get_length(), sound_copy.get_length())
+            self.assertEqual(sound.get_num_channels(), sound_copy.get_num_channels())
+            self.assertEqual(sound.get_volume(), sound_copy.get_volume())
+            self.assertEqual(sound.get_raw(), sound_copy.get_raw())
+
+            # Destroy the original sound
+            del sound
+
+            # Test on the copy
+            channel = sound_copy.play()
+            self.assertTrue(channel.get_busy())
+            sound_copy.stop()
+            self.assertFalse(channel.get_busy())
+
+            sound_copy.play()
+            self.assertEqual(sound_copy.get_num_channels(), 1)
 
 
 ############################## CHANNEL CLASS TESTS #############################
