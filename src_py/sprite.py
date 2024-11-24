@@ -84,14 +84,9 @@ Sprites are not thread safe, so lock them yourself if using threads.
 # specific ones that aren't quite so general but fit into common
 # specialized cases.
 
-import sys
+import types
 from typing import Optional
 from warnings import warn
-
-if sys.version_info[:3] >= (3, 9, 0):
-    from types import GenericAlias
-else:
-    from typing import _GenericAlias as GenericAlias  # type: ignore[name-defined]
 
 import pygame
 from pygame.mask import from_surface
@@ -377,7 +372,7 @@ class AbstractGroup:
     """
 
     def __class_getitem__(cls, generic):
-        return GenericAlias(cls, generic)
+        return types.GenericAlias(cls, generic)
 
     # protected identifier value to identify sprite groups, and avoid infinite recursion
     _spritegroup = True
