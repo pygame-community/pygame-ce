@@ -143,8 +143,8 @@ _TDirtySprite = TypeVar("_TDirtySprite", bound=_DirtySpriteSupportsGroup)
 # b = Group(MySprite())
 
 class AbstractGroup(Generic[_TSprite]):
-    spritedict: Dict[_TSprite, Optional[Union[FRect, Rect]]]
-    lostsprites: List[Union[FRect, Rect]]
+    spritedict: dict[_TSprite, Optional[Union[FRect, Rect]]]
+    lostsprites: list[Union[FRect, Rect]]
     def __class_getitem__(cls, generic: Any) -> types.GenericAlias: ...
     def __init__(self) -> None: ...
     def __len__(self) -> int: ...
