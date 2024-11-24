@@ -710,10 +710,21 @@ class MixerModuleTest(unittest.TestCase):
         compiled_version = pygame.mixer.get_sdl_mixer_version(linked=False)
 
         self.assertTupleEqual(linked_version, compiled_version)
-    
-        def test_snd_copy(self):
-            mixer.init()
-            filename = example_path(os.path.join("data", "house_lo.wav"))
+
+    def test_snd_copy(self):
+        mixer.init()
+
+        filenames = [
+            "house_lo.mp3",
+            "house_lo.ogg",
+            "house_lo.wav",
+            "house_lo.flac",
+            # "house_lo.opus", unsupported
+            # "surfonasinewave.xm" unsupported
+        ]
+
+        for f in filenames:
+            filename = example_path(os.path.join("data", f))
             sound = mixer.Sound(file=filename)
             sound_copy = sound.copy()
             self.assertEqual(sound.get_length(), sound_copy.get_length())
@@ -721,7 +732,6 @@ class MixerModuleTest(unittest.TestCase):
             self.assertEqual(sound.get_volume(), sound_copy.get_volume())
             self.assertEqual(sound.get_raw(), sound_copy.get_raw())
 
-            # Destroy the original sound
             del sound
 
             # Test on the copy

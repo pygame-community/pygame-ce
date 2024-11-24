@@ -838,17 +838,59 @@ snd_copy(pgSoundObject *self, PyObject *_null)
     pgSoundObject *new_sound;
     Mix_Chunk *new_chunk;
 
-    CHECK_CHUNK_VALID(chunk, -1);
+    // Validate the input chunk
+    CHECK_CHUNK_VALID(chunk, NULL);
 
+    // Create a new sound object
     new_sound =
         (pgSoundObject *)pgSound_Type.tp_new(Py_TYPE(self), NULL, NULL);
+    if (!new_sound) {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "Failed to allocate memory for new sound object");
+        return NULL;
+    }
 
+    // Handle chunk allocation type
     if (chunk->allocated) {
-        new_chunk = Mix_QuickLoad_RAW(chunk->abuf, chunk->alen);
-        if (!new_chunk)
-            RAISE(pgExc_BufferError, "there is a problem I can't describe :)");
+        // Create a deep copy of the audio buffer for allocated chunks
+        Uint8 *buffer_copy = (Uint8 *)malloc(chunk->alen);
+        if (!buffer_copy) {
+            Py_DECREF(new_sound);
+            PyErr_SetString(PyExc_MemoryError,
+                            "Failed to allocate memory for sound buffer");
+            return NULL;
+        }
+        memcpy(buffer_copy, chunk->abuf, chunk->alen);
 
+        // Create a new Mix_Chunk
+        new_chunk = Mix_QuickLoad_RAW(buffer_copy, chunk->alen);
+        if (!new_chunk) {
+            free(buffer_copy);
+            Py_DECREF(new_sound);
+            PyErr_SetString(PyExc_RuntimeError,
+                            "Failed to create new sound chunk");
+            return NULL;
+        }
         new_chunk->volume = chunk->volume;
+        new_sound->chunk = new_chunk;
+    }
+    else {
+        // For non-allocated chunks (e.g., formats like .xm), create a full
+        // copy
+        new_chunk = (Mix_Chunk *)malloc(sizeof(Mix_Chunk));
+        if (!new_chunk) {
+            Py_DECREF(new_sound);
+            PyErr_SetString(PyExc_MemoryError,
+                            "Failed to allocate memory for sound chunk");
+            return NULL;
+        }
+        *new_chunk = *chunk;  // Copy the entire structure
+
+        // For safety, ensure the copied chunk doesn't share pointers
+        new_chunk->abuf =
+            NULL;  // Prevent double-free if original gets deallocated
+        new_chunk->allocated = 0;
+
         new_sound->chunk = new_chunk;
     }
 
