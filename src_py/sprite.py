@@ -89,6 +89,7 @@ from warnings import warn
 from typing import Optional
 
 import pygame
+
 from pygame.rect import Rect
 from pygame.time import get_ticks
 from pygame.mask import from_surface
