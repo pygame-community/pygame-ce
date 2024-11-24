@@ -1,11 +1,13 @@
 #################################### IMPORTS ###################################
 
+
 import types
 import typing
 import unittest
 
 import pygame
 from pygame import sprite
+
 
 ################################# MODULE LEVEL #################################
 
@@ -1372,8 +1374,8 @@ class SingleGroupBugsTest(unittest.TestCase):
         # For memory leak bug posted to mailing list by Tobias Steinrücken on 16/11/10.
         # Fixed in revision 2953.
 
-        import gc
         import weakref
+        import gc
 
         class MySprite(sprite.Sprite):
             def __init__(self, *args, **kwargs):

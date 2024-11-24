@@ -14,7 +14,7 @@ from typing import (
     TypeVar,
     Union,
 )
-from typing_extensions import deprecated  # added in 3.13
+from typing_extensions import deprecated # added in 3.13
 
 from pygame.rect import FRect, Rect
 from pygame.surface import Surface
@@ -187,12 +187,10 @@ class Group(AbstractGroup[_TSprite]):
 # these are aliased in the code too
 @deprecated("Use `pygame.sprite.Group` instead")
 class RenderPlain(Group): ...
-
 @deprecated("Use `pygame.sprite.Group` instead")
 class RenderClear(Group): ...
 
 class RenderUpdates(Group[_TSprite]): ...
-
 @deprecated("Use `pygame.sprite.RenderUpdates` instead")
 class OrderedUpdates(RenderUpdates[_TSprite]): ...
 
@@ -204,7 +202,7 @@ class LayeredUpdates(AbstractGroup[_TSprite]):
             AbstractGroup[_TSprite],
             Iterable[Union[_TSprite, AbstractGroup[_TSprite]]],
         ],
-        **kwargs: Any,
+        **kwargs: Any
     ) -> None: ...
     def add(
         self,
@@ -213,7 +211,7 @@ class LayeredUpdates(AbstractGroup[_TSprite]):
             AbstractGroup[_TSprite],
             Iterable[Union[_TSprite, AbstractGroup[_TSprite]]],
         ],
-        **kwargs: Any,
+        **kwargs: Any
     ) -> None: ...
     def get_sprites_at(self, pos: Point) -> List[_TSprite]: ...
     def get_sprite(self, idx: int) -> _TSprite: ...
@@ -242,10 +240,10 @@ class LayeredDirty(LayeredUpdates[_TDirtySprite]):
     def set_timing_threshold(
         self, time_ms: SupportsFloat
     ) -> None: ...  # This actually accept any value
-    @deprecated(
-        "since 2.1.1. Use `pygame.sprite.LayeredDirty.set_timing_threshold` instead"
-    )
-    def set_timing_treshold(self, time_ms: SupportsFloat) -> None: ...
+    @deprecated("since 2.1.1. Use `pygame.sprite.LayeredDirty.set_timing_threshold` instead")
+    def set_timing_treshold(
+        self, time_ms: SupportsFloat
+    ) -> None: ...
 
 class GroupSingle(AbstractGroup[_TSprite]):
     sprite: _TSprite
