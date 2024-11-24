@@ -96,6 +96,9 @@ exclude = [
   "setup.py",
 ]
 
+[tool.ruff.lint]
+fixable = ["I"]
+
 [tool.ruff.format]
 quote-style = "preserve"
 
