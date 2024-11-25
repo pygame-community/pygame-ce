@@ -264,17 +264,32 @@ except (ImportError, OSError):
 
 # lastly, the "optional" pygame modules
 
+# Private, persisting alias for use in __getattr__
 _MissingModule = MissingModule
 
 
 def __getattr__(name):
+    """Implementation of lazy loading for some optional pygame modules.
+
+    The surfarray and sndarray submodules use numpy, so they are loaded
+    lazily to avoid a heavy numpy import if the modules are never used.
+
+    The first access of a lazily loaded submodule loads it and sets it
+    as an attribute on the pygame module. Pygame itself doesn't import these modules.
+    If the first access is an attribute access and not an import, then __getattr__ is
+    invoked (as the attribute isn't set yet), which imports the module dynamically.
+
+    All lazy submodules are directly referenced in the packager_imports function.
+    """
     from importlib import import_module
 
     LAZY_MODULES = "surfarray", "sndarray"
     if name not in LAZY_MODULES:
+        # Normal behavior for attribute accesses that aren't lazy modules
         raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
     try:
         module = import_module(f"{__name__}.{name}")
+        # A successful import automatically sets the module attribute on the package
     except (ImportError, OSError):
         module = _MissingModule(name, urgent=0)
         globals()[name] = module
