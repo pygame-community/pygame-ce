@@ -377,6 +377,10 @@ def packager_imports():
     import pygame.macosx
     import pygame.colordict
 
+    # lazily loaded pygame modules, just in case
+    import pygame.surfarray
+    import pygame.sndarray
+
 
 # make Rects pickleable
 
