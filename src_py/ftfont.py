@@ -12,17 +12,16 @@ __all__ = [
 ]
 
 from pygame import draw, encode_file_path
-from pygame._freetype import Font as _Font
 from pygame._freetype import (
+    Font as _Font,
     _internal_mod_init,
     get_default_font,
     get_default_resolution,
+    get_init as _get_init,
     init,
     quit,
 )
-from pygame._freetype import get_init as _get_init
-from pygame.sysfont import SysFont as _SysFont
-from pygame.sysfont import get_fonts, match_font
+from pygame.sysfont import SysFont as _SysFont, get_fonts, match_font
 
 
 class Font(_Font):

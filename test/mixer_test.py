@@ -368,8 +368,7 @@ class MixerModuleTest(unittest.TestCase):
                     mixer.quit()
 
     def _test_array_argument(self, format, a, test_pass):
-        from numpy import all as all_
-        from numpy import array
+        from numpy import all as all_, array
 
         try:
             snd = mixer.Sound(array=a)

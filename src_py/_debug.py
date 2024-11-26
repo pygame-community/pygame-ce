@@ -99,14 +99,10 @@ def print_debug_info(filename=None):
     from pygame.base import get_sdl_version
     from pygame.display import (
         get_driver as get_display_driver,
-    )
-    from pygame.display import (
         get_init as display_init,
     )
     from pygame.mixer import (
         get_driver as get_mixer_driver,
-    )
-    from pygame.mixer import (
         get_init as mixer_init,
     )
 

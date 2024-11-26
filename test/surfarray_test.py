@@ -5,11 +5,7 @@ import pygame
 import pygame.surfarray
 from numpy import (
     __version__ as np_version,
-)
-from numpy import (
     all as np_all,
-)
-from numpy import (
     arange,
     float32,
     float64,

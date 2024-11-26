@@ -42,25 +42,15 @@ import warnings  # will be removed in the future
 import numpy
 from numpy import (
     array as numpy_array,
-)
-from numpy import (
     empty as numpy_empty,
-)
-from numpy import (
     ndarray as numpy_ndarray,
-)
-from numpy import (
     uint32 as numpy_uint32,
 )
 from pygame.pixelcopy import (
     array_to_surface,
-    surface_to_array,
-)
-from pygame.pixelcopy import (
     make_surface as pix_make_surface,
-)
-from pygame.pixelcopy import (
     map_array as pix_map_array,
+    surface_to_array,
 )
 
 # float96 not available on all numpy versions.
