@@ -99,6 +99,9 @@ exclude = [
 [tool.ruff.lint]
 fixable = ["I"]
 
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
 [tool.ruff.format]
 quote-style = "preserve"
 
