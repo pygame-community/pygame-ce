@@ -832,7 +832,7 @@ snd_get_samples_address(PyObject *self, PyObject *closure)
 }
 
 static PyObject *
-snd_copy(pgSoundObject *self, PyObject *_null)
+snd_copy(PyObject *self, PyObject *_null)
 {
     Mix_Chunk *chunk = pgSound_AsChunk(self);
     pgSoundObject *new_sound;
@@ -908,7 +908,7 @@ PyMethodDef sound_methods[] = {
     {"get_volume", snd_get_volume, METH_NOARGS, DOC_MIXER_SOUND_GETVOLUME},
     {"get_length", snd_get_length, METH_NOARGS, DOC_MIXER_SOUND_GETLENGTH},
     {"get_raw", snd_get_raw, METH_NOARGS, DOC_MIXER_SOUND_GETRAW},
-    {"copy", snd_copy, METH_NOARGS, ""},
+    {"copy", snd_copy, METH_NOARGS, DOC_MIXER_SOUND_COPY},
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef sound_getset[] = {
