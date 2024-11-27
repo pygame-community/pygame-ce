@@ -845,7 +845,7 @@ snd_copy(PyObject *self, PyObject *_null)
     new_sound =
         (pgSoundObject *)pgSound_Type.tp_new(Py_TYPE(self), NULL, NULL);
     if (!new_sound) {
-        PyErr_SetString(PyExc_RuntimeError,
+        PyErr_SetString(PyExc_MemoryError,
                         "Failed to allocate memory for new sound object");
         return NULL;
     }
@@ -867,7 +867,7 @@ snd_copy(PyObject *self, PyObject *_null)
         if (!new_chunk) {
             free(buffer_copy);
             Py_DECREF(new_sound);
-            PyErr_SetString(PyExc_RuntimeError,
+            PyErr_SetString(pgExc_SDLError,
                             "Failed to create new sound chunk");
             return NULL;
         }
@@ -909,6 +909,7 @@ PyMethodDef sound_methods[] = {
     {"get_length", snd_get_length, METH_NOARGS, DOC_MIXER_SOUND_GETLENGTH},
     {"get_raw", snd_get_raw, METH_NOARGS, DOC_MIXER_SOUND_GETRAW},
     {"copy", snd_copy, METH_NOARGS, DOC_MIXER_SOUND_COPY},
+    {"__copy__", snd_copy, METH_NOARGS, DOC_MIXER_SOUND_COPY},
     {NULL, NULL, 0, NULL}};
 
 static PyGetSetDef sound_getset[] = {

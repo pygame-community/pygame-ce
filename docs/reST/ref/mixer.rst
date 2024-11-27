@@ -485,7 +485,8 @@ The following file formats are supported
       | :sg:`copy() -> Sound`
 
       Return a new Sound object that is a deep copy of this one. The new Sound will
-      be playable just like the original. If the copy fails, the method returns ``NULL``.
+      be playable just like the original. If the copy fails,  a ``MemoryError`` or a
+      :meth:`pygame.error` exception will be raised.
 
       .. ## Sound.copy ##
 
