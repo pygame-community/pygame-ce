@@ -2161,6 +2161,9 @@ RectExport_subscript(RectObject *self, PyObject *op)
 
     if (PyIndex_Check(op)) {
         Py_ssize_t i = PyNumber_AsSsize_t(op, NULL);
+        if (i == -1 && PyErr_Occurred()) {
+            return NULL;
+        }
         return RectExport_item(self, i);
     }
     else if (op == Py_Ellipsis) {
@@ -2207,6 +2210,9 @@ RectExport_assSubscript(RectObject *self, PyObject *op, PyObject *value)
     }
     if (PyIndex_Check(op)) {
         Py_ssize_t i = PyNumber_AsSsize_t(op, NULL);
+        if (i == -1 && PyErr_Occurred()) {
+            return -1;
+        }
         return RectExport_assItem(self, i, value);
     }
     else if (op == Py_Ellipsis) {
