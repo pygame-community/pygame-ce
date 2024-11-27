@@ -35,7 +35,7 @@ pixels from the surface and any changes performed to the array will make changes
 in the surface. As this last functions share memory with the surface, this one
 will be locked during the lifetime of the array.
 
-.. versionchanged:: 2.5.3 surfarray module is lazily loaded
+.. versionchanged:: 2.5.3 surfarray module is lazily loaded to avoid loading NumPy needlessly
 
 .. function:: array2d
 
