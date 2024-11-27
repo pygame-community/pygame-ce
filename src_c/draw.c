@@ -1189,7 +1189,7 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
         }
 
         draw_round_rect(surf, rect->x, rect->y, rect->x + rect->w - 1,
-                        rect->y + rect->h - 1, radius, width, color,
+                        rect->y + rect->h - 1, MAX(radius, 0), width, color,
                         top_left_radius, top_right_radius, bottom_left_radius,
                         bottom_right_radius, drawn_area);
         if (!pgSurface_Unlock(surfobj)) {

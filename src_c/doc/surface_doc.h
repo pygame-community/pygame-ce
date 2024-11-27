@@ -7,7 +7,7 @@
 #define DOC_SURFACE_CONVERTALPHA "convert_alpha() -> Surface\nchange the pixel format of a surface including per pixel alphas"
 #define DOC_SURFACE_COPY "copy() -> Surface\ncreate a new copy of a Surface"
 #define DOC_SURFACE_FILL "fill(color, rect=None, special_flags=0) -> Rect\nfill Surface with a solid color"
-#define DOC_SURFACE_SCROLL "scroll(dx=0, dy=0, /) -> None\nshift the surface image in place"
+#define DOC_SURFACE_SCROLL "scroll(dx=0, dy=0, scroll_flag=0, /) -> None\nshift the Surface pixels in place"
 #define DOC_SURFACE_SETCOLORKEY "set_colorkey(color, flags=0, /) -> None\nset_colorkey(None) -> None\nset the transparent colorkey"
 #define DOC_SURFACE_GETCOLORKEY "get_colorkey() -> RGBA or None\nget the current transparent colorkey"
 #define DOC_SURFACE_SETALPHA "set_alpha(value, flags=0, /) -> None\nset_alpha(None) -> None\nset the alpha value for the full Surface"
