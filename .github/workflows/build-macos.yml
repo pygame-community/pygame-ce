@@ -64,7 +64,7 @@ jobs:
         if: steps.macdep-cache.outputs.cache-hit != 'true'
         run: |
           export MAC_ARCH="${{ matrix.macarch }}"
-          brew install coreutils pkg-config
+          brew install coreutils
           cd buildconfig/macdependencies
           bash ./build_mac_deps.sh
 
@@ -104,7 +104,6 @@ jobs:
 
       # Setup macOS dependencies
       CIBW_BEFORE_ALL: |
-        brew install pkg-config
         cd buildconfig/macdependencies
         cp -r ${{ github.workspace }}/pygame_mac_deps_${{ matrix.macarch }} ${{ github.workspace }}/pygame_mac_deps
         bash ./install_mac_deps.sh
@@ -138,7 +137,7 @@ jobs:
           uv-version: "0.4.10"
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v2.22.0
 
       - uses: actions/upload-artifact@v4
         with:
