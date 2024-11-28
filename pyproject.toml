@@ -97,6 +97,7 @@ exclude = [
 ]
 
 [tool.ruff.lint]
+select = ["I"]
 fixable = ["I"]
 
 [tool.ruff.lint.isort]
