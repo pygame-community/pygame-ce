@@ -714,14 +714,9 @@ class MixerModuleTest(unittest.TestCase):
     def test_snd_copy(self):
         mixer.init()
 
-        filenames = [
-            "house_lo.mp3",
-            "house_lo.ogg",
-            "house_lo.wav",
-            "house_lo.flac",
-            # "house_lo.opus", unsupported
-            # "surfonasinewave.xm" unsupported
-        ]
+        filenames = ["house_lo.ogg", "house_lo.wav", "house_lo.flac"]
+        if pygame.mixer.get_sdl_mixer_version() >= (2, 6, 0):
+            filenames.append("house_lo.mp3")
 
         for f in filenames:
             filename = example_path(os.path.join("data", f))
