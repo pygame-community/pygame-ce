@@ -714,7 +714,13 @@ class MixerModuleTest(unittest.TestCase):
     def test_snd_copy(self):
         mixer.init()
 
-        filenames = ["house_lo.ogg", "house_lo.wav", "house_lo.flac"]
+        filenames = [
+            "house_lo.ogg",
+            "house_lo.wav",
+            "house_lo.flac",
+            "house_lo.opus",
+            "surfonasinewave.xm",
+        ]
         if pygame.mixer.get_sdl_mixer_version() >= (2, 6, 0):
             filenames.append("house_lo.mp3")
 
@@ -727,14 +733,18 @@ class MixerModuleTest(unittest.TestCase):
             self.assertEqual(sound.get_volume(), sound_copy.get_volume())
             self.assertEqual(sound.get_raw(), sound_copy.get_raw())
 
+            sound.set_volume(0.5)
+            self.assertNotEqual(sound.get_volume(), sound_copy.get_volume())
+
             del sound
 
-            # Test on the copy
+            # Test on the copy for playable sounds
             channel = sound_copy.play()
+            if channel is None:
+                continue
             self.assertTrue(channel.get_busy())
             sound_copy.stop()
             self.assertFalse(channel.get_busy())
-
             sound_copy.play()
             self.assertEqual(sound_copy.get_num_channels(), 1)
 
