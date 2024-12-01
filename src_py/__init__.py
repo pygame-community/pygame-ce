@@ -306,9 +306,11 @@ from importlib.util import LazyLoader, find_spec, module_from_spec
 
 
 def lazy_import(name):
-    """See https://docs.python.org/3/library/importlib.html#implementing-lazy-imports
+    """Lazily import a pygame module.
 
-    Only load modules upon their first attribute access.
+    See https://docs.python.org/3/library/importlib.html#implementing-lazy-imports
+    Only load the module upon its first attribute access.
+
     Lazily imported modules are directly referenced in packager_imports function.
     """
     spec = find_spec("pygame." + name)
@@ -320,15 +322,22 @@ def lazy_import(name):
     return module
 
 
-if find_spec("numpy") is not None:
+numpy_exists = find_spec("numpy") is not None
+
+# Preserve MissingModule behavior when numpy is not installed
+# and when their pygame module dependencies are unavailable
+
+if numpy_exists and not isinstance(pixelcopy, MissingModule):
     surfarray = lazy_import("surfarray")
+else:
+    surfarray = MissingModule("surfarray", urgent=0)
+
+if numpy_exists and not isinstance(mixer, MissingModule):
     sndarray = lazy_import("sndarray")
 else:
-    # Preserve MissingModule behavior when numpy is not installed
-    surfarray = MissingModule("surfarray", urgent=0)
     sndarray = MissingModule("sndarray", urgent=0)
 
-del LazyLoader, find_spec, lazy_import, module_from_spec
+del LazyLoader, find_spec, lazy_import, module_from_spec, numpy_exists
 
 try:
     import pygame._debug
