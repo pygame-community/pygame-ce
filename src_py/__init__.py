@@ -328,9 +328,9 @@ numpy_missing = find_spec("numpy") is None
 try:
     if numpy_missing:
         # Always fails here. Need the error message for MissingModule.reason
-        import numpy
+        import numpy  # pylint: disable=ungrouped-imports
     # Check that module dependencies are not missing, or get error message
-    import pygame.pixelcopy
+    import pygame.pixelcopy  # pylint: disable=ungrouped-imports
 except (ImportError, OSError):
     surfarray = MissingModule("surfarray", urgent=0)
 else:
@@ -338,8 +338,10 @@ else:
 
 try:
     if numpy_missing:
-        import numpy
-    import pygame.mixer
+        # Always fails here. Need the error message for MissingModule.reason
+        import numpy  # pylint: disable=ungrouped-imports
+    # Check that module dependencies are not missing, or get error message
+    import pygame.mixer  # pylint: disable=ungrouped-imports
 except (ImportError, OSError):
     sndarray = MissingModule("sndarray", urgent=0)
 else:
