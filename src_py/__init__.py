@@ -322,22 +322,30 @@ def lazy_import(name):
     return module
 
 
-numpy_exists = find_spec("numpy") is not None
+# Check if numpy is available for surfarray and sndarray modules
+numpy_missing = find_spec("numpy") is None
 
-# Preserve MissingModule behavior when numpy is not installed
-# and when their pygame module dependencies are unavailable
-
-if numpy_exists and not isinstance(pixelcopy, MissingModule):
-    surfarray = lazy_import("surfarray")
-else:
+try:
+    if numpy_missing:
+        # Always fails here. Need the error message for MissingModule.reason
+        import numpy
+    # Check that module dependencies are not missing, or get error message
+    import pygame.pixelcopy
+except (ImportError, OSError):
     surfarray = MissingModule("surfarray", urgent=0)
-
-if numpy_exists and not isinstance(mixer, MissingModule):
-    sndarray = lazy_import("sndarray")
 else:
-    sndarray = MissingModule("sndarray", urgent=0)
+    surfarray = lazy_import("surfarray")
 
-del LazyLoader, find_spec, lazy_import, module_from_spec, numpy_exists
+try:
+    if numpy_missing:
+        import numpy
+    import pygame.mixer
+except (ImportError, OSError):
+    sndarray = MissingModule("sndarray", urgent=0)
+else:
+    sndarray = lazy_import("sndarray")
+
+del LazyLoader, find_spec, lazy_import, module_from_spec, numpy_missing
 
 try:
     import pygame._debug
