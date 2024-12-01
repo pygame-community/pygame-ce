@@ -300,15 +300,35 @@ try:
 except (ImportError, OSError):
     scrap = MissingModule("scrap", urgent=0)
 
-try:
-    import pygame.surfarray
-except (ImportError, OSError):
-    surfarray = MissingModule("surfarray", urgent=0)
+# Two lazily imported modules to avoid loading numpy unnecessarily
 
-try:
-    import pygame.sndarray
-except (ImportError, OSError):
+from importlib.util import LazyLoader, find_spec, module_from_spec
+
+
+def lazy_import(name):
+    """See https://docs.python.org/3/library/importlib.html#implementing-lazy-imports
+
+    Only load modules upon their first attribute access.
+    Lazily imported modules are directly referenced in packager_imports function.
+    """
+    spec = find_spec("pygame." + name)
+    loader = LazyLoader(spec.loader)
+    spec.loader = loader
+    module = module_from_spec(spec)
+    sys.modules[spec.name] = module
+    loader.exec_module(module)
+    return module
+
+
+if find_spec("numpy") is not None:
+    surfarray = lazy_import("surfarray")
+    sndarray = lazy_import("sndarray")
+else:
+    # Preserve MissingModule behavior when numpy is not installed
+    surfarray = MissingModule("surfarray", urgent=0)
     sndarray = MissingModule("sndarray", urgent=0)
+
+del LazyLoader, find_spec, lazy_import, module_from_spec
 
 try:
     import pygame._debug
@@ -365,6 +385,10 @@ def packager_imports():
     import OpenGL.GL
     import pygame.macosx
     import pygame.colordict
+
+    # lazy imports
+    import pygame.surfarray
+    import pygame.sndarray
 
 
 # make Rects pickleable
