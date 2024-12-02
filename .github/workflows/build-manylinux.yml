@@ -75,7 +75,7 @@ jobs:
 
     - name: Build and push Docker image
       if: steps.inspect.outcome == 'failure'
-      uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75
+      uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355
       with:
         context: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base
         file: ${{ github.workspace }}/buildconfig/manylinux-build/docker_base/Dockerfile-${{ matrix.arch }}
