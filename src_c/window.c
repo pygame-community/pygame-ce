@@ -289,6 +289,12 @@ window_focus(pgWindowObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     if (input_only) {
+        if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                         "The input_only kwarg has been deprecated and may be "
+                         "removed in a future version",
+                         1) == -1) {
+            return NULL;
+        }
         if (SDL_SetWindowInputFocus(self->_win)) {
             return RAISE(pgExc_SDLError, SDL_GetError());
         }
@@ -930,6 +936,12 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
                     }
                 }
                 else if (!strcmp(_key_str, "foreign")) {
+                    if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                                     "The foreign kwarg has been deprecated "
+                                     "and may be removed in a future version",
+                                     1) == -1) {
+                        return -1;
+                    }
                     if (_value_bool) {
                         flags |= SDL_WINDOW_FOREIGN;
                     }
