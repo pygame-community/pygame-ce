@@ -367,7 +367,6 @@ controller_rumble(pgControllerObject *self, PyObject *args, PyObject *kwargs)
         return RAISE(pgExc_SDLError, "Controller is not initalized");
     }
 
-#if SDL_VERSION_ATLEAST(2, 0, 9)
     // rumble takes values in range 0 to 0xFFFF (65535)
     low_freq = MAX(MIN(low_freq, 1.0f), 0.0f) * 65535;
     high_freq = MAX(MIN(high_freq, 1.0f), 0.0f) * 65535;
@@ -376,9 +375,6 @@ controller_rumble(pgControllerObject *self, PyObject *args, PyObject *kwargs)
                                            (Uint16)high_freq, duration);
 
     return PyBool_FromLong(success == 0);
-#else
-    Py_RETURN_FALSE;
-#endif
 }
 
 static PyObject *
@@ -388,9 +384,7 @@ controller_stop_rumble(pgControllerObject *self, PyObject *_null)
     if (!self->controller) {
         return RAISE(pgExc_SDLError, "Controller is not initalized");
     }
-#if SDL_VERSION_ATLEAST(2, 0, 9)
     SDL_GameControllerRumble(self->controller, 0, 0, 1);
-#endif
     Py_RETURN_NONE;
 }
 
@@ -544,6 +538,15 @@ static PyTypeObject pgController_Type = {
     .tp_members = controller_members,
 };
 
+/* TODO: multiphase init
+#if PY_VERSION_HEX >= 0x030D0000
+static struct PyModuleDef_Slot mod_controller_slots[] = {
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+    {0, NULL}
+};
+#endif
+*/
+
 MODINIT_DEFINE(controller)
 {
     PyObject *module;
@@ -553,7 +556,13 @@ MODINIT_DEFINE(controller)
         .m_name = "controller",
         .m_doc = DOC_SDL2_CONTROLLER,
         .m_size = -1,
-        .m_methods = _controller_module_methods};
+        .m_methods = _controller_module_methods,
+/*
+#if PY_VERSION_HEX >= 0x030D0000
+        .m_slots = mod_controller_slots,
+#endif
+*/
+    };
 
     import_pygame_base();
     if (PyErr_Occurred()) {
@@ -566,7 +575,11 @@ MODINIT_DEFINE(controller)
     }
 
     module = PyModule_Create(&_module);
-
+#if Py_GIL_DISABLED
+#if (defined(__EMSCRIPTEN__) || defined(__wasi__))
+    PyUnstable_Module_SetGIL(module, Py_MOD_GIL_NOT_USED);
+#endif
+#endif
     if (!module) {
         return NULL;
     }

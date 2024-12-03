@@ -32,7 +32,7 @@
    Both flags are only a request, and may not be possible for all displays and
    formats.
 
-   Advance users can combine a set of bitmasks with a depth value. The masks
+   Advanced users can combine a set of bitmasks with a depth value. The masks
    are a set of 4 integers representing which bits in a pixel will represent
    each color. Normal Surfaces should not require the masks argument.
 
@@ -100,7 +100,7 @@
               If it has transparency, transparent pixels will be ignored when blittting to an 8-bit ``Surface``.
           - ``dest`` *(optional)*
               The ``source`` draw position onto this ``Surface``, defaults to (0, 0).
-              It can be a coordinate ``(x, y)`` or a ``Rect`` (using its top-left corner).
+              It can be a coordinate pair ``(x, y)`` or a ``Rect`` (using its top-left corner).
               If a ``Rect`` is passed, its size will not affect the blit.
           - ``area`` *(optional)*
               The rectangular portion of the ``source`` to draw.
@@ -298,10 +298,9 @@
       entire Surface will be filled. The rect argument will limit the fill to a
       specific area. The fill will also be contained by the Surface clip area.
 
-      The color argument can be an ``RGB`` sequence, an ``RGBA`` sequence,
-      a string (for :doc:`color_list`), or a mapped color index. If using ``RGBA``,
-      the Alpha (A part of ``RGBA``) is ignored unless the surface uses per pixel
-      alpha (Surface has the ``SRCALPHA`` flag).
+      The color argument should be compatible with :data:`pygame.typing.ColorLike`.
+      If using ``RGBA``, the Alpha (A part of ``RGBA``) is ignored unless the surface
+      uses per pixel alpha (Surface has the ``SRCALPHA`` flag).
 
       The special_flags argument controls how the colors are combined. See :doc:`special_flags_list`
       for a list of possible values.
@@ -317,16 +316,29 @@
 
    .. method:: scroll
 
-      | :sl:`shift the surface image in place`
-      | :sg:`scroll(dx=0, dy=0, /) -> None`
+      | :sl:`shift the Surface pixels in place`
+      | :sg:`scroll(dx=0, dy=0, scroll_flag=0, /) -> None`
 
-      Move the image by dx pixels right and dy pixels down. dx and dy may be
-      negative for left and up scrolls respectively. Areas of the surface that
-      are not overwritten retain their original pixel values. Scrolling is
-      contained by the Surface clip area. It is safe to have dx and dy values
-      that exceed the surface size.
+      Move the Surface by dx pixels right and dy pixels down. dx and dy may be
+      negative for left and up scrolls respectively.
+
+      Scrolling is contained by the Surface clip area. It is safe to have dx
+      and dy values that exceed the surface size.
+
+      The scroll flag can be:
+         * ``0`` (default): the pixels are shifted but previous pixels are
+           not modified.
+
+         * ``pygame.SCROLL_ERASE``: the space created by the shifting pixels
+           is filled with black or transparency.
+
+         * ``pygame.SCROLL_REPEAT``: the pixels that disappear out of the
+           surface or clip bounds are brought back on the opposite side
+           resulting in an infinitely scrolling and repeating surface.
 
       .. versionaddedold:: 1.9
+
+      .. versionchanged:: 2.5.3 Add repeating scroll and allow erasing pixels
 
       .. ## Surface.scroll ##
 
@@ -338,9 +350,8 @@
 
       Set the current color key for the Surface. When blitting this Surface
       onto a destination, any pixels that have the same color as the colorkey
-      will be transparent. The color can be an ``RGB`` color, a string
-      (for :doc:`color_list`), or a mapped color integer. If ``None`` is passed,
-      the colorkey will be unset.
+      will be transparent. The color should be compatible with :data:`pygame.typing.ColorLike`.
+      If ``None`` is passed, the colorkey will be unset.
 
       The colorkey will be ignored if the Surface is formatted to use per pixel
       alpha values. The colorkey can be mixed with the full Surface alpha
@@ -355,7 +366,7 @@
    .. method:: get_colorkey
 
       | :sl:`get the current transparent colorkey`
-      | :sg:`get_colorkey() -> RGB or None`
+      | :sg:`get_colorkey() -> RGBA or None`
 
       Return the current colorkey value for the Surface. If the colorkey is not
       set then ``None`` is returned.
@@ -510,10 +521,10 @@
       | :sl:`set the color value for a single pixel`
       | :sg:`set_at((x, y), color, /) -> None`
 
-      Set the color of a single pixel at the specified coordinates to be an ``RGB``,
-      ``RGBA``, string (for :doc:`color_list`), or mapped integer color value. If the Surface
-      does not have per pixel alphas, the alpha value is ignored. Setting pixels outside the
-      Surface area or outside the Surface clipping will have no effect.
+      Set the color of a single pixel at the specified coordinates to be a
+      :data:`pygame.typing.ColorLike` value. If the Surface does not have per pixel alphas,
+      the alpha value is ignored. Setting pixels outside the Surface area or outside
+      the Surface clipping will have no effect.
 
       Getting and setting pixels one at a time is generally too slow to be used
       in a game or realtime situation.
@@ -550,7 +561,7 @@
    .. method:: get_palette
 
       | :sl:`get the color index palette for an 8-bit Surface`
-      | :sg:`get_palette() -> [RGB, RGB, RGB, ...]`
+      | :sg:`get_palette() -> [Color, Color, Color, ...]`
 
       Return a list of up to 256 color elements that represent the indexed
       colors used in an 8-bit Surface. The returned list is a copy of the
@@ -565,7 +576,7 @@
    .. method:: get_palette_at
 
       | :sl:`get the color for a single entry in a palette`
-      | :sg:`get_palette_at(index, /) -> RGB`
+      | :sg:`get_palette_at(index, /) -> Color`
 
       Returns the red, green, and blue color values for a single index in a
       Surface palette. The index should be a value from 0 to 255.
@@ -578,7 +589,7 @@
    .. method:: set_palette
 
       | :sl:`set the color palette for an 8-bit Surface`
-      | :sg:`set_palette([RGB, RGB, RGB, ...], /) -> None`
+      | :sg:`set_palette([color, color, color, ...], /) -> None`
 
       Set the full palette for an 8-bit Surface. This will replace the colors in
       the existing palette. A partial palette can be passed and only the first
@@ -591,7 +602,7 @@
    .. method:: set_palette_at
 
       | :sl:`set the color for a single index in an 8-bit Surface palette`
-      | :sg:`set_palette_at(index, RGB, /) -> None`
+      | :sg:`set_palette_at(index, color, /) -> None`
 
       Set the palette value for a single entry in a Surface palette. The index
       should be a value from 0 to 255.
@@ -605,10 +616,10 @@
       | :sl:`convert a color into a mapped color value`
       | :sg:`map_rgb(color, /) -> mapped_int`
 
-      Convert an ``RGBA`` color into the mapped integer value for this Surface.
-      The returned integer will contain no more bits than the bit depth of the
-      Surface. Mapped color values are not often used inside pygame, but can be
-      passed to most functions that require a Surface and a color.
+      Convert a :data:`pygame.typing.ColorLike` into the mapped integer value
+      for this Surface. The returned integer will contain no more bits than the
+      bit depth of the Surface. Mapped color values are not often used inside pygame,
+      but can be passed to most functions that require a Surface and a color.
 
       See the Surface object documentation for more information about colors
       and pixel formats.

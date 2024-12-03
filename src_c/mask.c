@@ -1129,14 +1129,14 @@ mask_from_threshold(PyObject *self, PyObject *args, PyObject *kwargs)
         surf2 = pgSurface_AsSurface(surfobj2);
     }
 
-    if (!pg_MappedColorFromObj(rgba_obj_color, surf->format, &color,
-                               PG_COLOR_HANDLE_INT)) {
+    if (!pg_MappedColorFromObj(rgba_obj_color, surf, &color,
+                               PG_COLOR_HANDLE_ALL)) {
         return NULL;
     }
 
     if (rgba_obj_threshold) {
-        if (!pg_MappedColorFromObj(rgba_obj_threshold, surf->format,
-                                   &color_threshold, PG_COLOR_HANDLE_INT)) {
+        if (!pg_MappedColorFromObj(rgba_obj_threshold, surf, &color_threshold,
+                                   PG_COLOR_HANDLE_ALL)) {
             return NULL;
         }
     }
@@ -1927,8 +1927,7 @@ extract_color(SDL_Surface *surf, PyObject *color_obj, Uint8 rgba_color[],
         return 1;
     }
 
-    return pg_MappedColorFromObj(color_obj, surf->format, color,
-                                 PG_COLOR_HANDLE_ALL);
+    return pg_MappedColorFromObj(color_obj, surf, color, PG_COLOR_HANDLE_ALL);
 }
 
 /* Draws a mask on a surface.

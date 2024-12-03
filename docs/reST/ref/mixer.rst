@@ -79,6 +79,9 @@ The following file formats are supported
 
    The channels argument is used to specify whether to use mono or stereo. 1
    for mono and 2 for stereo.
+   ``NOTE``: The channels argument is not related to the number
+   of channels for playback of sounds, that you can get with the function
+   "get_num_channels" or set with the function "set_num_channels" (see below).
 
    The buffer argument controls the number of internal samples used in the
    sound mixer. The default value should work for most cases. It can be lowered
@@ -220,7 +223,7 @@ The following file formats are supported
    | :sl:`set the total number of playback channels`
    | :sg:`set_num_channels(count, /) -> None`
 
-   Sets the number of available channels for the mixer. The default value is 8.
+   Sets the number of available playback channels for the mixer. The default value is 8.
    The value can be increased or decreased. If the value is decreased, sounds
    playing on the truncated channels are stopped.
 

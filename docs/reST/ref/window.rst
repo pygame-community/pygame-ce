@@ -10,10 +10,10 @@
    | :sl:`pygame object that represents a window`
    | :sg:`Window(title='pygame window', size=(640, 480), position=None, fullscreen=False, fullscreen_desktop=False, **kwargs) -> Window`
 
-   The Window class (formerly known as _sdl2.video.Window), is an experimental
-   feature of pygame-ce. This class allows for programs to drive multiple
-   Windows on-screen at once, something not possible with the
-   :func:`pygame.display.set_mode` API. Not everything possible with
+   The Window class (formerly known as _sdl2.video.Window), is a newly
+   published feature of pygame-ce 2.5.2. This class allows for programs
+   to drive multiple windows on-screen at once, something not possible with
+   the :func:`pygame.display.set_mode` API. Not everything possible with
    :mod:`pygame.display` is possible yet in the Window API, but the new
    window class will continue to be developed, and we're excited to share
    the new functionality this class offers.
@@ -37,12 +37,51 @@
    :param bool keyboard_grabbed: Create a window with grabbed keyboard input.
    :param bool input_focus: Create a window with input focus.
    :param bool mouse_focus: Create a window with mouse focus.
-   :param bool foreign: Marks a window not created by SDL.
    :param bool allow_high_dpi: Create a window in high-DPI mode if supported.
    :param bool mouse_capture: Create a window that has the mouse captured
                               (unrelated to INPUT_GRABBED).
    :param bool always_on_top: Create a window that is always presented above
                               others.
+   :param bool utility: Create a window that doesn't appear in the task bar.
+
+   Event behavior if one Window is created: When the close button is pressed,
+   the ``QUIT`` event will be sent to the event queue.
+
+   .. code-block:: python
+
+     import pygame
+
+     window = pygame.Window()
+
+     while True:
+       for event in pygame.event.get():
+          if event.type == pygame.QUIT:
+             pygame.quit()
+             raise SystemExit
+
+   Event behavior if multiple ``Window``\ s are created: When the close button is
+   pressed, a ``WINDOWCLOSE`` event is sent. You need to explicitly destroy
+   the window. Note that the event ``QUIT`` will only be sent if all
+   ``Window``\ s have been destroyed.
+
+   .. code-block:: python
+
+     import pygame
+
+     window1 = pygame.Window(position=(0,100))
+     window2 = pygame.Window(position=(700,100))
+
+     while True:
+       for event in pygame.event.get():
+         if event.type == pygame.WINDOWCLOSE:
+           id = event.window.id
+           print(f"WINDOWCLOSE event sent to Window #{id}.")
+           event.window.destroy()
+
+         if event.type == pygame.QUIT:
+           print(f"Last window is destroyed. QUIT event was sent.")
+           pygame.quit()
+           raise SystemExit
 
    .. versionadded:: 2.4.0
    .. versionchanged:: 2.5.0 when ``opengl`` is ``True``, the ``Window`` has an OpenGL context created by pygame
@@ -250,6 +289,16 @@
 
       .. versionadded:: 2.5.0
 
+   .. attribute:: utility
+
+      | :sl:`Get if the windos is an utility window (**read-only**)`
+      | :sg:`utility -> bool`
+
+      ``True`` if the window doesn't appear in the task bar, ``False`` otherwise.
+      This only works for X11 and Windows, for other platforms, creating ``Window(utility=True)`` won't change anything.
+
+      .. versionadded:: 2.5.3
+
    .. classmethod:: from_display_module
 
       | :sl:`Create a Window object using window data from display module`
@@ -365,7 +414,10 @@
 
       :param bool input_only: if ``True``, the window will be given input focus
                               but may be completely obscured by other windows.
-                              Only supported on X11.
+                              Only supported on X11. This has been deprecated and
+                              may be removed in a future version.
+
+      .. deprecated:: 2.5.3 ``input_only`` argument
 
    .. method:: restore
 

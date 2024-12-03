@@ -48,28 +48,30 @@ jobs:
     strategy:
       fail-fast: false  # if a particular matrix build fails, don't skip the rest
       matrix:
-        os: [ubuntu-22.04]
+        os: [ubuntu-24.04]
+
+    env:
+      # Pip now forces us to either make a venv or set this flag, so we will do
+      # this
+      PIP_BREAK_SYSTEM_PACKAGES: 1
+      # We are using dependencies installed from apt
+      PG_DEPS_FROM_SYSTEM: 1
 
     steps:
-    - uses: actions/checkout@v4.1.7
+    - uses: actions/checkout@v4.2.2
 
     - name: Install deps
-      # install numpy from pip and not apt because the one from pip is newer,
-      # and has typestubs
       # https://github.com/actions/runner-images/issues/7192
       # https://github.com/orgs/community/discussions/47863
       run: |
         sudo apt-get update --fix-missing
         sudo apt-get install lcov -y
         sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libfreetype6-dev libportmidi-dev python3-dev -y
-        pip3 install --upgrade pip
-        pip3 install meson-python ninja cython "sphinx<=7.2.6"  # because we are doing --no-build-isolation
-        pip3 install numpy>=1.21.0
 
     - name: Build with coverage hooks and install
       id: build
       run: |
-        pip3 install -e . --no-build-isolation -Cbuild-dir=./.mesonpy-rel -Csetup-args=-Dcoverage=true
+        python3 dev.py build --coverage
 
     - name: Run tests
       env:

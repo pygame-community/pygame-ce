@@ -1112,7 +1112,7 @@ _array_assign_sequence(pgPixelArrayObject *array, Py_ssize_t low,
     }
     for (x = 0; x < val_dim0; ++x) {
         item = PySequence_ITEM(val, x);
-        if (!_get_color_from_object(item, format, (val_colors + x))) {
+        if (!_get_color_from_object(item, surf, (val_colors + x))) {
             Py_DECREF(item);
             free(val_colors);
             return -1;
@@ -1299,7 +1299,7 @@ _pxarray_ass_item(pgPixelArrayObject *array, Py_ssize_t index, PyObject *value)
 
     bpp = PG_SURF_BytesPerPixel(surf);
 
-    if (!_get_color_from_object(value, surf->format, &color)) {
+    if (!_get_color_from_object(value, surf, &color)) {
         if (PyTuple_Check(value)) {
             return -1;
         }
@@ -1425,7 +1425,7 @@ _pxarray_ass_slice(pgPixelArrayObject *array, Py_ssize_t low, Py_ssize_t high,
         return _array_assign_array(array, low, high,
                                    (pgPixelArrayObject *)value);
     }
-    if (_get_color_from_object(value, surf->format, &color)) {
+    if (_get_color_from_object(value, surf, &color)) {
         return _array_assign_slice(array, low, high, color);
     }
     if (PyTuple_Check(value)) {
@@ -1460,7 +1460,7 @@ _pxarray_contains(pgPixelArrayObject *array, PyObject *value)
 
     bpp = PG_SURF_BytesPerPixel(surf);
 
-    if (!_get_color_from_object(value, surf->format, &color)) {
+    if (!_get_color_from_object(value, surf, &color)) {
         return -1;
     }
 
@@ -1666,15 +1666,9 @@ _pxarray_subscript(pgPixelArrayObject *array, PyObject *op)
         return _pxarray_subscript_internal(array, start, stop, step, 0, dim1,
                                            1);
     }
-    else if (PyIndex_Check(op) || PyLong_Check(op)) {
-        Py_ssize_t i;
-        PyObject *val = PyNumber_Index(op);
-        if (!val) {
-            return 0;
-        }
+    else if (PyIndex_Check(op)) {
         /* A simple index. */
-        i = PyNumber_AsSsize_t(val, PyExc_IndexError);
-        Py_DECREF(val);
+        Py_ssize_t i = PyNumber_AsSsize_t(op, PyExc_IndexError);
         if (i == -1 && PyErr_Occurred()) {
             return 0;
         }
@@ -1828,15 +1822,9 @@ _pxarray_ass_subscript(pgPixelArrayObject *array, PyObject *op,
         Py_DECREF(tmparray);
         return retval;
     }
-    else if (PyIndex_Check(op) || PyLong_Check(op)) {
-        Py_ssize_t i;
-        PyObject *val = PyNumber_Index(op);
-        if (!val) {
-            return -1;
-        }
+    else if (PyIndex_Check(op)) {
         /* A simple index. */
-        i = PyNumber_AsSsize_t(val, PyExc_IndexError);
-        Py_DECREF(val);
+        Py_ssize_t i = PyNumber_AsSsize_t(op, PyExc_IndexError);
         if (i == -1 && PyErr_Occurred()) {
             return -1;
         }

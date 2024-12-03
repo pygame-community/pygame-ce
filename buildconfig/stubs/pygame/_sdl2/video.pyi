@@ -1,11 +1,12 @@
-from typing import Any, Generator, Iterable, Optional, Tuple, Union
+from collections.abc import Generator, Iterable
+from typing import Any, Optional, Union
 
 from pygame.color import Color
 from pygame.rect import Rect
 from pygame.surface import Surface
 from pygame.window import Window as Window
 
-from pygame.typing import ColorLike, RectLike, Coordinate
+from pygame.typing import ColorLike, RectLike, Point
 
 WINDOWPOS_UNDEFINED: int
 WINDOWPOS_CENTERED: int
@@ -34,7 +35,7 @@ def messagebox(
     info: bool = False,
     warn: bool = False,
     error: bool = False,
-    buttons: Tuple[str, ...] = ("OK",),
+    buttons: tuple[str, ...] = ("OK",),
     return_button: int = 0,
     escape_button: int = 0,
 ) -> int: ...
@@ -47,7 +48,7 @@ class Texture:
         static: bool = False,
         streaming: bool = False,
         target: bool = False,
-        scale_quality: Optional[int] =None
+        scale_quality: Optional[int] = None,
     ) -> None: ...
     @staticmethod
     def from_surface(renderer: Renderer, surface: Surface) -> Texture: ...
@@ -61,7 +62,6 @@ class Texture:
     def color(self) -> Color: ...
     @color.setter
     def color(self, value: ColorLike) -> None: ...
-
     def get_rect(self, **kwargs: Any) -> Rect: ...
     def draw(
         self,
@@ -74,26 +74,26 @@ class Texture:
     ) -> None: ...
     def draw_triangle(
         self,
-        p1_xy: Coordinate,
-        p2_xy: Coordinate,
-        p3_xy: Coordinate,
-        p1_uv: Coordinate = (0.0, 0.0),
-        p2_uv: Coordinate = (1.0, 1.0),
-        p3_uv: Coordinate = (0.0, 1.0),
+        p1_xy: Point,
+        p2_xy: Point,
+        p3_xy: Point,
+        p1_uv: Point = (0.0, 0.0),
+        p2_uv: Point = (1.0, 1.0),
+        p3_uv: Point = (0.0, 1.0),
         p1_mod: Iterable[int] = (255, 255, 255, 255),
         p2_mod: Iterable[int] = (255, 255, 255, 255),
         p3_mod: Iterable[int] = (255, 255, 255, 255),
     ) -> None: ...
     def draw_quad(
         self,
-        p1_xy: Coordinate,
-        p2_xy: Coordinate,
-        p3_xy: Coordinate,
-        p4_xy: Coordinate,
-        p1_uv: Coordinate = (0.0, 0.0),
-        p2_uv: Coordinate = (1.0, 0.0),
-        p3_uv: Coordinate = (1.0, 1.0),
-        p4_uv: Coordinate = (0.0, 1.0),
+        p1_xy: Point,
+        p2_xy: Point,
+        p3_xy: Point,
+        p4_xy: Point,
+        p1_uv: Point = (0.0, 0.0),
+        p2_uv: Point = (1.0, 0.0),
+        p3_uv: Point = (1.0, 1.0),
+        p4_uv: Point = (0.0, 1.0),
         p1_mod: Iterable[int] = (255, 255, 255, 255),
         p2_mod: Iterable[int] = (255, 255, 255, 255),
         p3_mod: Iterable[int] = (255, 255, 255, 255),
@@ -155,26 +155,26 @@ class Renderer:
         area: Optional[RectLike] = None,
         special_flags: int = 0,
     ) -> Rect: ...
-    def draw_line(self, p1: Coordinate, p2: Coordinate) -> None: ...
-    def draw_point(self, point: Coordinate) -> None: ...
+    def draw_line(self, p1: Point, p2: Point) -> None: ...
+    def draw_point(self, point: Point) -> None: ...
     def draw_rect(self, rect: RectLike) -> None: ...
     def fill_rect(self, rect: RectLike) -> None: ...
     def draw_triangle(
-        self, p1: Coordinate, p2: Coordinate, p3: Coordinate
+        self, p1: Point, p2: Point, p3: Point
     ) -> None: ...
     def fill_triangle(
-        self, p1: Coordinate, p2: Coordinate, p3: Coordinate
+        self, p1: Point, p2: Point, p3: Point
     ) -> None: ...
     def draw_quad(
-        self, p1: Coordinate, p2: Coordinate, p3: Coordinate, p4: Coordinate
+        self, p1: Point, p2: Point, p3: Point, p4: Point
     ) -> None: ...
     def fill_quad(
-        self, p1: Coordinate, p2: Coordinate, p3: Coordinate, p4: Coordinate
+        self, p1: Point, p2: Point, p3: Point, p4: Point
     ) -> None: ...
     def to_surface(
         self, surface: Optional[Surface] = None, area: Optional[RectLike] = None
     ) -> Surface: ...
     @staticmethod
     def compose_custom_blend_mode(
-        color_mode: Tuple[int, int, int], alpha_mode: Tuple[int, int, int]
+        color_mode: tuple[int, int, int], alpha_mode: tuple[int, int, int]
     ) -> int: ...
