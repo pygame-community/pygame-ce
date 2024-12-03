@@ -41,7 +41,9 @@ def build_signatures(object):
             arg_string = arg_string[2:]
 
         if ret.count("[") > 2 or ret.count(",") > 3:
-            ret = "..."
+            ret = ret.split("[")[0]
+            if ret in ("Optional", "Union"):
+                ret = "..."
 
         yield f"| :sg:`{name}({arg_string}) -> {ret}`"
 
