@@ -7,7 +7,8 @@
 |PyPiVersion| |PyPiLicense|
 |Python3| |GithubCommits| |BlackFormatBadge|
 
-`English`_ `简体中文`_ `繁體中文`_ `Français`_ **فارسی** `Español`_ `日本語`_ `Italiano`_
+`English`_ `简体中文`_ `繁體中文`_ `Français`_ **فارسی** `Español`_ `日本語`_ `Italiano`_ `Русский`_
+
 ---------------------------------------------------------------------------------------------------
 کتابخانه
 Pygame_
@@ -188,9 +189,9 @@ Dependencies (وابستگی ها)
 مشاهده کنید.
 
 +----------+------------------------+
-| CPython  | >= 3.8 (Or use PyPy3)  |
+| CPython  | >= 3.9 (Or use PyPy3)  |
 +----------+------------------------+
-| SDL      | >= 2.0.10              |
+| SDL      | >= 2.0.14              |
 +----------+------------------------+
 | SDL_mixer| >= 2.0.4               |
 +----------+------------------------+
@@ -257,3 +258,4 @@ LGPL-2.1-or-later **شناسه مجوز:**
 .. _Español: README.es.rst
 .. _日本語: README.ja.rst
 .. _Italiano: README.it.rst
+.. _Русский: README.ru.rst

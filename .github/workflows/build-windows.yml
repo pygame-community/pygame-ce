@@ -59,10 +59,10 @@ jobs:
       - name: Install uv for speed
         uses: yezz123/setup-uv@v4
         with:
-          uv-version: "0.4.10"
+          uv-version: "0.5.4"
 
       - name: Build and test wheels
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v2.22.0
 
       - uses: actions/upload-artifact@v4
         with:
