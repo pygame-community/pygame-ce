@@ -56,7 +56,9 @@ def _pre_init_placeholder_varargs(*_, **__):
 
 
 class _PreInitPlaceholderCamera(AbstractCamera):
-    __init__ = _pre_init_placeholder_varargs
+    def __init__(self, *args, **kwargs):
+        _pre_init_placeholder()
+
     start = _pre_init_placeholder_varargs
     stop = _pre_init_placeholder_varargs
     get_controls = _pre_init_placeholder_varargs
