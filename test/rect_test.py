@@ -52,6 +52,39 @@ class RectTypeTest(unittest.TestCase):
         self.assertEqual((r.left, r.centery), r.midleft)
         self.assertEqual((r.right, r.centery), r.midright)
 
+    def testAttributes(self):
+        """Checks that all the attributes are initialized correctly."""
+        r = Rect(1, 2, 3, 4)
+
+        self.assertEqual(1, r.left)
+        self.assertEqual(2, r.top)
+        self.assertEqual(4, r.right)
+        self.assertEqual(6, r.bottom)
+
+        self.assertEqual(1, r.x)
+        self.assertEqual(2, r.y)
+
+        self.assertEqual(3, r.w)
+        self.assertEqual(4, r.h)
+
+        self.assertEqual((1, 2), r.topleft)
+        self.assertEqual((4, 2), r.topright)
+        self.assertEqual((1, 6), r.bottomleft)
+        self.assertEqual((4, 6), r.bottomright)
+
+        self.assertEqual((3, 4), r.size)
+        self.assertEqual(3, r.width)
+        self.assertEqual(4, r.height)
+
+        self.assertEqual(2, r.centerx)
+        self.assertEqual(4, r.centery)
+        self.assertEqual((2, 4), r.center)
+
+        self.assertEqual((2, 2), r.midtop)
+        self.assertEqual((2, 6), r.midbottom)
+        self.assertEqual((1, 4), r.midleft)
+        self.assertEqual((4, 4), r.midright)
+
     def testRepr(self):
         rect = Rect(12, 34, 56, 78)
         self.assertEqual(repr(rect), "Rect(12, 34, 56, 78)")
