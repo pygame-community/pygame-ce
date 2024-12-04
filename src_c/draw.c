@@ -647,8 +647,20 @@ arc(PyObject *self, PyObject *arg, PyObject *kwargs)
 
     width = MIN(width, MIN(rect->w, rect->h) / 2);
 
-    draw_arc(surf, rect->x + rect->w / 2, rect->y + rect->h / 2, rect->w / 2,
-             rect->h / 2, width, angle_start, angle_stop, color, drawn_area);
+    if (rect->w < 0 || rect->h < 0) {
+        if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                         "Negative rect dimension values are deprecated and "
+                         "have no functionality. This will cause an error in "
+                         "a future version of pygame-ce.",
+                         1) == -1) {
+            return NULL;
+        }
+    }
+    else {
+        draw_arc(surf, rect->x + rect->w / 2, rect->y + rect->h / 2,
+                 rect->w / 2, rect->h / 2, width, angle_start, angle_stop,
+                 color, drawn_area);
+    }
 
     if (!pgSurface_Unlock(surfobj)) {
         return RAISE(PyExc_RuntimeError, "error unlocking surface");
@@ -708,14 +720,25 @@ ellipse(PyObject *self, PyObject *arg, PyObject *kwargs)
         return RAISE(PyExc_RuntimeError, "error locking surface");
     }
 
-    if (!width ||
-        width >= MIN(rect->w / 2 + rect->w % 2, rect->h / 2 + rect->h % 2)) {
-        draw_ellipse_filled(surf, rect->x, rect->y, rect->w, rect->h, color,
-                            drawn_area);
+    if (rect->w < 0 || rect->h < 0) {
+        if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                         "Negative rect dimension values are deprecated and "
+                         "have no functionality. This will cause an error in "
+                         "a future version of pygame-ce.",
+                         1) == -1) {
+            return NULL;
+        }
     }
     else {
-        draw_ellipse_thickness(surf, rect->x, rect->y, rect->w, rect->h,
-                               width - 1, color, drawn_area);
+        if (!width || width >= MIN(rect->w / 2 + rect->w % 2,
+                                   rect->h / 2 + rect->h % 2)) {
+            draw_ellipse_filled(surf, rect->x, rect->y, rect->w, rect->h,
+                                color, drawn_area);
+        }
+        else {
+            draw_ellipse_thickness(surf, rect->x, rect->y, rect->w, rect->h,
+                                   width - 1, color, drawn_area);
+        }
     }
 
     if (!pgSurface_Unlock(surfobj)) {
@@ -1119,65 +1142,79 @@ rect(PyObject *self, PyObject *args, PyObject *kwargs)
         return pgRect_New4(rect->x, rect->y, 0, 0);
     }
 
-    /* If there isn't any rounded rect-ness OR the rect is really thin in one
-       direction. The "really thin in one direction" check is necessary because
-       draw_round_rect fails (draws something bad) on rects with a dimension
-       that is 0 or 1 pixels across.*/
-    if ((radius <= 0 && top_left_radius <= 0 && top_right_radius <= 0 &&
-         bottom_left_radius <= 0 && bottom_right_radius <= 0) ||
-        abs(rect->w) < 2 || abs(rect->h) < 2) {
-        sdlrect.x = rect->x;
-        sdlrect.y = rect->y;
-        sdlrect.w = rect->w;
-        sdlrect.h = rect->h;
-        SDL_GetClipRect(surf, &cliprect);
-        /* SDL_FillRect respects the clip rect already, but in order to
-            return the drawn area, we need to do this here, and keep the
-            pointer to the result in clipped */
-        if (!SDL_IntersectRect(&sdlrect, &cliprect, &clipped)) {
-            return pgRect_New4(rect->x, rect->y, 0, 0);
+    if (rect->w < 0 || rect->h < 0) {
+        if (PyErr_WarnEx(PyExc_DeprecationWarning,
+                         "Negative rect dimension values are deprecated and "
+                         "have no functionality. This will cause an error in "
+                         "a future version of pygame-ce.",
+                         1) == -1) {
+            return NULL;
         }
-        if (width > 0 && (width * 2) < clipped.w && (width * 2) < clipped.h) {
-            draw_rect(surf, sdlrect.x, sdlrect.y, sdlrect.x + sdlrect.w - 1,
-                      sdlrect.y + sdlrect.h - 1, width, color);
-        }
-        else {
-            pgSurface_Prep(surfobj);
-            pgSurface_Lock(surfobj);
-            result = SDL_FillRect(surf, &clipped, color);
-            pgSurface_Unlock(surfobj);
-            pgSurface_Unprep(surfobj);
-            if (result != 0)
-                return RAISE(pgExc_SDLError, SDL_GetError());
-        }
-        return pgRect_New(&clipped);
     }
     else {
-        if (!pgSurface_Lock(surfobj)) {
-            return RAISE(PyExc_RuntimeError, "error locking surface");
+        /* If there isn't any rounded rect-ness OR the rect is really thin in
+           one direction. The "really thin in one direction" check is necessary
+           because draw_round_rect fails (draws something bad) on rects with a
+           dimension that is 0 or 1 pixels across.*/
+        if ((radius <= 0 && top_left_radius <= 0 && top_right_radius <= 0 &&
+             bottom_left_radius <= 0 && bottom_right_radius <= 0) ||
+            abs(rect->w) < 2 || abs(rect->h) < 2) {
+            sdlrect.x = rect->x;
+            sdlrect.y = rect->y;
+            sdlrect.w = rect->w;
+            sdlrect.h = rect->h;
+            SDL_GetClipRect(surf, &cliprect);
+            /* SDL_FillRect respects the clip rect already, but in order to
+                return the drawn area, we need to do this here, and keep the
+                pointer to the result in clipped */
+            if (!SDL_IntersectRect(&sdlrect, &cliprect, &clipped)) {
+                return pgRect_New4(rect->x, rect->y, 0, 0);
+            }
+            if (width > 0 && (width * 2) < clipped.w &&
+                (width * 2) < clipped.h) {
+                draw_rect(surf, sdlrect.x, sdlrect.y,
+                          sdlrect.x + sdlrect.w - 1, sdlrect.y + sdlrect.h - 1,
+                          width, color);
+            }
+            else {
+                pgSurface_Prep(surfobj);
+                pgSurface_Lock(surfobj);
+                result = SDL_FillRect(surf, &clipped, color);
+                pgSurface_Unlock(surfobj);
+                pgSurface_Unprep(surfobj);
+                if (result != 0)
+                    return RAISE(pgExc_SDLError, SDL_GetError());
+            }
+            return pgRect_New(&clipped);
         }
+        else {
+            if (!pgSurface_Lock(surfobj)) {
+                return RAISE(PyExc_RuntimeError, "error locking surface");
+            }
 
-        /* Little bit to normalize the rect: this matters for the rounded
-           rects, despite not mattering for the normal rects. */
-        if (rect->w < 0) {
-            rect->x += rect->w;
-            rect->w = -rect->w;
-        }
-        if (rect->h < 0) {
-            rect->y += rect->h;
-            rect->h = -rect->h;
-        }
+            /* Little bit to normalize the rect: this matters for the rounded
+               rects, despite not mattering for the normal rects. */
+            if (rect->w < 0) {
+                rect->x += rect->w;
+                rect->w = -rect->w;
+            }
+            if (rect->h < 0) {
+                rect->y += rect->h;
+                rect->h = -rect->h;
+            }
 
-        if (width > rect->w / 2 || width > rect->h / 2) {
-            width = MAX(rect->w / 2, rect->h / 2);
-        }
+            if (width > rect->w / 2 || width > rect->h / 2) {
+                width = MAX(rect->w / 2, rect->h / 2);
+            }
 
-        draw_round_rect(surf, rect->x, rect->y, rect->x + rect->w - 1,
-                        rect->y + rect->h - 1, radius, width, color,
-                        top_left_radius, top_right_radius, bottom_left_radius,
-                        bottom_right_radius, drawn_area);
-        if (!pgSurface_Unlock(surfobj)) {
-            return RAISE(PyExc_RuntimeError, "error unlocking surface");
+            draw_round_rect(surf, rect->x, rect->y, rect->x + rect->w - 1,
+                            rect->y + rect->h - 1, radius, width, color,
+                            top_left_radius, top_right_radius,
+                            bottom_left_radius, bottom_right_radius,
+                            drawn_area);
+            if (!pgSurface_Unlock(surfobj)) {
+                return RAISE(PyExc_RuntimeError, "error unlocking surface");
+            }
         }
     }
 

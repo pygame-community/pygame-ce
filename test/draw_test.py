@@ -408,6 +408,20 @@ class DrawEllipseMixin:
             self.assertEqual(surface.get_at(pos), expected_color)
             self.assertIsInstance(bounds_rect, pygame.Rect)
 
+    def test_ellipse__negative_rect_warning(self):
+        """Ensures draw ellipse shows DeprecationWarning for rect with negative values"""
+        # Generate few faulty rects.
+        faulty_rects = ((10, 10, -5, 3), (10, 10, 5, -3))
+        with warnings.catch_warnings(record=True) as w:
+            for count, rect in enumerate(faulty_rects):
+                # Cause all warnings to always be triggered.
+                warnings.simplefilter("always")
+                # Trigger DeprecationWarning.
+                self.draw_ellipse(pygame.Surface((6, 6)), (255, 255, 255), rect)
+                # Check if there is only one warning and is a DeprecationWarning.
+                self.assertEqual(len(w), count + 1)
+                self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
+
     def test_ellipse__valid_rect_formats(self):
         """Ensures draw ellipse accepts different rect formats."""
         pos = (1, 1)
@@ -4778,6 +4792,20 @@ class DrawRectMixin:
             self.assertEqual(surface.get_at(pos), expected_color)
             self.assertIsInstance(bounds_rect, pygame.Rect)
 
+    def test_rect__negative_rect_warning(self):
+        """Ensures draw rect shows DeprecationWarning for rect with negative values"""
+        # Generate few faulty rects.
+        faulty_rects = ((10, 10, -5, 3), (10, 10, 5, -3))
+        with warnings.catch_warnings(record=True) as w:
+            for count, rect in enumerate(faulty_rects):
+                # Cause all warnings to always be triggered.
+                warnings.simplefilter("always")
+                # Trigger DeprecationWarning.
+                self.draw_rect(pygame.Surface((6, 6)), (255, 255, 255), rect)
+                # Check if there is only one warning and is a DeprecationWarning.
+                self.assertEqual(len(w), count + 1)
+                self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
+
     def test_rect__valid_rect_formats(self):
         """Ensures draw rect accepts different rect formats."""
         pos = (1, 1)
@@ -7037,6 +7065,20 @@ class DrawArcMixin:
 
             self.assertEqual(surface.get_at(pos), expected_color, msg)
             self.assertIsInstance(bounds_rect, pygame.Rect, msg)
+
+    def test_arc__negative_rect_warning(self):
+        """Ensures draw arc shows DeprecationWarning for rect with negative values"""
+        # Generate few faulty rects.
+        faulty_rects = ((10, 10, -5, 3), (10, 10, 5, -3))
+        with warnings.catch_warnings(record=True) as w:
+            for count, rect in enumerate(faulty_rects):
+                # Cause all warnings to always be triggered.
+                warnings.simplefilter("always")
+                # Trigger DeprecationWarning.
+                self.draw_arc(pygame.Surface((6, 6)), (255, 255, 255), rect, 0, 7)
+                # Check if there is only one warning and is a DeprecationWarning.
+                self.assertEqual(len(w), count + 1)
+                self.assertTrue(issubclass(w[-1].category, DeprecationWarning))
 
     def test_arc__valid_rect_formats(self):
         """Ensures draw arc accepts different rect formats."""
