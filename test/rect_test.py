@@ -824,13 +824,13 @@ class RectTypeTest(unittest.TestCase):
         r = Rect(2, 4, 6, 8)
         r2 = r.inflate(-4, -6)
 
-        self.assertEqual((5, 8), r2.center)  
-        self.assertEqual(4, r2.left)        
-        self.assertEqual(7, r2.top)          
-        self.assertEqual(6, r2.right)        
-        self.assertEqual(9, r2.bottom)      
-        self.assertEqual(2, r2.width)        
-        self.assertEqual(2, r2.height) 
+        self.assertEqual((5, 8), r2.center)
+        self.assertEqual(4, r2.left)
+        self.assertEqual(7, r2.top)
+        self.assertEqual(6, r2.right)
+        self.assertEqual(9, r2.bottom)
+        self.assertEqual(2, r2.width)
+        self.assertEqual(2, r2.height)
 
     def test_inflate_ip__larger(self):
         """Ensures inflating a rect in place keeps its center the same
