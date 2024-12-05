@@ -677,6 +677,15 @@ The following file formats are supported
       If there is no sound actively playing on the Channel then the Sound will
       begin playing immediately.
 
+      The optional parameters ``loops`` and ``fade_ms`` control how the queued
+      Sound is played:
+
+      - ``loops``: The number of times the queued Sound will loop. A value of 0
+        means the sound will play once, 1 means it will play twice, and so on.
+      - ``fade_ms``: The duration of the fade-in effect in milliseconds when the
+        queued Sound starts playing. If set to 0 (default), the Sound will play
+        without a fade.
+
       .. ## Channel.queue ##
 
    .. method:: get_queue

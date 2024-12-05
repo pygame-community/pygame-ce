@@ -104,6 +104,8 @@ static char *request_devicename = NULL;
 struct ChannelData {
     PyObject *sound;
     PyObject *queue;
+    int queue_loop;
+    int queue_fade_ms;
     int endevent;
 };
 static struct ChannelData *channeldata = NULL;
@@ -294,15 +296,35 @@ endsound_callback(int channel)
 
         if (channeldata[channel].queue) {
             PyGILState_STATE gstate = PyGILState_Ensure();
-            int channelnum;
             Mix_Chunk *sound = pgSound_AsChunk(channeldata[channel].queue);
+
+            // Récupérer les paramètres de la queue
+            int queue_loop = channeldata[channel].queue_loop;
+            int queue_fade_ms = channeldata[channel].queue_fade_ms;
+
+            // Libérer le son actuel et déplacer le son de la queue dans
+            // "sound"
             Py_XDECREF(channeldata[channel].sound);
             channeldata[channel].sound = channeldata[channel].queue;
             channeldata[channel].queue = NULL;
-            PyGILState_Release(gstate);
-            channelnum = Mix_PlayChannelTimed(channel, sound, 0, -1);
-            if (channelnum != -1)
+
+            // Jouer le son avec les paramètres de fade-in ou directement
+            int channelnum;
+            if (queue_fade_ms > 0) {
+                channelnum = Mix_FadeInChannelTimed(channel, sound, queue_loop,
+                                                    queue_fade_ms, -1);
+            }
+            else {
+                channelnum =
+                    Mix_PlayChannelTimed(channel, sound, queue_loop, -1);
+            }
+
+            // Associer le canal au groupe
+            if (channelnum != -1) {
                 Mix_GroupChannel(channelnum, (int)(intptr_t)sound);
+            }
+
+            PyGILState_Release(gstate);
         }
         else {
             PyGILState_STATE gstate = PyGILState_Ensure();
@@ -1074,22 +1096,35 @@ chan_get_id(PyObject *self, PyObject *empty_args)
 }
 
 static PyObject *
-chan_queue(PyObject *self, PyObject *sound)
+chan_queue(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     int channelnum = pgChannel_AsInt(self);
     Mix_Chunk *chunk;
+    PyObject *sound;
+    int loop = 0;
+    int fade_ms = 0;
+
+    static char *kwlist[] = {"sound", "loop", "fade_ms", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|ii", kwlist, &sound,
+                                     &loop, &fade_ms)) {
+        return RAISE(PyExc_TypeError,
+                     "Expected arguments: sound, optional int loop, optional "
+                     "int fade_ms");
+    }
 
     if (!pgSound_Check(sound)) {
         return RAISE(PyExc_TypeError,
-                     "The argument must be an instance of Sound");
+                     "The first argument must be an instance of Sound");
     }
 
     chunk = pgSound_AsChunk(sound);
     CHECK_CHUNK_VALID(chunk, NULL);
+
     if (!channeldata[channelnum].sound) /*nothing playing*/
     {
         Py_BEGIN_ALLOW_THREADS;
-        channelnum = Mix_PlayChannelTimed(channelnum, chunk, 0, -1);
+        channelnum = Mix_PlayChannelTimed(channelnum, chunk, loop, -1);
         if (channelnum != -1)
             Mix_GroupChannel(channelnum, (int)(intptr_t)chunk);
         Py_END_ALLOW_THREADS;
@@ -1100,8 +1135,11 @@ chan_queue(PyObject *self, PyObject *sound)
     else {
         Py_XDECREF(channeldata[channelnum].queue);
         channeldata[channelnum].queue = sound;
+        channeldata[channelnum].queue_loop = loop;
+        channeldata[channelnum].queue_fade_ms = fade_ms;
         Py_INCREF(sound);
     }
+
     Py_RETURN_NONE;
 }
 
@@ -1321,7 +1359,8 @@ static PyGetSetDef _channel_getsets[] = {
 static PyMethodDef channel_methods[] = {
     {"play", (PyCFunction)chan_play, METH_VARARGS | METH_KEYWORDS,
      DOC_MIXER_CHANNEL_PLAY},
-    {"queue", chan_queue, METH_O, DOC_MIXER_CHANNEL_QUEUE},
+    {"queue", (PyCFunction)chan_queue, METH_VARARGS | METH_KEYWORDS,
+     DOC_MIXER_CHANNEL_QUEUE},
     {"get_busy", (PyCFunction)chan_get_busy, METH_NOARGS,
      DOC_MIXER_CHANNEL_GETBUSY},
     {"fadeout", chan_fadeout, METH_VARARGS, DOC_MIXER_CHANNEL_FADEOUT},
