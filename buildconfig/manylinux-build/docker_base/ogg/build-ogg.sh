@@ -22,6 +22,13 @@ cd ..
 tar xzf ${VORBIS}.tar.gz
 cd $VORBIS
 
+# some hackery needed to make libvorbis build under mingw
+case "$OSTYPE" in
+  msys|mingw32|mingw64)
+    sed -i '/LIBRARY/d' win32/*.def
+    ;;
+esac
+
 cmake . $PG_BASE_CMAKE_FLAGS
 make
 make install
