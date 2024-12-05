@@ -1294,6 +1294,19 @@ add_line_to_drawn_list(int x1, int y1, int x2, int y2, int *pts)
     }
 }
 
+// Prevents double evaluation
+inline static int
+intmin(int a, int b)
+{
+    return ((a) < (b) ? (a) : (b));
+}
+
+inline static int
+intmax(int a, int b)
+{
+    return ((a) > (b) ? (a) : (b));
+}
+
 static int
 clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2, int width,
           int xinc)
@@ -1311,13 +1324,9 @@ clip_line(SDL_Surface *surf, int *x1, int *y1, int *x2, int *y2, int width,
         top = MIN(*y1, *y2) - width;
         bottom = MAX(*y1, *y2) + width;
     }
-    if (surf->clip_rect.x > right || surf->clip_rect.y > bottom ||
-        surf->clip_rect.x + surf->clip_rect.w <= left ||
-        surf->clip_rect.y + surf->clip_rect.h <= top) {
-        return 0;
-    }
-
-    return 1;
+    return ((surf->clip_rect.x > right) || (surf->clip_rect.y > bottom) ||
+            (surf->clip_rect.x + surf->clip_rect.w <= left) ||
+            (surf->clip_rect.y + surf->clip_rect.h <= top));
 }
 
 static int
@@ -1762,12 +1771,6 @@ static void
 draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
                 int y2, int width, int *drawn_area)
 {
-    int dx, dy, err, e2, sx, sy, start_draw, end_draw;
-    int end_x = surf->clip_rect.x + surf->clip_rect.w - 1;
-    int end_y = surf->clip_rect.y + surf->clip_rect.h - 1;
-    int xinc = 0;
-    int extra_width = 1 - (width % 2);
-
     if (width < 1)
         return;
     if (width == 1) {
@@ -1775,74 +1778,134 @@ draw_line_width(SDL_Surface *surf, Uint32 color, int x1, int y1, int x2,
         return;
     }
 
-    width = (width / 2);
+    int dx, dy, err, e2, sx, sy, start_draw, end_draw, diff, exit;
+    int end_x = surf->clip_rect.x + surf->clip_rect.w - 1;
+    int end_y = surf->clip_rect.y + surf->clip_rect.h - 1;
+    int xinc = 0;
+    int extra_width = 1 - (width % 2);
 
+    width = (width / 2);
     /* Decide which direction to grow (width/thickness). */
     if (abs(x1 - x2) <= abs(y1 - y2)) {
         /* The line's thickness will be in the x direction. The top/bottom
          * ends of the line will be flat. */
         xinc = 1;
     }
-
-    if (!clip_line(surf, &x1, &y1, &x2, &y2, width, xinc))
+    if (clip_line(surf, &x1, &y1, &x2, &y2, width, xinc))
         return;
 
     if (x1 == x2 && y1 == y2) { /* Single point */
-        start_draw = MAX((x1 - width) + extra_width, surf->clip_rect.x);
-        end_draw = MIN(end_x, x1 + width);
+        start_draw = intmax((x1 - width) + extra_width, surf->clip_rect.x);
+        end_draw = intmin(end_x, x1 + width);
         if (start_draw <= end_draw) {
             drawhorzline(surf, color, start_draw, y1, end_draw);
             add_line_to_drawn_list(start_draw, y1, end_draw, y1, drawn_area);
         }
         return;
     }
+
     // Bresenham's line algorithm
     dx = abs(x2 - x1);
-    dy = abs(y2 - y1);
+    dy = -abs(y2 - y1);
     sx = x2 > x1 ? 1 : -1;
     sy = y2 > y1 ? 1 : -1;
-    err = (dx > dy ? dx : -dy) / 2;
+    err = dx + dy;
+    // If line is more vertical than horizontal
     if (xinc) {
-        while (y1 != (y2 + sy)) {
-            if (surf->clip_rect.y <= y1 && y1 <= end_y) {
-                start_draw =
-                    MAX((x1 - width) + extra_width, surf->clip_rect.x);
-                end_draw = MIN(end_x, x1 + width);
-                if (start_draw <= end_draw) {
-                    drawhorzline(surf, color, start_draw, y1, end_draw);
-                    add_line_to_drawn_list(start_draw, y1, end_draw, y1,
-                                           drawn_area);
-                }
+        drawn_area[0] =
+            intmax((intmin(x1, x2) - width) + extra_width, surf->clip_rect.x);
+        drawn_area[1] = intmax(intmin(y1, y2), surf->clip_rect.y);
+        drawn_area[2] = intmin(intmax(x1, x2) + width, end_x);
+        drawn_area[3] = intmin(intmax(y1, y2), end_y);
+        // Set exit to y value of where line will leave surface
+        // Set diff to difference between starting y coordinate and the y value
+        // of the line's entry point to the surface
+
+        if (y2 > y1) {
+            exit = intmin(end_y + 1, y2 + sy);
+            diff = surf->clip_rect.y - y1;
+        }
+        else {
+            exit = intmax(surf->clip_rect.y - 1, y2 + sy);
+            diff = y1 - end_y;
+        }
+        // If line starts outside of surface
+        if (diff > 0) {
+            // Set y1 to entry y point
+            y1 += diff * sy;
+            // Adjust err by dx for the change in the y axis
+            err += diff * dx;
+            // Calculate change in x value (x = y/m), uses ceil for consistency
+            // between positive/negative values
+            diff = (int)ceil((diff * dx) / (float)-dy);
+            x1 += diff * sx;
+            // Adjust err value to correct for change in x axis
+            err += diff * dy;
+        }
+        // Continue through normal Bresenham's line algorithm iteration
+        while (y1 != exit) {
+            start_draw = intmax((x1 - width) + extra_width, surf->clip_rect.x);
+            end_draw = intmin(end_x, x1 + width);
+            if (start_draw <= end_draw) {
+                drawhorzline(surf, color, start_draw, y1, end_draw);
             }
-            e2 = err;
-            if (e2 > -dx) {
-                err -= dy;
+
+            e2 = err * 2;
+            if (e2 >= dy) {
+                err += dy;
                 x1 += sx;
             }
-            if (e2 < dy) {
+            if (e2 <= dx) {
                 err += dx;
                 y1 += sy;
             }
         }
     }
     else {
-        while (x1 != (x2 + sx)) {
-            if (surf->clip_rect.x <= x1 && x1 <= end_x) {
-                start_draw =
-                    MAX((y1 - width) + extra_width, surf->clip_rect.y);
-                end_draw = MIN(end_y, y1 + width);
-                if (start_draw <= end_draw) {
-                    drawvertline(surf, color, start_draw, x1, end_draw);
-                    add_line_to_drawn_list(x1, start_draw, x1, end_draw,
-                                           drawn_area);
-                }
+        drawn_area[0] = intmax(intmin(x1, x2), surf->clip_rect.x);
+        drawn_area[1] =
+            intmax((intmin(y1, y2) - width) + extra_width, surf->clip_rect.y);
+        drawn_area[2] = intmin(MAX(x1, x2), end_x);
+        drawn_area[3] = intmin(intmax(y1, y2) + width, end_y);
+        // Set exit to x value of where line will leave surface
+        // Set diff to difference between starting x coordinate and the x value
+        // of the line's entry point to the surface
+        if (x2 > x1) {
+            diff = surf->clip_rect.x - x1;
+            exit = intmin(end_x + 1, x2 + sx);
+        }
+        else {
+            diff = x1 - end_x;
+            exit = intmax(surf->clip_rect.x - 1, x2 + sx);
+        }
+        // If line starts outside of surface
+        if (diff > 0) {
+            // Set x1 to entry x point
+            x1 += diff * sx;
+            // Adjust err by dy for the change in the x axis
+            err += diff * dy;
+            // Calculate change in y value (y = mx), uses ceil for consistency
+            // between positive/negative values
+            diff = (int)ceil((diff * -dy) / (float)dx);
+            y1 += diff * sy;
+            // Adjust err value to correct for change in y axis
+            err += diff * dx;
+        }
+
+        // Continue through normal Bresenham's line algorithm iteration
+        while (x1 != exit) {
+            start_draw = intmax((y1 - width) + extra_width, surf->clip_rect.y);
+            end_draw = intmin(end_y, y1 + width);
+            if (start_draw <= end_draw) {
+                drawvertline(surf, color, start_draw, x1, end_draw);
             }
-            e2 = err;
-            if (e2 > -dx) {
-                err -= dy;
+
+            e2 = err * 2;
+            if (e2 >= dy) {
+                err += dy;
                 x1 += sx;
             }
-            if (e2 < dy) {
+            if (e2 <= dx) {
                 err += dx;
                 y1 += sy;
             }
@@ -1890,41 +1953,165 @@ static void
 draw_line(SDL_Surface *surf, int x1, int y1, int x2, int y2, Uint32 color,
           int *drawn_area)
 {
-    int dx, dy, err, e2, sx, sy;
+    int dx, dy, err, e2, sx, sy, diff, exit, end;
+    int xinc = 0;
     if (x1 == x2 && y1 == y2) { /* Single point */
         set_and_check_rect(surf, x1, y1, color, drawn_area);
         return;
     }
-    if (y1 == y2) { /* Horizontal line */
-        dx = (x1 < x2) ? 1 : -1;
-        for (sx = 0; sx <= abs(x1 - x2); sx++) {
-            set_and_check_rect(surf, x1 + dx * sx, y1, color, drawn_area);
-        }
+    // Determine if the line is more vertical or horizontal for clipping
+    // purposes
+    if (abs(x1 - x2) <= abs(y1 - y2)) {
+        xinc = 1;
+    }
 
+    if (clip_line(surf, &x1, &y1, &x2, &y2, 0, xinc))
+        return;
+
+    if (y1 == y2) { /* Horizontal line */
+        if (x1 < x2) {
+            drawhorzline(
+                surf, color, intmax(x1, surf->clip_rect.x), y1,
+                intmin(x2, surf->clip_rect.x + surf->clip_rect.w - 1));
+            add_line_to_drawn_list(
+                intmax(x1, surf->clip_rect.x), y1,
+                intmin(x2, surf->clip_rect.x + surf->clip_rect.w - 1), y1,
+                drawn_area);
+        }
+        else {
+            drawhorzline(
+                surf, color, intmax(x2, surf->clip_rect.x), y1,
+                intmin(x1, surf->clip_rect.x + surf->clip_rect.w - 1));
+            add_line_to_drawn_list(
+                intmax(x2, surf->clip_rect.x), y1,
+                intmin(x1, surf->clip_rect.x + surf->clip_rect.w - 1), y1,
+                drawn_area);
+        }
         return;
     }
     if (x1 == x2) { /* Vertical line */
-        dy = (y1 < y2) ? 1 : -1;
-        for (sy = 0; sy <= abs(y1 - y2); sy++)
-            set_and_check_rect(surf, x1, y1 + dy * sy, color, drawn_area);
+        if (y1 < y2) {
+            drawvertline(
+                surf, color, intmax(y1, surf->clip_rect.y), x1,
+                intmin(y2, surf->clip_rect.y + surf->clip_rect.h - 1));
+            add_line_to_drawn_list(
+                x1, intmax(y1, surf->clip_rect.y), x1,
+                intmin(y2, surf->clip_rect.y + surf->clip_rect.h - 1),
+                drawn_area);
+        }
+        else {
+            drawvertline(
+                surf, color, intmax(y2, surf->clip_rect.y), x1,
+                intmin(y1, surf->clip_rect.y + surf->clip_rect.h - 1));
+            add_line_to_drawn_list(
+                x1, intmax(y2, surf->clip_rect.y), x1,
+                intmin(y1, surf->clip_rect.y + surf->clip_rect.h - 1),
+                drawn_area);
+        }
         return;
     }
-    dx = abs(x2 - x1), sx = x1 < x2 ? 1 : -1;
-    dy = abs(y2 - y1), sy = y1 < y2 ? 1 : -1;
-    err = (dx > dy ? dx : -dy) / 2;
-    while (x1 != x2 || y1 != y2) {
-        set_and_check_rect(surf, x1, y1, color, drawn_area);
-        e2 = err;
-        if (e2 > -dx) {
-            err -= dy;
-            x1 += sx;
+    drawn_area[0] = intmax(intmin(x1, x2), surf->clip_rect.x);
+    drawn_area[1] = intmax(intmin(y1, y2), surf->clip_rect.y);
+    drawn_area[2] =
+        intmin(intmax(x1, x2), surf->clip_rect.x + surf->clip_rect.w - 1);
+    drawn_area[3] =
+        intmin(intmax(y1, y2), surf->clip_rect.y + surf->clip_rect.h - 1);
+    dx = abs(x2 - x1);
+    dy = -abs(y2 - y1);
+    sx = x2 > x1 ? 1 : -1;
+    sy = y2 > y1 ? 1 : -1;
+    err = dx + dy;
+    // If line is more vertical than horizontal
+    if (xinc) {
+        end = y2 + sy;
+        // Set exit to y value of where line will leave surface
+        // Set diff to difference between starting y coordinate and the y value
+        // of the line's entry point to the surface
+        if (y2 > y1) {
+            exit = surf->clip_rect.y + surf->clip_rect.h;
+            diff = surf->clip_rect.y - y1;
         }
-        if (e2 < dy) {
-            err += dx;
-            y1 += sy;
+        else {
+            exit = surf->clip_rect.y - 1;
+            diff = y1 - (surf->clip_rect.y + surf->clip_rect.h - 1);
+        }
+        // If line starts outside of surface
+        if (diff > 0) {
+            // Set y1 to entry y point
+            y1 += diff * sy;
+            // Adjust err by dx for the change in the y axis
+            err += diff * dx;
+            // Calculate change in x value (x = y/m), uses ceil for consistency
+            // between positive/negative values
+            diff = (int)ceil(((float)diff * dx) / (float)-dy);
+            x1 += diff * sx;
+            // Adjust err value to correct for change in x axis
+            err += diff * dy;
+        }
+
+        // Continue through normal Bresenham's line algorithm iteration
+        while (y1 != end) {
+            if (y1 != exit) {
+                set_at(surf, x1, y1, color);
+            }
+            else
+                break;
+            e2 = err * 2;
+            if (e2 >= dy) {
+                err += dy;
+                x1 += sx;
+            }
+            if (e2 <= dx) {
+                err += dx;
+                y1 += sy;
+            }
         }
     }
-    set_and_check_rect(surf, x2, y2, color, drawn_area);
+    else {
+        end = x2 + sx;
+        // Set exit to x value of where line will leave surface
+        // Set diff to difference between starting x coordinate and the x value
+        // of the line's entry point to the surface
+        if (x2 > x1) {
+            diff = surf->clip_rect.x - x1;
+            exit = surf->clip_rect.x + surf->clip_rect.w;
+        }
+        else {
+            diff = x1 - (surf->clip_rect.x + surf->clip_rect.w - 1);
+            exit = surf->clip_rect.x - 1;
+        }
+        // If line starts outside of surface
+        if (diff > 0) {
+            // Set x1 to entry x point
+            x1 += diff * sx;
+            // Adjust err by dy for the change in the x axis
+            err += diff * dy;
+            // Calculate change in y value (y = mx), uses ceil for consistency
+            // between positive/negative values
+            diff = (int)ceil(((float)diff * -dy) / (float)dx);
+            y1 += diff * sy;
+            // Adjust err value to correct for change in y axis
+            err += diff * dx;
+        }
+
+        // Continue through normal Bresenham's line algorithm iteration
+        while (x1 != end) {
+            if (x1 != exit) {
+                set_at(surf, x1, y1, color);
+            }
+            else
+                break;
+            e2 = err * 2;
+            if (e2 >= dy) {
+                err += dy;
+                x1 += sx;
+            }
+            if (e2 <= dx) {
+                err += dx;
+                y1 += sy;
+            }
+        }
+    }
 }
 
 static int
@@ -3055,7 +3242,8 @@ draw_fillpoly(SDL_Surface *surf, int *point_x, int *point_y,
      * 3. each two x-coordinates in x_intersect are then inside the polygon
      *    (draw line for a pair of two such points)
      */
-    for (y = miny; (y <= maxy); y++) {
+    for (y = MAX(miny, surf->clip_rect.y);
+         (y <= MIN(maxy, surf->clip_rect.y + surf->clip_rect.h)); y++) {
         // n_intersections is the number of intersections with the polygon
         int n_intersections = 0;
         for (i = 0; (i < num_points); i++) {
