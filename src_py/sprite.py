@@ -107,12 +107,16 @@ class Sprite:
     When subclassing the Sprite class, be sure to call the base initializer
     before adding the Sprite to Groups.
 
+    source_rect = None
+        This is the source rect to use. Remember that it is relative to the top
+        left corner (0, 0) of self.image.
     """
 
     def __init__(self, *groups):
         self.__g = {}  # The groups the sprite is in
         self.__image: Optional[pygame.surface.Surface] = None
         self.__rect: Optional[pygame.rect.Rect] = None
+        self.source_rect = None
         if groups:
             self.add(*groups)
 
@@ -281,10 +285,6 @@ class DirtySprite(Sprite):
         It's the special_flags argument of Surface.blit; see the blendmodes in
         the Surface.blit documentation
 
-    source_rect = None
-        This is the source rect to use. Remember that it is relative to the top
-        left corner (0, 0) of self.image.
-
     visible = 1
         Normally this is 1. If set to 0, it will not be repainted. (If you
         change visible to 1, you must set dirty to 1 for it to be erased from
@@ -305,7 +305,6 @@ class DirtySprite(Sprite):
 
         # Default 0 unless initialized differently.
         self._layer = getattr(self, "_layer", 0)
-        self.source_rect = None
         Sprite.__init__(self, *groups)
 
     def _set_visible(self, val):
