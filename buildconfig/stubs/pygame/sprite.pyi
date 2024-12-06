@@ -21,6 +21,7 @@ _Group = AbstractGroup[_SpriteSupportsGroup]
 
 # protocol helps with structural subtyping for typevars in sprite group generics
 class _SupportsSprite(Protocol):
+    source_rect: Union[FRect, Rect]
     @property
     def image(self) -> Optional[Surface]: ...
     @image.setter
@@ -47,7 +48,6 @@ class _SupportsSprite(Protocol):
 class _SupportsDirtySprite(_SupportsSprite, Protocol):
     dirty: int
     blendmode: int
-    source_rect: Union[FRect, Rect]
     visible: int
     _layer: int
     def _set_visible(self, val: int) -> None: ...
@@ -55,6 +55,7 @@ class _SupportsDirtySprite(_SupportsSprite, Protocol):
 
 # concrete sprite implementation class
 class Sprite(_SupportsSprite):
+    source_rect: Union[FRect, Rect]
     @property
     def image(self) -> Optional[Surface]: ...
     @image.setter
@@ -78,10 +79,9 @@ class Sprite(_SupportsSprite):
     def groups(self) -> list[_Group]: ...
 
 # concrete dirty sprite implementation class
-class DirtySprite(_SupportsDirtySprite):
+class DirtySprite(Sprite, _SupportsDirtySprite):
     dirty: int
     blendmode: int
-    source_rect: Union[FRect, Rect]
     visible: int
     _layer: int
     def _set_visible(self, val: int) -> None: ...
