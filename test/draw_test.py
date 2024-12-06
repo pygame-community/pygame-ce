@@ -7302,6 +7302,119 @@ class DrawArcTest(DrawArcMixin, DrawTestCase):
     """
 
 
+### Draw Bezier Testing #######################################################
+
+
+class DrawBezierTest(unittest.TestCase):
+    is_started = False
+
+    foreground_color = (128, 64, 8)
+    background_color = (255, 255, 255)
+
+    def make_palette(base_color):
+        """Return color palette that is various intensities of base_color"""
+        # Need this function for Python 3.x so the base_color
+        # is within the scope of the list comprehension.
+
+        palette = []
+        for i in range(0, 256):
+            r, g, b = base_color
+            if 0 <= i <= 127:
+                # Darken
+                palette.append(((r * i) // 127, (g * i) // 127, (b * i) // 127))
+            else:
+                # Lighten
+                palette.append(
+                    (
+                        r + ((255 - r) * (255 - i)) // 127,
+                        g + ((255 - g) * (255 - i)) // 127,
+                        b + ((255 - b) * (255 - i)) // 127,
+                    )
+                )
+        return palette
+
+    default_palette = make_palette(foreground_color)
+
+    default_size = (100, 100)
+
+    def setUp(self):
+        # This makes sure pygame is always initialized before each test (in
+        # case a test calls pygame.quit()).
+        if not pygame.get_init():
+            pygame.init()
+
+        Surface = pygame.Surface
+        size = self.default_size
+        palette = self.default_palette
+        if not self.is_started:
+            # Create test surfaces
+            self.surfaces = [
+                Surface(size, 0, 8),
+                Surface(size, SRCALPHA, 16),
+                Surface(size, SRCALPHA, 32),
+            ]
+            self.surfaces[0].set_palette(palette)
+            nonpalette_fmts = (
+                # (8, (0xe0, 0x1c, 0x3, 0x0)),
+                (12, (0xF00, 0xF0, 0xF, 0x0)),
+                (15, (0x7C00, 0x3E0, 0x1F, 0x0)),
+                (15, (0x1F, 0x3E0, 0x7C00, 0x0)),
+                (16, (0xF00, 0xF0, 0xF, 0xF000)),
+                (16, (0xF000, 0xF00, 0xF0, 0xF)),
+                (16, (0xF, 0xF0, 0xF00, 0xF000)),
+                (16, (0xF0, 0xF00, 0xF000, 0xF)),
+                (16, (0x7C00, 0x3E0, 0x1F, 0x8000)),
+                (16, (0xF800, 0x7C0, 0x3E, 0x1)),
+                (16, (0x1F, 0x3E0, 0x7C00, 0x8000)),
+                (16, (0x3E, 0x7C0, 0xF800, 0x1)),
+                (16, (0xF800, 0x7E0, 0x1F, 0x0)),
+                (16, (0x1F, 0x7E0, 0xF800, 0x0)),
+                (24, (0xFF, 0xFF00, 0xFF0000, 0x0)),
+                (24, (0xFF0000, 0xFF00, 0xFF, 0x0)),
+                (32, (0xFF0000, 0xFF00, 0xFF, 0x0)),
+                (32, (0xFF000000, 0xFF0000, 0xFF00, 0x0)),
+                (32, (0xFF, 0xFF00, 0xFF0000, 0x0)),
+                (32, (0xFF00, 0xFF0000, 0xFF000000, 0x0)),
+                (32, (0xFF0000, 0xFF00, 0xFF, 0xFF000000)),
+                (32, (0xFF000000, 0xFF0000, 0xFF00, 0xFF)),
+                (32, (0xFF, 0xFF00, 0xFF0000, 0xFF000000)),
+                (32, (0xFF00, 0xFF0000, 0xFF000000, 0xFF)),
+            )
+            for bitsize, masks in nonpalette_fmts:
+                self.surfaces.append(Surface(size, 0, bitsize, masks))
+        for surf in self.surfaces:
+            surf.fill(self.background_color)
+
+    def check_at(self, surf, posn, color):
+        sc = surf.get_at(posn)
+        depth = surf.get_bitsize()
+        flags = surf.get_flags()
+        masks = surf.get_masks()
+        fail_msg = f"{sc} != {color} at {posn}, bitsize: {depth}, flags: {flags}, masks: {masks}"
+        self.assertEqual(sc, color, fail_msg)
+
+    def test_bezier(self):
+        """bezier(surface, points, steps, color): return None"""
+        fg = self.foreground_color
+        bg = self.background_color
+        points = [(10, 50), (25, 15), (60, 80), (92, 30)]
+        fg_test_points = [points[0], points[3]]
+        bg_test_points = [
+            (points[0][0] - 1, points[0][1]),
+            (points[3][0] + 1, points[3][1]),
+            (points[1][0], points[1][1] + 3),
+            (points[2][0], points[2][1] - 3),
+        ]
+        for surf in self.surfaces:
+            fg_adjusted = surf.unmap_rgb(surf.map_rgb(fg))
+            bg_adjusted = surf.unmap_rgb(surf.map_rgb(bg))
+            pygame.draw.bezier(surf, points, 30, fg)
+            for posn in fg_test_points:
+                self.check_at(surf, posn, fg_adjusted)
+            for posn in bg_test_points:
+                self.check_at(surf, posn, bg_adjusted)
+
+
 ### Draw Module Testing #######################################################
 
 
