@@ -79,7 +79,7 @@ class Sprite(_SupportsSprite):
     def groups(self) -> list[_Group]: ...
 
 # concrete dirty sprite implementation class
-class DirtySprite(_SupportsDirtySprite):
+class DirtySprite(Sprite, _SupportsDirtySprite):
     dirty: int
     blendmode: int
     visible: int
