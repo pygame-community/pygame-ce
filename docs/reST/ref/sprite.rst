@@ -56,9 +56,10 @@ Sprites are not thread safe. So lock them yourself if using threads.
    | :sg:`Sprite(*groups) -> Sprite`
 
    The base class for visible game objects. Derived classes will want to
-   override the ``Sprite.update()`` and assign a ``Sprite.image`` and
-   ``Sprite.rect`` attributes. The initializer can accept any number of Group
-   instances to be added to.
+   override the ``Sprite.update()`` and assign ``Sprite.image`` and
+   ``Sprite.rect`` attributes. Optionally, they can assign a
+   ``Sprite.source_rect`` attribute. The initializer can accept any number of
+   Group instances to be added to.
 
    When subclassing the Sprite, be sure to call the base initializer before
    adding the Sprite to Groups. For example:
@@ -81,6 +82,10 @@ Sprites are not thread safe. So lock them yourself if using threads.
               # Fetch the rectangle object that has the dimensions of the image
               # Update the position of this object by setting the values of rect.x and rect.y
               self.rect = self.image.get_rect()
+
+              # source rect to use, remember that it is relative to
+              # topleft (0,0) of self.image
+              #self.source_rect = pygame.rect.Rect((0, 0), (width, height))
 
    .. method:: update
 
@@ -169,13 +174,6 @@ Sprites are not thread safe. So lock them yourself if using threads.
    ::
 
        its the special_flags argument of blit, blendmodes
-
-   source_rect = None
-
-   ::
-
-       source rect to use, remember that it is relative to
-       topleft (0,0) of self.image
 
    visible = 1
 
