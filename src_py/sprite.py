@@ -563,11 +563,11 @@ class AbstractGroup:
         sprites = self.sprites()
         if hasattr(surface, "blits"):
             self.spritedict.update(
-                zip(sprites, surface.blits((spr.image, spr.rect) for spr in sprites))
+                zip(sprites, surface.blits((spr.image, spr.rect, spr.source_rect) for spr in sprites))
             )
         else:
             for spr in sprites:
-                self.spritedict[spr] = surface.blit(spr.image, spr.rect)
+                self.spritedict[spr] = surface.blit(spr.image, spr.rect, spr.source_rect)
         self.lostsprites = []
         dirty = self.lostsprites
 
@@ -689,7 +689,7 @@ class RenderUpdates(Group):
         dirty_append = dirty.append
         for sprite in self.sprites():
             old_rect = self.spritedict[sprite]
-            new_rect = surface_blit(sprite.image, sprite.rect)
+            new_rect = surface_blit(sprite.image, sprite.rect, sprite.source_rect)
             if old_rect:
                 if new_rect.colliderect(old_rect):
                     dirty_append(new_rect.union(old_rect))
@@ -865,7 +865,7 @@ class LayeredUpdates(AbstractGroup):
         init_rect = self._init_rect
         for spr in self.sprites():
             rec = spritedict[spr]
-            newrect = surface_blit(spr.image, spr.rect)
+            newrect = surface_blit(spr.image, spr.rect, spr.source_rect)
             if rec is init_rect:
                 dirty_append(newrect)
             else:
