@@ -72,6 +72,8 @@ class MissingModule:
     _NOT_IMPLEMENTED_ = True
 
     def __init__(self, name, urgent=0):
+        import sys  # pylint: disable=reimported
+
         self.name = name
         exc_type, exc_msg = sys.exc_info()[:2]
         self.info = str(exc_msg)
@@ -259,7 +261,41 @@ try:
 except (ImportError, OSError):
     transform = MissingModule("transform", urgent=1)
 
+
 # lastly, the "optional" pygame modules
+
+# Private, persisting alias for use in __getattr__
+_MissingModule = MissingModule
+
+
+def __getattr__(name):
+    """Implementation of lazy loading for some optional pygame modules.
+
+    The surfarray and sndarray submodules use numpy, so they are loaded
+    lazily to avoid a heavy numpy import if the modules are never used.
+
+    The first access of a lazily loaded submodule loads it and sets it
+    as an attribute on the pygame module. Pygame itself doesn't import these modules.
+    If the first access is an attribute access and not an import, then __getattr__ is
+    invoked (as the attribute isn't set yet), which imports the module dynamically.
+
+    All lazy submodules are directly referenced in the packager_imports function.
+    """
+    from importlib import import_module
+
+    LAZY_MODULES = "surfarray", "sndarray"
+    if name not in LAZY_MODULES:
+        # Normal behavior for attribute accesses that aren't lazy modules
+        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+    try:
+        module = import_module(f"{__name__}.{name}")
+        # A successful import automatically sets the module attribute on the package
+    except (ImportError, OSError):
+        module = _MissingModule(name, urgent=0)
+        globals()[name] = module
+    return module
+
+
 if "PYGAME_FREETYPE" in os.environ:
     try:
         import pygame.ftfont as font
@@ -299,16 +335,6 @@ try:
     import pygame.scrap
 except (ImportError, OSError):
     scrap = MissingModule("scrap", urgent=0)
-
-try:
-    import pygame.surfarray
-except (ImportError, OSError):
-    surfarray = MissingModule("surfarray", urgent=0)
-
-try:
-    import pygame.sndarray
-except (ImportError, OSError):
-    sndarray = MissingModule("sndarray", urgent=0)
 
 try:
     import pygame._debug
@@ -365,6 +391,10 @@ def packager_imports():
     import OpenGL.GL
     import pygame.macosx
     import pygame.colordict
+
+    # lazily loaded pygame modules, just in case
+    import pygame.surfarray
+    import pygame.sndarray
 
 
 # make Rects pickleable
