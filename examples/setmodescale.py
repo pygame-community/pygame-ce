@@ -10,8 +10,9 @@ Passing SCALED to pygame.display.set_mode means the resolution depends
 on desktop size and the graphics are scaled.
 """
 
-import pygame
 import sys
+
+import pygame
 
 RES = (160, 120)
 FPS = 30

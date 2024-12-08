@@ -2,7 +2,7 @@ import math
 import unittest
 from math import sqrt
 
-from pygame import Vector2, Vector3, Rect, FRect
+from pygame import FRect, Rect, Vector2, Vector3
 from pygame.geometry import Circle, Line
 
 
