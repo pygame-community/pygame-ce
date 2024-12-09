@@ -46,7 +46,15 @@
 
 #include "pgopengl.h"
 
+#ifdef PG_SDL3
+#include <SDL3_image/SDL_image.h>
+
+// SDL3_images uses SDL3 error reporting API
+#define IMG_GetError SDL_GetError
+#else
 #include <SDL_image.h>
+#endif
+
 #ifdef WIN32
 #define strcasecmp _stricmp
 #else
