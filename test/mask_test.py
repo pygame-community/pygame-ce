@@ -1,14 +1,13 @@
-from collections import OrderedDict
 import copy
 import platform
 import random
-import unittest
 import sys
+import unittest
+from collections import OrderedDict
 
 import pygame
 from pygame.locals import *
 from pygame.math import Vector2
-
 
 IS_PYPY = "PyPy" == platform.python_implementation()
 
