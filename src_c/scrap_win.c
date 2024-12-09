@@ -158,6 +158,15 @@ _create_dib_buffer(char *data, size_t *count)
 int
 pygame_scrap_init(void)
 {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+    int retval = 0;
+    window_handle = (HWND)SDL_GetPointerProperty(
+        SDL_GetWindowProperties(pg_GetDefaultWindow()),
+        SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+    if (window_handle) {
+        retval = 1;
+    }
+#else
     SDL_SysWMinfo info;
     int retval = 0;
 
@@ -170,6 +179,7 @@ pygame_scrap_init(void)
         window_handle = info.info.win.window;
         retval = 1;
     }
+#endif
 
     if (retval)
         _scrapinitialized = 1;
