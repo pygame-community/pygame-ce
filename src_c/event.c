@@ -1591,9 +1591,9 @@ static PyTypeObject pgEvent_Type;
 #define OFF(x) offsetof(pgEventObject, x)
 
 static PyMemberDef pg_event_members[] = {
-    {"__dict__", T_OBJECT, OFF(dict), READONLY},
-    {"type", T_INT, OFF(type), READONLY},
-    {"dict", T_OBJECT, OFF(dict), READONLY},
+    {"__dict__", T_OBJECT, OFF(dict), READONLY, DOC_EVENT_EVENT_DICT},
+    {"type", T_INT, OFF(type), READONLY, DOC_EVENT_EVENT_TYPE},
+    {"dict", T_OBJECT, OFF(dict), READONLY, DOC_EVENT_EVENT_DICT},
     {NULL} /* Sentinel */
 };
 
@@ -2250,7 +2250,7 @@ pg_event_peek(PyObject *self, PyObject *args, PyObject *kwargs)
 
     static char *kwids[] = {"eventtype", "pump", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Op", kwids, &obj,
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|p", kwids, &obj,
                                      &dopump))
         return NULL;
 
@@ -2258,44 +2258,36 @@ pg_event_peek(PyObject *self, PyObject *args, PyObject *kwargs)
 
     _pg_event_pump(dopump);
 
-    if (obj == NULL || obj == Py_None) {
-        res = PG_PEEP_EVENT_ALL(&event, 1, SDL_PEEKEVENT);
-        if (res < 0)
-            return RAISE(pgExc_SDLError, SDL_GetError());
-        return pgEvent_New(res ? &event : NULL);
-    }
-    else {
-        seq = _pg_eventtype_as_seq(obj, &len);
-        if (!seq)
+    seq = _pg_eventtype_as_seq(obj, &len);
+    if (!seq)
+        return NULL;
+
+    for (loop = 0; loop < len; loop++) {
+        type = _pg_eventtype_from_seq(seq, loop);
+        if (type == -1) {
+            Py_DECREF(seq);
             return NULL;
-
-        for (loop = 0; loop < len; loop++) {
-            type = _pg_eventtype_from_seq(seq, loop);
-            if (type == -1) {
-                Py_DECREF(seq);
-                return NULL;
-            }
-            res = PG_PEEP_EVENT(&event, 1, SDL_PEEKEVENT, type);
-            if (res) {
-                Py_DECREF(seq);
-
-                if (res < 0)
-                    return RAISE(pgExc_SDLError, SDL_GetError());
-                Py_RETURN_TRUE;
-            }
-            res = PG_PEEP_EVENT(&event, 1, SDL_PEEKEVENT,
-                                _pg_pgevent_proxify(type));
-            if (res) {
-                Py_DECREF(seq);
-
-                if (res < 0)
-                    return RAISE(pgExc_SDLError, SDL_GetError());
-                Py_RETURN_TRUE;
-            }
         }
-        Py_DECREF(seq);
-        Py_RETURN_FALSE; /* No event type match. */
+        res = PG_PEEP_EVENT(&event, 1, SDL_PEEKEVENT, type);
+        if (res) {
+            Py_DECREF(seq);
+
+            if (res < 0)
+                return RAISE(pgExc_SDLError, SDL_GetError());
+            Py_RETURN_TRUE;
+        }
+        res =
+            PG_PEEP_EVENT(&event, 1, SDL_PEEKEVENT, _pg_pgevent_proxify(type));
+        if (res) {
+            Py_DECREF(seq);
+
+            if (res < 0)
+                return RAISE(pgExc_SDLError, SDL_GetError());
+            Py_RETURN_TRUE;
+        }
     }
+    Py_DECREF(seq);
+    Py_RETURN_FALSE; /* No event type match. */
 }
 
 /* You might notice how we do event blocking stuff on proxy events and

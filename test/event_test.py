@@ -250,13 +250,6 @@ class EventModuleArgsTest(unittest.TestCase):
         self.assertRaises(TypeError, pygame.event.get, ["a", "b", "c"])
 
     def test_peek(self):
-        pygame.event.peek()
-        pygame.event.peek(None)
-        pygame.event.peek(None, True)
-
-        pygame.event.peek(pump=False)
-        pygame.event.peek(pump=True)
-        pygame.event.peek(eventtype=None)
         pygame.event.peek(eventtype=[pygame.KEYUP, pygame.KEYDOWN])
         pygame.event.peek(eventtype=pygame.USEREVENT, pump=False)
 
@@ -761,11 +754,6 @@ class EventModuleTest(unittest.TestCase):
         """Ensure peek() works correctly on an empty queue."""
         pygame.event.clear()
 
-        # Ensure all events can be checked.
-        peeked = pygame.event.peek()
-
-        self.assertFalse(peeked)
-
         # Ensure events can be checked individually.
         for event_type in EVENT_TYPES:
             peeked = pygame.event.peek(event_type)
@@ -821,7 +809,7 @@ class EventModuleTest(unittest.TestCase):
 
     @unittest.skipIf(
         os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
-        'requires the SDL_VIDEODRIVER to be a non-null value',
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     def test_set_grab__and_get_symmetric(self):
         """Ensure event grabbing can be enabled and disabled.
@@ -889,7 +877,7 @@ class EventModuleTest(unittest.TestCase):
 
     @unittest.skipIf(
         os.environ.get("SDL_VIDEODRIVER") == pygame.NULL_VIDEODRIVER,
-        'requires the SDL_VIDEODRIVER to be a non-null value',
+        "requires the SDL_VIDEODRIVER to be a non-null value",
     )
     def test_get_grab(self):
         """Ensure get_grab() works as expected"""

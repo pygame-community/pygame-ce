@@ -317,8 +317,7 @@ On Android, the following events can be generated
 .. function:: peek
 
    | :sl:`test if event types are waiting on the queue`
-   | :sg:`peek(eventtype=None) -> bool`
-   | :sg:`peek(eventtype=None, pump=True) -> bool`
+   | :sg:`peek(eventtype, pump=True) -> bool`
 
    Returns ``True`` if there are any events of the given type waiting on the
    queue. If a sequence of event types is passed, this will return ``True`` if
@@ -327,6 +326,8 @@ On Android, the following events can be generated
    If ``pump`` is ``True`` (the default), then :func:`pygame.event.pump()` will be called.
 
    .. versionchangedold:: 1.9.5 Added ``pump`` argument
+
+   .. versionchanged:: 2.5.3 ``eventtype`` is no longer an optional argument
 
    .. ## pygame.event.peek ##
 
@@ -491,7 +492,7 @@ On Android, the following events can be generated
 
       Read-only. The event type identifier. For user created event
       objects, this is the ``type`` argument passed to
-      :func:`pygame.event.Event()`.
+      :class:`pygame.event.Event()`.
 
       For example, some predefined event identifiers are ``QUIT`` and
       ``MOUSEMOTION``.
