@@ -143,6 +143,12 @@ pg_neon_at_runtime_but_uncompiled()
 #define DO_SSE2_DIV255_U16(MM128I) \
     _mm_srli_epi16(_mm_mulhi_epu16(MM128I, _mm_set1_epi16((short)0x8081)), 7);
 
+static inline __m128i
+pg_mm_blendv_epi8(__m128i a, __m128i b, __m128i mask)
+{
+    return _mm_or_si128(_mm_and_si128(mask, b), _mm_andnot_si128(mask, a));
+}
+
 void
 alphablit_alpha_sse2_argb_surf_alpha(SDL_BlitInfo *info)
 {
@@ -339,6 +345,8 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
                     mm_src_alpha = _mm_and_si128(mm_src, mm_alpha_mask);
                     mm_dst_alpha = _mm_and_si128(mm_dst, mm_alpha_mask);
 
+                    __m128i mask = _mm_cmpeq_epi32(mm_dst_alpha, mm_zero);
+
                     mm_src_alpha = _mm_srli_si128(mm_src_alpha, 3);
                     mm_dst_alpha = _mm_srli_si128(mm_dst_alpha, 3);
                     mm_res_a = _mm_add_epi16(mm_src_alpha, mm_dst_alpha);
@@ -391,6 +399,9 @@ alphablit_alpha_sse2_argb_no_surf_alpha(SDL_BlitInfo *info)
                     mm_res_pixels = _mm_packus_epi16(partial_A, partial_B);
                     mm_res_pixels = _mm_and_si128(mm_res_pixels, mm_rgb_mask);
                     mm_res_pixels = _mm_or_si128(mm_res_pixels, mm_res_a);
+
+                    mm_res_pixels =
+                        pg_mm_blendv_epi8(mm_res_pixels, mm_src, mask);
 
                     _mm_storeu_si128(dstp128, mm_res_pixels);
                     srcp128++;
