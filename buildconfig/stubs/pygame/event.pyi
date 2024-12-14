@@ -6,8 +6,6 @@ from pygame import Window, constants as _c
 
 class Event(EventLike):
     type: int
-    __dict__: dict[str, Any]
-    dict: dict[str, Any]  # type: ignore
 
     @overload
     def __init__(
@@ -15,7 +13,7 @@ class Event(EventLike):
     ) -> None: ...
     @overload
     def __init__(
-        self, dict: Optional[dict[str, Any]] = None, **kwargs: Any
+        self, dict: Optional[Dict[str, Any]] = None, **kwargs: Any
     ) -> None: ...
 
     def __getattribute__(self, name: str) -> Any: ...

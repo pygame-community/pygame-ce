@@ -177,6 +177,11 @@ class Event(metaclass=_EventMeta):
     def __delattr__(self, name: str) -> None:
         del self._dict[name]
 
+    def __dir__(self):
+        ret = super().__dir__()
+        ret = (*ret, *self._dict.keys())
+        return ret
+
 
 EventType = Event
 _register_event_class(Event)
