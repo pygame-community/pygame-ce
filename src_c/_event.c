@@ -187,10 +187,11 @@ _pg_unicode_from_event(SDL_Event *event)
     int capitalize = (capsheld && !shiftheld) || (shiftheld && !capsheld);
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-    if (event->key.mod & KMOD_CTRL) {
+    if (event->key.mod & KMOD_CTRL)
 #else
-    if (event->key.keysym.mod & KMOD_CTRL) {
+    if (event->key.keysym.mod & KMOD_CTRL)
 #endif
+    {
         /* Control Key held, send control-key related unicode. */
         if (key >= SDLK_a && key <= SDLK_z)
             return key - SDLK_a + 1;
@@ -312,10 +313,11 @@ _pg_get_event_unicode(SDL_Event *event)
     int i;
     for (i = 0; i < MAX_SCAN_UNICODE; i++) {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-        if (scanunicode[i].key == event->key.scancode) {
+        if (scanunicode[i].key == event->key.scancode)
 #else
-        if (scanunicode[i].key == event->key.keysym.scancode) {
+        if (scanunicode[i].key == event->key.keysym.scancode)
 #endif
+        {
             if (event->type == SDL_KEYUP) {
                 /* mark the position as free real estate for other
                  * events to occupy. */
@@ -531,12 +533,13 @@ pg_event_filter(void *_, SDL_Event *event)
     {
         /* DON'T filter SDL_WINDOWEVENTs here. If we delete events, they
          * won't be available to low-level SDL2 either.*/
+        switch (
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-        switch (event->type)
+            event->type
 #else
-        switch (event->window.event)
+            event->window.event
 #endif
-        {
+        ) {
             case SDL_WINDOWEVENT_RESIZED:
                 SDL_FilterEvents(_pg_remove_pending_VIDEORESIZE, &newevent);
 
@@ -852,10 +855,11 @@ dict_or_obj_from_event(SDL_Event *event)
             break;
         case SDL_ACTIVEEVENT:
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-            switch (event->window.data2) {
+            switch (event->window.data2)
 #else
-            switch (event->window.event) {
+            switch (event->window.event)
 #endif
+            {
                 case SDL_WINDOWEVENT_ENTER:
                     gain = 1;
                     state = SDL_APPMOUSEFOCUS;
@@ -1064,12 +1068,12 @@ dict_or_obj_from_event(SDL_Event *event)
                        PyFloat_FromDouble((double)event->wheel.preciseY));
 
 #else /* ~SDL_VERSION_ATLEAST(2, 0, 18) */
-        /* fallback to regular x and y when SDL version used does not
-         * support precise fields */
-        _pg_insobj(dict, "precise_x",
-                   PyFloat_FromDouble((double)event->wheel.x));
-        _pg_insobj(dict, "precise_y",
-                   PyFloat_FromDouble((double)event->wheel.y));
+            /* fallback to regular x and y when SDL version used does not
+             * support precise fields */
+            _pg_insobj(dict, "precise_x",
+                       PyFloat_FromDouble((double)event->wheel.x));
+            _pg_insobj(dict, "precise_y",
+                       PyFloat_FromDouble((double)event->wheel.y));
 
 #endif /* ~SDL_VERSION_ATLEAST(2, 0, 18) */
             _pg_insobj(
@@ -1295,12 +1299,12 @@ dict_or_obj_from_event(SDL_Event *event)
     }
     PyObject *pgWindow;
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-    if (!window ||
-        !(pgWindow = SDL_GetPointerProperty(SDL_GetWindowProperties(window),
-                                            "pg_window", NULL))) {
+    if (!window || !(pgWindow = SDL_GetPointerProperty(
+                         SDL_GetWindowProperties(window), "pg_window", NULL)))
 #else
-    if (!window || !(pgWindow = SDL_GetWindowData(window, "pg_window"))) {
+    if (!window || !(pgWindow = SDL_GetWindowData(window, "pg_window")))
 #endif
+    {
         pgWindow = Py_None;
     }
     Py_INCREF(pgWindow);
