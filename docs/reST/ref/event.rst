@@ -154,7 +154,7 @@ pygame 2 also supports controller hot-plugging
    CLIPBOARDUPDATE
    RENDER_TARGETS_RESET
    RENDER_DEVICE_RESET
-   LOCALECHANGED            (SDL backend >= 2.0.14)
+   LOCALECHANGED
 
 Also in this version, ``instance_id`` attributes were added to joystick events,
 and the ``joy`` attribute was deprecated.

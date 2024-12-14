@@ -37,12 +37,12 @@
    :param bool keyboard_grabbed: Create a window with grabbed keyboard input.
    :param bool input_focus: Create a window with input focus.
    :param bool mouse_focus: Create a window with mouse focus.
-   :param bool foreign: Marks a window not created by SDL.
    :param bool allow_high_dpi: Create a window in high-DPI mode if supported.
    :param bool mouse_capture: Create a window that has the mouse captured
                               (unrelated to INPUT_GRABBED).
    :param bool always_on_top: Create a window that is always presented above
                               others.
+   :param bool utility: Create a window that doesn't appear in the task bar.
 
    Event behavior if one Window is created: When the close button is pressed,
    the ``QUIT`` event will be sent to the event queue.
@@ -289,6 +289,16 @@
 
       .. versionadded:: 2.5.0
 
+   .. attribute:: utility
+
+      | :sl:`Get if the windos is an utility window (**read-only**)`
+      | :sg:`utility -> bool`
+
+      ``True`` if the window doesn't appear in the task bar, ``False`` otherwise.
+      This only works for X11 and Windows, for other platforms, creating ``Window(utility=True)`` won't change anything.
+
+      .. versionadded:: 2.5.3
+
    .. classmethod:: from_display_module
 
       | :sl:`Create a Window object using window data from display module`
@@ -404,7 +414,10 @@
 
       :param bool input_only: if ``True``, the window will be given input focus
                               but may be completely obscured by other windows.
-                              Only supported on X11.
+                              Only supported on X11. This has been deprecated and
+                              may be removed in a future version.
+
+      .. deprecated:: 2.5.3 ``input_only`` argument
 
    .. method:: restore
 

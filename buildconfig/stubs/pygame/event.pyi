@@ -1,4 +1,4 @@
-from typing import Any, Type, Union, Optional, Dict, overload, Tuple
+from typing import Any, Dict, Type, Optional, Union, overload
 
 from pygame.typing import SequenceLike, EventLike
 from pygame import Window, constants as _c
@@ -6,6 +6,8 @@ from pygame import Window, constants as _c
 
 class Event(EventLike):
     type: int
+    __dict__: dict[str, Any]
+    dict: dict[str, Any]  # type: ignore
 
     @overload
     def __init__(
@@ -13,7 +15,7 @@ class Event(EventLike):
     ) -> None: ...
     @overload
     def __init__(
-        self, dict: Optional[Dict[str, Any]] = None, **kwargs: Any
+        self, dict: Optional[dict[str, Any]] = None, **kwargs: Any
     ) -> None: ...
 
     def __getattribute__(self, name: str) -> Any: ...
@@ -22,6 +24,7 @@ class Event(EventLike):
     def __int__(self) -> int: ...
     def __bool__(self) -> bool: ...
     def __eq__(self, other: Any) -> bool: ...
+
 _EventTypes = Union[int, SequenceLike[int]]
 
 def pump() -> None: ...
@@ -100,22 +103,22 @@ class LocaleChanged(Event):
 
 class MouseMotion(Event):
     type: int = _c.MOUSEMOTION
-    pos: Tuple[int, int]
-    rel: Tuple[int, int]
+    pos: tuple[int, int]
+    rel: tuple[int, int]
     buttons: tuple[int, int, int]
     touch: bool
     window: Optional[Window]
 
 class MouseButtonDown(Event):
     type: int = _c.MOUSEBUTTONDOWN
-    pos: Tuple[int, int]
+    pos: tuple[int, int]
     button: int
     touch: bool
     window: Optional[Window]
 
 class MouseButtonUp(Event):
     type: int = _c.MOUSEBUTTONUP
-    pos: Tuple[int, int]
+    pos: tuple[int, int]
     button: int
     touch: bool
     window: Optional[Window]
@@ -134,7 +137,7 @@ class JoyBallMotion(Event):
     joy: int
     instance_id: int
     ball: int
-    rel: Tuple[int, int]
+    rel: tuple[int, int]
 
 class JoyHatMotion(Event):
     """Attribute "joy" is depracated, use "instance_id"."""
@@ -142,7 +145,7 @@ class JoyHatMotion(Event):
     joy: int
     instance_id: int
     hat: int
-    value: Tuple[int, int]
+    value: tuple[int, int]
 
 class JoyButtonUp(Event):
     """Attribute "joy" is depracated, use "instance_id"."""
@@ -178,7 +181,7 @@ class SysWMEvent(Event):
 
 class VideoResize(Event):
     type: int = _c.VIDEORESIZE
-    size: Tuple[int, int]
+    size: tuple[int, int]
     w: int
     h: int
 

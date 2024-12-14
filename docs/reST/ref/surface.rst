@@ -32,7 +32,7 @@
    Both flags are only a request, and may not be possible for all displays and
    formats.
 
-   Advance users can combine a set of bitmasks with a depth value. The masks
+   Advanced users can combine a set of bitmasks with a depth value. The masks
    are a set of 4 integers representing which bits in a pixel will represent
    each color. Normal Surfaces should not require the masks argument.
 
@@ -205,7 +205,7 @@
       object and dest is its destination position on this Surface. It draws each source Surface
       fully (meaning that unlike `blit()` you cannot pass an "area" parameter to represent
       a smaller portion of the source Surface to draw) on this Surface with the same blending
-      mode specified by special_flags. The sequence must have at least one (source, dest) pair.
+      mode specified by special_flags.
 
       :param blit_sequence: a sequence of (source, dest)
       :param special_flags: the flag(s) representing the blend mode used for each surface.

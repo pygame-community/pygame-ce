@@ -162,29 +162,23 @@ pgLine_FromObject(PyObject *obj, pgLineBase *out)
         length = PySequence_Fast_GET_SIZE(obj);
         PyObject **farray = PySequence_Fast_ITEMS(obj);
 
-        if (length == 4) {
-            if (!pg_DoubleFromObj(farray[0], &out->ax) ||
-                !pg_DoubleFromObj(farray[1], &out->ay) ||
-                !pg_DoubleFromObj(farray[2], &out->bx) ||
-                !pg_DoubleFromObj(farray[3], &out->by)) {
+        switch (length) {
+            case 4:
+                return pg_DoubleFromObj(farray[0], &out->ax) &&
+                       pg_DoubleFromObj(farray[1], &out->ay) &&
+                       pg_DoubleFromObj(farray[2], &out->bx) &&
+                       pg_DoubleFromObj(farray[3], &out->by);
+            case 2:
+                return pg_TwoDoublesFromObj(farray[0], &out->ax, &out->ay) &&
+                       pg_TwoDoublesFromObj(farray[1], &out->bx, &out->by);
+            case 1: /*looks like an arg?*/
+                if (PyUnicode_Check(farray[0]) ||
+                    !pgLine_FromObject(farray[0], out)) {
+                    return 0;
+                }
+                return 1;
+            default:
                 return 0;
-            }
-            return 1;
-        }
-        else if (length == 2) {
-            if (!pg_TwoDoublesFromObj(farray[0], &out->ax, &out->ay) ||
-                !pg_TwoDoublesFromObj(farray[1], &out->bx, &out->by)) {
-                PyErr_Clear();
-                return 0;
-            }
-            return 1;
-        }
-        else if (length == 1) /*looks like an arg?*/ {
-            if (PyUnicode_Check(farray[0]) ||
-                !pgLine_FromObject(farray[0], out)) {
-                return 0;
-            }
-            return 1;
         }
     }
     else if (PySequence_Check(obj)) {
@@ -274,6 +268,26 @@ pgLine_FromObject(PyObject *obj, pgLineBase *out)
     Py_DECREF(lineattr);
 
     return 1;
+}
+
+int
+pgLine_FromObjectFastcall(PyObject *const *args, Py_ssize_t nargs,
+                          pgLineBase *out)
+{
+    switch (nargs) {
+        case 1:
+            return pgLine_FromObject(args[0], out);
+        case 2:
+            return pg_TwoDoublesFromObj(args[0], &out->ax, &out->ay) &&
+                   pg_TwoDoublesFromObj(args[1], &out->bx, &out->by);
+        case 4:
+            return pg_DoubleFromObj(args[0], &out->ax) &&
+                   pg_DoubleFromObj(args[1], &out->ay) &&
+                   pg_DoubleFromObj(args[2], &out->bx) &&
+                   pg_DoubleFromObj(args[3], &out->by);
+        default:
+            return 0;
+    }
 }
 
 static inline int

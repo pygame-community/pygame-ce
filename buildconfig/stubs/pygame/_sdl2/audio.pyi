@@ -1,4 +1,4 @@
-from typing import Callable, List
+from collections.abc import Callable
 
 AUDIO_U8: int
 AUDIO_S8: int
@@ -20,7 +20,7 @@ AUDIO_ALLOW_FORMAT_CHANGE: int
 AUDIO_ALLOW_CHANNELS_CHANGE: int
 AUDIO_ALLOW_ANY_CHANGE: int
 
-def get_audio_device_names(iscapture: bool = False) -> List[str]: ...
+def get_audio_device_names(iscapture: bool = False) -> list[str]: ...
 
 class AudioDevice:
     def __init__(

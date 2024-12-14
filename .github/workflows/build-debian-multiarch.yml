@@ -96,13 +96,11 @@ jobs:
         install: ${{ env.INSTALL_CMD }}
 
         # Build a wheel, install it for running unit tests.
-        # --no-build-isolation is passed so that preinstalled meson-python can be used
-        # (done for optimization reasons)
+        # pip does not know that ninja is installed, and tries to install it again.
+        # so pass --ignore-dep ninja explicitly
         run: |
-          echo "\nBuilding pygame wheel\n"
-          pip3 wheel . --no-build-isolation --wheel-dir /artifacts -vvv
-          echo "\nInstalling wheel\n"
-          pip3 install --no-index --pre --break-system-packages --find-links /artifacts pygame-ce
+          echo "\nBuilding and installing pygame wheel\n"
+          PIP_BREAK_SYSTEM_PACKAGES=1 python3 dev.py --ignore-dep ninja build --wheel /artifacts --lax
           echo "\nRunning tests\n"
           export SDL_VIDEODRIVER=dummy
           export SDL_AUDIODRIVER=disk

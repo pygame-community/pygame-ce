@@ -1612,7 +1612,7 @@ pg_DisplayFormatAlpha(SDL_Surface *surface)
 #endif
         case SDL_PIXELFORMAT_ABGR1555:
         case SDL_PIXELFORMAT_BGR565:
-        case PG_PIXELFORMAT_XBGR8888:
+        case SDL_PIXELFORMAT_XBGR8888:
         case SDL_PIXELFORMAT_ABGR8888:
             pfe = SDL_PIXELFORMAT_ABGR8888;
             break;

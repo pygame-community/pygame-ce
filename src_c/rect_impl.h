@@ -2160,14 +2160,10 @@ RectExport_subscript(RectObject *self, PyObject *op)
     PrimitiveType *data = (PrimitiveType *)&self->r;
 
     if (PyIndex_Check(op)) {
-        PyObject *index = PyNumber_Index(op);
-        Py_ssize_t i;
-
-        if (index == NULL) {
+        Py_ssize_t i = PyNumber_AsSsize_t(op, NULL);
+        if (i == -1 && PyErr_Occurred()) {
             return NULL;
         }
-        i = PyNumber_AsSsize_t(index, NULL);
-        Py_DECREF(index);
         return RectExport_item(self, i);
     }
     else if (op == Py_Ellipsis) {
@@ -2213,15 +2209,10 @@ RectExport_assSubscript(RectObject *self, PyObject *op, PyObject *value)
         return -1;
     }
     if (PyIndex_Check(op)) {
-        PyObject *index;
-        Py_ssize_t i;
-
-        index = PyNumber_Index(op);
-        if (index == NULL) {
+        Py_ssize_t i = PyNumber_AsSsize_t(op, NULL);
+        if (i == -1 && PyErr_Occurred()) {
             return -1;
         }
-        i = PyNumber_AsSsize_t(index, NULL);
-        Py_DECREF(index);
         return RectExport_assItem(self, i, value);
     }
     else if (op == Py_Ellipsis) {
