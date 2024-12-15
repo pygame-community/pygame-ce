@@ -251,6 +251,7 @@ required).
 
    | :sl:`Get a reference to the currently set display surface`
    | :sg:`get_surface() -> Surface`
+   | :sg:`get_surface() -> None`
 
    Return a reference to the currently set display Surface. If no display mode
    has been set this will return None.
