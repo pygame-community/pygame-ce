@@ -273,7 +273,10 @@ required).
 .. function:: update
 
    | :sl:`Update all, or a portion, of the display. For non-OpenGL displays.`
-   | :sg:`update(rectangle=None, /) -> None`
+   | :sg:`update() -> None`
+   | :sg:`update(rectangle, /) -> None`
+   | :sg:`update(x, y, w, h, /) -> None`
+   | :sg:`update((x, y), (w, h), /) -> None`
    | :sg:`update(rectangle_iterable, /) -> None`
 
    For non OpenGL display Surfaces, this function is very similar to
