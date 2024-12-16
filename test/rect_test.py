@@ -2,7 +2,7 @@ import math
 import unittest
 from collections.abc import Collection, Sequence
 
-from pygame import Vector2, FRect, Rect as IRect
+from pygame import FRect, Rect as IRect, Vector2
 from pygame.tests import test_utils
 
 Rect = IRect

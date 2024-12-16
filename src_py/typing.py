@@ -15,11 +15,10 @@ __all__ = [
 from abc import abstractmethod
 from collections.abc import Callable
 from os import PathLike as _PathProtocol
-from typing import IO, Union, TypeVar, Protocol
+from typing import IO, Protocol, TypeVar, Union
 
 from pygame.color import Color
-from pygame.rect import Rect, FRect
-
+from pygame.rect import FRect, Rect
 
 # For functions that take a file name
 _PathLike = Union[str, bytes, _PathProtocol[str], _PathProtocol[bytes]]

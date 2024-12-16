@@ -1,5 +1,5 @@
-import unittest
 import platform
+import unittest
 
 
 class SysfontModuleTest(unittest.TestCase):

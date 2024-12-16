@@ -7,6 +7,7 @@ Shows an interactive image scaler.
 
 import sys
 import time
+
 import pygame
 
 
