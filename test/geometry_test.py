@@ -2025,9 +2025,10 @@ class LineTypeTest(unittest.TestCase):
         expected_y2 = 6.0
         expected_a = expected_x1, expected_y1
         expected_b = expected_x2, expected_y2
-        expected_center = (expected_x1 + expected_x2) / 2, (
-                expected_y1 + expected_y2
-        ) / 2
+        expected_center = (
+            (expected_x1 + expected_x2) / 2,
+            (expected_y1 + expected_y2) / 2,
+        )
         line = Line(expected_a, expected_b)
 
         self.assertEqual(line.center, expected_center)
@@ -2055,9 +2056,10 @@ class LineTypeTest(unittest.TestCase):
         expected_y2 = 6.0
         expected_a = expected_x1, expected_y1
         expected_b = expected_x2, expected_y2
-        expected_center = (expected_x1 + expected_x2) / 2, (
-                expected_y1 + expected_y2
-        ) / 2
+        expected_center = (
+            (expected_x1 + expected_x2) / 2,
+            (expected_y1 + expected_y2) / 2,
+        )
         line = Line(expected_a, expected_b)
 
         self.assertEqual(line.centerx, expected_center[0])
@@ -2083,9 +2085,10 @@ class LineTypeTest(unittest.TestCase):
         expected_y2 = 6.0
         expected_a = expected_x1, expected_y1
         expected_b = expected_x2, expected_y2
-        expected_center = (expected_x1 + expected_x2) / 2, (
-                expected_y1 + expected_y2
-        ) / 2
+        expected_center = (
+            (expected_x1 + expected_x2) / 2,
+            (expected_y1 + expected_y2) / 2,
+        )
         line = Line(expected_a, expected_b)
 
         self.assertEqual(line.centery, expected_center[1])
