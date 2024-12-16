@@ -835,7 +835,7 @@ window_init(pgWindowObject *self, PyObject *args, PyObject *kwargs)
     const char *_key_str;
     int _value_bool;
 
-    // ensure display is init at this point, diplay init automatically calls
+    // ensure display is init at this point, display init automatically calls
     // the window init in this module
     if (!pg_mod_autoinit(IMPPREFIX "display"))
         return -1;
@@ -1071,7 +1071,7 @@ window_from_display_module(PyTypeObject *cls, PyObject *_null)
         return NULL;
     }
 
-    // ensure display is init at this point, diplay init automatically calls
+    // ensure display is init at this point, display init automatically calls
     // the window init in this module
     if (!pg_mod_autoinit(IMPPREFIX "display"))
         return NULL;
