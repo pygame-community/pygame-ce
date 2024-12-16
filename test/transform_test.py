@@ -1450,6 +1450,50 @@ class TransformModuleTest(unittest.TestCase):
         for pt, color in gradient:
             self.assertTrue(s.get_at(pt) == color)
 
+    def test_skew(self):
+        blue = (0, 0, 255, 255)
+        red = (255, 0, 0, 255)
+        black = (0, 0, 0)
+        w, h = 32, 32
+        s = pygame.Surface((w, h), pygame.SRCALPHA, 32)
+        s.fill(red)
+        s.fill(black, pygame.rect.Rect(0, 0, 16, 16))
+        corner_points = [
+            [(1, 1), (19, 1), (19, 19), (1, 19)],
+            [(0, 10), (31, 0), (3, 31), (0, 13)],
+            [(5, 16), (17, 2), (19, 13), (2, 18)],
+            [(5, 4), (28, 2), (8, 25), (27, 20)],
+            [(20, 20), (15, 5), (30, 30), (5, 15)],
+        ]
+        test_points = [
+            [((0, 31), blue), ((5, 16), red), ((4, 4), black)],
+            [((7, 7), black), ((6, 7), blue), ((16, 16), red)],
+            [((19, 13), red), ((10, 9), black), ((11, 9), red)],
+            [((10, 8), black), ((18, 14), red), ((20, 14), blue)],
+            [((17, 14), black), ((17, 13), red), ((16, 14), blue)],
+        ]
+
+        # check specified test points are correct
+        for i in range(len(corner_points)):
+            s2 = pygame.transform.skew(s, corner_points[i], blue, False)
+            for test in test_points[i]:
+                self.assertEqual(
+                    s2.get_at(test[0]),
+                    test[1],
+                    "Failed for {0} at {1}".format(corner_points[i], test[0]),
+                )
+
+    def test_skew_adjust_size(self):
+        w, h = 32, 32
+        s = pygame.Surface((w, h), pygame.SRCALPHA, 32)
+        size_values = [-100, -72, -23, -1, 1, 15, 104, 1009]
+        for x in size_values:
+            for y in size_values:
+                s2 = pygame.transform.skew(
+                    s, [(x, 0), (0, 0), (x, y), (0, y)], adjust_size=True
+                )
+                self.assertEqual(s2.size, (abs(x) + 1, abs(y) + 1))
+
     def test_scale2x(self):
         # __doc__ (as of 2008-06-25) for pygame.transform.scale2x:
 
